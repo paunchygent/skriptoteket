@@ -436,7 +436,7 @@ class DocxConversionPipeline:
                 run.job.chunks,
                 course_key=run.job.course_key,
                 courses=load_exam_course_catalog().courses,
-            )
+            ).document
         provisional = replace(provisional, document=document, assets_by_id=assets_by_id)
         update = conversion_update(document, families, filled, pending, assets_by_id=assets_by_id)
         run.state = trial
@@ -467,13 +467,18 @@ class DocxConversionPipeline:
             chunks=run.job.chunks,
             assets_by_id=result.assets_by_id,
         )
-        document = apply_header(
+        header = apply_header(
             document,
             manifest,
             run.job.chunks,
             course_key=run.job.course_key,
             courses=load_exam_course_catalog().courses,
         )
+        document = header.document
+        for event in header.events:
+            logger.warning(
+                "DOCX build failure observed", job_id=str(run.job.job_id), **event.as_json()
+            )
         update = conversion_update(
             document, run.families, tuple(run.filled), (), assets_by_id=assets_by_id
         )
@@ -484,7 +489,7 @@ class DocxConversionPipeline:
                 result,
                 document=document,
                 assets_by_id=assets_by_id,
-                events=(*result.events, *checks),
+                events=(*result.events, *header.events, *checks),
                 timings=tuple(run.timings),
             ),
             update=update,

@@ -20,7 +20,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_scoring import (
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxChunk,
-    DocxMissingImage,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_governing_chunks import (
     release_governing_chunks,
@@ -32,7 +31,14 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions impor
 from skriptoteket.domain.curated_apps.exam_workspace.docx_section_instructions import (
     SectionInstructions,
     place_section_instructions,
+    replace_question_items,
     with_question_points,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.docx_source_review import (
+    missing_picture_reasons as missing_picture_reasons,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.docx_source_review import (
+    review_source_item as review_source_item,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     printed_points,
@@ -75,9 +81,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeItemReviewState,
     NativeParseOrigin,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.shared_body import (
-    source_paragraphs,
-)
 from skriptoteket.domain.curated_apps.exam_workspace.source_entry_ownership import (
     produced_entry_body,
 )
@@ -101,25 +104,6 @@ _BLANK = NativeTextSegment(text="____", marks=())
 NOTHING_GOVERNED: Mapping[str, frozenset[str]] = MappingProxyType({})
 
 _ITALIC_TAG = re.compile(r"</?i>")
-
-
-def _missing_picture_reason(missing: DocxMissingImage) -> str:
-    return (
-        f"Bilden {missing.reference} ({missing.media_type}) kan inte visas i provet. "
-        "Granska frågan manuellt."
-    )
-
-
-def missing_picture_reasons(chunks: Iterable[DocxChunk]) -> tuple[str, ...]:
-    """One named Swedish review reason per unresolved picture, deduplicated by reference.
-
-    An empty result means no chunk carries a picture the conversion could not show.
-    """
-    reasons: dict[str, str] = {}
-    for chunk in chunks:
-        for missing in chunk.missing_images:
-            reasons.setdefault(missing.reference, _missing_picture_reason(missing))
-    return tuple(reasons.values())
 
 
 def native_item(
@@ -297,33 +281,6 @@ def native_item(
     )
 
 
-def review_source_item(chunks: tuple[DocxChunk, ...], reason: str) -> NativeExamItem:
-    """One teacher-review item holding the plain source text of ``chunks``, one paragraph per
-    chunk in source order, whatever the model wrote; it keeps the question's printed points
-    and every picture at its exact place in the chunk's text, and names every picture the
-    conversion could not show beside the caller's ``reason``."""
-    body = source_paragraphs(chunks)
-    return NativeExamItem(
-        item_id="item_001",
-        sequence=1,
-        kind=NativeExamItemKind.FREE_TEXT,
-        points=printed_points(chunks),
-        body=body
-        or (
-            NativeParagraph(
-                heading_level=None, segments=(NativeTextSegment(text="Tomt källstycke.", marks=()),)
-            ),
-        ),
-        answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
-        review=NativeItemReview(
-            state=NativeItemReviewState.REVIEW_REQUIRED,
-            parse_origin=NativeParseOrigin.DETERMINISTIC,
-            reasons=(reason, *missing_picture_reasons(chunks)),
-        ),
-        source_anchor=chunks[0].anchor,
-    )
-
-
 def review_chunk_item(chunk: DocxChunk, reason: str) -> NativeExamItem:
     return review_source_item((chunk,), reason)
 
@@ -418,6 +375,7 @@ def assemble_build_result(
             own_anchors,
         )
     scored_items = list(placed.items)
+    parents = placed.parents
     by_anchor = {chunk.anchor: chunk for chunk in chunks}
     for own in questions:
         indices = [i for i, item in enumerate(scored_items) if item.source_anchor in own]
@@ -427,8 +385,11 @@ def assemble_build_result(
         )
         if points is None:
             points = placed.printed_totals.get(frozenset(item.item_id for item in members))
-        for i, item in zip(indices, with_question_points(members, points), strict=True):
-            scored_items[i] = item
+        scored = with_question_points(
+            members, points, source_chunks=tuple(by_anchor[a] for a in own if a in by_anchor)
+        )
+        events = (*events, *scored.events)
+        scored_items, parents = replace_question_items(scored_items, parents, members, scored)
     items = tuple(scored_items)
     global_instructions = tuple(
         paragraph
@@ -437,7 +398,7 @@ def assemble_build_result(
         for paragraph in instruction_paragraphs(instruction, by_anchor)
     )
     shared_bodies = (
-        *(parent.instruction for parent in placed.parents),
+        *(parent.instruction for parent in parents),
         global_instructions,
     )
     assets, assets_by_id = docx_build_assets.asset_manifest(
@@ -458,7 +419,7 @@ def assemble_build_result(
         title=document_title,
         instructions=global_instructions,
         items=items,
-        parents=placed.parents,
+        parents=parents,
         assets=assets,
         origin=NativeExamDocumentOrigin(
             kind="docx_import",

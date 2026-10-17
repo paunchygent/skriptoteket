@@ -261,13 +261,14 @@ def with_heading_runs(
     sole_origin = {
         m.source_anchors[0]: i for i, m in enumerate(instructions) if len(m.source_anchors) == 1
     }
+    assigned = held | owner.keys() | governed.keys()
     headings: list[Run] = []
     for chunk in chunks:
         at = positions[chunk.anchor]
         if (
             chunk.kind != "heading"
             or (not chunk.text.strip() and not chunk.images and not chunk.missing_images)
-            or (at == 0 and chunk.anchor not in owner and chunk.anchor not in governed)
+            or (at == 0 and chunk.anchor not in assigned)
             or chunk.anchor in title_anchors
         ):
             continue

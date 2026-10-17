@@ -58,8 +58,8 @@ def test_header_course_selection_keeps_the_hint_and_only_accepts_one_identity(
     result = apply_header(
         _document(), manifest, chunks, course_key=picked, courses=load_exam_course_catalog().courses
     )
-    assert result.header.course_hint == hint
-    assert result.header.course == (
+    assert result.document.header.course_hint == hint
+    assert result.document.header.course == (
         ExamCourseChoice(key=expected_key, name=expected_name) if expected_key else None
     )
 

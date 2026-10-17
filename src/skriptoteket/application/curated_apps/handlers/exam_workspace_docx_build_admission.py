@@ -384,7 +384,15 @@ def _admit_item(
             printed_label = QUESTION_HEADING_LABEL.match(headings[0].text)
             if printed_label:
                 item = item.model_copy(
-                    update={"printed_label": printed_label.group(1) or printed_label.group(2)}
+                    update={
+                        "printed_label": headings[0]
+                        .text[
+                            printed_label.start() : printed_label.end(
+                                1 if printed_label.group(1) else 2
+                            )
+                        ]
+                        .strip()
+                    }
                 )
         source_images = Counter(image.asset_id for chunk in own for image in chunk.images)
         emitted = Counter(item.body_asset_ids())

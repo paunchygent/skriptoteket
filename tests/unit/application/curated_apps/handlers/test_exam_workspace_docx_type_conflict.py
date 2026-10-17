@@ -34,7 +34,7 @@ from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
     recording,
 )
 
-pytestmark = [pytest.mark.unit, pytest.mark.asyncio]
+pytestmark = [pytest.mark.unit]
 
 _EXAM = "bf26_english_1_unit_test_kap_1_2_med_facit"
 _RECORDED = "docx_w2-11-01"

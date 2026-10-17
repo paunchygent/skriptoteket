@@ -5,15 +5,14 @@ from __future__ import annotations
 import json
 import shutil
 import subprocess
-import sys
 from pathlib import Path
 
 
 def test_builder_cli_checks_recorded_mapping_without_rewriting_stale_data(tmp_path: Path) -> None:
     command = [
-        sys.executable,
-        "-m",
-        "scripts.build_exam_course_catalog",
+        "pdm",
+        "run",
+        "build-exam-course-catalog",
         "--raw-dir",
         "tests/fixtures/exam_course_catalog",
         "--output-dir",
@@ -67,9 +66,9 @@ def test_builder_cli_rejects_source_drift_before_writing_output(tmp_path: Path) 
 
     rejected = subprocess.run(
         [
-            sys.executable,
-            "-m",
-            "scripts.build_exam_course_catalog",
+            "pdm",
+            "run",
+            "build-exam-course-catalog",
             "--raw-dir",
             str(raw_dir),
             "--output-dir",

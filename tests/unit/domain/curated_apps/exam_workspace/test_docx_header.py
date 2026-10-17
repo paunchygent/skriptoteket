@@ -70,7 +70,7 @@ def test_printed_exam_total_reads_the_points_not_an_earlier_part_number(
         course_key=None,
         courses=(),
     )
-    assert result.header.printed_total == expected
+    assert result.document.header.printed_total == expected
 
 
 def test_course_lines_keep_plain_source_order_and_first_parsable_exam_total() -> None:
@@ -95,9 +95,9 @@ def test_course_lines_keep_plain_source_order_and_first_parsable_exam_total() ->
         course_key=None,
         courses=(),
     )
-    assert result.header.course_hint == "Svenska 2 Kursavslutande"
-    assert result.header.printed_total == 36
-    assert result.instructions == ()
+    assert result.document.header.course_hint == "Svenska 2 Kursavslutande"
+    assert result.document.header.printed_total == 36
+    assert result.document.instructions == ()
 
 
 def test_empty_course_line_has_no_hint() -> None:
@@ -108,7 +108,7 @@ def test_empty_course_line_has_no_hint() -> None:
         course_key=None,
         courses=(),
     )
-    assert result.header.course_hint is None
+    assert result.document.header.course_hint is None
 
 
 def test_part_totals_follow_source_ownership_into_adjacent_parents() -> None:
@@ -144,8 +144,8 @@ def test_part_totals_follow_source_ownership_into_adjacent_parents() -> None:
         course_key=None,
         courses=(),
     )
-    assert [parent.printed_total for parent in result.parents] == [None, 15]
-    assert [item.points for item in result.items] == [1, 1, 1, 1, 1]
+    assert [parent.printed_total for parent in result.document.parents] == [None, 15]
+    assert [item.points for item in result.document.items] == [1, 1, 1, 1, 1]
 
 
 def test_part_total_uses_largest_overlap_even_when_some_questions_are_unparented() -> None:
@@ -164,7 +164,7 @@ def test_part_total_uses_largest_overlap_even_when_some_questions_are_unparented
         course_key=None,
         courses=(),
     )
-    assert [parent.printed_total for parent in result.parents] == [None, 40]
+    assert [parent.printed_total for parent in result.document.parents] == [None, 40]
 
 
 def test_part_total_uses_the_same_owned_context_mapping_as_pipeline_assembly() -> None:
@@ -198,9 +198,9 @@ def test_part_total_uses_the_same_owned_context_mapping_as_pipeline_assembly() -
         course_key=None,
         courses=(),
     )
-    assert result.parents[0].printed_total is None
-    assert result.items[0].points == 15
-    assert result.items[1].points == 1
+    assert result.document.parents[0].printed_total is None
+    assert result.document.items[0].points == 15
+    assert result.document.items[1].points == 1
 
 
 @pytest.mark.parametrize("existing_points", [None, 3, 7.5])
@@ -217,6 +217,6 @@ def test_single_unparented_question_owns_its_printed_points(
         course_key=None,
         courses=(),
     )
-    assert result.parents == ()
-    assert result.items[0].points == 7.5
-    assert result.items[0].review == item.review
+    assert result.document.parents == ()
+    assert result.document.items[0].points == 7.5
+    assert result.document.items[0].review == item.review
