@@ -6,7 +6,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import Do
 from skriptoteket.domain.curated_apps.exam_workspace.docx_batches import question_families
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import ExamManifest
-from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import line_points
+from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import (
+    heading_total,
+    line_points,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_section_instructions import (
     replace_question_items,
     with_question_points,
@@ -43,21 +46,36 @@ def resolve_header_course(
 
 
 def printed_exam_total(chunks: tuple[DocxChunk, ...], manifest: ExamManifest) -> int | float | None:
-    """The one total a non-heading points line prints before the first question.
+    """The one total a line before the first question prints, never a section's (D3).
 
-    Two lines printing different totals, or none, give None; a heading that prints a total is a
-    part heading, and a line after the first question belongs to that question.
+    A heading or a plain points line printing one total, that no question owns, is a total
+    line; it opens a section when the next total line or question after it is a question.
+    Before the first question a line that opens no section is the exam's total. An opening
+    line counts only when no such line exists, and only when no later section opens with a
+    line of its kind (heading or paragraph): then it is the first part's total. Two
+    different totals, or none, give None.
     """
-    first = min(
-        (
-            index
-            for index, chunk in enumerate(chunks)
-            for question in manifest.questions
-            if chunk.anchor in question.anchors
-        ),
-        default=len(chunks),
-    )
-    values = {value for chunk in chunks[:first] if (value := line_points(chunk)) is not None}
+    own = {anchor for question in manifest.questions for anchor in question.anchors}
+    starts = {question.anchors[0] for question in manifest.questions}
+    # Source order of question starts (None) and total lines (their total and chunk kind).
+    markers: list[tuple[int | float, str] | None] = []
+    for chunk in chunks:
+        if chunk.anchor in starts:
+            markers.append(None)
+        elif chunk.anchor not in own and (total := heading_total(chunk) or line_points(chunk)):
+            markers.append((total, chunk.kind))
+    first = markers.index(None) if None in markers else len(markers)
+    opening = [
+        (marker, index + 1 < len(markers) and markers[index + 1] is None)
+        for index, marker in enumerate(markers)
+        if marker is not None
+    ]
+    before = opening[: sum(1 for marker in markers[:first] if marker is not None)]
+    plain = {total for (total, _), opens in before if not opens}
+    later_kinds = {kind for (_, kind), opens in opening[len(before) :] if opens}
+    values = plain or {
+        total for (total, kind), opens in before if opens and kind not in later_kinds
+    }
     return values.pop() if len(values) == 1 else None
 
 

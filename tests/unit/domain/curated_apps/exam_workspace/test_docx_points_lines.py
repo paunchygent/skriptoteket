@@ -232,3 +232,15 @@ def test_manifest_without_points_line_is_returned_identically() -> None:
 )
 def test_line_points(kind: str, text: str, expected: int | float | None) -> None:
     assert line_points(_chunk(0, kind, text)) == expected
+
+
+def test_a_section_line_tagged_as_a_header_loses_the_tag_and_no_question_owns_it() -> None:
+    (closing,) = [case for case in _CASES if case.name.startswith("5 ")]
+    chunks, manifest = _build(replace(closing, placement="header"))
+    line = chunks[closing.line].anchor
+
+    result = assign_points_lines(manifest, chunks)
+
+    assert result.header == ()
+    assert line in result.unplaced_anchors
+    assert result.questions == manifest.questions

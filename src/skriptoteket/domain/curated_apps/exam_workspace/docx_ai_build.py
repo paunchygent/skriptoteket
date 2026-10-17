@@ -28,6 +28,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_governing_chunks impor
 from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions import (
     return_misplaced_own_chunks,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import line_points
 from skriptoteket.domain.curated_apps.exam_workspace.docx_section_instructions import (
     SectionInstructions,
     place_section_instructions,
@@ -383,6 +384,10 @@ def assemble_build_result(
         points = printed_points(
             by_anchor[a] for a in own if a in by_anchor and by_anchor[a].kind == "heading"
         )
+        if points is None:
+            # A points line the question owns prints its points over the reply (D2).
+            lines = {value for a in own if a in by_anchor if (value := line_points(by_anchor[a]))}
+            points = lines.pop() if len(lines) == 1 else None
         if points is None:
             points = placed.printed_totals.get(frozenset(item.item_id for item in members))
         scored = with_question_points(

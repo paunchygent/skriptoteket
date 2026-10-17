@@ -56,13 +56,22 @@ def _heading(anchor: str, text: str) -> DocxChunk:
 _Q1 = _manifest((), (_question("q1", "q1"),))
 
 
+_Q12 = _manifest((), (_question("q1", "q1"), _question("q2", "q2")))
+
+
 @pytest.mark.parametrize(
     ("chunks", "expected"),
     [
         ((_chunk("t", "Total: 36 poäng"), _chunk("q1", "1. Fråga")), 36),
         ((_chunk("n", "Namn:"), _chunk("q1", "1. Fråga")), None),
+        # Two plain totals that differ are no exam total.
         (
-            (_chunk("a", "Total: 36 poäng"), _chunk("b", "Totalt 40 p"), _chunk("q1", "1.")),
+            (
+                _chunk("a", "Total: 36 poäng"),
+                _chunk("b", "Max 40 p"),
+                _heading("h", "Del 1: 15 poäng"),
+                _chunk("q1", "1."),
+            ),
             None,
         ),
         (
@@ -70,11 +79,60 @@ _Q1 = _manifest((), (_question("q1", "q1"),))
             36,
         ),
         ((_chunk("q1", "1. Fråga"), _chunk("t", "Total: 36 poäng")), None),
+        # A line opening the first section is never the exam total, heading or paragraph.
         (
-            (_heading("h", "Del 1: 15 poäng"), _chunk("t", "Total: 36 poäng"), _chunk("q1", "1.")),
+            (_chunk("t", "Total: 36 poäng"), _heading("h", "Del 1: 15 poäng"), _chunk("q1", "1.")),
             36,
         ),
-        ((_heading("h", "Total: 36 poäng"), _chunk("q1", "1. Fråga")), None),
+        (
+            (_chunk("t", "Total: 36 poäng"), _chunk("d", "Del 1: 15 poäng"), _chunk("q1", "1.")),
+            36,
+        ),
+        # A heading can print the exam total.
+        ((_heading("h", "Total: 36 poäng"), _chunk("q1", "1. Fråga")), 36),
+        ((_heading("h", "Prov i svenska, 40 poäng"), _chunk("q1", "1. Fråga")), 40),
+        # In an exam of parts, the only line before the first question is Del 1's when a
+        # later part opens with a line of its kind.
+        (
+            (
+                _chunk("d", "Del 1: 15 poäng"),
+                _chunk("q1", "1."),
+                _chunk("d2", "Del 2: 21 poäng"),
+                _chunk("q2", "2."),
+            ),
+            None,
+        ),
+        (
+            (
+                _heading("h1", "Del 1: 15 poäng"),
+                _chunk("q1", "1."),
+                _heading("h2", "Del 2: 21 poäng"),
+                _chunk("q2", "2."),
+            ),
+            None,
+        ),
+        # The sa24 shape: a plain total before q1; later parts open with headings.
+        (
+            (
+                _chunk("t", "Total: 74 points"),
+                _chunk("q1", "1."),
+                _heading("h", "E Choose the words (15 points)"),
+                _chunk("q2", "2."),
+            ),
+            74,
+        ),
+        # The Svenska 2 shape: total, part heading, questions, a closing line, next part.
+        (
+            (
+                _chunk("t", "Total: 36 poäng"),
+                _heading("h1", "Del 1: litteraturhistoria, 15 poäng"),
+                _chunk("q1", "1."),
+                _chunk("c", "Poäng: 15 poäng"),
+                _heading("h2", "Del 2: grammatik, 21 poäng"),
+                _chunk("q2", "2."),
+            ),
+            36,
+        ),
         ((_chunk("t", "Total: 36,5 poäng"), _chunk("q1", "1. Fråga")), 36.5),
         ((_chunk("t", "Del 1: 15 poäng, del 2: 21 poäng"), _chunk("q1", "1.")), None),
     ],
@@ -82,7 +140,7 @@ _Q1 = _manifest((), (_question("q1", "q1"),))
 def test_printed_exam_total_is_the_one_total_line_before_the_first_question(
     chunks: tuple[DocxChunk, ...], expected: int | float | None
 ) -> None:
-    assert printed_exam_total(chunks, _Q1) == expected
+    assert printed_exam_total(chunks, _Q12) == expected
 
 
 def test_apply_header_takes_the_exam_total_from_the_text_without_a_header_anchor() -> None:

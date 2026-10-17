@@ -7,7 +7,7 @@ question's own printed points; it never becomes a separate question or review it
 
 One line is no question's: a line after the last question of a section of two or more
 questions that restates the total its section heading prints. It is the section's points
-line, which the section split absorbs.
+line, which the section split absorbs; a header tag on it is dropped.
 """
 
 from dataclasses import replace
@@ -50,6 +50,7 @@ def assign_points_lines(manifest: ExamManifest, chunks: tuple[DocxChunk, ...]) -
         if chunk.anchor not in own and (total := heading_total(chunk)) is not None
     ]
     owners: dict[str, str] = {}
+    section_lines: set[str] = set()
     for index, chunk in enumerate(chunks):
         points = line_points(chunk)
         if chunk.anchor in own or points is None:
@@ -68,9 +69,11 @@ def assign_points_lines(manifest: ExamManifest, chunks: tuple[DocxChunk, ...]) -
             section_end = min((s[0] for s in sections if s[0] > index), default=len(chunks))
             in_section = [s for s, _ in starts if heading[0] < s < section_end]
             if len(in_section) >= 2 and max(in_section) < index:
+                section_lines.add(chunk.anchor)
                 continue
         owners[chunk.anchor] = question_id
-    if not owners:
+    untagged = {h.anchor for h in manifest.header} & section_lines
+    if not owners and not untagged:
         return manifest
     questions = tuple(
         replace(
@@ -93,6 +96,10 @@ def assign_points_lines(manifest: ExamManifest, chunks: tuple[DocxChunk, ...]) -
         questions=questions,
         contexts=tuple(c for c in manifest.contexts if c.anchor not in owners),
         title_anchors=tuple(a for a in manifest.title_anchors if a not in owners),
-        header=tuple(h for h in manifest.header if h.anchor not in owners),
-        unplaced_anchors=tuple(a for a in manifest.unplaced_anchors if a not in owners),
+        header=tuple(
+            h for h in manifest.header if h.anchor not in owners and h.anchor not in untagged
+        ),
+        unplaced_anchors=tuple(
+            a for a in (*manifest.unplaced_anchors, *untagged) if a not in owners
+        ),
     )

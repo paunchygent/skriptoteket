@@ -125,3 +125,31 @@ async def test_a_points_line_the_reply_emits_as_its_own_item_joins_its_question(
     path.write_text(json.dumps(reply))
     replay = build_replay(_EXAM, root=tmp_path)
     _assert_printed_points(await replay.pipeline.convert(job=replay.job()))
+
+
+@pytest.mark.parametrize("case", ["A_none", "D_question_totals"])
+async def test_the_printed_points_line_wins_over_the_reply_points(tmp_path: Path, case: str):
+    """q23's reply claims 7 points; its own line prints 1, which the question takes (D2)."""
+    shutil.copytree(RECORDINGS / _EXAM, tmp_path / _EXAM)
+    path = tmp_path / _EXAM / "docx_w1-03.json"
+    reply = json.loads(path.read_text())
+    reply["items"][0]["points"] = 7
+    path.write_text(json.dumps(reply))
+    grouping_path = tmp_path / _EXAM / "docx_grouping_1.json"
+    grouping = json.loads(grouping_path.read_text())
+    grouping["header_anchors"] = _CASES[case]([q["id"] for q in grouping["questions"]])
+    grouping_path.write_text(json.dumps(grouping))
+    replay = build_replay(_EXAM, root=tmp_path)
+    outcome = await replay.pipeline.convert(job=replay.job())
+    _assert_printed_points(outcome)
+    items = sorted(outcome.result.document.items, key=lambda item: item.sequence)
+    assert items[22].points_estimated is False
+
+
+async def test_a_section_line_tagged_as_a_question_total_stays_the_sections(tmp_path: Path):
+    """Del 1's closing "Poäng: 15 poäng" tagged as q15's total is still Del 1's line (D2)."""
+    outcome = await _replay(
+        tmp_path,
+        lambda ids: [{"anchor": "body:0055", "kind": "question_total", "governs": [ids[14]]}],
+    )
+    _assert_printed_points(outcome)
