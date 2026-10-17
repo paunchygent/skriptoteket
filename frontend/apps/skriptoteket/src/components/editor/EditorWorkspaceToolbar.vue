@@ -9,7 +9,7 @@
 
 import { computed, ref } from "vue";
 
-import { IconRedo, IconUndo } from "../icons";
+import { UiGlyph } from "../ui/shared";
 import {
   DENSE_FORM_INPUT_CLASS,
   DENSE_MENU_PANEL_CLASS,
@@ -291,46 +291,13 @@ function formatDateTime(value: string | number): string {
         class="lg:hidden"
         @click="emit('toggleChatCollapsed')"
       >
-        <svg
-          viewBox="0 0 24 24"
+        <UiGlyph
+          meaning="ai-assist"
+          :size="16"
+          :stroke-width="1.5"
           class="h-4 w-4"
           aria-hidden="true"
-        >
-          <rect
-            x="5"
-            y="7"
-            width="14"
-            height="10"
-            rx="2"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.5"
-          />
-          <circle
-            cx="9"
-            cy="12"
-            r="1"
-            fill="currentColor"
-          />
-          <circle
-            cx="15"
-            cy="12"
-            r="1"
-            fill="currentColor"
-          />
-          <path
-            d="M9 16h6"
-            stroke="currentColor"
-            stroke-width="1.5"
-            stroke-linecap="round"
-          />
-          <path
-            d="M8 5h8"
-            stroke="currentColor"
-            stroke-width="1.5"
-            stroke-linecap="round"
-          />
-        </svg>
+        />
       </UiDenseIconButton>
 
       <div
@@ -356,7 +323,11 @@ function formatDateTime(value: string | number): string {
           :title="props.aiUndoDisabledReason || undefined"
           @click="emit('undoAi')"
         >
-          <IconUndo :size="16" />
+          <UiGlyph
+            meaning="undo"
+            :size="16"
+            :stroke-width="2.5"
+          />
         </UiDenseIconButton>
 
         <UiDenseIconButton
@@ -365,7 +336,11 @@ function formatDateTime(value: string | number): string {
           :title="props.aiRedoDisabledReason || undefined"
           @click="emit('redoAi')"
         >
-          <IconRedo :size="16" />
+          <UiGlyph
+            meaning="redo"
+            :size="16"
+            :stroke-width="2.5"
+          />
         </UiDenseIconButton>
 
         <div

@@ -76,8 +76,8 @@ onMounted(() => {
 </script>
 
 <template>
-  <section class="expand-left-40 border border-navy bg-panel">
-    <div class="border-b border-navy px-4 py-3">
+  <section class="expand-left-40 rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] bg-panel">
+    <div class="border-b border-[var(--huleedu-surface-divider)] px-4 py-3">
       <h2 class="text-sm font-semibold text-navy">Redigera personlig information</h2>
       <p class="text-xs text-navy/70">Uppdatera namn och visningsnamn</p>
     </div>
@@ -105,7 +105,7 @@ onMounted(() => {
               v-model="firstName"
               type="text"
               required
-              class="w-full border border-navy bg-white px-3 py-2 text-navy"
+              class="w-full border border-[var(--huleedu-panel-border)] bg-canvas px-3 py-2 text-navy"
               :disabled="isSaving"
             >
           </div>
@@ -119,7 +119,7 @@ onMounted(() => {
               v-model="lastName"
               type="text"
               required
-              class="w-full border border-navy bg-white px-3 py-2 text-navy"
+              class="w-full border border-[var(--huleedu-panel-border)] bg-canvas px-3 py-2 text-navy"
               :disabled="isSaving"
             >
           </div>
@@ -135,7 +135,7 @@ onMounted(() => {
             v-model="displayName"
             type="text"
             placeholder="Valfritt"
-            class="w-full border border-navy bg-white px-3 py-2 text-navy"
+            class="w-full border border-[var(--huleedu-panel-border)] bg-canvas px-3 py-2 text-navy"
             :disabled="isSaving"
           >
         </div>
@@ -148,7 +148,7 @@ onMounted(() => {
           <select
             id="edit-locale"
             v-model="locale"
-            class="w-full border border-navy bg-white px-3 py-2 text-navy"
+            class="w-full border border-[var(--huleedu-panel-border)] bg-canvas px-3 py-2 text-navy"
             :disabled="isSaving"
           >
             <option value="sv-SE">Svenska (sv-SE)</option>

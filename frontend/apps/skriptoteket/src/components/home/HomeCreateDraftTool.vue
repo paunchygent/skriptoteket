@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import CreateDraftToolModal from "../admin/CreateDraftToolModal.vue";
 import { useCreateDraftToolModal } from "../../composables/admin/useCreateDraftToolModal";
-import { IconArrow } from "../icons";
+import { UiGlyph } from "../ui/shared";
 
 const createDraftToolModal = useCreateDraftToolModal();
 const isCreateModalOpen = createDraftToolModal.isOpen;
@@ -31,7 +31,9 @@ async function createDraftTool(): Promise<void> {
   >
     <div class="card-header">
       <span class="card-label">Skapa nytt verktyg</span>
-      <IconArrow
+      <UiGlyph
+        meaning="continue"
+        :stroke-width="2.5"
         :size="18"
         class="card-arrow"
       />

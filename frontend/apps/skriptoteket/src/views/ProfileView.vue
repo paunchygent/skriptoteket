@@ -61,12 +61,12 @@ onMounted(() => {
     <div class="profile-stage">
       <Transition name="profile-fade">
         <div
-          v-if="isLoading"
+          v-if="isLoading && !profile"
           key="loading"
-          class="profile-stage-item expand-left-40 border border-navy bg-panel"
+          class="profile-stage-item expand-left-40 rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] bg-panel"
         >
           <div class="flex items-center gap-4 border-b border-navy/20 p-4">
-            <div class="h-14 w-14 shrink-0 animate-pulse border-2 border-navy/20 bg-navy/10" />
+            <div class="h-14 w-14 shrink-0 animate-pulse border border-[var(--huleedu-panel-border)] bg-navy/10" />
             <div class="flex-1 space-y-2">
               <div class="h-5 w-32 animate-pulse bg-navy/10" />
               <div class="h-4 w-48 animate-pulse bg-navy/10" />
@@ -80,7 +80,7 @@ onMounted(() => {
         </div>
 
         <ProfileDisplay
-          v-else-if="!loadError"
+          v-else-if="profile || !loadError"
           key="content"
           class="profile-stage-item"
           :profile="profile"

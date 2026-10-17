@@ -8,8 +8,8 @@
 
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 
-import { IconArrow, IconLink2, IconX } from "../../../components/icons";
 import { UiDenseActionButton, UiDenseIconButton, denseMenuItemClass } from "../../../components/ui";
+import { UiGlyph } from "../../../components/ui/shared";
 import type { ClassroomPlannerShareArtifact } from "../classroomPlannerShareApi";
 import type {
   PlannerExportFileOption,
@@ -259,12 +259,17 @@ onUnmounted(() => {
       @click="togglePanel"
     >
       <template #leading>
-        <IconLink2 :size="14" />
+        <UiGlyph
+          meaning="share-link"
+          :size="14"
+          :stroke-width="2.25"
+        />
       </template>
       <template #trailing>
-        <IconArrow
+        <UiGlyph
+          meaning="open-list"
           :size="12"
-          direction="down"
+          :stroke-width="2.5"
         />
       </template>
     </UiDenseActionButton>
@@ -280,7 +285,11 @@ onUnmounted(() => {
       @click="togglePanel"
     >
       <span class="inline-flex items-center gap-2">
-        <IconLink2 :size="15" />
+        <UiGlyph
+          meaning="share-link"
+          :size="15"
+          :stroke-width="2.25"
+        />
         Dela
       </span>
       <span
@@ -301,7 +310,11 @@ onUnmounted(() => {
       aria-haspopup="dialog"
       @click="togglePanel"
     >
-      <IconLink2 :size="16" />
+      <UiGlyph
+        meaning="share-link"
+        :size="16"
+        :stroke-width="2.25"
+      />
       <span>Dela</span>
     </button>
 
@@ -362,7 +375,11 @@ onUnmounted(() => {
           data-test="planner-share-export-close"
           @click="() => closePanel()"
         >
-          <IconX :size="14" />
+          <UiGlyph
+            meaning="close"
+            :size="14"
+            :stroke-width="2.5"
+          />
         </UiDenseIconButton>
       </header>
 

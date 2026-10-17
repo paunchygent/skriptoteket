@@ -10,8 +10,8 @@
 import { computed, nextTick, ref, toRef } from "vue";
 
 import { apiDelete, apiPost, apiPut } from "../../../api/client";
-import { IconSave, IconTrash, IconX } from "../../../components/icons";
-import { SystemMessage, UiDenseIconButton, UiGlyph } from "../../../components/ui";
+import { SystemMessage, UiDenseIconButton } from "../../../components/ui";
+import { UiGlyph } from "../../../components/ui/shared";
 import type { RoomTemplate } from "../classroomPlannerTypes";
 import { useRoomTemplateEditorState } from "../useRoomTemplateEditorState";
 import RoomTemplateBuilderSurface from "./RoomTemplateBuilderSurface.vue";
@@ -265,7 +265,11 @@ async function removeTemplate(): Promise<void> {
               :disabled="isDeleting"
               @click="removeTemplate"
             >
-              <IconTrash :size="14" />
+              <UiGlyph
+                meaning="delete"
+                :size="14"
+                :stroke-width="2.5"
+              />
               <span>{{ isDeleting ? "Raderar..." : "Radera" }}</span>
             </button>
           </div>
@@ -276,7 +280,11 @@ async function removeTemplate(): Promise<void> {
               data-test="room-template-cancel-button"
               @click="emit('close')"
             >
-              <IconX :size="14" />
+              <UiGlyph
+                meaning="close"
+                :size="14"
+                :stroke-width="2.5"
+              />
               <span>Avbryt</span>
             </button>
             <button
@@ -286,7 +294,11 @@ async function removeTemplate(): Promise<void> {
               :disabled="isSubmitting"
               @click="submit"
             >
-              <IconSave :size="14" />
+              <UiGlyph
+                meaning="save"
+                :size="14"
+                :stroke-width="2.5"
+              />
               <span>{{ primarySaveLabel }}</span>
             </button>
           </div>

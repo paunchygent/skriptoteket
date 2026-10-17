@@ -7,6 +7,7 @@ import { useVaultFiles } from "../../composables/vault/useVaultFiles";
 import { useAuthStore } from "../../stores/auth";
 import UiSearchBar from "../ui/UiSearchBar.vue";
 import { UiSegmentedToggle, type UiSegmentedToggleOption, SystemMessage } from "../ui";
+import { UiDenseActionButton } from "../ui/shared";
 
 import VaultFileList from "./VaultFileList.vue";
 import { useVaultFileActions } from "./useVaultFileActions";
@@ -270,7 +271,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <section class="border border-navy bg-panel p-4 space-y-4">
+  <section class="rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] bg-panel p-4 space-y-4">
     <header class="space-y-3">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <p
@@ -301,7 +302,7 @@ onUnmounted(() => {
 
       <div
         v-if="usage"
-        class="border border-navy/20 bg-canvas/30 p-3 space-y-2"
+        class="rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] bg-canvas/30 p-3 space-y-2"
       >
         <div class="flex items-center justify-between gap-3 text-xs text-navy/70">
           <span class="font-semibold uppercase tracking-wide">Kvot</span>
@@ -358,40 +359,29 @@ onUnmounted(() => {
           v-if="showBulkActions"
           class="flex w-full flex-wrap items-center justify-start gap-2 lg:w-auto lg:justify-end"
         >
-          <button
-            type="button"
-            class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] leading-none border-navy/30 bg-panel shadow-none"
+          <UiDenseActionButton
+            label="Markera alla"
             :disabled="isLoading || manageSelectionDisabled"
             @click="selectAllVisibleManage"
-          >
-            Markera alla
-          </button>
-          <button
-            type="button"
-            class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] leading-none border-navy/30 bg-panel shadow-none"
+          />
+          <UiDenseActionButton
+            label="Avmarkera"
             :disabled="selectedManageIds.length === 0 || manageSelectionDisabled"
             @click="clearManageSelection"
-          >
-            Avmarkera
-          </button>
-          <button
+          />
+          <UiDenseActionButton
             v-if="state === 'active'"
-            type="button"
-            class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] leading-none border-critical/40 text-critical bg-panel shadow-none"
+            label="Ta bort markerade"
+            tone="danger"
             :disabled="selectedManageIds.length === 0 || isMutating || manageSelectionDisabled"
             @click="void onDeleteSelected()"
-          >
-            Ta bort markerade
-          </button>
-          <button
+          />
+          <UiDenseActionButton
             v-else
-            type="button"
-            class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] leading-none border-navy/30 bg-canvas shadow-none"
+            label="Återställ markerade"
             :disabled="selectedManageIds.length === 0 || isMutating || manageSelectionDisabled"
             @click="void onRestoreSelected()"
-          >
-            Återställ markerade
-          </button>
+          />
         </div>
       </div>
     </header>

@@ -5,16 +5,16 @@
  * delegating measurement and lifecycle to the shared planner overflow ladder.
  */
 
-import { computed, type Component, type Ref } from "vue";
+import { computed, type Ref } from "vue";
 
-import { IconAdjustments, IconHistory } from "../../../components/icons";
+import type { UiGlyphMeaning } from "../../../components/ui/shared";
 import type { Roster } from "../classroomPlannerTypes";
 import { usePlannerToolbarOverflow } from "./usePlannerToolbarOverflow";
 
 type OverflowActionItem = {
   id: string;
   label: string;
-  icon?: Component;
+  glyph?: UiGlyphMeaning;
   disabled: boolean;
   group?: "primary" | "secondary";
   hasPopup?: "dialog" | "menu";
@@ -109,7 +109,7 @@ export function useGroupingToolbarOverflow(options: UseGroupingToolbarOverflowOp
       items.push({
         id: "history",
         label: "Historik",
-        icon: IconHistory,
+        glyph: "history",
         disabled: state.isWorkspaceBusy,
         testId: "grouping-history",
         onSelect: options.openHistory,
@@ -118,7 +118,7 @@ export function useGroupingToolbarOverflow(options: UseGroupingToolbarOverflowOp
     items.push({
       id: "edit-roster",
       label: "Redigera klass",
-      icon: IconAdjustments,
+      glyph: "configure",
       disabled: state.isWorkspaceBusy,
       testId: "edit-grouping-roster",
       onSelect: options.editRoster,
@@ -127,7 +127,7 @@ export function useGroupingToolbarOverflow(options: UseGroupingToolbarOverflowOp
       items.push({
         id: "advanced-settings",
         label: "Avancerade inställningar",
-        icon: IconAdjustments,
+        glyph: "configure",
         disabled: state.isWorkspaceBusy,
         hasPopup: "dialog",
         expanded: props.smartSettingsOpen,

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from "vue";
+import { computed, nextTick, ref, useId, watch } from "vue";
+import { UiGlyph } from "../ui/shared";
 
 const props = withDefaults(
   defineProps<{
@@ -27,6 +28,7 @@ const emit = defineEmits<{
   cancel: [];
 }>();
 
+const labelId = useId();
 const isEditing = ref(false);
 const editValue = ref("");
 const inputRef = ref<HTMLInputElement | HTMLSelectElement | null>(null);
@@ -81,7 +83,10 @@ watch(
 
 <template>
   <div class="profile-field-row">
-    <dt class="profile-field-label">
+    <dt
+      :id="labelId"
+      class="profile-field-label"
+    >
       {{ label }}
     </dt>
     <dd class="profile-field-value">
@@ -103,7 +108,8 @@ watch(
               v-if="type === 'select'"
               ref="inputRef"
               v-model="editValue"
-              class="w-full max-w-[200px] border-2 border-navy/30 bg-canvas px-2 py-1 text-sm text-navy focus:border-navy focus:outline-none"
+              :aria-labelledby="labelId"
+              class="w-full max-w-[200px] border border-[var(--huleedu-panel-border)] bg-canvas px-2 py-1 text-sm text-navy focus:border-navy focus:outline-none"
               :disabled="saving"
               @keydown="handleKeydown"
             >
@@ -119,8 +125,9 @@ watch(
               v-else
               ref="inputRef"
               v-model="editValue"
+              :aria-labelledby="labelId"
               :type="type"
-              class="w-full max-w-[200px] border-2 border-navy/30 bg-canvas px-2 py-1 text-sm text-navy focus:border-navy focus:outline-none"
+              class="w-full max-w-[200px] border border-[var(--huleedu-panel-border)] bg-canvas px-2 py-1 text-sm text-navy focus:border-navy focus:outline-none"
               :disabled="saving"
               @keydown="handleKeydown"
             >
@@ -139,19 +146,10 @@ watch(
             :disabled="saving"
             @click="startEditing"
           >
-            <svg
-              class="w-3 h-3 mr-1"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-              />
-            </svg>
+            <UiGlyph
+              meaning="edit"
+              :size="12"
+            />
             Ändra
           </button>
 
@@ -201,16 +199,16 @@ watch(
 }
 
 .profile-field-label {
-  font-size: var(--huleedu-text-xs, 0.75rem);
-  font-weight: 600;
+  font-size: var(--huleedu-text-xs);
+  font-weight: var(--huleedu-font-semibold);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--huleedu-navy-70, rgba(26, 43, 60, 0.7));
+  letter-spacing: var(--huleedu-tracking-label);
+  color: var(--huleedu-navy-70);
 }
 
 .profile-field-value {
-  font-size: var(--huleedu-text-sm, 0.875rem);
-  color: var(--huleedu-navy, #1a2b3c);
+  font-size: var(--huleedu-text-sm);
+  color: var(--huleedu-navy);
   min-height: 1.5rem;
 }
 

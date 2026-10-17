@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, ref, useId, watch } from "vue";
+
+import { UiDenseIconButton, UiGlyph } from "../ui/shared";
 
 import VaultPanel from "./VaultPanel.vue";
 
@@ -22,6 +24,7 @@ const emit = defineEmits<{
 }>();
 
 const draft = ref<string[]>([]);
+const titleId = useId();
 
 watch(
   () => props.isOpen,
@@ -56,20 +59,27 @@ function onConfirm(): void {
         class="fixed inset-0 z-50 flex items-center justify-center bg-navy/40"
         role="dialog"
         aria-modal="true"
+        :aria-labelledby="titleId"
         @click.self="emit('close')"
       >
-        <div class="relative w-full max-w-3xl mx-4 p-6 bg-modal border border-navy shadow-md">
-          <button
-            type="button"
-            class="absolute top-3 right-3 text-navy/60 hover:text-navy text-xl leading-none"
+        <div class="relative w-full max-w-3xl mx-4 p-6 rounded-[var(--huleedu-panel-radius)] bg-modal border border-[var(--huleedu-panel-border)] shadow-md">
+          <UiDenseIconButton
+            label="Stäng"
+            class="absolute top-3 right-3"
             @click="emit('close')"
           >
-            &times;
-          </button>
+            <UiGlyph
+              meaning="close"
+              :size="16"
+            />
+          </UiDenseIconButton>
 
           <div class="flex items-start justify-between gap-4">
             <div>
-              <h2 class="text-xl font-semibold text-navy">
+              <h2
+                :id="titleId"
+                class="text-xl font-semibold text-navy"
+              >
                 {{ title }}
               </h2>
               <p class="mt-1 text-sm text-navy/70">

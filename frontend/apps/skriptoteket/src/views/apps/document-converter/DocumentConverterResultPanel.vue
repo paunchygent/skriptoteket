@@ -13,7 +13,7 @@
  */
 import { onBeforeUnmount, ref, watch } from "vue";
 
-import { IconFitView, IconZoomIn, IconZoomOut } from "../../../components/icons";
+import { UiGlyph } from "../../../components/ui/shared";
 import { UiDenseIconButton } from "../../../components/ui";
 import { useAnchoredDocumentPreviewZoom } from "./useAnchoredDocumentPreviewZoom";
 import { useDocumentPreviewTouchGestures } from "./useDocumentPreviewTouchGestures";
@@ -96,7 +96,11 @@ onBeforeUnmount(() => {
           data-testid="document-converter-preview-zoom-out"
           @click="zoom.zoomOut"
         >
-          <IconZoomOut :size="16" />
+          <UiGlyph
+            meaning="zoom-out"
+            :size="16"
+            :stroke-width="2.5"
+          />
         </UiDenseIconButton>
         <span
           class="dc-preview-zoom-label"
@@ -110,14 +114,22 @@ onBeforeUnmount(() => {
           data-testid="document-converter-preview-zoom-in"
           @click="zoom.zoomIn"
         >
-          <IconZoomIn :size="16" />
+          <UiGlyph
+            meaning="zoom-in"
+            :size="16"
+            :stroke-width="2.5"
+          />
         </UiDenseIconButton>
         <UiDenseIconButton
           label="Anpassa till vyn"
           data-testid="document-converter-preview-fit"
           @click="zoom.fitToView"
         >
-          <IconFitView :size="16" />
+          <UiGlyph
+            meaning="fit-view"
+            :size="16"
+            :stroke-width="2.5"
+          />
         </UiDenseIconButton>
       </div>
     </header>

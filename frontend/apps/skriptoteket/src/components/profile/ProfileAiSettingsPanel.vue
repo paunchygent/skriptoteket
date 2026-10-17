@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
+import { UiDenseActionButton } from "../ui/shared";
 import type { RemoteFallbackPreference } from "../../stores/ai";
 
 const props = defineProps<{
@@ -40,19 +41,16 @@ const actionLabel = computed(() => {
 </script>
 
 <template>
-  <section class="expand-left-40 border border-navy bg-panel">
-    <div class="flex items-center justify-between border-b border-navy px-4 py-3">
+  <section class="expand-left-40 rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] bg-panel">
+    <div class="flex items-center justify-between border-b border-[var(--huleedu-surface-divider)] px-4 py-3">
       <div>
         <h3 class="text-sm font-semibold text-navy">AI-inställningar</h3>
         <p class="text-xs text-navy/70">Kodassistenten och externa AI-API:er</p>
       </div>
-      <button
-        type="button"
-        class="btn-ghost px-3 py-1 text-xs"
+      <UiDenseActionButton
+        :label="actionLabel"
         @click="emit('edit')"
-      >
-        {{ actionLabel }}
-      </button>
+      />
     </div>
 
     <dl class="divide-y divide-navy/20 px-4 text-sm">

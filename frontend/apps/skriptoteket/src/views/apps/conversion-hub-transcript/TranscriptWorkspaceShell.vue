@@ -11,7 +11,7 @@
  *   - Receives runtime state from `useTranscriptGatewayRuntime`.
  */
 
-import { FileAudio, Upload } from "lucide-vue-next";
+import { UiGlyph } from "../../../components/ui/shared";
 
 import type {
   ConversionHubTranscriptFormatterArtifactRef,
@@ -199,12 +199,14 @@ function handleDrop(event: DragEvent): void {
             class="grid h-12 w-12 shrink-0 place-items-center border border-navy/25 bg-panel"
             aria-hidden="true"
           >
-            <FileAudio
+            <UiGlyph
               v-if="selectedTranscriptFile"
+              meaning="audio-file"
               class="h-6 w-6 text-navy"
             />
-            <Upload
+            <UiGlyph
               v-else
+              meaning="upload"
               class="h-6 w-6 text-action"
             />
           </span>

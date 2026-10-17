@@ -11,8 +11,8 @@
  *   - emits selection mutation intents back to the planner state owner
  */
 
-import { IconX } from "../../../components/icons";
 import { UiDenseIconButton } from "../../../components/ui";
+import { UiGlyph } from "../../../components/ui/shared";
 
 defineProps<{
   students: Array<{ id: string; name: string }>;
@@ -62,7 +62,11 @@ const emit = defineEmits<{
           :label="`Ta bort ${student.name} från regeln`"
           @click.stop="emit('remove-student', student.id)"
         >
-          <IconX :size="14" />
+          <UiGlyph
+            meaning="remove-item"
+            :size="14"
+            :stroke-width="2.5"
+          />
         </UiDenseIconButton>
       </div>
     </div>

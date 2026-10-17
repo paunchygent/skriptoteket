@@ -10,7 +10,7 @@
 
 import { computed, nextTick, ref } from "vue";
 
-import { IconPlus, IconRedo, IconShuffle, IconUndo } from "../../../components/icons";
+import { UiGlyph } from "../../../components/ui/shared";
 import {
   DENSE_FORM_INPUT_CLASS,
   UiDenseActionButton,
@@ -229,7 +229,11 @@ function editCurrentTemplate(): void {
             @click="void undoSeatingDraft()"
           >
             <template #leading>
-              <IconUndo :size="16" />
+              <UiGlyph
+                meaning="undo"
+                :size="16"
+                :stroke-width="2.5"
+              />
             </template>
           </UiDenseActionButton>
           <UiDenseActionButton
@@ -242,7 +246,11 @@ function editCurrentTemplate(): void {
             @click="void redoSeatingDraft()"
           >
             <template #leading>
-              <IconRedo :size="16" />
+              <UiGlyph
+                meaning="redo"
+                :size="16"
+                :stroke-width="2.5"
+              />
             </template>
           </UiDenseActionButton>
         </div>
@@ -257,7 +265,11 @@ function editCurrentTemplate(): void {
             @click="void startNewSeatingDraft()"
           >
             <template #leading>
-              <IconPlus :size="14" />
+              <UiGlyph
+                meaning="add"
+                :size="14"
+                :stroke-width="2.5"
+              />
             </template>
           </UiDenseActionButton>
         </div>
@@ -271,7 +283,11 @@ function editCurrentTemplate(): void {
             @click="void randomizeCurrentSeatingDraft()"
           >
             <template #leading>
-              <IconShuffle :size="16" />
+              <UiGlyph
+                meaning="shuffle"
+                :size="16"
+                :stroke-width="2.5"
+              />
             </template>
           </UiDenseActionButton>
         </div>

@@ -6,7 +6,7 @@
  * shared icon registry so planner tools reuse one icon source.
  */
 
-import { Link2 } from "lucide-vue-next";
+import { Link2 } from "@lucide/vue";
 
 defineProps<{
   size?: number;

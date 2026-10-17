@@ -20,9 +20,9 @@ import {
   IconLink2,
   IconLock,
   IconTeacherAnchor,
-  IconX,
 } from "../../../components/icons";
 import { UiDenseActionButton } from "../../../components/ui";
+import { UiGlyph } from "../../../components/ui/shared";
 import type { SeatingSmartTool } from "../classroomPlannerTypes";
 
 const props = withDefaults(defineProps<{
@@ -193,7 +193,11 @@ const fixedSeatActionLabel = computed(() => {
                   :aria-label="`Ta bort ${student.name} från regeln`"
                   @click.stop="emit('remove-pending-student', student.id)"
                 >
-                  <IconX :size="12" />
+                  <UiGlyph
+                    meaning="remove-item"
+                    :size="12"
+                    :stroke-width="2.5"
+                  />
                 </button>
               </div>
             </div>

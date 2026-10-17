@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, useId } from "vue";
 
-import { IconX } from "../../../components/icons";
+import { UiGlyph } from "../../../components/ui/shared";
 import { SystemMessage, UiDenseIconButton, UiMarkdown } from "../../../components/ui";
 import { useDialogFocus } from "../../../composables/useDialogFocus";
 
@@ -56,7 +56,11 @@ useDialogFocus(dialog, {
             label="Stäng SDS"
             @click="emit('close')"
           >
-            <IconX :size="16" />
+            <UiGlyph
+              meaning="close"
+              :size="16"
+              :stroke-width="2.5"
+            />
           </UiDenseIconButton>
 
           <div class="flex flex-wrap items-start justify-between gap-3 pr-8">

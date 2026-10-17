@@ -9,8 +9,8 @@
 
 import { computed } from "vue";
 
-import { IconEdit, IconTrash } from "../../../components/icons";
 import { UiDenseIconButton } from "../../../components/ui";
+import { UiGlyph } from "../../../components/ui/shared";
 import type { FixedSeatRule, RelationshipRule, Student } from "../classroomPlannerTypes";
 import {
   formatRelationshipRuleHeading,
@@ -113,7 +113,11 @@ function fixedSeatRuleHeading(rule: FixedSeatRule): string {
             :disabled="!canEdit"
             @click="emit('edit-fixed-seat-rule', rule.id)"
           >
-            <IconEdit :size="14" />
+            <UiGlyph
+              meaning="edit"
+              :size="14"
+              :stroke-width="2.5"
+            />
           </UiDenseIconButton>
           <UiDenseIconButton
             :label="`Ta bort fast plats ${fixedSeatRuleHeading(rule)}`"
@@ -122,7 +126,11 @@ function fixedSeatRuleHeading(rule: FixedSeatRule): string {
             :disabled="!canEdit"
             @click="emit('delete-fixed-seat-rule', rule.id)"
           >
-            <IconTrash :size="14" />
+            <UiGlyph
+              meaning="delete"
+              :size="14"
+              :stroke-width="2.5"
+            />
           </UiDenseIconButton>
         </div>
       </div>
@@ -147,7 +155,11 @@ function fixedSeatRuleHeading(rule: FixedSeatRule): string {
             :disabled="!canEdit"
             @click="emit('edit-near-teacher')"
           >
-            <IconEdit :size="14" />
+            <UiGlyph
+              meaning="edit"
+              :size="14"
+              :stroke-width="2.5"
+            />
           </UiDenseIconButton>
           <UiDenseIconButton
             label="Ta bort regeln Nära läraren"
@@ -156,7 +168,11 @@ function fixedSeatRuleHeading(rule: FixedSeatRule): string {
             :disabled="!canEdit"
             @click="emit('delete-near-teacher')"
           >
-            <IconTrash :size="14" />
+            <UiGlyph
+              meaning="delete"
+              :size="14"
+              :stroke-width="2.5"
+            />
           </UiDenseIconButton>
         </div>
       </div>
@@ -186,7 +202,11 @@ function fixedSeatRuleHeading(rule: FixedSeatRule): string {
             :disabled="!canEdit"
             @click="emit('edit-rule', rule.id)"
           >
-            <IconEdit :size="14" />
+            <UiGlyph
+              meaning="edit"
+              :size="14"
+              :stroke-width="2.5"
+            />
           </UiDenseIconButton>
           <UiDenseIconButton
             :label="`Ta bort ${relationshipRuleHeading(rule, index)}`"
@@ -195,7 +215,11 @@ function fixedSeatRuleHeading(rule: FixedSeatRule): string {
             :disabled="!canEdit"
             @click="emit('delete-rule', rule.id)"
           >
-            <IconTrash :size="14" />
+            <UiGlyph
+              meaning="delete"
+              :size="14"
+              :stroke-width="2.5"
+            />
           </UiDenseIconButton>
         </div>
       </div>

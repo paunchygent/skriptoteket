@@ -10,8 +10,8 @@
 
 import { computed } from "vue";
 
-import { IconCopy, IconLink2, IconTrash } from "../../../components/icons";
 import { UiDenseActionButton, UiDenseSpinner } from "../../../components/ui";
+import { UiGlyph } from "../../../components/ui/shared";
 import type { ClassroomPlannerShareArtifact } from "../classroomPlannerShareApi";
 
 const props = withDefaults(
@@ -93,9 +93,11 @@ function formatActiveMeta(share: ClassroomPlannerShareArtifact): string {
           v-if="isCreateActionBusy"
           :size="12"
         />
-        <IconLink2
+        <UiGlyph
           v-else
+          meaning="share-link"
           :size="13"
+          :stroke-width="2.25"
         />
         <span class="truncate text-[11px] font-semibold leading-none">
           Skapa länk
@@ -126,7 +128,11 @@ function formatActiveMeta(share: ClassroomPlannerShareArtifact): string {
           @click="emit('create-share')"
         >
           <template #leading>
-            <IconLink2 :size="10" />
+            <UiGlyph
+              meaning="share-link"
+              :size="10"
+              :stroke-width="2.25"
+            />
           </template>
         </UiDenseActionButton>
       </div>
@@ -146,9 +152,11 @@ function formatActiveMeta(share: ClassroomPlannerShareArtifact): string {
           v-if="isCreateActionBusy"
           :size="12"
         />
-        <IconLink2
+        <UiGlyph
           v-else
+          meaning="share-link"
           :size="12"
+          :stroke-width="2.25"
         />
         Skapa länk
       </button>
@@ -219,8 +227,10 @@ function formatActiveMeta(share: ClassroomPlannerShareArtifact): string {
                 title="Kopiera länk till urklipp"
                 @click="emit('copy-share', share)"
               >
-                <IconCopy
+                <UiGlyph
+                  meaning="copy"
                   :size="12"
+                  :stroke-width="2.25"
                 />
                 <span class="sr-only md:not-sr-only">Kopiera</span>
               </button>
@@ -239,9 +249,11 @@ function formatActiveMeta(share: ClassroomPlannerShareArtifact): string {
                   v-if="revokingShareId === share.id"
                   :size="12"
                 />
-                <IconTrash
+                <UiGlyph
                   v-else
+                  meaning="delete"
                   :size="12"
+                  :stroke-width="2.5"
                 />
                 <span class="sr-only md:not-sr-only">
                   Återkalla

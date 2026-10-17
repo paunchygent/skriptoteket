@@ -10,7 +10,8 @@
 
 import { computed, ref } from "vue";
 
-import { IconArrow, IconStudents } from "../../../components/icons";
+import { IconStudents } from "../../../components/icons";
+import { UiGlyph } from "../../../components/ui/shared";
 import { buildSmartRuleMarkersByStudentId } from "../classroomPlannerSmartRulePresentation";
 import { getRoomSurfaceMetrics } from "../roomFixturePresentation";
 import {
@@ -151,9 +152,10 @@ function setVisibleSeatingCanvasViewportSize(size: RoomViewportSize): void {
         </span>
         <span class="flex shrink-0 items-center gap-2 text-xs text-navy/60">
           {{ phoneStudentCountLabel }}
-          <IconArrow
+          <UiGlyph
+            :meaning="phoneStudentSheetOpen ? 'collapse' : 'expand'"
             :size="15"
-            :direction="phoneStudentSheetOpen ? 'up' : 'down'"
+            :stroke-width="2.5"
           />
         </span>
       </button>

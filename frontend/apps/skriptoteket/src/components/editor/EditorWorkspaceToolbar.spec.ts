@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { mountWithContext } from "../../test/utils";
+import { UiGlyph } from "../ui/shared";
 import EditorWorkspaceToolbar from "./EditorWorkspaceToolbar.vue";
 
 const baseProps = {
@@ -78,7 +79,7 @@ describe("EditorWorkspaceToolbar", () => {
     expect(wrapper.text()).toContain("Det gick inte att ångra.");
   });
 
-  it("uses canonical icon buttons for AI undo and redo", () => {
+  it("keeps assistant visibility and AI undo/redo as separately named actions with decorative glyphs", async () => {
     const wrapper = mountWithContext(EditorWorkspaceToolbar, {
       props: {
         ...baseProps,
@@ -105,10 +106,31 @@ describe("EditorWorkspaceToolbar", () => {
       },
     });
 
-    expect(wrapper.find('button[aria-label="Ångra AI-ändring"]').exists()).toBe(true);
-    expect(wrapper.find('button[aria-label="Återställ AI-ändring"]').exists()).toBe(true);
-    expect(wrapper.text()).not.toContain("↶");
-    expect(wrapper.text()).not.toContain("↷");
+    for (const [label, meaning] of [
+      ["Stäng kodassistenten", "ai-assist"],
+      ["Ångra AI-ändring", "undo"],
+      ["Återställ AI-ändring", "redo"],
+    ] as const) {
+      const glyph = wrapper.get(`button[aria-label="${label}"]`).getComponent(UiGlyph);
+      expect(glyph.props("meaning")).toBe(meaning);
+      expect(glyph.get("svg").attributes("aria-hidden")).toBe("true");
+      expect(glyph.attributes("aria-label")).toBeUndefined();
+      expect(glyph.attributes("role")).not.toBe("img");
+    }
+    const close = wrapper.get('button[aria-label="Stäng kodassistenten"]');
+    await close.trigger("click");
+    expect(wrapper.emitted("toggleChatCollapsed")).toEqual([[]]);
+    expect(wrapper.emitted("undoAi")).toBeUndefined();
+    expect(wrapper.emitted("redoAi")).toBeUndefined();
+    await wrapper.setProps({ isChatCollapsed: true });
+    const open = wrapper.get('button[aria-label="Öppna kodassistenten"]');
+    expect(open.element).toBe(close.element);
+    await open.trigger("click");
+    expect(wrapper.emitted("toggleChatCollapsed")).toEqual([[], []]);
+    await wrapper.get('button[aria-label="Ångra AI-ändring"]').trigger("click");
+    expect(wrapper.emitted("undoAi")).toEqual([[]]);
+    expect(wrapper.emitted("redoAi")).toBeUndefined();
+    wrapper.unmount();
   });
 
   it("renders dirty and lock states through the shared dense status pill", () => {

@@ -10,8 +10,8 @@
 
 import { ref, watch } from "vue";
 
-import { IconTrash, IconX } from "../../../components/icons";
 import { UiDenseIconButton } from "../../../components/ui";
+import { UiGlyph } from "../../../components/ui/shared";
 import type { DraftGroup, Student } from "../classroomPlannerTypes";
 import { PLANNER_GROUP_CARD_CLASS } from "../plannerWorkspaceLayout";
 import PlannerStudentRuleMarkers from "./PlannerStudentRuleMarkers.vue";
@@ -127,7 +127,11 @@ function commitName(): void {
           :disabled="props.disabled"
           @click="emit('group-removed', group.id)"
         >
-          <IconTrash :size="14" />
+          <UiGlyph
+            meaning="delete"
+            :size="14"
+            :stroke-width="2.5"
+          />
         </UiDenseIconButton>
       </div>
     </div>
@@ -167,7 +171,11 @@ function commitName(): void {
           :disabled="props.disabled"
           @click.stop="emit('student-removed', student.id)"
         >
-          <IconX :size="14" />
+          <UiGlyph
+            meaning="remove-item"
+            :size="14"
+            :stroke-width="2.5"
+          />
         </UiDenseIconButton>
       </div>
 
