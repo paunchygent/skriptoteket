@@ -203,6 +203,9 @@ onBeforeUnmount(() => {
   --shell-top: 56px;
   --shell-side: var(--huleedu-sidebar-width);
   --shell-rail: 64px;
+  /* Width of the sidebar outside focus mode; main.css expand-left-* reads it
+     so focus mode widens panels by exactly the space the sidebar gave up. */
+  --shell-sidebar-inline: var(--shell-side);
 
   display: grid;
   grid-template-rows: var(--shell-top) minmax(0, 1fr);
@@ -216,11 +219,15 @@ onBeforeUnmount(() => {
 }
 
 .auth-shell.is-rail {
+  --shell-sidebar-inline: var(--shell-rail);
+
   grid-template-columns: var(--shell-rail) minmax(0, 1fr);
 }
 
 @media (max-width: 1279px) {
   .auth-shell {
+    --shell-sidebar-inline: var(--shell-rail);
+
     grid-template-columns: var(--shell-rail) minmax(0, 1fr);
   }
 }

@@ -46,7 +46,7 @@ const emit = defineEmits<{
 const closeButtonRef = ref<HTMLButtonElement | null>(null);
 
 const standardLinks = computed<readonly SidebarNavLink[]>(() => [
-  { label: "Hem", to: "/", glyph: "nav-home" },
+  { label: "Hem", to: "/", glyph: "home" },
   { label: "Katalog", to: "/browse", glyph: "choose-from-catalogue" },
   { label: "Mina filer", to: "/vault", glyph: "nav-files" },
   ...(props.canSeeContributor

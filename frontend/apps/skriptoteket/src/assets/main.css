@@ -184,7 +184,10 @@ body.app-shell-game-mode::before {
    while allowing expansion into sidebar space. The right edge stays
    stationary relative to the viewport as the sidebar slides out.
 
-   Math:
+   The shell sets --shell-sidebar-inline to the width of the sidebar it shows
+   outside focus mode: 240px for the desktop sidebar, 64px for the glyph rail.
+
+   Math (desktop sidebar):
      Normal mode:  left=240px, width=640px → right=880px
      Focus mode:   left=0px,   width=880px → right=880px (stationary)
    ═══════════════════════════════════════════════════════════════════════════ */
@@ -199,7 +202,7 @@ body.app-shell-game-mode::before {
   }
 
   .is-focus-mode .expand-left-40 {
-    max-width: calc(40rem + var(--huleedu-sidebar-width)); /* 640 + 240 = 880px */
+    max-width: calc(40rem + var(--shell-sidebar-inline));
   }
 
   .expand-left-48 {
@@ -211,7 +214,7 @@ body.app-shell-game-mode::before {
   }
 
   .is-focus-mode .expand-left-48 {
-    max-width: calc(48rem + var(--huleedu-sidebar-width)); /* 768 + 240 = 1008px */
+    max-width: calc(48rem + var(--shell-sidebar-inline));
   }
 
   .expand-left-64 {
@@ -223,7 +226,7 @@ body.app-shell-game-mode::before {
   }
 
   .is-focus-mode .expand-left-64 {
-    max-width: calc(64rem + var(--huleedu-sidebar-width)); /* 1024 + 240 = 1264px */
+    max-width: calc(64rem + var(--shell-sidebar-inline));
   }
 }
 
