@@ -20,6 +20,8 @@ import {
   IconTrash,
 } from "../../../components/icons";
 
+import { UiDenseActionButton } from "../../../components/ui";
+
 type WorkspaceMode = "project_preview" | "single_file";
 
 type AssetFile = {
@@ -113,42 +115,44 @@ const emit = defineEmits<{
           <IconFileText :size="16" />
           <strong>{{ index + 1 }}. {{ file.name }}</strong>
           <div class="dc-source-row__actions">
-            <button
+            <UiDenseActionButton
               :data-testid="`document-converter-source-move-up-${index}`"
-              class="dc-source-order-button"
-              type="button"
-              aria-label="Flytta upp"
+              label="Flytta upp"
+              icon-only
               :disabled="index === 0"
               @click="emit('moveSingleFileUpload', index, index - 1)"
             >
-              <IconArrow
-                direction="up"
-                :size="14"
-              />
-            </button>
-            <button
+              <template #leading>
+                <IconArrow
+                  direction="up"
+                  :size="14"
+                />
+              </template>
+            </UiDenseActionButton>
+            <UiDenseActionButton
               :data-testid="`document-converter-source-move-down-${index}`"
-              class="dc-source-order-button"
-              type="button"
-              aria-label="Flytta ned"
+              label="Flytta ned"
+              icon-only
               :disabled="index === singleFileUploadFiles.length - 1"
               @click="emit('moveSingleFileUpload', index, index + 1)"
             >
-              <IconArrow
-                direction="down"
-                :size="14"
-              />
-            </button>
-            <button
+              <template #leading>
+                <IconArrow
+                  direction="down"
+                  :size="14"
+                />
+              </template>
+            </UiDenseActionButton>
+            <UiDenseActionButton
               :data-testid="`document-converter-source-remove-${index}`"
-              class="dc-source-order-button"
-              type="button"
-              aria-label="Ta bort fil"
-              title="Ta bort fil"
+              label="Ta bort fil"
+              icon-only
               @click="emit('removeSingleFileUpload', index)"
             >
-              <IconTrash :size="14" />
-            </button>
+              <template #leading>
+                <IconTrash :size="14" />
+              </template>
+            </UiDenseActionButton>
           </div>
         </div>
       </template>
@@ -162,42 +166,44 @@ const emit = defineEmits<{
           <IconFileText :size="16" />
           <strong>{{ index + 1 }}. {{ file.name }}</strong>
           <div class="dc-source-row__actions">
-            <button
+            <UiDenseActionButton
               :data-testid="`document-converter-source-move-up-${index}`"
-              class="dc-source-order-button"
-              type="button"
-              aria-label="Flytta upp"
+              label="Flytta upp"
+              icon-only
               :disabled="index === 0"
               @click="emit('moveSingleFileSavedFile', index, index - 1)"
             >
-              <IconArrow
-                direction="up"
-                :size="14"
-              />
-            </button>
-            <button
+              <template #leading>
+                <IconArrow
+                  direction="up"
+                  :size="14"
+                />
+              </template>
+            </UiDenseActionButton>
+            <UiDenseActionButton
               :data-testid="`document-converter-source-move-down-${index}`"
-              class="dc-source-order-button"
-              type="button"
-              aria-label="Flytta ned"
+              label="Flytta ned"
+              icon-only
               :disabled="index === singleFileSavedFiles.length - 1"
               @click="emit('moveSingleFileSavedFile', index, index + 1)"
             >
-              <IconArrow
-                direction="down"
-                :size="14"
-              />
-            </button>
-            <button
+              <template #leading>
+                <IconArrow
+                  direction="down"
+                  :size="14"
+                />
+              </template>
+            </UiDenseActionButton>
+            <UiDenseActionButton
               :data-testid="`document-converter-source-remove-${index}`"
-              class="dc-source-order-button"
-              type="button"
-              aria-label="Ta bort fil"
-              title="Ta bort fil"
+              label="Ta bort fil"
+              icon-only
               @click="emit('removeSingleFileSavedFile', index)"
             >
-              <IconTrash :size="14" />
-            </button>
+              <template #leading>
+                <IconTrash :size="14" />
+              </template>
+            </UiDenseActionButton>
           </div>
         </div>
       </template>

@@ -20,6 +20,8 @@ import {
   IconVaultFiles,
 } from "../../../components/icons";
 
+import { UiDenseIconButton } from "../../../components/ui";
+
 defineProps<{
   actionErrorMessage: string | null;
   canDownload: boolean;
@@ -63,18 +65,16 @@ const emit = defineEmits<{
         </p>
       </div>
 
-      <button
+      <UiDenseIconButton
         v-if="canRetry"
         data-testid="document-converter-retry"
-        class="dc-icon-button"
-        type="button"
-        aria-label="Försök igen"
+        label="Försök igen"
         title="Försök igen"
         :disabled="isRetryDisabled"
         @click="emit('retry')"
       >
         <IconRefresh :size="16" />
-      </button>
+      </UiDenseIconButton>
     </div>
 
     <label class="dc-filename-field">
@@ -95,7 +95,7 @@ const emit = defineEmits<{
     <div class="dc-result-actions__buttons">
       <button
         data-testid="document-converter-download"
-        class="dc-neutral-button"
+        class="btn-ghost"
         type="button"
         :disabled="!canDownload || isDownloading"
         @click="emit('download')"
@@ -105,7 +105,7 @@ const emit = defineEmits<{
       </button>
       <button
         data-testid="document-converter-save"
-        class="dc-neutral-button"
+        class="btn-ghost"
         type="button"
         :disabled="!canSave || isSaving"
         @click="emit('save')"

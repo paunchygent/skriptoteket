@@ -185,28 +185,17 @@ describe("TranscriptWorkspaceShell PR-0351 UX", () => {
 
     const formatOptions = wrapper.findAll("[data-test^='transcript-format-option-']");
     expect(formatOptions).toHaveLength(4);
-    expect(wrapper.get("[data-test='transcript-format-option-txt']").classes()).toContain(
-      "text-canvas",
-    );
-    expect(wrapper.get("[data-test='transcript-format-option-txt']").classes()).not.toContain(
-      "text-navy",
-    );
+    expect(wrapper.get("[data-test='transcript-format-option-txt']").attributes("aria-checked"))
+      .toBe("true");
     expect(wrapper.get("[data-test='transcript-download-selected-format']").text()).toBe(
       "Ladda ner",
     );
     expect(wrapper.get("[data-test='transcript-save-selected-format']").text()).toBe("Mina filer");
 
     await wrapper.get("[data-test='transcript-format-option-md']").trigger("click");
-    expect(wrapper.get("[data-test='transcript-format-option-md']").classes()).toContain(
-      "text-canvas",
-    );
-    expect(wrapper.get("[data-test='transcript-format-option-md']").classes()).not.toContain(
-      "text-navy",
-    );
-    expect(wrapper.get("[data-test='transcript-format-option-txt']").classes()).toContain(
-      "text-navy",
-    );
-    expect(wrapper.get("[data-test='transcript-format-option-md']").attributes("aria-pressed"))
+    expect(wrapper.get("[data-test='transcript-format-option-txt']").attributes("aria-checked"))
+      .toBe("false");
+    expect(wrapper.get("[data-test='transcript-format-option-md']").attributes("aria-checked"))
       .toBe("true");
     await wrapper.get("[data-test='transcript-download-selected-format']").trigger("click");
     await wrapper.get("[data-test='transcript-save-selected-format']").trigger("click");

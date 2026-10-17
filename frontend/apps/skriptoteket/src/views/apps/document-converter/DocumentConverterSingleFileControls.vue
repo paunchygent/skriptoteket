@@ -72,7 +72,7 @@ const emit = defineEmits<{
 
     <button
       data-testid="document-converter-start-single-file"
-      class="dc-neutral-button"
+      class="btn-ghost"
       type="button"
       :disabled="isSubmitting || isLoadingSources"
       @click="emit('submit')"

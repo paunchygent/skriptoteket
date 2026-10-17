@@ -2,6 +2,7 @@
 import { onMounted, onUnmounted, ref } from "vue";
 
 import { IconSettings, IconX } from "../../../components/icons";
+import { UiDenseActionButton, UiDenseIconButton } from "../../../components/ui";
 
 import type { ReagentPrepChefDefaultsResult } from "./types";
 
@@ -26,7 +27,7 @@ const emit = defineEmits<{
 }>();
 
 const showSettings = ref(false);
-const settingsTriggerRef = ref<HTMLButtonElement | null>(null);
+const settingsTriggerRef = ref<HTMLSpanElement | null>(null);
 const settingsPopoverRef = ref<HTMLDivElement | null>(null);
 
 function closeSettings(): void {
@@ -66,38 +67,38 @@ onUnmounted(() => {
 
 <template>
   <div class="relative ml-auto">
-    <button
-      ref="settingsTriggerRef"
-      type="button"
-      class="btn-ghost h-[32px] px-3 py-1.5 text-[11px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] leading-none border-navy/30 bg-white shadow-none flex items-center gap-2"
-      aria-label="Inställningar"
-      title="Inställningar"
-      :aria-expanded="showSettings"
-      aria-controls="rpc-settings-popover"
-      @click.stop="toggleSettings"
-    >
-      <IconSettings :size="16" />
-      <span>Inställningar</span>
-    </button>
+    <span ref="settingsTriggerRef">
+      <UiDenseActionButton
+        label="Inställningar"
+        title="Inställningar"
+        :expanded="showSettings"
+        has-popup="dialog"
+        aria-controls="rpc-settings-popover"
+        @click.stop="toggleSettings"
+      >
+        <template #leading>
+          <IconSettings :size="16" />
+        </template>
+      </UiDenseActionButton>
+    </span>
 
     <Transition name="popover">
       <div
         v-if="showSettings"
         id="rpc-settings-popover"
         ref="settingsPopoverRef"
-        class="absolute right-0 mt-2 z-50 w-[min(22rem,calc(100vw-2rem))] border border-navy bg-modal shadow-md p-4 pr-10 text-sm text-navy/80"
+        class="absolute right-0 mt-2 z-50 w-[min(22rem,calc(100vw-2rem))] rounded-[var(--huleedu-panel-radius)] border border-navy/20 bg-modal shadow-md p-4 pr-10 text-sm text-navy/80"
         role="dialog"
         aria-modal="false"
         aria-label="Inställningar"
       >
-        <button
-          type="button"
-          class="absolute top-2 right-2 h-7 w-7 grid place-items-center border border-transparent rounded-[var(--huleedu-radius-sm)] text-navy/60 hover:text-action hover:border-navy/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-action/40 focus-visible:outline-offset-2"
-          aria-label="Stäng inställningar"
+        <UiDenseIconButton
+          class="absolute top-2 right-2"
+          label="Stäng inställningar"
           @click="closeSettings"
         >
           <IconX :size="14" />
-        </button>
+        </UiDenseIconButton>
 
         <p class="font-semibold text-navy mb-2">Inställningar</p>
 
@@ -170,14 +171,11 @@ onUnmounted(() => {
 <style scoped>
 .popover-enter-active,
 .popover-leave-active {
-  transition:
-    opacity 150ms var(--huleedu-ease-default),
-    transform 150ms var(--huleedu-ease-default);
+  transition: opacity var(--huleedu-duration-default) var(--huleedu-ease-default);
 }
 
 .popover-enter-from,
 .popover-leave-to {
   opacity: 0;
-  transform: translateY(-0.25rem);
 }
 </style>

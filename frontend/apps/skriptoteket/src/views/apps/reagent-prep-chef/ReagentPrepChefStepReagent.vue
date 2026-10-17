@@ -24,7 +24,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <section class="border border-navy bg-panel">
+  <section class="rounded-[var(--huleedu-panel-radius)] border border-navy/20 bg-panel">
     <div class="p-4 space-y-4">
       <div class="space-y-1">
         <h2 class="text-lg font-semibold text-navy">Ämne</h2>
@@ -49,7 +49,7 @@ const emit = defineEmits<{
             <Transition name="popover">
               <div
                 v-if="props.chemicalSearchIsActive"
-                class="absolute left-0 right-0 mt-2 z-50 max-h-56 overflow-auto border border-navy bg-modal shadow-md"
+                class="absolute left-0 right-0 mt-2 z-50 max-h-56 overflow-auto rounded-[var(--huleedu-radius-md)] border border-navy/20 bg-modal shadow-md"
               >
                 <div
                   v-if="props.chemicalSearchResults.length === 0"
@@ -84,7 +84,7 @@ const emit = defineEmits<{
 
           <select
             v-model="selectedChemicalKey"
-            class="w-full border border-navy bg-white px-3 py-2 shadow-none text-navy"
+            class="w-full rounded-[var(--huleedu-radius-sm)] border border-navy/20 bg-panel px-3 py-2 text-navy"
           >
             <option value="">— Välj i listan —</option>
             <option
@@ -110,7 +110,7 @@ const emit = defineEmits<{
             v-model="form.chemicalFormula"
             type="text"
             placeholder="CuSO4·5H2O"
-            class="w-full border border-navy bg-white px-3 py-2 shadow-none text-navy"
+            class="w-full rounded-[var(--huleedu-radius-sm)] border border-navy/20 bg-panel px-3 py-2 text-navy"
           >
           <p class="text-xs text-navy/60">
             Tips: skriv hydrat som <span class="font-mono">CuSO4·5H2O</span>.

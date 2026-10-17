@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { SystemMessage } from "../../../components/ui";
 import type {
   ReagentPrepChefRiskAssessmentResult,
   ReagentPrepChefRiskContext,
@@ -38,7 +39,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <section class="border border-navy bg-panel">
+  <section class="rounded-[var(--huleedu-panel-radius)] border border-navy/20 bg-panel">
     <div class="p-4 space-y-4">
       <div class="flex flex-wrap items-start justify-between gap-4">
         <div class="space-y-1">
@@ -64,27 +65,25 @@ const emit = defineEmits<{
         Sparar utkast…
       </p>
 
-      <div
-        v-if="props.isRiskLoading"
-        class="p-3 border border-navy bg-canvas shadow-none text-sm text-navy/70"
-      >
+      <SystemMessage v-if="props.isRiskLoading">
         Laddar riskutkast…
-      </div>
+      </SystemMessage>
 
-      <div
+      <SystemMessage
         v-else-if="props.riskErrorMessage"
-        class="p-3 border border-error bg-panel text-error text-sm"
+        tone="failure"
       >
         {{ props.riskErrorMessage }}
-      </div>
+      </SystemMessage>
 
       <template v-else-if="props.riskDraft">
-        <div
+        <SystemMessage
           v-if="props.riskWarnings.length > 0"
-          class="p-3 border border-warning bg-warning/10 shadow-none space-y-1"
+          tone="warning"
+          class="space-y-1"
         >
-          <p class="font-semibold text-warning">Varningar</p>
-          <ul class="list-disc pl-5 space-y-1 text-warning text-sm">
+          <p class="font-semibold">Varningar</p>
+          <ul class="list-disc pl-5 space-y-1">
             <li
               v-for="warning in props.riskWarnings"
               :key="warning"
@@ -92,7 +91,7 @@ const emit = defineEmits<{
               {{ warning }}
             </li>
           </ul>
-        </div>
+        </SystemMessage>
 
         <div class="flex flex-wrap items-center gap-2 text-xs text-navy/70">
           <button
@@ -115,7 +114,7 @@ const emit = defineEmits<{
                 <textarea
                   v-model="riskContext.scope"
                   rows="3"
-                  class="w-full border border-navy bg-white px-3 py-2 shadow-none text-navy"
+                  class="w-full rounded-[var(--huleedu-radius-sm)] border border-navy/20 bg-panel px-3 py-2 text-navy"
                 />
               </div>
               <div class="space-y-1">
@@ -123,7 +122,7 @@ const emit = defineEmits<{
                 <input
                   v-model="riskContext.location"
                   type="text"
-                  class="w-full border border-navy bg-white px-3 py-2 shadow-none text-navy"
+                  class="w-full rounded-[var(--huleedu-radius-sm)] border border-navy/20 bg-panel px-3 py-2 text-navy"
                 >
               </div>
               <div class="grid gap-3 sm:grid-cols-2">
@@ -132,7 +131,7 @@ const emit = defineEmits<{
                   <input
                     v-model="riskContext.participants"
                     type="text"
-                    class="w-full border border-navy bg-white px-3 py-2 shadow-none text-navy"
+                    class="w-full rounded-[var(--huleedu-radius-sm)] border border-navy/20 bg-panel px-3 py-2 text-navy"
                   >
                 </div>
                 <div class="space-y-1">
@@ -140,7 +139,7 @@ const emit = defineEmits<{
                   <input
                     v-model="riskContext.approver"
                     type="text"
-                    class="w-full border border-navy bg-white px-3 py-2 shadow-none text-navy"
+                    class="w-full rounded-[var(--huleedu-radius-sm)] border border-navy/20 bg-panel px-3 py-2 text-navy"
                   >
                 </div>
               </div>
@@ -150,7 +149,7 @@ const emit = defineEmits<{
                   <input
                     v-model="riskContext.assessment_date"
                     type="date"
-                    class="w-full border border-navy bg-white px-3 py-2 shadow-none text-navy"
+                    class="w-full rounded-[var(--huleedu-radius-sm)] border border-navy/20 bg-panel px-3 py-2 text-navy"
                   >
                 </div>
                 <div class="space-y-1">
@@ -158,7 +157,7 @@ const emit = defineEmits<{
                   <input
                     v-model="riskContext.next_review_date"
                     type="date"
-                    class="w-full border border-navy bg-white px-3 py-2 shadow-none text-navy"
+                    class="w-full rounded-[var(--huleedu-radius-sm)] border border-navy/20 bg-panel px-3 py-2 text-navy"
                   >
                 </div>
               </div>
@@ -167,7 +166,7 @@ const emit = defineEmits<{
                 <textarea
                   v-model="riskContext.local_routines"
                   rows="2"
-                  class="w-full border border-navy bg-white px-3 py-2 shadow-none text-navy"
+                  class="w-full rounded-[var(--huleedu-radius-sm)] border border-navy/20 bg-panel px-3 py-2 text-navy"
                 />
               </div>
             </div>
@@ -175,7 +174,7 @@ const emit = defineEmits<{
 
           <div class="space-y-3">
             <h3 class="text-sm font-semibold text-navy">Säkerhetsdata</h3>
-            <div class="p-3 border border-navy bg-canvas shadow-none space-y-1 text-xs text-navy/80">
+            <div class="p-3 rounded-[var(--huleedu-panel-radius)] border border-navy/20 bg-canvas space-y-1 text-xs text-navy/80">
               <p v-if="props.riskDraft.sheet.safety.level === 'unknown'">
                 {{ props.riskDraft.sheet.safety.message || "Konsultera SDS innan användning." }}
               </p>
@@ -202,7 +201,7 @@ const emit = defineEmits<{
           <div
             v-for="risk in props.riskDraft.risks"
             :key="risk.id"
-            class="border border-navy/20 bg-panel p-3 shadow-none space-y-3"
+            class="rounded-[var(--huleedu-panel-radius)] border border-navy/20 bg-panel p-3 space-y-3"
           >
             <div class="flex items-start justify-between gap-3">
               <div class="space-y-1">
@@ -227,7 +226,7 @@ const emit = defineEmits<{
               <input
                 v-model="riskOverrides[risk.id].confirmed"
                 type="checkbox"
-                class="h-4 w-4 border border-navy"
+                class="h-4 w-4 border border-navy/20 accent-action"
               >
               Bekräfta
             </label>
@@ -237,7 +236,7 @@ const emit = defineEmits<{
               <textarea
                 v-model="riskMeasuresDraft[risk.id]"
                 rows="3"
-                class="w-full border border-navy bg-white px-2 py-2 text-navy"
+                class="w-full rounded-[var(--huleedu-radius-sm)] border border-navy/20 bg-panel px-2 py-2 text-navy"
                 @input="emit('updateMeasures', risk.id)"
               />
             </div>
@@ -270,12 +269,12 @@ const emit = defineEmits<{
           </button>
         </div>
 
-        <p
+        <SystemMessage
           v-if="props.missingRiskContextMessage"
-          class="text-xs text-warning"
+          tone="warning"
         >
           {{ props.missingRiskContextMessage }}
-        </p>
+        </SystemMessage>
 
         <p
           v-if="props.lastSavedRiskPdfVaultRef"

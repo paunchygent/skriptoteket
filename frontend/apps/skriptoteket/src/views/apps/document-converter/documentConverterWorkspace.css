@@ -19,12 +19,8 @@
   min-height: calc(100vh - 6rem);
   display: grid;
   grid-template-rows: 4.375rem minmax(0, 1fr);
-  border: 1px solid var(--color-navy);
-  background:
-    linear-gradient(color-mix(in srgb, var(--color-navy) 5%, transparent) 1px, transparent 1px),
-    linear-gradient(90deg, color-mix(in srgb, var(--color-navy) 5%, transparent) 1px, transparent 1px),
-    var(--color-canvas);
-  background-size: var(--huleedu-grid-size) var(--huleedu-grid-size);
+  border: 1px solid var(--huleedu-navy-20);
+  background: var(--color-canvas);
   color: var(--color-navy);
 }
 
@@ -43,13 +39,13 @@
   justify-content: space-between;
   gap: 1.5rem;
   padding: 0 1.5rem;
-  border-bottom: 1px solid var(--color-navy);
+  border-bottom: 1px solid var(--huleedu-navy-20);
 }
 
 .dc-topbar h1 {
   margin: 0;
   font-size: var(--huleedu-text-base);
-  font-weight: 800;
+  font-weight: var(--huleedu-font-extrabold);
   letter-spacing: var(--huleedu-tracking-label);
   line-height: 1;
   text-transform: uppercase;
@@ -89,7 +85,7 @@
 .dc-field > span,
 .dc-asset-heading h2 {
   font-size: var(--huleedu-text-xs);
-  font-weight: 800;
+  font-weight: var(--huleedu-font-extrabold);
   letter-spacing: var(--huleedu-tracking-label);
   text-transform: uppercase;
 }
@@ -144,10 +140,9 @@
   border-top: 1px solid color-mix(in srgb, var(--color-navy) 20%, transparent);
 }
 
-.dc-asset-row,
-.dc-neutral-button {
-  border: 1px solid var(--color-navy);
-  border-radius: 4px;
+.dc-asset-row {
+  border: 1px solid var(--huleedu-navy-20);
+  border-radius: var(--huleedu-radius-md);
   background: var(--color-panel);
   color: var(--color-navy);
 }
@@ -171,18 +166,6 @@
 
 .dc-asset-heading--spaced {
   margin-top: 1rem;
-}
-
-.dc-neutral-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  font-family: var(--huleedu-font-sans);
-  font-weight: var(--huleedu-font-extrabold);
-  letter-spacing: var(--huleedu-tracking-label);
-  text-transform: uppercase;
-  background: var(--color-canvas);
 }
 
 .dc-file-input {
@@ -249,7 +232,7 @@
   align-items: center;
   gap: 0.5rem;
   border: 1px solid transparent;
-  border-radius: 4px;
+  border-radius: var(--huleedu-radius-md);
   background: transparent;
   color: var(--color-navy);
   padding: 0 0.65rem;
@@ -272,12 +255,6 @@
   box-shadow: inset 4px 0 0 var(--color-action);
 }
 
-.dc-neutral-button {
-  min-height: 2.5rem;
-  padding: 0 0.75rem;
-  font-size: var(--huleedu-text-xs);
-}
-
 .dc-source-empty {
   margin: 0;
   font-size: var(--huleedu-text-sm);
@@ -291,7 +268,7 @@
   align-items: center;
   gap: 0.55rem;
   border: 1px solid color-mix(in srgb, var(--color-navy) 20%, transparent);
-  border-radius: 6px;
+  border-radius: var(--huleedu-panel-radius);
   background: color-mix(in srgb, var(--color-canvas) 85%, var(--color-panel) 15%);
   color: var(--color-navy);
 }
@@ -325,23 +302,6 @@
   gap: 0.25rem;
 }
 
-.dc-source-order-button {
-  width: 1.8rem;
-  height: 1.8rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid color-mix(in srgb, var(--color-navy) 20%, transparent);
-  border-radius: 4px;
-  background: var(--color-canvas);
-  color: var(--color-navy);
-}
-
-.dc-source-order-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.45;
-}
-
 .dc-dropzone {
   min-height: 4.5rem;
   display: grid;
@@ -349,7 +309,7 @@
   gap: 0.2rem;
   padding: 0.8rem 0.95rem;
   border: 1px dashed color-mix(in srgb, var(--color-navy) 40%, transparent);
-  border-radius: 8px;
+  border-radius: var(--huleedu-panel-radius);
   background: color-mix(in srgb, var(--color-canvas) 78%, var(--color-panel) 22%);
   cursor: pointer;
 }
@@ -366,16 +326,6 @@
 
 .dc-dropzone span {
   font-size: var(--huleedu-text-xs);
-}
-
-.dc-neutral-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.55;
-}
-
-.dc-neutral-button--danger {
-  border-color: var(--color-critical);
-  color: var(--color-critical);
 }
 
 .dc-control-heading {
@@ -447,7 +397,7 @@
 .dc-field select {
   min-height: 2.75rem;
   border: 1px solid color-mix(in srgb, var(--color-navy) 50%, transparent);
-  border-radius: 4px;
+  border-radius: var(--huleedu-radius-md);
   background: var(--color-canvas);
   color: var(--color-navy);
   font-family: var(--huleedu-font-sans);

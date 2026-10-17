@@ -12,38 +12,19 @@
  *   - Keeps transcript state out of the existing Exam Converter components.
  */
 
-import { computed, onBeforeUnmount, ref } from "vue";
+import { computed, ref } from "vue";
 
 import {
-  downloadConversionHubTranscriptFormatterArtifact,
-  saveConversionHubTranscriptFormatterArtifact,
-  type TranscriptFormatterArtifactKey,
-} from "../../../api/conversionHubTranscriptFormatterArtifactActions";
-import {
-  type ConversionHubTranscriptFormatterArtifactRef,
-  type ConversionHubTranscriptFormatterExportResponse,
-  type ConversionHubTranscriptFormatterExportStatus,
-  getConversionHubTranscriptFormatterExport,
-  requestConversionHubTranscriptFormatterExport,
-} from "../../../api/conversionHubTranscriptFormatterExports";
-import {
   buildSaveTranscriptRequest,
-  getConversionHubTranscriptSpeakerOverlays,
   registerTranscriptConversionHubJob,
   saveConversionHubTranscript,
-  updateConversionHubTranscriptSpeakerOverlays,
-  type ConversionHubTranscriptSpeakerOverlayEntry,
 } from "../../../api/conversionHubTranscriptSaves";
-import { triggerBrowserDownload } from "../exam-converter/browserDownload";
 import TranscriptWorkflowRailShell from "./TranscriptWorkflowRailShell.vue";
 import TranscriptWorkspaceShell from "./TranscriptWorkspaceShell.vue";
-import {
-  formatterArtifactActionState,
-  type FormatterArtifactActionState,
-  type FormatterArtifactActionStates,
-} from "./transcriptFormatterArtifactActions";
+import { useTranscriptFormatterExports } from "./useTranscriptFormatterExports";
 import { useTranscriptGatewayRuntime } from "./useTranscriptGatewayRuntime";
 import { useTranscriptSourceFile, type TranscriptSpeakerMode } from "./useTranscriptSourceFile";
+import { useTranscriptSpeakerOverlays } from "./useTranscriptSpeakerOverlays";
 
 const {
   clearTranscriptFile,
@@ -75,29 +56,11 @@ const {
 } = useTranscriptGatewayRuntime();
 
 type TranscriptSaveStatus = "idle" | "saving" | "saved" | "failed";
-type SpeakerOverlayStatus = "idle" | "loading" | "saving" | "saved" | "failed";
-type FormatterExportStatus = ConversionHubTranscriptFormatterExportStatus;
-type TranscriptFormatterRequestedArtifact =
-  ConversionHubTranscriptFormatterArtifactRef["requested_artifact"];
-const SPEAKER_OVERLAY_AUTOSAVE_DELAY_MS = 500;
 
 const conversionHubJobId = ref<string | null>(null);
 const savedTranscriptId = ref<string | null>(null);
 const saveStatus = ref<TranscriptSaveStatus>("idle");
 const saveErrorMessage = ref<string | null>(null);
-const speakerOverlayEntries = ref<ConversionHubTranscriptSpeakerOverlayEntry[]>([]);
-const speakerOverlayStatus = ref<SpeakerOverlayStatus>("idle");
-const speakerOverlayErrorMessage = ref<string | null>(null);
-const formatterExportArtifacts = ref<ConversionHubTranscriptFormatterArtifactRef[]>([]);
-const formatterExportStatus = ref<FormatterExportStatus>("not_requested");
-const formatterExportErrorMessage = ref<string | null>(null);
-const formatterExportRequestInFlight = ref(false);
-const formatterArtifactActionStates = ref<FormatterArtifactActionStates>({});
-const speakerOverlayRevision = ref(0);
-let speakerOverlayAutosaveTimer: ReturnType<typeof window.setTimeout> | null = null;
-let speakerOverlayGeneration = 0;
-let speakerOverlaySaveInFlight = false;
-let speakerOverlaySaveQueued = false;
 const isRunning = computed(() => runtimeStatus.value === "running");
 const canStartTranscript = computed(
   () => selectedTranscriptFile.value !== null && speakerError.value === null && !isRunning.value,
@@ -113,48 +76,33 @@ const canSaveTranscript = computed(
 const canEditSpeakerOverlays = computed(
   () => saveStatus.value === "saved" && savedTranscriptId.value !== null,
 );
-const canRequestFormatterExport = computed(
-  () =>
-    saveStatus.value === "saved" &&
-    savedTranscriptId.value !== null &&
-    speakerOverlayCoverageComplete.value &&
-    speakerOverlayStatus.value === "saved" &&
-    !formatterExportRequestInFlight.value,
-);
-const speakerOverlayCoverageComplete = computed(() =>
-  speakerOverlayEntriesCoverTranscript(speakerOverlayEntries.value),
-);
-
-function resetFormatterExportState(): void {
-  formatterExportArtifacts.value = [];
-  formatterExportStatus.value = "not_requested";
-  formatterExportErrorMessage.value = null;
-  formatterExportRequestInFlight.value = false;
-  formatterArtifactActionStates.value = {};
-}
-
-function clearSpeakerOverlayAutosave(): void {
-  if (speakerOverlayAutosaveTimer === null) return;
-  window.clearTimeout(speakerOverlayAutosaveTimer);
-  speakerOverlayAutosaveTimer = null;
-}
-
-function resetSpeakerOverlayState(): void {
-  clearSpeakerOverlayAutosave();
-  speakerOverlayGeneration += 1;
-  speakerOverlaySaveInFlight = false;
-  speakerOverlaySaveQueued = false;
-  speakerOverlayRevision.value = 0;
-  savedTranscriptId.value = null;
-  speakerOverlayEntries.value = [];
-  speakerOverlayStatus.value = "idle";
-  speakerOverlayErrorMessage.value = null;
-  resetFormatterExportState();
-}
-
-onBeforeUnmount(() => {
-  clearSpeakerOverlayAutosave();
-  speakerOverlayGeneration += 1;
+const {
+  handleSpeakerOverlayChanged,
+  loadSpeakerOverlays,
+  resetSpeakerOverlayState,
+  speakerOverlayCoverageComplete,
+  speakerOverlayEntries,
+  speakerOverlayErrorMessage,
+  speakerOverlayStatus,
+} = useTranscriptSpeakerOverlays({
+  savedTranscriptId,
+  transcript,
+  resetFormatterExport: () => resetFormatterExportState(),
+});
+const {
+  canRequestFormatterExport,
+  formatterArtifactActionStates,
+  formatterExportArtifacts,
+  formatterExportErrorMessage,
+  formatterExportStatus,
+  handleDownloadFormatterArtifact,
+  handleSaveFormatterArtifact,
+  resetFormatterExportState,
+} = useTranscriptFormatterExports({
+  savedTranscriptId,
+  canEditSpeakerOverlays,
+  speakerOverlayCoverageComplete,
+  speakerOverlayStatus,
 });
 
 async function handleStartTranscript(): Promise<void> {
@@ -238,247 +186,6 @@ async function persistTranscript(): Promise<void> {
   } catch {
     saveStatus.value = "failed";
     saveErrorMessage.value = "Transkriptet kunde inte sparas. Försök igen.";
-  }
-}
-
-async function loadSpeakerOverlays(transcriptId: string): Promise<void> {
-  speakerOverlayStatus.value = "loading";
-  speakerOverlayErrorMessage.value = null;
-  try {
-    const response = await getConversionHubTranscriptSpeakerOverlays({ transcriptId });
-    speakerOverlayEntries.value = response.overlays;
-    speakerOverlayRevision.value = 0;
-    speakerOverlayStatus.value = speakerOverlayEntriesCoverTranscript(response.overlays)
-      ? "saved"
-      : "idle";
-  } catch {
-    speakerOverlayStatus.value = "failed";
-    speakerOverlayErrorMessage.value = "Namnen kunde inte hämtas.";
-  }
-}
-
-function handleSpeakerOverlayChanged(label: string, displayName: string): void {
-  const nextEntries = speakerOverlayEntries.value.filter(
-    (entry) => entry.canonical_speaker_label !== label,
-  );
-  if (displayName.length > 0) {
-    nextEntries.push({ canonical_speaker_label: label, display_name: displayName });
-  }
-  speakerOverlayEntries.value = nextEntries;
-  speakerOverlayRevision.value += 1;
-  speakerOverlayStatus.value = "idle";
-  speakerOverlayErrorMessage.value = null;
-  resetFormatterExportState();
-  scheduleSpeakerOverlayAutosave();
-}
-
-function scheduleSpeakerOverlayAutosave(): void {
-  const transcriptId = savedTranscriptId.value;
-  if (!transcriptId) return;
-  clearSpeakerOverlayAutosave();
-  speakerOverlayAutosaveTimer = window.setTimeout(() => {
-    speakerOverlayAutosaveTimer = null;
-    void persistSpeakerOverlays();
-  }, SPEAKER_OVERLAY_AUTOSAVE_DELAY_MS);
-}
-
-async function persistSpeakerOverlays(): Promise<void> {
-  const transcriptId = savedTranscriptId.value;
-  if (!transcriptId) return;
-  if (speakerOverlaySaveInFlight) {
-    speakerOverlaySaveQueued = true;
-    return;
-  }
-  const generationAtStart = speakerOverlayGeneration;
-  const revisionAtStart = speakerOverlayRevision.value;
-  const overlays = speakerOverlayEntries.value
-    .map((entry) => ({
-      canonical_speaker_label: entry.canonical_speaker_label,
-      display_name: entry.display_name.trim(),
-    }))
-    .filter((entry) => entry.display_name.length > 0);
-  speakerOverlaySaveInFlight = true;
-  speakerOverlayStatus.value = "saving";
-  speakerOverlayErrorMessage.value = null;
-  try {
-    const response = await updateConversionHubTranscriptSpeakerOverlays({
-      transcriptId,
-      request: { overlays },
-    });
-    if (
-      generationAtStart === speakerOverlayGeneration &&
-      revisionAtStart === speakerOverlayRevision.value
-    ) {
-      speakerOverlayEntries.value = response.overlays;
-      speakerOverlayStatus.value = speakerOverlayEntriesCoverTranscript(response.overlays)
-        ? "saved"
-        : "idle";
-    }
-  } catch {
-    if (
-      generationAtStart === speakerOverlayGeneration &&
-      revisionAtStart === speakerOverlayRevision.value
-    ) {
-      speakerOverlayStatus.value = "failed";
-      speakerOverlayErrorMessage.value = "Namnen kunde inte sparas.";
-    }
-  } finally {
-    const changedDuringSave = revisionAtStart !== speakerOverlayRevision.value;
-    speakerOverlaySaveInFlight = false;
-    if (
-      generationAtStart === speakerOverlayGeneration &&
-      (speakerOverlaySaveQueued || changedDuringSave)
-    ) {
-      speakerOverlaySaveQueued = false;
-      scheduleSpeakerOverlayAutosave();
-    }
-  }
-}
-
-function speakerOverlayEntriesCoverTranscript(
-  entries: readonly ConversionHubTranscriptSpeakerOverlayEntry[],
-): boolean {
-  const speakerLabels = new Set(transcript.value?.segments.map((segment) => segment.speakerLabel));
-  if (speakerLabels.size === 0) return false;
-  const namedLabels = new Set(
-    entries
-      .filter((entry) => entry.display_name.trim().length > 0)
-      .map((entry) => entry.canonical_speaker_label),
-  );
-  return [...speakerLabels].every((label) => namedLabels.has(label));
-}
-
-function applyFormatterExportState(
-  response: ConversionHubTranscriptFormatterExportResponse,
-): void {
-  formatterExportStatus.value = response.status;
-  formatterExportArtifacts.value = response.status === "succeeded" ? response.artifacts : [];
-  formatterArtifactActionStates.value = {};
-  formatterExportErrorMessage.value =
-    response.status === "failed"
-      ? response.error_message ?? "Filerna kunde inte skapas. Försök igen."
-      : null;
-}
-
-async function requestOrRefreshFormatterExport():
-  Promise<ConversionHubTranscriptFormatterExportResponse | null> {
-  const transcriptId = savedTranscriptId.value;
-  if (!transcriptId || !canRequestFormatterExport.value) return null;
-  const shouldRefresh =
-    formatterExportStatus.value === "pending" || formatterExportStatus.value === "running";
-  if (!shouldRefresh) {
-    formatterExportStatus.value = "running";
-    formatterExportArtifacts.value = [];
-  }
-  formatterExportRequestInFlight.value = true;
-  formatterExportErrorMessage.value = null;
-  try {
-    const exportState = shouldRefresh
-      ? await getConversionHubTranscriptFormatterExport({ transcriptId })
-      : await requestConversionHubTranscriptFormatterExport({ transcriptId });
-    applyFormatterExportState(exportState);
-    return exportState;
-  } catch {
-    formatterExportStatus.value = "failed";
-    formatterExportErrorMessage.value = "Filerna kunde inte skapas. Försök igen.";
-    return null;
-  } finally {
-    formatterExportRequestInFlight.value = false;
-  }
-}
-
-function artifactForRequestedArtifact(
-  requestedArtifact: TranscriptFormatterRequestedArtifact,
-): ConversionHubTranscriptFormatterArtifactRef | null {
-  return (
-    formatterExportArtifacts.value.find(
-      (artifact) => artifact.requested_artifact === requestedArtifact,
-    ) ?? null
-  );
-}
-
-async function ensureFormatterArtifact(
-  requestedArtifact: TranscriptFormatterRequestedArtifact,
-): Promise<ConversionHubTranscriptFormatterArtifactRef | null> {
-  const existingArtifact = artifactForRequestedArtifact(requestedArtifact);
-  if (existingArtifact) return existingArtifact;
-  const exportState = await requestOrRefreshFormatterExport();
-  const createdArtifact =
-    exportState?.artifacts.find(
-      (artifact) => artifact.requested_artifact === requestedArtifact,
-    ) ?? null;
-  if (createdArtifact) return createdArtifact;
-  if (exportState?.status === "pending" || exportState?.status === "running") return null;
-  formatterExportStatus.value = "failed";
-  formatterExportErrorMessage.value = "Filerna kunde inte skapas. Försök igen.";
-  return null;
-}
-
-function setFormatterArtifactActionState(
-  artifactKey: TranscriptFormatterArtifactKey,
-  patch: Partial<FormatterArtifactActionState>,
-): void {
-  const current = formatterArtifactActionState(
-    formatterArtifactActionStates.value,
-    artifactKey,
-  );
-  formatterArtifactActionStates.value = {
-    ...formatterArtifactActionStates.value,
-    [artifactKey]: {
-      ...current,
-      ...patch,
-    },
-  };
-}
-
-async function handleDownloadFormatterArtifact(
-  requestedArtifact: TranscriptFormatterRequestedArtifact,
-): Promise<void> {
-  const transcriptId = savedTranscriptId.value;
-  if (!transcriptId) return;
-  const artifact = await ensureFormatterArtifact(requestedArtifact);
-  if (!artifact) return;
-  setFormatterArtifactActionState(artifact.artifact_key, {
-    download: "running",
-    save: formatterArtifactActionState(
-      formatterArtifactActionStates.value,
-      artifact.artifact_key,
-    ).save,
-  });
-  try {
-    const response = await downloadConversionHubTranscriptFormatterArtifact({
-      artifactKey: artifact.artifact_key,
-      transcriptId,
-    });
-    triggerBrowserDownload(response.blob, response.filename ?? artifact.filename);
-    setFormatterArtifactActionState(artifact.artifact_key, { download: "succeeded" });
-  } catch {
-    setFormatterArtifactActionState(artifact.artifact_key, { download: "failed" });
-  }
-}
-
-async function handleSaveFormatterArtifact(
-  requestedArtifact: TranscriptFormatterRequestedArtifact,
-): Promise<void> {
-  const transcriptId = savedTranscriptId.value;
-  if (!transcriptId) return;
-  const artifact = await ensureFormatterArtifact(requestedArtifact);
-  if (!artifact) return;
-  setFormatterArtifactActionState(artifact.artifact_key, {
-    save: "running",
-    savedFilename: null,
-  });
-  try {
-    const saved = await saveConversionHubTranscriptFormatterArtifact({
-      artifactKey: artifact.artifact_key,
-      transcriptId,
-    });
-    setFormatterArtifactActionState(artifact.artifact_key, {
-      save: "succeeded",
-      savedFilename: saved.vault_artifact.name,
-    });
-  } catch {
-    setFormatterArtifactActionState(artifact.artifact_key, { save: "failed" });
   }
 }
 </script>

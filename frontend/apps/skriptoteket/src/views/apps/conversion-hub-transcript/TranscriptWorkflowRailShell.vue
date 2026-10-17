@@ -13,7 +13,7 @@
 
 import { Check, FileAudio, Play, Upload, X } from "lucide-vue-next";
 
-import { TRANSCRIPT_COMMAND_BUTTON_CLASS } from "./transcriptCommandButtonClasses";
+import { UiDenseActionButton } from "../../../components/ui";
 import type {
   TranscriptSourceFileSelection,
   TranscriptSpeakerMode,
@@ -99,18 +99,19 @@ function numericInputValue(event: Event): number {
               {{ selectedTranscriptFile.sizeLabel }}
             </span>
           </span>
-          <button
-            type="button"
-            class="grid h-7 w-7 place-items-center border border-navy/25 bg-panel-muted text-navy hover:bg-canvas"
-            aria-label="Ta bort transkriptionsfil"
+          <UiDenseActionButton
+            label="Ta bort transkriptionsfil"
+            icon-only
             :disabled="isRunning"
             @click="emit('clearTranscriptFile')"
           >
-            <X
-              class="h-4 w-4"
-              aria-hidden="true"
-            />
-          </button>
+            <template #leading>
+              <X
+                class="h-4 w-4"
+                aria-hidden="true"
+              />
+            </template>
+          </UiDenseActionButton>
         </div>
         <label
           v-else
@@ -257,10 +258,8 @@ function numericInputValue(event: Event): number {
         </h2>
         <button
           type="button"
-          :class="[
-            TRANSCRIPT_COMMAND_BUTTON_CLASS,
-            isRunning ? undefined : 'invisible pointer-events-none',
-          ]"
+          class="btn-ghost"
+          :class="isRunning ? undefined : 'invisible pointer-events-none'"
           data-test="transcript-cancel"
           :aria-hidden="isRunning ? undefined : 'true'"
           :disabled="!isRunning || abortState.status === 'pending'"
@@ -271,7 +270,7 @@ function numericInputValue(event: Event): number {
         </button>
         <button
           type="button"
-          :class="TRANSCRIPT_COMMAND_BUTTON_CLASS"
+          class="btn-ghost"
           data-test="transcript-start"
           :disabled="!canStartTranscript || isRunning"
           @click="emit('startTranscript')"
@@ -284,7 +283,7 @@ function numericInputValue(event: Event): number {
         </button>
         <button
           type="button"
-          :class="TRANSCRIPT_COMMAND_BUTTON_CLASS"
+          class="btn-ghost"
           data-test="transcript-reset"
           @click="emit('resetTranscriptChoices')"
         >

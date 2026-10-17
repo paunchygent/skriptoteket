@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { SystemMessage } from "../../../components/ui";
 import type { ReagentPrepChefFormState } from "./types";
 
 type Props = {
@@ -19,7 +20,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <section class="border border-navy bg-panel">
+  <section class="rounded-[var(--huleedu-panel-radius)] border border-navy/20 bg-panel">
     <div class="p-4 space-y-4">
       <div class="space-y-1">
         <h2 class="text-lg font-semibold text-navy">Källa</h2>
@@ -38,7 +39,7 @@ const emit = defineEmits<{
             id="rpc-target"
             v-model="form.targetMolarity"
             inputmode="decimal"
-            class="w-full border border-navy bg-white px-3 py-2 shadow-none text-navy"
+            class="w-full rounded-[var(--huleedu-radius-sm)] border border-navy/20 bg-panel px-3 py-2 text-navy"
           >
         </div>
 
@@ -50,7 +51,7 @@ const emit = defineEmits<{
           <select
             id="rpc-source"
             v-model="form.sourceType"
-            class="w-full border border-navy bg-white px-3 py-2 shadow-none text-navy"
+            class="w-full rounded-[var(--huleedu-radius-sm)] border border-navy/20 bg-panel px-3 py-2 text-navy"
           >
             <option value="solid">Fast ämne</option>
             <option value="liquid_stock">Späd från stocklösning</option>
@@ -69,7 +70,7 @@ const emit = defineEmits<{
             id="rpc-stock"
             v-model="form.stockMolarity"
             inputmode="decimal"
-            class="w-full border border-navy bg-white px-3 py-2 shadow-none text-navy"
+            class="w-full rounded-[var(--huleedu-radius-sm)] border border-navy/20 bg-panel px-3 py-2 text-navy"
           >
         </div>
 
@@ -82,7 +83,7 @@ const emit = defineEmits<{
             id="rpc-purity"
             v-model="form.solutePurity"
             inputmode="decimal"
-            class="w-full border border-navy bg-white px-3 py-2 shadow-none text-navy"
+            class="w-full rounded-[var(--huleedu-radius-sm)] border border-navy/20 bg-panel px-3 py-2 text-navy"
           >
           <p class="text-xs text-navy/60">Ex: 0,95 om du har teknisk kvalitet.</p>
         </div>
@@ -116,12 +117,13 @@ const emit = defineEmits<{
         </button>
       </div>
 
-      <p
+      <SystemMessage
         v-if="props.actionErrorMessage"
-        class="text-sm text-critical whitespace-pre-wrap"
+        tone="failure"
+        class="whitespace-pre-wrap"
       >
         {{ props.actionErrorMessage }}
-      </p>
+      </SystemMessage>
     </div>
   </section>
 </template>

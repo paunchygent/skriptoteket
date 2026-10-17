@@ -36,7 +36,7 @@ import {
 } from "./documentConverterProjectPreviewApi";
 import "./documentConverterWorkspace.css";
 import "./documentConverterPreview.css";
-import { useDocumentConverterFilenameIntent } from "./useDocumentConverterFilenameIntent";
+import { useDocumentConverterActiveResult } from "./useDocumentConverterActiveResult";
 import { useDocumentConverterProjectPreview } from "./useDocumentConverterProjectPreview";
 import { useDocumentConverterHistoryBridge } from "./useDocumentConverterHistoryBridge";
 import { useDocumentConverterSessionHistory } from "./useDocumentConverterSessionHistory";
@@ -169,103 +169,31 @@ const canRetryCurrentMode = computed(() => {
   return singleFileHistory.activeEntry.value?.status === "failed" && singleFileHistory.canRetryActiveEntry.value;
 });
 
-const isLiveProjectResultSelected = computed(() => {
-  return (
-    workspaceMode.value === "project_preview" &&
-    !isCurrentProjectPreviewFailure.value &&
-    projectHistory.activeEntry.value?.id === project.activePreviewEntryId.value &&
-    project.preview.value !== null
-  );
+const {
+  actionErrorMessage,
+  canDownloadResult,
+  canSaveResult,
+  downloadResult,
+  filenameExtensionLabel,
+  filenameStemIntent,
+  isDownloadingResult,
+  isSavingResult,
+  resultActiveArtifactId,
+  resultArtifactOptions,
+  resultPreviewUrl,
+  resultStateLabel,
+  resultTitle,
+  saveResult,
+  selectResultArtifact,
+} = useDocumentConverterActiveResult({
+  workspaceMode,
+  project,
+  singleFile,
+  projectHistory,
+  activeHistory,
+  isCurrentProjectPreviewFailure,
+  isRetainedProjectPreviewVisible,
 });
-const resultFilename = computed<string | null>(() => {
-  if (isLiveProjectResultSelected.value) {
-    return project.selectedArtifact.value?.filename ?? project.selectedFileLabel();
-  }
-  return activeHistory.value.activeArtifactFilename.value ?? activeHistory.value.activeEntry.value?.filename ?? null;
-});
-const resultTitle = computed(() => resultFilename.value ?? "Resultat");
-const { filenameExtensionLabel, filenameStemIntent } = useDocumentConverterFilenameIntent(resultFilename);
-const resultStateLabel = computed(() => {
-  const entry = activeHistory.value.activeEntry.value;
-  if (isRetainedProjectPreviewVisible.value) {
-    return "Visar föregående PDF.";
-  }
-  if (isCurrentProjectPreviewFailure.value) {
-    return project.errorMessage.value ?? "Resultatet gick inte att skapa.";
-  }
-  if (!entry) {
-    return workspaceMode.value === "single_file"
-      ? "Välj en fil som du vill konvertera."
-      : "Lägg till HTML, CSS och bilder.";
-  }
-  if (entry.status === "failed") {
-    return entry.errorMessage ?? "Resultatet gick inte att skapa.";
-  }
-  if (isLiveProjectResultSelected.value ? project.previewPdfUrl.value : activeHistory.value.activePreviewUrl.value) {
-    return `${entry.resultTypeLabel} klart för granskning.`;
-  }
-  return `${entry.resultTypeLabel} klart att ladda ned eller spara.`;
-});
-const resultPreviewUrl = computed(() => {
-  if (isLiveProjectResultSelected.value) {
-    return project.previewPdfUrl.value;
-  }
-  return activeHistory.value.activePreviewUrl.value;
-});
-const resultArtifactOptions = computed(() => {
-  if (isCurrentProjectPreviewFailure.value) {
-    return [];
-  }
-  if (isLiveProjectResultSelected.value) {
-    return (project.preview.value?.artifacts ?? []).map((artifact) => ({
-      artifactId: artifact.artifact_id,
-      filename: artifact.filename,
-    }));
-  }
-  return activeHistory.value.artifactOptions.value;
-});
-const resultActiveArtifactId = computed(() => {
-  if (isCurrentProjectPreviewFailure.value) {
-    return null;
-  }
-  if (isLiveProjectResultSelected.value) {
-    return project.selectedArtifact.value?.artifact_id ?? null;
-  }
-  return activeHistory.value.activeArtifactId.value;
-});
-const canDownloadResult = computed(() => {
-  if (isCurrentProjectPreviewFailure.value) {
-    return false;
-  }
-  if (isLiveProjectResultSelected.value) {
-    return project.canUseSelectedArtifact.value;
-  }
-  return activeHistory.value.canDownloadActiveEntry.value;
-});
-const canSaveResult = computed(() => {
-  if (isCurrentProjectPreviewFailure.value) {
-    return false;
-  }
-  if (isLiveProjectResultSelected.value) {
-    return project.canUseSelectedArtifact.value;
-  }
-  return activeHistory.value.canSaveActiveEntry.value;
-});
-
-const isDownloadingResult = computed(() => {
-  if (isLiveProjectResultSelected.value) {
-    return project.isDownloading.value;
-  }
-  return activeHistory.value.isDownloading.value;
-});
-const isSavingResult = computed(() => {
-  if (isLiveProjectResultSelected.value) {
-    return project.isSaving.value;
-  }
-  return activeHistory.value.isSaving.value;
-});
-
-const actionErrorMessage = computed(() => activeHistory.value.actionErrorMessage.value);
 const isRetryDisabled = computed(() => (
   project.isPreviewRunning.value ||
   singleFile.isSubmitting.value ||
@@ -280,46 +208,12 @@ function selectWorkspaceMode(nextMode: DocumentConverterWorkspaceMode): void {
   workspaceMode.value = nextMode;
 }
 
-async function downloadResult(): Promise<void> {
-  if (isCurrentProjectPreviewFailure.value) {
-    return;
-  }
-  if (isLiveProjectResultSelected.value) {
-    await project.downloadSelectedArtifact(filenameStemIntent.value);
-    return;
-  }
-  await activeHistory.value.downloadActiveEntry(filenameStemIntent.value);
-}
-
 async function retryCurrentMode(): Promise<void> {
   if (workspaceMode.value === "project_preview") {
     await project.retryPreview();
     return;
   }
   await activeHistory.value.retryActiveEntry();
-}
-
-async function saveResult(): Promise<void> {
-  if (isCurrentProjectPreviewFailure.value) {
-    return;
-  }
-  if (isLiveProjectResultSelected.value) {
-    await project.saveSelectedArtifact(filenameStemIntent.value);
-    await singleFile.loadSources();
-    return;
-  }
-  await activeHistory.value.saveActiveEntry(filenameStemIntent.value);
-}
-
-async function selectResultArtifact(artifactId: string): Promise<void> {
-  if (isCurrentProjectPreviewFailure.value) {
-    return;
-  }
-  if (isLiveProjectResultSelected.value) {
-    project.selectArtifact(artifactId);
-    return;
-  }
-  await activeHistory.value.selectActiveArtifact(artifactId);
 }
 
 </script>

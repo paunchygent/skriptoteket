@@ -4,6 +4,7 @@ import { useRoute } from "vue-router";
 
 import { apiGet, isApiError } from "../../api/client";
 import VaultPickerModal from "../../components/vault/VaultPickerModal.vue";
+import { SystemMessage, UiDenseActionButton } from "../../components/ui";
 import { useToast } from "../../composables/useToast";
 import { useReagentPrepChefDefaults } from "../../composables/reagentPrepChef/useReagentPrepChefDefaults";
 import { useReagentPrepChefForm } from "../../composables/reagentPrepChef/useReagentPrepChefForm";
@@ -264,7 +265,7 @@ onMounted(() => {
       >
         ← Tillbaka till katalog
       </RouterLink>
-      <span class="px-2 py-1 border border-navy bg-panel uppercase tracking-wide font-semibold">
+      <span class="px-2 py-1 rounded-[var(--huleedu-radius-sm)] border border-navy/20 bg-panel uppercase tracking-wide font-semibold">
         Kurerad app
       </span>
 
@@ -294,71 +295,58 @@ onMounted(() => {
       </p>
     </header>
 
-    <div
-      v-if="isLoading"
-      class="p-4 border border-navy bg-panel text-navy/70 text-sm"
-    >
+    <SystemMessage v-if="isLoading">
       Laddar...
-    </div>
+    </SystemMessage>
 
-    <div
+    <SystemMessage
       v-else-if="errorMessage"
-      class="p-4 border border-error bg-panel text-error text-sm"
+      tone="failure"
     >
       {{ errorMessage }}
-    </div>
+    </SystemMessage>
 
     <template v-else>
-      <div class="p-4 border border-navy bg-panel text-sm text-navy/80 space-y-2">
+      <SystemMessage class="space-y-2">
         <p class="font-semibold">Säkerhet</p>
         <p>
           Den här appen ger endast råd för ämnen i listan. Om ämnet saknas: konsultera alltid SDS och lokala rutiner.
         </p>
-      </div>
+      </SystemMessage>
 
       <nav class="flex flex-wrap gap-2 text-xs">
-        <button
-          type="button"
-          class="px-3 py-2 border border-navy uppercase tracking-wide font-semibold"
-          :class="step === 'reagent' ? 'bg-navy text-canvas' : 'bg-white hover:bg-canvas'"
+        <UiDenseActionButton
+          label="1. Ämne"
+          :active="step === 'reagent'"
+          :aria-current="step === 'reagent' ? 'step' : undefined"
           @click="goTo('reagent')"
-        >
-          1. Ämne
-        </button>
-        <button
-          type="button"
-          class="px-3 py-2 border border-navy uppercase tracking-wide font-semibold"
-          :class="step === 'class' ? 'bg-navy text-canvas' : 'bg-white hover:bg-canvas'"
+        />
+        <UiDenseActionButton
+          label="2. Klass"
+          :active="step === 'class'"
+          :aria-current="step === 'class' ? 'step' : undefined"
           @click="goTo('class')"
-        >
-          2. Klass
-        </button>
-        <button
-          type="button"
-          class="px-3 py-2 border border-navy uppercase tracking-wide font-semibold"
-          :class="step === 'source' ? 'bg-navy text-canvas' : 'bg-white hover:bg-canvas'"
+        />
+        <UiDenseActionButton
+          label="3. Källa"
+          :active="step === 'source'"
+          :aria-current="step === 'source' ? 'step' : undefined"
           @click="goTo('source')"
-        >
-          3. Källa
-        </button>
-        <button
-          type="button"
-          class="px-3 py-2 border border-navy uppercase tracking-wide font-semibold"
-          :class="step === 'result' ? 'bg-navy text-canvas' : 'bg-white hover:bg-canvas'"
+        />
+        <UiDenseActionButton
+          label="4. Resultat"
+          :active="step === 'result'"
+          :aria-current="step === 'result' ? 'step' : undefined"
           :disabled="prep === null"
           @click="goTo('result')"
-        >
-          4. Resultat
-        </button>
-        <button
-          type="button"
-          class="px-3 py-2 border border-navy uppercase tracking-wide font-semibold"
-          :class="step === 'risk' ? 'bg-navy text-canvas' : 'bg-white hover:bg-canvas'"
+        />
+        <UiDenseActionButton
+          label="5. Riskbedömning"
+          :active="step === 'risk'"
+          :aria-current="step === 'risk' ? 'step' : undefined"
           :disabled="prep === null"
           @click="goTo('risk')"
-        >
-          5. Riskbedömning
-        </button>
+        />
       </nav>
 
       <ReagentPrepChefStepReagent
