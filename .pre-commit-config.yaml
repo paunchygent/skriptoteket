@@ -106,4 +106,4 @@ repos:
           pyproject\.toml|
           \.pre-commit-config\.yaml)$
         pass_filenames: false
-        stages: [manual]
+        stages: [pre-commit]

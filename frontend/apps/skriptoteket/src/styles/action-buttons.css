@@ -1,0 +1,170 @@
+/**
+ * Purpose:
+ *     Define shared reusable CTA and action-button primitives.
+ *
+ * Relationships:
+ *     - Imported after huleedu-design-tokens.css and tailwind-theme.css.
+ *     - Consumed by HuleEdu and Skriptoteket surfaces that need the frozen
+ *       shared CTA/action-button design language.
+ *     - Keeps page-specific layout, routing, and API behavior in consumer apps.
+ */
+
+@layer components {
+.btn-primary,
+.btn-cta,
+.btn-ghost {
+  align-items: center;
+  border-radius: var(--huleedu-radius-md);
+  cursor: pointer;
+  display: inline-flex;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: var(--huleedu-font-semibold);
+  gap: var(--huleedu-space-2);
+  justify-content: center;
+  letter-spacing: 0;
+  line-height: 1;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color var(--huleedu-duration-default) var(--huleedu-ease-default),
+    border-color var(--huleedu-duration-default) var(--huleedu-ease-default),
+    box-shadow var(--huleedu-duration-fast) var(--huleedu-ease-default),
+    color var(--huleedu-duration-default) var(--huleedu-ease-default);
+}
+
+.btn-primary,
+.btn-cta {
+  padding: 0.875rem var(--huleedu-space-6);
+}
+
+.btn-primary {
+  background-color: var(--button-primary-bg);
+  border: var(--huleedu-border-width) solid var(--huleedu-navy);
+  color: var(--button-primary-text);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--huleedu-action);
+  border-color: var(--huleedu-action);
+}
+
+.btn-cta {
+  background-color: var(--button-primary-bg);
+  border: var(--huleedu-border-width) solid var(--huleedu-navy);
+  color: var(--button-primary-text);
+}
+
+.btn-cta:hover:not(:disabled) {
+  background-color: var(--huleedu-action);
+  border-color: var(--huleedu-action);
+}
+
+.btn-ghost {
+  background-color: var(--surface-paper);
+  border: var(--huleedu-border-width) solid var(--button-secondary-border);
+  color: var(--button-secondary-text);
+  height: var(--huleedu-action-control-height);
+  padding-inline: var(--huleedu-space-6);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background-color: var(--huleedu-navy-05);
+}
+
+.btn-ghost:focus-visible {
+  outline: var(--huleedu-border-width-2) solid var(--huleedu-action);
+  outline-offset: var(--huleedu-space-1);
+}
+
+.btn-ghost:disabled {
+  background-color: var(--surface-paper);
+  border-color: var(--button-secondary-border);
+  box-shadow: none;
+  color: var(--button-secondary-text);
+  cursor: not-allowed;
+}
+
+.btn-primary:disabled,
+.btn-cta:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+/* Inline edit primitives: compact trigger, save and cancel actions inside
+   content panels and settings rows. */
+.btn-inline-edit,
+.btn-inline-primary,
+.btn-inline-cancel {
+  align-items: center;
+  border-radius: var(--huleedu-radius-md);
+  border-style: solid;
+  border-width: var(--huleedu-border-width);
+  cursor: pointer;
+  display: inline-flex;
+  font-family: inherit;
+  font-weight: var(--huleedu-font-semibold);
+  justify-content: center;
+  letter-spacing: 0.025em;
+  line-height: 1;
+  text-transform: uppercase;
+  transition:
+    background-color var(--huleedu-duration-default) var(--huleedu-ease-default),
+    border-color var(--huleedu-duration-default) var(--huleedu-ease-default),
+    box-shadow var(--huleedu-duration-default) var(--huleedu-ease-default),
+    color var(--huleedu-duration-default) var(--huleedu-ease-default);
+}
+
+.btn-inline-edit {
+  background-color: var(--huleedu-canvas);
+  border-color: var(--huleedu-navy-20);
+  color: var(--huleedu-navy-70);
+  font-size: 10px;
+  height: 1.5rem;
+  padding-inline: 0.5rem;
+}
+
+.btn-inline-edit:hover:not(:disabled) {
+  border-color: var(--huleedu-navy-40);
+  color: var(--huleedu-navy);
+}
+
+.btn-inline-primary {
+  background-color: var(--button-primary-bg);
+  border-color: var(--huleedu-navy);
+  color: var(--button-primary-text);
+  font-size: 11px;
+  height: 2rem;
+  padding-inline: 0.75rem;
+}
+
+.btn-inline-primary:hover:not(:disabled) {
+  background-color: var(--huleedu-action);
+  border-color: var(--huleedu-action);
+}
+
+.btn-inline-cancel {
+  background-color: transparent;
+  border-color: color-mix(in srgb, var(--huleedu-navy) 25%, transparent);
+  color: var(--huleedu-navy-70);
+  font-size: 11px;
+  height: 2rem;
+  padding-inline: 0.75rem;
+}
+
+.btn-inline-cancel:hover:not(:disabled) {
+  border-color: var(--huleedu-navy-50);
+  color: var(--huleedu-navy);
+}
+
+.btn-inline-edit:disabled,
+.btn-inline-primary:disabled,
+.btn-inline-cancel:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+}
