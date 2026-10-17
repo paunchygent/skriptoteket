@@ -13,8 +13,10 @@
 
 import { flushPromises, mount, type VueWrapper } from "@vue/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { createPinia, setActivePinia } from "pinia";
 
 import DocumentConverterView from "./DocumentConverterView.vue";
+import { useToastStore } from "../../../stores/toast";
 
 const AUTO_PREVIEW_DEBOUNCE_MS = 350;
 
@@ -129,6 +131,7 @@ function expectFilenameIntent(wrapper: VueWrapper, stem: string, extension: stri
 
 describe("DocumentConverterView project results", () => {
   beforeEach(() => {
+    setActivePinia(createPinia());
     vi.useFakeTimers();
     apiMocks.discardDocumentConverterProjectPreview.mockReset();
     apiMocks.downloadDocumentConverterProjectPreviewArtifact.mockReset();
@@ -153,6 +156,36 @@ describe("DocumentConverterView project results", () => {
   afterEach(() => {
     vi.useRealTimers();
     vi.restoreAllMocks();
+  });
+
+  it("confirms a project save only after success and reports a rejected retry without another success", async () => {
+    apiMocks.renderDocumentConverterProjectPreview.mockResolvedValue(buildPreviewResult());
+    apiMocks.loadDocumentConverterProjectPreviewArtifactBlob.mockResolvedValue({
+      blob: new Blob(["pdf"], { type: "application/pdf" }), contentType: "application/pdf", filename: "index.pdf",
+    });
+    const pending = deferred<void>();
+    apiMocks.saveDocumentConverterProjectPreviewArtifact.mockReturnValueOnce(pending.promise);
+    const toast = useToastStore();
+    const success = vi.spyOn(toast, "success");
+    const wrapper = mount(DocumentConverterView);
+    try {
+      await addProjectFiles(wrapper);
+      await flushAutoPreview();
+      await wrapper.get('[data-testid="document-converter-save"]').trigger("click");
+      expect(apiMocks.saveDocumentConverterProjectPreviewArtifact).toHaveBeenCalledTimes(1);
+      expect(success).not.toHaveBeenCalled();
+      pending.resolve();
+      await flushPromises();
+      expect(success).toHaveBeenCalledTimes(1);
+      expect(success.mock.calls[0]?.[0]).toMatch(/sparad|sparades/i);
+      apiMocks.saveDocumentConverterProjectPreviewArtifact.mockRejectedValueOnce(new Error("network"));
+      await wrapper.get('[data-testid="document-converter-save"]').trigger("click");
+      await flushPromises();
+      expect(success).toHaveBeenCalledTimes(1);
+      expect(wrapper.get('[role="alert"]').text()).toMatch(/spara/i);
+    } finally {
+      wrapper.unmount();
+    }
   });
 
   it("keeps the project artifact selector working for multi-pdf previews", async () => {

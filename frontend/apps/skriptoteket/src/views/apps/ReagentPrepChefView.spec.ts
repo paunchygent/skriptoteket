@@ -101,6 +101,31 @@ beforeEach(() => {
 });
 
 describe("ReagentPrepChefView step actions", () => {
+  it("announces app load failures assertively while loading remains a status", async () => {
+    vi.mocked(apiGet).mockRejectedValueOnce(new Error("Det gick inte att ladda appen."));
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [
+        { path: "/apps/:appId", component: ReagentPrepChefView },
+        { path: "/browse", component: { template: "<div />" } },
+      ],
+    });
+    await router.push(`/apps/${appDetail.app_id}`);
+    await router.isReady();
+    const wrapper = mount(ReagentPrepChefView, {
+      global: { plugins: [router], stubs: { VaultPickerModal: true, ReagentPrepChefSdsModal: true } },
+    });
+    wrappers.push(wrapper);
+
+    expect(wrapper.get('[role="status"]').text()).toContain("Laddar");
+    expect(wrapper.find('[role="alert"]').exists()).toBe(false);
+    await flushPromises();
+    const alert = wrapper.get('[role="alert"]');
+    expect(alert.text()).toBe("Det gick inte att ladda appen.");
+    expect(alert.attributes("aria-live")).toBe("assertive");
+    expect(alert.attributes("aria-atomic")).toBe("true");
+  });
+
   it("keeps result and risk disabled until a successful calculation and updates the selected step", async () => {
     const router = createRouter({
       history: createMemoryHistory(),

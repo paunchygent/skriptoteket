@@ -12,6 +12,7 @@
 
 import { flushPromises, mount, type VueWrapper } from "@vue/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { createPinia, setActivePinia } from "pinia";
 
 import DocumentConverterView from "./DocumentConverterView.vue";
 
@@ -96,6 +97,7 @@ async function flushAutoPreview(): Promise<void> {
 
 describe("DocumentConverterView layout ownership", () => {
   beforeEach(() => {
+    setActivePinia(createPinia());
     vi.useFakeTimers();
     apiMocks.discardDocumentConverterProjectPreview.mockReset();
     apiMocks.downloadDocumentConverterProjectPreviewArtifact.mockReset();

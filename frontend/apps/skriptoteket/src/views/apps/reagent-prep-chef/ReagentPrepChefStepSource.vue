@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { SystemMessage } from "../../../components/ui";
-import type { ReagentPrepChefFormState } from "./types";
+import type { ReagentPrepChefFieldErrors, ReagentPrepChefFormState } from "./types";
 
 type Props = {
   isCalculating: boolean;
   isExporting: boolean;
   canCalculate: boolean;
   actionErrorMessage: string | null;
+  fieldErrors: ReagentPrepChefFieldErrors;
+  prerequisiteErrors: string[];
 };
 
 const props = defineProps<Props>();
@@ -38,9 +40,19 @@ const emit = defineEmits<{
           <input
             id="rpc-target"
             v-model="form.targetMolarity"
+            :aria-invalid="Boolean(props.fieldErrors.targetMolarity)"
+            :aria-describedby="props.fieldErrors.targetMolarity ? 'rpc-target-error' : undefined"
             inputmode="decimal"
             class="w-full rounded-[var(--huleedu-radius-sm)] border border-navy/20 bg-panel px-3 py-2 text-navy"
           >
+          <p
+            v-if="props.fieldErrors.targetMolarity"
+            id="rpc-target-error"
+            class="text-xs text-error"
+            role="alert"
+          >
+            {{ props.fieldErrors.targetMolarity }}
+          </p>
         </div>
 
         <div class="space-y-2">
@@ -69,9 +81,19 @@ const emit = defineEmits<{
           <input
             id="rpc-stock"
             v-model="form.stockMolarity"
+            :aria-invalid="Boolean(props.fieldErrors.stockMolarity)"
+            :aria-describedby="props.fieldErrors.stockMolarity ? 'rpc-stock-error' : undefined"
             inputmode="decimal"
             class="w-full rounded-[var(--huleedu-radius-sm)] border border-navy/20 bg-panel px-3 py-2 text-navy"
           >
+          <p
+            v-if="props.fieldErrors.stockMolarity"
+            id="rpc-stock-error"
+            class="text-xs text-error"
+            role="alert"
+          >
+            {{ props.fieldErrors.stockMolarity }}
+          </p>
         </div>
 
         <div class="space-y-2">
@@ -82,12 +104,39 @@ const emit = defineEmits<{
           <input
             id="rpc-purity"
             v-model="form.solutePurity"
+            :aria-invalid="Boolean(props.fieldErrors.solutePurity)"
+            :aria-describedby="props.fieldErrors.solutePurity ? 'rpc-purity-error' : undefined"
             inputmode="decimal"
             class="w-full rounded-[var(--huleedu-radius-sm)] border border-navy/20 bg-panel px-3 py-2 text-navy"
           >
           <p class="text-xs text-navy/60">Ex: 0,95 om du har teknisk kvalitet.</p>
+          <p
+            v-if="props.fieldErrors.solutePurity"
+            id="rpc-purity-error"
+            class="text-xs text-error"
+            role="alert"
+          >
+            {{ props.fieldErrors.solutePurity }}
+          </p>
         </div>
       </div>
+
+      <SystemMessage
+        v-if="props.prerequisiteErrors.length"
+        tone="failure"
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
+      >
+        <ul>
+          <li
+            v-for="message in props.prerequisiteErrors"
+            :key="message"
+          >
+            {{ message }}
+          </li>
+        </ul>
+      </SystemMessage>
 
       <div class="flex flex-wrap items-center gap-2 pt-2">
         <button
@@ -120,6 +169,9 @@ const emit = defineEmits<{
       <SystemMessage
         v-if="props.actionErrorMessage"
         tone="failure"
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
         class="whitespace-pre-wrap"
       >
         {{ props.actionErrorMessage }}

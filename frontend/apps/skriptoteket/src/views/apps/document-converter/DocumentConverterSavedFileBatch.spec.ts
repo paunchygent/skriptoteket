@@ -12,6 +12,7 @@
 
 import { flushPromises, mount } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { createPinia, setActivePinia } from "pinia";
 
 import DocumentConverterView from "./DocumentConverterView.vue";
 
@@ -56,6 +57,7 @@ vi.mock("./documentConverterFileApi", () => ({
 
 describe("DocumentConverterView saved-file batches", () => {
   beforeEach(() => {
+    setActivePinia(createPinia());
     fileApiMocks.listDocumentConverterSavedFiles.mockResolvedValue({
       files: [
         {

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { ref, watch } from "vue";
+
 import UiSearchBar from "../../../components/ui/UiSearchBar.vue";
 
 import type {
@@ -16,6 +18,19 @@ const props = defineProps<Props>();
 const form = defineModel<ReagentPrepChefFormState>("form", { required: true });
 const selectedChemicalKey = defineModel<string>("selectedChemicalKey", { required: true });
 const chemicalQuery = defineModel<string>("chemicalQuery", { required: true });
+const suggestionsDismissed = ref(false);
+
+watch(chemicalQuery, () => { suggestionsDismissed.value = false; });
+
+function selectChemical(item: ReagentPrepChefChemicalOption): void {
+  suggestionsDismissed.value = true;
+  emit("selectChemical", item);
+}
+
+function chemicalLabel(item: ReagentPrepChefChemicalOption): string {
+  const formula = ` (${item.key})`;
+  return item.display_name.endsWith(formula) ? item.display_name : `${item.display_name}${formula}`;
+}
 
 const emit = defineEmits<{
   (event: "selectChemical", item: ReagentPrepChefChemicalOption): void;
@@ -36,11 +51,15 @@ const emit = defineEmits<{
 
       <div class="grid gap-4 sm:grid-cols-2">
         <div class="space-y-2">
-          <label class="text-sm font-semibold text-navy">Ämneslista (valfritt)</label>
+          <label
+            for="rpc-chemical-list"
+            class="text-sm font-semibold text-navy"
+          >Ämneslista (valfritt)</label>
 
           <div class="relative">
             <UiSearchBar
               v-model="chemicalQuery"
+              aria-label="Sök ämne"
               placeholder="Sök (minst 2 tecken)…"
               :show-button="false"
               variant="panel"
@@ -48,7 +67,7 @@ const emit = defineEmits<{
 
             <Transition name="popover">
               <div
-                v-if="props.chemicalSearchIsActive"
+                v-if="props.chemicalSearchIsActive && !suggestionsDismissed"
                 class="absolute left-0 right-0 mt-2 z-50 max-h-56 overflow-auto rounded-[var(--huleedu-radius-md)] border border-navy/20 bg-modal shadow-md"
               >
                 <div
@@ -60,7 +79,6 @@ const emit = defineEmits<{
                 <ul
                   v-else
                   class="divide-y divide-navy/10"
-                  role="listbox"
                 >
                   <li
                     v-for="item in props.chemicalSearchResults"
@@ -69,7 +87,7 @@ const emit = defineEmits<{
                     <button
                       type="button"
                       class="w-full text-left px-3 py-2 hover:bg-canvas transition-colors"
-                      @click="emit('selectChemical', item)"
+                      @click="selectChemical(item)"
                     >
                       <div class="flex items-baseline justify-between gap-2">
                         <span class="text-sm font-semibold text-navy">{{ item.display_name }}</span>
@@ -83,6 +101,7 @@ const emit = defineEmits<{
           </div>
 
           <select
+            id="rpc-chemical-list"
             v-model="selectedChemicalKey"
             class="w-full rounded-[var(--huleedu-radius-sm)] border border-navy/20 bg-panel px-3 py-2 text-navy"
           >
@@ -92,7 +111,7 @@ const emit = defineEmits<{
               :key="item.key"
               :value="item.key"
             >
-              {{ item.display_name }} ({{ item.key }})
+              {{ chemicalLabel(item) }}
             </option>
           </select>
           <p class="text-xs text-navy/60">

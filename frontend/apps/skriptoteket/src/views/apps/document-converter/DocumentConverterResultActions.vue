@@ -54,12 +54,18 @@ const emit = defineEmits<{
           v-if="feedbackMessage"
           class="dc-feedback"
           :class="{ 'dc-feedback--error': feedbackIsError }"
+          :role="feedbackIsError ? 'alert' : 'status'"
+          :aria-live="feedbackIsError ? 'assertive' : 'polite'"
+          aria-atomic="true"
         >
           {{ feedbackMessage }}
         </p>
         <p
           v-if="actionErrorMessage"
           class="dc-action-error"
+          role="alert"
+          aria-live="assertive"
+          aria-atomic="true"
         >
           {{ actionErrorMessage }}
         </p>

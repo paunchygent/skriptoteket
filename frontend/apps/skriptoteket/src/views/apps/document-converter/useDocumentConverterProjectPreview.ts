@@ -14,6 +14,7 @@
 
 import { computed, nextTick, onScopeDispose, ref, watch } from "vue";
 
+import { useToast } from "../../../composables/useToast";
 import { triggerBrowserDownload } from "../exam-converter/browserDownload";
 import {
   downloadDocumentConverterProjectPreviewArtifact,
@@ -63,6 +64,7 @@ export type DocumentConverterProjectPreviewOutcome =
     };
 
 export function useDocumentConverterProjectPreview() {
+  const toast = useToast();
   const files = ref<File[]>([]);
   const outputMode = ref<DocumentConverterProjectOutputMode>("separate_pdfs");
   const paperSize = ref<DocumentConverterProjectPaperSize>("a4");
@@ -361,6 +363,7 @@ export function useDocumentConverterProjectPreview() {
         artifact: selectedArtifact.value,
         filenameStem,
       });
+      toast.success("Resultatet sparades i Mina filer.");
     } catch {
       setMessage("Det gick inte att spara. Försök igen.");
     } finally {

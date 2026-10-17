@@ -145,46 +145,43 @@ watch(activeId, () => {
           />
         </button>
       </div>
-      <div
+      <ul
         v-if="isOpen"
-        class="absolute inset-x-0 top-full z-50 mt-1 max-h-56 overflow-y-auto border border-navy/35 bg-panel shadow-md"
+        :id="listboxId"
+        ref="listbox"
+        role="listbox"
+        aria-label="Kurser"
+        class="absolute inset-x-0 top-full z-50 mt-1 max-h-56 overflow-y-auto border border-navy/35 bg-modal shadow-md"
       >
-        <ul
-          :id="listboxId"
-          ref="listbox"
-          role="listbox"
-          aria-label="Kurser"
+        <li
+          v-for="(course, index) in options"
+          :id="`${listboxId}-${index}`"
+          :key="course.key"
+          role="option"
+          :aria-selected="course.key === modelValue"
+          :data-active="index === activeIndex"
+          class="cursor-pointer px-3 py-2 text-sm text-navy hover:bg-canvas"
+          :class="index === activeIndex ? 'bg-canvas outline outline-1 -outline-offset-1 outline-action' : undefined"
+          @pointerdown.prevent
+          @click="choose(course)"
         >
-          <li
-            v-for="(course, index) in options"
-            :id="`${listboxId}-${index}`"
-            :key="course.key"
-            role="option"
-            :aria-selected="course.key === modelValue"
-            :data-active="index === activeIndex"
-            class="cursor-pointer px-3 py-2 text-sm text-navy hover:bg-canvas"
-            :class="index === activeIndex ? 'bg-canvas outline outline-1 -outline-offset-1 outline-action' : undefined"
-            @pointerdown.prevent
-            @click="choose(course)"
-          >
-            {{ course.name }} · {{ course.code }} · {{ course.school_form === 'gymnasiet' ? `Gymnasiet ${course.reform}` : 'Grundskolan' }}
-          </li>
-        </ul>
-        <p
+          {{ course.name }} · {{ course.code }} · {{ course.school_form === 'gymnasiet' ? `Gymnasiet ${course.reform}` : 'Grundskolan' }}
+        </li>
+        <li
           v-if="options.length === 0"
           class="px-3 py-2 text-xs text-navy/65"
           role="status"
         >
           Inga kurser hittades.
-        </p>
-        <p
+        </li>
+        <li
           v-if="matches.length > 50"
           class="px-3 py-2 text-xs text-navy/65"
           role="status"
         >
           Skriv mer för att begränsa.
-        </p>
-      </div>
+        </li>
+      </ul>
     </div>
     <p
       v-if="hint && modelValue === null"

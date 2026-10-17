@@ -15,6 +15,7 @@
 import { computed, onScopeDispose, ref } from "vue";
 
 import type { ApiBlobResponse } from "../../../api/client";
+import { useToast } from "../../../composables/useToast";
 
 export type DocumentConverterHistoryStatus = "ready" | "failed";
 export type DocumentConverterHistoryArtifact = {
@@ -44,6 +45,7 @@ type UpsertHistoryEntryOptions = {
 };
 
 export function useDocumentConverterSessionHistory() {
+  const toast = useToast();
   const entries = ref<DocumentConverterHistoryEntry[]>([]);
   const activeEntryId = ref<string | null>(null);
   const activeArtifactId = ref<string | null>(null);
@@ -179,6 +181,7 @@ export function useDocumentConverterSessionHistory() {
     actionErrorMessage.value = null;
     try {
       await save(filenameStem);
+      toast.success("Resultatet sparades i Mina filer.");
     } catch {
       actionErrorMessage.value = "Det gick inte att spara resultatet.";
     } finally {
