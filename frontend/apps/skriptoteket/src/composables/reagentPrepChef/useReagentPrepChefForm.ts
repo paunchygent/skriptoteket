@@ -47,11 +47,14 @@ export function useReagentPrepChefForm(
     });
   });
 
-  function parseDecimal(value: string): number | null {
+  function parseDecimal(value: string): { normalized: string; value: number } | null {
     const normalized = value.trim().replace(",", ".");
-    if (!normalized) return null;
+    if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/.test(normalized)) {
+      return null;
+    }
+    // Use Number for local bounds/preview only; send the text to preserve Decimal precision.
     const numberValue = Number(normalized);
-    return Number.isFinite(numberValue) ? numberValue : null;
+    return Number.isFinite(numberValue) ? { normalized, value: numberValue } : null;
   }
 
   const derivedGroups = computed(() => {
@@ -59,12 +62,21 @@ export function useReagentPrepChefForm(
     return Math.ceil(form.studentCount / form.studentsPerGroup);
   });
 
+  const safetyFactorError = computed(() => {
+    const margin = parseDecimal(form.safetyFactor);
+    return margin === null || margin.value < 0 || margin.value > 0.5
+      ? "Ange en marginal mellan 0 och 0,5."
+      : null;
+  });
+
   const derivedTotalVolumeMl = computed(() => {
     const groups = derivedGroups.value;
     const vol = parseDecimal(form.volPerGroupMl);
     const safetyFactor = parseDecimal(form.safetyFactor);
-    if (groups === null || vol === null || safetyFactor === null) return null;
-    return groups * vol * (1 + safetyFactor);
+    if (groups === null || vol === null || safetyFactor === null || safetyFactorError.value) {
+      return null;
+    }
+    return groups * vol.value * (1 + safetyFactor.value);
   });
 
   const canCalculate = computed(() => {
@@ -73,11 +85,10 @@ export function useReagentPrepChefForm(
     if (parseDecimal(form.volPerGroupMl) === null) return false;
     if (derivedGroups.value === null) return false;
 
-    const safetyFactor = parseDecimal(form.safetyFactor);
-    if (safetyFactor === null || safetyFactor < 0 || safetyFactor > 0.5) return false;
+    if (safetyFactorError.value) return false;
 
     const purity = parseDecimal(form.solutePurity);
-    if (purity === null || purity <= 0 || purity > 1) return false;
+    if (purity === null || purity.value <= 0 || purity.value > 1) return false;
 
     if (form.sourceType === "liquid_stock" && parseDecimal(form.stockMolarity) === null) {
       return false;
@@ -102,20 +113,26 @@ export function useReagentPrepChefForm(
   }
 
   function buildRequestPayload(): ReagentPrepChefPrepRequestInput {
+    function decimal(value: string): string {
+      const parsed = parseDecimal(value);
+      if (parsed === null) throw new Error("Ange ett giltigt decimaltal.");
+      return parsed.normalized;
+    }
+
     const payload: ReagentPrepChefPrepRequestInput = {
       chemical_formula: form.chemicalFormula,
-      target_molarity: form.targetMolarity,
-      vol_per_group_ml: form.volPerGroupMl,
+      target_molarity: decimal(form.targetMolarity),
+      vol_per_group_ml: decimal(form.volPerGroupMl),
       student_count: form.studentCount,
       students_per_group: form.studentsPerGroup,
-      safety_factor: form.safetyFactor,
+      safety_factor: decimal(form.safetyFactor),
       source_type: form.sourceType,
       stock_molarity: null,
-      solute_purity: form.solutePurity,
+      solute_purity: decimal(form.solutePurity),
     };
 
     if (form.sourceType === "liquid_stock") {
-      payload.stock_molarity = form.stockMolarity;
+      payload.stock_molarity = decimal(form.stockMolarity);
     }
 
     return payload;
@@ -218,6 +235,7 @@ export function useReagentPrepChefForm(
     chemicalSearchResults,
     derivedGroups,
     derivedTotalVolumeMl,
+    safetyFactorError,
     canCalculate,
     parseDecimal,
     applyDefaults,
