@@ -96,6 +96,9 @@ filer page (TASK-SKRIPT-37-05-04).
 4. TASK-SKRIPT-39-08-04: exam index backend with one row per exam, the order by
    course and date, the `Utan kurs` group and the saved sort preference; the
    grouped list lives in ST-SKRIPT-40-04's `Öppna` drawer (ready).
+5. TASK-SKRIPT-39-08-05: the `Mina kurser` section adds a chosen course at
+   once and saves each change at once, with no `+` button, no Spara button and
+   no success toast (done 2026-10-17, approved review plus unit tests).
 
 ## Verification
 

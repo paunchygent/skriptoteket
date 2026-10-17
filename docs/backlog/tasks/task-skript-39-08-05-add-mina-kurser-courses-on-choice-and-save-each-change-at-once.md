@@ -7,10 +7,14 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-17'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-17'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Pi ruthless-reviewer cf9ad92d reviewed c1992027 (retained session 01a149c9-5bc7-7713-ba64-12dee0470bdd, evidence/reviews/task-skript-39-08-05-c1992027.md): changes_requested with one medium finding F1 (a profile reload that started before a course save replaced the saved list). F1 was repaired in ab5e7e10 and, as a medium finding, admitted by the parent on focused checks without rereview: profile Vitest 18 passed including the late-reload test (which fails against the old guard), frontend typecheck and ESLint clean. No staging walk, by the user rule that repairs close on approved review plus unit tests. The parent session authorized closure.'
 task_kind: story
 acceptance_criteria:
   - Choosing a course in the Mina kurser search box adds it to the list at once and clears the box; choosing a course that is already listed changes nothing
@@ -64,9 +68,9 @@ unchanged.
   duplicate is ignored, a failed save restores the list and toasts, a success
   shows no toast, and saves are serialised.
 - Focused Vitest, frontend typecheck and build.
-- Independent review.
-- Staging walk of `/profile` as the proof admin at 375 and 1440 px before the
-  merge into local main.
+- Independent review. The task closes on an approved review plus unit tests;
+  no staging walk (user rule 2026-10-17: walks cover only exam-converter
+  changes, relayed by the parent).
 
 ## Stop Conditions
 
@@ -83,12 +87,13 @@ unchanged.
 | D4 | Saves are serialised: a change made during a save waits and is then saved with the latest value. Source: parent recommendation, 2026-10-17. |
 | D5 | `ExamCourseCombobox` keeps its shared behaviour. Source: parent constraint, 2026-10-17. |
 
-## Progress
+## Outcome
 
-2026-10-17: contract recorded on branch `claude/gallant-greider-598de1`
-(worktree `Skriptoteket-worktrees/gallant-greider-598de1`, HEAD `89e9d5a5`).
-Next: rewrite `ProfileExamCourses.vue` (bind the combobox to `null` and add on
-choice; optimistic draft with one serialised save loop; restore the last saved
-value on failure; stop emitting `profileUpdated` and skip prop sync while a
-save runs or waits; `UiDenseStatusPill` status in the old Spara slot), then the
-spec, focused checks, review, and a staging walk coordinated with the parent.
+`ProfileExamCourses.vue` adds a chosen course at once and clears the search
+box; the `+` button, the Spara button and the success toast are gone. Every
+change saves at once through one serialised loop, with a `Sparar…`/`Sparat`
+status in a fixed slot beside the search box. A failed save restores the last
+acknowledged value and shows the failure toast. After its first change the
+section keeps its acknowledged value, so a late profile reload cannot replace
+it (review F1). The section no longer emits `profileUpdated`.
+`ExamCourseCombobox` is unchanged.
