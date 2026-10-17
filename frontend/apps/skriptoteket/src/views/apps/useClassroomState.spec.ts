@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
 
+import { useAuthStore } from "../../stores/auth";
 import { useClassroomState } from "./useClassroomState";
 import type { DraftWorkspaceResponse, RosterSmartRulesResponse } from "./classroomPlannerTypes";
 
@@ -102,8 +103,8 @@ function createProfileResponse() {
     user: {
       id: "user-1",
       email: "teacher@example.com",
-      role: "user",
-      auth_provider: "local",
+      role: "user" as const,
+      auth_provider: "local" as const,
     },
     profile: {
       user_id: "user-1",
@@ -196,6 +197,7 @@ function seedWorkspace() {
 
 describe("useClassroomState", () => {
   beforeEach(() => {
+    vi.useFakeTimers();
     setActivePinia(createPinia());
     clientMocks.apiGet.mockReset();
     clientMocks.apiPatch.mockReset();
@@ -206,6 +208,8 @@ describe("useClassroomState", () => {
   });
 
   afterEach(() => {
+    // Pending autosaves belong to this test, never the next test's API mocks.
+    vi.clearAllTimers();
     vi.useRealTimers();
   });
 
@@ -1270,6 +1274,10 @@ describe("useClassroomState", () => {
   });
 
   it("waits for ordered Smart preference persistence before starting a new grouping draft", async () => {
+    // Profile writes update an already admitted teacher; they cannot sign one in.
+    const auth = useAuthStore();
+    auth.user = createProfileResponse().user;
+    const session = auth.captureSession();
     const state = seedWorkspace();
     state.draft = createDraft("template-1", "grouping");
     const firstPreferenceWrite = createDeferred<ReturnType<typeof createProfileResponse>>();
@@ -1304,6 +1312,8 @@ describe("useClassroomState", () => {
     secondPreferenceWrite.resolve(createProfileResponse());
     await newDraftPromise;
 
+    expect(auth.isCurrentSession(session)).toBe(true);
+    expect(clientMocks.apiPatch).toHaveBeenCalledTimes(2);
     expect(clientMocks.apiPost).toHaveBeenCalledWith(
       "/api/v1/apps/classroom.group-seating-studio/drafts/grouping/new",
       {
