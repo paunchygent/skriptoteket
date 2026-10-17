@@ -116,6 +116,7 @@ async def test_two_retries_keep_original_wording_and_append_in_order_after_reope
         lineage_id=original.document_id,
         version=2,
         expected_revision=1,
+        editor_step_id=original.document_id,
     )
     second = await env.retry(after_first)
     assert second.item.import_record is not None
@@ -228,7 +229,9 @@ async def test_unsaved_retries_keep_all_attempts_through_reload_save_and_reopen(
         actor=actor,
         lineage_id=original.document_id,
         request=SaveExamWorkspaceDocumentRequest(
-            expected_revision=original.revision, document=final_draft
+            expected_revision=original.revision,
+            document=final_draft,
+            position_step_id=original.document_id,
         ),
     )
     reopened = await env.get_handler.handle(actor=actor, lineage_id=original.document_id)
@@ -338,7 +341,9 @@ async def test_retry_after_undo_past_save_keeps_each_new_branch_attempt(
         actor=actor,
         lineage_id=lineage,
         request=SaveExamWorkspaceDocumentRequest(
-            expected_revision=1, document=draft.model_copy(update={"revision": 2})
+            expected_revision=1,
+            document=draft.model_copy(update={"revision": 2}),
+            position_step_id=history.position_step_id,
         ),
     )
     head = await env.vault_files.get_document_head(user_id=actor.id, document_lineage_id=lineage)
@@ -382,11 +387,14 @@ async def test_retry_after_undo_past_save_keeps_each_new_branch_attempt(
         or step.chosen_kind is not NativeExamItemKind.SINGLE_CHOICE
         for step in expected.steps
     )
+    history = await env.save_handler.history(actor=actor, lineage_id=lineage)
     saved = await env.save_handler.handle(
         actor=actor,
         lineage_id=lineage,
         request=SaveExamWorkspaceDocumentRequest(
-            expected_revision=2, document=draft.model_copy(update={"revision": 3})
+            expected_revision=2,
+            document=draft.model_copy(update={"revision": 3}),
+            position_step_id=history.position_step_id,
         ),
     )
     reopened = await env.get_handler.handle(actor=actor, lineage_id=lineage)
@@ -474,7 +482,9 @@ async def test_put_and_get_return_import_record_even_after_teacher_changes_facit
     saved = await env.save_handler.handle(
         actor=actor,
         lineage_id=original.document_id,
-        request=SaveExamWorkspaceDocumentRequest(expected_revision=1, document=edited),
+        request=SaveExamWorkspaceDocumentRequest(
+            expected_revision=1, document=edited, position_step_id=original.document_id
+        ),
     )
     reopened = await env.get_handler.handle(actor=actor, lineage_id=original.document_id)
     for response in (saved, reopened):

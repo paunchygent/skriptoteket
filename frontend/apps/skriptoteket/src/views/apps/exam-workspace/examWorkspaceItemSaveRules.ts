@@ -18,7 +18,7 @@
  *   - Mirrors `domain/curated_apps/exam_workspace/native_exam_document.py`.
  *   - Consumed by `useExamWorkspaceDocument` (save refusal),
  *     `examWorkspaceItemReadiness` (per-question reasons), and
- *     `ExamWorkspaceItemEditor` (inline field hints).
+ *     `ExamWorkspaceQuestionEditor` (inline field hints).
  */
 
 import type { NativeExamCriterion, NativeExamItem } from "../../../api/examWorkspace";
@@ -31,7 +31,7 @@ import {
 } from "./examWorkspaceAnswerKeyRules";
 import { isEmptyBody } from "./examWorkspaceRichText";
 
-export const NON_POSITIVE_POINTS_GUIDANCE = "Poängen måste vara större än noll.";
+export const NEGATIVE_POINTS_GUIDANCE = "Poängen kan inte vara negativ.";
 export const EMPTY_CHOICE_TEXT_GUIDANCE = "Ett svarsalternativ saknar text.";
 export const EMPTY_MATCH_TEXT_GUIDANCE = "En rad eller en kategori saknar text.";
 export const EMPTY_CRITERION_TEXT_GUIDANCE = "Ett kriterium saknar text.";
@@ -41,7 +41,7 @@ export const CRITERIA_POINTS_MISMATCH_GUIDANCE =
   "Kriteriernas poängsumma ska vara frågans poäng.";
 export const CRITERIA_ON_WRONG_KIND_GUIDANCE = "Endast fritextfrågor kan ha kriterier.";
 
-export function hasNonPositivePoints(item: NativeExamItem): boolean {
+export function hasNegativePoints(item: NativeExamItem): boolean {
   return typeof item.points === "number" && (!Number.isFinite(item.points) || item.points < 0);
 }
 
@@ -103,9 +103,9 @@ export function examWorkspaceSaveRefusalCopy(items: NativeExamItem[]): string | 
     refusal(items, isIncompleteMatchingItem, incompleteMatchKeyCopy),
     refusal(
       items,
-      hasNonPositivePoints,
+      hasNegativePoints,
       (refused) =>
-        `${questionSubject(refused)} har noll eller negativa poäng. ${NON_POSITIVE_POINTS_GUIDANCE}`,
+        `${questionSubject(refused)} har negativa poäng. ${NEGATIVE_POINTS_GUIDANCE}`,
     ),
     refusal(
       items,

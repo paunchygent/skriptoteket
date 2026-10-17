@@ -42,6 +42,9 @@ async def test_reopen_and_save_keep_saved_exam_distinct_from_autosave() -> None:
         request=SaveExamWorkspaceDocumentRequest(
             expected_revision=1,
             document=reopened.document.model_copy(update={"revision": 2}),
+            position_step_id=(
+                await env.save_handler.history(actor=actor, lineage_id=lineage)
+            ).position_step_id,
         ),
     )
     assert saved.saved_document == saved.document

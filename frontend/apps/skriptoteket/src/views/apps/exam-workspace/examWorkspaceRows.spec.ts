@@ -2,22 +2,19 @@
  * Exam workspace row-mapping behavior.
  *
  * Expected behavior:
- *   Native exam items map to teacher-facing table rows with Swedish type and
- *   review-status labels, locale-formatted points, question-number row
- *   titles, and prompt excerpts that keep gaps visible as fixed chips.
+ *   Native exam items map to Swedish type labels, question-number labels and
+ *   prompt excerpts that keep gaps visible as fixed chips; review reason codes
+ *   map to Swedish text.
  */
 
 import { describe, expect, it } from "vitest";
 
 import type { NativeExamItem } from "../../../api/examWorkspace";
 import {
-  examWorkspacePointsLabel,
   examWorkspacePromptExcerpt,
+  examWorkspaceQuestionLabel,
   examWorkspaceReviewReasonLabel,
-  examWorkspaceReviewStatusLabel,
   examWorkspaceTypeLabel,
-  toExamWorkspaceItemRow,
-  toExamWorkspaceItemRows,
 } from "./examWorkspaceRows";
 
 function buildItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
@@ -59,17 +56,7 @@ describe("examWorkspaceRows", () => {
     expect(examWorkspaceTypeLabel("multiple_response")).toBe("Flerval: flera val");
     expect(examWorkspaceTypeLabel("gap_fill")).toBe("Lucktext");
     expect(examWorkspaceTypeLabel("matching")).toBe("Kategorisera");
-  });
-
-  it("maps review states to Swedish status labels", () => {
-    expect(examWorkspaceReviewStatusLabel("review_required")).toBe("Behöver granskas");
-    expect(examWorkspaceReviewStatusLabel("review_complete")).toBe("Granskad");
-  });
-
-  it("formats points with Swedish decimals and a dash for missing points", () => {
-    expect(examWorkspacePointsLabel(null)).toBe("–");
-    expect(examWorkspacePointsLabel(3)).toBe("3");
-    expect(examWorkspacePointsLabel(2.5)).toBe("2,5");
+    expect(examWorkspaceTypeLabel("inline_choice")).toBe("Lucktext med rullista");
   });
 
   it("flattens body segments into an excerpt with gap chips", () => {
@@ -117,52 +104,8 @@ describe("examWorkspaceRows", () => {
     expect(fallback).not.toContain("_");
   });
 
-  it("builds a complete row titled by its question number", () => {
-    const row = toExamWorkspaceItemRow(
-      buildItem({
-        points: null,
-        review: {
-          confidence: 0.4,
-          parse_origin: "llm_parsed",
-          reasons: ["osäker tolkning av frågetexten"],
-          state: "review_required",
-        },
-        sequence: 4,
-      }),
-    );
-
-    expect(row).toEqual({
-      aiKeyLabel: null,
-      itemId: "item_001",
-      parentBlock: null,
-      parentChild: null,
-      pointsLabel: "–",
-      promptExcerpt: "Beskriv fotosyntesen.",
-      reviewReasons: ["osäker tolkning av frågetexten"],
-      reviewRequired: true,
-      sequence: 4,
-      statusLabel: "Behöver granskas",
-      title: "Fråga 4",
-      typeLabel: "Fritext",
-    });
-  });
-
-  it("titles every row with its question number, whatever the question text says", () => {
-    const item = buildItem({
-      body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Fråga 4. Beskriv fotosyntesen" }] }],
-      sequence: 4,
-    });
-    expect(toExamWorkspaceItemRow(item).title).toBe("Fråga 4");
-    expect(toExamWorkspaceItemRow(buildItem({ sequence: 12 })).title).toBe("Fråga 12");
-  });
-
-  it("maps item lists in order", () => {
-    const rows = toExamWorkspaceItemRows([
-      buildItem(),
-      buildItem({ item_id: "item_002", kind: "single_choice", sequence: 2 }),
-    ]);
-
-    expect(rows.map((row) => row.itemId)).toEqual(["item_001", "item_002"]);
-    expect(rows[1]?.typeLabel).toBe("Flerval: ett val");
+  it("labels every question with its question number", () => {
+    expect(examWorkspaceQuestionLabel(4)).toBe("Fråga 4");
+    expect(examWorkspaceQuestionLabel(12)).toBe("Fråga 12");
   });
 });

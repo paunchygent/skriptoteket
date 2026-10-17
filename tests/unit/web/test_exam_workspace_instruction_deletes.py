@@ -72,7 +72,9 @@ async def _saved_conversion(
     return await env.save_handler.handle(
         actor=actor,
         lineage_id=document.document_id,
-        request=SaveExamWorkspaceDocumentRequest(expected_revision=1, document=document),
+        request=SaveExamWorkspaceDocumentRequest(
+            expected_revision=1, document=document, position_step_id=document.document_id
+        ),
     )
 
 

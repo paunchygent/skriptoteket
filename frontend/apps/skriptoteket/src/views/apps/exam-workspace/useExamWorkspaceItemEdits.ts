@@ -11,7 +11,8 @@
  * Relationships:
  *   - Used by `useExamWorkspaceDocument`, which owns the patch path and
  *     re-exports these commands.
- *   - Reads its transitions from `examWorkspaceItemEdits`.
+ *   - Reads its transitions from `examWorkspaceItemEdits`, and the export
+ *     blocker fixes from `examWorkspaceBlockers`.
  */
 
 import type {
@@ -23,6 +24,7 @@ import type {
 } from "../../../api/examWorkspace";
 import {
   reviewed,
+  unreviewed,
   withChoiceBody,
   withCorrectChoices,
   withCriteria,
@@ -35,11 +37,14 @@ import {
   withPoints,
   withTickPoints,
 } from "./examWorkspaceItemEdits";
+import { withoutEmptyOptions, withoutOptionHeadings } from "./examWorkspaceBlockers";
 
 /** One patch of one item, refused while the document is busy or the item still converts. */
 export type ExamWorkspaceItemPatch = (
   itemId: string,
   patch: (item: NativeExamItem) => NativeExamItem,
+  /** A click edit (a key, the review state) is one undo step at once; typing waits for a pause. */
+  structural?: boolean,
 ) => boolean;
 
 export function useExamWorkspaceItemEdits(patchItem: ExamWorkspaceItemPatch) {
@@ -76,7 +81,7 @@ export function useExamWorkspaceItemEdits(patchItem: ExamWorkspaceItemPatch) {
   }
 
   function updateItemCorrectChoices(itemId: string, correctChoiceIds: string[]): void {
-    patchItem(itemId, (item) => withCorrectChoices(item, correctChoiceIds));
+    patchItem(itemId, (item) => withCorrectChoices(item, correctChoiceIds), true);
   }
 
   function updateItemMatchEntryBody(
@@ -89,7 +94,7 @@ export function useExamWorkspaceItemEdits(patchItem: ExamWorkspaceItemPatch) {
   }
 
   function updateItemMatchPairs(itemId: string, pairs: NativeExamMatchPair[]): void {
-    patchItem(itemId, (item) => withMatchPairs(item, pairs));
+    patchItem(itemId, (item) => withMatchPairs(item, pairs), true);
   }
 
   function updateItemTickPoints(itemId: string, tickPoints: string): void {
@@ -97,19 +102,34 @@ export function useExamWorkspaceItemEdits(patchItem: ExamWorkspaceItemPatch) {
   }
 
   function undoItemInterpretation(itemId: string): void {
-    patchItem(itemId, withoutInterpretedKey);
+    patchItem(itemId, withoutInterpretedKey, true);
   }
 
   function showItemGapAsText(itemId: string, gapId: string): void {
-    patchItem(itemId, (item) => withGapAsText(item, gapId));
+    patchItem(itemId, (item) => withGapAsText(item, gapId), true);
   }
 
   function markItemReviewed(itemId: string): void {
-    patchItem(itemId, reviewed);
+    patchItem(itemId, reviewed, true);
+  }
+
+  function unmarkItemReviewed(itemId: string): void {
+    patchItem(itemId, unreviewed, true);
+  }
+
+  function removeItemEmptyOptions(itemId: string): void {
+    patchItem(itemId, withoutEmptyOptions, true);
+  }
+
+  function removeItemOptionHeadings(itemId: string): void {
+    patchItem(itemId, withoutOptionHeadings, true);
   }
 
   return {
     markItemReviewed,
+    removeItemEmptyOptions,
+    removeItemOptionHeadings,
+    unmarkItemReviewed,
     showItemGapAsText,
     undoItemInterpretation,
     updateItemChoiceBody,

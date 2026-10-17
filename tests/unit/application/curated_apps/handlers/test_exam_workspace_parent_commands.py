@@ -138,7 +138,10 @@ async def test_each_command_stores_one_step_without_advancing_file_revision(
     undo_steps.handle.return_value = ExamWorkspaceUndoStepResponse(
         document=normalized,
         history=ExamWorkspaceHistoryResponse(
-            cursor=next_cursor, baseline_step_id=uuid4(), step_ids=(next_cursor,)
+            cursor=next_cursor,
+            baseline_step_id=uuid4(),
+            step_ids=(next_cursor,),
+            position_step_id=next_cursor,
         ),
     )
     handler = ExamWorkspaceParentsHandler(reader=reader, undo_steps=undo_steps)

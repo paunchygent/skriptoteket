@@ -123,6 +123,8 @@ class SaveExamWorkspaceDocumentRequest(BaseModel):
 
     expected_revision: int = Field(ge=1)
     document: NativeExamDocument
+    position_step_id: UUID
+    """The retained history snapshot the editor stands on; the saved copy is kept at it."""
 
 
 class ExamWorkspaceEnrichmentState(StrEnum):

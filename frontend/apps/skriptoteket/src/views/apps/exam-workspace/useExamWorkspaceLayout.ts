@@ -3,7 +3,7 @@
  *
  * Domain purpose:
  *   Choose the desktop, tablet, or phone composition of the exam workspace
- *   from the ADR-SKRIPT-0020 breakpoints (768px and 1024px), as data the
+ *   from the ADR-SKRIPT-0020 breakpoints as the app shell uses them (768px and 1280px), as data the
  *   view renders from, so tests select a layout without media queries.
  *
  * Relationships:
@@ -19,7 +19,7 @@ export type ExamWorkspaceLayout = "desktop" | "tablet" | "phone";
 export const EXAM_WORKSPACE_LAYOUT_KEY: InjectionKey<Ref<ExamWorkspaceLayout>> =
   Symbol("exam-workspace-layout");
 
-const DESKTOP_QUERY = "(min-width: 1024px)";
+const DESKTOP_QUERY = "(min-width: 1280px)";
 const TABLET_QUERY = "(min-width: 768px)";
 
 export function resolveExamWorkspaceLayout(

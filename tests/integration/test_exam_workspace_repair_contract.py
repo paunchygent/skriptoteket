@@ -40,7 +40,7 @@ from tests.integration.infrastructure.repositories.exam_workspace_test_support i
 pytestmark = [pytest.mark.integration, pytest.mark.docker, pytest.mark.asyncio(loop_scope="module")]
 
 
-async def test_explicit_save_is_current_without_rewriting_undo_then_autosave_becomes_current(
+async def test_explicit_save_retains_the_saved_copy_after_the_position_then_autosave_follows(
     session_factory: async_sessionmaker[AsyncSession], tmp_path: Path
 ) -> None:
     actor = await create_owner(session_factory)
@@ -73,14 +73,22 @@ async def test_explicit_save_is_current_without_rewriting_undo_then_autosave_bec
         after = await world.store.get_history(actor=actor, lineage_id=lineage)
         assert after.cursor != before.cursor
         assert after.baseline == before.baseline
-        assert after.steps == before.steps
+        # The saved copy differs from the position's snapshot, so Spara appends it as the
+        # next step after that position and leaves the earlier steps untouched.
+        assert after.steps[:-1] == before.steps
+        assert len(after.steps) == len(before.steps) + 1
+        assert after.current_step_id == after.steps[-1].step_id
+        saved_step = world.codec.parse(content=after.steps[-1].content)
+        assert saved_step.document.title == "Latest explicit Spara"
         # Keep the file guard independent of the history cursor.
         with pytest.raises(DomainError) as stale:
             await editor(world).handle(
                 actor=actor,
                 lineage_id=lineage,
                 request=SaveExamWorkspaceDocumentRequest(
-                    expected_revision=1, document=saved.document
+                    expected_revision=1,
+                    document=saved.document,
+                    position_step_id=after.current_step_id,
                 ),
             )
         assert stale.value.code is ErrorCode.CONFLICT
@@ -93,9 +101,9 @@ async def test_explicit_save_is_current_without_rewriting_undo_then_autosave_bec
             actor=actor, lineage_id=lineage, step_id=before.steps[0].step_id
         )
         assert old_step.document.title == "Earlier autosave"
-        assert (
-            await world.store.get_history(actor=actor, lineage_id=lineage)
-        ).steps == before.steps
+        assert (await world.store.get_history(actor=actor, lineage_id=lineage)).steps[
+            :-1
+        ] == before.steps
         await StoreExamWorkspaceUndoStepHandler(
             vault_files=world.vault_files,
             codec=world.codec,

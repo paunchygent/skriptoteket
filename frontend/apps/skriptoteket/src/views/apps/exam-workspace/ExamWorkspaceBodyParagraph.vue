@@ -115,7 +115,7 @@ const props = withDefaults(
     testId?: string;
     /** `input` renders the compact single-line surface a choice or matching entry needs. */
     variant?: "paragraph" | "input";
-    /** The paragraph's border colour, so an empty or correct choice can mark itself. */
+    /** The `input` border colour, so an empty or correct choice can mark itself. */
     borderClass?: string;
     /** Gaps and pictures inside a choice or matching entry render without the popover contract. */
     interactiveGaps?: boolean;
@@ -161,8 +161,9 @@ const selection = useExamWorkspaceRichTextTarget({
   toggleHeading: (level) => toggleHeading(level),
 });
 
+/* Paragraphs flow inside the editor's one bordered box, which draws the focus ring. */
 const PARAGRAPH_CLASS =
-  "min-h-14 whitespace-pre-wrap [overflow-wrap:anywhere] border bg-canvas px-4 py-3 leading-loose text-navy focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action/40";
+  "min-h-7 whitespace-pre-wrap [overflow-wrap:anywhere] leading-loose text-navy outline-none";
 const INPUT_CLASS =
   "min-h-10 w-full whitespace-pre-wrap [overflow-wrap:anywhere] border bg-panel px-2 py-1.5 leading-normal text-navy focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action/40";
 
@@ -176,7 +177,7 @@ const paragraphClass = computed(() => {
         : level === 3
           ? "text-lg font-semibold"
           : "text-base";
-  return [props.variant === "input" ? INPUT_CLASS : PARAGRAPH_CLASS, props.borderClass, size];
+  return [...(props.variant === "input" ? [INPUT_CLASS, props.borderClass] : [PARAGRAPH_CLASS]), size];
 });
 
 function renderNow(): void {

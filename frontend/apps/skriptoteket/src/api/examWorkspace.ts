@@ -15,7 +15,15 @@
  *     `useExamWorkspaceExports.ts`, and `useExamWorkspaceEnrichment.ts`.
  */
 
-import { apiFetchBlobResponse, apiGet, apiPost, apiPut, resolveProtectedApiUrl } from "./client";
+import {
+  apiFetch,
+  apiFetchBlobResponse,
+  apiGet,
+  apiPatch,
+  apiPost,
+  apiPut,
+  resolveProtectedApiUrl,
+} from "./client";
 import type { ApiBlobResponse } from "./client";
 import type { components } from "./openapi";
 
@@ -48,6 +56,8 @@ export type ExamWorkspaceDocumentSummary = Schemas["ExamWorkspaceDocumentSummary
 export type ExamCourse = Schemas["ExamCourse"];
 export type ExamCourseCatalogResponse = Schemas["ExamCourseCatalogResponse"];
 export type ExamWorkspaceDocumentResponse = Schemas["ExamWorkspaceDocumentResponse"];
+/** A deletion's document response; `removed_parent_id` names an instruction that went with it. */
+export type ExamWorkspaceDeleteResponse = Schemas["ExamWorkspaceDeleteResponse"];
 export type ExamWorkspaceDocumentListResponse = Schemas["ExamWorkspaceDocumentListResponse"];
 export type ExamWorkspaceExportTarget = Schemas["ExamWorkspaceExportTarget"];
 export type ExamWorkspaceEnrichmentState = Schemas["ExamWorkspaceEnrichmentState"];
@@ -61,6 +71,18 @@ export type ExamWorkspaceAnswerKeySuggestionItem =
 export type ExamWorkspaceItemRetryResponse = Schemas["ExamWorkspaceItemRetryResponse"];
 export type ExamWorkspaceMisspellingsRequest = Schemas["ExamWorkspaceMisspellingsRequest"];
 export type ExamWorkspaceMisspellingsResponse = Schemas["ExamWorkspaceMisspellingsResponse"];
+export type ExamWorkspaceDocumentGroup = Schemas["ExamWorkspaceDocumentGroup"];
+export type ExamListOrdering = Schemas["UpdateExamListOrderingRequest"]["ordering"];
+export type ExamWorkspaceHistory = Schemas["ExamWorkspaceHistoryResponse"];
+export type ExamWorkspaceHistoryDocument = Schemas["ExamWorkspaceHistoryDocumentResponse"];
+export type ExamWorkspaceUndoStep = Schemas["ExamWorkspaceUndoStepResponse"];
+export type NewParentChild = Schemas["NewParentChild"];
+export type NativeExamContentTag = Schemas["NativeExamContentTag"];
+export type ExamCourseContent = Schemas["ExamCourseContentResponse"];
+export type ExamWorkspaceContentSuggestions = Schemas["ContentSuggestionsResponse"];
+export type NativeExamImportRecord = Schemas["NativeExamImportRecord-Output"];
+export type ChangeExamWorkspaceItemTypeResponse = Schemas["ChangeExamWorkspaceItemTypeResponse"];
+export type SavedExamExport = Schemas["VaultFile"];
 
 /** Reasons the server-side S4 export gate reports per item (422 `details.blockers`). */
 export type ExamWorkspaceExportBlockerReason =
@@ -90,6 +112,8 @@ export type ExamWorkspaceExportChecklistResponse =
 export type SaveExamWorkspaceDocumentParams = {
   expectedRevision: number;
   document: NativeExamDocument;
+  /** The history snapshot the editor stands on; the server keeps the saved copy there. */
+  positionStepId: string;
 };
 
 function documentPath(lineageId: string): string {
@@ -155,6 +179,7 @@ export async function saveExamWorkspaceDocument(
   const body: Schemas["SaveExamWorkspaceDocumentRequest"] = {
     document: params.document,
     expected_revision: params.expectedRevision,
+    position_step_id: params.positionStepId,
   };
   return await apiPut<ExamWorkspaceDocumentResponse>(documentPath(lineageId), body);
 }
@@ -258,4 +283,184 @@ export async function requestExamWorkspaceAnswerMisspellings(
     `${ROOT}/answer-misspellings`,
     request,
   );
+}
+
+/** Store the editor's document as the newest undo step; `afterStepId` branches after an undo. */
+export async function storeExamWorkspaceUndoStep(
+  lineageId: string,
+  params: { expectedCursor: string; document: NativeExamDocument; afterStepId: string | null },
+): Promise<ExamWorkspaceUndoStep> {
+  const body: Schemas["StoreExamWorkspaceUndoStepRequest"] = {
+    after_step_id: params.afterStepId,
+    document: params.document,
+    expected_cursor: params.expectedCursor,
+  };
+  return await apiPost<ExamWorkspaceUndoStep>(`${documentPath(lineageId)}/autosaves`, body);
+}
+
+export async function getExamWorkspaceHistory(lineageId: string): Promise<ExamWorkspaceHistory> {
+  return await apiGet<ExamWorkspaceHistory>(`${documentPath(lineageId)}/history`);
+}
+
+export async function getExamWorkspaceHistoryStep(
+  lineageId: string,
+  stepId: string,
+): Promise<ExamWorkspaceHistoryDocument> {
+  return await apiGet<ExamWorkspaceHistoryDocument>(
+    `${documentPath(lineageId)}/history/${encodeURIComponent(stepId)}`,
+  );
+}
+
+/** Spara som: a new exam with its own file, the given name and an empty undo history. */
+export async function copyExamWorkspaceDocument(
+  lineageId: string,
+  name: string,
+  document: NativeExamDocument,
+): Promise<ExamWorkspaceDocumentResponse> {
+  const body: Schemas["SaveAsExamWorkspaceDocumentRequest"] = { document, name };
+  return await apiPost<ExamWorkspaceDocumentResponse>(`${documentPath(lineageId)}/copy`, body);
+}
+
+/** Save one export format of the saved revision to Mina filer, replacing the earlier one. */
+export async function saveExamWorkspaceExport(
+  lineageId: string,
+  target: ExamWorkspaceExportTarget,
+  expectedRevision: number,
+): Promise<SavedExamExport> {
+  return await apiPost<SavedExamExport>(
+    `${documentPath(lineageId)}/exports/${encodeURIComponent(target)}?expected_revision=${expectedRevision}`,
+  );
+}
+
+function parentsPath(lineageId: string): string {
+  return `${documentPath(lineageId)}/parents`;
+}
+
+/** Parent commands apply to the server's newest undo step and store one step each. */
+export async function createExamWorkspaceParent(
+  lineageId: string,
+  body: Schemas["CreateExamParentRequest"],
+): Promise<ExamWorkspaceDocumentResponse> {
+  return await apiPost<ExamWorkspaceDocumentResponse>(parentsPath(lineageId), body);
+}
+
+export async function addExamWorkspaceChild(
+  lineageId: string,
+  parentId: string,
+  body: Schemas["AddExamChildRequest"],
+): Promise<ExamWorkspaceDocumentResponse> {
+  return await apiPost<ExamWorkspaceDocumentResponse>(
+    `${parentsPath(lineageId)}/${encodeURIComponent(parentId)}/children`,
+    body,
+  );
+}
+
+/** Delete one deluppgift; deleting the last one removes its emptied instruction too. */
+export async function deleteExamWorkspaceChild(
+  lineageId: string,
+  parentId: string,
+  itemId: string,
+  expectedCursor: string,
+): Promise<ExamWorkspaceDeleteResponse> {
+  const body: Schemas["ParentCommandRequest"] = { expected_cursor: expectedCursor };
+  return await apiFetch<ExamWorkspaceDeleteResponse>(
+    `${parentsPath(lineageId)}/${encodeURIComponent(parentId)}/children/${encodeURIComponent(itemId)}`,
+    { body, method: "DELETE" },
+  );
+}
+
+export async function reorderExamWorkspaceChildren(
+  lineageId: string,
+  parentId: string,
+  itemIds: string[],
+  expectedCursor: string,
+): Promise<ExamWorkspaceDocumentResponse> {
+  const body: Schemas["ReorderExamChildrenRequest"] = {
+    expected_cursor: expectedCursor,
+    item_ids: itemIds,
+  };
+  return await apiPut<ExamWorkspaceDocumentResponse>(
+    `${parentsPath(lineageId)}/${encodeURIComponent(parentId)}/children/order`,
+    body,
+  );
+}
+
+/** "keep_questions" removes only the heading; "with_questions" removes its questions too. */
+export type ExamParentDeleteMode = "keep_questions" | "with_questions";
+
+const PARENT_DELETE_SUFFIX: Record<ExamParentDeleteMode, string> = {
+  keep_questions: "",
+  with_questions: "/with-children",
+};
+
+/**
+ * Delete an instruction (user ruling 2026-10-17). By default its questions
+ * stay in place as standalone questions; "with_questions" deletes them too.
+ * A deletion that would leave the exam without a question is refused with
+ * 422 `details.reason` "exam_requires_question".
+ */
+export async function deleteExamWorkspaceParent(
+  lineageId: string,
+  parentId: string,
+  mode: ExamParentDeleteMode,
+  expectedCursor: string,
+): Promise<ExamWorkspaceDeleteResponse> {
+  const body: Schemas["ParentCommandRequest"] = { expected_cursor: expectedCursor };
+  return await apiFetch<ExamWorkspaceDeleteResponse>(
+    `${parentsPath(lineageId)}/${encodeURIComponent(parentId)}${PARENT_DELETE_SUFFIX[mode]}`,
+    { body, method: "DELETE" },
+  );
+}
+
+/** Change one question's type; the response names the content the new type could not keep. */
+export async function changeExamWorkspaceItemType(
+  lineageId: string,
+  body: Schemas["ChangeExamWorkspaceItemTypeRequest"],
+): Promise<ChangeExamWorkspaceItemTypeResponse> {
+  return await apiPost<ChangeExamWorkspaceItemTypeResponse>(
+    `${documentPath(lineageId)}/change-type`,
+    body,
+  );
+}
+
+/** Import a DigiExam export (.dxe); conversion runs in the background like a Word import. */
+export async function importExamWorkspaceDigiExam(
+  file: File,
+  courseKey: string | null = null,
+): Promise<ExamWorkspaceConversionStatus> {
+  const form = new FormData();
+  form.append("file", file, file.name);
+  if (courseKey) {
+    form.append("course_key", courseKey);
+  }
+  return await apiPost<ExamWorkspaceConversionStatus>(`${ROOT}/import-digiexam`, form);
+}
+
+/** The course's central content, one checklist entry per item. */
+export async function getExamCourseContent(courseKey: string): Promise<ExamCourseContent> {
+  return await apiGet<ExamCourseContent>(`${ROOT}/courses/${courseKey.split("/").map(encodeURIComponent).join("/")}/content`);
+}
+
+/** Suggest central content from the saved exam file; save a changed course first. */
+export async function requestExamWorkspaceContentSuggestions(
+  lineageId: string,
+): Promise<ExamWorkspaceContentSuggestions> {
+  return await apiPost<ExamWorkspaceContentSuggestions>(
+    `${documentPath(lineageId)}/content-suggestions`,
+  );
+}
+
+export async function getExamWorkspaceContentSuggestions(
+  lineageId: string,
+  jobId: string,
+): Promise<ExamWorkspaceContentSuggestions> {
+  return await apiGet<ExamWorkspaceContentSuggestions>(
+    `${documentPath(lineageId)}/content-suggestions/${encodeURIComponent(jobId)}`,
+  );
+}
+
+/** Remember how the teacher sorts the Öppna exam list. */
+export async function updateExamListOrdering(ordering: ExamListOrdering): Promise<void> {
+  const body: Schemas["UpdateExamListOrderingRequest"] = { ordering };
+  await apiPatch<unknown>("/api/v1/profile/exam-list-ordering", body);
 }

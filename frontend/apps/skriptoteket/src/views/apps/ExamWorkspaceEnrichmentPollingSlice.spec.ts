@@ -34,7 +34,12 @@ import {
   selectItemRow,
 } from "./ExamWorkspaceSlice.specSupport";
 
+import { arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
+
 const apiMocks = vi.hoisted(() => ({
+  getExamWorkspaceHistory: vi.fn(),
+  getExamWorkspaceHistoryStep: vi.fn(),
+  storeExamWorkspaceUndoStep: vi.fn(),
   downloadExamWorkspaceExport: vi.fn(),
   getExamWorkspaceAnswerKeySuggestions: vi.fn(),
   findExamWorkspaceAnswerKeySuggestions: vi.fn(),
@@ -70,6 +75,7 @@ function statusFailureToastCount(): number {
 beforeEach(() => {
   vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
   resetEnrichmentApiMocks(apiMocks);
+  arrangeStepHistory(apiMocks);
 });
 
 afterEach(() => {
@@ -112,7 +118,7 @@ describe("ExamWorkspaceView answer-key suggestion request and polling", () => {
       "1 facitförslag har lagts in på frågorna.",
     );
     // The suggestion was written onto the question, so the exam is dirty.
-    expect(wrapper.find('[data-test="exam-workspace-dirty-pill"]').exists()).toBe(true);
+    expect(wrapper.get('[data-test="exam-workspace-save-state"]').text()).toContain("Osparat");
 
     await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_ENRICHMENT_POLL_MS * 3);
     expect(apiMocks.getExamWorkspaceAnswerKeySuggestions).toHaveBeenCalledTimes(2);
@@ -148,7 +154,7 @@ describe("ExamWorkspaceView answer-key suggestion request and polling", () => {
     expect(wrapper.find('[data-test="exam-workspace-enrichment-message"]').text()).toBe(
       "Facitförslaget kunde inte hämtas just nu. Försök igen senare.",
     );
-    expect(wrapper.find('[data-test="exam-workspace-dirty-pill"]').exists()).toBe(true);
+    expect(wrapper.get('[data-test="exam-workspace-save-state"]').text()).toContain("Osparat");
     await saveDocument(wrapper);
     const saved = lastSavedItem(apiMocks.saveExamWorkspaceDocument, "item_002");
     expect(saved?.ai_suggestion?.correct_choice_ids).toEqual(["choice_003"]);
@@ -178,7 +184,7 @@ describe("ExamWorkspaceView answer-key suggestion request and polling", () => {
     await wrapper.find('[data-test="exam-workspace-item-points-input"]').setValue("7");
 
     expect(
-      wrapper.find('[data-test="exam-workspace-enrichment-request"]').attributes("disabled"),
+      wrapper.find('[data-test="exam-workspace-suggest-all"]').attributes("disabled"),
     ).toBeUndefined();
 
     await requestProposals(wrapper);
@@ -202,7 +208,7 @@ describe("ExamWorkspaceView answer-key suggestion request and polling", () => {
     await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_ENRICHMENT_POLL_MS);
     await flushPromises();
     expect(
-      wrapper.find('[data-test="exam-workspace-enrichment-request"]').attributes("disabled"),
+      wrapper.find('[data-test="exam-workspace-suggest-all"]').attributes("disabled"),
     ).toBeDefined();
 
     await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_ENRICHMENT_POLL_MS);
@@ -213,7 +219,7 @@ describe("ExamWorkspaceView answer-key suggestion request and polling", () => {
       "1 facitförslag har lagts in på frågorna.",
     );
     expect(
-      wrapper.find('[data-test="exam-workspace-enrichment-request"]').attributes("disabled"),
+      wrapper.find('[data-test="exam-workspace-suggest-all"]').attributes("disabled"),
     ).toBeUndefined();
   });
 
@@ -234,7 +240,7 @@ describe("ExamWorkspaceView answer-key suggestion request and polling", () => {
     expect(apiMocks.getExamWorkspaceAnswerKeySuggestions).toHaveBeenCalledTimes(3);
     expect(statusFailureToastCount()).toBe(1);
     expect(
-      wrapper.find('[data-test="exam-workspace-enrichment-request"]').attributes("disabled"),
+      wrapper.find('[data-test="exam-workspace-suggest-all"]').attributes("disabled"),
     ).toBeDefined();
 
     await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_ENRICHMENT_POLL_MS * 8);

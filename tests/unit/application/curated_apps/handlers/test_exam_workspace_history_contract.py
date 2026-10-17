@@ -105,6 +105,7 @@ async def test_twelve_autosaves_keep_ten_steps_across_save_and_fresh_requests() 
         request=SaveExamWorkspaceDocumentRequest(
             expected_revision=1,
             document=reopened.document.model_copy(update={"revision": 2}),
+            position_step_id=history.position_step_id,
         ),
     )
     after_save = await _handler(env).history(actor=actor, lineage_id=lineage)
@@ -182,6 +183,7 @@ async def test_undo_response_roundtrips_through_existing_save_revision_contract(
         request=SaveExamWorkspaceDocumentRequest(
             expected_revision=edited.document.revision,
             document=with_next_revision(edited.document),
+            position_step_id=edited.history.position_step_id,
         ),
     )
     assert edited.document.revision == imported.document.revision
@@ -221,7 +223,9 @@ async def test_stale_cursor_cannot_overwrite_an_intervening_editor_write(
             actor=actor,
             lineage_id=lineage,
             request=SaveExamWorkspaceDocumentRequest(
-                expected_revision=1, document=winning_document
+                expected_revision=1,
+                document=winning_document,
+                position_step_id=opened_history.position_step_id,
             ),
         )
     before_stale_attempt = await handler.history(actor=actor, lineage_id=lineage)
@@ -294,6 +298,7 @@ async def test_history_picture_can_be_restored_after_save_removes_it() -> None:
         lineage_id=lineage,
         version=2,
         expected_revision=1,
+        editor_step_id=lineage,
     )
     handler = _handler(env)
     await _undo_handler(env).handle(
@@ -309,7 +314,9 @@ async def test_history_picture_can_be_restored_after_save_removes_it() -> None:
         actor=actor,
         lineage_id=lineage,
         request=SaveExamWorkspaceDocumentRequest(
-            expected_revision=2, document=imported.document.model_copy(update={"revision": 3})
+            expected_revision=2,
+            document=imported.document.model_copy(update={"revision": 3}),
+            position_step_id=history.position_step_id,
         ),
     )
     restored = await _handler(env).history_step(
@@ -325,7 +332,11 @@ async def test_history_picture_can_be_restored_after_save_removes_it() -> None:
         actor=actor,
         lineage_id=lineage,
         request=SaveExamWorkspaceDocumentRequest(
-            expected_revision=3, document=restored.document.model_copy(update={"revision": 4})
+            expected_revision=3,
+            document=restored.document.model_copy(update={"revision": 4}),
+            position_step_id=(
+                await handler.history(actor=actor, lineage_id=lineage)
+            ).position_step_id,
         ),
     )
     saved_file = env.vault_files.files[imported.summary.vault_file_id]

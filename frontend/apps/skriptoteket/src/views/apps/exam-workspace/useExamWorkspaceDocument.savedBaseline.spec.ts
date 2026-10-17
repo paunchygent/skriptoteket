@@ -52,9 +52,9 @@ describe("saved exam baseline", () => {
         ...response, document: next, saved_document: next,
         summary: { ...response.summary, version: 2 },
       });
-      expect(await state.saveDocument()).toBe(true);
+      expect(await state.saveDocument("position-1")).toBe(true);
       expect(api.saveExamWorkspaceDocument).toHaveBeenCalledWith("lineage-1", {
-        document: next, expectedRevision: 1,
+        document: next, expectedRevision: 1, positionStepId: "position-1",
       });
       expect(state.isDirty.value).toBe(false);
       expect(state.savedRevision.value).toBe(2);
@@ -77,9 +77,9 @@ describe("saved exam baseline", () => {
         ...response, document, saved_document: document,
         summary: { ...response.summary, version: 2 },
       });
-      expect(await state.saveDocument()).toBe(true);
+      expect(await state.saveDocument("position-1")).toBe(true);
       expect(api.saveExamWorkspaceDocument).toHaveBeenCalledWith("lineage-1", {
-        document, expectedRevision: 1,
+        document, expectedRevision: 1, positionStepId: "position-1",
       });
       expect(state.isDirty.value).toBe(false);
     } finally {
@@ -104,7 +104,7 @@ describe("saved exam baseline", () => {
       api.saveExamWorkspaceDocument.mockRejectedValue(new ApiError({
         status: 409, code: "CONFLICT", message: "Provet har ändrats.",
       }));
-      expect(await state.saveDocument()).toBe(false);
+      expect(await state.saveDocument("position-1")).toBe(false);
       expect(state.workspaceDocument.value?.parents).toEqual(response.document.parents);
       expect(state.savedRevision.value).toBe(2);
       expect(state.isDirty.value).toBe(true);

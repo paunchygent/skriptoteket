@@ -3,10 +3,10 @@
  *
  * Expected behavior:
  *   Every edit the editor offers on a child (points, text, gap
- *   answers, review) and adding a question leave the parents untouched and the
- *   children consecutive and in sequence order, so a save never
- *   sends a parent the server would refuse. A new question is appended after
- *   the last item and never becomes a child.
+ *   answers, review) leaves the parents untouched and the children
+ *   consecutive and in sequence order, so a save never sends a parent the
+ *   server would refuse. Adding questions is covered by
+ *   `useExamWorkspaceStructure.spec.ts`.
  */
 
 import { flushPromises } from "@vue/test-utils";
@@ -80,7 +80,7 @@ beforeEach(() => {
 });
 
 describe("parents in useExamWorkspaceDocument", () => {
-  it("keeps parents and children valid through every child edit and an added question", async () => {
+  it("keeps parents and children valid through every child edit", async () => {
     const original = buildParentDocument();
     const state = await openParentDocument();
     apiMocks.saveExamWorkspaceDocument.mockResolvedValue(buildResponse(original));
@@ -91,9 +91,8 @@ describe("parents in useExamWorkspaceDocument", () => {
     state.updateItemGapValues("item_002", gapId, ["grieve", "mourn"]);
     state.updateItemParagraphSegments("item_002", 0, [{ kind: "text", marks: [], text: "Edited." }]);
     state.markItemReviewed("item_002");
-    state.addItem("free_text");
 
-    await expect(state.saveDocument()).resolves.toBe(true);
+    await expect(state.saveDocument("position-1")).resolves.toBe(true);
 
     const sent = apiMocks.saveExamWorkspaceDocument.mock.calls[0]![1].document as NativeExamDocument;
     expect(sent.parents).toEqual(original.parents);
@@ -102,10 +101,7 @@ describe("parents in useExamWorkspaceDocument", () => {
       "item_002",
       "item_003",
       "item_004",
-      "item_005",
     ]);
-    expect(sent.items[4]!.sequence).toBe(5);
-    expect(sent.parents.flatMap((parent) => parent.item_ids)).not.toContain("item_005");
     expectParentsValid(sent);
   });
 

@@ -182,7 +182,7 @@ describe("keyed gap misspellings in useExamWorkspaceDocument", () => {
     const copy = currentDocument(state);
     apiMocks.saveExamWorkspaceDocument.mockResolvedValue(savedResponse({ ...copy, revision: 2 }));
 
-    expect(await state.saveDocument()).toBe(true);
+    expect(await state.saveDocument("position-1")).toBe(true);
 
     const payload = apiMocks.saveExamWorkspaceDocument.mock.calls[0]![1]
       .document as NativeExamDocument;
@@ -309,7 +309,7 @@ describe("keyed gap misspellings in useExamWorkspaceDocument", () => {
 
     const savePending = deferred<ExamWorkspaceDocumentResponse>();
     apiMocks.saveExamWorkspaceDocument.mockReturnValue(savePending.promise);
-    const saving = state.saveDocument();
+    const saving = state.saveDocument("position-1");
 
     pending.resolve({ automatic_values: ["Götebprg"] });
     await flushPromises();

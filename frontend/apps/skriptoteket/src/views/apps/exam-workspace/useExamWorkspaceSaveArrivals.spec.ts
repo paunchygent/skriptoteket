@@ -101,15 +101,15 @@ describe("a save response replays only arrivals its payload was read without", (
       unreviewedMachineItem([P2, P1, P3], suggestion(ROTATED)),
     );
 
-    const opened = arrivals.beginSave();
+    const opened = arrivals.beginHold();
     deliver(a1);
     expect(item0().answer_key.match_pairs).toEqual(pairs([P2, P1, P3]));
     // The conflict merge kept the copy; the recursive save reads it now.
     const recursiveMark = arrivals.payloadMark();
-    expect(arrivals.beginSave()).toBe(false);
+    expect(arrivals.beginHold()).toBe(false);
     replaceWith(documentWith(item0()));
     arrivals.replayAfterResponse(recursiveMark);
-    arrivals.endSave(opened);
+    arrivals.endHold(opened);
 
     expect(item0().answer_key.match_pairs).toEqual(pairs([P2, P1, P3]));
     expect(item0().ai_suggestion).toEqual(a1);
@@ -123,15 +123,15 @@ describe("a save response replays only arrivals its payload was read without", (
       unreviewedMachineItem([P2, P1, P3], suggestion([P2, P1, P3])),
     );
 
-    const opened = arrivals.beginSave();
+    const opened = arrivals.beginHold();
     deliver(a1);
     const recursiveMark = arrivals.payloadMark();
-    arrivals.beginSave();
+    arrivals.beginHold();
     const recursivePayload = documentWith(item0());
     deliver(a2);
     replaceWith(recursivePayload);
     arrivals.replayAfterResponse(recursiveMark);
-    arrivals.endSave(opened);
+    arrivals.endHold(opened);
 
     expect(item0().ai_suggestion).toEqual(a2);
     expect(item0().answer_key.match_pairs).toEqual(a2.match_pairs);
@@ -150,13 +150,13 @@ describe("a conflict reload replays every arrival since the teacher's save began
     const reloaded = documentWith(unreviewedMachineItem(CROSSED, s));
     const { arrivals, deliver, item0, matchesServer, replaceWith } = setup(unreviewedMachineItem(CROSSED, s));
 
-    const opened = arrivals.beginSave();
+    const opened = arrivals.beginHold();
     deliver(a1);
-    arrivals.beginSave();
+    arrivals.beginHold();
     deliver(a2);
     replaceWith(reloaded);
     arrivals.replayAfterReload();
-    arrivals.endSave(opened);
+    arrivals.endHold(opened);
 
     expect(item0().ai_suggestion).toEqual(a2);
     expect(item0().answer_key).toEqual({
@@ -173,8 +173,8 @@ describe("a conflict reload replays every arrival since the teacher's save began
     );
     const reloaded = workspaceDocument.value;
 
-    const opened = arrivals.beginSave();
-    arrivals.endSave(opened);
+    const opened = arrivals.beginHold();
+    arrivals.endHold(opened);
     deliver(suggestion([P1, P2, P3]));
     replaceWith(reloaded);
     arrivals.replayAfterReload();
@@ -191,14 +191,14 @@ describe("an arrival is written only into the exam opening that requested it", (
     );
     const before = workspaceDocument.value;
 
-    const opened = arrivals.beginSave();
+    const opened = arrivals.beginHold();
     deliver(suggestion([P1, P2, P3]));
     expect(item0().ai_suggestion).toEqual(suggestion([P1, P2, P3]));
     openExam.value = { lineageId: "lineage-1" };
     replaceWith(before);
     arrivals.replayAfterReload();
     deliver(suggestion(ROTATED));
-    arrivals.endSave(opened);
+    arrivals.endHold(opened);
 
     expect(workspaceDocument.value).toBe(before);
   });

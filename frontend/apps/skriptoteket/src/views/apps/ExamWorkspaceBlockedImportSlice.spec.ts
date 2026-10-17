@@ -4,7 +4,7 @@
  * Expected behavior:
  *   While the open exam has unsaved changes, the file picker is disabled and
  *   a dropped .docx is ignored, by the one `importBlocked` rule both paths
- *   read; the line "Spara det öppna provet innan du importerar ett annat."
+ *   read; the Öppna drawer line "Spara det öppna provet innan du importerar eller öppnar ett annat."
  *   explains why and the teacher's edits stay. Once the copy is clean again
  *   (saved, or edited back), the picker and drops import as before.
  */
@@ -21,7 +21,12 @@ import {
   selectItemRow,
 } from "./ExamWorkspaceSlice.specSupport";
 
+import { arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
+
 const apiMocks = vi.hoisted(() => ({
+  getExamWorkspaceHistory: vi.fn(),
+  getExamWorkspaceHistoryStep: vi.fn(),
+  storeExamWorkspaceUndoStep: vi.fn(),
   downloadExamWorkspaceExport: vi.fn(),
   findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
@@ -36,7 +41,7 @@ vi.mock("../../api/examWorkspace", async () => ({
   getExamCourseCatalog: (await import("../../test/examCourseCatalog")).getExamCourseCatalog,
 }));
 
-const SAVE_FIRST_COPY = "Spara det öppna provet innan du importerar ett annat.";
+const SAVE_FIRST_COPY = "Spara det öppna provet innan du importerar eller öppnar ett annat.";
 
 const succeededConversion: ExamWorkspaceConversionStatus = {
   job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null, summary: null,
@@ -47,6 +52,7 @@ beforeEach(() => {
   for (const mock of Object.values(apiMocks)) {
     mock.mockReset();
   }
+  arrangeStepHistory(apiMocks);
   apiMocks.findExamWorkspaceAnswerKeySuggestions.mockResolvedValue(null);
   apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue(succeededConversion);
   apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
@@ -56,7 +62,7 @@ beforeEach(() => {
     return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null, summary: null,
       document_revision: null, questions_total: 0, questions_done: 0, units: [] };
   });
-  apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [] });
+  apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [], ordering: "course" });
 });
 
 type Wrapper = Awaited<ReturnType<typeof mountExamWorkspace>>["wrapper"];
@@ -68,7 +74,7 @@ async function examWithUnsavedEdit(): Promise<Wrapper> {
   await selectItemRow(wrapper, "item_001");
   await wrapper.find('[data-test="exam-workspace-item-points-input"]').setValue("7");
   await flushPromises();
-  expect(wrapper.find('[data-test="exam-workspace-dirty-pill"]').exists()).toBe(true);
+  expect(wrapper.get('[data-test="exam-workspace-save-state"]').text()).toContain("Osparat");
   return wrapper;
 }
 
@@ -90,7 +96,10 @@ describe("import while the open exam has unsaved changes", () => {
     const wrapper = await examWithUnsavedEdit();
 
     expect(picker(wrapper).element.disabled).toBe(true);
-    expect(wrapper.text()).toContain(SAVE_FIRST_COPY);
+    expect(wrapper.get('[data-test="exam-workspace-open-dirty-hint"]').text()).toContain(
+      SAVE_FIRST_COPY,
+    );
+    expect(wrapper.get('[data-test="exam-workspace-pick-file"]').attributes("disabled")).toBeDefined();
   });
 
   it("ignores a dropped .docx and keeps the unsaved edit", async () => {
@@ -100,7 +109,7 @@ describe("import while the open exam has unsaved changes", () => {
 
     expect(apiMocks.importExamWorkspaceDocument).toHaveBeenCalledTimes(1);
     expect(wrapper.find('[data-test="exam-workspace-source-file-error"]').exists()).toBe(false);
-    expect(wrapper.find('[data-test="exam-workspace-dirty-pill"]').exists()).toBe(true);
+    expect(wrapper.get('[data-test="exam-workspace-save-state"]').text()).toContain("Osparat");
     expect(
       wrapper.find<HTMLInputElement>('[data-test="exam-workspace-item-points-input"]').element
         .value,
@@ -126,7 +135,8 @@ describe("import while the open exam has unsaved changes", () => {
     await saveDocument(wrapper);
 
     expect(picker(wrapper).element.disabled).toBe(false);
-    expect(wrapper.text()).not.toContain(SAVE_FIRST_COPY);
+    expect(wrapper.find('[data-test="exam-workspace-open-dirty-hint"]').exists()).toBe(false);
+    expect(wrapper.get('[data-test="exam-workspace-save-state"]').text()).not.toContain("Osparat");
     await dropDocx(wrapper);
     expect(apiMocks.importExamWorkspaceDocument).toHaveBeenCalledTimes(2);
   });

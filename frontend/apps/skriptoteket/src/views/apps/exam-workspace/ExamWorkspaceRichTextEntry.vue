@@ -36,15 +36,21 @@ const props = withDefaults(
     describedBy?: string;
     /** The paragraph border colour, so an empty or correct entry can mark itself. */
     borderClass?: string;
+    /** `paragraph` flows the text inside a surrounding bordered editor box instead of its own input border. */
+    variant?: "paragraph" | "input";
     /** The item, surface and entry this body belongs to; a standalone entry keys on its paragraphs. */
     owner?: RichTextSurfaceOwner;
+    /** Picture URLs by asset id; an unmapped picture keeps its "Bild" placeholder. */
+    assetUrls?: Record<string, string>;
   }>(),
   {
     disabled: false,
     invalid: false,
     describedBy: undefined,
     borderClass: "border-navy/35",
+    variant: "input",
     owner: undefined,
+    assetUrls: () => ({}),
   },
 );
 
@@ -88,7 +94,8 @@ function handleHeading(paragraphIndex: number, headingLevel: RichTextHeadingLeve
       :test-id="body.length > 1 ? `${testId}-${paragraphIndex}` : testId"
       :aria-invalid="invalid ? 'true' : undefined"
       :aria-describedby="describedBy"
-      variant="input"
+      :variant="variant"
+      :asset-urls="assetUrls"
       @update-segments="(segments) => handleSegments(paragraphIndex, segments)"
       @toggle-heading="(level) => handleHeading(paragraphIndex, level)"
       @focus-paragraph="emit('focusEntry')"

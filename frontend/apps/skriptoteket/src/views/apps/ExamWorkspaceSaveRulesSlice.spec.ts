@@ -5,14 +5,14 @@
  *   Item states the server refuses to save are flagged at the question and
  *   refused locally with Swedish copy naming the questions: points that are
  *   negative or non-finite, and a choice without text. The field is marked
- *   invalid with an inline hint, the question list, the details drawer, and
- *   the Filer readiness list carry the reason, and no save request is sent.
+ *   invalid with an inline hint, the question list and the export blocker
+ *   lists carry the reason, and no save request is sent.
  *   While a save runs, the item editor's inputs are disabled so a typed
  *   edit is not lost when the saved version replaces the document.
  */
 
 import { flushPromises } from "@vue/test-utils";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ExamWorkspaceConversionStatus, NativeExamDocument } from "../../api/examWorkspace";
 import { buildFreeTextItem } from "../../test/examWorkspaceFixtures";
@@ -24,9 +24,15 @@ import {
   mountExamWorkspace,
   saveDocument,
   selectItemRow,
+  type ViewWrapper,
 } from "./ExamWorkspaceSlice.specSupport";
 
+import { arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
+
 const apiMocks = vi.hoisted(() => ({
+  getExamWorkspaceHistory: vi.fn(),
+  getExamWorkspaceHistoryStep: vi.fn(),
+  storeExamWorkspaceUndoStep: vi.fn(),
   downloadExamWorkspaceExport: vi.fn(),
   findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
@@ -41,10 +47,25 @@ vi.mock("../../api/examWorkspace", async () => ({
   getExamCourseCatalog: (await import("../../test/examCourseCatalog")).getExamCourseCatalog,
 }));
 
+let mountedView: ViewWrapper | undefined;
+
+/** Attached to the body, because the export menu teleports there. */
 async function mountImported() {
-  const { wrapper } = await mountExamWorkspace();
+  const { wrapper } = await mountExamWorkspace({}, "desktop", document.body);
+  mountedView = wrapper;
   await importFixtureDocument(wrapper);
   return wrapper;
+}
+
+function bodyElement(testId: string): HTMLElement {
+  const element = document.body.querySelector<HTMLElement>(`[data-test="${testId}"]`);
+  expect(element, testId).not.toBeNull();
+  return element!;
+}
+
+async function openExportMenu(wrapper: ViewWrapper) {
+  await wrapper.get('[data-test="exam-workspace-export"]').trigger("click");
+  await flushPromises();
 }
 
 /** The finished import: its poll status, and the conversion its fetched document carries. */
@@ -57,8 +78,9 @@ beforeEach(() => {
   for (const mock of Object.values(apiMocks)) {
     mock.mockReset();
   }
+  arrangeStepHistory(apiMocks);
   apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue(succeededConversion);
-  apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [] });
+  apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [], ordering: "course" });
   apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
     apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(
       buildResponse({ conversion: succeededConversion, version: 1 }),
@@ -66,6 +88,11 @@ beforeEach(() => {
     return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null, summary: null,
       document_revision: null, questions_total: 0, questions_done: 0, units: [] };
   });
+});
+
+afterEach(() => {
+  mountedView?.unmount();
+  mountedView = undefined;
 });
 
 describe("ExamWorkspaceView save rules", () => {
@@ -78,35 +105,31 @@ describe("ExamWorkspaceView save rules", () => {
 
     expect(points.attributes("aria-invalid")).toBe("true");
     const hint = wrapper.get('[data-test="exam-workspace-points-hint"]');
-    expect(hint.text()).toBe("Poängen måste vara större än noll.");
+    expect(hint.text()).toBe("Poängen kan inte vara negativ.");
     expect(points.attributes("aria-describedby")).toBe(hint.attributes("id"));
-    expect(wrapper.get('[data-test="exam-workspace-item-row-item_002"]').text()).toContain(
-      "Poängen måste vara större än noll.",
-    );
+    expect(wrapper.get('[data-test="exam-workspace-row-item_002"]').text()).toContain("negativa poäng");
 
-    await wrapper.get('[data-test="exam-workspace-item-details-toggle"]').trigger("click");
-    expect(wrapper.get('[data-test="exam-workspace-item-readiness"]').text()).toContain(
-      "Poängen måste vara större än noll.",
-    );
+    await openExportMenu(wrapper);
+    expect(bodyElement("exam-workspace-blocker-item_002").textContent?.trim()).toBe("Fråga 2: negativa poäng");
 
     await saveDocument(wrapper);
 
     expect(apiMocks.saveExamWorkspaceDocument).not.toHaveBeenCalled();
     expect(vi.mocked(useToastStore().failure)).toHaveBeenCalledWith(
-      "Fråga 2 har noll eller negativa poäng. Poängen måste vara större än noll.",
+      "Fråga 2 har negativa poäng. Poängen kan inte vara negativ.",
     );
   });
 
-  it("flags negative points in the Filer readiness list", async () => {
+  it("flags negative points in the export drawer's blocker list", async () => {
     const wrapper = await mountImported();
 
     await selectItemRow(wrapper, "item_005");
     await wrapper.get('[data-test="exam-workspace-item-points-input"]').setValue("-1");
-    await wrapper.get('[data-test="exam-workspace-mode-filer"]').trigger("click");
+    await openExportMenu(wrapper);
+    bodyElement("exam-workspace-export-more").click();
+    await flushPromises();
 
-    expect(
-      wrapper.get('[data-test="exam-workspace-readiness-item-item_005"]').text(),
-    ).toContain("Poängen måste vara större än noll.");
+    expect(wrapper.get('[data-test="exam-workspace-blocker-item_005"]').text()).toBe("Fråga 5: negativa poäng");
   });
 
   it("flags an empty choice text and refuses the save, naming every question", async () => {

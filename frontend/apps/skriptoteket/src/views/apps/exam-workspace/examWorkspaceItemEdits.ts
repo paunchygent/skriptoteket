@@ -15,8 +15,11 @@ import type {
   NativeExamAnswerKeyOrigin,
   NativeExamBodyParagraph,
   NativeExamBodySegment,
+  NativeExamChoice,
   NativeExamCriterion,
+  NativeExamGap,
   NativeExamItem,
+  NativeExamItemKind,
   NativeExamMatchPair,
 } from "../../../api/examWorkspace";
 import { criteriaPointsTotal } from "./examWorkspaceItemSaveRules";
@@ -348,23 +351,61 @@ export function reviewed(item: NativeExamItem): NativeExamItem {
   };
 }
 
-/** The kinds of question a teacher adds from "Ny fråga". */
-export type TeacherItemKind = "free_text" | "short_answer";
+/** The teacher has reviewed the question and every AI-written answer key on it. */
+export function isTeacherReviewed(item: NativeExamItem): boolean {
+  const origin = item.answer_key.origin;
+  return item.review.state === "review_complete" && origin !== "machine_proposed" && origin !== "ai_interpreted";
+}
+
+/** Takes back "Granskad"; the answer key keeps its reviewed origin until the teacher undoes. */
+export function unreviewed(item: NativeExamItem): NativeExamItem {
+  return { ...item, review: { ...item.review, state: "review_required" } };
+}
+
+/** The kinds of question a teacher adds from "Ny uppgift": every item kind, and Kort svar. */
+export type TeacherItemKind = NativeExamItemKind | "short_answer";
+
+/** An empty paragraph, as the server writes one: a text segment needs one character. */
+function blankBody(): NativeExamBodyParagraph[] {
+  return [{ heading_level: null, segments: [{ kind: "text", text: " ", marks: [] }] }];
+}
+
+function blankChoices(): NativeExamChoice[] {
+  return ["choice_001", "choice_002"].map((choiceId) => ({ body: blankBody(), choice_id: choiceId }));
+}
+
+function blankGap(inlineChoice: boolean): NativeExamGap {
+  return {
+    accepted_values: [],
+    automatic_values: [],
+    correct_option_id: inlineChoice ? "choice_001" : null,
+    excluded_automatic_values: [],
+    gap_id: "gap_001",
+    options: inlineChoice ? blankChoices() : [],
+  };
+}
 
 /**
- * The question a teacher adds after the last item: a free-text question, or a
- * short answer, which is a Lucktext with one gap after the question text (Q14).
+ * The question a teacher adds: "Ny fråga" with the kind's empty structure,
+ * the same structure the server gives a question it retypes (TASK-SKRIPT-39-06-05).
+ * Choice kinds get two empty choices, gap kinds one gap after the question
+ * text (Kort svar is a Lucktext with one gap, Q14), a rullista one gap whose
+ * first empty option is the key, and Kategorisera one row, two categories and
+ * a zero tick value. Empty texts block export until the teacher fills them in.
  */
 export function newTeacherItem(
   itemId: string,
   sequence: number,
-  kind: TeacherItemKind,
+  teacherKind: TeacherItemKind,
 ): NativeExamItem {
+  const kind: NativeExamItemKind = teacherKind === "short_answer" ? "gap_fill" : teacherKind;
   const question: NativeExamBodyParagraph = {
     heading_level: null,
     segments: [{ kind: "text", text: "Ny fråga", marks: [] }],
   };
-  const shortAnswer = kind === "short_answer";
+  const gapped = kind === "gap_fill" || kind === "inline_choice";
+  const choice = kind === "single_choice" || kind === "multiple_response";
+  const matching = kind === "matching";
   return {
     ai_suggestion: null,
     import_record: null,
@@ -372,23 +413,27 @@ export function newTeacherItem(
     criteria: [],
     printed_label: null,
     retry_source: null,
-    // A Fritext carries no key; a short answer starts unkeyed until the teacher keys its gap.
     answer_key: {
       correct_choice_ids: [],
       match_pairs: [],
-      origin: shortAnswer ? "absent" : "not_applicable",
+      origin:
+        kind === "free_text"
+          ? "not_applicable"
+          : kind === "inline_choice"
+            ? "teacher_authored"
+            : "absent",
     },
-    body: shortAnswer
+    body: gapped
       ? [question, { heading_level: null, segments: [{ kind: "gap", gap_id: "gap_001" }] }]
       : [question],
-    choices: [],
-    gaps: shortAnswer
-      ? [{ gap_id: "gap_001", accepted_values: [], automatic_values: [], excluded_automatic_values: [], options: [], correct_option_id: null }]
-      : [],
+    choices: choice ? blankChoices() : [],
+    gaps: gapped ? [blankGap(kind === "inline_choice")] : [],
     item_id: itemId,
-    kind: shortAnswer ? "gap_fill" : "free_text",
-    match_left: [],
-    match_right: [],
+    kind,
+    match_left: matching ? [{ body: blankBody(), left_id: "left_001" }] : [],
+    match_right: matching
+      ? ["right_001", "right_002"].map((rightId) => ({ body: blankBody(), right_id: rightId }))
+      : [],
     points: null,
     points_estimated: false,
     review: {
@@ -400,6 +445,6 @@ export function newTeacherItem(
     sequence,
     source_anchor: null,
     suggested_kind: null,
-    tick_points: null,
+    tick_points: matching ? "0" : null,
   };
 }

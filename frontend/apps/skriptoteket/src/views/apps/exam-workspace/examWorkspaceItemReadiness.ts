@@ -43,9 +43,9 @@ import {
   hasCriteriaPointsMismatch,
   hasEmptyCriterionText,
   hasInvalidCriterionPoints,
-  hasNonPositivePoints,
+  hasNegativePoints,
   INVALID_CRITERION_POINTS_GUIDANCE,
-  NON_POSITIVE_POINTS_GUIDANCE,
+  NEGATIVE_POINTS_GUIDANCE,
 } from "./examWorkspaceItemSaveRules";
 import { bodyText } from "./examWorkspaceRichText";
 import { EXAM_WORKSPACE_EXPORT_BLOCKER_COPY } from "./useExamWorkspaceExports";
@@ -65,7 +65,7 @@ export type ExamWorkspaceReadinessReason =
   | "empty_criterion_text"
   | "incomplete_match_key"
   | "invalid_criterion_points"
-  | "non_positive_points"
+  | "negative_points"
   | "partial_gap_key";
 
 const READINESS_COPY: Record<ExamWorkspaceReadinessReason, string> = {
@@ -75,7 +75,7 @@ const READINESS_COPY: Record<ExamWorkspaceReadinessReason, string> = {
   empty_criterion_text: EMPTY_CRITERION_TEXT_GUIDANCE,
   incomplete_match_key: INCOMPLETE_MATCH_KEY_GUIDANCE,
   invalid_criterion_points: INVALID_CRITERION_POINTS_GUIDANCE,
-  non_positive_points: NON_POSITIVE_POINTS_GUIDANCE,
+  negative_points: NEGATIVE_POINTS_GUIDANCE,
   partial_gap_key: PARTIAL_GAP_KEY_GUIDANCE,
 };
 
@@ -108,8 +108,8 @@ export function examWorkspaceItemReadiness(item: NativeExamItem): ExamWorkspaceR
   if (item.points === null) {
     reasons.push("missing_points");
   }
-  if (hasNonPositivePoints(item)) {
-    reasons.push("non_positive_points");
+  if (hasNegativePoints(item)) {
+    reasons.push("negative_points");
   }
   // Export needs non-whitespace text; save validity deliberately remains separate.
   if (item.choices.some((choice) => bodyText(choice.body).length === 0)) {

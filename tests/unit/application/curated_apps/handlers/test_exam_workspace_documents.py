@@ -3,7 +3,7 @@
 from datetime import UTC, datetime
 from pathlib import Path
 from unittest.mock import AsyncMock
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 import pytest
 from pydantic import ValidationError
@@ -100,6 +100,13 @@ def _actor() -> User:
         auth_provider=AuthProvider.HULEEDU,
         created_at=_NOW,
         updated_at=_NOW,
+    )
+
+
+def _first_spara(document: NativeExamDocument, lineage: UUID) -> SaveExamWorkspaceDocumentRequest:
+    """Spara of revision 1 while the editor stands on the import baseline."""
+    return SaveExamWorkspaceDocumentRequest(
+        expected_revision=1, document=document, position_step_id=lineage
     )
 
 
@@ -228,6 +235,7 @@ async def test_store_uses_authoritative_head_name_not_a_writers_stale_copy(env: 
         lineage_id=imported.summary.lineage_id,
         version=2,
         expected_revision=1,
+        editor_step_id=imported.summary.lineage_id,
     )
     assert saved.name == "Lärarens namn.provdokument.zip"
 
@@ -255,9 +263,7 @@ async def test_list_returns_only_head_version_per_lineage(env: _Env, fixture_byt
     await env.save_handler.handle(
         actor=actor,
         lineage_id=imported.summary.lineage_id,
-        request=SaveExamWorkspaceDocumentRequest(
-            expected_revision=1, document=with_next_revision(imported.document)
-        ),
+        request=_first_spara(with_next_revision(imported.document), imported.summary.lineage_id),
     )
 
     listed = await env.list_handler.handle(actor=actor)
@@ -293,7 +299,7 @@ async def test_save_advances_version_and_reopens_faithfully(
     saved = await env.save_handler.handle(
         actor=actor,
         lineage_id=imported.summary.lineage_id,
-        request=SaveExamWorkspaceDocumentRequest(expected_revision=1, document=edited),
+        request=_first_spara(edited, imported.summary.lineage_id),
     )
     assert saved.summary.version == 2
 
@@ -311,13 +317,13 @@ async def test_save_with_stale_revision_conflicts(env: _Env, fixture_bytes: byte
     await env.save_handler.handle(
         actor=actor,
         lineage_id=imported.summary.lineage_id,
-        request=SaveExamWorkspaceDocumentRequest(expected_revision=1, document=edited),
+        request=_first_spara(edited, imported.summary.lineage_id),
     )
     with pytest.raises(DomainError) as exc_info:
         await env.save_handler.handle(
             actor=actor,
             lineage_id=imported.summary.lineage_id,
-            request=SaveExamWorkspaceDocumentRequest(expected_revision=1, document=edited),
+            request=_first_spara(edited, imported.summary.lineage_id),
         )
     assert exc_info.value.code is ErrorCode.CONFLICT
 
@@ -331,7 +337,7 @@ async def test_save_rejects_wrong_document_identity(env: _Env, fixture_bytes: by
         await env.save_handler.handle(
             actor=actor,
             lineage_id=imported.summary.lineage_id,
-            request=SaveExamWorkspaceDocumentRequest(expected_revision=1, document=foreign),
+            request=_first_spara(foreign, imported.summary.lineage_id),
         )
     assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
 
@@ -344,9 +350,7 @@ async def test_save_requires_revision_advance_by_one(env: _Env, fixture_bytes: b
         await env.save_handler.handle(
             actor=actor,
             lineage_id=imported.summary.lineage_id,
-            request=SaveExamWorkspaceDocumentRequest(
-                expected_revision=1, document=imported.document
-            ),
+            request=_first_spara(imported.document, imported.summary.lineage_id),
         )
     assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
 
@@ -385,6 +389,7 @@ def test_save_request_refuses_the_deleted_rejected_proposal_ids_field() -> None:
             {
                 "expected_revision": 1,
                 "document": document.model_dump(mode="json"),
+                "position_step_id": str(document.document_id),
                 "rejected_proposal_item_ids": ["item_001"],
             }
         )
@@ -399,7 +404,7 @@ def _save_payload_with_key(
     item["answer_key"] = {"correct_choice_ids": [], "match_pairs": [], **key}
     for gap in item["gaps"]:
         gap["accepted_values"] = gap_values
-    return {"expected_revision": 1, "document": payload}
+    return {"expected_revision": 1, "document": payload, "position_step_id": str(uuid4())}
 
 
 def test_save_request_accepts_a_machine_proposed_key_that_fits_its_question() -> None:
@@ -476,7 +481,7 @@ async def test_save_and_reopen_keep_the_ai_suggestion_on_its_question(
     await env.save_handler.handle(
         actor=actor,
         lineage_id=imported.summary.lineage_id,
-        request=SaveExamWorkspaceDocumentRequest(expected_revision=1, document=saved_document),
+        request=_first_spara(saved_document, imported.summary.lineage_id),
     )
     reopened = await env.get_handler.handle(actor=actor, lineage_id=imported.summary.lineage_id)
 

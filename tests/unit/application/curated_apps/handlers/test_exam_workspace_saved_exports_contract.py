@@ -77,6 +77,7 @@ async def test_saving_trashed_format_reuses_its_identity_and_charges_all_replace
         request=SaveExamWorkspaceDocumentRequest(
             expected_revision=1,
             document=_reviewed(imported.document).model_copy(update={"revision": 2}),
+            position_step_id=lineage,
         ),
     )
     exports = _export_handler(env)
@@ -124,7 +125,9 @@ async def test_resaved_qti_replaces_bytes_and_lists_once_under_its_exam() -> Non
     await env.save_handler.handle(
         actor=actor,
         lineage_id=lineage,
-        request=SaveExamWorkspaceDocumentRequest(expected_revision=1, document=reviewed),
+        request=SaveExamWorkspaceDocumentRequest(
+            expected_revision=1, document=reviewed, position_step_id=lineage
+        ),
     )
     exports = _export_handler(env)
     first = await exports.save(
@@ -159,7 +162,13 @@ async def test_resaved_qti_replaces_bytes_and_lists_once_under_its_exam() -> Non
     await env.save_handler.handle(
         actor=actor,
         lineage_id=lineage,
-        request=SaveExamWorkspaceDocumentRequest(expected_revision=2, document=changed),
+        request=SaveExamWorkspaceDocumentRequest(
+            expected_revision=2,
+            document=changed,
+            position_step_id=(
+                await env.save_handler.history(actor=actor, lineage_id=lineage)
+            ).position_step_id,
+        ),
     )
     second = await exports.save(
         actor=actor, lineage_id=lineage, target=ExamWorkspaceExportTarget.QTI, expected_revision=3

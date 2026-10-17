@@ -2,12 +2,12 @@
  * Exam workspace: a failed lookup of a lost suggestion job (TASK-SKRIPT-39-04-09 P1, repair 1 F2).
  *
  * Slice purpose:
- *   Lock the rail wiring for a failed lost-job lookup: the suggestion panel
+ *   Lock the wiring for a failed lost-job lookup: the notice under the header
  *   shows the failure with a retry button, and clicking it asks the server
  *   again for the open exam's saved version.
  *
  * Expected behavior:
- *   The failure shows in the Filer rail's suggestion panel; `Försök igen`
+ *   The failure shows in the notice under the header; `Försök igen`
  *   reruns the lookup; a job found then is delivered and the failure line
  *   and button disappear.
  */
@@ -51,7 +51,7 @@ afterEach(() => {
 });
 
 describe("ExamWorkspaceView failed lost-job lookup", () => {
-  it("shows the failure in the rail and reruns the lookup from its retry button", async () => {
+  it("shows the failure in the header notice and reruns the lookup from its retry button", async () => {
     apiMocks.findExamWorkspaceAnswerKeySuggestions.mockRejectedValueOnce(new Error("network"));
     const { wrapper } = await mountExamWorkspace();
     await importFixtureDocument(wrapper);
@@ -72,7 +72,7 @@ describe("ExamWorkspaceView failed lost-job lookup", () => {
     expect(wrapper.find('[data-test="exam-workspace-enrichment-message"]').text()).toBe(
       "1 facitförslag har lagts in på frågorna.",
     );
-    expect(wrapper.find('[data-test="exam-workspace-dirty-pill"]').exists()).toBe(true);
+    expect(wrapper.get('[data-test="exam-workspace-save-state"]').text()).toContain("Osparat");
     expect(wrapper.find(LOOKUP_ERROR).exists()).toBe(false);
     expect(wrapper.find(LOOKUP_RETRY).exists()).toBe(false);
   });

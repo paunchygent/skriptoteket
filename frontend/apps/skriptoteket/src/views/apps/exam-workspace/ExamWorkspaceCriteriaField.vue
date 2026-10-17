@@ -13,7 +13,7 @@
  *   last valid points.
  *
  * Relationships:
- *   - Rendered by `ExamWorkspaceItemEditor` for free-text items only; the
+ *   - Rendered by `ExamWorkspaceQuestionEditor` for free-text items only; the
  *     editor makes its points field read-only while criteria exist.
  *   - Emits the full criteria list; `useExamWorkspaceDocument`
  *     (`updateItemCriteria`) owns the state.

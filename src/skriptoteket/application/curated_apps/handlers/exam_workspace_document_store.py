@@ -15,6 +15,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.exam_course_catalog import 
     load_exam_course_catalog,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.exam_index import ExamIndexEntry
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import NativeExamDocument
 from skriptoteket.domain.errors import DomainError, ErrorCode, validation_error
 from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.scripting.vault import VaultFile, VaultFileSourceKind, VaultUsage
@@ -111,7 +112,10 @@ class ExamWorkspaceDocumentStore:
         expected_revision: int | None = None,
         export_format: str | None = None,
         preserve_editor_position: bool = False,
+        editor_step_id: UUID | None = None,
     ) -> VaultFile:
+        """Write the exam file. Spara of an existing exam passes ``editor_step_id``, the
+        snapshot the editor stands on; conversion delivery preserves the position instead."""
         self.validate_size(content)
         document = (
             None if export_format is not None else self._codec.parse(content=content).document
@@ -215,23 +219,21 @@ class ExamWorkspaceDocumentStore:
                     lineage_id=lineage_id,
                     history=ExamWorkspaceHistoryState(
                         cursor=lineage_id,
-                        current_step_id=None,
+                        current_step_id=lineage_id,
                         baseline=ExamWorkspaceHistoryStep(step_id=lineage_id, content=content),
                     ),
                 )
             elif export_format is None:
                 history = await self.get_history(actor=actor, lineage_id=lineage_id)
+                assert document is not None
+                if not preserve_editor_position:
+                    if editor_step_id is None:
+                        raise ValueError("Spara of an existing exam needs the editor's position.")
+                    history = self._retain_saved(history, document, content, editor_step_id)
                 await self.put_history(
                     actor=actor,
                     lineage_id=lineage_id,
-                    history=history.model_copy(
-                        update={
-                            "cursor": uuid4(),
-                            "current_step_id": history.current_step_id
-                            if preserve_editor_position
-                            else None,
-                        }
-                    ),
+                    history=history.model_copy(update={"cursor": uuid4()}),
                 )
             self._rollback_frames[-1].append((actor.id, file_id, previous_content))
             await self._vault_storage.store_file(user_id=actor.id, file_id=file_id, content=content)
@@ -239,6 +241,34 @@ class ExamWorkspaceDocumentStore:
                 usage=VaultUsage(user_id=actor.id, bytes_total=total, updated_at=now)
             )
         return vault_file
+
+    def _retain_saved(
+        self,
+        history: ExamWorkspaceHistoryState,
+        document: NativeExamDocument,
+        content: bytes,
+        editor_step_id: UUID,
+    ) -> ExamWorkspaceHistoryState:
+        """Keep the editor where it stands when that snapshot holds the saved copy.
+        Otherwise the saved copy (an edit whose autosave never landed) becomes the next
+        step after it, like any edit, so undo reaches the earlier steps at once.
+
+        A position another tab's writes already pruned leaves the copy after the newest
+        snapshot: the Spara itself passed its revision check and must not be lost.
+        """
+        snapshots = (history.baseline, *history.steps)
+        ids = [snapshot.step_id for snapshot in snapshots]
+        at = ids.index(editor_step_id) if editor_step_id in ids else len(ids) - 1
+        retained = self._codec.parse(content=snapshots[at].content).document
+        if retained.model_copy(update={"revision": document.revision}) == document:
+            return history.model_copy(update={"current_step_id": ids[at]})
+        step = ExamWorkspaceHistoryStep(step_id=uuid4(), content=content)
+        return history.model_copy(
+            update={
+                "current_step_id": step.step_id,
+                "steps": (*history.steps[:at], step)[-10:],
+            }
+        )
 
     def validate_size(self, content: bytes) -> None:
         if not content or len(content) > self._settings.VAULT_MAX_FILE_BYTES:

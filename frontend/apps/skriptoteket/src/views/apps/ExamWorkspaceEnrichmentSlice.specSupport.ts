@@ -99,7 +99,7 @@ export function resetEnrichmentApiMocks(apiMocks: EnrichmentApiMocks): void {
     return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null, summary: null,
       document_revision: null, questions_total: 0, questions_done: 0, units: [] };
   });
-  apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [] });
+  apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [], ordering: "course" });
 }
 
 export function lastSavedItem(saveMock: Mock, itemId: string): NativeExamItem | undefined {
@@ -112,6 +112,6 @@ export function lastSavedItem(saveMock: Mock, itemId: string): NativeExamItem | 
 }
 
 export async function requestProposals(wrapper: ViewWrapper) {
-  await wrapper.find('[data-test="exam-workspace-enrichment-request"]').trigger("click");
+  await wrapper.find('[data-test="exam-workspace-suggest-all"]').trigger("click");
   await flushPromises();
 }

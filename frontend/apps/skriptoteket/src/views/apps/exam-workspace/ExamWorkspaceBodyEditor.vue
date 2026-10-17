@@ -18,7 +18,7 @@
  *   closes without committing, and no gap change is forwarded.
  *
  * Relationships:
- *   - Rendered by `ExamWorkspaceItemEditor` for the selected item.
+ *   - Rendered by `ExamWorkspaceQuestionEditor` for the selected item.
  *   - Emits typed update events; `useExamWorkspaceDocument` owns the state
  *     (`updateItemParagraphSegments`, `updateItemParagraphHeading`,
  *     `updateItemGapValues`).
@@ -30,7 +30,7 @@
  *     the selection, never a stale one.
  */
 
-import { computed, ref, watch } from "vue";
+import { computed, ref, useId, watch } from "vue";
 import type { ComponentPublicInstance } from "vue";
 
 import type { NativeExamBodySegment, NativeExamItem } from "../../../api/examWorkspace";
@@ -74,6 +74,7 @@ type OpenGap = {
   left: number;
 };
 
+const labelId = useId();
 const editorRoot = ref<HTMLElement | null>(null);
 const statusMessage = ref<string | null>(null);
 const openGap = ref<OpenGap | null>(null);
@@ -196,58 +197,66 @@ watch(
 </script>
 
 <template>
-  <fieldset
-    class="grid gap-3 border border-navy/20 bg-panel p-4"
+  <div
+    class="mb-4 grid gap-1.5"
+    role="group"
+    :aria-labelledby="labelId"
     data-test="exam-workspace-body-editor"
   >
-    <legend class="px-1 text-xs font-semibold text-navy/80">
-      Frågetext
-    </legend>
-    <ExamWorkspaceMarkToolbar
-      :active-marks="activeMarks"
-      :active-heading="activeHeading"
-      :disabled="disabled"
-      show-headings
-      @toggle-mark="handleToggleMark"
-      @toggle-heading="handleToggleHeading"
-    />
     <div
-      ref="editorRoot"
-      class="relative grid gap-4"
+      :id="labelId"
+      class="xw-label"
     >
-      <ExamWorkspaceBodyParagraph
-        v-for="(paragraph, paragraphIndex) in item.body"
-        :key="`${item.item_id}:${paragraphIndex}`"
-        :ref="(element) => setParagraphRef(paragraphIndex, element)"
-        :paragraph="paragraph"
-        :paragraph-index="paragraphIndex"
-        :owner="questionOwner"
-        :gaps="item.gaps"
-        :asset-urls="assetUrls"
+      Frågetext
+    </div>
+    <div class="xw-rich">
+      <ExamWorkspaceMarkToolbar
+        class="xw-rich__bar"
+        :active-marks="activeMarks"
+        :active-heading="activeHeading"
         :disabled="disabled"
-        :label="`Frågetext, stycke ${paragraphIndex + 1}`"
-        :test-id="`exam-workspace-body-paragraph-${paragraphIndex}`"
-        @activate-gap="(chip) => openPopover(paragraphIndex, chip)"
-        @toggle-heading="(level) => emit('updateParagraphHeading', item.item_id, paragraphIndex, level)"
-        @status="statusMessage = $event"
-        @update-segments="(segments) => emit('updateParagraphSegments', item.item_id, paragraphIndex, segments)"
+        show-headings
+        @toggle-mark="handleToggleMark"
+        @toggle-heading="handleToggleHeading"
       />
+      <div
+        ref="editorRoot"
+        class="xw-rich__body relative grid gap-2"
+      >
+        <ExamWorkspaceBodyParagraph
+          v-for="(paragraph, paragraphIndex) in item.body"
+          :key="`${item.item_id}:${paragraphIndex}`"
+          :ref="(element) => setParagraphRef(paragraphIndex, element)"
+          :paragraph="paragraph"
+          :paragraph-index="paragraphIndex"
+          :owner="questionOwner"
+          :gaps="item.gaps"
+          :asset-urls="assetUrls"
+          :disabled="disabled"
+          :label="`Frågetext, stycke ${paragraphIndex + 1}`"
+          :test-id="`exam-workspace-body-paragraph-${paragraphIndex}`"
+          @activate-gap="(chip) => openPopover(paragraphIndex, chip)"
+          @toggle-heading="(level) => emit('updateParagraphHeading', item.item_id, paragraphIndex, level)"
+          @status="statusMessage = $event"
+          @update-segments="(segments) => emit('updateParagraphSegments', item.item_id, paragraphIndex, segments)"
+        />
 
-      <ExamWorkspaceGapPopover
-        v-if="openGap"
-        :key="`${openGap.itemId}:${openGap.gapId}`"
-        :item-id="openGap.itemId"
-        :gap-id="openGap.gapId"
-        :gap-number="openGapNumber"
-        :gap="openGapModel"
-        :gap-count="item.gaps.length"
-        :top="openGap.top"
-        :left="openGap.left"
-        @commit="handleGapCommit"
-        @remove-automatic-value="handleGapAutomaticValueRemoval"
-        @show-gap-as-text="handleGapAsText"
-        @close="closePopover"
-      />
+        <ExamWorkspaceGapPopover
+          v-if="openGap"
+          :key="`${openGap.itemId}:${openGap.gapId}`"
+          :item-id="openGap.itemId"
+          :gap-id="openGap.gapId"
+          :gap-number="openGapNumber"
+          :gap="openGapModel"
+          :gap-count="item.gaps.length"
+          :top="openGap.top"
+          :left="openGap.left"
+          @commit="handleGapCommit"
+          @remove-automatic-value="handleGapAutomaticValueRemoval"
+          @show-gap-as-text="handleGapAsText"
+          @close="closePopover"
+        />
+      </div>
     </div>
 
     <p
@@ -274,7 +283,7 @@ watch(
     >
       {{ PARTIAL_GAP_KEY_GUIDANCE }}
     </p>
-  </fieldset>
+  </div>
 </template>
 
 <style scoped>
