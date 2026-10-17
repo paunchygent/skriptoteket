@@ -87,5 +87,10 @@ metric, baseline and budget before becoming a gate.
   deleted. 27 remain: 14 shared wrappers used by held or frozen screens (app
   shell, exam workspace, old exam converter, Flunk-Out Frenzy) and 13 local or
   mixed wrappers.
-- Open: migrate the remaining wrappers once their screens are released, then
-  remove `lucide-vue-next` (still a dependency, 28 source files import it).
+- 2026-10-18, tranche 2 merged to main a67afa90 (review 74648746 approved
+  b3541a50 for the bounded tranche, no findings): the help components render
+  the shared `help` and `close` meanings; IconHelp is deleted.
+- Open: the tutorial play button keeps IconRun until a shared `play` meaning is
+  released (user decision 2026-10-18: add a play meaning). The 13 exam-held
+  wrappers migrate after TASK-SKRIPT-40-04-03 and TASK-SKRIPT-39-07-03 reach
+  main; then remove `lucide-vue-next` and reconcile the frontend lock.
