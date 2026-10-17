@@ -68,7 +68,7 @@ function handleInsertSettingsExample(): void {
 <template>
   <div
     :class="[
-      isInline ? 'p-3 space-y-3' : 'border border-navy/20 bg-panel shadow-brutal-sm p-3 space-y-3',
+      isInline ? 'p-3 space-y-3' : 'border border-navy/20 bg-panel p-3 space-y-3',
     ]"
   >
     <div class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
@@ -126,10 +126,7 @@ function handleInsertSettingsExample(): void {
       class="space-y-3"
     >
       <div
-        :class="[
-          'h-[240px] border border-navy bg-canvas overflow-hidden',
-          isInline ? '' : 'shadow-brutal-sm',
-        ]"
+        class="h-[240px] border border-navy bg-canvas overflow-hidden"
       >
         <Suspense>
           <template #default>

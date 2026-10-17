@@ -13,8 +13,7 @@
 
 import { AlertCircle, Download, RefreshCw } from "lucide-vue-next";
 
-import UiDenseActionButton from "../../../components/ui/UiDenseActionButton.vue";
-import UiDenseIconButton from "../../../components/ui/UiDenseIconButton.vue";
+import { UiDenseActionButton, UiDenseIconButton } from "../../../components/ui";
 import type {
   ArtifactEntry,
   ArtifactManifest,
@@ -59,7 +58,7 @@ function availabilityLabel(value: string): string {
 
 <template>
   <section
-    class="border border-navy bg-panel p-4 shadow-brutal-sm"
+    class="border border-navy bg-panel p-4"
     aria-live="polite"
   >
     <div class="flex items-start justify-between gap-4">

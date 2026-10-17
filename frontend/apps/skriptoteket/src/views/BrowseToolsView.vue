@@ -134,7 +134,7 @@ const hasContent = computed(() => tools.value.length > 0 || curatedApps.value.le
 
     <div
       v-else-if="errorMessage"
-      class="p-4 border border-critical bg-panel shadow-brutal-sm text-sm text-critical"
+      class="p-4 border border-critical bg-panel text-sm text-critical"
     >
       {{ errorMessage }}
     </div>

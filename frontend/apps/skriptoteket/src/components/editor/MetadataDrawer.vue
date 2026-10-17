@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import type { components } from "../../api/openapi";
-import SystemMessage from "../ui/SystemMessage.vue";
+import { SystemMessage } from "../ui";
 
 type ProfessionItem = components["schemas"]["ProfessionItem"];
 type CategoryItem = components["schemas"]["CategoryItem"];
@@ -75,7 +75,7 @@ function toggleCategory(value: string): void {
     :class="[
       isPanel
         ? 'relative w-full panel-inset flex flex-col min-h-0'
-        : 'fixed inset-y-0 right-0 z-50 w-full bg-modal border-l border-navy shadow-brutal flex flex-col md:relative md:inset-auto md:z-auto md:w-full md:h-full md:overflow-hidden',
+        : 'fixed inset-y-0 right-0 z-50 w-full bg-modal border-l border-navy shadow-md flex flex-col md:relative md:inset-auto md:z-auto md:w-full md:h-full md:overflow-hidden',
     ]"
     :role="isPanel ? 'region' : 'dialog'"
     :aria-modal="!isPanel"
@@ -177,7 +177,11 @@ function toggleCategory(value: string): void {
 
           <SystemMessage
             :model-value="slugError"
-            variant="error"
+            tone="failure"
+            dismissible
+            role="alert"
+            aria-live="assertive"
+            aria-atomic="true"
             @update:model-value="emit('update:slugError', $event)"
           />
         </div>
@@ -212,7 +216,11 @@ function toggleCategory(value: string): void {
         <SystemMessage
           v-if="taxonomyError"
           :model-value="taxonomyError"
-          variant="error"
+          tone="failure"
+          dismissible
+          role="alert"
+          aria-live="assertive"
+          aria-atomic="true"
           @update:model-value="emit('update:taxonomyError', $event)"
         />
 

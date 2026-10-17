@@ -129,7 +129,7 @@ describe("App", () => {
             template:
               "<div><button data-test='logout' @click='$emit(\"logout\")'>Logga ut</button><slot /></div>",
           },
-          ToastHost: { template: "<div />" },
+          SkriptoteketToastHost: { template: "<div />" },
           RouterView: { template: "<div />" },
         },
       },
@@ -151,7 +151,7 @@ describe("App", () => {
         stubs: {
           LandingLayout: { template: "<div><slot /></div>" },
           AuthLayout: { template: "<div><slot /></div>" },
-          ToastHost: { template: "<div />" },
+          SkriptoteketToastHost: { template: "<div />" },
           RouterView: { template: "<div />" },
         },
       },
@@ -191,7 +191,7 @@ describe("App", () => {
         stubs: {
           LandingLayout: { template: "<div><slot /></div>" },
           AuthLayout: { template: "<div><slot /></div>" },
-          ToastHost: { template: "<div />" },
+          SkriptoteketToastHost: { template: "<div />" },
           RouterView: { template: "<div />" },
         },
       },
@@ -222,7 +222,7 @@ describe("App", () => {
         stubs: {
           LandingLayout: { template: "<div><slot /></div>" },
           AuthLayout: { template: "<div><slot /></div>" },
-          ToastHost: { template: "<div />" },
+          SkriptoteketToastHost: { template: "<div />" },
           RouterView: { template: "<div />" },
         },
       },
@@ -254,7 +254,7 @@ describe("App", () => {
         stubs: {
           LandingLayout: { template: "<div><slot /></div>" },
           AuthLayout: { template: "<div><slot /></div>" },
-          ToastHost: { template: "<div />" },
+          SkriptoteketToastHost: { template: "<div />" },
           RouterView: { template: "<div />" },
         },
       },

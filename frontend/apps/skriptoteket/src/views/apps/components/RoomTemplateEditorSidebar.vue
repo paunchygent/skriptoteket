@@ -84,7 +84,7 @@ defineExpose({
     data-test="room-template-editor-sidebar"
   >
     <div
-      class="room-template-name-panel border border-navy bg-panel p-4 shadow-brutal-sm"
+      class="room-template-name-panel border border-navy bg-panel p-4"
       data-test="room-template-name-panel"
     >
       <label
@@ -100,7 +100,7 @@ defineExpose({
         type="text"
         placeholder="Till exempel Sal 304"
         data-test="room-template-name-input"
-        class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm"
+        class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy"
         :aria-invalid="nameError ? 'true' : undefined"
         :aria-describedby="nameError ? 'room-template-name-error' : undefined"
         @input="updateNameFromEvent"
@@ -115,7 +115,7 @@ defineExpose({
       </p>
     </div>
 
-    <div class="border border-navy bg-panel p-4 shadow-brutal-sm">
+    <div class="border border-navy bg-panel p-4">
       <div class="mb-3 flex items-end justify-between gap-3">
         <h3 class="text-sm font-semibold uppercase tracking-wide text-navy/70">
           Storlek
@@ -169,7 +169,7 @@ defineExpose({
       </div>
     </div>
 
-    <div class="border border-navy bg-panel p-4 shadow-brutal-sm">
+    <div class="border border-navy bg-panel p-4">
       <div class="mb-3 flex items-end justify-between gap-3">
         <h3 class="text-sm font-semibold uppercase tracking-wide text-navy/70">
           Verktyg
@@ -220,7 +220,7 @@ defineExpose({
       </div>
     </div>
 
-    <div class="border border-navy bg-canvas p-4 shadow-brutal-sm">
+    <div class="border border-navy bg-canvas p-4">
       <h3 class="text-sm font-semibold uppercase tracking-wide text-navy/70">
         Så här gör du
       </h3>

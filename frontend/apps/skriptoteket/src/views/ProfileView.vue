@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from "vue";
 
 import { isApiError } from "../api/client";
 import ProfileDisplay from "../components/profile/ProfileDisplay.vue";
-import SystemMessage from "../components/ui/SystemMessage.vue";
+import { SystemMessage } from "../components/ui";
 import { useProfile } from "../composables/useProfile";
 import { useAuthStore } from "../stores/auth";
 
@@ -53,7 +53,11 @@ onMounted(() => {
 
     <SystemMessage
       v-model="loadError"
-      variant="error"
+      tone="failure"
+      dismissible
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
       class="expand-left-40"
     />
 
@@ -62,7 +66,7 @@ onMounted(() => {
         <div
           v-if="isLoading"
           key="loading"
-          class="profile-stage-item expand-left-40 border border-navy bg-panel shadow-brutal-sm"
+          class="profile-stage-item expand-left-40 border border-navy bg-panel"
         >
           <div class="flex items-center gap-4 border-b border-navy/20 p-4">
             <div class="h-14 w-14 shrink-0 animate-pulse border-2 border-navy/20 bg-navy/10" />

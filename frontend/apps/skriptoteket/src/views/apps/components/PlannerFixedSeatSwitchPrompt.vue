@@ -22,7 +22,7 @@ const emit = defineEmits<{
 
 <template>
   <div
-    class="relative border border-navy bg-canvas p-3 shadow-brutal-sm"
+    class="relative border border-navy bg-canvas p-3"
     data-test="rules-fixed-seat-switch-prompt"
   >
     <button

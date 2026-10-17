@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 
-import UiSegmentedToggle, { type UiSegmentedToggleOption } from "../ui/UiSegmentedToggle.vue";
+import { UiSegmentedToggle, type UiSegmentedToggleOption } from "../ui";
 import VaultPickerModal from "../vault/VaultPickerModal.vue";
 
 import type {
@@ -189,7 +189,7 @@ function modeSurfaceKey(field: ToolFileFieldSpec): string {
         :class="[
           isCompact
             ? 'panel-inset p-3 space-y-3'
-            : 'border border-navy/20 bg-canvas/30 p-4 shadow-brutal-sm space-y-3',
+            : 'border border-navy/20 bg-canvas/30 p-4 space-y-3',
         ]"
       >
         <div class="flex flex-wrap items-center justify-between gap-3">

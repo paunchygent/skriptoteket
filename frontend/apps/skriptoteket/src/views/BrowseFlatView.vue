@@ -84,7 +84,7 @@ async function handleFavoriteToggled(payload: { id: string; isFavorite: boolean 
         <h3 class="text-xs font-semibold uppercase tracking-wide text-navy/70">
           Filter
         </h3>
-        <div class="border border-navy bg-panel shadow-brutal-sm divide-y divide-navy/20">
+        <div class="border border-navy bg-panel divide-y divide-navy/20">
           <!-- Snabbfilter -->
           <div class="p-4 space-y-3">
             <label class="flex items-center gap-3 text-sm text-navy cursor-pointer">
@@ -202,7 +202,7 @@ async function handleFavoriteToggled(payload: { id: string; isFavorite: boolean 
 
         <div
           v-else-if="errorMessage"
-          class="p-4 border border-critical bg-panel shadow-brutal-sm text-sm text-critical"
+          class="p-4 border border-critical bg-panel text-sm text-critical"
         >
           {{ errorMessage }}
         </div>
@@ -221,7 +221,7 @@ async function handleFavoriteToggled(payload: { id: string; isFavorite: boolean 
           <div class="text-xs uppercase tracking-wide text-navy/60">
             Visar {{ items.length }} objekt
           </div>
-          <ul class="border border-navy bg-panel shadow-brutal-sm divide-y divide-navy/20">
+          <ul class="border border-navy bg-panel divide-y divide-navy/20">
             <li
               v-for="item in items"
               :key="`${item.kind}-${item.id}`"

@@ -399,7 +399,7 @@ onMounted(async () => {
     aria-labelledby="exam-converter-auth-title"
   >
     <section
-      class="mx-auto grid min-h-[28rem] w-full min-w-0 max-w-[90rem] grid-cols-1 items-stretch border border-navy bg-panel shadow-brutal-sm xl:grid-cols-[minmax(14rem,17rem)_minmax(0,1fr)] 2xl:grid-cols-[minmax(15rem,18rem)_minmax(0,1fr)]"
+      class="mx-auto grid min-h-[28rem] w-full min-w-0 max-w-[90rem] grid-cols-1 items-stretch border border-navy bg-panel xl:grid-cols-[minmax(14rem,17rem)_minmax(0,1fr)] 2xl:grid-cols-[minmax(15rem,18rem)_minmax(0,1fr)]"
       :aria-label="hostAriaLabel"
       :data-inspection-fixture-id="inspectionFixtureId ?? undefined"
       data-test="exam-converter-host-frame"

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-import UiSegmentedToggle, { type UiSegmentedToggleOption } from "../ui/UiSegmentedToggle.vue";
+import { UiSegmentedToggle, type UiSegmentedToggleOption } from "../ui";
 
 type EditorWorkspaceMode = "source" | "diff" | "metadata" | "test";
 

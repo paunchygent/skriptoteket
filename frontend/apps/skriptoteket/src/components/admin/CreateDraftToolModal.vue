@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { nextTick, ref, watch } from "vue";
 
-import SystemMessage from "../ui/SystemMessage.vue";
+import { SystemMessage } from "../ui";
 
 type CreateDraftToolModalProps = {
   isOpen: boolean;
@@ -46,7 +46,7 @@ watch(
         :aria-describedby="error ? 'create-tool-dialog-error' : undefined"
         @click.self="emit('close')"
       >
-        <div class="relative w-full max-w-lg mx-4 p-6 bg-modal border border-navy shadow-brutal">
+        <div class="relative w-full max-w-lg mx-4 p-6 bg-modal border border-navy shadow-md">
           <button
             type="button"
             class="absolute top-3 right-3 text-navy/60 hover:text-navy text-xl leading-none"
@@ -75,7 +75,7 @@ watch(
                 ref="titleInputRef"
                 :value="title"
                 type="text"
-                class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm"
+                class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy"
                 placeholder="T.ex. Matteprovsgenerator"
                 :disabled="isSubmitting"
                 @input="emit('update:title', ($event.target as HTMLInputElement).value)"
@@ -89,7 +89,7 @@ watch(
               <textarea
                 :value="summary"
                 rows="3"
-                class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm"
+                class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy"
                 placeholder="Kort beskrivning..."
                 :disabled="isSubmitting"
                 @input="emit('update:summary', ($event.target as HTMLTextAreaElement).value)"
@@ -99,7 +99,11 @@ watch(
             <SystemMessage
               id="create-tool-dialog-error"
               :model-value="error"
-              variant="error"
+              tone="failure"
+              dismissible
+              role="alert"
+              aria-live="assertive"
+              aria-atomic="true"
               @update:model-value="emit('update:error', $event)"
             />
           </div>

@@ -13,7 +13,7 @@ import { apiGet, apiPost, isApiError } from "../api/client";
 import type { components } from "../api/openapi";
 import { useToast } from "../composables/useToast";
 import MicroHelp from "../components/help/MicroHelp.vue";
-import SystemMessage from "../components/ui/SystemMessage.vue";
+import { SystemMessage } from "../components/ui";
 
 type ProfessionItem = components["schemas"]["ProfessionItem"];
 type CategoryItem = components["schemas"]["CategoryItem"];
@@ -128,7 +128,7 @@ onMounted(() => {
 
     <div
       v-if="isLoading"
-      class="expand-left-40 p-4 border border-navy bg-panel shadow-brutal-sm text-sm text-navy/70"
+      class="expand-left-40 p-4 border border-navy bg-panel text-sm text-navy/70"
     >
       Laddar formulär...
     </div>
@@ -139,16 +139,24 @@ onMounted(() => {
     >
       <SystemMessage
         v-model="loadErrorMessage"
-        variant="error"
+        tone="failure"
+        dismissible
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
       />
 
       <form
-        class="expand-left-40 border border-navy bg-panel p-4 shadow-brutal-sm space-y-4"
+        class="expand-left-40 border border-navy bg-panel p-4 space-y-4"
         @submit.prevent="submit"
       >
         <SystemMessage
           v-model="formErrorMessage"
-          variant="error"
+          tone="failure"
+          dismissible
+          role="alert"
+          aria-live="assertive"
+          aria-atomic="true"
         />
 
         <div class="expand-left-40 space-y-2">

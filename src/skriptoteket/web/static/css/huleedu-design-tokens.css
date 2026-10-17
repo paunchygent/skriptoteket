@@ -245,13 +245,8 @@
   --huleedu-radius-full: 9999px;    /* Pills, dots */
 
   /* ─────────────────────────────────────────────────────────────────────────
-     LEGACY DECORATIVE SHADOWS (not workbench defaults)
+     SHADOWS (soft; floating layers only)
      ───────────────────────────────────────────────────────────────────────── */
-  --huleedu-shadow-brutal: 6px 6px 0px 0px var(--huleedu-navy);
-  --huleedu-shadow-brutal-sm: 4px 4px 0px 0px var(--huleedu-navy);
-  --huleedu-shadow-brutal-xs: 2px 2px 0px 0px var(--huleedu-navy);
-
-  /* Standard shadows (for softer contexts) */
   --huleedu-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --huleedu-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 

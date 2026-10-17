@@ -5,7 +5,7 @@ import type { components } from "../../api/openapi";
 import type { FileRefInfo, FileRefSource } from "../../composables/tools/fileRefHelpers";
 import { filterFileRefsBySources } from "../../composables/tools/fileRefHelpers";
 import UiActionFieldRenderer from "../ui-actions/UiActionFieldRenderer.vue";
-import SystemMessage from "../ui/SystemMessage.vue";
+import { SystemMessage } from "../ui";
 
 type ToolSettingsResponse = components["schemas"]["ToolSettingsResponse"];
 type SettingsField = NonNullable<ToolSettingsResponse["settings_schema"]>[number];
@@ -176,7 +176,11 @@ function onSave(): void {
 
     <SystemMessage
       :model-value="errorMessage"
-      variant="error"
+      tone="failure"
+      dismissible
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
       @update:model-value="emit('update:errorMessage', $event)"
     />
   </div>

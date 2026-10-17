@@ -28,7 +28,7 @@ describe("ToolRunActions", () => {
         stubs: {
           SystemMessage: {
             template: "<div />",
-            props: ["modelValue", "variant"],
+            props: ["modelValue", "tone"],
           },
           UiActionFieldRenderer: {
             template: "<div />",

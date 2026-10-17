@@ -10,8 +10,8 @@
 import { ref } from "vue";
 
 import { IconArrow } from "../icons";
-import type { DenseActionTone } from "./denseToolPrimitives";
-import UiDenseActionButton from "./UiDenseActionButton.vue";
+import type { DenseActionTone } from "./shared/denseToolPrimitives";
+import UiDenseActionButton from "./shared/components/UiDenseActionButton.vue";
 
 withDefaults(
   defineProps<{

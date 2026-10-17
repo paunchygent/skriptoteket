@@ -13,7 +13,7 @@ import { writeTextToClipboard } from "../../utils/clipboard";
 import { UiOutputRenderer } from "../ui-outputs";
 import ToolRunActions from "../tool-run/ToolRunActions.vue";
 import ToolRunArtifacts from "../tool-run/ToolRunArtifacts.vue";
-import SystemMessage from "../ui/SystemMessage.vue";
+import { SystemMessage } from "../ui";
 
 type EditorRunDetails = components["schemas"]["EditorRunDetails"];
 type RunStatus = components["schemas"]["RunStatus"];
@@ -333,7 +333,11 @@ async function copyDebugText(): Promise<void> {
       <!-- Action error message -->
       <SystemMessage
         v-model="actionError"
-        variant="error"
+        tone="failure"
+        dismissible
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
       />
 
       <!-- Next Actions (multi-step tools) - only show for current run -->

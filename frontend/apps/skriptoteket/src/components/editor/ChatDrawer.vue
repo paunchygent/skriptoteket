@@ -6,8 +6,7 @@ import type { EditorChatMessage } from "../../composables/editor/chat/editorChat
 import type { RemoteFallbackPrompt } from "./remoteFallbackPrompt";
 import ChatComposer from "./ChatComposer.vue";
 import ChatMessageList from "./ChatMessageList.vue";
-import SystemMessage from "../ui/SystemMessage.vue";
-import type { SystemMessageVariant } from "../ui/SystemMessage.vue";
+import { SystemMessage, type SystemMessageTone } from "../ui";
 
 type ChatDrawerProps = {
   variant?: "drawer" | "column";
@@ -23,7 +22,7 @@ type ChatDrawerProps = {
   disabledMessage: string | null;
   error: string | null;
   noticeMessage?: string | null;
-  noticeVariant?: Extract<SystemMessageVariant, "info" | "warning">;
+  noticeVariant?: Extract<SystemMessageTone, "info" | "warning">;
   remoteFallbackPrompt?: RemoteFallbackPrompt | null;
 };
 
@@ -103,7 +102,7 @@ const assistantActivity = computed(() => {
 
   <aside
     :class="[
-      'fixed inset-y-0 right-0 z-50 bg-modal border-l border-navy shadow-brutal flex flex-col lg:relative lg:inset-auto lg:z-auto lg:h-full lg:overflow-hidden',
+      'fixed inset-y-0 right-0 z-50 bg-modal border-l border-navy shadow-md flex flex-col lg:relative lg:inset-auto lg:z-auto lg:h-full lg:overflow-hidden',
       isRailOnlyOnMobile ? 'w-[var(--chat-rail-width,64px)]' : 'w-full',
       props.variant === 'column' ? 'lg:border-0 lg:shadow-none lg:bg-transparent' : '',
     ]"
@@ -138,31 +137,51 @@ const assistantActivity = computed(() => {
             <SystemMessage
               v-if="props.noticeMessage"
               :model-value="props.noticeMessage"
-              :variant="props.noticeVariant"
+              :tone="props.noticeVariant"
+              dismissible
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
               @update:model-value="emit('clearNotice')"
             />
             <SystemMessage
               v-if="error"
               :model-value="error"
-              variant="error"
+              tone="failure"
+              dismissible
+              role="alert"
+              aria-live="assertive"
+              aria-atomic="true"
               @update:model-value="emit('clearError')"
             />
             <SystemMessage
               v-if="disabledMessage"
               :model-value="disabledMessage"
-              variant="warning"
+              tone="warning"
+              dismissible
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
               @update:model-value="emit('clearDisabled')"
             />
             <SystemMessage
               v-if="props.editOpsError"
               :model-value="props.editOpsError"
-              variant="error"
+              tone="failure"
+              dismissible
+              role="alert"
+              aria-live="assertive"
+              aria-atomic="true"
               @update:model-value="emit('clearEditOpsError')"
             />
             <SystemMessage
               v-if="props.editOpsDisabledMessage"
               :model-value="props.editOpsDisabledMessage"
-              variant="warning"
+              tone="warning"
+              dismissible
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
               @update:model-value="emit('clearEditOpsDisabled')"
             />
 

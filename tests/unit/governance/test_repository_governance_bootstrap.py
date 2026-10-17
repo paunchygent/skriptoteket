@@ -157,11 +157,24 @@ def test_design_system_validation_runs_automatically_on_protected_paths() -> Non
 
     design_map = json.loads((ROOT / "design-system-map.json").read_text(encoding="utf-8"))
     assert design_map["package"] == "huleedu-integrated-frontend-design-system"
+    shared_vue = "frontend/apps/skriptoteket/src/components/ui/shared"
     adopted = {export: path for export, path in design_map["exports"].items() if path is not None}
     assert adopted == {
         "tokens": "src/skriptoteket/web/static/css/huleedu-design-tokens.css",
         "tailwind-theme": "frontend/apps/skriptoteket/src/styles/tailwind-theme.css",
         "skriptoteket-logo-horizontal": "frontend/apps/skriptoteket/public/logo-horizontal.svg",
+        "dense-tool-primitives": f"{shared_vue}/denseToolPrimitives.ts",
+        "ui-glyphs": f"{shared_vue}/uiGlyphs.ts",
+        "vue-barrel": f"{shared_vue}/index.ts",
+        "ui-dense-action-button": f"{shared_vue}/components/UiDenseActionButton.vue",
+        "ui-dense-icon-button": f"{shared_vue}/components/UiDenseIconButton.vue",
+        "ui-dense-status-pill": f"{shared_vue}/components/UiDenseStatusPill.vue",
+        "ui-dense-spinner": f"{shared_vue}/components/UiDenseSpinner.vue",
+        "ui-segmented-toggle": f"{shared_vue}/components/UiSegmentedToggle.vue",
+        "system-message": f"{shared_vue}/components/SystemMessage.vue",
+        "toast-host": f"{shared_vue}/components/ToastHost.vue",
+        "ui-glyph": f"{shared_vue}/components/UiGlyph.vue",
+        "ui-symbol": f"{shared_vue}/components/UiSymbol.vue",
     }
     mirror = design_map["mirror"]
     assert mirror == "frontend/apps/skriptoteket/src/design-system/huleedu-integrated"

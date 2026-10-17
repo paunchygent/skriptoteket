@@ -160,12 +160,58 @@ describe("PlannerShareExportPanel", () => {
     expect(wrapper.find('[data-test="planner-export-status"]').exists()).toBe(false);
     expect(wrapper.get('[data-test="grouping-export-option-xlsx"]').attributes("disabled"))
       .toBeDefined();
-    expect(wrapper.get('[data-test="grouping-export-option-xlsx"]').find('[data-ui="dense-spinner"]').exists())
-      .toBe(true);
+    const exportButton = wrapper.get('[data-test="grouping-export-option-xlsx"]');
+    expect(exportButton.find('[data-ui="dense-spinner"]').exists()).toBe(true);
+    expect(exportButton.attributes("aria-busy")).toBe("true");
+    const otherExportButton = wrapper.get('[data-test="grouping-export-option-pdf"]');
+    expect(otherExportButton.attributes("disabled")).toBeDefined();
+    expect(otherExportButton.find('[data-ui="dense-spinner"]').exists()).toBe(false);
+    expect(otherExportButton.attributes("aria-busy")).toBeUndefined();
 
-    await wrapper.get('[data-test="grouping-export-option-xlsx"]').trigger("click");
+    await exportButton.trigger("click");
     expect(wrapper.emitted("export-default")).toBeUndefined();
+    await wrapper.setProps({ exportBusy: false });
+    expect(exportButton.attributes("disabled")).toBeUndefined();
+    expect(exportButton.attributes("aria-busy")).toBeUndefined();
+    expect(exportButton.find('[data-ui="dense-spinner"]').exists()).toBe(false);
+    await exportButton.trigger("click");
+    expect(wrapper.emitted("export-default")).toEqual([[]]);
   });
+
+  it.each(["default", "desktop-overview"] as const)(
+    "clears create-link busy feedback after completion in %s mode",
+    async (visualVariant) => {
+      const wrapper = mount(PlannerShareExportPanel, {
+        props: {
+          fileOptions: groupingFileOptions(),
+          triggerVariant: "inline",
+          visualVariant,
+          shareBusy: true,
+        },
+      });
+      const actions = [
+        wrapper.get('[data-test="planner-share-create"]'),
+        wrapper.get('[data-test="planner-share-create-mobile"]'),
+      ];
+      for (const action of actions) {
+        expect(action.attributes("disabled")).toBeDefined();
+        expect(action.attributes("aria-busy")).toBe("true");
+        expect(action.find('[data-ui="dense-spinner"]').exists()).toBe(true);
+        await action.trigger("click");
+      }
+      expect(wrapper.emitted("create-share")).toBeUndefined();
+
+      await wrapper.setProps({ shareBusy: false });
+      for (const action of actions) {
+        expect(action.attributes("disabled")).toBeUndefined();
+        expect(action.attributes("aria-busy")).toBeUndefined();
+        expect(action.find('[data-ui="dense-spinner"]').exists()).toBe(false);
+        await action.trigger("click");
+      }
+      expect(wrapper.emitted("create-share")).toEqual([[], []]);
+      wrapper.unmount();
+    },
+  );
 
   it("shows exactly one create-link action in the mobile sheet", async () => {
     const wrapper = mount(PlannerShareExportPanel, {

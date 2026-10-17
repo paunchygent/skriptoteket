@@ -18,7 +18,7 @@ defineProps<{
 </script>
 
 <template>
-  <details class="border border-navy bg-panel p-4 shadow-brutal-sm">
+  <details class="border border-navy bg-panel p-4">
     <summary class="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3">
       <h3 class="text-sm font-semibold uppercase tracking-wide text-navy/70">
         Förhandsvisning

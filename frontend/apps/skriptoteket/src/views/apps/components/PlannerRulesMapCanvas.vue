@@ -21,9 +21,10 @@ import type {
   Student,
   StudentSeatingPreference,
 } from "../classroomPlannerTypes";
-import UiSegmentedToggle, {
+import {
+  UiSegmentedToggle,
   type UiSegmentedToggleOption,
-} from "../../../components/ui/UiSegmentedToggle.vue";
+} from "../../../components/ui";
 import {
   formatSeatDisplayLabel,
   sortStudentsAlphabetically,
@@ -294,7 +295,7 @@ function handleStudentSelection(studentId: string): void {
 
 <template>
   <section
-    class="border border-navy bg-panel p-3 shadow-brutal-sm"
+    class="border border-navy bg-panel p-3"
     data-test="rules-map-panel"
   >
     <div

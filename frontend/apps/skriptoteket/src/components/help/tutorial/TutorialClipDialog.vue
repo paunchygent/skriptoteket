@@ -173,7 +173,7 @@ onBeforeUnmount(() => {
           aria-modal="true"
           :aria-labelledby="titleId"
           tabindex="-1"
-          class="tutorial-clip-dialog-panel w-full max-w-[60rem] border border-navy bg-modal shadow-brutal-sm"
+          class="tutorial-clip-dialog-panel w-full max-w-[60rem] border border-navy bg-modal shadow-md"
         >
           <header class="flex items-center justify-between gap-3 border-b border-navy/20 px-5 py-3">
             <h2
@@ -304,7 +304,6 @@ onBeforeUnmount(() => {
   border: 1px solid var(--huleedu-navy);
   border-radius: 9999px;
   background: var(--huleedu-canvas);
-  box-shadow: var(--huleedu-shadow-brutal-sm);
   transition: background-color var(--huleedu-duration-fast, 150ms) ease,
     color var(--huleedu-duration-fast, 150ms) ease;
 }

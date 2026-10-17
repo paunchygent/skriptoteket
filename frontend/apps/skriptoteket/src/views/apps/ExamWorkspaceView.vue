@@ -249,7 +249,7 @@ async function handleSave(): Promise<void> {
   >
     <section
       class="mx-auto flex w-full min-w-0 max-w-[100rem] flex-1 flex-col"
-      :class="isPhone ? undefined : 'min-h-[35rem] border border-navy bg-panel shadow-brutal-sm'"
+      :class="isPhone ? undefined : 'min-h-[35rem] border border-navy bg-panel'"
       aria-label="Provredigering"
       :data-layout="layout"
       data-test="exam-workspace-frame"

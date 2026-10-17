@@ -11,7 +11,6 @@
     gap: var(--huleedu-space-2);
     border-color: rgb(8 43 76 / 0.26);
     padding: var(--huleedu-space-3);
-    box-shadow: var(--huleedu-shadow-brutal-xs);
   }
 
   .planner-top-panel-heading {
@@ -87,10 +86,6 @@
   .planner-top-panel-compact-status-message {
     display: block;
     white-space: normal;
-  }
-
-  .planner-share-export-inline-panel {
-    box-shadow: var(--huleedu-shadow-brutal-xs);
   }
 
   .planner-workspace-toolbar-shell {

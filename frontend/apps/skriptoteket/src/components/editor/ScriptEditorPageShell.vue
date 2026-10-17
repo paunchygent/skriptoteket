@@ -4,7 +4,7 @@ import EditorWorkspacePanel from "./EditorWorkspacePanel.vue";
 import ScriptEditorAiPanel from "./ScriptEditorAiPanel.vue";
 import WorkflowActionModal from "./WorkflowActionModal.vue";
 import WorkingCopyRestorePrompt from "./WorkingCopyRestorePrompt.vue";
-import SystemMessage from "../ui/SystemMessage.vue";
+import { SystemMessage } from "../ui";
 import { useScriptEditorPageState } from "../../composables/editor/useScriptEditorPageState";
 import { isVirtualFileId } from "../../composables/editor/virtualFiles";
 
@@ -138,21 +138,33 @@ const {
     <!-- Inline errors (validation / blocking states) -->
     <SystemMessage
       v-model="errorMessage"
-      variant="error"
+      tone="failure"
+      dismissible
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
     />
     <SystemMessage
       v-model="renderError"
-      variant="error"
+      tone="failure"
+      dismissible
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
     />
     <SystemMessage
       v-model="draftLockError"
-      variant="error"
+      tone="failure"
+      dismissible
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
     />
 
     <!-- Loading state -->
     <div
       v-if="isLoading"
-      class="flex items-center gap-3 p-4 border border-navy bg-panel shadow-brutal-sm text-sm text-navy/70"
+      class="flex items-center gap-3 p-4 border border-navy bg-panel text-sm text-navy/70"
     >
       <span class="inline-block w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
       <span>Laddar editorn...</span>
@@ -161,7 +173,7 @@ const {
     <!-- Error state -->
     <div
       v-else-if="!editor"
-      class="p-4 border border-navy bg-panel shadow-brutal-sm text-sm text-navy/70"
+      class="p-4 border border-navy bg-panel text-sm text-navy/70"
     >
       Det gick inte att ladda editorn.
     </div>

@@ -3,11 +3,11 @@
  * Compact icon-first toolbar button for planner action rows.
  *
  * Relationships:
- * - thin planner-facing adapter over the shared `UiDenseIconButton` primitive
+ * - thin planner-facing adapter over the shared `UiDenseActionButton` primitive
  * - preserves existing planner call sites while the shared dense-tool layer settles
  */
 
-import { UiDenseIconButton } from "../../../components/ui";
+import { UiDenseActionButton } from "../../../components/ui";
 import type { DenseActionGroupPosition, DenseActionSize } from "../../../components/ui";
 
 defineProps<{
@@ -20,13 +20,16 @@ defineProps<{
 </script>
 
 <template>
-  <UiDenseIconButton
+  <UiDenseActionButton
+    icon-only
     :label="label"
     :title="title ?? label"
     :disabled="disabled"
     :size="size"
     :group-position="groupPosition"
   >
-    <slot />
-  </UiDenseIconButton>
+    <template #leading>
+      <slot />
+    </template>
+  </UiDenseActionButton>
 </template>

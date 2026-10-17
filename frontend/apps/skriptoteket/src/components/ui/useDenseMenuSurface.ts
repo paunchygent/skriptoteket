@@ -8,7 +8,7 @@
 
 import { nextTick, onBeforeUnmount, onMounted, type Ref } from "vue";
 
-import { DENSE_MENU_ITEM_SELECTOR } from "./denseToolPrimitives";
+import { DENSE_MENU_ITEM_SELECTOR } from "./shared/denseToolPrimitives";
 
 type FocusTarget = "first" | "last";
 type FocusableTarget = HTMLElement | { focus: () => void } | null;

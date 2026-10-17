@@ -8,7 +8,7 @@
  */
 
 import { IconAdjustments } from "../icons";
-import UiDenseActionButton from "./UiDenseActionButton.vue";
+import UiDenseActionButton from "./shared/components/UiDenseActionButton.vue";
 import UiDenseToggle from "./UiDenseToggle.vue";
 
 withDefaults(

@@ -96,9 +96,9 @@ function onDragStart(event: DragEvent): void {
 
 <template>
   <div
-    class="absolute transition-transform transition-shadow"
+    class="group absolute"
     :class="[
-      student ? 'cursor-grab hover:-translate-y-0.5' : '',
+      student ? 'cursor-grab' : '',
       (markers ?? []).length > 0 ? 'z-30' : 'z-10',
     ]"
     :style="getSeatFrameStyle(seat)"
@@ -117,7 +117,7 @@ function onDragStart(event: DragEvent): void {
       <span
         v-for="marker in markers"
         :key="marker.id"
-        class="inline-flex h-5 w-5 shrink-0 items-center justify-center border text-[9px] shadow-brutal-sm"
+        class="inline-flex h-5 w-5 shrink-0 items-center justify-center border text-[9px]"
         :class="{
           'border-navy/35 bg-canvas text-navy': marker.tone === 'neutral',
           'border-success bg-success text-white': marker.tone === 'success',
@@ -137,7 +137,7 @@ function onDragStart(event: DragEvent): void {
 
     <span
       v-if="fixed"
-      class="pointer-events-none absolute -right-2 -top-2 z-20 flex h-6 w-6 items-center justify-center rounded-full border border-action bg-action text-white shadow-brutal-sm"
+      class="pointer-events-none absolute -right-2 -top-2 z-20 flex h-6 w-6 items-center justify-center rounded-full border border-action bg-action text-white"
       :title="fixedSeatTitle ?? undefined"
       :aria-label="fixedSeatTitle ?? 'Fast plats'"
       :data-test="`seat-fixed-lock-${seat.id}`"
@@ -152,6 +152,7 @@ function onDragStart(event: DragEvent): void {
       <RoomSeatToken
         :seat-id="seat.id"
         :student-name="student.display_name"
+        class="group-hover:bg-action/10"
         :selected="selected"
       />
     </div>

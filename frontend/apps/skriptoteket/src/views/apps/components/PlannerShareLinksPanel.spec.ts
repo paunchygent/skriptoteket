@@ -123,12 +123,29 @@ describe("PlannerShareLinksPanel", () => {
 
     const createButton = wrapper.get('[data-test="planner-share-create"]');
     expect(createButton.attributes("disabled")).toBeDefined();
+    expect(createButton.attributes("aria-busy")).toBe("true");
     expect(createButton.find('[data-ui="dense-spinner"]').exists()).toBe(true);
+    await createButton.trigger("click");
+    expect(wrapper.emitted("create-share")).toBeUndefined();
     expect(wrapper.find('[data-test="planner-share-status"]').exists()).toBe(false);
 
     const revokeButton = wrapper.get('[data-test="planner-share-revoke-share-5"]');
     expect(revokeButton.attributes("disabled")).toBeDefined();
+    expect(revokeButton.attributes("aria-busy")).toBe("true");
     expect(revokeButton.find('[data-ui="dense-spinner"]').exists()).toBe(true);
     expect(revokeButton.text()).toContain("Återkalla");
+    await revokeButton.trigger("click");
+    expect(wrapper.emitted("revoke-share")).toBeUndefined();
+
+    await wrapper.setProps({ busy: false, revokingShareId: null });
+    for (const button of [createButton, revokeButton]) {
+      expect(button.attributes("disabled")).toBeUndefined();
+      expect(button.attributes("aria-busy")).toBeUndefined();
+      expect(button.find('[data-ui="dense-spinner"]').exists()).toBe(false);
+    }
+    await createButton.trigger("click");
+    await revokeButton.trigger("click");
+    expect(wrapper.emitted("create-share")).toEqual([[]]);
+    expect(wrapper.emitted("revoke-share")).toEqual([[share]]);
   });
 });

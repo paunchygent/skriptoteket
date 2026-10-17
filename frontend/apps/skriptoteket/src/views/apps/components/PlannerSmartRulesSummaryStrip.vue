@@ -43,7 +43,7 @@ function relationshipRuleLabel(rule: RelationshipRule, index: number): string {
 
 <template>
   <section
-    class="border border-navy/20 bg-white px-3 py-2.5 shadow-brutal-sm"
+    class="border border-navy/20 bg-white px-3 py-2.5"
     aria-label="Aktiva regler"
   >
     <div class="flex flex-wrap items-start justify-between gap-3">

@@ -105,7 +105,7 @@ watch(
       <aside
         v-if="isOpen"
         id="help-panel"
-        class="help-panel border border-navy shadow-brutal flex flex-col text-navy"
+        class="help-panel border border-navy shadow-md flex flex-col text-navy"
         role="dialog"
         aria-modal="false"
         aria-labelledby="help-panel-title"

@@ -198,7 +198,7 @@ watch(mapView, (nextValue) => {
   <div class="space-y-3">
     <div
       v-if="plannerState.smartRuleHydrationStatus === 'error'"
-      class="border border-warning/50 bg-warning/10 px-4 py-3 text-sm text-navy shadow-brutal-sm"
+      class="border border-warning/50 bg-warning/10 px-4 py-3 text-sm text-navy"
       data-test="rules-smart-hydration-error"
     >
       <div class="flex flex-wrap items-center justify-between gap-3">

@@ -215,14 +215,14 @@ onUnmounted(() => {
 
     <div
       v-if="isLoading"
-      class="p-4 border border-navy bg-panel shadow-brutal-sm text-navy/70 text-sm"
+      class="p-4 border border-navy bg-panel text-navy/70 text-sm"
     >
       Laddar...
     </div>
 
     <div
       v-else-if="errorMessage"
-      class="p-4 border border-error bg-panel shadow-brutal-sm text-error text-sm"
+      class="p-4 border border-error bg-panel text-error text-sm"
     >
       {{ errorMessage }}
     </div>

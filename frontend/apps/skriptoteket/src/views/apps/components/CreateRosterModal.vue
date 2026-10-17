@@ -12,7 +12,7 @@ import { computed, ref, watch } from "vue";
 
 import { apiDelete, apiPost, apiPut } from "../../../api/client";
 import { IconTrash } from "../../../components/icons";
-import SystemMessage from "../../../components/ui/SystemMessage.vue";
+import { SystemMessage } from "../../../components/ui";
 import type { AmbiguousRow } from "../useClassListImportFlow";
 import { useClassListImportFlow } from "../useClassListImportFlow";
 import type { Roster, Student } from "../classroomPlannerTypes";
@@ -54,7 +54,7 @@ const importDropZoneClass = computed(() => {
     return "border-navy/20 bg-navy/5 text-navy/45";
   }
   if (isImportDropActive.value) {
-    return "border-action bg-white text-navy shadow-brutal-sm";
+    return "border-action bg-white text-navy";
   }
   return "border-navy/25 bg-white/80 text-navy/70";
 });
@@ -309,7 +309,7 @@ function closeModal(): void {
     />
     <div class="relative flex min-h-full items-start justify-center py-4">
       <div
-        class="flex max-h-[calc(100vh-2rem)] w-full max-w-2xl flex-col border border-navy bg-modal shadow-brutal"
+        class="flex max-h-[calc(100vh-2rem)] w-full max-w-2xl flex-col border border-navy bg-modal shadow-md"
         data-test="roster-modal-shell"
       >
         <div class="flex items-start justify-between gap-4 border-b border-navy/20 pb-4">
@@ -334,11 +334,15 @@ function closeModal(): void {
           <SystemMessage
             v-if="formError"
             v-model="formError"
-            variant="error"
+            tone="failure"
+            dismissible
+            role="alert"
+            aria-live="assertive"
+            aria-atomic="true"
           />
 
           <div class="mt-6 space-y-5">
-            <section class="space-y-3 border border-navy/20 bg-canvas p-4 shadow-brutal-sm">
+            <section class="space-y-3 border border-navy/20 bg-canvas p-4">
               <input
                 ref="fileInput"
                 type="file"
@@ -387,7 +391,11 @@ function closeModal(): void {
               <SystemMessage
                 v-if="importError"
                 v-model="importError"
-                variant="error"
+                tone="failure"
+                dismissible
+                role="alert"
+                aria-live="assertive"
+                aria-atomic="true"
               />
 
               <div
@@ -427,7 +435,7 @@ function closeModal(): void {
                 v-model="name"
                 type="text"
                 placeholder="Till exempel Klass 9A"
-                class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy shadow-brutal-sm"
+                class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy"
               >
             </div>
 
@@ -448,7 +456,7 @@ function closeModal(): void {
                 v-model="rawStudents"
                 rows="12"
                 placeholder="Anna Andersson&#10;Bilal Berg&#10;Cecilia Ceder"
-                class="min-h-[280px] w-full resize-y border border-navy bg-white px-3 py-3 font-mono text-sm text-navy shadow-brutal-sm"
+                class="min-h-[280px] w-full resize-y border border-navy bg-white px-3 py-3 font-mono text-sm text-navy"
               />
               <p class="text-[11px] leading-relaxed text-navy/60">
                 Skriv eller klistra in ett namn per rad.

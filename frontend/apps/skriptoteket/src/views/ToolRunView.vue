@@ -12,7 +12,7 @@ import ToolRunControlBar from "../components/tool-run/ToolRunControlBar.vue";
 import UsageInstructions from "../components/tool-run/UsageInstructions.vue";
 import ToolRunSettingsPanel from "../components/tool-run/ToolRunSettingsPanel.vue";
 import ToolRunStepIndicator from "../components/tool-run/ToolRunStepIndicator.vue";
-import SystemMessage from "../components/ui/SystemMessage.vue";
+import { SystemMessage } from "../components/ui";
 import UiCollapse from "../components/ui/UiCollapse.vue";
 import { useToolRun, type StepResult } from "../composables/tools/useToolRun";
 import { useToolSettings } from "../composables/tools/useToolSettings";
@@ -225,7 +225,7 @@ watch(hasSettingsSchema, (hasSchema) => {
 
     <div
       v-if="isLoadingTool"
-      class="p-4 border border-navy bg-panel shadow-brutal-sm text-navy/70 text-sm"
+      class="p-4 border border-navy bg-panel text-navy/70 text-sm"
     >
       Laddar...
     </div>
@@ -233,13 +233,17 @@ watch(hasSettingsSchema, (hasSchema) => {
     <SystemMessage
       v-else-if="errorMessage && !tool"
       v-model="errorMessage"
-      variant="error"
+      tone="failure"
+      dismissible
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
     />
 
     <!-- UNIFIED TOOL CARD -->
     <div
       v-else-if="tool"
-      class="border border-navy bg-panel shadow-brutal-sm"
+      class="border border-navy bg-panel"
     >
       <UsageInstructions
         v-if="tool.usage_instructions?.trim()"
@@ -323,7 +327,11 @@ watch(hasSettingsSchema, (hasSchema) => {
         <div class="px-4 py-3 border-b border-navy/20 bg-panel-muted">
           <SystemMessage
             v-model="errorMessage"
-            variant="error"
+            tone="failure"
+            dismissible
+            role="alert"
+            aria-live="assertive"
+            aria-atomic="true"
             class="shadow-none"
           />
         </div>

@@ -10,7 +10,7 @@
 import { computed } from "vue";
 
 import { IconCheck } from "../icons";
-import { denseActionButtonClass, type DenseActionGroupPosition } from "./denseToolPrimitives";
+import { denseActionButtonClass, type DenseActionGroupPosition } from "./shared/denseToolPrimitives";
 
 const props = withDefaults(
   defineProps<{
