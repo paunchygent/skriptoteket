@@ -13,8 +13,12 @@
 
 import { flushPromises, mount, type VueWrapper } from "@vue/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { createPinia, setActivePinia } from "pinia";
+import { effectScope } from "vue";
 
 import DocumentConverterView from "./DocumentConverterView.vue";
+import { useDocumentConverterSessionHistory } from "./useDocumentConverterSessionHistory";
+import { useToastStore } from "../../../stores/toast";
 
 const AUTO_PREVIEW_DEBOUNCE_MS = 350;
 
@@ -155,8 +159,47 @@ function expectFilenameIntent(wrapper: VueWrapper, stem: string, extension: stri
   expect(operationsColumn.text()).toContain(`.${extension}`);
 }
 
+describe("Document Converter history save confirmation", () => {
+  it.each(["entry", "artifact"] as const)("confirms only an awaited successful %s save", async (target) => {
+    setActivePinia(createPinia());
+    const scope = effectScope();
+    const history = scope.run(() => useDocumentConverterSessionHistory())!;
+    const success = vi.spyOn(useToastStore(), "success");
+    const pending = deferred<void>();
+    const save = vi.fn().mockReturnValueOnce(pending.promise);
+    history.upsertEntry({
+      id: "previous-result",
+      filename: "lektion.pdf",
+      resultTypeLabel: "PDF",
+      sourceLabel: "lektion.html",
+      status: "ready",
+      ...(target === "entry" ? { save } : {
+        artifacts: [{ id: "pdf", filename: "lektion.pdf", save }],
+      }),
+    });
+    try {
+      const saving = history.saveActiveEntry("min-lektion");
+      expect(save).toHaveBeenCalledWith("min-lektion");
+      expect(success).not.toHaveBeenCalled();
+      pending.resolve();
+      await saving;
+      expect(success).toHaveBeenCalledTimes(1);
+      expect(success.mock.calls[0]?.[0]).toMatch(/Mina filer/);
+      expect(history.actionErrorMessage.value).toBeNull();
+
+      save.mockRejectedValueOnce(new Error("network"));
+      await history.saveActiveEntry("min-lektion");
+      expect(success).toHaveBeenCalledTimes(1);
+      expect(history.actionErrorMessage.value).toMatch(/spara/i);
+    } finally {
+      scope.stop();
+    }
+  });
+});
+
 describe("DocumentConverterView", () => {
   beforeEach(() => {
+    setActivePinia(createPinia());
     vi.useFakeTimers();
     apiMocks.discardDocumentConverterProjectPreview.mockReset();
     apiMocks.downloadDocumentConverterProjectPreviewArtifact.mockReset();

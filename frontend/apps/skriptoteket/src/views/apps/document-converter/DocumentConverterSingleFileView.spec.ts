@@ -12,8 +12,10 @@
 
 import { flushPromises, mount } from "@vue/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { createPinia, setActivePinia } from "pinia";
 
 import DocumentConverterView from "./DocumentConverterView.vue";
+import { useToastStore } from "../../../stores/toast";
 
 const previewApiMocks = vi.hoisted(() => ({
   discardDocumentConverterProjectPreview: vi.fn(),
@@ -56,6 +58,7 @@ vi.mock("./documentConverterFileApi", () => ({
 
 describe("DocumentConverterView single-file surface", () => {
   beforeEach(() => {
+    setActivePinia(createPinia());
     vi.useFakeTimers();
     fileApiMocks.listDocumentConverterSavedFiles.mockResolvedValue({ files: [] });
     fileApiMocks.listDocumentConverterSingleFileRoutes.mockResolvedValue({
@@ -735,6 +738,27 @@ describe("DocumentConverterView single-file surface", () => {
     expect(wrapper.text()).not.toContain("Misslyckades");
     expect(wrapper.text()).not.toContain("Konverteringen kunde inte slutföras.");
     expect(wrapper.text()).not.toContain("Historik");
+
+    const success = vi.spyOn(useToastStore(), "success");
+    let finishSave!: () => void;
+    fileApiMocks.saveDocumentConverterJobArtifact.mockReturnValueOnce(
+      new Promise<void>((resolve) => { finishSave = resolve; }),
+    );
+    await wrapper.get('[data-testid="document-converter-save"]').trigger("click");
+    await flushPromises();
+    expect(fileApiMocks.saveDocumentConverterJobArtifact).toHaveBeenCalledWith({
+      filenameStem: "lektion", jobId: "job-ready",
+    });
+    expect(success).not.toHaveBeenCalled();
+    finishSave();
+    await flushPromises();
+    expect(success).toHaveBeenCalledTimes(1);
+    expect(success.mock.calls[0]?.[0]).toMatch(/Mina filer/);
+    fileApiMocks.saveDocumentConverterJobArtifact.mockRejectedValueOnce(new Error("network"));
+    await wrapper.get('[data-testid="document-converter-save"]').trigger("click");
+    await flushPromises();
+    expect(success).toHaveBeenCalledTimes(1);
+    expect(wrapper.get('[role="alert"]').text()).toMatch(/spara/i);
 
     await wrapper.get('[data-test="document-converter-mode-project"]').trigger("click");
     await flushPromises();
