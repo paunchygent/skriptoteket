@@ -70,6 +70,8 @@ function updateField(name: string, value: ToolInputFormValue): void {
         v-if="field.kind === 'text'"
         :id="`${idBase}-input-${field.name}`"
         :value="getValue(field) as string"
+        :aria-invalid="errors[field.name] ? 'true' : undefined"
+        :aria-describedby="errors[field.name] ? `${idBase}-input-${field.name}-error` : undefined"
         rows="4"
         :class="[
           'w-full bg-panel text-navy',
@@ -84,6 +86,8 @@ function updateField(name: string, value: ToolInputFormValue): void {
         v-else-if="field.kind === 'enum'"
         :id="`${idBase}-input-${field.name}`"
         :value="getValue(field) as string"
+        :aria-invalid="errors[field.name] ? 'true' : undefined"
+        :aria-describedby="errors[field.name] ? `${idBase}-input-${field.name}-error` : undefined"
         :class="[
           'w-full bg-panel text-navy',
           isCompact
@@ -117,6 +121,8 @@ function updateField(name: string, value: ToolInputFormValue): void {
           :id="`${idBase}-input-${field.name}`"
           type="checkbox"
           :checked="getValue(field) === true"
+          :aria-invalid="errors[field.name] ? 'true' : undefined"
+          :aria-describedby="errors[field.name] ? `${idBase}-input-${field.name}-error` : undefined"
           :class="[isCompact ? 'h-3.5 w-3.5' : 'h-4 w-4']"
           @change="updateField(field.name, ($event.target as HTMLInputElement).checked)"
         >
@@ -135,6 +141,8 @@ function updateField(name: string, value: ToolInputFormValue): void {
         v-else
         :id="`${idBase}-input-${field.name}`"
         :value="getValue(field) as string"
+        :aria-invalid="errors[field.name] ? 'true' : undefined"
+        :aria-describedby="errors[field.name] ? `${idBase}-input-${field.name}-error` : undefined"
         :inputmode="field.kind === 'integer' ? 'numeric' : field.kind === 'number' ? 'decimal' : undefined"
         type="text"
         :class="[
@@ -148,6 +156,7 @@ function updateField(name: string, value: ToolInputFormValue): void {
 
       <p
         v-if="errors[field.name]"
+        :id="`${idBase}-input-${field.name}-error`"
         class="text-xs font-semibold text-critical"
       >
         {{ errors[field.name] }}
