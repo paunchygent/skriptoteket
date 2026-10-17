@@ -4,7 +4,7 @@
 
 ## Counts
 
-- total | reference=109
+- total | reference=110
 
 ## Lookup
 
@@ -70,6 +70,7 @@
 - reference | REF-SKRIPT-GENERAL-skriptoteket-post-mvp-architecture-review | reference_kind=general | summary=Skriptoteket Post-MVP Architecture Review | [Skriptoteket Post-MVP Architecture Review](ref-skript-general-skriptoteket-post-mvp-architecture-review-skriptoteket-post-mvp-architecture-review.md)
 - reference | REF-SKRIPT-GENERAL-tool-editor-dx-review-source-schemas-runner-sandbox | reference_kind=general | summary=Tool editor DX review (source, schemas, runner, sandbox) | [Tool editor DX review (source, schemas, runner, sandbox)](ref-skript-general-tool-editor-dx-review-source-schemas-runner-sandbox-tool-editor-dx-review-source-schemas-runner-sandbox.md)
 - reference | REF-SKRIPT-GENERAL-tool-editor-framework-codemap-current-vs-target | reference_kind=general | summary=Tool editor framework codemap (current vs target) | [Tool editor framework codemap (current vs target)](ref-skript-general-tool-editor-framework-codemap-current-vs-target-tool-editor-framework-codemap-current-vs-target.md)
+- reference | REF-SKRIPT-MOCKUP-app-shell-and-exam-workspace-redesign-prototype | reference_kind=mockup | summary=Interactive prototype and design rules for the shared app shell and the exam workspace with every current and planned control (TASK-SKRIPT-40-04-01) | [App shell and exam workspace redesign prototype](ref-skript-mockup-app-shell-and-exam-workspace-redesign-prototype-app-shell-and-exam-workspace-redesign-prototype.md)
 - reference | REF-SKRIPT-MOCKUP-exam-workspace-approved-mockups-for-the-shared-design-direction | reference_kind=mockup | summary=User-approved images and exclusions for the exam workspace restyle | [Exam workspace approved mockups for the shared design direction](ref-skript-mockup-exam-workspace-approved-mockups-for-the-shared-design-direction-exam-workspace-approved-mockups-for-the-shared-design-direction.md)
 - reference | REF-SKRIPT-MOCKUP-exam-workspace-editor-with-drawers-prototype | reference_kind=mockup | summary=Interactive prototype of the exam workspace as one editor with drawers, inline import view, instructions and lettered sub-questions | [Exam workspace editor with drawers prototype](ref-skript-mockup-exam-workspace-editor-with-drawers-prototype-exam-workspace-editor-with-drawers-prototype.md)
 - reference | REF-SKRIPT-MOCKUP-klassrumskartan-svg-redesign-v5 | reference_kind=mockup | summary=# Klassrumskartan SVG Redesign v5 | [Klassrumskartan SVG redesign v5](ref-skript-mockup-klassrumskartan-svg-redesign-v5-klassrumskartan-svg-redesign-v5.md)
@@ -182,6 +183,7 @@
 - REF-SKRIPT-GENERAL-skriptoteket-post-mvp-architecture-review | [Skriptoteket Post-MVP Architecture Review](ref-skript-general-skriptoteket-post-mvp-architecture-review-skriptoteket-post-mvp-architecture-review.md) | backlog=none
 - REF-SKRIPT-GENERAL-tool-editor-dx-review-source-schemas-runner-sandbox | [Tool editor DX review (source, schemas, runner, sandbox)](ref-skript-general-tool-editor-dx-review-source-schemas-runner-sandbox-tool-editor-dx-review-source-schemas-runner-sandbox.md) | backlog=none
 - REF-SKRIPT-GENERAL-tool-editor-framework-codemap-current-vs-target | [Tool editor framework codemap (current vs target)](ref-skript-general-tool-editor-framework-codemap-current-vs-target-tool-editor-framework-codemap-current-vs-target.md) | backlog=none
+- REF-SKRIPT-MOCKUP-app-shell-and-exam-workspace-redesign-prototype | [App shell and exam workspace redesign prototype](ref-skript-mockup-app-shell-and-exam-workspace-redesign-prototype-app-shell-and-exam-workspace-redesign-prototype.md) | backlog=none
 - REF-SKRIPT-MOCKUP-exam-workspace-approved-mockups-for-the-shared-design-direction | [Exam workspace approved mockups for the shared design direction](ref-skript-mockup-exam-workspace-approved-mockups-for-the-shared-design-direction-exam-workspace-approved-mockups-for-the-shared-design-direction.md) | backlog=none
 - REF-SKRIPT-MOCKUP-exam-workspace-editor-with-drawers-prototype | [Exam workspace editor with drawers prototype](ref-skript-mockup-exam-workspace-editor-with-drawers-prototype-exam-workspace-editor-with-drawers-prototype.md) | backlog=none
 - REF-SKRIPT-MOCKUP-klassrumskartan-svg-redesign-v5 | [Klassrumskartan SVG redesign v5](ref-skript-mockup-klassrumskartan-svg-redesign-v5-klassrumskartan-svg-redesign-v5.md) | backlog=none
@@ -294,6 +296,7 @@
 - REF-SKRIPT-GENERAL-skriptoteket-post-mvp-architecture-review | [Skriptoteket Post-MVP Architecture Review](ref-skript-general-skriptoteket-post-mvp-architecture-review-skriptoteket-post-mvp-architecture-review.md) | references=none | runbooks=none
 - REF-SKRIPT-GENERAL-tool-editor-dx-review-source-schemas-runner-sandbox | [Tool editor DX review (source, schemas, runner, sandbox)](ref-skript-general-tool-editor-dx-review-source-schemas-runner-sandbox-tool-editor-dx-review-source-schemas-runner-sandbox.md) | references=none | runbooks=none
 - REF-SKRIPT-GENERAL-tool-editor-framework-codemap-current-vs-target | [Tool editor framework codemap (current vs target)](ref-skript-general-tool-editor-framework-codemap-current-vs-target-tool-editor-framework-codemap-current-vs-target.md) | references=none | runbooks=none
+- REF-SKRIPT-MOCKUP-app-shell-and-exam-workspace-redesign-prototype | [App shell and exam workspace redesign prototype](ref-skript-mockup-app-shell-and-exam-workspace-redesign-prototype-app-shell-and-exam-workspace-redesign-prototype.md) | references=none | runbooks=none
 - REF-SKRIPT-MOCKUP-exam-workspace-approved-mockups-for-the-shared-design-direction | [Exam workspace approved mockups for the shared design direction](ref-skript-mockup-exam-workspace-approved-mockups-for-the-shared-design-direction-exam-workspace-approved-mockups-for-the-shared-design-direction.md) | references=none | runbooks=none
 - REF-SKRIPT-MOCKUP-exam-workspace-editor-with-drawers-prototype | [Exam workspace editor with drawers prototype](ref-skript-mockup-exam-workspace-editor-with-drawers-prototype-exam-workspace-editor-with-drawers-prototype.md) | references=none | runbooks=none
 - REF-SKRIPT-MOCKUP-klassrumskartan-svg-redesign-v5 | [Klassrumskartan SVG redesign v5](ref-skript-mockup-klassrumskartan-svg-redesign-v5-klassrumskartan-svg-redesign-v5.md) | references=none | runbooks=none

@@ -38,7 +38,7 @@ const FRAME_CLASS: Record<ExamWorkspaceLayout, string> = {
   desktop: "min-h-0 w-[clamp(18rem,24vw,22rem)] shrink-0 overflow-y-auto border-l border-navy/20",
   phone: "fixed inset-0 z-50 overflow-y-auto bg-modal outline-none",
   tablet:
-    "absolute inset-y-0 right-0 z-10 w-[min(22rem,90%)] overflow-y-auto border-l border-navy bg-modal shadow-brutal-sm outline-none",
+    "absolute inset-y-0 right-0 z-10 w-[min(22rem,90%)] overflow-y-auto border-l border-navy bg-modal shadow-md outline-none",
 };
 const frame = ref<HTMLElement | null>(null);
 const id = useId();

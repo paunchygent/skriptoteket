@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-import SystemMessage from "../ui/SystemMessage.vue";
+import { SystemMessage, UiDenseIconButton } from "../ui";
 
 type WorkflowActionMeta = {
   title: string;
@@ -49,14 +49,14 @@ const isBlocked = computed(() => props.blockedItems.length > 0);
         :aria-describedby="error ? 'workflow-modal-error' : undefined"
         @click.self="emit('close')"
       >
-        <div class="relative w-full max-w-lg mx-4 p-6 bg-modal border border-navy shadow-brutal">
-          <button
-            type="button"
-            class="absolute top-3 right-3 text-navy/60 hover:text-navy text-xl leading-none"
+        <div class="relative w-full max-w-lg mx-4 p-6 bg-modal rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] shadow-md">
+          <UiDenseIconButton
+            label="Stäng"
+            class="absolute top-3 right-3"
             @click="emit('close')"
           >
             &times;
-          </button>
+          </UiDenseIconButton>
 
           <h2
             id="workflow-modal-title"
@@ -77,7 +77,11 @@ const isBlocked = computed(() => props.blockedItems.length > 0);
             id="workflow-modal-error"
             class="mt-4"
             :model-value="error"
-            variant="error"
+            tone="failure"
+            dismissible
+            role="alert"
+            aria-live="assertive"
+            aria-atomic="true"
             @update:model-value="emit('update:error', $event)"
           />
 
@@ -127,7 +131,7 @@ const isBlocked = computed(() => props.blockedItems.length > 0);
               <textarea
                 :value="note"
                 rows="4"
-                class="w-full px-3 py-2 border border-navy bg-white text-navy"
+                class="w-full px-3 py-2 border border-navy/20 bg-panel text-navy"
                 :placeholder="actionMeta.notePlaceholder"
                 :disabled="isSubmitting"
                 @input="emit('update:note', ($event.target as HTMLTextAreaElement).value)"

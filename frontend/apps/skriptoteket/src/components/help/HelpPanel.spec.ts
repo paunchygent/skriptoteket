@@ -255,25 +255,4 @@ describe("HelpPanel", () => {
     wrapper.unmount();
     opener.remove();
   });
-
-  it("keeps the help index link lists border-only inside the shadowed drawer", async () => {
-    routeMocks.route.name = "home";
-    routeMocks.route.fullPath = "/";
-
-    const wrapper = mount(HelpPanel, {
-      attachTo: document.body,
-    });
-
-    await flushPromises();
-    await flushPromises();
-
-    const lists = Array.from(document.body.querySelectorAll('[data-test="help-index-list"]'));
-    expect(lists.length).toBeGreaterThan(0);
-    for (const list of lists) {
-      expect(list.classList.contains("shadow-brutal")).toBe(false);
-      expect(list.classList.contains("shadow-brutal-sm")).toBe(false);
-    }
-
-    wrapper.unmount();
-  });
 });

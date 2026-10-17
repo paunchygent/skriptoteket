@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { UiDenseActionButton } from "../ui";
 import type { SubmitReviewTooltip } from "../../composables/editor/useEditorWorkflowActions";
 
 import WorkflowActionsDropdown from "./WorkflowActionsDropdown.vue";
@@ -22,11 +23,6 @@ const emit = defineEmits<{
 const hasAdminContext = computed(() => props.canPublish || props.canRequestChanges);
 const hasSubmitReviewTooltip = computed(() => Boolean(props.submitReviewTooltip));
 
-const actionButtonClass =
-  "btn-ghost shadow-none bg-canvas h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] border-navy/30 whitespace-nowrap leading-none";
-const disabledButtonClass =
-  "inline-flex items-center justify-center h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] border border-navy/20 bg-canvas text-navy/30 cursor-not-allowed whitespace-nowrap leading-none";
-
 function handleDropdownSelect(actionId: string): void {
   emit("action", actionId as WorkflowAction);
 }
@@ -43,17 +39,14 @@ function handleDropdownSelect(actionId: string): void {
         v-if="canSubmitReview"
         class="relative group"
       >
-        <button
-          type="button"
-          :class="actionButtonClass"
+        <UiDenseActionButton
+          label="Begär publicering"
           :disabled="isSubmitting"
           @click="emit('action', 'submit_review')"
-        >
-          Begär publicering
-        </button>
+        />
         <div
           v-if="hasSubmitReviewTooltip"
-          class="absolute left-0 top-full mt-2 w-[min(260px,calc(100vw-2*var(--huleedu-space-4)))] border border-navy bg-white text-navy px-3 py-2 text-xs opacity-0 pointer-events-none transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 z-[var(--huleedu-z-tooltip)]"
+          class="absolute left-0 top-full mt-2 w-[min(260px,calc(100vw-2*var(--huleedu-space-4)))] border border-navy/20 bg-modal shadow-md text-navy px-3 py-2 text-xs opacity-0 pointer-events-none transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 z-[var(--huleedu-z-tooltip)]"
           role="tooltip"
         >
           <div class="text-[0.65rem] font-semibold uppercase tracking-wide text-navy/70">
@@ -79,12 +72,11 @@ function handleDropdownSelect(actionId: string): void {
           </ul>
         </div>
       </div>
-      <span
+      <UiDenseActionButton
         v-else
-        :class="disabledButtonClass"
-      >
-        Begär publicering
-      </span>
+        label="Begär publicering"
+        disabled
+      />
     </div>
 
     <!-- Admin/Reviewer Context -->
@@ -93,32 +85,30 @@ function handleDropdownSelect(actionId: string): void {
       title="Granskare"
     >
       <template v-if="hasAdminContext">
-        <button
+        <UiDenseActionButton
           v-if="canPublish"
-          type="button"
-          :class="actionButtonClass"
+          label="Publicera"
           :disabled="isSubmitting"
           @click="emit('action', 'publish')"
-        >
-          Publicera
-        </button>
-        <button
+        />
+        <UiDenseActionButton
           v-if="canRequestChanges"
-          type="button"
-          :class="[actionButtonClass, 'text-critical']"
+          label="Avslå"
+          tone="danger"
           :disabled="isSubmitting"
           @click="emit('action', 'request_changes')"
-        >
-          Avslå
-        </button>
+        />
       </template>
       <template v-else>
-        <span :class="disabledButtonClass">
-          Publicera
-        </span>
-        <span :class="disabledButtonClass">
-          Avslå
-        </span>
+        <UiDenseActionButton
+          label="Publicera"
+          disabled
+        />
+        <UiDenseActionButton
+          label="Avslå"
+          tone="danger"
+          disabled
+        />
       </template>
 
       <!-- Overflow menu for rollback -->

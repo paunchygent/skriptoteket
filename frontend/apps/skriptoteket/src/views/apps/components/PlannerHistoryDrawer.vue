@@ -78,7 +78,7 @@ function confirmDelete(draftId: string): void {
       @click="emit('close')"
     />
     <aside
-      class="fixed inset-y-0 right-0 z-50 flex h-full w-full max-w-[26rem] flex-col border border-navy bg-modal shadow-brutal"
+      class="fixed inset-y-0 right-0 z-50 flex h-full w-full max-w-[26rem] flex-col border border-navy bg-modal shadow-md"
     >
       <div class="flex items-start justify-between gap-3 border-b border-navy/20 p-4">
         <div class="min-w-0">
@@ -109,7 +109,7 @@ function confirmDelete(draftId: string): void {
           <p class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/55">
             {{ renderedActiveLabel }}
           </p>
-          <article class="space-y-2 border border-navy bg-panel-muted p-4 shadow-brutal-sm">
+          <article class="space-y-2 border border-navy bg-panel-muted p-4">
             <div class="flex flex-wrap items-center justify-between gap-2">
               <p class="text-sm font-semibold text-navy">
                 {{ props.activeSummary.template_name ?? "Utan klassrum" }}

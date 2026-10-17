@@ -5,7 +5,7 @@ import { useRoute, useRouter } from "vue-router";
 import { apiGet, apiPost, isApiError } from "../../api/client";
 import type { components } from "../../api/openapi";
 import { useToast } from "../../composables/useToast";
-import SystemMessage from "../../components/ui/SystemMessage.vue";
+import { SystemMessage, UiDenseStatusPill } from "../../components/ui";
 
 type SuggestionDetailResponse = components["schemas"]["SuggestionDetailResponse"];
 type SuggestionDetail = components["schemas"]["SuggestionDetail"];
@@ -192,7 +192,7 @@ const showDecisionFields = computed(() => decision.value === "accept");
       </div>
       <button
         type="button"
-        class="text-sm underline text-action hover:text-navy"
+        class="btn-inline-cancel"
         @click="router.back()"
       >
         ← Tillbaka
@@ -201,7 +201,7 @@ const showDecisionFields = computed(() => decision.value === "accept");
 
     <div
       v-if="isLoading"
-      class="p-4 border border-navy bg-panel shadow-brutal-sm text-sm text-navy/70"
+      class="p-4 rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] bg-panel text-sm text-navy/70"
     >
       Laddar...
     </div>
@@ -209,12 +209,16 @@ const showDecisionFields = computed(() => decision.value === "accept");
     <SystemMessage
       v-else-if="loadErrorMessage"
       v-model="loadErrorMessage"
-      variant="error"
+      tone="failure"
+      dismissible
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
     />
 
     <div
       v-else-if="!suggestion"
-      class="p-4 border border-navy bg-panel shadow-brutal-sm text-sm text-navy"
+      class="p-4 rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] bg-panel text-sm text-navy"
     >
       Förslaget hittades inte.
     </div>
@@ -223,12 +227,13 @@ const showDecisionFields = computed(() => decision.value === "accept");
       v-else
       class="space-y-6"
     >
-      <div class="border border-navy bg-panel shadow-brutal-sm p-4 space-y-2">
+      <div class="rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] bg-panel p-4 space-y-2">
         <div class="flex items-center justify-between gap-3">
           <h2 class="text-xl font-semibold text-navy">{{ suggestion.title }}</h2>
-          <span class="px-2 py-1 border border-navy bg-canvas shadow-brutal-sm text-xs font-semibold uppercase tracking-wide text-navy/70">
-            {{ statusLabel(suggestion.status) }}
-          </span>
+          <UiDenseStatusPill
+            :label="statusLabel(suggestion.status)"
+            :tone="suggestion.status === 'pending_review' ? 'warning' : suggestion.status === 'accepted' ? 'success' : 'neutral'"
+          />
         </div>
 
         <p class="text-sm text-navy/80 whitespace-pre-line">{{ suggestion.description }}</p>
@@ -277,7 +282,7 @@ const showDecisionFields = computed(() => decision.value === "accept");
         </div>
       </div>
 
-      <div class="border border-navy bg-panel shadow-brutal-sm p-4 space-y-3">
+      <div class="rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] bg-panel p-4 space-y-3">
         <div class="flex items-center justify-between">
           <h3 class="text-lg font-semibold text-navy">Historik</h3>
           <span class="text-xs text-navy/60">Senaste först</span>
@@ -297,7 +302,7 @@ const showDecisionFields = computed(() => decision.value === "accept");
           <li
             v-for="decisionItem in decisions"
             :key="decisionItem.id"
-            class="border border-navy/30 bg-canvas px-3 py-2 shadow-brutal-sm space-y-1"
+            class="rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] bg-canvas px-3 py-2 space-y-1"
           >
             <div class="flex flex-wrap items-center gap-2 text-sm text-navy/80">
               <span class="font-semibold text-navy">{{ decisionLabel(decisionItem.decision) }}</span>
@@ -320,7 +325,7 @@ const showDecisionFields = computed(() => decision.value === "accept");
 
       <div
         v-if="canDecide"
-        class="border border-navy bg-panel shadow-brutal-sm p-4 space-y-4"
+        class="rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] bg-panel p-4 space-y-4"
       >
         <div class="flex items-center justify-between">
           <h3 class="text-lg font-semibold text-navy">Beslut</h3>
@@ -358,7 +363,7 @@ const showDecisionFields = computed(() => decision.value === "accept");
             v-model="rationale"
             rows="3"
             required
-            class="w-full border border-navy bg-white px-3 py-2 shadow-brutal-sm text-navy"
+            class="w-full border border-[var(--huleedu-panel-border)] bg-canvas px-3 py-2 text-navy"
           />
         </div>
 
@@ -375,7 +380,7 @@ const showDecisionFields = computed(() => decision.value === "accept");
               id="title"
               v-model="title"
               type="text"
-              class="w-full border border-navy bg-white px-3 py-2 shadow-brutal-sm text-navy"
+              class="w-full border border-[var(--huleedu-panel-border)] bg-canvas px-3 py-2 text-navy"
             >
           </div>
 
@@ -388,7 +393,7 @@ const showDecisionFields = computed(() => decision.value === "accept");
               id="description"
               v-model="description"
               rows="4"
-              class="w-full border border-navy bg-white px-3 py-2 shadow-brutal-sm text-navy"
+              class="w-full border border-[var(--huleedu-panel-border)] bg-canvas px-3 py-2 text-navy"
             />
           </div>
 
@@ -401,7 +406,7 @@ const showDecisionFields = computed(() => decision.value === "accept");
               <label
                 v-for="profession in professions"
                 :key="profession.slug"
-                class="flex items-center gap-2 border border-navy/30 bg-white px-3 py-2 shadow-brutal-sm text-sm text-navy"
+                class="flex items-center gap-2 rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] bg-panel px-3 py-2 text-sm text-navy"
               >
                 <input
                   :value="profession.slug"
@@ -424,7 +429,7 @@ const showDecisionFields = computed(() => decision.value === "accept");
               <label
                 v-for="category in categories"
                 :key="category.slug"
-                class="flex items-center gap-2 border border-navy/30 bg-white px-3 py-2 shadow-brutal-sm text-sm text-navy"
+                class="flex items-center gap-2 rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] bg-panel px-3 py-2 text-sm text-navy"
               >
                 <input
                   :value="category.slug"
@@ -461,13 +466,17 @@ const showDecisionFields = computed(() => decision.value === "accept");
 
         <SystemMessage
           v-model="decisionErrorMessage"
-          variant="error"
+          tone="failure"
+          dismissible
+          role="alert"
+          aria-live="assertive"
+          aria-atomic="true"
         />
       </div>
 
       <div
         v-else
-        class="p-3 border border-navy bg-panel shadow-brutal-sm text-sm text-navy/70"
+        class="p-3 rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] bg-panel text-sm text-navy/70"
       >
         Förslaget är redan granskat.
       </div>

@@ -19,7 +19,7 @@ import { useToolInputs, type ToolInputFormValues } from "../../composables/tools
 import type { FileSelectionMode } from "../../composables/tools/useToolInputs";
 import { useToast } from "../../composables/useToast";
 import { getFileRefSource } from "../../composables/tools/fileRefHelpers";
-import SystemMessage from "../ui/SystemMessage.vue";
+import { SystemMessage } from "../ui";
 import SandboxInputPanel from "./SandboxInputPanel.vue";
 import SandboxSettingsCard from "./SandboxSettingsCard.vue";
 import SandboxRunnerActions from "./SandboxRunnerActions.vue";
@@ -245,7 +245,11 @@ watch(
 
     <SystemMessage
       v-model="errorMessage"
-      variant="error"
+      tone="failure"
+      dismissible
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
     />
 
     <SandboxRunnerActions

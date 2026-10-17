@@ -21,10 +21,4 @@
   --color-success: var(--huleedu-success);
   --color-warning: var(--huleedu-warning);
   --color-error: var(--huleedu-error);
-
-  /* Shadows */
-  --shadow-brutal: var(--huleedu-shadow-brutal-sm);
-  --shadow-brutal-sm: var(--huleedu-shadow-brutal-xs);
-  --shadow-brutal-burgundy: 4px 4px 0px 0px var(--huleedu-burgundy);
-  --shadow-brutal-action: 4px 4px 0px 0px var(--huleedu-action);
 }

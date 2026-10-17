@@ -6,8 +6,7 @@ import { formatBytes } from "../../composables/tools/fileRefHelpers";
 import { useVaultFiles } from "../../composables/vault/useVaultFiles";
 import { useAuthStore } from "../../stores/auth";
 import UiSearchBar from "../ui/UiSearchBar.vue";
-import UiSegmentedToggle, { type UiSegmentedToggleOption } from "../ui/UiSegmentedToggle.vue";
-import SystemMessage from "../ui/SystemMessage.vue";
+import { UiSegmentedToggle, type UiSegmentedToggleOption, SystemMessage } from "../ui";
 
 import VaultFileList from "./VaultFileList.vue";
 import { useVaultFileActions } from "./useVaultFileActions";
@@ -271,7 +270,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <section class="border border-navy bg-panel shadow-brutal-sm p-4 space-y-4">
+  <section class="border border-navy bg-panel p-4 space-y-4">
     <header class="space-y-3">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <p
@@ -400,20 +399,31 @@ onUnmounted(() => {
     <SystemMessage
       v-if="errorMessage"
       :model-value="errorMessage"
-      variant="error"
+      tone="failure"
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
       :dismissible="false"
     />
     <SystemMessage
       v-else
       :model-value="actionError"
-      variant="error"
+      tone="failure"
+      dismissible
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
       @update:model-value="actionError = $event"
     />
 
     <SystemMessage
       v-if="selectionError"
       :model-value="selectionError"
-      variant="error"
+      tone="failure"
+      dismissible
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
       @update:model-value="selectionError = $event"
     />
 

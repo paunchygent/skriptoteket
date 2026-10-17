@@ -9,6 +9,7 @@
 
 import { computed, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
+import { SystemMessage, UiDenseSpinner } from "../components/ui";
 
 import { apiGet, isApiError } from "../api/client";
 import type { components } from "../api/openapi";
@@ -128,16 +129,18 @@ const hasContent = computed(() => tools.value.length > 0 || curatedApps.value.le
       v-if="isLoading"
       class="flex items-center gap-3 p-4 text-navy/60"
     >
-      <span class="inline-block w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
+      <UiDenseSpinner :size="16" />
       <span>Laddar...</span>
     </div>
 
-    <div
+    <SystemMessage
       v-else-if="errorMessage"
-      class="p-4 border border-critical bg-panel shadow-brutal-sm text-sm text-critical"
-    >
-      {{ errorMessage }}
-    </div>
+      :model-value="errorMessage"
+      tone="failure"
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
+    />
 
     <div
       v-else-if="!hasContent"
@@ -152,7 +155,7 @@ const hasContent = computed(() => tools.value.length > 0 || curatedApps.value.le
         v-if="tools.length > 0"
         class="mb-8 last:mb-0"
       >
-        <ul class="list-none m-0 p-0 border border-navy bg-panel">
+        <ul class="list-none m-0 p-0 border border-navy/20 bg-panel">
           <li
             v-for="tool in tools"
             :key="tool.id"
@@ -184,7 +187,7 @@ const hasContent = computed(() => tools.value.length > 0 || curatedApps.value.le
         v-if="curatedApps.length > 0"
         class="mb-8 last:mb-0"
       >
-        <ul class="list-none m-0 p-0 border border-navy bg-panel">
+        <ul class="list-none m-0 p-0 border border-navy/20 bg-panel">
           <li
             v-for="app in curatedApps"
             :key="app.app_id"

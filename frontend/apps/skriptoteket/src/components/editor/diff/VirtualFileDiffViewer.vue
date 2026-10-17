@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { json } from "@codemirror/lang-json";
+import { UiDenseActionButton } from "../../ui";
 import { python } from "@codemirror/lang-python";
 import type { Extension } from "@codemirror/state";
 import { computed, ref, watch } from "vue";
@@ -236,7 +237,7 @@ function downloadPatch(): void {
           </label>
           <select
             id="editor-diff-file"
-            class="h-[28px] border border-navy/30 bg-white px-2.5 text-[11px] text-navy shadow-none leading-none max-w-[min(360px,100%)]"
+            class="h-[28px] border border-navy/30 bg-panel px-2.5 text-[11px] text-navy shadow-none leading-none max-w-[min(360px,100%)]"
             :value="activeFileId ?? ''"
             :disabled="props.items.length === 0"
             @change="setActiveFileId(($event.target as HTMLSelectElement).value as EditorFileId)"
@@ -260,27 +261,21 @@ function downloadPatch(): void {
               {{ activeItem ? `${editorFileLabel(activeItem.virtualFileId)}.patch` : "" }}
             </p>
           </div>
-          <button
-            type="button"
-            class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-white leading-none"
+          <UiDenseActionButton
+            label="Kopiera"
             @click="copyPatch"
-          >
-            Kopiera
-          </button>
-          <button
-            type="button"
-            class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-white leading-none"
+          />
+          <UiDenseActionButton
+            label="Ladda ned"
             @click="downloadPatch"
-          >
-            Ladda ned
-          </button>
+          />
         </div>
       </div>
     </div>
 
     <div
       v-if="activeItem"
-      class="border-b border-navy/20 bg-white"
+      class="border-b border-navy/20 bg-panel"
     >
       <div class="grid grid-cols-1 md:grid-cols-2">
         <div class="flex items-start justify-between gap-3 px-3 py-2 min-w-0">
@@ -293,20 +288,14 @@ function downloadPatch(): void {
             </p>
           </div>
           <div class="flex items-center gap-2 shrink-0">
-            <button
-              type="button"
-              class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-white leading-none"
+            <UiDenseActionButton
+              label="Kopiera"
               @click="copyBefore"
-            >
-              Kopiera
-            </button>
-            <button
-              type="button"
-              class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-white leading-none"
+            />
+            <UiDenseActionButton
+              label="Ladda ned"
               @click="downloadBefore"
-            >
-              Ladda ned
-            </button>
+            />
           </div>
         </div>
 
@@ -320,20 +309,14 @@ function downloadPatch(): void {
             </p>
           </div>
           <div class="flex items-center gap-2 shrink-0">
-            <button
-              type="button"
-              class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-white leading-none"
+            <UiDenseActionButton
+              label="Kopiera"
               @click="copyAfter"
-            >
-              Kopiera
-            </button>
-            <button
-              type="button"
-              class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-white leading-none"
+            />
+            <UiDenseActionButton
+              label="Ladda ned"
               @click="downloadAfter"
-            >
-              Ladda ned
-            </button>
+            />
           </div>
         </div>
       </div>

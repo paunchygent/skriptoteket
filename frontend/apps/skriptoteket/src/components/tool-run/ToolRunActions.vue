@@ -4,8 +4,9 @@ import { computed, onMounted, reactive, watch } from "vue";
 import type { components } from "../../api/openapi";
 import type { FileRefInfo } from "../../composables/tools/fileRefHelpers";
 import { filterFileRefsBySources } from "../../composables/tools/fileRefHelpers";
+import { parseNumericInput } from "../../composables/tools/parseNumericInput";
 import UiActionFieldRenderer from "../ui-actions/UiActionFieldRenderer.vue";
-import SystemMessage from "../ui/SystemMessage.vue";
+import { SystemMessage, UiDenseActionButton } from "../ui";
 
 type UiFormAction = components["schemas"]["UiFormAction"];
 type UiActionField = NonNullable<UiFormAction["fields"]>[number];
@@ -178,16 +179,16 @@ function buildInput(action: UiFormAction): Record<string, components["schemas"][
     if (field.kind === "integer") {
       const str = rawStr.trim();
       if (!str) continue;
-      const parsed = Number.parseInt(str, 10);
-      if (Number.isNaN(parsed)) throw new Error(`Ogiltigt heltal: ${field.label}`);
+      const parsed = parseNumericInput(str, "integer");
+      if (parsed === null) throw new Error(`Ogiltigt heltal: ${field.label}`);
       input[field.name] = parsed;
       continue;
     }
     if (field.kind === "number") {
       const str = rawStr.trim();
       if (!str) continue;
-      const parsed = Number.parseFloat(str);
-      if (Number.isNaN(parsed)) throw new Error(`Ogiltigt tal: ${field.label}`);
+      const parsed = parseNumericInput(str, "number");
+      if (parsed === null) throw new Error(`Ogiltigt tal: ${field.label}`);
       input[field.name] = parsed;
       continue;
     }
@@ -259,12 +260,13 @@ const hasFileRefErrors = computed(() => {
 
 function onSubmit(action: UiFormAction): void {
   if (props.disabled || hasFileRefErrors.value) return;
+  emit("update:errorMessage", null);
   try {
     const input = buildInput(action);
     const fileRefsByField = buildFileRefsByField(action);
     emit("submit", { actionId: action.action_id, input, fileRefsByField });
-  } catch {
-    // Error handling done by parent
+  } catch (error: unknown) {
+    emit("update:errorMessage", error instanceof Error ? error.message : "Ogiltig indata.");
   }
 }
 
@@ -297,7 +299,11 @@ watch(
     <div :class="[isCompact ? 'p-3 space-y-3' : 'space-y-4']">
       <SystemMessage
         :model-value="errorMessage"
-        variant="error"
+        tone="failure"
+        dismissible
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
         @update:model-value="emit('update:errorMessage', $event)"
       />
 
@@ -319,20 +325,18 @@ watch(
       </div>
 
       <div class="flex flex-wrap gap-2">
-        <button
+        <component
+          :is="isCompact ? UiDenseActionButton : 'button'"
           v-for="action in actions"
           :key="action.action_id"
           type="button"
-          :class="[
-            isCompact
-              ? 'btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none'
-              : (action === actions[0] ? 'btn-cta' : 'btn-ghost'),
-          ]"
+          :label="isCompact ? action.label : undefined"
+          :class="isCompact ? undefined : (action === actions[0] ? 'btn-cta' : 'btn-ghost')"
           :disabled="disabled || hasFileRefErrors"
           @click="onSubmit(action)"
         >
           {{ action.label }}
-        </button>
+        </component>
       </div>
     </div>
   </div>

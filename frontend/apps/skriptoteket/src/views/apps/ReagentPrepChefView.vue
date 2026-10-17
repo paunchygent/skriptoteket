@@ -264,7 +264,7 @@ onMounted(() => {
       >
         ← Tillbaka till katalog
       </RouterLink>
-      <span class="px-2 py-1 border border-navy bg-panel shadow-brutal-sm uppercase tracking-wide font-semibold">
+      <span class="px-2 py-1 border border-navy bg-panel uppercase tracking-wide font-semibold">
         Kurerad app
       </span>
 
@@ -296,20 +296,20 @@ onMounted(() => {
 
     <div
       v-if="isLoading"
-      class="p-4 border border-navy bg-panel shadow-brutal-sm text-navy/70 text-sm"
+      class="p-4 border border-navy bg-panel text-navy/70 text-sm"
     >
       Laddar...
     </div>
 
     <div
       v-else-if="errorMessage"
-      class="p-4 border border-error bg-panel shadow-brutal-sm text-error text-sm"
+      class="p-4 border border-error bg-panel text-error text-sm"
     >
       {{ errorMessage }}
     </div>
 
     <template v-else>
-      <div class="p-4 border border-navy bg-panel shadow-brutal-sm text-sm text-navy/80 space-y-2">
+      <div class="p-4 border border-navy bg-panel text-sm text-navy/80 space-y-2">
         <p class="font-semibold">Säkerhet</p>
         <p>
           Den här appen ger endast råd för ämnen i listan. Om ämnet saknas: konsultera alltid SDS och lokala rutiner.
@@ -319,7 +319,7 @@ onMounted(() => {
       <nav class="flex flex-wrap gap-2 text-xs">
         <button
           type="button"
-          class="px-3 py-2 border border-navy shadow-brutal-sm uppercase tracking-wide font-semibold"
+          class="px-3 py-2 border border-navy uppercase tracking-wide font-semibold"
           :class="step === 'reagent' ? 'bg-navy text-canvas' : 'bg-white hover:bg-canvas'"
           @click="goTo('reagent')"
         >
@@ -327,7 +327,7 @@ onMounted(() => {
         </button>
         <button
           type="button"
-          class="px-3 py-2 border border-navy shadow-brutal-sm uppercase tracking-wide font-semibold"
+          class="px-3 py-2 border border-navy uppercase tracking-wide font-semibold"
           :class="step === 'class' ? 'bg-navy text-canvas' : 'bg-white hover:bg-canvas'"
           @click="goTo('class')"
         >
@@ -335,7 +335,7 @@ onMounted(() => {
         </button>
         <button
           type="button"
-          class="px-3 py-2 border border-navy shadow-brutal-sm uppercase tracking-wide font-semibold"
+          class="px-3 py-2 border border-navy uppercase tracking-wide font-semibold"
           :class="step === 'source' ? 'bg-navy text-canvas' : 'bg-white hover:bg-canvas'"
           @click="goTo('source')"
         >
@@ -343,7 +343,7 @@ onMounted(() => {
         </button>
         <button
           type="button"
-          class="px-3 py-2 border border-navy shadow-brutal-sm uppercase tracking-wide font-semibold"
+          class="px-3 py-2 border border-navy uppercase tracking-wide font-semibold"
           :class="step === 'result' ? 'bg-navy text-canvas' : 'bg-white hover:bg-canvas'"
           :disabled="prep === null"
           @click="goTo('result')"
@@ -352,7 +352,7 @@ onMounted(() => {
         </button>
         <button
           type="button"
-          class="px-3 py-2 border border-navy shadow-brutal-sm uppercase tracking-wide font-semibold"
+          class="px-3 py-2 border border-navy uppercase tracking-wide font-semibold"
           :class="step === 'risk' ? 'bg-navy text-canvas' : 'bg-white hover:bg-canvas'"
           :disabled="prep === null"
           @click="goTo('risk')"

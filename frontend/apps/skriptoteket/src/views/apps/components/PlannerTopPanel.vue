@@ -19,9 +19,10 @@ import {
   IconSeatingPlan,
   IconX,
 } from "../../../components/icons";
-import UiSegmentedToggle, {
+import {
+  UiSegmentedToggle,
   type UiSegmentedToggleOption,
-} from "../../../components/ui/UiSegmentedToggle.vue";
+} from "../../../components/ui";
 
 type WorkspaceMode = "overview" | "grouping" | "seating" | "rules";
 type StatusTone = "neutral" | "success" | "warning" | "danger";
@@ -199,7 +200,7 @@ function modeOptionMetadata(option: UiSegmentedToggleOption) {
 </script>
 
 <template>
-  <article class="planner-top-panel space-y-3 border border-navy bg-panel p-4 shadow-brutal-sm">
+  <article class="planner-top-panel space-y-3 border border-navy bg-panel p-4">
     <div class="planner-top-panel-heading flex items-start justify-between gap-3 border-b border-navy/20 pb-3">
       <div class="min-w-0 space-y-1">
         <h2 class="planner-shell-title">

@@ -189,7 +189,7 @@ function formatDate(value: string | null | undefined): string {
               <div
                 v-if="openMenuForFileId === file.id"
                 :id="`vault-file-actions-${file.id}`"
-                class="absolute right-0 mt-2 w-48 border border-navy bg-modal shadow-brutal-sm z-50"
+                class="absolute right-0 mt-2 w-48 border border-navy bg-modal shadow-md z-50"
                 role="menu"
                 aria-label="Filåtgärder"
                 @click.stop

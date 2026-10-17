@@ -58,9 +58,15 @@
   root `01a149c9-5bc7-7713-ba64-12dee0470bdd`): Sol pairs on 39-04-08,
   39-06-01, 39-06-03 and 39-08-02 in one shared Mac worktree; Opus prototype
   40-04-01; a Hemma Opus lead runs 40-01-02, 40-01-03, then ST-SKRIPT-40-03. Lane 0 (Sol): TASK-SKRIPT-40-01-02
-  (with the 0.1.24 sync) then 40-01-03. Opus lane: ST-SKRIPT-40-04, shell and
-  exam workspace redesign from a fresh prototype the user approves (40-04-01),
-  then two Opus builders (40-04-02 shell, 40-04-03 workspace); it supersedes
+  merged to main 2026-10-17 on huleedu-integrated 0.1.25 (TASK-SKILL-REP-0323
+  `done` added segmented-toggle keyboard operation; Sol rereview approved
+  `534e8b02`, retained `evidence/reviews/TASK-SKRIPT-40-01-02/`); `done` after
+  the Mac parent's staging walk passed on e1efb4fc (`evidence/staging-walk-40-01-02/`). Batch 1 (40-01-03, 40-03-01,
+  40-03-03) on main 2017d223, staging rebuilt there; next: the Mac parent's
+  combined walk (needs the user's proof-admin sign-in). 40-03-04/05/06 on the
+  Hemma branch in repair/review. Opus lane: ST-SKRIPT-40-04; 40-04-01 `done`
+  (prototype approved by the user 2026-10-17, decisions T6-T29,
+  `docs/mockups/app-shell-and-exam-workspace-redesign/`), then two Opus builders (40-04-02 shell, 40-04-03 workspace); it supersedes
   TASK-SKRIPT-39-04-05 (`canceled`). Sol restyle lane: ST-SKRIPT-40-03 tasks
   01-09, one per area, start after lane 0 without waiting for
   TASK-SKILL-REP-0280. Sol backend lanes (no new workspace UI; workspace

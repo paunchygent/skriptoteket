@@ -6,7 +6,7 @@
  * Klassrumskartan without relying on browser-native confirm dialogs.
  */
 
-import SystemMessage from "../../../components/ui/SystemMessage.vue";
+import { SystemMessage } from "../../../components/ui";
 
 defineProps<{
   eyebrow: string;
@@ -33,7 +33,7 @@ const emit = defineEmits<{
       @click="emit('cancel')"
     />
     <div class="relative flex min-h-full items-center justify-center py-4">
-      <div class="w-full max-w-[32rem] border border-navy bg-modal p-6 shadow-brutal-sm">
+      <div class="w-full max-w-[32rem] border border-navy bg-modal p-6 shadow-md">
         <div class="space-y-2">
           <p class="text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-critical">
             {{ eyebrow }}
@@ -50,7 +50,11 @@ const emit = defineEmits<{
           v-if="errorMessage"
           class="mt-4"
           :model-value="errorMessage ?? null"
-          variant="error"
+          tone="failure"
+          dismissible
+          role="alert"
+          aria-live="assertive"
+          aria-atomic="true"
           @update:model-value="emit('dismiss-error')"
         />
 

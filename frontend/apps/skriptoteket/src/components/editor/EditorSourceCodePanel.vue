@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { json } from "@codemirror/lang-json";
+import { UiDenseSpinner } from "../ui";
 import type { Extension } from "@codemirror/state";
 import type { EditorView } from "@codemirror/view";
 import { computed, defineAsyncComponent, ref, watch } from "vue";
@@ -160,9 +161,7 @@ function updateActiveBundleFile(value: string): void {
         </template>
         <template #fallback>
           <div class="h-full w-full flex items-center justify-center gap-3 text-sm text-navy/70">
-            <span
-              class="inline-block w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin"
-            />
+            <UiDenseSpinner :size="16" />
             <span>Laddar kodredigerare...</span>
           </div>
         </template>

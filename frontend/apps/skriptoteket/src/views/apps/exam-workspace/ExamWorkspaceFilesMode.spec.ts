@@ -1,4 +1,5 @@
 /** Course choice belongs to the open import panel and travels with either file input. */
+import { createTestingPinia } from "@pinia/testing";
 import { flushPromises, shallowMount } from "@vue/test-utils";
 import { describe, expect, it, vi } from "vitest";
 
@@ -12,6 +13,7 @@ vi.mock("../../../api/examWorkspace", async (importOriginal) => ({
 
 function panel(importBlocked = false) {
   return shallowMount(ExamWorkspaceFilesMode, {
+    global: { plugins: [createTestingPinia({ createSpy: vi.fn })] },
     props: {
       compact: true,
       enrichmentDisabled: false,

@@ -21,7 +21,7 @@ import { useToast } from "../../composables/useToast";
 import ExamCourseCombobox from "../../views/apps/exam-workspace/ExamCourseCombobox.vue";
 import { useExamCourseCatalog } from "../../views/apps/exam-workspace/useExamCourseCatalog";
 import { IconPlus, IconTrash } from "../icons";
-import SystemMessage from "../ui/SystemMessage.vue";
+import { SystemMessage } from "../ui";
 
 const props = defineProps<{
   examCourses: components["schemas"]["ExamCourses"] | null;
@@ -129,7 +129,10 @@ async function save(): Promise<void> {
     <SystemMessage
       v-if="catalogError"
       :model-value="catalogError"
-      variant="error"
+      tone="failure"
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
       :dismissible="false"
     />
 

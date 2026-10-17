@@ -23,7 +23,7 @@ function createSeatDragPreview(studentName: string): HTMLDivElement {
     "bg-white",
     "text-center",
     "text-navy",
-    "shadow-brutal-sm",
+    "shadow-md",
   ].join(" ");
   Object.assign(preview.style, {
     position: "fixed",

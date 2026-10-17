@@ -289,7 +289,6 @@ function formatDateTime(value: string | number): string {
       <UiDenseIconButton
         :label="props.isChatCollapsed ? 'Öppna kodassistenten' : 'Stäng kodassistenten'"
         class="lg:hidden"
-        :aria-label="props.isChatCollapsed ? 'Öppna kodassistenten' : 'Stäng kodassistenten'"
         @click="emit('toggleChatCollapsed')"
       >
         <svg

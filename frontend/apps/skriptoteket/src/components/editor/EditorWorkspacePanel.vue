@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, ref } from "vue";
+import { UiDenseActionButton } from "../ui";
 
 import { virtualFileTextFromEditorFields } from "../../composables/editor/virtualFiles";
 import type { EditorWorkspacePanelEmits, EditorWorkspacePanelProps } from "./EditorWorkspacePanel.types";
@@ -49,7 +50,7 @@ const chatColumnWidth = computed(() => {
 </script>
 
 <template>
-  <div class="border border-navy bg-panel shadow-brutal-sm flex flex-col min-h-0 h-full">
+  <div class="rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] bg-panel flex flex-col min-h-0 h-full">
     <div
       class="grid flex-1 min-h-0 h-full gap-y-3 transition-[grid-template-columns] duration-200 ease-out lg:grid-cols-[minmax(0,1fr)_var(--chat-column-width)] lg:grid-rows-[auto_minmax(0,1fr)_auto]"
       :style="{ '--chat-column-width': chatColumnWidth, '--chat-rail-width': chatRailWidth }"
@@ -319,14 +320,11 @@ const chatColumnWidth = computed(() => {
             <span class="text-[10px] font-semibold uppercase tracking-wide text-navy/60">
               Indata & inst&auml;llningar (JSON)
             </span>
-            <button
-              type="button"
-              class="btn-ghost shadow-none px-2 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] border-navy/30 bg-canvas"
-              :aria-expanded="!isSchemaCollapsed"
+            <UiDenseActionButton
+              :label="isSchemaCollapsed ? 'Visa' : 'Dölj'"
+              :expanded="!isSchemaCollapsed"
               @click="isSchemaCollapsed = !isSchemaCollapsed"
-            >
-              {{ isSchemaCollapsed ? "Visa" : "D&ouml;lj" }}
-            </button>
+            />
           </div>
           <div
             v-show="!isSchemaCollapsed"
@@ -356,7 +354,7 @@ const chatColumnWidth = computed(() => {
 
       <div
         v-if="props.isChatDrawerOpen"
-        class="hidden min-h-0 min-w-0 lg:block lg:col-start-2 lg:row-start-2 lg:row-span-2 lg:border-l-2 lg:border-t-2 lg:border-navy/20 lg:bg-canvas lg:shadow-none"
+        class="hidden min-h-0 min-w-0 lg:block lg:col-start-2 lg:row-start-2 lg:row-span-2 lg:border-l lg:border-t lg:border-navy/20 lg:bg-canvas lg:shadow-none"
       >
         <EditorWorkspaceDrawers
           variant="column"

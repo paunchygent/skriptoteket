@@ -149,7 +149,7 @@ function setActiveFileId(fileId: VirtualFileId): void {
           </label>
           <select
             id="ai-edit-ops-diff-file"
-            class="h-[28px] border border-navy/30 bg-white px-2.5 text-[11px] text-navy shadow-none leading-none max-w-[min(360px,100%)]"
+            class="h-[28px] border border-navy/30 bg-panel px-2.5 text-[11px] text-navy shadow-none leading-none max-w-[min(360px,100%)]"
             :value="activeFileId ?? ''"
             :disabled="props.items.length === 0"
             @change="setActiveFileId(($event.target as HTMLSelectElement).value as VirtualFileId)"

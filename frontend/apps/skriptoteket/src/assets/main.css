@@ -2,6 +2,7 @@
 @plugin "@tailwindcss/typography";
 @import "../styles/tokens.css";
 @import "../styles/tailwind-theme.css";
+@import "../styles/action-buttons.css";
 
 body {
   background: var(--color-canvas);
@@ -36,24 +37,7 @@ body.app-shell-game-mode::before {
   opacity: 0;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   BUTTON PRIMITIVES - Skriptoteket SPA
-
-   Tailwind v4 note: Cannot @apply custom classes within @layer components.
-   Define base styles directly in each button class instead.
-   ═══════════════════════════════════════════════════════════════════════════ */
-
 @layer components {
-  /* Shared button shell: all reusable btn-* primitives keep the same hard small radius. */
-  .btn-primary,
-  .btn-cta,
-  .btn-ghost,
-  .btn-inline-edit,
-  .btn-inline-primary,
-  .btn-inline-cancel {
-    @apply rounded-[4px];
-  }
-
   /* ════════════════════════════════════════════════════════════════════════
      PAGE HEADER - Academic brutalist typography
      ════════════════════════════════════════════════════════════════════════ */
@@ -87,40 +71,6 @@ body.app-shell-game-mode::before {
     .planner-shell-title {
       font-size: var(--huleedu-text-xl);
     }
-  }
-
-  /* Standard action button: Verdigris action fill, 4px press */
-  .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-widest select-none;
-    @apply border border-navy cursor-pointer transition-colors transition-shadow;
-    @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-action/40 focus-visible:outline-offset-2;
-    @apply disabled:opacity-50 disabled:cursor-not-allowed;
-    @apply shadow-brutal;
-    @apply active:translate-x-1 active:translate-y-1 active:shadow-none;
-    background-color: var(--button-primary-bg);
-    color: var(--button-primary-text);
-  }
-
-  /* Primary CTA: same action fill as standard primary, reserved for page-level conversion. */
-  .btn-cta {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-widest select-none;
-    @apply border border-navy cursor-pointer transition-colors transition-shadow;
-    @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-action/40 focus-visible:outline-offset-2;
-    @apply disabled:opacity-50 disabled:cursor-not-allowed;
-    @apply shadow-brutal;
-    @apply active:translate-x-1 active:translate-y-1 active:shadow-none;
-    background-color: var(--button-primary-bg);
-    color: var(--button-primary-text);
-  }
-
-  /* No-fill table/button: Canvas hover + warning highlight, 4px press */
-  .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-widest select-none;
-    @apply border border-navy cursor-pointer transition-colors transition-shadow;
-    @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-action/40 focus-visible:outline-offset-2;
-    @apply disabled:opacity-50 disabled:cursor-not-allowed;
-    @apply bg-panel text-navy shadow-brutal;
-    @apply active:translate-x-1 active:translate-y-1 active:shadow-none;
   }
 
   /* Planner button recipes - shared Klassrumskartan surface treatments */
@@ -233,7 +183,7 @@ body.app-shell-game-mode::before {
   }
 
   .planner-choice-button-active-raised {
-    @apply border-action bg-action/10 text-action shadow-brutal-sm;
+    @apply border-action bg-action/10 text-action;
   }
 
   .planner-choice-button-idle {
@@ -249,7 +199,7 @@ body.app-shell-game-mode::before {
   }
 
   .planner-tool-rail {
-    @apply border border-navy bg-panel px-2 py-2 shadow-brutal-sm;
+    @apply border border-navy bg-panel px-2 py-2;
   }
 
   .planner-rules-layout-row {
@@ -274,7 +224,7 @@ body.app-shell-game-mode::before {
   }
 
   .planner-rules-summary-panel {
-    @apply min-h-[11.5rem] border border-navy bg-panel px-3 py-2.5 shadow-brutal-sm;
+    @apply min-h-[11.5rem] border border-navy bg-panel px-3 py-2.5;
   }
 
   .planner-rules-summary-cards {
@@ -322,11 +272,10 @@ body.app-shell-game-mode::before {
 
   .planner-overview-panel-action {
     @apply h-[2.375rem] w-full justify-center px-3 py-1 text-[10px] font-semibold tracking-[var(--huleedu-tracking-label)] shadow-none;
-    @apply active:translate-x-0 active:translate-y-0 active:shadow-none;
   }
 
   .planner-overview-setup-panel {
-    @apply grid gap-0 border border-navy bg-panel p-3.5 shadow-brutal-sm;
+    @apply grid gap-0 border border-navy bg-panel p-3.5;
   }
 
   .planner-overview-setup-panel-desktop {
@@ -370,7 +319,6 @@ body.app-shell-game-mode::before {
   }
 
   .planner-share-export-overview-desktop .planner-share-export-inline-panel {
-    @apply shadow-brutal-sm;
     --planner-share-export-overview-control-height: 2.875rem;
     min-height: 18rem;
     max-height: 18rem;
@@ -459,14 +407,13 @@ body.app-shell-game-mode::before {
 
   .planner-modal-footer-button {
     @apply min-h-[2.75rem] shadow-none;
-    @apply active:translate-x-0 active:translate-y-0 active:shadow-none;
   }
 
   /* ════════════════════════════════════════════════════════════════════════
-     PANEL PRIMITIVES - Brutalist hierarchy
+     PANEL PRIMITIVES - Bordered hierarchy
 
      Rule of thumb:
-       - Outer panels: `border border-navy bg-panel shadow-brutal*`
+       - Outer panels: `border border-navy bg-panel`
        - Nested panels: thick inset border, no shadow (`panel-inset*`)
      ════════════════════════════════════════════════════════════════════════ */
 
@@ -476,87 +423,6 @@ body.app-shell-game-mode::before {
 
   .panel-inset-canvas {
     @apply border-2 border-navy/20 bg-panel shadow-none;
-  }
-
-  /* ════════════════════════════════════════════════════════════════════════
-     TOAST PRIMITIVES - Skriptoteket SPA
-
-     Overlay notifications that do not cause layout shift.
-     Variants:
-       - info:    navy / 90% + "i" icon (white)
-       - success: pine green (`--huleedu-success`) / 90% + check icon (white)
-       - warning: amber (`--huleedu-warning`) / 90% + warning icon (navy text for contrast)
-       - failure: warm terracotta (`--huleedu-terracotta`) / 90% + × icon (white)
-     ════════════════════════════════════════════════════════════════════════ */
-
-  .toast-container {
-    position: fixed;
-    bottom: calc(var(--huleedu-space-4) + env(safe-area-inset-bottom));
-    left: 50%;
-    transform: translateX(-50%);
-    width: min(var(--huleedu-max-width-md), calc(100vw - (2 * var(--huleedu-space-4))));
-    z-index: var(--huleedu-z-tooltip);
-    pointer-events: none;
-  }
-
-  @media (min-width: 768px) {
-    .toast-container {
-      left: auto;
-      transform: none;
-      right: var(--huleedu-space-6);
-      bottom: var(--huleedu-space-6);
-      width: var(--huleedu-max-width-md);
-    }
-  }
-
-  .toast-stack {
-    display: flex;
-    flex-direction: column;
-    gap: var(--huleedu-space-2);
-  }
-
-  .toast {
-    @apply pointer-events-auto border border-current;
-    @apply flex items-start gap-3 p-3 text-sm leading-snug;
-  }
-
-  .toast-icon {
-    @apply mt-0.5 shrink-0;
-  }
-
-  .toast-message {
-    @apply break-words;
-  }
-
-  .toast-close {
-    @apply ml-auto -mt-1.5 -mr-1.5 shrink-0;
-    @apply w-8 h-8 flex items-center justify-center;
-    @apply bg-transparent border-0 p-0;
-    @apply text-lg leading-none opacity-80;
-    @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-current focus-visible:outline-offset-2;
-  }
-
-  @media (hover: hover) and (pointer: fine) {
-    .toast-close:hover {
-      @apply opacity-100;
-    }
-  }
-
-  .toast-info {
-    @apply bg-navy/90 text-canvas;
-  }
-
-  .toast-success {
-    @apply bg-success/90 text-canvas;
-  }
-
-  .toast-warning {
-    @apply bg-warning/90 text-navy;
-  }
-
-  .toast-failure {
-    @apply bg-terracotta/90;
-    color: var(--button-primary-text);
   }
 
   /* ════════════════════════════════════════════════════════════════════════
@@ -572,7 +438,7 @@ body.app-shell-game-mode::before {
      ════════════════════════════════════════════════════════════════════════ */
 
   .system-message {
-    @apply pointer-events-auto border shadow-brutal-sm;
+    @apply pointer-events-auto border;
     @apply flex items-start gap-3 p-3 text-sm leading-snug;
   }
 
@@ -623,68 +489,12 @@ body.app-shell-game-mode::before {
   }
 
   /* ════════════════════════════════════════════════════════════════════════
-     INLINE EDIT PRIMITIVES - Profile & settings forms
-
-     Smaller-scale buttons for inline editing within content panels.
-     These complement the main btn-* primitives for compact UI contexts.
+     INLINE FORM PRIMITIVES - Profile & settings forms
 
      Usage:
-       - btn-inline-edit:    Small ghost trigger (Ändra)
-       - btn-inline-primary: Small primary action (Spara)
-       - btn-inline-cancel:  Small cancel/dismiss (Avbryt)
-       - input-inline:       Form input with canvas background
-       - label-inline:       Uppercase micro label
+       - input-inline: Form input with canvas background
+       - label-inline: Uppercase micro label
      ════════════════════════════════════════════════════════════════════════ */
-
-  .btn-inline-edit {
-    @apply inline-flex items-center justify-center;
-    @apply h-6 px-2;
-    @apply text-[10px] font-semibold uppercase tracking-wide;
-    @apply text-navy/70 bg-canvas border border-navy/20;
-    @apply transition-colors;
-  }
-
-  .btn-inline-edit:hover:not(:disabled) {
-    @apply border-navy/40 text-navy;
-  }
-
-  .btn-inline-edit:disabled {
-    @apply opacity-50 cursor-not-allowed;
-  }
-
-  .btn-inline-primary {
-    @apply inline-flex items-center justify-center;
-    @apply h-8 px-3;
-    @apply text-[11px] font-semibold uppercase tracking-wide;
-    @apply border border-navy;
-    @apply transition-colors;
-    background-color: var(--button-primary-bg);
-    color: var(--button-primary-text);
-  }
-
-  .btn-inline-primary:hover:not(:disabled) {
-    @apply ring-2 ring-action/40;
-  }
-
-  .btn-inline-primary:disabled {
-    @apply opacity-50 cursor-not-allowed;
-  }
-
-  .btn-inline-cancel {
-    @apply inline-flex items-center justify-center;
-    @apply h-8 px-3;
-    @apply text-[11px] font-semibold uppercase tracking-wide;
-    @apply text-navy/70 bg-transparent border border-navy/25;
-    @apply transition-colors;
-  }
-
-  .btn-inline-cancel:hover:not(:disabled) {
-    @apply border-navy/50 text-navy;
-  }
-
-  .btn-inline-cancel:disabled {
-    @apply opacity-50 cursor-not-allowed;
-  }
 
   .input-inline {
     @apply w-full max-w-xs;
@@ -771,56 +581,8 @@ body.app-shell-game-mode::before {
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .btn-primary:not(:disabled):not(:active):hover {
-    @apply ring-2 ring-action/40;
-  }
-
-  .btn-cta:not(:disabled):not(:active):hover {
-    @apply ring-2 ring-action/40;
-  }
-
-  .btn-ghost:not(:disabled):not(:active):hover {
-    @apply bg-canvas ring-2 ring-warning;
-  }
-
   .hover-warning-ring:not(:disabled):not(:active):hover {
     @apply ring-2 ring-warning;
-  }
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   TOAST TRANSITIONS (Vue TransitionGroup name="toast")
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-.toast-enter-active,
-.toast-leave-active {
-  transition:
-    transform var(--huleedu-duration-slow) var(--huleedu-ease-default),
-    opacity var(--huleedu-duration-slow) var(--huleedu-ease-default);
-}
-
-.toast-enter-from,
-.toast-leave-to {
-  opacity: 0;
-  transform: translateY(12px);
-}
-
-@media (min-width: 768px) {
-  .toast-enter-from,
-  .toast-leave-to {
-    transform: translateX(12px);
-  }
-}
-
-.toast-move {
-  transition: transform var(--huleedu-duration-slow) var(--huleedu-ease-default);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .toast-enter-active,
-  .toast-leave-active,
-  .toast-move {
-    transition: none;
   }
 }
 
@@ -966,7 +728,6 @@ body.app-shell-game-mode::before {
   border: var(--huleedu-border-width) solid var(--huleedu-navy);
   background-color: var(--huleedu-panel);
   padding: var(--huleedu-space-3);
-  box-shadow: var(--huleedu-shadow-brutal-xs);
 }
 
 .planner-group-board {
@@ -983,7 +744,6 @@ body.app-shell-game-mode::before {
   border: var(--huleedu-border-width) solid var(--huleedu-navy);
   background-color: var(--huleedu-panel);
   padding: var(--huleedu-space-3);
-  box-shadow: var(--huleedu-shadow-brutal-xs);
 }
 
 .planner-desktop-mode-switch,

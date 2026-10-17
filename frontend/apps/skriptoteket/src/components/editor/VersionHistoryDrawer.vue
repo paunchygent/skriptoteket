@@ -2,6 +2,7 @@
 import { computed, ref } from "vue";
 import type { components } from "../../api/openapi";
 import type { EditorWorkingCopyCheckpointSummary } from "../../composables/editor/useEditorWorkingCopy";
+import { UiDenseActionButton, UiGlyph } from "../ui";
 
 type EditorVersionSummary = components["schemas"]["EditorVersionSummary"];
 type VersionState = components["schemas"]["VersionState"];
@@ -51,8 +52,8 @@ const hasMoreVersions = computed(() => props.versions.length > VERSION_PREVIEW_L
 const isPopover = computed(() => props.variant === "popover");
 const panelClasses = computed(() =>
   isPopover.value
-    ? "fixed inset-y-[var(--huleedu-space-8)] left-[var(--huleedu-space-4)] right-[var(--huleedu-space-4)] z-50 bg-modal border border-navy flex flex-col overflow-hidden md:left-[var(--huleedu-space-12)] md:right-auto md:w-[420px]"
-    : "fixed inset-y-0 right-0 z-50 w-full bg-modal border-l border-navy flex flex-col md:relative md:inset-auto md:z-auto md:w-full md:h-full md:overflow-hidden",
+    ? "fixed inset-y-[var(--huleedu-space-8)] left-[var(--huleedu-space-4)] right-[var(--huleedu-space-4)] z-50 bg-modal border border-navy/20 shadow-md flex flex-col overflow-hidden md:left-[var(--huleedu-space-12)] md:right-auto md:w-[420px]"
+    : "fixed inset-y-0 right-0 z-50 w-full bg-modal border-l border-navy/20 shadow-md flex flex-col md:relative md:inset-auto md:z-auto md:w-full md:h-full md:overflow-hidden",
 );
 
 function versionLabel(state: VersionState): string {
@@ -141,13 +142,18 @@ function checkpointKindLabel(kind: EditorWorkingCopyCheckpointSummary["kind"]): 
               Serverversioner och återställningspunkter.
             </p>
           </div>
-          <button
-            type="button"
-            class="btn-ghost h-[28px] w-[28px] px-0 py-0 text-[12px] font-semibold normal-case tracking-normal shadow-none border-navy/30 bg-white leading-none"
+          <UiDenseActionButton
+            label="Stäng"
+            icon-only
             @click="emit('close')"
           >
-            ✕
-          </button>
+            <template #leading>
+              <UiGlyph
+                meaning="close"
+                :size="16"
+              />
+            </template>
+          </UiDenseActionButton>
         </div>
 
         <div class="flex-1 overflow-y-auto p-3 space-y-3">
@@ -185,10 +191,10 @@ function checkpointKindLabel(kind: EditorWorkingCopyCheckpointSummary["kind"]): 
               <div class="grid grid-cols-[minmax(0,1fr)_64px_56px_72px] items-center gap-2 px-2 py-1">
                 <button
                   type="button"
-                  class="text-left w-full min-w-0"
+                  class="btn-inline-edit w-full min-w-0"
                   @click="handleSelect(version.id)"
                 >
-                  <div class="min-w-0">
+                  <div class="min-w-0 w-full text-left">
                     <div class="flex items-center gap-2 min-w-0">
                       <span class="text-[11px] font-semibold text-navy">
                         v{{ version.version_number }}
@@ -210,7 +216,7 @@ function checkpointKindLabel(kind: EditorWorkingCopyCheckpointSummary["kind"]): 
                   <button
                     v-if="canCompare && version.id !== activeVersionId"
                     type="button"
-                    class="h-[20px] w-full text-right text-[11px] font-semibold text-navy/70 hover:text-navy hover:underline hover:underline-offset-4 disabled:text-navy/30 disabled:no-underline"
+                    class="btn-inline-edit"
                     :disabled="isSubmitting"
                     @click.stop="handleCompare(version.id)"
                   >
@@ -222,7 +228,7 @@ function checkpointKindLabel(kind: EditorWorkingCopyCheckpointSummary["kind"]): 
                   <button
                     v-if="canRollback && version.state === 'archived'"
                     type="button"
-                    class="h-[20px] w-full text-right text-[11px] font-semibold text-navy/70 hover:text-navy hover:underline hover:underline-offset-4 disabled:text-navy/30 disabled:no-underline"
+                    class="btn-inline-edit"
                     :disabled="isSubmitting"
                     @click.stop="handleRollback(version.id)"
                   >
@@ -236,7 +242,7 @@ function checkpointKindLabel(kind: EditorWorkingCopyCheckpointSummary["kind"]): 
           <button
             v-if="hasMoreVersions"
             type="button"
-            class="btn-ghost h-[24px] px-2 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-white leading-none"
+            class="btn-inline-edit"
             @click="showAllVersions = !showAllVersions"
           >
             {{ showAllVersions ? "visa färre" : "visa fler" }}
@@ -283,7 +289,7 @@ function checkpointKindLabel(kind: EditorWorkingCopyCheckpointSummary["kind"]): 
                     <button
                       v-if="checkpoint.kind === 'pinned'"
                       type="button"
-                      class="h-[20px] text-[11px] font-semibold text-navy/70 hover:text-navy hover:underline hover:underline-offset-4 disabled:text-navy/30 disabled:no-underline"
+                      class="btn-inline-edit"
                       :disabled="isSubmitting"
                       @click="emit('removeCheckpoint', checkpoint.id)"
                     >
@@ -291,7 +297,7 @@ function checkpointKindLabel(kind: EditorWorkingCopyCheckpointSummary["kind"]): 
                     </button>
                     <button
                       type="button"
-                      class="h-[20px] text-[11px] font-semibold text-navy/70 hover:text-navy hover:underline hover:underline-offset-4 disabled:text-navy/30 disabled:no-underline"
+                      class="btn-inline-edit"
                       :disabled="isSubmitting"
                       @click="emit('restoreCheckpoint', checkpoint.id)"
                     >
@@ -304,7 +310,7 @@ function checkpointKindLabel(kind: EditorWorkingCopyCheckpointSummary["kind"]): 
 
             <button
               type="button"
-              class="text-left text-[11px] font-semibold text-navy/70 hover:text-navy hover:underline hover:underline-offset-4 disabled:text-navy/30 disabled:no-underline"
+              class="btn-inline-edit"
               :disabled="isSubmitting"
               @click="emit('restoreServerVersion')"
             >

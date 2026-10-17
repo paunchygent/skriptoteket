@@ -81,7 +81,7 @@ function stepClasses(step: ProgressStep): string {
     class="grid min-h-0 w-full flex-1 place-items-center bg-canvas px-4 py-6 text-center"
     data-test="transcript-running-surface"
   >
-    <div class="grid w-full max-w-[39rem] gap-6 border border-navy/25 bg-panel px-5 py-6 shadow-brutal-sm sm:px-8">
+    <div class="grid w-full max-w-[39rem] gap-6 border border-navy/25 bg-panel px-5 py-6 sm:px-8">
       <div>
         <h3
           class="text-2xl font-semibold leading-tight text-navy"

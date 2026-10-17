@@ -19,6 +19,7 @@ from skriptoteket.application.curated_apps.exam_workspace import (
 )
 from skriptoteket.domain.errors import DomainError
 from skriptoteket.domain.identity.models import User
+from skriptoteket.domain.scripting.vault import VaultFile
 from skriptoteket.web.api.v1 import apps_conversion_hub_exam_workspace as api
 from tests.fixtures.identity_fixtures import make_user
 from tests.unit.web.test_apps_exam_workspace_answer_key_suggestions_api import FakeRegistry
@@ -44,6 +45,17 @@ class CapturingChecklistHandler:
     ) -> ExamWorkspaceExportFile:
         self.export_calls.append((actor.id, lineage_id, target))
         raise AssertionError("the checklist route must not run an export")
+
+    async def save(
+        self,
+        *,
+        actor: User,
+        lineage_id: UUID,
+        target: ExamWorkspaceExportTarget,
+        expected_revision: int,
+    ) -> VaultFile:
+        self.export_calls.append((actor.id, lineage_id, target))
+        raise AssertionError("the checklist route must not save an export")
 
     async def checklist(
         self, *, actor: User, lineage_id: UUID, expected_revision: int

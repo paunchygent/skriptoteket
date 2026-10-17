@@ -13,7 +13,7 @@ import { writeTextToClipboard } from "../../utils/clipboard";
 import { UiOutputRenderer } from "../ui-outputs";
 import ToolRunActions from "../tool-run/ToolRunActions.vue";
 import ToolRunArtifacts from "../tool-run/ToolRunArtifacts.vue";
-import SystemMessage from "../ui/SystemMessage.vue";
+import { SystemMessage, UiDenseActionButton, UiDenseSpinner, UiDenseStatusPill } from "../ui";
 
 type EditorRunDetails = components["schemas"]["EditorRunDetails"];
 type RunStatus = components["schemas"]["RunStatus"];
@@ -144,7 +144,7 @@ async function copyDebugText(): Promise<void> {
       v-if="isRunning && (runResult?.status === 'running' || runResult?.status === 'queued')"
       class="flex items-center gap-2 text-sm text-navy/70"
     >
-      <span class="inline-block w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
+      <UiDenseSpinner :size="16" />
       <span>{{ runResult?.status === "queued" ? "Köar skriptet..." : "Kör skriptet..." }}</span>
     </div>
 
@@ -155,24 +155,18 @@ async function copyDebugText(): Promise<void> {
         v-if="completedSteps.length > 0"
         class="flex flex-wrap gap-2"
       >
-        <button
+        <UiDenseActionButton
           v-for="(step, index) in completedSteps"
           :key="step.run_id"
-          type="button"
-          class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none"
-          :class="{ 'ring-1 ring-navy/40': selectedStepIndex === index }"
+          :label="`Steg ${index + 1}`"
+          :active="selectedStepIndex === index"
           @click="emit('select-step', index)"
-        >
-          Steg {{ index + 1 }}
-        </button>
-        <button
-          type="button"
-          class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none"
-          :class="{ 'ring-1 ring-navy/40': selectedStepIndex === null }"
+        />
+        <UiDenseActionButton
+          label="Aktuellt"
+          :active="selectedStepIndex === null"
           @click="emit('select-step', null)"
-        >
-          Aktuellt
-        </button>
+        />
       </div>
 
       <!-- Status row (uses displayedRun for viewing past steps) -->
@@ -180,16 +174,10 @@ async function copyDebugText(): Promise<void> {
         v-if="displayedRun"
         class="flex items-center gap-2 text-[11px]"
       >
-        <span
-          class="px-2 py-0.5 border font-semibold uppercase tracking-wide text-[10px]"
-          :class="{
-            'border-success bg-success/10 text-success': displayedRun.status === 'succeeded',
-            'border-error bg-error/10 text-error': displayedRun.status === 'failed',
-            'border-warning bg-warning/10 text-warning': displayedRun.status === 'timed_out',
-          }"
-        >
-          {{ statusLabel(displayedRun.status) }}
-        </span>
+        <UiDenseStatusPill
+          :label="statusLabel(displayedRun.status)"
+          :tone="displayedRun.status === 'succeeded' ? 'success' : displayedRun.status === 'failed' ? 'error' : displayedRun.status === 'timed_out' ? 'warning' : 'neutral'"
+        />
         <span class="font-mono text-xs text-navy/50">
           {{ displayedRun.run_id.slice(0, 8) }}
         </span>
@@ -215,27 +203,19 @@ async function copyDebugText(): Promise<void> {
           </span>
 
           <div class="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none"
+            <UiDenseActionButton
+              label="Kopiera JSON"
               @click="copyDebugJson"
-            >
-              Kopiera JSON
-            </button>
-            <button
-              type="button"
-              class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none"
+            />
+            <UiDenseActionButton
+              label="Kopiera text"
               @click="copyDebugText"
-            >
-              Kopiera text
-            </button>
-            <button
-              type="button"
-              class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none"
+            />
+            <UiDenseActionButton
+              :label="isDebugOpen ? 'Dölj' : 'Visa'"
+              :expanded="isDebugOpen"
               @click="isDebugOpen = !isDebugOpen"
-            >
-              {{ isDebugOpen ? "Dölj" : "Visa" }}
-            </button>
+            />
           </div>
         </div>
 
@@ -270,15 +250,14 @@ async function copyDebugText(): Promise<void> {
                 >
                   {{ stdoutMeta }}
                 </span>
-                <span
+                <UiDenseStatusPill
                   v-if="stdoutTruncated"
-                  class="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide border border-warning text-warning"
-                >
-                  Trunkerad
-                </span>
+                  label="Trunkerad"
+                  tone="warning"
+                />
               </div>
               <pre
-                class="border border-navy/30 bg-white p-2 text-[11px] font-mono whitespace-pre-wrap break-words"
+                class="border border-navy/30 bg-panel p-2 text-[11px] font-mono whitespace-pre-wrap break-words"
                 v-text="stdoutValue"
               />
             </section>
@@ -294,15 +273,14 @@ async function copyDebugText(): Promise<void> {
                 >
                   {{ stderrMeta }}
                 </span>
-                <span
+                <UiDenseStatusPill
                   v-if="stderrTruncated"
-                  class="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide border border-warning text-warning"
-                >
-                  Trunkerad
-                </span>
+                  label="Trunkerad"
+                  tone="warning"
+                />
               </div>
               <pre
-                class="border border-navy/30 bg-white p-2 text-[11px] font-mono whitespace-pre-wrap break-words"
+                class="border border-navy/30 bg-panel p-2 text-[11px] font-mono whitespace-pre-wrap break-words"
                 v-text="stderrValue"
               />
             </section>
@@ -333,7 +311,11 @@ async function copyDebugText(): Promise<void> {
       <!-- Action error message -->
       <SystemMessage
         v-model="actionError"
-        variant="error"
+        tone="failure"
+        dismissible
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
       />
 
       <!-- Next Actions (multi-step tools) - only show for current run -->

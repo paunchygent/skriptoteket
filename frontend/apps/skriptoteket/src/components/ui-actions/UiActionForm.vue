@@ -4,7 +4,9 @@ import { computed, onMounted, reactive, ref, watch } from "vue";
 import type { components } from "../../api/openapi";
 import type { FileRefInfo } from "../../composables/tools/fileRefHelpers";
 import { filterFileRefsBySources } from "../../composables/tools/fileRefHelpers";
+import { parseNumericInput } from "../../composables/tools/parseNumericInput";
 import UiActionFieldRenderer from "./UiActionFieldRenderer.vue";
+import { SystemMessage } from "../ui";
 
 type UiFormAction = components["schemas"]["UiFormAction"];
 type UiActionField = NonNullable<UiFormAction["fields"]>[number];
@@ -169,8 +171,8 @@ function buildInput(): Record<string, components["schemas"]["JsonValue"]> {
     if (field.kind === "integer") {
       const str = rawStr.trim();
       if (!str) continue;
-      const parsed = Number.parseInt(str, 10);
-      if (Number.isNaN(parsed)) throw new Error(`Ogiltigt heltal: ${field.label}`);
+      const parsed = parseNumericInput(str, "integer");
+      if (parsed === null) throw new Error(`Ogiltigt heltal: ${field.label}`);
       input[field.name] = parsed;
       continue;
     }
@@ -178,8 +180,8 @@ function buildInput(): Record<string, components["schemas"]["JsonValue"]> {
     if (field.kind === "number") {
       const str = rawStr.trim();
       if (!str) continue;
-      const parsed = Number.parseFloat(str);
-      if (Number.isNaN(parsed)) throw new Error(`Ogiltigt tal: ${field.label}`);
+      const parsed = parseNumericInput(str, "number");
+      if (parsed === null) throw new Error(`Ogiltigt tal: ${field.label}`);
       input[field.name] = parsed;
       continue;
     }
@@ -270,15 +272,17 @@ watch(
 
 <template>
   <form
-    class="p-4 border border-navy bg-panel shadow-brutal-sm space-y-4"
+    class="p-4 border border-navy bg-panel space-y-4"
     @submit.prevent="onSubmit"
   >
-    <div
+    <SystemMessage
       v-if="errorMessage"
-      class="p-3 border border-error text-error bg-canvas text-sm"
-    >
-      {{ errorMessage }}
-    </div>
+      :model-value="errorMessage"
+      tone="failure"
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
+    />
 
     <UiActionFieldRenderer
       v-for="field in fields"

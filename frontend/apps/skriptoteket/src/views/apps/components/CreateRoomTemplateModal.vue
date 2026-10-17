@@ -11,7 +11,7 @@ import { computed, nextTick, ref, toRef } from "vue";
 
 import { apiDelete, apiPost, apiPut } from "../../../api/client";
 import { IconSave, IconTrash, IconX } from "../../../components/icons";
-import SystemMessage from "../../../components/ui/SystemMessage.vue";
+import { SystemMessage } from "../../../components/ui";
 import type { RoomTemplate } from "../classroomPlannerTypes";
 import { useRoomTemplateEditorState } from "../useRoomTemplateEditorState";
 import RoomTemplateBuilderSurface from "./RoomTemplateBuilderSurface.vue";
@@ -170,7 +170,7 @@ async function removeTemplate(): Promise<void> {
     />
     <div class="room-template-modal-positioner relative flex min-h-full items-start justify-center py-4">
       <div
-        class="room-template-modal-panel flex max-h-[calc(100vh-1rem)] w-full max-w-[96vw] flex-col border border-navy bg-modal shadow-brutal 2xl:max-w-[1680px]"
+        class="room-template-modal-panel flex max-h-[calc(100vh-1rem)] w-full max-w-[96vw] flex-col border border-navy bg-modal shadow-md 2xl:max-w-[1680px]"
         data-test="room-template-modal-panel"
       >
         <div class="room-template-modal-header flex items-start justify-between gap-4 border-b border-navy/20 pb-4">
@@ -196,7 +196,11 @@ async function removeTemplate(): Promise<void> {
           <SystemMessage
             v-if="modalSystemError"
             v-model="error"
-            variant="error"
+            tone="failure"
+            dismissible
+            role="alert"
+            aria-live="assertive"
+            aria-atomic="true"
           />
 
           <div class="room-template-modal-editor-grid mt-6 grid gap-6 xl:grid-cols-[240px_minmax(0,1fr)] xl:items-start">

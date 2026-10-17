@@ -219,7 +219,7 @@ function selectWorkspaceMode(value: string): void {
 
     <div
       v-if="transitionLabel || isLoadingWorkspace"
-      class="border border-navy bg-panel px-4 py-12 text-center text-sm font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy shadow-brutal-sm"
+      class="border border-navy bg-panel px-4 py-12 text-center text-sm font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy"
     >
       {{ transitionLabel ?? "Laddar planeringen..." }}
     </div>

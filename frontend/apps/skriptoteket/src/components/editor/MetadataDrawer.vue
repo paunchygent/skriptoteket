@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import type { components } from "../../api/openapi";
-import SystemMessage from "../ui/SystemMessage.vue";
+import { SystemMessage, UiDenseActionButton, UiGlyph } from "../ui";
 
 type ProfessionItem = components["schemas"]["ProfessionItem"];
 type CategoryItem = components["schemas"]["CategoryItem"];
@@ -75,7 +75,7 @@ function toggleCategory(value: string): void {
     :class="[
       isPanel
         ? 'relative w-full panel-inset flex flex-col min-h-0'
-        : 'fixed inset-y-0 right-0 z-50 w-full bg-modal border-l border-navy shadow-brutal flex flex-col md:relative md:inset-auto md:z-auto md:w-full md:h-full md:overflow-hidden',
+        : 'fixed inset-y-0 right-0 z-50 w-full bg-modal border-l border-navy/20 shadow-md flex flex-col md:relative md:inset-auto md:z-auto md:w-full md:h-full md:overflow-hidden',
     ]"
     :role="isPanel ? 'region' : 'dialog'"
     :aria-modal="!isPanel"
@@ -91,19 +91,16 @@ function toggleCategory(value: string): void {
       >
         Verktygsinfo
       </span>
-      <button
-        type="button"
-        class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none"
+      <UiDenseActionButton
+        :label="isSaving ? 'Sparar...' : 'Spara'"
         :disabled="isSaving"
         @click="emit('save')"
-      >
-        {{ isSaving ? "Sparar..." : "Spara" }}
-      </button>
+      />
     </div>
 
     <div
       v-else
-      class="border-b border-navy flex items-start justify-between gap-4 p-4"
+      class="border-b border-navy/20 flex items-start justify-between gap-4 p-4"
     >
       <div>
         <h2
@@ -116,13 +113,18 @@ function toggleCategory(value: string): void {
           Uppdatera titel, sammanfattning och kategorisering.
         </p>
       </div>
-      <button
-        type="button"
-        class="text-navy/60 hover:text-navy text-2xl leading-none"
+      <UiDenseActionButton
+        label="Stäng"
+        icon-only
         @click="emit('close')"
       >
-        &times;
-      </button>
+        <template #leading>
+          <UiGlyph
+            meaning="close"
+            :size="16"
+          />
+        </template>
+      </UiDenseActionButton>
     </div>
 
     <div
@@ -139,7 +141,7 @@ function toggleCategory(value: string): void {
           <input
             :value="metadataTitle"
             type="text"
-            class="w-full h-[28px] border border-navy/30 bg-white px-2.5 text-[11px] text-navy shadow-none"
+            class="w-full h-[28px] border border-navy/30 bg-panel px-2.5 text-[11px] text-navy shadow-none"
             placeholder="Verktygets titel"
             :disabled="isSaving"
             @input="emit('update:metadataTitle', ($event.target as HTMLInputElement).value)"
@@ -151,20 +153,17 @@ function toggleCategory(value: string): void {
             <label class="block text-[10px] font-semibold uppercase tracking-wide text-navy/60">
               URL-namn
             </label>
-            <button
-              type="button"
-              class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none whitespace-nowrap"
+            <UiDenseActionButton
+              label="Från titel"
               :disabled="isSaving || !canEditSlug"
               @click="emit('suggestSlugFromTitle')"
-            >
-              Fr&aring;n titel
-            </button>
+            />
           </div>
 
           <input
             :value="metadataSlug"
             type="text"
-            class="w-full h-[28px] border border-navy/30 bg-white px-2.5 text-[11px] font-mono text-navy shadow-none"
+            class="w-full h-[28px] border border-navy/30 bg-panel px-2.5 text-[11px] font-mono text-navy shadow-none"
             placeholder="t.ex. mattest"
             :disabled="isSaving || !canEditSlug"
             @input="emit('update:metadataSlug', ($event.target as HTMLInputElement).value)"
@@ -177,7 +176,11 @@ function toggleCategory(value: string): void {
 
           <SystemMessage
             :model-value="slugError"
-            variant="error"
+            tone="failure"
+            dismissible
+            role="alert"
+            aria-live="assertive"
+            aria-atomic="true"
             @update:model-value="emit('update:slugError', $event)"
           />
         </div>
@@ -189,7 +192,7 @@ function toggleCategory(value: string): void {
           <textarea
             :value="metadataSummary"
             rows="3"
-            class="w-full border border-navy/30 bg-white px-2.5 py-1.5 text-[11px] text-navy shadow-none leading-snug"
+            class="w-full border border-navy/30 bg-panel px-2.5 py-1.5 text-[11px] text-navy shadow-none leading-snug"
             placeholder="Kort beskrivning av verktyget"
             :disabled="isSaving"
             @input="emit('update:metadataSummary', ($event.target as HTMLTextAreaElement).value)"
@@ -212,7 +215,11 @@ function toggleCategory(value: string): void {
         <SystemMessage
           v-if="taxonomyError"
           :model-value="taxonomyError"
-          variant="error"
+          tone="failure"
+          dismissible
+          role="alert"
+          aria-live="assertive"
+          aria-atomic="true"
           @update:model-value="emit('update:taxonomyError', $event)"
         />
 
@@ -229,7 +236,7 @@ function toggleCategory(value: string): void {
               <label
                 v-for="profession in professions"
                 :key="profession.id"
-                class="flex items-center gap-2 border border-navy/30 bg-white px-2.5 py-1.5 shadow-none text-[11px] text-navy hover:bg-canvas/40"
+                class="flex items-center gap-2 border border-navy/30 bg-panel px-2.5 py-1.5 shadow-none text-[11px] text-navy hover:bg-canvas/40"
               >
                 <input
                   :value="profession.id"
@@ -253,7 +260,7 @@ function toggleCategory(value: string): void {
               <label
                 v-for="category in categories"
                 :key="category.id"
-                class="flex items-center gap-2 border border-navy/30 bg-white px-2.5 py-1.5 shadow-none text-[11px] text-navy hover:bg-canvas/40"
+                class="flex items-center gap-2 border border-navy/30 bg-panel px-2.5 py-1.5 shadow-none text-[11px] text-navy hover:bg-canvas/40"
               >
                 <input
                   :value="category.id"

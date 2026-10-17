@@ -7,6 +7,8 @@ import type { components } from "../api/openapi";
 import { UiOutputRenderer } from "../components/ui-outputs";
 import ToolRunActions from "../components/tool-run/ToolRunActions.vue";
 import ToolRunArtifacts from "../components/tool-run/ToolRunArtifacts.vue";
+import { SystemMessage, UiDenseSpinner, UiDenseStatusPill } from "../components/ui";
+import { useToolFileRefs } from "../composables/tools/useToolFileRefs";
 
 type AppDetailResponse = components["schemas"]["AppDetailResponse"];
 type GetSessionStateResult = components["schemas"]["GetSessionStateResult"];
@@ -42,6 +44,9 @@ const outputs = computed<UiOutput[]>(() => run.value?.ui_payload?.outputs ?? [])
 const nextActions = computed<UiFormAction[]>(() => run.value?.ui_payload?.next_actions ?? []);
 const artifacts = computed(() => run.value?.artifacts ?? []);
 
+const toolFileRefs = useToolFileRefs();
+const availableFileRefs = toolFileRefs.fileRefs;
+
 function statusLabel(status: RunStatus): string {
   const labels: Record<RunStatus, string> = {
     queued: "Köad",
@@ -67,7 +72,7 @@ async function fetchSession(): Promise<void> {
   );
   sessionState.value = response.session_state;
   stateRev.value = response.session_state.state_rev;
-   latestRunId.value = response.session_state.latest_run_id ?? null;
+  latestRunId.value = response.session_state.latest_run_id ?? null;
 }
 
 async function fetchRun(runId: string): Promise<void> {
@@ -84,6 +89,8 @@ async function load(): Promise<void> {
   isLoading.value = true;
   errorMessage.value = null;
   actionErrorMessage.value = null;
+  app.value = null;
+  toolFileRefs.reset();
   run.value = null;
   stateRev.value = null;
   sessionState.value = null;
@@ -148,6 +155,7 @@ function stopPolling(): void {
 async function performAction(
   actionId: string,
   input: Record<string, components["schemas"]["JsonValue"]>,
+  fileRefsByField: Record<string, string[]> = {},
 ): Promise<void> {
   if (!app.value || stateRev.value === null) {
     actionErrorMessage.value = "Sessionen är inte redo än. Uppdatera och försök igen.";
@@ -164,6 +172,7 @@ async function performAction(
       context: "default",
       action_id: actionId,
       input,
+      file_refs_by_field: fileRefsByField,
       expected_state_rev: stateRev.value,
     });
 
@@ -193,9 +202,21 @@ async function startApp(): Promise<void> {
   await performAction("start", {});
 }
 
-async function submitAction(payload: { actionId: string; input: Record<string, components["schemas"]["JsonValue"]> }): Promise<void> {
-  await performAction(payload.actionId, payload.input);
+async function submitAction(payload: {
+  actionId: string;
+  input: Record<string, components["schemas"]["JsonValue"]>;
+  fileRefsByField?: Record<string, string[]>;
+}): Promise<void> {
+  await performAction(payload.actionId, payload.input, payload.fileRefsByField);
 }
+
+watch(
+  () => app.value?.tool_id,
+  (toolId) => {
+    toolFileRefs.reset();
+    if (toolId) void toolFileRefs.fetchFileRefs(toolId);
+  },
+);
 
 watch(
   () => run.value?.status,
@@ -204,6 +225,9 @@ watch(
       startPolling();
     } else {
       stopPolling();
+      if (status && app.value) {
+        void toolFileRefs.fetchFileRefs(app.value.tool_id);
+      }
     }
   },
   { immediate: true },
@@ -231,7 +255,7 @@ onUnmounted(() => {
       >
         ← Tillbaka till katalog
       </RouterLink>
-      <span class="px-2 py-1 border border-navy bg-panel shadow-brutal-sm uppercase tracking-wide font-semibold">
+      <span class="px-2 py-1 border border-navy bg-panel uppercase tracking-wide font-semibold">
         Kurerad app
       </span>
     </div>
@@ -248,17 +272,19 @@ onUnmounted(() => {
 
     <div
       v-if="isLoading"
-      class="p-4 border border-navy bg-panel shadow-brutal-sm text-navy/70 text-sm"
+      class="p-4 border border-navy bg-panel text-navy/70 text-sm"
     >
       Laddar...
     </div>
 
-    <div
+    <SystemMessage
       v-else-if="errorMessage"
-      class="p-4 border border-error bg-panel shadow-brutal-sm text-error text-sm"
-    >
-      {{ errorMessage }}
-    </div>
+      :model-value="errorMessage"
+      tone="failure"
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
+    />
 
     <template v-else>
       <div
@@ -274,10 +300,7 @@ onUnmounted(() => {
           :disabled="isSubmittingAction || !canSubmitActions"
           @click="startApp"
         >
-          <span
-            v-if="isSubmittingAction"
-            class="inline-block w-3 h-3 border-2 border-canvas/30 border-t-canvas rounded-full animate-spin"
-          />
+          <UiDenseSpinner v-if="isSubmittingAction" />
           <span v-else>Starta</span>
         </button>
         <p
@@ -291,14 +314,12 @@ onUnmounted(() => {
       <!-- Unified result card -->
       <div
         v-else-if="run"
-        class="border border-navy bg-panel shadow-brutal-sm"
+        class="border border-navy/20 bg-panel"
       >
         <div class="p-4 space-y-4">
           <!-- Status row -->
           <div class="flex items-center gap-2 text-sm">
-            <span class="px-2 py-1 border border-navy font-semibold uppercase tracking-wide text-xs">
-              {{ statusLabel(run.status) }}
-            </span>
+            <UiDenseStatusPill :label="statusLabel(run.status)" />
             <span class="font-mono text-xs text-navy/50">
               {{ run.run_id.slice(0, 8) }}
             </span>
@@ -318,7 +339,7 @@ onUnmounted(() => {
             v-if="run.status === 'running' || run.status === 'queued'"
             class="flex items-center gap-2 text-navy/70 text-sm"
           >
-            <span class="inline-block w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
+            <UiDenseSpinner :size="16" />
             <span>{{ run.status === "queued" ? "Köar..." : "Kör..." }}</span>
           </div>
 
@@ -337,10 +358,11 @@ onUnmounted(() => {
           <!-- Actions -->
           <ToolRunActions
             v-if="nextActions.length > 0"
+            v-model:error-message="actionErrorMessage"
             :actions="nextActions"
             :id-base="`curated-app-${appId}`"
             :disabled="isSubmittingAction || !canSubmitActions"
-            :error-message="actionErrorMessage"
+            :available-file-refs="availableFileRefs"
             @submit="submitAction"
           />
 

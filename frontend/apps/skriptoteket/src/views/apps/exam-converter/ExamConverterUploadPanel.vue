@@ -14,7 +14,7 @@
 
 import { FileArchive, FileText, Upload } from "lucide-vue-next";
 
-import UiDenseActionButton from "../../../components/ui/UiDenseActionButton.vue";
+import { UiDenseActionButton } from "../../../components/ui";
 import type { ExamConverterTarget } from "./types";
 
 const props = defineProps<{
@@ -52,7 +52,7 @@ function onTargetChange(target: ExamConverterTarget, event: Event): void {
 
 <template>
   <form
-    class="border border-navy bg-panel p-4 shadow-brutal-sm"
+    class="border border-navy bg-panel p-4"
     @submit.prevent="emit('submit')"
   >
     <label

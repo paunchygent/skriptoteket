@@ -156,7 +156,7 @@ onBeforeUnmount(() => {
 
 <template>
   <section
-    class="flex min-h-0 flex-1 flex-col border border-navy bg-panel p-3 shadow-brutal-sm"
+    class="flex min-h-0 flex-1 flex-col border border-navy bg-panel p-3"
     :class="props.compact ? 'planner-room-canvas-compact' : ''"
   >
     <div

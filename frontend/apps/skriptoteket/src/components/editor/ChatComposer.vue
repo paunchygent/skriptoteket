@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, watch } from "vue";
+import { UiDenseActionButton, UiDenseIconButton, UiSegmentedToggle } from "../ui";
 
 type ChatComposerProps = {
   isStreaming: boolean;
@@ -27,6 +28,10 @@ const emit = defineEmits<{
 type ChatComposerMode = "chat" | "edit";
 
 const mode = ref<ChatComposerMode>("chat");
+const modeOptions = [
+  { value: "chat", label: "Chat" },
+  { value: "edit", label: "Edit" },
+];
 const draft = ref("");
 const textarea = ref<HTMLTextAreaElement | null>(null);
 
@@ -125,17 +130,16 @@ watch(
         ref="textarea"
         v-model="draft"
         rows="2"
-        class="w-full resize-none border border-navy/30 bg-white px-3 py-2 pr-10 text-sm text-navy shadow-none"
+        class="w-full resize-none border border-navy/30 bg-panel px-3 py-2 pr-10 text-sm text-navy shadow-none"
         :placeholder="mode === 'chat' ? 'Fråga mig vad du vill' : 'Beskriv vad du vill ändra...'"
         :disabled="props.isStreaming"
         @keydown="handleKeydown"
       />
 
-      <button
-        type="button"
-        class="absolute bottom-2 right-2 inline-flex h-7 w-7 items-center justify-center text-navy/70 hover:text-navy focus-visible:outline focus-visible:outline-2 focus-visible:outline-navy/40 disabled:opacity-50 disabled:cursor-not-allowed"
+      <UiDenseIconButton
+        :label="primaryActionLabel"
+        class="absolute bottom-2 right-2"
         :disabled="!canSubmit"
-        :aria-label="primaryActionLabel"
         @click="handleSubmit"
       >
         <svg
@@ -148,68 +152,32 @@ watch(
             fill="currentColor"
           />
         </svg>
-      </button>
+      </UiDenseIconButton>
     </div>
 
     <div class="flex flex-wrap items-center justify-between gap-2">
-      <div
-        class="relative inline-grid grid-cols-2 overflow-hidden border border-navy/30 bg-white"
-        role="tablist"
+      <UiSegmentedToggle
+        :model-value="mode"
+        :options="modeOptions"
         aria-label="Läge"
-      >
-        <span
-          class="absolute inset-y-0 left-0 w-1/2 bg-navy transition-transform"
-          :class="mode === 'chat' ? 'translate-x-0' : 'translate-x-full'"
-          style="transition-timing-function: var(--huleedu-ease-default, ease);"
-          aria-hidden="true"
-        />
-        <span
-          class="absolute inset-y-0 left-1/2 w-px bg-navy/20"
-          aria-hidden="true"
-        />
-
-        <button
-          type="button"
-          role="tab"
-          :aria-selected="mode === 'chat'"
-          class="relative z-10 px-2 py-1 text-[10px] font-semibold tracking-[var(--huleedu-tracking-label)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-navy/40"
-          :class="mode === 'chat' ? 'text-canvas' : 'text-navy/70 hover:text-navy'"
-          :disabled="props.isStreaming || props.isEditOpsLoading"
-          @click="mode = 'chat'"
-        >
-          Chat
-        </button>
-        <button
-          type="button"
-          role="tab"
-          :aria-selected="mode === 'edit'"
-          class="relative z-10 px-2 py-1 text-[10px] font-semibold tracking-[var(--huleedu-tracking-label)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-navy/40"
-          :class="mode === 'edit' ? 'text-canvas' : 'text-navy/70 hover:text-navy'"
-          :disabled="props.isStreaming || props.isEditOpsLoading"
-          @click="mode = 'edit'"
-        >
-          Edit
-        </button>
-      </div>
+        density="compact"
+        width="auto"
+        :disabled="props.isStreaming || props.isEditOpsLoading"
+        @update:model-value="mode = $event as ChatComposerMode"
+      />
 
       <div class="flex items-center gap-2">
-        <button
+        <UiDenseActionButton
           v-if="props.isStreaming"
-          type="button"
-          class="btn-ghost shadow-none px-2 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] border-navy/30 bg-canvas leading-none"
+          label="Avbryt"
           @click="emit('cancel')"
-        >
-          Avbryt
-        </button>
+        />
 
-        <button
-          type="button"
-          class="btn-ghost shadow-none px-2 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] border-navy/30 bg-canvas leading-none"
+        <UiDenseActionButton
+          label="Ny chatt"
           :disabled="!props.canClear || props.isStreaming || props.isEditOpsLoading"
           @click="emit('clear')"
-        >
-          Ny chatt
-        </button>
+        />
       </div>
     </div>
 

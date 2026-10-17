@@ -1,25 +1,25 @@
 {
   "exports": {
-    "action-buttons": null,
+    "action-buttons": "frontend/apps/skriptoteket/src/styles/action-buttons.css",
     "auth-lifecycle": null,
     "brand": null,
-    "dense-tool-primitives": null,
+    "dense-tool-primitives": "frontend/apps/skriptoteket/src/components/ui/shared/denseToolPrimitives.ts",
     "skriptoteket-logo-horizontal": "frontend/apps/skriptoteket/public/logo-horizontal.svg",
-    "system-message": null,
+    "system-message": "frontend/apps/skriptoteket/src/components/ui/shared/components/SystemMessage.vue",
     "tailwind-theme": "frontend/apps/skriptoteket/src/styles/tailwind-theme.css",
-    "toast-host": null,
+    "toast-host": "frontend/apps/skriptoteket/src/components/ui/shared/components/ToastHost.vue",
     "tokens": "src/skriptoteket/web/static/css/huleedu-design-tokens.css",
-    "ui-dense-action-button": null,
-    "ui-dense-icon-button": null,
-    "ui-dense-spinner": null,
-    "ui-dense-status-pill": null,
-    "ui-glyph": null,
-    "ui-glyphs": null,
-    "ui-segmented-toggle": null,
-    "ui-symbol": null,
-    "vue-barrel": null
+    "ui-dense-action-button": "frontend/apps/skriptoteket/src/components/ui/shared/components/UiDenseActionButton.vue",
+    "ui-dense-icon-button": "frontend/apps/skriptoteket/src/components/ui/shared/components/UiDenseIconButton.vue",
+    "ui-dense-spinner": "frontend/apps/skriptoteket/src/components/ui/shared/components/UiDenseSpinner.vue",
+    "ui-dense-status-pill": "frontend/apps/skriptoteket/src/components/ui/shared/components/UiDenseStatusPill.vue",
+    "ui-glyph": "frontend/apps/skriptoteket/src/components/ui/shared/components/UiGlyph.vue",
+    "ui-glyphs": "frontend/apps/skriptoteket/src/components/ui/shared/uiGlyphs.ts",
+    "ui-segmented-toggle": "frontend/apps/skriptoteket/src/components/ui/shared/components/UiSegmentedToggle.vue",
+    "ui-symbol": "frontend/apps/skriptoteket/src/components/ui/shared/components/UiSymbol.vue",
+    "vue-barrel": "frontend/apps/skriptoteket/src/components/ui/shared/index.ts"
   },
   "mirror": "frontend/apps/skriptoteket/src/design-system/huleedu-integrated",
   "package": "huleedu-integrated-frontend-design-system",
-  "version": "0.1.23"
+  "version": "0.1.26"
 }

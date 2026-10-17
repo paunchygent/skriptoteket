@@ -64,7 +64,7 @@ const messageText = computed(() => props.message ?? fallbackMessage.value);
 <template>
   <div
     v-if="isVisible && messageText"
-    class="flex flex-col gap-3 border p-3 shadow-brutal-sm text-sm"
+    class="flex flex-col gap-3 border p-3 text-sm"
     :class="variantClass"
   >
     <div class="flex flex-wrap items-center justify-between gap-2">
@@ -83,7 +83,7 @@ const messageText = computed(() => props.message ?? fallbackMessage.value);
       <button
         v-if="canForceTakeover"
         type="button"
-        class="btn-cta btn-sm"
+        class="btn-cta"
         :disabled="isBusy"
         @click="emit('force')"
       >

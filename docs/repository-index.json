@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "85327a8aff5620b892c242d21ccfa547849fc93aecc27fd060e1976c3a3dc364",
+  "source_set_digest": "5074d81ae7e9b07972014f89e037480e16982ee27e3ea7151e3ac1e8c9582c4b",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4945,6 +4945,25 @@
       }
     },
     {
+      "id": "TASK-SKRIPT-39-04-10",
+      "type": "task",
+      "title": "A Mina filer file restored from the trash is never deleted by the expiry cleanup that selected it",
+      "path": "docs/backlog/tasks/task-skript-39-04-10-a-mina-filer-file-restored-from-the-trash-is-never-deleted-by-the-expiry-cleanup-that-selected-it.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
       "id": "TASK-SKRIPT-39-05-01",
       "type": "task",
       "title": "Walking skeleton for AI-first DOCX conversion as a background job",
@@ -5738,7 +5757,7 @@
       "type": "task",
       "title": "Adopt the shared dense components, SystemMessage and ToastHost",
       "path": "docs/backlog/tasks/task-skript-40-01-02-adopt-the-shared-dense-components-systemmessage-and-toasthost.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-01",
       "owners": [
@@ -5749,7 +5768,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-17",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer (Sol) approved the rereview of 534e8b02 (retained session 01a149c9-5bc7-7713-ba64-12dee0470bdd, evidence/reviews/TASK-SKRIPT-40-01-02/rereview-534e8b02.md); merged and pushed to main e1efb4fc. The Mac parent's staging walk on e1efb4fc on 2026-10-17 passed at desktop 1440x900, tablet 768x1024 and phone 375x812 (evidence/staging-walk-40-01-02/walk.md, 11 screenshots), and the parent authorized closure."
       }
     },
     {
@@ -5757,7 +5780,7 @@
       "type": "task",
       "title": "Adopt the shared action buttons",
       "path": "docs/backlog/tasks/task-skript-40-01-03-adopt-the-shared-action-buttons.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-01",
       "owners": [
@@ -5795,7 +5818,7 @@
       "type": "task",
       "title": "Refresh home, catalog and the script runner onto the shared tokens and components",
       "path": "docs/backlog/tasks/task-skript-40-03-01-refresh-home-catalog-and-the-script-runner-onto-the-shared-tokens-and-components.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-03",
       "owners": [
@@ -5833,7 +5856,7 @@
       "type": "task",
       "title": "Refresh admin screens and the authoring editor onto the shared tokens and components",
       "path": "docs/backlog/tasks/task-skript-40-03-03-refresh-admin-screens-and-the-authoring-editor-onto-the-shared-tokens-and-components.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-03",
       "owners": [
@@ -5852,7 +5875,7 @@
       "type": "task",
       "title": "Refresh Klassrumskartan onto the shared tokens and components",
       "path": "docs/backlog/tasks/task-skript-40-03-04-refresh-klassrumskartan-onto-the-shared-tokens-and-components.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-03",
       "owners": [
@@ -5966,7 +5989,7 @@
       "type": "task",
       "title": "Opus prototype of the app shell and the exam workspace covering every current and planned workspace control",
       "path": "docs/backlog/tasks/task-skript-40-04-01-opus-prototype-of-the-app-shell-and-the-exam-workspace-covering-every-current-and-planned-workspace-control.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -5977,7 +6000,9 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User approved the prototype on 2026-10-17 (user approval 2026-10-17) after settling its 23 open questions in the 2026-10-17 grilling (T6-T28) and the touch hint (T29); screenshots in docs/mockups/app-shell-and-exam-workspace-redesign/screenshots/, walk logs in session 01a149c9-5bc7-7713-ba64-12dee0470bdd evidence/assignments/efba92b2-aa85-44bf-844e-618697d8037e/walk/."
       }
     },
     {
@@ -9932,6 +9957,20 @@
       ],
       "retired_ids": [
         "REF-tool-editor-framework-codemap"
+      ]
+    },
+    {
+      "id": "REF-SKRIPT-MOCKUP-app-shell-and-exam-workspace-redesign-prototype",
+      "type": "reference",
+      "title": "App shell and exam workspace redesign prototype",
+      "path": "docs/reference/ref-skript-mockup-app-shell-and-exam-workspace-redesign-prototype-app-shell-and-exam-workspace-redesign-prototype.md",
+      "status": "active",
+      "reference_kind": "mockup",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
       ]
     },
     {

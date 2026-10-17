@@ -1,0 +1,289 @@
+/**
+ * HuleEdu Design Tokens
+ * =====================
+ * Standalone CSS custom properties for harmonizing external projects
+ * with the HuleEdu design system.
+ *
+ * Usage:
+ *   1. Import this file: @import url('huleedu-design-tokens.css');
+ *   2. Or link directly: <link rel="stylesheet" href="huleedu-design-tokens.css">
+ *   3. Add Google Fonts in your HTML head:
+ *      <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700;800&family=IBM+Plex+Serif:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+ */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DESIGN TOKENS (CSS Custom Properties)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ─────────────────────────────────────────────────────────────────────────
+     COLORS - Core Brand Palette
+     ───────────────────────────────────────────────────────────────────────── */
+  --huleedu-paper: #FEFEFC;         /* Subtle warm canvas background */
+  --huleedu-canvas: var(--huleedu-paper);
+  --huleedu-modal: var(--huleedu-canvas); /* Opaque canvas-toned modal/dialog shell */
+  --huleedu-panel: rgba(254, 254, 252, 0.64); /* Canvas-toned panel shell that lets the grid breathe */
+  --huleedu-panel-muted: rgba(254, 254, 252, 0.38);
+  --huleedu-navy: #082B4C;          /* Deep Navy: structure + long-form text */
+  --huleedu-terracotta: #C94F32;    /* Warm Terracotta: brand accent only */
+  --huleedu-action: #3F7F78;        /* Verdigris Teal: functional action/selection */
+  --huleedu-critical: #4D1521;      /* Burgundy family: destructive/critical decisions */
+  --huleedu-burgundy: var(--huleedu-critical); /* Deprecated compatibility alias */
+
+  /* HuleEdu semantic aliases shared by brand surfaces and app primitives. */
+  --brand-wordmark-primary: var(--huleedu-navy);
+  --brand-wordmark-accent: var(--huleedu-terracotta);
+  --brand-symbol-primary: var(--huleedu-terracotta);
+  --brand-symbol-secondary: var(--huleedu-navy);
+  --text-primary: var(--huleedu-navy);
+  --border-primary: var(--huleedu-navy);
+  --accent-brand: var(--huleedu-terracotta);
+  --accent-action: var(--huleedu-action);
+  --button-primary-bg: var(--huleedu-action);
+  --button-primary-text: #FFFFFF;
+  --button-secondary-border: var(--huleedu-navy);
+  --button-secondary-text: var(--huleedu-navy);
+  --surface-paper: var(--huleedu-paper);
+  --surface-modal: var(--huleedu-modal);
+  --surface-panel: var(--huleedu-panel);
+  --surface-panel-muted: var(--huleedu-panel-muted);
+
+  /* Color with opacity variants (pre-computed for compatibility) */
+  --huleedu-navy-02: rgba(8, 43, 76, 0.02);
+  --huleedu-navy-05: rgba(8, 43, 76, 0.05);
+  --huleedu-navy-10: rgba(8, 43, 76, 0.1);
+  --huleedu-navy-15: rgba(8, 43, 76, 0.15);
+  --huleedu-navy-20: rgba(8, 43, 76, 0.2);
+  --huleedu-navy-30: rgba(8, 43, 76, 0.3);
+  --huleedu-navy-40: rgba(8, 43, 76, 0.4);
+  --huleedu-navy-50: rgba(8, 43, 76, 0.5);
+  --huleedu-navy-60: rgba(8, 43, 76, 0.6);
+  --huleedu-navy-70: rgba(8, 43, 76, 0.7);
+  --huleedu-navy-80: rgba(8, 43, 76, 0.8);
+
+  --huleedu-terracotta-05: rgba(201, 79, 50, 0.05);
+  --huleedu-terracotta-10: rgba(201, 79, 50, 0.1);
+  --huleedu-terracotta-20: rgba(201, 79, 50, 0.2);
+  --huleedu-terracotta-30: rgba(201, 79, 50, 0.3);
+  --huleedu-terracotta-40: rgba(201, 79, 50, 0.4);
+
+  --huleedu-action-05: rgba(63, 127, 120, 0.05);
+  --huleedu-action-10: rgba(63, 127, 120, 0.1);
+  --huleedu-action-20: rgba(63, 127, 120, 0.2);
+  --huleedu-action-30: rgba(63, 127, 120, 0.3);
+  --huleedu-action-40: rgba(63, 127, 120, 0.4);
+
+  --huleedu-critical-05: rgba(77, 21, 33, 0.05);
+  --huleedu-critical-10: rgba(77, 21, 33, 0.1);
+  --huleedu-critical-20: rgba(77, 21, 33, 0.2);
+  --huleedu-critical-30: rgba(77, 21, 33, 0.3);
+  --huleedu-critical-40: rgba(77, 21, 33, 0.4);
+  --huleedu-burgundy-05: var(--huleedu-critical-05);
+  --huleedu-burgundy-10: var(--huleedu-critical-10);
+  --huleedu-burgundy-20: var(--huleedu-critical-20);
+  --huleedu-burgundy-30: var(--huleedu-critical-30);
+  --huleedu-burgundy-40: var(--huleedu-critical-40);
+
+  --huleedu-canvas-15: rgba(254, 254, 252, 0.15);
+  --huleedu-canvas-30: rgba(254, 254, 252, 0.3);
+  --huleedu-canvas-50: rgba(254, 254, 252, 0.5);
+  --huleedu-canvas-80: rgba(254, 254, 252, 0.8);
+
+  /* Semantic colors */
+  --huleedu-success: #059669;       /* emerald-600 */
+  --huleedu-warning: #D97706;       /* amber-600 */
+  --huleedu-error: #DC2626;         /* red-600 */
+
+  --huleedu-success-10: rgba(5, 150, 105, 0.1);
+  --huleedu-success-15: rgba(5, 150, 105, 0.15);
+  --huleedu-success-45: rgba(5, 150, 105, 0.45);
+  --huleedu-success-50: rgba(5, 150, 105, 0.5);
+  --huleedu-warning-15: rgba(217, 119, 6, 0.15);
+  --huleedu-warning-20: rgba(217, 119, 6, 0.2);
+  --huleedu-warning-50: rgba(217, 119, 6, 0.5);
+  --huleedu-warning-60: rgba(217, 119, 6, 0.6);
+  --huleedu-error-10: rgba(220, 38, 38, 0.1);
+  --huleedu-error-15: rgba(220, 38, 38, 0.15);
+  --huleedu-error-40: rgba(220, 38, 38, 0.4);
+  --huleedu-error-45: rgba(220, 38, 38, 0.45);
+
+  /* Strong solid shades: status glyphs on translucent (frosted) surfaces only.
+     Each keeps its base OKLCH hue at lightness ~0.39 (chroma reduced only to stay
+     in sRGB), so it reaches 3:1 against the darkest frosted surface (128,151,181)
+     and against the lightest one over white. Text keeps the base colour roles. */
+  --huleedu-success-strong: #025137; /* 3.14:1 darkest frosted, 9.40:1 white */
+  --huleedu-warning-strong: #6D3800; /* 3.16:1 darkest frosted, 9.48:1 white */
+  --huleedu-action-strong: #02504A;  /* 3.12:1 darkest frosted, 9.34:1 white */
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     TYPOGRAPHY
+     ───────────────────────────────────────────────────────────────────────── */
+  --huleedu-font-sans: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --huleedu-font-serif: "IBM Plex Serif", Georgia, "Times New Roman", serif;
+  --huleedu-font-mono: "IBM Plex Mono", ui-monospace, "Courier New", monospace;
+
+  /* Font sizes */
+  --huleedu-text-xs: 0.75rem;       /* 12px - labels, meta */
+  --huleedu-text-sm: 0.875rem;      /* 14px - body small, buttons */
+  --huleedu-text-base: 1rem;        /* 16px - body default */
+  --huleedu-text-lg: 1.125rem;      /* 18px - body large */
+  --huleedu-text-xl: 1.25rem;       /* 20px - section titles */
+  --huleedu-text-2xl: 1.5rem;       /* 24px - headings */
+  --huleedu-text-3xl: 1.875rem;     /* 30px - headings */
+  --huleedu-text-4xl: 2.25rem;      /* 36px - hero mobile */
+  --huleedu-text-5xl: 3rem;         /* 48px - hero tablet */
+  --huleedu-text-6xl: 3.75rem;      /* 60px - hero desktop */
+
+  /* Font weights */
+  --huleedu-font-normal: 400;
+  --huleedu-font-medium: 500;
+  --huleedu-font-semibold: 600;
+  --huleedu-font-bold: 700;
+  --huleedu-font-extrabold: 800;
+
+  /* Letter spacing */
+  --huleedu-tracking-tightest: -0.02em;  /* Hero headings */
+  --huleedu-tracking-tight: -0.01em;     /* Subheadings */
+  --huleedu-tracking-normal: 0;
+  --huleedu-tracking-label: 0.08em;      /* Uppercase labels */
+  --huleedu-tracking-wide: 0.1em;
+
+  /* Line heights */
+  --huleedu-leading-none: 1;
+  --huleedu-leading-tight: 1.05;         /* Hero headings */
+  --huleedu-leading-snug: 1.25;
+  --huleedu-leading-normal: 1.5;
+  --huleedu-leading-relaxed: 1.625;      /* Body text */
+  --huleedu-leading-loose: 2;            /* Essay/content */
+
+  /* Type roles for interface workspaces. Screen CSS consumes a role's size
+     and weight together instead of combining raw scale values.
+     page-title: page or mode title.
+     section-title: panel section title.
+     nested-title: nested section or document level-1 heading.
+     field-label: form field label.
+     control-value: selected option and entered field text.
+     supporting: supporting body text or summary value.
+     helper: helper text or metadata.
+     title-leading / body-leading: line height for title and body roles. */
+  --huleedu-type-page-title-size: var(--huleedu-text-xl);
+  --huleedu-type-page-title-weight: var(--huleedu-font-semibold);
+  --huleedu-type-section-title-size: var(--huleedu-text-lg);
+  --huleedu-type-section-title-weight: var(--huleedu-font-semibold);
+  --huleedu-type-nested-title-size: var(--huleedu-text-base);
+  --huleedu-type-nested-title-weight: var(--huleedu-font-medium);
+  --huleedu-type-field-label-size: var(--huleedu-text-sm);
+  --huleedu-type-field-label-weight: var(--huleedu-font-medium);
+  --huleedu-type-control-value-size: 0.8125rem; /* 13px */
+  --huleedu-type-control-value-weight: var(--huleedu-font-normal);
+  --huleedu-type-supporting-size: var(--huleedu-text-sm);
+  --huleedu-type-supporting-weight: var(--huleedu-font-normal);
+  --huleedu-type-helper-size: var(--huleedu-text-xs);
+  --huleedu-type-helper-weight: var(--huleedu-font-normal);
+  --huleedu-type-title-leading: var(--huleedu-leading-snug);
+  --huleedu-type-body-leading: var(--huleedu-leading-normal);
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     SPACING (4px base scale)
+     ───────────────────────────────────────────────────────────────────────── */
+  --huleedu-space-0: 0;
+  --huleedu-space-0-5: 0.125rem;    /* 2px */
+  --huleedu-space-1: 0.25rem;       /* 4px */
+  --huleedu-space-1-5: 0.375rem;    /* 6px */
+  --huleedu-space-2: 0.5rem;        /* 8px */
+  --huleedu-space-2-5: 0.625rem;    /* 10px */
+  --huleedu-space-3: 0.75rem;       /* 12px */
+  --huleedu-space-4: 1rem;          /* 16px */
+  --huleedu-space-5: 1.25rem;       /* 20px */
+  --huleedu-space-6: 1.5rem;        /* 24px */
+  --huleedu-space-8: 2rem;          /* 32px */
+  --huleedu-space-10: 2.5rem;       /* 40px */
+  --huleedu-space-12: 3rem;         /* 48px */
+  --huleedu-space-16: 4rem;         /* 64px */
+  --huleedu-space-20: 5rem;         /* 80px */
+
+  /* Shared action-control geometry: keep the touch/default target intact. */
+  --huleedu-action-control-height: 2.75rem; /* 44px */
+
+  /* Compact workbench roles. Opt in by surface; do not shrink touch controls. */
+  --huleedu-workbench-control-height: 1.75rem; /* 28px */
+  --huleedu-workbench-control-text: var(--huleedu-text-xs);
+  --huleedu-workbench-control-weight: var(--huleedu-font-medium);
+  --huleedu-workbench-control-padding-inline: var(--huleedu-space-2-5);
+  --huleedu-workbench-control-gap: var(--huleedu-space-2);
+  --huleedu-workbench-control-radius: 0.3125rem; /* 5px */
+  --huleedu-workbench-control-border: var(--huleedu-navy-20);
+  --huleedu-workbench-icon-size: var(--huleedu-space-4);
+  --huleedu-navigation-icon-size: var(--huleedu-space-5);
+  --huleedu-font-page-title: var(--huleedu-font-serif);
+  --huleedu-font-interface: var(--huleedu-font-sans);
+  --huleedu-product-identity-text: var(--huleedu-text-sm);
+  --huleedu-product-identity-weight: var(--huleedu-font-medium);
+  --huleedu-product-identity-color: var(--huleedu-navy-70);
+  --huleedu-surface-content: #FFFFFF;
+  --huleedu-surface-divider: var(--huleedu-navy-10);
+  --huleedu-panel-border: var(--huleedu-navy-15);
+  --huleedu-panel-radius: var(--huleedu-radius-lg);
+  --huleedu-link-color: var(--huleedu-action);
+  --huleedu-link-weight: var(--huleedu-font-medium);
+  --huleedu-link-underline-offset: var(--huleedu-space-0-5);
+  --huleedu-scrollbar-thumb: var(--huleedu-action-30);
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     BORDERS & RADIUS
+     ───────────────────────────────────────────────────────────────────────── */
+  --huleedu-border-width: 1px;
+  --huleedu-border-width-2: 2px;
+  --huleedu-border-color: var(--huleedu-navy);
+  --huleedu-border-color-subtle: var(--huleedu-navy-30);
+
+  --huleedu-radius-none: 0;
+  --huleedu-radius-sm: 2px;         /* Buttons, inputs */
+  --huleedu-radius-md: 4px;
+  --huleedu-radius-lg: 8px;
+  --huleedu-radius-xl: 12px;
+  --huleedu-radius-full: 9999px;    /* Pills, dots */
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     SHADOWS (soft; floating layers only)
+     ───────────────────────────────────────────────────────────────────────── */
+  --huleedu-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --huleedu-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     TRANSITIONS
+     ───────────────────────────────────────────────────────────────────────── */
+  --huleedu-duration-fast: 100ms;
+  --huleedu-duration-default: 150ms;
+  --huleedu-duration-slow: 300ms;
+  --huleedu-ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --huleedu-ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --huleedu-ease-out: cubic-bezier(0, 0, 0.2, 1);
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     Z-INDEX SCALE
+     ───────────────────────────────────────────────────────────────────────── */
+  --huleedu-z-dropdown: 10;
+  --huleedu-z-sticky: 20;
+  --huleedu-z-overlay: 30;
+  --huleedu-z-modal: 40;
+  --huleedu-z-popover: 50;
+  --huleedu-z-tooltip: 60;
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     LAYOUT
+     ───────────────────────────────────────────────────────────────────────── */
+  --huleedu-header-height: 4rem;    /* 64px */
+  --huleedu-sidebar-width: 240px;
+  --huleedu-max-width-sm: 24rem;    /* 384px */
+  --huleedu-max-width-md: 28rem;    /* 448px */
+  --huleedu-max-width-lg: 32rem;    /* 512px */
+  --huleedu-max-width-xl: 36rem;    /* 576px */
+  --huleedu-max-width-2xl: 42rem;   /* 672px */
+  --huleedu-max-width-6xl: 72rem;   /* 1152px */
+
+  /* Grid background pattern size */
+  --huleedu-grid-size: 24px;
+}
+
+/* Intentionally tokens-only (CSS Custom Properties). */

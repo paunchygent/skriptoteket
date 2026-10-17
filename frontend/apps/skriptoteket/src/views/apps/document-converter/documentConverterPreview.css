@@ -139,7 +139,6 @@
     linear-gradient(color-mix(in srgb, var(--color-navy) 5%, transparent) 1px, transparent 1px),
     var(--color-panel);
   background-size: 100% 1.25rem;
-  box-shadow: 4px 4px 0 color-mix(in srgb, var(--color-navy) 10%, transparent);
 }
 
 .dc-result-empty__sheet span {

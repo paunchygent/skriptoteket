@@ -72,10 +72,10 @@ function updateField(name: string, value: ToolInputFormValue): void {
         :value="getValue(field) as string"
         rows="4"
         :class="[
-          'w-full bg-white text-navy',
+          'w-full bg-panel text-navy',
           isCompact
             ? 'border border-navy/30 px-2.5 py-1.5 text-[11px] shadow-none leading-snug'
-            : 'border border-navy px-3 py-2 text-sm shadow-brutal-sm',
+            : 'border border-navy px-3 py-2 text-sm',
         ]"
         @input="updateField(field.name, ($event.target as HTMLTextAreaElement).value)"
       />
@@ -85,10 +85,10 @@ function updateField(name: string, value: ToolInputFormValue): void {
         :id="`${idBase}-input-${field.name}`"
         :value="getValue(field) as string"
         :class="[
-          'w-full bg-white text-navy',
+          'w-full bg-panel text-navy',
           isCompact
             ? 'h-[28px] border border-navy/30 px-2.5 text-[11px] shadow-none leading-none'
-            : 'border border-navy px-3 py-2 text-sm shadow-brutal-sm',
+            : 'border border-navy px-3 py-2 text-sm',
         ]"
         @change="updateField(field.name, ($event.target as HTMLSelectElement).value)"
       >
@@ -107,10 +107,10 @@ function updateField(name: string, value: ToolInputFormValue): void {
       <label
         v-else-if="field.kind === 'boolean'"
         :class="[
-          'flex items-center gap-2 bg-white text-navy',
+          'flex items-center gap-2 bg-panel text-navy',
           isCompact
             ? 'border border-navy/30 px-2.5 py-1.5 text-[11px] shadow-none'
-            : 'border border-navy px-3 py-2 text-sm shadow-brutal-sm',
+            : 'border border-navy px-3 py-2 text-sm',
         ]"
       >
         <input
@@ -138,10 +138,10 @@ function updateField(name: string, value: ToolInputFormValue): void {
         :inputmode="field.kind === 'integer' ? 'numeric' : field.kind === 'number' ? 'decimal' : undefined"
         type="text"
         :class="[
-          'w-full bg-white text-navy',
+          'w-full bg-panel text-navy',
           isCompact
             ? 'h-[28px] border border-navy/30 px-2.5 text-[11px] shadow-none leading-none'
-            : 'border border-navy px-3 py-2 text-sm shadow-brutal-sm',
+            : 'border border-navy px-3 py-2 text-sm',
         ]"
         @input="updateField(field.name, ($event.target as HTMLInputElement).value)"
       >

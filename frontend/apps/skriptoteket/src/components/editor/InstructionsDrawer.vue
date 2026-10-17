@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, ref } from "vue";
+import { UiDenseActionButton, UiDenseSpinner, UiGlyph } from "../ui";
 
 const UiMarkdown = defineAsyncComponent(() => import("../ui/UiMarkdown.vue"));
 
@@ -46,7 +47,7 @@ const showPreview = ref(false);
     :class="[
       isPanel
         ? 'relative w-full panel-inset flex flex-col min-h-0'
-        : 'fixed inset-y-0 right-0 z-50 w-full bg-modal border-l border-navy shadow-brutal flex flex-col md:relative md:inset-auto md:z-auto md:w-full md:h-full md:overflow-hidden',
+        : 'fixed inset-y-0 right-0 z-50 w-full bg-modal border-l border-navy/20 shadow-md flex flex-col md:relative md:inset-auto md:z-auto md:w-full md:h-full md:overflow-hidden',
     ]"
     :role="isPanel ? 'region' : 'dialog'"
     :aria-modal="!isPanel"
@@ -63,27 +64,21 @@ const showPreview = ref(false);
         Instruktioner
       </span>
       <div class="flex items-center gap-2">
-        <button
-          type="button"
-          class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none"
+        <UiDenseActionButton
+          :label="showPreview ? 'Redigera' : 'Förhandsgranska'"
           @click="showPreview = !showPreview"
-        >
-          {{ showPreview ? "Redigera" : "F&ouml;rhandsgranska" }}
-        </button>
-        <button
-          type="button"
-          class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none"
+        />
+        <UiDenseActionButton
+          :label="isSaving ? 'Sparar...' : 'Spara'"
           :disabled="isSaving || isReadOnly"
           @click="emit('save')"
-        >
-          {{ isSaving ? "Sparar..." : "Spara" }}
-        </button>
+        />
       </div>
     </div>
 
     <div
       v-else
-      class="border-b border-navy flex items-start justify-between gap-4 p-4"
+      class="border-b border-navy/20 flex items-start justify-between gap-4 p-4"
     >
       <div>
         <h2
@@ -96,13 +91,18 @@ const showPreview = ref(false);
           Skriv instruktioner i Markdown-format.
         </p>
       </div>
-      <button
-        type="button"
-        class="text-navy/60 hover:text-navy text-2xl leading-none"
+      <UiDenseActionButton
+        label="Stäng"
+        icon-only
         @click="emit('close')"
       >
-        &times;
-      </button>
+        <template #leading>
+          <UiGlyph
+            meaning="close"
+            :size="16"
+          />
+        </template>
+      </UiDenseActionButton>
     </div>
 
     <div
@@ -120,7 +120,7 @@ const showPreview = ref(false);
         </span>
         <button
           type="button"
-          class="text-xs text-navy/70 hover:text-action underline"
+          class="btn-inline-edit"
           @click="showPreview = !showPreview"
         >
           {{ showPreview ? "Visa redigerare" : "Visa f&ouml;rhandsgranskning" }}
@@ -142,7 +142,7 @@ const showPreview = ref(false);
           id="usage-instructions-textarea"
           :value="usageInstructions"
           rows="16"
-          class="w-full border border-navy/30 bg-white px-2.5 py-1.5 text-[11px] font-mono text-navy shadow-none leading-snug"
+          class="w-full border border-navy/30 bg-panel px-2.5 py-1.5 text-[11px] font-mono text-navy shadow-none leading-snug"
           placeholder="## Sa har gor du&#10;&#10;1. Ladda upp en fil&#10;2. Klicka pa Kor&#10;3. Ladda ner resultatet"
           :disabled="isSaving || isReadOnly"
           @input="emit('update:usageInstructions', ($event.target as HTMLTextAreaElement).value)"
@@ -152,7 +152,7 @@ const showPreview = ref(false);
       <!-- Preview mode -->
       <div
         v-else
-        class="border border-navy/30 bg-white p-3 shadow-none min-h-[240px]"
+        class="border border-navy/30 bg-panel p-3 shadow-none min-h-[240px]"
       >
         <Suspense v-if="usageInstructions.trim()">
           <template #default>
@@ -160,9 +160,7 @@ const showPreview = ref(false);
           </template>
           <template #fallback>
             <div class="flex items-center gap-3 text-sm text-navy/70">
-              <span
-                class="inline-block w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin"
-              />
+              <UiDenseSpinner :size="16" />
               <span>Laddar förhandsgranskning...</span>
             </div>
           </template>

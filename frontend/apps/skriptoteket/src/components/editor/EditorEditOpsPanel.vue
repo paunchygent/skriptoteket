@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, ref } from "vue";
+import { UiDenseActionButton } from "../ui";
 
 import type { EditOpsPanelState } from "../../composables/editor/editOps/editOpsState";
 import { writeTextToClipboard } from "../../utils/clipboard";
@@ -42,7 +43,7 @@ async function copyText(text: string): Promise<void> {
 <template>
   <section
     v-if="hasProposal"
-    class="border border-navy/30 bg-white px-3 py-3 space-y-3"
+    class="border border-navy/20 bg-panel px-3 py-3 space-y-3"
   >
     <div class="space-y-3">
       <div class="flex flex-wrap items-start justify-between gap-3">
@@ -60,61 +61,47 @@ async function copyText(text: string): Promise<void> {
             v-if="props.state.proposal?.correlationId"
             class="relative inline-flex group"
           >
-            <button
-              type="button"
-              class="btn-ghost h-[28px] px-2 py-1 text-[11px] font-mono normal-case border-navy/30 bg-canvas shadow-none text-navy/70"
-              :aria-expanded="showDebug"
+            <UiDenseActionButton
+              label="..."
               aria-label="Visa correlation-id"
+              :expanded="showDebug"
               @click="showDebug = !showDebug"
-            >
-              ...
-            </button>
+            />
             <span
-              class="pointer-events-none absolute right-0 top-full z-10 mt-1 whitespace-nowrap border border-navy/30 bg-white px-2 py-1 text-[10px] text-navy/70 opacity-0 shadow-brutal-sm transition-opacity group-hover:opacity-100"
+              class="pointer-events-none absolute right-0 top-full z-10 mt-1 whitespace-nowrap border border-navy/30 bg-modal px-2 py-1 text-[10px] text-navy/70 opacity-0 shadow-md transition-opacity group-hover:opacity-100"
               aria-hidden="true"
             >
               Visa correlation-id
             </span>
           </span>
-          <button
-            type="button"
-            class="btn-cta h-[28px] px-3 py-1 text-[11px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)]"
+          <UiDenseActionButton
+            label="Använd"
+            tone="primary"
             :disabled="!props.state.canApply"
             @click="emit('apply')"
-          >
-            Anv&auml;nd
-          </button>
-          <button
-            type="button"
-            class="btn-ghost h-[28px] px-3 py-1 text-[11px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] border-navy/30 bg-canvas shadow-none"
+          />
+          <UiDenseActionButton
+            label="Kasta"
             @click="emit('discard')"
-          >
-            Kasta
-          </button>
-          <button
+          />
+          <UiDenseActionButton
             v-if="showRegenerate"
-            type="button"
-            class="btn-ghost h-[28px] px-3 py-1 text-[11px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] border-navy/30 bg-canvas shadow-none"
+            label="Regenerera"
             @click="emit('regenerate')"
-          >
-            Regenerera
-          </button>
+          />
         </div>
       </div>
 
       <div
         v-if="showDebug && props.state.proposal?.correlationId"
-        class="border border-navy/20 bg-white px-3 py-2 text-[10px] text-navy/70"
+        class="border border-navy/20 bg-canvas px-3 py-2 text-[10px] text-navy/70"
       >
         <div class="flex flex-wrap items-center justify-between gap-2">
           <span class="font-mono break-all">correlation-id: {{ props.state.proposal.correlationId }}</span>
-          <button
-            type="button"
-            class="text-[10px] font-semibold text-navy/60 hover:text-navy"
+          <UiDenseActionButton
+            label="Kopiera"
             @click="copyText(props.state.proposal.correlationId)"
-          >
-            Kopiera
-          </button>
+          />
         </div>
       </div>
 
@@ -139,11 +126,11 @@ async function copyText(text: string): Promise<void> {
             </p>
             <pre
               v-if="props.state.previewErrorDetails.expected_snippet"
-              class="text-[11px] whitespace-pre-wrap border border-error/30 bg-white/60 p-2"
+              class="text-[11px] whitespace-pre-wrap border border-error/30 bg-panel/60 p-2"
             ><code>{{ props.state.previewErrorDetails.expected_snippet }}</code></pre>
             <pre
               v-if="props.state.previewErrorDetails.base_snippet"
-              class="text-[11px] whitespace-pre-wrap border border-error/30 bg-white/60 p-2"
+              class="text-[11px] whitespace-pre-wrap border border-error/30 bg-panel/60 p-2"
             ><code>{{ props.state.previewErrorDetails.base_snippet }}</code></pre>
           </div>
         </details>

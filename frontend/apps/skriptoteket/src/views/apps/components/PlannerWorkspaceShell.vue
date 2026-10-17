@@ -555,7 +555,7 @@ watch(
 
     <div
       v-if="transitionLabel"
-      class="border border-navy bg-panel px-4 py-10 text-center text-sm font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy shadow-brutal-sm"
+      class="border border-navy bg-panel px-4 py-10 text-center text-sm font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy"
       data-test="planner-workspace-transition"
     >
       {{ transitionLabel }}

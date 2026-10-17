@@ -4,19 +4,19 @@ id: TASK-SKRIPT-40-01-03
 title: Adopt the shared action buttons
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-09-27'
-status: ready
+status: in_progress
 closeout_review:
   record: inline
   status: not_started
 task_kind: story
 acceptance_criteria:
-- action-buttons is adopted through sync, main.css carries no .btn-* rules, and every button class renders from the package file
-- Frontend type check, unit tests, build and the shared `repository-governance-frontend-catalog design-system validate`, plus a Hemma staging walk of the screens the task touches, pass
+  - action-buttons is adopted through sync, main.css carries no .btn-* rules, and every button class renders from the package file
+  - Frontend type check, unit tests, build and the shared `repository-governance-frontend-catalog design-system validate`, plus a Hemma staging walk of the screens the task touches, pass
 dependencies:
-- TASK-SKRIPT-40-01-02
+  - TASK-SKRIPT-40-01-02
 story: ST-SKRIPT-40-01
 backlog_document_profile: contract-derived
 ---
@@ -46,7 +46,7 @@ Validate and parent-commit the coherent result before the unchanged repeat sync.
 
 ## Core Vertical And Performance
 
-Every application .btn-* use renders from one imported shared stylesheet.
+Every application .btn-\* use renders from one imported shared stylesheet.
 Removal includes duplicate shell and interaction rules so local CSS cannot
 silently override the release. No material performance concern is identified.
 
@@ -54,17 +54,17 @@ silently override the release. No material performance concern is identified.
 
 - Actual sync and validator pass; parent-committed protected paths are clean; repeat sync against the same clean source release exits 0 with no changes.
 - `pdm run fe-type-check`, `pdm run fe-test`, `pdm run fe-build` and `pdm run design-system-validate` pass, including the updated action-button contract test.
-- Confirm no .btn-* definitions remain in main.css and the adopted file is imported after tokens/theme.
+- Confirm no .btn-\* definitions remain in main.css and the adopted file is imported after tokens/theme.
 - Hemma staging walk covers forms and inline edit rows using all six classes and their relevant enabled/disabled/hover/focus/pressed states, using HuleEdu browser-session helpers/preflight.
 
 ## Stop Conditions
 
-- Stop if any used .btn-* variant lacks a released counterpart, if clean checkpoint authority is absent, or if local overrides remain necessary to restore an accepted package behavior.
+- Stop if any used .btn-\* variant lacks a released counterpart, if clean checkpoint authority is absent, or if local overrides remain necessary to restore an accepted package behavior.
 
 ## Decided Contract Terms
 
-| ID | Decided contract term |
-| --- | --- |
-| D1 | Adopt action-buttons and remove all inline .btn-* rules from main.css. Source: retained D13. |
-| D2 | Inline-edit, inline-primary and inline-cancel come from the package. Source: retained D13/D15. |
-| D3 | Parent-owned clean-map/result/repeat checkpoints and restored hook enforcement apply. Source: retained D24; R6. |
+| ID  | Decided contract term                                                                                           |
+| --- | --------------------------------------------------------------------------------------------------------------- |
+| D1  | Adopt action-buttons and remove all inline .btn-\* rules from main.css. Source: retained D13.                   |
+| D2  | Inline-edit, inline-primary and inline-cancel come from the package. Source: retained D13/D15.                  |
+| D3  | Parent-owned clean-map/result/repeat checkpoints and restored hook enforcement apply. Source: retained D24; R6. |

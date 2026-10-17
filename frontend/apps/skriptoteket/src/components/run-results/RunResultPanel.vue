@@ -18,6 +18,7 @@ import type { components } from "../../api/openapi";
 import type { FileRefInfo } from "../../composables/tools/fileRefHelpers";
 import { UiActionForm } from "../ui-actions";
 import { UiOutputRenderer } from "../ui-outputs";
+import { SystemMessage, UiDenseStatusPill } from "../ui";
 
 type RunStatus = components["schemas"]["RunStatus"];
 type UiOutput = NonNullable<components["schemas"]["UiPayloadV2"]["outputs"]>[number];
@@ -83,15 +84,13 @@ function onSubmitAction(payload: SubmitPayload): void {
 <template>
   <div class="space-y-6">
     <div class="flex items-center gap-3 text-sm text-navy/70">
-      <span class="px-2 py-1 border border-navy bg-panel shadow-brutal-sm font-semibold uppercase tracking-wide">
-        {{ statusLabel(run.status) }}
-      </span>
+      <UiDenseStatusPill :label="statusLabel(run.status)" />
       <span class="font-mono text-xs text-navy/50">{{ run.run_id }}</span>
     </div>
 
     <div
       v-if="run.error_summary"
-      class="p-4 border border-error bg-panel shadow-brutal-sm text-error"
+      class="p-4 border border-error bg-panel text-error"
     >
       <p class="font-semibold">Ett fel uppstod</p>
       <pre class="mt-2 whitespace-pre-wrap font-mono text-xs">{{ run.error_summary }}</pre>
@@ -119,12 +118,14 @@ function onSubmitAction(payload: SubmitPayload): void {
         Fortsätt
       </h2>
 
-      <div
+      <SystemMessage
         v-if="actionErrorMessage"
-        class="p-4 border border-error bg-panel shadow-brutal-sm text-error text-sm"
-      >
-        {{ actionErrorMessage }}
-      </div>
+        :model-value="actionErrorMessage"
+        tone="failure"
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
+      />
 
       <UiActionForm
         v-for="action in nextActions"
@@ -156,7 +157,7 @@ function onSubmitAction(payload: SubmitPayload): void {
         <li
           v-for="a in artifacts"
           :key="a.artifact_id"
-          class="p-4 border border-navy bg-panel shadow-brutal-sm flex items-center justify-between gap-4"
+          class="p-4 border border-navy bg-panel flex items-center justify-between gap-4"
         >
           <div class="min-w-0">
             <a

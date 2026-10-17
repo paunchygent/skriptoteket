@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { json } from "@codemirror/lang-json";
+import { UiDenseActionButton, UiDenseSpinner } from "../ui";
 import { computed, defineAsyncComponent, ref } from "vue";
 import type { components } from "../../api/openapi";
 
@@ -68,7 +69,7 @@ function handleInsertSettingsExample(): void {
 <template>
   <div
     :class="[
-      isInline ? 'p-3 space-y-3' : 'border border-navy/20 bg-panel shadow-brutal-sm p-3 space-y-3',
+      isInline ? 'p-3 space-y-3' : 'border border-navy/20 bg-panel p-3 space-y-3',
     ]"
   >
     <div class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
@@ -82,7 +83,7 @@ function handleInsertSettingsExample(): void {
         </span>
         <div
           :id="settingsSchemaHelpTooltipId"
-          class="absolute left-0 top-full mt-2 w-[min(260px,calc(100vw-2*var(--huleedu-space-4)))] border border-navy/30 bg-white text-navy px-3 py-2 text-[11px] opacity-0 pointer-events-none transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 z-[var(--huleedu-z-tooltip)]"
+          class="absolute left-0 top-full mt-2 w-[min(260px,calc(100vw-2*var(--huleedu-space-4)))] border border-navy/30 bg-modal shadow-md text-navy px-3 py-2 text-[11px] opacity-0 pointer-events-none transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 z-[var(--huleedu-z-tooltip)]"
           role="tooltip"
         >
           <p class="text-[11px] text-navy/80">
@@ -93,31 +94,23 @@ function handleInsertSettingsExample(): void {
       </div>
 
       <div class="flex items-center justify-end gap-2">
-        <button
+        <UiDenseActionButton
           v-if="!isInline"
-          type="button"
-          class="btn-ghost h-[28px] shadow-none px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] leading-none border-navy/30 bg-canvas"
-          :aria-expanded="!isCollapsed"
+          :label="isCollapsed ? 'Visa' : 'Dölj'"
+          :expanded="!isCollapsed"
           @click="isCollapsed = !isCollapsed"
-        >
-          {{ isCollapsed ? "Visa" : "D&ouml;lj" }}
-        </button>
-        <button
-          type="button"
-          class="btn-ghost h-[28px] shadow-none px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] leading-none border-navy/30 bg-canvas"
+        />
+        <UiDenseActionButton
+          label="formatera"
           :disabled="props.isReadOnly"
           @click="handlePrettifySettings"
-        >
-          formatera
-        </button>
-        <button
-          type="button"
-          class="btn-ghost h-[28px] shadow-none px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] leading-none border-navy/30 bg-canvas w-[110px]"
+        />
+        <UiDenseActionButton
+          label="förval"
+          class="w-[110px]"
           :disabled="props.isReadOnly"
           @click="handleInsertSettingsExample"
-        >
-          f&ouml;rval
-        </button>
+        />
       </div>
     </div>
 
@@ -126,10 +119,7 @@ function handleInsertSettingsExample(): void {
       class="space-y-3"
     >
       <div
-        :class="[
-          'h-[240px] border border-navy bg-canvas overflow-hidden',
-          isInline ? '' : 'shadow-brutal-sm',
-        ]"
+        class="h-[240px] border border-navy/20 bg-canvas overflow-hidden"
       >
         <Suspense>
           <template #default>
@@ -145,7 +135,7 @@ function handleInsertSettingsExample(): void {
           </template>
           <template #fallback>
             <div class="h-full w-full flex items-center justify-center gap-3 text-sm text-navy/70">
-              <span class="inline-block w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
+              <UiDenseSpinner :size="16" />
               <span>Laddar JSON-redigerare...</span>
             </div>
           </template>

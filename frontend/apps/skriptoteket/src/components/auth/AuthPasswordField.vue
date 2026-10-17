@@ -63,7 +63,7 @@ function onInput(event: Event): void {
         :disabled="disabled"
         :aria-invalid="error ? 'true' : 'false'"
         :aria-describedby="hint || error ? descriptionId : undefined"
-        class="w-full border bg-white px-3 py-2 pr-11 shadow-brutal-sm text-navy"
+        class="w-full border bg-white px-3 py-2 pr-11 text-navy"
         :class="error ? 'border-critical' : 'border-navy'"
         @input="onInput"
       >

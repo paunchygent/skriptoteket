@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { nextTick, ref, watch } from "vue";
+import { UiDenseSpinner } from "../ui";
 
 const props = withDefaults(
   defineProps<{
@@ -76,7 +77,7 @@ function handleKeydown(event: KeyboardEvent): void {
         v-model="localValue"
         type="text"
         :placeholder="placeholder"
-        class="inline-edit-input w-full px-2 py-1 bg-white shadow-none focus:outline-none focus:ring-2 focus:ring-action/30"
+        class="inline-edit-input w-full px-2 py-1 bg-panel shadow-none focus:outline-none focus:ring-2 focus:ring-action/30"
         :class="inputClass"
         @blur="commitEdit"
         @keydown="handleKeydown"
@@ -94,9 +95,9 @@ function handleKeydown(event: KeyboardEvent): void {
       >
         <slot>{{ modelValue || placeholder }}</slot>
       </component>
-      <span
+      <UiDenseSpinner
         v-if="saving"
-        class="inline-block w-3 h-3 border-2 border-navy/30 border-t-navy rounded-full animate-spin shrink-0"
+        class="shrink-0"
       />
     </template>
   </div>
@@ -104,7 +105,7 @@ function handleKeydown(event: KeyboardEvent): void {
 
 <style scoped>
 .inline-edit-input {
-  border: 1px solid var(--color-navy);
-  color: var(--color-navy);
+  border: var(--huleedu-border-width) solid var(--huleedu-navy-20);
+  color: var(--huleedu-navy);
 }
 </style>

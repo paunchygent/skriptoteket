@@ -2,9 +2,47 @@ import { describe, expect, it } from "vitest";
 import { nextTick } from "vue";
 
 import { mountWithContext } from "../../test/utils";
+import { SystemMessage } from "../ui";
 import ChatDrawer from "./ChatDrawer.vue";
 
 describe("ChatDrawer", () => {
+  it.each([
+    ["noticeMessage", "clearNotice", "Notice", "status", "polite"],
+    ["error", "clearError", "Chat failed", "alert", "assertive"],
+    ["disabledMessage", "clearDisabled", "Chat disabled", "status", "polite"],
+    ["editOpsError", "clearEditOpsError", "Edit failed", "alert", "assertive"],
+    ["editOpsDisabledMessage", "clearEditOpsDisabled", "Edit disabled", "status", "polite"],
+  ] as const)("dismisses %s through its clear handler exactly once", async (prop, event, text, role, live) => {
+    const wrapper = mountWithContext(ChatDrawer, {
+      props: {
+        variant: "column",
+        isOpen: true,
+        isCollapsed: false,
+        messages: [],
+        isStreaming: false,
+        isEditOpsLoading: false,
+        noticeMessage: "Notice",
+        noticeVariant: "warning",
+        error: "Chat failed",
+        disabledMessage: "Chat disabled",
+        editOpsError: "Edit failed",
+        editOpsDisabledMessage: "Edit disabled",
+      },
+    });
+
+    const message = wrapper.findAllComponents(SystemMessage).find((item) => item.text().includes(text));
+    expect(message, `Missing ${prop} message`).toBeDefined();
+    expect(message!.attributes()).toMatchObject({ role, "aria-live": live, "aria-atomic": "true" });
+    await message!.get('button[aria-label="Stäng"]').trigger("click");
+
+    for (const clearEvent of ["clearNotice", "clearError", "clearDisabled", "clearEditOpsError", "clearEditOpsDisabled"]) {
+      expect(wrapper.emitted(clearEvent)).toEqual(clearEvent === event ? [[]] : undefined);
+    }
+    await wrapper.setProps({ [prop]: null });
+    expect(wrapper.findAllComponents(SystemMessage).some((item) => item.text().includes(text))).toBe(false);
+    wrapper.unmount();
+  });
+
   it("keeps draft on edit-ops request and clears only when clearDraftToken changes", async () => {
     const wrapper = mountWithContext(ChatDrawer, {
       props: {

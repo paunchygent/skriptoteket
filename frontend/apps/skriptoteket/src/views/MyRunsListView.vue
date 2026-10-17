@@ -38,16 +38,12 @@ function statusLabel(status: RunStatus): string {
 
 function statusClass(status: RunStatus): string {
   switch (status) {
-    case "succeeded":
-      return "bg-canvas text-navy/70 border border-navy/30";
     case "failed":
     case "timed_out":
       return "bg-error/10 text-error border border-error/30";
     case "queued":
     case "running":
       return "bg-action/10 text-action border border-action/40";
-    case "cancelled":
-      return "bg-canvas text-navy/70 border border-navy/30";
     default:
       return "bg-canvas text-navy/70 border border-navy/30";
   }
@@ -61,8 +57,8 @@ function formatDateTime(value: string): string {
   return date.toLocaleString("sv-SE", { dateStyle: "medium", timeStyle: "short" });
 }
 
-	function formatDuration(startedAt?: string | null, finishedAt?: string | null): string | null {
-	  if (!startedAt || !finishedAt) return null;
+function formatDuration(startedAt?: string | null, finishedAt?: string | null): string | null {
+  if (!startedAt || !finishedAt) return null;
 
   const start = new Date(startedAt);
   const end = new Date(finishedAt);
@@ -123,7 +119,7 @@ onMounted(() => {
     <section class="panel">
       <div
         v-if="isLoading"
-        class="panel-state"
+        class="panel-state text-navy/70"
       >
         Laddar körningar…
       </div>
@@ -135,7 +131,7 @@ onMounted(() => {
       </div>
       <div
         v-else-if="!hasRuns"
-        class="panel-state"
+        class="panel-state text-navy/70"
       >
         Du har inga körningar än.
       </div>
@@ -247,15 +243,13 @@ onMounted(() => {
 }
 
 .panel {
-  border: var(--huleedu-border-width) solid var(--huleedu-navy);
+  border: var(--huleedu-border-width) solid var(--huleedu-navy-20);
   background-color: var(--huleedu-panel);
-  box-shadow: var(--huleedu-shadow-brutal-sm);
 }
 
 .panel-state {
   padding: var(--huleedu-space-4);
   font-size: var(--huleedu-text-sm);
-  color: var(--huleedu-navy-70);
 }
 
 .table-wrapper {

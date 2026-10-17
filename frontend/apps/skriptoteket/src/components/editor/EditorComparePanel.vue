@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue";
+import { UiDenseActionButton, UiDenseSpinner } from "../ui";
 import type { components } from "../../api/openapi";
 
 import {
@@ -113,7 +114,7 @@ const diffItems = computed<EditorFileDiffItem[]>(() => {
           Diff mot
         </label>
         <select
-          class="h-[28px] border border-navy/30 bg-white px-2.5 text-[11px] text-navy shadow-none leading-none"
+          class="h-[28px] border border-navy/30 bg-panel px-2.5 text-[11px] text-navy shadow-none leading-none"
           :value="compareTargetValue"
           @change="emit('updateCompareTargetValue', ($event.target as HTMLSelectElement).value)"
         >
@@ -133,13 +134,10 @@ const diffItems = computed<EditorFileDiffItem[]>(() => {
           </option>
         </select>
 
-        <button
-          type="button"
-          class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none"
+        <UiDenseActionButton
+          label="Stäng diff"
           @click="emit('close')"
-        >
-          Stäng diff
-        </button>
+        />
       </div>
     </div>
 
@@ -149,7 +147,7 @@ const diffItems = computed<EditorFileDiffItem[]>(() => {
         class="h-full w-full flex items-center justify-center gap-3 p-4 panel-inset text-sm text-navy/70"
         data-editor-state="diff-loading"
       >
-        <span class="inline-block w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
+        <UiDenseSpinner :size="16" />
         <span>Laddar diffversion...</span>
       </div>
 

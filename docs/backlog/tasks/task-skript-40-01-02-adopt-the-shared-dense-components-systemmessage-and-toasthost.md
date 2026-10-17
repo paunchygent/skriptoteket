@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-09-27'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-17'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: Pi ruthless-reviewer (Sol) approved the rereview of 534e8b02 (retained session 01a149c9-5bc7-7713-ba64-12dee0470bdd, evidence/reviews/TASK-SKRIPT-40-01-02/rereview-534e8b02.md); merged and pushed to main e1efb4fc. The Mac parent's staging walk on e1efb4fc on 2026-10-17 passed at desktop 1440x900, tablet 768x1024 and phone 375x812 (evidence/staging-walk-40-01-02/walk.md, 11 screenshots), and the parent authorized closure.
 task_kind: story
 acceptance_criteria:
   - All shared Vue exports including dense primitives, action/icon/status components, spinner, toggle, SystemMessage, ToastHost, glyph table/components and barrel are synced into the package-shaped shared subtree with no superseded local implementation remaining

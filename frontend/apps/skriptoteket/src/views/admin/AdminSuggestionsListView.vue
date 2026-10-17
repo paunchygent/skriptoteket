@@ -5,6 +5,7 @@ import { RouterLink } from "vue-router";
 import { apiGet, isApiError } from "../../api/client";
 import type { components } from "../../api/openapi";
 import ToolListRow from "../../components/tools/ToolListRow.vue";
+import { SystemMessage, UiDenseStatusPill } from "../../components/ui";
 
 type ListSuggestionsResponse = components["schemas"]["ListSuggestionsResponse"];
 type SuggestionSummary = components["schemas"]["SuggestionSummary"];
@@ -23,21 +24,17 @@ function statusLabel(status: SuggestionStatus): string {
   return labels[status];
 }
 
-function statusClass(status: SuggestionStatus): string {
-  if (status === "pending_review") {
-    return "bg-warning/10 text-warning border border-warning/40";
-  }
-  if (status === "accepted") {
-    return "bg-success/10 text-success border border-success/30";
-  }
-  return "bg-navy/10 text-navy/60 border border-navy/30";
+function statusTone(status: SuggestionStatus): "warning" | "success" | "neutral" {
+  if (status === "pending_review") return "warning";
+  if (status === "accepted") return "success";
+  return "neutral";
 }
 
 function actionClass(status: SuggestionStatus): string {
   if (status === "pending_review") {
-    return "btn-cta w-full no-underline";
+    return "btn-cta w-full";
   }
-  return "btn-ghost w-full no-underline";
+  return "btn-ghost w-full";
 }
 
 function actionLabel(status: SuggestionStatus): string {
@@ -86,28 +83,28 @@ onMounted(() => {
 
     <div
       v-if="isLoading"
-      class="p-4 border border-navy bg-panel shadow-brutal-sm text-sm text-navy/70"
+      class="p-4 rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] bg-panel text-sm text-navy/70"
     >
       Laddar...
     </div>
 
-    <div
+    <SystemMessage
       v-else-if="errorMessage"
-      class="p-4 border border-critical bg-panel shadow-brutal-sm text-sm text-critical"
-    >
-      {{ errorMessage }}
-    </div>
+      :model-value="errorMessage"
+      tone="failure"
+      role="alert"
+    />
 
     <div
       v-else-if="suggestions.length === 0"
-      class="p-4 border border-navy bg-panel shadow-brutal-sm text-sm text-navy/70"
+      class="p-4 rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] bg-panel text-sm text-navy/70"
     >
       Inga förslag väntar på granskning.
     </div>
 
     <ul
       v-else
-      class="border border-navy bg-panel shadow-brutal-sm divide-y divide-navy/15"
+      class="rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] bg-panel divide-y divide-[var(--huleedu-surface-divider)]"
     >
       <ToolListRow
         v-for="suggestion in suggestions"
@@ -126,12 +123,10 @@ onMounted(() => {
         </template>
 
         <template #status>
-          <span
-            class="status-pill"
-            :class="statusClass(suggestion.status)"
-          >
-            {{ statusLabel(suggestion.status) }}
-          </span>
+          <UiDenseStatusPill
+            :label="statusLabel(suggestion.status)"
+            :tone="statusTone(suggestion.status)"
+          />
         </template>
 
         <template #actions>

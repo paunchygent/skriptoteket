@@ -5,7 +5,7 @@ import { apiGet, apiPost, isApiError } from "../../api/client";
 import type { components } from "../../api/openapi";
 import CreateDraftToolModal from "../../components/admin/CreateDraftToolModal.vue";
 import { useToast } from "../../composables/useToast";
-import SystemMessage from "../../components/ui/SystemMessage.vue";
+import { SystemMessage } from "../../components/ui";
 import ToggleSwitch from "../../components/ui/ToggleSwitch.vue";
 import { useCreateDraftToolModal } from "../../composables/admin/useCreateDraftToolModal";
 
@@ -176,12 +176,16 @@ onMounted(() => {
 
     <SystemMessage
       v-model="errorMessage"
-      variant="error"
+      tone="failure"
+      dismissible
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
     />
 
     <div
       v-if="isLoading"
-      class="p-4 border border-navy bg-panel shadow-brutal-sm text-sm text-navy/70"
+      class="p-4 rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] bg-panel text-sm text-navy/70"
     >
       Laddar...
     </div>
@@ -195,7 +199,7 @@ onMounted(() => {
         <h2 class="text-xs font-semibold uppercase tracking-wide text-navy/70">
           Pågående
         </h2>
-        <ul class="border border-navy bg-panel shadow-brutal-sm">
+        <ul class="rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] bg-panel">
           <li
             v-for="tool in inProgressTools"
             :key="tool.id"
@@ -225,7 +229,7 @@ onMounted(() => {
         <h2 class="text-xs font-semibold uppercase tracking-wide text-navy/70">
           Klara med ändringar
         </h2>
-        <ul class="border border-navy bg-panel shadow-brutal-sm">
+        <ul class="rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] bg-panel">
           <li
             v-for="tool in readyToolsWithPendingReview"
             :key="tool.id"
@@ -270,7 +274,7 @@ onMounted(() => {
         <h2 class="text-xs font-semibold uppercase tracking-wide text-navy/70">
           Klara
         </h2>
-        <ul class="border border-navy bg-panel shadow-brutal-sm">
+        <ul class="rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] bg-panel">
           <li
             v-for="tool in readyToolsWithoutPendingReview"
             :key="tool.id"
