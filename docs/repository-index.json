@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "dc2beb4af95a2b349374f1c09067471b1437d653029c7a6f7a30225a648b5973",
+  "source_set_digest": "18e2fc09bb06cd3003ac29db5c23aace1f04011bcea2c3bc644fb883bb573b16",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -7235,6 +7235,24 @@
         "decided_at": "2026-10-17T10:24:31+02:00",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "Independent Sol review .orchestration/context/sessions/01a148db-64d7-7b40-9a2e-34373c3de59c/evidence/review-rep0042.md (approved, no findings; docker 9 passed, 38 v14 replay files 298 passed). One live provider call per D5 (evidence/rep0042-r2-live-call.md, gpt-6-luna, 3,571 input and 373 output tokens). Merged to main as ef8cd6ea; docker suite 9 passed on main after the merge (evidence/merged-main-docker.log)."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0043",
+      "type": "task",
+      "title": "Delete vault payload files only after their rows commit and surface migration-thread errors in migrated_db",
+      "path": "docs/backlog/tasks/task-skript-rep-0043-delete-vault-payload-files-only-after-their-rows-commit-and-surface-migration-thread-errors-in-migrated-db.md",
+      "status": "ready",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {
