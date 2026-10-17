@@ -79,9 +79,6 @@ const isBlocked = computed(() => props.blockedItems.length > 0);
             :model-value="error"
             tone="failure"
             dismissible
-            role="alert"
-            aria-live="assertive"
-            aria-atomic="true"
             @update:model-value="emit('update:error', $event)"
           />
 

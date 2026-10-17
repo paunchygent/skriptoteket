@@ -141,9 +141,6 @@ onMounted(() => {
         v-model="loadErrorMessage"
         tone="failure"
         dismissible
-        role="alert"
-        aria-live="assertive"
-        aria-atomic="true"
       />
 
       <form
@@ -154,9 +151,6 @@ onMounted(() => {
           v-model="formErrorMessage"
           tone="failure"
           dismissible
-          role="alert"
-          aria-live="assertive"
-          aria-atomic="true"
         />
 
         <div class="expand-left-40 space-y-2">

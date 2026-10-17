@@ -124,9 +124,6 @@ const emit = defineEmits<{
       <SystemMessage
         v-if="props.prerequisiteErrors.length"
         tone="failure"
-        role="alert"
-        aria-live="assertive"
-        aria-atomic="true"
       >
         <ul>
           <li
@@ -169,9 +166,6 @@ const emit = defineEmits<{
       <SystemMessage
         v-if="props.actionErrorMessage"
         tone="failure"
-        role="alert"
-        aria-live="assertive"
-        aria-atomic="true"
         class="whitespace-pre-wrap"
       >
         {{ props.actionErrorMessage }}

@@ -55,9 +55,6 @@ onMounted(() => {
       v-model="loadError"
       tone="failure"
       dismissible
-      role="alert"
-      aria-live="assertive"
-      aria-atomic="true"
       class="expand-left-40"
     />
 

@@ -115,7 +115,6 @@ watch(
         v-else-if="userError"
         :model-value="userError"
         tone="failure"
-        role="alert"
       />
       <div
         v-else-if="!user"

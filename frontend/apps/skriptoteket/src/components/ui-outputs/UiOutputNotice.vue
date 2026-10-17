@@ -16,5 +16,11 @@ const tone = computed(() => {
 </script>
 
 <template>
-  <SystemMessage :tone="tone">{{ output.message }}</SystemMessage>
+  <SystemMessage
+    :tone="tone"
+    role="status"
+    aria-live="polite"
+  >
+    {{ output.message }}
+  </SystemMessage>
 </template>

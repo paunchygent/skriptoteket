@@ -179,9 +179,6 @@ onMounted(() => {
       v-model="errorMessage"
       tone="failure"
       dismissible
-      role="alert"
-      aria-live="assertive"
-      aria-atomic="true"
     />
 
     <div

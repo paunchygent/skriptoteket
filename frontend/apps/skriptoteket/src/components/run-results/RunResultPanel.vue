@@ -122,9 +122,6 @@ function onSubmitAction(payload: SubmitPayload): void {
         v-if="actionErrorMessage"
         :model-value="actionErrorMessage"
         tone="failure"
-        role="alert"
-        aria-live="assertive"
-        aria-atomic="true"
       />
 
       <UiActionForm

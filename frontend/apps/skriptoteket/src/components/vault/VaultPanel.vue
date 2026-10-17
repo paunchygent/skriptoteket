@@ -400,9 +400,6 @@ onUnmounted(() => {
       v-if="errorMessage"
       :model-value="errorMessage"
       tone="failure"
-      role="alert"
-      aria-live="assertive"
-      aria-atomic="true"
       :dismissible="false"
     />
     <SystemMessage
@@ -410,9 +407,6 @@ onUnmounted(() => {
       :model-value="actionError"
       tone="failure"
       dismissible
-      role="alert"
-      aria-live="assertive"
-      aria-atomic="true"
       @update:model-value="actionError = $event"
     />
 
@@ -421,9 +415,6 @@ onUnmounted(() => {
       :model-value="selectionError"
       tone="failure"
       dismissible
-      role="alert"
-      aria-live="assertive"
-      aria-atomic="true"
       @update:model-value="selectionError = $event"
     />
 

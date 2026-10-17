@@ -92,7 +92,6 @@ onMounted(() => {
       v-else-if="errorMessage"
       :model-value="errorMessage"
       tone="failure"
-      role="alert"
     />
 
     <div

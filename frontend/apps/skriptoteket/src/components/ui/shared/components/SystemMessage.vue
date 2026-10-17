@@ -9,8 +9,9 @@
  *     - The parent owns visibility: an omitted modelValue renders the slot
  *       unconditionally, null or empty text hides the message, and dismissal
  *       only emits update:modelValue(null) followed by dismiss.
- *     - Announcement semantics default to role="status"; consumers pass
- *       role, aria-live, aria-atomic, id and class through to the root.
+ *     - Failure messages default to an assertive, atomic alert; other tones
+ *       default to role="status". Consumer announcement attributes override
+ *       these defaults; id and class also pass through to the root.
  */
 
 import { computed } from "vue";
@@ -58,7 +59,9 @@ function dismissMessage(): void {
       tone === 'info' && 'border-navy/20 bg-canvas/60 text-navy',
       dismissible && 'flex items-start gap-2',
     ]"
-    role="status"
+    :role="tone === 'failure' ? 'alert' : 'status'"
+    :aria-live="tone === 'failure' ? 'assertive' : undefined"
+    :aria-atomic="tone === 'failure' ? 'true' : undefined"
     data-ui="system-message"
   >
     <template v-if="dismissible">

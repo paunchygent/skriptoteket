@@ -149,9 +149,6 @@ const assistantActivity = computed(() => {
               :model-value="error"
               tone="failure"
               dismissible
-              role="alert"
-              aria-live="assertive"
-              aria-atomic="true"
               @update:model-value="emit('clearError')"
             />
             <SystemMessage
@@ -169,9 +166,6 @@ const assistantActivity = computed(() => {
               :model-value="props.editOpsError"
               tone="failure"
               dismissible
-              role="alert"
-              aria-live="assertive"
-              aria-atomic="true"
               @update:model-value="emit('clearEditOpsError')"
             />
             <SystemMessage
