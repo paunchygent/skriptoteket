@@ -86,8 +86,10 @@
   Running children (agent-mcp, host hemma): Sol `df1d5c3a` 39-06-06 suggested type on
   `codex/task-skript-39-06-06-remote` (ended; committed `6a9825c4`, gates green, not pushed;
   result `evidence/results/df1d5c3a-*.json`; next fresh review, merge, then field to 8445f6e1); Opus
-  `8445f6e1` 40-04-03 workspace on `...-40-04-03-remote` (b249f704 frame, 4b15a293;
-  view slice ports open; send 375/768/1440 screenshots, then review). Desktop session
+  `8445f6e1` 40-04-03 workspace on `...-40-04-03-remote` (b249f704 frame; 10879f00 spec
+  port; a1d89539 amber guidance; checks green; screenshots r2 at 375/768/1440 in its
+  `evidence/40-04-03-screens/r2/`; next: parent screenshot check, then review). It
+  confirmed the DXE export block independently. Desktop session
   "Profile: choosing a course adds and saves it" repairs Mina kurser (choosing adds,
   each change saves). Next lanes: 39-06-02 Exam.net probe, 39-07-03. Follow-ups:
   trash cleanup deletes payload files before its row commit; `migrated_db` swallows
