@@ -1,12 +1,11 @@
 ---
 type: task
 id: TASK-SKRIPT-39-06-07
-title: 'Delete an instruction in the workspace API: heading only by default, heading
-  with its questions as a separate command'
+title: 'Delete an instruction in the workspace API: heading only by default, heading with its questions as a separate command'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-17'
 status: ready
 closeout_review:
@@ -14,10 +13,7 @@ closeout_review:
   status: not_started
 task_kind: story
 acceptance_criteria:
-- Deleting an instruction removes only its heading and leaves its questions in place
-  as standalone questions; a separate command deletes the heading with all its questions;
-  deleting an instruction's last question also removes the empty heading; every delete
-  is one undoable step
+  - Deleting an instruction removes only its heading and leaves its questions in place as standalone questions; a separate command deletes the heading with all its questions; deleting an instruction's last question also removes the empty heading; every delete is one undoable step
 story: ST-SKRIPT-39-06
 backlog_document_profile: contract-derived
 ---
@@ -97,10 +93,10 @@ delete is one request and one undo step.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term                                                                                                                       |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| D1  | Deleting an instruction is required; the default removes only the heading (user 2026-10-17).                                                |
-| D2  | After a heading-only delete the questions stay in place, in order, with their points, as standalone questions (user 2026-10-17).            |
-| D3  | Deleting the heading with all its questions is a separate, explicit command and never the default (user 2026-10-17).                        |
-| D4  | Every delete is soft and undoable: one new undo step, restored exactly by undo; no toast undo (user 2026-10-17).                            |
+| ID  | Decided contract term                                                                                                                                                                                   |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Deleting an instruction is required; the default removes only the heading (user 2026-10-17).                                                                                                            |
+| D2  | After a heading-only delete the questions stay in place, in order, with their points, as standalone questions (user 2026-10-17).                                                                        |
+| D3  | Deleting the heading with all its questions is a separate, explicit command and never the default (user 2026-10-17).                                                                                    |
+| D4  | Every delete is soft and undoable: one new undo step, restored exactly by undo; no toast undo (user 2026-10-17).                                                                                        |
 | D5  | Deleting a parent's last question also removes the empty heading in the same undo step, and the result reports it for an inline notice (user 2026-10-17); this replaces TASK-SKRIPT-39-06-03's refusal. |
