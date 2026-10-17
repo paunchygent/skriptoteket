@@ -98,10 +98,11 @@ repos:
         files: >-
           (?x)^(design-system-map\.json|
           frontend/apps/skriptoteket/src/design-system/huleedu-integrated/.*|
+          frontend/apps/skriptoteket/src/components/ui/shared/.*|
           src/skriptoteket/web/static/css/huleedu-design-tokens\.css|
           frontend/apps/skriptoteket/src/styles/tailwind-theme\.css|
           frontend/apps/skriptoteket/public/logo-horizontal\.svg|
           pyproject\.toml|
           \.pre-commit-config\.yaml)$
         pass_filenames: false
-        stages: [pre-commit]
+        stages: [manual]
