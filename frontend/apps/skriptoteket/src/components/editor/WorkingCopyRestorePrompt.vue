@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
+import { UiDenseActionButton, UiDenseIconButton } from "../ui";
 
 import type { EditorFileDiffItem, EditorFileId } from "../../composables/editor/bundleFiles";
 import VirtualFileDiffViewer from "./diff/VirtualFileDiffViewer.vue";
@@ -64,28 +65,19 @@ watch(
       </div>
 
       <div class="flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none"
+        <UiDenseActionButton
+          label="Återställ"
           @click="emit('restore')"
-        >
-          &Aring;terst&auml;ll
-        </button>
-        <button
-          type="button"
-          class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none"
+        />
+        <UiDenseActionButton
+          label="Kasta"
           @click="emit('discard')"
-        >
-          Kasta
-        </button>
-        <button
-          type="button"
-          class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none"
+        />
+        <UiDenseActionButton
+          label="Visa diff"
           :disabled="props.diffItems.length === 0"
           @click="openDiff"
-        >
-          Visa diff
-        </button>
+        />
       </div>
     </div>
   </div>
@@ -100,15 +92,15 @@ watch(
         @click.self="closeDiff"
       >
         <div
-          class="relative w-full max-w-6xl mx-4 p-4 bg-modal border border-navy shadow-md flex flex-col min-h-0 h-[min(760px,calc(100vh-3rem))]"
+          class="relative w-full max-w-6xl mx-4 p-4 bg-modal rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] shadow-md flex flex-col min-h-0 h-[min(760px,calc(100vh-3rem))]"
         >
-          <button
-            type="button"
-            class="absolute top-3 right-3 text-navy/60 hover:text-navy text-xl leading-none"
+          <UiDenseIconButton
+            label="Stäng"
+            class="absolute top-3 right-3"
             @click="closeDiff"
           >
             &times;
-          </button>
+          </UiDenseIconButton>
 
           <div class="flex-1 min-h-0 overflow-hidden">
             <VirtualFileDiffViewer

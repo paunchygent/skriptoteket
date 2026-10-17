@@ -5,7 +5,7 @@ import { RouterLink, useRoute, useRouter } from "vue-router";
 import { apiGet, isApiError } from "../../api/client";
 import type { components } from "../../api/openapi";
 import CreateDraftToolModal from "../../components/admin/CreateDraftToolModal.vue";
-import { SystemMessage } from "../../components/ui";
+import { SystemMessage, UiDenseSpinner } from "../../components/ui";
 import { useCreateDraftToolModal } from "../../composables/admin/useCreateDraftToolModal";
 import { useAdminToolsIndex } from "../../composables/admin/useAdminToolsIndex";
 import {
@@ -289,7 +289,7 @@ watch(
           <input
             v-model="searchQuery"
             data-testid="editor-hub-search-input"
-            class="w-full h-[28px] border border-navy/30 bg-white px-2.5 text-[11px] text-navy shadow-none leading-none"
+            class="w-full h-[28px] border border-[var(--huleedu-panel-border)] bg-canvas px-2.5 text-[11px] text-navy shadow-none leading-none"
             placeholder="Sök på titel eller URL-namn…"
             @focus="isSearchOpen = true"
           >
@@ -299,25 +299,25 @@ watch(
 
           <div
             v-if="isSearchOpen && toolSearch.normalizedQuery"
-            class="absolute left-0 top-full mt-[var(--huleedu-space-2)] w-[min(520px,92vw)] border border-navy bg-panel shadow-md z-[var(--huleedu-z-tooltip)]"
+            class="absolute left-0 top-full mt-[var(--huleedu-space-2)] w-[min(520px,92vw)] rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] bg-modal shadow-md z-[var(--huleedu-z-tooltip)]"
           >
             <div class="p-[var(--huleedu-space-3)] space-y-[var(--huleedu-space-2)]">
               <div class="text-[10px] font-semibold uppercase tracking-wide text-navy/60">
                 Sökresultat
               </div>
 
-              <div
+              <SystemMessage
                 v-if="searchErrorMessage"
-                class="border border-error/30 bg-error/10 px-2 py-1 text-[11px] text-error"
-              >
-                {{ searchErrorMessage }}
-              </div>
+                :model-value="searchErrorMessage"
+                tone="failure"
+                role="alert"
+              />
 
               <div
                 v-else-if="isSearchLoading"
                 class="flex items-center gap-2 text-[11px] text-navy/60"
               >
-                <span class="inline-block w-3 h-3 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
+                <UiDenseSpinner />
                 <span>Laddar…</span>
               </div>
 
@@ -384,9 +384,9 @@ watch(
 
     <div
       v-if="isRedirecting"
-      class="flex items-center gap-[var(--huleedu-space-3)] p-[var(--huleedu-space-4)] border border-navy bg-panel text-sm text-navy/70"
+      class="flex items-center gap-[var(--huleedu-space-3)] p-[var(--huleedu-space-4)] rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] bg-panel text-sm text-navy/70"
     >
-      <span class="inline-block w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
+      <UiDenseSpinner :size="16" />
       <span>Öppnar senaste verktyg…</span>
     </div>
 
@@ -395,7 +395,7 @@ watch(
       class="grid gap-[var(--huleedu-space-6)] lg:grid-cols-2"
     >
       <section
-        class="border border-navy bg-panel p-[var(--huleedu-space-4)] space-y-[var(--huleedu-space-4)]"
+        class="rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] bg-panel p-[var(--huleedu-space-4)] space-y-[var(--huleedu-space-4)]"
       >
         <header class="space-y-[var(--huleedu-space-1)]">
           <h2 class="text-xs font-semibold uppercase tracking-wide text-navy/70">
@@ -439,7 +439,7 @@ watch(
       </section>
 
       <section
-        class="border border-navy bg-panel p-[var(--huleedu-space-4)] space-y-[var(--huleedu-space-4)]"
+        class="rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] bg-panel p-[var(--huleedu-space-4)] space-y-[var(--huleedu-space-4)]"
       >
         <header class="space-y-[var(--huleedu-space-1)]">
           <h2 class="text-xs font-semibold uppercase tracking-wide text-navy/70">
@@ -474,7 +474,7 @@ watch(
           data-testid="editor-hub-my-tools-loading"
           class="flex items-center gap-[var(--huleedu-space-3)] p-[var(--huleedu-space-4)] border border-navy/20 bg-canvas text-sm text-navy/70"
         >
-          <span class="inline-block w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
+          <UiDenseSpinner :size="16" />
           <span>Laddar…</span>
         </div>
 

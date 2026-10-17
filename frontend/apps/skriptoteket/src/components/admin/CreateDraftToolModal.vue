@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { nextTick, ref, watch } from "vue";
 
-import { SystemMessage } from "../ui";
+import { SystemMessage, UiDenseIconButton } from "../ui";
 
 type CreateDraftToolModalProps = {
   isOpen: boolean;
@@ -46,15 +46,15 @@ watch(
         :aria-describedby="error ? 'create-tool-dialog-error' : undefined"
         @click.self="emit('close')"
       >
-        <div class="relative w-full max-w-lg mx-4 p-6 bg-modal border border-navy shadow-md">
-          <button
-            type="button"
-            class="absolute top-3 right-3 text-navy/60 hover:text-navy text-xl leading-none"
+        <div class="relative w-full max-w-lg mx-4 p-6 bg-modal rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] shadow-md">
+          <UiDenseIconButton
+            label="Stäng"
+            class="absolute top-3 right-3"
             :disabled="isSubmitting"
             @click="emit('close')"
           >
             &times;
-          </button>
+          </UiDenseIconButton>
 
           <h2
             id="create-tool-dialog-title"
@@ -75,7 +75,7 @@ watch(
                 ref="titleInputRef"
                 :value="title"
                 type="text"
-                class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy"
+                class="w-full border border-navy/20 bg-panel px-3 py-2 text-sm text-navy"
                 placeholder="T.ex. Matteprovsgenerator"
                 :disabled="isSubmitting"
                 @input="emit('update:title', ($event.target as HTMLInputElement).value)"
@@ -89,7 +89,7 @@ watch(
               <textarea
                 :value="summary"
                 rows="3"
-                class="w-full border border-navy bg-white px-3 py-2 text-sm text-navy"
+                class="w-full border border-navy/20 bg-panel px-3 py-2 text-sm text-navy"
                 placeholder="Kort beskrivning..."
                 :disabled="isSubmitting"
                 @input="emit('update:summary', ($event.target as HTMLTextAreaElement).value)"

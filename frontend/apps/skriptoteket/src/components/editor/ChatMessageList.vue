@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
+import { UiDenseActionButton } from "../ui";
 
 import type { EditorChatMessage } from "../../composables/editor/chat/editorChatTypes";
 import { writeTextToClipboard } from "../../utils/clipboard";
@@ -84,17 +85,14 @@ async function copyText(text: string): Promise<void> {
             v-if="message.correlationId"
             class="relative inline-flex group"
           >
-            <button
-              type="button"
-              class="text-[11px] font-mono leading-none text-navy/45 hover:text-navy/70"
-              :aria-expanded="isDebugOpen(message.id)"
+            <UiDenseActionButton
+              label="..."
+              :expanded="isDebugOpen(message.id)"
               aria-label="Visa correlation-id"
               @click="toggleDebug(message.id)"
-            >
-              ...
-            </button>
+            />
             <span
-              class="pointer-events-none absolute left-0 top-full z-10 mt-1 whitespace-nowrap border border-navy/30 bg-white px-2 py-1 text-[10px] text-navy/70 opacity-0 shadow-md transition-opacity group-hover:opacity-100"
+              class="pointer-events-none absolute left-0 top-full z-10 mt-1 whitespace-nowrap border border-navy/30 bg-modal px-2 py-1 text-[10px] text-navy/70 opacity-0 shadow-md transition-opacity group-hover:opacity-100"
               aria-hidden="true"
             >
               Visa correlation-id
@@ -126,16 +124,13 @@ async function copyText(text: string): Promise<void> {
 
       <div
         v-if="message.correlationId && isDebugOpen(message.id)"
-        class="mt-2 flex flex-wrap items-center justify-between gap-2 border border-navy/20 bg-white px-2 py-1 text-[10px] text-navy/70"
+        class="mt-2 flex flex-wrap items-center justify-between gap-2 border border-navy/20 bg-canvas px-2 py-1 text-[10px] text-navy/70"
       >
         <span class="font-mono break-all">correlation-id: {{ message.correlationId }}</span>
-        <button
-          type="button"
-          class="text-[10px] font-semibold text-navy/60 hover:text-navy"
+        <UiDenseActionButton
+          label="Kopiera"
           @click="copyText(message.correlationId)"
-        >
-          Kopiera
-        </button>
+        />
       </div>
     </li>
   </ul>

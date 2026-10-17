@@ -185,7 +185,7 @@ onMounted(() => {
 
     <div
       v-if="isLoading"
-      class="p-4 border border-navy bg-panel text-sm text-navy/70"
+      class="p-4 rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] bg-panel text-sm text-navy/70"
     >
       Laddar...
     </div>
@@ -199,7 +199,7 @@ onMounted(() => {
         <h2 class="text-xs font-semibold uppercase tracking-wide text-navy/70">
           Pågående
         </h2>
-        <ul class="border border-navy bg-panel">
+        <ul class="rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] bg-panel">
           <li
             v-for="tool in inProgressTools"
             :key="tool.id"
@@ -229,7 +229,7 @@ onMounted(() => {
         <h2 class="text-xs font-semibold uppercase tracking-wide text-navy/70">
           Klara med ändringar
         </h2>
-        <ul class="border border-navy bg-panel">
+        <ul class="rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] bg-panel">
           <li
             v-for="tool in readyToolsWithPendingReview"
             :key="tool.id"
@@ -274,7 +274,7 @@ onMounted(() => {
         <h2 class="text-xs font-semibold uppercase tracking-wide text-navy/70">
           Klara
         </h2>
-        <ul class="border border-navy bg-panel">
+        <ul class="rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] bg-panel">
           <li
             v-for="tool in readyToolsWithoutPendingReview"
             :key="tool.id"

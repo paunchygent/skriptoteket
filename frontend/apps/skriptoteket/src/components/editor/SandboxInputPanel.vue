@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { components } from "../../api/openapi";
+import { UiDenseActionButton } from "../ui";
 import type { ToolInputFormValues } from "../../composables/tools/useToolInputs";
 import type { FileFieldSelection, FileSelectionMode, ToolFileFieldSpec } from "../../composables/tools/useToolInputs";
 import type { FileRefInfo } from "../../composables/tools/fileRefHelpers";
@@ -79,27 +80,19 @@ function updateInputValues(value: ToolInputFormValues): void {
     />
 
     <div class="flex flex-wrap gap-2">
-      <button
-        type="button"
+      <UiDenseActionButton
+        label="Testkör kod"
         :disabled="!canRun || isRunning || isReadOnly"
-        class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none min-w-[120px]"
+        :busy="isRunning"
+        class="min-w-[120px]"
         @click="emit('run')"
-      >
-        <span
-          v-if="isRunning"
-          class="inline-block w-3 h-3 border-2 border-navy/20 border-t-navy rounded-full animate-spin"
-        />
-        <span v-else>Testkör kod</span>
-      </button>
+      />
 
-      <button
+      <UiDenseActionButton
         v-if="hasResults"
-        type="button"
-        class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none"
+        label="Rensa"
         @click="emit('clear')"
-      >
-        Rensa
-      </button>
+      />
     </div>
 
     <details class="panel-inset">

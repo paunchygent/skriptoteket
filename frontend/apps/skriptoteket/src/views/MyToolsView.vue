@@ -6,6 +6,7 @@ import { apiGet, isApiError } from "../api/client";
 import type { components } from "../api/openapi";
 import ToolListRow from "../components/tools/ToolListRow.vue";
 import CreateDraftToolModal from "../components/admin/CreateDraftToolModal.vue";
+import { SystemMessage } from "../components/ui";
 import { useCreateDraftToolModal } from "../composables/admin/useCreateDraftToolModal";
 import { useAuthStore } from "../stores/auth";
 
@@ -74,21 +75,21 @@ onMounted(() => {
 
     <div
       v-if="isLoading"
-      class="p-4 border border-navy bg-panel text-sm text-navy/70"
+      class="p-4 rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] bg-panel text-sm text-navy/70"
     >
       Laddar...
     </div>
 
-    <div
+    <SystemMessage
       v-else-if="errorMessage"
-      class="p-4 border border-error bg-panel text-sm text-error"
-    >
-      {{ errorMessage }}
-    </div>
+      :model-value="errorMessage"
+      tone="failure"
+      role="alert"
+    />
 
     <div
       v-else-if="!hasTools"
-      class="w-full p-8 border border-navy bg-panel flex flex-col items-center text-center space-y-4"
+      class="w-full p-8 rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] bg-panel flex flex-col items-center text-center space-y-4"
     >
       <div class="space-y-2 max-w-[40rem]">
         <p class="text-navy font-semibold">Du har inga verktyg att underhålla ännu.</p>
@@ -101,7 +102,7 @@ onMounted(() => {
       <button
         v-if="canCreateTool"
         type="button"
-        class="btn-primary px-6"
+        class="btn-primary"
         @click="openCreateModal"
       >
         Skapa ditt första verktyg
@@ -109,7 +110,7 @@ onMounted(() => {
       <RouterLink
         v-else
         to="/suggestions/new"
-        class="btn-primary px-6 no-underline"
+        class="btn-primary"
       >
         Föreslå verktyg
       </RouterLink>
@@ -117,7 +118,7 @@ onMounted(() => {
 
     <ul
       v-else
-      class="border border-navy bg-panel divide-y divide-navy/15"
+      class="rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] bg-panel divide-y divide-[var(--huleedu-surface-divider)]"
     >
       <ToolListRow
         v-for="tool in tools"
@@ -150,7 +151,7 @@ onMounted(() => {
         <template #actions>
           <RouterLink
             :to="`/admin/tools/${tool.id}`"
-            class="btn-ghost no-underline"
+            class="btn-ghost"
           >
             Redigera
           </RouterLink>
