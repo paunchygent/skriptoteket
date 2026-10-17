@@ -3,7 +3,7 @@ import { computed } from "vue";
 
 import CatalogItemCard from "../components/catalog/CatalogItemCard.vue";
 import UiSearchBar from "../components/ui/UiSearchBar.vue";
-import { UiDenseSpinner } from "../components/ui";
+import { SystemMessage, UiDenseSpinner } from "../components/ui";
 import { useCatalogFilters } from "../composables/useCatalogFilters";
 import { useFavorites } from "../composables/useFavorites";
 
@@ -197,12 +197,14 @@ async function handleFavoriteToggled(payload: { id: string; isFavorite: boolean 
           <span>Laddar...</span>
         </div>
 
-        <div
+        <SystemMessage
           v-else-if="errorMessage"
-          class="p-4 border border-critical bg-panel text-sm text-critical"
-        >
-          {{ errorMessage }}
-        </div>
+          :model-value="errorMessage"
+          tone="failure"
+          role="alert"
+          aria-live="assertive"
+          aria-atomic="true"
+        />
 
         <div
           v-else-if="!hasItems"

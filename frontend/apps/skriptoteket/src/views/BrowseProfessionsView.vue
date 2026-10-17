@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
-import { UiDenseSpinner } from "../components/ui";
+import { SystemMessage, UiDenseSpinner } from "../components/ui";
 
 import { apiGet, isApiError } from "../api/client";
 import type { components } from "../api/openapi";
@@ -52,12 +52,14 @@ onMounted(() => {
       <span>Laddar...</span>
     </div>
 
-    <div
+    <SystemMessage
       v-else-if="errorMessage"
-      class="p-4 border border-critical bg-panel text-sm text-critical"
-    >
-      {{ errorMessage }}
-    </div>
+      :model-value="errorMessage"
+      tone="failure"
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
+    />
 
     <ul
       v-else

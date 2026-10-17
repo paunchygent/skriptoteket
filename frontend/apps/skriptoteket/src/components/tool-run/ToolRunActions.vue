@@ -4,6 +4,7 @@ import { computed, onMounted, reactive, watch } from "vue";
 import type { components } from "../../api/openapi";
 import type { FileRefInfo } from "../../composables/tools/fileRefHelpers";
 import { filterFileRefsBySources } from "../../composables/tools/fileRefHelpers";
+import { parseNumericInput } from "../../composables/tools/parseNumericInput";
 import UiActionFieldRenderer from "../ui-actions/UiActionFieldRenderer.vue";
 import { SystemMessage, UiDenseActionButton } from "../ui";
 
@@ -178,16 +179,16 @@ function buildInput(action: UiFormAction): Record<string, components["schemas"][
     if (field.kind === "integer") {
       const str = rawStr.trim();
       if (!str) continue;
-      const parsed = Number.parseInt(str, 10);
-      if (Number.isNaN(parsed)) throw new Error(`Ogiltigt heltal: ${field.label}`);
+      const parsed = parseNumericInput(str, "integer");
+      if (parsed === null) throw new Error(`Ogiltigt heltal: ${field.label}`);
       input[field.name] = parsed;
       continue;
     }
     if (field.kind === "number") {
       const str = rawStr.trim();
       if (!str) continue;
-      const parsed = Number.parseFloat(str);
-      if (Number.isNaN(parsed)) throw new Error(`Ogiltigt tal: ${field.label}`);
+      const parsed = parseNumericInput(str, "number");
+      if (parsed === null) throw new Error(`Ogiltigt tal: ${field.label}`);
       input[field.name] = parsed;
       continue;
     }
@@ -259,12 +260,13 @@ const hasFileRefErrors = computed(() => {
 
 function onSubmit(action: UiFormAction): void {
   if (props.disabled || hasFileRefErrors.value) return;
+  emit("update:errorMessage", null);
   try {
     const input = buildInput(action);
     const fileRefsByField = buildFileRefsByField(action);
     emit("submit", { actionId: action.action_id, input, fileRefsByField });
-  } catch {
-    // Error handling done by parent
+  } catch (error: unknown) {
+    emit("update:errorMessage", error instanceof Error ? error.message : "Ogiltig indata.");
   }
 }
 

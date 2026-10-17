@@ -4,6 +4,7 @@ import { useRoute, useRouter } from "vue-router";
 
 import { apiGet, apiPost, isApiError } from "../api/client";
 import type { components } from "../api/openapi";
+import { SystemMessage } from "../components/ui";
 import { RunResultPanel } from "../components/run-results";
 import { useToolFileRefs } from "../composables/tools/useToolFileRefs";
 
@@ -220,12 +221,14 @@ onUnmounted(() => {
       Laddar...
     </div>
 
-    <div
+    <SystemMessage
       v-else-if="errorMessage"
-      class="p-4 border border-error bg-panel text-error text-sm"
-    >
-      {{ errorMessage }}
-    </div>
+      :model-value="errorMessage"
+      tone="failure"
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
+    />
 
     <template v-else-if="run">
       <RunResultPanel

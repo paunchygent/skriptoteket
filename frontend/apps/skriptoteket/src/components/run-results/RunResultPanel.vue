@@ -18,7 +18,7 @@ import type { components } from "../../api/openapi";
 import type { FileRefInfo } from "../../composables/tools/fileRefHelpers";
 import { UiActionForm } from "../ui-actions";
 import { UiOutputRenderer } from "../ui-outputs";
-import { UiDenseStatusPill } from "../ui";
+import { SystemMessage, UiDenseStatusPill } from "../ui";
 
 type RunStatus = components["schemas"]["RunStatus"];
 type UiOutput = NonNullable<components["schemas"]["UiPayloadV2"]["outputs"]>[number];
@@ -118,12 +118,14 @@ function onSubmitAction(payload: SubmitPayload): void {
         Fortsätt
       </h2>
 
-      <div
+      <SystemMessage
         v-if="actionErrorMessage"
-        class="p-4 border border-error bg-panel text-error text-sm"
-      >
-        {{ actionErrorMessage }}
-      </div>
+        :model-value="actionErrorMessage"
+        tone="failure"
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
+      />
 
       <UiActionForm
         v-for="action in nextActions"

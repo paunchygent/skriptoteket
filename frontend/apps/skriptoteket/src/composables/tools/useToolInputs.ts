@@ -1,6 +1,7 @@
 import { computed, ref, watch, type Ref } from "vue";
 
 import type { components } from "../../api/openapi";
+import { parseNumericInput } from "./parseNumericInput";
 
 type ToolMetadataResponse = components["schemas"]["ToolMetadataResponse"];
 type JsonValue = components["schemas"]["JsonValue"];
@@ -88,16 +89,16 @@ export function useToolInputs({ schema }: UseToolInputsOptions) {
       if (!value) continue;
 
       if (field.kind === "integer") {
-        const parsed = Number.parseInt(value, 10);
-        if (Number.isNaN(parsed)) {
+        const parsed = parseNumericInput(value, "integer");
+        if (parsed === null) {
           errors[field.name] = "Ogiltigt heltal.";
         }
         continue;
       }
 
       if (field.kind === "number") {
-        const parsed = Number.parseFloat(value);
-        if (Number.isNaN(parsed)) {
+        const parsed = parseNumericInput(value, "number");
+        if (parsed === null) {
           errors[field.name] = "Ogiltigt tal.";
         }
       }
@@ -216,8 +217,8 @@ export function useToolInputs({ schema }: UseToolInputsOptions) {
       if (!value) continue;
 
       if (field.kind === "integer") {
-        const parsed = Number.parseInt(value, 10);
-        if (Number.isNaN(parsed)) {
+        const parsed = parseNumericInput(value, "integer");
+        if (parsed === null) {
           throw new Error("Ogiltigt heltal.");
         }
         apiValues[field.name] = parsed;
@@ -225,8 +226,8 @@ export function useToolInputs({ schema }: UseToolInputsOptions) {
       }
 
       if (field.kind === "number") {
-        const parsed = Number.parseFloat(value);
-        if (Number.isNaN(parsed)) {
+        const parsed = parseNumericInput(value, "number");
+        if (parsed === null) {
           throw new Error("Ogiltigt tal.");
         }
         apiValues[field.name] = parsed;

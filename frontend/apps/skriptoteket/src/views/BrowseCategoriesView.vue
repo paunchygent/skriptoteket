@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
-import { UiDenseSpinner } from "../components/ui";
+import { SystemMessage, UiDenseSpinner } from "../components/ui";
 
 import { apiGet, isApiError } from "../api/client";
 import type { components } from "../api/openapi";
@@ -85,12 +85,14 @@ watch(professionSlug, () => {
       <span>Laddar...</span>
     </div>
 
-    <div
+    <SystemMessage
       v-else-if="errorMessage"
-      class="p-4 border border-critical bg-panel text-sm text-critical"
-    >
-      {{ errorMessage }}
-    </div>
+      :model-value="errorMessage"
+      tone="failure"
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
+    />
 
     <div
       v-else-if="categories.length === 0"
