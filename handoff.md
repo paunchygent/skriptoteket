@@ -82,9 +82,9 @@
   Shell screenshots pass the lead's prototype check (final reshoot on 0.1.29).
   Hemma Opus lead `3b164d53`: 40-03-01..08 and 08-36-02 `done`; 40-02-01 tranche 1 on
   main 761b1b59 (`in_progress`: held/frozen-screen wrappers and lucide removal open);
-  40-03-09 `done` (rules folded into skills; user gates: delete the ignored rule-080
-  file, decide the withheld rule-094 values); useClassroomState spec fix and split under
-  Sol rereview. TASK-SKILL-REP-0326 (0.1.28) `done`.
+  40-03-09 `done` (rules folded into skills; rule-080 file and its .gitignore line
+  deleted and rule-094 values dropped, user 2026-10-17); useClassroomState fix and split
+  approved (31e0be3a). TASK-SKILL-REP-0326 (0.1.28) `done`.
 
 - Historical 2026-09-05 workspace planning (EPIC-SKRIPT-39 E8-E12, ADR-SKRIPT-0091,
   ST-SKRIPT-39-04): `.codex/long-term-memory/entries/session-2026-09-05-epic-39-handoff-compaction.md`.
