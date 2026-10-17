@@ -16,102 +16,63 @@ part: 2
 
 4. **Reference the codemap** for implementation details
 
-5. **Adhere to the frozen primitive contracts** from PR-0157
+5. **Use the current `huleedu-integrated` resource contracts** from
+   `resources/frontend-design-system/huleedu-integrated/` in `skill-repository`.
+   PR-0157 records the historical extraction, not current presentation authority.
 
 ---
 
 ### Source: Design Principles Summary
 
 
-From rule 045, the core principles that must be preserved across repos:
+Current presentation guidance belongs to `huleedu-ui-design`, especially
+`references/visual-system.md`; workflow composition belongs to its
+`references/interaction-design.md` and `references/dense-workspaces.md`.
+This codemap records implementation locations, not a separate design doctrine.
 
-### Physicality (Elevation & Feedback)
-
-- **Lift on Hover**: `-2px` translation with increased hard shadow
-
-- **Press on Active**: `1px` translation with shadow removal
-
-- **Never use blurred shadows**: Always use "Brutal" (hard) shadows
-
-- **Dense workspace exception**: Toolbars and controls should not all "perform" physical lift
-
-### Stationarity (Natural Reflow)
-
-- Use **Natural Grid Reflow** to prevent layout shifts
-
-- Set content column to `1fr` and action column to fixed/measured widths
-
-### Academic Typography (The Rule of 40rem)
-
-- Content columns must be capped at `max-w-[40rem]` (~640px)
-
-- Exception: Dense operational surfaces can be more compact
-
-### Structure Before Labels
-
-- Build hierarchy first with headings, spacing, section rules
-
-- Use small labels only when they solve real ambiguity
-
-- Avoid stacking multiple eyebrow labels
-
-### Operational Density
-
-- One live task surface must dominate the layout
-
-- Use compact action rows instead of full-width panels
-
-- Desktop-first composition for workspace-heavy apps
+Token values, Tailwind mappings, Vue primitives and glyphs belong to the
+`huleedu-integrated` package in
+`skill-repository/resources/frontend-design-system/huleedu-integrated/`.
+Use the current package contracts rather than freezing an earlier snapshot.
+`integrated-frontend-stack` owns token integration and CSS layout mechanics.
 
 ---
 
 ### Source: Token Reference
 
 
-### Core Brand Colors
+The current consumer mappings in `frontend/apps/skriptoteket/src/styles/tailwind-theme.css`
+include the following token names. Resolve values and component usage through the
+current package and `huleedu-ui-design`, not a copied palette or shadow table.
 
-| Token                  | Tailwind Class              | Hex     | Usage                              |
-|------------------------|----------------------------|---------|------------------------------------|
-| `--huleedu-canvas`     | `bg-canvas`, `text-canvas`  | #FAFAF6 | Background, button text on dark   |
-| `--huleedu-navy`       | `bg-navy`, `text-navy`, `border-navy` | #1C2E4A | Primary text, borders, functional buttons |
-| `--huleedu-burgundy`   | `bg-burgundy`, `text-burgundy` | #4D1521 | CTA accent, errors, publish actions |
-
-### Feedback Colors
-
-| Token                  | Tailwind Class              | Hex     | Usage                              |
-|------------------------|----------------------------|---------|------------------------------------|
-| `--huleedu-success`    | `text-success`, `border-success` | #059669 | Success states                    |
-| `--huleedu-warning`    | `text-warning`, `bg-warning/20` | #D97706 | Attention, pending review          |
-| `--huleedu-error`      | `text-error`               | #DC2626 | Error states                      |
-
-### Shadows (Brutalist)
-
-| Token                  | Tailwind Class              | Offset   | Usage               |
-|------------------------|----------------------------|----------|---------------------|
-| `--huleedu-shadow-brutal` | `shadow-brutal`           | 6px 6px  | Standard elevation  |
-| `--huleedu-shadow-brutal-sm` | `shadow-brutal-sm`       | 4px 4px  | Small elevation     |
-| `--huleedu-shadow-brutal-xs` | `shadow-brutal-xs`       | 2px 2px  | Minimal elevation   |
+| Token | Example mapped utility |
+|-------|------------------------|
+| `--huleedu-canvas` | `bg-canvas` |
+| `--huleedu-navy` | `text-navy`, `border-navy` |
+| `--huleedu-action` | `bg-action` |
+| `--huleedu-critical` | `text-critical` |
+| `--huleedu-success` | `text-success` |
+| `--huleedu-warning` | `text-warning` |
+| `--huleedu-error` | `text-error` |
 
 ---
 
-### Source: Frozen Primitive Constants
+### Source: Primitive Constants
 
 
-These constants must be preserved across all repos for consistency:
+`frontend/apps/skriptoteket/src/components/ui/shared/denseToolPrimitives.ts`
+contains these synced package exports:
 
-```typescript
-// Corner radius for dense controls (blocky, not soft)
-DENSE_ACTION_RADIUS_CLASS = "rounded-[4px]"
+| Export | Current class |
+|--------|---------------|
+| `DENSE_ACTION_RADIUS_CLASS` | `rounded-[4px]` |
+| `DENSE_ICON_SIZE_CLASS` | `h-9 w-9` |
+| `DENSE_TEXT_HEIGHT_CLASS` | `h-[28px]` |
+| `DENSE_COMPACT_SEGMENT_HEIGHT_CLASS` | `h-6` |
 
-// Dense control size tiers
-dense_icon = 36px // h-9 w-9
-dense_text = 28px // h-[28px]
-compact_segment = 24px // For segmented/toggle internals
-
-// Physical feedback
-press_translation = 1px // Active state
-hover_lift = -2px // Hover state
-```
+These are implementation facts, not independent cross-repo requirements.
+The current package owns primitive contracts; `huleedu-ui-design` owns which
+control role and feedback suit a surface.
 
 ---
 
@@ -122,13 +83,13 @@ When adopting this design system in another repo, verify:
 
 - [ ] Token pipeline: Backend CSS → Tailwind theme bridge is complete
 - [ ] Single CSS entry point imports Tailwind, tokens, then theme bridge
-- [ ] Dense tool primitives are copied from `denseToolPrimitives.ts`
+- [ ] Shared primitives and resources match the current `huleedu-integrated` package contracts
 - [ ] Shared UI components use the class builders
 - [ ] Toast system is mounted at app root
 - [ ] Segmented toggles use the shell constants
 - [ ] ADR-0017 and ADR-0032 are followed
-- [ ] Rule 045 design principles are respected
-- [ ] Frozen constants (radius, sizes, press behavior) are preserved
+- [ ] Presentation follows `huleedu-ui-design` and its task-relevant references
+- [ ] Primitive contracts come from the current package, not historical constants
 - [ ] No Tailwind default palette/spacing leaks into product UI
 - [ ] Only mapped token utilities are used (bg-canvas, text-navy, etc.)
 
@@ -149,31 +110,32 @@ When adopting this design system in another repo, verify:
 
 ### Shared Primitives
 
-- `frontend/apps/skriptoteket/src/components/ui/denseToolPrimitives.ts`
+- `frontend/apps/skriptoteket/src/components/ui/shared/denseToolPrimitives.ts`
 
-- `frontend/apps/skriptoteket/src/components/ui/UiDenseActionButton.vue`
+- `frontend/apps/skriptoteket/src/components/ui/shared/components/UiDenseActionButton.vue`
 
-- `frontend/apps/skriptoteket/src/components/ui/UiDenseIconButton.vue`
+- `frontend/apps/skriptoteket/src/components/ui/shared/components/UiDenseIconButton.vue`
 
-- `frontend/apps/skriptoteket/src/components/ui/UiSegmentedToggle.vue`
+- `frontend/apps/skriptoteket/src/components/ui/shared/components/UiSegmentedToggle.vue`
 
-- `frontend/apps/skriptoteket/src/components/ui/ToastHost.vue`
+- `frontend/apps/skriptoteket/src/components/ui/shared/components/ToastHost.vue`
+
+- `frontend/apps/skriptoteket/src/components/ui/SkriptoteketToastHost.vue`
 
 - `frontend/apps/skriptoteket/src/components/ui/index.ts`
 
 ### Governance
 
-- `docs/adr/adr-0017-huleedu-design-system-adoption.md`
+- `docs/decisions/adr-skript-0017-huleedu-design-system-adoption-for-frontend-harmonization.md`
 
-- `docs/adr/adr-0032-tailwind-4-theme-tokens.md`
+- `docs/decisions/adr-skript-0032-frontend-styling-tailwind-css-4-with-theme-design-tokens.md`
 
 - `huleedu-ui-design` skill
 
 ### Reference
 
-- `docs/reference/ref-frontend-design-system-codemap-2026-03-28.md` (file-list based)
-
 - `docs/backlog/prs/pr-0157-st-29-01-shared-dense-tool-primitives-and-canonical-symbol-assets.md`
+  (historical extraction record; not current presentation authority)
 
 ## Decisions And Interpretation
 
