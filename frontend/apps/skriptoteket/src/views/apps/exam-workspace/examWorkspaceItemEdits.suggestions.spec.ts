@@ -16,6 +16,8 @@ import { describe, expect, it } from "vitest";
 
 import type { NativeAnswerKeySuggestion, NativeExamItem } from "../../../api/examWorkspace";
 import { reviewed, withCorrectChoices } from "./examWorkspaceItemEdits";
+import { buildGap, gapSuggestion } from "./examWorkspaceKeyedItems.specSupport";
+import { plainBody } from "./examWorkspaceRichText";
 import { withArrivingSuggestion, withRestoredSuggestion } from "./examWorkspaceSuggestionEdits";
 
 function choiceItem(
@@ -133,6 +135,45 @@ describe("review, teacher choice and restore (T6)", () => {
     expect(restored.answer_key.correct_choice_ids).toEqual(["choice_002"]);
     expect(restored.review.state).toBe("review_required");
     expect(restored.ai_suggestion?.correct_choice_ids).toEqual(["choice_002"]);
+  });
+
+  it("restoring a retained typed-gap suggestion preserves an inline-choice key and review", () => {
+    const retainedSuggestion = gapSuggestion([["gap_001", ["Ada"]]]);
+    const options = [
+      { choice_id: "choice_001", body: plainBody("Ada") },
+      { choice_id: "choice_002", body: plainBody("Elsa") },
+    ];
+    const item: NativeExamItem = {
+      ...choiceItem("teacher_authored"),
+      ai_suggestion: retainedSuggestion,
+      body: [{ heading_level: null, segments: [
+        { kind: "text", marks: [], text: "Hon heter " },
+        { kind: "gap", gap_id: "gap_001" },
+      ] }],
+      choices: [],
+      gaps: [buildGap("gap_001", [], { options, correct_option_id: "choice_001" })],
+      kind: "inline_choice",
+    };
+
+    const restored = withRestoredSuggestion(item);
+
+    expect(restored).toBe(item);
+    expect(restored.answer_key).toEqual({
+      correct_choice_ids: [],
+      match_pairs: [],
+      origin: "teacher_authored",
+    });
+    expect(restored.gaps).toEqual([
+      buildGap("gap_001", [], { options, correct_option_id: "choice_001" }),
+    ]);
+    expect(restored.review).toEqual({
+      confidence: null,
+      parse_origin: "teacher_created",
+      reasons: [],
+      state: "review_complete",
+    });
+    expect(restored.ai_suggestion).toBe(retainedSuggestion);
+    expect(restored.ai_suggestion).toEqual(gapSuggestion([["gap_001", ["Ada"]]]));
   });
 
   it("restoring without a suggestion changes nothing", () => {

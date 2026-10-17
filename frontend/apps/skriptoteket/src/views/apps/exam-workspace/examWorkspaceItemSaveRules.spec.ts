@@ -4,7 +4,7 @@
  * Expected behavior:
  *   The save refusal copy names every question that breaks a server item
  *   rule, one sentence group per rule in a stable order (partial gap key,
- *   points not greater than zero, choice without text, criteria that lack
+ *   negative or non-finite points, choice without text, criteria that lack
  *   text or points or are not the item's points), and is `null` when
  *   the server would accept every item.
  */
@@ -75,7 +75,18 @@ describe("examWorkspaceSaveRefusalCopy", () => {
     ).toBeNull();
   });
 
-  it("names one question with points that are not greater than zero", () => {
+  it("accepts zero points", () => {
+    expect(examWorkspaceSaveRefusalCopy([buildChoiceItem(1, { points: 0 })])).toBeNull();
+  });
+
+  it.each([-1, Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY])(
+    "refuses invalid points %s",
+    (points) => {
+      expect(examWorkspaceSaveRefusalCopy([buildChoiceItem(1, { points })])).not.toBeNull();
+    },
+  );
+
+  it("names one question with negative points", () => {
     expect(examWorkspaceSaveRefusalCopy([buildChoiceItem(1, { points: -1 })])).toBe(
       "Fråga 1 har noll eller negativa poäng. Poängen måste vara större än noll.",
     );
@@ -83,9 +94,9 @@ describe("examWorkspaceSaveRefusalCopy", () => {
 
   it("names every question in each rule, rule by rule", () => {
     const items = [
-      buildChoiceItem(1, { points: 0 }),
+      buildChoiceItem(1, { points: -1 }),
       buildChoiceItem(2, { choices: EMPTY_CHOICES }),
-      buildChoiceItem(3, { choices: EMPTY_CHOICES, points: 0 }),
+      buildChoiceItem(3, { choices: EMPTY_CHOICES, points: -1 }),
     ];
 
     expect(examWorkspaceSaveRefusalCopy(items)).toBe(

@@ -166,15 +166,22 @@ describe("examWorkspaceItemReadiness", () => {
     expect(examWorkspaceItemReadiness(item)).toEqual(["partial_gap_key"]);
   });
 
-  it("reports points that are not greater than zero, but not missing points twice", () => {
-    expect(examWorkspaceItemReadiness(buildChoiceItem({ points: 0 }))).toEqual([
-      "non_positive_points",
-    ]);
+  it("accepts zero points and positive fractions, but reports negative points", () => {
+    expect(examWorkspaceItemReadiness(buildChoiceItem({ points: 0 }))).toEqual([]);
     expect(examWorkspaceItemReadiness(buildChoiceItem({ points: -2 }))).toEqual([
       "non_positive_points",
     ]);
     expect(examWorkspaceItemReadiness(buildChoiceItem({ points: 0.5 }))).toEqual([]);
   });
+
+  it.each([Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY])(
+    "reports non-finite points %s",
+    (points) => {
+      expect(examWorkspaceItemReadiness(buildChoiceItem({ points }))).toEqual([
+        "non_positive_points",
+      ]);
+    },
+  );
 
   it("reports a choice without text, and accepts whitespace as the server does", () => {
     const empty = buildChoiceItem({
@@ -220,7 +227,7 @@ describe("examWorkspaceReadinessByItemId", () => {
         { choice_id: "choice_a", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Syre" }] }] },
         { choice_id: "choice_b", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "" }] }] },
       ],
-      points: 0,
+      points: -1,
     });
 
     expect(examWorkspaceReadinessByItemId([item])).toEqual({

@@ -4,7 +4,7 @@
  * Expected behavior:
  *   Item states the server refuses to save are flagged at the question and
  *   refused locally with Swedish copy naming the questions: points that are
- *   not greater than zero, and a choice without text. The field is marked
+ *   negative or non-finite, and a choice without text. The field is marked
  *   invalid with an inline hint, the question list, the details drawer, and
  *   the Filer readiness list carry the reason, and no save request is sent.
  *   While a save runs, the item editor's inputs are disabled so a typed
@@ -68,12 +68,12 @@ beforeEach(() => {
 });
 
 describe("ExamWorkspaceView save rules", () => {
-  it("flags points of zero at the field and in the drawer, and refuses the save", async () => {
+  it("flags negative points at the field and in the drawer, and refuses the save", async () => {
     const wrapper = await mountImported();
 
     await selectItemRow(wrapper, "item_002");
     const points = wrapper.get('[data-test="exam-workspace-item-points-input"]');
-    await points.setValue("0");
+    await points.setValue("-1");
 
     expect(points.attributes("aria-invalid")).toBe("true");
     const hint = wrapper.get('[data-test="exam-workspace-points-hint"]');
@@ -150,13 +150,36 @@ describe("ExamWorkspaceView save rules", () => {
     );
   });
 
-  it("saves again once the refused fields are corrected", async () => {
+  it("accepts zero points at the field and sends the save", async () => {
     apiMocks.saveExamWorkspaceDocument.mockResolvedValue(buildResponse({ version: 2 }));
     const wrapper = await mountImported();
 
     await selectItemRow(wrapper, "item_002");
     const points = wrapper.get('[data-test="exam-workspace-item-points-input"]');
     await points.setValue("0");
+
+    expect(points.attributes("aria-invalid")).toBeUndefined();
+    expect(wrapper.find('[data-test="exam-workspace-points-hint"]').exists()).toBe(false);
+    await saveDocument(wrapper);
+
+    expect(apiMocks.saveExamWorkspaceDocument).toHaveBeenCalledTimes(1);
+    expect(apiMocks.saveExamWorkspaceDocument).toHaveBeenCalledWith(
+      "lineage-1",
+      expect.objectContaining({
+        document: expect.objectContaining({
+          items: expect.arrayContaining([expect.objectContaining({ item_id: "item_002", points: 0 })]),
+        }),
+      }),
+    );
+  });
+
+  it("saves again once the refused fields are corrected", async () => {
+    apiMocks.saveExamWorkspaceDocument.mockResolvedValue(buildResponse({ version: 2 }));
+    const wrapper = await mountImported();
+
+    await selectItemRow(wrapper, "item_002");
+    const points = wrapper.get('[data-test="exam-workspace-item-points-input"]');
+    await points.setValue("-1");
     await points.setValue("3");
     await saveDocument(wrapper);
 
