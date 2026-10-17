@@ -61,7 +61,10 @@
   (`evidence/staging-walk-u1-u3-1b417b64/`): pass except U-1 (a second tab's
   CSRF rotation breaks writes, no recovery) and U-2 (see-through course list),
   both with Hemma Sol repair agents; the exports-follow-exam trash check awaits
-  the user; the Exam.net import (U2) is still to walk; then 39-04-10 starts; Opus prototype
+  the user; U2 walked into Exam.net on d9c2b3bb
+  (`evidence/staging-walk-u2-d9c2b3bb/`: exams 5345126 and 5345127 pass); defect U-4 (the
+  workspace Spara stays disabled after parent commands, export lacks them) is with a Hemma Sol
+  agent with parent-authorised backend response change; 39-06-03 waits for its re-walk; then 39-04-10 starts; Opus prototype
   40-04-01; a Hemma Opus lead runs 40-01-02, 40-01-03, then ST-SKRIPT-40-03. Lane 0 (Sol): TASK-SKRIPT-40-01-02
   merged to main 2026-10-17 on huleedu-integrated 0.1.25 (TASK-SKILL-REP-0323
   `done` added segmented-toggle keyboard operation; Sol rereview approved
