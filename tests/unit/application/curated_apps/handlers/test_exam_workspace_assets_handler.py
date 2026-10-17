@@ -34,6 +34,9 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace
     ExamWorkspaceContainerCodec,
 )
 from tests.fixtures.time_fixtures import FixedClock
+from tests.unit.application.curated_apps.handlers.exam_index_test_support import (
+    InMemoryExamIndexRepository,
+)
 from tests.unit.application.curated_apps.handlers.exam_workspace_conversion_support import (
     choice,
 )
@@ -106,6 +109,8 @@ class _Env:
         self.codec = ExamWorkspaceContainerCodec()
         self.store = ExamWorkspaceDocumentStore(
             vault_files=self.vault_files,
+            index=InMemoryExamIndexRepository(self.vault_files),
+            codec=self.codec,
             vault_usage=InMemoryVaultUsageRepository(
                 usage=VaultUsage(user_id=uuid4(), bytes_total=0, updated_at=_NOW)
             ),

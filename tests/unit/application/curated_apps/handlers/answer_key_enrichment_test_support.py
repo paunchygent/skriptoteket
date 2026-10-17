@@ -69,6 +69,9 @@ from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
     Replay,
     build_replay,
 )
+from tests.unit.application.curated_apps.handlers.exam_index_test_support import (
+    InMemoryExamIndexRepository,
+)
 from tests.unit.application.curated_apps.handlers.test_document_converter_artifact_saves import (
     InMemoryVaultStorage,
     InMemoryVaultUsageRepository,
@@ -455,6 +458,8 @@ def replayed_docx_job_handler(
             usage=VaultUsage(user_id=uuid4(), bytes_total=0, updated_at=_NOW)
         ),
         vault_storage=vault_storage,
+        index=InMemoryExamIndexRepository(vault_files),
+        codec=codec,
         uow=uow,
         clock=clock,
         settings=Settings.model_construct(

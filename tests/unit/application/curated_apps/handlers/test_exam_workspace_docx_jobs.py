@@ -127,6 +127,19 @@ async def test_recorded_live_quiz_publishes_version_one_and_reports_every_batch_
     assert running.workspace_lineage_id is not None
     opened = await env.get_handler.handle(actor=env.actor, lineage_id=running.workspace_lineage_id)
     document = opened.document
+    indexed = await env.index.get(owner_user_id=env.actor.id, lineage_id=document.document_id)
+    assert indexed is not None
+    assert indexed.title == document.title
+    assert indexed.course_key == (
+        None if document.header.course is None else document.header.course.key
+    )
+    assert indexed.head_vault_file_id == opened.summary.vault_file_id
+    assert indexed.saved_at == opened.summary.saved_at
+    assert len(env.index.entries) == 1
+    status = await GetExamWorkspaceConversionStatusHandler(jobs=env.jobs, index=env.index).handle(
+        actor=env.actor, job_id=running.id
+    )
+    assert status.summary == opened.summary
     assert len(env.replay.progress.finals) == 1
     assert len(document.items) == 28
     assert [item.kind.value for item in document.items] == ["single_choice"] * 21 + ["gap_fill"] * 7
@@ -181,7 +194,7 @@ async def test_invalid_docx_finishes_failed_and_deletes_source():
     finished = await env.processor.handle(job=running)
     assert finished.status is ExamAnswerKeyEnrichmentJobStatus.FAILED
     assert finished.source_docx is None
-    status = await GetExamWorkspaceConversionStatusHandler(jobs=env.jobs).handle(
+    status = await GetExamWorkspaceConversionStatusHandler(jobs=env.jobs, index=env.index).handle(
         actor=env.actor, job_id=running.id
     )
     assert status.error_message and "Word" in status.error_message
@@ -203,7 +216,7 @@ async def test_invalid_docx_finishes_failed_and_deletes_source():
 async def test_status_owner_authorization_and_upload_validation():
     env = environment()
     running = await claim(env)
-    status = GetExamWorkspaceConversionStatusHandler(jobs=env.jobs)
+    status = GetExamWorkspaceConversionStatusHandler(jobs=env.jobs, index=env.index)
     with pytest.raises(DomainError):
         await status.handle(actor=_actor(), job_id=running.id)
     with pytest.raises(DomainError):

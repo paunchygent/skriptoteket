@@ -40,7 +40,7 @@ from tests.unit.domain.curated_apps.exam_workspace.recorded_native_exam_support 
     recorded_items,
 )
 
-_OFFICIAL = ExamCourseChoice(key="gy11:ENGENG05", name="Engelska 5")
+_OFFICIAL = ExamCourseChoice(key="ENGENG05", name="Engelska 5")
 _HINT = "Engelska, läsperiod 1"
 _TITLE = "Omdöpt prov: läsförståelse"
 _COURSE_CASES = (
