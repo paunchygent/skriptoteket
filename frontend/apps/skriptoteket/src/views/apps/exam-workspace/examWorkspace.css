@@ -194,7 +194,11 @@ Relationships:
 .xw-mblock {
   margin: 0 var(--huleedu-space-2) var(--huleedu-space-1-5); padding: var(--huleedu-space-2) var(--huleedu-space-3);
   border-radius: var(--huleedu-radius-md); background: var(--huleedu-error-10); font-size: var(--huleedu-text-xs);
+  max-height: 40vh; overflow-y: auto;
 }
+.xw-mblock.xw-mblock--warn { background: var(--huleedu-warning-15); }
+.xw-mblock.xw-mblock--warn b { color: var(--huleedu-navy); }
+.xw-mblock.xw-mblock--warn b svg { color: var(--huleedu-warning); }
 .xw-mblock b { display: flex; align-items: center; gap: var(--huleedu-space-1-5); margin-bottom: 4px; color: var(--huleedu-error); font-size: var(--huleedu-text-sm); }
 .xw-mblock button {
   all: unset; display: block; margin-top: 2px; cursor: pointer; color: var(--huleedu-navy);

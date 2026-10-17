@@ -95,6 +95,7 @@ function choose(action: () => void): void {
     <div
       v-if="blockers.length > 0"
       class="xw-mblock"
+      :class="{ 'xw-mblock--warn': !serverBlocked }"
       data-test="exam-workspace-export-blockers"
     >
       <b><UiGlyph

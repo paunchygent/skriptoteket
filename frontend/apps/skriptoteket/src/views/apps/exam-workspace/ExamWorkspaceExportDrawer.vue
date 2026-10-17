@@ -64,6 +64,7 @@ const disabled = computed(
   <div
     v-if="blockers.length > 0"
     class="xw-mblock"
+    :class="{ 'xw-mblock--warn': !serverBlocked }"
     data-test="exam-workspace-export-drawer-blockers"
   >
     <b><UiGlyph

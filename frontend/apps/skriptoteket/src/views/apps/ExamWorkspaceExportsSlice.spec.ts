@@ -299,6 +299,8 @@ describe("ExamWorkspaceView export slice", () => {
     expect(requirePage("exam-workspace-export-blockers").text()).not.toContain(
       "Kan inte exporteras ännu",
     );
+    // Client guidance is a warning, not an error.
+    expect(requirePage("exam-workspace-export-blockers").classes()).toContain("xw-mblock--warn");
     expect(requirePage("exam-workspace-export-blockers").text()).toContain(
       "Fråga 3: Facitförslaget är inte godkänt.",
     );
@@ -379,6 +381,7 @@ describe("ExamWorkspaceView export slice", () => {
     // The same refusal blocks every format in the menu and lists the questions there.
     await openMenu(wrapper);
     expect(requirePage("exam-workspace-export-blockers").text()).toContain("Kan inte exporteras ännu");
+    expect(requirePage("exam-workspace-export-blockers").classes()).not.toContain("xw-mblock--warn");
     expect(requirePage("exam-workspace-export-blockers").text()).not.toContain(
       "Kontrollera innan du exporterar",
     );
