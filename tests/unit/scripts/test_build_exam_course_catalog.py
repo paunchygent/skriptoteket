@@ -32,6 +32,14 @@ def test_builder_cli_checks_recorded_mapping_without_rewriting_stale_data(tmp_pa
         "https://api.skolverket.se/syllabus/v1/subjects?schooltype=GR&timespan=LATEST",
         "https://api.skolverket.se/syllabus/v1/subjects/GRGRMSP01",
         "https://api.skolverket.se/syllabus/v1/subjects/GRGRSVE01",
+        "https://api.skolverket.se/syllabus/v1/courses/ENGE1000X",
+        "https://api.skolverket.se/syllabus/v1/courses/ENGENG05",
+        "https://api.skolverket.se/syllabus/v1/courses/HISHIS01a1",
+        "https://api.skolverket.se/syllabus/v1/courses/HISHIS01b",
+        "https://api.skolverket.se/syllabus/v1/courses/MATE1A00X",
+        "https://api.skolverket.se/syllabus/v1/courses/MATMAT01a",
+        "https://api.skolverket.se/syllabus/v1/courses/SVEN2000X",
+        "https://api.skolverket.se/syllabus/v1/courses/SVESVE02",
     }
 
     checked = subprocess.run(

@@ -76,6 +76,27 @@ async def test_retry_returns_one_replacement_that_keeps_identity_and_stored_sour
     assert [chunk["anchor"] for chunk in payload["context_chunks"]] == []
 
 
+@pytest.mark.parametrize("label_kind", [NativeExamItemKind.GAP_FILL, NativeExamItemKind.FREE_TEXT])
+async def test_retry_recomputes_suggestion_from_saved_label_not_draft(
+    env: Env, label_kind: NativeExamItemKind
+) -> None:
+    document = make_document(
+        lineage_id=uuid4(),
+        items=(
+            make_item("item_001", 1, anchor="body:0001", source=make_source(label_kind=label_kind)),
+        ),
+    )
+    await env.seed(document)
+    env.exchange.reply = make_retry_reply()
+
+    response = await env.retry(document)
+
+    assert response.item.kind is NativeExamItemKind.FREE_TEXT
+    expected = label_kind if label_kind != response.item.kind else None
+    assert response.item.suggested_kind is expected
+    assert response.item.model_dump(mode="json")["suggested_kind"] == expected
+
+
 async def test_retry_uses_the_whole_saved_exam_for_language_not_only_its_question(
     env: Env, monkeypatch: pytest.MonkeyPatch
 ) -> None:

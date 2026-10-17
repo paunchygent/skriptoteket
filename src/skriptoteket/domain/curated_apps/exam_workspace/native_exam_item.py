@@ -54,6 +54,8 @@ class NativeExamItem(BaseModel):
     item_id: str = Field(pattern=ITEM_ID_PATTERN)
     sequence: int = Field(ge=1)
     kind: NativeExamItemKind
+    # The original labeler's different type, consumed only when the teacher chooses it.
+    suggested_kind: NativeExamItemKind | None = None
     printed_label: str | None = None  # "Fråga 3", "a": printed metadata only, never shown (D20)
     facit_text: str | None = None  # the teacher's original facit wording, kept after undo (D2)
     body: tuple[NativeParagraph, ...] = Field(min_length=1)
@@ -101,6 +103,13 @@ class NativeExamItem(BaseModel):
 
     @model_validator(mode="after")
     def _kind_invariants(self) -> "NativeExamItem":
+        if self.suggested_kind is not None:
+            if self.suggested_kind is self.kind:
+                raise ValueError("suggested kind must differ from the item's kind")
+            if self.retry_source is None:
+                raise ValueError("suggested kind requires retry source")
+            if self.suggested_kind is not self.retry_source.label_kind:
+                raise ValueError("suggested kind must match the retry source's label kind")
         if self.points_estimated and self.points is None:
             raise ValueError("estimated points require points")
         choice_ids = [choice.choice_id for choice in self.choices]

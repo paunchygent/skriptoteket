@@ -4,8 +4,9 @@
  *
  * Records the school forms taught and an ordered list of committed catalog
  * keys. The catalog key is the only stored identity; each row resolves its
- * name, code and school form from the committed catalog. Spara replaces the
- * whole value and reports the update to the profile view.
+ * name, code and school form from the committed catalog. Choosing a course
+ * adds it, and every change replaces the whole value at once. Saves run one
+ * at a time; a failed save restores the last saved value.
  */
 import { computed, ref, watch } from "vue";
 
@@ -23,12 +24,10 @@ import { useExamCourseCatalog } from "../../views/apps/exam-workspace/useExamCou
 import { SystemMessage } from "../ui";
 import { UiDenseIconButton, UiGlyph } from "../ui/shared";
 
+type ExamCourses = { school_forms: ExamCourseSchoolForm[]; course_keys: string[] };
+
 const props = defineProps<{
   examCourses: components["schemas"]["ExamCourses"] | null;
-}>();
-
-const emit = defineEmits<{
-  profileUpdated: [];
 }>();
 
 const { updateExamCourses } = useProfile();
@@ -43,13 +42,15 @@ const schoolFormLabels: Record<ExamCourseSchoolForm, string> = {
 
 const draftSchoolForms = ref<ExamCourseSchoolForm[]>([]);
 const draftCourseKeys = ref<string[]>([]);
-const selectedCourseKey = ref<string | null>(null);
-const isSaving = ref(false);
+const saveState = ref<"idle" | "saving" | "saved">("idle");
+let lastSaved: ExamCourses = { school_forms: [], course_keys: [] };
+let isSaving = false;
+let hasUnsavedChange = false;
+let hasLocalChange = false;
 
-const canAdd = computed(() => {
-  const key = selectedCourseKey.value;
-  return key !== null && !draftCourseKeys.value.includes(key);
-});
+const statusText = computed(() =>
+  saveState.value === "saving" ? "Sparar…" : saveState.value === "saved" ? "Sparat" : "",
+);
 
 const courseRows = computed(() =>
   draftCourseKeys.value.map((key) => {
@@ -66,10 +67,21 @@ function courseDetail(course: ExamCourse): string {
     : schoolFormLabels.grundskolan;
 }
 
+function applyValue(value: ExamCourses): void {
+  draftSchoolForms.value = [...value.school_forms];
+  draftCourseKeys.value = [...value.course_keys];
+}
+
 function syncFromProfile(): void {
-  draftSchoolForms.value = [...(props.examCourses?.school_forms ?? [])];
-  draftCourseKeys.value = [...(props.examCourses?.course_keys ?? [])];
-  selectedCourseKey.value = null;
+  // This section is the only writer of the value on the page. After its first
+  // change it holds the acknowledged value, and a profile reload that started
+  // before a save could carry an older one.
+  if (hasLocalChange) return;
+  lastSaved = {
+    school_forms: [...(props.examCourses?.school_forms ?? [])],
+    course_keys: [...(props.examCourses?.course_keys ?? [])],
+  };
+  applyValue(lastSaved);
 }
 
 watch(() => props.examCourses, syncFromProfile, { immediate: true });
@@ -78,17 +90,18 @@ function toggleSchoolForm(form: ExamCourseSchoolForm): void {
   draftSchoolForms.value = draftSchoolForms.value.includes(form)
     ? draftSchoolForms.value.filter((existing) => existing !== form)
     : [...draftSchoolForms.value, form];
+  void save();
 }
 
-function addCourse(): void {
-  const key = selectedCourseKey.value;
+function chooseCourse(key: string | null): void {
   if (key === null || draftCourseKeys.value.includes(key)) return;
   draftCourseKeys.value = [...draftCourseKeys.value, key];
-  selectedCourseKey.value = null;
+  void save();
 }
 
 function removeCourse(key: string): void {
   draftCourseKeys.value = draftCourseKeys.value.filter((existing) => existing !== key);
+  void save();
 }
 
 function saveFailureMessage(error: unknown): string {
@@ -100,23 +113,34 @@ function saveFailureMessage(error: unknown): string {
   return error.message;
 }
 
+/** Saves the current draft; a change made during a save is saved after it. */
 async function save(): Promise<void> {
-  if (isSaving.value) return;
-  isSaving.value = true;
+  hasLocalChange = true;
+  hasUnsavedChange = true;
+  if (isSaving) return;
+  isSaving = true;
+  saveState.value = "saving";
   try {
-    await updateExamCourses({
-      school_forms: EXAM_COURSE_SCHOOL_FORMS.filter((form) =>
-        draftSchoolForms.value.includes(form),
-      ),
-      course_keys: draftCourseKeys.value,
-    });
-    setRegisteredCourseKeys(draftCourseKeys.value);
-    toast.success("Kurserna uppdaterades.");
-    emit("profileUpdated");
+    while (hasUnsavedChange) {
+      hasUnsavedChange = false;
+      const value: ExamCourses = {
+        school_forms: EXAM_COURSE_SCHOOL_FORMS.filter((form) =>
+          draftSchoolForms.value.includes(form),
+        ),
+        course_keys: [...draftCourseKeys.value],
+      };
+      await updateExamCourses(value);
+      lastSaved = value;
+      setRegisteredCourseKeys(value.course_keys);
+    }
+    saveState.value = "saved";
   } catch (error: unknown) {
+    hasUnsavedChange = false;
+    applyValue(lastSaved);
+    saveState.value = "idle";
     toast.failure(saveFailureMessage(error));
   } finally {
-    isSaving.value = false;
+    isSaving = false;
   }
 }
 </script>
@@ -146,7 +170,6 @@ async function save(): Promise<void> {
             type="checkbox"
             class="h-4 w-4 accent-action"
             :checked="draftSchoolForms.includes(form)"
-            :disabled="isSaving"
             @change="toggleSchoolForm(form)"
           >
           {{ schoolFormLabels[form] }}
@@ -154,29 +177,21 @@ async function save(): Promise<void> {
       </div>
     </fieldset>
 
-    <div class="flex items-stretch gap-2">
+    <div class="flex items-center gap-3">
       <div class="min-w-0 flex-1">
         <ExamCourseCombobox
-          v-model="selectedCourseKey"
+          :model-value="null"
           :courses="courses"
-          :disabled="isSaving"
           input-id="profile-exam-course"
+          @update:model-value="chooseCourse"
         />
       </div>
-      <UiDenseIconButton
-        label="Lägg till kurs"
-        size="touch"
-        data-test="profile-course-add"
-        aria-label="Lägg till kurs"
-        title="Lägg till kurs"
-        :disabled="isSaving || !canAdd"
-        @click="addCourse"
-      >
-        <UiGlyph
-          meaning="add"
-          :size="16"
-        />
-      </UiDenseIconButton>
+      <span
+        class="courses-status"
+        data-test="profile-courses-status"
+        role="status"
+        aria-live="polite"
+      >{{ statusText }}</span>
     </div>
 
     <ol
@@ -203,7 +218,6 @@ async function save(): Promise<void> {
           data-test="profile-course-remove"
           :aria-label="`Ta bort ${row.name}`"
           title="Ta bort"
-          :disabled="isSaving"
           @click="removeCourse(row.key)"
         >
           <UiGlyph
@@ -219,20 +233,6 @@ async function save(): Promise<void> {
     >
       Inga kurser tillagda.
     </p>
-
-    <div class="courses-actions">
-      <button
-        type="button"
-        class="btn-inline-primary"
-        data-test="profile-courses-save"
-        :disabled="isSaving"
-        :aria-busy="isSaving"
-        title="Spara kurser"
-        @click="save"
-      >
-        Spara
-      </button>
-    </div>
   </div>
 </template>
 
@@ -271,11 +271,10 @@ async function save(): Promise<void> {
   border-bottom: none;
 }
 
-.courses-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid var(--huleedu-surface-divider);
+.courses-status {
+  flex-shrink: 0;
+  width: 4rem;
+  font-size: var(--huleedu-text-xs);
+  color: var(--huleedu-navy-70);
 }
 </style>

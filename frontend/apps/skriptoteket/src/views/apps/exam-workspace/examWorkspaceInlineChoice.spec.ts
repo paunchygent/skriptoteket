@@ -90,6 +90,7 @@ describe("new teacher item current-schema fields", () => {
     const item = newTeacherItem("item_002", 2, "short_answer");
     expect(item.kind).toBe("gap_fill");
     expect(item.import_record).toBeNull();
+    expect(item.suggested_kind).toBeNull();
     expect(item.gaps).toEqual([{
       gap_id: "gap_001",
       accepted_values: [],
@@ -105,6 +106,7 @@ describe("new teacher item current-schema fields", () => {
     const item = newTeacherItem("item_002", 2, "free_text");
     expect(item.gaps).toEqual([]);
     expect(item.import_record).toBeNull();
+    expect(item.suggested_kind).toBeNull();
     expect(hasInvalidAnswerKey(item)).toBe(false);
   });
 });
