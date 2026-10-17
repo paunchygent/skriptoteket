@@ -1619,6 +1619,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/change-type": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Change Exam Item Type */
+        post: operations["change_exam_item_type_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__change_type_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/content-suggestions": {
         parameters: {
             query?: never;
@@ -3792,6 +3809,38 @@ export interface components {
             label: string;
             /** Slug */
             slug: string;
+        };
+        /** ChangeExamWorkspaceItemTypeRequest */
+        ChangeExamWorkspaceItemTypeRequest: {
+            /**
+             * Expected Cursor
+             * Format: uuid
+             */
+            expected_cursor: string;
+            /** Expected Revision */
+            expected_revision: number;
+            /** Item Id */
+            item_id: string;
+            target_kind: components["schemas"]["NativeExamItemKind"];
+        };
+        /** ChangeExamWorkspaceItemTypeResponse */
+        ChangeExamWorkspaceItemTypeResponse: {
+            conversion: components["schemas"]["ExamWorkspaceConversionStatus"] | null;
+            document: components["schemas"]["NativeExamDocument-Output"];
+            /** Dropped Content */
+            dropped_content: string[];
+            /**
+             * History Cursor
+             * Format: uuid
+             */
+            history_cursor: string;
+            /**
+             * Notes
+             * @default []
+             */
+            notes: string[];
+            saved_document: components["schemas"]["NativeExamDocument-Output"];
+            summary: components["schemas"]["ExamWorkspaceDocumentSummary"];
         };
         /** ClassListImportPreview */
         ClassListImportPreview: {
@@ -13810,6 +13859,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ExamWorkspaceUndoStepResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    change_exam_item_type_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__change_type_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lineage_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangeExamWorkspaceItemTypeRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChangeExamWorkspaceItemTypeResponse"];
                 };
             };
             /** @description Validation Error */
