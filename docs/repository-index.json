@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "6b2ea37fa4143b6fa56770bc2d8d972a7b1e5fe3b9528d04df33946be0584436",
+  "source_set_digest": "dc2beb4af95a2b349374f1c09067471b1437d653029c7a6f7a30225a648b5973",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4980,6 +4980,25 @@
         "decided_at": "2026-10-17",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "Closeout review at main bd4d706d approved (Pi c2153ae4, retained 01a149c9-5bc7-7713-ba64-12dee0470bdd evidence/reviews/TASK-SKRIPT-39-04-10/closeout-review.md); implementation reviews 39-04-10-review-1 and review-2 approved (repair cf796321). Focused rerun with real PostgreSQL in both orders: 30 passed (evidence/reviews/closeout-bd4d706d/39-04-10.log). No browser or Exam.net proof by contract."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-04-11",
+      "type": "task",
+      "title": "Printed point totals reach their questions through one owner per points line",
+      "path": "docs/backlog/tasks/task-skript-39-04-11-printed-point-totals-reach-their-questions-through-one-owner-per-points-line.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {

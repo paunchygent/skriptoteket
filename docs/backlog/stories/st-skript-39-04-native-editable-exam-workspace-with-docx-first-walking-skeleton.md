@@ -103,7 +103,13 @@ with validation (ST-SKRIPT-21-10 DOCX-contract slice).
    finds the latest job for the current saved version on open, a running job
    is reused, import is impossible while the exam has unsaved changes, worker
    logs name the job kind, and each gap carries its printed label.
-10. Later slices (unscarffolded until this story is reviewed): digital-PDF
+10. `TASK-SKRIPT-39-04-10`: a Mina filer file restored from the trash is
+   never deleted by the expiry cleanup that selected it.
+11. `TASK-SKRIPT-39-04-11`: printed point totals reach their questions
+   through one owner per points line: part totals take one path, a points
+   line belongs to its question in every stage, and code reads the exam
+   total (root-cause repair of DOCX import variation, user 2026-10-17).
+12. Later slices (unscarffolded until this story is reviewed): digital-PDF
    intake reusing the same native document and review path; deferred
    scanned-PDF behavior once its handling is decided.
 

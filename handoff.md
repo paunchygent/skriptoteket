@@ -62,9 +62,10 @@
   `53c3f973` applied the rulings (no header banner, one plain line per level, no
   "Godkänn alla"; `72282832`). Independent review `0ff04626` (Pi) running. Next:
   admit findings, merge to main, rebuild staging, walk the editor once.
-  DOCX import run-to-run variation (printed_total 36 vs null; 36 p vs 21 p for the
-  same file): investigation running (`evidence/import-variability/report.md`);
-  user asked for findings before any fix.
+  DOCX import totals: root causes confirmed by replay (retained
+  `01a14bdc-65b7-73e1-a8ee-3c75001a36fa`); TASK-SKRIPT-39-04-11 `ready` (part totals
+  one path, one owner per points line, code-owned exam total; no fallbacks).
+  Next: implementation lead.
   Next lanes: 39-06-02 Exam.net ordering/dropdown probe, 39-07-03 retire old
   converter routes. Stories 39-04, 39-06, 39-07 await story closeout.
   Follow-ups: trash cleanup deletes payload files before its row commit;
