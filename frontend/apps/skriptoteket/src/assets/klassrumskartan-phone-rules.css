@@ -105,30 +105,6 @@
   gap: var(--huleedu-space-2);
 }
 
-/* G29: the shared icon control has no 44px phone touch size. */
-.planner-phone-rule-action-button {
-  display: inline-grid;
-  min-width: 2.75rem;
-  height: 2.75rem;
-  place-items: center;
-  border: var(--huleedu-border-width) solid var(--huleedu-panel-border);
-  background-color: var(--surface-panel);
-  color: var(--huleedu-navy);
-}
-
-.planner-phone-rule-action-button:disabled {
-  cursor: not-allowed;
-  border-color: var(--huleedu-surface-divider);
-  background-color: var(--huleedu-navy-05);
-  color: var(--huleedu-navy-40);
-  opacity: 1;
-}
-
-.planner-phone-rule-action-button-danger:not(:disabled) {
-  border-color: var(--huleedu-critical-40);
-  color: var(--huleedu-critical);
-}
-
 .planner-phone-rules-selection {
   position: sticky;
   top: var(--huleedu-space-2);

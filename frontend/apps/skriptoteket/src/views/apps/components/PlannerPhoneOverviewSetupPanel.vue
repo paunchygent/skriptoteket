@@ -13,6 +13,7 @@
 import { computed } from "vue";
 
 import { IconEdit, IconPlus, IconTrash } from "../../../components/icons";
+import { UiDenseActionButton } from "../../../components/ui";
 import type { RoomTemplate, Roster } from "../classroomPlannerTypes";
 
 const props = withDefaults(
@@ -159,39 +160,43 @@ function selectTemplate(event: Event): void {
         v-if="showRosterActions"
         class="planner-overview-setup-actions"
       >
-        <button
-          type="button"
-          class="planner-overview-setup-action"
+        <UiDenseActionButton
+          size="touch"
+          label="Ändra"
           :data-test="editRosterTestId"
           :disabled="isRosterEditDisabled"
           :title="rosterEditDisabledReason ?? undefined"
           @click="emit('edit-roster')"
         >
-          <IconEdit :size="14" />
-          Ändra
-        </button>
-        <button
-          type="button"
-          class="planner-overview-setup-action"
+          <template #leading>
+            <IconEdit :size="14" />
+          </template>
+        </UiDenseActionButton>
+        <UiDenseActionButton
+          size="touch"
+          label="Ny klass"
           :data-test="createRosterTestId"
           :disabled="Boolean(rosterCreateDisabledReason)"
           :title="rosterCreateDisabledReason ?? undefined"
           @click="emit('create-roster')"
         >
-          <IconPlus :size="14" />
-          Ny klass
-        </button>
-        <button
-          type="button"
-          class="planner-overview-setup-action planner-overview-setup-action-danger"
+          <template #leading>
+            <IconPlus :size="14" />
+          </template>
+        </UiDenseActionButton>
+        <UiDenseActionButton
+          size="touch"
+          tone="danger"
+          label="Radera"
           :data-test="deleteRosterTestId"
           :disabled="isRosterDeleteDisabled"
           :title="rosterDeleteDisabledReason ?? undefined"
           @click="emit('delete-current-roster')"
         >
-          <IconTrash :size="14" />
-          Radera
-        </button>
+          <template #leading>
+            <IconTrash :size="14" />
+          </template>
+        </UiDenseActionButton>
       </div>
     </section>
 
@@ -232,39 +237,43 @@ function selectTemplate(event: Event): void {
         v-if="showTemplateActions"
         class="planner-overview-setup-actions"
       >
-        <button
-          type="button"
-          class="planner-overview-setup-action"
+        <UiDenseActionButton
+          size="touch"
+          label="Ändra"
           :data-test="editTemplateTestId"
           :disabled="isTemplateEditDisabled"
           :title="templateEditDisabledReason ?? undefined"
           @click="emit('edit-current-template', selectedTemplate ?? undefined)"
         >
-          <IconEdit :size="14" />
-          Ändra
-        </button>
-        <button
-          type="button"
-          class="planner-overview-setup-action"
+          <template #leading>
+            <IconEdit :size="14" />
+          </template>
+        </UiDenseActionButton>
+        <UiDenseActionButton
+          size="touch"
+          label="Nytt klassrum"
           :data-test="createTemplateTestId"
           :disabled="Boolean(templateCreateDisabledReason)"
           :title="templateCreateDisabledReason ?? undefined"
           @click="emit('create-template')"
         >
-          <IconPlus :size="14" />
-          Nytt klassrum
-        </button>
-        <button
-          type="button"
-          class="planner-overview-setup-action planner-overview-setup-action-danger"
+          <template #leading>
+            <IconPlus :size="14" />
+          </template>
+        </UiDenseActionButton>
+        <UiDenseActionButton
+          size="touch"
+          tone="danger"
+          label="Radera"
           :data-test="deleteTemplateTestId"
           :disabled="isTemplateDeleteDisabled"
           :title="templateDeleteDisabledReason ?? undefined"
           @click="emit('delete-current-template')"
         >
-          <IconTrash :size="14" />
-          Radera
-        </button>
+          <template #leading>
+            <IconTrash :size="14" />
+          </template>
+        </UiDenseActionButton>
       </div>
       <span
         v-if="!selectedTemplate"

@@ -8,6 +8,7 @@
 import { mount } from "@vue/test-utils";
 import { afterEach, describe, expect, it } from "vitest";
 
+import { UiDenseStatusPill } from "../../../components/ui";
 import PlannerTopPanel from "./PlannerTopPanel.vue";
 
 function mountTopPanel(props?: Partial<InstanceType<typeof PlannerTopPanel>["$props"]>) {
@@ -24,6 +25,29 @@ function mountTopPanel(props?: Partial<InstanceType<typeof PlannerTopPanel>["$pr
 describe("PlannerTopPanel", () => {
   afterEach(() => {
     document.body.innerHTML = "";
+  });
+
+  it.each([
+    ["neutral", "neutral"],
+    ["success", "success"],
+    ["warning", "warning"],
+    ["danger", "error"],
+  ] as const)("provides compact and full shared status pills for %s", (statusTone, sharedTone) => {
+    const wrapper = mountTopPanel({ statusLabel: "Sparat", statusTone });
+    const pills = wrapper.findAllComponents(UiDenseStatusPill);
+
+    expect(pills).toHaveLength(2);
+    expect(pills.map((pill) => pill.props("compact")).sort()).toEqual([false, true]);
+    for (const pill of pills) {
+      expect(pill.props("tone")).toBe(sharedTone);
+      expect(pill.props("label")).toBe("Sparat");
+      expect(pill.text()).toBe("Sparat");
+      expect(pill.attributes("aria-hidden")).toBeUndefined();
+    }
+  });
+
+  it("does not render status pills without a status label", () => {
+    expect(mountTopPanel().findAllComponents(UiDenseStatusPill)).toHaveLength(0);
   });
 
   it("keeps the exit action as an accessible icon button", async () => {

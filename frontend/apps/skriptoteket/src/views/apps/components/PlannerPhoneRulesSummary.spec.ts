@@ -13,6 +13,7 @@
 import { mount } from "@vue/test-utils";
 import { describe, expect, it } from "vitest";
 
+import { UiDenseIconButton } from "../../../components/ui";
 import PlannerPhoneRulesSummary from "./PlannerPhoneRulesSummary.vue";
 import type { FixedSeatRule, RelationshipRule, Student } from "../classroomPlannerTypes";
 
@@ -47,6 +48,25 @@ describe("PlannerPhoneRulesSummary", () => {
     });
 
     expect(wrapper.find('[data-test="phone-rules-active-summary"]').exists()).toBe(false);
+  });
+
+  it("uses shared touch controls for every persisted-rule action", () => {
+    const wrapper = mount(PlannerPhoneRulesSummary, {
+      props: {
+        canEdit: true,
+        nearTeacherStudents: [studentsById["student-1"]],
+        relationshipRules,
+        fixedSeatRules,
+        studentsById,
+      },
+    });
+
+    const actions = wrapper.findAllComponents(UiDenseIconButton);
+    expect(actions).toHaveLength(8);
+    for (const action of actions) {
+      expect(action.props("size")).toBe("touch");
+      expect(action.attributes("aria-label")).toBeTruthy();
+    }
   });
 
   it("renders compact persisted-rule rows with a count", () => {
