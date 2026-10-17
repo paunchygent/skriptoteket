@@ -58,7 +58,10 @@
   root `01a149c9-5bc7-7713-ba64-12dee0470bdd`): Sol pairs on 39-04-08,
   39-06-01, 39-06-03 and 39-08-02 in one shared Mac worktree; Opus prototype
   40-04-01; a Hemma Opus lead runs 40-01-02, 40-01-03, then ST-SKRIPT-40-03. Lane 0 (Sol): TASK-SKRIPT-40-01-02
-  (with the 0.1.24 sync) then 40-01-03. Opus lane: ST-SKRIPT-40-04, shell and
+  merged to main 2026-10-17 on huleedu-integrated 0.1.25 (TASK-SKILL-REP-0323
+  `done` added segmented-toggle keyboard operation; Sol rereview approved
+  `534e8b02`, retained `evidence/reviews/TASK-SKRIPT-40-01-02/`). Next: the Mac
+  parent runs its staging walk, then 40-01-03. Opus lane: ST-SKRIPT-40-04, shell and
   exam workspace redesign from a fresh prototype the user approves (40-04-01),
   then two Opus builders (40-04-02 shell, 40-04-03 workspace); it supersedes
   TASK-SKRIPT-39-04-05 (`canceled`). Sol restyle lane: ST-SKRIPT-40-03 tasks
