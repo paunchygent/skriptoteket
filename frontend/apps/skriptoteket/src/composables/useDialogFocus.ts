@@ -67,6 +67,11 @@ export function useDialogFocus(
 
   function handleKeydown(element: HTMLElement, event: KeyboardEvent): void {
     if (event.key === "Escape") {
+      if (options.modal()) {
+        // Cancelling a modal must not also cancel its underlying workspace.
+        event.preventDefault();
+        event.stopPropagation();
+      }
       options.onClose();
     } else if (event.key === "Tab" && options.modal()) {
       containFocus(element, event);

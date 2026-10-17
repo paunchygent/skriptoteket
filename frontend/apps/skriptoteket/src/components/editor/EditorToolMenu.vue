@@ -7,7 +7,7 @@
  * - provides the editor-side proving ground for generic dense menu triggers and items
  */
 
-import { computed, ref, watch } from "vue";
+import { computed, nextTick, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 
 import { apiGet, isApiError } from "../../api/client";
@@ -222,9 +222,12 @@ async function openAdminToolsIndex(): Promise<void> {
   await router.push("/admin/tools");
 }
 
-function openCreateModal(): void {
+async function openCreateModal(): Promise<void> {
   closeMenu();
   searchQuery.value = "";
+  // Finish the menu's trigger restoration before the dialog captures its
+  // opener and takes focus. Closing the dialog then returns to that trigger.
+  await nextTick();
   createDraftToolModal.open();
 }
 
