@@ -157,23 +157,32 @@ export async function forceClick(view: ViewWrapper, control: string) {
 
 const EDIT_CONTROLS = [
   "exam-workspace-item-points-input",
+  "exam-workspace-type",
+  "exam-workspace-review",
   "exam-workspace-criterion-add",
 ];
 
-/** Every edit control of the selected item's editor is enabled, or every one is disabled. */
+/**
+ * Every edit control of the selected item's editor is editable, or every one is
+ * locked. A converting question hides its criteria/choice/category fields and
+ * disables points, body, type and review, so a locked control may be absent or
+ * disabled; an editable control must be present and enabled.
+ */
 export function expectEditable(view: ViewWrapper, editable: boolean) {
   for (const control of EDIT_CONTROLS) {
-    expect(view.get(`[data-test="${control}"]`).attributes("disabled"), control).toBe(editable ? undefined : "");
+    const element = view.find(`[data-test="${control}"]`);
+    if (editable) {
+      expect(element.exists(), `${control} present`).toBe(true);
+      expect(element.attributes("disabled"), `${control} enabled`).toBeUndefined();
+    } else if (element.exists()) {
+      expect(element.attributes("disabled"), `${control} disabled`).toBe("");
+    }
   }
   const body = view.get('[data-test="exam-workspace-body-paragraph-0"]').attributes("contenteditable");
   if (editable) {
     expect(body).not.toBe("false");
   } else {
     expect(body).toBe("false");
-  }
-  const markReviewed = view.find('[data-test="exam-workspace-review"]');
-  if (markReviewed.exists()) {
-    expect(markReviewed.attributes("disabled")).toBe(editable ? undefined : "");
   }
 }
 

@@ -37,7 +37,7 @@ beforeEach(() => {
   apiMocks.getExamWorkspaceDocument.mockResolvedValue(
     buildResponse({ conversion: status("succeeded"), version: 1 }),
   );
-  apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [] });
+  apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [], ordering: "course" });
 });
 afterEach(() => {
   wrapper?.unmount();
@@ -61,10 +61,12 @@ describe("Exam workspace background conversion", () => {
     const mounted = await mountExamWorkspace();
     wrapper = mounted.wrapper;
     const frame = wrapper.get('[data-test="exam-workspace-frame"]').element;
-    const toolbar = wrapper.get('[data-test="exam-workspace-toolbar"]').element;
+    const header = wrapper.get('[data-test="exam-workspace-header"]').element;
     await importFixtureDocument(wrapper);
     expect(wrapper.get('[data-test="exam-workspace-conversion-status"]').text()).toContain("Konverterar provet …");
-    expect(wrapper.get('[data-test="exam-workspace-source-file-input"]').attributes("disabled")).toBeDefined();
+    // While converting, the Öppna drawer offers no way to start another import.
+    expect(wrapper.find('[data-test="exam-workspace-source-file-input"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="exam-workspace-drop-zone"]').exists()).toBe(false);
     expect(apiMocks.getExamWorkspaceDocument).not.toHaveBeenCalled();
     apiMocks.getExamWorkspaceConversionStatus.mockResolvedValueOnce(status("running"));
     await tick();
@@ -72,11 +74,11 @@ describe("Exam workspace background conversion", () => {
     apiMocks.getExamWorkspaceConversionStatus.mockResolvedValueOnce(status("succeeded"));
     await tick();
     expect(apiMocks.getExamWorkspaceDocument).toHaveBeenCalledExactlyOnceWith("lineage-1");
-    expect(wrapper.get('[data-test="exam-workspace-summary-title"]').text()).toBe("NO-prov HT25");
+    expect(wrapper.get('[data-test="exam-workspace-title"]').text()).toBe("NO-prov HT25");
     expect(mounted.router.currentRoute.value.query.document).toBe("lineage-1");
     expect(wrapper.find('[data-test="exam-workspace-conversion-status"]').exists()).toBe(false);
     expect(wrapper.get('[data-test="exam-workspace-frame"]').element).toBe(frame);
-    expect(wrapper.get('[data-test="exam-workspace-toolbar"]').element).toBe(toolbar);
+    expect(wrapper.get('[data-test="exam-workspace-header"]').element).toBe(header);
     const polls = apiMocks.getExamWorkspaceConversionStatus.mock.calls.length;
     await tick(30_000);
     expect(apiMocks.getExamWorkspaceConversionStatus).toHaveBeenCalledTimes(polls);
@@ -97,17 +99,17 @@ describe("Exam workspace background conversion", () => {
   it("preserves the old exam and disables editing, saving and proposals during conversion", async () => {
     const mounted = await mountExamWorkspace({ document: "lineage-1" });
     wrapper = mounted.wrapper;
-    const title = wrapper.get('[data-test="exam-workspace-summary-title"]').text();
-    await wrapper.get('[data-test="exam-workspace-mode-filer"]').trigger("click");
+    const title = wrapper.get('[data-test="exam-workspace-title"]').text();
+    // On desktop the Öppna drawer stays open after the exam opens.
+    expect(wrapper.find('[data-test="exam-workspace-drawer-open"]').exists()).toBe(true);
     await importFixtureDocument(wrapper);
-    expect(wrapper.get('[data-test="exam-workspace-summary-title"]').text()).toBe(title);
+    expect(wrapper.get('[data-test="exam-workspace-title"]').text()).toBe(title);
     expect(wrapper.get('[data-test="exam-workspace-save"]').attributes("disabled")).toBeDefined();
-    expect(wrapper.get('[data-test="exam-workspace-enrichment-request"]').attributes("disabled")).toBeDefined();
-    await wrapper.get('[data-test="exam-workspace-mode-redigera"]').trigger("click");
+    expect(wrapper.get('[data-test="exam-workspace-suggest-all"]').attributes("disabled")).toBeDefined();
     expect(wrapper.get('[data-test="exam-workspace-item-points-input"]').attributes("disabled")).toBeDefined();
     apiMocks.getExamWorkspaceConversionStatus.mockResolvedValueOnce(status("failed", "Konverteringen misslyckades."));
     await tick();
-    expect(wrapper.get('[data-test="exam-workspace-summary-title"]').text()).toBe(title);
+    expect(wrapper.get('[data-test="exam-workspace-title"]').text()).toBe(title);
     expect(wrapper.get('[data-test="exam-workspace-item-points-input"]').attributes("disabled")).toBeUndefined();
   });
 

@@ -51,7 +51,6 @@ function mountEditor(item: NativeExamItem, options: { attachTo?: HTMLElement } =
       disabled: false,
       notice: null,
       importOpen: false,
-      lastChildDeletable: false,
     },
   });
 }

@@ -37,7 +37,6 @@ function mountEditor(item: NativeExamItem) {
       disabled: false,
       notice: null,
       importOpen: false,
-      lastChildDeletable: false,
     },
   });
 }

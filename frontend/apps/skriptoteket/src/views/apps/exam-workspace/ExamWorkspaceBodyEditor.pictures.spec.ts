@@ -139,7 +139,6 @@ describe("ExamWorkspaceBodyEditor picture rendering", () => {
         disabled: false,
         notice: null,
         importOpen: false,
-        lastChildDeletable: false,
       },
     });
 

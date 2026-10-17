@@ -38,8 +38,27 @@ async function openWorkspace() {
   wrappers.push(mounted.wrapper);
   return mounted.wrapper;
 }
+/** Open Provets uppgifter through the header title; the title button toggles the drawer. */
 async function openMetadata(wrapper: ViewWrapper) {
-  await wrapper.get('[data-test="exam-workspace-summary-title"]').trigger("click");
+  if (!wrapper.find('[data-test="exam-workspace-drawer-details"]').exists()) {
+    await wrapper.get('[data-test="exam-workspace-title"]').trigger("click");
+  }
+  expect(wrapper.find('[data-test="exam-workspace-drawer-details"]').exists()).toBe(true);
+}
+async function closeMetadata(wrapper: ViewWrapper) {
+  await wrapper.get('[data-test="exam-workspace-drawer-close"]').trigger("click");
+  expect(wrapper.find('[data-test="exam-workspace-drawer-details"]').exists()).toBe(false);
+}
+/** Show the Öppna drawer (it stays open on desktop after an exam opens, so only toggle when closed). */
+async function showSavedDocuments(wrapper: ViewWrapper) {
+  if (!wrapper.find('[data-test="exam-workspace-saved-documents"]').exists()) {
+    await wrapper.get('[data-test="exam-workspace-open"]').trigger("click");
+  }
+  expect(wrapper.find('[data-test="exam-workspace-saved-documents"]').exists()).toBe(true);
+}
+/** The header's save state: "Osparat" while the draft differs, otherwise "Sparat …". */
+function saveState(wrapper: ViewWrapper): string {
+  return wrapper.get('[data-test="exam-workspace-save-state"]').text();
 }
 
 beforeEach(() => {
@@ -57,10 +76,10 @@ afterEach(() => {
 describe("ExamWorkspaceView metadata", () => {
   it("edits the title without renaming and saves it with the document revision", async () => {
     const wrapper = await openWorkspace();
-    expect(wrapper.find('[data-test="exam-workspace-dirty-pill"]').exists()).toBe(false);
+    expect(saveState(wrapper)).not.toContain("Osparat");
     await openMetadata(wrapper);
     await wrapper.get('[data-test="exam-workspace-metadata-title"]').setValue("Vattnets kretslopp – slutprov");
-    expect(wrapper.get('[data-test="exam-workspace-dirty-pill"]').text()).toContain("Osparat");
+    expect(saveState(wrapper)).toContain("Osparat");
     expect(api.saveExamWorkspaceDocument).not.toHaveBeenCalled();
     expect(rename).not.toHaveBeenCalled();
     api.saveExamWorkspaceDocument.mockResolvedValue(buildResponse({ version: 2, title: "Vattnets kretslopp – slutprov" }));
@@ -69,7 +88,7 @@ describe("ExamWorkspaceView metadata", () => {
       expectedRevision: 1,
       document: expect.objectContaining({ title: "Vattnets kretslopp – slutprov", revision: 2 }),
     }));
-    expect(wrapper.find('[data-test="exam-workspace-dirty-pill"]').exists()).toBe(false);
+    expect(saveState(wrapper)).not.toContain("Osparat");
   });
 
   it("keeps blank title input local and refuses to send it, then recovers after correction", async () => {
@@ -90,17 +109,17 @@ describe("ExamWorkspaceView metadata", () => {
     expect(api.saveExamWorkspaceDocument).toHaveBeenCalledTimes(1);
   });
 
-  it("never opens item details and document metadata together, in either direction", async () => {
+  it("shows one drawer at a time: Öppna and Provets uppgifter replace each other", async () => {
     const wrapper = await openWorkspace();
-    const details = wrapper.get('[data-test="exam-workspace-item-details-toggle"]');
-    await details.trigger("click");
-    expect(wrapper.find('[data-test="exam-workspace-item-drawer-frame"]').exists()).toBe(true);
+    await showSavedDocuments(wrapper);
+    expect(wrapper.find('[data-test="exam-workspace-drawer-open"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="exam-workspace-drawer-details"]').exists()).toBe(false);
     await openMetadata(wrapper);
-    expect(wrapper.find('[data-test="exam-workspace-item-drawer-frame"]').exists()).toBe(false);
-    expect(wrapper.find('[data-test="exam-workspace-metadata-drawer-frame"]').exists()).toBe(true);
-    await details.trigger("click");
-    expect(wrapper.find('[data-test="exam-workspace-metadata-drawer-frame"]').exists()).toBe(false);
-    expect(wrapper.find('[data-test="exam-workspace-item-drawer-frame"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="exam-workspace-drawer-open"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="exam-workspace-drawer-details"]').exists()).toBe(true);
+    await wrapper.get('[data-test="exam-workspace-open"]').trigger("click");
+    expect(wrapper.find('[data-test="exam-workspace-drawer-details"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="exam-workspace-drawer-open"]').exists()).toBe(true);
   });
 
   it("keeps a pending rename alive after closing the drawer and serializes document writes", async () => {
@@ -111,8 +130,8 @@ describe("ExamWorkspaceView metadata", () => {
     rename.mockReturnValueOnce(new Promise((resolve) => { finish = resolve; }));
     await wrapper.get('[data-test="exam-workspace-metadata-name"]').setValue("Efter stängning");
     await wrapper.get('[data-test="exam-workspace-metadata-rename"]').trigger("click");
-    await wrapper.get('[data-test="exam-workspace-metadata-drawer-close"]').trigger("click");
-    expect(wrapper.find('[data-test="exam-workspace-metadata-drawer-frame"]').exists()).toBe(false);
+    await wrapper.get('[data-test="exam-workspace-drawer-close"]').trigger("click");
+    expect(wrapper.find('[data-test="exam-workspace-drawer-details"]').exists()).toBe(false);
     expect(wrapper.get('[data-test="exam-workspace-save"]').attributes("disabled")).toBeDefined();
     await saveDocument(wrapper);
     expect(api.saveExamWorkspaceDocument).not.toHaveBeenCalled();
@@ -133,7 +152,7 @@ describe("ExamWorkspaceView metadata", () => {
     rename.mockReturnValueOnce(new Promise((_, fail) => { reject = fail; }));
     await wrapper.get('[data-test="exam-workspace-metadata-name"]').setValue("Upptaget namn");
     await wrapper.get('[data-test="exam-workspace-metadata-rename"]').trigger("click");
-    await wrapper.get('[data-test="exam-workspace-metadata-drawer-close"]').trigger("click");
+    await wrapper.get('[data-test="exam-workspace-drawer-close"]').trigger("click");
     const message = "En annan fil heter redan Upptaget namn.provdokument.zip.";
     reject(new ApiError({ code: "validation_error", status: 400, message }));
     await flushPromises();
@@ -190,17 +209,28 @@ describe("ExamWorkspaceView metadata", () => {
       complete();
       await flushPromises();
     }
-    expect(wrapper.get('[data-test="exam-workspace-summary-version"]').text()).toContain("2");
-    await wrapper.get('[data-test="exam-workspace-metadata-drawer-close"]').trigger("click");
+    await wrapper.get('[data-test="exam-workspace-drawer-close"]').trigger("click");
     await openMetadata(wrapper);
     expect(wrapper.get<HTMLInputElement>('[data-test="exam-workspace-metadata-name"]').element.value)
       .toBe("Nytt namn");
-    await wrapper.get('[data-test="exam-workspace-metadata-drawer-close"]').trigger("click");
-    await wrapper.get('[data-test="exam-workspace-mode-filer"]').trigger("click");
+    // The newer head is kept: the next save is written against revision 2.
+    await wrapper.get('[data-test="exam-workspace-metadata-title"]').setValue("Titel på ny version");
+    const saved = buildResponse({ version: 3, title: "Titel på ny version" });
+    saved.summary.name = "Nytt namn.provdokument.zip";
+    saved.summary.vault_file_id = "head-2";
+    api.saveExamWorkspaceDocument.mockResolvedValueOnce(saved);
+    await saveDocument(wrapper);
+    await closeMetadata(wrapper);
+    expect(api.saveExamWorkspaceDocument).toHaveBeenCalledWith("lineage-1", expect.objectContaining({
+      expectedRevision: 2,
+    }));
+    await openMetadata(wrapper);
+    await wrapper.get('[data-test="exam-workspace-drawer-close"]').trigger("click");
+    await showSavedDocuments(wrapper);
     api.getExamWorkspaceDocument.mockResolvedValueOnce(other);
     await wrapper.get('[data-test="exam-workspace-open-lineage-2"]').trigger("click");
     await flushPromises();
-    await wrapper.get('[data-test="exam-workspace-mode-filer"]').trigger("click");
+    await showSavedDocuments(wrapper);
     expect(wrapper.get('[data-test="exam-workspace-open-lineage-1"]').text()).toContain("Nytt namn");
     expect(wrapper.get('[data-test="exam-workspace-open-lineage-1"]').text()).not.toContain("Original");
     // A request begun after rename completion must accept a new authoritative name.
@@ -218,7 +248,7 @@ describe("ExamWorkspaceView metadata", () => {
     await wrapper.get('[data-test="exam-workspace-metadata-rename"]').trigger("click");
     await flushPromises();
     expect(rename).toHaveBeenLastCalledWith("head-2", "Senare namn");
-    await wrapper.get('[data-test="exam-workspace-metadata-drawer-close"]').trigger("click");
+    await wrapper.get('[data-test="exam-workspace-drawer-close"]').trigger("click");
     await openMetadata(wrapper);
     expect(wrapper.get<HTMLInputElement>('[data-test="exam-workspace-metadata-name"]').element.value)
       .toBe("Senare namn");
@@ -236,15 +266,20 @@ describe("ExamWorkspaceView metadata", () => {
     await wrapper.get('[data-test="exam-workspace-metadata-rename"]').trigger("click");
     await flushPromises();
     expect(rename).toHaveBeenCalledWith("vault-head-7", "NO nytt");
-    expect(wrapper.get('[data-test="exam-workspace-summary-title"]').text()).toBe("NO-prov HT25");
-    expect(wrapper.find('[data-test="exam-workspace-dirty-pill"]').exists()).toBe(false);
+    // A successful rename reports through the new file name, not a toast.
+    const toasts = useToastStore();
+    expect(toasts.success).not.toHaveBeenCalled();
+    expect(toasts.info).not.toHaveBeenCalled();
+    expect(toasts.failure).not.toHaveBeenCalled();
+    expect(wrapper.get('[data-test="exam-workspace-title"]').text()).toBe("NO-prov HT25");
+    expect(saveState(wrapper)).not.toContain("Osparat");
     expect(api.saveExamWorkspaceDocument).not.toHaveBeenCalled();
-    await wrapper.get('[data-test="exam-workspace-metadata-drawer-close"]').trigger("click");
-    await wrapper.get('[data-test="exam-workspace-mode-filer"]').trigger("click");
+    await wrapper.get('[data-test="exam-workspace-drawer-close"]').trigger("click");
+    await showSavedDocuments(wrapper);
     api.getExamWorkspaceDocument.mockResolvedValueOnce(other);
     await wrapper.get('[data-test="exam-workspace-open-lineage-2"]').trigger("click");
     await flushPromises();
-    await wrapper.get('[data-test="exam-workspace-mode-filer"]').trigger("click");
+    await showSavedDocuments(wrapper);
     expect(wrapper.get('[data-test="exam-workspace-open-lineage-1"]').text()).toContain("NO nytt");
     expect(wrapper.get('[data-test="exam-workspace-open-lineage-1"]').text()).not.toContain("NO original");
   });

@@ -19,7 +19,6 @@ function mountEditor(item: NativeExamItem, disabled = false) {
       disabled,
       notice: null,
       importOpen: false,
-      lastChildDeletable: false,
     },
   });
 }

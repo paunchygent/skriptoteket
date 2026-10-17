@@ -52,14 +52,14 @@ describe("Exam workspace progressive conversion", () => {
     expect(view.get('[data-test="exam-workspace-conversion-status"]').text()).toContain(
       "Konverterar provet: 1 av 3 frågor klara.",
     );
-    expect(view.get('[data-test="exam-workspace-summary-title"]').text()).toBe("NO-prov HT25");
+    expect(view.get('[data-test="exam-workspace-title"]').text()).toBe("NO-prov HT25");
     await selectItemRow(view, "item_001");
     expect(convertingNoticeShown(view)).toBe(false);
     expectEditable(view, true);
     await selectItemRow(view, "item_002");
     expect(convertingNoticeShown(view)).toBe(true);
     expect(view.text()).toContain("Källtext 2");
-    expect(view.find('[data-test="exam-workspace-mark-reviewed"]').exists()).toBe(true);
+    expect(view.find('[data-test="exam-workspace-review"]').exists()).toBe(true);
     expectEditable(view, false);
 
     apiMocks.getExamWorkspaceConversionStatus.mockResolvedValueOnce(SECOND_STATUS);
@@ -82,9 +82,12 @@ describe("Exam workspace progressive conversion", () => {
     const view = await uploadFirstBatch();
     await selectItemRow(view, "item_002");
     await forceInput(view, "exam-workspace-item-points-input", "7");
-    await forceClick(view, "exam-workspace-criterion-add");
+    expect(view.find('[data-test="exam-workspace-criterion-add"]').exists()).toBe(false);
+    const pressedBefore = view.get('[data-test="exam-workspace-review"]').attributes("aria-pressed");
+    await forceClick(view, "exam-workspace-review");
+    expect(view.get('[data-test="exam-workspace-review"]').attributes("aria-pressed")).toBe(pressedBefore);
 
-    expect(view.find('[data-test="exam-workspace-dirty-pill"]').exists()).toBe(false);
+    expect(view.get('[data-test="exam-workspace-save-state"]').text()).not.toContain("Osparat");
     expect(view.get('[data-test="exam-workspace-save"]').attributes("disabled")).toBe("");
     await selectItemRow(view, "item_001");
     await selectItemRow(view, "item_002");
@@ -127,7 +130,7 @@ describe("Exam workspace progressive conversion", () => {
     expect(convertingNoticeShown(view)).toBe(true);
     expectEditable(view, false);
     await forceInput(view, "exam-workspace-item-points-input", "7");
-    expect(view.find('[data-test="exam-workspace-dirty-pill"]').exists()).toBe(false);
+    expect(view.get('[data-test="exam-workspace-save-state"]').text()).not.toContain("Osparat");
     await selectItemRow(view, "item_001");
     expectEditable(view, true);
 

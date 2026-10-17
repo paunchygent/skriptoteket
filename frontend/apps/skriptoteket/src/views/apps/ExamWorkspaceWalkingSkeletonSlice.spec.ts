@@ -17,7 +17,7 @@
  */
 
 import { flushPromises } from "@vue/test-utils";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ApiError } from "../../api/client";
 import type {
@@ -32,6 +32,7 @@ import {
   mountExamWorkspace,
   saveDocument,
   selectItemRow,
+  type ViewWrapper,
 } from "./ExamWorkspaceSlice.specSupport";
 
 const apiMocks = vi.hoisted(() => ({
@@ -57,6 +58,19 @@ function lastSavedDocument(): NativeExamDocument {
     { document: NativeExamDocument; expectedRevision: number },
   ];
   return params.document;
+}
+
+/** Choose a question type from the list's Ny fråga menu (teleported to the body). */
+async function addQuestion(wrapper: ViewWrapper, kind: string) {
+  await wrapper.find('[data-test="exam-workspace-new"]').trigger("click");
+  document.body.querySelector<HTMLElement>(`[data-test="exam-workspace-new-${kind}"]`)!.click();
+  await flushPromises();
+}
+
+function rowStatus(wrapper: ViewWrapper, itemId: string): string | undefined {
+  return wrapper
+    .find(`[data-test="exam-workspace-row-${itemId}"] [role="img"][aria-label$="granskas"], [data-test="exam-workspace-row-${itemId}"] [role="img"][aria-label="Granskad"]`)
+    .attributes("aria-label");
 }
 
 /** The imported exam with the given items as gap items keyed in two gaps, so one gap can be cleared on its own. */
@@ -107,7 +121,7 @@ beforeEach(() => {
   apiMocks.importExamWorkspaceDocument.mockReset();
   apiMocks.saveExamWorkspaceDocument.mockReset();
   apiMocks.listExamWorkspaceDocuments.mockReset();
-  apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [] });
+  apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [], ordering: "course" });
   apiMocks.requestExamWorkspaceAnswerMisspellings.mockReset();
   apiMocks.requestExamWorkspaceAnswerMisspellings.mockResolvedValue({ automatic_values: [] });
   apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
@@ -119,25 +133,26 @@ beforeEach(() => {
   });
 });
 
+afterEach(() => {
+  window.history.replaceState({}, "", "/");
+  document.body.replaceChildren();
+});
+
 describe("ExamWorkspaceView walking skeleton slice", () => {
   it("shows the extracted items with Swedish type labels and review status after import", async () => {
     const { wrapper } = await mountExamWorkspace();
 
     await importFixtureDocument(wrapper);
 
-    expect(wrapper.findAll('[data-test^="exam-workspace-item-row-"]')).toHaveLength(8);
+    expect(wrapper.findAll('[data-test^="exam-workspace-row-"]')).toHaveLength(8);
     expect(wrapper.text()).toContain("Fritext");
     expect(wrapper.text()).toContain("Flerval: ett val");
     expect(wrapper.text()).toContain("Flerval: flera val");
     expect(wrapper.text()).toContain("Lucktext");
-    expect(
-      wrapper.find('[data-test="exam-workspace-item-status-item_003"]').text(),
-    ).toContain("Behöver granskas");
-    expect(
-      wrapper.find('[data-test="exam-workspace-item-status-item_001"]').text(),
-    ).toContain("Granskad");
+    expect(rowStatus(wrapper, "item_003")).toBe("Behöver granskas");
+    expect(rowStatus(wrapper, "item_001")).toBe("Granskad");
     expect(wrapper.find('[data-test="exam-workspace-item-editor"]').exists()).toBe(true);
-    expect(wrapper.find('[data-test="exam-workspace-dirty-pill"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="exam-workspace-save-state"]').text()).toMatch(/^Sparat /);
   });
 
   it("marks the workspace as unsaved when the selected item points are edited", async () => {
@@ -149,8 +164,8 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
       .find('[data-test="exam-workspace-item-points-input"]')
       .setValue("5");
 
-    expect(wrapper.find('[data-test="exam-workspace-dirty-pill"]').text()).toBe("Osparat");
-    expect(wrapper.find('[data-test="exam-workspace-item-row-item_002"]').text()).toContain(
+    expect(wrapper.find('[data-test="exam-workspace-save-state"]').text()).toBe("Osparat");
+    expect(wrapper.find('[data-test="exam-workspace-row-item_002"]').text()).toContain(
       "Fråga 2",
     );
   });
@@ -159,16 +174,16 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
     const { wrapper } = await mountExamWorkspace();
     await importFixtureDocument(wrapper);
 
-    await wrapper.find('[data-test="exam-workspace-add-free_text"]').trigger("click");
+    await addQuestion(wrapper, "free_text");
 
-    expect(wrapper.findAll('[data-test^="exam-workspace-item-row-"]')).toHaveLength(9);
-    const newRow = wrapper.find('[data-test="exam-workspace-item-row-item_009"]');
+    expect(wrapper.findAll('[data-test^="exam-workspace-row-"]')).toHaveLength(9);
+    const newRow = wrapper.find('[data-test="exam-workspace-row-item_009"]');
     expect(newRow.exists()).toBe(true);
     expect(newRow.text()).toContain("Fritext");
     expect(wrapper.find('[data-test="exam-workspace-item-editor"]').text()).toContain(
       "Fråga 2",
     );
-    expect(wrapper.find('[data-test="exam-workspace-dirty-pill"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="exam-workspace-save-state"]').text()).toBe("Osparat");
   });
 
   it("adds a short answer as a Lucktext with one unkeyed gap after the question text", async () => {
@@ -176,9 +191,9 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
     const { wrapper } = await mountExamWorkspace();
     await importFixtureDocument(wrapper);
 
-    await wrapper.find('[data-test="exam-workspace-add-short_answer"]').trigger("click");
+    await addQuestion(wrapper, "short_answer");
 
-    const newRow = wrapper.find('[data-test="exam-workspace-item-row-item_009"]');
+    const newRow = wrapper.find('[data-test="exam-workspace-row-item_009"]');
     expect(newRow.text()).toContain("Lucktext");
     await saveDocument(wrapper);
 
@@ -220,8 +235,8 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
     expect(params.document.revision).toBe(2);
     const savedItem = params.document.items.find((item) => item.item_id === "item_002");
     expect(savedItem?.points).toBe(5);
-    expect(wrapper.find('[data-test="exam-workspace-dirty-pill"]').exists()).toBe(false);
-    expect(wrapper.text()).toContain("Version 2");
+    expect(wrapper.find('[data-test="exam-workspace-save-state"]').text()).toMatch(/^Sparat /);
+    expect(vi.mocked(useToastStore().success)).not.toHaveBeenCalled();
   });
 
   it("marks a machine-proposed answer key as reviewed_advisory when the item is marked reviewed", async () => {
@@ -230,11 +245,11 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
     await importFixtureDocument(wrapper);
 
     await selectItemRow(wrapper, "item_003");
-    await wrapper.find('[data-test="exam-workspace-mark-reviewed"]').trigger("click");
+    expect(wrapper.find('[data-test="exam-workspace-review"]').attributes("aria-pressed")).toBe("false");
+    await wrapper.find('[data-test="exam-workspace-review"]').trigger("click");
 
-    expect(
-      wrapper.find('[data-test="exam-workspace-item-status-item_003"]').text(),
-    ).toContain("Granskad");
+    expect(wrapper.find('[data-test="exam-workspace-review"]').attributes("aria-pressed")).toBe("true");
+    expect(rowStatus(wrapper, "item_003")).toBe("Granskad");
 
     await saveDocument(wrapper);
 
@@ -408,9 +423,8 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
     expect(wrapper.find('[data-test="exam-workspace-conflict-notice"]').text()).toContain(
       "ändrades någon annanstans",
     );
-    expect(wrapper.text()).toContain("Serverversion av provet");
-    expect(wrapper.text()).toContain("Version 2");
-    expect(wrapper.find('[data-test="exam-workspace-dirty-pill"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="exam-workspace-title"]').text()).toBe("Serverversion av provet");
+    expect(wrapper.find('[data-test="exam-workspace-save-state"]').text()).toMatch(/^Sparat /);
   });
 
   it("reloads the latest saved version on request", async () => {
@@ -420,10 +434,15 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
     const { wrapper } = await mountExamWorkspace();
     await importFixtureDocument(wrapper);
 
-    await wrapper.find('[data-test="exam-workspace-reload"]').trigger("click");
+    await wrapper.find('[data-test="exam-workspace-save-menu"]').trigger("click");
+    document.body.querySelector<HTMLElement>('[data-test="exam-workspace-reload"]')!.click();
     await flushPromises();
 
     expect(apiMocks.getExamWorkspaceDocument).toHaveBeenCalledWith("lineage-1");
-    expect(wrapper.text()).toContain("Uppdaterat prov");
+    expect(wrapper.find('[data-test="exam-workspace-title"]').text()).toBe("Uppdaterat prov");
+    // Reload reports no success toast: the header title and save state are the outcome.
+    const toasts = useToastStore();
+    expect(vi.mocked(toasts.success)).not.toHaveBeenCalled();
+    expect(vi.mocked(toasts.failure)).not.toHaveBeenCalled();
   });
 });

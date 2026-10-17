@@ -5,8 +5,9 @@
  * Domain purpose:
  *   Export the saved exam with every choice in view: the format, and whether
  *   the file downloads or stays in Mina filer as the exam's one file of that
- *   format, replacing the earlier one. The questions that stop an export come
- *   first and lead to the question. After a QTI export the drawer lists what
+ *   format, replacing the earlier one. The questions to fix come first and
+ *   lead to the question; only the server's refusal stops the export, what
+ *   the workspace itself sees is guidance. After a QTI export the drawer lists what
  *   Exam.net loses on import, so the teacher can correct it there.
  *
  * Relationships:
@@ -29,6 +30,8 @@ type Destination = "download" | "files";
 
 const props = defineProps<{
   blockers: ExamWorkspaceBlockerEntry[];
+  /** The server refused the last export for these questions. */
+  serverBlocked: boolean;
   dirty: boolean;
   busy: boolean;
   exportingTarget: ExamWorkspaceExportTarget | null;
@@ -53,7 +56,7 @@ const destination = ref<Destination>("download");
 const format = computed(() => EXAM_WORKSPACE_EXPORT_FORMATS.find((entry) => entry.target === target.value)!);
 const replaced = computed(() => props.savedExports[target.value] ?? null);
 const disabled = computed(
-  () => props.blockers.length > 0 || props.dirty || props.busy || props.exportingTarget !== null,
+  () => props.serverBlocked || props.dirty || props.busy || props.exportingTarget !== null,
 );
 </script>
 
@@ -64,9 +67,9 @@ const disabled = computed(
     data-test="exam-workspace-export-drawer-blockers"
   >
     <b><UiGlyph
-      meaning="status-failure"
+      :meaning="serverBlocked ? 'status-failure' : 'status-warning'"
       :size="16"
-    />Kan inte exporteras ännu</b>
+    />{{ serverBlocked ? "Kan inte exporteras ännu" : "Kontrollera innan du exporterar" }}</b>
     <button
       v-for="blocker in blockers"
       :key="`${blocker.itemId}-${blocker.reason}`"

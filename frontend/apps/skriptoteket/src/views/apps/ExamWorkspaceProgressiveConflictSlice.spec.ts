@@ -140,7 +140,7 @@ describe("Exam workspace progressive conversion save conflicts", () => {
     await flushPromises();
 
     expect(await pointsOf(view, "item_001")).toBe("11");
-    expect(view.find('[data-test="exam-workspace-dirty-pill"]').exists()).toBe(true);
+    expect(view.get('[data-test="exam-workspace-save-state"]').text()).toContain("Osparat");
     expect(apiMocks.getExamWorkspaceDocument).toHaveBeenCalledTimes(1);
     expect(view.text()).not.toContain(EXAM_WORKSPACE_CONFLICT_COPY);
   });

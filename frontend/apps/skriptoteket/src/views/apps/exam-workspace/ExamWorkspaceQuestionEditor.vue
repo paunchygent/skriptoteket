@@ -43,6 +43,7 @@ import ExamWorkspaceKategoriseraGrid from "./ExamWorkspaceKategoriseraGrid.vue";
 import ExamWorkspaceQuestionHead from "./ExamWorkspaceQuestionHead.vue";
 import ExamWorkspaceQuestionTools from "./ExamWorkspaceQuestionTools.vue";
 import { isTeacherReviewed } from "./examWorkspaceItemEdits";
+import { examWorkspaceItemReadiness } from "./examWorkspaceItemReadiness";
 import { hasNegativePoints, NEGATIVE_POINTS_GUIDANCE } from "./examWorkspaceItemSaveRules";
 import { provideRichTextTargetRegistry } from "./examWorkspaceRichTextTarget";
 import type { ExamWorkspaceNotice } from "./useExamWorkspaceStructure";
@@ -109,7 +110,8 @@ watch(
 );
 
 const locked = computed(() => props.disabled || props.converting);
-const unbuilt = computed(() => props.item.review.reasons.includes("unbuilt_question"));
+// The same rule as the list and the server's export blocker (`is_unbuilt_question`).
+const unbuilt = computed(() => examWorkspaceItemReadiness(props.item).includes("unbuilt_question"));
 const reviewed = computed(() => isTeacherReviewed(props.item));
 const typeUncertain = computed(
   () => typeof props.item.review.confidence === "number" && props.item.review.confidence < TYPE_CONFIDENCE_THRESHOLD,

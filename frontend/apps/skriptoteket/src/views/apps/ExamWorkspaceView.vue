@@ -170,6 +170,7 @@ const total = computed(() => examWorkspaceListTotal(entries.value));
 const blockers = computed(() =>
   examWorkspaceBlockerEntries(entries.value, readiness.value, exports.exportBlockersByItemId.value),
 );
+const serverBlocked = computed(() => Object.keys(exports.exportBlockersByItemId.value).length > 0);
 const globalInstructions = computed(() =>
   examWorkspaceSharedParagraphs(workspaceDocument.value?.instructions ?? [], assetUrls.value),
 );
@@ -477,6 +478,7 @@ onBeforeUnmount(() => {
       <template #export>
         <ExamWorkspaceExportMenu
           :blockers="blockers"
+          :server-blocked="serverBlocked"
           :disabled="workspaceDocument === null"
           :dirty="isDirty"
           :exporting-target="exports.exportingTarget.value"
@@ -707,6 +709,7 @@ onBeforeUnmount(() => {
         <ExamWorkspaceExportDrawer
           v-else-if="drawer === 'export' && workspaceDocument"
           :blockers="blockers"
+          :server-blocked="serverBlocked"
           :dirty="isDirty"
           :busy="disabled"
           :exporting-target="exports.exportingTarget.value"

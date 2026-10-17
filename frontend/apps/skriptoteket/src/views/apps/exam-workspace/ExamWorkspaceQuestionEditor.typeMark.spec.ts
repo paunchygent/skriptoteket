@@ -3,7 +3,9 @@
  *
  * Expected behavior:
  *   A review confidence below 0.95 shows the "Kontrollera frågetypen."
- *   hint; 0.95 and null show none.
+ *   hint; 0.95 and null show none. A question the conversion could not build
+ *   (review required after a deterministic parse, the server's export rule)
+ *   reads "Ej konverterad" and hides its answer fields, as the list does.
  */
 
 import { mount } from "@vue/test-utils";
@@ -38,7 +40,6 @@ function mountEditor(item: NativeExamItem) {
       disabled: false,
       notice: null,
       importOpen: false,
-      lastChildDeletable: false,
     },
   });
 }
@@ -63,5 +64,29 @@ describe("ExamWorkspaceQuestionEditor type-check mark", () => {
     );
 
     expect(wrapper.find(TYPE_MARK).exists()).toBe(false);
+  });
+});
+
+describe("ExamWorkspaceQuestionEditor unbuilt question", () => {
+  it("follows the list and the server: review required after a deterministic parse is unbuilt", () => {
+    const wrapper = mountEditor(
+      buildFreeTextItem({
+        review: { confidence: null, parse_origin: "deterministic", reasons: [], state: "review_required" },
+      }),
+    );
+
+    expect(wrapper.get('[data-test="exam-workspace-type"]').text()).toContain("Ej konverterad");
+    expect(wrapper.find('[data-test="exam-workspace-criterion-add"]').exists()).toBe(false);
+  });
+
+  it("keeps a reviewed deterministic question built", () => {
+    const wrapper = mountEditor(
+      buildFreeTextItem({
+        review: { confidence: null, parse_origin: "deterministic", reasons: [], state: "review_complete" },
+      }),
+    );
+
+    expect(wrapper.get('[data-test="exam-workspace-type"]').text()).not.toContain("Ej konverterad");
+    expect(wrapper.find('[data-test="exam-workspace-criterion-add"]').exists()).toBe(true);
   });
 });

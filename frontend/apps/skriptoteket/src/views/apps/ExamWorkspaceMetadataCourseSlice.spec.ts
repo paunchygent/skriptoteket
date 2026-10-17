@@ -39,11 +39,15 @@ async function openMetadata() {
   });
   const { wrapper } = await mountExamWorkspace({ document: "lineage-1" }, "desktop", document.body, pinia);
   wrappers.push(wrapper);
-  await wrapper.get('[data-test="exam-workspace-summary-title"]').trigger("click");
+  await wrapper.get('[data-test="exam-workspace-title"]').trigger("click");
   return wrapper;
 }
+/** The header's save state: "Osparat" while the draft differs, otherwise "Sparat …". */
+function saveState(wrapper: ViewWrapper): string {
+  return wrapper.get('[data-test="exam-workspace-save-state"]').text();
+}
 async function choose(wrapper: ViewWrapper, query: string) {
-  const drawer = wrapper.get('[data-test="exam-workspace-metadata-drawer"]');
+  const drawer = wrapper.get('[data-test="exam-workspace-drawer-details"]');
   await drawer.get('[role="combobox"]').setValue(query);
   await drawer.get('[role="option"]').trigger("click");
 }
@@ -69,13 +73,13 @@ afterEach(() => {
 describe("ExamWorkspaceMetadataDrawer course save workflow", () => {
   it("shows an unresolved hint, snapshots the picked name, and saves only with Spara", async () => {
     const wrapper = await openMetadata();
-    const drawer = wrapper.get('[data-test="exam-workspace-metadata-drawer"]');
+    const drawer = wrapper.get('[data-test="exam-workspace-drawer-details"]');
     expect((drawer.get('[role="combobox"]').element as HTMLInputElement).value).toBe("");
     expect(drawer.text()).toContain("Lokalt temaprov");
-    expect(wrapper.find('[data-test="exam-workspace-dirty-pill"]').exists()).toBe(false);
+    expect(saveState(wrapper)).not.toContain("Osparat");
     await choose(wrapper, "SVESVE02");
     expect(drawer.get('[data-test="exam-workspace-metadata-subject"]').text()).toContain("Svenska");
-    expect(wrapper.get('[data-test="exam-workspace-dirty-pill"]').text()).toContain("Osparat");
+    expect(saveState(wrapper)).toContain("Osparat");
     expect(api.saveExamWorkspaceDocument).not.toHaveBeenCalled();
     expect(rename).not.toHaveBeenCalled();
     await saveDocument(wrapper);
@@ -86,7 +90,7 @@ describe("ExamWorkspaceMetadataDrawer course save workflow", () => {
         header: { course: { key: "SVESVE02", name: "Svenska 2" }, course_hint: "Lokalt temaprov", printed_total: 36, tags: [] },
       }),
     }));
-    expect(wrapper.find('[data-test="exam-workspace-dirty-pill"]').exists()).toBe(false);
+    expect(saveState(wrapper)).not.toContain("Osparat");
     // Saving must not mutate the installed server response in place.
     expect(original.document.header.course).toBeNull();
   });
@@ -94,12 +98,12 @@ describe("ExamWorkspaceMetadataDrawer course save workflow", () => {
   it("clears a persisted course without erasing the hint or printed total", async () => {
     original.document.header.course = { key: "SVESVE02", name: "Svenska 2" };
     const wrapper = await openMetadata();
-    const drawer = wrapper.get('[data-test="exam-workspace-metadata-drawer"]');
+    const drawer = wrapper.get('[data-test="exam-workspace-drawer-details"]');
     expect((drawer.get('[role="combobox"]').element as HTMLInputElement).value).toBe("Svenska 2");
     await drawer.get('button[aria-label*="ensa"]').trigger("click");
     expect(drawer.text()).toContain("Lokalt temaprov");
     expect(drawer.find('[data-test="exam-workspace-metadata-subject"]').exists()).toBe(false);
-    expect(wrapper.find('[data-test="exam-workspace-dirty-pill"]').exists()).toBe(true);
+    expect(saveState(wrapper)).toContain("Osparat");
     await saveDocument(wrapper);
     expect(api.saveExamWorkspaceDocument).toHaveBeenCalledWith("lineage-1", expect.objectContaining({
       document: expect.objectContaining({ header: { course: null, course_hint: "Lokalt temaprov", printed_total: 36, tags: [] } }),
@@ -109,7 +113,7 @@ describe("ExamWorkspaceMetadataDrawer course save workflow", () => {
   it("binds grundskolan to its chosen band without showing a gymnasiet subject field", async () => {
     const wrapper = await openMetadata();
     await choose(wrapper, "åk 7-9");
-    const drawer = wrapper.get('[data-test="exam-workspace-metadata-drawer"]');
+    const drawer = wrapper.get('[data-test="exam-workspace-drawer-details"]');
     expect(drawer.find('[data-test="exam-workspace-metadata-subject"]').exists()).toBe(false);
     await saveDocument(wrapper);
     expect(api.saveExamWorkspaceDocument).toHaveBeenCalledWith("lineage-1", expect.objectContaining({

@@ -3,20 +3,24 @@
  *
  * Slice purpose:
  *   Lock the on-demand QTI, PDF, and DOCX downloads from the saved head
- *   revision and the Swedish per-item mapping of the server export gate.
+ *   revision and the Swedish per-question mapping of the server export gate.
  *
  * Expected behavior:
- *   Export buttons call the server for every target even when the client
- *   believes items still need review: the server gate decides. A 422 with
- *   `blockers` shows Swedish per-item copy in the item table; a new saved
- *   version clears it. Unsaved edits disable exports because files are built
- *   from the saved version. A successful QTI export also lists what Exam.net
- *   loses on import for the exported revision; edits, saves and new exports
- *   clear that list, and a stale response never replaces the current one.
+ *   The header's Exportera menu and the Exportera drawer call the server for
+ *   every target even when the client believes questions still need review:
+ *   the server gate decides. A 422 with `blockers` lists Swedish per-question
+ *   copy in the menu and the drawer; a new saved version clears it. Unsaved
+ *   edits disable exports because files are built from the saved version. A
+ *   created file is reported inline (menu and drawer), never as a success
+ *   toast; failures and warnings stay toasts. A successful QTI export also
+ *   lists what Exam.net loses on import for the exported revision; edits,
+ *   saves and new exports clear that list, and a stale response never
+ *   replaces the current one. With any question at 0 points the QTI choice
+ *   carries a note that Exam.net imports it as 1 point, without blocking.
  */
 
-import { flushPromises } from "@vue/test-utils";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { DOMWrapper, flushPromises } from "@vue/test-utils";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ApiError } from "../../api/client";
 import type {
@@ -25,6 +29,7 @@ import type {
 } from "../../api/examWorkspace";
 import { useToastStore } from "../../stores/toast";
 import {
+  buildFreeTextItem,
   buildResponse,
   importFixtureDocument,
   mountExamWorkspace,
@@ -52,6 +57,9 @@ vi.mock("../../api/examWorkspace", async () => ({
 const downloadMocks = vi.hoisted(() => ({ triggerBrowserDownload: vi.fn() }));
 
 vi.mock("./exam-converter/browserDownload", () => downloadMocks);
+
+const ZERO_POINTS_NOTE =
+  "Exam.net ger frågor med 0 poäng 1 poäng. Ändra poängen i Exam.net efter importen.";
 
 /** The finished import: its poll status, and the conversion its fetched document carries. */
 const succeededConversion: ExamWorkspaceConversionStatus = {
@@ -98,6 +106,28 @@ const LOST_CHECKLIST: ExamWorkspaceExportChecklistResponse = {
   ],
 };
 
+/**
+ * The fixture exam without client-side export blockers. The default fixture
+ * holds two questions whose proposed key is unreviewed, which the menu
+ * blocks before any request, so exports that must reach the server use this.
+ */
+function exportableResponse(params: {
+  conversion?: ExamWorkspaceConversionStatus | null;
+  version: number;
+}) {
+  const response = buildResponse(params);
+  for (const document of [response.document, response.saved_document]) {
+    document.items = document.items.map((item) =>
+      item.item_id === "item_003" || item.item_id === "item_004"
+        ? buildFreeTextItem(Number(item.item_id.slice(-1)))
+        : item,
+    );
+  }
+  return response;
+}
+
+const wrappers: ViewWrapper[] = [];
+
 beforeEach(() => {
   for (const mock of Object.values(apiMocks)) {
     mock.mockReset();
@@ -106,7 +136,7 @@ beforeEach(() => {
   downloadMocks.triggerBrowserDownload.mockReset();
   apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
     apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(
-      buildResponse({ conversion: succeededConversion, version: 1 }),
+      exportableResponse({ conversion: succeededConversion, version: 1 }),
     );
     return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null,
       document_revision: null, questions_total: 0, questions_done: 0, units: [] };
@@ -115,31 +145,143 @@ beforeEach(() => {
   apiMocks.getExamWorkspaceExportChecklist.mockResolvedValue({ entries: [] });
 });
 
+afterEach(() => {
+  for (const wrapper of wrappers.splice(0)) wrapper.unmount();
+  document.body.replaceChildren();
+});
+
+/** The workspace with the fixture exam imported, attached so the body-level menu is reachable. */
+async function mountImported(): Promise<ViewWrapper> {
+  const { wrapper } = await mountExamWorkspace({}, "desktop", document.body);
+  wrappers.push(wrapper);
+  await importFixtureDocument(wrapper);
+  return wrapper;
+}
+
+/** An element anywhere in the page: the Exportera menu is teleported to the body. */
+function page(testId: string): DOMWrapper<HTMLElement> | null {
+  const element = document.body.querySelector<HTMLElement>(`[data-test="${testId}"]`);
+  return element ? new DOMWrapper(element) : null;
+}
+
+function pageAll(testId: string): DOMWrapper<HTMLElement>[] {
+  return Array.from(document.body.querySelectorAll<HTMLElement>(`[data-test="${testId}"]`)).map(
+    (element) => new DOMWrapper(element),
+  );
+}
+
+function requirePage(testId: string): DOMWrapper<HTMLElement> {
+  const found = page(testId);
+  if (!found) throw new Error(`Missing [data-test="${testId}"]`);
+  return found;
+}
+
+async function openMenu(wrapper: ViewWrapper): Promise<void> {
+  if (!page("exam-workspace-export-menu")) {
+    await wrapper.get('[data-test="exam-workspace-export"]').trigger("click");
+    await flushPromises();
+  }
+}
+
+/** Download `target` through the header menu. */
+async function exportFromMenu(wrapper: ViewWrapper, target: "qti" | "pdf" | "docx"): Promise<void> {
+  await openMenu(wrapper);
+  await requirePage(`exam-workspace-export-${target}`).trigger("click");
+  await flushPromises();
+}
+
+/** Open the Exportera drawer through "Fler val …". */
+async function openExportDrawer(wrapper: ViewWrapper): Promise<void> {
+  await openMenu(wrapper);
+  await requirePage("exam-workspace-export-more").trigger("click");
+  await flushPromises();
+  expect(wrapper.find('[data-test="exam-workspace-drawer-export"]').exists()).toBe(true);
+}
+
+/** Open the Exportera drawer through the menu's "Det här tappar Exam.net" entry. */
+async function openChecklistDrawer(wrapper: ViewWrapper): Promise<void> {
+  await openMenu(wrapper);
+  await requirePage("exam-workspace-export-checklist-open").trigger("click");
+  await flushPromises();
+  expect(wrapper.find('[data-test="exam-workspace-export-checklist"]').exists()).toBe(true);
+}
+
+function menuFormatDisabled(target: string): string | undefined {
+  return requirePage(`exam-workspace-export-${target}`).attributes("aria-disabled");
+}
+
+/** Close the Exportera menu so a later `openMenu` reopens it from the current state. */
+async function closeMenu(wrapper: ViewWrapper): Promise<void> {
+  if (page("exam-workspace-export-menu")) {
+    await wrapper.get('[data-test="exam-workspace-export"]').trigger("click");
+    await flushPromises();
+  }
+}
+
 describe("ExamWorkspaceView export slice", () => {
   it.each([
-    ["qti", "NO-prov-qti.zip"],
-    ["pdf", "NO-prov-examnet.pdf"],
-    ["docx", "NO-prov.docx"],
+    ["qti", "NO-prov-qti.zip", "QTI-paketet är skapat."],
+    ["pdf", "NO-prov-examnet.pdf", "PDF-filen är skapad."],
+    ["docx", "NO-prov.docx", "Word-filen är skapad."],
   ] as const)(
-    "downloads the %s export from the saved version with the server filename",
-    async (target, filename) => {
+    "downloads the %s export from the saved version with the server filename and reports it inline",
+    async (target, filename, created) => {
       const blob = new Blob(["export"]);
       apiMocks.downloadExamWorkspaceExport.mockResolvedValue({
         blob,
         contentType: "application/octet-stream",
         filename,
       });
-      const { wrapper } = await mountExamWorkspace();
-      await importFixtureDocument(wrapper);
+      const wrapper = await mountImported();
 
-      await wrapper.find(`[data-test="exam-workspace-export-${target}"]`).trigger("click");
-      await flushPromises();
+      await exportFromMenu(wrapper, target);
 
       expect(apiMocks.downloadExamWorkspaceExport).toHaveBeenCalledWith("lineage-1", target, 1);
       expect(downloadMocks.triggerBrowserDownload).toHaveBeenCalledWith(blob, filename);
+      expect(useToastStore().success).not.toHaveBeenCalled();
+      await openMenu(wrapper);
+      expect(requirePage("exam-workspace-export-menu-result").text()).toBe(created);
+      await openExportDrawer(wrapper);
+      expect(wrapper.get('[data-test="exam-workspace-export-result"]').text()).toBe(created);
       expect(wrapper.find('[data-test="exam-workspace-export-notice"]').exists()).toBe(false);
     },
   );
+
+  it("exports from the drawer with the chosen format and reports it inline", async () => {
+    apiMocks.downloadExamWorkspaceExport.mockResolvedValue({
+      blob: new Blob(["pdf"]),
+      contentType: "application/pdf",
+      filename: "NO-prov-examnet.pdf",
+    });
+    const wrapper = await mountImported();
+    await openExportDrawer(wrapper);
+
+    await wrapper.get('[data-test="exam-workspace-export-format-pdf"]').trigger("click");
+    await wrapper.get('[data-test="exam-workspace-export-run"]').trigger("click");
+    await flushPromises();
+
+    expect(apiMocks.downloadExamWorkspaceExport).toHaveBeenCalledTimes(1);
+    expect(apiMocks.downloadExamWorkspaceExport).toHaveBeenCalledWith("lineage-1", "pdf", 1);
+    expect(downloadMocks.triggerBrowserDownload).toHaveBeenCalledWith(
+      expect.any(Blob),
+      "NO-prov-examnet.pdf",
+    );
+    expect(wrapper.get('[data-test="exam-workspace-export-result"]').text()).toBe(
+      "PDF-filen är skapad.",
+    );
+    expect(useToastStore().success).not.toHaveBeenCalled();
+  });
+
+  /** The default fixture: questions 3 and 4 hold an unreviewed proposed key. */
+  function importDefaultFixture() {
+    apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
+      apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(
+        buildResponse({ conversion: succeededConversion, version: 1 }),
+      );
+      return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null,
+        document_revision: null, questions_total: 0, questions_done: 0, units: [] };
+    });
+  }
 
   it("asks the server even when the client sees items that still need review", async () => {
     apiMocks.downloadExamWorkspaceExport.mockResolvedValue({
@@ -147,22 +289,56 @@ describe("ExamWorkspaceView export slice", () => {
       contentType: "application/zip",
       filename: null,
     });
-    const { wrapper } = await mountExamWorkspace();
-    await importFixtureDocument(wrapper);
+    importDefaultFixture();
+    const wrapper = await mountImported();
 
-    const qtiButton = wrapper.find('[data-test="exam-workspace-export-qti"]');
-    expect(qtiButton.attributes("disabled")).toBeUndefined();
-    await qtiButton.trigger("click");
+    await openMenu(wrapper);
+    expect(requirePage("exam-workspace-export-blockers").text()).toContain(
+      "Kontrollera innan du exporterar",
+    );
+    expect(requirePage("exam-workspace-export-blockers").text()).not.toContain(
+      "Kan inte exporteras ännu",
+    );
+    expect(requirePage("exam-workspace-export-blockers").text()).toContain(
+      "Fråga 3: Facitförslaget är inte godkänt.",
+    );
+    expect(requirePage("exam-workspace-export-blockers").text()).toContain(
+      "Fråga 4: Facitförslaget är inte godkänt.",
+    );
+    expect(menuFormatDisabled("qti")).toBeUndefined();
+    await requirePage("exam-workspace-export-qti").trigger("click");
     await flushPromises();
 
     expect(apiMocks.downloadExamWorkspaceExport).toHaveBeenCalledTimes(1);
+    expect(apiMocks.downloadExamWorkspaceExport).toHaveBeenCalledWith("lineage-1", "qti", 1);
     expect(downloadMocks.triggerBrowserDownload).toHaveBeenCalledWith(
       expect.any(Blob),
       "prov-qti.zip",
     );
   });
 
-  it("maps 422 export blockers to Swedish copy on each blocked item row", async () => {
+  it("keeps every format enabled and reaching the server while only client reasons are listed", async () => {
+    apiMocks.downloadExamWorkspaceExport.mockResolvedValue({
+      blob: new Blob(["file"]),
+      contentType: "application/octet-stream",
+      filename: null,
+    });
+    importDefaultFixture();
+    const wrapper = await mountImported();
+
+    for (const target of ["qti", "pdf", "docx"] as const) {
+      await exportFromMenu(wrapper, target);
+    }
+
+    expect(apiMocks.downloadExamWorkspaceExport.mock.calls).toEqual([
+      ["lineage-1", "qti", 1],
+      ["lineage-1", "pdf", 1],
+      ["lineage-1", "docx", 1],
+    ]);
+    expect(downloadMocks.triggerBrowserDownload).toHaveBeenCalledTimes(3);
+  });
+
+  it("maps 422 export blockers to Swedish copy per blocked question in the drawer and menu", async () => {
     apiMocks.downloadExamWorkspaceExport.mockRejectedValue(
       new ApiError({
         code: "VALIDATION_ERROR",
@@ -178,31 +354,44 @@ describe("ExamWorkspaceView export slice", () => {
         status: 422,
       }),
     );
-    const { wrapper } = await mountExamWorkspace();
-    await importFixtureDocument(wrapper);
+    const wrapper = await mountImported();
 
-    await wrapper.find('[data-test="exam-workspace-export-pdf"]').trigger("click");
-    await flushPromises();
+    await exportFromMenu(wrapper, "pdf");
 
     expect(downloadMocks.triggerBrowserDownload).not.toHaveBeenCalled();
-    const item3 = wrapper.find('[data-test="exam-workspace-item-blockers-item_003"]').text();
+    expect(useToastStore().warning).toHaveBeenCalledWith(
+      "Filen kan inte skapas ännu. Åtgärda de markerade frågorna och spara.",
+    );
+    await openExportDrawer(wrapper);
+    const item3 = wrapper
+      .findAll('[data-test="exam-workspace-blocker-item_003"]')
+      .map((entry) => entry.text())
+      .join(" ");
     expect(item3).toContain("Frågan kunde inte konverteras och visas som i källan.");
     expect(item3).toContain("Facitförslaget är inte godkänt.");
-    expect(
-      wrapper.find('[data-test="exam-workspace-item-blockers-item_005"]').text(),
-    ).toContain("Poäng saknas.");
-    expect(wrapper.find('[data-test="exam-workspace-item-blockers-item_001"]').exists()).toBe(
-      false,
+    expect(wrapper.get('[data-test="exam-workspace-blocker-item_005"]').text()).toContain(
+      "Poäng saknas.",
     );
-    expect(wrapper.find('[data-test="exam-workspace-export-notice"]').text()).toContain(
+    expect(wrapper.find('[data-test="exam-workspace-blocker-item_001"]').exists()).toBe(false);
+    expect(wrapper.get('[data-test="exam-workspace-export-notice"]').text()).toContain(
       "Åtgärda de markerade frågorna",
     );
+    // The same refusal blocks every format in the menu and lists the questions there.
+    await openMenu(wrapper);
+    expect(requirePage("exam-workspace-export-blockers").text()).toContain("Kan inte exporteras ännu");
+    expect(requirePage("exam-workspace-export-blockers").text()).not.toContain(
+      "Kontrollera innan du exporterar",
+    );
+    expect(requirePage("exam-workspace-export-blockers").text()).toContain("Fråga 5: Poäng saknas.");
+    for (const target of ["qti", "pdf", "docx"]) {
+      expect(menuFormatDisabled(target)).toBe("true");
+    }
   });
 
   it.each([
     ["missing_answer_key", "Frågan saknar facit. Fyll i facit eller låt AI föreslå ett."],
     ["inline_choice_option_heading", "Rubrikformat är inte tillåtet i rullistealternativ."],
-  ])("maps %s to Swedish copy on the item row", async (reason, copy) => {
+  ])("maps %s to Swedish copy on the blocked question", async (reason, copy) => {
     apiMocks.downloadExamWorkspaceExport.mockRejectedValue(
       new ApiError({
         code: "VALIDATION_ERROR",
@@ -211,16 +400,13 @@ describe("ExamWorkspaceView export slice", () => {
         status: 422,
       }),
     );
-    const { wrapper } = await mountExamWorkspace();
-    await importFixtureDocument(wrapper);
+    const wrapper = await mountImported();
 
-    await wrapper.find('[data-test="exam-workspace-export-qti"]').trigger("click");
-    await flushPromises();
+    await exportFromMenu(wrapper, "qti");
 
     expect(downloadMocks.triggerBrowserDownload).not.toHaveBeenCalled();
-    expect(
-      wrapper.find('[data-test="exam-workspace-item-blockers-item_002"]').text(),
-    ).toContain(copy);
+    await openExportDrawer(wrapper);
+    expect(wrapper.get('[data-test="exam-workspace-blocker-item_002"]').text()).toContain(copy);
   });
 
   it("clears export blockers when a new version is saved", async () => {
@@ -232,70 +418,177 @@ describe("ExamWorkspaceView export slice", () => {
         status: 422,
       }),
     );
-    apiMocks.saveExamWorkspaceDocument.mockResolvedValue(buildResponse({ version: 2 }));
-    const { wrapper } = await mountExamWorkspace();
-    await importFixtureDocument(wrapper);
-    await wrapper.find('[data-test="exam-workspace-export-docx"]').trigger("click");
-    await flushPromises();
-    expect(wrapper.find('[data-test="exam-workspace-item-blockers-item_005"]').exists()).toBe(
-      true,
-    );
+    apiMocks.saveExamWorkspaceDocument.mockResolvedValue(exportableResponse({ version: 2 }));
+    const wrapper = await mountImported();
+    await exportFromMenu(wrapper, "docx");
+    await openExportDrawer(wrapper);
+    expect(wrapper.find('[data-test="exam-workspace-blocker-item_005"]').exists()).toBe(true);
 
     await selectItemRow(wrapper, "item_005");
     await wrapper.find('[data-test="exam-workspace-item-points-input"]').setValue("3");
     await saveDocument(wrapper);
 
-    expect(wrapper.find('[data-test="exam-workspace-item-blockers-item_005"]').exists()).toBe(
-      false,
-    );
+    expect(wrapper.find('[data-test="exam-workspace-blocker-item_005"]').exists()).toBe(false);
     expect(wrapper.find('[data-test="exam-workspace-export-notice"]').exists()).toBe(false);
+    await openMenu(wrapper);
+    expect(page("exam-workspace-export-blockers")).toBeNull();
+    expect(menuFormatDisabled("docx")).toBeUndefined();
   });
 
-  it("shows a Swedish failure notice when an export fails without item blockers", async () => {
+  it("shows a Swedish failure notice and toast when an export fails without question blockers", async () => {
     apiMocks.downloadExamWorkspaceExport.mockRejectedValue(
       new ApiError({ code: "INTERNAL_ERROR", message: "boom", status: 500 }),
     );
-    const { wrapper } = await mountExamWorkspace();
-    await importFixtureDocument(wrapper);
+    const wrapper = await mountImported();
 
-    await wrapper.find('[data-test="exam-workspace-export-qti"]').trigger("click");
-    await flushPromises();
+    await exportFromMenu(wrapper, "qti");
 
-    expect(wrapper.find('[data-test="exam-workspace-export-notice"]').text()).toBe(
+    await openExportDrawer(wrapper);
+    expect(wrapper.get('[data-test="exam-workspace-export-notice"]').text()).toBe(
       "QTI-paketet kunde inte skapas. Försök igen.",
     );
+    expect(wrapper.find('[data-test="exam-workspace-export-result"]').exists()).toBe(false);
+    expect(useToastStore().failure).toHaveBeenCalledWith(
+      "QTI-paketet kunde inte skapas. Försök igen.",
+    );
+    expect(downloadMocks.triggerBrowserDownload).not.toHaveBeenCalled();
   });
 
   it("points to the reload control when a save elsewhere moved the saved exam", async () => {
     apiMocks.downloadExamWorkspaceExport.mockRejectedValue(
       new ApiError({ code: "CONFLICT", message: "stale", status: 409 }),
     );
-    const { wrapper } = await mountExamWorkspace();
-    await importFixtureDocument(wrapper);
+    const wrapper = await mountImported();
 
-    await wrapper.find('[data-test="exam-workspace-export-qti"]').trigger("click");
-    await flushPromises();
+    await exportFromMenu(wrapper, "qti");
 
-    const notice = wrapper.find('[data-test="exam-workspace-export-notice"]').text();
+    await openExportDrawer(wrapper);
+    const notice = wrapper.get('[data-test="exam-workspace-export-notice"]').text();
     expect(notice).toContain("Läs in på nytt");
     expect(notice).not.toContain("Försök igen");
   });
 
-  it("disables exports while there are unsaved edits", async () => {
-    const { wrapper } = await mountExamWorkspace();
-    await importFixtureDocument(wrapper);
+  it("disables exports in the menu and the drawer while there are unsaved edits", async () => {
+    const wrapper = await mountImported();
+    await openExportDrawer(wrapper);
 
     await selectItemRow(wrapper, "item_002");
-    await wrapper
-      .find('[data-test="exam-workspace-item-points-input"]')
-      .setValue("7");
+    await wrapper.find('[data-test="exam-workspace-item-points-input"]').setValue("7");
 
+    expect(
+      wrapper.get('[data-test="exam-workspace-export-run"]').attributes("disabled"),
+    ).toBeDefined();
+    expect(wrapper.get('[data-test="exam-workspace-drawer-export"]').text()).toContain(
+      "Spara provet innan du skapar filer.",
+    );
+    await openMenu(wrapper);
     for (const target of ["qti", "pdf", "docx"]) {
+      expect(menuFormatDisabled(target)).toBe("true");
       expect(
-        wrapper.find(`[data-test="exam-workspace-export-${target}"]`).attributes("disabled"),
+        requirePage(`exam-workspace-export-save-${target}`).attributes("disabled"),
       ).toBeDefined();
     }
-    expect(wrapper.text()).toContain("Spara provet innan du skapar filer.");
+    expect(requirePage("exam-workspace-export-menu").text()).toContain(
+      "Spara provet först. Exporten görs från det sparade provet.",
+    );
+    // A disabled entry must not reach the server.
+    await requirePage("exam-workspace-export-qti").trigger("click");
+    await wrapper.get('[data-test="exam-workspace-export-run"]').trigger("click");
+    await flushPromises();
+    expect(apiMocks.downloadExamWorkspaceExport).not.toHaveBeenCalled();
+  });
+});
+
+describe("ExamWorkspaceView export zero-points note", () => {
+  /** The fixture exam with its second question at 0 points. */
+  function zeroPointsResponse() {
+    const response = exportableResponse({ conversion: succeededConversion, version: 1 });
+    for (const document of [response.document, response.saved_document]) {
+      document.items = document.items.map((item) =>
+        item.item_id === "item_002" ? { ...item, points: 0 } : item,
+      );
+    }
+    return response;
+  }
+
+  beforeEach(() => {
+    apiMocks.downloadExamWorkspaceExport.mockResolvedValue({
+      blob: new Blob(["qti"]),
+      contentType: "application/zip",
+      filename: "prov-qti.zip",
+    });
+  });
+
+  it("notes in the menu and the drawer that Exam.net imports 0 points as 1, without blocking QTI", async () => {
+    apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
+      apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(zeroPointsResponse());
+      return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null,
+        document_revision: null, questions_total: 0, questions_done: 0, units: [] };
+    });
+    const wrapper = await mountImported();
+
+    // Menu: the note sits in the QTI entry only, and QTI stays exportable.
+    await openMenu(wrapper);
+    const menuNotes = pageAll("exam-workspace-export-zero-points");
+    expect(menuNotes).toHaveLength(1);
+    expect(menuNotes[0]?.text()).toBe(ZERO_POINTS_NOTE);
+    expect(requirePage("exam-workspace-export-qti").text()).toContain(ZERO_POINTS_NOTE);
+    expect(requirePage("exam-workspace-export-pdf").text()).not.toContain("0 poäng");
+    expect(requirePage("exam-workspace-export-docx").text()).not.toContain("0 poäng");
+    expect(menuFormatDisabled("qti")).toBeUndefined();
+    await requirePage("exam-workspace-export-qti").trigger("click");
+    await flushPromises();
+    expect(apiMocks.downloadExamWorkspaceExport).toHaveBeenNthCalledWith(1, "lineage-1", "qti", 1);
+
+    // Drawer: the note follows the chosen format.
+    await openExportDrawer(wrapper);
+    const drawer = wrapper.get('[data-test="exam-workspace-drawer-export"]');
+    expect(drawer.get('[data-test="exam-workspace-export-zero-points"]').text()).toBe(
+      ZERO_POINTS_NOTE,
+    );
+    await wrapper.get('[data-test="exam-workspace-export-format-pdf"]').trigger("click");
+    expect(drawer.find('[data-test="exam-workspace-export-zero-points"]').exists()).toBe(false);
+    await wrapper.get('[data-test="exam-workspace-export-format-qti"]').trigger("click");
+    expect(drawer.get('[data-test="exam-workspace-export-zero-points"]').text()).toBe(
+      ZERO_POINTS_NOTE,
+    );
+    const run = wrapper.get('[data-test="exam-workspace-export-run"]');
+    expect(run.attributes("disabled")).toBeUndefined();
+    await run.trigger("click");
+    await flushPromises();
+    expect(apiMocks.downloadExamWorkspaceExport).toHaveBeenCalledTimes(2);
+    expect(apiMocks.downloadExamWorkspaceExport).toHaveBeenNthCalledWith(2, "lineage-1", "qti", 1);
+  });
+
+  it("shows no note when no question is worth 0 points", async () => {
+    const wrapper = await mountImported();
+
+    await openMenu(wrapper);
+    expect(page("exam-workspace-export-zero-points")).toBeNull();
+    expect(requirePage("exam-workspace-export-qti").text()).not.toContain("0 poäng");
+    await closeMenu(wrapper);
+    await openExportDrawer(wrapper);
+    await wrapper.get('[data-test="exam-workspace-export-format-qti"]').trigger("click");
+    expect(wrapper.find('[data-test="exam-workspace-export-zero-points"]').exists()).toBe(false);
+    expect(wrapper.get('[data-test="exam-workspace-drawer-export"]').text()).not.toContain(
+      "0 poäng",
+    );
+  });
+
+  it("shows the note as soon as a question is edited to 0 points and drops it when raised", async () => {
+    const wrapper = await mountImported();
+    await openExportDrawer(wrapper);
+    expect(wrapper.find('[data-test="exam-workspace-export-zero-points"]').exists()).toBe(false);
+
+    await selectItemRow(wrapper, "item_002");
+    const points = wrapper.get('[data-test="exam-workspace-item-points-input"]');
+    await points.setValue("0");
+    expect(wrapper.get('[data-test="exam-workspace-export-zero-points"]').text()).toBe(
+      ZERO_POINTS_NOTE,
+    );
+
+    await points.setValue("2");
+    expect(wrapper.find('[data-test="exam-workspace-export-zero-points"]').exists()).toBe(false);
   });
 });
 
@@ -318,13 +611,16 @@ describe("ExamWorkspaceView export checklist", () => {
 
   it("lists what Exam.net loses after a successful QTI export", async () => {
     apiMocks.getExamWorkspaceExportChecklist.mockResolvedValue(LOST_CHECKLIST);
-    const { wrapper } = await mountExamWorkspace();
-    await importFixtureDocument(wrapper);
+    const wrapper = await mountImported();
 
-    await wrapper.find('[data-test="exam-workspace-export-qti"]').trigger("click");
-    await flushPromises();
+    await exportFromMenu(wrapper, "qti");
 
     expect(apiMocks.getExamWorkspaceExportChecklist).toHaveBeenCalledWith("lineage-1", 1);
+    await openMenu(wrapper);
+    expect(requirePage("exam-workspace-export-checklist-open").text()).toContain(
+      "Det här tappar Exam.net (3)",
+    );
+    await openChecklistDrawer(wrapper);
     const criteriaEntry = findLossEntry(wrapper, "Förklara fotosyntesen.");
     expect(criteriaEntry?.text()).toContain("Fråga 2: Förklara fotosyntesen.");
     expect(criteriaEntry?.text()).toContain("Tar upp koldioxid (1 p)");
@@ -336,35 +632,33 @@ describe("ExamWorkspaceView export checklist", () => {
   });
 
   it("hides the checklist when the export loses nothing", async () => {
-    const { wrapper } = await mountExamWorkspace();
-    await importFixtureDocument(wrapper);
+    const wrapper = await mountImported();
 
-    await wrapper.find('[data-test="exam-workspace-export-qti"]').trigger("click");
-    await flushPromises();
+    await exportFromMenu(wrapper, "qti");
 
     expect(apiMocks.getExamWorkspaceExportChecklist).toHaveBeenCalledWith("lineage-1", 1);
+    await openMenu(wrapper);
+    expect(page("exam-workspace-export-checklist-open")).toBeNull();
+    await openExportDrawer(wrapper);
+    expect(wrapper.find('[data-test="exam-workspace-export-checklist"]').exists()).toBe(false);
     expect(findLossEntry(wrapper, "Förklara fotosyntesen.")).toBeUndefined();
     expect(useToastStore().warning).not.toHaveBeenCalled();
   });
 
   it("requests no checklist for a PDF or DOCX export", async () => {
-    const { wrapper } = await mountExamWorkspace();
-    await importFixtureDocument(wrapper);
+    const wrapper = await mountImported();
 
-    await wrapper.find('[data-test="exam-workspace-export-pdf"]').trigger("click");
-    await flushPromises();
-    await wrapper.find('[data-test="exam-workspace-export-docx"]').trigger("click");
-    await flushPromises();
+    await exportFromMenu(wrapper, "pdf");
+    await exportFromMenu(wrapper, "docx");
 
     expect(apiMocks.getExamWorkspaceExportChecklist).not.toHaveBeenCalled();
   });
 
   it("clears the checklist when the draft changes", async () => {
     apiMocks.getExamWorkspaceExportChecklist.mockResolvedValue(LOST_CHECKLIST);
-    const { wrapper } = await mountExamWorkspace();
-    await importFixtureDocument(wrapper);
-    await wrapper.find('[data-test="exam-workspace-export-qti"]').trigger("click");
-    await flushPromises();
+    const wrapper = await mountImported();
+    await exportFromMenu(wrapper, "qti");
+    await openChecklistDrawer(wrapper);
     expect(findLossEntry(wrapper, "Förklara fotosyntesen.")).toBeDefined();
 
     await selectItemRow(wrapper, "item_002");
@@ -372,20 +666,21 @@ describe("ExamWorkspaceView export checklist", () => {
     await flushPromises();
 
     expect(findLossEntry(wrapper, "Förklara fotosyntesen.")).toBeUndefined();
+    expect(wrapper.find('[data-test="exam-workspace-export-checklist"]').exists()).toBe(false);
+    await openMenu(wrapper);
+    expect(page("exam-workspace-export-checklist-open")).toBeNull();
   });
 
   it("clears the checklist when another export starts", async () => {
     apiMocks.getExamWorkspaceExportChecklist.mockResolvedValue(LOST_CHECKLIST);
-    const { wrapper } = await mountExamWorkspace();
-    await importFixtureDocument(wrapper);
-    await wrapper.find('[data-test="exam-workspace-export-qti"]').trigger("click");
-    await flushPromises();
+    const wrapper = await mountImported();
+    await exportFromMenu(wrapper, "qti");
+    await openChecklistDrawer(wrapper);
     expect(findLossEntry(wrapper, "Förklara fotosyntesen.")).toBeDefined();
 
     const pdfDownload = deferred<{ blob: Blob; contentType: string; filename: string | null }>();
     apiMocks.downloadExamWorkspaceExport.mockReturnValueOnce(pdfDownload.promise);
-    await wrapper.find('[data-test="exam-workspace-export-pdf"]').trigger("click");
-    await flushPromises();
+    await exportFromMenu(wrapper, "pdf");
     expect(findLossEntry(wrapper, "Förklara fotosyntesen.")).toBeUndefined();
 
     pdfDownload.resolve({ blob: new Blob(["pdf"]), contentType: "application/pdf", filename: null });
@@ -396,14 +691,12 @@ describe("ExamWorkspaceView export checklist", () => {
   it("keeps the fresh checklist when a stale response arrives late", async () => {
     const staleChecklist = deferred<ExamWorkspaceExportChecklistResponse>();
     apiMocks.getExamWorkspaceExportChecklist.mockReturnValueOnce(staleChecklist.promise);
-    const { wrapper } = await mountExamWorkspace();
-    await importFixtureDocument(wrapper);
-    await wrapper.find('[data-test="exam-workspace-export-qti"]').trigger("click");
-    await flushPromises();
+    const wrapper = await mountImported();
+    await exportFromMenu(wrapper, "qti");
 
     await selectItemRow(wrapper, "item_002");
     await wrapper.find('[data-test="exam-workspace-item-points-input"]').setValue("7");
-    apiMocks.saveExamWorkspaceDocument.mockResolvedValue(buildResponse({ version: 2 }));
+    apiMocks.saveExamWorkspaceDocument.mockResolvedValue(exportableResponse({ version: 2 }));
     await saveDocument(wrapper);
 
     const freshChecklist: ExamWorkspaceExportChecklistResponse = {
@@ -417,8 +710,8 @@ describe("ExamWorkspaceView export checklist", () => {
       ],
     };
     apiMocks.getExamWorkspaceExportChecklist.mockResolvedValueOnce(freshChecklist);
-    await wrapper.find('[data-test="exam-workspace-export-qti"]').trigger("click");
-    await flushPromises();
+    await exportFromMenu(wrapper, "qti");
+    await openChecklistDrawer(wrapper);
     expect(findLossEntry(wrapper, "Ny fråga efter sparning.")).toBeDefined();
 
     staleChecklist.resolve(LOST_CHECKLIST);
@@ -434,18 +727,20 @@ describe("ExamWorkspaceView export checklist", () => {
     apiMocks.getExamWorkspaceExportChecklist.mockRejectedValue(
       new ApiError({ code: "INTERNAL_ERROR", message: "boom", status: 500 }),
     );
-    const { wrapper } = await mountExamWorkspace();
-    await importFixtureDocument(wrapper);
+    const wrapper = await mountImported();
 
-    await wrapper.find('[data-test="exam-workspace-export-qti"]').trigger("click");
-    await flushPromises();
+    await exportFromMenu(wrapper, "qti");
 
     expect(downloadMocks.triggerBrowserDownload).toHaveBeenCalledWith(
       expect.any(Blob),
       "prov-qti.zip",
     );
     expect(useToastStore().warning).toHaveBeenCalledTimes(1);
+    expect(useToastStore().warning).toHaveBeenCalledWith(
+      "QTI-paketet är skapat. Listan över vad Exam.net tappar kunde inte hämtas.",
+    );
     expect(useToastStore().failure).not.toHaveBeenCalled();
+    await openExportDrawer(wrapper);
     expect(wrapper.find('[data-test="exam-workspace-export-notice"]').exists()).toBe(false);
     expect(findLossEntry(wrapper, "Förklara fotosyntesen.")).toBeUndefined();
   });
@@ -454,11 +749,9 @@ describe("ExamWorkspaceView export checklist", () => {
     apiMocks.getExamWorkspaceExportChecklist.mockRejectedValue(
       new ApiError({ code: "CONFLICT", message: "head changed", status: 409 }),
     );
-    const { wrapper } = await mountExamWorkspace();
-    await importFixtureDocument(wrapper);
+    const wrapper = await mountImported();
 
-    await wrapper.find('[data-test="exam-workspace-export-qti"]').trigger("click");
-    await flushPromises();
+    await exportFromMenu(wrapper, "qti");
 
     expect(apiMocks.downloadExamWorkspaceExport).toHaveBeenCalledWith("lineage-1", "qti", 1);
     expect(downloadMocks.triggerBrowserDownload).toHaveBeenCalledWith(
@@ -467,6 +760,7 @@ describe("ExamWorkspaceView export checklist", () => {
     );
     expect(useToastStore().warning).toHaveBeenCalledTimes(1);
     expect(useToastStore().failure).not.toHaveBeenCalled();
+    await openExportDrawer(wrapper);
     expect(wrapper.find('[data-test="exam-workspace-export-notice"]').exists()).toBe(false);
     expect(findLossEntry(wrapper, "Förklara fotosyntesen.")).toBeUndefined();
   });
@@ -474,10 +768,8 @@ describe("ExamWorkspaceView export checklist", () => {
   it("ignores a stale checklist failure", async () => {
     const staleChecklist = deferred<ExamWorkspaceExportChecklistResponse>();
     apiMocks.getExamWorkspaceExportChecklist.mockReturnValueOnce(staleChecklist.promise);
-    const { wrapper } = await mountExamWorkspace();
-    await importFixtureDocument(wrapper);
-    await wrapper.find('[data-test="exam-workspace-export-qti"]').trigger("click");
-    await flushPromises();
+    const wrapper = await mountImported();
+    await exportFromMenu(wrapper, "qti");
 
     await selectItemRow(wrapper, "item_002");
     await wrapper.find('[data-test="exam-workspace-item-points-input"]').setValue("7");

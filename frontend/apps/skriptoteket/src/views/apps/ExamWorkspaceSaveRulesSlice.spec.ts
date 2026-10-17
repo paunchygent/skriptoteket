@@ -5,14 +5,14 @@
  *   Item states the server refuses to save are flagged at the question and
  *   refused locally with Swedish copy naming the questions: points that are
  *   negative or non-finite, and a choice without text. The field is marked
- *   invalid with an inline hint, the question list, the details drawer, and
- *   the Filer readiness list carry the reason, and no save request is sent.
+ *   invalid with an inline hint, the question list and the export blocker
+ *   lists carry the reason, and no save request is sent.
  *   While a save runs, the item editor's inputs are disabled so a typed
  *   edit is not lost when the saved version replaces the document.
  */
 
 import { flushPromises } from "@vue/test-utils";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ExamWorkspaceConversionStatus, NativeExamDocument } from "../../api/examWorkspace";
 import { buildFreeTextItem } from "../../test/examWorkspaceFixtures";
@@ -24,6 +24,7 @@ import {
   mountExamWorkspace,
   saveDocument,
   selectItemRow,
+  type ViewWrapper,
 } from "./ExamWorkspaceSlice.specSupport";
 
 const apiMocks = vi.hoisted(() => ({
@@ -41,10 +42,25 @@ vi.mock("../../api/examWorkspace", async () => ({
   getExamCourseCatalog: (await import("../../test/examCourseCatalog")).getExamCourseCatalog,
 }));
 
+let mountedView: ViewWrapper | undefined;
+
+/** Attached to the body, because the export menu teleports there. */
 async function mountImported() {
-  const { wrapper } = await mountExamWorkspace();
+  const { wrapper } = await mountExamWorkspace({}, "desktop", document.body);
+  mountedView = wrapper;
   await importFixtureDocument(wrapper);
   return wrapper;
+}
+
+function bodyElement(testId: string): HTMLElement {
+  const element = document.body.querySelector<HTMLElement>(`[data-test="${testId}"]`);
+  expect(element, testId).not.toBeNull();
+  return element!;
+}
+
+async function openExportMenu(wrapper: ViewWrapper) {
+  await wrapper.get('[data-test="exam-workspace-export"]').trigger("click");
+  await flushPromises();
 }
 
 /** The finished import: its poll status, and the conversion its fetched document carries. */
@@ -68,6 +84,11 @@ beforeEach(() => {
   });
 });
 
+afterEach(() => {
+  mountedView?.unmount();
+  mountedView = undefined;
+});
+
 describe("ExamWorkspaceView save rules", () => {
   it("flags negative points at the field and in the drawer, and refuses the save", async () => {
     const wrapper = await mountImported();
@@ -80,13 +101,11 @@ describe("ExamWorkspaceView save rules", () => {
     const hint = wrapper.get('[data-test="exam-workspace-points-hint"]');
     expect(hint.text()).toBe("Poängen kan inte vara negativ.");
     expect(points.attributes("aria-describedby")).toBe(hint.attributes("id"));
-    expect(wrapper.get('[data-test="exam-workspace-item-row-item_002"]').text()).toContain(
-      "Poängen kan inte vara negativ.",
-    );
+    expect(wrapper.get('[data-test="exam-workspace-row-item_002"]').text()).toContain("negativa poäng");
 
-    await wrapper.get('[data-test="exam-workspace-item-details-toggle"]').trigger("click");
-    expect(wrapper.get('[data-test="exam-workspace-item-readiness"]').text()).toContain(
-      "Poängen kan inte vara negativ.",
+    await openExportMenu(wrapper);
+    expect(bodyElement("exam-workspace-export-blockers").textContent).toContain(
+      "Fråga 2: Poängen kan inte vara negativ.",
     );
 
     await saveDocument(wrapper);
@@ -97,16 +116,18 @@ describe("ExamWorkspaceView save rules", () => {
     );
   });
 
-  it("flags negative points in the Filer readiness list", async () => {
+  it("flags negative points in the export drawer's blocker list", async () => {
     const wrapper = await mountImported();
 
     await selectItemRow(wrapper, "item_005");
     await wrapper.get('[data-test="exam-workspace-item-points-input"]').setValue("-1");
-    await wrapper.get('[data-test="exam-workspace-mode-filer"]').trigger("click");
+    await openExportMenu(wrapper);
+    bodyElement("exam-workspace-export-more").click();
+    await flushPromises();
 
-    expect(
-      wrapper.get('[data-test="exam-workspace-readiness-item-item_005"]').text(),
-    ).toContain("Poängen kan inte vara negativ.");
+    expect(wrapper.get('[data-test="exam-workspace-blocker-item_005"]').text()).toContain(
+      "Poängen kan inte vara negativ.",
+    );
   });
 
   it("flags an empty choice text and refuses the save, naming every question", async () => {

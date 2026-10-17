@@ -81,7 +81,7 @@ beforeEach(() => {
     return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null, summary: null,
       document_revision: null, questions_total: 0, questions_done: 0, units: [] };
   });
-  apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [OTHER_EXAM] });
+  apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [OTHER_EXAM], ordering: "course" });
 });
 
 describe("ExamWorkspaceView reopen slice", () => {
@@ -93,13 +93,11 @@ describe("ExamWorkspaceView reopen slice", () => {
     const { wrapper } = await mountExamWorkspace({ document: "lineage-1" });
 
     expect(apiMocks.getExamWorkspaceDocument).toHaveBeenCalledWith("lineage-1");
-    expect(wrapper.find('[data-test="exam-workspace-summary-title"]').text()).toBe(
+    expect(wrapper.find('[data-test="exam-workspace-title"]').text()).toBe(
       "Sparat prov",
     );
-    expect(wrapper.find('[data-test="exam-workspace-summary-version"]').text()).toBe(
-      "Version 4",
-    );
-    expect(wrapper.findAll('[data-test^="exam-workspace-item-row-"]')).toHaveLength(8);
+    expect(wrapper.find('[data-test="exam-workspace-save-state"]').text()).toMatch(/^Sparat /);
+    expect(wrapper.findAll('[data-test^="exam-workspace-row-"]')).toHaveLength(8);
   });
 
   it("lists saved exams by name and newest version and opens one", async () => {
@@ -110,17 +108,19 @@ describe("ExamWorkspaceView reopen slice", () => {
     const entry = wrapper.find('[data-test="exam-workspace-open-lineage-2"]');
     expect(entry.text()).toContain("Matteprov_v48");
     expect(entry.text()).not.toContain(".provdokument.zip");
-    expect(entry.text()).toContain("Version 3");
+    expect(entry.text()).toContain("Sparad ");
+    expect(entry.attributes("aria-current")).toBeUndefined();
 
     await entry.trigger("click");
     await flushPromises();
 
     expect(apiMocks.getExamWorkspaceDocument).toHaveBeenCalledWith("lineage-2");
-    expect(wrapper.find('[data-test="exam-workspace-summary-title"]').text()).toBe(
+    expect(wrapper.find('[data-test="exam-workspace-title"]').text()).toBe(
       "Matteprov v48",
     );
     expect(router.currentRoute.value.query.document).toBe("lineage-2");
-    expect(wrapper.find('[data-test="exam-workspace-open-lineage-2"]').exists()).toBe(false);
+    // On desktop the drawer stays open and marks the opened exam as the current one.
+    expect(wrapper.find('[data-test="exam-workspace-open-lineage-2"]').attributes("aria-current")).toBe("true");
   });
 
   it("writes the imported document into the address so a reload reopens it", async () => {
@@ -141,7 +141,7 @@ describe("ExamWorkspaceView reopen slice", () => {
 
     expect(apiMocks.getExamWorkspaceDocument).toHaveBeenCalledTimes(2);
     expect(apiMocks.getExamWorkspaceDocument).toHaveBeenCalledWith("lineage-2");
-    expect(wrapper.find('[data-test="exam-workspace-summary-title"]').text()).toBe(
+    expect(wrapper.find('[data-test="exam-workspace-title"]').text()).toBe(
       "Matteprov v48",
     );
     expect(router.currentRoute.value.query.document).toBe("lineage-2");
@@ -158,10 +158,10 @@ describe("ExamWorkspaceView reopen slice", () => {
 
     expect(apiMocks.getExamWorkspaceDocument).toHaveBeenCalledExactlyOnceWith("lineage-1");
     expect(router.currentRoute.value.query.document).toBe("lineage-1");
-    expect(wrapper.find('[data-test="exam-workspace-summary-title"]').text()).toBe(
+    expect(wrapper.find('[data-test="exam-workspace-title"]').text()).toBe(
       "NO-prov HT25",
     );
-    expect(wrapper.find('[data-test="exam-workspace-dirty-pill"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="exam-workspace-save-state"]').text()).toBe("Osparat");
   });
 
   it("restores the address to the open exam when the named exam fails to open", async () => {
@@ -174,13 +174,13 @@ describe("ExamWorkspaceView reopen slice", () => {
 
     expect(apiMocks.getExamWorkspaceDocument).toHaveBeenCalledWith("lineage-2");
     expect(router.currentRoute.value.query.document).toBe("lineage-1");
-    expect(wrapper.find('[data-test="exam-workspace-summary-title"]').text()).toBe(
+    expect(wrapper.find('[data-test="exam-workspace-title"]').text()).toBe(
       "NO-prov HT25",
     );
   });
 
   it("keeps an import that finishes while the saved list is still loading", async () => {
-    let resolveList: (value: { documents: ExamWorkspaceDocumentSummary[] }) => void = () => {};
+    let resolveList: (value: { documents: ExamWorkspaceDocumentSummary[]; ordering: "course" }) => void = () => {};
     apiMocks.listExamWorkspaceDocuments.mockReturnValue(
       new Promise((resolve) => {
         resolveList = resolve;
@@ -190,7 +190,7 @@ describe("ExamWorkspaceView reopen slice", () => {
     const { wrapper } = await mountExamWorkspace();
     await importFixtureDocument(wrapper);
 
-    resolveList({ documents: [OTHER_EXAM] });
+    resolveList({ documents: [OTHER_EXAM], ordering: "course" });
     await flushPromises();
     await wrapper.find('[data-test="exam-workspace-open-lineage-2"]').trigger("click");
     await flushPromises();
@@ -199,15 +199,25 @@ describe("ExamWorkspaceView reopen slice", () => {
   });
 
   it("blocks opening another exam while the current one has unsaved edits", async () => {
+    apiMocks.getExamWorkspaceDocument.mockResolvedValue(otherExamResponse());
     const { wrapper } = await mountExamWorkspace();
     await importFixtureDocument(wrapper);
 
     await selectItemRow(wrapper, "item_001");
     await wrapper.find('[data-test="exam-workspace-item-points-input"]').setValue("7");
 
-    expect(
-      wrapper.find('[data-test="exam-workspace-open-lineage-2"]').attributes("disabled"),
-    ).toBeDefined();
-    expect(wrapper.text()).toContain("Spara det öppna provet innan du öppnar ett annat.");
+    const entry = wrapper.find('[data-test="exam-workspace-open-lineage-2"]');
+    expect(entry.attributes("aria-disabled")).toBe("true");
+    expect(entry.attributes("title")).toBe("Spara det öppna provet innan du öppnar ett annat.");
+    expect(wrapper.find('[data-test="exam-workspace-open-dirty-hint"]').text()).toContain(
+      "Spara det öppna provet innan du importerar eller öppnar ett annat.",
+    );
+    expect(wrapper.find('[data-test="exam-workspace-pick-file"]').attributes("disabled")).toBeDefined();
+
+    await entry.trigger("click");
+    await flushPromises();
+
+    expect(apiMocks.getExamWorkspaceDocument).not.toHaveBeenCalledWith("lineage-2");
+    expect(wrapper.find('[data-test="exam-workspace-title"]').text()).toBe("NO-prov HT25");
   });
 });

@@ -5,10 +5,12 @@
  * Domain purpose:
  *   Export the saved exam in one step: each format row downloads the file
  *   and its folder button keeps it in Mina filer instead, replacing the
- *   exam's earlier file of that format. The questions that stop an export
- *   are listed first and lead to the question; while any remain, or while
- *   the exam has unsaved changes (exports are made from the saved exam),
- *   the formats are disabled. "Fler val …" opens the Exportera drawer.
+ *   exam's earlier file of that format. The questions to fix are listed
+ *   first and lead to the question. The server decides what stops an
+ *   export: what the workspace itself sees is guidance, so only the
+ *   server's refusal, unsaved changes (exports are made from the saved exam)
+ *   or a running export disable the formats. "Fler val …" opens the
+ *   Exportera drawer.
  *
  * Relationships:
  *   - Rendered in the `export` slot of `ExamWorkspaceHeader`; the view runs
@@ -25,6 +27,8 @@ import type { ExamWorkspaceBlockerEntry } from "./examWorkspaceListEntries";
 
 const props = defineProps<{
   blockers: ExamWorkspaceBlockerEntry[];
+  /** The server refused the last export for these questions. */
+  serverBlocked: boolean;
   disabled: boolean;
   dirty: boolean;
   exportingTarget: ExamWorkspaceExportTarget | null;
@@ -48,7 +52,7 @@ const emit = defineEmits<{
 const trigger = ref<HTMLButtonElement | null>(null);
 const open = ref(false);
 const formatsDisabled = computed(
-  () => props.blockers.length > 0 || props.dirty || props.exportingTarget !== null,
+  () => props.serverBlocked || props.dirty || props.exportingTarget !== null,
 );
 
 function choose(action: () => void): void {
@@ -94,9 +98,9 @@ function choose(action: () => void): void {
       data-test="exam-workspace-export-blockers"
     >
       <b><UiGlyph
-        meaning="status-failure"
+        :meaning="serverBlocked ? 'status-failure' : 'status-warning'"
         :size="16"
-      />Kan inte exporteras ännu</b>
+      />{{ serverBlocked ? "Kan inte exporteras ännu" : "Kontrollera innan du exporterar" }}</b>
       <button
         v-for="blocker in blockers"
         :key="`${blocker.itemId}-${blocker.reason}`"

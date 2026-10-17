@@ -18,7 +18,7 @@ import type {
   NativeExamItem,
   NativeExamItemKind,
 } from "../../api/examWorkspace";
-import ExamWorkspaceItemEditor from "./exam-workspace/ExamWorkspaceItemEditor.vue";
+import ExamWorkspaceQuestionEditor from "./exam-workspace/ExamWorkspaceQuestionEditor.vue";
 import { buildResponse, mountExamWorkspace } from "./ExamWorkspaceSlice.specSupport";
 import type { ViewWrapper } from "./ExamWorkspaceSlice.specSupport";
 
@@ -64,7 +64,10 @@ function retrySource(labelKind: NativeExamItemKind): NonNullable<NativeExamItem[
 function reviewItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
   return {
     ai_suggestion: null,
-    import_record: null,
+    import_record: {
+      original_wording: { answer_key_text: null, question_text: "Förklara begreppet." },
+      steps: [],
+    },
     facit_text: null,
     criteria: [],
     printed_label: null,
@@ -124,7 +127,7 @@ async function openRetryDocument(assets: NativeExamAsset[] = []) {
 }
 
 async function openDrawer(wrapper: ViewWrapper): Promise<void> {
-  await wrapper.get('[data-test="exam-workspace-item-details-toggle"]').trigger("click");
+  await wrapper.get('[data-test="exam-workspace-import-toggle"]').trigger("click");
   await flushPromises();
 }
 
@@ -133,7 +136,7 @@ async function chooseRetryKind(wrapper: ViewWrapper, kind: NativeExamItemKind): 
 }
 
 async function clickRetry(wrapper: ViewWrapper): Promise<void> {
-  await wrapper.get('[data-test="exam-workspace-retry-button"]').trigger("click");
+  await wrapper.get('[data-test="exam-workspace-retry"]').trigger("click");
   await flushPromises();
 }
 
@@ -166,6 +169,7 @@ describe("ExamWorkspaceView retry slice", () => {
     expect(kind).toBe("matching");
     expect(document.items[0].retry_source.label_kind).toBe("gap_fill");
     expect(wrapper.find('[data-test="exam-workspace-retry"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="exam-workspace-retry-kind"]').exists()).toBe(false);
     expect(
       wrapper.find('[data-test="exam-workspace-match-left-text-left_001"]').exists(),
     ).toBe(true);
@@ -188,7 +192,7 @@ describe("ExamWorkspaceView retry slice", () => {
     ).toBe("multiple_response");
   });
 
-  it("passes the open document's picture URLs to the item editor", async () => {
+  it("passes the open document's picture URLs to the question editor", async () => {
     const asset: NativeExamAsset = {
       asset_id: "asset_001",
       byte_length: 10,
@@ -202,7 +206,7 @@ describe("ExamWorkspaceView retry slice", () => {
 
     const { wrapper } = await openRetryDocument([asset]);
 
-    expect(wrapper.findComponent(ExamWorkspaceItemEditor).props("assetUrls")).toEqual({
+    expect(wrapper.findComponent(ExamWorkspaceQuestionEditor).props("assetUrls")).toEqual({
       asset_001: "/protected/lineage-1/asset_001?revision=1",
     });
   });
