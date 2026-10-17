@@ -104,6 +104,7 @@ Out of scope:
 | 1     | TASK-SKRIPT-40-03-07 | The Hjälp panel, its topics, tutorial and MicroHelp refreshed.                                               |
 | 1     | TASK-SKRIPT-40-03-08 | The sign-in, account and system pages refreshed, including the curated-app hosts.                            |
 | any   | TASK-SKRIPT-40-03-09 | `.codex/rules` removed; every still-valid fact lives in its owning skill; instruction routes through skills. |
+| any   | TASK-SKRIPT-40-03-10 | huleedu-integrated 0.1.30 adopted; delete and edit actions are glyph-only (user 2026-10-17). |
 
 Order 1 tasks run in parallel. TASK-SKRIPT-40-03-09 may run any time before
 TASK-SKRIPT-39-04-05 (S7), which ST-SKRIPT-40-04 replaces (G1).

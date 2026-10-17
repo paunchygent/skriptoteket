@@ -201,13 +201,14 @@ watch(
           class="btn-ghost min-w-0 px-2 shadow-none sm:px-4"
           :disabled="disabled"
           data-test="exam-converter-edit-advisory-answer-key-action"
+          aria-label="Ändra facit"
+          title="Ändra facit"
           @click="emit('edit')"
         >
           <IconEdit
             :size="16"
             class="h-4 w-4 shrink-0"
           />
-          Ändra
         </button>
       </div>
     </header>
@@ -300,6 +301,7 @@ watch(
         :disabled="disabled"
         :data-test="editing ? 'exam-converter-cancel-advisory-edit-bottom-action' : 'exam-converter-edit-advisory-answer-key-bottom-action'"
         :aria-label="editing ? 'Avbryt ändringen' : 'Ändra facit'"
+        :aria-expanded="editing"
         :title="editing ? 'Avbryt ändringen' : 'Ändra facit'"
         @click="editing ? cancelEdit() : emit('edit')"
       >

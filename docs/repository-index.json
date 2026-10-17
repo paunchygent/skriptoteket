@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "db4428919c62ab654b5667b6628fedf1df9f51f80fda9e451e6d56d1f3db81b0",
+  "source_set_digest": "da99af49f69ddbf0483f78c6481f94f9c4e9caf408ab8f282934fa1e0a8069a8",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6094,7 +6094,7 @@
       "type": "task",
       "title": "Adopt huleedu-integrated 0.1.30 and make delete and edit actions glyph-only across Skriptoteket",
       "path": "docs/backlog/tasks/task-skript-40-03-10-adopt-huleedu-integrated-0-1-30-and-make-delete-and-edit-actions-glyph-only-across-skriptoteket.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-03",
       "owners": [
@@ -6105,7 +6105,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-17",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer 618d81fe reviewed TASK-SKILL-REP-0328 (aeb0df32, c0b67604, 728a41c2) and TASK-SKRIPT-40-03-10 (10046baf) together (retained session 01a149c9-5bc7-7713-ba64-12dee0470bdd, evidence/reviews/task-40-03-10-and-rep-0328-review-1.md): changes_requested with two medium findings, F1 remaining worded edit controls and F2 the over-limit PlannerClassWorkspace spec, and no finding on the shared package. Both were repaired on the Skriptoteket branch and, as medium findings, admitted by the parent on focused checks without rereview: full frontend Vitest 2606 passed, typecheck, ESLint, build and design-system-validate clean. User decisions 2026-10-17; the user asked for the work."
       }
     },
     {

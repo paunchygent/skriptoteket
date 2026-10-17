@@ -8,10 +8,14 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-17'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-17'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Pi ruthless-reviewer 618d81fe reviewed TASK-SKILL-REP-0328 (aeb0df32, c0b67604, 728a41c2) and TASK-SKRIPT-40-03-10 (10046baf) together (retained session 01a149c9-5bc7-7713-ba64-12dee0470bdd, evidence/reviews/task-40-03-10-and-rep-0328-review-1.md): changes_requested with two medium findings, F1 remaining worded edit controls and F2 the over-limit PlannerClassWorkspace spec, and no finding on the shared package. Both were repaired on the Skriptoteket branch and, as medium findings, admitted by the parent on focused checks without rereview: full frontend Vitest 2606 passed, typecheck, ESLint, build and design-system-validate clean. User decisions 2026-10-17; the user asked for the work.'
 task_kind: story
 acceptance_criteria:
   - Every delete glyph action in Skriptoteket shows the glyph without a border or background square, except the worded Radera commits in the two planner modal footers
@@ -47,7 +51,17 @@ This task delivers:
   button becomes glyph-only (`Ändra facit`, `Avbryt ändringen`).
 - Mina kurser: the fieldset no longer cancels the section's vertical gap, and
   the checkbox row gets more space below the label.
-- `ProfileAiSettingsPanel.vue`, which nothing imports, is deleted.
+- Review F1 repairs: the Mina verktyg and admin tool-list `Redigera` links
+  become edit glyphs (`Redigera <verktyg>`); the advisory top-row edit button
+  becomes glyph-only and the bottom toggle exposes `aria-expanded`; the
+  instructions drawer's edit/preview switch becomes one glyph button
+  (`Redigera instruktionerna` / `Förhandsgranska instruktionerna`); the Mina
+  verktyg help text says to click the pen.
+- Review F2 repair: `PlannerClassWorkspace.spec.ts` is split into overview,
+  share-scope and task-entry specs with shared support.
+- `ProfileAiSettingsPanel.vue` and `ProfileInlineField.vue` (and its spec),
+  which nothing imports, are deleted.
+- X/close controls that clear a selection stay as they are (D4).
 
 ## Contract Inputs
 

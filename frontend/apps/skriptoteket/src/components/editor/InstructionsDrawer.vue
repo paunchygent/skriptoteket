@@ -65,9 +65,17 @@ const showPreview = ref(false);
       </span>
       <div class="flex items-center gap-2">
         <UiDenseActionButton
-          :label="showPreview ? 'Redigera' : 'Förhandsgranska'"
+          :label="showPreview ? 'Redigera instruktionerna' : 'Förhandsgranska instruktionerna'"
+          icon-only
           @click="showPreview = !showPreview"
-        />
+        >
+          <template #leading>
+            <UiGlyph
+              :meaning="showPreview ? 'edit' : 'preview'"
+              :size="14"
+            />
+          </template>
+        </UiDenseActionButton>
         <UiDenseActionButton
           :label="isSaving ? 'Sparar...' : 'Spara'"
           :disabled="isSaving || isReadOnly"
@@ -120,10 +128,15 @@ const showPreview = ref(false);
         </span>
         <button
           type="button"
-          class="btn-inline-edit"
+          class="btn-inline-edit btn-inline-edit--glyph"
+          :aria-label="showPreview ? 'Redigera instruktionerna' : 'Förhandsgranska instruktionerna'"
+          :title="showPreview ? 'Redigera instruktionerna' : 'Förhandsgranska instruktionerna'"
           @click="showPreview = !showPreview"
         >
-          {{ showPreview ? "Visa redigerare" : "Visa f&ouml;rhandsgranskning" }}
+          <UiGlyph
+            :meaning="showPreview ? 'edit' : 'preview'"
+            :size="12"
+          />
         </button>
       </div>
 

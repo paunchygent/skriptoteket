@@ -390,8 +390,11 @@ describe("ExamConverterAuthenticatedView AI-prefill durable sessions", () => {
         .classes(),
     ).toContain("btn-primary");
     expect(
+      wrapper.find('[data-test="exam-converter-edit-advisory-answer-key-action"]').attributes("aria-label"),
+    ).toBe("Ändra facit");
+    expect(
       wrapper.find('[data-test="exam-converter-edit-advisory-answer-key-action"]').text(),
-    ).toContain("Ändra");
+    ).toBe("");
     expect(
       wrapper.find('[data-test="exam-converter-edit-advisory-answer-key-action"] svg').exists(),
     ).toBe(true);
