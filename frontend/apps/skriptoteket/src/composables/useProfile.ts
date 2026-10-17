@@ -37,7 +37,9 @@ export function useProfile() {
   async function load(): Promise<ProfileResponse> {
     const session = auth.captureSession();
     const response = await apiGet<ProfileResponse>("/api/v1/profile", { session });
-    if (!auth.applyResponse(session, response)) throw new SupersededAuthSessionError();
+    const admittedSession = await auth.applyReadResponse(session, response);
+    if (admittedSession === null) throw new SupersededAuthSessionError();
+    auth.requireCurrentSession(admittedSession);
     profile.value = response.profile;
     return response;
   }

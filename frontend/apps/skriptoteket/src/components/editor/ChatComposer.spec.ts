@@ -1,6 +1,7 @@
 import { mount } from "@vue/test-utils";
 import { describe, expect, it } from "vitest";
 
+import { UiGlyph } from "../ui/shared";
 import ChatComposer from "./ChatComposer.vue";
 
 function mountComposer() {
@@ -25,6 +26,26 @@ describe("ChatComposer shared controls", () => {
     } finally {
       wrapper.unmount();
     }
+  });
+
+  it("keeps the send glyph decorative as its control changes mode without duplicating submission", async () => {
+    const wrapper = mountComposer();
+    await wrapper.get("textarea").setValue("Ändra rubriken");
+    const send = wrapper.get('button[aria-label="Skicka"]');
+    const glyph = send.getComponent(UiGlyph);
+    expect(glyph.props("meaning")).toBe("send");
+    expect(glyph.get("svg").attributes("aria-hidden")).toBe("true");
+    expect(glyph.attributes("aria-label")).toBeUndefined();
+    expect(glyph.attributes("role")).not.toBe("img");
+    await wrapper.get('[role="radiogroup"]').findAll('[role="radio"]')[1]!.trigger("click");
+    const edit = wrapper.get('button[aria-label="Föreslå ändringar"]');
+    expect(edit.element).toBe(send.element);
+    expect(edit.getComponent(UiGlyph).element).toBe(glyph.element);
+    await edit.trigger("click");
+    expect(wrapper.emitted("requestEditOps")).toEqual([["Ändra rubriken"]]);
+    expect(wrapper.emitted("send")).toBeUndefined();
+    expect(wrapper.get("textarea").element.value).toBe("Ändra rubriken");
+    wrapper.unmount();
   });
 
   it("routes keyboard-selected edit requests without losing the draft, then sends chat", async () => {

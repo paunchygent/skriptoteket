@@ -67,4 +67,32 @@ describe("useLayoutStore", () => {
     expect(store.focusMode).toBe(false);
     expect(store.activeUserId).toBeNull();
   });
+
+  it("keeps the rail per user and apart from focus mode", () => {
+    const railKey = (userId: string): string => `skriptoteket:layout:sidebar_collapsed:${userId}`;
+    localStorage.setItem(railKey("teacher-a"), "1");
+
+    const store = useLayoutStore();
+    store.hydrateForUser("teacher-a");
+    expect(store.sidebarCollapsed).toBe(true);
+    expect(store.focusMode).toBe(false);
+
+    store.toggle();
+    expect(store.sidebarCollapsed).toBe(true);
+    expect(localStorage.getItem(railKey("teacher-a"))).toBe("1");
+
+    store.hydrateForUser("teacher-b");
+    expect(store.sidebarCollapsed).toBe(false);
+
+    store.toggleSidebarCollapsed();
+    expect(localStorage.getItem(railKey("teacher-b"))).toBe("1");
+    expect(localStorage.getItem(storageKey("teacher-b"))).toBeNull();
+
+    store.hydrateForUser(null);
+    expect(store.sidebarCollapsed).toBe(false);
+
+    store.toggleSidebarCollapsed();
+    expect(localStorage.getItem(railKey("null"))).toBeNull();
+    expect(localStorage.length).toBe(3);
+  });
 });

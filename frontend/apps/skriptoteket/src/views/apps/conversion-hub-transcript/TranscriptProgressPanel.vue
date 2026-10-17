@@ -13,9 +13,9 @@
  */
 
 import { computed } from "vue";
-import { Info } from "lucide-vue-next";
 
 import { SystemMessage } from "../../../components/ui";
+import { UiGlyph } from "../../../components/ui/shared";
 
 import type { SirConvertTranscriptJob } from "../../../api/sirConvertGateway";
 import type { TranscriptAbortState, TranscriptUploadState } from "./useTranscriptGatewayRuntime";
@@ -171,7 +171,8 @@ function stepClasses(step: ProgressStep): string {
         class="grid min-h-[4.25rem] grid-cols-[auto_minmax(0,1fr)] items-center gap-3 border border-navy/15 bg-canvas px-4 py-3 text-left"
         data-test="transcript-progress-current-step"
       >
-        <Info
+        <UiGlyph
+          meaning="info"
           class="h-5 w-5 text-navy"
           aria-hidden="true"
         />

@@ -2,41 +2,30 @@
  * Authenticated shell action tests.
  *
  * These tests mount the real sidebar, top bar and shared help opener together
- * to prove that Hjälp, focus mode and logout stay wired through both the drawer
- * and the desktop top bar. Drawer cases run for the ordinary and planner shell
- * routes, because the planner's wider desktop cutoff is what left the drawer as
- * the only action surface at intermediate widths. They assert action state,
- * shared help state, focus return and emitted shell events; rendered breakpoint
- * geometry is proven by the parent's browser walk, not by jsdom.
+ * to prove that Hjälp, focus mode and logout stay wired through both the phone
+ * drawer and the top bar, that the drawer gives focus back to Meny however it
+ * closes, and that the rail toggle and the workspace contract hold. Drawer
+ * cases run for an ordinary tool route and Klassrumskartan, which used to have
+ * its own shell cutoff and now shares the one shell composition. They assert
+ * action state, shared help state, focus return and emitted shell events;
+ * rendered breakpoint geometry is proven by the browser walk, not by jsdom.
+ * Keyboard modality lives in `AuthLayout.keyboard.spec.ts`, stable top-bar
+ * slots in `AuthTopBar.slots.spec.ts`.
  */
 
-import { flushPromises, mount, type VueWrapper } from "@vue/test-utils";
-import { createPinia, setActivePinia } from "pinia";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { flushPromises } from "@vue/test-utils";
+import { describe, expect, it, vi } from "vitest";
 
 import { useHelp } from "../help/useHelp";
 import { useLayoutStore } from "../../stores/layout";
-import AuthLayout from "./AuthLayout.vue";
-
-const shellRoutes = [
-  {
-    label: "ordinary shell",
-    appId: "chemistry.reagent_prep_chef",
-    preferXl: false,
-  },
-  {
-    label: "planner shell",
-    appId: "classroom.group-seating-studio",
-    preferXl: true,
-  },
-] as const;
+import { createShellHarness, shellRoutes } from "./authLayoutShellHarness";
 
 const routeMocks = vi.hoisted(() => ({
   route: {
-    name: "app-detail",
+    name: "app-detail" as string,
     params: {
       appId: "chemistry.reagent_prep_chef",
-    },
+    } as Record<string, string>,
   },
 }));
 
@@ -47,91 +36,23 @@ vi.mock("vue-router", () => ({
   useRoute: () => routeMocks.route,
 }));
 
-let wrapper: VueWrapper | null = null;
-
-function mountLayout(options: { appId?: string; logoutInProgress?: boolean } = {}): VueWrapper {
-  routeMocks.route.params.appId = options.appId ?? shellRoutes[0].appId;
-
-  wrapper = mount(AuthLayout, {
-    attachTo: document.body,
-    props: {
-      user: { id: "user-1", email: "teacher@example.com", role: "user" },
-      profile: null,
-      aiPolicy: null,
-      canSeeContributor: false,
-      canSeeAdmin: false,
-      canSeeSuperuser: false,
-      logoutInProgress: options.logoutInProgress ?? false,
-    },
-    global: {
-      stubs: {
-        BrandLogo: true,
-        RouterLink: {
-          template: "<a><slot /></a>",
-        },
-      },
-    },
-    slots: {
-      default: "<div>Route content</div>",
-    },
-  });
-
-  return wrapper;
-}
-
-function menuButton() {
-  return wrapper!.get("button.hamburger");
-}
-
-function sidebar() {
-  return wrapper!.get(".sidebar");
-}
-
-function drawerHelpButton() {
-  return wrapper!.get(".sidebar-footer button[aria-controls='help-panel']");
-}
-
-function drawerFocusButton() {
-  return wrapper!.get(".sidebar-footer button[aria-pressed]");
-}
-
-function drawerLogoutButton() {
-  return wrapper!.get(".sidebar-footer .sidebar-logout-btn");
-}
-
-function topbarHelpButton() {
-  return wrapper!.get(".top-user-bar button[aria-controls='help-panel']");
-}
-
-function topbarFocusButton() {
-  return wrapper!.get(".top-user-bar .focus-mode-toggle");
-}
-
-beforeEach(() => {
-  setActivePinia(createPinia());
-  localStorage.clear();
-
-  const help = useHelp();
-  help.close({ restoreFocus: false });
-  help.showIndex();
-  help.setHelpContext(null);
-
-  document.body.classList.remove("app-shell-game-mode");
-});
-
-afterEach(() => {
-  wrapper?.unmount();
-  wrapper = null;
-  document.body.innerHTML = "";
-  document.body.className = "";
-});
+const {
+  wrapper,
+  mountLayout,
+  menuButton,
+  sidebar,
+  drawerHelpButton,
+  drawerFocusButton,
+  drawerLogoutButton,
+  topbarHelpButton,
+  topbarFocusButton,
+} = createShellHarness(routeMocks.route);
 
 describe("AuthLayout shell action wiring", () => {
-  describe.each(shellRoutes)("drawer actions in the $label", ({ appId, preferXl }) => {
+  describe.each(shellRoutes)("drawer actions in the $label", ({ appId }) => {
     it("opens and closes the drawer from the Meny button", async () => {
       mountLayout({ appId });
 
-      expect(sidebar().classes().includes("sidebar--xl-desktop-breakpoint")).toBe(preferXl);
       expect(menuButton().attributes("aria-expanded")).toBe("false");
       expect(sidebar().classes()).not.toContain("is-open");
 
@@ -205,7 +126,7 @@ describe("AuthLayout shell action wiring", () => {
       await drawerLogoutButton().trigger("click");
 
       expect(sidebar().classes()).not.toContain("is-open");
-      expect(wrapper!.emitted("logout")).toHaveLength(1);
+      expect(wrapper().emitted("logout")).toHaveLength(1);
     });
 
     it("keeps the drawer logout disabled and silent while logout is pending", async () => {
@@ -214,7 +135,7 @@ describe("AuthLayout shell action wiring", () => {
       await menuButton().trigger("click");
 
       const drawerLogout = drawerLogoutButton();
-      const topbarLogout = wrapper!.get(".top-user-bar .logout-btn");
+      const topbarLogout = wrapper().get(".topbar button.topbar-logout");
 
       expect(drawerLogout.attributes("disabled")).toBeDefined();
       expect(topbarLogout.attributes("disabled")).toBeDefined();
@@ -224,7 +145,7 @@ describe("AuthLayout shell action wiring", () => {
       await flushPromises();
 
       expect(sidebar().classes()).toContain("is-open");
-      expect(wrapper!.emitted("logout")).toBeUndefined();
+      expect(wrapper().emitted("logout")).toBeUndefined();
     });
   });
 
@@ -244,8 +165,85 @@ describe("AuthLayout shell action wiring", () => {
     expect(layout.focusMode).toBe(true);
     expect(topbarFocusButton().attributes("aria-pressed")).toBe("true");
 
-    await wrapper!.get(".top-user-bar .logout-btn").trigger("click");
+    await wrapper().get(".topbar button.topbar-logout").trigger("click");
 
-    expect(wrapper!.emitted("logout")).toHaveLength(1);
+    expect(wrapper().emitted("logout")).toHaveLength(1);
+  });
+
+  it("moves focus into the opened drawer and gives it back to Meny on Escape and on the backdrop", async () => {
+    mountLayout();
+
+    await menuButton().trigger("click");
+    await flushPromises();
+
+    expect(document.activeElement).toBe(wrapper().get(".sidebar button[aria-label='Stäng menyn']").element);
+
+    await sidebar().trigger("keydown", { key: "Escape" });
+
+    expect(sidebar().classes()).not.toContain("is-open");
+    expect(menuButton().attributes("aria-expanded")).toBe("false");
+    expect(document.activeElement).toBe(menuButton().element);
+
+    await menuButton().trigger("click");
+    await wrapper().get(".auth-nav-backdrop").trigger("click");
+
+    expect(sidebar().classes()).not.toContain("is-open");
+    expect(wrapper().find(".auth-nav-backdrop").exists()).toBe(false);
+    expect(document.activeElement).toBe(menuButton().element);
+  });
+
+  it("keeps the rail per user and independent of focus mode", async () => {
+    mountLayout({ userId: "teacher-a" });
+    const railToggle = () => wrapper().get(".topbar button.topbar-sidebar-toggle");
+
+    expect(railToggle().attributes("aria-label")).toBe("Fäll ihop menyn");
+    await railToggle().trigger("click");
+
+    expect(railToggle().attributes("aria-pressed")).toBe("true");
+    expect(railToggle().attributes("aria-label")).toBe("Fäll ut menyn");
+    expect(sidebar().classes()).toContain("is-rail");
+
+    await topbarFocusButton().trigger("click");
+    await topbarFocusButton().trigger("click");
+    expect(sidebar().classes()).toContain("is-rail");
+
+    wrapper().unmount();
+    mountLayout({ userId: "teacher-b" });
+    expect(sidebar().classes()).not.toContain("is-rail");
+    expect(railToggle().attributes("aria-pressed")).toBe("false");
+
+    wrapper().unmount();
+    mountLayout({ userId: "teacher-a" });
+    expect(sidebar().classes()).toContain("is-rail");
+  });
+
+  it("names the exam workspace beside the brand and offers it the phone page slot", () => {
+    mountLayout({ routeName: "exam-workspace", appId: "" });
+
+    expect(wrapper().get(".topbar .topbar-brand").text()).toBe("SkriptoteketProvredigering");
+    expect(wrapper().get(".topbar #app-topbar-page-slot").element.childElementCount).toBe(0);
+
+    wrapper().unmount();
+    mountLayout();
+
+    expect(wrapper().get(".topbar .topbar-brand").text()).toBe("Skriptoteket");
+    expect(wrapper().find(".topbar #app-topbar-page-slot").exists()).toBe(true);
+  });
+
+  it("gives immersive game routes only the way back, Hjälp and Logga ut", async () => {
+    mountLayout({ appId: "games.flunk_out_frenzy" });
+
+    expect(wrapper().find(".sidebar").exists()).toBe(false);
+    expect(wrapper().find(".topbar-menu-button").exists()).toBe(false);
+    expect(wrapper().find(".topbar-sidebar-toggle").exists()).toBe(false);
+    expect(wrapper().find(".topbar-focus-toggle").exists()).toBe(false);
+    expect(wrapper().get(".topbar .topbar-back-link").text()).toBe("Tillbaka till katalogen");
+    expect(document.body.classList.contains("app-shell-game-mode")).toBe(true);
+
+    await topbarHelpButton().trigger("click");
+    expect(useHelp().isOpen.value).toBe(true);
+
+    await wrapper().get(".topbar button.topbar-logout").trigger("click");
+    expect(wrapper().emitted("logout")).toHaveLength(1);
   });
 });

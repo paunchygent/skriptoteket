@@ -59,7 +59,7 @@ selected-state treatment. Preserve all route behavior and copy.
 4. Keep selector styling explicit and avoid reusing selector fills for command
    actions.
 5. If the corrected contract conflicts with
-   `.codex/rules/045-huleedu-design-system.md`, pause implementation and patch
+   `huleedu-ui-design`, pause implementation and patch
    the governed design-system doctrine before continuing.
 
 ## Test Plan

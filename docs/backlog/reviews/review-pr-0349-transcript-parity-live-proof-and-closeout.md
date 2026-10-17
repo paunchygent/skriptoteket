@@ -78,7 +78,7 @@ Authority and adjacent governed items reviewed:
 - `docs/backlog/stories/story-21-08-transcript-speaker-overlays-and-replay-formatter-exports.md`
 - `docs/backlog/epics/epic-21-curated-app-conversion-hub.md`
 - `.codex/handoff.md`
-- `.codex/rules/075-browser-automation.md`
+- Retired browser-automation rule 075 (current browser-proof route: `staging-walk`).
 - `docs/index.md`
 - `docs/reference/ref-review-workflow.md`
 

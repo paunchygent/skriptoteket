@@ -101,9 +101,7 @@ None.
 ## Verification
 
 - Reviewed `AGENTS.md`, `.codex/handoff.md`, `docs/index.md`,
-  `.codex/rules/025-curated-apps.md`, `.codex/rules/045-huleedu-design-system.md`,
-  `.codex/rules/070-testing-standards.md`, `.codex/rules/075-browser-automation.md`,
-  `.codex/rules/096-review-workflow.md`, the routed `ruthless-code-review`,
+  the routed `ruthless-code-review`,
   `testing`, `agent-docs-governance`, `integrated-frontend-stack`, and
   `skriptoteket-testing` guidance, plus the governing `PR-0386` and `PR-0383`
   backlog docs.

@@ -13,7 +13,7 @@ import { useRoute, useRouter } from "vue-router";
 
 import classroomPlannerSymbolUrl from "../../assets/home/klassrumskartan/catalog/classroom-map-symbol.png";
 import type { CatalogItem } from "../../types/catalog";
-import { IconBookmark } from "../icons";
+import { UiGlyph } from "../ui/shared";
 import {
   buildClassroomPlannerEntryTarget,
   CLASSROOM_PLANNER_APP_ID,
@@ -136,9 +136,11 @@ function handleCardKeydown(event: KeyboardEvent): void {
         ]"
         @click.stop="handleToggle"
       >
-        <IconBookmark
+        <UiGlyph
+          meaning="bookmark"
+          :stroke-width="2.5"
           class="h-full w-full"
-          :filled="item.is_favorite"
+          :fill="item.is_favorite ? 'currentColor' : 'none'"
         />
       </button>
       <p
@@ -180,9 +182,11 @@ function handleCardKeydown(event: KeyboardEvent): void {
         ]"
         @click.stop="handleToggle"
       >
-        <IconBookmark
+        <UiGlyph
+          meaning="bookmark"
+          :stroke-width="2.5"
           class="h-full w-full"
-          :filled="item.is_favorite"
+          :fill="item.is_favorite ? 'currentColor' : 'none'"
         />
       </button>
       <div :class="['min-w-0', isList ? 'space-y-0.5 lg:max-w-[40rem]' : 'space-y-1 pr-12 sm:pr-14']">
@@ -229,9 +233,11 @@ function handleCardKeydown(event: KeyboardEvent): void {
           ]"
           @click.stop="handleToggle"
         >
-          <IconBookmark
+          <UiGlyph
+            meaning="bookmark"
+            :stroke-width="2.5"
             class="h-full w-full"
-            :filled="item.is_favorite"
+            :fill="item.is_favorite ? 'currentColor' : 'none'"
           />
         </button>
         <RouterLink

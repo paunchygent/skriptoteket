@@ -74,7 +74,7 @@ to the nested route while preserving original-job actions for first-pass files.
 
 ## Review Checklist
 
-- [x] Read `AGENTS.md`, `.codex/handoff.md`, `docs/index.md`, `.codex/rules/000-rule-index.md`, rules `070`, `075`, and `096`, and the retained review workflow reference.
+- [x] Read `AGENTS.md`, `.codex/handoff.md`, `docs/index.md`, and the retained review workflow reference. Retired rule-read citations are omitted.
 - [x] Used the review, testing, frontend, Playwright, and docs-governance skills/references required for this surface.
 - [x] Inspected the current worktree diff for all PR-0410 files named in the review request.
 - [x] Checked public contracts: Sir Convert Gateway route, replay reference schema, file-action projection type, and save/download behavior.

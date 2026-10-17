@@ -9,7 +9,7 @@
 
 import { computed, onMounted, onUnmounted } from "vue";
 
-import { IconX } from "../../../components/icons";
+import { UiGlyph } from "../../../components/ui/shared";
 import {
   DENSE_FORM_INPUT_CLASS,
   UiDenseActionButton,
@@ -128,7 +128,11 @@ onUnmounted(() => {
           label="Stäng avancerade inställningar"
           @click="emit('close')"
         >
-          <IconX :size="14" />
+          <UiGlyph
+            meaning="close"
+            :size="14"
+            :stroke-width="2.5"
+          />
         </UiDenseIconButton>
       </div>
 

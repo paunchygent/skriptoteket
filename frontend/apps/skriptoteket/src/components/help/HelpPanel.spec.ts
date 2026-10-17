@@ -10,6 +10,7 @@ import { nextTick } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import HelpPanel from "./HelpPanel.vue";
+import HelpButton from "./HelpButton.vue";
 import { useHelp } from "./useHelp";
 import { useAuthStore } from "../../stores/auth";
 
@@ -44,6 +45,7 @@ describe("HelpPanel", () => {
     help.isOpen.value = true;
     help.activeTopic.value = null;
     help.setHelpContext(null);
+    help.setSuspended(false);
   });
 
   it("renders the generated planner overview help from planner context", async () => {
@@ -194,41 +196,163 @@ describe("HelpPanel", () => {
     wrapper.unmount();
   });
 
-  it("closes deterministically when Escape is pressed", async () => {
+  it("lets a signed-out teacher open a topic and return to the index without closing help", async () => {
+    routeMocks.route.name = "home";
+    routeMocks.route.fullPath = "/";
     const help = useHelp();
-    const wrapper = mount(HelpPanel, {
-      attachTo: document.body,
-    });
-
+    const wrapper = mount(HelpPanel, { attachTo: document.body });
     await flushPromises();
-    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    const login = Array.from(document.body.querySelectorAll<HTMLButtonElement>("#help-panel button"))
+      .find((button) => button.textContent?.includes("Logga in"));
+    expect(login).toBeDefined();
+    login?.click();
+    await flushPromises();
+    expect(help.activeTopic.value).toBe("login");
+    const back = document.body.querySelector<HTMLAnchorElement>('#help-panel a[href="#help-index"]');
+    expect(back?.textContent).toContain("Till hjälpindex");
+    back?.click();
     await flushPromises();
 
-    expect(help.isOpen.value).toBe(false);
-    expect(document.body.querySelector("#help-panel")).toBeNull();
+    expect(help.activeTopic.value).toBeNull();
+    expect(document.body.querySelector("#help-index")).not.toBeNull();
+    expect(help.isOpen.value).toBe(true);
+    wrapper.unmount();
+  });
+
+  it("moves focus into the opened panel instead of leaving it on the opener", async () => {
+    const help = useHelp();
+    help.isOpen.value = false;
+    const opener = document.createElement("button");
+    document.body.appendChild(opener);
+    opener.focus();
+
+    const wrapper = mount(HelpPanel, { attachTo: document.body });
+    help.open(opener);
+    await flushPromises();
+
+    const panel = document.body.querySelector<HTMLElement>("#help-panel");
+    expect(panel).not.toBeNull();
+    expect(document.activeElement).toBe(panel);
+
+    wrapper.unmount();
+    opener.remove();
+  });
+
+  it("takes focus again when help is opened while it is already open", async () => {
+    const help = useHelp();
+    const wrapper = mount(HelpPanel, { attachTo: document.body });
+    await flushPromises();
+    const panel = document.body.querySelector<HTMLElement>("#help-panel");
+
+    const elsewhere = document.createElement("button");
+    document.body.appendChild(elsewhere);
+    elsewhere.focus();
+    help.open(elsewhere);
+    await flushPromises();
+
+    expect(document.activeElement).toBe(panel);
+
+    wrapper.unmount();
+    elsewhere.remove();
+  });
+
+  it("is inert while a covering layer suspends help, and only then", async () => {
+    const help = useHelp();
+    const wrapper = mount(HelpPanel, { attachTo: document.body });
+    await flushPromises();
+    const panel = document.body.querySelector<HTMLElement>("#help-panel")!;
+    expect(panel.hasAttribute("inert")).toBe(false);
+
+    help.setSuspended(true);
+    await flushPromises();
+    expect(panel.hasAttribute("inert")).toBe(true);
+
+    help.setSuspended(false);
+    await flushPromises();
+    expect(panel.hasAttribute("inert")).toBe(false);
 
     wrapper.unmount();
   });
 
-  it("keeps backdrop click closing the drawer", async () => {
+  it("opens from the real help control and restores focus after the close control", async () => {
     const help = useHelp();
-    const wrapper = mount(HelpPanel, {
-      attachTo: document.body,
-    });
+    help.isOpen.value = false;
+    const opener = mount(HelpButton, { attachTo: document.body });
+    const panel = mount(HelpPanel, { attachTo: document.body });
+    const trigger = opener.get("button");
+    (trigger.element as HTMLButtonElement).focus();
 
-    await flushPromises();
-    const backdrop = document.body.querySelector(".help-backdrop");
-    expect(backdrop).not.toBeNull();
-    backdrop?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    expect(trigger.attributes("aria-expanded")).toBe("false");
+    expect(trigger.attributes("aria-haspopup")).toBe("dialog");
+    await trigger.trigger("click");
     await flushPromises();
 
-    expect(help.isOpen.value).toBe(false);
+    expect(trigger.attributes("aria-expanded")).toBe("true");
+    expect(trigger.attributes("aria-controls")).toBe("help-panel");
+    const dialog = document.body.querySelector('[role="dialog"]');
+    const titleId = dialog?.getAttribute("aria-labelledby") ?? "";
+    expect(document.getElementById(titleId)?.textContent?.trim()).toBe("Hjälp");
+    const close = document.body.querySelector<HTMLButtonElement>('#help-panel button[aria-label="Stäng"]');
+    expect(close).not.toBeNull();
+    close?.click();
+    await flushPromises();
+
     expect(document.body.querySelector("#help-panel")).toBeNull();
+    expect(trigger.attributes("aria-expanded")).toBe("false");
+    expect(document.activeElement).toBe(trigger.element);
+    panel.unmount();
+    opener.unmount();
+  });
+
+  it("renders no scrim: the page behind the non-modal panel stays usable", async () => {
+    const wrapper = mount(HelpPanel, { attachTo: document.body });
+    await flushPromises();
+
+    const panel = document.body.querySelector("#help-panel");
+    expect(panel?.getAttribute("aria-modal")).toBe("false");
+    expect(document.body.querySelector(".help-backdrop")).toBeNull();
+    expect(document.body.querySelectorAll(".fixed.inset-0")).toHaveLength(0);
 
     wrapper.unmount();
   });
 
-  it("returns focus to the opener when Escape closes the drawer", async () => {
+  it("closes on Escape inside the panel and stops the key at the panel", async () => {
+    const help = useHelp();
+    const wrapper = mount(HelpPanel, { attachTo: document.body });
+    await flushPromises();
+
+    const outerEscape = vi.fn();
+    document.addEventListener("keydown", outerEscape);
+    const closeButton = document.body.querySelector<HTMLElement>("#help-panel button");
+    closeButton?.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    await flushPromises();
+    document.removeEventListener("keydown", outerEscape);
+
+    expect(help.isOpen.value).toBe(false);
+    expect(document.body.querySelector("#help-panel")).toBeNull();
+    expect(outerEscape).not.toHaveBeenCalled();
+
+    wrapper.unmount();
+  });
+
+  it("leaves Escape from the page behind to the page's own top layer", async () => {
+    const help = useHelp();
+    const wrapper = mount(HelpPanel, { attachTo: document.body });
+    await flushPromises();
+
+    const pageControl = document.createElement("button");
+    document.body.appendChild(pageControl);
+    pageControl.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    await flushPromises();
+
+    expect(help.isOpen.value).toBe(true);
+    expect(document.body.querySelector("#help-panel")).not.toBeNull();
+
+    wrapper.unmount();
+    pageControl.remove();
+  });
+
+  it("returns focus to the opener when Escape closes the panel", async () => {
     const help = useHelp();
     help.isOpen.value = false;
 
@@ -244,9 +368,10 @@ describe("HelpPanel", () => {
 
     help.open(opener);
     await flushPromises();
-    expect(document.body.querySelector("#help-panel")).not.toBeNull();
+    const panel = document.body.querySelector<HTMLElement>("#help-panel");
+    expect(document.activeElement).toBe(panel);
 
-    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    panel?.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
     await flushPromises();
 
     expect(help.isOpen.value).toBe(false);

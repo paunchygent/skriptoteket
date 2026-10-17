@@ -98,24 +98,25 @@ const primaryRecoveryPath = computed(() => {
   gap: var(--huleedu-space-5);
   max-width: 44rem;
   padding: clamp(var(--huleedu-space-6), 5vw, var(--huleedu-space-10));
-  border: var(--huleedu-border-width) solid var(--huleedu-navy);
-  background:
-    linear-gradient(135deg, color-mix(in srgb, var(--huleedu-sand) 45%, white) 0%, white 100%);
+  border: var(--huleedu-border-width) solid var(--huleedu-panel-border);
+  border-radius: var(--huleedu-panel-radius);
+  background: var(--huleedu-panel);
+  font-family: var(--huleedu-font-sans);
 }
 
 .route-recovery__eyebrow {
   font-size: var(--huleedu-text-xs);
   font-weight: var(--huleedu-font-semibold);
-  letter-spacing: 0.14em;
+  letter-spacing: var(--huleedu-tracking-label);
   text-transform: uppercase;
   color: var(--huleedu-terracotta);
 }
 
 .route-recovery__title {
-  font-size: clamp(2rem, 4vw, 3rem);
+  font-size: clamp(2rem, 4vw, var(--huleedu-text-5xl));
   line-height: 0.95;
-  font-weight: var(--huleedu-font-black);
-  letter-spacing: -0.04em;
+  font-weight: var(--huleedu-type-page-title-weight);
+  letter-spacing: var(--huleedu-tracking-tight);
   color: var(--huleedu-navy);
 }
 

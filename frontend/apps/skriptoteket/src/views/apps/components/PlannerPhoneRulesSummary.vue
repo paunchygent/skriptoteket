@@ -15,15 +15,13 @@
 import { computed, ref } from "vue";
 
 import { UiDenseIconButton } from "../../../components/ui";
+import { UiGlyph } from "../../../components/ui/shared";
 
 import {
-  IconArrow,
-  IconEdit,
   IconKeepApart,
   IconKeepNear,
   IconLock,
   IconTeacherAnchor,
-  IconTrash,
 } from "../../../components/icons";
 import type { FixedSeatRule, RelationshipRule, Student } from "../classroomPlannerTypes";
 import {
@@ -107,9 +105,10 @@ function fixedSeatRuleHeading(rule: FixedSeatRule): string {
       >
         {{ ruleCount }}
       </span>
-      <IconArrow
+      <UiGlyph
+        :meaning="isExpanded ? 'collapse' : 'expand'"
         :size="15"
-        :direction="isExpanded ? 'up' : 'down'"
+        :stroke-width="2.5"
       />
     </button>
 
@@ -145,7 +144,11 @@ function fixedSeatRuleHeading(rule: FixedSeatRule): string {
             :disabled="!canEdit"
             @click="emit('edit-fixed-seat-rule', rule.id)"
           >
-            <IconEdit :size="14" />
+            <UiGlyph
+              meaning="edit"
+              :size="14"
+              :stroke-width="2.5"
+            />
           </UiDenseIconButton>
           <UiDenseIconButton
             size="touch"
@@ -155,7 +158,11 @@ function fixedSeatRuleHeading(rule: FixedSeatRule): string {
             :disabled="!canEdit"
             @click="emit('delete-fixed-seat-rule', rule.id)"
           >
-            <IconTrash :size="14" />
+            <UiGlyph
+              meaning="delete"
+              :size="14"
+              :stroke-width="2.5"
+            />
           </UiDenseIconButton>
         </div>
       </div>
@@ -186,7 +193,11 @@ function fixedSeatRuleHeading(rule: FixedSeatRule): string {
             :disabled="!canEdit"
             @click="emit('edit-near-teacher')"
           >
-            <IconEdit :size="14" />
+            <UiGlyph
+              meaning="edit"
+              :size="14"
+              :stroke-width="2.5"
+            />
           </UiDenseIconButton>
           <UiDenseIconButton
             size="touch"
@@ -196,7 +207,11 @@ function fixedSeatRuleHeading(rule: FixedSeatRule): string {
             :disabled="!canEdit"
             @click="emit('delete-near-teacher')"
           >
-            <IconTrash :size="14" />
+            <UiGlyph
+              meaning="delete"
+              :size="14"
+              :stroke-width="2.5"
+            />
           </UiDenseIconButton>
         </div>
       </div>
@@ -234,7 +249,11 @@ function fixedSeatRuleHeading(rule: FixedSeatRule): string {
             :disabled="!canEdit"
             @click="emit('edit-rule', rule.id)"
           >
-            <IconEdit :size="14" />
+            <UiGlyph
+              meaning="edit"
+              :size="14"
+              :stroke-width="2.5"
+            />
           </UiDenseIconButton>
           <UiDenseIconButton
             size="touch"
@@ -244,7 +263,11 @@ function fixedSeatRuleHeading(rule: FixedSeatRule): string {
             :disabled="!canEdit"
             @click="emit('delete-rule', rule.id)"
           >
-            <IconTrash :size="14" />
+            <UiGlyph
+              meaning="delete"
+              :size="14"
+              :stroke-width="2.5"
+            />
           </UiDenseIconButton>
         </div>
       </div>

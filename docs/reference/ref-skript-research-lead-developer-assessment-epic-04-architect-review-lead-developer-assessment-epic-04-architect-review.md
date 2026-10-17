@@ -47,8 +47,10 @@ review and maps them to the docs-as-code sources of truth (stories, reference sp
 ### Router `from __future__ import annotations`
 
 - **Decision:** Adopt (remove from router modules)
-- **Why:** Forbidden by rule `040-fastapi-blueprint` to prevent OpenAPI/ForwardRef issues.
-- **Docs:** Rule `040-fastapi-blueprint` is the source of truth.
+- **Why:** Forbidden in router modules to prevent OpenAPI/ForwardRef issues.
+- **Docs:** The backend HTTP contracts in
+  [backend-contracts.md](../../.codex/skills/skriptoteket-backend-dev/references/backend-contracts.md)
+  are the source of truth.
 
 ### ST-04-02: Docker Runner
 
@@ -138,8 +140,10 @@ review and maps them to the docs-as-code sources of truth (stories, reference sp
 ### Router `from __future__ import annotations`
 
 - **Decision:** Adopt (remove from router modules)
-- **Why:** Forbidden by rule `040-fastapi-blueprint` to prevent OpenAPI/ForwardRef issues.
-- **Docs:** Rule `040-fastapi-blueprint` is the source of truth.
+- **Why:** Forbidden in router modules to prevent OpenAPI/ForwardRef issues.
+- **Docs:** The backend HTTP contracts in
+  [backend-contracts.md](../../.codex/skills/skriptoteket-backend-dev/references/backend-contracts.md)
+  are the source of truth.
 
 ### ST-04-02: Docker Runner
 

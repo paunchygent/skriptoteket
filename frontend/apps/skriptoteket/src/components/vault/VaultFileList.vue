@@ -3,7 +3,7 @@ import { computed } from "vue";
 
 import type { components } from "../../api/openapi";
 import { formatBytes } from "../../composables/tools/fileRefHelpers";
-import { IconDownload, IconMoreVertical, IconTrash, IconUndo } from "../icons";
+import { denseMenuItemClass, UiDenseActionButton, UiGlyph } from "../ui/shared";
 
 type VaultFileInfo = components["schemas"]["VaultFileInfo"];
 type VaultListState = components["schemas"]["VaultListState"];
@@ -70,7 +70,7 @@ function formatDate(value: string | null | undefined): string {
       <li
         v-for="file in files"
         :key="file.id"
-        class="border border-navy/20 bg-panel hover:bg-action/5 transition-colors"
+        class="rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] bg-panel hover:bg-action/5 transition-colors"
       >
         <div class="grid grid-cols-[minmax(0,1fr)_auto] gap-3 p-3">
           <label
@@ -88,7 +88,7 @@ function formatDate(value: string | null | undefined): string {
               v-if="isPickerMode"
               :id="`vault-file-select-${file.id}`"
               type="checkbox"
-              class="h-4 w-4 border border-navy/40 bg-white shadow-none accent-action"
+              class="h-4 w-4 border border-navy/40 bg-canvas accent-action"
               :aria-label="file.name"
               :checked="selectedRefs.includes(file.ref)"
               :disabled="selectionDisabled || file.is_missing_on_disk"
@@ -100,7 +100,7 @@ function formatDate(value: string | null | undefined): string {
               v-model="manageSelection"
               type="checkbox"
               :value="file.id"
-              class="h-4 w-4 border border-navy/40 bg-white shadow-none accent-action"
+              class="h-4 w-4 border border-navy/40 bg-canvas accent-action"
               :aria-label="file.name"
               :disabled="manageSelectionDisabled"
             >
@@ -173,59 +173,74 @@ function formatDate(value: string | null | undefined): string {
             class="relative justify-self-end self-center"
             @click.stop
           >
-            <button
-              type="button"
-              class="h-[30px] w-[30px] grid place-items-center bg-transparent text-navy/70 hover:bg-canvas/50 hover:text-navy shadow-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-action/40 focus-visible:outline-offset-2"
+            <UiDenseActionButton
+              :label="`Filåtgärder för ${file.name}`"
+              size="icon"
+              icon-only
               :disabled="isMutating"
-              :aria-expanded="openMenuForFileId === file.id"
+              :expanded="openMenuForFileId === file.id"
               :aria-controls="`vault-file-actions-${file.id}`"
               :aria-label="`Filåtgärder för ${file.name}`"
               @click.stop="emit('toggle-menu', file.id)"
             >
-              <IconMoreVertical :size="16" />
-            </button>
+              <template #leading>
+                <UiGlyph
+                  meaning="more-actions"
+                  :size="16"
+                />
+              </template>
+            </UiDenseActionButton>
 
             <Transition name="popover">
               <div
                 v-if="openMenuForFileId === file.id"
                 :id="`vault-file-actions-${file.id}`"
-                class="absolute right-0 mt-2 w-48 border border-navy bg-modal shadow-md z-50"
+                class="absolute right-0 mt-2 w-48 rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] bg-modal shadow-md z-50"
                 role="menu"
                 :aria-label="`Filåtgärder för ${file.name}`"
                 @click.stop
               >
                 <button
                   type="button"
-                  class="flex items-center gap-2 w-full px-3 py-2 text-sm text-navy hover:bg-canvas transition-colors"
+                  :class="denseMenuItemClass()"
                   role="menuitem"
                   :disabled="isMutating || file.is_missing_on_disk"
                   @click="emit('close-menu'); emit('download', file);"
                 >
-                  <IconDownload :size="16" />
+                  <UiGlyph
+                    meaning="download"
+                    :size="16"
+                  />
                   Ladda ned
                 </button>
 
                 <button
                   v-if="state === 'active'"
                   type="button"
-                  class="flex items-center gap-2 w-full px-3 py-2 text-sm text-critical hover:bg-canvas transition-colors"
+                  :class="denseMenuItemClass('danger')"
                   role="menuitem"
                   :disabled="isMutating"
                   @click="emit('delete', file.id); emit('close-menu');"
                 >
-                  <IconTrash :size="16" />
+                  <UiGlyph
+                    meaning="delete"
+                    :size="16"
+                  />
                   Ta bort
                 </button>
 
                 <button
                   v-else
                   type="button"
-                  class="flex items-center gap-2 w-full px-3 py-2 text-sm text-navy hover:bg-canvas transition-colors"
+                  :class="denseMenuItemClass()"
                   role="menuitem"
                   :disabled="isMutating"
                   @click="emit('restore', file.id); emit('close-menu');"
                 >
-                  <IconUndo :size="16" />
+                  <UiGlyph
+                    meaning="restore"
+                    :size="16"
+                  />
                   Återställ
                 </button>
               </div>
@@ -252,17 +267,20 @@ function formatDate(value: string | null | undefined): string {
                 v-if="exportFile.is_missing_on_disk"
                 class="font-semibold text-critical"
               >Saknas på servern</span>
-              <button
+              <UiDenseActionButton
                 v-if="!props.isReadOnly"
-                type="button"
-                class="btn-ghost h-[26px] px-2 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] leading-none border-navy/30 bg-panel shadow-none"
+                label="Ladda ned"
                 :disabled="isMutating || exportFile.is_missing_on_disk"
                 :aria-label="`Ladda ned ${exportFile.name}`"
                 @click.stop="emit('download', exportFile)"
               >
-                <IconDownload :size="14" />
-                Ladda ned
-              </button>
+                <template #leading>
+                  <UiGlyph
+                    meaning="download"
+                    :size="14"
+                  />
+                </template>
+              </UiDenseActionButton>
             </span>
           </li>
         </ul>

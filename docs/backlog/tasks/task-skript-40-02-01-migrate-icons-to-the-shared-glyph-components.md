@@ -7,7 +7,7 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-09-27'
-status: ready
+status: in_progress
 closeout_review:
   record: inline
   status: not_started
@@ -77,3 +77,15 @@ metric, baseline and budget before becoming a gate.
 | D3 | Remove lucide-vue-next; the released catalog peer was installed in Story 1. Source: retained D13/D20; R1. |
 | D4 | Runtime-table retention is a measured risk, not a per-meaning or zero-growth guarantee. Source: retained D23; R5. |
 | D5 | Repeat-sync proof starts from a clean committed validated result. Source: retained D24; R6. |
+
+## Progress
+
+- 2026-10-17, tranche 1 merged to main 761b1b59 (review 869b1f05 approved for
+  the bounded tranche): home, catalogue, editor, tool-run, transcript, document
+  converter, reagent and Klassrumskartan controls render shared UiGlyph meanings
+  from huleedu-integrated 0.1.29. 40 local wrappers with no consumers are
+  deleted. 27 remain: 14 shared wrappers used by held or frozen screens (app
+  shell, exam workspace, old exam converter, Flunk-Out Frenzy) and 13 local or
+  mixed wrappers.
+- Open: migrate the remaining wrappers once their screens are released, then
+  remove `lucide-vue-next` (still a dependency, 28 source files import it).

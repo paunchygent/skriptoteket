@@ -64,6 +64,17 @@ export function mockJsonResponse(
   });
 }
 
+export function mockSharedSessionResponse(
+  sessionId: string | null = "session-a",
+  userId = "provider-a",
+): Response {
+  return mockJsonResponse({
+    authenticated: true,
+    user: { user_id: userId, email: `${userId}@example.test` },
+    session: { transport: "cookie", session_id: sessionId, csrf_required: true, expires_at: null },
+  });
+}
+
 export function mockEmptyResponse(status: number, statusText?: string): Response {
   return new Response(null, { status, statusText });
 }

@@ -9,10 +9,7 @@
 
 import { ref, watch } from "vue";
 
-import {
-  IconArrow,
-  IconInfo,
-} from "../../../components/icons";
+import { UiGlyph } from "../../../components/ui/shared";
 import { PHONE_RULE_TOOL_ROWS } from "../plannerPhoneRuleToolRows";
 import { usePlannerRulesWorkspaceViewState } from "../plannerRulesWorkspaceViewState";
 import PlannerRulesInspector from "./PlannerRulesInspector.vue";
@@ -224,7 +221,11 @@ watch(mapView, (nextValue) => {
         class="planner-phone-status-row"
         data-test="phone-rules-scope-status"
       >
-        <IconInfo :size="16" />
+        <UiGlyph
+          meaning="info"
+          :size="16"
+          :stroke-width="2.5"
+        />
         <span>Reglerna gäller hela klassen.</span>
       </div>
 
@@ -317,9 +318,10 @@ watch(mapView, (nextValue) => {
         <span>Elever</span>
         <span class="flex shrink-0 items-center gap-2 text-xs text-navy/60">
           {{ phoneStudentCountLabel }}
-          <IconArrow
+          <UiGlyph
+            :meaning="phoneStudentListOpen ? 'collapse' : 'expand'"
             :size="15"
-            :direction="phoneStudentListOpen ? 'up' : 'down'"
+            :stroke-width="2.5"
           />
         </span>
       </button>

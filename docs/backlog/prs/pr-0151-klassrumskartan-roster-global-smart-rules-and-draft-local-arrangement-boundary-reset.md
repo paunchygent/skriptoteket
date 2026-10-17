@@ -169,7 +169,7 @@ flush/status/timer contract before `ST-27-03` and `ST-27-04`.
   - `frontend/apps/skriptoteket/src/views/apps/components/PlannerWorkspaceShell.spec.ts`
   - `migrations/versions/`
   - `pyproject.toml`
-  - `.codex/rules/054-alembic-migrations.md`
+  - `.codex/skills/skriptoteket-testing/references/migrations.md`
 
 ## PR-sized execution checklist
 

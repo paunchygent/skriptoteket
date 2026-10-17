@@ -11,13 +11,9 @@
 import { computed, ref, type Component } from "vue";
 
 import {
-  IconCheck,
   IconGroupsWorkspace,
-  IconMoreVertical,
-  IconOverview,
   IconRules,
   IconSeatingPlan,
-  IconX,
 } from "../../../components/icons";
 import {
   UiDenseIconButton,
@@ -25,6 +21,7 @@ import {
   UiSegmentedToggle,
   type UiSegmentedToggleOption,
 } from "../../../components/ui";
+import { UiGlyph, type UiGlyphMeaning } from "../../../components/ui/shared";
 
 type WorkspaceMode = "overview" | "grouping" | "seating" | "rules";
 type StatusTone = "neutral" | "success" | "warning" | "danger";
@@ -109,15 +106,16 @@ const workspaceOptions = computed<UiSegmentedToggleOption[]>(() => {
   return options;
 });
 
-const modeMetadata: Record<WorkspaceMode, {
+type ModeMetadata = {
   label: string;
   subtitle: string;
-  icon: Component;
-}> = {
+} & ({ glyph: UiGlyphMeaning; icon?: never } | { glyph?: never; icon: Component });
+
+const modeMetadata: Record<WorkspaceMode, ModeMetadata> = {
   overview: {
     label: "Översikt",
     subtitle: "Snabböversikt",
-    icon: IconOverview,
+    glyph: "overview",
   },
   grouping: {
     label: "Grupper",
@@ -166,7 +164,7 @@ function closeModeSheet(): void {
   modeSheetOpen.value = false;
 }
 
-function modeOptionMetadata(option: UiSegmentedToggleOption) {
+function modeOptionMetadata(option: UiSegmentedToggleOption): ModeMetadata {
   const value = option.value;
   if (value === "overview" || value === "grouping" || value === "seating" || value === "rules") {
     return modeMetadata[value];
@@ -174,7 +172,7 @@ function modeOptionMetadata(option: UiSegmentedToggleOption) {
   return {
     label: option.label,
     subtitle: option.title ?? "",
-    icon: IconOverview,
+    glyph: "overview",
   };
 }
 </script>
@@ -201,7 +199,11 @@ function modeOptionMetadata(option: UiSegmentedToggleOption) {
         data-test="planner-exit"
         @click="emit('exit')"
       >
-        <IconX :size="16" />
+        <UiGlyph
+          meaning="close"
+          :size="16"
+          :stroke-width="2.5"
+        />
       </UiDenseIconButton>
     </div>
 
@@ -273,7 +275,11 @@ function modeOptionMetadata(option: UiSegmentedToggleOption) {
             data-test="planner-phone-mode-sheet-close"
             @click="closeModeSheet"
           >
-            <IconX :size="16" />
+            <UiGlyph
+              meaning="close"
+              :size="16"
+              :stroke-width="2.5"
+            />
           </UiDenseIconButton>
         </div>
 
@@ -290,8 +296,16 @@ function modeOptionMetadata(option: UiSegmentedToggleOption) {
             :data-test="`planner-phone-mode-sheet-${option.value}`"
             @click="selectWorkspaceMode(option.value)"
           >
+            <UiGlyph
+              v-if="modeOptionMetadata(option).glyph"
+              :meaning="modeOptionMetadata(option).glyph!"
+              :size="18"
+              :stroke-width="2.25"
+              class="shrink-0"
+            />
             <component
               :is="modeOptionMetadata(option).icon"
+              v-else
               :size="18"
               class="shrink-0"
             />
@@ -303,14 +317,18 @@ function modeOptionMetadata(option: UiSegmentedToggleOption) {
                 {{ option.disabled ? option.title : modeOptionMetadata(option).subtitle }}
               </span>
             </span>
-            <IconCheck
+            <UiGlyph
               v-if="modeValue === option.value"
+              meaning="selected"
               :size="16"
+              :stroke-width="2.5"
               aria-hidden="true"
             />
-            <IconMoreVertical
+            <UiGlyph
               v-else
+              meaning="more-actions"
               :size="14"
+              :stroke-width="2.5"
               class="text-navy/35"
               aria-hidden="true"
             />

@@ -124,7 +124,8 @@ retained review response, or a governed follow-up doc:
    depending on signed HuleEdu gateway context.
 5. **Replace CSRF wording with trust-boundary enforcement.** Mutating app routes should require the
    canonical signed-context dependencies, not local-session CSRF comparison. Update
-   `.codex/rules/040-fastapi-blueprint.md` so future work does not reintroduce
+   `.codex/skills/skriptoteket-backend-dev/references/backend-contracts.md`
+   so future work does not reintroduce
    `require_csrf_token` for browser app writes.
 6. **Settle provisioning before deleting local registration/password paths.** Either record a
    HuleEdu provider follow-up for signed provisioning claims or keep a non-browser

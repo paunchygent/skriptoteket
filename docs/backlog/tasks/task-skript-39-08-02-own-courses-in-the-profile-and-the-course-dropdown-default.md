@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-16'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-17'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Pi ruthless-reviewer (Sol) approvals for the task and its U-1/U-2 repairs, including rereviews 09754cfb and a8b301a2 (U-1 rounds 3 and 4), merged to main 02e6676c by the Hemma lead. The Mac parent re-walked staging in retained session 01a149c9-5bc7-7713-ba64-12dee0470bdd: U-2 on fdc2973b (evidence/staging-rewalk-fdc2973b/) and the two-tab CSRF recovery on 02e6676c (evidence/staging-rewalk-02e6676c/): a write in either tab after the other renews the token gets 403, refreshes and retries to 200 without a reload. The parent authorized closure.'
 task_kind: story
 acceptance_criteria:
   - A teacher registers school forms and courses (gymnasiet courses, grundskolan subject-and-band entries) in a Mina kurser section on the profile page, and the exam workspace course API returns the registered courses first so the existing course dropdown in the import panel and the metadata drawer offers them first without new controls; Lägg till i mina kurser and the Mina kurser/Alla kurser dropdown groups are built by ST-SKRIPT-40-04

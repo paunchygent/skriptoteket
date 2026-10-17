@@ -21,7 +21,6 @@ import { useToast } from "./composables/useToast";
 import { useAuthStore } from "./stores/auth";
 import { normalizeLogoutFailureMessage } from "./stores/authUserMessages";
 import { useHelp } from "./components/help/useHelp";
-import { CLASSROOM_PLANNER_APP_ID } from "./views/apps/classroomPlannerNavigation";
 
 const auth = useAuthStore();
 const router = useRouter();
@@ -50,20 +49,6 @@ const isPageTransitionEnabled = computed(() => {
   }
   return route.meta.pageTransition !== false && !route.redirectedFrom;
 });
-
-const isEditorRoute = computed(
-  () => route.name === "admin-tool-editor" || route.name === "admin-tool-version-editor",
-);
-
-const isClassroomPlannerRoute = computed(() => {
-  const appId = route.params?.appId;
-  return (
-    (route.name === "app-detail" || route.name === "public-app-detail")
-    && appId === CLASSROOM_PLANNER_APP_ID
-  );
-});
-
-const isExamWorkspaceRoute = computed(() => route.name === "exam-workspace");
 
 onMounted(() => {
   void auth.bootstrap();
@@ -137,13 +122,7 @@ async function onLogout(): Promise<void> {
   <div class="app-layout min-h-screen text-navy">
     <!-- Unauthenticated: Landing layout -->
     <LandingLayout v-if="!isAuthenticated">
-      <div
-        class="route-stage"
-        :class="{
-          'route-stage--editor': isEditorRoute,
-          'route-stage--workspace': isClassroomPlannerRoute || isExamWorkspaceRoute,
-        }"
-      >
+      <div class="route-stage">
         <RouterView v-slot="{ Component, route: viewRoute }">
           <Transition
             name="page"
@@ -173,13 +152,7 @@ async function onLogout(): Promise<void> {
       :logout-in-progress="logoutInProgress"
       @logout="onLogout"
     >
-      <div
-        class="route-stage"
-        :class="{
-          'route-stage--editor': isEditorRoute,
-          'route-stage--workspace': isClassroomPlannerRoute || isExamWorkspaceRoute,
-        }"
-      >
+      <div class="route-stage">
         <RouterView v-slot="{ Component, route: viewRoute }">
           <Transition
             name="page"

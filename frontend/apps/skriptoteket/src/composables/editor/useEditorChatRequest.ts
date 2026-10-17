@@ -121,13 +121,12 @@ export function useEditorChatRequest(
     let sawDelta = false;
 
     try {
-      const csrfToken = await auth.ensureCsrfToken(requestSession);
       auth.requireCurrentSession(requestSession);
       const response = await postChatStream({
         toolId: toolId.value,
         body,
         correlationId,
-        csrfToken: csrfToken ?? undefined,
+        session: requestSession,
         signal: controller.signal,
       });
 

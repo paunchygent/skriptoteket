@@ -106,8 +106,7 @@ The prior findings are resolved:
 
 ## Verification
 
-- Reviewed `AGENTS.md`, `.codex/handoff.md`, `.codex/rules/045-huleedu-design-system.md`,
-  `.codex/rules/096-review-workflow.md`, `docs/index.md`,
+- Reviewed `AGENTS.md`, `.codex/handoff.md`, `docs/index.md`,
   `ruthless-code-review`, `agent-docs-governance`, and the routed
   `integrated-frontend-stack` references for Skriptoteket, layout geometry,
   dense workspaces, and styling/design resources.

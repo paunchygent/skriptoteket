@@ -1,10 +1,10 @@
 /**
  * Authenticated sidebar navigation tests.
  *
- * These tests keep the persistent shell navigation aligned with the current
- * authenticated-home/app-card contract, where the persistent rail stays
- * utility-first, proposals stay available to all signed-in users, and routed
- * app lanes are not duplicated in the sidebar or drawer.
+ * These tests keep the shell navigation in the order of the approved app-shell
+ * prototype (TASK-SKRIPT-40-04-01): utility links first, proposals available
+ * to all signed-in users, admin links under Administration, and routed app
+ * lanes not duplicated in the sidebar, rail or drawer.
  */
 
 import { RouterLinkStub, mount } from "@vue/test-utils";
@@ -23,12 +23,12 @@ type SidebarNavLinkStub = {
   props: (name: string) => unknown;
 };
 
-function mountSidebar(visibility: SidebarRoleVisibility = {}) {
+function mountSidebar(visibility: SidebarRoleVisibility = {}, isOpen = true) {
   return mount(AuthSidebar, {
     props: {
-      isOpen: true,
+      isOpen,
+      isRail: false,
       isFocusMode: false,
-      preferXlDesktopBreakpoint: false,
       user: { email: "teacher@example.com" },
       canSeeContributor: visibility.canSeeContributor ?? false,
       canSeeAdmin: visibility.canSeeAdmin ?? false,
@@ -37,7 +37,6 @@ function mountSidebar(visibility: SidebarRoleVisibility = {}) {
     },
     global: {
       stubs: {
-        BrandLogo: true,
         RouterLink: RouterLinkStub,
       },
     },
@@ -64,16 +63,16 @@ describe("AuthSidebar", () => {
 
     expect(navItemTexts).toEqual([
       "Hem",
+      "Katalog",
       "Mina filer",
       "Föreslå verktyg",
-      "Katalog",
       "Profil",
     ]);
-    expect(linkTargets.slice(0, 5)).toEqual([
+    expect(linkTargets).toEqual([
       "/",
+      "/browse",
       "/vault",
       "/suggestions/new",
-      "/browse",
       "/profile",
     ]);
     expect(navItemTexts).not.toContain("Kodredigerare");
@@ -100,15 +99,59 @@ describe("AuthSidebar", () => {
 
     expect(navItemTexts).toEqual([
       "Hem",
-      "Mina filer",
-      "Föreslå verktyg",
       "Katalog",
-      "Profil",
+      "Mina filer",
       "Mina verktyg",
+      "Föreslå verktyg",
+      "Profil",
     ]);
     expect(linkTargets).toContain("/my-tools");
     expect(navItemTexts).not.toContain("Kodredigerare");
     expect(navItemTexts).not.toContain("Hjälp");
     expect(linkTargets).not.toContain("/editor");
+  });
+
+  it("puts the admin links under Administration and keeps Användare for superusers", () => {
+    const admin = mountSidebar({ canSeeContributor: true, canSeeAdmin: true });
+
+    expect(admin.find(".sidebar-section").text()).toBe("Administration");
+    expect(getNavItemTexts(admin).slice(-2)).toEqual(["Hantera verktyg", "Granska förslag"]);
+    expect(getNavItemTexts(admin)).not.toContain("Användare");
+
+    const superuser = mountSidebar({
+      canSeeContributor: true,
+      canSeeAdmin: true,
+      canSeeSuperuser: true,
+    });
+
+    expect(getNavItemTexts(superuser).slice(-3)).toEqual([
+      "Hantera verktyg",
+      "Granska förslag",
+      "Användare",
+    ]);
+  });
+
+  it("shows no Administration heading to users without admin links", () => {
+    const wrapper = mountSidebar({ canSeeContributor: true });
+
+    expect(wrapper.find(".sidebar-section").exists()).toBe(false);
+  });
+
+  it("dismisses only an open drawer on Escape", async () => {
+    const closed = mountSidebar({}, false);
+    await closed.get("nav").trigger("keydown", { key: "Escape" });
+    expect(closed.emitted("dismiss")).toBeUndefined();
+
+    const open = mountSidebar({}, true);
+    await open.get("nav").trigger("keydown", { key: "Escape" });
+    expect(open.emitted("dismiss")).toHaveLength(1);
+  });
+
+  it("names every rail link through its tooltip so the glyph-only rail stays labelled", () => {
+    const wrapper = mountSidebar({ canSeeContributor: true, canSeeAdmin: true, canSeeSuperuser: true });
+
+    for (const item of wrapper.find(".sidebar-nav").findAll(".sidebar-nav-item")) {
+      expect(item.attributes("title")).toBe(item.text().trim());
+    }
   });
 });

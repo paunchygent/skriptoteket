@@ -7,9 +7,9 @@
  * - keeps planner overflow content local while reading shared keyboard/focus behavior
  */
 
-import { computed, ref, useSlots, type Component } from "vue";
+import { computed, ref, useSlots } from "vue";
 
-import { IconMoreVertical } from "../../../components/icons";
+import { UiGlyph, type UiGlyphMeaning } from "../../../components/ui/shared";
 import {
   DENSE_MENU_PANEL_CLASS,
   UiDenseActionButton,
@@ -20,7 +20,7 @@ import { useDenseMenuSurface } from "../../../components/ui/useDenseMenuSurface"
 type PlannerToolbarMenuItem = {
   id: string;
   label: string;
-  icon?: Component;
+  glyph?: UiGlyphMeaning;
   disabled?: boolean;
   group?: "primary" | "secondary";
   hasPopup?: "dialog" | "menu";
@@ -107,7 +107,11 @@ function handleMenuKeydown(event: KeyboardEvent): void {
       @keydown="onTriggerKeydown"
     >
       <template #leading>
-        <IconMoreVertical :size="16" />
+        <UiGlyph
+          meaning="more-actions"
+          :size="16"
+          :stroke-width="2.5"
+        />
       </template>
     </UiDenseActionButton>
 
@@ -141,10 +145,11 @@ function handleMenuKeydown(event: KeyboardEvent): void {
             :aria-expanded="item.hasPopup ? item.expanded : undefined"
             @click="handleSelect(item)"
           >
-            <component
-              :is="item.icon"
-              v-if="item.icon"
+            <UiGlyph
+              v-if="item.glyph"
+              :meaning="item.glyph"
               :size="16"
+              :stroke-width="2.5"
             />
             <span>{{ item.label }}</span>
           </button>
@@ -173,10 +178,11 @@ function handleMenuKeydown(event: KeyboardEvent): void {
           :aria-expanded="item.hasPopup ? item.expanded : undefined"
           @click="handleSelect(item)"
         >
-          <component
-            :is="item.icon"
-            v-if="item.icon"
+          <UiGlyph
+            v-if="item.glyph"
+            :meaning="item.glyph"
             :size="16"
+            :stroke-width="2.5"
           />
           <span>{{ item.label }}</span>
         </button>

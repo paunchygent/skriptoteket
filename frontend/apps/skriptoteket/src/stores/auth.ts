@@ -7,7 +7,9 @@ import type { components } from "../api/openapi";
 import {
   type AuthProfile,
   type AuthUser,
+  type SharedAuthSnapshot,
   sharedAuthUrl,
+  requestWithCsrfRecovery,
   SHARED_AUTH_LOGOUT_PATH,
 } from "../api/sharedAuth";
 import {
@@ -41,6 +43,7 @@ const ROLE_RANK: Record<ApiRole, number> = {
   superuser: 3,
 };
 type AuthState = {
+  sharedSessionId: string | null;
   user: AuthUser | null;
   profile: AuthProfile | null;
   aiPolicy: ApiAiPolicy | null;
@@ -54,6 +57,7 @@ type AuthState = {
 };
 function anonymousState(): AuthState {
   return {
+    sharedSessionId: null,
     user: null,
     profile: null,
     aiPolicy: null,
@@ -91,6 +95,7 @@ export const useAuthStore = defineStore("auth", () => {
     // admitted response can then populate only the fields it actually owns.
     const next = anonymousState();
     Object.assign(state, {
+      sharedSessionId: next.sharedSessionId,
       profile: next.profile,
       aiPolicy: next.aiPolicy,
       grants: next.grants,
@@ -112,8 +117,8 @@ export const useAuthStore = defineStore("auth", () => {
   function requireCurrentSession(requestSession: AuthSession): void {
     if (!isCurrentSession(requestSession)) throw new SupersededAuthSessionError();
   }
-  /** The only response writer: reject the whole snapshot before changing any field. */
-  function applyResponse(requestSession: AuthSession, patch: Partial<AuthState>): boolean {
+  /** Private writer; only bootstrap may use it to admit a non-null identity. */
+  function applyState(requestSession: AuthSession, patch: Partial<AuthState>): boolean {
     if (!isCurrentSession(requestSession)) return false;
     const clearsAnonymous = patch.user === null && state.user === null;
     // Identity admission retires the former lifetime before applying its new
@@ -125,18 +130,50 @@ export const useAuthStore = defineStore("auth", () => {
     if (clearsAnonymous) session.value = Symbol("auth session");
     return true;
   }
+  /** Ordinary responses can update the admitted identity, never replace it. */
+  function applyResponse(requestSession: AuthSession, patch: Partial<AuthState>): boolean {
+    if (!isCurrentSession(requestSession)) return false;
+    if (patch.user && patch.user.id !== state.user?.id) {
+      clear(requestSession);
+      state.bootstrapped = false;
+      return false;
+    }
+    return applyState(requestSession, patch);
+  }
   function clear(requestSession: AuthSession = captureSession()): void {
-    applyResponse(requestSession, anonymousState());
+    applyState(requestSession, anonymousState());
   }
 
-  async function continueSession(requestSession: AuthSession): Promise<ContinuationOutcome> {
+  /** A read may discover another identity; only authoritative bootstrap admits it. */
+  async function applyReadResponse(
+    requestSession: AuthSession,
+    patch: Partial<AuthState>,
+  ): Promise<AuthSession | null> {
+    if (!isCurrentSession(requestSession)) return null;
+    if (applyResponse(requestSession, patch)) return requestSession;
+    const admittedSession = await bootstrapSession();
+    if (admittedSession === null || !isCurrentSession(admittedSession) ||
+      !state.sharedSessionId || !patch.user || state.user?.id !== patch.user.id) return null;
+    return applyResponse(admittedSession, patch) ? admittedSession : null;
+  }
+
+  async function continueSession(
+    requestSession: AuthSession,
+    admittedSnapshot?: SharedAuthSnapshot,
+  ): Promise<ContinuationOutcome> {
     if (!isCurrentSession(requestSession)) return { status: "superseded", session: null };
     state.aiPolicy = null;
     state.appContinuationError = null;
     try {
       const result = await requestAppContinuation();
       if (result.kind === "ready") {
-        if (!applyResponse(requestSession, {
+        const write = admittedSnapshot ? applyState : applyResponse;
+        if (!write(requestSession, {
+          ...(admittedSnapshot ? {
+            sharedSessionId: admittedSnapshot.sharedSessionId,
+            grants: admittedSnapshot.grants,
+            featureFlags: admittedSnapshot.featureFlags,
+          } : {}),
           user: result.continuation.local_user,
           profile: result.profile,
           aiPolicy: result.continuation.ai_policy,
@@ -175,10 +212,24 @@ export const useAuthStore = defineStore("auth", () => {
   ): Promise<string | null> {
     if (!isCurrentSession(requestSession)) return null;
     if (state.csrfToken) return state.csrfToken;
-    if (!state.user) return null;
+    if (!state.user || !state.sharedSessionId) return null;
+    const sharedSessionId = state.sharedSessionId;
     try {
       const result = await loadSharedCsrfToken();
+      if (!isCurrentSession(requestSession)) return null;
       if (result.kind === "ready") {
+        // Every candidate token belongs to the shared cookie, not necessarily
+        // this tab. Establish continuity before caching it or dispatching work.
+        const current = await loadSharedSessionSnapshot();
+        if (!isCurrentSession(requestSession)) return null;
+        if (current.kind === "error") {
+          applyResponse(requestSession, { error: current.message });
+          return null;
+        }
+        if (current.kind !== "authenticated" || current.snapshot.sharedSessionId !== sharedSessionId) {
+          clear(requestSession);
+          return null;
+        }
         return applyResponse(requestSession, { csrfToken: result.token }) ? result.token : null;
       }
       if (result.kind === "anonymous") {
@@ -192,6 +243,22 @@ export const useAuthStore = defineStore("auth", () => {
       });
     }
     return null;
+  }
+
+  function requestWithCsrf(
+    requestSession: AuthSession,
+    send: (token: string | null) => Promise<Response>,
+  ): Promise<Response> {
+    return requestWithCsrfRecovery({
+      requireCurrent: () => requireCurrentSession(requestSession),
+      ensureToken: () => ensureCsrfToken(requestSession),
+      recoverToken: () => ensureCsrfToken(requestSession),
+      invalidateToken: (rejectedToken) => {
+        requireCurrentSession(requestSession);
+        if (state.csrfToken === rejectedToken) state.csrfToken = null;
+      },
+      send,
+    });
   }
 
   async function bootstrapSession(): Promise<AuthSession | null> {
@@ -208,14 +275,10 @@ export const useAuthStore = defineStore("auth", () => {
           const { snapshot } = sharedSession;
           if (!applyResponse(requestSession, { bootstrapped: true })) return null;
           if (snapshot.user) {
-            const continuation = await continueSession(requestSession);
+            const continuation = await continueSession(requestSession, snapshot);
             const admittedSession = continuation.session;
             if (admittedSession === null || !isCurrentSession(admittedSession)) return null;
             if (continuation.status === "ready") {
-              if (!applyResponse(admittedSession, {
-                grants: snapshot.grants,
-                featureFlags: snapshot.featureFlags,
-              })) return null;
               await ensureCsrfToken(admittedSession);
             }
             return isCurrentSession(admittedSession) ? admittedSession : null;
@@ -272,25 +335,11 @@ export const useAuthStore = defineStore("auth", () => {
         }
         throw new Error(state.error ?? "Det gick inte att hämta CSRF-token.");
       }
-      const response = await postSharedLogout(csrfToken);
+      const response = await requestWithCsrf(requestSession, (token) => postSharedLogout(token ?? ""));
       if (!isCurrentSession(requestSession)) return;
       if (isSharedLogoutComplete(response)) {
         applyResponse(requestSession, anonymousState());
         return;
-      }
-      if (response.status === 403 && state.user) {
-        applyResponse(requestSession, { csrfToken: null });
-        const refreshedToken = await ensureCsrfToken(requestSession);
-        if (!isCurrentSession(requestSession)) return;
-        if (refreshedToken) {
-          const retry = await postSharedLogout(refreshedToken);
-          if (!isCurrentSession(requestSession)) return;
-          if (isSharedLogoutComplete(retry)) {
-            applyResponse(requestSession, anonymousState());
-            return;
-          }
-          throw new Error(await readErrorMessage(retry));
-        }
       }
       throw new Error(await readErrorMessage(response));
     } catch (error: unknown) {
@@ -320,10 +369,12 @@ export const useAuthStore = defineStore("auth", () => {
     isCurrentSession,
     requireCurrentSession,
     applyResponse,
+    applyReadResponse,
     clear,
     bootstrap,
     loadAppContinuation,
     ensureCsrfToken,
+    requestWithCsrf,
     logout,
   };
 });

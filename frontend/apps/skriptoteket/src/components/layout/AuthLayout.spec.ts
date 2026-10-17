@@ -1,9 +1,9 @@
 /**
  * Authenticated layout tests.
  *
- * These tests verify that immersive game routes can suppress the generic
- * authenticated sidebar shell while preserving the shared top bar and body
- * mode hooks needed by the bespoke game experience.
+ * These tests verify that immersive game routes suppress the sidebar while
+ * keeping the top bar and the body mode hook the bespoke game needs, and that
+ * the per-user shell modes follow the signed-in user.
  */
 
 import { mount } from "@vue/test-utils";
@@ -30,16 +30,16 @@ vi.mock("vue-router", () => ({
 
 vi.mock("./AuthSidebar.vue", () => ({
   default: {
-    props: ["preferXlDesktopBreakpoint"],
-    template: "<aside data-test='auth-sidebar-stub' :data-prefer-xl='preferXlDesktopBreakpoint'>Sidebar</aside>",
+    props: ["isRail"],
+    template: "<aside data-test='auth-sidebar-stub' :data-rail='isRail'>Sidebar</aside>",
   },
 }));
 
 vi.mock("./AuthTopBar.vue", () => ({
   default: {
-    props: ["isImmersiveRoute", "preferXlDesktopBreakpoint"],
+    props: ["isImmersiveRoute", "isFocusMode", "isSidebarCollapsed"],
     template:
-      "<header data-test='auth-topbar-stub' :data-immersive='isImmersiveRoute' :data-prefer-xl='preferXlDesktopBreakpoint'>TopBar</header>",
+      "<header data-test='auth-topbar-stub' :data-immersive='isImmersiveRoute' :data-focus='isFocusMode' :data-rail='isSidebarCollapsed'>TopBar</header>",
   },
 }));
 
@@ -47,6 +47,7 @@ describe("AuthLayout", () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     document.body.classList.remove("app-shell-game-mode");
+    localStorage.clear();
     routeMocks.route.name = "app-detail";
     routeMocks.route.params.appId = "games.flunk_out_frenzy";
   });
@@ -71,7 +72,7 @@ describe("AuthLayout", () => {
 
     expect(wrapper.find("[data-test='auth-sidebar-stub']").exists()).toBe(false);
     expect(wrapper.find("[data-test='auth-topbar-stub']").attributes("data-immersive")).toBe("true");
-    expect(wrapper.find(".auth-main-wrapper").classes()).toContain("is-immersive-route");
+    expect(wrapper.find(".auth-shell").classes()).toContain("is-immersive-route");
     expect(document.body.classList.contains("app-shell-game-mode")).toBe(true);
   });
 
@@ -100,8 +101,10 @@ describe("AuthLayout", () => {
     expect(document.body.classList.contains("app-shell-game-mode")).toBe(false);
   });
 
-  it("keeps the planner route on the wider sidebar breakpoint contract", async () => {
-    routeMocks.route.params.appId = "classroom.group-seating-studio";
+  it("rehydrates focus mode and the rail when the signed-in user changes", async () => {
+    routeMocks.route.params.appId = "chemistry.reagent_prep_chef";
+    localStorage.setItem("skriptoteket:layout:focus_mode:user-1", "1");
+    localStorage.setItem("skriptoteket:layout:sidebar_collapsed:user-2", "1");
 
     const wrapper = mount(AuthLayout, {
       props: {
@@ -117,16 +120,21 @@ describe("AuthLayout", () => {
         default: "<div>Route content</div>",
       },
     });
+    const topBar = () => wrapper.get("[data-test='auth-topbar-stub']");
+    const sidebar = () => wrapper.get("[data-test='auth-sidebar-stub']");
 
-    await wrapper.vm.$nextTick();
+    expect(topBar().attributes("data-focus")).toBe("true");
+    expect(sidebar().attributes("data-rail")).toBe("false");
 
-    expect(wrapper.find(".auth-mobile-header").classes()).toContain(
-      "auth-mobile-header--xl-sidebar-breakpoint",
-    );
-    expect(wrapper.find(".auth-main-wrapper").classes()).toContain(
-      "auth-main-wrapper--xl-sidebar-breakpoint",
-    );
-    expect(wrapper.find("[data-test='auth-sidebar-stub']").attributes("data-prefer-xl")).toBe("true");
-    expect(wrapper.find("[data-test='auth-topbar-stub']").attributes("data-prefer-xl")).toBe("true");
+    await wrapper.setProps({ user: { id: "user-2", email: "other@example.com", role: "user" } });
+
+    expect(topBar().attributes("data-focus")).toBe("false");
+    expect(topBar().attributes("data-rail")).toBe("true");
+    expect(sidebar().attributes("data-rail")).toBe("true");
+
+    await wrapper.setProps({ user: null });
+
+    expect(topBar().attributes("data-focus")).toBe("false");
+    expect(sidebar().attributes("data-rail")).toBe("false");
   });
 });

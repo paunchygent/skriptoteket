@@ -9,8 +9,8 @@
 
 import { computed } from "vue";
 
-import { IconDownload, IconFileSpreadsheet, IconFileText } from "../../../components/icons";
 import { UiDenseSpinner } from "../../../components/ui";
+import { UiGlyph } from "../../../components/ui/shared";
 import type {
   PlannerExportFileOption,
   PlannerExportOptionValue,
@@ -93,17 +93,23 @@ function fileTypeLabel(option: PlannerExportFileOption): string {
         @click="selectFileOption(option)"
       >
         <template v-if="visualVariant === 'desktop-overview'">
-          <IconFileSpreadsheet
+          <UiGlyph
             v-if="option.option === 'xlsx'"
+            meaning="spreadsheet-file"
             :size="14"
+            :stroke-width="2.25"
           />
-          <IconFileText
+          <UiGlyph
             v-else-if="option.option === 'a3_landscape' || option.option === 'a4_landscape'"
+            meaning="document"
             :size="14"
+            :stroke-width="2.25"
           />
-          <IconFileText
+          <UiGlyph
             v-else
+            meaning="document"
             :size="14"
+            :stroke-width="2.25"
           />
         </template>
         <template v-else>
@@ -111,9 +117,11 @@ function fileTypeLabel(option: PlannerExportFileOption): string {
             v-if="exportBusy && option.id === defaultFileOption?.id"
             :size="12"
           />
-          <IconDownload
+          <UiGlyph
             v-else
+            meaning="download"
             :size="13"
+            :stroke-width="2.5"
           />
         </template>
         <span class="truncate text-[11px] font-semibold leading-none">
@@ -124,9 +132,11 @@ function fileTypeLabel(option: PlannerExportFileOption): string {
             v-if="exportBusy && option.id === defaultFileOption?.id"
             :size="12"
           />
-          <IconDownload
+          <UiGlyph
             v-else
+            meaning="download"
             :size="13"
+            :stroke-width="2.5"
           />
         </template>
         <span

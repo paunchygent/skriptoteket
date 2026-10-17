@@ -42,7 +42,7 @@ mockup, which weakens the token-driven handoff contract for `PR-0384`.
   apps are instruments; mobile is a reduced port, not the source layout.
 - `integrated-frontend-stack/references/layout-geometry.md`: CSS owns
   breakpoint geometry, scroll ownership, containment, and panel/drawer layout.
-- `.codex/rules/045-huleedu-design-system.md`: operational density,
+- `huleedu-ui-design`: operational density,
   desktop-first curated-app composition, token-first styling, and reduced
   mobile ports are governed design-system behavior.
 - `docs/mockups/st-29-small-screen-workspace-redesign/README.md`: approved
@@ -162,7 +162,7 @@ repair pass, then approved the retained review after the repair.
 - Stop if the small-screen solution needs final Swedish copy approval.
 - Stop if the phone view introduces application-logic settings as user-facing
   controls.
-- Stop if token fidelity conflicts with `.codex/rules/045-huleedu-design-system.md`.
+- Stop if token fidelity conflicts with `huleedu-ui-design`.
 - Stop if the implementation would modify backend/API contracts or generated
   frontend types.
 

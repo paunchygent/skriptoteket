@@ -46,11 +46,9 @@ The scope of this session is: **HTMX UX enhancement across all web templates** -
 
 From repo root, read:
 
-1. **AGENTS.md** - Monorepo conventions, DI patterns, test structure
-2. **.codex/rules/000-rule-index.md** - Index of all rules
-3. **.codex/rules/040-fastapi-blueprint.md** - Web layer patterns, HTMX endpoint patterns
-4. **.codex/rules/050-python-standards.md** - Code style requirements
-5. **.codex/rules/070-testing-standards.md** - Testing approach
+1. **AGENTS.md** - Current project entrypoint and skill routing
+2. **`skriptoteket-backend-dev`** - Current backend contracts in `.codex/skills/skriptoteket-backend-dev/references/backend-contracts.md`; this does not restore the historical HTMX architecture
+3. **`skriptoteket-testing`** - Current testing approach in `.codex/skills/skriptoteket-testing/SKILL.md`
 
 ### Critical Files to Understand
 
@@ -438,7 +436,8 @@ When done, you MUST:
 
 1. **Update documentation**:
    - Update `ref-vue-spa-migration-assessment.md` to note HTMX implementation status
-   - Add new patterns to `.codex/rules/040-fastapi-blueprint.md` if significant
+   - Historical rule-authoring step retired; current backend guidance belongs to
+     the repo-local `skriptoteket-backend-dev` skill
 
 2. **Update handoff**:
    - Update `.codex/handoff.md` with what was implemented, decisions made, remaining work

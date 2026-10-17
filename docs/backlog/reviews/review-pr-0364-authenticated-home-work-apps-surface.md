@@ -107,8 +107,9 @@ Decision: `approved`.
 
 #### Scope Reviewed
 
-- Governing docs: `AGENTS.md`, `.codex/rules/045-huleedu-design-system.md`,
-  `PR-0364`, `REV-PR-0364`, the required design-skill references, and the
+- Governing docs: `AGENTS.md`, retired design-system rule 045
+  (current presentation route: `huleedu-ui-design`), `PR-0364`, `REV-PR-0364`,
+  the required design-skill references, and the
   scoped mockup README/HTML.
 - Scoped worker patch only:
   `docs/mockups/pr-0364-authenticated-home-work-apps-surface/README.md` and

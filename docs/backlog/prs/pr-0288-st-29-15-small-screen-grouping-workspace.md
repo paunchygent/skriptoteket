@@ -87,9 +87,8 @@ grouping surface wins; secondary student/group context remains reachable.
   this governed PR slice.
 - `integrated-frontend-stack`: Vue 3/Vite/TypeScript stack, token-driven
   styling, CSS-owned layout geometry, dense workspace verification.
-- `brutalist-academic-ui`: brutalist academic doctrine; dense workspaces are
-  instruments, not stacked card pages.
-- `.codex/rules/045-huleedu-design-system.md`: token-first styling, no Tailwind
+- `huleedu-ui-design`: dense workspaces are instruments, not stacked card pages;
+  token-first styling, no Tailwind
   default palette leakage, icon-supported dense controls, and dense-action
   primitive ownership.
 - `docs/reference/ref-klassrumskartan-workspace-ui-doctrine-2026-03-28.md`:

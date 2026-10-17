@@ -9,6 +9,7 @@
 import { nextTick, onMounted, onUnmounted, ref } from "vue";
 
 import { IconHelp, IconX } from "../icons";
+import UiDenseIconButton from "../ui/shared/components/UiDenseIconButton.vue";
 
 const props = withDefaults(
   defineProps<{
@@ -102,14 +103,13 @@ onUnmounted(() => {
         aria-modal="false"
         :aria-labelledby="props.title ? titleId : undefined"
       >
-        <button
-          type="button"
+        <UiDenseIconButton
           class="micro-help-close"
-          aria-label="Stäng hjälp"
+          label="Stäng hjälp"
           @click="close()"
         >
           <IconX :size="14" />
-        </button>
+        </UiDenseIconButton>
 
         <span
           v-if="props.title"
@@ -145,13 +145,14 @@ onUnmounted(() => {
     background-color var(--huleedu-duration-default) var(--huleedu-ease-default);
 }
 
-.micro-help-trigger:hover {
-  color: var(--huleedu-action);
-  background-color: var(--huleedu-action-10);
+@media (hover: hover) and (pointer: fine) {
+  .micro-help-trigger:hover {
+    color: var(--huleedu-action);
+    background-color: var(--huleedu-action-10);
+  }
 }
 
-.micro-help-trigger:focus-visible,
-.micro-help-close:focus-visible {
+.micro-help-trigger:focus-visible {
   outline: 2px solid var(--huleedu-action-40);
   outline-offset: 2px;
 }
@@ -165,12 +166,12 @@ onUnmounted(() => {
   width: max-content;
   max-width: min(20rem, calc(100vw - var(--huleedu-space-8)));
   padding: var(--huleedu-space-4);
-  padding-right: var(--huleedu-space-10);
+  padding-right: var(--huleedu-space-12);
   background-color: var(--surface-modal);
-  border: var(--huleedu-border-width) solid var(--huleedu-navy);
+  border: var(--huleedu-border-width) solid var(--huleedu-panel-border);
   box-shadow: var(--huleedu-shadow-md);
-  font-size: 0.875rem;
-  line-height: 1.5;
+  font-size: var(--huleedu-text-sm);
+  line-height: var(--huleedu-leading-normal);
   color: var(--huleedu-navy-80);
 }
 
@@ -178,30 +179,12 @@ onUnmounted(() => {
   position: absolute;
   top: var(--huleedu-space-2);
   right: var(--huleedu-space-2);
-  display: grid;
-  place-items: center;
-  width: var(--huleedu-space-6);
-  height: var(--huleedu-space-6);
-  padding: 0;
-  border: var(--huleedu-border-width) solid transparent;
-  border-radius: var(--huleedu-radius-sm);
-  background: transparent;
-  color: var(--huleedu-navy-60);
-  cursor: pointer;
-  transition:
-    color var(--huleedu-duration-default) var(--huleedu-ease-default),
-    border-color var(--huleedu-duration-default) var(--huleedu-ease-default);
-}
-
-.micro-help-close:hover {
-  color: var(--huleedu-action);
-  border-color: var(--huleedu-navy);
 }
 
 .micro-help-title {
   display: block;
   margin-bottom: var(--huleedu-space-2);
-  font-weight: 600;
+  font-weight: var(--huleedu-font-semibold);
   color: var(--huleedu-navy);
 }
 
@@ -212,13 +195,11 @@ onUnmounted(() => {
 .micro-help-popover-enter-active,
 .micro-help-popover-leave-active {
   transition:
-    opacity 150ms var(--huleedu-ease-default),
-    transform 150ms var(--huleedu-ease-default);
+    opacity var(--huleedu-duration-fast) var(--huleedu-ease-default);
 }
 
 .micro-help-popover-enter-from,
 .micro-help-popover-leave-to {
   opacity: 0;
-  transform: translateY(calc(-1 * var(--huleedu-space-1)));
 }
 </style>

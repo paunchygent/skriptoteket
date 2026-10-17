@@ -11,8 +11,8 @@
 
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 
-import { IconCopy, IconLink2, IconTrash, IconX } from "../../../components/icons";
 import { UiDenseActionButton, UiDenseIconButton, UiDenseSpinner } from "../../../components/ui";
+import { UiGlyph } from "../../../components/ui/shared";
 import type { ClassroomPlannerShareArtifact } from "../classroomPlannerShareApi";
 
 const props = withDefaults(
@@ -144,7 +144,11 @@ onUnmounted(() => {
       @click="togglePanel"
     >
       <template #leading>
-        <IconLink2 :size="14" />
+        <UiGlyph
+          meaning="share-link"
+          :size="14"
+          :stroke-width="2.25"
+        />
       </template>
     </UiDenseActionButton>
 
@@ -197,7 +201,11 @@ onUnmounted(() => {
             @click="createShare"
           >
             <template #leading>
-              <IconLink2 :size="10" />
+              <UiGlyph
+                meaning="share-link"
+                :size="10"
+                :stroke-width="2.25"
+              />
             </template>
           </UiDenseActionButton>
         </div>
@@ -207,7 +215,11 @@ onUnmounted(() => {
           data-test="planner-share-close"
           @click="closePanel"
         >
-          <IconX :size="14" />
+          <UiGlyph
+            meaning="close"
+            :size="14"
+            :stroke-width="2.5"
+          />
         </UiDenseIconButton>
       </header>
 
@@ -225,9 +237,11 @@ onUnmounted(() => {
             v-if="busy"
             :size="12"
           />
-          <IconLink2
+          <UiGlyph
             v-else
+            meaning="share-link"
             :size="12"
+            :stroke-width="2.25"
           />
           Skapa länk
         </button>
@@ -293,8 +307,10 @@ onUnmounted(() => {
                 title="Kopiera länk till urklipp"
                 @click="emit('copy-share', share)"
               >
-                <IconCopy
+                <UiGlyph
+                  meaning="copy"
                   :size="12"
+                  :stroke-width="2.25"
                 />
                 <span class="sr-only md:not-sr-only">Kopiera</span>
               </button>
@@ -313,9 +329,11 @@ onUnmounted(() => {
                   v-if="revokingShareId === share.id"
                   :size="12"
                 />
-                <IconTrash
+                <UiGlyph
                   v-else
+                  meaning="delete"
                   :size="12"
+                  :stroke-width="2.5"
                 />
                 <span class="sr-only md:not-sr-only">
                   Återkalla

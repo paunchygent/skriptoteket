@@ -9,7 +9,7 @@
 
 import { computed, ref } from "vue";
 
-import { IconArrow } from "../icons";
+import { UiGlyph } from "./shared";
 import { DENSE_MENU_PANEL_CLASS, denseMenuItemClass } from "./shared/denseToolPrimitives";
 import UiDenseActionButton from "./shared/components/UiDenseActionButton.vue";
 import { useDenseMenuSurface } from "./useDenseMenuSurface";
@@ -126,9 +126,10 @@ function selectItem(id: string, disabled?: boolean): void {
       @keydown="onTriggerKeydown"
     >
       <template #leading>
-        <IconArrow
+        <UiGlyph
+          meaning="open-list"
           :size="12"
-          direction="down"
+          :stroke-width="2.5"
         />
       </template>
     </UiDenseActionButton>

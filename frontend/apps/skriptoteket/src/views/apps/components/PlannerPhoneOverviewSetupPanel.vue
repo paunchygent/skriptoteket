@@ -12,8 +12,8 @@
 
 import { computed } from "vue";
 
-import { IconEdit, IconPlus, IconTrash } from "../../../components/icons";
 import { UiDenseActionButton } from "../../../components/ui";
+import { UiGlyph } from "../../../components/ui/shared";
 import type { RoomTemplate, Roster } from "../classroomPlannerTypes";
 
 const props = withDefaults(
@@ -169,7 +169,11 @@ function selectTemplate(event: Event): void {
           @click="emit('edit-roster')"
         >
           <template #leading>
-            <IconEdit :size="14" />
+            <UiGlyph
+              meaning="edit"
+              :size="14"
+              :stroke-width="2.5"
+            />
           </template>
         </UiDenseActionButton>
         <UiDenseActionButton
@@ -181,7 +185,11 @@ function selectTemplate(event: Event): void {
           @click="emit('create-roster')"
         >
           <template #leading>
-            <IconPlus :size="14" />
+            <UiGlyph
+              meaning="add"
+              :size="14"
+              :stroke-width="2.5"
+            />
           </template>
         </UiDenseActionButton>
         <UiDenseActionButton
@@ -194,7 +202,11 @@ function selectTemplate(event: Event): void {
           @click="emit('delete-current-roster')"
         >
           <template #leading>
-            <IconTrash :size="14" />
+            <UiGlyph
+              meaning="delete"
+              :size="14"
+              :stroke-width="2.5"
+            />
           </template>
         </UiDenseActionButton>
       </div>
@@ -246,7 +258,11 @@ function selectTemplate(event: Event): void {
           @click="emit('edit-current-template', selectedTemplate ?? undefined)"
         >
           <template #leading>
-            <IconEdit :size="14" />
+            <UiGlyph
+              meaning="edit"
+              :size="14"
+              :stroke-width="2.5"
+            />
           </template>
         </UiDenseActionButton>
         <UiDenseActionButton
@@ -258,7 +274,11 @@ function selectTemplate(event: Event): void {
           @click="emit('create-template')"
         >
           <template #leading>
-            <IconPlus :size="14" />
+            <UiGlyph
+              meaning="add"
+              :size="14"
+              :stroke-width="2.5"
+            />
           </template>
         </UiDenseActionButton>
         <UiDenseActionButton
@@ -271,7 +291,11 @@ function selectTemplate(event: Event): void {
           @click="emit('delete-current-template')"
         >
           <template #leading>
-            <IconTrash :size="14" />
+            <UiGlyph
+              meaning="delete"
+              :size="14"
+              :stroke-width="2.5"
+            />
           </template>
         </UiDenseActionButton>
       </div>

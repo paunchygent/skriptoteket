@@ -50,7 +50,10 @@ const authenticatedIndexSections = computed(() =>
 </script>
 
 <template>
-  <div class="space-y-6">
+  <div
+    id="help-index"
+    class="space-y-6"
+  >
     <div class="space-y-3">
       <h3 class="text-lg font-semibold text-navy">Hjälpindex</h3>
       <p

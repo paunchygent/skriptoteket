@@ -6,8 +6,9 @@
  * exposing the classic eye toggle requested for registration flows.
  */
 
-import { Eye, EyeOff } from "lucide-vue-next";
 import { computed, ref } from "vue";
+
+import { UiDenseIconButton, UiGlyph } from "../ui/shared";
 
 const props = withDefaults(
   defineProps<{
@@ -50,7 +51,7 @@ function onInput(event: Event): void {
   <div class="space-y-2">
     <label
       :for="id"
-      class="text-sm font-semibold text-navy"
+      class="text-[length:var(--huleedu-type-field-label-size)] font-[var(--huleedu-type-field-label-weight)] text-navy"
     >{{ label }}</label>
 
     <div class="relative">
@@ -63,24 +64,23 @@ function onInput(event: Event): void {
         :disabled="disabled"
         :aria-invalid="error ? 'true' : 'false'"
         :aria-describedby="hint || error ? descriptionId : undefined"
-        class="w-full border bg-white px-3 py-2 pr-11 text-navy"
-        :class="error ? 'border-critical' : 'border-navy'"
+        class="w-full rounded-[var(--huleedu-panel-radius)] border bg-panel px-3 py-2 pr-11 text-navy"
+        :class="error ? 'border-critical' : 'border-[var(--huleedu-panel-border)]'"
         @input="onInput"
       >
 
-      <button
-        type="button"
-        class="absolute inset-y-0 right-0 flex items-center justify-center px-3 text-navy/60 hover:text-navy"
-        :aria-label="visibilityLabel"
-        :disabled="disabled"
-        @click="isVisible = !isVisible"
-      >
-        <component
-          :is="isVisible ? EyeOff : Eye"
-          :size="16"
-          aria-hidden="true"
-        />
-      </button>
+      <div class="absolute inset-y-0 right-0 flex w-11 items-center justify-center">
+        <UiDenseIconButton
+          :label="visibilityLabel"
+          :disabled="disabled"
+          @click="isVisible = !isVisible"
+        >
+          <UiGlyph
+            :meaning="isVisible ? 'hide-password' : 'show-password'"
+            :size="16"
+          />
+        </UiDenseIconButton>
+      </div>
     </div>
 
     <p

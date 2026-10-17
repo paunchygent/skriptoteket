@@ -27,7 +27,7 @@
         Kontakta administratören för Skriptoteket så hjälper vi dig vidare.
       </p>
       <RouterLink
-        class="btn-primary inline-block"
+        class="btn-primary"
         :to="{ name: 'auth-login' }"
       >
         Till inloggningen

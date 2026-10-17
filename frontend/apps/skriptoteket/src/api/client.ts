@@ -72,6 +72,9 @@ function buildApiRequestBody(body: unknown, headers: Headers): BodyInit | undefi
   if (body === undefined) {
     return undefined;
   }
+  if (body instanceof ReadableStream) {
+    throw new TypeError("Stream request bodies are not replayable. Supply a Blob or FormData instead.");
+  }
   if (
     body instanceof FormData ||
     typeof body === "string" ||
@@ -146,6 +149,8 @@ export function bindProtectedSession(requestSession?: AuthSession) {
     requireCurrent,
     run,
     ensureCsrfToken: () => run(() => auth.ensureCsrfToken(session)),
+    requestWithCsrf: (send: (token: string | null) => Promise<Response>) =>
+      run(() => auth.requestWithCsrf(session, send)),
   };
 }
 
@@ -166,19 +171,17 @@ async function protectedRequest<T>(
   }
   const body = buildApiRequestBody(requestOptions.body, headers);
 
-  if (method !== "GET" && method !== "HEAD") {
-    const csrfToken = await binding.ensureCsrfToken();
-    if (csrfToken) headers.set("X-CSRF-Token", csrfToken);
-  }
-  // Never resume an old operation using the replacement session's cookies.
-  binding.requireCurrent();
-  const response = await binding.run(() => fetch(resolveProtectedApiUrl(path), {
-    ...requestOptions,
-    method,
-    headers,
-    body,
-    credentials: "include",
-  }));
+  const send = (csrfToken: string | null) => {
+    const attemptHeaders = new Headers(headers);
+    if (csrfToken) attemptHeaders.set("X-CSRF-Token", csrfToken);
+    return fetch(resolveProtectedApiUrl(path), {
+      ...requestOptions, method, headers: attemptHeaders, body, credentials: "include",
+    });
+  };
+  // JSON strings, FormData, Blob and ArrayBuffer bodies are reusable, not consumed streams.
+  const response = method !== "GET" && method !== "HEAD"
+    ? await binding.requestWithCsrf(send)
+    : await binding.run(() => send(null));
 
   if (!response.ok) {
     const error = await binding.run(() => toApiError(response));

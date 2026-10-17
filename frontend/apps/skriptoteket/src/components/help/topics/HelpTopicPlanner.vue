@@ -35,14 +35,14 @@ const html = computed(() => plannerHelpSections[props.section] ?? "");
 
 <style scoped>
 .help-planner-content :deep(h3) {
-  font-size: 0.9375rem;
-  font-weight: 600;
+  font-size: var(--huleedu-type-nested-title-size);
+  font-weight: var(--huleedu-font-semibold);
   margin-top: 1rem;
 }
 
 .help-planner-content :deep(h4) {
-  font-size: 0.8125rem;
-  font-weight: 600;
+  font-size: var(--huleedu-type-control-value-size);
+  font-weight: var(--huleedu-font-semibold);
   margin-top: 0.75rem;
 }
 
@@ -65,22 +65,22 @@ const html = computed(() => plannerHelpSections[props.section] ?? "");
 .help-planner-content :deep(table) {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.8125rem;
+  font-size: var(--huleedu-type-control-value-size);
 }
 
 .help-planner-content :deep(th),
 .help-planner-content :deep(td) {
-  border: 1px solid var(--huleedu-color-navy-20, rgba(26, 26, 64, 0.2));
+  border: 1px solid var(--huleedu-surface-divider);
   padding: 0.375rem 0.5rem;
   text-align: left;
 }
 
 .help-planner-content :deep(th) {
-  font-weight: 600;
-  background: var(--huleedu-color-canvas, #f5f5f0);
+  font-weight: var(--huleedu-font-semibold);
+  background: var(--huleedu-canvas);
 }
 
 .help-planner-content :deep(p) {
-  line-height: 1.5;
+  line-height: var(--huleedu-leading-normal);
 }
 </style>

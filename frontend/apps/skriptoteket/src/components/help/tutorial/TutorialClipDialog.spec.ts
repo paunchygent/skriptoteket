@@ -100,9 +100,9 @@ describe("TutorialClipDialog", () => {
     video?.dispatchEvent(new Event("error"));
     await nextTick();
 
-    expect(query("[data-test='tutorial-clip-error']")?.textContent?.trim()).toBe(
-      "Klippet kunde inte laddas just nu.",
-    );
+    const error = query("[data-test='tutorial-clip-error']");
+    expect(error?.getAttribute("role")).toBe("alert");
+    expect(error?.textContent?.trim()).toBe("Klippet kunde inte laddas just nu.");
     expect(video?.getAttribute("poster")).toBe("/static/media/klassrumskartan/klass.jpg");
   });
 
@@ -150,6 +150,53 @@ describe("TutorialClipDialog", () => {
       query<HTMLVideoElement>("[data-test='tutorial-clip-video']")?.getAttribute("src"),
     ).toBe("/static/media/klassrumskartan/klass.mp4");
     expect(query("[data-test='tutorial-clip-dialog-title']")?.textContent?.trim()).toBe("Klass");
+  });
+
+  it("wraps Tab at both ends of the modal without focusing the backdrop", async () => {
+    const { opener } = await mountDialog();
+    const close = query<HTMLButtonElement>('[data-test="tutorial-clip-dialog-close"]');
+    const items = document.body.querySelectorAll<HTMLButtonElement>(
+      '[data-test="tutorial-clip-list-item"]',
+    );
+    const last = items[items.length - 1];
+    expect(close).not.toBeNull();
+    expect(last).toBeDefined();
+
+    last?.focus();
+    document.body.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab", bubbles: true }));
+    expect(document.activeElement).toBe(close);
+    close?.focus();
+    document.body.dispatchEvent(new KeyboardEvent("keydown", {
+      key: "Tab", shiftKey: true, bubbles: true,
+    }));
+    expect(document.activeElement).toBe(last);
+
+    opener.focus();
+    document.body.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab", bubbles: true }));
+    expect(document.activeElement).toBe(close);
+  });
+
+  it("clears a failed clip when another clip is selected without starting playback", async () => {
+    const play = vi.spyOn(HTMLMediaElement.prototype, "play").mockResolvedValue(undefined);
+    try {
+      await mountDialog();
+      query<HTMLVideoElement>('[data-test="tutorial-clip-video"]')?.dispatchEvent(new Event("error"));
+      await nextTick();
+      expect(query('[data-test="tutorial-clip-error"]')).not.toBeNull();
+      expect(query('[data-test="tutorial-clip-play"]')).toBeNull();
+
+      document.body.querySelectorAll<HTMLButtonElement>(
+        '[data-test="tutorial-clip-list-item"]',
+      )[1]?.click();
+      await nextTick();
+
+      expect(query('[data-test="tutorial-clip-error"]')).toBeNull();
+      expect(query('[data-test="tutorial-clip-play"]')?.getAttribute("aria-label")).toContain("Klassrum");
+      expect(query('[data-test="tutorial-clip-video"]')?.getAttribute("src")).toContain("klassrum.mp4");
+      expect(play).not.toHaveBeenCalled();
+    } finally {
+      play.mockRestore();
+    }
   });
 
   it("renders nothing and ignores Escape while closed", async () => {

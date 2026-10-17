@@ -12,13 +12,7 @@
  *   - Emits source selection and ordering events back to the route host.
  */
 
-import {
-  IconArrow,
-  IconCode,
-  IconFileText,
-  IconImageAsset,
-  IconTrash,
-} from "../../../components/icons";
+import { UiGlyph } from "../../../components/ui/shared";
 
 import { UiDenseActionButton } from "../../../components/ui";
 
@@ -66,7 +60,11 @@ const emit = defineEmits<{
         type="button"
         @click="emit('selectProjectHtml', file.name)"
       >
-        <IconFileText :size="16" />
+        <UiGlyph
+          meaning="document"
+          :size="16"
+          :stroke-width="2.25"
+        />
         {{ file.name }}
       </button>
 
@@ -78,7 +76,11 @@ const emit = defineEmits<{
         :key="file.name"
         class="dc-asset-row dc-asset-row--static"
       >
-        <IconCode :size="16" />
+        <UiGlyph
+          meaning="code-file"
+          :size="16"
+          :stroke-width="2.25"
+        />
         {{ file.name }}
       </div>
 
@@ -90,7 +92,11 @@ const emit = defineEmits<{
         :key="file.name"
         class="dc-asset-row dc-asset-row--static"
       >
-        <IconImageAsset :size="16" />
+        <UiGlyph
+          meaning="image-file"
+          :size="16"
+          :stroke-width="2.25"
+        />
         {{ file.name }}
       </div>
     </section>
@@ -112,7 +118,11 @@ const emit = defineEmits<{
           :key="file.name"
           class="dc-source-row"
         >
-          <IconFileText :size="16" />
+          <UiGlyph
+            meaning="document"
+            :size="16"
+            :stroke-width="2.25"
+          />
           <strong>{{ index + 1 }}. {{ file.name }}</strong>
           <div class="dc-source-row__actions">
             <UiDenseActionButton
@@ -123,8 +133,9 @@ const emit = defineEmits<{
               @click="emit('moveSingleFileUpload', index, index - 1)"
             >
               <template #leading>
-                <IconArrow
-                  direction="up"
+                <UiGlyph
+                  meaning="move-up"
+                  :stroke-width="2.5"
                   :size="14"
                 />
               </template>
@@ -137,8 +148,9 @@ const emit = defineEmits<{
               @click="emit('moveSingleFileUpload', index, index + 1)"
             >
               <template #leading>
-                <IconArrow
-                  direction="down"
+                <UiGlyph
+                  meaning="move-down"
+                  :stroke-width="2.5"
                   :size="14"
                 />
               </template>
@@ -150,7 +162,11 @@ const emit = defineEmits<{
               @click="emit('removeSingleFileUpload', index)"
             >
               <template #leading>
-                <IconTrash :size="14" />
+                <UiGlyph
+                  meaning="delete"
+                  :size="14"
+                  :stroke-width="2.5"
+                />
               </template>
             </UiDenseActionButton>
           </div>
@@ -163,7 +179,11 @@ const emit = defineEmits<{
           :key="file.name"
           class="dc-source-row"
         >
-          <IconFileText :size="16" />
+          <UiGlyph
+            meaning="document"
+            :size="16"
+            :stroke-width="2.25"
+          />
           <strong>{{ index + 1 }}. {{ file.name }}</strong>
           <div class="dc-source-row__actions">
             <UiDenseActionButton
@@ -174,8 +194,9 @@ const emit = defineEmits<{
               @click="emit('moveSingleFileSavedFile', index, index - 1)"
             >
               <template #leading>
-                <IconArrow
-                  direction="up"
+                <UiGlyph
+                  meaning="move-up"
+                  :stroke-width="2.5"
                   :size="14"
                 />
               </template>
@@ -188,8 +209,9 @@ const emit = defineEmits<{
               @click="emit('moveSingleFileSavedFile', index, index + 1)"
             >
               <template #leading>
-                <IconArrow
-                  direction="down"
+                <UiGlyph
+                  meaning="move-down"
+                  :stroke-width="2.5"
                   :size="14"
                 />
               </template>
@@ -201,7 +223,11 @@ const emit = defineEmits<{
               @click="emit('removeSingleFileSavedFile', index)"
             >
               <template #leading>
-                <IconTrash :size="14" />
+                <UiGlyph
+                  meaning="delete"
+                  :size="14"
+                  :stroke-width="2.5"
+                />
               </template>
             </UiDenseActionButton>
           </div>
@@ -212,7 +238,11 @@ const emit = defineEmits<{
         v-else
         class="dc-source-summary"
       >
-        <IconFileText :size="16" />
+        <UiGlyph
+          meaning="document"
+          :size="16"
+          :stroke-width="2.25"
+        />
         <strong>{{ singleFileSourceName }}</strong>
         <span>{{ singleFileModeLabel }}</span>
       </div>
