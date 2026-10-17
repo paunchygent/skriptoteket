@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "dd1b8d81ec293a0ae953039482b9e1930495de436c2bf4f19b2af9f270837704",
+  "source_set_digest": "e52adf2bab6c20d6cfe6d729d9050573017b9f8583e8eeee927621146146d5a0",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6062,7 +6062,7 @@
       "type": "task",
       "title": "Build the redesigned app shell from the approved prototype",
       "path": "docs/backlog/tasks/task-skript-40-04-02-build-the-redesigned-app-shell-from-the-approved-prototype.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [

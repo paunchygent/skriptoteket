@@ -67,16 +67,17 @@
   never pushed; reviews in `evidence/reviews/` of the Hemma root copy). All six
   approved after repair: 39-04-06 (review 3), 39-04-10, 39-06-04, 39-07-01 (zero
   points allowed per user 2026-10-17; reconcile old positive-tick wording in its task
-  and story at closeout), 39-08-03 and 39-08-04; shared wiring 37288f10. Running:
-  39-06-05 (driver 1b99d555, navigator afe4699d) and 39-07-02 (driver bbd84f3f,
-  navigator de0a9d05); 728b8cd7 fixes the exam-workspace Vitest failures already on
-  main (stale 39-04-08 saved_document fixtures). Next: 39-06-06, the 39-06-02 Exam.net
-  probe; integrate wave 2 into main, rebuild staging, one exam-converter walk, then
+  and story at closeout), 39-08-03 and 39-08-04; shared wiring 37288f10. 39-07-02
+  approved (review 1); 39-06-05 approved after repair dabffe8c (review 2). Frontend v5
+  fixture and type repair (ff139435, ce881d19, 6d3f1d98, fc6d6f04): rereview 3
+  `9a6d3eb1` running; shared `buildDocument` fixture repair `f0ed8bac` running.
+  Next: 39-06-06, the 39-06-02 Exam.net probe; integrate wave 2 into main, rebuild
+  staging, one exam-converter walk (with the 40-04-02 shell at three widths), then
   39-07-03. Follow-ups: cleanup deletes payload files before its row commit (39-04-10
   review), and `migrated_db` swallows migration-thread errors.
   Opus lane ST-SKRIPT-40-04: 40-04-01 `done`; Opus builders on Hemma (parent-launched)
-  40-04-02 shell (`~/apps/skriptoteket-task-skript-40-04-02-remote`; review 1 changes
-  requested, Opus repair 11e695b3) and
+  40-04-02 shell `in_progress`: review 3 approved, merged to main 1413f65a; closes
+  after the staging walk (Flunk-Out Frenzy out of scope, user 2026-10-17); and
   40-04-03 workspace `f6049157` (`...-40-04-03-remote`); huleedu-integrated 0.1.29 (glyph
   meanings; no toast change, user rule) is on main cf19e83c (TASK-SKILL-REP-0327 `done`).
   Shell screenshots pass the lead's prototype check (final reshoot on 0.1.29).
