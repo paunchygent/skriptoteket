@@ -51,7 +51,7 @@ that workflow harder without a good reason; add what makes it easier.
 
 - ST-SKRIPT-39-04, ADR-SKRIPT-0091, TASK-SKRIPT-39-04-01 (workspace surface,
   item editor, export gate, answer-key proposals).
-- `.codex/rules/045-huleedu-design-system.md` (operational density,
+- `huleedu-ui-design` (operational density,
   desktop-first, surface cohesion).
 - ADR-SKRIPT-0020 breakpoints: `--huleedu-bp-md` 768px, `--huleedu-bp-lg`
   1024px.

@@ -154,28 +154,19 @@ None.
 
 ## Verification Commands
 
+Historical machine-specific shared-skill read commands are omitted. They named
+`agent-docs-governance` and its Skriptoteket reference, the then-used `testing`
+skill, and `ruthless-code-review` and its `references/forbidden-patterns.md`.
+No replacement command execution is claimed.
+
 - `sed -n '1,260p' AGENTS.md`
-- `sed -n '1,260p' /Users/olofs_mba/Documents/Repos/skill-repository/skills/agent-docs-governance/SKILL.md`
-- `sed -n '1,320p' /Users/olofs_mba/Documents/Repos/skill-repository/skills/testing/SKILL.md`
-- `sed -n '1,320p' /Users/olofs_mba/Documents/Repos/skill-repository/skills/ruthless-code-review/SKILL.md`
 - `sed -n '1,280p' .codex/skills/skriptoteket-testing/SKILL.md`
-- `sed -n '1,260p' /Users/olofs_mba/Documents/Repos/skill-repository/skills/agent-docs-governance/references/skriptoteket.md`
-- `sed -n '1,260p' /Users/olofs_mba/Documents/Repos/skill-repository/skills/ruthless-code-review/references/forbidden-patterns.md`
 - `sed -n '1,260p' .codex/skills/skriptoteket-testing/references/backend-pytest.md`
 - `sed -n '1,240p' docs/index.md`
 - `sed -n '1,220p' .codex/handoff.md`
 - `sed -n '1,260p' docs/backlog/prs/pr-0400-st-37-04-document-converter-artifact-content-hygiene-contract.md`
 - `sed -n '1,300p' docs/backlog/stories/story-37-04-app-presentation-decomposition-and-naming-reset.md`
-- `sed -n '1,260p' .codex/rules/000-rule-index.md`
 - `sed -n '1,260p' .codex/skills/skriptoteket-backend-dev/SKILL.md`
-- `sed -n '1,260p' .codex/rules/020-monolith-architecture.md`
-- `sed -n '1,260p' .codex/rules/025-curated-apps.md`
-- `sed -n '1,260p' .codex/rules/040-fastapi-blueprint.md`
-- `sed -n '1,260p' .codex/rules/042-async-di-patterns.md`
-- `sed -n '1,260p' .codex/rules/048-error-handling.md`
-- `sed -n '1,280p' .codex/rules/050-python-standards.md`
-- `sed -n '1,280p' .codex/rules/070-testing-standards.md`
-- `sed -n '1,240p' .codex/rules/096-review-workflow.md`
 - `sed -n '1,280p' docs/runbooks/runbook-testing.md`
 - `git status --short`
 - `git diff --stat`

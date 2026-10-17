@@ -45,7 +45,7 @@ rather than copy-paste targets.
 | `docs/backlog/prs/pr-0266-dev-tooling-script-surface-consolidation.md` | Existing Skriptoteket dev/observability command-surface boundary | 5 min |
 | `pyproject.toml` | Current Skriptoteket command surface | 5 min |
 | Sibling repo `pyproject.toml` docs command surfaces | Cross-repo factual check for `docs-sync`/`docs-validate` split | 5 min |
-| `.codex/rules/096-review-workflow.md` and `docs/reference/ref-review-workflow.md` | Target-based retained review compliance | 10 min |
+| `ruthless-code-review`, `agent-docs-governance` and `docs/reference/ref-review-workflow.md` | Target-based retained review compliance | 10 min |
 
 **Total estimated time:** ~40 minutes
 

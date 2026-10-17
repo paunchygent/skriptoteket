@@ -91,7 +91,7 @@ under `PR-0129`, not the seating toolbar behavior itself.
 - Story parent: [ST-29-03](../stories/story-29-03-klassrumskartan-shared-desktop-workspace-composition-primitives.md)
 - Export action baseline: [PR-0120](pr-0120-klassrumskartan-seating-export-action-teacher-flow-and-browser-proof.md)
 - Grouping zoning baseline: [PR-0129](pr-0129-klassrumskartan-shared-planner-action-bar-zoning-and-grouping-toolbar-stabilization.md)
-- Frontend skill: [integrated-frontend-stack](/Users/olofs_mba/Documents/Repos/skill-repository/skills/integrated-frontend-stack/SKILL.md)
-- Browser automation skill: [playwright-testing](../../..//Users/olofs_mba/.codex/skills/playwright-testing/SKILL.md)
-- Design-system rule: [045-huleedu-design-system](../../../.codex/rules/045-huleedu-design-system.md)
-- Browser automation rule: [075-browser-automation](../../../.codex/rules/075-browser-automation.md)
+- Frontend skill: `integrated-frontend-stack` (Skriptoteket reference).
+- Historical browser tooling: retired `playwright-testing` skill; current proof uses `staging-walk`.
+- Presentation skill: `huleedu-ui-design`.
+- Browser proof skill: `staging-walk` (Skriptoteket reference).

@@ -18,7 +18,7 @@ the `CodeMirrorEditor.vue` extension integration point.
 
 The reusable workflow expectation was:
 
-- read `AGENTS.md`, `.codex/rules/000-rule-index.md`, the task-relevant rules,
+- read `AGENTS.md`, its task-relevant skill routes,
   ADR, stories, epic, editor implementation, runner contract, and architect
   review package;
 - review design decisions with pros/cons before implementation;

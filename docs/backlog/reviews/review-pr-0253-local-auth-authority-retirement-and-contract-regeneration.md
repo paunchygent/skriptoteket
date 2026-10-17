@@ -205,10 +205,9 @@ This checklist is owned by the main reviewer. Implementers may add evidence note
 
 4. **medium - current runbooks point at removed smoke commands**
 
-   File references:
-   `.codex/rules/075-browser-automation.md:55`,
-   `.codex/rules/070-testing-standards.md:63`,
-   `docs/runbooks/runbook-testing.md:28`
+   Historical references: retired browser-automation rule 075, line 55;
+   retired testing rule 070, line 63; and `docs/runbooks/runbook-testing.md:28`.
+   Current owners are `staging-walk` and the repo-local `skriptoteket-testing` skill.
 
    `PR-0253` removed `ui-smoke`, `ui-editor-smoke`, and `ui-runtime-smoke` from the active PDM
    command surface, but current agent rules and runbooks still tell future sessions to run them.
@@ -405,7 +404,8 @@ revision.
    to depend on `require_app_*_api`, which verifies signed gateway context. Tests must prove missing
    signed context returns `401` even if `X-CSRF-Token` is present, valid signed context succeeds
    without `skriptoteket_session`, and stale local CSRF no longer grants anything. Also update
-   `.codex/rules/040-fastapi-blueprint.md` so future agents do not reintroduce the old dependency.
+   `.codex/skills/skriptoteket-backend-dev/references/backend-contracts.md`
+   so future agents do not reintroduce the old dependency.
 
 5. **high - frontend auth ceremony replacement is under-scoped**
 

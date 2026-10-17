@@ -12,7 +12,7 @@ root: REF-SKRIPT-GENERAL-frontend-design-system-codemap-trace-based-for-cross-re
 part: 2
 ---
 
-3. **Follow rule 045** for Brutalist Academic design principles
+3. **Follow `huleedu-ui-design`** for current presentation guidance
 
 4. **Reference the codemap** for implementation details
 
@@ -167,7 +167,7 @@ When adopting this design system in another repo, verify:
 
 - `docs/adr/adr-0032-tailwind-4-theme-tokens.md`
 
-- `.codex/rules/045-huleedu-design-system.md`
+- `huleedu-ui-design` skill
 
 ### Reference
 

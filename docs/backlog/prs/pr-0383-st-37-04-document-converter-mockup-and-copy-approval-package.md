@@ -142,7 +142,7 @@ families:
   token highlights for hover, focus, confirmation, or destructive accents.
 
 If the HTML/CSS mockup or `PR-0384` implementation finds a conflict with
-`.codex/rules/045-huleedu-design-system.md`, stop and reconcile the
+`huleedu-ui-design`, stop and reconcile the
 design-token contract before building route-visible production UI.
 
 ## Outcome-First UI Decision

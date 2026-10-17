@@ -356,10 +356,10 @@ Workspace Integration
 
 ---
 
-### Source: Trace 6: Design System Governance (ADRs → Rules → Reference Codemap)
+### Source: Trace 6: Design System Governance (ADRs → Skills → Reference Codemap)
 
 
-**Purpose**: Define the decision records and rules that govern the design system's principles and implementation contracts.
+**Purpose**: Map decision records to the skills that own current presentation and token contracts.
 
 ### Trace 6 Flow Diagram
 
@@ -370,11 +370,11 @@ Architecture Decision Records (ADRs)
   └── ADR-0032: Tailwind 4 @theme [6c]
       └── CSS-first token bridge [6d]
 
-Agent Implementation Rules
-  └── 045-huleedu-design-system.md [6e]
-      ├── Brutalist Academic principles [6f]
-      └── Physical feedback rules [6g]
-          └── 4px press, shadow removal [6h]
+Agent Skill Routes
+  └── huleedu-ui-design [6e]
+      ├── Presentation principles [6f]
+      └── Current interaction guidance [6g]
+          └── Historical press example is not current authority [6h]
 
 Reference Documentation
   ├── Frontend Design System Codemap [6i]
@@ -391,10 +391,10 @@ Reference Documentation
 | 6b   | Mandates HuleEdu tokens      | `docs/adr/adr-0017-huleedu-design-system-adoption.md:15`                          |
 | 6c   | Tailwind 4 @theme decision   | `docs/adr/adr-0032-tailwind-4-theme-tokens.md:33`                                 |
 | 6d   | CSS-first token bridge       | `docs/adr/adr-0032-tailwind-4-theme-tokens.md:23`                                 |
-| 6e   | Design system rules          | `.codex/rules/045-huleedu-design-system.md:14`                                   |
-| 6f   | Design system principles     | `.codex/rules/045-huleedu-design-system.md:16`                                   |
-| 6g   | Physical feedback rule       | `.codex/rules/045-huleedu-design-system.md:23`                                   |
-| 6h   | 4px press behavior           | `.codex/rules/045-huleedu-design-system.md:25`                                   |
+| 6e   | Presentation authority       | `huleedu-ui-design` skill |
+| 6f   | Design system principles     | `huleedu-ui-design` skill |
+| 6g   | Historical feedback guidance | Retired rule 045; use `huleedu-ui-design` for current interaction guidance |
+| 6h   | Historical press behavior    | Retired rule 045; its 4px press example is not current authority |
 | 6i   | Design system codemap        | `docs/reference/ref-frontend-design-system-codemap-2026-03-28.md:119`             |
 | 6j   | Token pipeline mapping       | `docs/reference/ref-frontend-design-system-codemap-2026-03-28.md:120`             |
 | 6k   | Dense primitive implementation | `docs/backlog/prs/pr-0157-st-29-01-shared-dense-tool-primitives-and-canonical-symbol-assets.md:34` |

@@ -142,7 +142,7 @@ Required green proof:
 | Script/editor capability remains valuable.                                              | `EPIC-37`, `REF-current-product-direction-and-backlog-inventory-2026-06-17`, approved C2 mockup | Present `Kodredigerare` as a first-class app shelf. Do not use `Mina körningar` as home chrome.                |
 | Sir Convert owns heavy conversion; Skriptoteket owns native app state and presentation. | `REF-current-product-lanes-and-sir-convert-boundary-v1`                                         | Shell work must not route native app state back through Sir Convert replay/fingerprint workflows.              |
 | No route/app-id rename in `PR-0361`.                                                    | `PR-0361` non-goals                                                                             | Follow-up code may add query state or entry links, but app-id decomposition waits for `ST-37-04`.              |
-| Protected route proof must use HuleEdu browser-session ceremony.                        | `AGENTS.md`, integrated frontend stack, `.codex/rules/075-browser-automation.md`                | Every route-visible implementation slice needs focused Vitest/typecheck plus live authenticated browser proof. |
+| Protected route proof must use HuleEdu browser-session ceremony.                        | `AGENTS.md`, `integrated-frontend-stack`, `staging-walk` (Skriptoteket reference)                | Every route-visible implementation slice needs focused Vitest/typecheck plus live authenticated browser proof. |
 
 ## Evidence Basis
 
