@@ -198,9 +198,7 @@ async def test_intervening_save_refuses_checklist_for_the_downloaded_revision(en
     )
     head = await env.vault_files.get_document_head(user_id=actor.id, document_lineage_id=lineage_id)
     assert head is not None
-    current = env.codec.parse(
-        content=await env.store.load_version(actor=actor, vault_file=head)
-    ).document
+    current = env.codec.parse(content=await env.store.load(actor=actor, vault_file=head)).document
     changed = with_next_revision(
         current.model_copy(
             update={

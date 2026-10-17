@@ -221,10 +221,9 @@ async def test_batches_replace_their_placeholders_keep_teacher_edits_and_hold_on
             "q3": "ready",
         }
 
-    # Revisions the teacher saved on (1, the base of their save, and 2, their own) stay;
-    # conversion-only revision 3 was superseded by revision 4, so it is retired.
+    # One exam file per lineage: every batch and save overwrote the same row.
     live = await _live_versions(session_factory, lineage_id)
-    assert [version for version, _ in live] == [1, 2, 4]
+    assert [version for version, _ in live] == [4]
     assert await _usage(session_factory, actor) == sum(size for _, size in live)
 
     async with session_factory() as session:
@@ -243,9 +242,9 @@ async def test_batches_replace_their_placeholders_keep_teacher_edits_and_hold_on
         final = await world.open(actor, lineage_id)
         assert _texts(final) == ["Lärarens fråga ett", "Fråga två", "Fråga tre slutlig"]
 
-    # Conversion-only revision 4 was superseded by the final revision 5, so it is retired.
+    # The final conversion revision overwrote the same row again.
     live = await _live_versions(session_factory, lineage_id)
-    assert [version for version, _ in live] == [1, 2, 5]
+    assert [version for version, _ in live] == [5]
     assert await _usage(session_factory, actor) == sum(size for _, size in live)
 
 

@@ -46,7 +46,7 @@ async def test_update_classroom_planner_settings_persists_explicit_profile_prefe
 
     profiles = AsyncMock(spec=ProfileRepositoryProtocol)
     profiles.get_by_user_id.return_value = profile
-    profiles.update.side_effect = lambda *, profile: profile
+    profiles.update.side_effect = lambda *, profile, fields: profile
 
     clock = Mock(spec=ClockProtocol)
     clock.now.return_value = now
@@ -92,7 +92,7 @@ def _handler_with_profile(
 
     profiles = AsyncMock(spec=ProfileRepositoryProtocol)
     profiles.get_by_user_id.return_value = profile
-    profiles.update.side_effect = lambda *, profile: profile
+    profiles.update.side_effect = lambda *, profile, fields: profile
 
     clock = Mock(spec=ClockProtocol)
     clock.now.return_value = now

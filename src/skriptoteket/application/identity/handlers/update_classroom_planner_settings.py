@@ -21,6 +21,7 @@ from skriptoteket.domain.errors import not_found
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.identity import (
     ProfileRepositoryProtocol,
+    ProfileUpdateField,
     UpdateClassroomPlannerSettingsHandlerProtocol,
     UserRepositoryProtocol,
 )
@@ -54,7 +55,7 @@ class UpdateClassroomPlannerSettingsHandler(UpdateClassroomPlannerSettingsHandle
             if profile is None:
                 raise not_found("UserProfile", str(command.user_id))
 
-            update: dict[str, object] = {"updated_at": self._clock.now()}
+            update: dict[ProfileUpdateField, object] = {"updated_at": self._clock.now()}
             if command.smart_enabled is not None:
                 update["classroom_planner_smart_enabled"] = command.smart_enabled
             if command.use_history is not None:
@@ -68,6 +69,11 @@ class UpdateClassroomPlannerSettingsHandler(UpdateClassroomPlannerSettingsHandle
                     command.tutorial_seen_sections
                 )
 
-            saved_profile = await self._profiles.update(profile=profile.model_copy(update=update))
+            saved_profile = await self._profiles.update(
+                profile=profile.model_copy(
+                    update={field: value for field, value in update.items()}
+                ),
+                fields=frozenset(update),
+            )
 
         return UpdateClassroomPlannerSettingsResult(user=user, profile=saved_profile)

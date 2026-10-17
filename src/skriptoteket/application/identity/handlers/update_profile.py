@@ -5,6 +5,7 @@ from skriptoteket.domain.errors import DomainError, ErrorCode, not_found
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.identity import (
     ProfileRepositoryProtocol,
+    ProfileUpdateField,
     UpdateProfileHandlerProtocol,
     UserRepositoryProtocol,
 )
@@ -37,7 +38,7 @@ class UpdateProfileHandler(UpdateProfileHandlerProtocol):
             if profile is None:
                 raise not_found("UserProfile", str(command.user_id))
 
-            updates: dict[str, object] = {}
+            updates: dict[ProfileUpdateField, object] = {}
 
             if command.first_name is not None:
                 first_name = command.first_name.strip()
@@ -88,7 +89,11 @@ class UpdateProfileHandler(UpdateProfileHandlerProtocol):
             now = self._clock.now()
             updates["updated_at"] = now
 
-            updated_profile = profile.model_copy(update=updates)
-            saved_profile = await self._profiles.update(profile=updated_profile)
+            updated_profile = profile.model_copy(
+                update={field: value for field, value in updates.items()}
+            )
+            saved_profile = await self._profiles.update(
+                profile=updated_profile, fields=frozenset(updates)
+            )
 
         return UpdateProfileResult(user=user, profile=saved_profile)

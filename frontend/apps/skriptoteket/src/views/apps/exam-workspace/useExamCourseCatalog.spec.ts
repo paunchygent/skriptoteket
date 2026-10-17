@@ -12,9 +12,15 @@ const COURSES: ExamCourse[] = [
   { key: "gr:GRGRMAT01:7-9", code: "GRGRMAT01", name: "Matematik, åk 7–9", school_form: "grundskolan", subject_code: "GRGRMAT01", subject_name: "Matematik", year_band: "7-9", year_band_label: "åk 7–9" },
 ];
 
-beforeEach(() => {
+beforeEach(async () => {
   vi.resetModules();
   vi.mocked(getExamCourseCatalog).mockReset();
+  const { createPinia, setActivePinia } = await import("pinia");
+  setActivePinia(createPinia());
+  const { useAuthStore } = await import("../../../stores/auth");
+  useAuthStore().user = {
+    id: "teacher-a", email: "teacher-a@example.test", role: "user", auth_provider: "local",
+  };
 });
 
 describe("searchCourses", () => {
@@ -66,7 +72,7 @@ describe("useExamCourseCatalog", () => {
     expect(first.isLoading.value).toBe(true);
     expect(second.isLoading.value).toBe(true);
     expect(getExamCourseCatalog).toHaveBeenCalledTimes(1);
-    finish({ courses: COURSES, generated_at: "2026-10-16T17:00:00Z" });
+    finish({ courses: COURSES, registered_course_keys: [], generated_at: "2026-10-16T17:00:00Z" });
     await flushPromises();
     for (const consumer of [first, second, useExamCourseCatalog()]) {
       expect(consumer.isLoading.value).toBe(false);

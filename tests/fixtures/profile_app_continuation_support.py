@@ -54,6 +54,7 @@ from skriptoteket.protocols.identity import (
     IdentityProjectionEventRepositoryProtocol,
     IdentityProjectionRepositoryProtocol,
     ProfileRepositoryProtocol,
+    ProfileUpdateField,
     UserRepositoryProtocol,
 )
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
@@ -258,9 +259,14 @@ class ProfileRepositoryStub:
         self.result = profile
         return profile
 
-    async def update(self, *, profile: UserProfile) -> UserProfile:
-        self.result = profile
-        return profile
+    async def update(
+        self, *, profile: UserProfile, fields: frozenset[ProfileUpdateField]
+    ) -> UserProfile:
+        assert self.result is not None
+        self.result = self.result.model_copy(
+            update={field: getattr(profile, field) for field in fields}
+        )
+        return self.result
 
 
 class ProfileContinuationApiProvider(Provider):

@@ -326,7 +326,7 @@ class Env:
     async def seed(
         self, document: NativeExamDocument, *, assets_by_id: dict[str, bytes] | None = None
     ) -> VaultFile:
-        return await self.store.save_version(
+        return await self.store.save(
             actor=self.actor,
             file_id=self.ids.new_uuid(),
             name="omprov.provdokument.zip",

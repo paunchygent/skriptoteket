@@ -1,20 +1,15 @@
-"""Exam workspace document store: versioned container persistence in Mina filer.
-
-The native exam document persists as one immutable Mina filer container per
-revision (D2/S3). Writers share a transaction-scoped lineage lock with
-rename, then take the per-user vault usage lock. The partial unique index
-on (user, lineage, version) is the database backstop; a duplicate version
-maps to CONFLICT. Retiring a
-superseded revision soft-deletes its row and releases its bytes from vault
-usage.
-"""
+"""One mutable vault file per exam, with revision-checked writes."""
 
 from __future__ import annotations
 
-from uuid import UUID
+from collections.abc import AsyncIterator
+from contextlib import AsyncExitStack, asynccontextmanager
+from uuid import UUID, uuid4
 
-from sqlalchemy.exc import IntegrityError
-
+from skriptoteket.application.curated_apps.exam_workspace_history import (
+    ExamWorkspaceHistoryState,
+    ExamWorkspaceHistoryStep,
+)
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode, validation_error
 from skriptoteket.domain.identity.models import User
@@ -31,7 +26,7 @@ EXAM_WORKSPACE_SOURCE_ARTIFACT_PREFIX = "documents.conversion_hub:exam-workspace
 
 
 class ExamWorkspaceDocumentStore:
-    """Persist and load versioned exam workspace containers in Mina filer."""
+    """Serialize writes against the lineage lock and account for replaced bytes."""
 
     def __init__(
         self,
@@ -49,8 +44,52 @@ class ExamWorkspaceDocumentStore:
         self._uow = uow
         self._clock = clock
         self._settings = settings
+        self._rollback_frames: list[list[tuple[UUID, UUID, bytes | None]]] = []
+        self._payload_guards: set[tuple[UUID, UUID]] = set()
+        self._guard_stack = AsyncExitStack()
 
-    async def save_version(
+    @asynccontextmanager
+    async def transaction(self, *, user_id: UUID, lineage_id: UUID) -> AsyncIterator[None]:
+        """Keep payload exclusion through SQL commit and any filesystem compensation.
+
+        Acquire before application row/lineage locks. Nested operations enlist both
+        their journal and their guards in the outermost transaction.
+        """
+        outermost = not self._rollback_frames
+        frame: list[tuple[UUID, UUID, bytes | None]] = []
+        key = (user_id, lineage_id)
+        try:
+            if key not in self._payload_guards:
+                await self._guard_stack.enter_async_context(
+                    self._vault_files.guard_document_payload(
+                        user_id=user_id, document_lineage_id=lineage_id
+                    )
+                )
+                self._payload_guards.add(key)
+            self._rollback_frames.append(frame)
+            try:
+                async with self._uow:
+                    yield
+            except BaseException:
+                for owner_id, file_id, content in reversed(frame):
+                    if content is None:
+                        await self._vault_storage.delete_file(user_id=owner_id, file_id=file_id)
+                    else:
+                        await self._vault_storage.store_file(
+                            user_id=owner_id, file_id=file_id, content=content
+                        )
+                raise
+            else:
+                if len(self._rollback_frames) > 1:
+                    self._rollback_frames[-2].extend(frame)
+            finally:
+                self._rollback_frames.pop()
+        finally:
+            if outermost:
+                await self._guard_stack.aclose()
+                self._payload_guards.clear()
+
+    async def save(
         self,
         *,
         actor: User,
@@ -59,43 +98,66 @@ class ExamWorkspaceDocumentStore:
         content: bytes,
         lineage_id: UUID,
         version: int,
+        expected_revision: int | None = None,
+        export_format: str | None = None,
+        preserve_editor_position: bool = False,
     ) -> VaultFile:
+        self.validate_size(content)
         actual_bytes = len(content)
-        if actual_bytes <= 0:
-            raise validation_error("Dokumentet saknar innehåll.")
-        if actual_bytes > self._settings.VAULT_MAX_FILE_BYTES:
-            raise validation_error(
-                "Dokumentet är större än maxstorleken för Mina filer.",
-                details={
-                    "bytes": actual_bytes,
-                    "max_bytes": self._settings.VAULT_MAX_FILE_BYTES,
-                },
-            )
-
+        previous_content: bytes | None = None
         now = self._clock.now()
-        stored = False
-        try:
-            async with self._uow:
-                # Shared by document saves, conversion writes and lineage renames.
-                # Read the name here, not from a head captured before this lock.
-                await self._vault_files.lock_document_lineage(
-                    user_id=actor.id, document_lineage_id=lineage_id
-                )
+        async with self.transaction(user_id=actor.id, lineage_id=lineage_id):
+            await self._vault_files.lock_document_lineage(
+                user_id=actor.id, document_lineage_id=lineage_id
+            )
+            if export_format is None:
                 head = await self._vault_files.get_document_head(
                     user_id=actor.id, document_lineage_id=lineage_id
                 )
-                if head is not None:
-                    name = head.name
-                usage = await self._vault_usage.get_for_update(user_id=actor.id, now=now)
-                if usage.bytes_total + actual_bytes > self._settings.VAULT_MAX_TOTAL_BYTES:
-                    raise validation_error(
-                        "Mina filer är fullt; ta bort filer och försök igen.",
-                        details={
-                            "bytes_total": usage.bytes_total,
-                            "attempted_bytes": actual_bytes,
-                            "max_total_bytes": self._settings.VAULT_MAX_TOTAL_BYTES,
-                        },
+            else:
+                files = await self._vault_files.list_exam_files(
+                    user_id=actor.id, document_lineage_id=lineage_id, include_deleted=True
+                )
+                head = next(
+                    (item for item in files if item.export_format == export_format),
+                    None,
+                )
+            current_revision = None if head is None else head.document_version
+            if export_format is None and current_revision != expected_revision:
+                raise DomainError(
+                    code=ErrorCode.CONFLICT,
+                    message="Dokumentet har ändrats sedan det öppnades.",
+                    details={
+                        "expected_revision": expected_revision,
+                        "current_revision": current_revision,
+                    },
+                )
+            usage = await self._vault_usage.get_for_update(user_id=actor.id, now=now)
+            counted_bytes = head.bytes if head is not None and head.deleted_at is None else 0
+            total = usage.bytes_total + actual_bytes - counted_bytes
+            if total > self._settings.VAULT_MAX_TOTAL_BYTES:
+                raise validation_error("Mina filer är fullt; ta bort filer och försök igen.")
+            if head is not None:
+                file_id = head.id
+                if await self._vault_storage.exists_file(user_id=actor.id, file_id=file_id):
+                    previous_content = await self.load(actor=actor, vault_file=head)
+                if head.deleted_at is not None:
+                    head = await self._vault_files.update(
+                        file=head.model_copy(
+                            update={"deleted_at": None, "trashed_with_exam": False}
+                        )
                     )
+                vault_file = await self._vault_files.overwrite(
+                    file=head.model_copy(
+                        update={
+                            "bytes": actual_bytes,
+                            "document_version": version,
+                            "document_saved_at": now,
+                            "name": head.name if export_format is None else name,
+                        }
+                    )
+                )
+            else:
                 vault_file = await self._vault_files.create(
                     file=VaultFile(
                         id=file_id,
@@ -103,66 +165,66 @@ class ExamWorkspaceDocumentStore:
                         name=name,
                         bytes=actual_bytes,
                         source_kind=VaultFileSourceKind.APP_EXPORT,
-                        source_run_id=None,
-                        source_artifact_id=(
-                            f"{EXAM_WORKSPACE_SOURCE_ARTIFACT_PREFIX}:{lineage_id}:v{version}"
-                        ),
+                        source_artifact_id=f"{EXAM_WORKSPACE_SOURCE_ARTIFACT_PREFIX}:{lineage_id}"
+                        + (f":{export_format}" if export_format else ""),
                         document_lineage_id=lineage_id,
                         document_version=version,
+                        export_format=export_format,
+                        document_saved_at=now,
                         created_at=now,
-                        deleted_at=None,
                     )
                 )
-                await self._vault_storage.store_file(
-                    user_id=actor.id, file_id=vault_file.id, content=content
+            if export_format is None and head is None:
+                await self.put_history(
+                    actor=actor,
+                    lineage_id=lineage_id,
+                    history=ExamWorkspaceHistoryState(
+                        cursor=lineage_id,
+                        current_step_id=None,
+                        baseline=ExamWorkspaceHistoryStep(step_id=lineage_id, content=content),
+                    ),
                 )
-                stored = True
-                await self._vault_usage.upsert(
-                    usage=VaultUsage(
-                        user_id=actor.id,
-                        bytes_total=usage.bytes_total + actual_bytes,
-                        updated_at=now,
-                    )
+            elif export_format is None:
+                history = await self.get_history(actor=actor, lineage_id=lineage_id)
+                await self.put_history(
+                    actor=actor,
+                    lineage_id=lineage_id,
+                    history=history.model_copy(
+                        update={
+                            "cursor": uuid4(),
+                            "current_step_id": history.current_step_id
+                            if preserve_editor_position
+                            else None,
+                        }
+                    ),
                 )
-        except IntegrityError as error:
-            if stored:
-                await self.discard_version_file(actor=actor, file_id=file_id)
-            raise DomainError(
-                code=ErrorCode.CONFLICT,
-                message="Dokumentet sparades samtidigt i en annan flik.",
-                details={"lineage_id": str(lineage_id), "version": version},
-            ) from error
-        except Exception:
-            if stored:
-                await self.discard_version_file(actor=actor, file_id=file_id)
-            raise
+            self._rollback_frames[-1].append((actor.id, file_id, previous_content))
+            await self._vault_storage.store_file(user_id=actor.id, file_id=file_id, content=content)
+            await self._vault_usage.upsert(
+                usage=VaultUsage(user_id=actor.id, bytes_total=total, updated_at=now)
+            )
         return vault_file
 
-    async def retire_version(self, *, actor: User, retired: VaultFile) -> None:
-        """Soft-delete one superseded revision and release its bytes from vault usage.
+    def validate_size(self, content: bytes) -> None:
+        if not content or len(content) > self._settings.VAULT_MAX_FILE_BYTES:
+            raise validation_error("Dokumentets storlek är inte tillåten.")
 
-        Runs inside the caller's unit of work; the stored payload expires with the row.
-        """
-        assert retired.document_lineage_id is not None
-        await self._vault_files.lock_document_lineage(
-            user_id=actor.id, document_lineage_id=retired.document_lineage_id
+    async def get_history(self, *, actor: User, lineage_id: UUID) -> ExamWorkspaceHistoryState:
+        content = await self._vault_files.get_history(
+            user_id=actor.id, document_lineage_id=lineage_id
         )
-        current = await self._vault_files.get_by_id(file_id=retired.id)
-        if current is None or current.deleted_at is not None:
-            return
-        now = self._clock.now()
-        await self._vault_files.update(file=current.model_copy(update={"deleted_at": now}))
-        usage = await self._vault_usage.get_for_update(user_id=actor.id, now=now)
-        await self._vault_usage.upsert(
-            usage=VaultUsage(
-                user_id=actor.id,
-                bytes_total=max(0, usage.bytes_total - current.bytes),
-                updated_at=now,
-            )
+        if content is None:
+            raise validation_error("Den sparade redigeringshistoriken saknas.")
+        return ExamWorkspaceHistoryState.model_validate_json(content)
+
+    async def put_history(
+        self, *, actor: User, lineage_id: UUID, history: ExamWorkspaceHistoryState
+    ) -> None:
+        await self._vault_files.put_history(
+            user_id=actor.id,
+            document_lineage_id=lineage_id,
+            content=history.model_dump_json().encode(),
         )
 
-    async def discard_version_file(self, *, actor: User, file_id: UUID) -> None:
-        await self._vault_storage.delete_file(user_id=actor.id, file_id=file_id)
-
-    async def load_version(self, *, actor: User, vault_file: VaultFile) -> bytes:
+    async def load(self, *, actor: User, vault_file: VaultFile) -> bytes:
         return await self._vault_storage.read_file(user_id=actor.id, file_id=vault_file.id)

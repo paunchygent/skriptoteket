@@ -127,7 +127,10 @@ async def test_profile_update(db_session: AsyncSession, user_id: UUID, now: date
             "locale": "en-GB",
         }
     )
-    updated = await repo.update(profile=updated_profile)
+    updated = await repo.update(
+        profile=updated_profile,
+        fields=frozenset({"first_name", "last_name", "display_name", "locale"}),
+    )
     assert updated.first_name == "New"
     assert updated.last_name == "Name"
     assert updated.display_name == "New N."
@@ -155,6 +158,7 @@ async def test_profile_tutorial_seen_sections_round_trip(
     assert created.classroom_planner_tutorial_seen_sections == ["planner_overview"]
 
     updated = await repo.update(
+        fields=frozenset({"classroom_planner_tutorial_seen_sections"}),
         profile=created.model_copy(
             update={
                 "classroom_planner_tutorial_seen_sections": [
@@ -162,7 +166,7 @@ async def test_profile_tutorial_seen_sections_round_trip(
                     "planner_overview",
                 ]
             }
-        )
+        ),
     )
     assert updated.classroom_planner_tutorial_seen_sections == [
         "planner_rules",
@@ -193,7 +197,7 @@ async def test_profile_update_raises_not_found(db_session: AsyncSession, now: da
     )
 
     with pytest.raises(DomainError) as exc:
-        await repo.update(profile=missing_profile)
+        await repo.update(profile=missing_profile, fields=frozenset({"first_name"}))
     assert exc.value.code == ErrorCode.NOT_FOUND
 
 

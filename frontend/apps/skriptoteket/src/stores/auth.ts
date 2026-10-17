@@ -1,12 +1,6 @@
-/**
- * SPA auth store for HuleEdu session bootstrap and local app continuation.
- *
- * This store owns the browser-visible auth snapshot, delegates browser session
- * proof to HuleEdu, and hydrates Skriptoteket-only app state through a separate
- * local continuation endpoint.
- */
-
+/** Owns the browser auth snapshot and admission of asynchronous session responses. */
 import { defineStore } from "pinia";
+import { computed, reactive, shallowRef, toRefs, watch } from "vue";
 
 import { fetchWithTimeout, readErrorMessage } from "../api/authHttp";
 import type { components } from "../api/openapi";
@@ -29,45 +23,23 @@ import {
 
 type ApiRole = components["schemas"]["Role"];
 type ApiAiPolicy = components["schemas"]["AiPolicyResponse"];
-
 type AuthStatus = "idle" | "loading" | "ready" | "error" | "provisioning_required";
-
+/** A store-owned session lifetime, not merely a teacher ID. */
+export type AuthSession = symbol;
+type ContinuationStatus = "ready" | "error" | "provisioning_required" | "superseded";
+type ContinuationOutcome = { status: ContinuationStatus; session: AuthSession | null };
+export class SupersededAuthSessionError extends Error {
+  constructor() {
+    super("Sessionen har ändrats. Svaret tillhör en tidigare inloggning.");
+    this.name = "SupersededAuthSessionError";
+  }
+}
 const ROLE_RANK: Record<ApiRole, number> = {
   user: 0,
   contributor: 1,
   admin: 2,
   superuser: 3,
 };
-
-function hasAtLeastRole(params: { actual: ApiRole; minRole: ApiRole }): boolean {
-  return ROLE_RANK[params.actual] >= ROLE_RANK[params.minRole];
-}
-
-function buildSharedLogoutHeaders(csrfToken: string): Record<string, string> {
-  return {
-    Accept: "application/json",
-    "X-CSRF-Token": csrfToken,
-  };
-}
-
-async function postSharedLogout(csrfToken: string): Promise<Response> {
-  return fetchWithTimeout(
-    sharedAuthUrl(SHARED_AUTH_LOGOUT_PATH),
-    {
-      method: "POST",
-      credentials: "include",
-      headers: buildSharedLogoutHeaders(csrfToken),
-    },
-    { timeoutMs: 10000, timeoutMessage: LOGOUT_NETWORK_FAILURE_MESSAGE },
-  );
-}
-
-function isSharedLogoutComplete(response: Response): boolean {
-  return response.ok || response.status === 401;
-}
-
-let bootstrapPromise: Promise<void> | null = null;
-
 type AuthState = {
   user: AuthUser | null;
   profile: AuthProfile | null;
@@ -80,260 +52,278 @@ type AuthState = {
   error: string | null;
   appContinuationError: AppContinuationError | null;
 };
-
-export const useAuthStore = defineStore("auth", {
-  state: (): AuthState => ({
+function anonymousState(): AuthState {
+  return {
     user: null,
     profile: null,
     aiPolicy: null,
     grants: [],
     featureFlags: [],
     csrfToken: null,
-    bootstrapped: false,
-    status: "idle",
+    bootstrapped: true,
+    status: "ready",
     error: null,
     appContinuationError: null,
-  }),
-  getters: {
-    isAuthenticated: (state) => state.user !== null,
-    isProvisioningRequired: (state) => state.status === "provisioning_required",
-    role: (state) => state.user?.role ?? null,
-    hasAtLeastRole: (state) => {
-      return (minRole: ApiRole): boolean => {
-        if (!state.user) {
-          return false;
-        }
-        return hasAtLeastRole({ actual: state.user.role, minRole });
-      };
+  };
+}
+async function postSharedLogout(csrfToken: string): Promise<Response> {
+  return fetchWithTimeout(
+    sharedAuthUrl(SHARED_AUTH_LOGOUT_PATH),
+    {
+      method: "POST",
+      credentials: "include",
+      headers: { Accept: "application/json", "X-CSRF-Token": csrfToken },
     },
-    hasGrant: (state) => {
-      return (grant: string): boolean => state.grants.includes(grant);
-    },
-    hasFeatureFlag: (state) => {
-      return (featureFlag: string): boolean => state.featureFlags.includes(featureFlag);
-    },
-    displayName: (state): string | null => {
-      if (!state.user) return null;
-      if (state.profile?.display_name) return state.profile.display_name;
-      if (state.profile?.first_name) return state.profile.first_name;
-      return state.user.email.split("@")[0];
-    },
-  },
-  actions: {
-    clear(): void {
-      this.user = null;
-      this.profile = null;
-      this.aiPolicy = null;
-      this.grants = [];
-      this.featureFlags = [];
-      this.csrfToken = null;
-      this.status = "ready";
-      this.error = null;
-      this.appContinuationError = null;
-      this.bootstrapped = true;
-    },
-    async bootstrap(): Promise<void> {
-      if (this.bootstrapped) {
-        return;
+    { timeoutMs: 10000, timeoutMessage: LOGOUT_NETWORK_FAILURE_MESSAGE },
+  );
+}
+function isSharedLogoutComplete(response: Response): boolean {
+  return response.ok || response.status === 401;
+}
+
+export const useAuthStore = defineStore("auth", () => {
+  const state = reactive<AuthState>({ ...anonymousState(), bootstrapped: false, status: "idle" });
+  // This token is runtime lifecycle state, not a persisted browser/session ID.
+  const session = shallowRef<AuthSession>(Symbol("auth session"));
+  let bootstrapPromise: Promise<AuthSession | null> | null = null;
+  watch(() => state.user?.id ?? null, () => {
+    // Retire every cached value before publishing the new lifetime. The
+    // admitted response can then populate only the fields it actually owns.
+    const next = anonymousState();
+    Object.assign(state, {
+      profile: next.profile,
+      aiPolicy: next.aiPolicy,
+      grants: next.grants,
+      featureFlags: next.featureFlags,
+      csrfToken: next.csrfToken,
+      status: next.status,
+      error: next.error,
+      appContinuationError: next.appContinuationError,
+    });
+    session.value = Symbol("auth session");
+  }, { flush: "sync" });
+
+  function captureSession(): AuthSession {
+    return session.value;
+  }
+  function isCurrentSession(requestSession: AuthSession): boolean {
+    return requestSession === session.value;
+  }
+  function requireCurrentSession(requestSession: AuthSession): void {
+    if (!isCurrentSession(requestSession)) throw new SupersededAuthSessionError();
+  }
+  /** The only response writer: reject the whole snapshot before changing any field. */
+  function applyResponse(requestSession: AuthSession, patch: Partial<AuthState>): boolean {
+    if (!isCurrentSession(requestSession)) return false;
+    const clearsAnonymous = patch.user === null && state.user === null;
+    // Identity admission retires the former lifetime before applying its new
+    // fields, regardless of the response object's property insertion order.
+    if (patch.user !== undefined) state.user = patch.user;
+    Object.assign(state, patch);
+    // Clearing an already anonymous session must also end pending bootstrap
+    // work, but only publish that lifetime after its cached fields are cleared.
+    if (clearsAnonymous) session.value = Symbol("auth session");
+    return true;
+  }
+  function clear(requestSession: AuthSession = captureSession()): void {
+    applyResponse(requestSession, anonymousState());
+  }
+
+  async function continueSession(requestSession: AuthSession): Promise<ContinuationOutcome> {
+    if (!isCurrentSession(requestSession)) return { status: "superseded", session: null };
+    state.aiPolicy = null;
+    state.appContinuationError = null;
+    try {
+      const result = await requestAppContinuation();
+      if (result.kind === "ready") {
+        if (!applyResponse(requestSession, {
+          user: result.continuation.local_user,
+          profile: result.profile,
+          aiPolicy: result.continuation.ai_policy,
+          error: null,
+          appContinuationError: null,
+          status: "ready",
+        })) return { status: "superseded", session: null };
+        return { status: "ready", session: captureSession() };
       }
+      if (!applyResponse(requestSession, {
+        user: null,
+        profile: null,
+        error: result.error.message,
+        appContinuationError: result.error,
+        status: result.kind === "provisioning_required" ? "provisioning_required" : "error",
+      })) return { status: "superseded", session: null };
+      return { status: result.kind, session: captureSession() };
+    } catch (error: unknown) {
+      if (!applyResponse(requestSession, {
+        user: null,
+        profile: null,
+        error: error instanceof Error ? error.message : "Failed to load app continuation",
+        appContinuationError: null,
+        status: "error",
+      })) return { status: "superseded", session: null };
+      return { status: "error", session: captureSession() };
+    }
+  }
 
-      if (bootstrapPromise) {
-        await bootstrapPromise;
-        return;
+  async function loadAppContinuation(): Promise<ContinuationStatus> {
+    return (await continueSession(captureSession())).status;
+  }
+
+  async function ensureCsrfToken(
+    requestSession: AuthSession = captureSession(),
+  ): Promise<string | null> {
+    if (!isCurrentSession(requestSession)) return null;
+    if (state.csrfToken) return state.csrfToken;
+    if (!state.user) return null;
+    try {
+      const result = await loadSharedCsrfToken();
+      if (result.kind === "ready") {
+        return applyResponse(requestSession, { csrfToken: result.token }) ? result.token : null;
       }
-
-      this.status = "loading";
-      this.error = null;
-      this.appContinuationError = null;
-
-      bootstrapPromise = (async () => {
-        try {
-          const sharedSession = await loadSharedSessionSnapshot();
-
-          if (sharedSession.kind === "authenticated") {
-            const { snapshot } = sharedSession;
-            this.user = null;
-            this.profile = null;
-            this.aiPolicy = null;
-            this.grants = snapshot.grants;
-            this.featureFlags = snapshot.featureFlags;
-
-            if (snapshot.user) {
-              const continuation = await this.loadAppContinuation();
-              if (continuation === "provisioning_required") {
-                this.status = "provisioning_required";
-                return;
-              }
-              if (continuation === "error") {
-                this.status = "error";
-                return;
-              }
-              if (!this.csrfToken) {
-                await this.ensureCsrfToken();
-              }
-            }
-
-            this.status = "ready";
-            return;
-          }
-
-          if (sharedSession.kind === "anonymous") {
-            this.user = null;
-            this.profile = null;
-            this.aiPolicy = null;
-            this.grants = [];
-            this.featureFlags = [];
-            this.csrfToken = null;
-            this.status = "ready";
-            this.error = null;
-            this.appContinuationError = null;
-            return;
-          }
-
-          this.user = null;
-          this.profile = null;
-          this.aiPolicy = null;
-          this.grants = [];
-          this.featureFlags = [];
-          this.csrfToken = null;
-          this.status = "error";
-          this.error = sharedSession.message;
-          this.appContinuationError = null;
-        } catch (error: unknown) {
-          this.user = null;
-          this.profile = null;
-          this.aiPolicy = null;
-          this.grants = [];
-          this.featureFlags = [];
-          this.csrfToken = null;
-          this.status = "error";
-          this.error = error instanceof Error ? error.message : "Failed to bootstrap session";
-          this.appContinuationError = null;
-        }
-      })();
-
-      try {
-        await bootstrapPromise;
-      } finally {
-        this.bootstrapped = true;
-        bootstrapPromise = null;
-      }
-    },
-    async loadAppContinuation(): Promise<"ready" | "error" | "provisioning_required"> {
-      this.aiPolicy = null;
-      this.appContinuationError = null;
-
-      try {
-        const result = await requestAppContinuation();
-
-        if (result.kind === "ready") {
-          this.user = result.continuation.local_user;
-          this.aiPolicy = result.continuation.ai_policy;
-          this.profile = result.profile;
-          this.error = null;
-          this.appContinuationError = null;
-          return "ready";
-        }
-
-        this.user = null;
-        this.profile = null;
-        this.error = result.error.message;
-        this.appContinuationError = result.error;
-        if (result.kind === "provisioning_required") {
-          return "provisioning_required";
-        }
-        return "error";
-      } catch (error: unknown) {
-        this.user = null;
-        this.profile = null;
-        this.error =
-          error instanceof Error ? error.message : "Failed to load app continuation";
-        this.appContinuationError = null;
-        return "error";
-      }
-    },
-    async ensureCsrfToken(): Promise<string | null> {
-      if (this.csrfToken) {
-        return this.csrfToken;
-      }
-
-      if (!this.user) {
+      if (result.kind === "anonymous") {
+        applyResponse(requestSession, anonymousState());
         return null;
       }
+      applyResponse(requestSession, { error: result.message });
+    } catch (error: unknown) {
+      applyResponse(requestSession, {
+        error: error instanceof Error ? error.message : "Failed to fetch CSRF token",
+      });
+    }
+    return null;
+  }
 
+  async function bootstrapSession(): Promise<AuthSession | null> {
+    if (bootstrapPromise) return bootstrapPromise;
+    if (state.bootstrapped) return captureSession();
+    const requestSession = captureSession();
+    state.status = "loading";
+    state.error = null;
+    state.appContinuationError = null;
+    bootstrapPromise = (async () => {
       try {
-        const result = await loadSharedCsrfToken();
-
-        if (result.kind === "ready") {
-          this.csrfToken = result.token;
-          return this.csrfToken;
-        }
-
-        if (result.kind === "anonymous") {
-          this.user = null;
-          this.grants = [];
-          this.featureFlags = [];
-          this.csrfToken = null;
+        const sharedSession = await loadSharedSessionSnapshot();
+        if (sharedSession.kind === "authenticated") {
+          const { snapshot } = sharedSession;
+          if (!applyResponse(requestSession, { bootstrapped: true })) return null;
+          if (snapshot.user) {
+            const continuation = await continueSession(requestSession);
+            const admittedSession = continuation.session;
+            if (admittedSession === null || !isCurrentSession(admittedSession)) return null;
+            if (continuation.status === "ready") {
+              if (!applyResponse(admittedSession, {
+                grants: snapshot.grants,
+                featureFlags: snapshot.featureFlags,
+              })) return null;
+              await ensureCsrfToken(admittedSession);
+            }
+            return isCurrentSession(admittedSession) ? admittedSession : null;
+          }
+          applyResponse(requestSession, anonymousState());
           return null;
         }
-
-        this.error = result.message;
-        return null;
-      } catch (error: unknown) {
-        this.error = error instanceof Error ? error.message : "Failed to fetch CSRF token";
-        return null;
-      }
-    },
-    async logout(): Promise<void> {
-      this.status = "loading";
-      this.error = null;
-
-      if (!this.bootstrapped) {
-        await this.bootstrap();
-      }
-
-      try {
-        const csrfToken = await this.ensureCsrfToken();
-        if (!csrfToken) {
-          if (!this.user) {
-            this.clear();
-            return;
-          }
-          throw new Error(this.error ?? "Det gick inte att hämta CSRF-token.");
+        if (sharedSession.kind === "anonymous") {
+          applyResponse(requestSession, anonymousState());
+          return null;
         }
+        applyResponse(requestSession, {
+          ...anonymousState(),
+          status: "error",
+          error: sharedSession.message,
+        });
+      } catch (error: unknown) {
+        applyResponse(requestSession, {
+          ...anonymousState(),
+          status: "error",
+          error: error instanceof Error ? error.message : "Failed to bootstrap session",
+        });
+      }
+      return null;
+    })();
+    try {
+      return await bootstrapPromise;
+    } finally {
+      bootstrapPromise = null;
+    }
+  }
 
-        const response = await postSharedLogout(csrfToken);
+  async function bootstrap(): Promise<void> {
+    await bootstrapSession();
+  }
 
-        if (isSharedLogoutComplete(response)) {
-          this.clear();
+  async function logout(): Promise<void> {
+    state.status = "loading";
+    state.error = null;
+    let requestSession = captureSession();
+    if (!state.bootstrapped) {
+      const admittedSession = await bootstrapSession();
+      if (admittedSession === null) return;
+      requestSession = admittedSession;
+    }
+    if (!isCurrentSession(requestSession)) return;
+    try {
+      const csrfToken = await ensureCsrfToken(requestSession);
+      if (!isCurrentSession(requestSession)) return;
+      if (!csrfToken) {
+        if (!state.user) {
+          applyResponse(requestSession, anonymousState());
           return;
         }
-
-        if (response.status === 403 && this.user) {
-          this.csrfToken = null;
-          const refreshedToken = await this.ensureCsrfToken();
-          if (refreshedToken) {
-            const retry = await postSharedLogout(refreshedToken);
-            if (isSharedLogoutComplete(retry)) {
-              this.clear();
-              return;
-            }
-            this.status = "error";
-            this.error = await readErrorMessage(retry);
-            throw new Error(this.error);
-          }
-        }
-
-        this.status = "error";
-        this.error = await readErrorMessage(response);
-        throw new Error(this.error);
-      } catch (error: unknown) {
-        if (!this.error) {
-          this.error = error instanceof Error ? error.message : LOGOUT_GENERIC_FAILURE_MESSAGE;
-        }
-        this.status = "error";
-        throw error;
+        throw new Error(state.error ?? "Det gick inte att hämta CSRF-token.");
       }
-    },
-  },
+      const response = await postSharedLogout(csrfToken);
+      if (!isCurrentSession(requestSession)) return;
+      if (isSharedLogoutComplete(response)) {
+        applyResponse(requestSession, anonymousState());
+        return;
+      }
+      if (response.status === 403 && state.user) {
+        applyResponse(requestSession, { csrfToken: null });
+        const refreshedToken = await ensureCsrfToken(requestSession);
+        if (!isCurrentSession(requestSession)) return;
+        if (refreshedToken) {
+          const retry = await postSharedLogout(refreshedToken);
+          if (!isCurrentSession(requestSession)) return;
+          if (isSharedLogoutComplete(retry)) {
+            applyResponse(requestSession, anonymousState());
+            return;
+          }
+          throw new Error(await readErrorMessage(retry));
+        }
+      }
+      throw new Error(await readErrorMessage(response));
+    } catch (error: unknown) {
+      if (!isCurrentSession(requestSession)) return;
+      applyResponse(requestSession, {
+        error: state.error ?? (error instanceof Error ? error.message : LOGOUT_GENERIC_FAILURE_MESSAGE),
+        status: "error",
+      });
+      throw error;
+    }
+  }
+
+  return {
+    ...toRefs(state),
+    actorSession: computed(() => session.value),
+    isAuthenticated: computed(() => state.user !== null),
+    isProvisioningRequired: computed(() => state.status === "provisioning_required"),
+    role: computed(() => state.user?.role ?? null),
+    hasAtLeastRole: (minRole: ApiRole): boolean =>
+      state.user !== null && ROLE_RANK[state.user.role] >= ROLE_RANK[minRole],
+    hasGrant: (grant: string): boolean => state.grants.includes(grant),
+    hasFeatureFlag: (flag: string): boolean => state.featureFlags.includes(flag),
+    displayName: computed(() => state.user
+      ? state.profile?.display_name || state.profile?.first_name || state.user.email.split("@")[0]
+      : null),
+    captureSession,
+    isCurrentSession,
+    requireCurrentSession,
+    applyResponse,
+    clear,
+    bootstrap,
+    loadAppContinuation,
+    ensureCsrfToken,
+    logout,
+  };
 });

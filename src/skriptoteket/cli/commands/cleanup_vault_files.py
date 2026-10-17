@@ -1,13 +1,19 @@
 from __future__ import annotations
 
 import asyncio
-from datetime import timedelta
+from collections.abc import AsyncIterator, Callable
+from contextlib import AbstractAsyncContextManager, asynccontextmanager, nullcontext
+from dataclasses import dataclass
+from datetime import datetime, timedelta
+from functools import partial
 from uuid import UUID
 
 import typer
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from skriptoteket.cli._db import open_session
 from skriptoteket.config import Settings
+from skriptoteket.domain.scripting.vault import VaultFile
 from skriptoteket.infrastructure.clock import UTCClock
 from skriptoteket.infrastructure.db.uow import SQLAlchemyUnitOfWork
 from skriptoteket.infrastructure.repositories.user_vault_file_repository import (
@@ -17,11 +23,158 @@ from skriptoteket.infrastructure.repositories.user_vault_usage_repository import
     PostgreSQLUserVaultUsageRepository,
 )
 from skriptoteket.infrastructure.vault.local_vault_storage import LocalVaultStorage
+from skriptoteket.protocols.uow import UnitOfWorkProtocol
+from skriptoteket.protocols.vault import (
+    VaultFileRepositoryProtocol,
+    VaultStorageProtocol,
+    VaultUsageRepositoryProtocol,
+)
+
+_EXPIRED_BATCH_SIZE = 200
+
+
+@dataclass(frozen=True)
+class VaultCleanupScope:
+    """Repositories and an unentered UoW belonging to one fresh session.
+
+    A scope must not share an ambient transaction: releasing a SAVEPOINT does
+    not release transaction-scoped advisory locks.
+    """
+
+    vault_files: VaultFileRepositoryProtocol
+    vault_usage: VaultUsageRepositoryProtocol
+    uow: UnitOfWorkProtocol
+
+
+@asynccontextmanager
+async def open_vault_cleanup_scope(
+    session_factory: async_sessionmaker[AsyncSession],
+) -> AsyncIterator[VaultCleanupScope]:
+    """Give each selection or purge its own application session and root UoW."""
+    async with session_factory() as session:
+        yield VaultCleanupScope(
+            vault_files=PostgreSQLUserVaultFileRepository(session),
+            vault_usage=PostgreSQLUserVaultUsageRepository(session),
+            uow=SQLAlchemyUnitOfWork(session),
+        )
 
 
 def cleanup_vault_files() -> None:
     """Delete expired vault files past retention (cron-friendly)."""
     asyncio.run(_cleanup_vault_files_async())
+
+
+async def purge_expired_vault_files(
+    *,
+    scope_factory: Callable[[], AbstractAsyncContextManager[VaultCleanupScope]],
+    storage: VaultStorageProtocol,
+    cutoff: datetime,
+    now: datetime,
+) -> tuple[int, set[UUID]]:
+    """Purge expired files, including all saved exports when their exam expires.
+
+    Every row in an expired exam's lineage is captured before deletion, regardless
+    of each export's own state. Every payload is deleted before the first row, so no
+    payload outlives its row. When only an export expires, the live exam and its
+    non-expired files stay.
+
+    Each purge group commits through its own root UoW before releasing its
+    payload guard. No SQL lock survives into acquisition of the next guard,
+    including across different lineages or owners. Selection scopes close
+    before any purge begins; callers supply fresh scopes, not an enclosing UoW.
+    A later failure leaves earlier groups committed and can be retried.
+
+    Returns the number of deleted rows and the owners whose bytes were recomputed.
+    """
+
+    deleted = 0
+    affected_users: set[UUID] = set()
+    processed_lineages: set[tuple[UUID, UUID]] = set()
+
+    while True:
+        async with scope_factory() as selection:
+            expired = await selection.vault_files.list_expired(
+                cutoff=cutoff, limit=_EXPIRED_BATCH_SIZE
+            )
+        if not expired:
+            break
+        for item in expired:
+            lineage_id = item.document_lineage_id
+            key = (item.user_id, lineage_id) if lineage_id is not None else None
+            if key is not None and key in processed_lineages:
+                continue
+            async with scope_factory() as scope:
+                vault_files = scope.vault_files
+                guard = (
+                    vault_files.guard_document_payload(
+                        user_id=item.user_id, document_lineage_id=lineage_id
+                    )
+                    if lineage_id is not None
+                    else nullcontext()
+                )
+                async with guard:
+                    async with scope.uow:
+                        if lineage_id is not None:
+                            await vault_files.lock_document_lineage(
+                                user_id=item.user_id, document_lineage_id=lineage_id
+                            )
+                        group = await _purge_group(
+                            vault_files=vault_files, item=item, cutoff=cutoff
+                        )
+                        for member in group:
+                            await storage.delete_file(user_id=member.user_id, file_id=member.id)
+                        for member in group:
+                            await vault_files.delete(file_id=member.id)
+                        # Lock before summing so another lineage's concurrent save
+                        # cannot publish accounting between our sum and its update.
+                        await scope.vault_usage.get_for_update(user_id=item.user_id, now=now)
+                        await scope.vault_usage.recompute_total(user_id=item.user_id, now=now)
+                deleted += len(group)
+                affected_users.add(item.user_id)
+            if key is not None:
+                processed_lineages.add(key)
+
+    return deleted, affected_users
+
+
+async def _purge_group(
+    *,
+    vault_files: VaultFileRepositoryProtocol,
+    item: VaultFile,
+    cutoff: datetime,
+) -> list[VaultFile]:
+    """Return the rows to purge with one expired row.
+
+    Permanently deleting an exam takes the whole exam aggregate with it: every row of its
+    lineage, in whatever state one saved export happens to be, so no export row can
+    outlive its exam while its payload is still on disk. An export whose exam is still
+    active expires alone: only the trashed rows past the cutoff are purged, never a live
+    exam or a format that still has time left. The item itself is one of the returned
+    rows while it still exists, so an empty group means an earlier purge in the same run
+    already took the row and its payload.
+    """
+
+    lineage_id = item.document_lineage_id
+    if lineage_id is None:
+        return [item]
+
+    members = await vault_files.list_exam_files(
+        user_id=item.user_id,
+        document_lineage_id=lineage_id,
+        include_deleted=True,
+    )
+    exam_document = next((member for member in members if member.export_format is None), None)
+    exam_is_expired = (
+        exam_document is not None
+        and exam_document.deleted_at is not None
+        and exam_document.deleted_at < cutoff
+    )
+    if exam_is_expired:
+        return members
+
+    return [
+        member for member in members if member.deleted_at is not None and member.deleted_at < cutoff
+    ]
 
 
 async def _cleanup_vault_files_async() -> None:
@@ -34,26 +187,12 @@ async def _cleanup_vault_files_async() -> None:
     cutoff = now - timedelta(days=settings.VAULT_RETENTION_DAYS)
 
     async with open_session(settings) as session:
-        uow = SQLAlchemyUnitOfWork(session)
-        vault_files = PostgreSQLUserVaultFileRepository(session)
-        vault_usage = PostgreSQLUserVaultUsageRepository(session)
-        storage = LocalVaultStorage(vault_root=settings.VAULT_ROOT)
-
-        deleted = 0
-        affected_users: set[UUID] = set()
-
-        async with uow:
-            while True:
-                expired = await vault_files.list_expired(cutoff=cutoff, limit=200)
-                if not expired:
-                    break
-                for item in expired:
-                    await storage.delete_file(user_id=item.user_id, file_id=item.id)
-                    await vault_files.delete(file_id=item.id)
-                    deleted += 1
-                    affected_users.add(item.user_id)
-
-            for user_id in affected_users:
-                await vault_usage.recompute_total(user_id=user_id, now=now)
+        session_factory = async_sessionmaker(session.bind, expire_on_commit=False)
+        deleted, _affected_users = await purge_expired_vault_files(
+            scope_factory=partial(open_vault_cleanup_scope, session_factory),
+            storage=LocalVaultStorage(vault_root=settings.VAULT_ROOT),
+            cutoff=cutoff,
+            now=now,
+        )
 
     typer.echo(f"Cleanup vault files complete: deleted={deleted}")

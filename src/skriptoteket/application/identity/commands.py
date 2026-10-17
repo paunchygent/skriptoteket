@@ -5,6 +5,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
+from skriptoteket.domain.curated_apps.exam_workspace.exam_course_catalog import SchoolForm
 from skriptoteket.domain.identity.models import Role, User, UserProfile
 
 
@@ -126,6 +127,21 @@ class UpdateClassroomPlannerSettingsCommand(BaseModel):
 
 
 class UpdateClassroomPlannerSettingsResult(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    user: User
+    profile: UserProfile
+
+
+class UpdateExamCoursesCommand(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    user_id: UUID
+    school_forms: list[SchoolForm]
+    course_keys: list[str]
+
+
+class UpdateExamCoursesResult(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     user: User

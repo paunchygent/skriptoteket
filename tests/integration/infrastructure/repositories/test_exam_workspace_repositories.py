@@ -1,7 +1,7 @@
 """PostgreSQL coverage for exam workspace persistence seams (TASK-SKRIPT-39-04-01).
 
-Covers the versioned Mina filer document lineage (head lookup, head listing,
-and the duplicate-version CONFLICT path through the real unique index) and
+Covers the one-file Mina filer exam document (head lookup, head listing, the
+stale-revision CONFLICT path and the overwrite that preserves the row) and
 workspace-kind answer-key enrichment jobs (revision lookup and the partial
 unique index that leaves DXE jobs unconstrained).
 """
@@ -33,6 +33,7 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_document_stor
 )
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode
+from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.scripting.vault import VaultFile, VaultFileSourceKind
 from skriptoteket.infrastructure.db.models.user_vault_file import UserVaultFileModel
 from skriptoteket.infrastructure.db.uow import SQLAlchemyUnitOfWork
@@ -63,12 +64,14 @@ pytestmark = [
 _WORKSPACE_PREFIX = f"{EXAM_WORKSPACE_SOURCE_ARTIFACT_PREFIX}:"
 
 
-def _version_file(
+def _exam_file(
     *,
     owner_id: UUID,
     lineage_id: UUID,
     version: int,
     created_at: datetime,
+    export_format: str | None = None,
+    deleted_at: datetime | None = None,
     source_artifact_id: str | None = None,
 ) -> VaultFile:
     return VaultFile(
@@ -79,11 +82,13 @@ def _version_file(
         source_kind=VaultFileSourceKind.APP_EXPORT,
         source_run_id=None,
         source_artifact_id=source_artifact_id
-        or f"{EXAM_WORKSPACE_SOURCE_ARTIFACT_PREFIX}:{lineage_id}:v{version}",
+        or f"{EXAM_WORKSPACE_SOURCE_ARTIFACT_PREFIX}:{lineage_id}"
+        + (f":{export_format}" if export_format else ""),
         document_lineage_id=lineage_id,
         document_version=version,
+        export_format=export_format,
         created_at=created_at,
-        deleted_at=None,
+        deleted_at=deleted_at,
     )
 
 
@@ -96,47 +101,75 @@ async def _insert_files(
             await repository.create(file=file)
 
 
-async def test_get_document_head_returns_newest_active_version_for_its_owner(
+async def _save_document(
+    session_factory: async_sessionmaker[AsyncSession],
+    *,
+    actor: User,
+    storage: LocalVaultStorage,
+    settings: Settings,
+    lineage_id: UUID,
+    file_id: UUID,
+    content: bytes,
+    version: int,
+    expected_revision: int | None,
+) -> VaultFile:
+    async with session_factory() as session:
+        store = ExamWorkspaceDocumentStore(
+            vault_files=PostgreSQLUserVaultFileRepository(session),
+            vault_usage=PostgreSQLUserVaultUsageRepository(session),
+            vault_storage=storage,
+            uow=SQLAlchemyUnitOfWork(session),
+            clock=FixedClock(datetime.now(UTC)),
+            settings=settings,
+        )
+        return await store.save(
+            actor=actor,
+            file_id=file_id,
+            name="prov.provdokument.zip",
+            content=content,
+            lineage_id=lineage_id,
+            version=version,
+            expected_revision=expected_revision,
+        )
+
+
+async def test_get_document_head_returns_the_one_active_exam_row_for_its_owner(
     session_factory: async_sessionmaker[AsyncSession],
 ) -> None:
     owner = await create_owner(session_factory)
     stranger = await create_owner(session_factory)
     lineage_id = uuid4()
     base = datetime.now(UTC)
-    files = [
-        _version_file(
-            owner_id=owner.id,
-            lineage_id=lineage_id,
-            version=version,
-            created_at=base + timedelta(seconds=version),
-        )
-        for version in (1, 2, 3)
-    ]
-    await _insert_files(session_factory, files)
+    exam = _exam_file(owner_id=owner.id, lineage_id=lineage_id, version=2, created_at=base)
+    trashed = _exam_file(
+        owner_id=owner.id,
+        lineage_id=lineage_id,
+        version=1,
+        created_at=base,
+        deleted_at=base + timedelta(minutes=1),
+    )
+    export = _exam_file(
+        owner_id=owner.id,
+        lineage_id=lineage_id,
+        version=2,
+        created_at=base,
+        export_format="qti",
+    )
+    foreign = _exam_file(owner_id=stranger.id, lineage_id=lineage_id, version=1, created_at=base)
+    await _insert_files(session_factory, [exam, trashed, export, foreign])
 
     async with session_factory() as session:
         repository = PostgreSQLUserVaultFileRepository(session)
         head = await repository.get_document_head(user_id=owner.id, document_lineage_id=lineage_id)
-        assert head is not None and head.document_version == 3
-        assert (
-            await repository.get_document_head(user_id=stranger.id, document_lineage_id=lineage_id)
-            is None
+        assert head is not None and head.id == exam.id
+        foreign_head = await repository.get_document_head(
+            user_id=stranger.id, document_lineage_id=lineage_id
         )
+        assert foreign_head is not None and foreign_head.id == foreign.id
         assert (
             await repository.get_document_head(user_id=owner.id, document_lineage_id=uuid4())
             is None
         )
-
-    async with session_factory() as session, session.begin():
-        model = await session.get(UserVaultFileModel, files[2].id)
-        assert model is not None
-        model.deleted_at = base + timedelta(minutes=1)
-
-    async with session_factory() as session:
-        head = await PostgreSQLUserVaultFileRepository(session).get_document_head(
-            user_id=owner.id, document_lineage_id=lineage_id
-        )
-    assert head is not None and head.document_version == 2
 
 
 async def test_list_document_heads_returns_one_head_per_workspace_lineage(
@@ -153,33 +186,35 @@ async def test_list_document_heads_returns_one_head_per_workspace_lineage(
     await _insert_files(
         session_factory,
         [
-            _version_file(owner_id=owner.id, lineage_id=older_lineage, version=1, created_at=base),
-            _version_file(
+            _exam_file(owner_id=owner.id, lineage_id=older_lineage, version=3, created_at=base),
+            # A saved export of the exam is not a document head.
+            _exam_file(
                 owner_id=owner.id,
                 lineage_id=older_lineage,
-                version=2,
-                created_at=base + timedelta(seconds=1),
+                version=3,
+                created_at=base + timedelta(seconds=2),
+                export_format="qti",
             ),
-            _version_file(
+            _exam_file(
                 owner_id=owner.id,
                 lineage_id=newer_lineage,
                 version=1,
                 created_at=base + timedelta(seconds=5),
             ),
-            _version_file(
+            _exam_file(
                 owner_id=owner.id,
                 lineage_id=foreign_lineage,
                 version=1,
                 created_at=base,
-                source_artifact_id=f"other.app:exam-workspace:{foreign_lineage}:v1",
+                source_artifact_id=f"other.app:exam-workspace:{foreign_lineage}",
             ),
             # `_` in the prefix must match literally, not as a LIKE wildcard.
-            _version_file(
+            _exam_file(
                 owner_id=owner.id,
                 lineage_id=wildcard_lineage,
                 version=1,
                 created_at=base,
-                source_artifact_id=f"documents.conversionXhub:exam-workspace:{wildcard_lineage}:v1",
+                source_artifact_id=f"documents.conversionXhub:exam-workspace:{wildcard_lineage}",
             ),
         ],
     )
@@ -191,65 +226,118 @@ async def test_list_document_heads_returns_one_head_per_workspace_lineage(
 
     assert [(head.document_lineage_id, head.document_version) for head in heads] == [
         (newer_lineage, 1),
-        (older_lineage, 2),
+        (older_lineage, 3),
     ]
 
 
-async def test_duplicate_document_version_maps_to_conflict_without_writing_a_file(
+async def test_save_with_stale_expected_revision_is_refused_and_writes_nothing(
     session_factory: async_sessionmaker[AsyncSession],
     tmp_path: Path,
 ) -> None:
-    """A second save of an existing (lineage, version) is refused before storage.
+    """An overwrite guarded by a stale revision is refused before storage.
 
-    ``create()`` flushes the row before the content is stored, so the unique
-    index raises on the duplicate before any file is written. Verified: the
-    duplicate maps to CONFLICT, no file exists for the duplicate id, and the
-    first version's file, row, and usage total are intact.
+    The store reads the current row inside the lineage lock, so the revision
+    check maps the caller's stale expectation to CONFLICT: no file is written
+    and the first save's row, payload and usage total stay intact.
     """
-    owner = await create_owner(session_factory)
+    actor = await create_owner(session_factory)
     lineage_id = uuid4()
     storage = LocalVaultStorage(vault_root=tmp_path)
     settings = Settings.model_construct(
         VAULT_MAX_FILE_BYTES=1_000_000, VAULT_MAX_TOTAL_BYTES=10_000_000
     )
 
-    async def save(file_id: UUID) -> VaultFile:
-        async with session_factory() as session:
-            store = ExamWorkspaceDocumentStore(
-                vault_files=PostgreSQLUserVaultFileRepository(session),
-                vault_usage=PostgreSQLUserVaultUsageRepository(session),
-                vault_storage=storage,
-                uow=SQLAlchemyUnitOfWork(session),
-                clock=FixedClock(datetime.now(UTC)),
-                settings=settings,
-            )
-            return await store.save_version(
-                actor=owner,
-                file_id=file_id,
-                name="prov.provdokument.zip",
-                content=b"container-bytes",
-                lineage_id=lineage_id,
-                version=1,
-            )
-
-    first = await save(uuid4())
-    duplicate_id = uuid4()
+    first = await _save_document(
+        session_factory,
+        actor=actor,
+        storage=storage,
+        settings=settings,
+        lineage_id=lineage_id,
+        file_id=uuid4(),
+        content=b"container-bytes",
+        version=1,
+        expected_revision=None,
+    )
+    refused_id = uuid4()
     with pytest.raises(DomainError) as exc_info:
-        await save(duplicate_id)
+        await _save_document(
+            session_factory,
+            actor=actor,
+            storage=storage,
+            settings=settings,
+            lineage_id=lineage_id,
+            file_id=refused_id,
+            content=b"stale-container-bytes",
+            version=2,
+            expected_revision=0,
+        )
 
     assert exc_info.value.code is ErrorCode.CONFLICT
-    assert exc_info.value.details == {"lineage_id": str(lineage_id), "version": 1}
-    assert await storage.exists_file(user_id=owner.id, file_id=first.id)
-    assert not await storage.exists_file(user_id=owner.id, file_id=duplicate_id)
+    assert exc_info.value.details == {"expected_revision": 0, "current_revision": 1}
+    assert await storage.exists_file(user_id=actor.id, file_id=first.id)
+    assert not await storage.exists_file(user_id=actor.id, file_id=refused_id)
     async with session_factory() as session:
         count = await session.scalar(
             select(func.count())
             .select_from(UserVaultFileModel)
             .where(UserVaultFileModel.document_lineage_id == lineage_id)
         )
-        usage = await PostgreSQLUserVaultUsageRepository(session).get(user_id=owner.id)
+        usage = await PostgreSQLUserVaultUsageRepository(session).get(user_id=actor.id)
     assert count == 1
     assert usage is not None and usage.bytes_total == len(b"container-bytes")
+
+
+async def test_overwriting_an_exam_keeps_the_row_and_adjusts_vault_usage(
+    session_factory: async_sessionmaker[AsyncSession],
+    tmp_path: Path,
+) -> None:
+    """A current expected_revision overwrites the one exam row instead of adding one."""
+    actor = await create_owner(session_factory)
+    lineage_id = uuid4()
+    storage = LocalVaultStorage(vault_root=tmp_path)
+    settings = Settings.model_construct(
+        VAULT_MAX_FILE_BYTES=1_000_000, VAULT_MAX_TOTAL_BYTES=10_000_000
+    )
+
+    first = await _save_document(
+        session_factory,
+        actor=actor,
+        storage=storage,
+        settings=settings,
+        lineage_id=lineage_id,
+        file_id=uuid4(),
+        content=b"container-bytes",
+        version=1,
+        expected_revision=None,
+    )
+    unused_id = uuid4()
+    second_content = b"a longer container body"
+    overwritten = await _save_document(
+        session_factory,
+        actor=actor,
+        storage=storage,
+        settings=settings,
+        lineage_id=lineage_id,
+        file_id=unused_id,
+        content=second_content,
+        version=2,
+        expected_revision=1,
+    )
+
+    assert overwritten.id == first.id
+    assert overwritten.document_version == 2
+    assert overwritten.bytes == len(second_content)
+    assert await storage.read_file(user_id=actor.id, file_id=first.id) == second_content
+    assert not await storage.exists_file(user_id=actor.id, file_id=unused_id)
+    async with session_factory() as session:
+        count = await session.scalar(
+            select(func.count())
+            .select_from(UserVaultFileModel)
+            .where(UserVaultFileModel.document_lineage_id == lineage_id)
+        )
+        usage = await PostgreSQLUserVaultUsageRepository(session).get(user_id=actor.id)
+    assert count == 1
+    assert usage is not None and usage.bytes_total == len(second_content)
 
 
 async def _create_conversion_job(
@@ -293,7 +381,7 @@ async def test_workspace_suggestion_jobs_coexist_for_one_lineage(
             now=now,
         )
 
-    # Both stand on saved version 3: one saved version carries several jobs.
+    # Both stand on saved revision 3: one exam file carries several jobs.
     first = workspace_job()
     second = workspace_job()
     async with session_factory() as session, session.begin():

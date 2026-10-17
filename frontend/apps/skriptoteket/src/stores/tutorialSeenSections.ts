@@ -69,8 +69,6 @@ export const useTutorialSeenSectionsStore = defineStore("tutorialSeenSections", 
   let writeQueued = false;
 
   const ready = computed(() => auth.profile !== null);
-  // The profile is the signed-in identity this chain writes for; `clear()` nulls it.
-  const currentUserId = computed(() => auth.profile?.user_id ?? null);
 
   function resetChain(): void {
     acknowledged.value = [];
@@ -80,11 +78,7 @@ export const useTutorialSeenSectionsStore = defineStore("tutorialSeenSections", 
   }
 
   // Logout, a 401 clear or a different user signing in ends this chain.
-  watch(currentUserId, (next, previous) => {
-    if (next !== previous) {
-      resetChain();
-    }
-  });
+  watch(() => auth.actorSession, resetChain, { flush: "sync" });
 
   function isConfirmed(section: string): boolean {
     return profileSeen.value.includes(section) || acknowledged.value.includes(section);
@@ -100,8 +94,8 @@ export const useTutorialSeenSectionsStore = defineStore("tutorialSeenSections", 
       while (writeQueued) {
         writeQueued = false;
         lastWriteFailed.value = false;
-        const writerId = currentUserId.value;
-        if (writerId === null) {
+        const writerSession = auth.captureSession();
+        if (auth.profile === null) {
           // Nothing to write without a session; the identity watch already
           // cleared the chain.
           continue;
@@ -111,20 +105,12 @@ export const useTutorialSeenSectionsStore = defineStore("tutorialSeenSections", 
           const response = await updateClassroomPlannerSettings({
             tutorial_seen_sections: sections,
           });
-          if (currentUserId.value !== writerId) {
-            // The session ended or changed while this write was in flight. The
-            // response belongs to the old session and must not revive it; the
-            // identity watch already reset the chain, and any write the new
-            // session queued meanwhile runs on the next loop pass.
-            continue;
-          }
-          auth.user = response.user;
-          auth.profile = response.profile;
+          if (!auth.applyResponse(writerSession, response)) continue;
           const stored = response.profile.classroom_planner_tutorial_seen_sections ?? [];
           acknowledged.value = unionOf(acknowledged.value, stored);
           pending.value = pending.value.filter((section) => !stored.includes(section));
         } catch {
-          if (currentUserId.value !== writerId) {
+          if (!auth.isCurrentSession(writerSession)) {
             continue;
           }
           lastWriteFailed.value = true;

@@ -8,7 +8,7 @@ goes through the minimal validated writer.
 
 from __future__ import annotations
 
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from skriptoteket.application.curated_apps.exam_workspace import (
     ExamWorkspaceExportChecklistAllOrNothing,
@@ -148,6 +148,35 @@ class ExportExamWorkspaceDocumentHandler:
             content=content,
         )
 
+    async def save(
+        self,
+        *,
+        actor: User,
+        lineage_id: UUID,
+        target: ExamWorkspaceExportTarget,
+        expected_revision: int,
+    ) -> VaultFile:
+        """Save through the download gate; replace this exam's previous format file."""
+        async with self._store.transaction(user_id=actor.id, lineage_id=lineage_id):
+            await self._vault_files.lock_document_lineage(
+                user_id=actor.id, document_lineage_id=lineage_id
+            )
+            exported = await self.handle(
+                actor=actor,
+                lineage_id=lineage_id,
+                target=target,
+                expected_revision=expected_revision,
+            )
+            return await self._store.save(
+                actor=actor,
+                file_id=uuid4(),
+                name=exported.filename,
+                content=exported.content,
+                lineage_id=lineage_id,
+                version=expected_revision,
+                export_format=target.value,
+            )
+
     async def checklist(
         self, *, actor: User, lineage_id: UUID, expected_revision: int
     ) -> ExamWorkspaceExportChecklistResponse:
@@ -175,12 +204,23 @@ class ExportExamWorkspaceDocumentHandler:
     async def _load_head(
         self, *, actor: User, lineage_id: UUID, expected_revision: int
     ) -> tuple[VaultFile, ExamWorkspaceContainerContent]:
+        async with self._store.transaction(user_id=actor.id, lineage_id=lineage_id):
+            await self._vault_files.lock_document_lineage(
+                user_id=actor.id, document_lineage_id=lineage_id
+            )
+            return await self._read_head(
+                actor=actor, lineage_id=lineage_id, expected_revision=expected_revision
+            )
+
+    async def _read_head(
+        self, *, actor: User, lineage_id: UUID, expected_revision: int
+    ) -> tuple[VaultFile, ExamWorkspaceContainerContent]:
         head = await self._vault_files.get_document_head(
             user_id=actor.id, document_lineage_id=lineage_id
         )
         if head is None:
             raise _document_not_found(lineage_id)
-        content = await self._store.load_version(actor=actor, vault_file=head)
+        content = await self._store.load(actor=actor, vault_file=head)
         container = self._codec.parse(content=content)
         if container.document.revision != expected_revision:
             raise DomainError(

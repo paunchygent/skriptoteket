@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from contextlib import AbstractAsyncContextManager
 from datetime import datetime
 from typing import Protocol
 from uuid import UUID
@@ -21,6 +22,8 @@ from skriptoteket.domain.scripting.vault import VaultFile, VaultListSort, VaultL
 
 
 class VaultFileRepositoryProtocol(Protocol):
+    """Stored Mina filer rows, the exam file per lineage, and exam undo history."""
+
     async def get_by_id(self, *, file_id: UUID) -> VaultFile | None: ...
 
     async def list_for_user(
@@ -65,6 +68,24 @@ class VaultFileRepositoryProtocol(Protocol):
         source_artifact_prefix: str,
     ) -> list[VaultFile]: ...
 
+    async def list_saved_exports(
+        self, *, user_id: UUID, document_lineage_id: UUID
+    ) -> list[VaultFile]: ...
+
+    async def list_exam_files(
+        self,
+        *,
+        user_id: UUID,
+        document_lineage_id: UUID,
+        include_deleted: bool,
+    ) -> list[VaultFile]: ...
+
+    async def get_history(self, *, user_id: UUID, document_lineage_id: UUID) -> bytes | None: ...
+
+    async def put_history(
+        self, *, user_id: UUID, document_lineage_id: UUID, content: bytes
+    ) -> None: ...
+
     async def name_in_use(
         self,
         *,
@@ -74,11 +95,13 @@ class VaultFileRepositoryProtocol(Protocol):
         exclude_file_id: UUID | None,
     ) -> bool: ...
 
-    async def list_lineage_versions(
-        self, *, user_id: UUID, document_lineage_id: UUID
-    ) -> list[VaultFile]: ...
-
     async def lock_owner_renames(self, *, user_id: UUID) -> None: ...
+
+    def guard_document_payload(
+        self, *, user_id: UUID, document_lineage_id: UUID
+    ) -> AbstractAsyncContextManager[None]:
+        """Exclude payload readers/writers until commit and compensation finish."""
+        ...
 
     async def lock_document_lineage(self, *, user_id: UUID, document_lineage_id: UUID) -> None: ...
 
@@ -91,6 +114,8 @@ class VaultFileRepositoryProtocol(Protocol):
     ) -> list[VaultFile]: ...
 
     async def create(self, *, file: VaultFile) -> VaultFile: ...
+
+    async def overwrite(self, *, file: VaultFile) -> VaultFile: ...
 
     async def update(self, *, file: VaultFile) -> VaultFile: ...
 

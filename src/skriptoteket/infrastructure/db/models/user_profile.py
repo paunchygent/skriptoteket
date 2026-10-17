@@ -3,12 +3,16 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, String, func
+from sqlalchemy import Boolean, DateTime, ForeignKey, String, func, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from skriptoteket.infrastructure.db.base import Base
+
+
+def _empty_exam_courses() -> dict[str, object]:
+    return {"school_forms": [], "course_keys": []}
 
 
 class UserProfileModel(Base):
@@ -37,6 +41,12 @@ class UserProfileModel(Base):
     classroom_planner_tutorial_seen_sections: Mapped[list[str] | None] = mapped_column(
         JSONB,
         nullable=True,
+    )
+    exam_courses: Mapped[dict[str, object]] = mapped_column(
+        JSONB,
+        nullable=False,
+        server_default=text('\'{"school_forms": [], "course_keys": []}\'::jsonb'),
+        default=_empty_exam_courses,
     )
     locale: Mapped[str] = mapped_column(
         String(16),

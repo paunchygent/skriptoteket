@@ -134,22 +134,26 @@ class RetryExamWorkspaceItemHandler:
                 "Dokumentet hör till en annan provrad.",
                 details={"lineage_id": str(lineage_id)},
             )
-        head = await self._vault_files.get_document_head(
-            user_id=actor.id, document_lineage_id=lineage_id
-        )
-        if head is None:
-            raise _document_not_found(lineage_id)
-        if head.document_version != draft.revision:
-            raise DomainError(
-                code=ErrorCode.CONFLICT,
-                message="Dokumentet har ändrats sedan det öppnades.",
-                details={
-                    "expected_revision": draft.revision,
-                    "current_revision": head.document_version,
-                },
+        async with self._store.transaction(user_id=actor.id, lineage_id=lineage_id):
+            await self._vault_files.lock_document_lineage(
+                user_id=actor.id, document_lineage_id=lineage_id
             )
-        content = await self._store.load_version(actor=actor, vault_file=head)
-        container = self._codec.parse(content=content)
+            head = await self._vault_files.get_document_head(
+                user_id=actor.id, document_lineage_id=lineage_id
+            )
+            if head is None:
+                raise _document_not_found(lineage_id)
+            if head.document_version != draft.revision:
+                raise DomainError(
+                    code=ErrorCode.CONFLICT,
+                    message="Dokumentet har ändrats sedan det öppnades.",
+                    details={
+                        "expected_revision": draft.revision,
+                        "current_revision": head.document_version,
+                    },
+                )
+            content = await self._store.load(actor=actor, vault_file=head)
+            container = self._codec.parse(content=content)
         saved = container.document
         if saved.document_id != lineage_id or saved.revision != head.document_version:
             raise validation_error(

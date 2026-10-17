@@ -3,24 +3,28 @@
 The first admitted batch saves revision 1 with placeholders for the questions still
 converting. Each later batch, the final document and a failed job's abandonment save
 the next revision through ``merge_conversion``: each batch replaces its own placeholders,
-and the teacher's edits on converted items stay. A conversion revision the teacher never
-saved on is retired when conversion supersedes it, so intermediate revisions never
-accumulate in the teacher's vault usage.
+and the teacher's edits on converted items stay. Every write overwrites the exam's
+one vault file and merges delivery into the baseline and autosave snapshots, without
+adding an editor undo step.
 """
 
 from __future__ import annotations
 
 from collections.abc import Mapping
 from pathlib import PurePosixPath
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJob,
     ExamAnswerKeyEnrichmentJobStatus,
 )
+from skriptoteket.application.curated_apps.exam_workspace_history import (
+    ExamWorkspaceHistoryStep,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_merge import (
     ConversionMerge,
     ConversionProgress,
+    ConversionTarget,
     abandon_target,
     first_conversion,
     merge_conversion,
@@ -69,7 +73,7 @@ def _version_name(job: ExamAnswerKeyEnrichmentJob, head: VaultFile | None = None
 
 
 class ExamWorkspaceConversionProgress:
-    """Progress port implementation over the job row and the versioned document store."""
+    """Progress port implementation over the job row and the exam document store."""
 
     def __init__(
         self,
@@ -105,11 +109,16 @@ class ExamWorkspaceConversionProgress:
             )
 
     async def batch_ready(self, *, worker_id: str, job_id: UUID, update: ConversionUpdate) -> None:
+        located = await self._jobs.get_by_id(job_id=job_id)
+        if located is None or located.workspace_lineage_id is None:
+            return
         for attempt in range(1, _SAVE_ATTEMPTS + 1):
             file_id = self._ids.new_uuid()
             actor: User | None = None
             try:
-                async with self._uow:
+                async with self._store.transaction(
+                    user_id=located.owner_user_id, lineage_id=located.workspace_lineage_id
+                ):
                     job = await self._owned_job(job_id=job_id, worker_id=worker_id)
                     if job is None:
                         return
@@ -125,14 +134,8 @@ class ExamWorkspaceConversionProgress:
                     )
                 return
             except DomainError as error:
-                if actor is not None:
-                    await self._store.discard_version_file(actor=actor, file_id=file_id)
                 if error.code is not ErrorCode.CONFLICT or attempt == _SAVE_ATTEMPTS:
                     raise
-            except BaseException:
-                if actor is not None:
-                    await self._store.discard_version_file(actor=actor, file_id=file_id)
-                raise
 
     async def publish_final(
         self,
@@ -145,14 +148,15 @@ class ExamWorkspaceConversionProgress:
         update: ConversionUpdate,
         notes: tuple[str, ...],
     ) -> None:
-        job = await self._owned_job(job_id=job_id, worker_id=worker_id)
-        if job is None or job.workspace_lineage_id != lineage_id:
-            raise DomainError(
-                code=ErrorCode.CONFLICT, message="Konverteringen ägs inte längre av arbetaren."
-            )
         for attempt in range(1, _SAVE_ATTEMPTS + 1):
             try:
-                async with self._uow:
+                async with self._store.transaction(user_id=actor.id, lineage_id=lineage_id):
+                    job = await self._owned_job(job_id=job_id, worker_id=worker_id)
+                    if job is None or job.workspace_lineage_id != lineage_id:
+                        raise DomainError(
+                            code=ErrorCode.CONFLICT,
+                            message="Konverteringen ägs inte längre av arbetaren.",
+                        )
                     await self._publish(
                         job=job,
                         actor=actor,
@@ -166,6 +170,15 @@ class ExamWorkspaceConversionProgress:
                     raise
 
     async def abandon(self, *, worker_id: str, job_id: UUID, reason: str) -> None:
+        located = await self._jobs.get_by_id(job_id=job_id)
+        if located is None or located.workspace_lineage_id is None:
+            return
+        async with self._store.transaction(
+            user_id=located.owner_user_id, lineage_id=located.workspace_lineage_id
+        ):
+            await self._abandon(worker_id=worker_id, job_id=job_id, reason=reason)
+
+    async def _abandon(self, *, worker_id: str, job_id: UUID, reason: str) -> None:
         job = await self._owned_job(job_id=job_id, worker_id=worker_id)
         if job is None or job.conversion_progress is None:
             return
@@ -178,13 +191,24 @@ class ExamWorkspaceConversionProgress:
         for attempt in range(1, _SAVE_ATTEMPTS + 1):
             file_id = self._ids.new_uuid()
             try:
-                async with self._uow:
+                assert job.workspace_lineage_id is not None
+                async with self._store.transaction(
+                    user_id=actor.id, lineage_id=job.workspace_lineage_id
+                ):
                     loaded = await self._load_head(job=job, actor=actor)
                     if loaded is None:
                         return
                     head_file, head = loaded
                     target = abandon_target(head=head.document, progress=progress, reason=reason)
                     merged = merge_conversion(head=head.document, progress=progress, target=target)
+                    await self._merge_history(
+                        actor=actor,
+                        lineage_id=head.document.document_id,
+                        progress=progress,
+                        target=target,
+                        payloads=head.assets_by_id,
+                        notes=None,
+                    )
                     await self._write(
                         job=job,
                         actor=actor,
@@ -197,7 +221,6 @@ class ExamWorkspaceConversionProgress:
                     )
                 return
             except DomainError as error:
-                await self._store.discard_version_file(actor=actor, file_id=file_id)
                 if error.code is not ErrorCode.CONFLICT or attempt == _SAVE_ATTEMPTS:
                     raise
 
@@ -220,12 +243,15 @@ class ExamWorkspaceConversionProgress:
         self, *, job: ExamAnswerKeyEnrichmentJob, actor: User
     ) -> tuple[VaultFile, ExamWorkspaceContainerContent] | None:
         assert job.workspace_lineage_id is not None
+        await self._vault_files.lock_document_lineage(
+            user_id=actor.id, document_lineage_id=job.workspace_lineage_id
+        )
         head = await self._vault_files.get_document_head(
             user_id=actor.id, document_lineage_id=job.workspace_lineage_id
         )
         if head is None or head.document_version is None:
             return None
-        content = await self._store.load_version(actor=actor, vault_file=head)
+        content = await self._store.load(actor=actor, vault_file=head)
         return head, self._codec.parse(content=content)
 
     async def _publish(
@@ -246,6 +272,15 @@ class ExamWorkspaceConversionProgress:
         loaded = await self._load_head(job=job, actor=actor)
         if loaded is None:
             assert job.workspace_lineage_id is not None
+            existing = await self._vault_files.list_exam_files(
+                user_id=actor.id,
+                document_lineage_id=job.workspace_lineage_id,
+                include_deleted=True,
+            )
+            # A missing active head is not necessarily an unpublished import:
+            # trash and permanent deletion must never recreate an exam/history.
+            if existing or progress.revision is not None:
+                return
             merged = first_conversion(update=update, progress=progress)
             document = merged.document.model_copy(update={"document_id": job.workspace_lineage_id})
             await self._write(
@@ -260,8 +295,15 @@ class ExamWorkspaceConversionProgress:
             )
             return
         head_file, head = loaded
-        merged = merge_conversion(
-            head=head.document, progress=progress, target=target_from_update(update)
+        target = target_from_update(update)
+        merged = merge_conversion(head=head.document, progress=progress, target=target)
+        await self._merge_history(
+            actor=actor,
+            lineage_id=head.document.document_id,
+            progress=progress,
+            target=target,
+            payloads=update.assets_by_id,
+            notes=notes,
         )
         await self._write(
             job=job,
@@ -277,6 +319,40 @@ class ExamWorkspaceConversionProgress:
             notes_changed=notes is not None and notes != head.notes,
         )
 
+    async def _merge_history(
+        self,
+        *,
+        actor: User,
+        lineage_id: UUID,
+        progress: ConversionProgress,
+        target: ConversionTarget,
+        payloads: Mapping[str, bytes],
+        notes: tuple[str, ...] | None,
+    ) -> None:
+        """Conversion delivery updates all snapshots without creating editor undo steps."""
+        history = await self._store.get_history(actor=actor, lineage_id=lineage_id)
+        snapshots: list[ExamWorkspaceHistoryStep] = []
+        for step in (history.baseline, *history.steps):
+            container = self._codec.parse(content=step.content)
+            merged = merge_conversion(head=container.document, progress=progress, target=target)
+            content = self._codec.build(
+                content=ExamWorkspaceContainerContent(
+                    document=merged.document,
+                    assets_by_id=_referenced_payloads(
+                        merged.document, {**container.assets_by_id, **payloads}
+                    ),
+                    notes=container.notes if notes is None else notes,
+                )
+            )
+            snapshots.append(step.model_copy(update={"content": content}))
+        await self._store.put_history(
+            actor=actor,
+            lineage_id=lineage_id,
+            history=history.model_copy(
+                update={"cursor": uuid4(), "baseline": snapshots[0], "steps": tuple(snapshots[1:])}
+            ),
+        )
+
     async def _write(
         self,
         *,
@@ -290,7 +366,7 @@ class ExamWorkspaceConversionProgress:
         notes: tuple[str, ...],
         notes_changed: bool = False,
     ) -> None:
-        """Save the merged revision and retire the conversion revision it supersedes."""
+        """Overwrite the saved exam and update conversion progress in the same unit of work."""
         assert job.workspace_lineage_id is not None
         progress = merged.progress
         if merged.changed or notes_changed:
@@ -299,17 +375,16 @@ class ExamWorkspaceConversionProgress:
                     document=merged.document, assets_by_id=assets_by_id, notes=notes
                 )
             )
-            await self._store.save_version(
+            await self._store.save(
                 actor=actor,
                 file_id=file_id,
                 name=name,
                 content=content,
                 lineage_id=job.workspace_lineage_id,
                 version=merged.document.revision,
+                expected_revision=None if head_file is None else head_file.document_version,
+                preserve_editor_position=True,
             )
-            previous = ConversionProgress.model_validate(job.conversion_progress or {}).revision
-            if head_file is not None and head_file.document_version == previous:
-                await self._store.retire_version(actor=actor, retired=head_file)
             progress = progress.model_copy(update={"revision": merged.document.revision})
         await self._jobs.set_conversion_progress(
             job_id=job.id, progress=progress.model_dump(mode="json")

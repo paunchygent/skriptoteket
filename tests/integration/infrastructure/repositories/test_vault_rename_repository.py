@@ -93,7 +93,7 @@ async def test_collision_query_handles_null_lineages_owner_trash_and_each_exclus
         await session.rollback()
 
 
-async def test_lineage_query_includes_trashed_versions_but_not_other_owners_or_lineages(
+async def test_rename_lineage_renames_the_exam_row_including_trash_and_spares_saved_exports(
     session_factory: async_sessionmaker[AsyncSession],
 ) -> None:
     async with session_factory() as session:
@@ -101,23 +101,48 @@ async def test_lineage_query_includes_trashed_versions_but_not_other_owners_or_l
         owner = await _owner(session)
         other_owner = await _owner(session)
         lineage = uuid4()
-        versions = [
-            _file(
-                owner,
-                document_lineage_id=lineage,
-                document_version=version,
-                deleted_at=_NOW if version == 2 else None,
-            )
-            for version in (1, 2, 3)
-        ]
+        exam = _file(
+            owner,
+            document_lineage_id=lineage,
+            document_version=2,
+            source_artifact_id=f"documents.conversion_hub:exam-workspace:{lineage}",
+        )
+        trashed = _file(
+            owner,
+            document_lineage_id=lineage,
+            document_version=1,
+            source_artifact_id=f"documents.conversion_hub:exam-workspace:{lineage}",
+            deleted_at=_NOW,
+        )
+        export = _file(
+            owner,
+            name="Prov-qti.zip",
+            document_lineage_id=lineage,
+            document_version=2,
+            export_format="qti",
+            source_artifact_id=f"documents.conversion_hub:exam-workspace:{lineage}:qti",
+        )
         for file in [
-            *versions,
+            exam,
+            trashed,
+            export,
             _file(owner, document_lineage_id=uuid4(), document_version=1),
-            _file(other_owner, document_lineage_id=lineage, document_version=4),
+            _file(other_owner, document_lineage_id=lineage, document_version=1),
             _file(owner),
         ]:
             await repo.create(file=file)
-        actual = await repo.list_lineage_versions(user_id=owner, document_lineage_id=lineage)
-        assert {file.id: file for file in actual} == {file.id: file for file in versions}
-        assert await repo.list_lineage_versions(user_id=owner, document_lineage_id=uuid4()) == []
+        renamed = await repo.rename_lineage(
+            user_id=owner, document_lineage_id=lineage, name="Nytt.provdokument.zip"
+        )
+        assert {file.id for file in renamed} == {exam.id, trashed.id}
+        for before in (exam, trashed):
+            after = await repo.get_by_id(file_id=before.id)
+            assert after is not None
+            assert after.name == "Nytt.provdokument.zip"
+        stored_export = await repo.get_by_id(file_id=export.id)
+        assert stored_export is not None and stored_export.name == export.name
+        assert (
+            await repo.rename_lineage(user_id=owner, document_lineage_id=uuid4(), name="Saknas.pdf")
+            == []
+        )
         await session.rollback()

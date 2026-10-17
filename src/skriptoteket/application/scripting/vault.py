@@ -10,6 +10,8 @@ from skriptoteket.domain.scripting.vault import VaultFileSourceKind, VaultListSo
 
 
 class VaultFileInfo(BaseModel):
+    """One Mina filer record; a record for a saved exam carries that exam's saved exports."""
+
     model_config = ConfigDict(frozen=True)
 
     id: UUID
@@ -20,6 +22,7 @@ class VaultFileInfo(BaseModel):
     is_missing_on_disk: bool = False
     created_at: datetime
     deleted_at: datetime | None = None
+    exports: list[VaultFileInfo] = Field(default_factory=list)
 
 
 class VaultUsageInfo(BaseModel):

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from datetime import datetime
 from types import TracebackType
 from typing import Iterable
@@ -209,6 +211,7 @@ class FakeCuratedApps(CuratedAppRegistryProtocol):
 class FakeVaultFileRepo(VaultFileRepositoryProtocol):
     def __init__(self) -> None:
         self._files: dict[UUID, VaultFile] = {}
+        self._histories: dict[tuple[UUID, UUID], bytes] = {}
 
     async def get_by_id(self, *, file_id: UUID) -> VaultFile | None:
         return self._files.get(file_id)
@@ -224,6 +227,8 @@ class FakeVaultFileRepo(VaultFileRepositoryProtocol):
         offset: int,
     ) -> list[VaultFile]:
         files = [item for item in self._files.values() if item.user_id == user_id]
+        # A saved exam export is listed with its exam, never as its own Mina filer row.
+        files = [item for item in files if item.export_format is None]
         if state is VaultListState.ACTIVE:
             files = [item for item in files if item.deleted_at is None]
         else:
@@ -271,12 +276,70 @@ class FakeVaultFileRepo(VaultFileRepositoryProtocol):
     async def get_document_head(
         self, *, user_id: UUID, document_lineage_id: UUID
     ) -> VaultFile | None:
-        raise NotImplementedError
+        return next(
+            (
+                file
+                for file in self._files.values()
+                if file.user_id == user_id
+                and file.document_lineage_id == document_lineage_id
+                and file.deleted_at is None
+                and file.export_format is None
+            ),
+            None,
+        )
 
     async def list_document_heads(
         self, *, user_id: UUID, source_artifact_prefix: str
     ) -> list[VaultFile]:
-        raise NotImplementedError
+        heads = [
+            file
+            for file in self._files.values()
+            if file.user_id == user_id
+            and file.document_lineage_id is not None
+            and file.deleted_at is None
+            and file.export_format is None
+            and (file.source_artifact_id or "").startswith(source_artifact_prefix)
+        ]
+        return sorted(heads, key=lambda file: (file.created_at, str(file.id)), reverse=True)
+
+    async def list_saved_exports(
+        self, *, user_id: UUID, document_lineage_id: UUID
+    ) -> list[VaultFile]:
+        return [
+            file
+            for file in self._files.values()
+            if file.user_id == user_id
+            and file.document_lineage_id == document_lineage_id
+            and file.deleted_at is None
+            and file.export_format is not None
+        ]
+
+    async def list_exam_files(
+        self, *, user_id: UUID, document_lineage_id: UUID, include_deleted: bool
+    ) -> list[VaultFile]:
+        return sorted(
+            (
+                file
+                for file in self._files.values()
+                if file.user_id == user_id
+                and file.document_lineage_id == document_lineage_id
+                and (include_deleted or file.deleted_at is None)
+            ),
+            key=lambda file: (
+                file.export_format is not None,
+                file.export_format or "",
+                file.created_at,
+                str(file.id),
+            ),
+        )
+
+    async def get_history(self, *, user_id: UUID, document_lineage_id: UUID) -> bytes | None:
+        return self._histories.get((user_id, document_lineage_id))
+
+    async def put_history(
+        self, *, user_id: UUID, document_lineage_id: UUID, content: bytes
+    ) -> None:
+        self._histories[(user_id, document_lineage_id)] = content
 
     async def name_in_use(
         self,
@@ -295,14 +358,12 @@ class FakeVaultFileRepo(VaultFileRepositoryProtocol):
             for file in self._files.values()
         )
 
-    async def list_lineage_versions(
+    @asynccontextmanager
+    async def guard_document_payload(
         self, *, user_id: UUID, document_lineage_id: UUID
-    ) -> list[VaultFile]:
-        return [
-            file
-            for file in self._files.values()
-            if file.user_id == user_id and file.document_lineage_id == document_lineage_id
-        ]
+    ) -> AsyncIterator[None]:
+        """No persistent payloads exist in this unit-only repository."""
+        yield
 
     async def lock_owner_renames(self, *, user_id: UUID) -> None:
         return None
@@ -321,10 +382,13 @@ class FakeVaultFileRepo(VaultFileRepositoryProtocol):
     async def rename_lineage(
         self, *, user_id: UUID, document_lineage_id: UUID, name: str
     ) -> list[VaultFile]:
-        versions = await self.list_lineage_versions(
-            user_id=user_id, document_lineage_id=document_lineage_id
-        )
-        renamed = [file.model_copy(update={"name": name}) for file in versions]
+        renamed = [
+            file.model_copy(update={"name": name})
+            for file in self._files.values()
+            if file.user_id == user_id
+            and file.document_lineage_id == document_lineage_id
+            and file.export_format is None
+        ]
         self._files.update({file.id: file for file in renamed})
         return renamed
 
@@ -333,11 +397,40 @@ class FakeVaultFileRepo(VaultFileRepositoryProtocol):
         return file
 
     async def update(self, *, file: VaultFile) -> VaultFile:
-        self._files[file.id] = file
-        return file
+        current = self._files.get(file.id)
+        if current is None:
+            return file
+        # Lifecycle callers own only trash state; a stale delete/restore payload
+        # must not overwrite a concurrently committed name or immutable metadata.
+        updated = current.model_copy(
+            update={"deleted_at": file.deleted_at, "trashed_with_exam": file.trashed_with_exam}
+        )
+        self._files[file.id] = updated
+        return updated
+
+    async def overwrite(self, *, file: VaultFile) -> VaultFile:
+        current = self._files.get(file.id)
+        if current is None:
+            return file
+        overwritten = current.model_copy(
+            update={
+                "name": file.name,
+                "bytes": file.bytes,
+                "source_artifact_id": file.source_artifact_id,
+                "document_version": file.document_version,
+                "export_format": file.export_format,
+                "document_saved_at": file.document_saved_at,
+            }
+        )
+        self._files[file.id] = overwritten
+        return overwritten
 
     async def delete(self, *, file_id: UUID) -> None:
-        self._files.pop(file_id, None)
+        file = self._files.pop(file_id, None)
+        if file is None:
+            return
+        if file.document_lineage_id is not None and file.export_format is None:
+            self._histories.pop((file.user_id, file.document_lineage_id), None)
 
 
 class FakeVaultUsageRepo(VaultUsageRepositoryProtocol):

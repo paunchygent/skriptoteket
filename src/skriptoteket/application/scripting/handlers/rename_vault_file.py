@@ -36,6 +36,7 @@ class RenameVaultFileHandler(RenameVaultFileHandlerProtocol):
             extension = (
                 ".provdokument.zip"
                 if target.document_lineage_id is not None
+                and target.export_format is None
                 and target.source_artifact_id is not None
                 and target.source_artifact_id.startswith(EXAM_WORKSPACE_SOURCE_ARTIFACT_PREFIX)
                 else PurePosixPath(target.name).suffix
@@ -44,7 +45,9 @@ class RenameVaultFileHandler(RenameVaultFileHandlerProtocol):
             if await self._vault_files.name_in_use(
                 user_id=actor.id,
                 name=name,
-                exclude_lineage_id=target.document_lineage_id,
+                exclude_lineage_id=target.document_lineage_id
+                if target.export_format is None
+                else None,
                 exclude_file_id=target.id,
             ):
                 raise validation_error(
@@ -60,14 +63,10 @@ class RenameVaultFileHandler(RenameVaultFileHandlerProtocol):
                 await self._vault_files.rename_lineage(
                     user_id=actor.id, document_lineage_id=target.document_lineage_id, name=name
                 )
-                if target.document_lineage_id is not None
+                if target.document_lineage_id is not None and target.export_format is None
                 else [active]
             )
-            head = max(
-                (version for version in renamed if version.deleted_at is None),
-                key=lambda version: version.document_version or 0,
-            )
         return RenameVaultFileResult(
-            file=build_vault_file_info(vault_file=head),
+            file=build_vault_file_info(vault_file=active),
             renamed_file_ids=tuple(version.id for version in renamed),
         )

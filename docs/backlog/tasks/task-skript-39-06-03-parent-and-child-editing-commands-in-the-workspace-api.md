@@ -49,8 +49,11 @@ This task delivers:
   children (`parent_points`, story P6).
 - One workspace API route per command under
   `/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/`.
-  Each takes the expected revision like the PUT route, answers a stale
-  revision with CONFLICT, saves one new revision and returns the document.
+  Each applies to the exam's newest undo step, takes the same concurrency
+  guard as the TASK-SKRIPT-39-04-08 autosave route, answers a stale request
+  with CONFLICT, stores the result as one new undo step and returns the
+  document. A command never writes the exam file; only `Spara` does (lead
+  decision L8 from user decisions G13, G15 and G20).
 
 Out of scope: moving questions between parents or out to standalone (story
 P7); turning existing standalone questions into children; ordering, which
@@ -66,7 +69,9 @@ ST-SKRIPT-40-04).
   (`_document_invariants`) and `native_exam_parent.py`
   (`NativeExamParent`, `validate_parent_structure`, `parent_points`).
 - Item id rule: `ITEM_ID_PATTERN` in `native_exam_vocabulary.py`.
-- Save path and conflict rule: `SaveExamWorkspaceDocumentHandler` in
+- Undo-step write and its concurrency guard: the TASK-SKRIPT-39-04-08
+  autosave handler.
+- Former save path and conflict rule: `SaveExamWorkspaceDocumentHandler` in
   `src/skriptoteket/application/curated_apps/handlers/exam_workspace_documents.py`;
   routes in `src/skriptoteket/web/api/v1/apps_conversion_hub_exam_workspace.py`.
 - Current read-only parent display: `frontend/apps/skriptoteket/src/views/apps/exam-workspace/examWorkspaceParents.ts`.
@@ -81,7 +86,8 @@ first; one call deletes the single-choice child. After each call the document
 reads back with sequences 1..N and the parent's children consecutive, and the
 parent's points equal its children's sum. The exported package imports into
 Exam.net with the children in the new order. Each command is one request and
-one saved revision.
+one undo step; reopening the exam shows the command's result, and `Spara`
+writes it to the exam file.
 
 ## Validation
 
@@ -90,8 +96,9 @@ one saved revision.
   consecutive; reorder changes only that parent's children; deleting the only
   child is refused with the named error; the parent's points equal its
   children's sum after each operation.
-- Focused handler tests: a stale revision returns CONFLICT; a valid call saves
-  one revision and returns the document.
+- Focused handler tests: a stale request returns CONFLICT; a valid call
+  stores one undo step, leaves the exam file unchanged and returns the
+  document; reopening the exam returns the command's result.
 - Exam.net proof on Hemma staging: a document changed through the commands,
   exported and imported through the teacher's browser, with screenshots of
   the task, its children in order and their points retained in the retained
@@ -112,3 +119,4 @@ one saved revision.
 | P4  | Ordering questions are standalone only and never children of a parent (story P3); this task has no ordering kind to refuse.                                                |
 | P5  | "Ny uppgift" and "+ Deluppgift" and their controls are requirements handed to ST-SKRIPT-40-04's prototype; this task supplies the backend (story P13, user 2026-10-17 G2). |
 | P6  | This story ships backend, data, API and export only; the current workspace screens are frozen except for bug fixes (story P18, user 2026-10-17 G2).                        |
+| P7  | Each command stores its result as one new undo step and never writes the exam file; `Spara` writes the file (lead 2026-10-17, L8, from user decisions G13, G15 and G20).   |

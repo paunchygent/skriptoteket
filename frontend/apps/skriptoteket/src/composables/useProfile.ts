@@ -2,26 +2,26 @@ import { ref } from "vue";
 
 import { apiFetch, apiGet } from "../api/client";
 import type { components } from "../api/openapi";
-import { useAuthStore } from "../stores/auth";
+import { SupersededAuthSessionError, useAuthStore } from "../stores/auth";
 
-type ApiUser = components["schemas"]["User"];
+type UserProfile = components["schemas"]["UserProfile"];
+type ProfileResponse = components["schemas"]["ProfileResponse"];
 
-type UserProfile = {
-  user_id: string;
-  first_name: string | null;
-  last_name: string | null;
-  display_name: string | null;
-  allow_remote_fallback?: boolean | null;
-  inline_completion_provider?: "local" | "external" | null;
-  locale: string;
-  created_at: string;
-  updated_at: string;
-};
+/** School forms a teacher can record for their own exam courses. */
+export const EXAM_COURSE_SCHOOL_FORMS: readonly ExamCourseSchoolForm[] = [
+  "gymnasiet",
+  "grundskolan",
+];
 
-type ProfileResponse = {
-  user: ApiUser;
-  profile: UserProfile;
-};
+export type ExamCourseSchoolForm =
+  components["schemas"]["UpdateExamCoursesRequest"]["school_forms"][number];
+
+/**
+ * The teacher's recorded school forms and ordered catalog keys, sent as one
+ * full-replacement value. The catalog key is the only identity; names resolve
+ * from the committed catalog.
+ */
+export type ProfileExamCourses = components["schemas"]["UpdateExamCoursesRequest"];
 
 type UpdateProfilePayload = {
   first_name?: string | null;
@@ -35,23 +35,42 @@ export function useProfile() {
   const profile = ref<UserProfile | null>(null);
 
   async function load(): Promise<ProfileResponse> {
-    const response = await apiGet<ProfileResponse>("/api/v1/profile");
+    const session = auth.captureSession();
+    const response = await apiGet<ProfileResponse>("/api/v1/profile", { session });
+    if (!auth.applyResponse(session, response)) throw new SupersededAuthSessionError();
     profile.value = response.profile;
-    auth.user = response.user;
-    auth.profile = response.profile;
     return response;
   }
 
   async function updateProfile(
     payload: UpdateProfilePayload,
   ): Promise<ProfileResponse> {
+    const session = auth.captureSession();
     const response = await apiFetch<ProfileResponse>("/api/v1/profile", {
+      session,
       method: "PATCH",
       body: payload,
     });
+    if (!auth.applyResponse(session, response)) throw new SupersededAuthSessionError();
     profile.value = response.profile;
-    auth.user = response.user;
-    auth.profile = response.profile;
+    return response;
+  }
+
+  /** Full replacement of the teacher's recorded school forms and course keys. */
+  async function updateExamCourses(
+    examCourses: ProfileExamCourses,
+  ): Promise<ProfileResponse> {
+    const session = auth.captureSession();
+    const response = await apiFetch<ProfileResponse>(
+      "/api/v1/profile/exam-courses",
+      {
+        session,
+        method: "PATCH",
+        body: examCourses,
+      },
+    );
+    if (!auth.applyResponse(session, response)) throw new SupersededAuthSessionError();
+    profile.value = response.profile;
     return response;
   }
 
@@ -59,5 +78,6 @@ export function useProfile() {
     profile,
     load,
     updateProfile,
+    updateExamCourses,
   };
 }

@@ -122,7 +122,7 @@ class _Env:
 
     async def seed(self, actor: User) -> tuple[NativeExamDocument, bytes, str]:
         document, payload, asset_id = _document_with_asset()
-        await self.store.save_version(
+        await self.store.save(
             actor=actor,
             file_id=uuid4(),
             name="prov.provdokument.zip",

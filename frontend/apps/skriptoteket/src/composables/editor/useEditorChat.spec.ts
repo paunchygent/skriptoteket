@@ -4,6 +4,7 @@ import { createPinia, setActivePinia } from "pinia";
 
 import { apiFetch } from "../../api/client";
 import { useAuthStore } from "../../stores/auth";
+import { createTestProfile, createTestUser, mockJsonResponse, TEST_AI_POLICY } from "../../stores/authTestHelpers";
 import { useEditorChat } from "./useEditorChat";
 
 const originalFetch = globalThis.fetch;
@@ -63,7 +64,93 @@ afterEach(() => {
   }
 });
 
+function deferredResponse() {
+  let resolve!: (response: Response) => void;
+  const promise = new Promise<Response>((done) => { resolve = done; });
+  return { promise, resolve };
+}
+
+function admitReplacementTeacher() {
+  const auth = useAuthStore();
+  auth.clear();
+  auth.$patch({
+    user: createTestUser({ id: "teacher-b" }),
+    profile: createTestProfile({ user_id: "teacher-b", display_name: "B", exam_courses: {
+      school_forms: ["grundskolan"], course_keys: ["B-course"],
+    } }),
+    csrfToken: "B-csrf", aiPolicy: TEST_AI_POLICY,
+    grants: ["B-grant"], featureFlags: ["B-flag"],
+  });
+  return JSON.parse(JSON.stringify(auth.$state));
+}
+
 describe("useEditorChat", () => {
+  it("still expires the originating session on its own chat 401 (positive control)", async () => {
+    setupAuth();
+    globalThis.fetch = vi.fn().mockResolvedValueOnce(mockJsonResponse({
+      error: { code: "UNAUTHORIZED", message: "Session expired" },
+    }, 401));
+    const chat = useEditorChat({ toolId: ref("tool-1"), baseVersionId: ref(null) });
+    await chat.sendMessage("Hej");
+    expect(useAuthStore().user).toBeNull();
+    expect(useAuthStore().csrfToken).toBeNull();
+    expect(chat.streaming.value).toBe(false);
+    expect(chat.messages.value.at(-1)).toMatchObject({
+      role: "assistant", content: "Session expired", status: "failed",
+    });
+  });
+
+  it.each([400, 401])("does not render A's delayed %s error body in B's session", async (status) => {
+    setupAuth();
+    let resolveBody!: (value: unknown) => void;
+    const body = new Promise<unknown>((done) => { resolveBody = done; });
+    const response = mockJsonResponse({}, status);
+    const readBody = vi.spyOn(response, "json").mockReturnValueOnce(body);
+    globalThis.fetch = vi.fn().mockResolvedValueOnce(response);
+    const chat = useEditorChat({ toolId: ref("tool-1"), baseVersionId: ref(null) });
+    const sending = chat.sendMessage("A's message");
+    await flushPromises();
+    expect(readBody).toHaveBeenCalledOnce();
+    const expected = admitReplacementTeacher();
+    const messagesBefore = JSON.parse(JSON.stringify(chat.messages.value));
+    resolveBody({ error: { code: "OLD_ERROR", message: "A-only error body" } });
+    await sending;
+    expect(useAuthStore().$state).toEqual(expected);
+    expect(chat.messages.value).toEqual(messagesBefore);
+    expect(chat.streaming.value).toBe(false);
+  });
+
+  it("does not expire B when A's delayed chat response is 401", async () => {
+    setupAuth();
+    const pending = deferredResponse();
+    globalThis.fetch = vi.fn().mockReturnValueOnce(pending.promise);
+    const chat = useEditorChat({ toolId: ref("tool-1"), baseVersionId: ref(null) });
+    const sending = chat.sendMessage("A's message");
+    await flushPromises();
+    expect(fetch).toHaveBeenCalledOnce();
+    const expected = admitReplacementTeacher();
+    pending.resolve(mockJsonResponse({ detail: "A expired" }, 401));
+    await sending;
+    expect(useAuthStore().$state).toEqual(expected);
+  });
+
+  it("never sends A's chat body after B is admitted during CSRF hydration", async () => {
+    setupAuth();
+    useAuthStore().csrfToken = null;
+    const csrf = deferredResponse();
+    globalThis.fetch = vi.fn().mockReturnValueOnce(csrf.promise)
+      .mockResolvedValue(mockJsonResponse({ detail: "must not dispatch" }, 400));
+    const chat = useEditorChat({ toolId: ref("tool-1"), baseVersionId: ref(null) });
+    const sending = chat.sendMessage("A's private message");
+    expect(fetch).toHaveBeenCalledOnce();
+    expect(vi.mocked(fetch).mock.calls[0][0]).toContain("/auth/csrf");
+    const expected = admitReplacementTeacher();
+    csrf.resolve(mockJsonResponse({ csrf_token: "A-csrf" }));
+    await sending;
+    expect(fetch).toHaveBeenCalledOnce();
+    expect(useAuthStore().$state).toEqual(expected);
+    expect(chat.streaming.value).toBe(false);
+  });
   it("shows a partial warning when the stream ends with done.reason=error after deltas", async () => {
     setupAuth();
 

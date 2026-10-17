@@ -14,7 +14,7 @@ from skriptoteket.application.scripting.vault import (
 )
 from skriptoteket.config import Settings
 from skriptoteket.domain.identity.models import User
-from skriptoteket.domain.scripting.vault import VaultFile, VaultFileSourceKind
+from skriptoteket.domain.scripting.vault import VaultFile, VaultFileSourceKind, VaultListState
 from skriptoteket.protocols.catalog import ToolRepositoryProtocol
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.protocols.scripting import ToolRunRepositoryProtocol
@@ -69,7 +69,12 @@ class ListVaultFilesHandler(ListVaultFilesHandlerProtocol):
             if has_more:
                 files = files[:limit]
 
-            file_infos = await self._build_file_infos(actor=actor, files=files)
+            exports_by_lineage = await self._exports_by_lineage(
+                actor=actor, files=files, state=query.state
+            )
+            file_infos = await self._build_file_infos(
+                actor=actor, files=files, exports_by_lineage=exports_by_lineage
+            )
 
         return ListVaultFilesResult(
             state=query.state,
@@ -80,17 +85,62 @@ class ListVaultFilesHandler(ListVaultFilesHandlerProtocol):
             next_cursor=str(offset + limit) if has_more else None,
         )
 
-    async def _build_file_infos(
-        self, *, actor: User, files: list[VaultFile]
-    ) -> list[VaultFileInfo]:
-        if not files:
-            return []
+    async def _exports_by_lineage(
+        self, *, actor: User, files: list[VaultFile], state: VaultListState
+    ) -> dict[UUID, list[VaultFile]]:
+        """Group the saved exports of the listed exams by the exam's document lineage.
 
+        The exam list carries one row per exam, active or in the trash, and its saved
+        export rows of the same state are nested under it instead of being listed as
+        separate Mina filer rows: an export belongs to its exam and never stands alone.
+        The repository already excludes export rows from the page, so the page counts
+        exams once and the exports never consume a page slot.
+        """
+
+        lineage_ids = {
+            item.document_lineage_id for item in files if item.document_lineage_id is not None
+        }
+        if not lineage_ids:
+            return {}
+
+        include_deleted = state is VaultListState.TRASH
+        exports_by_lineage: dict[UUID, list[VaultFile]] = {}
+        for lineage_id in lineage_ids:
+            members = await self._vault_files.list_exam_files(
+                user_id=actor.id,
+                document_lineage_id=lineage_id,
+                include_deleted=include_deleted,
+            )
+            exports_by_lineage[lineage_id] = [
+                member
+                for member in members
+                if member.export_format is not None
+                and (member.deleted_at is not None) == include_deleted
+            ]
+        return exports_by_lineage
+
+    async def _missing_on_disk_ids(self, *, actor: User, files: list[VaultFile]) -> set[UUID]:
         missing_on_disk_ids: set[UUID] = set()
         for item in files:
             exists = await self._vault_storage.exists_file(user_id=actor.id, file_id=item.id)
             if not exists:
                 missing_on_disk_ids.add(item.id)
+        return missing_on_disk_ids
+
+    async def _build_file_infos(
+        self,
+        *,
+        actor: User,
+        files: list[VaultFile],
+        exports_by_lineage: dict[UUID, list[VaultFile]],
+    ) -> list[VaultFileInfo]:
+        if not files:
+            return []
+
+        nested_files = [item for items in exports_by_lineage.values() for item in items]
+        missing_on_disk_ids = await self._missing_on_disk_ids(
+            actor=actor, files=[*files, *nested_files]
+        )
 
         run_ids = {
             item.source_run_id
@@ -137,11 +187,33 @@ class ListVaultFilesHandler(ListVaultFilesHandlerProtocol):
 
             return None
 
-        return [
-            build_vault_file_info(
-                vault_file=item,
-                source_label=source_label_for(item),
-                is_missing_on_disk=item.id in missing_on_disk_ids,
+        infos: list[VaultFileInfo] = []
+        for item in files:
+            lineage_id = item.document_lineage_id
+            # The repository lists no export row in either state, so a page row is an
+            # exam or a plain file and never collects another lineage's exports.
+            nested_exports = (
+                exports_by_lineage.get(lineage_id, [])
+                if lineage_id is not None and item.export_format is None
+                else []
             )
-            for item in files
-        ]
+            infos.append(
+                build_vault_file_info(
+                    vault_file=item,
+                    source_label=source_label_for(item),
+                    is_missing_on_disk=item.id in missing_on_disk_ids,
+                ).model_copy(
+                    update={
+                        # An export is shown inside its exam, so it carries no source
+                        # label of its own; its name and bytes are enough to act on it.
+                        "exports": [
+                            build_vault_file_info(
+                                vault_file=export,
+                                is_missing_on_disk=export.id in missing_on_disk_ids,
+                            )
+                            for export in nested_exports
+                        ]
+                    }
+                )
+            )
+        return infos

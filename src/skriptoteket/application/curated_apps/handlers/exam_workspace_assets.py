@@ -54,22 +54,44 @@ class GetExamWorkspaceAssetHandler:
     async def handle(
         self, *, actor: User, lineage_id: UUID, asset_id: str
     ) -> ExamWorkspaceAssetContent:
+        async with self._store.transaction(user_id=actor.id, lineage_id=lineage_id):
+            await self._vault_files.lock_document_lineage(
+                user_id=actor.id, document_lineage_id=lineage_id
+            )
+            return await self._read(actor=actor, lineage_id=lineage_id, asset_id=asset_id)
+
+    async def _read(
+        self, *, actor: User, lineage_id: UUID, asset_id: str
+    ) -> ExamWorkspaceAssetContent:
         head = await self._vault_files.get_document_head(
             user_id=actor.id, document_lineage_id=lineage_id
         )
         if head is None:
             raise _document_not_found(lineage_id)
-        content = await self._store.load_version(actor=actor, vault_file=head)
+        content = await self._store.load(actor=actor, vault_file=head)
         container = self._codec.parse(content=content)
+        history = await self._store.get_history(actor=actor, lineage_id=lineage_id)
+        containers = [container]
+        containers.extend(
+            self._codec.parse(content=step.content) for step in (history.baseline, *history.steps)
+        )
         asset = next(
             (
                 candidate
-                for candidate in container.document.assets
+                for retained in containers
+                for candidate in retained.document.assets
                 if candidate.asset_id == asset_id
             ),
             None,
         )
-        payload = container.assets_by_id.get(asset_id)
+        payload = next(
+            (
+                retained.assets_by_id[asset_id]
+                for retained in containers
+                if asset_id in retained.assets_by_id
+            ),
+            None,
+        )
         if asset is None or payload is None:
             raise _asset_not_found(lineage_id, asset_id)
         return ExamWorkspaceAssetContent(content=payload, media_type=asset.media_type)

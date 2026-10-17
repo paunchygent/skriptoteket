@@ -153,6 +153,7 @@ export function buildResponse(params: {
 }): ExamWorkspaceDocumentResponse {
   const document = buildDocument();
   return {
+    history_cursor: "00000000-0000-4000-8000-000000000001",
     conversion: params.conversion ?? null,
     document: {
       ...document,

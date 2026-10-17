@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from skriptoteket.domain.errors import not_found
 from skriptoteket.domain.identity.models import UserProfile
 from skriptoteket.infrastructure.db.models.user_profile import UserProfileModel
-from skriptoteket.protocols.identity import ProfileRepositoryProtocol
+from skriptoteket.protocols.identity import ProfileRepositoryProtocol, ProfileUpdateField
 
 
 class PostgreSQLProfileRepository(ProfileRepositoryProtocol):
@@ -43,6 +43,7 @@ class PostgreSQLProfileRepository(ProfileRepositoryProtocol):
             classroom_planner_tutorial_seen_sections=(
                 profile.classroom_planner_tutorial_seen_sections
             ),
+            exam_courses=profile.exam_courses.model_dump(),
             locale=profile.locale,
             created_at=profile.created_at,
             updated_at=profile.updated_at,
@@ -52,27 +53,19 @@ class PostgreSQLProfileRepository(ProfileRepositoryProtocol):
         await self._session.refresh(model)
         return UserProfile.model_validate(model)
 
-    async def update(self, *, profile: UserProfile) -> UserProfile:
-        model = await self._session.get(UserProfileModel, profile.user_id)
+    async def update(
+        self, *, profile: UserProfile, fields: frozenset[ProfileUpdateField]
+    ) -> UserProfile:
+        # Serialize JSONB values without assigning unrelated stale snapshot fields.
+        values = profile.model_dump(include=set[str](fields))
+        result = await self._session.execute(
+            update(UserProfileModel)
+            .where(UserProfileModel.user_id == profile.user_id)
+            .values(**values)
+            .returning(UserProfileModel)
+            .execution_options(populate_existing=True)
+        )
+        model = result.scalar_one_or_none()
         if model is None:
             raise not_found("UserProfile", str(profile.user_id))
-
-        model.first_name = profile.first_name
-        model.last_name = profile.last_name
-        model.display_name = profile.display_name
-        model.allow_remote_fallback = profile.allow_remote_fallback
-        model.inline_completion_provider = profile.inline_completion_provider
-        model.classroom_planner_smart_enabled = profile.classroom_planner_smart_enabled
-        model.classroom_planner_use_history = profile.classroom_planner_use_history
-        model.classroom_planner_grouping_seating_distance_enabled = (
-            profile.classroom_planner_grouping_seating_distance_enabled
-        )
-        model.classroom_planner_tutorial_seen_sections = (
-            profile.classroom_planner_tutorial_seen_sections
-        )
-        model.locale = profile.locale
-        model.updated_at = profile.updated_at
-
-        await self._session.flush()
-        await self._session.refresh(model)
         return UserProfile.model_validate(model)

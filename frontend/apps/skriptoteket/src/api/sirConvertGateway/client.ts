@@ -1,6 +1,6 @@
 /** Authenticated Sir Convert Gateway transport for transcript conversion only. */
 
-import { useAuthStore } from "../../stores/auth";
+import { bindProtectedSession } from "../client";
 import { toSirConvertGatewayUrl } from "./urls";
 import { stableJsonStringify } from "./requestFingerprint";
 import { prepareTranscriptRequestContext } from "./transcriptRequestContext";
@@ -119,12 +119,25 @@ export function createSirConvertTranscriptGatewayClient(
 }
 
 function createBrowserSirConvertTranscriptGatewayClient(): SirConvertTranscriptGatewayClient {
-  const auth = useAuthStore();
-  return createSirConvertTranscriptGatewayClient({
-    ensureCsrfToken: () => auth.ensureCsrfToken(),
-    fetcher: (input, init) => fetch(input, init),
-    multipartUploadTransport: browserMultipartUploadTransport,
+  // Each exported browser operation creates its binding before any asynchronous
+  // hashing/preparation. The transport core never recaptures a replacement session.
+  const binding = bindProtectedSession();
+  const client = createSirConvertTranscriptGatewayClient({
+    ensureCsrfToken: binding.ensureCsrfToken,
+    fetcher: (input, init) => binding.run(() => fetch(input, init)),
+    multipartUploadTransport: (request) =>
+      binding.run(() => browserMultipartUploadTransport(request)),
   });
+  // Guard the complete operation as well as dispatch: JSON decoding and parser
+  // failures can settle after the response's session has already ended.
+  return {
+    submitTranscriptJob: (params) => binding.run(() => client.submitTranscriptJob(params)),
+    getTranscriptJob: (params) => binding.run(() => client.getTranscriptJob(params)),
+    getTranscriptResult: (params) => binding.run(() => client.getTranscriptResult(params)),
+    listTranscriptArtifacts: (params) => binding.run(() => client.listTranscriptArtifacts(params)),
+    downloadTranscriptJson: (params) => binding.run(() => client.downloadTranscriptJson(params)),
+    cancelTranscriptJob: (params) => binding.run(() => client.cancelTranscriptJob(params)),
+  };
 }
 
 export async function submitTranscriptJob(params: TranscriptSubmitParams): Promise<SirConvertTranscriptSubmittedJob> {
