@@ -195,9 +195,22 @@ class ExportExamWorkspaceDocumentHandler:
     def _raise_for_blockers(self, document: NativeExamDocument) -> None:
         blockers = native_export_blockers(document)
         if blockers:
+            heading_items = {
+                blocker.item_id
+                for blocker in blockers
+                if blocker.reason == "inline_choice_option_heading"
+            }
+            heading_messages = [
+                f"Fråga {item.sequence}: Rubrikformat är inte tillåtet i rullistealternativ."
+                for item in document.items
+                if item.item_id in heading_items
+            ]
+            message = " ".join(
+                ["Provet har frågor som måste åtgärdas före export.", *heading_messages]
+            )
             raise DomainError(
                 code=ErrorCode.VALIDATION_ERROR,
-                message="Provet har frågor som måste åtgärdas före export.",
+                message=message,
                 details={"blockers": [blocker.model_dump(mode="json") for blocker in blockers]},
             )
 

@@ -49,6 +49,7 @@ class NativeExportBlocker(BaseModel):
         "machine_proposed_key_unreviewed",
         "missing_points",
         "missing_answer_key",
+        "inline_choice_option_heading",
     ]
 
 
@@ -74,6 +75,15 @@ def native_export_blockers(document: NativeExamDocument) -> tuple[NativeExportBl
             )
         if item.kind in _KEYED_KINDS and item.answer_key.origin is NativeAnswerKeyOrigin.ABSENT:
             blockers.append(NativeExportBlocker(item_id=item.item_id, reason="missing_answer_key"))
+        if item.kind is NativeExamItemKind.INLINE_CHOICE and any(
+            paragraph.heading_level is not None
+            for gap in item.gaps
+            for option in gap.options
+            for paragraph in option.body
+        ):
+            blockers.append(
+                NativeExportBlocker(item_id=item.item_id, reason="inline_choice_option_heading")
+            )
         if item.points is None:
             blockers.append(NativeExportBlocker(item_id=item.item_id, reason="missing_points"))
     return tuple(blockers)

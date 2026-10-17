@@ -17,6 +17,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.examnet_qti_export import (
     native_exam_to_examnet_qti_items,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import NativeExamDocument
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_export_rules import (
+    native_export_blockers,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import NativeExamItem
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import NativeExamParent
 from tests.unit.domain.curated_apps.exam_workspace.examnet_qti_export_test_support import (
@@ -112,6 +115,121 @@ def test_saved_dropdown_xml_binds_each_local_key_and_point_mapping(
                 assert body_order.index(interactions[child_index * 2 - 1]) < separator_index
     else:
         assert list(body.iter(qti_tag("qti-gap-match-interaction"))) == []
+
+
+@pytest.mark.parametrize("parented", [False, True])
+@pytest.mark.parametrize(
+    "mark,tag",
+    [
+        ("superscript", "sup"),
+        ("subscript", "sub"),
+        ("bold", "strong"),
+        ("italic", "em"),
+        ("underline", "u"),
+    ],
+)
+def test_dropdown_options_keep_marks_distinct_from_identical_plain_text(
+    parented: bool, mark: str, tag: str
+) -> None:
+    document = _saved_document(parented=parented, points=2.01)
+    payload = document.model_dump(mode="json")
+    for item in payload["items"]:
+        for gap in item["gaps"]:
+            gap["options"][0]["body"] = [
+                {
+                    "heading_level": None,
+                    "segments": [
+                        {"kind": "text", "text": "x", "marks": []},
+                        {"kind": "text", "text": "2", "marks": [mark]},
+                        {"kind": "text", "text": " & <tail>", "marks": []},
+                    ],
+                }
+            ]
+            gap["options"][1]["body"] = [
+                {
+                    "heading_level": None,
+                    "segments": [
+                        {"kind": "text", "text": "x2 & <tail>", "marks": []},
+                    ],
+                }
+            ]
+    document = NativeExamDocument.model_validate_json(
+        NativeExamDocument.model_validate(payload).model_dump_json()
+    )
+    (qti,) = native_exam_to_examnet_qti_items(document)
+    root = ElementTree.fromstring(serialize_qti_assessment_item(qti))
+    interactions = list(root.iter(qti_tag("qti-inline-choice-interaction")))
+    assert len(interactions) == (4 if parented else 2)
+    for index, interaction in enumerate(interactions):
+        formatted, plain, _ = interaction.findall(qti_tag("qti-inline-choice"))
+        assert "".join(formatted.itertext()) == "x2 & <tail>"
+        assert "".join(plain.itertext()) == "x2 & <tail>"
+        assert formatted.text == "x"
+        marked = formatted.find(qti_tag(tag))
+        assert marked is not None
+        assert marked.text == "2"
+        assert marked.tail == " & <tail>"
+        assert list(plain) == []
+        assert [node.tag for node in formatted] == [qti_tag(tag)]
+        declaration = next(
+            node
+            for node in root.iter(qti_tag("qti-response-declaration"))
+            if node.attrib["identifier"] == interaction.attrib["response-identifier"]
+        )
+        key = declaration.find(f"{qti_tag('qti-correct-response')}/{qti_tag('qti-value')}")
+        assert key is not None
+        expected_key = plain if index % 2 == 0 else formatted
+        assert key.text == expected_key.attrib["identifier"]
+        mapping = declaration.find(qti_tag("qti-mapping"))
+        assert mapping is not None
+        assert Decimal(mapping.attrib["upper-bound"]) == 1
+
+
+def test_dropdown_option_paragraphs_render_only_inline_content() -> None:
+    payload = _saved_document(parented=False, points=2).model_dump(mode="json")
+    option = payload["items"][0]["gaps"][1]["options"][0]
+    option["body"] = [
+        {
+            "heading_level": None,
+            "segments": [
+                {"kind": "text", "text": "x\n2", "marks": ["bold", "italic"]},
+            ],
+        },
+        {
+            "heading_level": None,
+            "segments": [
+                {"kind": "text", "text": "tail", "marks": ["underline"]},
+            ],
+        },
+    ]
+    document = NativeExamDocument.model_validate(payload)
+    (qti,) = native_exam_to_examnet_qti_items(document)
+    root = ElementTree.fromstring(serialize_qti_assessment_item(qti))
+    choice = next(root.iter(qti_tag("qti-inline-choice")))
+    assert [element.tag for element in choice] == [
+        qti_tag("strong"),
+        qti_tag("br"),
+        qti_tag("strong"),
+        qti_tag("br"),
+        qti_tag("u"),
+    ]
+    assert [element.text for element in choice.iter(qti_tag("em"))] == ["x", "2"]
+    assert "".join("".join(choice.itertext()).split()) == "x2tail"
+
+
+@pytest.mark.parametrize("heading_level", [1, 2, 3])
+def test_dropdown_heading_option_has_named_blocker_and_serializer_defence(
+    heading_level: int,
+) -> None:
+    payload = _saved_document(parented=False, points=2).model_dump(mode="json")
+    payload["items"][0]["gaps"][0]["options"][0]["body"][0]["heading_level"] = heading_level
+    document = NativeExamDocument.model_validate(payload)
+    assert [(blocker.item_id, blocker.reason) for blocker in native_export_blockers(document)] == [
+        ("item_001", "inline_choice_option_heading"),
+    ]
+    (qti,) = native_exam_to_examnet_qti_items(document)
+    with pytest.raises(ValueError, match="inline-choice options cannot render heading levels"):
+        serialize_qti_assessment_item(qti)
 
 
 @pytest.mark.parametrize("parented", [False, True])

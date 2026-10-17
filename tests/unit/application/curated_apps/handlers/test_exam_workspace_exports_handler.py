@@ -43,6 +43,9 @@ from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents 
     _Env,
 )
 from tests.unit.application.curated_apps.test_exam_workspace_exports import _reviewed
+from tests.unit.domain.curated_apps.exam_workspace.inline_choice_test_support import (
+    inline_choice_item,
+)
 from tests.unit.domain.curated_apps.exam_workspace.native_exam_document_test_support import (
     with_next_revision,
 )
@@ -132,6 +135,44 @@ async def test_unreviewed_document_blocks_every_target(env: _Env, fixture_bytes:
             )
         assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
         assert "blockers" in (exc_info.value.details or {})
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("operation", ["export", "checklist"])
+async def test_heading_dropdown_refuses_export_and_checklist_with_question_number(
+    env: _Env, operation: str
+) -> None:
+    actor = _actor()
+    imported = await env.seed_document(actor=actor)
+    item_payload = inline_choice_item(sequence=2, points=2).model_dump(mode="json")
+    item_payload["gaps"][0]["options"][0]["body"][0]["heading_level"] = 2
+    item = NativeExamItem.model_validate(item_payload)
+    document = with_next_revision(
+        imported.document.model_copy(update={"items": (inline_choice_item(points=2), item)})
+    )
+    await env.save_handler.handle(
+        actor=actor,
+        lineage_id=imported.summary.lineage_id,
+        request=SaveExamWorkspaceDocumentRequest(expected_revision=1, document=document),
+    )
+    handler = _export_handler(env)
+    with pytest.raises(DomainError) as exc_info:
+        if operation == "export":
+            await handler.handle(
+                actor=actor,
+                lineage_id=imported.summary.lineage_id,
+                target=ExamWorkspaceExportTarget.QTI,
+                expected_revision=2,
+            )
+        else:
+            await handler.checklist(
+                actor=actor, lineage_id=imported.summary.lineage_id, expected_revision=2
+            )
+    assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
+    assert "Fråga 2: Rubrikformat är inte tillåtet i rullistealternativ." in exc_info.value.message
+    assert exc_info.value.details == {
+        "blockers": [{"item_id": "item_002", "reason": "inline_choice_option_heading"}],
+    }
 
 
 @pytest.mark.asyncio

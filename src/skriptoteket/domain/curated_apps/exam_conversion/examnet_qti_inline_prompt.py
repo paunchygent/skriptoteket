@@ -20,6 +20,7 @@ from collections.abc import Iterator
 from xml.etree import ElementTree
 
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts import (
+    ExamNetQtiChoice,
     ExamNetQtiImageResource,
     ExamNetQtiInlineChoiceGap,
     ExamNetQtiInteractionType,
@@ -95,9 +96,10 @@ def _append_prompt_gap(
             {"response-identifier": gap.response_identifier, "shuffle": "false"},
         )
         for option in gap.options:
-            ElementTree.SubElement(
+            choice = ElementTree.SubElement(
                 interaction, qti_tag("qti-inline-choice"), {"identifier": option.identifier}
-            ).text = option.text
+            )
+            _append_inline_choice_content(choice, option)
         return interaction
     return ElementTree.SubElement(
         parent,
@@ -107,6 +109,27 @@ def _append_prompt_gap(
             "expected-length": _expected_text_entry_length(gap),
         },
     )
+
+
+def _append_inline_choice_content(choice: ElementTree.Element, option: ExamNetQtiChoice) -> None:
+    """Render static inline content, never block paragraphs or interactions.
+
+    Paragraph boundaries become line breaks; headings cannot be represented by
+    inline-choice content and fail closed instead of silently losing formatting.
+    """
+    if not option.body:
+        choice.text = option.text
+        return
+    tail_target: ElementTree.Element | None = None
+    for index, paragraph in enumerate(option.body):
+        if paragraph.heading_level is not None:
+            raise ValueError("inline-choice options cannot render heading levels")
+        if index:
+            tail_target = ElementTree.SubElement(choice, qti_tag("br"))
+        for segment in paragraph.segments:
+            if not isinstance(segment, ExamNetQtiPromptText):
+                raise ValueError("inline-choice options render text segments only")
+            tail_target = append_marked_text(choice, tail_target, segment.text, segment.marks)
 
 
 def append_interaction_prompt(
