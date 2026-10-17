@@ -15,7 +15,6 @@ from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
 from functools import partial
 from pathlib import Path
-from typing import Any
 from uuid import UUID, uuid4
 
 import pytest
@@ -61,9 +60,9 @@ _TRASHED_AT = _CUTOFF - timedelta(seconds=1)
 
 
 @asynccontextmanager
-async def _scheduled_tasks() -> AsyncIterator[list[asyncio.Task[Any]]]:
+async def _scheduled_tasks() -> AsyncIterator[list[asyncio.Task[object]]]:
     """Cancel and observe every actor even if a gate assertion or deadline fails."""
-    tasks: list[asyncio.Task[Any]] = []
+    tasks: list[asyncio.Task[object]] = []
     try:
         yield tasks
     finally:
