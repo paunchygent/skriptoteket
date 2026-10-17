@@ -57,7 +57,8 @@ export function revision(
   conversion: ExamWorkspaceConversionStatus | null,
 ): ExamWorkspaceDocumentResponse {
   const response = buildResponse({ version });
-  return { ...response, conversion, document: { ...response.document, items } };
+  const document = { ...response.document, items };
+  return { ...response, conversion, document, saved_document: document };
 }
 
 export function status(

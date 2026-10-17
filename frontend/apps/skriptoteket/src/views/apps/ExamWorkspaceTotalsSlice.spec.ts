@@ -49,6 +49,7 @@ async function openDocument(document: NativeExamDocument) {
   apiMocks.getExamWorkspaceDocument.mockResolvedValue({
     ...buildResponse({ version: 1, conversion: succeeded }),
     document,
+    saved_document: document,
   });
   const { wrapper } = await mountExamWorkspace();
   mounted.push(wrapper);
