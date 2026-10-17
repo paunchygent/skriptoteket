@@ -57,18 +57,24 @@
   27 items `ready`. Wave 1 `in_progress` (owner Claude Opus parent on the Mac,
   root `01a149c9-5bc7-7713-ba64-12dee0470bdd`): 39-04-08, 39-06-01, 39-06-03
   and 39-08-02 on main 7a0ff47c (reviews `evidence/reviews/u1-review-3.md`,
-  `u2-review-2.md`, `u3-review-6.md` approve); they stay `in_progress` until
-  the Mac parent's staging walks (Mina filer, profile courses, Exam.net import
-  of the parent QTI); then 39-04-10 starts; Opus prototype
+  `u2-review-2.md`, `u3-review-6.md` approve); U1/U3 walked on 1b417b64
+  (`evidence/staging-walk-u1-u3-1b417b64/`): pass except U-1 (a second tab's
+  CSRF rotation breaks writes, no recovery) and U-2 (see-through course list),
+  both with Hemma Sol repair agents; the exports-follow-exam trash check awaits
+  the user; the Exam.net import (U2) is still to walk; then 39-04-10 starts; Opus prototype
   40-04-01; a Hemma Opus lead runs 40-01-02, 40-01-03, then ST-SKRIPT-40-03. Lane 0 (Sol): TASK-SKRIPT-40-01-02
   merged to main 2026-10-17 on huleedu-integrated 0.1.25 (TASK-SKILL-REP-0323
   `done` added segmented-toggle keyboard operation; Sol rereview approved
   `534e8b02`, retained `evidence/reviews/TASK-SKRIPT-40-01-02/`); `done` after
   the Mac parent's staging walk passed on e1efb4fc (`evidence/staging-walk-40-01-02/`). 40-01-03 `done` (walk
-  passed on 1c133433). 40-03-01 and 40-03-03 on main; walk repairs in progress
-  (Hemma Sol pairs), then a parent re-walk. 40-03-05 and 40-03-06
-  (rereviews approved) merged to main for a Mac parent walk; 40-03-04 waits for
-  huleedu-integrated 0.1.27 (TASK-SKILL-REP-0325, user 2026-10-17) and its F7 split. Opus lane: ST-SKRIPT-40-04; 40-04-01 `done`
+  passed on 1c133433). 40-03-01 walk repairs merged (d9c2b3bb) and re-walked
+  there (`evidence/staging-rewalk-40-03-01-d9c2b3bb/`: items 1 and 3 pass, item 2 is a
+  user-generated-tool path, exempt by the user); lead closeout next. 40-03-03 repairs
+  (dialog Escape and focus return) are with a Hemma Sol agent, then a parent re-walk. 40-03-05 and 40-03-06
+  walked on 1b417b64 (`evidence/staging-walk-batch2-1b417b64/`): defects B2-1..B2-8,
+  one Hemma Sol agent per fix in a shared worktree; Ljudtranskribering is product-disabled
+  (96b9b96f7), not walkable; 40-03-04 adopts
+  huleedu-integrated 0.1.27 (TASK-SKILL-REP-0325 `done`); its F7 split is fa89d988. Opus lane: ST-SKRIPT-40-04; 40-04-01 `done`
   (prototype approved by the user 2026-10-17, decisions T6-T29,
   `docs/mockups/app-shell-and-exam-workspace-redesign/`), then two Opus builders (40-04-02 shell, 40-04-03 workspace); it supersedes
   TASK-SKRIPT-39-04-05 (`canceled`). Sol restyle lane: ST-SKRIPT-40-03 tasks
