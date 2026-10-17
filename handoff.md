@@ -59,8 +59,8 @@
   and 39-08-02 on main 7a0ff47c (reviews `evidence/reviews/u1-review-3.md`,
   `u2-review-2.md`, `u3-review-6.md` approve); U1/U3 walked on 1b417b64
   (`evidence/staging-walk-u1-u3-1b417b64/`): pass except U-1 (a second tab's
-  CSRF rotation breaks writes, no recovery) and U-2 (see-through course list),
-  both with Hemma Sol repair agents; the trash check (exports follow their exam
+  CSRF rotation breaks writes, no recovery, with a Hemma Sol repair agent) and U-2
+  (see-through course list; repair re-walked and passes on fdc2973b, `evidence/staging-rewalk-fdc2973b/`); the trash check (exports follow their exam
   there and back) passed on d9c2b3bb; U2 walked into Exam.net on d9c2b3bb
   (`evidence/staging-walk-u2-d9c2b3bb/`: exams 5345126 and 5345127 pass, grading preview
   passes); 39-06-01 `done` (closeout review approved); defect U-4 (the
@@ -74,7 +74,8 @@
   passed on 1c133433). 40-03-01 walk repairs merged (d9c2b3bb) and re-walked
   there (`evidence/staging-rewalk-40-03-01-d9c2b3bb/`: items 1 and 3 pass, item 2 is a
   user-generated-tool path, exempt by the user); 40-03-01 `done`. 40-03-03 repairs
-  (dialog Escape and focus return) are with a Hemma Sol agent, then a parent re-walk. 40-03-05 and 40-03-06
+  (dialog Escape and focus return) are merged (fdc2973b). User rule 2026-10-17: parent walks cover only the exam
+  converter, so 40-03-03..06 repairs close on unit proof and review without a re-walk. 40-03-05 and 40-03-06
   walked on 1b417b64 (`evidence/staging-walk-batch2-1b417b64/`): defects B2-1..B2-8,
   one Hemma Sol agent per fix in a shared worktree; Ljudtranskribering is product-disabled
   (96b9b96f7), not walkable; 40-03-04 adopts
