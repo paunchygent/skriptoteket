@@ -8,6 +8,8 @@
  *   when `isRail`; tablet: always the glyph rail; phone (< 768 px): a
  *   right-side drawer that Meny opens, with the user's email, Hjälp,
  *   Fokusläge and Logga ut in its footer
+ * - the open phone drawer is keyboard-modal: Tab and Shift+Tab wrap inside it,
+ *   and Escape, the close button and a selection dismiss it back to Meny
  * - the current page is marked by RouterLink's `aria-current="page"`
  * - utility links come first; the Administration section follows for admins
  *   and superusers. App entry points live on the home page, not here.
@@ -36,13 +38,13 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  close: [];
   dismiss: [];
   help: [];
   logout: [];
   toggleFocusMode: [];
 }>();
 
+const navRef = ref<HTMLElement | null>(null);
 const closeButtonRef = ref<HTMLButtonElement | null>(null);
 
 const standardLinks = computed<readonly SidebarNavLink[]>(() => [
@@ -68,11 +70,7 @@ const adminLinks = computed<readonly SidebarNavLink[]>(() => [
     : []),
 ]);
 
-function onClose(): void {
-  emit("close");
-}
-
-/** Escape and the close button dismiss the open drawer; the layout returns focus to Meny. */
+/** The close button and a selection dismiss the open drawer; the layout returns focus to Meny. */
 function onDismiss(): void {
   if (props.isOpen) {
     emit("dismiss");
@@ -80,8 +78,53 @@ function onDismiss(): void {
 }
 
 function onLogout(): void {
-  emit("close");
+  onDismiss();
   emit("logout");
+}
+
+function drawerFocusables(): HTMLElement[] {
+  const nav = navRef.value;
+  if (!nav) {
+    return [];
+  }
+  return Array.from(nav.querySelectorAll<HTMLElement>("a[href], button:not([disabled])"));
+}
+
+/** Tab wraps between the drawer's first and last control. */
+function containTab(event: KeyboardEvent): void {
+  const focusables = drawerFocusables();
+  const first = focusables[0];
+  const last = focusables[focusables.length - 1];
+  if (!first || !last) {
+    return;
+  }
+  const active = document.activeElement;
+  if (event.shiftKey && (active === first || !navRef.value?.contains(active))) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && (active === last || !navRef.value?.contains(active))) {
+    event.preventDefault();
+    first.focus();
+  }
+}
+
+/**
+ * Only the open phone drawer handles keys: Escape stops here so it closes the
+ * drawer alone, and Tab stays inside. The inline sidebar and rail pass keys on.
+ */
+function onKeydown(event: KeyboardEvent): void {
+  if (!props.isOpen) {
+    return;
+  }
+  if (event.key === "Escape") {
+    event.preventDefault();
+    event.stopPropagation();
+    emit("dismiss");
+    return;
+  }
+  if (event.key === "Tab") {
+    containTab(event);
+  }
 }
 
 watch(
@@ -99,10 +142,11 @@ watch(
 <template>
   <nav
     id="app-sidebar"
+    ref="navRef"
     class="sidebar"
     :class="{ 'is-open': isOpen, 'is-rail': isRail }"
     aria-label="Huvudmeny"
-    @keydown.esc="onDismiss"
+    @keydown="onKeydown"
   >
     <div class="sidebar-head">
       <button
@@ -127,7 +171,7 @@ watch(
         :to="link.to"
         class="sidebar-nav-item"
         :title="link.label"
-        @click="onClose"
+        @click="onDismiss"
       >
         <UiGlyph
           :meaning="link.glyph"
@@ -146,7 +190,7 @@ watch(
           :to="link.to"
           class="sidebar-nav-item"
           :title="link.label"
-          @click="onClose"
+          @click="onDismiss"
         >
           <UiGlyph
             :meaning="link.glyph"

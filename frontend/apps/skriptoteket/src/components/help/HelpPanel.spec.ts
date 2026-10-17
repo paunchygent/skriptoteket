@@ -194,41 +194,74 @@ describe("HelpPanel", () => {
     wrapper.unmount();
   });
 
-  it("closes deterministically when Escape is pressed", async () => {
+  it("moves focus into the opened panel instead of leaving it on the opener", async () => {
     const help = useHelp();
-    const wrapper = mount(HelpPanel, {
-      attachTo: document.body,
-    });
+    help.isOpen.value = false;
+    const opener = document.createElement("button");
+    document.body.appendChild(opener);
+    opener.focus();
 
-    await flushPromises();
-    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    const wrapper = mount(HelpPanel, { attachTo: document.body });
+    help.open(opener);
     await flushPromises();
 
-    expect(help.isOpen.value).toBe(false);
-    expect(document.body.querySelector("#help-panel")).toBeNull();
+    const panel = document.body.querySelector<HTMLElement>("#help-panel");
+    expect(panel).not.toBeNull();
+    expect(document.activeElement).toBe(panel);
+
+    wrapper.unmount();
+    opener.remove();
+  });
+
+  it("renders no scrim: the page behind the non-modal panel stays usable", async () => {
+    const wrapper = mount(HelpPanel, { attachTo: document.body });
+    await flushPromises();
+
+    const panel = document.body.querySelector("#help-panel");
+    expect(panel?.getAttribute("aria-modal")).toBe("false");
+    expect(document.body.querySelector(".help-backdrop")).toBeNull();
+    expect(document.body.querySelectorAll(".fixed.inset-0")).toHaveLength(0);
 
     wrapper.unmount();
   });
 
-  it("keeps backdrop click closing the drawer", async () => {
+  it("closes on Escape inside the panel and stops the key at the panel", async () => {
     const help = useHelp();
-    const wrapper = mount(HelpPanel, {
-      attachTo: document.body,
-    });
+    const wrapper = mount(HelpPanel, { attachTo: document.body });
+    await flushPromises();
 
+    const outerEscape = vi.fn();
+    document.addEventListener("keydown", outerEscape);
+    const closeButton = document.body.querySelector<HTMLElement>("#help-panel button");
+    closeButton?.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
     await flushPromises();
-    const backdrop = document.body.querySelector(".help-backdrop");
-    expect(backdrop).not.toBeNull();
-    backdrop?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    await flushPromises();
+    document.removeEventListener("keydown", outerEscape);
 
     expect(help.isOpen.value).toBe(false);
     expect(document.body.querySelector("#help-panel")).toBeNull();
+    expect(outerEscape).not.toHaveBeenCalled();
 
     wrapper.unmount();
   });
 
-  it("returns focus to the opener when Escape closes the drawer", async () => {
+  it("leaves Escape from the page behind to the page's own top layer", async () => {
+    const help = useHelp();
+    const wrapper = mount(HelpPanel, { attachTo: document.body });
+    await flushPromises();
+
+    const pageControl = document.createElement("button");
+    document.body.appendChild(pageControl);
+    pageControl.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    await flushPromises();
+
+    expect(help.isOpen.value).toBe(true);
+    expect(document.body.querySelector("#help-panel")).not.toBeNull();
+
+    wrapper.unmount();
+    pageControl.remove();
+  });
+
+  it("returns focus to the opener when Escape closes the panel", async () => {
     const help = useHelp();
     help.isOpen.value = false;
 
@@ -244,9 +277,10 @@ describe("HelpPanel", () => {
 
     help.open(opener);
     await flushPromises();
-    expect(document.body.querySelector("#help-panel")).not.toBeNull();
+    const panel = document.body.querySelector<HTMLElement>("#help-panel");
+    expect(document.activeElement).toBe(panel);
 
-    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    panel?.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
     await flushPromises();
 
     expect(help.isOpen.value).toBe(false);

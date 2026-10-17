@@ -132,6 +132,7 @@ defineExpose({ menuButtonElement });
       glyph="log-out"
       :label="logoutLabel"
       :word="logoutLabel"
+      word-reserve="Loggar ut…"
       :disabled="logoutInProgress"
       @click="emit('logout')"
     />
@@ -240,8 +241,10 @@ defineExpose({ menuButtonElement });
   }
 }
 
+/* Focus mode makes the toggle unavailable but keeps its slot, so the brand
+   holds still; a visibility-hidden button is not focusable. */
 .topbar--focus-mode .topbar-sidebar-toggle {
-  display: none;
+  visibility: hidden;
 }
 
 .topbar-menu-button {
@@ -291,10 +294,15 @@ defineExpose({ menuButtonElement });
 }
 
 /* Immersive game routes: dark bar over the game, no sidebar or drawer. */
+/* No shared role exists for dark chrome, so the bar darkens the action teal
+   toward black; text and hover derive from the canvas roles. */
 .topbar--immersive {
-  border-bottom-color: rgba(255, 255, 255, 0.12);
-  background: linear-gradient(180deg, rgba(18, 27, 24, 0.96), rgba(13, 18, 16, 0.9));
-  backdrop-filter: blur(18px);
+  border-bottom-color: var(--huleedu-canvas-15);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--huleedu-action) 22%, black),
+    color-mix(in srgb, var(--huleedu-action) 14%, black)
+  );
   color: var(--huleedu-canvas);
 }
 
@@ -306,8 +314,8 @@ defineExpose({ menuButtonElement });
 @media (hover: hover) {
   .topbar--immersive .topbar-back-link:hover,
   .topbar--immersive :deep(.shell-bar-button:not(:disabled):hover) {
-    background: rgba(255, 255, 255, 0.08);
-    color: #efc06c;
+    background: var(--huleedu-canvas-15);
+    color: var(--huleedu-canvas);
   }
 }
 

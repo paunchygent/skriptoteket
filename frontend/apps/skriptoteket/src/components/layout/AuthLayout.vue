@@ -6,7 +6,9 @@
  * - one CSS grid owns the shell geometry at every width: desktop (>= 1280 px)
  *   shows the 240 px sidebar or the 64 px rail, tablet always the rail, phone
  *   (< 768 px) a single column with the navigation in a Meny drawer
- * - owns the drawer state and reads focus mode and the rail state from the
+ * - owns the drawer state; while the phone drawer is open the top bar and the
+ *   page are inert, so only the drawer takes focus and pointer input
+ * - reads focus mode and the rail state from the
  *   per-user layout store; focus mode hides the sidebar at 768 px and wider and
  *   keeps the top bar
  * - selected game routes switch to an immersive mode with only the dark top bar
@@ -16,7 +18,7 @@
  *   and immersive routes get an unpadded, non-scrolling frame
  */
 
-import { computed, onBeforeUnmount, ref, watch, watchEffect } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch, watchEffect } from "vue";
 import { useRoute } from "vue-router";
 import { storeToRefs } from "pinia";
 
@@ -76,13 +78,17 @@ const isPageRoute = computed(
 );
 
 const sidebarOpen = ref(false);
+/** `undefined` removes the attribute; `inert="false"` would still be inert. */
+const drawerInert = computed(() => (sidebarOpen.value ? true : undefined));
 const topBarRef = ref<InstanceType<typeof AuthTopBar> | null>(null);
 
 function menuButton(): HTMLElement | null {
   return topBarRef.value?.menuButtonElement() ?? null;
 }
 
-function returnFocusToMenu(): void {
+/** Waits for the render that lifts `inert` from the top bar before focusing Meny. */
+async function returnFocusToMenu(): Promise<void> {
+  await nextTick();
   menuButton()?.focus({ preventScroll: true });
 }
 
@@ -97,7 +103,7 @@ function closeSidebar(): void {
 /** Escape, the close button and the backdrop dismiss the drawer back to Meny. */
 function dismissSidebar(): void {
   closeSidebar();
-  returnFocusToMenu();
+  void returnFocusToMenu();
 }
 
 function onLogout(): void {
@@ -120,8 +126,26 @@ function onDrawerHelp(): void {
 function onDrawerToggleFocusMode(): void {
   closeSidebar();
   layout.toggle();
-  returnFocusToMenu();
+  void returnFocusToMenu();
 }
+
+/** The drawer exists only below 768 px; widening the window closes it. */
+const PHONE_QUERY = "(max-width: 767px)";
+let phoneMedia: MediaQueryList | null = null;
+
+function onPhoneMediaChange(event: MediaQueryListEvent): void {
+  if (!event.matches) {
+    closeSidebar();
+  }
+}
+
+onMounted(() => {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+    return;
+  }
+  phoneMedia = window.matchMedia(PHONE_QUERY);
+  phoneMedia.addEventListener("change", onPhoneMediaChange);
+});
 
 watch(
   () => props.user?.id ?? null,
@@ -140,6 +164,7 @@ watchEffect(() => {
 });
 
 onBeforeUnmount(() => {
+  phoneMedia?.removeEventListener("change", onPhoneMediaChange);
   if (typeof document !== "undefined") {
     document.body.classList.remove("app-shell-game-mode");
   }
@@ -157,6 +182,7 @@ onBeforeUnmount(() => {
   >
     <AuthTopBar
       ref="topBarRef"
+      :inert="drawerInert"
       :logout-in-progress="logoutInProgress"
       :is-focus-mode="focusMode"
       :is-sidebar-collapsed="sidebarCollapsed"
@@ -178,7 +204,6 @@ onBeforeUnmount(() => {
       :can-see-admin="canSeeAdmin"
       :can-see-superuser="canSeeSuperuser"
       :logout-in-progress="logoutInProgress"
-      @close="closeSidebar"
       @dismiss="dismissSidebar"
       @help="onDrawerHelp"
       @logout="onLogout"
@@ -194,6 +219,7 @@ onBeforeUnmount(() => {
 
     <main
       class="auth-main-content"
+      :inert="drawerInert"
       :class="{
         'auth-main-content--page': isPageRoute,
         'auth-main-content--editor': isEditorRoute,
@@ -288,7 +314,7 @@ onBeforeUnmount(() => {
     position: fixed;
     inset: 0;
     z-index: 49;
-    background: rgba(8, 43, 76, 0.32);
+    background: var(--huleedu-navy-30);
   }
 }
 

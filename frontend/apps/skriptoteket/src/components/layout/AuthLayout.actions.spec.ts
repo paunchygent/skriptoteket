@@ -9,12 +9,17 @@
  * its own shell cutoff and now shares the one shell composition. They assert
  * action state, shared help state, focus return and emitted shell events;
  * rendered breakpoint geometry is proven by the browser walk, not by jsdom.
+ * The keyboard cases mount the real help panel beside the shell and try to
+ * break the open drawer's modality: Tab past either end, Escape reaching outer
+ * listeners, and focus left on a hidden control after a selection. jsdom does
+ * not enforce `inert`, so those cases assert the attribute, not its effect.
  */
 
 import { flushPromises, mount, type VueWrapper } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 
+import HelpPanel from "../help/HelpPanel.vue";
 import { useHelp } from "../help/useHelp";
 import { useLayoutStore } from "../../stores/layout";
 import AuthLayout from "./AuthLayout.vue";
@@ -62,7 +67,7 @@ function mountLayout(
     global: {
       stubs: {
         RouterLink: {
-          template: "<a><slot /></a>",
+          template: "<a href=\"#\"><slot /></a>",
         },
       },
     },
@@ -318,5 +323,212 @@ describe("AuthLayout shell action wiring", () => {
 
     await wrapper!.get(".topbar button.topbar-logout").trigger("click");
     expect(wrapper!.emitted("logout")).toHaveLength(1);
+  });
+
+  describe("phone drawer and help keyboard lifecycle", () => {
+    let outerKeydown: Mock<(event: KeyboardEvent) => void>;
+
+    beforeEach(() => {
+      outerKeydown = vi.fn<(event: KeyboardEvent) => void>();
+      document.addEventListener("keydown", outerKeydown);
+    });
+
+    afterEach(() => {
+      document.removeEventListener("keydown", outerKeydown);
+      vi.unstubAllGlobals();
+    });
+
+    function key(target: Element, init: KeyboardEventInit): KeyboardEvent {
+      const event = new KeyboardEvent("keydown", { bubbles: true, cancelable: true, ...init });
+      target.dispatchEvent(event);
+      return event;
+    }
+
+    function drawerControls(): HTMLElement[] {
+      return Array.from(
+        sidebar().element.querySelectorAll<HTMLElement>("a[href], button:not([disabled])"),
+      );
+    }
+
+    function closeButton(): HTMLElement {
+      return wrapper!.get(".sidebar button[aria-label='Stäng menyn']").element as HTMLElement;
+    }
+
+    it("wraps Tab and Shift+Tab inside the open drawer and makes the page behind inert", async () => {
+      mountLayout();
+      await menuButton().trigger("click");
+      await flushPromises();
+
+      expect(wrapper!.get(".topbar").attributes("inert")).toBeDefined();
+      expect(wrapper!.get("main").attributes("inert")).toBeDefined();
+
+      const controls = drawerControls();
+      const last = controls[controls.length - 1]!;
+      expect(last.classList.contains("sidebar-logout")).toBe(true);
+
+      last.focus();
+      const forward = key(last, { key: "Tab" });
+      expect(forward.defaultPrevented).toBe(true);
+      expect(document.activeElement).toBe(closeButton());
+
+      const backward = key(closeButton(), { key: "Tab", shiftKey: true });
+      expect(backward.defaultPrevented).toBe(true);
+      expect(document.activeElement).toBe(last);
+
+      const middle = controls[2]!;
+      middle.focus();
+      expect(key(middle, { key: "Tab" }).defaultPrevented).toBe(false);
+
+      await sidebar().trigger("keydown", { key: "Escape" });
+      await flushPromises();
+      expect(wrapper!.get(".topbar").attributes("inert")).toBeUndefined();
+      expect(wrapper!.get("main").attributes("inert")).toBeUndefined();
+    });
+
+    it("pulls focus that sits outside the open drawer back in on Tab", async () => {
+      mountLayout();
+      await menuButton().trigger("click");
+      await flushPromises();
+
+      const outside = document.createElement("button");
+      document.body.appendChild(outside);
+      outside.focus();
+      key(sidebar().element, { key: "Tab", shiftKey: true });
+
+      const controls = drawerControls();
+      expect(document.activeElement).toBe(controls[controls.length - 1]);
+      outside.remove();
+    });
+
+    it("stops Escape at the open drawer so no outer listener also reacts", async () => {
+      mountLayout();
+      await menuButton().trigger("click");
+      await flushPromises();
+
+      const link = sidebar().element.querySelector<HTMLElement>(".sidebar-nav a")!;
+      link.focus();
+      const escape = key(link, { key: "Escape" });
+      await flushPromises();
+
+      expect(escape.defaultPrevented).toBe(true);
+      expect(outerKeydown).not.toHaveBeenCalled();
+      expect(sidebar().classes()).not.toContain("is-open");
+      expect(document.activeElement).toBe(menuButton().element);
+    });
+
+    it("passes Escape and Tab through the inline sidebar while no drawer is open", async () => {
+      mountLayout();
+      const link = sidebar().element.querySelector<HTMLElement>(".sidebar-nav a")!;
+      link.focus();
+
+      expect(key(link, { key: "Escape" }).defaultPrevented).toBe(false);
+      expect(outerKeydown).toHaveBeenCalledTimes(1);
+      expect(key(link, { key: "Tab" }).defaultPrevented).toBe(false);
+      expect(wrapper!.emitted()).not.toHaveProperty("dismiss");
+      expect(wrapper!.get("main").attributes("inert")).toBeUndefined();
+    });
+
+    it("leaves focus on the visible Meny button after a drawer link is chosen", async () => {
+      mountLayout();
+      await menuButton().trigger("click");
+      await flushPromises();
+
+      const link = Array.from(sidebar().element.querySelectorAll<HTMLElement>(".sidebar-nav a")).find(
+        (item) => item.textContent?.includes("Katalog"),
+      )!;
+      link.focus();
+      link.click();
+      await flushPromises();
+
+      expect(sidebar().classes()).not.toContain("is-open");
+      expect(document.activeElement).toBe(menuButton().element);
+    });
+
+    it("closes the drawer and lifts inert when the window widens past the phone width", async () => {
+      let onChange: ((event: { matches: boolean }) => void) | null = null;
+      vi.stubGlobal("matchMedia", (query: string) => ({
+        matches: true,
+        media: query,
+        addEventListener: (_type: string, listener: (event: { matches: boolean }) => void) => {
+          onChange = listener;
+        },
+        removeEventListener: vi.fn(),
+      }));
+      mountLayout();
+      await menuButton().trigger("click");
+      expect(onChange).not.toBeNull();
+
+      onChange!({ matches: false });
+      await flushPromises();
+
+      expect(sidebar().classes()).not.toContain("is-open");
+      expect(wrapper!.get("main").attributes("inert")).toBeUndefined();
+    });
+
+    it("moves focus into the real help panel from the drawer and back to Meny on Escape", async () => {
+      mountLayout();
+      const helpPanel = mount(HelpPanel, { attachTo: document.body });
+      await menuButton().trigger("click");
+      await drawerHelpButton().trigger("click");
+      await flushPromises();
+
+      const panel = document.querySelector<HTMLElement>("#help-panel")!;
+      expect(panel).not.toBeNull();
+      expect(document.activeElement).toBe(panel);
+      expect(wrapper!.get("main").attributes("inert")).toBeUndefined();
+
+      const escape = key(panel, { key: "Escape" });
+      await flushPromises();
+
+      expect(outerKeydown).not.toHaveBeenCalled();
+      expect(escape.defaultPrevented).toBe(false);
+      expect(useHelp().isOpen.value).toBe(false);
+      expect(document.activeElement).toBe(menuButton().element);
+      helpPanel.unmount();
+    });
+
+    it("moves focus from the top-bar Hjälp into the help panel and back again", async () => {
+      mountLayout();
+      const helpPanel = mount(HelpPanel, { attachTo: document.body });
+      const opener = topbarHelpButton().element as HTMLElement;
+      opener.focus();
+      opener.click();
+      await flushPromises();
+
+      const panel = document.querySelector<HTMLElement>("#help-panel")!;
+      expect(document.activeElement).toBe(panel);
+      expect(document.querySelector(".help-backdrop")).toBeNull();
+
+      key(panel, { key: "Escape" });
+      await flushPromises();
+      expect(document.activeElement).toBe(opener);
+      helpPanel.unmount();
+    });
+  });
+
+  describe("top-bar slots stay put across state changes", () => {
+    it("keeps the sidebar toggle's slot in focus mode instead of removing it", async () => {
+      mountLayout();
+      await topbarFocusButton().trigger("click");
+
+      const toggle = wrapper!.find(".topbar .topbar-sidebar-toggle");
+      expect(toggle.exists()).toBe(true);
+      expect(wrapper!.get(".topbar").classes()).toContain("topbar--focus-mode");
+    });
+
+    it("reserves the pending logout word so the logout slot keeps its width", () => {
+      mountLayout();
+      const reserve = wrapper!.get(".topbar-logout .shell-bar-button__word-reserve");
+      expect(reserve.text()).toBe("Loggar ut…");
+      expect(reserve.attributes("aria-hidden")).toBe("true");
+      expect(wrapper!.get(".topbar-logout").attributes("aria-label")).toBe("Logga ut");
+
+      wrapper!.unmount();
+      mountLayout({ logoutInProgress: true });
+      const logout = wrapper!.get(".topbar-logout");
+      expect(logout.attributes("aria-label")).toBe("Loggar ut…");
+      expect(logout.attributes("disabled")).toBeDefined();
+      expect(logout.get(".shell-bar-button__word-reserve").text()).toBe("Loggar ut…");
+    });
   });
 });

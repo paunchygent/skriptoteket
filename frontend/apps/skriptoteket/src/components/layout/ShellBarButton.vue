@@ -12,6 +12,9 @@
  * - `word` is the visible word next to the glyph; `wordFrom="desktop"` hides it
  *   below 1280 px, `wordFrom="never"` makes the button glyph-only at every width.
  *   The accessible name and tooltip are always `label`.
+ * - `wordReserve` is the longest word the button can switch to; the word slot
+ *   keeps its width, so a state change such as Logga ut -> Loggar ut… does
+ *   not move the neighbouring buttons
  */
 
 import { UiGlyph, type UiGlyphMeaning } from "../ui";
@@ -21,6 +24,7 @@ withDefaults(
     glyph?: UiGlyphMeaning;
     label: string;
     word?: string;
+    wordReserve?: string;
     wordFrom?: "always" | "desktop" | "never";
     href?: string;
     pressed?: boolean;
@@ -29,6 +33,7 @@ withDefaults(
   {
     glyph: undefined,
     word: undefined,
+    wordReserve: undefined,
     wordFrom: "desktop",
     href: undefined,
     pressed: undefined,
@@ -58,7 +63,11 @@ defineEmits<{
     <span
       v-if="word"
       class="shell-bar-button__word"
-    >{{ word }}</span>
+    ><span>{{ word }}</span><span
+      v-if="wordReserve"
+      class="shell-bar-button__word-reserve"
+      aria-hidden="true"
+    >{{ wordReserve }}</span></span>
   </a>
   <button
     v-else
@@ -79,7 +88,11 @@ defineEmits<{
     <span
       v-if="word"
       class="shell-bar-button__word"
-    >{{ word }}</span>
+    ><span>{{ word }}</span><span
+      v-if="wordReserve"
+      class="shell-bar-button__word-reserve"
+      aria-hidden="true"
+    >{{ wordReserve }}</span></span>
   </button>
 </template>
 
@@ -110,6 +123,20 @@ defineEmits<{
     background-color var(--huleedu-duration-fast) var(--huleedu-ease-default),
     border-color var(--huleedu-duration-fast) var(--huleedu-ease-default),
     color var(--huleedu-duration-fast) var(--huleedu-ease-default);
+}
+
+/* The visible word and its reserve share one grid cell, so the slot is as
+   wide as the longer of the two. */
+.shell-bar-button__word {
+  display: inline-grid;
+}
+
+.shell-bar-button__word > * {
+  grid-area: 1 / 1;
+}
+
+.shell-bar-button__word-reserve {
+  visibility: hidden;
 }
 
 .shell-bar-button--word-never {

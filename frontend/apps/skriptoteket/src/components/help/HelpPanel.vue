@@ -5,8 +5,12 @@
  * This component resolves the currently visible help topic from the active SPA
  * route and nested workspace context, while keeping the signed-out public
  * landing page on the logged-out index instead of authenticated dashboard help.
+ *
+ * The panel is non-modal and has no scrim: the page behind stays usable. Opening
+ * moves focus into the panel; Escape inside the panel closes it, and `useHelp`
+ * returns focus to the opener.
  */
-import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { computed, nextTick, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 
 import HelpIndex from "./HelpIndex.vue";
@@ -18,6 +22,7 @@ const route = useRoute();
 const auth = useAuthStore();
 const { isOpen, activeTopic, helpContext, close, showIndex, showTopic } = useHelp();
 const hasPrefetched = ref(false);
+const panelRef = ref<HTMLElement | null>(null);
 
 const routeTopic = computed(() => {
   if (route.name === "home" && !auth.isAuthenticated && !helpContext.value) {
@@ -43,31 +48,33 @@ function prefetchDefaultTopics(): void {
   prefetchHelpTopics(["home", "browse_professions", "browse_categories", "browse_tools"]);
 }
 
-function handleKeydown(event: KeyboardEvent): void {
-  if (event.key === "Escape" && isOpen.value) {
-    event.stopPropagation();
-    close();
-  }
+/** Escape closes help only while focus is in it; outer layers keep their own Escape. */
+function onEscape(): void {
+  close();
+}
+
+async function focusPanel(): Promise<void> {
+  await nextTick();
+  panelRef.value?.focus({ preventScroll: true });
+}
+
+function onOpened(): void {
+  syncToRoute();
+  prefetchDefaultTopics();
+  void focusPanel();
 }
 
 onMounted(() => {
-  document.addEventListener("keydown", handleKeydown);
   if (isOpen.value) {
-    syncToRoute();
-    prefetchDefaultTopics();
+    onOpened();
   }
-});
-
-onUnmounted(() => {
-  document.removeEventListener("keydown", handleKeydown);
 });
 
 watch(
   () => isOpen.value,
   (open) => {
     if (open) {
-      syncToRoute();
-      prefetchDefaultTopics();
+      onOpened();
     }
   },
 );
@@ -93,22 +100,17 @@ watch(
 
 <template>
   <Teleport to="body">
-    <Transition name="help-backdrop">
-      <div
-        v-if="isOpen"
-        class="help-backdrop fixed inset-0 bg-navy/40"
-        @click="close()"
-      />
-    </Transition>
-
     <Transition name="help-panel">
       <aside
         v-if="isOpen"
         id="help-panel"
+        ref="panelRef"
+        tabindex="-1"
         class="help-panel border border-navy shadow-md flex flex-col text-navy"
         role="dialog"
         aria-modal="false"
         aria-labelledby="help-panel-title"
+        @keydown.esc.stop="onEscape"
       >
         <header class="flex items-center justify-between gap-3 p-4 border-b border-navy/20">
           <h2
@@ -141,10 +143,6 @@ watch(
 </template>
 
 <style scoped>
-.help-backdrop {
-  z-index: var(--huleedu-z-overlay);
-}
-
 .help-panel {
   position: fixed;
   top: calc(var(--huleedu-space-4) + var(--huleedu-header-height));
@@ -153,6 +151,11 @@ watch(
   width: min(420px, calc(100vw - var(--huleedu-space-8)));
   background-color: var(--surface-modal);
   z-index: var(--huleedu-z-modal);
+}
+
+.help-panel:focus-visible {
+  outline: 2px solid var(--huleedu-action-40);
+  outline-offset: 2px;
 }
 
 @media (max-width: 767px) {
@@ -165,15 +168,6 @@ watch(
     left: calc(var(--huleedu-space-4) + env(safe-area-inset-left, 0px));
     width: auto;
   }
-}
-
-.help-backdrop-enter-active,
-.help-backdrop-leave-active {
-  transition: opacity var(--huleedu-duration-slow) var(--huleedu-ease-default);
-}
-.help-backdrop-enter-from,
-.help-backdrop-leave-to {
-  opacity: 0;
 }
 
 .help-panel-enter-active,

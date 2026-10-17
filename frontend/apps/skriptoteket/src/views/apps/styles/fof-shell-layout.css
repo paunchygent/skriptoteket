@@ -222,9 +222,18 @@
   }
 }
 
+/* One column below 941 px: status, cabinet, then the service controls. The
+   content is taller than the immersive frame, so the game root is the single
+   scroll owner and the inner layers take their content height. */
 @media (max-width: 940px) {
+  .fof-game-container.fof-shell {
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
   .fof-game-container .fof-ready {
-    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    height: auto;
   }
 
   .fof-game-container .fof-ready__intro {
@@ -237,6 +246,7 @@
     grid-template-columns: minmax(0, 1fr);
     align-items: start;
     justify-items: stretch;
+    height: auto;
     padding: 1rem;
     gap: 1rem;
   }
@@ -261,9 +271,7 @@
     padding: 0.75rem;
   }
 
-  .fof-game-container .fof-shell__state,
-  .fof-game-container .fof-ready,
-  .fof-game-container .fof-machine-scene {
+  .fof-game-container .fof-shell__state {
     min-height: 0;
     height: 100%;
   }
