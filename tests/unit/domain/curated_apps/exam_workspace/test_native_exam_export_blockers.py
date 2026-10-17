@@ -3,6 +3,8 @@
 import pytest
 from pydantic import ValidationError
 
+from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk, DocxMissingImage
+from skriptoteket.domain.curated_apps.exam_workspace.docx_source_review import review_source_item
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_export_rules import (
     item_has_trusted_key,
     native_export_blockers,
@@ -49,7 +51,7 @@ class TestExportBlockers:
                 "points_estimated": True,
                 "review": make_review(
                     state=NativeItemReviewState.REVIEW_REQUIRED,
-                    parse_origin=NativeParseOrigin.DETERMINISTIC,
+                    parse_origin=NativeParseOrigin.SOURCE_FALLBACK,
                 ),
             }
         )
@@ -58,6 +60,37 @@ class TestExportBlockers:
 
         review = unbuilt.review.model_copy(update={"state": NativeItemReviewState.REVIEW_COMPLETE})
         reviewed = unbuilt.model_copy(update={"review": review})
+        assert native_export_blockers(make_document(reviewed)) == ()
+
+    @pytest.mark.parametrize("missing_picture", [False, True])
+    def test_docx_source_fallback_blocks_without_retry_or_import_metadata(
+        self, missing_picture: bool
+    ) -> None:
+        chunk = DocxChunk(
+            anchor="body:0001",
+            kind="paragraph",
+            text="Förklara. (2 p)",
+            marked_text="Förklara. (2 p)",
+            missing_images=(DocxMissingImage("/word/media/figur.emf", "image/x-emf"),)
+            if missing_picture
+            else (),
+        )
+        item = review_source_item((chunk,), "Frågan kunde inte konverteras.")
+        assert item.points == 2
+        assert item.retry_source is None
+        assert item.import_record is None
+        # The explicit marker, not an anchor or metadata, identifies the fallback.
+        item = item.model_copy(update={"source_anchor": None})
+        assert [blocker.reason for blocker in native_export_blockers(make_document(item))] == [
+            "unbuilt_question"
+        ]
+        reviewed = item.model_copy(
+            update={
+                "review": item.review.model_copy(
+                    update={"state": NativeItemReviewState.REVIEW_COMPLETE}
+                )
+            }
+        )
         assert native_export_blockers(make_document(reviewed)) == ()
 
     def test_estimated_points_require_points(self) -> None:

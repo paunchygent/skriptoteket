@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "5e8da48a18ad52ef4438782b777695ddd7aaf84050a606a8a72575fcac970f16",
+  "source_set_digest": "e3fc0b2167fb831bf6a5c86336cdc9ffe0eaa6500a2fbc15506d05b7e2c7787c",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -2351,7 +2351,7 @@
       "type": "story",
       "title": "Course and tag metadata for saved exams",
       "path": "docs/backlog/stories/st-skript-39-08-course-and-tag-metadata-for-saved-exams.md",
-      "status": "ready",
+      "status": "done",
       "epic": "EPIC-SKRIPT-39",
       "owners": [
         {
@@ -2364,7 +2364,10 @@
       },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "decided_at": "2026-10-17",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "All five tasks done (TASK-SKRIPT-39-08-01..05). Story check: suggested tags stored on a staging import (wave-2 walk at bd4d706d, retained 01a149c9-5bc7-7713-ba64-12dee0470bdd evidence/staging-walk-wave2-bd4d706d/out/exam-document.json); preselected course at import and export with the official course name (39-08-01 walk, retained 01a145b6-c404-761f-aeef-39de058ba7ca evidence/staging-walk-808d8f11/WALK.md); course registration in the profile (39-08-02 re-walks in 01a149c9); saved exams from the API grouped by course and date and the saved sort preference on staging d31e939a (retained 01a14b79-b714-7f76-bcba-845884716cae evidence/staging-list-check/CHECK.md). The user closed the story on 2026-10-17."
       }
     },
     {
@@ -5522,7 +5525,7 @@
       "type": "task",
       "title": "Central-content tags suggested by a Decisions classifier at import and from the drawer",
       "path": "docs/backlog/tasks/task-skript-39-08-03-central-content-tags-suggested-by-a-decisions-classifier-at-import-and-from-the-drawer.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-08",
       "owners": [
@@ -5533,7 +5536,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-17",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Implementation review approved (review-2, retained 01a149c9-5bc7-7713-ba64-12dee0470bdd evidence/reviews/39-08-03-review-2.md). Closeout review at main bd4d706d (Pi c2153ae4, evidence/reviews/TASK-SKRIPT-39-08-03/closeout-review.md) requested one medium change, F1: the catalog-builder test still expected the pre-tagging source URLs; repaired in 19ef5504. No high finding, so no rereview under the user ruling the closeout review cites. Focused selection rerun at main 44cd0c6b: 55 passed (retained 01a14b79-b714-7f76-bcba-845884716cae evidence/39-08-03-focused.log). No frontend tests and no staging walk by contract (G2/G4)."
       }
     },
     {
@@ -5541,7 +5548,7 @@
       "type": "task",
       "title": "Exam index backend for saved exams grouped by course and sorted by date",
       "path": "docs/backlog/tasks/task-skript-39-08-04-exam-index-backend-for-saved-exams-grouped-by-course-and-sorted-by-date.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-08",
       "owners": [
@@ -5552,7 +5559,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-17",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Implementation review approved (review-2, retained 01a149c9-5bc7-7713-ba64-12dee0470bdd evidence/reviews/39-08-04-review-2.md). Closeout review approved with no blocking findings at main bd4d706d (Pi c2153ae4, evidence/reviews/TASK-SKRIPT-39-08-04/closeout-review.md). Focused selection incl. real PostgreSQL index and migration tests rerun at main 44cd0c6b: 15 passed, no skips (retained 01a14b79-b714-7f76-bcba-845884716cae evidence/39-08-04-focused.log). No frontend tests and no staging walk by contract (G2/G4)."
       }
     },
     {

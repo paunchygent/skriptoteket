@@ -114,7 +114,7 @@ async def test_a_model_review_item_shows_every_source_chunk_of_its_question_in_o
     text = {chunk.anchor: chunk.text for chunk in corpus_chunks(_EXAM)}
     (item,) = [i for i in document.items if i.source_anchor == _QUESTION]
     assert item.review.state is NativeItemReviewState.REVIEW_REQUIRED
-    assert item.review.parse_origin is NativeParseOrigin.DETERMINISTIC
+    assert item.review.parse_origin is NativeParseOrigin.SOURCE_FALLBACK
     assert item.review.reasons == (f"AI-tolkningen markerade frågan för granskning: {_REASON}",)
     printed = "\n".join(item.plain_text_lines())
     own_positions = [printed.index(text[anchor]) for anchor in _QUESTION_OWN]
@@ -147,7 +147,7 @@ async def test_a_failed_item_listing_part_of_its_question_becomes_a_review_item_
     document = outcome.result.document
     text = {chunk.anchor: chunk.text for chunk in corpus_chunks(_EXAM)}
     (item,) = [i for i in document.items if i.source_anchor == _FAILED_QUESTION]
-    assert item.review.parse_origin is NativeParseOrigin.DETERMINISTIC
+    assert item.review.parse_origin is NativeParseOrigin.SOURCE_FALLBACK
     printed = "\n".join(item.plain_text_lines())
     for anchor in (*_FAILED_OWN, _FAILED_LISTED):
         assert text[anchor] in printed, f"{anchor} is missing from the review item"

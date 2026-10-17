@@ -60,7 +60,7 @@ beforeEach(() => {
   original.saved_document = original.document;
   api.getExamWorkspaceDocument.mockResolvedValue(original);
   api.getExamCourseCatalog.mockResolvedValue({ courses, registered_course_keys: [], generated_at: "2026-10-17T17:00:00Z" });
-  api.listExamWorkspaceDocuments.mockResolvedValue({ documents: [] });
+  api.listExamWorkspaceDocuments.mockResolvedValue({ documents: [], ordering: "course" });
   api.saveExamWorkspaceDocument.mockImplementation(async (_id, payload) => ({
     ...original, document: payload.document, saved_document: payload.document,
     summary: { ...original.summary, version: 2 },

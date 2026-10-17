@@ -106,7 +106,7 @@ async def test_a_gap_fill_reply_without_a_gap_is_a_review_item_naming_the_invari
     assert _INVARIANT in events[0].detail
     item = next(i for i in outcome.result.document.items if i.source_anchor == _QUESTION)
     assert item.review.state is NativeItemReviewState.REVIEW_REQUIRED
-    assert item.review.parse_origin is NativeParseOrigin.DETERMINISTIC
+    assert item.review.parse_origin is NativeParseOrigin.SOURCE_FALLBACK
     assert any(_INVARIANT in reason for reason in item.review.reasons)
     text = {chunk.anchor: chunk.text for chunk in corpus_chunks(_EXAM)}
     assert any(text[_STEM] in line for line in item.plain_text_lines()), (

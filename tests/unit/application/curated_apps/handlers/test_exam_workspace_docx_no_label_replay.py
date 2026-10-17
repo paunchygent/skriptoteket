@@ -91,7 +91,7 @@ async def test_a_question_neither_pass_labels_becomes_a_source_review_item(monke
         assert not set(_OWN) & claimed, "a converter request holds the unlabeled question"
     texts = {c.anchor: c.text for c in corpus_chunks(_EXAM)}
     (item,) = [i for i in outcome.result.document.items if i.source_anchor == _OWN[0]]
-    assert item.review.parse_origin is NativeParseOrigin.DETERMINISTIC
+    assert item.review.parse_origin is NativeParseOrigin.SOURCE_FALLBACK
     assert item.review.reasons == (UNLABELED_REASON,)
     shown = [s.text for p in item.body for s in p.segments if isinstance(s, NativeTextSegment)]
     assert shown == [texts[anchor] for anchor in _OWN]

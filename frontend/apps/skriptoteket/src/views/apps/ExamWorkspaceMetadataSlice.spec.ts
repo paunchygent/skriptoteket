@@ -66,7 +66,7 @@ beforeEach(() => {
   rename.mockReset();
   api.getExamCourseCatalog.mockResolvedValue({ courses: [] });
   api.getExamWorkspaceDocument.mockResolvedValue(response());
-  api.listExamWorkspaceDocuments.mockResolvedValue({ documents: [] });
+  api.listExamWorkspaceDocuments.mockResolvedValue({ documents: [], ordering: "course" });
 });
 afterEach(() => {
   for (const wrapper of wrappers.splice(0)) wrapper.unmount();
@@ -182,7 +182,7 @@ describe("ExamWorkspaceView metadata", () => {
     api.getExamWorkspaceDocument.mockResolvedValueOnce(first);
     const other = buildResponse({ version: 1 });
     other.summary.lineage_id = "lineage-2";
-    api.listExamWorkspaceDocuments.mockResolvedValue({ documents: [other.summary] });
+    api.listExamWorkspaceDocuments.mockResolvedValue({ documents: [other.summary], ordering: "course" });
     const wrapper = await openWorkspace();
     const nextConversion = { ...conversion, document_revision: 2, questions_done: 2 };
     const next = buildResponse({ version: 2, conversion: nextConversion });
@@ -258,7 +258,7 @@ describe("ExamWorkspaceView metadata", () => {
     const other = buildResponse({ version: 1, title: "Annat prov" });
     other.summary.lineage_id = "lineage-2";
     other.summary.vault_file_id = "vault-other";
-    api.listExamWorkspaceDocuments.mockResolvedValue({ documents: [other.summary] });
+    api.listExamWorkspaceDocuments.mockResolvedValue({ documents: [other.summary], ordering: "course" });
     const wrapper = await openWorkspace();
     await openMetadata(wrapper);
     rename.mockResolvedValue({ file: { name: "NO nytt.provdokument.zip" }, renamed_file_ids: ["vault-head-7", "vault-old-2"] });

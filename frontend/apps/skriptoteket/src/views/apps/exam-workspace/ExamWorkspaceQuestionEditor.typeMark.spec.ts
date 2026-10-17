@@ -71,7 +71,7 @@ describe("ExamWorkspaceQuestionEditor unbuilt question", () => {
   it("follows the list and the server: review required after a deterministic parse is unbuilt", () => {
     const wrapper = mountEditor(
       buildFreeTextItem({
-        review: { confidence: null, parse_origin: "deterministic", reasons: [], state: "review_required" },
+        review: { confidence: null, parse_origin: "source_fallback", reasons: [], state: "review_required" },
       }),
     );
 

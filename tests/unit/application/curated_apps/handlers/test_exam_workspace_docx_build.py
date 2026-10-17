@@ -217,7 +217,7 @@ async def test_recorded_typed_resend_retains_an_incomplete_key_for_teacher_revie
         "docx_w2-10-01c01",
     ]
     (item,) = [i for i in outcome.update.document.items if i.source_anchor == "body:0115"]
-    assert item.review.parse_origin is NativeParseOrigin.DETERMINISTIC
+    assert item.review.parse_origin is NativeParseOrigin.SOURCE_FALLBACK
     assert item.review.reasons
     assert item.retry_source is not None
     assert [c.anchor for c in item.retry_source.chunks] == ["body:0115"]

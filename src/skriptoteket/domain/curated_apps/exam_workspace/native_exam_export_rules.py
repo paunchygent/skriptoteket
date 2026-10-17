@@ -111,7 +111,7 @@ def is_unbuilt_question(item: NativeExamItem) -> bool:
     """An unfinished source question, including a named picture loss, pending teacher review."""
     missing_picture = item.retry_source is not None and item.retry_source.has_missing_pictures()
     return item.review.state is NativeItemReviewState.REVIEW_REQUIRED and (
-        item.review.parse_origin is NativeParseOrigin.DETERMINISTIC or missing_picture
+        item.review.parse_origin is NativeParseOrigin.SOURCE_FALLBACK or missing_picture
     )
 
 

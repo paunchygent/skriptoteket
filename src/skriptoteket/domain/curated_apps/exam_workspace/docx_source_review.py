@@ -74,7 +74,7 @@ def review_source_item(chunks: tuple[DocxChunk, ...], reason: str) -> NativeExam
         answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
         review=NativeItemReview(
             state=NativeItemReviewState.REVIEW_REQUIRED,
-            parse_origin=NativeParseOrigin.DETERMINISTIC,
+            parse_origin=NativeParseOrigin.SOURCE_FALLBACK,
             reasons=(reason, *missing_picture_reasons(chunks)),
         ),
         source_anchor=chunks[0].anchor,

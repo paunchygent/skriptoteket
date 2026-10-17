@@ -5,18 +5,19 @@
  *   Tell the teacher, while editing, which questions would stop a QTI, PDF,
  *   or DOCX export, so invalid states are explained at the question instead
  *   of discovered at export. The server export gate stays authoritative;
- *   this mirrors its reasons, including the unbuilt question (an item
- *   printed from source that the teacher has not marked reviewed; a
- *   converted item that needs review does not block), and adds the item
- *   states the save refuses:
- *   a partial gap key, an incomplete matching key, points that are not
- *   greater than zero, a choice or matching entry without text, and
+ *   this mirrors its reasons, including the unbuilt question (an explicit
+ *   source fallback or an item missing a picture that the teacher has not
+ *   marked reviewed; a converted item that needs review does not block),
+ *   dropdown option headings, and choices, gap options or matching entries
+ *   without non-whitespace text. Save validity remains separate. Readiness
+ *   also adds the item states the save refuses:
+ *   a partial gap key, an incomplete matching key, invalid points, and
  *   free-text criteria that lack text, carry invalid points, are not the
  *   item's points, or sit on a non-free-text item.
  *
  * Relationships:
  *   - Mirrors `native_export_blockers` in
- *     `domain/curated_apps/exam_workspace/native_exam_document.py`.
+ *     `domain/curated_apps/exam_workspace/native_exam_export_rules.py`.
  *   - Reads the save rules from `examWorkspaceItemSaveRules` and
  *     `examWorkspaceAnswerKeyRules`.
  *   - Consumed by `ExamWorkspaceView`, the question list, and the Filer
@@ -37,14 +38,10 @@ import {
 import {
   CRITERIA_ON_WRONG_KIND_GUIDANCE,
   CRITERIA_POINTS_MISMATCH_GUIDANCE,
-  EMPTY_CHOICE_TEXT_GUIDANCE,
   EMPTY_CRITERION_TEXT_GUIDANCE,
-  EMPTY_MATCH_TEXT_GUIDANCE,
   hasCriteriaOnWrongKind,
   hasCriteriaPointsMismatch,
-  hasEmptyChoiceText,
   hasEmptyCriterionText,
-  hasEmptyMatchText,
   hasInvalidCriterionPoints,
   hasNegativePoints,
   INVALID_CRITERION_POINTS_GUIDANCE,
@@ -55,6 +52,7 @@ import { EXAM_WORKSPACE_EXPORT_BLOCKER_COPY } from "./useExamWorkspaceExports";
 
 const KEYED_KINDS = new Set<NativeExamItemKind>([
   "gap_fill",
+  "inline_choice",
   "matching",
   "multiple_response",
   "single_choice",
@@ -64,9 +62,7 @@ export type ExamWorkspaceReadinessReason =
   | ExamWorkspaceExportBlockerReason
   | "criteria_on_wrong_kind"
   | "criteria_points_mismatch"
-  | "empty_choice_text"
   | "empty_criterion_text"
-  | "empty_match_text"
   | "incomplete_match_key"
   | "invalid_criterion_points"
   | "negative_points"
@@ -76,9 +72,7 @@ const READINESS_COPY: Record<ExamWorkspaceReadinessReason, string> = {
   ...EXAM_WORKSPACE_EXPORT_BLOCKER_COPY,
   criteria_on_wrong_kind: CRITERIA_ON_WRONG_KIND_GUIDANCE,
   criteria_points_mismatch: CRITERIA_POINTS_MISMATCH_GUIDANCE,
-  empty_choice_text: EMPTY_CHOICE_TEXT_GUIDANCE,
   empty_criterion_text: EMPTY_CRITERION_TEXT_GUIDANCE,
-  empty_match_text: EMPTY_MATCH_TEXT_GUIDANCE,
   incomplete_match_key: INCOMPLETE_MATCH_KEY_GUIDANCE,
   invalid_criterion_points: INVALID_CRITERION_POINTS_GUIDANCE,
   negative_points: NEGATIVE_POINTS_GUIDANCE,
@@ -95,7 +89,7 @@ export function examWorkspaceItemReadiness(item: NativeExamItem): ExamWorkspaceR
     : false;
   if (
     item.review.state === "review_required" &&
-    (item.review.parse_origin === "deterministic" || missingPicture)
+    (item.review.parse_origin === "source_fallback" || missingPicture)
   ) {
     reasons.push("unbuilt_question");
   }
@@ -117,14 +111,25 @@ export function examWorkspaceItemReadiness(item: NativeExamItem): ExamWorkspaceR
   if (hasNegativePoints(item)) {
     reasons.push("negative_points");
   }
-  if (hasEmptyChoiceText(item)) {
-    reasons.push("empty_choice_text");
+  // Export needs non-whitespace text; save validity deliberately remains separate.
+  if (item.choices.some((choice) => bodyText(choice.body).length === 0)) {
+    reasons.push("empty_choice");
   }
-  if (item.gaps.some((gap) => gap.options.some((option) => bodyText(option.body) === ""))) {
+  if (item.gaps.some((gap) => gap.options.some((option) => bodyText(option.body).length === 0))) {
     reasons.push("empty_gap_option");
   }
-  if (hasEmptyMatchText(item)) {
-    reasons.push("empty_match_text");
+  if (
+    [...item.match_left, ...item.match_right].some((entry) => bodyText(entry.body).length === 0)
+  ) {
+    reasons.push("empty_match_entry");
+  }
+  if (
+    item.kind === "inline_choice" &&
+    item.gaps.some((gap) => gap.options.some((option) =>
+      option.body.some((paragraph) => paragraph.heading_level !== null),
+    ))
+  ) {
+    reasons.push("inline_choice_option_heading");
   }
   if (hasEmptyCriterionText(item)) {
     reasons.push("empty_criterion_text");

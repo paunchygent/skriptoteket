@@ -141,7 +141,7 @@ beforeEach(() => {
     return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null,
       document_revision: null, questions_total: 0, questions_done: 0, units: [] };
   });
-  apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [] });
+  apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [], ordering: "course" });
   apiMocks.getExamWorkspaceExportChecklist.mockResolvedValue({ entries: [] });
 });
 
@@ -411,6 +411,49 @@ describe("ExamWorkspaceView export slice", () => {
     await openExportDrawer(wrapper);
     expect(wrapper.get('[data-test="exam-workspace-blocker-item_002"]').text()).toContain(copy);
   });
+
+  it.each([false, true])(
+    "keeps all empty-content blockers actionable in a 422 (mixed: %s)", async (mixed) => {
+      apiMocks.downloadExamWorkspaceExport.mockRejectedValue(
+        new ApiError({
+          code: "VALIDATION_ERROR",
+          details: {
+            blockers: [
+              { item_id: "item_002", reason: "empty_choice" },
+              { item_id: "item_003", reason: "empty_gap_option" },
+              { item_id: "item_004", reason: "empty_match_entry" },
+              ...(mixed ? [{ item_id: "item_002", reason: "missing_answer_key" }] : []),
+            ],
+          },
+          message: "blocked",
+          status: 422,
+        }),
+      );
+      const wrapper = await mountImported();
+      await exportFromMenu(wrapper, "qti");
+
+      expect(downloadMocks.triggerBrowserDownload).not.toHaveBeenCalled();
+      await openExportDrawer(wrapper);
+      const notice = wrapper.get('[data-test="exam-workspace-export-notice"]').text();
+      const blockerText = (itemId: string) =>
+        wrapper.findAll(`[data-test="exam-workspace-blocker-${itemId}"]`).map((entry) => entry.text()).join(" ");
+      for (const [itemId, copy] of [
+        ["item_002", "Ett svarsalternativ saknar text."],
+        ["item_003", "Ett alternativ i en lucka saknar text."],
+        ["item_004", "En del i matchningen saknar text."],
+      ]) {
+        expect(blockerText(itemId)).toContain(copy);
+      }
+      if (mixed) {
+        expect(blockerText("item_002")).toContain("Frågan saknar facit. Fyll i facit eller låt AI föreslå ett.");
+      }
+      expect(notice).toBe("Filen kan inte skapas ännu. Åtgärda de markerade frågorna och spara.");
+      expect(notice).not.toContain("Försök igen");
+      expect(useToastStore().warning).toHaveBeenCalledWith(notice);
+      expect(useToastStore().failure).not.toHaveBeenCalled();
+      expect(downloadMocks.triggerBrowserDownload).not.toHaveBeenCalled();
+    },
+  );
 
   it("clears export blockers when a new version is saved", async () => {
     apiMocks.downloadExamWorkspaceExport.mockRejectedValue(

@@ -138,7 +138,7 @@ def _converted_at(state: DocxBuildState, anchor: str) -> bool:
 def _assert_only_reviewed(
     baseline: DocxConversionOutcome, outcome: DocxConversionOutcome, expected_changed: set[str]
 ) -> None:
-    """The anchors in ``expected_changed`` and only they become deterministic review items
+    """The anchors in ``expected_changed`` and only they become source-fallback review items
     holding their source text; every other item equals the uncorrupted run."""
     chunks = corpus_chunks(_EXAM)
     text = {chunk.anchor: chunk.text for chunk in chunks}
@@ -153,7 +153,7 @@ def _assert_only_reviewed(
         item = after[anchor]
         assert item.kind is NativeExamItemKind.FREE_TEXT
         assert item.review.state is NativeItemReviewState.REVIEW_REQUIRED
-        assert item.review.parse_origin is NativeParseOrigin.DETERMINISTIC
+        assert item.review.parse_origin is NativeParseOrigin.SOURCE_FALLBACK
         assert item.review.reasons, f"{anchor} names no failure reason"
         source_anchor = _anchor(item)
         lines = _text(item)
@@ -163,14 +163,14 @@ def _assert_only_reviewed(
 
 
 def _assert_question_reviewed(outcome: DocxConversionOutcome, question_id: str) -> None:
-    """``question_id`` is one deterministic review item holding its own source text."""
+    """``question_id`` is one source-fallback review item holding its own source text."""
     items = {item.item_id: item for item in outcome.result.document.items}
     ids = outcome.update.item_ids[question_id]
     assert len(ids) == 1, f"{question_id} is not one review item"
     item = items[ids[0]]
     assert item.kind is NativeExamItemKind.FREE_TEXT
     assert item.review.state is NativeItemReviewState.REVIEW_REQUIRED
-    assert item.review.parse_origin is NativeParseOrigin.DETERMINISTIC
+    assert item.review.parse_origin is NativeParseOrigin.SOURCE_FALLBACK
     assert item.review.reasons, f"{question_id} names no failure reason"
     text = {chunk.anchor: chunk.text for chunk in corpus_chunks(_EXAM)}
     assert text[item.source_anchor or ""] in _text(item), f"{question_id} lost its source text"

@@ -7544,7 +7544,7 @@ export interface components {
          * NativeParseOrigin
          * @enum {string}
          */
-        NativeParseOrigin: "deterministic" | "llm_parsed" | "teacher_created";
+        NativeParseOrigin: "source_fallback" | "deterministic" | "llm_parsed" | "teacher_created";
         /** NativeTextSegment */
         NativeTextSegment: {
             /**

@@ -227,7 +227,7 @@ def item(
         answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
         review=NativeItemReview(
             state=NativeItemReviewState.REVIEW_REQUIRED,
-            parse_origin=NativeParseOrigin.DETERMINISTIC,
+            parse_origin=NativeParseOrigin.SOURCE_FALLBACK,
             reasons=("Frågetypen kunde inte avgöras.",),
         ),
         source_anchor=anchor,

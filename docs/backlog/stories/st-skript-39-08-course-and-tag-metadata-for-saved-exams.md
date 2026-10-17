@@ -7,10 +7,13 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-13'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: not_required
+  decided_at: '2026-10-17'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'All five tasks done (TASK-SKRIPT-39-08-01..05). Story check: suggested tags stored on a staging import (wave-2 walk at bd4d706d, retained 01a149c9-5bc7-7713-ba64-12dee0470bdd evidence/staging-walk-wave2-bd4d706d/out/exam-document.json); preselected course at import and export with the official course name (39-08-01 walk, retained 01a145b6-c404-761f-aeef-39de058ba7ca evidence/staging-walk-808d8f11/WALK.md); course registration in the profile (39-08-02 re-walks in 01a149c9); saved exams from the API grouped by course and date and the saved sort preference on staging d31e939a (retained 01a14b79-b714-7f76-bcba-845884716cae evidence/staging-list-check/CHECK.md). The user closed the story on 2026-10-17.'
 epic: EPIC-SKRIPT-39
 acceptance_criteria:
   - A teacher can give each saved exam an official Skolverket course (gymnasiet) or subject and year band (grundskolan), register where they teach and their courses in the profile so the course list offers those first, and have the import suggest course and central-content tags; the backend stores tags and serves saved exams ordered by course and date, and the tags checklist, the Lägg till i mina kurser action and the course-grouped exam list are built in the exam workspace by ST-SKRIPT-40-04
@@ -88,14 +91,15 @@ filer page (TASK-SKRIPT-37-05-04).
 2. TASK-SKRIPT-39-08-02: own courses in a `Mina kurser` section on the
    profile page, with its UI, and a course API that returns the registered
    courses first; `Lägg till i mina kurser` in the workspace moves to
-   ST-SKRIPT-40-04 (ready).
+   ST-SKRIPT-40-04 (done 2026-10-17, approved review closeout).
 3. TASK-SKRIPT-39-08-03: central-content snapshot, content route, Decisions
    classifier at import and the tag-suggestion enrichment job; no model course
    suggestion; the tags checklist and `Föreslå innehåll` in the metadata drawer
-   move to ST-SKRIPT-40-04 (ready).
+   move to ST-SKRIPT-40-04 (done 2026-10-17, approved review closeout).
 4. TASK-SKRIPT-39-08-04: exam index backend with one row per exam, the order by
    course and date, the `Utan kurs` group and the saved sort preference; the
-   grouped list lives in ST-SKRIPT-40-04's `Öppna` drawer (ready).
+   grouped list lives in ST-SKRIPT-40-04's `Öppna` drawer (done 2026-10-17,
+   approved review closeout).
 5. TASK-SKRIPT-39-08-05: the `Mina kurser` section adds a chosen course at
    once and saves each change at once, with no `+` button, no Spara button and
    no success toast (done 2026-10-17, approved review plus unit tests).

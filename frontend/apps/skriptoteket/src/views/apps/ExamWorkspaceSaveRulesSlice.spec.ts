@@ -74,7 +74,7 @@ beforeEach(() => {
     mock.mockReset();
   }
   apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue(succeededConversion);
-  apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [] });
+  apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [], ordering: "course" });
   apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
     apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(
       buildResponse({ conversion: succeededConversion, version: 1 }),

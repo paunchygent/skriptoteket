@@ -3,8 +3,9 @@
  *
  * Expected behavior:
  *   Each question reports the same reasons the server export gate refuses
- *   with (review required, unreviewed machine key, keyed question without a
- *   key, missing points) plus the states the save refuses (a partial gap
+ *   with (unbuilt source fallback or missing picture awaiting review,
+ *   unreviewed machine key, keyed question without a key, missing points)
+ *   plus the states the save refuses (a partial gap
  *   key, points not greater than zero, a choice without text, criteria
  *   that lack text or points or are not the item's points), in a stable
  *   order; ready
@@ -77,7 +78,7 @@ describe("examWorkspaceItemReadiness", () => {
       points: null,
       review: {
         confidence: null,
-        parse_origin: "deterministic",
+        parse_origin: "source_fallback",
         reasons: [],
         state: "review_required",
       },
@@ -88,6 +89,42 @@ describe("examWorkspaceItemReadiness", () => {
       "machine_proposed_key_unreviewed",
       "missing_points",
     ]);
+  });
+
+  it.each([null, "dxe:item_001"])(
+    "does not block deterministic free text needing manual marking with source anchor %s",
+    (sourceAnchor) => {
+      const item = buildChoiceItem({
+        answer_key: { correct_choice_ids: [], match_pairs: [], origin: "not_applicable" },
+        choices: [],
+        kind: "free_text",
+        source_anchor: sourceAnchor,
+        review: {
+          confidence: null,
+          parse_origin: "deterministic",
+          reasons: ["Frågan kräver manuell rättning."],
+          state: "review_required",
+        },
+      });
+
+      expect(examWorkspaceItemReadiness(item)).toEqual([]);
+      expect(examWorkspaceReadinessByItemId([item])).toEqual({});
+    },
+  );
+
+  it("reports only the missing key for a deterministic keyed question needing review", () => {
+    const item = buildChoiceItem({
+      answer_key: { correct_choice_ids: [], match_pairs: [], origin: "absent" },
+      source_anchor: "dxe:item_001",
+      review: {
+        confidence: null,
+        parse_origin: "deterministic",
+        reasons: ["Frågan behöver en manuell facitkontroll."],
+        state: "review_required",
+      },
+    });
+
+    expect(examWorkspaceItemReadiness(item)).toEqual(["missing_answer_key"]);
   });
 
   it("does not block a converted question that only needs review", () => {
@@ -124,11 +161,11 @@ describe("examWorkspaceItemReadiness", () => {
     },
   );
 
-  it("blocks an unbuilt question with estimated points until it is marked reviewed", () => {
+  it("blocks a source fallback with estimated points until it is marked reviewed", () => {
     const unbuilt = buildChoiceItem({
       points: 2,
       points_estimated: true,
-      review: { confidence: null, parse_origin: "deterministic", reasons: [], state: "review_required" },
+      review: { confidence: null, parse_origin: "source_fallback", reasons: [], state: "review_required" },
     });
     const reviewed = { ...unbuilt, review: { ...unbuilt.review, state: "review_complete" as const } };
 
@@ -184,7 +221,7 @@ describe("examWorkspaceItemReadiness", () => {
     },
   );
 
-  it("reports a choice without text, and accepts whitespace as the server does", () => {
+  it("reports choices without exportable text, including whitespace", () => {
     const empty = buildChoiceItem({
       choices: [
         { choice_id: "choice_001", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Syre" }] }] },
@@ -198,9 +235,77 @@ describe("examWorkspaceItemReadiness", () => {
       ],
     });
 
-    expect(examWorkspaceItemReadiness(empty)).toEqual(["empty_choice_text"]);
-    expect(examWorkspaceItemReadiness(blank)).toEqual([]);
+    expect(examWorkspaceItemReadiness(empty)).toEqual(["empty_choice"]);
+    expect(examWorkspaceItemReadiness(blank)).toEqual(["empty_choice"]);
   });
+});
+
+describe("export-only content readiness", () => {
+  function dropdown(): NativeExamItem {
+    return buildChoiceItem({
+      kind: "inline_choice",
+      choices: [],
+      answer_key: { origin: "teacher_authored", correct_choice_ids: [], match_pairs: [] },
+      body: [{ heading_level: null, segments: [{ kind: "gap", gap_id: "gap_001" }] }],
+      gaps: [buildGap("gap_001", [], {
+        correct_option_id: "option_001",
+        options: [
+          { choice_id: "option_001", body: plainBody("Syre") },
+          { choice_id: "option_002", body: plainBody("Järn") },
+        ],
+      })],
+    });
+  }
+
+  it("blocks a dropdown without a key but accepts the keyed dropdown", () => {
+    const item = dropdown();
+    expect(examWorkspaceItemReadiness(item)).toEqual([]);
+    item.answer_key.origin = "absent";
+    item.gaps[0]!.correct_option_id = null;
+    expect(examWorkspaceItemReadiness(item)).toEqual(["missing_answer_key"]);
+  });
+
+  it("blocks a heading in any paragraph of any dropdown option", () => {
+    const item = dropdown();
+    item.gaps[0]!.options[1]!.body.push({
+      heading_level: 2, segments: [{ kind: "text", marks: [], text: "Rubrik" }],
+    });
+    expect(examWorkspaceItemReadiness(item)).toEqual(["inline_choice_option_heading"]);
+    item.gaps[0]!.options[1]!.body[1]!.heading_level = null;
+    expect(examWorkspaceItemReadiness(item)).toEqual([]);
+  });
+
+  it.each(["", " \n\t "])("blocks a blank dropdown option %j", (text) => {
+    const item = dropdown();
+    item.gaps[0]!.options[1]!.body = plainBody(text);
+    expect(examWorkspaceItemReadiness(item)).toEqual(["empty_gap_option"]);
+    expect(examWorkspaceReadinessByItemId([item])[item.item_id]).toEqual([
+      "Ett alternativ i en lucka saknar text.",
+    ]);
+  });
+
+  it.each(["single_choice", "multiple_response"] as const)(
+    "blocks whitespace-only %s choices but accepts text after a blank paragraph", (kind) => {
+      const item = buildChoiceItem({ kind });
+      item.choices[1]!.body = plainBody(" \n\t ");
+      expect(examWorkspaceItemReadiness(item)).toEqual(["empty_choice"]);
+      item.choices[1]!.body.push(...plainBody(" Järn "));
+      expect(examWorkspaceItemReadiness(item)).toEqual([]);
+    },
+  );
+
+  it.each(["match_left", "match_right"] as const)(
+    "blocks whitespace-only entries in %s but accepts nonblank text", (side) => {
+      const item = buildMatchingItem();
+      item[side][0]!.body = plainBody(" \n\t ");
+      expect(examWorkspaceItemReadiness(item)).toEqual(["empty_match_entry"]);
+      expect(examWorkspaceReadinessByItemId([item])[item.item_id]).toEqual([
+        "En del i matchningen saknar text.",
+      ]);
+      item[side][0]!.body.push(...plainBody(" Text "));
+      expect(examWorkspaceItemReadiness(item)).toEqual([]);
+    },
+  );
 });
 
 describe("examWorkspaceReadinessByItemId", () => {
@@ -291,7 +396,7 @@ describe("examWorkspaceItemReadiness for matching items", () => {
           entry.right_id === "right_003" ? { ...entry, body: plainBody("") } : entry,
         ),
       }),
-    ).toEqual(["empty_match_text"]);
+    ).toEqual(["empty_match_entry"]);
   });
 
   it("maps the incomplete key to its Swedish guidance by item id", () => {

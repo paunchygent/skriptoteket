@@ -94,8 +94,7 @@
   migration-thread errors; backend for the export filename field.
   Hemma Opus lead `3b164d53`: 40-03-01..09 and 08-36-02 `done`; 40-02-01 tranche 1 on
   main 761b1b59 (`in_progress`: held/frozen-screen wrappers and lucide removal open).
-  Hemma Claude `st-39-08` owns the 39-08-03 and 39-08-04 closeout (worktree
-  `skriptoteket-st-skript-39-08`, retained `01a14b79-b714-7f76-bcba-845884716cae`).
+  Hemma Claude `st-39-08` closed 39-08-03, 39-08-04 and ST-SKRIPT-39-08 (Recent).
 
 - Historical 2026-09-05 workspace planning (EPIC-SKRIPT-39 E8-E12, ADR-SKRIPT-0091,
   ST-SKRIPT-39-04): `.codex/long-term-memory/entries/session-2026-09-05-epic-39-handoff-compaction.md`.
@@ -129,12 +128,6 @@
 
 ## Recent
 
-- [TASK-SKRIPT-39-08-05](docs/backlog/tasks/task-skript-39-08-05-add-mina-kurser-courses-on-choice-and-save-each-change-at-once.md)
-  `done` 2026-10-17: Mina kurser adds a chosen course at once and autosaves (no
-  `+`, no Spara, no success toast). Pi review F1 (late reload) repaired
-  `ab5e7e10`; review in retained `01a149c9-...`
-  `evidence/reviews/task-skript-39-08-05-c1992027.md`. No staging walk (rule).
-
 - 2026-10-17 hooks: `precommit-install` now runs the package installer
   `repository-governance-hooks-install` (TASK-SKILL-REP-0321, runtime 0.11.134),
   so an install from a task worktree keeps the shared hook on the primary
@@ -159,11 +152,11 @@
   host-dependent repair6 timing test is deleted; main `23fc5cf0`; reviews in
   `01a146ac.../evidence/`.
 
-- [TASK-SKRIPT-39-08-01](docs/backlog/tasks/task-skript-39-08-01-course-picker-at-import-and-exam-metadata-drawer-for-course-title-and-file-name.md)
-  `done` 2026-10-16 (user closure gate): course picker at import, metadata
-  drawer, course line in exports; main `255eef88`, headless staging walk
-  `01a145b6.../evidence/staging-walk-808d8f11/WALK.md`; worktree retired.
-  Exam.net import of the walk's QTI is left to the user.
+- [ST-SKRIPT-39-08](docs/backlog/stories/st-skript-39-08-course-and-tag-metadata-for-saved-exams.md)
+  `done` 2026-10-17 (user closure gate), tasks 1-5 `done`; epic summary
+  updated. Story check: list grouping and sort preference on staging
+  `d31e939a` (`01a14b79.../evidence/staging-list-check/CHECK.md`); tags from
+  the wave-2 walk; task evidence in each task's closeout. Worktree retired.
 
 - [ST-SKRIPT-39-09](docs/backlog/stories/st-skript-39-09-qti-3-0-native-export-for-exam-net.md)
   `done` 2026-10-16: QTI 3.0 for both lanes plus Exam.net routes, tasks 1-9;

@@ -104,7 +104,7 @@ export function installProgressiveConversionLifecycle(apiMocks: ProgressiveApiMo
     apiMocks.importExamWorkspaceDocument.mockResolvedValue(status("queued", null, []));
     apiMocks.getExamWorkspaceConversionStatus.mockResolvedValueOnce(FIRST_STATUS);
     apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(FIRST);
-    apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [] });
+    apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [], ordering: "course" });
   });
   afterEach(() => {
     mountedView?.unmount();

@@ -167,6 +167,11 @@ closes the epic and is not on the critical path.
     input mode of it, edited in the same editor and exported as QTI, PDF or
     DOCX. The signed-in DigiExam converter views retire with it; the public guest converter stays (user 2026-10-17). It starts now
     as a backend lane and does not wait for the PDF and Markdown routes (E17).
+11. Course and tag metadata for saved exams (`ST-SKRIPT-39-08`, `done`
+    2026-10-17, user closure): official Skolverket courses at import and in
+    the metadata drawer, own courses in the profile, central-content tags
+    suggested at import, and a saved-exam index ordered by course and date.
+    The tags checklist and the grouped exam list are built by ST-SKRIPT-40-04.
 
 ## Verification
 
@@ -195,6 +200,14 @@ closes the epic and is not on the critical path.
 
 ## Current Implementation Summary
 
+- `ST-SKRIPT-39-08` is done (2026-10-17). A teacher picks an official
+  Skolverket course at import (preselected from a uniquely matching course
+  line) and changes course, title and Mina filer name in the metadata
+  drawer; exports carry the official course name. The profile's Mina kurser
+  lists own courses first and saves each change at once. A Decisions
+  classifier stores suggested central-content tags in the header, each
+  citing its questions, from a committed central-content snapshot. A saved
+  exam index serves the list grouped by course (registered first, `Utan kurs` last) or newest first, following a saved preference.
 - `ST-SKRIPT-39-09` is done (2026-10-15). The workspace export and the
   DigiExam converter write one QTI 3.0 package shape that Exam.net imports with
   the workspace's tasks, keys and points. It delivers Kategorisera grids with
@@ -236,6 +249,6 @@ closes the epic and is not on the critical path.
 | E13 | The product QTI exporter converges on the native QTI 3.0 Exam.net contract proven in HuleEduOS, in a dedicated slice (story 8) sequenced after story 5 and before story 7; the QTI 2.1 writer is replaced outright in that slice, for both the workspace and DigiExam lanes (user decisions 2026-10-09, amended 2026-10-15).                                                                                         |
 | E14 | The story-5 breadth contract carries as candidates the HuleEduOS-proven teacher-grade scoring features — accepted-spelling variants under the hand-picked-misspelling rule, case-insensitive answer mappings, expected-length and letter-hint conventions — and the Exam.net-proven ordering (ordningsföljd) item type as an extension of the E3 subset (user decision 2026-10-09).                                  |
 | E15 | The HuleEduOS `examnet-qti-import` producer remains a deliberately separate hand-tool for now: story 8 ports its proven contract and shapes into the product exporter but creates no consumption or consolidation obligation for HuleEduOS (user decision 2026-10-09).                                                                                                                                               |
-| E16 | The exam workspace is the main exam conversion and editing app. DigiExam conversion is a secondary input mode inside it, not the start mode, and uses the same editor; the separate signed-in DigiExam converter views get no layout work of their own and retire when story 10 lands (user decision 2026-10-12); the public guest converter stays (amended user 2026-10-17, G27).                                                                                                              |
+| E16 | The exam workspace is the main exam conversion and editing app. DigiExam conversion is a secondary input mode inside it, not the start mode, and uses the same editor; the separate signed-in DigiExam converter views get no layout work of their own and retire when story 10 lands (user decision 2026-10-12); the public guest converter stays (amended user 2026-10-17, G27).                                   |
 | E17 | Story 10 (ST-SKRIPT-39-07) starts now as a backend lane; its wait for the PDF and Markdown routes is dropped (user decision G22, 2026-10-17).                                                                                                                                                                                                                                                                        |
 | E18 | A new story, ST-SKRIPT-40-04, replaces TASK-SKRIPT-39-04-05 as the exam workspace redesign: an Opus prototype covering today's workspace and the planned ST-SKRIPT-39-06, ST-SKRIPT-39-07 and TASK-SKRIPT-39-08-04 UI is approved by the user and then implemented, and approved looks (sizes, colour, type) carry over (user decision G1, 2026-10-17).                                                              |

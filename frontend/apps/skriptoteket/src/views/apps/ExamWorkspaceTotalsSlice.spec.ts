@@ -78,7 +78,7 @@ function partLine(wrapper: ViewWrapper, parentId: string) {
 beforeEach(() => {
   for (const mock of Object.values(apiMocks)) mock.mockReset();
   downloadMocks.triggerBrowserDownload.mockReset();
-  apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [] });
+  apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [], ordering: "course" });
   apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue(succeeded);
   apiMocks.importExamWorkspaceDocument.mockResolvedValue({ ...succeeded, state: "queued", document_revision: null });
   apiMocks.getExamWorkspaceExportChecklist.mockResolvedValue({ entries: [] });

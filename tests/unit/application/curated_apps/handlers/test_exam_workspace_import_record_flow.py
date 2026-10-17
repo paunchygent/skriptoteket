@@ -209,7 +209,7 @@ async def test_unsaved_retries_keep_all_attempts_through_reload_save_and_reopen(
         )
         assert retry_response.item.import_record == expected_record
         assert retry_response.item.review.parse_origin is (
-            NativeParseOrigin.LLM_PARSED if converted else NativeParseOrigin.DETERMINISTIC
+            NativeParseOrigin.LLM_PARSED if converted else NativeParseOrigin.SOURCE_FALLBACK
         )
         draft = draft.model_copy(update={"items": (retry_response.item,)})
         assert (
