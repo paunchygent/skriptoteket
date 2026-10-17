@@ -47,11 +47,14 @@ function importProblems(css: string): string[] {
   return problems;
 }
 
-function buttonRules(css: string): Set<string> {
+function buttonRules(
+  css: string,
+  isButtonClass = (name: string) => buttonClasses.some((known) => known === name),
+): Set<string> {
   const classes = new Set<string>();
   parseCss(css).walkRules((rule: { selector: string }) => {
     selectorParser().astSync(rule.selector).walkClasses((node: { value: string }) => {
-      if (buttonClasses.some((name) => name === node.value)) classes.add(node.value);
+      if (isButtonClass(node.value)) classes.add(node.value);
     });
   });
   return classes;
@@ -73,7 +76,7 @@ function markupButtons(source: string): Set<string> {
       // Class names are bounded lexical tokens inside a parsed class attribute
       // (including literal names in :class arrays/objects), not arbitrary prose.
       const tokens = value.match(/[\w-]+/g) ?? [];
-      for (const name of buttonClasses) if (tokens.includes(name)) classes.add(name);
+      for (const name of tokens) if (name.startsWith("btn-")) classes.add(name);
     }
     node.children.forEach(visit);
   }
@@ -83,7 +86,7 @@ function markupButtons(source: string): Set<string> {
 
 const files = sourceFiles(src);
 const stylesheet = readFileSync(resolve(src, "assets/main.css"), "utf8");
-const sharedRules = buttonRules(readFileSync(sharedPath, "utf8"));
+const sharedRules = buttonRules(readFileSync(sharedPath, "utf8"), (name) => name.startsWith("btn-"));
 const usedButtons = new Set(files.filter((file) => file.endsWith(".vue")).flatMap((file) =>
   [...markupButtons(readFileSync(file, "utf8"))],
 ));
@@ -142,6 +145,18 @@ describe("adoption guard adversarial fixtures", () => {
     const incomplete = buttonRules(buttonClasses.filter((other) => other !== name)
       .map((other) => `.${other} { color: red; }`).join("\n"));
     expect([...used].filter((item) => !incomplete.has(item))).toEqual([name]);
+  });
+
+  it("reports unknown action-button classes in static and bound markup", () => {
+    for (const markup of [
+      '<button class="btn-secondary btn-block" />',
+      '<button :class="{ \'btn-secondary\': retrying, \'btn-block\': fullWidth }" />',
+      '<button :class="[\'btn-secondary\', \'btn-block\', extra]" />',
+    ]) {
+      const used = markupButtons(`<template>${markup}</template>`);
+      expect([...used]).toEqual(["btn-secondary", "btn-block"]);
+      expect([...used].filter((name) => !sharedRules.has(name))).toEqual(["btn-secondary"]);
+    }
   });
 
   it("reads static and bound markup classes, not comments, text, scripts or scoped styles", () => {
