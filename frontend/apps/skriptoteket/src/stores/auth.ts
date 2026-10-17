@@ -7,6 +7,7 @@ import type { components } from "../api/openapi";
 import {
   type AuthProfile,
   type AuthUser,
+  type SharedAuthSnapshot,
   sharedAuthUrl,
   requestWithCsrfRecovery,
   SHARED_AUTH_LOGOUT_PATH,
@@ -116,8 +117,8 @@ export const useAuthStore = defineStore("auth", () => {
   function requireCurrentSession(requestSession: AuthSession): void {
     if (!isCurrentSession(requestSession)) throw new SupersededAuthSessionError();
   }
-  /** The only response writer: reject the whole snapshot before changing any field. */
-  function applyResponse(requestSession: AuthSession, patch: Partial<AuthState>): boolean {
+  /** Private writer; only bootstrap may use it to admit a non-null identity. */
+  function applyState(requestSession: AuthSession, patch: Partial<AuthState>): boolean {
     if (!isCurrentSession(requestSession)) return false;
     const clearsAnonymous = patch.user === null && state.user === null;
     // Identity admission retires the former lifetime before applying its new
@@ -129,18 +130,50 @@ export const useAuthStore = defineStore("auth", () => {
     if (clearsAnonymous) session.value = Symbol("auth session");
     return true;
   }
+  /** Ordinary responses can update the admitted identity, never replace it. */
+  function applyResponse(requestSession: AuthSession, patch: Partial<AuthState>): boolean {
+    if (!isCurrentSession(requestSession)) return false;
+    if (patch.user && patch.user.id !== state.user?.id) {
+      clear(requestSession);
+      state.bootstrapped = false;
+      return false;
+    }
+    return applyState(requestSession, patch);
+  }
   function clear(requestSession: AuthSession = captureSession()): void {
-    applyResponse(requestSession, anonymousState());
+    applyState(requestSession, anonymousState());
   }
 
-  async function continueSession(requestSession: AuthSession): Promise<ContinuationOutcome> {
+  /** A read may discover another identity; only authoritative bootstrap admits it. */
+  async function applyReadResponse(
+    requestSession: AuthSession,
+    patch: Partial<AuthState>,
+  ): Promise<AuthSession | null> {
+    if (!isCurrentSession(requestSession)) return null;
+    if (applyResponse(requestSession, patch)) return requestSession;
+    const admittedSession = await bootstrapSession();
+    if (admittedSession === null || !isCurrentSession(admittedSession) ||
+      !state.sharedSessionId || !patch.user || state.user?.id !== patch.user.id) return null;
+    return applyResponse(admittedSession, patch) ? admittedSession : null;
+  }
+
+  async function continueSession(
+    requestSession: AuthSession,
+    admittedSnapshot?: SharedAuthSnapshot,
+  ): Promise<ContinuationOutcome> {
     if (!isCurrentSession(requestSession)) return { status: "superseded", session: null };
     state.aiPolicy = null;
     state.appContinuationError = null;
     try {
       const result = await requestAppContinuation();
       if (result.kind === "ready") {
-        if (!applyResponse(requestSession, {
+        const write = admittedSnapshot ? applyState : applyResponse;
+        if (!write(requestSession, {
+          ...(admittedSnapshot ? {
+            sharedSessionId: admittedSnapshot.sharedSessionId,
+            grants: admittedSnapshot.grants,
+            featureFlags: admittedSnapshot.featureFlags,
+          } : {}),
           user: result.continuation.local_user,
           profile: result.profile,
           aiPolicy: result.continuation.ai_policy,
@@ -179,10 +212,24 @@ export const useAuthStore = defineStore("auth", () => {
   ): Promise<string | null> {
     if (!isCurrentSession(requestSession)) return null;
     if (state.csrfToken) return state.csrfToken;
-    if (!state.user) return null;
+    if (!state.user || !state.sharedSessionId) return null;
+    const sharedSessionId = state.sharedSessionId;
     try {
       const result = await loadSharedCsrfToken();
+      if (!isCurrentSession(requestSession)) return null;
       if (result.kind === "ready") {
+        // Every candidate token belongs to the shared cookie, not necessarily
+        // this tab. Establish continuity before caching it or dispatching work.
+        const current = await loadSharedSessionSnapshot();
+        if (!isCurrentSession(requestSession)) return null;
+        if (current.kind === "error") {
+          applyResponse(requestSession, { error: current.message });
+          return null;
+        }
+        if (current.kind !== "authenticated" || current.snapshot.sharedSessionId !== sharedSessionId) {
+          clear(requestSession);
+          return null;
+        }
         return applyResponse(requestSession, { csrfToken: result.token }) ? result.token : null;
       }
       if (result.kind === "anonymous") {
@@ -198,39 +245,14 @@ export const useAuthStore = defineStore("auth", () => {
     return null;
   }
 
-  /** Admit a refreshed token only after the server confirms the original shared lifetime. */
-  async function recoverCsrfToken(
-    requestSession: AuthSession,
-    sharedSessionId: string | null,
-  ): Promise<string | null> {
-    if (!sharedSessionId) return null;
-    try {
-      const token = await loadSharedCsrfToken();
-      requireCurrentSession(requestSession);
-      if (token.kind !== "ready") return null;
-      const current = await loadSharedSessionSnapshot();
-      requireCurrentSession(requestSession);
-      if (current.kind !== "authenticated" || current.snapshot.sharedSessionId !== sharedSessionId) {
-        return null;
-      }
-      return applyResponse(requestSession, { csrfToken: token.token }) ? token.token : null;
-    } catch (error: unknown) {
-      requireCurrentSession(requestSession);
-      if (error instanceof SupersededAuthSessionError) throw error;
-      // Continuity failures preserve the original rejection and never admit a new identity.
-      return null;
-    }
-  }
-
   function requestWithCsrf(
     requestSession: AuthSession,
     send: (token: string | null) => Promise<Response>,
   ): Promise<Response> {
-    const sharedSessionId = state.sharedSessionId;
     return requestWithCsrfRecovery({
       requireCurrent: () => requireCurrentSession(requestSession),
       ensureToken: () => ensureCsrfToken(requestSession),
-      recoverToken: () => recoverCsrfToken(requestSession, sharedSessionId),
+      recoverToken: () => ensureCsrfToken(requestSession),
       invalidateToken: (rejectedToken) => {
         requireCurrentSession(requestSession);
         if (state.csrfToken === rejectedToken) state.csrfToken = null;
@@ -253,15 +275,10 @@ export const useAuthStore = defineStore("auth", () => {
           const { snapshot } = sharedSession;
           if (!applyResponse(requestSession, { bootstrapped: true })) return null;
           if (snapshot.user) {
-            const continuation = await continueSession(requestSession);
+            const continuation = await continueSession(requestSession, snapshot);
             const admittedSession = continuation.session;
             if (admittedSession === null || !isCurrentSession(admittedSession)) return null;
             if (continuation.status === "ready") {
-              if (!applyResponse(admittedSession, {
-                sharedSessionId: snapshot.sharedSessionId,
-                grants: snapshot.grants,
-                featureFlags: snapshot.featureFlags,
-              })) return null;
               await ensureCsrfToken(admittedSession);
             }
             return isCurrentSession(admittedSession) ? admittedSession : null;
@@ -352,6 +369,7 @@ export const useAuthStore = defineStore("auth", () => {
     isCurrentSession,
     requireCurrentSession,
     applyResponse,
+    applyReadResponse,
     clear,
     bootstrap,
     loadAppContinuation,

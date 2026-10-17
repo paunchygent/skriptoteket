@@ -19,6 +19,7 @@ import {
   createTestProfile,
   createTestUser,
   mockJsonResponse,
+  mockSharedSessionResponse,
   TEST_AI_POLICY,
 } from "./authTestHelpers";
 
@@ -65,7 +66,8 @@ describe("useAuthStore", () => {
             inline_completion_provider: "external",
           }),
         )
-        .mockResolvedValueOnce(mockJsonResponse({ csrf_token: "csrf-token" }));
+        .mockResolvedValueOnce(mockJsonResponse({ csrf_token: "csrf-token" }))
+        .mockResolvedValueOnce(mockSharedSessionResponse("shared-session-a"));
 
       await store.bootstrap();
 

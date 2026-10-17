@@ -37,7 +37,8 @@ beforeEach(async () => {
     .mockResolvedValueOnce(mockJsonResponse({
       local_user: createTestUser(), profile: createTestProfile(), ai_policy: null,
     }))
-    .mockResolvedValueOnce(mockJsonResponse({ csrf_token: "stale" }));
+    .mockResolvedValueOnce(mockJsonResponse({ csrf_token: "stale" }))
+    .mockResolvedValueOnce(serverSession());
   await useAuthStore().bootstrap();
   vi.mocked(fetch).mockReset();
 });
@@ -61,7 +62,7 @@ it("surfaces the original CSRF failure when the session authority cannot answer"
   expect(useAuthStore().csrfToken).toBeNull();
 });
 
-describe.each(transports)("$name CSRF recovery", ({ request }) => {
+describe.each(transports)("$name CSRF recovery", ({ name: transportName, request }) => {
   it("replays the same payload once with a rehydrated token", async () => {
     vi.mocked(fetch).mockResolvedValueOnce(rejection())
       .mockResolvedValueOnce(mockJsonResponse({ csrf_token: "fresh" }))
@@ -107,7 +108,7 @@ describe.each(transports)("$name CSRF recovery", ({ request }) => {
     ["an unidentified session", () => serverSession(null)],
     ["an expired session", () => mockJsonResponse({}, 401)],
     ["an unavailable session authority", () => mockJsonResponse({}, 503)],
-  ])("refuses replay under %s without changing this tab's identity", async (_name, replacement) => {
+  ])("refuses replay under %s without adopting its identity", async (name, replacement) => {
     const auth = useAuthStore();
     const originalUser = auth.user;
     const originalSession = auth.captureSession();
@@ -115,10 +116,19 @@ describe.each(transports)("$name CSRF recovery", ({ request }) => {
       .mockResolvedValueOnce(mockJsonResponse({ csrf_token: "replacement-token" }))
       .mockResolvedValueOnce(replacement())
       .mockResolvedValueOnce(mockJsonResponse(job));
-    await expect(request()).rejects.toThrow();
+    if (transportName === "logout" && name !== "an unavailable session authority") {
+      await expect(request()).resolves.toBeUndefined();
+    } else {
+      await expect(request()).rejects.toThrow();
+    }
     expect(vi.mocked(fetch).mock.calls.filter(([, init]) => init?.method !== "GET")).toHaveLength(1);
-    expect(auth.user).toBe(originalUser);
-    expect(auth.isCurrentSession(originalSession)).toBe(true);
+    if (name === "an unavailable session authority") {
+      expect(auth.user).toBe(originalUser);
+      expect(auth.isCurrentSession(originalSession)).toBe(true);
+    } else {
+      expect(auth.user).toBeNull();
+      expect(auth.isCurrentSession(originalSession)).toBe(false);
+    }
     expect(auth.csrfToken).toBeNull();
   });
   it("refuses recovery when the originating session could not be identified at admission", async () => {
@@ -135,7 +145,7 @@ describe.each(transports)("$name CSRF recovery", ({ request }) => {
       .mockResolvedValueOnce(mockJsonResponse({ csrf_token: "unbound" }))
       .mockResolvedValueOnce(mockJsonResponse(job));
     await expect(request()).rejects.toThrow();
-    expect(fetch).toHaveBeenCalledOnce();
+    expect(fetch).toHaveBeenCalledTimes(transportName === "logout" ? 0 : 1);
     expect(auth.csrfToken).toBeNull();
   });
   it("never replays across a session change during rehydration", async () => {

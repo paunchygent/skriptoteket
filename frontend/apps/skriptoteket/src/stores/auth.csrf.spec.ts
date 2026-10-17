@@ -17,6 +17,7 @@ import {
   createTestUser,
   mockEmptyResponse,
   mockJsonResponse,
+  mockSharedSessionResponse,
 } from "./authTestHelpers";
 
 describe("useAuthStore.ensureCsrfToken", () => {
@@ -48,8 +49,10 @@ describe("useAuthStore.ensureCsrfToken", () => {
   it("fetches token from API if not cached", async () => {
     const store = useAuthStore();
     store.user = createTestUser();
+    store.sharedSessionId = "session-a";
 
-    vi.mocked(fetch).mockResolvedValueOnce(mockJsonResponse({ csrf_token: "new-token" }));
+    vi.mocked(fetch).mockResolvedValueOnce(mockJsonResponse({ csrf_token: "new-token" }))
+      .mockResolvedValueOnce(mockSharedSessionResponse());
 
     const token = await store.ensureCsrfToken();
 
@@ -68,6 +71,7 @@ describe("useAuthStore.ensureCsrfToken", () => {
   it("clears user on 401 response", async () => {
     const store = useAuthStore();
     store.user = createTestUser();
+    store.sharedSessionId = "session-a";
 
     vi.mocked(fetch).mockResolvedValueOnce(mockEmptyResponse(401));
 

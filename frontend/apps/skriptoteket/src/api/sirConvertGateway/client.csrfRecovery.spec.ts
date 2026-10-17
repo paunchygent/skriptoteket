@@ -42,7 +42,8 @@ beforeEach(async () => {
     .mockResolvedValueOnce(mockJsonResponse({
       local_user: createTestUser(), profile: createTestProfile(), ai_policy: null,
     }))
-    .mockResolvedValueOnce(mockJsonResponse({ csrf_token: "stale" }));
+    .mockResolvedValueOnce(mockJsonResponse({ csrf_token: "stale" }))
+    .mockResolvedValueOnce(mockSharedSessionResponse());
   await useAuthStore().bootstrap();
   vi.mocked(fetch).mockReset();
   NetworkXhr.sent = [];
@@ -80,15 +81,14 @@ describe("real Gateway XHR multipart recovery", () => {
   });
   it.each(["provider-a", "provider-b"])("does not upload into a replacement session for %s", async (userId) => {
     const auth = useAuthStore();
-    const originalUser = auth.user;
     const originalSession = auth.captureSession();
     NetworkXhr.responses.push({ status: 200, body: { job: { job_id: "wrong-owner", status: "queued" } } });
     vi.mocked(fetch).mockResolvedValueOnce(mockJsonResponse({ csrf_token: "replacement" }))
       .mockResolvedValueOnce(mockSharedSessionResponse("session-b", userId));
     await expect(submit()).rejects.toThrow();
     expect(NetworkXhr.sent).toHaveLength(1);
-    expect(auth.user).toBe(originalUser);
-    expect(auth.isCurrentSession(originalSession)).toBe(true);
+    expect(auth.user).toBeNull();
+    expect(auth.isCurrentSession(originalSession)).toBe(false);
     expect(auth.csrfToken).toBeNull();
   });
   it("does not upload A's file as B after hydration", async () => {

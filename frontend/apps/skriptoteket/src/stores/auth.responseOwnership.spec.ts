@@ -40,7 +40,7 @@ beforeEach(() => {
   vi.resetAllMocks();
   setActivePinia(createPinia());
   auth = useAuthStore();
-  auth.$patch({ ...snapshotFor("teacher-a"), bootstrapped: true, aiPolicy: TEST_AI_POLICY });
+  auth.$patch({ ...snapshotFor("teacher-a"), sharedSessionId: "session-a", bootstrapped: true, aiPolicy: TEST_AI_POLICY });
 });
 
 describe("same-session response admission", () => {

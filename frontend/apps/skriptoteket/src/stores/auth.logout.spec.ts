@@ -72,10 +72,12 @@ describe("useAuthStore.logout", () => {
   it("fetches shared CSRF before logout when no token is cached", async () => {
     const store = useAuthStore();
     store.user = createTestUser();
+    store.sharedSessionId = "session-a";
     store.bootstrapped = true;
 
     vi.mocked(fetch)
       .mockResolvedValueOnce(mockJsonResponse({ csrf_token: "fresh-token" }))
+      .mockResolvedValueOnce(mockSharedSessionResponse())
       .mockResolvedValueOnce(mockEmptyResponse(204));
 
     await store.logout();
@@ -90,7 +92,7 @@ describe("useAuthStore.logout", () => {
       }),
     );
     expect(fetch).toHaveBeenNthCalledWith(
-      2,
+      3,
       "https://api.hule.education/v1/auth/logout",
       expect.objectContaining({
         method: "POST",
