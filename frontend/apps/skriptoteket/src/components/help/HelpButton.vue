@@ -7,6 +7,7 @@
  * - delegates global open/close state to `useHelp`
  */
 import { useHelp } from "./useHelp";
+import UiDenseActionButton from "../ui/shared/components/UiDenseActionButton.vue";
 
 const props = withDefaults(
   defineProps<{
@@ -26,14 +27,11 @@ function onToggle(event: MouseEvent): void {
 </script>
 
 <template>
-  <button
-    type="button"
-    class="px-2 py-1 text-xs font-semibold uppercase tracking-wide text-navy hover:text-action transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-action/40"
-    :aria-expanded="isOpen"
+  <UiDenseActionButton
+    :label="props.label"
+    :expanded="isOpen"
     aria-controls="help-panel"
     aria-haspopup="dialog"
     @click="onToggle"
-  >
-    {{ props.label }}
-  </button>
+  />
 </template>

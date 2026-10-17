@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import HelpTopicLayout from "../HelpTopicLayout.vue";
+import SystemMessage from "../../ui/shared/components/SystemMessage.vue";
 import { useHelp } from "../useHelp";
 
 const { showIndex } = useHelp();
@@ -10,8 +11,8 @@ const { showIndex } = useHelp();
     title="Kunde inte ladda"
     @back="showIndex"
   >
-    <p class="text-sm text-navy/70">
+    <SystemMessage tone="failure">
       Hjälpavsnittet kunde inte laddas. Försök igen eller välj ett annat ämne.
-    </p>
+    </SystemMessage>
   </HelpTopicLayout>
 </template>

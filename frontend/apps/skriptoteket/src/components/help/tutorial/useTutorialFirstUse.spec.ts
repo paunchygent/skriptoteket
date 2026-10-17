@@ -189,7 +189,7 @@ describe("tutorial first-use gate", () => {
     await nextTick();
     const panel = document.body.querySelector("[data-test='planner-share-links-panel']");
     expect(panel?.getAttribute("role")).toBe("dialog");
-    expect(panel?.hasAttribute("aria-modal")).toBe(false);
+    expect(panel?.getAttribute("aria-modal")).toBe("true");
 
     await mountGate();
     help.setHelpContext("planner_overview");

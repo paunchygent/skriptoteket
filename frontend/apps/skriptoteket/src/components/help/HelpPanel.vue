@@ -10,6 +10,8 @@ import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 
 import HelpIndex from "./HelpIndex.vue";
+import UiDenseIconButton from "../ui/shared/components/UiDenseIconButton.vue";
+import IconX from "../icons/IconX.vue";
 import { prefetchHelpTopics, resolveHelpTopicComponent } from "./helpTopics";
 import { resolveHelpTopic, useHelp } from "./useHelp";
 import { useAuthStore } from "../../stores/auth";
@@ -105,7 +107,7 @@ watch(
       <aside
         v-if="isOpen"
         id="help-panel"
-        class="help-panel border border-navy shadow-md flex flex-col text-navy"
+        class="help-panel border border-[var(--huleedu-panel-border)] shadow-md flex flex-col text-navy"
         role="dialog"
         aria-modal="false"
         aria-labelledby="help-panel-title"
@@ -117,14 +119,13 @@ watch(
           >
             Hjälp
           </h2>
-          <button
-            type="button"
-            class="w-10 h-10 border border-navy text-navy text-xl leading-none flex items-center justify-center hover:bg-navy hover:text-canvas transition-colors"
-            aria-label="Stäng"
+          <UiDenseIconButton
+            label="Stäng"
+            size="touch"
             @click="close()"
           >
-            &times;
-          </button>
+            <IconX :size="20" />
+          </UiDenseIconButton>
         </header>
 
         <div class="flex-1 overflow-y-auto p-6 space-y-6">
@@ -178,12 +179,10 @@ watch(
 
 .help-panel-enter-active,
 .help-panel-leave-active {
-  transition: transform var(--huleedu-duration-slow) var(--huleedu-ease-default),
-    opacity var(--huleedu-duration-slow) var(--huleedu-ease-default);
+  transition: opacity var(--huleedu-duration-slow) var(--huleedu-ease-default);
 }
 .help-panel-enter-from,
 .help-panel-leave-to {
-  transform: translateY(8px);
   opacity: 0;
 }
 </style>

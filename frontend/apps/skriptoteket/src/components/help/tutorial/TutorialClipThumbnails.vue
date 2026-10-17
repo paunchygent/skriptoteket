@@ -56,7 +56,7 @@ const openClipId = ref<string | null>(null);
               decoding="async"
               class="absolute inset-0 h-full w-full object-cover"
             >
-            <span class="absolute bottom-1 right-1 bg-navy px-1.5 py-0.5 font-mono text-[11px] text-canvas">
+            <span class="absolute bottom-1 right-1 bg-navy px-1.5 py-0.5 font-mono text-[length:var(--huleedu-type-helper-size)] text-canvas">
               {{ formatClipDuration(clip.duration_seconds) }}
             </span>
           </span>
