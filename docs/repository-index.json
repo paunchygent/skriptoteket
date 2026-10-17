@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "5074d81ae7e9b07972014f89e037480e16982ee27e3ea7151e3ac1e8c9582c4b",
+  "source_set_digest": "6e8cc4192d08f1df74e7bcfb32dfc67e79322a546db3bbf561a7546cc36443b5",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5894,7 +5894,7 @@
       "type": "task",
       "title": "Refresh Conversion Hub document and transcript tools onto the shared tokens and components",
       "path": "docs/backlog/tasks/task-skript-40-03-05-refresh-conversion-hub-document-and-transcript-tools-onto-the-shared-tokens-and-components.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-03",
       "owners": [
@@ -5913,7 +5913,7 @@
       "type": "task",
       "title": "Refresh Reagent Prep Chef onto the shared tokens and components",
       "path": "docs/backlog/tasks/task-skript-40-03-06-refresh-reagent-prep-chef-onto-the-shared-tokens-and-components.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-03",
       "owners": [
