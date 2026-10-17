@@ -170,6 +170,9 @@ behave as before.
 - A listed module turns out to be used by the workspace, the document
   converter, the transcript host or a kept public surface: keep it and report
   it.
+- `ConversionHubTranscriptHost` has no route or host other than
+  `ExamConverterAuthenticatedView`: stop and report before removing that view;
+  where transcript mode lives afterwards is a user decision.
 
 ## Decided Contract Terms
 

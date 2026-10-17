@@ -64,7 +64,8 @@
   screens frozen except bug fixes): 39-08-02/03/04, 39-04-08 (save model,
   before 39-04-06), 39-04-06, ST-SKRIPT-39-06 tasks 01-06 (02 is the Exam.net
   ordering and dropdown probe; the user decides ordering), ST-SKRIPT-39-07
-  tasks 01-03 (03 waits on 40-04-03). Open defect: Klassrumskartan returns
+  tasks 01-03 (03 waits on 40-04-03). ST-SKRIPT-40-02 (icons) stays `ready`;
+  40-02-01 waits on TASK-SKILL-REP-0187. Open defect: Klassrumskartan returns
   focus to the sidebar, not "Ny klass", after the modal closes.
 
 - Historical 2026-09-05 workspace planning (EPIC-SKRIPT-39 E8-E12, ADR-SKRIPT-0091,
