@@ -1,5 +1,5 @@
 import { mount } from "@vue/test-utils";
-import { defineComponent, h, ref } from "vue";
+import { defineComponent, h, nextTick, ref } from "vue";
 import { describe, expect, it } from "vitest";
 
 import { useReagentPrepChefForm } from "../../../composables/reagentPrepChef/useReagentPrepChefForm";
@@ -28,7 +28,7 @@ function mountStep() {
         onSelectChemical: state.selectChemicalFromSearch,
       });
     },
-  }));
+  }), { attachTo: document.body });
 }
 
 describe("Reagent Prep Chef substance choices", () => {
@@ -47,6 +47,49 @@ describe("Reagent Prep Chef substance choices", () => {
       await choice.trigger("click");
       expect(wrapper.get<HTMLInputElement>("#rpc-formula").element.value).toBe("Al");
       expect(wrapper.findAll("button").some((button) => button.text().includes("Aluminium"))).toBe(false);
+    } finally {
+      wrapper.unmount();
+    }
+  });
+
+  it.each([
+    { activation: "keyboard", detail: 0 },
+    { activation: "pointer", detail: 1 },
+  ])("returns focus to the filled formula after $activation selection", async ({ detail }) => {
+    const wrapper = mountStep();
+    try {
+      const search = wrapper.get<HTMLInputElement>('input[type="search"]');
+      search.element.focus();
+      await search.setValue("Al");
+      const choice = wrapper.findAll("button").find((button) => button.text().includes("Aluminium"))!;
+      choice.element.focus();
+      expect(document.activeElement).toBe(choice.element);
+      // jsdom does not perform a button's native Enter default action. A
+      // keyboard activation dispatches a click with detail=0 in the browser.
+      if (detail === 0) await choice.trigger("keydown", { key: "Enter" });
+      choice.element.dispatchEvent(new MouseEvent("click", { bubbles: true, detail }));
+      await nextTick();
+      const formula = wrapper.get<HTMLInputElement>("#rpc-formula");
+      expect(formula.element.value).toBe("Al");
+      expect(wrapper.findAll("button").some((button) => button.text().includes("Aluminium"))).toBe(false);
+      expect(document.activeElement).toBe(formula.element);
+    } finally {
+      wrapper.unmount();
+    }
+  });
+
+  it.each([
+    { query: "Al", name: "Aluminium (Al)" },
+    { query: "NH3", name: "Ammoniak (NH3)" },
+    { query: "NaCl", name: "Natriumklorid (NaCl)" },
+  ])("names the $query suggestion without a repeated or joined formula", async ({ query, name }) => {
+    const wrapper = mountStep();
+    try {
+      await wrapper.get('input[type="search"]').setValue(query);
+      const choice = wrapper.get("ul button");
+      // These plain text buttons take their accessible name from content.
+      expect(choice.text()).toBe(name);
+      expect(choice.attributes("aria-label") ?? choice.text()).toBe(name);
     } finally {
       wrapper.unmount();
     }
