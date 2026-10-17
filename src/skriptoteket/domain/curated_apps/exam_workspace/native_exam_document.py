@@ -15,6 +15,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from skriptoteket.domain.curated_apps.exam_workspace.exam_content_tags import NativeExamContentTag
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeAssetSegment,
     NativeGapSegment,
@@ -50,16 +51,16 @@ class NativeExamAsset(BaseModel):
 class NativeExamDocumentOrigin(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    kind: Literal["docx_import", "created"]
+    kind: Literal["docx_import", "digiexam_import", "created"]
     source_filename: str | None = None
     source_sha256: str | None = Field(default=None, pattern=SHA256_PATTERN)
     extractor_version: str | None = None
 
     @model_validator(mode="after")
     def _import_requires_source(self) -> "NativeExamDocumentOrigin":
-        if self.kind == "docx_import":
+        if self.kind in {"docx_import", "digiexam_import"}:
             if not self.source_filename or not self.source_sha256:
-                raise ValueError("docx_import origin requires source_filename and source_sha256")
+                raise ValueError("import origin requires source_filename and source_sha256")
         return self
 
 
@@ -83,8 +84,18 @@ class NativeExamHeader(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     course: ExamCourseChoice | None = None
+    tags: tuple[NativeExamContentTag, ...] = ()
     course_hint: str | None = Field(default=None, min_length=1)
     printed_total: int | float | None = Field(default=None, gt=0)
+
+    @model_validator(mode="after")
+    def _clear_previous_course_tags(self) -> "NativeExamHeader":
+        """Changing/removing course never carries old-course checklist selections."""
+        prefix = f"{self.course.key}:" if self.course is not None else None
+        tags = tuple(tag for tag in self.tags if prefix is not None and tag.id.startswith(prefix))
+        if tags != self.tags:
+            object.__setattr__(self, "tags", tags)
+        return self
 
 
 class NativeExamDocument(BaseModel):
@@ -106,6 +117,14 @@ class NativeExamDocument(BaseModel):
         item_ids = [item.item_id for item in self.items]
         if len(set(item_ids)) != len(item_ids):
             raise ValueError("item ids must be unique")
+        tag_ids = [tag.id for tag in self.header.tags]
+        if len(set(tag_ids)) != len(tag_ids):
+            raise ValueError("content tag ids must be unique")
+        for tag in self.header.tags:
+            if self.header.course is None or not tag.id.startswith(f"{self.header.course.key}:"):
+                raise ValueError("content tags must belong to the selected course")
+            if not set(tag.question_ids).issubset(item_ids):
+                raise ValueError("content tag cites an unknown question")
         sequences = [item.sequence for item in self.items]
         if sequences != list(range(1, len(self.items) + 1)):
             raise ValueError("item sequences must be contiguous from 1 in order")

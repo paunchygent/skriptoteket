@@ -25,6 +25,7 @@ from uuid import UUID
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
     SourceImage,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.exam_content_tags import ExamContentItem
 
 
 class ItemTypeLabel(StrEnum):
@@ -167,6 +168,45 @@ class SecondPassLabel:
     input_tokens: int | None
     output_tokens: int | None
     refused: bool = False
+
+
+@dataclass(frozen=True)
+class ContentTagClassificationRequest:
+    """The same faithful question sources, with one course's complete choice set."""
+
+    job_id: UUID
+    items: tuple[LabelingItem, ...]
+    content_items: tuple[ExamContentItem, ...]
+
+    def __post_init__(self) -> None:
+        if len({item.item_id for item in self.items}) != len(self.items):
+            raise ValueError("Content classification question ids must be unique.")
+        if len({item.id for item in self.content_items}) != len(self.content_items):
+            raise ValueError("Content choice ids must be unique.")
+
+
+@dataclass(frozen=True)
+class ContentTagChoice:
+    item_id: str
+    content_id: str | None
+    probability: float
+
+
+@dataclass(frozen=True)
+class ContentTagClassification:
+    results: tuple[ContentTagChoice, ...]
+    usage: LabelingUsage = LabelingUsage()
+
+
+class ExamContentTagClassifierProtocol(Protocol):
+    @property
+    def provider_profile_id(self) -> str: ...
+
+    def estimate_content_tokens(self, *, request: ContentTagClassificationRequest) -> int: ...
+
+    async def classify_content(
+        self, *, request: ContentTagClassificationRequest
+    ) -> ContentTagClassification: ...
 
 
 class SecondPassItemTypeLabelerProtocol(Protocol):

@@ -28,6 +28,19 @@ class HeaderApplication:
     events: tuple[DocxBuildEvent, ...]
 
 
+def resolve_header_course(
+    course_hint: str, course_key: str | None, courses: tuple[ExamCourse, ...]
+) -> ExamCourseChoice | None:
+    if course_key is not None:
+        chosen = next((entry for entry in courses if entry.key == course_key), None)
+        if chosen is None:
+            raise ValueError(f"Unknown exam course key: {course_key}")
+    else:
+        match = match_course_hint(course_hint, courses)
+        chosen = match.course if match.kind == "unique" else None
+    return ExamCourseChoice(key=chosen.key, name=chosen.name) if chosen else None
+
+
 def apply_header(
     document: NativeExamDocument,
     manifest: ExamManifest | None,
@@ -47,14 +60,7 @@ def apply_header(
     course_hint = " ".join(
         text for h in headers if h.kind == "course" if (text := by_anchor[h.anchor].text.strip())
     )
-    if course_key is not None:
-        chosen = next((entry for entry in courses if entry.key == course_key), None)
-        if chosen is None:
-            raise ValueError(f"Unknown exam course key: {course_key}")
-    else:
-        match = match_course_hint(course_hint, courses)
-        chosen = match.course if match.kind == "unique" else None
-    course = ExamCourseChoice(key=chosen.key, name=chosen.name) if chosen else None
+    course = resolve_header_course(course_hint, course_key, courses)
     total = next(
         (
             value

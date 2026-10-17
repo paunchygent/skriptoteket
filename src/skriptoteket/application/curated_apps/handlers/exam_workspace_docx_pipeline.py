@@ -37,6 +37,9 @@ from dataclasses import replace
 
 import structlog
 
+from skriptoteket.application.curated_apps.exam_content_tagging import (
+    MeteredExamContentTagClassifier,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_assembly import (
     assembly_check,
     conversion_update,
@@ -78,7 +81,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_batches import (
     pack_batches,
     question_families,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_header import apply_header
+from skriptoteket.domain.curated_apps.exam_workspace.docx_header import (
+    apply_header,
+    resolve_header_course,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_import_records import (
     with_docx_import_records,
 )
@@ -88,6 +94,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import (
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_section_instructions import (
     assign_question_headings,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.exam_content_tags import (
+    load_exam_content_catalog,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.exam_course_catalog import (
     load_exam_course_catalog,
@@ -110,6 +119,7 @@ from skriptoteket.protocols.docx_conversion_progress import (
 from skriptoteket.protocols.exam_grouping import ExamGrouperProtocol, ExamGroupingError
 from skriptoteket.protocols.exam_workspace import LabelerSource, LabelerSourceProtocol
 from skriptoteket.protocols.item_type_labeler import (
+    ContentTagClassificationRequest,
     ItemTypeLabel,
     ItemTypeLabelerError,
     ItemTypeLabelerProtocol,
@@ -165,6 +175,7 @@ class DocxConversionPipeline:
         uow: SerializedUnitOfWork,
         families_per_batch: int,
         enabled: bool,
+        content_classifier: MeteredExamContentTagClassifier | None = None,
     ) -> None:
         self._grouper = grouper
         self._labeler = labeler
@@ -175,6 +186,7 @@ class DocxConversionPipeline:
         self._uow = uow
         self._families_per_batch = families_per_batch
         self._enabled = enabled
+        self._content_classifier = content_classifier
 
     async def convert(
         self, *, job: DocxConversionJob, fallback_reason: str | None = None
@@ -264,6 +276,8 @@ class DocxConversionPipeline:
     ) -> None:
         started = time.monotonic()
         request, unlabeled = self._labeling_request(run, manifest)
+        if self._content_classifier is not None:
+            tasks.create_task(self._suggest_content(run, manifest, request))
         for question_id in unlabeled:
             run.kinds[question_id] = NativeExamItemKind.FREE_TEXT
             run.label_kinds[question_id] = NativeExamItemKind.FREE_TEXT
@@ -308,6 +322,32 @@ class DocxConversionPipeline:
             run.state.fail_all_pending(_LABELING_REASON)
             return
         run.timed("labeling", started)
+
+    async def _suggest_content(
+        self, run: DocxConversionRun, manifest: ExamManifest, request: LabelingRequest
+    ) -> None:
+        try:
+            course_anchors = {entry.anchor for entry in manifest.header if entry.kind == "course"}
+            hint = " ".join(
+                chunk.text.strip() for chunk in run.job.chunks if chunk.anchor in course_anchors
+            )
+            course = resolve_header_course(
+                hint, run.job.course_key, load_exam_course_catalog().courses
+            )
+            if course is None or self._content_classifier is None:
+                return
+            run.content_tags = await self._content_classifier.suggest(
+                request=ContentTagClassificationRequest(
+                    job_id=request.job_id,
+                    items=request.items,
+                    content_items=load_exam_content_catalog()[course.key],
+                )
+            )
+        except Exception:
+            logger.exception(
+                "Import content suggestions failed; conversion continues",
+                job_id=str(run.job.job_id),
+            )
 
     def _dispatch(
         self, run: DocxConversionRun, question_ids: list[str], prefix: str, tasks: asyncio.TaskGroup
@@ -493,6 +533,24 @@ class DocxConversionPipeline:
         update = conversion_update(
             document, run.families, tuple(run.filled), (), assets_by_id=assets_by_id
         )
+        tags = tuple(
+            tag.model_copy(
+                update={
+                    "question_ids": tuple(
+                        dict.fromkeys(
+                            item_id
+                            for question_id in tag.question_ids
+                            for item_id in update.item_ids.get(question_id, ())
+                        )
+                    )
+                }
+            )
+            for tag in run.content_tags
+        )
+        document = document.model_copy(
+            update={"header": document.header.model_copy(update={"tags": tags})}
+        )
+        update = replace(update, document=document)
         checks = assembly_check(document, manifest, run.families, update) if manifest else ()
         run.timed("assembly", started)
         return DocxConversionOutcome(

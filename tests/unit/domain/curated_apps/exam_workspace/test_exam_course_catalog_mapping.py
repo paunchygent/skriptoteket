@@ -9,6 +9,7 @@ import pytest
 from pydantic import ValidationError
 
 from scripts.build_exam_course_catalog import (
+    CourseDetailResponse,
     CoursesResponse,
     GymnasiumSubjectsResponse,
     SourceRecord,
@@ -188,8 +189,16 @@ def test_mapping_is_independent_of_api_row_order() -> None:
 def test_build_check_accepts_identical_mapping_and_detects_stale_or_missing_outputs(
     tmp_path: Path,
 ) -> None:
-    payloads = build_payloads(*recorded_inputs(), today=TODAY, generated_at=STAMP)
-    assert set(payloads) == {"catalog.json", "BUILD.json"}
+    course_details = {
+        course.course_code: CourseDetailResponse.model_validate_json(
+            (FIXTURES / f"course-{course.course_code}.json").read_bytes()
+        )
+        for course in recorded_inputs()[0].courses
+    }
+    payloads = build_payloads(
+        *recorded_inputs(), today=TODAY, generated_at=STAMP, course_details=course_details
+    )
+    assert set(payloads) == {"catalog.json", "BUILD.json", "content.json"}
     catalog = ExamCourseCatalog.model_validate_json(payloads["catalog.json"])
     assert catalog.generated_at == STAMP
     assert catalog.courses == map_course_catalog(*recorded_inputs(), today=TODAY)
