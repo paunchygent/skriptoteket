@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections import Counter
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from uuid import UUID, uuid4
@@ -45,6 +46,7 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_run impo
     DocxConversionJob,
 )
 from skriptoteket.config import Settings
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import DocxBuildEvent
 from skriptoteket.domain.errors import DomainError
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_container import (
     ExamWorkspaceContainerCodec,
@@ -230,7 +232,10 @@ async def test_quiz_job_saves_batches_progressively_and_publishes_complete_docum
     async with session_factory() as reader:
         model = await reader.get(ExamAnswerKeyEnrichmentJobModel, queued.job_id)
         assert model is not None and model.source_docx is None and model.status == "succeeded"
-        assert model.diagnostics == []
+        assert model.diagnostics == list(finished.diagnostics)
+        assert model.diagnostics
+        assert all(event["stage"] == "formatting" for event in model.diagnostics)
+        assert all(event["code"] in {"exact", "aligned", "rebuilt"} for event in model.diagnostics)
         stored = ConversionProgress.model_validate(model.conversion_progress)
         assert stored.questions_done == stored.questions_total == first[3] + first[4]
         assert all(u.state is ConversionUnitState.READY for u in stored.units if u.question)
@@ -263,6 +268,10 @@ async def test_quiz_job_saves_batches_progressively_and_publishes_complete_docum
 
     opened = await open_head()
     document = opened.document
+    formatting = [DocxBuildEvent.model_validate(event) for event in finished.diagnostics]
+    assert Counter(event.anchors[0] for event in formatting) == Counter(
+        item.source_anchor for item in document.items
+    )
     assert opened.summary.version == stored.revision == document.revision
     assert opened.notes  # recorded facit chunks survive as teacher notes
     assert not [i for i in document.items if PLACEHOLDER_REASON in i.review.reasons]

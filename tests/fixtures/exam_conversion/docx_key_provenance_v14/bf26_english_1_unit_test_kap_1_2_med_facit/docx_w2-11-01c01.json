@@ -1,0 +1,45 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [
+    "body:0116"
+  ],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0115"
+      ],
+      "outcome": "type_conflict",
+      "conflict_kind": "gap_fill",
+      "review_reason": null,
+      "kind": "multiple_response",
+      "printed_label": "10",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Write its or it’s.\nThe school changed ",
+              "accepted_values": [],
+              "asset_id": null
+            },
+            {
+              "kind": "text",
+              "text": ". (1 point)",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": "copied",
+      "facit_text": "Correct answer: its",
+      "points": 1,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    }
+  ]
+}
