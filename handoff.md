@@ -54,35 +54,40 @@
 
 - Plan 2026-10-17 (user decisions G1-G30, lead L1-L9; retained
   `01a1495e-8398-75be-b2da-f0b08ba11afa` evidence/planning/decisions-2026-10-17.md).
-  Owner: Claude Opus parent on the Mac, root `01a149c9-5bc7-7713-ba64-12dee0470bdd`.
-  User rule 2026-10-17: the parent walks only exam-converter changes once after
-  merge; the restyle (ST-SKRIPT-40-03) and repairs close on approved review plus
-  unit tests. Wave 1: 39-06-01 `done`; 39-04-08 and 39-06-03 close after one
-  targeted U-4 check on staging 81200aba (Spara enables after a parent command,
-  export carries it), pending; 39-08-02 `done` (two-tab CSRF re-walk passed on
-  02e6676c). Walk evidence: `evidence/staging-walk-u1-u3-1b417b64/`,
-  `staging-walk-u2-d9c2b3bb/`, `staging-rewalk-fdc2973b/`, `staging-rewalk-02e6676c/`.
-  Wave 2 (39-04-06, 39-04-10, 39-06-04, 39-06-05, 39-07-01, 39-07-02, 39-08-03,
-  39-08-04, frontend v5 repairs) all approved and on main bd4d706d (merge 989c912f;
-  14 backend regressions repaired in 1583be5a, `evidence/backend-repair-1583be5a.md`).
-  Staging rebuild bd4d706d running (`~/logs/skriptoteket-dev-bd4d706d.log`); then one
-  exam-converter walk with the 40-04-02 shell at three widths, then close wave 2
-  (39-07-01: reconcile positive-tick wording to the zero-point rule). 39-06-07 delete
-  instruction (user 2026-10-17) `ready`, Sol `d2cfe369` on
-  `codex/task-skript-39-06-07-remote`. Next: 39-06-06, the 39-06-02 Exam.net probe,
-  39-07-03. Follow-ups: cleanup deletes payload files before its row commit (39-04-10
-  review); `migrated_db` swallows migration-thread errors.
-  Opus lane ST-SKRIPT-40-04: 40-04-01 `done`; Opus builders on Hemma (parent-launched)
-  40-04-02 shell `in_progress`: review 3 approved, merged to main 1413f65a; closes
-  after the staging walk (Flunk-Out Frenzy out of scope, user 2026-10-17); and
-  40-04-03 workspace `8445f6e1` (`...-40-04-03-remote`; logic 1d2fcadb, frame UI next); huleedu-integrated 0.1.29 (glyph
-  meanings; no toast change, user rule) is on main cf19e83c (TASK-SKILL-REP-0327 `done`).
-  Shell screenshots pass the lead's prototype check (final reshoot on 0.1.29).
-  Hemma Opus lead `3b164d53`: 40-03-01..08 and 08-36-02 `done`; 40-02-01 tranche 1 on
-  main 761b1b59 (`in_progress`: held/frozen-screen wrappers and lucide removal open);
-  40-03-09 `done` (rules folded into skills; rule-080 file and its .gitignore line
-  deleted and rule-094 values dropped, user 2026-10-17); useClassroomState fix and split
-  approved (31e0be3a). TASK-SKILL-REP-0326 (0.1.28) `done`.
+  HANDOFF 2026-10-17 evening: the Mac Opus parent (root
+  `01a149c9-5bc7-7713-ba64-12dee0470bdd`) stopped for an account switch; the next
+  parent re-enters that root. Rules: walk only exam-converter changes, once per
+  wave; restyle and repairs close on approved review plus unit tests.
+  State: main `ca4c50cb` holds wave 2 (39-04-06, 39-04-10, 39-06-04, 39-06-05,
+  39-07-01, 39-07-02, 39-08-03, 39-08-04), closeout repairs `19ef5504`, and 39-06-07
+  (`4341e0b3`, review-1 approved). Staging rebuilt healthy at `ca4c50cb`.
+  Closeout reviews on bd4d706d (`evidence/reviews/closeout-bd4d706d/`): 39-04-10 and
+  39-08-04 approved; 39-04-06 and 39-08-03 gaps fixed in 19ef5504; proof gaps open
+  for 39-06-04/05 (dropdown and retyped question through Exam.net), 39-07-01,
+  39-07-02 (suggestions API), 40-04-02 (home, tool page, Klassrumskartan, public
+  frame, focus at 375/768/1440) and 39-06-07 (heading-only delete, undo,
+  with-children, last child, export to Exam.net).
+  39-07-01 live proof (`evidence/staging-proof-ca4c50cb/out/`): AK7 `.dxe` import
+  202, job succeeded 8/8, document read 200; QTI/PDF/DOCX exports 422. Every DXE item
+  is `review_required` with `parse_origin: deterministic`, so `is_unbuilt_question`
+  blocks export even for free-text items whose only follow-up is manual marking;
+  keyed items also lack keys. Next: decide whether that is a mapper defect (contract:
+  only unbuilt questions block) and repair it, then finish the proofs via
+  suggestions plus review. API writes need header `X-CSRF-Token` from cookie
+  `huleedu_csrf`. Then closeout frontmatter (`agent-overseer:approved-review-closeout`)
+  for the wave-2 tasks, 40-04-02 and 39-06-07; U-4 check closes 39-04-08 and 39-06-03.
+  Running children (agent-mcp, host hemma): Sol `df1d5c3a` 39-06-06 suggested type on
+  `codex/task-skript-39-06-06-remote` (backend 3627 passed; frontend constructor and
+  fixture junior running; next fresh review, merge, then field to 8445f6e1); Opus
+  `8445f6e1` 40-04-03 workspace on `...-40-04-03-remote` (b249f704 frame, 4b15a293;
+  view slice ports open; send 375/768/1440 screenshots, then review). Desktop session
+  "Profile: choosing a course adds and saves it" repairs Mina kurser (choosing adds,
+  each change saves). Next lanes: 39-06-02 Exam.net probe, 39-07-03. Follow-ups:
+  trash cleanup deletes payload files before its row commit; `migrated_db` swallows
+  migration-thread errors; backend for the export filename field.
+  Hemma Opus lead `3b164d53`: 40-03-01..09 and 08-36-02 `done`; 40-02-01 tranche 1 on
+  main 761b1b59 (`in_progress`: held/frozen-screen wrappers and lucide removal open).
+  Hemma Claude `st-39-08` (tmux) was asked to write its own handoff here.
 
 - Historical 2026-09-05 workspace planning (EPIC-SKRIPT-39 E8-E12, ADR-SKRIPT-0091,
   ST-SKRIPT-39-04): `.codex/long-term-memory/entries/session-2026-09-05-epic-39-handoff-compaction.md`.
