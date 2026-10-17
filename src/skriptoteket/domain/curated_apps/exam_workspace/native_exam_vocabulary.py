@@ -35,6 +35,7 @@ class NativeExamItemKind(StrEnum):
 
 
 class NativeParseOrigin(StrEnum):
+    SOURCE_FALLBACK = "source_fallback"
     DETERMINISTIC = "deterministic"
     LLM_PARSED = "llm_parsed"
     TEACHER_CREATED = "teacher_created"

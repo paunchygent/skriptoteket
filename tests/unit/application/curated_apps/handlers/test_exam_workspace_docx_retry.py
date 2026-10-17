@@ -155,7 +155,7 @@ async def test_a_provider_failure_returns_the_question_as_a_source_review_item(
     assert item.retry_source == document.items[0].retry_source
     assert item.kind is NativeExamItemKind.FREE_TEXT
     assert item.review.state is NativeItemReviewState.REVIEW_REQUIRED
-    assert item.review.parse_origin is NativeParseOrigin.DETERMINISTIC
+    assert item.review.parse_origin is NativeParseOrigin.SOURCE_FALLBACK
     assert item.review.reasons == (
         "AI-tjänsten är inte tillgänglig. Kontrollera källtexten manuellt.",
     )

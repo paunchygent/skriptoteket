@@ -83,7 +83,7 @@ def test_impossible_section_tick_share_keeps_source_as_blocking_review_item():
     assert item.kind is NativeExamItemKind.FREE_TEXT
     assert item.tick_points is None
     assert item.review.state is NativeItemReviewState.REVIEW_REQUIRED
-    assert item.review.parse_origin is NativeParseOrigin.DETERMINISTIC
+    assert item.review.parse_origin is NativeParseOrigin.SOURCE_FALLBACK
     assert "0,01" in " ".join(item.review.reasons)
     assert body_plain_text(item.body) == text
     assert any(event.code == "invalid_tick_value" for event in result.events)

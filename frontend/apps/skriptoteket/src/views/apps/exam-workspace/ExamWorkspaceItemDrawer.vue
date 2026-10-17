@@ -33,6 +33,7 @@ import type { ExamWorkspaceLayout } from "./useExamWorkspaceLayout";
 import { useDialogFocus } from "../../../composables/useDialogFocus";
 
 const PARSE_ORIGIN_LABELS: Record<NativeExamParseOrigin, string> = {
+  source_fallback: "Kunde inte konverteras. Visas som i provfilen.",
   deterministic: "Läst direkt ur provfilen.",
   llm_parsed: "Tolkad med AI ur provfilen.",
   teacher_created: "Skapad i provredigeringen.",

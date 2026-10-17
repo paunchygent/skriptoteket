@@ -114,7 +114,7 @@ async def test_an_exception_inside_one_batch_fails_only_that_batch(monkeypatch):
     blocked = {blocker.item_id for blocker in native_export_blockers(document)}
     for anchor in ("body:0061", "body:0067", "body:0073", "body:0079", "body:0085"):
         (item,) = [i for i in document.items if i.source_anchor == anchor]
-        assert item.review.parse_origin is NativeParseOrigin.DETERMINISTIC
+        assert item.review.parse_origin is NativeParseOrigin.SOURCE_FALLBACK
         assert item.review.state is NativeItemReviewState.REVIEW_REQUIRED
         assert item.review.reasons == (_BATCH_FAILED_REASON,)
         assert item.item_id in blocked, "a failed review item does not block export"

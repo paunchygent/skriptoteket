@@ -365,7 +365,7 @@ def test_source_review_item_keeps_identity_and_shows_the_own_source_text():
     assert review.retry_source == original.retry_source
     assert review.ai_suggestion is None
     assert review.review.state is NativeItemReviewState.REVIEW_REQUIRED
-    assert review.review.parse_origin is NativeParseOrigin.DETERMINISTIC
+    assert review.review.parse_origin is NativeParseOrigin.SOURCE_FALLBACK
     assert review.review.reasons == ("Kunde inte tolkas.",)
     assert review.plain_text_lines() == ("body:0002",)
 

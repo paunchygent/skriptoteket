@@ -238,7 +238,7 @@ def test_printed_grid_tick_boundary_keeps_score_or_complete_source_review(
         assert item.kind is NativeExamItemKind.FREE_TEXT
         assert item.tick_points is None
         assert item.review.state is NativeItemReviewState.REVIEW_REQUIRED
-        assert item.review.parse_origin is NativeParseOrigin.DETERMINISTIC
+        assert item.review.parse_origin is NativeParseOrigin.SOURCE_FALLBACK
         text = body_plain_text(item.body)
         assert text.count(source) == 1
         if sibling_kind:

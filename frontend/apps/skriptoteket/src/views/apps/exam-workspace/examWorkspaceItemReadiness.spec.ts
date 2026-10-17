@@ -3,8 +3,9 @@
  *
  * Expected behavior:
  *   Each question reports the same reasons the server export gate refuses
- *   with (review required, unreviewed machine key, keyed question without a
- *   key, missing points) plus the states the save refuses (a partial gap
+ *   with (unbuilt source fallback or missing picture awaiting review,
+ *   unreviewed machine key, keyed question without a key, missing points)
+ *   plus the states the save refuses (a partial gap
  *   key, points not greater than zero, a choice without text, criteria
  *   that lack text or points or are not the item's points), in a stable
  *   order; ready
@@ -76,7 +77,7 @@ describe("examWorkspaceItemReadiness", () => {
       points: null,
       review: {
         confidence: null,
-        parse_origin: "deterministic",
+        parse_origin: "source_fallback",
         reasons: [],
         state: "review_required",
       },
@@ -87,6 +88,42 @@ describe("examWorkspaceItemReadiness", () => {
       "machine_proposed_key_unreviewed",
       "missing_points",
     ]);
+  });
+
+  it.each([null, "dxe:item_001"])(
+    "does not block deterministic free text needing manual marking with source anchor %s",
+    (sourceAnchor) => {
+      const item = buildChoiceItem({
+        answer_key: { correct_choice_ids: [], match_pairs: [], origin: "not_applicable" },
+        choices: [],
+        kind: "free_text",
+        source_anchor: sourceAnchor,
+        review: {
+          confidence: null,
+          parse_origin: "deterministic",
+          reasons: ["Frågan kräver manuell rättning."],
+          state: "review_required",
+        },
+      });
+
+      expect(examWorkspaceItemReadiness(item)).toEqual([]);
+      expect(examWorkspaceReadinessByItemId([item])).toEqual({});
+    },
+  );
+
+  it("reports only the missing key for a deterministic keyed question needing review", () => {
+    const item = buildChoiceItem({
+      answer_key: { correct_choice_ids: [], match_pairs: [], origin: "absent" },
+      source_anchor: "dxe:item_001",
+      review: {
+        confidence: null,
+        parse_origin: "deterministic",
+        reasons: ["Frågan behöver en manuell facitkontroll."],
+        state: "review_required",
+      },
+    });
+
+    expect(examWorkspaceItemReadiness(item)).toEqual(["missing_answer_key"]);
   });
 
   it("does not block a converted question that only needs review", () => {
@@ -123,11 +160,11 @@ describe("examWorkspaceItemReadiness", () => {
     },
   );
 
-  it("blocks an unbuilt question with estimated points until it is marked reviewed", () => {
+  it("blocks a source fallback with estimated points until it is marked reviewed", () => {
     const unbuilt = buildChoiceItem({
       points: 2,
       points_estimated: true,
-      review: { confidence: null, parse_origin: "deterministic", reasons: [], state: "review_required" },
+      review: { confidence: null, parse_origin: "source_fallback", reasons: [], state: "review_required" },
     });
     const reviewed = { ...unbuilt, review: { ...unbuilt.review, state: "review_complete" as const } };
 

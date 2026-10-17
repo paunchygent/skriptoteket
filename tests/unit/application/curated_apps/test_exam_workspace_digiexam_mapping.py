@@ -17,6 +17,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.digiexam_import import (
     build_native_exam_from_digiexam,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import NativeTextSegment
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_export_rules import (
+    native_export_blockers,
+)
 from skriptoteket.domain.errors import DomainError, ErrorCode
 
 _FIXTURES = Path("tests/fixtures/exam_conversion")
@@ -222,6 +225,34 @@ def test_real_fixture_absent_score_stays_absent():
     ).document
     assert exam.items[0].max_score is None
     assert document.items[0].points is None
+
+
+def test_real_ak7_review_followups_do_not_make_converted_questions_unbuilt():
+    fixture = _FIXTURES / "real_inputs/1776888013-ak7-lag-och-ratt.dxe"
+    content = fixture.read_bytes()
+    exam = parse_source_exam(
+        upload=ConversionHubUpload(
+            filename=fixture.name, file_bytes=content, content_type="application/octet-stream"
+        )
+    )
+    document = build_native_exam_from_digiexam(
+        exam=exam, document_id=uuid4(), source_sha256=hashlib.sha256(content).hexdigest()
+    ).document
+
+    assert len(document.items) == 8
+    assert all(item.review.state.value == "review_required" for item in document.items)
+    blockers = native_export_blockers(document)
+    assert not any(blocker.reason == "unbuilt_question" for blocker in blockers)
+    keyed = {item.item_id for item in document.items if item.kind.value != "free_text"}
+    assert keyed
+    assert {(blocker.item_id, blocker.reason) for blocker in blockers} == {
+        (item_id, "missing_answer_key") for item_id in keyed
+    }
+    free_text = tuple(item for item in document.items if item.kind.value == "free_text")
+    assert free_text
+    for item in free_text:
+        assert any("Manual marking is required" in reason for reason in item.review.reasons)
+    assert native_export_blockers(document.model_copy(update={"items": free_text})) == ()
 
 
 def test_real_question_families_and_formatting_are_not_flattened():

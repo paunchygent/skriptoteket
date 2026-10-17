@@ -5,10 +5,10 @@
  *   Tell the teacher, while editing, which questions would stop a QTI, PDF,
  *   or DOCX export, so invalid states are explained at the question instead
  *   of discovered at export. The server export gate stays authoritative;
- *   this mirrors its reasons, including the unbuilt question (an item
- *   printed from source that the teacher has not marked reviewed; a
- *   converted item that needs review does not block), and adds the item
- *   states the save refuses:
+ *   this mirrors its reasons, including the unbuilt question (an explicit
+ *   source fallback or an item missing a picture that the teacher has not
+ *   marked reviewed; a converted item that needs review does not block),
+ *   and adds the item states the save refuses:
  *   a partial gap key, an incomplete matching key, points that are not
  *   greater than zero, a choice or matching entry without text, and
  *   free-text criteria that lack text, carry invalid points, are not the
@@ -94,7 +94,7 @@ export function examWorkspaceItemReadiness(item: NativeExamItem): ExamWorkspaceR
     : false;
   if (
     item.review.state === "review_required" &&
-    (item.review.parse_origin === "deterministic" || missingPicture)
+    (item.review.parse_origin === "source_fallback" || missingPicture)
   ) {
     reasons.push("unbuilt_question");
   }

@@ -110,7 +110,7 @@ async def test_a_reply_that_makes_the_material_a_gap_comes_back_as_review_requir
     assert _MATERIAL in event.detail
     item = next(i for i in outcome.result.document.items if i.source_anchor == _QUESTION)
     assert item.review.state is NativeItemReviewState.REVIEW_REQUIRED
-    assert item.review.parse_origin is NativeParseOrigin.DETERMINISTIC
+    assert item.review.parse_origin is NativeParseOrigin.SOURCE_FALLBACK
     assert any(
         reason.startswith(GAPPED_MATERIAL_REASON) and _MATERIAL in reason
         for reason in item.review.reasons

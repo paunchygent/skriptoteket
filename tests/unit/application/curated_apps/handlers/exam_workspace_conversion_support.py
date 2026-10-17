@@ -50,7 +50,7 @@ def placeholder(anchor: str, text: str) -> NativeExamItem:
         answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
         review=NativeItemReview(
             state=NativeItemReviewState.REVIEW_REQUIRED,
-            parse_origin=NativeParseOrigin.DETERMINISTIC,
+            parse_origin=NativeParseOrigin.SOURCE_FALLBACK,
             reasons=(PLACEHOLDER_REASON,),
         ),
         source_anchor=anchor,

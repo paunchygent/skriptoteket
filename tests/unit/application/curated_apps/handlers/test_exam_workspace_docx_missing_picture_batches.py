@@ -288,7 +288,7 @@ async def test_a_missing_picture_holds_only_its_family_while_the_other_family_co
     assert converted.review.parse_origin is NativeParseOrigin.LLM_PARSED
     assert not converted.review.reasons
     held = items["body:0003"]
-    assert held.review.parse_origin is NativeParseOrigin.DETERMINISTIC
+    assert held.review.parse_origin is NativeParseOrigin.SOURCE_FALLBACK
     assert any("figur.emf" in reason for reason in held.review.reasons)
     events = [event for event in outcome.result.events if event.code == "source_picture_missing"]
     assert [(event.batch, event.anchors) for event in events] == [("w1-01", ("body:0002",))]

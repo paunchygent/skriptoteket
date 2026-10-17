@@ -85,7 +85,7 @@ def _assert_source_review_without_failing_the_batch(state: DocxBuildState) -> No
     item, anchors = entry
     assert anchors == ("body:0001",)
     assert item.review.state is NativeItemReviewState.REVIEW_REQUIRED
-    assert item.review.parse_origin is NativeParseOrigin.DETERMINISTIC
+    assert item.review.parse_origin is NativeParseOrigin.SOURCE_FALLBACK
     assert item.criteria == ()
     assert any("Resonera." in line for line in item.plain_text_lines())
     (event,) = [event for event in state.events if event.code == "item_unbuildable"]
