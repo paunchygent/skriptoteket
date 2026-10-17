@@ -49,6 +49,7 @@ const emit = defineEmits<{
   more: [];
   goto: [blocker: ExamWorkspaceBlockerEntry];
   fix: [blocker: ExamWorkspaceBlockerEntry];
+  suggestAll: [];
 }>();
 
 const trigger = ref<HTMLButtonElement | null>(null);
@@ -100,6 +101,7 @@ function choose(action: () => void): void {
       test-id="exam-workspace-export-blockers"
       @goto="(blocker) => choose(() => emit('goto', blocker))"
       @fix="emit('fix', $event)"
+      @suggest-all="emit('suggestAll')"
     />
     <div
       v-for="format in EXAM_WORKSPACE_EXPORT_FORMATS"

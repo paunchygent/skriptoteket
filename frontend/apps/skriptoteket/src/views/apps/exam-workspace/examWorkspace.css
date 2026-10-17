@@ -219,6 +219,7 @@ Relationships:
   background: var(--huleedu-surface-content); color: var(--huleedu-navy); font-weight: var(--huleedu-font-semibold);
   line-height: 26px; cursor: pointer; white-space: nowrap;
 }
+.xw-mblock__all { display: block; margin: 0 0 var(--huleedu-space-1-5); }
 .xw-mblock__fix:hover { border-color: var(--huleedu-navy-40); }
 .xw-mblock__fix:disabled { cursor: default; opacity: 0.6; }
 .xw-mblock__go:focus-visible, .xw-mblock__fix:focus-visible { outline: 2px solid var(--huleedu-action-40); }

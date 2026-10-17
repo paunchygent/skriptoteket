@@ -539,6 +539,7 @@ onBeforeUnmount(() => {
           @more="drawer = 'export'"
           @goto="gotoBlocker"
           @fix="fixBlocker"
+          @suggest-all="enrichment.requestSuggestionsForAll"
         />
       </template>
     </ExamWorkspaceHeader>
@@ -768,6 +769,7 @@ onBeforeUnmount(() => {
           @run="runExport"
           @goto="gotoBlocker"
           @fix="fixBlocker"
+          @suggest-all="enrichment.requestSuggestionsForAll"
         />
         <ExamWorkspaceDetailsDrawer
           v-else-if="drawer === 'details' && workspaceDocument && summary"

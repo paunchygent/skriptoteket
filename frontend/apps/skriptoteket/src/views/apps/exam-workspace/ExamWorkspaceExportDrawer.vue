@@ -49,6 +49,7 @@ const emit = defineEmits<{
   run: [target: ExamWorkspaceExportTarget, destination: Destination];
   goto: [blocker: ExamWorkspaceBlockerEntry];
   fix: [blocker: ExamWorkspaceBlockerEntry];
+  suggestAll: [];
 }>();
 
 const target = ref<ExamWorkspaceExportTarget>("qti");
@@ -68,6 +69,7 @@ const disabled = computed(() => props.blockers.length > 0 || props.busy || props
     test-id="exam-workspace-export-drawer-blockers"
     @goto="emit('goto', $event)"
     @fix="emit('fix', $event)"
+    @suggest-all="emit('suggestAll')"
   />
 
   <section class="sect">
