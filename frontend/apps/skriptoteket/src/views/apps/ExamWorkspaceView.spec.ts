@@ -20,8 +20,10 @@ import type {
   ExamWorkspaceDocumentResponse,
   NativeExamDocument,
 } from "../../api/examWorkspace";
+import { buildFreeTextItem } from "../../test/examWorkspaceFixtures";
 import { mountWithContext } from "../../test/utils";
 import ExamWorkspaceView from "./ExamWorkspaceView.vue";
+import { buildSavedExamSummary } from "./exam-workspace/useExamWorkspaceDocument.specSupport";
 
 const apiMocks = vi.hoisted(() => ({
   downloadExamWorkspaceExport: vi.fn(),
@@ -56,32 +58,9 @@ function buildDocument(): NativeExamDocument {
     document_id: "doc-1",
     instructions: [],
     items: [
-      {
-        ai_suggestion: null,
-        facit_text: null,
-        criteria: [],
-        printed_label: null,
-        retry_source: null,
-        answer_key: { correct_choice_ids: [], match_pairs: [], origin: "not_applicable" },
+      buildFreeTextItem(1, {
         body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Beskriv vattnets kretslopp." }] }],
-        choices: [],
-        gaps: [],
-        match_left: [],
-        match_right: [],
-        item_id: "item_001",
-        kind: "free_text",
-        points: 2,
-        points_estimated: false,
-        review: {
-          confidence: 0.9,
-          parse_origin: "deterministic",
-          reasons: [],
-          state: "review_complete",
-        },
-        sequence: 1,
-        source_anchor: null,
-        tick_points: null,
-      },
+      }),
     ],
     origin: {
       extractor_version: "docx-extractor-1",
@@ -91,15 +70,15 @@ function buildDocument(): NativeExamDocument {
     },
     parents: [],
     revision: 1,
-    header: {},
-    schema_version: "native_exam_document_v4",
+    header: { tags: [] },
+    schema_version: "native_exam_document_v5",
     title: "NO-prov HT25",
   };
 }
 
 /** The finished import: its poll status, and the conversion its fetched document carries. */
 const succeededConversion: ExamWorkspaceConversionStatus = {
-  job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null,
+  job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null, summary: null,
   document_revision: 1, questions_total: 0, questions_done: 0, units: [],
 };
 
@@ -111,13 +90,11 @@ function buildResponse(): ExamWorkspaceDocumentResponse {
     document: buildDocument(),
     saved_document: buildDocument(),
     notes: [],
-    summary: {
-      lineage_id: "lineage-1",
+    summary: buildSavedExamSummary({
       name: "NO-prov HT25",
       saved_at: "2026-10-09T08:00:00Z",
-      vault_file_id: "file-1",
-      version: 1,
-    },
+      title: "NO-prov HT25",
+    }),
   };
 }
 

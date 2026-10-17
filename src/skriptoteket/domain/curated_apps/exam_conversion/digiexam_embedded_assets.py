@@ -19,6 +19,7 @@ import binascii
 import hashlib
 from collections.abc import Sequence
 from dataclasses import dataclass
+from typing import Literal
 
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_contracts import (
     DigiExamEmbeddedAsset,
@@ -44,7 +45,7 @@ class DigiExamEmbeddedAssetParse:
 
 @dataclass(frozen=True)
 class _ImageMetadata:
-    media_type: str
+    media_type: Literal["image/png", "image/jpeg"]
     width_px: int
     height_px: int
 

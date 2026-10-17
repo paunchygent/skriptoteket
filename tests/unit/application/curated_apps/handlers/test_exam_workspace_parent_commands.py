@@ -55,6 +55,8 @@ def document_response(document: NativeExamDocument) -> ExamWorkspaceDocumentResp
             version=document.revision,
             vault_file_id=uuid4(),
             name="English.provdokument.zip",
+            title=document.title,
+            course_key=None if document.header.course is None else document.header.course.key,
             saved_at=datetime(2026, 10, 17, tzinfo=UTC),
         ),
         notes=("Keep import notes",),

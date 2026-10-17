@@ -1,7 +1,8 @@
 """Adversarial persistence contracts for one durable exam file per lineage."""
 
 from datetime import timedelta
-from uuid import uuid4
+from pathlib import Path
+from uuid import UUID, uuid4
 
 import pytest
 
@@ -13,6 +14,8 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_documents imp
     SaveExamWorkspaceDocumentHandler,
 )
 from skriptoteket.config import Settings
+from skriptoteket.domain.curated_apps.exam_workspace.container import ExamWorkspaceContainerContent
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import NativeExamDocument
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from tests.fixtures.time_fixtures import FixedClock
 from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents import (
@@ -24,6 +27,19 @@ from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents 
 )
 
 
+def _payload(env: _Env, lineage: UUID, revision: int, title: str) -> bytes:
+    document = NativeExamDocument.model_validate_json(
+        Path("tests/fixtures/exam_conversion/native_workspace_grammatik.json").read_bytes()
+    ).model_copy(update={"document_id": lineage, "revision": revision, "title": title})
+    return env.codec.build(
+        content=ExamWorkspaceContainerContent(
+            document=document,
+            assets_by_id={},
+            notes=(),
+        )
+    )
+
+
 def _store(
     env: _Env, *, total_limit: int, uow: FakeUow | None = None
 ) -> ExamWorkspaceDocumentStore:
@@ -31,10 +47,12 @@ def _store(
         vault_files=env.vault_files,
         vault_usage=env.vault_usage,
         vault_storage=env.vault_storage,
+        index=env.index,
+        codec=env.codec,
         uow=uow or FakeUow(),
         clock=FixedClock(_NOW),
         settings=Settings.model_construct(
-            VAULT_MAX_FILE_BYTES=100, VAULT_MAX_TOTAL_BYTES=total_limit
+            VAULT_MAX_FILE_BYTES=5_000_000, VAULT_MAX_TOTAL_BYTES=total_limit
         ),
     )
 
@@ -50,6 +68,8 @@ async def test_overwrite_reports_new_save_time_without_changing_row_creation_tim
         vault_files=env.vault_files,
         vault_usage=env.vault_usage,
         vault_storage=env.vault_storage,
+        index=env.index,
+        codec=env.codec,
         uow=FakeUow(),
         clock=FixedClock(later),
         settings=_settings(),
@@ -77,12 +97,16 @@ async def test_overwrite_reports_new_save_time_without_changing_row_creation_tim
 
 @pytest.mark.asyncio
 async def test_overwrites_charge_only_size_delta_and_keep_one_file_at_quota() -> None:
-    env = _Env()
-    actor = _actor()
-    lineage = uuid4()
-    store = _store(env, total_limit=15)
+    env, actor, lineage = _Env(), _actor(), uuid4()
+    contents = [
+        _payload(env, lineage, revision, title)
+        for revision, title in enumerate(
+            ("a", "A much longer changed title for this exam", "b"), start=1
+        )
+    ]
+    store = _store(env, total_limit=max(map(len, contents)))
     original_id = uuid4()
-    for revision, content in enumerate((b"a" * 10, b"b" * 15, b"c" * 4), start=1):
+    for revision, content in enumerate(contents, start=1):
         saved = await store.save(
             actor=actor,
             file_id=original_id if revision == 1 else uuid4(),
@@ -103,15 +127,14 @@ async def test_overwrites_charge_only_size_delta_and_keep_one_file_at_quota() ->
 
 @pytest.mark.asyncio
 async def test_stale_save_does_not_replace_payload_or_accounting() -> None:
-    env = _Env()
-    actor = _actor()
-    lineage = uuid4()
-    store = _store(env, total_limit=100)
+    env, actor, lineage = _Env(), _actor(), uuid4()
+    store = _store(env, total_limit=50_000)
+    current = _payload(env, lineage, 3, "Current")
     saved = await store.save(
         actor=actor,
         file_id=uuid4(),
         name="Prov.provdokument.zip",
-        content=b"current revision",
+        content=current,
         lineage_id=lineage,
         version=3,
     )
@@ -120,28 +143,27 @@ async def test_stale_save_does_not_replace_payload_or_accounting() -> None:
             actor=actor,
             file_id=uuid4(),
             name=saved.name,
-            content=b"stale tab replacing a newer save",
+            content=_payload(env, lineage, 2, "Stale"),
             lineage_id=lineage,
             version=2,
             expected_revision=1,
         )
     assert error.value.code is ErrorCode.CONFLICT
-    assert await store.load(actor=actor, vault_file=saved) == b"current revision"
-    assert env.vault_usage.usage.bytes_total == len(b"current revision")
+    assert await store.load(actor=actor, vault_file=saved) == current
+    assert env.vault_usage.usage.bytes_total == len(current)
     assert env.vault_files.files[saved.id].document_version == 3
 
 
 @pytest.mark.asyncio
 async def test_failed_accounting_does_not_destroy_previous_file_bytes() -> None:
-    env = _Env()
-    actor = _actor()
-    lineage = uuid4()
-    store = _store(env, total_limit=100)
+    env, actor, lineage = _Env(), _actor(), uuid4()
+    store = _store(env, total_limit=50_000)
+    current = _payload(env, lineage, 1, "Last successful save")
     saved = await store.save(
         actor=actor,
         file_id=uuid4(),
         name="Prov.provdokument.zip",
-        content=b"last successful save",
+        content=current,
         lineage_id=lineage,
         version=1,
     )
@@ -151,12 +173,12 @@ async def test_failed_accounting_does_not_destroy_previous_file_bytes() -> None:
             actor=actor,
             file_id=uuid4(),
             name=saved.name,
-            content=b"uncommitted replacement",
+            content=_payload(env, lineage, 2, "Uncommitted replacement"),
             lineage_id=lineage,
             version=2,
             expected_revision=1,
         )
-    assert await store.load(actor=actor, vault_file=saved) == b"last successful save"
+    assert await store.load(actor=actor, vault_file=saved) == current
     assert (actor.id, saved.id) not in env.vault_storage.deleted
 
 
@@ -175,16 +197,15 @@ async def test_outer_transaction_failure_restores_the_last_successful_file() -> 
             if self.depth == 0 and self.fail_commit:
                 raise RuntimeError("outer commit failed")
 
-    env = _Env()
-    actor = _actor()
-    lineage = uuid4()
+    env, actor, lineage = _Env(), _actor(), uuid4()
     uow = NestedFailingUow()
-    store = _store(env, total_limit=100, uow=uow)
+    store = _store(env, total_limit=50_000, uow=uow)
+    current = _payload(env, lineage, 1, "Last successful save")
     saved = await store.save(
         actor=actor,
         file_id=uuid4(),
         name="Prov.provdokument.zip",
-        content=b"last successful save",
+        content=current,
         lineage_id=lineage,
         version=1,
     )
@@ -195,25 +216,26 @@ async def test_outer_transaction_failure_restores_the_last_successful_file() -> 
                 actor=actor,
                 file_id=uuid4(),
                 name=saved.name,
-                content=b"uncommitted replacement",
+                content=_payload(env, lineage, 2, "Uncommitted replacement"),
                 lineage_id=lineage,
                 version=2,
                 expected_revision=1,
             )
-    assert await store.load(actor=actor, vault_file=saved) == b"last successful save"
+    assert await store.load(actor=actor, vault_file=saved) == current
 
 
 @pytest.mark.asyncio
 async def test_growth_past_quota_keeps_the_previous_durable_file() -> None:
-    env = _Env()
-    actor = _actor()
-    lineage = uuid4()
-    store = _store(env, total_limit=15)
+    env, actor, lineage = _Env(), _actor(), uuid4()
+    current = _payload(env, lineage, 1, "a")
+    larger = _payload(env, lineage, 2, "A substantially longer changed title to grow the file")
+    assert len(larger) > len(current)
+    store = _store(env, total_limit=len(current))
     saved = await store.save(
         actor=actor,
         file_id=uuid4(),
         name="Prov.provdokument.zip",
-        content=b"a" * 10,
+        content=current,
         lineage_id=lineage,
         version=1,
     )
@@ -222,12 +244,12 @@ async def test_growth_past_quota_keeps_the_previous_durable_file() -> None:
             actor=actor,
             file_id=uuid4(),
             name=saved.name,
-            content=b"b" * 16,
+            content=larger,
             lineage_id=lineage,
             version=2,
             expected_revision=1,
         )
     assert error.value.code is ErrorCode.VALIDATION_ERROR
-    assert await store.load(actor=actor, vault_file=saved) == b"a" * 10
-    assert env.vault_usage.usage.bytes_total == 10
+    assert await store.load(actor=actor, vault_file=saved) == current
+    assert env.vault_usage.usage.bytes_total == len(current)
     assert env.vault_files.files[saved.id].document_version == 1

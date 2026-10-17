@@ -57,7 +57,8 @@ export function revision(
   conversion: ExamWorkspaceConversionStatus | null,
 ): ExamWorkspaceDocumentResponse {
   const response = buildResponse({ version });
-  return { ...response, conversion, document: { ...response.document, items } };
+  const document = { ...response.document, items };
+  return { ...response, conversion, document, saved_document: document };
 }
 
 export function status(
@@ -70,6 +71,7 @@ export function status(
     lineage_id: "lineage-1",
     state,
     error_message: null,
+    summary: null,
     document_revision: documentRevision,
     questions_total: 3,
     questions_done: units.filter((unit) => unit !== "converting").length,

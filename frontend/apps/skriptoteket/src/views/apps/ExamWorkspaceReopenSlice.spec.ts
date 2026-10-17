@@ -22,6 +22,7 @@ import type {
   ExamWorkspaceConversionStatus,
   ExamWorkspaceDocumentSummary,
 } from "../../api/examWorkspace";
+import { buildSavedExamSummary } from "./exam-workspace/useExamWorkspaceDocument.specSupport";
 import {
   buildResponse,
   importFixtureDocument,
@@ -44,13 +45,14 @@ vi.mock("../../api/examWorkspace", async () => ({
   getExamCourseCatalog: (await import("../../test/examCourseCatalog")).getExamCourseCatalog,
 }));
 
-const OTHER_EXAM: ExamWorkspaceDocumentSummary = {
+const OTHER_EXAM: ExamWorkspaceDocumentSummary = buildSavedExamSummary({
   lineage_id: "lineage-2",
   name: "Matteprov_v48.provdokument.zip",
   saved_at: "2026-10-08T07:30:00Z",
+  title: "Matteprov v48",
   vault_file_id: "file-9",
   version: 3,
-};
+});
 
 function otherExamResponse() {
   const response = buildResponse({ title: "Matteprov v48", version: 3 });
@@ -63,7 +65,7 @@ function otherExamResponse() {
 
 /** The finished import: its poll status, and the conversion its fetched document carries. */
 const succeededConversion: ExamWorkspaceConversionStatus = {
-  job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null,
+  job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null, summary: null,
   document_revision: 1, questions_total: 0, questions_done: 0, units: [],
 };
 
@@ -76,7 +78,7 @@ beforeEach(() => {
     apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(
       buildResponse({ conversion: succeededConversion, version: 1 }),
     );
-    return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null,
+    return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null, summary: null,
       document_revision: null, questions_total: 0, questions_done: 0, units: [] };
   });
   apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [OTHER_EXAM] });

@@ -19,6 +19,7 @@ import type {
 } from "../../../api/examWorkspace";
 import recording from "../../../../../../../tests/fixtures/exam_conversion/docx_key_provenance_v14/bf26_english_1_unit_test_kap_1_2_med_facit/docx_w1-01.json";
 import standaloneRecording from "../../../../../../../tests/fixtures/exam_conversion/docx_key_provenance_v14/bf26_english_1_unit_test_kap_1_2_med_facit/docx_w1-04.json";
+import { buildGap } from "./examWorkspaceKeyedItems.specSupport";
 
 type RecordedSegment = { kind: string; text: string | null; accepted_values: string[] };
 type RecordedItem = (typeof recording.items)[number] | (typeof standaloneRecording.items)[number];
@@ -39,7 +40,7 @@ function toNativeItem(recorded: RecordedItem, sequence: number): NativeExamItem 
         return { kind: "text" as const, marks: [], text: segment.text ?? "" };
       }
       const gapId = `gap_${String(gaps.length + 1).padStart(3, "0")}`;
-      gaps.push({ accepted_values: segment.accepted_values, automatic_values: [], excluded_automatic_values: [], gap_id: gapId });
+      gaps.push(buildGap(gapId, segment.accepted_values));
       return { gap_id: gapId, kind: "gap" as const };
     }),
   }));
@@ -47,6 +48,7 @@ function toNativeItem(recorded: RecordedItem, sequence: number): NativeExamItem 
   return {
     ai_suggestion: null,
     facit_text: null,
+    import_record: null,
     criteria: [],
     printed_label: null,
     retry_source: null,
@@ -112,8 +114,8 @@ export function buildParentDocument(): NativeExamDocument {
     origin: { kind: "docx_import" },
     parents: [buildRecordedParent()],
     revision: 1,
-    header: {},
-    schema_version: "native_exam_document_v4",
+    header: { tags: [] },
+    schema_version: "native_exam_document_v5",
     title: "English 1",
   };
 }

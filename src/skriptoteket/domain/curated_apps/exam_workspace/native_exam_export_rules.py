@@ -7,6 +7,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
 
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import NativeTextSegment
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
 )
@@ -34,6 +35,7 @@ _KEYED_KINDS = frozenset(
         NativeExamItemKind.SINGLE_CHOICE,
         NativeExamItemKind.MULTIPLE_RESPONSE,
         NativeExamItemKind.GAP_FILL,
+        NativeExamItemKind.INLINE_CHOICE,
         NativeExamItemKind.MATCHING,
     }
 )
@@ -48,6 +50,10 @@ class NativeExportBlocker(BaseModel):
         "machine_proposed_key_unreviewed",
         "missing_points",
         "missing_answer_key",
+        "inline_choice_option_heading",
+        "empty_choice",
+        "empty_gap_option",
+        "empty_match_entry",
     ]
 
 
@@ -62,6 +68,20 @@ def native_export_blockers(document: NativeExamDocument) -> tuple[NativeExportBl
     """
     blockers: list[NativeExportBlocker] = []
     for item in document.items:
+        for reason, bodies in (
+            ("empty_choice", (choice.body for choice in item.choices)),
+            ("empty_gap_option", (option.body for gap in item.gaps for option in gap.options)),
+            ("empty_match_entry", (entry.body for entry in item.match_left)),
+            ("empty_match_entry", (entry.body for entry in item.match_right)),
+        ):
+            for body in bodies:
+                if not any(
+                    segment.text.strip()
+                    for paragraph in body
+                    for segment in paragraph.segments
+                    if isinstance(segment, NativeTextSegment)
+                ):
+                    blockers.append(NativeExportBlocker(item_id=item.item_id, reason=reason))
         if is_unbuilt_question(item):
             blockers.append(NativeExportBlocker(item_id=item.item_id, reason="unbuilt_question"))
         if item.answer_key.origin is NativeAnswerKeyOrigin.MACHINE_PROPOSED:
@@ -73,6 +93,15 @@ def native_export_blockers(document: NativeExamDocument) -> tuple[NativeExportBl
             )
         if item.kind in _KEYED_KINDS and item.answer_key.origin is NativeAnswerKeyOrigin.ABSENT:
             blockers.append(NativeExportBlocker(item_id=item.item_id, reason="missing_answer_key"))
+        if item.kind is NativeExamItemKind.INLINE_CHOICE and any(
+            paragraph.heading_level is not None
+            for gap in item.gaps
+            for option in gap.options
+            for paragraph in option.body
+        ):
+            blockers.append(
+                NativeExportBlocker(item_id=item.item_id, reason="inline_choice_option_heading")
+            )
         if item.points is None:
             blockers.append(NativeExportBlocker(item_id=item.item_id, reason="missing_points"))
     return tuple(blockers)

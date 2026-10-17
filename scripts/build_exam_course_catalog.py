@@ -11,15 +11,22 @@ import argparse
 import json
 import re
 from collections import Counter
+from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from html.parser import HTMLParser
 from os.path import commonprefix
 from pathlib import Path
 from typing import Literal
+from urllib.parse import quote
 from urllib.request import urlopen
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from skriptoteket.domain.curated_apps.exam_workspace.exam_content_tags import (
+    ExamContentItem,
+    content_item_id,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.exam_course_catalog import (
     ExamCourse,
     ExamCourseCatalog,
@@ -87,6 +94,18 @@ class SubjectsResponse(SourceRecord):
     subjects: list[SubjectRecord]
 
 
+class CourseContent(SourceRecord):
+    text: str
+
+
+class CourseDetail(SourceRecord):
+    central_content: CourseContent = Field(alias="centralContent")
+
+
+class CourseDetailResponse(SourceRecord):
+    course: CourseDetail
+
+
 class SubjectDetailResponse(SourceRecord):
     subject: SubjectDetail
 
@@ -113,6 +132,88 @@ class _HeadingParser(HTMLParser):
         if tag == self.heading:
             self.headings.append(" ".join("".join(self.parts).split()).replace("-", "–"))
             self.heading = None
+
+
+class _BulletParser(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.items: list[str] = []
+        self.parts: list[str] | None = None
+        self.empty_bullets = 0
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if tag == "li":
+            if self.parts is not None:
+                raise ValueError("Nested central-content bullets need source review")
+            self.parts = []
+        elif tag in {"br", "p"} and self.parts is not None:
+            self.parts.append(" ")
+
+    def handle_data(self, data: str) -> None:
+        if self.parts is not None:
+            self.parts.append(data)
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag == "li":
+            if self.parts is None:
+                raise ValueError("Central-content bullet closes without opening")
+            text = " ".join("".join(self.parts).split())
+            if text:
+                self.items.append(text)
+            else:
+                self.empty_bullets += 1
+            self.parts = None
+
+
+def _parse_content_items(course_key: str, html: str) -> tuple[tuple[ExamContentItem, ...], int]:
+    parser = _BulletParser()
+    try:
+        parser.feed(html)
+        parser.close()
+    except ValueError as error:
+        raise ValueError(f"Central content for {course_key}: {error}") from error
+    if parser.parts is not None:
+        raise ValueError(f"Central content has an unclosed bullet: {course_key}")
+    # Parent-approved source-gap policy (2026-10-17): a valid official text
+    # without bullet items is empty content, not invented curriculum material.
+    unique: dict[str, ExamContentItem] = {}
+    for text in parser.items:
+        identifier = content_item_id(course_key, text)
+        unique.setdefault(identifier, ExamContentItem(id=identifier, text=text))
+    return tuple(unique.values()), parser.empty_bullets
+
+
+def split_content_items(course_key: str, html: str) -> tuple[ExamContentItem, ...]:
+    return _parse_content_items(course_key, html)[0]
+
+
+@dataclass(frozen=True)
+class ContentSnapshot:
+    items: dict[str, tuple[ExamContentItem, ...]]
+    ignored_empty_bullet_keys: tuple[str, ...]
+
+
+def map_content_catalog(
+    courses: tuple[ExamCourse, ...],
+    course_details: dict[str, CourseDetailResponse],
+    subject_details: dict[str, SubjectDetailResponse],
+) -> ContentSnapshot:
+    result: dict[str, tuple[ExamContentItem, ...]] = {}
+    ignored_empty: list[str] = []
+    for course in courses:
+        if course.school_form == "gymnasiet":
+            html = course_details[course.key].course.central_content.text
+        else:
+            html = "\n".join(
+                content.text
+                for content in subject_details[course.subject_code].subject.central_contents
+                if content.year == course.year_band
+            )
+        items, empty_bullets = _parse_content_items(course.key, html)
+        result[course.key] = items
+        if empty_bullets:
+            ignored_empty.append(course.key)
+    return ContentSnapshot(items=result, ignored_empty_bullet_keys=tuple(sorted(ignored_empty)))
 
 
 def _band_label(year: str, contents: list[CentralContent]) -> str:
@@ -206,14 +307,18 @@ def build_payloads(
     *,
     today: date,
     generated_at: str,
+    course_details: dict[str, CourseDetailResponse],
 ) -> dict[str, bytes]:
     """Produce deterministic bytes, including provenance, from recorded inputs."""
     courses = map_course_catalog(
         courses_response, subjects_gy_response, subjects_gr_response, subject_details, today=today
     )
     catalog = ExamCourseCatalog(generated_at=generated_at, source=SOURCE, courses=courses)
+    snapshot = map_content_catalog(courses, course_details, subject_details)
+    content = snapshot.items
     urls = [*LIST_URLS.values()]
     urls.extend(f"{SOURCE}/v1/subjects/{code}" for code in sorted(subject_details))
+    urls.extend(f"{SOURCE}/v1/courses/{code}" for code in sorted(course_details))
     manifest = {
         "generated_at": generated_at,
         "valid_on": today.isoformat(),
@@ -222,9 +327,18 @@ def build_payloads(
             sorted(Counter(course.reform or course.school_form for course in courses).items())
         ),
         "total": len(courses),
+        "source_gaps": {
+            "central_content_without_bullets": sorted(
+                key for key, items in content.items() if not items
+            ),
+            "ignored_empty_bullets": list(snapshot.ignored_empty_bullet_keys),
+        },
     }
     return {
         "catalog.json": _json_bytes(catalog.model_dump(mode="json")),
+        "content.json": _json_bytes(
+            {key: [item.model_dump() for item in items] for key, items in content.items()}
+        ),
         "BUILD.json": _json_bytes(manifest),
     }
 
@@ -244,7 +358,7 @@ def _read_response[Model: BaseModel](
     if raw_dir is not None:
         payload = (raw_dir / name).read_bytes()
     else:
-        with urlopen(url, timeout=60) as response:
+        with urlopen(quote(url, safe=":/?=&"), timeout=60) as response:
             payload = response.read()
     return model.model_validate_json(payload)
 
@@ -275,6 +389,19 @@ def main() -> None:
         )
         for subject in subjects_gr.subjects
     }
+    catalog_entries = map_course_catalog(
+        courses, subjects_gy, subjects_gr, details, today=date.today()
+    )
+    codes = [entry.key for entry in catalog_entries if entry.school_form == "gymnasiet"]
+
+    def read_course(code: str) -> tuple[str, CourseDetailResponse]:
+        detail = _read_response(
+            f"course-{code}.json", f"{SOURCE}/v1/courses/{code}", args.raw_dir, CourseDetailResponse
+        )
+        return code, detail
+
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        course_details = dict(executor.map(read_course, codes))
     generated_at = datetime.now(timezone.utc).isoformat()
     if args.check:
         generated_at = json.loads((args.output_dir / "BUILD.json").read_text())["generated_at"]
@@ -285,6 +412,7 @@ def main() -> None:
         details,
         today=date.today(),
         generated_at=generated_at,
+        course_details=course_details,
     )
     if args.check:
         mismatches = check_payloads(args.output_dir, payloads)

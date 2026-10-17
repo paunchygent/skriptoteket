@@ -50,6 +50,9 @@ class NativeGap(BaseModel):
     gap_id: str = Field(pattern=GAP_ID_PATTERN)
     accepted_values: tuple[str, ...] = ()
     excluded_automatic_values: tuple[str, ...] = ()
+    # Dropdown lists and their key are local to this gap, not the question's choices.
+    options: tuple[NativeChoice, ...] = ()
+    correct_option_id: str | None = Field(default=None, pattern=CHOICE_ID_PATTERN)
     automatic_values: tuple[str, ...] = ()
 
     @field_validator("accepted_values")
@@ -72,6 +75,9 @@ class NativeGap(BaseModel):
         accepted value is dropped, and an accepted value's removal drops the
         automatic values that depended on it in the same save.
         """
+        if info.data.get("options") or info.data.get("correct_option_id") is not None:
+            if values:
+                raise ValueError("inline_choice gaps must not carry automatic typed values")
         accepted = info.data.get("accepted_values") or ()
         excluded = {
             normalize_answer(value) for value in info.data.get("excluded_automatic_values", ())

@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+from unittest.mock import AsyncMock
 from uuid import UUID, uuid4
 
 import pytest
@@ -15,10 +16,17 @@ from skriptoteket.application.scripting.handlers.rename_vault_file import Rename
 from skriptoteket.application.scripting.vault import RenameVaultFileCommand
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.scripting.vault import VaultFile, VaultFileSourceKind
+from skriptoteket.protocols.exam_index import ExamIndexRepositoryProtocol
 from tests.fixtures.identity_fixtures import make_user
 from tests.unit.application.scripting.handlers.vault_test_support import FakeUow, FakeVaultFileRepo
 
 _NOW = datetime(2026, 10, 16, tzinfo=UTC)
+
+
+def _handler(repo: FakeVaultFileRepo) -> RenameVaultFileHandler:
+    index = AsyncMock(spec=ExamIndexRepositoryProtocol)
+    index.get.return_value = None
+    return RenameVaultFileHandler(uow=FakeUow(), vault_files=repo, index=index)
 
 
 def test_conversion_version_name_keeps_teacher_rename_after_the_first_version() -> None:
@@ -65,7 +73,7 @@ async def test_inaccessible_records_are_not_found_and_never_changed(case: str) -
     if case != "missing":
         await repo.create(file=file)
     with pytest.raises(DomainError) as caught:
-        await RenameVaultFileHandler(uow=FakeUow(), vault_files=repo).handle(
+        await _handler(repo).handle(
             actor=actor,
             command=RenameVaultFileCommand(file_id=file.id, stem="Nytt"),
         )
@@ -86,7 +94,7 @@ async def test_collision_is_owner_scoped_and_only_counts_active_records(other_st
     )
     await repo.create(file=file)
     await repo.create(file=other)
-    handler = RenameVaultFileHandler(uow=FakeUow(), vault_files=repo)
+    handler = _handler(repo)
     command = RenameVaultFileCommand(file_id=file.id, stem="Nytt")
     if other_state == "active":
         with pytest.raises(DomainError) as caught:
@@ -132,7 +140,7 @@ async def test_lineage_rename_renames_the_exam_file_including_trash_and_spares_i
     unrelated = _file(actor.id, document_lineage_id=uuid4())
     for file in (exam, trashed, export, unrelated):
         await repo.create(file=file)
-    result = await RenameVaultFileHandler(uow=FakeUow(), vault_files=repo).handle(
+    result = await _handler(repo).handle(
         actor=actor,
         command=RenameVaultFileCommand(file_id=exam.id, stem="Nytt"),
     )
@@ -154,7 +162,7 @@ async def test_non_exam_lineage_without_source_reference_keeps_last_suffix() -> 
     repo = FakeVaultFileRepo()
     file = _file(actor.id, document_lineage_id=uuid4(), source_artifact_id=None)
     await repo.create(file=file)
-    result = await RenameVaultFileHandler(uow=FakeUow(), vault_files=repo).handle(
+    result = await _handler(repo).handle(
         actor=actor,
         command=RenameVaultFileCommand(file_id=file.id, stem="Nytt"),
     )
@@ -188,11 +196,12 @@ async def test_standalone_rename_classifies_the_record_and_changes_only_it(
     unrelated = _file(actor.id)
     await repo.create(file=file)
     await repo.create(file=unrelated)
-    result = await RenameVaultFileHandler(uow=FakeUow(), vault_files=repo).handle(
+    result = await _handler(repo).handle(
         actor=actor,
         command=RenameVaultFileCommand(file_id=file.id, stem="Nytt"),
     )
     assert result.file.name == expected
+    assert result.exam_summary is None
     assert result.renamed_file_ids == (file.id,)
     updated = await repo.get_by_id(file_id=file.id)
     assert updated is not None

@@ -53,6 +53,14 @@ def _rebuild(
     data = document.model_dump()
     data["items"] = [dict(item.model_dump(), sequence=index) for index, item in enumerate(items, 1)]
     data["parents"] = [parent.model_dump() for parent in parents]
+    surviving_ids = {item.item_id for item in items}
+    data["header"]["tags"] = [
+        dict(
+            tag.model_dump(),
+            question_ids=tuple(value for value in tag.question_ids if value in surviving_ids),
+        )
+        for tag in document.header.tags
+    ]
     # Removing a child removes only assets that no remaining body/source uses.
     referenced = {
         asset_id

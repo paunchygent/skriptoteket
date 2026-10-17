@@ -189,7 +189,7 @@ def test_gap_fill_plan_blocks_when_any_gap_lacks_accepted_values() -> None:
     assert "accepted values for every gap" in plan.warnings[0]
 
 
-def test_automatic_item_with_non_positive_score_blocks_plan() -> None:
+def test_keyed_automatic_item_with_zero_score_passes_plan() -> None:
     plan = build_examnet_qti_package_plan(
         package_name="zero-score",
         items=(
@@ -209,8 +209,9 @@ def test_automatic_item_with_non_positive_score_blocks_plan() -> None:
         ),
     )
 
-    assert plan.status == ExamNetQtiPackageStatus.BLOCKED
-    assert any("needs a positive point value" in warning for warning in plan.warnings)
+    assert plan.status == ExamNetQtiPackageStatus.PASSED
+    assert plan.warnings == ()
+    assert plan.manual_follow_ups == ()
 
 
 def test_blocked_plan_refuses_package_bytes_but_still_reports() -> None:

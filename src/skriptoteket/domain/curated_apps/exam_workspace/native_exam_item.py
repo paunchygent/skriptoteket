@@ -16,6 +16,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_criteria import (
     NativeExamCriterion,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_import_record import (
+    NativeExamImportRecord,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_matching import (
     NativeMatchLeft,
     NativeMatchRight,
@@ -55,8 +58,8 @@ class NativeExamItem(BaseModel):
     facit_text: str | None = None  # the teacher's original facit wording, kept after undo (D2)
     body: tuple[NativeParagraph, ...] = Field(min_length=1)
     points: int | float | None = None
-    # One uniform positive two-decimal tick value per grid; never default saved grids.
-    tick_points: Decimal | None = Field(default=None, gt=0, decimal_places=2)
+    # One uniform non-negative two-decimal tick value per grid; never default saved grids.
+    tick_points: Decimal | None = Field(default=None, ge=0, decimal_places=2, allow_inf_nan=False)
     # Points no source stated per question: a printed section total split over its
     # questions (D6), or a prose marking guide's single-criterion estimate (R14).
     points_estimated: bool = False
@@ -73,16 +76,20 @@ class NativeExamItem(BaseModel):
     # The question's original conversion source, when a DOCX conversion built it; it is
     # what one-question retry reads, never the item's current content (D1).
     retry_source: NativeExamRetrySource | None = None
+    # Source wording and import-time decisions, independent of subsequent teacher edits.
+    import_record: NativeExamImportRecord | None = None
 
-    @field_validator("points")
+    @field_validator("points", mode="before")
     @classmethod
-    def _positive_finite_points(cls, points: int | float | None) -> int | float | None:
+    def _nonnegative_finite_points(cls, points: object) -> int | float | None:
         if points is None:
             return None
+        if isinstance(points, bool) or not isinstance(points, (int, float)):
+            raise ValueError("points must be a number")
         if isinstance(points, float) and not math.isfinite(points):
             raise ValueError("points must be finite")
-        if points <= 0:
-            raise ValueError("points must be positive")
+        if points < 0:
+            raise ValueError("points must be non-negative")
         return points
 
     @model_validator(mode="after")
@@ -110,7 +117,7 @@ class NativeExamItem(BaseModel):
                 raise ValueError("choice items need at least two choices")
             if self.gaps:
                 raise ValueError("choice items must not declare gaps")
-        elif self.kind is NativeExamItemKind.GAP_FILL:
+        elif self.kind in (NativeExamItemKind.GAP_FILL, NativeExamItemKind.INLINE_CHOICE):
             if not self.gaps:
                 raise ValueError("gap_fill items need at least one gap")
             if self.choices:
@@ -123,6 +130,7 @@ class NativeExamItem(BaseModel):
         else:
             if self.choices or self.gaps:
                 raise ValueError("free_text items carry no choices or gaps")
+        self._gap_options_invariants()
         self._criteria_invariants()
 
         self._answer_key_invariants(frozenset(choice_ids))
@@ -147,7 +155,7 @@ class NativeExamItem(BaseModel):
         has_key_data = (
             bool(key.correct_choice_ids)
             or bool(key.match_pairs)
-            or any(gap.accepted_values for gap in self.gaps)
+            or any(gap.accepted_values or gap.correct_option_id for gap in self.gaps)
         )
         if key.origin is NativeAnswerKeyOrigin.ABSENT:
             if has_key_data:
@@ -171,16 +179,34 @@ class NativeExamItem(BaseModel):
             if key.correct_choice_ids:
                 raise ValueError("gap_fill items key gaps, not choices")
             for gap in self.gaps:
+                if self.kind is NativeExamItemKind.INLINE_CHOICE:
+                    continue
                 if not gap.accepted_values:
                     raise ValueError(f"gap {gap.gap_id} needs accepted values for a keyed item")
+
+    def _gap_options_invariants(self) -> None:
+        for gap in self.gaps:
+            if self.kind is not NativeExamItemKind.INLINE_CHOICE:
+                if gap.options or gap.correct_option_id is not None:
+                    raise ValueError("only inline_choice gaps carry options and an option key")
+                continue
+            if gap.accepted_values or gap.automatic_values or gap.excluded_automatic_values:
+                raise ValueError("inline_choice gaps must not carry typed accepted values")
+            option_ids = [option.choice_id for option in gap.options]
+            if not option_ids:
+                raise ValueError("inline_choice gaps need an option list")
+            if len(set(option_ids)) != len(option_ids):
+                raise ValueError("gap option ids must be unique within the gap")
+            if gap.correct_option_id is None or gap.correct_option_id not in option_ids:
+                raise ValueError("inline_choice gaps need exactly one correct option in their list")
 
     def _tick_points_invariants(self) -> None:
         """One uniform tick value per grid: points are exactly tick value × ticks (T2).
 
         A matching item always carries ``tick_points`` and a stored document is never
         defaulted, so an item saved under the old one-to-one rule fails validation. With
-        no key there are no ticks, so there are no derived points either: a positive
-        ``points`` can never equal a zero product.
+        no key there are no ticks, so only absent or zero points agree with the
+        derived total. A zero tick value makes a keyed grid worth zero points.
         """
 
         if self.kind is not NativeExamItemKind.MATCHING:
@@ -203,7 +229,7 @@ class NativeExamItem(BaseModel):
             for segment in paragraph.segments:
                 if isinstance(segment, NativeGapSegment):
                     placed.append(segment.gap_id)
-        if self.kind is not NativeExamItemKind.GAP_FILL:
+        if self.kind not in (NativeExamItemKind.GAP_FILL, NativeExamItemKind.INLINE_CHOICE):
             if placed:
                 raise ValueError("only gap_fill bodies may place gap segments")
             return
@@ -226,6 +252,16 @@ class NativeExamItem(BaseModel):
         criteria_points = sum(criterion.points for criterion in self.criteria)
         if self.points != criteria_points:
             raise ValueError("free_text criteria points must equal the item's points")
+
+    def body_gaps(self) -> tuple[NativeGap, ...]:
+        """Declared gaps in their validated body placement order."""
+        gaps = {gap.gap_id: gap for gap in self.gaps}
+        return tuple(
+            gaps[segment.gap_id]
+            for paragraph in self.body
+            for segment in paragraph.segments
+            if isinstance(segment, NativeGapSegment)
+        )
 
     def body_asset_ids(self) -> tuple[str, ...]:
         found: list[str] = []

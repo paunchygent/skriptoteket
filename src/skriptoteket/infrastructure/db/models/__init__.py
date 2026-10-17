@@ -67,6 +67,7 @@ from skriptoteket.infrastructure.db.models.exam_converter_correction_session imp
     ExamConverterCorrectionIntentModel,
     ExamConverterCorrectionSessionModel,
 )
+from skriptoteket.infrastructure.db.models.exam_index import ExamIndexModel
 from skriptoteket.infrastructure.db.models.identity_projection import (
     IdentityProjectionEventModel,
     IdentityProjectionModel,
@@ -81,6 +82,7 @@ from skriptoteket.infrastructure.db.models.user_favorite import (
 )
 
 __all__ = [
+    "ExamIndexModel",
     "AllowedDomainModel",
     "BlockedDomainModel",
     "ClassroomPlannerGuestUpgradeConsumptionModel",

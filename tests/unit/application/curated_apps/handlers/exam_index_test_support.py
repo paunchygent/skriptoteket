@@ -1,0 +1,39 @@
+"""In-memory index port joined against the shared vault fake for handler tests."""
+
+from uuid import UUID
+
+from skriptoteket.domain.curated_apps.exam_workspace.exam_index import ExamIndexEntry, SavedExam
+from tests.unit.application.curated_apps.handlers.vault_file_repository_test_support import (
+    InMemoryVaultFileRepository,
+)
+
+
+class InMemoryExamIndexRepository:
+    def __init__(self, vault_files: InMemoryVaultFileRepository) -> None:
+        self.entries: dict[tuple[UUID, UUID], ExamIndexEntry] = {}
+        self.vault_files = vault_files
+
+    async def upsert(self, *, entry: ExamIndexEntry) -> None:
+        self.entries[entry.owner_user_id, entry.lineage_id] = entry
+
+    async def list_for_owner(self, *, owner_user_id: UUID) -> list[SavedExam]:
+        exams = []
+        for entry in self.entries.values():
+            file = self.vault_files.files.get(entry.head_vault_file_id)
+            if entry.owner_user_id != owner_user_id or file is None or file.deleted_at is not None:
+                continue
+            assert file.document_version is not None
+            exams.append(
+                SavedExam(**entry.model_dump(), name=file.name, version=file.document_version)
+            )
+        return exams
+
+    async def get(self, *, owner_user_id: UUID, lineage_id: UUID) -> SavedExam | None:
+        return next(
+            (
+                exam
+                for exam in await self.list_for_owner(owner_user_id=owner_user_id)
+                if exam.lineage_id == lineage_id
+            ),
+            None,
+        )

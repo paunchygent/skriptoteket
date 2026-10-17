@@ -22,6 +22,7 @@ import {
   PARTIAL_GAP_KEY_GUIDANCE,
   partialGapKeyCopy,
 } from "./examWorkspaceAnswerKeyRules";
+import { buildGap } from "./examWorkspaceKeyedItems.specSupport";
 import {
   buildMatchingItem,
   buildMatchingItemWithDistractor,
@@ -32,6 +33,7 @@ function buildGapItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
   return {
     ai_suggestion: null,
     facit_text: null,
+    import_record: null,
     criteria: [],
     printed_label: null,
     retry_source: null,
@@ -48,8 +50,8 @@ function buildGapItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
     ],
     choices: [],
     gaps: [
-      { accepted_values: ["100"], automatic_values: [], excluded_automatic_values: [], gap_id: "gap_001" },
-      { accepted_values: [], automatic_values: [], excluded_automatic_values: [], gap_id: "gap_002" },
+      buildGap("gap_001", ["100"]),
+      buildGap("gap_002"),
     ],
     item_id: "item_001",
     kind: "gap_fill",
@@ -78,8 +80,8 @@ describe("isPartiallyKeyedGapItem", () => {
   it("accepts a gap item keyed in every gap", () => {
     const item = buildGapItem({
       gaps: [
-        { accepted_values: ["100"], automatic_values: [], excluded_automatic_values: [], gap_id: "gap_001" },
-        { accepted_values: ["0"], automatic_values: [], excluded_automatic_values: [], gap_id: "gap_002" },
+        buildGap("gap_001", ["100"]),
+        buildGap("gap_002", ["0"]),
       ],
     });
     expect(isPartiallyKeyedGapItem(item)).toBe(false);

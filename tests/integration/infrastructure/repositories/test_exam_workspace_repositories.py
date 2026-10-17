@@ -35,6 +35,9 @@ from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.scripting.vault import VaultFile, VaultFileSourceKind
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_container import (
+    ExamWorkspaceContainerCodec,
+)
 from skriptoteket.infrastructure.db.models.user_vault_file import UserVaultFileModel
 from skriptoteket.infrastructure.db.uow import SQLAlchemyUnitOfWork
 from skriptoteket.infrastructure.repositories.conversion_hub_jobs import (
@@ -42,6 +45,9 @@ from skriptoteket.infrastructure.repositories.conversion_hub_jobs import (
 )
 from skriptoteket.infrastructure.repositories.exam_answer_key_enrichment_jobs import (
     PostgreSQLExamAnswerKeyEnrichmentJobRepository,
+)
+from skriptoteket.infrastructure.repositories.exam_index_repository import (
+    PostgreSQLExamIndexRepository,
 )
 from skriptoteket.infrastructure.repositories.user_vault_file_repository import (
     PostgreSQLUserVaultFileRepository,
@@ -118,6 +124,8 @@ async def _save_document(
             vault_files=PostgreSQLUserVaultFileRepository(session),
             vault_usage=PostgreSQLUserVaultUsageRepository(session),
             vault_storage=storage,
+            index=PostgreSQLExamIndexRepository(session),
+            codec=ExamWorkspaceContainerCodec(),
             uow=SQLAlchemyUnitOfWork(session),
             clock=FixedClock(datetime.now(UTC)),
             settings=settings,

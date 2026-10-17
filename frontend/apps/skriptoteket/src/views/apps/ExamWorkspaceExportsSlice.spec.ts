@@ -55,7 +55,7 @@ vi.mock("./exam-converter/browserDownload", () => downloadMocks);
 
 /** The finished import: its poll status, and the conversion its fetched document carries. */
 const succeededConversion: ExamWorkspaceConversionStatus = {
-  job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null,
+  job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null, summary: null,
   document_revision: 1, questions_total: 0, questions_done: 0, units: [],
 };
 
@@ -199,11 +199,14 @@ describe("ExamWorkspaceView export slice", () => {
     );
   });
 
-  it("maps a missing answer key blocker to Swedish copy on the item row", async () => {
+  it.each([
+    ["missing_answer_key", "Frågan saknar facit. Fyll i facit eller låt AI föreslå ett."],
+    ["inline_choice_option_heading", "Rubrikformat är inte tillåtet i rullistealternativ."],
+  ])("maps %s to Swedish copy on the item row", async (reason, copy) => {
     apiMocks.downloadExamWorkspaceExport.mockRejectedValue(
       new ApiError({
         code: "VALIDATION_ERROR",
-        details: { blockers: [{ item_id: "item_002", reason: "missing_answer_key" }] },
+        details: { blockers: [{ item_id: "item_002", reason }] },
         message: "Provet har frågor som måste åtgärdas före export.",
         status: 422,
       }),
@@ -217,7 +220,7 @@ describe("ExamWorkspaceView export slice", () => {
     expect(downloadMocks.triggerBrowserDownload).not.toHaveBeenCalled();
     expect(
       wrapper.find('[data-test="exam-workspace-item-blockers-item_002"]').text(),
-    ).toContain("Frågan saknar facit. Fyll i facit eller låt AI föreslå ett.");
+    ).toContain(copy);
   });
 
   it("clears export blockers when a new version is saved", async () => {

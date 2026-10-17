@@ -1,4 +1,5 @@
 /** Teacher course choices travel through the real drawer, dirty state and toolbar save. */
+import { createTestingPinia } from "@pinia/testing";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ExamCourse, ExamWorkspaceDocumentResponse } from "../../api/examWorkspace";
@@ -29,7 +30,14 @@ const wrappers: ViewWrapper[] = [];
 let original: ExamWorkspaceDocumentResponse;
 
 async function openMetadata() {
-  const { wrapper } = await mountExamWorkspace({ document: "lineage-1" }, "desktop", document.body);
+  const pinia = createTestingPinia({
+    createSpy: vi.fn,
+    stubActions: false,
+    initialState: {
+      auth: { user: { id: "teacher-a", email: "teacher-a@example.test", role: "user", auth_provider: "local" } },
+    },
+  });
+  const { wrapper } = await mountExamWorkspace({ document: "lineage-1" }, "desktop", document.body, pinia);
   wrappers.push(wrapper);
   await wrapper.get('[data-test="exam-workspace-summary-title"]').trigger("click");
   return wrapper;
@@ -44,12 +52,14 @@ beforeEach(() => {
   for (const mock of Object.values(api)) mock.mockReset();
   rename.mockReset();
   original = buildResponse({ version: 1 });
-  original.document.header = { course: null, course_hint: "Lokalt temaprov", printed_total: 36 };
+  original.document.header = { course: null, course_hint: "Lokalt temaprov", printed_total: 36, tags: [] };
+  original.saved_document = original.document;
   api.getExamWorkspaceDocument.mockResolvedValue(original);
-  api.getExamCourseCatalog.mockResolvedValue({ courses });
+  api.getExamCourseCatalog.mockResolvedValue({ courses, registered_course_keys: [], generated_at: "2026-10-17T17:00:00Z" });
   api.listExamWorkspaceDocuments.mockResolvedValue({ documents: [] });
   api.saveExamWorkspaceDocument.mockImplementation(async (_id, payload) => ({
-    ...original, document: payload.document, summary: { ...original.summary, version: 2 },
+    ...original, document: payload.document, saved_document: payload.document,
+    summary: { ...original.summary, version: 2 },
   }));
 });
 afterEach(() => {
@@ -73,7 +83,7 @@ describe("ExamWorkspaceMetadataDrawer course save workflow", () => {
       expectedRevision: 1,
       document: expect.objectContaining({
         revision: 2,
-        header: { course: { key: "SVESVE02", name: "Svenska 2" }, course_hint: "Lokalt temaprov", printed_total: 36 },
+        header: { course: { key: "SVESVE02", name: "Svenska 2" }, course_hint: "Lokalt temaprov", printed_total: 36, tags: [] },
       }),
     }));
     expect(wrapper.find('[data-test="exam-workspace-dirty-pill"]').exists()).toBe(false);
@@ -92,7 +102,7 @@ describe("ExamWorkspaceMetadataDrawer course save workflow", () => {
     expect(wrapper.find('[data-test="exam-workspace-dirty-pill"]').exists()).toBe(true);
     await saveDocument(wrapper);
     expect(api.saveExamWorkspaceDocument).toHaveBeenCalledWith("lineage-1", expect.objectContaining({
-      document: expect.objectContaining({ header: { course: null, course_hint: "Lokalt temaprov", printed_total: 36 } }),
+      document: expect.objectContaining({ header: { course: null, course_hint: "Lokalt temaprov", printed_total: 36, tags: [] } }),
     }));
   });
 

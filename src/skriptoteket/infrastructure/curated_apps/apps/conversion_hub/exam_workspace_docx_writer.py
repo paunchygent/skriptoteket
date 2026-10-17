@@ -28,6 +28,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.exam_language_labels import
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeAssetSegment,
+    NativeGapSegment,
     NativeParagraph,
     NativeTextSegment,
 )
@@ -104,7 +105,7 @@ class ExamWorkspaceDocxWriter:
             if parent is not None and parent.item_ids[0] == item.item_id:
                 _write_shared_body(output, parent.instruction, assets_by_id=assets_by_id)
             output.add_heading(labels.item_title(item), level=3)
-            for line in item.plain_text_lines():
+            for line in _item_text_lines(item):
                 output.add_paragraph(line)
             output.add_paragraph(_points_line(item, labels))
             if item.kind in _CHOICE_KINDS:
@@ -157,6 +158,25 @@ class ExamWorkspaceDocxWriter:
             )
 
 
+def _item_text_lines(item: NativeExamItem) -> tuple[str, ...]:
+    if item.kind is not NativeExamItemKind.INLINE_CHOICE:
+        return item.plain_text_lines()
+    gaps = {gap.gap_id: gap for gap in item.gaps}
+    lines: list[str] = []
+    for paragraph in item.body:
+        parts: list[str] = []
+        for segment in paragraph.segments:
+            if isinstance(segment, NativeTextSegment):
+                parts.append(segment.text)
+            elif isinstance(segment, NativeGapSegment):
+                options = " / ".join(
+                    body_plain_text(option.body) for option in gaps[segment.gap_id].options
+                )
+                parts.append(f"[{options}]")
+        lines.append("".join(parts))
+    return tuple(lines)
+
+
 def _points_line(item: NativeExamItem, labels: ExamLanguageLabels) -> str:
     return labels.points_line(None if item.points is None else _format_points(item.points))
 
@@ -193,6 +213,20 @@ def _facit_lines(item: NativeExamItem, labels: ExamLanguageLabels) -> tuple[str,
         return tuple(
             labels.keyed(labels.gap_label(index), " / ".join(gap.accepted_values))
             for index, gap in enumerate(item.gaps, start=1)
+        )
+    if item.kind is NativeExamItemKind.INLINE_CHOICE:
+        return tuple(
+            labels.keyed(
+                labels.gap_label(index),
+                body_plain_text(
+                    next(
+                        option.body
+                        for option in gap.options
+                        if option.choice_id == gap.correct_option_id
+                    )
+                ),
+            )
+            for index, gap in enumerate(item.body_gaps(), start=1)
         )
     if item.kind is NativeExamItemKind.MATCHING and item.answer_key.match_pairs:
         left = {entry.left_id: body_plain_text(entry.body) for entry in item.match_left}

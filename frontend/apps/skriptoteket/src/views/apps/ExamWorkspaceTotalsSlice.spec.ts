@@ -32,7 +32,7 @@ const downloadMocks = vi.hoisted(() => ({ triggerBrowserDownload: vi.fn() }));
 vi.mock("./exam-converter/browserDownload", () => downloadMocks);
 
 const succeeded: ExamWorkspaceConversionStatus = {
-  job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null,
+  job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null, summary: null,
   document_revision: 1, questions_total: 0, questions_done: 0, units: [],
 };
 const mounted: ViewWrapper[] = [];
@@ -40,7 +40,7 @@ const mounted: ViewWrapper[] = [];
 function documentWithTotals(printed: number | null, points: (number | null)[]): NativeExamDocument {
   return {
     ...buildDocument(),
-    header: { course_hint: "Svenska 2", printed_total: printed },
+    header: { course_hint: "Svenska 2", printed_total: printed, tags: [] },
     items: points.map((value, index) => ({ ...buildFreeTextItem(index + 1), points: value })),
   };
 }
@@ -49,6 +49,7 @@ async function openDocument(document: NativeExamDocument) {
   apiMocks.getExamWorkspaceDocument.mockResolvedValue({
     ...buildResponse({ version: 1, conversion: succeeded }),
     document,
+    saved_document: document,
   });
   const { wrapper } = await mountExamWorkspace();
   mounted.push(wrapper);

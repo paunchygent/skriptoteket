@@ -11,6 +11,7 @@
 import { describe, expect, it } from "vitest";
 
 import ExamWorkspaceGapPopover from "./ExamWorkspaceGapPopover.vue";
+import { buildGap } from "./examWorkspaceKeyedItems.specSupport";
 import { buildGapItem, mountEditor, paragraph } from "./ExamWorkspaceBodyEditor.specSupport";
 
 function itemWithAutomaticValue() {
@@ -25,8 +26,8 @@ function itemWithAutomaticValue() {
       },
     ],
     gaps: [
-      { accepted_values: ["100"], automatic_values: ["hundra"], excluded_automatic_values: [], gap_id: "gap_001" },
-      { accepted_values: ["0"], automatic_values: [], excluded_automatic_values: [], gap_id: "gap_002" },
+      buildGap("gap_001", ["100"], { automatic_values: ["hundra"] }),
+      buildGap("gap_002", ["0"]),
     ],
   });
 }

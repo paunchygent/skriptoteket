@@ -85,8 +85,8 @@ function buildTwoGapResponse(
                 },
               ],
               gaps: [
-                { accepted_values: ["100"], automatic_values: [], excluded_automatic_values: [], gap_id: "gap_001" },
-                { accepted_values: ["0"], automatic_values: [], excluded_automatic_values: [], gap_id: "gap_002" },
+                { accepted_values: ["100"], automatic_values: [], excluded_automatic_values: [], gap_id: "gap_001", options: [], correct_option_id: null },
+                { accepted_values: ["0"], automatic_values: [], excluded_automatic_values: [], gap_id: "gap_002", options: [], correct_option_id: null },
               ],
             }
           : item,
@@ -97,7 +97,7 @@ function buildTwoGapResponse(
 
 /** The finished import: its poll status, and the conversion its fetched document carries. */
 const succeededConversion: ExamWorkspaceConversionStatus = {
-  job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null,
+  job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null, summary: null,
   document_revision: 1, questions_total: 0, questions_done: 0, units: [],
 };
 
@@ -114,7 +114,7 @@ beforeEach(() => {
     apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(
       buildResponse({ conversion: succeededConversion, version: 1 }),
     );
-    return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null,
+    return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null, summary: null,
       document_revision: null, questions_total: 0, questions_done: 0, units: [] };
   });
 });
@@ -194,7 +194,7 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
       { heading_level: null, segments: [{ kind: "gap", gap_id: "gap_001" }] },
     ]);
     expect(added.gaps).toEqual([
-      { gap_id: "gap_001", accepted_values: [], automatic_values: [], excluded_automatic_values: [] },
+      { gap_id: "gap_001", accepted_values: [], automatic_values: [], excluded_automatic_values: [], options: [], correct_option_id: null },
     ]);
     expect(added.points).toBeNull();
   });
@@ -303,7 +303,7 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
   it("refuses to save a gap item keyed in only some gaps and says why in Swedish", async () => {
     apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
       apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildTwoGapResponse());
-      return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null,
+      return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null, summary: null,
       document_revision: null, questions_total: 0, questions_done: 0, units: [] };
     });
     const { wrapper } = await mountExamWorkspace();
@@ -329,7 +329,7 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
   it("names every partially keyed gap item in the plural refusal copy", async () => {
     apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
       apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildTwoGapResponse(["item_004", "item_005"]));
-      return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null,
+      return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null, summary: null,
       document_revision: null, questions_total: 0, questions_done: 0, units: [] };
     });
     const { wrapper } = await mountExamWorkspace();

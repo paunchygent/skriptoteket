@@ -14,6 +14,7 @@ export function buildMatchingItem(overrides: Partial<NativeExamItem> = {}): Nati
   return {
     ai_suggestion: null,
     facit_text: null,
+    import_record: null,
     criteria: [],
     printed_label: null,
     retry_source: null,

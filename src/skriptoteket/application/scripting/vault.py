@@ -5,6 +5,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from skriptoteket.application.curated_apps.exam_workspace import ExamWorkspaceDocumentSummary
 from skriptoteket.domain.scripting.file_refs import FileRef
 from skriptoteket.domain.scripting.vault import VaultFileSourceKind, VaultListSort, VaultListState
 
@@ -110,3 +111,4 @@ class RenameVaultFileResult(BaseModel):
 
     file: VaultFileInfo
     renamed_file_ids: tuple[UUID, ...] = ()
+    exam_summary: ExamWorkspaceDocumentSummary | None = None

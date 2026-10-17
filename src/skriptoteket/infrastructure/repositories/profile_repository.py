@@ -44,6 +44,7 @@ class PostgreSQLProfileRepository(ProfileRepositoryProtocol):
                 profile.classroom_planner_tutorial_seen_sections
             ),
             exam_courses=profile.exam_courses.model_dump(),
+            exam_list_ordering=profile.exam_list_ordering,
             locale=profile.locale,
             created_at=profile.created_at,
             updated_at=profile.updated_at,

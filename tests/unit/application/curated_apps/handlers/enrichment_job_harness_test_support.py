@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 from datetime import timedelta
+from unittest.mock import AsyncMock
 from uuid import UUID, uuid4
 
 from pydantic import JsonValue
@@ -31,6 +32,12 @@ from skriptoteket.application.curated_apps.exam_conversion import ExamConversion
 from skriptoteket.application.curated_apps.handlers.conversion_hub_jobs import ConversionHubUpload
 from skriptoteket.application.curated_apps.handlers.exam_answer_key_enrichment_jobs import (
     ProcessExamAnswerKeyEnrichmentJobHandler,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_content_tags import (
+    ProcessExamContentSuggestionsHandler,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_digiexam_jobs import (
+    ProcessExamWorkspaceDigiExamJobHandler,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
     StructuredLLMProviderError,
@@ -165,6 +172,8 @@ class _Harness:
             uow=FakeUow(),
             clock=FixedClock(_NOW),
             id_generator=UUIDGenerator(),
+            digiexam_handler=AsyncMock(spec=ProcessExamWorkspaceDigiExamJobHandler),
+            content_tags_handler=AsyncMock(spec=ProcessExamContentSuggestionsHandler),
             docx_handler=docx_job_handler(
                 enrichment_jobs=self.enrichment_jobs,
                 proposed_overlays=self.proposed_overlays,

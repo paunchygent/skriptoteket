@@ -2,7 +2,7 @@
 
 Purpose:
     Prove that the local package preflight rejects refuted constructions:
-    non-positive map entries, orphaned scoring, uncovered matching left rows,
+    negative or non-finite map entries, orphaned scoring, uncovered matching left rows,
     missing qti-assessment-test wiring, and shuffle delivery attributes.
 
 Relationships:
@@ -52,18 +52,34 @@ def test_unmutated_sample_package_passes_contract_preflight() -> None:
     assert report.errors == ()
 
 
-def test_non_positive_map_entry_fails_preflight() -> None:
+@pytest.mark.parametrize("mapped_value", ["0", "0.0"])
+def test_zero_map_entry_passes_preflight(mapped_value: str) -> None:
     plan = _sample_plan("single-choice-mcq")
     package_bytes = _mutated_zip_bytes(
         plan,
         "items/item_001.xml",
-        lambda xml: _replaced(xml, 'mapped-value="4"', 'mapped-value="0"'),
+        lambda xml: _replaced(xml, 'mapped-value="4"', f'mapped-value="{mapped_value}"'),
+    )
+
+    report = _preflight(plan, package_bytes)
+
+    assert report.package_status == ExamNetQtiPackageStatus.PASSED
+    assert report.errors == ()
+
+
+@pytest.mark.parametrize("mapped_value", ["-1", "-0.5", "NaN", "INF", "-INF"])
+def test_negative_or_nonfinite_map_entry_fails_preflight(mapped_value: str) -> None:
+    plan = _sample_plan("single-choice-mcq")
+    package_bytes = _mutated_zip_bytes(
+        plan,
+        "items/item_001.xml",
+        lambda xml: _replaced(xml, 'mapped-value="4"', f'mapped-value="{mapped_value}"'),
     )
 
     report = _preflight(plan, package_bytes)
 
     assert report.package_status == ExamNetQtiPackageStatus.FAILED
-    assert "must be a positive number" in report.errors[0]
+    assert "must be a finite non-negative number" in report.errors[0]
 
 
 def test_mapping_without_correct_response_fails_preflight() -> None:

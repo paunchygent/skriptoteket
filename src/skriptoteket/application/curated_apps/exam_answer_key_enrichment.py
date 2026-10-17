@@ -35,7 +35,9 @@ class ExamAnswerKeySourceKind(StrEnum):
 
     DXE = "dxe"
     WORKSPACE = "workspace"
+    CONTENT_TAGS = "content_tags"
     DOCX_IMPORT = "docx_import"
+    DIGIEXAM_IMPORT = "digiexam_import"
 
 
 class ExamAnswerKeyEnrichmentJob(BaseModel):
@@ -78,6 +80,23 @@ class ExamAnswerKeyEnrichmentJob(BaseModel):
     def _source_kind_invariants(self) -> ExamAnswerKeyEnrichmentJob:
         """Check-style invariant: each source lane carries its own binding."""
 
+        if self.source_kind is ExamAnswerKeySourceKind.DIGIEXAM_IMPORT:
+            if self.workspace_lineage_id is None or self.workspace_document_revision != 1:
+                raise ValueError("DigiExam imports require a version-one workspace binding")
+            if self.conversion_job_id is not None or self.source_docx is not None:
+                raise ValueError("DigiExam imports carry no converter or DOCX binding")
+            if (
+                self.workspace_request_json is not None
+                or self.workspace_suggestions_json is not None
+            ):
+                raise ValueError("DigiExam imports carry no answer-key suggestion request")
+            terminal = self.status in {
+                ExamAnswerKeyEnrichmentJobStatus.SUCCEEDED,
+                ExamAnswerKeyEnrichmentJobStatus.FAILED,
+            }
+            if terminal != (self.source_dxe is None):
+                raise ValueError("DigiExam bytes exist only while import is unfinished")
+            return self
         if self.source_kind is ExamAnswerKeySourceKind.DOCX_IMPORT:
             if self.workspace_lineage_id is None or self.workspace_document_revision != 1:
                 raise ValueError("docx import jobs require a version-one workspace binding")
@@ -92,7 +111,10 @@ class ExamAnswerKeyEnrichmentJob(BaseModel):
             return self
         if self.source_docx is not None:
             raise ValueError("only docx import jobs carry source_docx")
-        if self.source_kind is not ExamAnswerKeySourceKind.WORKSPACE and (
+        if self.source_kind not in {
+            ExamAnswerKeySourceKind.WORKSPACE,
+            ExamAnswerKeySourceKind.CONTENT_TAGS,
+        } and (
             self.workspace_request_json is not None or self.workspace_suggestions_json is not None
         ):
             raise ValueError("only workspace jobs carry sent content or suggestions")

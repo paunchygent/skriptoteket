@@ -48,6 +48,9 @@ class UserProfileModel(Base):
         server_default=text('\'{"school_forms": [], "course_keys": []}\'::jsonb'),
         default=_empty_exam_courses,
     )
+    exam_list_ordering: Mapped[str] = mapped_column(
+        String(16), nullable=False, server_default="course", default="course"
+    )
     locale: Mapped[str] = mapped_column(
         String(16),
         nullable=False,

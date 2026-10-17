@@ -62,6 +62,13 @@ async def process_next_answer_key_enrichment_job(
                 lease_ttl=lease_ttl,
                 source_kind=ExamAnswerKeySourceKind.DOCX_IMPORT,
             )
+            if expired is None:
+                expired = await handler.fail_next_expired(
+                    worker_id=worker_id,
+                    now=now,
+                    lease_ttl=lease_ttl,
+                    source_kind=ExamAnswerKeySourceKind.DIGIEXAM_IMPORT,
+                )
         if expired is not None:
             logger.warning(
                 "Answer-key enrichment job fail-closed after worker lease expiry",
@@ -82,6 +89,13 @@ async def process_next_answer_key_enrichment_job(
                     lease_ttl=lease_ttl,
                     source_kind=ExamAnswerKeySourceKind.DOCX_IMPORT,
                 )
+                if job is None:
+                    job = await jobs.claim_next(
+                        worker_id=worker_id,
+                        now=now,
+                        lease_ttl=lease_ttl,
+                        source_kind=ExamAnswerKeySourceKind.DIGIEXAM_IMPORT,
+                    )
         if job is None:
             return False
         logger.info(

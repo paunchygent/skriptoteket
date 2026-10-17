@@ -6,7 +6,7 @@
  *   save, so the teacher sees them at the question and a save is refused
  *   with Swedish copy naming the questions instead of a generic failure.
  *   Mirrors these `NativeExamItem` field rules exactly: points must be
- *   greater than zero (`_positive_finite_points`), a choice's rich body must
+ *   non-negative and finite (`_nonnegative_finite_points`), a choice's rich body must
  *   not be empty (`NativeChoice.body`, text segments with `min_length=1`),
  *   and so must a matching entry's. A free-text item's criteria must have
  *   non-empty text and whole points of at least 1, only free-text items
@@ -42,7 +42,7 @@ export const CRITERIA_POINTS_MISMATCH_GUIDANCE =
 export const CRITERIA_ON_WRONG_KIND_GUIDANCE = "Endast fritextfrågor kan ha kriterier.";
 
 export function hasNonPositivePoints(item: NativeExamItem): boolean {
-  return typeof item.points === "number" && item.points <= 0;
+  return typeof item.points === "number" && (!Number.isFinite(item.points) || item.points < 0);
 }
 
 export function isEmptyChoiceBody(choice: NativeExamItem["choices"][number]): boolean {

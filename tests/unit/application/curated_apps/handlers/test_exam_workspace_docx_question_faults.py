@@ -14,7 +14,10 @@ from uuid import UUID
 import pytest
 from pydantic import JsonValue
 
-from skriptoteket.application.curated_apps.handlers import exam_workspace_docx_pipeline
+from skriptoteket.application.curated_apps.handlers import (
+    exam_workspace_docx_pipeline,
+    exam_workspace_docx_publication,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_state import (
     DocxBuildState,
 )
@@ -264,7 +267,7 @@ async def test_a_merge_failing_on_one_batch_reviews_only_that_batch(baseline, mo
 async def test_a_provisional_build_failing_on_one_batch_reviews_only_that_batch(
     baseline, monkeypatch
 ):
-    build = exam_workspace_docx_pipeline.provisional_result
+    build = exam_workspace_docx_publication.provisional_result
     previous_pending: list[frozenset[str] | None] = [None]
     failed: list[set[str]] = []
 
@@ -282,7 +285,7 @@ async def test_a_provisional_build_failing_on_one_batch_reviews_only_that_batch(
         previous_pending[0] = pending
         return build(state, families, pending, governed)
 
-    monkeypatch.setattr(exam_workspace_docx_pipeline, "provisional_result", failing_build)
+    monkeypatch.setattr(exam_workspace_docx_publication, "provisional_result", failing_build)
     outcome = await _convert()
 
     assert failed, "the provisional build never met the current batch's content"
@@ -292,7 +295,7 @@ async def test_a_provisional_build_failing_on_one_batch_reviews_only_that_batch(
 async def test_a_progress_update_failing_on_one_batch_reviews_only_that_batch(
     baseline, monkeypatch
 ):
-    update = exam_workspace_docx_pipeline.conversion_update
+    update = exam_workspace_docx_publication.conversion_update
     previous_filled: list[set[str]] = [set()]
     failed: list[set[str]] = []
 
@@ -315,7 +318,7 @@ async def test_a_progress_update_failing_on_one_batch_reviews_only_that_batch(
         previous_filled[0] = set(filled)
         return update(document, families, filled, pending, assets_by_id=assets_by_id)
 
-    monkeypatch.setattr(exam_workspace_docx_pipeline, "conversion_update", failing_update)
+    monkeypatch.setattr(exam_workspace_docx_publication, "conversion_update", failing_update)
     outcome = await _convert()
 
     assert failed, "the progress update never met the current batch's content"

@@ -123,6 +123,7 @@ function choiceItem(
   return {
     ai_suggestion: previous,
     facit_text: null,
+    import_record: null,
     criteria: [],
     printed_label: null,
     retry_source: null,

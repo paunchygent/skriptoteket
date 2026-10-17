@@ -154,7 +154,7 @@ describe("ExamWorkspaceView metadata", () => {
     vi.useFakeTimers();
     const conversion = {
       job_id: "job-1", lineage_id: "lineage-1", state: "running" as const,
-      error_message: null, document_revision: 1, questions_total: 8, questions_done: 1,
+      error_message: null, summary: null, document_revision: 1, questions_total: 8, questions_done: 1,
       units: [{ unit_id: "unit-1", question: true, state: "converting" as const, item_ids: ["item_001"] }],
     };
     const first = buildResponse({ version: 1, conversion });

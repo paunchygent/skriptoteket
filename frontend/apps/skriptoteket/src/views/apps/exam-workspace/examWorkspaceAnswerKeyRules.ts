@@ -70,7 +70,9 @@ export function isIncompleteMatchingItem(item: NativeExamItem): boolean {
  * data; only matching items key pairs; correct choices are declared
  * choices, exactly one for single choice and at least one for multiple
  * response; matching keys pair every left entry once; gap keys fill every
- * gap; neither keys choices.
+ * gap; inline-choice keys select an option declared in each gap and carry
+ * no typed values; neither
+ * gap kind keys top-level choices.
  */
 export function hasInvalidAnswerKey(item: NativeExamItem): boolean {
   const key = item.answer_key;
@@ -91,7 +93,7 @@ export function hasInvalidAnswerKey(item: NativeExamItem): boolean {
     return (
       key.correct_choice_ids.length > 0 ||
       key.match_pairs.length > 0 ||
-      item.gaps.some((gap) => gap.accepted_values.length > 0)
+      item.gaps.some((gap) => gap.accepted_values.length > 0 || gap.correct_option_id !== null)
     );
   }
   const declared = new Set(item.choices.map((choice) => choice.choice_id));
@@ -107,6 +109,14 @@ export function hasInvalidAnswerKey(item: NativeExamItem): boolean {
       return key.correct_choice_ids.length > 0 || isIncompleteMatchingItem(item);
     case "gap_fill":
       return key.correct_choice_ids.length > 0 || isPartiallyKeyedGapItem(item);
+    case "inline_choice":
+      return key.correct_choice_ids.length > 0 || item.gaps.some((gap) =>
+        gap.accepted_values.length > 0 ||
+        gap.automatic_values.length > 0 ||
+        gap.excluded_automatic_values.length > 0 ||
+        gap.correct_option_id === null ||
+        !gap.options.some((option) => option.choice_id === gap.correct_option_id),
+      );
   }
 }
 

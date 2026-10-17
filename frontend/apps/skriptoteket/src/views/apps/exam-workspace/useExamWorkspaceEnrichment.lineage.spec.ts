@@ -77,9 +77,11 @@ function keylessItem(): NativeExamItem {
 
 function examResponse(lineageId: string): ExamWorkspaceDocumentResponse {
   const base = buildResponse(keylessItem());
+  const document = { ...base.document, document_id: lineageId };
   return {
     ...base,
-    document: { ...base.document, document_id: lineageId },
+    document,
+    saved_document: document,
     summary: { ...base.summary, lineage_id: lineageId },
   };
 }

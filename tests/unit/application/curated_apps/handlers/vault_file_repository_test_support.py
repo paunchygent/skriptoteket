@@ -33,6 +33,33 @@ class InMemoryVaultFileRepository:
         self.calls.append(("get_by_id", {"file_id": file_id}))
         return self.files.get(file_id)
 
+    async def lock_lifecycle_rows(
+        self, *, user_id: UUID, file_id: UUID, document_lineage_id: UUID | None
+    ) -> list[VaultFile]:
+        self.calls.append(
+            (
+                "lock_lifecycle_rows",
+                {
+                    "user_id": user_id,
+                    "file_id": file_id,
+                    "document_lineage_id": document_lineage_id,
+                },
+            )
+        )
+        return sorted(
+            (
+                file
+                for file in self.files.values()
+                if file.user_id == user_id
+                and (
+                    file.document_lineage_id == document_lineage_id
+                    if document_lineage_id is not None
+                    else file.id == file_id
+                )
+            ),
+            key=lambda file: file.id,
+        )
+
     async def list_for_user(
         self,
         *,

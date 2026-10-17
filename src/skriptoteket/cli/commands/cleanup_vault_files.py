@@ -89,9 +89,8 @@ async def purge_expired_vault_files(
 
     deleted = 0
     affected_users: set[UUID] = set()
-    processed_lineages: set[tuple[UUID, UUID]] = set()
-
     while True:
+        processed_lineages: set[tuple[UUID, UUID]] = set()
         async with scope_factory() as selection:
             expired = await selection.vault_files.list_expired(
                 cutoff=cutoff, limit=_EXPIRED_BATCH_SIZE
@@ -125,13 +124,15 @@ async def purge_expired_vault_files(
                             await storage.delete_file(user_id=member.user_id, file_id=member.id)
                         for member in group:
                             await vault_files.delete(file_id=member.id)
-                        # Lock before summing so another lineage's concurrent save
-                        # cannot publish accounting between our sum and its update.
-                        await scope.vault_usage.get_for_update(user_id=item.user_id, now=now)
-                        await scope.vault_usage.recompute_total(user_id=item.user_id, now=now)
+                        if group:
+                            # Lock before summing so another lineage's concurrent save
+                            # cannot publish accounting between our sum and its update.
+                            await scope.vault_usage.get_for_update(user_id=item.user_id, now=now)
+                            await scope.vault_usage.recompute_total(user_id=item.user_id, now=now)
                 deleted += len(group)
-                affected_users.add(item.user_id)
-            if key is not None:
+                if group:
+                    affected_users.add(item.user_id)
+            if key is not None and group:
                 processed_lineages.add(key)
 
     return deleted, affected_users
@@ -150,19 +151,24 @@ async def _purge_group(
     outlive its exam while its payload is still on disk. An export whose exam is still
     active expires alone: only the trashed rows past the cutoff are purged, never a live
     exam or a format that still has time left. The item itself is one of the returned
-    rows while it still exists, so an empty group means an earlier purge in the same run
-    already took the row and its payload.
+    rows only while it is still expired under its row lock. An empty group means
+    the selected row was restored, no longer expired, or already purged.
     """
 
-    lineage_id = item.document_lineage_id
-    if lineage_id is None:
-        return [item]
-
-    members = await vault_files.list_exam_files(
+    # Lineage locks (when present) precede these UUID-ordered row locks, and
+    # usage locks follow them. Plain files use exactly the same row-lock route.
+    # Never use the selection snapshot to decide lifecycle or delete payloads.
+    members = await vault_files.lock_lifecycle_rows(
         user_id=item.user_id,
-        document_lineage_id=lineage_id,
-        include_deleted=True,
+        file_id=item.id,
+        document_lineage_id=item.document_lineage_id,
     )
+    target = next((member for member in members if member.id == item.id), None)
+    if target is None or target.deleted_at is None or target.deleted_at >= cutoff:
+        return []
+    if target.document_lineage_id is None:
+        return [target]
+
     exam_document = next((member for member in members if member.export_format is None), None)
     exam_is_expired = (
         exam_document is not None

@@ -1,0 +1,61 @@
+"""Printable exports must not silently discard dropdown options or the keyed label."""
+
+from html import escape
+from io import BytesIO
+from xml.etree import ElementTree
+from zipfile import ZipFile
+
+from skriptoteket.domain.curated_apps.exam_conversion.digiexam_examnet_pdf_contracts import (
+    DigiExamExamNetPdfStatus,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.examnet_pdf_export import (
+    native_exam_to_pdf_document,
+)
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub import (
+    exam_workspace_docx_writer,
+)
+from tests.unit.domain.curated_apps.exam_workspace.examnet_qti_export_test_support import (
+    document_of,
+)
+from tests.unit.domain.curated_apps.exam_workspace.inline_choice_test_support import (
+    inline_choice_item,
+)
+
+
+def test_docx_preserves_gap_local_lists_and_keys_in_placed_order() -> None:
+    content = exam_workspace_docx_writer.ExamWorkspaceDocxWriter().build_docx_bytes(
+        document_of((inline_choice_item(),))
+    )
+    with ZipFile(BytesIO(content)) as archive:
+        root = ElementTree.fromstring(archive.read("word/document.xml"))
+    ns = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
+    lines = [
+        "".join(node.itertext())
+        for paragraph in root.findall(".//w:p", ns)
+        for node in paragraph.findall("w:r/w:t", ns)
+    ]
+    text = "\n".join(lines)
+    prompt, key = text.split("Facit", maxsplit=1)
+    for label in ("Beta", "Alfa"):
+        for option in (1, 2, 3):
+            assert f"{label} {option} & <text>" in prompt
+    assert prompt.index("Beta 1 & <text>") < prompt.index("Alfa 1 & <text>")
+    assert "Lucka 1: Beta 2 & <text>" in key
+    assert "Lucka 2: Alfa 1 & <text>" in key
+    assert "choice_001" not in key
+    assert "choice_002" not in key
+
+
+def test_pdf_plan_preserves_options_and_actual_key_labels_not_raw_ids() -> None:
+    plan = native_exam_to_pdf_document(document_of((inline_choice_item(),)))
+    assert plan.status is DigiExamExamNetPdfStatus.SUCCESS
+    prompt, key = plan.html.split('<div class="answer-key">', maxsplit=1)
+    for label in ("Beta", "Alfa"):
+        for option in (1, 2, 3):
+            assert escape(f"{label} {option} & <text>") in prompt
+    assert prompt.index("Beta 1") < prompt.index("Alfa 1")
+    assert escape("Beta 2 & <text>") in key
+    assert escape("Alfa 1 & <text>") in key
+    assert escape("Alfa 2 & <text>") not in key
+    assert escape("Beta 1 & <text>") not in key
+    assert "choice_001" not in key

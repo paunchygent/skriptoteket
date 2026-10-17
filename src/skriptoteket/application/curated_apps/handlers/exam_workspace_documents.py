@@ -1,4 +1,4 @@
-"""Exam workspace document handlers: DOCX import, conversion status, reopen, list, and save.
+"""Exam workspace document handlers: DOCX import, conversion status, reopen, and save.
 
 Import queues one teacher DOCX as a background conversion. Each exam has one
 saved vault file and a separate bounded editor history. Reopen shows the current
@@ -21,7 +21,6 @@ from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
 from skriptoteket.application.curated_apps.exam_workspace import (
     ExamWorkspaceConversionStatus,
     ExamWorkspaceConversionUnit,
-    ExamWorkspaceDocumentListResponse,
     ExamWorkspaceDocumentResponse,
     ExamWorkspaceDocumentSummary,
     SaveExamWorkspaceDocumentRequest,
@@ -37,7 +36,6 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_me
     ConversionProgress,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_document_store import (
-    EXAM_WORKSPACE_SOURCE_ARTIFACT_PREFIX,
     ExamWorkspaceDocumentStore,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_editor_content import (
@@ -48,6 +46,7 @@ from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.exam_workspace.exam_course_catalog import (
     load_exam_course_catalog,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import NativeExamDocument
 from skriptoteket.domain.errors import DomainError, ErrorCode, validation_error
 from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.scripting.input_files import sanitize_input_filename
@@ -55,6 +54,7 @@ from skriptoteket.domain.scripting.vault import VaultFile
 from skriptoteket.domain.scripting.vault_names import rename_vault_filename
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.exam_answer_key import ExamAnswerKeyEnrichmentJobRepositoryProtocol
+from skriptoteket.protocols.exam_index import ExamIndexRepositoryProtocol
 from skriptoteket.protocols.exam_workspace import (
     ExamWorkspaceContainerCodecProtocol,
 )
@@ -71,7 +71,7 @@ def _document_not_found(lineage_id: UUID) -> DomainError:
     )
 
 
-def _summary(vault_file: VaultFile) -> ExamWorkspaceDocumentSummary:
+def _summary(vault_file: VaultFile, document: NativeExamDocument) -> ExamWorkspaceDocumentSummary:
     assert vault_file.document_lineage_id is not None
     assert vault_file.document_version is not None
     assert vault_file.document_saved_at is not None
@@ -81,11 +81,16 @@ def _summary(vault_file: VaultFile) -> ExamWorkspaceDocumentSummary:
         vault_file_id=vault_file.id,
         name=vault_file.name,
         saved_at=vault_file.document_saved_at,
+        title=document.title,
+        course_key=None if document.header.course is None else document.header.course.key,
     )
 
 
 class ImportExamWorkspaceDocumentHandler:
     """Import one teacher DOCX into a new exam workspace document."""
+
+    extension = ".docx"
+    source_kind = ExamAnswerKeySourceKind.DOCX_IMPORT
 
     def __init__(
         self,
@@ -106,12 +111,14 @@ class ImportExamWorkspaceDocumentHandler:
         self, *, actor: User, filename: str, content: bytes, course_key: str | None
     ) -> ExamWorkspaceConversionStatus:
         safe_name = sanitize_input_filename(input_filename=filename)
-        if not safe_name.lower().endswith(".docx"):
-            raise validation_error("Välj en .docx-fil.", details={"filename": safe_name})
+        if not safe_name.lower().endswith(self.extension):
+            raise validation_error(
+                f"Välj en {self.extension}-fil.", details={"filename": safe_name}
+            )
         if not content:
             raise validation_error("Filen saknar innehåll.")
         if len(content) > self._settings.VAULT_MAX_FILE_BYTES:
-            raise validation_error("Word-dokumentet är större än maxstorleken för Mina filer.")
+            raise validation_error("Filen är större än maxstorleken för Mina filer.")
 
         selected_course_key = (course_key or "").strip() or None
         if selected_course_key is not None:
@@ -132,11 +139,16 @@ class ImportExamWorkspaceDocumentHandler:
             job = await self._jobs.create(
                 job=ExamAnswerKeyEnrichmentJob(
                     id=self._id_generator.new_uuid(),
-                    source_kind=ExamAnswerKeySourceKind.DOCX_IMPORT,
+                    source_kind=self.source_kind,
                     owner_user_id=actor.id,
                     status=ExamAnswerKeyEnrichmentJobStatus.QUEUED,
                     input_filename=safe_name,
-                    source_docx=content,
+                    source_docx=content
+                    if self.source_kind is ExamAnswerKeySourceKind.DOCX_IMPORT
+                    else None,
+                    source_dxe=content
+                    if self.source_kind is ExamAnswerKeySourceKind.DIGIEXAM_IMPORT
+                    else None,
                     workspace_lineage_id=document_id,
                     workspace_document_revision=1,
                     workspace_course_key=selected_course_key,
@@ -150,7 +162,18 @@ class ImportExamWorkspaceDocumentHandler:
         )
 
 
-def conversion_status(job: ExamWorkspaceConversionJobView) -> ExamWorkspaceConversionStatus:
+class ImportExamWorkspaceDigiExamDocumentHandler(ImportExamWorkspaceDocumentHandler):
+    """Queue a bare DigiExam export without invoking answer-key enrichment."""
+
+    extension = ".dxe"
+    source_kind = ExamAnswerKeySourceKind.DIGIEXAM_IMPORT
+
+
+def conversion_status(
+    job: ExamWorkspaceConversionJobView,
+    *,
+    summary: ExamWorkspaceDocumentSummary | None = None,
+) -> ExamWorkspaceConversionStatus:
     assert job.workspace_lineage_id is not None
     progress = ConversionProgress.model_validate(job.conversion_progress or {})
     return ExamWorkspaceConversionStatus(
@@ -163,6 +186,7 @@ def conversion_status(job: ExamWorkspaceConversionJobView) -> ExamWorkspaceConve
         document_revision=progress.revision,
         questions_total=progress.questions_total,
         questions_done=progress.questions_done,
+        summary=summary,
         units=tuple(
             ExamWorkspaceConversionUnit(
                 unit_id=unit.unit_id,
@@ -179,18 +203,43 @@ def conversion_status(job: ExamWorkspaceConversionJobView) -> ExamWorkspaceConve
 class GetExamWorkspaceConversionStatusHandler:
     """Read one actor-owned background conversion without exposing source bytes."""
 
-    def __init__(self, *, jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol) -> None:
+    def __init__(
+        self,
+        *,
+        jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
+        index: ExamIndexRepositoryProtocol,
+    ) -> None:
         self._jobs = jobs
+        self._index = index
 
     async def handle(self, *, actor: User, job_id: UUID) -> ExamWorkspaceConversionStatus:
         job = await self._jobs.get_conversion_view(job_id=job_id)
         if (
             job is None
             or job.owner_user_id != actor.id
-            or job.source_kind is not ExamAnswerKeySourceKind.DOCX_IMPORT
+            or job.source_kind
+            not in {
+                ExamAnswerKeySourceKind.DOCX_IMPORT,
+                ExamAnswerKeySourceKind.DIGIEXAM_IMPORT,
+            }
         ):
             raise DomainError(code=ErrorCode.NOT_FOUND, message="Konverteringen finns inte.")
-        return conversion_status(job)
+        assert job.workspace_lineage_id is not None
+        exam = await self._index.get(owner_user_id=actor.id, lineage_id=job.workspace_lineage_id)
+        summary = (
+            None
+            if exam is None
+            else ExamWorkspaceDocumentSummary(
+                lineage_id=exam.lineage_id,
+                version=exam.version,
+                vault_file_id=exam.head_vault_file_id,
+                name=exam.name,
+                saved_at=exam.saved_at,
+                title=exam.title,
+                course_key=exam.course_key,
+            )
+        )
+        return conversion_status(job, summary=summary)
 
 
 class GetExamWorkspaceDocumentHandler:
@@ -245,25 +294,11 @@ class GetExamWorkspaceDocumentHandler:
         return ExamWorkspaceDocumentResponse(
             document=document,
             saved_document=container.document,
-            summary=_summary(head),
+            summary=_summary(head, container.document),
             history_cursor=history.cursor,
             notes=container.notes,
             conversion=None if job is None else conversion_status(job),
         )
-
-
-class ListExamWorkspaceDocumentsHandler:
-    """List the actor's workspace documents as head-version summaries."""
-
-    def __init__(self, *, vault_files: VaultFileRepositoryProtocol) -> None:
-        self._vault_files = vault_files
-
-    async def handle(self, *, actor: User) -> ExamWorkspaceDocumentListResponse:
-        heads = await self._vault_files.list_document_heads(
-            user_id=actor.id,
-            source_artifact_prefix=f"{EXAM_WORKSPACE_SOURCE_ARTIFACT_PREFIX}:",
-        )
-        return ExamWorkspaceDocumentListResponse(documents=tuple(_summary(head) for head in heads))
 
 
 class SaveExamWorkspaceDocumentHandler:
@@ -363,7 +398,7 @@ class SaveExamWorkspaceDocumentHandler:
             document=document,
             saved_document=document,
             history_cursor=history.cursor,
-            summary=_summary(vault_file),
+            summary=_summary(vault_file, document),
             notes=head_container.notes,
             conversion=None if job is None else conversion_status(job),
         )
@@ -447,7 +482,7 @@ class SaveExamWorkspaceDocumentHandler:
             return ExamWorkspaceDocumentResponse(
                 document=copied,
                 saved_document=copied,
-                summary=_summary(vault_file),
+                summary=_summary(vault_file, copied),
                 history_cursor=copy_id,
                 notes=saved.notes,
                 conversion=None,

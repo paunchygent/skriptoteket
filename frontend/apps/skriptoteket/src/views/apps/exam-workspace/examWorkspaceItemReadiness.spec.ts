@@ -18,6 +18,7 @@ import {
   examWorkspaceItemReadiness,
   examWorkspaceReadinessByItemId,
 } from "./examWorkspaceItemReadiness";
+import { buildGap } from "./examWorkspaceKeyedItems.specSupport";
 import {
   CRITERIA_POINTS_MISMATCH_GUIDANCE,
   INVALID_CRITERION_POINTS_GUIDANCE,
@@ -34,14 +35,15 @@ function buildChoiceItem(overrides: Partial<NativeExamItem> = {}): NativeExamIte
   return {
     ai_suggestion: null,
     facit_text: null,
+    import_record: null,
     criteria: [],
     printed_label: null,
     retry_source: null,
-    answer_key: { correct_choice_ids: ["choice_a"], match_pairs: [], origin: "teacher_authored" },
+    answer_key: { correct_choice_ids: ["choice_001"], match_pairs: [], origin: "teacher_authored" },
     body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Vilket ämne är en gas?" }] }],
     choices: [
-      { choice_id: "choice_a", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Syre" }] }] },
-      { choice_id: "choice_b", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Järn" }] }] },
+      { choice_id: "choice_001", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Syre" }] }] },
+      { choice_id: "choice_002", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Järn" }] }] },
     ],
     gaps: [],
     item_id: "item_001",
@@ -70,7 +72,7 @@ describe("examWorkspaceItemReadiness", () => {
 
   it("reports every server gate reason in order", () => {
     const item = buildChoiceItem({
-      answer_key: { correct_choice_ids: ["choice_a"], match_pairs: [], origin: "machine_proposed" },
+      answer_key: { correct_choice_ids: ["choice_001"], match_pairs: [], origin: "machine_proposed" },
       points: null,
       review: {
         confidence: null,
@@ -153,8 +155,8 @@ describe("examWorkspaceItemReadiness", () => {
     const item = buildChoiceItem({
       choices: [],
       gaps: [
-        { accepted_values: ["100"], automatic_values: [], excluded_automatic_values: [], gap_id: "gap_001" },
-        { accepted_values: [], automatic_values: [], excluded_automatic_values: [], gap_id: "gap_002" },
+        buildGap("gap_001", ["100"]),
+        buildGap("gap_002"),
       ],
       kind: "gap_fill",
       match_left: [],
@@ -164,27 +166,34 @@ describe("examWorkspaceItemReadiness", () => {
     expect(examWorkspaceItemReadiness(item)).toEqual(["partial_gap_key"]);
   });
 
-  it("reports points that are not greater than zero, but not missing points twice", () => {
-    expect(examWorkspaceItemReadiness(buildChoiceItem({ points: 0 }))).toEqual([
-      "non_positive_points",
-    ]);
+  it("accepts zero points and positive fractions, but reports negative points", () => {
+    expect(examWorkspaceItemReadiness(buildChoiceItem({ points: 0 }))).toEqual([]);
     expect(examWorkspaceItemReadiness(buildChoiceItem({ points: -2 }))).toEqual([
       "non_positive_points",
     ]);
     expect(examWorkspaceItemReadiness(buildChoiceItem({ points: 0.5 }))).toEqual([]);
   });
 
+  it.each([Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY])(
+    "reports non-finite points %s",
+    (points) => {
+      expect(examWorkspaceItemReadiness(buildChoiceItem({ points }))).toEqual([
+        "non_positive_points",
+      ]);
+    },
+  );
+
   it("reports a choice without text, and accepts whitespace as the server does", () => {
     const empty = buildChoiceItem({
       choices: [
-        { choice_id: "choice_a", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Syre" }] }] },
-        { choice_id: "choice_b", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "" }] }] },
+        { choice_id: "choice_001", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Syre" }] }] },
+        { choice_id: "choice_002", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "" }] }] },
       ],
     });
     const blank = buildChoiceItem({
       choices: [
-        { choice_id: "choice_a", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Syre" }] }] },
-        { choice_id: "choice_b", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: " " }] }] },
+        { choice_id: "choice_001", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Syre" }] }] },
+        { choice_id: "choice_002", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: " " }] }] },
       ],
     });
 
@@ -198,7 +207,7 @@ describe("examWorkspaceReadinessByItemId", () => {
     const ready = buildChoiceItem();
     const partial = buildChoiceItem({
       choices: [],
-      gaps: [{ accepted_values: [], automatic_values: [], excluded_automatic_values: [], gap_id: "gap_001" }],
+      gaps: [buildGap("gap_001")],
       item_id: "item_002",
       kind: "gap_fill",
       match_left: [],
@@ -215,10 +224,10 @@ describe("examWorkspaceReadinessByItemId", () => {
   it("maps the save-refused states to their Swedish copy", () => {
     const item = buildChoiceItem({
       choices: [
-        { choice_id: "choice_a", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Syre" }] }] },
-        { choice_id: "choice_b", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "" }] }] },
+        { choice_id: "choice_001", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Syre" }] }] },
+        { choice_id: "choice_002", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "" }] }] },
       ],
-      points: 0,
+      points: -1,
     });
 
     expect(examWorkspaceReadinessByItemId([item])).toEqual({

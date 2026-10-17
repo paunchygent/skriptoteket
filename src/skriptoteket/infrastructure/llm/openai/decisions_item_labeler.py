@@ -42,8 +42,15 @@ from skriptoteket.domain.curated_apps.exam_workspace.item_kind_boundary import (
     GAP_FILL_DEFINITION,
     labeler_boundary_sentences,
 )
+from skriptoteket.infrastructure.llm.openai.decisions_content_tags import (
+    build_content_decisions_payload,
+    parse_content_decisions_answers,
+)
 from skriptoteket.protocols.item_type_labeler import (
     ACCEPT_THRESHOLD,
+    ContentTagChoice,
+    ContentTagClassification,
+    ContentTagClassificationRequest,
     ItemTypeLabel,
     ItemTypeLabelerError,
     ItemTypeLabeling,
@@ -175,6 +182,49 @@ class OpenAIDecisionsItemTypeLabeler(MeteredItemTypeLabelerProtocol):
             results=tuple(results),
             usage=LabelingUsage(
                 input_tokens=None if None in tokens else sum(t or 0 for t in tokens),
+                requests=len(outcomes),
+                attempts=sum(outcome[2] for outcome in outcomes),
+            ),
+        )
+
+    def estimate_content_tokens(self, *, request: ContentTagClassificationRequest) -> int:
+        total = 0
+        for chunk in split_items(request.items):
+            payload = build_content_decisions_payload(
+                chunk, request.content_items, model=DECISIONS_MODEL
+            )
+            if any(item.images for item in chunk):
+                text_only = tuple(LabelingItem(item.item_id, item.source_text) for item in chunk)
+                payload = build_content_decisions_payload(
+                    text_only, request.content_items, model=DECISIONS_MODEL
+                )
+            total += estimate_prompt_tokens(json.dumps(payload))
+            total += IMAGE_INPUT_TOKEN_ESTIMATE * sum(len(item.images) for item in chunk)
+        return total
+
+    async def classify_content(
+        self, *, request: ContentTagClassificationRequest
+    ) -> ContentTagClassification:
+        if not request.items or not request.content_items:
+            return ContentTagClassification(results=())
+        if not self._api_key:
+            raise ItemTypeLabelerError(code="config_missing", message="Decisions API key missing.")
+
+        async def classify(
+            chunk: Sequence[LabelingItem],
+        ) -> tuple[list[ContentTagChoice], int | None, int]:
+            body, attempts = await self._post(
+                build_content_decisions_payload(chunk, request.content_items, model=DECISIONS_MODEL)
+            )
+            results, tokens = parse_content_decisions_answers(body, chunk, request.content_items)
+            return results, tokens, attempts
+
+        outcomes = await asyncio.gather(*(classify(chunk) for chunk in split_items(request.items)))
+        tokens = [outcome[1] for outcome in outcomes]
+        return ContentTagClassification(
+            results=tuple(result for outcome in outcomes for result in outcome[0]),
+            usage=LabelingUsage(
+                input_tokens=None if None in tokens else sum(token or 0 for token in tokens),
                 requests=len(outcomes),
                 attempts=sum(outcome[2] for outcome in outcomes),
             ),

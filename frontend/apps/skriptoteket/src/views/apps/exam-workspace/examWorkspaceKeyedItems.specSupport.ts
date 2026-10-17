@@ -11,10 +11,28 @@
 import type {
   NativeAnswerKeySuggestion,
   NativeExamBodySegment,
+  NativeExamGap,
   NativeExamItem,
   NativeExamMatchPair,
 } from "../../../api/examWorkspace";
 import { plainBody } from "./examWorkspaceRichText";
+
+/** A text-entry gap; inline-choice scenarios can override its options and key. */
+export function buildGap(
+  gapId: string,
+  acceptedValues: string[] = [],
+  overrides: Partial<NativeExamGap> = {},
+): NativeExamGap {
+  return {
+    accepted_values: acceptedValues,
+    automatic_values: [],
+    correct_option_id: null,
+    excluded_automatic_values: [],
+    gap_id: gapId,
+    options: [],
+    ...overrides,
+  };
+}
 
 export type GapValues = Array<[string, string[]]>;
 type Origin = NativeExamItem["answer_key"]["origin"];
@@ -63,6 +81,7 @@ export function choiceItem(
   return {
     ai_suggestion: previous,
     facit_text: null,
+    import_record: null,
     criteria: [],
     printed_label: null,
     retry_source: null,
@@ -95,13 +114,14 @@ export function gapItem(
   return {
     ai_suggestion: previous,
     facit_text: null,
+    import_record: null,
     criteria: [],
     printed_label: null,
     retry_source: null,
     answer_key: { correct_choice_ids: [], match_pairs: [], origin },
     body: [{ heading_level: null, segments }],
     choices: [],
-    gaps: key.map(([gap_id, accepted_values]) => ({ accepted_values, automatic_values: [], excluded_automatic_values: [], gap_id })),
+    gaps: key.map(([gap_id, accepted_values]) => buildGap(gap_id, accepted_values)),
     item_id: "item_001",
     kind: "gap_fill",
     match_left: [],

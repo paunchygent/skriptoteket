@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from datetime import timedelta
-from uuid import UUID
 
 from skriptoteket.application.scripting.handlers._vault_helpers import build_vault_file_info
+from skriptoteket.application.scripting.handlers._vault_lifecycle import lock_vault_lifecycle_target
 from skriptoteket.application.scripting.vault import RestoreVaultFileCommand, RestoreVaultFileResult
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import not_found, validation_error
@@ -42,7 +42,9 @@ class RestoreVaultFileHandler(RestoreVaultFileHandlerProtocol):
     ) -> RestoreVaultFileResult:
         now = self._clock.now()
         async with self._uow:
-            vault_file = await self._restore_target(actor=actor, file_id=command.file_id)
+            vault_file = await lock_vault_lifecycle_target(
+                vault_files=self._vault_files, user_id=actor.id, file_id=command.file_id
+            )
             if vault_file is None:
                 raise not_found("VaultFile", str(command.file_id))
 
@@ -97,27 +99,6 @@ class RestoreVaultFileHandler(RestoreVaultFileHandlerProtocol):
             )
 
         return RestoreVaultFileResult(file=build_vault_file_info(vault_file=vault_file))
-
-    async def _restore_target(self, *, actor: User, file_id: UUID) -> VaultFile | None:
-        """Read the caller's row, then take the exam's lineage lock before acting.
-
-        The row is read again under that lock, so the lifecycle decision uses the state
-        the lock protects instead of a row a concurrent request replaced meanwhile.
-        """
-
-        target = await self._vault_files.get_by_id(file_id=file_id)
-        if target is None or target.user_id != actor.id:
-            return None
-        if target.deleted_at is None or target.document_lineage_id is None:
-            return target
-
-        await self._vault_files.lock_document_lineage(
-            user_id=actor.id, document_lineage_id=target.document_lineage_id
-        )
-        # Read again under the lock and never fall back to the pre-lock row: another
-        # request may have purged it while this one waited, and the caller then gets
-        # NOT_FOUND instead of a lifecycle change against a file that no longer exists.
-        return await self._vault_files.get_by_id(file_id=file_id)
 
     async def _rows_moving_back(self, *, actor: User, target: VaultFile) -> list[VaultFile]:
         """Return the trashed rows that leave the trash together with the target.

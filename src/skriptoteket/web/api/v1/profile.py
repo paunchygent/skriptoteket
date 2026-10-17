@@ -20,6 +20,7 @@ from skriptoteket.application.identity.commands import (
     UpdateAiSettingsCommand,
     UpdateClassroomPlannerSettingsCommand,
     UpdateExamCoursesCommand,
+    UpdateExamListOrderingCommand,
     UpdateProfileCommand,
 )
 from skriptoteket.application.identity.huleedu_app_projection import HuleEduAppUserProjection
@@ -35,6 +36,7 @@ from skriptoteket.protocols.identity import (
     UpdateAiSettingsHandlerProtocol,
     UpdateClassroomPlannerSettingsHandlerProtocol,
     UpdateExamCoursesHandlerProtocol,
+    UpdateExamListOrderingHandlerProtocol,
     UpdateProfileHandlerProtocol,
 )
 from skriptoteket.web.api.v1.ai_policy import AiPolicyResponse, build_ai_policy
@@ -111,6 +113,12 @@ class UpdateClassroomPlannerSettingsRequest(BaseModel):
         ):
             raise ValueError("At least one classroom planner setting is required")
         return self
+
+
+class UpdateExamListOrderingRequest(BaseModel):
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    ordering: Literal["course", "newest"]
 
 
 class UpdateExamCoursesRequest(BaseModel):
@@ -193,6 +201,18 @@ async def update_classroom_planner_settings(
             grouping_seating_distance_enabled=payload.grouping_seating_distance_enabled,
             tutorial_seen_sections=payload.tutorial_seen_sections,
         )
+    )
+    return ProfileResponse(user=result.user, profile=result.profile)
+
+
+@router.patch("/exam-list-ordering", response_model=ProfileResponse)
+async def update_exam_list_ordering(
+    payload: UpdateExamListOrderingRequest,
+    handler: FromDishka[UpdateExamListOrderingHandlerProtocol],
+    user: User = Depends(require_app_user_api),
+) -> ProfileResponse:
+    result = await handler.handle(
+        UpdateExamListOrderingCommand(user_id=user.id, ordering=payload.ordering)
     )
     return ProfileResponse(user=result.user, profile=result.profile)
 

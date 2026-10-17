@@ -4,11 +4,13 @@ import hashlib
 
 import pytest
 
+from skriptoteket.domain.curated_apps.exam_workspace.exam_content_tags import NativeExamContentTag
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeAssetSegment,
     NativeParagraph,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    ExamCourseChoice,
     NativeExamAsset,
     NativeExamDocument,
 )
@@ -205,3 +207,39 @@ def test_deleting_an_imaged_child_prunes_only_assets_with_no_remaining_reference
 
     assert result.assets == ((asset,) if shared else ())
     _check_structure(result)
+
+
+@pytest.mark.parametrize("origin", ["suggested", "teacher"])
+def test_child_delete_prunes_only_removed_citations_and_keeps_selected_tag(origin: str) -> None:
+    base = _exam()
+    tag = NativeExamContentTag.model_validate(
+        {
+            "id": "course:content",
+            "text": "Lärarens valda innehåll",
+            "origin": origin,
+            "question_ids": ("item_002", "item_003", "item_001"),
+        }
+    )
+    orphaned = tag.model_copy(update={"id": "course:only-deleted", "question_ids": ("item_002",)})
+    base = NativeExamDocument.model_validate(
+        dict(
+            base.model_dump(),
+            header=base.header.model_copy(
+                update={
+                    "course": ExamCourseChoice(key="course", name="Course"),
+                    "tags": (tag, orphaned),
+                }
+            ),
+        )
+    )
+    reordered = reorder_children(base, parent_id="parent_001", item_ids=("item_003", "item_002"))
+    assert reordered.header == base.header
+
+    result = delete_child(reordered, parent_id="parent_001", item_id="item_002")
+
+    assert result.header.tags == (
+        tag.model_copy(update={"question_ids": ("item_003", "item_001")}),
+        orphaned.model_copy(update={"question_ids": ()}),
+    )
+    _check_structure(result)
+    assert base.header.tags == (tag, orphaned), "The immutable source keeps its citations"

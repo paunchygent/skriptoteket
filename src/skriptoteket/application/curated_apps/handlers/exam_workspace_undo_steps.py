@@ -88,6 +88,21 @@ class StoreExamWorkspaceUndoStepHandler:
                         code=ErrorCode.CONFLICT, message="Ångrasteget finns inte längre."
                     )
                 steps = steps[: ids.index(request.after_step_id)]
+            elif history.current_step_id is None:
+                # Spara deliberately leaves history untouched. Retain its working
+                # document before the next edit so undo cannot skip saved changes.
+                predecessor = steps[-1] if steps else history.baseline
+                previous_document = self._codec.parse(content=predecessor.content).document
+                previous_document = previous_document.model_copy(
+                    update={"revision": head.document_version}
+                )
+                if previous_document != saved.document:
+                    steps = (
+                        *steps,
+                        ExamWorkspaceHistoryStep(
+                            step_id=self._ids.new_uuid(), content=self._codec.build(content=saved)
+                        ),
+                    )
             step_id = self._ids.new_uuid()
             steps = (*steps, ExamWorkspaceHistoryStep(step_id=step_id, content=content))[-10:]
             history = history.model_copy(

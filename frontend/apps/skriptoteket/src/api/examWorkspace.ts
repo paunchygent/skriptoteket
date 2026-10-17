@@ -67,7 +67,8 @@ export type ExamWorkspaceExportBlockerReason =
   | "unbuilt_question"
   | "machine_proposed_key_unreviewed"
   | "missing_points"
-  | "missing_answer_key";
+  | "missing_answer_key"
+  | "inline_choice_option_heading";
 
 export type ExamWorkspaceExportBlocker = {
   item_id: string;

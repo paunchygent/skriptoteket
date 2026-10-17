@@ -367,6 +367,7 @@ export function newTeacherItem(
   const shortAnswer = kind === "short_answer";
   return {
     ai_suggestion: null,
+    import_record: null,
     facit_text: null,
     criteria: [],
     printed_label: null,
@@ -382,7 +383,7 @@ export function newTeacherItem(
       : [question],
     choices: [],
     gaps: shortAnswer
-      ? [{ gap_id: "gap_001", accepted_values: [], automatic_values: [], excluded_automatic_values: [] }]
+      ? [{ gap_id: "gap_001", accepted_values: [], automatic_values: [], excluded_automatic_values: [], options: [], correct_option_id: null }]
       : [],
     item_id: itemId,
     kind: shortAnswer ? "gap_fill" : "free_text",

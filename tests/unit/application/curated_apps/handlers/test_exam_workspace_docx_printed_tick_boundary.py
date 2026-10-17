@@ -10,6 +10,9 @@ from structlog.testing import capture_logs
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_state import (
     DocxBuildState,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_publication import (
+    final_publication,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_run import (
     DocxConversionJob,
     DocxConversionRun,
@@ -39,7 +42,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeParseOrigin,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_plain_text
-from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import build_replay
 
 pytestmark = pytest.mark.unit
 
@@ -199,10 +201,9 @@ def test_printed_grid_tick_boundary_keeps_score_or_complete_source_review(
         run.key_anchors = {"q1": ()}
         run.label_kinds = {"q1": NativeExamItemKind.MATCHING}
         run.filled = ["q1"]
-        # No recordings are served: only the production finalization/event path runs.
-        pipeline = build_replay("bf26_english_1_unit_test_kap_1_2_med_facit").pipeline
+        # No recordings are served: only the production publication/event path runs.
         with capture_logs() as logs:
-            outcome = pipeline._final(run, manifest)
+            outcome = final_publication(run, manifest)
         document = outcome.result.document
         failures = [event for event in outcome.result.events if event.code == "invalid_tick_value"]
         logged = [event for event in logs if event.get("code") == "invalid_tick_value"]

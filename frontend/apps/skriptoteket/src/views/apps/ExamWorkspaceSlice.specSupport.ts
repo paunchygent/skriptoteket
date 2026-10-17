@@ -24,44 +24,17 @@ import type {
   NativeExamDocument,
   NativeExamItem,
 } from "../../api/examWorkspace";
+import { buildFreeTextItem } from "../../test/examWorkspaceFixtures";
 import ExamWorkspaceView from "./ExamWorkspaceView.vue";
+
+export { buildFreeTextItem } from "../../test/examWorkspaceFixtures";
+import { buildSavedExamSummary } from "./exam-workspace/useExamWorkspaceDocument.specSupport";
 import {
   EXAM_WORKSPACE_LAYOUT_KEY,
   type ExamWorkspaceLayout,
 } from "./exam-workspace/useExamWorkspaceLayout";
 
 export const EXAM_WORKSPACE_PATH = "/apps/exam-workspace";
-
-export function buildFreeTextItem(sequence: number): NativeExamItem {
-  return {
-    ai_suggestion: null,
-    facit_text: null,
-    criteria: [],
-    printed_label: null,
-    retry_source: null,
-    answer_key: { correct_choice_ids: [], match_pairs: [], origin: "not_applicable" },
-    body: [
-      { heading_level: null, segments: [{ kind: "text", marks: [], text: `Fråga ${sequence }: beskriv med egna ord.` }] },
-    ],
-    choices: [],
-    gaps: [],
-    match_left: [],
-    match_right: [],
-    item_id: `item_${String(sequence).padStart(3, "0")}`,
-    kind: "free_text",
-    points: 2,
-    points_estimated: false,
-    review: {
-      confidence: 0.9,
-      parse_origin: "deterministic",
-      reasons: [],
-      state: "review_complete",
-    },
-    sequence,
-    source_anchor: null,
-    tick_points: null,
-  };
-}
 
 export function buildDocument(): NativeExamDocument {
   const items: NativeExamItem[] = [
@@ -106,7 +79,7 @@ export function buildDocument(): NativeExamDocument {
           ],
         },
       ],
-      gaps: [{ accepted_values: ["100"], automatic_values: [], excluded_automatic_values: [], gap_id: "gap_001" }],
+      gaps: [{ accepted_values: ["100"], automatic_values: [], excluded_automatic_values: [], gap_id: "gap_001", options: [], correct_option_id: null }],
       kind: "gap_fill",
       review: {
         confidence: 0.5,
@@ -134,8 +107,8 @@ export function buildDocument(): NativeExamDocument {
     },
     parents: [],
     revision: 1,
-    header: {},
-    schema_version: "native_exam_document_v4",
+    header: { tags: [] },
+    schema_version: "native_exam_document_v5",
     title: "NO-prov HT25",
   };
 }
@@ -166,13 +139,12 @@ export function buildResponse(params: {
       title: params.title ?? document.title,
     },
     notes: [],
-    summary: {
-      lineage_id: "lineage-1",
+    summary: buildSavedExamSummary({
       name: params.title ?? document.title,
       saved_at: "2026-10-09T08:00:00Z",
-      vault_file_id: "file-1",
+      title: params.title ?? document.title,
       version: params.version,
-    },
+    }),
   };
 }
 
@@ -180,6 +152,7 @@ export async function mountExamWorkspace(
   query: Record<string, string> = {},
   layout: ExamWorkspaceLayout = "desktop",
   attachTo?: HTMLElement,
+  pinia = createTestingPinia({ createSpy: vi.fn }),
 ) {
   const router = createRouter({
     history: createMemoryHistory(),
@@ -191,7 +164,7 @@ export async function mountExamWorkspace(
   const wrapper = mount(ExamWorkspaceView, {
     attachTo,
     global: {
-      plugins: [createTestingPinia({ createSpy: vi.fn }), router],
+      plugins: [pinia, router],
       provide: { [EXAM_WORKSPACE_LAYOUT_KEY as symbol]: layoutRef },
     },
   });

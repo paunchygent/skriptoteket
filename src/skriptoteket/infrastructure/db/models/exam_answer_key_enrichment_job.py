@@ -38,6 +38,12 @@ class ExamAnswerKeyEnrichmentJobModel(Base):
             postgresql_where=text("source_kind = 'workspace'"),
         ),
         Index(
+            "uq_exam_answer_key_enrichment_jobs_digiexam_import_lineage",
+            "workspace_lineage_id",
+            unique=True,
+            postgresql_where=text("source_kind = 'digiexam_import'"),
+        ),
+        Index(
             "uq_exam_answer_key_enrichment_jobs_docx_import_lineage",
             "workspace_lineage_id",
             unique=True,

@@ -2,6 +2,7 @@
 
 from datetime import UTC, datetime
 from pathlib import Path
+from unittest.mock import AsyncMock
 from uuid import uuid4
 
 import pytest
@@ -17,9 +18,11 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_document_stor
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
     GetExamWorkspaceDocumentHandler,
-    ListExamWorkspaceDocumentsHandler,
     SaveExamWorkspaceDocumentHandler,
     _summary,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_saved_index import (
+    ListExamWorkspaceDocumentsHandler,
 )
 from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.exam_workspace.container import ExamWorkspaceContainerContent
@@ -31,15 +34,19 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
     NativeGapAcceptedValues,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
-from skriptoteket.domain.identity.models import AuthProvider, Role, User
+from skriptoteket.domain.identity.models import AuthProvider, Role, User, UserProfile
 from skriptoteket.domain.scripting.vault import VaultFile, VaultUsage
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_container import (
     ExamWorkspaceContainerCodec,
 )
+from skriptoteket.protocols.identity import ProfileRepositoryProtocol
 from tests.fixtures.time_fixtures import FixedClock
 from tests.unit.application.curated_apps.handlers.answer_key_enrichment_test_support import (
     InMemoryEnrichmentJobRepository,
     InMemoryProposedOverlayRepository,
+)
+from tests.unit.application.curated_apps.handlers.exam_index_test_support import (
+    InMemoryExamIndexRepository,
 )
 from tests.unit.application.curated_apps.handlers.test_conversion_hub_jobs import (
     SequenceIdGenerator,
@@ -111,6 +118,11 @@ class _Env:
         )
         self.vault_storage = InMemoryVaultStorage()
         self.codec = ExamWorkspaceContainerCodec()
+        self.index = InMemoryExamIndexRepository(self.vault_files)
+        self.profiles = AsyncMock(spec=ProfileRepositoryProtocol)
+        self.profiles.get_by_user_id.return_value = UserProfile(
+            user_id=uuid4(), created_at=_NOW, updated_at=_NOW
+        )
         self.ids = SequenceIdGenerator([uuid4() for _ in range(10)])
         self.enrichment_jobs = InMemoryEnrichmentJobRepository()
         self.proposed_overlays = InMemoryProposedOverlayRepository()
@@ -121,6 +133,8 @@ class _Env:
             uow=FakeUow(),
             clock=FixedClock(_NOW),
             settings=_settings(),
+            index=self.index,
+            codec=self.codec,
         )
         self.get_handler = GetExamWorkspaceDocumentHandler(
             vault_files=self.vault_files,
@@ -129,7 +143,9 @@ class _Env:
             jobs=self.enrichment_jobs,
             uow=FakeUow(),
         )
-        self.list_handler = ListExamWorkspaceDocumentsHandler(vault_files=self.vault_files)
+        self.list_handler = ListExamWorkspaceDocumentsHandler(
+            index=self.index, profiles=self.profiles, uow=FakeUow()
+        )
         self.save_handler = SaveExamWorkspaceDocumentHandler(
             vault_files=self.vault_files,
             codec=self.codec,
@@ -159,7 +175,7 @@ class _Env:
         return ExamWorkspaceDocumentResponse(
             document=document,
             saved_document=document,
-            summary=_summary(file),
+            summary=_summary(file, document),
             history_cursor=document.document_id,
             conversion=None,
         )
@@ -200,7 +216,13 @@ async def test_store_uses_authoritative_head_name_not_a_writers_stale_copy(env: 
         actor=actor,
         file_id=uuid4(),
         name=original.name,
-        content=b"next version payload",
+        content=env.codec.build(
+            content=ExamWorkspaceContainerContent(
+                document=imported.document.model_copy(update={"revision": 2}),
+                assets_by_id={},
+                notes=(),
+            )
+        ),
         lineage_id=imported.summary.lineage_id,
         version=2,
         expected_revision=1,
@@ -336,7 +358,9 @@ async def test_duplicate_version_insert_maps_to_conflict(env: _Env, fixture_byte
             actor=actor,
             file_id=uuid4(),
             name="x.provdokument.zip",
-            content=b"payload",
+            content=env.codec.build(
+                content=ExamWorkspaceContainerContent(document=imported.document)
+            ),
             lineage_id=imported.summary.lineage_id,
             version=1,
         )

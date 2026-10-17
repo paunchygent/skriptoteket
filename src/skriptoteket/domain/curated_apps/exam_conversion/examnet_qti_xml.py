@@ -92,6 +92,38 @@ def append_response_declaration(
             return (response_id,)
         return ()
 
+    if item.interaction_type == ExamNetQtiInteractionType.INLINE_CHOICE:
+        gap_values = gap_point_values(item)
+        mapped_ids: list[str] = []
+        for index, inline_gap in enumerate(item.inline_choice_gaps):
+            declaration = ElementTree.SubElement(
+                root,
+                qti_tag("qti-response-declaration"),
+                {
+                    "identifier": inline_gap.response_identifier,
+                    "cardinality": "single",
+                    "base-type": "identifier",
+                },
+            )
+            correct = ElementTree.SubElement(declaration, qti_tag("qti-correct-response"))
+            ElementTree.SubElement(
+                correct, qti_tag("qti-value")
+            ).text = inline_gap.correct_option_identifier
+            if gap_values is not None:
+                points = gap_values[index]
+                mapping = ElementTree.SubElement(
+                    declaration,
+                    qti_tag("qti-mapping"),
+                    {"default-value": "0", "lower-bound": "0", "upper-bound": points},
+                )
+                ElementTree.SubElement(
+                    mapping,
+                    qti_tag("qti-map-entry"),
+                    {"map-key": inline_gap.correct_option_identifier, "mapped-value": points},
+                )
+                mapped_ids.append(inline_gap.response_identifier)
+        return tuple(mapped_ids)
+
     if item.interaction_type == ExamNetQtiInteractionType.GAP_FILL:
         gap_values = gap_point_values(item)
         mapped_gap_ids: list[str] = []
@@ -222,19 +254,19 @@ def _append_gap_response_declaration(
 def gap_point_values(item: ExamNetQtiItem) -> tuple[str, ...] | None:
     """The formatted value every gap gets, or None when the writer maps no gap points.
 
-    None means the item carries no total or no gaps, or the rounded-down share is
-    0.00; the QTI writer then writes no gap mapping at all. The checklist reads the
-    same predicate so the two can never disagree about the rounded value.
+    None means the item carries no total or no gaps, or a positive total's
+    rounded-down share is 0.00. An explicit zero total maps every gap to zero;
+    the checklist reads the same predicate so it does not report lost points.
     """
 
-    if item.max_score is None or not item.text_entry_gaps:
+    if item.max_score is None or not item.response_gaps:
         return None
-    value = (Decimal(str(item.max_score)) / len(item.text_entry_gaps)).quantize(
+    value = (Decimal(str(item.max_score)) / len(item.response_gaps)).quantize(
         Decimal("0.01"), rounding=ROUND_DOWN
     )
-    if value == 0:
+    if value == 0 and item.max_score > 0:
         return None
-    return (_format_points(value),) * len(item.text_entry_gaps)
+    return (_format_points(value),) * len(item.response_gaps)
 
 
 def _automatic_choice_value_count(item: ExamNetQtiItem) -> int:
@@ -262,13 +294,17 @@ def _equal_choice_point_value(item: ExamNetQtiItem) -> str | None:
 
 
 def _format_points(value: Decimal) -> str:
-    return format(value, "f").rstrip("0").rstrip(".") or "0"
+    formatted = format(value, "f")
+    return formatted.rstrip("0").rstrip(".") if "." in formatted else formatted
 
 
 def emits_map_response(item: ExamNetQtiItem) -> bool:
     if item.interaction_type == ExamNetQtiInteractionType.FREE_TEXT:
         return item.free_text_criterion_points is not None
-    if item.interaction_type == ExamNetQtiInteractionType.GAP_FILL:
+    if item.interaction_type in (
+        ExamNetQtiInteractionType.GAP_FILL,
+        ExamNetQtiInteractionType.INLINE_CHOICE,
+    ):
         return False
     return _equal_choice_point_value(item) is not None
 

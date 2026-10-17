@@ -4,7 +4,7 @@
  * Expected behavior:
  *   The save refusal copy names every question that breaks a server item
  *   rule, one sentence group per rule in a stable order (partial gap key,
- *   points not greater than zero, choice without text, criteria that lack
+ *   negative or non-finite points, choice without text, criteria that lack
  *   text or points or are not the item's points), and is `null` when
  *   the server would accept every item.
  */
@@ -33,14 +33,15 @@ function buildChoiceItem(
   return {
     ai_suggestion: null,
     facit_text: null,
+    import_record: null,
     criteria: [],
     printed_label: null,
     retry_source: null,
-    answer_key: { correct_choice_ids: ["choice_a"], match_pairs: [], origin: "teacher_authored" },
+    answer_key: { correct_choice_ids: ["choice_001"], match_pairs: [], origin: "teacher_authored" },
     body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Vilket ämne är en gas?" }] }],
     choices: [
-      { choice_id: "choice_a", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Syre" }] }] },
-      { choice_id: "choice_b", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Järn" }] }] },
+      { choice_id: "choice_001", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Syre" }] }] },
+      { choice_id: "choice_002", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Järn" }] }] },
     ],
     gaps: [],
     item_id: `item_00${sequence}`,
@@ -63,8 +64,8 @@ function buildChoiceItem(
 }
 
 const EMPTY_CHOICES = [
-  { choice_id: "choice_a", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Syre" }] }] },
-  { choice_id: "choice_b", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "" }] }] },
+  { choice_id: "choice_001", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Syre" }] }] },
+  { choice_id: "choice_002", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "" }] }] },
 ] satisfies NativeExamItem["choices"];
 
 describe("examWorkspaceSaveRefusalCopy", () => {
@@ -74,7 +75,18 @@ describe("examWorkspaceSaveRefusalCopy", () => {
     ).toBeNull();
   });
 
-  it("names one question with points that are not greater than zero", () => {
+  it("accepts zero points", () => {
+    expect(examWorkspaceSaveRefusalCopy([buildChoiceItem(1, { points: 0 })])).toBeNull();
+  });
+
+  it.each([-1, Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY])(
+    "refuses invalid points %s",
+    (points) => {
+      expect(examWorkspaceSaveRefusalCopy([buildChoiceItem(1, { points })])).not.toBeNull();
+    },
+  );
+
+  it("names one question with negative points", () => {
     expect(examWorkspaceSaveRefusalCopy([buildChoiceItem(1, { points: -1 })])).toBe(
       "Fråga 1 har noll eller negativa poäng. Poängen måste vara större än noll.",
     );
@@ -82,9 +94,9 @@ describe("examWorkspaceSaveRefusalCopy", () => {
 
   it("names every question in each rule, rule by rule", () => {
     const items = [
-      buildChoiceItem(1, { points: 0 }),
+      buildChoiceItem(1, { points: -1 }),
       buildChoiceItem(2, { choices: EMPTY_CHOICES }),
-      buildChoiceItem(3, { choices: EMPTY_CHOICES, points: 0 }),
+      buildChoiceItem(3, { choices: EMPTY_CHOICES, points: -1 }),
     ];
 
     expect(examWorkspaceSaveRefusalCopy(items)).toBe(

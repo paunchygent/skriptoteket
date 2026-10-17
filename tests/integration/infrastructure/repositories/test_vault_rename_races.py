@@ -25,9 +25,21 @@ from skriptoteket.application.scripting.handlers.delete_vault_file import Delete
 from skriptoteket.application.scripting.handlers.rename_vault_file import RenameVaultFileHandler
 from skriptoteket.application.scripting.vault import DeleteVaultFileCommand, RenameVaultFileCommand
 from skriptoteket.config import Settings
+from skriptoteket.domain.curated_apps.exam_workspace.container import ExamWorkspaceContainerContent
+from skriptoteket.domain.curated_apps.exam_workspace.exam_index import ExamIndexEntry
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeExamDocument,
+    NativeExamDocumentOrigin,
+)
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.scripting.vault import VaultFile
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_container import (
+    ExamWorkspaceContainerCodec,
+)
 from skriptoteket.infrastructure.db.uow import SQLAlchemyUnitOfWork
+from skriptoteket.infrastructure.repositories.exam_index_repository import (
+    PostgreSQLExamIndexRepository,
+)
 from skriptoteket.infrastructure.repositories.user_vault_file_repository import (
     PostgreSQLUserVaultFileRepository,
 )
@@ -41,6 +53,9 @@ from tests.integration.infrastructure.repositories.test_vault_rename_repository 
     _NOW,
     _file,
     _owner,
+)
+from tests.unit.application.curated_apps.handlers.exam_workspace_conversion_support import (
+    placeholder,
 )
 
 pytestmark = [
@@ -101,7 +116,6 @@ async def _wait_for_progress_or_database_block(
             )
             if blocked:
                 return
-            await asyncio.sleep(0.01)
 
 
 async def test_delete_with_stale_record_preserves_a_concurrently_committed_rename(
@@ -112,10 +126,14 @@ async def test_delete_with_stale_record_preserves_a_concurrently_committed_renam
     read, resume = asyncio.Event(), asyncio.Event()
 
     class PausedDeleteRepository(PostgreSQLUserVaultFileRepository):
-        async def update(self, *, file: VaultFile) -> VaultFile:
+        async def lock_lifecycle_rows(
+            self, *, user_id: UUID, file_id: UUID, document_lineage_id: UUID | None
+        ) -> list[VaultFile]:
             read.set()
             await resume.wait()
-            return await super().update(file=file)
+            return await super().lock_lifecycle_rows(
+                user_id=user_id, file_id=file_id, document_lineage_id=document_lineage_id
+            )
 
     async with asyncio.timeout(10), session_factory() as deleting:
         pending = asyncio.create_task(
@@ -132,6 +150,7 @@ async def test_delete_with_stale_record_preserves_a_concurrently_committed_renam
                 await RenameVaultFileHandler(
                     uow=SQLAlchemyUnitOfWork(renaming),
                     vault_files=PostgreSQLUserVaultFileRepository(renaming),
+                    index=PostgreSQLExamIndexRepository(renaming),
                 ).handle(
                     actor=actor, command=RenameVaultFileCommand(file_id=target.id, stem="Renamed")
                 )
@@ -178,7 +197,9 @@ async def test_delete_committed_after_rename_read_is_not_resurrected(
     async with asyncio.timeout(10), session_factory() as session:
         pending = asyncio.create_task(
             RenameVaultFileHandler(
-                uow=SQLAlchemyUnitOfWork(session), vault_files=PausedRepository(session)
+                uow=SQLAlchemyUnitOfWork(session),
+                vault_files=PausedRepository(session),
+                index=PostgreSQLExamIndexRepository(session),
             ).handle(actor=actor, command=RenameVaultFileCommand(file_id=target.id, stem="Renamed"))
         )
         try:
@@ -239,6 +260,7 @@ async def test_competing_same_owner_renames_return_one_named_collision(
             RenameVaultFileHandler(
                 uow=SQLAlchemyUnitOfWork(first_session),
                 vault_files=PausedRepository(first_session, first=True),
+                index=PostgreSQLExamIndexRepository(first_session),
             ).handle(actor=actor, command=RenameVaultFileCommand(file_id=left.id, stem="Same"))
         )
         await first_checked.wait()
@@ -246,6 +268,7 @@ async def test_competing_same_owner_renames_return_one_named_collision(
             RenameVaultFileHandler(
                 uow=SQLAlchemyUnitOfWork(second_session),
                 vault_files=PausedRepository(second_session, first=False),
+                index=PostgreSQLExamIndexRepository(second_session),
             ).handle(actor=actor, command=RenameVaultFileCommand(file_id=right.id, stem="Same"))
         )
         try:
@@ -273,6 +296,18 @@ async def test_overwrite_saved_during_lineage_rename_keeps_the_authoritative_nam
     owner, (head,) = await _seed(session_factory, lineage=lineage)
     actor = make_user().model_copy(update={"id": owner})
     writing, resume, renamed = asyncio.Event(), asyncio.Event(), asyncio.Event()
+    codec = ExamWorkspaceContainerCodec()
+    payload = codec.build(
+        content=ExamWorkspaceContainerContent(
+            document=NativeExamDocument(
+                document_id=lineage,
+                revision=2,
+                title="Overwritten exam",
+                items=(placeholder("p:1", "A question"),),
+                origin=NativeExamDocumentOrigin(kind="created"),
+            )
+        )
+    )
 
     class PausedRepository(PostgreSQLUserVaultFileRepository):
         async def overwrite(self, *, file: VaultFile) -> VaultFile:
@@ -290,6 +325,8 @@ async def test_overwrite_saved_during_lineage_rename_keeps_the_authoritative_nam
             vault_files=PausedRepository(writer_session),
             vault_usage=PostgreSQLUserVaultUsageRepository(writer_session),
             vault_storage=AsyncMock(spec=VaultStorageProtocol),
+            index=PostgreSQLExamIndexRepository(writer_session),
+            codec=codec,
             uow=SQLAlchemyUnitOfWork(writer_session),
             clock=FixedClock(_NOW),
             settings=Settings.model_construct(
@@ -302,7 +339,7 @@ async def test_overwrite_saved_during_lineage_rename_keeps_the_authoritative_nam
                 actor=actor,
                 file_id=uuid4(),
                 name=head.name,
-                content=b"overwritten container bytes",
+                content=payload,
                 lineage_id=lineage,
                 version=2,
                 expected_revision=1,
@@ -312,6 +349,7 @@ async def test_overwrite_saved_during_lineage_rename_keeps_the_authoritative_nam
             await RenameVaultFileHandler(
                 uow=SQLAlchemyUnitOfWork(rename_session),
                 vault_files=PostgreSQLUserVaultFileRepository(rename_session),
+                index=PostgreSQLExamIndexRepository(rename_session),
             ).handle(actor=actor, command=RenameVaultFileCommand(file_id=head.id, stem="Renamed"))
             renamed.set()
 
@@ -333,3 +371,49 @@ async def test_overwrite_saved_during_lineage_rename_keeps_the_authoritative_nam
         assert actual.id == head.id
         assert actual.name == "Renamed.provdokument.zip"
         assert actual.document_version == 2
+
+
+async def test_rename_response_joins_new_name_without_rewriting_saved_exam_metadata(
+    session_factory: async_sessionmaker[AsyncSession],
+) -> None:
+    lineage = uuid4()
+    owner, (head,) = await _seed(session_factory, lineage=lineage)
+    entry = ExamIndexEntry(
+        owner_user_id=owner,
+        lineage_id=lineage,
+        course_key="mathematics-1a",
+        title="The content title, not a filename",
+        saved_at=_NOW,
+        head_vault_file_id=head.id,
+    )
+    async with session_factory() as session, SQLAlchemyUnitOfWork(session):
+        await PostgreSQLExamIndexRepository(session).upsert(entry=entry)
+
+    async with session_factory() as session:
+        result = await RenameVaultFileHandler(
+            uow=SQLAlchemyUnitOfWork(session),
+            vault_files=PostgreSQLUserVaultFileRepository(session),
+            index=PostgreSQLExamIndexRepository(session),
+        ).handle(
+            actor=make_user().model_copy(update={"id": owner}),
+            command=RenameVaultFileCommand(file_id=head.id, stem="A different filename"),
+        )
+    assert result.file.name == "A different filename.provdokument.zip"
+    summary = result.exam_summary
+    assert summary is not None
+    assert summary.model_dump() == {
+        "lineage_id": lineage,
+        "vault_file_id": head.id,
+        "name": result.file.name,
+        "version": 1,
+        "saved_at": _NOW,
+        "title": entry.title,
+        "course_key": entry.course_key,
+    }
+    async with session_factory() as session:
+        saved = await PostgreSQLExamIndexRepository(session).get(
+            owner_user_id=owner, lineage_id=lineage
+        )
+        assert saved is not None
+        assert saved.name == result.file.name
+        assert saved.model_dump(exclude={"name", "version"}) == entry.model_dump()

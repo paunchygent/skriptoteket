@@ -15,6 +15,7 @@ import { bodyText, plainBody } from "./examWorkspaceRichText";
 import { mergeSavedDocuments } from "./examWorkspaceSavedDocuments";
 import {
   buildResponse,
+  buildSavedExamSummary,
   currentItem,
   openMatchingDocument as openWith,
 } from "./useExamWorkspaceDocument.specSupport";
@@ -35,13 +36,14 @@ vi.mock("../../../api/examWorkspace", async () => ({
 }));
 
 function summary(lineageId: string, version: number): ExamWorkspaceDocumentSummary {
-  return {
+  return buildSavedExamSummary({
     lineage_id: lineageId,
     name: `${lineageId}.provdokument.zip`,
     saved_at: "2026-10-09T08:00:00Z",
+    title: lineageId,
     vault_file_id: `file-${lineageId}-${version}`,
     version,
-  };
+  });
 }
 
 describe("mergeSavedDocuments", () => {

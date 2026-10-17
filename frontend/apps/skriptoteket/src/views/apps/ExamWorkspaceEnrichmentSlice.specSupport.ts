@@ -40,7 +40,7 @@ export interface EnrichmentApiMocks {
 
 /** The finished import conversion that every imported revision 1 carries. */
 export const SUCCEEDED_CONVERSION: ExamWorkspaceConversionStatus = {
-  job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null,
+  job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null, summary: null,
   document_revision: 1, questions_total: 0, questions_done: 0, units: [],
 };
 
@@ -96,7 +96,7 @@ export function resetEnrichmentApiMocks(apiMocks: EnrichmentApiMocks): void {
   apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue(SUCCEEDED_CONVERSION);
   apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
     apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildUnkeyedResponse(1, SUCCEEDED_CONVERSION));
-    return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null,
+    return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null, summary: null,
       document_revision: null, questions_total: 0, questions_done: 0, units: [] };
   });
   apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [] });

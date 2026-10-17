@@ -346,6 +346,7 @@ def replacement_item(*, original: NativeExamItem, produced: NativeExamItem) -> N
             "sequence": original.sequence,
             "source_anchor": original.source_anchor,
             "retry_source": original.retry_source,
+            "import_record": original.import_record,
             "ai_suggestion": None,
         }
     )
@@ -367,6 +368,7 @@ def source_review_item(
             "sequence": original.sequence,
             "source_anchor": original.source_anchor,
             "retry_source": original.retry_source,
+            "import_record": original.import_record,
             "ai_suggestion": None,
         }
     )

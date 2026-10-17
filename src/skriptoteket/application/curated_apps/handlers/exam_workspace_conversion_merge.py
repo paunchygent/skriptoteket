@@ -394,7 +394,28 @@ def merge_conversion(
         for sequence, item in enumerate(ordered, start=1)
     )
     title, title_digest = _choose(head.title, target.title, progress.title_digest)
-    header, header_digest = _choose(head.header, target.header, progress.header_digest)
+    # Assembly IDs are local to this target. Only this merge knows which saved
+    # identities survive teacher edits and split-question placeholder replacement.
+    proposed_header = target.header
+    if proposed_header is not None:
+        surviving_ids = {item.item_id for item in items}
+        proposed_header = proposed_header.model_copy(
+            update={
+                "tags": tuple(
+                    tag.model_copy(
+                        update={
+                            "question_ids": tuple(
+                                id_map[value]
+                                for value in tag.question_ids
+                                if value in id_map and id_map[value] in surviving_ids
+                            )
+                        }
+                    )
+                    for tag in proposed_header.tags
+                )
+            }
+        )
+    header, header_digest = _choose(head.header, proposed_header, progress.header_digest)
     instructions, instructions_digest = _choose(
         head.instructions, target.instructions, progress.instructions_digest
     )

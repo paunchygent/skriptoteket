@@ -4,9 +4,9 @@ Purpose:
     Start one AI answer-key suggestion job on the questions exactly as the
     editor shows them (TASK-SKRIPT-39-04-07) and read the job's status with
     one suggestion per question that got a valid answer. A request sends
-    either one named question, with or without a key, or every keyed-kind
-    question without a key; it works while the editor has unsaved changes
-    because the job runs on the sent content, never on the saved head.
+    either one named question whose key is not source-provided, or every
+    keyed-kind question without a key. It works while the editor has unsaved
+    changes because the job runs on the sent content, never on the saved head.
     Each job records the saved version the editor's copy stood on, so an
     exam opened again finds the newest job for its current saved version,
     and a request repeating a queued or running job's exact content gets
@@ -42,6 +42,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.answer_key_view import (
     AnswerKeyItemView,
     answer_key_item_view,
     answer_key_item_views,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeAnswerKeyOrigin,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import User
@@ -189,6 +192,8 @@ class RequestExamWorkspaceAnswerKeySuggestionsHandler:
         if request.item_id is None:
             return answer_key_item_views(document)
         item = document.item_by_id(request.item_id)
+        if item.answer_key.origin is NativeAnswerKeyOrigin.SOURCE_PROVIDED:
+            return ()
         try:
             return (answer_key_item_view(item, document.parent_of(item.item_id)),)
         except ValueError:

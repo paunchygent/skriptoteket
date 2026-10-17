@@ -8,6 +8,9 @@ from __future__ import annotations
 
 import httpx
 
+from skriptoteket.application.curated_apps.exam_content_tagging import (
+    MeteredExamContentTagClassifier,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_rounds import (
     DocxBuildRoundExchange,
 )
@@ -76,6 +79,19 @@ def build_docx_conversion_pipeline(
             ),
             second_pass=ResponsesSecondPassItemTypeLabeler(
                 provider=provider, profile=build_luna_item_label_profile(settings), sleeper=sleeper
+            ),
+            leases=leases,
+            uow=uow,
+            clock=clock,
+        ),
+        content_classifier=MeteredExamContentTagClassifier(
+            classifier=OpenAIDecisionsItemTypeLabeler(
+                client=client,
+                base_url=settings.LLM_ANSWER_KEY_BASE_URL,
+                api_key=settings.OPENAI_LLM_ANSWER_KEY_API_KEY,
+                timeout_seconds=float(settings.LLM_ITEM_LABELER_TIMEOUT_SECONDS),
+                sleeper=sleeper,
+                max_attempts=1,
             ),
             leases=leases,
             uow=uow,

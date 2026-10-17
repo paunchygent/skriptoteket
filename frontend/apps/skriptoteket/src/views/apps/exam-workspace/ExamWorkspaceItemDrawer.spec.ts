@@ -21,6 +21,7 @@ import type { ExamWorkspaceLayout } from "./useExamWorkspaceLayout";
 const ITEM: NativeExamItem = {
   ai_suggestion: null,
   facit_text: null,
+  import_record: null,
   criteria: [],
   printed_label: null,
   retry_source: null,

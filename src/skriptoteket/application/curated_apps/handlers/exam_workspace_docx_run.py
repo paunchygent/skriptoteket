@@ -19,6 +19,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import (
     ExamManifest,
     SharedContext,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.exam_content_tags import NativeExamContentTag
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
 )
@@ -68,6 +69,7 @@ class DocxConversionRun:
         # overwrites ``kinds``; the retry source persists it (TASK-SKRIPT-39-05-09 D1).
         self.label_kinds: dict[str, NativeExamItemKind] = {}
         self.resent: set[str] = set()
+        self.content_tags: tuple[NativeExamContentTag, ...] = ()
         self.second_wave_dispatches = 0
         self.filled: list[str] = []
         self.timings: list[DocxStageTiming] = []

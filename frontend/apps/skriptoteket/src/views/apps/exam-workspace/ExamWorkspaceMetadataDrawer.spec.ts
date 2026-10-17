@@ -16,7 +16,7 @@ function mountDrawer() {
     attachTo: document.body,
     props: {
       title: "NO-prov HT25",
-      header: { course: null, course_hint: null, printed_total: null },
+      header: { course: null, course_hint: null, printed_total: null, tags: [] },
       name: "NO. höst.provdokument.zip",
       vaultFileId: "vault-head-7",
       renameFile: rename,

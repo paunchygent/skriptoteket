@@ -9,7 +9,7 @@ const svenska = { key: "SVESVE02", name: "Svenska 2" };
 const engelska = { key: "ENGENG05", name: "Engelska 5" };
 
 function document(course: NativeExamDocument["header"]["course"]): NativeExamDocument {
-  return { ...buildParentDocument(), header: { course, course_hint: "Svenska 2", printed_total: 36 } };
+  return { ...buildParentDocument(), header: { course, course_hint: "Svenska 2", printed_total: 36, tags: [] } };
 }
 
 describe("course during progressive header replacement", () => {
