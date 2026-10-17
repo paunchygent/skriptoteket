@@ -32,6 +32,11 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_document_stor
     ExamWorkspaceDocumentStore,
 )
 from skriptoteket.config import Settings
+from skriptoteket.domain.curated_apps.exam_workspace.container import ExamWorkspaceContainerContent
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeExamDocument,
+    NativeExamDocumentOrigin,
+)
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.scripting.vault import VaultFile, VaultFileSourceKind
@@ -59,6 +64,9 @@ from skriptoteket.infrastructure.vault.local_vault_storage import LocalVaultStor
 from tests.fixtures.time_fixtures import FixedClock
 from tests.integration.infrastructure.repositories.exam_workspace_test_support import (
     create_owner,
+)
+from tests.unit.application.curated_apps.handlers.exam_workspace_conversion_support import (
+    placeholder,
 )
 
 pytestmark = [
@@ -105,6 +113,21 @@ async def _insert_files(
         repository = PostgreSQLUserVaultFileRepository(session)
         for file in files:
             await repository.create(file=file)
+
+
+def _exam_container(lineage_id: UUID, revision: int, title: str) -> bytes:
+    """A valid exam file at ``revision``, built through the real codec."""
+    return ExamWorkspaceContainerCodec().build(
+        content=ExamWorkspaceContainerContent(
+            document=NativeExamDocument(
+                document_id=lineage_id,
+                revision=revision,
+                title=title,
+                items=(placeholder("p:1", "A question"),),
+                origin=NativeExamDocumentOrigin(kind="created"),
+            )
+        )
+    )
 
 
 async def _save_document(
@@ -263,7 +286,7 @@ async def test_save_with_stale_expected_revision_is_refused_and_writes_nothing(
         settings=settings,
         lineage_id=lineage_id,
         file_id=uuid4(),
-        content=b"container-bytes",
+        content=(first_content := _exam_container(lineage_id, 1, "Prov")),
         version=1,
         expected_revision=None,
     )
@@ -276,7 +299,7 @@ async def test_save_with_stale_expected_revision_is_refused_and_writes_nothing(
             settings=settings,
             lineage_id=lineage_id,
             file_id=refused_id,
-            content=b"stale-container-bytes",
+            content=_exam_container(lineage_id, 2, "Inaktuell kopia"),
             version=2,
             expected_revision=0,
         )
@@ -293,7 +316,7 @@ async def test_save_with_stale_expected_revision_is_refused_and_writes_nothing(
         )
         usage = await PostgreSQLUserVaultUsageRepository(session).get(user_id=actor.id)
     assert count == 1
-    assert usage is not None and usage.bytes_total == len(b"container-bytes")
+    assert usage is not None and usage.bytes_total == len(first_content)
 
 
 async def test_overwriting_an_exam_keeps_the_row_and_adjusts_vault_usage(
@@ -315,12 +338,13 @@ async def test_overwriting_an_exam_keeps_the_row_and_adjusts_vault_usage(
         settings=settings,
         lineage_id=lineage_id,
         file_id=uuid4(),
-        content=b"container-bytes",
+        content=(first_content := _exam_container(lineage_id, 1, "Prov")),
         version=1,
         expected_revision=None,
     )
     unused_id = uuid4()
-    second_content = b"a longer container body"
+    second_content = _exam_container(lineage_id, 2, "Prov med en mycket längre rubrik " * 8)
+    assert len(second_content) != len(first_content)
     overwritten = await _save_document(
         session_factory,
         actor=actor,
