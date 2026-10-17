@@ -176,12 +176,11 @@ async def test_admitted_keys_keep_the_recorded_provenance_and_facit(exam: str):
     }
     produced = {}
     for request in replay.provider.requests:
-        # A type_conflict resend has no recording; the replay fails it and admission keeps the
-        # question's source review item, which no producer item backs.
-        if not request.item_id.startswith("docx_w") or (
-            request.item_id not in replay.provider.recording_ids
-        ):
+        if not request.item_id.startswith("docx_w"):
             continue
+        # Typed resends have live replies too; missing recordings must not silently
+        # replace the producer outcome with a source review item.
+        assert request.item_id in replay.provider.recording_ids
         for raw in _list(recording(exam, replay.provider.recording_ids[request.item_id])["items"]):
             node = _object(raw)
             if node["outcome"] == "converted":
@@ -205,6 +204,28 @@ async def test_admitted_keys_keep_the_recorded_provenance_and_facit(exam: str):
         facit = producer.facit_text
         assert item.facit_text == (facit.replace("<i>", "").replace("</i>", "") if facit else facit)
         assert "<i>" not in (item.facit_text or "")
+
+
+async def test_recorded_typed_resend_retains_an_incomplete_key_for_teacher_review():
+    exam = "bf26_english_1_unit_test_kap_1_2_med_facit"
+    replay, outcome = await _convert(exam)
+
+    assert replay.provider.recording_ids["docx_w2-10-01"] == "docx_w2-11-01"
+    assert replay.provider.recording_ids["docx_w2-10-01c01"] == "docx_w2-11-01c01"
+    assert [r for r in replay.provider.request_ids if r.startswith("docx_w2-10-01")] == [
+        "docx_w2-10-01",
+        "docx_w2-10-01c01",
+    ]
+    (item,) = [i for i in outcome.update.document.items if i.source_anchor == "body:0115"]
+    assert item.review.parse_origin is NativeParseOrigin.DETERMINISTIC
+    assert item.review.reasons
+    assert item.retry_source is not None
+    assert [c.anchor for c in item.retry_source.chunks] == ["body:0115"]
+    assert [c.anchor for c in item.retry_source.key_chunks] == ["body:0116"]
+    assert item.retry_source.key_chunks[0].text == "Correct answer: its"
+    codes = [e.code for e in outcome.result.events if "body:0115" in e.anchors]
+    assert "type_conflict_kept" in codes
+    assert "item_unparsed" in codes
 
 
 @pytest.mark.parametrize("exam", recorded_exams())

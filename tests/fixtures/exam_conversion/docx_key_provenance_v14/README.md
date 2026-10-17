@@ -35,3 +35,5 @@ report are retained in session `01a13a87-acac-7730-bb4e-746618d73cfd`, under
 
 These are the eval runner's reported conversion token counts, not a separate
 measurement of Decisions-service billing.
+
+2026-10-17: recorded BF26's current `docx_w2-10-01c01` typed resend on Hemma staging revision `d92b828e` with `gpt-6-luna` as `docx_w2-11-01c01.json` (after its original conflict recording); the reply repeats a type conflict, using 3,571 input and 373 output tokens (3,944 total).
