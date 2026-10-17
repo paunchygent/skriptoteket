@@ -38,6 +38,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
+    NativeChoice,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
 )
@@ -50,6 +53,7 @@ _CHOICE_KINDS = (
     NativeExamItemKind.MULTIPLE_RESPONSE,
 )
 _GAP_MARKER = "[___]"
+_STEP_BOX = "☐"
 NO_DOCX_EXPORT_ASSETS: Mapping[str, bytes] = MappingProxyType({})
 
 
@@ -111,6 +115,9 @@ class ExamWorkspaceDocxWriter:
             if item.kind in _CHOICE_KINDS:
                 for index, choice in enumerate(item.choices):
                     output.add_paragraph(f"{_choice_letter(index)}) {body_plain_text(choice.body)}")
+            if item.kind is NativeExamItemKind.ORDERING:
+                for choice in _ordering_steps_in_print_order(item):
+                    output.add_paragraph(f"{_STEP_BOX} {body_plain_text(choice.body)}")
             for index, left in enumerate(item.match_left, start=1):
                 output.add_paragraph(f"{index}. {body_plain_text(left.body)}")
             for index, right in enumerate(item.match_right):
@@ -193,6 +200,11 @@ def _choice_letter(index: int) -> str:
     return str(index + 1)
 
 
+def _ordering_steps_in_print_order(item: NativeExamItem) -> tuple[NativeChoice, ...]:
+    choice_by_id = {choice.choice_id: choice for choice in item.choices}
+    return tuple(choice_by_id[choice_id] for choice_id in item.print_order)
+
+
 def _facit_lines(item: NativeExamItem, labels: ExamLanguageLabels) -> tuple[str, ...]:
     if item.kind is NativeExamItemKind.FREE_TEXT:
         if not item.criteria:
@@ -228,6 +240,15 @@ def _facit_lines(item: NativeExamItem, labels: ExamLanguageLabels) -> tuple[str,
             )
             for index, gap in enumerate(item.body_gaps(), start=1)
         )
+    if item.kind is NativeExamItemKind.ORDERING:
+        number_by_id = {
+            choice.choice_id: index for index, choice in enumerate(item.choices, start=1)
+        }
+        steps = "; ".join(
+            f"{body_plain_text(choice.body)} {number_by_id[choice.choice_id]}"
+            for choice in _ordering_steps_in_print_order(item)
+        )
+        return (labels.keyed(labels.correct_order, steps),)
     if item.kind is NativeExamItemKind.MATCHING and item.answer_key.match_pairs:
         left = {entry.left_id: body_plain_text(entry.body) for entry in item.match_left}
         right = {entry.right_id: body_plain_text(entry.body) for entry in item.match_right}

@@ -24,6 +24,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_pdf_item_strategie
     MatchingExamNetPdfItemStrategy,
     MultipleResponseExamNetPdfItemStrategy,
     OpenEndedExamNetPdfItemStrategy,
+    OrderingExamNetPdfItemStrategy,
     SingleChoiceExamNetPdfItemStrategy,
     UnsupportedExamNetPdfItemStrategy,
 )
@@ -60,6 +61,7 @@ DEFAULT_EXAMNET_PDF_ITEM_STRATEGY_REGISTRY = ExamNetPdfItemRenderingPolicyRegist
         PdfExamItemKind.MULTIPLE_RESPONSE: MultipleResponseExamNetPdfItemStrategy(),
         PdfExamItemKind.GAP_OPEN_CLOZE: GapOpenClozeExamNetPdfItemStrategy(),
         PdfExamItemKind.MATCHING: MatchingExamNetPdfItemStrategy(),
+        PdfExamItemKind.ORDERING: OrderingExamNetPdfItemStrategy(),
     },
     unsupported_strategy=UnsupportedExamNetPdfItemStrategy(),
 )

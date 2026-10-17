@@ -3,7 +3,9 @@
 Purpose:
     Build the fail-closed Exam.net PDF document plan from a native exam
     document by adapting items into source-neutral PDF item semantics and
-    delegating target policy to the existing Exam.net PDF item strategies. Matching
+    delegating target policy to the existing Exam.net PDF item strategies. Ordering items
+    print an empty number box per step in the saved print order with the key in a separate
+    facit line. Matching
     items print blank category tables with every correct tick marked in a separate key.
     A Swedish exam prints the documented Swedish markers; every other exam prints the
     default ones.
@@ -77,6 +79,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
+    NativeChoice,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeAnswerKeyOrigin,
     NativeExamItemKind,
@@ -96,10 +101,12 @@ SWEDISH_EXAMNET_PDF_TARGET_PROFILE_CONTEXT = ExamNetPdfTargetProfileContext(
         choice_type_label="Flerval",
         multiple_response_type_label="Flerval",
         matching_type_label="Matcha ihop",
+        ordering_type_label="Ordna",
         target_item_type_marker="Typ",
         single_answer_key_label="Rätt svar",
         multiple_answer_key_label="Rätta svar",
         match_key_label="Rätta par",
+        ordering_key_label="Rätt ordning",
         marking_guide_label="Rättningsmall",
     ),
 )
@@ -116,6 +123,7 @@ _PDF_ITEM_KIND_BY_NATIVE_KIND = {
     NativeExamItemKind.GAP_FILL: PdfExamItemKind.GAP_OPEN_CLOZE,
     NativeExamItemKind.INLINE_CHOICE: PdfExamItemKind.GAP_OPEN_CLOZE,
     NativeExamItemKind.MATCHING: PdfExamItemKind.MATCHING,
+    NativeExamItemKind.ORDERING: PdfExamItemKind.ORDERING,
 }
 # Defensive second guard: `native_export_blockers` (reason `missing_answer_key`)
 # already blocks keyed items without a key before export. An unkeyed keyed item
@@ -235,7 +243,7 @@ def _pdf_item_semantics(
             PdfExamOptionSemantics(
                 option_id=_choice_number(choice.choice_id), text=body_plain_text(choice.body)
             )
-            for choice in item.choices
+            for choice in _choices_in_print_order(item)
         ),
         gaps=tuple(PdfExamGapSemantics(gap_id=gap.gap_id) for gap in item.body_gaps()),
         match_left=tuple(
@@ -268,8 +276,25 @@ def _pdf_item_semantics(
                 PdfExamMatchPairSemantics(left_id=pair.left_id, right_id=pair.right_id)
                 for pair in item.answer_key.match_pairs
             ),
+            correct_order_numbers=_ordering_key_numbers(item),
         ),
     )
+
+
+def _choices_in_print_order(item: NativeExamItem) -> tuple[NativeChoice, ...]:
+    """An ordering item prints its steps in the saved print order; others keep list order."""
+    if item.kind is not NativeExamItemKind.ORDERING:
+        return item.choices
+    choice_by_id = {choice.choice_id: choice for choice in item.choices}
+    return tuple(choice_by_id[choice_id] for choice_id in item.print_order)
+
+
+def _ordering_key_numbers(item: NativeExamItem) -> tuple[int, ...]:
+    """Per printed step, the 1-based number it has in the key (list) order."""
+    if item.kind is not NativeExamItemKind.ORDERING:
+        return ()
+    number_by_id = {choice.choice_id: index for index, choice in enumerate(item.choices, start=1)}
+    return tuple(number_by_id[choice_id] for choice_id in item.print_order)
 
 
 def _document_instruction_html(
