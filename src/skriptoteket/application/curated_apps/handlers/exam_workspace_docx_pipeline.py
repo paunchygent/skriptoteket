@@ -41,11 +41,7 @@ from skriptoteket.application.curated_apps.exam_content_tagging import (
     MeteredExamContentTagClassifier,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_assembly import (
-    assembly_check,
-    conversion_update,
-    governed_anchors,
     merge_batch,
-    provisional_result,
     validated,
     with_type_check_mark,
 )
@@ -63,6 +59,10 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_pipeline
     reviewed,
     source_parts,
     source_reviewed,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_publication import (
+    final_publication,
+    provisional_publication,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_run import (
     DocxConversionJob,
@@ -82,11 +82,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_batches import (
     question_families,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_header import (
-    apply_header,
     resolve_header_course,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.docx_import_records import (
-    with_docx_import_records,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import (
     ExamManifest,
@@ -100,11 +96,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.exam_content_tags import (
 )
 from skriptoteket.domain.curated_apps.exam_workspace.exam_course_catalog import (
     load_exam_course_catalog,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_retry_source import (
-    retry_sources_by_anchor,
-    with_retry_sources,
-    with_source_assets,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
@@ -198,14 +189,14 @@ class DocxConversionPipeline:
                 "fallback", "lease_expired" if fallback_reason else "ai_disabled", detail=reason
             )
             run.state.fail_all_pending(reason)
-            return self._final(run, None)
+            return final_publication(run, None)
         started = time.monotonic()
         try:
             grouping = await self._grouper.group(job_id=job.job_id, chunks=job.chunks)
         except ExamGroupingError as error:
             run.state.record("grouping", error.code, detail=error.detail)
             run.state.fail_all_pending(str(error))
-            return self._final(run, None)
+            return final_publication(run, None)
         for usage in grouping.usage:
             run.state.record_usage(usage)
         run.timed("grouping", started)
@@ -225,7 +216,7 @@ class DocxConversionPipeline:
                 tasks.create_task(self._label_and_convert(run, manifest, tasks))
         except* DomainError as group:
             raise group.exceptions[0] from group
-        return self._final(run, manifest)
+        return final_publication(run, manifest)
 
     async def _outline(self, run: DocxConversionRun, manifest: ExamManifest) -> None:
         questions = tuple(
@@ -457,35 +448,7 @@ class DocxConversionPipeline:
         merge_batch(trial, outcome.state, run.title_anchors)
         filled = (*run.filled, *(q for q in batch.question_ids if q not in outcome.conflicts))
         pending = tuple(f.question_id for f in families if f.question_id not in filled)
-        provisional = provisional_result(
-            trial, families, frozenset(pending), governed_anchors(run.contexts, families)
-        )
-        sources = retry_sources_by_anchor(
-            families=families,
-            own_anchors=run.own_anchors,
-            key_anchors=run.key_anchors,
-            chunks=run.job.chunks,
-            label_kinds=run.label_kinds,
-        )
-        document, assets_by_id = with_source_assets(
-            document=with_docx_import_records(
-                with_retry_sources(provisional.document, sources),
-                chunks=run.job.chunks,
-                events=tuple(trial.events),
-            ),
-            chunks=run.job.chunks,
-            assets_by_id=provisional.assets_by_id,
-        )
-        if run.manifest is not None:
-            document = apply_header(
-                document,
-                run.manifest,
-                run.job.chunks,
-                course_key=run.job.course_key,
-                courses=load_exam_course_catalog().courses,
-            ).document
-        provisional = replace(provisional, document=document, assets_by_id=assets_by_id)
-        update = conversion_update(document, families, filled, pending, assets_by_id=assets_by_id)
+        update = provisional_publication(run, trial, families, filled, pending)
         run.state = trial
         run.families = families
         run.filled = list(filled)
@@ -493,73 +456,3 @@ class DocxConversionPipeline:
             run.kinds[qid] = kind
             run.resent.add(qid)
         return update
-
-    def _final(
-        self, run: DocxConversionRun, manifest: ExamManifest | None
-    ) -> DocxConversionOutcome:
-        started = time.monotonic()
-        result = run.state.result(
-            governed_anchors(run.contexts, run.families),
-            tuple(f.question_anchors for f in run.families),
-        )
-        sources = retry_sources_by_anchor(
-            families=run.families,
-            own_anchors=run.own_anchors,
-            key_anchors=run.key_anchors,
-            chunks=run.job.chunks,
-            label_kinds=run.label_kinds,
-        )
-        document, assets_by_id = with_source_assets(
-            document=with_docx_import_records(
-                with_retry_sources(result.document, sources),
-                chunks=run.job.chunks,
-                events=result.events,
-            ),
-            chunks=run.job.chunks,
-            assets_by_id=result.assets_by_id,
-        )
-        header = apply_header(
-            document,
-            manifest,
-            run.job.chunks,
-            course_key=run.job.course_key,
-            courses=load_exam_course_catalog().courses,
-        )
-        document = header.document
-        for event in header.events:
-            logger.warning(
-                "DOCX build failure observed", job_id=str(run.job.job_id), **event.as_json()
-            )
-        update = conversion_update(
-            document, run.families, tuple(run.filled), (), assets_by_id=assets_by_id
-        )
-        tags = tuple(
-            tag.model_copy(
-                update={
-                    "question_ids": tuple(
-                        dict.fromkeys(
-                            item_id
-                            for question_id in tag.question_ids
-                            for item_id in update.item_ids.get(question_id, ())
-                        )
-                    )
-                }
-            )
-            for tag in run.content_tags
-        )
-        document = document.model_copy(
-            update={"header": document.header.model_copy(update={"tags": tags})}
-        )
-        update = replace(update, document=document)
-        checks = assembly_check(document, manifest, run.families, update) if manifest else ()
-        run.timed("assembly", started)
-        return DocxConversionOutcome(
-            result=replace(
-                result,
-                document=document,
-                assets_by_id=assets_by_id,
-                events=(*result.events, *header.events, *checks),
-                timings=tuple(run.timings),
-            ),
-            update=update,
-        )

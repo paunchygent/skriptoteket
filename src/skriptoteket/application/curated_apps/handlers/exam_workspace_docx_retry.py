@@ -164,9 +164,10 @@ class RetryExamWorkspaceItemHandler:
                 "Den sparade dokumentversionen är skadad.",
                 details={"lineage_id": str(lineage_id)},
             )
-        # The saved item is the source authority; the draft item only names the place.
+        # Saved evidence governs the source; the working item carries unsaved attempts.
         saved_item = saved.item_by_id(request.item_id)
         draft_item = draft.item_by_id(request.item_id)
+        _validate_retry_history(saved_item, draft_item)
         source = saved_item.retry_source
         if source is None:
             raise validation_error(
@@ -345,6 +346,26 @@ def _review_reason(state: DocxBuildState, outcome: BatchOutcome) -> str:
     return next(iter(state.reasons.values()), _DEFAULT_FAILURE_REASON)
 
 
+def _validate_retry_history(original: NativeExamItem, draft_item: NativeExamItem) -> None:
+    """A working record must extend, not erase or rewrite, the saved import steps."""
+    saved = original.import_record
+    if saved is None:
+        return
+    current = draft_item.import_record
+    if (
+        current is None
+        or current.steps[: len(saved.steps)] != saved.steps
+        or any(
+            not isinstance(step, NativeExamRetryStep) or step.reason != "teacher_request"
+            for step in current.steps[len(saved.steps) :]
+        )
+    ):
+        raise validation_error(
+            "Frågans konverteringshistorik stämmer inte med den sparade versionen.",
+            details={"item_id": original.item_id},
+        )
+
+
 def _placed(
     item: NativeExamItem,
     draft_item: NativeExamItem,
@@ -353,16 +374,17 @@ def _placed(
     chosen_kind: NativeExamItemKind,
     converted: bool,
 ) -> NativeExamItem:
-    """Keep saved import history, append this attempt, and use only the draft's place."""
+    """Keep saved source facts and append to the validated working retry history."""
     record = original.import_record
     if record is not None:
+        assert draft_item.import_record is not None  # Checked before any converter call.
         record = record.model_copy(
             update={
                 "steps": (
-                    *record.steps,
+                    *draft_item.import_record.steps,
                     NativeExamRetryStep(
                         reason="teacher_request",
-                        from_kind=original.kind,
+                        from_kind=draft_item.kind,
                         chosen_kind=chosen_kind,
                         outcome="converted" if converted else "review_required",
                     ),
