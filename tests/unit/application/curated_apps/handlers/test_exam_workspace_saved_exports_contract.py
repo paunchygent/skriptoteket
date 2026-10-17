@@ -30,7 +30,10 @@ from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents 
 from tests.unit.application.curated_apps.handlers.test_exam_workspace_exports_handler import (
     _export_handler,
 )
-from tests.unit.application.curated_apps.test_exam_workspace_exports import _reviewed
+from tests.unit.application.curated_apps.test_exam_workspace_exports import (
+    _reviewed,
+    _source_fallback_document,
+)
 from tests.unit.application.scripting.handlers.test_list_vault_files_missing_on_disk import (
     FakeCuratedApps,
     FakeRuns,
@@ -40,12 +43,12 @@ from tests.unit.application.scripting.handlers.test_list_vault_files_missing_on_
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("target", list(ExamWorkspaceExportTarget))
-async def test_saving_unreviewed_export_is_blocked_without_a_vault_side_effect(
+async def test_saving_source_fallback_export_is_blocked_without_a_vault_side_effect(
     target: ExamWorkspaceExportTarget,
 ) -> None:
     env = _Env()
     actor = _actor()
-    imported = await env.seed_document(actor=actor)
+    imported = await env.seed_document(actor=actor, document=_source_fallback_document())
     usage = env.vault_usage.usage.bytes_total
     with pytest.raises(DomainError) as error:
         await _export_handler(env).save(

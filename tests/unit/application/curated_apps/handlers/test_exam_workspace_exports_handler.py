@@ -42,7 +42,10 @@ from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents 
     _actor,
     _Env,
 )
-from tests.unit.application.curated_apps.test_exam_workspace_exports import _reviewed
+from tests.unit.application.curated_apps.test_exam_workspace_exports import (
+    _reviewed,
+    _source_fallback_document,
+)
 from tests.unit.domain.curated_apps.exam_workspace.inline_choice_test_support import (
     inline_choice_item,
 )
@@ -121,9 +124,9 @@ async def _imported_and_reviewed_with_losses(env: _Env) -> tuple[User, UUID]:
 
 
 @pytest.mark.asyncio
-async def test_unreviewed_document_blocks_every_target(env: _Env, fixture_bytes: bytes) -> None:
+async def test_source_fallback_blocks_every_target(env: _Env) -> None:
     actor = _actor()
-    imported = await env.seed_document(actor=actor)
+    imported = await env.seed_document(actor=actor, document=_source_fallback_document())
     handler = _export_handler(env)
     for target in ExamWorkspaceExportTarget:
         with pytest.raises(DomainError) as exc_info:
@@ -321,9 +324,9 @@ async def test_checklist_lists_the_saved_heads_losses(env: _Env) -> None:
 
 
 @pytest.mark.asyncio
-async def test_unreviewed_document_blocks_the_checklist(env: _Env) -> None:
+async def test_source_fallback_blocks_the_checklist(env: _Env) -> None:
     actor = _actor()
-    imported = await env.seed_document(actor=actor)
+    imported = await env.seed_document(actor=actor, document=_source_fallback_document())
 
     with pytest.raises(DomainError) as exc_info:
         await _export_handler(env).checklist(

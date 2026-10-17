@@ -154,10 +154,12 @@ class _Env:
             jobs=self.enrichment_jobs,
         )
 
-    async def seed_document(self, *, actor: User) -> ExamWorkspaceDocumentResponse:
-        document = NativeExamDocument.model_validate_json(_FIXTURE.read_bytes()).model_copy(
-            update={"document_id": uuid4()}
-        )
+    async def seed_document(
+        self, *, actor: User, document: NativeExamDocument | None = None
+    ) -> ExamWorkspaceDocumentResponse:
+        if document is None:
+            document = NativeExamDocument.model_validate_json(_FIXTURE.read_bytes())
+        document = document.model_copy(update={"document_id": uuid4()})
         file = await self.store.save(
             actor=actor,
             file_id=self.ids.new_uuid(),

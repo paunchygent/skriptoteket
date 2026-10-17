@@ -15,6 +15,8 @@ from skriptoteket.application.curated_apps.exam_workspace_exports import (
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_assessment_test_xml import (
     EXAMNET_QTI_ASSESSMENT_TEST_PATH,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
+from skriptoteket.domain.curated_apps.exam_workspace.docx_source_review import review_source_item
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeGapSegment,
     NativeParagraph,
@@ -45,8 +47,19 @@ from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_qti_writer import (
     ExamNetQtiPackageWriter,
 )
+from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders import make_document
 
 _FIXTURE = Path("tests/fixtures/exam_conversion/native_workspace_grammatik.json")
+
+
+def _source_fallback_document() -> NativeExamDocument:
+    chunk = DocxChunk(
+        anchor="body:0001",
+        kind="paragraph",
+        text="Förklara. (2 p)",
+        marked_text="Förklara. (2 p)",
+    )
+    return make_document(review_source_item((chunk,), "Frågan kunde inte konverteras."))
 
 
 def _reviewed(document: NativeExamDocument) -> NativeExamDocument:
@@ -83,12 +96,10 @@ def reviewed_document(extracted_document: NativeExamDocument) -> NativeExamDocum
 
 
 class TestExportGate:
-    def test_export_blockers_raise_with_blocker_details(
-        self, extracted_document: NativeExamDocument
-    ) -> None:
+    def test_export_blockers_raise_with_blocker_details(self) -> None:
         with pytest.raises(DomainError) as exc_info:
             build_native_examnet_qti_package(
-                extracted_document,
+                _source_fallback_document(),
                 package_name="grammatik-omprov",
                 qti_writer=ExamNetQtiPackageWriter(),
             )
