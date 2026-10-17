@@ -9,13 +9,14 @@ import re
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-PHONE_WORKSPACE_CSS = (
-    REPO_ROOT / "frontend/apps/skriptoteket/src/assets/klassrumskartan-phone-workspace.css"
-)
+ASSETS = REPO_ROOT / "frontend/apps/skriptoteket/src/assets"
+PHONE_WORKSPACE_CSS = ASSETS / "klassrumskartan-phone-workspace.css"
 
 
 def test_phone_workspace_sheet_uses_opaque_modal_surface() -> None:
-    css = PHONE_WORKSPACE_CSS.read_text(encoding="utf-8")
+    assembly = PHONE_WORKSPACE_CSS.read_text(encoding="utf-8")
+    assert '@import "./klassrumskartan-phone-navigation.css";' in assembly
+    css = (ASSETS / "klassrumskartan-phone-navigation.css").read_text(encoding="utf-8")
 
     match = re.search(r"\.planner-phone-mode-sheet\s*\{(?P<body>[^}]*)\}", css)
 
@@ -25,7 +26,9 @@ def test_phone_workspace_sheet_uses_opaque_modal_surface() -> None:
 
 
 def test_phone_classroom_map_scales_readability_tokens_from_seat_geometry() -> None:
-    css = PHONE_WORKSPACE_CSS.read_text(encoding="utf-8")
+    assembly = PHONE_WORKSPACE_CSS.read_text(encoding="utf-8")
+    assert '@import "./klassrumskartan-phone-fixed-seat.css";' in assembly
+    css = (ASSETS / "klassrumskartan-phone-fixed-seat.css").read_text(encoding="utf-8")
 
     match = re.search(r"\.planner-phone-fixed-seat-map\s*\{(?P<body>[^}]*)\}", css)
 
