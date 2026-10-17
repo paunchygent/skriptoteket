@@ -294,6 +294,31 @@ class PostgreSQLUserVaultFileRepository(VaultFileRepositoryProtocol):
     async def lock_document_lineage(self, *, user_id: UUID, document_lineage_id: UUID) -> None:
         await self._lock(key=f"vault:lineage:{user_id}:{document_lineage_id}")
 
+    async def lock_lifecycle_rows(
+        self,
+        *,
+        user_id: UUID,
+        file_id: UUID,
+        document_lineage_id: UUID | None,
+    ) -> list[VaultFile]:
+        """Return fresh lineage rows, or the plain file, locked in UUID order.
+
+        Callers must hold the lineage lock when a lineage is present and acquire
+        usage locks afterward. Row locks remain held until the Unit of Work ends.
+        """
+        stmt = select(UserVaultFileModel).where(UserVaultFileModel.user_id == user_id)
+        if document_lineage_id is not None:
+            stmt = stmt.where(UserVaultFileModel.document_lineage_id == document_lineage_id)
+        else:
+            stmt = stmt.where(UserVaultFileModel.id == file_id)
+        stmt = (
+            stmt.order_by(asc(UserVaultFileModel.id))
+            .with_for_update()
+            .execution_options(populate_existing=True)
+        )
+        result = await self._session.execute(stmt)
+        return [VaultFile.model_validate(item) for item in result.scalars().all()]
+
     async def rename_active(self, *, user_id: UUID, file_id: UUID, name: str) -> VaultFile | None:
         result = await self._session.execute(
             update(UserVaultFileModel)

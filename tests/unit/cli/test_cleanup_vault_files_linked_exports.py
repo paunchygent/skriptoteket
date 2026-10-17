@@ -63,25 +63,31 @@ def _recording_repo(
     vault_files.list_expired.side_effect = [expired, []]
     stored: dict[UUID, VaultFile] = {file.id: file for file in rows}
 
-    async def _list_exam_files(
+    async def _lock_lifecycle_rows(
         *,
         user_id: UUID,
-        document_lineage_id: UUID,
-        include_deleted: bool,
+        file_id: UUID,
+        document_lineage_id: UUID | None,
     ) -> list[VaultFile]:
-        return [
-            file
-            for file in stored.values()
-            if file.user_id == user_id
-            and file.document_lineage_id == document_lineage_id
-            and (include_deleted or file.deleted_at is None)
-        ]
+        return sorted(
+            (
+                file
+                for file in stored.values()
+                if file.user_id == user_id
+                and (
+                    file.document_lineage_id == document_lineage_id
+                    if document_lineage_id is not None
+                    else file.id == file_id
+                )
+            ),
+            key=lambda file: file.id,
+        )
 
     async def _delete(*, file_id: UUID) -> None:
         journal.append(f"row:{file_id}")
         stored.pop(file_id, None)
 
-    vault_files.list_exam_files.side_effect = _list_exam_files
+    vault_files.lock_lifecycle_rows.side_effect = _lock_lifecycle_rows
     vault_files.delete.side_effect = _delete
     return vault_files
 
@@ -160,15 +166,12 @@ async def test_purge_deletes_every_payload_of_a_trashed_exam_before_any_row() ->
 
     assert deleted == 3
     assert affected_users == {owner}
-    assert journal == [
-        f"payload:{exam.id}",
-        f"payload:{qti.id}",
-        f"payload:{pdf.id}",
-        f"row:{exam.id}",
-        f"row:{qti.id}",
-        f"row:{pdf.id}",
-        "recompute",
-    ]
+    ordered_ids = sorted(file.id for file in all_rows)
+    assert journal == (
+        [f"payload:{file_id}" for file_id in ordered_ids]
+        + [f"row:{file_id}" for file_id in ordered_ids]
+        + ["recompute"]
+    )
     usage.recompute_total.assert_awaited_once_with(user_id=owner, now=_NOW)
     usage.upsert.assert_not_called()
 

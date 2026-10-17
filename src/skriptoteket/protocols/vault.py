@@ -105,6 +105,20 @@ class VaultFileRepositoryProtocol(Protocol):
 
     async def lock_document_lineage(self, *, user_id: UUID, document_lineage_id: UUID) -> None: ...
 
+    async def lock_lifecycle_rows(
+        self,
+        *,
+        user_id: UUID,
+        file_id: UUID,
+        document_lineage_id: UUID | None,
+    ) -> list[VaultFile]:
+        """Return fresh lineage rows, or the plain file, locked in UUID order.
+
+        Callers must hold the lineage lock when a lineage is present and acquire
+        usage locks afterward. Row locks remain held until the Unit of Work ends.
+        """
+        ...
+
     async def rename_active(
         self, *, user_id: UUID, file_id: UUID, name: str
     ) -> VaultFile | None: ...
