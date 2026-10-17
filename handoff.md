@@ -113,7 +113,7 @@
 
 - [TASK-SKRIPT-40-03-10](docs/backlog/tasks/task-skript-40-03-10-adopt-huleedu-integrated-0-1-30-and-make-delete-and-edit-actions-glyph-only-across-skriptoteket.md)
   `done` 2026-10-17 (approved review): huleedu-integrated 0.1.30, delete and
-  edit controls glyph-only, roomier Mina kurser school forms; main `fb782f13`.
+  edit controls glyph-only and frameless (0.1.31), roomier school forms; main `e5ab32c6`.
 
 - 2026-10-17 hooks: `precommit-install` now runs the package installer
   `repository-governance-hooks-install` (TASK-SKILL-REP-0321, runtime 0.11.134),
