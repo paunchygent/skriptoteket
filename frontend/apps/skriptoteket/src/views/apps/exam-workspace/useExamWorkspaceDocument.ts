@@ -20,7 +20,7 @@
  *     opening that requested them.
  *   - Delegates the one-question reconversion request lifecycle to
  *     `useExamWorkspaceItemRetry`.
- *   - Dirty state is derived: the copy differs from the last server document
+ *   - Dirty state is derived: the copy differs from the saved exam file
  *     (`sameDocument`).
  *   - Reports outcomes through the shared toast store.
  */
@@ -93,13 +93,15 @@ export function useExamWorkspaceDocument() {
   const toast = useToast();
 
   const workspaceDocument = ref<NativeExamDocument | null>(null);
+  // The last working response remains the conversion merge base, not the Spara baseline.
   const serverDocument = ref<NativeExamDocument | null>(null);
+  const savedDocument = ref<NativeExamDocument | null>(null);
   const summary = ref<ExamWorkspaceDocumentSummary | null>(null);
   const notes = ref<string[]>([]);
   const openExam = shallowRef<ExamWorkspaceOpening | null>(null);
-  const isDirty = computed(() => !sameDocument(workspaceDocument.value, serverDocument.value));
+  const isDirty = computed(() => !sameDocument(workspaceDocument.value, savedDocument.value));
   /** The saved version the open copy stands on. */
-  const savedRevision = computed(() => serverDocument.value?.revision ?? null);
+  const savedRevision = computed(() => savedDocument.value?.revision ?? null);
   const operationBusy = ref(false);
   const conflictNotice = ref<string | null>(null);
   const selectedItemId = ref<string | null>(null);
@@ -178,6 +180,7 @@ export function useExamWorkspaceDocument() {
     }
     workspaceDocument.value = local;
     serverDocument.value = response.document;
+    savedDocument.value = response.saved_document;
     summary.value = response.summary;
     savedDocuments.value = savedDocuments.value.some(
       (entry) => entry.lineage_id === response.summary.lineage_id,

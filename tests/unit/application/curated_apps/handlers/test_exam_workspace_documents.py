@@ -158,6 +158,7 @@ class _Env:
         )
         return ExamWorkspaceDocumentResponse(
             document=document,
+            saved_document=document,
             summary=_summary(file),
             history_cursor=document.document_id,
             conversion=None,

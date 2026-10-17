@@ -134,7 +134,8 @@ function responseWith(
   assets: NativeExamAsset[] = [],
 ): ExamWorkspaceDocumentResponse {
   const base = buildResponse(items[0]);
-  return { ...base, document: { ...base.document, assets, items } };
+  const document = { ...base.document, assets, items };
+  return { ...base, document, saved_document: document };
 }
 
 async function openRetryDocument(

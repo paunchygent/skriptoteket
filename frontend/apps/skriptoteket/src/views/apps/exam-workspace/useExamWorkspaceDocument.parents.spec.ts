@@ -39,6 +39,7 @@ function buildResponse(document: NativeExamDocument): ExamWorkspaceDocumentRespo
     history_cursor: "00000000-0000-4000-8000-000000000001",
     conversion: null,
     document,
+    saved_document: document,
     notes: [],
     summary: {
       lineage_id: "lineage-1",

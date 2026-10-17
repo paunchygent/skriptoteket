@@ -244,6 +244,7 @@ class GetExamWorkspaceDocumentHandler:
         document = latest.document.model_copy(update={"revision": head.document_version})
         return ExamWorkspaceDocumentResponse(
             document=document,
+            saved_document=container.document,
             summary=_summary(head),
             history_cursor=history.cursor,
             notes=container.notes,
@@ -360,6 +361,7 @@ class SaveExamWorkspaceDocumentHandler:
         assert history is not None
         return ExamWorkspaceDocumentResponse(
             document=document,
+            saved_document=document,
             history_cursor=history.cursor,
             summary=_summary(vault_file),
             notes=head_container.notes,
@@ -444,6 +446,7 @@ class SaveExamWorkspaceDocumentHandler:
             )
             return ExamWorkspaceDocumentResponse(
                 document=copied,
+                saved_document=copied,
                 summary=_summary(vault_file),
                 history_cursor=copy_id,
                 notes=saved.notes,

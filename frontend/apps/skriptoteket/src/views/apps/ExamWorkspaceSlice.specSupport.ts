@@ -160,6 +160,11 @@ export function buildResponse(params: {
       revision: params.version,
       title: params.title ?? document.title,
     },
+    saved_document: {
+      ...document,
+      revision: params.version,
+      title: params.title ?? document.title,
+    },
     notes: [],
     summary: {
       lineage_id: "lineage-1",

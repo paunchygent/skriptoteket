@@ -109,6 +109,7 @@ function buildResponse(): ExamWorkspaceDocumentResponse {
     history_cursor: "00000000-0000-4000-8000-000000000001",
     conversion: succeededConversion,
     document: buildDocument(),
+    saved_document: buildDocument(),
     notes: [],
     summary: {
       lineage_id: "lineage-1",
