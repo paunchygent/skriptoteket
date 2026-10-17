@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "0ae672263da1f63dae87a2b67ac5d52c211a792f1aec7745cae9415c01b81d51",
+  "source_set_digest": "db395727cc0cb4a2d5ea1b9a2f08f6cf3625279b4088b4743a8d6fee97d44877",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5868,7 +5868,7 @@
       "type": "task",
       "title": "Refresh admin screens and the authoring editor onto the shared tokens and components",
       "path": "docs/backlog/tasks/task-skript-40-03-03-refresh-admin-screens-and-the-authoring-editor-onto-the-shared-tokens-and-components.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-03",
       "owners": [
@@ -5879,7 +5879,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-17",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer (Sol) approvals in the retained session 01a149c9-5bc7-7713-ba64-12dee0470bdd, evidence/reviews/TASK-SKRIPT-40-03-03/: the area review, review 3b4d672a's other items and rereview da8419e4 of the shared dialog focus repair (9334a739, da8419e4); merged to main fdc2973b. The Mac parent's staging walk on 1c133433 found batch-1 items 4 and 5; their repairs close on adversarial unit specs and approved review under the user's 2026-10-17 rule that parent walks cover only the exam converter. The parent authorized closure."
       }
     },
     {
@@ -5906,7 +5910,7 @@
       "type": "task",
       "title": "Refresh Conversion Hub document and transcript tools onto the shared tokens and components",
       "path": "docs/backlog/tasks/task-skript-40-03-05-refresh-conversion-hub-document-and-transcript-tools-onto-the-shared-tokens-and-components.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-03",
       "owners": [
@@ -5917,7 +5921,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-17",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer (Sol) approvals in the retained session 01a149c9-5bc7-7713-ba64-12dee0470bdd, evidence/reviews/TASK-SKRIPT-40-03-05/: rereview ec0b33c2, rereview 39c6ee16 (B2-1 save confirmation) and rereview 35b23eba (B2-2 alerts); merged to main 1b417b64 and 4a5c0569. The Mac parent's staging walk on 1b417b64 (evidence/staging-walk-batch2-1b417b64/) found B2-1 and B2-2; their repairs close on adversarial unit specs and approved review under the user's 2026-10-17 rule that parent walks cover only the exam converter. The transcript (Ljudtranskribering) restyle stands on unit proof only because the product keeps it disabled (user 2026-10-17, \"No\"). The parent authorized closure."
       }
     },
     {
@@ -5925,7 +5933,7 @@
       "type": "task",
       "title": "Refresh Reagent Prep Chef onto the shared tokens and components",
       "path": "docs/backlog/tasks/task-skript-40-03-06-refresh-reagent-prep-chef-onto-the-shared-tokens-and-components.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-03",
       "owners": [
@@ -5936,7 +5944,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-17",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer (Sol) approvals in the retained session 01a149c9-5bc7-7713-ba64-12dee0470bdd, evidence/reviews/TASK-SKRIPT-40-03-06/: rereview abfaf512 and reviews 820c9d61, 9e7f4c23, 73184c58, 0096ddcd, rereview 35b23eba and, for B2-6, rereview da8419e4; merged to main 1b417b64, 4a5c0569 and fdc2973b. The Mac parent's staging walk on 1b417b64 found B2-2..B2-8; its re-walk passed B2-3, B2-4, B2-5, B2-7 and B2-8. Non-blocking residual noted at closure: after a substance suggestion is picked focus dropped to body and suggestion names ran together (\"Koppar (Cu)Cu\"); a separate repair is in progress. The parent authorized closure."
       }
     },
     {

@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-17'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-17'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Pi ruthless-reviewer (Sol) approvals in the retained session 01a149c9-5bc7-7713-ba64-12dee0470bdd, evidence/reviews/TASK-SKRIPT-40-03-03/: the area review, review 3b4d672a''s other items and rereview da8419e4 of the shared dialog focus repair (9334a739, da8419e4); merged to main fdc2973b. The Mac parent''s staging walk on 1c133433 found batch-1 items 4 and 5; their repairs close on adversarial unit specs and approved review under the user''s 2026-10-17 rule that parent walks cover only the exam converter. The parent authorized closure.'
 task_kind: story
 acceptance_criteria:
   - The admin screens, the suggestion form, Mina verktyg, the editor hub and the script editor render with the shared tokens, action buttons and components and no hard offset shadows, keep their layout, and pass a browser walk at phone, tablet and desktop widths

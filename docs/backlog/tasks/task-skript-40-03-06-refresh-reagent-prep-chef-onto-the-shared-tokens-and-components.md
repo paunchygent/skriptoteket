@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-17'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-17'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Pi ruthless-reviewer (Sol) approvals in the retained session 01a149c9-5bc7-7713-ba64-12dee0470bdd, evidence/reviews/TASK-SKRIPT-40-03-06/: rereview abfaf512 and reviews 820c9d61, 9e7f4c23, 73184c58, 0096ddcd, rereview 35b23eba and, for B2-6, rereview da8419e4; merged to main 1b417b64, 4a5c0569 and fdc2973b. The Mac parent''s staging walk on 1b417b64 found B2-2..B2-8; its re-walk passed B2-3, B2-4, B2-5, B2-7 and B2-8. Non-blocking residual noted at closure: after a substance suggestion is picked focus dropped to body and suggestion names ran together ("Koppar (Cu)Cu"); a separate repair is in progress. The parent authorized closure.'
 task_kind: story
 acceptance_criteria:
   - The Reagent Prep Chef app render with the shared tokens, action buttons and components and no hard offset shadows, keep their layout, and pass a browser walk at phone, tablet and desktop widths

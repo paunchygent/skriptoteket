@@ -73,13 +73,14 @@
   the Mac parent's staging walk passed on e1efb4fc (`evidence/staging-walk-40-01-02/`). 40-01-03 `done` (walk
   passed on 1c133433). 40-03-01 walk repairs merged (d9c2b3bb) and re-walked
   there (`evidence/staging-rewalk-40-03-01-d9c2b3bb/`: items 1 and 3 pass, item 2 is a
-  user-generated-tool path, exempt by the user); 40-03-01 `done`. 40-03-03 repairs
-  (dialog Escape and focus return) are merged (fdc2973b). User rule 2026-10-17: parent walks cover only the exam
+  user-generated-tool path, exempt by the user); 40-03-01 `done`. 40-03-03, 40-03-05 and 40-03-06
+  `done` (repairs merged 4a5c0569 and fdc2973b; closed on review). User rule 2026-10-17: parent walks cover only the exam
   converter, so 40-03-03..06 repairs close on unit proof and review without a re-walk. 40-03-05 and 40-03-06
   walked on 1b417b64 (`evidence/staging-walk-batch2-1b417b64/`): defects B2-1..B2-8,
   one Hemma Sol agent per fix in a shared worktree; Ljudtranskribering is product-disabled
-  (96b9b96f7), not walkable; 40-03-04 adopts
-  huleedu-integrated 0.1.27 (TASK-SKILL-REP-0325 `done`); its F7 split is fa89d988. Opus lane: ST-SKRIPT-40-04; 40-04-01 `done`
+  (96b9b96f7), not walkable; 40-03-04 merged on
+  0.1.27 (81200aba, rereview 51081cb1 approved); closes after its planner sites drop the overrides
+  0.1.28 covers (TASK-SKILL-REP-0326 `done`, adopted on main 81200aba). Opus lane: ST-SKRIPT-40-04; 40-04-01 `done`
   (prototype approved by the user 2026-10-17, decisions T6-T29,
   `docs/mockups/app-shell-and-exam-workspace-redesign/`), then two Opus builders (40-04-02 shell, 40-04-03 workspace); it supersedes
   TASK-SKRIPT-39-04-05 (`canceled`). Sol restyle lane: ST-SKRIPT-40-03 tasks
