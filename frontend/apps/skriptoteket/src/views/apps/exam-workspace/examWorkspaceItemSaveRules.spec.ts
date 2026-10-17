@@ -37,11 +37,11 @@ function buildChoiceItem(
     criteria: [],
     printed_label: null,
     retry_source: null,
-    answer_key: { correct_choice_ids: ["choice_a"], match_pairs: [], origin: "teacher_authored" },
+    answer_key: { correct_choice_ids: ["choice_001"], match_pairs: [], origin: "teacher_authored" },
     body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Vilket ämne är en gas?" }] }],
     choices: [
-      { choice_id: "choice_a", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Syre" }] }] },
-      { choice_id: "choice_b", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Järn" }] }] },
+      { choice_id: "choice_001", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Syre" }] }] },
+      { choice_id: "choice_002", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Järn" }] }] },
     ],
     gaps: [],
     item_id: `item_00${sequence}`,
@@ -64,8 +64,8 @@ function buildChoiceItem(
 }
 
 const EMPTY_CHOICES = [
-  { choice_id: "choice_a", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Syre" }] }] },
-  { choice_id: "choice_b", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "" }] }] },
+  { choice_id: "choice_001", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Syre" }] }] },
+  { choice_id: "choice_002", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "" }] }] },
 ] satisfies NativeExamItem["choices"];
 
 describe("examWorkspaceSaveRefusalCopy", () => {

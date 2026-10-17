@@ -14,7 +14,8 @@
 import { flushPromises } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { ExamWorkspaceConversionStatus } from "../../api/examWorkspace";
+import type { ExamWorkspaceConversionStatus, NativeExamDocument } from "../../api/examWorkspace";
+import { buildFreeTextItem } from "../../test/examWorkspaceFixtures";
 import { useToastStore } from "../../stores/toast";
 import ExamWorkspaceBodyEditor from "./exam-workspace/ExamWorkspaceBodyEditor.vue";
 import {
@@ -151,7 +152,35 @@ describe("ExamWorkspaceView save rules", () => {
   });
 
   it("accepts zero points at the field and sends the save", async () => {
-    apiMocks.saveExamWorkspaceDocument.mockResolvedValue(buildResponse({ version: 2 }));
+    const response = buildResponse({ conversion: succeededConversion, version: 1 });
+    const document: NativeExamDocument = {
+      ...response.document,
+      document_id: "00000000-0000-4000-8000-000000000001",
+      origin: {
+        kind: "docx_import",
+        source_filename: "NO_Prov_HT25.docx",
+        source_sha256: "a".repeat(64),
+        extractor_version: "docx-extractor-1",
+      },
+      items: [buildFreeTextItem(1), buildFreeTextItem(2)],
+    };
+    const savedDocument: NativeExamDocument = {
+      ...document,
+      revision: 2,
+      items: document.items.map((item) => item.item_id === "item_002" ? { ...item, points: 0 } : item),
+    };
+    apiMocks.importExamWorkspaceDocument.mockResolvedValue({
+      ...succeededConversion, state: "queued", document_revision: null,
+    });
+    apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce({
+      ...response, document, saved_document: document,
+    });
+    apiMocks.saveExamWorkspaceDocument.mockResolvedValue({
+      ...response,
+      document: savedDocument,
+      saved_document: savedDocument,
+      summary: { ...response.summary, version: 2 },
+    });
     const wrapper = await mountImported();
 
     await selectItemRow(wrapper, "item_002");

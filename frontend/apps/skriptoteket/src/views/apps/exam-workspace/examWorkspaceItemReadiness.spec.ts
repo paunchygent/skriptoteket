@@ -39,11 +39,11 @@ function buildChoiceItem(overrides: Partial<NativeExamItem> = {}): NativeExamIte
     criteria: [],
     printed_label: null,
     retry_source: null,
-    answer_key: { correct_choice_ids: ["choice_a"], match_pairs: [], origin: "teacher_authored" },
+    answer_key: { correct_choice_ids: ["choice_001"], match_pairs: [], origin: "teacher_authored" },
     body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Vilket ämne är en gas?" }] }],
     choices: [
-      { choice_id: "choice_a", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Syre" }] }] },
-      { choice_id: "choice_b", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Järn" }] }] },
+      { choice_id: "choice_001", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Syre" }] }] },
+      { choice_id: "choice_002", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Järn" }] }] },
     ],
     gaps: [],
     item_id: "item_001",
@@ -72,7 +72,7 @@ describe("examWorkspaceItemReadiness", () => {
 
   it("reports every server gate reason in order", () => {
     const item = buildChoiceItem({
-      answer_key: { correct_choice_ids: ["choice_a"], match_pairs: [], origin: "machine_proposed" },
+      answer_key: { correct_choice_ids: ["choice_001"], match_pairs: [], origin: "machine_proposed" },
       points: null,
       review: {
         confidence: null,
@@ -186,14 +186,14 @@ describe("examWorkspaceItemReadiness", () => {
   it("reports a choice without text, and accepts whitespace as the server does", () => {
     const empty = buildChoiceItem({
       choices: [
-        { choice_id: "choice_a", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Syre" }] }] },
-        { choice_id: "choice_b", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "" }] }] },
+        { choice_id: "choice_001", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Syre" }] }] },
+        { choice_id: "choice_002", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "" }] }] },
       ],
     });
     const blank = buildChoiceItem({
       choices: [
-        { choice_id: "choice_a", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Syre" }] }] },
-        { choice_id: "choice_b", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: " " }] }] },
+        { choice_id: "choice_001", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Syre" }] }] },
+        { choice_id: "choice_002", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: " " }] }] },
       ],
     });
 
@@ -224,8 +224,8 @@ describe("examWorkspaceReadinessByItemId", () => {
   it("maps the save-refused states to their Swedish copy", () => {
     const item = buildChoiceItem({
       choices: [
-        { choice_id: "choice_a", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Syre" }] }] },
-        { choice_id: "choice_b", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "" }] }] },
+        { choice_id: "choice_001", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Syre" }] }] },
+        { choice_id: "choice_002", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "" }] }] },
       ],
       points: -1,
     });
