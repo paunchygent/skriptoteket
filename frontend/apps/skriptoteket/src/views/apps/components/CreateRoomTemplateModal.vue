@@ -206,9 +206,6 @@ async function removeTemplate(): Promise<void> {
             v-model="error"
             tone="failure"
             dismissible
-            role="alert"
-            aria-live="assertive"
-            aria-atomic="true"
           />
 
           <div class="room-template-modal-editor-grid mt-6 grid gap-6 xl:grid-cols-[240px_minmax(0,1fr)] xl:items-start">

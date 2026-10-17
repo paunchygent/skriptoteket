@@ -199,9 +199,6 @@ async function startOverviewSeatingShareLink(): Promise<void> {
       :dismissible="false"
       :model-value="guestController.bootstrapError.value"
       tone="failure"
-      role="alert"
-      aria-live="assertive"
-      aria-atomic="true"
     />
 
     <SystemMessage
@@ -209,9 +206,6 @@ async function startOverviewSeatingShareLink(): Promise<void> {
       :dismissible="false"
       :model-value="guestController.plannerActionError.value"
       tone="failure"
-      role="alert"
-      aria-live="assertive"
-      aria-atomic="true"
     />
 
     <div
