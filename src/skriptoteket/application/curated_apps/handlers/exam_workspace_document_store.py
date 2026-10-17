@@ -245,12 +245,13 @@ class ExamWorkspaceDocumentStore:
     def _saved_position(
         self, history: ExamWorkspaceHistoryState, document: NativeExamDocument
     ) -> UUID | None:
-        """After Spara the editor stands on the newest snapshot when it holds the saved
-        document; otherwise on the saved document alone, which the next edit retains."""
-        newest = history.steps[-1] if history.steps else history.baseline
-        retained = self._codec.parse(content=newest.content).document
-        if retained.model_copy(update={"revision": document.revision}) == document:
-            return newest.step_id
+        """After Spara the editor stands on the newest snapshot that holds the saved
+        document, an undone one included; otherwise on the saved document alone,
+        which the next edit retains."""
+        for snapshot in reversed((history.baseline, *history.steps)):
+            retained = self._codec.parse(content=snapshot.content).document
+            if retained.model_copy(update={"revision": document.revision}) == document:
+                return snapshot.step_id
         return None
 
     def validate_size(self, content: bytes) -> None:

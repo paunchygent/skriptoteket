@@ -72,6 +72,27 @@ async def test_spara_of_the_autosaved_copy_keeps_the_position_on_its_step() -> N
 
 
 @pytest.mark.asyncio
+async def test_spara_after_undo_stands_on_the_undone_step() -> None:
+    env = _Env()
+    actor = _actor()
+    imported = await env.seed_document(actor=actor)
+    lineage = imported.summary.lineage_id
+    first = imported.document.model_copy(update={"title": "Första"})
+    await _autosave(env, actor, lineage, first)
+    await _autosave(env, actor, lineage, first.model_copy(update={"title": "Andra"}))
+    before = await _handler(env).history(actor=actor, lineage_id=lineage)
+
+    # The editor undid to "Första" (a read only) and saves that copy.
+    await _spara(env, actor, lineage, first, 1)
+
+    after = await _handler(env).history(actor=actor, lineage_id=lineage)
+    assert after.step_ids == before.step_ids
+    assert after.position_step_id == before.step_ids[0]
+    reopened = await env.get_handler.handle(actor=actor, lineage_id=lineage)
+    assert reopened.document.title == "Första"
+
+
+@pytest.mark.asyncio
 async def test_spara_of_an_unmodified_import_keeps_the_position_on_the_baseline() -> None:
     env = _Env()
     actor = _actor()

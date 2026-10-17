@@ -20,6 +20,7 @@ import { flushPromises } from "@vue/test-utils";
 import { effectScope, ref } from "vue";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { ApiError } from "../../../api/client";
 import type { ExamWorkspaceDocumentResponse, NativeExamDocument } from "../../../api/examWorkspace";
 import { newTeacherItem } from "./examWorkspaceItemEdits";
 import { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
@@ -27,6 +28,7 @@ import { useExamWorkspaceHistory } from "./useExamWorkspaceHistory";
 
 const api = vi.hoisted(() => ({
   changeExamWorkspaceItemType: vi.fn(),
+  getExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceHistory: vi.fn(),
   getExamWorkspaceHistoryStep: vi.fn(),
   saveExamWorkspaceDocument: vi.fn(),
@@ -79,6 +81,10 @@ function response(document: NativeExamDocument, cursor: string): ExamWorkspaceDo
   } as ExamWorkspaceDocumentResponse;
 }
 
+function conflict(): ApiError {
+  return new ApiError({ code: "CONFLICT", message: "Dokumentet har ändrats sedan det öppnades.", status: 409 });
+}
+
 function withoutRevision(document: NativeExamDocument): string {
   return JSON.stringify({ ...document, revision: 0 });
 }
@@ -113,7 +119,7 @@ function fakeServer(baseline: NativeExamDocument) {
   }));
   api.storeExamWorkspaceUndoStep.mockImplementation(
     async (_l: string, request: { afterStepId: string | null; document: NativeExamDocument; expectedCursor: string }) => {
-      if (request.expectedCursor !== state.cursor) throw Object.assign(new Error("conflict"), { status: 409 });
+      if (request.expectedCursor !== state.cursor) throw conflict();
       if (request.afterStepId !== null) {
         state.steps = state.steps.slice(0, ["step-0", ...state.steps].indexOf(request.afterStepId));
       } else if (withoutRevision(documents.get(newest())!) !== withoutRevision(state.saved)) {
@@ -127,8 +133,11 @@ function fakeServer(baseline: NativeExamDocument) {
   api.saveExamWorkspaceDocument.mockImplementation(async (_l: string, request: { document: NativeExamDocument }) => {
     state.saved = request.document;
     state.cursor = `saved-${++counter}`;
-    const same = withoutRevision(documents.get(newest())!) === withoutRevision(request.document);
-    state.position = same ? newest() : null;
+    // Newest snapshot holding the saved copy, an undone one included.
+    state.position =
+      ["step-0", ...state.steps]
+        .reverse()
+        .find((stepId) => withoutRevision(documents.get(stepId)!) === withoutRevision(request.document)) ?? null;
     return response(request.document, state.cursor);
   });
   return { documents, state };
@@ -172,6 +181,27 @@ describe("undo history across Spara (F1)", () => {
     expect(editing.history.canRedo.value).toBe(true);
     await editing.history.redo();
     expect(editing.workspaceDocument.value!.title).toBe("Lärarens rubrik");
+  });
+
+  it("keeps undo and redo after an undo followed by Spara", async () => {
+    const { editing } = await openEditing();
+    editing.setTitle("Ett");
+    await editing.history.flush();
+    editing.setTitle("Två");
+    await editing.history.flush();
+    await editing.history.undo();
+    expect(editing.workspaceDocument.value!.title).toBe("Ett");
+
+    expect(await editing.save()).toBe(true);
+    await flushPromises();
+
+    expect(editing.history.canUndo.value).toBe(true);
+    expect(editing.history.canRedo.value).toBe(true);
+    await editing.history.redo();
+    expect(editing.workspaceDocument.value!.title).toBe("Två");
+    await editing.history.undo();
+    await editing.history.undo();
+    expect(editing.workspaceDocument.value!.title).toBe("Original");
   });
 
   it("reopened after Spara, the editor stands on the saved step and can undo", async () => {
@@ -246,6 +276,34 @@ describe("a failed prerequisite store (F2)", () => {
 
     expect(api.getExamWorkspaceHistoryStep).not.toHaveBeenCalled();
     expect(editing.workspaceDocument.value!.title).toBe("Lärarens osparade text");
+  });
+});
+
+describe("conflict recovery under the replacing lock", () => {
+  it("reloads the exam when a server command meets a newer cursor", async () => {
+    const { editing } = await openEditing();
+    api.changeExamWorkspaceItemType.mockRejectedValueOnce(conflict());
+    api.getExamWorkspaceDocument.mockResolvedValueOnce(response(exam("Från en annan flik"), "other-tab"));
+
+    await editing.structure.changeType("item_001", "single_choice");
+
+    expect(api.getExamWorkspaceDocument).toHaveBeenCalledOnce();
+    expect(editing.workspaceDocument.value!.title).toBe("Från en annan flik");
+  });
+
+  it("reloads the exam when undo's store of the pending edit meets a newer cursor", async () => {
+    const { editing, server } = await openEditing();
+    editing.setTitle("Ett");
+    await editing.history.flush();
+    server.state.cursor = "other-tab";
+    api.getExamWorkspaceDocument.mockResolvedValueOnce(response(exam("Från en annan flik"), "other-tab"));
+    editing.setTitle("Osparad");
+
+    await editing.history.undo();
+
+    expect(api.getExamWorkspaceDocument).toHaveBeenCalledOnce();
+    expect(api.getExamWorkspaceHistoryStep).not.toHaveBeenCalled();
+    expect(editing.workspaceDocument.value!.title).toBe("Från en annan flik");
   });
 });
 
