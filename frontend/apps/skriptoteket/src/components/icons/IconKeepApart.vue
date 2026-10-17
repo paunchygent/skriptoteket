@@ -7,7 +7,7 @@
  * - consumed by seating-rule tools and active-rule summaries
  */
 
-import { Ban } from "lucide-vue-next";
+import { Ban } from "@lucide/vue";
 
 defineProps<{
   size?: number;

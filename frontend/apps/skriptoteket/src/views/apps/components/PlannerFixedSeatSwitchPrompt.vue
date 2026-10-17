@@ -11,8 +11,8 @@
  *   - emits direct yes/no/close choices without owning map state
  */
 
-import { IconX } from "../../../components/icons";
 import { UiDenseIconButton } from "../../../components/ui";
+import { UiGlyph } from "../../../components/ui/shared";
 
 const emit = defineEmits<{
   (e: "accept"): void;
@@ -32,7 +32,11 @@ const emit = defineEmits<{
       data-test="rules-fixed-seat-switch-close"
       @click="emit('close')"
     >
-      <IconX :size="14" />
+      <UiGlyph
+        meaning="close"
+        :size="14"
+        :stroke-width="2.5"
+      />
     </UiDenseIconButton>
     <p class="pr-6 text-sm font-semibold leading-relaxed text-navy">
       Fast plats kräver en fysisk plats. Vill du byta till klassrumsvyn?

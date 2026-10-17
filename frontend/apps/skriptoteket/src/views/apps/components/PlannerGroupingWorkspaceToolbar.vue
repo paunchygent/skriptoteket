@@ -10,13 +10,7 @@
 
 import { computed, ref } from "vue";
 
-import {
-  IconMinus,
-  IconPlus,
-  IconRedo,
-  IconShuffle,
-  IconUndo,
-} from "../../../components/icons";
+import { UiGlyph } from "../../../components/ui/shared";
 import {
   DENSE_FORM_INPUT_CLASS,
   UiDenseActionButton,
@@ -195,7 +189,11 @@ function incrementGroupCount(): void {
             @click="void state.undoGroupingDraft()"
           >
             <template #leading>
-              <IconUndo :size="16" />
+              <UiGlyph
+                meaning="undo"
+                :size="16"
+                :stroke-width="2.5"
+              />
             </template>
           </UiDenseActionButton>
           <UiDenseActionButton
@@ -209,7 +207,11 @@ function incrementGroupCount(): void {
             @click="void state.redoGroupingDraft()"
           >
             <template #leading>
-              <IconRedo :size="16" />
+              <UiGlyph
+                meaning="redo"
+                :size="16"
+                :stroke-width="2.5"
+              />
             </template>
           </UiDenseActionButton>
         </div>
@@ -235,7 +237,11 @@ function incrementGroupCount(): void {
             @click="void state.runGroupingShuffle()"
           >
             <template #leading>
-              <IconShuffle :size="16" />
+              <UiGlyph
+                meaning="shuffle"
+                :size="16"
+                :stroke-width="2.5"
+              />
             </template>
           </UiDenseActionButton>
         </div>
@@ -271,7 +277,11 @@ function incrementGroupCount(): void {
               @click="decrementGroupCount"
             >
               <template #leading>
-                <IconMinus :size="16" />
+                <UiGlyph
+                  meaning="decrement"
+                  :size="16"
+                  :stroke-width="2.5"
+                />
               </template>
             </UiDenseActionButton>
             <span
@@ -292,7 +302,11 @@ function incrementGroupCount(): void {
               @click="incrementGroupCount"
             >
               <template #leading>
-                <IconPlus :size="16" />
+                <UiGlyph
+                  meaning="increment"
+                  :size="16"
+                  :stroke-width="2.5"
+                />
               </template>
             </UiDenseActionButton>
           </div>

@@ -17,7 +17,7 @@ import { useAdminToolsIndex } from "../../composables/admin/useAdminToolsIndex";
 import { listRecentEditorTools } from "../../composables/editor/editorRecentTools";
 import { searchTools } from "../../composables/tools/toolSearch";
 import { useAuthStore } from "../../stores/auth";
-import { IconPlus } from "../icons";
+import { UiGlyph } from "../ui/shared";
 import {
   DENSE_FORM_INPUT_CLASS,
   DENSE_MENU_PANEL_CLASS,
@@ -460,7 +460,11 @@ async function createDraftTool(): Promise<void> {
             @click="openCreateModal"
           >
             <template #leading>
-              <IconPlus :size="14" />
+              <UiGlyph
+                meaning="add"
+                :size="14"
+                :stroke-width="2.5"
+              />
             </template>
           </UiDenseActionButton>
         </div>

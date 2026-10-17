@@ -7,7 +7,7 @@
  * - avoids using settings/gear semantics for classroom rules
  */
 
-import { ListChecks } from "lucide-vue-next";
+import { ListChecks } from "@lucide/vue";
 
 defineProps<{
   size?: number;

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, watch } from "vue";
 import { UiDenseActionButton, UiDenseIconButton, UiSegmentedToggle } from "../ui";
+import { UiGlyph } from "../ui/shared";
 
 type ChatComposerProps = {
   isStreaming: boolean;
@@ -143,16 +144,12 @@ watch(
         :disabled="!canSubmit"
         @click="handleSubmit"
       >
-        <svg
-          viewBox="0 0 24 24"
+        <UiGlyph
+          meaning="send"
+          :size="16"
           class="h-4 w-4"
           aria-hidden="true"
-        >
-          <path
-            d="M20.9 11.3L4.6 3.2c-.6-.3-1.3.2-1.2.9l1.1 6.2c.1.4.4.8.9.9l7.1 1.1-7.1 1.1c-.4.1-.8.4-.9.9l-1.1 6.2c-.1.7.6 1.2 1.2.9l16.3-8.1c.7-.3.7-1.3 0-1.6z"
-            fill="currentColor"
-          />
-        </svg>
+        />
       </UiDenseIconButton>
     </div>
 

@@ -11,9 +11,8 @@
  *   - Delegates selected-format export actions to `TranscriptFormatterExportPanel`.
  */
 
-import { Check } from "lucide-vue-next";
-
 import { UiDenseActionButton } from "../../../components/ui";
+import { UiGlyph } from "../../../components/ui/shared";
 
 import type {
   ConversionHubTranscriptFormatterArtifactRef,
@@ -120,8 +119,9 @@ function handleSpeakerOverlayInput(label: string, event: Event): void {
             data-test="transcript-save-state"
             aria-live="polite"
           >
-            <Check
+            <UiGlyph
               v-if="saveStatus === 'saved'"
+              meaning="completed"
               class="h-4 w-4"
               aria-hidden="true"
             />
@@ -226,7 +226,8 @@ function handleSpeakerOverlayInput(label: string, event: Event): void {
                 Sparar namn automatiskt.
               </template>
               <template v-else-if="speakerOverlayStatus === 'saved'">
-                <Check
+                <UiGlyph
+                  meaning="completed"
                   class="h-4 w-4 shrink-0 text-success"
                   aria-hidden="true"
                 />

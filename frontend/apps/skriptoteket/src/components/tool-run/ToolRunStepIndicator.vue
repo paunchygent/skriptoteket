@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { StepResult } from "../../composables/tools/useToolRun";
-import { IconCheck } from "../icons";
+import { UiGlyph } from "../ui/shared";
 
 defineProps<{
   steps: StepResult[];
@@ -59,7 +59,11 @@ function connectorClass(step: StepResult): string {
           @click="step.status === 'completed' && emit('select-step', step)"
         >
           <template v-if="step.status === 'completed'">
-            <IconCheck :size="12" />
+            <UiGlyph
+              meaning="completed"
+              :size="12"
+              :stroke-width="2.5"
+            />
           </template>
           <template v-else>
             {{ step.stepNumber }}

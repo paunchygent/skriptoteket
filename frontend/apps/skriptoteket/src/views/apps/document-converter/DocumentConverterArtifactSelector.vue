@@ -12,7 +12,7 @@
  *     state.
  *   - Emits artifact-selection intent back to the route host.
  */
-import { IconFileText } from "../../../components/icons";
+import { UiGlyph } from "../../../components/ui/shared";
 
 type ArtifactOption = {
   artifactId: string;
@@ -44,7 +44,11 @@ const emit = defineEmits<{
       type="button"
       @click="emit('selectArtifact', artifact.artifactId)"
     >
-      <IconFileText :size="16" />
+      <UiGlyph
+        meaning="document"
+        :size="16"
+        :stroke-width="2.25"
+      />
       <span>{{ artifact.filename }}</span>
     </button>
   </section>

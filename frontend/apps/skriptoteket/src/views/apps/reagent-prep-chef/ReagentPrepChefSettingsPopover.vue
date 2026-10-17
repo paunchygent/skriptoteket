@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from "vue";
 
-import { IconSettings, IconX } from "../../../components/icons";
+import { UiGlyph } from "../../../components/ui/shared";
 import { UiDenseActionButton, UiDenseIconButton } from "../../../components/ui";
 
 import type { ReagentPrepChefDefaultsResult } from "./types";
@@ -77,7 +77,11 @@ onUnmounted(() => {
         @click.stop="toggleSettings"
       >
         <template #leading>
-          <IconSettings :size="16" />
+          <UiGlyph
+            meaning="settings"
+            :size="16"
+            :stroke-width="2.5"
+          />
         </template>
       </UiDenseActionButton>
     </span>
@@ -97,7 +101,11 @@ onUnmounted(() => {
           label="Stäng inställningar"
           @click="closeSettings"
         >
-          <IconX :size="14" />
+          <UiGlyph
+            meaning="close"
+            :size="14"
+            :stroke-width="2.5"
+          />
         </UiDenseIconButton>
 
         <p class="font-semibold text-navy mb-2">Inställningar</p>

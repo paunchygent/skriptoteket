@@ -12,7 +12,8 @@
  */
 
 import { computed, ref } from "vue";
-import { Download, FolderInput } from "lucide-vue-next";
+
+import { UiGlyph } from "../../../components/ui/shared";
 
 import type {
   ConversionHubTranscriptFormatterArtifactRef,
@@ -129,7 +130,8 @@ function stateMessage(): string {
         data-test="transcript-download-selected-format"
         @click="emit('downloadFormatterArtifact', selectedFormat)"
       >
-        <Download
+        <UiGlyph
+          meaning="download"
           class="h-4 w-4"
           aria-hidden="true"
         />
@@ -142,7 +144,8 @@ function stateMessage(): string {
         data-test="transcript-save-selected-format"
         @click="emit('saveFormatterArtifact', selectedFormat)"
       >
-        <FolderInput
+        <UiGlyph
+          meaning="save-to-files"
           class="h-4 w-4"
           aria-hidden="true"
         />
