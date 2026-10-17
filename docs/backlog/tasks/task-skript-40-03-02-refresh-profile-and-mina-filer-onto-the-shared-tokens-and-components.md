@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-17'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-17'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Pi ruthless-reviewer (Sol) reviews in the retained session 01a149c9-5bc7-7713-ba64-12dee0470bdd, evidence/reviews/TASK-SKRIPT-40-03-02/: review 23f656bf (changes requested, F1-F4 hairline borders, course remove button size, AI-settings edit-state owner, Mina filer search action) and rereview bed4fbcc approved. Merged to main 761b1b59. Closed on approved review plus unit proof under the user''s 2026-10-17 rule that parent walks cover only the exam converter. The parent authorized closure.'
 task_kind: story
 acceptance_criteria:
   - The profile page and Mina filer render with the shared tokens, action buttons and components and no hard offset shadows, keep their layout, and pass a browser walk at phone, tablet and desktop widths

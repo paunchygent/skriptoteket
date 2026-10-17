@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "e00f645bf1ee289bf6ad806949762abed499e722f57b1be6877401e38fac2890",
+  "source_set_digest": "f079c46af4e5caa44c1427453b7b34752dd6228e7561bfebda31449117ed491d",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5811,7 +5811,7 @@
       "type": "task",
       "title": "Migrate icons to the shared glyph components",
       "path": "docs/backlog/tasks/task-skript-40-02-01-migrate-icons-to-the-shared-glyph-components.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-02",
       "owners": [
@@ -5853,7 +5853,7 @@
       "type": "task",
       "title": "Refresh profile and Mina filer onto the shared tokens and components",
       "path": "docs/backlog/tasks/task-skript-40-03-02-refresh-profile-and-mina-filer-onto-the-shared-tokens-and-components.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-03",
       "owners": [
@@ -5864,7 +5864,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-17",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer (Sol) reviews in the retained session 01a149c9-5bc7-7713-ba64-12dee0470bdd, evidence/reviews/TASK-SKRIPT-40-03-02/: review 23f656bf (changes requested, F1-F4 hairline borders, course remove button size, AI-settings edit-state owner, Mina filer search action) and rereview bed4fbcc approved. Merged to main 761b1b59. Closed on approved review plus unit proof under the user's 2026-10-17 rule that parent walks cover only the exam converter. The parent authorized closure."
       }
     },
     {

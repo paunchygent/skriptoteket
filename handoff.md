@@ -83,8 +83,10 @@
   40-04-03 workspace `f6049157` (`...-40-04-03-remote`); huleedu-integrated 0.1.29 (glyph
   meanings; no toast change, user rule) is on main cf19e83c (TASK-SKILL-REP-0327 `done`).
   Shell screenshots pass the lead's prototype check (final reshoot on 0.1.29).
-  Hemma Opus lead `3b164d53`: 40-03-02 and 40-02-01 under Sol (re)review; 40-03-09 (rules
-  into skills) finishing; 40-03-01/03/04/05/06/07/08 and 08-36-02 `done`. TASK-SKILL-REP-0326 (0.1.28) `done`.
+  Hemma Opus lead `3b164d53`: 40-03-01..08 and 08-36-02 `done`; 40-02-01 tranche 1 on
+  main 761b1b59 (`in_progress`: held/frozen-screen wrappers and lucide removal open);
+  40-03-09 (rules into skills) under Sol review; useClassroomState Smart-preference
+  test failure (on main) with a Sol fix agent. TASK-SKILL-REP-0326 (0.1.28) `done`.
 
 - Historical 2026-09-05 workspace planning (EPIC-SKRIPT-39 E8-E12, ADR-SKRIPT-0091,
   ST-SKRIPT-39-04): `.codex/long-term-memory/entries/session-2026-09-05-epic-39-handoff-compaction.md`.
