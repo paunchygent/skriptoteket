@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import httpx
 from dishka import Provider, Scope, provide
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from skriptoteket.application.curated_apps.exam_content_tagging import (
     MeteredExamContentTagClassifier,
@@ -39,7 +38,6 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_documents imp
     GetExamWorkspaceDocumentHandler,
     ImportExamWorkspaceDigiExamDocumentHandler,
     ImportExamWorkspaceDocumentHandler,
-    ListExamWorkspaceDocumentsHandler,
     SaveExamWorkspaceDocumentHandler,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_rounds import (
@@ -95,9 +93,6 @@ from skriptoteket.infrastructure.llm.openai.decisions_item_labeler import (
 from skriptoteket.infrastructure.llm.openai.docx_conversion_profiles import (
     build_luna_docx_conversion_profile,
 )
-from skriptoteket.infrastructure.repositories.exam_index_repository import (
-    PostgreSQLExamIndexRepository,
-)
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.docx_conversion_progress import DocxConversionProgressProtocol
 from skriptoteket.protocols.exam_answer_key import (
@@ -116,7 +111,6 @@ from skriptoteket.protocols.exam_workspace import (
     GetExamWorkspaceDocumentHandlerProtocol,
     ImportExamWorkspaceDigiExamDocumentHandlerProtocol,
     ImportExamWorkspaceDocumentHandlerProtocol,
-    ListExamWorkspaceDocumentsHandlerProtocol,
     RetryExamWorkspaceItemHandlerProtocol,
     SaveExamWorkspaceDocumentHandlerProtocol,
 )
@@ -332,10 +326,6 @@ class ExamWorkspaceProvider(Provider):
         return ExamWorkspaceContainerCodec()
 
     @provide(scope=Scope.REQUEST)
-    def exam_index(self, session: AsyncSession) -> ExamIndexRepositoryProtocol:
-        return PostgreSQLExamIndexRepository(session)
-
-    @provide(scope=Scope.REQUEST)
     def document_store(
         self,
         vault_files: VaultFileRepositoryProtocol,
@@ -442,16 +432,6 @@ class ExamWorkspaceProvider(Provider):
     ) -> GetExamWorkspaceAssetHandlerProtocol:
         """Provide the head-revision picture reader for the editor."""
         return GetExamWorkspaceAssetHandler(vault_files=vault_files, codec=codec, store=store)
-
-    @provide(scope=Scope.REQUEST)
-    def list_handler(
-        self,
-        index: ExamIndexRepositoryProtocol,
-        profiles: ProfileRepositoryProtocol,
-        uow: UnitOfWorkProtocol,
-    ) -> ListExamWorkspaceDocumentsHandlerProtocol:
-        """Provide the joined saved-exam index list handler."""
-        return ListExamWorkspaceDocumentsHandler(index=index, profiles=profiles, uow=uow)
 
     @provide(scope=Scope.REQUEST)
     def export_handler(

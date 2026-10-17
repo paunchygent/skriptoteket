@@ -16,9 +16,10 @@ import ExamWorkspaceSavedDocuments from "./ExamWorkspaceSavedDocuments.vue";
 function summary(
   lineageId: string,
   name: string,
+  title: string,
   savedAt: string,
 ): ExamWorkspaceDocumentSummary {
-  return { lineage_id: lineageId, name, saved_at: savedAt, vault_file_id: "file", version: 1 };
+  return { course_key: null, lineage_id: lineageId, name, saved_at: savedAt, title, vault_file_id: "file", version: 1 };
 }
 
 describe("ExamWorkspaceSavedDocuments", () => {
@@ -26,9 +27,9 @@ describe("ExamWorkspaceSavedDocuments", () => {
     const wrapper = mount(ExamWorkspaceSavedDocuments, {
       props: {
         documents: [
-          summary("l-new", "Prov.provdokument.zip", "2026-10-09T10:00:00Z"),
-          summary("l-other", "Annat.provdokument.zip", "2026-10-09T09:00:00Z"),
-          summary("l-old", "Prov.provdokument.zip", "2026-10-09T08:00:00Z"),
+          summary("l-new", "Prov.provdokument.zip", "Prov", "2026-10-09T10:00:00Z"),
+          summary("l-other", "Annat.provdokument.zip", "Annat", "2026-10-09T09:00:00Z"),
+          summary("l-old", "Prov.provdokument.zip", "Prov", "2026-10-09T08:00:00Z"),
         ],
         isBusy: false,
         isDirty: false,

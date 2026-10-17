@@ -41,6 +41,7 @@ export function createTestProfile(
     display_name: null,
     first_name: null,
     last_name: null,
+    exam_list_ordering: "course",
     ...overrides,
   };
 }

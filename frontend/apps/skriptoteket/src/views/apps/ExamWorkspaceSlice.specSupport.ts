@@ -25,6 +25,7 @@ import type {
   NativeExamItem,
 } from "../../api/examWorkspace";
 import ExamWorkspaceView from "./ExamWorkspaceView.vue";
+import { buildSavedExamSummary } from "./exam-workspace/useExamWorkspaceDocument.specSupport";
 import {
   EXAM_WORKSPACE_LAYOUT_KEY,
   type ExamWorkspaceLayout,
@@ -166,13 +167,12 @@ export function buildResponse(params: {
       title: params.title ?? document.title,
     },
     notes: [],
-    summary: {
-      lineage_id: "lineage-1",
+    summary: buildSavedExamSummary({
       name: params.title ?? document.title,
       saved_at: "2026-10-09T08:00:00Z",
-      vault_file_id: "file-1",
+      title: params.title ?? document.title,
       version: params.version,
-    },
+    }),
   };
 }
 

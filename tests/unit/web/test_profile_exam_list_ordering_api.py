@@ -12,7 +12,7 @@ from dishka import Provider, Scope, make_async_container, provide
 from fastapi import FastAPI
 from starlette_dishka import setup_dishka
 
-from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
+from skriptoteket.application.curated_apps.handlers.exam_workspace_saved_index import (
     ListExamWorkspaceDocumentsHandler,
 )
 from skriptoteket.application.identity.handlers.get_profile import GetProfileHandler

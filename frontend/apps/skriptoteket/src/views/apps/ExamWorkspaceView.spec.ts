@@ -22,6 +22,7 @@ import type {
 } from "../../api/examWorkspace";
 import { mountWithContext } from "../../test/utils";
 import ExamWorkspaceView from "./ExamWorkspaceView.vue";
+import { buildSavedExamSummary } from "./exam-workspace/useExamWorkspaceDocument.specSupport";
 
 const apiMocks = vi.hoisted(() => ({
   downloadExamWorkspaceExport: vi.fn(),
@@ -99,7 +100,7 @@ function buildDocument(): NativeExamDocument {
 
 /** The finished import: its poll status, and the conversion its fetched document carries. */
 const succeededConversion: ExamWorkspaceConversionStatus = {
-  job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null,
+  job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null, summary: null,
   document_revision: 1, questions_total: 0, questions_done: 0, units: [],
 };
 
@@ -111,13 +112,11 @@ function buildResponse(): ExamWorkspaceDocumentResponse {
     document: buildDocument(),
     saved_document: buildDocument(),
     notes: [],
-    summary: {
-      lineage_id: "lineage-1",
+    summary: buildSavedExamSummary({
       name: "NO-prov HT25",
       saved_at: "2026-10-09T08:00:00Z",
-      vault_file_id: "file-1",
-      version: 1,
-    },
+      title: "NO-prov HT25",
+    }),
   };
 }
 

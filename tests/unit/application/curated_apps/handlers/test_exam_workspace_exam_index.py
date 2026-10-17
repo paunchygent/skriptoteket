@@ -7,7 +7,7 @@ from uuid import uuid4
 import pytest
 
 from skriptoteket.application.curated_apps.exam_workspace import SaveExamWorkspaceDocumentRequest
-from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
+from skriptoteket.application.curated_apps.handlers.exam_workspace_saved_index import (
     ListExamWorkspaceDocumentsHandler,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.container import ExamWorkspaceContainerContent

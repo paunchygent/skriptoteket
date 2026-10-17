@@ -32,7 +32,7 @@ const downloadMocks = vi.hoisted(() => ({ triggerBrowserDownload: vi.fn() }));
 vi.mock("./exam-converter/browserDownload", () => downloadMocks);
 
 const succeeded: ExamWorkspaceConversionStatus = {
-  job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null,
+  job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null, summary: null,
   document_revision: 1, questions_total: 0, questions_done: 0, units: [],
 };
 const mounted: ViewWrapper[] = [];

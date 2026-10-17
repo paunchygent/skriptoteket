@@ -39,7 +39,7 @@ vi.mock("../../api/examWorkspace", async () => ({
 const SAVE_FIRST_COPY = "Spara det öppna provet innan du importerar ett annat.";
 
 const succeededConversion: ExamWorkspaceConversionStatus = {
-  job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null,
+  job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null, summary: null,
   document_revision: 1, questions_total: 0, questions_done: 0, units: [],
 };
 
@@ -53,7 +53,7 @@ beforeEach(() => {
     apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(
       buildResponse({ conversion: succeededConversion, version: 1 }),
     );
-    return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null,
+    return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null, summary: null,
       document_revision: null, questions_total: 0, questions_done: 0, units: [] };
   });
   apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [] });

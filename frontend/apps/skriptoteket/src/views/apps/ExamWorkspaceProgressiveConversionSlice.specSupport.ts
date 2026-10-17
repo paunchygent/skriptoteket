@@ -70,6 +70,7 @@ export function status(
     lineage_id: "lineage-1",
     state,
     error_message: null,
+    summary: null,
     document_revision: documentRevision,
     questions_total: 3,
     questions_done: units.filter((unit) => unit !== "converting").length,

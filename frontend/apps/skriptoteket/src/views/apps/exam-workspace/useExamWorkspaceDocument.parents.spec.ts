@@ -17,6 +17,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { ExamWorkspaceDocumentResponse, NativeExamDocument } from "../../../api/examWorkspace";
 import { buildParentDocument } from "./examWorkspaceParentDocument.specSupport";
 import { useExamWorkspaceDocument } from "./useExamWorkspaceDocument";
+import { buildSavedExamSummary } from "./useExamWorkspaceDocument.specSupport";
 
 const apiMocks = vi.hoisted(() => ({
   downloadExamWorkspaceExport: vi.fn(),
@@ -41,13 +42,7 @@ function buildResponse(document: NativeExamDocument): ExamWorkspaceDocumentRespo
     document,
     saved_document: document,
     notes: [],
-    summary: {
-      lineage_id: "lineage-1",
-      name: "english-1.provdokument.zip",
-      saved_at: "2026-10-11T08:00:00Z",
-      vault_file_id: "file-1",
-      version: 1,
-    },
+    summary: buildSavedExamSummary({ title: document.title }),
   };
 }
 

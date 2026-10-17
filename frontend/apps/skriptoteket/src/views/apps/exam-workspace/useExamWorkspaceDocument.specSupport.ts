@@ -15,6 +15,7 @@ import type { Mock } from "vitest";
 
 import type {
   ExamWorkspaceDocumentResponse,
+  ExamWorkspaceDocumentSummary,
   NativeExamDocument,
   NativeExamItem,
 } from "../../../api/examWorkspace";
@@ -23,6 +24,22 @@ import { useExamWorkspaceDocument } from "./useExamWorkspaceDocument";
 import type { ExamWorkspaceOpening } from "./useExamWorkspaceDocument";
 
 export type DocumentState = ReturnType<typeof useExamWorkspaceDocument>;
+
+/** One saved index row; scenarios override identity, title and saved version. */
+export function buildSavedExamSummary(
+  overrides: Partial<ExamWorkspaceDocumentSummary> = {},
+): ExamWorkspaceDocumentSummary {
+  return {
+    course_key: null,
+    lineage_id: "lineage-1",
+    name: "english-1.provdokument.zip",
+    saved_at: "2026-10-11T08:00:00Z",
+    title: "English 1",
+    vault_file_id: "file-1",
+    version: 1,
+    ...overrides,
+  };
+}
 
 export function buildResponse(
   item: NativeExamItem = buildMatchingItem(),
@@ -50,13 +67,7 @@ export function buildResponse(
     document,
     saved_document: document,
     notes: [],
-    summary: {
-      lineage_id: "lineage-1",
-      name: "english-1.provdokument.zip",
-      saved_at: "2026-10-11T08:00:00Z",
-      vault_file_id: "file-1",
-      version: 1,
-    },
+    summary: buildSavedExamSummary({ title: document.title }),
   };
 }
 

@@ -96,9 +96,11 @@ function buildResponse(revision: number): ExamWorkspaceDocumentResponse {
     saved_document: buildDocument(revision),
     notes: [],
     summary: {
+      course_key: null,
       lineage_id: "lineage-1",
       name: "NO-prov HT25",
       saved_at: "2026-10-09T08:00:00Z",
+      title: "NO-prov HT25",
       vault_file_id: "file-1",
       version: revision,
     },

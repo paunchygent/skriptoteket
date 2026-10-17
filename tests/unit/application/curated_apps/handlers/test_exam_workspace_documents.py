@@ -18,9 +18,11 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_document_stor
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
     GetExamWorkspaceDocumentHandler,
-    ListExamWorkspaceDocumentsHandler,
     SaveExamWorkspaceDocumentHandler,
     _summary,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_saved_index import (
+    ListExamWorkspaceDocumentsHandler,
 )
 from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.exam_workspace.container import ExamWorkspaceContainerContent
