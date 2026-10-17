@@ -72,6 +72,9 @@ const emit = defineEmits<{
       <SystemMessage
         v-else-if="props.riskErrorMessage"
         tone="failure"
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
       >
         {{ props.riskErrorMessage }}
       </SystemMessage>

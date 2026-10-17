@@ -302,6 +302,9 @@ onMounted(() => {
     <SystemMessage
       v-else-if="errorMessage"
       tone="failure"
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
     >
       {{ errorMessage }}
     </SystemMessage>
