@@ -1585,6 +1585,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/autosaves": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Autosave Exam Workspace Document */
+        post: operations["autosave_exam_workspace_document_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__autosaves_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/copy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Copy Exam Workspace Document */
+        post: operations["copy_exam_workspace_document_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__copy_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/export-checklist": {
         parameters: {
             query?: never;
@@ -1615,6 +1649,41 @@ export interface paths {
         /** Export Exam Workspace Document */
         get: operations["export_exam_workspace_document_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__exports__target__get"];
         put?: never;
+        /** Save Exam Workspace Export */
+        post: operations["save_exam_workspace_export_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__exports__target__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Exam Workspace History */
+        get: operations["get_exam_workspace_history_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__history_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/history/{step_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Exam Workspace History Step */
+        get: operations["get_exam_workspace_history_step_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__history__step_id__get"];
+        put?: never;
         post?: never;
         delete?: never;
         options?: never;
@@ -1637,6 +1706,74 @@ export interface paths {
          */
         post: operations["retry_exam_workspace_item_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__items_retry_post"];
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/parents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Exam Parent */
+        post: operations["create_exam_parent_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__parents_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/parents/{parent_id}/children": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Add Exam Child */
+        post: operations["add_exam_child_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__parents__parent_id__children_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/parents/{parent_id}/children/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Reorder Exam Children */
+        put: operations["reorder_exam_children_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__parents__parent_id__children_order_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/parents/{parent_id}/children/{item_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Exam Child */
+        delete: operations["delete_exam_child_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__parents__parent_id__children__item_id__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -2646,6 +2783,23 @@ export interface paths {
         patch: operations["update_classroom_planner_settings_api_v1_profile_classroom_planner_settings_patch"];
         trace?: never;
     };
+    "/api/v1/profile/exam-courses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Update Exam Courses */
+        patch: operations["update_exam_courses_api_v1_profile_exam_courses_patch"];
+        trace?: never;
+    };
     "/api/v1/public/apps/classroom.group-seating-studio/grouping/export": {
         parameters: {
             query?: never;
@@ -3213,6 +3367,20 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AddExamChildRequest */
+        AddExamChildRequest: {
+            child: components["schemas"]["NewParentChild"];
+            /**
+             * Expected Cursor
+             * Format: uuid
+             */
+            expected_cursor: string;
+            /**
+             * Position
+             * @description Zero-based insertion index within the parent.
+             */
+            position: number;
+        };
         /**
          * AdminToolItem
          * @description Tool representation for admin list/actions (ADR-0033).
@@ -4049,6 +4217,22 @@ export interface components {
             source_code: string;
             /** Usage Instructions */
             usage_instructions?: string | null;
+        };
+        /** CreateExamParentRequest */
+        CreateExamParentRequest: {
+            child: components["schemas"]["NewParentChild"];
+            /**
+             * Expected Cursor
+             * Format: uuid
+             */
+            expected_cursor: string;
+            /** Instruction */
+            instruction: components["schemas"]["NativeParagraph"][];
+            /**
+             * Position
+             * @description Zero-based insertion index among standalone questions and whole parents.
+             */
+            position: number;
         };
         /**
          * CreateGroupingDraftRequest
@@ -5136,6 +5320,11 @@ export interface components {
             courses: components["schemas"]["ExamCourse"][];
             /** Generated At */
             generated_at: string;
+            /**
+             * Registered Course Keys
+             * @default []
+             */
+            registered_course_keys: string[];
         };
         /**
          * ExamCourseChoice
@@ -5146,6 +5335,19 @@ export interface components {
             key: string;
             /** Name */
             name: string;
+        };
+        /**
+         * ExamCourses
+         * @description The teacher's school forms and ordered exam catalog keys.
+         *
+         *     The catalog key is the only stored identity; names resolve from the
+         *     committed catalog on read, and order is the teacher's selection order.
+         */
+        ExamCourses: {
+            /** Course Keys */
+            course_keys?: string[];
+            /** School Forms */
+            school_forms?: ("gymnasiet" | "grundskolan")[];
         };
         /**
          * ExamWorkspaceAnswerKeySuggestionItem
@@ -5253,6 +5455,11 @@ export interface components {
         ExamWorkspaceDocumentResponse: {
             conversion: components["schemas"]["ExamWorkspaceConversionStatus"] | null;
             document: components["schemas"]["NativeExamDocument-Output"];
+            /**
+             * History Cursor
+             * Format: uuid
+             */
+            history_cursor: string;
             /**
              * Notes
              * @default []
@@ -5366,6 +5573,30 @@ export interface components {
          * @enum {string}
          */
         ExamWorkspaceExportTarget: "qti" | "pdf" | "docx";
+        /** ExamWorkspaceHistoryDocumentResponse */
+        ExamWorkspaceHistoryDocumentResponse: {
+            document: components["schemas"]["NativeExamDocument-Output"];
+            /**
+             * Step Id
+             * Format: uuid
+             */
+            step_id: string;
+        };
+        /** ExamWorkspaceHistoryResponse */
+        ExamWorkspaceHistoryResponse: {
+            /**
+             * Baseline Step Id
+             * Format: uuid
+             */
+            baseline_step_id: string;
+            /**
+             * Cursor
+             * Format: uuid
+             */
+            cursor: string;
+            /** Step Ids */
+            step_ids: string[];
+        };
         /**
          * ExamWorkspaceItemRetryResponse
          * @description The one item a retry replaces its question with; everything else stays put.
@@ -5391,6 +5622,11 @@ export interface components {
         ExamWorkspaceMisspellingsResponse: {
             /** Automatic Values */
             automatic_values: string[];
+        };
+        /** ExamWorkspaceUndoStepResponse */
+        ExamWorkspaceUndoStepResponse: {
+            document: components["schemas"]["NativeExamDocument-Output"];
+            history: components["schemas"]["ExamWorkspaceHistoryResponse"];
         };
         /** FavoriteCuratedAppItem */
         FavoriteCuratedAppItem: {
@@ -6883,6 +7119,69 @@ export interface components {
             text: string;
         };
         /**
+         * NewParentChild
+         * @description Item content; identity and order are assigned by the server.
+         */
+        NewParentChild: {
+            ai_suggestion?: components["schemas"]["NativeAnswerKeySuggestion"] | null;
+            answer_key: components["schemas"]["NativeAnswerKey"];
+            /** Body */
+            body: components["schemas"]["NativeParagraph"][];
+            /**
+             * Choices
+             * @default []
+             */
+            choices: components["schemas"]["NativeChoice-Input"][];
+            /**
+             * Criteria
+             * @default []
+             */
+            criteria: components["schemas"]["NativeExamCriterion"][];
+            /** Facit Text */
+            facit_text?: string | null;
+            /**
+             * Gaps
+             * @default []
+             */
+            gaps: components["schemas"]["NativeGap-Input"][];
+            /**
+             * Item Id
+             * @default item_001
+             */
+            item_id: string;
+            kind: components["schemas"]["NativeExamItemKind"];
+            /**
+             * Match Left
+             * @default []
+             */
+            match_left: components["schemas"]["NativeMatchLeft-Input"][];
+            /**
+             * Match Right
+             * @default []
+             */
+            match_right: components["schemas"]["NativeMatchRight-Input"][];
+            /** Points */
+            points?: number | null;
+            /**
+             * Points Estimated
+             * @default false
+             */
+            points_estimated: boolean;
+            /** Printed Label */
+            printed_label?: string | null;
+            retry_source?: components["schemas"]["NativeExamRetrySource-Input"] | null;
+            review: components["schemas"]["NativeItemReview"];
+            /**
+             * Sequence
+             * @default 1
+             */
+            sequence: number;
+            /** Source Anchor */
+            source_anchor?: string | null;
+            /** Tick Points */
+            tick_points?: number | string | null;
+        };
+        /**
          * OutputFileSummary
          * @description Output artifact info for my-runs list.
          */
@@ -6893,6 +7192,14 @@ export interface components {
             download_url: string;
             /** Filename */
             filename: string;
+        };
+        /** ParentCommandRequest */
+        ParentCommandRequest: {
+            /**
+             * Expected Cursor
+             * Format: uuid
+             */
+            expected_cursor: string;
         };
         /** ParsedStudentRow */
         ParsedStudentRow: {
@@ -8105,6 +8412,16 @@ export interface components {
              */
             renamed_file_ids: string[];
         };
+        /** ReorderExamChildrenRequest */
+        ReorderExamChildrenRequest: {
+            /**
+             * Expected Cursor
+             * Format: uuid
+             */
+            expected_cursor: string;
+            /** Item Ids */
+            item_ids: string[];
+        };
         /**
          * ReplaceExamConverterCorrectionIntentsRequest
          * @description Replace active correction targets through one optimistic batch write.
@@ -8415,6 +8732,12 @@ export interface components {
             values?: {
                 [key: string]: components["schemas"]["JsonValue"];
             };
+        };
+        /** SaveAsExamWorkspaceDocumentRequest */
+        SaveAsExamWorkspaceDocumentRequest: {
+            document: components["schemas"]["NativeExamDocument-Input"];
+            /** Name */
+            name: string;
         };
         /**
          * SaveConversionHubArtifactResult
@@ -8833,6 +9156,17 @@ export interface components {
              * Format: uuid
              */
             run_id: string;
+        };
+        /** StoreExamWorkspaceUndoStepRequest */
+        StoreExamWorkspaceUndoStepRequest: {
+            /** After Step Id */
+            after_step_id?: string | null;
+            document: components["schemas"]["NativeExamDocument-Input"];
+            /**
+             * Expected Cursor
+             * Format: uuid
+             */
+            expected_cursor: string;
         };
         /**
          * Student
@@ -9486,6 +9820,16 @@ export interface components {
             overlays?: components["schemas"]["ConversionHubTranscriptSpeakerOverlayEntry"][];
         };
         /**
+         * UpdateExamCoursesRequest
+         * @description Replace semantics: the client sends the full registered course state.
+         */
+        UpdateExamCoursesRequest: {
+            /** Course Keys */
+            course_keys: string[];
+            /** School Forms */
+            school_forms: ("gymnasiet" | "grundskolan")[];
+        };
+        /**
          * UpdatePlanDraftRequest
          * @description Deserialize mutable draft workspace patches.
          */
@@ -9661,6 +10005,7 @@ export interface components {
             created_at: string;
             /** Display Name */
             display_name?: string | null;
+            exam_courses?: components["schemas"]["ExamCourses"];
             /** First Name */
             first_name?: string | null;
             /** Inline Completion Provider */
@@ -9708,7 +10053,47 @@ export interface components {
             /** Error Type */
             type: string;
         };
-        /** VaultFileInfo */
+        /** VaultFile */
+        VaultFile: {
+            /** Bytes */
+            bytes: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Deleted At */
+            deleted_at?: string | null;
+            /** Document Lineage Id */
+            document_lineage_id?: string | null;
+            /** Document Saved At */
+            document_saved_at?: string | null;
+            /** Document Version */
+            document_version?: number | null;
+            /** Export Format */
+            export_format?: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Source Artifact Id */
+            source_artifact_id?: string | null;
+            source_kind: components["schemas"]["VaultFileSourceKind"];
+            /** Source Run Id */
+            source_run_id?: string | null;
+            /**
+             * User Id
+             * Format: uuid
+             */
+            user_id: string;
+        };
+        /**
+         * VaultFileInfo
+         * @description One Mina filer record; a record for a saved exam carries that exam's saved exports.
+         */
         VaultFileInfo: {
             /** Bytes */
             bytes: number;
@@ -9719,6 +10104,8 @@ export interface components {
             created_at: string;
             /** Deleted At */
             deleted_at?: string | null;
+            /** Exports */
+            exports?: components["schemas"]["VaultFileInfo"][];
             /**
              * Id
              * Format: uuid
@@ -13028,6 +13415,76 @@ export interface operations {
             };
         };
     };
+    autosave_exam_workspace_document_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__autosaves_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lineage_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StoreExamWorkspaceUndoStepRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamWorkspaceUndoStepResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    copy_exam_workspace_document_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__copy_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lineage_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveAsExamWorkspaceDocumentRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamWorkspaceDocumentResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     export_exam_workspace_document_checklist_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__export_checklist_get: {
         parameters: {
             query: {
@@ -13095,6 +13552,103 @@ export interface operations {
             };
         };
     };
+    save_exam_workspace_export_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__exports__target__post: {
+        parameters: {
+            query: {
+                expected_revision: number;
+            };
+            header?: never;
+            path: {
+                lineage_id: string;
+                target: components["schemas"]["ExamWorkspaceExportTarget"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VaultFile"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_exam_workspace_history_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__history_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lineage_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamWorkspaceHistoryResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_exam_workspace_history_step_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__history__step_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lineage_id: string;
+                step_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamWorkspaceHistoryDocumentResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     retry_exam_workspace_item_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__items_retry_post: {
         parameters: {
             query?: never;
@@ -13117,6 +13671,150 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ExamWorkspaceItemRetryResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_exam_parent_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__parents_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lineage_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateExamParentRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamWorkspaceDocumentResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_exam_child_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__parents__parent_id__children_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lineage_id: string;
+                parent_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddExamChildRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamWorkspaceDocumentResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    reorder_exam_children_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__parents__parent_id__children_order_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lineage_id: string;
+                parent_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReorderExamChildrenRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamWorkspaceDocumentResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_exam_child_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__parents__parent_id__children__item_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lineage_id: string;
+                parent_id: string;
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ParentCommandRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamWorkspaceDocumentResponse"];
                 };
             };
             /** @description Validation Error */
@@ -15201,6 +15899,39 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["UpdateClassroomPlannerSettingsRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProfileResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_exam_courses_api_v1_profile_exam_courses_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateExamCoursesRequest"];
             };
         };
         responses: {

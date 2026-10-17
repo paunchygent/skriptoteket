@@ -31,6 +31,9 @@ from skriptoteket.application.identity.handlers.update_ai_settings import Update
 from skriptoteket.application.identity.handlers.update_classroom_planner_settings import (
     UpdateClassroomPlannerSettingsHandler,
 )
+from skriptoteket.application.identity.handlers.update_exam_courses import (
+    UpdateExamCoursesHandler,
+)
 from skriptoteket.application.identity.handlers.update_profile import UpdateProfileHandler
 from skriptoteket.application.identity.huleedu_app_projection import (
     HuleEduAppProjectionResolver,
@@ -56,6 +59,7 @@ from skriptoteket.protocols.identity import (
     ProvisionLocalUserHandlerProtocol,
     UpdateAiSettingsHandlerProtocol,
     UpdateClassroomPlannerSettingsHandlerProtocol,
+    UpdateExamCoursesHandlerProtocol,
     UpdateProfileHandlerProtocol,
     UserRepositoryProtocol,
 )
@@ -190,6 +194,21 @@ class IdentityProvider(Provider):
         clock: ClockProtocol,
     ) -> UpdateClassroomPlannerSettingsHandlerProtocol:
         return UpdateClassroomPlannerSettingsHandler(
+            uow=uow,
+            users=users,
+            profiles=profiles,
+            clock=clock,
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def update_exam_courses_handler(
+        self,
+        uow: UnitOfWorkProtocol,
+        users: UserRepositoryProtocol,
+        profiles: ProfileRepositoryProtocol,
+        clock: ClockProtocol,
+    ) -> UpdateExamCoursesHandlerProtocol:
+        return UpdateExamCoursesHandler(
             uow=uow,
             users=users,
             profiles=profiles,

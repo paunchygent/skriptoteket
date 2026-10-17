@@ -116,6 +116,11 @@ describe("useTutorialSeenSections for guests", () => {
 });
 
 describe("useTutorialSeenSections for signed-in users", () => {
+  beforeEach(() => {
+    const auth = useAuthStore();
+    auth.user = { id: "user-1" } as typeof auth.user;
+  });
+
   it("reads the profile list and sends the full union to the settings endpoint", async () => {
     const auth = useAuthStore();
     auth.profile = signedInProfile(["planner_rules"]) as typeof auth.profile;

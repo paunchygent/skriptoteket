@@ -50,6 +50,12 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_exports impor
 from skriptoteket.application.curated_apps.handlers.exam_workspace_misspellings import (
     GenerateExamWorkspaceMisspellingsHandler,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_parents import (
+    ExamWorkspaceParentsHandler,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_undo_steps import (
+    StoreExamWorkspaceUndoStepHandler,
+)
 from skriptoteket.config import Settings
 from skriptoteket.di.docx_conversion import build_docx_conversion_pipeline
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_container import (
@@ -93,8 +99,12 @@ from skriptoteket.protocols.exam_workspace import (
     RetryExamWorkspaceItemHandlerProtocol,
     SaveExamWorkspaceDocumentHandlerProtocol,
 )
+from skriptoteket.protocols.exam_workspace_history import (
+    StoreExamWorkspaceUndoStepHandlerProtocol,
+)
+from skriptoteket.protocols.exam_workspace_parents import ExamWorkspaceParentsHandlerProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
-from skriptoteket.protocols.identity import UserRepositoryProtocol
+from skriptoteket.protocols.identity import ProfileRepositoryProtocol, UserRepositoryProtocol
 from skriptoteket.protocols.sleeper import SleeperProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from skriptoteket.protocols.vault import (
@@ -107,9 +117,11 @@ from skriptoteket.protocols.vault import (
 class ExamWorkspaceProvider(Provider):
     """Provide exam workspace conversion, persistence, and handlers."""
 
-    @provide(scope=Scope.APP)
-    def course_catalog(self) -> GetExamCourseCatalogHandlerProtocol:
-        return GetExamCourseCatalogHandler()
+    @provide(scope=Scope.REQUEST)
+    def course_catalog(
+        self, profiles: ProfileRepositoryProtocol, uow: UnitOfWorkProtocol
+    ) -> GetExamCourseCatalogHandlerProtocol:
+        return GetExamCourseCatalogHandler(profiles=profiles, uow=uow)
 
     @provide(scope=Scope.APP)
     def misspellings(self) -> GenerateExamWorkspaceMisspellingsHandlerProtocol:
@@ -290,6 +302,14 @@ class ExamWorkspaceProvider(Provider):
         )
 
     @provide(scope=Scope.REQUEST)
+    def parents_handler(
+        self,
+        reader: GetExamWorkspaceDocumentHandlerProtocol,
+        undo_steps: StoreExamWorkspaceUndoStepHandlerProtocol,
+    ) -> ExamWorkspaceParentsHandlerProtocol:
+        return ExamWorkspaceParentsHandler(reader=reader, undo_steps=undo_steps)
+
+    @provide(scope=Scope.REQUEST)
     def asset_handler(
         self,
         vault_files: VaultFileRepositoryProtocol,
@@ -324,6 +344,23 @@ class ExamWorkspaceProvider(Provider):
         )
 
     @provide(scope=Scope.REQUEST)
+    def undo_step_handler(
+        self,
+        vault_files: VaultFileRepositoryProtocol,
+        codec: ExamWorkspaceContainerCodecProtocol,
+        store: ExamWorkspaceDocumentStore,
+        id_generator: IdGeneratorProtocol,
+        jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
+    ) -> StoreExamWorkspaceUndoStepHandlerProtocol:
+        return StoreExamWorkspaceUndoStepHandler(
+            vault_files=vault_files,
+            codec=codec,
+            store=store,
+            id_generator=id_generator,
+            jobs=jobs,
+        )
+
+    @provide(scope=Scope.REQUEST)
     def save_handler(
         self,
         vault_files: VaultFileRepositoryProtocol,
@@ -332,7 +369,7 @@ class ExamWorkspaceProvider(Provider):
         id_generator: IdGeneratorProtocol,
         jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
     ) -> SaveExamWorkspaceDocumentHandlerProtocol:
-        """Provide the versioned save handler."""
+        """Provide the one-file save handler."""
         return SaveExamWorkspaceDocumentHandler(
             vault_files=vault_files,
             codec=codec,

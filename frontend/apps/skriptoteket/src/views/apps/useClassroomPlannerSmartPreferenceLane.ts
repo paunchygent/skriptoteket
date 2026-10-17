@@ -15,7 +15,7 @@
 import { computed, ref } from "vue";
 
 import { updateClassroomPlannerSettings } from "../../api/classroomPlannerSettings";
-import { useAuthStore } from "../../stores/auth";
+import { SupersededAuthSessionError, useAuthStore } from "../../stores/auth";
 import type {
   ClassroomPlannerSmartPreferenceKey,
   ClassroomPlannerSmartPreferencePatch,
@@ -38,16 +38,17 @@ export function useClassroomPlannerSmartPreferenceLane() {
     key: ClassroomPlannerSmartPreferenceKey,
     enabled: boolean,
   ): void {
+    const session = auth.captureSession();
     pendingWriteCount.value += 1;
     lastErrorMessage.value = null;
 
     const write = writeTail
       .catch(() => undefined)
       .then(async () => {
+        if (!auth.isCurrentSession(session)) throw new SupersededAuthSessionError();
         const patch: ClassroomPlannerSmartPreferencePatch = { [key]: enabled };
         const response = await updateClassroomPlannerSettings(patch);
-        auth.user = response.user;
-        auth.profile = response.profile;
+        if (!auth.applyResponse(session, response)) throw new SupersededAuthSessionError();
       });
 
     writeTail = write;

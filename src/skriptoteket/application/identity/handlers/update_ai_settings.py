@@ -112,6 +112,11 @@ class UpdateAiSettingsHandler(UpdateAiSettingsHandlerProtocol):
                     "updated_at": now,
                 }
             )
-            saved_profile = await self._profiles.update(profile=updated_profile)
+            saved_profile = await self._profiles.update(
+                profile=updated_profile,
+                fields=frozenset(
+                    {"allow_remote_fallback", "inline_completion_provider", "updated_at"}
+                ),
+            )
 
         return UpdateAiSettingsResult(user=user, profile=saved_profile)

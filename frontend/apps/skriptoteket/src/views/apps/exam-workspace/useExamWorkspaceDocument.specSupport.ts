@@ -28,6 +28,7 @@ export function buildResponse(
   item: NativeExamItem = buildMatchingItem(),
 ): ExamWorkspaceDocumentResponse {
   return {
+    history_cursor: "00000000-0000-4000-8000-000000000001",
     conversion: null,
     document: {
       assets: [],

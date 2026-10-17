@@ -19,10 +19,12 @@ from skriptoteket.application.identity.commands import (
     GetProfileCommand,
     UpdateAiSettingsCommand,
     UpdateClassroomPlannerSettingsCommand,
+    UpdateExamCoursesCommand,
     UpdateProfileCommand,
 )
 from skriptoteket.application.identity.huleedu_app_projection import HuleEduAppUserProjection
 from skriptoteket.config import Settings
+from skriptoteket.domain.curated_apps.exam_workspace.exam_course_catalog import SchoolForm
 from skriptoteket.domain.identity.models import (
     User,
     UserProfile,
@@ -32,6 +34,7 @@ from skriptoteket.protocols.identity import (
     GetProfileHandlerProtocol,
     UpdateAiSettingsHandlerProtocol,
     UpdateClassroomPlannerSettingsHandlerProtocol,
+    UpdateExamCoursesHandlerProtocol,
     UpdateProfileHandlerProtocol,
 )
 from skriptoteket.web.api.v1.ai_policy import AiPolicyResponse, build_ai_policy
@@ -110,6 +113,15 @@ class UpdateClassroomPlannerSettingsRequest(BaseModel):
         return self
 
 
+class UpdateExamCoursesRequest(BaseModel):
+    """Replace semantics: the client sends the full registered course state."""
+
+    model_config = ConfigDict(frozen=True)
+
+    school_forms: list[SchoolForm]
+    course_keys: list[str]
+
+
 @router.get("", response_model=ProfileResponse)
 async def get_profile(
     handler: FromDishka[GetProfileHandlerProtocol],
@@ -180,6 +192,22 @@ async def update_classroom_planner_settings(
             use_history=payload.use_history,
             grouping_seating_distance_enabled=payload.grouping_seating_distance_enabled,
             tutorial_seen_sections=payload.tutorial_seen_sections,
+        )
+    )
+    return ProfileResponse(user=result.user, profile=result.profile)
+
+
+@router.patch("/exam-courses", response_model=ProfileResponse)
+async def update_exam_courses(
+    payload: UpdateExamCoursesRequest,
+    handler: FromDishka[UpdateExamCoursesHandlerProtocol],
+    user: User = Depends(require_app_user_api),
+) -> ProfileResponse:
+    result = await handler.handle(
+        UpdateExamCoursesCommand(
+            user_id=user.id,
+            school_forms=payload.school_forms,
+            course_keys=payload.course_keys,
         )
     )
     return ProfileResponse(user=result.user, profile=result.profile)

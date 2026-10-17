@@ -6,6 +6,7 @@ import type { components } from "../../api/openapi";
 import { useProfile } from "../../composables/useProfile";
 import { useToast } from "../../composables/useToast";
 import ProfileAiSettingsInline from "./ProfileAiSettingsInline.vue";
+import ProfileExamCoursesSection from "./ProfileExamCourses.vue";
 
 type UserProfile = components["schemas"]["UserProfile"];
 
@@ -291,6 +292,20 @@ watch(() => props.profile, () => {
           </dd>
         </div>
       </dl>
+    </section>
+
+    <!-- Own exam courses section -->
+    <section class="border-b border-navy/20">
+      <div class="section-header">
+        <h3 class="section-title">Mina kurser</h3>
+      </div>
+
+      <div class="px-4 py-4">
+        <ProfileExamCoursesSection
+          :exam-courses="profile?.exam_courses ?? null"
+          @profile-updated="emit('profileUpdated')"
+        />
+      </div>
     </section>
 
     <!-- AI Settings section -->

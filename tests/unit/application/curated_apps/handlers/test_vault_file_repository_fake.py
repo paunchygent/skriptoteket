@@ -30,6 +30,7 @@ def _file(
     version: int = 1,
     deleted: bool = False,
     name: str = "Prov.provdokument.zip",
+    export_format: str | None = None,
 ) -> VaultFile:
     return VaultFile(
         id=UUID(int=number),
@@ -40,6 +41,7 @@ def _file(
         source_artifact_id="exam-workspace:document",
         document_lineage_id=lineage_id,
         document_version=version,
+        export_format=export_format,
         created_at=_NOW,
         deleted_at=_NOW if deleted else None,
     )
@@ -92,22 +94,25 @@ async def test_name_in_use_obeys_owner_active_exact_name_and_exclusions(
 
 
 @pytest.mark.asyncio
-async def test_list_lineage_versions_includes_trash_sorts_version_then_id_and_scopes_owner() -> (
-    None
-):
+async def test_document_head_is_the_one_active_exam_row_excluding_exports_and_trash() -> None:
     repo = InMemoryVaultFileRepository()
-    files = [
-        _file(12, version=2),
-        _file(11, version=1, deleted=True),
-        _file(10, version=1),
-        _file(13, lineage_id=_OTHER_LINEAGE),
-        _file(14, user_id=_OTHER_OWNER),
-    ]
-    repo.files = {file.id: file for file in files}
+    exam = _file(10)
+    export = _file(11, export_format="qti")
+    trashed = _file(12, deleted=True)
+    other_lineage = _file(13, lineage_id=_OTHER_LINEAGE)
+    foreign = _file(14, user_id=_OTHER_OWNER)
+    repo.files = {file.id: file for file in (exam, export, trashed, other_lineage, foreign)}
 
-    versions = await repo.list_lineage_versions(user_id=_OWNER, document_lineage_id=_LINEAGE)
-
-    assert versions == [files[2], files[1], files[0]]
+    assert await repo.get_document_head(user_id=_OWNER, document_lineage_id=_LINEAGE) == exam
+    assert (
+        await repo.get_document_head(user_id=_OWNER, document_lineage_id=_OTHER_LINEAGE)
+        == other_lineage
+    )
+    assert (
+        await repo.get_document_head(user_id=_OTHER_OWNER, document_lineage_id=_LINEAGE) == foreign
+    )
+    assert await repo.get_document_head(user_id=_OWNER, document_lineage_id=UUID(int=99)) is None
+    assert await repo.list_saved_exports(user_id=_OWNER, document_lineage_id=_LINEAGE) == [export]
 
 
 @pytest.mark.asyncio
@@ -135,25 +140,25 @@ async def test_rename_active_changes_only_one_owned_active_record(state: str) ->
 
 
 @pytest.mark.asyncio
-async def test_rename_lineage_changes_all_versions_including_trash_but_not_other_documents() -> (
-    None
-):
+async def test_rename_lineage_renames_the_exam_row_including_trash_but_not_exports() -> None:
     repo = InMemoryVaultFileRepository()
-    versions = [_file(10), _file(11, version=2, deleted=True)]
+    exam = _file(10)
+    trashed = _file(11, version=2, deleted=True)
     untouched = [
         _file(12, lineage_id=_OTHER_LINEAGE),
         _file(13, user_id=_OTHER_OWNER),
         _file(14, lineage_id=None),
+        _file(15, export_format="qti"),
     ]
-    repo.files = {file.id: file for file in versions + untouched}
+    repo.files = {file.id: file for file in (exam, trashed, *untouched)}
 
     result = await repo.rename_lineage(
         user_id=_OWNER, document_lineage_id=_LINEAGE, name="Nytt.zip"
     )
 
-    renamed = [file.model_copy(update={"name": "Nytt.zip"}) for file in versions]
+    renamed = [file.model_copy(update={"name": "Nytt.zip"}) for file in (exam, trashed)]
     assert {file.id: file for file in result} == {file.id: file for file in renamed}
-    assert repo.files == {file.id: file for file in renamed + untouched}
+    assert repo.files == {file.id: file for file in (*renamed, *untouched)}
     assert (
         await repo.rename_lineage(
             user_id=_OWNER, document_lineage_id=UUID(int=99), name="Missing.zip"
@@ -195,6 +200,23 @@ async def test_update_changes_only_lifecycle_state_and_keeps_a_concurrent_rename
     assert restored == renamed
     missing = _file(99)
     assert await repo.update(file=missing) == missing
+    assert missing.id not in repo.files
+
+
+@pytest.mark.asyncio
+async def test_overwrite_writes_the_full_row_it_is_given_and_ignores_a_missing_row() -> None:
+    repo = InMemoryVaultFileRepository()
+    stored = _file(10)
+    repo.files[stored.id] = stored
+
+    overwritten = stored.model_copy(
+        update={"name": "Nytt.zip", "bytes": 999, "document_version": 4}
+    )
+
+    assert await repo.overwrite(file=overwritten) == overwritten
+    assert repo.files == {stored.id: overwritten}
+    missing = _file(99)
+    assert await repo.overwrite(file=missing) == missing
     assert missing.id not in repo.files
 
 

@@ -68,7 +68,7 @@ class FakeUow:
 
 
 class LineageVaultFileRepository(InMemoryVaultFileRepository):
-    """Adds the PostgreSQL unique (user, lineage, version) constraint to the fake."""
+    """Adds active exam and per-format export uniqueness to the fake."""
 
     async def create(self, *, file: VaultFile) -> VaultFile:
         if file.document_lineage_id is not None:
@@ -76,7 +76,8 @@ class LineageVaultFileRepository(InMemoryVaultFileRepository):
                 if (
                     existing.user_id == file.user_id
                     and existing.document_lineage_id == file.document_lineage_id
-                    and existing.document_version == file.document_version
+                    and existing.export_format == file.export_format
+                    and (file.export_format is not None or existing.deleted_at is None)
                 ):
                     raise IntegrityError(
                         "duplicate version", params=None, orig=Exception("duplicate version")
@@ -141,7 +142,7 @@ class _Env:
         document = NativeExamDocument.model_validate_json(_FIXTURE.read_bytes()).model_copy(
             update={"document_id": uuid4()}
         )
-        file = await self.store.save_version(
+        file = await self.store.save(
             actor=actor,
             file_id=self.ids.new_uuid(),
             name="grammatik.provdokument.zip",
@@ -156,7 +157,10 @@ class _Env:
             version=1,
         )
         return ExamWorkspaceDocumentResponse(
-            document=document, summary=_summary(file), conversion=None
+            document=document,
+            summary=_summary(file),
+            history_cursor=document.document_id,
+            conversion=None,
         )
 
 
@@ -191,13 +195,14 @@ async def test_store_uses_authoritative_head_name_not_a_writers_stale_copy(env: 
     env.vault_files.files[original.id] = original.model_copy(
         update={"name": "Lärarens namn.provdokument.zip"}
     )
-    saved = await env.store.save_version(
+    saved = await env.store.save(
         actor=actor,
         file_id=uuid4(),
         name=original.name,
         content=b"next version payload",
         lineage_id=imported.summary.lineage_id,
         version=2,
+        expected_revision=1,
     )
     assert saved.name == "Lärarens namn.provdokument.zip"
 
@@ -326,7 +331,7 @@ async def test_duplicate_version_insert_maps_to_conflict(env: _Env, fixture_byte
     actor = _actor()
     imported = await env.seed_document(actor=actor)
     with pytest.raises(DomainError) as exc_info:
-        await env.store.save_version(
+        await env.store.save(
             actor=actor,
             file_id=uuid4(),
             name="x.provdokument.zip",

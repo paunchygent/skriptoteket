@@ -62,7 +62,7 @@ async def test_docx_export_embeds_shared_instruction_pictures_from_stored_payloa
     fixture = shared_picture_document()
     env = _Env()
     actor = _actor()
-    stored = await env.store.save_version(
+    stored = await env.store.save(
         actor=actor,
         file_id=env.ids.new_uuid(),
         name="diagramprov.provdokument.zip",

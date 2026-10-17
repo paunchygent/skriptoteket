@@ -12,7 +12,7 @@
  *   - Public `/api/v1/public/...` app APIs remain app-hosted.
  */
 
-import { useAuthStore } from "../stores/auth";
+import { type AuthSession, useAuthStore } from "../stores/auth";
 import { resolveProtectedApiUrl } from "./protectedApiBase";
 export {
   DEFAULT_PROTECTED_API_BASE_URL,
@@ -58,6 +58,8 @@ type ApiRequestOptions = Omit<RequestInit, "body" | "headers" | "credentials" | 
   method?: string;
   body?: unknown;
   headers?: HeadersInit;
+  /** Bind a larger operation to the session that constructed its payload. */
+  session?: AuthSession;
 };
 
 export type ApiBlobResponse = {
@@ -124,51 +126,84 @@ async function toApiError(response: Response): Promise<ApiError> {
   });
 }
 
-export async function apiFetch<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
+/** Bind an entire protected operation, including preparation, to one auth lifetime. */
+export function bindProtectedSession(requestSession?: AuthSession) {
   const auth = useAuthStore();
-
-  const method = (options.method ?? "GET").toUpperCase();
-  const headers = new Headers(options.headers);
-  headers.set("Accept", "application/json");
-  const body = buildApiRequestBody(options.body, headers);
-
-  if (method !== "GET" && method !== "HEAD") {
-    await auth.ensureCsrfToken();
-    if (auth.csrfToken) {
-      headers.set("X-CSRF-Token", auth.csrfToken);
+  const session = requestSession ?? auth.captureSession();
+  const requireCurrent = (): void => auth.requireCurrentSession(session);
+  async function run<T>(work: () => Promise<T>): Promise<T> {
+    requireCurrent();
+    try {
+      const result = await work();
+      requireCurrent();
+      return result;
+    } catch (error: unknown) {
+      requireCurrent();
+      throw error;
     }
   }
+  return {
+    requireCurrent,
+    run,
+    ensureCsrfToken: () => run(() => auth.ensureCsrfToken(session)),
+  };
+}
 
-  const response = await fetch(resolveProtectedApiUrl(path), {
-    ...options,
+async function protectedRequest<T>(
+  path: string,
+  options: ApiRequestOptions,
+  accept: string,
+  readResponse: (response: Response) => Promise<T>,
+): Promise<T> {
+  const auth = useAuthStore();
+  const { session = auth.captureSession(), ...requestOptions } = options;
+  const binding = bindProtectedSession(session);
+  binding.requireCurrent();
+  const method = (requestOptions.method ?? "GET").toUpperCase();
+  const headers = new Headers(requestOptions.headers);
+  if (accept === "application/json" || !headers.has("Accept")) {
+    headers.set("Accept", accept);
+  }
+  const body = buildApiRequestBody(requestOptions.body, headers);
+
+  if (method !== "GET" && method !== "HEAD") {
+    const csrfToken = await binding.ensureCsrfToken();
+    if (csrfToken) headers.set("X-CSRF-Token", csrfToken);
+  }
+  // Never resume an old operation using the replacement session's cookies.
+  binding.requireCurrent();
+  const response = await binding.run(() => fetch(resolveProtectedApiUrl(path), {
+    ...requestOptions,
     method,
     headers,
     body,
     credentials: "include",
-  });
+  }));
 
-  if (response.ok) {
-    if (response.status === 204) {
-      return undefined as T;
-    }
+  if (!response.ok) {
+    const error = await binding.run(() => toApiError(response));
+    if (response.status === 401) auth.clear(session);
+    throw error;
+  }
+  return binding.run(() => readResponse(response));
+}
 
+export async function apiFetch<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
+  return protectedRequest(path, options, "application/json", async (response) => {
+    if (response.status === 204) return undefined as T;
     const contentType = response.headers.get("content-type") ?? "";
     if (!contentType.includes("application/json")) {
       return (await response.text()) as unknown as T;
     }
-
     return (await response.json()) as T;
-  }
-
-  if (response.status === 401) {
-    auth.clear();
-  }
-
-  throw await toApiError(response);
+  });
 }
 
-export async function apiGet<T>(path: string): Promise<T> {
-  return await apiFetch<T>(path, { method: "GET" });
+export async function apiGet<T>(
+  path: string,
+  options: Omit<ApiRequestOptions, "method"> = {},
+): Promise<T> {
+  return await apiFetch<T>(path, { ...options, method: "GET" });
 }
 
 export async function apiPost<T>(path: string, body?: unknown): Promise<T> {
@@ -229,39 +264,7 @@ export async function apiDelete<T>(path: string): Promise<T> {
 }
 
 export async function apiFetchBlob(path: string, options: ApiRequestOptions = {}): Promise<Blob> {
-  const auth = useAuthStore();
-
-  const method = (options.method ?? "GET").toUpperCase();
-  const headers = new Headers(options.headers);
-  if (!headers.has("Accept")) {
-    headers.set("Accept", "*/*");
-  }
-  const body = buildApiRequestBody(options.body, headers);
-
-  if (method !== "GET" && method !== "HEAD") {
-    await auth.ensureCsrfToken();
-    if (auth.csrfToken) {
-      headers.set("X-CSRF-Token", auth.csrfToken);
-    }
-  }
-
-  const response = await fetch(resolveProtectedApiUrl(path), {
-    ...options,
-    method,
-    headers,
-    body,
-    credentials: "include",
-  });
-
-  if (response.ok) {
-    return await response.blob();
-  }
-
-  if (response.status === 401) {
-    auth.clear();
-  }
-
-  throw await toApiError(response);
+  return protectedRequest(path, options, "*/*", (response) => response.blob());
 }
 
 function parseContentDispositionFilename(headerValue: string | null): string | null {
@@ -291,45 +294,11 @@ export async function apiFetchBlobResponse(
   path: string,
   options: ApiRequestOptions = {},
 ): Promise<ApiBlobResponse> {
-  const auth = useAuthStore();
-
-  const method = (options.method ?? "GET").toUpperCase();
-  const headers = new Headers(options.headers);
-  if (!headers.has("Accept")) {
-    headers.set("Accept", "*/*");
-  }
-  const body = buildApiRequestBody(options.body, headers);
-
-  if (method !== "GET" && method !== "HEAD") {
-    await auth.ensureCsrfToken();
-    if (auth.csrfToken) {
-      headers.set("X-CSRF-Token", auth.csrfToken);
-    }
-  }
-
-  const response = await fetch(resolveProtectedApiUrl(path), {
-    ...options,
-    method,
-    headers,
-    body,
-    credentials: "include",
-  });
-
-  if (response.ok) {
-    return {
-      blob: await response.blob(),
-      contentType: response.headers.get("content-type"),
-      filename: parseContentDispositionFilename(
-        response.headers.get("content-disposition"),
-      ),
-    };
-  }
-
-  if (response.status === 401) {
-    auth.clear();
-  }
-
-  throw await toApiError(response);
+  return protectedRequest(path, options, "*/*", async (response) => ({
+    blob: await response.blob(),
+    contentType: response.headers.get("content-type"),
+    filename: parseContentDispositionFilename(response.headers.get("content-disposition")),
+  }));
 }
 
 export async function publicApiFetchBlobResponse(

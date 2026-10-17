@@ -3,7 +3,7 @@ import { computed } from "vue";
 
 import { apiFetch } from "../api/client";
 import type { components } from "../api/openapi";
-import { useAuthStore } from "./auth";
+import { SupersededAuthSessionError, useAuthStore } from "./auth";
 
 export type RemoteFallbackPreference = "unset" | "allow" | "deny";
 export type InlineCompletionProviderPreference = "unset" | "local" | "external";
@@ -53,13 +53,13 @@ export const useAiStore = defineStore("ai", () => {
   );
 
   async function persistAiSettings(payload: AiSettingsPayload): Promise<ProfileResponse> {
+    const session = auth.captureSession();
     const response = await apiFetch<ProfileResponse>("/api/v1/profile/ai-settings", {
       method: "PATCH",
       body: payload satisfies AiSettingsPayload,
     });
 
-    auth.user = response.user;
-    auth.profile = response.profile;
+    if (!auth.applyResponse(session, response)) throw new SupersededAuthSessionError();
     return response;
   }
 

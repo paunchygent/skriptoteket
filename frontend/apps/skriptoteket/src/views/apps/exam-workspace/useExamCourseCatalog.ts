@@ -1,12 +1,47 @@
-/** Page-local catalog loading and browser-only course search. */
-import { ref } from "vue";
+/** Shared immutable catalog, actor-bound preferences and browser-only search. */
+import { effectScope, ref, watch, type EffectScope } from "vue";
 
 import { getExamCourseCatalog, type ExamCourse } from "../../../api/examWorkspace";
+import { useAuthStore } from "../../../stores/auth";
 
 const courses = ref<ExamCourse[]>([]);
+const registeredCourseKeys = ref<string[]>([]);
 const isLoading = ref(false);
 const error = ref<string | null>(null);
-let catalogPromise: Promise<void> | null = null;
+let preferenceRevision = 0;
+let observedAuth: ReturnType<typeof useAuthStore> | null = null;
+let identityScope: EffectScope | null = null;
+
+function bindActor(auth: ReturnType<typeof useAuthStore>): void {
+  if (observedAuth === auth) return;
+  identityScope?.stop();
+  observedAuth = auth;
+  // Outlive individual consumers so logout invalidates pending responses even
+  // when the profile/workspace has unmounted. One watcher per auth store.
+  identityScope = effectScope(true);
+  identityScope.run(() => watch(() => auth.actorSession, () => {
+    registeredCourseKeys.value = [];
+    error.value = null;
+    isLoading.value = false;
+    if (auth.user === null) return;
+
+    isLoading.value = true;
+    const requestSession = auth.captureSession();
+    const requestPreferenceRevision = preferenceRevision;
+    void getExamCourseCatalog().then((response) => {
+      if (!auth.isCurrentSession(requestSession)) return;
+      courses.value = response.courses;
+      if (preferenceRevision === requestPreferenceRevision) {
+        registeredCourseKeys.value = response.registered_course_keys;
+      }
+    }).catch(() => {
+      if (!auth.isCurrentSession(requestSession)) return;
+      error.value = "Det gick inte att hämta kurserna. Ladda om sidan och försök igen.";
+    }).finally(() => {
+      if (auth.isCurrentSession(requestSession)) isLoading.value = false;
+    });
+  }, { immediate: true, flush: "sync" }));
+}
 
 function normalize(value: string): string {
   return value.normalize("NFKC").toLocaleLowerCase("sv-SE")
@@ -18,7 +53,9 @@ export function searchCourses(
   catalog: readonly ExamCourse[],
   query: string,
   limit = 50,
+  registeredKeys: readonly string[] = registeredCourseKeys.value,
 ): ExamCourse[] {
+  const positions = new Map(registeredKeys.map((key, index) => [key, index]));
   const normalized = normalize(query);
   const queryTokens = normalized ? normalized.split(/\s+/u) : [];
   return catalog.map((course) => {
@@ -30,26 +67,27 @@ export function searchCourses(
       : queryTokens.length > 0 && queryTokens.every((token) => code.startsWith(token)) ? 2 : 3;
     return { course, matches, rank };
   }).filter((entry) => entry.matches)
-    .sort((a, b) => a.rank - b.rank || a.course.name.localeCompare(b.course.name, "sv"))
+    .sort((a, b) =>
+      (positions.get(a.course.key) ?? positions.size) - (positions.get(b.course.key) ?? positions.size)
+      || a.rank - b.rank || a.course.name.localeCompare(b.course.name, "sv"))
     .slice(0, Math.max(0, limit))
     .map((entry) => entry.course);
 }
 
 export function useExamCourseCatalog() {
-  if (!catalogPromise) {
-    isLoading.value = true;
-    catalogPromise = getExamCourseCatalog().then((response) => {
-      courses.value = response.courses;
-    }).catch(() => {
-      error.value = "Det gick inte att hämta kurserna. Ladda om sidan och försök igen.";
-    }).finally(() => {
-      isLoading.value = false;
-    });
-  }
+  const auth = useAuthStore();
+  bindActor(auth);
+  const consumerSession = auth.captureSession();
 
   function courseByKey(key: string | null): ExamCourse | null {
     return courses.value.find((course) => course.key === key) ?? null;
   }
 
-  return { courses, isLoading, error, courseByKey };
+  function setRegisteredCourseKeys(keys: readonly string[]): void {
+    if (auth.user === null || !auth.isCurrentSession(consumerSession)) return;
+    preferenceRevision += 1;
+    registeredCourseKeys.value = [...keys];
+  }
+
+  return { courses, registeredCourseKeys, isLoading, error, courseByKey, setRegisteredCourseKeys };
 }

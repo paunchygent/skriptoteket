@@ -1,19 +1,18 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 
-import { apiFetchBlob, isApiError } from "../../api/client";
 import type { components } from "../../api/openapi";
 import { formatBytes } from "../../composables/tools/fileRefHelpers";
 import { useVaultFiles } from "../../composables/vault/useVaultFiles";
 import { useAuthStore } from "../../stores/auth";
-import { useToastStore } from "../../stores/toast";
-import { IconDownload, IconMoreVertical, IconTrash, IconUndo } from "../icons";
 import UiSearchBar from "../ui/UiSearchBar.vue";
 import UiSegmentedToggle, { type UiSegmentedToggleOption } from "../ui/UiSegmentedToggle.vue";
 import SystemMessage from "../ui/SystemMessage.vue";
 
+import VaultFileList from "./VaultFileList.vue";
+import { useVaultFileActions } from "./useVaultFileActions";
+
 type VaultPanelMode = "manage" | "picker";
-type VaultFileInfo = components["schemas"]["VaultFileInfo"];
 type VaultListSort = components["schemas"]["VaultListSort"];
 type VaultListState = components["schemas"]["VaultListState"];
 
@@ -32,11 +31,8 @@ const emit = defineEmits<{
   "update:modelValue": [value: string[]];
 }>();
 
-const toast = useToastStore();
 const auth = useAuthStore();
 const selectionError = ref<string | null>(null);
-const actionError = ref<string | null>(null);
-const isMutating = ref(false);
 const openMenuForFileId = ref<string | null>(null);
 const selectedManageIds = ref<string[]>([]);
 
@@ -55,6 +51,16 @@ const {
   restoreFile,
 } = useVaultFiles();
 
+const {
+  actionError,
+  isMutating,
+  onDelete,
+  onDeleteSelected,
+  onRestore,
+  onRestoreSelected,
+  onDownload,
+} = useVaultFileActions({ selectedManageIds, clearManageSelection, deleteFile, restoreFile, refresh });
+
 const searchDraft = ref(search.value);
 const searchMinChars = 2;
 const searchDebounceMs = 250;
@@ -70,11 +76,6 @@ const sortOptions: UiSegmentedToggleOption[] = [
   { value: "name", label: "Namn", dataTest: "vault-sort-name" },
   { value: "size", label: "Storlek", dataTest: "vault-sort-size" },
 ];
-
-const deleteFileFailureMessage = "Det gick inte att flytta filen till papperskorgen. Försök igen.";
-const deleteFilesFailureMessage = "Det gick inte att flytta filerna till papperskorgen. Försök igen.";
-const restoreFileFailureMessage = "Det gick inte att återställa filen. Försök igen.";
-const restoreFilesFailureMessage = "Det gick inte att återställa filerna. Försök igen.";
 
 function isVaultListState(value: string): value is VaultListState {
   return value === "active" || value === "trash";
@@ -182,12 +183,6 @@ function onToggleSelected(refValue: string, checked: boolean): void {
   emit("update:modelValue", [...current, refValue]);
 }
 
-function onToggleSelectedEvent(event: Event, refValue: string): void {
-  const target = event.target;
-  if (!(target instanceof HTMLInputElement)) return;
-  onToggleSelected(refValue, target.checked);
-}
-
 function selectAllVisibleManage(): void {
   if (manageSelectionDisabled.value) return;
   selectedManageIds.value = files.value.map((file) => file.id);
@@ -207,132 +202,12 @@ async function onSearch(): Promise<void> {
   await applySearch();
 }
 
-async function onDelete(fileId: string): Promise<void> {
-  if (isMutating.value) return;
-  isMutating.value = true;
-  actionError.value = null;
-
-  try {
-    await deleteFile(fileId);
-    toast.success("Filen flyttades till papperskorgen.");
-    await refresh();
-  } catch {
-    toast.failure(deleteFileFailureMessage);
-  } finally {
-    isMutating.value = false;
-  }
-}
-
-async function onDeleteSelected(): Promise<void> {
-  if (isMutating.value) return;
-  if (selectedManageIds.value.length === 0) return;
-
-  isMutating.value = true;
-  actionError.value = null;
-
-  try {
-    for (const fileId of selectedManageIds.value) {
-      await deleteFile(fileId);
-    }
-    clearManageSelection();
-    toast.success("Markerade filer flyttades till papperskorgen.");
-    await refresh();
-  } catch {
-    toast.failure(deleteFilesFailureMessage);
-  } finally {
-    isMutating.value = false;
-  }
-}
-
-async function onRestore(fileId: string): Promise<void> {
-  if (isMutating.value) return;
-  isMutating.value = true;
-  actionError.value = null;
-
-  try {
-    await restoreFile(fileId);
-    toast.success("Filen återställdes.");
-    await refresh();
-  } catch {
-    toast.failure(restoreFileFailureMessage);
-  } finally {
-    isMutating.value = false;
-  }
-}
-
-async function onRestoreSelected(): Promise<void> {
-  if (isMutating.value) return;
-  if (selectedManageIds.value.length === 0) return;
-
-  isMutating.value = true;
-  actionError.value = null;
-
-  try {
-    for (const fileId of selectedManageIds.value) {
-      await restoreFile(fileId);
-    }
-    clearManageSelection();
-    toast.success("Markerade filer återställdes.");
-    await refresh();
-  } catch {
-    toast.failure(restoreFilesFailureMessage);
-  } finally {
-    isMutating.value = false;
-  }
-}
-
-async function onDownload(file: VaultFileInfo): Promise<void> {
-  if (isMutating.value) return;
-  isMutating.value = true;
-  actionError.value = null;
-
-  try {
-    const blob = await apiFetchBlob(downloadHref(file.id));
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = file.name;
-    link.style.display = "none";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.setTimeout(() => URL.revokeObjectURL(url), 0);
-  } catch (error: unknown) {
-    if (isApiError(error)) {
-      const details = error.details as { resource?: string } | null;
-      if (error.code === "NOT_FOUND" && details?.resource === "VaultFile") {
-        actionError.value =
-          "Filen saknas på servern. Ta bort filen och skapa den igen om du behöver den.";
-      } else {
-        actionError.value = error.message;
-      }
-    } else if (error instanceof Error) {
-      actionError.value = error.message;
-    } else {
-      actionError.value = "Det gick inte att ladda ned filen.";
-    }
-  } finally {
-    isMutating.value = false;
-  }
-}
-
-function downloadHref(fileId: string): string {
-  return `/api/v1/vault/files/${encodeURIComponent(fileId)}/download`;
-}
-
 function toggleMenu(fileId: string): void {
   openMenuForFileId.value = openMenuForFileId.value === fileId ? null : fileId;
 }
 
 function closeMenu(): void {
   openMenuForFileId.value = null;
-}
-
-function formatDate(value: string | null | undefined): string {
-  if (!value) return "";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleString("sv-SE", { dateStyle: "medium", timeStyle: "short" });
 }
 
 watch(searchDraft, () => {
@@ -557,194 +432,26 @@ onUnmounted(() => {
       <span v-else>Du har inga sparade filer ännu.</span>
     </div>
 
-    <div
+    <VaultFileList
       v-else
-      class="space-y-2"
-      :class="{ 'opacity-70 pointer-events-none': isRefreshingResults }"
-      :aria-busy="isRefreshingResults ? 'true' : 'false'"
-    >
-      <ul class="space-y-2">
-        <li
-          v-for="file in files"
-          :key="file.id"
-          class="border border-navy/20 bg-panel hover:bg-action/5 transition-colors"
-        >
-          <div class="grid grid-cols-[minmax(0,1fr)_auto] gap-3 p-3">
-            <label
-              v-if="isPickerMode || isManageMode"
-              class="grid grid-cols-[auto_minmax(0,1fr)] gap-3 items-center min-w-0"
-              :class="[
-                (isPickerMode && (selectionDisabled || file.is_missing_on_disk))
-                  || (isManageMode && manageSelectionDisabled)
-                  ? 'cursor-default'
-                  : 'cursor-pointer',
-              ]"
-              :for="`vault-file-select-${file.id}`"
-            >
-              <input
-                v-if="isPickerMode"
-                :id="`vault-file-select-${file.id}`"
-                type="checkbox"
-                class="h-4 w-4 border border-navy/40 bg-white shadow-none accent-action"
-                :aria-label="file.name"
-                :checked="props.modelValue.includes(file.ref)"
-                :disabled="selectionDisabled || file.is_missing_on_disk"
-                @change="onToggleSelectedEvent($event, file.ref)"
-              >
-              <input
-                v-else
-                :id="`vault-file-select-${file.id}`"
-                v-model="selectedManageIds"
-                type="checkbox"
-                :value="file.id"
-                class="h-4 w-4 border border-navy/40 bg-white shadow-none accent-action"
-                :aria-label="file.name"
-                :disabled="manageSelectionDisabled"
-              >
-
-              <div class="min-w-0">
-                <div class="font-mono text-sm text-navy truncate">
-                  {{ file.name }}
-                </div>
-                <div class="mt-0.5 flex flex-wrap gap-x-2 gap-y-0.5 text-[11px] text-navy/60">
-                  <span v-if="file.source_label">{{ file.source_label }}</span>
-                  <span
-                    v-if="file.source_label"
-                    aria-hidden="true"
-                  >·</span>
-                  <span>{{ formatBytes(file.bytes) }}</span>
-                  <span aria-hidden="true">·</span>
-                  <span>{{ formatDate(file.created_at) }}</span>
-                  <span
-                    v-if="file.is_missing_on_disk"
-                    aria-hidden="true"
-                  >·</span>
-                  <span
-                    v-if="file.is_missing_on_disk"
-                    class="font-semibold text-critical"
-                  >Saknas på servern</span>
-                </div>
-                <p
-                  v-if="isPickerMode && state !== 'active'"
-                  class="mt-1 text-[11px] text-navy/60"
-                >
-                  Återställ filen för att kunna välja den.
-                </p>
-                <p
-                  v-if="file.is_missing_on_disk"
-                  class="mt-1 text-[11px] text-critical"
-                >
-                  Filen saknas på servern. Ta bort den eller skapa den igen om du behöver den.
-                </p>
-              </div>
-            </label>
-            <div
-              v-else
-              class="min-w-0"
-            >
-              <div class="font-mono text-sm text-navy truncate">
-                {{ file.name }}
-              </div>
-              <div class="mt-0.5 flex flex-wrap gap-x-2 gap-y-0.5 text-[11px] text-navy/60">
-                <span v-if="file.source_label">{{ file.source_label }}</span>
-                <span
-                  v-if="file.source_label"
-                  aria-hidden="true"
-                >·</span>
-                <span>{{ formatBytes(file.bytes) }}</span>
-                <span aria-hidden="true">·</span>
-                <span>{{ formatDate(file.created_at) }}</span>
-                <span
-                  v-if="file.is_missing_on_disk"
-                  aria-hidden="true"
-                >·</span>
-                <span
-                  v-if="file.is_missing_on_disk"
-                  class="font-semibold text-critical"
-                >Saknas på servern</span>
-              </div>
-            </div>
-
-            <div
-              v-if="!props.isReadOnly"
-              class="relative justify-self-end self-center"
-              @click.stop
-            >
-              <button
-                type="button"
-                class="h-[30px] w-[30px] grid place-items-center bg-transparent text-navy/70 hover:bg-canvas/50 hover:text-navy shadow-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-action/40 focus-visible:outline-offset-2"
-                :disabled="isMutating"
-                :aria-expanded="openMenuForFileId === file.id"
-                :aria-controls="`vault-file-actions-${file.id}`"
-                aria-label="Filåtgärder"
-                @click.stop="toggleMenu(file.id)"
-              >
-                <IconMoreVertical :size="16" />
-              </button>
-
-              <Transition name="popover">
-                <div
-                  v-if="openMenuForFileId === file.id"
-                  :id="`vault-file-actions-${file.id}`"
-                  class="absolute right-0 mt-2 w-48 border border-navy bg-modal shadow-brutal-sm z-50"
-                  role="menu"
-                  aria-label="Filåtgärder"
-                  @click.stop
-                >
-                  <button
-                    type="button"
-                    class="flex items-center gap-2 w-full px-3 py-2 text-sm text-navy hover:bg-canvas transition-colors"
-                    role="menuitem"
-                    :disabled="isMutating || file.is_missing_on_disk"
-                    @click="closeMenu(); void onDownload(file);"
-                  >
-                    <IconDownload :size="16" />
-                    Ladda ned
-                  </button>
-
-                  <button
-                    v-if="state === 'active'"
-                    type="button"
-                    class="flex items-center gap-2 w-full px-3 py-2 text-sm text-critical hover:bg-canvas transition-colors"
-                    role="menuitem"
-                    :disabled="isMutating"
-                    @click="void onDelete(file.id); closeMenu();"
-                  >
-                    <IconTrash :size="16" />
-                    Ta bort
-                  </button>
-
-                  <button
-                    v-else
-                    type="button"
-                    class="flex items-center gap-2 w-full px-3 py-2 text-sm text-navy hover:bg-canvas transition-colors"
-                    role="menuitem"
-                    :disabled="isMutating"
-                    @click="void onRestore(file.id); closeMenu();"
-                  >
-                    <IconUndo :size="16" />
-                    Återställ
-                  </button>
-                </div>
-              </Transition>
-            </div>
-          </div>
-        </li>
-      </ul>
-
-      <div
-        v-if="canLoadMore"
-        class="flex justify-center"
-      >
-        <button
-          type="button"
-          class="btn-ghost"
-          :disabled="isLoading"
-          @click="void loadMore()"
-        >
-          Ladda fler
-        </button>
-      </div>
-    </div>
+      v-model:selected-manage-ids="selectedManageIds"
+      :mode="props.mode"
+      :state="state"
+      :files="files"
+      :selected-refs="props.modelValue"
+      :is-read-only="props.isReadOnly"
+      :is-mutating="isMutating"
+      :open-menu-for-file-id="openMenuForFileId"
+      :is-refreshing-results="isRefreshingResults"
+      :can-load-more="canLoadMore"
+      :is-loading="isLoading"
+      @toggle-selected="onToggleSelected"
+      @toggle-menu="toggleMenu"
+      @close-menu="closeMenu"
+      @download="onDownload"
+      @delete="onDelete"
+      @restore="onRestore"
+      @load-more="void loadMore()"
+    />
   </section>
 </template>

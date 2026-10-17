@@ -97,36 +97,29 @@ class ProcessExamWorkspaceDocxJobHandler:
             result = outcome.result
             observed = tuple(event.as_json() for event in result.events)
             file_id = self._ids.new_uuid()
-            async with self._uow:
+            async with self._store.transaction(
+                user_id=actor.id, lineage_id=job.workspace_lineage_id
+            ):
                 current = await self._jobs.get_by_id_for_update(job_id=job.id)
                 if not self._owns(current, job):
                     return current or job
                 assert current is not None
-                try:
-                    await self._progress.publish_final(
-                        worker_id=job.locked_by,
-                        job_id=job.id,
-                        lineage_id=job.workspace_lineage_id,
-                        actor=actor,
-                        file_id=file_id,
-                        update=outcome.update,
-                        notes=result.notes,
-                    )
-                    finished = finish_enrichment_job(
-                        job=current,
-                        status=ExamAnswerKeyEnrichmentJobStatus.SUCCEEDED,
-                        now=self._clock.now(),
-                        diagnostics=observed,
-                    ).model_copy(update={"source_docx": None})
-                    updated = await self._jobs.update(
-                        job=finished, expected_worker_id=job.locked_by
-                    )
-                except BaseException:
-                    # Any body exception, cancellation included, rolls back the publication
-                    # transaction, so a stored container has no vault row; deletion is a no-op
-                    # for an unstored file, and a commit failure never lands here.
-                    await self._store.discard_version_file(actor=actor, file_id=file_id)
-                    raise
+                await self._progress.publish_final(
+                    worker_id=job.locked_by,
+                    job_id=job.id,
+                    lineage_id=job.workspace_lineage_id,
+                    actor=actor,
+                    file_id=file_id,
+                    update=outcome.update,
+                    notes=result.notes,
+                )
+                finished = finish_enrichment_job(
+                    job=current,
+                    status=ExamAnswerKeyEnrichmentJobStatus.SUCCEEDED,
+                    now=self._clock.now(),
+                    diagnostics=observed,
+                ).model_copy(update={"source_docx": None})
+                updated = await self._jobs.update(job=finished, expected_worker_id=job.locked_by)
             logger.info(
                 "DOCX conversion job succeeded",
                 job_id=str(job.id),
@@ -170,7 +163,10 @@ class ProcessExamWorkspaceDocxJobHandler:
             last_error=message,
             diagnostics=diagnostics,
         )
-        async with self._uow:
+        assert job.workspace_lineage_id is not None
+        async with self._store.transaction(
+            user_id=job.owner_user_id, lineage_id=job.workspace_lineage_id
+        ):
             current = await self._jobs.get_by_id_for_update(job_id=job.id)
             if not self._owns(current, job):
                 return current or job

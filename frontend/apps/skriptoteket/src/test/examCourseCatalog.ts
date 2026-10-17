@@ -4,6 +4,7 @@ import type { ExamCourseCatalogResponse } from "../api/examWorkspace";
 export async function getExamCourseCatalog(): Promise<ExamCourseCatalogResponse> {
   return {
     generated_at: "2026-10-16T17:48:27.460179+00:00",
+    registered_course_keys: [],
     courses: [
       {
         code: "ADMADM01",

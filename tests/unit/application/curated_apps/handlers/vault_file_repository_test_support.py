@@ -1,4 +1,6 @@
 import re
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from datetime import datetime
 from uuid import UUID
 
@@ -24,6 +26,7 @@ def _matches_search(name: str, search: str) -> bool:
 class InMemoryVaultFileRepository:
     def __init__(self) -> None:
         self.files: dict[UUID, VaultFile] = {}
+        self.histories: dict[tuple[UUID, UUID], bytes] = {}
         self.calls: list[tuple[str, dict[str, object]]] = []
 
     async def get_by_id(self, *, file_id: UUID) -> VaultFile | None:
@@ -44,6 +47,7 @@ class InMemoryVaultFileRepository:
             file
             for file in self.files.values()
             if file.user_id == user_id
+            and file.export_format is None
             and (file.deleted_at is None) == (state is VaultListState.ACTIVE)
             and (not search or _matches_search(file.name, search))
         ]
@@ -101,6 +105,7 @@ class InMemoryVaultFileRepository:
             for file in sorted(self.files.values(), key=lambda file: file.document_version or 0)
             if file.user_id == user_id
             and file.document_lineage_id is not None
+            and file.export_format is None
             and file.deleted_at is None
             and (file.source_artifact_id or "").startswith(source_artifact_prefix)
         }
@@ -111,8 +116,8 @@ class InMemoryVaultFileRepository:
         *,
         user_id: UUID,
         name: str,
-        exclude_lineage_id: UUID | None,
-        exclude_file_id: UUID | None,
+        exclude_lineage_id: UUID | None = None,
+        exclude_file_id: UUID | None = None,
     ) -> bool:
         self.calls.append(("name_in_use", {"user_id": user_id, "name": name}))
         return any(
@@ -124,23 +129,51 @@ class InMemoryVaultFileRepository:
             for file in self.files.values()
         )
 
-    async def list_lineage_versions(
+    async def list_saved_exports(
         self, *, user_id: UUID, document_lineage_id: UUID
     ) -> list[VaultFile]:
-        self.calls.append(
-            (
-                "list_lineage_versions",
-                {"user_id": user_id, "document_lineage_id": document_lineage_id},
-            )
-        )
+        return [
+            file
+            for file in self.files.values()
+            if file.user_id == user_id
+            and file.document_lineage_id == document_lineage_id
+            and file.export_format is not None
+            and file.deleted_at is None
+        ]
+
+    async def list_exam_files(
+        self, *, user_id: UUID, document_lineage_id: UUID, include_deleted: bool
+    ) -> list[VaultFile]:
         return sorted(
             (
                 file
                 for file in self.files.values()
-                if file.user_id == user_id and file.document_lineage_id == document_lineage_id
+                if file.user_id == user_id
+                and file.document_lineage_id == document_lineage_id
+                and (include_deleted or file.deleted_at is None)
             ),
-            key=lambda file: (file.document_version is None, file.document_version, file.id),
+            key=lambda file: (
+                file.export_format is not None,
+                file.export_format or "",
+                file.created_at,
+                file.id,
+            ),
         )
+
+    async def get_history(self, *, user_id: UUID, document_lineage_id: UUID) -> bytes | None:
+        return self.histories.get((user_id, document_lineage_id))
+
+    async def put_history(
+        self, *, user_id: UUID, document_lineage_id: UUID, content: bytes
+    ) -> None:
+        self.histories[(user_id, document_lineage_id)] = content
+
+    @asynccontextmanager
+    async def guard_document_payload(
+        self, *, user_id: UUID, document_lineage_id: UUID
+    ) -> AsyncIterator[None]:
+        """Unit-only port double; real lock ordering is covered by integration tests."""
+        yield
 
     async def lock_owner_renames(self, *, user_id: UUID) -> None:
         self.calls.append(("lock_owner_renames", {"user_id": user_id}))
@@ -167,7 +200,9 @@ class InMemoryVaultFileRepository:
         renamed = [
             file.model_copy(update={"name": name})
             for file in self.files.values()
-            if file.user_id == user_id and file.document_lineage_id == document_lineage_id
+            if file.user_id == user_id
+            and file.document_lineage_id == document_lineage_id
+            and file.export_format is None
         ]
         self.files.update((file.id, file) for file in renamed)
         return renamed
@@ -180,9 +215,32 @@ class InMemoryVaultFileRepository:
         current = self.files.get(file.id)
         if current is None:
             return file
-        updated = current.model_copy(update={"deleted_at": file.deleted_at})
+        # Lifecycle callers own only trash state; a stale delete/restore payload
+        # must not overwrite a concurrently committed name or immutable metadata.
+        updated = current.model_copy(
+            update={"deleted_at": file.deleted_at, "trashed_with_exam": file.trashed_with_exam}
+        )
         self.files[file.id] = updated
         return updated
 
+    async def overwrite(self, *, file: VaultFile) -> VaultFile:
+        current = self.files.get(file.id)
+        if current is None:
+            return file
+        overwritten = current.model_copy(
+            update={
+                "name": file.name,
+                "bytes": file.bytes,
+                "source_artifact_id": file.source_artifact_id,
+                "document_version": file.document_version,
+                "export_format": file.export_format,
+                "document_saved_at": file.document_saved_at,
+            }
+        )
+        self.files[file.id] = overwritten
+        return overwritten
+
     async def delete(self, *, file_id: UUID) -> None:
-        self.files.pop(file_id, None)
+        file = self.files.pop(file_id, None)
+        if file is not None and file.document_lineage_id is not None and file.export_format is None:
+            self.histories.pop((file.user_id, file.document_lineage_id), None)

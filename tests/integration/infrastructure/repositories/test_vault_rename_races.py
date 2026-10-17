@@ -14,6 +14,10 @@ import pytest
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from skriptoteket.application.curated_apps.exam_workspace_history import (
+    ExamWorkspaceHistoryState,
+    ExamWorkspaceHistoryStep,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_document_store import (
     ExamWorkspaceDocumentStore,
 )
@@ -58,7 +62,7 @@ async def _seed(
                     name="Original.provdokument.zip",
                     document_lineage_id=lineage,
                     document_version=1,
-                    source_artifact_id=f"documents.conversion_hub:exam-workspace:{lineage}:v1",
+                    source_artifact_id=f"documents.conversion_hub:exam-workspace:{lineage}",
                 )
             ]
             if lineage is not None
@@ -66,6 +70,19 @@ async def _seed(
         )
         for file in files:
             await PostgreSQLUserVaultFileRepository(session).create(file=file)
+        if lineage is not None:
+            # An exam file carries its undo history; an overwrite asserts it exists.
+            await PostgreSQLUserVaultFileRepository(session).put_history(
+                user_id=owner,
+                document_lineage_id=lineage,
+                content=ExamWorkspaceHistoryState(
+                    cursor=lineage,
+                    current_step_id=None,
+                    baseline=ExamWorkspaceHistoryStep(step_id=lineage, content=b"seed-container"),
+                )
+                .model_dump_json()
+                .encode(),
+            )
         await session.commit()
         return owner, files
 
@@ -249,19 +266,19 @@ async def test_competing_same_owner_renames_return_one_named_collision(
         assert sum(file is not None and file.name == "Same.pdf" for file in actual) == 1
 
 
-async def test_version_saved_during_lineage_rename_uses_authoritative_name(
+async def test_overwrite_saved_during_lineage_rename_keeps_the_authoritative_name(
     session_factory: async_sessionmaker[AsyncSession],
 ) -> None:
     lineage = uuid4()
     owner, (head,) = await _seed(session_factory, lineage=lineage)
     actor = make_user().model_copy(update={"id": owner})
-    creating, resume, renamed = asyncio.Event(), asyncio.Event(), asyncio.Event()
+    writing, resume, renamed = asyncio.Event(), asyncio.Event(), asyncio.Event()
 
     class PausedRepository(PostgreSQLUserVaultFileRepository):
-        async def create(self, *, file: VaultFile) -> VaultFile:
-            creating.set()
+        async def overwrite(self, *, file: VaultFile) -> VaultFile:
+            writing.set()
             await resume.wait()
-            return await super().create(file=file)
+            return await super().overwrite(file=file)
 
     async with (
         asyncio.timeout(10),
@@ -280,16 +297,16 @@ async def test_version_saved_during_lineage_rename_uses_authoritative_name(
             ),
         )
 
-        async def save_version() -> VaultFile:
-            version = await store.save_version(
+        async def save_overwrite() -> VaultFile:
+            return await store.save(
                 actor=actor,
                 file_id=uuid4(),
                 name=head.name,
-                content=b"version container bytes",
+                content=b"overwritten container bytes",
                 lineage_id=lineage,
                 version=2,
+                expected_revision=1,
             )
-            return version
 
         async def rename_document() -> None:
             await RenameVaultFileHandler(
@@ -298,8 +315,8 @@ async def test_version_saved_during_lineage_rename_uses_authoritative_name(
             ).handle(actor=actor, command=RenameVaultFileCommand(file_id=head.id, stem="Renamed"))
             renamed.set()
 
-        writer = asyncio.create_task(save_version())
-        await creating.wait()
+        writer = asyncio.create_task(save_overwrite())
+        await writing.wait()
         rename = asyncio.create_task(rename_document())
         try:
             await _wait_for_progress_or_database_block(
@@ -309,8 +326,10 @@ async def test_version_saved_during_lineage_rename_uses_authoritative_name(
             resume.set()
         await asyncio.gather(rename, writer)
     async with session_factory() as verify:
-        versions = await PostgreSQLUserVaultFileRepository(verify).list_lineage_versions(
+        actual = await PostgreSQLUserVaultFileRepository(verify).get_document_head(
             user_id=owner, document_lineage_id=lineage
         )
-        assert {file.document_version for file in versions} == {1, 2}
-        assert {file.name for file in versions} == {"Renamed.provdokument.zip"}
+        assert actual is not None
+        assert actual.id == head.id
+        assert actual.name == "Renamed.provdokument.zip"
+        assert actual.document_version == 2

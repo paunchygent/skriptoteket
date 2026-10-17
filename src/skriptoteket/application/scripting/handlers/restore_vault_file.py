@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 from datetime import timedelta
+from uuid import UUID
 
 from skriptoteket.application.scripting.handlers._vault_helpers import build_vault_file_info
 from skriptoteket.application.scripting.vault import RestoreVaultFileCommand, RestoreVaultFileResult
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import not_found, validation_error
 from skriptoteket.domain.identity.models import User
-from skriptoteket.domain.scripting.vault import VaultUsage
+from skriptoteket.domain.scripting.vault import VaultFile, VaultUsage
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from skriptoteket.protocols.vault import (
@@ -41,39 +42,113 @@ class RestoreVaultFileHandler(RestoreVaultFileHandlerProtocol):
     ) -> RestoreVaultFileResult:
         now = self._clock.now()
         async with self._uow:
-            vault_file = await self._vault_files.get_by_id(file_id=command.file_id)
-            if vault_file is None or vault_file.user_id != actor.id:
+            vault_file = await self._restore_target(actor=actor, file_id=command.file_id)
+            if vault_file is None:
                 raise not_found("VaultFile", str(command.file_id))
 
             if vault_file.deleted_at is None:
                 return RestoreVaultFileResult(file=build_vault_file_info(vault_file=vault_file))
 
+            members = await self._rows_moving_back(actor=actor, target=vault_file)
             cutoff = now - timedelta(days=self._settings.VAULT_RETENTION_DAYS)
-            if vault_file.deleted_at < cutoff:
+            expired = [
+                member
+                for member in members
+                if member.deleted_at is not None and member.deleted_at < cutoff
+            ]
+            if expired:
                 raise validation_error(
                     "Vault file has expired and cannot be restored.",
-                    details={"file_id": str(vault_file.id)},
+                    details={
+                        "file_id": str(vault_file.id),
+                        "expired_file_ids": [str(member.id) for member in expired],
+                    },
                 )
 
+            # The whole group returns at once, so the quota has to fit all of it: the
+            # check runs before any row changes, and a group that does not fit leaves
+            # every row in the trash.
+            restored_bytes = sum(member.bytes for member in members)
             usage = await self._vault_usage.get_for_update(user_id=actor.id, now=now)
-            if usage.bytes_total + vault_file.bytes > self._settings.VAULT_MAX_TOTAL_BYTES:
+            if usage.bytes_total + restored_bytes > self._settings.VAULT_MAX_TOTAL_BYTES:
                 raise validation_error(
                     "Vault quota exceeded.",
                     details={
                         "bytes_total": usage.bytes_total,
-                        "attempted_bytes": vault_file.bytes,
+                        "attempted_bytes": restored_bytes,
                         "max_total_bytes": self._settings.VAULT_MAX_TOTAL_BYTES,
                     },
                 )
 
-            updated = vault_file.model_copy(update={"deleted_at": None})
-            vault_file = await self._vault_files.update(file=updated)
+            for member in members:
+                updated = await self._vault_files.update(
+                    file=member.model_copy(update={"deleted_at": None, "trashed_with_exam": False})
+                )
+                if member.id == command.file_id:
+                    # The row the repository wrote back is the answer: a rename that
+                    # committed while this request waited keeps its new name here.
+                    vault_file = updated
             await self._vault_usage.upsert(
                 usage=VaultUsage(
                     user_id=actor.id,
-                    bytes_total=usage.bytes_total + vault_file.bytes,
+                    bytes_total=usage.bytes_total + restored_bytes,
                     updated_at=now,
                 )
             )
 
         return RestoreVaultFileResult(file=build_vault_file_info(vault_file=vault_file))
+
+    async def _restore_target(self, *, actor: User, file_id: UUID) -> VaultFile | None:
+        """Read the caller's row, then take the exam's lineage lock before acting.
+
+        The row is read again under that lock, so the lifecycle decision uses the state
+        the lock protects instead of a row a concurrent request replaced meanwhile.
+        """
+
+        target = await self._vault_files.get_by_id(file_id=file_id)
+        if target is None or target.user_id != actor.id:
+            return None
+        if target.deleted_at is None or target.document_lineage_id is None:
+            return target
+
+        await self._vault_files.lock_document_lineage(
+            user_id=actor.id, document_lineage_id=target.document_lineage_id
+        )
+        # Read again under the lock and never fall back to the pre-lock row: another
+        # request may have purged it while this one waited, and the caller then gets
+        # NOT_FOUND instead of a lifecycle change against a file that no longer exists.
+        return await self._vault_files.get_by_id(file_id=file_id)
+
+    async def _rows_moving_back(self, *, actor: User, target: VaultFile) -> list[VaultFile]:
+        """Return the trashed rows that leave the trash together with the target.
+
+        An exam owns its saved exports: restoring the exam restores the exports that were
+        trashed with it, while an export the user trashed on its own stays in the trash
+        until it is restored by itself. Restoring a saved export whose exam is still in
+        the trash returns the owning exam with it, so no active export can sit under a
+        trashed exam. A saved export whose exam is active returns alone, so the per-file
+        control keeps working. Callers hold the lineage lock, so a save, trash or restore
+        of the same exam cannot interleave with this group read.
+        """
+
+        lineage_id = target.document_lineage_id
+        if lineage_id is None:
+            return [target]
+
+        members = await self._vault_files.list_exam_files(
+            user_id=actor.id, document_lineage_id=lineage_id, include_deleted=True
+        )
+        exam_document = next((member for member in members if member.export_format is None), None)
+        exam_in_trash = exam_document is not None and exam_document.deleted_at is not None
+        if target.export_format is not None and not exam_in_trash:
+            return [target]
+
+        together = [
+            member
+            for member in members
+            if member.deleted_at is not None
+            and (member.export_format is None or member.trashed_with_exam)
+        ]
+        if all(member.id != target.id for member in together):
+            together.append(target)
+        return together

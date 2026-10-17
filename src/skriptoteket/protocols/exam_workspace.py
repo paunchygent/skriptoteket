@@ -20,6 +20,11 @@ from skriptoteket.application.curated_apps.exam_workspace import (
     RetryExamWorkspaceItemRequest,
     SaveExamWorkspaceDocumentRequest,
 )
+from skriptoteket.application.curated_apps.exam_workspace_history import (
+    ExamWorkspaceHistoryDocumentResponse,
+    ExamWorkspaceHistoryResponse,
+    SaveAsExamWorkspaceDocumentRequest,
+)
 from skriptoteket.application.curated_apps.exam_workspace_misspellings import (
     ExamWorkspaceMisspellingsRequest,
     ExamWorkspaceMisspellingsResponse,
@@ -32,6 +37,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeExamDocument,
 )
 from skriptoteket.domain.identity.models import User
+from skriptoteket.domain.scripting.vault import VaultFile
 
 
 class GenerateExamWorkspaceMisspellingsHandlerProtocol(Protocol):
@@ -114,7 +120,7 @@ class ImportExamWorkspaceDocumentHandlerProtocol(Protocol):
 
 
 class GetExamCourseCatalogHandlerProtocol(Protocol):
-    def handle(self) -> ExamCourseCatalogResponse: ...
+    async def handle(self, *, actor: User) -> ExamCourseCatalogResponse: ...
 
 
 class GetExamWorkspaceConversionStatusHandlerProtocol(Protocol):
@@ -134,6 +140,24 @@ class SaveExamWorkspaceDocumentHandlerProtocol(Protocol):
         request: SaveExamWorkspaceDocumentRequest,
     ) -> ExamWorkspaceDocumentResponse: ...
 
+    async def history(self, *, actor: User, lineage_id: UUID) -> ExamWorkspaceHistoryResponse: ...
+
+    async def history_step(
+        self,
+        *,
+        actor: User,
+        lineage_id: UUID,
+        step_id: UUID,
+    ) -> ExamWorkspaceHistoryDocumentResponse: ...
+
+    async def save_as(
+        self,
+        *,
+        actor: User,
+        lineage_id: UUID,
+        request: SaveAsExamWorkspaceDocumentRequest,
+    ) -> ExamWorkspaceDocumentResponse: ...
+
 
 class ExportExamWorkspaceDocumentHandlerProtocol(Protocol):
     async def handle(
@@ -144,6 +168,15 @@ class ExportExamWorkspaceDocumentHandlerProtocol(Protocol):
         target: ExamWorkspaceExportTarget,
         expected_revision: int,
     ) -> ExamWorkspaceExportFile: ...
+
+    async def save(
+        self,
+        *,
+        actor: User,
+        lineage_id: UUID,
+        target: ExamWorkspaceExportTarget,
+        expected_revision: int,
+    ) -> VaultFile: ...
 
     async def checklist(
         self,

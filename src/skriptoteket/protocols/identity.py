@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from datetime import datetime
-from typing import TYPE_CHECKING, Protocol
+from typing import TYPE_CHECKING, Literal, Protocol
 from uuid import UUID
 
 from skriptoteket.application.identity.admin_users import (
@@ -35,6 +35,8 @@ from skriptoteket.application.identity.commands import (
     UpdateAiSettingsResult,
     UpdateClassroomPlannerSettingsCommand,
     UpdateClassroomPlannerSettingsResult,
+    UpdateExamCoursesCommand,
+    UpdateExamCoursesResult,
     UpdateProfileCommand,
     UpdateProfileResult,
     ValidateRegistrationCommand,
@@ -77,10 +79,30 @@ class UserLifecycleRepositoryProtocol(Protocol):
     async def count_active_by_role(self) -> dict[Role, int]: ...
 
 
+ProfileUpdateField = Literal[
+    "first_name",
+    "last_name",
+    "display_name",
+    "locale",
+    "allow_remote_fallback",
+    "inline_completion_provider",
+    "classroom_planner_smart_enabled",
+    "classroom_planner_use_history",
+    "classroom_planner_grouping_seating_distance_enabled",
+    "classroom_planner_tutorial_seen_sections",
+    "exam_courses",
+    "updated_at",
+]
+
+
 class ProfileRepositoryProtocol(Protocol):
     async def get_by_user_id(self, *, user_id: UUID) -> UserProfile | None: ...
     async def create(self, *, profile: UserProfile) -> UserProfile: ...
-    async def update(self, *, profile: UserProfile) -> UserProfile: ...
+    async def update(
+        self, *, profile: UserProfile, fields: frozenset[ProfileUpdateField]
+    ) -> UserProfile:
+        """Write only the fields owned by this mutation, never the remaining snapshot."""
+        ...
 
 
 class IdentityProjectionRepositoryProtocol(Protocol):
@@ -183,6 +205,10 @@ class UpdateClassroomPlannerSettingsHandlerProtocol(Protocol):
         self,
         command: UpdateClassroomPlannerSettingsCommand,
     ) -> UpdateClassroomPlannerSettingsResult: ...
+
+
+class UpdateExamCoursesHandlerProtocol(Protocol):
+    async def handle(self, command: UpdateExamCoursesCommand) -> UpdateExamCoursesResult: ...
 
 
 class ChangePasswordHandlerProtocol(Protocol):

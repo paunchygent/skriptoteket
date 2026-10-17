@@ -40,21 +40,6 @@ def test_conversion_version_name_keeps_teacher_rename_after_the_first_version() 
     assert _version_name(job, renamed_head) == "Lärarens namn.provdokument.zip"
 
 
-class RenameFiles(FakeVaultFileRepo):
-    async def get_document_head(
-        self,
-        *,
-        user_id: UUID,
-        document_lineage_id: UUID,
-    ) -> VaultFile | None:
-        versions = await self.list_lineage_versions(
-            user_id=user_id,
-            document_lineage_id=document_lineage_id,
-        )
-        active = [file for file in versions if file.deleted_at is None]
-        return max(active, key=lambda file: file.document_version or 0, default=None)
-
-
 def _file(user_id: UUID, **updates: object) -> VaultFile:
     file = VaultFile(
         id=uuid4(),
@@ -73,7 +58,7 @@ def _file(user_id: UUID, **updates: object) -> VaultFile:
 @pytest.mark.parametrize("case", ["missing", "foreign", "trashed"])
 async def test_inaccessible_records_are_not_found_and_never_changed(case: str) -> None:
     actor = make_user()
-    repo = RenameFiles()
+    repo = FakeVaultFileRepo()
     file = _file(
         uuid4() if case == "foreign" else actor.id, deleted_at=_NOW if case == "trashed" else None
     )
@@ -92,7 +77,7 @@ async def test_inaccessible_records_are_not_found_and_never_changed(case: str) -
 @pytest.mark.parametrize("other_state", ["active", "trashed", "foreign"])
 async def test_collision_is_owner_scoped_and_only_counts_active_records(other_state: str) -> None:
     actor = make_user()
-    repo = RenameFiles()
+    repo = FakeVaultFileRepo()
     file = _file(actor.id)
     other = _file(
         uuid4() if other_state == "foreign" else actor.id,
@@ -117,43 +102,56 @@ async def test_collision_is_owner_scoped_and_only_counts_active_records(other_st
 
 
 @pytest.mark.asyncio
-async def test_lineage_rename_includes_trash_and_preserves_every_non_name_field() -> None:
+async def test_lineage_rename_renames_the_exam_file_including_trash_and_spares_its_export() -> None:
     actor = make_user()
-    repo = RenameFiles()
+    repo = FakeVaultFileRepo()
     lineage = uuid4()
-    versions = [
-        _file(
-            actor.id,
-            name="Nytt.provdokument.zip" if version == 1 else "Gamla.provdokument.zip",
-            document_lineage_id=lineage,
-            document_version=version,
-            source_artifact_id=f"documents.conversion_hub:exam-workspace:{version}",
-            deleted_at=_NOW if version == 3 else None,
-        )
-        for version in (1, 2, 3)
-    ]
+    exam = _file(
+        actor.id,
+        name="Gamla.provdokument.zip",
+        document_lineage_id=lineage,
+        document_version=3,
+        source_artifact_id=f"documents.conversion_hub:exam-workspace:{lineage}",
+    )
+    trashed = _file(
+        actor.id,
+        name="Gamla.provdokument.zip",
+        document_lineage_id=lineage,
+        document_version=1,
+        source_artifact_id=f"documents.conversion_hub:exam-workspace:{lineage}",
+        deleted_at=_NOW,
+    )
+    export = _file(
+        actor.id,
+        name="Gamla-qti.zip",
+        document_lineage_id=lineage,
+        document_version=3,
+        export_format="qti",
+        source_artifact_id=f"documents.conversion_hub:exam-workspace:{lineage}:qti",
+    )
     unrelated = _file(actor.id, document_lineage_id=uuid4())
-    for file in [*versions, unrelated]:
+    for file in (exam, trashed, export, unrelated):
         await repo.create(file=file)
     result = await RenameVaultFileHandler(uow=FakeUow(), vault_files=repo).handle(
         actor=actor,
-        command=RenameVaultFileCommand(file_id=versions[0].id, stem="Nytt"),
+        command=RenameVaultFileCommand(file_id=exam.id, stem="Nytt"),
     )
-    assert result.file.id == versions[1].id
+    assert result.file.id == exam.id
     assert result.file.name == "Nytt.provdokument.zip"
-    assert set(result.renamed_file_ids) == {file.id for file in versions}
-    for before in versions:
+    assert set(result.renamed_file_ids) == {exam.id, trashed.id}
+    for before in (exam, trashed):
         after = await repo.get_by_id(file_id=before.id)
         assert after is not None
         assert after.name == "Nytt.provdokument.zip"
         assert after.model_dump(exclude={"name"}) == before.model_dump(exclude={"name"})
+    assert await repo.get_by_id(file_id=export.id) == export
     assert await repo.get_by_id(file_id=unrelated.id) == unrelated
 
 
 @pytest.mark.asyncio
 async def test_non_exam_lineage_without_source_reference_keeps_last_suffix() -> None:
     actor = make_user()
-    repo = RenameFiles()
+    repo = FakeVaultFileRepo()
     file = _file(actor.id, document_lineage_id=uuid4(), source_artifact_id=None)
     await repo.create(file=file)
     result = await RenameVaultFileHandler(uow=FakeUow(), vault_files=repo).handle(
@@ -179,7 +177,7 @@ async def test_standalone_rename_classifies_the_record_and_changes_only_it(
     expected: str,
 ) -> None:
     actor = make_user()
-    repo = RenameFiles()
+    repo = FakeVaultFileRepo()
     file = _file(
         actor.id,
         name=name,

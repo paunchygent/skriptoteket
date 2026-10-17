@@ -18,7 +18,9 @@ from enum import StrEnum
 from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
+
+from skriptoteket.domain.curated_apps.exam_workspace.exam_course_catalog import SchoolForm
 
 
 class Role(StrEnum):
@@ -118,6 +120,19 @@ def normalize_classroom_planner_tutorial_seen_sections(sections: list[str]) -> l
     return list(dict.fromkeys(sections))
 
 
+class ExamCourses(BaseModel):
+    """The teacher's school forms and ordered exam catalog keys.
+
+    The catalog key is the only stored identity; names resolve from the
+    committed catalog on read, and order is the teacher's selection order.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    school_forms: list[SchoolForm] = Field(default_factory=list)
+    course_keys: list[str] = Field(default_factory=list)
+
+
 class UserProfile(BaseModel):
     """User profile data aligned with HuleEdu identity expectations."""
 
@@ -133,6 +148,7 @@ class UserProfile(BaseModel):
     classroom_planner_use_history: bool | None = None
     classroom_planner_grouping_seating_distance_enabled: bool | None = None
     classroom_planner_tutorial_seen_sections: list[str] | None = None
+    exam_courses: ExamCourses = Field(default_factory=ExamCourses)
     locale: str = "sv-SE"
     created_at: datetime
     updated_at: datetime

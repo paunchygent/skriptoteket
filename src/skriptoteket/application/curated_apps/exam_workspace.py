@@ -78,6 +78,7 @@ class ExamWorkspaceDocumentResponse(BaseModel):
 
     document: NativeExamDocument
     summary: ExamWorkspaceDocumentSummary
+    history_cursor: UUID
     notes: tuple[str, ...] = ()
     conversion: ExamWorkspaceConversionStatus | None
 
@@ -97,6 +98,7 @@ class ExamCourseCatalogResponse(BaseModel):
 
     generated_at: str
     courses: tuple[ExamCourse, ...] = ()
+    registered_course_keys: tuple[str, ...] = ()
 
 
 class SaveExamWorkspaceDocumentRequest(BaseModel):

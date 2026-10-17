@@ -1,13 +1,13 @@
 """Exam workspace API routes (ST-SKRIPT-39-04 walking skeleton).
 
 Purpose:
-  Expose DOCX import, document listing, reopen, and versioned save for the native editable
+  Expose DOCX import, listing, reopen, save, history, copy and exports for the native editable
   exam workspace under the Conversion Hub curated app.
 
 Relationships:
   - Shares Conversion Hub app access with `apps_conversion_hub`.
   - Delegates behavior to the exam workspace application handlers; the
-    native document persists as versioned Mina filer containers.
+    native document persists in one Mina filer container with a separate editor history.
 """
 
 from uuid import UUID
@@ -25,11 +25,19 @@ from skriptoteket.application.curated_apps.exam_workspace import (
     RetryExamWorkspaceItemRequest,
     SaveExamWorkspaceDocumentRequest,
 )
+from skriptoteket.application.curated_apps.exam_workspace_history import (
+    ExamWorkspaceHistoryDocumentResponse,
+    ExamWorkspaceHistoryResponse,
+    ExamWorkspaceUndoStepResponse,
+    SaveAsExamWorkspaceDocumentRequest,
+    StoreExamWorkspaceUndoStepRequest,
+)
 from skriptoteket.application.curated_apps.exam_workspace_misspellings import (
     ExamWorkspaceMisspellingsRequest,
     ExamWorkspaceMisspellingsResponse,
 )
 from skriptoteket.domain.identity.models import User
+from skriptoteket.domain.scripting.vault import VaultFile
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.protocols.exam_workspace import (
     ExportExamWorkspaceDocumentHandlerProtocol,
@@ -42,6 +50,7 @@ from skriptoteket.protocols.exam_workspace import (
     RetryExamWorkspaceItemHandlerProtocol,
     SaveExamWorkspaceDocumentHandlerProtocol,
 )
+from skriptoteket.protocols.exam_workspace_history import StoreExamWorkspaceUndoStepHandlerProtocol
 from skriptoteket.web.api.v1.apps_conversion_hub_access import (
     APP_ID,
     require_conversion_hub_access,
@@ -105,13 +114,13 @@ async def import_exam_workspace_document(
     "/exam-workspace/courses",
     response_model=ExamCourseCatalogResponse,
 )
-def get_exam_course_catalog(
+async def get_exam_course_catalog(
     registry: FromDishka[CuratedAppRegistryProtocol],
     handler: FromDishka[GetExamCourseCatalogHandlerProtocol],
     user: User = Depends(require_app_user_api),
 ) -> ExamCourseCatalogResponse:
     require_conversion_hub_access(registry=registry, user=user)
-    return handler.handle()
+    return await handler.handle(actor=user)
 
 
 @router.get(
@@ -195,6 +204,77 @@ async def save_exam_workspace_document(
 ) -> ExamWorkspaceDocumentResponse:
     require_conversion_hub_access(registry=registry, user=user)
     return await handler.handle(actor=user, lineage_id=lineage_id, request=request)
+
+
+@router.post(
+    "/exam-workspace/documents/{lineage_id}/autosaves", response_model=ExamWorkspaceUndoStepResponse
+)
+async def autosave_exam_workspace_document(
+    lineage_id: UUID,
+    request: StoreExamWorkspaceUndoStepRequest,
+    registry: FromDishka[CuratedAppRegistryProtocol],
+    handler: FromDishka[StoreExamWorkspaceUndoStepHandlerProtocol],
+    user: User = Depends(require_app_user_api),
+) -> ExamWorkspaceUndoStepResponse:
+    require_conversion_hub_access(registry=registry, user=user)
+    return await handler.handle(actor=user, lineage_id=lineage_id, request=request)
+
+
+@router.get(
+    "/exam-workspace/documents/{lineage_id}/history", response_model=ExamWorkspaceHistoryResponse
+)
+async def get_exam_workspace_history(
+    lineage_id: UUID,
+    registry: FromDishka[CuratedAppRegistryProtocol],
+    handler: FromDishka[SaveExamWorkspaceDocumentHandlerProtocol],
+    user: User = Depends(require_app_user_api),
+) -> ExamWorkspaceHistoryResponse:
+    require_conversion_hub_access(registry=registry, user=user)
+    return await handler.history(actor=user, lineage_id=lineage_id)
+
+
+@router.get(
+    "/exam-workspace/documents/{lineage_id}/history/{step_id}",
+    response_model=ExamWorkspaceHistoryDocumentResponse,
+)
+async def get_exam_workspace_history_step(
+    lineage_id: UUID,
+    step_id: UUID,
+    registry: FromDishka[CuratedAppRegistryProtocol],
+    handler: FromDishka[SaveExamWorkspaceDocumentHandlerProtocol],
+    user: User = Depends(require_app_user_api),
+) -> ExamWorkspaceHistoryDocumentResponse:
+    require_conversion_hub_access(registry=registry, user=user)
+    return await handler.history_step(actor=user, lineage_id=lineage_id, step_id=step_id)
+
+
+@router.post(
+    "/exam-workspace/documents/{lineage_id}/copy", response_model=ExamWorkspaceDocumentResponse
+)
+async def copy_exam_workspace_document(
+    lineage_id: UUID,
+    request: SaveAsExamWorkspaceDocumentRequest,
+    registry: FromDishka[CuratedAppRegistryProtocol],
+    handler: FromDishka[SaveExamWorkspaceDocumentHandlerProtocol],
+    user: User = Depends(require_app_user_api),
+) -> ExamWorkspaceDocumentResponse:
+    require_conversion_hub_access(registry=registry, user=user)
+    return await handler.save_as(actor=user, lineage_id=lineage_id, request=request)
+
+
+@router.post("/exam-workspace/documents/{lineage_id}/exports/{target}", response_model=VaultFile)
+async def save_exam_workspace_export(
+    lineage_id: UUID,
+    target: ExamWorkspaceExportTarget,
+    expected_revision: int,
+    registry: FromDishka[CuratedAppRegistryProtocol],
+    handler: FromDishka[ExportExamWorkspaceDocumentHandlerProtocol],
+    user: User = Depends(require_app_user_api),
+) -> VaultFile:
+    require_conversion_hub_access(registry=registry, user=user)
+    return await handler.save(
+        actor=user, lineage_id=lineage_id, target=target, expected_revision=expected_revision
+    )
 
 
 @router.post(

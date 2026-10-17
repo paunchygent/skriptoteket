@@ -1,0 +1,233 @@
+"""Adversarial persistence contracts for one durable exam file per lineage."""
+
+from datetime import timedelta
+from uuid import uuid4
+
+import pytest
+
+from skriptoteket.application.curated_apps.exam_workspace import SaveExamWorkspaceDocumentRequest
+from skriptoteket.application.curated_apps.handlers.exam_workspace_document_store import (
+    ExamWorkspaceDocumentStore,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
+    SaveExamWorkspaceDocumentHandler,
+)
+from skriptoteket.config import Settings
+from skriptoteket.domain.errors import DomainError, ErrorCode
+from tests.fixtures.time_fixtures import FixedClock
+from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents import (
+    _NOW,
+    FakeUow,
+    _actor,
+    _Env,
+    _settings,
+)
+
+
+def _store(
+    env: _Env, *, total_limit: int, uow: FakeUow | None = None
+) -> ExamWorkspaceDocumentStore:
+    return ExamWorkspaceDocumentStore(
+        vault_files=env.vault_files,
+        vault_usage=env.vault_usage,
+        vault_storage=env.vault_storage,
+        uow=uow or FakeUow(),
+        clock=FixedClock(_NOW),
+        settings=Settings.model_construct(
+            VAULT_MAX_FILE_BYTES=100, VAULT_MAX_TOTAL_BYTES=total_limit
+        ),
+    )
+
+
+@pytest.mark.asyncio
+async def test_overwrite_reports_new_save_time_without_changing_row_creation_time() -> None:
+    env = _Env()
+    actor = _actor()
+    imported = await env.seed_document(actor=actor)
+    original = env.vault_files.files[imported.summary.vault_file_id]
+    later = _NOW + timedelta(days=3)
+    later_store = ExamWorkspaceDocumentStore(
+        vault_files=env.vault_files,
+        vault_usage=env.vault_usage,
+        vault_storage=env.vault_storage,
+        uow=FakeUow(),
+        clock=FixedClock(later),
+        settings=_settings(),
+    )
+    saved = await SaveExamWorkspaceDocumentHandler(
+        vault_files=env.vault_files,
+        codec=env.codec,
+        store=later_store,
+        id_generator=env.ids,
+        jobs=env.enrichment_jobs,
+    ).handle(
+        actor=actor,
+        lineage_id=imported.summary.lineage_id,
+        request=SaveExamWorkspaceDocumentRequest(
+            expected_revision=1,
+            document=imported.document.model_copy(update={"revision": 2}),
+        ),
+    )
+    reopened = await env.get_handler.handle(actor=actor, lineage_id=imported.summary.lineage_id)
+    assert saved.summary.saved_at == later
+    assert reopened.summary.saved_at == later
+    assert saved.summary.vault_file_id == original.id
+    assert env.vault_files.files[original.id].created_at == original.created_at == _NOW
+
+
+@pytest.mark.asyncio
+async def test_overwrites_charge_only_size_delta_and_keep_one_file_at_quota() -> None:
+    env = _Env()
+    actor = _actor()
+    lineage = uuid4()
+    store = _store(env, total_limit=15)
+    original_id = uuid4()
+    for revision, content in enumerate((b"a" * 10, b"b" * 15, b"c" * 4), start=1):
+        saved = await store.save(
+            actor=actor,
+            file_id=original_id if revision == 1 else uuid4(),
+            name="Prov.provdokument.zip",
+            content=content,
+            lineage_id=lineage,
+            version=revision,
+            expected_revision=None if revision == 1 else revision - 1,
+        )
+        assert saved.id == original_id
+        assert saved.bytes == len(content)
+        assert saved.document_version == revision
+        assert env.vault_usage.usage.bytes_total == len(content)
+        assert await store.load(actor=actor, vault_file=saved) == content
+        assert len(await env.vault_files.list_active_for_user(user_id=actor.id)) == 1
+        assert set(env.vault_storage.stored) == {(actor.id, original_id)}
+
+
+@pytest.mark.asyncio
+async def test_stale_save_does_not_replace_payload_or_accounting() -> None:
+    env = _Env()
+    actor = _actor()
+    lineage = uuid4()
+    store = _store(env, total_limit=100)
+    saved = await store.save(
+        actor=actor,
+        file_id=uuid4(),
+        name="Prov.provdokument.zip",
+        content=b"current revision",
+        lineage_id=lineage,
+        version=3,
+    )
+    with pytest.raises(DomainError) as error:
+        await store.save(
+            actor=actor,
+            file_id=uuid4(),
+            name=saved.name,
+            content=b"stale tab replacing a newer save",
+            lineage_id=lineage,
+            version=2,
+            expected_revision=1,
+        )
+    assert error.value.code is ErrorCode.CONFLICT
+    assert await store.load(actor=actor, vault_file=saved) == b"current revision"
+    assert env.vault_usage.usage.bytes_total == len(b"current revision")
+    assert env.vault_files.files[saved.id].document_version == 3
+
+
+@pytest.mark.asyncio
+async def test_failed_accounting_does_not_destroy_previous_file_bytes() -> None:
+    env = _Env()
+    actor = _actor()
+    lineage = uuid4()
+    store = _store(env, total_limit=100)
+    saved = await store.save(
+        actor=actor,
+        file_id=uuid4(),
+        name="Prov.provdokument.zip",
+        content=b"last successful save",
+        lineage_id=lineage,
+        version=1,
+    )
+    env.vault_usage.fail_upsert = True
+    with pytest.raises(RuntimeError, match="usage failed"):
+        await store.save(
+            actor=actor,
+            file_id=uuid4(),
+            name=saved.name,
+            content=b"uncommitted replacement",
+            lineage_id=lineage,
+            version=2,
+            expected_revision=1,
+        )
+    assert await store.load(actor=actor, vault_file=saved) == b"last successful save"
+    assert (actor.id, saved.id) not in env.vault_storage.deleted
+
+
+@pytest.mark.asyncio
+async def test_outer_transaction_failure_restores_the_last_successful_file() -> None:
+    class NestedFailingUow(FakeUow):
+        depth = 0
+        fail_commit = False
+
+        async def __aenter__(self) -> "NestedFailingUow":
+            self.depth += 1
+            return self
+
+        async def __aexit__(self, *args: object) -> None:
+            self.depth -= 1
+            if self.depth == 0 and self.fail_commit:
+                raise RuntimeError("outer commit failed")
+
+    env = _Env()
+    actor = _actor()
+    lineage = uuid4()
+    uow = NestedFailingUow()
+    store = _store(env, total_limit=100, uow=uow)
+    saved = await store.save(
+        actor=actor,
+        file_id=uuid4(),
+        name="Prov.provdokument.zip",
+        content=b"last successful save",
+        lineage_id=lineage,
+        version=1,
+    )
+    uow.fail_commit = True
+    with pytest.raises(RuntimeError, match="outer commit failed"):
+        async with store.transaction(user_id=actor.id, lineage_id=lineage):
+            await store.save(
+                actor=actor,
+                file_id=uuid4(),
+                name=saved.name,
+                content=b"uncommitted replacement",
+                lineage_id=lineage,
+                version=2,
+                expected_revision=1,
+            )
+    assert await store.load(actor=actor, vault_file=saved) == b"last successful save"
+
+
+@pytest.mark.asyncio
+async def test_growth_past_quota_keeps_the_previous_durable_file() -> None:
+    env = _Env()
+    actor = _actor()
+    lineage = uuid4()
+    store = _store(env, total_limit=15)
+    saved = await store.save(
+        actor=actor,
+        file_id=uuid4(),
+        name="Prov.provdokument.zip",
+        content=b"a" * 10,
+        lineage_id=lineage,
+        version=1,
+    )
+    with pytest.raises(DomainError) as error:
+        await store.save(
+            actor=actor,
+            file_id=uuid4(),
+            name=saved.name,
+            content=b"b" * 16,
+            lineage_id=lineage,
+            version=2,
+            expected_revision=1,
+        )
+    assert error.value.code is ErrorCode.VALIDATION_ERROR
+    assert await store.load(actor=actor, vault_file=saved) == b"a" * 10
+    assert env.vault_usage.usage.bytes_total == 10
+    assert env.vault_files.files[saved.id].document_version == 1

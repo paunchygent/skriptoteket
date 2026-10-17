@@ -1,4 +1,4 @@
-"""Real PostgreSQL proof that converted DOCX pictures survive every revision write (D2).
+"""Real PostgreSQL proof that converted DOCX pictures survive every overwrite (D2).
 
 The job queue, vault repositories, container codec, local vault storage and the save handler
 are the production implementations; the provisional batches stand in for the pipeline.
@@ -141,9 +141,8 @@ async def test_a_picture_survives_provisional_saves_and_later_batches(
             user_id=actor.id, document_lineage_id=lineage_id
         )
         assert head is not None
-        container = world.codec.parse(
-            content=await world.store.load_version(actor=actor, vault_file=head)
-        )
+        head_id = head.id
+        container = world.codec.parse(content=await world.store.load(actor=actor, vault_file=head))
         assert container.assets_by_id == {_PICTURE_ID: _PICTURE}
 
         # A later batch keeps the first batch's picture and payload.
@@ -156,15 +155,14 @@ async def test_a_picture_survives_provisional_saves_and_later_batches(
         assert reopened.revision == 2
         assert reopened.items[0].body_asset_ids() == (_PICTURE_ID,)
 
-        # A teacher save keeps the picture and its payload beside the new revision.
+        # A teacher save keeps the picture and its payload in the same exam file.
         saved = await world.teacher_save(actor, reopened)
         assert saved.summary.version == 3
+        assert saved.summary.vault_file_id == head_id
         assert saved.document.items[0].body_asset_ids() == (_PICTURE_ID,)
         head = await world.vault_files.get_document_head(
             user_id=actor.id, document_lineage_id=lineage_id
         )
-        assert head is not None
-        container = world.codec.parse(
-            content=await world.store.load_version(actor=actor, vault_file=head)
-        )
+        assert head is not None and head.id == head_id
+        container = world.codec.parse(content=await world.store.load(actor=actor, vault_file=head))
         assert container.assets_by_id == {_PICTURE_ID: _PICTURE}
