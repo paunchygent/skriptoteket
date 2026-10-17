@@ -80,4 +80,4 @@ repair touches. Scoped ruff and mypy.
 | D2  | The bf26 replay matches the current build request contract; the fix follows the root cause of the request change, not a looser matcher that hides it. |
 | D3  | No test asserts wall-clock timing; contract tests track the current contracts. |
 | D4  | Production code changes only if the root cause shows production is wrong, and then only after reporting it. |
-| D5  | The bf26 type-conflict resend (39-05-04 D32, reached since 7c8c6bd7) gets one live provider recording, made once on Hemma staging with the staging provider configuration from the exact current resend request; no corpus rerun (user 2026-10-17). |
+| D5  | Every provider request that the current replays send without a recording (first the bf26 type-conflict resend, 39-05-04 D32, reached since 7c8c6bd7) gets a live recording made on Hemma staging with the staging provider configuration from the exact current request, with 2-3 recorded rounds per item as needed; no full corpus rerun (user 2026-10-17). |
