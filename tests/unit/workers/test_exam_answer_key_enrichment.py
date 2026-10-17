@@ -119,7 +119,15 @@ async def test_claimed_docx_is_processed(
 
     assert processed is True
     arguments = expected_claim_arguments(enrichment_enabled=enrichment_enabled)
-    handler.fail_next_expired.assert_awaited_once_with(**arguments)
+    if enrichment_enabled:
+        handler.fail_next_expired.assert_awaited_once_with(**arguments)
+    else:
+        assert [
+            call.kwargs["source_kind"] for call in handler.fail_next_expired.await_args_list
+        ] == [
+            ExamAnswerKeySourceKind.DOCX_IMPORT,
+            ExamAnswerKeySourceKind.DIGIEXAM_IMPORT,
+        ]
     jobs.claim_next.assert_awaited_once_with(**arguments)
     handler.handle.assert_awaited_once_with(job=claimed_docx_job)
 
@@ -143,8 +151,15 @@ async def test_empty_queue_returns_false(
 
     assert processed is False
     arguments = expected_claim_arguments(enrichment_enabled=enrichment_enabled)
-    handler.fail_next_expired.assert_awaited_once_with(**arguments)
-    jobs.claim_next.assert_awaited_once_with(**arguments)
+    if enrichment_enabled:
+        handler.fail_next_expired.assert_awaited_once_with(**arguments)
+        jobs.claim_next.assert_awaited_once_with(**arguments)
+    else:
+        for boundary in (handler.fail_next_expired, jobs.claim_next):
+            assert [call.kwargs["source_kind"] for call in boundary.await_args_list] == [
+                ExamAnswerKeySourceKind.DOCX_IMPORT,
+                ExamAnswerKeySourceKind.DIGIEXAM_IMPORT,
+            ]
     handler.handle.assert_not_awaited()
 
 

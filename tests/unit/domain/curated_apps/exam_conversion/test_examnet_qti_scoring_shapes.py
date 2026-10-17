@@ -395,13 +395,17 @@ def test_lucktext_value_rounded_to_zero_keeps_accepted_values_without_mapping() 
     assert _max_score_value(root) == "0.02"
 
 
-def test_zero_point_lucktext_keeps_accepted_values_without_mapping() -> None:
+def test_zero_point_lucktext_maps_each_accepted_value_to_explicit_zero() -> None:
     root = _root(_gap_item(max_score=0, gap_count=3, accepted_values=("beta",)))
 
     declarations = root.findall(_tag("qti-response-declaration"))
     assert len(declarations) == 3
     for declaration in declarations:
-        assert declaration.find(_tag("qti-mapping")) is None
+        mapping = _child(declaration, "qti-mapping")
+        entries = mapping.findall(_tag("qti-map-entry"))
+        assert [(entry.attrib["map-key"], entry.attrib["mapped-value"]) for entry in entries] == [
+            ("beta", "0")
+        ]
         correct_response = _child(declaration, "qti-correct-response")
         assert [value.text for value in correct_response.findall(_tag("qti-value"))] == ["beta"]
     assert _max_score_value(root) == "0"
