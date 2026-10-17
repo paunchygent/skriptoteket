@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-import { IconSearch } from "../icons";
+import { UiDenseIconButton, UiGlyph } from "./shared";
 
 type UiSearchBarVariant = "panel" | "popover";
 
@@ -46,12 +46,6 @@ const inputClass = computed(() => {
     : "flex-1 min-w-0 h-[38px] px-3 bg-transparent text-sm text-navy outline-none";
 });
 
-const buttonClass = computed(() => {
-  return props.variant === "popover"
-    ? "grid place-items-center w-[32px] border-l border-navy/30 bg-canvas text-navy/70 hover:bg-canvas/70 hover:text-navy shadow-none"
-    : "grid place-items-center w-[44px] border-l border-navy bg-canvas text-navy/70 hover:bg-canvas/70 hover:text-navy shadow-none";
-});
-
 function onInput(event: Event): void {
   const target = event.target;
   if (!(target instanceof HTMLInputElement)) return;
@@ -82,16 +76,20 @@ function onSubmit(): void {
         @input="onInput"
         @keydown.enter.prevent="onSubmit"
       >
-      <button
+      <UiDenseIconButton
         v-if="showButton"
         type="button"
-        :class="buttonClass"
+        size="icon"
         :disabled="disabled || isBusy || buttonDisabled"
-        :aria-label="ariaLabel ?? 'Sök'"
+        :label="ariaLabel ?? 'Sök'"
         @click="onSubmit"
       >
-        <IconSearch :size="16" />
-      </button>
+        <UiGlyph
+          meaning="search"
+          :size="16"
+          :stroke-width="2.5"
+        />
+      </UiDenseIconButton>
     </div>
   </div>
 </template>

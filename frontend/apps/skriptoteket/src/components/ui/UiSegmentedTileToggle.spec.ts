@@ -9,7 +9,7 @@
 import { mount } from "@vue/test-utils";
 import { describe, expect, it } from "vitest";
 
-import { IconFileText } from "../icons";
+import { IconCombinePdf, IconSeparatePdfs } from "../icons";
 import UiSegmentedTileToggle from "./UiSegmentedTileToggle.vue";
 
 describe("UiSegmentedTileToggle", () => {
@@ -22,13 +22,13 @@ describe("UiSegmentedTileToggle", () => {
           {
             value: "separate",
             label: "Enskilda PDF-filer",
-            icon: IconFileText,
+            icon: IconSeparatePdfs,
             dataTest: "separate",
           },
           {
             value: "combined",
             label: "Kombinerad PDF",
-            icon: IconFileText,
+            icon: IconCombinePdf,
             dataTest: "combined",
           },
         ],
@@ -37,9 +37,19 @@ describe("UiSegmentedTileToggle", () => {
 
     expect(wrapper.get('[role="radiogroup"]').attributes("aria-label")).toBe("Exportera som");
     expect(wrapper.get('[data-test="separate"]').attributes("aria-checked")).toBe("true");
+    for (const option of wrapper.findAll('[role="radio"]')) {
+      expect(option.get("svg").attributes("aria-hidden")).toBe("true");
+      expect(option.get("svg").attributes("aria-label")).toBeUndefined();
+      expect(option.text()).not.toBe("");
+    }
 
     await wrapper.get('[data-test="combined"]').trigger("click");
-
     expect(wrapper.emitted("update:modelValue")).toEqual([["combined"]]);
+    await wrapper.setProps({ modelValue: "combined", disabled: true });
+    expect(wrapper.get('[data-test="combined"]').attributes("aria-checked")).toBe("true");
+    expect(wrapper.get('[data-test="separate"]').attributes("aria-checked")).toBe("false");
+    await wrapper.get('[data-test="separate"]').trigger("click");
+    expect(wrapper.emitted("update:modelValue")).toEqual([["combined"]]);
+    wrapper.unmount();
   });
 });

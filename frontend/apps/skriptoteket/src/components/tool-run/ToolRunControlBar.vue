@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
-import { IconSettings } from "../icons";
+import { UiGlyph } from "../ui/shared";
 import { UiDenseActionButton } from "../ui";
 
 const props = withDefaults(defineProps<{
@@ -44,7 +44,11 @@ const isCompact = computed(() => props.density === "compact");
       @click="emit('toggle-settings')"
     >
       <template #leading>
-        <IconSettings :size="isCompact ? 14 : 16" />
+        <UiGlyph
+          meaning="settings"
+          :size="isCompact ? 14 : 16"
+          :stroke-width="2.5"
+        />
       </template>
     </UiDenseActionButton>
 

@@ -10,8 +10,8 @@
 
 import { computed, type CSSProperties } from "vue";
 
-import { IconEdit, IconPlus, IconTrash } from "../../../components/icons";
 import { UiDenseActionButton } from "../../../components/ui";
+import { UiGlyph } from "../../../components/ui/shared";
 import type { RoomTemplate } from "../classroomPlannerTypes";
 import { getRoomSurfaceMetrics } from "../roomFixturePresentation";
 import { normalizeRoomGrid } from "../roomFixtureLayout";
@@ -183,7 +183,11 @@ const previewSurfaceStyle = computed<CSSProperties>(() => {
         @click="emit('create-template')"
       >
         <template #leading>
-          <IconPlus :size="14" />
+          <UiGlyph
+            meaning="add"
+            :size="14"
+            :stroke-width="2.5"
+          />
         </template>
       </UiDenseActionButton>
       <UiDenseActionButton
@@ -194,7 +198,11 @@ const previewSurfaceStyle = computed<CSSProperties>(() => {
         @click="emit('edit-current-template', selectedTemplate ?? undefined)"
       >
         <template #leading>
-          <IconEdit :size="14" />
+          <UiGlyph
+            meaning="edit"
+            :size="14"
+            :stroke-width="2.5"
+          />
         </template>
       </UiDenseActionButton>
       <UiDenseActionButton
@@ -206,7 +214,11 @@ const previewSurfaceStyle = computed<CSSProperties>(() => {
         @click="emit('delete-current-template')"
       >
         <template #leading>
-          <IconTrash :size="14" />
+          <UiGlyph
+            meaning="delete"
+            :size="14"
+            :stroke-width="2.5"
+          />
         </template>
       </UiDenseActionButton>
     </div>

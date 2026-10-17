@@ -7,7 +7,7 @@
  * - used by dense planner controls where text would be too slow to scan
  */
 
-import { LockKeyhole } from "lucide-vue-next";
+import { LockKeyhole } from "@lucide/vue";
 
 defineProps<{
   size?: number;

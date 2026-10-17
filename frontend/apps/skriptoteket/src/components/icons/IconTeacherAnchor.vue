@@ -7,7 +7,7 @@
  * - consumed by near-teacher rule tools without implying a school building
  */
 
-import { UserStar } from "lucide-vue-next";
+import { UserStar } from "@lucide/vue";
 
 defineProps<{
   size?: number;

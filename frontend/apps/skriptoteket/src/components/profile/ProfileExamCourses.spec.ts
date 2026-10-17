@@ -82,6 +82,27 @@ it("adds gymnasiet and subject-band entries in selection order, removes one, and
   wrapper.unmount();
 });
 
+it("keeps the package-sized remove control non-shrinking beside a long course label", async () => {
+  const longName = "Svenska med fördjupning i språk, litteratur och vetenskaplig kommunikation";
+  vi.mocked(getExamCourseCatalog).mockResolvedValue({
+    courses: [{ ...COURSES[1]!, name: longName }],
+    generated_at: "2026-10-17",
+    registered_course_keys: ["SVESVE01"],
+  });
+  const { default: ProfileExamCourses } = await import("./ProfileExamCourses.vue");
+  const wrapper = mount(ProfileExamCourses, {
+    props: { examCourses: { school_forms: ["gymnasiet"], course_keys: ["SVESVE01"] } },
+  });
+  await flushPromises();
+
+  expect(wrapper.get("ol li span").text()).toContain(longName);
+  const remove = wrapper.get('[data-test="profile-course-remove"]');
+  expect(remove.attributes("aria-label")).toBe(`Ta bort ${longName}`);
+  expect(remove.classes()).toContain("shrink-0");
+  expect(remove.classes()).toEqual(expect.arrayContaining(["h-9", "w-9"]));
+  wrapper.unmount();
+});
+
 it("keeps an unsaved removal and reports no success when saving fails, then permits retry", async () => {
   const { default: ProfileExamCourses } = await import("./ProfileExamCourses.vue");
   const wrapper = mount(ProfileExamCourses, {

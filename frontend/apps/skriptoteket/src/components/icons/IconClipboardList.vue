@@ -6,7 +6,7 @@
  * shared icon registry for planner navigation.
  */
 
-import { ClipboardList } from "lucide-vue-next";
+import { ClipboardList } from "@lucide/vue";
 
 defineProps<{
   size?: number;

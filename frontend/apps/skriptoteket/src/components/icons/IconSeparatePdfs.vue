@@ -10,7 +10,7 @@
  *   - consumed by the Document Converter output selector
  */
 
-import { Files } from "lucide-vue-next";
+import { Files } from "@lucide/vue";
 
 defineProps<{
   size?: number;

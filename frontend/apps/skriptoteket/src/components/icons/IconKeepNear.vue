@@ -7,7 +7,7 @@
  * - keeps `IconLink2` reserved for real link/share semantics
  */
 
-import { Magnet } from "lucide-vue-next";
+import { Magnet } from "@lucide/vue";
 
 defineProps<{
   size?: number;

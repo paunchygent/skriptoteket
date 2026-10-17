@@ -7,7 +7,7 @@
  * - consumed by planner student-list and student-pool surfaces
  */
 
-import { UsersRound } from "lucide-vue-next";
+import { UsersRound } from "@lucide/vue";
 
 defineProps<{
   size?: number;

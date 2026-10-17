@@ -9,7 +9,7 @@
 
 import { computed } from "vue";
 
-import { IconCheck } from "../icons";
+import { UiGlyph } from "./shared";
 import { denseActionButtonClass, type DenseActionGroupPosition } from "./shared/denseToolPrimitives";
 
 const props = withDefaults(
@@ -68,7 +68,11 @@ function toggle(): void {
       :class="modelValue ? 'border-action bg-action text-button-primary-text' : 'border-navy/30 bg-white text-transparent'"
       aria-hidden="true"
     >
-      <IconCheck :size="10" />
+      <UiGlyph
+        meaning="selected"
+        :size="10"
+        :stroke-width="2.5"
+      />
     </span>
     <span>{{ label }}</span>
   </button>
