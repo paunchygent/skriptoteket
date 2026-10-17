@@ -2,11 +2,21 @@
 
 from dataclasses import dataclass
 from decimal import Decimal
-from typing import Any
 
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+    NativeParagraph,
+    NativeTextSegment,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import NativeExamDocument
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import NativeExamItem
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_matching import NativeMatchPair
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
+    NativeAnswerKey,
+    NativeChoice,
+    NativeGap,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeAnswerKeyOrigin,
     NativeExamItemKind,
 )
 from skriptoteket.domain.errors import validation_error
@@ -21,12 +31,12 @@ class NativeExamChangeTypeResult:
     dropped_content: tuple[str, ...]
 
 
-def _empty_body() -> list[dict[str, object]]:
-    return [{"segments": [{"kind": "text", "text": " ", "marks": ()}], "heading_level": None}]
+def _empty_body() -> tuple[NativeParagraph, ...]:
+    return (NativeParagraph(segments=(NativeTextSegment(text=" ", marks=()),), heading_level=None),)
 
 
-def _empty_choices() -> list[dict[str, object]]:
-    return [{"choice_id": f"choice_{i:03d}", "body": _empty_body()} for i in (1, 2)]
+def _empty_choices() -> tuple[NativeChoice, ...]:
+    return tuple(NativeChoice(choice_id=f"choice_{i:03d}", body=_empty_body()) for i in (1, 2))
 
 
 def change_item_type(
@@ -75,31 +85,27 @@ def change_item_type(
     drop("tick_points", item.tick_points is not None)
     drop("ai_suggestion", item.ai_suggestion is not None)
     data.update(kind=target_kind, choices=(), gaps=(), tick_points=None, ai_suggestion=None)
-    key: dict[str, Any] = {"origin": "absent", "correct_choice_ids": (), "match_pairs": ()}
-    data["answer_key"] = key
+    key = NativeAnswerKey(origin=NativeAnswerKeyOrigin.ABSENT)
     if target_kind in _CHOICE:
         data["choices"] = item.choices if keep_choices else _empty_choices()
         if keep_key:
-            data["answer_key"] = item.answer_key.model_dump()
+            key = item.answer_key
     elif target_kind == NativeExamItemKind.FREE_TEXT:
-        key["origin"] = "not_applicable"
+        key = NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE)
     elif target_kind in _GAP:
-        gaps: list[dict[str, Any]] = (
-            [gap.model_dump() for gap in item.gaps] if keep_gaps else [{"gap_id": "gap_001"}]
-        )
-        for gap in gaps:
-            gap.update(
-                accepted_values=(),
-                automatic_values=(),
-                excluded_automatic_values=(),
-                options=(),
-                correct_option_id=None,
+        gap_ids = tuple(gap.gap_id for gap in item.gaps) if keep_gaps else ("gap_001",)
+        data["gaps"] = tuple(
+            NativeGap(
+                gap_id=gap_id,
+                options=_empty_choices() if target_kind == NativeExamItemKind.INLINE_CHOICE else (),
+                correct_option_id=(
+                    "choice_001" if target_kind == NativeExamItemKind.INLINE_CHOICE else None
+                ),
             )
-            if target_kind == NativeExamItemKind.INLINE_CHOICE:
-                gap.update(options=_empty_choices(), correct_option_id="choice_001")
-        data["gaps"] = gaps
+            for gap_id in gap_ids
+        )
         if target_kind == NativeExamItemKind.INLINE_CHOICE:
-            key["origin"] = "teacher_authored"
+            key = NativeAnswerKey(origin=NativeAnswerKeyOrigin.TEACHER_AUTHORED)
         if not keep_gaps:
             data["body"] = [
                 *data["body"],
@@ -113,10 +119,11 @@ def change_item_type(
         ]
         data["tick_points"] = Decimal(str(item.points)) if item.points is not None else Decimal(0)
         if item.points is not None:
-            key.update(
-                origin="teacher_authored",
-                match_pairs=[{"left_id": "left_001", "right_id": "right_001"}],
+            key = NativeAnswerKey(
+                origin=NativeAnswerKeyOrigin.TEACHER_AUTHORED,
+                match_pairs=(NativeMatchPair(left_id="left_001", right_id="right_001"),),
             )
+    data["answer_key"] = key
     if item.kind in _GAP and not keep_gaps:
         # Remove interaction markers, not surrounding teacher text or its formatting.
         body = []
