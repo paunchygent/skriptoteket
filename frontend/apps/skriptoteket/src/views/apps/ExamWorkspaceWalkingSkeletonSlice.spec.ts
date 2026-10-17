@@ -194,7 +194,7 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
       { heading_level: null, segments: [{ kind: "gap", gap_id: "gap_001" }] },
     ]);
     expect(added.gaps).toEqual([
-      { gap_id: "gap_001", accepted_values: [], automatic_values: [], excluded_automatic_values: [] },
+      { gap_id: "gap_001", accepted_values: [], automatic_values: [], excluded_automatic_values: [], options: [], correct_option_id: null },
     ]);
     expect(added.points).toBeNull();
   });
