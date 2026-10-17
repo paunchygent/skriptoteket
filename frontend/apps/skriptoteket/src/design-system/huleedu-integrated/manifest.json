@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "package": "huleedu-integrated-frontend-design-system",
-  "version": "0.1.27",
+  "version": "0.1.28",
   "compatibility": {
     "tailwind": ">=4.0.0",
     "vue": ">=3.5.0",
@@ -106,7 +106,7 @@
       "id": "system-message",
       "kind": "vue.component",
       "path": "src/vue/components/SystemMessage.vue",
-      "sha256": "61f40d01e7bdcfb9055c27975c25bef9fda3fc8799e0900ce834050fe58d7266"
+      "sha256": "584e353add9ad6853ba1d683a6c52b7ca7eb53dea669ffba51e5ea1b4a19260f"
     },
     {
       "id": "toast-host",
