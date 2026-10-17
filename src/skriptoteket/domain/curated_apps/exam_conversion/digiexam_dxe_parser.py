@@ -48,6 +48,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_prompt_repair imp
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_result_pdf_answers import (
     DigiExamResultPdfAnswerEvidence,
 )
+from skriptoteket.domain.errors import validation_error
 
 
 @dataclass(frozen=True)
@@ -164,7 +165,11 @@ class DigiExamDxeParser:
         title = _str_value(question.get("title"))
         about = _str_value(question.get("about"))
         prompt_html = _str_value(question.get("bodyHTML"))
-        max_score = _point_value(question.get("maxScore"))
+        max_score = (
+            _point_value(question["maxScore"], question_number=index)
+            if "maxScore" in question
+            else None
+        )
         type_code = _int_value(question.get("type"))
 
         missing_title = title is None or not title.strip()
@@ -336,21 +341,25 @@ def _int_value(value: object) -> int | None:
     return value if isinstance(value, int) else None
 
 
-def _point_value(value: object) -> int | float | None:
-    """Return a `.dxe` point value preserving valid positive fractionals.
+def _point_value(value: object, *, question_number: int) -> int | float:
+    """Preserve supplied finite nonnegative numbers; refuse every other value.
 
-    Integers keep the existing acceptance policy. Floats must be finite and
-    positive so valid fractional point values pass unchanged while malformed
-    values keep the existing missing-required-field blocking behavior.
+    Only the caller handles an absent field. An invalid supplied value must
+    terminate import rather than becoming a reviewable item with missing points.
     """
-
-    if isinstance(value, bool):
-        return None
-    if isinstance(value, int):
-        return value
-    if isinstance(value, float) and math.isfinite(value) and value > 0:
-        return value
-    return None
+    if not isinstance(value, bool):
+        if isinstance(value, int) and value >= 0:
+            return value
+        if isinstance(value, float) and math.isfinite(value) and value >= 0:
+            return value
+    raise validation_error(
+        f"Fråga {question_number} har ett ogiltigt maxScore. "
+        "Poängen måste vara ett ändligt tal som är noll eller större.",
+        details={
+            "reason_code": "invalid_digiexam_max_score",
+            "question_number": question_number,
+        },
+    )
 
 
 def _question_header(title: str | None, index: int) -> str:

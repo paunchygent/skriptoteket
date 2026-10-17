@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import base64
 from pathlib import PurePath
-from typing import Literal, cast
 from uuid import UUID
 
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_contracts import (
@@ -101,7 +100,7 @@ def build_native_exam_from_digiexam(
             assets[asset_id] = NativeExamAsset(
                 asset_id=asset_id,
                 sha256=asset.sha256,
-                media_type=cast(Literal["image/png", "image/jpeg"], asset.media_type),
+                media_type=asset.media_type,
                 byte_length=asset.byte_length,
                 width=asset.width_px,
                 height=asset.height_px,

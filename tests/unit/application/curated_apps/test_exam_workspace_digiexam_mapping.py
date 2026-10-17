@@ -1,6 +1,7 @@
 """Contract fidelity at the real parser-to-native boundary, without AI or overlays."""
 
 import hashlib
+import json
 from dataclasses import replace
 from pathlib import Path
 from uuid import uuid4
@@ -13,6 +14,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.digiexam_import import (
     build_native_exam_from_digiexam,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import NativeTextSegment
+from skriptoteket.domain.errors import DomainError, ErrorCode
 
 _FIXTURES = Path("tests/fixtures/exam_conversion")
 
@@ -90,6 +92,68 @@ def test_real_parser_output_preserves_question_semantics_and_wording(filename):
         assert native.import_record.original_wording.question_text == "\n".join(source.prompt_lines)
         assert native.import_record.steps
         assert set(native.body_asset_ids()) <= set(mapped.assets_by_id)
+
+
+@pytest.mark.parametrize("score", [0, 0.0, 0.5, 2, 2.5])
+def test_real_fixture_score_mutation_preserves_finite_nonnegative_points(score):
+    """Synthetic JSON mutation of the reviewer's real fixture, through production owners."""
+    fixture = _FIXTURES / "1772718003-test-samma-prov-i-digiexam.dxe"
+    payload = json.loads(fixture.read_bytes())
+    payload["exams"][0]["questions"][0]["maxScore"] = score
+    content = json.dumps(payload).encode()
+    exam = parse_source_exam(
+        upload=ConversionHubUpload(
+            filename=fixture.name, file_bytes=content, content_type="application/octet-stream"
+        )
+    )
+    document = build_native_exam_from_digiexam(
+        exam=exam, document_id=uuid4(), source_sha256=hashlib.sha256(content).hexdigest()
+    ).document
+    assert exam.items[0].max_score == score
+    assert document.items[0].points == score
+    assert document.items[0].points is not None
+
+
+@pytest.mark.parametrize(
+    "score", [-1, -0.5, True, False, "0", "2.5", float("nan"), float("inf"), -float("inf"), None]
+)
+@pytest.mark.parametrize("question_index", [0, 3, 6])
+def test_real_fixture_invalid_supplied_score_refuses_entire_import(score, question_index):
+    fixture = _FIXTURES / "1772718003-test-samma-prov-i-digiexam.dxe"
+    payload = json.loads(fixture.read_bytes())
+    payload["exams"][0]["questions"][question_index]["maxScore"] = score
+    content = json.dumps(payload).encode()
+    with pytest.raises(DomainError) as exc_info:
+        parse_source_exam(
+            upload=ConversionHubUpload(
+                filename=fixture.name,
+                file_bytes=content,
+                content_type="application/octet-stream",
+            )
+        )
+    assert exc_info.value.code == ErrorCode.VALIDATION_ERROR
+    assert exc_info.value.details == {
+        "reason_code": "invalid_digiexam_max_score",
+        "question_number": question_index + 1,
+    }
+    assert "maxScore" in exc_info.value.message
+
+
+def test_real_fixture_absent_score_stays_absent():
+    fixture = _FIXTURES / "1772718003-test-samma-prov-i-digiexam.dxe"
+    payload = json.loads(fixture.read_bytes())
+    del payload["exams"][0]["questions"][0]["maxScore"]
+    content = json.dumps(payload).encode()
+    exam = parse_source_exam(
+        upload=ConversionHubUpload(
+            filename=fixture.name, file_bytes=content, content_type="application/octet-stream"
+        )
+    )
+    document = build_native_exam_from_digiexam(
+        exam=exam, document_id=uuid4(), source_sha256=hashlib.sha256(content).hexdigest()
+    ).document
+    assert exam.items[0].max_score is None
+    assert document.items[0].points is None
 
 
 def test_real_question_families_and_formatting_are_not_flattened():

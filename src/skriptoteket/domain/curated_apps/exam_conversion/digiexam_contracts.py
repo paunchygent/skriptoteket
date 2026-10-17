@@ -15,6 +15,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import StrEnum
+from typing import Literal
 
 
 class DigiExamItemType(StrEnum):
@@ -143,7 +144,7 @@ class DigiExamEmbeddedAsset:
     item_sequence: int
     source_image_index: int
     sha256: str
-    media_type: str
+    media_type: Literal["image/png", "image/jpeg"]
     content_base64: str
     byte_length: int
     width_px: int
