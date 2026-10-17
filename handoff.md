@@ -4,8 +4,8 @@
   `ready`, owner delegated Codex lead on `codex/task-skript-rep-0038`.
   D1-D2 live routing edits pass focused gates (2026-10-11; retained session
   `01a12706-566c-7480-acc3-427145283942`, captures 0426-0430).
-  Rule deletion is blocked: migration hook demands replacements, contrary to D1.
-  Next: parent resolves hook, delete rules, rerun gates, commit for review.
+  The 22 rule files are deleted on main by TASK-SKRIPT-40-03-09 (facts folded into
+  skills). Next: the REP-0038 owner reconciles its remaining D1-D2 scope against that.
 
 - [TASK-SKRIPT-REP-0040](docs/backlog/tasks/task-skript-rep-0040-retire-sir-convert-public-host-defaults-and-align-private-conversion-lanes.md)
   `in_progress`; owner Claude parent. `fix/retire-convert-references` at
@@ -82,8 +82,9 @@
   Shell screenshots pass the lead's prototype check (final reshoot on 0.1.29).
   Hemma Opus lead `3b164d53`: 40-03-01..08 and 08-36-02 `done`; 40-02-01 tranche 1 on
   main 761b1b59 (`in_progress`: held/frozen-screen wrappers and lucide removal open);
-  40-03-09 (rules into skills) under Sol review; useClassroomState Smart-preference
-  test failure (on main) with a Sol fix agent. TASK-SKILL-REP-0326 (0.1.28) `done`.
+  40-03-09 `done` (rules folded into skills; user gates: delete the ignored rule-080
+  file, decide the withheld rule-094 values); useClassroomState spec fix and split under
+  Sol rereview. TASK-SKILL-REP-0326 (0.1.28) `done`.
 
 - Historical 2026-09-05 workspace planning (EPIC-SKRIPT-39 E8-E12, ADR-SKRIPT-0091,
   ST-SKRIPT-39-04): `.codex/long-term-memory/entries/session-2026-09-05-epic-39-handoff-compaction.md`.

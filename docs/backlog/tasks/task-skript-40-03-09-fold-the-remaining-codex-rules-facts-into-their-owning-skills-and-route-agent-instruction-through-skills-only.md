@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-17'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-17'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Pi ruthless-reviewer (Sol) reviews in the retained session 01a149c9-5bc7-7713-ba64-12dee0470bdd, evidence/reviews/TASK-SKRIPT-40-03-09/: review afcdc94a (changes requested, F1 codemap rule-045 authority, F2 dead runbook paths), rereview a9a1bca3 (F2 cleared, F1 open on proposed ADR-0017), rereview 707c6992 approved. Shared-skill half merged to skill-repository main 4139f6d9. Accepted exceptions, accepted by the parent: 16 historical docs keep their rule references, the generated index quotes the task title, the .gitignore entry for the ignored rule-080 file stays until the user deletes that file, and the private rule-094 server values stay withheld as a user decision. The parent authorized closure.'
 task_kind: story
 acceptance_criteria:
   - Skriptoteket has no .codex/rules; every still-valid rule fact lives in the skill that owns its topic, and AGENTS.md and CLAUDE.md route agent instruction through skills only
