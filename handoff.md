@@ -55,8 +55,11 @@
 - Plan 2026-10-17 (user decisions G1-G30, lead L1-L7; retained
   `01a1495e-8398-75be-b2da-f0b08ba11afa` evidence/planning/decisions-2026-10-17.md):
   27 items `ready`. Wave 1 `in_progress` (owner Claude Opus parent on the Mac,
-  root `01a149c9-5bc7-7713-ba64-12dee0470bdd`): Sol pairs on 39-04-08,
-  39-06-01, 39-06-03 and 39-08-02 in one shared Mac worktree; Opus prototype
+  root `01a149c9-5bc7-7713-ba64-12dee0470bdd`): 39-04-08, 39-06-01, 39-06-03
+  and 39-08-02 on main 7a0ff47c (reviews `evidence/reviews/u1-review-3.md`,
+  `u2-review-2.md`, `u3-review-6.md` approve); they stay `in_progress` until
+  the Mac parent's staging walks (Mina filer, profile courses, Exam.net import
+  of the parent QTI); then 39-04-10 starts; Opus prototype
   40-04-01; a Hemma Opus lead runs 40-01-02, 40-01-03, then ST-SKRIPT-40-03. Lane 0 (Sol): TASK-SKRIPT-40-01-02
   merged to main 2026-10-17 on huleedu-integrated 0.1.25 (TASK-SKILL-REP-0323
   `done` added segmented-toggle keyboard operation; Sol rereview approved
