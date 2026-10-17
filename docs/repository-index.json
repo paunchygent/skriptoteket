@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "6a2676531ecba6c2d396f60f654d709984cff926f7b2211ef6fbd355ae211db1",
+  "source_set_digest": "b0f9faacaa11fe0197446e1b31ec55cc8fb8005e0fc07e053fd71b1e5e7e1d50",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5542,6 +5542,25 @@
       "title": "Exam index backend for saved exams grouped by course and sorted by date",
       "path": "docs/backlog/tasks/task-skript-39-08-04-exam-index-backend-for-saved-exams-grouped-by-course-and-sorted-by-date.md",
       "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-08",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-08-05",
+      "type": "task",
+      "title": "Add Mina kurser courses on choice and save each change at once",
+      "path": "docs/backlog/tasks/task-skript-39-08-05-add-mina-kurser-courses-on-choice-and-save-each-change-at-once.md",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-08",
       "owners": [
