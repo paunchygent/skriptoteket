@@ -8,9 +8,11 @@
  *     - Keeps mode switches semantic, keyboard reachable, and layout stable.
  *     - equalizeOptionWidth measures option labels with a ResizeObserver only
  *       while enabled and gives every option the widest label width.
+ *     - Uses roving radio focus with arrow, Home and End selection, skipping
+ *       disabled options, and links option titles as accessible guidance.
  */
 
-import { computed, onBeforeUnmount, ref, watch } from "vue";
+import { computed, onBeforeUnmount, ref, useId, watch } from "vue";
 
 import {
   DENSE_SEGMENTED_SHELL_CLASS,
@@ -50,6 +52,10 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{ "update:modelValue": [value: string] }>();
+
+type FocusableButton = { focus: () => void };
+const buttonRefs = ref<(FocusableButton | null)[]>([]);
+const descriptionId = useId();
 
 const columnCount = computed(() => {
   if (props.columns && props.columns > 0) {
@@ -151,6 +157,105 @@ watch(
 
 onBeforeUnmount(stopLabelObservation);
 
+function setButtonRef(index: number, element: FocusableButton | null): void {
+  buttonRefs.value[index] = element;
+}
+
+function enabledOptions(): UiSegmentedToggleOption[] {
+  return props.options.filter((option) => !props.disabled && !option.disabled);
+}
+
+function selectedIndex(): number {
+  const index = props.options.findIndex(
+    (option) => option.value === props.modelValue && !option.disabled,
+  );
+  if (index >= 0) {
+    return index;
+  }
+  return props.options.findIndex((option) => !option.disabled);
+}
+
+function tabindexForOption(index: number): number {
+  if (props.disabled || props.options[index]?.disabled) {
+    return -1;
+  }
+  return index === selectedIndex() ? 0 : -1;
+}
+
+function focusOption(index: number): void {
+  buttonRefs.value[index]?.focus();
+}
+
+function nextEnabledIndex(fromIndex: number, direction: 1 | -1): number {
+  const total = props.options.length;
+  for (let step = 1; step <= total; step += 1) {
+    const candidate = (fromIndex + step * direction + total) % total;
+    if (!props.options[candidate]?.disabled) {
+      return candidate;
+    }
+  }
+  return fromIndex;
+}
+
+function firstEnabledIndex(): number {
+  return props.options.findIndex((option) => !option.disabled);
+}
+
+function lastEnabledIndex(): number {
+  for (let index = props.options.length - 1; index >= 0; index -= 1) {
+    if (!props.options[index]?.disabled) {
+      return index;
+    }
+  }
+  return -1;
+}
+
+function optionDescriptionId(index: number): string | undefined {
+  const option = props.options[index];
+  if (!option?.title) {
+    return undefined;
+  }
+  return `${descriptionId}-option-hint-${index}`;
+}
+
+function onOptionKeydown(event: KeyboardEvent, index: number): void {
+  if (props.disabled || props.options[index]?.disabled || enabledOptions().length === 0) {
+    return;
+  }
+
+  let targetIndex = index;
+  switch (event.key) {
+    case "ArrowRight":
+    case "ArrowDown":
+      targetIndex = nextEnabledIndex(index, 1);
+      break;
+    case "ArrowLeft":
+    case "ArrowUp":
+      targetIndex = nextEnabledIndex(index, -1);
+      break;
+    case "Home":
+      targetIndex = firstEnabledIndex();
+      break;
+    case "End":
+      targetIndex = lastEnabledIndex();
+      break;
+    case " ":
+    case "Enter":
+      selectOption(props.options[index]!);
+      return;
+    default:
+      return;
+  }
+
+  event.preventDefault();
+  const nextOption = props.options[targetIndex];
+  if (!nextOption) {
+    return;
+  }
+  focusOption(targetIndex);
+  selectOption(nextOption);
+}
+
 function selectOption(option: UiSegmentedToggleOption): void {
   if (props.disabled || option.disabled || option.value === props.modelValue) {
     return;
@@ -167,35 +272,49 @@ function selectOption(option: UiSegmentedToggleOption): void {
     :aria-label="ariaLabel"
     data-ui="segmented-toggle"
   >
-    <button
+    <template
       v-for="(option, index) in options"
       :key="option.value"
-      type="button"
-      role="radio"
-      :aria-checked="option.value === modelValue"
-      :disabled="disabled || option.disabled"
-      :title="option.title"
-      :data-test="option.dataTest"
-      :class="[
-        optionClass,
-        'rounded-[4px] border text-navy transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-burgundy/40 focus-visible:outline-offset-1 disabled:cursor-not-allowed disabled:opacity-50',
-        option.value === modelValue ? 'border-navy/20 bg-white' : 'border-transparent bg-transparent hover:bg-white/70',
-      ]"
-      @click="selectOption(option)"
     >
-      <span
-        v-if="equalizeOptionWidth"
-        class="inline-block text-center"
-        :style="equalizedLabelStyle"
+      <button
+        :ref="(element) => setButtonRef(index, element as FocusableButton | null)"
+        type="button"
+        role="radio"
+        :aria-checked="option.value === modelValue"
+        :tabindex="tabindexForOption(index)"
+        :aria-describedby="optionDescriptionId(index)"
+        :disabled="disabled || option.disabled"
+        :title="option.title"
+        :data-test="option.dataTest"
+        :class="[
+          optionClass,
+          'rounded-[4px] border text-navy transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-burgundy/40 focus-visible:outline-offset-1 disabled:cursor-not-allowed disabled:opacity-50',
+          option.value === modelValue ? 'border-navy/20 bg-white' : 'border-transparent bg-transparent hover:bg-white/70',
+        ]"
+        @click="selectOption(option)"
+        @keydown="onOptionKeydown($event, index)"
       >
         <span
-          :ref="(element) => setLabelElement(index, element)"
-          class="inline-block"
-        >{{ option.label }}</span>
+          v-if="equalizeOptionWidth"
+          class="inline-block text-center"
+          :style="equalizedLabelStyle"
+        >
+          <span
+            :ref="(element) => setLabelElement(index, element)"
+            class="inline-block"
+          >{{ option.label }}</span>
+        </span>
+        <template v-else>
+          {{ option.label }}
+        </template>
+      </button>
+      <span
+        v-if="option.title"
+        :id="optionDescriptionId(index)"
+        class="sr-only"
+      >
+        {{ option.title }}
       </span>
-      <template v-else>
-        {{ option.label }}
-      </template>
-    </button>
+    </template>
   </div>
 </template>
