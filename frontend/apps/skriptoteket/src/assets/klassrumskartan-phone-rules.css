@@ -1,0 +1,167 @@
+/* Phone rule tools, active-rule summaries and student selection/trays.
+
+   Extends the common rule-row and selection-surface defaults from phone
+   navigation. Fixed-seat map rendering lives in its own sibling module.
+   Imported after overview controls, before the fixed-seat map module.
+*/
+
+.planner-phone-rule-row {
+  display: flex;
+  min-height: 3.5rem;
+  align-items: center;
+  gap: var(--huleedu-space-3);
+  padding: 0.5rem var(--huleedu-space-3);
+  text-align: left;
+}
+
+.planner-phone-rule-row-active {
+  border-color: var(--huleedu-action);
+  background-color: var(--huleedu-action);
+  color: var(--button-primary-text);
+  box-shadow: inset 0 0 0 2px var(--huleedu-canvas);
+}
+
+.planner-phone-rules-summary {
+  border: var(--huleedu-border-width) solid var(--huleedu-panel-border);
+  background-color: var(--huleedu-panel);
+}
+
+.planner-phone-rules-summary-toggle {
+  display: flex;
+  min-height: 2.75rem;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--huleedu-space-2);
+  padding: 0 var(--huleedu-space-3);
+  text-align: left;
+  font-size: 0.875rem;
+  font-weight: 800;
+  color: var(--huleedu-navy);
+}
+
+.planner-phone-rules-summary-count {
+  display: inline-grid;
+  min-width: 1.65rem;
+  height: 1.65rem;
+  place-items: center;
+  border: var(--huleedu-border-width) solid var(--huleedu-workbench-control-border);
+  background-color: var(--surface-panel);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.planner-phone-rules-active-list {
+  display: grid;
+  border-top: var(--huleedu-border-width) solid var(--huleedu-surface-divider);
+}
+
+.planner-phone-rules-active-row {
+  display: flex;
+  min-height: 3.75rem;
+  align-items: center;
+  gap: var(--huleedu-space-2);
+  border-top: 1px solid var(--huleedu-surface-divider);
+  padding: 0.5rem var(--huleedu-space-2);
+}
+
+.planner-phone-rules-active-row:first-child {
+  border-top: 0;
+}
+
+.planner-phone-rules-active-row-editing {
+  box-shadow: inset 0.25rem 0 0 var(--huleedu-action);
+}
+
+.planner-phone-rules-active-icon {
+  flex-shrink: 0;
+  color: var(--huleedu-navy);
+}
+
+.planner-phone-rules-active-label,
+.planner-phone-rules-active-target {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.planner-phone-rules-active-label {
+  font-size: 0.8125rem;
+  font-weight: 800;
+  color: var(--huleedu-navy);
+}
+
+.planner-phone-rules-active-target {
+  margin-top: 0.125rem;
+  font-size: 0.75rem;
+  font-weight: 650;
+  color: var(--huleedu-navy-70);
+}
+
+.planner-phone-rules-active-actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--huleedu-space-2);
+}
+
+/* G29: the shared icon control has no 44px phone touch size. */
+.planner-phone-rule-action-button {
+  display: inline-grid;
+  min-width: 2.75rem;
+  height: 2.75rem;
+  place-items: center;
+  border: var(--huleedu-border-width) solid var(--huleedu-panel-border);
+  background-color: var(--surface-panel);
+  color: var(--huleedu-navy);
+}
+
+.planner-phone-rule-action-button:disabled {
+  cursor: not-allowed;
+  border-color: var(--huleedu-surface-divider);
+  background-color: var(--huleedu-navy-05);
+  color: var(--huleedu-navy-40);
+  opacity: 1;
+}
+
+.planner-phone-rule-action-button-danger:not(:disabled) {
+  border-color: var(--huleedu-critical-40);
+  color: var(--huleedu-critical);
+}
+
+.planner-phone-rules-selection {
+  position: sticky;
+  top: var(--huleedu-space-2);
+  z-index: 8;
+}
+
+.planner-phone-rules-student-tray {
+  position: relative;
+  z-index: 1;
+  max-height: min(46vh, 24rem);
+  min-height: 0;
+  overflow: hidden;
+  border: var(--huleedu-border-width) solid var(--huleedu-panel-border);
+  background-color: var(--huleedu-canvas);
+  padding: var(--huleedu-space-2);
+}
+
+.planner-phone-rules-student-tray .planner-student-pool-surface {
+  max-height: calc(min(46vh, 24rem) - var(--huleedu-space-4));
+  min-height: 0;
+  box-shadow: none;
+}
+
+.planner-phone-selected-student-row {
+  display: flex;
+  min-height: 2.25rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--huleedu-space-2);
+  border: var(--huleedu-border-width) solid var(--huleedu-panel-border);
+  background-color: var(--huleedu-panel-muted);
+  padding: 0 var(--huleedu-space-2);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--huleedu-navy);
+}

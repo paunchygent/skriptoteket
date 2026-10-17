@@ -8,7 +8,7 @@
  * whole-workspace mental model.
  */
 
-import { computed, onUnmounted, ref, watch } from "vue";
+import { computed, onUnmounted, watch } from "vue";
 
 import type { ClassWorkspaceSummary, RoomTemplate, Roster } from "../classroomPlannerTypes";
 import PlannerGroupingWorkspacePane from "./PlannerGroupingWorkspacePane.vue";
@@ -28,11 +28,13 @@ import { useClassroomState } from "../useClassroomState";
 import { usePlannerUndoRedoShortcuts } from "../usePlannerUndoRedoShortcuts";
 import { resolvePlannerWorkspaceDisabledReasons } from "../plannerWorkspacePrerequisites";
 import { useHelp } from "../../../components/help/useHelp";
-import { useToast } from "../../../composables/useToast";
 import { SystemMessage } from "../../../components/ui";
+import { usePlannerWorkspaceHistory } from "./usePlannerWorkspaceHistory";
+import { usePlannerTransitionPresentation } from "./usePlannerTransitionPresentation";
+import { usePlannerWorkspaceFeedback } from "../usePlannerWorkspaceFeedback";
+import { usePlannerWorkspaceNavigation } from "../usePlannerWorkspaceNavigation";
 
 type PlannerView = "groups" | "seats" | "rules";
-type PlannerStatusTone = "neutral" | "success" | "warning" | "danger";
 
 const props = withDefaults(
   defineProps<{
@@ -130,36 +132,50 @@ const emit = defineEmits<{
 }>();
 
 const plannerState = useClassroomState();
-const toast = useToast();
+usePlannerWorkspaceFeedback(plannerState, {
+  message: () => props.workspaceNotice,
+  dismiss: () => emit("dismiss-workspace-notice"),
+});
 
 usePlannerUndoRedoShortcuts({
   plannerState,
   isEnabled: () => !isTransitioningBetweenWorkspaces.value,
 });
 
-function resolvePlannerView(requestedView: PlannerView): PlannerView {
-  if (requestedView === "rules") {
-    return "rules";
-  }
-  if (plannerState.draft?.draft_kind === "grouping") {
-    return "groups";
-  }
-  if (plannerState.draft?.draft_kind === "seating") {
-    return "seats";
-  }
-  return requestedView;
-}
-
-const currentView = ref<PlannerView>(resolvePlannerView(props.initialView));
-const selectedStudentId = ref<string | null>(null);
-const isGroupingSettingsDrawerOpen = ref(false);
-const isSeatingSettingsDrawerOpen = ref(false);
-const openHistoryDrawerKind = ref<"grouping" | "seating" | null>(null);
+const {
+  openHistoryDrawerKind, isHistoryDrawerOpen, historyDrawerTitle,
+  historyDrawerActiveSummary, historyDrawerSummaries, historyDrawerEmptyLabel,
+  historyDrawerActiveLabel, historyDrawerLabel, openGroupingHistoryDrawer,
+  openSeatingHistoryDrawer, closeHistoryDrawer, openGroupingHistoryDraft,
+  openSeatingHistoryDraft, deleteGroupingHistoryDraft, deleteSeatingHistoryDraft,
+} = usePlannerWorkspaceHistory({
+  summary: () => props.workspaceSummary,
+  seatingBusy: () => props.seatingLifecycleBusy,
+  openDraft: (kind, draftId) => {
+    if (kind === "seating") emit("open-seating-history-draft", draftId);
+    else emit("open-grouping-history-draft", draftId);
+  },
+  deleteDraft: (kind, draftId) => {
+    if (kind === "seating") emit("delete-seating-history-draft", draftId);
+    else emit("delete-grouping-history-draft", draftId);
+  },
+});
 const initialSelectedTemplateId = computed(() => {
   return props.selectedWorkspaceTemplateId ?? plannerState.template?.id ?? "";
 });
-const pendingGroupingTemplateId = ref(initialSelectedTemplateId.value);
-const pendingSeatingTemplateId = ref(initialSelectedTemplateId.value);
+const {
+  currentView, selectedStudentId, isGroupingSettingsDrawerOpen, isSeatingSettingsDrawerOpen,
+  pendingGroupingTemplateId, pendingSeatingTemplateId, selectStudent,
+  openGroupingSettingsDrawer, closeGroupingSettingsDrawer,
+  openSeatingSettingsDrawer, closeSeatingSettingsDrawer,
+} = usePlannerWorkspaceNavigation({
+  plannerState,
+  initialView: () => props.initialView,
+  initialTemplateId: () => initialSelectedTemplateId.value,
+  identityKey: () => [plannerState.draft?.draft_kind ?? "none", plannerState.template?.id ?? "none"].join(":"),
+  resetTemplateId: () => initialSelectedTemplateId.value,
+  onReset: closeHistoryDrawer,
+});
 const selectedWorkspaceRoster = computed(() => {
   return props.availableRosters.find((roster) => roster.id === props.selectedRosterId) ?? null;
 });
@@ -208,39 +224,6 @@ const topPanelContextLabel = computed(() => {
     ? "Välj klassrum i sittschemat"
     : workspaceContextLabel.value;
 });
-const activeGroupingSummary = computed(() => props.workspaceSummary?.active_grouping_draft ?? null);
-const groupingHistorySummaries = computed(() => props.workspaceSummary?.grouping_history ?? []);
-const activeSeatingSummary = computed(() => props.workspaceSummary?.active_seating_draft ?? null);
-const seatingHistorySummaries = computed(() => props.workspaceSummary?.seating_history ?? []);
-const isHistoryDrawerOpen = computed(() => openHistoryDrawerKind.value !== null);
-const historyDrawerTitle = computed(() => {
-  return openHistoryDrawerKind.value === "seating" ? "Sittplatser" : "Grupper";
-});
-const historyDrawerActiveSummary = computed(() => {
-  return openHistoryDrawerKind.value === "seating"
-    ? activeSeatingSummary.value
-    : activeGroupingSummary.value;
-});
-const historyDrawerSummaries = computed(() => {
-  return openHistoryDrawerKind.value === "seating"
-    ? seatingHistorySummaries.value
-    : groupingHistorySummaries.value;
-});
-const historyDrawerEmptyLabel = computed(() => {
-  return openHistoryDrawerKind.value === "seating"
-    ? "Ingen sitthistorik ännu."
-    : "Ingen grupphistorik ännu.";
-});
-const historyDrawerActiveLabel = computed(() => {
-  return openHistoryDrawerKind.value === "seating"
-    ? "Aktuellt sittschema"
-    : "Aktuellt grupputkast";
-});
-const historyDrawerLabel = computed(() => {
-  return openHistoryDrawerKind.value === "seating"
-    ? "Tidigare sittscheman"
-    : "Tidigare grupputkast";
-});
 const currentViewHint = computed(() => {
   if (isSeatWorkspaceWithoutTemplate.value) {
     return "Välj eller byt klassrum direkt här i sittschemat.";
@@ -253,78 +236,17 @@ const currentViewHint = computed(() => {
   }
   return "Dra elever till platserna och justera sittschemat direkt i klassrummet.";
 });
-const displayedPlannerTitle = ref(plannerTitle.value);
-const displayedContextLabel = ref(topPanelContextLabel.value);
-const displayedSupportingText = ref(currentViewHint.value);
-const displayedStatusLabel = ref<string | null>(plannerState.plannerStatusLabel ?? null);
-const displayedStatusMessage = ref<string | null>(plannerState.plannerStatusMessage ?? null);
-const displayedStatusTone = ref<PlannerStatusTone>(plannerState.plannerStatusTone);
-const isTransitioningBetweenWorkspaces = computed(() => Boolean(props.transitionLabel));
-const lastWorkspaceNotice = ref<string | null>(null);
-const lastGroupingSmartRunToast = ref<string | null>(null);
-const lastSeatingSmartRunToast = ref<string | null>(null);
-const workspaceIdentityKey = computed(() => {
-  return [
-    plannerState.draft?.draft_kind ?? "none",
-    plannerState.template?.id ?? "none",
-  ].join(":");
+const {
+  displayedPlannerTitle, displayedContextLabel, displayedSupportingText,
+  displayedStatusLabel, displayedStatusMessage, displayedStatusTone,
+} = usePlannerTransitionPresentation({
+  title: () => plannerTitle.value,
+  contextLabel: () => topPanelContextLabel.value,
+  supportingText: () => currentViewHint.value,
+  transitionLabel: () => props.transitionLabel,
+  plannerState,
 });
-
-watch(
-  [
-    plannerTitle,
-    topPanelContextLabel,
-    currentViewHint,
-    () => plannerState.plannerStatusLabel,
-    () => plannerState.plannerStatusMessage,
-    () => plannerState.plannerStatusTone,
-    () => props.transitionLabel,
-  ],
-  ([
-    nextTitle,
-    nextContextLabel,
-    nextSupportingText,
-    nextStatusLabel,
-    nextStatusMessage,
-    nextStatusTone,
-    nextTransitionLabel,
-  ]) => {
-    if (nextTransitionLabel) {
-      return;
-    }
-
-    displayedPlannerTitle.value = nextTitle;
-    displayedContextLabel.value = nextContextLabel;
-    displayedSupportingText.value = nextSupportingText;
-    displayedStatusLabel.value = nextStatusLabel;
-    displayedStatusMessage.value = nextStatusMessage;
-    displayedStatusTone.value = nextStatusTone;
-  },
-  { immediate: true },
-);
-
-function selectStudent(studentId: string): void {
-  if (currentView.value === "groups") {
-    selectedStudentId.value = null;
-    return;
-  }
-
-  if (currentView.value === "rules") {
-    if (plannerState.activeSeatingSmartTool) {
-      if (plannerState.isStudentInPendingRuleCandidates(studentId)) {
-        plannerState.removePendingRuleCandidate(studentId);
-        selectedStudentId.value = null;
-        return;
-      }
-      plannerState.handleSeatingSmartToolStudentSelection(studentId);
-    }
-    selectedStudentId.value = null;
-    return;
-  }
-
-  selectedStudentId.value = null;
-}
-
+const isTransitioningBetweenWorkspaces = computed(() => Boolean(props.transitionLabel));
 async function reloadAfterConflict(): Promise<void> {
   await plannerState.reloadActiveWorkspace();
 }
@@ -347,63 +269,6 @@ function startNewGroupingDraft(): void {
   emit("new-grouping-draft", { templateId: plannerState.template?.id ?? null });
 }
 
-function openGroupingHistoryDrawer(): void {
-  openHistoryDrawerKind.value = "grouping";
-}
-
-function openGroupingSettingsDrawer(): void {
-  isGroupingSettingsDrawerOpen.value = true;
-}
-
-function closeGroupingSettingsDrawer(): void {
-  isGroupingSettingsDrawerOpen.value = false;
-}
-
-function openSeatingSettingsDrawer(): void {
-  isSeatingSettingsDrawerOpen.value = true;
-}
-
-function closeSeatingSettingsDrawer(): void {
-  isSeatingSettingsDrawerOpen.value = false;
-}
-
-function openSeatingHistoryDrawer(): void {
-  if (props.seatingLifecycleBusy) {
-    return;
-  }
-  openHistoryDrawerKind.value = "seating";
-}
-
-function closeHistoryDrawer(): void {
-  openHistoryDrawerKind.value = null;
-}
-
-function openGroupingHistoryDraft(draftId: string): void {
-  closeHistoryDrawer();
-  emit("open-grouping-history-draft", draftId);
-}
-
-function deleteGroupingHistoryDraft(draftId: string): void {
-  closeHistoryDrawer();
-  emit("delete-grouping-history-draft", draftId);
-}
-
-function openSeatingHistoryDraft(draftId: string): void {
-  if (props.seatingLifecycleBusy) {
-    return;
-  }
-  closeHistoryDrawer();
-  emit("open-seating-history-draft", draftId);
-}
-
-function deleteSeatingHistoryDraft(draftId: string): void {
-  if (props.seatingLifecycleBusy) {
-    return;
-  }
-  closeHistoryDrawer();
-  emit("delete-seating-history-draft", draftId);
-}
-
 function editCurrentTemplate(template: RoomTemplate): void {
   emit("edit-current-template", template);
 }
@@ -415,107 +280,12 @@ function selectWorkspaceMode(value: string): void {
 }
 
 watch(
-  () => props.initialView,
-  (nextView) => {
-    currentView.value = resolvePlannerView(nextView);
-    isGroupingSettingsDrawerOpen.value = false;
-    isSeatingSettingsDrawerOpen.value = false;
-    openHistoryDrawerKind.value = null;
-    selectedStudentId.value = null;
-  },
-);
-
-watch(
-  workspaceIdentityKey,
-  () => {
-    currentView.value = resolvePlannerView(currentView.value);
-    isGroupingSettingsDrawerOpen.value = false;
-    isSeatingSettingsDrawerOpen.value = false;
-    openHistoryDrawerKind.value = null;
-    selectedStudentId.value = null;
-    pendingGroupingTemplateId.value = initialSelectedTemplateId.value;
-    pendingSeatingTemplateId.value = initialSelectedTemplateId.value;
-  },
-);
-
-watch(
   initialSelectedTemplateId,
   (templateId) => {
     if (!plannerState.template) {
       pendingGroupingTemplateId.value = templateId;
       pendingSeatingTemplateId.value = templateId;
     }
-  },
-);
-
-watch(
-  () => props.workspaceNotice,
-  (nextNotice) => {
-    if (!nextNotice) {
-      lastWorkspaceNotice.value = null;
-      return;
-    }
-    if (nextNotice === lastWorkspaceNotice.value) {
-      return;
-    }
-    toast.info(nextNotice);
-    lastWorkspaceNotice.value = nextNotice;
-    emit("dismiss-workspace-notice");
-  },
-  { immediate: true },
-);
-
-function showSmartRunToast(options: {
-  message: string | null;
-  tone: "neutral" | "success" | "warning";
-  lastToastRef: { value: string | null };
-}): void {
-  const { message, tone, lastToastRef } = options;
-  if (!message) {
-    lastToastRef.value = null;
-    return;
-  }
-
-  const toastKey = `${tone}:${message}`;
-  if (toastKey === lastToastRef.value) {
-    return;
-  }
-
-  if (tone === "success") {
-    toast.success(message);
-  } else if (tone === "warning") {
-    toast.warning(message);
-  } else {
-    toast.info(message);
-  }
-  lastToastRef.value = toastKey;
-}
-
-watch(
-  () => ({
-    message: plannerState.smartGroupingRunMessage,
-    tone: plannerState.smartGroupingRunTone,
-  }),
-  ({ message, tone }) => {
-    showSmartRunToast({
-      message,
-      tone,
-      lastToastRef: lastGroupingSmartRunToast,
-    });
-  },
-);
-
-watch(
-  () => ({
-    message: plannerState.smartSeatingRunMessage,
-    tone: plannerState.smartSeatingRunTone,
-  }),
-  ({ message, tone }) => {
-    showSmartRunToast({
-      message,
-      tone,
-      lastToastRef: lastSeatingSmartRunToast,
-    });
   },
 );
 
