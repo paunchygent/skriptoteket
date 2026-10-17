@@ -94,7 +94,8 @@
   migration-thread errors; backend for the export filename field.
   Hemma Opus lead `3b164d53`: 40-03-01..09 and 08-36-02 `done`; 40-02-01 tranche 1 on
   main 761b1b59 (`in_progress`: held/frozen-screen wrappers and lucide removal open).
-  Hemma Claude `st-39-08` (tmux) was asked to write its own handoff here.
+  Hemma Claude `st-39-08` owns the 39-08-03 and 39-08-04 closeout (worktree
+  `skriptoteket-st-skript-39-08`, retained `01a14b79-b714-7f76-bcba-845884716cae`).
 
 - Historical 2026-09-05 workspace planning (EPIC-SKRIPT-39 E8-E12, ADR-SKRIPT-0091,
   ST-SKRIPT-39-04): `.codex/long-term-memory/entries/session-2026-09-05-epic-39-handoff-compaction.md`.
