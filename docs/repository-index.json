@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "6a2676531ecba6c2d396f60f654d709984cff926f7b2211ef6fbd355ae211db1",
+  "source_set_digest": "b9d9fe1f38e3afcc0eed4c49fb27380ccffa53d906fb9ef4c6edb243ac89671a",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5553,6 +5553,29 @@
       "closeout_review": {
         "record": "inline",
         "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-08-05",
+      "type": "task",
+      "title": "Add Mina kurser courses on choice and save each change at once",
+      "path": "docs/backlog/tasks/task-skript-39-08-05-add-mina-kurser-courses-on-choice-and-save-each-change-at-once.md",
+      "status": "done",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-08",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-17",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer cf9ad92d reviewed c1992027 (retained session 01a149c9-5bc7-7713-ba64-12dee0470bdd, evidence/reviews/task-skript-39-08-05-c1992027.md): changes_requested with one medium finding F1 (a profile reload that started before a course save replaced the saved list). F1 was repaired in ab5e7e10 and, as a medium finding, admitted by the parent on focused checks without rereview: profile Vitest 18 passed including the late-reload test (which fails against the old guard), frontend typecheck and ESLint clean. No staging walk, by the user rule that repairs close on approved review plus unit tests. The parent session authorized closure."
       }
     },
     {
