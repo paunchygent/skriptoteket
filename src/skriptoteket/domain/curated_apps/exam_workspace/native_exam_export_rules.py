@@ -34,6 +34,7 @@ _KEYED_KINDS = frozenset(
         NativeExamItemKind.SINGLE_CHOICE,
         NativeExamItemKind.MULTIPLE_RESPONSE,
         NativeExamItemKind.GAP_FILL,
+        NativeExamItemKind.INLINE_CHOICE,
         NativeExamItemKind.MATCHING,
     }
 )

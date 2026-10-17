@@ -30,6 +30,7 @@ class NativeExamItemKind(StrEnum):
     SINGLE_CHOICE = "single_choice"
     MULTIPLE_RESPONSE = "multiple_response"
     GAP_FILL = "gap_fill"
+    INLINE_CHOICE = "inline_choice"
     MATCHING = "matching"
 
 

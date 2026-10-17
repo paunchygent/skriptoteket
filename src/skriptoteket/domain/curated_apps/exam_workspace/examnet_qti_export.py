@@ -22,6 +22,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts impo
     ExamNetQtiChoice,
     ExamNetQtiEvaluationMode,
     ExamNetQtiImageResource,
+    ExamNetQtiInlineChoiceGap,
     ExamNetQtiInteractionType,
     ExamNetQtiItem,
     ExamNetQtiMatchEntry,
@@ -73,6 +74,7 @@ _INTERACTION_TYPE_BY_KIND = {
     NativeExamItemKind.SINGLE_CHOICE: ExamNetQtiInteractionType.SINGLE_CHOICE,
     NativeExamItemKind.MULTIPLE_RESPONSE: ExamNetQtiInteractionType.MULTIPLE_RESPONSE,
     NativeExamItemKind.GAP_FILL: ExamNetQtiInteractionType.GAP_FILL,
+    NativeExamItemKind.INLINE_CHOICE: ExamNetQtiInteractionType.INLINE_CHOICE,
     NativeExamItemKind.MATCHING: ExamNetQtiInteractionType.MATCHING,
 }
 
@@ -188,7 +190,10 @@ def _parent_qti_item(
         qti_children.append(qti_child)
     first = qti_children[0]
     parent_id = _safe_identifier(parent.parent_id)
-    if len(qti_children) == 1 and first.interaction_type is not ExamNetQtiInteractionType.GAP_FILL:
+    if len(qti_children) == 1 and first.interaction_type not in (
+        ExamNetQtiInteractionType.GAP_FILL,
+        ExamNetQtiInteractionType.INLINE_CHOICE,
+    ):
         # One child has nothing to share: a stem outside its interaction would be
         # rejected, so the instruction joins the child's own prompt.
         return replace(
@@ -259,6 +264,8 @@ def _qti_item(
         return _choice_item(item, base_item)
     if item.kind is NativeExamItemKind.MATCHING:
         return _matching_item(item, base_item)
+    if item.kind is NativeExamItemKind.INLINE_CHOICE:
+        return _inline_choice_item(item, base_item)
     return _gap_fill_item(item, base_item, labels)
 
 
@@ -392,6 +399,33 @@ def _gap_fill_item(
     )
 
 
+def _inline_choice_item(item: NativeExamItem, base_item: ExamNetQtiItem) -> ExamNetQtiItem:
+    gaps = {gap.gap_id: gap for gap in item.gaps}
+    return replace(
+        base_item,
+        inline_choice_gaps=tuple(
+            ExamNetQtiInlineChoiceGap(
+                response_identifier=f"RESPONSE_{_safe_identifier(gap_id)}",
+                options=tuple(
+                    ExamNetQtiChoice(
+                        identifier=_safe_identifier(option.choice_id),
+                        text=_plain_label(option.body),
+                    )
+                    for option in gaps[gap_id].options
+                ),
+                correct_option_identifier=_safe_identifier(
+                    next(
+                        option.choice_id
+                        for option in gaps[gap_id].options
+                        if option.choice_id == gaps[gap_id].correct_option_id
+                    )
+                ),
+            )
+            for gap_id in _placed_gap_ids(item)
+        ),
+    )
+
+
 def _placed_gap_ids(item: NativeExamItem) -> tuple[str, ...]:
     """Return gap ids in body placement order: the planner binds the ``[___]``
     markers rendered by ``plain_text_lines`` to text-entry gaps in order."""
@@ -413,7 +447,7 @@ def _prompt_paragraphs(item: NativeExamItem) -> tuple[ExamNetQtiPromptParagraph,
     the rich rendering path; formatting is never dropped.
     """
     if (
-        item.kind is not NativeExamItemKind.GAP_FILL
+        item.kind not in (NativeExamItemKind.GAP_FILL, NativeExamItemKind.INLINE_CHOICE)
         and not item.body_asset_ids()
         and not body_carries_formatting(item.body)
     ):

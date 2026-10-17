@@ -114,6 +114,7 @@ _PDF_ITEM_KIND_BY_NATIVE_KIND = {
     NativeExamItemKind.SINGLE_CHOICE: PdfExamItemKind.SINGLE_CHOICE,
     NativeExamItemKind.MULTIPLE_RESPONSE: PdfExamItemKind.MULTIPLE_RESPONSE,
     NativeExamItemKind.GAP_FILL: PdfExamItemKind.GAP_OPEN_CLOZE,
+    NativeExamItemKind.INLINE_CHOICE: PdfExamItemKind.GAP_OPEN_CLOZE,
     NativeExamItemKind.MATCHING: PdfExamItemKind.MATCHING,
 }
 # Defensive second guard: `native_export_blockers` (reason `missing_answer_key`)
@@ -236,7 +237,7 @@ def _pdf_item_semantics(
             )
             for choice in item.choices
         ),
-        gaps=tuple(PdfExamGapSemantics(gap_id=gap.gap_id) for gap in item.gaps),
+        gaps=tuple(PdfExamGapSemantics(gap_id=gap.gap_id) for gap in item.body_gaps()),
         match_left=tuple(
             PdfExamMatchEntrySemantics(entry_id=entry.left_id, text=body_plain_text(entry.body))
             for entry in item.match_left
@@ -253,7 +254,15 @@ def _pdf_item_semantics(
             correct_gap_answers=tuple(
                 PdfExamGapAnswerSemantics(gap_id=gap.gap_id, value=value)
                 for gap in item.gaps
-                for value in gap.accepted_values
+                for value in (
+                    tuple(
+                        body_plain_text(option.body)
+                        for option in gap.options
+                        if option.choice_id == gap.correct_option_id
+                    )
+                    if item.kind is NativeExamItemKind.INLINE_CHOICE
+                    else gap.accepted_values
+                )
             ),
             correct_match_pairs=tuple(
                 PdfExamMatchPairSemantics(left_id=pair.left_id, right_id=pair.right_id)
@@ -299,7 +308,19 @@ def _prompt_html(
     asset_paths_by_id: Mapping[str, str],
     labels: ExamLanguageLabels,
 ) -> str:
-    return _body_html(item.body, asset_paths_by_id=asset_paths_by_id, labels=labels)
+    body = _body_html(item.body, asset_paths_by_id=asset_paths_by_id, labels=labels)
+    if item.kind is NativeExamItemKind.INLINE_CHOICE:
+        gaps = {gap.gap_id: gap for gap in item.gaps}
+        # A printable list stays at the gap's place; only the answer-key block names its key.
+        for paragraph in item.body:
+            for segment in paragraph.segments:
+                if isinstance(segment, NativeGapSegment):
+                    options = " / ".join(
+                        escape(body_plain_text(option.body))
+                        for option in gaps[segment.gap_id].options
+                    )
+                    body = body.replace(_GAP_PLACEHOLDER_HTML, f"[{options}]", 1)
+    return body
 
 
 def _body_html(

@@ -249,7 +249,11 @@ def _has_proof_gated_interaction(items: tuple[ExamNetQtiItem, ...]) -> bool:
     """Whether any item, or any child of a parent, is a gap fill or a matching."""
     return any(
         leaf.interaction_type
-        in {ExamNetQtiInteractionType.GAP_FILL, ExamNetQtiInteractionType.MATCHING}
+        in {
+            ExamNetQtiInteractionType.GAP_FILL,
+            ExamNetQtiInteractionType.INLINE_CHOICE,
+            ExamNetQtiInteractionType.MATCHING,
+        }
         for item in items
         for leaf in (item.children or (item,))
     )

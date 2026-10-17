@@ -145,7 +145,10 @@ def _loss_entry(
 
     if qti_item.interaction_type is ExamNetQtiInteractionType.FREE_TEXT:
         return _free_text_criteria_entry(qti_item=qti_item, native_item=native_item)
-    if qti_item.interaction_type is ExamNetQtiInteractionType.GAP_FILL:
+    if qti_item.interaction_type in (
+        ExamNetQtiInteractionType.GAP_FILL,
+        ExamNetQtiInteractionType.INLINE_CHOICE,
+    ):
         return _rounded_gaps_entry(qti_item=qti_item, native_item=native_item)
     if not shared_subquestion:
         # A standalone keyed item imports one all-or-nothing rule worth its own
@@ -223,15 +226,18 @@ def _rounded_gap_points(qti_item: ExamNetQtiItem) -> int | float | None:
     the rounded value the export itself carries, not an observed import result.
     """
 
-    if qti_item.interaction_type is not ExamNetQtiInteractionType.GAP_FILL:
+    if qti_item.interaction_type not in (
+        ExamNetQtiInteractionType.GAP_FILL,
+        ExamNetQtiInteractionType.INLINE_CHOICE,
+    ):
         return None
-    if not qti_item.text_entry_gaps or qti_item.max_score is None:
+    if not qti_item.response_gaps or qti_item.max_score is None:
         return None
     rounded = gap_point_values(qti_item)
     if rounded is None:
         return 0
     per_gap = Decimal(rounded[0])
-    if per_gap * len(qti_item.text_entry_gaps) == Decimal(str(qti_item.max_score)):
+    if per_gap * len(qti_item.response_gaps) == Decimal(str(qti_item.max_score)):
         return None
     return _points_number(per_gap)
 

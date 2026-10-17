@@ -21,6 +21,8 @@ from xml.etree import ElementTree
 
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts import (
     ExamNetQtiImageResource,
+    ExamNetQtiInlineChoiceGap,
+    ExamNetQtiInteractionType,
     ExamNetQtiItem,
     ExamNetQtiPromptGap,
     ExamNetQtiPromptImage,
@@ -83,9 +85,20 @@ def _append_prompt_gap(
     item: ExamNetQtiItem,
     gap_index: int,
 ) -> ElementTree.Element:
-    if not 0 <= gap_index < len(item.text_entry_gaps):
+    if not 0 <= gap_index < len(item.response_gaps):
         raise ValueError(f"Item {item.item_id} prompt gap index {gap_index} has no text-entry gap.")
-    gap = item.text_entry_gaps[gap_index]
+    gap = item.response_gaps[gap_index]
+    if isinstance(gap, ExamNetQtiInlineChoiceGap):
+        interaction = ElementTree.SubElement(
+            parent,
+            qti_tag("qti-inline-choice-interaction"),
+            {"response-identifier": gap.response_identifier, "shuffle": "false"},
+        )
+        for option in gap.options:
+            ElementTree.SubElement(
+                interaction, qti_tag("qti-inline-choice"), {"identifier": option.identifier}
+            ).text = option.text
+        return interaction
     return ElementTree.SubElement(
         parent,
         qti_tag("qti-text-entry-interaction"),
@@ -205,6 +218,11 @@ def append_gap_fill_body(
     item: ExamNetQtiItem,
     image_paths: tuple[str, ...],
 ) -> None:
+    if item.interaction_type is ExamNetQtiInteractionType.INLINE_CHOICE:
+        placed = append_inline_gap_fill_paragraphs(parent, item, image_paths)
+        if placed != frozenset(range(len(item.inline_choice_gaps))):
+            raise ValueError("inline_choice body must place every gap exactly once")
+        return
     if item.prompt_paragraphs:
         placed_gap_indexes = append_inline_gap_fill_paragraphs(parent, item, image_paths)
         for index, gap in enumerate(item.text_entry_gaps):

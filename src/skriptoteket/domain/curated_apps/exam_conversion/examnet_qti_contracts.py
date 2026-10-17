@@ -41,6 +41,7 @@ class ExamNetQtiInteractionType(StrEnum):
     SINGLE_CHOICE = "single_choice"
     MULTIPLE_RESPONSE = "multiple_response"
     GAP_FILL = "gap_fill"
+    INLINE_CHOICE = "inline_choice"
     FREE_TEXT = "free_text"
     MATCHING = "matching"
 
@@ -150,6 +151,15 @@ class ExamNetQtiTextEntryGap:
 
 
 @dataclass(frozen=True)
+class ExamNetQtiInlineChoiceGap:
+    """One dropdown gap with its own option identifiers and single correct key."""
+
+    response_identifier: str
+    options: tuple[ExamNetQtiChoice, ...]
+    correct_option_identifier: str
+
+
+@dataclass(frozen=True)
 class ExamNetQtiImageResource:
     """One renderer-neutral image resource that may be carried in QTI."""
 
@@ -242,6 +252,7 @@ class ExamNetQtiItem:
     choices: tuple[ExamNetQtiChoice, ...] = ()
     correct_choice_identifiers: tuple[str, ...] = ()
     text_entry_gaps: tuple[ExamNetQtiTextEntryGap, ...] = ()
+    inline_choice_gaps: tuple[ExamNetQtiInlineChoiceGap, ...] = ()
     match_pairs: tuple[ExamNetQtiMatchPair, ...] = ()
     match_left: tuple[ExamNetQtiMatchEntry, ...] = ()
     match_right: tuple[ExamNetQtiMatchEntry, ...] = ()
@@ -249,6 +260,13 @@ class ExamNetQtiItem:
     unsupported_resources: tuple[ExamNetQtiUnsupportedResource, ...] = ()
     instruction_lines: tuple[str, ...] = ()
     children: tuple[ExamNetQtiItem, ...] = ()
+
+    @property
+    def response_gaps(self) -> tuple[ExamNetQtiTextEntryGap | ExamNetQtiInlineChoiceGap, ...]:
+        """The ordered gaps used by positioned rendering and point splitting."""
+        if self.interaction_type is ExamNetQtiInteractionType.INLINE_CHOICE:
+            return self.inline_choice_gaps
+        return self.text_entry_gaps
 
 
 @dataclass(frozen=True)

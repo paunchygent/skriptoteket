@@ -115,7 +115,7 @@ class NativeExamItem(BaseModel):
                 raise ValueError("choice items need at least two choices")
             if self.gaps:
                 raise ValueError("choice items must not declare gaps")
-        elif self.kind is NativeExamItemKind.GAP_FILL:
+        elif self.kind in (NativeExamItemKind.GAP_FILL, NativeExamItemKind.INLINE_CHOICE):
             if not self.gaps:
                 raise ValueError("gap_fill items need at least one gap")
             if self.choices:
@@ -128,6 +128,7 @@ class NativeExamItem(BaseModel):
         else:
             if self.choices or self.gaps:
                 raise ValueError("free_text items carry no choices or gaps")
+        self._gap_options_invariants()
         self._criteria_invariants()
 
         self._answer_key_invariants(frozenset(choice_ids))
@@ -152,7 +153,7 @@ class NativeExamItem(BaseModel):
         has_key_data = (
             bool(key.correct_choice_ids)
             or bool(key.match_pairs)
-            or any(gap.accepted_values for gap in self.gaps)
+            or any(gap.accepted_values or gap.correct_option_id for gap in self.gaps)
         )
         if key.origin is NativeAnswerKeyOrigin.ABSENT:
             if has_key_data:
@@ -176,8 +177,26 @@ class NativeExamItem(BaseModel):
             if key.correct_choice_ids:
                 raise ValueError("gap_fill items key gaps, not choices")
             for gap in self.gaps:
+                if self.kind is NativeExamItemKind.INLINE_CHOICE:
+                    continue
                 if not gap.accepted_values:
                     raise ValueError(f"gap {gap.gap_id} needs accepted values for a keyed item")
+
+    def _gap_options_invariants(self) -> None:
+        for gap in self.gaps:
+            if self.kind is not NativeExamItemKind.INLINE_CHOICE:
+                if gap.options or gap.correct_option_id is not None:
+                    raise ValueError("only inline_choice gaps carry options and an option key")
+                continue
+            if gap.accepted_values or gap.automatic_values or gap.excluded_automatic_values:
+                raise ValueError("inline_choice gaps must not carry typed accepted values")
+            option_ids = [option.choice_id for option in gap.options]
+            if not option_ids:
+                raise ValueError("inline_choice gaps need an option list")
+            if len(set(option_ids)) != len(option_ids):
+                raise ValueError("gap option ids must be unique within the gap")
+            if gap.correct_option_id is None or gap.correct_option_id not in option_ids:
+                raise ValueError("inline_choice gaps need exactly one correct option in their list")
 
     def _tick_points_invariants(self) -> None:
         """One uniform tick value per grid: points are exactly tick value × ticks (T2).
@@ -208,7 +227,7 @@ class NativeExamItem(BaseModel):
             for segment in paragraph.segments:
                 if isinstance(segment, NativeGapSegment):
                     placed.append(segment.gap_id)
-        if self.kind is not NativeExamItemKind.GAP_FILL:
+        if self.kind not in (NativeExamItemKind.GAP_FILL, NativeExamItemKind.INLINE_CHOICE):
             if placed:
                 raise ValueError("only gap_fill bodies may place gap segments")
             return
@@ -231,6 +250,16 @@ class NativeExamItem(BaseModel):
         criteria_points = sum(criterion.points for criterion in self.criteria)
         if self.points != criteria_points:
             raise ValueError("free_text criteria points must equal the item's points")
+
+    def body_gaps(self) -> tuple[NativeGap, ...]:
+        """Declared gaps in their validated body placement order."""
+        gaps = {gap.gap_id: gap for gap in self.gaps}
+        return tuple(
+            gaps[segment.gap_id]
+            for paragraph in self.body
+            for segment in paragraph.segments
+            if isinstance(segment, NativeGapSegment)
+        )
 
     def body_asset_ids(self) -> tuple[str, ...]:
         found: list[str] = []

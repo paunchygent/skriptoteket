@@ -20,6 +20,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts impo
     ExamNetQtiItem,
     ExamNetQtiManualFollowUp,
     ExamNetQtiManualFollowUpReason,
+    ExamNetQtiPromptGap,
     ExamNetQtiPromptImage,
     ExamNetQtiTextEntryGap,
     ExamNetQtiUnsupportedResource,
@@ -112,6 +113,7 @@ def _item_errors(item: ExamNetQtiItem) -> tuple[str, ...]:
         errors.append(f"Item {item.item_id} needs a positive point value.")
     errors.extend(_choice_errors(item))
     errors.extend(_gap_fill_errors(item))
+    errors.extend(_inline_choice_errors(item))
     errors.extend(_matching_errors(item))
     errors.extend(_image_errors(item))
     return tuple(errors)
@@ -168,6 +170,37 @@ def _gap_fill_errors(item: ExamNetQtiItem) -> tuple[str, ...]:
         errors.append(f"Item {item.item_id} has unsafe gap response identifiers.")
     if any(not _accepted_gap_values(gap) for gap in item.text_entry_gaps):
         errors.append(f"Item {item.item_id} needs accepted values for every gap.")
+    return tuple(errors)
+
+
+def _inline_choice_errors(item: ExamNetQtiItem) -> tuple[str, ...]:
+    if item.interaction_type is not ExamNetQtiInteractionType.INLINE_CHOICE:
+        return ()
+    errors: list[str] = []
+    gaps = item.inline_choice_gaps
+    ids = [gap.response_identifier for gap in gaps]
+    if not gaps or len(set(ids)) != len(ids):
+        errors.append(f"Item {item.item_id} needs unique inline-choice gap responses.")
+    if any(not _SAFE_IDENTIFIER_PATTERN.fullmatch(value) for value in ids):
+        errors.append(f"Item {item.item_id} has unsafe gap response identifiers.")
+    for gap in gaps:
+        options = [option.identifier for option in gap.options]
+        if (
+            not options
+            or len(set(options)) != len(options)
+            or gap.correct_option_identifier not in options
+            or any(not _SAFE_IDENTIFIER_PATTERN.fullmatch(value) for value in options)
+            or any(not option.text.strip() for option in gap.options)
+        ):
+            errors.append(f"Item {item.item_id} needs a valid option list and one key per gap.")
+    placed = [
+        segment.gap_index
+        for paragraph in item.prompt_paragraphs
+        for segment in paragraph.segments
+        if isinstance(segment, ExamNetQtiPromptGap)
+    ]
+    if sorted(placed) != list(range(len(gaps))):
+        errors.append(f"Item {item.item_id} must place every inline-choice gap exactly once.")
     return tuple(errors)
 
 

@@ -85,16 +85,21 @@ def _append_standalone_item(
     item: ExamNetQtiItem,
     image_paths: tuple[str, ...],
 ) -> None:
-    append_response_declaration(root, item)
+    mapped_ids = append_response_declaration(root, item)
     append_score_outcome(root, item)
     item_body = ElementTree.SubElement(root, qti_tag("qti-item-body"))
-    if item.interaction_type == ExamNetQtiInteractionType.GAP_FILL:
+    if item.interaction_type in (
+        ExamNetQtiInteractionType.GAP_FILL,
+        ExamNetQtiInteractionType.INLINE_CHOICE,
+    ):
         append_gap_fill_body(item_body, item, image_paths)
         if not item.prompt_paragraphs:
             append_images(item_body, item.image_resources, image_paths)
     else:
         append_interaction(item_body, item, image_paths)
-    if emits_map_response(item):
+    if item.interaction_type is ExamNetQtiInteractionType.INLINE_CHOICE and mapped_ids:
+        _append_score_sum(root, mapped_ids, ())
+    elif emits_map_response(item):
         ElementTree.SubElement(
             root,
             qti_tag("qti-response-processing"),
@@ -118,7 +123,10 @@ def _append_parent_item(
     child_image_paths = _split_image_paths(children, image_paths[stem_image_count:])
     mapped_response_ids: list[str] = []
     for child in children:
-        if child.interaction_type == ExamNetQtiInteractionType.GAP_FILL:
+        if child.interaction_type in (
+            ExamNetQtiInteractionType.GAP_FILL,
+            ExamNetQtiInteractionType.INLINE_CHOICE,
+        ):
             ElementTree.SubElement(
                 root,
                 qti_tag("qti-response-declaration"),
@@ -150,7 +158,10 @@ def _append_child_body(
     child: ExamNetQtiItem,
     image_paths: tuple[str, ...],
 ) -> None:
-    if child.interaction_type != ExamNetQtiInteractionType.GAP_FILL:
+    if child.interaction_type not in (
+        ExamNetQtiInteractionType.GAP_FILL,
+        ExamNetQtiInteractionType.INLINE_CHOICE,
+    ):
         append_interaction(item_body, child, image_paths, _response_identifier(child))
         return
     # The empty gap-match starts the next sub-question in Exam.net; one before
@@ -224,6 +235,10 @@ def _qualified_child(child: ExamNetQtiItem) -> ExamNetQtiItem:
         text_entry_gaps=tuple(
             replace(gap, response_identifier=f"{child.item_id}_{gap.response_identifier}")
             for gap in child.text_entry_gaps
+        ),
+        inline_choice_gaps=tuple(
+            replace(gap, response_identifier=f"{child.item_id}_{gap.response_identifier}")
+            for gap in child.inline_choice_gaps
         ),
     )
 
