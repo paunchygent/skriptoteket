@@ -119,6 +119,12 @@ class ImportExamWorkspaceDocumentHandlerProtocol(Protocol):
     ) -> ExamWorkspaceConversionStatus: ...
 
 
+class ImportExamWorkspaceDigiExamDocumentHandlerProtocol(Protocol):
+    async def handle(
+        self, *, actor: User, filename: str, content: bytes, course_key: str | None
+    ) -> ExamWorkspaceConversionStatus: ...
+
+
 class GetExamCourseCatalogHandlerProtocol(Protocol):
     async def handle(self, *, actor: User) -> ExamCourseCatalogResponse: ...
 

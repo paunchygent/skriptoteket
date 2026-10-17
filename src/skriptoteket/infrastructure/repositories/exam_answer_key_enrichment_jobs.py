@@ -93,6 +93,7 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(
             )
         model.status = job.status.value
         model.source_docx = job.source_docx
+        model.source_dxe = job.source_dxe
         model.workspace_course_key = job.workspace_course_key
         model.workspace_suggestions_json = job.workspace_suggestions_json
         model.attempts = job.attempts
@@ -151,8 +152,12 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(
                 ExamAnswerKeyEnrichmentJobModel.conversion_progress,
             )
             .where(
-                ExamAnswerKeyEnrichmentJobModel.source_kind
-                == ExamAnswerKeySourceKind.DOCX_IMPORT.value,
+                ExamAnswerKeyEnrichmentJobModel.source_kind.in_(
+                    (
+                        ExamAnswerKeySourceKind.DOCX_IMPORT.value,
+                        ExamAnswerKeySourceKind.DIGIEXAM_IMPORT.value,
+                    )
+                ),
                 ExamAnswerKeyEnrichmentJobModel.owner_user_id == owner_user_id,
                 ExamAnswerKeyEnrichmentJobModel.workspace_lineage_id == workspace_lineage_id,
             )
