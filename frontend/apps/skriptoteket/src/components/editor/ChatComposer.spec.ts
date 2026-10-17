@@ -10,6 +10,23 @@ function mountComposer() {
 }
 
 describe("ChatComposer shared controls", () => {
+  it.each([0, 1])("names the code-assistant message field in Swedish in mode %i", async (modeIndex) => {
+    const wrapper = mountComposer();
+    try {
+      const modes = wrapper.get('[role="radiogroup"]').findAll('[role="radio"]');
+      await modes[modeIndex]!.trigger("click");
+      const textarea = wrapper.get("textarea").element;
+      const labelledBy = textarea.getAttribute("aria-labelledby");
+      const name = textarea.getAttribute("aria-label")
+        ?? (labelledBy
+          ? labelledBy.split(/\s+/).map((id) => wrapper.find(`[id="${id}"]`).text()).join(" ")
+          : Array.from(textarea.labels ?? []).map((label) => label.textContent).join(" "));
+      expect(name.trim()).toMatch(/meddelande|fråga|instruktion|kodassistent/i);
+    } finally {
+      wrapper.unmount();
+    }
+  });
+
   it("routes keyboard-selected edit requests without losing the draft, then sends chat", async () => {
     const wrapper = mountComposer();
     await wrapper.get("textarea").setValue("  Fixa en bugg  ");

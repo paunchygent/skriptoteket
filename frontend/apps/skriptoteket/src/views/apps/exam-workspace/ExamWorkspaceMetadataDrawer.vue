@@ -6,7 +6,7 @@ import { IconX } from "../../../components/icons";
 import type { ExamCourseChoice, NativeExamHeader } from "../../../api/examWorkspace";
 import ExamCourseCombobox from "./ExamCourseCombobox.vue";
 import { useExamCourseCatalog } from "./useExamCourseCatalog";
-import { useExamWorkspaceDialogFocus } from "./useExamWorkspaceDialogFocus";
+import { useDialogFocus } from "../../../composables/useDialogFocus";
 import type { ExamWorkspaceLayout } from "./useExamWorkspaceLayout";
 import type { ExamWorkspaceRenameFailure } from "./useExamWorkspaceRename";
 
@@ -59,7 +59,7 @@ watch(() => props.renameFailure, (failure) => {
   if (failure) stem.value = failure.stem;
 });
 
-useExamWorkspaceDialogFocus(frame, {
+useDialogFocus(frame, {
   modal: () => isModal.value,
   takesFocus: () => props.layout !== "desktop",
   fallbackFocus: () => document.querySelector<HTMLElement>('[data-test="exam-workspace-summary-title"]'),

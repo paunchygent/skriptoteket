@@ -49,7 +49,8 @@ function truncate(text: string | null, maxLength: number): string {
   return text.slice(0, maxLength) + "...";
 }
 
-function openCreateModal(): void {
+function openCreateModal(event: MouseEvent): void {
+  (event.currentTarget as HTMLButtonElement).focus();
   createDraftToolModal.open();
 }
 

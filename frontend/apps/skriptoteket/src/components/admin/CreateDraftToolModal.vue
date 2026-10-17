@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { nextTick, ref, watch } from "vue";
+import { ref } from "vue";
 
+import { useDialogFocus } from "../../composables/useDialogFocus";
 import { SystemMessage, UiDenseIconButton } from "../ui";
 
 type CreateDraftToolModalProps = {
@@ -11,7 +12,7 @@ type CreateDraftToolModalProps = {
   isSubmitting: boolean;
 };
 
-const props = defineProps<CreateDraftToolModalProps>();
+defineProps<CreateDraftToolModalProps>();
 
 const emit = defineEmits<{
   (event: "close"): void;
@@ -22,16 +23,14 @@ const emit = defineEmits<{
 }>();
 
 const titleInputRef = ref<HTMLInputElement | null>(null);
+const dialog = ref<HTMLElement | null>(null);
 
-watch(
-  () => props.isOpen,
-  (isOpen) => {
-    if (!isOpen) return;
-    void nextTick().then(() => {
-      titleInputRef.value?.focus();
-    });
-  },
-);
+useDialogFocus(dialog, {
+  modal: () => true,
+  takesFocus: () => true,
+  initialFocus: () => titleInputRef.value?.disabled ? null : titleInputRef.value,
+  onClose: () => emit("close"),
+});
 </script>
 
 <template>
@@ -39,6 +38,8 @@ watch(
     <Transition name="fade">
       <div
         v-if="isOpen"
+        ref="dialog"
+        tabindex="-1"
         class="fixed inset-0 z-50 flex items-center justify-center bg-navy/40"
         role="dialog"
         aria-modal="true"
