@@ -243,6 +243,7 @@ describe("HelpPanel", () => {
     (trigger.element as HTMLButtonElement).focus();
 
     expect(trigger.attributes("aria-expanded")).toBe("false");
+    expect(trigger.attributes("aria-haspopup")).toBe("dialog");
     await trigger.trigger("click");
     await flushPromises();
 

@@ -31,7 +31,7 @@ function onToggle(event: MouseEvent): void {
     :label="props.label"
     :expanded="isOpen"
     aria-controls="help-panel"
-    aria-haspopup="dialog"
+    has-popup="dialog"
     @click="onToggle"
   />
 </template>
