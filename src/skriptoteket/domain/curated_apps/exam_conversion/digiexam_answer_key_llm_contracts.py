@@ -94,7 +94,6 @@ class StructuredLLMProviderProfile:
     is_remote: bool
     context_window_tokens: int
     max_output_tokens: int
-    temperature: float = 0.0
     reasoning_effort: StructuredLLMReasoningEffort | None = None
     text_verbosity: StructuredLLMTextVerbosity | None = None
 
@@ -111,8 +110,6 @@ class StructuredLLMProviderProfile:
             raise ValueError(
                 "Structured provider max_output_tokens must be below context_window_tokens."
             )
-        if self.temperature < 0 or self.temperature > 2:
-            raise ValueError("Structured provider temperature must be between 0 and 2.")
 
 
 # Input-token estimate of one inline source image, added to the text estimate before

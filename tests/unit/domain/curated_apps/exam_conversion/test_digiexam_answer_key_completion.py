@@ -68,7 +68,6 @@ def _profile() -> StructuredLLMProviderProfile:
         is_remote=True,
         context_window_tokens=32_768,
         max_output_tokens=4_096,
-        temperature=0.0,
         reasoning_effort=StructuredLLMReasoningEffort.LOW,
     )
 

@@ -9,6 +9,9 @@ Purpose:
 
 from __future__ import annotations
 
+import json
+
+import httpx
 import pytest
 from pydantic import JsonValue
 
@@ -21,6 +24,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
     StructuredOutputSpec,
 )
 from skriptoteket.infrastructure.llm.openrouter.answer_key_chat_provider import (
+    OpenRouterAnswerKeyChatProvider,
     build_answer_key_chat_completions_payload,
     parse_answer_key_chat_completions_payload,
 )
@@ -63,7 +67,9 @@ def _request() -> StructuredLLMRequest:
 
 
 def test_payload_pins_the_openrouter_chat_completions_shape() -> None:
-    payload = build_answer_key_chat_completions_payload(profile=_profile(), request=_request())
+    payload = build_answer_key_chat_completions_payload(
+        profile=_profile(), request=_request(), temperature=0.0
+    )
 
     assert payload["model"] == "z-ai/glm-5.3-flash"
     assert payload["messages"] == [
@@ -143,3 +149,85 @@ def test_parse_maps_malformed_payloads_to_typed_failures(
     with pytest.raises(StructuredLLMProviderError) as excinfo:
         parse_answer_key_chat_completions_payload(payload=payload, profile=_profile())
     assert excinfo.value.failure_code is failure_code
+
+
+# The request body before temperature moved from the shared profile onto this provider
+# (TASK-SKRIPT-39-04-11 D4), serialized compactly; the move must not change one byte.
+_PINNED_BODY = (
+    '{"model":"z-ai/glm-5.3-flash","messages":[{"role":"system","content":"You pick t'
+    'he correct alternative."},{"role":"user","content":"{\\"alternatives\\": [1, 2]}"}'
+    '],"stream":false,"max_tokens":512,"temperature":0.0,"provider":{"require_paramet'
+    'ers":true},"response_format":{"type":"json_schema","json_schema":{"name":"choice'
+    '_decision","strict":true,"schema":{"type":"object","properties":{"correct_altern'
+    'ative_ids":{"type":"array"}},"required":["correct_alternative_ids"],"additionalP'
+    'roperties":false}}}}'
+)
+
+
+def test_payload_bytes_are_pinned() -> None:
+    payload = build_answer_key_chat_completions_payload(
+        profile=_profile(), request=_request(), temperature=0.0
+    )
+
+    assert json.dumps(payload, separators=(",", ":"), ensure_ascii=False) == _PINNED_BODY
+
+
+async def test_the_provider_posts_its_own_temperature_in_the_pinned_body() -> None:
+    posted: list[bytes] = []
+
+    def handle(request: httpx.Request) -> httpx.Response:
+        posted.append(request.content)
+        return httpx.Response(503)
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handle)) as client:
+        provider = OpenRouterAnswerKeyChatProvider(
+            client=client,
+            base_url="https://openrouter.test/api/v1",
+            api_key="key",
+            timeout_seconds=5.0,
+            temperature=0.0,
+        )
+        with pytest.raises(StructuredLLMProviderError):
+            await provider.complete_structured(request=_request(), profile=_profile())
+
+    (body,) = posted
+    assert json.loads(body) == json.loads(_PINNED_BODY)
+    assert body == _PINNED_BODY.encode()
+
+
+@pytest.mark.parametrize("temperature", [-0.1, 2.1])
+def test_the_provider_rejects_a_temperature_outside_zero_to_two(temperature: float) -> None:
+    with pytest.raises(ValueError, match="temperature"):
+        OpenRouterAnswerKeyChatProvider(
+            client=httpx.AsyncClient(),
+            base_url="https://openrouter.test/api/v1",
+            api_key="key",
+            timeout_seconds=5.0,
+            temperature=temperature,
+        )
+
+
+def test_the_shared_profile_has_no_temperature() -> None:
+    assert not hasattr(_profile(), "temperature")
+
+
+async def test_the_provider_posts_the_temperature_it_was_configured_with() -> None:
+    posted: list[bytes] = []
+
+    def handle(request: httpx.Request) -> httpx.Response:
+        posted.append(request.content)
+        return httpx.Response(503)
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handle)) as client:
+        provider = OpenRouterAnswerKeyChatProvider(
+            client=client,
+            base_url="https://openrouter.test/api/v1",
+            api_key="key",
+            timeout_seconds=5.0,
+            temperature=0.7,
+        )
+        with pytest.raises(StructuredLLMProviderError):
+            await provider.complete_structured(request=_request(), profile=_profile())
+
+    (body,) = posted
+    assert json.loads(body)["temperature"] == 0.7
