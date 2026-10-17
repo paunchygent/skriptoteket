@@ -87,7 +87,7 @@ When adopting this design system in another repo, verify:
 - [ ] Shared UI components use the class builders
 - [ ] Toast system is mounted at app root
 - [ ] Segmented toggles use the shell constants
-- [ ] ADR-0017 and ADR-0032 are followed
+- [ ] Token and Tailwind integration follows the applicable mechanics in ADR-0032, not its historical presentation prescriptions
 - [ ] Presentation follows `huleedu-ui-design` and its task-relevant references
 - [ ] Primitive contracts come from the current package, not historical constants
 - [ ] No Tailwind default palette/spacing leaks into product UI
@@ -127,10 +127,12 @@ When adopting this design system in another repo, verify:
 ### Governance
 
 - `docs/decisions/adr-skript-0017-huleedu-design-system-adoption-for-frontend-harmonization.md`
+  (proposed historical adoption record; non-authorizing, not a compliance requirement)
 
 - `docs/decisions/adr-skript-0032-frontend-styling-tailwind-css-4-with-theme-design-tokens.md`
+  (token and Tailwind integration mechanics only; not current presentation authority)
 
-- `huleedu-ui-design` skill
+- `huleedu-ui-design` skill (current presentation authority)
 
 ### Reference
 
