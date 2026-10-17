@@ -156,7 +156,7 @@ closes the epic and is not on the critical path.
     grid, Fritext criteria, Kort svar and the export checklist.
 09. Teacher authoring of every Exam.net question type with parent and child
     questions (`ST-SKRIPT-39-06`, `proposed`; user decisions 2026-10-10;
-    sequenced after story 8): teachers create the seven proven types as
+    sequenced after story 8): teachers create six proven types (ordering waits on an Exam.net probe, user 2026-10-17) as
     standalone questions or as parents whose children share one instruction,
     and conversion and the gold corpus move to that structure. Creating every
     type is new scope; ST-SKRIPT-39-04 closed with free-text creation only
@@ -165,8 +165,8 @@ closes the epic and is not on the critical path.
     `proposed`; user decision 2026-10-12): the exam workspace is the main exam
     conversion and editing app, and DigiExam export becomes one secondary
     input mode of it, edited in the same editor and exported as QTI, PDF or
-    DOCX. The separate DigiExam converter views retire with it. Scoped after
-    the DOCX, PDF and Markdown routes exist.
+    DOCX. The signed-in DigiExam converter views retire with it; the public guest converter stays (user 2026-10-17). It starts now
+    as a backend lane and does not wait for the PDF and Markdown routes (E17).
 
 ## Verification
 
@@ -237,3 +237,5 @@ closes the epic and is not on the critical path.
 | E14 | The story-5 breadth contract carries as candidates the HuleEduOS-proven teacher-grade scoring features — accepted-spelling variants under the hand-picked-misspelling rule, case-insensitive answer mappings, expected-length and letter-hint conventions — and the Exam.net-proven ordering (ordningsföljd) item type as an extension of the E3 subset (user decision 2026-10-09).                                  |
 | E15 | The HuleEduOS `examnet-qti-import` producer remains a deliberately separate hand-tool for now: story 8 ports its proven contract and shapes into the product exporter but creates no consumption or consolidation obligation for HuleEduOS (user decision 2026-10-09).                                                                                                                                               |
 | E16 | The exam workspace is the main exam conversion and editing app. DigiExam conversion is a secondary input mode inside it, not the start mode, and uses the same editor; the separate DigiExam converter views get no layout work of their own and retire when story 10 lands (user decision 2026-10-12).                                                                                                              |
+| E17 | Story 10 (ST-SKRIPT-39-07) starts now as a backend lane; its wait for the PDF and Markdown routes is dropped (user decision G22, 2026-10-17).                                                                                                                                                                                                                                                                        |
+| E18 | A new story, ST-SKRIPT-40-04, replaces TASK-SKRIPT-39-04-05 as the exam workspace redesign: an Opus prototype covering today's workspace and the planned ST-SKRIPT-39-06, ST-SKRIPT-39-07 and TASK-SKRIPT-39-08-04 UI is approved by the user and then implemented, and approved looks (sizes, colour, type) carry over (user decision G1, 2026-10-17).                                                              |

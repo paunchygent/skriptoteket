@@ -4,16 +4,14 @@ id: EPIC-SKRIPT-40
 title: Shared design-system convergence
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-09-27'
 status: active
 closeout_review:
   record: inline
   status: not_started
-outcome: Skriptoteket consumes the shared huleedu-integrated design system through
-  design-system sync for tokens, components, action buttons and glyphs, and its local
-  extensions live in the shared package.
+outcome: Skriptoteket consumes the shared huleedu-integrated design system through design-system sync for tokens, components, action buttons and glyphs, and its local extensions live in the shared package.
 links:
   decisions: []
 backlog_document_profile: contract-derived
@@ -32,7 +30,9 @@ its root adoption map, local composition barrel, application adapters and
 call sites. Package Vue files occupy a package-shaped subtree under
 `frontend/apps/skriptoteket/src/components/ui/shared`; adopted CSS, logo and
 metadata mirror retain their existing paths. Brand and auth-lifecycle stay
-unadopted. New product features and HuleEdu UI redesign are excluded.
+unadopted. HuleEdu UI redesign is excluded. New product features are excluded,
+except that ST-SKRIPT-40-04 builds the exam workspace controls for features
+whose backends come from EPIC-SKRIPT-39 (user 2026-10-17, G1, G2).
 
 Story 1 includes the released glyph runtime and peer needed by its shared
 components. Story 2 owns icon-meaning inventory, missing-meaning promotion,
@@ -48,11 +48,12 @@ call-site migration and removal of `lucide-vue-next`.
 
 ## Stories
 
-| Story | Slice |
-| --- | --- |
-| ST-SKRIPT-40-01 | In progress: tokens, theme and logo adopted through sync (TASK-SKRIPT-40-01-01 done 2026-10-12). Remaining: dense components and spinner, messages, toast adapter, action buttons, and required glyph runtime/peer. |
-| ST-SKRIPT-40-02 | Expanded shared meaning vocabulary, complete icon migration, and old Lucide dependency removal. |
-| ST-SKRIPT-40-03 | Proposed (user decision 2026-10-12): every Skriptoteket screen on the shared visual direction: design rule 045 replaced, panels and surfaces off hard offset shadows, and one token pass per curated app, after TASK-SKRIPT-40-01-03 and TASK-SKRIPT-39-04-05. |
+| Story           | Slice                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ST-SKRIPT-40-01 | In progress: tokens, theme and logo adopted through sync (TASK-SKRIPT-40-01-01 done 2026-10-12). Remaining: dense components and spinner, messages, toast adapter, action buttons, and required glyph runtime/peer.                                                                                                                                                                                                     |
+| ST-SKRIPT-40-02 | Expanded shared meaning vocabulary, complete icon migration, and old Lucide dependency removal.                                                                                                                                                                                                                                                                                                                         |
+| ST-SKRIPT-40-03 | Proposed (user decision 2026-10-12): every Skriptoteket screen on the shared visual direction: design rule 045 replaced, panels and surfaces off hard offset shadows, and one token pass per curated app. Every screen outside the app shell and the exam workspace keeps its layout; Sol 6.1 pairs refresh the areas in parallel right after TASK-SKRIPT-40-01-02 and TASK-SKRIPT-40-01-03 (user 2026-10-17, G9, G11). |
+| ST-SKRIPT-40-04 | Proposed (user 2026-10-17, G1): an Opus prototype of the app shell and the exam workspace, approved by the user, then built by two Opus builders in parallel; replaces TASK-SKRIPT-39-04-05.                                                                                                                                                                                                                            |
 
 ## Verification
 
@@ -64,11 +65,12 @@ call-site migration and removal of `lucide-vue-next`.
 
 ## Decided Contract Terms
 
-| ID | Decided contract term |
-| --- | --- |
-| D1 | Reusable local extensions are promoted instead of forked. Source: retained D1/D9/D11-D15. |
-| D2 | Brand and auth-lifecycle remain unadopted. Source: retained D13. |
-| D3 | Package palette is authoritative. Source: retained D3. |
-| D4 | Adoption and drift proof use shared sync/validate and admitted clean checkpoints. Source: retained D4/D16/D24; R6. |
-| D5 | Two stories separate component delivery from semantic icon migration; prerequisite glyph runtime belongs to Story 1. Source: retained D17/D20; R1. |
-| D6 | Vue adoption uses the shared subtree and local composition barrel; other established resource paths remain. Source: retained D19; R2. |
+| ID  | Decided contract term                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Reusable local extensions are promoted instead of forked. Source: retained D1/D9/D11-D15.                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| D2  | Brand and auth-lifecycle remain unadopted. Source: retained D13.                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| D3  | Package palette is authoritative. Source: retained D3.                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| D4  | Adoption and drift proof use shared sync/validate and admitted clean checkpoints. Source: retained D4/D16/D24; R6.                                                                                                                                                                                                                                                                                                                                                                                                        |
+| D5  | Two stories separate component delivery from semantic icon migration; prerequisite glyph runtime belongs to Story 1. Source: retained D17/D20; R1.                                                                                                                                                                                                                                                                                                                                                                        |
+| D6  | Vue adoption uses the shared subtree and local composition barrel; other established resource paths remain. Source: retained D19; R2.                                                                                                                                                                                                                                                                                                                                                                                     |
+| D7  | Greenfield UI design and its implementation are Opus-owned and cover only the app shell (top bar, sidebar, page frame) and the exam workspace (ST-SKRIPT-40-04): one Opus lead makes the prototype and owns the design rules, and two Opus builders implement it after user approval. Every other screen keeps its layout and gets the simple refresh onto shared tokens, buttons and components by Sol 6.1 agents (ST-SKRIPT-40-03); Sol agents do only non-visual work otherwise. Source: user 2026-10-17, G7, G9, G10. |

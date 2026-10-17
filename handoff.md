@@ -32,13 +32,6 @@
   `proposed`: idempotent migration suite fails on merge revision `6a1e9d3c4b7f`
   (pre-existing on main); found during ST-SKRIPT-08-36 review repair.
 
-- [ST-SKRIPT-39-08](docs/backlog/stories/st-skript-39-08-course-and-tag-metadata-for-saved-exams.md)
-  `ready`: task 1 `done` 2026-10-16; tasks 2-4 contracted `ready`, next is
-  TASK-SKRIPT-39-08-02 (own courses in the profile); no owner yet.
-
-- [ST-SKRIPT-39-06](docs/backlog/stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md)
-  `proposed`, P1-P17, tasks 1-6; follows ST-SKRIPT-39-09.
-
 - [TASK-SKRIPT-REP-0037](docs/backlog/tasks/task-skript-rep-0037-multi-file-script-bank-tool-bundles-and-the-split-of-four-over-long-tools.md)
   `in_progress`, owner Codex (handed over by the Claude exam parent 2026-10-11).
   D6 (every bundle file shown and saved) rereview approved `578d4a4d`, merged
@@ -59,30 +52,20 @@
   34 focused tests passed; next natural checks 25.005 ms prod / 24.596 ms staging.
   Proof: task-worktree .artifacts/native-health/passive-\*-rollout-proof.json (2026-10-06).
 
-- [EPIC-SKRIPT-40](docs/backlog/epics/epic-skript-40-shared-design-system-convergence.md)
-  and ST-SKRIPT-40-01 are `active`. TASK-SKRIPT-40-01-01 is `done` (user
-  closure 2026-10-12; review `bda00b6a`; Hemma walk `fc42b918`, retained
-  `01a13061-ff38-7099-aa3d-e23f6e5bba43` evidence/staging-walk). Next:
-  TASK-SKRIPT-40-01-03 (shared action buttons), which TASK-SKRIPT-39-04-05
-  waits on. TASK-SKRIPT-40-02-01 waits on TASK-SKILL-REP-0187. Open defect
-  from the walk: Klassrumskartan returns focus to the sidebar, not "Ny klass",
-  after the modal closes.
-
-- ST-SKRIPT-40-03 (`proposed`): every screen onto the shared visual direction
-  (rules removal into skills, user 2026-10-12; shadow and panel sweep, per-app
-  token passes). Retained plan `01a13082-a8f9-7137-aa65-848f7e3c53c2`, S1-S7
-  closed. Release first (user 2026-10-12): skill-repository
-  `TASK-SKILL-REP-0279` and HuleEdu `TASK-HULE-REP-0142` are done
-  (0.1.24 without offset shadows, in repository-governance 0.11.109; HuleEdu
-  staging walk clean). Next: this story's first task (not yet scaffolded)
-  syncs 0.1.24 and removes local uses in the same commit, before
-  TASK-SKRIPT-40-01-02 and 40-01-03. TASK-SKRIPT-39-04-05
-  (`proposed`, contract C1-C25 incl. autosave; plan D1-D67 closed in session
-  `01a13061-ff38-7099-aa3d-e23f6e5bba43`): frontend-only editor with drawers;
-  waits on 40-01-03, the 0.1.24 sync, 39-04-06 (scaffold),
-  39-04-08 (scaffold: Mina filer exports, pruning); 39-05-08 is done.
-  EPIC-SKRIPT-39 E16 and ST-SKRIPT-39-07 (`proposed`): DigiExam conversion
-  becomes a secondary input mode of the workspace.
+- Plan 2026-10-17 (user decisions G1-G30, lead L1-L7; retained
+  `01a1495e-8398-75be-b2da-f0b08ba11afa` evidence/planning/decisions-2026-10-17.md):
+  27 items now `ready`, no owners yet. Lane 0 (Sol): TASK-SKRIPT-40-01-02
+  (with the 0.1.24 sync) then 40-01-03. Opus lane: ST-SKRIPT-40-04, shell and
+  exam workspace redesign from a fresh prototype the user approves (40-04-01),
+  then two Opus builders (40-04-02 shell, 40-04-03 workspace); it supersedes
+  TASK-SKRIPT-39-04-05 (`canceled`). Sol restyle lane: ST-SKRIPT-40-03 tasks
+  01-09, one per area, start after lane 0 without waiting for
+  TASK-SKILL-REP-0280. Sol backend lanes (no new workspace UI; workspace
+  screens frozen except bug fixes): 39-08-02/03/04, 39-04-08 (save model,
+  before 39-04-06), 39-04-06, ST-SKRIPT-39-06 tasks 01-06 (02 is the Exam.net
+  ordering and dropdown probe; the user decides ordering), ST-SKRIPT-39-07
+  tasks 01-03 (03 waits on 40-04-03). Open defect: Klassrumskartan returns
+  focus to the sidebar, not "Ny klass", after the modal closes.
 
 - Historical 2026-09-05 workspace planning (EPIC-SKRIPT-39 E8-E12, ADR-SKRIPT-0091,
   ST-SKRIPT-39-04): `.codex/long-term-memory/entries/session-2026-09-05-epic-39-handoff-compaction.md`.

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "0bc03851d503c59c3ad5d5ced9a0b6db8dd9c94ac57aeea37e48020cffef6830",
+  "source_set_digest": "b48e2bf04518e1ab17d048e0cf1ea4c7cb40f8ba6fbc1ede1ab01e867be988fa",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -2309,7 +2309,7 @@
       "type": "story",
       "title": "Teacher authoring of every Exam.net question type with parent and child questions",
       "path": "docs/backlog/stories/st-skript-39-06-teacher-authoring-of-every-exam-net-question-type-with-parent-and-child-questions.md",
-      "status": "proposed",
+      "status": "ready",
       "epic": "EPIC-SKRIPT-39",
       "owners": [
         {
@@ -2330,7 +2330,7 @@
       "type": "story",
       "title": "Bring DigiExam conversion into the exam workspace as a secondary input mode",
       "path": "docs/backlog/stories/st-skript-39-07-bring-digiexam-conversion-into-the-exam-workspace-as-a-secondary-input-mode.md",
-      "status": "proposed",
+      "status": "ready",
       "epic": "EPIC-SKRIPT-39",
       "owners": [
         {
@@ -2438,7 +2438,28 @@
       "type": "story",
       "title": "Bring every Skriptoteket screen onto the shared visual direction",
       "path": "docs/backlog/stories/st-skript-40-03-bring-every-skriptoteket-screen-onto-the-shared-visual-direction.md",
-      "status": "proposed",
+      "status": "ready",
+      "epic": "EPIC-SKRIPT-40",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "links": {
+        "decisions": []
+      },
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "ST-SKRIPT-40-04",
+      "type": "story",
+      "title": "Redesign the app shell and the exam workspace from a fresh Opus prototype",
+      "path": "docs/backlog/stories/st-skript-40-04-redesign-the-app-shell-and-the-exam-workspace-from-a-fresh-opus-prototype.md",
+      "status": "ready",
       "epic": "EPIC-SKRIPT-40",
       "owners": [
         {
@@ -4825,7 +4846,7 @@
       "type": "task",
       "title": "Restyle the exam workspace to the shared design direction",
       "path": "docs/backlog/tasks/task-skript-39-04-05-restyle-the-exam-workspace-to-the-shared-design-direction.md",
-      "status": "proposed",
+      "status": "canceled",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-04",
       "owners": [
@@ -4836,7 +4857,9 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User decided 2026-10-17 (G1) that a new story, ST-SKRIPT-40-04, replaces this task with a fresh Opus prototype of the app shell and the exam workspace; the approved looks carry over, and terms C1-C26 hold in TASK-SKRIPT-40-04-03 only where the approved prototype keeps them."
       }
     },
     {
@@ -4844,7 +4867,7 @@
       "type": "task",
       "title": "Send each converted question's original wording and build steps to the exam workspace",
       "path": "docs/backlog/tasks/task-skript-39-04-06-send-each-converted-question-s-original-wording-and-build-steps-to-the-exam-workspace.md",
-      "status": "proposed",
+      "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-04",
       "owners": [
@@ -4882,9 +4905,9 @@
     {
       "id": "TASK-SKRIPT-39-04-08",
       "type": "task",
-      "title": "Save exported exam files in Mina filer, list each exam once and prune autosaved versions",
-      "path": "docs/backlog/tasks/task-skript-39-04-08-save-exported-exam-files-in-mina-filer-list-each-exam-once-and-prune-autosaved-versions.md",
-      "status": "proposed",
+      "title": "One file per exam with Spara, Spara som and server-stored undo steps, and exports saved in Mina filer",
+      "path": "docs/backlog/tasks/task-skript-39-04-08-one-file-per-exam-with-spara-spara-som-and-server-stored-undo-steps-and-exports-saved-in-mina-filer.md",
+      "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-04",
       "owners": [
@@ -5232,6 +5255,177 @@
       }
     },
     {
+      "id": "TASK-SKRIPT-39-06-01",
+      "type": "task",
+      "title": "Walking skeleton: a parent with two Lucktext children built through the API, exported to QTI and imported into Exam.net",
+      "path": "docs/backlog/tasks/task-skript-39-06-01-walking-skeleton-a-parent-with-two-lucktext-children-built-through-the-api-exported-to-qti-and-imported-into-exam-net.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-06",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-06-02",
+      "type": "task",
+      "title": "Exam.net probe of ordering and dropdown Lucktext in the student view and grading",
+      "path": "docs/backlog/tasks/task-skript-39-06-02-exam-net-probe-of-ordering-and-dropdown-lucktext-in-the-student-view-and-grading.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-06",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-06-03",
+      "type": "task",
+      "title": "Parent and child editing commands in the workspace API",
+      "path": "docs/backlog/tasks/task-skript-39-06-03-parent-and-child-editing-commands-in-the-workspace-api.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-06",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-06-04",
+      "type": "task",
+      "title": "Dropdown Lucktext question kind with per-gap options and its QTI writer",
+      "path": "docs/backlog/tasks/task-skript-39-06-04-dropdown-lucktext-question-kind-with-per-gap-options-and-its-qti-writer.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-06",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-06-05",
+      "type": "task",
+      "title": "Change a question's type, keeping what fits and reporting what is dropped",
+      "path": "docs/backlog/tasks/task-skript-39-06-05-change-a-question-s-type-keeping-what-fits-and-reporting-what-is-dropped.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-06",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-06-06",
+      "type": "task",
+      "title": "Store a suggested type on converted questions",
+      "path": "docs/backlog/tasks/task-skript-39-06-06-store-a-suggested-type-on-converted-questions.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-06",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-07-01",
+      "type": "task",
+      "title": "Import a DigiExam export into the exam workspace as a native exam document",
+      "path": "docs/backlog/tasks/task-skript-39-07-01-import-a-digiexam-export-into-the-exam-workspace-as-a-native-exam-document.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-07",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-07-02",
+      "type": "task",
+      "title": "Answer keys for DigiExam imports through the workspace's per-question suggestions",
+      "path": "docs/backlog/tasks/task-skript-39-07-02-answer-keys-for-digiexam-imports-through-the-workspace-s-per-question-suggestions.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-07",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-07-03",
+      "type": "task",
+      "title": "Retire the old exam converter routes, correction overlay and screens",
+      "path": "docs/backlog/tasks/task-skript-39-07-03-retire-the-old-exam-converter-routes-correction-overlay-and-screens.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-07",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
       "id": "TASK-SKRIPT-39-08-01",
       "type": "task",
       "title": "Course picker at import and exam metadata drawer for course, title and file name",
@@ -5295,8 +5489,8 @@
     {
       "id": "TASK-SKRIPT-39-08-04",
       "type": "task",
-      "title": "Prov mode lists saved exams grouped by course and sorted by date",
-      "path": "docs/backlog/tasks/task-skript-39-08-04-prov-mode-lists-saved-exams-grouped-by-course-and-sorted-by-date.md",
+      "title": "Exam index backend for saved exams grouped by course and sorted by date",
+      "path": "docs/backlog/tasks/task-skript-39-08-04-exam-index-backend-for-saved-exams-grouped-by-course-and-sorted-by-date.md",
       "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-08",
@@ -5585,6 +5779,234 @@
       "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-02",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-03-01",
+      "type": "task",
+      "title": "Refresh home, catalog and the script runner onto the shared tokens and components",
+      "path": "docs/backlog/tasks/task-skript-40-03-01-refresh-home-catalog-and-the-script-runner-onto-the-shared-tokens-and-components.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-03",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-03-02",
+      "type": "task",
+      "title": "Refresh profile and Mina filer onto the shared tokens and components",
+      "path": "docs/backlog/tasks/task-skript-40-03-02-refresh-profile-and-mina-filer-onto-the-shared-tokens-and-components.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-03",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-03-03",
+      "type": "task",
+      "title": "Refresh admin screens and the authoring editor onto the shared tokens and components",
+      "path": "docs/backlog/tasks/task-skript-40-03-03-refresh-admin-screens-and-the-authoring-editor-onto-the-shared-tokens-and-components.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-03",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-03-04",
+      "type": "task",
+      "title": "Refresh Klassrumskartan onto the shared tokens and components",
+      "path": "docs/backlog/tasks/task-skript-40-03-04-refresh-klassrumskartan-onto-the-shared-tokens-and-components.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-03",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-03-05",
+      "type": "task",
+      "title": "Refresh Conversion Hub document and transcript tools onto the shared tokens and components",
+      "path": "docs/backlog/tasks/task-skript-40-03-05-refresh-conversion-hub-document-and-transcript-tools-onto-the-shared-tokens-and-components.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-03",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-03-06",
+      "type": "task",
+      "title": "Refresh Reagent Prep Chef onto the shared tokens and components",
+      "path": "docs/backlog/tasks/task-skript-40-03-06-refresh-reagent-prep-chef-onto-the-shared-tokens-and-components.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-03",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-03-07",
+      "type": "task",
+      "title": "Refresh the Hjälp panel onto the shared tokens and components",
+      "path": "docs/backlog/tasks/task-skript-40-03-07-refresh-the-hjälp-panel-onto-the-shared-tokens-and-components.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-03",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-03-08",
+      "type": "task",
+      "title": "Refresh the sign-in and account pages onto the shared tokens and components",
+      "path": "docs/backlog/tasks/task-skript-40-03-08-refresh-the-sign-in-and-account-pages-onto-the-shared-tokens-and-components.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-03",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-03-09",
+      "type": "task",
+      "title": "Fold the remaining .codex/rules facts into their owning skills and route agent instruction through skills only",
+      "path": "docs/backlog/tasks/task-skript-40-03-09-fold-the-remaining-codex-rules-facts-into-their-owning-skills-and-route-agent-instruction-through-skills-only.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-03",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-01",
+      "type": "task",
+      "title": "Opus prototype of the app shell and the exam workspace covering every current and planned workspace control",
+      "path": "docs/backlog/tasks/task-skript-40-04-01-opus-prototype-of-the-app-shell-and-the-exam-workspace-covering-every-current-and-planned-workspace-control.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-02",
+      "type": "task",
+      "title": "Build the redesigned app shell from the approved prototype",
+      "path": "docs/backlog/tasks/task-skript-40-04-02-build-the-redesigned-app-shell-from-the-approved-prototype.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-03",
+      "type": "task",
+      "title": "Build the redesigned exam workspace editor from the approved prototype",
+      "path": "docs/backlog/tasks/task-skript-40-04-03-build-the-redesigned-exam-workspace-editor-from-the-approved-prototype.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
       "owners": [
         {
           "kind": "service",

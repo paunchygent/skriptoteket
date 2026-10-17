@@ -4,24 +4,27 @@ id: TASK-SKRIPT-39-04-05
 title: Restyle the exam workspace to the shared design direction
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-12'
-status: proposed
+status: canceled
 closeout_review:
   record: inline
-  status: not_started
+  status: not_required
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: User decided 2026-10-17 (G1) that a new story, ST-SKRIPT-40-04, replaces this task with a fresh Opus prototype of the app shell and the exam workspace; the approved looks carry over, and terms C1-C26 hold in TASK-SKRIPT-40-04-03 only where the approved prototype keeps them.
 task_kind: story
 acceptance_criteria:
-- The exam workspace is one editor with drawers that meets terms C1-C24 on phone,
-  tablet and desktop, matching REF-SKRIPT-MOCKUP-exam-workspace-approved-mockups-for-the-shared-design-direction
-  and REF-SKRIPT-MOCKUP-exam-workspace-editor-with-drawers-prototype
-- A live staging walk of the core vertical passes at desktop, tablet and phone widths
+  - The exam workspace is one editor with drawers that meets terms C1-C24 on phone, tablet and desktop, matching REF-SKRIPT-MOCKUP-exam-workspace-approved-mockups-for-the-shared-design-direction and REF-SKRIPT-MOCKUP-exam-workspace-editor-with-drawers-prototype
+  - A live staging walk of the core vertical passes at desktop, tablet and phone widths
 story: ST-SKRIPT-39-04
 backlog_document_profile: contract-derived
 ---
 
 ## Implementation Contract
+
+Superseded by ST-SKRIPT-40-04 (user 2026-10-17, G1). The contract below is
+kept as history.
 
 The exam workspace becomes one editor with drawers in the shared design
 direction, on phone, tablet and desktop. The Filer and Redigera modes go: the
@@ -151,31 +154,31 @@ only the affected rows and the editor.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| C1  | One editor with drawers replaces the Filer and Redigera modes; the task covers the whole exam workspace on phone, tablet and desktop, but not the old DigiExam converter views (D2, D8, D30). |
-| C2  | Frontend-only; it runs after TASK-SKRIPT-40-01-03, ST-SKRIPT-40-03's 0.1.24 sync, TASK-SKRIPT-39-05-07, TASK-SKRIPT-39-04-06, TASK-SKRIPT-39-04-07 and TASK-SKRIPT-39-04-08 (D1, D3, D8, D53, D62, D67). |
-| C3  | Visual target: the approved images with their exclusions; layout, controls and copy follow the editor-drawers prototype (D7, D8). |
-| C4  | Spara is the only filled action; the header is one row with a file group (Öppna, Spara, Exportera), a divider and the Sparkles all-keys action, compact 36 px on fine pointers (D6, D43, D44). |
-| C5  | 'Provredigering' follows the wordmark in terracotta; brand links show glyph only below 1100 px; on phone a Meny button holds Avsluta fokusläge, Hjälp and Logga ut (D38, D44, D46). |
-| C6  | No version number in the header (D12). |
-| C7  | No state change moves, resizes or reflows an element; controls never appear or disappear on state change; the Import box transition is the only exception (D11, D27, D41). |
-| C8  | Buttons carry a glyph and at most one short word; action wording lives in tooltips and screen-reader names (D28). |
-| C9  | The review check is a square button, outlined when the question needs review and filled when reviewed, named 'Markera som granskad' or 'Ångra granskad'; no header status text (D14, D29). |
-| C10 | Questions have no titles; list rows show the number and the opening of the question text; the heading is 'Fråga N' with the type small and muted beside it (D59, D64). |
+| ID  | Decided contract term                                                                                                                                                                                                                                                               |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| C1  | One editor with drawers replaces the Filer and Redigera modes; the task covers the whole exam workspace on phone, tablet and desktop, but not the old DigiExam converter views (D2, D8, D30).                                                                                       |
+| C2  | Frontend-only; it runs after TASK-SKRIPT-40-01-03, ST-SKRIPT-40-03's 0.1.24 sync, TASK-SKRIPT-39-05-07, TASK-SKRIPT-39-04-06, TASK-SKRIPT-39-04-07 and TASK-SKRIPT-39-04-08 (D1, D3, D8, D53, D62, D67).                                                                            |
+| C3  | Visual target: the approved images with their exclusions; layout, controls and copy follow the editor-drawers prototype (D7, D8).                                                                                                                                                   |
+| C4  | Spara is the only filled action; the header is one row with a file group (Öppna, Spara, Exportera), a divider and the Sparkles all-keys action, compact 36 px on fine pointers (D6, D43, D44).                                                                                      |
+| C5  | 'Provredigering' follows the wordmark in terracotta; brand links show glyph only below 1100 px; on phone a Meny button holds Avsluta fokusläge, Hjälp and Logga ut (D38, D44, D46).                                                                                                 |
+| C6  | No version number in the header (D12).                                                                                                                                                                                                                                              |
+| C7  | No state change moves, resizes or reflows an element; controls never appear or disappear on state change; the Import box transition is the only exception (D11, D27, D41).                                                                                                          |
+| C8  | Buttons carry a glyph and at most one short word; action wording lives in tooltips and screen-reader names (D28).                                                                                                                                                                   |
+| C9  | The review check is a square button, outlined when the question needs review and filled when reviewed, named 'Markera som granskad' or 'Ångra granskad'; no header status text (D14, D29).                                                                                          |
+| C10 | Questions have no titles; list rows show the number and the opening of the question text; the heading is 'Fråga N' with the type small and muted beside it (D59, D64).                                                                                                              |
 | C11 | An instruction is its own row with its questions indented and lettered (4, 4a, 4b); selecting it edits its text and lists its questions and total, with no points or answer fields; its questions show a collapsed instruction bar; lettering is display only (D24, D60, D61, D66). |
-| C12 | No previous and next buttons on desktop and tablet; the list and the up and down keys navigate, ignored in text fields; phone keeps previous and next in its question bar (D39, D46). |
-| C13 | Field order: question text, alternatives, Poäng; dense spacing; the question text is one continuous text surface with fixed gap and image chips (D22, D45). |
-| C14 | No type hint in the question header, no type caption under the question text and no subtask explanation box (D13, D23, D24). |
-| C15 | A missing value that blocks export is marked at its field and in the list row; a parsing issue sets needs review, shows one short line in the Import box and does not block export; 'Frågetypen kan ha tolkats fel.' is the kept-type-conflict line (D40, D56, D57, D58, D65). |
-| C16 | Import opens the question as written in the exam file inline above the fields, with missing parts marked 'saknas i frågan' (D21, D41). |
-| C17 | AI-interpreted questions show the ai-assist glyph in the list row and phone question bar, named 'AI-tolkad' (D25). |
-| C18 | AI key suggestions: written in where the key is empty or the AI's own, ai-assist mark named 'AI-förslag', sets needs review, any option selectable, mark restores the AI's choice, edited options mark the suggestion out of date at the per-question action (D26, D32, D42). |
-| C19 | Öppna holds the .docx import, the exams in Mina filer with 'Sparad <datum>' and their exam-level import notes, and 'Läs in på nytt' (D16, D35, D36, D63). |
-| C20 | Exportera opens a quick menu with QTI, PDF, DOCX, a Mina filer save per format and 'Fler val …' for the export drawer (D31). |
-| C21 | When every question is reviewed and nothing blocks export, a floating toast 'Alla frågor är granskade' offers Exportera (D33). |
-| C22 | The workspace opens the last exam, or the Öppna drawer when there is none (D34). |
-| C23 | The upload shows a moving indeterminate bar with 'Laddar upp provet …' and 'Läser provet …' before the counted bar (D18). |
-| C24 | Desktop ≥ 1100 px, tablet 641-1099 px with floating drawers, phone ≤ 640 px with full-screen drawers and list; phone has one question bar with previous, picker, next, Import and review check (D5, D37, D46). |
-| C25 | The editor autosaves shortly after each change as a new version; Spara stays as the visible 'save now' (D67). |
-| C26 | The core vertical also walks a per-question AI suggestion request and restoring the AI's choice, which TASK-SKRIPT-39-04-07 could not walk without controls (D68, 39-04-07 P11). |
+| C12 | No previous and next buttons on desktop and tablet; the list and the up and down keys navigate, ignored in text fields; phone keeps previous and next in its question bar (D39, D46).                                                                                               |
+| C13 | Field order: question text, alternatives, Poäng; dense spacing; the question text is one continuous text surface with fixed gap and image chips (D22, D45).                                                                                                                         |
+| C14 | No type hint in the question header, no type caption under the question text and no subtask explanation box (D13, D23, D24).                                                                                                                                                        |
+| C15 | A missing value that blocks export is marked at its field and in the list row; a parsing issue sets needs review, shows one short line in the Import box and does not block export; 'Frågetypen kan ha tolkats fel.' is the kept-type-conflict line (D40, D56, D57, D58, D65).      |
+| C16 | Import opens the question as written in the exam file inline above the fields, with missing parts marked 'saknas i frågan' (D21, D41).                                                                                                                                              |
+| C17 | AI-interpreted questions show the ai-assist glyph in the list row and phone question bar, named 'AI-tolkad' (D25).                                                                                                                                                                  |
+| C18 | AI key suggestions: written in where the key is empty or the AI's own, ai-assist mark named 'AI-förslag', sets needs review, any option selectable, mark restores the AI's choice, edited options mark the suggestion out of date at the per-question action (D26, D32, D42).       |
+| C19 | Öppna holds the .docx import, the exams in Mina filer with 'Sparad <datum>' and their exam-level import notes, and 'Läs in på nytt' (D16, D35, D36, D63).                                                                                                                           |
+| C20 | Exportera opens a quick menu with QTI, PDF, DOCX, a Mina filer save per format and 'Fler val …' for the export drawer (D31).                                                                                                                                                        |
+| C21 | When every question is reviewed and nothing blocks export, a floating toast 'Alla frågor är granskade' offers Exportera (D33).                                                                                                                                                      |
+| C22 | The workspace opens the last exam, or the Öppna drawer when there is none (D34).                                                                                                                                                                                                    |
+| C23 | The upload shows a moving indeterminate bar with 'Laddar upp provet …' and 'Läser provet …' before the counted bar (D18).                                                                                                                                                           |
+| C24 | Desktop ≥ 1100 px, tablet 641-1099 px with floating drawers, phone ≤ 640 px with full-screen drawers and list; phone has one question bar with previous, picker, next, Import and review check (D5, D37, D46).                                                                      |
+| C25 | The editor autosaves shortly after each change as a new version; Spara stays as the visible 'save now' (D67).                                                                                                                                                                       |
+| C26 | The core vertical also walks a per-question AI suggestion request and restoring the AI's choice, which TASK-SKRIPT-39-04-07 could not walk without controls (D68, 39-04-07 P11).                                                                                                    |

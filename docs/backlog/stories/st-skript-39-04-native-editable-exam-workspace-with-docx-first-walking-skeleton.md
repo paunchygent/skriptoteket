@@ -14,8 +14,9 @@ closeout_review:
 epic: EPIC-SKRIPT-39
 acceptance_criteria:
 - A teacher imports a DOCX source, reviews and edits questions, creates items from
-  scratch, saves and reopens a versioned native exam document in Mina filer, and exports
-  QTI, PDF, and DOCX on demand
+  scratch, saves and reopens a native exam document kept as one file per exam in Mina
+  filer that Spara overwrites and Spara som copies, and exports QTI, PDF, and DOCX on
+  demand or saves them to Mina filer as one file per format per exam
 links:
   decisions:
   - ADR-SKRIPT-0090
@@ -31,13 +32,13 @@ source-neutral native exam document, per-item confidence routes the
 low-confidence remainder to LLM parsing and repair, the existing
 answer-key-enrichment line proposes keys, and the teacher reviews, edits
 existing questions, and creates items from scratch. The teacher saves a
-versioned native document with assets and editing state in Mina filer,
+native document with assets and editing state in Mina filer,
 reopens it, continues editing, and exports QTI and PDF on demand through
 the existing fail-closed validators plus DOCX through a minimal new writer
 with validation (ST-SKRIPT-21-10 DOCX-contract slice).
 
 - The native document model is source-neutral: it carries items, assets,
-  editing state, and provenance, and saves versioned in Mina filer. It
+  editing state, and provenance, and saves in Mina filer as one file per exam (Spara overwrites, Spara som copies; user 2026-10-17, TASK-SKRIPT-39-04-08). It
   reuses IR item semantics without mirroring source-format internals.
   Storage internals beyond Mina filer persistence are decided during
   implementation.
@@ -84,15 +85,19 @@ with validation (ST-SKRIPT-21-10 DOCX-contract slice).
 4. `TASK-SKRIPT-39-04-04`: carry pending answer-key proposals across saves.
    Done; its workspace carry-forward was replaced by 39-04-07.
 5. `TASK-SKRIPT-39-04-05`: restyle the exam workspace to the shared design
-   direction (proposed).
-6. `TASK-SKRIPT-39-04-06`: send each converted question's original wording
-   and build steps to the exam (proposed).
+   direction (superseded by ST-SKRIPT-40-04, user decision G1 2026-10-17).
+6. `TASK-SKRIPT-39-04-06`: backend lane: each imported question's original
+   wording and a few readable steps (chosen type, answer-key source,
+   retries) in the saved exam and the workspace API, for DOCX and DigiExam
+   imports alike; the import box is ST-SKRIPT-40-04's (proposed).
 7. `TASK-SKRIPT-39-04-07`: keep AI answer-key suggestions on each question
    and request them per question. Done 2026-10-13: the suggestion is stored
    on the question, becomes the key only under T5/P12/P13, survives save
    and reopen, and the workspace no longer uses the proposed-overlay table.
-8. `TASK-SKRIPT-39-04-08`: save exported exam files in Mina filer, list each
-   exam once and prune autosaves (proposed).
+8. `TASK-SKRIPT-39-04-08`: backend lane: the save model. One file per exam
+   that `Spara` overwrites, `Spara som` copies, at most 10 undo steps stored
+   on the server, and one saved export per format per exam in Mina filer;
+   the controls and shortcuts are ST-SKRIPT-40-04's (proposed).
 9. `TASK-SKRIPT-39-04-09`: resume a pending answer-key suggestion after
    reload and block importing over unsaved edits. Done 2026-10-13: the page
    finds the latest job for the current saved version on open, a running job
@@ -106,7 +111,7 @@ with validation (ST-SKRIPT-21-10 DOCX-contract slice).
 
 - One genuine unchanged DOCX fixture converts end to end in-process:
   deterministic extraction with per-item confidence, LLM remainder and
-  answer-key proposals, teacher review/edit/create, versioned Mina filer
+  answer-key proposals, teacher review/edit/create, Mina filer
   save and faithful reopen, and on-demand exports: QTI and PDF through the
   existing fail-closed validators, DOCX through the minimal new writer with
   validation.
@@ -122,6 +127,6 @@ with validation (ST-SKRIPT-21-10 DOCX-contract slice).
 | --- | --------------------- |
 | S1 | The DOCX walking skeleton proves the full import, edit/create, save/reopen, export vertical before any breadth work. |
 | S2 | DOCX implementation begins only after TASK-SKRIPT-39-02-03, TASK-SKRIPT-39-03-03, and TASK-SKRIPT-39-03-04 are done. |
-| S3 | Native documents persist versioned in Mina filer; QTI, PDF, and DOCX are on-demand exports only. |
+| S3 | Each native exam document is one file in Mina filer; `Spara` overwrites it and `Spara som` creates a separately edited copy. QTI, PDF, and DOCX are on-demand exports that can also be saved to Mina filer as one file per format per exam (amended by user 2026-10-17, G15, G18). |
 | S4 | AI interpretation of the teacher's own facit that passes code-enforced checks with high confidence is export-eligible without teacher approval, with visible provenance and undo. AI-invented answer keys, low-confidence items and unresolved items require teacher review before export eligibility (amended by user decision 2026-10-10). |
 | S5 | OCR/scanned-PDF handling is deferred out of this story; digital PDF follows as the next slice. |

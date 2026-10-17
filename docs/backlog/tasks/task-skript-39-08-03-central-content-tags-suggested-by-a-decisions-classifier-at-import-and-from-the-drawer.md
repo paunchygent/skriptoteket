@@ -13,7 +13,7 @@ closeout_review:
   status: not_started
 task_kind: story
 acceptance_criteria:
-  - An exam whose course is known when the import runs opens with central-content tags suggested and preselected in the metadata drawer, each citing the questions that cover it; picking or changing the course in the drawer runs the same suggestion as a background job; the teacher ticks or unticks items in a checklist of the course's central content and saves; a classifier failure never blocks a conversion
+  - An exam whose course is known when the import runs is saved with central-content tags suggested in its header, each citing the questions that cover it; a GET route serves one course's content items; an enrichment job over a saved exam runs the same suggestion for its course and stores the result on the job row; the document save persists the header tags; a classifier failure never blocks a conversion; the tags checklist and Föreslå innehåll in the metadata drawer are built by ST-SKRIPT-40-04
 story: ST-SKRIPT-39-08
 backlog_document_profile: contract-derived
 ---
@@ -35,7 +35,7 @@ This task delivers:
   second snapshot file keyed by catalog key. A tag id is the catalog key plus
   the normalized item text; the item text is stored with it. A
   `GET .../exam-workspace/courses/{key}/content` route serves one course's
-  items; the drawer loads them when a course is set.
+  items for the drawer to load when a course is set.
 - Classifier: one domain function builds, per question, one Decisions choice
   over the course's content items plus `Inget av dessa`, using the question
   text the item labeler already sends. A protocol
@@ -50,21 +50,24 @@ This task delivers:
   daily token lease. The suggested tags land in the header at assembly. A
   classifier failure is logged, leaves tags empty and never fails or delays
   the conversion.
-- Trigger 2, drawer: picking or changing the course in the metadata drawer
-  enqueues a job on the existing enrichment queue with a new source kind over
-  the saved head document; `Föreslå innehåll` reruns it. The job stores its
-  result on the job row; the editor applies the suggestions to the draft like
-  answer-key suggestions and the teacher's save persists them.
-- Header and drawer: `NativeExamHeader` gains `tags`, a list of
-  `{id, text, origin: suggested | teacher, question_ids}`. The drawer shows
-  the course's content items as a checklist with suggested items preselected
-  and their citing question labels; ticking and unticking edits the draft and
-  toolbar `Spara` saves. A course change clears tags of the old course.
+- Trigger 2, enrichment job: a job on the existing enrichment queue with a new
+  source kind over the saved head document suggests tags for the exam's
+  course. The job stores its result on the job row. The drawer wiring that
+  enqueues it when the course is picked or changed, the `Föreslå innehåll`
+  rerun, and applying the suggestions to the draft like answer-key suggestions
+  are built by ST-SKRIPT-40-04 (user 2026-10-17, G2/G4).
+- Header: `NativeExamHeader` gains `tags`, a list of
+  `{id, text, origin: suggested | teacher, question_ids}`, and the document
+  save persists them. A course change clears tags of the old course. The
+  drawer checklist of the course's content items, with suggested items
+  preselected and their citing question labels, is built by ST-SKRIPT-40-04
+  (user 2026-10-17, G2/G4).
 - No model course suggestion: with no picked course and no unique hint match
   the teacher picks the course in the drawer and the hint stays visible.
 
 Out of scope: exporting tags, searching or filtering exams by tag, any class
-label, and tags for exams imported through other converters.
+label, tags for exams imported through other converters, and every new
+control inside the exam workspace (user 2026-10-17, G2/G4).
 
 ## Contract Inputs
 
@@ -93,13 +96,12 @@ label, and tags for exams imported through other converters.
 ## Core Vertical And Performance
 
 The teacher picks Svenska 2 at import and drops the DOCX; conversion runs
-grouping, labeling with the classifier beside it, and build; the workspace
-opens and the drawer shows the Svenska 2 checklist with three items
-preselected, each citing its questions; the teacher unticks one and saves. The
-teacher changes the course to Svenska 3 in the drawer; a job suggests tags for
-Svenska 3; the teacher saves. The classifier adds one Decisions request per
-200 questions with the course's items as choices, input tokens only, and no
-model call when the course is unknown.
+grouping, labeling with the classifier beside it, and build; the saved
+document header holds three suggested Svenska 2 tags, each citing its
+questions. An enrichment job over the saved exam with course Svenska 3
+stores suggested Svenska 3 tags on the job row. The classifier adds one
+Decisions request per 200 questions with the course's items as choices,
+input tokens only, and no model call when the course is unknown.
 
 ## Validation
 
@@ -107,14 +109,10 @@ model call when the course is unknown.
   into items with stable ids; classifier payload per question (items plus
   none) and the aggregation rule (threshold, citations, none when all below);
   pipeline test that a classifier failure leaves tags empty and the conversion
-  succeeds; job lane test for the drawer trigger storing suggestions on the
-  job; header model with tags.
-- Focused frontend tests: checklist renders items with suggested ones
-  preselected and citations; toggling marks the document dirty; course change
-  clears old tags and requests new suggestions; `Föreslå innehåll` reruns.
-- Hemma staging walk: convert Svenska 2 kursavslutande with the course picked,
-  check the preselected tags and citations in the drawer, change the course
-  and see new suggestions, save and reopen.
+  succeeds; job lane test for the tag-suggestion job storing suggestions on
+  the job row; header model with tags.
+- No frontend tests and no staging walk: this task ships no UI (user
+  2026-10-17, G2/G4).
 
 ## Stop Conditions
 
@@ -127,10 +125,10 @@ model call when the course is unknown.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term                                                                                                                                                                                                                                                                                                                                                                  |
-| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Q1  | One classifier on the Decisions endpoint assigns each question a central-content item or none; a tag is suggested when some question reaches the threshold and those questions are its citation; trigger 1 runs in the labeling stage of the import when the course is known, trigger 2 runs as a background job when the course is picked or changed in the drawer (user 2026-10-16). |
-| Q2  | No model course suggestion; with no picked course and no unique hint match the teacher picks in the drawer and the hint stays visible (user 2026-10-16).                                                                                                                                                                                                                               |
-| Q3  | One tag per bullet item of the Skolverket central content; tag id is the catalog key plus the normalized item text and the text snapshot is stored with the tag; the generator commits central content per course and per band (user 2026-10-16).                                                                                                                                      |
-| Q5  | A course change in the drawer clears the old course's tags before the new suggestion runs; the drawer loads one course's content items on demand from a small GET route (user 2026-10-16).                                                                                                                                                                                             |
-| Q4  | Tags live in the document header next to the course with origin and citing questions; the drawer shows the course's items as a checklist with suggested items preselected; one threshold constant decides preselection; a classifier failure never blocks conversion (user 2026-10-16).                                                                                                |
+| ID  | Decided contract term                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Q1  | One classifier on the Decisions endpoint assigns each question a central-content item or none; a tag is suggested when some question reaches the threshold and those questions are its citation; trigger 1 runs in the labeling stage of the import when the course is known, trigger 2 is a background enrichment job over the saved exam; the drawer wiring that runs it when the course is picked or changed is built by ST-SKRIPT-40-04 (user 2026-10-16; amended user 2026-10-17, G2/G4). |
+| Q2  | No model course suggestion; with no picked course and no unique hint match the teacher picks in the drawer and the hint stays visible (user 2026-10-16).                                                                                                                                                                                                                                                                                                                                       |
+| Q3  | One tag per bullet item of the Skolverket central content; tag id is the catalog key plus the normalized item text and the text snapshot is stored with the tag; the generator commits central content per course and per band (user 2026-10-16).                                                                                                                                                                                                                                              |
+| Q5  | A course change clears the old course's tags before the new suggestion runs; a small GET route serves one course's content items for the drawer to load on demand; the drawer is built by ST-SKRIPT-40-04 (user 2026-10-16; amended user 2026-10-17, G2/G4).                                                                                                                                                                                                                                   |
+| Q4  | Tags live in the document header next to the course with origin and citing questions; one threshold constant decides preselection; a classifier failure never blocks conversion; the drawer checklist with suggested items preselected is built by ST-SKRIPT-40-04 (user 2026-10-16; amended user 2026-10-17, G2/G4).                                                                                                                                                                          |

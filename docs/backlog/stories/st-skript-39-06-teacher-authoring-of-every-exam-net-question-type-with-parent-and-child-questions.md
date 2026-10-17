@@ -7,13 +7,13 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-10'
-status: proposed
+status: ready
 closeout_review:
   record: inline
   status: not_started
 epic: EPIC-SKRIPT-39
 acceptance_criteria:
-  - A teacher creates any of the seven Exam.net-proven question types, as a standalone question or as a parent whose child questions share one instruction, and the exported QTI imports into Exam.net with that structure
+  - Through the workspace API an exam holds any of six Exam.net-proven question types, with ordering added only if the user decides so after the Exam.net probe, as a standalone question or as a parent whose child questions share one instruction, and the exported QTI 3.0 package imports into Exam.net with that structure
 links:
   decisions: []
 backlog_document_profile: contract-derived
@@ -21,59 +21,92 @@ backlog_document_profile: contract-derived
 
 ## Slice Contract
 
-A teacher builds an exam in the native workspace with every question type
-that Exam.net imports and auto-marks, and decides for each task whether it is
-one standalone question or a parent whose child questions share one
-instruction. The exported QTI 3.0 package imports into Exam.net with exactly
-that structure. Today "Ny fråga" creates free text only and the native
-document has no grouping.
+An exam in the native workspace holds every question type that Exam.net
+imports and auto-marks, and each task is either one standalone question or a
+parent whose child questions share one instruction. The exported QTI 3.0
+package imports into Exam.net with exactly that structure. Today the document
+model has five item kinds and parents that only conversion creates; the
+editor reads parents but cannot edit them, and "Ny fråga" offers Fritext and
+Kort svar only.
 
-- **Seven question types.** Single choice, multiple choice, Lucktext (typed
-  gaps), Lucktext with dropdown, matching, ordering and free text. Every type
-  proven in QTI 2.1 counts as proven in QTI 3.0.
+- **Backend, API and export only.** This story ships the document model, the
+  workspace API commands and the QTI export. Every new workspace control is
+  built by ST-SKRIPT-40-04's redesign from its prototype
+  (TASK-SKRIPT-40-04-01). The current workspace screens are frozen except for
+  bug fixes.
+- **Six question types, ordering after a probe.** Single choice, multiple
+  choice, Lucktext (typed gaps), Lucktext with dropdown, matching and free
+  text. Every type proven in QTI 2.1 counts as proven in QTI 3.0. An Exam.net
+  probe of ordering (import, student preview, answer, grading) comes before
+  any ordering build, and the user decides from its screenshots. If ordering
+  is built, it is all-or-nothing with a default of 1 point that the teacher
+  can edit, and it is standalone only.
+- **Lucktext with dropdown.** Each gap has its own option list, and one option
+  per gap is marked correct as the key.
 - **Standalone or parent with children.** A parent holds one shared
   instruction and one or more child questions of any mix of types, as
-  Exam.net allows. Ordering questions are standalone only.
+  Exam.net allows.
 - **Points.** Each child has its own points; the parent shows their sum and
   is not edited directly.
-- **Editing children.** Inside one parent the teacher adds, deletes and
-  reorders children. Moving questions between parents, or out to standalone,
-  is outside this story.
+- **Editing children.** Workspace API commands let the teacher add, delete
+  and reorder children inside one parent. Moving questions between parents,
+  or out to standalone, is outside this story.
 - **Teacher-facing labels follow Exam.net.** "Ny uppgift" creates a
   standalone question or a parent; "+ Deluppgift" adds a child inside a
-  parent. Parent and child are internal names only.
+  parent. Parent and child are internal names only. These labels and their
+  controls are requirements handed to ST-SKRIPT-40-04's prototype; this story
+  supplies the backend behind them.
 - **Export.** Each parent exports as one QTI item: the shared instruction as
   a paragraph and one interaction per child with its own response and
   mapping; SCORE sums the children. Lucktext children keep the empty
   `SEPARATOR` gap-match element before every child sentence, a recorded
   exception to QTI 3.0 schema validity, because Exam.net imports it as
-  separate child questions.
-- **Conversion and gold.** DOCX conversion produces the same structure:
-  section instructions become parents and their questions become children.
-  TASK-SKRIPT-39-05-03 delivers this, with the gold files, the comparator,
-  the native parent model, its QTI export and editor display; this story
-  adds parent authoring.
+  separate child questions (P12). The writer emits it in
+  `exam_conversion/examnet_qti_item_xml.py` (`_append_child_body`).
+- **Conversion and gold.** TASK-SKRIPT-39-05-03 has delivered DOCX conversion
+  into parents and children, with the gold files, the comparator, the native
+  parent model, its QTI export and its editor display. This story adds parent
+  authoring.
 - **Boundaries.** ST-SKRIPT-39-05 keeps the matching kind (native model,
   editor, QTI export) and delivers converted parents; this story adds teacher
-  creation for matching and parent authoring. ST-SKRIPT-39-04's acceptance stands; creating every
-  type is new scope here.
-- **Changing a question's type.** The teacher changes any question to
-  another type. When conversion reported that a question is of another type
-  than the one it was saved as, the question stores that suggested type and
-  the editor offers "Gör om till [type]", which converts the question to it.
-  Asking the model to rebuild a question as a type the teacher chooses waits
-  until walks show it is needed.
-- **Exam.net import routes.** ST-SKRIPT-39-09 comes first: it delivers the
-  QTI 3.0 exporter, the Kategorisera grid, Fritext criteria, Kort svar and the
+  creation for matching and parent authoring. ST-SKRIPT-39-04's acceptance
+  stands; creating every type is new scope here.
+- **Changing a question's type.** The teacher changes any question to another
+  type. The question text and points carry over; content the new type cannot
+  hold is dropped, and the API names what was dropped so the workspace can
+  show a notice. A type that needs structure gets the minimum empty parts (two
+  empty choices, one empty gap, one empty pair), marked as blockers until
+  filled; for matching the one pair holds all the points. One undo step
+  restores the previous question; undo steps are the server-stored autosaves
+  that TASK-SKRIPT-39-04-08 builds.
+- **Suggested type.** When conversion reported that a question is of another
+  type than the one it was saved as, the question stores that suggested type:
+  the labeler's `retry_source.label_kind` when it differs from the saved kind.
+  The workspace offers "Gör om till [type]", which converts the question to
+  it through the change-type command. Asking the model to rebuild a question
+  as a type the teacher chooses waits until walks show it is needed.
+- **Exam.net import routes.** ST-SKRIPT-39-09 comes first: it delivers the QTI
+  3.0 exporter, the Kategorisera grid, Fritext criteria, Kort svar and the
   export checklist. This story's types and parents build on them.
 
 ## Contract Inputs
 
+- User decisions of 2026-10-17 (G2, G8, G13, G20, G23, G24, G25) and lead
+  decision L1: retained root
+  `.orchestration/context/sessions/01a1495e-8398-75be-b2da-f0b08ba11afa`,
+  `evidence/planning/decisions-2026-10-17.md`; repository facts in
+  `evidence/discovery/planning-facts-2026-10-17.md`.
 - EPIC-SKRIPT-39 terms E3, E13, E14 and E15, and story 8 (QTI 3.0 export
   convergence, ST-SKRIPT-39-09), which this story follows.
+- ST-SKRIPT-40-04 and TASK-SKRIPT-40-04-01: the redesign that builds every
+  workspace control this story's backend serves.
+- TASK-SKRIPT-39-04-08: server-stored autosaves, which are the undo steps the
+  change-type command relies on (G13).
 - HuleEduOS `examnet-qti-import` contract
   (`.codex/skills/examnet-qti-import/references/examnet-qti3-contract.md`):
-  deluppgift rules, the separator layout, and the producer's proven shapes.
+  deluppgift rules, the separator layout, and the producer's proven shapes,
+  including `qti-inline-choice-interaction` (keyed `fillGaps` with a
+  selectable gap) and `qti-order-interaction` (probe round 11).
 - BF26 English 1 package
   (`HuleEduOS/build/exam/BF26/bf26-english1-unit-test-2026-10-02-qti3.zip`):
   the proven parent layout.
@@ -82,61 +115,89 @@ document has no grouping.
   parents (single choice, Lucktext, Lucktext with dropdown, matching,
   multiple choice, free text) with children a) and b) and their own points,
   and seven standalone tasks including ordering. Multiple choice scored 2/2
-  for the keyed answers in the grading preview.
+  for the keyed answers in the grading preview; no other grading was checked.
 - `REF-SKRIPT-RESEARCH-exam-net-qti-import-routes-per-question-type`: Exam.net
-  QTI 3.0 import behaviour per question type (probe rounds 13-18).
-- Current code: `NativeExamItemKind` (`native_exam_document.py:39-45`) has
-  four kinds and no grouping; "Ny fråga" creates free text only
-  (`useExamWorkspaceDocument.ts:386`).
+  QTI 3.0 import behaviour per question type (probe rounds 13-18). Ordering
+  imports as Matcha ihop with position numbers 1..N in the right column and one
+  ALL_CORRECT rule (V60-V65); student view and marking were not observed.
+- Current code under `src/skriptoteket/domain/curated_apps/exam_workspace/`:
+  `NativeExamItemKind` (`native_exam_vocabulary.py:26`) has five kinds (free
+  text, single choice, multiple response, gap fill, matching); `NativeGap`
+  (`native_exam_values.py:43`) holds typed accepted values only;
+  `NativeExamParent`, `validate_parent_structure` and `parent_points`
+  (`native_exam_parent.py`) on `native_exam_document_v4`;
+  `retry_source.label_kind` (`native_exam_retry_records.py:132`). The QTI
+  writer knows five interactions (`exam_conversion/examnet_qti_contracts.py:38`).
+  The only document write route is the whole-document PUT
+  (`SaveExamWorkspaceDocumentHandler`). The editor reads parents only
+  (`examWorkspaceParents.ts`), and "Ny fråga" offers Fritext and Kort svar
+  (`ExamWorkspaceQuestionList.vue:25`).
 
 ## Tasks
 
-1. Walking skeleton: on Hemma staging a teacher creates a parent with two
-   Lucktext children, saves, reopens and exports QTI; the agent imports the
-   package into Exam.net through the teacher's browser session and confirms
-   the parent, the children and their points.
-2. Remaining types as standalone questions and as parents: single choice,
-   multiple choice, Lucktext with dropdown, matching (creation only; the kind
-   comes from ST-SKRIPT-39-05), free text, and ordering as standalone only.
-3. Child editing inside a parent: add, delete, reorder; parent points as the
-   sum of its children.
-4. Conversion, gold files and comparator move to parents with children
-   together.
-5. Changing a question's type: the teacher changes any question to another
-   type.
-6. Suggested type: conversion stores the type it reported on the question,
-   and the editor offers "Gör om till [type]".
+Every task ships backend, API or export work only (P18); none adds a
+workspace control.
+
+1. TASK-SKRIPT-39-06-01 (backend, API, export). Walking skeleton: a parent
+   with two Lucktext children saved through the workspace API, exported as
+   QTI 3.0 and imported into Exam.net through the teacher's browser.
+2. TASK-SKRIPT-39-06-02 (export probe). Exam.net probe of ordering and
+   dropdown Lucktext: import, student preview, answer and grading, with
+   retained screenshots; the user decides from them whether ordering is built.
+3. TASK-SKRIPT-39-06-03 (backend, API). Parent and child commands: create a
+   parent, add, delete and reorder children; parent points stay the sum of
+   its children.
+4. TASK-SKRIPT-39-06-04 (backend, API, export). Dropdown Lucktext kind with an
+   option list per gap and one correct option, and its QTI writer. Follows the
+   probe in order; it is not gated on the probe.
+5. TASK-SKRIPT-39-06-05 (backend, API). Change a question's type: text and
+   points carry over, dropped content is named, and one undo step restores
+   the previous question.
+6. TASK-SKRIPT-39-06-06 (backend, API). Stored suggested type on converted
+   questions, consumed by a change to that type.
+
+If the user decides after TASK-SKRIPT-39-06-02 to build ordering, it joins this
+story as a new task carrying P3 and P21.
 
 ## Verification
 
-- Each task: an agent-driven browser walk on Hemma staging, then an Exam.net
-  import of the exported package through the teacher's browser session,
-  checking the tasks, children, points and the grading preview.
-- Story closure: one exported package holding every type, standalone and as
-  parents, imports into Exam.net with the same tasks, children and points as
-  the workspace showed.
-- Task 4: the gold-corpus eval runs with the moved gold convention.
+- Each code task: on Hemma staging, the agent builds or changes the document
+  through the workspace API, exports the QTI 3.0 package and imports it into
+  Exam.net through the teacher's browser session, checking the tasks,
+  children, points and the grading preview. Screenshots are retained in the
+  retained root's `evidence/`.
+- TASK-SKRIPT-39-06-02: the retained screenshots of import, student preview,
+  answer and grading, and the user's recorded decision on ordering.
+- Story closure: one exported package holding every built type, standalone
+  and as parents, imports into Exam.net with the same tasks, children and
+  points as the saved document holds.
 - Tests only on real input: real workspace documents, real exports and the
   real corpus.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term                                                                                                                                                                                                                      |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| P1  | This is a new EPIC-SKRIPT-39 story sequenced after story 8, whose QTI 3.0 exporter it builds on (user decision 2026-10-10).                                                                                                                |
-| P2  | Teachers create all seven Exam.net-proven types: single choice, multiple choice, Lucktext, Lucktext with dropdown, matching, ordering, free text; every type proven in QTI 2.1 counts as proven in QTI 3.0 (user decision 2026-10-10).     |
-| P3  | Ordering questions are standalone only and never children of a parent (user decision 2026-10-10).                                                                                                                                          |
-| P4  | A question is standalone or a parent with one shared instruction and child questions of any mix of types (user decisions 2026-10-10 and 2026-10-11).                                                                                       |
-| P5  | DOCX conversion produces the same parent and child structure: section instructions become parents and their questions become children (user decision 2026-10-10).                                                                          |
-| P6  | Each child has its own points; the parent shows their sum and is not edited directly (user decision 2026-10-10).                                                                                                                           |
-| P7  | Inside one parent the teacher adds, deletes and reorders children; moving questions between parents or out to standalone is later work (user decision 2026-10-10).                                                                         |
-| P8  | The first task is the walking skeleton: a parent with two Lucktext children created, saved and exported on staging and imported into Exam.net by the agent through the teacher's browser session (user decision 2026-10-10).               |
-| P9  | ST-SKRIPT-39-05 task 4 keeps the matching kind; this story adds teacher creation for it (user decision 2026-10-10).                                                                                                                        |
-| P10 | Superseded 2026-10-11: TASK-SKRIPT-39-05-03 moves conversion, gold and the comparator to parents (user decision 2026-10-11).                                                                                                               |
-| P11 | ST-SKRIPT-39-04's acceptance stands; creating every question type is new scope in this story (user decision 2026-10-10).                                                                                                                   |
-| P12 | Lucktext children export with the empty `SEPARATOR` gap-match before every child sentence, a recorded exception to QTI 3.0 schema validity, proven by the BF26 package and the all-types import of 2026-10-10.                             |
-| P13 | Teacher-facing labels follow Exam.net: "Ny uppgift" creates a standalone question or a parent and "+ Deluppgift" adds a child; parent and child are internal names (user confirmation 2026-10-10).                                         |
-| P14 | The teacher can change any question to another type (user decision 2026-10-13).                                                                                                                                                            |
-| P15 | When conversion reports that a question is of another type than the one it was saved as, the question stores that suggested type and the editor offers "Gör om till [type]", which converts the question to it (user decision 2026-10-13). |
-| P16 | Asking the model to rebuild a question as a type the teacher chooses waits until walks show it is needed (user decision 2026-10-13).                                                                                                       |
-| P17 | Epic story 8 (ST-SKRIPT-39-09, QTI 3.0 native export) is delivered first; it owns the Exam.net import routes (Kategorisera grid, Fritext criteria, Kort svar, export checklist) and their terms (user decisions 2026-10-15).               |
+| ID  | Decided contract term                                                                                                                                                                                                                                                                                                                                |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P1  | This is a new EPIC-SKRIPT-39 story sequenced after story 8, whose QTI 3.0 exporter it builds on (user decision 2026-10-10).                                                                                                                                                                                                                          |
+| P2  | Teachers create six Exam.net-proven types: single choice, multiple choice, Lucktext, Lucktext with dropdown, matching and free text; ordering waits for the Exam.net probe of P21; every type proven in QTI 2.1 counts as proven in QTI 3.0 (user decision 2026-10-10, amended 2026-10-17 G24).                                                      |
+| P3  | Ordering questions are standalone only and never children of a parent (user decision 2026-10-10).                                                                                                                                                                                                                                                    |
+| P4  | A question is standalone or a parent with one shared instruction and child questions of any mix of types (user decisions 2026-10-10 and 2026-10-11).                                                                                                                                                                                                 |
+| P5  | DOCX conversion produces the same parent and child structure: section instructions become parents and their questions become children (user decision 2026-10-10).                                                                                                                                                                                    |
+| P6  | Each child has its own points; the parent shows their sum and is not edited directly (user decision 2026-10-10).                                                                                                                                                                                                                                     |
+| P7  | Inside one parent the teacher adds, deletes and reorders children; moving questions between parents or out to standalone is later work (user decision 2026-10-10).                                                                                                                                                                                   |
+| P8  | The first task is the walking skeleton: a parent with two Lucktext children built through the workspace API, exported as QTI 3.0 and imported into Exam.net through the teacher's browser; the editor UI comes from ST-SKRIPT-40-04 (user decision 2026-10-10, amended 2026-10-17 G2).                                                               |
+| P9  | ST-SKRIPT-39-05 task 4 keeps the matching kind; this story adds teacher creation for it (user decision 2026-10-10).                                                                                                                                                                                                                                  |
+| P11 | ST-SKRIPT-39-04's acceptance stands; creating every question type is new scope in this story (user decision 2026-10-10).                                                                                                                                                                                                                             |
+| P12 | Lucktext children export with the empty `SEPARATOR` gap-match before every child sentence, a recorded exception to QTI 3.0 schema validity, proven by the BF26 package and the all-types import of 2026-10-10.                                                                                                                                       |
+| P13 | Teacher-facing labels follow Exam.net: "Ny uppgift" creates a standalone question or a parent and "+ Deluppgift" adds a child; parent and child are internal names; the labels and their controls are requirements handed to ST-SKRIPT-40-04's prototype, and this story supplies the backend (user confirmation 2026-10-10, amended 2026-10-17 G2). |
+| P14 | The teacher can change any question to another type; this story supplies the change-type command and ST-SKRIPT-40-04's prototype the control (user decision 2026-10-13, amended 2026-10-17 G2).                                                                                                                                                      |
+| P15 | When conversion reports that a question is of another type than the one it was saved as, the question stores that suggested type and "Gör om till [type]" converts the question to it; this story supplies the stored type and the conversion, and ST-SKRIPT-40-04's prototype the offer (user decision 2026-10-13, amended 2026-10-17 G2).          |
+| P16 | Asking the model to rebuild a question as a type the teacher chooses waits until walks show it is needed (user decision 2026-10-13).                                                                                                                                                                                                                 |
+| P17 | Epic story 8 (ST-SKRIPT-39-09, QTI 3.0 native export) is delivered first; it owns the Exam.net import routes (Kategorisera grid, Fritext criteria, Kort svar, export checklist) and their terms (user decisions 2026-10-15).                                                                                                                         |
+| P18 | This story ships backend, data, API and export only; every new workspace control is built by ST-SKRIPT-40-04's redesign; the current workspace screens are frozen except for bug fixes (user decisions 2026-10-17 G2 and G8).                                                                                                                        |
+| P19 | Changing a question's type carries over its question text and points; content the new type cannot hold is dropped with a visible notice naming it, and one undo step restores it (user decision 2026-10-17 G20).                                                                                                                                     |
+| P20 | Lucktext with dropdown gives each gap its own option list with one correct option marked as the key (user decision 2026-10-17 G23).                                                                                                                                                                                                                  |
+| P21 | An Exam.net probe of ordering (import, student preview, answer, grading) comes before any ordering build, as TASK-SKRIPT-39-06-02; the user decides from its screenshots; until then the story plans six types; if built, ordering is all-or-nothing with a default of 1 point that the teacher can edit (user decision 2026-10-17 G24).             |
+| P22 | Undo keeps at most 10 steps; each autosave is one step, stored on the server so history survives reload and reopening (user decision 2026-10-17 G13).                                                                                                                                                                                                |
+| P23 | A change into a type that needs structure carries over the text and points and gives the new type the minimum empty parts (two empty choices, one empty gap, one empty pair), marked as blockers until filled; for matching the one pair holds all the points (user 2026-10-17, G25).                                                                |
+| P24 | The suggested type is the labeler's `retry_source.label_kind` when it differs from the saved kind (lead 2026-10-17, L1).                                                                                                                                                                                                                             |

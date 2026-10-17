@@ -13,7 +13,7 @@ closeout_review:
   status: not_started
 task_kind: story
 acceptance_criteria:
-  - A teacher registers school forms and courses (gymnasiet courses, grundskolan subject-and-band entries) in a Mina kurser section on the profile page, adds a picked course to that list from the course dropdown without leaving the exam workspace, and the course dropdown in the import panel and the metadata drawer lists the registered courses first before typing and ranks them first when typing
+  - A teacher registers school forms and courses (gymnasiet courses, grundskolan subject-and-band entries) in a Mina kurser section on the profile page, and the exam workspace course API returns the registered courses first so the existing course dropdown in the import panel and the metadata drawer offers them first without new controls; Lägg till i mina kurser and the Mina kurser/Alla kurser dropdown groups are built by ST-SKRIPT-40-04
 story: ST-SKRIPT-39-08
 backlog_document_profile: contract-derived
 ---
@@ -38,18 +38,24 @@ This task delivers:
   are copied. A dedicated `PATCH /api/v1/profile/exam-courses` handler
   validates every key against the committed catalog and rejects an unknown key
   with a named field error. The profile read returns the stored value.
-- Dropdown default: before typing, the dropdown lists the registered courses
-  under `Mina kurser`, then the rest of the catalog under `Alla kurser`, the
-  latter limited to the recorded school forms when at least one is recorded.
-  A typed query searches the whole catalog with the existing search rule and
-  ranks registered matches first. One search rule; no second matcher.
-- A `Lägg till i mina kurser` action on a picked course that is not yet
-  registered, in the import panel and in the metadata drawer. It saves at once
-  through the same PATCH handler and confirms with a toast.
+- Course API ranking: `GET .../exam-workspace/courses` returns the teacher's
+  registered courses first, in profile order, then the rest of the catalog, so
+  the existing course dropdown in the import panel and the metadata drawer
+  offers them first. A typed query searches the whole catalog with the
+  existing search rule and ranks registered matches first. One search rule;
+  no second matcher. No new control inside the exam workspace (user
+  2026-10-17, G2/G4).
+- Dropdown sort: this task changes the sort in `searchCourses`
+  (`useExamCourseCatalog.ts`) of the frozen workspace course dropdown so
+  registered courses show first. It adds no new control (user 2026-10-17,
+  G30).
 
 Out of scope: tags (TASK-SKRIPT-39-08-03), the saved-exam list
-(TASK-SKRIPT-39-08-04), any class label, and school-level or
-colleague-shared course lists.
+(TASK-SKRIPT-39-08-04), any class label, school-level or colleague-shared
+course lists, and every new control inside the exam workspace. ST-SKRIPT-40-04
+builds the `Mina kurser` and `Alla kurser` dropdown groups, with `Alla kurser`
+limited to the recorded school forms, and the `Lägg till i mina kurser`
+action (user 2026-10-17, G2/G4).
 
 ## Contract Inputs
 
@@ -62,6 +68,9 @@ colleague-shared course lists.
   `update_classroom_planner_settings` handler and its
   `PATCH /api/v1/profile/classroom-planner-settings` route, and the profile
   view under `frontend/apps/skriptoteket/src/views/`.
+- User decision G30 (2026-10-17), retained in session
+  `01a1495e-8398-75be-b2da-f0b08ba11afa`,
+  `evidence/planning/decisions-2026-10-17.md`.
 - Story terms D21 (amended by this task: grundskolan entries are subject and
   band, not years) and D22.
 - Retained plan: session `01a145b6-c404-761f-aeef-39de058ba7ca`,
@@ -71,23 +80,25 @@ colleague-shared course lists.
 
 The teacher opens the profile, registers gymnasiet and the courses Svenska 1
 and Svenska 2, opens the exam workspace, and the import dropdown shows those
-two first before typing. The teacher picks Svenska 3 for an exam and adds it
-from the dropdown; the profile now lists three. The dropdown still searches the
-whole catalog in the browser; the profile value is loaded once with the
-catalog and no keystroke makes a server request.
+two first before typing. The dropdown still searches the whole catalog in the
+browser; the profile value is loaded once with the catalog and no keystroke
+makes a server request.
 
 ## Validation
 
 - Focused backend tests: the PATCH handler keeps order, rejects an unknown key
   with the named field error, accepts an empty list, and the profile read
   returns the stored value.
-- Focused frontend tests: profile section add and remove; dropdown shows the
-  registered group first before typing and ranks a registered match first when
-  typing; `Lägg till i mina kurser` appears only for an unregistered picked
-  course and calls the PATCH route.
-- Hemma staging walk in a browser: register two courses on the profile, see
-  them first in the import dropdown, add a third from the dropdown, reload and
-  see all three in the profile.
+- Focused backend test: the course API returns the registered courses first
+  in profile order, then the rest of the catalog.
+- Focused frontend tests: profile section add and remove; the dropdown lists
+  the registered courses first before typing and ranks a registered match
+  first when typing.
+- Focused frontend test in `useExamCourseCatalog.spec.ts`: the `searchCourses`
+  sort puts registered courses first, before typing and for a typed query.
+- Hemma staging walk in a browser on the profile page, the only UI this task
+  ships besides the dropdown sort change: register two courses, reload and
+  see both in the profile (user 2026-10-17, G2/G4, G30).
 
 ## Stop Conditions
 
@@ -96,10 +107,11 @@ catalog and no keystroke makes a server request.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term                                                                                                                                                                                                                     |
-| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| P1  | Registration lives in a Mina kurser section on /profile; the course dropdown also offers "Lägg till i mina kurser" on any picked course (user 2026-10-16).                                                                                |
-| P2  | The profile records grundskolan subject-and-band entries, the same entries as the dropdown, not years only; amends story D21 (user 2026-10-16).                                                                                           |
-| P3  | The registered courses are one ordered JSONB list of catalog keys with the school forms in a column on user_profiles, read and written through a dedicated PATCH profile handler; the catalog key is the only identity (user 2026-10-16). |
-| P5  | The Alla kurser group is limited to the recorded school forms when at least one is recorded; a typed query still searches the whole catalog (user 2026-10-16).                                                                            |
-| P4  | Before typing the dropdown lists the registered courses under Mina kurser, then the catalog under Alla kurser; a typed query searches the whole catalog with the same search rule and ranks registered matches first (user 2026-10-16).   |
+| ID  | Decided contract term                                                                                                                                                                                                                                                                                                                               |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P1  | Registration lives in a Mina kurser section on /profile and ships with its UI now; the "Lägg till i mina kurser" action on a picked course in the exam workspace is built by ST-SKRIPT-40-04 (user 2026-10-16; amended user 2026-10-17, G2/G4).                                                                                                     |
+| P2  | The profile records grundskolan subject-and-band entries, the same entries as the dropdown, not years only; amends story D21 (user 2026-10-16).                                                                                                                                                                                                     |
+| P3  | The registered courses are one ordered JSONB list of catalog keys with the school forms in a column on user_profiles, read and written through a dedicated PATCH profile handler; the catalog key is the only identity (user 2026-10-16).                                                                                                           |
+| P5  | The Alla kurser group is limited to the recorded school forms when at least one is recorded; a typed query still searches the whole catalog; the group is built by ST-SKRIPT-40-04 (user 2026-10-16; amended user 2026-10-17, G2/G4).                                                                                                               |
+| P4  | The course API returns the registered courses first so the existing dropdown offers them first before typing; a typed query searches the whole catalog with the same search rule and ranks registered matches first; the Mina kurser and Alla kurser group headings are built by ST-SKRIPT-40-04 (user 2026-10-16; amended user 2026-10-17, G2/G4). |
+| P6  | This task may change the sort of the frozen workspace course dropdown (`searchCourses` in `useExamCourseCatalog.ts`) so registered courses show first; it adds no new control (user 2026-10-17, G30).                                                                                                                                               |
