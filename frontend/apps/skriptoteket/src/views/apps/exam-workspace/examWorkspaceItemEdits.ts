@@ -351,6 +351,17 @@ export function reviewed(item: NativeExamItem): NativeExamItem {
   };
 }
 
+/** The teacher has reviewed the question and every AI-written answer key on it. */
+export function isTeacherReviewed(item: NativeExamItem): boolean {
+  const origin = item.answer_key.origin;
+  return item.review.state === "review_complete" && origin !== "machine_proposed" && origin !== "ai_interpreted";
+}
+
+/** Takes back "Granskad"; the answer key keeps its reviewed origin until the teacher undoes. */
+export function unreviewed(item: NativeExamItem): NativeExamItem {
+  return { ...item, review: { ...item.review, state: "review_required" } };
+}
+
 /** The kinds of question a teacher adds from "Ny uppgift": every item kind, and Kort svar. */
 export type TeacherItemKind = NativeExamItemKind | "short_answer";
 

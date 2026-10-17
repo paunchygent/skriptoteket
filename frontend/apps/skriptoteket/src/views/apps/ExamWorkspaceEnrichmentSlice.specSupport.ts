@@ -112,6 +112,6 @@ export function lastSavedItem(saveMock: Mock, itemId: string): NativeExamItem | 
 }
 
 export async function requestProposals(wrapper: ViewWrapper) {
-  await wrapper.find('[data-test="exam-workspace-enrichment-request"]').trigger("click");
+  await wrapper.find('[data-test="exam-workspace-suggest-all"]').trigger("click");
   await flushPromises();
 }

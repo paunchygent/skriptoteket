@@ -2,9 +2,11 @@
  * Exam workspace on-demand exports.
  *
  * Domain purpose:
- *   Download QTI, PDF, and DOCX files generated from the saved head revision.
- *   The server owns the export gate; when it refuses with per-item blockers,
- *   map them to Swedish per-item copy for the item table.
+ *   Download QTI, PDF, and DOCX files generated from the saved head revision,
+ *   or keep one in Mina filer as the exam's one file of that format, which
+ *   the next save of that format replaces (TASK-SKRIPT-39-04-08). The server
+ *   owns the export gate; when it refuses with per-item blockers, map them to
+ *   Swedish per-item copy for the question list and the export menu.
  *
  * Relationships:
  *   - Used by `ExamWorkspaceView` next to `useExamWorkspaceDocument`.
@@ -19,6 +21,7 @@ import { isApiError } from "../../../api/client";
 import {
   downloadExamWorkspaceExport,
   getExamWorkspaceExportChecklist,
+  saveExamWorkspaceExport,
 } from "../../../api/examWorkspace";
 import type {
   ExamWorkspaceDocumentSummary,
@@ -30,6 +33,7 @@ import type {
 } from "../../../api/examWorkspace";
 import { useToast } from "../../../composables/useToast";
 import { triggerBrowserDownload } from "../exam-converter/browserDownload";
+import { examWorkspaceSavedAt } from "./examWorkspaceFormat";
 
 /** A save from elsewhere moved the head; exporting again fails until the teacher reloads it. */
 const EXPORT_STALE_COPY = "Provet har sparats någon annanstans. Läs in på nytt och exportera igen.";
@@ -61,6 +65,15 @@ const EXPORT_CREATED_MESSAGES: Record<ExamWorkspaceExportTarget, string> = {
   pdf: "PDF-filen är skapad.",
   qti: "QTI-paketet är skapat.",
 };
+
+/** The format's name in the Mina filer messages. */
+export const EXPORT_FORMAT_NAMES: Record<ExamWorkspaceExportTarget, string> = {
+  docx: "DOCX",
+  pdf: "PDF",
+  qti: "QTI",
+};
+
+type ExportDestination = "download" | "files";
 
 const FALLBACK_FILENAMES: Record<ExamWorkspaceExportTarget, string> = {
   docx: "prov.docx",
@@ -110,13 +123,18 @@ export function useExamWorkspaceExports(
   const exportingTarget = ref<ExamWorkspaceExportTarget | null>(null);
   const exportBlockersByItemId = ref<Record<string, string[]>>({});
   const exportNotice = ref<string | null>(null);
+  /** What the last export made, shown in Exportera; toasts report failures only (user rule 2026-10-17). */
+  const exportResult = ref<string | null>(null);
   const exportChecklist = ref<ExamWorkspaceExportChecklistEntry[]>([]);
+  /** Export format -> when the exam's file of that format was saved in Mina filer this session. */
+  const savedExports = ref<Partial<Record<ExamWorkspaceExportTarget, string>>>({});
   /** Bumped by every clear, so an in-flight checklist response can be dropped. */
   let checklistRequestId = 0;
 
   function clearExportFeedback(): void {
     exportBlockersByItemId.value = {};
     exportNotice.value = null;
+    exportResult.value = null;
   }
 
   function clearExportChecklist(): void {
@@ -127,6 +145,13 @@ export function useExamWorkspaceExports(
   watch(
     () => [summary.value?.lineage_id, summary.value?.version],
     () => clearExportFeedback(),
+  );
+
+  watch(
+    () => summary.value?.lineage_id,
+    () => {
+      savedExports.value = {};
+    },
   );
 
   watch(
@@ -167,7 +192,29 @@ export function useExamWorkspaceExports(
     }
   }
 
-  async function exportDocument(target: ExamWorkspaceExportTarget): Promise<void> {
+  /** Show why the server refused an export of the saved version. */
+  function reportExportFailure(target: ExamWorkspaceExportTarget, error: unknown): void {
+    const blockers = isApiError(error) && error.status === 422 ? parseBlockers(error.details) : [];
+    if (blockers.length > 0) {
+      exportBlockersByItemId.value = groupBlockers(blockers);
+      exportNotice.value = EXAM_WORKSPACE_EXPORT_BLOCKED_COPY;
+      toast.warning(EXAM_WORKSPACE_EXPORT_BLOCKED_COPY);
+    } else if (isApiError(error) && error.status === 409) {
+      exportBlockersByItemId.value = {};
+      exportNotice.value = EXPORT_STALE_COPY;
+      toast.warning(EXPORT_STALE_COPY);
+    } else {
+      exportBlockersByItemId.value = {};
+      exportNotice.value = `${EXPORT_TARGET_LABELS[target]} kunde inte skapas. Försök igen.`;
+      toast.failure(exportNotice.value);
+    }
+  }
+
+  /**
+   * Create one export of the saved version: download it, or keep it in Mina
+   * filer as the exam's one file of that format, replacing the earlier one.
+   */
+  async function runExport(target: ExamWorkspaceExportTarget, destination: ExportDestination): Promise<void> {
     const currentSummary = summary.value;
     if (!currentSummary || exportingTarget.value !== null) {
       return;
@@ -176,29 +223,32 @@ export function useExamWorkspaceExports(
     clearExportChecklist();
     const requestId = checklistRequestId;
     try {
-      const response = await downloadExamWorkspaceExport(
-        currentSummary.lineage_id,
-        target,
-        currentSummary.version,
-      );
-      triggerBrowserDownload(response.blob, response.filename ?? FALLBACK_FILENAMES[target]);
-      clearExportFeedback();
-      toast.success(EXPORT_CREATED_MESSAGES[target]);
-    } catch (error) {
-      const blockers = isApiError(error) && error.status === 422 ? parseBlockers(error.details) : [];
-      if (blockers.length > 0) {
-        exportBlockersByItemId.value = groupBlockers(blockers);
-        exportNotice.value = EXAM_WORKSPACE_EXPORT_BLOCKED_COPY;
-        toast.warning(EXAM_WORKSPACE_EXPORT_BLOCKED_COPY);
-      } else if (isApiError(error) && error.status === 409) {
-        exportBlockersByItemId.value = {};
-        exportNotice.value = EXPORT_STALE_COPY;
-        toast.warning(EXPORT_STALE_COPY);
+      if (destination === "files") {
+        const replaced = savedExports.value[target] ?? null;
+        const saved = await saveExamWorkspaceExport(
+          currentSummary.lineage_id,
+          target,
+          currentSummary.version,
+        );
+        if (summary.value?.lineage_id === currentSummary.lineage_id) {
+          savedExports.value = { ...savedExports.value, [target]: saved.created_at };
+        }
+        clearExportFeedback();
+        exportResult.value = replaced
+          ? `${EXPORT_FORMAT_NAMES[target]} sparad i Mina filer och ersatte filen från ${examWorkspaceSavedAt(replaced)}.`
+          : `${EXPORT_FORMAT_NAMES[target]} sparad i Mina filer.`;
       } else {
-        exportBlockersByItemId.value = {};
-        exportNotice.value = `${EXPORT_TARGET_LABELS[target]} kunde inte skapas. Försök igen.`;
-        toast.failure(exportNotice.value);
+        const response = await downloadExamWorkspaceExport(
+          currentSummary.lineage_id,
+          target,
+          currentSummary.version,
+        );
+        triggerBrowserDownload(response.blob, response.filename ?? FALLBACK_FILENAMES[target]);
+        clearExportFeedback();
+        exportResult.value = EXPORT_CREATED_MESSAGES[target];
       }
+    } catch (error) {
+      reportExportFailure(target, error);
       return;
     } finally {
       exportingTarget.value = null;
@@ -208,12 +258,23 @@ export function useExamWorkspaceExports(
     }
   }
 
+  async function exportDocument(target: ExamWorkspaceExportTarget): Promise<void> {
+    await runExport(target, "download");
+  }
+
+  async function saveExportToFiles(target: ExamWorkspaceExportTarget): Promise<void> {
+    await runExport(target, "files");
+  }
+
   return {
     clearExportFeedback,
     exportBlockersByItemId,
     exportChecklist,
     exportDocument,
     exportNotice,
+    exportResult,
     exportingTarget,
+    saveExportToFiles,
+    savedExports,
   };
 }

@@ -12,7 +12,7 @@
  *   becomes active.
  *
  * Relationships:
- *   - Provided once per item editor (`ExamWorkspaceItemEditor`) and consumed
+ *   - Provided once per item editor (`ExamWorkspaceQuestionEditor`) and consumed
  *     by `ExamWorkspaceBodyParagraph` (registers) and
  *     `ExamWorkspaceBodyEditor` (dispatches the toolbar).
  *   - A component subtree mounted without a provider creates and provides

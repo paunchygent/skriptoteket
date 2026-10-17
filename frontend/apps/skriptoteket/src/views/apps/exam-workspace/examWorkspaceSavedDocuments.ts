@@ -4,14 +4,43 @@
  * Domain purpose:
  *   Merge a fetched saved-document list into the entries already known
  *   locally, so an import or save that lands while the list request is in
- *   flight is never dropped or rolled back to an older version.
+ *   flight is never dropped or rolled back to an older version. Number exams
+ *   that share a file name, so the teacher can tell them apart.
  *
  * Relationships:
  *   - Used by `useExamWorkspaceDocument` when it lists the teacher's saved
- *     exams.
+ *     exams, and by `ExamWorkspaceOpenDrawer`.
  */
 
 import type { ExamWorkspaceDocumentSummary } from "../../../api/examWorkspace";
+import { examWorkspaceDocumentLabel } from "./examWorkspaceRows";
+
+/**
+ * "N av M med samma namn" per lineage id, only for names that repeat. The
+ * summary carries no creation time, so N is the position in the list ordered
+ * by latest save (oldest first); it can change after a save.
+ */
+export function examWorkspaceSameNameCounts(
+  documents: readonly ExamWorkspaceDocumentSummary[],
+): Record<string, string> {
+  const groups = new Map<string, ExamWorkspaceDocumentSummary[]>();
+  for (const entry of documents) {
+    const label = examWorkspaceDocumentLabel(entry.name);
+    groups.set(label, [...(groups.get(label) ?? []), entry]);
+  }
+  const counts: Record<string, string> = {};
+  for (const group of groups.values()) {
+    if (group.length < 2) {
+      continue;
+    }
+    [...group]
+      .sort((left, right) => left.saved_at.localeCompare(right.saved_at))
+      .forEach((entry, index) => {
+        counts[entry.lineage_id] = `${index + 1} av ${group.length} med samma namn`;
+      });
+  }
+  return counts;
+}
 
 /**
  * Merge a fetched saved-document list into the entries already known locally.

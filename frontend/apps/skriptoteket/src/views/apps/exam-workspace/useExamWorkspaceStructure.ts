@@ -10,7 +10,10 @@
  *   newest undo step, so the pending edit is stored first and the response's
  *   document becomes the next step. After Byt frågetyp the question shows an
  *   inline notice naming what the change removed; the header Ångra reverts it
- *   (user ruling 2026-10-17: no Ångra in toasts).
+ *   (user ruling 2026-10-17: no Ångra in toasts). Deleting an instruction,
+ *   keeping its questions or with them, and deleting its last question
+ *   together with the emptied heading wait for the server commands of
+ *   TASK-SKRIPT-39-06-07 (user ruling 2026-10-17); until then they do nothing.
  *
  * Relationships:
  *   - Edits through `useExamWorkspaceDocument` (`editDocument`,
@@ -27,9 +30,12 @@ import {
   changeExamWorkspaceItemType,
   createExamWorkspaceParent,
   deleteExamWorkspaceChild,
+  deleteExamWorkspaceParent,
+  EXAM_PARENT_DELETE_READY,
   reorderExamWorkspaceChildren,
 } from "../../../api/examWorkspace";
 import type {
+  ExamParentDeleteMode,
   ExamWorkspaceDocumentResponse,
   NativeExamDocument,
   NativeExamItemKind,
@@ -70,6 +76,8 @@ export type ExamWorkspaceStructureDeps = {
 
 export type ExamWorkspaceTypeNotice = { itemId: string; kind: NativeExamItemKind; text: string };
 
+const HEADING_REMOVED_COPY = "Instruktionen hade inga frågor kvar och togs också bort.";
+
 function newChildContent(kind: TeacherItemKind) {
   // The server assigns the child's id and sequence.
   return newTeacherItem("item_001", 1, kind);
@@ -79,6 +87,8 @@ export function useExamWorkspaceStructure(deps: ExamWorkspaceStructureDeps) {
   const toast = useToast();
   const running = ref(false);
   const typeNotice = ref<ExamWorkspaceTypeNotice | null>(null);
+  /** Said once where the selection lands after a delete took more than the teacher picked. */
+  const deleteNotice = ref<string | null>(null);
 
   const blocked = computed(() => running.value || deps.isBusy());
 
@@ -147,22 +157,54 @@ export function useExamWorkspaceStructure(deps: ExamWorkspaceStructureDeps) {
     }
     const parent = document.parents.find((entry) => entry.item_ids.includes(itemId));
     if (parent) {
-      if (parent.item_ids.length > 1) {
-        const next = examWorkspaceNeighbourId(document, itemId);
-        void runCommand((lineageId, cursor) =>
-          deleteExamWorkspaceChild(lineageId, parent.parent_id, itemId, cursor),
-        ).then((response) => {
-          if (response && next && response.document.items.some((item) => item.item_id === next)) {
-            deps.selectItem(next);
-          }
-        });
+      // The last question takes its emptied heading with it; that waits for TASK-SKRIPT-39-06-07.
+      const last = parent.item_ids.length === 1;
+      if (last && !EXAM_PARENT_DELETE_READY) {
+        return;
       }
+      const next = examWorkspaceNeighbourId(document, itemId);
+      void runCommand((lineageId, cursor) =>
+        deleteExamWorkspaceChild(lineageId, parent.parent_id, itemId, cursor),
+      ).then((response) => {
+        if (!response) {
+          return;
+        }
+        if (next && response.document.items.some((item) => item.item_id === next)) {
+          deps.selectItem(next);
+        }
+        if (last) {
+          deleteNotice.value = HEADING_REMOVED_COPY;
+        }
+      });
       return;
     }
     deps.editDocument(
       (current) => withoutStandaloneItem(current, itemId),
       examWorkspaceNeighbourId(document, itemId),
     );
+  }
+
+  /** Remove an instruction: only its heading, or with its questions (TASK-SKRIPT-39-06-07). */
+  async function deleteParent(parentId: string, mode: ExamParentDeleteMode): Promise<void> {
+    const document = deps.workspaceDocument.value;
+    const parent = document?.parents.find((entry) => entry.parent_id === parentId);
+    if (!document || !parent || !EXAM_PARENT_DELETE_READY) {
+      return;
+    }
+    const firstChild = parent.item_ids[0] ?? null;
+    const lastChild = parent.item_ids[parent.item_ids.length - 1] ?? null;
+    const next =
+      mode === "keep_questions" ? firstChild : lastChild && examWorkspaceNeighbourId(document, lastChild);
+    const response = await runCommand((lineageId, cursor) =>
+      deleteExamWorkspaceParent(lineageId, parentId, mode, cursor),
+    );
+    if (response && next && response.document.items.some((item) => item.item_id === next)) {
+      deps.selectItem(next);
+    }
+  }
+
+  function dismissDeleteNotice(): void {
+    deleteNotice.value = null;
   }
 
   async function addInstruction(): Promise<void> {
@@ -245,7 +287,11 @@ export function useExamWorkspaceStructure(deps: ExamWorkspaceStructureDeps) {
     addItem,
     changeType,
     deleteItem,
+    deleteNotice: computed(() => deleteNotice.value),
+    deleteParent,
+    dismissDeleteNotice,
     dismissTypeNotice,
+    parentDeleteReady: EXAM_PARENT_DELETE_READY,
     moveChild,
     running: computed(() => running.value),
     typeNotice: computed(() => typeNotice.value),

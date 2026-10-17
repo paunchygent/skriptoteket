@@ -1,28 +1,17 @@
 /**
- * Exam workspace item-row presentation mapping.
+ * Exam workspace presentation labels.
  *
  * Domain purpose:
- *   Map native exam items to the compact teacher-facing table rows with
- *   Swedish type, review-status and AI-key labels, and saved-document
- *   summaries to short list labels.
+ *   Swedish teacher-facing labels for native exam items and saved documents:
+ *   question type, prompt excerpt, question number, review reason, document
+ *   name and saved-at time.
  *
  * Relationships:
- *   - Pure functions consumed by `ExamWorkspaceView`.
+ *   - Pure functions consumed by the exam workspace question list and views.
  *   - Reads shapes from `api/examWorkspace.ts`.
  */
 
-import type {
-  NativeExamAnswerKeyOrigin,
-  NativeExamItem,
-  NativeExamItemKind,
-  NativeExamParent,
-  NativeExamReviewState,
-} from "../../../api/examWorkspace";
-import {
-  examWorkspaceParentBlocksByFirstChild,
-  examWorkspaceParentChildren,
-} from "./examWorkspaceParents";
-import type { ExamWorkspaceParentBlock, ExamWorkspaceParentChild } from "./examWorkspaceParents";
+import type { NativeExamItem, NativeExamItemKind } from "../../../api/examWorkspace";
 
 const REVIEW_REASON_LABELS: Record<string, string> = {
   machine_proposed_answer_key:
@@ -42,28 +31,6 @@ export function examWorkspaceReviewReasonLabel(reason: string): string {
   return reason;
 }
 
-export type ExamWorkspaceItemRow = {
-  itemId: string;
-  sequence: number;
-  title: string;
-  promptExcerpt: string;
-  typeLabel: string;
-  pointsLabel: string;
-  statusLabel: string;
-  /**
-   * Set when the conversion AI wrote the key: "Tolkad av AI" for a key it
-   * interpreted from the facit, "Förslag från AI" for a key it invented
-   * without one. Null when the key came from the facit or the teacher.
-   */
-  aiKeyLabel: string | null;
-  reviewRequired: boolean;
-  reviewReasons: string[];
-  /** Set on a child question: where it sits in its parent. */
-  parentChild: ExamWorkspaceParentChild | null;
-  /** Set only on a parent's first child: the shared instruction and total points. */
-  parentBlock: ExamWorkspaceParentBlock | null;
-};
-
 const EXCERPT_MAX_LENGTH = 140;
 const CONTAINER_SUFFIX = ".provdokument.zip";
 
@@ -78,31 +45,6 @@ export const EXAM_WORKSPACE_TYPE_LABELS: Record<NativeExamItemKind, string> = {
 
 export function examWorkspaceTypeLabel(kind: NativeExamItemKind): string {
   return EXAM_WORKSPACE_TYPE_LABELS[kind];
-}
-
-export function examWorkspaceReviewStatusLabel(state: NativeExamReviewState): string {
-  return state === "review_required" ? "Behöver granskas" : "Granskad";
-}
-
-/**
- * The AI mark for an item's key: the AI read the teacher's facit, or invented
- * a key without one. Null for every other origin.
- */
-export function examWorkspaceAiKeyLabel(origin: NativeExamAnswerKeyOrigin): string | null {
-  if (origin === "ai_interpreted") {
-    return "Tolkad av AI";
-  }
-  if (origin === "machine_proposed") {
-    return "Förslag från AI";
-  }
-  return null;
-}
-
-export function examWorkspacePointsLabel(points: number | null): string {
-  if (points === null) {
-    return "–";
-  }
-  return points.toLocaleString("sv-SE", { maximumFractionDigits: 2 });
 }
 
 export function examWorkspacePromptExcerpt(item: NativeExamItem): string {
@@ -133,41 +75,6 @@ export function examWorkspacePromptExcerpt(item: NativeExamItem): string {
 /** The row label for a question: its question number. */
 export function examWorkspaceQuestionLabel(sequence: number): string {
   return `Fråga ${sequence}`;
-}
-
-export function toExamWorkspaceItemRow(
-  item: NativeExamItem,
-  parentChild: ExamWorkspaceParentChild | null = null,
-  parentBlock: ExamWorkspaceParentBlock | null = null,
-): ExamWorkspaceItemRow {
-  const title = examWorkspaceQuestionLabel(item.sequence);
-
-  return {
-    aiKeyLabel: examWorkspaceAiKeyLabel(item.answer_key.origin),
-    itemId: item.item_id,
-    parentBlock,
-    parentChild,
-    pointsLabel: examWorkspacePointsLabel(item.points ?? null),
-    promptExcerpt: examWorkspacePromptExcerpt(item),
-    reviewReasons: item.review.reasons.map(examWorkspaceReviewReasonLabel),
-    reviewRequired: item.review.state === "review_required",
-    sequence: item.sequence,
-    statusLabel: examWorkspaceReviewStatusLabel(item.review.state),
-    title,
-    typeLabel: examWorkspaceTypeLabel(item.kind),
-  };
-}
-
-export function toExamWorkspaceItemRows(
-  items: NativeExamItem[],
-  parents: NativeExamParent[] = [],
-  assetUrls: Record<string, string> = {},
-): ExamWorkspaceItemRow[] {
-  const blocks = examWorkspaceParentBlocksByFirstChild(parents, items, assetUrls);
-  const children = examWorkspaceParentChildren(parents);
-  return items.map((item) =>
-    toExamWorkspaceItemRow(item, children[item.item_id] ?? null, blocks[item.item_id] ?? null),
-  );
 }
 
 export function examWorkspaceDocumentLabel(name: string): string {

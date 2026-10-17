@@ -27,6 +27,7 @@ import type { Ref } from "vue";
 import {
   getExamWorkspaceConversionStatus,
   getExamWorkspaceDocument,
+  importExamWorkspaceDigiExam,
   importExamWorkspaceDocument as requestImportExamWorkspaceDocument,
 } from "../../../api/examWorkspace";
 import type {
@@ -43,7 +44,6 @@ export const EXAM_WORKSPACE_CONVERSION_POLL_MS = 3000;
 const CONVERSION_MAX_POLL_MS = 30_000;
 const STATUS_FAILURE_COPY = "Det gick inte att hämta konverteringen eller öppna provet. Försöker igen …";
 const IMPORT_FAILURE_COPY = "Det gick inte att läsa in provet. Försök igen.";
-const IMPORT_SUCCESS_COPY = "Provet är inläst.";
 
 /** The document owner's state that conversion revisions are applied to. */
 export type ExamWorkspaceConversionBinding = {
@@ -165,8 +165,8 @@ export function useExamWorkspaceConversion(
     isConverting.value = false;
     shownUnits.value = null;
     conversionError.value = null;
+    // The opened exam is the success state; toasts report failures only (user rule 2026-10-17).
     stopPolling();
-    if (status.state === "succeeded") toast.success(IMPORT_SUCCESS_COPY);
   }
 
   /**
@@ -357,7 +357,11 @@ export function useExamWorkspaceConversion(
     shownUnits.value = null;
     pollFailures = 0;
     try {
-      const status = await requestImportExamWorkspaceDocument(file, courseKey);
+      // A DigiExam export (.dxe) is read by its own importer; both follow the same conversion.
+      const request = file.name.toLowerCase().endsWith(".dxe")
+        ? importExamWorkspaceDigiExam
+        : requestImportExamWorkspaceDocument;
+      const status = await request(file, courseKey);
       if (pollGeneration !== generation) return;
       isConverting.value = true;
       conversionStatus.value = status;

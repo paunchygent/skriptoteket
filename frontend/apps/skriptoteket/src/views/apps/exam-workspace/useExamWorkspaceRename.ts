@@ -58,7 +58,6 @@ export function useExamWorkspaceRename(state: RenameState) {
       if (state.summary.value?.lineage_id === lineageId) {
         state.summary.value = { ...state.summary.value, name };
       }
-      toast.success("Filnamnet är ändrat.");
       return name;
     } catch (error) {
       const message = isApiError(error)

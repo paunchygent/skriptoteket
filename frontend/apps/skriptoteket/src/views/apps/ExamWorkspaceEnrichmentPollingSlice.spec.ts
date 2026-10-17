@@ -48,6 +48,7 @@ const apiMocks = vi.hoisted(() => ({
 
 vi.mock("../../api/examWorkspace", async () => ({
   ...apiMocks,
+  EXAM_PARENT_DELETE_READY: false,
   getExamCourseCatalog: (await import("../../test/examCourseCatalog")).getExamCourseCatalog,
 }));
 

@@ -18,7 +18,7 @@
  *   closes without committing, and no gap change is forwarded.
  *
  * Relationships:
- *   - Rendered by `ExamWorkspaceItemEditor` for the selected item.
+ *   - Rendered by `ExamWorkspaceQuestionEditor` for the selected item.
  *   - Emits typed update events; `useExamWorkspaceDocument` owns the state
  *     (`updateItemParagraphSegments`, `updateItemParagraphHeading`,
  *     `updateItemGapValues`).

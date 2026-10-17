@@ -2,7 +2,7 @@
  * Exam workspace layout selection.
  *
  * Expected behavior:
- *   Widths from 1024px are desktop, widths from 768px are tablet, and
+ *   Widths from 1280px are desktop, widths from 768px are tablet, and
  *   narrower widths are phone (ADR-SKRIPT-0020 breakpoints).
  */
 

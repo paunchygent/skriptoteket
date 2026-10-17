@@ -18,7 +18,7 @@ import { describe, expect, it } from "vitest";
 import type { NativeExamItem } from "../../../api/examWorkspace";
 import ExamWorkspaceBodyEditor from "./ExamWorkspaceBodyEditor.vue";
 import { buildGapItem, paragraph } from "./ExamWorkspaceBodyEditor.specSupport";
-import ExamWorkspaceItemEditor from "./ExamWorkspaceItemEditor.vue";
+import ExamWorkspaceQuestionEditor from "./ExamWorkspaceQuestionEditor.vue";
 import { partsFromParagraphElement, segmentsFromParts } from "./examWorkspaceBodySegments";
 
 const ASSET_ID = "asset_001";
@@ -126,16 +126,21 @@ describe("ExamWorkspaceBodyEditor picture rendering", () => {
     wrapper.unmount();
   });
 
-  it("passes the asset URL map through the item editor to the body editor", () => {
-    const wrapper = mount(ExamWorkspaceItemEditor, {
+  it("passes the asset URL map through the question editor to the body editor", () => {
+    const wrapper = mount(ExamWorkspaceQuestionEditor, {
       props: {
         assetUrls: { [ASSET_ID]: ASSET_URL },
-        attentionCount: 0,
-        detailsOpen: false,
         item: buildGapItem(),
-        position: 1,
-        showNavigation: false,
-        total: 1,
+        label: "1",
+        origin: "digiexam_import",
+        parent: null,
+        child: null,
+        suggestedKind: null,
+        converting: false,
+        disabled: false,
+        notice: null,
+        importOpen: false,
+        lastChildDeletable: false,
       },
     });
 

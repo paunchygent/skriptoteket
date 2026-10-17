@@ -1,16 +1,16 @@
 /**
- * Exam workspace item editor, type-check mark.
+ * Exam workspace question editor, type-check mark.
  *
  * Expected behavior:
- *   A review confidence below 0.95 shows the quiet "Kontrollera frågetypen"
- *   mark; 0.95 and null show none.
+ *   A review confidence below 0.95 shows the "Kontrollera frågetypen."
+ *   hint; 0.95 and null show none.
  */
 
 import { mount } from "@vue/test-utils";
 import { describe, expect, it } from "vitest";
 
 import type { NativeExamItem } from "../../../api/examWorkspace";
-import ExamWorkspaceItemEditor from "./ExamWorkspaceItemEditor.vue";
+import ExamWorkspaceQuestionEditor from "./ExamWorkspaceQuestionEditor.vue";
 import { buildMatchingItem } from "./examWorkspaceMatchingItem.specSupport";
 
 const TYPE_MARK = '[data-test="exam-workspace-type-uncertain"]';
@@ -27,19 +27,24 @@ function buildFreeTextItem(overrides: Partial<NativeExamItem> = {}): NativeExamI
 }
 
 function mountEditor(item: NativeExamItem) {
-  return mount(ExamWorkspaceItemEditor, {
+  return mount(ExamWorkspaceQuestionEditor, {
     props: {
-      attentionCount: 0,
-      detailsOpen: false,
       item,
-      position: 1,
-      showNavigation: false,
-      total: 1,
+      label: "1",
+      origin: "digiexam_import",
+      parent: null,
+      child: null,
+      suggestedKind: null,
+      converting: false,
+      disabled: false,
+      notice: null,
+      importOpen: false,
+      lastChildDeletable: false,
     },
   });
 }
 
-describe("ExamWorkspaceItemEditor type-check mark", () => {
+describe("ExamWorkspaceQuestionEditor type-check mark", () => {
   it("marks a type below 0.95 confidence for checking, without blocking", () => {
     const wrapper = mountEditor(
       buildFreeTextItem({
@@ -47,7 +52,7 @@ describe("ExamWorkspaceItemEditor type-check mark", () => {
       }),
     );
 
-    expect(wrapper.get(TYPE_MARK).text()).toBe("Kontrollera frågetypen");
+    expect(wrapper.get(TYPE_MARK).text()).toContain("Kontrollera frågetypen");
     expect(wrapper.find(`${TYPE_MARK} button`).exists()).toBe(false);
   });
 

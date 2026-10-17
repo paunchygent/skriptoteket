@@ -2,8 +2,8 @@
  * Exam workspace source-file intake.
  *
  * Domain purpose:
- *   Accept one .docx exam from the file picker or a drop and hand it to the
- *   import; any other file, or several exams in one drop, leaves the
+ *   Accept one exam file, a Word .docx or a DigiExam .dxe, from the file
+ *   picker or a drop and hand it to the import; any other file, or several exams in one drop, leaves the
  *   current state and shows Swedish guidance instead. While the import is
  *   blocked (busy, or unsaved changes the new exam would discard) a picked
  *   or dropped file is ignored; the Filer pane explains why.
@@ -18,12 +18,13 @@
 import { ref } from "vue";
 import type { Ref } from "vue";
 
-const DOCX_EXTENSION = ".docx";
-const INVALID_DOCX_COPY = "Det gick inte att använda filen. Välj en .docx-fil.";
+const EXAM_FILE_EXTENSIONS = [".docx", ".dxe"];
+const INVALID_FILE_COPY = "Det gick inte att använda filen. Välj en Word-fil (.docx) eller en DigiExam-fil (.dxe).";
 const MULTIPLE_FILES_COPY = "Välj en provfil åt gången.";
 
-function isDocxFile(file: File): boolean {
-  return file.name.toLowerCase().endsWith(DOCX_EXTENSION);
+function isExamFile(file: File): boolean {
+  const name = file.name.toLowerCase();
+  return EXAM_FILE_EXTENSIONS.some((extension) => name.endsWith(extension));
 }
 
 export function useExamWorkspaceSourceFile(
@@ -36,8 +37,8 @@ export function useExamWorkspaceSourceFile(
     if (importBlocked.value) {
       return;
     }
-    if (!isDocxFile(file)) {
-      sourceFileError.value = INVALID_DOCX_COPY;
+    if (!isExamFile(file)) {
+      sourceFileError.value = INVALID_FILE_COPY;
       return;
     }
     sourceFileError.value = null;
@@ -48,18 +49,18 @@ export function useExamWorkspaceSourceFile(
     if (importBlocked.value) {
       return;
     }
-    const docxFiles = files.filter(isDocxFile);
-    if (docxFiles.length > 1) {
+    const examFiles = files.filter(isExamFile);
+    if (examFiles.length > 1) {
       sourceFileError.value = MULTIPLE_FILES_COPY;
       return;
     }
-    const [file] = docxFiles;
+    const [file] = examFiles;
     if (file) {
       sourceFileError.value = null;
       void importDocument(file, courseKey);
       return;
     }
-    sourceFileError.value = INVALID_DOCX_COPY;
+    sourceFileError.value = INVALID_FILE_COPY;
   }
 
   return { handleDroppedFiles, handleSelectedFile, sourceFileError };

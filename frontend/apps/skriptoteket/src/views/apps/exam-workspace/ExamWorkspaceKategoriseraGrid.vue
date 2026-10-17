@@ -11,7 +11,7 @@
  *   with the Swedish guidance the save refusal uses.
  *
  * Relationships:
- *   - Rendered by `ExamWorkspaceItemEditor` for matching items; the tick
+ *   - Rendered by `ExamWorkspaceQuestionEditor` for matching items; the tick
  *     value and the derived points sit in the editor's points row.
  *   - Emits typed update events; `useExamWorkspaceDocument` owns the state.
  *   - Reads the rules from `examWorkspaceAnswerKeyRules`,

@@ -54,5 +54,11 @@ export function useExamWorkspaceEditing() {
     return await document.saveDocument();
   }
 
-  return { ...document, history, save, structure };
+  /** Spara som: store the pending edit, then copy the working exam under `name`. */
+  async function saveAs(name: string) {
+    await history.flush(false);
+    return await document.saveDocumentAs(name);
+  }
+
+  return { ...document, history, save, saveAs, structure };
 }

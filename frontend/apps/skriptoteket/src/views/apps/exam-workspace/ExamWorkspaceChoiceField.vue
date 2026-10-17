@@ -11,7 +11,7 @@
  *   is set, every control is disabled.
  *
  * Relationships:
- *   - Rendered by `ExamWorkspaceItemEditor` for choice kinds.
+ *   - Rendered by `ExamWorkspaceQuestionEditor` for choice kinds.
  *   - Emits typed update events; `useExamWorkspaceDocument` owns the state.
  *   - Reads the empty-body rule from `examWorkspaceItemSaveRules`.
  */

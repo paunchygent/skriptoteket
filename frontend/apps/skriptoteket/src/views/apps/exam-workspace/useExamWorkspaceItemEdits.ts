@@ -23,6 +23,7 @@ import type {
 } from "../../../api/examWorkspace";
 import {
   reviewed,
+  unreviewed,
   withChoiceBody,
   withCorrectChoices,
   withCriteria,
@@ -40,6 +41,8 @@ import {
 export type ExamWorkspaceItemPatch = (
   itemId: string,
   patch: (item: NativeExamItem) => NativeExamItem,
+  /** A click edit (a key, the review state) is one undo step at once; typing waits for a pause. */
+  structural?: boolean,
 ) => boolean;
 
 export function useExamWorkspaceItemEdits(patchItem: ExamWorkspaceItemPatch) {
@@ -76,7 +79,7 @@ export function useExamWorkspaceItemEdits(patchItem: ExamWorkspaceItemPatch) {
   }
 
   function updateItemCorrectChoices(itemId: string, correctChoiceIds: string[]): void {
-    patchItem(itemId, (item) => withCorrectChoices(item, correctChoiceIds));
+    patchItem(itemId, (item) => withCorrectChoices(item, correctChoiceIds), true);
   }
 
   function updateItemMatchEntryBody(
@@ -89,7 +92,7 @@ export function useExamWorkspaceItemEdits(patchItem: ExamWorkspaceItemPatch) {
   }
 
   function updateItemMatchPairs(itemId: string, pairs: NativeExamMatchPair[]): void {
-    patchItem(itemId, (item) => withMatchPairs(item, pairs));
+    patchItem(itemId, (item) => withMatchPairs(item, pairs), true);
   }
 
   function updateItemTickPoints(itemId: string, tickPoints: string): void {
@@ -97,19 +100,24 @@ export function useExamWorkspaceItemEdits(patchItem: ExamWorkspaceItemPatch) {
   }
 
   function undoItemInterpretation(itemId: string): void {
-    patchItem(itemId, withoutInterpretedKey);
+    patchItem(itemId, withoutInterpretedKey, true);
   }
 
   function showItemGapAsText(itemId: string, gapId: string): void {
-    patchItem(itemId, (item) => withGapAsText(item, gapId));
+    patchItem(itemId, (item) => withGapAsText(item, gapId), true);
   }
 
   function markItemReviewed(itemId: string): void {
-    patchItem(itemId, reviewed);
+    patchItem(itemId, reviewed, true);
+  }
+
+  function unmarkItemReviewed(itemId: string): void {
+    patchItem(itemId, unreviewed, true);
   }
 
   return {
     markItemReviewed,
+    unmarkItemReviewed,
     showItemGapAsText,
     undoItemInterpretation,
     updateItemChoiceBody,

@@ -18,7 +18,7 @@
  *   - Mirrors `domain/curated_apps/exam_workspace/native_exam_document.py`.
  *   - Consumed by `useExamWorkspaceDocument` (save refusal),
  *     `examWorkspaceItemReadiness` (per-question reasons), and
- *     `ExamWorkspaceItemEditor` (inline field hints).
+ *     `ExamWorkspaceQuestionEditor` (inline field hints).
  */
 
 import type { NativeExamCriterion, NativeExamItem } from "../../../api/examWorkspace";

@@ -171,7 +171,7 @@ export function expectEditable(view: ViewWrapper, editable: boolean) {
   } else {
     expect(body).toBe("false");
   }
-  const markReviewed = view.find('[data-test="exam-workspace-mark-reviewed"]');
+  const markReviewed = view.find('[data-test="exam-workspace-review"]');
   if (markReviewed.exists()) {
     expect(markReviewed.attributes("disabled")).toBe(editable ? undefined : "");
   }

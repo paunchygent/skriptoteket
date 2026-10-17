@@ -1,5 +1,5 @@
 /**
- * Exam workspace item editor, shared rich-text formatting target.
+ * Exam workspace question editor, shared rich-text formatting target.
  *
  * Expected behavior:
  *   The item editor has one formatting toolbar and one active rich target:
@@ -14,22 +14,26 @@ import { mount } from "@vue/test-utils";
 import { describe, expect, it } from "vitest";
 
 import type { NativeExamBodyParagraph, NativeExamItem } from "../../../api/examWorkspace";
-import ExamWorkspaceItemEditor from "./ExamWorkspaceItemEditor.vue";
+import ExamWorkspaceQuestionEditor from "./ExamWorkspaceQuestionEditor.vue";
 import { choiceItem } from "./examWorkspaceKeyedItems.specSupport";
 import { buildMatchingItem } from "./examWorkspaceMatchingItem.specSupport";
 import { plainBody } from "./examWorkspaceRichText";
 
 function mountEditor(item: NativeExamItem, disabled = false) {
-  return mount(ExamWorkspaceItemEditor, {
+  return mount(ExamWorkspaceQuestionEditor, {
     attachTo: document.body,
     props: {
-      attentionCount: 0,
-      detailsOpen: false,
-      disabled,
       item,
-      position: 1,
-      showNavigation: false,
-      total: 1,
+      label: "1",
+      origin: "digiexam_import",
+      parent: null,
+      child: null,
+      suggestedKind: null,
+      converting: false,
+      disabled,
+      notice: null,
+      importOpen: false,
+      lastChildDeletable: false,
     },
   });
 }
@@ -86,7 +90,7 @@ function bodyOf(emitted: unknown[][] | undefined, index: number): NativeExamBody
   return emitted![index]![2] as NativeExamBodyParagraph[];
 }
 
-describe("ExamWorkspaceItemEditor shared rich-text target", () => {
+describe("ExamWorkspaceQuestionEditor shared rich-text target", () => {
   it("edits the selected option instead of the stale question selection", async () => {
     const wrapper = mountEditor(buildChoiceWithText());
     const question = wrapper.get(QUESTION);

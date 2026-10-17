@@ -1,46 +1,92 @@
 <script setup lang="ts">
 /**
- * Teacher exam workspace: file intake and exports, responsive question editor,
- * and mutually exclusive item/document metadata drawers. Document state owns
- * edits and saves; address, conversion, enrichment and export composables own
- * their respective lifecycles. Shared instructions and parent stems resolve
- * picture URLs once above the question list and phone sheet.
+ * Teacher exam workspace (TASK-SKRIPT-40-04-03).
+ *
+ * Domain purpose:
+ *   One surface for an exam: the header with the exam's title, save state
+ *   and tools; the question list; the editor for the selected question or
+ *   instruction; and one drawer at a time for Öppna, Exportera and Provets
+ *   uppgifter. Desktop (>= 1280 px) docks the drawer as a third column,
+ *   tablet floats it over the editor, phone covers the screen with it; on a
+ *   phone the list is a layer opened from the question strip and the
+ *   header's title and Spara sit in the shell's top bar.
+ *
+ *   Ctrl/Cmd+S saves (and never the browser's save page), Ctrl/Cmd+Z and
+ *   Ctrl/Cmd+Shift+Z step through the autosave history outside text fields,
+ *   ↑ and ↓ move between questions outside text fields, and Escape closes
+ *   the phone list. Toasts report failures only (user rule 2026-10-17).
+ *
+ * Relationships:
+ *   - Every exam state comes from `useExamWorkspaceEditing` (document,
+ *     autosave history, structure commands); address, intake, conversion,
+ *     enrichment, exports and content suggestions from their composables.
+ *   - Holds only presentation state: the drawer, the phone list, the
+ *     selected instruction and the Import box.
  */
 
-import { computed, onMounted, ref, useId, watch } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 
-import { IconPlus } from "../../components/icons";
-import { UiDenseStatusPill, UiSegmentedToggle } from "../../components/ui";
-import type { UiSegmentedToggleOption } from "../../components/ui";
-import type { ExamWorkspaceExportTarget } from "../../api/examWorkspace";
-import ExamWorkspaceConversionStatus from "./exam-workspace/ExamWorkspaceConversionStatus.vue";
-import ExamWorkspaceConvertingNotice from "./exam-workspace/ExamWorkspaceConvertingNotice.vue";
-import ExamWorkspaceFilesMode from "./exam-workspace/ExamWorkspaceFilesMode.vue";
-import type { ExamWorkspaceReadinessEntry } from "./exam-workspace/ExamWorkspaceFilesMode.vue";
-import type { TeacherItemKind } from "./exam-workspace/examWorkspaceItemEdits";
-import ExamWorkspaceEditorPane from "./exam-workspace/ExamWorkspaceEditorPane.vue";
-import ExamWorkspaceItemTable from "./exam-workspace/ExamWorkspaceItemTable.vue";
-import ExamWorkspaceMetadata from "./exam-workspace/ExamWorkspaceMetadata.vue";
-import ExamWorkspaceMetadataTitle from "./exam-workspace/ExamWorkspaceMetadataTitle.vue";
+import type { ExamWorkspaceExportTarget, NativeExamItemKind } from "../../api/examWorkspace";
+import { UiGlyph } from "../../components/ui";
+import ExamWorkspaceDetailsDrawer from "./exam-workspace/ExamWorkspaceDetailsDrawer.vue";
+import ExamWorkspaceDrawer from "./exam-workspace/ExamWorkspaceDrawer.vue";
+import ExamWorkspaceExportDrawer from "./exam-workspace/ExamWorkspaceExportDrawer.vue";
+import ExamWorkspaceExportMenu from "./exam-workspace/ExamWorkspaceExportMenu.vue";
+import ExamWorkspaceHeader from "./exam-workspace/ExamWorkspaceHeader.vue";
+import ExamWorkspaceInstructionEditor from "./exam-workspace/ExamWorkspaceInstructionEditor.vue";
+import ExamWorkspaceOpenDrawer from "./exam-workspace/ExamWorkspaceOpenDrawer.vue";
+import ExamWorkspacePhoneStrip from "./exam-workspace/ExamWorkspacePhoneStrip.vue";
+import ExamWorkspaceQuestionEditor from "./exam-workspace/ExamWorkspaceQuestionEditor.vue";
+import ExamWorkspaceQuestionList from "./exam-workspace/ExamWorkspaceQuestionList.vue";
+import ExamWorkspaceQuestionTools from "./exam-workspace/ExamWorkspaceQuestionTools.vue";
+import ExamWorkspaceSaveAsDialog from "./exam-workspace/ExamWorkspaceSaveAsDialog.vue";
 import ExamWorkspaceSharedInstruction from "./exam-workspace/ExamWorkspaceSharedInstruction.vue";
-import ExamWorkspacePhoneQuestionBar from "./exam-workspace/ExamWorkspacePhoneQuestionBar.vue";
-import ExamWorkspaceSheet from "./exam-workspace/ExamWorkspaceSheet.vue";
-import { examWorkspaceReadinessByItemId } from "./exam-workspace/examWorkspaceItemReadiness";
-import { toExamWorkspaceItemRows } from "./exam-workspace/examWorkspaceRows";
-import ExamWorkspaceTotalSignal from "./exam-workspace/ExamWorkspaceTotalSignal.vue";
+import "./exam-workspace/examWorkspace.css";
+import { examWorkspaceSavedAt } from "./exam-workspace/examWorkspaceFormat";
+import { examWorkspaceItemReadiness } from "./exam-workspace/examWorkspaceItemReadiness";
+import type { ExamWorkspaceReadinessReason } from "./exam-workspace/examWorkspaceItemReadiness";
+import { isTeacherReviewed } from "./exam-workspace/examWorkspaceItemEdits";
+import type { TeacherItemKind } from "./exam-workspace/examWorkspaceItemEdits";
+import {
+  examWorkspaceBlockerEntries,
+  examWorkspaceFirstPrintedMismatch,
+  examWorkspaceListEntries,
+  examWorkspaceListTotal,
+} from "./exam-workspace/examWorkspaceListEntries";
+import type { ExamWorkspaceItemEntry, ExamWorkspaceParentEntry } from "./exam-workspace/examWorkspaceListEntries";
+import { bodyText } from "./exam-workspace/examWorkspaceRichText";
+import { examWorkspaceDocumentLabel } from "./exam-workspace/examWorkspaceRows";
 import { examWorkspaceSharedParagraphs } from "./exam-workspace/examWorkspaceSharedInstruction";
+import { examWorkspaceExamPrintedDifference } from "./exam-workspace/examWorkspaceTotals";
+import { updateExamListOrdering } from "../../api/examWorkspace";
+import type { ExamListOrdering } from "../../api/examWorkspace";
+import { useToast } from "../../composables/useToast";
 import { useExamWorkspaceAddress } from "./exam-workspace/useExamWorkspaceAddress";
+import { useExamWorkspaceContentSuggestions } from "./exam-workspace/useExamWorkspaceContentSuggestions";
 import { useExamWorkspaceEditing } from "./exam-workspace/useExamWorkspaceEditing";
 import { useExamWorkspaceEnrichment } from "./exam-workspace/useExamWorkspaceEnrichment";
-import { useExamWorkspaceExports } from "./exam-workspace/useExamWorkspaceExports";
+import { EXPORT_FORMAT_NAMES, useExamWorkspaceExports } from "./exam-workspace/useExamWorkspaceExports";
 import { useExamWorkspaceLayout } from "./exam-workspace/useExamWorkspaceLayout";
 import { useExamWorkspaceSourceFile } from "./exam-workspace/useExamWorkspaceSourceFile";
 
-type ExamWorkspaceMode = "filer" | "redigera";
+type DrawerName = "open" | "export" | "details";
+
+const DRAWER_TITLES: Record<DrawerName, string> = {
+  details: "Provets uppgifter",
+  export: "Exportera",
+  open: "Öppna",
+};
+const DRAWER_OPENERS: Record<DrawerName, string> = {
+  details: '[data-test="exam-workspace-title"]',
+  export: '[data-test="exam-workspace-export"]',
+  open: '[data-test="exam-workspace-open"]',
+};
 
 const layout = useExamWorkspaceLayout();
-
+const toast = useToast();
+const editing = useExamWorkspaceEditing();
 const {
+  history,
   structure,
   applyArrivingSuggestions,
   assetUrls,
@@ -56,8 +102,8 @@ const {
   isBusy,
   isDirty,
   isOpen,
+  listOrdering,
   loadSavedDocuments,
-  markItemReviewed,
   notes,
   openDocument,
   openExam,
@@ -65,432 +111,672 @@ const {
   renameFailure,
   renameFile,
   retryItem,
-  saveDocument,
   savedDocuments,
   savedRevision,
   selectItem,
-  setTitle,
-  setCourse,
-  selectedItem,
   selectedItemId,
+  setCourse,
+  setParentInstruction,
+  setTags,
+  setTitle,
   summary,
-  updateItemChoiceBody,
-  updateItemCorrectChoices,
-  updateItemGapValues,
-  undoItemInterpretation,
-  removeItemAutomaticValue,
-  showItemGapAsText,
-  updateItemCriteria,
-  updateItemMatchEntryBody,
-  updateItemMatchPairs,
-  updateItemParagraphHeading,
-  updateItemParagraphSegments,
-  updateItemPoints,
-  updateItemTickPoints,
   workspaceDocument,
-} = useExamWorkspaceEditing();
+} = editing;
 
 const { showDocument } = useExamWorkspaceAddress({ isDirty, openDocument, summary });
-
-const { handleDroppedFiles, handleSelectedFile, sourceFileError } =
-  useExamWorkspaceSourceFile(importDocument, importBlocked);
-
-const { exportBlockersByItemId, exportChecklist, exportDocument, exportNotice, exportingTarget } =
-  useExamWorkspaceExports(summary, workspaceDocument);
-
-const {
-  enrichmentLookupError,
-  enrichmentMessage,
-  isEnrichmentPending,
-  isRequesting,
-  requestSuggestionsForAll,
-  retryEnrichmentLookup,
-} = useExamWorkspaceEnrichment({
+const { handleDroppedFiles, handleSelectedFile, sourceFileError } = useExamWorkspaceSourceFile(
+  importDocument,
+  importBlocked,
+);
+const exports = useExamWorkspaceExports(summary, workspaceDocument);
+const enrichment = useExamWorkspaceEnrichment({
   applySuggestions: applyArrivingSuggestions,
   document: workspaceDocument,
   isOpen,
   openExam,
   savedRevision,
 });
-
-const mode = ref<ExamWorkspaceMode>("filer");
-const detailsOpen = ref(false);
-const metadata = ref<InstanceType<typeof ExamWorkspaceMetadata> | null>(null);
-const metadataDrawerId = useId();
-function prepareMetadata(): void {
-  detailsOpen.value = false;
-  mode.value = "redigera";
-}
-const questionSheetOpen = ref(false);
+const content = useExamWorkspaceContentSuggestions({
+  lineageId: () => summary.value?.lineage_id ?? null,
+  setTags,
+  tags: () => workspaceDocument.value?.header.tags ?? null,
+});
 
 const isPhone = computed(() => layout.value === "phone");
+const drawer = ref<DrawerName | null>(null);
+const listOpen = ref(false);
+const importOpen = ref(false);
+const saving = ref(false);
+const saveAsOpen = ref(false);
+const saveAsTaken = ref<string | null>(null);
+/** An instruction the teacher selected; its first question stays the document's selection. */
+const selectedParentId = ref<string | null>(null);
 
-const modeOptions = computed<UiSegmentedToggleOption[]>(() => [
-  { dataTest: "exam-workspace-mode-filer", label: "Filer", value: "filer" },
-  {
-    dataTest: "exam-workspace-mode-redigera",
-    disabled: !workspaceDocument.value,
-    label: "Redigera",
-    value: "redigera",
-  },
-]);
-
+const disabled = computed(() => isBusy.value || structure.running.value);
 const items = computed(() => workspaceDocument.value?.items ?? []);
-
-const itemRows = computed(() =>
-  toExamWorkspaceItemRows(
-    items.value,
-    workspaceDocument.value?.parents ?? [],
-    assetUrls.value,
-  ),
+const readiness = computed<Record<string, ExamWorkspaceReadinessReason[]>>(() =>
+  Object.fromEntries(items.value.map((item) => [item.item_id, examWorkspaceItemReadiness(item)])),
 );
-
-const selectedAiKeyLabel = computed(() =>
-  itemRows.value.find((row) => row.itemId === selectedItemId.value)?.aiKeyLabel ?? null,
+const entries = computed(() =>
+  workspaceDocument.value
+    ? examWorkspaceListEntries(workspaceDocument.value, readiness.value, convertingItemIds.value)
+    : [],
 );
-
-/** The exam's shared instructions with their pictures resolved, once above the rows. */
+const itemEntries = computed(() =>
+  entries.value.filter((entry): entry is ExamWorkspaceItemEntry => entry.kind === "item"),
+);
+const total = computed(() => examWorkspaceListTotal(entries.value));
+const blockers = computed(() =>
+  examWorkspaceBlockerEntries(entries.value, readiness.value, exports.exportBlockersByItemId.value),
+);
 const globalInstructions = computed(() =>
   examWorkspaceSharedParagraphs(workspaceDocument.value?.instructions ?? [], assetUrls.value),
 );
-
-const readinessByItemId = computed(() => examWorkspaceReadinessByItemId(items.value));
-
-const readinessEntries = computed<ExamWorkspaceReadinessEntry[]>(() =>
-  items.value
-    .filter((item) => readinessByItemId.value[item.item_id])
-    .map((item) => ({
-      itemId: item.item_id,
-      reasons: readinessByItemId.value[item.item_id] ?? [],
-      sequence: item.sequence,
-    })),
+const examPrintedTotal = computed(() =>
+  workspaceDocument.value ? examWorkspaceExamPrintedDifference(workspaceDocument.value) : null,
 );
+/** Where "Poängen stämmer inte med provtexten" leads: the first differing part, or the exam total. */
+const firstPrintedMismatch = computed(() => examWorkspaceFirstPrintedMismatch(entries.value, examPrintedTotal.value));
 
-const selectedPosition = computed(() => {
-  const index = items.value.findIndex((item) => item.item_id === selectedItemId.value);
-  return index + 1;
+const selectedEntryId = computed(() => selectedParentId.value ?? selectedItemId.value);
+const selectedEntry = computed(() => entries.value.find((entry) => entry.id === selectedEntryId.value) ?? null);
+const selectedItem = computed(() =>
+  selectedParentId.value === null ? (items.value.find((item) => item.item_id === selectedItemId.value) ?? null) : null,
+);
+const selectedParent = computed(
+  () => workspaceDocument.value?.parents.find((parent) => parent.parent_id === selectedParentId.value) ?? null,
+);
+const selectedParentEntry = computed(() =>
+  selectedEntry.value?.kind === "parent" ? (selectedEntry.value as ExamWorkspaceParentEntry) : null,
+);
+const parentChildren = computed(() =>
+  itemEntries.value.filter((entry) => entry.parentId === selectedParentId.value),
+);
+const itemEntry = computed(() =>
+  selectedEntry.value?.kind === "item" ? (selectedEntry.value as ExamWorkspaceItemEntry) : null,
+);
+const itemParent = computed(() => {
+  const parentId = itemEntry.value?.parentId ?? null;
+  const parent = workspaceDocument.value?.parents.find((entry) => entry.parent_id === parentId);
+  const entry = entries.value.find((candidate) => candidate.id === parentId);
+  return parent && entry ? { id: parent.parent_id, label: entry.label, text: bodyText(parent.instruction) } : null;
+});
+const itemChild = computed(() => {
+  const item = selectedItem.value;
+  const parent = workspaceDocument.value?.parents.find((entry) => entry.item_ids.includes(item?.item_id ?? ""));
+  return item && parent ? { index: parent.item_ids.indexOf(item.item_id), count: parent.item_ids.length } : null;
+});
+/** Until TASK-SKRIPT-39-06-06 stores it, the suggested type is the type the conversion first read. */
+const suggestedKind = computed<NativeExamItemKind | null>(() => {
+  const item = selectedItem.value;
+  const kind = item?.retry_source?.label_kind ?? null;
+  return item && kind && kind !== item.kind && item.review.state === "review_required" ? kind : null;
+});
+const itemNotice = computed(() => {
+  const item = selectedItem.value;
+  const typeNotice = structure.typeNotice.value;
+  if (item && typeNotice && typeNotice.itemId === item.item_id && typeNotice.kind === item.kind) {
+    return typeNotice.text;
+  }
+  return structure.deleteNotice.value;
+});
+const converting = computed(() => selectedItem.value !== null && convertingItemIds.value.has(selectedItem.value.item_id));
+const entryIndex = computed(() => entries.value.findIndex((entry) => entry.id === selectedEntryId.value));
+const stripState = computed(() => {
+  const entry = selectedEntry.value;
+  if (!entry) return null;
+  if (entry.kind === "parent") return "instruction" as const;
+  return entry.status === "converting" ? ("converting" as const) : entry.status;
 });
 
-const otherSavedDocuments = computed(() =>
-  savedDocuments.value.filter((entry) => entry.lineage_id !== summary.value?.lineage_id),
+const saveState = computed(() => (saving.value ? "saving" : isDirty.value ? "dirty" : "saved"));
+const canSave = computed(
+  () => isDirty.value && !disabled.value && !!workspaceDocument.value?.title.trim(),
 );
-
-// Suggestion requests send the editor's current document, so unsaved
-// changes never disable them (TASK-SKRIPT-39-04-07).
-const enrichmentDisabled = computed(
-  () => isBusy.value || isRequesting.value || isEnrichmentPending.value,
+const courseLabel = computed(() => workspaceDocument.value?.header.course?.name ?? null);
+const formattedSavedExports = computed(() =>
+  Object.fromEntries(
+    Object.entries(exports.savedExports.value).map(([target, iso]) => [target, examWorkspaceSavedAt(iso)]),
+  ) as Partial<Record<ExamWorkspaceExportTarget, string>>,
 );
+const currentExports = computed(() =>
+  (Object.keys(exports.savedExports.value) as ExamWorkspaceExportTarget[]).map((target) => EXPORT_FORMAT_NAMES[target]),
+);
+const zeroPoints = computed(() => items.value.some((item) => item.points === 0));
+const enrichmentBusy = computed(() => enrichment.isRequesting.value || enrichment.isEnrichmentPending.value);
 
-// A newly open exam goes into the address and starts in Redigera; closing
-// it returns to Filer.
+function questionLabel(itemId: string): string | null {
+  return itemEntries.value.find((entry) => entry.id === itemId)?.label ?? null;
+}
+
+async function gotoPrintedMismatch(): Promise<void> {
+  const target = firstPrintedMismatch.value;
+  if (target === null) return;
+  if (target !== "exam") {
+    selectEntry(target);
+    return;
+  }
+  if (isPhone.value) listOpen.value = true;
+  await nextTick();
+  const total = document.getElementById("exam-workspace-exam-points");
+  total?.scrollIntoView?.({ block: "nearest" });
+  total?.focus();
+}
+
+function toggleDrawer(name: DrawerName): void {
+  drawer.value = drawer.value === name ? null : name;
+}
+
+function selectEntry(id: string): void {
+  structure.dismissDeleteNotice();
+  importOpen.value = false;
+  if (workspaceDocument.value?.parents.some((parent) => parent.parent_id === id)) {
+    selectedParentId.value = id;
+  } else {
+    selectedParentId.value = null;
+    selectItem(id);
+  }
+  listOpen.value = false;
+}
+
+function step(delta: -1 | 1): void {
+  const target = entries.value[entryIndex.value + delta];
+  if (target) selectEntry(target.id);
+}
+
+function gotoItem(itemId: string): void {
+  selectEntry(itemId);
+  if (!isPhone.value && drawer.value === "export") return;
+  drawer.value = null;
+}
+
+// A command that selects a question (add, delete, a new exam) leaves the instruction.
+watch(selectedItemId, () => {
+  selectedParentId.value = null;
+  importOpen.value = false;
+});
+
 watch(
   () => summary.value?.lineage_id ?? null,
-  (lineageId, previousLineageId) => {
+  (lineageId, previous) => {
     showDocument(lineageId);
-    if (!lineageId) {
-      mode.value = "filer";
-    } else if (lineageId !== previousLineageId) {
-      mode.value = "redigera";
+    if (lineageId === null) {
+      drawer.value = "open";
+    } else if (lineageId !== previous && !(layout.value === "desktop" && drawer.value === "open")) {
+      drawer.value = null;
     }
   },
 );
 
-// The question sheet exists only on phones; leaving the phone layout closes it.
 watch(isPhone, (phone) => {
-  if (!phone) {
-    questionSheetOpen.value = false;
-  }
+  if (!phone) listOpen.value = false;
 });
 
-function setMode(value: string): void {
-  mode.value = value === "redigera" && workspaceDocument.value ? "redigera" : "filer";
-}
-
-function selectAndClose(itemId: string): void {
-  selectItem(itemId);
-  questionSheetOpen.value = false;
-}
-
-function stepItem(offset: number): void {
-  const target = items.value[selectedPosition.value - 1 + offset];
-  if (target) {
-    selectItem(target.item_id);
+async function handleSave(): Promise<void> {
+  if (!canSave.value) return;
+  saving.value = true;
+  try {
+    await editing.save();
+  } finally {
+    saving.value = false;
   }
 }
 
-function goToItem(itemId: string): void {
-  selectItem(itemId);
-  mode.value = "redigera";
-  detailsOpen.value = true;
+function openSaveAs(): void {
+  saveAsTaken.value = null;
+  saveAsOpen.value = true;
 }
 
-function handleAddItem(kind: TeacherItemKind): void {
-  structure.addItem(kind);
-  questionSheetOpen.value = false;
+async function handleSaveAs(name: string): Promise<void> {
+  const outcome = await editing.saveAs(name);
+  if (outcome === "saved") {
+    saveAsOpen.value = false;
+  } else if (outcome === "name_taken") {
+    saveAsTaken.value = name;
+  }
+}
+
+async function setOrdering(ordering: ExamListOrdering): Promise<void> {
+  const previous = listOrdering.value;
+  listOrdering.value = ordering;
+  try {
+    await updateExamListOrdering(ordering);
+  } catch {
+    listOrdering.value = previous;
+    toast.failure("Ordningen kunde inte sparas. Försök igen.");
+  }
+}
+
+function runExport(target: ExamWorkspaceExportTarget, destination: "download" | "files"): void {
+  if (disabled.value) return;
+  void (destination === "files" ? exports.saveExportToFiles(target) : exports.exportDocument(target));
+}
+
+function toggleReviewed(): void {
+  const item = selectedItem.value;
+  if (!item) return;
+  if (isTeacherReviewed(item)) {
+    editing.unmarkItemReviewed(item.item_id);
+  } else {
+    editing.markItemReviewed(item.item_id);
+  }
+}
+
+function addEntry(kind: TeacherItemKind | "instruction"): void {
+  listOpen.value = false;
+  if (kind === "instruction") {
+    void structure.addInstruction();
+  } else {
+    structure.addItem(kind);
+  }
+}
+
+function addChild(kind: TeacherItemKind): void {
+  if (selectedParentId.value) void structure.addChild(selectedParentId.value, kind);
+}
+
+function moveSelected(delta: -1 | 1): void {
+  const item = selectedItem.value;
+  const parentId = itemEntry.value?.parentId;
+  if (item && parentId) void structure.moveChild(parentId, item.item_id, delta);
+}
+
+function isEditable(target: EventTarget | null): boolean {
+  return (
+    target instanceof HTMLElement &&
+    (target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName))
+  );
+}
+
+function handleKeydown(event: KeyboardEvent): void {
+  const modifier = event.metaKey || event.ctrlKey;
+  const key = event.key.toLowerCase();
+  if (modifier && key === "s") {
+    // The browser's save page never opens over the workspace.
+    event.preventDefault();
+    void handleSave();
+    return;
+  }
+  if (modifier && key === "z" && !isEditable(event.target)) {
+    event.preventDefault();
+    void (event.shiftKey ? history.redo() : history.undo());
+    return;
+  }
+  if (event.key === "Escape" && listOpen.value) {
+    listOpen.value = false;
+    return;
+  }
+  if (
+    (event.key === "ArrowDown" || event.key === "ArrowUp") &&
+    !modifier &&
+    !event.defaultPrevented &&
+    !isEditable(event.target) &&
+    !(event.target instanceof HTMLElement && event.target.closest('[role="menu"], [role="dialog"], select'))
+  ) {
+    event.preventDefault();
+    step(event.key === "ArrowDown" ? 1 : -1);
+  }
 }
 
 onMounted(() => {
+  window.addEventListener("keydown", handleKeydown);
   void loadSavedDocuments();
+  if (!summary.value) drawer.value = "open";
 });
 
-function handleExport(target: ExamWorkspaceExportTarget): void {
-  if (!isBusy.value) void exportDocument(target);
-}
-
-async function handleSave(): Promise<void> {
-  await saveDocument();
-}
+onBeforeUnmount(() => {
+  window.removeEventListener("keydown", handleKeydown);
+});
 </script>
 
 <template>
   <main
-    class="flex min-h-0 flex-1 flex-col bg-canvas text-navy"
-    aria-labelledby="exam-workspace-title"
+    class="xw-root ws"
+    :class="{ 'ws--drawer': drawer !== null }"
+    aria-label="Provredigering"
+    :data-layout="layout"
+    data-test="exam-workspace-frame"
   >
-    <section
-      class="mx-auto flex w-full min-w-0 max-w-[100rem] flex-1 flex-col"
-      :class="isPhone ? undefined : 'min-h-[35rem] border border-navy bg-panel'"
-      aria-label="Provredigering"
-      :data-layout="layout"
-      data-test="exam-workspace-frame"
+    <ExamWorkspaceHeader
+      :title="workspaceDocument ? workspaceDocument.title || (summary ? examWorkspaceDocumentLabel(summary.name) : '') : null"
+      :save-state="saveState"
+      :saved-at="summary ? examWorkspaceSavedAt(summary.saved_at) : null"
+      :course-label="courseLabel"
+      :total="total"
+      :details-open="drawer === 'details'"
+      :open-drawer-open="drawer === 'open'"
+      :can-undo="history.canUndo.value && !disabled"
+      :can-redo="history.canRedo.value && !disabled"
+      :can-save="canSave"
+      :can-save-as="workspaceDocument !== null && !disabled"
+      :suggest-busy="enrichmentBusy"
+      :suggest-disabled="workspaceDocument === null || disabled"
+      :is-phone="isPhone"
+      @toggle-details="toggleDrawer('details')"
+      @toggle-open="toggleDrawer('open')"
+      @save="handleSave"
+      @save-as="openSaveAs"
+      @reload="reloadDocument"
+      @suggest-all="enrichment.requestSuggestionsForAll"
+      @undo="history.undo"
+      @redo="history.redo"
     >
-      <header
-        class="grid gap-2 border-b border-navy py-2.5"
-        :class="isPhone ? 'sticky top-0 z-20 bg-modal' : 'bg-panel px-4'"
-        data-test="exam-workspace-toolbar"
-      >
-        <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
-          <h1
-            id="exam-workspace-title"
-            class="text-sm font-extrabold uppercase leading-none tracking-wide text-navy"
-            :class="isPhone ? 'sr-only' : undefined"
-          >
-            Provredigering
-          </h1>
-          <UiSegmentedToggle
-            :model-value="mode"
-            :options="modeOptions"
-            aria-label="Läge"
-            density="compact"
-            width="auto"
-            @update:model-value="setMode"
-          />
-          <div
-            v-if="workspaceDocument && summary"
-            class="flex min-w-0 flex-1 items-center justify-end gap-3"
-            data-test="exam-workspace-summary"
-          >
-            <ExamWorkspaceMetadataTitle
-              :title="workspaceDocument.title || summary.name"
-              :is-open="metadata?.isOpen ?? false"
-              :drawer-id="metadataDrawerId"
-              @open="metadata?.open()"
-            />
-            <ExamWorkspaceTotalSignal :document="workspaceDocument" />
-            <span
-              class="shrink-0 text-xs leading-snug text-navy/65"
-              data-test="exam-workspace-summary-version"
-            >
-              Version {{ summary.version }}
-            </span>
-            <UiDenseStatusPill
-              v-if="isDirty"
-              label="Osparat"
-              tone="warning"
-              data-test="exam-workspace-dirty-pill"
-            />
-            <button
-              type="button"
-              class="btn-cta shrink-0 shadow-none"
-              :disabled="!isDirty || isBusy || !workspaceDocument.title.trim()"
-              data-test="exam-workspace-save"
-              @click="handleSave"
-            >
-              Spara
-            </button>
-          </div>
-        </div>
-
-        <ExamWorkspacePhoneQuestionBar
-          v-if="isPhone && mode === 'redigera' && selectedItem"
-          :ai-key-label="selectedAiKeyLabel"
-          :needs-attention="readinessEntries.length > 0"
-          :position="selectedPosition"
-          :sheet-open="questionSheetOpen"
-          :total="items.length"
-          @next="stepItem(1)"
-          @open-questions="questionSheetOpen = true"
-          @previous="stepItem(-1)"
+      <template #export>
+        <ExamWorkspaceExportMenu
+          :blockers="blockers"
+          :disabled="workspaceDocument === null"
+          :dirty="isDirty"
+          :exporting-target="exports.exportingTarget.value"
+          :saved-exports="formattedSavedExports"
+          :result="exports.exportResult.value"
+          :checklist-count="exports.exportChecklist.value.length"
+          :zero-points="zeroPoints"
+          :is-phone="isPhone"
+          @download="(target) => runExport(target, 'download')"
+          @save-to-files="(target) => runExport(target, 'files')"
+          @more="drawer = 'export'"
+          @goto="gotoItem"
         />
-      </header>
+      </template>
+    </ExamWorkspaceHeader>
 
-      <ExamWorkspaceConversionStatus
-        :conversion-message="conversionMessage"
-        :conversion-error="conversionError"
-        :conversion-progress="conversionProgress"
-        :is-converting="isConverting"
-        @retry="retryConversionStatus"
-      />
-
-      <p
-        v-if="conflictNotice"
-        class="border-b border-navy bg-saffron px-4 py-2 text-xs font-semibold leading-snug"
-        data-test="exam-workspace-conflict-notice"
-      >
-        {{ conflictNotice }}
-      </p>
-
-      <div class="flex min-h-0 flex-1 flex-col">
-        <div
-          v-show="mode === 'filer'"
-          class="min-h-0 flex-1 overflow-y-auto"
-          role="region"
-          aria-label="Filer"
-          data-test="exam-workspace-rail"
-        >
-          <ExamWorkspaceFilesMode
-            :compact="isPhone"
-            :enrichment-disabled="enrichmentDisabled"
-            :enrichment-lookup-error="enrichmentLookupError"
-            :enrichment-message="enrichmentMessage"
-            :export-checklist="exportChecklist"
-            :export-notice="exportNotice"
-            :exporting-target="exportingTarget"
-            :has-document="workspaceDocument !== null"
-            :import-blocked="importBlocked"
-            :is-busy="isBusy"
-            :is-dirty="isDirty"
-            :notes="notes"
-            :readiness="readinessEntries"
-            :saved-documents="otherSavedDocuments"
-            :source-file-error="sourceFileError"
-            @drop-files="handleDroppedFiles"
-            @export="handleExport"
-            @go-to-item="goToItem"
-            @open="openDocument"
-            @reload="reloadDocument"
-            @request-proposals="requestSuggestionsForAll"
-            @retry-enrichment-lookup="retryEnrichmentLookup"
-            @select-file="handleSelectedFile"
-          />
-        </div>
-
-        <div
-          v-show="mode === 'redigera'"
-          class="flex min-h-0 flex-1 flex-col"
-          role="region"
-          aria-label="Redigera"
-          data-test="exam-workspace-workspace"
-        >
-          <ExamWorkspaceConvertingNotice
-            v-if="selectedItemId !== null && convertingItemIds.has(selectedItemId)"
-          />
-          <ExamWorkspaceEditorPane
-            v-if="workspaceDocument"
-            v-model:details-open="detailsOpen"
-            :asset-urls="assetUrls"
-            :disabled="isBusy"
-            :export-blockers-by-item-id="exportBlockersByItemId"
-            :global-instructions="globalInstructions"
-            :item-count="items.length"
-            :item-rows="itemRows"
-            :layout="layout"
-            :readiness-by-item-id="readinessByItemId"
-            :selected-item="selectedItem"
-            :selected-item-id="selectedItemId"
-            :selected-item-locked="selectedItemId !== null && convertingItemIds.has(selectedItemId)"
-            :selected-position="selectedPosition"
-            @add="handleAddItem"
-            @mark-reviewed="markItemReviewed"
-            @retry="retryItem"
-            @select="selectItem"
-            @step="stepItem"
-            @update-choice-body="updateItemChoiceBody"
-            @update-correct-choices="updateItemCorrectChoices"
-            @update-gap-values="updateItemGapValues"
-            @undo-interpretation="undoItemInterpretation"
-            @remove-automatic-value="removeItemAutomaticValue"
-            @show-gap-as-text="showItemGapAsText"
-            @update-criteria="updateItemCriteria"
-            @update-match-entry-body="updateItemMatchEntryBody"
-            @update-match-pairs="updateItemMatchPairs"
-            @update-paragraph-segments="updateItemParagraphSegments"
-            @update-paragraph-heading="updateItemParagraphHeading"
-            @update-points="updateItemPoints"
-            @update-tick-points="updateItemTickPoints"
-          >
-            <template #metadata>
-              <ExamWorkspaceMetadata
-                v-if="summary"
-                ref="metadata"
-                :document="workspaceDocument"
-                :summary="summary"
-                :details-open="detailsOpen"
-                :drawer-id="metadataDrawerId"
-                :set-title="setTitle"
-                :set-course="setCourse"
-                :rename-file="renameFile"
-                :rename-failure="renameFailure"
-                :disabled="isBusy"
-                :layout="layout"
-                @open="prepareMetadata"
-              />
-            </template>
-          </ExamWorkspaceEditorPane>
-        </div>
-      </div>
-    </section>
-
-    <ExamWorkspaceSheet
-      v-if="isPhone && questionSheetOpen && workspaceDocument"
-      title="Frågor"
-      @close="questionSheetOpen = false"
+    <button
+      v-if="firstPrintedMismatch !== null"
+      type="button"
+      class="ws__points"
+      data-test="exam-workspace-points-warning"
+      @click="gotoPrintedMismatch"
     >
-      <ExamWorkspaceSharedInstruction
-        v-if="globalInstructions.length > 0"
-        :paragraphs="globalInstructions"
-        class="border-b border-navy/15 bg-canvas px-3 py-2"
-        data-test="exam-workspace-global-instruction"
+      <UiGlyph
+        meaning="status-warning"
+        :size="16"
+      />Poängen stämmer inte med provtexten
+    </button>
+    <p
+      v-if="conflictNotice"
+      class="xw-notice xw-notice--error ws__bar"
+      role="status"
+      data-test="exam-workspace-conflict-notice"
+    >
+      {{ conflictNotice }}
+    </p>
+    <div
+      v-if="enrichment.enrichmentMessage.value || enrichment.enrichmentLookupError.value"
+      class="xw-notice xw-notice--info ws__bar"
+      role="status"
+      data-test="exam-workspace-enrichment"
+    >
+      <span
+        v-if="enrichment.enrichmentLookupError.value"
+        class="xw-grow"
+        data-test="exam-workspace-enrichment-lookup-error"
+      >{{ enrichment.enrichmentLookupError.value }}</span>
+      <span
+        v-else
+        class="xw-grow"
+        data-test="exam-workspace-enrichment-message"
+      >{{ enrichment.enrichmentMessage.value }}</span>
+      <button
+        v-if="enrichment.enrichmentLookupError.value"
+        type="button"
+        class="xw-btn xw-btn--compact"
+        data-test="exam-workspace-enrichment-lookup-retry"
+        @click="enrichment.retryEnrichmentLookup"
+      >
+        Försök igen
+      </button>
+    </div>
+
+    <ExamWorkspacePhoneStrip
+      v-if="isPhone && workspaceDocument"
+      :label="selectedEntry?.label ?? null"
+      :state="stripState"
+      :can-previous="entryIndex > 0"
+      :can-next="entryIndex >= 0 && entryIndex < entries.length - 1"
+      :list-open="listOpen"
+      @previous="step(-1)"
+      @next="step(1)"
+      @open-list="listOpen = true"
+    >
+      <ExamWorkspaceQuestionTools
+        v-if="selectedItem"
+        :has-import="selectedItem.import_record !== null"
+        :import-open="importOpen"
+        :reviewed="isTeacherReviewed(selectedItem)"
+        :disabled="disabled || converting"
+        @toggle-import="importOpen = !importOpen"
+        @toggle-reviewed="toggleReviewed"
       />
-      <ExamWorkspaceItemTable
-        :export-blockers-by-item-id="exportBlockersByItemId"
-        :readiness-by-item-id="readinessByItemId"
-        :rows="itemRows"
-        :selected-item-id="selectedItemId"
-        @select="selectAndClose"
-      />
-      <div class="grid grid-cols-2 gap-2 p-4">
-        <button
-          type="button"
-          class="btn-ghost w-full justify-center shadow-none"
-          :disabled="isBusy"
-          title="Ny fråga: fritext"
-          aria-label="Ny fråga: fritext"
-          data-test="exam-workspace-phone-add-free_text"
-          @click="handleAddItem('free_text')"
-        >
-          <IconPlus
-            :size="14"
-            class="h-3.5 w-3.5"
+    </ExamWorkspacePhoneStrip>
+
+    <div
+      class="ws__body"
+      :class="{ 'ws__body--empty': !workspaceDocument }"
+    >
+      <ExamWorkspaceQuestionList
+        v-if="workspaceDocument"
+        :entries="entries"
+        :selected-id="selectedEntryId"
+        :question-count="itemEntries.length"
+        :total="total"
+        :printed-total="examPrintedTotal"
+        :can-add="!disabled"
+        :overlay="isPhone && listOpen"
+        @select="selectEntry"
+        @add="addEntry"
+        @close="listOpen = false"
+      >
+        <template #intro>
+          <ExamWorkspaceSharedInstruction
+            v-if="globalInstructions.length > 0"
+            :paragraphs="globalInstructions"
+            class="ws__shared"
+            data-test="exam-workspace-global-instruction"
           />
-          Fritext
-        </button>
-        <button
-          type="button"
-          class="btn-ghost w-full justify-center shadow-none"
-          :disabled="isBusy"
-          title="Ny fråga: kort svar"
-          aria-label="Ny fråga: kort svar"
-          data-test="exam-workspace-phone-add-short_answer"
-          @click="handleAddItem('short_answer')"
+        </template>
+      </ExamWorkspaceQuestionList>
+
+      <div
+        class="ws__editor"
+        data-test="exam-workspace-workspace"
+      >
+        <div
+          v-if="!workspaceDocument"
+          class="ws__empty"
+          data-test="exam-workspace-empty"
         >
-          <IconPlus
-            :size="14"
-            class="h-3.5 w-3.5"
+          <h2>Inget prov öppet</h2>
+          <p>Importera ett prov från Word eller DigiExam, eller öppna ett sparat prov.</p>
+          <button
+            v-if="drawer !== 'open'"
+            type="button"
+            class="xw-btn"
+            data-test="exam-workspace-empty-open"
+            @click="drawer = 'open'"
+          >
+            Öppna
+          </button>
+        </div>
+        <div
+          v-else
+          class="ws__in"
+        >
+          <ExamWorkspaceInstructionEditor
+            v-if="selectedParent && selectedParentEntry"
+            :parent="selectedParent"
+            :label="selectedParentEntry.label"
+            :children="parentChildren"
+            :subtotal="selectedParentEntry.points"
+            :printed-total="selectedParentEntry.printedTotal"
+            :disabled="disabled"
+            :delete-ready="structure.parentDeleteReady"
+            @update-instruction="(body) => setParentInstruction(selectedParent!.parent_id, body)"
+            @goto-child="selectEntry"
+            @move-child="(itemId, delta) => structure.moveChild(selectedParent!.parent_id, itemId, delta)"
+            @delete-child="structure.deleteItem"
+            @add-child="addChild"
+            @delete-parent="(mode) => structure.deleteParent(selectedParent!.parent_id, mode)"
           />
-          Kort svar
-        </button>
+          <ExamWorkspaceQuestionEditor
+            v-else-if="selectedItem && itemEntry"
+            :item="selectedItem"
+            :label="itemEntry.label"
+            :origin="workspaceDocument.origin.kind"
+            :parent="itemParent"
+            :child="itemChild"
+            :suggested-kind="suggestedKind"
+            :converting="converting"
+            :disabled="disabled"
+            :notice="itemNotice"
+            :import-open="importOpen"
+            :last-child-deletable="structure.parentDeleteReady"
+            :asset-urls="assetUrls"
+            @change-type="(kind) => structure.changeType(selectedItem!.item_id, kind)"
+            @move="moveSelected"
+            @remove="structure.deleteItem(selectedItem!.item_id)"
+            @toggle-import="importOpen = !importOpen"
+            @toggle-reviewed="toggleReviewed"
+            @retry="(kind) => retryItem(selectedItem!.item_id, kind)"
+            @goto-parent="selectEntry"
+            @dismiss-notice="itemNotice === structure.deleteNotice.value ? structure.dismissDeleteNotice() : structure.dismissTypeNotice()"
+            @undo-interpretation="editing.undoItemInterpretation"
+            @remove-automatic-value="editing.removeItemAutomaticValue"
+            @show-gap-as-text="editing.showItemGapAsText"
+            @update-choice-body="editing.updateItemChoiceBody"
+            @update-correct-choices="editing.updateItemCorrectChoices"
+            @update-criteria="editing.updateItemCriteria"
+            @update-gap-values="editing.updateItemGapValues"
+            @update-match-entry-body="editing.updateItemMatchEntryBody"
+            @update-match-pairs="editing.updateItemMatchPairs"
+            @update-paragraph-segments="editing.updateItemParagraphSegments"
+            @update-paragraph-heading="editing.updateItemParagraphHeading"
+            @update-points="editing.updateItemPoints"
+            @update-tick-points="editing.updateItemTickPoints"
+          />
+          <p
+            v-else
+            class="xw-muted"
+          >
+            Välj en fråga i listan.
+          </p>
+        </div>
       </div>
-    </ExamWorkspaceSheet>
+
+      <ExamWorkspaceDrawer
+        v-if="drawer"
+        :key="drawer"
+        :title="DRAWER_TITLES[drawer]"
+        :layout="layout"
+        :opener-selector="DRAWER_OPENERS[drawer]"
+        :test-id="`exam-workspace-drawer-${drawer}`"
+        @close="drawer = null"
+      >
+        <ExamWorkspaceOpenDrawer
+          v-if="drawer === 'open'"
+          :documents="savedDocuments"
+          :current-lineage-id="summary?.lineage_id ?? null"
+          :ordering="listOrdering"
+          :import-blocked="importBlocked"
+          :is-busy="isBusy"
+          :is-dirty="isDirty"
+          :source-file-error="sourceFileError"
+          :conversion-message="conversionMessage"
+          :conversion-error="conversionError"
+          :conversion-progress="conversionProgress"
+          :is-converting="isConverting"
+          :notes="notes"
+          :current-exports="currentExports"
+          @select-file="handleSelectedFile"
+          @drop-files="handleDroppedFiles"
+          @open="openDocument"
+          @set-ordering="setOrdering"
+          @retry-conversion="retryConversionStatus"
+        />
+        <ExamWorkspaceExportDrawer
+          v-else-if="drawer === 'export' && workspaceDocument"
+          :blockers="blockers"
+          :dirty="isDirty"
+          :busy="disabled"
+          :exporting-target="exports.exportingTarget.value"
+          :saved-exports="formattedSavedExports"
+          :checklist="exports.exportChecklist.value"
+          :notice="exports.exportNotice.value"
+          :result="exports.exportResult.value"
+          :zero-points="zeroPoints"
+          @run="runExport"
+          @goto="gotoItem"
+        />
+        <ExamWorkspaceDetailsDrawer
+          v-else-if="drawer === 'details' && workspaceDocument && summary"
+          :document="workspaceDocument"
+          :summary="summary"
+          :rename-file="renameFile"
+          :rename-failure="renameFailure"
+          :disabled="disabled"
+          :dirty="isDirty"
+          :content-busy="content.busy.value"
+          :content-message="content.message.value"
+          :question-label="questionLabel"
+          @update:title="setTitle"
+          @update:course="setCourse"
+          @set-tags="setTags"
+          @suggest-content="content.suggest"
+        />
+      </ExamWorkspaceDrawer>
+    </div>
+
+    <ExamWorkspaceSaveAsDialog
+      v-if="saveAsOpen && summary"
+      :current-name="examWorkspaceDocumentLabel(summary.name)"
+      :busy="isBusy"
+      :taken-name="saveAsTaken"
+      @save="handleSaveAs"
+      @close="saveAsOpen = false"
+    />
   </main>
 </template>
+
+<style scoped>
+.ws {
+  display: flex; flex-direction: column; flex: 1; min-height: 0; min-width: 0;
+  background: var(--huleedu-canvas); color: var(--huleedu-navy);
+}
+.ws__bar { margin: var(--huleedu-space-2) var(--huleedu-space-6) 0; }
+.ws__points {
+  all: unset; box-sizing: border-box; display: flex; align-items: flex-start; gap: var(--huleedu-space-1-5); align-self: flex-start;
+  min-height: var(--xw-ctl-fine); margin: var(--huleedu-space-1) var(--huleedu-space-6) 0; padding: var(--huleedu-space-1-5) 0; cursor: pointer;
+  font-size: var(--huleedu-text-sm); color: var(--huleedu-warning); overflow-wrap: anywhere;
+}
+.ws__points svg { flex: none; margin-top: 2px; }
+.ws__points:focus-visible { outline: 2px solid var(--huleedu-action-40); }
+@media (hover: hover) { .ws__points:hover { text-decoration: underline; } }
+@media (pointer: coarse) { .ws__points { min-height: var(--xw-ctl); } }
+.ws__body {
+  position: relative; flex: 1; min-height: 0; display: grid;
+  grid-template-columns: var(--xw-list) minmax(0, 1fr);
+}
+.ws--drawer .ws__body { grid-template-columns: var(--xw-list) minmax(0, 1fr) var(--xw-drawer); }
+.ws__body--empty, .ws--drawer .ws__body--empty { grid-template-columns: minmax(0, 1fr); }
+.ws--drawer .ws__body--empty { grid-template-columns: minmax(0, 1fr) var(--xw-drawer); }
+.ws__editor { min-width: 0; min-height: 0; overflow-y: auto; }
+.ws__in { max-width: 860px; margin: 0 auto; padding: var(--huleedu-space-6) var(--huleedu-space-8) var(--huleedu-space-12); }
+.ws__shared { padding: var(--huleedu-space-2) var(--huleedu-space-6); border-bottom: 1px solid var(--huleedu-surface-divider); }
+.ws__empty {
+  height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--huleedu-space-2);
+  padding: var(--huleedu-space-8); text-align: center; color: var(--huleedu-navy-70);
+}
+.ws__empty h2 { margin: 0; font-size: var(--huleedu-text-xl); color: var(--huleedu-navy); }
+.ws__empty p { max-width: 360px; margin: 0 0 var(--huleedu-space-4); font-size: var(--huleedu-text-sm); }
+@media (max-width: 1279px) {
+  .ws__body, .ws--drawer .ws__body { grid-template-columns: 280px minmax(0, 1fr); }
+  .ws__body--empty, .ws--drawer .ws__body--empty { grid-template-columns: minmax(0, 1fr); }
+  .ws__in { padding: var(--huleedu-space-4) var(--huleedu-space-5) var(--huleedu-space-12); }
+  .ws__bar { margin: var(--huleedu-space-2) var(--huleedu-space-4) 0; }
+  .ws__points { margin: var(--huleedu-space-1) var(--huleedu-space-4) 0; }
+  .ws__shared { padding: var(--huleedu-space-2) var(--huleedu-space-4); }
+}
+@media (max-width: 767px) {
+  .ws__body, .ws--drawer .ws__body { grid-template-columns: minmax(0, 1fr); }
+  .ws__in { padding: var(--huleedu-space-3) var(--huleedu-space-4) var(--huleedu-space-12); }
+}
+</style>

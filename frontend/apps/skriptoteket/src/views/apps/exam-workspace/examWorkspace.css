@@ -1,0 +1,211 @@
+/*
+Domain purpose:
+    The exam workspace's shared controls from the approved prototype
+    (TASK-SKRIPT-40-04-01, docs/mockups/app-shell-and-exam-workspace-redesign):
+    regular buttons at 44 px for touch and 36 px for a fine pointer, 28 px
+    compact buttons, inputs, menus, chips, segmented toggles, notices and the
+    choice marks. Every value comes from the huleedu-integrated tokens.
+    Phone < 768 px, tablet 768-1279 px, desktop >= 1280 px.
+
+Relationships:
+    Imported once by `ExamWorkspaceView.vue`; every class is prefixed `xw-`
+    so nothing reaches the rest of the app. Layout belongs to each
+    component's scoped style.
+*/
+
+.xw-root {
+  --xw-ctl: 44px;
+  --xw-ctl-fine: 36px;
+  --xw-ctl-compact: var(--huleedu-workbench-control-height);
+  --xw-list: 320px;
+  --xw-drawer: 380px;
+}
+
+/* Buttons */
+.xw-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--huleedu-space-2);
+  height: var(--xw-ctl, 44px); padding: 0 var(--huleedu-space-4); flex: none; position: relative;
+  border: 1px solid var(--huleedu-panel-border); border-radius: var(--huleedu-radius-md);
+  background: var(--huleedu-surface-content); color: var(--huleedu-navy);
+  font: inherit; font-size: var(--huleedu-text-sm); font-weight: var(--huleedu-font-medium);
+  white-space: nowrap; cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+.xw-btn--icon { width: var(--xw-ctl, 44px); padding: 0; }
+.xw-btn--ghost { border-color: transparent; background: transparent; }
+.xw-btn--primary { background: var(--huleedu-action); border-color: var(--huleedu-action); color: #fff; }
+.xw-btn--pressed,
+.xw-btn[aria-expanded="true"]:not(.xw-btn--primary),
+.xw-btn[aria-pressed="true"]:not(.xw-btn--checked) {
+  background: var(--huleedu-action-10); border-color: var(--huleedu-action); color: var(--huleedu-action);
+}
+.xw-btn--checked { background: var(--huleedu-action); border-color: var(--huleedu-action); color: #fff; }
+.xw-btn--compact {
+  height: var(--xw-ctl-compact, 28px); padding: 0 var(--huleedu-workbench-control-padding-inline);
+  font-size: var(--huleedu-workbench-control-text); border-radius: var(--huleedu-workbench-control-radius);
+  gap: var(--huleedu-space-1-5);
+}
+.xw-btn--compact.xw-btn--icon { width: var(--xw-ctl-compact, 28px); padding: 0; }
+.xw-btn:disabled, .xw-btn[aria-disabled="true"] { color: var(--huleedu-navy-40); cursor: not-allowed; }
+.xw-btn--primary:disabled { background: var(--huleedu-navy-20); border-color: var(--huleedu-navy-20); color: #fff; }
+.xw-btn--error { border-color: var(--huleedu-error); box-shadow: 0 0 0 1px var(--huleedu-error); }
+.xw-btn:focus-visible { outline: 2px solid var(--huleedu-action-40); outline-offset: 2px; }
+@media (hover: hover) {
+  .xw-btn:not(:disabled):hover { background: var(--huleedu-action-05); }
+  .xw-btn--primary:not(:disabled):hover, .xw-btn--checked:hover { background: var(--huleedu-action); opacity: 0.9; }
+}
+@media (pointer: fine) {
+  .xw-btn { height: var(--xw-ctl-fine, 36px); }
+  .xw-btn--icon { width: var(--xw-ctl-fine, 36px); }
+  .xw-btn--compact { height: var(--xw-ctl-compact, 28px); }
+  .xw-btn--compact.xw-btn--icon { width: var(--xw-ctl-compact, 28px); }
+}
+.xw-split { display: inline-flex; }
+.xw-split > .xw-btn:first-child { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+.xw-split > .xw-btn + .xw-btn {
+  width: 28px; padding: 0; border-top-left-radius: 0; border-bottom-left-radius: 0;
+  border-left-color: rgb(255 255 255 / 40%);
+}
+.xw-sep { width: 1px; height: 24px; background: var(--huleedu-surface-divider); flex: none; }
+.xw-badge-dot {
+  position: absolute; top: 3px; right: 3px; width: 8px; height: 8px; border-radius: 50%;
+  background: var(--huleedu-warning);
+}
+.xw-rm {
+  width: 28px; height: 28px; flex: none; border: 0; background: none; color: var(--huleedu-navy-50);
+  border-radius: var(--huleedu-radius-md); display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
+}
+.xw-rm:disabled { color: var(--huleedu-navy-20); cursor: not-allowed; }
+@media (hover: hover) { .xw-rm:not(:disabled):hover { color: var(--huleedu-error); background: var(--huleedu-error-10); } }
+.xw-linkbtn {
+  all: unset; cursor: pointer; display: inline-flex; align-items: center; gap: var(--huleedu-space-1-5); min-height: 28px;
+  font-size: var(--huleedu-text-sm); font-weight: var(--huleedu-font-medium); color: var(--huleedu-action);
+  text-decoration: underline; text-underline-offset: 3px;
+}
+.xw-linkbtn:focus-visible { outline: 2px solid var(--huleedu-action-40); }
+
+/* Text, inputs and labels */
+.xw-label {
+  display: flex; align-items: center; gap: var(--huleedu-space-2); min-height: 28px;
+  margin: var(--huleedu-space-4) 0 var(--huleedu-space-1-5);
+  font-size: var(--huleedu-type-field-label-size); font-weight: var(--huleedu-type-field-label-weight);
+}
+.xw-grow { flex: 1; min-width: 0; }
+.xw-input {
+  width: 100%; min-width: 0; height: var(--xw-ctl, 44px); padding: 0 var(--huleedu-space-3);
+  border: 1px solid var(--huleedu-panel-border); border-radius: var(--huleedu-radius-md);
+  background: var(--huleedu-surface-content); color: var(--huleedu-navy); font: inherit;
+}
+.xw-input:focus { outline: none; border-color: var(--huleedu-action); box-shadow: 0 0 0 1px var(--huleedu-action); }
+.xw-input[aria-invalid="true"] { border-color: var(--huleedu-error); box-shadow: 0 0 0 1px var(--huleedu-error); }
+.xw-input[readonly] { background: var(--huleedu-navy-02); color: var(--huleedu-navy-70); }
+.xw-input:disabled { background: var(--huleedu-navy-02); color: var(--huleedu-navy-40); }
+@media (pointer: fine) { .xw-input { height: var(--xw-ctl-fine, 36px); } }
+.xw-hint {
+  display: flex; align-items: center; gap: var(--huleedu-space-1-5); margin: var(--huleedu-space-1-5) 0 0;
+  font-size: var(--huleedu-text-xs); color: var(--huleedu-navy-60);
+}
+.xw-errline {
+  display: flex; align-items: center; gap: var(--huleedu-space-1-5); margin: var(--huleedu-space-1-5) 0 0;
+  font-size: var(--huleedu-text-sm); color: var(--huleedu-error);
+}
+.xw-okline {
+  display: inline-flex; align-items: center; gap: var(--huleedu-space-1-5); min-height: 28px;
+  font-size: var(--huleedu-text-sm); color: var(--huleedu-navy-60);
+}
+.xw-notice {
+  display: flex; align-items: flex-start; gap: var(--huleedu-space-2); margin: 0 0 var(--huleedu-space-3);
+  padding: var(--huleedu-space-2-5) var(--huleedu-space-3); border-radius: var(--huleedu-radius-md);
+  background: var(--huleedu-warning-15); font-size: var(--huleedu-text-sm);
+}
+.xw-notice > svg { color: var(--huleedu-warning); margin-top: 1px; flex: none; }
+.xw-notice--info { background: var(--huleedu-action-05); border: 1px solid var(--huleedu-action-30); }
+.xw-notice--info > svg { color: var(--huleedu-action); }
+.xw-notice--error { background: var(--huleedu-error-10); }
+.xw-notice--error > svg { color: var(--huleedu-error); }
+.xw-warn { color: var(--huleedu-warning); }
+.xw-ok { color: var(--huleedu-success); }
+.xw-bad { color: var(--huleedu-error); }
+.xw-ai { color: var(--huleedu-action); }
+.xw-muted { color: var(--huleedu-navy-60); }
+
+/* Chips and segmented toggles */
+.xw-chip {
+  display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 var(--huleedu-space-2);
+  border-radius: 11px; border: 1px solid var(--huleedu-surface-divider); background: var(--huleedu-navy-02);
+  font-size: var(--huleedu-text-xs); font-weight: var(--huleedu-font-medium); color: var(--huleedu-navy-70); white-space: nowrap;
+}
+.xw-chip--teal { color: var(--huleedu-action); border-color: var(--huleedu-action-30); background: var(--huleedu-action-05); }
+.xw-seg {
+  display: inline-flex; flex: none; overflow: hidden;
+  border: 1px solid var(--huleedu-panel-border); border-radius: var(--huleedu-radius-md);
+}
+.xw-seg > button {
+  all: unset; box-sizing: border-box; display: inline-flex; align-items: center; height: 28px; cursor: pointer;
+  padding: 0 var(--huleedu-space-2-5); border-right: 1px solid var(--huleedu-panel-border);
+  background: var(--huleedu-surface-content); font-size: var(--huleedu-text-xs); font-weight: var(--huleedu-font-medium);
+}
+.xw-seg--large > button { height: var(--xw-ctl-fine, 36px); padding: 0 var(--huleedu-space-4); font-size: var(--huleedu-text-sm); }
+.xw-seg > button:last-child { border-right: 0; }
+.xw-seg > button[aria-pressed="true"] { background: var(--huleedu-action-10); color: var(--huleedu-action); }
+.xw-seg > button:focus-visible { outline: 2px solid var(--huleedu-action-40); outline-offset: -2px; }
+
+/* Choice marks */
+.xw-radio, .xw-check { width: 18px; height: 18px; flex: none; border: 2px solid var(--huleedu-navy-50); }
+.xw-radio { border-radius: 50%; }
+.xw-check { border-radius: 3px; }
+.xw-radio--on { border-color: var(--huleedu-action); background: var(--huleedu-action); box-shadow: inset 0 0 0 3px #fff; }
+.xw-check--on {
+  border-color: var(--huleedu-action);
+  background: var(--huleedu-action) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center / 12px no-repeat;
+}
+
+/* Menus: positioned by ExamWorkspaceMenu */
+.xw-menu {
+  position: fixed; z-index: 30; width: 300px; max-height: calc(100vh - 80px); overflow-y: auto;
+  padding: var(--huleedu-space-1-5) 0; border: 1px solid var(--huleedu-panel-border); border-radius: var(--huleedu-radius-lg);
+  background: var(--huleedu-surface-content); box-shadow: var(--huleedu-shadow-md); color: var(--huleedu-navy);
+}
+.xw-mi {
+  all: unset; box-sizing: border-box; width: 100%; min-height: 40px; display: flex; align-items: center; gap: var(--huleedu-space-3);
+  padding: 0 var(--huleedu-space-2) 0 var(--huleedu-space-4); font-size: var(--huleedu-text-sm); cursor: pointer;
+}
+.xw-mi .xw-grow { font-weight: var(--huleedu-font-medium); }
+.xw-mi[aria-checked="true"] { color: var(--huleedu-action); }
+.xw-mi[aria-disabled="true"] { color: var(--huleedu-navy-40); cursor: not-allowed; }
+.xw-mi:focus-visible { background: var(--huleedu-action-05); }
+@media (hover: hover) { .xw-mi:not([aria-disabled="true"]):hover { background: var(--huleedu-action-05); } }
+.xw-mi__pad { width: 20px; flex: none; }
+.xw-mi__sub { color: var(--huleedu-navy-60); font-weight: var(--huleedu-font-normal); }
+.xw-mi__hint { flex: none; padding-right: var(--huleedu-space-2); font-size: var(--huleedu-text-xs); color: var(--huleedu-navy-60); }
+.xw-mi__stack { flex: 1; min-width: 0; display: flex; flex-direction: column; padding: 6px 0; }
+.xw-mi__stack small { display: flex; align-items: center; gap: 4px; font-size: var(--huleedu-text-xs); color: var(--huleedu-navy-60); }
+.xw-mi__mini {
+  width: 32px; height: 32px; flex: none; border: 0; background: none; cursor: pointer; color: var(--huleedu-navy-70);
+  display: inline-flex; align-items: center; justify-content: center; border-radius: var(--huleedu-radius-md);
+}
+.xw-mi__mini:disabled { color: var(--huleedu-navy-30); cursor: not-allowed; }
+@media (hover: hover) { .xw-mi__mini:not(:disabled):hover { background: var(--huleedu-action-10); color: var(--huleedu-action); } }
+.xw-mhead {
+  padding: var(--huleedu-space-1-5) var(--huleedu-space-4) var(--huleedu-space-1);
+  font-size: var(--huleedu-text-xs); font-weight: var(--huleedu-font-semibold); color: var(--huleedu-navy-60);
+}
+.xw-mdiv { height: 1px; margin: var(--huleedu-space-1-5) 0; background: var(--huleedu-surface-divider); }
+.xw-mblock {
+  margin: 0 var(--huleedu-space-2) var(--huleedu-space-1-5); padding: var(--huleedu-space-2) var(--huleedu-space-3);
+  border-radius: var(--huleedu-radius-md); background: var(--huleedu-error-10); font-size: var(--huleedu-text-xs);
+}
+.xw-mblock b { display: flex; align-items: center; gap: var(--huleedu-space-1-5); margin-bottom: 4px; color: var(--huleedu-error); font-size: var(--huleedu-text-sm); }
+.xw-mblock button {
+  all: unset; display: block; margin-top: 2px; cursor: pointer; color: var(--huleedu-navy);
+  text-decoration: underline; text-underline-offset: 2px;
+}
+.xw-mblock button:focus-visible { outline: 2px solid var(--huleedu-action-40); }
+@media (max-width: 767px) {
+  .xw-menu { left: 12px !important; right: 12px !important; width: auto !important; }
+}
+
+/* Spin for busy glyphs */
+@keyframes xw-spin { to { transform: rotate(360deg); } }
+.xw-spin { animation: xw-spin 0.9s linear infinite; }
+@media (prefers-reduced-motion: reduce) { .xw-spin { animation-duration: 2.4s; } }

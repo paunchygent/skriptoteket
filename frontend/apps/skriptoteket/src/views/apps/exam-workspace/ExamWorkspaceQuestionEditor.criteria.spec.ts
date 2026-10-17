@@ -1,5 +1,5 @@
 /**
- * Exam workspace item editor, Fritext criteria.
+ * Exam workspace question editor, Fritext criteria.
  *
  * Expected behavior:
  *   A free-text item shows its criteria with text and whole points. Adding
@@ -17,7 +17,7 @@ import { describe, expect, it } from "vitest";
 import { nextTick } from "vue";
 
 import type { NativeExamItem } from "../../../api/examWorkspace";
-import ExamWorkspaceItemEditor from "./ExamWorkspaceItemEditor.vue";
+import ExamWorkspaceQuestionEditor from "./ExamWorkspaceQuestionEditor.vue";
 import { EMPTY_CRITERION_TEXT_GUIDANCE } from "./examWorkspaceItemSaveRules";
 import { buildMatchingItem } from "./examWorkspaceMatchingItem.specSupport";
 
@@ -39,15 +39,20 @@ function buildFreeTextItem(overrides: Partial<NativeExamItem> = {}): NativeExamI
 }
 
 function mountEditor(item: NativeExamItem, options: { attachTo?: HTMLElement } = {}) {
-  return mount(ExamWorkspaceItemEditor, {
+  return mount(ExamWorkspaceQuestionEditor, {
     ...options,
     props: {
-      attentionCount: 0,
-      detailsOpen: false,
       item,
-      position: 1,
-      showNavigation: false,
-      total: 1,
+      label: "1",
+      origin: "digiexam_import",
+      parent: null,
+      child: null,
+      suggestedKind: null,
+      converting: false,
+      disabled: false,
+      notice: null,
+      importOpen: false,
+      lastChildDeletable: false,
     },
   });
 }
@@ -57,7 +62,7 @@ const TWO_CRITERIA = [
   { text: "Förklarar följden", points: 2 },
 ];
 
-describe("ExamWorkspaceItemEditor Fritext criteria", () => {
+describe("ExamWorkspaceQuestionEditor Fritext criteria", () => {
   it("adds a first criterion worth the question's whole points", async () => {
     const wrapper = mountEditor(buildFreeTextItem());
 

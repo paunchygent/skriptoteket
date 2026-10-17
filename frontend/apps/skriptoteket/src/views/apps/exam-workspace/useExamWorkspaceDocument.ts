@@ -23,6 +23,7 @@ import { computed, ref, shallowRef } from "vue";
 import { isApiError } from "../../../api/client";
 import type { ApiError } from "../../../api/client";
 import {
+  copyExamWorkspaceDocument,
   getExamWorkspaceDocument,
   listExamWorkspaceDocuments,
   saveExamWorkspaceDocument as requestSaveExamWorkspaceDocument,
@@ -33,8 +34,10 @@ import type {
   ExamCourseChoice,
   ExamListOrdering,
   NativeExamDocument,
+  NativeExamHeader,
   NativeExamItem,
   NativeExamItemKind,
+  NativeExamParent,
 } from "../../../api/examWorkspace";
 import { useToast } from "../../../composables/useToast";
 import { examWorkspaceAssetUrls } from "./examWorkspaceAssetUrls";
@@ -54,12 +57,23 @@ export { EXAM_WORKSPACE_CONVERSION_POLL_MS } from "./useExamWorkspaceConversion"
 export const EXAM_WORKSPACE_CONFLICT_COPY =
   "Det gick inte att spara eftersom provet ändrades någon annanstans. Den senaste sparade versionen har lästs in på nytt.";
 
-const SAVE_SUCCESS_COPY = "Provet är sparat.";
 const SAVE_FAILURE_COPY = "Det gick inte att spara provet. Försök igen.";
-const RELOAD_SUCCESS_COPY = "Den senaste sparade versionen är inläst.";
 const RELOAD_FAILURE_COPY = "Det gick inte att läsa in provet på nytt. Försök igen.";
 const OPEN_FAILURE_COPY = "Det gick inte att öppna provet. Försök igen.";
 const LIST_FAILURE_COPY = "Det gick inte att hämta dina sparade prov.";
+const SAVE_AS_FAILURE_COPY = "Det gick inte att spara en kopia av provet. Försök igen.";
+
+export type ExamWorkspaceSaveAsOutcome = "saved" | "name_taken" | "failed";
+
+function nameInUse(error: unknown): boolean {
+  return (
+    isApiError(error) &&
+    error.status === 422 &&
+    typeof error.details === "object" &&
+    error.details !== null &&
+    (error.details as { code?: unknown }).code === "vault_name_in_use"
+  );
+}
 
 /** A save refused because it changed questions that still convert (D30). */
 function refusedPlaceholderChange(error: unknown): error is ApiError {
@@ -278,8 +292,8 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
       arrivals.replayAfterResponse(payloadMark);
       // The response holds the payload; spellings merged in after it was read run again on it.
       keying.replayAfterResponse(keyingMark);
+      // "Sparat HH:MM" in the header is the success state; toasts report failures only.
       conflictNotice.value = null;
-      toast.success(SAVE_SUCCESS_COPY);
       return true;
     } catch (error) {
       // A batch saved meanwhile: merge it and save again on top of it. Each
@@ -314,6 +328,38 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
     }
   }
 
+  /**
+   * Spara som: the working copy becomes a new exam named `name` with its own
+   * history, and opens in place; the exam it came from keeps its last save.
+   */
+  async function saveDocumentAs(name: string): Promise<ExamWorkspaceSaveAsOutcome> {
+    const current = workspaceDocument.value;
+    const currentSummary = summary.value;
+    if (!current || !currentSummary || isBusy.value) {
+      return "failed";
+    }
+    if (!current.title.trim()) {
+      toast.failure("Skriv en titel innan du sparar provet.");
+      return "failed";
+    }
+    operationBusy.value = true;
+    try {
+      const response = await copyExamWorkspaceDocument(currentSummary.lineage_id, name, current);
+      applyResponse(response);
+      keying.invalidateCopy();
+      conflictNotice.value = null;
+      return "saved";
+    } catch (error) {
+      if (nameInUse(error)) {
+        return "name_taken";
+      }
+      toast.failure(SAVE_AS_FAILURE_COPY);
+      return "failed";
+    } finally {
+      operationBusy.value = false;
+    }
+  }
+
   async function reloadDocument(): Promise<void> {
     const currentSummary = summary.value;
     if (!currentSummary || isBusy.value) {
@@ -326,7 +372,6 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
       applyResponse(response);
       keying.invalidateCopy();
       conflictNotice.value = null;
-      toast.info(RELOAD_SUCCESS_COPY);
     } catch {
       toast.failure(RELOAD_FAILURE_COPY);
     } finally {
@@ -375,6 +420,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
     const after = workspaceDocument.value?.items.find((item) => item.item_id === itemId);
     if (after !== before) {
       keying.invalidateItem(itemId);
+      noteEdit(true);
     }
   }
 
@@ -382,6 +428,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
   function patchItem(
     itemId: string,
     patch: (item: NativeExamItem) => NativeExamItem,
+    structural = false,
   ): boolean {
     const current = workspaceDocument.value;
     if (!current || isBusy.value || convertingItemIds.value.has(itemId)) {
@@ -399,7 +446,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
       return false;
     }
     workspaceDocument.value = { ...current, items };
-    noteEdit(false);
+    noteEdit(structural);
     return true;
   }
 
@@ -413,10 +460,14 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
     patchItem(itemId, (item) => withRestoredSuggestion(item));
   }
 
-  /** A structural edit of the whole copy (add, delete, reorder); it is one undo step at once. */
+  /**
+   * An edit of the whole copy. A structural edit (add, delete, reorder) is one
+   * undo step at once; typing waits for the pause like an item's text.
+   */
   function editDocument(
     edit: (document: NativeExamDocument) => NativeExamDocument,
     selectId: string | null = null,
+    structural = true,
   ): boolean {
     const current = workspaceDocument.value;
     if (!current || isBusy.value) {
@@ -426,8 +477,27 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
     if (selectId !== null) {
       selectedItemId.value = selectId;
     }
-    noteEdit(true);
+    noteEdit(structural);
     return true;
+  }
+
+  /** The instruction text above an instruction's deluppgifter, typed like a question's text. */
+  function setParentInstruction(parentId: string, instruction: NativeExamParent["instruction"]): void {
+    editDocument(
+      (document) => ({
+        ...document,
+        parents: document.parents.map((parent) =>
+          parent.parent_id === parentId ? { ...parent, instruction } : parent,
+        ),
+      }),
+      null,
+      false,
+    );
+  }
+
+  /** The exam's Centralt innehåll ticks; each tick is its own undo step. */
+  function setTags(tags: NativeExamHeader["tags"]): void {
+    editDocument((document) => ({ ...document, header: { ...document.header, tags } }));
   }
 
   function keepSelection(document: NativeExamDocument): void {
@@ -481,12 +551,15 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
     restoreItemSuggestion,
     retryItem,
     saveDocument,
+    saveDocumentAs,
     savedDocuments,
     savedRevision,
     serverDocument,
     selectItem,
     setTitle,
     setCourse,
+    setParentInstruction,
+    setTags,
     selectedItem,
     selectedItemId,
     summary,

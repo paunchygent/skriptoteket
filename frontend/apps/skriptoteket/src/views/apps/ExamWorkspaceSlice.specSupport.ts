@@ -191,7 +191,7 @@ export async function importFixtureDocument(wrapper: ViewWrapper) {
 }
 
 export async function selectItemRow(wrapper: ViewWrapper, itemId: string) {
-  await wrapper.find(`[data-test="exam-workspace-item-row-${itemId}"]`).trigger("click");
+  await wrapper.find(`[data-test="exam-workspace-row-${itemId}"]`).trigger("click");
 }
 
 export async function saveDocument(wrapper: ViewWrapper) {

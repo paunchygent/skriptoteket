@@ -41,6 +41,15 @@ describe("exam workspace course-aware source intake", () => {
     expect(state.sourceFileError.value).toBeTruthy();
   });
 
+  it("accepts a DigiExam export and counts a .docx and a .dxe in one drop as two exams", () => {
+    const state = intake();
+    const digiExam = new File(["dxe"], "Prov.DXE");
+    state.handleDroppedFiles([digiExam, new File(["a"], "a.docx")], COURSE);
+    expect(state.importDocument).not.toHaveBeenCalled();
+    state.handleSelectedFile(digiExam, COURSE);
+    expect(state.importDocument).toHaveBeenCalledExactlyOnceWith(digiExam, COURSE);
+  });
+
   it("rejects two exams without discarding the key for the next single-file attempt", () => {
     const state = intake();
     const first = new File(["a"], "a.docx");

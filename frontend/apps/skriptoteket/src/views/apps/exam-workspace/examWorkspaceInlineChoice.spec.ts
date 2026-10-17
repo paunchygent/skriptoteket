@@ -6,7 +6,7 @@ import { hasInvalidAnswerKey } from "./examWorkspaceAnswerKeyRules";
 import { newTeacherItem } from "./examWorkspaceItemEdits";
 import { buildGap } from "./examWorkspaceKeyedItems.specSupport";
 import { plainBody } from "./examWorkspaceRichText";
-import { toExamWorkspaceItemRows } from "./examWorkspaceRows";
+import { examWorkspaceTypeLabel } from "./examWorkspaceRows";
 
 type InlineChoiceGap = NativeExamGap & { options: [NativeExamChoice, NativeExamChoice] };
 type InlineChoiceItem = NativeExamItem & { gaps: [InlineChoiceGap, InlineChoiceGap] };
@@ -79,9 +79,9 @@ describe("inline-choice answer keys", () => {
   });
 });
 
-describe("inline-choice row label", () => {
-  it("uses the approved dropdown Lucktext kind name in the teacher's row", () => {
-    expect(toExamWorkspaceItemRows([inlineChoiceItem()])[0]?.typeLabel).toBe("Lucktext med rullista");
+describe("inline-choice type label", () => {
+  it("uses the approved dropdown Lucktext kind name for the teacher", () => {
+    expect(examWorkspaceTypeLabel(inlineChoiceItem().kind)).toBe("Lucktext med rullista");
   });
 });
 

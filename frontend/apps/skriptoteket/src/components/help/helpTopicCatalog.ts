@@ -23,6 +23,7 @@ export type HelpTopicId =
   | "editor_hub"
   | "apps_detail"
   | "conversion_tools"
+  | "exam_workspace"
   | "suggestions_new"
   | "admin_suggestions"
   | "admin_tools"
@@ -158,10 +159,15 @@ export const HELP_TOPIC_CATALOG: readonly HelpTopicCatalogEntry[] = [
     description: "Omvandla prov, ljud och dokument.",
     routes: [
       "exam-converter-authenticated",
-      "exam-workspace",
       "audio-transcription-authenticated",
       "document-converter-authenticated",
     ],
+  },
+  {
+    topic: "exam_workspace",
+    title: "Provredigering",
+    description: "Importera, redigera, spara och exportera prov.",
+    routes: ["exam-workspace"],
   },
   {
     topic: "admin_suggestions",

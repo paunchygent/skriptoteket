@@ -1,5 +1,5 @@
 /**
- * Exam workspace item editor, Kategorisera grid.
+ * Exam workspace question editor, Kategorisera grid.
  *
  * Expected behavior:
  *   A matching item shows the Kategorisera grid: a row per left entry, a
@@ -16,7 +16,7 @@ import { mount } from "@vue/test-utils";
 import { describe, expect, it } from "vitest";
 
 import type { NativeExamItem } from "../../../api/examWorkspace";
-import ExamWorkspaceItemEditor from "./ExamWorkspaceItemEditor.vue";
+import ExamWorkspaceQuestionEditor from "./ExamWorkspaceQuestionEditor.vue";
 import { INCOMPLETE_MATCH_KEY_GUIDANCE } from "./examWorkspaceAnswerKeyRules";
 import { plainBody } from "./examWorkspaceRichText";
 import {
@@ -26,14 +26,19 @@ import {
 } from "./examWorkspaceMatchingItem.specSupport";
 
 function mountEditor(item: NativeExamItem) {
-  return mount(ExamWorkspaceItemEditor, {
+  return mount(ExamWorkspaceQuestionEditor, {
     props: {
-      attentionCount: 0,
-      detailsOpen: false,
       item,
-      position: 1,
-      showNavigation: false,
-      total: 1,
+      label: "1",
+      origin: "digiexam_import",
+      parent: null,
+      child: null,
+      suggestedKind: null,
+      converting: false,
+      disabled: false,
+      notice: null,
+      importOpen: false,
+      lastChildDeletable: false,
     },
   });
 }
@@ -42,7 +47,7 @@ function tick(leftId: string, rightId: string): string {
   return `[data-test="exam-workspace-match-tick-${leftId}-${rightId}"]`;
 }
 
-describe("ExamWorkspaceItemEditor Kategorisera grid", () => {
+describe("ExamWorkspaceQuestionEditor Kategorisera grid", () => {
   it("renders the grid with the key ticked and the Kategorisera labels", () => {
     const wrapper = mountEditor(buildMatchingItem());
 
@@ -133,16 +138,24 @@ describe("ExamWorkspaceItemEditor Kategorisera grid", () => {
     expect(tickPoints.attributes("aria-invalid")).toBeUndefined();
   });
 
-  it("marks a tick value with three decimals or zero and emits nothing", async () => {
+  it("marks a tick value with three decimals and emits nothing", async () => {
     const wrapper = mountEditor(buildMatchingItem());
     const tickPoints = wrapper.get('[data-test="exam-workspace-item-tick-points-input"]');
 
     await tickPoints.setValue("0.125");
-    expect(tickPoints.attributes("aria-invalid")).toBe("true");
-    await tickPoints.setValue("0");
 
     expect(tickPoints.attributes("aria-invalid")).toBe("true");
     expect(wrapper.emitted("updateTickPoints")).toBeUndefined();
+  });
+
+  it("accepts a tick value of zero, which the question editor allows", async () => {
+    const wrapper = mountEditor(buildMatchingItem());
+    const tickPoints = wrapper.get('[data-test="exam-workspace-item-tick-points-input"]');
+
+    await tickPoints.setValue("0");
+
+    expect(tickPoints.attributes("aria-invalid")).toBeUndefined();
+    expect(wrapper.emitted("updateTickPoints")).toEqual([["item_001", "0"]]);
   });
 
   it("emits the side and id of an edited entry text", async () => {
