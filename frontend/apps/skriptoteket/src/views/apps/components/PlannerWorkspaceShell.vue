@@ -29,6 +29,7 @@ import { usePlannerUndoRedoShortcuts } from "../usePlannerUndoRedoShortcuts";
 import { resolvePlannerWorkspaceDisabledReasons } from "../plannerWorkspacePrerequisites";
 import { useHelp } from "../../../components/help/useHelp";
 import { useToast } from "../../../composables/useToast";
+import { SystemMessage } from "../../../components/ui";
 
 type PlannerView = "groups" | "seats" | "rules";
 type PlannerStatusTone = "neutral" | "success" | "warning" | "danger";
@@ -522,11 +523,15 @@ watch(
 
 <template>
   <section :class="PLANNER_WORKSPACE_SHELL_CLASS">
-    <div
+    <SystemMessage
       v-if="plannerState.plannerConflictMessage"
-      class="system-message system-message-warning"
+      tone="warning"
+      class="flex items-start gap-3"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
     >
-      <div class="system-message-content">
+      <div class="min-w-0">
         {{ plannerState.plannerConflictMessage }}
       </div>
       <button
@@ -536,7 +541,7 @@ watch(
       >
         Ladda om utkast
       </button>
-    </div>
+    </SystemMessage>
 
     <PlannerTopPanel
       :title="displayedPlannerTitle"

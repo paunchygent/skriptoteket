@@ -33,7 +33,6 @@ import type {
   PlannerExportFileOption,
   PlannerExportOptionValue,
 } from "./plannerShareExportActions";
-import PlannerToolbarIconButton from "./PlannerToolbarIconButton.vue";
 import PlannerToolbarOverflowMenu from "./PlannerToolbarOverflowMenu.vue";
 import PlannerWorkspaceActionBar from "./PlannerWorkspaceActionBar.vue";
 import { usePlannerToolbarOverflow } from "./usePlannerToolbarOverflow";
@@ -309,7 +308,8 @@ const showOverflowPanel = computed(() => (
           data-overflow-contribution="undo-redo"
           data-test="grouping-undo-redo-cluster"
         >
-          <PlannerToolbarIconButton
+          <UiDenseActionButton
+            icon-only
             label="Ångra"
             size="utility"
             group-position="start"
@@ -318,9 +318,12 @@ const showOverflowPanel = computed(() => (
             @mousedown.prevent
             @click="void state.undoGroupingDraft()"
           >
-            <IconUndo :size="16" />
-          </PlannerToolbarIconButton>
-          <PlannerToolbarIconButton
+            <template #leading>
+              <IconUndo :size="16" />
+            </template>
+          </UiDenseActionButton>
+          <UiDenseActionButton
+            icon-only
             label="Gör om"
             size="utility"
             group-position="end"
@@ -329,8 +332,10 @@ const showOverflowPanel = computed(() => (
             @mousedown.prevent
             @click="void state.redoGroupingDraft()"
           >
-            <IconRedo :size="16" />
-          </PlannerToolbarIconButton>
+            <template #leading>
+              <IconRedo :size="16" />
+            </template>
+          </UiDenseActionButton>
         </div>
         <div
           v-if="isNewDraftInline"
@@ -379,7 +384,8 @@ const showOverflowPanel = computed(() => (
           data-test="grouping-group-count-control"
         >
           <div class="flex items-center [&>*+*]:-ml-px">
-            <PlannerToolbarIconButton
+            <UiDenseActionButton
+              icon-only
               label="Minska antal grupper"
               title="Ta bort sista gruppen"
               size="utility"
@@ -388,8 +394,10 @@ const showOverflowPanel = computed(() => (
               :disabled="state.isWorkspaceBusy || removableGroupId === null"
               @click="decrementGroupCount"
             >
-              <IconMinus :size="16" />
-            </PlannerToolbarIconButton>
+              <template #leading>
+                <IconMinus :size="16" />
+              </template>
+            </UiDenseActionButton>
             <span
               :class="denseActionValueClass({ groupPosition: 'middle' })"
               data-test="group-count-value"
@@ -397,7 +405,8 @@ const showOverflowPanel = computed(() => (
             >
               {{ groupCount }}
             </span>
-            <PlannerToolbarIconButton
+            <UiDenseActionButton
+              icon-only
               label="Öka antal grupper"
               title="Lägg till grupp"
               size="utility"
@@ -406,8 +415,10 @@ const showOverflowPanel = computed(() => (
               :disabled="state.isWorkspaceBusy"
               @click="incrementGroupCount"
             >
-              <IconPlus :size="16" />
-            </PlannerToolbarIconButton>
+              <template #leading>
+                <IconPlus :size="16" />
+              </template>
+            </UiDenseActionButton>
           </div>
         </div>
       </template>

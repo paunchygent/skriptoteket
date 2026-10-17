@@ -10,7 +10,6 @@
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 
 import { UiDenseActionButton } from "../../../components/ui";
-import PlannerToolbarIconButton from "./PlannerToolbarIconButton.vue";
 import SeatNode from "./SeatNode.vue";
 import RoomFixtureArtwork from "./RoomFixtureArtwork.vue";
 import type {
@@ -177,28 +176,34 @@ onBeforeUnmount(() => {
         class="flex flex-wrap items-center gap-2"
         :class="props.compact ? 'w-full justify-between' : ''"
       >
-        <PlannerToolbarIconButton
+        <UiDenseActionButton
+          icon-only
           label="Zooma ut"
           size="utility"
           data-test="seating-zoom-out"
           @click="emit('zoom-out')"
         >
-          −
-        </PlannerToolbarIconButton>
+          <template #leading>
+            −
+          </template>
+        </UiDenseActionButton>
         <span
           data-test="seating-zoom-percent"
           class="border border-navy/20 bg-panel px-2 py-1 text-[11px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60"
         >
           {{ scalePercent }}%
         </span>
-        <PlannerToolbarIconButton
+        <UiDenseActionButton
+          icon-only
           label="Zooma in"
           size="utility"
           data-test="seating-zoom-in"
           @click="emit('zoom-in')"
         >
-          +
-        </PlannerToolbarIconButton>
+          <template #leading>
+            +
+          </template>
+        </UiDenseActionButton>
         <UiDenseActionButton
           label="Anpassa"
           data-test="seating-zoom-fit"

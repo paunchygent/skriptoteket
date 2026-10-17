@@ -77,6 +77,25 @@ describe("RoomCanvas", () => {
     stateMocks.plannerState.studentBySeatId = { "seat-1": null };
   });
 
+  it.each([
+    ["seating-zoom-out", "Zooma ut", "zoom-out"],
+    ["seating-zoom-in", "Zooma in", "zoom-in"],
+  ])("keeps %s labelled, enabled and emitting its zoom event", async (hook, label, event) => {
+    const wrapper = mount(RoomCanvas, {
+      props: {
+        scalePercent: 100,
+        scaledSurfaceStyle: { width: "1400px", height: "960px" },
+        surfaceScale: 1,
+      },
+    });
+    const button = wrapper.get(`[data-test="${hook}"]`);
+    expect(button.attributes("aria-label")).toBe(label);
+    expect(button.attributes("disabled")).toBeUndefined();
+    await button.trigger("click");
+    expect(wrapper.emitted(event)).toEqual([[]]);
+    wrapper.unmount();
+  });
+
   it("keeps the seating surface free from grouping labels", () => {
     const wrapper = mount(RoomCanvas, {
       props: {

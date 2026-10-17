@@ -299,6 +299,7 @@ describe("PlannerWorkspaceShell", () => {
     toastMocks.success.mockReset();
     toastMocks.warning.mockReset();
     stateMocks.plannerState.reloadActiveWorkspace.mockReset();
+    stateMocks.plannerState.plannerConflictMessage = null;
     stateMocks.plannerState.undoGroupingDraft.mockReset();
     stateMocks.plannerState.redoGroupingDraft.mockReset();
     stateMocks.plannerState.runGroupingShuffle.mockReset();
@@ -397,6 +398,97 @@ describe("PlannerWorkspaceShell", () => {
       draft_kind: "grouping",
       revision: 3,
     };
+  });
+
+  it("announces authenticated conflicts and reloads the active workspace from the recovery action", async () => {
+    const message = "Utkastet har ändrats i en annan flik.";
+    stateMocks.plannerState.plannerConflictMessage = message;
+    const wrapper = mount(PlannerWorkspaceShell, {
+      props: { workspaceSummary: buildWorkspaceSummary() },
+      global: {
+        stubs: {
+          PlannerOverviewWorkspacePane: true,
+          PlannerMetadataDrawer: true,
+          PlannerHistoryDrawer: true,
+        },
+      },
+    });
+
+    const announcement = wrapper.findAll('[role="status"]').find(
+      (candidate) => candidate.text().includes(message),
+    );
+    expect(announcement, "conflict feedback must be announced").toBeDefined();
+    const reload = wrapper.findAll("button").find(
+      (candidate) => candidate.text() === "Ladda om utkast",
+    );
+    expect(reload).toBeDefined();
+    await reload!.trigger("click");
+    expect(stateMocks.plannerState.reloadActiveWorkspace).toHaveBeenCalledExactlyOnceWith();
+    wrapper.unmount();
+  });
+
+  it.each([
+    ["groups", "grouping", "undo-grouping", "Ångra", "canUndo", "undoGroupingDraft"],
+    ["groups", "grouping", "redo-grouping", "Gör om", "canRedo", "redoGroupingDraft"],
+    ["seats", "seating", "undo-seating-draft", "Ångra", "canUndo", "undoSeatingDraft"],
+    ["seats", "seating", "redo-seating-draft", "Gör om", "canRedo", "redoSeatingDraft"],
+  ] as const)("preserves %s %s action %s label, disabled state and command", async (view, kind, hook, label, permission, command) => {
+    stateMocks.plannerState.draft = { id: "draft-1", draft_kind: kind, revision: 3 };
+    const wrapper = mount(PlannerWorkspaceShell, {
+      props: { initialView: view, workspaceSummary: buildWorkspaceSummary() },
+      global: {
+        stubs: {
+          PlannerGroupingWorkspacePane: true,
+          PlannerSeatingWorkspacePane: true,
+          PlannerMetadataDrawer: true,
+          PlannerHistoryDrawer: true,
+        },
+      },
+    });
+    const button = wrapper.get(`[data-test="${hook}"]`);
+    expect(button.attributes("aria-label")).toBe(label);
+    expect(button.attributes("disabled")).toBeDefined();
+    await button.trigger("click");
+    expect(stateMocks.plannerState[command]).not.toHaveBeenCalled();
+    stateMocks.plannerState[permission] = true;
+    await nextTick();
+    expect(button.attributes("disabled")).toBeUndefined();
+    await button.trigger("click");
+    expect(stateMocks.plannerState[command]).toHaveBeenCalledExactlyOnceWith();
+    wrapper.unmount();
+  });
+
+  it("preserves grouping count action labels, disabled state and commands", async () => {
+    stateMocks.plannerState.groups.push({ id: "group-b", name: "Grupp B", sort_order: 1, name_is_custom: false });
+    const wrapper = mount(PlannerWorkspaceShell, {
+      props: { initialView: "groups", workspaceSummary: buildWorkspaceSummary() },
+      global: {
+        stubs: {
+          PlannerGroupingWorkspacePane: true,
+          PlannerMetadataDrawer: true,
+          PlannerHistoryDrawer: true,
+        },
+      },
+    });
+    const decrement = wrapper.get('[data-test="decrement-group-count"]');
+    const increment = wrapper.get('[data-test="increment-group-count"]');
+    expect(decrement.attributes("aria-label")).toBe("Minska antal grupper");
+    expect(increment.attributes("aria-label")).toBe("Öka antal grupper");
+    expect(decrement.attributes("disabled")).toBeUndefined();
+    expect(increment.attributes("disabled")).toBeUndefined();
+    await decrement.trigger("click");
+    expect(stateMocks.plannerState.removeGroup).toHaveBeenCalledExactlyOnceWith("group-b");
+    await increment.trigger("click");
+    expect(stateMocks.plannerState.addGroup).toHaveBeenCalledExactlyOnceWith();
+    stateMocks.plannerState.isWorkspaceBusy = true;
+    await nextTick();
+    expect(decrement.attributes("disabled")).toBeDefined();
+    expect(increment.attributes("disabled")).toBeDefined();
+    await decrement.trigger("click");
+    await increment.trigger("click");
+    expect(stateMocks.plannerState.removeGroup).toHaveBeenCalledTimes(1);
+    expect(stateMocks.plannerState.addGroup).toHaveBeenCalledTimes(1);
+    wrapper.unmount();
   });
 
   it("removes the visible placement-profile entry point from the default shell", () => {

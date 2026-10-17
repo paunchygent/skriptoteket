@@ -9,7 +9,7 @@
 @media (max-width: 1023px) {
   .planner-top-panel {
     gap: var(--huleedu-space-2);
-    border-color: rgb(8 43 76 / 0.26);
+    border-color: var(--huleedu-panel-border);
     padding: var(--huleedu-space-3);
   }
 
@@ -32,8 +32,6 @@
   .planner-top-panel-exit {
     height: 2rem;
     width: 2rem;
-    border-color: rgb(8 43 76 / 0.24);
-    background-color: var(--huleedu-panel);
   }
 
   .planner-top-panel-exit svg {

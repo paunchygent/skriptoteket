@@ -21,7 +21,6 @@ import {
 } from "../../../components/icons";
 import {
   UiDenseIconButton,
-  UiDenseStatusPill,
   UiSegmentedToggle,
   type UiSegmentedToggleOption,
 } from "../../../components/ui";
@@ -145,6 +144,33 @@ const activeModeLabel = computed(() => {
     return modeMetadata[value].label;
   }
   return activeModeOption.value?.label ?? "Översikt";
+});
+
+// G29: retain the compact dot composition until the shared core supports it.
+const statusToneClass = computed(() => {
+  switch (props.statusTone) {
+    case "success":
+      return "border-success/45 bg-success/10 text-success";
+    case "warning":
+      return "border-warning/50 bg-warning/15 text-navy";
+    case "danger":
+      return "border-error/40 bg-error/10 text-error";
+    default:
+      return "border-navy/15 bg-canvas text-navy/70";
+  }
+});
+
+const statusDotClass = computed(() => {
+  switch (props.statusTone) {
+    case "success":
+      return "bg-success";
+    case "warning":
+      return "bg-warning";
+    case "danger":
+      return "bg-error";
+    default:
+      return "bg-navy/35";
+  }
 });
 
 function selectWorkspaceMode(value: string): void {
@@ -316,13 +342,22 @@ function modeOptionMetadata(option: UiSegmentedToggleOption) {
     </Teleport>
 
     <div class="planner-top-panel-status flex min-h-[2rem] flex-wrap items-center gap-2 text-xs text-navy/65">
-      <UiDenseStatusPill
+      <span
         v-if="statusLabel"
-        :label="statusLabel"
-        :tone="statusTone === 'danger' ? 'error' : statusTone"
+        class="planner-top-panel-status-pill inline-flex items-center gap-2 rounded-full border px-2.5 py-1 font-semibold uppercase tracking-[var(--huleedu-tracking-label)]"
+        :class="statusToneClass"
         :title="statusLabel"
         data-test="planner-top-panel-status-label"
-      />
+      >
+        <span
+          class="h-2 w-2 rounded-full"
+          :class="statusDotClass"
+          aria-hidden="true"
+        />
+        <span class="planner-top-panel-status-label-text">
+          {{ statusLabel }}
+        </span>
+      </span>
       <span
         v-if="statusMessage"
         data-test="planner-top-panel-status-message"

@@ -9,7 +9,7 @@
 
 import { computed, ref } from "vue";
 
-import PlannerToolbarIconButton from "./PlannerToolbarIconButton.vue";
+import { UiDenseActionButton } from "../../../components/ui";
 import type { BuilderTool } from "../roomTemplateEditorDomain";
 import type { RoomFixturePaletteEntry, RoomGridDimensions } from "../roomFixtureLayout";
 
@@ -130,41 +130,53 @@ defineExpose({
         <div class="flex items-center justify-between gap-3">
           <span class="text-sm text-navy/70">Bredd</span>
           <div class="flex items-center gap-2">
-            <PlannerToolbarIconButton
+            <UiDenseActionButton
+              icon-only
               label="Minska bredd"
               size="utility"
               :disabled="!canShrinkCols"
               @click="emit('resize-room', { axis: 'cols', delta: -1 })"
             >
-              −
-            </PlannerToolbarIconButton>
-            <PlannerToolbarIconButton
+              <template #leading>
+                −
+              </template>
+            </UiDenseActionButton>
+            <UiDenseActionButton
+              icon-only
               label="Öka bredd"
               size="utility"
               @click="emit('resize-room', { axis: 'cols', delta: 1 })"
             >
-              +
-            </PlannerToolbarIconButton>
+              <template #leading>
+                +
+              </template>
+            </UiDenseActionButton>
           </div>
         </div>
         <div class="flex items-center justify-between gap-3">
           <span class="text-sm text-navy/70">Höjd</span>
           <div class="flex items-center gap-2">
-            <PlannerToolbarIconButton
+            <UiDenseActionButton
+              icon-only
               label="Minska höjd"
               size="utility"
               :disabled="!canShrinkRows"
               @click="emit('resize-room', { axis: 'rows', delta: -1 })"
             >
-              −
-            </PlannerToolbarIconButton>
-            <PlannerToolbarIconButton
+              <template #leading>
+                −
+              </template>
+            </UiDenseActionButton>
+            <UiDenseActionButton
+              icon-only
               label="Öka höjd"
               size="utility"
               @click="emit('resize-room', { axis: 'rows', delta: 1 })"
             >
-              +
-            </PlannerToolbarIconButton>
+              <template #leading>
+                +
+              </template>
+            </UiDenseActionButton>
           </div>
         </div>
       </div>

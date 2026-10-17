@@ -67,6 +67,30 @@ describe("RoomTemplateBuilderSurface", () => {
     setHoverCapableViewport();
   });
 
+  it.each([
+    ["builder-zoom-out", "Zooma ut", "zoom-out"],
+    ["builder-zoom-in", "Zooma in", "zoom-in"],
+  ])("keeps %s labelled, enabled and emitting its zoom event", async (hook, label, event) => {
+    const wrapper = mount(RoomTemplateBuilderSurface, {
+      props: {
+        roomGrid: { cols: 14, rows: 9 },
+        seats: [],
+        fixtures: [],
+        ghostPlacement: null,
+        ghostRenderableFixture: null,
+        builderScale: 0.8,
+        builderScaledSurfaceStyle: { width: "1120px", height: "768px" },
+        builderScalePercent: 80,
+      },
+    });
+    const button = wrapper.get(`[data-test="${hook}"]`);
+    expect(button.attributes("aria-label")).toBe(label);
+    expect(button.attributes("disabled")).toBeUndefined();
+    await button.trigger("click");
+    expect(wrapper.emitted(event)).toEqual([[]]);
+    wrapper.unmount();
+  });
+
   it("anchors the zoomed builder surface to the left edge when it overflows horizontally", async () => {
     const wrapper = mount(RoomTemplateBuilderSurface, {
       props: {

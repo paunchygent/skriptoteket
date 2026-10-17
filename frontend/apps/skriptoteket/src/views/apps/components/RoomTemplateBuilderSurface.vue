@@ -9,7 +9,6 @@
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 
 import { UiDenseActionButton } from "../../../components/ui";
-import PlannerToolbarIconButton from "./PlannerToolbarIconButton.vue";
 import {
   getRoomSurfaceStyle,
   getWallFixtureFrameStyle,
@@ -210,22 +209,28 @@ const shouldCenterSurface = computed(() => {
         >
           {{ builderScalePercent }}%
         </span>
-        <PlannerToolbarIconButton
+        <UiDenseActionButton
+          icon-only
           label="Zooma ut"
           size="utility"
           data-test="builder-zoom-out"
           @click="emit('zoom-out')"
         >
-          −
-        </PlannerToolbarIconButton>
-        <PlannerToolbarIconButton
+          <template #leading>
+            −
+          </template>
+        </UiDenseActionButton>
+        <UiDenseActionButton
+          icon-only
           label="Zooma in"
           size="utility"
           data-test="builder-zoom-in"
           @click="emit('zoom-in')"
         >
-          +
-        </PlannerToolbarIconButton>
+          <template #leading>
+            +
+          </template>
+        </UiDenseActionButton>
         <UiDenseActionButton
           label="Anpassa"
           data-test="builder-zoom-fit"

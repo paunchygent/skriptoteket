@@ -24,7 +24,6 @@ import type {
   PlannerExportFileOption,
   PlannerExportOptionValue,
 } from "./plannerShareExportActions";
-import PlannerToolbarIconButton from "./PlannerToolbarIconButton.vue";
 import PlannerToolbarOverflowMenu from "./PlannerToolbarOverflowMenu.vue";
 import PlannerWorkspaceActionBar from "./PlannerWorkspaceActionBar.vue";
 import { usePlannerToolbarOverflow } from "./usePlannerToolbarOverflow";
@@ -350,7 +349,8 @@ const showOverflowPanel = computed(() => (
           data-overflow-contribution="undo-redo"
           data-test="seating-undo-redo-cluster"
         >
-          <PlannerToolbarIconButton
+          <UiDenseActionButton
+            icon-only
             label="Ångra"
             size="utility"
             group-position="start"
@@ -358,9 +358,12 @@ const showOverflowPanel = computed(() => (
             :disabled="!plannerState.canUndo || seatingLifecycleBusy"
             @click="void undoSeatingDraft()"
           >
-            <IconUndo :size="16" />
-          </PlannerToolbarIconButton>
-          <PlannerToolbarIconButton
+            <template #leading>
+              <IconUndo :size="16" />
+            </template>
+          </UiDenseActionButton>
+          <UiDenseActionButton
+            icon-only
             label="Gör om"
             size="utility"
             group-position="end"
@@ -368,8 +371,10 @@ const showOverflowPanel = computed(() => (
             :disabled="!plannerState.canRedo || seatingLifecycleBusy"
             @click="void redoSeatingDraft()"
           >
-            <IconRedo :size="16" />
-          </PlannerToolbarIconButton>
+            <template #leading>
+              <IconRedo :size="16" />
+            </template>
+          </UiDenseActionButton>
         </div>
         <div
           v-if="isNewDraftInline"
