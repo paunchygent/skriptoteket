@@ -19,7 +19,7 @@
 import { flushPromises } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { ExamWorkspaceConversionStatus } from "../../api/examWorkspace";
+import type { ExamWorkspaceConversionStatus, NativeExamDocument } from "../../api/examWorkspace";
 import type { ExamWorkspaceLayout } from "./exam-workspace/useExamWorkspaceLayout";
 import {
   buildResponse,
@@ -70,9 +70,21 @@ beforeEach(() => {
   apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue(succeededConversion);
   apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [] });
   apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
-    apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(
-      buildResponse({ conversion: succeededConversion, version: 1 }),
-    );
+    const response = buildResponse({ conversion: succeededConversion, version: 1 });
+    // Layout proof needs one export blocker: question 4 has a source key but still needs review.
+    const document: NativeExamDocument = {
+      ...response.document,
+      items: response.document.items.map((item) =>
+        item.item_id === "item_004"
+          ? { ...item, answer_key: { ...item.answer_key, origin: "source_provided" } }
+          : item,
+      ),
+    };
+    apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce({
+      ...response,
+      document,
+      saved_document: document,
+    });
     return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null, summary: null,
       document_revision: null, questions_total: 0, questions_done: 0, units: [] };
   });

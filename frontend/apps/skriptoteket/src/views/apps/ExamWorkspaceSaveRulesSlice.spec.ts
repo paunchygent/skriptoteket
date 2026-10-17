@@ -115,8 +115,8 @@ describe("ExamWorkspaceView save rules", () => {
     // a stored document carries (a conversion or an arriving revision).
     const response = buildResponse({ conversion: succeededConversion, version: 1 });
     for (const [itemId, choiceId] of [
-      ["item_002", "choice_b"],
-      ["item_003", "choice_c"],
+      ["item_002", "choice_002"],
+      ["item_003", "choice_003"],
     ] as const) {
       const choice = response.document.items
         .find((item) => item.item_id === itemId)!
@@ -130,14 +130,14 @@ describe("ExamWorkspaceView save rules", () => {
     await importFixtureDocument(wrapper);
 
     await selectItemRow(wrapper, "item_002");
-    const choice = wrapper.get('[data-test="exam-workspace-choice-text-choice_b"]');
+    const choice = wrapper.get('[data-test="exam-workspace-choice-text-choice_002"]');
 
     expect(choice.attributes("aria-invalid")).toBe("true");
     const hint = wrapper.get('[data-test="exam-workspace-choice-text-hint"]');
     expect(hint.text()).toBe("Ett svarsalternativ saknar text.");
     expect(choice.attributes("aria-describedby")).toBe(hint.attributes("id"));
     expect(
-      wrapper.get('[data-test="exam-workspace-choice-text-choice_a"]').attributes("aria-invalid"),
+      wrapper.get('[data-test="exam-workspace-choice-text-choice_001"]').attributes("aria-invalid"),
     ).toBeUndefined();
     // A teacher edit makes the copy dirty, so the save button sends the refused copy.
     await wrapper.get('[data-test="exam-workspace-item-points-input"]').setValue("5");
@@ -231,11 +231,11 @@ describe("ExamWorkspaceView save rules", () => {
 
     for (const testId of [
       "exam-workspace-item-points-input",
-      "exam-workspace-choice-text-choice_a",
-      "exam-workspace-choice-correct-choice_a",
+      "exam-workspace-choice-text-choice_001",
+      "exam-workspace-choice-correct-choice_001",
     ]) {
       const control = wrapper.get(`[data-test="${testId}"]`);
-      if (testId === "exam-workspace-choice-text-choice_a") {
+      if (testId === "exam-workspace-choice-text-choice_001") {
         expect(control.attributes("contenteditable")).toBe("false");
       } else {
         expect(control.attributes("disabled")).toBeDefined();

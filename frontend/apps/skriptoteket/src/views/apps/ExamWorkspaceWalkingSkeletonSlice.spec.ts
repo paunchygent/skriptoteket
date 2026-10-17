@@ -252,7 +252,7 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
 
     await selectItemRow(wrapper, "item_002");
     await wrapper
-      .find('[data-test="exam-workspace-choice-correct-choice_b"]')
+      .find('[data-test="exam-workspace-choice-correct-choice_002"]')
       .setValue(true);
 
     await selectItemRow(wrapper, "item_004");
@@ -266,7 +266,7 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
     const savedDocument = lastSavedDocument();
     const choiceItem = savedDocument.items.find((item) => item.item_id === "item_002");
     expect(choiceItem?.answer_key).toEqual({
-      correct_choice_ids: ["choice_b"],
+      correct_choice_ids: ["choice_002"],
       match_pairs: [],
       origin: "teacher_authored",
     });
@@ -281,8 +281,8 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
     await importFixtureDocument(wrapper);
 
     await selectItemRow(wrapper, "item_003");
-    await wrapper.find('[data-test="exam-workspace-choice-correct-choice_a"]').setValue(false);
-    await wrapper.find('[data-test="exam-workspace-choice-correct-choice_b"]').setValue(false);
+    await wrapper.find('[data-test="exam-workspace-choice-correct-choice_001"]').setValue(false);
+    await wrapper.find('[data-test="exam-workspace-choice-correct-choice_002"]').setValue(false);
 
     await selectItemRow(wrapper, "item_004");
     await wrapper.get('[data-gap-id="gap_001"]').trigger("click");
@@ -357,9 +357,9 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
     await importFixtureDocument(wrapper);
 
     await selectItemRow(wrapper, "item_003");
-    const choiceA = wrapper.find('[data-test="exam-workspace-choice-correct-choice_a"]');
+    const choiceA = wrapper.find('[data-test="exam-workspace-choice-correct-choice_001"]');
     await choiceA.setValue(false);
-    await wrapper.find('[data-test="exam-workspace-choice-correct-choice_b"]').setValue(false);
+    await wrapper.find('[data-test="exam-workspace-choice-correct-choice_002"]').setValue(false);
     await choiceA.setValue(true);
 
     await selectItemRow(wrapper, "item_004");
@@ -375,7 +375,7 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
     const savedDocument = lastSavedDocument();
     const choiceItem = savedDocument.items.find((item) => item.item_id === "item_003");
     expect(choiceItem?.answer_key).toEqual({
-      correct_choice_ids: ["choice_a"],
+      correct_choice_ids: ["choice_001"],
       match_pairs: [],
       origin: "teacher_authored",
     });
