@@ -44,6 +44,7 @@ class ExamNetQtiInteractionType(StrEnum):
     INLINE_CHOICE = "inline_choice"
     FREE_TEXT = "free_text"
     MATCHING = "matching"
+    ORDERING = "ordering"
 
 
 class ExamNetQtiEvaluationMode(StrEnum):

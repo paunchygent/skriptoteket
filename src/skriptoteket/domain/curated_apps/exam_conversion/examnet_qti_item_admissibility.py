@@ -115,6 +115,7 @@ def _item_errors(item: ExamNetQtiItem) -> tuple[str, ...]:
     errors.extend(_gap_fill_errors(item))
     errors.extend(_inline_choice_errors(item))
     errors.extend(_matching_errors(item))
+    errors.extend(_ordering_errors(item))
     errors.extend(_image_errors(item))
     return tuple(errors)
 
@@ -223,6 +224,20 @@ def _matching_errors(item: ExamNetQtiItem) -> tuple[str, ...]:
     ):
         return (f"Item {item.item_id} pairs entries missing from its matching lists.",)
     return ()
+
+
+def _ordering_errors(item: ExamNetQtiItem) -> tuple[str, ...]:
+    if item.interaction_type is not ExamNetQtiInteractionType.ORDERING:
+        return ()
+    errors: list[str] = []
+    identifiers = tuple(choice.identifier for choice in item.choices)
+    if len(identifiers) < 2:
+        errors.append(f"Item {item.item_id} needs at least two ordering steps.")
+    if len(set(identifiers)) != len(identifiers):
+        errors.append(f"Item {item.item_id} has duplicate ordering step identifiers.")
+    if sorted(item.correct_choice_identifiers) != sorted(identifiers):
+        errors.append(f"Item {item.item_id} needs a correct order that lists every step once.")
+    return tuple(errors)
 
 
 def _image_errors(item: ExamNetQtiItem) -> tuple[str, ...]:

@@ -48,6 +48,7 @@ _INTERACTION_TYPE_BY_KIND = {
     NativeExamItemKind.GAP_FILL: ExamNetQtiInteractionType.GAP_FILL,
     NativeExamItemKind.INLINE_CHOICE: ExamNetQtiInteractionType.INLINE_CHOICE,
     NativeExamItemKind.MATCHING: ExamNetQtiInteractionType.MATCHING,
+    NativeExamItemKind.ORDERING: ExamNetQtiInteractionType.ORDERING,
 }
 
 
@@ -85,6 +86,8 @@ def leaf_qti_item(
         return _choice_item(item, base_item)
     if item.kind is NativeExamItemKind.MATCHING:
         return _matching_item(item, base_item)
+    if item.kind is NativeExamItemKind.ORDERING:
+        return _ordering_item(item, base_item)
     if item.kind is NativeExamItemKind.INLINE_CHOICE:
         return _inline_choice_item(item, base_item)
     return _gap_fill_item(item, base_item, labels)
@@ -123,6 +126,28 @@ def _choice_item(item: NativeExamItem, base_item: ExamNetQtiItem) -> ExamNetQtiI
         evaluation_mode=ExamNetQtiEvaluationMode.AUTOMATIC,
         choices=tuple(choices),
         correct_choice_identifiers=correct_ids,
+    )
+
+
+def _ordering_item(item: NativeExamItem, base_item: ExamNetQtiItem) -> ExamNetQtiItem:
+    # Steps are item.choices in key order; the student sees them in the saved print
+    # order, so the visible list never shows the answer. The correct response is the key.
+    by_id = {choice.choice_id: choice for choice in item.choices}
+    shown = [by_id[choice_id] for choice_id in item.print_order]
+    return replace(
+        base_item,
+        evaluation_mode=ExamNetQtiEvaluationMode.AUTOMATIC,
+        choices=tuple(
+            ExamNetQtiChoice(
+                identifier=safe_identifier(choice.choice_id),
+                text=_plain_label(choice.body),
+                body=body_prompt_paragraphs(choice.body),
+            )
+            for choice in shown
+        ),
+        correct_choice_identifiers=tuple(
+            safe_identifier(choice.choice_id) for choice in item.choices
+        ),
     )
 
 
