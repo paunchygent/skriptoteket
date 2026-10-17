@@ -33,6 +33,19 @@ describe("ExamCourseCombobox", () => {
     expect(wrapper.emitted("update:modelValue")).toBeUndefined();
   });
 
+  it("uses the controlled listbox itself as the floating layer", async () => {
+    const wrapper = mountPicker();
+    const input = wrapper.get('[role="combobox"]');
+    await input.trigger("focus");
+
+    const listbox = wrapper.get('[role="listbox"]');
+    expect(listbox.attributes("id")).toBe(input.attributes("aria-controls"));
+    expect(listbox.classes()).toEqual(expect.arrayContaining([
+      "absolute", "inset-x-0", "top-full", "z-50", "bg-modal", "shadow-md", "border",
+    ]));
+    expect(listbox.element.parentElement?.classList.contains("relative")).toBe(true);
+  });
+
   it("searches a course code and Enter emits the highlighted key with linked ARIA", async () => {
     const wrapper = mountPicker();
     const input = wrapper.get('[role="combobox"]');
