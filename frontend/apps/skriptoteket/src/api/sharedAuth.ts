@@ -117,6 +117,44 @@ export type SharedCsrfResponse = {
   csrf_token: string;
 };
 
+/** The Gateway and identity-service CSRF guard's authorization error contract. */
+async function isCsrfRejection(response: Response): Promise<boolean> {
+  if (response.status !== 403 || !response.headers.get("content-type")?.includes("application/json")) {
+    return false;
+  }
+  const payload: unknown = await response.clone().json().catch(() => null);
+  if (typeof payload !== "object" || payload === null || !("error" in payload)) return false;
+  const error = payload.error;
+  return typeof error === "object" && error !== null &&
+    "code" in error && error.code === "AUTHORIZATION_ERROR" &&
+    "message" in error && error.message === "CSRF token required for browser session write";
+}
+
+/** Send factories must recreate headers and supply a replayable body on each call. */
+export async function requestWithCsrfRecovery(params: {
+  requireCurrent: () => void;
+  ensureToken: () => Promise<string | null>;
+  invalidateToken: (rejectedToken: string | null) => void;
+  send: (token: string | null) => Promise<Response>;
+}): Promise<Response> {
+  const run = async <T>(work: () => Promise<T>): Promise<T> => {
+    params.requireCurrent();
+    try {
+      return await work();
+    } finally {
+      params.requireCurrent();
+    }
+  };
+  const token = await run(params.ensureToken);
+  const response = await run(() => params.send(token));
+  if (!await run(() => isCsrfRejection(response))) return response;
+  params.invalidateToken(token);
+  const freshToken = await run(params.ensureToken);
+  // Preserve the original rejection if hydration failed; do not send a tokenless replay.
+  if (!freshToken) return response;
+  return run(() => params.send(freshToken));
+}
+
 function normalizeBaseUrl(value: string | undefined, origin: string | null = null): string {
   const rawValue = value?.trim() || DEFAULT_SHARED_AUTH_BASE_URL;
   const normalized = rawValue.endsWith("/") ? rawValue.slice(0, -1) : rawValue;

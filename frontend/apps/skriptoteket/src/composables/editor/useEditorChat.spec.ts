@@ -9,7 +9,8 @@ import { useEditorChat } from "./useEditorChat";
 
 const originalFetch = globalThis.fetch;
 
-vi.mock("../../api/client", () => ({
+vi.mock("../../api/client", async (importOriginal) => ({
+  ...await importOriginal<typeof import("../../api/client")>(),
   apiFetch: vi.fn(),
   apiGet: vi.fn(),
   isApiError: (error: unknown) => error instanceof Error,

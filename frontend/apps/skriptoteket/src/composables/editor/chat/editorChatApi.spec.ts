@@ -1,15 +1,26 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { createPinia, setActivePinia } from "pinia";
+import { useAuthStore } from "../../../stores/auth";
+import { createTestUser } from "../../../stores/authTestHelpers";
 
 import { apiFetch, apiGet, resolveProtectedApiUrl } from "../../../api/client";
 import { clearChatHistory, fetchChatHistory, postChatStream, readChatErrorMessage } from "./editorChatApi";
 
 const originalFetch = globalThis.fetch;
 
-vi.mock("../../../api/client", () => ({
+vi.mock("../../../api/client", async (importOriginal) => ({
+  ...await importOriginal<typeof import("../../../api/client")>(),
   apiFetch: vi.fn(),
   apiGet: vi.fn(),
   resolveProtectedApiUrl: vi.fn((path: string) => path),
 }));
+
+beforeEach(() => {
+  setActivePinia(createPinia());
+  const auth = useAuthStore();
+  auth.user = createTestUser();
+  auth.csrfToken = "csrf-1";
+});
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -52,7 +63,6 @@ describe("editorChatApi", () => {
       toolId: "tool/1",
       body: { message: "Hi" },
       correlationId: "corr-1",
-      csrfToken: "csrf-1",
       signal: controller.signal,
     });
 

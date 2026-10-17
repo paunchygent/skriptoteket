@@ -8,6 +8,7 @@ import {
   type AuthProfile,
   type AuthUser,
   sharedAuthUrl,
+  requestWithCsrfRecovery,
   SHARED_AUTH_LOGOUT_PATH,
 } from "../api/sharedAuth";
 import {
@@ -194,6 +195,21 @@ export const useAuthStore = defineStore("auth", () => {
     return null;
   }
 
+  function requestWithCsrf(
+    requestSession: AuthSession,
+    send: (token: string | null) => Promise<Response>,
+  ): Promise<Response> {
+    return requestWithCsrfRecovery({
+      requireCurrent: () => requireCurrentSession(requestSession),
+      ensureToken: () => ensureCsrfToken(requestSession),
+      invalidateToken: (rejectedToken) => {
+        requireCurrentSession(requestSession);
+        if (state.csrfToken === rejectedToken) state.csrfToken = null;
+      },
+      send,
+    });
+  }
+
   async function bootstrapSession(): Promise<AuthSession | null> {
     if (bootstrapPromise) return bootstrapPromise;
     if (state.bootstrapped) return captureSession();
@@ -272,25 +288,11 @@ export const useAuthStore = defineStore("auth", () => {
         }
         throw new Error(state.error ?? "Det gick inte att hämta CSRF-token.");
       }
-      const response = await postSharedLogout(csrfToken);
+      const response = await requestWithCsrf(requestSession, (token) => postSharedLogout(token ?? ""));
       if (!isCurrentSession(requestSession)) return;
       if (isSharedLogoutComplete(response)) {
         applyResponse(requestSession, anonymousState());
         return;
-      }
-      if (response.status === 403 && state.user) {
-        applyResponse(requestSession, { csrfToken: null });
-        const refreshedToken = await ensureCsrfToken(requestSession);
-        if (!isCurrentSession(requestSession)) return;
-        if (refreshedToken) {
-          const retry = await postSharedLogout(refreshedToken);
-          if (!isCurrentSession(requestSession)) return;
-          if (isSharedLogoutComplete(retry)) {
-            applyResponse(requestSession, anonymousState());
-            return;
-          }
-          throw new Error(await readErrorMessage(retry));
-        }
       }
       throw new Error(await readErrorMessage(response));
     } catch (error: unknown) {
@@ -324,6 +326,7 @@ export const useAuthStore = defineStore("auth", () => {
     bootstrap,
     loadAppContinuation,
     ensureCsrfToken,
+    requestWithCsrf,
     logout,
   };
 });

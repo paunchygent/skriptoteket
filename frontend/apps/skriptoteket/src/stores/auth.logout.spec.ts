@@ -104,14 +104,16 @@ describe("useAuthStore.logout", () => {
     expect(store.csrfToken).toBeNull();
   });
 
-  it("refreshes stale CSRF and retries logout once after a 403", async () => {
+  it("refreshes stale CSRF and retries logout once after a CSRF rejection", async () => {
     const store = useAuthStore();
     store.user = createTestUser();
     store.csrfToken = "stale-token";
     store.bootstrapped = true;
 
     vi.mocked(fetch)
-      .mockResolvedValueOnce(mockEmptyResponse(403))
+      .mockResolvedValueOnce(mockJsonResponse({ error: {
+        code: "AUTHORIZATION_ERROR", message: "CSRF token required for browser session write",
+      } }, 403))
       .mockResolvedValueOnce(mockJsonResponse({ csrf_token: "fresh-token" }))
       .mockResolvedValueOnce(mockEmptyResponse(204));
 
