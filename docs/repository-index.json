@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "af3014b34ade7c7a243bcfd074ec06e3ec5f51299d14d979bc04a3e6b7d28048",
+  "source_set_digest": "0bc03851d503c59c3ad5d5ced9a0b6db8dd9c94ac57aeea37e48020cffef6830",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6582,7 +6582,7 @@
       "type": "task",
       "title": "Repair the two failing docker-suite tests in the DOCX background job proof",
       "path": "docs/backlog/tasks/task-skript-rep-0042-repair-the-two-failing-docker-suite-tests-in-the-docx-background-job-proof.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "repository",
       "owners": [
         {
@@ -6592,7 +6592,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-code-review",
+        "decided_at": "2026-10-17T10:24:31+02:00",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Independent Sol review .orchestration/context/sessions/01a148db-64d7-7b40-9a2e-34373c3de59c/evidence/review-rep0042.md (approved, no findings; docker 9 passed, 38 v14 replay files 298 passed). One live provider call per D5 (evidence/rep0042-r2-live-call.md, gpt-6-luna, 3,571 input and 373 output tokens). Merged to main as ef8cd6ea; docker suite 9 passed on main after the merge (evidence/merged-main-docker.log)."
       }
     },
     {
