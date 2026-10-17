@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "db395727cc0cb4a2d5ea1b9a2f08f6cf3625279b4088b4743a8d6fee97d44877",
+  "source_set_digest": "e00f645bf1ee289bf6ad806949762abed499e722f57b1be6877401e38fac2890",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -2683,7 +2683,7 @@
       "type": "task",
       "title": "Keep signed-in shell help and account actions reachable across breakpoints",
       "path": "docs/backlog/tasks/task-skript-08-36-02-keep-signed-in-shell-help-and-account-actions-reachable-across-breakpoints.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-08-36",
       "owners": [
@@ -2694,7 +2694,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-17",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer (Sol) closeout review 31089b51 in the retained session 01a149c9-5bc7-7713-ba64-12dee0470bdd, evidence/reviews/TASK-SKRIPT-08-36-02/closeout-review.md: approved on 0a91a86a, whose four files are unchanged on main. The live viewport walk is not run: the user's 2026-10-17 rule limits parent walks to the exam converter, so other UI closes on unit proof plus approved review. The parent authorized closure."
       }
     },
     {
@@ -5891,7 +5895,7 @@
       "type": "task",
       "title": "Refresh Klassrumskartan onto the shared tokens and components",
       "path": "docs/backlog/tasks/task-skript-40-03-04-refresh-klassrumskartan-onto-the-shared-tokens-and-components.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-03",
       "owners": [
@@ -5902,7 +5906,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-17",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer (Sol) reviews in the retained session 01a149c9-5bc7-7713-ba64-12dee0470bdd, evidence/reviews/TASK-SKRIPT-40-03-04/: review a1e02eb2 and rereview f6883427 (changes requested, F1/F2/F7) repaired and approved by rereview 51081cb1 (huleedu-integrated 0.1.27 adoption) and review 1b7f61f7 (0.1.28 failure-default cleanup); merged to main fb56b364 and 38591ce8. The G12 browser walk is not run: the user's 2026-10-17 rule limits parent walks to the exam converter, so this style-token refresh closes on unit proof plus approved review. The parent authorized closure."
       }
     },
     {
@@ -5956,7 +5964,7 @@
       "type": "task",
       "title": "Refresh the Hjälp panel onto the shared tokens and components",
       "path": "docs/backlog/tasks/task-skript-40-03-07-refresh-the-hjälp-panel-onto-the-shared-tokens-and-components.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-03",
       "owners": [
@@ -5967,7 +5975,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-17",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer (Sol) reviews in the retained session 01a149c9-5bc7-7713-ba64-12dee0470bdd, evidence/reviews/TASK-SKRIPT-40-03-07/: review f7d7f4ad (changes requested, F1 HelpButton popup semantics) and rereview 7d05c366 approved. Closed on approved review plus unit proof under the user's 2026-10-17 rule that parent walks cover only the exam converter. The parent authorized closure."
       }
     },
     {
@@ -5975,7 +5987,7 @@
       "type": "task",
       "title": "Refresh the sign-in and account pages onto the shared tokens and components",
       "path": "docs/backlog/tasks/task-skript-40-03-08-refresh-the-sign-in-and-account-pages-onto-the-shared-tokens-and-components.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-03",
       "owners": [
@@ -5986,7 +5998,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-17",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer (Sol) review 767baa2c approved without findings in the retained session 01a149c9-5bc7-7713-ba64-12dee0470bdd, evidence/reviews/TASK-SKRIPT-40-03-08/review-767baa2c.md. Closed on approved review plus unit proof under the user's 2026-10-17 rule that parent walks cover only the exam converter. The parent authorized closure."
       }
     },
     {

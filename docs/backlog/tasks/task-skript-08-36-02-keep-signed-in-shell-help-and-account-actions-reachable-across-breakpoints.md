@@ -7,10 +7,14 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-15'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-17'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Pi ruthless-reviewer (Sol) closeout review 31089b51 in the retained session 01a149c9-5bc7-7713-ba64-12dee0470bdd, evidence/reviews/TASK-SKRIPT-08-36-02/closeout-review.md: approved on 0a91a86a, whose four files are unchanged on main. The live viewport walk is not run: the user''s 2026-10-17 rule limits parent walks to the exam converter, so other UI closes on unit proof plus approved review. The parent authorized closure.'
 task_kind: story
 acceptance_criteria:
 - Signed-in teachers can open Hjälp at 375, 900, 1024 and 1280+ px through the
@@ -67,7 +71,8 @@ Implementation validation on 2026-10-15: the focused command passed 3 files /
 16 tests; SPA typecheck, lint and build passed. Build reported a chunk-size
 warning. Proof and exact changed files are retained in
 `.orchestration/context/sessions/01a13f60-f5d1-7cee-9c93-2d226dad61de/evidence/implementation/TASK-SKRIPT-08-36-02/result.md`.
-Independent review and the parent's live viewport walk remain pending.
+Independent review approved on 2026-10-17 (closeout review 31089b51). The live viewport walk
+is not run under the user's 2026-10-17 rule that parent walks cover only the exam converter.
 
 ## Stop Conditions
 

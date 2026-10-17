@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-17'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-17'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Pi ruthless-reviewer (Sol) reviews in the retained session 01a149c9-5bc7-7713-ba64-12dee0470bdd, evidence/reviews/TASK-SKRIPT-40-03-04/: review a1e02eb2 and rereview f6883427 (changes requested, F1/F2/F7) repaired and approved by rereview 51081cb1 (huleedu-integrated 0.1.27 adoption) and review 1b7f61f7 (0.1.28 failure-default cleanup); merged to main fb56b364 and 38591ce8. The G12 browser walk is not run: the user''s 2026-10-17 rule limits parent walks to the exam converter, so this style-token refresh closes on unit proof plus approved review. The parent authorized closure.'
 task_kind: story
 acceptance_criteria:
   - Every Klassrumskartan screen, including its phone views render with the shared tokens, action buttons and components and no hard offset shadows, keep their layout, and pass a browser walk at phone, tablet and desktop widths
