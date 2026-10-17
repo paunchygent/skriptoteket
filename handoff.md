@@ -65,12 +65,16 @@
   Wave 2 backend (Sol driver+navigator pairs on Hemma, shared worktree
   `~/apps/skriptoteket-epic-skript-39-remote`, branch `codex/epic-skript-39-remote`,
   never pushed; shared-file hunks stay uncommitted for one parent commit):
-  39-04-06 cfc6a32c/954f3e96/aca5cbf0/878b7042 and 39-04-10 6ecd9924/4a1e56f4
-  under Sol review; 39-06-04 7f79413a/884a2e29 under review (API save/reopen test
-  missing); 39-07-01 1e3c1a3b plus a zero-point fix (user 2026-10-17: questions may
-  carry 0 points); 39-08-03 a418b491/32dacb9c/d9c4e246 (full course snapshot; no-bullet
-  courses store [] and are listed in BUILD); 39-08-04 e65a78a4/d21766a3/7f2bc00d.
-  Reviews for 07-01, 08-03 and 08-04 are next. Next: 39-06-05 then 06-06, 39-07-02, the 39-06-02 Exam.net probe;
+  reviews in `evidence/reviews/` (Hemma copy of the root). Review 1 changes_requested,
+  repairs running then rereview by the same reviewer: 39-04-06 (cfc6a32c/954f3e96/
+  aca5cbf0/878b7042; retry history, pipeline split; repair a130484e), 39-04-10
+  (6ecd9924/4a1e56f4; Task[Any] in a test; repair 0524bc5f), 39-06-04 (7f79413a/
+  884a2e29; rich dropdown options, 504-line adapter; repair 7b2aac0e, API save/reopen
+  test c1e195a2). Under review 1: 39-07-01 (1e3c1a3b/5519749c/2b100a17; zero points
+  allowed per user 2026-10-17, reconcile old positive-tick wording in its task and
+  story at closeout; reviewer 2001b921), 39-08-03 (a418b491/32dacb9c/d9c4e246; no-bullet
+  courses store [], listed in BUILD; reviewer 45d9338a), 39-08-04 (e65a78a4/d21766a3/
+  7f2bc00d; reviewer 2f3d462f). Next: 39-06-05 then 06-06, 39-07-02, the 39-06-02 Exam.net probe;
   integrate, staging walk, then 39-07-03. Follow-ups: cleanup deletes payload files
   before its row commit (39-04-10 review), and `migrated_db` swallows migration-thread errors.
   Opus lane ST-SKRIPT-40-04: 40-04-01 `done`; Opus builders on Hemma (parent-launched)
