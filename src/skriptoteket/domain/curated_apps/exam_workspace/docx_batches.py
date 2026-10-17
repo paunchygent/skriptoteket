@@ -2,8 +2,9 @@
 
 A family is one grouped question with its subparts and answer key; it never splits (D2).
 Every non-header source chunk has exactly one owning family: its own chunks, the shared
-instructions and passages it owns, a points line the grouping left unplaced (the question
-before it), and the title, headings and other unplaced chunks (the question after them). A shared
+instructions and passages it owns, a points line no question owns (the question before it;
+a points line after a question is that question's own chunk, ``docx_points_lines``), and the
+title, headings and other unplaced chunks (the question after them). A shared
 instruction reaches every other family it governs as read-only context. A family that owns
 chunks beyond its own question and answer key, such as a section heading or a points line
 after the section's last question, also reads the other questions of each section it sits

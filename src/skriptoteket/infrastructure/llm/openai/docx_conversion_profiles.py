@@ -49,7 +49,6 @@ def build_luna_docx_conversion_profile(settings: Settings) -> StructuredLLMProvi
             settings.LLM_DOCX_BATCH_OUTPUT_TOKENS_PER_FAMILY * settings.LLM_DOCX_BATCH_FAMILIES,
             LUNA_MAX_OUTPUT_TOKENS,
         ),
-        temperature=settings.LLM_ANSWER_KEY_TEMPERATURE,
         reasoning_effort=StructuredLLMReasoningEffort(
             settings.LLM_DOCX_CONVERSION_REASONING_EFFORT
         ),
@@ -67,7 +66,6 @@ def build_luna_docx_grouping_profile(settings: Settings) -> StructuredLLMProvide
         is_remote=True,
         context_window_tokens=settings.LLM_DOCX_CONVERSION_CONTEXT_WINDOW_TOKENS,
         max_output_tokens=settings.LLM_DOCX_GROUPING_MAX_OUTPUT_TOKENS,
-        temperature=settings.LLM_ANSWER_KEY_TEMPERATURE,
         reasoning_effort=StructuredLLMReasoningEffort.LOW,
         text_verbosity=StructuredLLMTextVerbosity(settings.LLM_ANSWER_KEY_TEXT_VERBOSITY),
     )
@@ -83,7 +81,6 @@ def build_luna_item_label_profile(settings: Settings) -> StructuredLLMProviderPr
         is_remote=True,
         context_window_tokens=settings.LLM_DOCX_CONVERSION_CONTEXT_WINDOW_TOKENS,
         max_output_tokens=settings.LLM_ITEM_LABELER_SECOND_PASS_MAX_OUTPUT_TOKENS,
-        temperature=settings.LLM_ANSWER_KEY_TEMPERATURE,
         reasoning_effort=StructuredLLMReasoningEffort.MEDIUM,
         text_verbosity=StructuredLLMTextVerbosity.LOW,
     )

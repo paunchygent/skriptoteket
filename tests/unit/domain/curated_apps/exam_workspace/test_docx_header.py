@@ -5,7 +5,10 @@ from __future__ import annotations
 import pytest
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
-from skriptoteket.domain.curated_apps.exam_workspace.docx_header import apply_header
+from skriptoteket.domain.curated_apps.exam_workspace.docx_header import (
+    apply_header,
+    printed_exam_total,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import (
     ExamManifest,
     HeaderAnchor,
@@ -46,57 +49,65 @@ def _document() -> NativeExamDocument:
     return conversion_update([("q1", [choice("p1", "Frågan")])], pending=()).document
 
 
+def _heading(anchor: str, text: str) -> DocxChunk:
+    return DocxChunk(anchor=anchor, kind="heading", text=text, marked_text=text)
+
+
+_Q1 = _manifest((), (_question("q1", "q1"),))
+
+
 @pytest.mark.parametrize(
-    ("line", "expected"),
+    ("chunks", "expected"),
     [
-        ("Total: 36 poäng", 36),
-        ("Totalt 40 p", 40),
-        ("Poäng: 15 poäng", 15),
-        ("Max 36p", 36),
-        ("36 poäng totalt", 36),
-        ("Totalt: 7,5 p", 7.5),
-        ("Totalt: 7.5 p", 7.5),
-        ("Del 2: 15 poäng", 15),
-        ("Totalpoäng saknas", None),
+        ((_chunk("t", "Total: 36 poäng"), _chunk("q1", "1. Fråga")), 36),
+        ((_chunk("n", "Namn:"), _chunk("q1", "1. Fråga")), None),
+        (
+            (_chunk("a", "Total: 36 poäng"), _chunk("b", "Totalt 40 p"), _chunk("q1", "1.")),
+            None,
+        ),
+        (
+            (_chunk("a", "Total: 36 poäng"), _chunk("b", "Max 36p"), _chunk("q1", "1.")),
+            36,
+        ),
+        ((_chunk("q1", "1. Fråga"), _chunk("t", "Total: 36 poäng")), None),
+        (
+            (_heading("h", "Del 1: 15 poäng"), _chunk("t", "Total: 36 poäng"), _chunk("q1", "1.")),
+            36,
+        ),
+        ((_heading("h", "Total: 36 poäng"), _chunk("q1", "1. Fråga")), None),
+        ((_chunk("t", "Total: 36,5 poäng"), _chunk("q1", "1. Fråga")), 36.5),
+        ((_chunk("t", "Del 1: 15 poäng, del 2: 21 poäng"), _chunk("q1", "1.")), None),
     ],
 )
-def test_printed_exam_total_reads_the_points_not_an_earlier_part_number(
-    line: str, expected: int | float | None
+def test_printed_exam_total_is_the_one_total_line_before_the_first_question(
+    chunks: tuple[DocxChunk, ...], expected: int | float | None
 ) -> None:
+    assert printed_exam_total(chunks, _Q1) == expected
+
+
+def test_apply_header_takes_the_exam_total_from_the_text_without_a_header_anchor() -> None:
     result = apply_header(
         _document(),
-        _manifest((HeaderAnchor("h1", "exam_total", ()),)),
-        (_chunk("h1", line),),
+        _Q1,
+        (_chunk("t", "Total: 36 poäng"), _chunk("q1", "Frågan")),
         course_key=None,
         courses=(),
     )
-    assert result.document.header.printed_total == expected
+    assert result.document.header.printed_total == 36
 
 
-def test_course_lines_keep_plain_source_order_and_first_parsable_exam_total() -> None:
+def test_course_lines_keep_plain_source_order() -> None:
     result = apply_header(
         _document(),
-        _manifest(
-            (
-                HeaderAnchor("c2", "course", ()),
-                HeaderAnchor("t3", "exam_total", ()),
-                HeaderAnchor("c1", "course", ()),
-                HeaderAnchor("t2", "exam_total", ()),
-                HeaderAnchor("t1", "exam_total", ()),
-            )
-        ),
+        _manifest((HeaderAnchor("c2", "course", ()), HeaderAnchor("c1", "course", ()))),
         (
             _chunk("c1", "Svenska 2", marked="**Svenska** <i>2</i>"),
             _chunk("c2", "Kursavslutande", marked="<u>Kursavslutande</u>"),
-            _chunk("t1", "Total saknas"),
-            _chunk("t2", "Total: 36 poäng"),
-            _chunk("t3", "Total: 99 poäng"),
         ),
         course_key=None,
         courses=(),
     )
     assert result.document.header.course_hint == "Svenska 2 Kursavslutande"
-    assert result.document.header.printed_total == 36
     assert result.document.instructions == ()
 
 

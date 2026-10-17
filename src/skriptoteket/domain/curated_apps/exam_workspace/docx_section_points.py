@@ -9,6 +9,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_scoring import (
     point_shares,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
+from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import line_points
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     POINT_LABEL,
     points_line,
@@ -39,11 +40,6 @@ class SectionPoints:
 def _number(label: str) -> int | None:
     number = re.search(r"\d+", label)
     return int(number.group()) if number else None
-
-
-def _line_total(chunk: DocxChunk) -> int | None:
-    labels = POINT_LABEL.findall(chunk.text)
-    return _number(labels[0]) if points_line(chunk.text) and len(labels) == 1 else None
 
 
 def _total(
@@ -149,8 +145,14 @@ def split_section_totals(
             # printed total is applied atomically after heading placement instead.
             continue
         last_start = starts[members[-1]]
+        # A points line a question owns is its own points (docx_points_lines), never the
+        # section's line.
         closing = (
-            {chunk.anchor for chunk in chunks[last_start + 1 : end] if _line_total(chunk) == total}
+            {
+                chunk.anchor
+                for chunk in chunks[last_start + 1 : end]
+                if chunk.anchor not in question_by_anchor and line_points(chunk) == total
+            }
             if len(members) > 1
             else set()
         )

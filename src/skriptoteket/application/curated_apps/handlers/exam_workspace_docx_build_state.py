@@ -64,6 +64,8 @@ class DocxBuildState:
     ``allowed_kinds`` (None: every kind). ``questions`` holds each grouped question's own
     anchors, never its answer keys. ``governing`` holds the grouping's chunks that govern two
     or more questions; one no entry holds becomes its section parent's instruction (D40).
+    ``part_total_anchors`` holds the header lines the grouping tags as part totals; they start
+    sections in the points split like any section instruction (TASK-SKRIPT-39-04-11 D1).
     """
 
     job_id: UUID
@@ -79,6 +81,7 @@ class DocxBuildState:
     governing: frozenset[str] = frozenset()
     grouped_keys: frozenset[str] = frozenset()
     header_anchors: frozenset[str] = frozenset()
+    part_total_anchors: frozenset[str] = frozenset()
     document_language: InitVar[Language | None] = None
     language: Language = field(init=False)
     known_anchors: frozenset[str] = field(init=False, repr=False, compare=False)
@@ -291,18 +294,25 @@ class DocxBuildState:
         stands only where it lands at that question (D42).
 
         A printed section total gives each question that prints no points of its own a
-        share marked as estimated (D38, D6). A section's points line the split absorbs is
-        metadata, never a review item.
+        share marked as estimated (D38, D6), whether the grouping tags the line printing it
+        as a part total or the converter returns it as an instruction (D1). Header lines stay
+        in the split's chunks, so a member's printed points count wherever they are tagged. A
+        section's points line the split absorbs is metadata, never a review item.
         """
         heading_instructions = self.heading_instructions
         heading_anchors = {
             a for instruction in heading_instructions for a in instruction.source_anchors
         }
         instructions = (*self.instructions, *heading_instructions)
+        part_totals = tuple(
+            ProducedMetadata(text=chunk.text, source_anchors=(chunk.anchor,))
+            for chunk in self.chunks
+            if chunk.anchor in self.part_total_anchors
+        )
         points = split_section_totals(
-            tuple(c for c in self.chunks if c.anchor not in self.header_anchors),
+            self.chunks,
             tuple(self.accepted),
-            instructions,
+            (*instructions, *part_totals),
             frozenset(chunk.anchor for chunk in self.pending),
             questions=questions or self.questions,
         )

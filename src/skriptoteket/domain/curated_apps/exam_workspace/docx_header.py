@@ -6,6 +6,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import Do
 from skriptoteket.domain.curated_apps.exam_workspace.docx_batches import question_families
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import ExamManifest
+from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import line_points
 from skriptoteket.domain.curated_apps.exam_workspace.docx_section_instructions import (
     replace_question_items,
     with_question_points,
@@ -41,6 +42,25 @@ def resolve_header_course(
     return ExamCourseChoice(key=chosen.key, name=chosen.name) if chosen else None
 
 
+def printed_exam_total(chunks: tuple[DocxChunk, ...], manifest: ExamManifest) -> int | float | None:
+    """The one total a non-heading points line prints before the first question.
+
+    Two lines printing different totals, or none, give None; a heading that prints a total is a
+    part heading, and a line after the first question belongs to that question.
+    """
+    first = min(
+        (
+            index
+            for index, chunk in enumerate(chunks)
+            for question in manifest.questions
+            if chunk.anchor in question.anchors
+        ),
+        default=len(chunks),
+    )
+    values = {value for chunk in chunks[:first] if (value := line_points(chunk)) is not None}
+    return values.pop() if len(values) == 1 else None
+
+
 def apply_header(
     document: NativeExamDocument,
     manifest: ExamManifest | None,
@@ -61,15 +81,7 @@ def apply_header(
         text for h in headers if h.kind == "course" if (text := by_anchor[h.anchor].text.strip())
     )
     course = resolve_header_course(course_hint, course_key, courses)
-    total = next(
-        (
-            value
-            for h in headers
-            if h.kind == "exam_total"
-            if (value := printed_points((by_anchor[h.anchor],))) is not None
-        ),
-        None,
-    )
+    total = printed_exam_total(chunks, manifest) if manifest is not None else None
     question_anchors = (
         {family.question_id: family.claims for family in question_families(manifest, chunks)}
         if manifest is not None and any(h.governs for h in headers)

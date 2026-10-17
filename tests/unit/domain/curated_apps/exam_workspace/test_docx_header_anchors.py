@@ -54,7 +54,7 @@ def _grouping(
     }
 
 
-@pytest.mark.parametrize("kind", ["course", "exam_total", "part_total"])
+@pytest.mark.parametrize("kind", ["course", "part_total"])
 def test_header_never_enters_family_or_batch_even_when_it_heads_a_section(kind: str) -> None:
     chunks = (
         _chunk("instruction", "Besvara båda frågorna."),
@@ -132,10 +132,9 @@ def test_part_total_governs_only_surviving_questions_in_source_order() -> None:
     assert manifest.header[0].governs == ("q1", "q2")
 
 
-@pytest.mark.parametrize("kind", ["course", "exam_total"])
-def test_exam_level_header_cannot_become_part_scoped(kind: str) -> None:
+def test_exam_level_header_cannot_become_part_scoped() -> None:
     chunks = (_chunk("header", "Svenska 2"), _chunk("question", "1. Svara."))
-    manifest = manifest_from_output(_grouping([_header("header", kind, "q1")]), chunks)
+    manifest = manifest_from_output(_grouping([_header("header", "course", "q1")]), chunks)
     assert manifest.header[0].governs == ()
 
 

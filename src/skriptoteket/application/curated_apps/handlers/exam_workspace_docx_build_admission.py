@@ -48,6 +48,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions impor
     with_left_out_mark,
     wording_left_out,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import line_points
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     POINT_LABEL,
     QUESTION_HEADING_LABEL,
@@ -175,10 +176,13 @@ def _admit_metadata(
         for a in listed
         if not (
             a in state.question_by_anchor
-            and state.chunk_by_anchor[a].kind == "heading"
             and (
-                QUESTION_HEADING_LABEL.match(state.chunk_by_anchor[a].text)
-                or POINT_LABEL.search(state.chunk_by_anchor[a].text)
+                _points_line(a, state)
+                or state.chunk_by_anchor[a].kind == "heading"
+                and (
+                    QUESTION_HEADING_LABEL.match(state.chunk_by_anchor[a].text)
+                    or POINT_LABEL.search(state.chunk_by_anchor[a].text)
+                )
             )
         )
     )
@@ -215,6 +219,11 @@ def _admit_metadata(
     seen.update(anchors)
 
 
+def _points_line(anchor: str, state: DocxBuildState) -> bool:
+    """A question's own line that only prints its points (D2): its item reads the points."""
+    return line_points(state.chunk_by_anchor[anchor]) is not None
+
+
 def _raw_anchors(raw: JsonValue) -> tuple[str, ...]:
     anchors = raw.get("source_anchors") if isinstance(raw, dict) else None
     return tuple(a for a in anchors if isinstance(a, str)) if isinstance(anchors, list) else ()
@@ -246,9 +255,13 @@ def _with_left_out(
     keys = {a for a in left_out if a in state.grouped_keys}
     state.key_anchors.update(keys)
     seen.update(keys)
-    left_out = tuple(a for a in left_out if a not in keys)
+    # A left-out points line is held without a mark: the item already read its points (D2).
+    held = {a for a in left_out if a not in keys and _points_line(a, state)}
+    seen.update(held)
+    anchors = (*anchors, *(a for a in left_out if a in held))
+    left_out = tuple(a for a in left_out if a not in keys and a not in held)
     if not left_out:
-        return admitted
+        return item, anchors
     seen.update(left_out)
     missing = wording_left_out(item, [state.chunk_by_anchor[a] for a in left_out])
     if missing:
@@ -310,6 +323,11 @@ def _admit_item(
         # emits the question's body. Its leading anchor joins that body below.
         if (own - {c.anchor for c in headings}).intersection(item_held):
             return
+    lines = {a for a in own if _points_line(a, state)}
+    if lines and set(anchors).issubset(lines) and (own - lines).intersection(item_held):
+        # A separately emitted points line is no question: the item holding its question's
+        # body holds it (D2).
+        return
     leading = tuple(
         c.anchor
         for c in headings

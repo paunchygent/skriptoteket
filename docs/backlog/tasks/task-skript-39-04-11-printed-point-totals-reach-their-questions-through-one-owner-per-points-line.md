@@ -4,18 +4,16 @@ id: TASK-SKRIPT-39-04-11
 title: Printed point totals reach their questions through one owner per points line
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-17'
-status: ready
+status: in_progress
 closeout_review:
   record: inline
   status: not_started
 task_kind: story
 acceptance_criteria:
-- Replaying the recorded Svenska 2 conversion gives 24 questions and 36 points with
-  the exam total 36, whether the grouping tags the Del 1 heading as a part total or
-  an instruction and whether it tags the per-question points lines
+  - Replaying the recorded Svenska 2 conversion gives 24 questions and 36 points with the exam total 36, whether the grouping tags the Del 1 heading as a part total or an instruction and whether it tags the per-question points lines
 story: ST-SKRIPT-39-04
 backlog_document_profile: contract-derived
 ---
@@ -65,19 +63,21 @@ and in question kinds.
   `tests/fixtures/exam_conversion/docx_key_provenance_v14/svenska_2_kursavslutande_prov_med_facit/`,
   replayed through `build_replay(exam, root=tmp_path)` with a rewritten
   `docx_grouping_1.json` (pattern: `test_exam_workspace_docx_build.py:136-151`).
+
 - Source fixture: `tests/fixtures/exam_conversion/docx_corpus/svenska_2_kursavslutande_prov_med_facit.docx`.
   It prints "Total: 36 poäng" (body:0004, paragraph style), the Del 1-3
   headings with 15, 16 and 5 points (Heading 2), "Poäng: 15 poäng" after Del 1,
   and one "Poäng: N poäng" line after each Del 2 and Del 3 question.
+
 - Replay outcomes before this task (retained `evidence/carried/replay-probe.py`):
 
-  | Case | Change to the grouping | Result |
-  | --- | --- | --- |
-  | A | baseline | 25 items, 37 p, no total |
-  | B | Del 1 heading tagged `part_total` | items 1-15 get no points, 22 p |
-  | C | `exam_total` anchor added | total 36 |
-  | D | `question_total` anchor on each points line | 24 items, 36 p |
-  | E | B, C and D together | 21 p, total 36 |
+  | Case | Change to the grouping                      | Result                         |
+  | ---- | ------------------------------------------- | ------------------------------ |
+  | A    | baseline                                    | 25 items, 37 p, no total       |
+  | B    | Del 1 heading tagged `part_total`           | items 1-15 get no points, 22 p |
+  | C    | `exam_total` anchor added                   | total 36                       |
+  | D    | `question_total` anchor on each points line | 24 items, 36 p                 |
+  | E    | B, C and D together                         | 21 p, total 36                 |
 
 - Existing rules to reuse: `POINT_LABEL`, `points_line` and `printed_points` in
   `docx_source_rules.py`.
@@ -126,11 +126,11 @@ Bounded units:
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| D1 | A part heading's one printed total is split over its part's questions that print no points, marked as estimated, whether the grouping tags the heading as a part total or as an instruction; the parent keeps its printed total. |
-| D2 | One shared rule gives a points line after a question to that question in batching, admission and the section split; the line never becomes a separate question or review item. |
-| D3 | Code reads `header.printed_total` from the one total line printed before the first question; the grouping has no `exam_total` kind; no line, or conflicting lines, leave it empty. |
-| D4 | The never-sent temperature is deleted from the DOCX conversion profile and its settings. |
-| D5 | Variation in grouping shape and question kinds is out of scope. |
-| D6 | Proof is replay tests over the recorded Svenska 2 conversion for each tagging case, plus one Svenska 2 import on staging; no corpus rerun. |
+| ID  | Decided contract term                                                                                                                                                                                                            |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | A part heading's one printed total is split over its part's questions that print no points, marked as estimated, whether the grouping tags the heading as a part total or as an instruction; the parent keeps its printed total. |
+| D2  | One shared rule gives a points line after a question to that question in batching, admission and the section split; the line never becomes a separate question or review item.                                                   |
+| D3  | Code reads `header.printed_total` from the one total line printed before the first question; the grouping has no `exam_total` kind; no line, or conflicting lines, leave it empty.                                               |
+| D4  | The never-sent temperature is deleted from the DOCX conversion profile and its settings.                                                                                                                                         |
+| D5  | Variation in grouping shape and question kinds is out of scope.                                                                                                                                                                  |
+| D6  | Proof is replay tests over the recorded Svenska 2 conversion for each tagging case, plus one Svenska 2 import on staging; no corpus rerun.                                                                                       |
