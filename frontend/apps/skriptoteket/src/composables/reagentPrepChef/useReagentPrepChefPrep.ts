@@ -4,6 +4,7 @@ import type { Ref } from "vue";
 
 import { apiFetchBlob, apiPost, isApiError } from "../../api/client";
 import { useToast } from "../useToast";
+import { calculationErrorMessage } from "./calculationErrorMessage";
 
 import type {
   ReagentPrepChefFormState,
@@ -57,13 +58,7 @@ export function useReagentPrepChefPrep(options: PrepOptions) {
       lastPrepRequest.value = payload;
       return true;
     } catch (error: unknown) {
-      if (isApiError(error)) {
-        options.actionErrorMessage.value = error.message;
-      } else if (error instanceof Error) {
-        options.actionErrorMessage.value = error.message;
-      } else {
-        options.actionErrorMessage.value = "Det gick inte att beräkna just nu.";
-      }
+      options.actionErrorMessage.value = calculationErrorMessage(error);
       return false;
     } finally {
       isCalculating.value = false;
