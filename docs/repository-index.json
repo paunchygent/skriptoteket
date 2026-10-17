@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "321fd98fe537d64fbb808706e448ce62e57ff412937cea3d69f5eb3aeaf8bf95",
+  "source_set_digest": "7c76ea23249f419a0247db55f6f782de29028a07724f55aed87d72414c009918",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4907,7 +4907,7 @@
       "type": "task",
       "title": "One file per exam with Spara, Spara som and server-stored undo steps, and exports saved in Mina filer",
       "path": "docs/backlog/tasks/task-skript-39-04-08-one-file-per-exam-with-spara-spara-som-and-server-stored-undo-steps-and-exports-saved-in-mina-filer.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-04",
       "owners": [
@@ -5259,7 +5259,7 @@
       "type": "task",
       "title": "Walking skeleton: a parent with two Lucktext children built through the API, exported to QTI and imported into Exam.net",
       "path": "docs/backlog/tasks/task-skript-39-06-01-walking-skeleton-a-parent-with-two-lucktext-children-built-through-the-api-exported-to-qti-and-imported-into-exam-net.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-06",
       "owners": [
@@ -5297,7 +5297,7 @@
       "type": "task",
       "title": "Parent and child editing commands in the workspace API",
       "path": "docs/backlog/tasks/task-skript-39-06-03-parent-and-child-editing-commands-in-the-workspace-api.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-06",
       "owners": [
@@ -5453,7 +5453,7 @@
       "type": "task",
       "title": "Own courses in the profile and the course dropdown default",
       "path": "docs/backlog/tasks/task-skript-39-08-02-own-courses-in-the-profile-and-the-course-dropdown-default.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-08",
       "owners": [
@@ -5738,7 +5738,7 @@
       "type": "task",
       "title": "Adopt the shared dense components, SystemMessage and ToastHost",
       "path": "docs/backlog/tasks/task-skript-40-01-02-adopt-the-shared-dense-components-systemmessage-and-toasthost.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-01",
       "owners": [
@@ -5966,7 +5966,7 @@
       "type": "task",
       "title": "Opus prototype of the app shell and the exam workspace covering every current and planned workspace control",
       "path": "docs/backlog/tasks/task-skript-40-04-01-opus-prototype-of-the-app-shell-and-the-exam-workspace-covering-every-current-and-planned-workspace-control.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [

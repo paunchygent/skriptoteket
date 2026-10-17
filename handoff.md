@@ -54,7 +54,10 @@
 
 - Plan 2026-10-17 (user decisions G1-G30, lead L1-L7; retained
   `01a1495e-8398-75be-b2da-f0b08ba11afa` evidence/planning/decisions-2026-10-17.md):
-  27 items now `ready`, no owners yet. Lane 0 (Sol): TASK-SKRIPT-40-01-02
+  27 items `ready`. Wave 1 `in_progress` (owner Claude Opus parent on the Mac,
+  root `01a149c9-5bc7-7713-ba64-12dee0470bdd`): Sol pairs on 39-04-08,
+  39-06-01, 39-06-03 and 39-08-02 in one shared Mac worktree; Opus prototype
+  40-04-01; a Hemma Opus lead runs 40-01-02, 40-01-03, then ST-SKRIPT-40-03. Lane 0 (Sol): TASK-SKRIPT-40-01-02
   (with the 0.1.24 sync) then 40-01-03. Opus lane: ST-SKRIPT-40-04, shell and
   exam workspace redesign from a fresh prototype the user approves (40-04-01),
   then two Opus builders (40-04-02 shell, 40-04-03 workspace); it supersedes
