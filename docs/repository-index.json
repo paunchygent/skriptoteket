@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "b9d9fe1f38e3afcc0eed4c49fb27380ccffa53d906fb9ef4c6edb243ac89671a",
+  "source_set_digest": "5e8da48a18ad52ef4438782b777695ddd7aaf84050a606a8a72575fcac970f16",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5381,7 +5381,7 @@
       "type": "task",
       "title": "Store a suggested type on converted questions",
       "path": "docs/backlog/tasks/task-skript-39-06-06-store-a-suggested-type-on-converted-questions.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-06",
       "owners": [
