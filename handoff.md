@@ -59,7 +59,8 @@
   merge; the restyle (ST-SKRIPT-40-03) and repairs close on approved review plus
   unit tests. Wave 1: 39-06-01 `done`; 39-04-08 and 39-06-03 close after one
   targeted U-4 check on staging 81200aba (Spara enables after a parent command,
-  export carries it), pending; 39-08-02 waits for U-1 round 3 (Hemma lead).
+  export carries it), pending; 39-08-02: U-1 on main (rereviews 09754cfb, a8b301a2
+  approved); waits on the parent's two-tab CSRF re-walk.
   Walk evidence: `evidence/staging-walk-u1-u3-1b417b64/`, `staging-walk-u2-d9c2b3bb/`,
   `staging-rewalk-fdc2973b/` (U-2 passes).
   Wave 2 backend (Sol driver+navigator pairs on Hemma, shared worktree
@@ -79,11 +80,11 @@
   before its row commit (39-04-10 review), and `migrated_db` swallows migration-thread errors.
   Opus lane ST-SKRIPT-40-04: 40-04-01 `done`; Opus builders on Hemma (parent-launched)
   40-04-02 shell `cb68bbd2` (`~/apps/skriptoteket-task-skript-40-04-02-remote`) and
-  40-04-03 workspace `f6049157` (`...-40-04-03-remote`); both wait on huleedu-integrated
-  0.1.29 (new glyph meanings and a toast action button), released by the Hemma lead.
-  Hemma Opus lead `3b164d53` runs Sol pairs for 40-03-02/07/08/09 and 40-02-01, U-1
-  round 3, and the 08-36-02 closeout review (code on main 0a91a86a, unreviewed);
-  40-03-01/03/04/05/06 `done`. TASK-SKILL-REP-0326 (0.1.28) `done`.
+  40-04-03 workspace `f6049157` (`...-40-04-03-remote`); huleedu-integrated 0.1.29 (glyph
+  meanings; no toast change, user rule) is on main cf19e83c (TASK-SKILL-REP-0327 `done`).
+  Shell screenshots pass the lead's prototype check (final reshoot on 0.1.29).
+  Hemma Opus lead `3b164d53`: 40-03-02 and 40-02-01 under Sol (re)review; 40-03-09 (rules
+  into skills) finishing; 40-03-01/03/04/05/06/07/08 and 08-36-02 `done`. TASK-SKILL-REP-0326 (0.1.28) `done`.
 
 - Historical 2026-09-05 workspace planning (EPIC-SKRIPT-39 E8-E12, ADR-SKRIPT-0091,
   ST-SKRIPT-39-04): `.codex/long-term-memory/entries/session-2026-09-05-epic-39-handoff-compaction.md`.
