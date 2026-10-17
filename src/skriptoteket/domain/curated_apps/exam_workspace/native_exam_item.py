@@ -16,6 +16,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_criteria import (
     NativeExamCriterion,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_import_record import (
+    NativeExamImportRecord,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_matching import (
     NativeMatchLeft,
     NativeMatchRight,
@@ -73,6 +76,8 @@ class NativeExamItem(BaseModel):
     # The question's original conversion source, when a DOCX conversion built it; it is
     # what one-question retry reads, never the item's current content (D1).
     retry_source: NativeExamRetrySource | None = None
+    # Source wording and import-time decisions, independent of subsequent teacher edits.
+    import_record: NativeExamImportRecord | None = None
 
     @field_validator("points")
     @classmethod
