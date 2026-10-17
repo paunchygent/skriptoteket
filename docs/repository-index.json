@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "7c76ea23249f419a0247db55f6f782de29028a07724f55aed87d72414c009918",
+  "source_set_digest": "abbce65e63ff524636e8643674d971763dc4e380afd43280466b82cbea0fa610",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5966,7 +5966,7 @@
       "type": "task",
       "title": "Opus prototype of the app shell and the exam workspace covering every current and planned workspace control",
       "path": "docs/backlog/tasks/task-skript-40-04-01-opus-prototype-of-the-app-shell-and-the-exam-workspace-covering-every-current-and-planned-workspace-control.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -5977,7 +5977,9 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User approved the prototype on 2026-10-17 (user approval 2026-10-17) after settling its 23 open questions in the 2026-10-17 grilling (T6-T28) and the touch hint (T29); screenshots in docs/mockups/app-shell-and-exam-workspace-redesign/screenshots/, walk logs in session 01a149c9-5bc7-7713-ba64-12dee0470bdd evidence/assignments/efba92b2-aa85-44bf-844e-618697d8037e/walk/."
       }
     },
     {
@@ -9932,6 +9934,20 @@
       ],
       "retired_ids": [
         "REF-tool-editor-framework-codemap"
+      ]
+    },
+    {
+      "id": "REF-SKRIPT-MOCKUP-app-shell-and-exam-workspace-redesign-prototype",
+      "type": "reference",
+      "title": "App shell and exam workspace redesign prototype",
+      "path": "docs/reference/ref-skript-mockup-app-shell-and-exam-workspace-redesign-prototype-app-shell-and-exam-workspace-redesign-prototype.md",
+      "status": "active",
+      "reference_kind": "mockup",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
       ]
     },
     {

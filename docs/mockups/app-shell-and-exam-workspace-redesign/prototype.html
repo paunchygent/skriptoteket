@@ -1,0 +1,140 @@
+<!doctype html>
+<!--
+Domain purpose:
+    Interactive decision prototype for the redesigned app shell (top bar,
+    sidebar, page frame) and the exam workspace (TASK-SKRIPT-40-04-01,
+    ST-SKRIPT-40-04). Static Swedish data in data.js; behaviour in app.js;
+    no backend. Phone < 768 px, tablet 768-1279 px, desktop >= 1280 px.
+    States are addressable through the URL hash; see the reference doc.
+-->
+<html lang="sv">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Provredigering – prototyp</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none"><symbol id="i-house" viewBox="0 0 24 24"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol><symbol id="i-library" viewBox="0 0 24 24"><path d="m16 6 4 14"/><path d="M12 6v14"/><path d="M8 8v12"/><path d="M4 4v16"/></symbol><symbol id="i-folder" viewBox="0 0 24 24"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></symbol><symbol id="i-folder-open" viewBox="0 0 24 24"><path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"/></symbol><symbol id="i-folder-input" viewBox="0 0 24 24"><path d="M2 9V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H20a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-1"/><path d="M2 13h10"/><path d="m9 16 3-3-3-3"/></symbol><symbol id="i-wrench" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.106-3.105c.32-.322.863-.22.983.218a6 6 0 0 1-8.259 7.057l-7.91 7.91a1 1 0 0 1-2.999-3l7.91-7.91a6 6 0 0 1 7.057-8.259c.438.12.54.662.219.984z"/></symbol><symbol id="i-lightbulb" viewBox="0 0 24 24"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></symbol><symbol id="i-circle-user-round" viewBox="0 0 24 24"><path d="M18 20a6 6 0 0 0-12 0"/><circle cx="12" cy="10" r="4"/><circle cx="12" cy="12" r="10"/></symbol><symbol id="i-settings" viewBox="0 0 24 24"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/></symbol><symbol id="i-clipboard-check" viewBox="0 0 24 24"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></symbol><symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M16 3.128a4 4 0 0 1 0 7.744"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><circle cx="9" cy="7" r="4"/></symbol><symbol id="i-panel-left" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/></symbol><symbol id="i-save" viewBox="0 0 24 24"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/></symbol><symbol id="i-download" viewBox="0 0 24 24"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></symbol><symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m17 8-5-5-5 5"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/></symbol><symbol id="i-sparkles" viewBox="0 0 24 24"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/><path d="M20 2v4"/><path d="M22 4h-4"/><circle cx="4" cy="20" r="2"/></symbol><symbol id="i-file-text" viewBox="0 0 24 24"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></symbol><symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol><symbol id="i-circle-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></symbol><symbol id="i-triangle-alert" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></symbol><symbol id="i-octagon-alert" viewBox="0 0 24 24"><path d="M12 16h.01"/><path d="M12 8v4"/><path d="M15.312 2a2 2 0 0 1 1.414.586l4.688 4.688A2 2 0 0 1 22 8.688v6.624a2 2 0 0 1-.586 1.414l-4.688 4.688a2 2 0 0 1-1.414.586H8.688a2 2 0 0 1-1.414-.586l-4.688-4.688A2 2 0 0 1 2 15.312V8.688a2 2 0 0 1 .586-1.414l4.688-4.688A2 2 0 0 1 8.688 2z"/></symbol><symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol><symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol><symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol><symbol id="i-chevron-up" viewBox="0 0 24 24"><path d="m18 15-6-6-6 6"/></symbol><symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol><symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol><symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></symbol><symbol id="i-arrow-up" viewBox="0 0 24 24"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></symbol><symbol id="i-arrow-down" viewBox="0 0 24 24"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></symbol><symbol id="i-undo-2" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11"/></symbol><symbol id="i-redo-2" viewBox="0 0 24 24"><path d="m15 14 5-5-5-5"/><path d="M20 9H9.5A5.5 5.5 0 0 0 4 14.5A5.5 5.5 0 0 0 9.5 20H13"/></symbol><symbol id="i-circle-question-mark" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></symbol><symbol id="i-log-out" viewBox="0 0 24 24"><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/></symbol><symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 5h16"/><path d="M4 12h16"/><path d="M4 19h16"/></symbol><symbol id="i-loader-circle" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></symbol><symbol id="i-circle-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></symbol><symbol id="i-book-open" viewBox="0 0 24 24"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></symbol><symbol id="i-pencil-line" viewBox="0 0 24 24"><path d="M13 21h8"/><path d="m15 5 4 4"/><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/></symbol><symbol id="i-trash-2" viewBox="0 0 24 24"><path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></symbol><symbol id="i-copy" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></symbol><symbol id="i-rotate-cw" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></symbol><symbol id="i-image" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></symbol><symbol id="i-bold" viewBox="0 0 24 24"><path d="M6 12h9a4 4 0 0 1 0 8H7a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h7a4 4 0 0 1 0 8"/></symbol><symbol id="i-italic" viewBox="0 0 24 24"><line x1="19" x2="10" y1="4" y2="4"/><line x1="14" x2="5" y1="20" y2="20"/><line x1="15" x2="9" y1="4" y2="20"/></symbol><symbol id="i-underline" viewBox="0 0 24 24"><path d="M6 4v6a6 6 0 0 0 12 0V4"/><line x1="4" x2="20" y1="20" y2="20"/></symbol><symbol id="i-subscript" viewBox="0 0 24 24"><path d="m4 5 8 8"/><path d="m12 5-8 8"/><path d="M20 19h-4c0-1.5.44-2 1.5-2.5S20 15.33 20 14c0-.47-.17-.93-.48-1.29a2.11 2.11 0 0 0-2.62-.44c-.42.24-.74.62-.9 1.07"/></symbol><symbol id="i-superscript" viewBox="0 0 24 24"><path d="m4 19 8-8"/><path d="m12 19-8-8"/><path d="M20 12h-4c0-1.5.442-2 1.5-2.5S20 8.334 20 7.002c0-.472-.17-.93-.484-1.29a2.105 2.105 0 0 0-2.617-.436c-.42.239-.738.614-.899 1.06"/></symbol><symbol id="i-heading-1" viewBox="0 0 24 24"><path d="M4 12h8"/><path d="M4 18V6"/><path d="M12 18V6"/><path d="m17 12 3-2v8"/></symbol><symbol id="i-heading-2" viewBox="0 0 24 24"><path d="M4 12h8"/><path d="M4 18V6"/><path d="M12 18V6"/><path d="M21 18h-4c0-4 4-3 4-6 0-1.5-2-2.5-4-1"/></symbol><symbol id="i-heading-3" viewBox="0 0 24 24"><path d="M4 12h8"/><path d="M4 18V6"/><path d="M12 18V6"/><path d="M17.5 10.5c1.7-1 3.5 0 3.5 1.5a2 2 0 0 1-2 2"/><path d="M17 17.5c2 1.5 4 .3 4-1.5a2 2 0 0 0-2-2"/></symbol><symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></symbol><symbol id="i-list-checks" viewBox="0 0 24 24"><path d="M13 5h8"/><path d="M13 12h8"/><path d="M13 19h8"/><path d="m3 17 2 2 4-4"/><path d="m3 7 2 2 4-4"/></symbol><symbol id="i-ellipsis-vertical" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></symbol><symbol id="i-replace" viewBox="0 0 24 24"><path d="M14 4a1 1 0 0 1 1-1"/><path d="M15 10a1 1 0 0 1-1-1"/><path d="M21 4a1 1 0 0 0-1-1"/><path d="M21 9a1 1 0 0 1-1 1"/><path d="m3 7 3 3 3-3"/><path d="M6 10V5a2 2 0 0 1 2-2h2"/><rect x="3" y="14" width="7" height="7" rx="1"/></symbol><symbol id="i-file-up" viewBox="0 0 24 24"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M12 12v6"/><path d="m15 15-3-3-3 3"/></symbol><symbol id="i-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></symbol><symbol id="i-square-check" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m9 12 2 2 4-4"/></symbol><symbol id="i-square" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/></symbol><symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol></svg>
+
+<header class="topbar" id="topbar">
+  <button class="btn icon ghost desk-only" id="b-rail" aria-pressed="false" title="Fäll ihop menyn" aria-label="Fäll ihop menyn"><svg class="g"><use href="#i-panel-left"/></svg></button>
+  <a class="brand" href="#" id="brand">Skriptoteket<small id="brand-app">Provredigering</small></a>
+  <div class="tb-slot" id="tb-slot"></div>
+  <span class="grow"></span>
+  <button class="btn ghost tb-link" id="b-help" title="Hjälp" aria-label="Hjälp" aria-haspopup="dialog" aria-expanded="false"><svg class="g"><use href="#i-circle-question-mark"/></svg><span class="tb-word">Hjälp</span></button>
+  <button class="btn ghost tb-link" id="b-logout" title="Logga ut" aria-label="Logga ut"><svg class="g"><use href="#i-log-out"/></svg><span class="tb-word">Logga ut</span></button>
+  <button class="btn icon ghost phone-only" id="b-nav" aria-label="Meny" title="Meny" aria-expanded="false" aria-controls="sidebar"><svg class="g"><use href="#i-menu"/></svg></button>
+</header>
+
+<nav class="sidebar" id="sidebar" aria-label="Huvudmeny">
+  <div class="nav-head phone-only"><span class="brand sm">Skriptoteket</span><button class="btn icon ghost" id="b-nav-close" aria-label="Stäng menyn" title="Stäng menyn"><svg class="g"><use href="#i-x"/></svg></button></div>
+  <div class="nav-items" id="nav-items"></div>
+  <div class="nav-foot phone-only">
+    <span class="nav-user">olof.larsson@skola.se</span>
+    <button class="nav-item" data-act="help"><svg class="g"><use href="#i-circle-question-mark"/></svg><span>Hjälp</span></button>
+    <button class="nav-item" data-act="logout"><svg class="g"><use href="#i-log-out"/></svg><span>Logga ut</span></button>
+  </div>
+</nav>
+<div class="nav-backdrop" id="nav-backdrop"></div>
+
+<main class="page" id="page">
+  <!-- Exam workspace: fills the page frame edge to edge -->
+  <section class="ws" id="ws" aria-label="Provredigering">
+    <div class="wshead" id="wshead">
+      <div class="titleblock" id="titleblock">
+        <button class="examtitle" id="b-title" aria-haspopup="dialog" aria-expanded="false" title="Provets uppgifter"><span class="tx" id="title-text"></span><svg class="g sm"><use href="#i-chevron-down"/></svg></button>
+        <div class="meta" id="meta"></div>
+      </div>
+      <div class="toolbar" role="toolbar" aria-label="Provet" id="toolbar">
+        <div class="group" role="group" aria-label="Fil">
+          <button class="btn" id="b-open" aria-expanded="false" title="Öppna eller importera ett prov"><svg class="g"><use href="#i-folder-open"/></svg><span class="word">Öppna</span></button>
+          <div class="split" id="save-split">
+            <button class="btn primary" id="b-save"><svg class="g"><use href="#i-save"/></svg>Spara</button>
+            <button class="btn primary icon chev" id="b-save-menu" aria-haspopup="menu" aria-expanded="false" title="Fler sätt att spara" aria-label="Fler sätt att spara"><svg class="g sm"><use href="#i-chevron-down"/></svg></button>
+          </div>
+          <button class="btn" id="b-export" aria-haspopup="menu" aria-expanded="false" title="Exportera provet"><svg class="g"><use href="#i-download"/></svg><span class="word">Exportera</span><svg class="g sm word"><use href="#i-chevron-down"/></svg></button>
+        </div>
+        <span class="sep"></span>
+        <button class="btn icon" id="b-ai-all" title="Föreslå facit för frågor som saknar facit" aria-label="Föreslå facit för frågor som saknar facit"><svg class="g" id="ai-all-glyph"><use href="#i-sparkles"/></svg></button>
+        <span class="sep"></span>
+        <div class="group" role="group" aria-label="Historik">
+          <button class="btn icon" id="b-undo" title="Ångra (Ctrl+Z)" aria-label="Ångra" aria-keyshortcuts="Control+Z Meta+Z"><svg class="g"><use href="#i-undo-2"/></svg></button>
+          <button class="btn icon" id="b-redo" title="Gör om (Ctrl+Shift+Z)" aria-label="Gör om" aria-keyshortcuts="Control+Shift+Z Meta+Shift+Z"><svg class="g"><use href="#i-redo-2"/></svg></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="strip phone-only" id="strip">
+      <div class="stripnav"><button id="p-prev" aria-label="Föregående fråga" title="Föregående fråga"><svg class="g"><use href="#i-chevron-left"/></svg></button>
+        <button id="p-pick" aria-haspopup="dialog" title="Välj fråga"><span id="p-state"></span><span id="p-pos"></span><svg class="g sm"><use href="#i-chevron-down"/></svg></button>
+        <button id="p-next" aria-label="Nästa fråga" title="Nästa fråga"><svg class="g"><use href="#i-chevron-right"/></svg></button></div>
+      <span class="phone-tools" id="phone-tools"></span>
+    </div>
+
+    <div class="body" id="body">
+      <section class="list" id="list" aria-label="Frågor">
+        <div class="listhead"><button class="btn back phone-only" id="list-back"><svg class="g"><use href="#i-arrow-left"/></svg>Tillbaka</button><h2 id="list-count"></h2>
+          <button class="btn compact" id="b-new" aria-haspopup="menu" aria-expanded="false"><svg class="g sm"><use href="#i-plus"/></svg>Ny uppgift</button></div>
+        <div class="rows" id="rows" aria-keyshortcuts="ArrowUp ArrowDown"></div>
+        <div class="listfoot" id="listfoot"></div>
+      </section>
+
+      <section class="editor" id="editor" aria-label="Fråga"></section>
+
+      <aside class="drawer" id="d-open" hidden aria-label="Öppna">
+        <div class="drawerhead"><button class="btn back" data-close><svg class="g"><use href="#i-arrow-left"/></svg>Tillbaka</button><h2>Öppna</h2><button class="btn icon ghost close-x" data-close title="Stäng" aria-label="Stäng"><svg class="g"><use href="#i-x"/></svg></button></div>
+        <div class="drawerbody" id="open-body"></div>
+      </aside>
+      <aside class="drawer" id="d-export" hidden aria-label="Exportera">
+        <div class="drawerhead"><button class="btn back" data-close><svg class="g"><use href="#i-arrow-left"/></svg>Tillbaka</button><h2>Exportera</h2><button class="btn icon ghost close-x" data-close title="Stäng" aria-label="Stäng"><svg class="g"><use href="#i-x"/></svg></button></div>
+        <div class="drawerbody" id="export-body"></div>
+      </aside>
+      <aside class="drawer" id="d-meta" hidden aria-label="Provets uppgifter">
+        <div class="drawerhead"><button class="btn back" data-close><svg class="g"><use href="#i-arrow-left"/></svg>Tillbaka</button><h2>Provets uppgifter</h2><button class="btn icon ghost close-x" data-close title="Stäng" aria-label="Stäng"><svg class="g"><use href="#i-x"/></svg></button></div>
+        <div class="drawerbody" id="meta-body"></div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- Every other screen keeps its own layout inside this plain page frame (R3, R20) -->
+  <section class="plain" id="plain" hidden></section>
+</main>
+
+<!-- Floating layers -->
+<div class="menu" id="m-export" role="menu" hidden></div>
+<div class="menu" id="m-save" role="menu" hidden>
+  <button class="mi" data-act="save" role="menuitem"><svg class="g"><use href="#i-save"/></svg><span class="grow">Spara</span><kbd class="kbd" data-kbd="S"></kbd></button>
+  <button class="mi" data-act="saveas" role="menuitem"><svg class="g"><use href="#i-copy"/></svg><span class="grow">Spara som …</span></button>
+</div>
+<div class="menu" id="m-new" role="menu" hidden></div>
+<div class="menu" id="m-type" role="menu" hidden></div>
+<div class="menu" id="m-more" role="menu" hidden></div>
+<div class="menu" id="m-course" role="listbox" hidden></div>
+<div class="pop" id="gap-pop" role="dialog" aria-modal="false" hidden></div>
+<div class="toast" id="toast" role="status" hidden><span id="toast-glyph"></span><b id="toast-text"></b>
+  <button class="btn" id="toast-action" hidden></button>
+  <button class="btn icon ghost" id="toast-close" title="Stäng" aria-label="Stäng"><svg class="g"><use href="#i-x"/></svg></button></div>
+
+<div class="scrim" id="scrim" hidden></div>
+<div class="dialog" id="dlg-saveas" role="dialog" aria-modal="true" aria-labelledby="sa-h" hidden>
+  <h2 id="sa-h">Spara som</h2>
+  <label class="label" for="sa-name">Namn</label>
+  <input class="input" id="sa-name" aria-describedby="sa-err sa-help" />
+  <p class="err-line" id="sa-err" hidden><svg class="g sm"><use href="#i-circle-alert"/></svg>Det finns redan ett prov med det namnet i Mina filer.</p>
+  <p class="help-line" id="sa-help">Kopian får samma frågor, kurs och innehåll och öppnas direkt. Ångra börjar om i kopian.</p>
+  <div class="dlg-actions"><button class="btn" id="sa-cancel">Avbryt</button><button class="btn primary" id="sa-ok"><svg class="g"><use href="#i-copy"/></svg>Spara kopia</button></div>
+</div>
+
+<aside class="helppanel" id="helppanel" role="dialog" aria-modal="false" aria-labelledby="help-h" hidden>
+  <div class="drawerhead"><h2 id="help-h">Hjälp</h2><button class="btn icon ghost" id="help-close" title="Stäng" aria-label="Stäng"><svg class="g"><use href="#i-x"/></svg></button></div>
+  <div class="drawerbody"><div class="sect"><h3>Kortkommandon</h3>
+    <dl class="keys" id="keys"></dl></div></div>
+</aside>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
