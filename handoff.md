@@ -1,5 +1,12 @@
 ## Current
 
+- [TASK-SKRIPT-39-08-05](docs/backlog/tasks/task-skript-39-08-05-add-mina-kurser-courses-on-choice-and-save-each-change-at-once.md)
+  `in_progress`, owner Claude side session of the 2026-10-17 parent: Mina kurser
+  adds a chosen course at once and autosaves (no `+`, no Spara, no success
+  toast). Contract on `claude/gallant-greider-598de1` (worktree
+  `Skriptoteket-worktrees/gallant-greider-598de1`, HEAD `6b1e860f`). Next:
+  component, spec, checks, review, staging walk at 375/1440 px, merge.
+
 - [TASK-SKRIPT-REP-0038](docs/backlog/tasks/task-skript-rep-0038-retire-repository-rules-and-route-staging-walks-to-staging-walk.md)
   `ready`, owner delegated Codex lead on `codex/task-skript-rep-0038`.
   D1-D2 live routing edits pass focused gates (2026-10-11; retained session
