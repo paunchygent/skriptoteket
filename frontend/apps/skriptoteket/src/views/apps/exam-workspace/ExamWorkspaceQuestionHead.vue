@@ -3,7 +3,9 @@
  * Exam workspace question header.
  *
  * Domain purpose:
- *   "Fråga 3" and its type, which opens Byt frågetyp; Import, which shows the
+ *   "Fråga 3" and its type, which opens Byt frågetyp; "Gör om till [typ]"
+ *   when the labeler suggests another type (`suggested_kind`), also marked
+ *   Förslag in Byt frågetyp; Import, which shows the
  *   question as the exam file had it; the review check; and ⋮ with Flytta
  *   upp, Flytta ned and Ta bort for a deluppgift, or Ta bort for a question.
  *   Removing an instruction's last deluppgift also removes the emptied
@@ -43,7 +45,8 @@ const props = defineProps<{
   /** Where a deluppgift sits in its instruction; null for a standalone question. */
   child: { index: number; count: number } | null;
   disabled: boolean;
-  /** An instruction's last deluppgift can be removed with its heading. */
+  /** The type the labeler suggests for this question; null when it has none. */
+  suggestedKind: NativeExamItemKind | null;
 }>();
 
 const emit = defineEmits<{
@@ -60,6 +63,10 @@ const hintId = useId();
 const deleteHintId = useId();
 
 const typeLabel = computed(() => (props.unbuilt ? "Ej konverterad" : EXAM_WORKSPACE_TYPE_LABELS[props.kind]));
+/** Offered while the question has another type, or has not been converted at all. */
+const offeredKind = computed(() =>
+  props.suggestedKind !== null && (props.suggestedKind !== props.kind || props.unbuilt) ? props.suggestedKind : null,
+);
 const deleteTakesHeading = computed(() => props.child !== null && props.child.count === 1);
 
 function chooseKind(kind: NativeExamItemKind): void {
@@ -106,6 +113,20 @@ function chooseMore(action: "up" | "down" | "remove"): void {
       />
     </button>
     <div class="qhead__tools">
+      <button
+        v-if="offeredKind"
+        type="button"
+        class="xw-btn xw-btn--compact"
+        :disabled="converting || disabled"
+        title="Byt till den typ som provfilen tyder på"
+        data-test="exam-workspace-suggested-type"
+        @click="emit('changeType', offeredKind)"
+      >
+        <UiGlyph
+          meaning="convert-type"
+          :size="16"
+        />Gör om till {{ EXAM_WORKSPACE_TYPE_LABELS[offeredKind] }}
+      </button>
       <span class="qhead__desk-tools">
         <slot name="tools" />
       </span>
@@ -156,7 +177,14 @@ function chooseMore(action: "up" | "down" | "remove"): void {
         /><span
           v-else
           class="xw-mi__pad"
-        /><span class="xw-grow">{{ entryLabel }}</span>
+        /><span class="xw-grow">{{ entryLabel }}</span><span
+          v-if="entryKind === offeredKind"
+          class="xw-chip xw-chip--teal"
+          data-test="exam-workspace-type-suggested"
+        ><UiGlyph
+          meaning="convert-type"
+          :size="12"
+        />Förslag</span>
       </button>
       <button
         v-if="child === null"

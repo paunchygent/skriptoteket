@@ -166,6 +166,7 @@ function handleTickPointsInput(event: Event): void {
       :converting="converting"
       :child="child"
       :disabled="disabled"
+      :suggested-kind="item.suggested_kind"
       @change-type="emit('changeType', $event)"
       @move="emit('move', $event)"
       @remove="emit('remove')"

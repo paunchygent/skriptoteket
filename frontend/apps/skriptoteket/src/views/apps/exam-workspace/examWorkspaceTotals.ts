@@ -30,13 +30,23 @@ export function examWorkspaceFormatPoints(points: number): string {
 }
 
 /**
- * "14 p", or "14 p · provtexten anger 15 p" when the exam text prints another
- * total. A difference shows every decimal, so it never reads as two equal numbers.
+ * The sum ("14 p") and, when the exam text prints another total, the printed
+ * note ("provtexten anger 15 p"). A difference shows every decimal, so it
+ * never reads as two equal numbers.
  */
-export function examWorkspacePointsLine(points: number, printed: number | null): string {
+export function examWorkspacePointsParts(
+  points: number,
+  printed: number | null,
+): { sum: string; printedNote: string | null } {
   if (printed === null) {
-    return `${examWorkspaceFormatPoints(points)} p`;
+    return { sum: `${examWorkspaceFormatPoints(points)} p`, printedNote: null };
   }
   const exact = (value: number) => value.toLocaleString("sv-SE", { maximumSignificantDigits: 15 });
-  return `${exact(points)} p · provtexten anger ${exact(printed)} p`;
+  return { sum: `${exact(points)} p`, printedNote: `provtexten anger ${exact(printed)} p` };
+}
+
+/** "14 p", or "14 p · provtexten anger 15 p" when the exam text prints another total. */
+export function examWorkspacePointsLine(points: number, printed: number | null): string {
+  const { sum, printedNote } = examWorkspacePointsParts(points, printed);
+  return printedNote === null ? sum : `${sum} · ${printedNote}`;
 }

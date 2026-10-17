@@ -16,14 +16,14 @@
  *     each told only whether it is selected.
  */
 
-import { nextTick, ref, watch } from "vue";
+import { computed, nextTick, ref, watch } from "vue";
 
 import { UiGlyph } from "../../../components/ui";
 import ExamWorkspaceNewItemMenu from "./ExamWorkspaceNewItemMenu.vue";
 import ExamWorkspaceQuestionRow from "./ExamWorkspaceQuestionRow.vue";
 import type { TeacherItemKind } from "./examWorkspaceItemEdits";
 import type { ExamWorkspaceListEntry } from "./examWorkspaceListEntries";
-import { examWorkspacePointsLine } from "./examWorkspaceTotals";
+import { examWorkspacePointsParts } from "./examWorkspaceTotals";
 
 const props = defineProps<{
   entries: ExamWorkspaceListEntry[];
@@ -36,6 +36,8 @@ const props = defineProps<{
   /** The phone shows the list as a full-screen layer. */
   overlay: boolean;
 }>();
+
+const totalParts = computed(() => examWorkspacePointsParts(props.total, props.printedTotal));
 
 const emit = defineEmits<{
   select: [id: string];
@@ -123,10 +125,12 @@ watch(
       <span
         id="exam-workspace-exam-points"
         class="list__total"
-        :class="{ 'list__total--printed': printedTotal !== null }"
         tabindex="-1"
         data-test="exam-workspace-exam-points"
-      >Totalt {{ examWorkspacePointsLine(total, printedTotal) }}</span>
+      >Totalt <strong class="list__sum">{{ totalParts.sum }}</strong><span
+        v-if="totalParts.printedNote"
+        class="list__printed"
+      > · {{ totalParts.printedNote }}</span></span>
     </div>
     <ExamWorkspaceNewItemMenu
       :open="newMenuOpen"
@@ -153,7 +157,8 @@ watch(
 }
 .list__total { min-width: 0; overflow-wrap: anywhere; outline: none; }
 .list__total:focus-visible { outline: 2px solid var(--huleedu-action-40); outline-offset: 2px; }
-.list__total--printed { color: var(--huleedu-warning); }
+.list__sum { font-weight: var(--huleedu-font-semibold); }
+.list__printed { color: var(--huleedu-warning); }
 @media (max-width: 1279px) {
   .list__head { padding: 0 var(--huleedu-space-3) 0 var(--huleedu-space-4); }
   .list__foot { padding: var(--huleedu-space-2) var(--huleedu-space-4); }

@@ -88,7 +88,11 @@ describe("Exam workspace progressive conversion", () => {
     expect(view.get('[data-test="exam-workspace-review"]').attributes("aria-pressed")).toBe(pressedBefore);
 
     expect(view.get('[data-test="exam-workspace-save-state"]').text()).not.toContain("Osparat");
-    expect(view.get('[data-test="exam-workspace-save"]').attributes("disabled")).toBe("");
+    // Spara stays the available primary action on a clean exam and writes nothing.
+    expect(view.get('[data-test="exam-workspace-save"]').attributes("disabled")).toBeUndefined();
+    await view.get('[data-test="exam-workspace-save"]').trigger("click");
+    await flushPromises();
+    expect(apiMocks.saveExamWorkspaceDocument).not.toHaveBeenCalled();
     await selectItemRow(view, "item_001");
     await selectItemRow(view, "item_002");
     expect((view.get('[data-test="exam-workspace-item-points-input"]').element as HTMLInputElement).value).toBe("2");

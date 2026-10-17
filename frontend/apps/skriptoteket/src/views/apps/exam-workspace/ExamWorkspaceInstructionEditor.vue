@@ -124,8 +124,9 @@ function chooseDelete(mode: ExamParentDeleteMode): void {
     <div class="xw-label ied__first">
       Instruktion
     </div>
-    <div class="ied__rich">
+    <div class="xw-rich">
       <ExamWorkspaceMarkToolbar
+        class="xw-rich__bar"
         :active-marks="activeMarks"
         :active-heading="activeHeading"
         :disabled="disabled"
@@ -134,11 +135,13 @@ function chooseDelete(mode: ExamParentDeleteMode): void {
         @toggle-heading="toggleHeading"
       />
       <ExamWorkspaceRichTextEntry
+        class="xw-rich__body"
         :body="parent.instruction"
         :disabled="disabled"
         label="Instruktion"
         test-id="exam-workspace-instruction-text"
         :owner="owner"
+        variant="paragraph"
         @update-body="emit('updateInstruction', $event)"
       />
     </div>
@@ -283,10 +286,6 @@ function chooseDelete(mode: ExamParentDeleteMode): void {
 .ied__type { padding: 0 var(--huleedu-space-2); font-size: var(--huleedu-text-sm); color: var(--huleedu-navy-70); }
 .ied__more { margin-left: auto; }
 .ied .ied__first { margin-top: 0; }
-.ied__rich {
-  display: grid; gap: var(--huleedu-space-2); padding: var(--huleedu-space-3);
-  border: 1px solid var(--huleedu-panel-border); border-radius: var(--huleedu-radius-lg); background: var(--huleedu-surface-content);
-}
 .kids { margin: 0; padding: 0; list-style: none; border: 1px solid var(--huleedu-panel-border); border-radius: var(--huleedu-radius-lg); }
 .kid {
   display: grid; grid-template-columns: 32px minmax(0, 1fr) auto auto; align-items: center; gap: var(--huleedu-space-2);

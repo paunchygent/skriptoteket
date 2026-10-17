@@ -234,9 +234,8 @@ const stripState = computed(() => {
 });
 
 const saveState = computed(() => (saving.value ? "saving" : isDirty.value ? "dirty" : "saved"));
-const canSave = computed(
-  () => isDirty.value && !disabled.value && !!workspaceDocument.value?.title.trim(),
-);
+// Spara stays available on a clean exam too, where it writes nothing; it is unavailable only while nothing can be written.
+const canSave = computed(() => !disabled.value && !!workspaceDocument.value?.title.trim());
 const courseLabel = computed(() => workspaceDocument.value?.header.course?.name ?? null);
 const formattedSavedExports = computed(() =>
   Object.fromEntries(
@@ -327,7 +326,7 @@ watch(isPhone, (phone) => {
 });
 
 async function handleSave(): Promise<void> {
-  if (!canSave.value) return;
+  if (!canSave.value || !isDirty.value) return;
   saving.value = true;
   try {
     await editing.save();

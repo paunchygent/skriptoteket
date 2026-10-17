@@ -53,7 +53,6 @@ const emit = defineEmits<{ previous: []; next: []; openList: [] }>();
         data-test="exam-workspace-phone-list"
         @click="emit('openList')"
       >
-        <span class="strip__label">{{ label ? `Fråga ${label}` : "Inget prov" }}</span>
         <UiGlyph
           v-if="state === 'instruction'"
           meaning="instruction"
@@ -83,6 +82,12 @@ const emit = defineEmits<{ previous: []; next: []; openList: [] }>();
           meaning="status-warning"
           :size="16"
         /></span>
+        <span class="strip__label">{{ label ? `Fråga ${label}` : "Inget prov" }}</span>
+        <UiGlyph
+          meaning="open-list"
+          :size="16"
+          class="strip__chevron"
+        />
       </button>
       <button
         type="button"
@@ -120,5 +125,6 @@ const emit = defineEmits<{ previous: []; next: []; openList: [] }>();
 .strip__nav > button:focus-visible { outline: 2px solid var(--huleedu-action-40); outline-offset: -2px; }
 .strip__nav > * + * { border-left: 1px solid var(--huleedu-panel-border); }
 .strip__label { overflow: hidden; text-overflow: ellipsis; }
+.strip__chevron { flex: none; color: var(--huleedu-navy-60); }
 .strip__tools { display: flex; gap: var(--huleedu-space-2); flex: none; }
 </style>

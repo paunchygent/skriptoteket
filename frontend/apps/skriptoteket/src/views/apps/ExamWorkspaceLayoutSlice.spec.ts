@@ -216,6 +216,27 @@ describe("ExamWorkspaceView frame layout", () => {
     expect(wrapper.find('[data-test="exam-workspace-list-back"]').exists()).toBe(false);
   });
 
+  it("orders the desktop toolbar Öppna, Spara, Exportera, AI facit, Ångra and Gör om", async () => {
+    const wrapper = await mountImported("desktop");
+    const order = [
+      "exam-workspace-open", "exam-workspace-save", "exam-workspace-export",
+      "exam-workspace-suggest-all", "exam-workspace-undo", "exam-workspace-redo",
+    ];
+    const found = wrapper.get('[data-test="exam-workspace-header"]').findAll("[data-test]")
+      .map((element) => element.attributes("data-test"))
+      .filter((testId): testId is string => order.includes(testId ?? ""));
+    expect(found).toEqual(order);
+  });
+
+  it("puts the phone strip's state icon before Fråga N and the list chevron after it", async () => {
+    const wrapper = await mountImported("phone");
+    const parts = [...wrapper.get('[data-test="exam-workspace-phone-list"]').element.children];
+    const label = parts.findIndex((element) => element.classList.contains("strip__label"));
+    expect(label).toBe(1);
+    expect(parts[label]!.textContent).toBe("Fråga 1");
+    expect(parts[label + 1]!.classList.contains("strip__chevron")).toBe(true);
+  });
+
   it("makes the editor the phone screen behind a question strip that opens the list layer", async () => {
     const wrapper = await mountImported("phone");
 

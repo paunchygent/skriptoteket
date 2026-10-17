@@ -91,6 +91,17 @@ Relationships:
   font-size: var(--huleedu-type-field-label-size); font-weight: var(--huleedu-type-field-label-weight);
 }
 .xw-grow { flex: 1; min-width: 0; }
+/* One bordered rich-text box: the formatting toolbar is its top strip and the text flows below it. */
+.xw-rich {
+  border: 1px solid var(--huleedu-panel-border); border-radius: var(--huleedu-radius-lg);
+  background: var(--huleedu-surface-content); overflow: hidden;
+}
+.xw-rich:focus-within { border-color: var(--huleedu-action); box-shadow: 0 0 0 1px var(--huleedu-action); }
+.xw-rich__bar {
+  padding: var(--huleedu-space-1) var(--huleedu-space-2);
+  border-bottom: 1px solid var(--huleedu-panel-border); background: var(--huleedu-navy-02);
+}
+.xw-rich__body { padding: var(--huleedu-space-3) var(--huleedu-space-4); }
 .xw-input {
   width: 100%; min-width: 0; height: var(--xw-ctl, 44px); padding: 0 var(--huleedu-space-3);
   border: 1px solid var(--huleedu-panel-border); border-radius: var(--huleedu-radius-md);

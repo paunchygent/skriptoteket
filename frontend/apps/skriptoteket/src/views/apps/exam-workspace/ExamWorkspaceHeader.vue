@@ -145,39 +145,6 @@ const DIRTY_TITLE = "Ändringarna sparas automatiskt som utkast. Spara skriver �
           <span class="ws-meta__text">{{ total }} p</span>
         </div>
       </div>
-      <div class="xw-split ws-save">
-        <button
-          type="button"
-          class="xw-btn xw-btn--primary"
-          :disabled="!canSave"
-          :title="`Spara (${examWorkspaceShortcut('S', false, mac)})`"
-          :aria-keyshortcuts="saveKeys"
-          data-test="exam-workspace-save"
-          @click="emit('save')"
-        >
-          <UiGlyph
-            meaning="save"
-            :size="20"
-          /><span class="ws-save__word">Spara</span>
-        </button>
-        <button
-          ref="saveMenuTrigger"
-          type="button"
-          class="xw-btn xw-btn--primary xw-btn--icon"
-          :disabled="!canSaveAs"
-          aria-haspopup="menu"
-          :aria-expanded="saveMenuOpen"
-          aria-label="Fler sätt att spara"
-          title="Fler sätt att spara"
-          data-test="exam-workspace-save-menu"
-          @click="saveMenuOpen = !saveMenuOpen"
-        >
-          <UiGlyph
-            meaning="open-list"
-            :size="16"
-          />
-        </button>
-      </div>
     </Teleport>
 
     <ExamWorkspaceMenu
@@ -252,6 +219,45 @@ const DIRTY_TITLE = "Ändringarna sparas automatiskt som utkast. Spara skriver �
             :size="20"
           /><span class="ws-tools__word">Öppna</span>
         </button>
+        <Teleport
+          to="#app-topbar-page-slot"
+          defer
+          :disabled="!isPhone"
+        >
+          <div class="xw-split ws-save">
+            <button
+              type="button"
+              class="xw-btn xw-btn--primary"
+              :disabled="!canSave"
+              :title="`Spara (${examWorkspaceShortcut('S', false, mac)})`"
+              :aria-keyshortcuts="saveKeys"
+              data-test="exam-workspace-save"
+              @click="emit('save')"
+            >
+              <UiGlyph
+                meaning="save"
+                :size="20"
+              />Spara
+            </button>
+            <button
+              ref="saveMenuTrigger"
+              type="button"
+              class="xw-btn xw-btn--primary xw-btn--icon"
+              :disabled="!canSaveAs"
+              aria-haspopup="menu"
+              :aria-expanded="saveMenuOpen"
+              aria-label="Fler sätt att spara"
+              title="Fler sätt att spara"
+              data-test="exam-workspace-save-menu"
+              @click="saveMenuOpen = !saveMenuOpen"
+            >
+              <UiGlyph
+                meaning="open-list"
+                :size="16"
+              />
+            </button>
+          </div>
+        </Teleport>
         <slot name="export" />
       </div>
       <span class="xw-sep" />
@@ -360,7 +366,5 @@ const DIRTY_TITLE = "Ändringarna sparas automatiskt som utkast. Spara skriver �
   .ws-title__button { font-size: var(--huleedu-text-base); }
   .ws-meta > :not(.ws-meta__state) { display: none; }
   .ws-meta__state { min-width: 0; }
-  .ws-save__word { display: none; }
-  .ws-save > .xw-btn:first-child { width: var(--xw-ctl, 44px); padding: 0; }
 }
 </style>

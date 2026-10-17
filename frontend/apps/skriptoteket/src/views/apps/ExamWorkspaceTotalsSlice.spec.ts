@@ -98,13 +98,14 @@ describe("workspace printed exam totals", () => {
     const wrapper = await openDocument(documentWithTotals(printed, points));
     expect(wrapper.find(WARNING).exists()).toBe(false);
     expect(wrapper.get(EXAM_POINTS).text()).not.toContain("provtexten");
-    expect(wrapper.get(EXAM_POINTS).classes()).not.toContain("list__total--printed");
+    expect(wrapper.get(EXAM_POINTS).find(".list__printed").exists()).toBe(false);
   });
 
   it("states both decimal totals on one line, uses no jargon, and still exports", async () => {
     const wrapper = await openDocument(documentWithTotals(7.5, [2.5, 4]));
     expect(wrapper.get(EXAM_POINTS).text()).toBe("Totalt 6,5 p · provtexten anger 7,5 p");
-    expect(wrapper.get(EXAM_POINTS).classes()).toContain("list__total--printed");
+    expect(wrapper.get(EXAM_POINTS).get(".list__sum").text()).toBe("6,5 p");
+    expect(wrapper.get(EXAM_POINTS).get(".list__printed").text()).toBe("· provtexten anger 7,5 p");
     expect(wrapper.get(WARNING).text()).toBe("Poängen stämmer inte med provtexten");
     expect(wrapper.text()).not.toMatch(/Tryckt|TRYCKT/);
 
