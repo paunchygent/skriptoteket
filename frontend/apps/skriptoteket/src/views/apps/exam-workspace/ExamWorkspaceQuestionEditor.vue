@@ -40,6 +40,7 @@ import ExamWorkspaceCriteriaField from "./ExamWorkspaceCriteriaField.vue";
 import ExamWorkspaceImportBox from "./ExamWorkspaceImportBox.vue";
 import ExamWorkspaceInlineNotice from "./ExamWorkspaceInlineNotice.vue";
 import ExamWorkspaceKategoriseraGrid from "./ExamWorkspaceKategoriseraGrid.vue";
+import ExamWorkspaceOrderingField from "./ExamWorkspaceOrderingField.vue";
 import ExamWorkspaceQuestionHead from "./ExamWorkspaceQuestionHead.vue";
 import ExamWorkspaceQuestionTools from "./ExamWorkspaceQuestionTools.vue";
 import { isTeacherReviewed } from "./examWorkspaceItemEdits";
@@ -83,6 +84,10 @@ const emit = defineEmits<{
   undoInterpretation: [itemId: string];
   removeAutomaticValue: [itemId: string, gapId: string, value: string];
   showGapAsText: [itemId: string, gapId: string];
+  addOrderingStep: [itemId: string];
+  moveOrderingStep: [itemId: string, choiceId: string, delta: -1 | 1];
+  removeOrderingStep: [itemId: string, choiceId: string];
+  shuffleOrderingSteps: [itemId: string];
   updateChoiceBody: [itemId: string, choiceId: string, body: NativeExamBodyParagraph[]];
   updateCorrectChoices: [itemId: string, correctChoiceIds: string[]];
   updateCriteria: [itemId: string, criteria: NativeExamCriterion[]];
@@ -283,6 +288,16 @@ function handleTickPointsInput(event: Event): void {
         :item="item"
         @update-body="(choiceId, body) => emit('updateChoiceBody', item.item_id, choiceId, body)"
         @update-correct-choices="(ids) => emit('updateCorrectChoices', item.item_id, ids)"
+      />
+      <ExamWorkspaceOrderingField
+        v-if="item.kind === 'ordering'"
+        :disabled="locked"
+        :item="item"
+        @add-step="emit('addOrderingStep', item.item_id)"
+        @move-step="(choiceId, delta) => emit('moveOrderingStep', item.item_id, choiceId, delta)"
+        @remove-step="(choiceId) => emit('removeOrderingStep', item.item_id, choiceId)"
+        @shuffle="emit('shuffleOrderingSteps', item.item_id)"
+        @update-body="(choiceId, body) => emit('updateChoiceBody', item.item_id, choiceId, body)"
       />
       <ExamWorkspaceKategoriseraGrid
         v-if="isGrid"

@@ -37,6 +37,7 @@ import {
   withPoints,
   withTickPoints,
 } from "./examWorkspaceItemEdits";
+import { withShuffledSteps, withStepAdded, withStepMoved, withStepRemoved } from "./examWorkspaceOrdering";
 import { withoutEmptyOptions, withoutOptionHeadings } from "./examWorkspaceBlockers";
 
 /** One patch of one item, refused while the document is busy or the item still converts. */
@@ -101,6 +102,22 @@ export function useExamWorkspaceItemEdits(patchItem: ExamWorkspaceItemPatch) {
     patchItem(itemId, (item) => withTickPoints(item, tickPoints));
   }
 
+  function addItemOrderingStep(itemId: string): void {
+    patchItem(itemId, (item) => withStepAdded(item), true);
+  }
+
+  function removeItemOrderingStep(itemId: string, choiceId: string): void {
+    patchItem(itemId, (item) => withStepRemoved(item, choiceId), true);
+  }
+
+  function moveItemOrderingStep(itemId: string, choiceId: string, delta: -1 | 1): void {
+    patchItem(itemId, (item) => withStepMoved(item, choiceId, delta), true);
+  }
+
+  function shuffleItemOrderingSteps(itemId: string): void {
+    patchItem(itemId, (item) => withShuffledSteps(item), true);
+  }
+
   function undoItemInterpretation(itemId: string): void {
     patchItem(itemId, withoutInterpretedKey, true);
   }
@@ -126,7 +143,11 @@ export function useExamWorkspaceItemEdits(patchItem: ExamWorkspaceItemPatch) {
   }
 
   return {
+    addItemOrderingStep,
     markItemReviewed,
+    moveItemOrderingStep,
+    removeItemOrderingStep,
+    shuffleItemOrderingSteps,
     removeItemEmptyOptions,
     removeItemOptionHeadings,
     unmarkItemReviewed,
