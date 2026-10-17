@@ -10,8 +10,8 @@
 
 import { computed } from "vue";
 
-import { IconEdit, IconPlus, IconTrash } from "../../../components/icons";
 import { UiDenseActionButton } from "../../../components/ui";
+import { UiGlyph } from "../../../components/ui/shared";
 import type { Roster } from "../classroomPlannerTypes";
 
 const CLASS_PREVIEW_NAME_LIMIT = 33;
@@ -170,7 +170,11 @@ const countLabel = computed(() => {
         @click="emit('create-roster')"
       >
         <template #leading>
-          <IconPlus :size="14" />
+          <UiGlyph
+            meaning="add"
+            :size="14"
+            :stroke-width="2.5"
+          />
         </template>
       </UiDenseActionButton>
       <UiDenseActionButton
@@ -181,7 +185,11 @@ const countLabel = computed(() => {
         @click="emit('edit-roster')"
       >
         <template #leading>
-          <IconEdit :size="14" />
+          <UiGlyph
+            meaning="edit"
+            :size="14"
+            :stroke-width="2.5"
+          />
         </template>
       </UiDenseActionButton>
       <UiDenseActionButton
@@ -193,7 +201,11 @@ const countLabel = computed(() => {
         @click="emit('delete-current-roster')"
       >
         <template #leading>
-          <IconTrash :size="14" />
+          <UiGlyph
+            meaning="delete"
+            :size="14"
+            :stroke-width="2.5"
+          />
         </template>
       </UiDenseActionButton>
     </div>

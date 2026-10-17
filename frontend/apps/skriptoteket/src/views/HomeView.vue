@@ -18,7 +18,7 @@ import {
 } from "../components/home/homeWorkApps";
 import LandingAuthenticatedPreview from "../components/home/LandingAuthenticatedPreview.vue";
 import LandingClassroomPreview from "../components/home/LandingClassroomPreview.vue";
-import { IconArrow } from "../components/icons";
+import { UiGlyph } from "../components/ui/shared";
 import { useHomeDashboard } from "../composables/home/useHomeDashboard";
 import { useAuthStore } from "../stores/auth";
 
@@ -166,8 +166,10 @@ onMounted(async () => {
                 class="btn-cta group"
               >
                 Öppna Klassrumskartan
-                <IconArrow
+                <UiGlyph
+                  meaning="continue"
                   :size="18"
+                  :stroke-width="2.5"
                 />
               </RouterLink>
             </div>
@@ -252,8 +254,10 @@ onMounted(async () => {
                       {{ entry.description }}
                     </p>
                   </div>
-                  <IconArrow
+                  <UiGlyph
+                    meaning="continue"
                     :size="16"
+                    :stroke-width="2.5"
                     class="mt-1 shrink-0 text-navy/55 transition-colors duration-150 group-hover:text-action"
                     aria-hidden="true"
                   />

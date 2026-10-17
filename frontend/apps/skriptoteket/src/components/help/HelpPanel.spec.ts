@@ -10,6 +10,7 @@ import { nextTick } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import HelpPanel from "./HelpPanel.vue";
+import HelpButton from "./HelpButton.vue";
 import { useHelp } from "./useHelp";
 import { useAuthStore } from "../../stores/auth";
 
@@ -195,6 +196,29 @@ describe("HelpPanel", () => {
     wrapper.unmount();
   });
 
+  it("lets a signed-out teacher open a topic and return to the index without closing help", async () => {
+    routeMocks.route.name = "home";
+    routeMocks.route.fullPath = "/";
+    const help = useHelp();
+    const wrapper = mount(HelpPanel, { attachTo: document.body });
+    await flushPromises();
+    const login = Array.from(document.body.querySelectorAll<HTMLButtonElement>("#help-panel button"))
+      .find((button) => button.textContent?.includes("Logga in"));
+    expect(login).toBeDefined();
+    login?.click();
+    await flushPromises();
+    expect(help.activeTopic.value).toBe("login");
+    const back = document.body.querySelector<HTMLAnchorElement>('#help-panel a[href="#help-index"]');
+    expect(back?.textContent).toContain("Till hjälpindex");
+    back?.click();
+    await flushPromises();
+
+    expect(help.activeTopic.value).toBeNull();
+    expect(document.body.querySelector("#help-index")).not.toBeNull();
+    expect(help.isOpen.value).toBe(true);
+    wrapper.unmount();
+  });
+
   it("moves focus into the opened panel instead of leaving it on the opener", async () => {
     const help = useHelp();
     help.isOpen.value = false;
@@ -248,6 +272,36 @@ describe("HelpPanel", () => {
     expect(panel.hasAttribute("inert")).toBe(false);
 
     wrapper.unmount();
+  });
+
+  it("opens from the real help control and restores focus after the close control", async () => {
+    const help = useHelp();
+    help.isOpen.value = false;
+    const opener = mount(HelpButton, { attachTo: document.body });
+    const panel = mount(HelpPanel, { attachTo: document.body });
+    const trigger = opener.get("button");
+    (trigger.element as HTMLButtonElement).focus();
+
+    expect(trigger.attributes("aria-expanded")).toBe("false");
+    expect(trigger.attributes("aria-haspopup")).toBe("dialog");
+    await trigger.trigger("click");
+    await flushPromises();
+
+    expect(trigger.attributes("aria-expanded")).toBe("true");
+    expect(trigger.attributes("aria-controls")).toBe("help-panel");
+    const dialog = document.body.querySelector('[role="dialog"]');
+    const titleId = dialog?.getAttribute("aria-labelledby") ?? "";
+    expect(document.getElementById(titleId)?.textContent?.trim()).toBe("Hjälp");
+    const close = document.body.querySelector<HTMLButtonElement>('#help-panel button[aria-label="Stäng"]');
+    expect(close).not.toBeNull();
+    close?.click();
+    await flushPromises();
+
+    expect(document.body.querySelector("#help-panel")).toBeNull();
+    expect(trigger.attributes("aria-expanded")).toBe("false");
+    expect(document.activeElement).toBe(trigger.element);
+    panel.unmount();
+    opener.unmount();
   });
 
   it("renders no scrim: the page behind the non-modal panel stays usable", async () => {

@@ -12,7 +12,8 @@
  *   - `useEditorChat.ts` owns chat UI state and stream consumption.
  */
 
-import { apiFetch, apiGet, resolveProtectedApiUrl } from "../../../api/client";
+import { apiFetch, apiGet, bindProtectedSession, resolveProtectedApiUrl } from "../../../api/client";
+import type { AuthSession } from "../../../stores/auth";
 import type { EditorChatHistoryResponse, EditorChatRequest } from "./editorChatTypes";
 
 type ApiErrorEnvelope = {
@@ -24,7 +25,7 @@ type ChatStreamRequestParams = {
   toolId: string;
   body: EditorChatRequest;
   correlationId: string;
-  csrfToken?: string | null;
+  session?: AuthSession;
   signal: AbortSignal;
 };
 
@@ -47,26 +48,26 @@ export async function postChatStream({
   toolId,
   body,
   correlationId,
-  csrfToken,
+  session,
   signal,
 }: ChatStreamRequestParams): Promise<Response> {
   const headers = new Headers({
     Accept: "text/event-stream",
     "Content-Type": "application/json",
   });
-  if (csrfToken) {
-    headers.set("X-CSRF-Token", csrfToken);
-  }
   headers.set("X-Correlation-ID", correlationId);
 
   const path = `/api/v1/editor/tools/${encodeURIComponent(toolId)}/chat`;
 
-  return await fetch(resolveProtectedApiUrl(path), {
-    method: "POST",
-    headers,
-    body: JSON.stringify(body),
-    credentials: "include",
-    signal,
+  const binding = bindProtectedSession(session);
+  const serializedBody = JSON.stringify(body);
+  return binding.requestWithCsrf((csrfToken) => {
+    const attemptHeaders = new Headers(headers);
+    if (csrfToken) attemptHeaders.set("X-CSRF-Token", csrfToken);
+    return fetch(resolveProtectedApiUrl(path), {
+      method: "POST", headers: attemptHeaders, body: serializedBody,
+      credentials: "include", signal,
+    });
   });
 }
 

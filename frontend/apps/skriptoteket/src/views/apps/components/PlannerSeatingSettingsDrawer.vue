@@ -8,7 +8,7 @@
 
 import { onMounted, onUnmounted } from "vue";
 
-import { IconX } from "../../../components/icons";
+import { UiGlyph } from "../../../components/ui/shared";
 import { UiDenseActionButton, UiDenseIconButton, UiDenseToggle } from "../../../components/ui";
 import { useToast } from "../../../composables/useToast";
 import {
@@ -88,7 +88,11 @@ onUnmounted(() => {
           label="Stäng avancerade inställningar"
           @click="emit('close')"
         >
-          <IconX :size="14" />
+          <UiGlyph
+            meaning="close"
+            :size="14"
+            :stroke-width="2.5"
+          />
         </UiDenseIconButton>
       </div>
 

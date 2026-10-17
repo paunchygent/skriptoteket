@@ -288,7 +288,7 @@ The external copy review package starts here:
 - Use critical/burgundy only for destructive text or border accents, not broad
   filled surfaces.
 - If `PR-0384` implementation discovers a conflict between this approved
-  package and `.codex/rules/045-huleedu-design-system.md`, stop and reconcile
+  package and `huleedu-ui-design`, stop and reconcile
   the design-token contract before production route work.
 
 ## Runtime And Proof Boundary

@@ -1,6 +1,6 @@
-import { computed, type Component } from "vue";
+import { computed } from "vue";
 
-import { IconAdjustments, IconHistory } from "../../../components/icons";
+import type { UiGlyphMeaning } from "../../../components/ui/shared";
 import { usePlannerToolbarOverflow } from "./usePlannerToolbarOverflow";
 
 const PHONE_TOOLBAR_MEDIA_QUERY = "(max-width: 767px)";
@@ -12,7 +12,7 @@ const OVERFLOW_PRIORITY_ORDER = ["context", "reset", "distribution"];
 type OverflowActionItem = {
   id: string;
   label: string;
-  icon?: Component;
+  glyph?: UiGlyphMeaning;
   disabled: boolean;
   group?: "primary" | "secondary";
   hasPopup?: "dialog" | "menu";
@@ -96,7 +96,7 @@ export function useSeatingToolbarOverflow(options: {
       items.push({
         id: "history",
         label: "Historik",
-        icon: IconHistory,
+        glyph: "history",
         disabled: options.seatingLifecycleBusy(),
         testId: "seating-history",
         onSelect: options.openHistory,
@@ -105,7 +105,7 @@ export function useSeatingToolbarOverflow(options: {
     items.push({
       id: "edit-roster",
       label: "Redigera klass",
-      icon: IconAdjustments,
+      glyph: "configure",
       disabled: options.workspaceBusy() || options.seatingLifecycleBusy(),
       testId: "edit-seating-roster",
       onSelect: options.editRoster,
@@ -113,7 +113,7 @@ export function useSeatingToolbarOverflow(options: {
     items.push({
       id: "edit-classroom",
       label: "Redigera klassrum",
-      icon: IconAdjustments,
+      glyph: "configure",
       disabled: !options.canEditCurrentTemplate() || options.workspaceBusy() || options.seatingLifecycleBusy(),
       testId: "edit-current-template",
       onSelect: options.editCurrentTemplate,
@@ -122,7 +122,7 @@ export function useSeatingToolbarOverflow(options: {
       items.push({
         id: "advanced-settings",
         label: "Avancerade inställningar",
-        icon: IconAdjustments,
+        glyph: "configure",
         disabled: options.workspaceBusy() || options.seatingLifecycleBusy(),
         hasPopup: "dialog",
         expanded: options.smartSettingsOpen(),

@@ -11,9 +11,8 @@
  *   - Receives local intake state from `useTranscriptSourceFile`.
  */
 
-import { Check, FileAudio, Play, Upload, X } from "lucide-vue-next";
-
 import { UiDenseActionButton } from "../../../components/ui";
+import { UiGlyph } from "../../../components/ui/shared";
 import type {
   TranscriptSourceFileSelection,
   TranscriptSpeakerMode,
@@ -87,7 +86,8 @@ function numericInputValue(event: Event): number {
           class="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border border-navy/25 bg-panel px-3 py-3"
           data-test="transcript-selected-source-file"
         >
-          <FileAudio
+          <UiGlyph
+            meaning="audio-file"
             class="h-5 w-5 text-navy"
             aria-hidden="true"
           />
@@ -106,7 +106,8 @@ function numericInputValue(event: Event): number {
             @click="emit('clearTranscriptFile')"
           >
             <template #leading>
-              <X
+              <UiGlyph
+                meaning="close"
                 class="h-4 w-4"
                 aria-hidden="true"
               />
@@ -126,7 +127,8 @@ function numericInputValue(event: Event): number {
             :disabled="isRunning"
             @change="handleFileInput"
           >
-          <Upload
+          <UiGlyph
+            meaning="upload"
             class="h-5 w-5 text-action"
             aria-hidden="true"
           />
@@ -144,7 +146,8 @@ function numericInputValue(event: Event): number {
           v-else-if="selectedTranscriptFile"
           class="flex items-center gap-2 text-xs leading-snug text-success"
         >
-          <Check
+          <UiGlyph
+            meaning="completed"
             class="h-3 w-3"
             aria-hidden="true"
           />
@@ -275,7 +278,8 @@ function numericInputValue(event: Event): number {
           :disabled="!canStartTranscript || isRunning"
           @click="emit('startTranscript')"
         >
-          <Play
+          <UiGlyph
+            meaning="start"
             class="h-4 w-4"
             aria-hidden="true"
           />

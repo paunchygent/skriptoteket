@@ -124,9 +124,22 @@ function createBrowserSirConvertTranscriptGatewayClient(): SirConvertTranscriptG
   const binding = bindProtectedSession();
   const client = createSirConvertTranscriptGatewayClient({
     ensureCsrfToken: binding.ensureCsrfToken,
-    fetcher: (input, init) => binding.run(() => fetch(input, init)),
-    multipartUploadTransport: (request) =>
-      binding.run(() => browserMultipartUploadTransport(request)),
+    fetcher: (input, init) => {
+      if (init?.method === "GET") return binding.run(() => fetch(input, init));
+      return binding.requestWithCsrf((token) => {
+        const headers = new Headers(init?.headers);
+        headers.delete("X-CSRF-Token");
+        if (token) headers.set("X-CSRF-Token", token);
+        return fetch(input, { ...init, headers });
+      });
+    },
+    multipartUploadTransport: (request) => binding.requestWithCsrf((token) => {
+      const headers = new Headers(request.headers);
+      headers.delete("X-CSRF-Token");
+      if (token) headers.set("X-CSRF-Token", token);
+      // The prepared FormData contains a File and a JSON string; both are replayable.
+      return browserMultipartUploadTransport({ ...request, headers });
+    }),
   });
   // Guard the complete operation as well as dispatch: JSON decoding and parser
   // failures can settle after the response's session has already ended.

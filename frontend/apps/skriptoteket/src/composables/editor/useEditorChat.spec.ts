@@ -4,12 +4,13 @@ import { createPinia, setActivePinia } from "pinia";
 
 import { apiFetch } from "../../api/client";
 import { useAuthStore } from "../../stores/auth";
-import { createTestProfile, createTestUser, mockJsonResponse, TEST_AI_POLICY } from "../../stores/authTestHelpers";
+import { createTestProfile, createTestUser, mockJsonResponse, mockSharedSessionResponse, TEST_AI_POLICY } from "../../stores/authTestHelpers";
 import { useEditorChat } from "./useEditorChat";
 
 const originalFetch = globalThis.fetch;
 
-vi.mock("../../api/client", () => ({
+vi.mock("../../api/client", async (importOriginal) => ({
+  ...await importOriginal<typeof import("../../api/client")>(),
   apiFetch: vi.fn(),
   apiGet: vi.fn(),
   isApiError: (error: unknown) => error instanceof Error,
@@ -78,6 +79,7 @@ function admitReplacementTeacher() {
     profile: createTestProfile({ user_id: "teacher-b", display_name: "B", exam_courses: {
       school_forms: ["grundskolan"], course_keys: ["B-course"],
     } }),
+    sharedSessionId: "session-b",
     csrfToken: "B-csrf", aiPolicy: TEST_AI_POLICY,
     grants: ["B-grant"], featureFlags: ["B-flag"],
   });
@@ -134,23 +136,44 @@ describe("useEditorChat", () => {
     expect(useAuthStore().$state).toEqual(expected);
   });
 
-  it("never sends A's chat body after B is admitted during CSRF hydration", async () => {
-    setupAuth();
-    useAuthStore().csrfToken = null;
-    const csrf = deferredResponse();
-    globalThis.fetch = vi.fn().mockReturnValueOnce(csrf.promise)
-      .mockResolvedValue(mockJsonResponse({ detail: "must not dispatch" }, 400));
-    const chat = useEditorChat({ toolId: ref("tool-1"), baseVersionId: ref(null) });
-    const sending = chat.sendMessage("A's private message");
-    expect(fetch).toHaveBeenCalledOnce();
-    expect(vi.mocked(fetch).mock.calls[0][0]).toContain("/auth/csrf");
-    const expected = admitReplacementTeacher();
-    csrf.resolve(mockJsonResponse({ csrf_token: "A-csrf" }));
-    await sending;
-    expect(fetch).toHaveBeenCalledOnce();
-    expect(useAuthStore().$state).toEqual(expected);
-    expect(chat.streaming.value).toBe(false);
-  });
+  it.each(["csrf", "session"] as const)(
+    "never sends A's chat body after B is admitted during the %s acquisition step",
+    async (step) => {
+      setupAuth();
+      const auth = useAuthStore();
+      auth.sharedSessionId = "session-a";
+      auth.csrfToken = null;
+      const pending = deferredResponse();
+      let markStarted!: () => void;
+      const started = new Promise<void>((resolve) => { markStarted = resolve; });
+      globalThis.fetch = vi.fn(async (input) => {
+        const path = new URL(String(input)).pathname;
+        if (path === `/v1/auth/${step}`) {
+          markStarted();
+          return pending.promise;
+        }
+        if (path === "/v1/auth/csrf") return mockJsonResponse({ csrf_token: "A-csrf" });
+        return mockJsonResponse({ detail: "must not dispatch" }, 400);
+      });
+      const chat = useEditorChat({ toolId: ref("tool-1"), baseVersionId: ref(null) });
+      const sending = chat.sendMessage("A's private message");
+      await started;
+      const expected = admitReplacementTeacher();
+      pending.resolve(step === "csrf"
+        ? mockJsonResponse({ csrf_token: "A-csrf" })
+        : mockSharedSessionResponse("session-a"));
+      await sending;
+      const requests = vi.mocked(fetch).mock.calls.map(([input, init]) => ({
+        path: new URL(String(input)).pathname,
+        method: init?.method,
+        body: init?.body,
+      }));
+      expect(requests).toEqual((step === "csrf" ? ["csrf"] : ["csrf", "session"])
+        .map((endpoint) => ({ path: `/v1/auth/${endpoint}`, method: "GET", body: undefined })));
+      expect(useAuthStore().$state).toEqual(expected);
+      expect(chat.streaming.value).toBe(false);
+    },
+  );
   it("shows a partial warning when the stream ends with done.reason=error after deltas", async () => {
     setupAuth();
 

@@ -7,7 +7,7 @@
  * - canonical proving-ground pattern for `Smart` + `Regler`
  */
 
-import { IconAdjustments } from "../icons";
+import { UiGlyph } from "./shared";
 import UiDenseActionButton from "./shared/components/UiDenseActionButton.vue";
 import UiDenseToggle from "./UiDenseToggle.vue";
 
@@ -59,7 +59,11 @@ const emit = defineEmits<{
       @click="emit('action')"
     >
       <template #leading>
-        <IconAdjustments :size="14" />
+        <UiGlyph
+          meaning="configure"
+          :size="14"
+          :stroke-width="2.5"
+        />
       </template>
     </UiDenseActionButton>
   </div>

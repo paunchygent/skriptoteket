@@ -8,6 +8,7 @@
 import { RouterLinkStub, flushPromises, mount } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { UiGlyph } from "../components/ui/shared";
 import HomeView from "./HomeView.vue";
 
 const homeMocks = vi.hoisted(() => ({
@@ -120,6 +121,36 @@ describe("HomeView", () => {
     homeMocks.auth.hasAtLeastRole.mockReturnValue(false);
     homeMocks.dashboard.loadDashboard.mockReset();
     homeMocks.toast.info.mockReset();
+  });
+
+  it("keeps the public continuation glyph decorative and the link named by its text", () => {
+    const wrapper = mountPublicHomeView();
+    const link = wrapper.get('a[href="/public/apps/classroom.group-seating-studio"]');
+    const glyph = link.getComponent(UiGlyph);
+
+    expect(link.text()).toBe("Öppna Klassrumskartan");
+    expect(link.attributes("aria-label")).toBeUndefined();
+    expect(glyph.props("meaning")).toBe("continue");
+    expect(glyph.get("svg").attributes("aria-hidden")).toBe("true");
+    expect(glyph.find("title").exists()).toBe(false);
+    expect(glyph.attributes("role")).not.toBe("img");
+  });
+
+  it("keeps role-gated continuation glyphs decorative without replacing ledger link names", async () => {
+    const wrapper = await mountAuthenticatedHomeView("admin");
+    const section = wrapper.get('[data-testid="home-secondary-ledgers"]');
+    const links = section.findAllComponents(RouterLinkStub);
+
+    expect(links).toHaveLength(5);
+    for (const link of links) {
+      const glyph = link.getComponent(UiGlyph);
+      expect(link.text().trim()).not.toBe("");
+      expect(link.attributes("aria-label")).toBeUndefined();
+      expect(glyph.props("meaning")).toBe("continue");
+      expect(glyph.get("svg").attributes("aria-hidden")).toBe("true");
+      expect(glyph.find("title").exists()).toBe(false);
+      expect(glyph.attributes("role")).not.toBe("img");
+    }
   });
 
   it("shows the public-entry hero hierarchy for signed-out users", () => {

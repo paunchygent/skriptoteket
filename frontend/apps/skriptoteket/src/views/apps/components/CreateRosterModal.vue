@@ -9,8 +9,8 @@
  */
 
 import { nextTick, ref } from "vue";
-import { IconTrash } from "../../../components/icons";
-import { SystemMessage, UiDenseIconButton, UiGlyph } from "../../../components/ui";
+import { SystemMessage, UiDenseIconButton } from "../../../components/ui";
+import { UiGlyph } from "../../../components/ui/shared";
 import type { Roster, Student } from "../classroomPlannerTypes";
 import { useRosterForm } from "./useRosterForm";
 import { useRosterImport } from "./useRosterImport";
@@ -289,9 +289,11 @@ function closeModal(): void {
               :disabled="isDeleting"
               @click="removeRoster"
             >
-              <IconTrash
+              <UiGlyph
                 v-if="!isDeleting"
+                meaning="delete"
                 :size="14"
+                :stroke-width="2.5"
                 aria-hidden="true"
               />
               {{ isDeleting ? "Raderar..." : "Radera" }}

@@ -55,7 +55,7 @@ const passwordResetUrl = computed(() =>
 </script>
 
 <template>
-  <div class="border border-navy bg-panel p-6 md:p-8">
+  <div class="rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] bg-panel p-6 md:p-8">
     <div class="space-y-4 text-sm leading-6 text-navy/75">
       <p>
         {{ introCopy }}
@@ -63,7 +63,7 @@ const passwordResetUrl = computed(() =>
       <p v-if="showAccountLinks">
         Saknar du konto?
         <a
-          class="font-semibold text-navy underline decoration-navy/40 underline-offset-4"
+          class="font-[var(--huleedu-link-weight)] text-[var(--huleedu-link-color)] underline underline-offset-4"
           :href="registerUrl"
         >
           Skapa ett Skriptoteket-konto
@@ -71,7 +71,7 @@ const passwordResetUrl = computed(() =>
       </p>
       <p v-if="showAccountLinks">
         <a
-          class="font-semibold text-navy underline decoration-navy/40 underline-offset-4"
+          class="font-[var(--huleedu-link-weight)] text-[var(--huleedu-link-color)] underline underline-offset-4"
           :href="passwordResetUrl"
         >
           Glömt lösenordet?
@@ -80,7 +80,7 @@ const passwordResetUrl = computed(() =>
     </div>
 
     <a
-      class="btn-primary mt-6 block w-full text-center"
+      class="btn-primary mt-6 w-full"
       :href="loginUrl"
     >
       {{ primaryLabel }}

@@ -116,14 +116,7 @@ No blocking findings remain in the PR-0385 implementation scope.
 
 ## Verification
 
-- Reviewed `AGENTS.md`, `.codex/handoff.md`, `.codex/rules/000-rule-index.md`,
-  `.codex/rules/040-fastapi-blueprint.md`,
-  `.codex/rules/042-async-di-patterns.md`,
-  `.codex/rules/045-huleedu-design-system.md`,
-  `.codex/rules/050-python-standards.md`,
-  `.codex/rules/070-testing-standards.md`,
-  `.codex/rules/096-review-workflow.md`,
-  `docs/index.md`,
+- Reviewed `AGENTS.md`, `.codex/handoff.md`, `docs/index.md`,
   `docs/reference/ref-review-workflow.md`,
   `docs/backlog/prs/pr-0385-st-37-04-document-converter-files-and-history-follow-up.md`,
   and the routed `ruthless-code-review`, `testing`,

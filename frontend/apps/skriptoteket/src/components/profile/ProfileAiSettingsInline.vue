@@ -15,8 +15,7 @@ const {
 } = storeToRefs(ai);
 const toast = useToast();
 
-// Single edit mode for entire section
-const isEditing = ref(false);
+const isEditing = defineModel<boolean>("editing", { default: false });
 const isSaving = ref(false);
 
 // Local edit values
@@ -46,16 +45,16 @@ const externalCompletionDisabled = computed(() =>
   remoteSelection.value !== "allow"
 );
 
-// Start editing - populate both settings
-function startEditing(): void {
+// Initialize a fresh draft whenever the shared edit mode opens.
+watch(isEditing, (editing) => {
+  if (!editing) return;
   remoteSelection.value = remoteFallbackPreference.value === "unset" ? null : remoteFallbackPreference.value;
   if (inlineCompletionProviderPreference.value !== "unset") {
     completionSelection.value = inlineCompletionProviderPreference.value;
   } else {
     completionSelection.value = completionLocalAvailable.value ? "local" : "external";
   }
-  isEditing.value = true;
-}
+}, { immediate: true });
 
 function cancelEditing(): void {
   isEditing.value = false;
@@ -97,7 +96,6 @@ watch(remoteFallbackPreference, (pref) => {
   }
 });
 
-defineExpose({ startEditing, cancelEditing });
 </script>
 
 <template>
@@ -107,7 +105,7 @@ defineExpose({ startEditing, cancelEditing });
       v-if="!remoteProvidersEnabled && !isEditing"
       class="py-2"
     >
-      <div class="panel-inset-canvas p-2.5 text-xs text-navy/70">
+      <div class="border border-[var(--huleedu-panel-border)] bg-panel p-2.5 text-xs text-navy/70 shadow-none">
         Systemadministratören tillåter inte externa AI-modeller i den här miljön.
       </div>
     </div>
@@ -272,16 +270,16 @@ defineExpose({ startEditing, cancelEditing });
 }
 
 .ai-setting-label {
-  font-size: var(--huleedu-text-xs, 0.75rem);
-  font-weight: 600;
+  font-size: var(--huleedu-text-xs);
+  font-weight: var(--huleedu-font-semibold);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--huleedu-navy-70, rgba(26, 43, 60, 0.7));
+  letter-spacing: var(--huleedu-tracking-label);
+  color: var(--huleedu-navy-70);
 }
 
 .ai-setting-value {
-  font-size: var(--huleedu-text-sm, 0.875rem);
-  color: var(--huleedu-navy, #1a2b3c);
+  font-size: var(--huleedu-text-sm);
+  color: var(--huleedu-navy);
 }
 
 /* Edit form */
@@ -299,11 +297,11 @@ defineExpose({ startEditing, cancelEditing });
 }
 
 .ai-fieldset-legend {
-  font-size: 0.6875rem;
-  font-weight: 600;
+  font-size: var(--huleedu-text-xs);
+  font-weight: var(--huleedu-font-semibold);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: rgba(26, 43, 60, 0.6);
+  letter-spacing: var(--huleedu-tracking-label);
+  color: var(--huleedu-navy-60);
   margin-bottom: 0.5rem;
 }
 
@@ -312,6 +310,6 @@ defineExpose({ startEditing, cancelEditing });
   align-items: center;
   gap: 0.75rem;
   padding-top: 0.5rem;
-  border-top: 1px solid rgba(26, 43, 60, 0.1);
+  border-top: 1px solid var(--huleedu-surface-divider);
 }
 </style>

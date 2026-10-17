@@ -171,8 +171,7 @@ None.
 
 ## Verification
 
-- Reviewed `AGENTS.md`, `.codex/handoff.md`, `.codex/rules/000-rule-index.md`,
-  `.codex/rules/096-review-workflow.md`, `docs/index.md`,
+- Reviewed `AGENTS.md`, `.codex/handoff.md`, `docs/index.md`,
   `docs/reference/ref-review-workflow.md`,
   `docs/backlog/prs/pr-0388-st-37-04-document-converter-automatic-preview-and-state-copy-remediation.md`,
   `docs/backlog/prs/pr-0384-st-37-04-document-converter-route-visible-mvp-implementation.md`,

@@ -13,7 +13,7 @@ closeout_review:
   status: not_started
 task_kind: repository
 acceptance_criteria:
-- The .codex/rules directory is gone and no live surface references it, and every
+- The retired repository-rule directory is gone and no live surface references it, and every
   Skriptoteket staging or browser-proof passage is one routing line to the staging-walk
   skill with no Mac-local proof lane
 backlog_document_profile: contract-derived
@@ -25,7 +25,7 @@ Repository rules are retired and staging has one authority, the shared
 `staging-walk` skill (TASK-SKILL-REP-0275). This task removes the Skriptoteket
 copies.
 
-- Delete `.codex/rules/`. Repair every live reference: `AGENTS.md`,
+- Delete the retired repository-rule directory. Repair every live reference: `AGENTS.md`,
   `.gitignore`, the two unit tests that read rule files
   (`tests/unit/web/test_openapi_contracts.py`,
   `tests/unit/scripts/test_playwright_script_surface.py`), `.codex/agents/*.toml`,
@@ -45,7 +45,7 @@ reference plans and reports, the changelog and long-term-memory entries.
 
 ## Contract Inputs
 
-- Live reference grep of 2026-10-11 for `.codex/rules` and `rules/0NN-`.
+- Live reference audit of 2026-10-11 for the retired repository-rule directory and numbered rule routes.
 - Staging inventory, skill-repository session
   `01a12b2b-d8bd-7fd4-b52c-76675362904a` evidence `staging-inventory.md`.
 - TASK-SKILL-REP-0275 for the `staging-walk` skill name and scope.
@@ -60,7 +60,7 @@ changes.
 - `pdm run docs-validate`, `pdm run skills-validate`,
   `pdm run handoff-validate`, `git diff --check`.
 - The two repaired unit tests pass.
-- A grep for `.codex/rules` over live surfaces returns nothing.
+- A reference audit for retired repository-rule routes over live surfaces returns nothing.
 
 ## Stop Conditions
 
@@ -73,5 +73,5 @@ changes.
 
 | ID  | Decided contract term |
 | --- | --------------------- |
-| D1  | Delete `.codex/rules/` and repair every live reference; historical documents keep their mentions. |
+| D1  | Delete the retired repository-rule directory and repair every live reference; historical documents keep their mentions. |
 | D2  | Every Skriptoteket staging and browser-proof passage is one routing line to `staging-walk`; Mac-local proof lanes are removed; staging runs only on Hemma. |

@@ -7,7 +7,7 @@
  * - distinguishes the seating workspace from an individual chair/place
  */
 
-import { LayoutGrid } from "lucide-vue-next";
+import { LayoutGrid } from "@lucide/vue";
 
 defineProps<{
   size?: number;

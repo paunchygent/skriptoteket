@@ -45,7 +45,7 @@ as a retained artifact adapter.
 | File | Focus | Time |
 |------|-------|------|
 | `docs/backlog/prs/pr-0408-st-21-04-exam-converter-frontend-design-implementation-alignment.md` | Authority, non-goals, proof expectations | 10 min |
-| `AGENTS.md`, `.codex/rules/050-python-standards.md`, `.codex/rules/075-browser-automation.md`, `docs/runbooks/runbook-agent-browser-automation.md` | Repo constraints for Python, auth, Playwright, proof lanes | 15 min |
+| `AGENTS.md`, `.codex/skills/skriptoteket-backend-dev/references/backend-contracts.md`, `staging-walk` (Skriptoteket reference), `docs/runbooks/runbook-agent-browser-automation.md` | Current Python, auth and browser-proof guidance; retained Playwright helper context | 15 min |
 | `scripts/_playwright_auth.py` | Shared auth default strictness and opt-in backoff integration | 25 min |
 | `scripts/_playwright_auth_rate_limit.py` | RATE_LIMIT parsing, bounded waits, credential redaction | 20 min |
 | `scripts/_exam_converter_design_proof.py` | Reusable domain proof helper and behavior assertions | 20 min |

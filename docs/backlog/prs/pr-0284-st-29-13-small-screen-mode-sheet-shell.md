@@ -84,9 +84,8 @@ the live workspace.
   this governed PR slice.
 - `integrated-frontend-stack`: Vue 3/Vite/TypeScript stack, token-driven
   styling, CSS-owned layout geometry, dense workspace verification.
-- `brutalist-academic-ui`: brutalist academic doctrine; dense workspace
-  surfaces are instruments, not card stacks.
-- `.codex/rules/045-huleedu-design-system.md`: token-first styling, no Tailwind
+- `huleedu-ui-design`: dense workspace surfaces are instruments, not card stacks;
+  token-first styling, no Tailwind
   default palette leakage, dense workspace exception for theatrical button
   motion, shared dense-control sizing/radius ownership.
 - `docs/reference/ref-klassrumskartan-workspace-ui-doctrine-2026-03-28.md`:

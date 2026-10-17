@@ -16,6 +16,8 @@
 
 import { computed, nextTick, onBeforeUnmount, ref, watch } from "vue";
 
+import UiDenseIconButton from "../../ui/shared/components/UiDenseIconButton.vue";
+import SystemMessage from "../../ui/shared/components/SystemMessage.vue";
 import IconRun from "../../icons/IconRun.vue";
 import IconX from "../../icons/IconX.vue";
 import { resolveTutorialMediaUrl, type TutorialClip } from "../../../api/tutorialClips";
@@ -173,7 +175,7 @@ onBeforeUnmount(() => {
           aria-modal="true"
           :aria-labelledby="titleId"
           tabindex="-1"
-          class="tutorial-clip-dialog-panel w-full max-w-[60rem] border border-navy bg-modal shadow-md"
+          class="tutorial-clip-dialog-panel w-full max-w-[60rem] border border-[var(--huleedu-panel-border)] bg-modal shadow-md"
         >
           <header class="flex items-center justify-between gap-3 border-b border-navy/20 px-5 py-3">
             <h2
@@ -184,16 +186,15 @@ onBeforeUnmount(() => {
             >
               {{ currentClip.title }}
             </h2>
-            <button
-              type="button"
-              class="tutorial-clip-icon-button"
-              :aria-label="TUTORIAL_COPY.close"
+            <UiDenseIconButton
+              size="touch"
+              :label="TUTORIAL_COPY.close"
               :title="TUTORIAL_COPY.close"
               data-test="tutorial-clip-dialog-close"
               @click="close"
             >
               <IconX :size="20" />
-            </button>
+            </UiDenseIconButton>
           </header>
 
           <div class="relative aspect-video w-full bg-navy">
@@ -224,14 +225,17 @@ onBeforeUnmount(() => {
                 <IconRun :size="36" />
               </span>
             </button>
-            <p
+            <div
               v-if="hasLoadError"
-              role="status"
-              class="absolute inset-x-0 bottom-0 border-t border-critical/30 bg-panel px-4 py-2 text-sm text-critical"
-              data-test="tutorial-clip-error"
+              class="absolute inset-x-0 bottom-0"
             >
-              {{ TUTORIAL_COPY.loadError }}
-            </p>
+              <SystemMessage
+                tone="failure"
+                data-test="tutorial-clip-error"
+              >
+                {{ TUTORIAL_COPY.loadError }}
+              </SystemMessage>
+            </div>
           </div>
 
           <ul
@@ -272,19 +276,6 @@ onBeforeUnmount(() => {
   outline: none;
 }
 
-.tutorial-clip-icon-button {
-  display: inline-flex;
-  height: 2.5rem;
-  width: 2.5rem;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--huleedu-navy);
-  color: var(--huleedu-navy);
-  transition: background-color var(--huleedu-duration-fast, 150ms) ease,
-    color var(--huleedu-duration-fast, 150ms) ease;
-}
-
 .tutorial-clip-play {
   position: absolute;
   inset: 0;
@@ -304,8 +295,8 @@ onBeforeUnmount(() => {
   border: 1px solid var(--huleedu-navy);
   border-radius: 9999px;
   background: var(--huleedu-canvas);
-  transition: background-color var(--huleedu-duration-fast, 150ms) ease,
-    color var(--huleedu-duration-fast, 150ms) ease;
+  transition: background-color var(--huleedu-duration-fast) var(--huleedu-ease-default),
+    color var(--huleedu-duration-fast) var(--huleedu-ease-default);
 }
 
 .tutorial-clip-list-item {
@@ -317,17 +308,16 @@ onBeforeUnmount(() => {
   gap: 0.75rem;
   padding: 0.5rem 1.25rem;
   text-align: left;
-  font-size: 0.875rem;
+  font-size: var(--huleedu-text-sm);
   color: var(--huleedu-navy);
-  transition: background-color var(--huleedu-duration-fast, 150ms) ease;
+  transition: background-color var(--huleedu-duration-fast) var(--huleedu-ease-default);
 }
 
 .tutorial-clip-list-item[aria-current="true"] {
-  font-weight: 600;
+  font-weight: var(--huleedu-font-semibold);
   background: var(--huleedu-canvas);
 }
 
-.tutorial-clip-icon-button:focus-visible,
 .tutorial-clip-play:focus-visible .tutorial-clip-play-disc,
 .tutorial-clip-list-item:focus-visible {
   outline: 2px solid var(--huleedu-action-40);
@@ -335,7 +325,6 @@ onBeforeUnmount(() => {
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .tutorial-clip-icon-button:hover,
   .tutorial-clip-play:hover .tutorial-clip-play-disc {
     background: var(--huleedu-navy);
     color: var(--huleedu-canvas);

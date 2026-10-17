@@ -79,8 +79,8 @@ prove it end to end:
   `docs/reference/ref-exam-converter-ui-content-model-v1.md`
 - Selected Exam Converter UI mockup:
   `docs/mockups/st-21-03-exam-converter-authenticated-progressive-review/README.md`
-- Design-system rule and workspace doctrine:
-  `.codex/rules/045-huleedu-design-system.md` and
+- Presentation skill and workspace doctrine:
+  `huleedu-ui-design` and
   `docs/reference/ref-klassrumskartan-workspace-ui-doctrine-2026-03-28.md`
 
 ## Non-goals

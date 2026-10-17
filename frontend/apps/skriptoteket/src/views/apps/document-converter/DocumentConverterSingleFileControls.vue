@@ -12,7 +12,7 @@
  *   - Emits user selections and submit intents back to the route host.
  */
 
-import { IconRefresh } from "../../../components/icons";
+import { UiGlyph } from "../../../components/ui/shared";
 import {
   UiSegmentedToggle,
   type UiSegmentedToggleOption,
@@ -77,7 +77,11 @@ const emit = defineEmits<{
       :disabled="isSubmitting || isLoadingSources"
       @click="emit('submit')"
     >
-      <IconRefresh :size="16" />
+      <UiGlyph
+        meaning="start"
+        :size="16"
+        :stroke-width="2.25"
+      />
       {{ isSubmitting ? "Arbetar…" : "Skapa fil" }}
     </button>
   </section>

@@ -4,8 +4,8 @@
   `ready`, owner delegated Codex lead on `codex/task-skript-rep-0038`.
   D1-D2 live routing edits pass focused gates (2026-10-11; retained session
   `01a12706-566c-7480-acc3-427145283942`, captures 0426-0430).
-  Rule deletion is blocked: migration hook demands replacements, contrary to D1.
-  Next: parent resolves hook, delete rules, rerun gates, commit for review.
+  The 22 rule files are deleted on main by TASK-SKRIPT-40-03-09 (facts folded into
+  skills). Next: the REP-0038 owner reconciles its remaining D1-D2 scope against that.
 
 - [TASK-SKRIPT-REP-0040](docs/backlog/tasks/task-skript-rep-0040-retire-sir-convert-public-host-defaults-and-align-private-conversion-lanes.md)
   `in_progress`; owner Claude parent. `fix/retire-convert-references` at
@@ -59,31 +59,32 @@
   merge; the restyle (ST-SKRIPT-40-03) and repairs close on approved review plus
   unit tests. Wave 1: 39-06-01 `done`; 39-04-08 and 39-06-03 close after one
   targeted U-4 check on staging 81200aba (Spara enables after a parent command,
-  export carries it), pending; 39-08-02 waits for U-1 round 3 (Hemma lead).
-  Walk evidence: `evidence/staging-walk-u1-u3-1b417b64/`, `staging-walk-u2-d9c2b3bb/`,
-  `staging-rewalk-fdc2973b/` (U-2 passes).
-  Wave 2 backend (Sol driver+navigator pairs on Hemma, shared worktree
+  export carries it), pending; 39-08-02 `done` (two-tab CSRF re-walk passed on
+  02e6676c). Walk evidence: `evidence/staging-walk-u1-u3-1b417b64/`,
+  `staging-walk-u2-d9c2b3bb/`, `staging-rewalk-fdc2973b/`, `staging-rewalk-02e6676c/`.
+  Wave 2 backend (Sol pairs on Hemma, shared worktree
   `~/apps/skriptoteket-epic-skript-39-remote`, branch `codex/epic-skript-39-remote`,
-  never pushed; shared-file hunks stay uncommitted for one parent commit):
-  reviews in `evidence/reviews/` (Hemma copy of the root). Review 1 changes_requested,
-  repairs running then rereview by the same reviewer: 39-04-06 (cfc6a32c/954f3e96/
-  aca5cbf0/878b7042; retry history, pipeline split; repair a130484e), 39-04-10
-  (6ecd9924/4a1e56f4; Task[Any] in a test; repair 0524bc5f), 39-06-04 (7f79413a/
-  884a2e29; rich dropdown options, 504-line adapter; repair 7b2aac0e, API save/reopen
-  test c1e195a2). Under review 1: 39-07-01 (1e3c1a3b/5519749c/2b100a17; zero points
-  allowed per user 2026-10-17, reconcile old positive-tick wording in its task and
-  story at closeout; reviewer 2001b921), 39-08-03 (a418b491/32dacb9c/d9c4e246; no-bullet
-  courses store [], listed in BUILD; reviewer 45d9338a), 39-08-04 (e65a78a4/d21766a3/
-  7f2bc00d; reviewer 2f3d462f). Next: 39-06-05 then 06-06, 39-07-02, the 39-06-02 Exam.net probe;
-  integrate, staging walk, then 39-07-03. Follow-ups: cleanup deletes payload files
-  before its row commit (39-04-10 review), and `migrated_db` swallows migration-thread errors.
+  never pushed; reviews in `evidence/reviews/` of the Hemma root copy). All six
+  approved after repair: 39-04-06 (review 3), 39-04-10, 39-06-04, 39-07-01 (zero
+  points allowed per user 2026-10-17; reconcile old positive-tick wording in its task
+  and story at closeout), 39-08-03 and 39-08-04; shared wiring 37288f10. Running:
+  39-06-05 (driver 1b99d555, navigator afe4699d) and 39-07-02 (driver bbd84f3f,
+  navigator de0a9d05); 728b8cd7 fixes the exam-workspace Vitest failures already on
+  main (stale 39-04-08 saved_document fixtures). Next: 39-06-06, the 39-06-02 Exam.net
+  probe; integrate wave 2 into main, rebuild staging, one exam-converter walk, then
+  39-07-03. Follow-ups: cleanup deletes payload files before its row commit (39-04-10
+  review), and `migrated_db` swallows migration-thread errors.
   Opus lane ST-SKRIPT-40-04: 40-04-01 `done`; Opus builders on Hemma (parent-launched)
-  40-04-02 shell `cb68bbd2` (`~/apps/skriptoteket-task-skript-40-04-02-remote`) and
-  40-04-03 workspace `f6049157` (`...-40-04-03-remote`); both wait on huleedu-integrated
-  0.1.29 (new glyph meanings and a toast action button), released by the Hemma lead.
-  Hemma Opus lead `3b164d53` runs Sol pairs for 40-03-02/07/08/09 and 40-02-01, U-1
-  round 3, and the 08-36-02 closeout review (code on main 0a91a86a, unreviewed);
-  40-03-01/03/04/05/06 `done`. TASK-SKILL-REP-0326 (0.1.28) `done`.
+  40-04-02 shell (`~/apps/skriptoteket-task-skript-40-04-02-remote`; review 1 changes
+  requested, Opus repair 11e695b3) and
+  40-04-03 workspace `f6049157` (`...-40-04-03-remote`); huleedu-integrated 0.1.29 (glyph
+  meanings; no toast change, user rule) is on main cf19e83c (TASK-SKILL-REP-0327 `done`).
+  Shell screenshots pass the lead's prototype check (final reshoot on 0.1.29).
+  Hemma Opus lead `3b164d53`: 40-03-01..08 and 08-36-02 `done`; 40-02-01 tranche 1 on
+  main 761b1b59 (`in_progress`: held/frozen-screen wrappers and lucide removal open);
+  40-03-09 `done` (rules folded into skills; rule-080 file and its .gitignore line
+  deleted and rule-094 values dropped, user 2026-10-17); useClassroomState fix and split
+  approved (31e0be3a). TASK-SKILL-REP-0326 (0.1.28) `done`.
 
 - Historical 2026-09-05 workspace planning (EPIC-SKRIPT-39 E8-E12, ADR-SKRIPT-0091,
   ST-SKRIPT-39-04): `.codex/long-term-memory/entries/session-2026-09-05-epic-39-handoff-compaction.md`.

@@ -9,7 +9,7 @@
 
 import { ref } from "vue";
 
-import { IconArrow } from "../icons";
+import { UiGlyph } from "./shared";
 import type { DenseActionTone } from "./shared/denseToolPrimitives";
 import UiDenseActionButton from "./shared/components/UiDenseActionButton.vue";
 
@@ -56,9 +56,10 @@ defineExpose({
       <slot name="leading" />
     </template>
     <template #trailing>
-      <IconArrow
+      <UiGlyph
+        meaning="open-list"
         :size="12"
-        direction="down"
+        :stroke-width="2.5"
       />
     </template>
   </UiDenseActionButton>

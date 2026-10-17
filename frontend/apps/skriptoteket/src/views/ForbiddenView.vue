@@ -19,10 +19,20 @@ const fromPath = computed(() => {
 </script>
 
 <template>
-  <div>
+  <div class="font-sans text-navy">
     <h2>Forbidden</h2>
-    <p>You do not have permission to view this page.</p>
-    <p v-if="requiredRole">Required role: {{ requiredRole }}</p>
-    <p v-if="fromPath">Attempted path: {{ fromPath }}</p>
+    <p class="text-navy/70">You do not have permission to view this page.</p>
+    <p
+      v-if="requiredRole"
+      class="text-navy/70"
+    >
+      Required role: {{ requiredRole }}
+    </p>
+    <p
+      v-if="fromPath"
+      class="text-navy/70"
+    >
+      Attempted path: {{ fromPath }}
+    </p>
   </div>
 </template>

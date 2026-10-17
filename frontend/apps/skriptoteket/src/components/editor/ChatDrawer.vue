@@ -258,46 +258,13 @@ const assistantActivity = computed(() => {
           @click="emit('toggleCollapse')"
         >
           <template #leading>
-            <svg
-              viewBox="0 0 24 24"
+            <UiGlyph
+              meaning="ai-assist"
+              :size="20"
+              :stroke-width="1.5"
               class="h-5 w-5"
               aria-hidden="true"
-            >
-              <rect
-                x="5"
-                y="7"
-                width="14"
-                height="10"
-                rx="2"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.5"
-              />
-              <circle
-                cx="9"
-                cy="12"
-                r="1"
-                fill="currentColor"
-              />
-              <circle
-                cx="15"
-                cy="12"
-                r="1"
-                fill="currentColor"
-              />
-              <path
-                d="M9 16h6"
-                stroke="currentColor"
-                stroke-width="1.5"
-                stroke-linecap="round"
-              />
-              <path
-                d="M8 5h8"
-                stroke="currentColor"
-                stroke-width="1.5"
-                stroke-linecap="round"
-              />
-            </svg>
+            />
           </template>
         </UiDenseActionButton>
       </div>

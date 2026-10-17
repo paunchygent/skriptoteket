@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "db395727cc0cb4a2d5ea1b9a2f08f6cf3625279b4088b4743a8d6fee97d44877",
+  "source_set_digest": "dd1b8d81ec293a0ae953039482b9e1930495de436c2bf4f19b2af9f270837704",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -2683,7 +2683,7 @@
       "type": "task",
       "title": "Keep signed-in shell help and account actions reachable across breakpoints",
       "path": "docs/backlog/tasks/task-skript-08-36-02-keep-signed-in-shell-help-and-account-actions-reachable-across-breakpoints.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-08-36",
       "owners": [
@@ -2694,7 +2694,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-17",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer (Sol) closeout review 31089b51 in the retained session 01a149c9-5bc7-7713-ba64-12dee0470bdd, evidence/reviews/TASK-SKRIPT-08-36-02/closeout-review.md: approved on 0a91a86a, whose four files are unchanged on main. The live viewport walk is not run: the user's 2026-10-17 rule limits parent walks to the exam converter, so other UI closes on unit proof plus approved review. The parent authorized closure."
       }
     },
     {
@@ -5476,7 +5480,7 @@
       "type": "task",
       "title": "Own courses in the profile and the course dropdown default",
       "path": "docs/backlog/tasks/task-skript-39-08-02-own-courses-in-the-profile-and-the-course-dropdown-default.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-08",
       "owners": [
@@ -5487,7 +5491,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-17",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer (Sol) approvals for the task and its U-1/U-2 repairs, including rereviews 09754cfb and a8b301a2 (U-1 rounds 3 and 4), merged to main 02e6676c by the Hemma lead. The Mac parent re-walked staging in retained session 01a149c9-5bc7-7713-ba64-12dee0470bdd: U-2 on fdc2973b (evidence/staging-rewalk-fdc2973b/) and the two-tab CSRF recovery on 02e6676c (evidence/staging-rewalk-02e6676c/): a write in either tab after the other renews the token gets 403, refreshes and retries to 200 without a reload. The parent authorized closure."
       }
     },
     {
@@ -5807,7 +5815,7 @@
       "type": "task",
       "title": "Migrate icons to the shared glyph components",
       "path": "docs/backlog/tasks/task-skript-40-02-01-migrate-icons-to-the-shared-glyph-components.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-02",
       "owners": [
@@ -5849,7 +5857,7 @@
       "type": "task",
       "title": "Refresh profile and Mina filer onto the shared tokens and components",
       "path": "docs/backlog/tasks/task-skript-40-03-02-refresh-profile-and-mina-filer-onto-the-shared-tokens-and-components.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-03",
       "owners": [
@@ -5860,7 +5868,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-17",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer (Sol) reviews in the retained session 01a149c9-5bc7-7713-ba64-12dee0470bdd, evidence/reviews/TASK-SKRIPT-40-03-02/: review 23f656bf (changes requested, F1-F4 hairline borders, course remove button size, AI-settings edit-state owner, Mina filer search action) and rereview bed4fbcc approved. Merged to main 761b1b59. Closed on approved review plus unit proof under the user's 2026-10-17 rule that parent walks cover only the exam converter. The parent authorized closure."
       }
     },
     {
@@ -5891,7 +5903,7 @@
       "type": "task",
       "title": "Refresh Klassrumskartan onto the shared tokens and components",
       "path": "docs/backlog/tasks/task-skript-40-03-04-refresh-klassrumskartan-onto-the-shared-tokens-and-components.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-03",
       "owners": [
@@ -5902,7 +5914,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-17",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer (Sol) reviews in the retained session 01a149c9-5bc7-7713-ba64-12dee0470bdd, evidence/reviews/TASK-SKRIPT-40-03-04/: review a1e02eb2 and rereview f6883427 (changes requested, F1/F2/F7) repaired and approved by rereview 51081cb1 (huleedu-integrated 0.1.27 adoption) and review 1b7f61f7 (0.1.28 failure-default cleanup); merged to main fb56b364 and 38591ce8. The G12 browser walk is not run: the user's 2026-10-17 rule limits parent walks to the exam converter, so this style-token refresh closes on unit proof plus approved review. The parent authorized closure."
       }
     },
     {
@@ -5956,7 +5972,7 @@
       "type": "task",
       "title": "Refresh the Hjälp panel onto the shared tokens and components",
       "path": "docs/backlog/tasks/task-skript-40-03-07-refresh-the-hjälp-panel-onto-the-shared-tokens-and-components.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-03",
       "owners": [
@@ -5967,7 +5983,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-17",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer (Sol) reviews in the retained session 01a149c9-5bc7-7713-ba64-12dee0470bdd, evidence/reviews/TASK-SKRIPT-40-03-07/: review f7d7f4ad (changes requested, F1 HelpButton popup semantics) and rereview 7d05c366 approved. Closed on approved review plus unit proof under the user's 2026-10-17 rule that parent walks cover only the exam converter. The parent authorized closure."
       }
     },
     {
@@ -5975,7 +5995,7 @@
       "type": "task",
       "title": "Refresh the sign-in and account pages onto the shared tokens and components",
       "path": "docs/backlog/tasks/task-skript-40-03-08-refresh-the-sign-in-and-account-pages-onto-the-shared-tokens-and-components.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-03",
       "owners": [
@@ -5986,7 +6006,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-17",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer (Sol) review 767baa2c approved without findings in the retained session 01a149c9-5bc7-7713-ba64-12dee0470bdd, evidence/reviews/TASK-SKRIPT-40-03-08/review-767baa2c.md. Closed on approved review plus unit proof under the user's 2026-10-17 rule that parent walks cover only the exam converter. The parent authorized closure."
       }
     },
     {
@@ -5994,7 +6018,7 @@
       "type": "task",
       "title": "Fold the remaining .codex/rules facts into their owning skills and route agent instruction through skills only",
       "path": "docs/backlog/tasks/task-skript-40-03-09-fold-the-remaining-codex-rules-facts-into-their-owning-skills-and-route-agent-instruction-through-skills-only.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-03",
       "owners": [
@@ -6005,7 +6029,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-17",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer (Sol) reviews in the retained session 01a149c9-5bc7-7713-ba64-12dee0470bdd, evidence/reviews/TASK-SKRIPT-40-03-09/: review afcdc94a (changes requested, F1 codemap rule-045 authority, F2 dead runbook paths), rereview a9a1bca3 (F2 cleared, F1 open on proposed ADR-0017), rereview 707c6992 approved. Shared-skill half merged to skill-repository main 4139f6d9. Accepted exceptions, accepted by the parent: 16 historical docs keep their rule references, the generated index quotes the task title, the .gitignore entry for the ignored rule-080 file stays until the user deletes that file, and the private rule-094 server values stay withheld as a user decision. The parent authorized closure."
       }
     },
     {

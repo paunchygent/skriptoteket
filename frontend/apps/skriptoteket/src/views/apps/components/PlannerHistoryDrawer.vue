@@ -10,8 +10,8 @@
 
 import { computed, ref } from "vue";
 
-import { IconTrash, IconX } from "../../../components/icons";
 import { UiDenseIconButton, UiDenseStatusPill } from "../../../components/ui";
+import { UiGlyph } from "../../../components/ui/shared";
 import type { PlanDraftSummary } from "../classroomPlannerTypes";
 
 const props = defineProps<{
@@ -100,7 +100,11 @@ function confirmDelete(draftId: string): void {
           label="Stäng historik"
           @click="emit('close')"
         >
-          <IconX :size="14" />
+          <UiGlyph
+            meaning="close"
+            :size="14"
+            :stroke-width="2.5"
+          />
         </UiDenseIconButton>
       </div>
 
@@ -176,7 +180,11 @@ function confirmDelete(draftId: string): void {
                 :disabled="props.busySummaryId === summary.id"
                 @click.stop="requestDelete(summary.id)"
               >
-                <IconTrash :size="14" />
+                <UiGlyph
+                  meaning="delete"
+                  :size="14"
+                  :stroke-width="2.5"
+                />
               </UiDenseIconButton>
             </div>
 

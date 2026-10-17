@@ -3,9 +3,42 @@ import { nextTick } from "vue";
 
 import { mountWithContext } from "../../test/utils";
 import { SystemMessage } from "../ui";
+import { UiGlyph } from "../ui/shared";
 import ChatDrawer from "./ChatDrawer.vue";
 
 describe("ChatDrawer", () => {
+  it("keeps the assistant rail control named and its glyph decorative across collapse", async () => {
+    const wrapper = mountWithContext(ChatDrawer, {
+      props: {
+        variant: "column",
+        isOpen: true,
+        isCollapsed: false,
+        messages: [],
+        isStreaming: false,
+        isEditOpsLoading: false,
+        disabledMessage: null,
+        error: null,
+      },
+    });
+    const collapse = wrapper.get('button[aria-label="Minimera kodassistenten"]');
+    const glyph = collapse.getComponent(UiGlyph);
+    expect(glyph.props("meaning")).toBe("ai-assist");
+    expect(glyph.get("svg").attributes("aria-hidden")).toBe("true");
+    expect(glyph.attributes("aria-label")).toBeUndefined();
+    expect(glyph.attributes("role")).not.toBe("img");
+    expect(collapse.attributes("aria-expanded")).toBe("true");
+    await collapse.trigger("click");
+    expect(wrapper.emitted("toggleCollapse")).toEqual([[]]);
+    expect(wrapper.emitted("close")).toBeUndefined();
+    await wrapper.setProps({ isCollapsed: true });
+    const expand = wrapper.get('button[aria-label="Expandera kodassistenten"]');
+    expect(expand.element).toBe(collapse.element);
+    expect(expand.getComponent(UiGlyph).element).toBe(glyph.element);
+    expect(expand.attributes("aria-expanded")).toBe("false");
+    await expand.trigger("click");
+    expect(wrapper.emitted("toggleCollapse")).toEqual([[], []]);
+    wrapper.unmount();
+  });
   it.each([
     ["noticeMessage", "clearNotice", "Notice", "status", "polite"],
     ["error", "clearError", "Chat failed", "alert", "assertive"],

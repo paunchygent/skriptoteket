@@ -14,11 +14,7 @@
  *   - Leaves preview rendering to `DocumentConverterResultPanel.vue`.
  */
 
-import {
-  IconDownload,
-  IconRefresh,
-  IconVaultFiles,
-} from "../../../components/icons";
+import { UiGlyph } from "../../../components/ui/shared";
 
 import { UiDenseIconButton } from "../../../components/ui";
 
@@ -79,7 +75,11 @@ const emit = defineEmits<{
         :disabled="isRetryDisabled"
         @click="emit('retry')"
       >
-        <IconRefresh :size="16" />
+        <UiGlyph
+          meaning="retry"
+          :size="16"
+          :stroke-width="2.25"
+        />
       </UiDenseIconButton>
     </div>
 
@@ -106,7 +106,11 @@ const emit = defineEmits<{
         :disabled="!canDownload || isDownloading"
         @click="emit('download')"
       >
-        <IconDownload :size="16" />
+        <UiGlyph
+          meaning="download"
+          :size="16"
+          :stroke-width="2.5"
+        />
         Ladda ned
       </button>
       <button
@@ -116,7 +120,11 @@ const emit = defineEmits<{
         :disabled="!canSave || isSaving"
         @click="emit('save')"
       >
-        <IconVaultFiles :size="16" />
+        <UiGlyph
+          meaning="save-to-files"
+          :size="16"
+          :stroke-width="2.25"
+        />
         Spara i Mina filer
       </button>
     </div>
