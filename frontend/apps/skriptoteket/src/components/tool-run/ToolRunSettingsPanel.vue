@@ -170,9 +170,6 @@ function onSave(): void {
       :model-value="errorMessage"
       tone="failure"
       dismissible
-      role="alert"
-      aria-live="assertive"
-      aria-atomic="true"
       @update:model-value="emit('update:errorMessage', $event)"
     />
   </div>

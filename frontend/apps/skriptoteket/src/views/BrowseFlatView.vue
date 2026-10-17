@@ -201,9 +201,6 @@ async function handleFavoriteToggled(payload: { id: string; isFavorite: boolean 
           v-else-if="errorMessage"
           :model-value="errorMessage"
           tone="failure"
-          role="alert"
-          aria-live="assertive"
-          aria-atomic="true"
         />
 
         <div

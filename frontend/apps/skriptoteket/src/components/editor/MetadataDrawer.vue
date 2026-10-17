@@ -178,9 +178,6 @@ function toggleCategory(value: string): void {
             :model-value="slugError"
             tone="failure"
             dismissible
-            role="alert"
-            aria-live="assertive"
-            aria-atomic="true"
             @update:model-value="emit('update:slugError', $event)"
           />
         </div>
@@ -217,9 +214,6 @@ function toggleCategory(value: string): void {
           :model-value="taxonomyError"
           tone="failure"
           dismissible
-          role="alert"
-          aria-live="assertive"
-          aria-atomic="true"
           @update:model-value="emit('update:taxonomyError', $event)"
         />
 

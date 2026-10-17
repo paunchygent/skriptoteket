@@ -101,7 +101,6 @@ async function createDraftTool(): Promise<void> {
                 v-if="searchErrorMessage"
                 :model-value="searchErrorMessage"
                 tone="failure"
-                role="alert"
               />
 
               <div
@@ -255,9 +254,6 @@ async function createDraftTool(): Promise<void> {
           v-model="myToolsError"
           tone="failure"
           dismissible
-          role="alert"
-          aria-live="assertive"
-          aria-atomic="true"
         />
 
         <div

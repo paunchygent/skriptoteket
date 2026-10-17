@@ -130,9 +130,6 @@ async function save(): Promise<void> {
       v-if="catalogError"
       :model-value="catalogError"
       tone="failure"
-      role="alert"
-      aria-live="assertive"
-      aria-atomic="true"
       :dismissible="false"
     />
 

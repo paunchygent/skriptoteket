@@ -313,9 +313,6 @@ async function copyDebugText(): Promise<void> {
         v-model="actionError"
         tone="failure"
         dismissible
-        role="alert"
-        aria-live="assertive"
-        aria-atomic="true"
       />
 
       <!-- Next Actions (multi-step tools) - only show for current run -->

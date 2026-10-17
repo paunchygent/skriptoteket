@@ -279,9 +279,6 @@ watch(
       v-if="errorMessage"
       :model-value="errorMessage"
       tone="failure"
-      role="alert"
-      aria-live="assertive"
-      aria-atomic="true"
     />
 
     <UiActionFieldRenderer

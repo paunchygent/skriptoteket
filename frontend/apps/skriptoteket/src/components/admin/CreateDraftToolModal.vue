@@ -102,9 +102,6 @@ useDialogFocus(dialog, {
               :model-value="error"
               tone="failure"
               dismissible
-              role="alert"
-              aria-live="assertive"
-              aria-atomic="true"
               @update:model-value="emit('update:error', $event)"
             />
           </div>

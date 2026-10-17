@@ -247,9 +247,6 @@ watch(
       v-model="errorMessage"
       tone="failure"
       dismissible
-      role="alert"
-      aria-live="assertive"
-      aria-atomic="true"
     />
 
     <SandboxRunnerActions

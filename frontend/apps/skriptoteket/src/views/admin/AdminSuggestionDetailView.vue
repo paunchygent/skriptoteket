@@ -211,9 +211,6 @@ const showDecisionFields = computed(() => decision.value === "accept");
       v-model="loadErrorMessage"
       tone="failure"
       dismissible
-      role="alert"
-      aria-live="assertive"
-      aria-atomic="true"
     />
 
     <div
@@ -468,9 +465,6 @@ const showDecisionFields = computed(() => decision.value === "accept");
           v-model="decisionErrorMessage"
           tone="failure"
           dismissible
-          role="alert"
-          aria-live="assertive"
-          aria-atomic="true"
         />
       </div>
 

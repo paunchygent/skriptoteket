@@ -87,9 +87,6 @@ onMounted(() => {
         v-model="error"
         tone="failure"
         dismissible
-        role="alert"
-        aria-live="assertive"
-        aria-atomic="true"
         class="mb-4"
       />
 
