@@ -33,7 +33,6 @@ function mountEditor(item: NativeExamItem) {
       origin: "digiexam_import",
       parent: null,
       child: null,
-      suggestedKind: null,
       converting: false,
       disabled: false,
       notice: null,

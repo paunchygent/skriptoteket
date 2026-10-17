@@ -7,7 +7,10 @@
  *   sequences contiguous. Server commands run against the cursor the history
  *   holds after storing the pending edit, never the cursor from before it.
  *   Byt frågetyp names what it removed in Swedish; a refused command leaves
- *   no notice behind.
+ *   no notice behind. Deleting an instruction keeps its questions by default
+ *   or takes them along; deleting its last question says inline that the
+ *   heading went too; a delete that would empty the exam is refused inline,
+ *   never in a toast (user ruling 2026-10-17).
  */
 
 import { createPinia, setActivePinia } from "pinia";
@@ -15,7 +18,12 @@ import { effectScope, ref } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ApiError } from "../../../api/client";
-import type { ExamWorkspaceDocumentResponse, NativeExamDocument } from "../../../api/examWorkspace";
+import type {
+  ExamWorkspaceDeleteResponse,
+  ExamWorkspaceDocumentResponse,
+  NativeExamDocument,
+} from "../../../api/examWorkspace";
+import { useToastStore } from "../../../stores/toast";
 import { newTeacherItem } from "./examWorkspaceItemEdits";
 import { buildParentDocument } from "./examWorkspaceParentDocument.specSupport";
 import { buildSavedExamSummary } from "./useExamWorkspaceDocument.specSupport";
@@ -26,6 +34,7 @@ const apiMocks = vi.hoisted(() => ({
   changeExamWorkspaceItemType: vi.fn(),
   createExamWorkspaceParent: vi.fn(),
   deleteExamWorkspaceChild: vi.fn(),
+  deleteExamWorkspaceParent: vi.fn(),
   reorderExamWorkspaceChildren: vi.fn(),
 }));
 
@@ -41,6 +50,28 @@ function response(document: NativeExamDocument): ExamWorkspaceDocumentResponse {
     summary: buildSavedExamSummary({ title: document.title }),
   };
 }
+
+function deleted(document: NativeExamDocument, removedParentId: string | null): ExamWorkspaceDeleteResponse {
+  return { ...response(document), removed_parent_id: removedParentId };
+}
+
+/** The fixture without its instruction; `keep` leaves the deluppgifter as standalone questions. */
+function withoutParent(keep: boolean): NativeExamDocument {
+  const document = buildParentDocument();
+  const childIds = new Set(document.parents[0]!.item_ids);
+  return {
+    ...document,
+    items: keep ? document.items : document.items.filter((item) => !childIds.has(item.item_id)),
+    parents: [],
+  };
+}
+
+const EMPTY_EXAM = new ApiError({
+  code: "VALIDATION_ERROR",
+  details: { parent_id: "parent_001", reason: "exam_requires_question" },
+  message: "Provet måste ha minst en fråga.",
+  status: 422,
+});
 
 function setup(selected: string | null = null) {
   const workspaceDocument = ref<NativeExamDocument | null>(buildParentDocument());
@@ -191,18 +222,39 @@ describe("server commands", () => {
     ]);
   });
 
-  it("refuses to delete the last deluppgift without asking the server", () => {
+  it("deletes the last deluppgift on the server and says inline that the heading went too", async () => {
     const { structure, workspaceDocument } = setup("item_001");
     const document = workspaceDocument.value!;
     workspaceDocument.value = {
       ...document,
       parents: document.parents.map((parent) => ({ ...parent, item_ids: ["item_001"] })),
     };
+    const after = { ...document, items: document.items.filter((item) => item.item_id !== "item_001"), parents: [] };
+    apiMocks.deleteExamWorkspaceChild.mockResolvedValue(deleted(after, "parent_001"));
 
     structure.deleteItem("item_001");
 
-    expect(apiMocks.deleteExamWorkspaceChild).not.toHaveBeenCalled();
-    expect(workspaceDocument.value.items).toHaveLength(4);
+    await vi.waitFor(() =>
+      expect(structure.deleteNotice.value).toEqual({
+        kind: "delete",
+        text: "Instruktionen hade inga frågor kvar och togs också bort.",
+      }),
+    );
+    expect(workspaceDocument.value.parents).toEqual([]);
+    expect(useToastStore().toasts).toEqual([]);
+  });
+
+  it("says nothing about the heading when the server kept it", async () => {
+    const { structure } = setup("item_002");
+    const after = buildParentDocument();
+    after.items = after.items.filter((item) => item.item_id !== "item_002");
+    apiMocks.deleteExamWorkspaceChild.mockResolvedValue(deleted(after, null));
+
+    structure.deleteItem("item_002");
+    await vi.waitFor(() => expect(apiMocks.deleteExamWorkspaceChild).toHaveBeenCalled());
+    await vi.waitFor(() => expect(structure.running.value).toBe(false));
+
+    expect(structure.deleteNotice.value).toBeNull();
   });
 
   it("selects the deluppgift the server added", async () => {
@@ -254,5 +306,86 @@ describe("server commands", () => {
     expect(onConflict).toHaveBeenCalledOnce();
     expect(applied).toEqual([]);
     expect(structure.typeNotice.value).toBeNull();
+  });
+});
+
+describe("deleting an instruction", () => {
+  it("keeps the questions by default and selects the first of them", async () => {
+    const { structure, selectedItemId, workspaceDocument } = setup("item_004");
+    apiMocks.deleteExamWorkspaceParent.mockResolvedValue(deleted(withoutParent(true), "parent_001"));
+
+    await structure.deleteParent("parent_001", "keep_questions");
+
+    expect(apiMocks.deleteExamWorkspaceParent.mock.calls[0]).toEqual([
+      "lineage-1",
+      "parent_001",
+      "keep_questions",
+      "cursor-after-flush",
+    ]);
+    expect(workspaceDocument.value!.items).toHaveLength(4);
+    expect(selectedItemId.value).toBe("item_001");
+    expect(structure.deleteNotice.value).toBeNull();
+  });
+
+  it("takes the questions along only when asked, and selects the next unit", async () => {
+    const { structure, selectedItemId, workspaceDocument } = setup("item_002");
+    apiMocks.deleteExamWorkspaceParent.mockResolvedValue(deleted(withoutParent(false), "parent_001"));
+
+    await structure.deleteParent("parent_001", "with_questions");
+
+    expect(apiMocks.deleteExamWorkspaceParent.mock.calls[0]![2]).toBe("with_questions");
+    expect(workspaceDocument.value!.items.map((item) => item.item_id)).toEqual(["item_004"]);
+    expect(selectedItemId.value).toBe("item_004");
+  });
+
+  it("refuses inline, never in a toast, when the exam would have no question left", async () => {
+    const { structure, applied } = setup("item_001");
+    apiMocks.deleteExamWorkspaceParent.mockRejectedValue(EMPTY_EXAM);
+
+    await structure.deleteParent("parent_001", "with_questions");
+
+    expect(applied).toEqual([]);
+    expect(structure.deleteNotice.value).toEqual({ kind: "refused", text: "Provet måste ha minst en fråga." });
+    expect(useToastStore().toasts).toEqual([]);
+  });
+
+  it("refuses a last-deluppgift delete inline when it would empty the exam", async () => {
+    const { structure } = setup("item_001");
+    apiMocks.deleteExamWorkspaceChild.mockRejectedValue(EMPTY_EXAM);
+
+    structure.deleteItem("item_001");
+
+    await vi.waitFor(() => expect(structure.deleteNotice.value?.kind).toBe("refused"));
+    expect(useToastStore().toasts).toEqual([]);
+  });
+
+  it("still toasts any other refusal and clears an earlier notice when the next command starts", async () => {
+    const { structure } = setup("item_001");
+    apiMocks.deleteExamWorkspaceParent.mockRejectedValueOnce(EMPTY_EXAM);
+    await structure.deleteParent("parent_001", "with_questions");
+    expect(structure.deleteNotice.value).not.toBeNull();
+
+    apiMocks.deleteExamWorkspaceParent.mockRejectedValueOnce(
+      new ApiError({ code: "VALIDATION_ERROR", message: "Instruktionen finns inte.", status: 422 }),
+    );
+    await structure.deleteParent("parent_001", "keep_questions");
+
+    expect(structure.deleteNotice.value).toBeNull();
+    expect(useToastStore().toasts.map((toast) => [toast.variant, toast.message])).toEqual([
+      ["failure", "Instruktionen finns inte."],
+    ]);
+  });
+
+  it("reloads on a stale cursor and leaves the document alone", async () => {
+    const { structure, onConflict, applied } = setup("item_001");
+    apiMocks.deleteExamWorkspaceParent.mockRejectedValue(
+      new ApiError({ code: "CONFLICT", message: "Dokumentet har ändrats.", status: 409 }),
+    );
+
+    await structure.deleteParent("parent_001", "keep_questions");
+
+    expect(onConflict).toHaveBeenCalledOnce();
+    expect(applied).toEqual([]);
+    expect(structure.deleteNotice.value).toBeNull();
   });
 });

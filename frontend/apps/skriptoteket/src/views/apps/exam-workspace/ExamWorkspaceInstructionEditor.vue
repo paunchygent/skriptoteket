@@ -12,9 +12,9 @@
  *
  *   Removing an instruction keeps its questions as standalone questions by
  *   default ("Ta bort instruktion"); removing it with every question is a
- *   separate entry lower in ⋮ (user ruling 2026-10-17). Both, and removing
- *   the last deluppgift with its emptied heading, wait for the server
- *   commands of TASK-SKRIPT-39-06-07 and are disabled until they land.
+ *   separate entry lower in ⋮ (user ruling 2026-10-17). Removing the last
+ *   deluppgift removes the emptied heading too. A removal the server refuses
+ *   (the exam would have no question left) is said inline above the text.
  *
  * Relationships:
  *   - Rendered by `ExamWorkspaceView` for a selected instruction; emits
@@ -26,6 +26,7 @@ import { computed, ref } from "vue";
 import type { NativeExamBodyParagraph, NativeExamParent } from "../../../api/examWorkspace";
 import type { ExamParentDeleteMode } from "../../../api/examWorkspace";
 import { UiGlyph } from "../../../components/ui";
+import ExamWorkspaceInlineNotice from "./ExamWorkspaceInlineNotice.vue";
 import ExamWorkspaceMarkToolbar from "./ExamWorkspaceMarkToolbar.vue";
 import ExamWorkspaceMenu from "./ExamWorkspaceMenu.vue";
 import ExamWorkspaceNewItemMenu from "./ExamWorkspaceNewItemMenu.vue";
@@ -36,6 +37,7 @@ import { examWorkspaceFormatPoints, examWorkspacePointsLine } from "./examWorksp
 import { provideRichTextTargetRegistry } from "./examWorkspaceRichTextTarget";
 import type { RichTextHeadingLevel } from "./examWorkspaceRichTextTarget";
 import type { BodyMark } from "./examWorkspaceBodyMarks";
+import type { ExamWorkspaceNotice } from "./useExamWorkspaceStructure";
 
 const props = defineProps<{
   parent: NativeExamParent;
@@ -45,8 +47,8 @@ const props = defineProps<{
   /** The part total the exam text prints, only when it differs from `subtotal`. */
   printedTotal: number | null;
   disabled: boolean;
-  /** The server commands for deleting an instruction exist (TASK-SKRIPT-39-06-07). */
-  deleteReady: boolean;
+  /** The last command's inline outcome, e.g. a refused delete. */
+  notice: ExamWorkspaceNotice | null;
 }>();
 
 const emit = defineEmits<{
@@ -56,6 +58,7 @@ const emit = defineEmits<{
   deleteChild: [itemId: string];
   addChild: [kind: TeacherItemKind];
   deleteParent: [mode: ExamParentDeleteMode];
+  dismissNotice: [];
 }>();
 
 const targets = provideRichTextTargetRegistry();
@@ -68,7 +71,6 @@ const addOpen = ref(false);
 const moreOpen = ref(false);
 
 const owner = computed(() => ({ itemId: props.parent.parent_id, surface: "question" as const, entryId: null }));
-const lastChildReserved = computed(() => props.children.length === 1 && !props.deleteReady);
 
 function toggleMark(mark: BodyMark): void {
   targets.active.value?.toggleMark(mark);
@@ -79,7 +81,6 @@ function toggleHeading(level: RichTextHeadingLevel): void {
 }
 
 function chooseDelete(mode: ExamParentDeleteMode): void {
-  if (!props.deleteReady) return;
   moreOpen.value = false;
   emit("deleteParent", mode);
 }
@@ -115,6 +116,11 @@ function chooseDelete(mode: ExamParentDeleteMode): void {
       </button>
     </div>
 
+    <ExamWorkspaceInlineNotice
+      v-if="notice"
+      :notice="notice"
+      @dismiss="emit('dismissNotice')"
+    />
     <div class="xw-label ied__first">
       Instruktion
     </div>
@@ -207,9 +213,9 @@ function chooseDelete(mode: ExamParentDeleteMode): void {
           <button
             type="button"
             class="xw-rm"
-            :disabled="disabled || lastChildReserved"
+            :disabled="disabled"
             aria-label="Ta bort deluppgiften"
-            :title="lastChildReserved ? 'Ta bort deluppgiften (kommer senare)' : 'Ta bort deluppgiften'"
+            :title="children.length === 1 ? 'Ta bort deluppgiften och instruktionen' : 'Ta bort deluppgiften'"
             :data-test="`exam-workspace-child-delete-${entry.id}`"
             @click="emit('deleteChild', entry.id)"
           >
@@ -248,31 +254,23 @@ function chooseDelete(mode: ExamParentDeleteMode): void {
         type="button"
         class="xw-mi"
         role="menuitem"
-        :aria-disabled="!deleteReady || undefined"
         data-test="exam-workspace-delete-instruction"
         @click="chooseDelete('keep_questions')"
       >
         <UiGlyph
           meaning="delete"
           :size="20"
-        /><span class="xw-mi__stack"><span>Ta bort instruktion</span><span class="xw-mi__sub">Frågorna blir kvar som egna frågor</span></span><span
-          v-if="!deleteReady"
-          class="xw-mi__hint"
-        >Kommer senare</span>
+        /><span class="xw-mi__stack"><span>Ta bort instruktion</span><span class="xw-mi__sub">Frågorna blir kvar som egna frågor</span></span>
       </button>
       <div class="xw-mdiv" />
       <button
         type="button"
         class="xw-mi"
         role="menuitem"
-        :aria-disabled="!deleteReady || undefined"
         data-test="exam-workspace-delete-instruction-with-children"
         @click="chooseDelete('with_questions')"
       >
-        <span class="xw-mi__pad" /><span class="xw-grow">Ta bort instruktion och alla dess frågor</span><span
-          v-if="!deleteReady"
-          class="xw-mi__hint"
-        >Kommer senare</span>
+        <span class="xw-mi__pad" /><span class="xw-grow">Ta bort instruktion och alla dess frågor</span>
       </button>
     </ExamWorkspaceMenu>
   </section>

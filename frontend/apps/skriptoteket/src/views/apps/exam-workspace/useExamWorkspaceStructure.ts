@@ -10,10 +10,12 @@
  *   newest undo step, so the pending edit is stored first and the response's
  *   document becomes the next step. After Byt frågetyp the question shows an
  *   inline notice naming what the change removed; the header Ångra reverts it
- *   (user ruling 2026-10-17: no Ångra in toasts). Deleting an instruction,
- *   keeping its questions or with them, and deleting its last question
- *   together with the emptied heading wait for the server commands of
- *   TASK-SKRIPT-39-06-07 (user ruling 2026-10-17); until then they do nothing.
+ *   (user ruling 2026-10-17: no Ångra in toasts). Deleting an instruction
+ *   keeps its questions as standalone questions by default, or deletes them
+ *   with it; deleting its last question removes the emptied heading too, and
+ *   an inline notice says so (TASK-SKRIPT-39-06-07, user ruling 2026-10-17).
+ *   A delete that would leave the exam without a question is refused inline,
+ *   never in a toast.
  *
  * Relationships:
  *   - Edits through `useExamWorkspaceDocument` (`editDocument`,
@@ -31,7 +33,6 @@ import {
   createExamWorkspaceParent,
   deleteExamWorkspaceChild,
   deleteExamWorkspaceParent,
-  EXAM_PARENT_DELETE_READY,
   reorderExamWorkspaceChildren,
 } from "../../../api/examWorkspace";
 import type {
@@ -76,7 +77,21 @@ export type ExamWorkspaceStructureDeps = {
 
 export type ExamWorkspaceTypeNotice = { itemId: string; kind: NativeExamItemKind; text: string };
 
+/** An inline outcome: a type change, an instruction removed with its last question, or a refused delete. */
+export type ExamWorkspaceNotice = { kind: "type" | "delete" | "refused"; text: string };
+
 const HEADING_REMOVED_COPY = "Instruktionen hade inga frågor kvar och togs också bort.";
+
+/** The server's refusal of a delete that would leave the exam without a question. */
+function isExamRequiresQuestion(error: unknown): boolean {
+  return (
+    isApiError(error) &&
+    error.status === 422 &&
+    typeof error.details === "object" &&
+    error.details !== null &&
+    (error.details as { reason?: unknown }).reason === "exam_requires_question"
+  );
+}
 
 function newChildContent(kind: TeacherItemKind) {
   // The server assigns the child's id and sequence.
@@ -88,7 +103,7 @@ export function useExamWorkspaceStructure(deps: ExamWorkspaceStructureDeps) {
   const running = ref(false);
   const typeNotice = ref<ExamWorkspaceTypeNotice | null>(null);
   /** Said once where the selection lands after a delete took more than the teacher picked. */
-  const deleteNotice = ref<string | null>(null);
+  const deleteNotice = ref<ExamWorkspaceNotice | null>(null);
 
   const blocked = computed(() => running.value || deps.isBusy());
 
@@ -97,13 +112,14 @@ export function useExamWorkspaceStructure(deps: ExamWorkspaceStructureDeps) {
   }
 
   /** Run one server command against the newest stored step; select what it added. */
-  async function runCommand(
-    command: (lineageId: string, cursor: string) => Promise<ExamWorkspaceDocumentResponse>,
-  ): Promise<ExamWorkspaceDocumentResponse | null> {
+  async function runCommand<Response extends ExamWorkspaceDocumentResponse>(
+    command: (lineageId: string, cursor: string) => Promise<Response>,
+  ): Promise<Response | null> {
     if (blocked.value) {
       return null;
     }
     running.value = true;
+    deleteNotice.value = null;
     try {
       await deps.flush(true);
       const lineageId = deps.lineageId();
@@ -125,6 +141,8 @@ export function useExamWorkspaceStructure(deps: ExamWorkspaceStructureDeps) {
     } catch (error) {
       if (isApiError(error) && error.status === 409) {
         await deps.onConflict();
+      } else if (isExamRequiresQuestion(error)) {
+        deleteNotice.value = { kind: "refused", text: (error as Error).message };
       } else if (isApiError(error) && error.status === 422) {
         toast.failure(error.message);
       } else {
@@ -157,11 +175,6 @@ export function useExamWorkspaceStructure(deps: ExamWorkspaceStructureDeps) {
     }
     const parent = document.parents.find((entry) => entry.item_ids.includes(itemId));
     if (parent) {
-      // The last question takes its emptied heading with it; that waits for TASK-SKRIPT-39-06-07.
-      const last = parent.item_ids.length === 1;
-      if (last && !EXAM_PARENT_DELETE_READY) {
-        return;
-      }
       const next = examWorkspaceNeighbourId(document, itemId);
       void runCommand((lineageId, cursor) =>
         deleteExamWorkspaceChild(lineageId, parent.parent_id, itemId, cursor),
@@ -172,8 +185,8 @@ export function useExamWorkspaceStructure(deps: ExamWorkspaceStructureDeps) {
         if (next && response.document.items.some((item) => item.item_id === next)) {
           deps.selectItem(next);
         }
-        if (last) {
-          deleteNotice.value = HEADING_REMOVED_COPY;
+        if (response.removed_parent_id !== null) {
+          deleteNotice.value = { kind: "delete", text: HEADING_REMOVED_COPY };
         }
       });
       return;
@@ -184,11 +197,11 @@ export function useExamWorkspaceStructure(deps: ExamWorkspaceStructureDeps) {
     );
   }
 
-  /** Remove an instruction: only its heading, or with its questions (TASK-SKRIPT-39-06-07). */
+  /** Remove an instruction: only its heading, or with its questions. */
   async function deleteParent(parentId: string, mode: ExamParentDeleteMode): Promise<void> {
     const document = deps.workspaceDocument.value;
     const parent = document?.parents.find((entry) => entry.parent_id === parentId);
-    if (!document || !parent || !EXAM_PARENT_DELETE_READY) {
+    if (!document || !parent) {
       return;
     }
     const firstChild = parent.item_ids[0] ?? null;
@@ -291,7 +304,6 @@ export function useExamWorkspaceStructure(deps: ExamWorkspaceStructureDeps) {
     deleteParent,
     dismissDeleteNotice,
     dismissTypeNotice,
-    parentDeleteReady: EXAM_PARENT_DELETE_READY,
     moveChild,
     running: computed(() => running.value),
     typeNotice: computed(() => typeNotice.value),

@@ -56,6 +56,8 @@ export type ExamWorkspaceDocumentSummary = Schemas["ExamWorkspaceDocumentSummary
 export type ExamCourse = Schemas["ExamCourse"];
 export type ExamCourseCatalogResponse = Schemas["ExamCourseCatalogResponse"];
 export type ExamWorkspaceDocumentResponse = Schemas["ExamWorkspaceDocumentResponse"];
+/** A deletion's document response; `removed_parent_id` names an instruction that went with it. */
+export type ExamWorkspaceDeleteResponse = Schemas["ExamWorkspaceDeleteResponse"];
 export type ExamWorkspaceDocumentListResponse = Schemas["ExamWorkspaceDocumentListResponse"];
 export type ExamWorkspaceExportTarget = Schemas["ExamWorkspaceExportTarget"];
 export type ExamWorkspaceEnrichmentState = Schemas["ExamWorkspaceEnrichmentState"];
@@ -350,14 +352,15 @@ export async function addExamWorkspaceChild(
   );
 }
 
+/** Delete one deluppgift; deleting the last one removes its emptied instruction too. */
 export async function deleteExamWorkspaceChild(
   lineageId: string,
   parentId: string,
   itemId: string,
   expectedCursor: string,
-): Promise<ExamWorkspaceDocumentResponse> {
+): Promise<ExamWorkspaceDeleteResponse> {
   const body: Schemas["ParentCommandRequest"] = { expected_cursor: expectedCursor };
-  return await apiFetch<ExamWorkspaceDocumentResponse>(
+  return await apiFetch<ExamWorkspaceDeleteResponse>(
     `${parentsPath(lineageId)}/${encodeURIComponent(parentId)}/children/${encodeURIComponent(itemId)}`,
     { body, method: "DELETE" },
   );
@@ -379,33 +382,29 @@ export async function reorderExamWorkspaceChildren(
   );
 }
 
-/**
- * Deleting an instruction (TASK-SKRIPT-39-06-07, user ruling 2026-10-17). The
- * server routes are not built yet: the paths below are placeholders, and the
- * workspace keeps these controls disabled until `EXAM_PARENT_DELETE_READY` is
- * true. The same lane lets `deleteExamWorkspaceChild` remove an instruction's
- * last question together with its emptied heading.
- */
-export const EXAM_PARENT_DELETE_READY = false;
-
 /** "keep_questions" removes only the heading; "with_questions" removes its questions too. */
 export type ExamParentDeleteMode = "keep_questions" | "with_questions";
 
-// TODO(TASK-SKRIPT-39-06-07): replace with the built route paths and request shape.
-const PARENT_DELETE_PATH_TODO: Record<ExamParentDeleteMode, string> = {
+const PARENT_DELETE_SUFFIX: Record<ExamParentDeleteMode, string> = {
   keep_questions: "",
   with_questions: "/with-children",
 };
 
+/**
+ * Delete an instruction (user ruling 2026-10-17). By default its questions
+ * stay in place as standalone questions; "with_questions" deletes them too.
+ * A deletion that would leave the exam without a question is refused with
+ * 422 `details.reason` "exam_requires_question".
+ */
 export async function deleteExamWorkspaceParent(
   lineageId: string,
   parentId: string,
   mode: ExamParentDeleteMode,
   expectedCursor: string,
-): Promise<ExamWorkspaceDocumentResponse> {
+): Promise<ExamWorkspaceDeleteResponse> {
   const body: Schemas["ParentCommandRequest"] = { expected_cursor: expectedCursor };
-  return await apiFetch<ExamWorkspaceDocumentResponse>(
-    `${parentsPath(lineageId)}/${encodeURIComponent(parentId)}${PARENT_DELETE_PATH_TODO[mode]}`,
+  return await apiFetch<ExamWorkspaceDeleteResponse>(
+    `${parentsPath(lineageId)}/${encodeURIComponent(parentId)}${PARENT_DELETE_SUFFIX[mode]}`,
     { body, method: "DELETE" },
   );
 }

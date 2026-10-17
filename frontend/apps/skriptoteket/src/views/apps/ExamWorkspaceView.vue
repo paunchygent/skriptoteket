@@ -26,7 +26,7 @@
 
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 
-import type { ExamWorkspaceExportTarget, NativeExamItemKind } from "../../api/examWorkspace";
+import type { ExamWorkspaceExportTarget } from "../../api/examWorkspace";
 import { UiGlyph } from "../../components/ui";
 import ExamWorkspaceDetailsDrawer from "./exam-workspace/ExamWorkspaceDetailsDrawer.vue";
 import ExamWorkspaceDrawer from "./exam-workspace/ExamWorkspaceDrawer.vue";
@@ -68,6 +68,7 @@ import { useExamWorkspaceEnrichment } from "./exam-workspace/useExamWorkspaceEnr
 import { EXPORT_FORMAT_NAMES, useExamWorkspaceExports } from "./exam-workspace/useExamWorkspaceExports";
 import { useExamWorkspaceLayout } from "./exam-workspace/useExamWorkspaceLayout";
 import { useExamWorkspaceSourceFile } from "./exam-workspace/useExamWorkspaceSourceFile";
+import type { ExamWorkspaceNotice } from "./exam-workspace/useExamWorkspaceStructure";
 
 type DrawerName = "open" | "export" | "details";
 
@@ -206,20 +207,22 @@ const itemChild = computed(() => {
   const parent = workspaceDocument.value?.parents.find((entry) => entry.item_ids.includes(item?.item_id ?? ""));
   return item && parent ? { index: parent.item_ids.indexOf(item.item_id), count: parent.item_ids.length } : null;
 });
-/** Until TASK-SKRIPT-39-06-06 stores it, the suggested type is the type the conversion first read. */
-const suggestedKind = computed<NativeExamItemKind | null>(() => {
-  const item = selectedItem.value;
-  const kind = item?.retry_source?.label_kind ?? null;
-  return item && kind && kind !== item.kind && item.review.state === "review_required" ? kind : null;
-});
-const itemNotice = computed(() => {
+const itemNotice = computed<ExamWorkspaceNotice | null>(() => {
   const item = selectedItem.value;
   const typeNotice = structure.typeNotice.value;
   if (item && typeNotice && typeNotice.itemId === item.item_id && typeNotice.kind === item.kind) {
-    return typeNotice.text;
+    return { kind: "type", text: typeNotice.text };
   }
   return structure.deleteNotice.value;
 });
+
+function dismissItemNotice(): void {
+  if (itemNotice.value?.kind === "type") {
+    structure.dismissTypeNotice();
+  } else {
+    structure.dismissDeleteNotice();
+  }
+}
 const converting = computed(() => selectedItem.value !== null && convertingItemIds.value.has(selectedItem.value.item_id));
 const entryIndex = computed(() => entries.value.findIndex((entry) => entry.id === selectedEntryId.value));
 const stripState = computed(() => {
@@ -289,6 +292,16 @@ function gotoItem(itemId: string): void {
   if (!isPhone.value && drawer.value === "export") return;
   drawer.value = null;
 }
+
+// A deleted instruction cannot stay selected.
+watch(
+  () => workspaceDocument.value?.parents,
+  (parents) => {
+    if (selectedParentId.value && !parents?.some((parent) => parent.parent_id === selectedParentId.value)) {
+      selectedParentId.value = null;
+    }
+  },
+);
 
 // A command that selects a question (add, delete, a new exam) leaves the instruction.
 watch(selectedItemId, () => {
@@ -609,13 +622,14 @@ onBeforeUnmount(() => {
             :subtotal="selectedParentEntry.points"
             :printed-total="selectedParentEntry.printedTotal"
             :disabled="disabled"
-            :delete-ready="structure.parentDeleteReady"
+            :notice="structure.deleteNotice.value"
             @update-instruction="(body) => setParentInstruction(selectedParent!.parent_id, body)"
             @goto-child="selectEntry"
             @move-child="(itemId, delta) => structure.moveChild(selectedParent!.parent_id, itemId, delta)"
             @delete-child="structure.deleteItem"
             @add-child="addChild"
             @delete-parent="(mode) => structure.deleteParent(selectedParent!.parent_id, mode)"
+            @dismiss-notice="structure.dismissDeleteNotice"
           />
           <ExamWorkspaceQuestionEditor
             v-else-if="selectedItem && itemEntry"
@@ -624,12 +638,10 @@ onBeforeUnmount(() => {
             :origin="workspaceDocument.origin.kind"
             :parent="itemParent"
             :child="itemChild"
-            :suggested-kind="suggestedKind"
             :converting="converting"
             :disabled="disabled"
             :notice="itemNotice"
             :import-open="importOpen"
-            :last-child-deletable="structure.parentDeleteReady"
             :asset-urls="assetUrls"
             @change-type="(kind) => structure.changeType(selectedItem!.item_id, kind)"
             @move="moveSelected"
@@ -638,7 +650,7 @@ onBeforeUnmount(() => {
             @toggle-reviewed="toggleReviewed"
             @retry="(kind) => retryItem(selectedItem!.item_id, kind)"
             @goto-parent="selectEntry"
-            @dismiss-notice="itemNotice === structure.deleteNotice.value ? structure.dismissDeleteNotice() : structure.dismissTypeNotice()"
+            @dismiss-notice="dismissItemNotice"
             @undo-interpretation="editing.undoItemInterpretation"
             @remove-automatic-value="editing.removeItemAutomaticValue"
             @show-gap-as-text="editing.showItemGapAsText"

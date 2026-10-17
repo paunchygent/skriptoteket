@@ -5,14 +5,17 @@
  *   The thin typed client calls the exam workspace document endpoints with
  *   the exact paths and payload shapes the backend contract defines: multipart
  *   import with the `file` field, head-version listing, lineage readback, blob
- *   export downloads per target, and answer-key suggestion request/status.
+ *   export downloads per target, answer-key suggestion request/status, and
+ *   the three instruction deletes with the cursor in the body.
  */
 
 import { describe, expect, it, vi } from "vitest";
 
 import { buildFreeTextItem } from "../test/examWorkspaceFixtures";
-import { apiFetchBlobResponse, apiGet, apiPost } from "./client";
+import { apiFetch, apiFetchBlobResponse, apiGet, apiPost } from "./client";
 import {
+  deleteExamWorkspaceChild,
+  deleteExamWorkspaceParent,
   downloadExamWorkspaceExport,
   getExamWorkspaceConversionStatus,
   getExamWorkspaceDocument,
@@ -26,6 +29,7 @@ import {
 import type { ExamWorkspaceDocumentResponse, NativeExamDocument } from "./examWorkspace";
 
 vi.mock("./client", () => ({
+  apiFetch: vi.fn(),
   apiFetchBlobResponse: vi.fn(),
   apiGet: vi.fn(),
   apiPost: vi.fn(),
@@ -35,6 +39,7 @@ vi.mock("./client", () => ({
 const apiGetMock = vi.mocked(apiGet);
 const apiPostMock = vi.mocked(apiPost);
 const apiFetchBlobResponseMock = vi.mocked(apiFetchBlobResponse);
+const apiFetchMock = vi.mocked(apiFetch);
 
 const DOCUMENTS_ROOT = "/api/v1/apps/documents.conversion_hub/exam-workspace/documents";
 const ANSWER_MISSPELLINGS_PATH =
@@ -86,6 +91,21 @@ function buildResponse(revision: number): ExamWorkspaceDocumentResponse {
 }
 
 describe("examWorkspace transport", () => {
+  it("deletes an instruction, with or without its questions, and one deluppgift", async () => {
+    apiFetchMock.mockResolvedValue({});
+    const body = { body: { expected_cursor: "cursor-1" }, method: "DELETE" };
+
+    await deleteExamWorkspaceParent("lineage/1", "parent 1", "keep_questions", "cursor-1");
+    await deleteExamWorkspaceParent("lineage/1", "parent 1", "with_questions", "cursor-1");
+    await deleteExamWorkspaceChild("lineage/1", "parent 1", "item_002", "cursor-1");
+
+    expect(apiFetchMock.mock.calls).toEqual([
+      [`${DOCUMENTS_ROOT}/lineage%2F1/parents/parent%201`, body],
+      [`${DOCUMENTS_ROOT}/lineage%2F1/parents/parent%201/with-children`, body],
+      [`${DOCUMENTS_ROOT}/lineage%2F1/parents/parent%201/children/item_002`, body],
+    ]);
+  });
+
   it("imports a .docx as multipart form data with the `file` field", async () => {
     const response = { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null };
     apiPostMock.mockResolvedValueOnce(response);

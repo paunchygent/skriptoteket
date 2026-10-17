@@ -135,7 +135,6 @@ describe("ExamWorkspaceBodyEditor picture rendering", () => {
         origin: "digiexam_import",
         parent: null,
         child: null,
-        suggestedKind: null,
         converting: false,
         disabled: false,
         notice: null,

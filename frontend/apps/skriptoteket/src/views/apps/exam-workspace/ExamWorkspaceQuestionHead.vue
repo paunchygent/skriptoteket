@@ -3,13 +3,11 @@
  * Exam workspace question header.
  *
  * Domain purpose:
- *   "Fråga 3" and its type, which opens Byt frågetyp; "Gör om till [typ]"
- *   when the conversion suggests another type; Import, which shows the
+ *   "Fråga 3" and its type, which opens Byt frågetyp; Import, which shows the
  *   question as the exam file had it; the review check; and ⋮ with Flytta
  *   upp, Flytta ned and Ta bort for a deluppgift, or Ta bort for a question.
  *   Removing an instruction's last deluppgift also removes the emptied
- *   heading; until that server command lands (TASK-SKRIPT-39-06-07) the entry
- *   is disabled and marked "Kommer senare".
+ *   heading, and the entry says so before the teacher chooses it.
  *   A question that could not be converted shows its type in red. While the
  *   question still converts its type cannot change. Import and the review
  *   check come in through the `tools` slot (`ExamWorkspaceQuestionTools`);
@@ -41,13 +39,11 @@ const props = defineProps<{
   label: string;
   kind: NativeExamItemKind;
   unbuilt: boolean;
-  suggestedKind: NativeExamItemKind | null;
   converting: boolean;
   /** Where a deluppgift sits in its instruction; null for a standalone question. */
   child: { index: number; count: number } | null;
   disabled: boolean;
   /** An instruction's last deluppgift can be removed with its heading. */
-  lastChildDeletable: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -64,9 +60,7 @@ const hintId = useId();
 const deleteHintId = useId();
 
 const typeLabel = computed(() => (props.unbuilt ? "Ej konverterad" : EXAM_WORKSPACE_TYPE_LABELS[props.kind]));
-const deleteReserved = computed(
-  () => props.child !== null && props.child.count === 1 && !props.lastChildDeletable,
-);
+const deleteTakesHeading = computed(() => props.child !== null && props.child.count === 1);
 
 function chooseKind(kind: NativeExamItemKind): void {
   typeOpen.value = false;
@@ -112,20 +106,6 @@ function chooseMore(action: "up" | "down" | "remove"): void {
       />
     </button>
     <div class="qhead__tools">
-      <button
-        v-if="suggestedKind && suggestedKind !== kind"
-        type="button"
-        class="xw-btn xw-btn--compact"
-        :disabled="converting || disabled"
-        title="Byt till den typ som provfilen tyder på"
-        data-test="exam-workspace-suggested-type"
-        @click="emit('changeType', suggestedKind)"
-      >
-        <UiGlyph
-          meaning="convert-type"
-          :size="16"
-        />Gör om till {{ EXAM_WORKSPACE_TYPE_LABELS[suggestedKind] }}
-      </button>
       <span class="qhead__desk-tools">
         <slot name="tools" />
       </span>
@@ -176,13 +156,7 @@ function chooseMore(action: "up" | "down" | "remove"): void {
         /><span
           v-else
           class="xw-mi__pad"
-        /><span class="xw-grow">{{ entryLabel }}</span><span
-          v-if="entryKind === suggestedKind && entryKind !== kind"
-          class="xw-chip xw-chip--teal"
-        ><UiGlyph
-          meaning="convert-type"
-          :size="12"
-        />Förslag</span>
+        /><span class="xw-grow">{{ entryLabel }}</span>
       </button>
       <button
         v-if="child === null"
@@ -240,19 +214,18 @@ function chooseMore(action: "up" | "down" | "remove"): void {
         type="button"
         class="xw-mi"
         role="menuitem"
-        :aria-disabled="deleteReserved || undefined"
-        :aria-describedby="deleteReserved ? deleteHintId : undefined"
+        :aria-describedby="deleteTakesHeading ? deleteHintId : undefined"
         data-test="exam-workspace-delete"
-        @click="!deleteReserved && chooseMore('remove')"
+        @click="chooseMore('remove')"
       >
         <UiGlyph
           meaning="delete"
           :size="20"
         /><span class="xw-grow">{{ child ? "Ta bort deluppgiften" : "Ta bort frågan" }}</span><span
-          v-if="deleteReserved"
+          v-if="deleteTakesHeading"
           :id="deleteHintId"
           class="xw-mi__hint"
-        >Kommer senare</span>
+        >Instruktionen tas också bort</span>
       </button>
     </ExamWorkspaceMenu>
   </div>

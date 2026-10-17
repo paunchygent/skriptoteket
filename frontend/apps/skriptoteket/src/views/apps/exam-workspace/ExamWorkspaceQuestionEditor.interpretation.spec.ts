@@ -15,7 +15,6 @@ function mountEditor(item: NativeExamItem, disabled = false) {
       origin: "digiexam_import",
       parent: null,
       child: null,
-      suggestedKind: null,
       converting: false,
       disabled,
       notice: null,

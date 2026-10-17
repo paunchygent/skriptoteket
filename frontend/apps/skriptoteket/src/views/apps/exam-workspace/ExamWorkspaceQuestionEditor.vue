@@ -38,12 +38,14 @@ import ExamWorkspaceBodyEditor from "./ExamWorkspaceBodyEditor.vue";
 import ExamWorkspaceChoiceField from "./ExamWorkspaceChoiceField.vue";
 import ExamWorkspaceCriteriaField from "./ExamWorkspaceCriteriaField.vue";
 import ExamWorkspaceImportBox from "./ExamWorkspaceImportBox.vue";
+import ExamWorkspaceInlineNotice from "./ExamWorkspaceInlineNotice.vue";
 import ExamWorkspaceKategoriseraGrid from "./ExamWorkspaceKategoriseraGrid.vue";
 import ExamWorkspaceQuestionHead from "./ExamWorkspaceQuestionHead.vue";
 import ExamWorkspaceQuestionTools from "./ExamWorkspaceQuestionTools.vue";
 import { isTeacherReviewed } from "./examWorkspaceItemEdits";
 import { hasNegativePoints, NEGATIVE_POINTS_GUIDANCE } from "./examWorkspaceItemSaveRules";
 import { provideRichTextTargetRegistry } from "./examWorkspaceRichTextTarget";
+import type { ExamWorkspaceNotice } from "./useExamWorkspaceStructure";
 
 /** A type the labeler read with less confidence than this is marked for checking. */
 const TYPE_CONFIDENCE_THRESHOLD = 0.95;
@@ -57,13 +59,12 @@ const props = defineProps<{
   /** The instruction above a deluppgift; null for a standalone question. */
   parent: { id: string; label: string; text: string } | null;
   child: { index: number; count: number } | null;
-  suggestedKind: NativeExamItemKind | null;
   converting: boolean;
   disabled: boolean;
   /** What the last type change removed, shown until the teacher closes it. */
-  notice: string | null;
+  /** The last command's inline outcome for this question. */
+  notice: ExamWorkspaceNotice | null;
   importOpen: boolean;
-  lastChildDeletable: boolean;
   assetUrls?: Record<string, string>;
 }>();
 
@@ -160,11 +161,9 @@ function handleTickPointsInput(event: Event): void {
       :label="label"
       :kind="item.kind"
       :unbuilt="unbuilt"
-      :suggested-kind="suggestedKind"
       :converting="converting"
       :child="child"
       :disabled="disabled"
-      :last-child-deletable="lastChildDeletable"
       @change-type="emit('changeType', $event)"
       @move="emit('move', $event)"
       @remove="emit('remove')"
@@ -192,31 +191,11 @@ function handleTickPointsInput(event: Event): void {
       />Kontrollera frågetypen.
     </p>
 
-    <div
+    <ExamWorkspaceInlineNotice
       v-if="notice"
-      class="xw-notice xw-notice--info qed__notice"
-      role="status"
-      data-test="exam-workspace-type-notice"
-    >
-      <UiGlyph
-        meaning="convert-type"
-        :size="16"
-      />
-      <span class="xw-grow">{{ notice }} Ångra återställer det.</span>
-      <button
-        type="button"
-        class="xw-rm"
-        aria-label="Stäng meddelandet"
-        title="Stäng"
-        data-test="exam-workspace-type-notice-close"
-        @click="emit('dismissNotice')"
-      >
-        <UiGlyph
-          meaning="close"
-          :size="16"
-        />
-      </button>
-    </div>
+      :notice="notice"
+      @dismiss="emit('dismissNotice')"
+    />
 
     <ExamWorkspaceImportBox
       :item="item"

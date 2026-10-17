@@ -23,7 +23,7 @@ const api = vi.hoisted(() => ({
   saveExamWorkspaceDocument: vi.fn(),
 }));
 const rename = vi.hoisted(() => vi.fn());
-vi.mock("../../api/examWorkspace", () => ({ ...api, EXAM_PARENT_DELETE_READY: false }));
+vi.mock("../../api/examWorkspace", () => ({ ...api }));
 vi.mock("../../api/vault", () => ({ renameVaultFile: rename }));
 const wrappers: ViewWrapper[] = [];
 
