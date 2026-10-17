@@ -1,5 +1,7 @@
 """Item-level invariants for the native exam document (ST-SKRIPT-39-04)."""
 
+from decimal import Decimal
+
 import pytest
 from pydantic import ValidationError
 
@@ -102,17 +104,39 @@ class TestItemInvariants:
                 review=make_review(),
             )
 
-    def test_points_must_be_positive(self) -> None:
-        with pytest.raises(ValidationError, match="positive"):
-            NativeExamItem(
-                item_id="item_001",
-                sequence=1,
-                kind=NativeExamItemKind.FREE_TEXT,
-                body=(make_paragraph("Fråga"),),
-                points=0,
-                answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
-                review=make_review(),
-            )
+    @pytest.mark.parametrize(
+        "points", [0, 0.0, 1, 1.25, Decimal("0.00"), Decimal("4.00"), Decimal("1.25")]
+    )
+    def test_points_accept_finite_nonnegative_numbers(self, points: int | float | Decimal) -> None:
+        item = NativeExamItem.model_validate({**dict(make_free_text_item()), "points": points})
+
+        assert item.points == points
+        assert NativeExamItem.model_validate_json(item.model_dump_json()).points == points
+
+    @pytest.mark.parametrize(
+        ("points", "message"),
+        [
+            (-1, "non-negative"),
+            (-0.25, "non-negative"),
+            (Decimal("-0.25"), "non-negative"),
+            (float("inf"), "finite"),
+            (float("-inf"), "finite"),
+            (float("nan"), "finite"),
+            (Decimal("Infinity"), "finite"),
+            (Decimal("-Infinity"), "finite"),
+            (Decimal("NaN"), "finite"),
+            (Decimal("sNaN"), "finite"),
+            (True, "number"),
+            (False, "number"),
+            ("0", "number"),
+            ("1.25", "number"),
+        ],
+    )
+    def test_points_refuse_negative_nonfinite_boolean_and_text_values(
+        self, points: object, message: str
+    ) -> None:
+        with pytest.raises(ValidationError, match=message):
+            NativeExamItem.model_validate({**dict(make_free_text_item()), "points": points})
 
     def test_free_text_criteria_points_must_equal_the_item_points(self) -> None:
         with pytest.raises(ValidationError, match="equal the item's points"):

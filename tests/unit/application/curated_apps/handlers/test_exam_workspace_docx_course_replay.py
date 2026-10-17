@@ -5,7 +5,15 @@ import pytest
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJobStatus,
 )
+from skriptoteket.application.curated_apps.exam_content_tagging import (
+    MeteredExamContentTagClassifier,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.exam_content_tags import (
+    NativeExamContentTag,
+    load_exam_content_catalog,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import ExamCourseChoice
+from skriptoteket.protocols.item_type_labeler import ContentTagClassificationRequest
 from tests.unit.application.curated_apps.handlers.test_exam_workspace_docx_jobs import (
     claim,
     environment,
@@ -16,7 +24,22 @@ from tests.unit.application.curated_apps.handlers.test_exam_workspace_docx_jobs 
 @pytest.mark.parametrize("enabled", [True, False])
 async def test_picked_course_reaches_every_published_header_and_saved_document(
     enabled: bool,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    content_requests: list[ContentTagClassificationRequest] = []
+
+    async def no_content_tags(
+        self: MeteredExamContentTagClassifier,
+        *,
+        request: ContentTagClassificationRequest,
+        fail_open: bool = True,
+    ) -> tuple[NativeExamContentTag, ...]:
+        content_requests.append(request)
+        return ()
+
+    # These live recordings predate content tagging. Stub only that optional
+    # lane so it cannot consume the type labeler's recorded Decisions reply.
+    monkeypatch.setattr(MeteredExamContentTagClassifier, "suggest", no_content_tags)
     env = environment(enabled=enabled)
     running = await claim(env)
     running = running.model_copy(update={"workspace_course_key": "SVESVE02"})
@@ -37,3 +60,7 @@ async def test_picked_course_reaches_every_published_header_and_saved_document(
     assert opened.document.schema_version == "native_exam_document_v5"
     if enabled:
         assert len(opened.document.items) == 28
+        assert len(content_requests) == 1
+        assert content_requests[0].content_items == load_exam_content_catalog()[expected.key]
+    else:
+        assert content_requests == []

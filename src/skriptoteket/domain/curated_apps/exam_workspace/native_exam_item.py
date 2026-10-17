@@ -84,8 +84,15 @@ class NativeExamItem(BaseModel):
     def _nonnegative_finite_points(cls, points: object) -> int | float | None:
         if points is None:
             return None
-        if isinstance(points, bool) or not isinstance(points, (int, float)):
+        if isinstance(points, bool) or not isinstance(points, (int, float, Decimal)):
             raise ValueError("points must be a number")
+        if isinstance(points, Decimal):
+            if not points.is_finite():
+                raise ValueError("points must be finite")
+            if points < 0:
+                raise ValueError("points must be non-negative")
+            # Persistence uses Decimal for numeric columns; the document uses JSON numbers.
+            points = int(points) if points == points.to_integral_value() else float(points)
         if isinstance(points, float) and not math.isfinite(points):
             raise ValueError("points must be finite")
         if points < 0:

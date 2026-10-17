@@ -122,4 +122,7 @@ def test_examnet_pdf_matches_sir_convert_reference_structurally(
 
     assert len(produced.pages) == len(reference.pages)
     for produced_page, reference_page in zip(produced.pages, reference.pages, strict=True):
-        assert produced_page.extract_text() == reference_page.extract_text()
+        # PDF font encoding varies by host for NBSP; preserve every other character and newline.
+        assert produced_page.extract_text().replace(
+            "\u00a0", " "
+        ) == reference_page.extract_text().replace("\u00a0", " ")

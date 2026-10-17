@@ -101,6 +101,28 @@ class TestSuggestionStorageAcrossKindChanges:
             )
             base["gaps"] = (NativeGap(gap_id="gap_001", accepted_values=("Anna",)),)
             base["answer_key"] = NativeAnswerKey(origin=NativeAnswerKeyOrigin.TEACHER_AUTHORED)
+        elif kind is NativeExamItemKind.INLINE_CHOICE:
+            base["body"] = (
+                NativeParagraph(
+                    heading_level=None,
+                    segments=(
+                        NativeTextSegment(text="Hon heter ", marks=()),
+                        NativeGapSegment(gap_id="gap_001"),
+                        NativeTextSegment(text=".", marks=()),
+                    ),
+                ),
+            )
+            base["gaps"] = (
+                NativeGap(
+                    gap_id="gap_001",
+                    options=(
+                        NativeChoice(choice_id="choice_001", body=plain_body("Anna")),
+                        NativeChoice(choice_id="choice_002", body=plain_body("Bo")),
+                    ),
+                    correct_option_id="choice_001",
+                ),
+            )
+            base["answer_key"] = NativeAnswerKey(origin=NativeAnswerKeyOrigin.TEACHER_AUTHORED)
         elif kind is NativeExamItemKind.MATCHING:
             base["tick_points"] = Decimal("1")
             base["match_left"] = (NativeMatchLeft(left_id="left_001", body=plain_body("hund")),)
