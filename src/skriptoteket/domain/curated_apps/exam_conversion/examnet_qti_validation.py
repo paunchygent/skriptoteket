@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import hashlib
 import io
+import math
 import posixpath
 import zipfile
 from dataclasses import asdict
@@ -252,7 +253,7 @@ def _validate_contract_rules(
         root = _parse_or_none(archive.read(name))
         if root is None:
             continue
-        errors.extend(_positive_mapping_errors(name, root))
+        errors.extend(_nonnegative_mapping_errors(name, root))
         errors.extend(_scoring_shape_errors(name, root))
         errors.extend(_prompt_placement_errors(name, root))
     return tuple(errors)
@@ -309,13 +310,14 @@ def _prompt_has_content(prompt: ElementTree.Element) -> bool:
     return next(iter(prompt), None) is not None
 
 
-def _positive_mapping_errors(name: str, root: ElementTree.Element) -> tuple[str, ...]:
+def _nonnegative_mapping_errors(name: str, root: ElementTree.Element) -> tuple[str, ...]:
     errors: list[str] = []
     for entry in root.iter(f"{{{QTI_NAMESPACE}}}qti-map-entry"):
         raw_value = entry.attrib.get("mapped-value")
-        if raw_value is None or not _is_positive_number(raw_value):
+        if raw_value is None or not _is_nonnegative_number(raw_value):
             errors.append(
-                f"{name} qti-map-entry mapped-value {raw_value!r} must be a positive number."
+                f"{name} qti-map-entry mapped-value {raw_value!r} "
+                "must be a finite non-negative number."
             )
     return tuple(errors)
 
@@ -384,9 +386,10 @@ def _matching_left_coverage_errors(
     )
 
 
-def _is_positive_number(raw_value: str) -> bool:
+def _is_nonnegative_number(raw_value: str) -> bool:
     try:
-        return float(raw_value) > 0
+        value = float(raw_value)
+        return math.isfinite(value) and value >= 0
     except ValueError:
         return False
 

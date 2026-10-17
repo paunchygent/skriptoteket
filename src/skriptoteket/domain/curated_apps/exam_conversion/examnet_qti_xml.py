@@ -254,9 +254,9 @@ def _append_gap_response_declaration(
 def gap_point_values(item: ExamNetQtiItem) -> tuple[str, ...] | None:
     """The formatted value every gap gets, or None when the writer maps no gap points.
 
-    None means the item carries no total or no gaps, or the rounded-down share is
-    0.00; the QTI writer then writes no gap mapping at all. The checklist reads the
-    same predicate so the two can never disagree about the rounded value.
+    None means the item carries no total or no gaps, or a positive total's
+    rounded-down share is 0.00. An explicit zero total maps every gap to zero;
+    the checklist reads the same predicate so it does not report lost points.
     """
 
     if item.max_score is None or not item.response_gaps:
@@ -264,7 +264,7 @@ def gap_point_values(item: ExamNetQtiItem) -> tuple[str, ...] | None:
     value = (Decimal(str(item.max_score)) / len(item.response_gaps)).quantize(
         Decimal("0.01"), rounding=ROUND_DOWN
     )
-    if value == 0:
+    if value == 0 and item.max_score > 0:
         return None
     return (_format_points(value),) * len(item.response_gaps)
 
@@ -294,7 +294,8 @@ def _equal_choice_point_value(item: ExamNetQtiItem) -> str | None:
 
 
 def _format_points(value: Decimal) -> str:
-    return format(value, "f").rstrip("0").rstrip(".") or "0"
+    formatted = format(value, "f")
+    return formatted.rstrip("0").rstrip(".") if "." in formatted else formatted
 
 
 def emits_map_response(item: ExamNetQtiItem) -> bool:

@@ -58,8 +58,8 @@ class NativeExamItem(BaseModel):
     facit_text: str | None = None  # the teacher's original facit wording, kept after undo (D2)
     body: tuple[NativeParagraph, ...] = Field(min_length=1)
     points: int | float | None = None
-    # One uniform positive two-decimal tick value per grid; never default saved grids.
-    tick_points: Decimal | None = Field(default=None, gt=0, decimal_places=2)
+    # One uniform non-negative two-decimal tick value per grid; never default saved grids.
+    tick_points: Decimal | None = Field(default=None, ge=0, decimal_places=2, allow_inf_nan=False)
     # Points no source stated per question: a printed section total split over its
     # questions (D6), or a prose marking guide's single-criterion estimate (R14).
     points_estimated: bool = False
@@ -79,15 +79,17 @@ class NativeExamItem(BaseModel):
     # Source wording and import-time decisions, independent of subsequent teacher edits.
     import_record: NativeExamImportRecord | None = None
 
-    @field_validator("points")
+    @field_validator("points", mode="before")
     @classmethod
-    def _positive_finite_points(cls, points: int | float | None) -> int | float | None:
+    def _nonnegative_finite_points(cls, points: object) -> int | float | None:
         if points is None:
             return None
+        if isinstance(points, bool) or not isinstance(points, (int, float)):
+            raise ValueError("points must be a number")
         if isinstance(points, float) and not math.isfinite(points):
             raise ValueError("points must be finite")
-        if points <= 0:
-            raise ValueError("points must be positive")
+        if points < 0:
+            raise ValueError("points must be non-negative")
         return points
 
     @model_validator(mode="after")
@@ -203,8 +205,8 @@ class NativeExamItem(BaseModel):
 
         A matching item always carries ``tick_points`` and a stored document is never
         defaulted, so an item saved under the old one-to-one rule fails validation. With
-        no key there are no ticks, so there are no derived points either: a positive
-        ``points`` can never equal a zero product.
+        no key there are no ticks, so only absent or zero points agree with the
+        derived total. A zero tick value makes a keyed grid worth zero points.
         """
 
         if self.kind is not NativeExamItemKind.MATCHING:

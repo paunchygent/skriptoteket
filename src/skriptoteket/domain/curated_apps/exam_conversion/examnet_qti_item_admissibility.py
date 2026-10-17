@@ -108,9 +108,9 @@ def _item_errors(item: ExamNetQtiItem) -> tuple[str, ...]:
     if not any(line.strip() for line in item.prompt_lines) and not positioned_picture:
         errors.append(f"Item {item.item_id} has no prompt text.")
     if item.evaluation_mode == ExamNetQtiEvaluationMode.AUTOMATIC and (
-        item.max_score is None or not math.isfinite(item.max_score) or item.max_score <= 0
+        item.max_score is None or not math.isfinite(item.max_score) or item.max_score < 0
     ):
-        errors.append(f"Item {item.item_id} needs a positive point value.")
+        errors.append(f"Item {item.item_id} needs a finite non-negative point value.")
     errors.extend(_choice_errors(item))
     errors.extend(_gap_fill_errors(item))
     errors.extend(_inline_choice_errors(item))
