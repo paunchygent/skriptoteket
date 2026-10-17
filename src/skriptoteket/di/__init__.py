@@ -30,6 +30,7 @@ from skriptoteket.di.editor import EditorProvider
 from skriptoteket.di.exam_answer_key import ExamAnswerKeyProvider
 from skriptoteket.di.exam_converter import ExamConverterProvider
 from skriptoteket.di.exam_workspace import ExamWorkspaceProvider
+from skriptoteket.di.exam_workspace_change_type import ExamWorkspaceChangeTypeProvider
 from skriptoteket.di.exam_workspace_index import ExamWorkspaceIndexProvider
 from skriptoteket.di.favorites import FavoritesProvider
 from skriptoteket.di.flunk_out_frenzy import FlunkOutFrenzyProvider
@@ -65,6 +66,7 @@ __all__ = [
     "ReagentPrepChefProvider",
     "EditorProvider",
     "ExamWorkspaceProvider",
+    "ExamWorkspaceChangeTypeProvider",
     "ExamWorkspaceIndexProvider",
     "FavoritesProvider",
     "IdentityProvider",
@@ -111,6 +113,7 @@ def create_container(settings: Settings) -> AsyncContainer:
         FavoritesProvider(),
         EditorProvider(),
         ExamWorkspaceProvider(),
+        ExamWorkspaceChangeTypeProvider(),
         ExamWorkspaceIndexProvider(),
         LlmProvider(),
         ScriptingProvider(),

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "db395727cc0cb4a2d5ea1b9a2f08f6cf3625279b4088b4743a8d6fee97d44877",
+  "source_set_digest": "8496b8827121f9ae45c1a54242a1127027d509428134706cd520360f7e966ce0",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5358,7 +5358,7 @@
       "type": "task",
       "title": "Change a question's type, keeping what fits and reporting what is dropped",
       "path": "docs/backlog/tasks/task-skript-39-06-05-change-a-question-s-type-keeping-what-fits-and-reporting-what-is-dropped.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-06",
       "owners": [
@@ -5415,7 +5415,7 @@
       "type": "task",
       "title": "Answer keys for DigiExam imports through the workspace's per-question suggestions",
       "path": "docs/backlog/tasks/task-skript-39-07-02-answer-keys-for-digiexam-imports-through-the-workspace-s-per-question-suggestions.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-07",
       "owners": [
