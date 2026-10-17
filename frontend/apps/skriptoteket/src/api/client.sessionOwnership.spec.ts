@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useProfile } from "../composables/useProfile";
 import { SupersededAuthSessionError, useAuthStore } from "../stores/auth";
-import { createTestProfile, createTestUser, mockJsonResponse, TEST_AI_POLICY } from "../stores/authTestHelpers";
+import { createTestProfile, createTestUser, mockJsonResponse, mockSharedSessionResponse, TEST_AI_POLICY } from "../stores/authTestHelpers";
 import { apiFetch, apiFetchBlob, apiFetchBlobResponse } from "./client";
 
 function deferred<T>() {
@@ -22,7 +22,7 @@ function admitTeacher(id: string, csrfToken: string | null = `${id}-csrf`) {
       user_id: id, display_name: id,
       exam_courses: { school_forms: ["grundskolan"], course_keys: [`${id}-course`] },
     }),
-    csrfToken, aiPolicy: TEST_AI_POLICY,
+    sharedSessionId: `${id}-session`, csrfToken, aiPolicy: TEST_AI_POLICY,
     grants: [`${id}-grant`], featureFlags: [`${id}-flag`],
     bootstrapped: true,
   });
@@ -100,6 +100,10 @@ describe("real useProfile.updateExamCourses through the real API client", () => 
       school_forms: ["gymnasiet"], course_keys: ["SVESVE01"],
     } });
     vi.mocked(fetch).mockImplementation(async (input) => {
+      if (String(input).includes("/auth/session")) return mockSharedSessionResponse("teacher-b-session");
+      if (String(input).includes("/profile/app-continuation")) return mockJsonResponse({
+        local_user: teacherB, profile: profileB, ai_policy: null,
+      });
       if (String(input).includes("/auth/csrf")) return mockJsonResponse({ csrf_token: "b-only-csrf" });
       if (String(input).includes("/profile/exam-courses")) return mockJsonResponse({ user: teacherB, profile: savedProfile });
       return mockJsonResponse({ user: teacherB, profile: profileB });
@@ -107,12 +111,13 @@ describe("real useProfile.updateExamCourses through the real API client", () => 
     const profile = useProfile();
     await profile.load();
     expect(auth.isCurrentSession(oldSession)).toBe(false);
-    expect(auth.csrfToken).toBeNull();
+    expect(auth.sharedSessionId).toBe("teacher-b-session");
+    expect(auth.csrfToken).toBe("b-only-csrf");
     expect(auth.aiPolicy).toBeNull();
     expect(auth.grants).toEqual([]);
     expect(auth.featureFlags).toEqual([]);
     await profile.updateExamCourses({ school_forms: ["gymnasiet"], course_keys: ["SVESVE01"] });
-    expect(fetch).toHaveBeenCalledTimes(3);
+    expect(fetch).toHaveBeenCalledTimes(6);
     const save = vi.mocked(fetch).mock.calls.find(([url]) => String(url).includes("/profile/exam-courses"));
     expect(new Headers(save?.[1]?.headers).get("X-CSRF-Token")).toBe("b-only-csrf");
     expect(auth.csrfToken).toBe("b-only-csrf");
@@ -125,13 +130,21 @@ describe("real useProfile.updateExamCourses through the real API client", () => 
     const teacherB = createTestUser({ id: "teacher-b" });
     const profileB = createTestProfile({ user_id: "teacher-b", display_name: "B's admitted profile" });
     // JSON object field order is not an identity or session-lifetime contract.
-    vi.mocked(fetch).mockResolvedValue(mockJsonResponse({ profile: profileB, user: teacherB }));
+    vi.mocked(fetch).mockImplementation(async (input) => {
+      if (String(input).includes("/auth/session")) return mockSharedSessionResponse("teacher-b-session");
+      if (String(input).includes("/profile/app-continuation")) return mockJsonResponse({
+        local_user: teacherB, profile: profileB, ai_policy: null,
+      });
+      if (String(input).includes("/auth/csrf")) return mockJsonResponse({ csrf_token: "b-only-csrf" });
+      return mockJsonResponse({ profile: profileB, user: teacherB });
+    });
     const profile = useProfile();
     await profile.load();
     expect(auth.user).toEqual(teacherB);
     expect(auth.profile).toEqual(profileB);
     expect(profile.profile.value).toEqual(profileB);
-    expect(auth.csrfToken).toBeNull();
+    expect(auth.sharedSessionId).toBe("teacher-b-session");
+    expect(auth.csrfToken).toBe("b-only-csrf");
     expect(auth.grants).toEqual([]);
     expect(auth.featureFlags).toEqual([]);
     expect(auth.aiPolicy).toBeNull();
@@ -145,12 +158,13 @@ describe("real useProfile.updateExamCourses through the real API client", () => 
     } });
     const saved = { user: auth.user, profile: savedProfile };
     vi.mocked(fetch).mockResolvedValueOnce(mockJsonResponse({ csrf_token: "teacher-a-hydrated" }))
+      .mockResolvedValueOnce(mockSharedSessionResponse("teacher-a-session"))
       .mockResolvedValueOnce(mockJsonResponse(saved));
     const profile = useProfile();
     expect(await profile.updateExamCourses({ school_forms: ["gymnasiet"], course_keys: ["SVESVE01"] }))
       .toEqual(saved);
-    expect(fetch).toHaveBeenCalledTimes(2);
-    const [url, options] = vi.mocked(fetch).mock.calls[1];
+    expect(fetch).toHaveBeenCalledTimes(3);
+    const [url, options] = vi.mocked(fetch).mock.calls[2];
     expect(url).toContain("/profile/exam-courses");
     expect(options).toMatchObject({ method: "PATCH", credentials: "include",
       body: JSON.stringify({ school_forms: ["gymnasiet"], course_keys: ["SVESVE01"] }),
@@ -189,14 +203,15 @@ describe("real useProfile.updateExamCourses through the real API client", () => 
     expect(fetch).toHaveBeenCalledOnce();
     expect(vi.mocked(fetch).mock.calls[0][0]).toContain("/auth/csrf");
     admitTeacher("teacher-b", null);
-    vi.mocked(fetch).mockResolvedValueOnce(mockJsonResponse({ csrf_token: "teacher-b-hydrated" }));
+    vi.mocked(fetch).mockResolvedValueOnce(mockJsonResponse({ csrf_token: "teacher-b-hydrated" }))
+      .mockResolvedValueOnce(mockSharedSessionResponse("teacher-b-session"));
     expect(await auth.ensureCsrfToken()).toBe("teacher-b-hydrated");
-    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(fetch).toHaveBeenCalledTimes(3);
     expect(vi.mocked(fetch).mock.calls[1][0]).toContain("/auth/csrf");
     const expected = copyState();
     csrf.resolve(mockJsonResponse({ csrf_token: "teacher-a-csrf" }));
     expect(await result).toBeInstanceOf(SupersededAuthSessionError);
-    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(fetch).toHaveBeenCalledTimes(3);
     expect(auth.$state).toEqual(expected);
     expect(profile.profile.value).toBeNull();
   });

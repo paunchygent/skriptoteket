@@ -12,6 +12,7 @@ import {
   resolveProtectedApiUrl,
 } from "./client";
 import { useAuthStore } from "../stores/auth";
+import { mockSharedSessionResponse } from "../stores/authTestHelpers";
 import type { components } from "./openapi";
 
 type ApiUser = components["schemas"]["User"];
@@ -225,6 +226,7 @@ describe("client", () => {
     it("fetches CSRF from the shared HuleEdu edge before unsafe requests", async () => {
       const auth = useAuthStore();
       auth.user = createTestUser();
+      auth.sharedSessionId = "session-a";
       vi.mocked(fetch)
         .mockResolvedValueOnce({
           ok: true,
@@ -232,6 +234,7 @@ describe("client", () => {
           headers: new Headers({ "content-type": "application/json" }),
           json: () => Promise.resolve({ csrf_token: "shared-csrf-token" }),
         } as Response)
+        .mockResolvedValueOnce(mockSharedSessionResponse())
         .mockResolvedValueOnce({
           ok: true,
           status: 200,
@@ -246,7 +249,7 @@ describe("client", () => {
         "https://api.hule.education/v1/auth/csrf",
         expect.objectContaining({ method: "GET", credentials: "include" }),
       );
-      const headers = (fetch as ReturnType<typeof vi.fn>).mock.calls[1][1].headers as Headers;
+      const headers = (fetch as ReturnType<typeof vi.fn>).mock.calls[2][1].headers as Headers;
       expect(headers.get("X-CSRF-Token")).toBe("shared-csrf-token");
       expect(headers.get("Authorization")).toBeNull();
     });

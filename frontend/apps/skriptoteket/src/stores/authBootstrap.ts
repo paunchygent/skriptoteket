@@ -107,6 +107,7 @@ export async function loadSharedSessionSnapshot(): Promise<SharedSessionBootstra
     sharedAuthUrl(SHARED_AUTH_SESSION_PATH),
     {
       method: "GET",
+      cache: "no-store",
       credentials: "include",
       headers: { Accept: "application/json" },
     },
@@ -171,6 +172,7 @@ export async function loadSharedCsrfToken(): Promise<CsrfTokenResult> {
     sharedAuthUrl(SHARED_AUTH_CSRF_PATH),
     {
       method: "GET",
+      cache: "no-store",
       credentials: "include",
       headers: { Accept: "application/json" },
     },

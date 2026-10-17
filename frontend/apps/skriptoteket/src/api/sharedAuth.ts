@@ -62,6 +62,7 @@ export type BrowserSessionResponse = {
 };
 
 export type SharedAuthSnapshot = {
+  sharedSessionId: string | null;
   user: AuthUser | null;
   profile: AuthProfile | null;
   aiPolicy: ApiAiPolicy | null;
@@ -116,6 +117,45 @@ const DEFAULT_SHARED_AUTH_ENTRY_URLS: Record<SharedAuthCeremonyKind, string> = {
 export type SharedCsrfResponse = {
   csrf_token: string;
 };
+
+/** The Gateway and identity-service CSRF guard's authorization error contract. */
+async function isCsrfRejection(response: Response): Promise<boolean> {
+  if (response.status !== 403 || !response.headers.get("content-type")?.includes("application/json")) {
+    return false;
+  }
+  const payload: unknown = await response.clone().json().catch(() => null);
+  if (typeof payload !== "object" || payload === null || !("error" in payload)) return false;
+  const error = payload.error;
+  return typeof error === "object" && error !== null &&
+    "code" in error && error.code === "AUTHORIZATION_ERROR" &&
+    "message" in error && error.message === "CSRF token required for browser session write";
+}
+
+/** Send factories must recreate headers and supply a replayable body on each call. */
+export async function requestWithCsrfRecovery(params: {
+  requireCurrent: () => void;
+  ensureToken: () => Promise<string | null>;
+  recoverToken: () => Promise<string | null>;
+  invalidateToken: (rejectedToken: string | null) => void;
+  send: (token: string | null) => Promise<Response>;
+}): Promise<Response> {
+  const run = async <T>(work: () => Promise<T>): Promise<T> => {
+    params.requireCurrent();
+    try {
+      return await work();
+    } finally {
+      params.requireCurrent();
+    }
+  };
+  const token = await run(params.ensureToken);
+  const response = await run(() => params.send(token));
+  if (!await run(() => isCsrfRejection(response))) return response;
+  params.invalidateToken(token);
+  const freshToken = await run(params.recoverToken);
+  // Preserve the original rejection if hydration or session continuity could not be established.
+  if (!freshToken) return response;
+  return run(() => params.send(freshToken));
+}
 
 function normalizeBaseUrl(value: string | undefined, origin: string | null = null): string {
   const rawValue = value?.trim() || DEFAULT_SHARED_AUTH_BASE_URL;
@@ -240,6 +280,7 @@ function pickNamePart(
 
 function emptySnapshot(): SharedAuthSnapshot {
   return {
+    sharedSessionId: null,
     user: null,
     profile: null,
     aiPolicy: null,
@@ -259,6 +300,8 @@ export function mapBrowserSessionToAuthSnapshot(
   const personName = payload.profile?.person_name ?? null;
 
   return {
+    sharedSessionId: typeof payload.session.session_id === "string" && payload.session.session_id.trim()
+      ? payload.session.session_id : null,
     user: {
       id: userId,
       email: payload.user.email,

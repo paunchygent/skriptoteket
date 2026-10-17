@@ -16,6 +16,7 @@ function admit(id: string, csrfToken: string | null = `${id}-csrf`) {
   const auth = useAuthStore();
   auth.clear();
   auth.$patch({ user: createTestUser({ id }), profile: createTestProfile({ user_id: id }), csrfToken,
+    sharedSessionId: `${id}-session`,
     grants: [`${id}-grant`], featureFlags: [`${id}-flag`], bootstrapped: true });
   return auth;
 }
