@@ -54,6 +54,8 @@ class NativeExportBlocker(BaseModel):
         "empty_choice",
         "empty_gap_option",
         "empty_match_entry",
+        "ordering_too_few_steps",
+        "empty_ordering_step",
     ]
 
 
