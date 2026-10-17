@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-17'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: user
+  decided_at: '2026-10-18'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'Probe package built by the HuleEduOS producer and imported into Exam.net exam 5345282 in the user''s Edge; student preview, answers and grading retained in 01a14bdc-65b7-73e1-a8ee-3c75001a36fa evidence/39-06-02-probe/ (PROBE.md, screenshots 01-07): ordering is line matching to shuffled positions and all-or-nothing; dropdown Lucktext keyed and graded. The user decided on 2026-10-18 to build ordering, recorded in ST-SKRIPT-39-06 P21.'
 task_kind: story
 acceptance_criteria:
   - Screenshots of one ordering task and one dropdown Lucktext task imported into Exam.net, answered in the student preview and graded, are retained and the user records whether ordering is built

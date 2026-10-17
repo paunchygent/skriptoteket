@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "18e2fc09bb06cd3003ac29db5c23aace1f04011bcea2c3bc644fb883bb573b16",
+  "source_set_digest": "865640d3dd93b714c10dad33625fce6ad8c69e7211675507e8d8450e661af3d7",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5339,7 +5339,7 @@
       "type": "task",
       "title": "Exam.net probe of ordering and dropdown Lucktext in the student view and grading",
       "path": "docs/backlog/tasks/task-skript-39-06-02-exam-net-probe-of-ordering-and-dropdown-lucktext-in-the-student-view-and-grading.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-06",
       "owners": [
@@ -5350,7 +5350,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "user",
+        "decided_at": "2026-10-18",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "Probe package built by the HuleEduOS producer and imported into Exam.net exam 5345282 in the user's Edge; student preview, answers and grading retained in 01a14bdc-65b7-73e1-a8ee-3c75001a36fa evidence/39-06-02-probe/ (PROBE.md, screenshots 01-07): ordering is line matching to shuffled positions and all-or-nothing; dropdown Lucktext keyed and graded. The user decided on 2026-10-18 to build ordering, recorded in ST-SKRIPT-39-06 P21."
       }
     },
     {

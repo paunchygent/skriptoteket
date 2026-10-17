@@ -160,8 +160,8 @@ workspace control.
    question's delete takes the empty heading with it; every delete is one
    undo step (user 2026-10-17).
 
-If the user decides after TASK-SKRIPT-39-06-02 to build ordering, it joins this
-story as a new task carrying P3 and P21.
+The user decided on 2026-10-18, after TASK-SKRIPT-39-06-02, to build ordering;
+it joins this story as a new task carrying P3 and P21 (not yet scaffolded).
 
 ## Verification
 
@@ -201,7 +201,7 @@ story as a new task carrying P3 and P21.
 | P18 | This story ships backend, data, API and export only; every new workspace control is built by ST-SKRIPT-40-04's redesign; the current workspace screens are frozen except for bug fixes (user decisions 2026-10-17 G2 and G8).                                                                                                                        |
 | P19 | Changing a question's type carries over its question text and points; content the new type cannot hold is dropped with a visible notice naming it, and one undo step restores it (user decision 2026-10-17 G20).                                                                                                                                     |
 | P20 | Lucktext with dropdown gives each gap its own option list with one correct option marked as the key (user decision 2026-10-17 G23).                                                                                                                                                                                                                  |
-| P21 | An Exam.net probe of ordering (import, student preview, answer, grading) comes before any ordering build, as TASK-SKRIPT-39-06-02; the user decides from its screenshots; until then the story plans six types; if built, ordering is all-or-nothing with a default of 1 point that the teacher can edit (user decision 2026-10-17 G24).             |
+| P21 | An Exam.net probe of ordering (import, student preview, answer, grading) comes before any ordering build, as TASK-SKRIPT-39-06-02; the user decides from its screenshots; until then the story plans six types; ordering is all-or-nothing with a default of 1 point that the teacher can edit (user decision 2026-10-17 G24); the user decided on 2026-10-18 to build it after the probe (Exam.net exam 5345282).             |
 | P22 | Undo keeps at most 10 steps; each autosave is one step, stored on the server so history survives reload and reopening (user decision 2026-10-17 G13).                                                                                                                                                                                                |
 | P23 | A change into a type that needs structure carries over the text and points and gives the new type the minimum empty parts (two empty choices, one empty gap, one empty pair), marked as blockers until filled; for matching the one pair holds all the points (user 2026-10-17, G25).                                                                |
 | P24 | The suggested type is the labeler's `retry_source.label_kind` when it differs from the saved kind (lead 2026-10-17, L1).                                                                                                                                                                                                                             |
