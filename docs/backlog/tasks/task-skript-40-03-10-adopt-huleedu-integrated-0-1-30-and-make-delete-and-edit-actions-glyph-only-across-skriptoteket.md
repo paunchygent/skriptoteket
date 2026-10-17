@@ -91,3 +91,7 @@ Presentation only; no behaviour or API changes.
 | D2  | Edit actions are the edit glyph alone, everywhere in Skriptoteket (user 2026-10-17). |
 | D3  | The Mina kurser school-form checkboxes get more, but not much more, space above and below (user 2026-10-17). |
 | D4  | Non-delete icon-only buttons keep their current border until the user decides otherwise. |
+
+Follow-up the same day (user decision): huleedu-integrated 0.1.31 draws every
+icon-only default action and glyph edit trigger without a frame, and the Mina
+kurser delete glyph is 12px and centred on the section pens above it.

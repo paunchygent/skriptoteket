@@ -211,9 +211,10 @@ async function save(): Promise<void> {
         >
           {{ row.name }}<template v-if="row.detail"> · {{ row.detail }}</template>
         </span>
+        <!-- -mr-1.5 centres the 36px button's glyph on the 24px section pens above. -->
         <UiDenseIconButton
           :label="`Ta bort ${row.name}`"
-          class="shrink-0"
+          class="-mr-1.5 shrink-0"
           tone="danger"
           data-test="profile-course-remove"
           :aria-label="`Ta bort ${row.name}`"
@@ -222,7 +223,7 @@ async function save(): Promise<void> {
         >
           <UiGlyph
             meaning="delete"
-            :size="14"
+            :size="12"
           />
         </UiDenseIconButton>
       </li>
