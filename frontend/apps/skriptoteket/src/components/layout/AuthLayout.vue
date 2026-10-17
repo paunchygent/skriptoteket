@@ -10,7 +10,8 @@
  *   per-user layout store; focus mode hides the sidebar at 768 px and wider and
  *   keeps the top bar
  * - selected game routes switch to an immersive mode with only the dark top bar
- * - the page frame pads every route; the editor and Klassrumskartan get a
+ * - the page frame pads every route and centres ordinary routes in a 1040 px
+ *   column; the editor and Klassrumskartan get a
  *   flex-column frame they fill, and the exam workspace (TASK-SKRIPT-40-04-03)
  *   and immersive routes get an unpadded, non-scrolling frame
  */
@@ -65,6 +66,14 @@ const isClassroomPlannerRoute = computed(() => {
   return route.name === "app-detail" && route.params.appId === "classroom.group-seating-studio";
 });
 const isExamWorkspaceRoute = computed(() => route.name === "exam-workspace");
+/** Ordinary routes sit in the centred page column; the others fill the frame. */
+const isPageRoute = computed(
+  () =>
+    !isEditorRoute.value
+    && !isClassroomPlannerRoute.value
+    && !isExamWorkspaceRoute.value
+    && !isImmersiveCuratedAppRoute.value,
+);
 
 const sidebarOpen = ref(false);
 const topBarRef = ref<InstanceType<typeof AuthTopBar> | null>(null);
@@ -186,6 +195,7 @@ onBeforeUnmount(() => {
     <main
       class="auth-main-content"
       :class="{
+        'auth-main-content--page': isPageRoute,
         'auth-main-content--editor': isEditorRoute,
         'auth-main-content--workspace': isClassroomPlannerRoute,
         'auth-main-content--exam-workspace': isExamWorkspaceRoute,
@@ -282,7 +292,9 @@ onBeforeUnmount(() => {
   }
 }
 
-/* Page frame. */
+/* Page frame: a plain canvas surface over the global grid paper; ordinary
+   routes sit in a centred 1040 px column that focus mode widens by the width
+   the sidebar gave up, so the column's right edge holds still. */
 .auth-main-content {
   grid-area: main;
   min-width: 0;
@@ -290,12 +302,22 @@ onBeforeUnmount(() => {
   padding: var(--huleedu-space-5) var(--huleedu-space-4);
   overflow-y: auto;
   scrollbar-gutter: stable;
+  background: var(--huleedu-canvas);
 }
 
 @media (min-width: 768px) {
   .auth-main-content {
     padding: var(--huleedu-space-8);
   }
+}
+
+.auth-main-content--page :deep(.route-stage) {
+  max-width: 1040px;
+  margin-inline: auto;
+}
+
+.auth-shell.is-focus-mode .auth-main-content--page :deep(.route-stage) {
+  max-width: calc(1040px + var(--shell-sidebar-inline));
 }
 
 /* Flex-column frames that their route fills. */

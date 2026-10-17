@@ -112,6 +112,7 @@ const loginUrl = computed(() => {
   min-width: 0;
   min-height: 0;
   padding: var(--huleedu-space-5) var(--huleedu-space-4);
+  background: var(--huleedu-canvas);
 }
 
 .landing-frame {
