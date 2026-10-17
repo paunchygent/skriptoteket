@@ -16,6 +16,8 @@ describe("ChatDrawer", () => {
         messages: [],
         isStreaming: false,
         isEditOpsLoading: false,
+        disabledMessage: null,
+        error: null,
       },
     });
     const collapse = wrapper.get('button[aria-label="Minimera kodassistenten"]');
