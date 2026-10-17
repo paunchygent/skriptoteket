@@ -2,7 +2,7 @@ import { createPinia, setActivePinia } from "pinia";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { SupersededAuthSessionError, useAuthStore } from "../stores/auth";
-import { createTestUser, mockJsonResponse } from "../stores/authTestHelpers";
+import { createTestProfile, createTestUser, mockJsonResponse, mockSharedSessionResponse as serverSession } from "../stores/authTestHelpers";
 import { postChatStream } from "../composables/editor/chat/editorChatApi";
 import { cancelTranscriptJob, submitTranscriptJob } from "./sirConvertGateway/client";
 import { apiFetch, apiFetchBlob, apiFetchBlobResponse } from "./client";
@@ -30,13 +30,16 @@ const transports = [
   { name: "Gateway upload", request: () => submitTranscriptJob({ file: file(), correlationId: "corr-a", speakerControl: { mode: "auto" } }) },
   { name: "logout", request: () => useAuthStore().logout() },
 ];
-beforeEach(() => {
+beforeEach(async () => {
   setActivePinia(createPinia());
   vi.mocked(fetch).mockReset();
-  const auth = useAuthStore();
-  auth.user = createTestUser();
-  auth.csrfToken = "stale";
-  auth.bootstrapped = true;
+  vi.mocked(fetch).mockResolvedValueOnce(serverSession())
+    .mockResolvedValueOnce(mockJsonResponse({
+      local_user: createTestUser(), profile: createTestProfile(), ai_policy: null,
+    }))
+    .mockResolvedValueOnce(mockJsonResponse({ csrf_token: "stale" }));
+  await useAuthStore().bootstrap();
+  vi.mocked(fetch).mockReset();
 });
 
 it("rejects a one-shot request stream before dispatch instead of replaying consumed data", async () => {
@@ -46,26 +49,43 @@ it("rejects a one-shot request stream before dispatch instead of replaying consu
   expect(fetch).not.toHaveBeenCalled();
 });
 
+it("surfaces the original CSRF failure when the session authority cannot answer", async () => {
+  vi.mocked(fetch).mockResolvedValueOnce(rejection())
+    .mockResolvedValueOnce(mockJsonResponse({ csrf_token: "unverified" }))
+    .mockRejectedValueOnce(new Error("Session lookup offline"));
+  await expect(apiFetch("/api/v1/write", { method: "PUT", body: { title: "A" } }))
+    .rejects.toMatchObject({
+      status: 403, code: "AUTHORIZATION_ERROR", message: "CSRF token required for browser session write",
+    });
+  expect(fetch).toHaveBeenCalledTimes(3);
+  expect(useAuthStore().csrfToken).toBeNull();
+});
+
 describe.each(transports)("$name CSRF recovery", ({ request }) => {
   it("replays the same payload once with a rehydrated token", async () => {
     vi.mocked(fetch).mockResolvedValueOnce(rejection())
       .mockResolvedValueOnce(mockJsonResponse({ csrf_token: "fresh" }))
+      .mockResolvedValueOnce(serverSession())
       .mockResolvedValueOnce(mockJsonResponse(job));
     await request();
     const calls = vi.mocked(fetch).mock.calls;
-    expect(calls).toHaveLength(3);
+    expect(calls).toHaveLength(4);
     expect(String(calls[1][0])).toContain("/auth/csrf");
     expect(new Headers(calls[0][1]?.headers).get("X-CSRF-Token")).toBe("stale");
-    expect(new Headers(calls[2][1]?.headers).get("X-CSRF-Token")).toBe("fresh");
-    expect(calls[2][0]).toBe(calls[0][0]);
-    expect(calls[2][1]?.body).toEqual(calls[0][1]?.body);
+    expect(String(calls[2][0])).toContain("/auth/session");
+    expect(calls[1][1]?.cache).toBe("no-store");
+    expect(calls[2][1]?.cache).toBe("no-store");
+    expect(new Headers(calls[3][1]?.headers).get("X-CSRF-Token")).toBe("fresh");
+    expect(calls[3][0]).toBe(calls[0][0]);
+    expect(calls[3][1]?.body).toEqual(calls[0][1]?.body);
   });
   it("surfaces a second CSRF rejection without a loop", async () => {
     vi.mocked(fetch).mockResolvedValueOnce(rejection())
       .mockResolvedValueOnce(mockJsonResponse({ csrf_token: "fresh" }))
+      .mockResolvedValueOnce(serverSession())
       .mockResolvedValueOnce(rejection());
     await expect(request()).rejects.toThrow();
-    expect(fetch).toHaveBeenCalledTimes(3);
+    expect(fetch).toHaveBeenCalledTimes(4);
   });
   it("does not replay a non-CSRF authorization denial", async () => {
     vi.mocked(fetch).mockResolvedValueOnce(mockJsonResponse({ error: {
@@ -80,6 +100,43 @@ describe.each(transports)("$name CSRF recovery", ({ request }) => {
       .mockResolvedValueOnce(mockJsonResponse({ error: { message: "Unavailable" } }, 503));
     await expect(request()).rejects.toThrow();
     expect(fetch).toHaveBeenCalledTimes(2);
+  });
+  it.each([
+    ["another account", () => serverSession("session-b", "provider-b")],
+    ["a new session for the same account", () => serverSession("session-b")],
+    ["an unidentified session", () => serverSession(null)],
+    ["an expired session", () => mockJsonResponse({}, 401)],
+    ["an unavailable session authority", () => mockJsonResponse({}, 503)],
+  ])("refuses replay under %s without changing this tab's identity", async (_name, replacement) => {
+    const auth = useAuthStore();
+    const originalUser = auth.user;
+    const originalSession = auth.captureSession();
+    vi.mocked(fetch).mockResolvedValueOnce(rejection())
+      .mockResolvedValueOnce(mockJsonResponse({ csrf_token: "replacement-token" }))
+      .mockResolvedValueOnce(replacement())
+      .mockResolvedValueOnce(mockJsonResponse(job));
+    await expect(request()).rejects.toThrow();
+    expect(vi.mocked(fetch).mock.calls.filter(([, init]) => init?.method !== "GET")).toHaveLength(1);
+    expect(auth.user).toBe(originalUser);
+    expect(auth.isCurrentSession(originalSession)).toBe(true);
+    expect(auth.csrfToken).toBeNull();
+  });
+  it("refuses recovery when the originating session could not be identified at admission", async () => {
+    const auth = useAuthStore();
+    auth.clear();
+    auth.bootstrapped = false;
+    vi.mocked(fetch).mockResolvedValueOnce(serverSession(null))
+      .mockResolvedValueOnce(mockJsonResponse({
+        local_user: createTestUser(), profile: createTestProfile(), ai_policy: null,
+      }))
+      .mockResolvedValueOnce(mockJsonResponse({ csrf_token: "stale" }));
+    await auth.bootstrap();
+    vi.mocked(fetch).mockReset().mockResolvedValueOnce(rejection())
+      .mockResolvedValueOnce(mockJsonResponse({ csrf_token: "unbound" }))
+      .mockResolvedValueOnce(mockJsonResponse(job));
+    await expect(request()).rejects.toThrow();
+    expect(fetch).toHaveBeenCalledOnce();
+    expect(auth.csrfToken).toBeNull();
   });
   it("never replays across a session change during rehydration", async () => {
     const auth = useAuthStore();

@@ -62,6 +62,7 @@ export type BrowserSessionResponse = {
 };
 
 export type SharedAuthSnapshot = {
+  sharedSessionId: string | null;
   user: AuthUser | null;
   profile: AuthProfile | null;
   aiPolicy: ApiAiPolicy | null;
@@ -134,6 +135,7 @@ async function isCsrfRejection(response: Response): Promise<boolean> {
 export async function requestWithCsrfRecovery(params: {
   requireCurrent: () => void;
   ensureToken: () => Promise<string | null>;
+  recoverToken: () => Promise<string | null>;
   invalidateToken: (rejectedToken: string | null) => void;
   send: (token: string | null) => Promise<Response>;
 }): Promise<Response> {
@@ -149,8 +151,8 @@ export async function requestWithCsrfRecovery(params: {
   const response = await run(() => params.send(token));
   if (!await run(() => isCsrfRejection(response))) return response;
   params.invalidateToken(token);
-  const freshToken = await run(params.ensureToken);
-  // Preserve the original rejection if hydration failed; do not send a tokenless replay.
+  const freshToken = await run(params.recoverToken);
+  // Preserve the original rejection if hydration or session continuity could not be established.
   if (!freshToken) return response;
   return run(() => params.send(freshToken));
 }
@@ -278,6 +280,7 @@ function pickNamePart(
 
 function emptySnapshot(): SharedAuthSnapshot {
   return {
+    sharedSessionId: null,
     user: null,
     profile: null,
     aiPolicy: null,
@@ -297,6 +300,8 @@ export function mapBrowserSessionToAuthSnapshot(
   const personName = payload.profile?.person_name ?? null;
 
   return {
+    sharedSessionId: typeof payload.session.session_id === "string" && payload.session.session_id.trim()
+      ? payload.session.session_id : null,
     user: {
       id: userId,
       email: payload.user.email,

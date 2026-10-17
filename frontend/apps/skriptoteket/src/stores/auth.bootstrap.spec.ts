@@ -53,7 +53,7 @@ describe("useAuthStore", () => {
               grants: ["tools:run"],
               feature_flags: ["inline-completion"],
             },
-            session: { transport: "cookie", csrf_required: true, expires_at: "2026-04-11T12:00:00Z" },
+            session: { transport: "cookie", session_id: "shared-session-a", csrf_required: true, expires_at: "2026-04-11T12:00:00Z" },
           }),
         )
         .mockResolvedValueOnce(
@@ -69,6 +69,7 @@ describe("useAuthStore", () => {
 
       await store.bootstrap();
 
+      expect(store.sharedSessionId).toBe("shared-session-a");
       expect(store.user).toEqual(
         expect.objectContaining({
           id: mockUser.id,

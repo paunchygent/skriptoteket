@@ -98,6 +98,7 @@ describe("same-session response admission", () => {
     vi.mocked(loadSharedSessionSnapshot).mockResolvedValue({
       kind: "authenticated", snapshot: {
         ...snapshotFor("teacher-a"), aiPolicy: TEST_AI_POLICY,
+        sharedSessionId: "session-a",
         grants: ["teacher-grant"], featureFlags: ["teacher-flag"],
       },
     });

@@ -42,6 +42,7 @@ const ROLE_RANK: Record<ApiRole, number> = {
   superuser: 3,
 };
 type AuthState = {
+  sharedSessionId: string | null;
   user: AuthUser | null;
   profile: AuthProfile | null;
   aiPolicy: ApiAiPolicy | null;
@@ -55,6 +56,7 @@ type AuthState = {
 };
 function anonymousState(): AuthState {
   return {
+    sharedSessionId: null,
     user: null,
     profile: null,
     aiPolicy: null,
@@ -92,6 +94,7 @@ export const useAuthStore = defineStore("auth", () => {
     // admitted response can then populate only the fields it actually owns.
     const next = anonymousState();
     Object.assign(state, {
+      sharedSessionId: next.sharedSessionId,
       profile: next.profile,
       aiPolicy: next.aiPolicy,
       grants: next.grants,
@@ -195,13 +198,39 @@ export const useAuthStore = defineStore("auth", () => {
     return null;
   }
 
+  /** Admit a refreshed token only after the server confirms the original shared lifetime. */
+  async function recoverCsrfToken(
+    requestSession: AuthSession,
+    sharedSessionId: string | null,
+  ): Promise<string | null> {
+    if (!sharedSessionId) return null;
+    try {
+      const token = await loadSharedCsrfToken();
+      requireCurrentSession(requestSession);
+      if (token.kind !== "ready") return null;
+      const current = await loadSharedSessionSnapshot();
+      requireCurrentSession(requestSession);
+      if (current.kind !== "authenticated" || current.snapshot.sharedSessionId !== sharedSessionId) {
+        return null;
+      }
+      return applyResponse(requestSession, { csrfToken: token.token }) ? token.token : null;
+    } catch (error: unknown) {
+      requireCurrentSession(requestSession);
+      if (error instanceof SupersededAuthSessionError) throw error;
+      // Continuity failures preserve the original rejection and never admit a new identity.
+      return null;
+    }
+  }
+
   function requestWithCsrf(
     requestSession: AuthSession,
     send: (token: string | null) => Promise<Response>,
   ): Promise<Response> {
+    const sharedSessionId = state.sharedSessionId;
     return requestWithCsrfRecovery({
       requireCurrent: () => requireCurrentSession(requestSession),
       ensureToken: () => ensureCsrfToken(requestSession),
+      recoverToken: () => recoverCsrfToken(requestSession, sharedSessionId),
       invalidateToken: (rejectedToken) => {
         requireCurrentSession(requestSession);
         if (state.csrfToken === rejectedToken) state.csrfToken = null;
@@ -229,6 +258,7 @@ export const useAuthStore = defineStore("auth", () => {
             if (admittedSession === null || !isCurrentSession(admittedSession)) return null;
             if (continuation.status === "ready") {
               if (!applyResponse(admittedSession, {
+                sharedSessionId: snapshot.sharedSessionId,
                 grants: snapshot.grants,
                 featureFlags: snapshot.featureFlags,
               })) return null;

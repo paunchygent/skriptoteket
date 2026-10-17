@@ -18,6 +18,7 @@ import {
   createTestUser,
   mockEmptyResponse,
   mockJsonResponse,
+  mockSharedSessionResponse,
 } from "./authTestHelpers";
 
 describe("useAuthStore.logout", () => {
@@ -108,6 +109,7 @@ describe("useAuthStore.logout", () => {
     const store = useAuthStore();
     store.user = createTestUser();
     store.csrfToken = "stale-token";
+    store.sharedSessionId = "session-a";
     store.bootstrapped = true;
 
     vi.mocked(fetch)
@@ -115,6 +117,7 @@ describe("useAuthStore.logout", () => {
         code: "AUTHORIZATION_ERROR", message: "CSRF token required for browser session write",
       } }, 403))
       .mockResolvedValueOnce(mockJsonResponse({ csrf_token: "fresh-token" }))
+      .mockResolvedValueOnce(mockSharedSessionResponse())
       .mockResolvedValueOnce(mockEmptyResponse(204));
 
     await store.logout();
@@ -141,7 +144,7 @@ describe("useAuthStore.logout", () => {
       }),
     );
     expect(fetch).toHaveBeenNthCalledWith(
-      3,
+      4,
       "https://api.hule.education/v1/auth/logout",
       expect.objectContaining({
         method: "POST",
