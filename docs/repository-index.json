@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "a562c5e69a6ab4ca0e21804b56369c1c6d3909374b45e94fd08e3248e47d83e3",
+  "source_set_digest": "5737af8fe9955547eac510efcc4ad6115874794ca391aaa606b6359f84744b4d",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5477,7 +5477,7 @@
       "type": "task",
       "title": "Teachers author ordering questions that export to Exam.net as all-or-nothing line matching",
       "path": "docs/backlog/tasks/task-skript-39-06-08-teachers-author-ordering-questions-that-export-to-exam-net-as-all-or-nothing-line-matching.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-06",
       "owners": [

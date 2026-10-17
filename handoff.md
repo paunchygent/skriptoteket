@@ -59,7 +59,7 @@
   review plus unit tests. Wave 2 is closed (Recent).
   2026-10-18 on main: TASK-SKRIPT-40-04-03 `done` (merge 10eef9fd, staging walk
   passed, root 01a149c9 evidence/staging-walk-10eef9fd/); REP-0043 `done`; 39-06-02
-  `done`; ordering TASK-SKRIPT-39-06-08 `ready` (root 01a14c27, D1-D7 + P3/P21); tutorial
+  `done`; ordering TASK-SKRIPT-39-06-08 `in_progress` (Mac Opus lead 58ebedec, worktree Skriptoteket-task-skript-39-06-08, root 01a14c27); tutorial
   video focus fix 39230851.
   TASK-SKRIPT-39-04-11 on `codex/task-skript-39-04-11-remote` (Hemma, lead
   `f193466c`, root `01a14bdc-65b7-73e1-a8ee-3c75001a36fa`): review-1 changes_requested
