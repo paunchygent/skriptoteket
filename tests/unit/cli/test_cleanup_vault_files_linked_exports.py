@@ -1,8 +1,8 @@
 """The vault cleanup purges an exam's payloads and rows together.
 
 The producer captures the expired rows of a document lineage before it deletes
-anything, deletes every physical payload of that group before the first row, and leaves
-the payload of an exam that is still active alone.
+anything, deletes the group's rows and commits them, then deletes every physical payload
+of that group, and leaves the payload of an exam that is still active alone.
 """
 
 from __future__ import annotations
@@ -129,7 +129,7 @@ def _scope_factory(
 
 @pytest.mark.unit
 @pytest.mark.asyncio
-async def test_purge_deletes_every_payload_of_a_trashed_exam_before_any_row() -> None:
+async def test_purge_deletes_every_payload_of_a_trashed_exam_after_every_row() -> None:
     owner = uuid4()
     lineage_id = uuid4()
     trashed_at = _CUTOFF - timedelta(days=1)
@@ -168,9 +168,9 @@ async def test_purge_deletes_every_payload_of_a_trashed_exam_before_any_row() ->
     assert affected_users == {owner}
     ordered_ids = sorted(file.id for file in all_rows)
     assert journal == (
-        [f"payload:{file_id}" for file_id in ordered_ids]
-        + [f"row:{file_id}" for file_id in ordered_ids]
+        [f"row:{file_id}" for file_id in ordered_ids]
         + ["recompute"]
+        + [f"payload:{file_id}" for file_id in ordered_ids]
     )
     usage.recompute_total.assert_awaited_once_with(user_id=owner, now=_NOW)
     usage.upsert.assert_not_called()
@@ -218,10 +218,8 @@ async def test_purge_of_an_expired_exam_takes_every_export_whatever_its_state() 
     rows = [entry for entry in journal if entry.startswith("row:")]
     assert set(payloads) == {f"payload:{file.id}" for file in pinned}
     assert set(rows) == {f"row:{file.id}" for file in pinned}
-    assert max(journal.index(entry) for entry in payloads) < min(
-        journal.index(entry) for entry in rows
-    )
-    assert journal[-1] == "recompute"
+    assert max(journal.index(entry) for entry in rows) < journal.index("recompute")
+    assert journal.index("recompute") < min(journal.index(entry) for entry in payloads)
 
 
 @pytest.mark.unit
@@ -254,4 +252,4 @@ async def test_purge_of_an_expired_export_leaves_the_live_exam_payload_and_row()
 
     assert deleted == 1
     assert affected_users == {owner}
-    assert journal == [f"payload:{expired_export.id}", f"row:{expired_export.id}", "recompute"]
+    assert journal == [f"row:{expired_export.id}", "recompute", f"payload:{expired_export.id}"]

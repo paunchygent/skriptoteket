@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "865640d3dd93b714c10dad33625fce6ad8c69e7211675507e8d8450e661af3d7",
+  "source_set_digest": "7d93e72dd4932b57a56c4d9a3c353f250a28cb62b9984edd8f2274b03c68e792",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -7246,7 +7246,7 @@
       "type": "task",
       "title": "Delete vault payload files only after their rows commit and surface migration-thread errors in migrated_db",
       "path": "docs/backlog/tasks/task-skript-rep-0043-delete-vault-payload-files-only-after-their-rows-commit-and-surface-migration-thread-errors-in-migrated-db.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "repository",
       "owners": [
         {

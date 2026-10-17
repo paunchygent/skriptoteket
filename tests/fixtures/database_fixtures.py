@@ -83,22 +83,39 @@ def alembic_config(database_url: str) -> Config:
     return config
 
 
-@pytest.fixture(scope="module")
-def migrated_db(alembic_config: Config, database_url: str) -> str:
-    """Runs alembic upgrade head once for the module."""
-
-    # Ensure env.py picks up the correct URL
-    os.environ["DATABASE_URL"] = database_url
+def _run_alembic_upgrade_in_thread(alembic_config: Config) -> None:
+    """Run ``alembic upgrade head`` in a thread and re-raise its exception after join."""
+    failures: list[BaseException] = []
 
     def run_upgrade() -> None:
-        command.upgrade(alembic_config, "head")
+        try:
+            command.upgrade(alembic_config, "head")
+        except BaseException as exc:  # noqa: BLE001 - re-raised in the calling thread
+            failures.append(exc)
 
     # Run in a separate thread to avoid asyncio loop conflicts with env.py
     thread = threading.Thread(target=run_upgrade)
     thread.start()
     thread.join()
+    if failures:
+        raise failures[0]
+
+
+def migrate_to_head(alembic_config: Config, database_url: str) -> str:
+    """Upgrade the database to head and return its URL; a migration error propagates."""
+
+    # Ensure env.py picks up the correct URL
+    os.environ["DATABASE_URL"] = database_url
+
+    _run_alembic_upgrade_in_thread(alembic_config)
 
     return database_url
+
+
+@pytest.fixture(scope="module")
+def migrated_db(alembic_config: Config, database_url: str) -> str:
+    """Runs alembic upgrade head once for the module."""
+    return migrate_to_head(alembic_config, database_url)
 
 
 @pytest.fixture(scope="module")

@@ -1,12 +1,15 @@
 """Cleanup must release lineage SQL locks before waiting for another payload.
 
-Real handlers, PostgreSQL locks, UoWs and filesystem participate. The storage
+Real handlers, PostgreSQL locks, UoWs and filesystem participate. The row-deletion
 barrier only arranges the reviewer's cleanup A / rename A / copy B interleaving.
+Payload files are deleted after the group's rows commit, so the barrier stops at the
+row deletion, where the group still holds its real lineage SQL locks.
 """
 
 import asyncio
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from datetime import UTC, datetime, timedelta
-from functools import partial
 from pathlib import Path
 from uuid import UUID
 
@@ -22,7 +25,7 @@ from skriptoteket.application.scripting.handlers.delete_vault_file import Delete
 from skriptoteket.application.scripting.handlers.rename_vault_file import RenameVaultFileHandler
 from skriptoteket.application.scripting.vault import DeleteVaultFileCommand, RenameVaultFileCommand
 from skriptoteket.cli.commands.cleanup_vault_files import (
-    open_vault_cleanup_scope,
+    VaultCleanupScope,
     purge_expired_vault_files,
 )
 from skriptoteket.infrastructure.db.uow import SQLAlchemyUnitOfWork
@@ -45,20 +48,27 @@ from tests.integration.test_exam_workspace_payload_compensation import exporter
 pytestmark = [pytest.mark.integration, pytest.mark.docker, pytest.mark.asyncio(loop_scope="module")]
 
 
-class PurgeBarrierStorage(LocalVaultStorage):
-    """Stop at A's payload deletion, with its real lineage SQL lock held."""
+class PurgeBarrier:
+    """Coordinates the pause at A's row deletion."""
 
-    def __init__(self, *, vault_root: Path) -> None:
-        super().__init__(vault_root=vault_root)
+    def __init__(self) -> None:
         self.paused_file_id: UUID | None = None
         self.deleting = asyncio.Event()
         self.resume = asyncio.Event()
 
-    async def delete_file(self, *, user_id: UUID, file_id: UUID) -> None:
-        if file_id == self.paused_file_id:
-            self.deleting.set()
-            await self.resume.wait()
-        await super().delete_file(user_id=user_id, file_id=file_id)
+
+class BarrierVaultFiles(PostgreSQLUserVaultFileRepository):
+    """Stop at A's row deletion, with its real lineage SQL lock held."""
+
+    def __init__(self, session: AsyncSession, barrier: PurgeBarrier) -> None:
+        super().__init__(session)
+        self._barrier = barrier
+
+    async def delete(self, *, file_id: UUID) -> None:
+        if file_id == self._barrier.paused_file_id:
+            self._barrier.deleting.set()
+            await self._barrier.resume.wait()
+        await super().delete(file_id=file_id)
 
 
 async def observe_advisory_wait(factory: async_sessionmaker[AsyncSession], *, pid: int) -> None:
@@ -82,7 +92,8 @@ async def test_multilineage_cleanup_rename_and_save_as_complete_without_lock_cyc
 ) -> None:
     now = datetime.now(UTC)
     actor = await create_owner(session_factory)
-    storage = PurgeBarrierStorage(vault_root=tmp_path)
+    storage = LocalVaultStorage(vault_root=tmp_path)
+    barrier = PurgeBarrier()
     async with session_factory() as session:
         world = ConversionWorld(session, storage, FixedClock(now))
         first = await seed_exam(world, actor)
@@ -109,13 +120,22 @@ async def test_multilineage_cleanup_rename_and_save_as_complete_without_lock_cyc
         before_usage = await PostgreSQLUserVaultUsageRepository(session).get(user_id=actor.id)
         assert before_usage is not None
 
-    storage.paused_file_id = expired_ids[0]
+    barrier.paused_file_id = expired_ids[0]
     rename_pid: asyncio.Future[int] = asyncio.get_running_loop().create_future()
     copy_pid: asyncio.Future[int] = asyncio.get_running_loop().create_future()
 
+    @asynccontextmanager
+    async def barrier_scope() -> AsyncIterator[VaultCleanupScope]:
+        async with session_factory() as session:
+            yield VaultCleanupScope(
+                vault_files=BarrierVaultFiles(session, barrier),
+                vault_usage=PostgreSQLUserVaultUsageRepository(session),
+                uow=SQLAlchemyUnitOfWork(session),
+            )
+
     async def cleanup() -> tuple[int, set[UUID]]:
         return await purge_expired_vault_files(
-            scope_factory=partial(open_vault_cleanup_scope, session_factory),
+            scope_factory=barrier_scope,
             storage=storage,
             cutoff=now - timedelta(days=30),
             now=now,
@@ -152,14 +172,14 @@ async def test_multilineage_cleanup_rename_and_save_as_complete_without_lock_cyc
     tasks: list[asyncio.Task[object]] = [cleanup_task]
     try:
         async with asyncio.timeout(10):
-            await storage.deleting.wait()
+            await barrier.deleting.wait()
             rename_task = asyncio.create_task(rename())
             tasks.append(rename_task)
             await observe_advisory_wait(session_factory, pid=await rename_pid)
             copy_task = asyncio.create_task(copy())
             tasks.append(copy_task)
             await observe_advisory_wait(session_factory, pid=await copy_pid)
-        storage.resume.set()
+        barrier.resume.set()
         # Deadline is a test hang safeguard, not a production timeout or timing assertion.
         async with asyncio.timeout(10):
             deleted, owners = await cleanup_task
@@ -168,7 +188,7 @@ async def test_multilineage_cleanup_rename_and_save_as_complete_without_lock_cyc
         assert deleted == 2
         assert owners == {actor.id}
     finally:
-        storage.resume.set()
+        barrier.resume.set()
         for task in reversed(tasks):
             task.cancel()
         await asyncio.gather(*tasks, return_exceptions=True)

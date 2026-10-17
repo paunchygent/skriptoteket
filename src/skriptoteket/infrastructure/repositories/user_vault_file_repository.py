@@ -411,9 +411,10 @@ class PostgreSQLUserVaultFileRepository(VaultFileRepositoryProtocol):
         """Purge one row and, for an exam document row, its undo history.
 
         The caller owns the group: saved export rows belong to their exam, so a
-        permanent exam purge deletes every linked payload before any row is deleted.
-        This method deletes exactly the row it was given, so a purge
-        never drops a sibling row whose payload still exists.
+        permanent exam purge deletes every linked row and commits before it deletes
+        any payload file. A failed file delete is logged and leaves an orphaned file,
+        never a row without its file. This method deletes exactly the row it was
+        given, so a purge never drops a sibling row the caller did not select.
         """
 
         model = await self._session.get(UserVaultFileModel, file_id)

@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from functools import partial
 from uuid import UUID
 
+import structlog
 import typer
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
@@ -31,6 +32,8 @@ from skriptoteket.protocols.vault import (
 )
 
 _EXPIRED_BATCH_SIZE = 200
+
+logger = structlog.get_logger(__name__)
 
 
 @dataclass(frozen=True)
@@ -74,9 +77,11 @@ async def purge_expired_vault_files(
     """Purge expired files, including all saved exports when their exam expires.
 
     Every row in an expired exam's lineage is captured before deletion, regardless
-    of each export's own state. Every payload is deleted before the first row, so no
-    payload outlives its row. When only an export expires, the live exam and its
-    non-expired files stay.
+    of each export's own state. A group deletes its rows and commits them first, then
+    deletes its payload files under the same payload guard, so a failed commit never
+    leaves a row without its file. A failed file deletion is logged and leaves an
+    orphaned file; the purge continues. When only an export expires, the live exam and
+    its non-expired files stay.
 
     Each purge group commits through its own root UoW before releasing its
     payload guard. No SQL lock survives into acquisition of the next guard,
@@ -121,14 +126,14 @@ async def purge_expired_vault_files(
                             vault_files=vault_files, item=item, cutoff=cutoff
                         )
                         for member in group:
-                            await storage.delete_file(user_id=member.user_id, file_id=member.id)
-                        for member in group:
                             await vault_files.delete(file_id=member.id)
                         if group:
                             # Lock before summing so another lineage's concurrent save
                             # cannot publish accounting between our sum and its update.
                             await scope.vault_usage.get_for_update(user_id=item.user_id, now=now)
                             await scope.vault_usage.recompute_total(user_id=item.user_id, now=now)
+                    # The rows are committed; the guard still excludes payload readers.
+                    await _delete_payloads(storage=storage, group=group)
                 deleted += len(group)
                 if group:
                     affected_users.add(item.user_id)
@@ -136,6 +141,19 @@ async def purge_expired_vault_files(
                 processed_lineages.add(key)
 
     return deleted, affected_users
+
+
+async def _delete_payloads(*, storage: VaultStorageProtocol, group: list[VaultFile]) -> None:
+    """Delete committed rows' payloads; a failure leaves an orphaned file, never a row."""
+    for member in group:
+        try:
+            await storage.delete_file(user_id=member.user_id, file_id=member.id)
+        except Exception:
+            logger.exception(
+                "vault_cleanup_payload_delete_failed",
+                file_id=str(member.id),
+                user_id=str(member.user_id),
+            )
 
 
 async def _purge_group(
