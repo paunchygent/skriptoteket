@@ -159,7 +159,7 @@ async function save(): Promise<void> {
 
     <fieldset class="courses-fieldset">
       <legend class="courses-legend">Skolformer</legend>
-      <div class="flex flex-wrap gap-x-6 gap-y-2 pt-1">
+      <div class="flex flex-wrap gap-x-6 gap-y-2 pt-2">
         <label
           v-for="form in EXAM_COURSE_SCHOOL_FORMS"
           :key="form"
@@ -239,7 +239,8 @@ async function save(): Promise<void> {
 <style scoped>
 .courses-fieldset {
   border: none;
-  margin: 0;
+  /* Inline only: the block margin is the section's space-y gap to the search box. */
+  margin-inline: 0;
   padding: 0;
 }
 

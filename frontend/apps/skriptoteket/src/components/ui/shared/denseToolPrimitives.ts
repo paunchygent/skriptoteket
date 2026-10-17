@@ -68,7 +68,13 @@ function groupPositionClass(position: DenseActionGroupPosition): string {
   }
 }
 
-function toneClass(tone: DenseActionTone, active: boolean): string {
+function toneClass(tone: DenseActionTone, active: boolean, iconOnly: boolean): string {
+  // An icon-only delete action is its glyph alone; the border stays for geometry.
+  if (tone === "danger" && iconOnly) {
+    return active
+      ? "border-transparent bg-burgundy/10 text-burgundy"
+      : "border-transparent bg-transparent text-burgundy hover:bg-burgundy/5";
+  }
   switch (tone) {
     case "primary":
       return active
@@ -138,7 +144,7 @@ export function denseActionButtonClass(options: DenseActionClassOptions = {}): s
     sizeClass,
     disabledClass,
     groupPositionClass(groupPosition),
-    toneClass(tone, active),
+    toneClass(tone, active, iconOnly),
   ].join(" ");
 }
 

@@ -6,6 +6,7 @@ import type { components } from "../../api/openapi";
 import CreateDraftToolModal from "../../components/admin/CreateDraftToolModal.vue";
 import { useToast } from "../../composables/useToast";
 import { SystemMessage } from "../../components/ui";
+import { denseActionButtonClass, UiGlyph } from "../../components/ui/shared";
 import ToggleSwitch from "../../components/ui/ToggleSwitch.vue";
 import { useCreateDraftToolModal } from "../../composables/admin/useCreateDraftToolModal";
 
@@ -14,6 +15,7 @@ type AdminToolItem = components["schemas"]["AdminToolItem"];
 type PublishToolResponse = components["schemas"]["PublishToolResponse"];
 type DepublishToolResponse = components["schemas"]["DepublishToolResponse"];
 
+const editLinkClass = denseActionButtonClass({ size: "icon", iconOnly: true });
 const tools = ref<AdminToolItem[]>([]);
 const isLoading = ref(true);
 const errorMessage = ref<string | null>(null);
@@ -210,9 +212,14 @@ onMounted(() => {
               </div>
               <RouterLink
                 :to="`/admin/tools/${tool.id}`"
-                class="shrink-0 text-sm font-medium text-navy border-b border-navy/40 pb-0.5 hover:text-action hover:border-action transition-colors"
+                :class="['shrink-0', editLinkClass]"
+                :aria-label="`Redigera ${tool.title}`"
+                :title="`Redigera ${tool.title}`"
               >
-                Redigera
+                <UiGlyph
+                  meaning="edit"
+                  :size="16"
+                />
               </RouterLink>
             </div>
           </li>
@@ -299,9 +306,14 @@ onMounted(() => {
                 </div>
                 <RouterLink
                   :to="`/admin/tools/${tool.id}`"
-                  class="text-sm font-medium text-navy border-b border-navy/40 pb-0.5 hover:text-action hover:border-action transition-colors"
+                  :class="editLinkClass"
+                  :aria-label="`Redigera ${tool.title}`"
+                  :title="`Redigera ${tool.title}`"
                 >
-                  Redigera
+                  <UiGlyph
+                    meaning="edit"
+                    :size="16"
+                  />
                 </RouterLink>
               </div>
             </div>

@@ -158,6 +158,7 @@ const emit = defineEmits<{
             <UiDenseActionButton
               :data-testid="`document-converter-source-remove-${index}`"
               label="Ta bort fil"
+              tone="danger"
               icon-only
               @click="emit('removeSingleFileUpload', index)"
             >
@@ -219,6 +220,7 @@ const emit = defineEmits<{
             <UiDenseActionButton
               :data-testid="`document-converter-source-remove-${index}`"
               label="Ta bort fil"
+              tone="danger"
               icon-only
               @click="emit('removeSingleFileSavedFile', index)"
             >

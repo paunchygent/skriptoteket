@@ -16,8 +16,8 @@ const { showIndex } = useHelp();
         verktyg för att se versioner, beskrivning och metadata.
       </li>
       <li>
-        Klicka <strong>Redigera</strong> för att öppna skripteditorn och jobba
-        vidare på en ny version.
+        Klicka på pennan för att öppna skripteditorn och jobba vidare på en ny
+        version.
       </li>
       <li>Behöver du lämna över ansvaret för ett verktyg? Hör av dig till en administratör.</li>
     </ul>

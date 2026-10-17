@@ -134,6 +134,18 @@
   color: var(--huleedu-navy);
 }
 
+/* Glyph-only edit trigger; its open form shows through aria-expanded. */
+.btn-inline-edit--glyph {
+  padding-inline: 0;
+  width: 1.5rem;
+}
+
+.btn-inline-edit[aria-expanded="true"] {
+  background-color: color-mix(in srgb, var(--huleedu-navy) 8%, transparent);
+  border-color: var(--huleedu-navy-40);
+  color: var(--huleedu-navy);
+}
+
 .btn-inline-primary {
   background-color: var(--button-primary-bg);
   border-color: var(--huleedu-navy);

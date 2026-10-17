@@ -191,7 +191,8 @@ const previewSurfaceStyle = computed<CSSProperties>(() => {
         </template>
       </UiDenseActionButton>
       <UiDenseActionButton
-        label="Redigera"
+        label="Ändra klassrummet"
+        icon-only
         :disabled="!selectedTemplate || Boolean(editDisabledReason)"
         :title="editDisabledReason ?? undefined"
         data-test="overview-edit-template"
@@ -206,8 +207,9 @@ const previewSurfaceStyle = computed<CSSProperties>(() => {
         </template>
       </UiDenseActionButton>
       <UiDenseActionButton
-        label="Radera"
+        label="Radera klassrummet"
         tone="danger"
+        icon-only
         :disabled="!selectedTemplate || Boolean(deleteDisabledReason)"
         :title="deleteDisabledReason ?? undefined"
         data-test="overview-delete-template"

@@ -32,20 +32,22 @@ describe("Profile AI edit lifecycle (F4)", () => {
       global: { plugins: [pinia], stubs: { ProfileExamCoursesSection: true } },
     });
     const section = wrapper.findAll("section").find(node => node.find("h3").text() === "AI-inställningar")!;
-    const toggle = section.get("button");
+    const toggle = section.get('button[aria-label="Ändra AI-inställningar"]');
+    expect(toggle.text()).toBe("");
+    expect(toggle.attributes("aria-expanded")).toBe("false");
     await toggle.trigger("click");
-    expect(toggle.text()).toContain("Stäng");
+    expect(toggle.attributes("aria-expanded")).toBe("true");
     await section.get('input[name="remote-fallback"][value="allow"]').setValue();
     const actionButton = section.findAll("button").find(button => button.text() === (action === "save" ? "Spara ändringar" : "Avbryt"))!;
     await actionButton.trigger("click");
     await flushPromises();
     expect(section.find("fieldset").exists()).toBe(false);
-    expect(toggle.text()).toContain("Ändra");
+    expect(toggle.attributes("aria-expanded")).toBe("false");
     expect(persist).toHaveBeenCalledTimes(action === "save" ? 1 : 0);
 
     await toggle.trigger("click");
     expect(section.find("fieldset").exists()).toBe(true);
-    expect(toggle.text()).toContain("Stäng");
+    expect(toggle.attributes("aria-expanded")).toBe("true");
     // A reopened draft is initialized from persisted settings, not the discarded edit.
     expect((section.get('input[name="remote-fallback"][value="deny"]').element as HTMLInputElement).checked).toBe(true);
     wrapper.unmount();

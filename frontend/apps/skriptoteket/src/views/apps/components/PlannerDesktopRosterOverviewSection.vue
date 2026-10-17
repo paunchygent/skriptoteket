@@ -178,7 +178,8 @@ const countLabel = computed(() => {
         </template>
       </UiDenseActionButton>
       <UiDenseActionButton
-        label="Redigera"
+        label="Ändra klasslistan"
+        icon-only
         :disabled="!selectedRoster || Boolean(editDisabledReason)"
         :title="editDisabledReason ?? undefined"
         data-test="overview-edit-roster"
@@ -193,8 +194,9 @@ const countLabel = computed(() => {
         </template>
       </UiDenseActionButton>
       <UiDenseActionButton
-        label="Radera"
+        label="Radera klasslistan"
         tone="danger"
+        icon-only
         :disabled="!selectedRoster || Boolean(deleteDisabledReason)"
         :title="deleteDisabledReason ?? undefined"
         data-test="overview-delete-roster"

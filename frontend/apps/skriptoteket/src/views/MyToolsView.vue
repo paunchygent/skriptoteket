@@ -7,8 +7,11 @@ import type { components } from "../api/openapi";
 import ToolListRow from "../components/tools/ToolListRow.vue";
 import CreateDraftToolModal from "../components/admin/CreateDraftToolModal.vue";
 import { SystemMessage } from "../components/ui";
+import { denseActionButtonClass, UiGlyph } from "../components/ui/shared";
 import { useCreateDraftToolModal } from "../composables/admin/useCreateDraftToolModal";
 import { useAuthStore } from "../stores/auth";
+
+const editLinkClass = denseActionButtonClass({ size: "icon", iconOnly: true });
 
 type ListMyToolsResponse = components["schemas"]["ListMyToolsResponse"];
 type MyToolItem = components["schemas"]["MyToolItem"];
@@ -150,9 +153,14 @@ onMounted(() => {
         <template #actions>
           <RouterLink
             :to="`/admin/tools/${tool.id}`"
-            class="btn-ghost"
+            :class="editLinkClass"
+            :aria-label="`Redigera ${tool.title}`"
+            :title="`Redigera ${tool.title}`"
           >
-            Redigera
+            <UiGlyph
+              meaning="edit"
+              :size="16"
+            />
           </RouterLink>
         </template>
       </ToolListRow>
