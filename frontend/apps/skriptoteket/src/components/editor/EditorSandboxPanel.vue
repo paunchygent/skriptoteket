@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { defineAsyncComponent } from "vue";
+import { UiDenseSpinner } from "../ui";
 import type { components } from "../../api/openapi";
 import type { BundleFiles } from "../../composables/editor/bundleFiles";
 
@@ -101,7 +102,7 @@ const emit = defineEmits<{
             ]"
             data-editor-state="test-loading"
           >
-            <span class="inline-block w-4 h-4 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
+            <UiDenseSpinner :size="16" />
             <span>Laddar testkörning...</span>
           </div>
         </template>

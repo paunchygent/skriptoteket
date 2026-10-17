@@ -83,7 +83,7 @@ const messageText = computed(() => props.message ?? fallbackMessage.value);
       <button
         v-if="canForceTakeover"
         type="button"
-        class="btn-cta btn-sm"
+        class="btn-cta"
         :disabled="isBusy"
         @click="emit('force')"
       >

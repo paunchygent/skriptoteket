@@ -6,7 +6,7 @@ import type { EditorChatMessage } from "../../composables/editor/chat/editorChat
 import type { RemoteFallbackPrompt } from "./remoteFallbackPrompt";
 import ChatComposer from "./ChatComposer.vue";
 import ChatMessageList from "./ChatMessageList.vue";
-import { SystemMessage, type SystemMessageTone } from "../ui";
+import { SystemMessage, UiDenseActionButton, UiGlyph, type SystemMessageTone } from "../ui";
 
 type ChatDrawerProps = {
   variant?: "drawer" | "column";
@@ -102,7 +102,7 @@ const assistantActivity = computed(() => {
 
   <aside
     :class="[
-      'fixed inset-y-0 right-0 z-50 bg-modal border-l border-navy shadow-md flex flex-col lg:relative lg:inset-auto lg:z-auto lg:h-full lg:overflow-hidden',
+      'fixed inset-y-0 right-0 z-50 bg-modal border-l border-navy/20 shadow-md flex flex-col lg:relative lg:inset-auto lg:z-auto lg:h-full lg:overflow-hidden',
       isRailOnlyOnMobile ? 'w-[var(--chat-rail-width,64px)]' : 'w-full',
       props.variant === 'column' ? 'lg:border-0 lg:shadow-none lg:bg-transparent' : '',
     ]"
@@ -200,38 +200,37 @@ const assistantActivity = computed(() => {
                   </p>
                   <RouterLink
                     to="/profile"
-                    class="text-xs text-navy/70 underline decoration-navy/40 hover:text-navy"
+                    class="text-xs text-[var(--huleedu-link-color)] underline underline-offset-[var(--huleedu-link-underline-offset)] font-[number:var(--huleedu-link-weight)]"
                   >
                     Öppna Profil och ändra inställningen
                   </RouterLink>
                 </div>
-                <button
-                  type="button"
-                  class="btn-ghost shadow-none px-2 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] border-navy/30 bg-white leading-none"
-                  aria-label="Stäng"
+                <UiDenseActionButton
+                  label="Stäng"
+                  icon-only
                   @click="emit('dismissRemoteFallbackPrompt')"
                 >
-                  ×
-                </button>
+                  <template #leading>
+                    <UiGlyph
+                      meaning="close"
+                      :size="16"
+                    />
+                  </template>
+                </UiDenseActionButton>
               </div>
 
               <div class="flex flex-wrap items-center gap-2 pt-3">
-                <button
-                  type="button"
-                  class="btn-primary shadow-none px-2 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] border-navy/30 leading-none"
+                <UiDenseActionButton
+                  label="Aktivera"
+                  tone="primary"
                   :disabled="props.isStreaming || props.isEditOpsLoading"
                   @click="emit('allowRemoteFallbackPrompt')"
-                >
-                  Aktivera
-                </button>
-                <button
-                  type="button"
-                  class="btn-ghost shadow-none px-2 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] border-navy/30 bg-white leading-none"
+                />
+                <UiDenseActionButton
+                  label="Stäng av"
                   :disabled="props.isStreaming || props.isEditOpsLoading"
                   @click="emit('denyRemoteFallbackPrompt')"
-                >
-                  Stäng av
-                </button>
+                />
               </div>
             </div>
           </div>
@@ -258,53 +257,55 @@ const assistantActivity = computed(() => {
       </div>
 
       <div class="chat-rail">
-        <button
-          type="button"
-          class="inline-flex items-center justify-center h-8 w-8 text-navy/70 hover:text-navy focus-visible:outline focus-visible:outline-2 focus-visible:outline-navy/40"
-          :aria-label="props.isCollapsed ? 'Expandera kodassistenten' : 'Minimera kodassistenten'"
+        <UiDenseActionButton
+          :label="props.isCollapsed ? 'Expandera kodassistenten' : 'Minimera kodassistenten'"
+          icon-only
+          :expanded="!props.isCollapsed"
           @click="emit('toggleCollapse')"
         >
-          <svg
-            viewBox="0 0 24 24"
-            class="h-5 w-5"
-            aria-hidden="true"
-          >
-            <rect
-              x="5"
-              y="7"
-              width="14"
-              height="10"
-              rx="2"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.5"
-            />
-            <circle
-              cx="9"
-              cy="12"
-              r="1"
-              fill="currentColor"
-            />
-            <circle
-              cx="15"
-              cy="12"
-              r="1"
-              fill="currentColor"
-            />
-            <path
-              d="M9 16h6"
-              stroke="currentColor"
-              stroke-width="1.5"
-              stroke-linecap="round"
-            />
-            <path
-              d="M8 5h8"
-              stroke="currentColor"
-              stroke-width="1.5"
-              stroke-linecap="round"
-            />
-          </svg>
-        </button>
+          <template #leading>
+            <svg
+              viewBox="0 0 24 24"
+              class="h-5 w-5"
+              aria-hidden="true"
+            >
+              <rect
+                x="5"
+                y="7"
+                width="14"
+                height="10"
+                rx="2"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+              />
+              <circle
+                cx="9"
+                cy="12"
+                r="1"
+                fill="currentColor"
+              />
+              <circle
+                cx="15"
+                cy="12"
+                r="1"
+                fill="currentColor"
+              />
+              <path
+                d="M9 16h6"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+              />
+              <path
+                d="M8 5h8"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+              />
+            </svg>
+          </template>
+        </UiDenseActionButton>
       </div>
     </div>
   </aside>

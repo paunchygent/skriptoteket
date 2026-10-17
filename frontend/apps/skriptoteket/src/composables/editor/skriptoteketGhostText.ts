@@ -324,7 +324,7 @@ export function skriptoteketGhostText(config: SkriptoteketIntelligenceConfig): E
     ghostTextField,
     EditorView.baseTheme({
       ".cm-skriptoteket-ghost-text": {
-        color: "var(--color-navy, #0b1b3a)",
+        color: "var(--huleedu-navy)",
         opacity: "0.45",
         fontStyle: "italic",
         whiteSpace: "pre",

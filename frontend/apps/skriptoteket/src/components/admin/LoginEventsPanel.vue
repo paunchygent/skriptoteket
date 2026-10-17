@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { LoginEvent } from "../../composables/admin/useAdminUsers";
+import { SystemMessage, UiDenseStatusPill } from "../ui";
 
 const props = defineProps<{
   events: LoginEvent[];
@@ -19,11 +20,6 @@ function statusLabel(event: LoginEvent): string {
   return event.status === "success" ? "Lyckad" : "Misslyckad";
 }
 
-function statusClass(event: LoginEvent): string {
-  return event.status === "success"
-    ? "bg-success/10 text-success border border-success/30"
-    : "bg-error/10 text-error border border-error/30";
-}
 </script>
 
 <template>
@@ -39,12 +35,12 @@ function statusClass(event: LoginEvent): string {
     >
       Laddar login events…
     </div>
-    <div
+    <SystemMessage
       v-else-if="errorMessage"
-      class="panel-state text-error"
-    >
-      {{ errorMessage }}
-    </div>
+      :model-value="errorMessage"
+      tone="failure"
+      role="alert"
+    />
     <div
       v-else-if="props.events.length === 0"
       class="panel-state"
@@ -72,12 +68,10 @@ function statusClass(event: LoginEvent): string {
           >
             <td class="font-mono text-xs">{{ formatDateTime(event.created_at) }}</td>
             <td>
-              <span
-                class="status-pill"
-                :class="statusClass(event)"
-              >
-                {{ statusLabel(event) }}
-              </span>
+              <UiDenseStatusPill
+                :label="statusLabel(event)"
+                :tone="event.status === 'success' ? 'success' : 'error'"
+              />
             </td>
             <td class="font-mono text-xs">{{ event.ip_address ?? "—" }}</td>
             <td
@@ -98,7 +92,8 @@ function statusClass(event: LoginEvent): string {
 
 <style scoped>
 .panel {
-  border: var(--huleedu-border-width) solid var(--huleedu-navy);
+  border: var(--huleedu-border-width) solid var(--huleedu-panel-border);
+  border-radius: var(--huleedu-panel-radius);
   background-color: var(--huleedu-panel);
   padding: var(--huleedu-space-4);
 }
@@ -111,7 +106,7 @@ function statusClass(event: LoginEvent): string {
 }
 
 .panel-title {
-  font-family: var(--huleedu-font-serif);
+  font-family: var(--huleedu-font-sans);
   font-size: var(--huleedu-text-lg);
   color: var(--huleedu-navy);
   margin: 0;
@@ -143,7 +138,7 @@ function statusClass(event: LoginEvent): string {
 .panel-table td {
   padding: var(--huleedu-space-2);
   text-align: left;
-  border-bottom: var(--huleedu-border-width) solid var(--huleedu-navy-10);
+  border-bottom: var(--huleedu-border-width) solid var(--huleedu-surface-divider);
   vertical-align: top;
 }
 

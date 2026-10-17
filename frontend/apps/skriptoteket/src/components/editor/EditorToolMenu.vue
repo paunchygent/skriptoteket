@@ -24,6 +24,7 @@ import {
   DENSE_MENU_SECTION_LABEL_CLASS,
   UiDenseActionButton,
   UiDenseMenuButton,
+  UiDenseSpinner,
   denseMenuItemClass,
 } from "../ui";
 import { useDenseMenuSurface } from "../ui/useDenseMenuSurface";
@@ -302,7 +303,7 @@ async function createDraftTool(): Promise<void> {
             v-else-if="isSearchLoading"
             class="flex items-center gap-2 text-[11px] text-navy/60"
           >
-            <span class="inline-block w-3 h-3 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
+            <UiDenseSpinner />
             <span>Laddar…</span>
           </div>
 
@@ -410,7 +411,7 @@ async function createDraftTool(): Promise<void> {
               v-else-if="isLoadingMyTools"
               class="flex items-center gap-2 text-[11px] text-navy/60"
             >
-              <span class="inline-block w-3 h-3 border-2 border-navy/20 border-t-navy rounded-full animate-spin" />
+              <UiDenseSpinner />
               <span>Laddar…</span>
             </div>
 

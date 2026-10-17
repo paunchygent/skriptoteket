@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { denseMenuItemClass, UiDenseActionButton } from "../ui";
 
 type WorkflowAction = "submit_review" | "publish" | "request_changes" | "rollback";
 
@@ -74,22 +75,19 @@ onBeforeUnmount(() => {
     ref="dropdownRef"
     class="relative"
   >
-    <button
-      type="button"
-      class="btn-ghost shadow-none bg-canvas px-2.5 py-1 text-[10px] font-semibold tracking-[var(--huleedu-tracking-label)] border-navy/30"
-      :class="{ 'opacity-60 cursor-not-allowed': !hasItems }"
+    <UiDenseActionButton
+      :label="label"
       :disabled="!hasItems"
-      :aria-expanded="isOpen"
-      aria-haspopup="menu"
+      :expanded="isOpen"
+      has-popup="menu"
       @click="toggleMenu"
     >
-      {{ label }}
-      <span class="ml-1">▾</span>
-    </button>
+      <template #trailing>▾</template>
+    </UiDenseActionButton>
 
     <div
       v-if="isOpen"
-      class="absolute right-0 mt-2 w-56 border border-navy bg-canvas z-[var(--huleedu-z-tooltip)]"
+      class="absolute right-0 mt-2 w-56 border border-navy/20 bg-modal shadow-md z-[var(--huleedu-z-tooltip)]"
       role="menu"
     >
       <button
@@ -97,11 +95,7 @@ onBeforeUnmount(() => {
         :key="item.id"
         type="button"
         role="menuitem"
-        class="w-full text-left px-2.5 py-2 text-[11px] text-navy hover:bg-white transition-colors"
-        :class="{
-          'text-critical': item.tone === 'danger',
-          'font-semibold': item.tone === 'primary',
-        }"
+        :class="denseMenuItemClass(item.tone)"
         @click="handleSelect(item)"
       >
         {{ item.label }}

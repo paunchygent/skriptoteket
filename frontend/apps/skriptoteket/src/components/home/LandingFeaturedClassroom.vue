@@ -22,7 +22,7 @@ const steps = [
 </script>
 
 <template>
-  <section class="border-b border-navy py-16 md:py-20">
+  <section class="border-b border-navy/20 py-16 md:py-20">
     <div class="grid grid-cols-1 items-start gap-12 lg:grid-cols-[5fr_7fr] lg:gap-16">
       <div class="max-w-[42ch]">
         <h2 class="font-serif text-3xl font-semibold tracking-[-0.02em] text-navy md:text-4xl">
@@ -46,7 +46,7 @@ const steps = [
       </div>
 
       <div
-        class="grid grid-cols-1 divide-y-2 divide-navy border-2 border-navy md:grid-cols-3 md:divide-x-2 md:divide-y-0"
+        class="grid grid-cols-1 divide-y divide-navy/20 border border-navy/20 md:grid-cols-3 md:divide-x md:divide-y-0"
         aria-label="Tre steg i Klassrumskartan"
       >
         <article

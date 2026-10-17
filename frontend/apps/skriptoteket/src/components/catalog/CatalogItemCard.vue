@@ -87,8 +87,8 @@ function handleCardKeydown(event: KeyboardEvent): void {
     :tabindex="isInteractive ? 0 : undefined"
     :aria-label="isInteractive ? `${actionLabel} ${item.title}` : undefined"
     :class="[
-      'relative border transition-all duration-150',
-      isList ? 'px-4 py-3 bg-panel border-navy/15' : 'border-navy bg-panel',
+      'relative border transition-colors duration-150',
+      isList ? 'px-4 py-3 bg-panel border-navy/15' : 'border-navy/20 bg-panel',
       isCompact ? 'flex flex-col h-full p-3 compact-card' : (!isList && 'p-4'),
       isInteractive ? 'catalog-card-interactive' : '',
     ]"

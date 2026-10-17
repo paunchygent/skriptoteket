@@ -162,6 +162,7 @@ def test_design_system_validation_runs_automatically_on_protected_paths() -> Non
     assert adopted == {
         "tokens": "src/skriptoteket/web/static/css/huleedu-design-tokens.css",
         "tailwind-theme": "frontend/apps/skriptoteket/src/styles/tailwind-theme.css",
+        "action-buttons": "frontend/apps/skriptoteket/src/styles/action-buttons.css",
         "skriptoteket-logo-horizontal": "frontend/apps/skriptoteket/public/logo-horizontal.svg",
         "dense-tool-primitives": f"{shared_vue}/denseToolPrimitives.ts",
         "ui-glyphs": f"{shared_vue}/uiGlyphs.ts",

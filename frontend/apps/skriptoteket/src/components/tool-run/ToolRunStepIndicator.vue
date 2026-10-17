@@ -14,7 +14,7 @@ const emit = defineEmits<{
 function stepStatusClass(step: StepResult): string {
   switch (step.status) {
     case "completed":
-      return "bg-success text-white border-success";
+      return "bg-success text-button-primary-text border-success";
     case "current":
       return "bg-action text-button-primary-text border-action";
     default:

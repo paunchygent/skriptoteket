@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
+import { UiDenseActionButton } from "../ui";
 
 import type { components } from "../../api/openapi";
 import type { SettingsFormValues } from "../../composables/tools/toolSettingsHelpers";
@@ -66,14 +67,12 @@ watch(
         Inställningar
       </span>
 
-      <button
-        type="button"
-        class="btn-ghost h-[28px] px-2.5 py-1 text-[10px] font-semibold normal-case tracking-[var(--huleedu-tracking-label)] shadow-none border-navy/30 bg-canvas leading-none"
+      <UiDenseActionButton
+        :label="isOpen ? 'Dölj' : 'Visa'"
         :disabled="!props.hasSettingsSchema"
+        :expanded="isOpen"
         @click="toggleSettings"
-      >
-        {{ isOpen ? "Dölj" : "Visa" }}
-      </button>
+      />
     </div>
 
     <p

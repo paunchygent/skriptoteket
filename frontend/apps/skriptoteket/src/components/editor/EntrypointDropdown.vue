@@ -86,7 +86,7 @@ watch(
         </button>
         <div
           :id="helpId"
-          class="absolute left-0 top-full mt-2 w-[min(260px,calc(100vw-2*var(--huleedu-space-4)))] border border-navy/30 bg-white text-navy px-3 py-2 text-[11px] opacity-0 pointer-events-none transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 z-[var(--huleedu-z-tooltip)]"
+          class="absolute left-0 top-full mt-2 w-[min(260px,calc(100vw-2*var(--huleedu-space-4)))] border border-navy/30 bg-modal shadow-md text-navy px-3 py-2 text-[11px] opacity-0 pointer-events-none transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 z-[var(--huleedu-z-tooltip)]"
           role="tooltip"
         >
           <span class="text-[11px] text-navy/80">
@@ -100,7 +100,7 @@ watch(
         :id="selectId"
         :value="selectedOption"
         :aria-describedby="helpId"
-        class="w-full sm:w-44 h-[28px] border border-navy/30 bg-white px-2.5 text-[11px] text-navy shadow-none leading-none"
+        class="w-full sm:w-44 h-[28px] border border-navy/30 bg-panel px-2.5 text-[11px] text-navy shadow-none leading-none"
         :disabled="disabled"
         @change="handleSelectChange"
       >
@@ -119,7 +119,7 @@ watch(
         :value="customValue"
         type="text"
         :aria-describedby="helpId"
-        class="w-full flex-1 h-[28px] border border-navy/30 bg-white px-2.5 text-[11px] text-navy shadow-none leading-none"
+        class="w-full flex-1 h-[28px] border border-navy/30 bg-panel px-2.5 text-[11px] text-navy shadow-none leading-none"
         :placeholder="placeholder"
         :disabled="disabled"
         @input="handleCustomInput"

@@ -3,6 +3,7 @@ import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 
 import { isApiError } from "../../api/client";
+import { SystemMessage, UiDenseStatusPill } from "../../components/ui";
 import { listAdminUsers, type AdminUser } from "../../composables/admin/useAdminUsers";
 
 const router = useRouter();
@@ -31,10 +32,10 @@ function statusLabel(user: AdminUser): string {
   return "Aktiv";
 }
 
-function statusClass(user: AdminUser): string {
-  if (!user.is_active) return "bg-navy/10 text-navy border border-navy/30";
-  if (user.locked_until) return "bg-error/10 text-error border border-error/30";
-  return "bg-success/10 text-success border border-success/30";
+function statusTone(user: AdminUser): "neutral" | "error" | "success" {
+  if (!user.is_active) return "neutral";
+  if (user.locked_until) return "error";
+  return "success";
 }
 
 async function load(): Promise<void> {
@@ -82,12 +83,12 @@ onMounted(() => {
       >
         Laddar användare…
       </div>
-      <div
+      <SystemMessage
         v-else-if="errorMessage"
-        class="panel-state text-error"
-      >
-        {{ errorMessage }}
-      </div>
+        :model-value="errorMessage"
+        tone="failure"
+        role="alert"
+      />
       <div
         v-else-if="users.length === 0"
         class="panel-state"
@@ -118,12 +119,10 @@ onMounted(() => {
               <td class="font-mono text-xs">{{ user.email }}</td>
               <td>{{ user.role }}</td>
               <td>
-                <span
-                  class="status-pill"
-                  :class="statusClass(user)"
-                >
-                  {{ statusLabel(user) }}
-                </span>
+                <UiDenseStatusPill
+                  :label="statusLabel(user)"
+                  :tone="statusTone(user)"
+                />
               </td>
               <td class="text-xs">{{ formatDateTime(user.last_login_at) }}</td>
               <td class="text-xs">{{ user.failed_login_attempts }}</td>
@@ -165,7 +164,8 @@ onMounted(() => {
 }
 
 .panel {
-  border: var(--huleedu-border-width) solid var(--huleedu-navy);
+  border: var(--huleedu-border-width) solid var(--huleedu-panel-border);
+  border-radius: var(--huleedu-panel-radius);
   background-color: var(--huleedu-panel);
   padding: var(--huleedu-space-4);
 }
@@ -189,7 +189,7 @@ onMounted(() => {
 .panel-table td {
   padding: var(--huleedu-space-2);
   text-align: left;
-  border-bottom: var(--huleedu-border-width) solid var(--huleedu-navy-10);
+  border-bottom: var(--huleedu-border-width) solid var(--huleedu-surface-divider);
   vertical-align: top;
 }
 

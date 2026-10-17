@@ -143,7 +143,7 @@ onMounted(async () => {
          PRE-LOGIN: Hero + Features
          ═══════════════════════════════════════════════════════════════════════ -->
     <template v-if="!isAuthenticated">
-      <section class="border-b border-navy py-12 md:py-16 lg:py-20">
+      <section class="border-b border-navy/20 py-12 md:py-16 lg:py-20">
         <div class="grid items-start gap-10 lg:grid-cols-[minmax(0,7fr)_minmax(18rem,5fr)] lg:gap-16">
           <div class="max-w-[40rem]">
             <h1
@@ -163,7 +163,7 @@ onMounted(async () => {
             <div class="mt-8">
               <RouterLink
                 :to="publicClassroomPlannerPath"
-                class="btn-cta group gap-3 px-6 py-4 text-sm no-underline md:px-7"
+                class="btn-cta group"
               >
                 Öppna Klassrumskartan
                 <IconArrow
@@ -221,7 +221,7 @@ onMounted(async () => {
           <section
             v-for="section in secondaryLedgerSections"
             :key="section.id"
-            class="border border-navy bg-panel"
+            class="border border-navy/20 bg-panel"
           >
             <header class="border-b border-navy/15 px-5 py-4">
               <h2 class="text-lg font-semibold text-navy">

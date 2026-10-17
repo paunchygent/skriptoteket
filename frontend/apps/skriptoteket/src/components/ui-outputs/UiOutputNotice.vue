@@ -2,35 +2,19 @@
 import { computed } from "vue";
 
 import type { components } from "../../api/openapi";
+import { SystemMessage } from "../ui";
 
 type UiNoticeOutput = components["schemas"]["UiNoticeOutput"];
 
-const props = withDefaults(defineProps<{ output: UiNoticeOutput; density?: "default" | "compact" }>(), {
-  density: "default",
-});
+const props = defineProps<{ output: UiNoticeOutput; density?: "default" | "compact" }>();
 
-const variantClasses = computed(() => {
-  if (props.output.level === "error") {
-    return "border-error text-error";
-  }
-  if (props.output.level === "warning") {
-    return "border-warning text-warning";
-  }
-  return "border-navy text-navy";
+const tone = computed(() => {
+  if (props.output.level === "error") return "failure";
+  if (props.output.level === "warning") return "warning";
+  return "info";
 });
-
-const isCompact = computed(() => props.density === "compact");
 </script>
 
 <template>
-  <div
-    :class="[
-      isCompact ? 'p-3 border-2 bg-white shadow-none' : 'p-4 border bg-panel',
-      variantClasses,
-    ]"
-  >
-    <p :class="[isCompact ? 'text-[11px]' : 'text-sm']">
-      {{ output.message }}
-    </p>
-  </div>
+  <SystemMessage :tone="tone">{{ output.message }}</SystemMessage>
 </template>

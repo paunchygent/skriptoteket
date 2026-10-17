@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "fbc084bd49299b8ee98db2c1e86475258229de52b2edd2c0aeb5be80dbb850c9",
+  "source_set_digest": "a3d7ef0977c338b463629aae5bbe9b3c0f41a5aaae3ca2ea1b9046502fa17bdc",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5757,7 +5757,7 @@
       "type": "task",
       "title": "Adopt the shared dense components, SystemMessage and ToastHost",
       "path": "docs/backlog/tasks/task-skript-40-01-02-adopt-the-shared-dense-components-systemmessage-and-toasthost.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-01",
       "owners": [
@@ -5768,7 +5768,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-17",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer (Sol) approved the rereview of 534e8b02 (retained session 01a149c9-5bc7-7713-ba64-12dee0470bdd, evidence/reviews/TASK-SKRIPT-40-01-02/rereview-534e8b02.md); merged and pushed to main e1efb4fc. The Mac parent's staging walk on e1efb4fc on 2026-10-17 passed at desktop 1440x900, tablet 768x1024 and phone 375x812 (evidence/staging-walk-40-01-02/walk.md, 11 screenshots), and the parent authorized closure."
       }
     },
     {
@@ -5776,7 +5780,7 @@
       "type": "task",
       "title": "Adopt the shared action buttons",
       "path": "docs/backlog/tasks/task-skript-40-01-03-adopt-the-shared-action-buttons.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-01",
       "owners": [
@@ -5814,7 +5818,7 @@
       "type": "task",
       "title": "Refresh home, catalog and the script runner onto the shared tokens and components",
       "path": "docs/backlog/tasks/task-skript-40-03-01-refresh-home-catalog-and-the-script-runner-onto-the-shared-tokens-and-components.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-03",
       "owners": [
@@ -5852,7 +5856,7 @@
       "type": "task",
       "title": "Refresh admin screens and the authoring editor onto the shared tokens and components",
       "path": "docs/backlog/tasks/task-skript-40-03-03-refresh-admin-screens-and-the-authoring-editor-onto-the-shared-tokens-and-components.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-03",
       "owners": [
@@ -5871,7 +5875,7 @@
       "type": "task",
       "title": "Refresh Klassrumskartan onto the shared tokens and components",
       "path": "docs/backlog/tasks/task-skript-40-03-04-refresh-klassrumskartan-onto-the-shared-tokens-and-components.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-03",
       "owners": [

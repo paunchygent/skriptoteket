@@ -24,7 +24,7 @@ import heroPreviewUrl from "../../assets/home/klassrumskartan/landing/redesign-v
 
 <style scoped>
 .hero-preview {
-  border: 2px solid var(--color-navy);
+  border: var(--huleedu-border-width) solid var(--huleedu-panel-border);
   background-color: var(--color-canvas);
   padding: 1.125rem;
 }

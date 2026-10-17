@@ -128,7 +128,7 @@ onMounted(() => {
 
     <div
       v-if="isLoading"
-      class="expand-left-40 p-4 border border-navy bg-panel text-sm text-navy/70"
+      class="expand-left-40 p-4 rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] bg-panel text-sm text-navy/70"
     >
       Laddar formulär...
     </div>
@@ -147,7 +147,7 @@ onMounted(() => {
       />
 
       <form
-        class="expand-left-40 border border-navy bg-panel p-4 space-y-4"
+        class="expand-left-40 rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] bg-panel p-4 space-y-4"
         @submit.prevent="submit"
       >
         <SystemMessage
@@ -170,7 +170,7 @@ onMounted(() => {
             type="text"
             required
             placeholder="T.ex. 'Skapa slumpade elevgrupper'"
-            class="w-full border border-navy bg-white px-3 py-2 text-navy"
+            class="w-full border border-[var(--huleedu-panel-border)] bg-canvas px-3 py-2 text-navy"
           >
         </div>
 
@@ -197,7 +197,7 @@ onMounted(() => {
             required
             rows="5"
             placeholder="Beskriv problemet och hur du vill att verktyget ska hjälpa dig..."
-            class="w-full border border-navy bg-white px-3 py-2 text-navy"
+            class="w-full border border-[var(--huleedu-panel-border)] bg-canvas px-3 py-2 text-navy"
           />
         </div>
 
@@ -206,7 +206,7 @@ onMounted(() => {
             <label class="text-sm font-semibold text-navy">Yrken</label>
             <span class="text-xs text-navy/60">Välj minst ett</span>
           </div>
-          <div class="p-4 border border-navy bg-panel-muted">
+          <div class="p-4 rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] bg-panel-muted">
             <div class="grid gap-3 sm:grid-cols-2">
               <label
                 v-for="profession in professions"
@@ -231,7 +231,7 @@ onMounted(() => {
             <label class="text-sm font-semibold text-navy">Kategorier</label>
             <span class="text-xs text-navy/60">Välj minst en</span>
           </div>
-          <div class="p-4 border border-navy bg-panel-muted">
+          <div class="p-4 rounded-[var(--huleedu-panel-radius)] border border-[var(--huleedu-panel-border)] bg-panel-muted">
             <div class="grid gap-3 sm:grid-cols-2">
               <label
                 v-for="category in categories"

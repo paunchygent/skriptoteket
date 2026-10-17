@@ -4,6 +4,7 @@ import { RouterLink, useRoute } from "vue-router";
 
 import { isApiError } from "../../api/client";
 import LoginEventsPanel from "../../components/admin/LoginEventsPanel.vue";
+import { SystemMessage } from "../../components/ui";
 import {
   getAdminUser,
   getAdminUserLoginEvents,
@@ -110,12 +111,12 @@ watch(
       >
         Laddar användare…
       </div>
-      <div
+      <SystemMessage
         v-else-if="userError"
-        class="panel-state text-error"
-      >
-        {{ userError }}
-      </div>
+        :model-value="userError"
+        tone="failure"
+        role="alert"
+      />
       <div
         v-else-if="!user"
         class="panel-state"
@@ -185,8 +186,10 @@ watch(
 }
 
 .back-link {
-  color: var(--huleedu-navy-70);
-  text-decoration: none;
+  color: var(--huleedu-link-color);
+  text-decoration: underline;
+  text-underline-offset: var(--huleedu-link-underline-offset);
+  font-weight: var(--huleedu-link-weight);
   font-size: var(--huleedu-text-sm);
 }
 
@@ -203,7 +206,8 @@ watch(
 }
 
 .panel {
-  border: var(--huleedu-border-width) solid var(--huleedu-navy);
+  border: var(--huleedu-border-width) solid var(--huleedu-panel-border);
+  border-radius: var(--huleedu-panel-radius);
   background-color: var(--huleedu-panel);
   padding: var(--huleedu-space-4);
 }

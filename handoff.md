@@ -60,8 +60,9 @@
   40-04-01; a Hemma Opus lead runs 40-01-02, 40-01-03, then ST-SKRIPT-40-03. Lane 0 (Sol): TASK-SKRIPT-40-01-02
   merged to main 2026-10-17 on huleedu-integrated 0.1.25 (TASK-SKILL-REP-0323
   `done` added segmented-toggle keyboard operation; Sol rereview approved
-  `534e8b02`, retained `evidence/reviews/TASK-SKRIPT-40-01-02/`). Next: the Mac
-  parent runs its staging walk, then 40-01-03. Opus lane: ST-SKRIPT-40-04, shell and
+  `534e8b02`, retained `evidence/reviews/TASK-SKRIPT-40-01-02/`); `done` after
+  the Mac parent's staging walk passed on e1efb4fc (`evidence/staging-walk-40-01-02/`). 40-01-03 `in_progress` (Hemma branch, Sol review open);
+  40-03-01, 40-03-03 and 40-03-04 `in_progress` (Hemma Sol pairs). Opus lane: ST-SKRIPT-40-04, shell and
   exam workspace redesign from a fresh prototype the user approves (40-04-01),
   then two Opus builders (40-04-02 shell, 40-04-03 workspace); it supersedes
   TASK-SKRIPT-39-04-05 (`canceled`). Sol restyle lane: ST-SKRIPT-40-03 tasks
