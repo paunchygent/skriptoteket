@@ -52,6 +52,7 @@ function toNativeItem(recorded: RecordedItem, sequence: number): NativeExamItem 
     criteria: [],
     printed_label: null,
     retry_source: null,
+    suggested_kind: null,
     tick_points: null,
     answer_key: {
       correct_choice_ids: recorded.choices.flatMap((choice, index) =>
@@ -115,7 +116,7 @@ export function buildParentDocument(): NativeExamDocument {
     parents: [buildRecordedParent()],
     revision: 1,
     header: { tags: [] },
-    schema_version: "native_exam_document_v5",
+    schema_version: "native_exam_document_v6",
     title: "English 1",
   };
 }

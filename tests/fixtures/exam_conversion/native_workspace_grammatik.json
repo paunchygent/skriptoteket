@@ -1,5 +1,5 @@
 {
-  "schema_version": "native_exam_document_v5",
+  "schema_version": "native_exam_document_v6",
   "document_id": "00000000-0000-4000-8000-000000000001",
   "revision": 1,
   "title": "Omprov: grammatik och språkstrukturer",
@@ -28,6 +28,7 @@
   "items": [
     {
       "item_id": "item_001",
+      "suggested_kind": null,
       "sequence": 1,
       "kind": "gap_fill",
       "body": [
@@ -130,6 +131,7 @@
     },
     {
       "item_id": "item_002",
+      "suggested_kind": null,
       "sequence": 2,
       "kind": "gap_fill",
       "body": [
@@ -242,6 +244,7 @@
     },
     {
       "item_id": "item_003",
+      "suggested_kind": null,
       "sequence": 3,
       "kind": "gap_fill",
       "body": [
@@ -344,6 +347,7 @@
     },
     {
       "item_id": "item_004",
+      "suggested_kind": null,
       "sequence": 4,
       "kind": "gap_fill",
       "body": [
@@ -466,6 +470,7 @@
     },
     {
       "item_id": "item_005",
+      "suggested_kind": null,
       "sequence": 5,
       "kind": "gap_fill",
       "body": [
@@ -548,6 +553,7 @@
     },
     {
       "item_id": "item_006",
+      "suggested_kind": null,
       "sequence": 6,
       "kind": "gap_fill",
       "body": [
@@ -710,6 +716,7 @@
     },
     {
       "item_id": "item_007",
+      "suggested_kind": null,
       "sequence": 7,
       "kind": "gap_fill",
       "body": [
@@ -782,6 +789,7 @@
     },
     {
       "item_id": "item_008",
+      "suggested_kind": null,
       "sequence": 8,
       "kind": "free_text",
       "body": [

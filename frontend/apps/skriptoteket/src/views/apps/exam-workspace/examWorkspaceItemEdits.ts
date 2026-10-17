@@ -399,6 +399,7 @@ export function newTeacherItem(
     },
     sequence,
     source_anchor: null,
+    suggested_kind: null,
     tick_points: null,
   };
 }
