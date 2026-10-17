@@ -16,6 +16,10 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
     SourceImage,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.exam_content_tags import ExamContentItem
+from skriptoteket.infrastructure.llm.openai.decisions_content_tags import (
+    build_content_decisions_payload,
+    parse_content_decisions_answers,
+)
 from skriptoteket.protocols.item_type_labeler import (
     ContentTagClassificationRequest,
     ItemTypeLabelerError,
@@ -29,6 +33,21 @@ _CONTENT = (
     ExamContentItem(id="GY:SVESVE02:grammatik", text="Svenska språkets uppbyggnad."),
     ExamContentItem(id="GY:SVESVE02:litteratur", text="Skönlitterära verkningsmedel."),
 )
+
+
+def test_content_contract_is_independent_of_transport_and_keeps_refusal_identity() -> None:
+    items = (LabelingItem("not-a-wire-id", "Fråga"),)
+    payload = build_content_decisions_payload(items, _CONTENT, model="contract-test-model")
+    assert payload["model"] == "contract-test-model"
+    choices, tokens = parse_content_decisions_answers(
+        {"answers": [{"name": "content_q1", "type": "refusal"}], "usage": {"input_tokens": True}},
+        items,
+        _CONTENT,
+    )
+    assert [(choice.item_id, choice.content_id, choice.probability) for choice in choices] == [
+        ("not-a-wire-id", None, 0.0)
+    ]
+    assert tokens is None, "A boolean is not metered token usage"
 
 
 def _request(count: int = 2, *, content=_CONTENT) -> ContentTagClassificationRequest:

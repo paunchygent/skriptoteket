@@ -2,20 +2,32 @@
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import json
+from dataclasses import replace
 from uuid import uuid4
 
 import httpx
 import pytest
 
+from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_merge import (
+    ConversionProgress,
+    first_conversion,
+    merge_conversion,
+    target_from_update,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_run import DocxConversionJob
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_serial_uow import (
     SerializedUnitOfWork,
 )
 from skriptoteket.config import Settings
 from skriptoteket.di.docx_conversion import build_docx_conversion_pipeline
-from skriptoteket.domain.curated_apps.exam_workspace.exam_content_tags import ExamContentItem
+from skriptoteket.domain.curated_apps.exam_workspace.exam_content_tags import (
+    ExamContentItem,
+    NativeExamContentTag,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import ExamCourseChoice
 from tests.fixtures.time_fixtures import FixedClock
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
     _NOW,
@@ -28,6 +40,11 @@ from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
     corpus_docx,
     decisions_client,
 )
+from tests.unit.application.curated_apps.handlers.exam_workspace_conversion_support import (
+    choice,
+    conversion_update,
+    placeholder,
+)
 
 pytestmark = pytest.mark.unit
 _EXAM = "chapter_4_poetry_and_lyrics_quiz_med_facit"
@@ -35,7 +52,9 @@ _CONTENT = (ExamContentItem(id="SVESVE02:poesi", text="Skönlitterära verknings
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("outcome", ["success", "failure", "unknown_course"])
+@pytest.mark.parametrize(
+    "outcome", ["success", "failure", "pending", "cancelled", "unknown_course"]
+)
 async def test_conversion_keeps_valid_citations_or_survives_content_failure(
     monkeypatch: pytest.MonkeyPatch,
     outcome: str,
@@ -49,12 +68,21 @@ async def test_conversion_keeps_valid_citations_or_survives_content_failure(
     )
     labels = decisions_client(_EXAM)
     requests: list[dict] = []
+    classifier_started = asyncio.Event()
+    classifier_cancelled = asyncio.Event()
 
     async def respond(request: httpx.Request) -> httpx.Response:
         sent = json.loads(request.content)
         if sent["questions"][0]["name"].startswith("kind_"):
             return await labels.send(request)
         requests.append(sent)
+        if outcome in {"pending", "cancelled"}:
+            classifier_started.set()
+            try:
+                await asyncio.Future()
+            finally:
+                classifier_cancelled.set()
+            raise AssertionError("Pending classifier cannot finish normally")
         if outcome == "failure":
             return httpx.Response(503, json={"error": "synthetic classifier outage"})
         return httpx.Response(
@@ -104,7 +132,21 @@ async def test_conversion_keeps_valid_citations_or_survives_content_failure(
             chunks=corpus_chunks(_EXAM),
             course_key=None if outcome == "unknown_course" else "SVESVE02",
         )
-        result = await pipeline.convert(job=job)
+        conversion = asyncio.create_task(pipeline.convert(job=job))
+        if outcome == "cancelled":
+            await asyncio.wait_for(classifier_started.wait(), timeout=5)
+            conversion.cancel()
+            with pytest.raises(asyncio.CancelledError):
+                await conversion
+            assert classifier_cancelled.is_set(), "Cancellation must join optional work"
+            await labels.aclose()
+            return
+        # This deadline is only a deadlock watchdog. The classifier never returns;
+        # cancellation/completion signals, not elapsed time, establish independence.
+        result = await asyncio.wait_for(conversion, timeout=5)
+        if outcome == "pending":
+            assert classifier_started.is_set()
+            assert classifier_cancelled.is_set(), "Completed conversion must clean up suggestions"
     await labels.aclose()
 
     document = result.result.document
@@ -122,3 +164,65 @@ async def test_conversion_keeps_valid_citations_or_survives_content_failure(
     else:
         assert tags == ()
         assert len(requests) == (0 if outcome == "unknown_course" else 1)
+
+
+@pytest.mark.parametrize("teacher_header", [False, True])
+@pytest.mark.parametrize("deleted", [False, True])
+def test_saved_merge_citations_follow_split_questions_not_assembled_positions(
+    teacher_header: bool, deleted: bool
+) -> None:
+    first = first_conversion(
+        update=conversion_update(
+            [
+                ("q1", [choice("a", "One")]),
+                ("q2", [placeholder("b", "Two")]),
+                ("q3", [choice("c", "Three")]),
+            ],
+            pending=("q2",),
+        ),
+        progress=ConversionProgress.from_question_ids(("q1", "q2", "q3")),
+    )
+    head = first.document
+    if deleted:
+        head = head.model_copy(update={"items": head.items[:2]})
+    course = ExamCourseChoice(key="course", name="Course")
+    teacher_tag = NativeExamContentTag(
+        id="course:teacher",
+        text="Keep this selection",
+        origin="teacher",
+        question_ids=("item_001",),
+    )
+    if teacher_header:
+        head = head.model_copy(
+            update={
+                "header": head.header.model_copy(update={"course": course, "tags": (teacher_tag,)})
+            }
+        )
+    final = conversion_update(
+        [
+            ("q1", [choice("a", "One")]),
+            ("q2", [choice("b", "Two a"), choice("bb", "Two b")]),
+            ("q3", [choice("c", "Three")]),
+        ],
+        pending=(),
+    )
+    tag = NativeExamContentTag(
+        id="course:content",
+        text="Content",
+        origin="suggested",
+        question_ids=("item_002", "item_003", "item_004"),
+    )
+    target = target_from_update(final)
+    target = replace(
+        target, header=final.document.header.model_copy(update={"course": course, "tags": (tag,)})
+    )
+    merged = merge_conversion(head=head, progress=first.progress, target=target)
+    if teacher_header:
+        assert merged.document.header.tags == (teacher_tag,)
+    else:
+        expected = ("item_002", "item_1001") + (() if deleted else ("item_003",))
+        assert merged.document.header.tags == (tag.model_copy(update={"question_ids": expected}),)
+        # Redelivery must recognize its own remapped header rather than treating it
+        # as a teacher edit and reintroducing target-local IDs.
+        again = merge_conversion(head=merged.document, progress=merged.progress, target=target)
+        assert again.document.header.tags == merged.document.header.tags

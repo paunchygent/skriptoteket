@@ -211,11 +211,24 @@ class DocxConversionPipeline:
             run.own_anchors[question.question_id] = (*question.anchors, *question.subpart_anchors)
             run.key_anchors[question.question_id] = question.key_anchors
         await self._outline(run, manifest)
+        request, unlabeled = self._labeling_request(run, manifest)
+        optional = (
+            asyncio.create_task(self._suggest_content(run, manifest, request))
+            if self._content_classifier is not None
+            else None
+        )
         try:
             async with asyncio.TaskGroup() as tasks:
-                tasks.create_task(self._label_and_convert(run, manifest, tasks))
+                tasks.create_task(self._label_and_convert(run, request, unlabeled, tasks))
         except* DomainError as group:
             raise group.exceptions[0] from group
+        finally:
+            # This conversion owns the optional request's entire lifetime. Keep
+            # ready tags; cancel and join unfinished work on success or failure.
+            # Provider timeouts must never hold up an otherwise complete exam.
+            if optional is not None:
+                optional.cancel()
+                await asyncio.gather(optional, return_exceptions=True)
         return final_publication(run, manifest)
 
     async def _outline(self, run: DocxConversionRun, manifest: ExamManifest) -> None:
@@ -263,12 +276,13 @@ class DocxConversionPipeline:
         return LabelingRequest(job_id=run.job.job_id, items=tuple(items)), unlabeled
 
     async def _label_and_convert(
-        self, run: DocxConversionRun, manifest: ExamManifest, tasks: asyncio.TaskGroup
+        self,
+        run: DocxConversionRun,
+        request: LabelingRequest,
+        unlabeled: list[str],
+        tasks: asyncio.TaskGroup,
     ) -> None:
         started = time.monotonic()
-        request, unlabeled = self._labeling_request(run, manifest)
-        if self._content_classifier is not None:
-            tasks.create_task(self._suggest_content(run, manifest, request))
         for question_id in unlabeled:
             run.kinds[question_id] = NativeExamItemKind.FREE_TEXT
             run.label_kinds[question_id] = NativeExamItemKind.FREE_TEXT
