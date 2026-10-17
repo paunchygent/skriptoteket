@@ -109,3 +109,19 @@ async def test_a_points_line_tagged_as_a_facit_still_reaches_its_question(tmp_pa
     assert "Poäng" not in (items[22].facit_text or "")
     assert len(items) == 24
     assert sum(item.points for item in items) == 36
+
+
+@pytest.mark.parametrize("line_first", [False, True])
+async def test_a_points_line_the_reply_emits_as_its_own_item_joins_its_question(
+    tmp_path: Path, line_first: bool
+):
+    """A reply listing "Poäng: 1 poäng" as a separate item still gives it to q23 (D2)."""
+    shutil.copytree(RECORDINGS / _EXAM, tmp_path / _EXAM)
+    path = tmp_path / _EXAM / "docx_w1-03.json"
+    reply = json.loads(path.read_text())
+    (question,) = reply["items"]
+    line = {**question, "source_anchors": ["body:0108"], "points": None}
+    reply["items"] = [line, question] if line_first else [question, line]
+    path.write_text(json.dumps(reply))
+    replay = build_replay(_EXAM, root=tmp_path)
+    _assert_printed_points(await replay.pipeline.convert(job=replay.job()))

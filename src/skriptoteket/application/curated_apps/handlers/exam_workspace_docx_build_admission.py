@@ -239,8 +239,8 @@ def _with_left_out(
     """A converted item holds the own chunks of its question it leaves out; those whose wording
     it lacks show under a check mark as printed, a possible parsing issue (D41, D4).
 
-    A left-out chunk is an own chunk of a question the item touches that no item of the
-    reply lists and no entry holds yet.
+    A left-out chunk is an own chunk of a question the item touches that no entry holds yet
+    and no item of the reply lists, except as a points line alone (D2).
     """
     item, anchors = admitted
     if item.review.parse_origin is not NativeParseOrigin.LLM_PARSED:
@@ -249,7 +249,10 @@ def _with_left_out(
     left_out = tuple(
         c.anchor
         for c in state.pending
-        if c.anchor in own and c.anchor not in item_held and c.anchor not in seen
+        if c.anchor in own
+        and c.anchor not in seen
+        # A points line another entry lists alone is no item; this one holds it (D2).
+        and (c.anchor not in item_held or _points_line(c.anchor, state))
     )
     # A left-out chunk the grouping lists as the question's facit is its answer key.
     keys = {a for a in left_out if a in state.grouped_keys}
