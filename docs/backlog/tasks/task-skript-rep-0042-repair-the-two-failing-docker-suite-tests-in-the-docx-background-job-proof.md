@@ -43,6 +43,10 @@ because `addopts` excludes the `docker` marker. Causes found 2026-10-17:
   retries as `w2-10-01c01` and falls back to review items for `body:0115` and
   `body:0116`. The repair finds which change moved the request, and makes the
   test replay the recording against the current request contract.
+  Root cause (pair, 2026-10-17): the request matches `docx_w2-11-01.json`,
+  whose reply is a type conflict. Since 7c8c6bd7 that reply reaches the
+  intended one-time typed resend (275ebd248, 39-05-04 D32), and the v14
+  recordings (87478dcd) hold no reply for the resend `w2-10-01c01`.
 
 ## Contract Inputs
 
@@ -76,3 +80,4 @@ repair touches. Scoped ruff and mypy.
 | D2  | The bf26 replay matches the current build request contract; the fix follows the root cause of the request change, not a looser matcher that hides it. |
 | D3  | No test asserts wall-clock timing; contract tests track the current contracts. |
 | D4  | Production code changes only if the root cause shows production is wrong, and then only after reporting it. |
+| D5  | The bf26 type-conflict resend (39-05-04 D32, reached since 7c8c6bd7) gets one live provider recording, made once on Hemma staging with the staging provider configuration from the exact current resend request; no corpus rerun (user 2026-10-17). |
