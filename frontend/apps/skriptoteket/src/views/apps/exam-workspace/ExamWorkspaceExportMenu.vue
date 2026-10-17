@@ -5,12 +5,12 @@
  * Domain purpose:
  *   Export the saved exam in one step: each format row downloads the file
  *   and its folder button keeps it in Mina filer instead, replacing the
- *   exam's earlier file of that format. The questions to fix are listed
- *   first and lead to the question. The server decides what stops an
- *   export: what the workspace itself sees is guidance, so only the
- *   server's refusal, unsaved changes (exports are made from the saved exam)
- *   or a running export disable the formats. "Fler val …" opens the
- *   Exportera drawer.
+ *   exam's earlier file of that format. A format click saves the exam
+ *   first and exports the version just saved; the menu stays open and the
+ *   format shows the export running. What stops the export is listed first,
+ *   with its fix, and disables the formats until the last one is fixed; the
+ *   server's refusal stays the final check (user rule 2026-10-17). "Fler
+ *   val …" opens the Exportera drawer.
  *
  * Relationships:
  *   - Rendered in the `export` slot of `ExamWorkspaceHeader`; the view runs
@@ -21,16 +21,17 @@ import { computed, ref } from "vue";
 
 import type { ExamWorkspaceExportTarget } from "../../../api/examWorkspace";
 import { UiGlyph } from "../../../components/ui";
+import ExamWorkspaceExportBlockers from "./ExamWorkspaceExportBlockers.vue";
 import ExamWorkspaceMenu from "./ExamWorkspaceMenu.vue";
+import type { ExamWorkspaceBlockerEntry } from "./examWorkspaceBlockers";
 import { EXAM_WORKSPACE_EXPORT_FORMATS, QTI_ZERO_POINTS_NOTE } from "./examWorkspaceExportFormats";
-import type { ExamWorkspaceBlockerEntry } from "./examWorkspaceListEntries";
 
 const props = defineProps<{
   blockers: ExamWorkspaceBlockerEntry[];
-  /** The server refused the last export for these questions. */
-  serverBlocked: boolean;
   disabled: boolean;
-  dirty: boolean;
+  /** The exam is busy, so no blocker fix can run. */
+  fixDisabled: boolean;
+  suggestBusy: boolean;
   exportingTarget: ExamWorkspaceExportTarget | null;
   savedExports: Partial<Record<ExamWorkspaceExportTarget, string>>;
   /** What the last export made, e.g. "QTI-paketet är skapat." */
@@ -46,14 +47,13 @@ const emit = defineEmits<{
   download: [target: ExamWorkspaceExportTarget];
   saveToFiles: [target: ExamWorkspaceExportTarget];
   more: [];
-  goto: [itemId: string];
+  goto: [blocker: ExamWorkspaceBlockerEntry];
+  fix: [blocker: ExamWorkspaceBlockerEntry];
 }>();
 
 const trigger = ref<HTMLButtonElement | null>(null);
 const open = ref(false);
-const formatsDisabled = computed(
-  () => props.serverBlocked || props.dirty || props.exportingTarget !== null,
-);
+const formatsDisabled = computed(() => props.blockers.length > 0 || props.exportingTarget !== null);
 
 function choose(action: () => void): void {
   open.value = false;
@@ -92,31 +92,15 @@ function choose(action: () => void): void {
     test-id="exam-workspace-export-menu"
     @close="open = false"
   >
-    <div
+    <ExamWorkspaceExportBlockers
       v-if="blockers.length > 0"
-      class="xw-mblock"
-      :class="{ 'xw-mblock--warn': !serverBlocked }"
-      data-test="exam-workspace-export-blockers"
-    >
-      <b><UiGlyph
-        :meaning="serverBlocked ? 'status-failure' : 'status-warning'"
-        :size="16"
-      />{{ serverBlocked ? "Kan inte exporteras ännu" : "Kontrollera innan du exporterar" }}</b>
-      <button
-        v-for="blocker in blockers"
-        :key="`${blocker.itemId}-${blocker.reason}`"
-        type="button"
-        @click="choose(() => emit('goto', blocker.itemId))"
-      >
-        Fråga {{ blocker.label }}: {{ blocker.reason }}
-      </button>
-    </div>
-    <p
-      v-else-if="dirty"
-      class="xw-mhead"
-    >
-      Spara provet först. Exporten görs från det sparade provet.
-    </p>
+      :blockers="blockers"
+      :fix-disabled="fixDisabled"
+      :suggest-busy="suggestBusy"
+      test-id="exam-workspace-export-blockers"
+      @goto="(blocker) => choose(() => emit('goto', blocker))"
+      @fix="emit('fix', $event)"
+    />
     <div
       v-for="format in EXAM_WORKSPACE_EXPORT_FORMATS"
       :key="format.target"
@@ -125,17 +109,23 @@ function choose(action: () => void): void {
       :tabindex="formatsDisabled ? -1 : 0"
       :aria-disabled="formatsDisabled || undefined"
       :title="`Ladda ner ${format.name}`"
+      :aria-busy="exportingTarget === format.target || undefined"
       :data-test="`exam-workspace-export-${format.target}`"
-      @click="!formatsDisabled && choose(() => emit('download', format.target))"
-      @keydown.enter.self.prevent="!formatsDisabled && choose(() => emit('download', format.target))"
-      @keydown.space.self.prevent="!formatsDisabled && choose(() => emit('download', format.target))"
+      @click="!formatsDisabled && emit('download', format.target)"
+      @keydown.enter.self.prevent="!formatsDisabled && emit('download', format.target)"
+      @keydown.space.self.prevent="!formatsDisabled && emit('download', format.target)"
     >
       <UiGlyph
-        meaning="download"
+        :meaning="exportingTarget === format.target ? 'busy' : 'download'"
         :size="20"
+        :class="{ 'xw-spin': exportingTarget === format.target }"
       />
       <span class="xw-mi__stack">
         <span class="xw-grow">{{ format.name }} <span class="xw-mi__sub">{{ format.use }}</span></span>
+        <small
+          v-if="exportingTarget === format.target"
+          data-test="exam-workspace-export-running"
+        >Exporterar …</small>
         <small v-if="savedExports[format.target]"><UiGlyph
           meaning="save-to-files"
           :size="14"
@@ -155,7 +145,7 @@ function choose(action: () => void): void {
           : `Spara ${format.name} i Mina filer`"
         :aria-label="`Spara ${format.name} i Mina filer`"
         :data-test="`exam-workspace-export-save-${format.target}`"
-        @click.stop="choose(() => emit('saveToFiles', format.target))"
+        @click.stop="emit('saveToFiles', format.target)"
       >
         <UiGlyph
           meaning="save-to-files"

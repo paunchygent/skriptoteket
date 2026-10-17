@@ -104,9 +104,7 @@ describe("ExamWorkspaceView save rules", () => {
     expect(wrapper.get('[data-test="exam-workspace-row-item_002"]').text()).toContain("negativa poäng");
 
     await openExportMenu(wrapper);
-    expect(bodyElement("exam-workspace-export-blockers").textContent).toContain(
-      "Fråga 2: Poängen kan inte vara negativ.",
-    );
+    expect(bodyElement("exam-workspace-blocker-item_002").textContent?.trim()).toBe("Fråga 2: negativa poäng");
 
     await saveDocument(wrapper);
 
@@ -125,9 +123,7 @@ describe("ExamWorkspaceView save rules", () => {
     bodyElement("exam-workspace-export-more").click();
     await flushPromises();
 
-    expect(wrapper.get('[data-test="exam-workspace-blocker-item_005"]').text()).toContain(
-      "Poängen kan inte vara negativ.",
-    );
+    expect(wrapper.get('[data-test="exam-workspace-blocker-item_005"]').text()).toBe("Fråga 5: negativa poäng");
   });
 
   it("flags an empty choice text and refuses the save, naming every question", async () => {

@@ -5,10 +5,11 @@
  * Domain purpose:
  *   Export the saved exam with every choice in view: the format, and whether
  *   the file downloads or stays in Mina filer as the exam's one file of that
- *   format, replacing the earlier one. The questions to fix come first and
- *   lead to the question; only the server's refusal stops the export, what
- *   the workspace itself sees is guidance. After a QTI export the drawer lists what
- *   Exam.net loses on import, so the teacher can correct it there.
+ *   format, replacing the earlier one. What stops the export comes first,
+ *   with its fix, and disables the export until the last one is fixed; the
+ *   export saves the exam first and runs from the version just saved (user
+ *   rule 2026-10-17). After a QTI export the drawer lists what Exam.net
+ *   loses on import, so the teacher can correct it there.
  *
  * Relationships:
  *   - Rendered inside `ExamWorkspaceDrawer` by `ExamWorkspaceView`; the
@@ -22,18 +23,17 @@ import type {
   ExamWorkspaceExportTarget,
 } from "../../../api/examWorkspace";
 import { UiGlyph } from "../../../components/ui";
+import ExamWorkspaceExportBlockers from "./ExamWorkspaceExportBlockers.vue";
+import type { ExamWorkspaceBlockerEntry } from "./examWorkspaceBlockers";
 import { EXAM_WORKSPACE_EXPORT_FORMATS, QTI_ZERO_POINTS_NOTE } from "./examWorkspaceExportFormats";
-import type { ExamWorkspaceBlockerEntry } from "./examWorkspaceListEntries";
 import { examWorkspaceQuestionLabel } from "./examWorkspaceRows";
 
 type Destination = "download" | "files";
 
 const props = defineProps<{
   blockers: ExamWorkspaceBlockerEntry[];
-  /** The server refused the last export for these questions. */
-  serverBlocked: boolean;
-  dirty: boolean;
   busy: boolean;
+  suggestBusy: boolean;
   exportingTarget: ExamWorkspaceExportTarget | null;
   /** When the exam's file of each format was saved in Mina filer this session. */
   savedExports: Partial<Record<ExamWorkspaceExportTarget, string>>;
@@ -47,7 +47,8 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   run: [target: ExamWorkspaceExportTarget, destination: Destination];
-  goto: [itemId: string];
+  goto: [blocker: ExamWorkspaceBlockerEntry];
+  fix: [blocker: ExamWorkspaceBlockerEntry];
 }>();
 
 const target = ref<ExamWorkspaceExportTarget>("qti");
@@ -55,32 +56,19 @@ const destination = ref<Destination>("download");
 
 const format = computed(() => EXAM_WORKSPACE_EXPORT_FORMATS.find((entry) => entry.target === target.value)!);
 const replaced = computed(() => props.savedExports[target.value] ?? null);
-const disabled = computed(
-  () => props.serverBlocked || props.dirty || props.busy || props.exportingTarget !== null,
-);
+const disabled = computed(() => props.blockers.length > 0 || props.busy || props.exportingTarget !== null);
 </script>
 
 <template>
-  <div
+  <ExamWorkspaceExportBlockers
     v-if="blockers.length > 0"
-    class="xw-mblock"
-    :class="{ 'xw-mblock--warn': !serverBlocked }"
-    data-test="exam-workspace-export-drawer-blockers"
-  >
-    <b><UiGlyph
-      :meaning="serverBlocked ? 'status-failure' : 'status-warning'"
-      :size="16"
-    />{{ serverBlocked ? "Kan inte exporteras ännu" : "Kontrollera innan du exporterar" }}</b>
-    <button
-      v-for="blocker in blockers"
-      :key="`${blocker.itemId}-${blocker.reason}`"
-      type="button"
-      :data-test="`exam-workspace-blocker-${blocker.itemId}`"
-      @click="emit('goto', blocker.itemId)"
-    >
-      Fråga {{ blocker.label }}: {{ blocker.reason }}
-    </button>
-  </div>
+    :blockers="blockers"
+    :fix-disabled="busy"
+    :suggest-busy="suggestBusy"
+    test-id="exam-workspace-export-drawer-blockers"
+    @goto="emit('goto', $event)"
+    @fix="emit('fix', $event)"
+  />
 
   <section class="sect">
     <h3>Format</h3>
@@ -151,7 +139,7 @@ const disabled = computed(
         :meaning="exportingTarget ? 'busy' : destination === 'files' ? 'save-to-files' : 'download'"
         :size="20"
         :class="{ 'xw-spin': exportingTarget }"
-      />{{ destination === "files" ? "Spara i Mina filer" : "Ladda ner" }}
+      />{{ exportingTarget ? "Exporterar …" : destination === "files" ? "Spara i Mina filer" : "Ladda ner" }}
     </button>
     <p
       v-if="notice"
@@ -174,15 +162,6 @@ const disabled = computed(
         meaning="status-success"
         :size="16"
       />{{ result }}
-    </p>
-    <p
-      v-else-if="dirty"
-      class="xw-hint"
-    >
-      <UiGlyph
-        meaning="info"
-        :size="16"
-      />Spara provet innan du skapar filer. Filerna skapas från den sparade versionen.
     </p>
   </section>
 

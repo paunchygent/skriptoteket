@@ -427,22 +427,15 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
     expect(wrapper.find('[data-test="exam-workspace-save-state"]').text()).toMatch(/^Sparat /);
   });
 
-  it("reloads the latest saved version on request", async () => {
-    apiMocks.getExamWorkspaceDocument.mockResolvedValue(
-      buildResponse({ title: "Uppdaterat prov", version: 1 }),
-    );
+  it("offers Spara and Spara som in the save menu, and no reload of the saved version", async () => {
     const { wrapper } = await mountExamWorkspace();
     await importFixtureDocument(wrapper);
 
     await wrapper.find('[data-test="exam-workspace-save-menu"]').trigger("click");
-    document.body.querySelector<HTMLElement>('[data-test="exam-workspace-reload"]')!.click();
-    await flushPromises();
 
-    expect(apiMocks.getExamWorkspaceDocument).toHaveBeenCalledWith("lineage-1");
-    expect(wrapper.find('[data-test="exam-workspace-title"]').text()).toBe("Uppdaterat prov");
-    // Reload reports no success toast: the header title and save state are the outcome.
-    const toasts = useToastStore();
-    expect(vi.mocked(toasts.success)).not.toHaveBeenCalled();
-    expect(vi.mocked(toasts.failure)).not.toHaveBeenCalled();
+    const menu = document.body.querySelector<HTMLElement>('[role="menu"]')!;
+    expect(Array.from(menu.querySelectorAll('[role="menuitem"]')).map((entry) => entry.textContent?.trim()))
+      .toEqual([expect.stringContaining("Spara"), "Spara som …"]);
+    expect(menu.textContent).not.toContain("Läs in på nytt");
   });
 });

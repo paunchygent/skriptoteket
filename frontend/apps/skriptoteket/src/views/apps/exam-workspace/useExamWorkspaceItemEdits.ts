@@ -11,7 +11,8 @@
  * Relationships:
  *   - Used by `useExamWorkspaceDocument`, which owns the patch path and
  *     re-exports these commands.
- *   - Reads its transitions from `examWorkspaceItemEdits`.
+ *   - Reads its transitions from `examWorkspaceItemEdits`, and the export
+ *     blocker fixes from `examWorkspaceBlockers`.
  */
 
 import type {
@@ -36,6 +37,7 @@ import {
   withPoints,
   withTickPoints,
 } from "./examWorkspaceItemEdits";
+import { withoutEmptyOptions, withoutOptionHeadings } from "./examWorkspaceBlockers";
 
 /** One patch of one item, refused while the document is busy or the item still converts. */
 export type ExamWorkspaceItemPatch = (
@@ -115,8 +117,18 @@ export function useExamWorkspaceItemEdits(patchItem: ExamWorkspaceItemPatch) {
     patchItem(itemId, unreviewed, true);
   }
 
+  function removeItemEmptyOptions(itemId: string): void {
+    patchItem(itemId, withoutEmptyOptions, true);
+  }
+
+  function removeItemOptionHeadings(itemId: string): void {
+    patchItem(itemId, withoutOptionHeadings, true);
+  }
+
   return {
     markItemReviewed,
+    removeItemEmptyOptions,
+    removeItemOptionHeadings,
     unmarkItemReviewed,
     showItemGapAsText,
     undoItemInterpretation,

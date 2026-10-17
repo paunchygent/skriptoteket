@@ -42,13 +42,14 @@ import ExamWorkspaceQuestionTools from "./exam-workspace/ExamWorkspaceQuestionTo
 import ExamWorkspaceSaveAsDialog from "./exam-workspace/ExamWorkspaceSaveAsDialog.vue";
 import ExamWorkspaceSharedInstruction from "./exam-workspace/ExamWorkspaceSharedInstruction.vue";
 import "./exam-workspace/examWorkspace.css";
+import { examWorkspaceBlockerEntries } from "./exam-workspace/examWorkspaceBlockers";
+import type { ExamWorkspaceBlockerEntry } from "./exam-workspace/examWorkspaceBlockers";
 import { examWorkspaceSavedAt } from "./exam-workspace/examWorkspaceFormat";
 import { examWorkspaceItemReadiness } from "./exam-workspace/examWorkspaceItemReadiness";
 import type { ExamWorkspaceReadinessReason } from "./exam-workspace/examWorkspaceItemReadiness";
 import { isTeacherReviewed } from "./exam-workspace/examWorkspaceItemEdits";
 import type { TeacherItemKind } from "./exam-workspace/examWorkspaceItemEdits";
 import {
-  examWorkspaceBlockerEntries,
   examWorkspaceFirstPrintedMismatch,
   examWorkspaceListEntries,
   examWorkspaceListTotal,
@@ -108,7 +109,6 @@ const {
   notes,
   openDocument,
   openExam,
-  reloadDocument,
   renameFailure,
   renameFile,
   retryItem,
@@ -129,7 +129,10 @@ const { handleDroppedFiles, handleSelectedFile, sourceFileError } = useExamWorks
   importDocument,
   importBlocked,
 );
-const exports = useExamWorkspaceExports(summary, workspaceDocument);
+const exports = useExamWorkspaceExports(summary, workspaceDocument, {
+  readLatest: editing.reloadDocument,
+  saveFirst: saveBeforeExport,
+});
 const enrichment = useExamWorkspaceEnrichment({
   applySuggestions: applyArrivingSuggestions,
   document: workspaceDocument,
@@ -144,6 +147,7 @@ const content = useExamWorkspaceContentSuggestions({
 });
 
 const isPhone = computed(() => layout.value === "phone");
+const frame = ref<HTMLElement | null>(null);
 const drawer = ref<DrawerName | null>(null);
 const listOpen = ref(false);
 const importOpen = ref(false);
@@ -168,9 +172,8 @@ const itemEntries = computed(() =>
 );
 const total = computed(() => examWorkspaceListTotal(entries.value));
 const blockers = computed(() =>
-  examWorkspaceBlockerEntries(entries.value, readiness.value, exports.exportBlockersByItemId.value),
+  examWorkspaceBlockerEntries(entries.value, items.value, readiness.value, exports.exportBlockersByItemId.value),
 );
-const serverBlocked = computed(() => Object.keys(exports.exportBlockersByItemId.value).length > 0);
 const globalInstructions = computed(() =>
   examWorkspaceSharedParagraphs(workspaceDocument.value?.instructions ?? [], assetUrls.value),
 );
@@ -361,8 +364,53 @@ async function setOrdering(ordering: ExamListOrdering): Promise<void> {
 }
 
 function runExport(target: ExamWorkspaceExportTarget, destination: "download" | "files"): void {
-  if (disabled.value) return;
+  if (disabled.value || blockers.value.length > 0) return;
   void (destination === "files" ? exports.saveExportToFiles(target) : exports.exportDocument(target));
+}
+
+/** An export saves unsaved changes first, through Spara; a failed save has toasted why. */
+async function saveBeforeExport(): Promise<boolean> {
+  if (!isDirty.value) return true;
+  saving.value = true;
+  try {
+    return await editing.save();
+  } finally {
+    saving.value = false;
+  }
+}
+
+/** Lead to the question and the field that stops its export; a gap chip opens its popover. */
+async function gotoBlocker(blocker: ExamWorkspaceBlockerEntry): Promise<void> {
+  gotoItem(blocker.itemId);
+  if (!blocker.focus) return;
+  await nextTick();
+  const field = frame.value?.querySelector<HTMLElement>(blocker.focus);
+  field?.scrollIntoView?.({ block: "center" });
+  if (field?.hasAttribute("data-gap-id")) {
+    field.click();
+  } else {
+    field?.focus();
+  }
+}
+
+function fixBlocker(blocker: ExamWorkspaceBlockerEntry): void {
+  switch (blocker.fix) {
+    case "review":
+    case "approve":
+      editing.markItemReviewed(blocker.itemId);
+      return;
+    case "suggest_key":
+      void enrichment.requestSuggestionForItem(blocker.itemId);
+      return;
+    case "remove_empty":
+      editing.removeItemEmptyOptions(blocker.itemId);
+      return;
+    case "strip_headings":
+      editing.removeItemOptionHeadings(blocker.itemId);
+      return;
+    case null:
+      return;
+  }
 }
 
 function toggleReviewed(): void {
@@ -444,6 +492,7 @@ onBeforeUnmount(() => {
 
 <template>
   <main
+    ref="frame"
     class="xw-root ws"
     :class="{ 'ws--drawer': drawer !== null }"
     aria-label="Provredigering"
@@ -469,7 +518,6 @@ onBeforeUnmount(() => {
       @toggle-open="toggleDrawer('open')"
       @save="handleSave"
       @save-as="openSaveAs"
-      @reload="reloadDocument"
       @suggest-all="enrichment.requestSuggestionsForAll"
       @undo="history.undo"
       @redo="history.redo"
@@ -477,9 +525,9 @@ onBeforeUnmount(() => {
       <template #export>
         <ExamWorkspaceExportMenu
           :blockers="blockers"
-          :server-blocked="serverBlocked"
           :disabled="workspaceDocument === null"
-          :dirty="isDirty"
+          :fix-disabled="disabled"
+          :suggest-busy="enrichmentBusy"
           :exporting-target="exports.exportingTarget.value"
           :saved-exports="formattedSavedExports"
           :result="exports.exportResult.value"
@@ -489,7 +537,8 @@ onBeforeUnmount(() => {
           @download="(target) => runExport(target, 'download')"
           @save-to-files="(target) => runExport(target, 'files')"
           @more="drawer = 'export'"
-          @goto="gotoItem"
+          @goto="gotoBlocker"
+          @fix="fixBlocker"
         />
       </template>
     </ExamWorkspaceHeader>
@@ -708,9 +757,8 @@ onBeforeUnmount(() => {
         <ExamWorkspaceExportDrawer
           v-else-if="drawer === 'export' && workspaceDocument"
           :blockers="blockers"
-          :server-blocked="serverBlocked"
-          :dirty="isDirty"
           :busy="disabled"
+          :suggest-busy="enrichmentBusy"
           :exporting-target="exports.exportingTarget.value"
           :saved-exports="formattedSavedExports"
           :checklist="exports.exportChecklist.value"
@@ -718,7 +766,8 @@ onBeforeUnmount(() => {
           :result="exports.exportResult.value"
           :zero-points="zeroPoints"
           @run="runExport"
-          @goto="gotoItem"
+          @goto="gotoBlocker"
+          @fix="fixBlocker"
         />
         <ExamWorkspaceDetailsDrawer
           v-else-if="drawer === 'details' && workspaceDocument && summary"

@@ -6,18 +6,17 @@
  *   is numbered 1, 2, 3; an instruction with deluppgifter takes the next
  *   number and its deluppgifter follow as 4a, 4b. Each question row names
  *   its type and points, or the first thing that stops its export in a few
- *   words, and whether the AI wrote its key. The export menu lists the same
- *   problems in full, numbered like the list.
+ *   words, and whether the AI wrote its key. The export menu names the same
+ *   problems in the same words, numbered like the list.
  *
  * Relationships:
  *   - Pure; consumed by `ExamWorkspaceView` and the list and export menu.
- *   - Reads readiness from `examWorkspaceItemReadiness` and the server's
- *     export blockers from `useExamWorkspaceExports`.
+ *   - Reads readiness from `examWorkspaceItemReadiness`; `examWorkspaceBlockers`
+ *     reuses the short problem words.
  */
 
 import type { NativeExamDocument, NativeExamItem } from "../../../api/examWorkspace";
 import type { ExamWorkspaceReadinessReason } from "./examWorkspaceItemReadiness";
-import { examWorkspaceReadinessCopy } from "./examWorkspaceItemReadiness";
 import { examWorkspacePromptExcerpt, examWorkspaceTypeLabel } from "./examWorkspaceRows";
 import { examWorkspaceUnits } from "./examWorkspaceStructure";
 import { bodyText } from "./examWorkspaceRichText";
@@ -52,9 +51,6 @@ export type ExamWorkspaceParentEntry = {
 
 export type ExamWorkspaceListEntry = ExamWorkspaceItemEntry | ExamWorkspaceParentEntry;
 
-/** One question's problem for the export menu: "Fråga 4a: Poäng saknas." */
-export type ExamWorkspaceBlockerEntry = { itemId: string; label: string; reason: string };
-
 const SHORT_PROBLEM: Record<ExamWorkspaceReadinessReason, string> = {
   criteria_on_wrong_kind: "kriterier på fel frågetyp",
   criteria_points_mismatch: "kriterierna ger en annan summa",
@@ -72,6 +68,11 @@ const SHORT_PROBLEM: Record<ExamWorkspaceReadinessReason, string> = {
   partial_gap_key: "lucka utan svar",
   unbuilt_question: "kunde inte konverteras",
 };
+
+/** The problem in a few words, as the list row and the export menu name it. */
+export function examWorkspaceShortProblem(reason: ExamWorkspaceReadinessReason): string {
+  return SHORT_PROBLEM[reason];
+}
 
 const LETTERS = "abcdefghijklmnopqrstuvwxyz";
 
@@ -145,26 +146,6 @@ export function examWorkspaceListEntries(
     });
   });
   return entries;
-}
-
-/** Every question's problems, client readiness first, then what the server added. */
-export function examWorkspaceBlockerEntries(
-  entries: ExamWorkspaceListEntry[],
-  readinessByItemId: Record<string, ExamWorkspaceReadinessReason[]>,
-  serverBlockersByItemId: Record<string, string[]>,
-): ExamWorkspaceBlockerEntry[] {
-  return entries.flatMap((entry) => {
-    if (entry.kind !== "item") {
-      return [];
-    }
-    const reasons = (readinessByItemId[entry.id] ?? []).map(examWorkspaceReadinessCopy);
-    for (const copy of serverBlockersByItemId[entry.id] ?? []) {
-      if (!reasons.includes(copy)) {
-        reasons.push(copy);
-      }
-    }
-    return reasons.map((reason) => ({ itemId: entry.id, label: entry.label, reason }));
-  });
 }
 
 /** The question total; a parent's points are its deluppgifter's. */

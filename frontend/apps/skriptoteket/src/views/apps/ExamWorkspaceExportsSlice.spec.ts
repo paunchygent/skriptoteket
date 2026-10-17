@@ -6,11 +6,14 @@
  *   revision and the Swedish per-question mapping of the server export gate.
  *
  * Expected behavior:
- *   The header's Exportera menu and the Exportera drawer call the server for
- *   every target even when the client believes questions still need review:
- *   the server gate decides. A 422 with `blockers` lists Swedish per-question
- *   copy in the menu and the drawer; a new saved version clears it. Unsaved
- *   edits disable exports because files are built from the saved version. A
+ *   Whatever stops the export is a red "Kan inte exporteras ännu" row per
+ *   question before any click, in the list's words, and disables every
+ *   format; a row's in-place fix (Godkänn, Markera som granskad, Ta bort
+ *   tomma, Ta bort rubrikformat) clears it, and the formats enable when the
+ *   last row is gone. A format click saves unsaved changes first and exports
+ *   the version just saved; a failed save exports nothing. The server's 422
+ *   stays the final check: its rows hold until the teacher changes that
+ *   question. A 409 reads the latest version in. A
  *   created file is reported inline (menu and drawer), never as a success
  *   toast; failures and warnings stay toasts. A successful QTI export also
  *   lists what Exam.net loses on import for the exported revision; edits,
@@ -28,6 +31,7 @@ import type {
   ExamWorkspaceExportChecklistResponse,
 } from "../../api/examWorkspace";
 import { useToastStore } from "../../stores/toast";
+import { plainBody } from "./exam-workspace/examWorkspaceRichText";
 import {
   buildFreeTextItem,
   buildResponse,
@@ -283,61 +287,99 @@ describe("ExamWorkspaceView export slice", () => {
     });
   }
 
-  it("asks the server even when the client sees items that still need review", async () => {
+  it("blocks every format before the click and enables them when the last in-place fix clears the panel", async () => {
     apiMocks.downloadExamWorkspaceExport.mockResolvedValue({
       blob: new Blob(["zip"]),
       contentType: "application/zip",
       filename: null,
     });
+    apiMocks.saveExamWorkspaceDocument.mockResolvedValue(exportableResponse({ version: 2 }));
     importDefaultFixture();
     const wrapper = await mountImported();
 
     await openMenu(wrapper);
-    expect(requirePage("exam-workspace-export-blockers").text()).toContain(
-      "Kontrollera innan du exporterar",
-    );
-    expect(requirePage("exam-workspace-export-blockers").text()).not.toContain(
-      "Kan inte exporteras ännu",
-    );
-    // Client guidance is a warning, not an error.
-    expect(requirePage("exam-workspace-export-blockers").classes()).toContain("xw-mblock--warn");
-    expect(requirePage("exam-workspace-export-blockers").text()).toContain(
-      "Fråga 3: Facitförslaget är inte godkänt.",
-    );
-    expect(requirePage("exam-workspace-export-blockers").text()).toContain(
-      "Fråga 4: Facitförslaget är inte godkänt.",
-    );
-    expect(menuFormatDisabled("qti")).toBeUndefined();
+    expect(requirePage("exam-workspace-export-blockers").text()).toContain("Kan inte exporteras ännu");
+    expect(requirePage("exam-workspace-blocker-item_003").text()).toBe("Fråga 3: facit ej granskat");
+    expect(requirePage("exam-workspace-blocker-item_004").text()).toBe("Fråga 4: facit ej granskat");
+    for (const target of ["qti", "pdf", "docx"]) {
+      expect(menuFormatDisabled(target)).toBe("true");
+      expect(requirePage(`exam-workspace-export-save-${target}`).attributes("disabled")).toBeDefined();
+    }
     await requirePage("exam-workspace-export-qti").trigger("click");
     await flushPromises();
+    expect(apiMocks.downloadExamWorkspaceExport).not.toHaveBeenCalled();
 
-    expect(apiMocks.downloadExamWorkspaceExport).toHaveBeenCalledTimes(1);
-    expect(apiMocks.downloadExamWorkspaceExport).toHaveBeenCalledWith("lineage-1", "qti", 1);
-    expect(downloadMocks.triggerBrowserDownload).toHaveBeenCalledWith(
-      expect.any(Blob),
-      "prov-qti.zip",
+    expect(requirePage("exam-workspace-blocker-fix-item_003").text()).toBe("Godkänn");
+    await requirePage("exam-workspace-blocker-fix-item_003").trigger("click");
+    await flushPromises();
+    // The fix keeps the menu open; the next row stays and still blocks.
+    expect(page("exam-workspace-blocker-item_003")).toBeNull();
+    expect(menuFormatDisabled("qti")).toBe("true");
+    await requirePage("exam-workspace-blocker-fix-item_004").trigger("click");
+    await flushPromises();
+
+    expect(page("exam-workspace-export-blockers")).toBeNull();
+    expect(menuFormatDisabled("qti")).toBeUndefined();
+    // One click on the enabled format saves the approvals and exports that version.
+    await requirePage("exam-workspace-export-qti").trigger("click");
+    await flushPromises();
+    expect(apiMocks.saveExamWorkspaceDocument).toHaveBeenCalledTimes(1);
+    const saved = apiMocks.saveExamWorkspaceDocument.mock.calls[0]![1].document;
+    for (const itemId of ["item_003", "item_004"]) {
+      expect(saved.items.find((item: { item_id: string }) => item.item_id === itemId).answer_key.origin)
+        .toBe("reviewed_advisory");
+    }
+    expect(apiMocks.downloadExamWorkspaceExport).toHaveBeenCalledWith("lineage-1", "qti", 2);
+    expect(apiMocks.saveExamWorkspaceDocument.mock.invocationCallOrder[0]!).toBeLessThan(
+      apiMocks.downloadExamWorkspaceExport.mock.invocationCallOrder[0]!,
     );
+    expect(requirePage("exam-workspace-export-menu-result").text()).toBe("QTI-paketet är skapat.");
   });
 
-  it("keeps every format enabled and reaching the server while only client reasons are listed", async () => {
-    apiMocks.downloadExamWorkspaceExport.mockResolvedValue({
-      blob: new Blob(["file"]),
-      contentType: "application/octet-stream",
-      filename: null,
+  it("removes question 2's empty choice in place, and its row leads to that choice", async () => {
+    apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
+      const response = exportableResponse({ conversion: succeededConversion, version: 1 });
+      for (const document of [response.document, response.saved_document]) {
+        document.items = document.items.map((item) =>
+          item.item_id === "item_002"
+            ? { ...item, choices: [...item.choices, { body: plainBody(" "), choice_id: "choice_004" }] }
+            : item,
+        );
+      }
+      apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(response);
+      return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null,
+        document_revision: null, questions_total: 0, questions_done: 0, units: [] };
     });
+    const wrapper = await mountImported();
+
+    await openMenu(wrapper);
+    expect(requirePage("exam-workspace-blocker-item_002").text()).toBe("Fråga 2: tomt svarsalternativ");
+    await requirePage("exam-workspace-blocker-item_002").trigger("click");
+    await flushPromises();
+    expect(document.activeElement?.getAttribute("data-test")).toBe("exam-workspace-choice-text-choice_004");
+
+    await openMenu(wrapper);
+    expect(requirePage("exam-workspace-blocker-fix-item_002").text()).toBe("Ta bort tomma");
+    await requirePage("exam-workspace-blocker-fix-item_002").trigger("click");
+    await flushPromises();
+
+    expect(page("exam-workspace-export-blockers")).toBeNull();
+    expect(menuFormatDisabled("qti")).toBeUndefined();
+    expect(wrapper.find('[data-test="exam-workspace-choice-text-choice_004"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="exam-workspace-choice-text-choice_003"]').exists()).toBe(true);
+  });
+
+  it("leads a row to its question and focuses the field that holds the problem", async () => {
     importDefaultFixture();
     const wrapper = await mountImported();
 
-    for (const target of ["qti", "pdf", "docx"] as const) {
-      await exportFromMenu(wrapper, target);
-    }
+    await openMenu(wrapper);
+    await requirePage("exam-workspace-blocker-item_004").trigger("click");
+    await flushPromises();
 
-    expect(apiMocks.downloadExamWorkspaceExport.mock.calls).toEqual([
-      ["lineage-1", "qti", 1],
-      ["lineage-1", "pdf", 1],
-      ["lineage-1", "docx", 1],
-    ]);
-    expect(downloadMocks.triggerBrowserDownload).toHaveBeenCalledTimes(3);
+    expect(page("exam-workspace-export-menu")).toBeNull();
+    expect(wrapper.get('[data-test="exam-workspace-row-item_004"]').attributes("aria-selected")).toBe("true");
+    expect(document.activeElement?.getAttribute("data-test")).toBe("exam-workspace-review");
   });
 
   it("maps 422 export blockers to Swedish copy per blocked question in the drawer and menu", async () => {
@@ -362,39 +404,32 @@ describe("ExamWorkspaceView export slice", () => {
 
     expect(downloadMocks.triggerBrowserDownload).not.toHaveBeenCalled();
     expect(useToastStore().warning).toHaveBeenCalledWith(
-      "Filen kan inte skapas ännu. Åtgärda de markerade frågorna och spara.",
+      "Filen kan inte skapas ännu. Åtgärda frågorna i listan och exportera igen.",
     );
-    await openExportDrawer(wrapper);
-    const item3 = wrapper
-      .findAll('[data-test="exam-workspace-blocker-item_003"]')
-      .map((entry) => entry.text())
-      .join(" ");
-    expect(item3).toContain("Frågan kunde inte konverteras och visas som i källan.");
-    expect(item3).toContain("Facitförslaget är inte godkänt.");
-    expect(wrapper.get('[data-test="exam-workspace-blocker-item_005"]').text()).toContain(
-      "Poäng saknas.",
-    );
-    expect(wrapper.find('[data-test="exam-workspace-blocker-item_001"]').exists()).toBe(false);
-    expect(wrapper.get('[data-test="exam-workspace-export-notice"]').text()).toContain(
-      "Åtgärda de markerade frågorna",
-    );
-    // The same refusal blocks every format in the menu and lists the questions there.
-    await openMenu(wrapper);
-    expect(requirePage("exam-workspace-export-blockers").text()).toContain("Kan inte exporteras ännu");
-    expect(requirePage("exam-workspace-export-blockers").classes()).not.toContain("xw-mblock--warn");
-    expect(requirePage("exam-workspace-export-blockers").text()).not.toContain(
-      "Kontrollera innan du exporterar",
-    );
-    expect(requirePage("exam-workspace-export-blockers").text()).toContain("Fråga 5: Poäng saknas.");
+    // The menu stays open on the refusal: one row per question, its first reason.
+    expect(pageAll("exam-workspace-blocker-item_003").map((row) => row.text())).toEqual([
+      "Fråga 3: kunde inte konverteras",
+    ]);
+    expect(requirePage("exam-workspace-blocker-fix-item_003").text()).toBe("Markera som granskad");
+    expect(requirePage("exam-workspace-blocker-item_004").text()).toBe("Fråga 4: kunde inte konverteras");
+    expect(requirePage("exam-workspace-blocker-item_005").text()).toBe("Fråga 5: poäng saknas");
+    expect(page("exam-workspace-blocker-fix-item_005")).toBeNull();
+    expect(page("exam-workspace-blocker-item_001")).toBeNull();
     for (const target of ["qti", "pdf", "docx"]) {
       expect(menuFormatDisabled(target)).toBe("true");
     }
+    await openExportDrawer(wrapper);
+    expect(wrapper.get('[data-test="exam-workspace-blocker-item_005"]').text()).toBe("Fråga 5: poäng saknas");
+    expect(wrapper.get('[data-test="exam-workspace-export-run"]').attributes("disabled")).toBeDefined();
+    expect(wrapper.get('[data-test="exam-workspace-export-notice"]').text()).toBe(
+      "Filen kan inte skapas ännu. Åtgärda frågorna i listan och exportera igen.",
+    );
   });
 
   it.each([
-    ["missing_answer_key", "Frågan saknar facit. Fyll i facit eller låt AI föreslå ett."],
-    ["inline_choice_option_heading", "Rubrikformat är inte tillåtet i rullistealternativ."],
-  ])("maps %s to Swedish copy on the blocked question", async (reason, copy) => {
+    ["missing_answer_key", "Fråga 2: facit saknas", "Föreslå facit"],
+    ["inline_choice_option_heading", "Fråga 2: rubrik i rullista", "Ta bort rubrikformat"],
+  ])("names %s in the list's words with its fix on the blocked question", async (reason, row, fix) => {
     apiMocks.downloadExamWorkspaceExport.mockRejectedValue(
       new ApiError({
         code: "VALIDATION_ERROR",
@@ -409,7 +444,8 @@ describe("ExamWorkspaceView export slice", () => {
 
     expect(downloadMocks.triggerBrowserDownload).not.toHaveBeenCalled();
     await openExportDrawer(wrapper);
-    expect(wrapper.get('[data-test="exam-workspace-blocker-item_002"]').text()).toContain(copy);
+    expect(wrapper.get('[data-test="exam-workspace-blocker-item_002"]').text()).toBe(row);
+    expect(wrapper.get('[data-test="exam-workspace-blocker-fix-item_002"]').text()).toBe(fix);
   });
 
   it.each([false, true])(
@@ -437,17 +473,15 @@ describe("ExamWorkspaceView export slice", () => {
       const notice = wrapper.get('[data-test="exam-workspace-export-notice"]').text();
       const blockerText = (itemId: string) =>
         wrapper.findAll(`[data-test="exam-workspace-blocker-${itemId}"]`).map((entry) => entry.text()).join(" ");
-      for (const [itemId, copy] of [
-        ["item_002", "Ett svarsalternativ saknar text."],
-        ["item_003", "Ett alternativ i en lucka saknar text."],
-        ["item_004", "En del i matchningen saknar text."],
+      for (const [itemId, row] of [
+        ["item_002", "Fråga 2: tomt svarsalternativ"],
+        ["item_003", "Fråga 3: tomt alternativ i rullista"],
+        ["item_004", "Fråga 4: tom rad eller kategori"],
       ]) {
-        expect(blockerText(itemId)).toContain(copy);
+        // One row per question, even when the server gave it two reasons.
+        expect(blockerText(itemId)).toBe(row);
       }
-      if (mixed) {
-        expect(blockerText("item_002")).toContain("Frågan saknar facit. Fyll i facit eller låt AI föreslå ett.");
-      }
-      expect(notice).toBe("Filen kan inte skapas ännu. Åtgärda de markerade frågorna och spara.");
+      expect(notice).toBe("Filen kan inte skapas ännu. Åtgärda frågorna i listan och exportera igen.");
       expect(notice).not.toContain("Försök igen");
       expect(useToastStore().warning).toHaveBeenCalledWith(notice);
       expect(useToastStore().failure).not.toHaveBeenCalled();
@@ -472,6 +506,8 @@ describe("ExamWorkspaceView export slice", () => {
 
     await selectItemRow(wrapper, "item_005");
     await wrapper.find('[data-test="exam-workspace-item-points-input"]').setValue("3");
+    // Changing the refused question drops its refusal, so the next export can ask again.
+    expect(wrapper.find('[data-test="exam-workspace-blocker-item_005"]').exists()).toBe(false);
     await saveDocument(wrapper);
 
     expect(wrapper.find('[data-test="exam-workspace-blocker-item_005"]').exists()).toBe(false);
@@ -500,48 +536,98 @@ describe("ExamWorkspaceView export slice", () => {
     expect(downloadMocks.triggerBrowserDownload).not.toHaveBeenCalled();
   });
 
-  it("points to the reload control when a save elsewhere moved the saved exam", async () => {
+  it("reads the latest version in when a save elsewhere moved the saved exam", async () => {
     apiMocks.downloadExamWorkspaceExport.mockRejectedValue(
       new ApiError({ code: "CONFLICT", message: "stale", status: 409 }),
     );
     const wrapper = await mountImported();
+    apiMocks.getExamWorkspaceDocument.mockResolvedValue(exportableResponse({ version: 3 }));
 
     await exportFromMenu(wrapper, "qti");
 
+    expect(apiMocks.getExamWorkspaceDocument).toHaveBeenLastCalledWith("lineage-1");
     await openExportDrawer(wrapper);
-    const notice = wrapper.get('[data-test="exam-workspace-export-notice"]').text();
-    expect(notice).toContain("Läs in på nytt");
-    expect(notice).not.toContain("Försök igen");
+    expect(wrapper.get('[data-test="exam-workspace-export-notice"]').text()).toBe(
+      "Provet hade sparats någon annanstans. Den senaste versionen är inläst. Exportera igen.",
+    );
   });
 
-  it("disables exports in the menu and the drawer while there are unsaved edits", async () => {
+  it("saves unsaved edits first and exports the version just saved, in one click", async () => {
+    apiMocks.saveExamWorkspaceDocument.mockResolvedValue(exportableResponse({ version: 2 }));
+    apiMocks.downloadExamWorkspaceExport.mockResolvedValue({
+      blob: new Blob(["pdf"]),
+      contentType: "application/pdf",
+      filename: null,
+    });
     const wrapper = await mountImported();
-    await openExportDrawer(wrapper);
-
     await selectItemRow(wrapper, "item_002");
     await wrapper.find('[data-test="exam-workspace-item-points-input"]').setValue("7");
 
-    expect(
-      wrapper.get('[data-test="exam-workspace-export-run"]').attributes("disabled"),
-    ).toBeDefined();
-    expect(wrapper.get('[data-test="exam-workspace-drawer-export"]').text()).toContain(
-      "Spara provet innan du skapar filer.",
-    );
     await openMenu(wrapper);
-    for (const target of ["qti", "pdf", "docx"]) {
-      expect(menuFormatDisabled(target)).toBe("true");
-      expect(
-        requirePage(`exam-workspace-export-save-${target}`).attributes("disabled"),
-      ).toBeDefined();
-    }
-    expect(requirePage("exam-workspace-export-menu").text()).toContain(
-      "Spara provet först. Exporten görs från det sparade provet.",
-    );
-    // A disabled entry must not reach the server.
-    await requirePage("exam-workspace-export-qti").trigger("click");
-    await wrapper.get('[data-test="exam-workspace-export-run"]').trigger("click");
+    expect(menuFormatDisabled("pdf")).toBeUndefined();
+    expect(requirePage("exam-workspace-export-menu").text()).not.toContain("Spara provet först");
+    await requirePage("exam-workspace-export-pdf").trigger("click");
     await flushPromises();
+
+    const saved = apiMocks.saveExamWorkspaceDocument.mock.calls[0]![1].document;
+    expect(saved.items.find((item: { item_id: string }) => item.item_id === "item_002").points).toBe(7);
+    expect(apiMocks.downloadExamWorkspaceExport).toHaveBeenCalledWith("lineage-1", "pdf", 2);
+    expect(wrapper.get('[data-test="exam-workspace-save-state"]').text()).toMatch(/^Sparat /);
+  });
+
+  it("exports a clean exam without saving it again", async () => {
+    apiMocks.downloadExamWorkspaceExport.mockResolvedValue({
+      blob: new Blob(["docx"]),
+      contentType: "application/octet-stream",
+      filename: null,
+    });
+    const wrapper = await mountImported();
+
+    await exportFromMenu(wrapper, "docx");
+
+    expect(apiMocks.saveExamWorkspaceDocument).not.toHaveBeenCalled();
+    expect(apiMocks.downloadExamWorkspaceExport).toHaveBeenCalledWith("lineage-1", "docx", 1);
+  });
+
+  it("exports nothing when the save before it fails, and toasts the save failure", async () => {
+    apiMocks.saveExamWorkspaceDocument.mockRejectedValue(
+      new ApiError({ code: "INTERNAL_ERROR", message: "boom", status: 500 }),
+    );
+    const wrapper = await mountImported();
+    await selectItemRow(wrapper, "item_002");
+    await wrapper.find('[data-test="exam-workspace-item-points-input"]').setValue("7");
+
+    await exportFromMenu(wrapper, "qti");
+
     expect(apiMocks.downloadExamWorkspaceExport).not.toHaveBeenCalled();
+    expect(useToastStore().failure).toHaveBeenCalledTimes(1);
+    expect(useToastStore().failure).toHaveBeenCalledWith("Det gick inte att spara provet. Försök igen.");
+    expect(page("exam-workspace-export-running")).toBeNull();
+    expect(menuFormatDisabled("qti")).toBeUndefined();
+  });
+
+  it("shows the export running on the format and the drawer while the save and the export run", async () => {
+    const save = deferred<ReturnType<typeof exportableResponse>>();
+    apiMocks.saveExamWorkspaceDocument.mockReturnValue(save.promise);
+    const download = deferred<{ blob: Blob; contentType: string; filename: null }>();
+    apiMocks.downloadExamWorkspaceExport.mockReturnValue(download.promise);
+    const wrapper = await mountImported();
+    await selectItemRow(wrapper, "item_002");
+    await wrapper.find('[data-test="exam-workspace-item-points-input"]').setValue("7");
+
+    await exportFromMenu(wrapper, "qti");
+    // Saving: the format already shows the export running, and no format starts another.
+    expect(requirePage("exam-workspace-export-running").text()).toBe("Exporterar …");
+    expect(requirePage("exam-workspace-export-qti").attributes("aria-busy")).toBe("true");
+    expect(menuFormatDisabled("pdf")).toBe("true");
+    save.resolve(exportableResponse({ version: 2 }));
+    await flushPromises();
+    expect(apiMocks.downloadExamWorkspaceExport).toHaveBeenCalledWith("lineage-1", "qti", 2);
+    expect(requirePage("exam-workspace-export-running").text()).toBe("Exporterar …");
+    download.resolve({ blob: new Blob(["zip"]), contentType: "application/zip", filename: null });
+    await flushPromises();
+    expect(page("exam-workspace-export-running")).toBeNull();
+    expect(requirePage("exam-workspace-export-menu-result").text()).toBe("QTI-paketet är skapat.");
   });
 });
 

@@ -6,8 +6,7 @@
  *   The exam's title and state above every question: the title opens
  *   Provets uppgifter; the meta line shows the save state (Sparar …,
  *   Osparat, Sparat <time>), the course and the total points. The toolbar
- *   holds Öppna, Spara with Spara som and Läs in på nytt (the last saved
- *   version, dropping unsaved changes), Exportera, AI facit for every
+ *   holds Öppna, Spara with Spara som, Exportera, AI facit for every
  *   question without one, and Ångra and Gör om with their shortcuts.
  *   On a phone the title block and Spara move into the shell's top bar
  *   (`#app-topbar-page-slot`), whose remaining row keeps the other tools.
@@ -48,7 +47,6 @@ const emit = defineEmits<{
   toggleOpen: [];
   save: [];
   saveAs: [];
-  reload: [];
   suggestAll: [];
   undo: [];
   redo: [];
@@ -59,12 +57,10 @@ const saveKeys = mac ? "Meta+S" : "Control+S";
 const saveMenuTrigger = ref<HTMLButtonElement | null>(null);
 const saveMenuOpen = ref(false);
 
-function chooseSave(action: "save" | "saveAs" | "reload"): void {
+function chooseSave(action: "save" | "saveAs"): void {
   saveMenuOpen.value = false;
   if (action === "saveAs") {
     emit("saveAs");
-  } else if (action === "reload") {
-    emit("reload");
   } else {
     emit("save");
   }
@@ -178,20 +174,6 @@ const DIRTY_TITLE = "Ändringarna sparas automatiskt som utkast. Spara skriver �
           meaning="copy"
           :size="20"
         /><span class="xw-grow">Spara som …</span>
-      </button>
-      <div class="xw-mdiv" />
-      <button
-        type="button"
-        class="xw-mi"
-        role="menuitem"
-        title="Hämtar den senast sparade versionen och tar bort osparade ändringar"
-        data-test="exam-workspace-reload"
-        @click="chooseSave('reload')"
-      >
-        <UiGlyph
-          meaning="retry"
-          :size="20"
-        /><span class="xw-mi__stack"><span>Läs in på nytt</span><span class="xw-mi__sub">Den sparade versionen, utan osparade ändringar</span></span>
       </button>
     </ExamWorkspaceMenu>
 

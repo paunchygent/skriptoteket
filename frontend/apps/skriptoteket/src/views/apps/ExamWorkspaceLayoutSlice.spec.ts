@@ -166,14 +166,16 @@ describe("ExamWorkspaceView frame layout", () => {
 
     expect(wrapper.find('[data-test="exam-workspace-drawer-export"]').exists()).toBe(true);
     const blockers = wrapper.get('[data-test="exam-workspace-export-drawer-blockers"]');
-    expect(blockers.text()).toContain("Fråga 3");
-    expect(blockers.text()).toContain("Facitförslaget är inte godkänt.");
+    expect(wrapper.get('[data-test="exam-workspace-blocker-item_003"]').text()).toBe("Fråga 3: facit ej granskat");
+    expect(blockers.text()).toContain("Kan inte exporteras ännu");
     // Question 4 only needs review, which never stops an export (D1).
     expect(wrapper.find('[data-test="exam-workspace-blocker-item_004"]').exists()).toBe(false);
 
     await wrapper.get('[data-test="exam-workspace-blocker-item_003"]').trigger("click");
 
+    await flushPromises();
     expect(editorText(wrapper)).toContain("Fråga 3");
+    expect(document.activeElement?.getAttribute("data-test")).toBe("exam-workspace-review");
     // On desktop the export drawer stays docked while the teacher fixes the question.
     expect(wrapper.find('[data-test="exam-workspace-drawer-export"]').exists()).toBe(true);
   });
