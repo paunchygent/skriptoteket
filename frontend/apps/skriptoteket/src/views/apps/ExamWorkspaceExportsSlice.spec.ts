@@ -223,6 +223,49 @@ describe("ExamWorkspaceView export slice", () => {
     ).toContain(copy);
   });
 
+  it.each([false, true])(
+    "keeps all empty-content blockers actionable in a 422 (mixed: %s)", async (mixed) => {
+      apiMocks.downloadExamWorkspaceExport.mockRejectedValue(
+        new ApiError({
+          code: "VALIDATION_ERROR",
+          details: {
+            blockers: [
+              { item_id: "item_002", reason: "empty_choice" },
+              { item_id: "item_003", reason: "empty_gap_option" },
+              { item_id: "item_004", reason: "empty_match_entry" },
+              ...(mixed ? [{ item_id: "item_002", reason: "missing_answer_key" }] : []),
+            ],
+          },
+          message: "blocked",
+          status: 422,
+        }),
+      );
+      const { wrapper } = await mountExamWorkspace();
+      await importFixtureDocument(wrapper);
+      await wrapper.find('[data-test="exam-workspace-export-qti"]').trigger("click");
+      await flushPromises();
+
+      for (const [itemId, copy] of [
+        ["item_002", "Ett svarsalternativ saknar text."],
+        ["item_003", "Ett alternativ i en lucka saknar text."],
+        ["item_004", "En del i matchningen saknar text."],
+      ]) {
+        expect(wrapper.find(`[data-test="exam-workspace-item-blockers-${itemId}"]`).text())
+          .toContain(copy);
+      }
+      if (mixed) {
+        expect(wrapper.find('[data-test="exam-workspace-item-blockers-item_002"]').text())
+          .toContain("Frågan saknar facit. Fyll i facit eller låt AI föreslå ett.");
+      }
+      const notice = wrapper.find('[data-test="exam-workspace-export-notice"]').text();
+      expect(notice).toBe("Filen kan inte skapas ännu. Åtgärda de markerade frågorna och spara.");
+      expect(notice).not.toContain("Försök igen");
+      expect(useToastStore().warning).toHaveBeenCalledWith(notice);
+      expect(useToastStore().failure).not.toHaveBeenCalled();
+      expect(downloadMocks.triggerBrowserDownload).not.toHaveBeenCalled();
+    },
+  );
+
   it("clears export blockers when a new version is saved", async () => {
     apiMocks.downloadExamWorkspaceExport.mockRejectedValue(
       new ApiError({

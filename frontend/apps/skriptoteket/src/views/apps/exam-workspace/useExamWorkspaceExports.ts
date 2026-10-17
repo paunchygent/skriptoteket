@@ -39,6 +39,9 @@ export const EXAM_WORKSPACE_EXPORT_BLOCKER_COPY: Record<ExamWorkspaceExportBlock
     machine_proposed_key_unreviewed: "Facitförslaget är inte godkänt.",
     missing_answer_key: "Frågan saknar facit. Fyll i facit eller låt AI föreslå ett.",
     missing_points: "Poäng saknas.",
+    empty_choice: "Ett svarsalternativ saknar text.",
+    empty_gap_option: "Ett alternativ i en lucka saknar text.",
+    empty_match_entry: "En del i matchningen saknar text.",
     inline_choice_option_heading: "Rubrikformat är inte tillåtet i rullistealternativ.",
     unbuilt_question:
       "Frågan kunde inte konverteras och visas som i källan. Kontrollera den och markera den som granskad.",

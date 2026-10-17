@@ -221,7 +221,7 @@ describe("examWorkspaceItemReadiness", () => {
     },
   );
 
-  it("reports a choice without text, and accepts whitespace as the server does", () => {
+  it("reports choices without exportable text, including whitespace", () => {
     const empty = buildChoiceItem({
       choices: [
         { choice_id: "choice_001", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Syre" }] }] },
@@ -235,9 +235,77 @@ describe("examWorkspaceItemReadiness", () => {
       ],
     });
 
-    expect(examWorkspaceItemReadiness(empty)).toEqual(["empty_choice_text"]);
-    expect(examWorkspaceItemReadiness(blank)).toEqual([]);
+    expect(examWorkspaceItemReadiness(empty)).toEqual(["empty_choice"]);
+    expect(examWorkspaceItemReadiness(blank)).toEqual(["empty_choice"]);
   });
+});
+
+describe("export-only content readiness", () => {
+  function dropdown(): NativeExamItem {
+    return buildChoiceItem({
+      kind: "inline_choice",
+      choices: [],
+      answer_key: { origin: "teacher_authored", correct_choice_ids: [], match_pairs: [] },
+      body: [{ heading_level: null, segments: [{ kind: "gap", gap_id: "gap_001" }] }],
+      gaps: [buildGap("gap_001", [], {
+        correct_option_id: "option_001",
+        options: [
+          { choice_id: "option_001", body: plainBody("Syre") },
+          { choice_id: "option_002", body: plainBody("Järn") },
+        ],
+      })],
+    });
+  }
+
+  it("blocks a dropdown without a key but accepts the keyed dropdown", () => {
+    const item = dropdown();
+    expect(examWorkspaceItemReadiness(item)).toEqual([]);
+    item.answer_key.origin = "absent";
+    item.gaps[0]!.correct_option_id = null;
+    expect(examWorkspaceItemReadiness(item)).toEqual(["missing_answer_key"]);
+  });
+
+  it("blocks a heading in any paragraph of any dropdown option", () => {
+    const item = dropdown();
+    item.gaps[0]!.options[1]!.body.push({
+      heading_level: 2, segments: [{ kind: "text", marks: [], text: "Rubrik" }],
+    });
+    expect(examWorkspaceItemReadiness(item)).toEqual(["inline_choice_option_heading"]);
+    item.gaps[0]!.options[1]!.body[1]!.heading_level = null;
+    expect(examWorkspaceItemReadiness(item)).toEqual([]);
+  });
+
+  it.each(["", " \n\t "])("blocks a blank dropdown option %j", (text) => {
+    const item = dropdown();
+    item.gaps[0]!.options[1]!.body = plainBody(text);
+    expect(examWorkspaceItemReadiness(item)).toEqual(["empty_gap_option"]);
+    expect(examWorkspaceReadinessByItemId([item])[item.item_id]).toEqual([
+      "Ett alternativ i en lucka saknar text.",
+    ]);
+  });
+
+  it.each(["single_choice", "multiple_response"] as const)(
+    "blocks whitespace-only %s choices but accepts text after a blank paragraph", (kind) => {
+      const item = buildChoiceItem({ kind });
+      item.choices[1]!.body = plainBody(" \n\t ");
+      expect(examWorkspaceItemReadiness(item)).toEqual(["empty_choice"]);
+      item.choices[1]!.body.push(...plainBody(" Järn "));
+      expect(examWorkspaceItemReadiness(item)).toEqual([]);
+    },
+  );
+
+  it.each(["match_left", "match_right"] as const)(
+    "blocks whitespace-only entries in %s but accepts nonblank text", (side) => {
+      const item = buildMatchingItem();
+      item[side][0]!.body = plainBody(" \n\t ");
+      expect(examWorkspaceItemReadiness(item)).toEqual(["empty_match_entry"]);
+      expect(examWorkspaceReadinessByItemId([item])[item.item_id]).toEqual([
+        "En del i matchningen saknar text.",
+      ]);
+      item[side][0]!.body.push(...plainBody(" Text "));
+      expect(examWorkspaceItemReadiness(item)).toEqual([]);
+    },
+  );
 });
 
 describe("examWorkspaceReadinessByItemId", () => {
@@ -328,7 +396,7 @@ describe("examWorkspaceItemReadiness for matching items", () => {
           entry.right_id === "right_003" ? { ...entry, body: plainBody("") } : entry,
         ),
       }),
-    ).toEqual(["empty_match_text"]);
+    ).toEqual(["empty_match_entry"]);
   });
 
   it("maps the incomplete key to its Swedish guidance by item id", () => {
