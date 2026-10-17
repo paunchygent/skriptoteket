@@ -54,47 +54,24 @@
 
 - Plan 2026-10-17 (user decisions G1-G30, lead L1-L9; retained
   `01a1495e-8398-75be-b2da-f0b08ba11afa` evidence/planning/decisions-2026-10-17.md).
-  HANDOFF 2026-10-17 evening: the Mac Opus parent (root
-  `01a149c9-5bc7-7713-ba64-12dee0470bdd`) stopped for an account switch; the next
-  parent re-enters that root. Rules: walk only exam-converter changes, once per
-  wave; restyle and repairs close on approved review plus unit tests.
-  State: main `ca4c50cb` holds wave 2 (39-04-06, 39-04-10, 39-06-04, 39-06-05,
-  39-07-01, 39-07-02, 39-08-03, 39-08-04), closeout repairs `19ef5504`, and 39-06-07
-  (`4341e0b3`, review-1 approved). Staging rebuilt healthy at `ca4c50cb`.
-  Closeout reviews on bd4d706d (`evidence/reviews/closeout-bd4d706d/`): 39-04-10 and
-  39-08-04 approved; 39-04-06 and 39-08-03 gaps fixed in 19ef5504; proof gaps open
-  for 39-06-04/05 (dropdown and retyped question through Exam.net), 39-07-01,
-  39-07-02 (suggestions API), 40-04-02 (home, tool page, Klassrumskartan, public
-  frame, focus at 375/768/1440) and 39-06-07 (heading-only delete, undo,
-  with-children, last child, export to Exam.net).
-  39-07-01 live proof (`evidence/staging-proof-ca4c50cb/out/`): AK7 `.dxe` import
-  202, job succeeded 8/8, document read 200; QTI/PDF/DOCX exports 422. Every DXE item
-  is `review_required` with `parse_origin: deterministic`, so `is_unbuilt_question`
-  blocks export even for free-text items whose only follow-up is manual marking;
-  keyed items also lack keys. Next: decide whether that is a mapper defect (contract:
-  only unbuilt questions block) and repair it, then finish the proofs via
-  suggestions plus review. API writes need header `X-CSRF-Token` from cookie
-  `huleedu_csrf`. Then closeout frontmatter (`agent-overseer:approved-review-closeout`)
-  for the wave-2 tasks, 40-04-02 and 39-06-07; U-4 check closes 39-04-08 and 39-06-03.
-  Running children (agent-mcp, host hemma): 39-06-06 approved (review-1 no findings, retained
-  `evidence/reviews/TASK-SKRIPT-39-06-06/review-1.md`) and on main `d60740ef`;
-  `in_progress` until the staging proof. DXE export-block fixer Sol `efc35c9e` on
-  `codex/task-skript-39-07-01-remote` adds `NativeParseOrigin.SOURCE_FALLBACK`
-  inside v6 (drawer label "Kunde inte konverteras. Visas som i provfilen."); next:
-  merge, rebuild staging, run the proofs. Opus
-  `8445f6e1` (ended, result `evidence/results/8445f6e1-*.json`) 40-04-03 workspace on `...-40-04-03-remote` (b249f704 frame; 10879f00 spec
-  port; a1d89539 amber guidance; checks green; screenshots r2 at 375/768/1440 in its
-  `evidence/40-04-03-screens/r2/`; lead `f3523358` failed r2 on seven prototype
-  divergences (`evidence/40-04-03-screens/lead-check-r2.md`); builder `f6049157`
-  still running on them; then review). It
-  confirmed the DXE export block independently. Desktop session
-  "Profile: choosing a course adds and saves it" repairs Mina kurser (choosing adds,
-  each change saves). Next lanes: 39-06-02 Exam.net probe, 39-07-03. Follow-ups:
-  trash cleanup deletes payload files before its row commit; `migrated_db` swallows
-  migration-thread errors; backend for the export filename field.
+  Owner: Mac Opus parent, root `01a149c9-5bc7-7713-ba64-12dee0470bdd`. Rules: walk
+  only exam-converter changes, once per wave; restyle and repairs close on approved
+  review plus unit tests. Wave 2 is closed (Recent).
+  TASK-SKRIPT-40-04-03 (workspace UI) on `codex/task-skript-40-04-03-remote` (Hemma):
+  r3 builds the red blocker panel and save-then-export (`697ac00b`); builder
+  `53c3f973` applied the rulings (no header banner, one plain line per level, no
+  "Godkänn alla"; `72282832`). Independent review `0ff04626` (Pi) running. Next:
+  admit findings, merge to main, rebuild staging, walk the editor once.
+  DOCX import run-to-run variation (printed_total 36 vs null; 36 p vs 21 p for the
+  same file): investigation running (`evidence/import-variability/report.md`);
+  user asked for findings before any fix.
+  Next lanes: 39-06-02 Exam.net ordering/dropdown probe, 39-07-03 retire old
+  converter routes. Stories 39-04, 39-06, 39-07 await story closeout.
+  Follow-ups: trash cleanup deletes payload files before its row commit;
+  `migrated_db` swallows migration-thread errors; backend for the export filename
+  field; W14 dropdown option editor unbuilt.
   Hemma Opus lead `3b164d53`: 40-03-01..09 and 08-36-02 `done`; 40-02-01 tranche 1 on
   main 761b1b59 (`in_progress`: held/frozen-screen wrappers and lucide removal open).
-  Hemma Claude `st-39-08` closed 39-08-03, 39-08-04 and ST-SKRIPT-39-08 (Recent).
 
 - Historical 2026-09-05 workspace planning (EPIC-SKRIPT-39 E8-E12, ADR-SKRIPT-0091,
   ST-SKRIPT-39-04): `.codex/long-term-memory/entries/session-2026-09-05-epic-39-handoff-compaction.md`.
@@ -127,6 +104,12 @@
 - Completed REP/ST-38 outcomes and evidence are in the 2026-09-05 archive above.
 
 ## Recent
+
+- Wave 2 closed 2026-10-17 at `agent-overseer:approved-review-closeout`:
+  39-04-06, 39-04-08, 39-04-10, 39-06-03, 39-06-04, 39-06-05, 39-06-07, 39-07-01,
+  39-07-02, 40-04-02 (`baf1e2e7`) and 39-06-06 on tests by user ruling (`69c0610b`).
+  Staging and Exam.net proof at main `1f9e4367` (exam 5345261):
+  `01a149c9.../evidence/staging-proof-1f9e4367/proof.md`.
 
 - [TASK-SKRIPT-40-03-10](docs/backlog/tasks/task-skript-40-03-10-adopt-huleedu-integrated-0-1-30-and-make-delete-and-edit-actions-glyph-only-across-skriptoteket.md)
   `done` 2026-10-17 (approved review): huleedu-integrated 0.1.30, delete and
