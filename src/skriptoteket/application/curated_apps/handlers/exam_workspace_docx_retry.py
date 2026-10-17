@@ -56,6 +56,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeExamAsset,
     NativeExamDocument,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_import_record import (
+    NativeExamRetryStep,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
 )
@@ -76,6 +79,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_text import (
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
+    NativeParseOrigin,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode, validation_error
 from skriptoteket.domain.identity.models import User
@@ -195,6 +199,9 @@ class RetryExamWorkspaceItemHandler:
                         reason=" ".join(missing_pictures),
                     ),
                     draft_item,
+                    original=saved_item,
+                    chosen_kind=request.kind,
+                    converted=False,
                 ),
             )
         if not self._enabled:
@@ -211,6 +218,9 @@ class RetryExamWorkspaceItemHandler:
                         reason=_DISABLED_REASON,
                     ),
                     draft_item,
+                    original=saved_item,
+                    chosen_kind=request.kind,
+                    converted=False,
                 ),
             )
         replacement = await self._reconvert(
@@ -282,9 +292,17 @@ class RetryExamWorkspaceItemHandler:
                 payloads=payloads,
                 reason=_review_reason(state, outcome),
             )
-            return _placed(review, draft_item)
+            return _placed(
+                review, draft_item, original=saved_item, chosen_kind=kind, converted=False
+            )
         replacement = replacement_item(original=saved_item, produced=produced)
-        replacement = _placed(replacement, draft_item)
+        replacement = _placed(
+            replacement,
+            draft_item,
+            original=saved_item,
+            chosen_kind=kind,
+            converted=replacement.review.parse_origin is NativeParseOrigin.LLM_PARSED,
+        )
         try:
             return NativeExamItem.model_validate(replacement.model_dump())
         except ValidationError:
@@ -295,7 +313,9 @@ class RetryExamWorkspaceItemHandler:
                 payloads=payloads,
                 reason=_INVALID_REASON,
             )
-            return _placed(review, draft_item)
+            return _placed(
+                review, draft_item, original=saved_item, chosen_kind=kind, converted=False
+            )
 
 
 def _missing_source_assets(
@@ -325,6 +345,28 @@ def _review_reason(state: DocxBuildState, outcome: BatchOutcome) -> str:
     return next(iter(state.reasons.values()), _DEFAULT_FAILURE_REASON)
 
 
-def _placed(item: NativeExamItem, draft_item: NativeExamItem) -> NativeExamItem:
-    """The replacement sits where the item it replaces sits in the editor's copy."""
-    return item.model_copy(update={"sequence": draft_item.sequence})
+def _placed(
+    item: NativeExamItem,
+    draft_item: NativeExamItem,
+    *,
+    original: NativeExamItem,
+    chosen_kind: NativeExamItemKind,
+    converted: bool,
+) -> NativeExamItem:
+    """Keep saved import history, append this attempt, and use only the draft's place."""
+    record = original.import_record
+    if record is not None:
+        record = record.model_copy(
+            update={
+                "steps": (
+                    *record.steps,
+                    NativeExamRetryStep(
+                        reason="teacher_request",
+                        from_kind=original.kind,
+                        chosen_kind=chosen_kind,
+                        outcome="converted" if converted else "review_required",
+                    ),
+                )
+            }
+        )
+    return item.model_copy(update={"sequence": draft_item.sequence, "import_record": record})

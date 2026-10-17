@@ -79,6 +79,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_batches import (
     question_families,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_header import apply_header
+from skriptoteket.domain.curated_apps.exam_workspace.docx_import_records import (
+    with_docx_import_records,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import (
     ExamManifest,
     question_source_anchors,
@@ -425,7 +428,11 @@ class DocxConversionPipeline:
             label_kinds=run.label_kinds,
         )
         document, assets_by_id = with_source_assets(
-            document=with_retry_sources(provisional.document, sources),
+            document=with_docx_import_records(
+                with_retry_sources(provisional.document, sources),
+                chunks=run.job.chunks,
+                events=tuple(trial.events),
+            ),
             chunks=run.job.chunks,
             assets_by_id=provisional.assets_by_id,
         )
@@ -463,7 +470,11 @@ class DocxConversionPipeline:
             label_kinds=run.label_kinds,
         )
         document, assets_by_id = with_source_assets(
-            document=with_retry_sources(result.document, sources),
+            document=with_docx_import_records(
+                with_retry_sources(result.document, sources),
+                chunks=run.job.chunks,
+                events=result.events,
+            ),
             chunks=run.job.chunks,
             assets_by_id=result.assets_by_id,
         )
