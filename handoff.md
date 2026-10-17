@@ -94,8 +94,7 @@
   migration-thread errors; backend for the export filename field.
   Hemma Opus lead `3b164d53`: 40-03-01..09 and 08-36-02 `done`; 40-02-01 tranche 1 on
   main 761b1b59 (`in_progress`: held/frozen-screen wrappers and lucide removal open).
-  Hemma Claude `st-39-08` owns the 39-08-03 and 39-08-04 closeout (worktree
-  `skriptoteket-st-skript-39-08`, retained `01a14b79-b714-7f76-bcba-845884716cae`).
+  Hemma Claude `st-39-08` closed 39-08-03 and 39-08-04 (see Recent).
 
 - Historical 2026-09-05 workspace planning (EPIC-SKRIPT-39 E8-E12, ADR-SKRIPT-0091,
   ST-SKRIPT-39-04): `.codex/long-term-memory/entries/session-2026-09-05-epic-39-handoff-compaction.md`.
@@ -159,11 +158,12 @@
   host-dependent repair6 timing test is deleted; main `23fc5cf0`; reviews in
   `01a146ac.../evidence/`.
 
-- [TASK-SKRIPT-39-08-01](docs/backlog/tasks/task-skript-39-08-01-course-picker-at-import-and-exam-metadata-drawer-for-course-title-and-file-name.md)
-  `done` 2026-10-16 (user closure gate): course picker at import, metadata
-  drawer, course line in exports; main `255eef88`, headless staging walk
-  `01a145b6.../evidence/staging-walk-808d8f11/WALK.md`; worktree retired.
-  Exam.net import of the walk's QTI is left to the user.
+- [ST-SKRIPT-39-08](docs/backlog/stories/st-skript-39-08-course-and-tag-metadata-for-saved-exams.md)
+  tasks 1-5 `done`; story stays `ready` until its closure check. 39-08-01
+  user closure 2026-10-16 (walk `01a145b6.../evidence/staging-walk-808d8f11/`);
+  39-08-03 and 39-08-04 approved-review closeout 2026-10-17 (reviews in
+  `01a149c9.../evidence/reviews/`, focused reruns 55 and 15 passed at
+  `44cd0c6b` in `01a14b79.../evidence/`).
 
 - [ST-SKRIPT-39-09](docs/backlog/stories/st-skript-39-09-qti-3-0-native-export-for-exam-net.md)
   `done` 2026-10-16: QTI 3.0 for both lanes plus Exam.net routes, tasks 1-9;

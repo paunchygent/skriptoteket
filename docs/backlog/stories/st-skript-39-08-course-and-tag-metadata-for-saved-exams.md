@@ -88,14 +88,15 @@ filer page (TASK-SKRIPT-37-05-04).
 2. TASK-SKRIPT-39-08-02: own courses in a `Mina kurser` section on the
    profile page, with its UI, and a course API that returns the registered
    courses first; `Lägg till i mina kurser` in the workspace moves to
-   ST-SKRIPT-40-04 (ready).
+   ST-SKRIPT-40-04 (done 2026-10-17, approved review closeout).
 3. TASK-SKRIPT-39-08-03: central-content snapshot, content route, Decisions
    classifier at import and the tag-suggestion enrichment job; no model course
    suggestion; the tags checklist and `Föreslå innehåll` in the metadata drawer
-   move to ST-SKRIPT-40-04 (ready).
+   move to ST-SKRIPT-40-04 (done 2026-10-17, approved review closeout).
 4. TASK-SKRIPT-39-08-04: exam index backend with one row per exam, the order by
    course and date, the `Utan kurs` group and the saved sort preference; the
-   grouped list lives in ST-SKRIPT-40-04's `Öppna` drawer (ready).
+   grouped list lives in ST-SKRIPT-40-04's `Öppna` drawer (done 2026-10-17,
+   approved review closeout).
 5. TASK-SKRIPT-39-08-05: the `Mina kurser` section adds a chosen course at
    once and saves each change at once, with no `+` button, no Spara button and
    no success toast (done 2026-10-17, approved review plus unit tests).

@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-16'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-17'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Implementation review approved (review-2, retained 01a149c9-5bc7-7713-ba64-12dee0470bdd evidence/reviews/39-08-03-review-2.md). Closeout review at main bd4d706d (Pi c2153ae4, evidence/reviews/TASK-SKRIPT-39-08-03/closeout-review.md) requested one medium change, F1: the catalog-builder test still expected the pre-tagging source URLs; repaired in 19ef5504. No high finding, so no rereview under the user ruling the closeout review cites. Focused selection rerun at main 44cd0c6b: 55 passed (retained 01a14b79-b714-7f76-bcba-845884716cae evidence/39-08-03-focused.log). No frontend tests and no staging walk by contract (G2/G4).'
 task_kind: story
 acceptance_criteria:
   - An exam whose course is known when the import runs is saved with central-content tags suggested in its header, each citing the questions that cover it; a GET route serves one course's content items; an enrichment job over a saved exam runs the same suggestion for its course and stores the result on the job row; the document save persists the header tags; a classifier failure never blocks a conversion; the tags checklist and Föreslå innehåll in the metadata drawer are built by ST-SKRIPT-40-04

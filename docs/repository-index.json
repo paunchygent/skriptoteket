@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "5e8da48a18ad52ef4438782b777695ddd7aaf84050a606a8a72575fcac970f16",
+  "source_set_digest": "84e84f2f8f525ca9753848197a597981ab37da73e7430bd637bab5c66c2aea40",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5522,7 +5522,7 @@
       "type": "task",
       "title": "Central-content tags suggested by a Decisions classifier at import and from the drawer",
       "path": "docs/backlog/tasks/task-skript-39-08-03-central-content-tags-suggested-by-a-decisions-classifier-at-import-and-from-the-drawer.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-08",
       "owners": [
@@ -5533,7 +5533,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-17",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Implementation review approved (review-2, retained 01a149c9-5bc7-7713-ba64-12dee0470bdd evidence/reviews/39-08-03-review-2.md). Closeout review at main bd4d706d (Pi c2153ae4, evidence/reviews/TASK-SKRIPT-39-08-03/closeout-review.md) requested one medium change, F1: the catalog-builder test still expected the pre-tagging source URLs; repaired in 19ef5504. No high finding, so no rereview under the user ruling the closeout review cites. Focused selection rerun at main 44cd0c6b: 55 passed (retained 01a14b79-b714-7f76-bcba-845884716cae evidence/39-08-03-focused.log). No frontend tests and no staging walk by contract (G2/G4)."
       }
     },
     {
@@ -5541,7 +5545,7 @@
       "type": "task",
       "title": "Exam index backend for saved exams grouped by course and sorted by date",
       "path": "docs/backlog/tasks/task-skript-39-08-04-exam-index-backend-for-saved-exams-grouped-by-course-and-sorted-by-date.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-08",
       "owners": [
@@ -5552,7 +5556,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-17",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Implementation review approved (review-2, retained 01a149c9-5bc7-7713-ba64-12dee0470bdd evidence/reviews/39-08-04-review-2.md). Closeout review approved with no blocking findings at main bd4d706d (Pi c2153ae4, evidence/reviews/TASK-SKRIPT-39-08-04/closeout-review.md). Focused selection incl. real PostgreSQL index and migration tests rerun at main 44cd0c6b: 15 passed, no skips (retained 01a14b79-b714-7f76-bcba-845884716cae evidence/39-08-04-focused.log). No frontend tests and no staging walk by contract (G2/G4)."
       }
     },
     {

@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-16'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-17'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Implementation review approved (review-2, retained 01a149c9-5bc7-7713-ba64-12dee0470bdd evidence/reviews/39-08-04-review-2.md). Closeout review approved with no blocking findings at main bd4d706d (Pi c2153ae4, evidence/reviews/TASK-SKRIPT-39-08-04/closeout-review.md). Focused selection incl. real PostgreSQL index and migration tests rerun at main 44cd0c6b: 15 passed, no skips (retained 01a14b79-b714-7f76-bcba-845884716cae evidence/39-08-04-focused.log). No frontend tests and no staging walk by contract (G2/G4).'
 task_kind: story
 acceptance_criteria:
   - An exam-owned index keeps one row per exam current through save, conversion publish and rename; the saved-exam list endpoint returns the exams either grouped by course (registered courses first, newest saved first within a course, exams without a course last under Utan kurs) or as one flat list newest first, following the teacher's sort preference saved in the backend so it survives another browser; the grouped list and its sort control live in ST-SKRIPT-40-04's Öppna drawer
