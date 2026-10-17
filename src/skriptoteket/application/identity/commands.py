@@ -148,6 +148,20 @@ class UpdateExamCoursesResult(BaseModel):
     profile: UserProfile
 
 
+class UpdateExamListOrderingCommand(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    user_id: UUID
+    ordering: Literal["course", "newest"]
+
+
+class UpdateExamListOrderingResult(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    user: User
+    profile: UserProfile
+
+
 class ChangePasswordCommand(BaseModel):
     model_config = ConfigDict(frozen=True)
 

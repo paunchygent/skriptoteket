@@ -37,6 +37,8 @@ from skriptoteket.application.identity.commands import (
     UpdateClassroomPlannerSettingsResult,
     UpdateExamCoursesCommand,
     UpdateExamCoursesResult,
+    UpdateExamListOrderingCommand,
+    UpdateExamListOrderingResult,
     UpdateProfileCommand,
     UpdateProfileResult,
     ValidateRegistrationCommand,
@@ -91,6 +93,7 @@ ProfileUpdateField = Literal[
     "classroom_planner_grouping_seating_distance_enabled",
     "classroom_planner_tutorial_seen_sections",
     "exam_courses",
+    "exam_list_ordering",
     "updated_at",
 ]
 
@@ -205,6 +208,12 @@ class UpdateClassroomPlannerSettingsHandlerProtocol(Protocol):
         self,
         command: UpdateClassroomPlannerSettingsCommand,
     ) -> UpdateClassroomPlannerSettingsResult: ...
+
+
+class UpdateExamListOrderingHandlerProtocol(Protocol):
+    async def handle(
+        self, command: UpdateExamListOrderingCommand
+    ) -> UpdateExamListOrderingResult: ...
 
 
 class UpdateExamCoursesHandlerProtocol(Protocol):

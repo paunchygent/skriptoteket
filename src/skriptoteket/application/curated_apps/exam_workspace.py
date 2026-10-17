@@ -8,6 +8,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field
 
 from skriptoteket.domain.curated_apps.exam_workspace.exam_course_catalog import ExamCourse
+from skriptoteket.domain.curated_apps.exam_workspace.exam_index import ExamListOrdering
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
 )
@@ -30,6 +31,8 @@ class ExamWorkspaceDocumentSummary(BaseModel):
     vault_file_id: UUID
     name: str
     saved_at: datetime
+    course_key: str | None
+    title: str
 
 
 class ExamWorkspaceConversionUnit(BaseModel):
@@ -65,6 +68,7 @@ class ExamWorkspaceConversionStatus(BaseModel):
     questions_total: int
     questions_done: int
     units: tuple[ExamWorkspaceConversionUnit, ...]
+    summary: ExamWorkspaceDocumentSummary | None
 
 
 class ExamWorkspaceDocumentResponse(BaseModel):
@@ -86,12 +90,22 @@ class ExamWorkspaceDocumentResponse(BaseModel):
     conversion: ExamWorkspaceConversionStatus | None
 
 
+class ExamWorkspaceDocumentGroup(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    course_key: str | None
+    course_name: str
+    documents: tuple[ExamWorkspaceDocumentSummary, ...]
+
+
 class ExamWorkspaceDocumentListResponse(BaseModel):
     """The actor's workspace documents, one head version per lineage."""
 
     model_config = ConfigDict(frozen=True)
 
-    documents: tuple[ExamWorkspaceDocumentSummary, ...] = ()
+    ordering: ExamListOrdering
+    documents: tuple[ExamWorkspaceDocumentSummary, ...]
+    groups: tuple[ExamWorkspaceDocumentGroup, ...]
 
 
 class ExamCourseCatalogResponse(BaseModel):

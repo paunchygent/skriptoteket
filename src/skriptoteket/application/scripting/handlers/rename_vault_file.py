@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import PurePosixPath
 
+from skriptoteket.application.curated_apps.exam_workspace import ExamWorkspaceDocumentSummary
 from skriptoteket.application.curated_apps.handlers.exam_workspace_document_store import (
     EXAM_WORKSPACE_SOURCE_ARTIFACT_PREFIX,
 )
@@ -10,16 +11,22 @@ from skriptoteket.application.scripting.vault import RenameVaultFileCommand, Ren
 from skriptoteket.domain.errors import not_found, validation_error
 from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.scripting.vault_names import rename_vault_filename
+from skriptoteket.protocols.exam_index import ExamIndexRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from skriptoteket.protocols.vault import RenameVaultFileHandlerProtocol, VaultFileRepositoryProtocol
 
 
 class RenameVaultFileHandler(RenameVaultFileHandlerProtocol):
     def __init__(
-        self, *, uow: UnitOfWorkProtocol, vault_files: VaultFileRepositoryProtocol
+        self,
+        *,
+        uow: UnitOfWorkProtocol,
+        vault_files: VaultFileRepositoryProtocol,
+        index: ExamIndexRepositoryProtocol,
     ) -> None:
         self._uow = uow
         self._vault_files = vault_files
+        self._index = index
 
     async def handle(
         self, *, actor: User, command: RenameVaultFileCommand
@@ -66,7 +73,28 @@ class RenameVaultFileHandler(RenameVaultFileHandlerProtocol):
                 if target.document_lineage_id is not None and target.export_format is None
                 else [active]
             )
+            exam = (
+                None
+                if target.document_lineage_id is None
+                else await self._index.get(
+                    owner_user_id=actor.id, lineage_id=target.document_lineage_id
+                )
+            )
+            summary = (
+                None
+                if exam is None
+                else ExamWorkspaceDocumentSummary(
+                    lineage_id=exam.lineage_id,
+                    version=exam.version,
+                    vault_file_id=exam.head_vault_file_id,
+                    name=exam.name,
+                    saved_at=exam.saved_at,
+                    title=exam.title,
+                    course_key=exam.course_key,
+                )
+            )
         return RenameVaultFileResult(
             file=build_vault_file_info(vault_file=active),
             renamed_file_ids=tuple(version.id for version in renamed),
+            exam_summary=summary,
         )

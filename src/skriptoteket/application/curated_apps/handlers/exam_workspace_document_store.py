@@ -11,10 +11,16 @@ from skriptoteket.application.curated_apps.exam_workspace_history import (
     ExamWorkspaceHistoryStep,
 )
 from skriptoteket.config import Settings
+from skriptoteket.domain.curated_apps.exam_workspace.exam_course_catalog import (
+    load_exam_course_catalog,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.exam_index import ExamIndexEntry
 from skriptoteket.domain.errors import DomainError, ErrorCode, validation_error
 from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.scripting.vault import VaultFile, VaultFileSourceKind, VaultUsage
 from skriptoteket.protocols.clock import ClockProtocol
+from skriptoteket.protocols.exam_index import ExamIndexRepositoryProtocol
+from skriptoteket.protocols.exam_workspace import ExamWorkspaceContainerCodecProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from skriptoteket.protocols.vault import (
     VaultFileRepositoryProtocol,
@@ -37,6 +43,8 @@ class ExamWorkspaceDocumentStore:
         uow: UnitOfWorkProtocol,
         clock: ClockProtocol,
         settings: Settings,
+        index: ExamIndexRepositoryProtocol,
+        codec: ExamWorkspaceContainerCodecProtocol,
     ) -> None:
         self._vault_files = vault_files
         self._vault_usage = vault_usage
@@ -44,6 +52,8 @@ class ExamWorkspaceDocumentStore:
         self._uow = uow
         self._clock = clock
         self._settings = settings
+        self._index = index
+        self._codec = codec
         self._rollback_frames: list[list[tuple[UUID, UUID, bytes | None]]] = []
         self._payload_guards: set[tuple[UUID, UUID]] = set()
         self._guard_stack = AsyncExitStack()
@@ -103,6 +113,18 @@ class ExamWorkspaceDocumentStore:
         preserve_editor_position: bool = False,
     ) -> VaultFile:
         self.validate_size(content)
+        document = (
+            None if export_format is not None else self._codec.parse(content=content).document
+        )
+        if document is not None:
+            if document.document_id != lineage_id or document.revision != version:
+                raise validation_error("Dokumentets identitet eller version matchar inte filen.")
+            if document.header.course is not None and document.header.course.key not in {
+                course.key for course in load_exam_course_catalog().courses
+            }:
+                raise validation_error(
+                    "Välj en kurs ur kurslistan.", details={"field": "course_key"}
+                )
         actual_bytes = len(content)
         previous_content: bytes | None = None
         now = self._clock.now()
@@ -172,6 +194,19 @@ class ExamWorkspaceDocumentStore:
                         export_format=export_format,
                         document_saved_at=now,
                         created_at=now,
+                    )
+                )
+            if document is not None:
+                await self._index.upsert(
+                    entry=ExamIndexEntry(
+                        owner_user_id=actor.id,
+                        lineage_id=lineage_id,
+                        course_key=None
+                        if document.header.course is None
+                        else document.header.course.key,
+                        title=document.title,
+                        saved_at=now,
+                        head_vault_file_id=vault_file.id,
                     )
                 )
             if export_format is None and head is None:

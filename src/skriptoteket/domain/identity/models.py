@@ -149,6 +149,7 @@ class UserProfile(BaseModel):
     classroom_planner_grouping_seating_distance_enabled: bool | None = None
     classroom_planner_tutorial_seen_sections: list[str] | None = None
     exam_courses: ExamCourses = Field(default_factory=ExamCourses)
+    exam_list_ordering: Literal["course", "newest"] = "course"
     locale: str = "sv-SE"
     created_at: datetime
     updated_at: datetime
