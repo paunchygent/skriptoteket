@@ -18,8 +18,9 @@
  *     the step list.
  *   - Spara and the structural commands call `flush` first, so the server's
  *     newest step is the editor's document.
- *   - Reports a failed undo or redo through the shared toast store; that is
- *     the only toast history shows (user ruling 2026-10-17).
+ *   - Reports a failed undo or redo through the shared toast store, and an
+ *     autosave the server could not store; a draft the save rules refuse
+ *     shows its reason inline in the editor instead, never as a toast.
  */
 
 import { computed, onScopeDispose, ref, shallowRef, watch } from "vue";
@@ -34,6 +35,7 @@ import {
 import type { NativeExamDocument } from "../../../api/examWorkspace";
 import { useToast } from "../../../composables/useToast";
 import { sameDocument } from "./examWorkspaceConversionMerge";
+import { examWorkspaceSaveRefusalCopy } from "./examWorkspaceItemSaveRules";
 
 export const EXAM_WORKSPACE_TYPING_PAUSE_MS = 900;
 
@@ -190,7 +192,11 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
       if (isApiError(error) && error.status === 409) {
         await deps.onConflict();
       } else if (isApiError(error) && error.status === 422) {
-        toast.failure(error.message);
+        // A draft the save rules refuse already shows why inline in the editor; the
+        // server's request-shape rejection carries no Swedish copy of its own.
+        if (examWorkspaceSaveRefusalCopy(document.items) === null) {
+          toast.failure(error.code === "VALIDATION_ERROR" ? AUTOSAVE_FAILURE_COPY : error.message);
+        }
       } else {
         toast.failure(AUTOSAVE_FAILURE_COPY);
       }

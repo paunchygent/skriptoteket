@@ -198,7 +198,7 @@ watch(
 
 <template>
   <div
-    class="grid gap-1.5"
+    class="mb-4 grid gap-1.5"
     role="group"
     :aria-labelledby="labelId"
     data-test="exam-workspace-body-editor"

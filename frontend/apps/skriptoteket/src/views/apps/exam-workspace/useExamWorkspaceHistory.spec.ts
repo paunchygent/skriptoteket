@@ -8,7 +8,9 @@
  *   edit first so it can be redone; an edit after undo branches and drops the
  *   redo steps; the 11th step prunes the oldest; a read that echoes an older
  *   cursor neither reloads nor breaks the next write; a failed history load is
- *   retried before the next write; only a failed undo or redo shows a toast.
+ *   retried before the next write; a failed undo or redo shows a toast, and a
+ *   rejected autosave shows Swedish copy only when the editor does not already
+ *   say why inline.
  */
 
 import { flushPromises } from "@vue/test-utils";
@@ -16,6 +18,7 @@ import { createPinia, setActivePinia } from "pinia";
 import { effectScope, ref } from "vue";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { ApiError } from "../../../api/client";
 import type { NativeExamDocument } from "../../../api/examWorkspace";
 import { useToastStore } from "../../../stores/toast";
 import { buildParentDocument } from "./examWorkspaceParentDocument.specSupport";
@@ -245,6 +248,41 @@ describe("autosaved undo steps", () => {
 
     expect(toasts.toasts.map((toast) => toast.message)).toEqual([
       "Det gick inte att ångra. Försök igen.",
+    ]);
+  });
+
+  function validationError(): ApiError {
+    return new ApiError({
+      code: "VALIDATION_ERROR", message: "Validation error", details: [], correlationId: null, status: 422,
+    });
+  }
+
+  it("shows no toast when the server rejects a draft the editor already explains inline", async () => {
+    const { history, workspaceDocument } = setup();
+    await flushPromises();
+    const document = workspaceDocument.value!;
+    workspaceDocument.value = {
+      ...document,
+      items: document.items.map((item, index) => (index === 0 ? { ...item, points: -1 } : item)),
+    };
+    apiMocks.storeExamWorkspaceUndoStep.mockRejectedValueOnce(validationError());
+
+    history.noteEdit(true);
+    await history.flush(false);
+
+    expect(useToastStore().toasts).toEqual([]);
+  });
+
+  it("states a rejected autosave in Swedish, never the server's English shape error", async () => {
+    const { edit, history } = setup();
+    await flushPromises();
+    apiMocks.storeExamWorkspaceUndoStep.mockRejectedValueOnce(validationError());
+
+    edit("one", true);
+    await history.flush(false);
+
+    expect(useToastStore().toasts.map((toast) => toast.message)).toEqual([
+      "Ändringen kunde inte sparas som utkast. Försök igen.",
     ]);
   });
 });
