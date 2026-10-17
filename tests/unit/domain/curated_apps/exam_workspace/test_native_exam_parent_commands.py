@@ -1,6 +1,8 @@
 """Adversarial parent authoring over the real recorded DOCX conversion items."""
 
 import hashlib
+from collections.abc import Callable
+from functools import partial
 
 import pytest
 
@@ -14,18 +16,24 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeExamAsset,
     NativeExamDocument,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document_json import (
+    native_exam_document_json_bytes,
+    parse_native_exam_document,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import parent_points
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent_commands import (
     add_child,
     create_parent,
     delete_child,
+    delete_parent,
+    delete_parent_with_children,
     reorder_children,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
     NativeParseOrigin,
 )
-from skriptoteket.domain.errors import DomainError
+from skriptoteket.domain.errors import DomainError, ErrorCode
 from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders import plain_body
 from tests.unit.domain.curated_apps.exam_workspace.recorded_native_exam_support import (
     parent_over,
@@ -33,10 +41,27 @@ from tests.unit.domain.curated_apps.exam_workspace.recorded_native_exam_support 
     recorded_items,
 )
 
+_DELETE_CASES = [
+    pytest.param(delete_parent, False, id="heading-only"),
+    pytest.param(delete_parent_with_children, False, id="cascade"),
+    pytest.param(partial(delete_child, item_id="item_002"), True, id="last-child"),
+]
+
 
 def _exam() -> NativeExamDocument:
     # Keep a converted mixed-kind parent in place while authoring another parent.
     return recorded_document((parent_over("parent_001", "Existing instruction", 2, 3),))
+
+
+def _saved_exam(*, single_child: bool = False) -> NativeExamDocument:
+    # Recorded conversion items, with explicit test grouping, reopened from the saved JSON shape.
+    document = recorded_document(
+        (
+            parent_over("parent_001", "First instruction", *((2,) if single_child else (2, 3, 4))),
+            parent_over("parent_002", "Untouched instruction", 6, 7),
+        )
+    )
+    return parse_native_exam_document(native_exam_document_json_bytes(document))
 
 
 def _check_structure(document: NativeExamDocument) -> None:
@@ -140,10 +165,14 @@ def test_reorder_changes_only_the_requested_parent_and_delete_updates_sum() -> N
     }
     assert parent_points(deleted, deleted.parents[0]) == base.item_by_id("item_002").points
     _check_structure(deleted)
-    with pytest.raises(DomainError) as error:
-        delete_child(deleted, parent_id="parent_001", item_id="item_002")
-    assert error.value.details is not None
-    assert error.value.details["reason"] == "parent_requires_child"
+    last_child_deleted = delete_child(deleted, parent_id="parent_001", item_id="item_002")
+
+    assert last_child_deleted.parents == (base.parents[1],)
+    assert last_child_deleted.parent_of("item_002") is None
+    assert [item.item_id for item in last_child_deleted.items] == [
+        item.item_id for item in base.items if item.item_id not in {"item_002", "item_003"}
+    ]
+    _check_structure(last_child_deleted)
 
 
 @pytest.mark.parametrize(
@@ -164,13 +193,20 @@ def test_reorder_requires_the_exact_permutation_not_merely_known_item_ids(
         reorder_children(base, parent_id="parent_001", item_ids=item_ids)
 
 
-def test_delete_cannot_take_a_standalone_or_another_parents_child() -> None:
-    base = recorded_document(
-        (parent_over("parent_001", "First", 2, 3), parent_over("parent_002", "Second", 5, 6))
-    )
-    for item_id in ("item_001", "item_005"):
-        with pytest.raises(DomainError):
-            delete_child(base, parent_id="parent_001", item_id=item_id)
+@pytest.mark.parametrize("single_child", [False, True], ids=["multiple-children", "last-child"])
+@pytest.mark.parametrize("item_id", ["item_001", "item_006", "item_999", "item_002 "])
+def test_delete_cannot_take_a_standalone_another_parents_child_or_missing_id(
+    item_id: str, single_child: bool
+) -> None:
+    base = _saved_exam(single_child=single_child)
+    original = native_exam_document_json_bytes(base)
+
+    with pytest.raises(DomainError) as error:
+        delete_child(base, parent_id="parent_001", item_id=item_id)
+
+    assert error.value.code is ErrorCode.NOT_FOUND
+    assert error.value.details == {"parent_id": "parent_001", "item_id": item_id}
+    assert native_exam_document_json_bytes(base) == original
 
 
 @pytest.mark.parametrize("shared", [False, True], ids=["last-reference", "shared-instruction"])
@@ -243,3 +279,176 @@ def test_child_delete_prunes_only_removed_citations_and_keeps_selected_tag(origi
     )
     _check_structure(result)
     assert base.header.tags == (tag, orphaned), "The immutable source keeps its citations"
+
+
+def test_delete_heading_keeps_saved_items_at_their_positions_with_unchanged_points() -> None:
+    base = _saved_exam()
+    original = native_exam_document_json_bytes(base)
+    parent = base.parents[0]
+    assert parent.item_ids == ("item_002", "item_003", "item_004")
+    assert base.parent_of("item_001") is None
+    assert base.parent_of("item_005") is None
+
+    result = delete_parent(base, parent_id=parent.parent_id)
+
+    assert result.items == base.items, "Every field, including sequence, content and points, stays"
+    assert all(result.parent_of(item_id) is None for item_id in parent.item_ids)
+    assert result.parents == (base.parents[1],)
+    assert result.header == base.header
+    assert result.document_id == base.document_id
+    assert result.revision == base.revision
+    assert result.title == base.title
+    assert result.origin == base.origin
+    assert native_exam_document_json_bytes(base) == original
+    _check_structure(result)
+
+
+def test_cascade_removes_exactly_the_three_children_and_renumbers_all_survivors() -> None:
+    base = _saved_exam()
+    original = native_exam_document_json_bytes(base)
+
+    result = delete_parent_with_children(base, parent_id="parent_001")
+
+    survivors = [
+        item for item in base.items if item.item_id not in {"item_002", "item_003", "item_004"}
+    ]
+    assert [item.model_dump() for item in result.items] == [
+        dict(item.model_dump(), sequence=sequence)
+        for sequence, item in enumerate(survivors, start=1)
+    ]
+    assert result.parents == (base.parents[1],)
+    assert [result.item_by_id(item_id).sequence for item_id in result.parents[0].item_ids] == [3, 4]
+    assert parent_points(result, result.parents[0]) == parent_points(base, base.parents[1])
+    assert result.document_id == base.document_id
+    assert result.revision == base.revision
+    assert result.header == base.header
+    assert result.origin == base.origin
+    assert native_exam_document_json_bytes(base) == original
+    _check_structure(result)
+
+
+def test_deleting_the_last_child_removes_its_parent_without_changing_other_items_content() -> None:
+    base = _saved_exam(single_child=True)
+    original = native_exam_document_json_bytes(base)
+
+    result = delete_child(base, parent_id="parent_001", item_id="item_002")
+
+    assert result.parents == (base.parents[1],)
+    assert not any(parent.parent_id == "parent_001" for parent in result.parents)
+    assert [item.model_dump() for item in result.items] == [
+        dict(item.model_dump(), sequence=sequence)
+        for sequence, item in enumerate(
+            (item for item in base.items if item.item_id != "item_002"), start=1
+        )
+    ]
+    assert result.item_by_id("item_003").sequence == 2
+    assert result.parent_of("item_003") is None
+    assert native_exam_document_json_bytes(base) == original
+    _check_structure(result)
+
+
+@pytest.mark.parametrize("command", [delete_parent, delete_parent_with_children, delete_child])
+@pytest.mark.parametrize("parent_id", ["parent_999", "item_002", "parent_01", "parent_001 "])
+def test_parent_deletes_require_exact_existing_parent_identity(
+    command: Callable[..., NativeExamDocument], parent_id: str
+) -> None:
+    base = _saved_exam()
+    original = native_exam_document_json_bytes(base)
+    extra = {"item_id": "item_002"} if command is delete_child else {}
+
+    with pytest.raises(DomainError) as error:
+        command(base, parent_id=parent_id, **extra)
+
+    assert error.value.code is ErrorCode.NOT_FOUND
+    assert error.value.details == {"parent_id": parent_id}
+    assert native_exam_document_json_bytes(base) == original
+
+
+@pytest.mark.parametrize(("command", "single_child"), _DELETE_CASES)
+@pytest.mark.parametrize("origin", ["suggested", "teacher"])
+def test_parent_deletes_keep_selected_tags_and_prune_only_deleted_question_citations(
+    command: Callable[..., NativeExamDocument], single_child: bool, origin: str
+) -> None:
+    base = _saved_exam(single_child=single_child)
+    tag = NativeExamContentTag.model_validate(
+        {
+            "id": "course:shared",
+            "text": "Selected content",
+            "origin": origin,
+            "question_ids": ("item_002", "item_003", "item_001", "item_006"),
+        }
+    )
+    only_deleted = tag.model_copy(
+        update={"id": "course:only-deleted", "question_ids": ("item_002",)}
+    )
+    base = base.model_copy(
+        update={
+            "header": base.header.model_copy(
+                update={
+                    "course": ExamCourseChoice(key="course", name="Course"),
+                    "tags": (tag, only_deleted),
+                }
+            )
+        }
+    )
+    base = parse_native_exam_document(native_exam_document_json_bytes(base))
+    original = native_exam_document_json_bytes(base)
+
+    result = command(base, parent_id="parent_001")
+
+    expected_ids = (
+        tag.question_ids
+        if command is delete_parent
+        else (("item_003", "item_001", "item_006") if single_child else ("item_001", "item_006"))
+    )
+    assert result.header == base.header.model_copy(
+        update={
+            "tags": (
+                tag.model_copy(update={"question_ids": expected_ids}),
+                only_deleted.model_copy(
+                    update={
+                        "question_ids": only_deleted.question_ids
+                        if command is delete_parent
+                        else ()
+                    }
+                ),
+            )
+        }
+    )
+    assert native_exam_document_json_bytes(base) == original
+    _check_structure(result)
+
+
+@pytest.mark.parametrize(
+    ("command", "child_count"),
+    [(delete_parent_with_children, 3), (partial(delete_child, item_id="item_001"), 1)],
+)
+def test_deletes_that_would_empty_the_document_raise_named_question_required_error(
+    command: Callable[..., NativeExamDocument],
+    child_count: int,
+) -> None:
+    base = recorded_document(
+        (parent_over("parent_001", "Only instruction", *range(1, child_count + 1)),),
+        items=recorded_items()[:child_count],
+    )
+    original = native_exam_document_json_bytes(base)
+
+    with pytest.raises(DomainError) as error:
+        command(base, parent_id="parent_001")
+
+    assert error.value.code is ErrorCode.VALIDATION_ERROR
+    assert error.value.message == "Provet måste ha minst en fråga."
+    assert error.value.details == {"reason": "exam_requires_question", "parent_id": "parent_001"}
+    assert native_exam_document_json_bytes(base) == original
+
+
+def test_deleting_the_only_heading_still_keeps_the_document_nonempty() -> None:
+    base = recorded_document(
+        (parent_over("parent_001", "Only instruction", 1),), items=recorded_items()[:1]
+    )
+
+    result = delete_parent(base, parent_id="parent_001")
+
+    assert result.parents == ()
+    assert result.items == base.items
+    _check_structure(result)

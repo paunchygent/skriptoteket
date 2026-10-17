@@ -10,6 +10,7 @@ from skriptoteket.application.curated_apps.exam_workspace_history import (
 from skriptoteket.application.curated_apps.exam_workspace_parents import (
     AddExamChildRequest,
     CreateExamParentRequest,
+    ExamWorkspaceDeleteResponse,
     ParentCommandRequest,
     ReorderExamChildrenRequest,
 )
@@ -103,6 +104,62 @@ class ExamWorkspaceParentsHandler:
             ),
         )
 
+    async def _delete(
+        self,
+        *,
+        actor: User,
+        lineage_id: UUID,
+        parent_id: str,
+        request: ParentCommandRequest,
+        operation: Callable[[NativeExamDocument], NativeExamDocument],
+    ) -> ExamWorkspaceDeleteResponse:
+        result = await self._apply(
+            actor=actor,
+            lineage_id=lineage_id,
+            expected_cursor=request.expected_cursor,
+            operation=operation,
+        )
+        removed_parent_id = (
+            None if any(p.parent_id == parent_id for p in result.document.parents) else parent_id
+        )
+        return ExamWorkspaceDeleteResponse(
+            **result.model_dump(), removed_parent_id=removed_parent_id
+        )
+
+    async def delete_parent(
+        self,
+        *,
+        actor: User,
+        lineage_id: UUID,
+        parent_id: str,
+        request: ParentCommandRequest,
+    ) -> ExamWorkspaceDeleteResponse:
+        return await self._delete(
+            actor=actor,
+            lineage_id=lineage_id,
+            parent_id=parent_id,
+            request=request,
+            operation=lambda document: commands.delete_parent(document, parent_id=parent_id),
+        )
+
+    async def delete_parent_with_children(
+        self,
+        *,
+        actor: User,
+        lineage_id: UUID,
+        parent_id: str,
+        request: ParentCommandRequest,
+    ) -> ExamWorkspaceDeleteResponse:
+        return await self._delete(
+            actor=actor,
+            lineage_id=lineage_id,
+            parent_id=parent_id,
+            request=request,
+            operation=lambda document: commands.delete_parent_with_children(
+                document, parent_id=parent_id
+            ),
+        )
+
     async def delete_child(
         self,
         *,
@@ -111,11 +168,12 @@ class ExamWorkspaceParentsHandler:
         parent_id: str,
         item_id: str,
         request: ParentCommandRequest,
-    ) -> ExamWorkspaceDocumentResponse:
-        return await self._apply(
+    ) -> ExamWorkspaceDeleteResponse:
+        return await self._delete(
             actor=actor,
             lineage_id=lineage_id,
-            expected_cursor=request.expected_cursor,
+            parent_id=parent_id,
+            request=request,
             operation=lambda document: commands.delete_child(
                 document, parent_id=parent_id, item_id=item_id
             ),

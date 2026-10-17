@@ -42,7 +42,7 @@ from tests.unit.domain.curated_apps.exam_workspace.recorded_native_exam_support 
     recorded_document,
 )
 
-Command = Literal["create", "add", "delete", "reorder"]
+Command = Literal["create", "add", "delete", "reorder", "delete_parent", "cascade"]
 
 
 def document_response(document: NativeExamDocument) -> ExamWorkspaceDocumentResponse:
@@ -90,6 +90,18 @@ async def _invoke(
             parent_id="parent_001",
             request=AddExamChildRequest(expected_cursor=expected_cursor, child=child, position=1),
         )
+    if command in ("delete_parent", "cascade"):
+        operation = (
+            handler.delete_parent
+            if command == "delete_parent"
+            else handler.delete_parent_with_children
+        )
+        return await operation(
+            actor=actor,
+            lineage_id=document.document_id,
+            parent_id="parent_001",
+            request=ParentCommandRequest(expected_cursor=expected_cursor),
+        )
     if command == "delete":
         return await handler.delete_child(
             actor=actor,
@@ -108,7 +120,9 @@ async def _invoke(
     )
 
 
-@pytest.mark.parametrize("command", ["create", "add", "delete", "reorder"])
+@pytest.mark.parametrize(
+    "command", ["create", "add", "delete", "reorder", "delete_parent", "cascade"]
+)
 async def test_each_command_stores_one_step_without_advancing_file_revision(
     command: Command,
 ) -> None:
@@ -148,11 +162,14 @@ async def test_each_command_stores_one_step_without_advancing_file_revision(
     assert request.document.document_id == document.document_id
     assert request.document.revision == document.revision
     assert request.document.origin == document.origin
-    assert request.document.items != document.items
+    assert request.document != document
+    assert response.saved_document == current.saved_document
     NativeExamDocument.model_validate(request.document.model_dump())
 
 
-@pytest.mark.parametrize("command", ["create", "add", "delete", "reorder"])
+@pytest.mark.parametrize(
+    "command", ["create", "add", "delete", "reorder", "delete_parent", "cascade"]
+)
 async def test_each_command_refuses_stale_cursor_even_when_file_revision_matches(
     command: Command,
 ) -> None:
@@ -176,7 +193,9 @@ async def test_each_command_refuses_stale_cursor_even_when_file_revision_matches
     undo_steps.handle.assert_not_awaited()
 
 
-@pytest.mark.parametrize("command", ["create", "add", "delete", "reorder"])
+@pytest.mark.parametrize(
+    "command", ["create", "add", "delete", "reorder", "delete_parent", "cascade"]
+)
 async def test_atomic_seam_conflict_is_not_overwritten_or_retried(command: Command) -> None:
     actor = make_user()
     document = recorded_document((parent_over("parent_001", "Converted instruction", 2, 3),))
