@@ -82,3 +82,13 @@ unchanged.
 | D3 | A failed save keeps the failure toast with the existing message and restores the last saved list and school forms. Source: parent recommendation, 2026-10-17. |
 | D4 | Saves are serialised: a change made during a save waits and is then saved with the latest value. Source: parent recommendation, 2026-10-17. |
 | D5 | `ExamCourseCombobox` keeps its shared behaviour. Source: parent constraint, 2026-10-17. |
+
+## Progress
+
+2026-10-17: contract recorded on branch `claude/gallant-greider-598de1`
+(worktree `Skriptoteket-worktrees/gallant-greider-598de1`, HEAD `89e9d5a5`).
+Next: rewrite `ProfileExamCourses.vue` (bind the combobox to `null` and add on
+choice; optimistic draft with one serialised save loop; restore the last saved
+value on failure; stop emitting `profileUpdated` and skip prop sync while a
+save runs or waits; `UiDenseStatusPill` status in the old Spara slot), then the
+spec, focused checks, review, and a staging walk coordinated with the parent.
