@@ -77,8 +77,8 @@
   `huleedu_csrf`. Then closeout frontmatter (`agent-overseer:approved-review-closeout`)
   for the wave-2 tasks, 40-04-02 and 39-06-07; U-4 check closes 39-04-08 and 39-06-03.
   Running children (agent-mcp, host hemma): Sol `df1d5c3a` 39-06-06 suggested type on
-  `codex/task-skript-39-06-06-remote` (backend 3627 passed; frontend constructor and
-  fixture junior running; next fresh review, merge, then field to 8445f6e1); Opus
+  `codex/task-skript-39-06-06-remote` (committed `6a9825c4`, 37 files, all gates green,
+  not pushed; next fresh review, merge, then field to 8445f6e1); Opus
   `8445f6e1` 40-04-03 workspace on `...-40-04-03-remote` (b249f704 frame, 4b15a293;
   view slice ports open; send 375/768/1440 screenshots, then review). Desktop session
   "Profile: choosing a course adds and saves it" repairs Mina kurser (choosing adds,
