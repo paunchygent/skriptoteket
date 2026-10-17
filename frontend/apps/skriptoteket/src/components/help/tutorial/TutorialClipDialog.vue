@@ -38,6 +38,7 @@ const titleId = `tutorial-clip-title-${Math.random().toString(36).slice(2, 10)}`
 const currentClipId = ref<string | null>(null);
 const hasStarted = ref(false);
 const hasLoadError = ref(false);
+const overlayRef = ref<HTMLElement | null>(null);
 const panelRef = ref<HTMLElement | null>(null);
 const playButtonRef = ref<HTMLButtonElement | null>(null);
 const videoRef = ref<HTMLVideoElement | null>(null);
@@ -62,6 +63,9 @@ function play(): void {
     return;
   }
   hasStarted.value = true;
+  // The play control unmounts once playback starts; move focus to the video so
+  // keyboard control and the focus ring stay inside the dialog.
+  video.focus({ preventScroll: true });
   const result = video.play() as Promise<void> | undefined;
   result?.catch(() => undefined);
 }
@@ -98,21 +102,27 @@ function handleDocumentKeydown(event: KeyboardEvent): void {
   if (event.key !== "Tab") {
     return;
   }
-  const focusable = focusableElements();
-  if (focusable.length === 0) {
+  // Inside the panel the browser moves focus itself, so a video's native
+  // controls stay reachable; the edge sentinels wrap it. Only focus that has
+  // left the dialog is pulled back here.
+  const active = document.activeElement;
+  if (active instanceof Node && overlayRef.value?.contains(active)) {
     return;
   }
-  const first = focusable[0];
-  const last = focusable[focusable.length - 1];
-  const active = document.activeElement;
-  const isInside = active instanceof Node && panelRef.value?.contains(active);
-  if (event.shiftKey && (active === first || !isInside)) {
-    event.preventDefault();
-    last?.focus();
-  } else if (!event.shiftKey && (active === last || !isInside)) {
-    event.preventDefault();
-    first?.focus();
+  event.preventDefault();
+  if (event.shiftKey) {
+    focusLast();
+  } else {
+    focusFirst();
   }
+}
+
+function focusFirst(): void {
+  focusableElements()[0]?.focus();
+}
+
+function focusLast(): void {
+  focusableElements().at(-1)?.focus();
 }
 
 function activate(): void {
@@ -157,6 +167,7 @@ onBeforeUnmount(() => {
   <Teleport to="body">
     <div
       v-if="open && currentClip"
+      ref="overlayRef"
       class="fixed inset-0 z-50 overflow-y-auto p-4"
       data-test="tutorial-clip-dialog"
     >
@@ -167,6 +178,12 @@ onBeforeUnmount(() => {
         class="planner-overlay-backdrop"
         data-test="tutorial-clip-dialog-backdrop"
         @click="close"
+      />
+      <span
+        tabindex="0"
+        class="sr-only"
+        data-test="tutorial-clip-focus-start"
+        @focus="focusLast"
       />
       <div class="relative flex min-h-full items-center justify-center py-4">
         <section
@@ -206,6 +223,7 @@ onBeforeUnmount(() => {
               ref="videoRef"
               class="absolute inset-0 h-full w-full"
               controls
+              tabindex="0"
               playsinline
               preload="none"
               :poster="resolveTutorialMediaUrl(currentClip.poster)"
@@ -270,6 +288,12 @@ onBeforeUnmount(() => {
           </p>
         </section>
       </div>
+      <span
+        tabindex="0"
+        class="sr-only"
+        data-test="tutorial-clip-focus-end"
+        @focus="focusFirst"
+      />
     </div>
   </Teleport>
 </template>
