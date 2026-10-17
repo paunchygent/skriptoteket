@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-17'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-17'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Implementation review 1 requested changes (F1 high) and review 2 approved at 5fdf1ba0 (retained 01a149c9-5bc7-7713-ba64-12dee0470bdd evidence/reviews/39-07-01-review-{1,2}.md). Closeout review at main bd4d706d (evidence/reviews/TASK-SKRIPT-39-07-01/closeout-review.md) requested two medium changes: F1, source-key wording, repaired in 19ef5504, and G1, the running-app API proof. Repair review 1 on 6b1a2831 (evidence/reviews/TASK-SKRIPT-39-07-01/review-1.md) found the SOURCE_FALLBACK repair 7406e91d sound and requested two medium changes, F1 readiness mirror and F2 export blocker reasons, repaired in 12d36ea5; no high finding, so no rereview. Focused rerun: 88 passed (evidence/reviews/closeout-bd4d706d/39-07-01.log). Running-app API proof at main 1f9e4367: evidence/staging-proof-1f9e4367/proof.md (upload 202, job succeeded 8 of 8, document read, QTI 200 after keys, PDF 200, DOCX 200).'
 task_kind: story
 acceptance_criteria:
   - A teacher's .dxe DigiExam export imports through the workspace API into a saved native exam document with a DigiExam origin, its supported questions, assets and points; questions of unsupported types are not imported and the import notes name each one by number and opening words (EPIC-SKRIPT-39 E12)

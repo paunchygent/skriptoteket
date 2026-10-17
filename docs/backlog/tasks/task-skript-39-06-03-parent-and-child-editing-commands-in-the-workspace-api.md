@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-17'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-17'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Implementation reviews: u2-review-1 requested changes (F1 high), u2-review-2 approved (evidence/reviews/u2-review-2.md; retained 01a149c9-5bc7-7713-ba64-12dee0470bdd); on Hemma evidence/reviews/TASK-SKRIPT-39-06-03/review-4b135859.md approved the U-4 saved-baseline repair bc8c1071e. Focused runs: evidence/u2r-focused.log 74 passed, u1r2-focused.log 41 passed. Exam.net proof of a command-changed exam with parents and children in order: evidence/staging-walk-u2-d9c2b3bb/walk.md (exams 5345126 and 5345127); U-4 re-walk (Spara, export, Exam.net import) at main 1f9e4367: evidence/staging-proof-1f9e4367/proof.md (exam 5345261).'
 task_kind: story
 acceptance_criteria:
   - The workspace API creates a parent, adds, deletes and reorders its children, and keeps sequence numbers and the parent's summed points consistent

@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-13'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-17'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Implementation review U1 requested changes in rounds 1 and 2 (F1-F6) and round 3 approved (evidence/reviews/u1-review-3.md; retained 01a149c9-5bc7-7713-ba64-12dee0470bdd); the parent-command seam review u2-review-2.md is approved. The walk defect U-4 (Spara after a parent command) was repaired in bc8c1071e and approved in review 4b135859 (evidence/reviews/TASK-SKRIPT-39-06-03 on Hemma). Focused runs: evidence/u1-focused.log 120 passed, u1-integration.log 22 passed, u1-lifecycle.log 25 passed, u1r2-focused.log 41 passed, u1r2-integration.log 10 passed; migration test u1-migration-storage-run.log 1 passed. Hemma staging API and Mina filer walk: evidence/staging-walk-u1-u3-1b417b64/walk.md (one file per exam, saved exports nested under it, Spara som, 10 pruned undo steps). U-4 re-walk, Spara after a part command then export then Exam.net import: evidence/staging-proof-1f9e4367/proof.md (revision 11 saved, QTI 200, Exam.net exam 5345261).'
 task_kind: story
 acceptance_criteria:
   - Each exam is one file in Mina filer that Spara overwrites, Spara som creates a separately edited copy under a given name with the questions, course and tags and an empty undo history, each autosave is one of at most 10 undo steps stored on the server that survive reload, reopening and Spara, and each export format is saved as one Mina filer file per exam, replaced on the next save and listed with the exam

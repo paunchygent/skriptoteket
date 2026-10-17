@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-17'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-17'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Implementation review 1 approved with no findings (retained 01a149c9-5bc7-7713-ba64-12dee0470bdd on Hemma worktree skriptoteket-task-skript-39-06-07-remote, evidence/reviews/TASK-SKRIPT-39-06-07/review-1.md, commit 4341e0b3). Proof at main 1f9e4367: evidence/staging-proof-1f9e4367/proof.md (heading-only delete keeps all 24 items and points, history step before the delete keeps the parent, with-children delete, last-child delete returns removed_parent_id, QTI export 200, Exam.net exam 5345261 shows the former Del 2 questions standing alone).'
 task_kind: story
 acceptance_criteria:
   - Deleting an instruction removes only its heading and leaves its questions in place as standalone questions; a separate command deletes the heading with all its questions; deleting an instruction's last question also removes the empty heading; every delete is one undoable step

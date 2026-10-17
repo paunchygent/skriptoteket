@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-13'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-17'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Implementation reviews 1 and 2 requested changes and review 3 approved (F1-F3 cleared; retained 01a149c9-5bc7-7713-ba64-12dee0470bdd evidence/reviews/39-04-06-review-{1,2,3}.md). Closeout review at main bd4d706d (Pi c2153ae4, evidence/reviews/TASK-SKRIPT-39-04-06/closeout-review.md) requested one medium change, F1: DigiExam dropped the original answer-key wording; repaired in 19ef5504. No high finding, so no rereview under the user ruling. Focused rerun at bd4d706d: 40 passed (evidence/reviews/closeout-bd4d706d/39-04-06.log) and the shared repair set 171 passed (evidence/reviews/closeout-bd4d706d/backend-repair-corrected.log). Genuine DOCX import, save, reopen and record read on Hemma staging: evidence/staging-walk-wave2-bd4d706d/walk.md; DigiExam import leg re-proved at main 1f9e4367 (evidence/staging-proof-1f9e4367/proof.md).'
 task_kind: story
 acceptance_criteria:
   - Each imported question in a saved exam carries its original wording from the exam file and a few readable steps (the chosen type, where the answer key came from, any retry), the workspace API returns them for DOCX and DigiExam imports alike, they survive save and reopen, and raw build events stay out of the document and the API

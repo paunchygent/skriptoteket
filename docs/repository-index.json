@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "e3fc0b2167fb831bf6a5c86336cdc9ffe0eaa6500a2fbc15506d05b7e2c7787c",
+  "source_set_digest": "5dff0a77342641d469782d8b4d6b26e32184840a785aa9776eb4c6e0a1daf7ec",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4874,7 +4874,7 @@
       "type": "task",
       "title": "Send each converted question's original wording and build steps to the exam workspace",
       "path": "docs/backlog/tasks/task-skript-39-04-06-send-each-converted-question-s-original-wording-and-build-steps-to-the-exam-workspace.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-04",
       "owners": [
@@ -4885,7 +4885,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-17",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Implementation reviews 1 and 2 requested changes and review 3 approved (F1-F3 cleared; retained 01a149c9-5bc7-7713-ba64-12dee0470bdd evidence/reviews/39-04-06-review-{1,2,3}.md). Closeout review at main bd4d706d (Pi c2153ae4, evidence/reviews/TASK-SKRIPT-39-04-06/closeout-review.md) requested one medium change, F1: DigiExam dropped the original answer-key wording; repaired in 19ef5504. No high finding, so no rereview under the user ruling. Focused rerun at bd4d706d: 40 passed (evidence/reviews/closeout-bd4d706d/39-04-06.log) and the shared repair set 171 passed (evidence/reviews/closeout-bd4d706d/backend-repair-corrected.log). Genuine DOCX import, save, reopen and record read on Hemma staging: evidence/staging-walk-wave2-bd4d706d/walk.md; DigiExam import leg re-proved at main 1f9e4367 (evidence/staging-proof-1f9e4367/proof.md)."
       }
     },
     {
@@ -4914,7 +4918,7 @@
       "type": "task",
       "title": "One file per exam with Spara, Spara som and server-stored undo steps, and exports saved in Mina filer",
       "path": "docs/backlog/tasks/task-skript-39-04-08-one-file-per-exam-with-spara-spara-som-and-server-stored-undo-steps-and-exports-saved-in-mina-filer.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-04",
       "owners": [
@@ -4925,7 +4929,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-17",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Implementation review U1 requested changes in rounds 1 and 2 (F1-F6) and round 3 approved (evidence/reviews/u1-review-3.md; retained 01a149c9-5bc7-7713-ba64-12dee0470bdd); the parent-command seam review u2-review-2.md is approved. The walk defect U-4 (Spara after a parent command) was repaired in bc8c1071e and approved in review 4b135859 (evidence/reviews/TASK-SKRIPT-39-06-03 on Hemma). Focused runs: evidence/u1-focused.log 120 passed, u1-integration.log 22 passed, u1-lifecycle.log 25 passed, u1r2-focused.log 41 passed, u1r2-integration.log 10 passed; migration test u1-migration-storage-run.log 1 passed. Hemma staging API and Mina filer walk: evidence/staging-walk-u1-u3-1b417b64/walk.md (one file per exam, saved exports nested under it, Spara som, 10 pruned undo steps). U-4 re-walk, Spara after a part command then export then Exam.net import: evidence/staging-proof-1f9e4367/proof.md (revision 11 saved, QTI 200, Exam.net exam 5345261)."
       }
     },
     {
@@ -4956,7 +4964,7 @@
       "type": "task",
       "title": "A Mina filer file restored from the trash is never deleted by the expiry cleanup that selected it",
       "path": "docs/backlog/tasks/task-skript-39-04-10-a-mina-filer-file-restored-from-the-trash-is-never-deleted-by-the-expiry-cleanup-that-selected-it.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-04",
       "owners": [
@@ -4967,7 +4975,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-17",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Closeout review at main bd4d706d approved (Pi c2153ae4, retained 01a149c9-5bc7-7713-ba64-12dee0470bdd evidence/reviews/TASK-SKRIPT-39-04-10/closeout-review.md); implementation reviews 39-04-10-review-1 and review-2 approved (repair cf796321). Focused rerun with real PostgreSQL in both orders: 30 passed (evidence/reviews/closeout-bd4d706d/39-04-10.log). No browser or Exam.net proof by contract."
       }
     },
     {
@@ -5327,7 +5339,7 @@
       "type": "task",
       "title": "Parent and child editing commands in the workspace API",
       "path": "docs/backlog/tasks/task-skript-39-06-03-parent-and-child-editing-commands-in-the-workspace-api.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-06",
       "owners": [
@@ -5338,7 +5350,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-17",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Implementation reviews: u2-review-1 requested changes (F1 high), u2-review-2 approved (evidence/reviews/u2-review-2.md; retained 01a149c9-5bc7-7713-ba64-12dee0470bdd); on Hemma evidence/reviews/TASK-SKRIPT-39-06-03/review-4b135859.md approved the U-4 saved-baseline repair bc8c1071e. Focused runs: evidence/u2r-focused.log 74 passed, u1r2-focused.log 41 passed. Exam.net proof of a command-changed exam with parents and children in order: evidence/staging-walk-u2-d9c2b3bb/walk.md (exams 5345126 and 5345127); U-4 re-walk (Spara, export, Exam.net import) at main 1f9e4367: evidence/staging-proof-1f9e4367/proof.md (exam 5345261)."
       }
     },
     {
@@ -5346,7 +5362,7 @@
       "type": "task",
       "title": "Dropdown Lucktext question kind with per-gap options and its QTI writer",
       "path": "docs/backlog/tasks/task-skript-39-06-04-dropdown-lucktext-question-kind-with-per-gap-options-and-its-qti-writer.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-06",
       "owners": [
@@ -5357,7 +5373,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-17",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Implementation review 1 requested changes (F1 high, F2 medium) and review 2 approved with none remaining (retained 01a149c9-5bc7-7713-ba64-12dee0470bdd evidence/reviews/39-06-04-review-{1,2}.md). Closeout review at main bd4d706d (evidence/reviews/TASK-SKRIPT-39-06-04/closeout-review.md) requested one medium change, G1: the Exam.net proof; no high finding. Focused rerun: 53 passed (evidence/reviews/closeout-bd4d706d/39-06-04.log). G1 resolved at main 1f9e4367: evidence/staging-proof-1f9e4367/proof.md (item 016 changed to dropdown Lucktext with three gaps keyed R, A, B, saved, exported, imported as Exam.net exam 5345261; screenshots evidence/staging-proof-1f9e4367/examnet-5345261/01-editor-q2-gaps.jpg, 02-preview-q2-dropdowns-q3-typed.jpg and 03-preview-q2-RAB-3of3.jpg show each list, key and 3 of 3 points)."
       }
     },
     {
@@ -5365,7 +5385,7 @@
       "type": "task",
       "title": "Change a question's type, keeping what fits and reporting what is dropped",
       "path": "docs/backlog/tasks/task-skript-39-06-05-change-a-question-s-type-keeping-what-fits-and-reporting-what-is-dropped.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-06",
       "owners": [
@@ -5376,7 +5396,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-17",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Implementation review 1 requested changes (F1 high, F2 medium) and review 2 approved at repair dabffe8c (retained 01a149c9-5bc7-7713-ba64-12dee0470bdd evidence/reviews/39-06-05-review-{1,2}.md). Closeout review at main bd4d706d (evidence/reviews/TASK-SKRIPT-39-06-05/closeout-review.md) requested one medium change, G1: the changed-question Exam.net proof; no high finding. Focused rerun incl. 16 undo combinations: 141 passed (evidence/reviews/closeout-bd4d706d/39-06-05.log). G1 resolved at main 1f9e4367: evidence/staging-proof-1f9e4367/proof.md (item_001 single choice to multiple response and item_016 gap fill to dropdown, undo step restores the previous kind, Exam.net exam 5345261, screenshot 04-preview-q1a-checkboxes.jpg)."
       }
     },
     {
@@ -5403,7 +5427,7 @@
       "type": "task",
       "title": "Delete an instruction in the workspace API: heading only by default, heading with its questions as a separate command",
       "path": "docs/backlog/tasks/task-skript-39-06-07-delete-an-instruction-in-the-workspace-api-heading-only-by-default-heading-with-its-questions-as-a-separate-command.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-06",
       "owners": [
@@ -5414,7 +5438,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-17",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Implementation review 1 approved with no findings (retained 01a149c9-5bc7-7713-ba64-12dee0470bdd on Hemma worktree skriptoteket-task-skript-39-06-07-remote, evidence/reviews/TASK-SKRIPT-39-06-07/review-1.md, commit 4341e0b3). Proof at main 1f9e4367: evidence/staging-proof-1f9e4367/proof.md (heading-only delete keeps all 24 items and points, history step before the delete keeps the parent, with-children delete, last-child delete returns removed_parent_id, QTI export 200, Exam.net exam 5345261 shows the former Del 2 questions standing alone)."
       }
     },
     {
@@ -5422,7 +5450,7 @@
       "type": "task",
       "title": "Import a DigiExam export into the exam workspace as a native exam document",
       "path": "docs/backlog/tasks/task-skript-39-07-01-import-a-digiexam-export-into-the-exam-workspace-as-a-native-exam-document.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-07",
       "owners": [
@@ -5433,7 +5461,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-17",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Implementation review 1 requested changes (F1 high) and review 2 approved at 5fdf1ba0 (retained 01a149c9-5bc7-7713-ba64-12dee0470bdd evidence/reviews/39-07-01-review-{1,2}.md). Closeout review at main bd4d706d (evidence/reviews/TASK-SKRIPT-39-07-01/closeout-review.md) requested two medium changes: F1, source-key wording, repaired in 19ef5504, and G1, the running-app API proof. Repair review 1 on 6b1a2831 (evidence/reviews/TASK-SKRIPT-39-07-01/review-1.md) found the SOURCE_FALLBACK repair 7406e91d sound and requested two medium changes, F1 readiness mirror and F2 export blocker reasons, repaired in 12d36ea5; no high finding, so no rereview. Focused rerun: 88 passed (evidence/reviews/closeout-bd4d706d/39-07-01.log). Running-app API proof at main 1f9e4367: evidence/staging-proof-1f9e4367/proof.md (upload 202, job succeeded 8 of 8, document read, QTI 200 after keys, PDF 200, DOCX 200)."
       }
     },
     {
@@ -5441,7 +5473,7 @@
       "type": "task",
       "title": "Answer keys for DigiExam imports through the workspace's per-question suggestions",
       "path": "docs/backlog/tasks/task-skript-39-07-02-answer-keys-for-digiexam-imports-through-the-workspace-s-per-question-suggestions.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-07",
       "owners": [
@@ -5452,7 +5484,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-17",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Implementation review 1 approved (retained 01a149c9-5bc7-7713-ba64-12dee0470bdd evidence/reviews/39-07-02-review-1.md). Closeout review at main bd4d706d (evidence/reviews/TASK-SKRIPT-39-07-02/closeout-review.md) requested one medium change, G1: the deployed API proof; no high finding. Focused rerun: 9 passed (evidence/reviews/closeout-bd4d706d/39-07-02.log). G1 resolved at main 1f9e4367: evidence/staging-proof-1f9e4367/proof.md (suggestions request 200, job b54fde45 succeeded with 6 suggestions, same set by document revision)."
       }
     },
     {
@@ -6115,7 +6151,7 @@
       "type": "task",
       "title": "Build the redesigned app shell from the approved prototype",
       "path": "docs/backlog/tasks/task-skript-40-04-02-build-the-redesigned-app-shell-from-the-approved-prototype.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -6126,7 +6162,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-17",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Implementation review 1 requested changes (F1 high clipped narrow controls, F2-F5 medium); review 2 cleared F1 in code and requested F3, F6 and F7 (medium); review 3 approved with no material findings at 116f062a (retained 01a149c9-5bc7-7713-ba64-12dee0470bdd evidence/reviews/40-04-02-review-{1,2,3}.md). Focused runs at main bd4d706d: Vitest 39 passed, type check exit 0, build exit 0 (evidence/reviews/closeout-bd4d706d/40-04-02-vitest.log, 40-04-02-typecheck.log, 40-04-02-build.log). The lead prototype check landed in 1f2af925. The 375/768/1440 shell walk is exempt under the user rule that walks cover only exam-converter changes and restyle and repairs close on approved review plus unit tests."
       }
     },
     {

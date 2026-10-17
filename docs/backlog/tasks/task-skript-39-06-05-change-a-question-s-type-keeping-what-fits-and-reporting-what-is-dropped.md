@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-17'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-17'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Implementation review 1 requested changes (F1 high, F2 medium) and review 2 approved at repair dabffe8c (retained 01a149c9-5bc7-7713-ba64-12dee0470bdd evidence/reviews/39-06-05-review-{1,2}.md). Closeout review at main bd4d706d (evidence/reviews/TASK-SKRIPT-39-06-05/closeout-review.md) requested one medium change, G1: the changed-question Exam.net proof; no high finding. Focused rerun incl. 16 undo combinations: 141 passed (evidence/reviews/closeout-bd4d706d/39-06-05.log). G1 resolved at main 1f9e4367: evidence/staging-proof-1f9e4367/proof.md (item_001 single choice to multiple response and item_016 gap fill to dropdown, undo step restores the previous kind, Exam.net exam 5345261, screenshot 04-preview-q1a-checkboxes.jpg).'
 task_kind: story
 acceptance_criteria:
   - Changing a question's type through the workspace API carries over its text and points, drops content the new type cannot hold, returns the names of what was dropped, gives a type that needs structure its minimum empty parts marked as blockers until filled, and one undo step restores the previous question

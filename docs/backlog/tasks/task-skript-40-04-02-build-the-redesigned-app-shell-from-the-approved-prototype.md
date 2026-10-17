@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-17'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-17'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Implementation review 1 requested changes (F1 high clipped narrow controls, F2-F5 medium); review 2 cleared F1 in code and requested F3, F6 and F7 (medium); review 3 approved with no material findings at 116f062a (retained 01a149c9-5bc7-7713-ba64-12dee0470bdd evidence/reviews/40-04-02-review-{1,2,3}.md). Focused runs at main bd4d706d: Vitest 39 passed, type check exit 0, build exit 0 (evidence/reviews/closeout-bd4d706d/40-04-02-vitest.log, 40-04-02-typecheck.log, 40-04-02-build.log). The lead prototype check landed in 1f2af925. The 375/768/1440 shell walk is exempt under the user rule that walks cover only exam-converter changes and restyle and repairs close on approved review plus unit tests.'
 task_kind: story
 acceptance_criteria:
   - Every signed-in screen renders inside the redesigned top bar, sidebar and page frame from the approved prototype at phone, tablet and desktop widths

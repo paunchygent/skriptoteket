@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-17'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-17'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Implementation review 1 approved (retained 01a149c9-5bc7-7713-ba64-12dee0470bdd evidence/reviews/39-07-02-review-1.md). Closeout review at main bd4d706d (evidence/reviews/TASK-SKRIPT-39-07-02/closeout-review.md) requested one medium change, G1: the deployed API proof; no high finding. Focused rerun: 9 passed (evidence/reviews/closeout-bd4d706d/39-07-02.log). G1 resolved at main 1f9e4367: evidence/staging-proof-1f9e4367/proof.md (suggestions request 200, job b54fde45 succeeded with 6 suggestions, same set by document revision).'
 task_kind: story
 acceptance_criteria:
   - Questions imported from DigiExam without keys get answer-key suggestions through the same per-question suggestion lane as DOCX imports

@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-17'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-17'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Closeout review at main bd4d706d approved (Pi c2153ae4, retained 01a149c9-5bc7-7713-ba64-12dee0470bdd evidence/reviews/TASK-SKRIPT-39-04-10/closeout-review.md); implementation reviews 39-04-10-review-1 and review-2 approved (repair cf796321). Focused rerun with real PostgreSQL in both orders: 30 passed (evidence/reviews/closeout-bd4d706d/39-04-10.log). No browser or Exam.net proof by contract.'
 task_kind: story
 acceptance_criteria:
   - When a teacher restores a trashed Mina filer file while the expiry cleanup is deleting expired files, the file stays restored with its content, and a file the cleanup deletes cannot be restored half-deleted; exam files and their exports keep the 39-04-08 lifecycle

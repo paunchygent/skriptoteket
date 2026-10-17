@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-17'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-17'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Implementation review 1 requested changes (F1 high, F2 medium) and review 2 approved with none remaining (retained 01a149c9-5bc7-7713-ba64-12dee0470bdd evidence/reviews/39-06-04-review-{1,2}.md). Closeout review at main bd4d706d (evidence/reviews/TASK-SKRIPT-39-06-04/closeout-review.md) requested one medium change, G1: the Exam.net proof; no high finding. Focused rerun: 53 passed (evidence/reviews/closeout-bd4d706d/39-06-04.log). G1 resolved at main 1f9e4367: evidence/staging-proof-1f9e4367/proof.md (item 016 changed to dropdown Lucktext with three gaps keyed R, A, B, saved, exported, imported as Exam.net exam 5345261; screenshots evidence/staging-proof-1f9e4367/examnet-5345261/01-editor-q2-gaps.jpg, 02-preview-q2-dropdowns-q3-typed.jpg and 03-preview-q2-RAB-3of3.jpg show each list, key and 3 of 3 points).'
 task_kind: story
 acceptance_criteria:
   - A Lucktext question whose gaps each hold their own option list with one correct option saves through the workspace API and exports as QTI 3.0 that Exam.net imports with each gap's correct option as the key
