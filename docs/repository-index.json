@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "e52adf2bab6c20d6cfe6d729d9050573017b9f8583e8eeee927621146146d5a0",
+  "source_set_digest": "5c82f2582a1aae30e60c6d98b550d0442a8fc6ffe4ab5a37971fca3fe59f225a",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5381,6 +5381,25 @@
       "type": "task",
       "title": "Store a suggested type on converted questions",
       "path": "docs/backlog/tasks/task-skript-39-06-06-store-a-suggested-type-on-converted-questions.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-06",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-06-07",
+      "type": "task",
+      "title": "Delete an instruction in the workspace API: heading only by default, heading with its questions as a separate command",
+      "path": "docs/backlog/tasks/task-skript-39-06-07-delete-an-instruction-in-the-workspace-api-heading-only-by-default-heading-with-its-questions-as-a-separate-command.md",
       "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-06",

@@ -155,6 +155,10 @@ workspace control.
    the previous question.
 6. TASK-SKRIPT-39-06-06 (backend, API). Stored suggested type on converted
    questions, consumed by a change to that type.
+7. TASK-SKRIPT-39-06-07 (backend, API). Delete an instruction: heading only
+   by default, heading with its questions as a separate command, the last
+   question's delete takes the empty heading with it; every delete is one
+   undo step (user 2026-10-17).
 
 If the user decides after TASK-SKRIPT-39-06-02 to build ordering, it joins this
 story as a new task carrying P3 and P21.
