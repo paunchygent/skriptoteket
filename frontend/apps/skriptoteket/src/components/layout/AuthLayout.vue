@@ -1,17 +1,24 @@
 <script setup lang="ts">
 /**
- * Authenticated application layout.
+ * Signed-in app shell: top bar, sidebar and page frame.
  *
- * This layout usually renders the full Skriptoteket authenticated chrome, but
- * selected bespoke game routes can switch it into an immersive mode where only
- * the shared top bar remains and the generic sidebar framing disappears.
+ * Relationships:
+ * - one CSS grid owns the shell geometry at every width: desktop (>= 1280 px)
+ *   shows the 240 px sidebar or the 64 px rail, tablet always the rail, phone
+ *   (< 768 px) a single column with the navigation in a Meny drawer
+ * - owns the drawer state and reads focus mode and the rail state from the
+ *   per-user layout store; focus mode hides the sidebar at 768 px and wider and
+ *   keeps the top bar
+ * - selected game routes switch to an immersive mode with only the dark top bar
+ * - the page frame pads every route; the editor and Klassrumskartan get a
+ *   flex-column frame they fill, and the exam workspace (TASK-SKRIPT-40-04-03)
+ *   and immersive routes get an unpadded, non-scrolling frame
  */
 
 import { computed, onBeforeUnmount, ref, watch, watchEffect } from "vue";
-import { RouterLink, useRoute } from "vue-router";
+import { useRoute } from "vue-router";
 import { storeToRefs } from "pinia";
 
-import BrandLogo from "../brand/BrandLogo.vue";
 import AuthSidebar from "./AuthSidebar.vue";
 import AuthTopBar from "./AuthTopBar.vue";
 import { useHelp } from "../help/useHelp";
@@ -36,7 +43,7 @@ const emit = defineEmits<{
 }>();
 
 const layout = useLayoutStore();
-const { focusMode } = storeToRefs(layout);
+const { focusMode, sidebarCollapsed } = storeToRefs(layout);
 const { open: openHelp } = useHelp();
 const route = useRoute();
 const IMMERSIVE_CURATED_APP_IDS = new Set(["games.flunk_out_frenzy"]);
@@ -58,10 +65,17 @@ const isClassroomPlannerRoute = computed(() => {
   return route.name === "app-detail" && route.params.appId === "classroom.group-seating-studio";
 });
 const isExamWorkspaceRoute = computed(() => route.name === "exam-workspace");
-const prefersXlSidebarBreakpoint = computed(() => isClassroomPlannerRoute.value);
 
 const sidebarOpen = ref(false);
-const menuButtonRef = ref<HTMLButtonElement | null>(null);
+const topBarRef = ref<InstanceType<typeof AuthTopBar> | null>(null);
+
+function menuButton(): HTMLElement | null {
+  return topBarRef.value?.menuButtonElement() ?? null;
+}
+
+function returnFocusToMenu(): void {
+  menuButton()?.focus({ preventScroll: true });
+}
 
 function toggleSidebar(): void {
   sidebarOpen.value = !sidebarOpen.value;
@@ -71,12 +85,14 @@ function closeSidebar(): void {
   sidebarOpen.value = false;
 }
 
-function onLogout(): void {
-  emit("logout");
+/** Escape, the close button and the backdrop dismiss the drawer back to Meny. */
+function dismissSidebar(): void {
+  closeSidebar();
+  returnFocusToMenu();
 }
 
-function toggleFocusMode(): void {
-  layout.toggle();
+function onLogout(): void {
+  emit("logout");
 }
 
 /**
@@ -85,7 +101,7 @@ function toggleFocusMode(): void {
  */
 function onDrawerHelp(): void {
   closeSidebar();
-  openHelp(menuButtonRef.value);
+  openHelp(menuButton());
 }
 
 /**
@@ -95,7 +111,7 @@ function onDrawerHelp(): void {
 function onDrawerToggleFocusMode(): void {
   closeSidebar();
   layout.toggle();
-  menuButtonRef.value?.focus({ preventScroll: true });
+  returnFocusToMenu();
 }
 
 watch(
@@ -122,82 +138,51 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <!-- Mobile header bar: brand left, hamburger right -->
-  <header
-    v-if="!isImmersiveCuratedAppRoute"
-    class="auth-mobile-header"
-    :class="{ 'auth-mobile-header--xl-sidebar-breakpoint': prefersXlSidebarBreakpoint }"
-  >
-    <RouterLink
-      to="/"
-      class="mobile-brand"
-    >
-      <BrandLogo height="22px" />
-    </RouterLink>
-    <button
-      ref="menuButtonRef"
-      type="button"
-      class="hamburger"
-      :class="{ 'is-open': sidebarOpen }"
-      aria-label="Meny"
-      :aria-expanded="sidebarOpen"
-      @click="toggleSidebar"
-    >
-      <span /><span /><span />
-    </button>
-  </header>
-
-  <!-- Mobile sidebar drawer backdrop -->
-  <Transition
-    v-if="!isImmersiveCuratedAppRoute"
-    name="drawer-backdrop"
-  >
-    <div
-      v-if="sidebarOpen"
-      class="auth-sidebar-backdrop"
-      :class="{ 'auth-sidebar-backdrop--xl-sidebar-breakpoint': prefersXlSidebarBreakpoint }"
-      @click="closeSidebar"
-    />
-  </Transition>
-
-  <!-- Sidebar (authenticated) -->
-  <AuthSidebar
-    v-if="!isImmersiveCuratedAppRoute"
-    :is-open="sidebarOpen"
-    :is-focus-mode="focusMode"
-    :user="user"
-    :can-see-contributor="canSeeContributor"
-    :can-see-admin="canSeeAdmin"
-    :can-see-superuser="canSeeSuperuser"
-    :logout-in-progress="logoutInProgress"
-    :prefer-xl-desktop-breakpoint="prefersXlSidebarBreakpoint"
-    @close="closeSidebar"
-    @help="onDrawerHelp"
-    @logout="onLogout"
-    @toggle-focus-mode="onDrawerToggleFocusMode"
-  />
-
-  <!-- Main content wrapper with top user bar -->
   <div
-    class="auth-main-wrapper"
+    class="auth-shell"
     :class="{
+      'is-rail': sidebarCollapsed,
       'is-focus-mode': focusMode,
       'is-immersive-route': isImmersiveCuratedAppRoute,
-      'auth-main-wrapper--xl-sidebar-breakpoint': prefersXlSidebarBreakpoint,
     }"
   >
-    <!-- Top user bar -->
     <AuthTopBar
-      :user="user"
+      ref="topBarRef"
       :logout-in-progress="logoutInProgress"
       :is-focus-mode="focusMode"
+      :is-sidebar-collapsed="sidebarCollapsed"
       :is-immersive-route="isImmersiveCuratedAppRoute"
-      :prefer-xl-desktop-breakpoint="prefersXlSidebarBreakpoint"
-      @toggle-focus-mode="toggleFocusMode"
+      :is-menu-open="sidebarOpen"
+      @toggle-focus-mode="layout.toggle()"
+      @toggle-sidebar="layout.toggleSidebarCollapsed()"
+      @toggle-menu="toggleSidebar"
       @logout="onLogout"
     />
 
-    <!-- Main content area -->
+    <AuthSidebar
+      v-if="!isImmersiveCuratedAppRoute"
+      :is-open="sidebarOpen"
+      :is-rail="sidebarCollapsed"
+      :is-focus-mode="focusMode"
+      :user="user"
+      :can-see-contributor="canSeeContributor"
+      :can-see-admin="canSeeAdmin"
+      :can-see-superuser="canSeeSuperuser"
+      :logout-in-progress="logoutInProgress"
+      @close="closeSidebar"
+      @dismiss="dismissSidebar"
+      @help="onDrawerHelp"
+      @logout="onLogout"
+      @toggle-focus-mode="onDrawerToggleFocusMode"
+    />
+
+    <div
+      v-if="sidebarOpen && !isImmersiveCuratedAppRoute"
+      class="auth-nav-backdrop"
+      aria-hidden="true"
+      @click="dismissSidebar"
+    />
+
     <main
       class="auth-main-content"
       :class="{
@@ -213,164 +198,121 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-/* Mobile header for authenticated - hidden on desktop */
-.auth-mobile-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--huleedu-space-3) var(--huleedu-space-4);
-  border-bottom: var(--huleedu-border-width) solid var(--huleedu-navy);
-  background-color: var(--huleedu-canvas);
+/* Shell grid: the only owner of the shell's height and column geometry. */
+.auth-shell {
+  --shell-top: 56px;
+  --shell-side: var(--huleedu-sidebar-width);
+  --shell-rail: 64px;
+
+  display: grid;
+  grid-template-rows: var(--shell-top) minmax(0, 1fr);
+  grid-template-columns: var(--shell-side) minmax(0, 1fr);
+  grid-template-areas:
+    "top top"
+    "side main";
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
 }
 
-/* Mobile brand - no hover state since touch devices have sticky :hover */
-.mobile-brand {
-  font-family: var(--huleedu-font-serif);
-  font-weight: var(--huleedu-font-bold);
-  font-size: var(--huleedu-text-lg);
-  letter-spacing: var(--huleedu-tracking-tight);
-  color: var(--huleedu-navy);
-  text-decoration: none;
+.auth-shell.is-rail {
+  grid-template-columns: var(--shell-rail) minmax(0, 1fr);
 }
 
-@media (min-width: 768px) {
-  .auth-mobile-header {
-    display: none;
+@media (max-width: 1279px) {
+  .auth-shell {
+    grid-template-columns: var(--shell-rail) minmax(0, 1fr);
+  }
+}
+
+.auth-shell.is-focus-mode,
+.auth-shell.is-immersive-route {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "top"
+    "main";
+}
+
+.auth-shell.is-focus-mode > .sidebar {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .auth-shell,
+  .auth-shell.is-rail {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "top"
+      "main";
   }
 
-  .auth-mobile-header.auth-mobile-header--xl-sidebar-breakpoint {
+  /* The phone drawer carries the way out of focus mode, so it stays. */
+  .auth-shell.is-focus-mode > .sidebar {
     display: flex;
   }
 }
 
-@media (min-width: 1280px) {
-  .auth-mobile-header.auth-mobile-header--xl-sidebar-breakpoint {
-    display: none;
-  }
+.auth-shell > .topbar {
+  grid-area: top;
+  z-index: 20;
 }
 
-.auth-sidebar-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: var(--huleedu-z-overlay);
-  background-color: color-mix(in srgb, var(--huleedu-navy) 40%, transparent);
+.auth-shell > .sidebar {
+  grid-area: side;
 }
 
-@media (min-width: 768px) {
-  .auth-sidebar-backdrop {
-    display: none;
-  }
+.auth-nav-backdrop {
+  display: none;
+}
 
-  .auth-sidebar-backdrop.auth-sidebar-backdrop--xl-sidebar-breakpoint {
+@media (max-width: 767px) {
+  .auth-nav-backdrop {
     display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 49;
+    background: rgba(8, 43, 76, 0.32);
   }
 }
 
-@media (min-width: 1280px) {
-  .auth-sidebar-backdrop.auth-sidebar-backdrop--xl-sidebar-breakpoint {
-    display: none;
-  }
-}
-
-/* Main wrapper (authenticated) */
-.auth-main-wrapper {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  height: 100dvh;
-  min-height: 0;
-  transition: margin-left var(--huleedu-duration-slow) var(--huleedu-ease-default);
-}
-
-@media (min-width: 768px) {
-  .auth-main-wrapper:not(.auth-main-wrapper--xl-sidebar-breakpoint) {
-    margin-left: var(--huleedu-sidebar-width);
-    will-change: margin-left;
-  }
-
-  .auth-main-wrapper:not(.auth-main-wrapper--xl-sidebar-breakpoint).is-focus-mode,
-  .auth-main-wrapper:not(.auth-main-wrapper--xl-sidebar-breakpoint).is-immersive-route {
-    margin-left: 0;
-  }
-}
-
-@media (min-width: 1280px) {
-  .auth-main-wrapper.auth-main-wrapper--xl-sidebar-breakpoint {
-    margin-left: var(--huleedu-sidebar-width);
-    will-change: margin-left;
-  }
-
-  .auth-main-wrapper.auth-main-wrapper--xl-sidebar-breakpoint.is-focus-mode,
-  .auth-main-wrapper.auth-main-wrapper--xl-sidebar-breakpoint.is-immersive-route {
-    margin-left: 0;
-  }
-}
-
-/* Main content (authenticated) */
+/* Page frame. */
 .auth-main-content {
-  flex: 1;
+  grid-area: main;
+  min-width: 0;
   min-height: 0;
-  padding: var(--huleedu-space-6);
+  padding: var(--huleedu-space-5) var(--huleedu-space-4);
   overflow-y: auto;
   scrollbar-gutter: stable;
 }
 
-.auth-main-content--editor {
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
+@media (min-width: 768px) {
+  .auth-main-content {
+    padding: var(--huleedu-space-8);
+  }
 }
 
-.auth-main-content--editor .route-stage {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.auth-main-content--workspace {
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  overflow-x: hidden;
-}
-
-.auth-main-content--workspace .route-stage,
-.auth-main-content--workspace .route-stage-item {
-  display: flex;
-  flex: 1;
-  min-height: 0;
-  flex-direction: column;
-}
-
-.auth-main-content--editor .route-stage-item {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.auth-main-content--exam-workspace {
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  padding: var(--huleedu-space-4);
-  overflow-x: hidden;
-}
-
+/* Flex-column frames that their route fills. */
+.auth-main-content--editor,
+.auth-main-content--workspace,
+.auth-main-content--exam-workspace,
 .auth-main-content--immersive {
-  padding: 0;
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
 }
 
-.auth-main-content--immersive .route-stage,
-.auth-main-content--immersive .route-stage-item {
+.auth-main-content--editor :deep(.route-stage),
+.auth-main-content--editor :deep(.route-stage-item),
+.auth-main-content--workspace :deep(.route-stage),
+.auth-main-content--workspace :deep(.route-stage-item),
+.auth-main-content--exam-workspace :deep(.route-stage),
+.auth-main-content--exam-workspace :deep(.route-stage-item),
+.auth-main-content--immersive :deep(.route-stage),
+.auth-main-content--immersive :deep(.route-stage-item) {
   display: flex;
   flex: 1;
-  min-height: 0;
   flex-direction: column;
+  min-height: 0;
 }
 
 @media (min-width: 1024px) {
@@ -379,62 +321,10 @@ onBeforeUnmount(() => {
   }
 }
 
-@media (min-width: 768px) {
-  .auth-main-content {
-    padding: var(--huleedu-space-8);
-  }
-
-  .auth-main-content--exam-workspace {
-    padding: var(--huleedu-space-6);
-  }
-
-  .auth-main-content--immersive {
-    padding: 0;
-  }
-}
-
-/* Hamburger button */
-.hamburger {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 5px;
-  width: 24px;
-  height: 24px;
-  background: none;
-  border: none;
-  cursor: pointer;
+.auth-main-content--exam-workspace,
+.auth-main-content--immersive {
   padding: 0;
-}
-
-.hamburger span {
-  display: block;
-  width: 100%;
-  height: 2px;
-  background-color: var(--huleedu-navy);
-  transition: transform var(--huleedu-duration-slow) var(--huleedu-ease-default),
-              opacity var(--huleedu-duration-slow) var(--huleedu-ease-default);
-}
-
-.hamburger.is-open span:nth-child(1) {
-  transform: translateY(7px) rotate(45deg);
-}
-
-.hamburger.is-open span:nth-child(2) {
-  opacity: 0;
-}
-
-.hamburger.is-open span:nth-child(3) {
-  transform: translateY(-7px) rotate(-45deg);
-}
-
-/* Transitions */
-.drawer-backdrop-enter-active,
-.drawer-backdrop-leave-active {
-  transition: opacity var(--huleedu-duration-slow) var(--huleedu-ease-default);
-}
-.drawer-backdrop-enter-from,
-.drawer-backdrop-leave-to {
-  opacity: 0;
+  overflow: hidden;
+  scrollbar-gutter: auto;
 }
 </style>

@@ -9,6 +9,7 @@
 import { mount } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { useHelp } from "../help/useHelp";
 import LandingLayout from "./LandingLayout.vue";
 
 const layoutMocks = vi.hoisted(() => ({
@@ -22,13 +23,11 @@ const layoutMocks = vi.hoisted(() => ({
 }));
 
 vi.mock("vue-router", () => ({
-  useRoute: () => layoutMocks.route,
-}));
-
-vi.mock("../help/HelpButton.vue", () => ({
-  default: {
-    template: "<button type='button' data-test='help-button-stub'>Hjälp</button>",
+  RouterLink: {
+    props: ["to"],
+    template: "<a :href=\"typeof to === 'string' ? to : '#'\"><slot /></a>",
   },
+  useRoute: () => layoutMocks.route,
 }));
 
 describe("LandingLayout", () => {
@@ -91,5 +90,25 @@ describe("LandingLayout", () => {
     expect(wrapper.get("a.landing-header-link").attributes("href")).toBe(
       "https://api.hule.education/auth/login?app=skriptoteket&product_identity_realm=skriptoteket_standalone&return_to=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fcallback&next=%2F",
     );
+  });
+
+  it("opens the shared help panel from the public Hjälp button and reflects it", async () => {
+    const help = useHelp();
+    help.close({ restoreFocus: false });
+
+    const wrapper = mount(LandingLayout, {
+      slots: {
+        default: "<div>Innehåll</div>",
+      },
+    });
+    const helpButton = wrapper.get(".landing-header-actions button[aria-controls='help-panel']");
+
+    expect(helpButton.attributes("aria-expanded")).toBe("false");
+    await helpButton.trigger("click");
+
+    expect(help.isOpen.value).toBe(true);
+    expect(helpButton.attributes("aria-expanded")).toBe("true");
+
+    help.close({ restoreFocus: false });
   });
 });

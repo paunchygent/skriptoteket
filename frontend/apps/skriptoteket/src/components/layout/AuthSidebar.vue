@@ -1,30 +1,33 @@
 <script setup lang="ts">
 /**
- * Authenticated application sidebar.
+ * Signed-in navigation: sidebar, glyph rail or phone drawer.
  *
  * Relationships:
- * - renders the shared authenticated navigation as either a drawer or fixed
- *   rail with utility/platform links first while authenticated home owns app
- *   entry affordances
- * - carries Hjälp, focus mode and logout in its footer below the owning shell
- *   cutoff, where the top bar hides its desktop actions; the top auth bar owns
- *   those actions at and above the cutoff
- * - lets planner routes defer the desktop rail until a wider `xl` breakpoint
- * - stays coordinated with `AuthLayout` so header, backdrop, and content margin
- *   all switch at the same shell cutoff
+ * - `AuthLayout` places it in the shell grid and owns its open and rail state
+ * - desktop (>= 1280 px): 240 px sidebar with labels, or the 64 px glyph rail
+ *   when `isRail`; tablet: always the glyph rail; phone (< 768 px): a
+ *   right-side drawer that Meny opens, with the user's email, Hjälp,
+ *   Fokusläge and Logga ut in its footer
+ * - the current page is marked by RouterLink's `aria-current="page"`
+ * - utility links come first; the Administration section follows for admins
+ *   and superusers. App entry points live on the home page, not here.
  */
 
-import BrandLogo from "../brand/BrandLogo.vue";
+import { computed, nextTick, ref, watch } from "vue";
+import { RouterLink } from "vue-router";
+
+import { UiGlyph, type UiGlyphMeaning } from "../ui";
 
 type SidebarNavLink = {
   label: string;
   to: string;
+  glyph: UiGlyphMeaning;
 };
 
 const props = defineProps<{
   isOpen: boolean;
+  isRail: boolean;
   isFocusMode: boolean;
-  preferXlDesktopBreakpoint: boolean;
   user: { email: string } | null;
   canSeeContributor: boolean;
   canSeeAdmin: boolean;
@@ -34,17 +37,46 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   close: [];
+  dismiss: [];
   help: [];
   logout: [];
   toggleFocusMode: [];
 }>();
 
+const closeButtonRef = ref<HTMLButtonElement | null>(null);
+
+const standardLinks = computed<readonly SidebarNavLink[]>(() => [
+  { label: "Hem", to: "/", glyph: "nav-home" },
+  { label: "Katalog", to: "/browse", glyph: "choose-from-catalogue" },
+  { label: "Mina filer", to: "/vault", glyph: "nav-files" },
+  ...(props.canSeeContributor
+    ? [{ label: "Mina verktyg", to: "/my-tools", glyph: "nav-my-tools" } as const]
+    : []),
+  { label: "Föreslå verktyg", to: "/suggestions/new", glyph: "nav-suggest-tool" },
+  { label: "Profil", to: "/profile", glyph: "account-menu" },
+]);
+
+const adminLinks = computed<readonly SidebarNavLink[]>(() => [
+  ...(props.canSeeAdmin
+    ? [
+        { label: "Hantera verktyg", to: "/admin/tools", glyph: "settings" } as const,
+        { label: "Granska förslag", to: "/admin/suggestions", glyph: "nav-review-suggestions" } as const,
+      ]
+    : []),
+  ...(props.canSeeSuperuser
+    ? [{ label: "Användare", to: "/admin/users", glyph: "nav-users" } as const]
+    : []),
+]);
+
 function onClose(): void {
   emit("close");
 }
 
-function onHelp(): void {
-  emit("help");
+/** Escape and the close button dismiss the open drawer; the layout returns focus to Meny. */
+function onDismiss(): void {
+  if (props.isOpen) {
+    emit("dismiss");
+  }
 }
 
 function onLogout(): void {
@@ -52,351 +84,348 @@ function onLogout(): void {
   emit("logout");
 }
 
-function onToggleFocusMode(): void {
-  emit("toggleFocusMode");
-}
-
-const standardLinks: readonly SidebarNavLink[] = [
-  {
-    label: "Hem",
-    to: "/",
+watch(
+  () => props.isOpen,
+  async (open) => {
+    if (!open) {
+      return;
+    }
+    await nextTick();
+    closeButtonRef.value?.focus({ preventScroll: true });
   },
-  {
-    label: "Mina filer",
-    to: "/vault",
-  },
-  {
-    label: "Föreslå verktyg",
-    to: "/suggestions/new",
-  },
-  {
-    label: "Katalog",
-    to: "/browse",
-  },
-  {
-    label: "Profil",
-    to: "/profile",
-  },
-];
+);
 </script>
 
 <template>
-  <aside
+  <nav
+    id="app-sidebar"
     class="sidebar"
-    :class="{
-      'is-open': props.isOpen,
-      'is-focus-mode': props.isFocusMode,
-      'sidebar--xl-desktop-breakpoint': props.preferXlDesktopBreakpoint,
-    }"
+    :class="{ 'is-open': isOpen, 'is-rail': isRail }"
+    aria-label="Huvudmeny"
+    @keydown.esc="onDismiss"
   >
-    <div class="sidebar-content">
+    <div class="sidebar-head">
+      <button
+        ref="closeButtonRef"
+        type="button"
+        class="sidebar-close"
+        aria-label="Stäng menyn"
+        title="Stäng menyn"
+        @click="onDismiss"
+      >
+        <UiGlyph
+          meaning="close"
+          :size="20"
+        />
+      </button>
+    </div>
+
+    <div class="sidebar-nav">
       <RouterLink
-        to="/"
-        class="sidebar-brand"
+        v-for="link in standardLinks"
+        :key="link.to"
+        :to="link.to"
+        class="sidebar-nav-item"
+        :title="link.label"
         @click="onClose"
       >
-        <BrandLogo height="32px" />
+        <UiGlyph
+          :meaning="link.glyph"
+          :size="20"
+        />
+        <span class="sidebar-nav-label">{{ link.label }}</span>
       </RouterLink>
 
-      <nav class="sidebar-nav">
+      <template v-if="adminLinks.length > 0">
+        <div class="sidebar-section">
+          <span class="sidebar-nav-label">Administration</span>
+        </div>
         <RouterLink
-          v-for="link in standardLinks"
+          v-for="link in adminLinks"
           :key="link.to"
           :to="link.to"
           class="sidebar-nav-item"
+          :title="link.label"
           @click="onClose"
         >
-          {{ link.label }}
+          <UiGlyph
+            :meaning="link.glyph"
+            :size="20"
+          />
+          <span class="sidebar-nav-label">{{ link.label }}</span>
         </RouterLink>
-        <RouterLink
-          v-if="props.canSeeContributor"
-          to="/my-tools"
-          class="sidebar-nav-item"
-          @click="onClose"
-        >
-          Mina verktyg
-        </RouterLink>
-        <RouterLink
-          v-if="props.canSeeAdmin"
-          to="/admin/tools"
-          class="sidebar-nav-item"
-          @click="onClose"
-        >
-          Hantera verktyg
-        </RouterLink>
-        <RouterLink
-          v-if="props.canSeeSuperuser"
-          to="/admin/users"
-          class="sidebar-nav-item"
-          @click="onClose"
-        >
-          Användare
-        </RouterLink>
-        <RouterLink
-          v-if="props.canSeeAdmin"
-          to="/admin/suggestions"
-          class="sidebar-nav-item"
-          @click="onClose"
-        >
-          Granska förslag
-        </RouterLink>
-      </nav>
-
-      <!-- Sidebar footer: user info and compact shell actions below the shell cutoff -->
-      <div class="sidebar-footer">
-        <div class="sidebar-user-info">
-          {{ props.user?.email }}
-        </div>
-        <div class="sidebar-footer-actions">
-          <button
-            type="button"
-            class="sidebar-action-btn"
-            aria-controls="help-panel"
-            aria-haspopup="dialog"
-            @click="onHelp"
-          >
-            Hjälp
-          </button>
-          <button
-            type="button"
-            class="sidebar-action-btn"
-            :class="{ 'is-active': props.isFocusMode }"
-            :aria-pressed="props.isFocusMode"
-            @click="onToggleFocusMode"
-          >
-            {{ props.isFocusMode ? "Avsluta fokusläge" : "Aktivera fokusläge" }}
-          </button>
-          <button
-            type="button"
-            class="sidebar-logout-btn"
-            :disabled="props.logoutInProgress"
-            @click="onLogout"
-          >
-            {{ props.logoutInProgress ? "Loggar ut…" : "Logga ut" }}
-          </button>
-        </div>
-      </div>
+      </template>
     </div>
-  </aside>
+
+    <!-- Phone drawer footer: the top-bar actions move here below 768 px. -->
+    <div class="sidebar-footer">
+      <span class="sidebar-user">{{ user?.email }}</span>
+      <button
+        type="button"
+        class="sidebar-nav-item sidebar-help"
+        aria-controls="help-panel"
+        aria-haspopup="dialog"
+        @click="emit('help')"
+      >
+        <UiGlyph
+          meaning="help"
+          :size="20"
+        />
+        <span class="sidebar-nav-label">Hjälp</span>
+      </button>
+      <button
+        type="button"
+        class="sidebar-nav-item sidebar-focus-toggle"
+        :aria-pressed="isFocusMode"
+        @click="emit('toggleFocusMode')"
+      >
+        <UiGlyph
+          meaning="focus-mode"
+          :size="20"
+        />
+        <span class="sidebar-nav-label">{{ isFocusMode ? "Avsluta fokusläge" : "Aktivera fokusläge" }}</span>
+      </button>
+      <button
+        type="button"
+        class="sidebar-nav-item sidebar-logout"
+        :disabled="logoutInProgress"
+        @click="onLogout"
+      >
+        <UiGlyph
+          meaning="log-out"
+          :size="20"
+        />
+        <span class="sidebar-nav-label">{{ logoutInProgress ? "Loggar ut…" : "Logga ut" }}</span>
+      </button>
+    </div>
+  </nav>
 </template>
 
 <style scoped>
-/* Mobile: sidebar slides from right */
 .sidebar {
-  display: none;
-  flex-direction: column;
-  border-left: var(--huleedu-border-width) solid var(--huleedu-navy);
-  background-color: var(--huleedu-canvas);
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: var(--huleedu-sidebar-width);
-  z-index: var(--huleedu-z-popover);
-  transform: translateX(100%);
-  transition: transform var(--huleedu-duration-slow) var(--huleedu-ease-out);
-}
-
-.sidebar.is-open {
-  display: flex;
-  transform: translateX(0);
-}
-
-/* Desktop: sidebar fixed on left */
-@media (min-width: 768px) {
-  .sidebar:not(.sidebar--xl-desktop-breakpoint) {
-    display: flex;
-    position: fixed;
-    left: 0;
-    right: auto;
-    border-left: none;
-    border-right: var(--huleedu-border-width) solid var(--huleedu-navy);
-    transform: none;
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-    z-index: var(--huleedu-z-overlay);
-    transition:
-      opacity var(--huleedu-duration-slow) var(--huleedu-ease-default),
-      visibility 0s linear 0s;
-  }
-
-  .sidebar:not(.sidebar--xl-desktop-breakpoint).is-focus-mode {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transition:
-      opacity var(--huleedu-duration-slow) var(--huleedu-ease-default),
-      visibility 0s linear var(--huleedu-duration-slow);
-  }
-}
-
-.sidebar-content {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  padding: var(--huleedu-space-6) var(--huleedu-space-4);
+  gap: var(--huleedu-space-1);
+  min-height: 0;
+  padding: var(--huleedu-space-3);
   overflow-y: auto;
-}
-
-@media (min-width: 768px) {
-  .sidebar:not(.sidebar--xl-desktop-breakpoint) .sidebar-content {
-    padding-top: var(--huleedu-space-3);
-  }
-}
-
-.sidebar-brand {
-  font-family: var(--huleedu-font-serif);
-  font-weight: var(--huleedu-font-bold);
-  font-size: var(--huleedu-text-lg);
-  letter-spacing: var(--huleedu-tracking-tight);
-  color: var(--huleedu-navy);
-  text-decoration: none;
-  margin-bottom: var(--huleedu-space-8);
-}
-
-@media (min-width: 768px) {
-  .sidebar:not(.sidebar--xl-desktop-breakpoint) .sidebar-brand {
-    transform: translateY(1px);
-  }
-}
-
-.sidebar-brand:hover {
-  color: var(--huleedu-action);
+  border-right: 1px solid var(--huleedu-surface-divider);
+  background: var(--huleedu-canvas);
 }
 
 .sidebar-nav {
   display: flex;
   flex-direction: column;
-  gap: var(--huleedu-space-1);
-  flex: 1;
+  gap: 2px;
 }
 
 .sidebar-nav-item {
-  display: block;
-  padding: var(--huleedu-space-2) var(--huleedu-space-3);
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--huleedu-space-3);
+  height: 40px;
+  padding: 0 var(--huleedu-space-3);
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--huleedu-radius-md);
+  background: transparent;
+  color: var(--huleedu-navy-70);
+  font-family: var(--huleedu-font-sans);
   font-size: var(--huleedu-text-sm);
   font-weight: var(--huleedu-font-medium);
-  text-transform: uppercase;
-  letter-spacing: var(--huleedu-tracking-label);
-  color: var(--huleedu-navy-70);
+  text-align: left;
   text-decoration: none;
-  border-left: var(--huleedu-border-width-2) solid transparent;
-  transition: color var(--huleedu-duration-default) var(--huleedu-ease-default),
-              border-color var(--huleedu-duration-default) var(--huleedu-ease-default);
+  white-space: nowrap;
+  cursor: pointer;
 }
 
-.sidebar-nav-item:hover {
+.sidebar-nav-item:focus-visible,
+.sidebar-close:focus-visible {
+  outline: 2px solid var(--huleedu-action-40);
+  outline-offset: -2px;
+}
+
+.sidebar-nav-item[aria-current="page"] {
+  background: var(--huleedu-action-10);
+  box-shadow: inset 3px 0 0 var(--huleedu-action);
+  color: var(--huleedu-navy);
+}
+
+.sidebar-nav-item[aria-current="page"] :deep(svg) {
   color: var(--huleedu-action);
 }
 
-.sidebar-nav-item.router-link-active {
-  color: var(--huleedu-navy);
-  border-left-color: var(--huleedu-action);
+.sidebar-nav-item:disabled {
+  color: var(--huleedu-navy-40);
+  cursor: not-allowed;
 }
 
-@media (min-width: 1280px) {
-  .sidebar.sidebar--xl-desktop-breakpoint {
-    display: flex;
-    position: fixed;
-    left: 0;
-    right: auto;
-    border-left: none;
-    border-right: var(--huleedu-border-width) solid var(--huleedu-navy);
-    transform: none;
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-    z-index: var(--huleedu-z-overlay);
-    transition:
-      opacity var(--huleedu-duration-slow) var(--huleedu-ease-default),
-      visibility 0s linear 0s;
+@media (hover: hover) {
+  .sidebar-nav-item:not(:disabled):hover {
+    background: var(--huleedu-action-05);
+    color: var(--huleedu-navy);
   }
 
-  .sidebar.sidebar--xl-desktop-breakpoint.is-focus-mode {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transition:
-      opacity var(--huleedu-duration-slow) var(--huleedu-ease-default),
-      visibility 0s linear var(--huleedu-duration-slow);
-  }
-
-  .sidebar.sidebar--xl-desktop-breakpoint .sidebar-content {
-    padding-top: var(--huleedu-space-3);
-  }
-
-  .sidebar.sidebar--xl-desktop-breakpoint .sidebar-brand {
-    transform: translateY(1px);
+  .sidebar-nav-item[aria-current="page"]:hover {
+    background: var(--huleedu-action-10);
   }
 }
 
-/* Sidebar footer: shown only below the owning shell cutoff, where the top bar
-   hides its desktop actions. Ordinary shell hides it at 768px, planner at 1280px. */
-.sidebar-footer {
-  flex: 0 0 auto;
-  margin-top: auto;
-  padding-top: var(--huleedu-space-4);
-  border-top: var(--huleedu-border-width) solid var(--huleedu-navy-20);
-}
-
-@media (min-width: 768px) {
-  .sidebar:not(.sidebar--xl-desktop-breakpoint) .sidebar-footer {
-    display: none;
-  }
-}
-
-@media (min-width: 1280px) {
-  .sidebar.sidebar--xl-desktop-breakpoint .sidebar-footer {
-    display: none;
-  }
-}
-
-.sidebar-footer-actions {
-  display: flex;
-  flex-direction: column;
-  gap: var(--huleedu-space-2);
-}
-
-.sidebar-user-info {
-  font-size: var(--huleedu-text-xs);
-  font-family: var(--huleedu-font-mono);
-  color: var(--huleedu-navy);
-  margin-bottom: var(--huleedu-space-2);
-  word-break: break-all;
-}
-
-.sidebar-action-btn,
-.sidebar-logout-btn {
-  display: block;
-  width: 100%;
-  padding: var(--huleedu-space-2) var(--huleedu-space-3);
-  border: var(--huleedu-border-width) solid var(--huleedu-navy);
-  background: transparent;
+.sidebar-section {
+  height: 16px;
+  margin: var(--huleedu-space-4) var(--huleedu-space-3) var(--huleedu-space-1);
+  color: var(--huleedu-navy-60);
   font-size: var(--huleedu-text-xs);
   font-weight: var(--huleedu-font-semibold);
-  text-transform: uppercase;
-  letter-spacing: var(--huleedu-tracking-label);
+  white-space: nowrap;
+}
+
+/* The drawer's head and footer exist only in the phone drawer. */
+.sidebar-head,
+.sidebar-footer {
+  display: none;
+}
+
+/* Glyph rail: the desktop rail state and every tablet width. */
+.sidebar.is-rail {
+  padding: var(--huleedu-space-3) var(--huleedu-space-2-5);
+}
+
+.sidebar.is-rail .sidebar-nav-item {
+  justify-content: center;
+  padding: 0;
+}
+
+.sidebar.is-rail .sidebar-nav-label {
+  display: none;
+}
+
+.sidebar.is-rail .sidebar-section {
+  height: 1px;
+  margin: var(--huleedu-space-3) var(--huleedu-space-2);
+  background: var(--huleedu-surface-divider);
+}
+
+@media (max-width: 1279px) {
+  .sidebar {
+    padding: var(--huleedu-space-3) var(--huleedu-space-2-5);
+  }
+
+  .sidebar-nav-item {
+    justify-content: center;
+    padding: 0;
+  }
+
+  .sidebar-nav-label {
+    display: none;
+  }
+
+  .sidebar-section {
+    height: 1px;
+    margin: var(--huleedu-space-3) var(--huleedu-space-2);
+    background: var(--huleedu-surface-divider);
+  }
+}
+
+/* Phone: a right-side drawer with labels, opened from Meny. */
+@media (max-width: 767px) {
+  .sidebar,
+  .sidebar.is-rail {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 50;
+    width: min(300px, 86vw);
+    padding: var(--huleedu-space-3);
+    border-right: 0;
+    border-left: 1px solid var(--huleedu-panel-border);
+    box-shadow: var(--huleedu-shadow-md);
+    transform: translateX(100%);
+    visibility: hidden;
+    transition:
+      transform 200ms ease-out,
+      visibility 0s linear 200ms;
+  }
+
+  .sidebar.is-open {
+    transform: none;
+    visibility: visible;
+    transition: transform 200ms ease-out;
+  }
+
+  .sidebar .sidebar-nav-item,
+  .sidebar.is-rail .sidebar-nav-item {
+    justify-content: flex-start;
+    height: 44px;
+    padding: 0 var(--huleedu-space-3);
+  }
+
+  .sidebar .sidebar-nav-label,
+  .sidebar.is-rail .sidebar-nav-label {
+    display: inline;
+  }
+
+  .sidebar .sidebar-section,
+  .sidebar.is-rail .sidebar-section {
+    height: 16px;
+    margin: var(--huleedu-space-4) var(--huleedu-space-3) var(--huleedu-space-1);
+    background: none;
+  }
+
+  .sidebar-head {
+    display: flex;
+    align-items: center;
+    padding: 0 0 var(--huleedu-space-3) var(--huleedu-space-1);
+  }
+
+  .sidebar-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: auto;
+    padding-top: var(--huleedu-space-3);
+    border-top: 1px solid var(--huleedu-surface-divider);
+  }
+
+  .sidebar-user {
+    padding: 0 var(--huleedu-space-3) var(--huleedu-space-2);
+    overflow-wrap: anywhere;
+    color: var(--huleedu-navy-60);
+    font-family: var(--huleedu-font-mono);
+    font-size: var(--huleedu-text-xs);
+  }
+}
+
+@media (max-width: 767px) and (prefers-reduced-motion: reduce) {
+  .sidebar,
+  .sidebar.is-rail,
+  .sidebar.is-open {
+    transition: none;
+  }
+}
+
+.sidebar-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: var(--huleedu-radius-md);
+  background: transparent;
   color: var(--huleedu-navy);
   cursor: pointer;
-  text-align: center;
-  transition: background-color var(--huleedu-duration-default) var(--huleedu-ease-default),
-              color var(--huleedu-duration-default) var(--huleedu-ease-default);
 }
 
-.sidebar-action-btn.is-active {
-  border-color: var(--huleedu-action);
+@media (hover: hover) {
+  .sidebar-close:hover {
+    background: var(--huleedu-action-05);
+  }
+}
+
+.sidebar-focus-toggle[aria-pressed="true"] {
   color: var(--huleedu-action);
-}
-
-.sidebar-action-btn:hover,
-.sidebar-logout-btn:hover {
-  background-color: var(--huleedu-navy);
-  color: var(--huleedu-canvas);
-}
-
-.sidebar-logout-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 </style>
