@@ -116,6 +116,11 @@
 
 ## Recent
 
+- 2026-10-17 hooks: `precommit-install` now runs the package installer
+  `repository-governance-hooks-install` (TASK-SKILL-REP-0321, runtime 0.11.134),
+  so an install from a task worktree keeps the shared hook on the primary
+  `.venv`; repository-governance pin 0.11.134 (`70bbfefd`, binding `6363b36e`).
+
 - [TASK-SKRIPT-REP-0042](docs/backlog/tasks/task-skript-rep-0042-repair-the-two-failing-docker-suite-tests-in-the-docx-background-job-proof.md)
   `done` 2026-10-17 (approved review): the docker DOCX job proof asserts the
   formatting diagnostics contract; one live recording answers the bf26 typed
