@@ -36,6 +36,7 @@ function buildGapItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
     import_record: null,
     criteria: [],
     printed_label: null,
+    print_order: [],
     retry_source: null,
     answer_key: { correct_choice_ids: [], match_pairs: [], origin: "teacher_authored" },
     body: [

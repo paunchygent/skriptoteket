@@ -36,6 +36,7 @@ function buildChoiceItem(
     import_record: null,
     criteria: [],
     printed_label: null,
+    print_order: [],
     retry_source: null,
     answer_key: { correct_choice_ids: ["choice_001"], match_pairs: [], origin: "teacher_authored" },
     body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Vilket ämne är en gas?" }] }],
