@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "84e84f2f8f525ca9753848197a597981ab37da73e7430bd637bab5c66c2aea40",
+  "source_set_digest": "e3fc0b2167fb831bf6a5c86336cdc9ffe0eaa6500a2fbc15506d05b7e2c7787c",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -2351,7 +2351,7 @@
       "type": "story",
       "title": "Course and tag metadata for saved exams",
       "path": "docs/backlog/stories/st-skript-39-08-course-and-tag-metadata-for-saved-exams.md",
-      "status": "ready",
+      "status": "done",
       "epic": "EPIC-SKRIPT-39",
       "owners": [
         {
@@ -2364,7 +2364,10 @@
       },
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "decided_at": "2026-10-17",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "All five tasks done (TASK-SKRIPT-39-08-01..05). Story check: suggested tags stored on a staging import (wave-2 walk at bd4d706d, retained 01a149c9-5bc7-7713-ba64-12dee0470bdd evidence/staging-walk-wave2-bd4d706d/out/exam-document.json); preselected course at import and export with the official course name (39-08-01 walk, retained 01a145b6-c404-761f-aeef-39de058ba7ca evidence/staging-walk-808d8f11/WALK.md); course registration in the profile (39-08-02 re-walks in 01a149c9); saved exams from the API grouped by course and date and the saved sort preference on staging d31e939a (retained 01a14b79-b714-7f76-bcba-845884716cae evidence/staging-list-check/CHECK.md). The user closed the story on 2026-10-17."
       }
     },
     {
