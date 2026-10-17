@@ -1,12 +1,5 @@
 ## Current
 
-- [TASK-SKRIPT-39-08-05](docs/backlog/tasks/task-skript-39-08-05-add-mina-kurser-courses-on-choice-and-save-each-change-at-once.md)
-  `in_progress`, owner Claude side session of the 2026-10-17 parent: Mina kurser
-  adds a chosen course at once and autosaves (no `+`, no Spara, no success
-  toast). Contract on `claude/gallant-greider-598de1` (worktree
-  `Skriptoteket-worktrees/gallant-greider-598de1`, HEAD `6b1e860f`). Next:
-  component, spec, checks, review, staging walk at 375/1440 px, merge.
-
 - [TASK-SKRIPT-REP-0038](docs/backlog/tasks/task-skript-rep-0038-retire-repository-rules-and-route-staging-walks-to-staging-walk.md)
   `ready`, owner delegated Codex lead on `codex/task-skript-rep-0038`.
   D1-D2 live routing edits pass focused gates (2026-10-11; retained session
@@ -131,6 +124,12 @@
 - Completed REP/ST-38 outcomes and evidence are in the 2026-09-05 archive above.
 
 ## Recent
+
+- [TASK-SKRIPT-39-08-05](docs/backlog/tasks/task-skript-39-08-05-add-mina-kurser-courses-on-choice-and-save-each-change-at-once.md)
+  `done` 2026-10-17: Mina kurser adds a chosen course at once and autosaves (no
+  `+`, no Spara, no success toast). Pi review F1 (late reload) repaired
+  `ab5e7e10`; review in retained `01a149c9-...`
+  `evidence/reviews/task-skript-39-08-05-c1992027.md`. No staging walk (rule).
 
 - 2026-10-17 hooks: `precommit-install` now runs the package installer
   `repository-governance-hooks-install` (TASK-SKILL-REP-0321, runtime 0.11.134),
