@@ -52,46 +52,34 @@
   34 focused tests passed; next natural checks 25.005 ms prod / 24.596 ms staging.
   Proof: task-worktree .artifacts/native-health/passive-\*-rollout-proof.json (2026-10-06).
 
-- Plan 2026-10-17 (user decisions G1-G30, lead L1-L7; retained
-  `01a1495e-8398-75be-b2da-f0b08ba11afa` evidence/planning/decisions-2026-10-17.md):
-  27 items `ready`. Wave 1 `in_progress` (owner Claude Opus parent on the Mac,
-  root `01a149c9-5bc7-7713-ba64-12dee0470bdd`): 39-04-08, 39-06-01, 39-06-03
-  and 39-08-02 on main 7a0ff47c (reviews `evidence/reviews/u1-review-3.md`,
-  `u2-review-2.md`, `u3-review-6.md` approve); U1/U3 walked on 1b417b64
-  (`evidence/staging-walk-u1-u3-1b417b64/`): pass except U-1 (a second tab's
-  CSRF rotation breaks writes, no recovery, with a Hemma Sol repair agent) and U-2
-  (see-through course list; repair re-walked and passes on fdc2973b, `evidence/staging-rewalk-fdc2973b/`); the trash check (exports follow their exam
-  there and back) passed on d9c2b3bb; U2 walked into Exam.net on d9c2b3bb
-  (`evidence/staging-walk-u2-d9c2b3bb/`: exams 5345126 and 5345127 pass, grading preview
-  passes); 39-06-01 `done` (closeout review approved); defect U-4 (the
-  workspace Spara stays disabled after parent commands, export lacks them) is with a Hemma Sol
-  agent with parent-authorised backend response change; 39-06-03 waits for its re-walk; then 39-04-10 starts; Opus prototype
-  40-04-01; a Hemma Opus lead runs 40-01-02, 40-01-03, then ST-SKRIPT-40-03. Lane 0 (Sol): TASK-SKRIPT-40-01-02
-  merged to main 2026-10-17 on huleedu-integrated 0.1.25 (TASK-SKILL-REP-0323
-  `done` added segmented-toggle keyboard operation; Sol rereview approved
-  `534e8b02`, retained `evidence/reviews/TASK-SKRIPT-40-01-02/`); `done` after
-  the Mac parent's staging walk passed on e1efb4fc (`evidence/staging-walk-40-01-02/`). 40-01-03 `done` (walk
-  passed on 1c133433). 40-03-01 walk repairs merged (d9c2b3bb) and re-walked
-  there (`evidence/staging-rewalk-40-03-01-d9c2b3bb/`: items 1 and 3 pass, item 2 is a
-  user-generated-tool path, exempt by the user); 40-03-01 `done`. 40-03-03, 40-03-05 and 40-03-06
-  `done` (repairs merged 4a5c0569 and fdc2973b; closed on review). User rule 2026-10-17: parent walks cover only the exam
-  converter, so 40-03-03..06 repairs close on unit proof and review without a re-walk. 40-03-05 and 40-03-06
-  walked on 1b417b64 (`evidence/staging-walk-batch2-1b417b64/`): defects B2-1..B2-8,
-  one Hemma Sol agent per fix in a shared worktree; Ljudtranskribering is product-disabled
-  (96b9b96f7), not walkable; 40-03-04 merged on
-  0.1.27 (81200aba, rereview 51081cb1 approved); closes after its planner sites drop the overrides
-  0.1.28 covers (TASK-SKILL-REP-0326 `done`, adopted on main 81200aba). Opus lane: ST-SKRIPT-40-04; 40-04-01 `done`
-  (prototype approved by the user 2026-10-17, decisions T6-T29,
-  `docs/mockups/app-shell-and-exam-workspace-redesign/`), then two Opus builders (40-04-02 shell, 40-04-03 workspace); it supersedes
-  TASK-SKRIPT-39-04-05 (`canceled`). Sol restyle lane: ST-SKRIPT-40-03 tasks
-  01-09, one per area, start after lane 0 without waiting for
-  TASK-SKILL-REP-0280. Sol backend lanes (no new workspace UI; workspace
-  screens frozen except bug fixes): 39-08-02/03/04, 39-04-08 (save model,
-  before 39-04-06), 39-04-06, ST-SKRIPT-39-06 tasks 01-06 (02 is the Exam.net
-  ordering and dropdown probe; the user decides ordering), ST-SKRIPT-39-07
-  tasks 01-03 (03 waits on 40-04-03). ST-SKRIPT-40-02 (icons) stays `ready`;
-  40-02-01 waits on TASK-SKILL-REP-0187. Open defect: Klassrumskartan returns
-  focus to the sidebar, not "Ny klass", after the modal closes.
+- Plan 2026-10-17 (user decisions G1-G30, lead L1-L9; retained
+  `01a1495e-8398-75be-b2da-f0b08ba11afa` evidence/planning/decisions-2026-10-17.md).
+  Owner: Claude Opus parent on the Mac, root `01a149c9-5bc7-7713-ba64-12dee0470bdd`.
+  User rule 2026-10-17: the parent walks only exam-converter changes once after
+  merge; the restyle (ST-SKRIPT-40-03) and repairs close on approved review plus
+  unit tests. Wave 1: 39-06-01 `done`; 39-04-08 and 39-06-03 close after one
+  targeted U-4 check on staging 81200aba (Spara enables after a parent command,
+  export carries it), pending; 39-08-02 waits for U-1 round 3 (Hemma lead).
+  Walk evidence: `evidence/staging-walk-u1-u3-1b417b64/`, `staging-walk-u2-d9c2b3bb/`,
+  `staging-rewalk-fdc2973b/` (U-2 passes).
+  Wave 2 backend (Sol driver+navigator pairs on Hemma, shared worktree
+  `~/apps/skriptoteket-epic-skript-39-remote`, branch `codex/epic-skript-39-remote`,
+  never pushed; shared-file hunks stay uncommitted for one parent commit):
+  39-04-06 cfc6a32c/954f3e96/aca5cbf0/878b7042 and 39-04-10 6ecd9924/4a1e56f4
+  under Sol review; 39-06-04 7f79413a/884a2e29 under review (API save/reopen test
+  missing); 39-07-01 1e3c1a3b plus a zero-point fix (user 2026-10-17: questions may
+  carry 0 points); 39-08-03 a418b491/32dacb9c/d9c4e246 (full course snapshot; no-bullet
+  courses store [] and are listed in BUILD); 39-08-04 e65a78a4/d21766a3/7f2bc00d.
+  Reviews for 07-01, 08-03 and 08-04 are next. Next: 39-06-05 then 06-06, 39-07-02, the 39-06-02 Exam.net probe;
+  integrate, staging walk, then 39-07-03. Follow-ups: cleanup deletes payload files
+  before its row commit (39-04-10 review), and `migrated_db` swallows migration-thread errors.
+  Opus lane ST-SKRIPT-40-04: 40-04-01 `done`; Opus builders on Hemma (parent-launched)
+  40-04-02 shell `cb68bbd2` (`~/apps/skriptoteket-task-skript-40-04-02-remote`) and
+  40-04-03 workspace `f6049157` (`...-40-04-03-remote`); both wait on huleedu-integrated
+  0.1.29 (new glyph meanings and a toast action button), released by the Hemma lead.
+  Hemma Opus lead `3b164d53` runs Sol pairs for 40-03-02/07/08/09 and 40-02-01, U-1
+  round 3, and the 08-36-02 closeout review (code on main 0a91a86a, unreviewed);
+  40-03-01/03/04/05/06 `done`. TASK-SKILL-REP-0326 (0.1.28) `done`.
 
 - Historical 2026-09-05 workspace planning (EPIC-SKRIPT-39 E8-E12, ADR-SKRIPT-0091,
   ST-SKRIPT-39-04): `.codex/long-term-memory/entries/session-2026-09-05-epic-39-handoff-compaction.md`.
