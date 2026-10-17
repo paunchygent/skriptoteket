@@ -169,7 +169,7 @@ describe("examWorkspaceItemReadiness", () => {
   it("accepts zero points and positive fractions, but reports negative points", () => {
     expect(examWorkspaceItemReadiness(buildChoiceItem({ points: 0 }))).toEqual([]);
     expect(examWorkspaceItemReadiness(buildChoiceItem({ points: -2 }))).toEqual([
-      "non_positive_points",
+      "negative_points",
     ]);
     expect(examWorkspaceItemReadiness(buildChoiceItem({ points: 0.5 }))).toEqual([]);
   });
@@ -178,7 +178,7 @@ describe("examWorkspaceItemReadiness", () => {
     "reports non-finite points %s",
     (points) => {
       expect(examWorkspaceItemReadiness(buildChoiceItem({ points }))).toEqual([
-        "non_positive_points",
+        "negative_points",
       ]);
     },
   );
@@ -231,7 +231,7 @@ describe("examWorkspaceReadinessByItemId", () => {
     });
 
     expect(examWorkspaceReadinessByItemId([item])).toEqual({
-      item_001: ["Poängen måste vara större än noll.", "Ett svarsalternativ saknar text."],
+      item_001: ["Poängen kan inte vara negativ.", "Ett svarsalternativ saknar text."],
     });
   });
 });

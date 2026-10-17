@@ -88,7 +88,7 @@ describe("examWorkspaceSaveRefusalCopy", () => {
 
   it("names one question with negative points", () => {
     expect(examWorkspaceSaveRefusalCopy([buildChoiceItem(1, { points: -1 })])).toBe(
-      "Fråga 1 har noll eller negativa poäng. Poängen måste vara större än noll.",
+      "Fråga 1 har negativa poäng. Poängen kan inte vara negativ.",
     );
   });
 
@@ -100,7 +100,7 @@ describe("examWorkspaceSaveRefusalCopy", () => {
     ];
 
     expect(examWorkspaceSaveRefusalCopy(items)).toBe(
-      "Frågorna 1 och 3 har noll eller negativa poäng. Poängen måste vara större än noll. " +
+      "Frågorna 1 och 3 har negativa poäng. Poängen kan inte vara negativ. " +
         "Frågorna 2 och 3 har svarsalternativ utan text. Skriv text i varje svarsalternativ.",
     );
   });

@@ -2,27 +2,20 @@
  * Exam workspace document state.
  *
  * Domain purpose:
- *   Own the teacher-facing exam workspace lifecycle: import a .docx exam,
- *   list and reopen saved documents, edit items locally with immutable
- *   updates, refuse a save the server would reject with Swedish copy naming
- *   the questions,
- *   save versioned revisions, recover from stale-save conflicts by reloading
- *   the latest saved version, and reconvert one review question from its
- *   stored source with a type the teacher keeps or changes.
+ *   Own the open exam: import, list and reopen exams, edit the working copy
+ *   with immutable updates, refuse a Spara the server would reject with
+ *   Swedish copy naming the questions, overwrite the exam file with Spara,
+ *   recover from stale-save conflicts, and reconvert one question.
  *
  * Relationships:
- *   - Used by `ExamWorkspaceView`.
- *   - Delegates transport to `api/examWorkspace.ts`.
- *   - Applies item edits from `examWorkspaceItemEdits` through one patch path.
- *   - Checks a save against `examWorkspaceItemSaveRules` before sending it.
- *   - Writes arriving AI suggestions and keeps their single effect across
- *     saves through `useExamWorkspaceSaveArrivals`, only into the exam
- *     opening that requested them.
- *   - Delegates the one-question reconversion request lifecycle to
- *     `useExamWorkspaceItemRetry`.
- *   - Dirty state is derived: the copy differs from the saved exam file
- *     (`sameDocument`).
- *   - Reports outcomes through the shared toast store.
+ *   - Transport through `api/examWorkspace.ts`; item edits through one patch
+ *     path (`useExamWorkspaceItemEdits`, `useExamWorkspaceGapKeying`).
+ *   - Reports each teacher edit through `onEdit`, which the undo history
+ *     (`useExamWorkspaceHistory`) turns into autosaved steps; installs the
+ *     history's steps and the server commands' results.
+ *   - AI suggestion arrivals, conversion merges and one-question retries
+ *     through their own composables.
+ *   - Dirty state: the copy differs from the saved exam file (`sameDocument`).
  */
 
 import { computed, ref, shallowRef } from "vue";
@@ -30,7 +23,6 @@ import { computed, ref, shallowRef } from "vue";
 import { isApiError } from "../../../api/client";
 import type { ApiError } from "../../../api/client";
 import {
-  examWorkspaceAssetUrl,
   getExamWorkspaceDocument,
   listExamWorkspaceDocuments,
   saveExamWorkspaceDocument as requestSaveExamWorkspaceDocument,
@@ -39,16 +31,14 @@ import type {
   ExamWorkspaceDocumentResponse,
   ExamWorkspaceDocumentSummary,
   ExamCourseChoice,
+  ExamListOrdering,
   NativeExamDocument,
   NativeExamItem,
   NativeExamItemKind,
 } from "../../../api/examWorkspace";
 import { useToast } from "../../../composables/useToast";
-import { nextItemId, sameDocument } from "./examWorkspaceConversionMerge";
-import {
-  newTeacherItem,
-  type TeacherItemKind,
-} from "./examWorkspaceItemEdits";
+import { examWorkspaceAssetUrls } from "./examWorkspaceAssetUrls";
+import { sameDocument } from "./examWorkspaceConversionMerge";
 import { useExamWorkspaceItemEdits } from "./useExamWorkspaceItemEdits";
 import { withRestoredSuggestion } from "./examWorkspaceSuggestionEdits";
 import { examWorkspaceSaveRefusalCopy } from "./examWorkspaceItemSaveRules";
@@ -89,14 +79,23 @@ function refusedPlaceholderChange(error: unknown): error is ApiError {
  */
 export type ExamWorkspaceOpening = { readonly lineageId: string };
 
-export function useExamWorkspaceDocument() {
+export type ExamWorkspaceDocumentOptions = {
+  /** A teacher edit changed the copy; structural edits become an undo step at once. */
+  onEdit?: (structural: boolean) => void;
+};
+
+export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions = {}) {
   const toast = useToast();
+  const noteEdit = options.onEdit ?? (() => undefined);
 
   const workspaceDocument = ref<NativeExamDocument | null>(null);
   // The last working response remains the conversion merge base, not the Spara baseline.
   const serverDocument = ref<NativeExamDocument | null>(null);
   const savedDocument = ref<NativeExamDocument | null>(null);
   const summary = ref<ExamWorkspaceDocumentSummary | null>(null);
+  /** The server's newest undo step; history commands are guarded by it. */
+  const historyCursor = ref<string | null>(null);
+  const listOrdering = ref<ExamListOrdering>("course");
   const notes = ref<string[]>([]);
   const openExam = shallowRef<ExamWorkspaceOpening | null>(null);
   const isDirty = computed(() => !sameDocument(workspaceDocument.value, savedDocument.value));
@@ -152,19 +151,9 @@ export function useExamWorkspaceDocument() {
   });
 
   /** The open document's pictures by asset id, for the editor's image atoms. */
-  const assetUrls = computed<Record<string, string>>(() => {
-    const current = workspaceDocument.value;
-    const lineageId = summary.value?.lineage_id;
-    if (!current || !lineageId || current.assets.length === 0) {
-      return {};
-    }
-    return Object.fromEntries(
-      current.assets.map((asset) => [
-        asset.asset_id,
-        examWorkspaceAssetUrl(lineageId, asset.asset_id, current.revision),
-      ]),
-    );
-  });
+  const assetUrls = computed(() =>
+    examWorkspaceAssetUrls(workspaceDocument.value, summary.value?.lineage_id ?? null),
+  );
 
   /** Whether `opening` is the exam opening in front of the teacher now. */
   function isOpen(opening: ExamWorkspaceOpening): boolean {
@@ -182,6 +171,7 @@ export function useExamWorkspaceDocument() {
     serverDocument.value = response.document;
     savedDocument.value = response.saved_document;
     summary.value = response.summary;
+    historyCursor.value = response.history_cursor;
     savedDocuments.value = savedDocuments.value.some(
       (entry) => entry.lineage_id === response.summary.lineage_id,
     )
@@ -215,6 +205,7 @@ export function useExamWorkspaceDocument() {
     try {
       const response = await listExamWorkspaceDocuments();
       savedDocuments.value = mergeSavedDocuments(savedDocuments.value, response.documents.map(reconcile));
+      listOrdering.value = response.ordering;
     } catch {
       toast.failure(LIST_FAILURE_COPY);
     }
@@ -351,12 +342,14 @@ export function useExamWorkspaceDocument() {
     const current = workspaceDocument.value;
     if (!current || isBusy.value) return;
     workspaceDocument.value = { ...current, title };
+    noteEdit(false);
   }
 
   function setCourse(course: ExamCourseChoice | null): void {
     const current = workspaceDocument.value;
     if (!current || isBusy.value) return;
     workspaceDocument.value = { ...current, header: { ...current.header, course } };
+    noteEdit(true);
   }
 
   const { beginSummaryRead, renameFailure, renameFile } = useExamWorkspaceRename({
@@ -406,46 +399,63 @@ export function useExamWorkspaceDocument() {
       return false;
     }
     workspaceDocument.value = { ...current, items };
+    noteEdit(false);
     return true;
   }
 
   // Every gap keying edit and its asynchronous misspelling reply.
   const keying = useExamWorkspaceGapKeying({ openExam, patchItem, workspaceDocument });
-  const { removeItemAutomaticValue, updateItemGapValues } = keying;
 
   // Every teacher edit command, applied through the one patch path above.
-  const {
-    markItemReviewed,
-    showItemGapAsText,
-    undoItemInterpretation,
-    updateItemChoiceBody,
-    updateItemCorrectChoices,
-    updateItemCriteria,
-    updateItemMatchEntryBody,
-    updateItemMatchPairs,
-    updateItemParagraphHeading,
-    updateItemParagraphSegments,
-    updateItemPoints,
-    updateItemTickPoints,
-  } = useExamWorkspaceItemEdits(patchItem);
+  const itemEdits = useExamWorkspaceItemEdits(patchItem);
 
   function restoreItemSuggestion(itemId: string): void {
     patchItem(itemId, (item) => withRestoredSuggestion(item));
   }
 
-  function addItem(kind: TeacherItemKind): void {
+  /** A structural edit of the whole copy (add, delete, reorder); it is one undo step at once. */
+  function editDocument(
+    edit: (document: NativeExamDocument) => NativeExamDocument,
+    selectId: string | null = null,
+  ): boolean {
     const current = workspaceDocument.value;
     if (!current || isBusy.value) {
-      return;
+      return false;
     }
-    const itemId = nextItemId(current.items.map((item) => item.item_id));
-    const newItem = newTeacherItem(itemId, current.items.length + 1, kind);
-    workspaceDocument.value = { ...current, items: [...current.items, newItem] };
-    selectedItemId.value = itemId;
+    workspaceDocument.value = edit(current);
+    if (selectId !== null) {
+      selectedItemId.value = selectId;
+    }
+    noteEdit(true);
+    return true;
+  }
+
+  function keepSelection(document: NativeExamDocument): void {
+    if (!document.items.some((item) => item.item_id === selectedItemId.value)) {
+      selectedItemId.value = document.items[0]?.item_id ?? null;
+    }
+  }
+
+  /** Put an undo step's document in front of the teacher; not an edit. */
+  function installDocument(document: NativeExamDocument): void {
+    workspaceDocument.value = document;
+    keying.invalidateCopy();
+    keepSelection(document);
+  }
+
+  /** A server command (parent, change type) stored a new step; show its document. */
+  function applyCommandResponse(response: ExamWorkspaceDocumentResponse): void {
+    applyResponse(response);
+    keying.invalidateCopy();
   }
 
   return {
-    addItem,
+    ...itemEdits,
+    applyCommandResponse,
+    editDocument,
+    historyCursor,
+    installDocument,
+    listOrdering,
     applyArrivingSuggestions,
     assetUrls,
     conflictNotice,
@@ -462,7 +472,6 @@ export function useExamWorkspaceDocument() {
     isDirty,
     isOpen,
     loadSavedDocuments,
-    markItemReviewed,
     notes,
     openDocument,
     openExam: computed(() => openExam.value),
@@ -474,25 +483,15 @@ export function useExamWorkspaceDocument() {
     saveDocument,
     savedDocuments,
     savedRevision,
+    serverDocument,
     selectItem,
     setTitle,
     setCourse,
     selectedItem,
     selectedItemId,
     summary,
-    updateItemParagraphSegments,
-    updateItemParagraphHeading,
-    updateItemChoiceBody,
-    updateItemCorrectChoices,
-    updateItemGapValues,
-    undoItemInterpretation,
-    removeItemAutomaticValue,
-    showItemGapAsText,
-    updateItemCriteria,
-    updateItemMatchEntryBody,
-    updateItemMatchPairs,
-    updateItemTickPoints,
-    updateItemPoints,
+    updateItemGapValues: keying.updateItemGapValues,
+    removeItemAutomaticValue: keying.removeItemAutomaticValue,
     workspaceDocument,
   };
 }

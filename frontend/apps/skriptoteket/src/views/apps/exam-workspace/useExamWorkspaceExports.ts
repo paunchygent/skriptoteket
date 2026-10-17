@@ -40,6 +40,9 @@ export const EXAM_WORKSPACE_EXPORT_BLOCKER_COPY: Record<ExamWorkspaceExportBlock
     missing_answer_key: "Frågan saknar facit. Fyll i facit eller låt AI föreslå ett.",
     missing_points: "Poäng saknas.",
     inline_choice_option_heading: "Rubrikformat är inte tillåtet i rullistealternativ.",
+    empty_choice: "Ett svarsalternativ saknar text.",
+    empty_gap_option: "Ett alternativ i en rullista saknar text.",
+    empty_match_entry: "En rad eller en kategori saknar text.",
     unbuilt_question:
       "Frågan kunde inte konverteras och visas som i källan. Kontrollera den och markera den som granskad.",
   };

@@ -155,7 +155,7 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
     );
   });
 
-  it("adds a new teacher-created free-text question with the next free item id", async () => {
+  it("adds a new free-text question with the next free item id after the selected question", async () => {
     const { wrapper } = await mountExamWorkspace();
     await importFixtureDocument(wrapper);
 
@@ -166,7 +166,7 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
     expect(newRow.exists()).toBe(true);
     expect(newRow.text()).toContain("Fritext");
     expect(wrapper.find('[data-test="exam-workspace-item-editor"]').text()).toContain(
-      "Fråga 9",
+      "Fråga 2",
     );
     expect(wrapper.find('[data-test="exam-workspace-dirty-pill"]').exists()).toBe(true);
   });

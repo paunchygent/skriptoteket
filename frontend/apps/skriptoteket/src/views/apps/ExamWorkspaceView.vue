@@ -30,7 +30,7 @@ import { toExamWorkspaceItemRows } from "./exam-workspace/examWorkspaceRows";
 import ExamWorkspaceTotalSignal from "./exam-workspace/ExamWorkspaceTotalSignal.vue";
 import { examWorkspaceSharedParagraphs } from "./exam-workspace/examWorkspaceSharedInstruction";
 import { useExamWorkspaceAddress } from "./exam-workspace/useExamWorkspaceAddress";
-import { useExamWorkspaceDocument } from "./exam-workspace/useExamWorkspaceDocument";
+import { useExamWorkspaceEditing } from "./exam-workspace/useExamWorkspaceEditing";
 import { useExamWorkspaceEnrichment } from "./exam-workspace/useExamWorkspaceEnrichment";
 import { useExamWorkspaceExports } from "./exam-workspace/useExamWorkspaceExports";
 import { useExamWorkspaceLayout } from "./exam-workspace/useExamWorkspaceLayout";
@@ -41,7 +41,7 @@ type ExamWorkspaceMode = "filer" | "redigera";
 const layout = useExamWorkspaceLayout();
 
 const {
-  addItem,
+  structure,
   applyArrivingSuggestions,
   assetUrls,
   conflictNotice,
@@ -88,7 +88,7 @@ const {
   updateItemPoints,
   updateItemTickPoints,
   workspaceDocument,
-} = useExamWorkspaceDocument();
+} = useExamWorkspaceEditing();
 
 const { showDocument } = useExamWorkspaceAddress({ isDirty, openDocument, summary });
 
@@ -225,7 +225,7 @@ function goToItem(itemId: string): void {
 }
 
 function handleAddItem(kind: TeacherItemKind): void {
-  addItem(kind);
+  structure.addItem(kind);
   questionSheetOpen.value = false;
 }
 

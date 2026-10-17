@@ -78,22 +78,22 @@ describe("ExamWorkspaceView save rules", () => {
 
     expect(points.attributes("aria-invalid")).toBe("true");
     const hint = wrapper.get('[data-test="exam-workspace-points-hint"]');
-    expect(hint.text()).toBe("Poängen måste vara större än noll.");
+    expect(hint.text()).toBe("Poängen kan inte vara negativ.");
     expect(points.attributes("aria-describedby")).toBe(hint.attributes("id"));
     expect(wrapper.get('[data-test="exam-workspace-item-row-item_002"]').text()).toContain(
-      "Poängen måste vara större än noll.",
+      "Poängen kan inte vara negativ.",
     );
 
     await wrapper.get('[data-test="exam-workspace-item-details-toggle"]').trigger("click");
     expect(wrapper.get('[data-test="exam-workspace-item-readiness"]').text()).toContain(
-      "Poängen måste vara större än noll.",
+      "Poängen kan inte vara negativ.",
     );
 
     await saveDocument(wrapper);
 
     expect(apiMocks.saveExamWorkspaceDocument).not.toHaveBeenCalled();
     expect(vi.mocked(useToastStore().failure)).toHaveBeenCalledWith(
-      "Fråga 2 har noll eller negativa poäng. Poängen måste vara större än noll.",
+      "Fråga 2 har negativa poäng. Poängen kan inte vara negativ.",
     );
   });
 
@@ -106,7 +106,7 @@ describe("ExamWorkspaceView save rules", () => {
 
     expect(
       wrapper.get('[data-test="exam-workspace-readiness-item-item_005"]').text(),
-    ).toContain("Poängen måste vara större än noll.");
+    ).toContain("Poängen kan inte vara negativ.");
   });
 
   it("flags an empty choice text and refuses the save, naming every question", async () => {

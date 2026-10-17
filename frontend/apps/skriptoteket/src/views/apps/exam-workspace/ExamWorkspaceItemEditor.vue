@@ -47,8 +47,8 @@ import ExamWorkspaceChoiceField from "./ExamWorkspaceChoiceField.vue";
 import ExamWorkspaceCriteriaField from "./ExamWorkspaceCriteriaField.vue";
 import ExamWorkspaceKategoriseraGrid from "./ExamWorkspaceKategoriseraGrid.vue";
 import {
-  hasNonPositivePoints,
-  NON_POSITIVE_POINTS_GUIDANCE,
+  hasNegativePoints,
+  NEGATIVE_POINTS_GUIDANCE,
 } from "./examWorkspaceItemSaveRules";
 import { PARENT_CHILD_LOCKED_COPY } from "./examWorkspaceParents";
 import type { ExamWorkspaceParentChild } from "./examWorkspaceParents";
@@ -115,7 +115,7 @@ const typeUncertain = computed(
     props.item.review.confidence < TYPE_CONFIDENCE_THRESHOLD,
 );
 
-const pointsInvalid = computed(() => props.item.points === null || hasNonPositivePoints(props.item));
+const pointsInvalid = computed(() => props.item.points === null || hasNegativePoints(props.item));
 const hasCriteria = computed(() => props.item.criteria.length > 0);
 
 const isGrid = computed(() => props.item.kind === "matching");
@@ -344,19 +344,19 @@ function handlePointsInput(event: Event): void {
             :readonly="isGrid || hasCriteria"
             :title="isGrid ? 'Poäng per kryss × antal kryss' : hasCriteria ? 'Summan av kriteriernas poäng' : undefined"
             :aria-invalid="pointsInvalid ? 'true' : undefined"
-            :aria-describedby="hasNonPositivePoints(item) ? pointsHintId : undefined"
+            :aria-describedby="hasNegativePoints(item) ? pointsHintId : undefined"
             data-test="exam-workspace-item-points-input"
             @input="handlePointsInput"
           >
         </label>
       </div>
       <p
-        v-if="hasNonPositivePoints(item)"
+        v-if="hasNegativePoints(item)"
         :id="pointsHintId"
         class="border-l-4 border-warning pl-2 text-sm leading-snug text-navy"
         data-test="exam-workspace-points-hint"
       >
-        {{ NON_POSITIVE_POINTS_GUIDANCE }}
+        {{ NEGATIVE_POINTS_GUIDANCE }}
       </p>
     </div>
 
