@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "7c76ea23249f419a0247db55f6f782de29028a07724f55aed87d72414c009918",
+  "source_set_digest": "fbc084bd49299b8ee98db2c1e86475258229de52b2edd2c0aeb5be80dbb850c9",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4942,6 +4942,25 @@
         "decided_at": "2026-10-13",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "Pi ruthless-reviewer rereview approved d09bd286 after the F1 lock, F2 retry and F3 test-synchronization repairs (retained evidence/reviews/TASK-SKRIPT-39-04-09/rereview-d09bd286.md); merged main c018ae9e and deployed to Hemma staging; all seven Validation walk steps passed in the built-in browser on c018ae9e and the user closed the task on 2026-10-13 (evidence/staging-walk-c018ae9e/README.md), all in session 01a13559-bf2e-760d-a690-3a3dea446cd5."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-04-10",
+      "type": "task",
+      "title": "A Mina filer file restored from the trash is never deleted by the expiry cleanup that selected it",
+      "path": "docs/backlog/tasks/task-skript-39-04-10-a-mina-filer-file-restored-from-the-trash-is-never-deleted-by-the-expiry-cleanup-that-selected-it.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {
