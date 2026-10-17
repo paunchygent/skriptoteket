@@ -152,12 +152,3 @@ export function examWorkspaceListEntries(
 export function examWorkspaceListTotal(entries: ExamWorkspaceListEntry[]): number {
   return entries.reduce((sum, entry) => sum + (entry.kind === "item" ? (entry.points ?? 0) : 0), 0);
 }
-
-/** The first part whose printed total differs, or "exam" when only the exam total does. */
-export function examWorkspaceFirstPrintedMismatch(
-  entries: ExamWorkspaceListEntry[],
-  examPrintedTotal: number | null,
-): string | "exam" | null {
-  const part = entries.find((entry) => entry.kind === "parent" && entry.printedTotal !== null);
-  return part ? part.id : examPrintedTotal !== null ? "exam" : null;
-}

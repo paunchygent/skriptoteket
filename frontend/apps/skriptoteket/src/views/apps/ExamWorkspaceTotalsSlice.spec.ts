@@ -1,8 +1,8 @@
 /**
  * Printed totals are advisory, live warnings, never a save or export gate
  * (user ruling 2026-10-17): a part's line and the exam total read
- * "14 p · provtexten anger 15 p" in amber while they differ, and one header
- * warning "Poängen stämmer inte med provtexten" leads to the first difference.
+ * "14 p · provtexten anger 15 p" in amber while they differ. Each difference
+ * is said once, on its own level: no header warning repeats it.
  */
 import { flushPromises } from "@vue/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -106,7 +106,8 @@ describe("workspace printed exam totals", () => {
     expect(wrapper.get(EXAM_POINTS).text()).toBe("Totalt 6,5 p · provtexten anger 7,5 p");
     expect(wrapper.get(EXAM_POINTS).get(".list__sum").text()).toBe("6,5 p");
     expect(wrapper.get(EXAM_POINTS).get(".list__printed").text()).toBe("· provtexten anger 7,5 p");
-    expect(wrapper.get(WARNING).text()).toBe("Poängen stämmer inte med provtexten");
+    expect(wrapper.find(WARNING).exists()).toBe(false);
+    expect(wrapper.text()).not.toContain("Poängen stämmer inte");
     expect(wrapper.text()).not.toMatch(/Tryckt|TRYCKT/);
 
     apiMocks.downloadExamWorkspaceExport.mockResolvedValue({
@@ -136,10 +137,9 @@ describe("workspace printed exam totals", () => {
     await wrapper.get('[data-test="exam-workspace-item-points-input"]').setValue("3.5");
     expect(wrapper.get(EXAM_POINTS).text()).toBe("Totalt 8,5 p · provtexten anger 7,5 p");
     expect(partLine(wrapper, "parent_001").text()).toBe("8,5 p · provtexten anger 7,5 p");
-    expect(wrapper.find(WARNING).exists()).toBe(true);
 
     await wrapper.get('[data-test="exam-workspace-item-points-input"]').setValue("2.5");
-    expect(wrapper.find(WARNING).exists()).toBe(false);
+    expect(wrapper.get(EXAM_POINTS).text()).toBe("Totalt 7,5 p");
     expect(partLine(wrapper, "parent_001").exists()).toBe(false);
     expect(apiMocks.getExamWorkspaceDocument).toHaveBeenCalledTimes(1);
     expect(apiMocks.saveExamWorkspaceDocument).not.toHaveBeenCalled();
@@ -149,7 +149,7 @@ describe("workspace printed exam totals", () => {
     const wrapper = await openDocument(documentWithTotals(10, [2, 3]));
     await selectItemRow(wrapper, "item_001");
     await wrapper.get('[data-test="exam-workspace-item-points-input"]').setValue("4");
-    expect(wrapper.find(WARNING).exists()).toBe(true);
+    expect(wrapper.get(EXAM_POINTS).text()).toBe("Totalt 7 p · provtexten anger 10 p");
     expect(wrapper.get('[data-test="exam-workspace-save"]').attributes("disabled")).toBeUndefined();
   });
 
@@ -164,7 +164,7 @@ describe("workspace printed exam totals", () => {
     expect(partLine(wrapper, "parent_001").exists()).toBe(false);
   });
 
-  it("puts a part difference only on its own part, and the warning leads to it", async () => {
+  it("puts a part difference only on its own part and its instruction, said once per level", async () => {
     const document = documentWithTotals(null, [2, 3, 1, 4]);
     document.parents = [
       { parent_id: "parent_002", item_ids: ["item_003", "item_004"], printed_total: 8, instruction: [] },
@@ -178,26 +178,19 @@ describe("workspace printed exam totals", () => {
     // The meta line drops its points, so "5 p" is not said twice on the row.
     expect(wrapper.get('[data-test="exam-workspace-row-parent_002"]').text().match(/5 p/g)).toHaveLength(1);
 
-    await wrapper.get(WARNING).trigger("click");
+    expect(wrapper.find(WARNING).exists()).toBe(false);
+    await wrapper.get('[data-test="exam-workspace-row-parent_002"]').trigger("click");
 
     const editor = wrapper.get('[data-test="exam-workspace-instruction-editor"]');
     expect(editor.get('[data-test="exam-workspace-part-points"]').text()).toBe("5 p · provtexten anger 8 p");
     expect(wrapper.get('[data-test="exam-workspace-row-parent_002"]').attributes("aria-selected")).toBe("true");
   });
 
-  it("leads to the exam total when only the exam total differs", async () => {
+  it("says an exam total difference once, on the footer line, with no header warning", async () => {
     const wrapper = await openDocument(documentWithTotals(9, [2, 3]));
-    await wrapper.get(WARNING).trigger("click");
-    await flushPromises();
-    expect(document.activeElement).toBe(wrapper.get(EXAM_POINTS).element);
-  });
-
-  it("opens the phone list to show the exam total", async () => {
-    const wrapper = await openDocument(documentWithTotals(9, [2, 3]), "phone");
-    await wrapper.get(WARNING).trigger("click");
-    await flushPromises();
-    expect(wrapper.get('[data-test="exam-workspace-question-list"]').classes()).toContain("list--overlay");
-    expect(document.activeElement).toBe(wrapper.get(EXAM_POINTS).element);
+    expect(wrapper.get(EXAM_POINTS).text()).toBe("Totalt 5 p · provtexten anger 9 p");
+    expect(wrapper.find(WARNING).exists()).toBe(false);
+    expect(wrapper.text().match(/provtexten anger/g)).toHaveLength(1);
   });
 });
 

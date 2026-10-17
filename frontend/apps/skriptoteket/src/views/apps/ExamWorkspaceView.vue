@@ -27,7 +27,6 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 
 import type { ExamWorkspaceExportTarget } from "../../api/examWorkspace";
-import { UiGlyph } from "../../components/ui";
 import ExamWorkspaceDetailsDrawer from "./exam-workspace/ExamWorkspaceDetailsDrawer.vue";
 import ExamWorkspaceDrawer from "./exam-workspace/ExamWorkspaceDrawer.vue";
 import ExamWorkspaceExportDrawer from "./exam-workspace/ExamWorkspaceExportDrawer.vue";
@@ -50,7 +49,6 @@ import type { ExamWorkspaceReadinessReason } from "./exam-workspace/examWorkspac
 import { isTeacherReviewed } from "./exam-workspace/examWorkspaceItemEdits";
 import type { TeacherItemKind } from "./exam-workspace/examWorkspaceItemEdits";
 import {
-  examWorkspaceFirstPrintedMismatch,
   examWorkspaceListEntries,
   examWorkspaceListTotal,
 } from "./exam-workspace/examWorkspaceListEntries";
@@ -180,8 +178,6 @@ const globalInstructions = computed(() =>
 const examPrintedTotal = computed(() =>
   workspaceDocument.value ? examWorkspaceExamPrintedDifference(workspaceDocument.value) : null,
 );
-/** Where "Poängen stämmer inte med provtexten" leads: the first differing part, or the exam total. */
-const firstPrintedMismatch = computed(() => examWorkspaceFirstPrintedMismatch(entries.value, examPrintedTotal.value));
 
 const selectedEntryId = computed(() => selectedParentId.value ?? selectedItemId.value);
 const selectedEntry = computed(() => entries.value.find((entry) => entry.id === selectedEntryId.value) ?? null);
@@ -253,20 +249,6 @@ const enrichmentBusy = computed(() => enrichment.isRequesting.value || enrichmen
 
 function questionLabel(itemId: string): string | null {
   return itemEntries.value.find((entry) => entry.id === itemId)?.label ?? null;
-}
-
-async function gotoPrintedMismatch(): Promise<void> {
-  const target = firstPrintedMismatch.value;
-  if (target === null) return;
-  if (target !== "exam") {
-    selectEntry(target);
-    return;
-  }
-  if (isPhone.value) listOpen.value = true;
-  await nextTick();
-  const total = document.getElementById("exam-workspace-exam-points");
-  total?.scrollIntoView?.({ block: "nearest" });
-  total?.focus();
 }
 
 function toggleDrawer(name: DrawerName): void {
@@ -544,18 +526,6 @@ onBeforeUnmount(() => {
       </template>
     </ExamWorkspaceHeader>
 
-    <button
-      v-if="firstPrintedMismatch !== null"
-      type="button"
-      class="ws__points"
-      data-test="exam-workspace-points-warning"
-      @click="gotoPrintedMismatch"
-    >
-      <UiGlyph
-        meaning="status-warning"
-        :size="16"
-      />Poängen stämmer inte med provtexten
-    </button>
     <p
       v-if="conflictNotice"
       class="xw-notice xw-notice--error ws__bar"
@@ -807,15 +777,6 @@ onBeforeUnmount(() => {
   background: var(--huleedu-canvas); color: var(--huleedu-navy);
 }
 .ws__bar { margin: var(--huleedu-space-2) var(--huleedu-space-6) 0; }
-.ws__points {
-  all: unset; box-sizing: border-box; display: flex; align-items: flex-start; gap: var(--huleedu-space-1-5); align-self: flex-start;
-  min-height: var(--xw-ctl-fine); margin: var(--huleedu-space-1) var(--huleedu-space-6) 0; padding: var(--huleedu-space-1-5) 0; cursor: pointer;
-  font-size: var(--huleedu-text-sm); color: var(--huleedu-warning); overflow-wrap: anywhere;
-}
-.ws__points svg { flex: none; margin-top: 2px; }
-.ws__points:focus-visible { outline: 2px solid var(--huleedu-action-40); }
-@media (hover: hover) { .ws__points:hover { text-decoration: underline; } }
-@media (pointer: coarse) { .ws__points { min-height: var(--xw-ctl); } }
 .ws__body {
   position: relative; flex: 1; min-height: 0; display: grid;
   grid-template-columns: var(--xw-list) minmax(0, 1fr);
@@ -837,7 +798,6 @@ onBeforeUnmount(() => {
   .ws__body--empty, .ws--drawer .ws__body--empty { grid-template-columns: minmax(0, 1fr); }
   .ws__in { padding: var(--huleedu-space-4) var(--huleedu-space-5) var(--huleedu-space-12); }
   .ws__bar { margin: var(--huleedu-space-2) var(--huleedu-space-4) 0; }
-  .ws__points { margin: var(--huleedu-space-1) var(--huleedu-space-4) 0; }
   .ws__shared { padding: var(--huleedu-space-2) var(--huleedu-space-4); }
 }
 @media (max-width: 767px) {

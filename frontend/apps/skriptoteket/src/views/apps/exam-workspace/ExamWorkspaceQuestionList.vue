@@ -123,9 +123,7 @@ watch(
     </div>
     <div class="list__foot">
       <span
-        id="exam-workspace-exam-points"
         class="list__total"
-        tabindex="-1"
         data-test="exam-workspace-exam-points"
       >Totalt <strong class="list__sum">{{ totalParts.sum }}</strong><span
         v-if="totalParts.printedNote"
@@ -155,8 +153,7 @@ watch(
   padding: var(--huleedu-space-2) var(--huleedu-space-6); border-top: 1px solid var(--huleedu-surface-divider);
   font-size: var(--huleedu-text-sm);
 }
-.list__total { min-width: 0; overflow-wrap: anywhere; outline: none; }
-.list__total:focus-visible { outline: 2px solid var(--huleedu-action-40); outline-offset: 2px; }
+.list__total { min-width: 0; overflow-wrap: anywhere; }
 .list__sum { font-weight: var(--huleedu-font-semibold); }
 .list__printed { color: var(--huleedu-warning); }
 @media (max-width: 1279px) {
