@@ -10,6 +10,9 @@ import pytest
 
 from skriptoteket.application.curated_apps.exam_conversion_producers import parse_source_exam
 from skriptoteket.application.curated_apps.handlers.conversion_hub_jobs import ConversionHubUpload
+from skriptoteket.domain.curated_apps.exam_conversion.digiexam_contracts import (
+    DigiExamAnswerKeyProvenance,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.digiexam_import import (
     build_native_exam_from_digiexam,
 )
@@ -90,8 +93,73 @@ def test_real_parser_output_preserves_question_semantics_and_wording(filename):
             assert all(message in native.review.reasons for message in followups)
         assert native.import_record is not None
         assert native.import_record.original_wording.question_text == "\n".join(source.prompt_lines)
+        assert native.import_record.original_wording.answer_key_text == (
+            "\n".join(
+                [
+                    alternative.title
+                    for alternative in source.alternatives
+                    if alternative.id in source.answer_key.correct_alternative_ids
+                ]
+                + [answer.value for answer in source.answer_key.correct_gap_answers]
+            )
+            if source.answer_key.provenance is DigiExamAnswerKeyProvenance.DXE_POPULATED_KEY
+            else None
+        )
         assert native.import_record.steps
         assert set(native.body_asset_ids()) <= set(mapped.assets_by_id)
+
+
+@pytest.mark.parametrize("has_key", [True, False])
+def test_source_choice_key_keeps_exact_wording_independent_of_later_edits(has_key):
+    """Synthetic key mutation on parsed DigiExam structure, not a producer capture."""
+    fixture = _FIXTURES / "1772718003-test-samma-prov-i-digiexam.dxe"
+    content = fixture.read_bytes()
+    exam = parse_source_exam(
+        upload=ConversionHubUpload(
+            filename=fixture.name, file_bytes=content, content_type="application/octet-stream"
+        )
+    )
+    source = exam.items[1]
+    source = replace(
+        source,
+        alternatives=(
+            replace(source.alternatives[0], id=17, title="Fel svar", right=False),
+            replace(
+                source.alternatives[1],
+                id=4,
+                title="  Rätt svar: å, ä & ö.\nRad två  ",
+                right=has_key,
+            ),
+        ),
+        answer_key=replace(
+            source.answer_key,
+            provenance=(
+                DigiExamAnswerKeyProvenance.DXE_POPULATED_KEY
+                if has_key
+                else DigiExamAnswerKeyProvenance.ABSENT
+            ),
+            correct_alternative_ids=(4,) if has_key else (),
+        ),
+    )
+    document = build_native_exam_from_digiexam(
+        exam=replace(exam, items=(source,)),
+        document_id=uuid4(),
+        source_sha256=hashlib.sha256(content).hexdigest(),
+    ).document
+    item = document.items[0]
+    assert item.answer_key.origin.value == ("source_provided" if has_key else "absent")
+    choices = {choice.choice_id: _choice_text(choice) for choice in item.choices}
+    assert [choices[key] for key in item.answer_key.correct_choice_ids] == (
+        ["  Rätt svar: å, ä & ö.\nRad två  "] if has_key else []
+    )
+    assert item.import_record is not None
+    assert item.import_record.original_wording.answer_key_text == (
+        "  Rätt svar: å, ä & ö.\nRad två  " if has_key else None
+    )
+    edited = item.model_copy(
+        update={"choices": (item.choices[1].model_copy(update={"body": item.choices[0].body}),)}
+    )
+    assert edited.import_record == item.import_record
 
 
 @pytest.mark.parametrize("score", [0, 0.0, 0.5, 2, 2.5])

@@ -135,6 +135,20 @@ def build_native_exam_from_digiexam(
     )
 
 
+def _source_answer_key_wording(source: DigiExamIrItem) -> str | None:
+    """Snapshot supplied choice labels or gap values, without inventing a key."""
+    if source.answer_key.provenance is not DigiExamAnswerKeyProvenance.DXE_POPULATED_KEY:
+        return None
+    return "\n".join(
+        [
+            alternative.title
+            for alternative in source.alternatives
+            if alternative.id in source.answer_key.correct_alternative_ids
+        ]
+        + [answer.value for answer in source.answer_key.correct_gap_answers]
+    )
+
+
 def _item(
     source: DigiExamIrItem,
     *,
@@ -207,7 +221,7 @@ def _item(
                     html=source.prompt_html,
                     lines=source.prompt_lines,
                 ),
-                answer_key_text=None,
+                answer_key_text=_source_answer_key_wording(source),
             ),
             steps=(
                 NativeExamChosenTypeStep(chosen_kind=kind),
