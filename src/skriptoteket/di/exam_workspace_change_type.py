@@ -1,5 +1,7 @@
 """Request-scoped wiring for the question-type command."""
 
+import random
+
 from dishka import Provider, Scope, provide
 
 from skriptoteket.application.curated_apps.handlers.exam_workspace_change_type import (
@@ -19,4 +21,6 @@ class ExamWorkspaceChangeTypeProvider(Provider):
         reader: GetExamWorkspaceDocumentHandlerProtocol,
         undo_steps: StoreExamWorkspaceUndoStepHandlerProtocol,
     ) -> ChangeExamWorkspaceItemTypeHandlerProtocol:
-        return ChangeExamWorkspaceItemTypeHandler(reader=reader, undo_steps=undo_steps)
+        return ChangeExamWorkspaceItemTypeHandler(
+            reader=reader, undo_steps=undo_steps, rng=random.SystemRandom()
+        )

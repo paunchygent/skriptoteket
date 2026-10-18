@@ -107,6 +107,13 @@ p {{
 .matching-grid th[scope="row"] {{
   text-align: left;
 }}
+.number-box {{
+  border: 1pt solid #111;
+  display: inline-block;
+  width: 24pt;
+  height: 16pt;
+  vertical-align: middle;
+}}
 .tick-box {{
   border: 1pt solid #111;
   display: inline-block;

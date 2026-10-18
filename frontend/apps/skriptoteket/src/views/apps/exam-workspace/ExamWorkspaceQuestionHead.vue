@@ -34,8 +34,8 @@ const PROTOTYPE_KIND_ORDER: NativeExamItemKind[] = [
   "gap_fill",
   "inline_choice",
   "matching",
+  "ordering",
 ];
-const ORDERED_KINDS = PROTOTYPE_KIND_ORDER.map((kind) => KINDS.find(([entry]) => entry === kind)!);
 
 const props = defineProps<{
   label: string;
@@ -49,6 +49,13 @@ const props = defineProps<{
   suggestedKind: NativeExamItemKind | null;
 }>();
 
+/** Ordering questions are standalone only (ST-SKRIPT-39-06 P3), so a deluppgift cannot change to Ordna. */
+const orderedKinds = computed(() =>
+  PROTOTYPE_KIND_ORDER.filter((kind) => !(props.child !== null && kind === "ordering")).map(
+    (kind) => KINDS.find(([entry]) => entry === kind)!,
+  ),
+);
+
 const emit = defineEmits<{
   changeType: [kind: NativeExamItemKind];
   move: [delta: -1 | 1];
@@ -59,7 +66,6 @@ const typeTrigger = ref<HTMLButtonElement | null>(null);
 const moreTrigger = ref<HTMLButtonElement | null>(null);
 const typeOpen = ref(false);
 const moreOpen = ref(false);
-const hintId = useId();
 const deleteHintId = useId();
 
 const typeLabel = computed(() => (props.unbuilt ? "Ej konverterad" : EXAM_WORKSPACE_TYPE_LABELS[props.kind]));
@@ -161,7 +167,7 @@ function chooseMore(action: "up" | "down" | "remove"): void {
         Byt frågetyp
       </div>
       <button
-        v-for="[entryKind, entryLabel] in ORDERED_KINDS"
+        v-for="[entryKind, entryLabel] in orderedKinds"
         :key="entryKind"
         type="button"
         class="xw-mi"
@@ -185,20 +191,6 @@ function chooseMore(action: "up" | "down" | "remove"): void {
           meaning="convert-type"
           :size="12"
         />Förslag</span>
-      </button>
-      <button
-        v-if="child === null"
-        type="button"
-        class="xw-mi"
-        role="menuitem"
-        aria-disabled="true"
-        tabindex="-1"
-        :aria-describedby="hintId"
-      >
-        <span class="xw-mi__pad" /><span class="xw-grow">Ordning</span><span
-          :id="hintId"
-          class="xw-mi__hint"
-        >Kommer senare</span>
       </button>
     </ExamWorkspaceMenu>
 

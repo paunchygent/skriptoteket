@@ -283,6 +283,51 @@ def _matching_table(
 
 
 @dataclass(frozen=True)
+class OrderingExamNetPdfItemStrategy:
+    """Render steps in print order with an empty number box each and a separate facit line."""
+
+    def render(
+        self,
+        *,
+        item: PdfExamItemSemantics,
+        context: ExamNetPdfTargetProfileContext,
+    ) -> ExamNetPdfItemStrategyResult:
+        numbers = item.answer_key.correct_order_numbers
+        if not item.options or not item.answer_key.available:
+            return ExamNetPdfItemStrategyResult(item=None, warnings=(missing_answer_key(item),))
+        if sorted(numbers) != list(range(1, len(item.options) + 1)):
+            return ExamNetPdfItemStrategyResult(
+                item=None,
+                warnings=(answer_key_mismatch(item, "order numbers must key every step once"),),
+            )
+
+        labels = context.label_policy
+        rows = "".join(
+            f'<p class="ordering-step"><span class="number-box"></span> {escape(option.text)}</p>'
+            for option in item.options
+        )
+        facit = "; ".join(
+            f"{escape(option.text)} {number}" for option, number in zip(item.options, numbers)
+        )
+        body_html = (
+            f'<div class="options ordering-steps">{rows}</div>'
+            f'<p class="answer-key">{escape(labels.ordering_key_label)}: {facit}</p>'
+        )
+        return ExamNetPdfItemStrategyResult(
+            item=DigiExamExamNetPdfItemRender(
+                html=item_shell(
+                    item=item,
+                    labels=labels,
+                    item_type_label=labels.ordering_type_label,
+                    instruction="",
+                    body_html=body_html,
+                    item_type_marker=labels.target_item_type_marker,
+                )
+            )
+        )
+
+
+@dataclass(frozen=True)
 class UnsupportedExamNetPdfItemStrategy:
     """Fail closed for neutral item kinds without a governed PDF target shape."""
 

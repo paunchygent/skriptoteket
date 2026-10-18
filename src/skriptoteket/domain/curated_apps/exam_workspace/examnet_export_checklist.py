@@ -186,6 +186,8 @@ def _all_or_nothing_entry(
 ) -> ExamNetExportChecklistAllOrNothing | None:
     """The shared-subquestion loss the XML writer scores all-or-nothing (Q16)."""
 
+    if qti_item.interaction_type is ExamNetQtiInteractionType.ORDERING:
+        return None  # All-or-nothing is the ordering design, not a loss.
     if not emits_all_or_nothing(qti_item):
         return None
     points = qti_item.max_score

@@ -259,6 +259,11 @@ def _validate_contract_rules(
     return tuple(errors)
 
 
+ORDER_AWARE_TAGS = (
+    "qti-choice-interaction",
+    "qti-match-interaction",
+    "qti-order-interaction",
+)
 _GAP_MATCH_TAG = f"{{{QTI_NAMESPACE}}}qti-gap-match-interaction"
 
 
@@ -271,6 +276,7 @@ def _prompt_placement_errors(name: str, root: ElementTree.Element) -> tuple[str,
         for tag in (
             "qti-choice-interaction",
             "qti-match-interaction",
+            "qti-order-interaction",
             "qti-extended-text-interaction",
         )
     )
@@ -328,7 +334,7 @@ def _scoring_shape_errors(name: str, root: ElementTree.Element) -> tuple[str, ..
         declaration.attrib.get("identifier", ""): declaration
         for declaration in root.findall(f"{{{QTI_NAMESPACE}}}qti-response-declaration")
     }
-    for tag in ("qti-choice-interaction", "qti-match-interaction"):
+    for tag in ORDER_AWARE_TAGS:
         for interaction in root.iter(f"{{{QTI_NAMESPACE}}}{tag}"):
             if "shuffle" in interaction.attrib:
                 errors.append(f"{name} {tag} must not carry a shuffle attribute.")
@@ -347,8 +353,7 @@ def _scoring_shape_errors(name: str, root: ElementTree.Element) -> tuple[str, ..
 
 def _match_correct_template_errors(name: str, root: ElementTree.Element) -> tuple[str, ...]:
     has_choice_or_match = any(
-        root.find(f".//{{{QTI_NAMESPACE}}}{tag}") is not None
-        for tag in ("qti-choice-interaction", "qti-match-interaction")
+        root.find(f".//{{{QTI_NAMESPACE}}}{tag}") is not None for tag in ORDER_AWARE_TAGS
     )
     if not has_choice_or_match:
         return ()

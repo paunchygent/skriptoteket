@@ -105,6 +105,9 @@ export function hasInvalidAnswerKey(item: NativeExamItem): boolean {
       return key.correct_choice_ids.length !== 1;
     case "multiple_response":
       return key.correct_choice_ids.length === 0;
+    case "ordering":
+      // The key is the list order of the steps, so no key data can break a rule.
+      return false;
     case "matching":
       return key.correct_choice_ids.length > 0 || isIncompleteMatchingItem(item);
     case "gap_fill":

@@ -25,6 +25,7 @@ class PdfExamItemKind(StrEnum):
     MULTIPLE_RESPONSE = "multiple_response"
     GAP_OPEN_CLOZE = "gap_open_cloze"
     MATCHING = "matching"
+    ORDERING = "ordering"
     UNSUPPORTED = "unsupported"
 
 
@@ -75,6 +76,9 @@ class PdfExamAnswerKeySemantics:
     correct_option_ids: tuple[int, ...] = ()
     correct_gap_answers: tuple[PdfExamGapAnswerSemantics, ...] = ()
     correct_match_pairs: tuple[PdfExamMatchPairSemantics, ...] = ()
+    # Ordering: per option, in the same (print) order as `options`, the 1-based number
+    # that option has in the correct order.
+    correct_order_numbers: tuple[int, ...] = ()
 
 
 @dataclass(frozen=True)

@@ -5,12 +5,13 @@ from dataclasses import dataclass
 from types import MappingProxyType
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, JsonValue, model_validator
+from pydantic import BaseModel, ConfigDict, Field, JsonValue, field_validator, model_validator
 
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    IMPORTABLE_ITEM_KINDS,
     NativeExamItemKind,
 )
 
@@ -172,6 +173,13 @@ class ProducedItem(_Produced):
         "the key gives a guide without per-criterion points, holding the whole guide; empty "
         "when the facit gives no guidance and for every other kind.",
     )
+
+    @field_validator("kind", "conflict_kind")
+    @classmethod
+    def _importable_kind(cls, value: NativeExamItemKind | None) -> NativeExamItemKind | None:
+        if value is not None and value not in IMPORTABLE_ITEM_KINDS:
+            raise ValueError("an import never produces ordering questions")
+        return value
 
     @model_validator(mode="after")
     def _pairs_name_entries(self) -> "ProducedItem":

@@ -134,6 +134,13 @@ class TestSuggestionStorageAcrossKindChanges:
                 origin=NativeAnswerKeyOrigin.TEACHER_AUTHORED,
                 match_pairs=(NativeMatchPair(left_id="left_001", right_id="right_001"),),
             )
+        elif kind is NativeExamItemKind.ORDERING:
+            base["choices"] = (
+                NativeChoice(choice_id="choice_001", body=plain_body("först")),
+                NativeChoice(choice_id="choice_002", body=plain_body("sist")),
+            )
+            base["print_order"] = ("choice_002", "choice_001")
+            base["answer_key"] = NativeAnswerKey(origin=NativeAnswerKeyOrigin.TEACHER_AUTHORED)
         else:
             base["answer_key"] = NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE)
         return base

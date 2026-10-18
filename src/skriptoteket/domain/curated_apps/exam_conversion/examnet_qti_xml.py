@@ -141,6 +141,10 @@ def append_response_declaration(
         values = item.correct_choice_identifiers
     elif item.interaction_type == ExamNetQtiInteractionType.MULTIPLE_RESPONSE:
         values = item.correct_choice_identifiers
+    elif item.interaction_type == ExamNetQtiInteractionType.ORDERING:
+        # The correct response carries the key order; the declaration is ordered.
+        cardinality = "ordered"
+        values = item.correct_choice_identifiers
     else:
         base_type = "directedPair"
         values = tuple(
@@ -304,14 +308,21 @@ def emits_map_response(item: ExamNetQtiItem) -> bool:
     if item.interaction_type in (
         ExamNetQtiInteractionType.GAP_FILL,
         ExamNetQtiInteractionType.INLINE_CHOICE,
+        ExamNetQtiInteractionType.ORDERING,
     ):
         return False
     return _equal_choice_point_value(item) is not None
 
 
 def emits_all_or_nothing(item: ExamNetQtiItem) -> bool:
-    """Use all-or-nothing only for keyed automatic choice or matching items."""
+    """Use all-or-nothing only for keyed automatic choice, matching or ordering items."""
 
+    if item.interaction_type is ExamNetQtiInteractionType.ORDERING:
+        return (
+            item.evaluation_mode == ExamNetQtiEvaluationMode.AUTOMATIC
+            and item.max_score is not None
+            and bool(item.correct_choice_identifiers)
+        )
     return bool(_automatic_choice_value_count(item)) and _equal_choice_point_value(item) is None
 
 
@@ -354,6 +365,9 @@ def append_interaction(
     }:
         _append_choice_interaction(parent, item, image_paths, response_id)
         return
+    if item.interaction_type == ExamNetQtiInteractionType.ORDERING:
+        _append_order_interaction(parent, item, image_paths, response_id)
+        return
     if item.interaction_type == ExamNetQtiInteractionType.FREE_TEXT:
         interaction = ElementTree.SubElement(
             parent,
@@ -384,6 +398,23 @@ def _append_choice_interaction(
             "response-identifier": response_id,
             "max-choices": max_choices,
         },
+    )
+    append_interaction_prompt(interaction, item, image_paths)
+    for choice in item.choices:
+        _append_simple_choice(interaction, choice)
+
+
+def _append_order_interaction(
+    parent: ElementTree.Element,
+    item: ExamNetQtiItem,
+    image_paths: tuple[str, ...],
+    response_id: str,
+) -> None:
+    # The choices arrive in the saved print order, so the visible list never shows the key.
+    interaction = ElementTree.SubElement(
+        parent,
+        qti_tag("qti-order-interaction"),
+        {"response-identifier": response_id},
     )
     append_interaction_prompt(interaction, item, image_paths)
     for choice in item.choices:

@@ -430,6 +430,7 @@ export function newTeacherItem(
   const gapped = kind === "gap_fill" || kind === "inline_choice";
   const choice = kind === "single_choice" || kind === "multiple_response";
   const matching = kind === "matching";
+  const ordering = kind === "ordering";
   return {
     ai_suggestion: null,
     import_record: null,
@@ -443,14 +444,14 @@ export function newTeacherItem(
       origin:
         kind === "free_text"
           ? "not_applicable"
-          : kind === "inline_choice"
+          : kind === "inline_choice" || ordering
             ? "teacher_authored"
             : "absent",
     },
     body: gapped
       ? [question, { heading_level: null, segments: [{ kind: "gap", gap_id: "gap_001" }] }]
       : [question],
-    choices: choice ? blankChoices() : [],
+    choices: choice || ordering ? blankChoices() : [],
     gaps: gapped ? [blankGap(kind === "inline_choice")] : [],
     item_id: itemId,
     kind,
@@ -458,8 +459,9 @@ export function newTeacherItem(
     match_right: matching
       ? ["right_001", "right_002"].map((rightId) => ({ body: blankBody(), right_id: rightId }))
       : [],
-    points: null,
+    points: ordering ? 1 : null,
     points_estimated: false,
+    print_order: ordering ? ["choice_002", "choice_001"] : [],
     review: {
       confidence: null,
       parse_origin: "teacher_created",

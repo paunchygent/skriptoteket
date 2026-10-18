@@ -3,7 +3,9 @@
 Purpose:
     Build the fail-closed Exam.net PDF document plan from a native exam
     document by adapting items into source-neutral PDF item semantics and
-    delegating target policy to the existing Exam.net PDF item strategies. Matching
+    delegating target policy to the existing Exam.net PDF item strategies. Ordering items
+    print an empty number box per step in the saved print order with the key in a separate
+    facit line. Matching
     items print blank category tables with every correct tick marked in a separate key.
     A Swedish exam prints the documented Swedish markers; every other exam prints the
     default ones.
@@ -55,7 +57,6 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_pdf_item_registry 
     DEFAULT_EXAMNET_PDF_ITEM_STRATEGY_REGISTRY,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_pdf_target_profile import (
-    DEFAULT_EXAMNET_PDF_TARGET_PROFILE_CONTEXT,
     ExamNetPdfItemLabelPolicy,
     ExamNetPdfTargetProfileContext,
 )
@@ -63,8 +64,8 @@ from skriptoteket.domain.curated_apps.exam_workspace.exam_export_header import (
     exam_export_header_lines,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.exam_language_labels import (
-    ExamLanguageLabels,
-    exam_language_labels,
+    SWEDISH_EXAM_LABELS,
+    ExamExportLabels,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeGapSegment,
@@ -77,6 +78,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
+    NativeChoice,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeAnswerKeyOrigin,
     NativeExamItemKind,
@@ -87,8 +91,8 @@ NO_PDF_EXPORT_ASSETS: Mapping[str, bytes] = MappingProxyType({})
 
 # Marker words from sir-convert-a-lot
 # docs/reference/ref-examnet-pdf-to-exam-swedish-renderer-profile.md ("Canonical Swedish PDF
-# Profile" and "Supported Item Profiles"). That profile documents Swedish words only, so every
-# other language keeps the default profile's markers.
+# Profile" and "Supported Item Profiles"). Every workspace PDF prints these Swedish words,
+# whatever language the exam is written in (user decision of 2026-10-18).
 SWEDISH_EXAMNET_PDF_TARGET_PROFILE_CONTEXT = ExamNetPdfTargetProfileContext(
     target_id="examnet_pdf",
     profile_version="examnet-pdf-swedish-v2",
@@ -96,10 +100,12 @@ SWEDISH_EXAMNET_PDF_TARGET_PROFILE_CONTEXT = ExamNetPdfTargetProfileContext(
         choice_type_label="Flerval",
         multiple_response_type_label="Flerval",
         matching_type_label="Matcha ihop",
+        ordering_type_label="Ordna",
         target_item_type_marker="Typ",
         single_answer_key_label="Rätt svar",
         multiple_answer_key_label="Rätta svar",
         match_key_label="Rätta par",
+        ordering_key_label="Rätt ordning",
         marking_guide_label="Rättningsmall",
     ),
 )
@@ -116,6 +122,7 @@ _PDF_ITEM_KIND_BY_NATIVE_KIND = {
     NativeExamItemKind.GAP_FILL: PdfExamItemKind.GAP_OPEN_CLOZE,
     NativeExamItemKind.INLINE_CHOICE: PdfExamItemKind.GAP_OPEN_CLOZE,
     NativeExamItemKind.MATCHING: PdfExamItemKind.MATCHING,
+    NativeExamItemKind.ORDERING: PdfExamItemKind.ORDERING,
 }
 # Defensive second guard: `native_export_blockers` (reason `missing_answer_key`)
 # already blocks keyed items without a key before export. An unkeyed keyed item
@@ -130,12 +137,8 @@ def native_exam_to_pdf_document(
 ) -> DigiExamExamNetPdfDocument:
     """Build an Exam.net PDF-converter HTML plan from a native exam document."""
 
-    labels = exam_language_labels(document)
-    context = (
-        SWEDISH_EXAMNET_PDF_TARGET_PROFILE_CONTEXT
-        if labels.language == "sv"
-        else DEFAULT_EXAMNET_PDF_TARGET_PROFILE_CONTEXT
-    )
+    labels = SWEDISH_EXAM_LABELS
+    context = SWEDISH_EXAMNET_PDF_TARGET_PROFILE_CONTEXT
     asset_files, asset_paths_by_id, asset_warnings = _prepare_assets(document, assets_by_id)
     if asset_warnings:
         return _blocked(asset_warnings)
@@ -178,7 +181,7 @@ def _render_item(
     *,
     item: NativeExamItem,
     asset_paths_by_id: Mapping[str, str],
-    labels: ExamLanguageLabels,
+    labels: ExamExportLabels,
     context: ExamNetPdfTargetProfileContext,
     document_instruction_html: str,
     parent_instruction_html: str,
@@ -235,7 +238,7 @@ def _pdf_item_semantics(
             PdfExamOptionSemantics(
                 option_id=_choice_number(choice.choice_id), text=body_plain_text(choice.body)
             )
-            for choice in item.choices
+            for choice in _choices_in_print_order(item)
         ),
         gaps=tuple(PdfExamGapSemantics(gap_id=gap.gap_id) for gap in item.body_gaps()),
         match_left=tuple(
@@ -268,15 +271,32 @@ def _pdf_item_semantics(
                 PdfExamMatchPairSemantics(left_id=pair.left_id, right_id=pair.right_id)
                 for pair in item.answer_key.match_pairs
             ),
+            correct_order_numbers=_ordering_key_numbers(item),
         ),
     )
+
+
+def _choices_in_print_order(item: NativeExamItem) -> tuple[NativeChoice, ...]:
+    """An ordering item prints its steps in the saved print order; others keep list order."""
+    if item.kind is not NativeExamItemKind.ORDERING:
+        return item.choices
+    choice_by_id = {choice.choice_id: choice for choice in item.choices}
+    return tuple(choice_by_id[choice_id] for choice_id in item.print_order)
+
+
+def _ordering_key_numbers(item: NativeExamItem) -> tuple[int, ...]:
+    """Per printed step, the 1-based number it has in the key (list) order."""
+    if item.kind is not NativeExamItemKind.ORDERING:
+        return ()
+    number_by_id = {choice.choice_id: index for index, choice in enumerate(item.choices, start=1)}
+    return tuple(number_by_id[choice_id] for choice_id in item.print_order)
 
 
 def _document_instruction_html(
     document: NativeExamDocument,
     *,
     asset_paths_by_id: Mapping[str, str],
-    labels: ExamLanguageLabels,
+    labels: ExamExportLabels,
 ) -> str:
     """The exam-wide shared instruction, printed once with every top-level item."""
     body = _body_html(document.instructions, asset_paths_by_id=asset_paths_by_id, labels=labels)
@@ -288,7 +308,7 @@ def _parent_instruction_html(
     item: NativeExamItem,
     *,
     asset_paths_by_id: Mapping[str, str],
-    labels: ExamLanguageLabels,
+    labels: ExamExportLabels,
 ) -> str:
     """The parent's instruction, printed once with the first child item.
 
@@ -306,7 +326,7 @@ def _prompt_html(
     *,
     item: NativeExamItem,
     asset_paths_by_id: Mapping[str, str],
-    labels: ExamLanguageLabels,
+    labels: ExamExportLabels,
 ) -> str:
     body = _body_html(item.body, asset_paths_by_id=asset_paths_by_id, labels=labels)
     if item.kind is NativeExamItemKind.INLINE_CHOICE:
@@ -327,7 +347,7 @@ def _body_html(
     body: Iterable[NativeParagraph],
     *,
     asset_paths_by_id: Mapping[str, str],
-    labels: ExamLanguageLabels,
+    labels: ExamExportLabels,
 ) -> str:
     """One native body as HTML: one ``<p>`` per paragraph, pictures inline at their place."""
     paragraphs: list[str] = []
@@ -347,7 +367,7 @@ def _body_html(
 def _image_html(
     asset_id: str,
     asset_paths_by_id: Mapping[str, str],
-    labels: ExamLanguageLabels,
+    labels: ExamExportLabels,
 ) -> str:
     relative_path = asset_paths_by_id[asset_id]
     alt = f"{labels.image} {asset_id}".strip()

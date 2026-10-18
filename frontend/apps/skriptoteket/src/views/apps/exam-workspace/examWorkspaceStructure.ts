@@ -171,4 +171,5 @@ export const EXAM_WORKSPACE_NEW_ITEM_KINDS: { kind: TeacherItemKind; label: stri
   { kind: "gap_fill", label: "Lucktext" },
   { kind: "inline_choice", label: "Lucktext med rullista" },
   { kind: "matching", label: "Kategorisera" },
+  { kind: "ordering", label: "Ordna" },
 ];
