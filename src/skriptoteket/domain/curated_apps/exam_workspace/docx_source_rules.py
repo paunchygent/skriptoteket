@@ -248,6 +248,16 @@ def answer_line(text: str) -> bool:
     return bool(lines) and all(_ANSWER_LINE.match(_NUMBERING.sub("", line)) for line in lines)
 
 
+# A printed blank answer run: two or more underscores, or a bracketed empty space.
+BLANK_RUN = re.compile(r"_{2,}|\[\s*\]")
+
+
+def blank_line(text: str) -> bool:
+    """A printed blank answer line is response space, never question text."""
+    rest = _NUMBERING.sub("", text)
+    return bool(BLANK_RUN.search(rest)) and not BLANK_RUN.sub("", rest).strip()
+
+
 def defined_terms(text: str) -> tuple[str, ...]:
     """The terms an instruction defines: each "short = term" pair, or a list after a colon."""
     terms = [

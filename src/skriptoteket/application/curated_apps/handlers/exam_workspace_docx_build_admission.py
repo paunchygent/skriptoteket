@@ -171,8 +171,14 @@ def _with_left_out(
     item_held: frozenset[str],
 ) -> Admitted:
     """A converted item holds the own chunks of its question it leaves out; those no body
-    paragraph is aligned to show under a check mark as printed, a possible parsing issue (D41,
-    D4).
+    paragraph, choice or matching entry is aligned to show under a check mark as printed, a
+    possible parsing issue (D41, D4).
+
+    The check also covers every own chunk of the question the item itself lists, so a listed
+    chunk the item shows nothing of is marked too (TASK-SKRIPT-39-04-15 D1). A listed chunk
+    is never marked when it is a source answer or facit line, a points line, a grouped key, a
+    governing chunk, a header or a section-placed instruction (D2); the alignment says what
+    the item shows, never the reply's wording.
 
     A left-out chunk is an own chunk of a question the item touches that no entry holds yet
     and no item of the reply lists, except as a points line alone (D2).
@@ -182,6 +188,18 @@ def _with_left_out(
     if item.review.parse_origin is not NativeParseOrigin.LLM_PARSED:
         return admitted
     own = set().union(*(state.question_by_anchor.get(a, ()) for a in anchors))
+    listed = tuple(
+        a
+        for a in anchors
+        if a in own
+        and a not in state.grouped_keys
+        and a not in state.key_anchors
+        and a not in state.governing
+        and a not in state.header_anchors
+        and a not in state.context_anchors
+        and all(a not in m.source_anchors for m in state.instructions)
+        and not is_points_line(a, state)
+    )
     left_out = tuple(
         c.anchor
         for c in state.pending
@@ -199,10 +217,14 @@ def _with_left_out(
     seen.update(held)
     anchors = (*anchors, *(a for a in left_out if a in held))
     left_out = tuple(a for a in left_out if a not in keys and a not in held)
-    if not left_out:
+    if not left_out and not listed:
         return aligned, anchors
     seen.update(left_out)
-    missing = left_out_chunks(aligned, [state.chunk_by_anchor[a] for a in left_out])
+    # Both the left-out and the listed chunks are checked against the alignment; a chunk of
+    # either the body shows or an entry is aligned to is not missing. Listed anchors are
+    # already held, so only the left-out ones join ``seen`` and the returned anchors.
+    examined = {*left_out, *listed}
+    missing = left_out_chunks(aligned, (c for c in state.chunks if c.anchor in examined))
     if missing:
         moved = tuple(c.anchor for c in missing)
         state.record("admission", "own_chunks_left_out", item=index, anchors=moved)

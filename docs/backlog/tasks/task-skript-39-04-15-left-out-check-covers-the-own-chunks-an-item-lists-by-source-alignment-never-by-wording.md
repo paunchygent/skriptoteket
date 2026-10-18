@@ -1,12 +1,11 @@
 ---
 type: task
 id: TASK-SKRIPT-39-04-15
-title: Gapless body paragraphs show their aligned source paragraph's text, so a reply cannot
-  drop or replace stem sentences
+title: A body paragraph aligned to another item's source is rebuilt from the item's own source; listed own chunks are checked for left-out text
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-18'
 status: proposed
 closeout_review:
@@ -14,9 +13,7 @@ closeout_review:
   status: not_started
 task_kind: story
 acceptance_criteria:
-- A gapless body paragraph aligned to a source paragraph shows that paragraph's text; q8 of
-  the v14 chapter_4 replay shows its own stem and metodprov 1 keeps its second sentence;
-  every replay difference is read interpretively and classified
+  - A body paragraph aligned to another item's source span and not to its own is rebuilt from the item's own source or dropped; q8 of the v14 chapter_4 replay shows its own stem; correctly placed paragraphs keep the model's wording; every replay difference is read interpretively and classified
 story: ST-SKRIPT-39-04
 backlog_document_profile: contract-derived
 ---
@@ -48,16 +45,16 @@ structural rule holds it. Instances:
   elevlista." is dropped from body paragraph `body:0006`. It appears nowhere in the
   final item except its import record.
 
-Fix: a gapless body paragraph aligned to a source paragraph is built from that source
-paragraph's text and marks. The reply's paragraph only selects which source paragraph it
-shows. The built text leaves out what other fields of the item show or what the body never
-prints: the question label (`label_span`), the excluded intervals (points), the spans the
-item's choices and matching entries are aligned to, and any paragraph holding an inline
-answer label (`ANSWER_LABEL`), which stays as today. Pictures keep their place. Paragraphs
-with gaps belong to Task 1. The listed-chunk check from the first scope (D1, D2 of the
-previous revision) is kept as written: the left-out check also covers the own chunks an item
-lists, by alignment only. It marks neither Question 4 nor q8, because a paragraph is
-aligned to each (lead's reading of "the listed-chunk rule is kept as written").
+Fix (user ruling 2026-10-18, "misplaced only"): ownership decides, never wording. A body
+paragraph of item N whose aligned source paragraph lies in another item's source span,
+and not in N's own span, is not N's content. It is rebuilt from N's own source paragraph
+the reply skipped, or dropped when N's source has no such paragraph. Correctly placed
+paragraphs keep the model's wording: model edits in unmarked text stand. The interpretive
+read stays the semantic gate: no item is worse after conversion than its source.
+
+The listed-chunk check (D1, D2) is kept as written. The left-out check also covers the
+own chunks an item lists, by alignment only. It marks neither Question 4 nor q8, because
+a paragraph is aligned to each.
 
 ## Contract Inputs
 
@@ -115,14 +112,14 @@ paragraph from them is one pass over its characters.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| D1  | The left-out check (`docx_own_instructions.left_out_chunks`, called from `_with_left_out`) also runs on every own chunk of the question that a converted item lists. It marks a chunk under D41 when no body paragraph, choice or matching entry is aligned to it. |
-| D2  | A listed chunk is never marked when it is a source answer or facit line (`answer_line`), a points line (`is_points_line`), a grouped key (`state.grouped_keys`), a chunk the grouping marks as governing, or an instruction that section placement places. |
-| D3  | No coverage threshold and no new flag. TASK-SKRIPT-39-04-14 D7 stands (user ruling 2026-10-18). |
-| D4  | A body paragraph with no gap, aligned to a source paragraph, is built from that source paragraph's text and marks. The reply's paragraph only selects which source paragraph it shows. |
-| D5  | The built paragraph leaves out the question label, the excluded intervals (points) and the spans the item's choices and matching entries are aligned to. A paragraph holding an inline answer label keeps today's projection. Pictures keep their source place. |
-| D6  | Paragraphs with gaps are Task 1's (TASK-SKRIPT-39-04-16). The two builders share one source-text path after Task 1 merges. |
-| D7  | Decisions read the source alignment and the source classification only; no reply wording is compared, and no fallback reads wording. |
-| D8  | Proof is the interpretive replay read by a fresh junior (drop-audit method) plus the adversarial unit tests; every replay difference is classified. |
-| D9  | Owning story is ST-SKRIPT-39-04; the task builds on TASK-SKRIPT-39-04-14 at `6e3453b2e` and merges after Task 1. |
+| ID  | Decided contract term                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| D1  | The left-out check (`docx_own_instructions.left_out_chunks`, called from `_with_left_out`) also runs on every own chunk of the question that a converted item lists. It marks a chunk under D41 when no body paragraph, choice or matching entry is aligned to it.                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| D2  | A listed chunk is never marked when it is a source answer or facit line (`answer_line`), a blank answer line (`blank_line`: only blank runs `__` or `[ ]` and whitespace, the response space the item's gap or answer field takes), a points line (`is_points_line`), a grouped key (`state.grouped_keys`), a chunk the grouping marks as governing, or an instruction that section placement places. `left_out_chunks` skips blank answer lines for unlisted chunks too. The blank-line exclusion was added by the lead after the replays: without it, the check marked the blank lines of chapter_4 Part 3 Questions 1-7 and exempelprov 2.1, 2.2 and 4.1, which are all response space. |
+| D3  | No coverage threshold and no new flag. TASK-SKRIPT-39-04-14 D7 stands (user ruling 2026-10-18).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| D4  | User ruling 2026-10-18 (misplaced only): a body paragraph of item N is misplaced when its aligned source paragraph lies in another item's source span and not in N's own span. A misplaced paragraph is rebuilt from N's own source paragraph that the reply skipped (in source order), or dropped when there is none. Every other paragraph keeps the reply's wording. Shared text both items own is never misplaced.                                                                                                                                                                                                                                                                     |
+| D5  | The rebuilt paragraph is the source paragraph's visible text and marks: the question label, the excluded intervals (points, entry owners, recovered answer labels) stay out, and pictures keep their source place. It uses the held source-text builder now, and moves onto Task 1's shared `source_paragraph()` builder when this branch merges after TASK-SKRIPT-39-04-16.                                                                                                                                                                                                                                                                                                               |
+| D6  | Misplacement is decided from the alignment and the items' source spans only. The tests that keep model wording in correctly placed paragraphs stay unchanged.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| D7  | Decisions read the source alignment and the source classification only; no reply wording is compared, and no fallback reads wording.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| D8  | Proof is the interpretive replay read by a fresh junior (drop-audit method) plus the adversarial unit tests; every replay difference is classified.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| D9  | Owning story is ST-SKRIPT-39-04; the task builds on TASK-SKRIPT-39-04-14 at `6e3453b2e` and merges after Task 1.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
