@@ -49,6 +49,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeExamDocument,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_export_rules import (
+    INLINE_CHOICE_MIN_OPTIONS,
     native_export_blockers,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
@@ -189,7 +190,8 @@ class ExportExamWorkspaceDocumentHandler:
         self._raise_for_blockers(document)
         entries = native_exam_export_checklist(document, assets_by_id=container.assets_by_id)
         return ExamWorkspaceExportChecklistResponse(
-            entries=tuple(_checklist_entry(entry) for entry in entries)
+            entries=tuple(_checklist_entry(entry) for entry in entries),
+            inline_choice_min_options=INLINE_CHOICE_MIN_OPTIONS,
         )
 
     def _raise_for_blockers(self, document: NativeExamDocument) -> None:

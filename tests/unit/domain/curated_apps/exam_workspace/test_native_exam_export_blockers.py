@@ -10,6 +10,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeParagraph,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_export_rules import (
+    INLINE_CHOICE_MIN_OPTIONS,
     item_has_trusted_key,
     native_export_blockers,
 )
@@ -183,27 +184,18 @@ def _reasons(item: NativeExamItem) -> list[str]:
     return [blocker.reason for blocker in native_export_blockers(make_document(item))]
 
 
-# Shared fixture shapes: the frontend readiness spec asserts the same table (option counts
-# per gap -> blocked), so the server rule and the workspace mirror visibly agree.
-TOO_FEW_GAP_OPTIONS_PARITY = (
-    ((2,), False),
-    ((3,), False),
-    ((1,), True),
-    ((2, 2, 1), True),
-    ((1, 2, 2), True),
-    ((2, 2, 2), False),
-)
-
-
 class TestTooFewGapOptions:
-    @pytest.mark.parametrize(("counts", "blocked"), TOO_FEW_GAP_OPTIONS_PARITY)
-    def test_parity_table(self, counts: tuple[int, ...], blocked: bool) -> None:
-        gaps = tuple(
-            _dropdown_gap(f"gap_{index:03d}", tuple(f"alt{n}" for n in range(count)))
-            for index, count in enumerate(counts, start=1)
-        )
-        expected = ["too_few_gap_options"] if blocked else []
-        assert _reasons(_dropdown_item(*gaps)) == expected
+    def test_threshold_is_the_published_minimum(self) -> None:
+        def reasons_for(option_count: int) -> list[str]:
+            gap = _dropdown_gap("gap_001", tuple(f"alt{n}" for n in range(option_count)))
+            return _reasons(_dropdown_item(gap))
+
+        assert reasons_for(INLINE_CHOICE_MIN_OPTIONS - 1) == ["too_few_gap_options"]
+        assert reasons_for(INLINE_CHOICE_MIN_OPTIONS) == []
+
+    def test_one_option_blocks_and_two_do_not(self) -> None:
+        assert _reasons(_dropdown_item(_dropdown_gap("gap_001", ("a",)))) == ["too_few_gap_options"]
+        assert _reasons(_dropdown_item(_dropdown_gap("gap_001", ("a", "b")))) == []
 
     def test_one_blocker_per_item_even_when_several_gaps_are_short(self) -> None:
         item = _dropdown_item(

@@ -12,6 +12,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.exam_index import ExamListO
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_export_rules import (
+    InlineChoiceMinOptions,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
 )
@@ -271,8 +274,13 @@ ExamWorkspaceExportChecklistEntry = Annotated[
 
 
 class ExamWorkspaceExportChecklistResponse(BaseModel):
-    """What an Exam.net import of this document's QTI package loses (Q15-Q17)."""
+    """What an Exam.net import of this document's QTI package loses (Q15-Q17).
+
+    ``inline_choice_min_options`` publishes the export rule's dropdown minimum, so the
+    workspace readiness mirror reads it from this contract instead of restating it.
+    """
 
     model_config = ConfigDict(frozen=True)
 
     entries: tuple[ExamWorkspaceExportChecklistEntry, ...]
+    inline_choice_min_options: InlineChoiceMinOptions

@@ -21,7 +21,9 @@
  *   the whole option state at once (one patch each); typed option text
  *   commits on `change`, Enter and leaving the popover, and rides along with
  *   the next such emit. Escape discards typed text. The correct option
- *   cannot be removed. The accepted answers, automatic answers and "Visa som
+ *   cannot be removed; a gap with no correct option shows no radio checked,
+ *   keeps that state through add, move, remove and text edits, and lets every
+ *   option be removed. The accepted answers, automatic answers and "Visa som
  *   text" do not apply to a dropdown gap and are hidden.
  *
  * Relationships:
@@ -123,8 +125,10 @@ function commit(): void {
 // Typed option text by option id, until a commit or a structural edit carries it.
 const optionDrafts = reactive<Record<string, string>>({});
 const options = computed(() => props.gap?.options ?? []);
-const correctOptionId = computed(
-  () => props.gap?.correct_option_id ?? options.value[0]?.choice_id ?? "",
+// A gap with no correct option stays that way until the teacher picks a radio.
+const correctOptionId = computed<string | null>(() => props.gap?.correct_option_id ?? null);
+const hasCorrectOption = computed(() =>
+  options.value.some((option) => option.choice_id === correctOptionId.value),
 );
 
 function optionText(option: NativeExamChoice): string {
@@ -397,6 +401,7 @@ onMounted(() => {
         </button>
       </div>
       <p
+        v-if="hasCorrectOption"
         :id="removeHintId"
         class="text-[11px] leading-snug text-navy/65"
         data-test="exam-workspace-gap-option-remove-hint"

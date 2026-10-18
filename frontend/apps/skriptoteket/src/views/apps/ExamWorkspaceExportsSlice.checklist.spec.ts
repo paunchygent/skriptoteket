@@ -270,6 +270,7 @@ describe("ExamWorkspaceView export checklist", () => {
     await saveDocument(wrapper);
 
     const freshChecklist: ExamWorkspaceExportChecklistResponse = {
+      inline_choice_min_options: 2,
       entries: [
         {
           kind: "all_or_nothing",

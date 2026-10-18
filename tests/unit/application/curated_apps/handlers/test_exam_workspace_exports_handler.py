@@ -21,6 +21,9 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_exports impor
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_criteria import (
     NativeExamCriterion,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_export_rules import (
+    INLINE_CHOICE_MIN_OPTIONS,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
 )
@@ -318,6 +321,7 @@ async def test_checklist_lists_the_saved_heads_losses(env: _Env) -> None:
         actor=actor, lineage_id=lineage_id, expected_revision=2
     )
 
+    assert response.inline_choice_min_options == INLINE_CHOICE_MIN_OPTIONS
     entries = response.entries
     assert len(entries) == 2
     rounded, criteria = entries

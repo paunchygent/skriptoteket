@@ -47,6 +47,7 @@ export function deferred<T>() {
 
 /** One entry per loss the checklist lists, as the server sends them. */
 export const LOST_CHECKLIST: ExamWorkspaceExportChecklistResponse = {
+  inline_choice_min_options: 2,
   entries: [
     {
       kind: "free_text_criteria",

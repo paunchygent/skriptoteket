@@ -44,7 +44,7 @@ import ExamWorkspaceKategoriseraGrid from "./ExamWorkspaceKategoriseraGrid.vue";
 import ExamWorkspaceOrderingField from "./ExamWorkspaceOrderingField.vue";
 import ExamWorkspaceQuestionHead from "./ExamWorkspaceQuestionHead.vue";
 import ExamWorkspaceQuestionTools from "./ExamWorkspaceQuestionTools.vue";
-import { isTeacherReviewed } from "./examWorkspaceItemEdits";
+import { canUndoInterpretation, isTeacherReviewed } from "./examWorkspaceItemEdits";
 import { examWorkspaceItemReadiness } from "./examWorkspaceItemReadiness";
 import { hasNegativePoints, NEGATIVE_POINTS_GUIDANCE } from "./examWorkspaceItemSaveRules";
 import { provideRichTextTargetRegistry } from "./examWorkspaceRichTextTarget";
@@ -321,7 +321,7 @@ function handleTickPointsInput(event: Event): void {
         />
         <span class="xw-grow">{{ keyLine.lead }} <q>{{ keyLine.facit }}</q></span>
         <button
-          v-if="keyLine.ai"
+          v-if="keyLine.ai && canUndoInterpretation(item)"
           type="button"
           class="xw-btn xw-btn--compact"
           title="Ångra AI-tolkningen och lämna frågan utan facit"
