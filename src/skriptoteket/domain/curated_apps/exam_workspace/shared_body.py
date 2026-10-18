@@ -96,6 +96,17 @@ def source_paragraph(chunk: DocxChunk) -> NativeParagraph | None:
     )
 
 
+def is_answer_line_chunk(chunk: DocxChunk) -> bool:
+    """A chunk whose only paragraph is a printed answer line has no question text (W10).
+
+    True only when the chunk renders a paragraph and that whole paragraph is whitespace
+    and underscores. A content-less chunk and a chunk that keeps any other wording or
+    carries a picture are not answer-line chunks: they still become a review item.
+    """
+    paragraph = source_paragraph(chunk)
+    return paragraph is not None and is_printed_answer_line(paragraph.segments)
+
+
 def source_paragraphs(chunks: Iterable[DocxChunk]) -> tuple[NativeParagraph, ...]:
     """Every source chunk as one body, in the given order, contentless chunks skipped."""
     result: list[NativeParagraph] = []

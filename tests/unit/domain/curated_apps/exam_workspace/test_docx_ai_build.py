@@ -1,15 +1,21 @@
 """DOCX build output: the producer schema and the native body projection (W10)."""
 
+from uuid import uuid4
+
 import pytest
 from pydantic import JsonValue
 
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import aligned_native_item
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import (
+    aligned_native_item,
+    assemble_build_result,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedItem,
     ProducedParagraph,
     ProducedSegment,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_schema import docx_build_output_spec
+from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeGapSegment,
     NativeTextSegment,
@@ -168,3 +174,42 @@ def test_a_gap_fill_paragraph_with_only_a_gap_is_kept() -> None:
 
     (paragraph,) = item.body
     assert paragraph.segments == (NativeGapSegment(gap_id="gap_001"),)
+
+
+def _source_chunk(anchor: str, text: str) -> DocxChunk:
+    return DocxChunk(anchor, "paragraph", text, text)
+
+
+def _review_result(chunks: tuple[DocxChunk, ...]):
+    return assemble_build_result(
+        document_id=uuid4(),
+        filename="prov.docx",
+        source_sha256="0" * 64,
+        chunks=chunks,
+        review_reasons={chunk.anchor: "Granska manuellt." for chunk in chunks},
+    )
+
+
+def test_an_answer_line_chunk_between_questions_yields_no_review_item() -> None:
+    chunks = (
+        _source_chunk("body:0001", "Fråga ett?"),
+        _source_chunk("body:0002", "  _____  "),
+        _source_chunk("body:0003", "Fråga två?"),
+    )
+
+    result = _review_result(chunks)
+
+    bodies = [item.plain_text_lines() for item in result.document.items]
+    assert bodies == [("Fråga ett?",), ("Fråga två?",)]
+    assert all("Tomt källstycke." not in line for body in bodies for line in body)
+    assert all(line.strip("_ ") != "" for body in bodies for line in body)
+
+
+def test_a_labelled_answer_line_chunk_still_yields_a_review_item() -> None:
+    chunks = (_source_chunk("body:0001", "Svar: ____"),)
+
+    result = _review_result(chunks)
+
+    assert [line for item in result.document.items for line in item.plain_text_lines()] == [
+        "Svar: ____"
+    ]

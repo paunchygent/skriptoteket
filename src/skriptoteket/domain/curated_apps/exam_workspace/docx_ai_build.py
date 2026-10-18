@@ -105,6 +105,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeParseOrigin,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import (
+    is_answer_line_chunk,
     is_printed_answer_line,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.source_entry_ownership import (
@@ -334,7 +335,7 @@ def _ordered_items(
             aligned_source_item(review_chunk_item(chunk, review_reasons[chunk.anchor]), (chunk,)),
         )
         for chunk in chunks
-        if chunk.anchor in review_reasons
+        if chunk.anchor in review_reasons and not is_answer_line_chunk(chunk)
     )
     ordered.sort(key=lambda entry: entry[0])
     return place_section_instructions(

@@ -24,6 +24,9 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_jobs imp
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_export_rules import (
     native_export_blockers,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.shared_body import (
+    is_answer_line_chunk,
+)
 from skriptoteket.domain.errors import DomainError
 from skriptoteket.domain.identity.models import User
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (  # noqa: E501
@@ -168,8 +171,11 @@ async def test_unavailable_budget_or_provider_opens_review_source_and_deletes_do
     opened = await env.get_handler.handle(actor=env.actor, lineage_id=running.workspace_lineage_id)
     chunks = PythonDocxExamChunker().chunk(content=_QUIZ.read_bytes())
     assert [item.plain_text_lines()[0] for item in opened.document.items] == [
-        c.text.strip() for c in chunks
+        c.text.strip() for c in chunks if not is_answer_line_chunk(c)
     ]
+    body_lines = [line for item in opened.document.items for line in item.plain_text_lines()]
+    assert "Tomt källstycke." not in body_lines
+    assert not any(line.strip("_ ") == "" for line in body_lines)
     assert all(item.review.state.value == "review_required" for item in opened.document.items)
     assert opened.notes == (), "item reasons stay on their items (D8)"
     assert {b.reason for b in native_export_blockers(opened.document)} == {
@@ -178,6 +184,14 @@ async def test_unavailable_budget_or_provider_opens_review_source_and_deletes_do
     }
     codes = {event["code"] for event in finished.diagnostics}
     assert codes == {"ai_disabled" if not enabled else "lease_refused", "review_item"}
+    answer_line_anchors = {c.anchor for c in chunks if is_answer_line_chunk(c)}
+    named_by_review_item: set[str] = set()
+    for event in finished.diagnostics:
+        anchors = event["anchors"]
+        if event["code"] == "review_item" and isinstance(anchors, list):
+            named_by_review_item.update(str(anchor) for anchor in anchors)
+    assert answer_line_anchors
+    assert named_by_review_item.isdisjoint(answer_line_anchors)
     reason = opened.document.items[0].review.reasons[0]
     assert reason == (
         "AI-tolkning är avstängd. Kontrollera källtexten manuellt."
