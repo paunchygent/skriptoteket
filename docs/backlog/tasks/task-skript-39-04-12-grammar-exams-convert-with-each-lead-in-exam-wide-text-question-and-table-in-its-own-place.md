@@ -1,9 +1,7 @@
 ---
 type: task
 id: TASK-SKRIPT-39-04-12
-title:
-  Grammar exams convert with each lead-in, exam-wide text, question and table
-  in its own place
+title: Grammar exams convert with each lead-in, exam-wide text, question and table in its own place
 repository: skriptoteket
 owners:
   - kind: service
@@ -15,10 +13,7 @@ closeout_review:
   status: not_started
 task_kind: story
 acceptance_criteria:
-  - omprov_grammatik_sve2 and exempelprov_grammatik_sve2_v2_1 convert with each question's
-    lead-in in its own question, exam-wide text in the exam instructions once, every
-    grouped question as one item and every table in its question, and the gold corpus
-    results are unchanged
+  - omprov_grammatik_sve2 and exempelprov_grammatik_sve2_v2_1 convert with each question's lead-in in its own question, exam-wide text in the exam instructions once, every grouped question as one item and every table in its question, and the gold corpus results are unchanged
 story: ST-SKRIPT-39-04
 backlog_document_profile: contract-derived
 ---
