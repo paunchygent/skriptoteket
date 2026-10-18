@@ -47,6 +47,17 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_jobs imp
 from skriptoteket.config import Settings
 from skriptoteket.di import build_providers
 from skriptoteket.domain.identity.models import User
+from skriptoteket.infrastructure.llm.openai.answer_key_structured_provider import (
+    OpenAIAnswerKeyStructuredProvider,
+)
+from skriptoteket.infrastructure.llm.openai.chat_ops_provider import OpenAIChatOpsProvider
+from skriptoteket.infrastructure.llm.openai.chat_stream_provider import OpenAIChatStreamProvider
+from skriptoteket.infrastructure.llm.openai.decisions_item_labeler import (
+    OpenAIDecisionsItemTypeLabeler,
+)
+from skriptoteket.infrastructure.llm.openai.inline_completion_provider import (
+    OpenAIInlineCompletionProvider,
+)
 from skriptoteket.protocols import llm as llm_protocols
 from skriptoteket.protocols.exam_answer_key import (
     AnswerKeyStructuredProviderProtocol,
@@ -92,8 +103,11 @@ PAID_LLM_PROTOCOLS: frozenset[type] = frozenset(
         AnswerKeyStructuredProviderProtocol,
         MeteredItemTypeLabelerProtocol,
         SecondPassItemTypeLabelerProtocol,
+        llm_protocols.InlineCompletionProviderProtocol,
         llm_protocols.InlineCompletionProvidersProtocol,
+        llm_protocols.ChatStreamProviderProtocol,
         llm_protocols.ChatStreamProvidersProtocol,
+        llm_protocols.ChatOpsProviderProtocol,
         llm_protocols.ChatOpsProvidersProtocol,
     }
 )
@@ -468,6 +482,21 @@ def test_guard_detects_an_ungated_llm_route(reached_llm: set[type]) -> None:
     )
     assert _AI_ROLE_GATE.__name__ not in _dependency_call_names(probe_route.dependant), (
         "the guard failed its adversarial self-check: an ungated LLM route was reported as gated"
+    )
+
+
+def test_paid_llm_client_classes_include_known_openai_clients() -> None:
+    expected = {
+        OpenAIInlineCompletionProvider,
+        OpenAIChatStreamProvider,
+        OpenAIChatOpsProvider,
+        OpenAIAnswerKeyStructuredProvider,
+        OpenAIDecisionsItemTypeLabeler,
+    }
+    missing = expected - _llm_client_classes()
+    assert not missing, (
+        "PAID_LLM_PROTOCOLS no longer derives these LLM clients as paid roots: "
+        + ", ".join(sorted(_type_name(item) for item in missing))
     )
 
 
