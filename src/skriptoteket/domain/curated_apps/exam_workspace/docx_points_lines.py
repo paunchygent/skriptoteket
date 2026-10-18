@@ -29,7 +29,10 @@ from types import MappingProxyType
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import ExamManifest
-from skriptoteket.domain.curated_apps.exam_workspace.docx_points_labels import points_label
+from skriptoteket.domain.curated_apps.exam_workspace.docx_points_labels import (
+    part_identity,
+    points_label,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     points_line,
     printed_points,
@@ -51,11 +54,16 @@ class PrintedQuestion:
 
 @dataclass(frozen=True)
 class PrintedPart:
-    """A part's printed total, its part line's anchor and the questions that start in it."""
+    """A part's printed total, its part line's anchor and the questions that start in it.
+
+    ``identity`` is the part its line names ("3" for "Del 3" and "Part 3, Question 1"), or
+    None when the line names none, such as a numbered heading.
+    """
 
     total: int | float
     questions: tuple[int, ...]
     opener: str
+    identity: str | None = None
 
 
 @dataclass(frozen=True)
@@ -158,7 +166,9 @@ def printed_points_plan(
             for index in lines[members[-1]]
             if last_start < index < end and line_points(chunks[index]) == total
         )
-        parts.append(PrintedPart(total, members, chunks[opener].anchor))
+        parts.append(
+            PrintedPart(total, members, chunks[opener].anchor, part_identity(chunks[opener].text))
+        )
     printed = tuple(
         PrintedQuestion(
             anchors=own,
@@ -185,6 +195,22 @@ def printed_points_plan(
         owners=MappingProxyType(owners),
         metadata=metadata,
     )
+
+
+def section_openers(parts: Iterable[PrintedPart]) -> frozenset[str]:
+    """The part lines that open a section: each that changes the running part.
+
+    A part line that repeats the identity of the part line before it, such as "Part 3,
+    Question 2" after "Part 3, Question 1", continues that part. A line that names no part
+    always opens one.
+    """
+    openers: list[str] = []
+    running: str | None = None
+    for part in parts:
+        if part.identity is None or part.identity != running:
+            openers.append(part.opener)
+        running = part.identity
+    return frozenset(openers)
 
 
 def manifest_questions(manifest: ExamManifest) -> tuple[tuple[str, ...], ...]:

@@ -1,8 +1,8 @@
 """The runs a section placement is built from: instructions, headings, and their reach.
 
 Every run is decided in one pass with one section rule: a section boundary is a heading
-no item owns or a heading that opens a printed part, other than a heading that labels a
-stretch inside one instruction printed in several paragraphs. A printed heading over
+no item owns or a part line that changes the running part, other than a heading that labels
+a stretch inside one instruction printed in several paragraphs. A printed heading over
 questions is a run of its own starting at the heading, reaching the questions up to the
 next boundary, so a parent formed from same-reach runs opens with the heading by
 construction (T1, T2). A heading a question owns reaches that question alone. A heading
@@ -194,8 +194,8 @@ def with_heading_runs(
 ) -> tuple[list[Run], SectionShape]:
     """Add one run per printed heading, under the same boundary rule as every other run.
 
-    A heading that opens a printed part (``part_lines``) is a section boundary even when a
-    question owns it, so the part before it never runs on into the part it opens.
+    A part line that changes the running part (``part_lines``) is a section boundary even
+    when a question owns it, so the part before it never runs on into the part it opens.
 
     The document's opening heading is the exam title, never a question heading. A
     question's own heading chunk a reply lists as an instruction instead of in its item
@@ -279,8 +279,9 @@ def _span(
 
     A heading run passes its subsection headings: it ends at the next boundary heading of
     the same or a higher level, so a section title directly above a subsection heading
-    still reaches its section's questions. A heading that opens a printed part ends every
-    run whatever its level.
+    still reaches its section's questions. A part line that changes the running part ends
+    every run whatever its level, once the run has reached a question: a run directly above a
+    part line serves that part.
     """
     chunk_count = len(chunks)
     rank = _heading_rank(run.sources[0]) if run.heading else None
@@ -292,6 +293,7 @@ def _span(
                 i
                 for i in shape.boundaries
                 if i > run.start
+                and not (i in shape.parts and i <= first_item)
                 and (rank is None or i in shape.parts or _heading_rank(chunks[i]) <= rank)
             ),
             chunk_count,

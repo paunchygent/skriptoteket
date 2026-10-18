@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from uuid import uuid4
+from uuid import UUID
 
 import pytest
 from starlette.routing import BaseRoute, Match
@@ -11,7 +11,7 @@ from skriptoteket.web.router import router
 
 _APP = "/api/v1/apps/documents.conversion_hub"
 _PUBLIC_APP = "/api/v1/public/apps/documents.conversion_hub"
-_JOB = uuid4()
+_JOB = UUID("37301f02-db48-40cd-9429-d0d23748d12c")
 _SPA_FALLBACK_PATH = "/{full_path:path}"
 
 

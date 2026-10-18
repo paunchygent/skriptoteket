@@ -1,9 +1,7 @@
 ---
 type: task
 id: TASK-SKRIPT-40-04-04
-title:
-  Teachers edit a dropdown gap's options and mark the correct one in the gap
-  popover
+title: Teachers edit a dropdown gap's options and mark the correct one in the gap popover
 repository: skriptoteket
 owners:
   - kind: service
@@ -15,9 +13,7 @@ closeout_review:
   status: not_started
 task_kind: story
 acceptance_criteria:
-  - A teacher opens a dropdown gap's popover, adds, edits, removes and reorders options,
-    marks the correct one, and export blocks in red with a one-click jump while a gap
-    has fewer than two options, an empty option or none marked correct
+  - A teacher opens a dropdown gap's popover, adds, edits, removes and reorders options, marks the correct one, and export blocks in red with a one-click jump while a gap has fewer than two options, an empty option or none marked correct
 story: ST-SKRIPT-40-04
 backlog_document_profile: contract-derived
 ---

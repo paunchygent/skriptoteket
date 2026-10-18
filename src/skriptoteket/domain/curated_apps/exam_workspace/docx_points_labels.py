@@ -14,7 +14,7 @@ from typing import Literal
 PointsLabel = Literal["part", "exam", "question"]
 
 _PART = re.compile(
-    r"^\s*(?:del|part|avsnitt|section|uppgiftsdel)\s+(?:\d+[a-zåäö]?|[a-zåäö])\b",
+    r"^\s*(?:del|part|avsnitt|section|uppgiftsdel)\s+(\d+[a-zåäö]?|[a-zåäö])\b",
     re.IGNORECASE,
 )
 _EXAM = re.compile(
@@ -33,3 +33,10 @@ def points_label(text: str) -> PointsLabel | None:
     if _QUESTION.match(text):
         return "question"
     return None
+
+
+def part_identity(text: str) -> str | None:
+    """The part a part-labelled line names, its number or letter ("3" in "Part 3, Question
+    1"), or None for a line without a part label."""
+    match = _PART.match(text)
+    return match.group(1).lower() if match else None
