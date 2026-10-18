@@ -28,10 +28,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_governing_chunks impor
 from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions import (
     return_misplaced_own_chunks,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_points_labels import names_question
 from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import (
     NO_PRINTED_POINTS,
     PrintedPoints,
+    section_openers,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_section_instructions import (
     SectionInstructions,
@@ -360,12 +360,7 @@ def assemble_build_result(
     events = (*events, *released.events)
     title_anchors = frozenset(title.source_anchors) if title is not None else frozenset()
     own_anchors = frozenset(anchor for own in questions for anchor in own)
-    by_anchor = {chunk.anchor: chunk for chunk in chunks}
-    # A part heading that names its question ("Part 3, Question 2") heads that question
-    # inside a part; the instruction above the part still reaches all of its questions.
-    part_lines = frozenset(
-        part.opener for part in printed.parts if not names_question(by_anchor[part.opener].text)
-    )
+    part_lines = section_openers(printed.parts)
     placed = _ordered_items(
         chunks,
         accepted,
@@ -391,6 +386,7 @@ def assemble_build_result(
             own_anchors,
             part_lines,
         )
+    by_anchor = {chunk.anchor: chunk for chunk in chunks}
     scored = apply_printed_points(placed.items, placed.parents, printed, by_anchor)
     items, parents = scored.items, scored.parents
     events = (*events, *scored.events)

@@ -14,7 +14,7 @@ from typing import Literal
 PointsLabel = Literal["part", "exam", "question"]
 
 _PART = re.compile(
-    r"^\s*(?:del|part|avsnitt|section|uppgiftsdel)\s+(?:\d+[a-zåäö]?|[a-zåäö])\b",
+    r"^\s*(?:del|part|avsnitt|section|uppgiftsdel)\s+(\d+[a-zåäö]?|[a-zåäö])\b",
     re.IGNORECASE,
 )
 _EXAM = re.compile(
@@ -22,7 +22,6 @@ _EXAM = re.compile(
     re.IGNORECASE,
 )
 _QUESTION = re.compile(r"^\s*(?:poäng|points?)\s*:", re.IGNORECASE)
-_NAMED_QUESTION = re.compile(r"\b(?:fråga|question|uppgift)\s+\d", re.IGNORECASE)
 
 
 def points_label(text: str) -> PointsLabel | None:
@@ -36,7 +35,8 @@ def points_label(text: str) -> PointsLabel | None:
     return None
 
 
-def names_question(text: str) -> bool:
-    """A line that names a question, such as "Part 3, Question 2 (1 point)": under a part
-    label it heads that one question inside its part and opens no new section."""
-    return bool(_NAMED_QUESTION.search(text))
+def part_identity(text: str) -> str | None:
+    """The part a part-labelled line names, its number or letter ("3" in "Part 3, Question
+    1"), or None for a line without a part label."""
+    match = _PART.match(text)
+    return match.group(1).lower() if match else None
