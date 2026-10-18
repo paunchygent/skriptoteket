@@ -41,13 +41,15 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build im
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_admission import (
     Admitted,
-    _joined_body,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_rounds import (
     DocxBuildExchangeProtocol,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_state import (
     DocxBuildState,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_context_join import (
+    joined_body,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
     StructuredLLMProviderProfile,
@@ -374,7 +376,7 @@ def _with_owned_contexts(
     passages = tuple(chunk for chunk in state.chunks if chunk.anchor in elsewhere)
     own = tuple(chunk for chunk in state.chunks if chunk.anchor in state.question_by_anchor)
     headings = tuple(chunk for chunk in own if is_question_heading(chunk))
-    return item.model_copy(update={"body": _joined_body(item, passages, own, state, headings)})
+    return item.model_copy(update={"body": joined_body(item, passages, own, state, headings)})
 
 
 def _review_reason(state: DocxBuildState, outcome: BatchOutcome, admitted: Admitted | None) -> str:

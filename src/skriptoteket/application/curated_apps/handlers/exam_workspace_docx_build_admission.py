@@ -25,7 +25,9 @@ it stands as an instruction, which placement puts at its part's parent or questi
 one question's item never fails the batch: an item that cannot be built becomes a review item
 holding that question's own source text. A context the grouping gives a question as its owner
 that no entry holds opens that question's item as its source paragraphs, and joins its review
-item otherwise; it is never an item of its own (ruling 2026-10-18 c). A question reported as
+item otherwise; it is never an item of its own (ruling 2026-10-18 c). Such a context an entry
+of another question lists leaves that entry before any item is built and is recorded once
+(``owned_context_moved``, review-3 N5), so its owner joins it. A question reported as
 a type conflict leaves the batch for the pipeline to resend with the kind the source shows,
 once: in the resend it is kept as converted.
 """
@@ -40,11 +42,16 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_admit_me
     admit_metadata,
     free_anchors,
     is_points_line,
+    is_question_heading,
     validation_detail,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_state import (
     DocxBuildState,
     TypeConflict,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_context_join import (
+    joined_body,
+    without_foreign_contexts,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_one_item import (
     raw_anchors,
@@ -61,12 +68,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedItem,
     ProducedMetadata,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.docx_gap_material import (
     GAPPED_MATERIAL_REASON,
     gapped_material,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_heading_wording import heading_wording
 from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions import (
     with_left_out_mark,
     wording_left_out,
@@ -75,15 +80,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import (
     printed_points_plan,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
-    POINT_LABEL,
     QUESTION_HEADING_LABEL,
     definition_context,
     with_accepted_forms,
     with_printed_points,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
-    NativeParagraph,
-    NativeTextSegment,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
@@ -92,7 +92,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeExamItemKind,
     NativeParseOrigin,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.shared_body import source_paragraphs
 from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import (
     FORMATTING_REASON,
     FormattingTransferError,
@@ -193,39 +192,6 @@ def _with_left_out(
     return item, (*anchors, *left_out)
 
 
-def _text(paragraph: NativeParagraph) -> str:
-    return "".join(s.text for s in paragraph.segments if isinstance(s, NativeTextSegment))
-
-
-def _joined_body(
-    item: NativeExamItem,
-    passages: tuple[DocxChunk, ...],
-    own: tuple[DocxChunk, ...],
-    state: DocxBuildState,
-    headings: tuple[DocxChunk, ...],
-) -> tuple[NativeParagraph, ...]:
-    """``item``'s body with the joined contexts' source paragraphs, marks and pictures at
-    their source place, both in source order: a context printed before the question's first
-    own chunk opens the body; one printed after it follows the content of the question's
-    leading heading, which is the body's first paragraph when it holds the heading's wording.
-    """
-    position = {chunk.anchor: n for n, chunk in enumerate(state.chunks)}
-    first = position[own[0].anchor] if own else len(position)
-    before = tuple(c for c in passages if position[c.anchor] < first)
-    after = tuple(c for c in passages if position[c.anchor] > first)
-    lead = 0
-    if after and headings and own and headings[0].anchor == own[0].anchor and item.body:
-        wording = heading_wording(headings[0], item).casefold()
-        if wording and wording in _text(item.body[0]).casefold():
-            lead = 1
-    return (
-        *source_paragraphs(before),
-        *item.body[:lead],
-        *source_paragraphs(after),
-        *item.body[lead:],
-    )
-
-
 def _admit_item(
     index: int, raw: JsonValue, state: DocxBuildState, seen: set[str], item_held: frozenset[str]
 ) -> None:
@@ -268,10 +234,7 @@ def _admit_item(
     headings = tuple(
         c
         for c in state.chunks
-        if c.anchor in own
-        and c.anchor not in state.header_anchors
-        and c.kind == "heading"
-        and (QUESTION_HEADING_LABEL.match(c.text) or POINT_LABEL.search(c.text))
+        if c.anchor in own and c.anchor not in state.header_anchors and is_question_heading(c)
     )
     if headings and set(anchors).issubset(c.anchor for c in headings):
         # A separately emitted heading is not a second question when the reply also
@@ -374,7 +337,7 @@ def _admit_item(
         if joined:
             passages = tuple(c for c in state.chunks if c.anchor in joined)
             item = item.model_copy(
-                update={"body": _joined_body(item, passages, own, state, headings)}
+                update={"body": joined_body(item, passages, own, state, headings)}
             )
             own = (*passages, *own)
         source_images = Counter(image.asset_id for chunk in own for image in chunk.images)
@@ -441,6 +404,11 @@ def admit_batch(content: dict[str, JsonValue], state: DocxBuildState) -> None:
         if not any(state.question_by_anchor.get(a) in refused for a in raw_anchors(raw))
     ]
     items, moved = _without_part_lines(items, state)
+    # A context another question owns leaves the entry before ``item_held`` is read, so its
+    # owner's item joins it as a context no entry holds (review-3 N5).
+    items, foreign = without_foreign_contexts(items, state)
+    if foreign := free_anchors(foreign, state, seen):
+        state.record("admission", "owned_context_moved", anchors=foreign)
     item_held = frozenset(a for raw in items for a in raw_anchors(raw))
     admit_keys(content.get("answer_key_anchors"), state, seen, item_held)
     if content.get("title"):

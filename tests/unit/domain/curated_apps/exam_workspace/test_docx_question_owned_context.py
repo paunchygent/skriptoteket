@@ -167,7 +167,7 @@ _PATHS: dict[str, Callable[[DocxConversionRun, DocxBuildState], DocxBuildResult]
 }
 
 
-def _build(items: list[JsonValue], path: str) -> DocxBuildResult:
+def _admitted(items: list[JsonValue], path: str) -> tuple[DocxBuildResult, DocxBuildState]:
     run = _run()
     claims = frozenset().union(*(f.claims for f in run.families))
     batch = ConversionBatch("w1-01", _FREE_TEXT, tuple(_QUESTIONS), claims, frozenset())
@@ -175,11 +175,20 @@ def _build(items: list[JsonValue], path: str) -> DocxBuildResult:
     admit_batch(
         {"items": items, "answer_key_anchors": [], "title": None, "instructions": []}, state
     )
-    return _PATHS[path](run, state)
+    return _PATHS[path](run, state), state
+
+
+def _build(items: list[JsonValue], path: str) -> DocxBuildResult:
+    return _admitted(items, path)[0]
 
 
 def _q2(result: DocxBuildResult) -> NativeExamItem:
     (item,) = [i for i in result.document.items if _Q2 in i.plain_text_lines()]
+    return item
+
+
+def _q1(result: DocxBuildResult) -> NativeExamItem:
+    (item,) = [i for i in result.document.items if i.source_anchor == "body:0001"]
     return item
 
 
@@ -238,3 +247,60 @@ def test_passage_the_reply_holds_is_not_joined_again(path):
     assert len(result.document.items) == 2
     assert item.review.parse_origin is NativeParseOrigin.LLM_PARSED
     assert item.plain_text_lines() == (_TEXT_A, _PASSAGE, _Q2)
+
+
+def _paragraph(text: str) -> dict[str, JsonValue]:
+    return {"segments": [{"kind": "text", "text": text, "accepted_values": []}]}
+
+
+# Review-3 N5: q1's entry lists contexts the grouping gives q2 (parent ruling 2026-10-18).
+_FOREIGN: dict[str, tuple[tuple[str, ...], list[JsonValue]]] = {
+    "text_a": (("body:0001", "body:0002"), [_paragraph(_Q1), _paragraph(_TEXT_A)]),
+    "text_a_and_passage": (
+        ("body:0001", "body:0002", "body:0003"),
+        [_paragraph(_Q1), _paragraph(_TEXT_A), _passage_paragraph()],
+    ),
+}
+
+
+def _foreign(case: str, path: str) -> tuple[DocxBuildResult, DocxBuildState]:
+    anchors, body = _FOREIGN[case]
+    return _admitted([_item(anchors, 5, body=body), _item(("body:0004",), 10)], path)
+
+
+@pytest.mark.parametrize("path", sorted(_PATHS))
+@pytest.mark.parametrize("case", sorted(_FOREIGN))
+def test_context_another_question_lists_opens_its_owner_item(case, path):
+    result, state = _foreign(case, path)
+    item = _q2(result)
+
+    assert len(result.document.items) == 2
+    assert item.plain_text_lines() == (_TEXT_A, _PASSAGE, _Q2)
+    assert item.review.parse_origin is NativeParseOrigin.LLM_PARSED
+    assert item.body[1].segments[-1] == NativeAssetSegment(asset_id=_PICTURE.asset_id)
+    assert item.source_anchor == "body:0004"
+    moved = [e.anchors for e in state.events if e.code == "owned_context_moved"]
+    assert moved == [_FOREIGN[case][0][1:]]
+    assert all(e.detail == "" for e in state.events if e.code == "owned_context_moved")
+
+
+@pytest.mark.xfail(
+    strict=True,
+    reason="review-3 N5/N6: awaits reply-paragraph source alignment (2026-10-18)",
+)
+@pytest.mark.parametrize("path", sorted(_PATHS))
+def test_question_listing_another_question_context_holds_only_its_own_text(path):
+    item = _q1(_foreign("text_a", path)[0])
+
+    assert item.review.parse_origin is NativeParseOrigin.LLM_PARSED
+    assert item.plain_text_lines() == (_Q1,)
+
+
+@pytest.mark.parametrize("path", sorted(_PATHS))
+def test_question_placing_the_moved_context_picture_is_its_source_review_item(path):
+    """The picture belongs to the context's source, so it leaves with the context: a q1
+    reply that places it no longer matches q1's own source pictures (no wording is read)."""
+    item = _q1(_foreign("text_a_and_passage", path)[0])
+
+    assert item.review.parse_origin is NativeParseOrigin.SOURCE_FALLBACK
+    assert item.plain_text_lines() == (_Q1,)
