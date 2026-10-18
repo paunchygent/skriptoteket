@@ -85,3 +85,34 @@ Stop and report to the parent in either case:
 | W9  | Writing areas print as ruled lines.                                                                                                                                                                                                                                              |
 | W10 | The DOCX converter drops a paragraph consisting only of underscores and whitespace on import; dashes and dots are kept.                                                                                                                                                          |
 | W11 | The Exam.net import PDF keeps its current content and stays a separate fallback export, last in the export menu, labelled as a fallback for Exam.net import when QTI fails and not for printing; QTI is the main route into Exam.net.                                            |
+
+## Resume here (2026-10-18 clean break)
+
+- Branch `codex/task-skript-40-04-07-remote`, worktree
+  `/home/paunchygent/apps/skriptoteket-task-skript-40-04-07-remote`. The head is
+  the commit that adds this note; its parent is merge `12c1c42f`.
+- Done: the repair of review 09d50acc (changes requested at `b027d93e`). R1
+  house template on A4 (`65ad81a0`, `3d5b667a`); R2 answer-line drop survives
+  source reconstruction (`0383413e`); R3 preview follows the history cursor
+  (`b4176e78`, `c4630370`); R4 PDFium lock (`f24adedd`); R5 preview disposal
+  (`8ff9f1c3`); R6 file splits (`0ff1b18b`, `5c58b9ff`, `240b2448`, `5fe9bf48`,
+  `19fa3e12`, `2602cd15`); L1 `f132b336`; L2 `9181d010`. After those, origin/main
+  `188a2139` was merged with its conflicts resolved explicitly (`12c1c42f`).
+- Next unit, the v8 seam: port `exam_print_document._print_walk` to
+  `native_exam_outline.document_outline`. A part prints its instruction only
+  when `is_empty_body(part.instruction)` is false, then prints its children in
+  order. Bump `native_exam_document_v7` to `v8` everywhere: the domain,
+  fixtures, frontend spec supports and `openapi.d.ts`. Keep no v7 reader. Keep
+  REP-0044's admin-only AI gate.
+- Open after the merge: mypy reports `printed_parent_of` missing (fixed by the
+  seam). It also reports Optional `Length` errors in
+  `test_exam_workspace_docx_house_geometry.py` and `Page.width/height` in
+  `test_exam_print_html.py`. Frontend typecheck passes.
+- Not yet run after the merge: the focused tests, lint, frontend
+  ESLint/build and the one exam-workspace domain suite. R1–R4 then return to
+  reviewer 09d50acc. Under the user's 2026-10-18 instruction, no review
+  launches until the work resumes.
+- Retained root:
+  `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a14e6d-3ab6-7b8f-a363-3295c0f7fda6`
+  (work orders in `evidence/lead-715cef23/orders/`).
+- No children are running. User gates: none open.
