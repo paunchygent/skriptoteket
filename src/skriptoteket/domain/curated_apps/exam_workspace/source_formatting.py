@@ -91,6 +91,7 @@ class SourceFormatting:
             elif chunk.text:
                 paragraphs.append(SourceParagraph(offset, offset + len(chunk.text), None))
             offset += len(chunk.text)
+        self._chunk_offsets = [start for start, _ in self.chunk_starts]
         self.text = "".join(parts)
         self.marks = marks
         self.paragraphs = paragraphs
@@ -253,20 +254,49 @@ class SourceFormatting:
             self.entry_spans.append(self._entry_span)
             left, right = self._entry_span
             origins = [p.start for p in self.paragraphs_in(left, right)]
-            for index, output in enumerate(result[output_before:]):
-                anchor = origins[min(index, len(origins) - 1)] if origins else -1
-                pictures = []
-                for segment in output.segments:
-                    if segment.kind != "asset" or segment.asset_id not in self.asset_positions:
-                        continue
-                    positions = self.asset_positions[segment.asset_id]
-                    ordinal = self._asset_cursors.get(segment.asset_id, 0)
-                    pictures.append(positions[min(ordinal, len(positions) - 1)])
-                    self._asset_cursors[segment.asset_id] = ordinal + 1
-                if pictures:
-                    anchor = min(pictures + ([anchor] if anchor >= 0 else []))
-                self.output_anchors.append(anchor)
+            produced = result[output_before:]
+            del result[output_before:]
+            for index, output in enumerate(produced):
+                text_origin = origins[min(index, len(origins) - 1)] if origins else -1
+                for origin, piece in self._by_chunk(output, text_origin):
+                    result.append(piece)
+                    self.output_anchors.append(origin)
         return tuple(result)
+
+    def _chunk_at(self, offset: int) -> str | None:
+        if offset < 0:
+            return None
+        return self.chunk_starts[bisect_right(self._chunk_offsets, offset) - 1][1]
+
+    def _by_chunk(
+        self, output: NativeParagraph, text_origin: int
+    ) -> list[tuple[int, NativeParagraph]]:
+        """The paragraph split where its source chunk changes, each piece with its origin.
+
+        A picture's origin is its own source place; text and gaps share the paragraph's text
+        origin, -1 when its wording has no unique source paragraph. A paragraph that joins a
+        picture of one chunk to text of another, or to text of no known chunk, becomes one
+        piece per chunk, so no piece claims content another chunk holds (TASK-SKRIPT-39-04-13
+        D1).
+        """
+        pieces: list[tuple[int, list[NativeSegment]]] = []
+        for segment in output.segments:
+            origin = text_origin
+            if segment.kind == "asset" and segment.asset_id in self.asset_positions:
+                positions = self.asset_positions[segment.asset_id]
+                ordinal = self._asset_cursors.get(segment.asset_id, 0)
+                origin = positions[min(ordinal, len(positions) - 1)]
+                self._asset_cursors[segment.asset_id] = ordinal + 1
+            if pieces and self._chunk_at(pieces[-1][0]) == self._chunk_at(origin):
+                # Within one chunk the earliest source place stands for the piece.
+                kept, segments = pieces[-1]
+                pieces[-1] = (min(kept, origin) if origin >= 0 else kept, [*segments, segment])
+            else:
+                pieces.append((origin, [segment]))
+        return [
+            (origin, output.model_copy(update={"segments": tuple(segments)}))
+            for origin, segments in pieces
+        ]
 
     def _paragraph(
         self, paragraph: NativeParagraph, answers: dict[str, tuple[str, ...]]

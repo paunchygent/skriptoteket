@@ -46,6 +46,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import (
     NO_PART_LINES,
     PartLines,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_source_form import source_form
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_review import review_source_item
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     POINT_LABEL,
@@ -234,25 +235,30 @@ def _in_source_form(aligned: AlignedItem, sources: Sequence[DocxChunk]) -> Align
 
     The body paragraphs aligned to such a chunk are that chunk: they give way, at the first
     one's place, to the chunk's source paragraphs with their marks and pictures, so a reply
-    line that echoes an instruction without its picture never drops it. A heading keeps the
-    reply's line, which carries the printed label assembly reads.
+    line that echoes an instruction without its picture never drops it. A response gap the
+    item placed there stays, at its source location (``source_form``); when no unique source
+    location exists, the item's paragraphs stay as they are, since the source form could not
+    carry its response. A heading keeps the reply's line, which carries the printed label
+    assembly reads.
     """
+    answers = {gap.gap_id: gap.accepted_values for gap in aligned.item.gaps}
     for chunk in sources:
         if chunk.kind == "heading" or not aligned.shows(chunk.anchor):
             continue
+        pairs = list(zip(aligned.item.body, aligned.chunks, strict=True))
+        shown = [paragraph for paragraph, anchor in pairs if anchor == chunk.anchor]
+        restored = source_form(chunk, shown, answers)
+        if restored is None:
+            continue
         at = aligned.chunks.index(chunk.anchor)
-        kept = [
-            (paragraph, anchor)
-            for paragraph, anchor in zip(aligned.item.body, aligned.chunks, strict=True)
-            if anchor != chunk.anchor
-        ]
+        kept = [(paragraph, anchor) for paragraph, anchor in pairs if anchor != chunk.anchor]
         aligned = _inserted(
             AlignedItem(
                 aligned.item.model_copy(update={"body": tuple(p for p, _ in kept)}),
                 tuple(anchor for _, anchor in kept),
             ),
             at,
-            tuple((paragraph, chunk.anchor) for paragraph in source_paragraphs((chunk,))),
+            tuple((paragraph, chunk.anchor) for paragraph in restored),
         )
     return aligned
 
@@ -270,25 +276,36 @@ def _inserted(aligned: AlignedItem, at: int, added: Sequence[_Shown]) -> Aligned
 def _with_joined(
     aligned: AlignedItem, joined: Sequence[Joined], position: Mapping[str, int], first: int
 ) -> AlignedItem:
-    """Place each joined instruction before the first body paragraph whose source place
-    comes after it.
+    """Place each joined instruction as one source-ordered unit among the body paragraphs.
 
-    A paragraph's place is its aligned chunk's position, and an unaligned paragraph takes
-    the place of the aligned paragraph before it (``source_places``). Every source chunk
-    keeps its exact place, a shared picture included; a chunk the item already shows is not
-    placed again. An instruction that opens the item stands first. An instruction no later
-    paragraph follows ends the body.
+    A chunk the item already shows keeps its place (``_in_source_form``); every other chunk
+    of the instruction is placed in source order: right after the instruction's paragraphs
+    that come before it in the source, or, with none, first when the instruction opens the
+    item and otherwise before the first body paragraph whose source place comes after it. A
+    paragraph's place is its aligned chunk's position, and an unaligned paragraph takes the
+    place of the aligned paragraph before it (``source_places``). Every source chunk keeps
+    its exact place, a shared picture included. An instruction no later paragraph follows
+    ends the body.
     """
     for entry in joined:
-        added = _unshown(aligned, entry.sources)
-        last = position[entry.sources[-1].anchor]
-        places = source_places(aligned.chunks, position, first)
-        at = (
-            0
-            if entry.opens
-            else next((n for n, place in enumerate(places) if place > last), len(places))
-        )
-        aligned = _inserted(aligned, at, added)
+        own = {chunk.anchor for chunk in entry.sources}
+        for chunk in entry.sources:
+            if aligned.shows(chunk.anchor):
+                continue
+            here = position[chunk.anchor]
+            prior = [
+                n
+                for n, anchor in enumerate(aligned.chunks)
+                if anchor in own and position[anchor] < here
+            ]
+            if prior:
+                at = prior[-1] + 1
+            elif entry.opens:
+                at = 0
+            else:
+                places = source_places(aligned.chunks, position, first)
+                at = next((n for n, place in enumerate(places) if place > here), len(places))
+            aligned = _inserted(aligned, at, _unshown(aligned, (chunk,)))
     return aligned
 
 
