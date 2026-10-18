@@ -86,8 +86,8 @@
   40-04-07 ruling (user 2026-10-18): print PDF renders the DOCX house template; Exam.net import PDF stays a fallback only; QTI is the Exam.net route (W1/W11, lead amends the task doc).
   39-06-10 delivered at 92ff33e2, Sol review running; merge after 40-04-07 (v8 bump, openapi regen).
   Hemma lanes 2026-10-18: REP-0044 paid AI admin-only gate (lead 20270b35); REP-0045 docx_background labeler recordings (pre-existing failure on main).
-  39-04-14 at 4d7929bf6 (session remove-last-wording-rule): D5-D7 user-accepted; interpretive junior drop audit over recorded fixtures before review and merge.
-  Next planning: new epic for the public exam workspace (no AI, browser-only guest save) and the AI spend cap (10M Luna/Terra tokens/day, $1 parity); 39-07-04 scaffold uncommitted, to be re-scoped.
+  39-04 follow-ups on Hemma from 6e3453b2e: 39-04-16 gap paragraphs from source (lead ec3b7ed9); 39-04-15 re-scoped by user to fix the q8 stem drop at its root (lead bb15ad98, merges after 39-04-16).
+  EPIC-SKRIPT-41 ready 2026-10-18: ST-41-02 guest workspace + QTI import + guest DXE line removal (Hemma, parallel); ST-41-01 paid AI through the HuleEdu LLM provider door (TASK-HULE-14-03-01 in huleedu first, then 41-01-03, 41-01-02, 41-01-04 capacity for 1,000 concurrent calls).
   Hemma Opus lead `3b164d53`: 40-03-01..09 and 08-36-02 `done`; 40-02-01 tranche 1 on
   main 761b1b59, tranche 2 a67afa90 (`in_progress`: shared `play` meaning in
   session add-a-shared-play-glyph, exam-held wrappers and lucide removal open).
