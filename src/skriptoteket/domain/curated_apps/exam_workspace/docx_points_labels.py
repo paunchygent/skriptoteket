@@ -22,6 +22,7 @@ _EXAM = re.compile(
     re.IGNORECASE,
 )
 _QUESTION = re.compile(r"^\s*(?:poäng|points?)\s*:", re.IGNORECASE)
+_NAMED_QUESTION = re.compile(r"\b(?:fråga|question|uppgift)\s+\d", re.IGNORECASE)
 
 
 def points_label(text: str) -> PointsLabel | None:
@@ -33,3 +34,9 @@ def points_label(text: str) -> PointsLabel | None:
     if _QUESTION.match(text):
         return "question"
     return None
+
+
+def names_question(text: str) -> bool:
+    """A line that names a question, such as "Part 3, Question 2 (1 point)": under a part
+    label it heads that one question inside its part and opens no new section."""
+    return bool(_NAMED_QUESTION.search(text))

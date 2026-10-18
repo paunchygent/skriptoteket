@@ -12,6 +12,7 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_st
     DocxBuildState,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import review_chunk_item
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedMetadata
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxChunk,
     DocxSourceParagraph,
@@ -89,3 +90,36 @@ def test_a_section_parent_ends_at_the_next_part_heading_whatever_its_rank(
         (("item_001", "item_002"), 2)
     ]
     assert [item.points for item in document.items] == [1, 1, 7]
+
+
+@pytest.mark.parametrize("level", [1, 2, None])
+def test_part_headings_that_name_their_question_stay_inside_the_part(level: int | None) -> None:
+    """Poetry quiz Part 3: "Part 3, Question N (1 point)" heads each question, so the word box
+    above the part reaches every question of it, and each question keeps its own point."""
+    chunks = (
+        _chunk("body:0000", "paragraph", "Poetry quiz"),
+        _chunk("body:0001", "paragraph", "Word box: cherish | diction | stanza"),
+        _chunk("body:0002", "heading", "Part 3, Question 1 (1 point)", level),
+        _chunk("body:0003", "paragraph", "Write the word that means to love dearly."),
+        _chunk("body:0004", "heading", "Part 3, Question 2 (1 point)", level),
+        _chunk("body:0005", "paragraph", "Write the word for a poet's choice of words."),
+    )
+    state = DocxBuildState(
+        job_id=uuid4(),
+        document_id=uuid4(),
+        filename="poetry.docx",
+        source_sha256="0" * 64,
+        chunks=chunks,
+        questions=(("body:0002", "body:0003"), ("body:0004", "body:0005")),
+    )
+    for heading, body in ((chunks[2], chunks[3]), (chunks[4], chunks[5])):
+        state.accepted.append((review_chunk_item(body, "test"), (heading.anchor, body.anchor)))
+    state.instructions = (
+        ProducedMetadata(text=chunks[1].text, source_anchors=(chunks[1].anchor,)),
+    )
+    state.claimed.update(chunk.anchor for chunk in chunks)
+
+    document = state.result().document
+
+    assert [p.item_ids for p in document.parents] == [("item_001", "item_002")]
+    assert [item.points for item in document.items] == [1, 1]
