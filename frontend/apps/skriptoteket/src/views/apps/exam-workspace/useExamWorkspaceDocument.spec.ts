@@ -134,12 +134,14 @@ describe("matching edits in useExamWorkspaceDocument", () => {
     expect(apiMocks.saveExamWorkspaceDocument).not.toHaveBeenCalled();
   });
 
-  it("refuses to save an empty entry text", async () => {
+  it("saves an emptied entry text as an empty body", async () => {
     const state = await openMatchingDocument();
+    apiMocks.saveExamWorkspaceDocument.mockResolvedValue(buildResponse());
 
-    state.updateItemMatchEntryBody("item_001", "right", "right_001", plainBody(""));
+    state.updateItemMatchEntryBody("item_001", "right", "right_001", []);
 
-    await expect(state.saveDocument("position-1")).resolves.toBe(false);
-    expect(apiMocks.saveExamWorkspaceDocument).not.toHaveBeenCalled();
+    await expect(state.saveDocument("position-1")).resolves.toBe(true);
+    const saved = apiMocks.saveExamWorkspaceDocument.mock.calls[0]?.[1].document;
+    expect(saved?.items[0]?.match_right.find((entry: { right_id: string }) => entry.right_id === "right_001")?.body).toEqual([]);
   });
 });
