@@ -401,8 +401,7 @@ def place_section_instructions(
     student-visible.
     The instructions that reach two or more consecutive items become the parent of
     exactly those items, whatever their kinds. An instruction that defines terms reaches only
-    the run's items whose own chunks use one; lines an item prints before its numbered
-    question line are such an instruction too; a lead-in ending in a colon that introduces a
+    the run's items whose own chunks use one; a lead-in ending in a colon that introduces a
     question opening with quoted material reaches only the run's items that open with quotes.
     Every other instruction, and every instruction whose reach cannot be a parent, is copied
     into the items it reaches. An instruction an item prints inside its own chunks is placed
