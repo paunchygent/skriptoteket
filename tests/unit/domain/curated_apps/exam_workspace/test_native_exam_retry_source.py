@@ -123,6 +123,7 @@ def _source(
             )
             for index, anchor in enumerate(own)
         ),
+        owned_context_anchors=(),
         key_chunks=tuple(
             NativeExamRetryChunk(
                 anchor=anchor,
@@ -396,6 +397,7 @@ def test_source_asset_ids_cover_own_key_and_context_pictures():
                 images=(NativeExamRetryImage(asset_id=_ASSET_ID, offset=0, marked_offset=0),),
             ),
         ),
+        owned_context_anchors=(),
         key_chunks=(),
         context_chunks=(),
         label_kind=NativeExamItemKind.FREE_TEXT,
@@ -422,6 +424,7 @@ def test_a_source_only_picture_is_a_referenced_asset_without_entering_the_body()
                 paragraphs=(NativeExamRetryParagraph(offset=0, text="fråga", heading_level=None),),
             ),
         ),
+        owned_context_anchors=(),
         key_chunks=(
             NativeExamRetryChunk(
                 anchor="body:0002",

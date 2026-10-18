@@ -121,6 +121,7 @@ def test_a_picture_retained_only_as_teacher_key_source_is_not_exported_to_studen
                     paragraphs=(),
                 ),
             ),
+            owned_context_anchors=(),
             key_chunks=(
                 NativeExamRetryChunk(
                     anchor="body:0002",
@@ -132,6 +133,7 @@ def test_a_picture_retained_only_as_teacher_key_source_is_not_exported_to_studen
                     paragraphs=(),
                 ),
             ),
+            context_chunks=(),
             label_kind=NativeExamItemKind.FREE_TEXT,
         ),
     )

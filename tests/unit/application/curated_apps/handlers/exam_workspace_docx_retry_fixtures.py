@@ -192,6 +192,7 @@ def source(
                 images=images,
             ),
         ),
+        owned_context_anchors=(),
         key_chunks=tuple(
             NativeExamRetryChunk(
                 anchor=key_anchor,

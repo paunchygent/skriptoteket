@@ -44,7 +44,13 @@ function withRetrySource(item: NativeExamItem, assetId: string): NativeExamItem 
   };
   return {
     ...item,
-    retry_source: { chunks: [], context_chunks: [chunk], key_chunks: [], label_kind: "free_text" },
+    retry_source: {
+      chunks: [],
+      context_chunks: [chunk],
+      owned_context_anchors: [],
+      key_chunks: [],
+      label_kind: "free_text",
+    },
   } as unknown as NativeExamItem;
 }
 

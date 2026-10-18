@@ -120,9 +120,9 @@ class NativeExamRetrySource(BaseModel):
     The DOCX bytes are gone once conversion ends, so this is the only source a question can
     be reconverted from after save and reopen: ``chunks`` hold the question's own chunks and
     the contexts it owns, each context at its source place; ``owned_context_anchors`` name
-    those contexts,
-    ``key_chunks`` hold its answer-key chunks, and ``context_chunks`` the read-only shared
-    context the conversion read. A retry treats an owned context as the question's own: a
+    those contexts, ``key_chunks`` hold its answer-key chunks, and ``context_chunks`` the
+    read-only shared context the conversion read. The writer always records all three, so
+    none has a default. A retry treats an owned context as the question's own: a
     reply that leaves it out joins it to the item as the build does (ruling 2026-10-18 c).
     ``label_kind`` is the labeler's first type, kept before a type-conflict resend changed the
     pipeline's kind.
@@ -131,9 +131,9 @@ class NativeExamRetrySource(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     chunks: tuple[NativeExamRetryChunk, ...] = Field(min_length=1)
-    owned_context_anchors: tuple[str, ...] = ()
-    key_chunks: tuple[NativeExamRetryChunk, ...] = ()
-    context_chunks: tuple[NativeExamRetryChunk, ...] = ()
+    owned_context_anchors: tuple[str, ...]
+    key_chunks: tuple[NativeExamRetryChunk, ...]
+    context_chunks: tuple[NativeExamRetryChunk, ...]
     label_kind: NativeExamItemKind
 
     @model_validator(mode="after")

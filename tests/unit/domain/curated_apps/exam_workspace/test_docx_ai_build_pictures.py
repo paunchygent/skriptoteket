@@ -199,6 +199,9 @@ def test_manifest_carries_a_retry_only_picture_without_exporting_it() -> None:
                         paragraphs=(),
                     ),
                 ),
+                owned_context_anchors=(),
+                key_chunks=(),
+                context_chunks=(),
                 label_kind=NativeExamItemKind.FREE_TEXT,
             )
         }

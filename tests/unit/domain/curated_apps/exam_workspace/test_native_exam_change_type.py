@@ -331,6 +331,9 @@ def _retry_source(label_kind: NativeExamItemKind) -> NativeExamRetrySource:
                 paragraphs=(),
             ),
         ),
+        owned_context_anchors=(),
+        key_chunks=(),
+        context_chunks=(),
         label_kind=label_kind,
     )
 
