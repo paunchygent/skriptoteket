@@ -19,8 +19,12 @@ from skriptoteket.domain.scripting.tool_session_messages import ToolSessionMessa
 from skriptoteket.domain.scripting.tool_session_turns import ToolSessionTurn
 from skriptoteket.protocols.catalog import ToolMaintainerRepositoryProtocol
 from skriptoteket.protocols.llm import (
+    EditorChatDoneEnabledData,
+    EditorChatDoneEvent,
+    EditorChatHandlerProtocol,
     EditorChatHistoryHandlerProtocol,
     EditorChatHistoryResult,
+    EditorChatStreamEvent,
 )
 from skriptoteket.web.api.v1.editor import chat as chat_api
 from skriptoteket.web.middleware.error_handler import error_handler_middleware
@@ -40,14 +44,20 @@ class EditorChatHistoryApiProvider(Provider):
         *,
         maintainers: ToolMaintainerRepositoryProtocol,
         handler: EditorChatHistoryHandlerProtocol,
+        chat_handler: EditorChatHandlerProtocol,
     ) -> None:
         super().__init__()
         self._maintainers = maintainers
         self._handler = handler
+        self._chat_handler = chat_handler
 
     @provide(scope=Scope.REQUEST)
     def maintainers(self) -> ToolMaintainerRepositoryProtocol:
         return self._maintainers
+
+    @provide(scope=Scope.REQUEST)
+    def editor_chat_handler(self) -> EditorChatHandlerProtocol:
+        return self._chat_handler
 
     @provide(scope=Scope.REQUEST)
     def editor_chat_history_handler(self) -> EditorChatHistoryHandlerProtocol:
@@ -98,6 +108,11 @@ def handler() -> AsyncMock:
 
 
 @pytest.fixture
+def chat_handler() -> AsyncMock:
+    return AsyncMock(spec=EditorChatHandlerProtocol)
+
+
+@pytest.fixture
 def app(
     settings: Settings,
     clock: ClockStub,
@@ -105,6 +120,7 @@ def app(
     profiles: ProfileRepositoryStub,
     maintainers: AsyncMock,
     handler: AsyncMock,
+    chat_handler: AsyncMock,
 ) -> FastAPI:
     app = FastAPI()
     app.middleware("http")(error_handler_middleware)
@@ -120,6 +136,7 @@ def app(
         EditorChatHistoryApiProvider(
             maintainers=maintainers,
             handler=handler,
+            chat_handler=chat_handler,
         ),
     )
     setup_dishka(container, app)
@@ -237,3 +254,59 @@ async def test_editor_chat_history_returns_messages(
     called_query = handler.handle.call_args.kwargs["query"]
     assert called_query.tool_id == tool_id
     assert called_query.limit == 2
+
+
+async def _chat_stream_events() -> AsyncIterator[EditorChatStreamEvent]:
+    yield EditorChatDoneEvent(data=EditorChatDoneEnabledData(reason="stop"))
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("role", [Role.USER, Role.CONTRIBUTOR])
+async def test_editor_chat_ai_gate_rejects_non_admin_roles(
+    client: httpx.AsyncClient,
+    private_key: rsa.RSAPrivateKey,
+    clock: ClockStub,
+    users: UserRepositoryStub,
+    profiles: ProfileRepositoryStub,
+    chat_handler: AsyncMock,
+    role: Role,
+    now: datetime,
+) -> None:
+    seed_huleedu_projection(users=users, profiles=profiles, role=role, now=now)
+
+    response = await client.post(
+        f"/api/v1/editor/tools/{uuid4()}/chat",
+        headers=signed_huleedu_headers(private_key=private_key, clock=clock),
+        json={"message": "Hej"},
+    )
+
+    assert response.status_code == 403
+    details = response.json()["error"]["details"]
+    assert set(details["required_roles"]) == {"admin", "superuser"}
+    assert details["actual_role"] == role.value
+    chat_handler.stream.assert_not_called()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("role", [Role.ADMIN, Role.SUPERUSER])
+async def test_editor_chat_ai_gate_admits_admin_roles(
+    client: httpx.AsyncClient,
+    private_key: rsa.RSAPrivateKey,
+    clock: ClockStub,
+    users: UserRepositoryStub,
+    profiles: ProfileRepositoryStub,
+    chat_handler: AsyncMock,
+    role: Role,
+    now: datetime,
+) -> None:
+    seed_huleedu_projection(users=users, profiles=profiles, role=role, now=now)
+    chat_handler.stream.return_value = _chat_stream_events()
+
+    response = await client.post(
+        f"/api/v1/editor/tools/{uuid4()}/chat",
+        headers=signed_huleedu_headers(private_key=private_key, clock=clock),
+        json={"message": "Hej"},
+    )
+
+    assert response.status_code == 200
+    chat_handler.stream.assert_called_once()

@@ -21,11 +21,17 @@ T = TypeVar("T")
 
 
 def from_dishka(dependency_type: type[T]) -> Any:
-    """Create a FastAPI dependency that resolves a Dishka service from request state."""
+    """Create a FastAPI dependency that resolves a Dishka service from request state.
+
+    The inner dependency function carries the resolved Dishka type on the
+    ``dishka_dependency_type`` attribute so route-coverage guards can read which
+    service a FastAPI dependency resolves without parsing annotations.
+    """
 
     async def dependency(request: Request) -> T:
         return cast(T, await request.state.dishka_container.get(dependency_type))
 
+    setattr(dependency, "dishka_dependency_type", dependency_type)
     return Depends(dependency)
 
 
