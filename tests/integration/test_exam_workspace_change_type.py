@@ -158,7 +158,13 @@ async def test_change_reopens_as_one_autosave_and_one_undo_restores_exact_questi
             assert response.status_code == 200, response.text
             saved = response.json()
             before_history = (await client.get(path + "/history")).json()
-            assert before_history["step_ids"] == retained_before_save["step_ids"]
+            # TASK-SKRIPT-40-04-03: Spara keeps the saved copy at the sent position only
+            # when that snapshot already holds it. The saved document here is an unsaved
+            # edit no snapshot holds, so Spara appends it as exactly one new step after
+            # the retained ones; a full ten-step history drops its oldest step to fit.
+            retained_before_ids = retained_before_save["step_ids"]
+            assert before_history["step_ids"][:-1] == retained_before_ids[-9:]
+            assert len(before_history["step_ids"]) == min(10, len(retained_before_ids) + 1)
             draft = prepared
             if autosave_before_change:
                 # Also challenge handlers which retype the file instead of editor state.
@@ -202,7 +208,10 @@ async def test_change_reopens_as_one_autosave_and_one_undo_restores_exact_questi
             assert actual.revision == 2
             assert changed["saved_document"] == saved["document"]
             history = (await client.get(path + "/history")).json()
-            appended = 1 if autosave_before_change else 2
+            # The retype itself appends exactly one step after the snapshot the
+            # editor stands on; before_history already holds Spara's and any
+            # autosave's steps, so only this one command is new.
+            appended = 1
             retained_ids = before_history["step_ids"][-(10 - appended) :]
             assert history["step_ids"][:-appended] == retained_ids
             assert len(history["step_ids"]) == min(10, len(before_history["step_ids"]) + appended)
