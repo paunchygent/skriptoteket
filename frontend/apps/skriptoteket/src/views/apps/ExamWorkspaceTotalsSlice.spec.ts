@@ -145,7 +145,7 @@ describe("workspace printed exam totals", () => {
   it("recomputes the exam and part lines on a point edit without a save or reload", async () => {
     const document = documentWithTotals(7.5, [2.5, 5]);
     document.parents = [{
-      parent_id: "parent_001", item_ids: ["item_001", "item_002"],
+      parent_id: "parent_001", item_ids: ["item_001", "item_002"], place: 0,
       printed_total: 7.5, instruction: [],
     }];
     const wrapper = await openDocument(document);
@@ -175,7 +175,7 @@ describe("workspace printed exam totals", () => {
   it("shows no part line without a printed part total", async () => {
     const document = documentWithTotals(null, [2, 3]);
     document.parents = [{
-      parent_id: "parent_001", item_ids: ["item_001", "item_002"],
+      parent_id: "parent_001", item_ids: ["item_001", "item_002"], place: 0,
       printed_total: null, instruction: [],
     }];
     const wrapper = await openDocument(document);
@@ -186,8 +186,8 @@ describe("workspace printed exam totals", () => {
   it("puts a part difference only on its own part and its instruction, said once per level", async () => {
     const document = documentWithTotals(null, [2, 3, 1, 4]);
     document.parents = [
-      { parent_id: "parent_002", item_ids: ["item_003", "item_004"], printed_total: 8, instruction: [] },
-      { parent_id: "parent_001", item_ids: ["item_001", "item_002"], printed_total: 5, instruction: [] },
+      { parent_id: "parent_002", item_ids: ["item_003", "item_004"], place: 2, printed_total: 8, instruction: [] },
+      { parent_id: "parent_001", item_ids: ["item_001", "item_002"], place: 0, printed_total: 5, instruction: [] },
     ];
     const wrapper = await openDocument(document);
     expect(partLine(wrapper, "parent_001").exists()).toBe(false);
@@ -244,8 +244,8 @@ describe("accepting the computed totals", () => {
   function twoPartsPrintingOtherTotals(examPrinted: number | null = 14): NativeExamDocument {
     const document = documentWithTotals(examPrinted, [2, 3, 1, 4]);
     document.parents = [
-      { parent_id: "parent_001", item_ids: ["item_001", "item_002"], printed_total: 8, instruction: [] },
-      { parent_id: "parent_002", item_ids: ["item_003", "item_004"], printed_total: 6, instruction: [] },
+      { parent_id: "parent_001", item_ids: ["item_001", "item_002"], place: 0, printed_total: 8, instruction: [] },
+      { parent_id: "parent_002", item_ids: ["item_003", "item_004"], place: 2, printed_total: 6, instruction: [] },
     ];
     return document;
   }
@@ -355,7 +355,7 @@ describe("accepting the computed totals", () => {
   it("names a decimal sum as the line shows it", async () => {
     const document = documentWithTotals(9, [2.5, 5]);
     document.parents = [{
-      parent_id: "parent_001", item_ids: ["item_001", "item_002"], printed_total: 9, instruction: [],
+      parent_id: "parent_001", item_ids: ["item_001", "item_002"], place: 0, printed_total: 9, instruction: [],
     }];
     const wrapper = await openDocument(document);
     expect(wrapper.get(ACCEPT_EXAM).text()).toBe("Använd 7,5 p");
@@ -371,8 +371,8 @@ describe("accepting a total never changes the layout slots", () => {
   function printingOtherTotals(): NativeExamDocument {
     const document = documentWithTotals(14, [2, 3, 1, 4]);
     document.parents = [
-      { parent_id: "parent_001", item_ids: ["item_001", "item_002"], printed_total: 8, instruction: [] },
-      { parent_id: "parent_002", item_ids: ["item_003", "item_004"], printed_total: 6, instruction: [] },
+      { parent_id: "parent_001", item_ids: ["item_001", "item_002"], place: 0, printed_total: 8, instruction: [] },
+      { parent_id: "parent_002", item_ids: ["item_003", "item_004"], place: 2, printed_total: 6, instruction: [] },
     ];
     return document;
   }
@@ -424,7 +424,7 @@ describe("accepting a total never changes the layout slots", () => {
   it("keeps the parent row's three lines for a part that never printed a total", async () => {
     const document = documentWithTotals(null, [2, 3]);
     document.parents = [{
-      parent_id: "parent_001", item_ids: ["item_001", "item_002"], printed_total: null, instruction: [],
+      parent_id: "parent_001", item_ids: ["item_001", "item_002"], place: 0, printed_total: null, instruction: [],
     }];
     const wrapper = await openDocument(document);
 

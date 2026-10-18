@@ -64,7 +64,7 @@ function documentOf(overrides: Partial<NativeExamDocument>): NativeExamDocument 
     origin: { kind: "docx_import" },
     parents: [],
     revision: 1,
-    schema_version: "native_exam_document_v6",
+    schema_version: "native_exam_document_v7",
     title: "Prov",
     ...overrides,
   } as NativeExamDocument;
@@ -164,7 +164,7 @@ describe("deleting a standalone question", () => {
       "a parent instruction",
       {
         items: [question(1, ["asset_a"]), question(2), question(3)],
-        parents: [{ instruction: picture("asset_a"), item_ids: ["item_003"], parent_id: "parent_001" }],
+        parents: [{ instruction: picture("asset_a"), item_ids: ["item_003"], parent_id: "parent_001", place: 2 }],
       },
     ],
   ] as [string, Partial<NativeExamDocument>][])("keeps a picture still used by %s", (_label, overrides) => {

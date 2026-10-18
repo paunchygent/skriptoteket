@@ -3,10 +3,13 @@
  *
  * Domain purpose:
  *   The exam's top-level units are standalone questions and whole
- *   instructions with their deluppgifter (parents). A new question lands
- *   after the selected unit, never inside a parent, and a deleted standalone
- *   question leaves contiguous sequences 1..n behind. Names the content a
- *   Byt frågetyp dropped in the teacher's words (TASK-SKRIPT-39-06-05).
+ *   instructions with their deluppgifter (parents). A part has its own stored
+ *   place: the number of questions before it in document order, and a part
+ *   with no questions is an instruction block that keeps that place. A new
+ *   question lands after the selected unit, never inside a parent, and a
+ *   deleted standalone question leaves contiguous sequences 1..n behind.
+ *   Names the content a Byt frågetyp dropped in the teacher's words
+ *   (TASK-SKRIPT-39-06-05).
  *
  * Relationships:
  *   - Pure functions used by `useExamWorkspaceStructure`; parent and
@@ -21,24 +24,76 @@ export type ExamWorkspaceUnit =
   | { kind: "item"; itemId: string }
   | { kind: "parent"; parentId: string; itemIds: string[] };
 
-/** The top-level units in document order. */
+/**
+ * The top-level units in document order: a part sits at its stored place (the
+ * questions before it), a part with no questions is an instruction block, and
+ * the standalone questions fill the places no part claims.
+ */
 export function examWorkspaceUnits(document: NativeExamDocument): ExamWorkspaceUnit[] {
-  const parentOf = new Map<string, NativeExamDocument["parents"][number]>();
+  const parentsByPlace = new Map<number, NativeExamDocument["parents"]>();
   for (const parent of document.parents) {
-    for (const itemId of parent.item_ids) {
-      parentOf.set(itemId, parent);
+    const at = parentsByPlace.get(parent.place);
+    if (at === undefined) {
+      parentsByPlace.set(parent.place, [parent]);
+    } else {
+      at.push(parent);
     }
   }
+  const inPart = new Set(document.parents.flatMap((parent) => [...parent.item_ids]));
   const units: ExamWorkspaceUnit[] = [];
-  for (const item of document.items) {
-    const parent = parentOf.get(item.item_id);
-    if (!parent) {
-      units.push({ kind: "item", itemId: item.item_id });
-    } else if (parent.item_ids[0] === item.item_id) {
+  const emitParts = (place: number) => {
+    for (const parent of parentsByPlace.get(place) ?? []) {
       units.push({ kind: "parent", parentId: parent.parent_id, itemIds: [...parent.item_ids] });
     }
-  }
+  };
+  document.items.forEach((item, place) => {
+    emitParts(place);
+    if (!inPart.has(item.item_id)) {
+      units.push({ kind: "item", itemId: item.item_id });
+    }
+  });
+  emitParts(document.items.length);
   return units;
+}
+
+/**
+ * The one writer: items in unit order, renumbered 1..n, and the parts reordered
+ * to unit order with their stored place (the items before them). Content tags
+ * and assets are left untouched here.
+ */
+export function withUnits(
+  document: NativeExamDocument,
+  units: ExamWorkspaceUnit[],
+  pool: NativeExamItem[] = document.items,
+): NativeExamDocument {
+  const itemById = new Map(pool.map((item) => [item.item_id, item]));
+  const items: NativeExamItem[] = [];
+  const parents: NativeExamDocument["parents"] = [];
+  for (const unit of units) {
+    if (unit.kind === "item") {
+      const item = itemById.get(unit.itemId);
+      if (item !== undefined) {
+        items.push(item);
+      }
+      continue;
+    }
+    const parent = document.parents.find((entry) => entry.parent_id === unit.parentId);
+    if (parent === undefined) {
+      continue;
+    }
+    const itemIds = unit.itemIds.filter((itemId) => itemById.has(itemId));
+    parents.push({ ...parent, item_ids: itemIds, place: items.length });
+    for (const itemId of itemIds) {
+      items.push(itemById.get(itemId)!);
+    }
+  }
+  return {
+    ...document,
+    items: items.map((item, index) =>
+      item.sequence === index + 1 ? item : { ...item, sequence: index + 1 },
+    ),
+    parents,
+  };
 }
 
 /** The index of the unit holding the selection (an item, a child or a parent), or -1. */
@@ -54,10 +109,6 @@ export function examWorkspaceUnitIndex(
   );
 }
 
-function resequenced(items: NativeExamItem[]): NativeExamItem[] {
-  return items.map((item, index) => (item.sequence === index + 1 ? item : { ...item, sequence: index + 1 }));
-}
-
 /** Insert a standalone question after unit `afterUnit` (-1 puts it first). */
 export function withItemAfterUnit(
   document: NativeExamDocument,
@@ -65,15 +116,9 @@ export function withItemAfterUnit(
   afterUnit: number,
 ): NativeExamDocument {
   const units = examWorkspaceUnits(document);
-  const anchor = units[Math.min(afterUnit, units.length - 1)];
-  const lastId = anchor === undefined || afterUnit < 0
-    ? null
-    : anchor.kind === "item"
-      ? anchor.itemId
-      : anchor.itemIds[anchor.itemIds.length - 1];
-  const at = lastId === null ? 0 : document.items.findIndex((entry) => entry.item_id === lastId) + 1;
-  const items = [...document.items.slice(0, at), item, ...document.items.slice(at)];
-  return { ...document, items: resequenced(items) };
+  const next = [...units];
+  next.splice(Math.min(afterUnit, units.length - 1) + 1, 0, { kind: "item", itemId: item.item_id });
+  return withUnits(document, next, [...document.items, item]);
 }
 
 function bodyAssetIds(body: NativeExamBodyParagraph[]): string[] {
@@ -117,18 +162,20 @@ export function withoutStandaloneItem(document: NativeExamDocument, itemId: stri
   if (document.parents.some((parent) => parent.item_ids.includes(itemId))) {
     return document;
   }
-  const items = resequenced(document.items.filter((item) => item.item_id !== itemId));
-  const surviving = new Set(items.map((item) => item.item_id));
+  const units = examWorkspaceUnits(document).filter(
+    (unit) => unit.kind !== "item" || unit.itemId !== itemId,
+  );
+  const stripped = withUnits(document, units);
+  const surviving = new Set(stripped.items.map((item) => item.item_id));
   return withReferencedAssetsOnly({
-    ...document,
+    ...stripped,
     header: {
-      ...document.header,
-      tags: document.header.tags.map((tag) => ({
+      ...stripped.header,
+      tags: stripped.header.tags.map((tag) => ({
         ...tag,
         question_ids: tag.question_ids.filter((id) => surviving.has(id)),
       })),
     },
-    items,
   });
 }
 

@@ -112,6 +112,7 @@ function baselineSharingPicture(shared: "item" | "instructions" | "parent"): Nat
     parent_id: "parent_001",
     instruction: pictureOnly(PICTURE),
     item_ids: ["item_002"],
+    place: 1,
   };
   const overrides: Partial<NativeExamDocument> = { assets: [asset(PICTURE)] };
   if (shared === "instructions") overrides.instructions = pictureOnly(PICTURE);

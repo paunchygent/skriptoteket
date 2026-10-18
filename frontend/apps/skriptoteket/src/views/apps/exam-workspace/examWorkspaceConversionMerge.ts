@@ -246,18 +246,54 @@ export function mergeConversionRevision({
     head.instructions,
   ).value;
   const parentsPick = pick(base.parents, local.parents, head.parents);
+  const source = parentsPick.fromHead ? head : local;
   const present = new Set(items.map((item) => item.item_id));
-  const parents = parentsPick.value
-    .map((parent): NativeExamParent => {
-      const itemIds = parentsPick.fromHead
-        ? parent.item_ids
-        : parent.item_ids.map((itemId) => renames.get(itemId) ?? itemId);
-      return {
-        ...parent,
-        item_ids: itemIds.filter((itemId) => present.has(itemId)),
-      };
-    })
-    .filter((parent) => parent.item_ids.length > 0);
+  const itemIndex = new Map(items.map((item, index) => [item.item_id, index]));
+  const mappedItemIds = (parent: NativeExamParent): string[] =>
+    parentsPick.fromHead
+      ? [...parent.item_ids]
+      : parent.item_ids.map((itemId) => renames.get(itemId) ?? itemId);
+  const partsWithItems: NativeExamParent[] = [];
+  const instructionBlocks: NativeExamParent[] = [];
+  for (const parent of parentsPick.value) {
+    if (parent.item_ids.length === 0) {
+      instructionBlocks.push(parent);
+      continue;
+    }
+    const itemIds = mappedItemIds(parent).filter((itemId) => present.has(itemId));
+    if (itemIds.length === 0) {
+      continue;
+    }
+    partsWithItems.push({ ...parent, item_ids: itemIds, place: itemIndex.get(itemIds[0]!)! });
+  }
+  // A childless part anchors on the question that stood before it in its source
+  // document, walked back until one survives the merge; none keeps it at 0.
+  const placedBlocks = instructionBlocks.map((parent): NativeExamParent => {
+    let place = 0;
+    for (let at = parent.place - 1; at >= 0; at -= 1) {
+      const earlier = source.items[at];
+      if (earlier === undefined) {
+        continue;
+      }
+      const itemId = parentsPick.fromHead ? earlier.item_id : (renames.get(earlier.item_id) ?? earlier.item_id);
+      const merged = itemIndex.get(itemId);
+      if (merged !== undefined) {
+        place = merged + 1;
+        break;
+      }
+    }
+    for (const part of partsWithItems) {
+      if (part.place < place && place < part.place + part.item_ids.length) {
+        place = part.place + part.item_ids.length;
+      }
+    }
+    return { ...parent, item_ids: [], place };
+  });
+  const parents = [...partsWithItems, ...placedBlocks].sort(
+    (a, b) =>
+      a.place - b.place ||
+      (a.item_ids.length === 0 ? 0 : 1) - (b.item_ids.length === 0 ? 0 : 1),
+  );
 
   return {
     ...local,
