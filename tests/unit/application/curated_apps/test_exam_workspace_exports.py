@@ -151,7 +151,7 @@ class TestExportGate:
             {"item_id": "item_001", "reason": "missing_answer_key"}
         ]
 
-    def test_blank_prompt_passes_gate_but_blocks_at_planning(self) -> None:
+    def test_blank_prompt_is_a_gate_blocker_and_blocks_at_planning(self) -> None:
         item = NativeExamItem(
             item_id="item_001",
             sequence=1,
@@ -175,7 +175,9 @@ class TestExportGate:
             items=(item,),
             origin=NativeExamDocumentOrigin(kind="created"),
         )
-        assert native_export_blockers(document) == ()
+        assert [(b.item_id, b.reason) for b in native_export_blockers(document)] == [
+            ("item_001", "empty_question_text")
+        ]
 
         with pytest.raises(DomainError) as exc_info:
             build_native_examnet_qti_package(
