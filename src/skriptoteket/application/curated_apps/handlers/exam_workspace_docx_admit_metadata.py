@@ -12,6 +12,7 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_st
     DocxBuildState,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedMetadata
+from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import line_points
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     POINT_LABEL,
@@ -79,14 +80,7 @@ def admit_metadata(
         for a in listed
         if not (
             a in state.question_by_anchor
-            and (
-                is_points_line(a, state)
-                or state.chunk_by_anchor[a].kind == "heading"
-                and (
-                    QUESTION_HEADING_LABEL.match(state.chunk_by_anchor[a].text)
-                    or POINT_LABEL.search(state.chunk_by_anchor[a].text)
-                )
-            )
+            and (is_points_line(a, state) or is_question_heading(state.chunk_by_anchor[a]))
         )
     )
     # The grouping decides ownership: a question's own chunk an item of the reply lists stays
@@ -125,3 +119,10 @@ def admit_metadata(
 def is_points_line(anchor: str, state: DocxBuildState) -> bool:
     """A question's own line that only prints its points (D2): its item reads the points."""
     return line_points(state.chunk_by_anchor[anchor]) is not None
+
+
+def is_question_heading(chunk: DocxChunk) -> bool:
+    """A heading that prints a question label or points: it heads its question's item."""
+    return chunk.kind == "heading" and bool(
+        QUESTION_HEADING_LABEL.match(chunk.text) or POINT_LABEL.search(chunk.text)
+    )

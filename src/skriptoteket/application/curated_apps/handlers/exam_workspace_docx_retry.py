@@ -32,9 +32,16 @@ from skriptoteket.application.curated_apps.exam_workspace import (
 from skriptoteket.application.curated_apps.handlers.exam_workspace_document_store import (
     ExamWorkspaceDocumentStore,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_admit_metadata import (
+    is_question_heading,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build import (
     BatchOutcome,
     convert_batch,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_admission import (
+    Admitted,
+    _joined_body,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_rounds import (
     DocxBuildExchangeProtocol,
@@ -290,14 +297,15 @@ class RetryExamWorkspaceItemHandler:
             exchange=self._exchange,
             profile=self._profile,
         )
-        produced = _single_item(state, outcome)
+        admitted = _single_item(state, outcome)
+        produced = None if admitted is None else _with_owned_contexts(admitted, owned, state)
         if produced is None:
             review = source_review_item(
                 original=saved_item,
                 source=source,
                 assets=assets,
                 payloads=payloads,
-                reason=_review_reason(state, outcome),
+                reason=_review_reason(state, outcome, admitted),
             )
             return _placed(
                 review, draft_item, original=saved_item, chosen_kind=kind, converted=False
@@ -337,18 +345,46 @@ def _missing_source_assets(
     return sorted(referenced - (declared & set(payloads)))
 
 
-def _single_item(state: DocxBuildState, outcome: BatchOutcome) -> NativeExamItem | None:
-    """The one item the reply admitted, or None when no single item can replace the question."""
+def _single_item(state: DocxBuildState, outcome: BatchOutcome) -> Admitted | None:
+    """The one item the reply admitted with the anchors it holds, or None when no single item
+    can replace the question."""
     if outcome.conflicts or len(state.accepted) != 1:
         return None
-    return state.accepted[0][0]
+    return state.accepted[0]
 
 
-def _review_reason(state: DocxBuildState, outcome: BatchOutcome) -> str:
+def _with_owned_contexts(
+    admitted: Admitted, owned: tuple[str, ...], state: DocxBuildState
+) -> NativeExamItem | None:
+    """The item with every context its question owns, or None when it cannot hold them.
+
+    Admission joins an owned context the reply leaves out. One the reply lists in another
+    role (an instruction, the title or an answer key) is no instruction or key of a
+    one-question retry: it joins the converted item at its source place through the build's
+    join (ruling 2026-10-18 c). An item that is not converted cannot join it, so the retry
+    ends as the source review item, which shows every owned context. Joining adds exactly the
+    contexts' pictures, so the item's source pictures still match its body.
+    """
+    item, held = admitted
+    elsewhere = frozenset(owned).difference(held)
+    if not elsewhere:
+        return item
+    if item.review.parse_origin is not NativeParseOrigin.LLM_PARSED:
+        return None
+    passages = tuple(chunk for chunk in state.chunks if chunk.anchor in elsewhere)
+    own = tuple(chunk for chunk in state.chunks if chunk.anchor in state.question_by_anchor)
+    headings = tuple(chunk for chunk in own if is_question_heading(chunk))
+    return item.model_copy(update={"body": _joined_body(item, passages, own, state, headings)})
+
+
+def _review_reason(state: DocxBuildState, outcome: BatchOutcome, admitted: Admitted | None) -> str:
     if outcome.conflicts:
         return _TYPE_CONFLICT_REASON
     if len(state.accepted) > 1:
         return _MULTIPLE_ITEMS_REASON
+    if admitted is not None and admitted[0].review.reasons:
+        # The single item could not hold the contexts its question owns.
+        return " ".join(admitted[0].review.reasons)
     return next(iter(state.reasons.values()), _DEFAULT_FAILURE_REASON)
 
 
