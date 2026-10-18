@@ -65,9 +65,12 @@
   `f193466c`, root `01a14bdc-65b7-73e1-a8ee-3c75001a36fa`): repairs through 97d47894
   (section opens where the running part changes); parent admits and merges to main.
   TASK-SKRIPT-39-04-12 on `codex/task-skript-39-04-12-remote` (same lead and root):
-  C1-C4 committed, 39-04-11 merged (e43820f2); C5 needed no change (35e8a38a).
-  Next: parent review, merge, one omprov staging conversion (root
-  evidence/39-04-12/integration/ holds the offline replays).
+  review-2 repairs plus the user's exempelprov rulings at ba911227 (F1/F2 to
+  rereview; user-exam fixtures in tests/fixtures/exam_conversion/docx_user_exams/).
+  User gate: DEL 4 one-question part instruction (one-child parent vs item-level
+  instruction task); interim heading opens the question's body.
+  Next: parent rereview, merge, one omprov staging conversion (root
+  evidence/39-04-12/final/).
   Next lanes: 39-07-03 retire old converter routes (40-04-03 now on main); implement
   39-06-08 ordering; stories 39-04, 39-06, 39-07 await closeout.
   Ready (user grilling 2026-10-18, plans in root 01a14c27): 40-04-04 dropdown option editor, 40-04-05 export names from the exam title, 39-06-09 Exam.net probe of ordering inside a part.
