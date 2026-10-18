@@ -4,8 +4,9 @@ import { describe, expect, it } from "vitest";
 import type { NativeExamItem } from "../../../api/examWorkspace";
 import { hasInvalidAnswerKey } from "./examWorkspaceAnswerKeyRules";
 import { examWorkspaceItemReadiness } from "./examWorkspaceItemReadiness";
-import { choiceItem, gapItem } from "./examWorkspaceKeyedItems.specSupport";
+import { buildGap, choiceItem, gapItem } from "./examWorkspaceKeyedItems.specSupport";
 import {
+  canUndoInterpretation,
   reviewed,
   withCorrectChoices,
   withGapAsText,
@@ -14,6 +15,7 @@ import {
   withoutInterpretedKey,
   withMatchPairs,
 } from "./examWorkspaceItemEdits";
+import { plainBody } from "./examWorkspaceRichText";
 import { buildMatchingItem } from "./examWorkspaceMatchingItem.specSupport";
 
 function interpretedGap(): NativeExamItem {
@@ -125,5 +127,35 @@ describe("conversion answer-key transitions", () => {
     expect(withGapAsText(source, "missing")).toBe(source);
     const empty = withoutInterpretedKey(source);
     expect(withGapAsText(empty, "gap_001")).toBe(empty);
+  });
+});
+
+describe("undoing an interpreted dropdown key", () => {
+  function interpretedDropdown(): NativeExamItem {
+    return {
+      ...gapItem("ai_interpreted", [], null),
+      kind: "inline_choice",
+      facit_text: "Rätt är röd.",
+      gaps: [
+        buildGap("gap_001", [], {
+          correct_option_id: "choice_001",
+          options: [
+            { choice_id: "choice_001", body: plainBody("röd") },
+            { choice_id: "choice_002", body: plainBody("blå") },
+          ],
+        }),
+      ],
+    };
+  }
+
+  it("is not offered and changes nothing", () => {
+    const item = interpretedDropdown();
+    expect(canUndoInterpretation(item)).toBe(false);
+    expect(withoutInterpretedKey(item)).toBe(item);
+  });
+
+  it("is offered for an interpreted gap_fill and not for a teacher-authored one", () => {
+    expect(canUndoInterpretation(interpretedGap())).toBe(true);
+    expect(canUndoInterpretation(gapItem("teacher_authored", [["gap_001", ["x"]]], null))).toBe(false);
   });
 });

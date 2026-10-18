@@ -44,6 +44,12 @@ _KEYED_KINDS = frozenset(
 )
 
 
+# The fewest options a dropdown gap exports with; one option gives the answer away
+# (TASK-SKRIPT-40-04-04 D3). Published to the workspace through the export checklist.
+InlineChoiceMinOptions = Literal[2]
+INLINE_CHOICE_MIN_OPTIONS: InlineChoiceMinOptions = 2
+
+
 class NativeExportBlocker(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -59,6 +65,7 @@ class NativeExportBlocker(BaseModel):
         "empty_match_entry",
         "ordering_too_few_steps",
         "empty_ordering_step",
+        "too_few_gap_options",
     ]
 
 
@@ -120,6 +127,10 @@ def native_export_blockers(document: NativeExamDocument) -> tuple[NativeExportBl
             blockers.append(
                 NativeExportBlocker(item_id=item.item_id, reason="inline_choice_option_heading")
             )
+        if item.kind is NativeExamItemKind.INLINE_CHOICE and any(
+            len(gap.options) < INLINE_CHOICE_MIN_OPTIONS for gap in item.gaps
+        ):
+            blockers.append(NativeExportBlocker(item_id=item.item_id, reason="too_few_gap_options"))
         if item.points is None:
             blockers.append(NativeExportBlocker(item_id=item.item_id, reason="missing_points"))
     return tuple(blockers)

@@ -27,6 +27,7 @@ import { computed, ref, useId, watch } from "vue";
 import type {
   NativeExamBodyParagraph,
   NativeExamBodySegment,
+  NativeExamChoice,
   NativeExamCriterion,
   NativeExamDocument,
   NativeExamItem,
@@ -43,7 +44,7 @@ import ExamWorkspaceKategoriseraGrid from "./ExamWorkspaceKategoriseraGrid.vue";
 import ExamWorkspaceOrderingField from "./ExamWorkspaceOrderingField.vue";
 import ExamWorkspaceQuestionHead from "./ExamWorkspaceQuestionHead.vue";
 import ExamWorkspaceQuestionTools from "./ExamWorkspaceQuestionTools.vue";
-import { isTeacherReviewed } from "./examWorkspaceItemEdits";
+import { canUndoInterpretation, isTeacherReviewed } from "./examWorkspaceItemEdits";
 import { examWorkspaceItemReadiness } from "./examWorkspaceItemReadiness";
 import { hasNegativePoints, NEGATIVE_POINTS_GUIDANCE } from "./examWorkspaceItemSaveRules";
 import { provideRichTextTargetRegistry } from "./examWorkspaceRichTextTarget";
@@ -92,6 +93,7 @@ const emit = defineEmits<{
   updateCorrectChoices: [itemId: string, correctChoiceIds: string[]];
   updateCriteria: [itemId: string, criteria: NativeExamCriterion[]];
   updateGapValues: [itemId: string, gapId: string, acceptedValues: string[]];
+  updateGapOptions: [itemId: string, gapId: string, options: NativeExamChoice[], correctOptionId: string | null];
   updateMatchEntryBody: [itemId: string, side: "left" | "right", entryId: string, body: NativeExamBodyParagraph[]];
   updateMatchPairs: [itemId: string, pairs: NativeExamMatchPair[]];
   updateParagraphSegments: [itemId: string, paragraphIndex: number, segments: NativeExamBodySegment[]];
@@ -270,6 +272,7 @@ function handleTickPointsInput(event: Event): void {
       :disabled="locked"
       :item="item"
       @update-gap-values="(itemId, gapId, values) => emit('updateGapValues', itemId, gapId, values)"
+      @update-gap-options="(itemId, gapId, options, correctOptionId) => emit('updateGapOptions', itemId, gapId, options, correctOptionId)"
       @remove-automatic-value="(itemId, gapId, value) => emit('removeAutomaticValue', itemId, gapId, value)"
       @show-gap-as-text="(itemId, gapId) => emit('showGapAsText', itemId, gapId)"
       @update-paragraph-segments="(itemId, index, segments) => emit('updateParagraphSegments', itemId, index, segments)"
@@ -318,7 +321,7 @@ function handleTickPointsInput(event: Event): void {
         />
         <span class="xw-grow">{{ keyLine.lead }} <q>{{ keyLine.facit }}</q></span>
         <button
-          v-if="keyLine.ai"
+          v-if="keyLine.ai && canUndoInterpretation(item)"
           type="button"
           class="xw-btn xw-btn--compact"
           title="Ångra AI-tolkningen och lämna frågan utan facit"

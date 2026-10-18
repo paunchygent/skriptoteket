@@ -95,7 +95,8 @@ export type ExamWorkspaceExportBlockerReason =
   | "empty_gap_option"
   | "empty_match_entry"
   | "ordering_too_few_steps"
-  | "empty_ordering_step";
+  | "empty_ordering_step"
+  | "too_few_gap_options";
 
 export type ExamWorkspaceExportBlocker = {
   item_id: string;

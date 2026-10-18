@@ -5813,10 +5813,18 @@ export interface components {
         /**
          * ExamWorkspaceExportChecklistResponse
          * @description What an Exam.net import of this document's QTI package loses (Q15-Q17).
+         *
+         *     ``inline_choice_min_options`` publishes the export rule's dropdown minimum, so the
+         *     workspace readiness mirror reads it from this contract instead of restating it.
          */
         ExamWorkspaceExportChecklistResponse: {
             /** Entries */
             entries: (components["schemas"]["ExamWorkspaceExportChecklistFreeTextCriteria"] | components["schemas"]["ExamWorkspaceExportChecklistAllOrNothing"] | components["schemas"]["ExamWorkspaceExportChecklistRoundedGaps"])[];
+            /**
+             * Inline Choice Min Options
+             * @constant
+             */
+            inline_choice_min_options: 2;
         };
         /**
          * ExamWorkspaceExportChecklistRoundedGaps

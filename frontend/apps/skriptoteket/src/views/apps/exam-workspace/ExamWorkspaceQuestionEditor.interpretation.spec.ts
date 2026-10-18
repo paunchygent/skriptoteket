@@ -4,7 +4,8 @@ import { describe, expect, it } from "vitest";
 
 import type { NativeExamItem } from "../../../api/examWorkspace";
 import ExamWorkspaceQuestionEditor from "./ExamWorkspaceQuestionEditor.vue";
-import { choiceItem } from "./examWorkspaceKeyedItems.specSupport";
+import { buildGap, choiceItem, gapItem } from "./examWorkspaceKeyedItems.specSupport";
+import { plainBody } from "./examWorkspaceRichText";
 import { reviewed, withCorrectChoices, withoutInterpretedKey } from "./examWorkspaceItemEdits";
 
 function mountEditor(item: NativeExamItem, disabled = false) {
@@ -88,5 +89,28 @@ describe("question editor AI conversion key", () => {
     expect(wrapper.get(reviewButton).attributes("disabled")).toBeDefined();
     await wrapper.get(undoButton).trigger("click");
     expect(wrapper.emitted("undoInterpretation")).toBeUndefined();
+  });
+
+  it("offers no undo for an interpreted dropdown but keeps it for an interpreted gap_fill", () => {
+    const dropdown: NativeExamItem = {
+      ...gapItem("ai_interpreted", [], null),
+      kind: "inline_choice",
+      facit_text: FACIT,
+      gaps: [
+        buildGap("gap_001", [], {
+          correct_option_id: "choice_001",
+          options: [
+            { choice_id: "choice_001", body: plainBody("röd") },
+            { choice_id: "choice_002", body: plainBody("blå") },
+          ],
+        }),
+      ],
+    };
+    const dropdownWrapper = mountEditor(dropdown);
+    expect(dropdownWrapper.get(keyLine).text()).toContain("Facit tolkat av AI ur");
+    expect(dropdownWrapper.find(undoButton).exists()).toBe(false);
+
+    const gapFill = { ...gapItem("ai_interpreted", [["gap_001", ["Stockholm"]]], null), facit_text: FACIT };
+    expect(mountEditor(gapFill).find(undoButton).exists()).toBe(true);
   });
 });

@@ -49,6 +49,21 @@ def _next_choice_id(choices: tuple[NativeChoice, ...]) -> str:
     return next(f"choice_{n:03d}" for n in range(1, len(used) + 2) if f"choice_{n:03d}" not in used)
 
 
+def _options_from_accepted_values(values: tuple[str, ...]) -> tuple[NativeChoice, ...]:
+    """Turn a typed gap's accepted values into dropdown options, verbatim and in order."""
+    return tuple(
+        NativeChoice(
+            choice_id=f"choice_{index:03d}",
+            body=(
+                NativeParagraph(
+                    segments=(NativeTextSegment(text=value, marks=()),), heading_level=None
+                ),
+            ),
+        )
+        for index, value in enumerate(values, start=1)
+    )
+
+
 def change_item_type(
     document: NativeExamDocument,
     *,
@@ -95,9 +110,14 @@ def change_item_type(
     )
     drop("correct_choice_ids", bool(item.answer_key.correct_choice_ids) and not keep_key)
     drop("gaps", bool(item.gaps) and not keep_gaps)
+    # Accepted values become dropdown options; misspelling lists are dropped silently.
+    values_become_options = (
+        item.kind == NativeExamItemKind.GAP_FILL and target_kind == NativeExamItemKind.INLINE_CHOICE
+    )
     drop(
         "accepted_values",
-        any(
+        not values_become_options
+        and any(
             g.accepted_values or g.automatic_values or g.excluded_automatic_values
             for g in item.gaps
         ),
@@ -142,10 +162,17 @@ def change_item_type(
         key = NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE)
     elif target_kind in _GAP:
         gap_ids = tuple(gap.gap_id for gap in item.gaps) if keep_gaps else ("gap_001",)
+        seeds = (
+            {gap.gap_id: gap.accepted_values for gap in item.gaps} if values_become_options else {}
+        )
         data["gaps"] = tuple(
             NativeGap(
                 gap_id=gap_id,
-                options=_empty_choices() if target_kind == NativeExamItemKind.INLINE_CHOICE else (),
+                options=(
+                    (_options_from_accepted_values(seeds.get(gap_id, ())) or _empty_choices())
+                    if target_kind == NativeExamItemKind.INLINE_CHOICE
+                    else ()
+                ),
                 correct_option_id=(
                     "choice_001" if target_kind == NativeExamItemKind.INLINE_CHOICE else None
                 ),
@@ -153,7 +180,14 @@ def change_item_type(
             for gap_id in gap_ids
         )
         if target_kind == NativeExamItemKind.INLINE_CHOICE:
-            key = NativeAnswerKey(origin=NativeAnswerKeyOrigin.TEACHER_AUTHORED)
+            kept_origin = item.answer_key.origin
+            key = NativeAnswerKey(
+                origin=(
+                    kept_origin
+                    if values_become_options and kept_origin != NativeAnswerKeyOrigin.ABSENT
+                    else NativeAnswerKeyOrigin.TEACHER_AUTHORED
+                )
+            )
         if not keep_gaps:
             data["body"] = [
                 *data["body"],

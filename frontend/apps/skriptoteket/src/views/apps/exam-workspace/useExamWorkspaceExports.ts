@@ -54,6 +54,7 @@ export const EXAM_WORKSPACE_EXPORT_BLOCKER_COPY: Record<ExamWorkspaceExportBlock
     ordering_too_few_steps: "Ordningsfrågan behöver minst två steg.",
     empty_ordering_step: "Ett steg i ordningsfrågan saknar text.",
     inline_choice_option_heading: "Rubrikformat är inte tillåtet i rullistealternativ.",
+    too_few_gap_options: "En rullista i en lucka har färre än två alternativ.",
     unbuilt_question:
       "Frågan kunde inte konverteras och visas som i källan. Kontrollera den och markera den som granskad.",
   };

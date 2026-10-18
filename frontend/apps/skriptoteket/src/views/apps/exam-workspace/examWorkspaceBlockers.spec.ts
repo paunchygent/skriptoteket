@@ -4,6 +4,7 @@ import type { NativeExamItem } from "../../../api/examWorkspace";
 import { buildDocument } from "../ExamWorkspaceSlice.specSupport";
 import { examWorkspaceBlockerEntries, withoutEmptyOptions, withoutOptionHeadings } from "./examWorkspaceBlockers";
 import { examWorkspaceItemReadiness } from "./examWorkspaceItemReadiness";
+import type { ExamWorkspaceReadinessReason } from "./examWorkspaceItemReadiness";
 import { reviewed } from "./examWorkspaceItemEdits";
 import { buildMatchingItemWithPairs } from "./examWorkspaceMatchingItem.specSupport";
 import { buildGap, choiceItem } from "./examWorkspaceKeyedItems.specSupport";
@@ -31,7 +32,11 @@ function rullista(options: NativeExamItem["gaps"][number]["options"], key: strin
   };
 }
 
-function rows(items: NativeExamItem[], server: Record<string, NativeExamItem["item_id"][]> = {}, converting: string[] = []) {
+function rows(
+  items: NativeExamItem[],
+  server: Record<string, ExamWorkspaceReadinessReason[]> = {},
+  converting: string[] = [],
+) {
   const document = { ...buildDocument(), items, parents: [] };
   const readiness = Object.fromEntries(items.map((item) => [item.item_id, examWorkspaceItemReadiness(item)]));
   const entries = examWorkspaceListEntries(document, readiness, new Set(converting));
@@ -39,7 +44,7 @@ function rows(items: NativeExamItem[], server: Record<string, NativeExamItem["it
     entries,
     items,
     readiness,
-    server as Parameters<typeof examWorkspaceBlockerEntries>[3],
+    server,
   );
 }
 
@@ -151,6 +156,57 @@ describe("examWorkspaceBlockerEntries", () => {
       focus: '[data-gap-id="gap_001"]',
       problem: "rubrik i rullista",
     });
+  });
+
+  it("leads a too-short dropdown to its first short gap with no one-click fix", () => {
+    const item = rullista(
+      [{ body: plainBody("är"), choice_id: "choice_001" }, { body: plainBody("var"), choice_id: "choice_002" }],
+      "choice_001",
+    );
+    item.body = [{
+      heading_level: null,
+      segments: [
+        { kind: "gap", gap_id: "gap_001" }, { kind: "gap", gap_id: "gap_002" }, { kind: "gap", gap_id: "gap_003" },
+      ],
+    }];
+    item.gaps = [
+      item.gaps[0]!,
+      buildGap("gap_002", [], { correct_option_id: "choice_001", options: [{ body: plainBody("är"), choice_id: "choice_001" }] }),
+      buildGap("gap_003", [], { correct_option_id: "choice_001", options: [{ body: plainBody("är"), choice_id: "choice_001" }] }),
+    ];
+
+    expect(rows([item])[0]).toMatchObject({
+      fix: null,
+      focus: '[data-gap-id="gap_002"]',
+      problem: "rullista med färre än två alternativ",
+      reason: "too_few_gap_options",
+    });
+  });
+
+  it("leads a dropdown without a correct option to the first unkeyed gap, not the first gap", () => {
+    const options = [{ body: plainBody("är"), choice_id: "choice_001" }, { body: plainBody("var"), choice_id: "choice_002" }];
+    const item = rullista(options, "choice_001");
+    item.body = [{
+      heading_level: null,
+      segments: [{ kind: "gap", gap_id: "gap_001" }, { kind: "gap", gap_id: "gap_002" }, { kind: "gap", gap_id: "gap_003" }],
+    }];
+    item.gaps = [
+      item.gaps[0]!,
+      buildGap("gap_002", [], { correct_option_id: null, options }),
+      buildGap("gap_003", [], { correct_option_id: null, options }),
+    ];
+
+    expect(rows([item])[0]).toMatchObject({
+      fix: null,
+      focus: '[data-gap-id="gap_002"]',
+      problem: "rullista utan rätt svar",
+      reason: "gap_without_correct_option",
+    });
+  });
+
+  it("names an earlier reason first when the dropdown also lacks points", () => {
+    const item = { ...rullista([{ body: plainBody("är"), choice_id: "choice_001" }], "choice_001"), points: null };
+    expect(rows([item])[0]).toMatchObject({ reason: "missing_points" });
   });
 });
 
