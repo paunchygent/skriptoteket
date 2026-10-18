@@ -84,8 +84,9 @@ def test_standalone_questions_only_round_trip():
     document = _document(_items(1, 2, 3))
     outline = document_outline(document)
 
-    assert all(isinstance(entry, OutlineQuestion) for entry in outline)
-    assert [entry.item.sequence for entry in outline] == [1, 2, 3]
+    questions = [entry for entry in outline if isinstance(entry, OutlineQuestion)]
+    assert len(questions) == len(outline)
+    assert [entry.item.sequence for entry in questions] == [1, 2, 3]
     _assert_round_trip(document)
 
 
@@ -127,7 +128,8 @@ def test_a_childless_part_at_the_end_keeps_place_len_items():
     outline = document_outline(document)
 
     assert [type(entry) for entry in outline] == [OutlineQuestion, OutlineQuestion, OutlinePart]
-    assert outline[2].part.place == 2
+    parts = [entry for entry in outline if isinstance(entry, OutlinePart)]
+    assert parts[0].part.place == 2
     _assert_round_trip(document)
 
 

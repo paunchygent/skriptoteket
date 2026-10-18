@@ -193,7 +193,9 @@ def test_malformed_parent_fields_are_rejected(fields: dict):
 
 def test_a_parent_without_a_place_is_refused():
     with pytest.raises(ValidationError, match="place"):
-        NativeExamParent(parent_id="parent_001", instruction=(), item_ids=())
+        NativeExamParent.model_validate(
+            {"parent_id": "parent_001", "instruction": (), "item_ids": ()}
+        )
 
 
 def test_a_part_with_no_questions_validates_and_has_zero_points():
