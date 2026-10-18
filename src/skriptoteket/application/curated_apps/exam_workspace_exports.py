@@ -17,6 +17,7 @@ Relationships:
 from __future__ import annotations
 
 import json
+import unicodedata
 from collections.abc import Mapping
 
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts import (
@@ -40,6 +41,29 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_export_rules im
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.protocols.exam_conversion import ExamNetQtiPackageWriterProtocol
+
+
+def export_file_base_name(document: NativeExamDocument) -> str:
+    """The base name every export of this exam shares: its title without punctuation.
+
+    Letters (å, ä, ö included), digits and combining marks stay; spaces collapse to single spaces.
+    A title with no letter or digit has no base name, so the export is refused.
+    """
+
+    kept = "".join(
+        char
+        for char in unicodedata.normalize("NFC", document.title)
+        if char.isalnum() or char.isspace() or unicodedata.category(char).startswith("M")
+    )
+    base = " ".join(kept.split())
+    if not base:
+        raise DomainError(
+            code=ErrorCode.VALIDATION_ERROR,
+            message=(
+                "Provets titel saknar bokstäver och siffror. Ge provet en titel och exportera igen."
+            ),
+        )
+    return base
 
 
 def build_native_examnet_qti_package(

@@ -94,7 +94,7 @@ async def test_docx_export_embeds_shared_instruction_pictures_from_stored_payloa
         expected_revision=fixture.document.revision,
     )
 
-    assert result.filename == "diagramprov.docx"
+    assert result.filename == f"{fixture.document.title}.docx"
     assert result.media_type.endswith("wordprocessingml.document")
     parsed = Document(io.BytesIO(result.content))
     paragraphs = list(parsed.paragraphs)

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "802bd976c4328070d9ff379fcf84d29b8d0bc35be5fccd43f4db01ebc22c4da8",
+  "source_set_digest": "2996d424fa603afd9ac91982a8bb26b8665b5e9c57ca093e9e881fea3c245b89",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6304,7 +6304,7 @@
       "type": "task",
       "title": "Exported files are named after the exam title",
       "path": "docs/backlog/tasks/task-skript-40-04-05-exported-files-are-named-after-the-exam-title.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [

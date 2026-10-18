@@ -64,6 +64,7 @@ from skriptoteket.web.api.v1.apps_conversion_hub_access import (
     require_conversion_hub_access,
 )
 from skriptoteket.web.auth.huleedu_app_projection import require_app_user_api
+from skriptoteket.web.content_disposition import attachment_content_disposition
 from skriptoteket.web.dishka_dependencies import FromDishka
 
 router = APIRouter(prefix=f"/api/v1/apps/{APP_ID}", tags=["apps"])
@@ -233,11 +234,10 @@ async def export_exam_workspace_document(
     result = await handler.handle(
         actor=user, lineage_id=lineage_id, target=target, expected_revision=expected_revision
     )
-    safe_filename = result.filename.replace('"', "")
     return Response(
         content=result.content,
         media_type=result.media_type,
-        headers={"Content-Disposition": f'attachment; filename="{safe_filename}"'},
+        headers={"Content-Disposition": attachment_content_disposition(filename=result.filename)},
     )
 
 

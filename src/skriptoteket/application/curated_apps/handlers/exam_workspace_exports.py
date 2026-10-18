@@ -22,6 +22,7 @@ from skriptoteket.application.curated_apps.exam_workspace import (
 )
 from skriptoteket.application.curated_apps.exam_workspace_exports import (
     build_native_examnet_qti_package,
+    export_file_base_name,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_document_store import (
     ExamWorkspaceDocumentStore,
@@ -65,7 +66,6 @@ from skriptoteket.protocols.exam_workspace import (
 from skriptoteket.protocols.vault import VaultFileRepositoryProtocol
 
 _DOCX_MEDIA_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-_CONTAINER_SUFFIX = ".provdokument.zip"
 
 
 class ExportExamWorkspaceDocumentHandler:
@@ -96,13 +96,13 @@ class ExportExamWorkspaceDocumentHandler:
         target: ExamWorkspaceExportTarget,
         expected_revision: int,
     ) -> ExamWorkspaceExportFile:
-        head, container = await self._load_head(
+        _head, container = await self._load_head(
             actor=actor, lineage_id=lineage_id, expected_revision=expected_revision
         )
         document = container.document
         self._raise_for_blockers(document)
 
-        base = head.name.removesuffix(_CONTAINER_SUFFIX) or "prov"
+        base = export_file_base_name(document)
         if target is ExamWorkspaceExportTarget.QTI:
             package_bytes, _report_bytes = build_native_examnet_qti_package(
                 document,
@@ -111,7 +111,7 @@ class ExportExamWorkspaceDocumentHandler:
                 assets_by_id=container.assets_by_id,
             )
             return ExamWorkspaceExportFile(
-                filename=f"{base}-qti.zip",
+                filename=f"{base}.zip",
                 media_type="application/zip",
                 content=package_bytes,
             )
@@ -135,7 +135,7 @@ class ExportExamWorkspaceDocumentHandler:
                     },
                 )
             return ExamWorkspaceExportFile(
-                filename=f"{base}-examnet.pdf",
+                filename=f"{base}.pdf",
                 media_type="application/pdf",
                 content=self._pdf_renderer.render_pdf(document=pdf_document),
             )

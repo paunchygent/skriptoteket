@@ -80,11 +80,26 @@ export const EXPORT_FORMAT_NAMES: Record<ExamWorkspaceExportTarget, string> = {
 
 type ExportDestination = "download" | "files";
 
-const FALLBACK_FILENAMES: Record<ExamWorkspaceExportTarget, string> = {
-  docx: "prov.docx",
-  pdf: "prov-examnet.pdf",
-  qti: "prov-qti.zip",
+const EXPORT_EXTENSIONS: Record<ExamWorkspaceExportTarget, string> = {
+  docx: "docx",
+  pdf: "pdf",
+  qti: "zip",
 };
+
+/**
+ * The file name the server gives an export (D1): the exam title without
+ * punctuation (letters, digits and single spaces stay) plus the format's
+ * extension, the same base for every format.
+ */
+export function examWorkspaceExportFilename(title: string, target: ExamWorkspaceExportTarget): string {
+  const base = title
+    .normalize("NFC")
+    .replace(/[^\p{L}\p{N}\p{M}\s]/gu, "")
+    .split(/\s+/)
+    .filter(Boolean)
+    .join(" ");
+  return `${base}.${EXPORT_EXTENSIONS[target]}`;
+}
 
 const BLOCKER_REASONS = new Set<string>(Object.keys(EXAM_WORKSPACE_EXPORT_BLOCKER_COPY));
 
@@ -269,7 +284,7 @@ export function useExamWorkspaceExports(
           : `${EXPORT_FORMAT_NAMES[target]} sparad i Mina filer.`;
       } else {
         const response = await downloadExamWorkspaceExport(savedSummary.lineage_id, target, savedSummary.version);
-        triggerBrowserDownload(response.blob, response.filename ?? FALLBACK_FILENAMES[target]);
+        triggerBrowserDownload(response.blob, response.filename ?? examWorkspaceExportFilename(savedSummary.title, target));
         clearExportFeedback();
         exportResult.value = EXPORT_CREATED_MESSAGES[target];
       }
