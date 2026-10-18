@@ -18,8 +18,9 @@ whose wording it lacks show under a check mark as printed (D41, D4). A reply wit
 takes the one points label its question's own chunks print (D3). A gap_fill item that makes a gap of
 material its line talks about becomes a review item showing its question as printed (D43).
 A part's line no question owns (``PrintedPart.opener``) leaves, before any item is built,
-every entry when its part holds two or more questions, and every entry for a question outside
-its part when it holds one (review-2 F1, review-3 N1). An entry holding no question anchor is
+every entry when it opens a parent (``parent_openers``: DEL 4 over one question too, user
+ruling 2026-10-18), and every entry for a question outside its part when it heads its one
+question (review-2 F1, review-3 N1). An entry holding no question anchor is
 no item (review-3 N2). Every moved line is recorded once; unless an item of its part lists it,
 it stands as an instruction, which placement puts at its part's parent or question. Building
 one question's item never fails the batch: an item that cannot be built becomes a review item
@@ -84,6 +85,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions impor
     wording_left_out,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import (
+    parent_openers,
     printed_points_plan,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
@@ -374,12 +376,14 @@ def _without_part_lines(
     """``items`` without the part lines no entry may hold, and those lines, each once.
 
     This is the one owner of which part lines leave an entry. A part line no question owns
-    (``PrintedPart.opener``) leaves every entry when its part holds two or more questions, and
-    every entry whose questions lie outside its part when it holds one question. An entry that
+    (``PrintedPart.opener``) leaves every entry when it opens a parent (``parent_openers``),
+    and every entry whose questions lie outside its part when it heads its one question. An
+    entry that
     holds no question anchor is no item: it leaves the reply, its part lines among the moved
     ones, and its other chunks stay unlisted for the rules of chunks no entry holds.
     """
     plan = printed_points_plan(state.chunks, state.questions)
+    parents = parent_openers(plan.parts)
     parts = {
         part.opener: {state.questions[n] for n in part.questions}
         for part in plan.parts
@@ -390,7 +394,7 @@ def _without_part_lines(
     for raw in items:
         listed = raw_anchors(raw)
         held = {state.question_by_anchor[a] for a in listed if a in state.question_by_anchor}
-        lines = [a for a in listed if a in parts and (len(parts[a]) > 1 or not held & parts[a])]
+        lines = [a for a in listed if a in parts and (a in parents or not held & parts[a])]
         moved.extend(lines)
         if not held:
             continue

@@ -135,7 +135,8 @@ async def test_every_parent_holds_contiguous_children_in_order_and_never_repeats
         ]
         for parent in document.parents:
             children = build.children(parent)
-            assert len(children) >= 2
+            # A part line over one question is a parent with one child (ruling 2026-10-18).
+            assert children
             first = children[0].sequence
             assert [c.sequence for c in children] == list(range(first, first + len(children)))
             lines = body_text_lines(parent.instruction)

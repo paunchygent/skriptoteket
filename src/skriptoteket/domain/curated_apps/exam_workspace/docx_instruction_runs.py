@@ -43,7 +43,8 @@ class Run:
 
     A heading run carries one printed heading: ``only`` is the item that owns the heading
     chunk, and ``raw`` is the heading as printed, before its wording loses the printed
-    points label and question number.
+    points label and question number. ``part`` marks a part line that opens a parent
+    whatever its number of questions (``PartLines.parents``).
     """
 
     origin: int | None
@@ -56,6 +57,7 @@ class Run:
     only: int | None = None
     raw: str = ""
     question_label: re.Match[str] | None = None
+    part: bool = False
 
 
 @dataclass(frozen=True)
@@ -258,6 +260,7 @@ def with_heading_runs(
                 only=only,
                 raw=chunk.text,
                 question_label=QUESTION_HEADING_LABEL.match(chunk.text),
+                part=only is None and chunk.anchor in part_lines.parents,
             )
         )
     shape = SectionShape(
@@ -347,8 +350,9 @@ def reaches(
             chunk = run.sources[0]
             # D2 splits every heading the same way, whether it opens one question
             # or governs a parent: only its wording is displayed.
+            opens = len(reach) == 1 and not run.part
             shown = shown_heading(
-                chunk, ordered[reach[0]][2] if len(reach) == 1 else None, run.question_label
+                chunk, ordered[reach[0]][2] if opens else None, run.question_label
             )
             if not reach:
                 reached.append(Run(run.origin, run.start, (), heading=True, raw=run.raw))
@@ -365,6 +369,7 @@ def reaches(
                     only=run.only,
                     raw=run.raw,
                     question_label=run.question_label,
+                    part=run.part,
                 )
             )
             continue
@@ -410,7 +415,9 @@ def reaches(
 
 
 def parent_groups(reached: list[Run]) -> list[list[Run]]:
-    """Runs whose instruction reaches the same two or more consecutive items, of any kinds.
+    """Runs whose instruction reaches the same two or more consecutive items, of any kinds,
+    or the one item a part line that opens a parent reaches (``Run.part``): that line alone
+    forms the one-child parent.
 
     A heading the grouping marks as governing joins a parent only when its scope equals
     that parent's items (D40 exact scope): it never lands on a wider parent, forms no
@@ -423,8 +430,15 @@ def parent_groups(reached: list[Run]) -> list[list[Run]]:
     candidates: dict[tuple[int, ...], list[Run]] = {}
     for run in reached:
         consecutive = all(b - a == 1 for a, b in zip(run.reach, run.reach[1:], strict=False))
-        if (run.origin is not None or run.heading) and len(run.reach) >= 2 and consecutive:
+        if (run.origin is not None or run.heading) and run.reach and consecutive:
             candidates.setdefault(run.reach, []).append(run)
+    # Over one item only the part line itself forms the parent; an instruction reaching that
+    # item alone stays the item's own text, as over any single item.
+    candidates = {
+        span: group if len(span) >= 2 else [run for run in group if run.part]
+        for span, group in candidates.items()
+    }
+    candidates = {span: group for span, group in candidates.items() if group}
     groups: list[list[Run]] = []
     taken: set[int] = set()
     # An instruction-formed parent stands before a heading-only one: a heading over a

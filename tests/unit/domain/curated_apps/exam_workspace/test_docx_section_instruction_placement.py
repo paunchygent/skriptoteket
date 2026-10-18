@@ -90,9 +90,12 @@ async def test_short_label_survives_when_a_later_sentence_contains_it():
         )
         assert lines.index("Text A") == first_passage - 1
         assert lines.index("Text B") == second_passage - 1
-        # The printed section heading over this one question opens its body (T1, 39-05-08).
-        assert lines[0] == "Del 4: Textanalys"
-        assert lines[1] == build.wording("body:0075")
+        # The part line over this one question opens its one-child parent (user ruling
+        # 2026-10-18), so the body opens with the question's own first line.
+        parent = build.parent_of("body:0085")
+        assert parent is not None and parent.item_ids == (item.item_id,)
+        assert body_text_lines(parent.instruction) == ("Del 4: Textanalys",)
+        assert lines[0] == build.wording("body:0075")
 
 
 async def test_instruction_over_a_run_of_reached_items_is_the_parent_of_exactly_those_items():

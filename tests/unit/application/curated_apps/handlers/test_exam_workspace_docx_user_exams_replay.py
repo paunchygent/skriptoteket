@@ -5,8 +5,8 @@ summary of the four part totals, the exam total), four parts of which DEL 1-3 ho
 questions and DEL 4 one, and a closing "— SLUT PÅ PROVET —" line before the reminder to
 check the answers. The rulings:
 
-1. DEL 1-3 are parents over their questions; DEL 4's one question is no parent, and until
-   the user rules on its instruction its heading opens that question's body.
+1. DEL 1-4 are parents over their questions; DEL 4 is a parent with one child, like a
+   part over several questions, and its line no longer opens its question's body.
 2. The summary line is no exam text; its totals are the parts' printed totals.
 3. Name, date, class and exam-total lines are header data, never exam text; the exam total
    is the header's printed total, kept even where the questions' points sum to less.
@@ -55,19 +55,24 @@ def _exam_text(document: NativeExamDocument) -> list[str]:
 
 
 @pytest.mark.parametrize("exam", EXAMS)
-async def test_del_1_to_3_are_parents_and_del_4_opens_its_one_question(exam: str) -> None:
+async def test_del_1_to_4_are_parents_and_del_4_has_one_child(exam: str) -> None:
     document = await _document(exam)
 
     items = sorted(document.items, key=lambda item: item.sequence)
     assert len(items) == 9
     assert all(item.review.parse_origin.value == "llm_parsed" for item in items)
     headings = [body_text_lines(parent.instruction)[0] for parent in document.parents]
-    assert headings == ["DEL 1: MORFEM OCH FRASER", "DEL 2: SATSLÖSNING", "DEL 3: BISATSER"]
-    assert [len(parent.item_ids) for parent in document.parents] == [4, 2, 2]
-    parented = {item_id for parent in document.parents for item_id in parent.item_ids}
+    assert headings == [
+        "DEL 1: MORFEM OCH FRASER",
+        "DEL 2: SATSLÖSNING",
+        "DEL 3: BISATSER",
+        "DEL 4: TEXTANALYS – SPRÅKLIGA DRAG",
+    ]
+    assert [len(parent.item_ids) for parent in document.parents] == [4, 2, 2, 1]
     last = items[-1]
-    assert last.item_id not in parented
-    assert body_text_lines(last.body)[0] == "DEL 4: TEXTANALYS – SPRÅKLIGA DRAG"
+    assert document.parents[-1].item_ids == (last.item_id,)
+    assert body_text_lines(last.body)[0] != "DEL 4: TEXTANALYS – SPRÅKLIGA DRAG"
+    assert not [line for line in body_text_lines(last.body) if line.startswith("DEL 4")]
 
 
 @pytest.mark.parametrize("exam", EXAMS)
@@ -77,14 +82,13 @@ async def test_the_part_summary_is_no_exam_text_and_totals_the_parents(exam: str
     text = _exam_text(document)
     assert not [line for line in text if "Poängöversikt" in line]
     assert not [line for line in text if "Morfem och fraser (20 p)" in line]
-    assert [parent.printed_total for parent in document.parents] == [20, 20, 15]
+    assert [parent.printed_total for parent in document.parents] == [20, 20, 15, 15]
     by_id = {item.item_id: item for item in document.items}
-    for parent in document.parents:
-        assert sum(by_id[item_id].points or 0 for item_id in parent.item_ids) == (
-            parent.printed_total
-        )
+    sums = [sum(by_id[i].points or 0 for i in parent.item_ids) for parent in document.parents]
     # DEL 4's one question keeps the points it prints itself: omprov's summary says 15 p
-    # for DEL 4 while its question prints 12 p, and the question's own lines win.
+    # for DEL 4 while its question prints 12 p, so its parent shows the printed difference;
+    # exempelprov's question prints the summary's 15 p.
+    assert sums == [20, 20, 15, LAST_POINTS[exam]]
     assert max(document.items, key=lambda item: item.sequence).points == LAST_POINTS[exam]
 
 
