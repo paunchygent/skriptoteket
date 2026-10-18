@@ -35,7 +35,7 @@ export const HOME_PRIMARY_WORK_APPS: readonly HomeWorkApp[] = [
     to: "/apps/classroom.group-seating-studio",
   },
   {
-    id: "exam-converter",
+    id: "exam-workspace",
     title: "Provhantering",
     description: "Skapa, redigera och konvertera prov.",
     imageSrc: examConverterSymbolUrl,

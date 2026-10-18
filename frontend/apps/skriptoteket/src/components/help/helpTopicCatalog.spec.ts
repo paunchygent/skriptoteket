@@ -14,10 +14,6 @@ import {
 } from "./helpTopicCatalog";
 import { routes } from "../../router/routes";
 
-const INTERNAL_INSPECTION_ROUTES = new Set([
-  "exam-converter-ui-inspection-fixture",
-]);
-
 function collectRouteNames(routeRecords: readonly RouteRecordRaw[]): string[] {
   return routeRecords.flatMap((route) => {
     const current = typeof route.name === "string" ? [route.name] : [];
@@ -27,9 +23,7 @@ function collectRouteNames(routeRecords: readonly RouteRecordRaw[]): string[] {
 
 describe("help topic catalog", () => {
   it("covers every named production SPA route with a help topic", () => {
-    const routeNames = collectRouteNames(routes).filter(
-      (routeName) => !INTERNAL_INSPECTION_ROUTES.has(routeName),
-    );
+    const routeNames = collectRouteNames(routes);
     const uncovered = routeNames.filter((routeName) => !HELP_ROUTE_TOPIC_BY_ROUTE_NAME[routeName]);
 
     expect(uncovered).toEqual([]);
@@ -42,11 +36,10 @@ describe("help topic catalog", () => {
     expect(resolveHelpTopic("verify-email")).toBe("auth_lifecycle");
     expect(resolveHelpTopic("auth-provisioning-required")).toBe("provisioning_required");
     expect(resolveHelpTopic("my-runs")).toBe("my_runs");
-    expect(resolveHelpTopic("exam-converter-authenticated")).toBe("conversion_tools");
+    expect(resolveHelpTopic("exam-converter-authenticated")).toBeNull();
     expect(resolveHelpTopic("exam-workspace")).toBe("exam_workspace");
     expect(resolveHelpTopic("audio-transcription-authenticated")).toBe("conversion_tools");
     expect(resolveHelpTopic("document-converter-authenticated")).toBe("conversion_tools");
-    expect(resolveHelpTopic("exam-converter-ui-inspection-fixture")).toBeNull();
   });
 
   it("lets planner context override the generic app route", () => {

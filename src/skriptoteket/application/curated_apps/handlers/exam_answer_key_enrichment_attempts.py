@@ -5,17 +5,15 @@ Purpose:
     token lease in one Unit of Work transaction, then collect one proposal
     per candidate: call the provider (with failover), reconcile the served
     attempt's lease with the tokens the provider actually used, and let the
-    lane turn the model output into its proposal. Both source lanes
-    (DigiExam conversion and native exam workspace) run exactly this
-    bookkeeping and loop, so it lives here once. Also holds the
-    teacher-facing message both lanes use when the model output cannot
+    lane turn the model output into its proposal. The source lanes run
+    exactly this bookkeeping and loop, so it lives here once. Also holds
+    the teacher-facing message the lanes use when the model output cannot
     complete the key.
 
 Relationships:
     Constructed once by
     ``application.curated_apps.handlers.exam_answer_key_enrichment_jobs`` and
-    handed to ``exam_answer_key_enrichment_dxe_lane`` and
-    ``exam_answer_key_enrichment_workspace_lane``. The per-item provider call
+    handed to ``exam_answer_key_enrichment_workspace_lane``. The per-item provider call
     and failover lease live in ``exam_answer_key_provider_attempts``.
 """
 

@@ -66,9 +66,6 @@ async def test_workspace_job_stores_suggestions_on_the_job_without_an_overlay() 
 
     assert finished.status is ExamAnswerKeyEnrichmentJobStatus.SUCCEEDED
     assert harness.provider.call_count == 1
-    assert harness.producer.calls == 0
-    assert harness.conversion_jobs.jobs == {}
-    assert harness.proposed_overlays.records == []
     leases = list(harness.leases.leases.values())
     assert len(leases) == 1
     assert leases[0].state is AnswerKeyTokenLeaseState.RECONCILED
@@ -101,8 +98,6 @@ async def test_workspace_lease_refusal_fails_closed_with_zero_provider_calls() -
     assert provider.call_count == 0
     assert finished.status is ExamAnswerKeyEnrichmentJobStatus.FAILED
     assert finished.last_error == "daily_token_lease_exhausted"
-    assert harness.producer.calls == 0
-    assert harness.proposed_overlays.records == []
 
 
 async def test_workspace_job_without_sent_content_fails_closed() -> None:
@@ -140,8 +135,6 @@ async def test_invalid_workspace_model_output_fails_without_a_suggestion() -> No
     assert finished.workspace_suggestions_json is None
     leases = list(harness.leases.leases.values())
     assert leases[0].state is AnswerKeyTokenLeaseState.RECONCILED
-    assert harness.proposed_overlays.records == []
-    assert harness.producer.calls == 0
 
 
 async def test_matching_workspace_job_stores_pairs_for_recorded_unkeyed_items() -> None:
@@ -194,4 +187,3 @@ async def test_matching_workspace_job_fails_when_a_left_entry_is_left_unpaired()
 
     assert finished.status is ExamAnswerKeyEnrichmentJobStatus.FAILED
     assert finished.last_error == "llm_output_invalid"
-    assert harness.proposed_overlays.records == []

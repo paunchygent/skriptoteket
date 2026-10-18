@@ -14,12 +14,11 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from sqlalchemy import select, text
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from skriptoteket.application.curated_apps.conversion_hub import (
     ConversionHubJob,
-    ConversionHubJobStatus,
     ConversionHubPdfLayoutV2,
 )
 from skriptoteket.domain.errors import not_found
@@ -47,7 +46,6 @@ class PostgreSQLConversionHubJobRepository(ConversionHubJobRepositoryProtocol):
             upstream_job_id=job.upstream_job_id,
             status=job.status.value,
             correlation_id=job.correlation_id,
-            submission_idempotency_key=job.submission_idempotency_key,
             error_message=job.error_message,
             created_at=job.created_at,
             updated_at=job.updated_at,
@@ -75,7 +73,6 @@ class PostgreSQLConversionHubJobRepository(ConversionHubJobRepositoryProtocol):
             upstream_job_id=model.upstream_job_id,
             status=model.status,
             correlation_id=model.correlation_id,
-            submission_idempotency_key=model.submission_idempotency_key,
             error_message=model.error_message,
             created_at=model.created_at,
             updated_at=model.updated_at,
@@ -100,40 +97,6 @@ class PostgreSQLConversionHubJobRepository(ConversionHubJobRepositoryProtocol):
         )
         model = result.scalar_one_or_none()
         return self._to_job(model) if model is not None else None
-
-    async def acquire_by_owner_and_submission_key(
-        self,
-        *,
-        job: ConversionHubJob,
-    ) -> tuple[ConversionHubJob, bool]:
-        if job.submission_idempotency_key is None:
-            return await self.create(job=job), True
-        await self._session.execute(
-            text("SELECT pg_advisory_xact_lock(hashtextextended(:lock_key, 0))"),
-            {
-                "lock_key": (
-                    f"exam-converter-submission:{job.owner_user_id}:"
-                    f"{job.submission_idempotency_key}"
-                )
-            },
-        )
-        result = await self._session.execute(
-            select(ConversionHubJobModel)
-            .where(
-                ConversionHubJobModel.owner_user_id == job.owner_user_id,
-                ConversionHubJobModel.submission_idempotency_key == job.submission_idempotency_key,
-            )
-            .with_for_update()
-        )
-        existing = result.scalar_one_or_none()
-        if existing is None:
-            return await self.create(job=job), True
-        if existing.status != ConversionHubJobStatus.FAILED.value:
-            return self._to_job(existing), False
-
-        existing.submission_idempotency_key = None
-        await self._session.flush()
-        return await self.create(job=job), True
 
     async def get_latest_transcript_formatter_export(
         self,
@@ -173,7 +136,6 @@ class PostgreSQLConversionHubJobRepository(ConversionHubJobRepositoryProtocol):
         model.upstream_job_id = job.upstream_job_id
         model.status = job.status.value
         model.correlation_id = job.correlation_id
-        model.submission_idempotency_key = job.submission_idempotency_key
         model.error_message = job.error_message
 
         await self._session.flush()

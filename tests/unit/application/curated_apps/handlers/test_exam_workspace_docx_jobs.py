@@ -72,7 +72,6 @@ def environment(*, enabled: bool = True, budget: int = 1_000_000) -> JobEnvironm
     )
     env.processor, env.replay = replayed_docx_job_handler(
         enrichment_jobs=env.jobs,
-        proposed_overlays=env.proposed_overlays,
         leases=InMemoryLeaseRepository(daily_token_limit=budget),
         vault_files=env.vault_files,
         vault_storage=env.vault_storage,

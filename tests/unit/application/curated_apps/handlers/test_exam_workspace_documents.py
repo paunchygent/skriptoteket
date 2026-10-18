@@ -43,7 +43,6 @@ from skriptoteket.protocols.identity import ProfileRepositoryProtocol
 from tests.fixtures.time_fixtures import FixedClock
 from tests.unit.application.curated_apps.handlers.answer_key_enrichment_test_support import (
     InMemoryEnrichmentJobRepository,
-    InMemoryProposedOverlayRepository,
 )
 from tests.unit.application.curated_apps.handlers.exam_index_test_support import (
     InMemoryExamIndexRepository,
@@ -132,7 +131,6 @@ class _Env:
         )
         self.ids = SequenceIdGenerator([uuid4() for _ in range(10)])
         self.enrichment_jobs = InMemoryEnrichmentJobRepository()
-        self.proposed_overlays = InMemoryProposedOverlayRepository()
         self.store = ExamWorkspaceDocumentStore(
             vault_files=self.vault_files,
             vault_usage=self.vault_usage,

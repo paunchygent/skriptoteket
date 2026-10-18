@@ -304,5 +304,4 @@ def _mark_unavailable(
     entry["availability"] = availability
     entry["size_bytes"] = None
     entry["sha256"] = None
-    entry["download_path"] = None
     entry["unavailable_code"] = code

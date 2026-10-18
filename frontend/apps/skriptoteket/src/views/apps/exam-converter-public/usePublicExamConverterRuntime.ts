@@ -15,7 +15,7 @@
 import { computed, ref } from "vue";
 
 import { isApiError } from "../../../api/client";
-import { triggerBrowserDownload } from "./browserDownload";
+import { triggerBrowserDownload } from "../../../utils/browserDownload";
 import {
   downloadPublicExamConverterArtifact,
   getPublicExamConverterArtifactManifest,

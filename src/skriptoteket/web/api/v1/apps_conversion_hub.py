@@ -14,7 +14,6 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, File, Form, Query, Request, UploadFile
 from fastapi.responses import Response
-from pydantic import JsonValue
 
 from skriptoteket.application.curated_apps.conversion_hub import (
     ConversionHubJobSpecV2,
@@ -25,9 +24,6 @@ from skriptoteket.application.curated_apps.conversion_hub import (
     ConversionHubSourceFormatV2,
     ConversionHubSubmitResult,
     build_conversion_hub_v2_job_spec,
-)
-from skriptoteket.application.curated_apps.conversion_hub_saved_artifacts import (
-    SaveConversionHubArtifactResult,
 )
 from skriptoteket.application.curated_apps.document_converter import (
     DOCUMENT_CONVERTER_MAX_BATCH_ITEMS,
@@ -40,9 +36,6 @@ from skriptoteket.application.curated_apps.document_converter import (
 )
 from skriptoteket.application.curated_apps.document_converter import (
     list_document_converter_routes as build_document_converter_routes,
-)
-from skriptoteket.application.curated_apps.exam_conversion import (
-    ExamConverterConversionSubmitResult,
 )
 from skriptoteket.application.curated_apps.handlers.conversion_hub_document_converter import (
     DownloadDocumentConverterArtifactHandler,
@@ -58,14 +51,6 @@ from skriptoteket.application.curated_apps.handlers.conversion_hub_jobs import (
 from skriptoteket.application.curated_apps.handlers.document_converter_jobs import (
     CreateDocumentConverterJobsHandler,
 )
-from skriptoteket.application.curated_apps.handlers.exam_converter_conversions import (
-    CreateExamConverterConversionJobsHandler,
-)
-from skriptoteket.application.curated_apps.handlers.exam_converter_product import (
-    ExamConverterProductHandler,
-    ExamConverterProductResult,
-    SaveExamConverterLocalArtifactHandler,
-)
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import validation_error
 from skriptoteket.domain.identity.models import User
@@ -75,7 +60,6 @@ from skriptoteket.web.api.v1.apps_conversion_hub_access import (
     require_conversion_hub_access,
 )
 from skriptoteket.web.auth.huleedu_app_projection import require_app_user_api
-from skriptoteket.web.content_disposition import attachment_content_disposition
 from skriptoteket.web.dishka_dependencies import FromDishka
 from skriptoteket.web.request_metadata import get_correlation_id
 from skriptoteket.web.uploads import read_upload_files
@@ -265,145 +249,6 @@ async def submit_document_converter_job(
         correlation_id=correlation_id,
         build_job_spec=build_conversion_hub_v2_job_spec,
     )
-
-
-@router.post(
-    "/exam-converter/jobs/{job_id}/artifacts/{artifact_key}/save",
-    response_model=SaveConversionHubArtifactResult,
-)
-async def save_local_exam_converter_artifact(
-    job_id: UUID,
-    artifact_key: str,
-    registry: FromDishka[CuratedAppRegistryProtocol],
-    handler: FromDishka[SaveExamConverterLocalArtifactHandler],
-    user: User = Depends(require_app_user_api),
-) -> SaveConversionHubArtifactResult:
-    _require_app_access(registry=registry, user=user)
-    return await handler.handle(actor=user, job_id=job_id, artifact_key=artifact_key)
-
-
-@router.post(
-    "/exam-converter/conversions",
-    response_model=ExamConverterConversionSubmitResult,
-)
-async def submit_exam_converter_conversion(
-    request: Request,
-    registry: FromDishka[CuratedAppRegistryProtocol],
-    handler: FromDishka[CreateExamConverterConversionJobsHandler],
-    settings: FromDishka[Settings],
-    idempotency_key: Annotated[str, Form(min_length=1, max_length=128)],
-    file: UploadFile = File(...),
-    ingestion_overlay: UploadFile | None = File(None),
-    advisory_retry_attempt: Annotated[int | None, Form(ge=1)] = None,
-    user: User = Depends(require_app_user_api),
-) -> ExamConverterConversionSubmitResult:
-    _require_app_access(registry=registry, user=user)
-    if file.filename is None or not file.filename:
-        raise validation_error("Uploaded file is missing a filename.")
-    if not file.filename.lower().endswith(".dxe"):
-        raise validation_error("Endast DigiExam-exporter (.dxe) stöds.")
-    correlation_id_uuid = get_correlation_id(request)
-    correlation_id = str(correlation_id_uuid) if correlation_id_uuid is not None else None
-    input_files = await read_upload_files(
-        files=[file],
-        max_files=1,
-        max_file_bytes=settings.UPLOAD_MAX_FILE_BYTES,
-        max_total_bytes=settings.UPLOAD_MAX_TOTAL_BYTES,
-        default_filename="exam-converter-input.dxe",
-    )
-    overlay_bytes: bytes | None = None
-    if ingestion_overlay is not None:
-        overlay_files = await read_upload_files(
-            files=[ingestion_overlay],
-            max_files=1,
-            max_file_bytes=settings.UPLOAD_MAX_FILE_BYTES,
-            max_total_bytes=settings.UPLOAD_MAX_TOTAL_BYTES,
-            default_filename="ingestion-overlay.json",
-        )
-        overlay_bytes = overlay_files[0][1]
-    return await handler.handle(
-        actor=user,
-        upload=ConversionHubUpload(
-            filename=file.filename,
-            content_type=file.content_type or "application/octet-stream",
-            file_bytes=input_files[0][1],
-        ),
-        overlay_bytes=overlay_bytes,
-        correlation_id=correlation_id,
-        idempotency_key=idempotency_key,
-        advisory_retry_attempt=advisory_retry_attempt,
-    )
-
-
-@router.get(
-    "/exam-converter/jobs/{job_id}/result",
-    response_model=ExamConverterProductResult,
-)
-async def get_exam_converter_result(
-    job_id: UUID,
-    registry: FromDishka[CuratedAppRegistryProtocol],
-    handler: FromDishka[ExamConverterProductHandler],
-    user: User = Depends(require_app_user_api),
-) -> ExamConverterProductResult:
-    _require_app_access(registry=registry, user=user)
-    return await handler.result(actor=user, job_id=job_id)
-
-
-@router.get("/exam-converter/jobs/{job_id}/artifacts")
-async def get_exam_converter_artifacts(
-    job_id: UUID,
-    registry: FromDishka[CuratedAppRegistryProtocol],
-    handler: FromDishka[ExamConverterProductHandler],
-    user: User = Depends(require_app_user_api),
-) -> dict[str, JsonValue]:
-    _require_app_access(registry=registry, user=user)
-    return await handler.manifest(actor=user, job_id=job_id)
-
-
-@router.get("/exam-converter/jobs/{job_id}/artifacts/{artifact_key}")
-async def download_exam_converter_named_artifact(
-    job_id: UUID,
-    artifact_key: str,
-    registry: FromDishka[CuratedAppRegistryProtocol],
-    handler: FromDishka[ExamConverterProductHandler],
-    user: User = Depends(require_app_user_api),
-) -> Response:
-    _require_app_access(registry=registry, user=user)
-    artifact = await handler.named_artifact(
-        actor=user,
-        job_id=job_id,
-        artifact_key=artifact_key,
-    )
-    return Response(
-        content=artifact.content,
-        media_type=artifact.content_type,
-        headers={
-            "Content-Disposition": attachment_content_disposition(filename=artifact.filename),
-            "Cache-Control": "no-store",
-        },
-    )
-
-
-@router.get("/exam-converter/jobs/{job_id}/source-state")
-async def get_exam_converter_source_state(
-    job_id: UUID,
-    registry: FromDishka[CuratedAppRegistryProtocol],
-    handler: FromDishka[ExamConverterProductHandler],
-    user: User = Depends(require_app_user_api),
-) -> dict[str, JsonValue]:
-    _require_app_access(registry=registry, user=user)
-    return await handler.source_state(actor=user, job_id=job_id)
-
-
-@router.post("/exam-converter/jobs/{job_id}/replay")
-async def replay_exam_converter_corrections(
-    job_id: UUID,
-    registry: FromDishka[CuratedAppRegistryProtocol],
-    handler: FromDishka[ExamConverterProductHandler],
-    user: User = Depends(require_app_user_api),
-) -> dict[str, JsonValue]:
-    _require_app_access(registry=registry, user=user)
-    return await handler.replay(actor=user, job_id=job_id)
 
 
 @router.get(

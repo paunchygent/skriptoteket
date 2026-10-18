@@ -2,12 +2,11 @@
 
 Purpose:
     Produce answer-key independent digests for DigiExam source IR items so
-    teacher overlays and readiness reports can bind edits to parser-owned
-    structure without trusting mutable downstream state.
+    readiness reports can bind items to parser-owned structure without
+    trusting mutable downstream state.
 
 Relationships:
     - Used by `domain.digiexam_ir_contracts` when building IR manifests.
-    - Used by `domain.digiexam_ingestion_overlay` when validating overlays.
     - Used by `domain.digiexam_target_readiness` for item-addressable rows.
 """
 

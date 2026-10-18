@@ -7,8 +7,7 @@
  *   selection, and submit without owning runtime state or backend calls.
  *
  * Relationships:
- *   - Emits file and target changes to public or authenticated runtime
- *     composables.
+ *   - Emits file and target changes to the public runtime composable.
  *   - Uses shared dense UI primitives for tokenized button behavior.
  */
 

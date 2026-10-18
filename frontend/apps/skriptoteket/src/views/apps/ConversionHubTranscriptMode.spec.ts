@@ -7,42 +7,27 @@
  *   actions.
  *
  * Relationships:
- *   - Mounts `ExamConverterAuthenticatedView` with transcript presentation
- *     identity while reusing the shared authenticated runtime host.
+ *   - Mounts `ConversionHubTranscriptHost` through the router at
+ *     `/apps/audio-transcription`.
  *   - Uses mocked Sir Convert Gateway methods only at the product edge.
  */
 
 import { flushPromises, mount } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import ExamConverterAuthenticatedView from "./ExamConverterAuthenticatedView.vue";
+import { RouterView, createMemoryHistory, createRouter } from "vue-router";
+import { defineComponent, h } from "vue";
+
+import { routes } from "../../router/routes";
+import ConversionHubTranscriptHost from "./conversion-hub-transcript/ConversionHubTranscriptHost.vue";
 
 const gatewayMocks = vi.hoisted(() => ({
-  applyExamAuthoringCorrections: vi.fn(),
   cancelTranscriptJob: vi.fn(),
-  downloadDigiExamMigrationArtifact: vi.fn(),
-  downloadDigiExamMigrationCorrectionReplayArtifact: vi.fn(),
   downloadTranscriptJson: vi.fn(),
-  getDigiExamMigrationJob: vi.fn(),
-  getDigiExamMigrationResult: vi.fn(),
   getTranscriptJob: vi.fn(),
   getTranscriptResult: vi.fn(),
-  issueExamAuthoringCorrectionSourceState: vi.fn(),
-  listDigiExamMigrationArtifacts: vi.fn(),
   listTranscriptArtifacts: vi.fn(),
-  saveDigiExamMigrationArtifactToUserFiles: vi.fn(),
-  submitDigiExamMigration: vi.fn(),
   submitTranscriptJob: vi.fn(),
-}));
-
-vi.mock("../../api/examConverterLocal", () => ({
-  downloadLocalExamConversionArtifact: gatewayMocks.downloadDigiExamMigrationArtifact,
-  getLocalExamConversionJob: gatewayMocks.getDigiExamMigrationJob,
-  getLocalExamConversionResult: gatewayMocks.getDigiExamMigrationResult,
-  getLocalExamConversionSourceState: gatewayMocks.issueExamAuthoringCorrectionSourceState,
-  listLocalExamConversionArtifacts: gatewayMocks.listDigiExamMigrationArtifacts,
-  replayLocalExamConversion: vi.fn(),
-  submitLocalExamConversion: gatewayMocks.submitDigiExamMigration,
 }));
 
 vi.mock("../../api/sirConvertGateway", () => ({
@@ -55,9 +40,15 @@ vi.mock("../../api/sirConvertGateway", () => ({
   submitTranscriptJob: gatewayMocks.submitTranscriptJob,
 }));
 
-vi.mock("vue-router", () => ({
-  useRoute: () => ({ query: {} }),
-}));
+async function mountTranscriptRoute() {
+  const router = createRouter({ history: createMemoryHistory(), routes });
+  await router.push("/apps/audio-transcription");
+  await router.isReady();
+  const App = defineComponent({ render: () => h("div", [h(RouterView)]) });
+  const wrapper = mount(App, { global: { plugins: [router] } });
+  await flushPromises();
+  return { router, wrapper };
+}
 
 async function chooseTranscriptFile(wrapper: ReturnType<typeof mount>, file: File) {
   const input = wrapper.find<HTMLInputElement>('[data-test="transcript-source-file-input"]');
@@ -191,10 +182,10 @@ describe("Audio Transcription authenticated presentation", () => {
   });
 
   it("submits selected audio with exact speaker controls through the transcript Gateway lane", async () => {
-    const wrapper = mount(ExamConverterAuthenticatedView, {
-      props: { presentationMode: "transcript" },
-    });
+    const { router, wrapper } = await mountTranscriptRoute();
 
+    expect(router.currentRoute.value.name).toBe("audio-transcription-authenticated");
+    expect(wrapper.findComponent(ConversionHubTranscriptHost).exists()).toBe(true);
     expect(wrapper.find('[data-test="conversion-hub-mode-exam"]').exists()).toBe(false);
     expect(wrapper.find('[data-test="conversion-hub-mode-transcript"]').exists()).toBe(false);
     await chooseTranscriptFile(

@@ -5,18 +5,12 @@ from __future__ import annotations
 import pytest
 from pydantic import JsonValue
 
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_completion import (
-    manual_answer_key_from_model_content,
-)
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_prompts import (
     gap_fill_answer_key_model_payload,
     numbered_gap_labels,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_dxe_parser import (
     DigiExamDxeParser,
-)
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ingestion_overlay_contracts import (
-    DigiExamOverlayGapFillManualAnswerKey,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ir_contracts import (
     DigiExamIrItem,
@@ -59,33 +53,6 @@ def test_gap_projection_replaces_internal_span_content_with_numbered_marker() ->
     item_payload = payload["item"]
     assert isinstance(item_payload, dict)
     assert item_payload["cloze_text"] == ("Complete [1] and [2] from the word bank: apple, pear.")
-
-
-def test_gap_proposal_rejects_the_source_gap_identifier() -> None:
-    item = _gap_fill_item()
-
-    assert (
-        manual_answer_key_from_model_content(
-            item=item,
-            content={"1": _GAP_IDS[1], "2": "pear"},
-        )
-        is None
-    )
-
-
-def test_gap_proposal_preserves_a_valid_human_answer() -> None:
-    item = _gap_fill_item()
-
-    key = manual_answer_key_from_model_content(
-        item=item,
-        content={"1": "apple", "2": "pear"},
-    )
-
-    assert isinstance(key, DigiExamOverlayGapFillManualAnswerKey)
-    assert tuple(answer.accepted_values for answer in key.gap_answers) == (
-        ("apple",),
-        ("pear",),
-    )
 
 
 def _two_pair_gap_item() -> DigiExamIrItem:

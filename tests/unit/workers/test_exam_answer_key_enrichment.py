@@ -229,7 +229,6 @@ async def test_claimed_and_finished_events_name_the_job_kind(
     events = {call.args[0]: call.kwargs for call in logger.info.call_args_list}
     assert events["Exam enrichment queue job claimed"] == {
         "job_id": str(job.id),
-        "conversion_job_id": str(job.conversion_job_id),
         "worker_id": WORKER_ID,
         "source_kind": source_kind.value,
     }

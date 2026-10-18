@@ -59,7 +59,7 @@ vi.mock("../../api/examWorkspace", async () => ({
 
 const downloadMocks = vi.hoisted(() => ({ triggerBrowserDownload: vi.fn() }));
 
-vi.mock("./exam-converter/browserDownload", () => downloadMocks);
+vi.mock("../../utils/browserDownload", () => downloadMocks);
 
 
 beforeEach(() => {

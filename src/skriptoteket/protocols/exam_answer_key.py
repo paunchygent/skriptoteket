@@ -3,7 +3,7 @@
 Purpose:
     Keep the machine answer-key lane protocol-first: structured provider
     execution, provider selection, the Postgres daily token lease, the
-    enrichment job ledger, and proposed-overlay persistence all sit behind
+    and enrichment job ledger all sit behind
     protocols so infrastructure can evolve independently.
 
 Relationships:
@@ -24,7 +24,6 @@ from pydantic import JsonValue
 
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJob,
-    ExamAnswerKeyProposedOverlay,
     ExamAnswerKeySourceKind,
     ExamWorkspaceConversionJobView,
 )
@@ -200,25 +199,3 @@ class ExamWorkspaceSuggestionJobQueryProtocol(Protocol):
         so that lookup and the enqueue that may follow are one decision.
         """
         ...
-
-
-class ExamAnswerKeyProposedOverlayRepositoryProtocol(Protocol):
-    """Persist machine-proposed answer-key overlays as proposal records."""
-
-    async def create(
-        self,
-        *,
-        proposed_overlay: ExamAnswerKeyProposedOverlay,
-    ) -> ExamAnswerKeyProposedOverlay: ...
-
-    async def get_by_conversion_job_id(
-        self,
-        *,
-        conversion_job_id: UUID,
-    ) -> ExamAnswerKeyProposedOverlay | None: ...
-
-    async def get_by_enrichment_job_id(
-        self,
-        *,
-        enrichment_job_id: UUID,
-    ) -> ExamAnswerKeyProposedOverlay | None: ...

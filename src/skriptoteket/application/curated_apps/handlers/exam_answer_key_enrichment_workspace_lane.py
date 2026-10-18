@@ -6,17 +6,15 @@ Purpose:
     daily token leases with the recorded attempt, collect one suggestion
     per requested question (one GLM failover per item after a transient
     outage), and store the suggestions on the job itself. This lane never
-    reads a saved document revision, never calls the conversion producer
-    and writes no overlay; any failure finishes the job as FAILED with a
-    typed ``last_error``.
+    reads a saved document revision and writes no overlay; any failure
+    finishes the job as FAILED with a typed ``last_error``.
 
 Relationships:
     Dispatched by
     ``application.curated_apps.handlers.exam_answer_key_enrichment_jobs``,
     which also calls ``fail`` for an expired worker lease. Shares
     ``exam_answer_key_enrichment_attempts`` (attempt and lease bookkeeping
-    and the per-item proposal loop) with
-    ``exam_answer_key_enrichment_dxe_lane``.
+    and the per-item proposal loop).
 """
 
 from __future__ import annotations

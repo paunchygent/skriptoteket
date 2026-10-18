@@ -4,17 +4,28 @@ id: ADR-SKRIPT-0087
 title: Exam Converter durable correction sessions with stateless apply
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
-status: accepted
+status: superseded
 deciders:
-- user-lead
+  - user-lead
 retired_ids:
-- ADR-0087
+  - ADR-0087
 ---
 
 ## Context
+
+### 2026-10-18 Superseded
+
+TASK-SKRIPT-39-07-03 retires the signed-in old exam converter under
+ST-SKRIPT-39-07 terms G21, G27 and E16. The exam workspace replaces it as the
+main exam conversion and editing app. The task removes the correction sessions
+this ADR defines: the `exam-converter/jobs/{job_id}/correction-session` routes,
+their handlers, protocol, repository and model, and the
+`exam_converter_correction_sessions` and `exam_converter_correction_intents`
+tables, dropped by a migration. The public guest exam converter
+(ADR-SKRIPT-0085) never used correction sessions and stays.
 
 ### Source: Context
 
@@ -79,16 +90,16 @@ The durable truth boundary is:
 The correction-session aggregate must persist only source-bound intents whose
 current producer contract can be replayed through the unified apply route:
 
-| Correction entry kind | Durable ownership | Notes |
-|---|---|---|
-| `point_correction` | Persisted in this aggregate | One active point correction per source-bound item. |
-| `manual_choice_answer_key` | Persisted in this aggregate | One active answer-key correction per source-bound choice interaction. |
-| `manual_gap_open_cloze_answer_key` | Persisted in this aggregate | One active answer-key correction per source-bound gap/open-cloze interaction. |
-| `item_text_patch` | Persisted in this aggregate | One active visible-text value per source-bound text field target. |
-| `review_decision` | Superseded by `PR-0341` | Accepted-current-state export is not durable authoring state and must not be persisted or replayed as a correction intent. |
-| `candidate_suppression` | Persisted in this aggregate | Teacher rejection of an advisory candidate is durable suppression semantics and must survive reload. |
-| `manual_matching_answer_key` | Blocked | Not persisted or replayed until Sir Convert Task 332 and a later accepted slice enable matching-capable producer state. |
-| Later correction kinds | Blocked until approved | Any new kind needs accepted upstream producer semantics and a governed implementation slice. |
+| Correction entry kind              | Durable ownership           | Notes                                                                                                                      |
+| ---------------------------------- | --------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `point_correction`                 | Persisted in this aggregate | One active point correction per source-bound item.                                                                         |
+| `manual_choice_answer_key`         | Persisted in this aggregate | One active answer-key correction per source-bound choice interaction.                                                      |
+| `manual_gap_open_cloze_answer_key` | Persisted in this aggregate | One active answer-key correction per source-bound gap/open-cloze interaction.                                              |
+| `item_text_patch`                  | Persisted in this aggregate | One active visible-text value per source-bound text field target.                                                          |
+| `review_decision`                  | Superseded by `PR-0341`     | Accepted-current-state export is not durable authoring state and must not be persisted or replayed as a correction intent. |
+| `candidate_suppression`            | Persisted in this aggregate | Teacher rejection of an advisory candidate is durable suppression semantics and must survive reload.                       |
+| `manual_matching_answer_key`       | Blocked                     | Not persisted or replayed until Sir Convert Task 332 and a later accepted slice enable matching-capable producer state.    |
+| Later correction kinds             | Blocked until approved      | Any new kind needs accepted upstream producer semantics and a governed implementation slice.                               |
 
 Each persisted intent must carry enough binding material to prove it belongs to
 the current source state before replay. Skriptoteket must persist the exact

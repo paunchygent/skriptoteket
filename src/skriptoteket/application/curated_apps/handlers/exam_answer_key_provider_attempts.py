@@ -13,8 +13,7 @@ Relationships:
     the transient-outage gate lives in
     ``domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts``.
     Candidates are source-neutral: each carries its planned request plus a
-    builder that re-plans the same item's request for the failover profile
-    (the DigiExam lane rebuilds through ``plan_answer_key_candidates``).
+    builder that re-plans the same item's request for the failover profile.
 """
 
 from __future__ import annotations
@@ -22,14 +21,9 @@ from __future__ import annotations
 import logging
 from collections.abc import Callable
 from dataclasses import dataclass
-from uuid import UUID
 
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJob,
-)
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_completion import (
-    AnswerKeyCandidatePlan,
-    plan_answer_key_candidates,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
     AnswerKeyProviderRoute,
@@ -82,29 +76,6 @@ class AnswerKeyAttemptCandidate:
     item_id: str
     request: StructuredLLMRequest
     build_request_for_profile: RequestForProfileBuilder
-
-
-def dxe_attempt_candidate(
-    *,
-    conversion_job_id: UUID,
-    plan: AnswerKeyCandidatePlan,
-) -> AnswerKeyAttemptCandidate:
-    """Wrap one DigiExam candidate plan with its original failover rebuild."""
-
-    item = plan.item
-
-    def build(profile: StructuredLLMProviderProfile) -> StructuredLLMRequest:
-        return plan_answer_key_candidates(
-            job_id=str(conversion_job_id),
-            items=(item,),
-            profile=profile,
-        )[0].request
-
-    return AnswerKeyAttemptCandidate(
-        item_id=item.item_id,
-        request=plan.request,
-        build_request_for_profile=build,
-    )
 
 
 def lease_exhausted_message(refusal: AnswerKeyTokenLeaseRefused) -> str:

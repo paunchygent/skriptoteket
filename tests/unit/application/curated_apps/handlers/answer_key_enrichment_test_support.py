@@ -1,15 +1,14 @@
 """In-memory fakes and builders for the machine answer-key enrichment tests.
 
 Purpose:
-    Give the enrichment lifecycle tests protocol fakes for the conversion-hub,
-    enrichment, lease, and proposed-overlay repositories, scripted structured
-    providers, a recording producer and artifact store, provider-route
-    builders, and the DOCX import processor wiring the enrichment dispatcher
+    Give the enrichment lifecycle tests protocol fakes for the
+    enrichment and lease repositories, scripted structured providers,
+    provider-route builders, and the DOCX import processor wiring the enrichment dispatcher
     requires.
 
 Relationships:
-    - Shared by `test_exam_answer_key_enrichment_jobs` and the workspace
-      enrichment, DOCX job, and repository tests that reuse its fakes.
+    - Shared by the dispatcher, workspace enrichment, DOCX job, and repository
+      tests that reuse its fakes.
 """
 
 from __future__ import annotations
@@ -19,15 +18,12 @@ from uuid import UUID, uuid4
 
 from pydantic import JsonValue
 
-from skriptoteket.application.curated_apps.conversion_hub import ConversionHubJob
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJob,
     ExamAnswerKeyEnrichmentJobStatus,
-    ExamAnswerKeyProposedOverlay,
     ExamAnswerKeySourceKind,
     ExamWorkspaceConversionJobView,
 )
-from skriptoteket.application.curated_apps.exam_conversion import ExamConversionStoredArtifact
 from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_progress import (
     ExamWorkspaceConversionProgress,
 )
@@ -94,28 +90,6 @@ class FixedClock:
 class UUIDGenerator:
     def new_uuid(self) -> UUID:
         return uuid4()
-
-
-class InMemoryConversionHubJobRepository:
-    def __init__(self) -> None:
-        self.jobs: dict[UUID, ConversionHubJob] = {}
-
-    async def create(self, *, job: ConversionHubJob) -> ConversionHubJob:
-        self.jobs[job.id] = job
-        return job
-
-    async def get_by_id(self, *, job_id: UUID) -> ConversionHubJob | None:
-        return self.jobs.get(job_id)
-
-    async def get_by_upstream_job_id(self, *, upstream_job_id: str) -> ConversionHubJob | None:
-        for job in self.jobs.values():
-            if job.upstream_job_id == upstream_job_id:
-                return job
-        return None
-
-    async def update(self, *, job: ConversionHubJob) -> ConversionHubJob:
-        self.jobs[job.id] = job
-        return job
 
 
 class InMemoryEnrichmentJobRepository:
@@ -308,39 +282,6 @@ class InMemoryLeaseRepository:
         )
 
 
-class InMemoryProposedOverlayRepository:
-    def __init__(self) -> None:
-        self.records: list[ExamAnswerKeyProposedOverlay] = []
-
-    async def create(
-        self,
-        *,
-        proposed_overlay: ExamAnswerKeyProposedOverlay,
-    ) -> ExamAnswerKeyProposedOverlay:
-        self.records.append(proposed_overlay)
-        return proposed_overlay
-
-    async def get_by_conversion_job_id(
-        self,
-        *,
-        conversion_job_id: UUID,
-    ) -> ExamAnswerKeyProposedOverlay | None:
-        for record in self.records:
-            if record.conversion_job_id == conversion_job_id:
-                return record
-        return None
-
-    async def get_by_enrichment_job_id(
-        self,
-        *,
-        enrichment_job_id: UUID,
-    ) -> ExamAnswerKeyProposedOverlay | None:
-        for record in self.records:
-            if record.enrichment_job_id == enrichment_job_id:
-                return record
-        return None
-
-
 class StubProvider:
     def __init__(self, *, content: dict[str, JsonValue], usage: StructuredLLMUsage) -> None:
         self._content = content
@@ -359,27 +300,6 @@ class StubProvider:
             finish_reason="completed",
             usage=self._usage,
         )
-
-
-class RecordingArtifactStore:
-    def __init__(self) -> None:
-        self.stored: dict[UUID, ExamConversionStoredArtifact] = {}
-
-    def store_artifact(self, *, job_id: UUID, artifact: ExamConversionStoredArtifact) -> None:
-        self.stored[job_id] = artifact
-
-    def read_artifact(self, *, job_id: UUID) -> ExamConversionStoredArtifact:
-        return self.stored[job_id]
-
-    def read_named_artifact(self, *, job_id: UUID, artifact_key: str):
-        return next(
-            artifact
-            for artifact in self.stored[job_id].named_artifacts
-            if artifact.artifact_key == artifact_key
-        )
-
-    def delete_artifact(self, *, job_id: UUID) -> None:
-        self.stored.pop(job_id, None)
 
 
 def _profile() -> StructuredLLMProviderProfile:
@@ -415,7 +335,6 @@ DEFAULT_REPLAYED_EXAM = "chapter_4_poetry_and_lyrics_quiz_med_facit"
 def docx_job_handler(
     *,
     enrichment_jobs: InMemoryEnrichmentJobRepository,
-    proposed_overlays: InMemoryProposedOverlayRepository,
     leases: InMemoryLeaseRepository,
     provider: AnswerKeyStructuredProviderProtocol,
     vault_files: InMemoryVaultFileRepository,
@@ -425,7 +344,6 @@ def docx_job_handler(
     """The DOCX import processor the dispatcher requires; ``provider`` is unused (replayed)."""
     handler, _ = replayed_docx_job_handler(
         enrichment_jobs=enrichment_jobs,
-        proposed_overlays=proposed_overlays,
         leases=leases,
         vault_files=vault_files,
         vault_storage=vault_storage,
@@ -437,7 +355,6 @@ def docx_job_handler(
 def replayed_docx_job_handler(
     *,
     enrichment_jobs: InMemoryEnrichmentJobRepository,
-    proposed_overlays: InMemoryProposedOverlayRepository,
     leases: InMemoryLeaseRepository,
     vault_files: InMemoryVaultFileRepository,
     vault_storage: InMemoryVaultStorage,
