@@ -21,7 +21,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts impo
     ExamNetQtiPromptParagraph,
     ExamNetQtiTextEntryGap,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.exam_language_labels import ExamLanguageLabels
+from skriptoteket.domain.curated_apps.exam_workspace.exam_language_labels import ExamExportLabels
 from skriptoteket.domain.curated_apps.exam_workspace.examnet_qti_prompt import (
     body_carries_formatting,
 )
@@ -57,7 +57,7 @@ def leaf_qti_item(
     item: NativeExamItem,
     assets: Mapping[str, NativeExamAsset],
     assets_by_id: Mapping[str, bytes],
-    labels: ExamLanguageLabels,
+    labels: ExamExportLabels,
     first_image_number: int = 1,
 ) -> ExamNetQtiItem:
     base_item = ExamNetQtiItem(
@@ -190,7 +190,7 @@ def _matching_item(item: NativeExamItem, base_item: ExamNetQtiItem) -> ExamNetQt
 
 
 def _gap_fill_item(
-    item: NativeExamItem, base_item: ExamNetQtiItem, labels: ExamLanguageLabels
+    item: NativeExamItem, base_item: ExamNetQtiItem, labels: ExamExportLabels
 ) -> ExamNetQtiItem:
     accepted_values_by_gap_id = {
         gap.gap_id: tuple(
@@ -272,7 +272,7 @@ def _image_resources(
     item: NativeExamItem,
     assets: Mapping[str, NativeExamAsset],
     assets_by_id: Mapping[str, bytes],
-    labels: ExamLanguageLabels,
+    labels: ExamExportLabels,
     first_image_number: int,
 ) -> tuple[ExamNetQtiImageResource, ...]:
     resources: list[ExamNetQtiImageResource] = []

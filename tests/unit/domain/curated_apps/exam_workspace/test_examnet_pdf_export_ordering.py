@@ -9,6 +9,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.examnet_pdf_export import (
     native_exam_to_pdf_document,
 )
 from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders import (
+    ORDERING_STEPS,
     make_document,
     make_ordering_item,
     make_paragraph,
@@ -18,8 +19,13 @@ _STEP = re.compile(r'<p class="ordering-step"><span class="number-box"></span> (
 _FACIT = re.compile(r'<p class="answer-key">([^<:]*): ([^<]*)</p>')
 
 
-def _html(*steps: str, english: bool = False, **kwargs: object) -> str:
-    item = make_ordering_item(**({"steps": steps} if steps else {}), **kwargs)  # type: ignore[arg-type]
+def _html(
+    *steps: str,
+    english: bool = False,
+    print_order: tuple[str, ...] | None = None,
+    points: int | float | None = 1,
+) -> str:
+    item = make_ordering_item(steps=steps or ORDERING_STEPS, print_order=print_order, points=points)
     if english:
         item = item.model_copy(
             update={"body": (make_paragraph("Put the steps of what is an essay in order."),)}
@@ -41,7 +47,8 @@ def test_student_part_has_no_key_numbers_and_facit_is_separate() -> None:
     assert not re.search(r"(Tes|Argument|Motargument|Avslutning) \d", student_part)
     ((label, line),) = _FACIT.findall(html)
     assert line == "Avslutning 4; Motargument 3; Argument 2; Tes 1"
-    assert label == "Correct order"
+    assert label == "Rätt ordning"
+    assert "Correct order" not in html
 
 
 def test_swedish_exam_labels_the_facit_in_swedish() -> None:

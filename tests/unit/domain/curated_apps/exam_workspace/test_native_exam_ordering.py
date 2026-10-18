@@ -1,6 +1,7 @@
 """Ordering questions: the saved print order and the item's shape (TASK-SKRIPT-39-06-08)."""
 
 import random
+from collections.abc import MutableSequence
 from itertools import permutations
 
 import pytest
@@ -28,7 +29,7 @@ from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders imp
 class _IdentityShuffle(random.Random):
     """A random source whose shuffle always leaves the key order, the D6 worst case."""
 
-    def shuffle(self, x: list[object]) -> None:  # type: ignore[override]
+    def shuffle(self, x: MutableSequence[object]) -> None:
         return None
 
 

@@ -17,8 +17,8 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts impo
     ExamNetQtiItem,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.exam_language_labels import (
-    ExamLanguageLabels,
-    exam_language_labels,
+    SWEDISH_EXAM_LABELS,
+    ExamExportLabels,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.examnet_qti_leaf_items import (
     leaf_qti_item,
@@ -58,7 +58,7 @@ def native_exam_to_examnet_qti_items(
     """
 
     assets = {asset.asset_id: asset for asset in document.assets}
-    labels = exam_language_labels(document)
+    labels = SWEDISH_EXAM_LABELS
     qti_items: list[ExamNetQtiItem] = []
     emitted_parent_ids: set[str] = set()
     for item in document.items:
@@ -95,7 +95,7 @@ def _standalone_with_stem(
     stem: tuple[NativeParagraph, ...],
     assets: Mapping[str, NativeExamAsset],
     assets_by_id: Mapping[str, bytes],
-    labels: ExamLanguageLabels,
+    labels: ExamExportLabels,
 ) -> ExamNetQtiItem:
     stem_resources = stem_image_resources(
         stem,
@@ -133,7 +133,7 @@ def _parent_qti_item(
     children: tuple[NativeExamItem, ...],
     assets: Mapping[str, NativeExamAsset],
     assets_by_id: Mapping[str, bytes],
-    labels: ExamLanguageLabels,
+    labels: ExamExportLabels,
 ) -> ExamNetQtiItem:
     stem = (*global_stem, *parent.instruction)
     stem_resources = stem_image_resources(
@@ -207,7 +207,7 @@ def _parent_qti_item(
     )
 
 
-def _parent_title(children: tuple[NativeExamItem, ...], labels: ExamLanguageLabels) -> str:
+def _parent_title(children: tuple[NativeExamItem, ...], labels: ExamExportLabels) -> str:
     """The span of the children's printed labels (D20); running numbers when one lacks it."""
     printed = [child.printed_label for child in children if child.printed_label]
     if len(printed) == len(children):

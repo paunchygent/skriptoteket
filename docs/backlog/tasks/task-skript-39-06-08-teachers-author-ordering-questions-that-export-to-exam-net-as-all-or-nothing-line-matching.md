@@ -1,9 +1,7 @@
 ---
 type: task
 id: TASK-SKRIPT-39-06-08
-title:
-  Teachers author ordering questions that export to Exam.net as all-or-nothing
-  line matching
+title: Teachers author ordering questions that export to Exam.net as all-or-nothing line matching
 repository: skriptoteket
 owners:
   - kind: service
@@ -15,9 +13,7 @@ closeout_review:
   status: not_started
 task_kind: story
 acceptance_criteria:
-  - A teacher creates or converts a standalone ordering question in the workspace editor,
-    and its QTI export imports into Exam.net as all-or-nothing line matching worth 1
-    point by default
+  - A teacher creates or converts a standalone ordering question in the workspace editor, and its QTI export imports into Exam.net as all-or-nothing line matching worth 1 point by default
 story: ST-SKRIPT-39-06
 backlog_document_profile: contract-derived
 ---
@@ -88,14 +84,15 @@ Stop and report to the parent in any of these cases:
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term                                                                                                                                     |
-| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| D1  | The order of the steps in the editor list is the answer key.                                                                                              |
-| D2  | Print shows the steps shuffled with a number box per step; the teacher can reshuffle at any time.                                                         |
-| D3  | Teachers create an ordering question new or by changing type; changing from a choice question keeps option texts as steps; imports never detect ordering. |
-| D4  | Ordering questions inside a part are out of scope; a separate task covers them.                                                                           |
-| D5  | The shuffled order is saved with the exam; a "Blanda om" button draws a new order, undoable through autosave history.                                     |
-| D6  | With two or more steps, a shuffle never yields the answer-key order.                                                                                      |
-| D7  | Fewer than two steps or an empty step is a red export blocker before the click, formats disabled, with a one-click jump to the step.                      |
-| P3  | Ordering questions are standalone only (story ST-SKRIPT-39-06).                                                                                           |
-| P21 | Grading is all-or-nothing with a default of 1 point the teacher can edit (story ST-SKRIPT-39-06).                                                         |
+| ID  | Decided contract term                                                                                                                                                      |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | The order of the steps in the editor list is the answer key.                                                                                                               |
+| D2  | Print shows the steps shuffled with a number box per step; the teacher can reshuffle at any time.                                                                          |
+| D3  | Teachers create an ordering question new or by changing type; changing from a choice question keeps option texts as steps; imports never detect ordering.                  |
+| D4  | Ordering questions inside a part are out of scope; a separate task covers them.                                                                                            |
+| D5  | The shuffled order is saved with the exam; a "Blanda om" button draws a new order, undoable through autosave history.                                                      |
+| D6  | With two or more steps, a shuffle never yields the answer-key order.                                                                                                       |
+| D7  | Fewer than two steps or an empty step is a red export blocker before the click, formats disabled, with a one-click jump to the step.                                       |
+| P3  | Ordering questions are standalone only (story ST-SKRIPT-39-06).                                                                                                            |
+| P21 | Grading is all-or-nothing with a default of 1 point the teacher can edit (story ST-SKRIPT-39-06).                                                                          |
+| D8  | Exports always print their added words in Swedish (Fråga, Lucka, Bild, Poäng, Rätt svar, Rätt ordning); user decision 2026-10-18, supersedes TASK-SKRIPT-39-05-03 D18/D21. |

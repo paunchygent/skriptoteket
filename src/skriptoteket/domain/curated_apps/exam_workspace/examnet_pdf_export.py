@@ -57,7 +57,6 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_pdf_item_registry 
     DEFAULT_EXAMNET_PDF_ITEM_STRATEGY_REGISTRY,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_pdf_target_profile import (
-    DEFAULT_EXAMNET_PDF_TARGET_PROFILE_CONTEXT,
     ExamNetPdfItemLabelPolicy,
     ExamNetPdfTargetProfileContext,
 )
@@ -65,8 +64,8 @@ from skriptoteket.domain.curated_apps.exam_workspace.exam_export_header import (
     exam_export_header_lines,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.exam_language_labels import (
-    ExamLanguageLabels,
-    exam_language_labels,
+    SWEDISH_EXAM_LABELS,
+    ExamExportLabels,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeGapSegment,
@@ -92,8 +91,8 @@ NO_PDF_EXPORT_ASSETS: Mapping[str, bytes] = MappingProxyType({})
 
 # Marker words from sir-convert-a-lot
 # docs/reference/ref-examnet-pdf-to-exam-swedish-renderer-profile.md ("Canonical Swedish PDF
-# Profile" and "Supported Item Profiles"). That profile documents Swedish words only, so every
-# other language keeps the default profile's markers.
+# Profile" and "Supported Item Profiles"). Every workspace PDF prints these Swedish words,
+# whatever language the exam is written in (user decision of 2026-10-18).
 SWEDISH_EXAMNET_PDF_TARGET_PROFILE_CONTEXT = ExamNetPdfTargetProfileContext(
     target_id="examnet_pdf",
     profile_version="examnet-pdf-swedish-v2",
@@ -138,12 +137,8 @@ def native_exam_to_pdf_document(
 ) -> DigiExamExamNetPdfDocument:
     """Build an Exam.net PDF-converter HTML plan from a native exam document."""
 
-    labels = exam_language_labels(document)
-    context = (
-        SWEDISH_EXAMNET_PDF_TARGET_PROFILE_CONTEXT
-        if labels.language == "sv"
-        else DEFAULT_EXAMNET_PDF_TARGET_PROFILE_CONTEXT
-    )
+    labels = SWEDISH_EXAM_LABELS
+    context = SWEDISH_EXAMNET_PDF_TARGET_PROFILE_CONTEXT
     asset_files, asset_paths_by_id, asset_warnings = _prepare_assets(document, assets_by_id)
     if asset_warnings:
         return _blocked(asset_warnings)
@@ -186,7 +181,7 @@ def _render_item(
     *,
     item: NativeExamItem,
     asset_paths_by_id: Mapping[str, str],
-    labels: ExamLanguageLabels,
+    labels: ExamExportLabels,
     context: ExamNetPdfTargetProfileContext,
     document_instruction_html: str,
     parent_instruction_html: str,
@@ -301,7 +296,7 @@ def _document_instruction_html(
     document: NativeExamDocument,
     *,
     asset_paths_by_id: Mapping[str, str],
-    labels: ExamLanguageLabels,
+    labels: ExamExportLabels,
 ) -> str:
     """The exam-wide shared instruction, printed once with every top-level item."""
     body = _body_html(document.instructions, asset_paths_by_id=asset_paths_by_id, labels=labels)
@@ -313,7 +308,7 @@ def _parent_instruction_html(
     item: NativeExamItem,
     *,
     asset_paths_by_id: Mapping[str, str],
-    labels: ExamLanguageLabels,
+    labels: ExamExportLabels,
 ) -> str:
     """The parent's instruction, printed once with the first child item.
 
@@ -331,7 +326,7 @@ def _prompt_html(
     *,
     item: NativeExamItem,
     asset_paths_by_id: Mapping[str, str],
-    labels: ExamLanguageLabels,
+    labels: ExamExportLabels,
 ) -> str:
     body = _body_html(item.body, asset_paths_by_id=asset_paths_by_id, labels=labels)
     if item.kind is NativeExamItemKind.INLINE_CHOICE:
@@ -352,7 +347,7 @@ def _body_html(
     body: Iterable[NativeParagraph],
     *,
     asset_paths_by_id: Mapping[str, str],
-    labels: ExamLanguageLabels,
+    labels: ExamExportLabels,
 ) -> str:
     """One native body as HTML: one ``<p>`` per paragraph, pictures inline at their place."""
     paragraphs: list[str] = []
@@ -372,7 +367,7 @@ def _body_html(
 def _image_html(
     asset_id: str,
     asset_paths_by_id: Mapping[str, str],
-    labels: ExamLanguageLabels,
+    labels: ExamExportLabels,
 ) -> str:
     relative_path = asset_paths_by_id[asset_id]
     alt = f"{labels.image} {asset_id}".strip()

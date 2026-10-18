@@ -1,8 +1,8 @@
-"""Exam.net PDF markers follow the exam's language (TASK-SKRIPT-39-05-03 D21).
+"""Exam.net PDF markers are Swedish for every exam (user decision of 2026-10-18).
 
 Each corpus exam is converted from its recorded provider rounds and exported through the
-native PDF function. Only the Swedish markers documented in sir-convert-a-lot's Swedish
-renderer profile are used; every other language keeps the default profile's markers.
+native PDF function. The Swedish markers documented in sir-convert-a-lot's Swedish renderer
+profile are used whatever language the exam is written in.
 """
 
 import hashlib
@@ -13,9 +13,6 @@ import pytest
 
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_examnet_pdf_contracts import (
     DigiExamExamNetPdfStatus,
-)
-from skriptoteket.domain.curated_apps.exam_conversion.examnet_pdf_target_profile import (
-    DEFAULT_EXAMNET_PDF_TARGET_PROFILE_CONTEXT,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.examnet_pdf_export import (
     native_exam_to_pdf_document,
@@ -37,15 +34,6 @@ from tests.unit.domain.curated_apps.exam_workspace.matching_recording_support im
 )
 from tests.unit.scripts.exam_conversion_corpus_support import RECORDED_STEMS, gold_exam, replayed
 
-_ENGLISH_MARKERS = (
-    "Type:",
-    "Multiple choice",
-    "Multiple response",
-    "Matching",
-    "Correct answer",
-    "Correct answers",
-    "Image ",
-)
 _ITEM_TYPE = re.compile(r'<p class="item-type">([^<]*)</p>')
 _KEY_LABEL = re.compile(r'<p class="answer-key">([^<:]*):|<div class="answer-key"><p>([^<:]*):</p>')
 _ALT = re.compile(r'alt="([^"]*)"')
@@ -91,30 +79,20 @@ def test_corpus_exports_both_languages() -> None:
     assert {"sv", "en"} <= languages, (languages, _SKIPPED)
 
 
-@pytest.mark.parametrize("exam", [e for e in _EXPORTED if e.language == "sv"], ids=lambda e: e.stem)
-def test_swedish_exam_prints_no_english_marker_word(exam: _Exported) -> None:
-    present = [marker for marker in _ENGLISH_MARKERS if marker in exam.html]
-    assert not present, f"{exam.stem} prints English markers {present}"
-
-
-@pytest.mark.parametrize("exam", [e for e in _EXPORTED if e.language == "en"], ids=lambda e: e.stem)
-def test_english_exam_keeps_default_markers_and_english_alt(exam: _Exported) -> None:
-    labels = DEFAULT_EXAMNET_PDF_TARGET_PROFILE_CONTEXT.label_policy
+@pytest.mark.parametrize("exam", _EXPORTED, ids=lambda e: e.stem)
+def test_every_exam_prints_only_swedish_markers(exam: _Exported) -> None:
     allowed_types = {
-        f"{labels.source_item_type_marker}: {labels.free_text_type_label}",
-        f"{labels.source_item_type_marker}: {labels.gap_open_cloze_type_label}",
-        f"{labels.target_item_type_marker}: {labels.choice_type_label}",
-        f"{labels.target_item_type_marker}: {labels.multiple_response_type_label}",
-        f"{labels.target_item_type_marker}: {labels.matching_type_label}",
+        "Typ: Fritext",
+        "Typ: Lucktext",
+        "Typ: Flerval",
+        "Typ: Matcha ihop",
+        "Typ: Ordna",
     }
-    allowed_keys = {labels.single_answer_key_label, labels.multiple_answer_key_label}
+    allowed_keys = {"Rätt svar", "Rätta svar", "Rätta par", "Rätt ordning", "Rättningsmall"}
     assert set(_ITEM_TYPE.findall(exam.html)) <= allowed_types
     keys = {first or second for first, second in _KEY_LABEL.findall(exam.html)}
     assert keys <= allowed_keys
-    assert not [alt for alt in _ALT.findall(exam.html) if alt.startswith("Bild")]
-    assert not [
-        word for word in ("Flerval", "Rätt svar", "Rätta", "Matcha ihop") if word in exam.html
-    ]
+    assert not [alt for alt in _ALT.findall(exam.html) if alt.startswith("Image")]
 
 
 def test_swedish_choice_item_prints_documented_markers() -> None:
@@ -185,9 +163,9 @@ def _with_image(document: NativeExamDocument) -> NativeExamDocument:
     )
 
 
-@pytest.mark.parametrize(("language", "alt"), [("sv", "Bild"), ("en", "Image")])
-def test_image_alt_follows_the_exam_language(language: str, alt: str) -> None:
+@pytest.mark.parametrize("language", ["sv", "en"])
+def test_image_alt_is_swedish_for_every_exam_language(language: str) -> None:
     exam = next(e for e in _EXPORTED if e.language == language)
     result = native_exam_to_pdf_document(_with_image(exam.document), assets_by_id={_ASSET_ID: _PNG})
     assert result.status is DigiExamExamNetPdfStatus.SUCCESS
-    assert f'alt="{alt} {_ASSET_ID}"' in result.html
+    assert f'alt="Bild {_ASSET_ID}"' in result.html

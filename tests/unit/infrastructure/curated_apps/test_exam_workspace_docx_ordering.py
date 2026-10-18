@@ -34,7 +34,7 @@ def test_steps_follow_print_order_with_boxes() -> None:
 def test_facit_line_names_each_step_with_its_key_number() -> None:
     lines = _paragraphs(english=True)
     facit = [line for line in lines if "Avslutning 4" in line]
-    assert facit == ["Correct order: Avslutning 4; Motargument 3; Argument 2; Tes 1"]
+    assert facit == ["Rätt ordning: Avslutning 4; Motargument 3; Argument 2; Tes 1"]
 
 
 def test_swedish_label() -> None:
