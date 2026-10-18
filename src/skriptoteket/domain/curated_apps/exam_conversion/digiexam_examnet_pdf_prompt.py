@@ -7,6 +7,9 @@ Purpose:
 Relationships:
     - Consumes asset reference paths prepared by
       `domain.digiexam_examnet_pdf_assets`.
+    - Binds every prompt image through the positions of
+      `domain.digiexam_prompt_repair.prompt_image_positions`, the single
+      interpreter of prompt images.
     - Used by `domain.digiexam_examnet_pdf_items` before item sections are
       assembled.
 """
@@ -14,7 +17,7 @@ Relationships:
 from __future__ import annotations
 
 import re
-from collections.abc import Mapping
+from collections.abc import Iterator, Mapping
 from html import escape
 from html.parser import HTMLParser
 
@@ -27,6 +30,8 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_examnet_pdf_contr
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ir_contracts import DigiExamIrItem
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_prompt_repair import (
     PROMPT_IMAGE_PLACEHOLDER_HTML,
+    PromptImagePosition,
+    prompt_image_positions,
 )
 
 
@@ -68,10 +73,12 @@ class _PromptHtmlRenderer(HTMLParser):
         self._parts: list[str] = []
         self._warnings: list[DigiExamExamNetPdfWarning] = []
         self._gap_span_depth = 0
+        self._image_positions: Iterator[PromptImagePosition] = iter(())
 
     def render(self, prompt_html: str) -> DigiExamExamNetPdfPromptRender:
         """Return sanitized prompt HTML and warnings."""
 
+        self._image_positions = iter(prompt_image_positions(prompt_html))
         self.feed(prompt_html)
         self.close()
         return DigiExamExamNetPdfPromptRender(
@@ -82,12 +89,12 @@ class _PromptHtmlRenderer(HTMLParser):
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         """Handle allowed prompt start tags."""
 
-        if self._gap_span_depth:
-            self._gap_span_depth += 1
-            return
         normalized_tag = tag.lower()
         if normalized_tag == "img":
-            self._handle_image(attrs)
+            self._handle_image()
+            return
+        if self._gap_span_depth:
+            self._gap_span_depth += 1
             return
         if normalized_tag == "span" and _has_gap_id(attrs):
             self._parts.append('<span class="gap-placeholder">[____]</span>')
@@ -108,7 +115,7 @@ class _PromptHtmlRenderer(HTMLParser):
 
         normalized_tag = tag.lower()
         if normalized_tag == "img":
-            self._handle_image(attrs)
+            self._handle_image()
             return
         if normalized_tag == "span" and _has_gap_id(attrs):
             self._parts.append('<span class="gap-placeholder">[____]</span>')
@@ -137,9 +144,10 @@ class _PromptHtmlRenderer(HTMLParser):
             return
         self._parts.append(escape(data))
 
-    def _handle_image(self, attrs: list[tuple[str, str | None]]) -> None:
-        image_id = _image_id(attrs)
-        if image_id is None:
+    def _handle_image(self) -> None:
+        position = next(self._image_positions)
+        image_id = position.reference_index
+        if position.ambiguous or image_id is None:
             self._warnings.append(_missing_image_warning(self._item_id, "unresolved"))
             self._parts.append(PROMPT_IMAGE_PLACEHOLDER_HTML)
             return
@@ -155,14 +163,6 @@ class _PromptHtmlRenderer(HTMLParser):
             f'src="{escape(relative_path, quote=True)}" '
             f'alt="embedded image {image_id + 1}">'
         )
-
-
-def _image_id(attrs: list[tuple[str, str | None]]) -> int | None:
-    attr_map = {key.lower(): value for key, value in attrs if value is not None}
-    value = attr_map.get("data-image-id")
-    if value is None or not value.isdecimal():
-        return None
-    return int(value)
 
 
 def _has_gap_id(attrs: list[tuple[str, str | None]]) -> bool:

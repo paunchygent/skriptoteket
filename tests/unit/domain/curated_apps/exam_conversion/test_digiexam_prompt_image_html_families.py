@@ -41,6 +41,9 @@ class _Family:
     images: tuple[str, ...]
     positions: tuple[PromptImagePosition, ...]
     placeholders: int
+    rendered_images: int
+    missing_warning: bool
+    ambiguous_warning: bool = False
     parse_blocked: bool = False
 
 
@@ -51,6 +54,8 @@ _FAMILIES = (
         (_PNG_BASE64,),
         (PromptImagePosition(reference_index=0),),
         0,
+        1,
+        False,
     ),
     _Family(
         "unquoted-id",
@@ -58,6 +63,8 @@ _FAMILIES = (
         (_PNG_BASE64,),
         (PromptImagePosition(reference_index=0),),
         0,
+        1,
+        False,
     ),
     _Family(
         "gt-inside-quoted-alt",
@@ -65,6 +72,8 @@ _FAMILIES = (
         (_PNG_BASE64,),
         (PromptImagePosition(reference_index=0),),
         0,
+        1,
+        False,
     ),
     _Family(
         "binding-text-inside-alt",
@@ -72,6 +81,8 @@ _FAMILIES = (
         (_PNG_BASE64,),
         (PromptImagePosition(reference_index=None),),
         1,
+        0,
+        True,
         parse_blocked=True,
     ),
     _Family(
@@ -80,6 +91,37 @@ _FAMILIES = (
         (),
         (),
         0,
+        0,
+        False,
+    ),
+    _Family(
+        "duplicate-binding",
+        '<p><img data-image-id="0" data-image-id="1"></p>',
+        (_PNG_BASE64, _PNG_BASE64),
+        (PromptImagePosition(reference_index=None, ambiguous=True),),
+        1,
+        0,
+        False,
+        ambiguous_warning=True,
+        parse_blocked=True,
+    ),
+    _Family(
+        "img-inside-gap-span-bound",
+        '<p>Fyll i <span dx-wg-id="1"><img data-image-id="0"></span> här</p>',
+        (_PNG_BASE64,),
+        (PromptImagePosition(reference_index=0),),
+        0,
+        1,
+        False,
+    ),
+    _Family(
+        "img-inside-gap-span-unbound",
+        '<p>Fyll i <span dx-wg-id="1"><img></span> här</p>',
+        (),
+        (PromptImagePosition(reference_index=None),),
+        1,
+        0,
+        True,
     ),
 )
 
@@ -106,9 +148,11 @@ def test_html_family_is_classified_identically_by_parser_pdf_and_qti(family: _Fa
     result = _parse_family(family)
     item = result.items[0]
     warning_codes = [warning.code for warning in item.warnings]
-    expect_missing = family.placeholders > 0
 
-    assert (DigiExamWarningCode.MISSING_PROMPT_IMAGE in warning_codes) is expect_missing
+    assert (DigiExamWarningCode.MISSING_PROMPT_IMAGE in warning_codes) is family.missing_warning
+    assert (
+        DigiExamWarningCode.AMBIGUOUS_EMBEDDED_ASSET_BINDING in warning_codes
+    ) is family.ambiguous_warning
     assert (DigiExamWarningCode.UNUSED_EMBEDDED_ASSET_PAYLOAD in warning_codes) is (
         family.parse_blocked
     )
@@ -125,6 +169,7 @@ def test_html_family_is_classified_identically_by_parser_pdf_and_qti(family: _Fa
     }
     pdf_prompt = render_examnet_prompt_html(item=ir_item, asset_paths_by_reference=asset_paths)
     assert pdf_prompt.html.count("missing-image-placeholder") == family.placeholders
+    assert pdf_prompt.html.count('class="prompt-image"') == family.rendered_images
 
     qti_item = build_examnet_qti_items_from_digiexam_ir(exam).items[0]
     assert qti_item.prompt_lines.count(PROMPT_IMAGE_PLACEHOLDER_LINE) == family.placeholders
@@ -170,3 +215,18 @@ def test_prompt_image_positions_count_only_real_img_elements(
     html: str | None, expected: tuple[PromptImagePosition, ...]
 ) -> None:
     assert prompt_image_positions(html) == expected
+
+
+def test_pdf_keeps_text_after_a_gap_span_that_holds_an_image() -> None:
+    family = next(f for f in _FAMILIES if f.name == "img-inside-gap-span-bound")
+    exam = build_digiexam_intermediate_exam(_parse_family(family))
+    ir_item = exam.items[0]
+    asset_paths = {
+        (ir_item.item_id, asset.source_image_index): "images/asset.png"
+        for asset in ir_item.embedded_assets
+    }
+
+    html = render_examnet_prompt_html(item=ir_item, asset_paths_by_reference=asset_paths).html
+
+    assert html.count("gap-placeholder") == 1
+    assert html.endswith(" här</p>")
