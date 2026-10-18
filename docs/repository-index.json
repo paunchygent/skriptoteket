@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "ac4c21e8af05d9637be1758b76355c31b48b9933104a318ba77e87fd649dde02",
+  "source_set_digest": "31893314eff54cdd6d1e340a265f486845add8784271565506775585036e0051",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -7683,6 +7683,24 @@
         "decided_at": "2026-10-18",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "Independent ruthless-reviewer review of the delivery (root 01a14f23 evidence/reviews/10b693b6-1db4-4125-a880-ac5f7273bde7.md); its only finding F1 (medium) repaired at cbd290bd (capture-time request key sidecar per label_b recording, refused without one) and admitted on focused proof; user-approved re-recording of exactly 14 labeler calls (16,286 in, 1,315 out tokens); integration file 11/11, domain suite 3586 passed on Hemma; merged into main."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0046",
+      "type": "task",
+      "title": "Unit DOCX replay serves label_b recordings only by their capture-time request key",
+      "path": "docs/backlog/tasks/task-skript-rep-0046-unit-docx-replay-serves-label-b-recordings-only-by-their-capture-time-request-key.md",
+      "status": "in_progress",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {
