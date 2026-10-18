@@ -230,3 +230,103 @@ def test_pdf_keeps_text_after_a_gap_span_that_holds_an_image() -> None:
 
     assert html.count("gap-placeholder") == 1
     assert html.endswith(" här</p>")
+
+
+@pytest.mark.parametrize(
+    "void_markup",
+    [
+        pytest.param("<br>", id="br-start-tag"),
+        pytest.param("<br/>", id="br-self-closing"),
+        pytest.param("<hr>", id="hr-start-tag"),
+        pytest.param("<input>", id="unclosed-input"),
+        pytest.param('<input type="text" value="x">', id="unclosed-input-with-attributes"),
+        pytest.param("<wbr><br></br>", id="void-start-tags-and-stray-end-tag"),
+        pytest.param("<b>fet</b><br><i>kursiv</i>", id="nested-elements-around-void"),
+    ],
+)
+def test_pdf_keeps_text_after_a_gap_span_that_holds_a_void_element(void_markup: str) -> None:
+    family = _Family(
+        "void-inside-gap-span",
+        f'<p>Fyll i <span dx-wg-id="1">{void_markup}</span> här</p>',
+        (),
+        (),
+        0,
+        0,
+        False,
+    )
+    exam = build_digiexam_intermediate_exam(_parse_family(family))
+
+    html = render_examnet_prompt_html(item=exam.items[0], asset_paths_by_reference={}).html
+
+    assert html == '<p>Fyll i <span class="gap-placeholder">[____]</span> här</p>'
+
+
+def test_pdf_keeps_voids_outside_gap_spans_after_a_void_inside_one() -> None:
+    family = _Family(
+        "void-before-and-after-gap-span",
+        '<p>A<br><span dx-wg-id="1"><hr></span>B<br>C</p>',
+        (),
+        (),
+        0,
+        0,
+        False,
+    )
+    exam = build_digiexam_intermediate_exam(_parse_family(family))
+
+    html = render_examnet_prompt_html(item=exam.items[0], asset_paths_by_reference={}).html
+
+    assert html == '<p>A<br><span class="gap-placeholder">[____]</span>B<br>C</p>'
+
+
+def test_pdf_binds_each_image_through_its_own_start_tag_when_the_owner_document_parse_drifts(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Simulation, not observed behaviour: the owner interprets a multi-image
+    # document differently from the renderer's own element walk (here it drops
+    # every position after the first). The renderer must still bind per image.
+    from skriptoteket.domain.curated_apps.exam_conversion import digiexam_examnet_pdf_prompt
+
+    real_positions = digiexam_examnet_pdf_prompt.prompt_image_positions
+
+    def drifting_positions(prompt_html: str | None) -> tuple[PromptImagePosition, ...]:
+        return real_positions(prompt_html)[:1]
+
+    monkeypatch.setattr(digiexam_examnet_pdf_prompt, "prompt_image_positions", drifting_positions)
+    family = _Family(
+        "two-images",
+        '<p><img data-image-id="0"> och <img data-image-id="1"></p>',
+        (_PNG_BASE64, _PNG_BASE64),
+        (),
+        0,
+        2,
+        False,
+    )
+    exam = build_digiexam_intermediate_exam(_parse_family(family))
+    ir_item = exam.items[0]
+    asset_paths = {
+        (ir_item.item_id, asset.source_image_index): f"images/asset-{asset.source_image_index}.png"
+        for asset in ir_item.embedded_assets
+    }
+
+    html = render_examnet_prompt_html(item=ir_item, asset_paths_by_reference=asset_paths).html
+
+    assert 'src="images/asset-0.png"' in html
+    assert 'src="images/asset-1.png"' in html
+    assert "missing-image-placeholder" not in html
+
+
+def test_pdf_renders_one_placeholder_for_a_self_closing_gap_span_inside_a_gap_span() -> None:
+    family = _Family(
+        "self-closing-gap-inside-gap",
+        '<p>A <span dx-wg-id="1"><span dx-wg-id="2"/></span> B</p>',
+        (),
+        (),
+        0,
+        0,
+        False,
+    )
+    exam = build_digiexam_intermediate_exam(_parse_family(family))
+
+    html = render_examnet_prompt_html(item=exam.items[0], asset_paths_by_reference={}).html
+
+    assert html == '<p>A <span class="gap-placeholder">[____]</span> B</p>'

@@ -7,9 +7,9 @@ Purpose:
 Relationships:
     - Consumes asset reference paths prepared by
       `domain.digiexam_examnet_pdf_assets`.
-    - Binds every prompt image through the positions of
+    - Binds every prompt image through the position that
       `domain.digiexam_prompt_repair.prompt_image_positions`, the single
-      interpreter of prompt images.
+      interpreter of prompt images, returns for that image's own start tag.
     - Used by `domain.digiexam_examnet_pdf_items` before item sections are
       assembled.
 """
@@ -17,7 +17,7 @@ Relationships:
 from __future__ import annotations
 
 import re
-from collections.abc import Iterator, Mapping
+from collections.abc import Mapping
 from html import escape
 from html.parser import HTMLParser
 
@@ -30,8 +30,27 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_examnet_pdf_contr
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ir_contracts import DigiExamIrItem
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_prompt_repair import (
     PROMPT_IMAGE_PLACEHOLDER_HTML,
-    PromptImagePosition,
     prompt_image_positions,
+)
+
+# HTML void elements (WHATWG): they never have content or an end tag, so they
+# never open or close a nesting level.
+_VOID_ELEMENTS = frozenset(
+    {
+        "area",
+        "base",
+        "br",
+        "col",
+        "embed",
+        "hr",
+        "img",
+        "input",
+        "link",
+        "meta",
+        "source",
+        "track",
+        "wbr",
+    }
 )
 
 
@@ -73,12 +92,10 @@ class _PromptHtmlRenderer(HTMLParser):
         self._parts: list[str] = []
         self._warnings: list[DigiExamExamNetPdfWarning] = []
         self._gap_span_depth = 0
-        self._image_positions: Iterator[PromptImagePosition] = iter(())
 
     def render(self, prompt_html: str) -> DigiExamExamNetPdfPromptRender:
         """Return sanitized prompt HTML and warnings."""
 
-        self._image_positions = iter(prompt_image_positions(prompt_html))
         self.feed(prompt_html)
         self.close()
         return DigiExamExamNetPdfPromptRender(
@@ -94,7 +111,8 @@ class _PromptHtmlRenderer(HTMLParser):
             self._handle_image()
             return
         if self._gap_span_depth:
-            self._gap_span_depth += 1
+            if normalized_tag not in _VOID_ELEMENTS:
+                self._gap_span_depth += 1
             return
         if normalized_tag == "span" and _has_gap_id(attrs):
             self._parts.append('<span class="gap-placeholder">[____]</span>')
@@ -117,6 +135,8 @@ class _PromptHtmlRenderer(HTMLParser):
         if normalized_tag == "img":
             self._handle_image()
             return
+        if self._gap_span_depth:
+            return
         if normalized_tag == "span" and _has_gap_id(attrs):
             self._parts.append('<span class="gap-placeholder">[____]</span>')
             return
@@ -126,10 +146,11 @@ class _PromptHtmlRenderer(HTMLParser):
     def handle_endtag(self, tag: str) -> None:
         """Handle allowed prompt end tags."""
 
-        if self._gap_span_depth:
-            self._gap_span_depth -= 1
-            return
         normalized_tag = tag.lower()
+        if self._gap_span_depth:
+            if normalized_tag not in _VOID_ELEMENTS:
+                self._gap_span_depth -= 1
+            return
         if normalized_tag in {"p", "strong", "em", "sup", "sub"}:
             self._parts.append(f"</{normalized_tag}>")
             return
@@ -145,7 +166,7 @@ class _PromptHtmlRenderer(HTMLParser):
         self._parts.append(escape(data))
 
     def _handle_image(self) -> None:
-        position = next(self._image_positions)
+        (position,) = prompt_image_positions(self.get_starttag_text())
         image_id = position.reference_index
         if position.ambiguous or image_id is None:
             self._warnings.append(_missing_image_warning(self._item_id, "unresolved"))
