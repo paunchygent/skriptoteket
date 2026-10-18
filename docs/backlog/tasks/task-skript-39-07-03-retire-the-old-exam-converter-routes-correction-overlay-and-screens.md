@@ -213,3 +213,6 @@ behave as before.
   generic Conversion Hub job routes stay: no frontend caller exists, but the
   document converter and transcript lanes share their `conversion_hub_jobs`
   handlers, so removing them is a separate decision.
+- One public bundle change: the manual-follow-up `qti_validation_report_v1`
+  inside the public bundle no longer carries `"retry_identity": null`; only the
+  removed dxe lane set it, and no reader uses it.
