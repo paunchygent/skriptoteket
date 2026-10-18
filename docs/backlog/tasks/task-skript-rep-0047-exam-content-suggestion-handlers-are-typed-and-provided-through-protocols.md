@@ -64,3 +64,11 @@ Stop and report to the parent if the guard's expected paid-route snapshot would 
 | P5  | The guard policy keys `JOB_ENQUEUERS` by `RequestExamContentSuggestionsHandlerProtocol` and `NON_AI_JOB_REPOSITORY_USERS` by `GetExamContentSuggestionsHandlerProtocol`. `EXPECTED_AI_ROUTES` is unchanged.                                                                                                                                                                                        |
 | P6  | `ContentSuggestionsDouble` subclasses `RecordingDouble` and `RequestExamContentSuggestionsHandlerProtocol` only, like the sibling doubles, and the test provider returns the protocol type.                                                                                                                                                                                                        |
 | P7  | The status handler is included under the same rule (Boy Scout: the same defect on the sibling route in the same files).                                                                                                                                                                                                                                                                            |
+
+## Resume Here (2026-10-18 clean break)
+
+- Branch `codex/task-skript-rep-0047-remote`, implementation commit `67d1ecdc`; all work committed.
+- Done: P1-P7 in one junior unit. Focused proof green: `test_apps_exam_workspace_ai_gate_api.py`, `test_ai_route_gate_coverage.py`, `test_exam_content_suggestion_jobs.py`; `pdm run lint` and `pdm run typecheck` green. `EXPECTED_AI_ROUTES` unchanged.
+- Next: confirm the one domain-wide run (`pdm run pytest -q tests/unit/web tests/unit/application/curated_apps`; log at `evidence/commands/domain-suite-rep-0047.log` in the retained root). If the run did not finish, rerun it. Then independent review, routed by the parent.
+- Open findings: none. Blockers and user gates: none.
+- Retained root: `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a14f6a-f57b-7b24-9672-320bf5884dbc`.
