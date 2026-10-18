@@ -18,7 +18,10 @@ from skriptoteket.application.curated_apps.exam_workspace_history import (
 )
 from skriptoteket.application.curated_apps.exam_workspace_parents import (
     AddExamChildRequest,
+    CreateEmptyExamPartRequest,
     CreateExamParentRequest,
+    GroupExamItemsRequest,
+    MoveExamItemRequest,
     NewParentChild,
     ParentCommandRequest,
     ReorderExamChildrenRequest,
@@ -42,7 +45,9 @@ from tests.unit.domain.curated_apps.exam_workspace.recorded_native_exam_support 
     recorded_document,
 )
 
-Command = Literal["create", "add", "delete", "reorder", "delete_parent", "cascade"]
+Command = Literal[
+    "create", "add", "delete", "reorder", "delete_parent", "cascade", "group", "move", "empty"
+]
 
 
 def document_response(document: NativeExamDocument) -> ExamWorkspaceDocumentResponse:
@@ -110,6 +115,30 @@ async def _invoke(
             item_id="item_002",
             request=ParentCommandRequest(expected_cursor=expected_cursor),
         )
+    if command == "group":
+        return await handler.group_items(
+            actor=actor,
+            lineage_id=document.document_id,
+            request=GroupExamItemsRequest(
+                expected_cursor=expected_cursor, item_ids=("item_001", "item_004")
+            ),
+        )
+    if command == "move":
+        return await handler.move_item(
+            actor=actor,
+            lineage_id=document.document_id,
+            request=MoveExamItemRequest(
+                expected_cursor=expected_cursor,
+                item_id="item_001",
+                target_parent_id="parent_001",
+            ),
+        )
+    if command == "empty":
+        return await handler.create_empty_part(
+            actor=actor,
+            lineage_id=document.document_id,
+            request=CreateEmptyExamPartRequest(expected_cursor=expected_cursor, position=0),
+        )
     return await handler.reorder_children(
         actor=actor,
         lineage_id=document.document_id,
@@ -121,7 +150,8 @@ async def _invoke(
 
 
 @pytest.mark.parametrize(
-    "command", ["create", "add", "delete", "reorder", "delete_parent", "cascade"]
+    "command",
+    ["create", "add", "delete", "reorder", "delete_parent", "cascade", "group", "move", "empty"],
 )
 async def test_each_command_stores_one_step_without_advancing_file_revision(
     command: Command,
@@ -171,7 +201,8 @@ async def test_each_command_stores_one_step_without_advancing_file_revision(
 
 
 @pytest.mark.parametrize(
-    "command", ["create", "add", "delete", "reorder", "delete_parent", "cascade"]
+    "command",
+    ["create", "add", "delete", "reorder", "delete_parent", "cascade", "group", "move", "empty"],
 )
 async def test_each_command_refuses_stale_cursor_even_when_file_revision_matches(
     command: Command,
@@ -197,7 +228,8 @@ async def test_each_command_refuses_stale_cursor_even_when_file_revision_matches
 
 
 @pytest.mark.parametrize(
-    "command", ["create", "add", "delete", "reorder", "delete_parent", "cascade"]
+    "command",
+    ["create", "add", "delete", "reorder", "delete_parent", "cascade", "group", "move", "empty"],
 )
 async def test_atomic_seam_conflict_is_not_overwritten_or_retried(command: Command) -> None:
     actor = make_user()
@@ -255,3 +287,79 @@ async def test_undo_command_restores_pre_command_document_through_real_editor_se
     saved_file = env.vault_files.files[imported.summary.vault_file_id]
     saved = env.codec.parse(content=await env.store.load(actor=actor, vault_file=saved_file))
     assert saved.document == imported.document
+
+
+async def test_group_and_empty_name_the_created_part_and_are_each_one_undo_step() -> None:
+    env = _Env()
+    actor = _actor()
+    imported = await env.seed_document(actor=actor)
+    lineage_id = imported.summary.lineage_id
+    undo_steps = _undo_handler(env)
+    handler = ExamWorkspaceParentsHandler(reader=env.get_handler, undo_steps=undo_steps)
+
+    grouped = await handler.group_items(
+        actor=actor,
+        lineage_id=lineage_id,
+        request=GroupExamItemsRequest(
+            expected_cursor=imported.history_cursor, item_ids=("item_001", "item_003")
+        ),
+    )
+    assert grouped.created_parent_id in {p.parent_id for p in grouped.document.parents}
+    assert grouped.history_cursor != imported.history_cursor
+
+    emptied = await handler.create_empty_part(
+        actor=actor,
+        lineage_id=lineage_id,
+        request=CreateEmptyExamPartRequest(expected_cursor=grouped.history_cursor, position=0),
+    )
+    assert emptied.created_parent_id != grouped.created_parent_id
+    new_part = next(p for p in emptied.document.parents if p.parent_id == emptied.created_parent_id)
+    assert new_part.item_ids == ()
+    assert emptied.history_cursor != grouped.history_cursor
+
+    history = await env.save_handler.history(actor=actor, lineage_id=lineage_id)
+    assert history.step_ids == (grouped.history_cursor, emptied.history_cursor)
+
+
+async def test_move_is_one_undo_step_restoring_the_exact_previous_document() -> None:
+    env = _Env()
+    actor = _actor()
+    imported = await env.seed_document(actor=actor)
+    lineage_id = imported.summary.lineage_id
+    undo_steps = _undo_handler(env)
+    handler = ExamWorkspaceParentsHandler(reader=env.get_handler, undo_steps=undo_steps)
+
+    grouped = await handler.group_items(
+        actor=actor,
+        lineage_id=lineage_id,
+        request=GroupExamItemsRequest(
+            expected_cursor=imported.history_cursor, item_ids=("item_001", "item_003")
+        ),
+    )
+    moved = await handler.move_item(
+        actor=actor,
+        lineage_id=lineage_id,
+        request=MoveExamItemRequest(
+            expected_cursor=grouped.history_cursor,
+            item_id="item_005",
+            target_parent_id=grouped.created_parent_id,
+        ),
+    )
+    assert moved.document.parent_of("item_005") is not None
+
+    previous = await env.save_handler.history_step(
+        actor=actor, lineage_id=lineage_id, step_id=grouped.history_cursor
+    )
+    assert previous.document == grouped.document
+    restored = await undo_steps.handle(
+        actor=actor,
+        lineage_id=lineage_id,
+        request=StoreExamWorkspaceUndoStepRequest(
+            document=previous.document,
+            expected_cursor=moved.history_cursor,
+            after_step_id=previous.step_id,
+        ),
+    )
+    reopened = await env.get_handler.handle(actor=actor, lineage_id=lineage_id)
+    assert restored.document == grouped.document == reopened.document
+    assert moved.history_cursor not in restored.history.step_ids

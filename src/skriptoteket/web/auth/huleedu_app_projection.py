@@ -73,6 +73,18 @@ async def require_app_admin_api(
     return user
 
 
+async def require_app_ai_api(
+    user: User = Depends(require_app_user_api),
+) -> User:
+    """Return an app-local admin or superuser allowed to start paid AI calls.
+
+    Temporary gate until the AI spend cap and rate limits ship
+    (TASK-SKRIPT-REP-0044).
+    """
+    require_any_role(user=user, roles={Role.ADMIN, Role.SUPERUSER})
+    return user
+
+
 async def require_app_contributor_api(
     user: User = Depends(require_app_user_api),
 ) -> User:

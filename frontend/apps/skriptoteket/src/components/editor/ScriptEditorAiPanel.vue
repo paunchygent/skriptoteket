@@ -9,6 +9,7 @@ import { createLocalMessageId, appendMessage } from "../../composables/editor/ch
 import type { EditorChatMessage } from "../../composables/editor/chat/editorChatTypes";
 import type { VirtualFileId } from "../../composables/editor/virtualFiles";
 import { virtualFileTextFromEditorFields } from "../../composables/editor/virtualFiles";
+import { AI_ADMIN_ONLY_NOTE, useAiAccess } from "../../composables/useAiAccess";
 import { useToast } from "../../composables/useToast";
 import { useAiStore } from "../../stores/ai";
 import type { RemoteFallbackPrompt, RemoteFallbackPromptSource } from "./remoteFallbackPrompt";
@@ -46,6 +47,7 @@ const isChatDrawerOpen = toRef(props, "isChatDrawerOpen");
 const toast = useToast();
 const ai = useAiStore();
 const { remoteFallbackPreference } = storeToRefs(ai);
+const { canUseAi } = useAiAccess();
 
 const REMOTE_FALLBACK_REQUIRED_CODE = "remote_fallback_required";
 const REMOTE_FALLBACK_REQUIRED_TEXT_SNIPPET = "Aktivera externa AI-API:er (OpenAI)";
@@ -115,6 +117,9 @@ function latestAssistantFailure(): { outcome: string | null; message: string | n
 }
 
 async function sendChatMessage(message: string): Promise<void> {
+  if (!canUseAi.value) {
+    return;
+  }
   if (remoteFallbackPrompt.value) {
     // If the user is mid-consent, treat new sends as a dismissal of the prior prompt.
     clearRemoteFallbackPrompt();
@@ -201,6 +206,7 @@ const slotBindings = computed(() => ({
   chatError: editorChat.error.value,
   chatNoticeMessage: editorChat.noticeMessage.value,
   chatNoticeVariant: editorChat.noticeVariant.value,
+  aiBlockedNote: canUseAi.value ? null : AI_ADMIN_ONLY_NOTE,
   remoteFallbackPrompt: remoteFallbackPrompt.value,
   allowRemoteFallbackPrompt,
   denyRemoteFallbackPrompt,
@@ -273,6 +279,7 @@ function appendChatMessage(
 }
 
 async function requestEditOps(message: string): Promise<void> {
+  if (!canUseAi.value) return;
   if (editorChat.streaming.value || editOps.isRequesting.value) return;
   if (remoteFallbackPrompt.value) {
     clearRemoteFallbackPrompt();

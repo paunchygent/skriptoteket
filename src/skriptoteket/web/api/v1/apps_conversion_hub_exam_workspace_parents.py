@@ -1,4 +1,4 @@
-"""Parent authoring commands; the existing workspace UI remains unchanged."""
+"""Parent authoring commands: parts, their questions, and moves between them."""
 
 from uuid import UUID
 
@@ -7,8 +7,12 @@ from fastapi import APIRouter, Depends
 from skriptoteket.application.curated_apps.exam_workspace import ExamWorkspaceDocumentResponse
 from skriptoteket.application.curated_apps.exam_workspace_parents import (
     AddExamChildRequest,
+    CreateEmptyExamPartRequest,
     CreateExamParentRequest,
+    ExamWorkspaceCreatedPartResponse,
     ExamWorkspaceDeleteResponse,
+    GroupExamItemsRequest,
+    MoveExamItemRequest,
     ParentCommandRequest,
     ReorderExamChildrenRequest,
 )
@@ -38,6 +42,45 @@ async def create_exam_parent(
 ) -> ExamWorkspaceDocumentResponse:
     require_conversion_hub_access(registry=registry, user=user)
     return await handler.create_parent(actor=user, lineage_id=lineage_id, request=request)
+
+
+@router.post("/group", response_model=ExamWorkspaceCreatedPartResponse)
+async def group_exam_items(
+    lineage_id: UUID,
+    request: GroupExamItemsRequest,
+    registry: FromDishka[CuratedAppRegistryProtocol],
+    handler: FromDishka[ExamWorkspaceParentsHandlerProtocol],
+    user: User = Depends(require_app_user_api),
+) -> ExamWorkspaceCreatedPartResponse:
+    """Create one new part from the marked standalone questions (G10)."""
+    require_conversion_hub_access(registry=registry, user=user)
+    return await handler.group_items(actor=user, lineage_id=lineage_id, request=request)
+
+
+@router.post("/empty", response_model=ExamWorkspaceCreatedPartResponse)
+async def create_empty_exam_part(
+    lineage_id: UUID,
+    request: CreateEmptyExamPartRequest,
+    registry: FromDishka[CuratedAppRegistryProtocol],
+    handler: FromDishka[ExamWorkspaceParentsHandlerProtocol],
+    user: User = Depends(require_app_user_api),
+) -> ExamWorkspaceCreatedPartResponse:
+    """Insert a part with an empty instruction at the requested position (G9)."""
+    require_conversion_hub_access(registry=registry, user=user)
+    return await handler.create_empty_part(actor=user, lineage_id=lineage_id, request=request)
+
+
+@router.post("/move", response_model=ExamWorkspaceDocumentResponse)
+async def move_exam_item(
+    lineage_id: UUID,
+    request: MoveExamItemRequest,
+    registry: FromDishka[CuratedAppRegistryProtocol],
+    handler: FromDishka[ExamWorkspaceParentsHandlerProtocol],
+    user: User = Depends(require_app_user_api),
+) -> ExamWorkspaceDocumentResponse:
+    """Move one question into a part, out to standalone, or between parts (R3, R4)."""
+    require_conversion_hub_access(registry=registry, user=user)
+    return await handler.move_item(actor=user, lineage_id=lineage_id, request=request)
 
 
 @router.post("/{parent_id}/children", response_model=ExamWorkspaceDocumentResponse)

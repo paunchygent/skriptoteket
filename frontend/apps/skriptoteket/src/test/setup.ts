@@ -103,6 +103,11 @@ if (typeof Range !== "undefined") {
   }
 }
 
+// jsdom has no hit testing; ProseMirror asks `elementFromPoint` while it places a pointer.
+if (typeof document !== "undefined" && typeof document.elementFromPoint !== "function") {
+  document.elementFromPoint = () => null;
+}
+
 // Mock fetch globally
 globalThis.fetch = vi.fn();
 

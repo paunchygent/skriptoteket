@@ -24,8 +24,8 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_me
     merge_conversion,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import (
+    aligned_native_item,
     assemble_build_result,
-    native_item,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     DocxBuildResult,
@@ -33,11 +33,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedMetadata,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk, DocxImage
+from skriptoteket.domain.curated_apps.exam_workspace.docx_item_alignment import AlignedItem
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeAssetSegment,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
-    NativeExamItem,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import (
     body_asset_ids,
@@ -89,8 +87,8 @@ def _asset(asset_id: str) -> dict[str, object]:
     }
 
 
-def _converted(anchor: str, text: str = "svar") -> NativeExamItem:
-    return native_item(
+def _converted(anchor: str, text: str = "svar") -> AlignedItem:
+    return aligned_native_item(
         ProducedItem.model_validate(
             {
                 "source_anchors": [anchor],
@@ -116,8 +114,8 @@ def _joined_chunks() -> tuple[DocxChunk, ...]:
     )
 
 
-def _joined_item(paragraphs: _PARAGRAPHS) -> NativeExamItem:
-    return native_item(
+def _joined_item(paragraphs: _PARAGRAPHS) -> AlignedItem:
+    return aligned_native_item(
         ProducedItem.model_validate(
             {
                 "source_anchors": ["body:0001"],
@@ -218,7 +216,9 @@ def test_the_joined_picture_reaches_the_packaged_item_at_its_place():
         assert images[0].attrib["src"].rsplit("/", 1)[-1] == resources[0].rsplit("/", 1)[-1]
 
 
-def test_an_asset_id_in_a_different_paragraph_does_not_erase_a_source_occurrence():
+def test_a_reply_paragraph_aligned_to_the_instruction_shows_its_source_occurrence():
+    # The reply rewords the instruction around its picture; the alignment maps the line to
+    # the instruction chunk, so the line is that chunk and shows in its source form, once.
     asset_id = _joined_picture().asset_id
     built = _built(
         item_paragraphs=[
@@ -228,13 +228,9 @@ def test_an_asset_id_in_a_different_paragraph_does_not_erase_a_source_occurrence
     )
     (item,) = built.document.items
 
-    assert body_asset_ids(item.body) == (asset_id, asset_id)
-    assert body_text_lines(item.body) == (
-        "Betrakta diagrammet: Något annat.",
-        _JOINED_TEXT,
-        "a) en katt",
-    )
-    assert item.body[1] == source_paragraph(_joined_chunks()[1])
+    assert body_asset_ids(item.body) == (asset_id,)
+    assert body_text_lines(item.body) == (_JOINED_TEXT, "a) en katt")
+    assert item.body[0] == source_paragraph(_joined_chunks()[1])
 
 
 @pytest.mark.parametrize("separate_instructions", [False, True])

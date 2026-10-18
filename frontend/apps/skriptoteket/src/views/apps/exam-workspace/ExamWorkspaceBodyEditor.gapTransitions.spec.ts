@@ -4,15 +4,16 @@
  * Expected behavior:
  *   The body editor forwards an automatic answer removal and "Visa som
  *   text" from the open popover, closes the popover on the latter and moves
- *   focus to the paragraph that held the gap, and forwards neither while
- *   disabled.
+ *   focus to the question text, and forwards neither while disabled. The
+ *   item's only gap can be shown as text too: no gap is a valid state.
  */
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import { nextTick } from "vue";
 
 import ExamWorkspaceGapPopover from "./ExamWorkspaceGapPopover.vue";
 import { buildGap } from "./examWorkspaceKeyedItems.specSupport";
-import { buildGapItem, mountEditor, paragraph } from "./ExamWorkspaceBodyEditor.specSupport";
+import { buildGapItem, clickGap, mountEditor, surface } from "./ExamWorkspaceBodyEditor.specSupport";
 
 function itemWithAutomaticValue() {
   return buildGapItem({
@@ -34,8 +35,9 @@ function itemWithAutomaticValue() {
 
 describe("ExamWorkspaceBodyEditor gap transitions", () => {
   it("forwards an automatic answer removal from the open popover", async () => {
-    const wrapper = mountEditor(itemWithAutomaticValue());
-    await wrapper.get('[data-gap-id="gap_001"]').trigger("click");
+    const wrapper = await mountEditor(itemWithAutomaticValue());
+    clickGap(wrapper, "gap_001");
+    await nextTick();
 
     await wrapper.get('[data-test="exam-workspace-gap-automatic-remove-hundra"]').trigger("click");
 
@@ -45,22 +47,49 @@ describe("ExamWorkspaceBodyEditor gap transitions", () => {
     wrapper.unmount();
   });
 
-  it("forwards Visa som text, closes the popover and focuses the paragraph", async () => {
-    const wrapper = mountEditor(itemWithAutomaticValue());
-    await wrapper.get('[data-gap-id="gap_001"]').trigger("click");
+  it("forwards Visa som text, closes the popover and focuses the question text", async () => {
+    const wrapper = await mountEditor(itemWithAutomaticValue());
+    clickGap(wrapper, "gap_001");
+    await nextTick();
     expect(wrapper.find('[data-test="exam-workspace-gap-popover"]').exists()).toBe(true);
 
     await wrapper.get('[data-test="exam-workspace-gap-as-text"]').trigger("click");
 
     expect(wrapper.emitted("showGapAsText")).toEqual([["item_001", "gap_001"]]);
     expect(wrapper.find('[data-test="exam-workspace-gap-popover"]').exists()).toBe(false);
-    expect(document.activeElement).toBe(paragraph(wrapper, 1));
+    // TipTap moves focus on the next animation frame.
+    await vi.waitFor(() => expect(document.activeElement).toBe(surface(wrapper)));
+    wrapper.unmount();
+  });
+
+  it("lets the item's only gap be shown as text", async () => {
+    const item = buildGapItem({
+      body: [
+        {
+          heading_level: null,
+          segments: [{ kind: "text", marks: [], text: "Svar: " }, { gap_id: "gap_001", kind: "gap" }],
+        },
+      ],
+      gaps: [buildGap("gap_001", ["100"])],
+    });
+    const wrapper = await mountEditor(item);
+    clickGap(wrapper, "gap_001");
+    await nextTick();
+
+    const button = wrapper.get('[data-test="exam-workspace-gap-as-text"]');
+    expect((button.element as HTMLButtonElement).disabled).toBe(false);
+    expect(wrapper.find('[data-test="exam-workspace-gap-as-text-disabled"]').exists()).toBe(false);
+    await button.trigger("click");
+
+    expect(wrapper.emitted("showGapAsText")).toEqual([["item_001", "gap_001"]]);
+    expect(wrapper.find('[data-test="exam-workspace-gap-popover"]').exists()).toBe(false);
     wrapper.unmount();
   });
 
   it("forwards neither gap change once the editor is disabled", async () => {
-    const wrapper = mountEditor(itemWithAutomaticValue());
-    await wrapper.get('[data-gap-id="gap_001"]').trigger("click");
+    const wrapper = await mountEditor(itemWithAutomaticValue());
+    clickGap(wrapper, "gap_001");
+    await nextTick();
     const popover = wrapper.findComponent(ExamWorkspaceGapPopover);
     await wrapper.setProps({ disabled: true });
     expect(wrapper.find('[data-test="exam-workspace-gap-popover"]').exists()).toBe(false);

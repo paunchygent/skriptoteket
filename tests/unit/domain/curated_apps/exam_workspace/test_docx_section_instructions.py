@@ -11,6 +11,19 @@ import re
 from dataclasses import dataclass
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
+from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import (
+    claim_inner_chunks,
+    manifest_from_output,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import (
+    assign_points_lines,
+    manifest_questions,
+    parent_openers,
+    printed_points_plan,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.docx_section_instructions import (
+    assign_question_headings,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     POINT_LABEL,
     defined_terms,
@@ -35,6 +48,7 @@ from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
     RECORDINGS,
     build_replay,
     corpus_chunks,
+    recording,
 )
 from tests.unit.domain.curated_apps.exam_workspace.source_rules_test_support import (
     recorded_produced_items,
@@ -80,6 +94,27 @@ async def _build(exam: str) -> _Build:
             outcome.result.document, {chunk.anchor: chunk for chunk in corpus_chunks(exam)}
         )
     return _BUILDS[exam]
+
+
+def _parent_opener_lines(exam: str) -> frozenset[str]:
+    """The printed wording of every part line that opens a parent, as the pipeline plans it."""
+    chunks = corpus_chunks(exam)
+    manifest = claim_inner_chunks(
+        assign_points_lines(
+            assign_question_headings(
+                manifest_from_output(recording(exam, "docx_grouping_1"), chunks), chunks
+            ),
+            chunks,
+        ),
+        chunks,
+    )
+    plan = printed_points_plan(chunks, manifest_questions(manifest))
+    by_anchor = {chunk.anchor: chunk for chunk in chunks}
+    return frozenset(
+        variant
+        for opener in parent_openers(plan.parts)
+        for variant in _shown_variants(by_anchor[opener].text)
+    )
 
 
 def _item_text(item: NativeExamItem) -> str:
@@ -133,9 +168,14 @@ async def test_every_parent_holds_contiguous_children_in_order_and_never_repeats
         assert [p.parent_id for p in document.parents] == [
             f"parent_{n:03d}" for n in range(1, len(document.parents) + 1)
         ]
+        openers = _parent_opener_lines(exam)
         for parent in document.parents:
             children = build.children(parent)
-            assert len(children) >= 2
+            # A parent over one question is a part line that opens a parent (ruling 2026-10-18).
+            assert len(children) >= 2 or body_text_lines(parent.instruction)[0] in openers, (
+                exam,
+                parent.parent_id,
+            )
             first = children[0].sequence
             assert [c.sequence for c in children] == list(range(first, first + len(children)))
             lines = body_text_lines(parent.instruction)

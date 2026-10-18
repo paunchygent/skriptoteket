@@ -3,8 +3,9 @@
  *
  * Expected behavior:
  *   Ctrl/Cmd+S never reaches the browser's save page and saves only a changed
- *   exam; Ctrl/Cmd+Z steps back outside text fields and leaves text fields
- *   alone.
+ *   exam; Ctrl/Cmd+Z steps back outside text fields and leaves plain input
+ *   fields alone. Inside the question text (an exam rich-text editor) it runs
+ *   the workspace's Ångra once and never the browser's own undo.
  */
 
 import { flushPromises } from "@vue/test-utils";
@@ -115,6 +116,32 @@ describe("ExamWorkspaceView keyboard shortcuts", () => {
     await importFixture(wrapper);
 
     const event = pressKey({ key: "z", ctrlKey: true }, document.body);
+    await flushPromises();
+
+    expect(event.defaultPrevented).toBe(true);
+    expect(apiMocks.getExamWorkspaceHistoryStep).toHaveBeenCalledExactlyOnceWith("lineage-1", baselineId);
+  });
+
+  it("Ctrl+Z inside the question text runs the workspace Ångra once, as the button does", async () => {
+    importsTheFixture(apiMocks);
+    const baselineId = "step-baseline";
+    apiMocks.getExamWorkspaceHistory.mockResolvedValue({
+      baseline_step_id: baselineId,
+      cursor: buildResponse().history_cursor,
+      position_step_id: buildResponse().history_cursor,
+      step_ids: [buildResponse().history_cursor],
+    });
+    apiMocks.getExamWorkspaceHistoryStep.mockResolvedValue({ document: buildDocument(), step_id: baselineId });
+    const wrapper = await mountView();
+    await importFixture(wrapper);
+    await wrapper.find('[data-test="exam-workspace-row-item_001"]').trigger("click");
+    await flushPromises();
+    const surface = wrapper.get('[data-test="exam-workspace-body-editor-surface"]').element;
+    // A browser reports a contenteditable surface as editable, which keeps the
+    // window shortcut out of it; jsdom does not implement the property.
+    Object.defineProperty(surface, "isContentEditable", { value: true });
+
+    const event = pressKey({ key: "z", ctrlKey: true, keyCode: 90 }, surface);
     await flushPromises();
 
     expect(event.defaultPrevented).toBe(true);

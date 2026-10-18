@@ -3,26 +3,28 @@
  * Exam workspace question-text editor.
  *
  * Domain purpose:
- *   Let the teacher edit each paragraph of a question as one continuous
- *   rich text: the five kept marks, a heading level, every gap shown as an
- *   inline chip and every image as a fixed atom. The toolbar toggles the
- *   marks and heading level of the one active rich surface — this fieldset's
- *   own paragraph or a choice option / Kategorisera entry — and Ctrl/Cmd+B,
- *   I and U toggle marks from the keyboard. Activating a gap
- *   chip opens a small popover where the teacher edits that gap's accepted
- *   answers, removes an automatic answer the conversion added, or replaces
- *   the whole gap with its first accepted answer as plain text ("Visa som
- *   text"). Gaps and images are the Exam.net contract, so typing, pasting,
- *   cutting, dragging, dropping or undo can never remove, add or reorder
- *   them. While `disabled` is set, nothing can be edited, an open popover
- *   closes without committing, and no gap change is forwarded.
+ *   Let the teacher edit a question's text as one document in the shared
+ *   rich-text editor: the five kept marks, a heading level, every gap shown as
+ *   an inline chip and every image as a fixed atom. The toolbar toggles the
+ *   marks and heading level of the one active rich surface — this question
+ *   text or a choice option / Kategorisera entry — and Ctrl/Cmd+B, I and U
+ *   toggle marks from the keyboard. Activating a gap chip opens a small
+ *   popover where the teacher edits that gap's accepted answers, removes an
+ *   automatic answer the conversion added, or replaces the whole gap with its
+ *   first accepted answer as plain text ("Visa som text").
+ *
+ *   A selection that covers a gap or a picture deletes it like any other
+ *   character, without confirmation: the body edit drops the gap's record and
+ *   an unreferenced picture's asset, and Ångra (Ctrl/Cmd+Z included) brings
+ *   text, record and asset back. Paste and drop never carry a gap or picture.
+ *   While `disabled` is set, nothing can be edited, an open popover closes
+ *   without committing, and no gap change is forwarded.
  *
  * Relationships:
  *   - Rendered by `ExamWorkspaceQuestionEditor` for the selected item.
  *   - Emits typed update events; `useExamWorkspaceDocument` owns the state
- *     (`updateItemParagraphSegments`, `updateItemParagraphHeading`,
- *     `updateItemGapValues`).
- *   - `ExamWorkspaceBodyParagraph` owns one paragraph's DOM and marks,
+ *     (`updateItemBody`, `updateItemGapValues`).
+ *   - `ExamWorkspaceRichTextEditor` owns the text, marks and atoms,
  *     `ExamWorkspaceMarkToolbar` the glyph buttons, and
  *     `ExamWorkspaceGapPopover` edits one gap's accepted answers.
  *   - `examWorkspaceRichTextTarget` is the shared active target the toolbar
@@ -31,23 +33,20 @@
  */
 
 import { computed, ref, useId, watch } from "vue";
-import type { ComponentPublicInstance } from "vue";
 
-import type { NativeExamBodySegment, NativeExamChoice, NativeExamItem } from "../../../api/examWorkspace";
+import type { NativeExamBodyParagraph, NativeExamChoice, NativeExamItem } from "../../../api/examWorkspace";
 import {
   isPartiallyKeyedGapItem,
   PARTIAL_GAP_KEY_GUIDANCE,
 } from "./examWorkspaceAnswerKeyRules";
 import type { BodyMark } from "./examWorkspaceBodyMarks";
-import { gapNumberIn } from "./examWorkspaceBodySegments";
-import ExamWorkspaceBodyParagraph from "./ExamWorkspaceBodyParagraph.vue";
+import { examGapStates, gapNumberIn } from "./examWorkspaceGapLabels";
 import ExamWorkspaceGapPopover from "./ExamWorkspaceGapPopover.vue";
 import ExamWorkspaceMarkToolbar from "./ExamWorkspaceMarkToolbar.vue";
+import ExamWorkspaceRichTextEditor from "./ExamWorkspaceRichTextEditor.vue";
 import { useRichTextTargetRegistry } from "./examWorkspaceRichTextTarget";
-import type { RichTextSurfaceOwner } from "./useExamWorkspaceRichTextTarget";
 
 type HeadingLevel = 1 | 2 | 3;
-type ParagraphInstance = InstanceType<typeof ExamWorkspaceBodyParagraph>;
 
 const POPOVER_WIDTH_PX = 448;
 
@@ -59,8 +58,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  updateParagraphSegments: [itemId: string, paragraphIndex: number, segments: NativeExamBodySegment[]];
-  updateParagraphHeading: [itemId: string, paragraphIndex: number, headingLevel: HeadingLevel | null];
+  updateBody: [itemId: string, body: NativeExamBodyParagraph[], structural: boolean];
   updateGapValues: [itemId: string, gapId: string, acceptedValues: string[]];
   updateGapOptions: [itemId: string, gapId: string, options: NativeExamChoice[], correctOptionId: string | null];
   removeAutomaticValue: [itemId: string, gapId: string, value: string];
@@ -70,14 +68,13 @@ const emit = defineEmits<{
 type OpenGap = {
   itemId: string;
   gapId: string;
-  paragraphIndex: number;
   top: number;
   left: number;
 };
 
 const labelId = useId();
 const editorRoot = ref<HTMLElement | null>(null);
-const statusMessage = ref<string | null>(null);
+const editor = ref<InstanceType<typeof ExamWorkspaceRichTextEditor> | null>(null);
 const openGap = ref<OpenGap | null>(null);
 const richTextTargets = useRichTextTargetRegistry();
 const activeRichTextTarget = richTextTargets.active;
@@ -97,23 +94,8 @@ const activeHeading = computed<HeadingLevel | null>(
   () => activeRichTextTarget.value?.headingLevel() ?? null,
 );
 
-/** The question text's semantic owner, so its saved toolbar selection follows the selected item. */
-const questionOwner = computed<RichTextSurfaceOwner>(() => ({
-  itemId: props.item.item_id,
-  surface: "question",
-  entryId: null,
-}));
-
-/** Imperative paragraph refs; deliberately not reactive, so a toolbar click reaches the live component. */
-const paragraphRefs: (ParagraphInstance | null)[] = [];
-
-function setParagraphRef(
-  paragraphIndex: number,
-  element: Element | ComponentPublicInstance | null,
-): void {
-  paragraphRefs[paragraphIndex] =
-    element instanceof Element ? null : (element as unknown as ParagraphInstance | null);
-}
+/** How each gap of the item reads in the text: its accepted answers, or "Lucka N" while it has none. */
+const gapStates = computed(() => examGapStates(props.item.gaps));
 
 function handleToggleMark(mark: BodyMark): void {
   activeRichTextTarget.value?.toggleMark(mark);
@@ -123,13 +105,12 @@ function handleToggleHeading(level: HeadingLevel): void {
   activeRichTextTarget.value?.toggleHeading(level);
 }
 
-function openPopover(paragraphIndex: number, chip: HTMLElement): void {
+function openPopover(gapId: string, chip: HTMLElement): void {
   if (props.disabled) {
     return;
   }
-  const gapId = chip.getAttribute("data-gap-id");
   const root = editorRoot.value;
-  if (!gapId || !root) {
+  if (!root) {
     return;
   }
   openChip?.setAttribute("aria-expanded", "false");
@@ -140,7 +121,6 @@ function openPopover(paragraphIndex: number, chip: HTMLElement): void {
   openGap.value = {
     itemId: props.item.item_id,
     gapId,
-    paragraphIndex,
     top: chipRect.bottom - rootRect.top + 4,
     // Keep the popover inside the editor when the chip sits near the right edge.
     left: Math.max(0, Math.min(chipRect.left - rootRect.left, rootRect.width - POPOVER_WIDTH_PX)),
@@ -156,7 +136,8 @@ function closePopover(returnFocus: boolean): void {
   openGap.value = null;
   chip?.setAttribute("aria-expanded", "false");
   if (returnFocus && chip?.isConnected) {
-    chip.focus();
+    // The text surface takes focus back with its selection (the gap) intact.
+    chip.closest<HTMLElement>("[contenteditable='true']")?.focus();
   }
 }
 
@@ -186,17 +167,14 @@ function handleGapAutomaticValueRemoval(itemId: string, gapId: string, value: st
   emit("removeAutomaticValue", itemId, gapId, value);
 }
 
-/** The chip this action removes cannot keep focus, so the paragraph takes it. */
+/** The chip this action removes cannot keep focus, so the text takes it. */
 function handleGapAsText(itemId: string, gapId: string): void {
   if (props.disabled) {
     return;
   }
-  const paragraphIndex = openGap.value?.paragraphIndex ?? null;
   closePopover(false);
   emit("showGapAsText", itemId, gapId);
-  if (paragraphIndex !== null) {
-    paragraphRefs[paragraphIndex]?.focus();
-  }
+  editor.value?.focus();
 }
 
 watch(
@@ -236,22 +214,19 @@ watch(
         ref="editorRoot"
         class="xw-rich__body relative grid gap-2"
       >
-        <ExamWorkspaceBodyParagraph
-          v-for="(paragraph, paragraphIndex) in item.body"
-          :key="`${item.item_id}:${paragraphIndex}`"
-          :ref="(element) => setParagraphRef(paragraphIndex, element)"
-          :paragraph="paragraph"
-          :paragraph-index="paragraphIndex"
-          :owner="questionOwner"
-          :gaps="item.gaps"
-          :asset-urls="assetUrls"
+        <ExamWorkspaceRichTextEditor
+          :key="item.item_id"
+          ref="editor"
+          :body="item.body"
+          label="Frågetext"
+          test-id="exam-workspace-body-editor-surface"
+          variant="field"
           :disabled="disabled"
-          :label="`Frågetext, stycke ${paragraphIndex + 1}`"
-          :test-id="`exam-workspace-body-paragraph-${paragraphIndex}`"
-          @activate-gap="(chip) => openPopover(paragraphIndex, chip)"
-          @toggle-heading="(level) => emit('updateParagraphHeading', item.item_id, paragraphIndex, level)"
-          @status="statusMessage = $event"
-          @update-segments="(segments) => emit('updateParagraphSegments', item.item_id, paragraphIndex, segments)"
+          :gap-states="gapStates"
+          :asset-urls="assetUrls"
+          gaps-interactive
+          @activate-gap="openPopover"
+          @update="(body, structural) => emit('updateBody', item.item_id, body, structural)"
         />
 
         <ExamWorkspaceGapPopover
@@ -261,7 +236,6 @@ watch(
           :gap-id="openGap.gapId"
           :gap-number="openGapNumber"
           :gap="openGapModel"
-          :gap-count="item.gaps.length"
           :dropdown="item.kind === 'inline_choice'"
           :top="openGap.top"
           :left="openGap.left"
@@ -281,15 +255,6 @@ watch(
       Fritextfråga – eleven svarar med egen text.
     </p>
     <p
-      v-if="statusMessage"
-      class="text-xs leading-snug text-navy/70"
-      role="status"
-      aria-live="polite"
-      data-test="exam-workspace-body-status"
-    >
-      {{ statusMessage }}
-    </p>
-    <p
       v-if="hasPartialGapKey"
       class="text-xs leading-snug text-navy/70"
       role="status"
@@ -300,10 +265,3 @@ watch(
     </p>
   </div>
 </template>
-
-<style scoped>
-/* Atom labels are CSS-generated so copied or dragged text never contains them. */
-:deep([data-atom][data-label])::before {
-  content: attr(data-label);
-}
-</style>

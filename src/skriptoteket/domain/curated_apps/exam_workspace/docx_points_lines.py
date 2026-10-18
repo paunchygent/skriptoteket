@@ -33,6 +33,7 @@ A question starts at its first own chunk that is no standalone total line and no
 so where the grouping places a points line or a part heading never moves a question's start.
 """
 
+from collections import Counter
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, replace
 from types import MappingProxyType
@@ -83,7 +84,9 @@ class PrintedPoints:
     """Every printed total and its owner.
 
     ``owners`` maps each points line a question owns to that question's index. ``metadata``
-    holds every other points line: part and exam lines, never exam text or review items.
+    holds every other points line except a part's opener: closing part lines, exam lines and
+    summaries, never exam text or review items. A part's opener is section structure whatever
+    its Word kind (``part_openers``), so its text reaches its part's parent.
     """
 
     questions: tuple[PrintedQuestion, ...] = ()
@@ -266,12 +269,17 @@ def printed_points_plan(
         for index in indices
         if index not in closers and line_points(chunks[index]) is not None
     }
+    # A part's opener is section structure, never metadata; a line that opens no part (D3)
+    # stays metadata as any other points line no question owns.
+    opened = part_openers(parts)
     metadata = frozenset(
         {
             *(
                 chunks[index].anchor
                 for index in totals
-                if line_points(chunks[index]) is not None and chunks[index].anchor not in owners
+                if line_points(chunks[index]) is not None
+                and chunks[index].anchor not in owners
+                and chunks[index].anchor not in opened
             ),
             *(chunks[index].anchor for index in summaries),
         }
@@ -285,25 +293,89 @@ def printed_points_plan(
     )
 
 
-def section_openers(parts: Iterable[PrintedPart]) -> frozenset[str]:
-    """The part lines that open a section: each that changes the running part.
+def part_openers(parts: Iterable[PrintedPart]) -> frozenset[str]:
+    """Every part's opener: section structure whatever its Word kind, never an item."""
+    return frozenset(part.opener for part in parts)
 
-    A part line that repeats the identity of the part line before it, such as "Part 3,
-    Question 2" after "Part 3, Question 1", continues that part. A line that names no part
-    opens one, unless it lies inside a part that names its part ("Uppgift 1.1 (4 p)" under
-    "DEL 1"): that outer part keeps running over all of its questions.
+
+def parent_openers(parts: Iterable[PrintedPart]) -> frozenset[str]:
+    """The part lines that open a parent; every other part line is its question's heading.
+
+    A part over two or more questions opens a parent. A part-labelled line whose part
+    identity no other part line repeats opens a parent whatever its number of questions, so
+    "DEL 4" over one question is a parent with one child (user ruling 2026-10-18). Part lines
+    that repeat one identity ("Part 3, Question 1 (1 point)", "Part 3, Question 2 (1 point)")
+    and a numbered heading over one question ("Uppgift 2: Verb (2 p)") head their question.
+    """
+    listed = tuple(parts)
+    named = Counter(part.identity for part in listed if part.identity is not None)
+    return frozenset(
+        part.opener
+        for part in listed
+        if len(part.questions) > 1 or (part.identity is not None and named[part.identity] == 1)
+    )
+
+
+def heading_openers(parts: Iterable[PrintedPart]) -> tuple[PrintedPart, ...]:
+    """The parts whose line heads their one question: every part that opens no parent.
+
+    A part over two or more questions opens a parent (``parent_openers``), so each part
+    returned here holds exactly one question and its line is that question's heading.
+    """
+    listed = tuple(parts)
+    parents = parent_openers(listed)
+    return tuple(part for part in listed if part.opener not in parents)
+
+
+def _section_runs(parts: Iterable[PrintedPart]) -> tuple[frozenset[str], frozenset[str]]:
+    """The part lines that open a section, and those nested in a part that names its part.
+
+    A part line opens a section when it changes the running part. A part line that repeats
+    the identity of the part line before it, such as "Part 3, Question 2" after "Part 3,
+    Question 1", continues that part. A line that names no part opens one, unless it lies
+    inside a part that names its part ("Uppgift 1.1 (4 p)" under "DEL 1"): it is nested, and
+    that outer part keeps running over all of its questions.
     """
     openers: list[str] = []
+    nested: list[str] = []
     running: str | None = None
     outer: frozenset[int] = frozenset()
     for part in parts:
         if part.identity is None and outer.issuperset(part.questions):
+            nested.append(part.opener)
             continue
         if part.identity is None or part.identity != running:
             openers.append(part.opener)
         running = part.identity
         outer = frozenset(part.questions) if part.identity is not None else frozenset()
-    return frozenset(openers)
+    return frozenset(openers), frozenset(nested)
+
+
+@dataclass(frozen=True)
+class PartLines:
+    """The plan's part lines as section placement reads them.
+
+    ``openers`` holds every part's opener: section structure whatever its Word kind, so it
+    opens a run as a heading does and shows its wording without its points label.
+    ``sections`` holds the openers that change the running part.
+    ``nested`` holds the openers that name no part inside a part that names its part, such as
+    "Uppgift 1.1 (4 p)" under "DEL 1": the outer part's run passes them.
+    ``parents`` holds the openers that open a parent whatever their number of questions
+    (``parent_openers``).
+    """
+
+    openers: frozenset[str] = frozenset()
+    sections: frozenset[str] = frozenset()
+    nested: frozenset[str] = frozenset()
+    parents: frozenset[str] = frozenset()
+
+
+NO_PART_LINES = PartLines()
+
+
+def part_lines(parts: tuple[PrintedPart, ...]) -> PartLines:
+    sections, nested = _section_runs(parts)
+    return PartLines(part_openers(parts), sections, nested, parent_openers(parts))
 
 
 def manifest_questions(manifest: ExamManifest) -> tuple[tuple[str, ...], ...]:
@@ -319,7 +391,9 @@ def assign_points_lines(manifest: ExamManifest, chunks: tuple[DocxChunk, ...]) -
     contexts, title and header tags. A part-labelled line ("Del 2", "Part 2A: enrich (1
     point)") is never a question anchor, whatever number of questions its part holds: it is
     unplaced section structure in the same way, and so is a part heading with no part label
-    over several questions. A part line with no part label over one question, such as
+    over several questions. Whether such a line opens a parent or heads its one question is
+    ``parent_openers``' decision, read downstream. A part line with no part label over one
+    question, such as
     "Uppgift 2: Verb (2 p)", joins that question's anchors as its own points line does and
     leaves every other placement, so the heading has one owner whatever the reply lists.
     Every part line scores its questions whatever its placement. Run after question headings

@@ -18,20 +18,28 @@ whose wording it lacks show under a check mark as printed (D41, D4). A reply wit
 takes the one points label its question's own chunks print (D3). A gap_fill item that makes a gap of
 material its line talks about becomes a review item showing its question as printed (D43).
 A part's line no question owns (``PrintedPart.opener``) leaves, before any item is built,
-every entry when its part holds two or more questions, and every entry for a question outside
-its part when it holds one (review-2 F1, review-3 N1). An entry holding no question anchor is
+every entry when it opens a parent (``parent_openers``: DEL 4 over one question too, user
+ruling 2026-10-18), and every entry for a question outside its part when it heads its one
+question (review-2 F1, review-3 N1). An entry holding no question anchor is
 no item (review-3 N2). Every moved line is recorded once; unless an item of its part lists it,
 it stands as an instruction, which placement puts at its part's parent or question. Building
 one question's item never fails the batch: an item that cannot be built becomes a review item
 holding that question's own source text. A context the grouping gives a question as its owner
-that no entry holds opens that question's item as its source paragraphs, and joins its review
-item otherwise; it is never an item of its own (ruling 2026-10-18 c). A question reported as
+that no entry holds joins that question's item as its source paragraphs, and joins its review
+item otherwise; it is never an item of its own (ruling 2026-10-18 c). An entry of another
+question that lists such a context is not converted: its question becomes its source-review
+item (``foreign_context_listed``), and the context, recorded once (``owned_context_moved``),
+joins its owner (review-3 N5, parent ruling 2026-10-18 a). One the reply lists as the title,
+an instruction or an answer key joins its owner's item too when an item entry holds the owner
+(review-3 N4). Joined contexts and the question's printed headings stand at their source place,
+read from the source alignment of the item's body paragraphs (review-3 N6). A question reported as
 a type conflict leaves the batch for the pipeline to resend with the kind the source shows,
 once: in the resend it is kept as converted.
 """
 
 from collections import Counter
 from collections.abc import Callable
+from dataclasses import replace
 
 from pydantic import JsonValue, ValidationError
 
@@ -40,11 +48,18 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_admit_me
     admit_metadata,
     free_anchors,
     is_points_line,
+    is_question_heading,
     validation_detail,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_state import (
     DocxBuildState,
     TypeConflict,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_context_join import (
+    FOREIGN_CONTEXT_REASON,
+    joined_body,
+    without_foreign_contexts,
+    without_held_owned_contexts,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_one_item import (
     raw_anchors,
@@ -56,43 +71,37 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_produced
     with_heading_content,
     without_header_content,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import native_item
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import aligned_native_item
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedItem,
     ProducedMetadata,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.docx_gap_material import (
     GAPPED_MATERIAL_REASON,
     gapped_material,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_heading_wording import heading_wording
+from skriptoteket.domain.curated_apps.exam_workspace.docx_item_alignment import (
+    AcceptedEntry,
+    AlignedItem,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions import (
+    left_out_chunks,
     with_left_out_mark,
-    wording_left_out,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import (
-    printed_points_plan,
+    heading_openers,
+    parent_openers,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
-    POINT_LABEL,
     QUESTION_HEADING_LABEL,
     definition_context,
     with_accepted_forms,
     with_printed_points,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
-    NativeParagraph,
-    NativeTextSegment,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
-    NativeExamItem,
-)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
     NativeParseOrigin,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.shared_body import source_paragraphs
 from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import (
     FORMATTING_REASON,
     FormattingTransferError,
@@ -104,7 +113,7 @@ CONFLICT_WITHOUT_KIND_REASON = (
 )
 
 
-Admitted = tuple[NativeExamItem, tuple[str, ...]]
+Admitted = AcceptedEntry
 
 
 def _source_review(
@@ -120,12 +129,16 @@ def _source_review(
     return state.printed(anchors, f"Frågan följer inte provformatet ({detail}).", seen)
 
 
+class GaplessGapQuestionError(ValueError):
+    """A converted gap_fill or inline_choice item that places no gap."""
+
+
 def _built(
     index: int,
     anchors: tuple[str, ...],
     state: DocxBuildState,
     seen: set[str],
-    build: Callable[[], NativeExamItem],
+    build: Callable[[], AlignedItem],
 ) -> Admitted:
     """The item ``build`` makes, or its source review item when the item cannot be built."""
     try:
@@ -143,6 +156,8 @@ def _built(
         return _source_review(
             index, anchors, state, seen, "native_contract_invalid", validation_detail(error)
         )
+    except GaplessGapQuestionError as error:
+        return _source_review(index, anchors, state, seen, "native_contract_invalid", str(error))
     except Exception as error:
         # Model output that breaks an assumption of the item builder affects only its question.
         return _source_review(index, anchors, state, seen, "item_unbuildable", type(error).__name__)
@@ -155,13 +170,15 @@ def _with_left_out(
     seen: set[str],
     item_held: frozenset[str],
 ) -> Admitted:
-    """A converted item holds the own chunks of its question it leaves out; those whose wording
-    it lacks show under a check mark as printed, a possible parsing issue (D41, D4).
+    """A converted item holds the own chunks of its question it leaves out; those no body
+    paragraph is aligned to show under a check mark as printed, a possible parsing issue (D41,
+    D4).
 
     A left-out chunk is an own chunk of a question the item touches that no entry holds yet
     and no item of the reply lists, except as a points line alone (D2).
     """
-    item, anchors = admitted
+    aligned, anchors = admitted
+    item = aligned.item
     if item.review.parse_origin is not NativeParseOrigin.LLM_PARSED:
         return admitted
     own = set().union(*(state.question_by_anchor.get(a, ()) for a in anchors))
@@ -183,47 +200,14 @@ def _with_left_out(
     anchors = (*anchors, *(a for a in left_out if a in held))
     left_out = tuple(a for a in left_out if a not in keys and a not in held)
     if not left_out:
-        return item, anchors
+        return aligned, anchors
     seen.update(left_out)
-    missing = wording_left_out(item, [state.chunk_by_anchor[a] for a in left_out])
+    missing = left_out_chunks(aligned, [state.chunk_by_anchor[a] for a in left_out])
     if missing:
         moved = tuple(c.anchor for c in missing)
         state.record("admission", "own_chunks_left_out", item=index, anchors=moved)
         item = with_left_out_mark(item, missing)
-    return item, (*anchors, *left_out)
-
-
-def _text(paragraph: NativeParagraph) -> str:
-    return "".join(s.text for s in paragraph.segments if isinstance(s, NativeTextSegment))
-
-
-def _joined_body(
-    item: NativeExamItem,
-    passages: tuple[DocxChunk, ...],
-    own: tuple[DocxChunk, ...],
-    state: DocxBuildState,
-    headings: tuple[DocxChunk, ...],
-) -> tuple[NativeParagraph, ...]:
-    """``item``'s body with the joined contexts' source paragraphs, marks and pictures at
-    their source place, both in source order: a context printed before the question's first
-    own chunk opens the body; one printed after it follows the content of the question's
-    leading heading, which is the body's first paragraph when it holds the heading's wording.
-    """
-    position = {chunk.anchor: n for n, chunk in enumerate(state.chunks)}
-    first = position[own[0].anchor] if own else len(position)
-    before = tuple(c for c in passages if position[c.anchor] < first)
-    after = tuple(c for c in passages if position[c.anchor] > first)
-    lead = 0
-    if after and headings and own and headings[0].anchor == own[0].anchor and item.body:
-        wording = heading_wording(headings[0], item).casefold()
-        if wording and wording in _text(item.body[0]).casefold():
-            lead = 1
-    return (
-        *source_paragraphs(before),
-        *item.body[:lead],
-        *source_paragraphs(after),
-        *item.body[lead:],
-    )
+    return replace(aligned, item=item), (*anchors, *left_out)
 
 
 def _admit_item(
@@ -265,13 +249,13 @@ def _admit_item(
             )
             return
     own = set().union(*(state.question_by_anchor.get(a, ()) for a in anchors))
+    shown_lines = own | _part_lines_heading(anchors, state)
     headings = tuple(
         c
         for c in state.chunks
-        if c.anchor in own
+        if c.anchor in shown_lines
         and c.anchor not in state.header_anchors
-        and c.kind == "heading"
-        and (QUESTION_HEADING_LABEL.match(c.text) or POINT_LABEL.search(c.text))
+        and is_question_heading(c)
     )
     if headings and set(anchors).issubset(c.anchor for c in headings):
         # A separately emitted heading is not a second question when the reply also
@@ -338,7 +322,7 @@ def _admit_item(
         *state.context_anchors,
     )
 
-    def build() -> NativeExamItem:
+    def build() -> AlignedItem:
         context = definition_context(state.chunks, question, instructions)
         # The question's own paragraphs, also those the reply does not list (D3).
         shown = set(question).union(*(state.question_by_anchor.get(a, ()) for a in question))
@@ -349,7 +333,7 @@ def _admit_item(
             with_accepted_forms(produced, context),
             (chunk for chunk in own if chunk.kind != "heading"),
         )
-        item = native_item(
+        aligned = aligned_native_item(
             scored,
             chunks=own,
             language=state.language,
@@ -357,6 +341,7 @@ def _admit_item(
                 path, item=index, anchors=anchors
             ),
         )
+        item = aligned.item
         if headings:
             printed_label = QUESTION_HEADING_LABEL.match(headings[0].text)
             if printed_label:
@@ -371,12 +356,19 @@ def _admit_item(
                         .strip()
                     }
                 )
-        if joined:
-            passages = tuple(c for c in state.chunks if c.anchor in joined)
-            item = item.model_copy(
-                update={"body": _joined_body(item, passages, own, state, headings)}
-            )
+        aligned = replace(aligned, item=item)
+        passages = tuple(c for c in state.chunks if c.anchor in joined)
+        if passages or headings:
+            # The body's source alignment places each joined context and question heading
+            # at its source place, in place of the reply's copy (review-3 N5/N6).
+            aligned = joined_body(aligned, passages, headings, own, state)
+            item = aligned.item
             own = (*passages, *own)
+        if item.kind in (NativeExamItemKind.GAP_FILL, NativeExamItemKind.INLINE_CHOICE):
+            if not item.gaps:
+                # The model saves a teacher's zero-gap question, but a conversion that finds
+                # no gap has misread the question: its source stays for review.
+                raise GaplessGapQuestionError("gap_fill items need at least one gap")
         source_images = Counter(image.asset_id for chunk in own for image in chunk.images)
         emitted = Counter(item.body_asset_ids())
         if source_images != emitted:
@@ -388,10 +380,26 @@ def _admit_item(
             raise ValueError(
                 f"source pictures differ: missing {dict(missing)}, extra {dict(extra)}"
             )
-        return item
+        return aligned
 
     built = _built(index, anchors, state, seen, build)
     state.accepted.append(_with_left_out(index, built, state, seen, item_held))
+
+
+def _part_lines_heading(anchors: tuple[str, ...], state: DocxBuildState) -> set[str]:
+    """The part lines that head the one question these anchors hold.
+
+    A part line no question owns that opens no parent (``heading_openers``) heads the one
+    question of its part. Such a line is a heading of that question, which the join shows
+    at its source place (CH4FRAG); the plan decides it, never the line's wording.
+    """
+    held = {state.question_by_anchor[a] for a in anchors if a in state.question_by_anchor}
+    return {
+        part.opener
+        for part in heading_openers(state.plan.parts)
+        if part.opener not in state.question_by_anchor
+        and state.questions[part.questions[0]] in held
+    }
 
 
 def _without_part_lines(
@@ -400,15 +408,16 @@ def _without_part_lines(
     """``items`` without the part lines no entry may hold, and those lines, each once.
 
     This is the one owner of which part lines leave an entry. A part line no question owns
-    (``PrintedPart.opener``) leaves every entry when its part holds two or more questions, and
-    every entry whose questions lie outside its part when it holds one question. An entry that
-    holds no question anchor is no item: it leaves the reply, its part lines among the moved
-    ones, and its other chunks stay unlisted for the rules of chunks no entry holds.
+    (``PrintedPart.opener``) leaves every entry when it opens a parent (``parent_openers``),
+    and every entry whose questions lie outside its part when it heads its one question
+    (``heading_openers``). An entry that holds no question anchor is no item: it leaves the
+    reply, its part lines among the moved ones, and its other chunks stay unlisted for the
+    rules of chunks no entry holds.
     """
-    plan = printed_points_plan(state.chunks, state.questions)
-    parts = {
-        part.opener: {state.questions[n] for n in part.questions}
-        for part in plan.parts
+    parents = {a for a in parent_openers(state.plan.parts) if a not in state.question_by_anchor}
+    headed = {
+        part.opener: state.questions[part.questions[0]]
+        for part in heading_openers(state.plan.parts)
         if part.opener not in state.question_by_anchor
     }
     kept: list[JsonValue] = []
@@ -416,7 +425,7 @@ def _without_part_lines(
     for raw in items:
         listed = raw_anchors(raw)
         held = {state.question_by_anchor[a] for a in listed if a in state.question_by_anchor}
-        lines = [a for a in listed if a in parts and (len(parts[a]) > 1 or not held & parts[a])]
+        lines = [a for a in listed if a in parents or (a in headed and headed[a] not in held)]
         moved.extend(lines)
         if not held:
             continue
@@ -441,6 +450,23 @@ def admit_batch(content: dict[str, JsonValue], state: DocxBuildState) -> None:
         if not any(state.question_by_anchor.get(a) in refused for a in raw_anchors(raw))
     ]
     items, moved = _without_part_lines(items, state)
+    # An entry listing another question's owned context is its questions' source-review
+    # item, and the context joins its owner's item (review-3 N5, parent ruling 2026-10-18 a).
+    foreign = without_foreign_contexts(items, state)
+    items = foreign.items
+    for question in foreign.refused:
+        own = tuple(
+            c.anchor for c in state.pending if c.anchor in question and c.anchor not in seen
+        )
+        if own:
+            state.record("admission", "foreign_context_listed", anchors=own)
+            seen.update(own)
+            state.accepted.append(state.printed(own, FOREIGN_CONTEXT_REASON, seen))
+    if moved_contexts := free_anchors(foreign.moved, state, seen):
+        state.record("admission", "owned_context_moved", anchors=moved_contexts)
+    # A context an item entry's question owns joins that item, whatever other role the
+    # reply gives it (ruling 2026-10-18 c, review-3 N4).
+    content = without_held_owned_contexts(content, items, state)
     item_held = frozenset(a for raw in items for a in raw_anchors(raw))
     admit_keys(content.get("answer_key_anchors"), state, seen, item_held)
     if content.get("title"):

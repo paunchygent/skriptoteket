@@ -158,7 +158,9 @@ def test_paragraph_part_lines_each_open_their_part() -> None:
 
     assert plan.exam_total is None
     assert [(part.total, part.questions) for part in plan.parts] == [(15, (0,)), (21, (1,))]
-    assert plan.metadata == {"d", "d2"}
+    # Each part's opener is section structure, never metadata (review-3 N3b).
+    assert plan.metadata == frozenset()
+    assert {part.opener for part in plan.parts} == {"d", "d2"}
     assert not plan.owners
 
 

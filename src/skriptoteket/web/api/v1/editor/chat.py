@@ -28,6 +28,7 @@ from skriptoteket.protocols.llm import (
 )
 from skriptoteket.web.auth.ai_preferences import AiPreferences, require_app_ai_preferences
 from skriptoteket.web.auth.huleedu_app_projection import (
+    require_app_ai_api,
     require_app_contributor_api,
 )
 from skriptoteket.web.dishka_dependencies import FromDishka
@@ -54,7 +55,7 @@ async def stream_editor_chat(
     payload: EditorChatRequest,
     handler: FromDishka[EditorChatHandlerProtocol],
     maintainers: FromDishka[ToolMaintainerRepositoryProtocol],
-    user: User = Depends(require_app_contributor_api),
+    user: User = Depends(require_app_ai_api),
     ai_preferences: AiPreferences = Depends(require_app_ai_preferences),
 ) -> Response:
     await require_tool_access(actor=user, tool_id=tool_id, maintainers=maintainers)

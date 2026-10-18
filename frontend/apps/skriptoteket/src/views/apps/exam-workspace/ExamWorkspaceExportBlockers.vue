@@ -17,9 +17,10 @@
  *     the rows come from `examWorkspaceBlockers`.
  */
 
-import { computed } from "vue";
+import { computed, useId } from "vue";
 
 import { UiGlyph } from "../../../components/ui";
+import { AI_ADMIN_ONLY_NOTE, useAiAccess } from "../../../composables/useAiAccess";
 import { EXAM_WORKSPACE_BLOCKER_FIX_LABELS } from "./examWorkspaceBlockers";
 import type { ExamWorkspaceBlockerEntry } from "./examWorkspaceBlockers";
 
@@ -37,7 +38,15 @@ const emit = defineEmits<{
   suggestAll: [];
 }>();
 
+const { canUseAi } = useAiAccess();
+const aiNoteId = useId();
 const missingKeys = computed(() => props.blockers.filter((blocker) => blocker.fix === "suggest_key").length);
+/**
+ * At least one answer-key control is on screen: each question still missing a
+ * key renders its own "Föreslå facit" fix, and two or more also render the
+ * single "Föreslå facit för alla" request.
+ */
+const hasAiControl = computed(() => missingKeys.value > 0);
 </script>
 
 <template>
@@ -49,11 +58,20 @@ const missingKeys = computed(() => props.blockers.filter((blocker) => blocker.fi
       meaning="status-failure"
       :size="16"
     />Kan inte exporteras ännu</b>
+    <p
+      v-if="!canUseAi && hasAiControl"
+      :id="aiNoteId"
+      class="xw-hint"
+    >
+      {{ AI_ADMIN_ONLY_NOTE }}
+    </p>
     <button
       v-if="missingKeys > 1"
       type="button"
       class="xw-mblock__fix xw-mblock__all"
-      :disabled="fixDisabled || suggestBusy"
+      :disabled="fixDisabled || suggestBusy || !canUseAi"
+      :title="!canUseAi ? AI_ADMIN_ONLY_NOTE : undefined"
+      :aria-describedby="!canUseAi ? aiNoteId : undefined"
       data-test="exam-workspace-blocker-suggest-all"
       @click="emit('suggestAll')"
     >
@@ -76,8 +94,10 @@ const missingKeys = computed(() => props.blockers.filter((blocker) => blocker.fi
         v-if="blocker.fix"
         type="button"
         class="xw-mblock__fix"
-        :disabled="fixDisabled || (blocker.fix === 'suggest_key' && suggestBusy)"
+        :disabled="fixDisabled || (blocker.fix === 'suggest_key' && (suggestBusy || !canUseAi))"
+        :title="blocker.fix === 'suggest_key' && !canUseAi ? AI_ADMIN_ONLY_NOTE : undefined"
         :aria-label="`Fråga ${blocker.label}: ${EXAM_WORKSPACE_BLOCKER_FIX_LABELS[blocker.fix]}`"
+        :aria-describedby="blocker.fix === 'suggest_key' && !canUseAi ? aiNoteId : undefined"
         :data-test="`exam-workspace-blocker-fix-${blocker.itemId ?? 'title'}`"
         @click="emit('fix', blocker)"
       >

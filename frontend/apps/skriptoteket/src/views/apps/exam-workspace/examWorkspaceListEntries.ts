@@ -4,7 +4,9 @@
  * Domain purpose:
  *   The rows of the question list in document order: a standalone question
  *   is numbered 1, 2, 3; an instruction with deluppgifter takes the next
- *   number and its deluppgifter follow as 4a, 4b. Each question row names
+ *   number and its deluppgifter follow as 4a, 4b. Only a unit that holds at
+ *   least one question takes a number: an instruction with no questions is an
+ *   unnumbered row, like Exam.net's information block. Each question row names
  *   its type and points, or the first thing that stops its export in a few
  *   words, and whether the AI wrote its key. The export menu names the same
  *   problems in the same words, numbered like the list.
@@ -31,6 +33,8 @@ export type ExamWorkspaceItemEntry = {
   parentId: string | null;
   text: string;
   typeLabel: string;
+  /** The question's kind; the UI disables grouping and moving an ordering question into a part. */
+  itemKind: NativeExamItem["kind"];
   points: number | null;
   /** The first export or save problem, in a few words; null when there is none. */
   problem: string | null;
@@ -56,6 +60,7 @@ const SHORT_PROBLEM: Record<ExamWorkspaceReadinessReason, string> = {
   criteria_points_mismatch: "kriterierna ger en annan summa",
   empty_choice: "tomt svarsalternativ",
   empty_criterion_text: "tomt kriterium",
+  empty_question_text: "Frågetexten är tom.",
   empty_gap_option: "tomt alternativ i rullista",
   empty_match_entry: "tom rad eller kategori",
   empty_ordering_step: "tomt steg",
@@ -66,6 +71,7 @@ const SHORT_PROBLEM: Record<ExamWorkspaceReadinessReason, string> = {
   missing_answer_key: "facit saknas",
   missing_points: "poäng saknas",
   negative_points: "negativa poäng",
+  no_gaps: "Frågan saknar luckor.",
   ordering_too_few_steps: "för få steg",
   partial_gap_key: "lucka utan svar",
   gap_without_correct_option: "rullista utan rätt svar",
@@ -96,6 +102,7 @@ function itemEntry(
   return {
     aiKey: origin === "ai_interpreted" ? "interpreted" : origin === "machine_proposed" ? "proposed" : null,
     id: item.item_id,
+    itemKind: item.kind,
     kind: "item",
     label,
     parentId,
@@ -119,29 +126,45 @@ export function examWorkspaceListEntries(
   const items = new Map(document.items.map((item) => [item.item_id, item]));
   const parents = new Map(document.parents.map((parent) => [parent.parent_id, parent]));
   const entries: ExamWorkspaceListEntry[] = [];
-  examWorkspaceUnits(document).forEach((unit, index) => {
-    const number = String(index + 1);
+  let number = 0;
+  examWorkspaceUnits(document).forEach((unit) => {
     if (unit.kind === "item") {
+      number += 1;
       const item = items.get(unit.itemId)!;
-      entries.push(itemEntry(item, number, null, readinessByItemId[item.item_id] ?? [], convertingItemIds.has(item.item_id)));
+      entries.push(itemEntry(item, String(number), null, readinessByItemId[item.item_id] ?? [], convertingItemIds.has(item.item_id)));
       return;
     }
     const parent = parents.get(unit.parentId)!;
     const children = unit.itemIds.flatMap((id) => (items.has(id) ? [items.get(id)!] : []));
+    const text = parent.instruction.map((paragraph) => bodyText([paragraph])).join(" ").replace(/\s+/g, " ").trim();
+    if (children.length === 0) {
+      entries.push({
+        childIds: [],
+        id: parent.parent_id,
+        kind: "parent",
+        label: "",
+        points: 0,
+        printedTotal: null,
+        text,
+      });
+      return;
+    }
+    number += 1;
+    const partNumber = String(number);
     entries.push({
       childIds: [...unit.itemIds],
       id: parent.parent_id,
       kind: "parent",
-      label: number,
+      label: partNumber,
       points: children.reduce((sum, child) => sum + (child.points ?? 0), 0),
       printedTotal: examWorkspacePrintedDifference(parent.printed_total, children),
-      text: parent.instruction.map((paragraph) => bodyText([paragraph])).join(" ").replace(/\s+/g, " ").trim(),
+      text,
     });
     children.forEach((child, childIndex) => {
       entries.push(
         itemEntry(
           child,
-          `${number}${childLetter(childIndex)}`,
+          `${partNumber}${childLetter(childIndex)}`,
           parent.parent_id,
           readinessByItemId[child.item_id] ?? [],
           convertingItemIds.has(child.item_id),

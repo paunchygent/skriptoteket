@@ -128,12 +128,30 @@ def test_parent_deletes_prune_instruction_assets_only_when_no_surviving_referenc
 
     result = command(base, parent_id="parent_001")
 
-    keep_asset = reference != "instruction-only" and (
-        command is delete_parent or reference not in {"child-body", "child-source"}
+    # Deleting a part's last child keeps the part as a childless instruction block (G8), so
+    # every instruction-held asset survives; removing the part itself prunes asset references
+    # that only the removed part, its removed children or its own instruction held.
+    keep_asset = single_child or (
+        reference != "instruction-only"
+        and (command is delete_parent or reference not in {"child-body", "child-source"})
+    )
+    # Deleting questions lowers each surviving part's stored place to the number of questions
+    # left ahead of it; parent_002 keeps its own children in every case.
+    part_child_ids = set(base.parents[1].item_ids)
+    surviving_parent_002 = base.parents[1].model_copy(
+        update={
+            "place": next(item.sequence for item in result.items if item.item_id in part_child_ids)
+            - 1
+        }
+    )
+    expected_parents = (
+        (base.parents[0].model_copy(update={"item_ids": ()}), surviving_parent_002)
+        if single_child
+        else (surviving_parent_002,)
     )
     assert result.assets == (base.assets if keep_asset else ())
     assert result.instructions == base.instructions
-    assert result.parents == (base.parents[1],)
+    assert result.parents == expected_parents
     assert native_exam_document_json_bytes(base) == original
     NativeExamDocument.model_validate(result.model_dump())
     assert [item.sequence for item in result.items] == list(range(1, len(result.items) + 1))

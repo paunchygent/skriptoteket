@@ -10,7 +10,7 @@ import pytest
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_state import (
     DocxBuildState,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import native_item
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import aligned_native_item
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedItem,
     ProducedMatchPair,
@@ -71,7 +71,7 @@ def test_impossible_section_tick_share_keeps_source_as_blocking_review_item():
         chunks=chunks,
         questions=(("body:0002",),),
     )
-    state.accepted.append((native_item(produced, language="sv"), ("body:0002",)))
+    state.accepted.append((aligned_native_item(produced, language="sv"), ("body:0002",)))
     state.claimed.update(chunk.anchor for chunk in chunks)
     state.instructions = (
         ProducedMetadata(text=chunks[0].text, points=1, source_anchors=("body:0001",)),

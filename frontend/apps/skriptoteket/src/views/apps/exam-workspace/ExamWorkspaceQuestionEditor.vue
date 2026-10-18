@@ -26,7 +26,6 @@ import { computed, ref, useId, watch } from "vue";
 
 import type {
   NativeExamBodyParagraph,
-  NativeExamBodySegment,
   NativeExamChoice,
   NativeExamCriterion,
   NativeExamDocument,
@@ -55,21 +54,28 @@ const TYPE_CONFIDENCE_THRESHOLD = 0.95;
 /** A tick value is a number of at least 0 with at most 2 decimals (Q10). */
 const TICK_POINTS_PATTERN = /^\d+(\.\d{1,2})?$/;
 
-const props = defineProps<{
-  item: NativeExamItem;
-  label: string;
-  origin: NativeExamDocument["origin"]["kind"];
-  /** The instruction above a deluppgift; null for a standalone question. */
-  parent: { id: string; label: string; text: string } | null;
-  child: { index: number; count: number } | null;
-  converting: boolean;
-  disabled: boolean;
-  /** What the last type change removed, shown until the teacher closes it. */
-  /** The last command's inline outcome for this question. */
-  notice: ExamWorkspaceNotice | null;
-  importOpen: boolean;
-  assetUrls?: Record<string, string>;
-}>();
+const props = withDefaults(
+  defineProps<{
+    item: NativeExamItem;
+    label: string;
+    origin: NativeExamDocument["origin"]["kind"];
+    /** The instruction above a deluppgift; null for a standalone question. */
+    parent: { id: string; label: string; text: string } | null;
+    child: { index: number; count: number } | null;
+    converting: boolean;
+    disabled: boolean;
+    /** What the last type change removed, shown until the teacher closes it. */
+    /** The last command's inline outcome for this question. */
+    notice: ExamWorkspaceNotice | null;
+    importOpen: boolean;
+    /** The places Flytta till offers, in list order. */
+    moveTargets?: { id: string; label: string }[];
+    /** The part the question sits in; null when it is standalone. */
+    currentParentId?: string | null;
+    assetUrls?: Record<string, string>;
+  }>(),
+  { assetUrls: undefined, currentParentId: null, moveTargets: () => [] },
+);
 
 provideRichTextTargetRegistry();
 
@@ -77,6 +83,7 @@ const emit = defineEmits<{
   changeType: [kind: NativeExamItemKind];
   move: [delta: -1 | 1];
   remove: [];
+  moveTo: [targetParentId: string | null];
   toggleImport: [];
   toggleReviewed: [];
   retry: [kind: NativeExamItemKind];
@@ -89,15 +96,20 @@ const emit = defineEmits<{
   moveOrderingStep: [itemId: string, choiceId: string, delta: -1 | 1];
   removeOrderingStep: [itemId: string, choiceId: string];
   shuffleOrderingSteps: [itemId: string];
-  updateChoiceBody: [itemId: string, choiceId: string, body: NativeExamBodyParagraph[]];
+  updateChoiceBody: [itemId: string, choiceId: string, body: NativeExamBodyParagraph[], structural: boolean];
   updateCorrectChoices: [itemId: string, correctChoiceIds: string[]];
   updateCriteria: [itemId: string, criteria: NativeExamCriterion[]];
   updateGapValues: [itemId: string, gapId: string, acceptedValues: string[]];
   updateGapOptions: [itemId: string, gapId: string, options: NativeExamChoice[], correctOptionId: string | null];
-  updateMatchEntryBody: [itemId: string, side: "left" | "right", entryId: string, body: NativeExamBodyParagraph[]];
+  updateMatchEntryBody: [
+    itemId: string,
+    side: "left" | "right",
+    entryId: string,
+    body: NativeExamBodyParagraph[],
+    structural: boolean,
+  ];
   updateMatchPairs: [itemId: string, pairs: NativeExamMatchPair[]];
-  updateParagraphSegments: [itemId: string, paragraphIndex: number, segments: NativeExamBodySegment[]];
-  updateParagraphHeading: [itemId: string, paragraphIndex: number, headingLevel: NativeExamBodyParagraph["heading_level"]];
+  updateBody: [itemId: string, body: NativeExamBodyParagraph[], structural: boolean];
   updatePoints: [itemId: string, points: number | null];
   updateTickPoints: [itemId: string, tickPoints: string];
 }>();
@@ -178,9 +190,12 @@ function handleTickPointsInput(event: Event): void {
       :child="child"
       :disabled="disabled"
       :suggested-kind="item.suggested_kind"
+      :move-targets="moveTargets"
+      :current-parent-id="currentParentId"
       @change-type="emit('changeType', $event)"
       @move="emit('move', $event)"
       @remove="emit('remove')"
+      @move-to="emit('moveTo', $event)"
     >
       <template #tools>
         <ExamWorkspaceQuestionTools
@@ -275,8 +290,7 @@ function handleTickPointsInput(event: Event): void {
       @update-gap-options="(itemId, gapId, options, correctOptionId) => emit('updateGapOptions', itemId, gapId, options, correctOptionId)"
       @remove-automatic-value="(itemId, gapId, value) => emit('removeAutomaticValue', itemId, gapId, value)"
       @show-gap-as-text="(itemId, gapId) => emit('showGapAsText', itemId, gapId)"
-      @update-paragraph-segments="(itemId, index, segments) => emit('updateParagraphSegments', itemId, index, segments)"
-      @update-paragraph-heading="(itemId, index, level) => emit('updateParagraphHeading', itemId, index, level)"
+      @update-body="(itemId, body, structural) => emit('updateBody', itemId, body, structural)"
     />
 
     <template v-if="showFields">
@@ -289,7 +303,7 @@ function handleTickPointsInput(event: Event): void {
       <ExamWorkspaceChoiceField
         :disabled="locked"
         :item="item"
-        @update-body="(choiceId, body) => emit('updateChoiceBody', item.item_id, choiceId, body)"
+        @update-body="(choiceId, body, structural) => emit('updateChoiceBody', item.item_id, choiceId, body, structural)"
         @update-correct-choices="(ids) => emit('updateCorrectChoices', item.item_id, ids)"
       />
       <ExamWorkspaceOrderingField
@@ -300,13 +314,16 @@ function handleTickPointsInput(event: Event): void {
         @move-step="(choiceId, delta) => emit('moveOrderingStep', item.item_id, choiceId, delta)"
         @remove-step="(choiceId) => emit('removeOrderingStep', item.item_id, choiceId)"
         @shuffle="emit('shuffleOrderingSteps', item.item_id)"
-        @update-body="(choiceId, body) => emit('updateChoiceBody', item.item_id, choiceId, body)"
+        @update-body="(choiceId, body, structural) => emit('updateChoiceBody', item.item_id, choiceId, body, structural)"
       />
       <ExamWorkspaceKategoriseraGrid
         v-if="isGrid"
         :disabled="locked"
         :item="item"
-        @update-entry-body="(side, entryId, body) => emit('updateMatchEntryBody', item.item_id, side, entryId, body)"
+        @update-entry-body="
+          (side, entryId, body, structural) =>
+            emit('updateMatchEntryBody', item.item_id, side, entryId, body, structural)
+        "
         @update-pairs="(pairs) => emit('updateMatchPairs', item.item_id, pairs)"
       />
       <div

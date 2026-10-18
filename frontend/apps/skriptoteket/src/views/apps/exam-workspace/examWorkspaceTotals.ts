@@ -25,6 +25,29 @@ export function examWorkspaceExamPrintedDifference(document: NativeExamDocument)
   return examWorkspacePrintedDifference(document.header.printed_total, document.items);
 }
 
+/** The exam text prints no exam total any more; the questions' sum stands. */
+export function withoutExamPrintedTotal(document: NativeExamDocument): NativeExamDocument {
+  return { ...document, header: { ...document.header, printed_total: null } };
+}
+
+/** The exam text prints no total over this part any more. */
+export function withoutPartPrintedTotal(document: NativeExamDocument, parentId: string): NativeExamDocument {
+  return {
+    ...document,
+    parents: document.parents.map((parent) =>
+      parent.parent_id === parentId ? { ...parent, printed_total: null } : parent,
+    ),
+  };
+}
+
+/** Clears the exam total and every part total at once. */
+export function withoutPrintedTotals(document: NativeExamDocument): NativeExamDocument {
+  return {
+    ...withoutExamPrintedTotal(document),
+    parents: document.parents.map((parent) => ({ ...parent, printed_total: null })),
+  };
+}
+
 export function examWorkspaceFormatPoints(points: number): string {
   return points.toLocaleString("sv-SE", { maximumFractionDigits: 2 });
 }

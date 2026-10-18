@@ -231,6 +231,36 @@ Relationships:
   .xw-menu { left: 12px !important; right: 12px !important; width: auto !important; }
 }
 
+/* Exam rich-text editor: one TipTap surface per stored body (ExamWorkspaceRichTextEditor) */
+.xw-richtext__surface {
+  min-height: 1.75rem; outline: none; white-space: pre-wrap; overflow-wrap: anywhere;
+  line-height: 2; color: var(--huleedu-navy);
+}
+.xw-richtext--compact .xw-richtext__surface { min-height: 2.5rem; line-height: 1.5; }
+.xw-richtext__surface p { margin: 0; min-height: 1.75rem; }
+.xw-richtext--compact .xw-richtext__surface p { min-height: 0; }
+.xw-richtext__surface h1, .xw-richtext__surface h2, .xw-richtext__surface h3 { margin: 0; font-weight: var(--huleedu-font-semibold); }
+.xw-richtext__surface h1 { font-size: 1.5rem; }
+.xw-richtext__surface h2 { font-size: 1.25rem; }
+.xw-richtext__surface h3 { font-size: 1.125rem; }
+.xw-richtext[data-disabled="true"] .xw-richtext__surface { color: var(--huleedu-navy-60); }
+/* Atom labels are CSS-generated so copied or dragged text never contains them. */
+.xw-richtext__surface [data-atom][data-label]::before { content: attr(data-label); }
+.xw-gap {
+  display: inline-block; margin: 0 0.125rem; padding: 0 var(--huleedu-space-2); cursor: pointer; user-select: none;
+  border: 1px solid var(--huleedu-navy-30); background: var(--huleedu-navy-02);
+  vertical-align: baseline; font-size: var(--huleedu-text-sm); font-weight: var(--huleedu-font-semibold);
+  line-height: 1.5; color: var(--huleedu-navy);
+}
+.xw-gap[data-empty="true"] { border-color: var(--huleedu-warning); background: var(--huleedu-warning-15); }
+.xw-picture {
+  display: inline-block; max-width: 100%; margin: 0 0.125rem; padding: 0 var(--huleedu-space-2); user-select: none;
+  border: 1px solid var(--huleedu-navy-30); background: var(--huleedu-navy-02);
+  vertical-align: baseline; font-size: var(--huleedu-text-sm); line-height: 1.5; color: var(--huleedu-navy);
+}
+.xw-picture__image { display: block; height: auto; max-width: 100%; }
+.xw-richtext__surface .ProseMirror-selectednode { outline: 2px solid var(--huleedu-action-40); outline-offset: 2px; }
+
 /* Spin for busy glyphs */
 @keyframes xw-spin { to { transform: rotate(360deg); } }
 .xw-spin { animation: xw-spin 0.9s linear infinite; }

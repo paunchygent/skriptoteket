@@ -3,6 +3,7 @@ import { computed, defineAsyncComponent, ref } from "vue";
 import { UiDenseActionButton } from "../ui";
 
 import type { EditOpsPanelState } from "../../composables/editor/editOps/editOpsState";
+import { useAiAccess } from "../../composables/useAiAccess";
 import { writeTextToClipboard } from "../../utils/clipboard";
 
 const AiVirtualFileDiffViewer = defineAsyncComponent(() => import("./diff/AiVirtualFileDiffViewer.vue"));
@@ -34,6 +35,7 @@ function updateConfirmationAccepted(event: Event): void {
 }
 
 const showDebug = ref(false);
+const { canUseAi } = useAiAccess();
 
 async function copyText(text: string): Promise<void> {
   await writeTextToClipboard(text);
@@ -87,6 +89,7 @@ async function copyText(text: string): Promise<void> {
           <UiDenseActionButton
             v-if="showRegenerate"
             label="Regenerera"
+            :disabled="!canUseAi"
             @click="emit('regenerate')"
           />
         </div>

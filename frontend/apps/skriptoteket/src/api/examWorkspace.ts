@@ -16,7 +16,6 @@
  */
 
 import {
-  apiFetch,
   apiFetchBlobResponse,
   apiGet,
   apiPatch,
@@ -58,6 +57,8 @@ export type ExamCourseCatalogResponse = Schemas["ExamCourseCatalogResponse"];
 export type ExamWorkspaceDocumentResponse = Schemas["ExamWorkspaceDocumentResponse"];
 /** A deletion's document response; `removed_parent_id` names an instruction that went with it. */
 export type ExamWorkspaceDeleteResponse = Schemas["ExamWorkspaceDeleteResponse"];
+/** A part creation's document response; `created_parent_id` names the part the editor opens. */
+export type ExamWorkspaceCreatedPartResponse = Schemas["ExamWorkspaceCreatedPartResponse"];
 export type ExamWorkspaceDocumentListResponse = Schemas["ExamWorkspaceDocumentListResponse"];
 export type ExamWorkspaceExportTarget = Schemas["ExamWorkspaceExportTarget"];
 export type ExamWorkspaceEnrichmentState = Schemas["ExamWorkspaceEnrichmentState"];
@@ -96,7 +97,9 @@ export type ExamWorkspaceItemExportBlockerReason =
   | "empty_match_entry"
   | "ordering_too_few_steps"
   | "empty_ordering_step"
-  | "too_few_gap_options";
+  | "too_few_gap_options"
+  | "empty_question_text"
+  | "no_gaps";
 
 /** Every reason the gate reports; the title reason belongs to the exam, not a question. */
 export type ExamWorkspaceExportBlockerReason = ExamWorkspaceItemExportBlockerReason | "title_without_text";
@@ -123,7 +126,7 @@ export type SaveExamWorkspaceDocumentParams = {
   positionStepId: string;
 };
 
-function documentPath(lineageId: string): string {
+export function documentPath(lineageId: string): string {
   return `${ROOT}/documents/${encodeURIComponent(lineageId)}`;
 }
 
@@ -343,97 +346,6 @@ export async function saveExamWorkspaceExport(
 ): Promise<SavedExamExport> {
   return await apiPost<SavedExamExport>(
     `${documentPath(lineageId)}/exports/${encodeURIComponent(target)}?expected_revision=${expectedRevision}`,
-  );
-}
-
-function parentsPath(lineageId: string): string {
-  return `${documentPath(lineageId)}/parents`;
-}
-
-/** Parent commands apply to the server's newest undo step and store one step each. */
-export async function createExamWorkspaceParent(
-  lineageId: string,
-  body: Schemas["CreateExamParentRequest"],
-): Promise<ExamWorkspaceDocumentResponse> {
-  return await apiPost<ExamWorkspaceDocumentResponse>(parentsPath(lineageId), body);
-}
-
-export async function addExamWorkspaceChild(
-  lineageId: string,
-  parentId: string,
-  body: Schemas["AddExamChildRequest"],
-): Promise<ExamWorkspaceDocumentResponse> {
-  return await apiPost<ExamWorkspaceDocumentResponse>(
-    `${parentsPath(lineageId)}/${encodeURIComponent(parentId)}/children`,
-    body,
-  );
-}
-
-/** Delete one deluppgift; deleting the last one removes its emptied instruction too. */
-export async function deleteExamWorkspaceChild(
-  lineageId: string,
-  parentId: string,
-  itemId: string,
-  expectedCursor: string,
-): Promise<ExamWorkspaceDeleteResponse> {
-  const body: Schemas["ParentCommandRequest"] = { expected_cursor: expectedCursor };
-  return await apiFetch<ExamWorkspaceDeleteResponse>(
-    `${parentsPath(lineageId)}/${encodeURIComponent(parentId)}/children/${encodeURIComponent(itemId)}`,
-    { body, method: "DELETE" },
-  );
-}
-
-export async function reorderExamWorkspaceChildren(
-  lineageId: string,
-  parentId: string,
-  itemIds: string[],
-  expectedCursor: string,
-): Promise<ExamWorkspaceDocumentResponse> {
-  const body: Schemas["ReorderExamChildrenRequest"] = {
-    expected_cursor: expectedCursor,
-    item_ids: itemIds,
-  };
-  return await apiPut<ExamWorkspaceDocumentResponse>(
-    `${parentsPath(lineageId)}/${encodeURIComponent(parentId)}/children/order`,
-    body,
-  );
-}
-
-/** "keep_questions" removes only the heading; "with_questions" removes its questions too. */
-export type ExamParentDeleteMode = "keep_questions" | "with_questions";
-
-const PARENT_DELETE_SUFFIX: Record<ExamParentDeleteMode, string> = {
-  keep_questions: "",
-  with_questions: "/with-children",
-};
-
-/**
- * Delete an instruction (user ruling 2026-10-17). By default its questions
- * stay in place as standalone questions; "with_questions" deletes them too.
- * A deletion that would leave the exam without a question is refused with
- * 422 `details.reason` "exam_requires_question".
- */
-export async function deleteExamWorkspaceParent(
-  lineageId: string,
-  parentId: string,
-  mode: ExamParentDeleteMode,
-  expectedCursor: string,
-): Promise<ExamWorkspaceDeleteResponse> {
-  const body: Schemas["ParentCommandRequest"] = { expected_cursor: expectedCursor };
-  return await apiFetch<ExamWorkspaceDeleteResponse>(
-    `${parentsPath(lineageId)}/${encodeURIComponent(parentId)}${PARENT_DELETE_SUFFIX[mode]}`,
-    { body, method: "DELETE" },
-  );
-}
-
-/** Change one question's type; the response names the content the new type could not keep. */
-export async function changeExamWorkspaceItemType(
-  lineageId: string,
-  body: Schemas["ChangeExamWorkspaceItemTypeRequest"],
-): Promise<ChangeExamWorkspaceItemTypeResponse> {
-  return await apiPost<ChangeExamWorkspaceItemTypeResponse>(
-    `${documentPath(lineageId)}/change-type`,
-    body,
   );
 }
 

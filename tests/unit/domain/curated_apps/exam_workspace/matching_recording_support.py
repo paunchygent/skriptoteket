@@ -2,7 +2,7 @@
 
 from uuid import uuid4
 
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import native_item
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import aligned_native_item
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
     NativeExamDocumentOrigin,
@@ -31,7 +31,7 @@ def recorded_matching_items(
             continue
         if not keyed:
             produced = produced.model_copy(update={"match_pairs": ()})
-        item = native_item(produced, language=recorded_exam_language(exam))
+        item = aligned_native_item(produced, language=recorded_exam_language(exam)).item
         sequence = len(items) + 1
         items.append(
             NativeExamItem.model_validate(

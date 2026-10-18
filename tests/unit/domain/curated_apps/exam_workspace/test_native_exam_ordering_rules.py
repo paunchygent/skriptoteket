@@ -120,8 +120,8 @@ def test_one_step_ordering_gets_a_second_choice_for_multiple_response() -> None:
     item = make_ordering_item(steps=("Ensam",), print_order=("choice_001",))
     changed = _retype(item, NativeExamItemKind.MULTIPLE_RESPONSE).document.items[0]
     assert [c.choice_id for c in changed.choices] == ["choice_001", "choice_002"]
-    assert _texts(changed)[0] == "Ensam"
-    assert not _texts(changed)[1].strip()
+    assert _texts(changed) == ["Ensam"]
+    assert changed.choices[1].body == ()
     assert changed.print_order == ()
 
 

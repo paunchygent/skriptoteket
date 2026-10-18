@@ -13,20 +13,22 @@ Relationships:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Annotated, Any, TypeVar, cast
+from typing import TYPE_CHECKING, Annotated, TypeVar
 
-from fastapi import Depends, Request, WebSocket
+from dishka import AsyncContainer
+from fastapi import Request, WebSocket, params
 
 T = TypeVar("T")
 
 
-def from_dishka(dependency_type: type[T]) -> Any:
+def from_dishka(dependency_type: type[T]) -> params.Depends:
     """Create a FastAPI dependency that resolves a Dishka service from request state."""
 
     async def dependency(request: Request) -> T:
-        return cast(T, await request.state.dishka_container.get(dependency_type))
+        container: AsyncContainer = request.state.dishka_container
+        return await container.get(dependency_type)
 
-    return Depends(dependency)
+    return params.Depends(dependency=dependency)
 
 
 if TYPE_CHECKING:
@@ -36,14 +38,15 @@ else:
     class FromDishka:
         """Annotated alias that keeps route signatures concise for Dishka-backed HTTP DI."""
 
-        def __class_getitem__(cls, dependency_type: Any) -> Any:
+        def __class_getitem__(cls, dependency_type: type[object]) -> object:
             return Annotated[dependency_type, from_dishka(dependency_type)]
 
 
 async def resolve_from_websocket(websocket: WebSocket, dependency_type: type[T]) -> T:
     """Resolve a Dishka service explicitly from websocket state."""
 
-    return cast(T, await websocket.state.dishka_container.get(dependency_type))
+    container: AsyncContainer = websocket.state.dishka_container
+    return await container.get(dependency_type)
 
 
 __all__ = ["FromDishka", "from_dishka", "resolve_from_websocket"]

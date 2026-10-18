@@ -20,6 +20,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeAssetSegment,
     NativeGapSegment,
     NativeParagraph,
+    is_empty_body,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
@@ -35,7 +36,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 
-NATIVE_EXAM_DOCUMENT_SCHEMA_VERSION: Literal["native_exam_document_v6"] = "native_exam_document_v6"
+NATIVE_EXAM_DOCUMENT_SCHEMA_VERSION: Literal["native_exam_document_v7"] = "native_exam_document_v7"
 
 
 class NativeExamAsset(BaseModel):
@@ -102,7 +103,7 @@ class NativeExamHeader(BaseModel):
 class NativeExamDocument(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    schema_version: Literal["native_exam_document_v6"] = NATIVE_EXAM_DOCUMENT_SCHEMA_VERSION
+    schema_version: Literal["native_exam_document_v7"] = NATIVE_EXAM_DOCUMENT_SCHEMA_VERSION
     document_id: UUID
     revision: int = Field(ge=1)
     title: str
@@ -165,6 +166,10 @@ class NativeExamDocument(BaseModel):
 
     def parent_of(self, item_id: str) -> NativeExamParent | None:
         return next((parent for parent in self.parents if item_id in parent.item_ids), None)
+
+    def printed_instructions(self) -> tuple[NativeParagraph, ...]:
+        """The exam instruction the exports print; a whitespace-only one prints nothing."""
+        return () if is_empty_body(self.instructions) else self.instructions
 
     def item_by_id(self, item_id: str) -> NativeExamItem:
         for item in self.items:

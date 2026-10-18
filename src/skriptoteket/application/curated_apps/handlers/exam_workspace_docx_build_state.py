@@ -3,6 +3,7 @@
 import copy
 from collections.abc import Iterable, Mapping
 from dataclasses import InitVar, dataclass, field
+from functools import cached_property
 from uuid import UUID
 
 import structlog
@@ -21,7 +22,14 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedMetadata,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
+from skriptoteket.domain.curated_apps.exam_workspace.docx_item_alignment import (
+    Accepted,
+    AcceptedEntry,
+    aligned_source_item,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import (
+    PrintedPoints,
+    part_openers,
     printed_points_plan,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
@@ -32,9 +40,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
 from skriptoteket.domain.curated_apps.exam_workspace.exam_document_language import (
     Language,
     infer_exam_document_language,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
-    NativeExamItem,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
@@ -87,7 +92,7 @@ class DocxBuildState:
     known_anchors: frozenset[str] = field(init=False, repr=False, compare=False)
     chunk_by_anchor: dict[str, DocxChunk] = field(init=False, repr=False, compare=False)
     question_by_anchor: dict[str, tuple[str, ...]] = field(init=False, repr=False, compare=False)
-    accepted: list[tuple[NativeExamItem, tuple[str, ...]]] = field(default_factory=list)
+    accepted: list[AcceptedEntry] = field(default_factory=list)
     title: ProducedMetadata | None = None
     instructions: tuple[ProducedMetadata, ...] = ()
     key_anchors: set[str] = field(default_factory=set)
@@ -113,6 +118,16 @@ class DocxBuildState:
             else infer_exam_document_language("\n".join(chunk.text for chunk in self.chunks))
         )
 
+    @cached_property
+    def plan(self) -> PrintedPoints:
+        """The printed-points plan of this batch's chunks and questions, built once.
+
+        The state's chunks and questions are fixed for its lifetime and admission reads the
+        plan for every entry it admits, so the state owns it: no entry rebuilds it, and a
+        snapshot shares it.
+        """
+        return printed_points_plan(self.chunks, self.questions)
+
     @property
     def owned(self) -> frozenset[str]:
         return (
@@ -128,18 +143,27 @@ class DocxBuildState:
             if chunk.anchor in owned and chunk.anchor not in self.claimed
         )
 
-    @property
-    def heading_instructions(self) -> tuple[ProducedMetadata, ...]:
-        """Headings omitted by a successful build stay structural until T1/T2 decides reach.
+    def heading_instructions(self, printed: PrintedPoints) -> tuple[ProducedMetadata, ...]:
+        """Headings and part openers omitted by a successful build stay structural until
+        T1/T2 decides reach.
 
-        A failed batch's headings keep its failure reason and source-review path.
+        Every part's opener in ``printed`` is section structure whatever its Word kind, so an
+        omitted part paragraph opens its part's parent as a part heading does, never an item.
+        A failed batch's headings and part openers keep its failure reason and source-review
+        path.
         """
+        openers = part_openers(printed.parts)
         return tuple(
             ProducedMetadata(text=chunk.text, source_anchors=(chunk.anchor,))
             for chunk in self.pending
-            if chunk.kind == "heading"
-            and chunk.anchor not in self.reasons
-            and (QUESTION_HEADING_LABEL.match(chunk.text) or POINT_LABEL.search(chunk.text))
+            if chunk.anchor not in self.reasons
+            and (
+                chunk.anchor in openers
+                or (
+                    chunk.kind == "heading"
+                    and (QUESTION_HEADING_LABEL.match(chunk.text) or POINT_LABEL.search(chunk.text))
+                )
+            )
         )
 
     def left_out_contexts(self, anchors: Iterable[str], held: set[str]) -> tuple[str, ...]:
@@ -160,9 +184,7 @@ class DocxBuildState:
         trial.events = list(self.events)
         return trial
 
-    def printed(
-        self, anchors: tuple[str, ...], reason: str, taken: set[str]
-    ) -> tuple[NativeExamItem, tuple[str, ...]]:
+    def printed(self, anchors: tuple[str, ...], reason: str, taken: set[str]) -> AcceptedEntry:
         """The question ``anchors`` belong to as printed, facit included, as one review item.
 
         The item shows every own chunk of each grouped question ``anchors`` touch, every
@@ -186,7 +208,7 @@ class DocxBuildState:
         own = [c.anchor for c in chunks if c.anchor not in contexts]
         if own:
             item = item.model_copy(update={"source_anchor": own[0]})
-        return item, (*anchors, *extra)
+        return aligned_source_item(item, chunks), (*anchors, *extra)
 
     def review_questions(
         self,
@@ -201,10 +223,12 @@ class DocxBuildState:
 
         Each question with an unclaimed own chunk becomes one review item holding the source
         text of all its own chunks at the question's place. Answer-key chunks stay teacher
-        notes, the grouped title stays the title, and shared section text and headings stay
-        section text, each in its source wording.
+        notes, the grouped title stays the title, and shared section text, headings and
+        every plan part opener whatever its Word kind (``part_openers``, as on the normal
+        path) stay section text, each in its source wording.
         Every other pending chunk becomes a review item with ``reason``.
         """
+        openers = part_openers(self.plan.parts)
         for anchors in questions:
             own = tuple(c.anchor for c in self.pending if c.anchor in anchors)
             if own:
@@ -215,7 +239,7 @@ class DocxBuildState:
             if chunk.anchor in keys:
                 self.key_anchors.add(chunk.anchor)
             elif chunk.anchor not in title and (
-                chunk.anchor in contexts or chunk.kind == "heading"
+                chunk.anchor in contexts or chunk.anchor in openers or chunk.kind == "heading"
             ):
                 section = ProducedMetadata(text=chunk.text, source_anchors=(chunk.anchor,))
                 self.instructions = (*self.instructions, section)
@@ -300,7 +324,7 @@ class DocxBuildState:
         review_reasons: dict[str, str],
         governed: Mapping[str, frozenset[str]],
         exam_wide: frozenset[str],
-    ) -> tuple[tuple[NativeExamItem, tuple[str, ...]], ...]:
+    ) -> Accepted:
         """Each question no accepted item holds, as one review item showing its source as
         printed, whatever role the reply gave its chunks.
 
@@ -312,7 +336,7 @@ class DocxBuildState:
         held = {a for _, anchors in self.accepted for a in anchors}
         owned = self.owned
         taken = set(self.claimed)
-        omitted: list[tuple[NativeExamItem, tuple[str, ...]]] = []
+        omitted: list[AcceptedEntry] = []
         for question in questions:
             own = tuple(
                 a for a in question if a in owned and a not in governed and a not in exam_wide
@@ -365,13 +389,13 @@ class DocxBuildState:
         (``printed_points_plan``); assembly scores the items from them. A points line that is
         no question's own is part or exam metadata, never a review item.
         """
-        heading_instructions = self.heading_instructions
+        questions = questions or self.questions
+        printed = printed_points_plan(self.chunks, questions)
+        heading_instructions = self.heading_instructions(printed)
         heading_anchors = {
             a for instruction in heading_instructions for a in instruction.source_anchors
         }
         instructions = (*self.instructions, *heading_instructions)
-        questions = questions or self.questions
-        printed = printed_points_plan(self.chunks, questions)
         review_reasons: dict[str, str] = {}
         for chunk in self.pending:
             if (

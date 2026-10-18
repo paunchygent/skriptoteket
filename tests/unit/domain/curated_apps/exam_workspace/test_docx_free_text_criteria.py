@@ -3,7 +3,7 @@
 import pytest
 from pydantic import JsonValue, ValidationError
 
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import native_item
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import aligned_native_item
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedCriterion,
     ProducedItem,
@@ -55,7 +55,7 @@ def _produced(
 
 
 def test_stated_criteria_keep_their_points_and_the_item_points_are_their_sum() -> None:
-    item = native_item(
+    item = aligned_native_item(
         _produced(
             points=3,
             criteria=(
@@ -64,7 +64,7 @@ def test_stated_criteria_keep_their_points_and_the_item_points_are_their_sum() -
             ),
         ),
         language="sv",
-    )
+    ).item
 
     assert item.criteria == (
         NativeExamCriterion(text="Ett exempel.", points=2),
@@ -75,7 +75,7 @@ def test_stated_criteria_keep_their_points_and_the_item_points_are_their_sum() -
 
 
 def test_stated_criteria_without_printed_points_take_their_sum() -> None:
-    item = native_item(
+    item = aligned_native_item(
         _produced(
             points=None,
             criteria=(
@@ -84,16 +84,16 @@ def test_stated_criteria_without_printed_points_take_their_sum() -> None:
             ),
         ),
         language="sv",
-    )
+    ).item
 
     assert item.points == 3
     assert item.points_estimated is False
 
 
 def test_guide_without_breakdown_becomes_one_estimated_criterion_at_the_item_points() -> None:
-    item = native_item(
+    item = aligned_native_item(
         _produced(points=4, criteria=(ProducedCriterion(text="Bedöm helheten."),)), language="sv"
-    )
+    ).item
 
     assert item.criteria == (NativeExamCriterion(text="Bedöm helheten.", points=4),)
     assert item.points == 4
@@ -101,9 +101,9 @@ def test_guide_without_breakdown_becomes_one_estimated_criterion_at_the_item_poi
 
 
 def test_guide_without_breakdown_or_points_becomes_one_estimated_point() -> None:
-    item = native_item(
+    item = aligned_native_item(
         _produced(points=None, criteria=(ProducedCriterion(text="Bedöm helheten."),)), language="sv"
-    )
+    ).item
 
     assert item.criteria == (NativeExamCriterion(text="Bedöm helheten.", points=1),)
     assert item.points == 1
@@ -111,7 +111,7 @@ def test_guide_without_breakdown_or_points_becomes_one_estimated_point() -> None
 
 
 def test_free_text_without_criteria_keeps_its_printed_points() -> None:
-    item = native_item(_produced(points=8), language="sv")
+    item = aligned_native_item(_produced(points=8), language="sv").item
 
     assert item.criteria == ()
     assert item.points == 8
@@ -120,13 +120,13 @@ def test_free_text_without_criteria_keeps_its_printed_points() -> None:
 
 def test_fractional_item_points_route_to_review() -> None:
     with pytest.raises(ValueError, match="points are not whole"):
-        native_item(
+        aligned_native_item(
             _produced(points=2.5, criteria=(ProducedCriterion(text="Bedöm helheten."),)),
             language="sv",
-        )
+        ).item
 
     with pytest.raises(ValueError, match="criteria sum does not match"):
-        native_item(
+        aligned_native_item(
             _produced(
                 points=2.5,
                 criteria=(
@@ -135,17 +135,17 @@ def test_fractional_item_points_route_to_review() -> None:
                 ),
             ),
             language="sv",
-        )
+        ).item
 
 
 def test_fractional_free_text_points_without_criteria_route_to_review() -> None:
     with pytest.raises(ValueError, match="points are not whole"):
-        native_item(_produced(points=2.5), language="sv")
+        aligned_native_item(_produced(points=2.5), language="sv").item
 
 
 def test_fractional_criterion_points_route_to_review() -> None:
     with pytest.raises(ValueError, match="criterion points are not whole"):
-        native_item(
+        aligned_native_item(
             _produced(
                 points=3,
                 criteria=(
@@ -154,12 +154,12 @@ def test_fractional_criterion_points_route_to_review() -> None:
                 ),
             ),
             language="sv",
-        )
+        ).item
 
 
 def test_a_criteria_sum_that_differs_from_the_printed_points_routes_to_review() -> None:
     with pytest.raises(ValueError, match="criteria sum does not match"):
-        native_item(
+        aligned_native_item(
             _produced(
                 points=4,
                 criteria=(
@@ -168,15 +168,15 @@ def test_a_criteria_sum_that_differs_from_the_printed_points_routes_to_review() 
                 ),
             ),
             language="sv",
-        )
+        ).item
 
 
 def test_criteria_below_one_point_route_to_review() -> None:
     with pytest.raises(ValueError, match="criterion points are not whole"):
-        native_item(
+        aligned_native_item(
             _produced(points=1, criteria=(ProducedCriterion(text="Ett exempel.", points=0),)),
             language="sv",
-        )
+        ).item
 
 
 def test_the_produced_schema_carries_criteria_only_for_free_text() -> None:

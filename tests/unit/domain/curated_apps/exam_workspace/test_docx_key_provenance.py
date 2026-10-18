@@ -6,7 +6,7 @@ from pydantic import ValidationError
 from skriptoteket.domain.curated_apps.exam_workspace.answer_spelling import (
     filter_answer_spelling_candidates,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import native_item
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import aligned_native_item
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedCriterion,
     ProducedItem,
@@ -69,9 +69,9 @@ def test_key_source_maps_without_treating_invented_answers_as_teacher_keys(
         "skriptoteket.domain.curated_apps.exam_workspace.docx_ai_gap_values.produce_answer_misspellings",
         lambda *_, **__: ("KATT", "kat", "kattn", "ktat", "hund", "kattnn"),
     )
-    item = native_item(
+    item = aligned_native_item(
         _gap_item(source, facit, answers=() if source is None else ("katt",)), language="sv"
-    )
+    ).item
     assert item.answer_key.origin is origin
     assert item.facit_text == facit
     # The producer supplies candidates for every keyed gap, invented keys included; the
@@ -173,7 +173,7 @@ def test_choice_and_matching_keys_use_the_same_provenance_mapping(kind: str, sou
         )
     else:
         payload["choices"] = [{"text": "Katt", "correct": True}, {"text": "Bil", "correct": False}]
-    item = native_item(ProducedItem.model_validate(payload), language="sv")
+    item = aligned_native_item(ProducedItem.model_validate(payload), language="sv").item
     assert (
         item.answer_key.origin.value
         == {
@@ -208,7 +208,7 @@ def test_free_text_retains_facit_but_has_no_objective_key_source() -> None:
             ),
         ),
     )
-    native = native_item(item, language="sv")
+    native = aligned_native_item(item, language="sv").item
     assert native.facit_text == item.facit_text
     assert native.answer_key.origin is NativeAnswerKeyOrigin.NOT_APPLICABLE
     # R14: a guide without per-criterion points is one estimated criterion at 1 point

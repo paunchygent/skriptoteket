@@ -9,7 +9,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
 
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import NativeTextSegment
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import is_empty_body
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
 )
@@ -43,6 +43,8 @@ _KEYED_KINDS = frozenset(
     }
 )
 
+_GAP_KINDS = frozenset({NativeExamItemKind.GAP_FILL, NativeExamItemKind.INLINE_CHOICE})
+
 
 # The fewest options a dropdown gap exports with; one option gives the answer away
 # (TASK-SKRIPT-40-04-04 D3). Published to the workspace through the export checklist.
@@ -69,6 +71,8 @@ class NativeExportBlocker(BaseModel):
         "ordering_too_few_steps",
         "empty_ordering_step",
         "too_few_gap_options",
+        "empty_question_text",
+        "no_gaps",
     ]
 
 
@@ -88,6 +92,8 @@ def native_export_blockers(document: NativeExamDocument) -> tuple[NativeExportBl
     A title without a letter or digit blocks too: every export file is named after the title.
     An ordering question needs two steps and a text in every step; its key is its step order,
     always teacher-authored, so it never lacks one (TASK-SKRIPT-39-06-08).
+    A question needs a text, and a gap_fill or inline_choice question needs a gap
+    (TASK-SKRIPT-40-04-06 D3, D4); both save while empty.
     """
     blockers: list[NativeExportBlocker] = []
     if not title_has_text(document.title):
@@ -107,13 +113,12 @@ def native_export_blockers(document: NativeExamDocument) -> tuple[NativeExportBl
             ("empty_match_entry", (entry.body for entry in item.match_right)),
         ):
             for body in bodies:
-                if not any(
-                    segment.text.strip()
-                    for paragraph in body
-                    for segment in paragraph.segments
-                    if isinstance(segment, NativeTextSegment)
-                ):
+                if is_empty_body(body):
                     blockers.append(NativeExportBlocker(item_id=item.item_id, reason=reason))
+        if is_empty_body(item.body):
+            blockers.append(NativeExportBlocker(item_id=item.item_id, reason="empty_question_text"))
+        if item.kind in _GAP_KINDS and not item.gaps:
+            blockers.append(NativeExportBlocker(item_id=item.item_id, reason="no_gaps"))
         if item.kind is NativeExamItemKind.ORDERING and len(item.choices) < 2:
             blockers.append(
                 NativeExportBlocker(item_id=item.item_id, reason="ordering_too_few_steps")

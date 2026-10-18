@@ -1,0 +1,7 @@
+## **Del 2: Satsdelar, 8 poäng**
+Använd S = subjekt, P = predikat, DO = direkt objekt, IO = indirekt objekt, Pf = predikativ/predikatsfyllnad, Adv = adverbial och SA = satsadverbial.
+### **<i>Fråga 5. Gör satsdelsanalys av meningarna.</i>**
+a) Klassen läste inte texten i klassrummet. Analys: <i>Klassen (S) läste (P) inte (SA) texten (DO) i klassrummet (Adv).</i>
+b) Mentorn skickade eleverna ett tydligt schema på morgonen. Analys: <i>Mentorn (S) skickade (P) eleverna (IO) ett tydligt schema (DO) på morgonen (Adv).</i>
+c) Dagen blev stressig efter beskedet. Analys: <i>Dagen (S) blev (P) stressig (Pf) efter beskedet (Adv).</i>
+Poäng: 6 poäng

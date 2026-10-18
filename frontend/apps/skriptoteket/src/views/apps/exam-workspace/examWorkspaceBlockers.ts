@@ -118,6 +118,7 @@ function blockerFix(item: NativeExamItem, reason: ExamWorkspaceReadinessReason):
 
 const testId = (id: string) => `[data-test="${id}"]`;
 const POINTS = testId("exam-workspace-item-points-input");
+const QUESTION_TEXT = testId("exam-workspace-body-editor-surface");
 
 function gapChip(gapId: string | undefined): string | null {
   return gapId ? `[data-gap-id="${gapId}"]` : null;
@@ -153,6 +154,9 @@ function blockerFocus(item: NativeExamItem, reason: ExamWorkspaceReadinessReason
       );
       return unticked ? `[data-test^="exam-workspace-match-tick-${unticked.left_id}-"]` : null;
     }
+    case "empty_question_text":
+    case "no_gaps":
+      return QUESTION_TEXT;
     case "missing_points":
     case "negative_points":
     case "criteria_points_mismatch":

@@ -17,6 +17,8 @@ import { UiGlyph } from "../../../components/ui";
 
 defineProps<{
   label: string | null;
+  /** Names the selected entry when it has no question number, e.g. the exam instruction. */
+  heading?: string | null;
   /** The selected entry's state glyph: an instruction, converting, ok or warn. */
   state: "instruction" | "converting" | "ok" | "warn" | null;
   canPrevious: boolean;
@@ -48,7 +50,7 @@ const emit = defineEmits<{ previous: []; next: []; openList: [] }>();
       <button
         type="button"
         class="strip__pos"
-        aria-haspopup="listbox"
+        aria-haspopup="grid"
         :aria-expanded="listOpen"
         data-test="exam-workspace-phone-list"
         @click="emit('openList')"
@@ -82,7 +84,7 @@ const emit = defineEmits<{ previous: []; next: []; openList: [] }>();
           meaning="status-warning"
           :size="16"
         /></span>
-        <span class="strip__label">{{ label ? `Fråga ${label}` : "Inget prov" }}</span>
+        <span class="strip__label">{{ heading ?? (label ? `Fråga ${label}` : "Inget prov") }}</span>
         <UiGlyph
           meaning="open-list"
           :size="16"

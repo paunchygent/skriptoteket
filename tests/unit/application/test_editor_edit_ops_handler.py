@@ -380,3 +380,108 @@ async def test_edit_ops_finalizes_turn_as_remote_fallback_required_after_retryab
     assert update_kwargs["turn_id"] == turn_id
     assert update_kwargs["status"] == "failed"
     assert update_kwargs["failure_outcome"] == "remote_fallback_required"
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_handle_leaves_role_admission_to_the_web_gate() -> None:
+    settings = Settings(LLM_CHAT_OPS_ENABLED=True)
+
+    response_payload = {
+        "assistant_message": "OK",
+        "ops": [
+            {
+                "op": "patch",
+                "target_file": "tool.py",
+                "patch_lines": [
+                    "diff --git a/tool.py b/tool.py",
+                    "--- a/tool.py",
+                    "+++ b/tool.py",
+                    "@@ -1,1 +1,1 @@",
+                    "-print('hej')",
+                    "+print('hello')",
+                ],
+            }
+        ],
+    }
+    provider = MagicMock(spec=ChatOpsProviderProtocol)
+    provider.complete_chat_ops = AsyncMock(
+        return_value=LLMChatOpsResponse(
+            content=json.dumps(response_payload, ensure_ascii=False),
+            finish_reason=None,
+            raw_payload={"choices": []},
+        )
+    )
+    providers = MagicMock()
+    providers.primary = provider
+    providers.fallback = None
+    providers.fallback_is_remote = False
+
+    tool_id = uuid4()
+    actor = make_user(role=Role.USER)
+    session = _make_tool_session(tool_id=tool_id, user_id=actor.id)
+
+    sessions = MagicMock(spec=ToolSessionRepositoryProtocol)
+    sessions.get = AsyncMock(return_value=None)
+    sessions.get_or_create = AsyncMock(return_value=session)
+
+    turns = MagicMock(spec=ToolSessionTurnRepositoryProtocol)
+    turns.list_tail = AsyncMock(return_value=[])
+    turns.cancel_pending_turn = AsyncMock(return_value=None)
+    turns.update_status = AsyncMock(return_value=None)
+    turns.create_turn = AsyncMock()
+
+    messages = MagicMock(spec=ToolSessionMessageRepositoryProtocol)
+    messages.list_by_turn_ids = AsyncMock(return_value=[])
+    messages.create_message = AsyncMock()
+    messages.update_message_content_if_pending_turn = AsyncMock(return_value=True)
+
+    clock = MagicMock(spec=ClockProtocol)
+    clock.now.return_value = datetime(2025, 1, 1, tzinfo=timezone.utc)
+
+    id_generator = MagicMock(spec=IdGeneratorProtocol)
+    session_id = uuid4()
+    turn_id = uuid4()
+    user_message_id = uuid4()
+    assistant_message_id = uuid4()
+    id_generator.new_uuid.side_effect = [session_id, turn_id, user_message_id, assistant_message_id]
+
+    turns.create_turn.return_value = _make_turn(
+        turn_id=turn_id,
+        tool_session_id=session.id,
+        correlation_id=None,
+    )
+
+    handler = EditOpsHandler(
+        settings=settings,
+        providers=providers,
+        budget_resolver=DummyChatOpsBudgetResolver(settings),
+        payload_parser=DefaultEditOpsPayloadParser(),
+        guard=DummyChatGuard(),
+        failover=DummyFailover(),
+        capture_store=MagicMock(spec=LlmCaptureStoreProtocol),
+        uow=DummyUow(),
+        sessions=sessions,
+        turns=turns,
+        messages=messages,
+        clock=clock,
+        id_generator=id_generator,
+        token_counters=FakeTokenCounterResolver(),
+        system_prompt_loader=lambda _: "prompt",
+    )
+
+    result = await handler.handle(
+        actor=actor,
+        command=EditOpsCommand(
+            tool_id=tool_id,
+            message="Hej",
+            active_file="tool.py",
+            cursor=EditOpsCursor(pos=0),
+            virtual_files=_virtual_files(),
+        ),
+    )
+
+    assert result.enabled is True
+    assert result.assistant_message == "OK"
+    provider.complete_chat_ops.assert_awaited_once()
+    turns.create_turn.assert_awaited_once()

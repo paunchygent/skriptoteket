@@ -61,23 +61,24 @@
   passed, root 01a149c9 evidence/staging-walk-10eef9fd/); REP-0043 `done`; 39-06-02
   `done`; ordering TASK-SKRIPT-39-06-08 `in_progress` (Mac Opus lead 58ebedec, worktree Skriptoteket-task-skript-39-06-08, root 01a14c27); tutorial
   video focus fix 39230851.
-  TASK-SKRIPT-39-04-11 on `codex/task-skript-39-04-11-remote` (Hemma, lead
-  `f193466c`, root `01a14bdc-65b7-73e1-a8ee-3c75001a36fa`): repairs through 97d47894
-  (section opens where the running part changes); parent admits and merges to main.
-  TASK-SKRIPT-39-04-12 on `codex/task-skript-39-04-12-remote` (same lead and root):
-  review-2 repairs plus the user's exempelprov rulings, then r3pre fixes at
-  24c390af (required retry-source fields; omprov 70 p vs 67 p replay check; F1/F2
-  to rereview; user-exam fixtures in tests/fixtures/exam_conversion/docx_user_exams/).
-  User gate: DEL 4 one-question part instruction (one-child parent vs item-level
-  instruction task); interim heading opens the question's body.
-  Next: parent rereview, merge, one omprov staging conversion that also shows the
-  exam-level amber "provtexten anger 70 p" line (root evidence/39-04-12/final/).
   Next lanes: 39-07-03 retire old converter routes (40-04-03 now on main); implement
   39-06-08 ordering; stories 39-04, 39-06, 39-07 await closeout.
   Ready (user grilling 2026-10-18, plans in root 01a14c27): 40-04-04 dropdown option editor, 40-04-05 export names from the exam title, 39-06-09 Exam.net probe of ordering inside a part.
-  Hemma Opus lead `3b164d53`: 40-03-01..09 and 08-36-02 `done`; 40-02-01 tranche 1 on
-  main 761b1b59, tranche 2 a67afa90 (`in_progress`: shared `play` meaning in
-  session add-a-shared-play-glyph, exam-held wrappers and lucide removal open).
+  39-06-10 lead 146bc2d8, both from a0a81ab5a; 39-06-10 ruling: a question moved out lands after its part.
+  40-04-07 ruling (user 2026-10-18): print PDF renders the DOCX house template; Exam.net import PDF is a fallback only; QTI is the Exam.net route.
+  ACCOUNT SWITCH 2026-10-18 clean break: every Hemma Claude lead stopped at a unit boundary, committed, wrote a "Resume here" note in its task doc; no reviews running; worktrees clean. Orchestrator note: hemma:~/.cache/claude-prompts/orchestrator-resume.md. New orchestrator starts as a desktop SSH session (claude-overseer). Junior route is GLM; switch back with `junior-route deepseek`. Lanes (Hemma branch @ head: next):
+
+  - 40-04-07 `codex/task-skript-40-04-07-remote` @2e64e240f: R1-R6, L1-L2 done, origin/main merged; next v8 seam (port \_print_walk to document_outline), checks, R1-R4 re-review 09d50acc; then re-import staging fixture, walk 39-06-10 + 40-04-07.
+  - 39-04-16 `codex/task-skript-39-04-gap-source` @235846dc8: Swedish gap copy 6e6c19d6 (user); review 5805cf6e 3 medium; next medium repair + focused proof, merge (no re-review).
+  - 39-04-15 `codex/task-skript-39-04-listed-chunks` @757b07ef8: review 898d311f changes_requested; F1 fixed a2ec34d0; next F2, F3, F4, replays, suite, F1+F2 re-review; merges after 39-04-16 onto source_paragraph(). Then 39-04-17 and REP-0049 (metodprov 1, proposed).
+  - REP-0046 `codex/task-skript-rep-0046-remote` @60773359b: F1 medium; USER GATE re-record 8 stale omprov_grammatik_sve2 labeler calls (REP-0045 route), keys at 4717a9d3.
+  - REP-0047 @f7dd14d79 and REP-0048 @26a450538 (`codex/task-skript-rep-004{7,8}-remote`): implemented; next review; REP-0048 then 6 Exam.net walk checks.
+  - 41-02-01 `codex/task-skript-41-02-01-remote` @4852c9fd2: U1-U7 done; next real Exam.net QTI fixture from the user, merge main, indentation test after REP-0048, review. 41-02-03 unstarted.
+  - 41-02-02 `codex/task-skript-41-02-02-remote` @76d7cc1d6: next f3a/f3b/f4, review; USER GATE G3 limits (import 10/200, export 30/300, edit 600/6000 per caller/pool per hour) and duplicate-title handoff decision.
+  - HuleEdu TASK-HULE-14-03-01 `codex/task-hule-14-03-01-remote` @bef82487c: U0-U4b, U2a done; next U2b, U5 load proof on huleedu-dev (mock mode), review. Then 41-01-03, 41-01-02, 41-01-04; HuleEdu http_runtime workers repair.
+    Hemma Opus lead `3b164d53`: 40-03-01..09 and 08-36-02 `done`; 40-02-01 tranche 1 on
+    main 761b1b59, tranche 2 a67afa90 (`in_progress`: shared `play` meaning in
+    session add-a-shared-play-glyph, exam-held wrappers and lucide removal open).
 
 - Historical 2026-09-05 workspace planning (EPIC-SKRIPT-39 E8-E12, ADR-SKRIPT-0091,
   ST-SKRIPT-39-04): `.codex/long-term-memory/entries/session-2026-09-05-epic-39-handoff-compaction.md`.
@@ -169,6 +170,7 @@
 
 - Session Date: 2026-10-15
 - Last Refreshed: 2026-10-15
+- Pushing `main` runs the full `pdm run typecheck` and `pdm run test` on Hemma first (`scripts/hemma_pre_push_check.sh`, pre-push hook, ~10 min; install with `pre-commit install --hook-type pre-push`). Run the push in the background; a failure blocks it, unreachable Hemma warns, Markdown-only commits reuse the last pass.
 - Current docs validate with `pdm run docs-validate`.
 - Historical terminal docs audit separately with `pdm run python -m scripts.historical_docs.validate_historical_docs`.
 - Full typecheck passed 2026-10-15: backend (1,588 source files) and SPA;

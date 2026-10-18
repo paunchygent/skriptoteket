@@ -129,6 +129,13 @@ their own tasks own.
    TASK-SKRIPT-40-01-03, and wires each planned control to its backend as
    that backend lands. TASK-SKRIPT-39-07-03 retires the old exam converter
    after this task offers the DigiExam import.
+4. TASK-SKRIPT-40-04-04: teachers edit a dropdown gap's options and mark the
+   correct one in the gap popover.
+5. TASK-SKRIPT-40-04-05: exported files are named after the exam title.
+6. TASK-SKRIPT-40-04-06: exam texts edit as one document per field, exam
+   instructions are editable and printed totals can be accepted.
+7. TASK-SKRIPT-40-04-07: teachers set the writing area of printed DOCX and PDF
+   exams and imports drop paper answer lines.
 
 Tasks 2 and 3 run in parallel.
 

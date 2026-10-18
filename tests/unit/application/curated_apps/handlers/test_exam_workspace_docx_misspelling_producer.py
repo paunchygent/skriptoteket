@@ -19,7 +19,7 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_st
     DocxBuildState,
 )
 from skriptoteket.domain.curated_apps.exam_workspace import docx_ai_gap_values
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import native_item
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import aligned_native_item
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedItem
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.exam_document_language import Language
@@ -116,7 +116,7 @@ def test_every_keyed_gap_reaches_the_producer_with_the_language_and_its_other_go
 ) -> None:
     calls = _record_producer(monkeypatch)
 
-    item = native_item(_gap_item((("katt", "katten"), ("hund",))), language="en")
+    item = aligned_native_item(_gap_item((("katt", "katten"), ("hund",))), language="en").item
 
     assert calls == [
         {
@@ -138,7 +138,7 @@ def test_an_invented_key_gets_producer_misspellings_bounded_by_the_native_contra
 ) -> None:
     _record_producer(monkeypatch, returns=("KATT", "kat", "kattx", "hund", "katt"))
 
-    item = native_item(_gap_item((("katt",),)), language="sv")
+    item = aligned_native_item(_gap_item((("katt",),)), language="sv").item
 
     assert item.answer_key.origin is NativeAnswerKeyOrigin.MACHINE_PROPOSED
     assert item.gaps[0].accepted_values == ("katt",)
@@ -186,7 +186,7 @@ def test_admission_gives_the_states_document_language_to_the_gap_producer(monkey
         state,
     )
 
-    ((item, anchors),) = state.accepted
+    ((item, anchors),) = [(a.item, h) for a, h in state.accepted]
     assert anchors == ("body:0001",)
     assert calls == [
         {"accepted_values": ("Stockholm",), "language": "en", "other_gold_answers": ()}

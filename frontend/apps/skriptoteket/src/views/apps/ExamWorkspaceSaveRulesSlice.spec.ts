@@ -14,7 +14,12 @@
 import { flushPromises } from "@vue/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { ExamWorkspaceConversionStatus, NativeExamDocument } from "../../api/examWorkspace";
+import type {
+  ExamWorkspaceConversionStatus,
+  NativeExamChoice,
+  NativeExamDocument,
+  NativeExamItem,
+} from "../../api/examWorkspace";
 import { buildFreeTextItem } from "../../test/examWorkspaceFixtures";
 import { useToastStore } from "../../stores/toast";
 import ExamWorkspaceBodyEditor from "./exam-workspace/ExamWorkspaceBodyEditor.vue";
@@ -132,10 +137,9 @@ describe("ExamWorkspaceView save rules", () => {
     expect(wrapper.get('[data-test="exam-workspace-blocker-item_005"]').text()).toBe("Fråga 5: negativa poäng");
   });
 
-  it("flags an empty choice text and refuses the save, naming every question", async () => {
+  it("flags an empty choice text at the field and still saves it", async () => {
     const { wrapper } = await mountExamWorkspace();
-    // The editor restores an emptied paragraph, so an empty choice is a state
-    // a stored document carries (a conversion or an arriving revision).
+    // An emptied choice saves (TASK-SKRIPT-40-04-06 D3) and blocks export instead.
     const response = buildResponse({ conversion: succeededConversion, version: 1 });
     for (const [itemId, choiceId] of [
       ["item_002", "choice_002"],
@@ -144,12 +148,11 @@ describe("ExamWorkspaceView save rules", () => {
       const choice = response.document.items
         .find((item) => item.item_id === itemId)!
         .choices.find((entry) => entry.choice_id === choiceId)!;
-      choice.body = [
-        { heading_level: null, segments: [{ kind: "text", marks: [], text: "" }] },
-      ];
+      choice.body = [];
     }
     apiMocks.getExamWorkspaceDocument.mockReset();
     apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(response);
+    apiMocks.saveExamWorkspaceDocument.mockResolvedValue(buildResponse({ version: 2 }));
     await importFixtureDocument(wrapper);
 
     await selectItemRow(wrapper, "item_002");
@@ -162,16 +165,17 @@ describe("ExamWorkspaceView save rules", () => {
     expect(
       wrapper.get('[data-test="exam-workspace-choice-text-choice_001"]').attributes("aria-invalid"),
     ).toBeUndefined();
-    // A teacher edit makes the copy dirty, so the save button sends the refused copy.
+    // A teacher edit makes the copy dirty, so the save button sends it.
     await wrapper.get('[data-test="exam-workspace-item-points-input"]').setValue("5");
 
     await selectItemRow(wrapper, "item_003");
     await saveDocument(wrapper);
 
-    expect(apiMocks.saveExamWorkspaceDocument).not.toHaveBeenCalled();
-    expect(vi.mocked(useToastStore().failure)).toHaveBeenCalledWith(
-      "Frågorna 2 och 3 har svarsalternativ utan text. Skriv text i varje svarsalternativ.",
-    );
+    expect(vi.mocked(useToastStore().failure)).not.toHaveBeenCalled();
+    expect(apiMocks.saveExamWorkspaceDocument).toHaveBeenCalledTimes(1);
+    const [, request] = apiMocks.saveExamWorkspaceDocument.mock.calls[0]!;
+    const saved = request.document.items.find((item: NativeExamItem) => item.item_id === "item_002")!;
+    expect(saved.choices.find((entry: NativeExamChoice) => entry.choice_id === "choice_002")!.body).toEqual([]);
   });
 
   it("accepts zero points at the field and sends the save", async () => {

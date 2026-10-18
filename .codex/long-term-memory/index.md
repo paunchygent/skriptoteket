@@ -28,5 +28,6 @@ criteria, and implementation doctrine in governed docs.
 | 2026-04-16   | `entries/session-2026-04-16-task-0042.md`                                             | TASK-0042 long-term memory cutover and template-lane retirement                                 |
 | 2026-04-16   | `entries/session-2026-04-16-st08-10-script-editor-intelligence-review.md`             | Retained ST-08-10 script editor intelligence review prompt content                              |
 | 2026-04-16   | `entries/session-2026-04-16-epic-05-huleedu-design-harmonization.md`                  | Retained EPIC-05 HuleEdu design harmonization prompt content                                    |
-| 2026-10-13   | `entries/session-2026-10-13-st-39-04-handoff-compaction.md`                          | Compacted TASK-SKRIPT-39-04-01, -02 and -04 closures from handoff Recent                         |
-| 2026-10-15   | `entries/session-2026-10-15-st-39-05-handoff-compaction.md`                          | Compacted TASK-SKRIPT-39-05-04 and -09 closures from handoff Current                             |
+| 2026-10-13   | `entries/session-2026-10-13-st-39-04-handoff-compaction.md`                           | Compacted TASK-SKRIPT-39-04-01, -02 and -04 closures from handoff Recent                        |
+| 2026-10-15   | `entries/session-2026-10-15-st-39-05-handoff-compaction.md`                           | Compacted TASK-SKRIPT-39-05-04 and -09 closures from handoff Current                            |
+| 2026-10-18   | `entries/session-2026-10-18-st-39-04-handoff-compaction.md`                           | Compacted TASK-SKRIPT-39-04-11 to -14 narratives from handoff Current                           |

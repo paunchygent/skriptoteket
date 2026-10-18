@@ -2,7 +2,7 @@
 
 import pytest
 
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import native_item
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import aligned_native_item
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedItem
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxChunk,
@@ -71,7 +71,7 @@ def test_bold_final_choice_tail_stays_out_of_the_student_entry(separator, tail, 
         _chunk("body:0002", "A. red B. blue" + separator + tail, marked=True),
     )
     produced = _produced(chunks, facit_text=facit)
-    result = native_item(produced, chunks=chunks, language="en")
+    result = aligned_native_item(produced, chunks=chunks, language="en").item
     assert [body_plain_text(choice.body).strip() for choice in result.choices] == ["red", "blue"]
     assert body_plain_text(result.body) == "Choose an answer."
     assert result.facit_text == facit
@@ -90,7 +90,7 @@ def test_matching_answer_tail_does_not_join_the_last_right_entry():
         match_left=["red", "blue"],
         match_right=["warm", "cold"],
     )
-    result = native_item(produced, chunks=chunks, language="en")
+    result = aligned_native_item(produced, chunks=chunks, language="en").item
     assert [body_plain_text(entry.body).strip() for entry in result.match_left] == ["red", "blue"]
     assert [body_plain_text(entry.body).strip() for entry in result.match_right] == ["warm", "cold"]
     assert result.facit_text is None
@@ -109,7 +109,7 @@ def test_ordinary_literal_answer_label_inside_entry_content_survives():
             {"text": literal, "correct": False},
         ],
     )
-    result = native_item(produced, chunks=chunks, language="en")
+    result = aligned_native_item(produced, chunks=chunks, language="en").item
     assert body_plain_text(result.choices[1].body) == literal
     assert all(
         _as_text(segment).marks == ("bold",) for segment in result.choices[1].body[0].segments
@@ -122,7 +122,7 @@ def test_literal_answer_label_in_an_omitted_ordinary_continuation_is_rebuilt():
         _chunk("body:0001", "Choose an answer."),
         _chunk("body:0002", "A. red B. blue\n" + literal, marked=True),
     )
-    result = native_item(_produced(chunks), chunks=chunks, language="en")
+    result = aligned_native_item(_produced(chunks), chunks=chunks, language="en").item
     assert body_plain_text(result.choices[1].body) == "blue\n" + literal
 
 
@@ -142,7 +142,7 @@ def test_omitted_continuation_before_answer_tail_keeps_visible_text(last_wording
             {"text": last_wording, "correct": False},
         ],
     )
-    result = native_item(produced, chunks=chunks, language="en")
+    result = aligned_native_item(produced, chunks=chunks, language="en").item
     assert [body_plain_text(choice.body) for choice in result.choices] == [
         "red",
         "blue" + continuation.rstrip(),
@@ -160,7 +160,7 @@ def test_numbered_continuation_before_answer_label_keeps_visible_text():
         _chunk("body:0001", "Choose an answer."),
         _chunk("body:0002", "A. red B. blue\nUse cold water. Answer key: blue", marked=True),
     )
-    result = native_item(_produced(chunks), chunks=chunks, language="en")
+    result = aligned_native_item(_produced(chunks), chunks=chunks, language="en").item
     assert [body_plain_text(choice.body) for choice in result.choices] == [
         "red",
         "blue\nUse cold water.",
@@ -173,7 +173,9 @@ def test_bound_facit_excludes_the_tail_after_an_omitted_continuation():
         _chunk("body:0001", "Choose an answer."),
         _chunk("body:0002", "A. red B. blue\nFollow the safety note.\nSvar: blue", marked=True),
     )
-    result = native_item(_produced(chunks, facit_text="blue"), chunks=chunks, language="en")
+    result = aligned_native_item(
+        _produced(chunks, facit_text="blue"), chunks=chunks, language="en"
+    ).item
     assert [body_plain_text(choice.body) for choice in result.choices] == [
         "red",
         "blue\nFollow the safety note.",
@@ -187,7 +189,7 @@ def test_literal_quoted_answer_label_after_a_sentence_stays_in_content():
         _chunk("body:0001", "Choose an answer."),
         _chunk("body:0002", "A. red B. blue\n" + literal, marked=True),
     )
-    result = native_item(_produced(chunks), chunks=chunks, language="en")
+    result = aligned_native_item(_produced(chunks), chunks=chunks, language="en").item
     assert body_plain_text(result.choices[1].body) == "blue\n" + literal
     assert result.facit_text is None
 
@@ -197,7 +199,7 @@ def test_answer_tail_after_a_quote_closed_before_the_entry_anchor():
         _chunk("body:0001", "Choose an answer."),
         _chunk("body:0002", 'A. red B. Say "blue" aloud.\nSvar: blue', marked=True),
     )
-    result = native_item(_produced(chunks), chunks=chunks, language="en")
+    result = aligned_native_item(_produced(chunks), chunks=chunks, language="en").item
     assert [body_plain_text(choice.body) for choice in result.choices] == [
         "red",
         'Say "blue" aloud.',
@@ -222,7 +224,7 @@ def test_exact_choice_with_a_literal_label_still_excludes_the_source_tail():
             {"text": wording, "correct": False},
         ],
     )
-    result = native_item(produced, chunks=chunks, language="en")
+    result = aligned_native_item(produced, chunks=chunks, language="en").item
     assert [body_plain_text(choice.body) for choice in result.choices] == [
         "red",
         wording + "\nFollow the safety note.",
@@ -242,7 +244,7 @@ def test_rewritten_choice_keeps_the_answer_label_the_model_emitted():
             {"text": "azure Answer key: blue", "correct": False},
         ],
     )
-    result = native_item(produced, chunks=chunks, language="en")
+    result = aligned_native_item(produced, chunks=chunks, language="en").item
     assert [body_plain_text(choice.body) for choice in result.choices] == [
         "red",
         "blue\nUse cold water. Answer key: blue",
@@ -264,7 +266,7 @@ def test_mathematical_point_expression_survives_entry_reconstruction():
             {"text": wording, "correct": False},
         ],
     )
-    result = native_item(produced, chunks=chunks, language="en")
+    result = aligned_native_item(produced, chunks=chunks, language="en").item
     assert [body_plain_text(choice.body) for choice in result.choices] == ["red", wording]
     assert all(
         _as_text(segment).marks == ("bold",)
@@ -286,7 +288,7 @@ def test_quoted_point_label_survives_entry_reconstruction():
             {"text": wording, "correct": False},
         ],
     )
-    result = native_item(produced, chunks=chunks, language="en")
+    result = aligned_native_item(produced, chunks=chunks, language="en").item
     assert [body_plain_text(choice.body) for choice in result.choices] == ["red", wording]
     assert all(
         _as_text(segment).marks == ("bold",)

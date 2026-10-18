@@ -1,7 +1,8 @@
 """A converted item holds the own chunks of its question that the reply leaves out (D41). Only a
-chunk whose wording the item lacks, without points labels, numbering and answer or facit lines,
-shows under the item's check mark as printed (D4). A reply without points takes the one points
-label the item's own chunks print, and the label leaves the stem (D3)."""
+chunk no body paragraph, choice or matching entry is aligned to shows under the item's check
+mark as printed; a source answer or facit line is never marked (D4, TASK-SKRIPT-39-04-14). A
+reply without points takes the one points label the item's own chunks print, and the label
+leaves the stem (D3)."""
 
 from uuid import uuid4
 
@@ -93,7 +94,7 @@ def test_an_own_facit_line_listed_only_as_an_answer_key_joins_the_item_unmarked(
     admit_batch({"answer_key_anchors": ["body:0002"], "items": [_item(["body:0001"])]}, state)
 
     assert state.key_anchors == set()
-    ((admitted, anchors),) = state.accepted
+    ((admitted, anchors),) = [(a.item, h) for a, h in state.accepted]
     assert anchors == ("body:0001", "body:0002")
     assert admitted.review.parse_origin is NativeParseOrigin.LLM_PARSED
     assert admitted.review.state is NativeItemReviewState.REVIEW_COMPLETE
@@ -134,7 +135,7 @@ def test_an_own_facit_line_the_grouping_and_the_reply_list_as_a_key_is_its_answe
     )
 
     assert state.key_anchors == {"body:0002"}
-    ((admitted, anchors),) = state.accepted
+    ((admitted, anchors),) = [(a.item, h) for a, h in state.accepted]
     assert anchors == ("body:0001",)
     assert _FACIT not in " ".join(_stem_texts(admitted))
     assert admitted.review.state is NativeItemReviewState.REVIEW_COMPLETE
@@ -157,7 +158,7 @@ def test_an_own_facit_line_the_reply_leaves_out_is_not_flagged_in_any_printed_fo
 
     admit_batch({"items": [_item(["body:0001"])]}, state)
 
-    ((admitted, anchors),) = state.accepted
+    ((admitted, anchors),) = [(a.item, h) for a, h in state.accepted]
     assert anchors == ("body:0001", "body:0002")
     assert admitted.review.state is NativeItemReviewState.REVIEW_COMPLETE
     assert admitted.review.reasons == ()
@@ -169,7 +170,7 @@ def test_an_answer_options_line_the_reply_leaves_out_is_still_flagged():
 
     admit_batch({"items": [_item(["body:0001"])]}, state)
 
-    ((admitted, _),) = state.accepted
+    ((admitted, _),) = [(a.item, h) for a, h in state.accepted]
     assert admitted.review.state is NativeItemReviewState.REVIEW_REQUIRED
     assert admitted.review.reasons == (LEFT_OUT_REASON, options)
 
@@ -181,28 +182,25 @@ def test_a_reply_that_leaves_out_the_stem_anchor_but_copies_its_wording_is_not_f
     body: JsonValue = [{"segments": [_text(lead)]}, {"segments": [_text(_STEM[3:])]}]
     admit_batch({"items": [_item(["body:0002"], body=body)]}, state)
 
-    ((admitted, anchors),) = state.accepted
+    ((admitted, anchors),) = [(a.item, h) for a, h in state.accepted]
     assert anchors == ("body:0002", "body:0001")
     assert admitted.review.state is NativeItemReviewState.REVIEW_COMPLETE
     assert admitted.review.reasons == ()
 
 
-def test_a_reply_that_drops_a_stem_sentence_is_flagged_with_that_paragraph():
+def test_a_reply_that_shortens_an_aligned_stem_paragraph_shows_its_chunk():
+    # The reply drops the lead's second sentence, but its first sentence is aligned to the lead
+    # chunk: the item shows that chunk, so it is no left-out chunk (TASK-SKRIPT-39-04-14 D4).
     lead = "Läs dikten nedan. Tänk särskilt på diktens rytm och rim."
     state = _state(lead, _STEM)
 
     body: JsonValue = [{"segments": [_text("Läs dikten nedan.")]}, {"segments": [_text(_STEM[3:])]}]
     admit_batch({"items": [_item(["body:0002"], body=body)]}, state)
 
-    ((admitted, _),) = state.accepted
-    assert admitted.review.state is NativeItemReviewState.REVIEW_REQUIRED
-    assert admitted.review.reasons == (LEFT_OUT_REASON, lead)
-    assert [(e.code, e.item, e.anchors) for e in state.events if e.stage == "formatting"] == [
-        ("exact", 0, ("body:0002",))
-    ]
-    assert [(e.code, e.anchors) for e in state.events if e.stage != "formatting"] == [
-        ("own_chunks_left_out", ("body:0001",))
-    ]
+    ((admitted, anchors),) = [(a.item, h) for a, h in state.accepted]
+    assert anchors == ("body:0002", "body:0001")
+    assert admitted.review.state is NativeItemReviewState.REVIEW_COMPLETE
+    assert [e for e in state.events if e.stage != "formatting"] == []
 
 
 @pytest.mark.parametrize(
@@ -240,7 +238,7 @@ def test_a_dropped_paragraph_is_flagged_even_when_the_item_shares_its_words(drop
         state,
     )
 
-    ((admitted, _),) = state.accepted
+    ((admitted, _),) = [(a.item, h) for a, h in state.accepted]
     assert admitted.review.state is NativeItemReviewState.REVIEW_REQUIRED
     assert admitted.review.reasons == (LEFT_OUT_REASON, dropped)
 
@@ -267,7 +265,7 @@ def test_a_dropped_stem_read_through_its_gap_answer_is_not_flagged():
         {"items": [_item(["body:0001"], kind="gap_fill", key_source="invented", body=body)]}, state
     )
 
-    ((admitted, anchors),) = state.accepted
+    ((admitted, anchors),) = [(a.item, h) for a, h in state.accepted]
     assert anchors == ("body:0001", "body:0002")
     assert admitted.review.reasons == ()
 
@@ -295,7 +293,7 @@ def test_a_dropped_line_of_inline_options_is_read_option_by_option():
         state,
     )
 
-    ((admitted, _),) = state.accepted
+    ((admitted, _),) = [(a.item, h) for a, h in state.accepted]
     assert admitted.review.reasons == ()
 
 
@@ -322,23 +320,25 @@ def test_a_dropped_bullet_list_of_options_is_read_without_its_bullets():
         state,
     )
 
-    ((admitted, _),) = state.accepted
+    ((admitted, _),) = [(a.item, h) for a, h in state.accepted]
     assert admitted.review.reasons == ()
 
 
 @pytest.mark.parametrize(
-    ("stem", "flagged"),
-    [("absence without permission", True), ("absence without permission: truancy", False)],
-    ids=["one-cell-missing", "every-cell-read"],
+    "stem",
+    ["absence without permission", "absence without permission: truancy"],
+    ids=["one-cell-repeated", "every-cell-repeated"],
 )
-def test_a_dropped_table_is_read_cell_by_cell(stem, flagged):
+def test_a_dropped_table_the_stem_repeats_is_flagged(stem):
+    # The stem paragraph is aligned to the stem chunk; repeating the table's words never
+    # shows the table chunk (TASK-SKRIPT-39-04-14 D4).
     table = "1. absence without permission | ____ | A. truancy"
     state = _state(stem, table)
 
     admit_batch({"items": [_item(["body:0001"], body=[{"segments": [_text(stem)]}])]}, state)
 
-    ((admitted, _),) = state.accepted
-    assert admitted.review.reasons == ((LEFT_OUT_REASON, table) if flagged else ())
+    ((admitted, _),) = [(a.item, h) for a, h in state.accepted]
+    assert admitted.review.reasons == (LEFT_OUT_REASON, table)
 
 
 def test_a_dropped_stem_whose_words_span_text_segments_is_not_flagged():
@@ -351,7 +351,7 @@ def test_a_dropped_stem_whose_words_span_text_segments_is_not_flagged():
 
     admit_batch({"items": [_item(["body:0001"], body=body)]}, state)
 
-    ((admitted, _),) = state.accepted
+    ((admitted, _),) = [(a.item, h) for a, h in state.accepted]
     assert admitted.review.reasons == ()
 
 
@@ -362,7 +362,7 @@ def test_a_points_label_split_across_text_segments_leaves_the_stem():
 
     admit_batch({"items": [_item(["body:0001"], body=body, points=None)]}, state)
 
-    ((admitted, _),) = state.accepted
+    ((admitted, _),) = [(a.item, h) for a, h in state.accepted]
     assert admitted.points == 1
     assert _stem_texts(admitted) == ["Vilket ord är ett substantiv?"]
 
@@ -393,7 +393,7 @@ def test_a_choice_stem_ending_in_one_point_label_takes_the_point_and_loses_the_l
         state,
     )
 
-    ((admitted, _),) = state.accepted
+    ((admitted, _),) = [(a.item, h) for a, h in state.accepted]
     assert admitted.points == 1
     assert _stem_texts(admitted) == ["Vilket ord är ett substantiv?"]
     assert admitted.review.reasons == ()
@@ -432,7 +432,7 @@ def test_a_reply_without_points_keeps_no_points_without_exactly_one_positive_lab
         state,
     )
 
-    ((admitted, _),) = state.accepted
+    ((admitted, _),) = [(a.item, h) for a, h in state.accepted]
     assert admitted.points is None
     assert _stem_texts(admitted) == [texts[0]]
 
@@ -443,7 +443,7 @@ def test_points_the_reply_gives_win_over_a_printed_label():
 
     admit_batch({"items": [_item(["body:0001"], body=[{"segments": [_text(stem)]}])]}, state)
 
-    ((admitted, _),) = state.accepted
+    ((admitted, _),) = [(a.item, h) for a, h in state.accepted]
     assert admitted.points == 2
     assert _stem_texts(admitted) == [stem]
 
@@ -472,7 +472,7 @@ def test_a_points_paragraph_the_reply_does_not_list_still_gives_its_question_the
         state,
     )
 
-    ((admitted, anchors),) = state.accepted
+    ((admitted, anchors),) = [(a.item, h) for a, h in state.accepted]
     assert admitted.points == 1
     assert anchors[-1] == "body:0004"
     assert admitted.review.state is NativeItemReviewState.REVIEW_COMPLETE

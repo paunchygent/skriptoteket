@@ -83,6 +83,7 @@ def _marked(scored: ScoredItems) -> list[bool]:
 def _parent(parent_id: str, *item_ids: str) -> NativeExamParent:
     return NativeExamParent(
         parent_id=parent_id,
+        place=int(item_ids[0].removeprefix("item_")) - 1,
         instruction=(
             NativeParagraph(
                 segments=(NativeTextSegment(kind="text", text="Del", marks=()),), heading_level=None
@@ -381,12 +382,14 @@ def test_an_outer_part_never_shares_its_total_over_questions_that_print_their_ow
 
 
 def test_a_one_question_part_total_reaches_the_item_that_opens_with_its_part_heading():
-    # Chapter_4 shape: the item of each one-question part starts at its part heading, an
-    # anchor no question holds. The part's printed total still reaches that item.
+    # Chapter_4 shape: part lines that repeat one identity head their one question each, so
+    # the item starts at its part heading, an anchor no question holds. The part's printed
+    # total still reaches that item. (A part line naming its own part opens a parent instead,
+    # user ruling 2026-10-18.)
     chunks, questions = _exam(
-        "# Del 1: Substantiv (2 p)",
+        "# Part 3, Question 1 (2 p)",
         "Q Förklara vad som kännetecknar ett substantiv.",
-        "# Del 2: Verb (3 p)",
+        "# Part 3, Question 2 (3 p)",
         "Q Förklara vad som kännetecknar ett verb.",
     )
     noun, verb = _items(chunks, questions, (2, 5))

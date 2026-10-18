@@ -93,5 +93,18 @@ NativeSegment = Annotated[
 class NativeParagraph(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    segments: tuple[NativeSegment, ...] = Field(min_length=1)
+    # An emptied paragraph has no segments; an empty text run never exists.
+    segments: tuple[NativeSegment, ...]
     heading_level: Literal[1, 2, 3] | None
+
+
+def is_empty_body(body: tuple[NativeParagraph, ...]) -> bool:
+    """No gap, no picture and only whitespace text: what the teacher sees as an empty field.
+
+    The same rule as the SPA's ``isEmptyBody`` in ``examWorkspaceRichTextDocument.ts``.
+    """
+    return all(
+        isinstance(segment, NativeTextSegment) and segment.text.strip() == ""
+        for paragraph in body
+        for segment in paragraph.segments
+    )

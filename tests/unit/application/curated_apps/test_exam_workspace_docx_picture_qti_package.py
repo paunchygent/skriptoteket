@@ -19,8 +19,8 @@ from skriptoteket.application.curated_apps.exam_workspace_exports import (
     build_native_examnet_qti_package,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import (
+    aligned_native_item,
     assemble_build_result,
-    native_item,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedItem
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk, DocxImage
@@ -117,10 +117,10 @@ def test_a_converted_picture_keeps_its_position_and_packaged_resource(
             "criteria": [],
         }
     )
-    converted = native_item(produced, chunks=(chunk,), language="sv")
-    assert converted.review.parse_origin is NativeParseOrigin.LLM_PARSED
-    assert converted.review.state is NativeItemReviewState.REVIEW_COMPLETE
-    assert isinstance(converted.body[0].segments[0 if picture_only else 1], NativeAssetSegment)
+    converted = aligned_native_item(produced, chunks=(chunk,), language="sv")
+    assert converted.item.review.parse_origin is NativeParseOrigin.LLM_PARSED
+    assert converted.item.review.state is NativeItemReviewState.REVIEW_COMPLETE
+    assert isinstance(converted.item.body[0].segments[0 if picture_only else 1], NativeAssetSegment)
     built = assemble_build_result(
         document_id=uuid4(),
         filename="bildprov.docx",
@@ -136,6 +136,7 @@ def test_a_converted_picture_keeps_its_position_and_packaged_resource(
                 "parents": (
                     NativeExamParent(
                         parent_id="parent_001",
+                        place=document.items[0].sequence - 1,
                         instruction=(
                             NativeParagraph(
                                 heading_level=None,

@@ -32,13 +32,22 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_governing_chunks impor
     release_governing_chunks,
     unclaimed_governing,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_item_alignment import (
+    Accepted,
+    AlignedItem,
+    aligned_source_item,
+    entry_chunks,
+    paragraph_chunks,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions import (
     return_misplaced_own_chunks,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import (
+    NO_PART_LINES,
     NO_PRINTED_POINTS,
+    PartLines,
     PrintedPoints,
-    section_openers,
+    part_lines,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_section_instructions import (
     SectionInstructions,
@@ -115,14 +124,17 @@ NOTHING_GOVERNED: Mapping[str, frozenset[str]] = MappingProxyType({})
 _ITALIC_TAG = re.compile(r"</?i>")
 
 
-def native_item(
+def aligned_native_item(
     produced: ProducedItem,
     *,
     chunks: Iterable[DocxChunk] = (),
     language: Language,
     formatting_observer: Callable[[str], None] | None = None,
-) -> NativeExamItem:
+) -> AlignedItem:
     """Assign IDs and provenance; the native contract raises on any invalid shape.
+
+    The result names, per body paragraph, the source chunk that paragraph shows: the one
+    alignment the source formatting made, never a second reading of the wording.
 
     An asset segment becomes a native picture reference only when its id belongs to one of
     the provided source chunks; a model-invented id raises, so admission falls back to the
@@ -265,7 +277,7 @@ def native_item(
         formatting_observer(
             "rebuilt" if "rebuilt" in paths else "aligned" if "aligned" in paths else "exact"
         )
-    return NativeExamItem(
+    item = NativeExamItem(
         item_id="item_001",
         sequence=1,
         kind=produced.kind,
@@ -288,6 +300,13 @@ def native_item(
         ),
         source_anchor=produced.source_anchors[0],
     )
+    entries = frozenset().union(
+        *(
+            entry_chunks(surface.source, surface.source.entry_spans)
+            for surface in formatting.surfaces
+        )
+    )
+    return AlignedItem(item, paragraph_chunks(body_source), entries)
 
 
 def review_chunk_item(chunk: DocxChunk, reason: str) -> NativeExamItem:
@@ -296,13 +315,13 @@ def review_chunk_item(chunk: DocxChunk, reason: str) -> NativeExamItem:
 
 def _ordered_items(
     chunks: tuple[DocxChunk, ...],
-    accepted: tuple[tuple[NativeExamItem, tuple[str, ...]], ...],
+    accepted: Accepted,
     review_reasons: dict[str, str],
     instructions: tuple[ProducedMetadata, ...],
     governed: Mapping[str, frozenset[str]],
     title_anchors: frozenset[str] = frozenset(),
     own_anchors: frozenset[str] = frozenset(),
-    part_lines: frozenset[str] = frozenset(),
+    parts: PartLines = NO_PART_LINES,
 ) -> SectionInstructions:
     positions = {c.anchor: i for i, c in enumerate(chunks)}
     ordered = [(min(positions[a] for a in anchors), anchors, item) for item, anchors in accepted]
@@ -310,7 +329,7 @@ def _ordered_items(
         (
             positions[chunk.anchor],
             (chunk.anchor,),
-            review_chunk_item(chunk, review_reasons[chunk.anchor]),
+            aligned_source_item(review_chunk_item(chunk, review_reasons[chunk.anchor]), (chunk,)),
         )
         for chunk in chunks
         if chunk.anchor in review_reasons
@@ -323,7 +342,7 @@ def _ordered_items(
         governed,
         title_anchors,
         own_anchors,
-        part_lines,
+        parts,
     )
 
 
@@ -333,7 +352,7 @@ def assemble_build_result(
     filename: str,
     source_sha256: str,
     chunks: tuple[DocxChunk, ...],
-    accepted: tuple[tuple[NativeExamItem, tuple[str, ...]], ...] = (),
+    accepted: Accepted = (),
     review_reasons: dict[str, str],
     key_anchors: frozenset[str] = frozenset(),
     title: ProducedMetadata | None = None,
@@ -381,7 +400,7 @@ def assemble_build_result(
     events = (*events, *released.events)
     title_anchors = frozenset(title.source_anchors) if title is not None else frozenset()
     own_anchors = frozenset(anchor for own in questions for anchor in own)
-    part_lines = section_openers(printed.parts)
+    parts = part_lines(printed.parts)
     placed = _ordered_items(
         placeable,
         accepted,
@@ -390,7 +409,7 @@ def assemble_build_result(
         governed,
         title_anchors,
         own_anchors,
-        part_lines,
+        parts,
     )
     while returned := return_misplaced_own_chunks(
         chunks, accepted, instructions, placed.landed, questions, governed
@@ -405,7 +424,7 @@ def assemble_build_result(
             governed,
             title_anchors,
             own_anchors,
-            part_lines,
+            parts,
         )
     scored = apply_printed_points(placed.items, placed.parents, printed, by_anchor)
     items, parents = scored.items, scored.parents

@@ -28,6 +28,10 @@ vi.mock("../../../api/examWorkspace", async (original) => ({
   ...(await original<typeof import("../../../api/examWorkspace")>()),
   ...api,
 }));
+vi.mock("../../../api/examWorkspaceStructureCommands", async (original) => ({
+  ...(await original<typeof import("../../../api/examWorkspaceStructureCommands")>()),
+  changeExamWorkspaceItemType: api.changeExamWorkspaceItemType,
+}));
 vi.mock("../../../composables/useToast", () => ({ useToast: () => toast }));
 
 const ROUND_TRIP_MS = 50;
@@ -67,11 +71,11 @@ describe("typing right after a structural edit", () => {
     const [first, second] = editing.workspaceDocument.value!.items[0]!.choices;
 
     // Pending text, then "Lägg till steg": the text and the added step are owed as two steps.
-    editing.updateItemChoiceBody("item_001", first!.choice_id, typed("B"));
+    editing.updateItemChoiceBody("item_001", first!.choice_id, typed("B"), false);
     editing.addItemOrderingStep("item_001");
     // The first owed store is in flight; the teacher types into the next step meanwhile.
     await elapse(10);
-    editing.updateItemChoiceBody("item_001", second!.choice_id, typed("C"));
+    editing.updateItemChoiceBody("item_001", second!.choice_id, typed("C"), false);
 
     await elapse(5000);
 
@@ -91,13 +95,13 @@ describe("typing right after a structural edit", () => {
     const [first] = editing.workspaceDocument.value!.items[0]!.choices;
 
     // Pending text, then two structural edits back to back: three owed stores, each its own step.
-    editing.updateItemChoiceBody("item_001", first!.choice_id, typed("B"));
+    editing.updateItemChoiceBody("item_001", first!.choice_id, typed("B"), false);
     editing.addItemOrderingStep("item_001");
     editing.addItemOrderingStep("item_001");
     // The owed stores are in flight; the teacher types into the newest step meanwhile.
     await elapse(10);
     const last = editing.workspaceDocument.value!.items[0]!.choices.at(-1)!;
-    editing.updateItemChoiceBody("item_001", last.choice_id, typed("C"));
+    editing.updateItemChoiceBody("item_001", last.choice_id, typed("C"), false);
 
     await elapse(5000);
 

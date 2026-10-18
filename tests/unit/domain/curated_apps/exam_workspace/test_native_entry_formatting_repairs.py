@@ -4,7 +4,7 @@ from dataclasses import replace
 
 import pytest
 
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import native_item
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import aligned_native_item
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedItem
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxChunk,
@@ -64,7 +64,7 @@ def test_native_choices_account_for_each_marked_source_label_in_one_chunk():
     options = _source("body:0002", [("A. red", "A."), ("B. blue", "B.")])
     chunks = (prompt, options)
     paths: list[str] = []
-    result = native_item(
+    result = aligned_native_item(
         _item(
             "single_choice",
             chunks,
@@ -73,7 +73,7 @@ def test_native_choices_account_for_each_marked_source_label_in_one_chunk():
         chunks=chunks,
         language="en",
         formatting_observer=paths.append,
-    )
+    ).item
     assert paths == ["exact"]
     assert [body_plain_text(choice.body) for choice in result.choices] == ["red", "blue"]
     assert body_plain_text(result.body) == "Choose an answer."
@@ -88,12 +88,12 @@ def test_native_matching_accounts_for_marked_row_and_column_entry_labels():
     )
     chunks = (prompt, entries)
     paths: list[str] = []
-    result = native_item(
+    result = aligned_native_item(
         _item("matching", chunks, match_left=["red", "blue"], match_right=["warm", "cold"]),
         chunks=chunks,
         language="en",
         formatting_observer=paths.append,
-    )
+    ).item
     assert paths == ["exact"]
     assert [body_plain_text(entry.body) for entry in result.match_left] == ["red", "blue"]
     assert [body_plain_text(entry.body) for entry in result.match_right] == ["warm", "cold"]
@@ -115,7 +115,7 @@ def test_choice_rebuild_restores_marked_content_before_its_aligned_wording(prefi
     )
     chunks = (prompt, options)
     paths: list[str] = []
-    result = native_item(
+    result = aligned_native_item(
         _item(
             "single_choice",
             chunks,
@@ -124,7 +124,7 @@ def test_choice_rebuild_restores_marked_content_before_its_aligned_wording(prefi
         chunks=chunks,
         language="en",
         formatting_observer=paths.append,
-    )
+    ).item
     expected = original.removeprefix("a) ")
     assert body_plain_text(result.choices[0].body) == expected
     assert _as_text(result.choices[0].body[0].segments[0]).marks == ("bold",)
@@ -147,11 +147,11 @@ def test_matching_rebuilds_missing_marked_words_on_each_entry_side():
         separator=" | ",
     )
     chunks = (prompt, cells)
-    result = native_item(
+    result = aligned_native_item(
         _item("matching", chunks, match_left=["red", "blue"], match_right=["warm", "cold"]),
         chunks=chunks,
         language="en",
-    )
+    ).item
     assert [body_plain_text(entry.body) for entry in result.match_left] == ["Safety. red", "blue"]
     assert [body_plain_text(entry.body) for entry in result.match_right] == [
         "Caution. warm",
@@ -171,7 +171,7 @@ def test_native_item_keeps_unmarked_model_wording_and_recovers_the_omitted_headi
     question = _source("body:0002", [("Answer the question.", "")])
     chunks = (heading, question)
     paths: list[str] = []
-    result = native_item(
+    result = aligned_native_item(
         _item(
             "free_text",
             chunks,
@@ -186,7 +186,7 @@ def test_native_item_keeps_unmarked_model_wording_and_recovers_the_omitted_headi
         chunks=chunks,
         language="en",
         formatting_observer=paths.append,
-    )
+    ).item
     assert paths == ["rebuilt"]
     assert [paragraph.heading_level for paragraph in result.body] == [2, None]
     assert body_plain_text(result.body) == "Read this section carefully.\nFollow these guidelines."
@@ -212,11 +212,11 @@ def test_interleaved_matching_entries_never_share_one_anothers_source():
     prompt = _source("body:0001", [("Choose an answer.", "")])
     row = _interleaved_matching_row()
     chunks = (prompt, row)
-    result = native_item(
+    result = aligned_native_item(
         _item("matching", chunks, match_left=["red", "blue"], match_right=["warm", "cold"]),
         chunks=chunks,
         language="en",
-    )
+    ).item
     assert [body_plain_text(entry.body) for entry in result.match_left] == [
         "Safety. red",
         "blue",
@@ -233,7 +233,7 @@ def test_rewritten_matching_entry_rebuilds_only_its_own_span():
     prompt = _source("body:0001", [("Choose an answer.", "")])
     row = _interleaved_matching_row()
     chunks = (prompt, row)
-    result = native_item(
+    result = aligned_native_item(
         _item(
             "matching",
             chunks,
@@ -242,7 +242,7 @@ def test_rewritten_matching_entry_rebuilds_only_its_own_span():
         ),
         chunks=chunks,
         language="en",
-    )
+    ).item
     assert [body_plain_text(entry.body) for entry in result.match_left] == [
         "Safety. red",
         "blue",
@@ -266,7 +266,7 @@ def test_rewritten_adjacent_choices_keep_their_own_source_spans():
         one_paragraph=True,
     )
     chunks = (prompt, options)
-    result = native_item(
+    result = aligned_native_item(
         _item(
             "single_choice",
             chunks,
@@ -277,7 +277,7 @@ def test_rewritten_adjacent_choices_keep_their_own_source_spans():
         ),
         chunks=chunks,
         language="en",
-    )
+    ).item
     assert [body_plain_text(choice.body) for choice in result.choices] == [
         "Identify the important concept.",
         "blue",
@@ -306,7 +306,7 @@ def test_continuation_heading_paragraph_belongs_to_its_entry(continuation_label)
         ),
     )
     chunks = (prompt, options)
-    result = native_item(
+    result = aligned_native_item(
         _item(
             "single_choice",
             chunks,
@@ -314,7 +314,7 @@ def test_continuation_heading_paragraph_belongs_to_its_entry(continuation_label)
         ),
         chunks=chunks,
         language="en",
-    )
+    ).item
     assert [body_plain_text(choice.body) for choice in result.choices] == [
         "red\nFollow the safety note.",
         "blue",
@@ -336,7 +336,7 @@ def test_marked_continuation_after_the_last_choice_belongs_to_that_choice():
         ],
     )
     chunks = (prompt, options)
-    result = native_item(
+    result = aligned_native_item(
         _item(
             "single_choice",
             chunks,
@@ -344,7 +344,7 @@ def test_marked_continuation_after_the_last_choice_belongs_to_that_choice():
         ),
         chunks=chunks,
         language="en",
-    )
+    ).item
     assert [body_plain_text(choice.body) for choice in result.choices] == [
         "red",
         "blue\nFollow the safety note.",
@@ -366,11 +366,11 @@ def test_marked_continuation_after_the_last_matching_entry_belongs_to_it():
         kind="table",
     )
     chunks = (prompt, entries)
-    result = native_item(
+    result = aligned_native_item(
         _item("matching", chunks, match_left=["red", "blue"], match_right=["warm", "cold"]),
         chunks=chunks,
         language="en",
-    )
+    ).item
     assert [body_plain_text(entry.body) for entry in result.match_left] == ["red", "blue"]
     assert [body_plain_text(entry.body) for entry in result.match_right] == [
         "warm",
@@ -383,7 +383,7 @@ def test_unlabelled_entry_prefix_is_excluded_from_a_rewritten_body():
     prompt = _source("body:0001", [("Choose an answer.", "")])
     options = _source("body:0002", [("Safety. blue", "Safety."), ("red", "")])
     chunks = (prompt, options)
-    result = native_item(
+    result = aligned_native_item(
         _item(
             "single_choice",
             chunks,
@@ -405,7 +405,7 @@ def test_unlabelled_entry_prefix_is_excluded_from_a_rewritten_body():
         ),
         chunks=chunks,
         language="en",
-    )
+    ).item
     assert body_plain_text(result.choices[0].body) == "Safety. blue"
     assert _as_text(result.choices[0].body[0].segments[0]).marks == ("bold",)
     assert body_plain_text(result.choices[1].body) == "red"
@@ -416,7 +416,7 @@ def test_entry_label_delimiter_never_consumes_a_content_dot():
     prompt = _source("body:0001", [("Choose an answer.", "")])
     options = _source("body:0002", [("A. .NET is useful", "A. .NET"), ("B. plain", "B.")])
     chunks = (prompt, options)
-    result = native_item(
+    result = aligned_native_item(
         _item(
             "single_choice",
             chunks,
@@ -427,7 +427,7 @@ def test_entry_label_delimiter_never_consumes_a_content_dot():
         ),
         chunks=chunks,
         language="en",
-    )
+    ).item
     assert [body_plain_text(choice.body) for choice in result.choices] == [
         ".NET is useful",
         "plain",
@@ -459,11 +459,11 @@ def test_duplicate_word_matching_entries_keep_their_own_side_formatting():
         paragraphs=(DocxSourceParagraph(0, text, None),),
     )
     chunks = (prompt, entries)
-    result = native_item(
+    result = aligned_native_item(
         _item("matching", chunks, match_left=["red", "blue"], match_right=["red", "blue"]),
         chunks=chunks,
         language="en",
-    )
+    ).item
     assert [body_plain_text(entry.body) for entry in result.match_left] == ["red", "blue"]
     assert [body_plain_text(entry.body) for entry in result.match_right] == ["red", "blue"]
     assert _as_text(result.match_left[0].body[0].segments[0]).marks == ("bold",)
@@ -480,7 +480,7 @@ def test_wholly_rewritten_first_choice_keeps_its_labeled_source_span():
         one_paragraph=True,
     )
     chunks = (prompt, options)
-    result = native_item(
+    result = aligned_native_item(
         _item(
             "single_choice",
             chunks,
@@ -488,7 +488,7 @@ def test_wholly_rewritten_first_choice_keeps_its_labeled_source_span():
         ),
         chunks=chunks,
         language="en",
-    )
+    ).item
     assert [body_plain_text(choice.body) for choice in result.choices] == ["Safety. red", "blue"]
     assert _as_text(result.choices[0].body[0].segments[0]).marks == ("bold",)
     assert _as_text(result.choices[1].body[0].segments[0]).marks == ()

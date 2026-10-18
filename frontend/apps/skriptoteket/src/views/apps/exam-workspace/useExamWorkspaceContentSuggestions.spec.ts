@@ -18,6 +18,7 @@ import type {
   NativeExamContentTag,
   NativeExamDocument,
 } from "../../../api/examWorkspace";
+import { useAuthStore } from "../../../stores/auth";
 import { useToastStore } from "../../../stores/toast";
 import type { ExamWorkspaceOpening } from "./useExamWorkspaceDocument";
 import {
@@ -33,6 +34,11 @@ const apiMocks = vi.hoisted(() => ({
 vi.mock("../../../api/examWorkspace", () => apiMocks);
 
 const STALE_COPY = "Provet ändrades medan innehållet föreslogs. Föreslå innehåll igen.";
+
+/** Seed the signed-in actor the AI gate reads (TASK-SKRIPT-REP-0044 L3). */
+function signInAs(role: "user" | "contributor" | "admin" | "superuser"): void {
+  useAuthStore().user = { id: "teacher-a", email: "teacher-a@example.test", role, auth_provider: "local" };
+}
 
 type Tag = NativeExamContentTag;
 
@@ -103,6 +109,7 @@ function toastMessages(): string[] {
 beforeEach(() => {
   vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
   setActivePinia(createPinia());
+  signInAs("admin");
   for (const mock of Object.values(apiMocks)) mock.mockReset();
 });
 
@@ -191,5 +198,32 @@ describe("useExamWorkspaceContentSuggestions", () => {
     expect(harness.content.message.value).toBe(
       "Inget centralt innehåll kunde föreslås för provets frågor.",
     );
+  });
+});
+
+describe("useExamWorkspaceContentSuggestions admin gate (TASK-SKRIPT-REP-0044 L3)", () => {
+  it.each(["user", "contributor"] as const)(
+    "sends no request and stays idle for role %s",
+    async (role) => {
+      signInAs(role);
+      const harness = setup();
+      await harness.content.suggest();
+
+      expect(apiMocks.requestExamWorkspaceContentSuggestions).not.toHaveBeenCalled();
+      expect(apiMocks.getExamWorkspaceContentSuggestions).not.toHaveBeenCalled();
+      expect(harness.content.busy.value).toBe(false);
+    },
+  );
+
+  it("sends the request for an admin", async () => {
+    signInAs("admin");
+    const harness = setup();
+    apiMocks.requestExamWorkspaceContentSuggestions.mockResolvedValue(response("running"));
+    apiMocks.getExamWorkspaceContentSuggestions.mockResolvedValue(response("succeeded"));
+
+    await harness.content.suggest();
+
+    expect(apiMocks.requestExamWorkspaceContentSuggestions).toHaveBeenCalledTimes(1);
+    expect(apiMocks.requestExamWorkspaceContentSuggestions).toHaveBeenCalledWith("lineage-a");
   });
 });

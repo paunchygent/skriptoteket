@@ -20,8 +20,8 @@ from uuid import uuid4
 import pytest
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import (
+    aligned_native_item,
     assemble_build_result,
-    native_item,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedItem,
@@ -35,12 +35,12 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxSourceParagraph,
     DocxSourceRun,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_item_alignment import AlignedItem
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeParagraph,
     NativeSegment,
     NativeTextSegment,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import NativeExamItem
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
 )
@@ -92,8 +92,8 @@ def _rewritten_instruction(anchors: tuple[str, ...]) -> ProducedMetadata:
     return ProducedMetadata(text="Follow these guidelines.", source_anchors=anchors)
 
 
-def _converted(anchor: str, text: str) -> NativeExamItem:
-    return native_item(
+def _converted(anchor: str, text: str) -> AlignedItem:
+    return aligned_native_item(
         ProducedItem(
             source_anchors=(anchor,),
             outcome="converted",

@@ -21,12 +21,11 @@ function buildGap(overrides: Partial<NativeExamGap> = {}): NativeExamGap {
   return buildNativeGap("gap_001", ["100"], overrides);
 }
 
-function mountPopover(gap: NativeExamGap, gapCount = 2) {
+function mountPopover(gap: NativeExamGap) {
   return mount(ExamWorkspaceGapPopover, {
     attachTo: document.body,
     props: {
       gap,
-      gapCount,
       gapId: "gap_001",
       gapNumber: 1,
       itemId: "item_001",
@@ -127,19 +126,6 @@ describe("ExamWorkspaceGapPopover Visa som text", () => {
 
     expect(wrapper.emitted("commit")).toEqual([["item_001", "gap_001", ["hundra"]]]);
     expect(wrapper.emitted("showGapAsText")).toHaveLength(1);
-    wrapper.unmount();
-  });
-
-  it("disables the button with a linked explanation on the item's last gap", async () => {
-    const wrapper = mountPopover(buildGap(), 1);
-    const button = wrapper.get('[data-test="exam-workspace-gap-as-text"]');
-    const explanation = wrapper.get('[data-test="exam-workspace-gap-as-text-disabled"]');
-
-    expect(popoverButton(wrapper).disabled).toBe(true);
-    expect(button.attributes("aria-describedby")).toBe(explanation.attributes("id"));
-
-    await button.trigger("click");
-    expect(wrapper.emitted("showGapAsText")).toBeUndefined();
     wrapper.unmount();
   });
 

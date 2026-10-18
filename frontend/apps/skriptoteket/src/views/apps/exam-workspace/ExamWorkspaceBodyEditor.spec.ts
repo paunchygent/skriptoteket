@@ -2,315 +2,141 @@
  * Exam workspace question-text editor, text editing.
  *
  * Expected behavior:
- *   Each paragraph is one editable text with gap chips and image markers
- *   inline. Text edits emit the paragraph's normalized segments without
- *   rebuilding the DOM the teacher is typing in. Removing a gap or image is
- *   refused: the paragraph is restored and a Swedish status line explains
- *   why. Drops are refused, a paste inserts plain text at the caret, and an
- *   IME composition is read only once it ends.
+ *   The question text is one editing surface holding every paragraph, with
+ *   gap chips and pictures inline. Every change emits the item's whole body
+ *   at once: typing as a coalescing edit, and a change of the gaps, pictures
+ *   or formatting as a structural one. A selection across paragraphs deletes
+ *   with Backspace, gaps and pictures included, and Backspace at a paragraph
+ *   start merges. Another item's body replaces the text.
+ *
+ * jsdom has no layout, so selections are set through TipTap commands and keys
+ * are real `keydown` events handled by the editor's keymaps; characters are
+ * inserted with `insertContent`, because the browser inserts a typed one.
  */
 
 import { describe, expect, it } from "vitest";
+import { nextTick } from "vue";
 
-import { buildGapItem, mountEditor, paragraph } from "./ExamWorkspaceBodyEditor.specSupport";
+import { buildGapItem, buildMergeItem, mountEditor, posIn, press, surface, tiptap } from "./ExamWorkspaceBodyEditor.specSupport";
+
+type UpdateEvent = [string, Array<{ heading_level: number | null; segments: unknown[] }>, boolean];
 
 describe("ExamWorkspaceBodyEditor text editing", () => {
-  it("renders each paragraph as one text with inline gap chips and image markers", () => {
-    const wrapper = mountEditor();
+  it("renders the whole question as one labelled surface with inline gap chips and pictures", async () => {
+    const wrapper = await mountEditor();
 
-    const first = wrapper.get('[data-test="exam-workspace-body-paragraph-0"]');
-    expect(first.attributes("aria-label")).toBe("Frågetext, stycke 1");
-    expect(first.attributes("contenteditable")).not.toBe("false");
+    const root = surface(wrapper);
+    expect(wrapper.findAll('[role="textbox"]')).toHaveLength(1);
+    expect(root.getAttribute("aria-label")).toBe("Frågetext");
+    expect(root.getAttribute("contenteditable")).toBe("true");
+    expect(root.querySelectorAll("p")).toHaveLength(2);
 
-    const filledChip = wrapper.get('[data-test="exam-workspace-body-gap-0-1"]');
-    expect(filledChip.attributes("data-label")).toBe("100");
-    expect(filledChip.text()).toBe("");
-    expect(filledChip.attributes("data-gap-id")).toBe("gap_001");
-    expect(filledChip.attributes("contenteditable")).toBe("false");
-    expect(filledChip.attributes("role")).toBe("button");
+    const filled = wrapper.get('[data-gap-id="gap_001"]');
+    expect(filled.attributes("data-label")).toBe("100");
+    expect(filled.attributes("aria-label")).toBe("Lucka 1, godkända svar: 100");
+    expect(filled.attributes("data-empty")).toBeUndefined();
+    expect(filled.text()).toBe("");
 
-    const emptyChip = wrapper.get('[data-test="exam-workspace-body-gap-0-3"]');
-    expect(emptyChip.attributes("data-label")).toBe("Lucka 2");
-    expect(emptyChip.classes()).toContain("border-warning");
+    const empty = wrapper.get('[data-gap-id="gap_002"]');
+    expect(empty.attributes("data-label")).toBe("Lucka 2");
+    expect(empty.attributes("aria-label")).toBe("Lucka 2, saknar godkända svar");
+    expect(empty.attributes("data-empty")).toBe("true");
 
-    const asset = wrapper.get('[data-asset-id="asset_001"]');
-    expect(asset.attributes("data-label")).toBe("Bild");
-    expect(asset.attributes("aria-label")).toBe("Bild");
-    expect(first.element.textContent).toBe("Vatten kokar vid  grader och fryser vid  grader.");
-    expect(paragraph(wrapper, 1).textContent).toBe("Se ");
+    expect(wrapper.get('[data-asset-id="asset_001"]').attributes("role")).toBe("img");
+    expect(root.textContent).toBe("Vatten kokar vid  grader och fryser vid  grader.Se ");
     wrapper.unmount();
   });
 
-  it("emits normalized paragraph segments and keeps the typed DOM in place", async () => {
-    const item = buildGapItem();
-    const wrapper = mountEditor(item);
-    const element = paragraph(wrapper, 0);
-    const firstText = element.firstChild as Text;
+  it("emits the whole body as a coalescing edit when text is typed", async () => {
+    const wrapper = await mountEditor();
+    const editor = tiptap(wrapper);
 
-    firstText.data = "Vatten\nkokar vid ";
-    element.dispatchEvent(new Event("input", { bubbles: true }));
+    editor.commands.insertContentAt(posIn(editor, "Vatten kokar vid ", 6), " x");
 
-    const emitted = wrapper.emitted("updateParagraphSegments");
-    expect(emitted).toHaveLength(1);
-    const [itemId, paragraphIndex, segments] = emitted![0]!;
-    expect(itemId).toBe("item_001");
-    expect(paragraphIndex).toBe(0);
-    expect(segments).toEqual([
-      { kind: "text", marks: [], text: "Vatten\nkokar vid " },
-      { gap_id: "gap_001", kind: "gap" },
-      { kind: "text", marks: [], text: " grader och fryser vid " },
-      { gap_id: "gap_002", kind: "gap" },
-      { kind: "text", marks: [], text: " grader." },
+    const [event] = wrapper.emitted("updateBody") as UpdateEvent[];
+    expect(event![0]).toBe("item_001");
+    expect(event![1]).toHaveLength(2);
+    expect(event![1][0]!.segments[0]).toEqual({ kind: "text", marks: [], text: "Vatten x kokar vid " });
+    expect(event![1][1]!.segments).toEqual([
+      { kind: "text", marks: [], text: "Se " },
+      { kind: "asset", asset_id: "asset_001" },
     ]);
+    expect(event![2]).toBe(false);
+    wrapper.unmount();
+  });
 
-    await wrapper.setProps({
-      item: { ...item, body: [{ heading_level: null, segments: segments as never }, item.body[1]!] },
+  it("deletes a selection across two paragraphs, a gap and a picture included, and merges them", async () => {
+    const wrapper = await mountEditor(buildMergeItem());
+    const editor = tiptap(wrapper);
+    const from = posIn(editor, " B ", 2);
+    let pictureEnd = -1;
+    editor.state.doc.descendants((node, pos) => {
+      if (node.type.name === "examPicture") {
+        pictureEnd = pos + node.nodeSize;
+      }
+      return pictureEnd < 0;
     });
-    expect(paragraph(wrapper, 0).firstChild).toBe(firstText);
-    wrapper.unmount();
-  });
+    editor.commands.setTextSelection({ from, to: pictureEnd });
 
-  it("re-indexes chips when the text before a gap disappears", () => {
-    const wrapper = mountEditor();
-    const element = paragraph(wrapper, 0);
-    (element.firstChild as Text).data = "";
-    element.dispatchEvent(new Event("input", { bubbles: true }));
-
-    const [, , segments] = wrapper.emitted("updateParagraphSegments")![0]!;
-    expect((segments as unknown[])[0]).toEqual({ gap_id: "gap_001", kind: "gap" });
-    expect(wrapper.find('[data-test="exam-workspace-body-gap-0-0"]').exists()).toBe(true);
-    wrapper.unmount();
-  });
-
-  it("restores a removed gap and explains why", async () => {
-    const wrapper = mountEditor();
-    const element = paragraph(wrapper, 0);
-    element.querySelector('[data-gap-id="gap_002"]')!.remove();
-    element.dispatchEvent(new Event("input", { bubbles: true }));
-    await wrapper.vm.$nextTick();
-
-    expect(wrapper.emitted("updateParagraphSegments")).toBeUndefined();
-    expect(element.querySelector('[data-gap-id="gap_002"]')).not.toBeNull();
-    const status = wrapper.get('[data-test="exam-workspace-body-status"]');
-    expect(status.attributes("role")).toBe("status");
-    expect(status.text()).toBe("Luckor och bilder kan inte tas bort i texten.");
-    wrapper.unmount();
-  });
-
-  it("refuses an emptied paragraph and restores it when focus leaves", async () => {
-    const item = buildGapItem({ body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Hej" }] }] });
-    const wrapper = mountEditor(item);
-    const element = paragraph(wrapper, 0);
-    (element.firstChild as Text).data = "";
-    element.dispatchEvent(new Event("input", { bubbles: true }));
-    await wrapper.vm.$nextTick();
-
-    expect(wrapper.emitted("updateParagraphSegments")).toBeUndefined();
-    expect(wrapper.get('[data-test="exam-workspace-body-status"]').text()).toBe(
-      "Stycket måste innehålla text.",
-    );
-
-    element.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
-    await wrapper.vm.$nextTick();
-    expect(element.textContent).toBe("Hej");
-    expect(wrapper.find('[data-test="exam-workspace-body-status"]').exists()).toBe(false);
-    wrapper.unmount();
-  });
-
-  it("blocks a deletion whose target range covers a gap", () => {
-    const wrapper = mountEditor();
-    const element = paragraph(wrapper, 0);
-    const chip = element.querySelector('[data-gap-id="gap_001"]')!;
-    const range = document.createRange();
-    range.selectNode(chip);
-    const selection = window.getSelection()!;
-    selection.removeAllRanges();
-    selection.addRange(range);
-
-    const event = new InputEvent("beforeinput", {
-      bubbles: true,
-      cancelable: true,
-      inputType: "deleteContentBackward",
-    });
-    element.dispatchEvent(event);
+    const event = press(surface(wrapper), "Backspace");
 
     expect(event.defaultPrevented).toBe(true);
+    const emitted = wrapper.emitted("updateBody") as UpdateEvent[];
+    expect(emitted).toHaveLength(1);
+    expect(emitted[0]![1]).toEqual([
+      {
+        heading_level: null,
+        segments: [
+          { kind: "text", marks: [], text: "A " },
+          { kind: "gap", gap_id: "gap_001" },
+          { kind: "text", marks: [], text: " B D" },
+        ],
+      },
+    ]);
+    expect(emitted[0]![2]).toBe(true);
     wrapper.unmount();
   });
 
-  it("blocks backspace when the caret sits right after a gap", () => {
-    const wrapper = mountEditor();
-    const element = paragraph(wrapper, 0);
-    const afterChip = element.querySelector('[data-gap-id="gap_001"]')!.nextSibling as Text;
-    const range = document.createRange();
-    range.setStart(afterChip, 0);
-    range.collapse(true);
-    const selection = window.getSelection()!;
-    selection.removeAllRanges();
-    selection.addRange(range);
-
-    const event = new InputEvent("beforeinput", {
-      bubbles: true,
-      cancelable: true,
-      inputType: "deleteContentBackward",
-    });
-    element.dispatchEvent(event);
-    expect(event.defaultPrevented).toBe(true);
-
-    range.setStart(afterChip, 3);
-    range.collapse(true);
-    selection.removeAllRanges();
-    selection.addRange(range);
-    const textDelete = new InputEvent("beforeinput", {
-      bubbles: true,
-      cancelable: true,
-      inputType: "deleteContentBackward",
-    });
-    element.dispatchEvent(textDelete);
-    expect(textDelete.defaultPrevented).toBe(false);
-    wrapper.unmount();
-  });
-
-  it("explains that Backspace beside an image changes nothing, without mentioning gaps", async () => {
-    const wrapper = mountEditor();
-    const element = paragraph(wrapper, 1);
-    const marker = element.querySelector('[data-asset-id="asset_001"]')!;
-    const range = document.createRange();
-    range.setStartAfter(marker);
-    range.collapse(true);
-    const selection = window.getSelection()!;
-    selection.removeAllRanges();
-    selection.addRange(range);
-
-    const event = new InputEvent("beforeinput", {
-      bubbles: true,
-      cancelable: true,
-      inputType: "deleteContentBackward",
-    });
-    element.dispatchEvent(event);
-    await wrapper.vm.$nextTick();
-
-    expect(event.defaultPrevented).toBe(true);
-    expect(wrapper.get('[data-test="exam-workspace-body-status"]').text()).toBe(
-      "Bilden kan inte tas bort i texten.",
-    );
-    wrapper.unmount();
-  });
-
-  it("explains why Backspace beside a gap changes nothing, until the next input", async () => {
-    const wrapper = mountEditor();
-    const element = paragraph(wrapper, 0);
-    const afterChip = element.querySelector('[data-gap-id="gap_001"]')!.nextSibling as Text;
-    const range = document.createRange();
-    range.setStart(afterChip, 0);
-    range.collapse(true);
-    const selection = window.getSelection()!;
-    selection.removeAllRanges();
-    selection.addRange(range);
-
-    element.dispatchEvent(
-      new InputEvent("beforeinput", {
-        bubbles: true,
-        cancelable: true,
-        inputType: "deleteContentBackward",
+  it("merges two paragraphs with Backspace at the start of the second", async () => {
+    const wrapper = await mountEditor(
+      buildGapItem({
+        body: [
+          { heading_level: null, segments: [{ kind: "text", marks: [], text: "Ett" }] },
+          { heading_level: null, segments: [{ kind: "text", marks: [], text: "Två" }] },
+        ],
+        gaps: [],
       }),
     );
-    await wrapper.vm.$nextTick();
+    const editor = tiptap(wrapper);
+    editor.commands.setTextSelection(posIn(editor, "Två", 0));
 
-    const status = wrapper.get('[data-test="exam-workspace-body-status"]');
-    expect(status.attributes("aria-live")).toBe("polite");
-    expect(status.text()).toBe(
-      "Luckan tas inte bort med Backsteg eller Delete. Öppna luckan för att ändra svaret.",
+    press(surface(wrapper), "Backspace");
+
+    const [event] = wrapper.emitted("updateBody") as UpdateEvent[];
+    expect(event![1]).toEqual([
+      { heading_level: null, segments: [{ kind: "text", marks: [], text: "EttTvå" }] },
+    ]);
+    wrapper.unmount();
+  });
+
+  it("emits the empty body when the whole text is deleted", async () => {
+    const wrapper = await mountEditor(
+      buildGapItem({
+        body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Hej" }] }],
+        gaps: [],
+      }),
     );
+    tiptap(wrapper).commands.selectAll();
 
-    afterChip.data = " grader och fryser vid, ";
-    element.dispatchEvent(new Event("input", { bubbles: true }));
-    await wrapper.vm.$nextTick();
-    expect(wrapper.find('[data-test="exam-workspace-body-status"]').exists()).toBe(false);
+    press(surface(wrapper), "Backspace");
+
+    const [event] = wrapper.emitted("updateBody") as UpdateEvent[];
+    expect(event![1]).toEqual([]);
     wrapper.unmount();
   });
 
-  it("inserts Enter as a newline in the text", () => {
-    const wrapper = mountEditor();
-    const element = paragraph(wrapper, 0);
-    const range = document.createRange();
-    range.setStart(element.firstChild!, 6);
-    range.collapse(true);
-    const selection = window.getSelection()!;
-    selection.removeAllRanges();
-    selection.addRange(range);
-
-    const event = new InputEvent("beforeinput", {
-      bubbles: true,
-      cancelable: true,
-      inputType: "insertParagraph",
-    });
-    element.dispatchEvent(event);
-
-    expect(event.defaultPrevented).toBe(true);
-    const [, , segments] = wrapper.emitted("updateParagraphSegments")![0]!;
-    expect((segments as unknown[])[0]).toEqual({ kind: "text", marks: [], text: "Vatten\n kokar vid " });
-    wrapper.unmount();
-  });
-
-  it("waits for an IME composition to end before reading the paragraph", () => {
-    const wrapper = mountEditor();
-    const element = paragraph(wrapper, 0);
-    element.dispatchEvent(new CompositionEvent("compositionstart", { bubbles: true }));
-    (element.firstChild as Text).data = "Vatten kokar vid å";
-    element.dispatchEvent(new Event("input", { bubbles: true }));
-    expect(wrapper.emitted("updateParagraphSegments")).toBeUndefined();
-
-    element.dispatchEvent(new CompositionEvent("compositionend", { bubbles: true }));
-    const [, , segments] = wrapper.emitted("updateParagraphSegments")![0]!;
-    expect((segments as unknown[])[0]).toEqual({ kind: "text", marks: [], text: "Vatten kokar vid å" });
-    wrapper.unmount();
-  });
-
-  it("refuses drops into a paragraph", () => {
-    const wrapper = mountEditor();
-    const element = paragraph(wrapper, 0);
-    const dragOver = new Event("dragover", { bubbles: true, cancelable: true });
-    const drop = new Event("drop", { bubbles: true, cancelable: true });
-    element.dispatchEvent(dragOver);
-    element.dispatchEvent(drop);
-    expect(dragOver.defaultPrevented).toBe(true);
-    expect(drop.defaultPrevented).toBe(true);
-    expect(element.textContent).toBe("Vatten kokar vid  grader och fryser vid  grader.");
-    wrapper.unmount();
-  });
-
-  it("pastes plain text at the caret and refuses a paste over a gap", () => {
-    const wrapper = mountEditor();
-    const element = paragraph(wrapper, 0);
-    const selection = window.getSelection()!;
-    const range = document.createRange();
-    range.setStart(element.firstChild!, 6);
-    range.collapse(true);
-    selection.removeAllRanges();
-    selection.addRange(range);
-
-    const paste = new Event("paste", { bubbles: true, cancelable: true });
-    Object.defineProperty(paste, "clipboardData", { value: { getData: () => " x\r\ny" } });
-    element.dispatchEvent(paste);
-    expect(paste.defaultPrevented).toBe(true);
-    const [, , segments] = wrapper.emitted("updateParagraphSegments")![0]!;
-    expect((segments as unknown[])[0]).toEqual({ kind: "text", marks: [], text: "Vatten x\ny kokar vid " });
-
-    const chipRange = document.createRange();
-    chipRange.selectNode(element.querySelector('[data-gap-id="gap_001"]')!);
-    selection.removeAllRanges();
-    selection.addRange(chipRange);
-    const overGap = new Event("paste", { bubbles: true, cancelable: true });
-    Object.defineProperty(overGap, "clipboardData", { value: { getData: () => "z" } });
-    element.dispatchEvent(overGap);
-    expect(wrapper.emitted("updateParagraphSegments")).toHaveLength(1);
-    expect(element.querySelector('[data-gap-id="gap_001"]')).not.toBeNull();
-    wrapper.unmount();
-  });
-
-  it("rebuilds the paragraphs when another item is shown", async () => {
-    const wrapper = mountEditor();
+  it("replaces the text when another item is shown, without emitting an edit", async () => {
+    const wrapper = await mountEditor();
     await wrapper.setProps({
       item: buildGapItem({
         item_id: "item_002",
@@ -318,8 +144,48 @@ describe("ExamWorkspaceBodyEditor text editing", () => {
         gaps: [],
       }),
     });
-    expect(paragraph(wrapper, 0).textContent).toBe("Annan fråga");
-    expect(wrapper.find('[data-test="exam-workspace-body-paragraph-1"]').exists()).toBe(false);
+    await nextTick();
+    await nextTick();
+
+    expect(surface(wrapper).textContent).toBe("Annan fråga");
+    expect(surface(wrapper).querySelectorAll("p")).toHaveLength(1);
+    expect(wrapper.emitted("updateBody")).toBeUndefined();
+    wrapper.unmount();
+  });
+
+  it("gives each question its own editor, so the first edit after switching is the new question's typing", async () => {
+    const wrapper = await mountEditor();
+    const first = tiptap(wrapper);
+    first.commands.setTextSelection(posIn(first, "Vatten kokar vid ", 6));
+    await wrapper.setProps({
+      item: buildGapItem({
+        item_id: "item_002",
+        body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Annan fråga" }] }],
+        gaps: [],
+      }),
+    });
+    await nextTick();
+    await nextTick();
+    const second = tiptap(wrapper);
+
+    expect(second).not.toBe(first);
+    second.commands.setTextSelection(posIn(second, "Annan fråga", 11));
+    second.commands.insertContent("?");
+
+    expect(wrapper.emitted("updateBody")).toEqual([
+      ["item_002", [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Annan fråga?" }] }], false],
+    ]);
+    wrapper.unmount();
+  });
+
+  it("shows nothing editable and emits no edit while disabled", async () => {
+    const wrapper = await mountEditor(buildGapItem(), { disabled: true });
+    const editor = tiptap(wrapper);
+
+    expect(surface(wrapper).getAttribute("contenteditable")).toBe("false");
+    editor.commands.insertContentAt(posIn(editor, "Vatten kokar vid ", 6), " x");
+
+    expect(wrapper.emitted("updateBody")).toBeUndefined();
     wrapper.unmount();
   });
 });

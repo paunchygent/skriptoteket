@@ -71,12 +71,20 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeGapSegment,
     NativeParagraph,
     NativeTextSegment,
+    is_empty_body,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_outline import (
+    OutlineQuestion,
+    document_outline,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import (
+    NativeExamParent,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
     NativeChoice,
@@ -148,20 +156,42 @@ def native_exam_to_pdf_document(
     document_instruction_html = _document_instruction_html(
         document, asset_paths_by_id=asset_paths_by_id, labels=labels
     )
-    for item in document.items:
-        item_render, item_warnings = _render_item(
-            item=item,
-            asset_paths_by_id=asset_paths_by_id,
-            labels=labels,
-            context=context,
-            document_instruction_html=document_instruction_html,
-            parent_instruction_html=_parent_instruction_html(
-                document, item, asset_paths_by_id=asset_paths_by_id, labels=labels
-            ),
+    for entry in document_outline(document):
+        if isinstance(entry, OutlineQuestion):
+            item_render, item_warnings = _render_item(
+                item=entry.item,
+                asset_paths_by_id=asset_paths_by_id,
+                labels=labels,
+                context=context,
+                document_instruction_html=document_instruction_html,
+                parent_instruction_html="",
+            )
+            warnings.extend(item_warnings)
+            if item_render is not None:
+                items.append(item_render)
+            continue
+        if entry.children:
+            parent_instruction_html = _parent_instruction_html(
+                entry.part, asset_paths_by_id=asset_paths_by_id, labels=labels
+            )
+            for position, child in enumerate(entry.children):
+                item_render, item_warnings = _render_item(
+                    item=child,
+                    asset_paths_by_id=asset_paths_by_id,
+                    labels=labels,
+                    context=context,
+                    document_instruction_html=document_instruction_html,
+                    parent_instruction_html=parent_instruction_html if position == 0 else "",
+                )
+                warnings.extend(item_warnings)
+                if item_render is not None:
+                    items.append(item_render)
+            continue
+        part_instruction_block = _part_instruction_block(
+            entry.part, asset_paths_by_id=asset_paths_by_id, labels=labels
         )
-        warnings.extend(item_warnings)
-        if item_render is not None:
-            items.append(item_render)
+        if part_instruction_block is not None:
+            items.append(part_instruction_block)
     if blocking_examnet_pdf_warnings(tuple(warnings)):
         return _blocked(tuple(warnings))
 
@@ -299,27 +329,40 @@ def _document_instruction_html(
     labels: ExamExportLabels,
 ) -> str:
     """The exam-wide shared instruction, printed once with every top-level item."""
-    body = _body_html(document.instructions, asset_paths_by_id=asset_paths_by_id, labels=labels)
+    body = _body_html(
+        document.printed_instructions(), asset_paths_by_id=asset_paths_by_id, labels=labels
+    )
     return f'<div class="document-instruction">{body}</div>' if body else ""
 
 
 def _parent_instruction_html(
-    document: NativeExamDocument,
-    item: NativeExamItem,
+    part: NativeExamParent,
     *,
     asset_paths_by_id: Mapping[str, str],
     labels: ExamExportLabels,
 ) -> str:
-    """The parent's instruction, printed once with the first child item.
+    """The part's instruction, printed once before its first child; empty prints nothing.
 
     Every paragraph keeps its wording and every shared picture at its source place, exactly
     as an item body does; a missing or invalid picture already blocked the whole export.
     """
-    parent = document.parent_of(item.item_id)
-    if parent is None or parent.item_ids[0] != item.item_id:
+    if is_empty_body(part.instruction):
         return ""
-    body = _body_html(parent.instruction, asset_paths_by_id=asset_paths_by_id, labels=labels)
+    body = _body_html(part.instruction, asset_paths_by_id=asset_paths_by_id, labels=labels)
     return f'<div class="parent-instruction">{body}</div>'
+
+
+def _part_instruction_block(
+    part: NativeExamParent,
+    *,
+    asset_paths_by_id: Mapping[str, str],
+    labels: ExamExportLabels,
+) -> DigiExamExamNetPdfItemRender | None:
+    """A childless printed part: its instruction at its own place, nothing when empty."""
+    if is_empty_body(part.instruction):
+        return None
+    body = _body_html(part.instruction, asset_paths_by_id=asset_paths_by_id, labels=labels)
+    return DigiExamExamNetPdfItemRender(html=f'<section class="part-instruction">{body}</section>')
 
 
 def _prompt_html(

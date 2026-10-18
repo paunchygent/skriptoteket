@@ -1,7 +1,10 @@
 """A part-labelled paragraph printing its own total opens its part (review-3 N3, D10a).
 
 A paragraph that opens with a part label and prints exactly one points label opens its part
-whatever its title length. It is never a question anchor and never an item of its own.
+whatever its title length. It is never a question anchor and never an item of its own. As a
+plan part opener it is section structure whatever its Word kind (review-3 N3b): listed or
+omitted by the reply, it opens its part's parent, whose instruction is its wording without the
+points label, as a part heading's is.
 """
 
 from uuid import uuid4
@@ -140,44 +143,38 @@ def test_a_part_labelled_paragraph_total_is_shared_by_its_questions(
     )
 
 
-@pytest.mark.parametrize("opener", _LONG_TITLES)
-@_GROUPINGS
-def test_a_listed_part_paragraph_opens_a_parent_over_its_questions(
-    opener: str, grouped: tuple[tuple[int, ...], ...]
-) -> None:
-    document = _built(opener, grouped, listed=True)
+_ALL_OPENERS = pytest.mark.parametrize("opener", [*_LONG_TITLES, "DEL 1 (6 p)"])
 
+
+def _part_of_six(document: NativeExamDocument) -> tuple[str, ...]:
+    """The 6 p parent over q1 and q2, as its instruction texts; it must exist."""
     items = sorted(document.items, key=lambda item: item.sequence)
-    assert [item.source_anchor for item in items] == [
+    part = next(parent for parent in document.parents if parent.printed_total == 6)
+    assert part.item_ids == (items[0].item_id, items[1].item_id)
+    return tuple(_texts(part.instruction))
+
+
+@pytest.mark.parametrize("listed", [True, False], ids=["listed", "omitted"])
+@_ALL_OPENERS
+@_GROUPINGS
+def test_a_part_paragraph_opens_a_parent_over_its_questions(
+    opener: str, grouped: tuple[tuple[int, ...], ...], listed: bool
+) -> None:
+    # N3b requirements 1-3: listed or omitted, whatever its title length, the part paragraph
+    # opens the DEL 1 parent; its instruction is the line without its points label, as a part
+    # heading's is ("DEL 2: Satsdelar"), and no item holds it.
+    document = _built(opener, grouped, listed)
+
+    assert [item.source_anchor for item in sorted(document.items, key=lambda i: i.sequence)] == [
         "body:0002",
         "body:0003",
         "body:0005",
         "body:0006",
     ]
-    part = next(parent for parent in document.parents if parent.printed_total == 6)
-    assert part.item_ids == (items[0].item_id, items[1].item_id)
-    assert _texts(part.instruction)[0].startswith(opener.split(" (")[0])
-
-
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "review-3 N3 build side: an omitted pending part paragraph becomes a source review "
-        "item; DocxBuildState.heading_instructions and the docx_instruction_runs section "
-        "boundary admit headings only"
-    ),
-)
-@pytest.mark.parametrize("opener", _LONG_TITLES)
-@_GROUPINGS
-def test_an_omitted_part_paragraph_is_no_item_and_opens_its_parent(
-    opener: str, grouped: tuple[tuple[int, ...], ...]
-) -> None:
-    document = _built(opener, grouped, listed=False)
-
     assert not [
         item
         for item in document.items
         if item.review.parse_origin is NativeParseOrigin.SOURCE_FALLBACK
     ]
-    part = next(parent for parent in document.parents if parent.printed_total == 6)
-    assert _texts(part.instruction)[0].startswith(opener.split(" (")[0])
+    assert _part_of_six(document) == (opener.split(" (")[0],)
+    assert not _texts(document.instructions)
