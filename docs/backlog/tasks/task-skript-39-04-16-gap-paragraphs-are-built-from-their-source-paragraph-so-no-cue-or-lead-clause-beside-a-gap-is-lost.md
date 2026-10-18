@@ -138,16 +138,18 @@ source line breaks changed 10 correct items.
 
 ### Resume here (2026-10-18)
 
-- State: in independent review, reviewer pending (routed by the orchestrator).
+- State: implementation complete; independent review not launched (user stop
+  2026-10-18: break before review).
 - Branch `codex/task-skript-39-04-gap-source`, worktree
   `/home/paunchygent/apps/skriptoteket-task-skript-39-04-gap-source`; head
-  `bcc9b934` before this note (production code at `d6c2f9af`); never pushed.
+  `6e6c19d6` plus this note; production code last at `6e6c19d6` (the D10
+  copy fix; replays and the full suite ran at `d6c2f9af`); never pushed.
 - Done units: A (rule and wiring), A2 (pictures), A3 and A4 (edge whitespace,
   one paragraph with source line breaks), B (admission review), C and C2
   (label test retarget). Replays, the Hemma suite, lint, typecheck and
   `docs-validate` pass (see above).
 - Running children: none.
-- Next: act on the review verdict; then the parent merges Task 1 before
+- Next: the parent routes independent review; then act on the verdict; then the parent merges Task 1 before
   TASK-SKRIPT-39-04-15 (Task 2), which reuses `source_paragraph`.
 - Open findings: none. The `gap_count_mismatch` review text follows the
   user decision 2026-10-18 (D10), landed after review routing; not re-reviewed.
