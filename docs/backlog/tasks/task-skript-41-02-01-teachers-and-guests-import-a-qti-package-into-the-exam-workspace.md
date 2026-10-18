@@ -29,6 +29,10 @@ Non-goals: AI repair of imported items; QTI versions other than the one the expo
 
 - ST-SKRIPT-41-02 P1; User grilling 2026-10-18 in the Mac orchestration session (retained root 01a14ee0-903e-7423-b969-30e3661e9006); explorer maps of the DigiExam lines and paid AI call sites the same day.
 - `domain/curated_apps/exam_workspace/digiexam_import.py` (mapper pattern), `examnet_qti_export.py`, `docs/reference/ref-skript-research-exam-net-qti-import-routes-per-question-type-*.md`.
+- Mac parent rulings 2026-10-18, relayed by the orchestrator to the implementation lead:
+  - Ordering items import, with answer-key origin `teacher_authored`, because the QTI key is the order the teacher wrote. They are not skipped under 39-06-08 D3.
+  - These Q2 round-trip losses are accepted because the export cannot carry them. Tests assert each one by name: free-text rubric criterion text (never written), document instructions folded into every item prompt, automatic gap values merged into accepted values, and a parent with one non-gap child flattened to a standalone item.
+  - AC1's Exam.net part stays in this task. The Skriptoteket QTI shape is built and proven first. A real Exam.net export, supplied by the Mac parent, becomes a fixture and is proven before review.
 
 ## Core Vertical And Performance
 
