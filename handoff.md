@@ -86,7 +86,7 @@
   40-04-07 ruling (user 2026-10-18): print PDF renders the DOCX house template; Exam.net import PDF stays a fallback only; QTI is the Exam.net route (W1/W11, lead amends the task doc).
   39-06-10 `done` 2026-10-18, merged (schema v7); 40-04-07 (repair lead 715cef23) merges second: ports _print_walk to document_outline, bumps to v8; then re-import the staging fixture and walk both.
   Hemma lanes 2026-10-18: REP-0044 `done` 2026-10-18, merged (paid AI admin-only until EPIC-41 ships); REP-0045 `done` 2026-10-18, merged (label_b recordings carry capture-time request keys; 14 calls re-recorded).
-  39-04 follow-ups on Hemma from 6e3453b2e: 39-04-16 gap paragraphs from source (lead ec3b7ed9); 39-04-15 re-scoped by user to fix the q8 stem drop at its root (lead bb15ad98, merges after 39-04-16).
+  39-04 follow-ups on Hemma: 39-04-16 (lead ec3b7ed9); 39-04-15 misplaced-only in review at 6d58822f (lead bb15ad98, merges after 39-04-16); metodprov 1 own-paragraph drop -> TASK-SKRIPT-REP-0049 (proposed, unplanned). Account switch 2026-10-18: Hemma orchestrator brings all lanes to committed branches with 'Resume here' notes; no new launches.
   EPIC-SKRIPT-41 ready 2026-10-18: ST-41-02 guest workspace + QTI import + guest DXE line removal (Hemma, parallel); ST-41-01 paid AI through the HuleEdu LLM provider door (TASK-HULE-14-03-01 in huleedu first, then 41-01-03, 41-01-02, 41-01-04 capacity for 1,000 concurrent calls).
   Hemma Opus lead `3b164d53`: 40-03-01..09 and 08-36-02 `done`; 40-02-01 tranche 1 on
   main 761b1b59, tranche 2 a67afa90 (`in_progress`: shared `play` meaning in
