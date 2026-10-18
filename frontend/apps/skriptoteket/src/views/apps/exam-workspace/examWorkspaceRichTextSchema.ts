@@ -52,11 +52,12 @@ export const EXAM_PICTURE_NODE = "examPicture";
 /** Dispatch a transaction with this meta key to redraw gap labels and picture URLs. */
 export const ATOM_STATE_KEY = new PluginKey<DecorationSet>("examAtomState");
 
+/** A gap's visible label ("Lucka 2" or its accepted answers), accessible name, and whether it lacks answers. */
+export type ExamGapState = { label: string; accessibleLabel: string; empty: boolean };
+
 export type ExamRichTextOptions = {
-  /** The visible label of one gap ("Lucka 2" or its accepted answers), read on every redraw. */
-  gapLabel: (gapId: string) => string;
-  /** The accessible name of one gap, read on every redraw. */
-  gapAccessibleLabel: (gapId: string) => string;
+  /** How one gap is drawn, read on every redraw. */
+  gapState: (gapId: string) => ExamGapState;
   /** The protected URL of one picture, or undefined while it is not loaded. */
   pictureUrl: (assetId: string) => string | undefined;
   /** Ctrl/Cmd+Z: the workspace's Ångra. */
@@ -173,11 +174,12 @@ function atomState(options: ExamRichTextOptions) {
         const decorations: Decoration[] = [];
         doc.descendants((node, pos) => {
           if (node.type.name === EXAM_GAP_NODE) {
-            const gapId = String(node.attrs.gapId);
+            const gap = options.gapState(String(node.attrs.gapId));
             decorations.push(
               Decoration.node(pos, pos + node.nodeSize, {
-                "data-label": options.gapLabel(gapId),
-                "aria-label": options.gapAccessibleLabel(gapId),
+                "data-label": gap.label,
+                "aria-label": gap.accessibleLabel,
+                ...(gap.empty ? { "data-empty": "true" } : {}),
               }),
             );
           } else if (node.type.name === EXAM_PICTURE_NODE) {
