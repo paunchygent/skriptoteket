@@ -456,7 +456,6 @@ pr-0255-auth-bootstrap = "python -m scripts.playwright_pr_0255_auth_bootstrap"
 pr-0258-auth-projection = "python -m scripts.playwright_pr_0258_auth_projection"
 pr-0261-auth-action-matrix = "python -m scripts.playwright_pr_0261_auth_action_matrix --start-backend --start-vite"
 pr-0262-real-lifecycle = "python -m scripts.playwright_pr_0262_real_lifecycle --start-backend --start-vite"
-exam-converter-real-dxe-e2e = "python -m scripts.exam_converter_real_dxe_e2e"
 exam-conversion-eval = { cmd = "python -m scripts.exam_conversion_eval", env = { PYTHONPATH = "src" } }
 build-answer-misspellings = { cmd = "python -m scripts.build_answer_misspellings", env = { PYTHONPATH = "src" } }
 build-exam-course-catalog = { cmd = "python -m scripts.build_exam_course_catalog", env = { PYTHONPATH = "src" } }

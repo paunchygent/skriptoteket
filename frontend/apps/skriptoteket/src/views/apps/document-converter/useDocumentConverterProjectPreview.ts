@@ -15,7 +15,7 @@
 import { computed, nextTick, onScopeDispose, ref, watch } from "vue";
 
 import { useToast } from "../../../composables/useToast";
-import { triggerBrowserDownload } from "../exam-converter/browserDownload";
+import { triggerBrowserDownload } from "../../../utils/browserDownload";
 import {
   downloadDocumentConverterProjectPreviewArtifact,
   loadDocumentConverterProjectPreviewArtifactBlob,

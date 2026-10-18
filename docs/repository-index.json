@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "861fb3c49442359d3d972cc13fa05784065949b1766c919d772ef7db3e0674a1",
+  "source_set_digest": "99de55352b9d1e92bc805b3623315caebd0b98f6b3ab8feed64f21168cd65316",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -8707,7 +8707,7 @@
       "type": "adr",
       "title": "Exam Converter durable correction sessions with stateless apply",
       "path": "docs/decisions/adr-skript-0087-exam-converter-durable-correction-sessions-with-stateless-apply.md",
-      "status": "accepted",
+      "status": "superseded",
       "owners": [
         {
           "kind": "service",
@@ -12335,7 +12335,7 @@
       {
         "id": "ADR-SKRIPT-0087",
         "title": "Exam Converter durable correction sessions with stateless apply",
-        "status": "accepted",
+        "status": "superseded",
         "path": "docs/decisions/adr-skript-0087-exam-converter-durable-correction-sessions-with-stateless-apply.md",
         "governing": [],
         "governed_contracts": [],

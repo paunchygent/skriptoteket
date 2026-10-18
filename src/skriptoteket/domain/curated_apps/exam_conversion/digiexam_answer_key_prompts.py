@@ -6,8 +6,8 @@ Purpose:
     `76983339` without changing parser provenance or renderer input.
 
 Relationships:
-    - Consumed by `domain.curated_apps.exam_conversion.digiexam_answer_key_completion`
-      before provider request construction.
+    - Consumed by the workspace answer-key prompts and the answer-key
+      providers before provider request construction.
     - Uses DigiExam gap IDs from source HTML so gap-fill output can bind back
       to the source item contract.
 """

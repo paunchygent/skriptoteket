@@ -7,9 +7,8 @@
  *   speaker controls, and Gateway lifecycle runtime.
  *
  * Relationships:
- *   - Rendered by `ExamConverterAuthenticatedView` when transcript mode is
- *     selected.
- *   - Keeps transcript state out of the existing Exam Converter components.
+ *   - Mounted directly by the `/apps/audio-transcription` route.
+ *   - Keeps transcript state out of the Exam Converter components.
  */
 
 import { computed, ref } from "vue";

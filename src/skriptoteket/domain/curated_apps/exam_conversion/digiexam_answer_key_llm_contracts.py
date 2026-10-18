@@ -1,14 +1,13 @@
 """Structured-LLM contracts for DigiExam answer-key completion.
 
 Purpose:
-    Define the typed request/completion boundary between answer-key candidate
-    planning and remote structured-output providers, ported from
+    Define the typed request/completion boundary between answer-key requests
+    and remote structured-output providers, ported from
     sir-convert-a-lot `76983339` and trimmed to the JSON-Schema-only lane.
 
 Relationships:
-    - Consumed by `domain.curated_apps.exam_conversion.digiexam_answer_key_completion`
-      for candidate planning and by the httpx provider adapter in
-      `infrastructure.llm.openai.answer_key_structured_provider`.
+    - Consumed by the workspace answer-key lane and by the httpx provider
+      adapter in `infrastructure.llm.openai.answer_key_structured_provider`.
     - The provider protocol seam lives in `protocols.exam_answer_key`.
 """
 

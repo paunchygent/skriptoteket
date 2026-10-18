@@ -36,7 +36,7 @@ import type {
   NativeExamItem,
 } from "../../../api/examWorkspace";
 import { useToast } from "../../../composables/useToast";
-import { triggerBrowserDownload } from "../exam-converter/browserDownload";
+import { triggerBrowserDownload } from "../../../utils/browserDownload";
 import { examWorkspaceSavedAt } from "./examWorkspaceFormat";
 
 /** A save from elsewhere moved the head; the workspace reads the latest version in. */

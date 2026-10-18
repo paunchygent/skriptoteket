@@ -189,8 +189,15 @@ async def test_real_dxe_upload_job_and_saved_edits_roundtrip_http_and_postgres(
                 document = opened["document"]
                 document["revision"] = 2
                 document["title"] = "Lärarens redigerade DigiExam-prov"
+                history = await client.get(path + "/history")
+                assert history.status_code == 200, history.text
                 response = await client.put(
-                    path, json={"expected_revision": 1, "document": document}
+                    path,
+                    json={
+                        "expected_revision": 1,
+                        "document": document,
+                        "position_step_id": history.json()["position_step_id"],
+                    },
                 )
                 assert response.status_code == 200, response.text
                 assert response.json()["document"]["title"] == document["title"]

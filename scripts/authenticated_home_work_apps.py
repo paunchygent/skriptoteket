@@ -41,7 +41,7 @@ APP_ORDER = [
 ]
 APP_LINK_TARGETS = {
     "home-work-app-classroom": "/apps/classroom.group-seating-studio",
-    "home-work-app-exam-converter": "/apps/exam-converter",
+    "home-work-app-exam-workspace": "/apps/exam-workspace",
     "home-work-app-audio-transcription": "/apps/audio-transcription",
     "home-work-app-document-converter": "/apps/document-converter",
     "home-work-app-editor": "/editor",

@@ -6,7 +6,7 @@
  *   downloads while keeping upstream storage and authority out of view code.
  *
  * Relationships:
- *   - Used by Exam Converter, transcript, and Document Converter runtimes.
+ *   - Used by the Exam Workspace, public Exam Converter, transcript, and Document Converter runtimes.
  */
 
 export function triggerBrowserDownload(blob: Blob, filename: string): void {

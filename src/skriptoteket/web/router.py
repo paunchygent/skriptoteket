@@ -29,9 +29,6 @@ from skriptoteket.web.api.v1 import (
 )
 from skriptoteket.web.api.v1 import apps_conversion_hub as api_v1_apps_conversion_hub
 from skriptoteket.web.api.v1 import (
-    apps_conversion_hub_correction_sessions as api_v1_apps_conversion_hub_correction_sessions,
-)
-from skriptoteket.web.api.v1 import (
     apps_conversion_hub_document_converter_project_previews as api_v1_doc_converter_previews,
 )
 from skriptoteket.web.api.v1 import (
@@ -116,7 +113,6 @@ router.include_router(api_v1_apps_reagent_prep_chef.router)
 router.include_router(api_v1_apps_conversion_hub.router)
 router.include_router(api_v1_doc_converter_saved_files.router)
 router.include_router(api_v1_doc_converter_previews.router)
-router.include_router(api_v1_apps_conversion_hub_correction_sessions.router)
 router.include_router(api_v1_apps_conversion_hub_exam_workspace.router)
 router.include_router(api_v1_exam_workspace_parents.router)
 router.include_router(api_v1_exam_workspace_change_type.router)

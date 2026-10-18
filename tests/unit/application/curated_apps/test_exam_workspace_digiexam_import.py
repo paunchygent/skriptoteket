@@ -70,7 +70,6 @@ async def test_real_export_queues_once_with_source_course_and_private_status(fix
     assert job.workspace_lineage_id == queued.lineage_id
     assert job.workspace_document_revision == 1
     assert job.workspace_course_key == "SVESVE02"
-    assert job.conversion_job_id is None
     assert uow.entered and uow.exited
 
     index = AsyncMock(spec=ExamIndexRepositoryProtocol)

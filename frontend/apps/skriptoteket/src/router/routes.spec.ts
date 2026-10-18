@@ -50,28 +50,29 @@ describe("routes", () => {
     expect(resolved.params.publicCapabilitySlug).toBe("exam-converter");
   });
 
-  it("adds a canonical protected Exam Converter app identity route", () => {
+  it("no longer has a protected Exam Converter app identity route", () => {
     const router = createTestRouter();
 
     const resolved = router.resolve("/apps/exam-converter");
 
-    expect(resolved.name).toBe("exam-converter-authenticated");
-    expect(resolved.meta.requiresAuth).toBe(true);
-    expect(resolveMatchedProps("/apps/exam-converter")).toEqual({
-      presentationMode: "exam",
-    });
+    expect(resolved.name).not.toBe("exam-converter-authenticated");
+    expect(resolved.name).toBe("app-detail");
+    expect(resolved.params.appId).toBe("exam-converter");
+    expect(router.hasRoute("exam-converter-authenticated")).toBe(false);
   });
 
-  it("keeps Audio Transcription on the shared unavailable-app surface", () => {
+  it("mounts the transcript host directly on Audio Transcription", async () => {
     const router = createTestRouter();
 
     const resolved = router.resolve("/apps/audio-transcription");
 
     expect(resolved.name).toBe("audio-transcription-authenticated");
     expect(resolved.meta.requiresAuth).toBe(true);
-    expect(resolved.meta.unavailableAppTitle).toBe("Ljudtranskribering");
-    const route = routes.find((candidate) => candidate.path === "/apps/audio-transcription");
-    expect(String(route?.component)).toContain("HomeView.vue");
+    expect(resolved.meta.unavailableAppTitle).toBeUndefined();
+    const loader = resolved.matched.at(-1)?.components?.default;
+    expect(typeof loader).toBe("function");
+    const loaded = await (loader as () => Promise<{ default: { __file?: string } }>)();
+    expect(loaded.default.__file).toContain("ConversionHubTranscriptHost.vue");
   });
 
   it("adds the route-visible authenticated Document Converter app before the generic app host", () => {
@@ -118,16 +119,16 @@ describe("routes", () => {
     expect(resolved.meta.minRole).toBeUndefined();
   });
 
-  it("adds the authenticated Exam Converter UI-inspection fixture route for test/dev", () => {
+  it("has no Exam Converter UI-inspection fixture route", () => {
     const router = createTestRouter();
 
     const resolved = router.resolve(
       "/apps/documents.conversion_hub/exam-converter/ui-fixtures/complete-qti-blocked",
     );
 
-    expect(resolved.name).toBe("exam-converter-ui-inspection-fixture");
-    expect(resolved.params.fixtureId).toBe("complete-qti-blocked");
-    expect(resolved.meta.requiresAuth).toBe(true);
+    expect(resolved.name).not.toBe("exam-converter-ui-inspection-fixture");
+    expect(router.hasRoute("exam-converter-ui-inspection-fixture")).toBe(false);
+    expect(resolved.params.fixtureId).toBeUndefined();
   });
 
   it("resolves malformed public app links to the dedicated recovery route", () => {

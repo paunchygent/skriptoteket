@@ -2,7 +2,7 @@
 
 Purpose:
     Persist the durable execution-worker jobs that produce machine-proposed
-    answer keys for in-process Exam Converter conversions.
+    answer keys for exam workspace source lanes.
 
 Relationships:
     Mapped by ``infrastructure.repositories.exam_answer_key_enrichment_jobs``;
@@ -16,7 +16,7 @@ from datetime import datetime
 from uuid import UUID, uuid4
 
 from pydantic import JsonValue
-from sqlalchemy import DateTime, ForeignKey, Index, Integer, LargeBinary, String, Text, func, text
+from sqlalchemy import DateTime, Index, Integer, LargeBinary, String, Text, func, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.dialects.postgresql import UUID as PGUUID
 from sqlalchemy.orm import Mapped, mapped_column
@@ -53,14 +53,7 @@ class ExamAnswerKeyEnrichmentJobModel(Base):
 
     id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid4)
 
-    source_kind: Mapped[str] = mapped_column(String(32), nullable=False, server_default="dxe")
-    conversion_job_id: Mapped[UUID | None] = mapped_column(
-        PGUUID(as_uuid=True),
-        ForeignKey("conversion_hub_jobs.id", ondelete="CASCADE"),
-        unique=True,
-        index=True,
-        nullable=True,
-    )
+    source_kind: Mapped[str] = mapped_column(String(32), nullable=False)
     owner_user_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), index=True, nullable=False)
 
     status: Mapped[str] = mapped_column(String(16), index=True, nullable=False)

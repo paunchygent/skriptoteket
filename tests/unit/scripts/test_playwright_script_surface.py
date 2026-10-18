@@ -44,7 +44,6 @@ ALLOWED_PR_PLAYWRIGHT_SCRIPTS = {
     "playwright_pr_0311_phone_room_template_modal.py",
     "playwright_pr_0315_phone_rules_active_management.py",
     "playwright_pr_0316_smart_history_first_run_soft_degrade.py",
-    "playwright_pr_0356_source_only_fixture_proof.py",
 }
 
 ACTIVE_REUSABLE_PROOF_SCRIPTS = {

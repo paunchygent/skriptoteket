@@ -158,7 +158,6 @@ export const HELP_TOPIC_CATALOG: readonly HelpTopicCatalogEntry[] = [
     title: "Konvertera material",
     description: "Omvandla prov, ljud och dokument.",
     routes: [
-      "exam-converter-authenticated",
       "audio-transcription-authenticated",
       "document-converter-authenticated",
     ],

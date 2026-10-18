@@ -88,7 +88,7 @@ vi.mock("../../../api/conversionHubTranscriptFormatterArtifactActions", () => ({
   saveConversionHubTranscriptFormatterArtifact:
     hoistedArtifactActionMocks.saveConversionHubTranscriptFormatterArtifact,
 }));
-vi.mock("../exam-converter/browserDownload", () => ({
+vi.mock("../../../utils/browserDownload", () => ({
   triggerBrowserDownload: hoistedBrowserDownloadMocks.triggerBrowserDownload,
 }));
 vi.mock("./useTranscriptSourceFile", () => ({

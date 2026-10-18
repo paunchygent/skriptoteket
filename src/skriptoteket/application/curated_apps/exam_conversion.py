@@ -6,21 +6,17 @@ Purpose:
     curated app.
 
 Relationships:
-    Used by ``application.curated_apps.handlers.exam_converter_conversions``,
-    ``application.curated_apps.exam_conversion_producers``, and the Conversion
-    Hub artifact download handler for local-lane branching.
+    Used by ``application.curated_apps.exam_conversion_producers``,
+    ``application.curated_apps.exam_conversion_review_artifacts``, the public
+    Exam Converter handlers, and the Conversion Hub artifact download handler
+    for local-lane branching.
 """
 
 from __future__ import annotations
 
-from uuid import UUID
-
 from pydantic import BaseModel, ConfigDict, Field
 
-from skriptoteket.application.curated_apps.conversion_hub import (
-    ConversionHubJob,
-    ConversionHubJobStatus,
-)
+from skriptoteket.application.curated_apps.conversion_hub import ConversionHubJob
 from skriptoteket.domain.errors import validation_error
 from skriptoteket.domain.scripting.input_files import sanitize_input_filename
 
@@ -55,17 +51,6 @@ class ExamConversionNamedArtifact(BaseModel):
     filename: str = Field(min_length=1, max_length=255)
     content_type: str = Field(min_length=1, max_length=255)
     content: bytes = Field(min_length=1)
-
-
-class ExamConverterConversionSubmitResult(BaseModel):
-    """Return the locally owned job created for one in-process conversion."""
-
-    model_config = ConfigDict(extra="forbid")
-
-    job_id: UUID
-    status: ConversionHubJobStatus
-    error: str | None = None
-    idempotent_replay: bool = False
 
 
 def is_exam_conversion_job(job: ConversionHubJob) -> bool:
