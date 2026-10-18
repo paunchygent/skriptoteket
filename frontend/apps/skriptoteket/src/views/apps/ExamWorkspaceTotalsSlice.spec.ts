@@ -17,6 +17,7 @@ import {
   selectItemRow,
   type ViewWrapper,
 } from "./ExamWorkspaceSlice.specSupport";
+import { HISTORY_BASELINE_STEP_ID, arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
 import { examWorkspacePointsLine, examWorkspacePrintedDifference } from "./exam-workspace/examWorkspaceTotals";
 import type { ExamWorkspaceLayout } from "./exam-workspace/useExamWorkspaceLayout";
 
@@ -24,6 +25,9 @@ const apiMocks = vi.hoisted(() => ({
   downloadExamWorkspaceExport: vi.fn(),
   findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
+  getExamWorkspaceHistory: vi.fn(),
+  getExamWorkspaceHistoryStep: vi.fn(),
+  storeExamWorkspaceUndoStep: vi.fn(),
   getExamWorkspaceExportChecklist: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
@@ -42,6 +46,7 @@ const succeeded: ExamWorkspaceConversionStatus = {
   document_revision: 1, questions_total: 0, questions_done: 0, units: [],
 };
 const mounted: ViewWrapper[] = [];
+let history: ReturnType<typeof arrangeStepHistory>;
 const WARNING = '[data-test="exam-workspace-points-warning"]';
 const EXAM_POINTS = '[data-test="exam-workspace-exam-points"]';
 
@@ -65,6 +70,7 @@ async function openDocument(document: NativeExamDocument, layout: ExamWorkspaceL
   globalThis.document.body.append(slot);
   const host = globalThis.document.createElement("div");
   globalThis.document.body.append(host);
+  history.documents.set(HISTORY_BASELINE_STEP_ID, document);
   const { wrapper } = await mountExamWorkspace({}, layout, host);
   mounted.push(wrapper);
   await importFixtureDocument(wrapper);
@@ -82,6 +88,7 @@ beforeEach(() => {
   apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue(succeeded);
   apiMocks.importExamWorkspaceDocument.mockResolvedValue({ ...succeeded, state: "queued", document_revision: null });
   apiMocks.getExamWorkspaceExportChecklist.mockResolvedValue({ entries: [] });
+  history = arrangeStepHistory(apiMocks);
 });
 afterEach(() => {
   for (const wrapper of mounted.splice(0)) wrapper.unmount();
@@ -175,8 +182,8 @@ describe("workspace printed exam totals", () => {
     expect(partLine(wrapper, "parent_002").text()).toBe("5 p · provtexten anger 8 p");
     expect(wrapper.findAll('[data-test="exam-workspace-row-parent_002"] [data-test="exam-workspace-part-points"]'))
       .toHaveLength(1);
-    // The meta line drops its points, so "5 p" is not said twice on the row.
-    expect(wrapper.get('[data-test="exam-workspace-row-parent_002"]').text().match(/5 p/g)).toHaveLength(1);
+    // The meta line drops its points, so "5 p" is said only by the amber line and its accept button.
+    expect(wrapper.get('[data-test="exam-workspace-row-parent_002"]').text().match(/5 p/g)).toHaveLength(2);
 
     expect(wrapper.find(WARNING).exists()).toBe(false);
     await wrapper.get('[data-test="exam-workspace-row-parent_002"]').trigger("click");
@@ -210,5 +217,111 @@ describe("total comparison edge cases", () => {
     expect(examWorkspacePrintedDifference(0.3, items)).toBeNull();
     expect(examWorkspacePrintedDifference(0.4, items)).toBe(0.4);
     expect(examWorkspacePointsLine(0.1 + 0.2, 0.4)).toBe("0,3 p · provtexten anger 0,4 p");
+  });
+});
+
+describe("accepting the computed totals", () => {
+  const ACCEPT_EXAM = '[data-test="exam-workspace-accept-exam-total"]';
+  const ACCEPT_ALL = '[data-test="exam-workspace-accept-all-totals"]';
+  const acceptPart = (parentId: string) => `[data-test="exam-workspace-accept-part-total-${parentId}"]`;
+
+  /** Items 2+3 = 5 and 1+4 = 5 (exam 10); the exam prints 14 and each part 8 or 6. */
+  function twoPartsPrintingOtherTotals(examPrinted: number | null = 14): NativeExamDocument {
+    const document = documentWithTotals(examPrinted, [2, 3, 1, 4]);
+    document.parents = [
+      { parent_id: "parent_001", item_ids: ["item_001", "item_002"], printed_total: 8, instruction: [] },
+      { parent_id: "parent_002", item_ids: ["item_003", "item_004"], printed_total: 6, instruction: [] },
+    ];
+    return document;
+  }
+
+  async function undo(wrapper: ViewWrapper) {
+    await wrapper.get('[data-test="exam-workspace-undo"]').trigger("click");
+    await flushPromises();
+  }
+
+  it("clears only the exam total from the footer, and Ångra brings the printed number back", async () => {
+    const wrapper = await openDocument(twoPartsPrintingOtherTotals());
+    expect(wrapper.get(EXAM_POINTS).text()).toBe("Totalt 10 p · provtexten anger 14 p");
+    expect(wrapper.get(ACCEPT_EXAM).text()).toBe("Använd 10 p");
+
+    await wrapper.get(ACCEPT_EXAM).trigger("click");
+    await flushPromises();
+
+    expect(wrapper.get(EXAM_POINTS).text()).toBe("Totalt 10 p");
+    expect(wrapper.find(ACCEPT_EXAM).exists()).toBe(false);
+    expect(partLine(wrapper, "parent_001").text()).toBe("5 p · provtexten anger 8 p");
+    expect(partLine(wrapper, "parent_002").text()).toBe("5 p · provtexten anger 6 p");
+    expect(apiMocks.saveExamWorkspaceDocument).not.toHaveBeenCalled();
+
+    await undo(wrapper);
+    expect(wrapper.get(EXAM_POINTS).text()).toBe("Totalt 10 p · provtexten anger 14 p");
+  });
+
+  it("clears only one part from its row without selecting it, and from the instruction editor", async () => {
+    const wrapper = await openDocument(twoPartsPrintingOtherTotals());
+    await wrapper.get('[data-test="exam-workspace-row-parent_002"]').trigger("click");
+    expect(wrapper.get('[data-test="exam-workspace-row-parent_002"]').attributes("aria-selected")).toBe("true");
+    const selectedBefore = wrapper.get('[aria-selected="true"]').attributes("data-entry-id");
+
+    expect(wrapper.get(acceptPart("parent_001")).text()).toBe("Använd 5 p");
+    await wrapper.get(acceptPart("parent_001")).trigger("click");
+    await flushPromises();
+
+    expect(partLine(wrapper, "parent_001").exists()).toBe(false);
+    expect(partLine(wrapper, "parent_002").text()).toBe("5 p · provtexten anger 6 p");
+    expect(wrapper.get(EXAM_POINTS).text()).toBe("Totalt 10 p · provtexten anger 14 p");
+    expect(wrapper.get('[aria-selected="true"]').attributes("data-entry-id")).toBe(selectedBefore);
+
+    await undo(wrapper);
+    expect(partLine(wrapper, "parent_001").text()).toBe("5 p · provtexten anger 8 p");
+
+    const editor = wrapper.get('[data-test="exam-workspace-instruction-editor"]');
+    expect(editor.get('[data-test="exam-workspace-accept-part-total"]').text()).toBe("Använd 5 p");
+    await editor.get('[data-test="exam-workspace-accept-part-total"]').trigger("click");
+    await flushPromises();
+    expect(partLine(wrapper, "parent_002").exists()).toBe(false);
+    expect(partLine(wrapper, "parent_001").text()).toBe("5 p · provtexten anger 8 p");
+    expect(wrapper.find('[data-test="exam-workspace-accept-part-total"]').exists()).toBe(false);
+  });
+
+  it("clears the exam and every part in one step that one Ångra restores", async () => {
+    const wrapper = await openDocument(twoPartsPrintingOtherTotals());
+
+    await wrapper.get(ACCEPT_ALL).trigger("click");
+    await flushPromises();
+
+    expect(wrapper.text()).not.toContain("provtexten anger");
+    expect(wrapper.find(ACCEPT_ALL).exists()).toBe(false);
+    expect(apiMocks.storeExamWorkspaceUndoStep).toHaveBeenCalledTimes(1);
+
+    await undo(wrapper);
+    expect(wrapper.get(EXAM_POINTS).text()).toBe("Totalt 10 p · provtexten anger 14 p");
+    expect(partLine(wrapper, "parent_001").text()).toBe("5 p · provtexten anger 8 p");
+    expect(partLine(wrapper, "parent_002").text()).toBe("5 p · provtexten anger 6 p");
+    expect(wrapper.get('[data-test="exam-workspace-undo"]').attributes("disabled")).toBeDefined();
+  });
+
+  it("offers the footer action only while a level differs, also when only a part does", async () => {
+    const equal = await openDocument(documentWithTotals(5, [2, 3]));
+    expect(equal.find(ACCEPT_ALL).exists()).toBe(false);
+    expect(equal.find(ACCEPT_EXAM).exists()).toBe(false);
+
+    const onlyPart = await openDocument(twoPartsPrintingOtherTotals(10));
+    expect(onlyPart.find(ACCEPT_EXAM).exists()).toBe(false);
+    expect(onlyPart.get(ACCEPT_ALL).text()).toBe("Använd beräknade summor");
+    await onlyPart.get(ACCEPT_ALL).trigger("click");
+    await flushPromises();
+    expect(onlyPart.find(ACCEPT_ALL).exists()).toBe(false);
+  });
+
+  it("names a decimal sum as the line shows it", async () => {
+    const document = documentWithTotals(9, [2.5, 5]);
+    document.parents = [{
+      parent_id: "parent_001", item_ids: ["item_001", "item_002"], printed_total: 9, instruction: [],
+    }];
+    const wrapper = await openDocument(document);
+    expect(wrapper.get(ACCEPT_EXAM).text()).toBe("Använd 7,5 p");
+    expect(wrapper.get(acceptPart("parent_001")).text()).toBe("Använd 7,5 p");
   });
 });

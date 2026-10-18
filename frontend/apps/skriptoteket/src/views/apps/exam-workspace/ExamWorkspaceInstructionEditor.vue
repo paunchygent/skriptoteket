@@ -61,6 +61,7 @@ const emit = defineEmits<{
   addChild: [kind: TeacherItemKind];
   deleteParent: [mode: ExamParentDeleteMode];
   dismissNotice: [];
+  acceptPartTotal: [];
 }>();
 
 const targets = provideRichTextTargetRegistry();
@@ -239,6 +240,16 @@ function chooseDelete(mode: ExamParentDeleteMode): void {
         :class="{ 'psum__points--printed': printedTotal !== null }"
         data-test="exam-workspace-part-points"
       >{{ examWorkspacePointsLine(subtotal, printedTotal) }}</span>
+      <button
+        v-if="printedTotal !== null"
+        type="button"
+        class="xw-btn xw-btn--compact xw-btn--ghost"
+        :disabled="disabled"
+        data-test="exam-workspace-accept-part-total"
+        @click="emit('acceptPartTotal')"
+      >
+        Använd {{ examWorkspaceFormatPoints(subtotal) }} p
+      </button>
       <span>Poängen sätts på varje deluppgift.</span>
     </p>
 

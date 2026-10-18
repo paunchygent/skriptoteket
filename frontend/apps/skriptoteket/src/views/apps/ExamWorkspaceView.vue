@@ -342,9 +342,13 @@ onMounted(() => {
         :total="total"
         :printed-total="examPrintedTotal"
         :can-add="!disabled"
+        :disabled="disabled"
         :overlay="isPhone && listOpen"
         @select="selectEntry"
         @add="addEntry"
+        @accept-exam-total="editing.acceptExamPrintedTotal"
+        @accept-part-total="editing.acceptPartPrintedTotal"
+        @accept-all-totals="editing.acceptAllPrintedTotals"
         @close="listOpen = false"
       >
         <template #intro>

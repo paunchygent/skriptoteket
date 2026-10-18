@@ -23,7 +23,7 @@ import ExamWorkspaceNewItemMenu from "./ExamWorkspaceNewItemMenu.vue";
 import ExamWorkspaceQuestionRow from "./ExamWorkspaceQuestionRow.vue";
 import type { TeacherItemKind } from "./examWorkspaceItemEdits";
 import type { ExamWorkspaceListEntry } from "./examWorkspaceListEntries";
-import { examWorkspacePointsParts } from "./examWorkspaceTotals";
+import { examWorkspaceFormatPoints, examWorkspacePointsParts } from "./examWorkspaceTotals";
 
 const props = defineProps<{
   entries: ExamWorkspaceListEntry[];
@@ -33,15 +33,25 @@ const props = defineProps<{
   /** The exam total the exam text prints, only when it differs from `total`. */
   printedTotal: number | null;
   canAdd: boolean;
+  /** The workspace is busy: the accept actions wait like the other list actions. */
+  disabled: boolean;
   /** The phone shows the list as a full-screen layer. */
   overlay: boolean;
 }>();
 
 const totalParts = computed(() => examWorkspacePointsParts(props.total, props.printedTotal));
+const anyPrintedDifference = computed(
+  () =>
+    props.printedTotal !== null ||
+    props.entries.some((entry) => entry.kind === "parent" && entry.printedTotal !== null),
+);
 
 const emit = defineEmits<{
   select: [id: string];
   add: [kind: TeacherItemKind | "instruction"];
+  acceptExamTotal: [];
+  acceptPartTotal: [parentId: string];
+  acceptAllTotals: [];
   close: [];
 }>();
 
@@ -117,7 +127,9 @@ watch(
           :key="entry.id"
           :entry="entry"
           :selected="entry.id === selectedId"
+          :disabled="disabled"
           @select="emit('select', $event)"
+          @accept-total="emit('acceptPartTotal', $event)"
         />
       </div>
     </div>
@@ -129,6 +141,26 @@ watch(
         v-if="totalParts.printedNote"
         class="list__printed"
       > · {{ totalParts.printedNote }}</span></span>
+      <button
+        v-if="printedTotal !== null"
+        type="button"
+        class="xw-btn xw-btn--compact xw-btn--ghost"
+        :disabled="disabled"
+        data-test="exam-workspace-accept-exam-total"
+        @click="emit('acceptExamTotal')"
+      >
+        Använd {{ examWorkspaceFormatPoints(total) }} p
+      </button>
+      <button
+        v-if="anyPrintedDifference"
+        type="button"
+        class="xw-btn xw-btn--compact xw-btn--ghost"
+        :disabled="disabled"
+        data-test="exam-workspace-accept-all-totals"
+        @click="emit('acceptAllTotals')"
+      >
+        Använd beräknade summor
+      </button>
     </div>
     <ExamWorkspaceNewItemMenu
       :open="newMenuOpen"
@@ -149,7 +181,7 @@ watch(
 .list__title { margin: 0; font-size: var(--huleedu-text-base); font-weight: var(--huleedu-font-semibold); }
 .list__scroll { flex: 1; min-height: 0; overflow-y: auto; }
 .list__foot {
-  display: flex; align-items: center; gap: var(--huleedu-space-2); flex: none; min-height: 44px;
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--huleedu-space-1) var(--huleedu-space-2); flex: none; min-height: 44px;
   padding: var(--huleedu-space-2) var(--huleedu-space-6); border-top: 1px solid var(--huleedu-surface-divider);
   font-size: var(--huleedu-text-sm);
 }

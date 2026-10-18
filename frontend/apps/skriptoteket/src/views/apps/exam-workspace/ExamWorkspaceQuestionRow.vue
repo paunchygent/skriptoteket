@@ -25,9 +25,10 @@ import { examWorkspaceFormatPoints, examWorkspacePointsLine } from "./examWorksp
 const props = defineProps<{
   entry: ExamWorkspaceListEntry;
   selected: boolean;
+  disabled: boolean;
 }>();
 
-const emit = defineEmits<{ select: [id: string] }>();
+const emit = defineEmits<{ select: [id: string]; acceptTotal: [parentId: string] }>();
 
 const meta = computed(() => {
   const entry = props.entry;
@@ -74,9 +75,22 @@ const aiTitle = computed(() =>
       </span>
       <span
         v-if="entry.kind === 'parent' && entry.printedTotal !== null"
-        class="row__printed"
-        data-test="exam-workspace-part-points"
-      >{{ examWorkspacePointsLine(entry.points, entry.printedTotal) }}</span>
+        class="row__printedline"
+      >
+        <span
+          class="row__printed"
+          data-test="exam-workspace-part-points"
+        >{{ examWorkspacePointsLine(entry.points, entry.printedTotal) }}</span>
+        <button
+          type="button"
+          class="xw-btn xw-btn--compact xw-btn--ghost"
+          :disabled="disabled"
+          :data-test="`exam-workspace-accept-part-total-${entry.id}`"
+          @click.stop="emit('acceptTotal', entry.id)"
+        >
+          Använd {{ examWorkspaceFormatPoints(entry.points) }} p
+        </button>
+      </span>
     </span>
     <span
       v-if="entry.kind === 'item' && entry.aiKey"
@@ -143,6 +157,7 @@ const aiTitle = computed(() =>
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .row__problem { font-weight: var(--huleedu-font-medium); }
+.row__printedline { display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--huleedu-space-2); }
 .row__printed { font-size: var(--huleedu-text-xs); color: var(--huleedu-warning); overflow-wrap: anywhere; }
 .row--parent .row__text { font-weight: var(--huleedu-font-normal); }
 .row--child { padding-left: calc(var(--huleedu-space-6) + 24px); }

@@ -44,6 +44,7 @@ import { useExamWorkspaceRename } from "./useExamWorkspaceRename";
 import { RELOAD_FAILURE_COPY, useExamWorkspaceSave } from "./useExamWorkspaceSave";
 import { useExamWorkspaceSavedList } from "./useExamWorkspaceSavedList";
 import { useExamWorkspaceTitleVerdict } from "./useExamWorkspaceTitleVerdict";
+import { withoutExamPrintedTotal, withoutPartPrintedTotal, withoutPrintedTotals } from "./examWorkspaceTotals";
 
 export { EXAM_WORKSPACE_CONVERSION_POLL_MS } from "./useExamWorkspaceConversion";
 
@@ -367,6 +368,21 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
     editDocument((document) => ({ ...document, header: { ...document.header, tags } }));
   }
 
+  /** Use the questions' sum over the printed exam total; one undo step. */
+  function acceptExamPrintedTotal(): void {
+    editDocument(withoutExamPrintedTotal);
+  }
+
+  /** Use the questions' sum over one part's printed total; one undo step. */
+  function acceptPartPrintedTotal(parentId: string): void {
+    editDocument((document) => withoutPartPrintedTotal(document, parentId));
+  }
+
+  /** Use the questions' sums over the exam and every part's printed total; one undo step. */
+  function acceptAllPrintedTotals(): void {
+    editDocument(withoutPrintedTotals);
+  }
+
   function keepSelection(document: NativeExamDocument): void {
     if (!document.items.some((item) => item.item_id === selectedItemId.value)) {
       selectedItemId.value = document.items[0]?.item_id ?? null;
@@ -418,6 +434,9 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
 
   return {
     ...itemEdits,
+    acceptAllPrintedTotals,
+    acceptExamPrintedTotal,
+    acceptPartPrintedTotal,
     applyCommandResponse,
     editDocument,
     historyCursor,

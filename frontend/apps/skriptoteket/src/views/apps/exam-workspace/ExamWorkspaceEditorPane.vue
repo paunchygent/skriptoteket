@@ -96,6 +96,7 @@ const { structure, assetUrls } = props.editing;
         @add-child="(kind) => $emit('add-child', kind)"
         @delete-parent="(mode) => structure.deleteParent(selectedParent!.parent_id, mode)"
         @dismiss-notice="structure.dismissDeleteNotice"
+        @accept-part-total="editing.acceptPartPrintedTotal(selectedParent!.parent_id)"
       />
       <ExamWorkspaceQuestionEditor
         v-else-if="selectedItem && itemEntry"
