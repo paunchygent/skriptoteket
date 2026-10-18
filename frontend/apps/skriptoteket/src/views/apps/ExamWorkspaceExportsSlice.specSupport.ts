@@ -6,9 +6,9 @@
  *   slice specs (blockers, download, checklist).
  *
  * Relationships:
- *   - Each spec owns its own `api/examWorkspace` and `browserDownload` module
- *     mocks (vi.mock is hoisted per file) and passes them to
- *     `arrangeExportApis`.
+ *   - Each spec owns its own `api/examWorkspace`, `api/examWorkspaceExports`
+ *     and `browserDownload` module mocks (vi.mock is hoisted per file) and
+ *     passes them to `arrangeExportApis`.
  */
 
 import { DOMWrapper, flushPromises } from "@vue/test-utils";
@@ -100,16 +100,19 @@ export interface ExportApiMocks {
   api: Record<string, Mock> & {
     getExamWorkspaceConversionStatus: Mock;
     getExamWorkspaceDocument: Mock;
-    getExamWorkspaceExportChecklist: Mock;
     importExamWorkspaceDocument: Mock;
     listExamWorkspaceDocuments: Mock;
+  };
+  exportApi: {
+    downloadExamWorkspaceExport: Mock;
+    getExamWorkspaceExportChecklist: Mock;
   };
   download: { triggerBrowserDownload: Mock };
 }
 
 /** Reset every mock and prime the finished import of the exportable fixture exam. */
-export function arrangeExportApis({ api, download }: ExportApiMocks): void {
-  for (const mock of Object.values(api)) {
+export function arrangeExportApis({ api, exportApi, download }: ExportApiMocks): void {
+  for (const mock of [...Object.values(api), ...Object.values(exportApi)]) {
     mock.mockReset();
   }
   api.getExamWorkspaceConversionStatus.mockResolvedValue(succeededConversion);
@@ -122,7 +125,7 @@ export function arrangeExportApis({ api, download }: ExportApiMocks): void {
       document_revision: null, questions_total: 0, questions_done: 0, units: [] };
   });
   api.listExamWorkspaceDocuments.mockResolvedValue({ documents: [], ordering: "course" });
-  api.getExamWorkspaceExportChecklist.mockResolvedValue({ entries: [] });
+  exportApi.getExamWorkspaceExportChecklist.mockResolvedValue({ entries: [] });
 }
 
 export function unmountWrappers(): void {

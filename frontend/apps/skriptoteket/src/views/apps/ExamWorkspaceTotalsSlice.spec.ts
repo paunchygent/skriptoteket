@@ -22,19 +22,21 @@ import { examWorkspacePointsLine, examWorkspacePrintedDifference } from "./exam-
 import type { ExamWorkspaceLayout } from "./exam-workspace/useExamWorkspaceLayout";
 
 const apiMocks = vi.hoisted(() => ({
-  downloadExamWorkspaceExport: vi.fn(),
   findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceHistory: vi.fn(),
   getExamWorkspaceHistoryStep: vi.fn(),
   storeExamWorkspaceUndoStep: vi.fn(),
-  getExamWorkspaceExportChecklist: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
   saveExamWorkspaceDocument: vi.fn(),
 }));
-vi.mock("../../api/examWorkspaceExports", () => apiMocks);
+const exportApiMocks = vi.hoisted(() => ({
+  downloadExamWorkspaceExport: vi.fn(),
+  getExamWorkspaceExportChecklist: vi.fn(),
+}));
+vi.mock("../../api/examWorkspaceExports", () => exportApiMocks);
 vi.mock("../../api/examWorkspace", async () => ({
   ...apiMocks,
   getExamCourseCatalog: (await import("../../test/examCourseCatalog")).getExamCourseCatalog,
@@ -95,12 +97,12 @@ function partLine(wrapper: ViewWrapper, parentId: string) {
 }
 
 beforeEach(() => {
-  for (const mock of Object.values(apiMocks)) mock.mockReset();
+  for (const mock of [...Object.values(apiMocks), ...Object.values(exportApiMocks)]) mock.mockReset();
   downloadMocks.triggerBrowserDownload.mockReset();
   apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [], ordering: "course" });
   apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue(succeeded);
   apiMocks.importExamWorkspaceDocument.mockResolvedValue({ ...succeeded, state: "queued", document_revision: null });
-  apiMocks.getExamWorkspaceExportChecklist.mockResolvedValue({ entries: [] });
+  exportApiMocks.getExamWorkspaceExportChecklist.mockResolvedValue({ entries: [] });
   history = arrangeStepHistory(apiMocks);
 });
 afterEach(() => {
@@ -130,7 +132,7 @@ describe("workspace printed exam totals", () => {
     expect(wrapper.text()).not.toContain("Poängen stämmer inte");
     expect(wrapper.text()).not.toMatch(/Tryckt|TRYCKT/);
 
-    apiMocks.downloadExamWorkspaceExport.mockResolvedValue({
+    exportApiMocks.downloadExamWorkspaceExport.mockResolvedValue({
       blob: new Blob(["export"]), contentType: "application/zip", filename: "prov.zip",
     });
     await wrapper.get('[data-test="exam-workspace-export"]').trigger("click");
@@ -139,7 +141,7 @@ describe("workspace printed exam totals", () => {
     expect(entry.getAttribute("aria-disabled")).toBeNull();
     entry.click();
     await flushPromises();
-    expect(apiMocks.downloadExamWorkspaceExport).toHaveBeenCalledWith("lineage-1", "qti", 1);
+    expect(exportApiMocks.downloadExamWorkspaceExport).toHaveBeenCalledWith("lineage-1", "qti", 1);
     expect(downloadMocks.triggerBrowserDownload).toHaveBeenCalledTimes(1);
   });
 

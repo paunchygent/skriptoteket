@@ -13,7 +13,6 @@ const api = vi.hoisted(() => ({
   getExamWorkspaceHistory: vi.fn(),
   getExamWorkspaceHistoryStep: vi.fn(),
   storeExamWorkspaceUndoStep: vi.fn(),
-  downloadExamWorkspaceExport: vi.fn(),
   findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
   getExamCourseCatalog: vi.fn(),
@@ -22,8 +21,11 @@ const api = vi.hoisted(() => ({
   listExamWorkspaceDocuments: vi.fn(),
   saveExamWorkspaceDocument: vi.fn(),
 }));
+const exportApiMocks = vi.hoisted(() => ({
+  downloadExamWorkspaceExport: vi.fn(),
+}));
 const rename = vi.hoisted(() => vi.fn());
-vi.mock("../../api/examWorkspaceExports", () => api);
+vi.mock("../../api/examWorkspaceExports", () => exportApiMocks);
 vi.mock("../../api/examWorkspace", () => ({ ...api }));
 vi.mock("../../api/vault", () => ({ renameVaultFile: rename }));
 
@@ -59,7 +61,7 @@ async function choose(wrapper: ViewWrapper, query: string) {
 }
 
 beforeEach(() => {
-  for (const mock of Object.values(api)) mock.mockReset();
+  for (const mock of [...Object.values(api), ...Object.values(exportApiMocks)]) mock.mockReset();
   arrangeStepHistory(api);
   rename.mockReset();
   original = buildResponse({ version: 1 });

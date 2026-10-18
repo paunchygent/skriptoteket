@@ -37,17 +37,19 @@ const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceHistory: vi.fn(),
   getExamWorkspaceHistoryStep: vi.fn(),
   storeExamWorkspaceUndoStep: vi.fn(),
-  downloadExamWorkspaceExport: vi.fn(),
   findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
-  getExamWorkspaceExportChecklist: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
   saveExamWorkspaceDocument: vi.fn(),
 }));
+const exportApiMocks = vi.hoisted(() => ({
+  downloadExamWorkspaceExport: vi.fn(),
+  getExamWorkspaceExportChecklist: vi.fn(),
+}));
 
-vi.mock("../../../api/examWorkspaceExports", () => apiMocks);
+vi.mock("../../../api/examWorkspaceExports", () => exportApiMocks);
 vi.mock("../../../api/examWorkspace", async () => ({
   ...apiMocks,
   getExamCourseCatalog: (await import("../../../test/examCourseCatalog")).getExamCourseCatalog,
@@ -100,7 +102,7 @@ function judgeAutosaves(): void {
 }
 
 beforeEach(() => {
-  arrangeExportApis({ api: apiMocks, download: downloadMocks });
+  arrangeExportApis({ api: apiMocks, exportApi: exportApiMocks, download: downloadMocks });
   arrangeStepHistory(apiMocks);
   judgeAutosaves();
   apiMocks.saveExamWorkspaceDocument.mockImplementation(async (_lineage, body) =>
@@ -139,7 +141,7 @@ describe("ExamWorkspaceView title export blocker", () => {
       await requirePage("exam-workspace-export-qti").trigger("click");
       await flushPromises();
       expect(apiMocks.saveExamWorkspaceDocument).not.toHaveBeenCalled();
-      expect(apiMocks.downloadExamWorkspaceExport).not.toHaveBeenCalled();
+      expect(exportApiMocks.downloadExamWorkspaceExport).not.toHaveBeenCalled();
     },
   );
 
@@ -155,7 +157,7 @@ describe("ExamWorkspaceView title export blocker", () => {
 
   it("jumps to the title field, clears at once on a changed title, and then downloads under the server's name", async () => {
     importTitled("?!...");
-    apiMocks.downloadExamWorkspaceExport.mockResolvedValue({
+    exportApiMocks.downloadExamWorkspaceExport.mockResolvedValue({
       blob: new Blob(["zip"]),
       contentType: "application/zip",
       filename: "Server Prov 1.zip",
@@ -243,7 +245,7 @@ describe("ExamWorkspaceView title export blocker", () => {
 
   it("shows the row when the server refuses an export clicked before the autosave judged the title", async () => {
     importTitled("Prov 1");
-    apiMocks.downloadExamWorkspaceExport.mockRejectedValue(new ApiError(TITLE_REFUSAL));
+    exportApiMocks.downloadExamWorkspaceExport.mockRejectedValue(new ApiError(TITLE_REFUSAL));
     const wrapper = await mountImported();
     await openTitleField(wrapper);
 
@@ -260,7 +262,7 @@ describe("ExamWorkspaceView title export blocker", () => {
 
   it("names the title, not the questions, when the title is the only refusal", async () => {
     importTitled("Prov 1");
-    apiMocks.downloadExamWorkspaceExport.mockRejectedValue(new ApiError(TITLE_REFUSAL));
+    exportApiMocks.downloadExamWorkspaceExport.mockRejectedValue(new ApiError(TITLE_REFUSAL));
     const wrapper = await mountImported();
 
     await openMenu(wrapper);
@@ -282,7 +284,7 @@ describe("ExamWorkspaceView title export blocker", () => {
 
   it("names the title and the questions when both refuse", async () => {
     importTitled("Prov 1");
-    apiMocks.downloadExamWorkspaceExport.mockRejectedValue(
+    exportApiMocks.downloadExamWorkspaceExport.mockRejectedValue(
       new ApiError({
         ...TITLE_REFUSAL,
         details: {

@@ -14,8 +14,8 @@
  *
  * Relationships:
  *   - Used by `ExamWorkspaceView` next to `useExamWorkspaceDocument`.
- *   - Delegates transport to `api/examWorkspace.ts` and downloads through the
- *     shared browser download helper.
+ *   - Delegates transport to `api/examWorkspaceExports.ts` and downloads
+ *     through the shared browser download helper.
  */
 
 import { computed, ref, watch } from "vue";

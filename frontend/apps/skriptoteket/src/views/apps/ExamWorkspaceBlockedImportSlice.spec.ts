@@ -27,7 +27,6 @@ const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceHistory: vi.fn(),
   getExamWorkspaceHistoryStep: vi.fn(),
   storeExamWorkspaceUndoStep: vi.fn(),
-  downloadExamWorkspaceExport: vi.fn(),
   findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
@@ -35,8 +34,11 @@ const apiMocks = vi.hoisted(() => ({
   listExamWorkspaceDocuments: vi.fn(),
   saveExamWorkspaceDocument: vi.fn(),
 }));
+const exportApiMocks = vi.hoisted(() => ({
+  downloadExamWorkspaceExport: vi.fn(),
+}));
 
-vi.mock("../../api/examWorkspaceExports", () => apiMocks);
+vi.mock("../../api/examWorkspaceExports", () => exportApiMocks);
 vi.mock("../../api/examWorkspace", async () => ({
   ...apiMocks,
   getExamCourseCatalog: (await import("../../test/examCourseCatalog")).getExamCourseCatalog,
@@ -50,7 +52,7 @@ const succeededConversion: ExamWorkspaceConversionStatus = {
 };
 
 beforeEach(() => {
-  for (const mock of Object.values(apiMocks)) {
+  for (const mock of [...Object.values(apiMocks), ...Object.values(exportApiMocks)]) {
     mock.mockReset();
   }
   arrangeStepHistory(apiMocks);

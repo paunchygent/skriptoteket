@@ -42,17 +42,19 @@ const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceHistory: vi.fn(),
   getExamWorkspaceHistoryStep: vi.fn(),
   storeExamWorkspaceUndoStep: vi.fn(),
-  downloadExamWorkspaceExport: vi.fn(),
   findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
-  getExamWorkspaceExportChecklist: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
   saveExamWorkspaceDocument: vi.fn(),
 }));
+const exportApiMocks = vi.hoisted(() => ({
+  downloadExamWorkspaceExport: vi.fn(),
+  getExamWorkspaceExportChecklist: vi.fn(),
+}));
 
-vi.mock("../../api/examWorkspaceExports", () => apiMocks);
+vi.mock("../../api/examWorkspaceExports", () => exportApiMocks);
 vi.mock("../../api/examWorkspace", async () => ({
   ...apiMocks,
   getExamCourseCatalog: (await import("../../test/examCourseCatalog")).getExamCourseCatalog,
@@ -64,7 +66,7 @@ vi.mock("../../utils/browserDownload", () => downloadMocks);
 
 
 beforeEach(() => {
-  arrangeExportApis({ api: apiMocks, download: downloadMocks });
+  arrangeExportApis({ api: apiMocks, exportApi: exportApiMocks, download: downloadMocks });
   arrangeStepHistory(apiMocks);
 });
 
@@ -83,7 +85,7 @@ describe("ExamWorkspaceView export zero-points note", () => {
   }
 
   beforeEach(() => {
-    apiMocks.downloadExamWorkspaceExport.mockResolvedValue({
+    exportApiMocks.downloadExamWorkspaceExport.mockResolvedValue({
       blob: new Blob(["qti"]),
       contentType: "application/zip",
       filename: "prov-qti.zip",
@@ -109,7 +111,7 @@ describe("ExamWorkspaceView export zero-points note", () => {
     expect(menuFormatDisabled("qti")).toBeUndefined();
     await requirePage("exam-workspace-export-qti").trigger("click");
     await flushPromises();
-    expect(apiMocks.downloadExamWorkspaceExport).toHaveBeenNthCalledWith(1, "lineage-1", "qti", 1);
+    expect(exportApiMocks.downloadExamWorkspaceExport).toHaveBeenNthCalledWith(1, "lineage-1", "qti", 1);
 
     // Drawer: the note follows the chosen format.
     await openExportDrawer(wrapper);
@@ -127,8 +129,8 @@ describe("ExamWorkspaceView export zero-points note", () => {
     expect(run.attributes("disabled")).toBeUndefined();
     await run.trigger("click");
     await flushPromises();
-    expect(apiMocks.downloadExamWorkspaceExport).toHaveBeenCalledTimes(2);
-    expect(apiMocks.downloadExamWorkspaceExport).toHaveBeenNthCalledWith(2, "lineage-1", "qti", 1);
+    expect(exportApiMocks.downloadExamWorkspaceExport).toHaveBeenCalledTimes(2);
+    expect(exportApiMocks.downloadExamWorkspaceExport).toHaveBeenNthCalledWith(2, "lineage-1", "qti", 1);
   });
 
   it("shows no note when no question is worth 0 points", async () => {
@@ -173,7 +175,7 @@ function findLossEntry(wrapper: ViewWrapper, questionText: string) {
 
 describe("ExamWorkspaceView export checklist", () => {
   beforeEach(() => {
-    apiMocks.downloadExamWorkspaceExport.mockResolvedValue({
+    exportApiMocks.downloadExamWorkspaceExport.mockResolvedValue({
       blob: new Blob(["qti"]),
       contentType: "application/zip",
       filename: "prov-qti.zip",
@@ -181,12 +183,12 @@ describe("ExamWorkspaceView export checklist", () => {
   });
 
   it("lists what Exam.net loses after a successful QTI export", async () => {
-    apiMocks.getExamWorkspaceExportChecklist.mockResolvedValue(LOST_CHECKLIST);
+    exportApiMocks.getExamWorkspaceExportChecklist.mockResolvedValue(LOST_CHECKLIST);
     const wrapper = await mountImported();
 
     await exportFromMenu(wrapper, "qti");
 
-    expect(apiMocks.getExamWorkspaceExportChecklist).toHaveBeenCalledWith("lineage-1", 1);
+    expect(exportApiMocks.getExamWorkspaceExportChecklist).toHaveBeenCalledWith("lineage-1", 1);
     await openMenu(wrapper);
     expect(requirePage("exam-workspace-export-checklist-open").text()).toContain(
       "Det här tappar Exam.net (3)",
@@ -207,7 +209,7 @@ describe("ExamWorkspaceView export checklist", () => {
 
     await exportFromMenu(wrapper, "qti");
 
-    expect(apiMocks.getExamWorkspaceExportChecklist).toHaveBeenCalledWith("lineage-1", 1);
+    expect(exportApiMocks.getExamWorkspaceExportChecklist).toHaveBeenCalledWith("lineage-1", 1);
     await openMenu(wrapper);
     expect(page("exam-workspace-export-checklist-open")).toBeNull();
     await openExportDrawer(wrapper);
@@ -222,11 +224,11 @@ describe("ExamWorkspaceView export checklist", () => {
     await exportFromMenu(wrapper, "pdf");
     await exportFromMenu(wrapper, "docx");
 
-    expect(apiMocks.getExamWorkspaceExportChecklist).not.toHaveBeenCalled();
+    expect(exportApiMocks.getExamWorkspaceExportChecklist).not.toHaveBeenCalled();
   });
 
   it("clears the checklist when the draft changes", async () => {
-    apiMocks.getExamWorkspaceExportChecklist.mockResolvedValue(LOST_CHECKLIST);
+    exportApiMocks.getExamWorkspaceExportChecklist.mockResolvedValue(LOST_CHECKLIST);
     const wrapper = await mountImported();
     await exportFromMenu(wrapper, "qti");
     await openChecklistDrawer(wrapper);
@@ -243,14 +245,14 @@ describe("ExamWorkspaceView export checklist", () => {
   });
 
   it("clears the checklist when another export starts", async () => {
-    apiMocks.getExamWorkspaceExportChecklist.mockResolvedValue(LOST_CHECKLIST);
+    exportApiMocks.getExamWorkspaceExportChecklist.mockResolvedValue(LOST_CHECKLIST);
     const wrapper = await mountImported();
     await exportFromMenu(wrapper, "qti");
     await openChecklistDrawer(wrapper);
     expect(findLossEntry(wrapper, "Förklara fotosyntesen.")).toBeDefined();
 
     const pdfDownload = deferred<{ blob: Blob; contentType: string; filename: string }>();
-    apiMocks.downloadExamWorkspaceExport.mockReturnValueOnce(pdfDownload.promise);
+    exportApiMocks.downloadExamWorkspaceExport.mockReturnValueOnce(pdfDownload.promise);
     await exportFromMenu(wrapper, "pdf");
     expect(findLossEntry(wrapper, "Förklara fotosyntesen.")).toBeUndefined();
 
@@ -261,7 +263,7 @@ describe("ExamWorkspaceView export checklist", () => {
 
   it("keeps the fresh checklist when a stale response arrives late", async () => {
     const staleChecklist = deferred<ExamWorkspaceExportChecklistResponse>();
-    apiMocks.getExamWorkspaceExportChecklist.mockReturnValueOnce(staleChecklist.promise);
+    exportApiMocks.getExamWorkspaceExportChecklist.mockReturnValueOnce(staleChecklist.promise);
     const wrapper = await mountImported();
     await exportFromMenu(wrapper, "qti");
 
@@ -281,7 +283,7 @@ describe("ExamWorkspaceView export checklist", () => {
         },
       ],
     };
-    apiMocks.getExamWorkspaceExportChecklist.mockResolvedValueOnce(freshChecklist);
+    exportApiMocks.getExamWorkspaceExportChecklist.mockResolvedValueOnce(freshChecklist);
     await exportFromMenu(wrapper, "qti");
     await openChecklistDrawer(wrapper);
     expect(findLossEntry(wrapper, "Ny fråga efter sparning.")).toBeDefined();
@@ -291,12 +293,12 @@ describe("ExamWorkspaceView export checklist", () => {
 
     expect(findLossEntry(wrapper, "Ny fråga efter sparning.")).toBeDefined();
     expect(findLossEntry(wrapper, "Förklara fotosyntesen.")).toBeUndefined();
-    expect(apiMocks.getExamWorkspaceExportChecklist).toHaveBeenNthCalledWith(1, "lineage-1", 1);
-    expect(apiMocks.getExamWorkspaceExportChecklist).toHaveBeenNthCalledWith(2, "lineage-1", 2);
+    expect(exportApiMocks.getExamWorkspaceExportChecklist).toHaveBeenNthCalledWith(1, "lineage-1", 1);
+    expect(exportApiMocks.getExamWorkspaceExportChecklist).toHaveBeenNthCalledWith(2, "lineage-1", 2);
   });
 
   it("warns without claiming the export failed when the checklist request fails", async () => {
-    apiMocks.getExamWorkspaceExportChecklist.mockRejectedValue(
+    exportApiMocks.getExamWorkspaceExportChecklist.mockRejectedValue(
       new ApiError({ code: "INTERNAL_ERROR", message: "boom", status: 500 }),
     );
     const wrapper = await mountImported();
@@ -318,14 +320,14 @@ describe("ExamWorkspaceView export checklist", () => {
   });
 
   it("warns without claiming the export failed when the saved head changed", async () => {
-    apiMocks.getExamWorkspaceExportChecklist.mockRejectedValue(
+    exportApiMocks.getExamWorkspaceExportChecklist.mockRejectedValue(
       new ApiError({ code: "CONFLICT", message: "head changed", status: 409 }),
     );
     const wrapper = await mountImported();
 
     await exportFromMenu(wrapper, "qti");
 
-    expect(apiMocks.downloadExamWorkspaceExport).toHaveBeenCalledWith("lineage-1", "qti", 1);
+    expect(exportApiMocks.downloadExamWorkspaceExport).toHaveBeenCalledWith("lineage-1", "qti", 1);
     expect(downloadMocks.triggerBrowserDownload).toHaveBeenCalledWith(
       expect.any(Blob),
       "prov-qti.zip",
@@ -339,7 +341,7 @@ describe("ExamWorkspaceView export checklist", () => {
 
   it("ignores a stale checklist failure", async () => {
     const staleChecklist = deferred<ExamWorkspaceExportChecklistResponse>();
-    apiMocks.getExamWorkspaceExportChecklist.mockReturnValueOnce(staleChecklist.promise);
+    exportApiMocks.getExamWorkspaceExportChecklist.mockReturnValueOnce(staleChecklist.promise);
     const wrapper = await mountImported();
     await exportFromMenu(wrapper, "qti");
 

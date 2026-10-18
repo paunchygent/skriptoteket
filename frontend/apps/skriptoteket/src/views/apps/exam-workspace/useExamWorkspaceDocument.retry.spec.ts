@@ -41,7 +41,6 @@ const RETRY_FAILURE_COPY = "Det gick inte att konvertera om frågan. Försök ig
 const CONFLICT_COPY = "Dokumentet har ändrats sedan det öppnades.";
 
 const apiMocks = vi.hoisted(() => ({
-  downloadExamWorkspaceExport: vi.fn(),
   examWorkspaceAssetUrl: vi.fn(),
   findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
@@ -51,8 +50,11 @@ const apiMocks = vi.hoisted(() => ({
   retryExamWorkspaceItem: vi.fn(),
   saveExamWorkspaceDocument: vi.fn(),
 }));
+const exportApiMocks = vi.hoisted(() => ({
+  downloadExamWorkspaceExport: vi.fn(),
+}));
 
-vi.mock("../../../api/examWorkspaceExports", () => apiMocks);
+vi.mock("../../../api/examWorkspaceExports", () => exportApiMocks);
 vi.mock("../../../api/examWorkspace", async () => ({
   ...apiMocks,
   getExamCourseCatalog: (await import("../../../test/examCourseCatalog")).getExamCourseCatalog,
@@ -165,7 +167,7 @@ function toastCount(message: string): number {
 
 beforeEach(() => {
   setActivePinia(createPinia());
-  for (const mock of Object.values(apiMocks)) {
+  for (const mock of [...Object.values(apiMocks), ...Object.values(exportApiMocks)]) {
     mock.mockReset();
   }
 });

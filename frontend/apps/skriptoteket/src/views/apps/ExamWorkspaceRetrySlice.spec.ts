@@ -25,7 +25,6 @@ import type { ViewWrapper } from "./ExamWorkspaceSlice.specSupport";
 type NativeExamAsset = ExamWorkspaceDocumentResponse["document"]["assets"][number];
 
 const apiMocks = vi.hoisted(() => ({
-  downloadExamWorkspaceExport: vi.fn(),
   examWorkspaceAssetUrl: vi.fn(),
   findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
@@ -35,8 +34,11 @@ const apiMocks = vi.hoisted(() => ({
   retryExamWorkspaceItem: vi.fn(),
   saveExamWorkspaceDocument: vi.fn(),
 }));
+const exportApiMocks = vi.hoisted(() => ({
+  downloadExamWorkspaceExport: vi.fn(),
+}));
 
-vi.mock("../../api/examWorkspaceExports", () => apiMocks);
+vi.mock("../../api/examWorkspaceExports", () => exportApiMocks);
 vi.mock("../../api/examWorkspace", async () => ({
   ...apiMocks,
   getExamCourseCatalog: (await import("../../test/examCourseCatalog")).getExamCourseCatalog,
@@ -147,7 +149,7 @@ async function clickRetry(wrapper: ViewWrapper): Promise<void> {
 }
 
 beforeEach(() => {
-  for (const mock of Object.values(apiMocks)) {
+  for (const mock of [...Object.values(apiMocks), ...Object.values(exportApiMocks)]) {
     mock.mockReset();
   }
 });
