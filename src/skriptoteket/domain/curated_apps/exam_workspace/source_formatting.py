@@ -301,13 +301,26 @@ class SourceFormatting:
 
     def _rebuild_misplaced(self) -> list[tuple[NativeParagraph, int]]:
         """Rebuild a misplaced paragraph from this item's next own source paragraph no output
-        has shown, or return nothing to drop it; the entry span stays unaligned."""
+        has shown, or return nothing to drop it; the entry span stays unaligned.
+
+        The candidate is a whole source paragraph (TASK-SKRIPT-39-04-15 D4/D5): an
+        excluded interval inside it is removed text, never a paragraph boundary."""
         start = self.positions[self.cursor] if self.cursor < len(self.positions) else len(self.text)
         paragraph = next(
             (
                 p
-                for p in self.available_paragraphs
-                if p.start >= start and p.start not in self.projected
+                for p in self.paragraphs
+                if p.start >= start
+                # A paragraph is shown when any excluded-interval fragment of it was shown.
+                and not any(
+                    fragment in self.projected
+                    for fragment in self.available_paragraphs
+                    if p.start <= fragment.start < p.end
+                )
+                and any(
+                    segment.text.strip()
+                    for segment in self._rebuilt_text_segments(self._content_start(p), p.end)
+                )
             ),
             None,
         )
@@ -323,8 +336,11 @@ class SourceFormatting:
 
     def _source_paragraph(self, origin: int) -> NativeParagraph | None:
         """Build this item's own source paragraph, never another question's source: a
-        paragraph whose text is another question's source is not this item's content (D4)."""
-        paragraph = next((p for p in self.available_paragraphs if p.start <= origin < p.end), None)
+        paragraph whose text is another question's source is not this item's content (D4).
+
+        The whole paragraph is rendered with every excluded interval inside it removed
+        (D5); removing one must not leave two spaces at the join it creates."""
+        paragraph = next((p for p in self.paragraphs if p.start <= origin < p.end), None)
         if paragraph is None:
             return None
         start = self._content_start(paragraph)
@@ -332,12 +348,21 @@ class SourceFormatting:
             return None
         if self.provenance.has_picture_in(paragraph.start, paragraph.end):
             return None
-        segments = _trim_edge_whitespace(self._rebuilt_text_segments(start, paragraph.end))
+        joined: list[NativeTextSegment] = []
+        for segment in self._rebuilt_text_segments(start, paragraph.end):
+            if joined and joined[-1].text[-1:].isspace() and segment.text[:1].isspace():
+                joined[-1] = joined[-1].model_copy(update={"text": joined[-1].text.rstrip()})
+            joined.append(segment)
+        segments = _trim_edge_whitespace(tuple(joined))
         if not any(segment.text.strip() for segment in segments):
             return None
         for left, right in visible_intervals(start, paragraph.end, self.excluded):
             self.covered.update(range(left, right))
-        self.projected.add(paragraph.start)
+        self.projected.update(
+            fragment.start
+            for fragment in self.available_paragraphs
+            if paragraph.start <= fragment.start < paragraph.end
+        )
         return NativeParagraph(heading_level=paragraph.heading, segments=segments)
 
     def _paragraph(

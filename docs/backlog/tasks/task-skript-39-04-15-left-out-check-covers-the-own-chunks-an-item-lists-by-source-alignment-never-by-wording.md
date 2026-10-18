@@ -131,6 +131,44 @@ Evidence: retained root `01a14f3e-12df-7020-8c18-18ad39a131cf` (`evidence/probes
   shows its morpheme split from the key with gaps for the labels. Neither D4 nor Task 1
   reaches them. Reported to the parent, not fixed.
 
+### Resume here (2026-10-18, clean break for an account switch)
+
+- Branch `codex/task-skript-39-04-listed-chunks`, worktree
+  `/home/paunchygent/apps/skriptoteket-task-skript-39-04-listed-chunks`. The head is the
+  commit that adds this note. Code head before the break: `6249a2e8`. Not merged with
+  `origin/main`; never pushed.
+- Retained root: `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a14f3e-12df-7020-8c18-18ad39a131cf`
+  (work orders in `evidence/orders/`, probes in `evidence/probes/`, reads in
+  `evidence/read/`, review in `evidence/reviews/898d311f-da73-489f-9b10-76a36892ff88.md`
+  with the probe at `scratch/898d311f-da73-489f-9b10-76a36892ff88/review_probe.py`).
+- Units done: D1-D2 listed-chunk check plus blank answer lines (`5bc0e8a4`); D4 misplaced
+  paragraph rebuild (`6249a2e8`); outcome docs (`6d58822f`). Domain suite at `6249a2e8`:
+  4631 passed, 59 skipped. Ten replays: q8 is the only difference.
+- Review 898d311f: changes requested. Open findings:
+  - F1 (high): the rebuild truncates at an excluded points interval.
+  - F2 (high): an unrenderable own paragraph (interior picture) is silently dropped.
+  - F3 (medium): ownership is conflated with the cursor.
+  - F4 (medium): four files are over 500 lines.
+    F1 and F2 go back to reviewer 898d311f; F3 and F4 are admitted on focused proof. Each
+    finding gets its own commit and a fresh junior.
+- In flight at the break: the F1 junior `cf28dc3e-1c3d-4818-b734-a8f8ca0c5355`
+  (OpenCode, scope `review-f1`, order `evidence/orders/junior-f1.md`, result
+  `evidence/results/cf28dc3e-1c3d-4818-b734-a8f8ca0c5355.json`) was still running. Its
+  partial edit to `source_formatting.py` is committed as unreviewed WIP. On resume, read
+  its result, finish F1 against the order, and rerun its focused tests.
+- Next units, in order:
+  1. F1 (finish).
+  2. F2: order ready at `evidence/orders/junior-f2.md`.
+  3. F3 (`evidence/orders/junior-f3.md`) and F4 part 1, the admission and test-file split
+     (`evidence/orders/junior-f4a.md`). These two can run in parallel.
+  4. F4 part 2: split `source_formatting.py`, with no order written yet.
+     Then rerun the ten replays (q8 must stay the only difference) and the domain suite, and
+     send F1-F2 to reviewer 898d311f.
+- Gates: merge `origin/main` only when the parent says TASK-SKRIPT-39-04-16 has landed,
+  then fold `_source_paragraph` onto its `source_paragraph()` and rerun the replays.
+  Reported, not fixed: metodprov 1 (reply shortens its own paragraph, D7) and svenska_2
+  Fråga 1 (inline `Svar:` gap paragraphs).
+
 ## Stop Conditions
 
 - A replay difference that the interpretive read finds worse goes to the parent before
