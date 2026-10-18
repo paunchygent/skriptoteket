@@ -38,7 +38,7 @@ const apiMocks = vi.hoisted(() => ({
   reorderExamWorkspaceChildren: vi.fn(),
 }));
 
-vi.mock("../../../api/examWorkspace", () => apiMocks);
+vi.mock("../../../api/examWorkspaceStructureCommands", () => apiMocks);
 
 function response(document: NativeExamDocument): ExamWorkspaceDocumentResponse {
   return {
@@ -73,6 +73,7 @@ const EMPTY_EXAM = new ApiError({
 function setup(selected: string | null = null) {
   const workspaceDocument = ref<NativeExamDocument | null>(buildParentDocument());
   const selectedItemId = ref<string | null>(selected);
+  const selectedParentId = ref<string | null>(null);
   const historyCursor = ref<string | null>("cursor-before-flush");
   const calls: string[] = [];
   const flush = vi.fn(async (settle: boolean) => {
@@ -106,10 +107,11 @@ function setup(selected: string | null = null) {
       },
       selectParent,
       selectedItemId,
+      selectedParentId,
       workspaceDocument,
     }),
   )!;
-  return { applied, calls, flush, onConflict, selectParent, selectedItemId, structure, workspaceDocument };
+  return { applied, calls, flush, onConflict, selectParent, selectedItemId, selectedParentId, structure, workspaceDocument };
 }
 
 beforeEach(() => {

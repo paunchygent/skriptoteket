@@ -10,7 +10,7 @@ question.
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
@@ -42,6 +42,24 @@ class OutlinePart:
 
 
 OutlineEntry = OutlineQuestion | OutlinePart
+
+
+@dataclass(frozen=True, slots=True)
+class MemberItem:
+    """One item token in the member list, with the part it belongs to (None: standalone)."""
+
+    item: NativeExamItem
+    part: NativeExamParent | None
+
+
+@dataclass(frozen=True, slots=True)
+class MemberBlock:
+    """One childless part token in the member list, at its position among the items."""
+
+    part: NativeExamParent
+
+
+OutlineMember = MemberItem | MemberBlock
 
 
 def document_outline(document: NativeExamDocument) -> tuple[OutlineEntry, ...]:
@@ -104,3 +122,67 @@ def outline_items_and_parts(
             count += 1
             items.append(child.model_copy(update={"sequence": count}))
     return tuple(items), tuple(parts)
+
+
+def outline_members(outline: Sequence[OutlineEntry]) -> tuple[OutlineMember, ...]:
+    """The outline as a flat member list: one item token per item, one block per childless part.
+
+    This is the read half of the one grouping rule ``outline_from_members`` applies: an item
+    token carries the part it belongs to (or none), and a childless part is a block token at its
+    own position among the items.
+    """
+    members: list[OutlineMember] = []
+    for entry in outline:
+        if isinstance(entry, OutlinePart):
+            if entry.children:
+                members.extend(MemberItem(item=child, part=entry.part) for child in entry.children)
+            else:
+                members.append(MemberBlock(part=entry.part))
+            continue
+        members.append(MemberItem(item=entry.item, part=None))
+    return tuple(members)
+
+
+def outline_from_members(
+    members: Sequence[OutlineMember],
+    fresh_parent_id: Callable[[], str],
+) -> tuple[OutlineEntry, ...]:
+    """The one grouping rule: consecutive item tokens of one part form it (R1, D30).
+
+    A block token becomes a childless part in place. Consecutive item tokens whose part shares a
+    ``parent_id`` become one part entry; when the same original ``parent_id`` reappears after an
+    interruption, each later run is a copy of the part with a fresh id that carries the same
+    instruction, so no child loses its part. Returned entries keep the member order.
+    """
+    entries: list[OutlineEntry] = []
+    run_part: NativeExamParent | None = None
+    run_children: list[NativeExamItem] = []
+    started: set[str] = set()
+
+    def flush() -> None:
+        nonlocal run_part, run_children
+        if run_part is None:
+            return
+        part = run_part
+        if part.parent_id in started:
+            part = part.model_copy(update={"parent_id": fresh_parent_id()})
+        started.add(run_part.parent_id)
+        entries.append(OutlinePart(part=part, children=tuple(run_children)))
+        run_part = None
+        run_children = []
+
+    for member in members:
+        if isinstance(member, MemberBlock):
+            flush()
+            entries.append(OutlinePart(part=member.part, children=()))
+            continue
+        if member.part is None:
+            flush()
+            entries.append(OutlineQuestion(item=member.item))
+            continue
+        if run_part is None or run_part.parent_id != member.part.parent_id:
+            flush()
+            run_part = member.part
+        run_children.append(member.item)
+    flush()
+    return tuple(entries)

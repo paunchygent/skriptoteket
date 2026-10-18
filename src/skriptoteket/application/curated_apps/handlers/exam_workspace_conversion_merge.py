@@ -7,8 +7,10 @@ refuses a save that changes, moves or removes one (``changed_placeholders``), so
 result always finds them intact and replaces them. A converted unit belongs to the
 teacher: a later result replaces its items only while the head still holds exactly those
 items, and once the teacher changed, removed or reordered them, the teacher's version
-stays. The document title, the instructions and the parents follow the converted-unit
-rule. Items the teacher added belong to no unit and keep their place.
+stays. The document title and the instructions follow the converted-unit rule. The parents
+become a flat member list that the outline owner groups into parts and places (R1), so the
+merge never computes a part place. Items the teacher added belong to no unit and keep their
+place.
 """
 
 from __future__ import annotations
@@ -29,8 +31,10 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_me
     digest_json as _digest,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_merge_parents import (
-    merge_parents,
+    ParentIds,
+    merged_members,
     parents_digest,
+    with_delivered_membership,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeParagraph,
@@ -43,8 +47,13 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_outline import (
+    outline_from_members,
+    outline_items_and_parts,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import (
     NativeExamParent,
+    validate_parent_structure,
 )
 from skriptoteket.protocols.docx_conversion_progress import ConversionUpdate
 
@@ -378,21 +387,16 @@ def merge_conversion(
             )
         previous_last = head_items[-1].item_id if head_items else previous_last
 
-    ordered: list[NativeExamItem] = []
-    for item in head.items:
-        if item.item_id in replacements:
-            ordered.extend(replacements[item.item_id])
-        elif item.item_id not in removed:
-            ordered.append(item)
-    for after, placed in inserts:
-        index = next(
-            (position + 1 for position, item in enumerate(ordered) if item.item_id == after), 0
-        )
-        ordered[index:index] = placed
-    items = tuple(
-        item.model_copy(update={"sequence": sequence})
-        for sequence, item in enumerate(ordered, start=1)
+    delivered = (
+        target.parents is not None and parents_digest(head.parents) == progress.parents_digest
     )
+    members = merged_members(head=head, replacements=replacements, removed=removed, inserts=inserts)
+    if delivered and target.parents is not None:
+        members = with_delivered_membership(members, proposed=target.parents, id_map=id_map)
+    parent_ids = ParentIds(parent.parent_id for parent in (*head.parents, *(target.parents or ())))
+    items, parents = outline_items_and_parts(outline_from_members(members, parent_ids.fresh))
+    validate_parent_structure(parents, items)
+    delivered_parents_digest = parents_digest(parents) if delivered else progress.parents_digest
     title, title_digest = _choose(head.title, target.title, progress.title_digest)
     # Assembly IDs are local to this target. Only this merge knows which saved
     # identities survive teacher edits and split-question placeholder replacement.
@@ -418,14 +422,6 @@ def merge_conversion(
     header, header_digest = _choose(head.header, proposed_header, progress.header_digest)
     instructions, instructions_digest = _choose(
         head.instructions, target.instructions, progress.instructions_digest
-    )
-    parents, delivered_parents_digest = merge_parents(
-        current=head.parents,
-        proposed=target.parents,
-        delivered_digest=progress.parents_digest,
-        id_map=id_map,
-        items=items,
-        head_items=head.items,
     )
     assets = merged_assets(
         head=head,

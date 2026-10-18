@@ -166,19 +166,6 @@ watch(
       </h2>
       <div class="list__head-actions">
         <button
-          v-if="!marking"
-          type="button"
-          class="xw-btn xw-btn--compact"
-          :disabled="disabled"
-          data-test="exam-workspace-marking-start"
-          @click="startMarking"
-        >
-          <UiGlyph
-            meaning="checkbox-off"
-            :size="16"
-          />Markera
-        </button>
-        <button
           ref="newTrigger"
           type="button"
           class="xw-btn xw-btn--compact"
@@ -196,13 +183,13 @@ watch(
       </div>
     </div>
     <div
-      v-if="marking"
       class="list__markbar"
       data-test="exam-workspace-marking-bar"
     >
       <button
         type="button"
-        class="xw-btn xw-btn--compact xw-btn--primary"
+        class="xw-btn xw-btn--compact xw-btn--primary list__markbar-group"
+        :class="{ 'list__markbar-group--idle': !marking }"
         :disabled="disabled || markedIds.length === 0"
         data-test="exam-workspace-group-marked"
         @click="groupMarked"
@@ -211,12 +198,16 @@ watch(
       </button>
       <button
         type="button"
-        class="xw-btn xw-btn--compact xw-btn--ghost"
+        class="xw-btn xw-btn--compact list__markbar-toggle"
         :disabled="disabled"
-        data-test="exam-workspace-marking-cancel"
-        @click="cancelMarking"
+        :data-test="marking ? 'exam-workspace-marking-cancel' : 'exam-workspace-marking-start'"
+        @click="marking ? cancelMarking() : startMarking()"
       >
-        Avbryt
+        <UiGlyph
+          v-if="!marking"
+          meaning="checkbox-off"
+          :size="16"
+        />{{ marking ? "Avbryt" : "Markera" }}
       </button>
     </div>
     <div class="list__scroll">
@@ -322,9 +313,14 @@ watch(
 .list__head-actions { display: flex; align-items: center; gap: var(--huleedu-space-2); }
 .list__markbar {
   display: flex; align-items: center; gap: var(--huleedu-space-2); flex: none;
-  padding: var(--huleedu-space-2) var(--huleedu-space-4) var(--huleedu-space-2) var(--huleedu-space-6);
+  height: calc(var(--xw-ctl-compact, 28px) + 2 * var(--huleedu-space-2));
+  padding: 0 var(--huleedu-space-4) 0 var(--huleedu-space-6);
   border-bottom: 1px solid var(--huleedu-surface-divider);
 }
+/* The group action keeps its box in both states; hidden when the list is not marking. */
+.list__markbar-group--idle { visibility: hidden; }
+/* One slot for Markera/Avbryt: a fixed width so swapping the label moves nothing. */
+.list__markbar-toggle { min-width: 100px; }
 .list__scroll { flex: 1; min-height: 0; overflow-y: auto; }
 .list__intro {
   padding: var(--huleedu-space-1-5) var(--huleedu-space-4) var(--huleedu-space-1-5) var(--huleedu-space-6);
@@ -361,7 +357,7 @@ watch(
 .list__action--idle { visibility: hidden; }
 @media (max-width: 1279px) {
   .list__head { padding: 0 var(--huleedu-space-3) 0 var(--huleedu-space-4); }
-  .list__markbar { padding: var(--huleedu-space-2) var(--huleedu-space-3) var(--huleedu-space-2) var(--huleedu-space-4); }
+  .list__markbar { padding: 0 var(--huleedu-space-3) 0 var(--huleedu-space-4); }
   .list__foot { padding: var(--huleedu-space-2) var(--huleedu-space-4); }
   .list__intro { padding-left: var(--huleedu-space-4); padding-right: var(--huleedu-space-3); }
 }

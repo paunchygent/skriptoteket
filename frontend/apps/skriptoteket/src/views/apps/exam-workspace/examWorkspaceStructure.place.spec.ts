@@ -17,12 +17,14 @@ import type {
 } from "../../../api/examWorkspace";
 import { newTeacherItem } from "./examWorkspaceItemEdits";
 import {
+  examWorkspaceMembers,
   examWorkspaceUnits,
   withItemAfterUnit,
+  withMembers,
   withoutStandaloneItem,
   withUnits,
 } from "./examWorkspaceStructure";
-import type { ExamWorkspaceUnit } from "./examWorkspaceStructure";
+import type { ExamWorkspaceMember, ExamWorkspaceUnit } from "./examWorkspaceStructure";
 
 function question(sequence: number): NativeExamItem {
   return newTeacherItem(`item_${String(sequence).padStart(3, "0")}`, sequence, "free_text");
@@ -157,5 +159,62 @@ describe("deleting a standalone question before a childless part", () => {
 
     expect(next.items.map((item) => item.item_id)).toEqual(["item_002"]);
     expect(next.parents).toEqual([block("parent_001", 0)]);
+  });
+});
+
+function memberKeys(members: ExamWorkspaceMember[]): string[] {
+  return members.map((member) =>
+    member.kind === "item"
+      ? `item:${member.item.item_id}:${member.parentId ?? ""}`
+      : `block:${member.parentId}`,
+  );
+}
+
+describe("reading and writing the member list", () => {
+  it("round trips a document through members (standalone, part with two children, block)", () => {
+    const document = documentOf(
+      [question(1), question(2), question(3), question(4)],
+      [part("parent_001", 1, ["item_002", "item_003"]), block("parent_002", 3)],
+    );
+
+    expect(memberKeys(examWorkspaceMembers(document))).toEqual([
+      "item:item_001:",
+      "item:item_002:parent_001",
+      "item:item_003:parent_001",
+      "block:parent_002",
+      "item:item_004:",
+    ]);
+    expect(withMembers(document, examWorkspaceMembers(document), document.parents)).toEqual(
+      document,
+    );
+  });
+
+  it("splits a part whose members reappear through a fresh parent copy with the same instruction", () => {
+    const parent: NativeExamParent = {
+      instruction: [
+        { heading_level: null, segments: [{ kind: "text", marks: [], text: "Gemensam" }] },
+      ],
+      item_ids: ["item_001"],
+      parent_id: "parent_001",
+      place: 0,
+    };
+    const document = documentOf([question(1), question(2), question(3)], [parent]);
+    const members: ExamWorkspaceMember[] = [
+      { kind: "item", item: document.items[0]!, parentId: "parent_001" },
+      { kind: "item", item: document.items[1]!, parentId: null },
+      { kind: "item", item: document.items[2]!, parentId: "parent_001" },
+    ];
+
+    const next = withMembers(document, members, document.parents);
+
+    expect(next.items.map((item) => item.item_id)).toEqual(["item_001", "item_002", "item_003"]);
+    expect(
+      next.parents.map((entry) => [entry.parent_id, entry.place, entry.item_ids]),
+    ).toEqual([
+      ["parent_001", 0, ["item_001"]],
+      ["parent_002", 2, ["item_003"]],
+    ]);
+    expect(next.parents[1]!.instruction).toEqual(parent.instruction);
+    expect(withUnits(next, examWorkspaceUnits(next))).toEqual(next);
   });
 });

@@ -2,15 +2,17 @@
  * Exam workspace structure commands.
  *
  * Domain purpose:
- *   Add a question of any kind after the selected unit, delete a standalone
- *   question, add an instruction with deluppgifter, group marked questions into
- *   a new part, add an empty part, move a question into, out of or between
- *   parts, add, move and delete a deluppgift, and change a question's type
- *   (TASK-SKRIPT-39-06-03, 39-06-05, 39-06-10, 40-04-03). Adding and deleting a
- *   standalone question are local structural edits; the parent commands and Byt
- *   frågetyp run on the server against its newest undo step, so the pending edit
- *   is stored first and the response's document becomes the next step. After Byt
- *   frågetyp the question shows an inline notice naming what the change removed;
+ *   Add a question of any kind after the selected top-level unit — the selected
+ *   part entry when one is selected, otherwise the selected question — delete a
+ *   standalone question, add an instruction with deluppgifter, group marked
+ *   questions into a new part, add an empty part, move a question into, out of
+ *   or between parts, add, move and delete a deluppgift, and change a question's
+ *   type (TASK-SKRIPT-39-06-03, 39-06-05, 39-06-10, 40-04-03). Adding and
+ *   deleting a standalone question are local structural edits; the parent
+ *   commands and Byt frågetyp run on the server against its newest undo step, so
+ *   the pending edit is stored first and the response's document becomes the
+ *   next step. After Byt frågetyp the question shows an inline notice naming what
+ *   the change removed;
  *   the header Ångra reverts it (user ruling 2026-10-17: no Ångra in toasts).
  *   Deleting an instruction keeps its questions as standalone questions by
  *   default, or deletes them with it; deleting its last question keeps the part
@@ -38,9 +40,9 @@ import {
   groupExamWorkspaceItems,
   moveExamWorkspaceItem,
   reorderExamWorkspaceChildren,
-} from "../../../api/examWorkspace";
+} from "../../../api/examWorkspaceStructureCommands";
+import type { ExamParentDeleteMode } from "../../../api/examWorkspaceStructureCommands";
 import type {
-  ExamParentDeleteMode,
   ExamWorkspaceDocumentResponse,
   NativeExamDocument,
   NativeExamItemKind,
@@ -65,6 +67,8 @@ const NEW_INSTRUCTION_TEXT = "Ny instruktion";
 export type ExamWorkspaceStructureDeps = {
   workspaceDocument: Ref<NativeExamDocument | null>;
   selectedItemId: Ref<string | null>;
+  /** The part entry the teacher selected, or null; a structural insert lands after it (G9). */
+  selectedParentId: Ref<string | null>;
   historyCursor: Ref<string | null>;
   lineageId: () => string | null;
   savedRevision: () => number | null;
@@ -116,8 +120,16 @@ export function useExamWorkspaceStructure(deps: ExamWorkspaceStructureDeps) {
 
   const blocked = computed(() => running.value || deps.isBusy());
 
+  /**
+   * The unit a structural insert lands after: the selected part entry when the
+   * teacher selected one, otherwise the document's selected question.
+   */
   function selectedUnitIndex(document: NativeExamDocument): number {
-    return examWorkspaceUnitIndex(examWorkspaceUnits(document), { itemId: deps.selectedItemId.value });
+    const parentId = deps.selectedParentId.value;
+    return examWorkspaceUnitIndex(
+      examWorkspaceUnits(document),
+      parentId === null ? { itemId: deps.selectedItemId.value } : { parentId },
+    );
   }
 
   /** Run one server command against the newest stored step; select what it added. */
@@ -288,7 +300,7 @@ export function useExamWorkspaceStructure(deps: ExamWorkspaceStructureDeps) {
     return true;
   }
 
-  /** Insert a part with an empty instruction after the selected unit and open its editor (G9). */
+  /** Insert a part with an empty instruction after the selected top-level unit and open its editor (G9). */
   async function addEmptyPart(): Promise<void> {
     const document = deps.workspaceDocument.value;
     if (!document) {

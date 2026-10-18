@@ -4,9 +4,10 @@
  * Expected behavior:
  *   A part with no questions is an unnumbered instruction block: no number,
  *   its instruction excerpt or "Tom instruktion" when empty, the meta
- *   "Instruktion utan frågor" and no points (G5, R1). Clicking it selects the
- *   part, so its instruction opens in the editor. A part with questions keeps
- *   its number, counts and points.
+ *   "Instruktion utan frågor" and no points, though its fixed-height points
+ *   line stays in place (G5, R1). Clicking it selects the part, so its
+ *   instruction opens in the editor. A part with questions keeps its number,
+ *   counts and points.
  */
 
 import { mount } from "@vue/test-utils";
@@ -41,6 +42,10 @@ describe("ExamWorkspaceQuestionRow childless part", () => {
     expect(empty.get(".row__n").text()).toBe("");
     expect(empty.get(".row__text").text()).toBe("Tom instruktion");
     expect(empty.get(".row__meta").text()).toBe("Instruktion utan frågor");
+    // The points line keeps its fixed-height slot but renders no points.
+    const line = empty.get(".row__pointsline");
+    expect(line.text()).toBe("");
+    expect(line.attributes("aria-hidden")).toBe("true");
     expect(empty.find('[data-test="exam-workspace-part-points-line"]').exists()).toBe(false);
 
     const written = mountRow(part("parent_002", "", [], "Läs texten och svara"));
@@ -56,10 +61,12 @@ describe("ExamWorkspaceQuestionRow childless part", () => {
   });
 
   it("keeps a part with questions numbered and scored", () => {
-    const wrapper = mountRow(part("parent_001", "2", ["item_003"], "Delinstruktion"));
+    const entry = part("parent_001", "2", ["item_003"], "Delinstruktion");
+    entry.points = 4;
+    const wrapper = mountRow(entry);
 
     expect(wrapper.get(".row__n").text()).toBe("2");
     expect(wrapper.get(".row__meta").text()).toBe("Instruktion · 1 fråga");
-    expect(wrapper.find('[data-test="exam-workspace-part-points-line"]').exists()).toBe(true);
+    expect(wrapper.get('[data-test="exam-workspace-part-points-line"]').text()).toBe("4 p");
   });
 });

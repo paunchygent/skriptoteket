@@ -11,18 +11,41 @@
  *   Names the content a Byt frågetyp dropped in the teacher's words
  *   (TASK-SKRIPT-39-06-05).
  *
+ *   The client twin of the server's one ordering owner (`native_exam_outline`,
+ *   R1): `examWorkspaceMembers` reads the units as a flat member list, and
+ *   `withMembers` is the one grouping rule that turns members back into units
+ *   with item sequences and part places -- the client twins of
+ *   `outline_members` and `outline_from_members`. A conversion merge hands a
+ *   member list to `withMembers` instead of computing a part place itself, so
+ *   no consumer reconstructs the ordering rule.
+ *
  * Relationships:
  *   - Pure functions used by `useExamWorkspaceStructure`; parent and
  *     change-type commands themselves run on the server.
+ *   - `examWorkspaceConversionMerge` consumes `examWorkspaceMembers` and
+ *     `withMembers`.
  */
 
-import type { NativeExamBodyParagraph, NativeExamDocument, NativeExamItem } from "../../../api/examWorkspace";
+import type {
+  NativeExamBodyParagraph,
+  NativeExamDocument,
+  NativeExamItem,
+  NativeExamParent,
+} from "../../../api/examWorkspace";
 import { examWorkspaceTypeLabel } from "./examWorkspaceRows";
 import type { TeacherItemKind } from "./examWorkspaceItemEdits";
 
 export type ExamWorkspaceUnit =
   | { kind: "item"; itemId: string }
   | { kind: "parent"; parentId: string; itemIds: string[] };
+
+/**
+ * One token of a flat member list in document order: an item with the part it
+ * belongs to (`null` when standalone), or a block for a childless part.
+ */
+export type ExamWorkspaceMember =
+  | { kind: "item"; item: NativeExamItem; parentId: string | null }
+  | { kind: "block"; parentId: string };
 
 /**
  * The top-level units in document order: a part sits at its stored place (the
@@ -94,6 +117,113 @@ export function withUnits(
     ),
     parents,
   };
+}
+
+/**
+ * The document's member list in document order: one item token per item with
+ * the part it belongs to (`null` when standalone), and one block token per
+ * childless part. The client twin of `outline_members`.
+ */
+export function examWorkspaceMembers(document: NativeExamDocument): ExamWorkspaceMember[] {
+  const itemById = new Map(document.items.map((item) => [item.item_id, item]));
+  const members: ExamWorkspaceMember[] = [];
+  for (const unit of examWorkspaceUnits(document)) {
+    if (unit.kind === "item") {
+      const item = itemById.get(unit.itemId);
+      if (item !== undefined) {
+        members.push({ kind: "item", item, parentId: null });
+      }
+      continue;
+    }
+    if (unit.itemIds.length === 0) {
+      members.push({ kind: "block", parentId: unit.parentId });
+      continue;
+    }
+    for (const itemId of unit.itemIds) {
+      const item = itemById.get(itemId);
+      if (item !== undefined) {
+        members.push({ kind: "item", item, parentId: unit.parentId });
+      }
+    }
+  }
+  return members;
+}
+
+/** The next free `parent_NNN` id: one above the highest numbered id in use. */
+export function nextParentId(parentIds: string[]): string {
+  const used = new Set(parentIds);
+  let highest = 0;
+  for (const parentId of parentIds) {
+    const match = /^parent_(\d+)$/.exec(parentId);
+    if (match) {
+      highest = Math.max(highest, Number(match[1]));
+    }
+  }
+  let candidate = highest + 1;
+  while (used.has(`parent_${String(candidate).padStart(3, "0")}`)) {
+    candidate += 1;
+  }
+  return `parent_${String(candidate).padStart(3, "0")}`;
+}
+
+/**
+ * The one grouping rule for a member list: consecutive item members of one part
+ * become one part entry, a block member becomes a childless part in place, and a
+ * part whose members reappear after an interruption is split into runs; each
+ * later run is a copy of the part with a fresh parent id and the same
+ * instruction, so no child loses its part. The client twin of
+ * `outline_from_members`.
+ */
+export function withMembers(
+  document: NativeExamDocument,
+  members: ExamWorkspaceMember[],
+  parents: NativeExamParent[],
+): NativeExamDocument {
+  const parentById = new Map(parents.map((parent) => [parent.parent_id, parent]));
+  const usedParentIds = parents.map((parent) => parent.parent_id);
+  const runCopies: NativeExamParent[] = [];
+  const started = new Set<string>();
+  const units: ExamWorkspaceUnit[] = [];
+  let previous: ExamWorkspaceMember | null = null;
+  for (const member of members) {
+    if (member.kind === "block") {
+      units.push({ kind: "parent", parentId: member.parentId, itemIds: [] });
+      previous = member;
+      continue;
+    }
+    if (member.parentId === null) {
+      units.push({ kind: "item", itemId: member.item.item_id });
+      previous = member;
+      continue;
+    }
+    const continues =
+      previous !== null && previous.kind === "item" && previous.parentId === member.parentId;
+    let parentId = member.parentId;
+    if (!continues) {
+      if (started.has(member.parentId)) {
+        parentId = nextParentId(usedParentIds);
+        usedParentIds.push(parentId);
+        const source = parentById.get(member.parentId);
+        if (source !== undefined) {
+          const copy = { ...source, parent_id: parentId };
+          runCopies.push(copy);
+          parentById.set(parentId, copy);
+        }
+      }
+      started.add(member.parentId);
+      units.push({ kind: "parent", parentId, itemIds: [] });
+    }
+    const running = units[units.length - 1]!;
+    if (running.kind === "parent") {
+      running.itemIds.push(member.item.item_id);
+    }
+    previous = member;
+  }
+  return withUnits(
+    { ...document, parents: [...parents, ...runCopies] },
+    units,
+    members.flatMap((member) => (member.kind === "item" ? [member.item] : [])),
+  );
 }
 
 /** The index of the unit holding the selection (an item, a child or a parent), or -1. */

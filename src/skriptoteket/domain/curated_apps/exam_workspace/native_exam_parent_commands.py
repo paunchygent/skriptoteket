@@ -6,7 +6,6 @@ owner, so item sequences and each part's stored place come from the new order.
 """
 
 from collections.abc import Sequence
-from typing import cast
 
 from pydantic import ValidationError
 
@@ -55,12 +54,11 @@ def _parent(document: NativeExamDocument, parent_id: str) -> NativeExamParent:
     )
 
 
-def _part_index(outline: Sequence[OutlineEntry], parent_id: str) -> int:
-    return next(
-        index
-        for index, entry in enumerate(outline)
-        if isinstance(entry, OutlinePart) and entry.part.parent_id == parent_id
-    )
+def _located_part(outline: Sequence[OutlineEntry], parent_id: str) -> tuple[int, OutlinePart]:
+    for index, entry in enumerate(outline):
+        if isinstance(entry, OutlinePart) and entry.part.parent_id == parent_id:
+            return index, entry
+    raise LookupError(f"part {parent_id} is not in the document outline")
 
 
 def _new_child(document: NativeExamDocument, child: NativeExamItem) -> NativeExamItem:
@@ -141,8 +139,7 @@ def add_child(
 ) -> NativeExamDocument:
     _parent(document, parent_id)
     outline = list(document_outline(document))
-    index = _part_index(outline, parent_id)
-    part = cast(OutlinePart, outline[index])
+    index, part = _located_part(outline, parent_id)
     _position(position, len(part.children))
     new_child = _new_child(document, child)
     children = list(part.children)
@@ -159,8 +156,7 @@ def delete_parent(
     """Remove the shared instruction, leaving every child in place as a standalone."""
     _parent(document, parent_id)
     outline = list(document_outline(document))
-    index = _part_index(outline, parent_id)
-    part = cast(OutlinePart, outline[index])
+    index, part = _located_part(outline, parent_id)
     outline[index : index + 1] = [OutlineQuestion(item=item) for item in part.children]
     return _rebuild(document, outline)
 
@@ -206,8 +202,7 @@ def delete_child(
             details={"reason": "exam_requires_question", "parent_id": parent_id},
         )
     outline = list(document_outline(document))
-    index = _part_index(outline, parent_id)
-    part = cast(OutlinePart, outline[index])
+    index, part = _located_part(outline, parent_id)
     outline[index] = OutlinePart(
         part=part.part,
         children=tuple(child for child in part.children if child.item_id != item_id),
@@ -285,8 +280,7 @@ def move_item(
                 details={"reason": "already_standalone", "item_id": item_id},
             )
         outline = list(document_outline(document))
-        index = _part_index(outline, part.parent_id)
-        current = cast(OutlinePart, outline[index])
+        index, current = _located_part(outline, part.parent_id)
         moved = next(child for child in current.children if child.item_id == item_id)
         outline[index] = OutlinePart(
             part=current.part,
@@ -319,8 +313,7 @@ def move_item(
                 children=tuple(child for child in entry.children if child.item_id != item_id),
             )
             break
-    target_index = _part_index(outline, target_parent_id)
-    target = cast(OutlinePart, outline[target_index])
+    target_index, target = _located_part(outline, target_parent_id)
     outline[target_index] = OutlinePart(part=target.part, children=(*target.children, item))
     return _rebuild(document, outline)
 
@@ -355,8 +348,7 @@ def reorder_children(
             details={"parent_id": parent_id},
         )
     outline = list(document_outline(document))
-    index = _part_index(outline, parent_id)
-    part = cast(OutlinePart, outline[index])
+    index, part = _located_part(outline, parent_id)
     by_id = {child.item_id: child for child in part.children}
     outline[index] = OutlinePart(
         part=part.part, children=tuple(by_id[item_id] for item_id in item_ids)

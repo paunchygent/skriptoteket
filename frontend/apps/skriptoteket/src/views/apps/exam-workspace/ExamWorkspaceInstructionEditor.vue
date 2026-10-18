@@ -14,8 +14,9 @@
  *   Removing an instruction keeps its questions as standalone questions by
  *   default ("Ta bort instruktion"); removing it with every question is a
  *   separate entry lower in ⋮ (user ruling 2026-10-17). Removing the last
- *   deluppgift removes the emptied heading too. A removal the server refuses
- *   (the exam would have no question left) is said inline above the text.
+ *   deluppgift keeps the part as an instruction block (G8). A removal the
+ *   server refuses (the exam would have no question left) is said inline above
+ *   the text.
  *
  * Relationships:
  *   - Rendered by `ExamWorkspaceView` for a selected instruction; emits
@@ -25,7 +26,7 @@
 import { computed, ref } from "vue";
 
 import type { NativeExamBodyParagraph, NativeExamParent } from "../../../api/examWorkspace";
-import type { ExamParentDeleteMode } from "../../../api/examWorkspace";
+import type { ExamParentDeleteMode } from "../../../api/examWorkspaceStructureCommands";
 import { UiGlyph } from "../../../components/ui";
 import ExamWorkspaceInlineNotice from "./ExamWorkspaceInlineNotice.vue";
 import ExamWorkspaceMarkToolbar from "./ExamWorkspaceMarkToolbar.vue";
@@ -221,7 +222,7 @@ function chooseDelete(mode: ExamParentDeleteMode): void {
             class="xw-rm"
             :disabled="disabled"
             aria-label="Ta bort deluppgiften"
-            :title="children.length === 1 ? 'Ta bort deluppgiften och instruktionen' : 'Ta bort deluppgiften'"
+            title="Ta bort deluppgiften"
             :data-test="`exam-workspace-child-delete-${entry.id}`"
             @click="emit('deleteChild', entry.id)"
           >

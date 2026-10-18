@@ -12,10 +12,14 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import NativeExamItem
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_outline import (
+    MemberBlock,
+    MemberItem,
     OutlinePart,
     OutlineQuestion,
     document_outline,
+    outline_from_members,
     outline_items_and_parts,
+    outline_members,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import (
     NativeExamParent,
@@ -175,3 +179,57 @@ def test_the_writer_renumbers_items_and_sets_each_parts_place_and_children():
     assert [item.sequence for item in items] == [1, 2, 3]
     assert parts[0].place == 1
     assert parts[0].item_ids == ("item_002", "item_003")
+
+
+def test_members_round_trip_questions_a_part_and_a_childless_block():
+    document = _document(
+        _items(1, 2, 3, 4),
+        parents=(_part("parent_001", 1, (2, 3)), _part("parent_002", 4)),
+    )
+
+    members = outline_members(document_outline(document))
+
+    assert [type(member) for member in members] == [
+        MemberItem,
+        MemberItem,
+        MemberItem,
+        MemberItem,
+        MemberBlock,
+    ]
+    assert [member.item.item_id for member in members if isinstance(member, MemberItem)] == [
+        "item_001",
+        "item_002",
+        "item_003",
+        "item_004",
+    ]
+    block = members[4]
+    assert isinstance(block, MemberBlock)
+    assert block.part.parent_id == "parent_002"
+    rebuilt = outline_from_members(members, lambda: "parent_900")
+    assert outline_items_and_parts(rebuilt) == outline_items_and_parts(document_outline(document))
+
+
+def test_an_interrupted_part_splits_into_runs_with_the_same_instruction():
+    part = _part("parent_001", 0, (1, 2))
+    first, second, other = _items(1, 2, 3)
+
+    entries = outline_from_members(
+        (
+            MemberItem(item=first, part=part),
+            MemberItem(item=other, part=None),
+            MemberItem(item=second, part=part),
+        ),
+        lambda: "parent_900",
+    )
+
+    assert [type(entry) for entry in entries] == [OutlinePart, OutlineQuestion, OutlinePart]
+    first_run, middle, second_run = entries
+    assert isinstance(first_run, OutlinePart)
+    assert isinstance(middle, OutlineQuestion)
+    assert isinstance(second_run, OutlinePart)
+    assert first_run.part.parent_id == "parent_001"
+    assert first_run.children == (first,)
+    assert middle.item == other
+    assert second_run.part.parent_id == "parent_900"
+    assert second_run.part.instruction == part.instruction
+    assert second_run.children == (second,)

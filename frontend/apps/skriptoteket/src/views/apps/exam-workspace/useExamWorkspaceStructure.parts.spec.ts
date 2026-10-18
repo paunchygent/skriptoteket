@@ -4,10 +4,12 @@
  * Expected behavior:
  *   Each command is exactly one server call against the cursor the history
  *   holds after the pending edit is stored, and one undo step. Grouping and
- *   Ny del open the created part's instruction in the editor; moving a
- *   question keeps it selected. A conflict reloads and selects nothing; a 422
- *   refusal shows one failure toast and leaves the document untouched; every
- *   command is skipped while the editor is busy.
+ *   Ny del open the created part's instruction in the editor; Ny del lands
+ *   after the selected part entry when one is selected, otherwise after the
+ *   selected question. Moving a question keeps it selected. A conflict
+ *   reloads and selects nothing; a 422 refusal shows one failure toast and
+ *   leaves the document untouched; every command is skipped while the editor
+ *   is busy.
  */
 
 import { createPinia, setActivePinia } from "pinia";
@@ -33,7 +35,7 @@ const apiMocks = vi.hoisted(() => ({
   reorderExamWorkspaceChildren: vi.fn(),
 }));
 
-vi.mock("../../../api/examWorkspace", () => apiMocks);
+vi.mock("../../../api/examWorkspaceStructureCommands", () => apiMocks);
 
 function documentResponse(document: NativeExamDocument): ExamWorkspaceDocumentResponse {
   return {
@@ -54,9 +56,22 @@ function createdPartResponse(
   return { ...documentResponse(document), created_parent_id: createdParentId };
 }
 
+/** A childless part (parent_002) sitting among standalone questions, after item_002. */
+function childlessMiddleDocument(): NativeExamDocument {
+  const base = buildParentDocument();
+  return {
+    ...base,
+    parents: [
+      { ...base.parents[0]!, item_ids: ["item_001"], place: 0 },
+      { instruction: [], item_ids: [], parent_id: "parent_002", place: 2 },
+    ],
+  };
+}
+
 function setup(selected: string | null = null) {
   const workspaceDocument = ref<NativeExamDocument | null>(buildParentDocument());
   const selectedItemId = ref<string | null>(selected);
+  const selectedParentId = ref<string | null>(null);
   const historyCursor = ref<string | null>("cursor-before-flush");
   const calls: string[] = [];
   const flush = vi.fn(async (settle: boolean) => {
@@ -66,7 +81,10 @@ function setup(selected: string | null = null) {
   });
   const onConflict = vi.fn(async () => undefined);
   const applied: ExamWorkspaceDocumentResponse[] = [];
-  const selectParent = vi.fn();
+  // The view wires this to the selection composable's selectEntry, which sets the shared part ref.
+  const selectParent = vi.fn((parentId: string) => {
+    selectedParentId.value = parentId;
+  });
   const selectItem = vi.fn((itemId: string) => {
     selectedItemId.value = itemId;
   });
@@ -92,6 +110,7 @@ function setup(selected: string | null = null) {
       selectItem,
       selectParent,
       selectedItemId,
+      selectedParentId,
       workspaceDocument,
     }),
   )!;
@@ -103,6 +122,7 @@ function setup(selected: string | null = null) {
     selectItem,
     selectParent,
     selectedItemId,
+    selectedParentId,
     setBusy: (value: boolean) => {
       busy = value;
     },
@@ -191,6 +211,58 @@ describe("addEmptyPart", () => {
     expect(apiMocks.createEmptyExamWorkspacePart.mock.calls[0]).toEqual([
       "lineage-1",
       2,
+      "cursor-after-flush",
+    ]);
+  });
+
+  it("inserts after the selected childless part, not the stale selected question", async () => {
+    const document = childlessMiddleDocument();
+    const { selectParent, selectedItemId, selectedParentId, structure, workspaceDocument } = setup("item_004");
+    workspaceDocument.value = document;
+    selectedParentId.value = "parent_002";
+    apiMocks.createEmptyExamWorkspacePart.mockResolvedValue(createdPartResponse(document, "parent_003"));
+
+    await structure.addEmptyPart();
+
+    expect(selectedItemId.value).toBe("item_004");
+    expect(apiMocks.createEmptyExamWorkspacePart.mock.calls[0]).toEqual([
+      "lineage-1",
+      3,
+      "cursor-after-flush",
+    ]);
+    expect(selectParent).toHaveBeenCalledWith("parent_003");
+  });
+
+  it("inserts after the part the previous Ny del created, without a question in between", async () => {
+    const base = buildParentDocument();
+    const withNewPart: NativeExamDocument = {
+      ...base,
+      parents: [
+        ...base.parents,
+        { instruction: [], item_ids: [], parent_id: "parent_002", place: base.items.length },
+      ],
+    };
+    const { selectParent, structure } = setup("item_004");
+    apiMocks.createEmptyExamWorkspacePart.mockResolvedValue(createdPartResponse(withNewPart, "parent_002"));
+
+    await structure.addEmptyPart();
+    await structure.addEmptyPart();
+
+    expect(apiMocks.createEmptyExamWorkspacePart.mock.calls.map((call) => call[1])).toEqual([2, 3]);
+    expect(selectParent).toHaveBeenCalledWith("parent_002");
+  });
+
+  it("inserts after the selected part with children, not the unrelated selected question", async () => {
+    const base = buildParentDocument();
+    const { selectedParentId, structure } = setup("item_004");
+    selectedParentId.value = "parent_001";
+    apiMocks.createEmptyExamWorkspacePart.mockResolvedValue(createdPartResponse(base, "parent_002"));
+
+    await structure.addEmptyPart();
+
+    expect(apiMocks.createEmptyExamWorkspacePart.mock.calls[0]).toEqual([
+      "lineage-1",
+      1,
       "cursor-after-flush",
     ]);
   });

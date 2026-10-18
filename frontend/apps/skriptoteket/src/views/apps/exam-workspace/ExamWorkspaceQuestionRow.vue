@@ -85,7 +85,6 @@ const ORDERING_REASON = "Ordna-frågor kan inte ligga i en del";
     class="row"
     :class="{
       'row--selected': selected,
-      'row--marking': marking,
       'row--parent': entry.kind === 'parent',
       'row--child': entry.kind === 'item' && entry.parentId !== null,
       'row--converting': entry.kind === 'item' && entry.status === 'converting',
@@ -98,8 +97,8 @@ const ORDERING_REASON = "Ordna-frågor kan inte ligga i en del";
     @click="emit('select', entry.id)"
   >
     <span
-      v-if="marking"
       class="row__mark"
+      :class="{ 'row__mark--idle': !marking }"
       role="gridcell"
     >
       <input
@@ -131,30 +130,33 @@ const ORDERING_REASON = "Ordna-frågor kan inte ligga i en del";
         <template v-else>{{ meta }}</template>
       </span>
       <span
-        v-if="entry.kind === 'parent' && !childlessPart"
+        v-if="entry.kind === 'parent'"
         class="row__pointsline"
-        data-test="exam-workspace-part-points-line"
+        :data-test="childlessPart ? undefined : 'exam-workspace-part-points-line'"
+        :aria-hidden="childlessPart ? 'true' : undefined"
       >
-        <template v-if="entry.printedTotal !== null">
+        <template v-if="!childlessPart">
+          <template v-if="entry.printedTotal !== null">
+            <span
+              class="row__printed"
+              :title="examWorkspacePointsLine(entry.points, entry.printedTotal)"
+              data-test="exam-workspace-part-points"
+            >{{ examWorkspacePointsLine(entry.points, entry.printedTotal) }}</span>
+            <button
+              type="button"
+              class="xw-btn xw-btn--compact xw-btn--ghost row__accept"
+              :disabled="disabled"
+              :data-test="`exam-workspace-accept-part-total-${entry.id}`"
+              @click.stop="emit('acceptTotal', entry.id)"
+            >
+              Använd {{ examWorkspaceFormatPoints(entry.points) }} p
+            </button>
+          </template>
           <span
-            class="row__printed"
-            :title="examWorkspacePointsLine(entry.points, entry.printedTotal)"
-            data-test="exam-workspace-part-points"
-          >{{ examWorkspacePointsLine(entry.points, entry.printedTotal) }}</span>
-          <button
-            type="button"
-            class="xw-btn xw-btn--compact xw-btn--ghost row__accept"
-            :disabled="disabled"
-            :data-test="`exam-workspace-accept-part-total-${entry.id}`"
-            @click.stop="emit('acceptTotal', entry.id)"
-          >
-            Använd {{ examWorkspaceFormatPoints(entry.points) }} p
-          </button>
+            v-else
+            class="row__points"
+          >{{ examWorkspaceFormatPoints(entry.points) }} p</span>
         </template>
-        <span
-          v-else
-          class="row__points"
-        >{{ examWorkspaceFormatPoints(entry.points) }} p</span>
       </span>
     </span>
     <span role="gridcell"><span
@@ -203,15 +205,16 @@ const ORDERING_REASON = "Ordna-frågor kan inte ligga i en del";
 
 <style scoped>
 .row {
-  display: grid; grid-template-columns: 28px minmax(0, 1fr) 20px 20px; align-items: center; gap: var(--huleedu-space-2);
+  display: grid; grid-template-columns: 28px 28px minmax(0, 1fr) 20px 20px; align-items: center; gap: var(--huleedu-space-2);
   padding: var(--huleedu-space-2-5) var(--huleedu-space-4) var(--huleedu-space-2-5) var(--huleedu-space-6);
   border-bottom: 1px solid var(--huleedu-surface-divider); cursor: pointer; position: relative;
 }
 .row:focus-visible { outline: 2px solid var(--huleedu-action-40); outline-offset: -2px; }
 .row--selected { background: var(--huleedu-action-10); box-shadow: inset 4px 0 0 var(--huleedu-action); }
 .row__n { font-size: var(--huleedu-text-sm); color: var(--huleedu-navy-70); }
-.row--marking { grid-template-columns: 28px 28px minmax(0, 1fr) 20px 20px; }
+/* The mark cell keeps its grid track in both states; only its content is hidden when not marking. */
 .row__mark { display: flex; align-items: center; }
+.row__mark--idle { visibility: hidden; }
 .row__body { min-width: 0; display: flex; flex-direction: column; }
 .row__text {
   font-size: var(--huleedu-text-sm); font-weight: var(--huleedu-font-medium);

@@ -312,7 +312,9 @@ describe("accepting the computed totals", () => {
     );
     for (const row of Array.from(grid.querySelectorAll('[role="row"]'))) {
       expect(row.parentElement).toBe(grid);
+      // Every row keeps the always-present mark cell, so the grid holds five cells in both modes.
       expect(Array.from(row.children).map((cell) => cell.getAttribute("role"))).toEqual([
+        "gridcell",
         "gridcell",
         "gridcell",
         "gridcell",

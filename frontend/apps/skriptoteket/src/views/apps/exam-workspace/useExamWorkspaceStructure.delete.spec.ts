@@ -28,10 +28,27 @@ const apiMocks = vi.hoisted(() => ({
   deleteExamWorkspaceChild: vi.fn(),
 }));
 
-vi.mock("../../../api/examWorkspace", () => apiMocks);
+vi.mock("../../../api/examWorkspaceStructureCommands", () => apiMocks);
+
+/** The stored retry source and one of its chunks, as the transport declares them. */
+type NativeExamRetrySource = NonNullable<NativeExamItem["retry_source"]>;
+type NativeExamRetryChunk = NativeExamRetrySource["chunks"][number];
+
+/** A stable 64-hex SHA-256-shaped digest, distinct per asset id. */
+function assetDigest(assetId: string): string {
+  const encoded = [...assetId]
+    .map((character) => character.charCodeAt(0).toString(16).padStart(2, "0"))
+    .join("");
+  return encoded.padEnd(64, "0");
+}
 
 function asset(assetId: string): NativeExamAsset {
-  return { asset_id: assetId, byte_length: 1, media_type: "image/png", sha256: assetId };
+  return {
+    asset_id: assetId,
+    byte_length: 1,
+    media_type: "image/png",
+    sha256: assetDigest(assetId),
+  };
 }
 
 function picture(assetId: string): NativeExamBodyParagraph[] {
@@ -43,26 +60,29 @@ function question(sequence: number, assetIds: string[] = []): NativeExamItem {
   return { ...item, body: assetIds.flatMap(picture) };
 }
 
-function withRetrySource(item: NativeExamItem, assetId: string): NativeExamItem {
-  const chunk = {
-    anchor: "a",
-    images: [{ asset_id: assetId, marked_offset: 0, offset: 0 }],
-    kind: "paragraph",
-    marked_text: "",
+function retryChunk(anchor: string, text: string, assetIds: string[] = []): NativeExamRetryChunk {
+  return {
+    anchor,
+    images: assetIds.map((assetId) => ({ asset_id: assetId, marked_offset: 0, offset: 0 })),
+    kind: "question",
+    marked_text: text,
     missing_images: [],
     paragraphs: [],
     runs: [],
+    text,
   };
-  return {
-    ...item,
-    retry_source: {
-      chunks: [],
-      context_chunks: [chunk],
-      owned_context_anchors: [],
-      key_chunks: [],
-      label_kind: "free_text",
-    },
-  } as unknown as NativeExamItem;
+}
+
+/** The retry source a question keeps: one own chunk and one shared context chunk holding the picture. */
+function withRetrySource(item: NativeExamItem, assetId: string): NativeExamItem {
+  const source: NativeExamRetrySource = {
+    chunks: [retryChunk("body:0001", "Fråga två.")],
+    context_chunks: [retryChunk("context:0001", "Delad kontext.", [assetId])],
+    key_chunks: [],
+    label_kind: "free_text",
+    owned_context_anchors: [],
+  };
+  return { ...item, retry_source: source };
 }
 
 function documentOf(overrides: Partial<NativeExamDocument>): NativeExamDocument {
@@ -72,7 +92,12 @@ function documentOf(overrides: Partial<NativeExamDocument>): NativeExamDocument 
     header: { tags: [] },
     instructions: [],
     items: [question(1), question(2)],
-    origin: { kind: "docx_import" },
+    origin: {
+      extractor_version: "docx-extractor-1",
+      kind: "docx_import",
+      source_filename: "prov.docx",
+      source_sha256: "d".repeat(64),
+    },
     parents: [],
     revision: 1,
     schema_version: "native_exam_document_v7",
@@ -96,6 +121,7 @@ function response(document: NativeExamDocument): ExamWorkspaceDocumentResponse {
 function setup(initial: NativeExamDocument) {
   const workspaceDocument = ref<NativeExamDocument | null>(initial);
   const selectedItemId = ref<string | null>(null);
+  const selectedParentId = ref<string | null>(null);
   const editDocument = vi.fn((edit: (document: NativeExamDocument) => NativeExamDocument) => {
     workspaceDocument.value = edit(workspaceDocument.value!);
     return true;
@@ -116,6 +142,7 @@ function setup(initial: NativeExamDocument) {
       selectItem: vi.fn(),
       selectParent: vi.fn(),
       selectedItemId,
+      selectedParentId,
       workspaceDocument,
     }),
   )!;
