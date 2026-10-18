@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "03450518942056a48ad58d2d16e0215de1265eb3347b7cb0449408b5000ffec5",
+  "source_set_digest": "bd2b25f788a301e70e83d03683db258dedcc841afc8936ce643d14c475f4ee64",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5069,7 +5069,7 @@
     {
       "id": "TASK-SKRIPT-39-04-15",
       "type": "task",
-      "title": "Left-out check covers the own chunks an item lists, by source alignment, never by wording",
+      "title": "Gapless body paragraphs show their aligned source paragraph's text, so a reply cannot drop or replace stem sentences",
       "path": "docs/backlog/tasks/task-skript-39-04-15-left-out-check-covers-the-own-chunks-an-item-lists-by-source-alignment-never-by-wording.md",
       "status": "proposed",
       "task_kind": "story",
