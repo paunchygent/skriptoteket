@@ -121,19 +121,6 @@ NOTHING_GOVERNED: Mapping[str, frozenset[str]] = MappingProxyType({})
 _ITALIC_TAG = re.compile(r"</?i>")
 
 
-def native_item(
-    produced: ProducedItem,
-    *,
-    chunks: Iterable[DocxChunk] = (),
-    language: Language,
-    formatting_observer: Callable[[str], None] | None = None,
-) -> NativeExamItem:
-    """The item ``aligned_native_item`` builds, for callers that do not read its alignment."""
-    return aligned_native_item(
-        produced, chunks=chunks, language=language, formatting_observer=formatting_observer
-    ).item
-
-
 def aligned_native_item(
     produced: ProducedItem,
     *,

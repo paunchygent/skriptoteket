@@ -182,7 +182,7 @@ def test_a_nested_part_line_listed_with_its_first_question_leaves_the_item():
 
 def test_an_entry_holding_only_a_part_line_is_no_item():
     # Review-3 N2: the reply lists q2's part heading as an entry of its own. The heading opens
-    # q2's item through placement; the entry is no third item.
+    # q2's one-child parent through placement (ruling 2026-10-18); the entry is no third item.
     chunks = (
         ("paragraph", "Förklara vad som kännetecknar ett substantiv. (4 p)"),
         ("heading", "Del 2: Verb (2 p)"),
@@ -202,14 +202,15 @@ def test_an_entry_holding_only_a_part_line_is_no_item():
     noun, verb = sorted(document.items, key=lambda item: item.sequence)
     assert noun.source_anchor == "body:0001"
     assert (noun.points, verb.points) == (4, 2)
-    assert _texts(verb)[0].startswith("Del 2: Verb")
+    assert not [t for t in _texts(verb) if "Del 2" in t]
+    assert [(p.item_ids, p.printed_total) for p in document.parents] == [((verb.item_id,), 2)]
     assert all(i.review.parse_origin is NativeParseOrigin.LLM_PARSED for i in document.items)
     assert _moved(state) == [("body:0002",)]
 
 
 def test_a_one_question_part_line_another_entry_of_its_part_holds_is_recorded_once():
-    # Review-3 L1: q2's part heading is listed in q1's entry and in q2's own entry. It leaves
-    # q1's entry, which the event records, and stays where q2's entry lists it.
+    # Review-3 L1: q2's part heading is listed in q1's entry and in q2's own entry. It opens
+    # q2's one-child parent (ruling 2026-10-18), so it leaves both entries, recorded once.
     chunks = (
         ("paragraph", "Förklara vad som kännetecknar ett substantiv. (4 p)"),
         ("heading", "Del 2: Verb (2 p)"),
@@ -226,6 +227,7 @@ def test_a_one_question_part_line_another_entry_of_its_part_holds_is_recorded_on
 
     noun, verb = sorted(document.items, key=lambda item: item.sequence)
     assert not [t for t in _texts(noun) if "Del 2" in t]
-    assert verb.source_anchor == "body:0002"
-    assert _texts(verb)[0].startswith("Del 2: Verb")
+    assert verb.source_anchor == "body:0003"
+    assert not [t for t in _texts(verb) if "Del 2" in t]
+    assert [(p.item_ids, p.printed_total) for p in document.parents] == [((verb.item_id,), 2)]
     assert _moved(state) == [("body:0002",)]

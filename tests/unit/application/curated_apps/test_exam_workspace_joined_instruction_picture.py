@@ -24,8 +24,8 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_me
     merge_conversion,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import (
+    aligned_native_item,
     assemble_build_result,
-    native_item,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     DocxBuildResult,
@@ -90,7 +90,7 @@ def _asset(asset_id: str) -> dict[str, object]:
 
 
 def _converted(anchor: str, text: str = "svar") -> NativeExamItem:
-    return native_item(
+    return aligned_native_item(
         ProducedItem.model_validate(
             {
                 "source_anchors": [anchor],
@@ -105,7 +105,7 @@ def _converted(anchor: str, text: str = "svar") -> NativeExamItem:
             }
         ),
         language="sv",
-    )
+    ).item
 
 
 def _joined_chunks() -> tuple[DocxChunk, ...]:
@@ -117,7 +117,7 @@ def _joined_chunks() -> tuple[DocxChunk, ...]:
 
 
 def _joined_item(paragraphs: _PARAGRAPHS) -> NativeExamItem:
-    return native_item(
+    return aligned_native_item(
         ProducedItem.model_validate(
             {
                 "source_anchors": ["body:0001"],
@@ -133,7 +133,7 @@ def _joined_item(paragraphs: _PARAGRAPHS) -> NativeExamItem:
         ),
         chunks=_joined_chunks(),
         language="sv",
-    )
+    ).item
 
 
 def _built(*, item_paragraphs: _PARAGRAPHS | None = None) -> DocxBuildResult:
