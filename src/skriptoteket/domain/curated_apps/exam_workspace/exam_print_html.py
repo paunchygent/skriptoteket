@@ -20,14 +20,8 @@ import hashlib
 from collections.abc import Mapping, Sequence
 from html import escape
 
-from skriptoteket.domain.curated_apps.exam_conversion.exam_print_house_template import (
-    HOUSE_FONT_FAMILIES,
-    HOUSE_FONT_SIZE_PT,
-    HOUSE_LINE_HEIGHT,
-    PAGE_MARGIN_SIDE_MM,
-    PAGE_MARGIN_VERTICAL_MM,
-    WRITING_LINE_PITCH_MM,
-    ExamPrintVariant,
+from skriptoteket.domain.curated_apps.exam_conversion import (
+    exam_print_house_template as house_template,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.exam_print_document import (
     PrintAnswerKey,
@@ -50,79 +44,105 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 
-_VARIANT_TITLE_SUFFIX: Mapping[ExamPrintVariant, str] = {
-    ExamPrintVariant.STUDENT: "Elevexemplar",
-    ExamPrintVariant.FACIT: "Facit",
+_VARIANT_TITLE_SUFFIX: Mapping[house_template.ExamPrintVariant, str] = {
+    house_template.ExamPrintVariant.STUDENT: "Elevexemplar",
+    house_template.ExamPrintVariant.FACIT: "Facit",
 }
 _MISSING_IMAGE_MESSAGE = "PDF-exporten saknar bilddata för en bild."
 
 
 def _font_family_css() -> str:
     """The house font stack: the template's families, each quoted, then a generic fallback."""
-    families = ", ".join(f'"{family}"' for family in HOUSE_FONT_FAMILIES)
+    families = ", ".join(f'"{family}"' for family in house_template.HOUSE_FONT_FAMILIES)
     return f"{families}, sans-serif"
 
 
-_HOUSE_CSS = f"""
-@page {{ size: A4; margin: {PAGE_MARGIN_VERTICAL_MM}mm {PAGE_MARGIN_SIDE_MM}mm; }}
-body {{
-  color: #111;
-  font-family: {_font_family_css()};
-  font-size: {HOUSE_FONT_SIZE_PT}pt;
-  line-height: {HOUSE_LINE_HEIGHT};
+def _block_margin_css(spacing: house_template.BlockSpacing) -> str:
+    """One block's space before and after as a CSS margin shorthand; side margins stay zero."""
+    return f"{spacing.space_before_mm}mm 0 {spacing.space_after_mm}mm"
+
+
+def _heading_rules() -> str:
+    """One CSS rule per heading level the template declares, kept with the next block."""
+    template = house_template
+    return "\n".join(
+        f"h{level} {{ font-size: {template.HEADING_GEOMETRY[level].size_pt}pt;"
+        f" margin: {_block_margin_css(template.HEADING_GEOMETRY[level].spacing)};"
+        f" font-weight: bold; color: #{template.TEXT_COLOR_HEX}; break-after: avoid }}"
+        for level in sorted(template.HEADING_GEOMETRY)
+    )
+
+
+def _house_css() -> str:
+    """The house template as CSS, read from the template module's current measures."""
+    template = house_template
+    points_weight = "bold" if template.POINTS_BOLD else "normal"
+    return f"""
+@page {{
+  size: {template.PAGE_WIDTH_MM}mm {template.PAGE_HEIGHT_MM}mm;
+  margin: {template.PAGE_MARGIN_VERTICAL_MM}mm {template.PAGE_MARGIN_SIDE_MM}mm;
 }}
-h1 {{ font-size: 18pt; margin: 0 0 6mm }}
-h3 {{ font-size: 14pt; margin: 0 0 3mm; break-after: avoid }}
-p {{ margin: 0 0 2mm }}
-.print-question {{ margin: 0 0 8mm }}
-.print-instruction {{ margin: 0 0 6mm; break-inside: avoid }}
-p.print-gap_line {{ line-height: {WRITING_LINE_PITCH_MM}mm }}
-p.print-points {{ font-weight: 700 }}
+body {{
+  color: #{template.TEXT_COLOR_HEX};
+  font-family: {_font_family_css()};
+  font-size: {template.HOUSE_FONT_SIZE_PT}pt;
+  line-height: {template.HOUSE_LINE_HEIGHT};
+}}
+{_heading_rules()}
+p {{ margin: {_block_margin_css(template.PARAGRAPH_SPACING)} }}
+.print-question {{ margin: 0 0 {template.QUESTION_SPACE_AFTER_MM}mm }}
+.print-instruction {{
+  margin: 0 0 {template.INSTRUCTION_SPACE_AFTER_MM}mm;
+  break-inside: avoid;
+}}
+p.print-gap_line {{ line-height: {template.WRITING_LINE_PITCH_MM}mm }}
+p.print-points {{ font-weight: {points_weight} }}
 .gap-blank {{
   display: inline-block;
-  border-bottom: 0.8pt solid #111;
+  border-bottom: {template.RULE_WEIGHT_PT}pt solid #{template.RULE_COLOR_HEX};
   height: 1.1em;
   vertical-align: baseline;
 }}
-.writing-area {{ margin: 2mm 0 4mm }}
+.writing-area {{ margin: {_block_margin_css(template.WRITING_AREA_SPACING)} }}
 .writing-line {{
-  height: {WRITING_LINE_PITCH_MM}mm;
-  border-bottom: 0.6pt solid #555;
+  height: {template.WRITING_LINE_PITCH_MM}mm;
+  border-bottom: {template.RULE_WEIGHT_PT}pt solid #{template.RULE_COLOR_HEX};
   break-inside: avoid;
 }}
-.print-option {{ margin: 0 0 3mm }}
-.tick-box {{
-  border: 1pt solid #111;
-  display: inline-block;
-  width: 4mm;
-  height: 4mm;
-  vertical-align: middle;
-  margin-right: 2mm;
-}}
+.print-option {{ margin: {_block_margin_css(template.OPTION_SPACING)} }}
 .number-box {{
-  border: 1pt solid #111;
+  border: {template.BOX_BORDER_PT}pt solid #{template.TEXT_COLOR_HEX};
   display: inline-block;
-  width: 9mm;
-  height: 6mm;
+  width: {template.NUMBER_BOX_WIDTH_MM}mm;
+  height: 1.2em;
   vertical-align: middle;
-  margin-right: 2mm;
+  margin-right: {template.BOX_GAP_MM}mm;
 }}
-.print-grid {{ border-collapse: collapse; width: 100%; table-layout: fixed; margin: 2mm 0 4mm }}
+.print-grid {{
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: fixed;
+  margin: {_block_margin_css(template.GRID_SPACING)};
+}}
 .print-grid th, .print-grid td {{
-  border: 0.5pt solid #111;
-  padding: 2mm;
+  border: {template.RULE_WEIGHT_PT}pt solid #{template.TEXT_COLOR_HEX};
+  padding: {template.GRID_CELL_PADDING_MM}mm;
   overflow-wrap: anywhere;
 }}
 .print-grid td {{ text-align: center }}
 .print-grid th[scope="row"] {{ text-align: left }}
 .print-answer-key {{
-  border-left: 2pt solid #111;
-  padding-left: 3mm;
-  margin: 2mm 0 4mm;
+  border-left: {template.ANSWER_KEY_RULE_PT}pt solid #{template.TEXT_COLOR_HEX};
+  padding-left: {template.ANSWER_KEY_INDENT_MM}mm;
+  margin: {_block_margin_css(template.ANSWER_KEY_SPACING)};
   break-inside: avoid;
-  font-weight: 700;
+  font-weight: bold;
 }}
-.print-image {{ display: block; max-width: 100%; margin: 2mm 0 }}
+.print-image {{
+  display: block;
+  max-width: 100%;
+  margin: {_block_margin_css(template.IMAGE_SPACING)};
+}}
 """
 
 
@@ -148,7 +168,7 @@ def render_print_html(
         "<head>\n"
         '<meta charset="utf-8">\n'
         f"<title>{title}</title>\n"
-        f"<style>{_HOUSE_CSS}</style>\n"
+        f"<style>{_house_css()}</style>\n"
         "</head>\n"
         "<body>\n"
         "<main>\n"
@@ -210,7 +230,7 @@ class _PrintHtmlRenderer:
 
     def _option(self, option: PrintOption) -> str:
         if option.box is PrintBox.TICK:
-            box, label = '<span class="tick-box"></span>', option.label
+            box, label = house_template.TICK_BOX_GLYPH, option.label
         else:
             box, label = '<span class="number-box"></span>', ""
         prefix = f"{escape(label)} " if label else ""
@@ -219,7 +239,7 @@ class _PrintHtmlRenderer:
     def _grid(self, grid: PrintGrid) -> str:
         columns = "".join(f'<th scope="col">{escape(column)}</th>' for column in grid.columns)
         head = f"<tr><td></td>{columns}</tr>"
-        cell = '<td><span class="tick-box"></span></td>'
+        cell = f"<td>{house_template.TICK_BOX_GLYPH}</td>"
         rows = "".join(
             f'<tr><th scope="row">{escape(row)}</th>{cell * len(grid.columns)}</tr>'
             for row in grid.rows

@@ -5,6 +5,9 @@ import hashlib
 
 import pytest
 
+from skriptoteket.domain.curated_apps.exam_conversion import (
+    exam_print_house_template as house_template,
+)
 from skriptoteket.domain.curated_apps.exam_conversion.exam_print_house_template import (
     ExamPrintVariant,
     blank_width_mm,
@@ -75,6 +78,12 @@ def _render(
     return render_print_html(document, assets=assets, assets_by_id=assets_by_id or {})
 
 
+def _style_text(html: str) -> str:
+    """The rendered document's stylesheet text, for asserting the generated house CSS."""
+    start = html.index("<style>") + len("<style>")
+    return html[start : html.index("</style>")]
+
+
 class TestDocumentShell:
     def test_student_title_carries_the_variant_suffix(self) -> None:
         html = _render(_document())
@@ -93,13 +102,42 @@ class TestDocumentShell:
 
         assert "<title>A &lt;B&gt; &amp;" in html
 
-    def test_house_css_uses_the_template_measures(self) -> None:
-        html = _render(_document())
+    def test_house_css_carries_the_template_page_and_body_measures(self) -> None:
+        css = _style_text(_render(_document()))
 
-        assert "10.0mm" in html
-        assert "Liberation Sans" in html
-        assert "@page { size: A4; margin: 18.0mm 18.0mm; }" in html
-        assert "font-size: 12pt" in html
+        assert f"size: {house_template.PAGE_WIDTH_MM}mm {house_template.PAGE_HEIGHT_MM}mm" in css
+        assert (
+            f"margin: {house_template.PAGE_MARGIN_VERTICAL_MM}mm"
+            f" {house_template.PAGE_MARGIN_SIDE_MM}mm" in css
+        )
+        assert f"font-size: {house_template.HOUSE_FONT_SIZE_PT}pt" in css
+        assert "Liberation Sans" in css
+
+    def test_house_css_carries_every_declared_heading_from_the_template(self) -> None:
+        css = _style_text(_render(_document()))
+
+        assert house_template.HEADING_GEOMETRY
+        for level, geometry in house_template.HEADING_GEOMETRY.items():
+            assert f"h{level} {{" in css
+            assert f"font-size: {geometry.size_pt}pt" in css
+            assert (
+                f"margin: {geometry.spacing.space_before_mm}mm 0"
+                f" {geometry.spacing.space_after_mm}mm" in css
+            )
+
+    def test_house_css_carries_the_number_box_width(self) -> None:
+        css = _style_text(_render(_document()))
+
+        assert f"width: {house_template.NUMBER_BOX_WIDTH_MM}mm" in css
+
+    def test_a_changed_template_measure_flows_into_the_css(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setattr(house_template, "QUESTION_SPACE_AFTER_MM", 12.5)
+
+        css = _style_text(_render(_document()))
+
+        assert ".print-question { margin: 0 0 12.5mm }" in css
 
 
 class TestEntries:
@@ -172,7 +210,7 @@ class TestBlocks:
         assert "&lt;b&gt;&amp; &quot;x&quot;" in html
         assert "<b>&" not in html
 
-    def test_tick_and_number_options_render_their_boxes(self) -> None:
+    def test_tick_options_render_the_glyph_and_number_options_render_the_box(self) -> None:
         question = PrintQuestion(
             item_id="item_001",
             blocks=(
@@ -183,10 +221,11 @@ class TestBlocks:
 
         html = _render(_document(question))
 
-        assert '<p class="print-option"><span class="tick-box"></span> A) vägen</p>' in html
+        assert f'<p class="print-option">{house_template.TICK_BOX_GLYPH} A) vägen</p>' in html
         assert '<p class="print-option"><span class="number-box"></span> Tes</p>' in html
+        assert html.count(house_template.TICK_BOX_GLYPH) == 1
 
-    def test_a_grid_renders_a_header_and_one_tick_cell_per_row_and_column(self) -> None:
+    def test_a_grid_renders_a_header_and_one_glyph_cell_per_row_and_column(self) -> None:
         question = PrintQuestion(
             item_id="item_001",
             blocks=(PrintGrid(rows=("hund", "katt"), columns=("däggdjur", "fåglar", "fiskar")),),
@@ -196,8 +235,9 @@ class TestBlocks:
 
         assert '<th scope="col">däggdjur</th>' in html
         assert '<th scope="row">hund</th>' in html
-        assert '<td><span class="tick-box"></span></td>' in html
-        assert html.count('<td><span class="tick-box"></span></td>') == 6
+        cell = f"<td>{house_template.TICK_BOX_GLYPH}</td>"
+        assert cell in html
+        assert html.count(cell) == 6
 
     def test_an_answer_key_renders_one_paragraph_per_line(self) -> None:
         question = PrintQuestion(
@@ -281,7 +321,7 @@ class TestBuiltDocuments:
         assert "<title>Omprov: grammatik – Elevexemplar</title>" in student_html
         assert '<div class="print-answer-key">' not in student_html
         assert 'id="exam-item-item_001"' in student_html
-        assert '<span class="tick-box"></span> A) vägen' in student_html
+        assert f"{house_template.TICK_BOX_GLYPH} A) vägen" in student_html
 
         assert "<title>Omprov: grammatik – Facit</title>" in facit_html
         assert '<div class="print-answer-key">' in facit_html
@@ -295,3 +335,18 @@ class TestBuiltDocuments:
 
         assert 'class="print-gap_line"' in html
         assert f'style="width:{expected_width:.1f}mm"' in html
+
+
+class TestRenderedPage:
+    def test_a_full_student_document_renders_one_a4_page(self) -> None:
+        from weasyprint import HTML
+
+        document = build_print_document(
+            make_document(make_single_choice_item()), variant=ExamPrintVariant.STUDENT
+        )
+        rendered = HTML(string=_render(document)).render()
+
+        assert rendered.write_pdf().startswith(b"%PDF")
+        page = rendered.pages[0]
+        assert page.width * 72 / 96 == pytest.approx(595.28, abs=0.5)
+        assert page.height * 72 / 96 == pytest.approx(841.89, abs=0.5)
