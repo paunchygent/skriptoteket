@@ -17,7 +17,7 @@ from types import MappingProxyType
 
 from pydantic import ValidationError
 
-from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_admission import (
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_admit_metadata import (
     validation_detail,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_state import (
@@ -77,6 +77,8 @@ def merge_batch(
         *batch.instructions,
     )
     target.key_anchors |= batch.key_anchors
+    # A new mapping: a trial snapshot shares the run state's mapping until it is replaced.
+    target.owned_contexts = {**target.owned_contexts, **batch.owned_contexts}
     target.claimed |= batch.claimed
     target.reasons.update(
         (anchor, reason) for anchor, reason in batch.reasons.items() if anchor not in batch.claimed
@@ -160,6 +162,30 @@ def exam_wide_anchors(
         for c in contexts
         if c.owner == "exam" and (not c.governs or every <= set(c.governs))
     )
+
+
+def question_owned_contexts(
+    contexts: tuple[SharedContext, ...], families: tuple[QuestionFamily, ...]
+) -> dict[str, tuple[str, ...]]:
+    """Each question's own anchor, mapped to the contexts that question owns, in manifest order.
+
+    A context a question owns joins that question's item, or its source-review item, when no
+    reply entry holds it (ruling 2026-10-18 c). A context governing two or more questions is
+    its section parent's instruction (D40), so no single question owns it here.
+    """
+    governed = governed_anchors(contexts, families)
+    owned = {
+        family.question_id: tuple(
+            c.anchor for c in contexts if c.owner == family.question_id and c.anchor not in governed
+        )
+        for family in families
+    }
+    return {
+        anchor: owned[family.question_id]
+        for family in families
+        if owned[family.question_id]
+        for anchor in family.question_anchors
+    }
 
 
 def governed_anchors(

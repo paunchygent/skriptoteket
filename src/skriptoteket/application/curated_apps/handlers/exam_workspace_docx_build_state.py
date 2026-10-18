@@ -64,6 +64,8 @@ class DocxBuildState:
     ``allowed_kinds`` (None: every kind). ``questions`` holds each grouped question's own
     anchors, never its answer keys. ``governing`` holds the grouping's chunks that govern two
     or more questions; one no entry holds becomes its section parent's instruction (D40).
+    ``owned_contexts`` maps each question's own anchor to the contexts the question owns; one
+    no entry holds joins the question's item, or its review item (ruling 2026-10-18 c).
     """
 
     job_id: UUID
@@ -79,6 +81,7 @@ class DocxBuildState:
     governing: frozenset[str] = frozenset()
     grouped_keys: frozenset[str] = frozenset()
     header_anchors: frozenset[str] = frozenset()
+    owned_contexts: dict[str, tuple[str, ...]] = field(default_factory=dict)
     document_language: InitVar[Language | None] = None
     language: Language = field(init=False)
     known_anchors: frozenset[str] = field(init=False, repr=False, compare=False)
@@ -139,6 +142,12 @@ class DocxBuildState:
             and (QUESTION_HEADING_LABEL.match(chunk.text) or POINT_LABEL.search(chunk.text))
         )
 
+    def left_out_contexts(self, anchors: Iterable[str], held: set[str]) -> tuple[str, ...]:
+        """The contexts owned by the questions ``anchors`` touch that this state still owns
+        and no entry holds, neither ``held`` nor a claim, in source order."""
+        owned = set().union(*(self.owned_contexts.get(a, ()) for a in anchors))
+        return tuple(c.anchor for c in self.pending if c.anchor in owned and c.anchor not in held)
+
     def snapshot(self) -> "DocxBuildState":
         """A copy a trial merge may change without changing this state; items are frozen."""
         trial = copy.copy(self)
@@ -156,11 +165,13 @@ class DocxBuildState:
     ) -> tuple[NativeExamItem, tuple[str, ...]]:
         """The question ``anchors`` belong to as printed, facit included, as one review item.
 
-        The item shows every own chunk of each grouped question ``anchors`` touch and every
-        chunk in ``anchors``, in source order. It holds ``anchors`` plus the shown chunks no
-        entry holds yet, which join ``taken``.
+        The item shows every own chunk of each grouped question ``anchors`` touch, every
+        context those questions own that no entry holds (ruling 2026-10-18 c) and every chunk
+        in ``anchors``, in source order. It holds ``anchors`` plus the shown chunks no entry
+        holds yet, which join ``taken``.
         """
         shown = set(anchors).union(*(self.question_by_anchor.get(a, ()) for a in anchors))
+        shown.update(self.left_out_contexts(anchors, taken))
         shown -= self.header_anchors
         extra = tuple(
             c.anchor
@@ -288,8 +299,9 @@ class DocxBuildState:
         printed, whatever role the reply gave its chunks.
 
         The item holds all the question's own chunks, also those the reply lists as an
-        instruction, the title or an answer key; they leave ``review_reasons``. It carries the
-        reason of the question's first pending chunk.
+        instruction, the title or an answer key, and the contexts it owns that no entry holds;
+        every chunk it holds leaves ``review_reasons``. It carries the reason of the question's
+        first pending chunk.
         """
         held = {a for _, anchors in self.accepted for a in anchors}
         owned = self.owned
@@ -305,9 +317,10 @@ class DocxBuildState:
             reason = (
                 self.reasons.get(pending, NO_ITEM_REASON) if pending is not None else NO_ITEM_REASON
             )
-            for anchor in own:
+            review = self.printed(own, reason, taken)
+            for anchor in review[1]:
                 review_reasons.pop(anchor, None)
-            omitted.append(self.printed(own, reason, taken))
+            omitted.append(review)
         return tuple(omitted)
 
     def _without(self, metadata: ProducedMetadata, removed: set[str]) -> ProducedMetadata | None:

@@ -22,6 +22,7 @@ from dataclasses import dataclass, replace
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_assembly import (
     exam_wide_anchors,
     governed_anchors,
+    question_owned_contexts,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build import (
     BatchOutcome,
@@ -128,6 +129,7 @@ def batch_state(run: DocxConversionRun, batch: ConversionBatch) -> DocxBuildStat
         questions=tuple(f.question_anchors for f in run.families),
         governing=frozenset(governed_anchors(run.contexts, run.families)),
         grouped_keys=frozenset(a for anchors in run.key_anchors.values() for a in anchors),
+        owned_contexts=question_owned_contexts(run.contexts, run.families),
     )
 
 

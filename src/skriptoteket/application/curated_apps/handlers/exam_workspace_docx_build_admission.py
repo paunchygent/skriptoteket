@@ -21,9 +21,11 @@ A part's line (``PrintedPart.opener``) is never held by an item for a question o
 part (review-2 F1): it leaves that entry before the item is built and, unless an item of its
 part lists it, stands as an instruction, which placement puts at its part's question. Building
 one question's item never fails the batch: an item that cannot be built becomes a review item
-holding that question's own source text. A question reported as a type conflict leaves the
-batch for the pipeline to resend with the kind the source shows, once: in the resend it is kept
-as converted.
+holding that question's own source text. A context the grouping gives a question as its owner
+that no entry holds opens that question's item as its source paragraphs, and joins its review
+item otherwise; it is never an item of its own (ruling 2026-10-18 c). A question reported as
+a type conflict leaves the batch for the pipeline to resend with the kind the source shows,
+once: in the resend it is kept as converted.
 """
 
 from collections import Counter
@@ -31,6 +33,13 @@ from collections.abc import Callable
 
 from pydantic import JsonValue, ValidationError
 
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_admit_metadata import (
+    admit_keys,
+    admit_metadata,
+    free_anchors,
+    is_points_line,
+    validation_detail,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_state import (
     DocxBuildState,
     TypeConflict,
@@ -59,14 +68,12 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions impor
     wording_left_out,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import (
-    line_points,
     printed_points_plan,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     POINT_LABEL,
     QUESTION_HEADING_LABEL,
     definition_context,
-    title_without_answer_key,
     with_accepted_forms,
     with_printed_points,
 )
@@ -77,25 +84,16 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeExamItemKind,
     NativeParseOrigin,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.shared_body import source_paragraphs
 from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import (
     FORMATTING_REASON,
     FormattingTransferError,
 )
-from skriptoteket.domain.errors import DomainError
 
 CONFLICT_WITHOUT_KIND_REASON = (
     "AI-tolkningen angav att frågan har en annan svarstyp men inte vilken. "
     "Kontrollera frågan manuellt."
 )
-
-
-def validation_detail(error: ValidationError) -> str:
-    """Field locations, error types and the invariant a validator names; never the input."""
-    return "; ".join(
-        f"{'.'.join(str(part) for part in entry['loc'])}: "
-        + (entry["msg"] if entry["type"] == "value_error" else entry["type"])
-        for entry in error.errors()
-    )
 
 
 Admitted = tuple[NativeExamItem, tuple[str, ...]]
@@ -142,101 +140,6 @@ def _built(
         return _source_review(index, anchors, state, seen, "item_unbuildable", type(error).__name__)
 
 
-def _free(anchors: tuple[str, ...], state: DocxBuildState, seen: set[str]) -> tuple[str, ...]:
-    """The anchors no earlier entry of this batch or an earlier batch already holds."""
-    return tuple(
-        dict.fromkeys(
-            a for a in anchors if a not in seen and a not in state.claimed and a in state.owned
-        )
-    )
-
-
-def _admit_keys(
-    raw: JsonValue, state: DocxBuildState, seen: set[str], item_held: frozenset[str]
-) -> None:
-    listed = tuple(a for a in raw if isinstance(a, str)) if isinstance(raw, list) else ()
-    for anchor in _free(listed, state, seen):
-        if item_held.intersection(state.question_by_anchor.get(anchor, ())):
-            continue
-        state.key_anchors.add(anchor)
-        seen.add(anchor)
-
-
-def _source(
-    metadata: ProducedMetadata, anchors: tuple[str, ...], state: DocxBuildState
-) -> ProducedMetadata:
-    """``metadata`` narrowed to ``anchors``, showing their source text: the reply's text may
-    hold the wording of chunks it no longer holds."""
-    text = "\n".join(state.chunk_by_anchor[a].text for a in anchors)
-    return metadata.model_copy(update={"text": text, "source_anchors": anchors})
-
-
-def _admit_metadata(
-    raw: JsonValue,
-    field_name: str,
-    state: DocxBuildState,
-    seen: set[str],
-    item_held: frozenset[str],
-) -> None:
-    try:
-        metadata = ProducedMetadata.model_validate(raw)
-    except ValidationError as error:
-        state.record("admission", f"{field_name}_unparsed", detail=validation_detail(error))
-        return
-    listed = _free(metadata.source_anchors, state, seen)
-    listed = tuple(
-        a
-        for a in listed
-        if not (
-            a in state.question_by_anchor
-            and (
-                _points_line(a, state)
-                or state.chunk_by_anchor[a].kind == "heading"
-                and (
-                    QUESTION_HEADING_LABEL.match(state.chunk_by_anchor[a].text)
-                    or POINT_LABEL.search(state.chunk_by_anchor[a].text)
-                )
-            )
-        )
-    )
-    # The grouping decides ownership: a question's own chunk an item of the reply lists stays
-    # with that item. A title or instruction holding another own chunk is an instruction that
-    # stands only where assembly places it at its question (D42).
-    own = frozenset(a for a in listed if a in state.question_by_anchor) - state.governing
-    anchors = tuple(a for a in listed if a not in own.intersection(item_held))
-    if not anchors:
-        state.record("admission", "anchor_conflict", anchors=metadata.source_anchors)
-        return
-    if anchors != metadata.source_anchors:
-        metadata = _source(metadata, anchors, state)
-    else:
-        metadata = metadata.model_copy(update={"source_anchors": anchors})
-    if field_name == "title" and own.intersection(anchors):
-        moved = tuple(a for a in anchors if a in own)
-        state.instructions = (*state.instructions, _source(metadata, moved, state))
-        seen.update(moved)
-        anchors = tuple(a for a in anchors if a not in own)
-        if not anchors:
-            return
-        metadata = _source(metadata, anchors, state)
-    if field_name == "title" and state.title is None:
-        try:
-            text = title_without_answer_key(metadata.text)
-        except DomainError as error:
-            # A title of answer-key wording alone names no title; its chunks stay unclaimed.
-            state.record("admission", "title_unparsed", anchors=anchors, detail=error.code.value)
-            return
-        state.title = metadata.model_copy(update={"text": text})
-    else:
-        state.instructions = (*state.instructions, metadata)
-    seen.update(anchors)
-
-
-def _points_line(anchor: str, state: DocxBuildState) -> bool:
-    """A question's own line that only prints its points (D2): its item reads the points."""
-    return line_points(state.chunk_by_anchor[anchor]) is not None
-
-
 def _with_left_out(
     index: int,
     admitted: Admitted,
@@ -260,14 +163,14 @@ def _with_left_out(
         if c.anchor in own
         and c.anchor not in seen
         # A points line another entry lists alone is no item; this one holds it (D2).
-        and (c.anchor not in item_held or _points_line(c.anchor, state))
+        and (c.anchor not in item_held or is_points_line(c.anchor, state))
     )
     # A left-out chunk the grouping lists as the question's facit is its answer key.
     keys = {a for a in left_out if a in state.grouped_keys}
     state.key_anchors.update(keys)
     seen.update(keys)
     # A left-out points line is held without a mark: the item already read its points (D2).
-    held = {a for a in left_out if a not in keys and _points_line(a, state)}
+    held = {a for a in left_out if a not in keys and is_points_line(a, state)}
     seen.update(held)
     anchors = (*anchors, *(a for a in left_out if a in held))
     left_out = tuple(a for a in left_out if a not in keys and a not in held)
@@ -289,7 +192,7 @@ def _admit_item(
         produced = ProducedItem.model_validate(raw)
     except ValidationError as error:
         # The question the entry names becomes one review item holding its source text.
-        anchors = _free(raw_anchors(raw), state, seen)
+        anchors = free_anchors(raw_anchors(raw), state, seen)
         detail = validation_detail(error)
         if not anchors:
             state.record("admission", "item_unparsed", item=index, detail=detail)
@@ -297,7 +200,7 @@ def _admit_item(
         seen.update(anchors)
         state.accepted.append(_source_review(index, anchors, state, seen, "item_unparsed", detail))
         return
-    anchors = _free(produced.source_anchors, state, seen)
+    anchors = free_anchors(produced.source_anchors, state, seen)
     if anchors != produced.source_anchors:
         state.record("admission", "anchor_conflict", item=index, anchors=produced.source_anchors)
     if not anchors:
@@ -334,7 +237,7 @@ def _admit_item(
         # emits the question's body. Its leading anchor joins that body below.
         if (own - {c.anchor for c in headings}).intersection(item_held):
             return
-    lines = {a for a in own if _points_line(a, state)}
+    lines = {a for a in own if is_points_line(a, state)}
     if lines and set(anchors).issubset(lines) and (own - lines).intersection(item_held):
         # A separately emitted points line is no question: the item holding its question's
         # body holds it (D2).
@@ -344,7 +247,10 @@ def _admit_item(
         for c in headings
         if c.anchor not in anchors and c.anchor not in seen | state.claimed
     )
-    anchors = (*leading, *anchors)
+    question = (*leading, *anchors)
+    # A context the question owns that no entry holds opens its item (ruling 2026-10-18 c).
+    joined = state.left_out_contexts(question, seen | item_held)
+    anchors = (*joined, *question)
     produced = produced.model_copy(update={"source_anchors": anchors})
     produced = with_heading_content(produced, headings)
     seen.update(anchors)
@@ -391,10 +297,10 @@ def _admit_item(
     )
 
     def build() -> NativeExamItem:
-        context = definition_context(state.chunks, anchors, instructions)
+        context = definition_context(state.chunks, question, instructions)
         # The question's own paragraphs, also those the reply does not list (D3).
-        shown = set(anchors).union(*(state.question_by_anchor.get(a, ()) for a in anchors))
-        shown -= (state.key_anchors | state.grouped_keys) - set(anchors)
+        shown = set(question).union(*(state.question_by_anchor.get(a, ()) for a in question))
+        shown -= (state.key_anchors | state.grouped_keys) - set(question)
         shown -= state.header_anchors
         own = tuple(chunk for chunk in state.chunks if chunk.anchor in shown)
         scored = with_printed_points(
@@ -423,6 +329,11 @@ def _admit_item(
                         .strip()
                     }
                 )
+        if joined:
+            # The joined contexts' source paragraphs, marks and pictures as printed.
+            passages = tuple(c for c in state.chunks if c.anchor in joined)
+            item = item.model_copy(update={"body": (*source_paragraphs(passages), *item.body)})
+            own = (*passages, *own)
         source_images = Counter(image.asset_id for chunk in own for image in chunk.images)
         emitted = Counter(item.body_asset_ids())
         if source_images != emitted:
@@ -470,14 +381,14 @@ def admit_batch(content: dict[str, JsonValue], state: DocxBuildState) -> None:
     ]
     moved = _strip_foreign_openers(items, state)
     item_held = frozenset(a for raw in items for a in raw_anchors(raw))
-    _admit_keys(content.get("answer_key_anchors"), state, seen, item_held)
+    admit_keys(content.get("answer_key_anchors"), state, seen, item_held)
     if content.get("title"):
-        _admit_metadata(content["title"], "title", state, seen, item_held)
+        admit_metadata(content["title"], "title", state, seen, item_held)
     raw_instructions = content.get("instructions")
     for raw in raw_instructions if isinstance(raw_instructions, list) else ():
-        _admit_metadata(raw, "instructions", state, seen, item_held)
+        admit_metadata(raw, "instructions", state, seen, item_held)
     # A moved opener no item of its part lists is an instruction, which placement places.
-    if unheld := tuple(a for a in _free(moved, state, seen) if a not in item_held):
+    if unheld := tuple(a for a in free_anchors(moved, state, seen) if a not in item_held):
         state.record("admission", "part_heading_moved", anchors=unheld)
         seen.update(unheld)
         by = state.chunk_by_anchor
