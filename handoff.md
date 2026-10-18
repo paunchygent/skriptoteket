@@ -73,8 +73,11 @@
   existing parts) is a separate parent-owned 39-06 task.
   TASK-SKRIPT-39-04-13 and TASK-SKRIPT-40-04-06 `done` 2026-10-18: merged and published in
   a0a81ab5a (Hemma-verified) and walked on staging (root 01a14e1f
-  evidence/staging-walk-a0a81ab5a/walk.md). Follow-ups: wording rules in
-  `docx_governing_chunks._item_without` and `docx_own_instructions.wording_left_out`.
+  evidence/staging-walk-a0a81ab5a/walk.md).
+  TASK-SKRIPT-39-04-14 `done` 2026-10-18: left-out own chunks and governing release read the
+  alignment, wording rules deleted; review approved at 62e178088 (root 01a14ea8
+  evidence/reviews/5d0e4e46…), D5-D7 user-accepted, drop audit in the task doc. Follow-ups held
+  on Hemma: gap paragraphs built from the source; left-out check on listed own chunks.
   Next lanes: 39-07-03 retire old converter routes (40-04-03 now on main); implement
   39-06-08 ordering; stories 39-04, 39-06, 39-07 await closeout.
   Ready (user grilling 2026-10-18, plans in root 01a14c27): 40-04-04 dropdown option editor, 40-04-05 export names from the exam title, 39-06-09 Exam.net probe of ordering inside a part.

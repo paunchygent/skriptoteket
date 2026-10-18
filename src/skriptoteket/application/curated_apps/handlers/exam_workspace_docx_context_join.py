@@ -171,7 +171,4 @@ def joined_body(
         at = next((n for n, (p, _) in enumerate(body) if p >= place), len(body))
         body.insert(at, (place, tuple((paragraph, anchor) for paragraph in shown[anchor])))
     entries = [entry for _, entries in body for entry in entries]
-    return AlignedItem(
-        aligned.item.model_copy(update={"body": tuple(paragraph for paragraph, _ in entries)}),
-        tuple(chunk for _, chunk in entries),
-    )
+    return aligned.with_body(entries)

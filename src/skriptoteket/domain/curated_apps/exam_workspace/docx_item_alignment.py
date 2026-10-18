@@ -7,10 +7,11 @@ and headings, and the section placement of instructions and headings, read the a
 and never the wording of the reply (TASK-SKRIPT-39-04-13).
 """
 
-from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from collections.abc import Iterable, Mapping, Sequence
+from dataclasses import dataclass, replace
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import NativeParagraph
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import NativeExamItem
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import source_paragraphs
 from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import SourceFormatting
@@ -22,11 +23,13 @@ class AlignedItem:
 
     ``chunks[n]`` is None when body paragraph ``n`` kept the reply's wording without a
     unique source paragraph. Every change to the body states its paragraphs' chunks, so the
-    two always have the same length.
+    two always have the same length. ``entry_chunks`` holds the chunks the item's choices
+    and matching entries are aligned to (TASK-SKRIPT-39-04-14).
     """
 
     item: NativeExamItem
     chunks: tuple[str | None, ...]
+    entry_chunks: frozenset[str]
 
     def __post_init__(self) -> None:
         if len(self.chunks) != len(self.item.body):
@@ -38,10 +41,27 @@ class AlignedItem:
         """Whether a body paragraph shows the source chunk ``anchor``."""
         return anchor in self.chunks
 
+    def with_body(self, shown: Sequence[tuple[NativeParagraph, str | None]]) -> "AlignedItem":
+        """The item with ``shown``'s paragraphs as its body, each aligned to its chunk; the
+        entries keep theirs."""
+        body = tuple(paragraph for paragraph, _ in shown)
+        return replace(
+            self,
+            item=self.item.model_copy(update={"body": body}),
+            chunks=tuple(chunk for _, chunk in shown),
+        )
+
 
 def paragraph_chunks(source: SourceFormatting) -> tuple[str | None, ...]:
     """The chunk anchor of each paragraph of the body ``source`` last produced."""
     return tuple(source.provenance.chunk_at(offset) for offset in source.output_anchors)
+
+
+def entry_chunks(source: SourceFormatting, spans: Iterable[tuple[int, int]]) -> frozenset[str]:
+    """The chunk anchor at the start of each aligned entry span; (-1, -1) is no alignment."""
+    return frozenset(
+        anchor for start, _ in spans if (anchor := source.provenance.chunk_at(start)) is not None
+    )
 
 
 def source_chunks(chunks: Sequence[DocxChunk]) -> tuple[str, ...]:
@@ -54,7 +74,7 @@ def aligned_source_item(item: NativeExamItem, chunks: Sequence[DocxChunk]) -> Al
 
     A body that renders no chunk is the one placeholder paragraph, which shows no chunk.
     """
-    return AlignedItem(item, source_chunks(chunks) or (None,) * len(item.body))
+    return AlignedItem(item, source_chunks(chunks) or (None,) * len(item.body), frozenset())
 
 
 def source_places(

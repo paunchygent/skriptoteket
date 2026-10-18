@@ -12,8 +12,6 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_examnet_pdf_contr
 from skriptoteket.domain.curated_apps.exam_workspace.container import (
     ExamWorkspaceContainerContent,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
-from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions import wording_left_out
 from skriptoteket.domain.curated_apps.exam_workspace.examnet_pdf_export import (
     native_exam_to_pdf_document,
 )
@@ -87,23 +85,6 @@ def _document(body: str, *, criteria: tuple[NativeExamCriterion, ...]) -> Native
 def _docx_lines(document: NativeExamDocument) -> list[str]:
     content = exam_workspace_docx_writer.ExamWorkspaceDocxWriter().build_docx_bytes(document)
     return [paragraph.text for paragraph in Document(io.BytesIO(content)).paragraphs]
-
-
-def test_own_instructions_count_criterion_text_as_preserved_wording() -> None:
-    item = _document(_SWEDISH_BODY, criteria=_CRITERIA).items[0]
-    preserved = DocxChunk(
-        anchor="body:0002",
-        kind="paragraph",
-        text="Definitionen",
-        marked_text="Definitionen",
-    )
-    omitted = DocxChunk(
-        anchor="body:0003",
-        kind="paragraph",
-        text="Ett separat krav som saknas",
-        marked_text="Ett separat krav som saknas",
-    )
-    assert wording_left_out(item, (preserved, omitted)) == (omitted,)
 
 
 def test_criteria_survive_the_container_round_trip() -> None:
