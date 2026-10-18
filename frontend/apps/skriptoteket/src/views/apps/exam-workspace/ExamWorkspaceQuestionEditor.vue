@@ -114,6 +114,8 @@ const emit = defineEmits<{
 const pointsId = useId();
 const pointsMessageId = useId();
 const tickId = useId();
+/** The converting notice's stable id, so the locked fields can point at their reason. */
+const convertingNoticeId = useId();
 const parentOpen = ref(false);
 const tickInvalid = ref(false);
 
@@ -234,6 +236,7 @@ function handleTickPointsInput(event: Event): void {
 
     <div
       v-if="converting"
+      :id="convertingNoticeId"
       class="xw-notice qed__notice"
       data-test="exam-workspace-converting-notice"
     >
@@ -297,6 +300,7 @@ function handleTickPointsInput(event: Event): void {
         :lines="item.writing_lines"
         :disabled="locked"
         :all-free-text-match="allFreeTextWritingLinesMatch"
+        :locked-reason-id="converting ? convertingNoticeId : null"
         @update="(lines) => emit('updateWritingLines', item.item_id, lines)"
         @apply-to-all="(lines) => emit('applyWritingLinesToAll', lines)"
       />
