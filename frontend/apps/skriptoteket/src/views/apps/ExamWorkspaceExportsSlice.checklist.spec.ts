@@ -13,7 +13,7 @@ import { flushPromises } from "@vue/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ApiError } from "../../api/client";
-import type { ExamWorkspaceExportChecklistResponse } from "../../api/examWorkspace";
+import type { ExamWorkspaceExportChecklistResponse } from "../../api/examWorkspaceExports";
 import { useToastStore } from "../../stores/toast";
 import {
   arrangeExportApis,
@@ -52,6 +52,7 @@ const apiMocks = vi.hoisted(() => ({
   saveExamWorkspaceDocument: vi.fn(),
 }));
 
+vi.mock("../../api/examWorkspaceExports", () => apiMocks);
 vi.mock("../../api/examWorkspace", async () => ({
   ...apiMocks,
   getExamCourseCatalog: (await import("../../test/examCourseCatalog")).getExamCourseCatalog,

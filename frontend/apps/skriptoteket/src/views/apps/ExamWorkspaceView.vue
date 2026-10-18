@@ -29,8 +29,9 @@
 
 import { computed, onMounted, ref, watch } from "vue";
 
-import type { ExamWorkspaceExportTarget, ExamListOrdering } from "../../api/examWorkspace";
+import type { ExamListOrdering } from "../../api/examWorkspace";
 import { updateExamListOrdering } from "../../api/examWorkspace";
+import type { ExamWorkspaceExportTarget } from "../../api/examWorkspaceExports";
 import { useToast } from "../../composables/useToast";
 import ExamWorkspaceDrawers from "./exam-workspace/ExamWorkspaceDrawers.vue";
 import ExamWorkspaceEditorPane from "./exam-workspace/ExamWorkspaceEditorPane.vue";

@@ -15,16 +15,7 @@
  *     `useExamWorkspaceExports.ts`, and `useExamWorkspaceEnrichment.ts`.
  */
 
-import {
-  apiFetch,
-  apiFetchBlobResponse,
-  apiGet,
-  apiPatch,
-  apiPost,
-  apiPut,
-  resolveProtectedApiUrl,
-} from "./client";
-import type { ApiBlobResponse } from "./client";
+import { apiGet, apiPatch, apiPost, apiPut, resolveProtectedApiUrl } from "./client";
 import type { components } from "./openapi";
 
 type Schemas = components["schemas"];
@@ -59,7 +50,6 @@ export type ExamWorkspaceDocumentResponse = Schemas["ExamWorkspaceDocumentRespon
 /** A deletion's document response; `removed_parent_id` names an instruction that went with it. */
 export type ExamWorkspaceDeleteResponse = Schemas["ExamWorkspaceDeleteResponse"];
 export type ExamWorkspaceDocumentListResponse = Schemas["ExamWorkspaceDocumentListResponse"];
-export type ExamWorkspaceExportTarget = Schemas["ExamWorkspaceExportTarget"];
 export type ExamWorkspaceEnrichmentState = Schemas["ExamWorkspaceEnrichmentState"];
 export type ExamWorkspaceAnswerKeySuggestionsStatus =
   Schemas["ExamWorkspaceAnswerKeySuggestionsResponse"];
@@ -76,47 +66,11 @@ export type ExamListOrdering = Schemas["UpdateExamListOrderingRequest"]["orderin
 export type ExamWorkspaceHistory = Schemas["ExamWorkspaceHistoryResponse"];
 export type ExamWorkspaceHistoryDocument = Schemas["ExamWorkspaceHistoryDocumentResponse"];
 export type ExamWorkspaceUndoStep = Schemas["ExamWorkspaceUndoStepResponse"];
-export type NewParentChild = Schemas["NewParentChild"];
 export type NativeExamContentTag = Schemas["NativeExamContentTag"];
 export type ExamCourseContent = Schemas["ExamCourseContentResponse"];
 export type ExamWorkspaceContentSuggestions = Schemas["ContentSuggestionsResponse"];
 export type NativeExamImportRecord = Schemas["NativeExamImportRecord-Output"];
 export type ChangeExamWorkspaceItemTypeResponse = Schemas["ChangeExamWorkspaceItemTypeResponse"];
-export type SavedExamExport = Schemas["VaultFile"];
-
-/** Reasons the server-side S4 export gate reports per item (422 `details.blockers`). */
-export type ExamWorkspaceItemExportBlockerReason =
-  | "unbuilt_question"
-  | "machine_proposed_key_unreviewed"
-  | "missing_points"
-  | "missing_answer_key"
-  | "inline_choice_option_heading"
-  | "empty_choice"
-  | "empty_gap_option"
-  | "empty_match_entry"
-  | "ordering_too_few_steps"
-  | "empty_ordering_step"
-  | "too_few_gap_options"
-  | "empty_question_text"
-  | "no_gaps";
-
-/** Every reason the gate reports; the title reason belongs to the exam, not a question. */
-export type ExamWorkspaceExportBlockerReason = ExamWorkspaceItemExportBlockerReason | "title_without_text";
-
-export type ExamWorkspaceExportBlocker = {
-  /** Null for a reason that belongs to the exam. */
-  item_id: string | null;
-  reason: ExamWorkspaceExportBlockerReason;
-};
-
-export type ExamWorkspaceExportChecklistCriterion =
-  Schemas["ExamWorkspaceExportChecklistCriterion"];
-export type ExamWorkspaceExportChecklistEntry =
-  | Schemas["ExamWorkspaceExportChecklistFreeTextCriteria"]
-  | Schemas["ExamWorkspaceExportChecklistAllOrNothing"]
-  | Schemas["ExamWorkspaceExportChecklistRoundedGaps"];
-export type ExamWorkspaceExportChecklistResponse =
-  Schemas["ExamWorkspaceExportChecklistResponse"];
 
 export type SaveExamWorkspaceDocumentParams = {
   expectedRevision: number;
@@ -125,7 +79,11 @@ export type SaveExamWorkspaceDocumentParams = {
   positionStepId: string;
 };
 
-function documentPath(lineageId: string): string {
+/**
+ * Protected path of one exam workspace document, shared by the transport
+ * modules that build on this document root.
+ */
+export function documentPath(lineageId: string): string {
   return `${ROOT}/documents/${encodeURIComponent(lineageId)}`;
 }
 
@@ -191,37 +149,6 @@ export async function saveExamWorkspaceDocument(
     position_step_id: params.positionStepId,
   };
   return await apiPut<ExamWorkspaceDocumentResponse>(documentPath(lineageId), body);
-}
-
-/** The server names every export after the exam title; a response without that name is a fault. */
-export type ExamWorkspaceExportDownload = ApiBlobResponse & { filename: string };
-
-export async function downloadExamWorkspaceExport(
-  lineageId: string,
-  target: ExamWorkspaceExportTarget,
-  expectedRevision: number,
-): Promise<ExamWorkspaceExportDownload> {
-  const response = await apiFetchBlobResponse(
-    `${documentPath(lineageId)}/exports/${encodeURIComponent(target)}?expected_revision=${expectedRevision}`,
-  );
-  if (response.filename === null) {
-    throw new Error("The export response carries no file name in Content-Disposition.");
-  }
-  return { ...response, filename: response.filename };
-}
-
-/**
- * What Exam.net loses when it imports the saved revision: Fritext criteria,
- * all-or-nothing subquestions, and rounded gap values, computed from the QTI
- * items the export itself builds.
- */
-export async function getExamWorkspaceExportChecklist(
-  lineageId: string,
-  expectedRevision: number,
-): Promise<ExamWorkspaceExportChecklistResponse> {
-  return await apiGet<ExamWorkspaceExportChecklistResponse>(
-    `${documentPath(lineageId)}/export-checklist?expected_revision=${expectedRevision}`,
-  );
 }
 
 /**
@@ -335,117 +262,6 @@ export async function copyExamWorkspaceDocument(
 ): Promise<ExamWorkspaceDocumentResponse> {
   const body: Schemas["SaveAsExamWorkspaceDocumentRequest"] = { document, name };
   return await apiPost<ExamWorkspaceDocumentResponse>(`${documentPath(lineageId)}/copy`, body);
-}
-
-/** Save one export format of the saved revision to Mina filer, replacing the earlier one. */
-export async function saveExamWorkspaceExport(
-  lineageId: string,
-  target: ExamWorkspaceExportTarget,
-  expectedRevision: number,
-): Promise<SavedExamExport> {
-  return await apiPost<SavedExamExport>(
-    `${documentPath(lineageId)}/exports/${encodeURIComponent(target)}?expected_revision=${expectedRevision}`,
-  );
-}
-
-/** The saved student print copy as page images, for the Förhandsgranska panel (W5). */
-export type ExamWorkspacePrintPreview = Schemas["ExamWorkspacePrintPreviewResponse"];
-
-/**
- * Render the saved revision's student print pages page by page: `pages` holds
- * one PNG data URL per printed page in print order, and `question_pages` maps
- * a question's item id to the 0-based page it first appears on, so the
- * Förhandsgranska panel can scroll to the selected question. `status`
- * "blocked" means the exam cannot be rendered at all. A saved revision the
- * server has moved past answers 409.
- */
-export async function fetchExamWorkspacePrintPreview(
-  lineageId: string,
-  expectedRevision: number,
-): Promise<ExamWorkspacePrintPreview> {
-  return await apiGet<ExamWorkspacePrintPreview>(
-    `${documentPath(lineageId)}/print-preview?expected_revision=${expectedRevision}`,
-  );
-}
-
-function parentsPath(lineageId: string): string {
-  return `${documentPath(lineageId)}/parents`;
-}
-
-/** Parent commands apply to the server's newest undo step and store one step each. */
-export async function createExamWorkspaceParent(
-  lineageId: string,
-  body: Schemas["CreateExamParentRequest"],
-): Promise<ExamWorkspaceDocumentResponse> {
-  return await apiPost<ExamWorkspaceDocumentResponse>(parentsPath(lineageId), body);
-}
-
-export async function addExamWorkspaceChild(
-  lineageId: string,
-  parentId: string,
-  body: Schemas["AddExamChildRequest"],
-): Promise<ExamWorkspaceDocumentResponse> {
-  return await apiPost<ExamWorkspaceDocumentResponse>(
-    `${parentsPath(lineageId)}/${encodeURIComponent(parentId)}/children`,
-    body,
-  );
-}
-
-/** Delete one deluppgift; deleting the last one removes its emptied instruction too. */
-export async function deleteExamWorkspaceChild(
-  lineageId: string,
-  parentId: string,
-  itemId: string,
-  expectedCursor: string,
-): Promise<ExamWorkspaceDeleteResponse> {
-  const body: Schemas["ParentCommandRequest"] = { expected_cursor: expectedCursor };
-  return await apiFetch<ExamWorkspaceDeleteResponse>(
-    `${parentsPath(lineageId)}/${encodeURIComponent(parentId)}/children/${encodeURIComponent(itemId)}`,
-    { body, method: "DELETE" },
-  );
-}
-
-export async function reorderExamWorkspaceChildren(
-  lineageId: string,
-  parentId: string,
-  itemIds: string[],
-  expectedCursor: string,
-): Promise<ExamWorkspaceDocumentResponse> {
-  const body: Schemas["ReorderExamChildrenRequest"] = {
-    expected_cursor: expectedCursor,
-    item_ids: itemIds,
-  };
-  return await apiPut<ExamWorkspaceDocumentResponse>(
-    `${parentsPath(lineageId)}/${encodeURIComponent(parentId)}/children/order`,
-    body,
-  );
-}
-
-/** "keep_questions" removes only the heading; "with_questions" removes its questions too. */
-export type ExamParentDeleteMode = "keep_questions" | "with_questions";
-
-const PARENT_DELETE_SUFFIX: Record<ExamParentDeleteMode, string> = {
-  keep_questions: "",
-  with_questions: "/with-children",
-};
-
-/**
- * Delete an instruction (user ruling 2026-10-17). By default its questions
- * stay in place as standalone questions; "with_questions" deletes them too.
- * A deletion that would leave the exam without a question is refused with
- * 422 `details.reason` "exam_requires_question".
- */
-export async function deleteExamWorkspaceParent(
-  lineageId: string,
-  parentId: string,
-  mode: ExamParentDeleteMode,
-  expectedCursor: string,
-): Promise<ExamWorkspaceDeleteResponse> {
-  const body: Schemas["ParentCommandRequest"] = { expected_cursor: expectedCursor };
-  return await apiFetch<ExamWorkspaceDeleteResponse>(
-    `${parentsPath(lineageId)}/${encodeURIComponent(parentId)}${PARENT_DELETE_SUFFIX[mode]}`,
-    { body, method: "DELETE" },
-  );
 }
 
 /** Change one question's type; the response names the content the new type could not keep. */

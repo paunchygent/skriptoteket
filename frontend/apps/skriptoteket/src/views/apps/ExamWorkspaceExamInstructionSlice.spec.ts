@@ -35,6 +35,7 @@ const apiMocks = vi.hoisted(() => ({
   listExamWorkspaceDocuments: vi.fn(),
   saveExamWorkspaceDocument: vi.fn(),
 }));
+vi.mock("../../api/examWorkspaceExports", () => apiMocks);
 vi.mock("../../api/examWorkspace", async (original) => ({
   ...(await original<typeof import("../../api/examWorkspace")>()),
   ...apiMocks,

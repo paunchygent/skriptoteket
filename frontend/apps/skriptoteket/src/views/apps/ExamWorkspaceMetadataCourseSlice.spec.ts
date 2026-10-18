@@ -23,6 +23,7 @@ const api = vi.hoisted(() => ({
   saveExamWorkspaceDocument: vi.fn(),
 }));
 const rename = vi.hoisted(() => vi.fn());
+vi.mock("../../api/examWorkspaceExports", () => api);
 vi.mock("../../api/examWorkspace", () => ({ ...api }));
 vi.mock("../../api/vault", () => ({ renameVaultFile: rename }));
 

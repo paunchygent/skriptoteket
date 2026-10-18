@@ -25,7 +25,7 @@
 import { computed, ref } from "vue";
 
 import type { NativeExamBodyParagraph, NativeExamParent } from "../../../api/examWorkspace";
-import type { ExamParentDeleteMode } from "../../../api/examWorkspace";
+import type { ExamParentDeleteMode } from "../../../api/examWorkspaceStructure";
 import { UiGlyph } from "../../../components/ui";
 import ExamWorkspaceInlineNotice from "./ExamWorkspaceInlineNotice.vue";
 import ExamWorkspaceMarkToolbar from "./ExamWorkspaceMarkToolbar.vue";

@@ -21,8 +21,8 @@ import { ref, watch } from "vue";
 import type { Ref } from "vue";
 
 import { isApiError } from "../../../api/client";
-import { fetchExamWorkspacePrintPreview } from "../../../api/examWorkspace";
-import type { ExamWorkspacePrintPreview } from "../../../api/examWorkspace";
+import { fetchExamWorkspacePrintPreview } from "../../../api/examWorkspaceExports";
+import type { ExamWorkspacePrintPreview } from "../../../api/examWorkspaceExports";
 import { useToast } from "../../../composables/useToast";
 
 /** Wait after the last saved-revision change before rendering, so a burst of saves renders once. */

@@ -17,7 +17,7 @@ import { useToastStore } from "../../../stores/toast";
 import { PREVIEW_DEBOUNCE_MS, useExamWorkspacePrintPreview } from "./useExamWorkspacePrintPreview";
 
 const apiMocks = vi.hoisted(() => ({ fetchExamWorkspacePrintPreview: vi.fn() }));
-vi.mock("../../../api/examWorkspace", () => apiMocks);
+vi.mock("../../../api/examWorkspaceExports", () => apiMocks);
 
 function ready(pages: string[], questionPages: Record<string, number> = {}) {
   return { message: null, pages, question_pages: questionPages, revision: 1, status: "ready" as const };

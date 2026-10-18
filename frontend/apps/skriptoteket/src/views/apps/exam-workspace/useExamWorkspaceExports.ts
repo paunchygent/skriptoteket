@@ -22,21 +22,23 @@ import { computed, ref, watch } from "vue";
 import type { Ref } from "vue";
 
 import { isApiError } from "../../../api/client";
+import type {
+  ExamWorkspaceDocumentSummary,
+  NativeExamDocument,
+  NativeExamItem,
+} from "../../../api/examWorkspace";
 import {
   downloadExamWorkspaceExport,
   getExamWorkspaceExportChecklist,
   saveExamWorkspaceExport,
-} from "../../../api/examWorkspace";
+} from "../../../api/examWorkspaceExports";
 import type {
-  ExamWorkspaceDocumentSummary,
   ExamWorkspaceExportBlocker,
   ExamWorkspaceExportBlockerReason,
   ExamWorkspaceExportChecklistEntry,
   ExamWorkspaceExportTarget,
   ExamWorkspaceItemExportBlockerReason,
-  NativeExamDocument,
-  NativeExamItem,
-} from "../../../api/examWorkspace";
+} from "../../../api/examWorkspaceExports";
 import { useToast } from "../../../composables/useToast";
 import { triggerBrowserDownload } from "../../../utils/browserDownload";
 import { examWorkspaceSavedAt } from "./examWorkspaceFormat";

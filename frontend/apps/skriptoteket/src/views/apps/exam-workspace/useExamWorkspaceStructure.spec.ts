@@ -39,7 +39,17 @@ const apiMocks = vi.hoisted(() => ({
   reorderExamWorkspaceChildren: vi.fn(),
 }));
 
-vi.mock("../../../api/examWorkspace", () => apiMocks);
+vi.mock("../../../api/examWorkspace", () => ({
+  changeExamWorkspaceItemType: apiMocks.changeExamWorkspaceItemType,
+}));
+
+vi.mock("../../../api/examWorkspaceStructure", () => ({
+  addExamWorkspaceChild: apiMocks.addExamWorkspaceChild,
+  createExamWorkspaceParent: apiMocks.createExamWorkspaceParent,
+  deleteExamWorkspaceChild: apiMocks.deleteExamWorkspaceChild,
+  deleteExamWorkspaceParent: apiMocks.deleteExamWorkspaceParent,
+  reorderExamWorkspaceChildren: apiMocks.reorderExamWorkspaceChildren,
+}));
 
 function response(document: NativeExamDocument): ExamWorkspaceDocumentResponse {
   return {

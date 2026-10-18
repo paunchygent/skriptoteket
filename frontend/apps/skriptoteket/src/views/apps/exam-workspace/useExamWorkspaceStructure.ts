@@ -27,20 +27,20 @@ import { computed, ref } from "vue";
 import type { Ref } from "vue";
 
 import { isApiError } from "../../../api/client";
-import {
-  addExamWorkspaceChild,
-  changeExamWorkspaceItemType,
-  createExamWorkspaceParent,
-  deleteExamWorkspaceChild,
-  deleteExamWorkspaceParent,
-  reorderExamWorkspaceChildren,
-} from "../../../api/examWorkspace";
+import { changeExamWorkspaceItemType } from "../../../api/examWorkspace";
 import type {
-  ExamParentDeleteMode,
   ExamWorkspaceDocumentResponse,
   NativeExamDocument,
   NativeExamItemKind,
 } from "../../../api/examWorkspace";
+import {
+  addExamWorkspaceChild,
+  createExamWorkspaceParent,
+  deleteExamWorkspaceChild,
+  deleteExamWorkspaceParent,
+  reorderExamWorkspaceChildren,
+} from "../../../api/examWorkspaceStructure";
+import type { ExamParentDeleteMode } from "../../../api/examWorkspaceStructure";
 import { useToast } from "../../../composables/useToast";
 import { nextItemId } from "./examWorkspaceConversionMerge";
 import { newTeacherItem } from "./examWorkspaceItemEdits";

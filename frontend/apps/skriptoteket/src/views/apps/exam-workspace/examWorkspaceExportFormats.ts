@@ -13,7 +13,7 @@
  *   - Read by the Exportera menu and drawer.
  */
 
-import type { ExamWorkspaceExportTarget } from "../../../api/examWorkspace";
+import type { ExamWorkspaceExportTarget } from "../../../api/examWorkspaceExports";
 
 export type ExamWorkspaceExportFormat = {
   target: ExamWorkspaceExportTarget;

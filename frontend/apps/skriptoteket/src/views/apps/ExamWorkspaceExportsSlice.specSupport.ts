@@ -14,10 +14,8 @@
 import { DOMWrapper, flushPromises } from "@vue/test-utils";
 import { expect, type Mock } from "vitest";
 
-import type {
-  ExamWorkspaceConversionStatus,
-  ExamWorkspaceExportChecklistResponse,
-} from "../../api/examWorkspace";
+import type { ExamWorkspaceConversionStatus } from "../../api/examWorkspace";
+import type { ExamWorkspaceExportChecklistResponse } from "../../api/examWorkspaceExports";
 import {
   buildFreeTextItem,
   buildResponse,
