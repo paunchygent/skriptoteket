@@ -46,7 +46,7 @@ const curatedAppHostRegistry: Record<string, CuratedAppHostRegistration> = {
   },
   "documents.conversion_hub": {
     authenticated: {
-      loader: () => import("./apps/ExamConverterAuthenticatedView.vue"),
+      loader: () => import("./apps/ExamWorkspaceView.vue"),
     },
     public: {
       loader: () => import("./apps/ExamConverterPublicView.vue"),

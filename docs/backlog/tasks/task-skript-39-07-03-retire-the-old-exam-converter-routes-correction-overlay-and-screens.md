@@ -7,7 +7,7 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-17'
-status: ready
+status: in_progress
 closeout_review:
   record: inline
   status: not_started
@@ -182,3 +182,10 @@ behave as before.
 | R2  | The old correction overlay, correction sessions and their routes retire with the old converter (G21, user 2026-10-17).                                                                                                                                        |
 | R3  | The DigiExam entry in the Öppna drawer is built by ST-SKRIPT-40-04; this story ships no workspace UI (G2, user 2026-10-17).                                                                                                                                   |
 | R4  | The public guest exam converter (ADR-SKRIPT-0085) stays with its routes and modules; this story retires only the signed-in old converter, its correction overlay and correction sessions; a later decision covers the guest converter (user 2026-10-17, G27). |
+
+## Progress
+
+- 2026-10-18, first commit (parent request, for an early staging rebuild): the
+  home `Provhantering` card links to `/apps/exam-workspace`, and the signed-in
+  `documents.conversion_hub` host opens the exam workspace; the public guest
+  host is unchanged. The removals follow.

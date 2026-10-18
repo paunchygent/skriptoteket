@@ -39,7 +39,7 @@ export const HOME_PRIMARY_WORK_APPS: readonly HomeWorkApp[] = [
     title: "Provhantering",
     description: "Skapa, redigera och konvertera prov.",
     imageSrc: examConverterSymbolUrl,
-    to: "/apps/exam-converter",
+    to: "/apps/exam-workspace",
   },
   {
     id: "audio-transcription",

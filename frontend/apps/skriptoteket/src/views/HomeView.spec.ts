@@ -331,7 +331,7 @@ describe("HomeView", () => {
       "/apps/classroom.group-seating-studio",
     );
     expect(findRouterLinkByText(wrapper, "Provhantering")?.props("to")).toBe(
-      "/apps/exam-converter",
+      "/apps/exam-workspace",
     );
     expect(findRouterLinkByText(wrapper, "Ljudtranskribering")).toBeUndefined();
     expect(findRouterLinkByText(wrapper, "Dokumentkonvertering")?.props("to")).toBe(
