@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Pre-push gate for main: run the full `pdm run typecheck` and `pdm run test`
 # on Hemma for the commit being pushed. A failure blocks the push. Hemma being
-# unreachable pushes with a warning. Commits that only change Markdown since
+# unreachable pushes with a warning. Commits that only change Markdown or docs/ since
 # the last passing commit reuse that result.
 set -euo pipefail
 
@@ -15,8 +15,8 @@ verified_file="$(git rev-parse --git-common-dir)/hemma-verified-sha"
 verified="$(cat "$verified_file" 2>/dev/null || true)"
 
 if [[ -n "$verified" ]] && git merge-base --is-ancestor "$verified" "$sha" 2>/dev/null; then
-  if ! git diff --name-only "$verified" "$sha" | grep -qv '\.md$'; then
-    echo "hemma-check: only Markdown changed since verified ${verified:0:9}; skipping."
+  if ! git diff --name-only "$verified" "$sha" | grep -qvE '(\.md$|^docs/)'; then
+    echo "hemma-check: only docs changed since verified ${verified:0:9}; skipping."
     exit 0
   fi
 fi

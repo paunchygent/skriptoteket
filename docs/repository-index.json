@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "a7db0f3db447f92fa962034531d632da9bc59f88cfd9845e10f1495a187712af",
+  "source_set_digest": "5fa7c93d3315e8476ea87c815fcd3165f4667eff2de5069786c9b03ac6a5ad54",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5025,7 +5025,7 @@
       "type": "task",
       "title": "Section instructions are placed and deduplicated by source alignment, never by wording",
       "path": "docs/backlog/tasks/task-skript-39-04-13-section-instructions-are-placed-and-deduplicated-by-source-alignment-never-by-wording.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-04",
       "owners": [
@@ -5036,7 +5036,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-18",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Independent ruthless-reviewer 7a083063 (Pi, Sol 6.1 high) approved f2a00f3a3 on second re-review after F1-F4 repairs; merged into main as b365fdefd and published in a0a81ab5a after the Hemma full typecheck and test pass; staging walk at a0a81ab5a on omprov_grammatik_sve2.docx showed each section instruction once in its own part, in the editor and in the QTI export (root 01a14e1f evidence/staging-walk-a0a81ab5a/walk.md)."
       }
     },
     {
@@ -6380,7 +6384,7 @@
       "type": "task",
       "title": "Exam texts edit as one document per field, exam instructions are editable and printed totals can be accepted",
       "path": "docs/backlog/tasks/task-skript-40-04-06-exam-texts-edit-as-one-document-per-field-exam-instructions-are-editable-and-printed-totals-can-be-accepted.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -6391,7 +6395,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-18",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Independent ruthless-reviewer 1122a276 (Pi, Sol 6.1 high) approved 4f9f6945b on re-review after F1-F6 repairs; merged into main as af5b147a0 and published with a stale-spec fix in a0a81ab5a after the Hemma full typecheck and test pass; staging walk at a0a81ab5a on omprov_grammatik_sve2.docx deleted an underscore line, edited the exam instruction with a hard break (exported as br in QTI) and accepted a printed total with no layout shift (root 01a14e1f evidence/staging-walk-a0a81ab5a/walk.md)."
       }
     },
     {

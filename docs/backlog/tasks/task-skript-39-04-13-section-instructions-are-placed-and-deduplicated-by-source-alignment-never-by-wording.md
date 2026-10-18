@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-18'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-18'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: Independent ruthless-reviewer 7a083063 (Pi, Sol 6.1 high) approved f2a00f3a3 on second re-review after F1-F4 repairs; merged into main as b365fdefd and published in a0a81ab5a after the Hemma full typecheck and test pass; staging walk at a0a81ab5a on omprov_grammatik_sve2.docx showed each section instruction once in its own part, in the editor and in the QTI export (root 01a14e1f evidence/staging-walk-a0a81ab5a/walk.md).
 task_kind: story
 acceptance_criteria:
   - Whether a section, part or heading instruction is already shown in an item, and where a joined instruction stands in an item's body, are decided from the per-paragraph source alignment; no whole-line, prefix or casefold text match remains; the ten recorded exam replays are unchanged except for proven fixes
