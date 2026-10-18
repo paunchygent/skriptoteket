@@ -805,3 +805,36 @@ async def test_inline_completion_returns_notice_when_local_down_and_remote_block
     assert result.notice_message
     local.complete_inline.assert_awaited_once()
     external.complete_inline.assert_not_called()
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_inline_completion_handle_leaves_role_admission_to_the_web_gate() -> None:
+    settings = Settings(LLM_COMPLETION_ENABLED=True)
+    provider = AsyncMock()
+    provider.complete_inline.return_value = LLMCompletionResponse(
+        completion="partial",
+        finish_reason="length",
+    )
+
+    handler = InlineCompletionHandler(
+        settings=settings,
+        providers=InlineCompletionProviders(
+            primary=provider,
+            primary_is_remote=False,
+            fallback=None,
+            fallback_is_remote=False,
+        ),
+        capture_store=AsyncMock(),
+        token_counters=FakeTokenCounterResolver(),
+    )
+    actor = make_user(role=Role.USER)
+
+    result = await handler.handle(
+        actor=actor,
+        command=InlineCompletionCommand(prefix="def x():\n    ", suffix=""),
+    )
+
+    assert result.enabled is True
+    assert result.completion == "partial"
+    provider.complete_inline.assert_awaited_once()
