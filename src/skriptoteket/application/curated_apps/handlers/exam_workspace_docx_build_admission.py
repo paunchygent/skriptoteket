@@ -120,6 +120,10 @@ def _source_review(
     return state.printed(anchors, f"Frågan följer inte provformatet ({detail}).", seen)
 
 
+class GaplessGapQuestionError(ValueError):
+    """A converted gap_fill or inline_choice item that places no gap."""
+
+
 def _built(
     index: int,
     anchors: tuple[str, ...],
@@ -143,6 +147,8 @@ def _built(
         return _source_review(
             index, anchors, state, seen, "native_contract_invalid", validation_detail(error)
         )
+    except GaplessGapQuestionError as error:
+        return _source_review(index, anchors, state, seen, "native_contract_invalid", str(error))
     except Exception as error:
         # Model output that breaks an assumption of the item builder affects only its question.
         return _source_review(index, anchors, state, seen, "item_unbuildable", type(error).__name__)
@@ -382,6 +388,11 @@ def _admit_item(
                 # The model saves a teacher's zero-gap question, but a conversion that finds
                 # no gap has misread the question: its source stays for review.
                 raise ValueError("a converted gap question needs at least one gap")
+        if item.kind in (NativeExamItemKind.GAP_FILL, NativeExamItemKind.INLINE_CHOICE):
+            if not item.gaps:
+                # The model saves a teacher's zero-gap question, but a conversion that finds
+                # no gap has misread the question: its source stays for review.
+                raise GaplessGapQuestionError("gap_fill items need at least one gap")
         source_images = Counter(image.asset_id for chunk in own for image in chunk.images)
         emitted = Counter(item.body_asset_ids())
         if source_images != emitted:
