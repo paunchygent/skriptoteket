@@ -10,9 +10,11 @@
  *   until the teacher changes that question.
  */
 
+import type { Editor } from "@tiptap/core";
 import { flushPromises } from "@vue/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { NativeExamItem } from "../../api/examWorkspace";
 import { ApiError } from "../../api/client";
 import { useToastStore } from "../../stores/toast";
 import { plainBody } from "./exam-workspace/examWorkspaceRichText";
@@ -170,6 +172,82 @@ describe("ExamWorkspaceView export blockers", () => {
     expect(page("exam-workspace-export-menu")).toBeNull();
     expect(wrapper.get('[data-test="exam-workspace-row-item_004"]').attributes("aria-selected")).toBe("true");
     expect(document.activeElement?.getAttribute("data-test")).toBe("exam-workspace-review");
+  });
+
+  /** The exportable fixture, with question 2 changed by `change` before the import returns it. */
+  function importWithItem2(change: (item: NativeExamItem) => NativeExamItem) {
+    apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
+      const response = exportableResponse({ conversion: succeededConversion, version: 1 });
+      for (const document of [response.document, response.saved_document]) {
+        document.items = document.items.map((item) => (item.item_id === "item_002" ? change(item) : item));
+      }
+      apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(response);
+      return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null,
+        document_revision: null, questions_total: 0, questions_done: 0, units: [] };
+    });
+  }
+
+  it("blocks an empty question text before any click, leads to the Frågetext, and clears when text is typed", async () => {
+    importWithItem2((item) => ({ ...item, body: plainBody(" \n ") }));
+    const wrapper = await mountImported();
+
+    await openMenu(wrapper);
+    expect(requirePage("exam-workspace-blocker-item_002").text()).toBe("Fråga 2: Frågetexten är tom.");
+    expect(page("exam-workspace-blocker-fix-item_002")).toBeNull();
+    expect(menuFormatDisabled("qti")).toBe("true");
+    expect(downloadMocks.triggerBrowserDownload).not.toHaveBeenCalled();
+
+    await requirePage("exam-workspace-blocker-item_002").trigger("click");
+    await flushPromises();
+
+    expect(wrapper.get('[data-test="exam-workspace-row-item_002"]').attributes("aria-selected")).toBe("true");
+    const surface = wrapper.get('[data-test="exam-workspace-body-editor-surface"]').element as HTMLElement & {
+      editor: Editor;
+    };
+    expect(document.activeElement).toBe(surface);
+
+    surface.editor.commands.insertContent("Vad är en molekyl?");
+    await flushPromises();
+    await openMenu(wrapper);
+    expect(page("exam-workspace-blocker-item_002")).toBeNull();
+    expect(menuFormatDisabled("qti")).toBeUndefined();
+  });
+
+  it("blocks a gap question without gaps, leads to the Frågetext, and names the empty text first", async () => {
+    importWithItem2((item) => ({
+      ...item,
+      answer_key: { correct_choice_ids: [], match_pairs: [], origin: "not_applicable" },
+      body: plainBody("Vatten kokar vid grader."),
+      choices: [],
+      gaps: [],
+      kind: "gap_fill",
+    }));
+    const wrapper = await mountImported();
+
+    await openMenu(wrapper);
+    expect(requirePage("exam-workspace-blocker-item_002").text()).toBe("Fråga 2: Frågan saknar luckor.");
+    expect(page("exam-workspace-blocker-fix-item_002")).toBeNull();
+
+    await requirePage("exam-workspace-blocker-item_002").trigger("click");
+    await flushPromises();
+
+    expect(wrapper.get('[data-test="exam-workspace-row-item_002"]').attributes("aria-selected")).toBe("true");
+    expect(document.activeElement).toBe(wrapper.get('[data-test="exam-workspace-body-editor-surface"]').element);
+  });
+
+  it("names a zero-gap question without text by its empty text", async () => {
+    importWithItem2((item) => ({
+      ...item,
+      answer_key: { correct_choice_ids: [], match_pairs: [], origin: "not_applicable" },
+      body: [],
+      choices: [],
+      gaps: [],
+      kind: "inline_choice",
+    }));
+    const wrapper = await mountImported();
+
+    await openMenu(wrapper);
+    expect(requirePage("exam-workspace-blocker-item_002").text()).toBe("Fråga 2: Frågetexten är tom.");
   });
 
   it("maps 422 export blockers to Swedish copy per blocked question in the drawer and menu", async () => {

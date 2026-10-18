@@ -96,7 +96,9 @@ export type ExamWorkspaceItemExportBlockerReason =
   | "empty_match_entry"
   | "ordering_too_few_steps"
   | "empty_ordering_step"
-  | "too_few_gap_options";
+  | "too_few_gap_options"
+  | "empty_question_text"
+  | "no_gaps";
 
 /** Every reason the gate reports; the title reason belongs to the exam, not a question. */
 export type ExamWorkspaceExportBlockerReason = ExamWorkspaceItemExportBlockerReason | "title_without_text";
