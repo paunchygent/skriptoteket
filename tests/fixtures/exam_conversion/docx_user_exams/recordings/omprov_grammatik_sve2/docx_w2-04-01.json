@@ -1,0 +1,93 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0038",
+        "body:0039",
+        "body:0040",
+        "body:0041",
+        "body:0042",
+        "body:0043",
+        "body:0044"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "free_text",
+      "printed_label": "Uppgift 1.3",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Identifiera huvudord",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Stryk under huvudordet i varje nominalfras.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "1. det lilla gröna äpplet",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "2. många människor i staden",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "3. hennes gamla blå cykel på gården",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "4. de två första veckorna efter sommaren",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": null,
+      "facit_text": null,
+      "points": 4,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    }
+  ]
+}

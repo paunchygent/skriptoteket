@@ -1,0 +1,341 @@
+{
+  "model": "gpt-6-luna",
+  "answers": [
+    {
+      "type": "choice",
+      "name": "kind_q1",
+      "choice": "free_text",
+      "probabilities": [
+        {
+          "value": "single_choice",
+          "probability": 0.0
+        },
+        {
+          "value": "multiple_response",
+          "probability": 0.0
+        },
+        {
+          "value": "gap_fill",
+          "probability": 0.09
+        },
+        {
+          "value": "free_text",
+          "probability": 0.89
+        },
+        {
+          "value": "matching",
+          "probability": 0.0
+        },
+        {
+          "value": "unsupported",
+          "probability": 0.01
+        },
+        {
+          "value": "unresolved",
+          "probability": 0.01
+        }
+      ],
+      "confidence": 0.87
+    },
+    {
+      "type": "choice",
+      "name": "kind_q2",
+      "choice": "free_text",
+      "probabilities": [
+        {
+          "value": "single_choice",
+          "probability": 0.01
+        },
+        {
+          "value": "multiple_response",
+          "probability": 0.0
+        },
+        {
+          "value": "gap_fill",
+          "probability": 0.12
+        },
+        {
+          "value": "free_text",
+          "probability": 0.86
+        },
+        {
+          "value": "matching",
+          "probability": 0.0
+        },
+        {
+          "value": "unsupported",
+          "probability": 0.0
+        },
+        {
+          "value": "unresolved",
+          "probability": 0.01
+        }
+      ],
+      "confidence": 0.84
+    },
+    {
+      "type": "choice",
+      "name": "kind_q3",
+      "choice": "free_text",
+      "probabilities": [
+        {
+          "value": "single_choice",
+          "probability": 0.01
+        },
+        {
+          "value": "multiple_response",
+          "probability": 0.0
+        },
+        {
+          "value": "gap_fill",
+          "probability": 0.39
+        },
+        {
+          "value": "free_text",
+          "probability": 0.57
+        },
+        {
+          "value": "matching",
+          "probability": 0.01
+        },
+        {
+          "value": "unsupported",
+          "probability": 0.01
+        },
+        {
+          "value": "unresolved",
+          "probability": 0.01
+        }
+      ],
+      "confidence": 0.5
+    },
+    {
+      "type": "choice",
+      "name": "kind_q4",
+      "choice": "free_text",
+      "probabilities": [
+        {
+          "value": "single_choice",
+          "probability": 0.0
+        },
+        {
+          "value": "multiple_response",
+          "probability": 0.0
+        },
+        {
+          "value": "gap_fill",
+          "probability": 0.06
+        },
+        {
+          "value": "free_text",
+          "probability": 0.94
+        },
+        {
+          "value": "matching",
+          "probability": 0.0
+        },
+        {
+          "value": "unsupported",
+          "probability": 0.0
+        },
+        {
+          "value": "unresolved",
+          "probability": 0.0
+        }
+      ],
+      "confidence": 0.93
+    },
+    {
+      "type": "choice",
+      "name": "kind_q5",
+      "choice": "free_text",
+      "probabilities": [
+        {
+          "value": "single_choice",
+          "probability": 0.0
+        },
+        {
+          "value": "multiple_response",
+          "probability": 0.01
+        },
+        {
+          "value": "gap_fill",
+          "probability": 0.02
+        },
+        {
+          "value": "free_text",
+          "probability": 0.93
+        },
+        {
+          "value": "matching",
+          "probability": 0.01
+        },
+        {
+          "value": "unsupported",
+          "probability": 0.01
+        },
+        {
+          "value": "unresolved",
+          "probability": 0.02
+        }
+      ],
+      "confidence": 0.92
+    },
+    {
+      "type": "choice",
+      "name": "kind_q6",
+      "choice": "free_text",
+      "probabilities": [
+        {
+          "value": "single_choice",
+          "probability": 0.0
+        },
+        {
+          "value": "multiple_response",
+          "probability": 0.0
+        },
+        {
+          "value": "gap_fill",
+          "probability": 0.02
+        },
+        {
+          "value": "free_text",
+          "probability": 0.94
+        },
+        {
+          "value": "matching",
+          "probability": 0.01
+        },
+        {
+          "value": "unsupported",
+          "probability": 0.01
+        },
+        {
+          "value": "unresolved",
+          "probability": 0.02
+        }
+      ],
+      "confidence": 0.93
+    },
+    {
+      "type": "choice",
+      "name": "kind_q7",
+      "choice": "free_text",
+      "probabilities": [
+        {
+          "value": "single_choice",
+          "probability": 0.01
+        },
+        {
+          "value": "multiple_response",
+          "probability": 0.02
+        },
+        {
+          "value": "gap_fill",
+          "probability": 0.15
+        },
+        {
+          "value": "free_text",
+          "probability": 0.79
+        },
+        {
+          "value": "matching",
+          "probability": 0.01
+        },
+        {
+          "value": "unsupported",
+          "probability": 0.01
+        },
+        {
+          "value": "unresolved",
+          "probability": 0.01
+        }
+      ],
+      "confidence": 0.76
+    },
+    {
+      "type": "choice",
+      "name": "kind_q8",
+      "choice": "free_text",
+      "probabilities": [
+        {
+          "value": "single_choice",
+          "probability": 0.0
+        },
+        {
+          "value": "multiple_response",
+          "probability": 0.0
+        },
+        {
+          "value": "gap_fill",
+          "probability": 0.08
+        },
+        {
+          "value": "free_text",
+          "probability": 0.88
+        },
+        {
+          "value": "matching",
+          "probability": 0.01
+        },
+        {
+          "value": "unsupported",
+          "probability": 0.01
+        },
+        {
+          "value": "unresolved",
+          "probability": 0.02
+        }
+      ],
+      "confidence": 0.86
+    },
+    {
+      "type": "choice",
+      "name": "kind_q9",
+      "choice": "free_text",
+      "probabilities": [
+        {
+          "value": "single_choice",
+          "probability": 0.0
+        },
+        {
+          "value": "multiple_response",
+          "probability": 0.0
+        },
+        {
+          "value": "gap_fill",
+          "probability": 0.01
+        },
+        {
+          "value": "free_text",
+          "probability": 0.96
+        },
+        {
+          "value": "matching",
+          "probability": 0.01
+        },
+        {
+          "value": "unsupported",
+          "probability": 0.01
+        },
+        {
+          "value": "unresolved",
+          "probability": 0.01
+        }
+      ],
+      "confidence": 0.95
+    }
+  ],
+  "usage": {
+    "input_tokens": 7821,
+    "input_tokens_details": {
+      "cached_tokens": 0,
+      "cache_write_tokens": 0
+    },
+    "output_tokens": 0,
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "total_tokens": 7821
+  }
+}

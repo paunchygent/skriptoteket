@@ -1,0 +1,161 @@
+{
+  "title": null,
+  "instructions": [
+    {
+      "text": "DEL 3: BISATSER",
+      "source_anchors": [
+        "body:0122"
+      ],
+      "points": null
+    },
+    {
+      "text": "Stryk under bisatsen. Ange typ (att-sats, relativ bisats, tids-, orsaks-, villkors-, avsiktsbisats) och funktion (subjekt, objekt, adverbial, bestämning i NF).",
+      "source_anchors": [
+        "body:0125"
+      ],
+      "points": null
+    }
+  ],
+  "answer_key_anchors": [],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0124",
+        "body:0127",
+        "body:0128",
+        "body:0129",
+        "body:0130",
+        "body:0131",
+        "body:0132",
+        "body:0133",
+        "body:0134",
+        "body:0135",
+        "body:0136",
+        "body:0137",
+        "body:0138",
+        "body:0139",
+        "body:0140",
+        "body:0141",
+        "body:0142",
+        "body:0143",
+        "body:0144",
+        "body:0145"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "free_text",
+      "printed_label": "Uppgift 3.1",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Bestäm bisatstyp och funktion",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "1. Att du kom överraskade mig.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "2. Jag förstår om du är trött.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "3. Vi gick hem eftersom det började regna.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "4. Mannen som står där borta är min lärare.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "5. Om du pluggar kommer du att klara provet.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "6. Hon tränar hårt för att bli bättre.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "7. Medan vi väntade läste jag tidningen.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "8. Alla vet att jorden är rund.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "9. Eleverna vars föräldrar kom till mötet fick gå hem tidigare.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": null,
+      "facit_text": null,
+      "points": 9,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    }
+  ]
+}

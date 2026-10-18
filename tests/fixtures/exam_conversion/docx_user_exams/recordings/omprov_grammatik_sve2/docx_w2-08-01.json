@@ -1,0 +1,163 @@
+{
+  "title": {
+    "text": "DEL 3: BISATSER",
+    "source_anchors": [
+      "body:0101"
+    ],
+    "points": null
+  },
+  "instructions": [],
+  "answer_key_anchors": [],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0102",
+        "body:0103",
+        "body:0104",
+        "body:0105",
+        "body:0106",
+        "body:0107",
+        "body:0108",
+        "body:0109",
+        "body:0110",
+        "body:0111",
+        "body:0112",
+        "body:0113",
+        "body:0114",
+        "body:0115",
+        "body:0116",
+        "body:0117",
+        "body:0118",
+        "body:0119",
+        "body:0120",
+        "body:0121",
+        "body:0122"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "free_text",
+      "printed_label": "Uppgift 3.1",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Bestäm bisatstyp och funktion",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Stryk under bisatsen. Ange typ (att-sats, relativ bisats, tids-, orsaks-, villkors-, avsiktsbisats) och funktion (subjekt, objekt, adverbial, bestämning i NF).",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "1. Att hon vann överraskade ingen.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "2. Jag undrar om han kommer.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "3. Han gick hem eftersom han var sjuk.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "4. Boken som ligger på bordet är min.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "5. Om det regnar stannar vi hemma.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "6. De sparar pengar för att kunna resa.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "7. När vi kom fram hade festen redan börjat.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "8. Läraren berättade att provet var inställt.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "9. Barnet som föräldrarna letade efter hittades snabbt.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": null,
+      "facit_text": null,
+      "points": 9,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    }
+  ]
+}

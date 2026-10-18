@@ -1,0 +1,527 @@
+{
+  "title_anchors": [
+    "body:0001"
+  ],
+  "questions": [
+    {
+      "id": "q1",
+      "anchors": [
+        "body:0016",
+        "body:0019",
+        "body:0020",
+        "body:0021",
+        "body:0022",
+        "body:0023",
+        "body:0024",
+        "body:0025",
+        "body:0026"
+      ],
+      "subpart_anchors": [],
+      "answer_key_anchors": []
+    },
+    {
+      "id": "q2",
+      "anchors": [
+        "body:0029",
+        "body:0034",
+        "body:0035",
+        "body:0036",
+        "body:0037",
+        "body:0038",
+        "body:0039",
+        "body:0040",
+        "body:0041",
+        "body:0042",
+        "body:0043"
+      ],
+      "subpart_anchors": [
+        "body:0034",
+        "body:0038",
+        "body:0041"
+      ],
+      "answer_key_anchors": []
+    },
+    {
+      "id": "q3",
+      "anchors": [
+        "body:0046",
+        "body:0049",
+        "body:0050",
+        "body:0051",
+        "body:0052",
+        "body:0053",
+        "body:0054",
+        "body:0055",
+        "body:0056"
+      ],
+      "subpart_anchors": [],
+      "answer_key_anchors": []
+    },
+    {
+      "id": "q4",
+      "anchors": [
+        "body:0059",
+        "body:0065",
+        "body:0066",
+        "body:0067",
+        "body:0068",
+        "body:0069",
+        "body:0070",
+        "body:0071",
+        "body:0072",
+        "body:0073",
+        "body:0074",
+        "body:0075",
+        "body:0076"
+      ],
+      "subpart_anchors": [],
+      "answer_key_anchors": []
+    },
+    {
+      "id": "q5",
+      "anchors": [
+        "body:0082",
+        "body:0085",
+        "body:0086",
+        "body:0087",
+        "body:0088",
+        "body:0089",
+        "body:0090",
+        "body:0091",
+        "body:0092",
+        "body:0093",
+        "body:0094",
+        "body:0095",
+        "body:0096",
+        "body:0097",
+        "body:0098",
+        "body:0099"
+      ],
+      "subpart_anchors": [],
+      "answer_key_anchors": []
+    },
+    {
+      "id": "q6",
+      "anchors": [
+        "body:0102",
+        "body:0105",
+        "body:0106",
+        "body:0107",
+        "body:0108",
+        "body:0109",
+        "body:0110",
+        "body:0111",
+        "body:0112",
+        "body:0113",
+        "body:0114",
+        "body:0115",
+        "body:0116",
+        "body:0117",
+        "body:0118",
+        "body:0119"
+      ],
+      "subpart_anchors": [],
+      "answer_key_anchors": []
+    },
+    {
+      "id": "q7",
+      "anchors": [
+        "body:0124",
+        "body:0127",
+        "body:0128",
+        "body:0129",
+        "body:0130",
+        "body:0131",
+        "body:0132",
+        "body:0133",
+        "body:0134",
+        "body:0135",
+        "body:0136",
+        "body:0137",
+        "body:0138",
+        "body:0139",
+        "body:0140",
+        "body:0141",
+        "body:0142",
+        "body:0143",
+        "body:0144"
+      ],
+      "subpart_anchors": [],
+      "answer_key_anchors": []
+    },
+    {
+      "id": "q8",
+      "anchors": [
+        "body:0147",
+        "body:0152",
+        "body:0153",
+        "body:0154",
+        "body:0155",
+        "body:0156",
+        "body:0157",
+        "body:0158",
+        "body:0159",
+        "body:0160",
+        "body:0161"
+      ],
+      "subpart_anchors": [
+        "body:0152",
+        "body:0154",
+        "body:0156",
+        "body:0159"
+      ],
+      "answer_key_anchors": []
+    },
+    {
+      "id": "q9",
+      "anchors": [
+        "body:0173",
+        "body:0178",
+        "body:0179",
+        "body:0180",
+        "body:0181",
+        "body:0182",
+        "body:0183",
+        "body:0184",
+        "body:0185",
+        "body:0186",
+        "body:0187",
+        "body:0188",
+        "body:0189",
+        "body:0190",
+        "body:0191",
+        "body:0192",
+        "body:0193",
+        "body:0194",
+        "body:0195",
+        "body:0196",
+        "body:0197"
+      ],
+      "subpart_anchors": [],
+      "answer_key_anchors": []
+    }
+  ],
+  "shared_contexts": [
+    {
+      "anchor": "body:0004",
+      "scope": "exam_metadata",
+      "owner": "exam",
+      "governs": []
+    },
+    {
+      "anchor": "body:0005",
+      "scope": "exam_metadata",
+      "owner": "exam",
+      "governs": []
+    },
+    {
+      "anchor": "body:0007",
+      "scope": "section_instruction",
+      "owner": "exam",
+      "governs": [
+        "q1",
+        "q2",
+        "q3",
+        "q4",
+        "q5",
+        "q6",
+        "q7",
+        "q8",
+        "q9"
+      ]
+    },
+    {
+      "anchor": "body:0009",
+      "scope": "exam_metadata",
+      "owner": "exam",
+      "governs": []
+    },
+    {
+      "anchor": "body:0011",
+      "scope": "exam_metadata",
+      "owner": "exam",
+      "governs": []
+    },
+    {
+      "anchor": "body:0014",
+      "scope": "section_instruction",
+      "owner": "exam",
+      "governs": [
+        "q1",
+        "q2",
+        "q3",
+        "q4"
+      ]
+    },
+    {
+      "anchor": "body:0017",
+      "scope": "section_instruction",
+      "owner": "q1",
+      "governs": [
+        "q1"
+      ]
+    },
+    {
+      "anchor": "body:0030",
+      "scope": "section_instruction",
+      "owner": "q2",
+      "governs": [
+        "q2"
+      ]
+    },
+    {
+      "anchor": "body:0032",
+      "scope": "shared_passage",
+      "owner": "q2",
+      "governs": [
+        "q2"
+      ]
+    },
+    {
+      "anchor": "body:0062",
+      "scope": "other",
+      "owner": "q4",
+      "governs": [
+        "q4"
+      ]
+    },
+    {
+      "anchor": "body:0063",
+      "scope": "other",
+      "owner": "q4",
+      "governs": [
+        "q4"
+      ]
+    },
+    {
+      "anchor": "body:0079",
+      "scope": "section_instruction",
+      "owner": "exam",
+      "governs": [
+        "q5",
+        "q6"
+      ]
+    },
+    {
+      "anchor": "body:0080",
+      "scope": "section_instruction",
+      "owner": "exam",
+      "governs": [
+        "q5",
+        "q6"
+      ]
+    },
+    {
+      "anchor": "body:0083",
+      "scope": "section_instruction",
+      "owner": "q5",
+      "governs": [
+        "q5"
+      ]
+    },
+    {
+      "anchor": "body:0103",
+      "scope": "section_instruction",
+      "owner": "q6",
+      "governs": [
+        "q6"
+      ]
+    },
+    {
+      "anchor": "body:0122",
+      "scope": "section_instruction",
+      "owner": "exam",
+      "governs": [
+        "q7",
+        "q8"
+      ]
+    },
+    {
+      "anchor": "body:0125",
+      "scope": "section_instruction",
+      "owner": "q7",
+      "governs": [
+        "q7"
+      ]
+    },
+    {
+      "anchor": "body:0148",
+      "scope": "section_instruction",
+      "owner": "q8",
+      "governs": [
+        "q8"
+      ]
+    },
+    {
+      "anchor": "body:0164",
+      "scope": "section_instruction",
+      "owner": "exam",
+      "governs": [
+        "q9"
+      ]
+    },
+    {
+      "anchor": "body:0165",
+      "scope": "section_instruction",
+      "owner": "q9",
+      "governs": [
+        "q9"
+      ]
+    },
+    {
+      "anchor": "body:0167",
+      "scope": "shared_passage",
+      "owner": "q9",
+      "governs": [
+        "q9"
+      ]
+    },
+    {
+      "anchor": "body:0168",
+      "scope": "shared_passage",
+      "owner": "q9",
+      "governs": [
+        "q9"
+      ]
+    },
+    {
+      "anchor": "body:0170",
+      "scope": "shared_passage",
+      "owner": "q9",
+      "governs": [
+        "q9"
+      ]
+    },
+    {
+      "anchor": "body:0171",
+      "scope": "shared_passage",
+      "owner": "q9",
+      "governs": [
+        "q9"
+      ]
+    },
+    {
+      "anchor": "body:0174",
+      "scope": "section_instruction",
+      "owner": "q9",
+      "governs": [
+        "q9"
+      ]
+    },
+    {
+      "anchor": "body:0176",
+      "scope": "other",
+      "owner": "q9",
+      "governs": [
+        "q9"
+      ]
+    },
+    {
+      "anchor": "body:0201",
+      "scope": "exam_metadata",
+      "owner": "exam",
+      "governs": []
+    },
+    {
+      "anchor": "body:0202",
+      "scope": "section_instruction",
+      "owner": "exam",
+      "governs": [
+        "q1",
+        "q2",
+        "q3",
+        "q4",
+        "q5",
+        "q6",
+        "q7",
+        "q8",
+        "q9"
+      ]
+    }
+  ],
+  "header_anchors": [
+    {
+      "anchor": "body:0002",
+      "kind": "course",
+      "governs": []
+    },
+    {
+      "anchor": "body:0010",
+      "kind": "part_total",
+      "governs": [
+        "q1",
+        "q2",
+        "q3",
+        "q4",
+        "q5",
+        "q6",
+        "q7",
+        "q8",
+        "q9"
+      ]
+    },
+    {
+      "anchor": "body:0027",
+      "kind": "question_total",
+      "governs": [
+        "q1"
+      ]
+    },
+    {
+      "anchor": "body:0044",
+      "kind": "question_total",
+      "governs": [
+        "q2"
+      ]
+    },
+    {
+      "anchor": "body:0057",
+      "kind": "question_total",
+      "governs": [
+        "q3"
+      ]
+    },
+    {
+      "anchor": "body:0077",
+      "kind": "question_total",
+      "governs": [
+        "q4"
+      ]
+    },
+    {
+      "anchor": "body:0100",
+      "kind": "question_total",
+      "governs": [
+        "q5"
+      ]
+    },
+    {
+      "anchor": "body:0120",
+      "kind": "question_total",
+      "governs": [
+        "q6"
+      ]
+    },
+    {
+      "anchor": "body:0145",
+      "kind": "question_total",
+      "governs": [
+        "q7"
+      ]
+    },
+    {
+      "anchor": "body:0162",
+      "kind": "question_total",
+      "governs": [
+        "q8"
+      ]
+    },
+    {
+      "anchor": "body:0198",
+      "kind": "question_total",
+      "governs": [
+        "q9"
+      ]
+    }
+  ]
+}

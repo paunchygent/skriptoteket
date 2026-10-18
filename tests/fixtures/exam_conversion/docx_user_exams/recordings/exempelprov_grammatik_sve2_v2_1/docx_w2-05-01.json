@@ -1,0 +1,97 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0046",
+        "body:0047",
+        "body:0049",
+        "body:0050",
+        "body:0051",
+        "body:0052",
+        "body:0053",
+        "body:0054",
+        "body:0055",
+        "body:0056",
+        "body:0057"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "free_text",
+      "printed_label": "Uppgift 1.3",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Identifiera huvudord",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Stryk under huvudordet i varje nominalfras.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "1. den stora röda bilen",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "2. alla eleverna i klassen",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "3. hans nya fina lägenhet på Södermalm",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "4. de tre sista dagarna före jul",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": null,
+      "facit_text": null,
+      "points": 4,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    }
+  ]
+}

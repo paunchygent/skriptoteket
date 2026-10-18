@@ -1,0 +1,93 @@
+{
+  "title": null,
+  "instructions": [
+    {
+      "text": "Läs texten nedan. Identifiera sedan de efterfrågade fraserna.",
+      "source_anchors": [
+        "body:0024"
+      ],
+      "points": null
+    },
+    {
+      "text": "\"Den unge mannen vid busshållplatsen väntade tålmodigt på bussen. Hans lilla hund satt lugnt bredvid honom.\"",
+      "source_anchors": [
+        "body:0025"
+      ],
+      "points": null
+    }
+  ],
+  "answer_key_anchors": [],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0023",
+        "body:0027",
+        "body:0028",
+        "body:0029",
+        "body:0030",
+        "body:0031",
+        "body:0032",
+        "body:0033",
+        "body:0034",
+        "body:0035",
+        "body:0036",
+        "body:0037"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "free_text",
+      "printed_label": "Uppgift 1.2",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Identifiera fraser i texten",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "a) Skriv ut ALLA nominalfraser (NF) i texten:",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "b) Skriv ut ALLA prepositionsfraser (PF) i texten:",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "c) Skriv ut ALLA verbfraser (VF) i texten:",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": null,
+      "facit_text": null,
+      "points": 8,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    }
+  ]
+}

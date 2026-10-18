@@ -1,0 +1,114 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0083",
+        "body:0084",
+        "body:0085",
+        "body:0086",
+        "body:0087",
+        "body:0088",
+        "body:0089",
+        "body:0090",
+        "body:0091",
+        "body:0092",
+        "body:0093",
+        "body:0094",
+        "body:0095",
+        "body:0096",
+        "body:0097",
+        "body:0098",
+        "body:0099",
+        "body:0100"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "free_text",
+      "printed_label": "Uppgift 2.2",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Komplex satslösning",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gör fullständig satsdelsanalys. Tänk på att bisatser kan vara satsdelar och att satsadverbial (SA) har en särskild position.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "1. Hon stannar troligen inte hemma ikväll.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "2. Att han ljög förvånade alla.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "3. Vi vet inte när tåget avgår.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "4. Innan han gick hemifrån kontrollerade han att dörren var låst.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "5. Flickan som sitter där borta verkar ledsen.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": null,
+      "facit_text": null,
+      "points": 10,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    }
+  ]
+}
