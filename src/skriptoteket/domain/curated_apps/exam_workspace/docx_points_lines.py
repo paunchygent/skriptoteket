@@ -14,7 +14,8 @@ placed it:
 - A question line lies in a question's span, from the question's start to the next question
   start or part line: any total line there without an exam label. Outside every span, a
   question-labelled line ("Poäng: 2 poäng") heads the question right after it, or the last
-  question when none follows. A question line prints that question's own points.
+  question when none follows. A question's lines print its own points: their one distinct
+  value, or none when they differ.
 - Outside every question span, any other standalone total line is an exam-total candidate.
   One distinct candidate value is the exam total; differing values give none (D3).
 
@@ -22,7 +23,7 @@ A question starts at its first own chunk that is no standalone total line, so wh
 grouping places a points line or a total heading never moves a question's start.
 """
 
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, replace
 from types import MappingProxyType
 
@@ -39,8 +40,8 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
 class PrintedQuestion:
     """A question's own anchors and what its question lines print.
 
-    ``prints`` is true when its span prints points; ``points`` is their value when the span
-    prints exactly one label, else None.
+    ``prints`` is true when its span prints points; ``points`` is their one distinct value,
+    such as a heading's "(4 p)" with its "/4 p" line, and None when the lines differ.
     """
 
     anchors: tuple[str, ...]
@@ -80,6 +81,12 @@ def line_points(chunk: DocxChunk) -> int | float | None:
     if chunk.kind == "heading" or not points_line(chunk.text):
         return None
     return printed_points((chunk,))
+
+
+def _one_value(values: Iterable[int | float]) -> int | float | None:
+    """The one distinct value the lines print, or None when they differ (D3)."""
+    distinct = set(values)
+    return distinct.pop() if len(distinct) == 1 else None
 
 
 def _stands_alone(chunk: DocxChunk) -> bool:
@@ -156,7 +163,7 @@ def printed_points_plan(
         PrintedQuestion(
             anchors=own,
             prints=bool(own_lines := [i for i in lines.get(number, ()) if i not in closers]),
-            points=printed_points(chunks[i] for i in own_lines),
+            points=_one_value(totals[i] for i in own_lines),
         )
         for number, own in enumerate(questions)
     )
@@ -174,7 +181,7 @@ def printed_points_plan(
     return PrintedPoints(
         questions=printed,
         parts=tuple(parts),
-        exam_total=candidates.pop() if len(candidates) == 1 else None,
+        exam_total=_one_value(candidates),
         owners=MappingProxyType(owners),
         metadata=metadata,
     )

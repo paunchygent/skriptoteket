@@ -11,10 +11,11 @@ the grouping marks as governing reaches exactly the governed questions (D40).
 
 import re
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedMetadata
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
+from skriptoteket.domain.curated_apps.exam_workspace.docx_heading_wording import shown_heading
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     POINT_LABEL,
     QUESTION_HEADING_LABEL,
@@ -25,7 +26,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.source_format_projection import projected_chunk
 
 Placed = tuple[int, tuple[str, ...], NativeExamItem]
 
@@ -126,55 +126,6 @@ def _lead_in_labels(
     return labels
 
 
-def heading_wording(chunk: DocxChunk, item: NativeExamItem | None) -> str:
-    """A printed heading's wording without its points label and question number.
-
-    What remains is the heading as printed; a heading that is only a question number
-    and points leaves nothing. A numbered question line set in a heading style, such
-    as "Fråga 6. Ange …", leaves its stem, which the item already prints.
-    """
-    return _heading_content(chunk, item, QUESTION_HEADING_LABEL.match(chunk.text))[0]
-
-
-def _heading_content(
-    chunk: DocxChunk, item: NativeExamItem | None, question_label: re.Match[str] | None
-) -> tuple[str, tuple[int, ...]]:
-    """Normalize heading wording while retaining each shown character's source index.
-
-    Deleted labels consume no shown characters. A picture in deleted wording therefore
-    stays at that boundary; surviving words and collapsed whitespace keep their order.
-    """
-    characters = list(chunk.text)
-    origins = list(range(len(chunk.text)))
-    for match in reversed(list(POINT_LABEL.finditer(chunk.text))):
-        characters[match.start() : match.end()] = [" "]
-        origins[match.start() : match.end()] = [match.start()]
-    stripped = "".join(characters)
-    words = list(re.finditer(r"\S+", stripped))
-    normalized: list[int] = []
-    for word in words:
-        if normalized:
-            normalized.append(origins[word.start() - 1])
-        normalized.extend(origins[word.start() : word.end()])
-    text = " ".join(word.group() for word in words)
-    label = (item.printed_label or "") if item is not None else ""
-    if question_label is not None:
-        # The same source parse supplies the eventual item's label. Source indices
-        # survive points deletion and whitespace normalization above.
-        prefix = sum(origin < question_label.end() for origin in normalized)
-    elif label and text.casefold().startswith(label.casefold()):
-        # A producer may label a non-numbered question, for example a lettered subpart.
-        prefix = len(label)
-        prefix += len(text[prefix:]) - len(text[prefix:].lstrip(" .):-"))
-    else:
-        prefix = 0
-    text = text[prefix:]
-    normalized = normalized[prefix:]
-    left = len(text) - len(text.lstrip())
-    text = text.strip().rstrip(" ,;")
-    return text, tuple(normalized[left : left + len(text)])
-
-
 def instruction_runs(
     chunks: tuple[DocxChunk, ...],
     instructions: tuple[ProducedMetadata, ...],
@@ -227,6 +178,7 @@ class SectionShape:
     boundaries: list[int]
     labels: set[int]
     heading_anchors: frozenset[str]
+    parts: frozenset[int] = frozenset()
 
 
 def with_heading_runs(
@@ -298,36 +250,13 @@ def with_heading_runs(
                 question_label=QUESTION_HEADING_LABEL.match(chunk.text),
             )
         )
-    shape = SectionShape(boundaries, labels, frozenset(r.sources[0].anchor for r in headings))
-    return [*runs, *headings], shape
-
-
-def _shown_heading(
-    chunk: DocxChunk, item: NativeExamItem | None, question_label: re.Match[str] | None
-) -> DocxChunk:
-    """Place every picture through the same deterministic deletion as heading text."""
-    text, origins = _heading_content(chunk, item, question_label)
-    if text == chunk.text:
-        return chunk
-
-    def shown_offset(offset: int) -> int:
-        return sum(origin < offset for origin in origins)
-
-    return replace(
-        projected_chunk(chunk, text, origins),
-        images=tuple(
-            replace(
-                image, offset=shown_offset(image.offset), marked_offset=shown_offset(image.offset)
-            )
-            for image in chunk.images
-        ),
-        missing_images=tuple(
-            replace(
-                image, offset=shown_offset(image.offset), marked_offset=shown_offset(image.offset)
-            )
-            for image in chunk.missing_images
-        ),
+    shape = SectionShape(
+        boundaries,
+        labels,
+        frozenset(r.sources[0].anchor for r in headings),
+        frozenset(i for i in boundaries if chunks[i].anchor in part_lines),
     )
+    return [*runs, *headings], shape
 
 
 # Heading 4 and deeper, and a heading style without a level, rank below level 3.
@@ -342,7 +271,7 @@ def _heading_rank(chunk: DocxChunk) -> int:
 def _span(
     run: Run,
     ordered: list[Placed],
-    boundaries: list[int],
+    shape: SectionShape,
     starts: list[int],
     chunks: tuple[DocxChunk, ...],
 ) -> tuple[int, ...]:
@@ -350,7 +279,8 @@ def _span(
 
     A heading run passes its subsection headings: it ends at the next boundary heading of
     the same or a higher level, so a section title directly above a subsection heading
-    still reaches its section's questions.
+    still reaches its section's questions. A heading that opens a printed part ends every
+    run whatever its level.
     """
     chunk_count = len(chunks)
     rank = _heading_rank(run.sources[0]) if run.heading else None
@@ -360,8 +290,9 @@ def _span(
         next(
             (
                 i
-                for i in boundaries
-                if i > run.start and (rank is None or _heading_rank(chunks[i]) <= rank)
+                for i in shape.boundaries
+                if i > run.start
+                and (rank is None or i in shape.parts or _heading_rank(chunks[i]) <= rank)
             ),
             chunk_count,
         ),
@@ -396,12 +327,12 @@ def reaches(
                 if run.only is not None
                 else _exact(run, ordered)
                 if run.governs
-                else _span(run, ordered, shape.boundaries, starts, chunks)
+                else _span(run, ordered, shape, starts, chunks)
             )
             chunk = run.sources[0]
             # D2 splits every heading the same way, whether it opens one question
             # or governs a parent: only its wording is displayed.
-            shown = _shown_heading(
+            shown = shown_heading(
                 chunk, ordered[reach[0]][2] if len(reach) == 1 else None, run.question_label
             )
             if not reach:
@@ -444,7 +375,7 @@ def reaches(
             reach = _exact(run, ordered)
             reached.append(Run(run.origin, run.start, sources, reach, reach, run.governs))
             continue
-        span = _span(run, ordered, shape.boundaries, starts, chunks)
+        span = _span(run, ordered, shape, starts, chunks)
         terms = defined_terms("\n".join(chunk.text for chunk in sources))
         following = [k for k, (position, _, _) in enumerate(ordered) if position >= run.start]
         quoted = (

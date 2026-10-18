@@ -177,6 +177,29 @@ def test_a_same_total_line_after_the_next_part_line_scores_the_last_question():
     assert _marked(scored) == [False, False]
 
 
+@pytest.mark.parametrize(
+    ("closing", "expected"),
+    [("/4 p", [4, 8]), ("/5 p", [7, 8])],
+    ids=["same-value-pair", "differing-pair"],
+)
+def test_a_questions_lines_print_their_one_distinct_value(
+    closing: str, expected: list[int]
+) -> None:
+    """The omprov heading "(4 p)" and its "/4 p" line print 4; a differing pair prints none."""
+    chunks, questions = _exam(
+        "Q Uppgift 1.1: Morfemanalys (4 p)",
+        "Dela upp följande ord i morfem.",
+        closing,
+        "Q Uppgift 1.2: Identifiera fraser i texten (8 p)",
+        "/8 p",
+    )
+
+    scored = _score(chunks, questions, _items(chunks, questions, (7, 2)))
+
+    assert _points(scored) == expected
+    assert _marked(scored) == [False, False]
+
+
 def test_a_printed_point_beats_a_reply_of_seven():
     chunks, questions = _exam(
         "# Del 3: kortsvar, 5 poäng",
