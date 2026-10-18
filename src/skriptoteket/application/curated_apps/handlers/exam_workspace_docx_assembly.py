@@ -37,6 +37,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import (
     ExamManifest,
     SharedContext,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import printed_points_plan
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
 )
@@ -166,6 +167,7 @@ def provisional_result(
     finished = frozenset(
         a for family in families if family.question_id not in pending for a in family.claims
     )
+    questions = tuple(family.question_anchors for family in families)
     heading_instructions = state.heading_instructions
     heading_anchors = {
         a for instruction in heading_instructions for a in instruction.source_anchors
@@ -188,7 +190,8 @@ def provisional_result(
         title=state.title,
         instructions=(*state.instructions, *heading_instructions),
         governed=governed,
-        questions=tuple(family.question_anchors for family in families),
+        questions=questions,
+        printed=printed_points_plan(state.chunks, questions),
     )
 
 

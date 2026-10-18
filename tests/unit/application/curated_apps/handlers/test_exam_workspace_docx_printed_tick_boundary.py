@@ -77,14 +77,19 @@ def test_printed_grid_tick_boundary_keeps_score_or_complete_source_review(
     metadata = (
         f"Kategorisering ({printed_points} poäng)" if heading else f"Poäng: {printed_points} poäng"
     )
-    chunks: tuple[DocxChunk, ...] = (
-        DocxChunk("body:0001", "heading" if heading else "paragraph", metadata, metadata),
-        DocxChunk("body:0002", "table", source, source),
-    )
     sibling_source = "Förklara hur du valde kategori."
-    if sibling_kind:
-        chunks += (DocxChunk("body:0003", "paragraph", sibling_source, sibling_source),)
-    own = tuple(chunk.anchor for chunk in (chunks if route == "owned_heading" else chunks[1:]))
+    question: tuple[DocxChunk, ...] = (
+        DocxChunk("body:0002", "table", source, source),
+        *(
+            (DocxChunk("body:0003", "paragraph", sibling_source, sibling_source),)
+            if sibling_kind
+            else ()
+        ),
+    )
+    # A heading opens the question; the points line closes it, whatever it is tagged as.
+    line = DocxChunk("body:0001", "heading" if heading else "paragraph", metadata, metadata)
+    chunks = (line, *question) if heading else (*question, line)
+    own = tuple(chunk.anchor for chunk in (chunks if route == "owned_heading" else question))
     produced = ProducedItem(
         source_anchors=("body:0002",),
         outcome="converted",

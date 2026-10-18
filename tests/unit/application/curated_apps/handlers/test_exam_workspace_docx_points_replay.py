@@ -146,10 +146,32 @@ async def test_the_printed_points_line_wins_over_the_reply_points(tmp_path: Path
     assert items[22].points_estimated is False
 
 
-async def test_a_section_line_tagged_as_a_question_total_stays_the_sections(tmp_path: Path):
-    """Del 1's closing "Poäng: 15 poäng" tagged as q15's total is still Del 1's line (D2)."""
+@pytest.mark.parametrize(
+    ("kind", "governed"),
+    [("question_total", slice(14, 15)), ("part_total", slice(0, 15)), ("course", slice(0, 0))],
+)
+async def test_a_section_line_with_a_header_tag_stays_the_sections(
+    tmp_path: Path, kind: str, governed: slice
+):
+    """Del 1's closing "Poäng: 15 poäng" tagged as any header line is still Del 1's line."""
     outcome = await _replay(
         tmp_path,
-        lambda ids: [{"anchor": "body:0055", "kind": "question_total", "governs": [ids[14]]}],
+        lambda ids: [{"anchor": "body:0055", "kind": kind, "governs": ids[governed]}],
     )
     _assert_printed_points(outcome)
+
+
+@pytest.mark.parametrize("field", ["anchors", "subpart_anchors", "answer_key_anchors"])
+async def test_a_section_line_the_grouping_gives_its_last_question_stays_the_sections(
+    tmp_path: Path, field: str
+):
+    """Del 1's closing "Poäng: 15 poäng" placed in q15 is still Del 1's line (D2)."""
+
+    def give_q15_the_closing_line(grouping: dict) -> None:
+        question = next(q for q in grouping["questions"] if q["id"] == "q15")
+        question[field] = [*question[field], "body:0055"]
+        grouping["shared_contexts"] = [
+            c for c in grouping["shared_contexts"] if c["anchor"] != "body:0055"
+        ]
+
+    _assert_printed_points(await _replay(tmp_path, _CASES["A_none"], give_q15_the_closing_line))

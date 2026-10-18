@@ -21,8 +21,8 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedMetadata,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
-from skriptoteket.domain.curated_apps.exam_workspace.docx_section_points import (
-    split_section_totals,
+from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import (
+    printed_points_plan,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     POINT_LABEL,
@@ -64,8 +64,6 @@ class DocxBuildState:
     ``allowed_kinds`` (None: every kind). ``questions`` holds each grouped question's own
     anchors, never its answer keys. ``governing`` holds the grouping's chunks that govern two
     or more questions; one no entry holds becomes its section parent's instruction (D40).
-    ``part_total_anchors`` holds the header lines the grouping tags as part totals; they start
-    sections in the points split like any section instruction (TASK-SKRIPT-39-04-11 D1).
     """
 
     job_id: UUID
@@ -81,7 +79,6 @@ class DocxBuildState:
     governing: frozenset[str] = frozenset()
     grouped_keys: frozenset[str] = frozenset()
     header_anchors: frozenset[str] = frozenset()
-    part_total_anchors: frozenset[str] = frozenset()
     document_language: InitVar[Language | None] = None
     language: Language = field(init=False)
     known_anchors: frozenset[str] = field(init=False, repr=False, compare=False)
@@ -293,40 +290,20 @@ class DocxBuildState:
         ``questions`` holds each grouped question's own anchors; an instruction holding one
         stands only where it lands at that question (D42).
 
-        A printed section total gives each question that prints no points of its own a
-        share marked as estimated (D38, D6), whether the grouping tags the line printing it
-        as a part total or the converter returns it as an instruction (D1). Header lines stay
-        in the split's chunks, so a member's printed points count wherever they are tagged. A
-        section's points line the split absorbs is metadata, never a review item.
+        Printed totals are classified once over the whole document, header lines included
+        (``printed_points_plan``); assembly scores the items from them. A points line that is
+        no question's own is part or exam metadata, never a review item.
         """
         heading_instructions = self.heading_instructions
         heading_anchors = {
             a for instruction in heading_instructions for a in instruction.source_anchors
         }
         instructions = (*self.instructions, *heading_instructions)
-        part_totals = tuple(
-            ProducedMetadata(text=chunk.text, source_anchors=(chunk.anchor,))
-            for chunk in self.chunks
-            if chunk.anchor in self.part_total_anchors
-        )
-        points = split_section_totals(
-            self.chunks,
-            tuple(self.accepted),
-            (*instructions, *part_totals),
-            frozenset(chunk.anchor for chunk in self.pending),
-            questions=questions or self.questions,
-        )
-        accepted: list[tuple[NativeExamItem, tuple[str, ...]]] = []
-        for item, anchors in points.accepted:
-            if anchors in points.review_anchors:
-                reason = "Poängen per kryss blir mindre än 0,01. Kontrollera kategoriseringen."
-                self.record("fallback", "invalid_tick_value", anchors=anchors)
-                accepted.append(self.printed(anchors, reason, self.claimed))
-            else:
-                accepted.append((item, anchors))
+        questions = questions or self.questions
+        printed = printed_points_plan(self.chunks, questions)
         review_reasons: dict[str, str] = {}
         for chunk in self.pending:
-            if chunk.anchor in points.absorbed or chunk.anchor in heading_anchors:
+            if chunk.anchor in printed.metadata or chunk.anchor in heading_anchors:
                 continue
             if chunk.anchor in governed and chunk.text:
                 # Assembly makes it its section parent's instruction (D40).
@@ -341,13 +318,14 @@ class DocxBuildState:
             filename=self.filename,
             source_sha256=self.source_sha256,
             chunks=tuple(c for c in self.chunks if c.anchor not in self.header_anchors),
-            accepted=tuple(accepted),
+            accepted=tuple(self.accepted),
             review_reasons=review_reasons,
             key_anchors=frozenset(self.key_anchors),
             title=self.title,
             instructions=instructions,
             governed=governed,
-            questions=questions or self.questions,
+            questions=questions,
+            printed=printed,
             events=tuple(self.events),
             input_tokens=self.input_tokens if self.input_complete else None,
             output_tokens=self.output_tokens if self.output_complete else None,

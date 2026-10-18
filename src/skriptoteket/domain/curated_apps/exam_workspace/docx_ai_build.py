@@ -28,12 +28,16 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_governing_chunks impor
 from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions import (
     return_misplaced_own_chunks,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import line_points
+from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import (
+    NO_PRINTED_POINTS,
+    PrintedPoints,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_section_instructions import (
     SectionInstructions,
     place_section_instructions,
-    replace_question_items,
-    with_question_points,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.docx_section_points import (
+    apply_printed_points,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_review import (
     missing_picture_reasons as missing_picture_reasons,
@@ -42,7 +46,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_source_review import (
     review_source_item as review_source_item,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
-    printed_points,
     title_without_answer_key,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.exam_document_language import (
@@ -330,6 +333,7 @@ def assemble_build_result(
     instructions: tuple[ProducedMetadata, ...] = (),
     governed: Mapping[str, frozenset[str]] = NOTHING_GOVERNED,
     questions: tuple[tuple[str, ...], ...] = (),
+    printed: PrintedPoints = NO_PRINTED_POINTS,
     events: tuple[DocxBuildEvent, ...] = (),
     input_tokens: int | None = None,
     output_tokens: int | None = None,
@@ -339,7 +343,8 @@ def assemble_build_result(
 
     ``questions`` holds each grouped question's own anchors. An own chunk listed as an
     instruction that placement does not put at its question goes back to its question's item,
-    and placement runs again without it (D42).
+    and placement runs again without it (D42). ``printed`` owns every printed total; it
+    scores the placed items once (``apply_printed_points``).
     """
     if not chunks:
         empty = "Dokumentet saknar läsbart innehåll."
@@ -375,27 +380,10 @@ def assemble_build_result(
             title_anchors,
             own_anchors,
         )
-    scored_items = list(placed.items)
-    parents = placed.parents
     by_anchor = {chunk.anchor: chunk for chunk in chunks}
-    for own in questions:
-        indices = [i for i, item in enumerate(scored_items) if item.source_anchor in own]
-        members = tuple(scored_items[i] for i in indices)
-        points = printed_points(
-            by_anchor[a] for a in own if a in by_anchor and by_anchor[a].kind == "heading"
-        )
-        if points is None:
-            # A points line the question owns prints its points over the reply (D2).
-            lines = {value for a in own if a in by_anchor if (value := line_points(by_anchor[a]))}
-            points = lines.pop() if len(lines) == 1 else None
-        if points is None:
-            points = placed.printed_totals.get(frozenset(item.item_id for item in members))
-        scored = with_question_points(
-            members, points, source_chunks=tuple(by_anchor[a] for a in own if a in by_anchor)
-        )
-        events = (*events, *scored.events)
-        scored_items, parents = replace_question_items(scored_items, parents, members, scored)
-    items = tuple(scored_items)
+    scored = apply_printed_points(placed.items, placed.parents, printed, by_anchor)
+    items, parents = scored.items, scored.parents
+    events = (*events, *scored.events)
     global_instructions = tuple(
         paragraph
         for index, instruction in enumerate(instructions)

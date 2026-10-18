@@ -89,13 +89,14 @@ _CASES = (
         "unplaced",
         None,
     ),
+    # A line that restates its part's total closes the part, even after its only question.
     _Case(
         "6 one-question section",
         ((_H, "Del 1: 4 poäng"), (_P, "Q1"), (_P, "Poäng: 4 poäng")),
         {"q1": (1,)},
         2,
         "unplaced",
-        "q1",
+        None,
     ),
     _Case(
         "7 value differs from heading",
@@ -113,13 +114,14 @@ _CASES = (
         "unplaced",
         None,
     ),
+    # A question's points label before its question heads the question right after it.
     _Case(
         "9 heading between question and line",
         ((_P, "Q1"), (_H, "Del 2: 5 poäng"), (_P, "Poäng: 5 poäng"), (_P, "Q2")),
         {"q1": (0,), "q2": (3,)},
         2,
         "unplaced",
-        None,
+        "q2",
     ),
     _Case(
         "10 heading prints points", ((_P, "Q1"), (_H, "(2 p)")), {"q1": (0,)}, 1, "unplaced", None
@@ -186,7 +188,12 @@ def test_points_line_owner(case: _Case) -> None:
     result = assign_points_lines(manifest, chunks)
 
     if case.owner is None:
-        assert result is manifest
+        assert all(line not in (*q.anchors, *q.key_anchors) for q in result.questions)
+        if line_points(chunks[case.line]) is not None:
+            # A points line no question owns is unplaced metadata wherever it was tagged.
+            assert line in result.unplaced_anchors
+            assert all(c.anchor != line for c in result.contexts)
+            assert all(h.anchor != line for h in result.header)
         return
     for question in result.questions:
         if question.question_id == case.owner:
@@ -218,7 +225,7 @@ def test_manifest_without_points_line_is_returned_identically() -> None:
         None,
     )
     chunks, manifest = _build(case)
-    assert assign_points_lines(manifest, chunks) is manifest
+    assert assign_points_lines(manifest, chunks) == manifest
 
 
 @pytest.mark.parametrize(
@@ -244,3 +251,25 @@ def test_a_section_line_tagged_as_a_header_loses_the_tag_and_no_question_owns_it
     assert result.header == ()
     assert line in result.unplaced_anchors
     assert result.questions == manifest.questions
+
+
+@pytest.mark.parametrize("placement", ["anchors", "key_anchors"])
+def test_a_section_line_a_question_holds_is_released(placement: str) -> None:
+    (closing,) = [case for case in _CASES if case.name.startswith("5 ")]
+    chunks, manifest = _build(closing)
+    line = chunks[closing.line].anchor
+    q2 = manifest.questions[1]
+    if placement == "anchors":
+        held = replace(q2, anchors=(*q2.anchors, line))
+    else:
+        held = replace(q2, key_anchors=(*q2.key_anchors, line))
+    manifest = replace(
+        manifest,
+        questions=(manifest.questions[0], held),
+        unplaced_anchors=tuple(a for a in manifest.unplaced_anchors if a != line),
+    )
+
+    result = assign_points_lines(manifest, chunks)
+
+    assert all(line not in (*q.anchors, *q.key_anchors) for q in result.questions)
+    assert line in result.unplaced_anchors

@@ -208,9 +208,6 @@ class DocxConversionPipeline:
         )
         run.manifest = manifest
         run.state.header_anchors = frozenset(h.anchor for h in manifest.header)
-        run.state.part_total_anchors = frozenset(
-            h.anchor for h in manifest.header if h.kind == "part_total"
-        )
         run.families = question_families(manifest, job.chunks)
         run.title_anchors = frozenset(manifest.title_anchors)
         run.context_anchors = frozenset(context.anchor for context in manifest.contexts)

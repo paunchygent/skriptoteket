@@ -72,7 +72,8 @@ class PrintedCase:
         ),
         PrintedCase("heading", (5, 1), (2, 1.5), kind="mixed_rubric", printed=3.5),
         PrintedCase("heading", heading_owned=True, type_conflict=True),
-        PrintedCase("heading", (1, 5), (3, 5), heading_owned=True, separate_questions=True),
+        # The heading prints 3 over both questions under it, wherever the grouping put it.
+        PrintedCase("heading", (1, 5), (2, 1), heading_owned=True, separate_questions=True),
     ],
     ids=[
         "question-line-overrides-build",
@@ -98,7 +99,7 @@ class PrintedCase:
         "owned-heading-fractional-mixed-split-no-false-review",
         "omitted-heading-fractional-mixed-split-no-false-review",
         "owned-heading-preserves-repeated-type-conflict-mark",
-        "question-owned-heading-does-not-rescore-next-question",
+        "question-owned-heading-opens-a-part-over-the-questions-under-it",
     ],
 )
 def test_printed_question_points_own_scores_and_never_become_exam_text(case: PrintedCase) -> None:
