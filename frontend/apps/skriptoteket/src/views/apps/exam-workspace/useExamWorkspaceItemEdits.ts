@@ -78,7 +78,7 @@ export function useExamWorkspaceItemEdits(patchItem: ExamWorkspaceItemPatch) {
     itemId: string,
     gapId: string,
     options: NativeExamChoice[],
-    correctOptionId: string,
+    correctOptionId: string | null,
   ): void {
     patchItem(itemId, (item) => withGapOptions(item, gapId, options, correctOptionId), true);
   }

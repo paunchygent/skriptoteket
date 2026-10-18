@@ -57,7 +57,7 @@ const emit = defineEmits<{
   commit: [itemId: string, gapId: string, acceptedValues: string[]];
   removeAutomaticValue: [itemId: string, gapId: string, value: string];
   showGapAsText: [itemId: string, gapId: string];
-  updateOptions: [itemId: string, gapId: string, options: NativeExamChoice[], correctOptionId: string];
+  updateOptions: [itemId: string, gapId: string, options: NativeExamChoice[], correctOptionId: string | null];
   close: [returnFocus: boolean];
 }>();
 
@@ -145,7 +145,7 @@ function optionsWithDrafts(): NativeExamChoice[] {
   });
 }
 
-function emitOptions(next: NativeExamChoice[], correct: string): void {
+function emitOptions(next: NativeExamChoice[], correct: string | null): void {
   for (const key of Object.keys(optionDrafts)) {
     delete optionDrafts[key];
   }

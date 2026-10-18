@@ -62,7 +62,7 @@ const emit = defineEmits<{
   updateParagraphSegments: [itemId: string, paragraphIndex: number, segments: NativeExamBodySegment[]];
   updateParagraphHeading: [itemId: string, paragraphIndex: number, headingLevel: HeadingLevel | null];
   updateGapValues: [itemId: string, gapId: string, acceptedValues: string[]];
-  updateGapOptions: [itemId: string, gapId: string, options: NativeExamChoice[], correctOptionId: string];
+  updateGapOptions: [itemId: string, gapId: string, options: NativeExamChoice[], correctOptionId: string | null];
   removeAutomaticValue: [itemId: string, gapId: string, value: string];
   showGapAsText: [itemId: string, gapId: string];
 }>();
@@ -171,7 +171,7 @@ function handleGapOptions(
   itemId: string,
   gapId: string,
   options: NativeExamChoice[],
-  correctOptionId: string,
+  correctOptionId: string | null,
 ): void {
   if (props.disabled) {
     return;

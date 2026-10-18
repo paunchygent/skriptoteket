@@ -270,7 +270,7 @@ export function withGapOptions(
   item: NativeExamItem,
   gapId: string,
   options: NativeExamChoice[],
-  correctOptionId: string,
+  correctOptionId: string | null,
 ): NativeExamItem {
   const current = item.gaps.find((gap) => gap.gap_id === gapId);
   if (

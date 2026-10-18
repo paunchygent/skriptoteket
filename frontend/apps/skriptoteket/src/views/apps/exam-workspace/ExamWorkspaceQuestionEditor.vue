@@ -88,7 +88,7 @@ const emit = defineEmits<{
   updateCorrectChoices: [itemId: string, correctChoiceIds: string[]];
   updateCriteria: [itemId: string, criteria: NativeExamCriterion[]];
   updateGapValues: [itemId: string, gapId: string, acceptedValues: string[]];
-  updateGapOptions: [itemId: string, gapId: string, options: NativeExamChoice[], correctOptionId: string];
+  updateGapOptions: [itemId: string, gapId: string, options: NativeExamChoice[], correctOptionId: string | null];
   updateMatchEntryBody: [itemId: string, side: "left" | "right", entryId: string, body: NativeExamBodyParagraph[]];
   updateMatchPairs: [itemId: string, pairs: NativeExamMatchPair[]];
   updateParagraphSegments: [itemId: string, paragraphIndex: number, segments: NativeExamBodySegment[]];
