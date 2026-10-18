@@ -12,6 +12,7 @@
  */
 
 import { AlertCircle, Download, RefreshCw } from "lucide-vue-next";
+import { computed } from "vue";
 
 import { UiDenseActionButton, UiDenseIconButton } from "../../../components/ui";
 import type {
@@ -36,10 +37,24 @@ const emit = defineEmits<{
   download: [artifact: ArtifactEntry];
 }>();
 
+const FINAL_STATUSES = new Set(["succeeded", "failed", "canceled", "expired"]);
+
+const needsAnswerKey = computed(() => props.manifest?.bundle_status === "needs_review");
+
+const waitingMessage = computed(() => {
+  if (!props.currentJob) {
+    return "Redo för en engångskonvertering.";
+  }
+  const value = props.status?.status;
+  return value && FINAL_STATUSES.has(value) ? null : "Väntar på färdiga filer.";
+});
+
 function availabilityLabel(value: string): string {
   switch (value) {
     case "available":
       return "Klar att hämta";
+    case "unavailable":
+      return "Kunde inte skapas";
     case "blocked":
       return "Behöver kontrolleras";
     case "failed":
@@ -90,6 +105,22 @@ function availabilityLabel(value: string): string {
       <span>{{ props.errorMessage }}</span>
     </p>
 
+    <p
+      v-if="needsAnswerKey"
+      class="exam-converter__needs-answer-key mt-4 flex items-start gap-2 border border-navy/30 bg-canvas/55 px-3 py-2 text-sm text-navy"
+      role="status"
+    >
+      <AlertCircle
+        class="mt-0.5 h-[18px] w-[18px] shrink-0"
+        aria-hidden="true"
+      />
+      <span>
+        Exam.net PDF och QTI-paket kunde inte skapas. Provfilen saknar facit för en eller
+        flera flervals- eller luckfrågor. Välj resultat-PDF:en från DigiExam med rätta svar
+        och konvertera igen.
+      </span>
+    </p>
+
     <ul
       v-if="props.manifest"
       class="mt-4 grid gap-2"
@@ -105,6 +136,12 @@ function availabilityLabel(value: string): string {
           </strong>
           <small class="text-[10px] font-semibold uppercase tracking-[var(--huleedu-tracking-label)] text-navy/60">
             {{ availabilityLabel(artifact.availability) }}
+          </small>
+          <small
+            v-if="artifact.unavailable_code === 'manual_answer_key_required'"
+            class="block text-xs text-navy/70"
+          >
+            Facit saknas i provfilen.
           </small>
         </span>
         <UiDenseActionButton
@@ -124,10 +161,10 @@ function availabilityLabel(value: string): string {
     </ul>
 
     <p
-      v-else
+      v-else-if="waitingMessage"
       class="mt-6 text-sm text-navy/65"
     >
-      {{ props.currentJob ? "Väntar på färdiga filer." : "Redo för en engångskonvertering." }}
+      {{ waitingMessage }}
     </p>
 
     <p
