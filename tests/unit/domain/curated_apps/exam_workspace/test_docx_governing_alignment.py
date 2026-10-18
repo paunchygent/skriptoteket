@@ -21,6 +21,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions impor
     left_out_chunks,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+    NativeGapSegment,
     NativeParagraph,
     NativeTextSegment,
 )
@@ -28,6 +29,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import Nat
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
     NativeAnswerKey,
     NativeChoice,
+    NativeGap,
     NativeItemReview,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
@@ -177,6 +179,71 @@ def test_every_paragraph_aligned_to_the_governing_chunk_leaves_wherever_it_stand
     assert _only_item(released).item.plain_text_lines() == (_QUESTION,)
 
 
+def _gap_paragraph(text: str, gap_id: str) -> NativeParagraph:
+    return NativeParagraph(
+        heading_level=None,
+        segments=(NativeTextSegment(text=text, marks=()), NativeGapSegment(gap_id=gap_id)),
+    )
+
+
+def _gap_fill(*paragraphs: tuple[NativeParagraph, str]) -> AlignedItem:
+    """A keyed gap_fill item whose body paragraphs show the given chunks."""
+    placed = [
+        segment.gap_id
+        for paragraph, _ in paragraphs
+        for segment in paragraph.segments
+        if isinstance(segment, NativeGapSegment)
+    ]
+    item = NativeExamItem(
+        item_id="item_001",
+        sequence=1,
+        kind=NativeExamItemKind.GAP_FILL,
+        body=tuple(paragraph for paragraph, _ in paragraphs),
+        gaps=tuple(NativeGap(gap_id=gap_id, accepted_values=("går",)) for gap_id in placed),
+        answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.SOURCE_PROVIDED),
+        review=NativeItemReview(
+            state=NativeItemReviewState.REVIEW_COMPLETE,
+            parse_origin=NativeParseOrigin.LLM_PARSED,
+        ),
+        source_anchor=_GOVERNING,
+    )
+    return AlignedItem(item, tuple(anchor for _, anchor in paragraphs), frozenset())
+
+
+def test_a_gap_the_governing_example_places_leaves_with_its_paragraph() -> None:
+    # The shared instruction carries a worked example with its own gap; the question places
+    # the item's real gap. The example's gap leaves with the example, so the item stays a
+    # valid gap_fill item with the question's gap only.
+    released = _released(
+        _gap_fill(
+            (_gap_paragraph("Exempel: jag ", "gap_001"), _GOVERNING),
+            (_gap_paragraph("Vi ", "gap_002"), _STEM),
+        )
+    )
+
+    item = _only_item(released).item
+    assert [gap.gap_id for gap in item.gaps] == ["gap_002"]
+    assert NativeExamItem.model_validate(item.model_dump()) == item
+    assert released.events == ()
+
+
+def test_a_governing_chunk_that_places_every_gap_is_kept_and_reported() -> None:
+    # Taking the chunk would leave a gap_fill item with no gap to answer, so the item keeps
+    # the chunk, valid as it was, and the chunk is reported.
+    aligned = _gap_fill(
+        (_gap_paragraph("Vi ", "gap_001"), _GOVERNING),
+        (_body(_QUESTION)[0], _STEM),
+    )
+    released = _released(aligned)
+
+    item = _only_item(released).item
+    assert item.body == aligned.item.body
+    assert item.gaps == aligned.item.gaps
+    assert [(e.code, e.anchors) for e in released.events] == [
+        ("governing_text_kept", (_GOVERNING,))
+    ]
+
+
 _LEFT_OUT = DocxChunk("body:0004", "paragraph", "Motivera ditt svar.", "Motivera ditt svar.")
 
 
@@ -193,10 +260,18 @@ def test_a_left_out_chunk_a_reworded_paragraph_is_aligned_to_is_shown() -> None:
 
 
 def _with_choice(aligned: AlignedItem, entries: frozenset[str]) -> AlignedItem:
-    item = aligned.item.model_copy(
-        update={
+    """The item as a valid single_choice item whose first choice repeats the chunk."""
+    item = NativeExamItem.model_validate(
+        {
+            **aligned.item.model_dump(),
             "kind": NativeExamItemKind.SINGLE_CHOICE,
-            "choices": (NativeChoice(choice_id="choice_001", body=_body("Motivera ditt svar.")),),
+            "choices": (
+                NativeChoice(choice_id="choice_001", body=_body("Motivera ditt svar.")),
+                NativeChoice(choice_id="choice_002", body=_body("Svara med ett årtal.")),
+            ),
+            "answer_key": NativeAnswerKey(
+                origin=NativeAnswerKeyOrigin.SOURCE_PROVIDED, correct_choice_ids=("choice_001",)
+            ),
         }
     )
     return AlignedItem(item, aligned.chunks, entries)

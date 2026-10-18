@@ -2,11 +2,12 @@
 
 When a converter reply lists such a chunk in an item's source anchors, the item gives the
 chunk up: the anchor leaves the item, every body paragraph aligned to the chunk leaves the
-item's body, and the chunk becomes an instruction, which section placement shows once, on the
-parent. The per-paragraph source alignment decides which paragraphs are the chunk, never their
-wording (TASK-SKRIPT-39-04-14). An item whose whole body is the chunk keeps it and the chunk is
-reported. An item that held nothing but governing chunks is dropped. A governing chunk no entry
-holds becomes an instruction built from its source text. No reply is rejected or resent.
+item's body with the response gaps they place, and the chunk becomes an instruction, which
+section placement shows once, on the parent. The per-paragraph source alignment decides which
+paragraphs are the chunk, never their wording (TASK-SKRIPT-39-04-14). An item whose whole body
+or every response gap is the chunk keeps it and the chunk is reported. An item that held
+nothing but governing chunks is dropped. A governing chunk no entry holds becomes an
+instruction built from its source text. No reply is rejected or resent.
 """
 
 from collections.abc import Mapping
@@ -22,6 +23,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_item_alignment import 
     AcceptedEntry,
     AlignedItem,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import NativeGapSegment
 
 
 @dataclass(frozen=True)
@@ -34,16 +36,22 @@ class ReleasedChunks:
 
 
 def _item_without(aligned: AlignedItem, anchor: str) -> AlignedItem | None:
-    """The item without the body paragraphs aligned to ``anchor``; None when they are its
-    whole body."""
-    kept = [
-        (paragraph, chunk)
-        for paragraph, chunk in zip(aligned.item.body, aligned.chunks, strict=True)
-        if chunk != anchor
-    ]
-    if not kept:
+    """The item without the body paragraphs aligned to ``anchor`` and the gaps they place;
+    None when they are its whole body or place its every gap."""
+    pairs = tuple(zip(aligned.item.body, aligned.chunks, strict=True))
+    kept = [(paragraph, chunk) for paragraph, chunk in pairs if chunk != anchor]
+    removed = {
+        segment.gap_id
+        for paragraph, chunk in pairs
+        if chunk == anchor
+        for segment in paragraph.segments
+        if isinstance(segment, NativeGapSegment)
+    }
+    gaps = tuple(gap for gap in aligned.item.gaps if gap.gap_id not in removed)
+    if not kept or (aligned.item.gaps and not gaps):
         return None
-    return aligned.with_body(kept)
+    shown = aligned.with_body(kept)
+    return replace(shown, item=shown.item.model_copy(update={"gaps": gaps}))
 
 
 def release_governing_chunks(
