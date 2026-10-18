@@ -12,8 +12,12 @@
  *     as props from `ExamWorkspaceView`, which owns them.
  */
 
+import { computed } from "vue";
+
 import type { NativeExamDocument } from "../../../api/examWorkspace";
 import type { TeacherItemKind } from "./examWorkspaceItemEdits";
+import { examWorkspaceItemReadiness } from "./examWorkspaceItemReadiness";
+import { examWorkspaceListEntries } from "./examWorkspaceListEntries";
 import type { ExamWorkspaceItemEntry, ExamWorkspaceParentEntry } from "./examWorkspaceListEntries";
 import ExamWorkspaceExamInstructionEditor from "./ExamWorkspaceExamInstructionEditor.vue";
 import ExamWorkspaceInstructionEditor from "./ExamWorkspaceInstructionEditor.vue";
@@ -53,6 +57,32 @@ defineEmits<{
 }>();
 
 const { structure, assetUrls } = props.editing;
+
+/** The display label of one part in the Flytta till list. */
+function moveTargetLabel(entry: ExamWorkspaceParentEntry): string {
+  const excerpt = entry.text || "Tom instruktion";
+  return entry.label ? `${entry.label} · ${excerpt}` : `Instruktion · ${excerpt}`;
+}
+
+/**
+ * The places Flytta till offers, in list order: every part with its list label
+ * and instruction excerpt (G3).
+ */
+const moveTargets = computed<{ id: string; label: string }[]>(() => {
+  const document = props.workspaceDocument;
+  if (!document) {
+    return [];
+  }
+  const readiness = Object.fromEntries(
+    document.items.map((item) => [item.item_id, examWorkspaceItemReadiness(item)]),
+  );
+  return examWorkspaceListEntries(document, readiness, props.editing.convertingItemIds.value)
+    .filter((entry): entry is ExamWorkspaceParentEntry => entry.kind === "parent")
+    .map((entry) => ({ id: entry.id, label: moveTargetLabel(entry) }));
+});
+
+/** The part the selected question sits in; null when it is standalone. */
+const currentParentId = computed(() => props.itemEntry?.parentId ?? null);
 </script>
 
 <template>
@@ -118,10 +148,13 @@ const { structure, assetUrls } = props.editing;
         :disabled="disabled"
         :notice="itemNotice"
         :import-open="importOpen"
+        :move-targets="moveTargets"
+        :current-parent-id="currentParentId"
         :asset-urls="assetUrls"
         @change-type="(kind) => structure.changeType(selectedItem!.item_id, kind)"
         @move="(delta) => $emit('move-selected', delta)"
         @remove="structure.deleteItem(selectedItem!.item_id)"
+        @move-to="(targetParentId) => structure.moveItem(selectedItem!.item_id, targetParentId)"
         @toggle-import="$emit('toggle-import')"
         @toggle-reviewed="$emit('toggle-reviewed')"
         @retry="(kind) => editing.retryItem(selectedItem!.item_id, kind)"

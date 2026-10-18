@@ -256,7 +256,7 @@ function chooseDelete(mode: ExamParentDeleteMode): void {
       :open="addOpen"
       :anchor="addTrigger"
       :child="true"
-      @choose="(kind) => kind !== 'instruction' && emit('addChild', kind)"
+      @choose="(kind) => kind !== 'instruction' && kind !== 'part' && emit('addChild', kind)"
       @close="addOpen = false"
     />
     <ExamWorkspaceMenu

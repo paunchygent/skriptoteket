@@ -58,6 +58,8 @@ export type ExamCourseCatalogResponse = Schemas["ExamCourseCatalogResponse"];
 export type ExamWorkspaceDocumentResponse = Schemas["ExamWorkspaceDocumentResponse"];
 /** A deletion's document response; `removed_parent_id` names an instruction that went with it. */
 export type ExamWorkspaceDeleteResponse = Schemas["ExamWorkspaceDeleteResponse"];
+/** A part creation's document response; `created_parent_id` names the part the editor opens. */
+export type ExamWorkspaceCreatedPartResponse = Schemas["ExamWorkspaceCreatedPartResponse"];
 export type ExamWorkspaceDocumentListResponse = Schemas["ExamWorkspaceDocumentListResponse"];
 export type ExamWorkspaceExportTarget = Schemas["ExamWorkspaceExportTarget"];
 export type ExamWorkspaceEnrichmentState = Schemas["ExamWorkspaceEnrichmentState"];
@@ -358,6 +360,47 @@ export async function createExamWorkspaceParent(
   body: Schemas["CreateExamParentRequest"],
 ): Promise<ExamWorkspaceDocumentResponse> {
   return await apiPost<ExamWorkspaceDocumentResponse>(parentsPath(lineageId), body);
+}
+
+/** Group marked standalone questions into one new part (G2, G10). */
+export async function groupExamWorkspaceItems(
+  lineageId: string,
+  itemIds: string[],
+  expectedCursor: string,
+): Promise<ExamWorkspaceCreatedPartResponse> {
+  const body: Schemas["GroupExamItemsRequest"] = {
+    expected_cursor: expectedCursor,
+    item_ids: itemIds,
+  };
+  return await apiPost<ExamWorkspaceCreatedPartResponse>(`${parentsPath(lineageId)}/group`, body);
+}
+
+/** Insert a part with an empty instruction at the chosen top-level position (G9). */
+export async function createEmptyExamWorkspacePart(
+  lineageId: string,
+  position: number,
+  expectedCursor: string,
+): Promise<ExamWorkspaceCreatedPartResponse> {
+  const body: Schemas["CreateEmptyExamPartRequest"] = {
+    expected_cursor: expectedCursor,
+    position,
+  };
+  return await apiPost<ExamWorkspaceCreatedPartResponse>(`${parentsPath(lineageId)}/empty`, body);
+}
+
+/** Move one question into a part, out to standalone, or between parts (G3, R3, R4). */
+export async function moveExamWorkspaceItem(
+  lineageId: string,
+  itemId: string,
+  targetParentId: string | null,
+  expectedCursor: string,
+): Promise<ExamWorkspaceDocumentResponse> {
+  const body: Schemas["MoveExamItemRequest"] = {
+    expected_cursor: expectedCursor,
+    item_id: itemId,
+    target_parent_id: targetParentId,
+  };
+  return await apiPost<ExamWorkspaceDocumentResponse>(`${parentsPath(lineageId)}/move`, body);
 }
 
 export async function addExamWorkspaceChild(

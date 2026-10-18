@@ -19,6 +19,9 @@ import { useExamWorkspaceStructure } from "./useExamWorkspaceStructure";
 
 export function useExamWorkspaceEditing() {
   let noteEdit: (structural: boolean, before: NativeExamDocument | null) => void = () => undefined;
+  // The selection composable is built by the view after this session; it registers
+  // its part-entry selection here so a new part's instruction opens in the editor.
+  let selectParent: (parentId: string) => void = () => undefined;
   const document = useExamWorkspaceDocument({ onEdit: (structural, before) => noteEdit(structural, before) });
   const lineageId = () => document.summary.value?.lineage_id ?? null;
   const reload = () => document.reloadDocument();
@@ -50,6 +53,7 @@ export function useExamWorkspaceEditing() {
     replaceCopy: document.replaceCopy,
     savedRevision: () => document.savedRevision.value,
     selectItem: document.selectItem,
+    selectParent: (parentId) => selectParent(parentId),
     selectedItemId: document.selectedItemId,
     workspaceDocument: document.workspaceDocument,
   });
@@ -71,5 +75,15 @@ export function useExamWorkspaceEditing() {
     return await document.saveDocumentAs(name);
   }
 
-  return { ...document, history, save, saveAs, structure };
+  return {
+    ...document,
+    history,
+    save,
+    saveAs,
+    structure,
+    /** The view wires its part-entry selection once the selection composable exists. */
+    registerSelectParent: (select: (parentId: string) => void) => {
+      selectParent = select;
+    },
+  };
 }

@@ -12,12 +12,23 @@ import { createPinia, setActivePinia } from "pinia";
 import { effectScope, ref } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { NativeExamAsset, NativeExamBodyParagraph, NativeExamDocument, NativeExamItem } from "../../../api/examWorkspace";
+import type {
+  ExamWorkspaceDocumentResponse,
+  NativeExamAsset,
+  NativeExamBodyParagraph,
+  NativeExamDocument,
+  NativeExamItem,
+} from "../../../api/examWorkspace";
 import { useToastStore } from "../../../stores/toast";
 import { newTeacherItem } from "./examWorkspaceItemEdits";
 import { useExamWorkspaceStructure } from "./useExamWorkspaceStructure";
+import { buildSavedExamSummary } from "./useExamWorkspaceDocument.specSupport";
 
-vi.mock("../../../api/examWorkspace", () => ({}));
+const apiMocks = vi.hoisted(() => ({
+  deleteExamWorkspaceChild: vi.fn(),
+}));
+
+vi.mock("../../../api/examWorkspace", () => apiMocks);
 
 function asset(assetId: string): NativeExamAsset {
   return { asset_id: assetId, byte_length: 1, media_type: "image/png", sha256: assetId };
@@ -70,6 +81,18 @@ function documentOf(overrides: Partial<NativeExamDocument>): NativeExamDocument 
   } as NativeExamDocument;
 }
 
+function response(document: NativeExamDocument): ExamWorkspaceDocumentResponse {
+  return {
+    conversion: null,
+    document,
+    export_blockers: [],
+    history_cursor: "cursor-after-command",
+    notes: [],
+    saved_document: document,
+    summary: buildSavedExamSummary({ title: document.title }),
+  };
+}
+
 function setup(initial: NativeExamDocument) {
   const workspaceDocument = ref<NativeExamDocument | null>(initial);
   const selectedItemId = ref<string | null>(null);
@@ -79,7 +102,9 @@ function setup(initial: NativeExamDocument) {
   });
   const structure = effectScope().run(() =>
     useExamWorkspaceStructure({
-      applyCommandResponse: vi.fn(),
+      applyCommandResponse: (next) => {
+        workspaceDocument.value = next.document;
+      },
       editDocument,
       flush: vi.fn(async () => true),
       historyCursor: ref("cursor"),
@@ -89,6 +114,7 @@ function setup(initial: NativeExamDocument) {
       replaceCopy: (run) => run(),
       savedRevision: () => 1,
       selectItem: vi.fn(),
+      selectParent: vi.fn(),
       selectedItemId,
       workspaceDocument,
     }),
@@ -98,6 +124,7 @@ function setup(initial: NativeExamDocument) {
 
 beforeEach(() => {
   setActivePinia(createPinia());
+  apiMocks.deleteExamWorkspaceChild.mockReset();
 });
 
 describe("deleting a standalone question", () => {
@@ -173,5 +200,28 @@ describe("deleting a standalone question", () => {
     structure.deleteItem("item_001");
 
     expect(workspaceDocument.value!.assets.map((entry) => entry.asset_id)).toEqual(["asset_a"]);
+  });
+});
+
+describe("deleting a part's last question (G8)", () => {
+  it("keeps the part as an instruction block and shows no heading notice", async () => {
+    const part = {
+      instruction: picture("asset_a"),
+      item_ids: ["item_001"],
+      parent_id: "parent_001",
+      place: 0,
+    };
+    const initial = documentOf({ assets: [asset("asset_a")], items: [question(1, ["asset_a"])], parents: [part] });
+    const { structure, workspaceDocument } = setup(initial);
+    const after = { ...initial, items: [], parents: [{ ...part, item_ids: [] }] };
+    apiMocks.deleteExamWorkspaceChild.mockResolvedValue(response(after));
+
+    structure.deleteItem("item_001");
+    await vi.waitFor(() => expect(apiMocks.deleteExamWorkspaceChild).toHaveBeenCalled());
+    await vi.waitFor(() => expect(structure.running.value).toBe(false));
+
+    expect(structure.deleteNotice.value).toBeNull();
+    expect(useToastStore().toasts).toEqual([]);
+    expect(workspaceDocument.value!.parents).toEqual([{ ...part, item_ids: [] }]);
   });
 });
