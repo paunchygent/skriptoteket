@@ -30,11 +30,22 @@ _EXAM = "bf26_english_1_unit_test_kap_1_2_med_facit"
 _PROFILE = StructuredLLMProviderProfile(
     "replay", "replay", StructuredLLMEndpointKind.RESPONSES, False, 4096, 1024
 )
-_LABELED_EXAMS = [e for e in recorded_exams() if any((RECORDINGS / e).glob("label_b_*.json"))]
+_USER_EXAMS = Path("tests/fixtures/exam_conversion/docx_user_exams")
+_LABELED_EXAMS = [
+    *(
+        (exam, RECORDINGS, None)
+        for exam in recorded_exams()
+        if any((RECORDINGS / exam).glob("label_b_*.json"))
+    ),
+    ("omprov_grammatik_sve2", _USER_EXAMS / "recordings", _USER_EXAMS),
+    ("exempelprov_grammatik_sve2_v2_1", _USER_EXAMS / "recordings", _USER_EXAMS),
+]
 
 
-async def _label_requests(exam: str) -> tuple[ReplayProvider, list[StructuredLLMRequest]]:
-    replay = build_replay(exam)
+async def _label_requests(
+    exam: str, root: Path = RECORDINGS, corpus: Path | None = None
+) -> tuple[ReplayProvider, list[StructuredLLMRequest]]:
+    replay = build_replay(exam, root=root, corpus=corpus)
     await replay.pipeline.convert(job=replay.job())
     labels = [r for r in replay.provider.requests if r.output_spec.schema_name == "item_type_label"]
     return replay.provider, labels
@@ -47,10 +58,12 @@ def _copy(name: str, directory: Path, *, key: str | None = None) -> None:
         (directory / f"{name}.request.txt").write_text(f"{key}\n")
 
 
-@pytest.mark.parametrize("exam", _LABELED_EXAMS)
-async def test_every_label_request_is_served_its_own_recording_once(exam: str):
-    provider, labels = await _label_requests(exam)
-    recorded = sorted(p.stem for p in (RECORDINGS / exam).glob("label_b_*.json"))
+@pytest.mark.parametrize(("exam", "root", "corpus"), _LABELED_EXAMS)
+async def test_every_label_request_is_served_its_own_recording_once(
+    exam: str, root: Path, corpus: Path | None
+):
+    provider, labels = await _label_requests(exam, root, corpus)
+    recorded = sorted(p.stem for p in (root / exam).glob("label_b_*.json"))
     assert sorted(r.item_id.replace(":", "_") for r in labels) == recorded
     for request in labels:
         assert provider.recording_ids[request.item_id] == request.item_id.replace(":", "_")

@@ -14,3 +14,5 @@ default settings (`LLM_DOCX_BATCH_FAMILIES=16`). No credentials are stored here.
 | ------------------------------- | ----: | -----------: | ------------: |
 | omprov_grammatik_sve2           |     9 |       47,516 |         9,267 |
 | exempelprov_grammatik_sve2_v2_1 |     9 |       64,889 |         9,809 |
+
+2026-10-18 (TASK-SKRIPT-REP-0046): each `recordings/<exam>/label_b_<qid>.json` carries the request source text it answered in `label_b_<qid>.request.txt`, followed by one final newline; the replay serves a label reply only to a request ending in that text. The 15 keys were captured without live calls by replaying both exams through the production pipeline at `b7ca932c`, the commit that added these recordings, and taking each `item_type_label` request's text after `### Question q1`.

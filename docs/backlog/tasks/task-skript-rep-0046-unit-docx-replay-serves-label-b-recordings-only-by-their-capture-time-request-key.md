@@ -49,6 +49,12 @@ The vertical is the unit replay of the production DOCX pipeline. Each `item_type
 
 Stop and report to the parent if a unit replay fails because a labeler recording is stale. Never re-record anything and make no live model calls.
 
+## User-Exam Recording Keys (parent ruling 2026-10-18)
+
+The new rule refused the 15 `label_b` recordings in `tests/fixtures/exam_conversion/docx_user_exams/recordings/` (`omprov_grammatik_sve2` q1-q8, `exempelprov_grammatik_sve2_v2_1` q1-q5, q7, q8), because they had no sidecars. They were added at `b7ca932c` (2026-10-18), after the `c67dcb70` points-line change. The parent ruled that their keys are captured as that revision built the requests, not from today's request text.
+
+Method: a detached throwaway worktree at `b7ca932c` replayed both exams through that revision's production DOCX pipeline, with that revision's `src` first on the import path. Each `item_type_label` request's text after `### Question q1` became the sidecar. Every request held one question and no images. The disposable script is `evidence/probes/capture_user_exam_label_b_keys.py` in retained root `01a14f5e`, and the worktree was removed afterwards. Today's pipeline matches all 15 keys, so the recordings are current by construction. No live calls were made and nothing was re-recorded.
+
 ## Decided Contract Terms
 
 | ID  | Decided contract term |

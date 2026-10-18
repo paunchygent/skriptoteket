@@ -1,0 +1,15 @@
+**Uppgift 3.2: Analysera komplex mening (6 p)**
+Analysera meningen nedan.
+| <i>"Han lovade att han skulle börja sjunga en sång om de andra i klassen sa att de ville det."</i> |
+| --- |
+a) Hur många satser finns? Skriv ut alla finita verb.
+______________________________________________________________________
+b) Vilken är huvudsatsen?
+______________________________________________________________________
+c) Markera bisatserna med hakparenteser [ ] och ange nivå (1 eller 2).
+______________________________________________________________________
+______________________________________________________________________
+d) Ange varje bisats typ och funktion.
+______________________________________________________________________
+______________________________________________________________________
+<i>/6 p</i>
