@@ -29,6 +29,9 @@ from skriptoteket.application.curated_apps.exam_workspace_misspellings import (
     ExamWorkspaceMisspellingsRequest,
     ExamWorkspaceMisspellingsResponse,
 )
+from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_import_contracts import (
+    ExamNetQtiPackageSource,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.container import (
     ExamWorkspaceContainerContent,
 )
@@ -223,3 +226,9 @@ class RetryExamWorkspaceItemHandlerProtocol(Protocol):
         lineage_id: UUID,
         request: RetryExamWorkspaceItemRequest,
     ) -> ExamWorkspaceItemRetryResponse: ...
+
+
+class ExamNetQtiPackageReaderProtocol(Protocol):
+    """Open an uploaded QTI 3.0 package; refuse unsafe or malformed archives in Swedish."""
+
+    def read(self, *, content: bytes) -> ExamNetQtiPackageSource: ...
