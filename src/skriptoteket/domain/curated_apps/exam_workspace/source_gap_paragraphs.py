@@ -182,71 +182,56 @@ def source_paragraph(
     runs: Sequence[tuple[int, int]] = (),
     gaps: Sequence[NativeGapSegment] = (),
     pictures: Sequence[tuple[int, str]] = (),
-) -> tuple[NativeParagraph, ...]:
-    """Build one paragraph per source line from a source span, each gap in its blank run (2g).
+) -> NativeParagraph:
+    """Build one paragraph from a source span, with each gap in its blank run (2g).
 
     ``runs`` and ``gaps`` line up one to one; the caller checks their lengths. ``pictures``
     are (source place, asset id), sorted, and each is emitted at its place: a place before
     ``start`` stands at ``start``, a place after ``end`` at ``end``, and a place inside a
     text stretch splits the text there. A picture at a blank run's start stands before the
-    gap. A newline in the span's source text closes the current paragraph and opens the
-    next at the same heading level, keeping marks across the break; a line left with no
-    segment is dropped. With no runs, no gaps and no pictures the plain source paragraph
-    text is returned as one paragraph.
+    gap. A source line break stays inside its text segment, as ``sourced_fragments`` renders
+    it, so the span's source paragraph stays one paragraph. With no runs, no gaps and no
+    pictures the plain source paragraph text is returned.
     """
-    lines: list[list[NativeSegment]] = [[]]
+    segments: list[NativeSegment] = []
     cursor = start
     placed = [(min(max(place, start), end), asset_id) for place, asset_id in pictures]
     index = 0
 
     def text_until(target: int) -> None:
         nonlocal cursor
-        if target <= cursor:
-            return
-        for segment in source.visible_text_segments(cursor, target):
-            pieces = segment.text.split("\n")
-            for piece in pieces[:-1]:
-                if piece:
-                    lines[-1].append(NativeTextSegment(text=piece, marks=segment.marks))
-                lines.append([])
-            if pieces[-1]:
-                lines[-1].append(NativeTextSegment(text=pieces[-1], marks=segment.marks))
-        cursor = target
+        if target > cursor:
+            segments.extend(source.visible_text_segments(cursor, target))
+            cursor = target
 
     for (run_start, run_end), gap in zip(runs, gaps, strict=True):
         while index < len(placed) and placed[index][0] < run_start:
             text_until(placed[index][0])
-            lines[-1].append(NativeAssetSegment(asset_id=placed[index][1]))
+            segments.append(NativeAssetSegment(asset_id=placed[index][1]))
             index += 1
         while index < len(placed) and placed[index][0] == run_start:
             text_until(run_start)
-            lines[-1].append(NativeAssetSegment(asset_id=placed[index][1]))
+            segments.append(NativeAssetSegment(asset_id=placed[index][1]))
             index += 1
         text_until(run_start)
-        lines[-1].append(gap)
+        segments.append(gap)
         cursor = run_end
     while index < len(placed):
         text_until(placed[index][0])
-        lines[-1].append(NativeAssetSegment(asset_id=placed[index][1]))
+        segments.append(NativeAssetSegment(asset_id=placed[index][1]))
         index += 1
     text_until(end)
-    paragraphs: list[NativeParagraph] = []
-    for line in lines:
-        trimmed = _trim_light_edges(line)
-        if trimmed:
-            paragraphs.append(NativeParagraph(heading_level=heading, segments=tuple(trimmed)))
-    return tuple(paragraphs)
+    return NativeParagraph(heading_level=heading, segments=tuple(_trim_light_edges(segments)))
 
 
 def gap_paragraphs_from_source(
     source: SourceFormatting, body: tuple[NativeParagraph, ...]
 ) -> tuple[NativeParagraph, ...]:
-    """Replace each blank-run unit's reply paragraphs with the paragraphs built from source.
+    """Replace each blank-run unit's reply paragraphs with one paragraph built from source.
 
     Paragraphs aligned to no source paragraph, or to a source paragraph without blank
-    runs, keep their projection. The unit's built paragraphs, one per source line, stand
-    at the place of its first reply paragraph, each anchored to the unit; the other reply
-    paragraphs of that unit are removed.
+    runs, keep their projection. One built paragraph stands at the place of the unit's
+    first reply paragraph; the other reply paragraphs of that unit are removed.
     """
     anchors = list(source.output_anchors)
     units = [_gap_unit(source, anchor) for anchor in anchors]
@@ -282,16 +267,17 @@ def gap_paragraphs_from_source(
         ]
         if len(gaps) != len(unit.blank_runs):
             raise GapCountMismatchError(f"{len(gaps)} gaps for {len(unit.blank_runs)} blank runs")
-        for built in source_paragraph(
-            source,
-            unit.start,
-            unit.end,
-            unit.heading,
-            unit.blank_runs,
-            gaps,
-            pictures,
-        ):
-            result.append(built)
-            result_anchors.append(unit.anchor)
+        result.append(
+            source_paragraph(
+                source,
+                unit.start,
+                unit.end,
+                unit.heading,
+                unit.blank_runs,
+                gaps,
+                pictures,
+            )
+        )
+        result_anchors.append(unit.anchor)
     source.output_anchors = result_anchors
     return tuple(result)

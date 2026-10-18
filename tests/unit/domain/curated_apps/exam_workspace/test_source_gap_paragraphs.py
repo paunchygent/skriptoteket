@@ -108,7 +108,7 @@ def test_blank_runs_follow_character_class_only(text, expected):
 def test_source_paragraph_without_runs_is_the_trimmed_plain_source_text():
     chunks = (_chunk("body:0001", "  The important idea.  ", marks=("italic",)),)
     source = SourceFormatting(chunks)
-    (paragraph,) = source_paragraph(
+    paragraph = source_paragraph(
         source,
         source.paragraphs[0].start,
         source.paragraphs[0].end,
@@ -242,9 +242,17 @@ def test_two_reply_paragraphs_aligned_to_one_source_paragraph_become_one():
     assert len(aligned.chunks) == len(aligned.item.body)
 
 
-def test_a_two_line_source_paragraph_builds_one_paragraph_per_line():
-    source = "Write most or the most.\nOf these three questions, this is ______ difficult one."
-    chunks = (_chunk("body:0001", source),)
+def test_a_two_line_source_paragraph_builds_one_paragraph_keeping_the_line_break():
+    text = "Write most or the most.\nOf these three questions, this is ______ difficult one."
+    chunk = DocxChunk(
+        "body:0001",
+        "paragraph",
+        text,
+        text,
+        runs=(DocxSourceRun(0, "Write most or the most.", ("italic",)),),
+        paragraphs=(DocxSourceParagraph(0, text, None),),
+    )
+    chunks = (chunk,)
     produced = _item(
         chunks,
         [
@@ -262,34 +270,14 @@ def test_a_two_line_source_paragraph_builds_one_paragraph_per_line():
     assert body_plain_text(aligned.item.body) == (
         "Write most or the most.\nOf these three questions, this is [___] difficult one."
     )
-    assert len(aligned.item.body) == 2
+    assert len(aligned.item.body) == 1
     assert len(aligned.chunks) == len(aligned.item.body)
-    assert aligned.chunks == ("body:0001", "body:0001")
-
-
-def test_a_marked_run_across_the_line_break_keeps_its_marks_on_both_lines():
-    text = "First line\nSecond ______ line."
-    chunk = DocxChunk(
-        "body:0001",
-        "paragraph",
-        text,
-        text,
-        runs=(DocxSourceRun(0, text, ("italic",)),),
-        paragraphs=(DocxSourceParagraph(0, text, None),),
-    )
-    chunks = (chunk,)
-    produced = _item(
-        chunks,
-        [{"segments": [_text("First line Second "), _gap(), _text(" line.")]}],
-    )
-    result = aligned_native_item(produced, chunks=chunks, language="en").item
-    assert body_plain_text(result.body) == "First line\nSecond [___] line."
+    assert aligned.chunks == ("body:0001",)
     assert [
         segment.marks
-        for paragraph in result.body
-        for segment in paragraph.segments
+        for segment in aligned.item.body[0].segments
         if isinstance(segment, NativeTextSegment)
-    ] == [("italic",), ("italic",), ("italic",)]
+    ] == [("italic",), (), ()]
 
 
 def test_source_text_from_an_inline_answer_label_onward_stays_out():
