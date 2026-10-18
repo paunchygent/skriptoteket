@@ -7,7 +7,6 @@ and headings, and the section placement of instructions and headings, read the a
 and never the wording of the reply (TASK-SKRIPT-39-04-13).
 """
 
-from bisect import bisect_right
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
@@ -42,11 +41,7 @@ class AlignedItem:
 
 def paragraph_chunks(source: SourceFormatting) -> tuple[str | None, ...]:
     """The chunk anchor of each paragraph of the body ``source`` last produced."""
-    starts = [start for start, _ in source.chunk_starts]
-    return tuple(
-        source.chunk_starts[bisect_right(starts, offset) - 1][1] if offset >= 0 else None
-        for offset in source.output_anchors
-    )
+    return tuple(source.provenance.chunk_at(offset) for offset in source.output_anchors)
 
 
 def source_chunks(chunks: Sequence[DocxChunk]) -> tuple[str, ...]:
