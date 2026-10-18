@@ -22,7 +22,7 @@ import importlib
 import inspect
 import pkgutil
 import types
-from collections.abc import Iterator
+from collections.abc import Iterator, Set
 
 import pytest
 from fastapi import APIRouter, Depends, FastAPI
@@ -471,7 +471,7 @@ def test_guard_detects_an_ungated_llm_route(reached_llm: set[type]) -> None:
     )
 
 
-def _describe_routes(routes: set[tuple[str, str]]) -> str:
+def _describe_routes(routes: Set[tuple[str, str]]) -> str:
     if not routes:
         return "none"
     return ", ".join(f"{method} {path}" for method, path in sorted(routes))
