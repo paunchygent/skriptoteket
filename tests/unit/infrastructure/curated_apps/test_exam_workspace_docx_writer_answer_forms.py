@@ -42,6 +42,7 @@ from tests.unit.infrastructure.curated_apps.exam_workspace_docx_writer_test_supp
     lone_gap_item,
     only_paragraph,
     ruled_paragraphs,
+    run_border,
     sentence_gap_item,
 )
 
@@ -119,19 +120,28 @@ class TestForms:
         assert f"{STEP_BOX} B) eleverna" in texts
         assert "Facit" not in document_text(parsed)
 
-    def test_ordering_prints_tick_options_in_print_order(self) -> None:
+    def test_ordering_prints_number_boxes_in_print_order(self) -> None:
         document = make_document(make_ordering_item())
         parsed = Document(io.BytesIO(ExamWorkspaceDocxWriter().build_docx_bytes(document)))
 
-        options = [
-            paragraph.text for paragraph in parsed.paragraphs if paragraph.text.startswith(STEP_BOX)
+        boxed = [
+            paragraph
+            for paragraph in parsed.paragraphs
+            if paragraph.runs and run_border(paragraph.runs[0]) is not None
         ]
-        assert options == [
-            f"{STEP_BOX} Avslutning",
-            f"{STEP_BOX} Motargument",
-            f"{STEP_BOX} Argument",
-            f"{STEP_BOX} Tes",
+        assert [paragraph.runs[-1].text for paragraph in boxed] == [
+            "Avslutning",
+            "Motargument",
+            "Argument",
+            "Tes",
         ]
+        assert STEP_BOX not in document_text(parsed)
+        assert run_border(boxed[0].runs[0]) == {
+            "val": "single",
+            "sz": "8",
+            "space": "0",
+            "color": "111111",
+        }
 
     def test_matching_prints_a_grid_with_tick_cells(self) -> None:
         document = make_document(matching_item())

@@ -12,6 +12,7 @@ from uuid import uuid4
 from docx.document import Document as DocxDocument
 from docx.oxml.ns import qn
 from docx.text.paragraph import Paragraph
+from docx.text.run import Run
 from PIL import Image
 
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
@@ -125,6 +126,17 @@ def border_attributes(paragraph: Paragraph, edge: str) -> dict[str, str | None]:
     element = borders.find(qn(f"w:{edge}"))
     assert element is not None
     return {name: element.get(qn(f"w:{name}")) for name in ("val", "sz", "space", "color")}
+
+
+def run_border(run: Run) -> dict[str, str | None] | None:
+    """The run's own border attributes, or None when the run carries no border."""
+    rPr = run._element.find(qn("w:rPr"))
+    if rPr is None:
+        return None
+    border = rPr.find(qn("w:bdr"))
+    if border is None:
+        return None
+    return {name: border.get(qn(f"w:{name}")) for name in ("val", "sz", "space", "color")}
 
 
 def ruled_paragraphs(paragraphs: list[Paragraph]) -> list[Paragraph]:

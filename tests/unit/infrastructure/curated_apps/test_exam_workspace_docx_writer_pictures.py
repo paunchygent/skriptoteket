@@ -16,6 +16,7 @@ from docx import Document
 from docx.shared import Mm
 
 from skriptoteket.domain.curated_apps.exam_conversion.exam_print_house_template import (
+    IMAGE_SPACING,
     TEXT_WIDTH_MM,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.exam_language_labels import (
@@ -284,6 +285,20 @@ class TestPictures:
         parsed = Document(io.BytesIO(content))
         assert len(parsed.inline_shapes) == 1
         assert parsed.inline_shapes[0].width == Mm(TEXT_WIDTH_MM)
+
+    def test_a_body_picture_paragraph_takes_the_template_image_spacing(
+        self, shared_picture_document: SharedPictureDocument
+    ) -> None:
+        fixture = shared_picture_document
+        content = ExamWorkspaceDocxWriter().build_docx_bytes(
+            fixture.document, assets_by_id=fixture.assets_by_id
+        )
+        parsed = Document(io.BytesIO(content))
+        body_paragraph = only_paragraph(list(parsed.paragraphs), "Fråga 1.")
+        spacing = body_paragraph.paragraph_format
+
+        assert spacing.space_before.mm == pytest.approx(IMAGE_SPACING.space_before_mm, abs=0.02)
+        assert spacing.space_after.mm == pytest.approx(IMAGE_SPACING.space_after_mm, abs=0.02)
 
     def test_picture_without_payload_fails_closed(
         self, shared_picture_document: SharedPictureDocument
