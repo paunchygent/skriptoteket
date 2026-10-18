@@ -38,6 +38,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_instruction_runs impor
 from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import (
     ExamManifest,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import (
+    NO_PART_LINES,
+    PartLines,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_review import review_source_item
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     POINT_LABEL,
@@ -336,7 +340,7 @@ def place_section_instructions(
     governed: Mapping[str, frozenset[str]],
     title_anchors: frozenset[str] = frozenset(),
     own_anchors: frozenset[str] = frozenset(),
-    part_lines: frozenset[str] = frozenset(),
+    part_lines: PartLines = NO_PART_LINES,
 ) -> SectionInstructions:
     """Build the parents and copy the instructions that stay with single items.
 
