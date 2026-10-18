@@ -277,6 +277,30 @@ class DocxBuildState:
         else:
             self.output_complete = False
 
+    def _omitted(
+        self,
+        questions: tuple[tuple[str, ...], ...],
+        review_reasons: dict[str, str],
+        governed: Mapping[str, frozenset[str]],
+    ) -> tuple[tuple[NativeExamItem, tuple[str, ...]], ...]:
+        """Each question no item holds, as one review item showing its source as printed.
+
+        Its own chunks leave ``review_reasons``, so a question is one item however many chunks
+        it prints; the item carries the reason of its first chunk.
+        """
+        held = {a for _, anchors in self.accepted for a in anchors}
+        taken = set(self.claimed)
+        omitted: list[tuple[NativeExamItem, tuple[str, ...]]] = []
+        for own in questions:
+            missing = tuple(a for a in own if a in review_reasons and a not in governed)
+            if not missing or held.intersection(own):
+                continue
+            reason = review_reasons[missing[0]]
+            for anchor in missing:
+                del review_reasons[anchor]
+            omitted.append(self.printed(missing, reason, taken))
+        return tuple(omitted)
+
     def result(
         self,
         governed: Mapping[str, frozenset[str]] = NOTHING_GOVERNED,
@@ -326,7 +350,7 @@ class DocxBuildState:
             filename=self.filename,
             source_sha256=self.source_sha256,
             chunks=tuple(c for c in self.chunks if c.anchor not in self.header_anchors),
-            accepted=tuple(self.accepted),
+            accepted=(*self.accepted, *self._omitted(questions, review_reasons, governed)),
             review_reasons=review_reasons,
             key_anchors=frozenset(self.key_anchors),
             title=self.title,

@@ -13,6 +13,7 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_ad
     admit_batch,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_state import (
+    NO_ITEM_REASON,
     DocxBuildState,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_one_item import (
@@ -207,3 +208,21 @@ def test_a_separately_emitted_heading_or_points_line_is_no_split(label: tuple[st
     assert item.review.parse_origin is NativeParseOrigin.LLM_PARSED
     assert set(anchors) == {"body:0001", "body:0002"}
     assert not [e for e in state.events if e.code in {"question_split", "questions_merged"}]
+
+
+def test_a_question_the_reply_omits_becomes_one_source_review_item():
+    # Without an entry, each of the question's four chunks would be its own review item and
+    # its printed 4 p would be shared out among them.
+    state = _state(_OTHER, _QUESTION)
+
+    admit_batch(
+        {"items": [_item(["body:0001"], "Förklara vad ett predikat är.", "Uppgift 1.2")]}, state
+    )
+    document = state.result().document
+
+    converted, omitted = document.items
+    assert converted.review.parse_origin is NativeParseOrigin.LLM_PARSED
+    assert _is_source_review(omitted, NO_ITEM_REASON)
+    assert _texts(omitted) == [text for _, text in _QUESTION]
+    assert omitted.points == 4
+    assert omitted.source_anchor == "body:0002"

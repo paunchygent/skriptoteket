@@ -16,7 +16,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import (
     PrintedQuestion,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_section_instructions import (
-    replace_question_items,
     with_question_points,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
@@ -39,7 +38,8 @@ def apply_printed_points(
     printed: PrintedPoints,
     by_anchor: Mapping[str, DocxChunk],
 ) -> ScoredItems:
-    """Give every question its printed points or its share of its part, in that order.
+    """Give every question's one item its printed points or its share of its part, in that
+    order.
 
     A question that prints its points keeps them. In each part, the total less the points
     of its other questions goes to the questions that print none: one such question takes
@@ -53,55 +53,58 @@ def apply_printed_points(
     scored = list(items)
     events: list[DocxBuildEvent] = []
 
-    def members(question: PrintedQuestion) -> tuple[NativeExamItem, ...]:
+    def member(question: PrintedQuestion) -> NativeExamItem | None:
+        """The question's one item: the first item that starts at one of its own chunks."""
         own = set(question.anchors)
-        return tuple(item for item in scored if item.source_anchor in own)
+        return next((item for item in scored if item.source_anchor in own), None)
 
-    def score(question: PrintedQuestion, points: int | float, *, estimated: bool) -> None:
-        nonlocal scored, parents
+    def score(
+        item: NativeExamItem, question: PrintedQuestion, points: int | float, *, estimated: bool
+    ) -> None:
+        nonlocal scored
         result = with_question_points(
-            members(question),
+            item,
             points,
             source_chunks=tuple(by_anchor[a] for a in question.anchors if a in by_anchor),
             estimated=estimated,
         )
         events.extend(result.events)
-        scored, parents = replace_question_items(scored, parents, members(question), result)
+        scored = [result.item if i.item_id == item.item_id else i for i in scored]
 
     for question in printed.questions:
-        if question.points is not None and members(question):
-            score(question, question.points, estimated=False)
+        if question.points is not None and (item := member(question)) is not None:
+            score(item, question, question.points, estimated=False)
     for part in printed.parts:
         questions = [
-            question
+            (question, item)
             for question in (printed.questions[number] for number in part.questions)
-            if members(question)
+            if (item := member(question)) is not None
         ]
-        unprinted = [q for q in questions if not q.prints]
+        unprinted = [(q, item) for q, item in questions if not q.prints]
         sharing = (
             unprinted
             if len(unprinted) == 1
-            else [q for q in unprinted if not any(item.criteria for item in members(q))]
+            else [(q, item) for q, item in unprinted if not item.criteria]
         )
         if not sharing:
             continue
+        shared = {item.item_id for _, item in sharing}
         remaining = part.total - sum(
-            item.points or 0 for q in questions if q not in sharing for item in members(q)
+            item.points or 0 for _, item in questions if item.item_id not in shared
         )
         if len(sharing) > 1:
             remaining = int(remaining)
-        for question, share in zip(
+        for (question, item), share in zip(
             sharing, point_shares(max(remaining, 0), len(sharing)), strict=True
         ):
-            unkeyed = any(
-                item.kind is NativeExamItemKind.MATCHING and not item.answer_key.match_pairs
-                for item in members(question)
-            )
+            unkeyed = item.kind is NativeExamItemKind.MATCHING and not item.answer_key.match_pairs
             if share > 0 and not unkeyed:
-                score(question, share, estimated=len(sharing) > 1)
+                score(item, question, share, estimated=len(sharing) > 1)
     for part in printed.parts:
         held = {
-            item.item_id for number in part.questions for item in members(printed.questions[number])
+            item.item_id
+            for number in part.questions
+            if (item := member(printed.questions[number])) is not None
         }
         parents = tuple(
             parent.model_copy(update={"printed_total": part.total})
