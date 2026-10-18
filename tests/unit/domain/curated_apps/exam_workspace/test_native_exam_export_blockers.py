@@ -11,6 +11,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_export_rules import (
     INLINE_CHOICE_MIN_OPTIONS,
+    NativeExportBlocker,
     item_has_trusted_key,
     native_export_blockers,
 )
@@ -39,6 +40,20 @@ from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders imp
 class TestExportBlockers:
     def test_clean_document_has_no_blockers(self) -> None:
         assert native_export_blockers(make_document(make_gap_fill_item())) == ()
+
+    @pytest.mark.parametrize("title", ["?!...", "", "  ", " - / ", "\u0301", "(…)"])
+    def test_a_title_without_letters_or_digits_blocks_the_exam_not_a_question(
+        self, title: str
+    ) -> None:
+        document = make_document(make_gap_fill_item()).model_copy(update={"title": title})
+        assert native_export_blockers(document) == (
+            NativeExportBlocker(item_id=None, reason="title_without_text"),
+        )
+
+    @pytest.mark.parametrize("title", ["Prov 1", "1", "å", "?! Prov", "²"])
+    def test_a_title_with_one_letter_or_digit_does_not_block(self, title: str) -> None:
+        document = make_document(make_gap_fill_item()).model_copy(update={"title": title})
+        assert native_export_blockers(document) == ()
 
     def test_a_converted_item_that_needs_review_with_points_and_key_does_not_block(
         self,

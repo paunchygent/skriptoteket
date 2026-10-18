@@ -26,6 +26,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeExamAsset,
     NativeExamHeader,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_export_rules import (
+    NativeExportBlocker,
+)
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from tests.unit.application.curated_apps.handlers.test_conversion_hub_jobs import (
     SequenceIdGenerator,
@@ -193,6 +196,32 @@ async def test_undo_response_roundtrips_through_existing_save_revision_contract(
     durable = env.codec.parse(content=await env.store.load(actor=actor, vault_file=head))
     assert durable.document.title == "Aktuell redigering"
     assert durable.document.revision == saved.document.revision
+
+
+@pytest.mark.asyncio
+async def test_undo_response_carries_the_gates_title_verdict_for_the_stored_step() -> None:
+    env = _Env()
+    actor = _actor()
+    imported = await env.seed_document(actor=actor)
+    blank = await _undo_handler(env).handle(
+        actor=actor,
+        lineage_id=imported.summary.lineage_id,
+        request=StoreExamWorkspaceUndoStepRequest(
+            expected_cursor=imported.history_cursor,
+            document=imported.document.model_copy(update={"title": "?!..."}),
+        ),
+    )
+    titled = await _undo_handler(env).handle(
+        actor=actor,
+        lineage_id=imported.summary.lineage_id,
+        request=StoreExamWorkspaceUndoStepRequest(
+            expected_cursor=blank.history.cursor,
+            document=blank.document.model_copy(update={"title": "Prov 1"}),
+        ),
+    )
+
+    assert NativeExportBlocker(item_id=None, reason="title_without_text") in blank.export_blockers
+    assert all(blocker.item_id is not None for blocker in titled.export_blockers)
 
 
 @pytest.mark.asyncio

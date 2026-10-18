@@ -196,7 +196,7 @@ async def test_qti_export_returns_zip_package(env: _Env, fixture_bytes: bytes) -
         target=ExamWorkspaceExportTarget.QTI,
         expected_revision=2,
     )
-    assert result.filename.endswith("-qti.zip")
+    assert result.filename == "Omprov grammatik och språkstrukturer.zip"
     assert result.media_type == "application/zip"
     assert result.content.startswith(b"PK")
 
@@ -210,7 +210,7 @@ async def test_pdf_export_returns_pdf(env: _Env, fixture_bytes: bytes) -> None:
         target=ExamWorkspaceExportTarget.PDF,
         expected_revision=2,
     )
-    assert result.filename.endswith("-examnet.pdf")
+    assert result.filename == "Omprov grammatik och språkstrukturer.pdf"
     assert result.content.startswith(b"%PDF")
 
 
@@ -223,7 +223,7 @@ async def test_docx_export_returns_validated_docx(env: _Env, fixture_bytes: byte
         target=ExamWorkspaceExportTarget.DOCX,
         expected_revision=2,
     )
-    assert result.filename.endswith(".docx")
+    assert result.filename == "Omprov grammatik och språkstrukturer.docx"
     assert result.content.startswith(b"PK")
 
 

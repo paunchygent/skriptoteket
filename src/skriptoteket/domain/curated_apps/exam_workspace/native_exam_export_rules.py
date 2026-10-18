@@ -51,10 +51,13 @@ INLINE_CHOICE_MIN_OPTIONS: InlineChoiceMinOptions = 2
 
 
 class NativeExportBlocker(BaseModel):
+    """One refusal; `item_id` is None for a refusal that belongs to the exam, not a question."""
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    item_id: str
+    item_id: str | None
     reason: Literal[
+        "title_without_text",
         "unbuilt_question",
         "machine_proposed_key_unreviewed",
         "missing_points",
@@ -69,6 +72,11 @@ class NativeExportBlocker(BaseModel):
     ]
 
 
+def title_has_text(title: str) -> bool:
+    """Whether a title has a letter or digit, the least an export file name is built from."""
+    return any(char.isalnum() for char in title)
+
+
 def native_export_blockers(document: NativeExamDocument) -> tuple[NativeExportBlocker, ...]:
     """S4 gate: export needs every value the export carries, never a parsing doubt (D1).
 
@@ -77,10 +85,13 @@ def native_export_blockers(document: NativeExamDocument) -> tuple[NativeExportBl
     other converted items that need review do not block.
     Keyed kinds without an answer key block export: Exam.net QTI would carry an
     automatic item with no correct response and the Exam.net PDF prints the key.
+    A title without a letter or digit blocks too: every export file is named after the title.
     An ordering question needs two steps and a text in every step; its key is its step order,
     always teacher-authored, so it never lacks one (TASK-SKRIPT-39-06-08).
     """
     blockers: list[NativeExportBlocker] = []
+    if not title_has_text(document.title):
+        blockers.append(NativeExportBlocker(item_id=None, reason="title_without_text"))
     for item in document.items:
         for reason, bodies in (
             (

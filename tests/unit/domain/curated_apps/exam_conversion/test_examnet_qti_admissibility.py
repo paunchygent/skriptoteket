@@ -83,6 +83,7 @@ def test_post_missing_gap_values_block_qti_package(
 def test_validation_reports_cover_blocked_and_failed_states() -> None:
     blocked_plan = build_examnet_qti_package_plan(
         package_name="blocked",
+        assessment_title="blocked",
         items=(
             ExamNetQtiItem(
                 item_id="item_001",
@@ -110,6 +111,7 @@ def test_validation_reports_cover_blocked_and_failed_states() -> None:
 
     passed_plan = build_examnet_qti_package_plan(
         package_name="failed-validation",
+        assessment_title="failed-validation",
         items=(keyed_sample("free-text").items[0],),
     )
     failed_report = build_examnet_qti_validation_report(
@@ -138,10 +140,12 @@ def test_manual_unkeyed_choice_plan_passes_where_automatic_choice_blocks() -> No
     )
     automatic_plan = build_examnet_qti_package_plan(
         package_name="automatic-blocked",
+        assessment_title="automatic-blocked",
         items=(item,),
     )
     manual_plan = build_examnet_qti_package_plan(
         package_name="manual-passed",
+        assessment_title="manual-passed",
         items=(
             ExamNetQtiItem(
                 item_id=item.item_id,
@@ -163,6 +167,7 @@ def test_manual_unkeyed_choice_plan_passes_where_automatic_choice_blocks() -> No
 def test_gap_fill_plan_blocks_when_any_gap_lacks_accepted_values() -> None:
     plan = build_examnet_qti_package_plan(
         package_name="missing-gap-key",
+        assessment_title="missing-gap-key",
         items=(
             ExamNetQtiItem(
                 item_id="item_001",
@@ -192,6 +197,7 @@ def test_gap_fill_plan_blocks_when_any_gap_lacks_accepted_values() -> None:
 def test_keyed_automatic_item_with_zero_score_passes_plan() -> None:
     plan = build_examnet_qti_package_plan(
         package_name="zero-score",
+        assessment_title="zero-score",
         items=(
             ExamNetQtiItem(
                 item_id="item_001",
@@ -218,7 +224,9 @@ def test_blocked_plan_refuses_package_bytes_but_still_reports() -> None:
     samples = {sample.name: sample for sample in examnet_qti_manual_unkeyed_samples()}
     sample = samples["unkeyed-multiple-response-preserved"]
 
-    plan = build_examnet_qti_package_plan(package_name=sample.name, items=sample.items)
+    plan = build_examnet_qti_package_plan(
+        package_name=sample.name, assessment_title=sample.name, items=sample.items
+    )
 
     assert plan.status == ExamNetQtiPackageStatus.BLOCKED
     with pytest.raises(ValueError, match="passed QTI package plans"):

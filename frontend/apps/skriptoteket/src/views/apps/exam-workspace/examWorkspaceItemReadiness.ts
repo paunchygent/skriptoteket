@@ -19,7 +19,7 @@
  *   item's points, or sit on a non-free-text item.
  *
  * Relationships:
- *   - Mirrors `native_export_blockers` in
+ *   - Mirrors the per-item rules of `native_export_blockers` in
  *     `domain/curated_apps/exam_workspace/native_exam_export_rules.py`.
  *   - Reads the save rules from `examWorkspaceItemSaveRules` and
  *     `examWorkspaceAnswerKeyRules`.
@@ -28,8 +28,8 @@
  */
 
 import type {
-  ExamWorkspaceExportBlockerReason,
   ExamWorkspaceExportChecklistResponse,
+  ExamWorkspaceItemExportBlockerReason,
   NativeExamGap,
   NativeExamItem,
   NativeExamItemKind,
@@ -79,7 +79,7 @@ export function dropdownGapsWithTooFewOptions(item: NativeExamItem): NativeExamG
 }
 
 export type ExamWorkspaceReadinessReason =
-  | ExamWorkspaceExportBlockerReason
+  | ExamWorkspaceItemExportBlockerReason
   | "criteria_on_wrong_kind"
   | "criteria_points_mismatch"
   | "empty_criterion_text"

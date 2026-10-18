@@ -47,6 +47,7 @@ import type { NativeExamDocument } from "../../../api/examWorkspace";
 import { useToast } from "../../../composables/useToast";
 import { sameDocument } from "./examWorkspaceConversionMerge";
 import { examWorkspaceSaveRefusalCopy } from "./examWorkspaceItemSaveRules";
+import type { ExamWorkspaceTitleVerdict } from "./useExamWorkspaceTitleVerdict";
 
 export const EXAM_WORKSPACE_TYPING_PAUSE_MS = 900;
 
@@ -71,6 +72,8 @@ export type ExamWorkspaceHistoryDeps = {
   replaceCopy: <T>(run: () => Promise<T>) => Promise<T>;
   /** Put a stored step's document in front of the teacher. */
   install: (document: NativeExamDocument) => void;
+  /** The export gate's verdict on a stored step, for the title blocker. */
+  noteExportBlockers: ExamWorkspaceTitleVerdict;
   /** Another tab moved the history; reload the exam. */
   onConflict: () => Promise<void>;
 };
@@ -219,6 +222,7 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
       if (deps.lineageId() !== lineageId) {
         return "failed";
       }
+      deps.noteExportBlockers(response.document.title, response.export_blockers);
       ownCursor = response.history.cursor;
       deps.historyCursor.value = response.history.cursor;
       baselineId.value = response.history.baseline_step_id;

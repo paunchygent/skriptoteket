@@ -38,6 +38,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_package import
     build_examnet_qti_package_plan,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_xml import QTI_NAMESPACE
+from skriptoteket.domain.errors import DomainError, ErrorCode
 from tests.fixtures.exam_conversion_samples import (
     examnet_qti_keyed_samples,
     examnet_qti_manual_unkeyed_samples,
@@ -117,9 +118,36 @@ def test_unsupported_resources_are_omitted_and_reported(tmp_path: Path) -> None:
     assert "teacher-audio.mp3" in json_string(follow_up, "message")
 
 
+@pytest.mark.parametrize("blank", ["", "   ", "\t\n"])
+def test_blank_assessment_title_is_refused_not_replaced_by_the_package_name(blank: str) -> None:
+    sample = keyed_sample("free-text")
+
+    with pytest.raises(DomainError) as refusal:
+        build_examnet_qti_package_plan(
+            package_name=sample.name, assessment_title=blank, items=sample.items
+        )
+
+    assert refusal.value.code is ErrorCode.VALIDATION_ERROR
+    assert "title" in refusal.value.message
+
+
+def test_assessment_title_names_the_manifest_independent_of_the_package_name() -> None:
+    sample = keyed_sample("free-text")
+
+    plan = build_examnet_qti_package_plan(
+        package_name="the-file", assessment_title="The exam", items=sample.items
+    )
+
+    manifest = next(file for file in plan.files if file.relative_path == "imsmanifest.xml")
+    assert b"The exam" in manifest.payload
+    assert b"the-file" not in manifest.payload
+
+
 def test_all_sample_packages_wire_assessment_test_into_manifest() -> None:
     for sample in (*examnet_qti_keyed_samples(), *examnet_qti_manual_unkeyed_samples()):
-        plan = build_examnet_qti_package_plan(package_name=sample.name, items=sample.items)
+        plan = build_examnet_qti_package_plan(
+            package_name=sample.name, assessment_title=sample.name, items=sample.items
+        )
         if plan.status != ExamNetQtiPackageStatus.PASSED:
             continue
         zip_bytes = build_examnet_qti_zip_bytes(plan)
@@ -168,6 +196,7 @@ def test_digiexam_ir_adapter_feeds_reusable_qti_package_plan() -> None:
     adapter_result = build_examnet_qti_items_from_digiexam_ir(exam)
     plan = build_examnet_qti_package_plan(
         package_name="digiexam-adapter",
+        assessment_title="digiexam-adapter",
         items=adapter_result.items,
     )
     zip_bytes = build_examnet_qti_zip_bytes(plan)

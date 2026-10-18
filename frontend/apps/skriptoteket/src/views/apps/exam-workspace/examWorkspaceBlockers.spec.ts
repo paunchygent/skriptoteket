@@ -2,7 +2,12 @@ import { describe, expect, it } from "vitest";
 
 import type { NativeExamItem } from "../../../api/examWorkspace";
 import { buildDocument } from "../ExamWorkspaceSlice.specSupport";
-import { examWorkspaceBlockerEntries, withoutEmptyOptions, withoutOptionHeadings } from "./examWorkspaceBlockers";
+import {
+  examWorkspaceBlockerEntries,
+  examWorkspaceTitleBlockerEntries,
+  withoutEmptyOptions,
+  withoutOptionHeadings,
+} from "./examWorkspaceBlockers";
 import { examWorkspaceItemReadiness } from "./examWorkspaceItemReadiness";
 import type { ExamWorkspaceReadinessReason } from "./examWorkspaceItemReadiness";
 import { reviewed } from "./examWorkspaceItemEdits";
@@ -263,6 +268,25 @@ describe("export blocker fixes", () => {
     it("targets the first row when that is the unticked one", () => {
       expect(focusOf([[2, 1], [3, 3]])).toBe('[data-test^="exam-workspace-match-tick-left_001-"]');
     });
+  });
+});
+
+describe("examWorkspaceTitleBlockerEntries", () => {
+  it("gives the title row when the server judged the title without text", () => {
+    expect(examWorkspaceTitleBlockerEntries(true)).toEqual([
+      {
+        fix: null,
+        focus: '[data-test="exam-workspace-metadata-title"]',
+        itemId: null,
+        label: null,
+        problem: "Ge provet en titel med bokstäver eller siffror",
+        reason: "title_without_text",
+      },
+    ]);
+  });
+
+  it("gives no row while the title is not judged without text", () => {
+    expect(examWorkspaceTitleBlockerEntries(false)).toEqual([]);
   });
 });
 

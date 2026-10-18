@@ -8,7 +8,8 @@
  *   saves the exam first, so one click exports what the teacher sees; a
  *   failed save stops it (user rule 2026-10-17). The server owns the export
  *   gate; when it refuses with per-item blockers, keep their reasons per
- *   question for the export menu's blocker rows. When a save elsewhere moved
+ *   question, and a refused title, for the export menu's blocker rows. The
+ *   file name is the server's: the Content-Disposition name is used as sent. When a save elsewhere moved
  *   the saved exam, the latest version is read in for the next export.
  *
  * Relationships:
@@ -32,12 +33,14 @@ import type {
   ExamWorkspaceExportBlockerReason,
   ExamWorkspaceExportChecklistEntry,
   ExamWorkspaceExportTarget,
+  ExamWorkspaceItemExportBlockerReason,
   NativeExamDocument,
   NativeExamItem,
 } from "../../../api/examWorkspace";
 import { useToast } from "../../../composables/useToast";
 import { triggerBrowserDownload } from "../../../utils/browserDownload";
 import { examWorkspaceSavedAt } from "./examWorkspaceFormat";
+import type { ExamWorkspaceTitleVerdict } from "./useExamWorkspaceTitleVerdict";
 
 /** A save from elsewhere moved the head; the workspace reads the latest version in. */
 const EXPORT_STALE_COPY =
@@ -54,13 +57,24 @@ export const EXAM_WORKSPACE_EXPORT_BLOCKER_COPY: Record<ExamWorkspaceExportBlock
     ordering_too_few_steps: "Ordningsfrågan behöver minst två steg.",
     empty_ordering_step: "Ett steg i ordningsfrågan saknar text.",
     inline_choice_option_heading: "Rubrikformat är inte tillåtet i rullistealternativ.",
+    title_without_text: "Ge provet en titel med bokstäver eller siffror.",
     too_few_gap_options: "En rullista i en lucka har färre än två alternativ.",
     unbuilt_question:
       "Frågan kunde inte konverteras och visas som i källan. Kontrollera den och markera den som granskad.",
   };
 
-export const EXAM_WORKSPACE_EXPORT_BLOCKED_COPY =
-  "Filen kan inte skapas ännu. Åtgärda frågorna i listan och exportera igen.";
+/** The refusal names what blocks: the title, the questions, or both. */
+export function examWorkspaceExportBlockedCopy(blockers: readonly ExamWorkspaceExportBlocker[]): string {
+  const titleBlocked = blockers.some((blocker) => blocker.item_id === null);
+  const questionsBlocked = blockers.some((blocker) => blocker.item_id !== null);
+  if (titleBlocked && questionsBlocked) {
+    return "Filen kan inte skapas ännu. Åtgärda titeln och frågorna i listan och exportera igen.";
+  }
+  if (titleBlocked) {
+    return "Filen kan inte skapas ännu. Ge provet en titel med bokstäver eller siffror och exportera igen.";
+  }
+  return "Filen kan inte skapas ännu. Åtgärda frågorna i listan och exportera igen.";
+}
 
 const EXPORT_TARGET_LABELS: Record<ExamWorkspaceExportTarget, string> = {
   docx: "Word-filen",
@@ -83,12 +97,6 @@ export const EXPORT_FORMAT_NAMES: Record<ExamWorkspaceExportTarget, string> = {
 
 type ExportDestination = "download" | "files";
 
-const FALLBACK_FILENAMES: Record<ExamWorkspaceExportTarget, string> = {
-  docx: "prov.docx",
-  pdf: "prov-examnet.pdf",
-  qti: "prov-qti.zip",
-};
-
 const BLOCKER_REASONS = new Set<string>(Object.keys(EXAM_WORKSPACE_EXPORT_BLOCKER_COPY));
 
 function isExportBlocker(candidate: unknown): candidate is ExamWorkspaceExportBlocker {
@@ -96,7 +104,7 @@ function isExportBlocker(candidate: unknown): candidate is ExamWorkspaceExportBl
     typeof candidate === "object" &&
     candidate !== null &&
     "item_id" in candidate &&
-    typeof candidate.item_id === "string" &&
+    (typeof candidate.item_id === "string" || candidate.item_id === null) &&
     "reason" in candidate &&
     BLOCKER_REASONS.has(String(candidate.reason))
   );
@@ -111,7 +119,7 @@ function parseBlockers(details: unknown): ExamWorkspaceExportBlocker[] {
 }
 
 /** The server's reasons for one question, and the question as it was refused. */
-type RefusedItem = { item: NativeExamItem | undefined; reasons: ExamWorkspaceExportBlockerReason[] };
+type RefusedItem = { item: NativeExamItem | undefined; reasons: ExamWorkspaceItemExportBlockerReason[] };
 
 function groupBlockers(
   blockers: ExamWorkspaceExportBlocker[],
@@ -119,6 +127,9 @@ function groupBlockers(
 ): Record<string, RefusedItem> {
   const grouped: Record<string, RefusedItem> = {};
   for (const blocker of blockers) {
+    if (blocker.item_id === null || blocker.reason === "title_without_text") {
+      continue;
+    }
     const existing = grouped[blocker.item_id] ?? {
       item: items.find((item) => item.item_id === blocker.item_id),
       reasons: [],
@@ -136,6 +147,8 @@ export type ExamWorkspaceExportSteps = {
   saveFirst: () => Promise<boolean>;
   /** Read in the latest saved version after a save elsewhere moved it. */
   readLatest: () => Promise<void>;
+  /** The export gate's refusal of the title just saved, for the title blocker. */
+  noteBlockers: ExamWorkspaceTitleVerdict;
 };
 
 export function useExamWorkspaceExports(
@@ -152,7 +165,7 @@ export function useExamWorkspaceExports(
    * until the teacher changes that question: items change by replacement, so
    * a changed question is a new object and its old refusal no longer holds.
    */
-  const exportBlockersByItemId = computed<Record<string, ExamWorkspaceExportBlockerReason[]>>(() => {
+  const exportBlockersByItemId = computed<Record<string, ExamWorkspaceItemExportBlockerReason[]>>(() => {
     const current = new Map((workspaceDocument.value?.items ?? []).map((item) => [item.item_id, item]));
     return Object.fromEntries(
       Object.entries(refusedItems.value)
@@ -235,16 +248,17 @@ export function useExamWorkspaceExports(
     const blockers = isApiError(error) && error.status === 422 ? parseBlockers(error.details) : [];
     if (blockers.length > 0) {
       refusedItems.value = groupBlockers(blockers, workspaceDocument.value?.items ?? []);
-      exportNotice.value = EXAM_WORKSPACE_EXPORT_BLOCKED_COPY;
-      toast.warning(EXAM_WORKSPACE_EXPORT_BLOCKED_COPY);
+      steps.noteBlockers(workspaceDocument.value?.title ?? "", blockers);
+      exportNotice.value = examWorkspaceExportBlockedCopy(blockers);
+      toast.warning(exportNotice.value);
     } else if (isApiError(error) && error.status === 409) {
       refusedItems.value = {};
-      await steps.readLatest();
+        await steps.readLatest();
       exportNotice.value = EXPORT_STALE_COPY;
       toast.warning(EXPORT_STALE_COPY);
     } else {
       refusedItems.value = {};
-      exportNotice.value = `${EXPORT_TARGET_LABELS[target]} kunde inte skapas. Försök igen.`;
+        exportNotice.value = `${EXPORT_TARGET_LABELS[target]} kunde inte skapas. Försök igen.`;
       toast.failure(exportNotice.value);
     }
   }
@@ -272,7 +286,7 @@ export function useExamWorkspaceExports(
           : `${EXPORT_FORMAT_NAMES[target]} sparad i Mina filer.`;
       } else {
         const response = await downloadExamWorkspaceExport(savedSummary.lineage_id, target, savedSummary.version);
-        triggerBrowserDownload(response.blob, response.filename ?? FALLBACK_FILENAMES[target]);
+        triggerBrowserDownload(response.blob, response.filename);
         clearExportFeedback();
         exportResult.value = EXPORT_CREATED_MESSAGES[target];
       }

@@ -3,9 +3,13 @@
 from typing import Self
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, model_validator
+from pydantic import BaseModel, ConfigDict, computed_field, model_validator
 
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import NativeExamDocument
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_export_rules import (
+    NativeExportBlocker,
+    native_export_blockers,
+)
 
 
 class ExamWorkspaceHistoryStep(BaseModel):
@@ -69,6 +73,12 @@ class ExamWorkspaceUndoStepResponse(BaseModel):
 
     document: NativeExamDocument
     history: ExamWorkspaceHistoryResponse
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def export_blockers(self) -> tuple[NativeExportBlocker, ...]:
+        """The export gate's verdict on the stored step, for the workspace's blocker rows."""
+        return native_export_blockers(self.document)
 
 
 def history_response(history: ExamWorkspaceHistoryState) -> ExamWorkspaceHistoryResponse:

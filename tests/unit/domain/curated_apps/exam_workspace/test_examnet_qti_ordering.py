@@ -110,7 +110,9 @@ def test_scoring_is_all_or_nothing_for_the_full_points_and_never_mapped(
 
 def test_package_validator_reports_no_errors_for_an_ordering_item() -> None:
     items = native_exam_to_examnet_qti_items(_ordering_document(3))
-    plan = build_examnet_qti_package_plan(package_name="ordering", items=items)
+    plan = build_examnet_qti_package_plan(
+        package_name="ordering", assessment_title="ordering", items=items
+    )
     assert plan.status is ExamNetQtiPackageStatus.PASSED, plan.warnings
     package = ExamNetQtiPackageWriter().build_package_bytes(plan)
     report = build_examnet_qti_validation_report(
