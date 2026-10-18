@@ -19,8 +19,8 @@
  *   `examWorkspaceRichTextEditKind`), so the owner records one undo step for
  *   it; typing, Enter and paste coalesce. Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z and
  *   Ctrl+Y are the workspace's Ångra and Gör om (`examWorkspaceHistoryKeys`),
- *   never an editor-local undo. The component is a `RichTextTarget`: focusing it makes it the
- *   surface the shared formatting toolbar acts on.
+ *   never an editor-local undo. The component is a `RichTextTarget`: focusing
+ *   it makes it the surface the shared formatting toolbar acts on.
  *
  * Relationships:
  *   - `examWorkspaceRichTextSchema` builds the editor's extensions;
