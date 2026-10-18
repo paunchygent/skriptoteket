@@ -1,7 +1,7 @@
 /**
  * The keymap reads the platform once, when ProseMirror's keymap module loads,
  * so the Cmd shortcuts need a spec file of their own that reports a Mac before
- * any import runs. `ExamWorkspaceRichTextEditor.spec.ts` covers the Ctrl keys.
+ * any import runs. `ExamWorkspaceRichTextEditor.formatting.spec.ts` covers the Ctrl keys.
  */
 import { mount } from "@vue/test-utils";
 import type { Editor } from "@tiptap/core";

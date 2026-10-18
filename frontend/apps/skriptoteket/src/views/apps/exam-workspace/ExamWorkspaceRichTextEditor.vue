@@ -13,16 +13,19 @@
  *   confirmation, and the first Backspace after one selects it.
  *
  *   Every document change emits the mapped body at once. `structural` is true
- *   when the gaps or pictures changed, or when a toolbar click changed the
- *   marks or heading, so the owner records one undo step for it; typing
- *   coalesces. Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z and Ctrl+Y are the workspace's
- *   Ångra and Gör om (`examWorkspaceHistoryKeys`), never an editor-local
- *   undo. The component is a `RichTextTarget`: focusing it makes it the
+ *   when the gaps or pictures changed, when a toolbar click changed the marks
+ *   or heading, or when the transaction itself is a discrete edit (a mark or
+ *   heading changed from the keyboard, or text deleted across paragraphs;
+ *   `examWorkspaceRichTextEditKind`), so the owner records one undo step for
+ *   it; typing, Enter and paste coalesce. Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z and
+ *   Ctrl+Y are the workspace's Ångra and Gör om (`examWorkspaceHistoryKeys`),
+ *   never an editor-local undo. The component is a `RichTextTarget`: focusing it makes it the
  *   surface the shared formatting toolbar acts on.
  *
  * Relationships:
  *   - `examWorkspaceRichTextSchema` builds the editor's extensions;
  *     `examWorkspaceRichTextDocument` maps the body to and from them.
+ *   - `examWorkspaceRichTextEditKind` classifies a transaction as a discrete edit.
  *   - `examWorkspaceRichTextTarget` registers the surface for the toolbar.
  *   - `examWorkspaceHistoryKeys` receives the undo and redo shortcuts.
  *   - Atom and heading styles are global in `examWorkspace.css`.
@@ -43,6 +46,7 @@ import {
   placedAssetIds,
   placedGapIds,
 } from "./examWorkspaceRichTextDocument";
+import { isDiscreteEdit } from "./examWorkspaceRichTextEditKind";
 import {
   ATOM_STATE_KEY,
   EXAM_GAP_NODE,
@@ -123,7 +127,11 @@ const editor = useEditor({
       if (node.type.name !== EXAM_GAP_NODE || !props.gapsInteractive || props.disabled) {
         return false;
       }
-      emit("activateGap", String(node.attrs.gapId), view.nodeDOM(nodePos) as HTMLElement);
+      const element = view.nodeDOM(nodePos);
+      if (!(element instanceof HTMLElement)) {
+        return false;
+      }
+      emit("activateGap", String(node.attrs.gapId), element);
       return true;
     },
     handleKeyDown: (view, event) => {
@@ -137,17 +145,21 @@ const editor = useEditor({
       ) {
         return false;
       }
-      emit("activateGap", String(selection.node.attrs.gapId), view.nodeDOM(selection.from) as HTMLElement);
+      const element = view.nodeDOM(selection.from);
+      if (!(element instanceof HTMLElement)) {
+        return false;
+      }
+      emit("activateGap", String(selection.node.attrs.gapId), element);
       return true;
     },
   },
-  onUpdate: ({ editor: current }) => {
+  onUpdate: ({ editor: current, transaction }) => {
     if (props.disabled) {
       return;
     }
     const body = bodyFromEditor(current.getJSON());
     const atoms = atomKey(body);
-    const structural = toolbarEdit || atoms !== knownAtoms;
+    const structural = toolbarEdit || atoms !== knownAtoms || isDiscreteEdit(transaction);
     emitted = JSON.stringify(body);
     knownAtoms = atoms;
     emit("update", body, structural);
