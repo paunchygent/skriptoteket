@@ -21,6 +21,8 @@
  */
 
 import type { NativeExamItem } from "../../../api/examWorkspace";
+import { dropdownGapsWithoutCorrectOption } from "./examWorkspaceAnswerKeyRules";
+import { dropdownGapsWithTooFewOptions } from "./examWorkspaceItemReadiness";
 import type { ExamWorkspaceReadinessReason } from "./examWorkspaceItemReadiness";
 import { examWorkspaceShortProblem } from "./examWorkspaceListEntries";
 import type { ExamWorkspaceListEntry } from "./examWorkspaceListEntries";
@@ -155,6 +157,12 @@ function blockerFocus(item: NativeExamItem, reason: ExamWorkspaceReadinessReason
     case "negative_points":
     case "criteria_points_mismatch":
       return POINTS;
+    case "ordering_too_few_steps":
+      return testId("exam-workspace-ordering-add-step");
+    case "empty_ordering_step": {
+      const step = item.choices.find((choice) => isEmpty(choice.body))?.choice_id;
+      return step ? `[data-test^="exam-workspace-ordering-step-text-${step}"]` : null;
+    }
     case "empty_choice":
       return choiceText(item.choices.find((choice) => isEmpty(choice.body))?.choice_id);
     case "empty_gap_option":
@@ -164,6 +172,10 @@ function blockerFocus(item: NativeExamItem, reason: ExamWorkspaceReadinessReason
         item.gaps.find((gap) => gap.options.some((option) => option.body.some((p) => p.heading_level !== null)))
           ?.gap_id,
       );
+    case "too_few_gap_options":
+      return gapChip(dropdownGapsWithTooFewOptions(item)[0]?.gap_id);
+    case "gap_without_correct_option":
+      return gapChip(dropdownGapsWithoutCorrectOption(item)[0]?.gap_id);
     case "empty_match_entry": {
       const left = item.match_left.find((entry) => isEmpty(entry.body));
       if (left) return `[data-test^="exam-workspace-match-left-text-${left.left_id}"]`;

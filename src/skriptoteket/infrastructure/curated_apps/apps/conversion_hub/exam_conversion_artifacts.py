@@ -7,8 +7,8 @@ Purpose:
 
 Relationships:
     Implements ``ExamConversionArtifactStoreProtocol`` for
-    ``CreateExamConverterConversionJobsHandler`` and the Conversion Hub
-    artifact download handler.
+    the public Exam Converter job handler and the Conversion Hub artifact
+    download handler.
 """
 
 from __future__ import annotations

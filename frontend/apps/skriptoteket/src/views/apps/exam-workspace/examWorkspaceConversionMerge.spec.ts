@@ -30,6 +30,7 @@ function buildItem(itemId: string, text: string): NativeExamItem {
     import_record: null,
     criteria: [],
     printed_label: null,
+    print_order: [],
     retry_source: null,
     answer_key: {
       correct_choice_ids: [],

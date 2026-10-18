@@ -63,8 +63,6 @@ async def test_one_invalid_answer_keeps_valid_answers_and_continues_to_later_que
     assert [entry.item_id for entry in payload.suggestions] == ["item_001", "item_003"]
     assert payload.suggestions[0].suggestion.correct_choice_ids == ("choice_002",)
     assert payload.suggestions[1].suggestion.correct_choice_ids == ("choice_001",)
-    assert harness.proposed_overlays.records == []
-    assert harness.producer.calls == 0
 
 
 async def test_valid_answer_survives_a_later_provider_timeout_with_failover() -> None:
@@ -86,8 +84,6 @@ async def test_valid_answer_survives_a_later_provider_timeout_with_failover() ->
     )
     assert [entry.item_id for entry in payload.suggestions] == ["item_001"]
     assert payload.suggestions[0].suggestion.correct_choice_ids == ("choice_002",)
-    assert harness.proposed_overlays.records == []
-    assert harness.producer.calls == 0
 
 
 async def test_valid_answer_survives_an_invalid_answer_then_a_provider_error() -> None:

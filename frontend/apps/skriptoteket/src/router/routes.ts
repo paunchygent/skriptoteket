@@ -10,39 +10,12 @@ function getMissingAppsPrefixAppId(appId: unknown): string | null {
   return RESERVED_PUBLIC_ROUTE_SEGMENTS.has(appId) ? null : appId;
 }
 
-const EXAM_CONVERTER_UI_INSPECTION_ROUTES: RouteRecordRaw[] =
-  import.meta.env.DEV || import.meta.env.MODE === "test"
-    ? [
-        {
-          path: "/apps/documents.conversion_hub/exam-converter/ui-fixtures/:fixtureId",
-          name: "exam-converter-ui-inspection-fixture",
-          component: () => import("../views/apps/ExamConverterAuthenticatedView.vue"),
-          props: (route) => ({
-            inspectionFixtureId: route.params.fixtureId,
-          }),
-          meta: { requiresAuth: true },
-        },
-      ]
-    : [];
-
 const CANONICAL_CONVERSION_APP_ROUTES: RouteRecordRaw[] = [
-  {
-    path: "/apps/exam-converter",
-    name: "exam-converter-authenticated",
-    component: () => import("../views/apps/ExamConverterAuthenticatedView.vue"),
-    props: () => ({
-      presentationMode: "exam",
-    }),
-    meta: { requiresAuth: true },
-  },
   {
     path: "/apps/audio-transcription",
     name: "audio-transcription-authenticated",
-    component: () => import("../views/HomeView.vue"),
-    meta: {
-      requiresAuth: true,
-      unavailableAppTitle: "Ljudtranskribering",
-    },
+    component: () => import("../views/apps/conversion-hub-transcript/ConversionHubTranscriptHost.vue"),
+    meta: { requiresAuth: true },
   },
   {
     path: "/apps/document-converter",
@@ -134,7 +107,6 @@ export const routes: RouteRecordRaw[] = [
     component: () => import("../views/BrowseToolsView.vue"),
     meta: { requiresAuth: true },
   },
-  ...EXAM_CONVERTER_UI_INSPECTION_ROUTES,
   ...CANONICAL_CONVERSION_APP_ROUTES,
   {
     path: "/apps/:appId",

@@ -17,7 +17,7 @@ import {
   publicApiPost,
   type ApiBlobResponse,
 } from "../../../api/client";
-import type { ExamConverterTarget } from "../exam-converter/types";
+import type { ExamConverterTarget } from "./types";
 
 export type { ExamConverterTarget };
 

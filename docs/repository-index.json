@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "eeb7d839a14d62a373909d7366aa20459492c475bb20bda0404457ed46cb37a9",
+  "source_set_digest": "205f361d2ab5d995e736fb4bc17965d90ea768869921fac5e6467776bc62bb03",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5002,6 +5002,25 @@
       }
     },
     {
+      "id": "TASK-SKRIPT-39-04-12",
+      "type": "task",
+      "title": "Grammar exams convert with each lead-in, exam-wide text, question and table in its own place",
+      "path": "docs/backlog/tasks/task-skript-39-04-12-grammar-exams-convert-with-each-lead-in-exam-wide-text-question-and-table-in-its-own-place.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
       "id": "TASK-SKRIPT-39-05-01",
       "type": "task",
       "title": "Walking skeleton for AI-first DOCX conversion as a background job",
@@ -6285,7 +6304,7 @@
       "type": "task",
       "title": "Teachers edit a dropdown gap's options and mark the correct one in the gap popover",
       "path": "docs/backlog/tasks/task-skript-40-04-04-teachers-edit-a-dropdown-gap-s-options-and-mark-the-correct-one-in-the-gap-popover.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -8764,7 +8783,7 @@
       "type": "adr",
       "title": "Exam Converter durable correction sessions with stateless apply",
       "path": "docs/decisions/adr-skript-0087-exam-converter-durable-correction-sessions-with-stateless-apply.md",
-      "status": "accepted",
+      "status": "superseded",
       "owners": [
         {
           "kind": "service",
@@ -12392,7 +12411,7 @@
       {
         "id": "ADR-SKRIPT-0087",
         "title": "Exam Converter durable correction sessions with stateless apply",
-        "status": "accepted",
+        "status": "superseded",
         "path": "docs/decisions/adr-skript-0087-exam-converter-durable-correction-sessions-with-stateless-apply.md",
         "governing": [],
         "governed_contracts": [],

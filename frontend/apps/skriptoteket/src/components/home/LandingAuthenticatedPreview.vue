@@ -47,7 +47,7 @@ function getWorkApp(appId: string): HomeWorkApp {
 
 const audioTranscriptionApp = getWorkApp("audio-transcription");
 const documentConverterApp = getWorkApp("document-converter");
-const examConverterApp = getWorkApp("exam-converter");
+const examWorkspaceApp = getWorkApp("exam-workspace");
 
 const panels = [
   {
@@ -62,8 +62,8 @@ const panels = [
   },
   {
     title: "Skapa, redigera och konvertera prov",
-    imageSrc: examConverterApp.imageSrc,
-    availability: examConverterApp.availability ?? "available",
+    imageSrc: examWorkspaceApp.imageSrc,
+    availability: examWorkspaceApp.availability ?? "available",
   },
 ] as const;
 </script>

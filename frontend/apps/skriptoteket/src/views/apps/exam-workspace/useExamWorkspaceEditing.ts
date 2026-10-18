@@ -12,13 +12,14 @@
  *     `useExamWorkspaceStructure`; consumed by `ExamWorkspaceView`.
  */
 
+import type { NativeExamDocument } from "../../../api/examWorkspace";
 import { useExamWorkspaceDocument } from "./useExamWorkspaceDocument";
 import { useExamWorkspaceHistory } from "./useExamWorkspaceHistory";
 import { useExamWorkspaceStructure } from "./useExamWorkspaceStructure";
 
 export function useExamWorkspaceEditing() {
-  let noteEdit: (structural: boolean) => void = () => undefined;
-  const document = useExamWorkspaceDocument({ onEdit: (structural) => noteEdit(structural) });
+  let noteEdit: (structural: boolean, before: NativeExamDocument | null) => void = () => undefined;
+  const document = useExamWorkspaceDocument({ onEdit: (structural, before) => noteEdit(structural, before) });
   const lineageId = () => document.summary.value?.lineage_id ?? null;
   const reload = () => document.reloadDocument();
 

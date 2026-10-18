@@ -51,6 +51,7 @@ function toNativeItem(recorded: RecordedItem, sequence: number): NativeExamItem 
     import_record: null,
     criteria: [],
     printed_label: null,
+    print_order: [],
     retry_source: null,
     suggested_kind: null,
     tick_points: null,

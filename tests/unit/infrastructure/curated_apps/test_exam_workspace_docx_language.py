@@ -1,7 +1,7 @@
-"""The teacher DOCX export prints its fixed words in the exam's language (D21).
+"""The teacher DOCX export prints its fixed words in Swedish (user decision of 2026-10-18).
 
-Each corpus exam is converted from its recorded provider rounds and exported. The exam
-language is the word gold prints before its question numbers, so no exam is named. Only
+Each corpus exam is converted from its recorded provider rounds and exported. No exam is
+named, and English exams get the same Swedish words. Only
 lines the writer generates are checked: headings, points lines, the answer-key heading
 and answer-key rows. Exam text copied from the source may contain any word.
 """
@@ -13,23 +13,15 @@ import pytest
 from docx import Document
 
 from skriptoteket.domain.curated_apps.exam_workspace.exam_language_labels import (
-    exam_language_labels,
+    SWEDISH_EXAM_LABELS,
 )
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_writer import (  # noqa: E501
     ExamWorkspaceDocxWriter,
 )
-from tests.unit.scripts.exam_conversion_corpus_support import RECORDED_STEMS, gold_exam, replayed
+from tests.unit.scripts.exam_conversion_corpus_support import RECORDED_STEMS, replayed
 
-_SWEDISH = {"Fråga", "Lucka", "Poäng", "poäng", "saknas", "Facit", "Rätt svar", "Par"}
 _ENGLISH = {"Question", "Gap", "Points", "missing", "Answer key", "Correct answer", "Pair"}
 _KEY_ROW = re.compile(r"^(Rätt svar|Correct answer|Lucka \d+|Gap \d+|Par|Pair): ")
-
-
-def _gold_label_word(stem: str) -> str:
-    label = gold_exam(stem).questions[0].source_label.split(",")[-1]
-    match = re.match(r"\s*(\w+)\s+\d", label)
-    assert match is not None, label
-    return match.group(1)
 
 
 def _generated_lines(stem: str) -> list[str]:
@@ -55,12 +47,11 @@ def _words_of(text: str) -> set[str]:
 
 
 @pytest.mark.parametrize("stem", RECORDED_STEMS)
-def test_generated_lines_hold_no_fixed_word_of_the_other_language(stem: str) -> None:
+def test_generated_lines_hold_no_english_fixed_word(stem: str) -> None:
     document, _ = replayed(stem)
-    labels = exam_language_labels(document)
-    assert labels.question == _gold_label_word(stem)
-    forbidden = _ENGLISH if labels.language == "sv" else _SWEDISH
-    forbidden_words = {word for phrase in forbidden for word in phrase.split()}
+    labels = SWEDISH_EXAM_LABELS
+    assert labels.question == "Fråga"
+    forbidden_words = {word for phrase in _ENGLISH for word in phrase.split()}
     # Lines the exam itself prints are not generated export wording.
     printed = {line for item in document.items for line in item.plain_text_lines()}
     generated = [line for line in _generated_lines(stem) if line not in printed]
@@ -71,9 +62,9 @@ def test_generated_lines_hold_no_fixed_word_of_the_other_language(stem: str) -> 
 
 
 @pytest.mark.parametrize("stem", RECORDED_STEMS)
-def test_every_points_line_and_key_heading_uses_the_exam_language(stem: str) -> None:
+def test_every_points_line_and_key_heading_is_swedish(stem: str) -> None:
     document, _ = replayed(stem)
-    labels = exam_language_labels(document)
+    labels = SWEDISH_EXAM_LABELS
     parsed = Document(io.BytesIO(ExamWorkspaceDocxWriter().build_docx_bytes(document)))
     texts = [paragraph.text for paragraph in parsed.paragraphs]
     for item in document.items:
@@ -85,8 +76,3 @@ def test_every_points_line_and_key_heading_uses_the_exam_language(stem: str) -> 
         p.text for p in parsed.paragraphs if p.style is not None and p.style.name == "Heading 2"
     ]
     assert headings in ([], [labels.answer_key])
-
-
-def test_the_corpus_holds_a_swedish_and_an_english_exam() -> None:
-    languages = {exam_language_labels(replayed(stem)[0]).language for stem in RECORDED_STEMS}
-    assert {"sv", "en"} <= languages

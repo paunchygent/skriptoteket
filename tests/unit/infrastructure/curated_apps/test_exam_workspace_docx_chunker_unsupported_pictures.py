@@ -265,7 +265,7 @@ def test_an_unavailable_render_leaves_review_state_and_blocks_export() -> None:
     )
 
     assert item.review.state is NativeItemReviewState.REVIEW_REQUIRED
-    assert item.review.parse_origin is NativeParseOrigin.DETERMINISTIC
+    assert item.review.parse_origin is NativeParseOrigin.SOURCE_FALLBACK
     assert item.review.reasons == (
         "Frågan kunde inte tolkas. Kontrollera källtexten manuellt.",
         "Bilden /word/media/figur.emf (image/x-emf) kan inte visas i provet. "

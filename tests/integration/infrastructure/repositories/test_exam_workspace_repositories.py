@@ -16,15 +16,8 @@ import pytest
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from skriptoteket.application.curated_apps.conversion_hub import (
-    ConversionHubJob,
-    ConversionHubJobStatus,
-    ConversionHubOutputFormatV2,
-    ConversionHubSourceFormatV2,
-)
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJob,
-    enqueue_enrichment_job,
     enqueue_workspace_enrichment_job,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_document_store import (
@@ -45,9 +38,6 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace
 )
 from skriptoteket.infrastructure.db.models.user_vault_file import UserVaultFileModel
 from skriptoteket.infrastructure.db.uow import SQLAlchemyUnitOfWork
-from skriptoteket.infrastructure.repositories.conversion_hub_jobs import (
-    PostgreSQLConversionHubJobRepository,
-)
 from skriptoteket.infrastructure.repositories.exam_answer_key_enrichment_jobs import (
     PostgreSQLExamAnswerKeyEnrichmentJobRepository,
 )
@@ -373,28 +363,6 @@ async def test_overwriting_an_exam_keeps_the_row_and_adjusts_vault_usage(
     assert usage is not None and usage.bytes_total == len(second_content)
 
 
-async def _create_conversion_job(
-    session_factory: async_sessionmaker[AsyncSession], owner_id: UUID
-) -> ConversionHubJob:
-    now = datetime.now(UTC)
-    candidate = ConversionHubJob(
-        id=uuid4(),
-        owner_user_id=owner_id,
-        input_filename="exam.dxe",
-        source_format=ConversionHubSourceFormatV2.DIGIEXAM_DXE,
-        output_format=ConversionHubOutputFormatV2.EXAMNET_BUNDLE,
-        status=ConversionHubJobStatus.SUBMITTED,
-        submission_idempotency_key=f"workspace-test-{uuid4()}",
-        created_at=now,
-        updated_at=now,
-    )
-    async with session_factory() as session, session.begin():
-        job, _ = await PostgreSQLConversionHubJobRepository(
-            session
-        ).acquire_by_owner_and_submission_key(job=candidate)
-    return job
-
-
 async def test_workspace_suggestion_jobs_coexist_for_one_lineage(
     session_factory: async_sessionmaker[AsyncSession],
 ) -> None:
@@ -430,35 +398,3 @@ async def test_workspace_suggestion_jobs_coexist_for_one_lineage(
         assert found.workspace_document_revision == 3
         assert found.workspace_request_json == {"views": []}
         assert await repository.get_by_id(job_id=uuid4()) is None
-
-
-async def test_dxe_enrichment_jobs_carry_no_workspace_binding(
-    session_factory: async_sessionmaker[AsyncSession],
-) -> None:
-    owner = await create_owner(session_factory)
-    now = datetime.now(UTC)
-    conversion_jobs = [await _create_conversion_job(session_factory, owner.id) for _ in range(2)]
-
-    dxe_jobs = [
-        enqueue_enrichment_job(
-            job_id=uuid4(),
-            conversion_job_id=conversion_job.id,
-            owner_user_id=owner.id,
-            input_filename="exam.dxe",
-            source_dxe=b"dxe",
-            now=now,
-        )
-        for conversion_job in conversion_jobs
-    ]
-    async with session_factory() as session, session.begin():
-        repository = PostgreSQLExamAnswerKeyEnrichmentJobRepository(session)
-        for dxe_job in dxe_jobs:
-            await repository.create(job=dxe_job)
-
-    async with session_factory() as session, session.begin():
-        repository = PostgreSQLExamAnswerKeyEnrichmentJobRepository(session)
-        for dxe_job in dxe_jobs:
-            stored = await repository.get_by_id_for_update(job_id=dxe_job.id)
-            assert stored is not None
-            assert stored.workspace_lineage_id is None
-            assert stored.workspace_document_revision is None

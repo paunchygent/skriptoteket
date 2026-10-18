@@ -5,7 +5,7 @@ from enum import StrEnum
 from typing import Annotated, Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, computed_field
+from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator
 
 from skriptoteket.domain.curated_apps.exam_workspace.exam_course_catalog import ExamCourse
 from skriptoteket.domain.curated_apps.exam_workspace.exam_index import ExamListOrdering
@@ -13,6 +13,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeExamDocument,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_export_rules import (
+    InlineChoiceMinOptions,
     NativeExportBlocker,
     native_export_blockers,
 )
@@ -23,6 +24,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
     NativeAnswerKeySuggestion,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    IMPORTABLE_ITEM_KINDS,
     NativeExamItemKind,
 )
 
@@ -197,6 +199,13 @@ class RetryExamWorkspaceItemRequest(BaseModel):
     item_id: str
     kind: NativeExamItemKind
 
+    @field_validator("kind")
+    @classmethod
+    def _importable_kind(cls, value: NativeExamItemKind) -> NativeExamItemKind:
+        if value not in IMPORTABLE_ITEM_KINDS:
+            raise ValueError("a retry never produces ordering questions")
+        return value
+
 
 class ExamWorkspaceItemRetryResponse(BaseModel):
     """The one item a retry replaces its question with; everything else stays put."""
@@ -274,8 +283,13 @@ ExamWorkspaceExportChecklistEntry = Annotated[
 
 
 class ExamWorkspaceExportChecklistResponse(BaseModel):
-    """What an Exam.net import of this document's QTI package loses (Q15-Q17)."""
+    """What an Exam.net import of this document's QTI package loses (Q15-Q17).
+
+    ``inline_choice_min_options`` publishes the export rule's dropdown minimum, so the
+    workspace readiness mirror reads it from this contract instead of restating it.
+    """
 
     model_config = ConfigDict(frozen=True)
 
     entries: tuple[ExamWorkspaceExportChecklistEntry, ...]
+    inline_choice_min_options: InlineChoiceMinOptions

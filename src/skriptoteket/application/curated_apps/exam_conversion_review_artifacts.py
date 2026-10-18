@@ -1,4 +1,16 @@
-"""Native review, readiness, and artifact projections for Exam Converter jobs."""
+"""Review, readiness, and artifact projections for public Exam Converter jobs.
+
+Purpose:
+    Project one parsed DigiExam source exam and its produced Exam.net bundle
+    parts into the named artifacts and browser-facing manifest that the public
+    guest Exam Converter stores, lists and serves for download.
+
+Relationships:
+    Called by ``application.curated_apps.exam_conversion_producers`` when the
+    public converter produces a bundle; ``build_artifact_manifest`` is called by
+    ``application.curated_apps.handlers.public_exam_converter_jobs`` over the
+    stored named artifacts.
+"""
 
 from __future__ import annotations
 
@@ -14,17 +26,9 @@ from skriptoteket.application.curated_apps.exam_conversion import (
     build_examnet_pdf_filename,
     build_examnet_qti_filename,
 )
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_completion import (
-    CHOICE_PROMPT_TEMPLATE_VERSION,
-    GAP_FILL_PROMPT_TEMPLATE_VERSION,
-)
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_contracts import (
     DigiExamAnswerKeyProvenance,
     DigiExamItemType,
-)
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ingestion_overlay_contracts import (
-    DigiExamEffectiveExam,
-    DigiExamIngestionOverlay,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ir_contracts import (
     DigiExamIntermediateExam,
@@ -34,9 +38,6 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ir_contracts impo
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_source_fingerprints import (
     source_item_fingerprint,
-)
-from skriptoteket.domain.curated_apps.exam_converter_correction_sessions import (
-    SourceBoundCorrectionIntent,
 )
 
 _MACHINE_MARKED = frozenset(
@@ -53,40 +54,20 @@ def build_review_named_artifacts(
     *,
     job_id: UUID,
     source_exam: DigiExamIntermediateExam,
-    effective_exam: DigiExamIntermediateExam,
-    effective_report: DigiExamEffectiveExam | None,
-    proposal_overlay: DigiExamIngestionOverlay | None,
-    proposal_provider_profile_id: str | None,
-    proposal_model: str | None,
     qti_package_bytes: bytes,
     pdf_bytes: bytes,
     validation_report_bytes: bytes,
-    correction_intents: tuple[SourceBoundCorrectionIntent, ...] = (),
-    enrichment_failure_code: str | None = None,
-    retry_identity: str | None = None,
+    enrichment_failure_code: str | None,
 ) -> tuple[ExamConversionNamedArtifact, ...]:
     """Build the complete local product projection from owned conversion state."""
 
     source_ir_bytes = _json_bytes(source_exam)
-    review_ir_bytes = _json_bytes(effective_exam)
     source_ir_sha256 = _sha256(source_ir_bytes)
-    effective_bytes = (
-        _json_bytes(effective_report) if effective_report is not None else source_ir_bytes
-    )
-    effective_sha256 = _sha256(effective_bytes)
-    proposal_items = {
-        item.item_id: item for item in (proposal_overlay.items if proposal_overlay else ())
-    }
-    review_state, blocked_item_ids = _review_state(
-        source_exam=source_exam,
-        effective_exam=effective_exam,
-        proposal_item_ids=frozenset(proposal_items),
-        correction_intents=correction_intents,
-    )
+    review_state, blocked_item_ids = _review_state(source_exam=source_exam)
     readiness = _target_readiness(
         job_id=job_id,
         source_ir_sha256=source_ir_sha256,
-        effective_exam_sha256=effective_sha256,
+        effective_exam_sha256=source_ir_sha256,
         blocked_item_ids=blocked_item_ids,
         source_exam=source_exam,
     )
@@ -109,7 +90,7 @@ def build_review_named_artifacts(
             "application/json",
             validation_report_bytes,
         ),
-        _named("ir_json", "digiexam-ir.json", "application/json", review_ir_bytes),
+        _named("ir_json", "digiexam-ir.json", "application/json", source_ir_bytes),
         _named(
             "source_ir_json",
             "digiexam-source-ir.json",
@@ -135,18 +116,7 @@ def build_review_named_artifacts(
             _json_bytes(review_state),
         ),
     ]
-    if effective_report is not None:
-        artifacts.append(
-            _named("effective_ir_json", "effective-ir.json", "application/json", effective_bytes)
-        )
-    completion = _completion_report(
-        source_exam=source_exam,
-        proposal_overlay=proposal_overlay,
-        provider_profile_id=proposal_provider_profile_id,
-        model=proposal_model,
-        failure_code=enrichment_failure_code,
-        retry_identity=retry_identity,
-    )
+    completion = _completion_report(source_exam=source_exam, failure_code=enrichment_failure_code)
     artifacts.append(
         _named(
             "answer_key_completion_report",
@@ -167,9 +137,7 @@ def build_artifact_manifest(
 ) -> dict[str, JsonValue]:
     """Build the browser-facing manifest from stored named artifacts."""
 
-    entries: list[JsonValue] = [
-        _artifact_entry(job_id=job_id, artifact=artifact) for artifact in artifacts
-    ]
+    entries: list[JsonValue] = [_artifact_entry(artifact=artifact) for artifact in artifacts]
     readiness_bytes = next(
         artifact.content
         for artifact in artifacts
@@ -184,19 +152,8 @@ def build_artifact_manifest(
         if row.get("item_id") is None and row.get("export_enabled") is True
     ]
     review_required = any(row.get("export_enabled") is not True for row in readiness_rows)
-    review_ir_bytes = next(
-        artifact.content for artifact in artifacts if artifact.artifact_key == "ir_json"
-    )
     source_ir_bytes = next(
         artifact.content for artifact in artifacts if artifact.artifact_key == "source_ir_json"
-    )
-    effective = next(
-        (
-            artifact.content
-            for artifact in artifacts
-            if artifact.artifact_key == "effective_ir_json"
-        ),
-        review_ir_bytes,
     )
     return {
         "schema_version": "digiexam_migration_bundle_v3",
@@ -223,57 +180,19 @@ def build_artifact_manifest(
             "source_ir_schema_version": "digiexam_intermediate_exam_v3",
             "source_ir_sha256": _sha256(source_ir_bytes),
             "effective_exam_schema_version": "digiexam_effective_exam_v2",
-            "effective_exam_sha256": _sha256(effective),
+            "effective_exam_sha256": _sha256(source_ir_bytes),
         },
     }
 
 
 def _review_state(
-    *,
-    source_exam: DigiExamIntermediateExam,
-    effective_exam: DigiExamIntermediateExam,
-    proposal_item_ids: frozenset[str],
-    correction_intents: tuple[SourceBoundCorrectionIntent, ...],
+    *, source_exam: DigiExamIntermediateExam
 ) -> tuple[dict[str, JsonValue], set[str]]:
-    effective_by_id = {item.item_id: item for item in effective_exam.items}
     rows: list[JsonValue] = []
     blocked_item_ids: set[str] = set()
-    manual_intents = {
-        intent.item_id: intent
-        for intent in correction_intents
-        if intent.kind.value in {"manual_choice_answer_key", "manual_gap_open_cloze_answer_key"}
-    }
     for item in source_exam.items:
-        effective_item = effective_by_id[item.item_id]
-        is_machine = item.item_id in proposal_item_ids
-        provenance = effective_item.answer_key.provenance
-        if is_machine and provenance is DigiExamAnswerKeyProvenance.MACHINE_PROPOSED_KEY:
-            review_state = "review_required"
-            origin = "none"
-            reasons = ["advisory_candidate_pending"]
-            message_key = "exam_converter.answer_key.advisory_pending"
-        elif provenance is DigiExamAnswerKeyProvenance.MANUAL_TEACHER_KEY:
-            intent = manual_intents.get(item.item_id)
-            submission_origin = (
-                intent.payload.get("submission_origin") if intent is not None else None
-            )
-            review_state = "teacher_modified"
-            origin = "teacher_authored"
-            reasons = ["teacher_answer_key_present"]
-            message_key = "exam_converter.answer_key.teacher_answer_key_present"
-            provenance_detail = None
-            if submission_origin == "accepted_advisory_candidate" and intent is not None:
-                review_state = "review_complete"
-                origin = "reviewed_advisory"
-                reasons = ["reviewed_advisory_accepted"]
-                message_key = "exam_converter.answer_key.advisory_accepted"
-                provenance_detail = intent.payload.get("candidate_lineage")
-            elif submission_origin == "teacher_edited_advisory_candidate" and intent is not None:
-                origin = "teacher_edited_advisory"
-                reasons = ["teacher_edited_advisory_candidate"]
-                message_key = "exam_converter.answer_key.advisory_edited"
-                provenance_detail = intent.payload.get("candidate_lineage")
-        elif provenance is not DigiExamAnswerKeyProvenance.ABSENT:
+        provenance = item.answer_key.provenance
+        if provenance is not DigiExamAnswerKeyProvenance.ABSENT:
             review_state = "review_complete"
             origin = "source_provided"
             reasons = ["source_answer_key_present"]
@@ -288,9 +207,7 @@ def _review_state(
             origin = "none"
             reasons = ["answer_key_not_applicable"]
             message_key = "exam_converter.answer_key.not_applicable"
-        if provenance is not DigiExamAnswerKeyProvenance.MANUAL_TEACHER_KEY:
-            provenance_detail = None
-        if review_state in {"review_required", "validation_required"}:
+        if review_state == "validation_required":
             blocked_item_ids.add(item.item_id)
         rows.append(
             {
@@ -303,19 +220,17 @@ def _review_state(
                 "reasons": list(reasons),
                 "message_key": message_key,
                 "choice_ids": [
-                    f"choice-{value}" for value in effective_item.answer_key.correct_alternative_ids
+                    f"choice-{value}" for value in item.answer_key.correct_alternative_ids
                 ],
                 "choice_interaction_ids": (
                     [f"choice-{item.item_id}"] if item.item_type in _MACHINE_MARKED else []
                 ),
-                "gap_ids": [
-                    answer.guid for answer in effective_item.answer_key.correct_gap_answers
-                ],
+                "gap_ids": [answer.guid for answer in item.answer_key.correct_gap_answers],
                 "gap_interaction_ids": (
                     [f"gap-{item.item_id}"] if item.item_type is DigiExamItemType.GAP_FILL else []
                 ),
                 "correction_affordances": _correction_affordances(item),
-                "provenance_detail": provenance_detail,
+                "provenance_detail": None,
                 "replay_artifact_references": [],
             }
         )
@@ -390,74 +305,33 @@ def _readiness_row(
 def _completion_report(
     *,
     source_exam: DigiExamIntermediateExam,
-    proposal_overlay: DigiExamIngestionOverlay | None,
-    provider_profile_id: str | None,
-    model: str | None,
     failure_code: str | None,
-    retry_identity: str | None,
 ) -> dict[str, JsonValue]:
-    proposals = {
-        item.item_id: item for item in (proposal_overlay.items if proposal_overlay else ())
-    }
     items: list[JsonValue] = []
     for item in source_exam.items:
-        proposal = proposals.get(item.item_id)
         manual_follow_up = (
             failure_code is not None
             and item.answer_key.provenance is DigiExamAnswerKeyProvenance.ABSENT
             and item.item_type in _MACHINE_MARKED
-        )
-        payload = (
-            proposal.manual_answer_key.model_dump(mode="json")
-            if proposal and proposal.manual_answer_key
-            else None
-        )
-        payload_bytes = _json_bytes(payload) if payload is not None else b""
-        prompt_version = (
-            GAP_FILL_PROMPT_TEMPLATE_VERSION
-            if item.item_type is DigiExamItemType.GAP_FILL
-            else CHOICE_PROMPT_TEMPLATE_VERSION
         )
         items.append(
             {
                 "item_id": item.item_id,
                 "sequence": item.sequence,
                 "item_type": item.item_type.value,
-                "decision_state": (
-                    "suggested"
-                    if payload is not None
-                    else "manual_follow_up_required"
-                    if manual_follow_up
-                    else "skipped"
-                ),
-                "validation_state": (
-                    "valid"
-                    if payload is not None
-                    else "manual_follow_up_required"
-                    if manual_follow_up
-                    else "skipped"
-                ),
-                "answer_payload": payload,
-                "backend_status": (
-                    "succeeded"
-                    if payload is not None
-                    else "manual_follow_up_required"
-                    if manual_follow_up and proposal_overlay is not None
-                    else "failed"
-                    if manual_follow_up
-                    else "not_requested"
-                ),
-                "backend_failure_code": (failure_code if manual_follow_up else None),
-                "retry_identity": (retry_identity if manual_follow_up else None),
-                "candidate_id": f"candidate-{item.item_id}" if payload is not None else None,
-                "candidate_payload_digest": _sha256(payload_bytes) if payload is not None else None,
-                "provider_profile_id": provider_profile_id if payload is not None else None,
-                "model_profile": model if payload is not None else None,
-                "prompt_template_version": prompt_version if payload is not None else None,
-                "schema_name": f"digiexam_{item.item_type.value}_answer_key_v1"
-                if payload is not None
-                else None,
-                "schema_version": "1" if payload is not None else None,
+                "decision_state": "manual_follow_up_required" if manual_follow_up else "skipped",
+                "validation_state": "manual_follow_up_required" if manual_follow_up else "skipped",
+                "answer_payload": None,
+                "backend_status": "failed" if manual_follow_up else "not_requested",
+                "backend_failure_code": failure_code if manual_follow_up else None,
+                "retry_identity": None,
+                "candidate_id": None,
+                "candidate_payload_digest": None,
+                "provider_profile_id": None,
+                "model_profile": None,
+                "prompt_template_version": None,
+                "schema_name": None,
+                "schema_version": None,
             }
         )
     return {
@@ -467,7 +341,7 @@ def _completion_report(
     }
 
 
-def _artifact_entry(*, job_id: UUID, artifact: ExamConversionNamedArtifact) -> dict[str, JsonValue]:
+def _artifact_entry(*, artifact: ExamConversionNamedArtifact) -> dict[str, JsonValue]:
     return {
         "artifact_key": artifact.artifact_key,
         "filename": artifact.filename,
@@ -475,10 +349,6 @@ def _artifact_entry(*, job_id: UUID, artifact: ExamConversionNamedArtifact) -> d
         "availability": "available",
         "size_bytes": len(artifact.content),
         "sha256": _sha256(artifact.content),
-        "download_path": (
-            f"/api/v1/apps/documents.conversion_hub/exam-converter/jobs/{job_id}/artifacts/"
-            f"{artifact.artifact_key}"
-        ),
         "unavailable_code": None,
     }
 
@@ -498,9 +368,7 @@ def _sha256(content: bytes) -> str:
     return f"sha256:{hashlib.sha256(content).hexdigest()}"
 
 
-def _json_bytes(
-    value: JsonValue | DigiExamIntermediateExam | DigiExamEffectiveExam | DigiExamIrManifest,
-) -> bytes:
+def _json_bytes(value: JsonValue | DigiExamIntermediateExam | DigiExamIrManifest) -> bytes:
     payload = (
         asdict(value)
         if not isinstance(value, str | int | float | bool | list | dict | type(None))

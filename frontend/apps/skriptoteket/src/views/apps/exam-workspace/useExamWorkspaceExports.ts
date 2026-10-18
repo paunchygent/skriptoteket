@@ -38,7 +38,7 @@ import type {
   NativeExamItem,
 } from "../../../api/examWorkspace";
 import { useToast } from "../../../composables/useToast";
-import { triggerBrowserDownload } from "../exam-converter/browserDownload";
+import { triggerBrowserDownload } from "../../../utils/browserDownload";
 import { examWorkspaceSavedAt } from "./examWorkspaceFormat";
 import type { ExamWorkspaceTitleVerdict } from "./useExamWorkspaceTitleVerdict";
 
@@ -54,8 +54,11 @@ export const EXAM_WORKSPACE_EXPORT_BLOCKER_COPY: Record<ExamWorkspaceExportBlock
     empty_choice: "Ett svarsalternativ saknar text.",
     empty_gap_option: "Ett alternativ i en lucka saknar text.",
     empty_match_entry: "En del i matchningen saknar text.",
+    ordering_too_few_steps: "Ordningsfrågan behöver minst två steg.",
+    empty_ordering_step: "Ett steg i ordningsfrågan saknar text.",
     inline_choice_option_heading: "Rubrikformat är inte tillåtet i rullistealternativ.",
     title_without_text: "Ge provet en titel med bokstäver eller siffror.",
+    too_few_gap_options: "En rullista i en lucka har färre än två alternativ.",
     unbuilt_question:
       "Frågan kunde inte konverteras och visas som i källan. Kontrollera den och markera den som granskad.",
   };

@@ -297,6 +297,7 @@ def _ordered_items(
     governed: Mapping[str, frozenset[str]],
     title_anchors: frozenset[str] = frozenset(),
     own_anchors: frozenset[str] = frozenset(),
+    part_lines: frozenset[str] = frozenset(),
 ) -> SectionInstructions:
     positions = {c.anchor: i for i, c in enumerate(chunks)}
     ordered = [(min(positions[a] for a in anchors), anchors, item) for item, anchors in accepted]
@@ -317,6 +318,7 @@ def _ordered_items(
         governed,
         title_anchors,
         own_anchors,
+        part_lines,
     )
 
 
@@ -357,6 +359,7 @@ def assemble_build_result(
     events = (*events, *released.events)
     title_anchors = frozenset(title.source_anchors) if title is not None else frozenset()
     own_anchors = frozenset(anchor for own in questions for anchor in own)
+    part_lines = frozenset(part.opener for part in printed.parts)
     placed = _ordered_items(
         chunks,
         accepted,
@@ -365,6 +368,7 @@ def assemble_build_result(
         governed,
         title_anchors,
         own_anchors,
+        part_lines,
     )
     while returned := return_misplaced_own_chunks(
         chunks, accepted, instructions, placed.landed, questions, governed
@@ -379,6 +383,7 @@ def assemble_build_result(
             governed,
             title_anchors,
             own_anchors,
+            part_lines,
         )
     by_anchor = {chunk.anchor: chunk for chunk in chunks}
     scored = apply_printed_points(placed.items, placed.parents, printed, by_anchor)

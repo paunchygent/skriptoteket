@@ -93,7 +93,10 @@ export type ExamWorkspaceItemExportBlockerReason =
   | "inline_choice_option_heading"
   | "empty_choice"
   | "empty_gap_option"
-  | "empty_match_entry";
+  | "empty_match_entry"
+  | "ordering_too_few_steps"
+  | "empty_ordering_step"
+  | "too_few_gap_options";
 
 /** Every reason the gate reports; the title reason belongs to the exam, not a question. */
 export type ExamWorkspaceExportBlockerReason = ExamWorkspaceItemExportBlockerReason | "title_without_text";

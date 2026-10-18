@@ -2,13 +2,14 @@
 
 Purpose:
     Define the durable execution-worker job that produces machine-proposed
-    answer keys for one in-process Exam Converter conversion, plus its pure
-    lifecycle transitions.
+    answer keys for one exam workspace source lane (workspace suggestions,
+    content tags, DOCX import, DigiExam import), plus its pure lifecycle
+    transitions.
 
 Relationships:
-    Enqueued by ``application.curated_apps.handlers.exam_converter_conversions``
-    in the same Unit of Work as the conversion job; claimed and processed by
-    the execution worker through
+    Enqueued by the exam workspace handlers in the same Unit of Work as the
+    request that needs it; claimed and processed by the execution worker
+    through
     ``application.curated_apps.handlers.exam_answer_key_enrichment_jobs``.
 """
 
@@ -33,7 +34,6 @@ class ExamAnswerKeyEnrichmentJobStatus(StrEnum):
 class ExamAnswerKeySourceKind(StrEnum):
     """Which source lane one enrichment job completes answer keys for."""
 
-    DXE = "dxe"
     WORKSPACE = "workspace"
     CONTENT_TAGS = "content_tags"
     DOCX_IMPORT = "docx_import"
@@ -46,8 +46,7 @@ class ExamAnswerKeyEnrichmentJob(BaseModel):
     model_config = ConfigDict(frozen=True, from_attributes=True)
 
     id: UUID
-    source_kind: ExamAnswerKeySourceKind = ExamAnswerKeySourceKind.DXE
-    conversion_job_id: UUID | None = None
+    source_kind: ExamAnswerKeySourceKind
     owner_user_id: UUID
     status: ExamAnswerKeyEnrichmentJobStatus
     input_filename: str = Field(min_length=1, max_length=255)
@@ -83,8 +82,8 @@ class ExamAnswerKeyEnrichmentJob(BaseModel):
         if self.source_kind is ExamAnswerKeySourceKind.DIGIEXAM_IMPORT:
             if self.workspace_lineage_id is None or self.workspace_document_revision != 1:
                 raise ValueError("DigiExam imports require a version-one workspace binding")
-            if self.conversion_job_id is not None or self.source_docx is not None:
-                raise ValueError("DigiExam imports carry no converter or DOCX binding")
+            if self.source_docx is not None:
+                raise ValueError("DigiExam imports carry no DOCX bytes")
             if (
                 self.workspace_request_json is not None
                 or self.workspace_suggestions_json is not None
@@ -100,8 +99,8 @@ class ExamAnswerKeyEnrichmentJob(BaseModel):
         if self.source_kind is ExamAnswerKeySourceKind.DOCX_IMPORT:
             if self.workspace_lineage_id is None or self.workspace_document_revision != 1:
                 raise ValueError("docx import jobs require a version-one workspace binding")
-            if self.conversion_job_id is not None or self.source_dxe is not None:
-                raise ValueError("docx import jobs carry no dxe binding")
+            if self.source_dxe is not None:
+                raise ValueError("docx import jobs carry no DigiExam bytes")
             terminal = self.status in {
                 ExamAnswerKeyEnrichmentJobStatus.SUCCEEDED,
                 ExamAnswerKeyEnrichmentJobStatus.FAILED,
@@ -111,26 +110,10 @@ class ExamAnswerKeyEnrichmentJob(BaseModel):
             return self
         if self.source_docx is not None:
             raise ValueError("only docx import jobs carry source_docx")
-        if self.source_kind not in {
-            ExamAnswerKeySourceKind.WORKSPACE,
-            ExamAnswerKeySourceKind.CONTENT_TAGS,
-        } and (
-            self.workspace_request_json is not None or self.workspace_suggestions_json is not None
-        ):
-            raise ValueError("only workspace jobs carry sent content or suggestions")
-        if self.source_kind is ExamAnswerKeySourceKind.DXE:
-            if self.conversion_job_id is None or self.source_dxe is None:
-                raise ValueError("dxe enrichment jobs require conversion_job_id and source_dxe")
-            if (
-                self.workspace_lineage_id is not None
-                or self.workspace_document_revision is not None
-            ):
-                raise ValueError("dxe enrichment jobs carry no workspace binding")
-        else:
-            if self.workspace_lineage_id is None:
-                raise ValueError("workspace enrichment jobs require workspace_lineage_id")
-            if self.conversion_job_id is not None or self.source_dxe is not None:
-                raise ValueError("workspace enrichment jobs carry no dxe binding")
+        if self.workspace_lineage_id is None:
+            raise ValueError("workspace enrichment jobs require workspace_lineage_id")
+        if self.source_dxe is not None:
+            raise ValueError("only DigiExam import jobs carry source_dxe")
         return self
 
 
@@ -146,51 +129,6 @@ class ExamWorkspaceConversionJobView(BaseModel):
     workspace_lineage_id: UUID | None
     last_error: str | None
     conversion_progress: dict[str, JsonValue] | None = None
-
-
-class ExamAnswerKeyProposedOverlay(BaseModel):
-    """Persist one machine-proposed answer-key overlay as a proposal record."""
-
-    model_config = ConfigDict(frozen=True, from_attributes=True)
-
-    id: UUID
-    enrichment_job_id: UUID
-    conversion_job_id: UUID | None = None
-    owner_user_id: UUID
-    workspace_lineage_id: UUID | None = None
-    workspace_document_revision: int | None = Field(default=None, ge=1)
-    source_file_sha256: str = Field(min_length=1, max_length=128)
-    source_ir_sha256: str = Field(min_length=1, max_length=128)
-    provider_profile_id: str = Field(min_length=1, max_length=128)
-    model: str = Field(min_length=1, max_length=128)
-    overlay_json: dict[str, JsonValue]
-    created_at: datetime
-
-
-def enqueue_enrichment_job(
-    *,
-    job_id: UUID,
-    conversion_job_id: UUID,
-    owner_user_id: UUID,
-    input_filename: str,
-    source_dxe: bytes,
-    now: datetime,
-    retry_identity: str | None = None,
-) -> ExamAnswerKeyEnrichmentJob:
-    """Build one queued enrichment job for a submitted conversion."""
-
-    return ExamAnswerKeyEnrichmentJob(
-        id=job_id,
-        conversion_job_id=conversion_job_id,
-        owner_user_id=owner_user_id,
-        status=ExamAnswerKeyEnrichmentJobStatus.QUEUED,
-        input_filename=input_filename,
-        source_dxe=source_dxe,
-        retry_identity=retry_identity,
-        available_at=now,
-        created_at=now,
-        updated_at=now,
-    )
 
 
 def enqueue_workspace_enrichment_job(
@@ -213,7 +151,6 @@ def enqueue_workspace_enrichment_job(
     return ExamAnswerKeyEnrichmentJob(
         id=job_id,
         source_kind=ExamAnswerKeySourceKind.WORKSPACE,
-        conversion_job_id=None,
         owner_user_id=owner_user_id,
         status=ExamAnswerKeyEnrichmentJobStatus.QUEUED,
         input_filename=input_filename,

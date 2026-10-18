@@ -22,7 +22,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.container import (
     ExamWorkspaceContainerContent,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.exam_language_labels import (
-    exam_language_labels,
+    SWEDISH_EXAM_LABELS,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeParagraph,
@@ -113,7 +113,7 @@ async def test_docx_export_embeds_shared_instruction_pictures_from_stored_payloa
     )
     assert texts.count(parent_text) == 1
 
-    labels = exam_language_labels(fixture.document)
+    labels = SWEDISH_EXAM_LABELS
     criterion = next(criterion for item in fixture.document.items for criterion in item.criteria)
     label_text = f"{labels.marking_guide}:"
     assert label_text in texts

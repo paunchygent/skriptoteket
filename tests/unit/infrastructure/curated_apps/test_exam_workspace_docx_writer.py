@@ -15,7 +15,7 @@ from docx.text.paragraph import Paragraph
 from PIL import Image
 
 from skriptoteket.domain.curated_apps.exam_workspace.exam_language_labels import (
-    exam_language_labels,
+    SWEDISH_EXAM_LABELS,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeAssetSegment,
@@ -461,7 +461,7 @@ class TestSharedInstructionPictures:
             expected_digests
         )
 
-        labels = exam_language_labels(fixture.document)
+        labels = SWEDISH_EXAM_LABELS
         heading_names = [
             paragraph.text
             for paragraph in paragraphs

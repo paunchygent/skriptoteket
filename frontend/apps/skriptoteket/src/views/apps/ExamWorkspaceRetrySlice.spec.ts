@@ -71,6 +71,7 @@ function reviewItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
     facit_text: null,
     criteria: [],
     printed_label: null,
+    print_order: [],
     answer_key: { correct_choice_ids: [], match_pairs: [], origin: "not_applicable" },
     body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Förklara begreppet." }] }],
     choices: [],

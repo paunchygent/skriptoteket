@@ -1,5 +1,6 @@
 """Contract-first change-type matrix, including nested questions and empty scaffolds."""
 
+import random
 from decimal import Decimal
 
 import pytest
@@ -40,7 +41,8 @@ from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders imp
 from tests.unit.domain.curated_apps.exam_workspace.native_matching_test_support import matching_item
 from tests.unit.domain.curated_apps.exam_workspace.recorded_native_exam_support import parent_over
 
-KINDS = tuple(NativeExamItemKind)
+# Ordering has its own matrix in test_native_exam_ordering_rules.py.
+KINDS = tuple(kind for kind in NativeExamItemKind if kind is not NativeExamItemKind.ORDERING)
 CHOICE_KINDS = {NativeExamItemKind.SINGLE_CHOICE, NativeExamItemKind.MULTIPLE_RESPONSE}
 GAP_KINDS = {NativeExamItemKind.GAP_FILL, NativeExamItemKind.INLINE_CHOICE}
 
@@ -89,7 +91,8 @@ def _expected_dropped(source: NativeExamItem, target: NativeExamItemKind) -> set
         if target not in GAP_KINDS:
             dropped.add("gaps")
         if source.kind is NativeExamItemKind.GAP_FILL:
-            dropped.add("accepted_values")
+            if target is not NativeExamItemKind.INLINE_CHOICE:
+                dropped.add("accepted_values")
         else:
             dropped.update(("options", "correct_option_id"))
     if source.kind is NativeExamItemKind.MATCHING:
@@ -112,7 +115,9 @@ def test_every_kind_pair_keeps_text_points_identity_and_parent(
         )
     before = document.model_dump(mode="json")
 
-    result = change_item_type(document, item_id=item.item_id, target_kind=target)
+    result = change_item_type(
+        document, item_id=item.item_id, target_kind=target, rng=random.Random(1)
+    )
 
     changed = NativeExamDocument.model_validate(result.document.model_dump())
     actual = changed.items[0]
@@ -157,7 +162,9 @@ def test_minimum_parts_block_export_until_filled(
     target: NativeExamItemKind, points: int | float
 ) -> None:
     item = make_free_text_item().model_copy(update={"points": points})
-    result = change_item_type(make_document(item), item_id=item.item_id, target_kind=target)
+    result = change_item_type(
+        make_document(item), item_id=item.item_id, target_kind=target, rng=random.Random(1)
+    )
     changed = result.document.items[0]
     assert changed.points == points
     assert result.dropped_content == ()
@@ -231,7 +238,9 @@ def test_minimum_parts_block_export_until_filled(
 @pytest.mark.parametrize("target", [NativeExamItemKind.GAP_FILL, NativeExamItemKind.INLINE_CHOICE])
 def test_matching_loss_includes_zero_tick_points(target: NativeExamItemKind) -> None:
     item = matching_item(tick_points=Decimal("0"), points=0)
-    result = change_item_type(make_document(item), item_id=item.item_id, target_kind=target)
+    result = change_item_type(
+        make_document(item), item_id=item.item_id, target_kind=target, rng=random.Random(1)
+    )
     assert result.document.items[0].points == 0
     assert set(result.dropped_content) == {
         "match_left",
@@ -244,7 +253,7 @@ def test_matching_loss_includes_zero_tick_points(target: NativeExamItemKind) -> 
 def test_dropped_names_are_per_content_kind_not_per_gap_or_option() -> None:
     document = make_document(inline_choice_item())
     result = change_item_type(
-        document, item_id="item_001", target_kind=NativeExamItemKind.FREE_TEXT
+        document, item_id="item_001", target_kind=NativeExamItemKind.FREE_TEXT, rng=random.Random(1)
     )
     assert set(result.dropped_content) == {"gaps", "options", "correct_option_id"}
     assert len(result.dropped_content) == 3
@@ -253,7 +262,9 @@ def test_dropped_names_are_per_content_kind_not_per_gap_or_option() -> None:
 @pytest.mark.parametrize("target", KINDS, ids=lambda kind: kind.value)
 def test_unstated_points_are_not_invented(target: NativeExamItemKind) -> None:
     item = make_free_text_item().model_copy(update={"points": None})
-    result = change_item_type(make_document(item), item_id=item.item_id, target_kind=target)
+    result = change_item_type(
+        make_document(item), item_id=item.item_id, target_kind=target, rng=random.Random(1)
+    )
     assert result.document.items[0].points is None
     assert "missing_points" in {
         blocker.reason for blocker in native_export_blockers(result.document)
@@ -280,7 +291,9 @@ def test_criteria_and_ai_key_are_reported_but_import_wording_is_preserved(
         },
     )
     item = NativeExamItem.model_validate(payload)
-    result = change_item_type(make_document(item), item_id=item.item_id, target_kind=target)
+    result = change_item_type(
+        make_document(item), item_id=item.item_id, target_kind=target, rng=random.Random(1)
+    )
     expected = set() if target is NativeExamItemKind.FREE_TEXT else {"criteria", "ai_suggestion"}
     assert set(result.dropped_content) == expected
     changed = result.document.items[0]
@@ -297,7 +310,12 @@ def test_criteria_and_ai_key_are_reported_but_import_wording_is_preserved(
 def test_missing_item_is_not_a_silent_noop() -> None:
     document = make_document(make_free_text_item())
     with pytest.raises(DomainError) as error:
-        change_item_type(document, item_id="item_999", target_kind=NativeExamItemKind.SINGLE_CHOICE)
+        change_item_type(
+            document,
+            item_id="item_999",
+            target_kind=NativeExamItemKind.SINGLE_CHOICE,
+            rng=random.Random(1),
+        )
     assert error.value.code is ErrorCode.NOT_FOUND
 
 
@@ -340,7 +358,9 @@ def test_suggestion_is_consumed_only_by_its_target_kind(
     document = make_document(item, sibling)
     before = document.model_dump(mode="json")
 
-    result = change_item_type(document, item_id=item.item_id, target_kind=target)
+    result = change_item_type(
+        document, item_id=item.item_id, target_kind=target, rng=random.Random(1)
+    )
 
     changed = result.document.items[0]
     assert changed.kind is target
@@ -365,11 +385,15 @@ def test_consumed_suggestion_stays_absent_after_an_unrelated_manual_type_change(
         make_document(original),
         item_id=original.item_id,
         target_kind=NativeExamItemKind.SINGLE_CHOICE,
+        rng=random.Random(1),
     ).document
     assert accepted.items[0].suggested_kind is None
 
     manually_changed = change_item_type(
-        accepted, item_id=original.item_id, target_kind=NativeExamItemKind.GAP_FILL
+        accepted,
+        item_id=original.item_id,
+        target_kind=NativeExamItemKind.GAP_FILL,
+        rng=random.Random(1),
     ).document
 
     changed = manually_changed.items[0]

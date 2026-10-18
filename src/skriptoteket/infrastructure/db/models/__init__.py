@@ -57,15 +57,8 @@ from skriptoteket.infrastructure.db.models.conversion_hub_transcript_speaker_ove
 from skriptoteket.infrastructure.db.models.exam_answer_key_enrichment_job import (
     ExamAnswerKeyEnrichmentJobModel,
 )
-from skriptoteket.infrastructure.db.models.exam_answer_key_proposed_overlay import (
-    ExamAnswerKeyProposedOverlayModel,
-)
 from skriptoteket.infrastructure.db.models.exam_answer_key_token_lease import (
     ExamAnswerKeyTokenLeaseModel,
-)
-from skriptoteket.infrastructure.db.models.exam_converter_correction_session import (
-    ExamConverterCorrectionIntentModel,
-    ExamConverterCorrectionSessionModel,
 )
 from skriptoteket.infrastructure.db.models.exam_index import ExamIndexModel
 from skriptoteket.infrastructure.db.models.identity_projection import (
@@ -94,10 +87,7 @@ __all__ = [
     "ConversionHubTranscriptFormatterExportStateModel",
     "ConversionHubTranscriptSpeakerOverlayModel",
     "ExamAnswerKeyEnrichmentJobModel",
-    "ExamAnswerKeyProposedOverlayModel",
     "ExamAnswerKeyTokenLeaseModel",
-    "ExamConverterCorrectionIntentModel",
-    "ExamConverterCorrectionSessionModel",
     "GroupingExportCheckpointModel",
     "GroupingExportJobModel",
     "GroupAssignmentModel",

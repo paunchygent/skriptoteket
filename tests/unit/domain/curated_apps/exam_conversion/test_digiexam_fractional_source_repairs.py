@@ -2,8 +2,8 @@
 
 Purpose:
     Prove on synthetic fixtures only that valid positive fractional point
-    values pass unchanged through parser, neutral/effective IR,
-    fingerprints/JSON artifacts, overlays/replay, PDF, and QTI scoring and
+    values pass unchanged through parser, neutral IR,
+    fingerprints/JSON artifacts, PDF, and QTI scoring and
     gap allocation without warnings or rounding; that unresolved visible
     prompt image positions become visible PDF/QTI placeholders with one
     item-bound non-blocking Swedish warning and no QTI resource/manifest
@@ -11,7 +11,7 @@ Purpose:
     fallback with item-bound non-blocking Swedish review information.
 
 Relationships:
-    - Exercises the parser, IR, overlay, PDF, QTI, and fingerprint boundaries
+    - Exercises the parser, IR, PDF, QTI, and fingerprint boundaries
       owned by `domain.curated_apps.exam_conversion`.
     - Copies no teacher-supplied `.dxe` files.
 """
@@ -39,22 +39,9 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_examnet_pdf_contr
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_examnet_qti_adapter import (
     build_examnet_qti_items_from_digiexam_ir,
 )
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ingestion_overlay import (
-    parse_and_apply_digiexam_ingestion_overlay,
-)
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ingestion_overlay_contracts import (
-    DigiExamIngestionOverlay,
-    DigiExamIngestionOverlayItem,
-    DigiExamOverlayGenericItemPatch,
-    DigiExamOverlaySourceBinding,
-)
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ir_contracts import (
-    DIGIEXAM_IR_SCHEMA_VERSION,
     build_digiexam_intermediate_exam,
     build_digiexam_ir_manifest,
-)
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_schema_versions import (
-    DIGIEXAM_INGESTION_OVERLAY_SCHEMA_VERSION,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_source_fingerprints import (
     source_item_fingerprint,
@@ -240,46 +227,6 @@ def test_small_fractional_score_survives_parser_to_neutral_ir_without_warnings()
     assert isinstance(exam.items[0].max_score, float)
     serialized = json.dumps(asdict(exam), sort_keys=True)
     assert '"max_score": 0.25' in serialized
-
-
-def test_fractional_scores_survive_overlay_replay_without_point_correction() -> None:
-    exam = build_digiexam_intermediate_exam(
-        DigiExamDxeParser().parse_payload(_fractional_payload(), filename="fractional.dxe")
-    )
-    item = exam.items[0]
-    overlay = DigiExamIngestionOverlay(
-        schema_version=DIGIEXAM_INGESTION_OVERLAY_SCHEMA_VERSION,
-        source_binding=DigiExamOverlaySourceBinding(
-            source_file_sha256="sha256:file",
-            source_ir_schema_version=DIGIEXAM_IR_SCHEMA_VERSION,
-            source_ir_sha256="sha256:ir",
-        ),
-        items=(
-            DigiExamIngestionOverlayItem(
-                item_id="item-001",
-                sequence=1,
-                item_type=item.item_type,
-                source_item_fingerprint=source_item_fingerprint(item),
-                effective_item_patch=DigiExamOverlayGenericItemPatch(
-                    kind="generic", title="Reparerad titel"
-                ),
-            ),
-        ),
-    )
-
-    result = parse_and_apply_digiexam_ingestion_overlay(
-        overlay_bytes=json.dumps(overlay.model_dump(mode="json")).encode("utf-8"),
-        source_file_sha256="sha256:file",
-        source_ir_sha256="sha256:ir",
-        source_exam=exam,
-    )
-
-    effective_item = result.effective_exam_for_rendering.items[0]
-    report_item = result.effective_exam_report.items[0]
-    assert effective_item.title == "Reparerad titel"
-    assert effective_item.max_score == 10.5
-    assert report_item.effective_point_correction is None
-    assert result.ingestion_overlay_report.rejected_entries == ()
 
 
 def test_fractional_scores_survive_pdf_semantics_without_warnings() -> None:

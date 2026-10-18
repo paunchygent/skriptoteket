@@ -28,10 +28,6 @@ from skriptoteket.infrastructure.db.models.draft_lock import DraftLockModel
 from skriptoteket.infrastructure.db.models.email_verification_token import (
     EmailVerificationTokenModel,
 )
-from skriptoteket.infrastructure.db.models.exam_converter_correction_session import (
-    ExamConverterCorrectionIntentModel,
-    ExamConverterCorrectionSessionModel,
-)
 from skriptoteket.infrastructure.db.models.identity_projection import (
     IdentityProjectionEventModel,
     IdentityProjectionModel,
@@ -93,8 +89,6 @@ _MODELS = [
     RosterModel,
     DraftLockModel,
     EmailVerificationTokenModel,
-    ExamConverterCorrectionIntentModel,
-    ExamConverterCorrectionSessionModel,
     IdentityProjectionEventModel,
     IdentityProjectionModel,
     LoginEventModel,

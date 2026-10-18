@@ -15,7 +15,7 @@
 import { AlertCircle, CheckCircle2, LoaderCircle } from "lucide-vue-next";
 
 import PublicExamConverterJobPanel from "./exam-converter-public/PublicExamConverterJobPanel.vue";
-import ExamConverterUploadPanel from "./exam-converter/ExamConverterUploadPanel.vue";
+import ExamConverterUploadPanel from "./exam-converter-public/ExamConverterUploadPanel.vue";
 import { usePublicExamConverterRuntime } from "./exam-converter-public/usePublicExamConverterRuntime";
 
 const {

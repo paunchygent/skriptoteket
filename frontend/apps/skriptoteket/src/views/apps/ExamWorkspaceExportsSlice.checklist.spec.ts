@@ -59,7 +59,7 @@ vi.mock("../../api/examWorkspace", async () => ({
 
 const downloadMocks = vi.hoisted(() => ({ triggerBrowserDownload: vi.fn() }));
 
-vi.mock("./exam-converter/browserDownload", () => downloadMocks);
+vi.mock("../../utils/browserDownload", () => downloadMocks);
 
 
 beforeEach(() => {
@@ -270,6 +270,7 @@ describe("ExamWorkspaceView export checklist", () => {
     await saveDocument(wrapper);
 
     const freshChecklist: ExamWorkspaceExportChecklistResponse = {
+      inline_choice_min_options: 2,
       entries: [
         {
           kind: "all_or_nothing",

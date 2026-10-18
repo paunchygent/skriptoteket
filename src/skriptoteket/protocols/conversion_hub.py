@@ -47,16 +47,6 @@ class ConversionHubJobRepositoryProtocol(Protocol):
     async def update(self, *, job: ConversionHubJob) -> ConversionHubJob: ...
 
 
-class ExamConverterSubmissionRepositoryProtocol(Protocol):
-    """Atomically acquire an owner-scoped native Exam Converter submission."""
-
-    async def acquire_by_owner_and_submission_key(
-        self,
-        *,
-        job: ConversionHubJob,
-    ) -> tuple[ConversionHubJob, bool]: ...
-
-
 class ConversionHubTranscriptFormatterExportJobRepositoryProtocol(Protocol):
     """Read product-owned formatter export jobs."""
 

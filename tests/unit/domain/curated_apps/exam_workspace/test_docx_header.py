@@ -197,3 +197,16 @@ def test_empty_course_line_has_no_hint() -> None:
         courses=(),
     )
     assert result.document.header.course_hint is None
+
+
+@pytest.mark.parametrize("own", [("b",), ("h", "b")], ids=["body-only", "heading-in-own-anchors"])
+def test_an_exam_total_heading_stays_the_exams_wherever_the_grouping_places_it(
+    own: tuple[str, ...],
+) -> None:
+    """R3-2: a question owning the total heading does not turn it into question text."""
+    chunks = (
+        DocxChunk("h", "heading", "Total: 36 poäng", "Total: 36 poäng"),
+        DocxChunk("b", "paragraph", "1. Förklara.", "1. Förklara."),
+    )
+
+    assert printed_points_plan(chunks, (own,)).exam_total == 36

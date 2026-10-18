@@ -114,6 +114,35 @@ def make_gap_fill_item(
     )
 
 
+ORDERING_STEPS = ("Tes", "Argument", "Motargument", "Avslutning")
+
+
+def make_ordering_item(
+    *,
+    sequence: int = 1,
+    item_id: str = "item_001",
+    steps: tuple[str, ...] = ORDERING_STEPS,
+    print_order: tuple[str, ...] | None = None,
+    points: int | float | None = 1,
+) -> NativeExamItem:
+    """Steps in key order; the print order defaults to the key order reversed."""
+    choice_ids = tuple(f"choice_{index:03d}" for index in range(1, len(steps) + 1))
+    return NativeExamItem(
+        item_id=item_id,
+        sequence=sequence,
+        kind=NativeExamItemKind.ORDERING,
+        body=(make_paragraph("Sätt stegen i en argumenterande text i rätt ordning."),),
+        points=points,
+        choices=tuple(
+            NativeChoice(choice_id=choice_id, body=plain_body(text))
+            for choice_id, text in zip(choice_ids, steps, strict=True)
+        ),
+        print_order=print_order if print_order is not None else tuple(reversed(choice_ids)),
+        answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.TEACHER_AUTHORED),
+        review=make_review(),
+    )
+
+
 def make_document(*items: NativeExamItem) -> NativeExamDocument:
     return NativeExamDocument(
         document_id=uuid4(),

@@ -8,6 +8,7 @@ export function buildFreeTextItem(sequence: number, overrides: Partial<NativeExa
     facit_text: null,
     criteria: [],
     printed_label: null,
+    print_order: [],
     retry_source: null,
     answer_key: { correct_choice_ids: [], match_pairs: [], origin: "not_applicable" },
     body: [

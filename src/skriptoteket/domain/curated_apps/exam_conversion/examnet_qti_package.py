@@ -256,6 +256,7 @@ def _has_proof_gated_interaction(items: tuple[ExamNetQtiItem, ...]) -> bool:
             ExamNetQtiInteractionType.GAP_FILL,
             ExamNetQtiInteractionType.INLINE_CHOICE,
             ExamNetQtiInteractionType.MATCHING,
+            ExamNetQtiInteractionType.ORDERING,
         }
         for item in items
         for leaf in (item.children or (item,))

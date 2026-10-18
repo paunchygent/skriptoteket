@@ -60,8 +60,12 @@ const OPEN_FAILURE_COPY = "Det gick inte att öppna provet. Försök igen.";
 export type ExamWorkspaceOpening = { readonly lineageId: string };
 
 export type ExamWorkspaceDocumentOptions = {
-  /** A teacher edit changed the copy; structural edits become an undo step at once. */
-  onEdit?: (structural: boolean) => void;
+  /**
+   * A teacher edit changed the copy; structural edits become an undo step at
+   * once. `before` is the copy just before the edit, so pending typing can be
+   * stored as its own step first; null when no such copy applies.
+   */
+  onEdit?: (structural: boolean, before: NativeExamDocument | null) => void;
 };
 
 export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions = {}) {
@@ -237,14 +241,14 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
     const current = workspaceDocument.value;
     if (!current || isBusy.value) return;
     workspaceDocument.value = { ...current, title };
-    noteEdit(false);
+    noteEdit(false, current);
   }
 
   function setCourse(course: ExamCourseChoice | null): void {
     const current = workspaceDocument.value;
     if (!current || isBusy.value) return;
     workspaceDocument.value = { ...current, header: { ...current.header, course } };
-    noteEdit(true);
+    noteEdit(true, current);
   }
 
   const { beginSummaryRead, renameFailure, renameFile } = useExamWorkspaceRename({
@@ -265,12 +269,13 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
 
   /** Retry one question, and drop in-flight keying replies for the item it replaced. */
   async function retryItem(itemId: string, kind: NativeExamItemKind): Promise<void> {
-    const before = workspaceDocument.value?.items.find((item) => item.item_id === itemId);
+    const prior = workspaceDocument.value;
+    const before = prior?.items.find((item) => item.item_id === itemId);
     await requestItemRetry(itemId, kind);
     const after = workspaceDocument.value?.items.find((item) => item.item_id === itemId);
     if (after !== before) {
       keying.invalidateItem(itemId);
-      noteEdit(true);
+      noteEdit(true, prior);
     }
   }
 
@@ -296,7 +301,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
       return false;
     }
     workspaceDocument.value = { ...current, items };
-    noteEdit(structural);
+    noteEdit(structural, current);
     return true;
   }
 
@@ -339,7 +344,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
     if (selectId !== null) {
       selectedItemId.value = selectId;
     }
-    noteEdit(structural);
+    noteEdit(structural, current);
     return true;
   }
 

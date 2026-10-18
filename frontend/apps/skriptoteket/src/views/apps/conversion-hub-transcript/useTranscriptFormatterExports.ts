@@ -19,7 +19,7 @@ import {
   getConversionHubTranscriptFormatterExport,
   requestConversionHubTranscriptFormatterExport,
 } from "../../../api/conversionHubTranscriptFormatterExports";
-import { triggerBrowserDownload } from "../exam-converter/browserDownload";
+import { triggerBrowserDownload } from "../../../utils/browserDownload";
 import {
   formatterArtifactActionState,
   type FormatterArtifactActionState,
