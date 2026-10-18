@@ -149,6 +149,21 @@ def test_a_captioned_instruction_picture_sharing_a_line_with_the_stem_keeps_both
     assert body_asset_ids(item.body) == (_PICTURE.asset_id,)
 
 
+def test_one_reply_line_around_an_omitted_caption_keeps_the_stem() -> None:
+    # One reply paragraph prints the opening, the instruction's picture and the stem; the
+    # caption between them is omitted. Each emitted piece carries the source paragraph it
+    # was projected from, never the caption by its ordinal (rereview 7a083063 F1).
+    item = _assembled(
+        ("1. Undersök bilden.", "Se bilden.", "Vilket djur visas?"),
+        (2,),
+        [[_text("1. Undersök bilden. "), _picture(), _text("Vilket djur visas?")]],
+        picture_in=2,
+    )
+
+    assert item.plain_text_lines() == ("1. Undersök bilden.", "Se bilden.", "Vilket djur visas?")
+    assert body_asset_ids(item.body) == (_PICTURE.asset_id,)
+
+
 def test_a_gap_the_item_placed_in_an_instruction_chunk_stays_at_its_source_blank() -> None:
     item = _assembled(
         ("1. Fyll i meningen.", "Sveriges huvudstad är ___.", "Kontrollera stavningen."),
