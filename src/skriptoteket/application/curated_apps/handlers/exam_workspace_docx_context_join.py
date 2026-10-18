@@ -129,7 +129,7 @@ def _places(aligned: AlignedItem, position: dict[str, int], first: int) -> list[
 
     An unaligned paragraph takes the place of the aligned paragraph before it; with none
     before it, of the first aligned paragraph after it; with none at all, of the question's
-    first own chunk.
+    first own chunk. A joined chunk stands before every paragraph that took its place.
     """
     known = [position[c] if c is not None and c in position else None for c in aligned.chunks]
     following = next((p for p in known if p is not None), first)
@@ -154,8 +154,9 @@ def joined_body(
     shows its source paragraphs, marks and pictures; a heading shows its wording without its
     points label and question number (``shown_heading``), the form its heading run in
     assembly gives it, so assembly finds it delivered. Each joined chunk stands after the body
-    paragraphs whose place comes before it and before those whose place comes after it, in
-    source order (``_places``).
+    paragraphs whose place comes before it and before those whose place is its own or comes
+    after it, in source order (``_places``): an unaligned paragraph that took the place of the
+    reply's copy of a heading follows the joined heading (review 4).
     """
     position = {chunk.anchor: n for n, chunk in enumerate(state.chunks)}
     first = position[own[0].anchor] if own else len(position)
@@ -178,6 +179,7 @@ def joined_body(
     ]
     for anchor in sorted(shown, key=position.__getitem__):
         place = position[anchor]
-        at = next((n for n, (p, _) in enumerate(body) if p > place), len(body))
+        # A paragraph at the same place inherited it from the reply's copy of this chunk.
+        at = next((n for n, (p, _) in enumerate(body) if p >= place), len(body))
         body.insert(at, (place, shown[anchor]))
     return tuple(paragraph for _, paragraphs in body for paragraph in paragraphs)
