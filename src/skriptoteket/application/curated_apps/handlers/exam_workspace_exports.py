@@ -205,8 +205,17 @@ class ExportExamWorkspaceDocumentHandler:
                 for item in document.items
                 if item.item_id in heading_items
             ]
+            title_messages = [
+                "Ge provet en titel med bokstäver eller siffror."
+                for blocker in blockers
+                if blocker.reason == "title_without_text"
+            ]
             message = " ".join(
-                ["Provet har frågor som måste åtgärdas före export.", *heading_messages]
+                [
+                    "Provet har frågor som måste åtgärdas före export.",
+                    *title_messages,
+                    *heading_messages,
+                ]
             )
             raise DomainError(
                 code=ErrorCode.VALIDATION_ERROR,

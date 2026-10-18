@@ -9,7 +9,9 @@
  *   Markera som granskad for an unbuilt question, Godkänn for an AI key
  *   nobody approved, Föreslå facit for a missing key, Ta bort tomma for
  *   empty options nobody keyed, and Ta bort rubrikformat for a heading in a
- *   dropdown option. The fixes are pure item transitions.
+ *   dropdown option. The fixes are pure item transitions. A title with no
+ *   letter or digit adds one row of its own ahead of the questions that
+ *   jumps to the title field; the teacher fixes it by typing.
  *
  * Relationships:
  *   - Reads readiness from `examWorkspaceItemReadiness` and the list labels
@@ -18,17 +20,20 @@
  */
 
 import type { NativeExamItem } from "../../../api/examWorkspace";
+import { examWorkspaceTitleWithoutText } from "./examWorkspaceItemReadiness";
 import type { ExamWorkspaceReadinessReason } from "./examWorkspaceItemReadiness";
 import { examWorkspaceShortProblem } from "./examWorkspaceListEntries";
 import type { ExamWorkspaceListEntry } from "./examWorkspaceListEntries";
 import { bodyText } from "./examWorkspaceRichText";
+import { EXAM_WORKSPACE_EXPORT_BLOCKER_COPY } from "./useExamWorkspaceExports";
 
 export type ExamWorkspaceBlockerFix = "review" | "approve" | "suggest_key" | "remove_empty" | "strip_headings";
 
 export type ExamWorkspaceBlockerEntry = {
-  itemId: string;
-  label: string;
-  reason: ExamWorkspaceReadinessReason;
+  /** The question; null for the exam's title. */
+  itemId: string | null;
+  label: string | null;
+  reason: ExamWorkspaceReadinessReason | "title_without_text";
   /** The problem in the list's words: "facit saknas". */
   problem: string;
   fix: ExamWorkspaceBlockerFix | null;
@@ -203,4 +208,29 @@ export function examWorkspaceBlockerEntries(
       reason,
     }];
   });
+}
+
+/** The field that holds the exam title: Provets uppgifter, which the jump opens first. */
+export const EXAM_WORKSPACE_TITLE_FIELD = testId("exam-workspace-metadata-title");
+
+/**
+ * The row for an exam title with no letter or digit, ahead of the question
+ * rows: the client's own check, else the server's last refusal of this title.
+ * The row names the one fix in the copy; the jump opens the title field.
+ */
+export function examWorkspaceTitleBlockerEntries(
+  title: string,
+  serverRefusedTitle: boolean,
+): ExamWorkspaceBlockerEntry[] {
+  if (!examWorkspaceTitleWithoutText(title) && !serverRefusedTitle) {
+    return [];
+  }
+  return [{
+    fix: null,
+    focus: EXAM_WORKSPACE_TITLE_FIELD,
+    itemId: null,
+    label: null,
+    problem: EXAM_WORKSPACE_EXPORT_BLOCKER_COPY.title_without_text.replace(/\.$/, ""),
+    reason: "title_without_text",
+  }];
 }

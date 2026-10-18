@@ -174,7 +174,19 @@ describe("examWorkspace transport", () => {
     expect(apiFetchBlobResponseMock).toHaveBeenCalledWith(
       `${DOCUMENTS_ROOT}/lineage-1/exports/qti?expected_revision=2`,
     );
-    expect(result).toBe(blobResponse);
+    expect(result).toEqual(blobResponse);
+  });
+
+  it("treats an export response without a Content-Disposition file name as a fault", async () => {
+    apiFetchBlobResponseMock.mockResolvedValueOnce({
+      blob: new Blob(["zip"]),
+      contentType: "application/zip",
+      filename: null,
+    });
+
+    await expect(downloadExamWorkspaceExport("lineage-1", "qti", 2)).rejects.toThrow(
+      "Content-Disposition",
+    );
   });
 
   it("requests only the checklist for the exported revision", async () => {

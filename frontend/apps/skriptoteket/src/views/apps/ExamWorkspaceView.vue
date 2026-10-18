@@ -42,7 +42,7 @@ import ExamWorkspaceQuestionTools from "./exam-workspace/ExamWorkspaceQuestionTo
 import ExamWorkspaceSaveAsDialog from "./exam-workspace/ExamWorkspaceSaveAsDialog.vue";
 import ExamWorkspaceSharedInstruction from "./exam-workspace/ExamWorkspaceSharedInstruction.vue";
 import "./exam-workspace/examWorkspace.css";
-import { examWorkspaceBlockerEntries } from "./exam-workspace/examWorkspaceBlockers";
+import { examWorkspaceBlockerEntries, examWorkspaceTitleBlockerEntries } from "./exam-workspace/examWorkspaceBlockers";
 import { examWorkspaceSavedAt } from "./exam-workspace/examWorkspaceFormat";
 import { isTeacherReviewed } from "./exam-workspace/examWorkspaceItemEdits";
 import type { TeacherItemKind } from "./exam-workspace/examWorkspaceItemEdits";
@@ -130,10 +130,16 @@ const {
 } = selection;
 
 const disabled = computed(() => isBusy.value || structure.running.value);
-const blockers = computed(() =>
-  examWorkspaceBlockerEntries(entries.value, items.value, readiness.value, exports.exportBlockersByItemId.value),
-);
-const saveFlow = useExamWorkspaceSaveFlow({ editing, enrichment, exports, blockers, disabled, frame, gotoItem });
+const blockers = computed(() => [
+  ...(workspaceDocument.value
+    ? examWorkspaceTitleBlockerEntries(workspaceDocument.value.title, exports.exportTitleRefused.value)
+    : []),
+  ...examWorkspaceBlockerEntries(entries.value, items.value, readiness.value, exports.exportBlockersByItemId.value),
+]);
+const saveFlow = useExamWorkspaceSaveFlow({
+  editing, enrichment, exports, blockers, disabled, frame, gotoItem,
+  openDetails: () => { drawer.value = "details"; },
+});
 const { canSave, fixBlocker, gotoBlocker, handleSave, handleSaveAs, openSaveAs, runExport, saveAsOpen, saveAsTaken, saveState } =
   saveFlow;
 useExamWorkspaceKeyboard({ save: handleSave, undo: history.undo, redo: history.redo, step, listOpen });

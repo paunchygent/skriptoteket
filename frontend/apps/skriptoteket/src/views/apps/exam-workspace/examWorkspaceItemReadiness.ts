@@ -16,7 +16,7 @@
  *   item's points, or sit on a non-free-text item.
  *
  * Relationships:
- *   - Mirrors `native_export_blockers` in
+ *   - Mirrors `native_export_blockers` (and `title_has_text`) in
  *     `domain/curated_apps/exam_workspace/native_exam_export_rules.py`.
  *   - Reads the save rules from `examWorkspaceItemSaveRules` and
  *     `examWorkspaceAnswerKeyRules`.
@@ -25,7 +25,7 @@
  */
 
 import type {
-  ExamWorkspaceExportBlockerReason,
+  ExamWorkspaceItemExportBlockerReason,
   NativeExamItem,
   NativeExamItemKind,
 } from "../../../api/examWorkspace";
@@ -59,7 +59,7 @@ const KEYED_KINDS = new Set<NativeExamItemKind>([
 ]);
 
 export type ExamWorkspaceReadinessReason =
-  | ExamWorkspaceExportBlockerReason
+  | ExamWorkspaceItemExportBlockerReason
   | "criteria_on_wrong_kind"
   | "criteria_points_mismatch"
   | "empty_criterion_text"
@@ -144,6 +144,15 @@ export function examWorkspaceItemReadiness(item: NativeExamItem): ExamWorkspaceR
     reasons.push("criteria_on_wrong_kind");
   }
   return reasons;
+}
+
+/**
+ * Whether the exam title has no letter or digit, so every export file would
+ * have no name. Mirrors `title_has_text` in the server gate; the title
+ * belongs to the exam, so it has no per-item reason.
+ */
+export function examWorkspaceTitleWithoutText(title: string): boolean {
+  return !/[\p{L}\p{N}]/u.test(title);
 }
 
 export function examWorkspaceReadinessCopy(reason: ExamWorkspaceReadinessReason): string {

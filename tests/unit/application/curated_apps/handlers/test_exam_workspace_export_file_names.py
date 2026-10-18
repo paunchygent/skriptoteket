@@ -113,5 +113,36 @@ async def test_title_of_only_punctuation_refuses_every_export_and_names_no_file(
             await handler.save(
                 actor=actor, lineage_id=lineage_id, target=target, expected_revision=revision
             )
-        assert download_error.value.code is ErrorCode.VALIDATION_ERROR
-        assert save_error.value.code is ErrorCode.VALIDATION_ERROR
+        for error in (download_error.value, save_error.value):
+            assert error.code is ErrorCode.VALIDATION_ERROR
+            assert error.details == {
+                "blockers": [{"item_id": None, "reason": "title_without_text"}]
+            }
+            assert "Ge provet en titel med bokstäver eller siffror." in error.message
+
+
+@pytest.mark.asyncio
+async def test_checklist_refuses_a_title_without_letters_or_digits_and_clears_after_a_valid_one(
+    env: _Env,
+) -> None:
+    actor, lineage_id, revision = await _retitled(env, "?!...")
+    handler = _export_handler(env)
+
+    with pytest.raises(DomainError) as refused:
+        await handler.checklist(actor=actor, lineage_id=lineage_id, expected_revision=revision)
+    assert refused.value.details == {
+        "blockers": [{"item_id": None, "reason": "title_without_text"}]
+    }
+
+    head = await env.vault_files.get_document_head(user_id=actor.id, document_lineage_id=lineage_id)
+    assert head is not None
+    container = env.codec.parse(content=await env.store.load(actor=actor, vault_file=head))
+    fixed = with_next_revision(container.document.model_copy(update={"title": "Prov 1"}))
+    await env.save_handler.handle(
+        actor=actor,
+        lineage_id=lineage_id,
+        request=SaveExamWorkspaceDocumentRequest(
+            expected_revision=revision, document=fixed, position_step_id=lineage_id
+        ),
+    )
+    await handler.checklist(actor=actor, lineage_id=lineage_id, expected_revision=fixed.revision)

@@ -2,7 +2,12 @@ import { describe, expect, it } from "vitest";
 
 import type { NativeExamItem } from "../../../api/examWorkspace";
 import { buildDocument } from "../ExamWorkspaceSlice.specSupport";
-import { examWorkspaceBlockerEntries, withoutEmptyOptions, withoutOptionHeadings } from "./examWorkspaceBlockers";
+import {
+  examWorkspaceBlockerEntries,
+  examWorkspaceTitleBlockerEntries,
+  withoutEmptyOptions,
+  withoutOptionHeadings,
+} from "./examWorkspaceBlockers";
 import { examWorkspaceItemReadiness } from "./examWorkspaceItemReadiness";
 import { reviewed } from "./examWorkspaceItemEdits";
 import { buildMatchingItemWithPairs } from "./examWorkspaceMatchingItem.specSupport";
@@ -207,5 +212,28 @@ describe("export blocker fixes", () => {
     it("targets the first row when that is the unticked one", () => {
       expect(focusOf([[2, 1], [3, 3]])).toBe('[data-test^="exam-workspace-match-tick-left_001-"]');
     });
+  });
+});
+
+describe("examWorkspaceTitleBlockerEntries", () => {
+  it.each(["", "  ", "?!...", "(…) – /", "\u0301"])("gives the title row for %j", (title) => {
+    expect(examWorkspaceTitleBlockerEntries(title, false)).toEqual([
+      {
+        fix: null,
+        focus: '[data-test="exam-workspace-metadata-title"]',
+        itemId: null,
+        label: null,
+        problem: "Ge provet en titel med bokstäver eller siffror",
+        reason: "title_without_text",
+      },
+    ]);
+  });
+
+  it.each(["Prov", "7", "åk. 9!", "?! Ö"])("gives no row for %j", (title) => {
+    expect(examWorkspaceTitleBlockerEntries(title, false)).toEqual([]);
+  });
+
+  it("keeps the row for a title the server refused until the caller says it changed", () => {
+    expect(examWorkspaceTitleBlockerEntries("Prov", true)).toHaveLength(1);
   });
 });

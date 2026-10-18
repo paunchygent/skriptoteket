@@ -8,7 +8,8 @@
  *   saves the exam first, so one click exports what the teacher sees; a
  *   failed save stops it (user rule 2026-10-17). The server owns the export
  *   gate; when it refuses with per-item blockers, keep their reasons per
- *   question for the export menu's blocker rows. When a save elsewhere moved
+ *   question, and a refused title, for the export menu's blocker rows. The
+ *   file name is the server's: the Content-Disposition name is used as sent. When a save elsewhere moved
  *   the saved exam, the latest version is read in for the next export.
  *
  * Relationships:
@@ -32,6 +33,7 @@ import type {
   ExamWorkspaceExportBlockerReason,
   ExamWorkspaceExportChecklistEntry,
   ExamWorkspaceExportTarget,
+  ExamWorkspaceItemExportBlockerReason,
   NativeExamDocument,
   NativeExamItem,
 } from "../../../api/examWorkspace";
@@ -52,6 +54,7 @@ export const EXAM_WORKSPACE_EXPORT_BLOCKER_COPY: Record<ExamWorkspaceExportBlock
     empty_gap_option: "Ett alternativ i en lucka saknar text.",
     empty_match_entry: "En del i matchningen saknar text.",
     inline_choice_option_heading: "Rubrikformat är inte tillåtet i rullistealternativ.",
+    title_without_text: "Ge provet en titel med bokstäver eller siffror.",
     unbuilt_question:
       "Frågan kunde inte konverteras och visas som i källan. Kontrollera den och markera den som granskad.",
   };
@@ -80,27 +83,6 @@ export const EXPORT_FORMAT_NAMES: Record<ExamWorkspaceExportTarget, string> = {
 
 type ExportDestination = "download" | "files";
 
-const EXPORT_EXTENSIONS: Record<ExamWorkspaceExportTarget, string> = {
-  docx: "docx",
-  pdf: "pdf",
-  qti: "zip",
-};
-
-/**
- * The file name the server gives an export (D1): the exam title without
- * punctuation (letters, digits and single spaces stay) plus the format's
- * extension, the same base for every format.
- */
-export function examWorkspaceExportFilename(title: string, target: ExamWorkspaceExportTarget): string {
-  const base = title
-    .normalize("NFC")
-    .replace(/[^\p{L}\p{N}\p{M}\s]/gu, "")
-    .split(/\s+/)
-    .filter(Boolean)
-    .join(" ");
-  return `${base}.${EXPORT_EXTENSIONS[target]}`;
-}
-
 const BLOCKER_REASONS = new Set<string>(Object.keys(EXAM_WORKSPACE_EXPORT_BLOCKER_COPY));
 
 function isExportBlocker(candidate: unknown): candidate is ExamWorkspaceExportBlocker {
@@ -108,7 +90,7 @@ function isExportBlocker(candidate: unknown): candidate is ExamWorkspaceExportBl
     typeof candidate === "object" &&
     candidate !== null &&
     "item_id" in candidate &&
-    typeof candidate.item_id === "string" &&
+    (typeof candidate.item_id === "string" || candidate.item_id === null) &&
     "reason" in candidate &&
     BLOCKER_REASONS.has(String(candidate.reason))
   );
@@ -123,7 +105,7 @@ function parseBlockers(details: unknown): ExamWorkspaceExportBlocker[] {
 }
 
 /** The server's reasons for one question, and the question as it was refused. */
-type RefusedItem = { item: NativeExamItem | undefined; reasons: ExamWorkspaceExportBlockerReason[] };
+type RefusedItem = { item: NativeExamItem | undefined; reasons: ExamWorkspaceItemExportBlockerReason[] };
 
 function groupBlockers(
   blockers: ExamWorkspaceExportBlocker[],
@@ -131,6 +113,9 @@ function groupBlockers(
 ): Record<string, RefusedItem> {
   const grouped: Record<string, RefusedItem> = {};
   for (const blocker of blockers) {
+    if (blocker.item_id === null || blocker.reason === "title_without_text") {
+      continue;
+    }
     const existing = grouped[blocker.item_id] ?? {
       item: items.find((item) => item.item_id === blocker.item_id),
       reasons: [],
@@ -159,12 +144,14 @@ export function useExamWorkspaceExports(
 
   const exportingTarget = ref<ExamWorkspaceExportTarget | null>(null);
   const refusedItems = ref<Record<string, RefusedItem>>({});
+  /** The title the server last refused for having no letter or digit, until the teacher changes it. */
+  const refusedTitle = ref<string | null>(null);
   /**
    * The reasons the server gave when it last refused an export, per question,
    * until the teacher changes that question: items change by replacement, so
    * a changed question is a new object and its old refusal no longer holds.
    */
-  const exportBlockersByItemId = computed<Record<string, ExamWorkspaceExportBlockerReason[]>>(() => {
+  const exportBlockersByItemId = computed<Record<string, ExamWorkspaceItemExportBlockerReason[]>>(() => {
     const current = new Map((workspaceDocument.value?.items ?? []).map((item) => [item.item_id, item]));
     return Object.fromEntries(
       Object.entries(refusedItems.value)
@@ -172,6 +159,9 @@ export function useExamWorkspaceExports(
         .map(([itemId, refused]) => [itemId, refused.reasons]),
     );
   });
+  const exportTitleRefused = computed(
+    () => refusedTitle.value !== null && refusedTitle.value === workspaceDocument.value?.title,
+  );
   const exportNotice = ref<string | null>(null);
   /** What the last export made, shown in Exportera; toasts report failures only (user rule 2026-10-17). */
   const exportResult = ref<string | null>(null);
@@ -183,6 +173,7 @@ export function useExamWorkspaceExports(
 
   function clearExportFeedback(): void {
     refusedItems.value = {};
+    refusedTitle.value = null;
     exportNotice.value = null;
     exportResult.value = null;
   }
@@ -247,15 +238,20 @@ export function useExamWorkspaceExports(
     const blockers = isApiError(error) && error.status === 422 ? parseBlockers(error.details) : [];
     if (blockers.length > 0) {
       refusedItems.value = groupBlockers(blockers, workspaceDocument.value?.items ?? []);
+      refusedTitle.value = blockers.some((blocker) => blocker.reason === "title_without_text")
+        ? (workspaceDocument.value?.title ?? null)
+        : null;
       exportNotice.value = EXAM_WORKSPACE_EXPORT_BLOCKED_COPY;
       toast.warning(EXAM_WORKSPACE_EXPORT_BLOCKED_COPY);
     } else if (isApiError(error) && error.status === 409) {
       refusedItems.value = {};
+      refusedTitle.value = null;
       await steps.readLatest();
       exportNotice.value = EXPORT_STALE_COPY;
       toast.warning(EXPORT_STALE_COPY);
     } else {
       refusedItems.value = {};
+      refusedTitle.value = null;
       exportNotice.value = `${EXPORT_TARGET_LABELS[target]} kunde inte skapas. Försök igen.`;
       toast.failure(exportNotice.value);
     }
@@ -284,7 +280,7 @@ export function useExamWorkspaceExports(
           : `${EXPORT_FORMAT_NAMES[target]} sparad i Mina filer.`;
       } else {
         const response = await downloadExamWorkspaceExport(savedSummary.lineage_id, target, savedSummary.version);
-        triggerBrowserDownload(response.blob, response.filename ?? examWorkspaceExportFilename(savedSummary.title, target));
+        triggerBrowserDownload(response.blob, response.filename);
         clearExportFeedback();
         exportResult.value = EXPORT_CREATED_MESSAGES[target];
       }
@@ -334,6 +330,7 @@ export function useExamWorkspaceExports(
   return {
     clearExportFeedback,
     exportBlockersByItemId,
+    exportTitleRefused,
     exportChecklist,
     exportDocument,
     exportNotice,

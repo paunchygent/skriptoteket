@@ -38,6 +38,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_export_rules import (
     native_export_blockers,
+    title_has_text,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.protocols.exam_conversion import ExamNetQtiPackageWriterProtocol
@@ -47,23 +48,23 @@ def export_file_base_name(document: NativeExamDocument) -> str:
     """The base name every export of this exam shares: its title without punctuation.
 
     Letters (å, ä, ö included), digits and combining marks stay; spaces collapse to single spaces.
-    A title with no letter or digit has no base name, so the export is refused.
+    A title with no letter or digit has no base name: the title_without_text blocker refuses the
+    export before this runs, and this raise guards any caller that skips the blockers.
     """
 
-    kept = "".join(
-        char
-        for char in unicodedata.normalize("NFC", document.title)
-        if char.isalnum() or char.isspace() or unicodedata.category(char).startswith("M")
-    )
-    base = " ".join(kept.split())
-    if not base:
+    if not title_has_text(document.title):
         raise DomainError(
             code=ErrorCode.VALIDATION_ERROR,
             message=(
                 "Provets titel saknar bokstäver och siffror. Ge provet en titel och exportera igen."
             ),
         )
-    return base
+    kept = "".join(
+        char
+        for char in unicodedata.normalize("NFC", document.title)
+        if char.isalnum() or char.isspace() or unicodedata.category(char).startswith("M")
+    )
+    return " ".join(kept.split())
 
 
 def build_native_examnet_qti_package(
