@@ -80,6 +80,7 @@
   Ready (user grilling 2026-10-18, plans in root 01a14c27): 40-04-04 dropdown option editor, 40-04-05 export names from the exam title, 39-06-09 Exam.net probe of ordering inside a part.
   In progress on Hemma 2026-10-18 (orchestrator tmux skript-orchestrator): 40-04-07 lead e492bfbb and
   39-06-10 lead 146bc2d8, both from a0a81ab5a; 39-06-10 ruling: a question moved out lands after its part.
+  40-04-07 ruling (user 2026-10-18): print PDF renders the DOCX house template; Exam.net import PDF stays a fallback only; QTI is the Exam.net route (W1/W11, lead amends the task doc).
   Hemma Opus lead `3b164d53`: 40-03-01..09 and 08-36-02 `done`; 40-02-01 tranche 1 on
   main 761b1b59, tranche 2 a67afa90 (`in_progress`: shared `play` meaning in
   session add-a-shared-play-glyph, exam-held wrappers and lucide removal open).
