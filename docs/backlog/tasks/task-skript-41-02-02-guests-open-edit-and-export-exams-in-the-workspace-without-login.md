@@ -53,3 +53,33 @@ Stop and report if the shared editor cannot run on a browser store without forki
 | G2  | The guest and signed-in workspace are one editor behind one document store interface; no forked workspace. |
 | G3  | Limit numbers are settings; the lead proposes defaults and the user confirms them before merge. |
 | G4  | Sign-in prompts read "Logga in för att importera från DigiExam eller Word." and "Logga in för att få AI-hjälp." |
+
+## Resume Here (clean break 2026-10-18)
+
+- Branch `codex/task-skript-41-02-02-remote`. The lead's last code commit is 277e82d6; this note is committed on top of it. Merged origin/main 188a2139 (REP-0044 and 39-06-10) at b454590b.
+- Retained root: `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a14f56-345b-7f38-ab9e-a441663b90d8`. Design and facts: `evidence/planning/synthesis-41-02-02.md`. Junior work orders: `evidence/planning/work-orders/` (each one is `_preamble.md` plus `<unit>.body.md`).
+- Done and committed:
+  - B1 and B1m: database limiter, table `public_request_windows`, migration a1c2e3f4b5d6 (P4).
+  - B2a: public guest exports and export checklist (P3).
+  - B2b and B2c: public stateless blank, part, group/empty/move, change-type, misspellings and course routes.
+  - F1a-c: one injected exam workspace store (G2).
+  - F2a-c: the guest browser store in IndexedDB (P2).
+  - G1: `tests/unit/web/test_ai_route_gate_public_routes.py` proves that no public or guest route reaches an AI client. The REP-0044 modules are unchanged.
+- WIP commit 277e82d6 holds B3, the signed-in POST `/exam-workspace/guest-drafts` handoff with the `exam_guest_draft_handoffs` ledger and migration c8e4f2a6d9b3. The lead has not reviewed or proven it. Still missing:
+  - `tests/integration/test_migration_c8e4f2a6d9b3_idempotent.py`.
+  - One `NON_AI_JOB_REPOSITORY_USERS` entry for the guest-draft handler in `tests/unit/web/ai_route_gate_policy.py`. Without it `test_ai_route_gate_coverage.py` fails.
+  - The B3 tests.
+- Next units, in order (orders are written):
+  1. Finish B3.
+  2. `f3a-guest-host`: guest host, entry swap, sign-in prompt, copy constants, limit notice.
+  3. `f3b-guest-gating`: its addendum covers main's `canUseAi` gate.
+  4. `f4-guest-handoff` (P5).
+  5. The guest QTI start, after the parent confirms that 41-02-01 is on main.
+- Open findings:
+  - The caller key is an unsalted sha256 of the client IP. Rows are pruned after about 2 hours.
+  - `ExamConverterPublicView.vue` stays until 41-02-03.
+- User gate (G3): the six `PUBLIC_GUEST_*_PER_HOUR` settings hold provisional values in `config.py`. The user must confirm them before merge. Local render timing for an 8-question exam with no images: QTI 3 ms, PDF about 0.11 s, DOCX about 0.05 s. The probe is `evidence/probes/render_timing.py`; it has not been run on Hemma.
+- Children still running at the break, possibly with uncommitted edits:
+  - B3 `ca5699fa-775b-407d-a84f-54226f34dccf`, result `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a14f56-345b-7f38-ab9e-a441663b90d8/evidence/results/ca5699fa-775b-407d-a84f-54226f34dccf.json`.
+  - F3a `22a5493f-c8bd-41d9-a6a3-0bb9bb47be31`, result `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a14f56-345b-7f38-ab9e-a441663b90d8/evidence/results/22a5493f-c8bd-41d9-a6a3-0bb9bb47be31.json`. It was told to stop and undo its edits.
+- Remove the temporary worktree `/tmp/sk-4102-head` with `git worktree remove`.
