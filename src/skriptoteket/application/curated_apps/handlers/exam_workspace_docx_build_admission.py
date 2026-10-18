@@ -106,6 +106,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import (
     FORMATTING_REASON,
     FormattingTransferError,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.source_gap_paragraphs import (
+    GapCountMismatchError,
+)
 
 CONFLICT_WITHOUT_KIND_REASON = (
     "AI-tolkningen angav att frågan har en annan svarstyp men inte vilken. "
@@ -158,6 +161,8 @@ def _built(
         )
     except GaplessGapQuestionError as error:
         return _source_review(index, anchors, state, seen, "native_contract_invalid", str(error))
+    except GapCountMismatchError as error:
+        return _source_review(index, anchors, state, seen, "gap_count_mismatch", str(error))
     except Exception as error:
         # Model output that breaks an assumption of the item builder affects only its question.
         return _source_review(index, anchors, state, seen, "item_unbuildable", type(error).__name__)
