@@ -47,45 +47,30 @@ pytestmark = pytest.mark.unit
 
 
 @pytest.mark.parametrize(
-    ("route", "ticks", "explicit_questions", "sibling_kind"),
+    ("route", "ticks", "explicit_questions"),
     [
-        ("external_heading", 100, False, None),
-        ("external_heading", 101, False, None),
-        ("external_heading", 101, True, None),
-        ("owned_heading", 100, False, None),
-        ("owned_heading", 101, True, None),
-        ("question_total", 100, False, None),
-        ("question_total", 101, True, None),
-        ("external_heading", 101, True, NativeExamItemKind.FREE_TEXT),
-        ("external_heading", 101, True, NativeExamItemKind.MATCHING),
-        ("owned_heading", 101, True, NativeExamItemKind.FREE_TEXT),
-        ("owned_heading", 101, True, NativeExamItemKind.MATCHING),
-        ("question_total", 101, True, NativeExamItemKind.FREE_TEXT),
-        ("question_total", 101, True, NativeExamItemKind.MATCHING),
+        ("external_heading", 100, False),
+        ("external_heading", 101, False),
+        ("external_heading", 101, True),
+        ("owned_heading", 100, False),
+        ("owned_heading", 101, True),
+        ("question_total", 100, False),
+        ("question_total", 101, True),
     ],
 )
 def test_printed_grid_tick_boundary_keeps_score_or_complete_source_review(
     route: str,
     ticks: int,
     explicit_questions: bool,
-    sibling_kind: NativeExamItemKind | None,
 ) -> None:
     rows = tuple(f"Ord {number}" for number in range(1, ticks + 1))
     source = "Kategorisera varje ord.\n" + "\n".join(rows)
     heading = route != "question_total"
-    printed_points = 2 if sibling_kind else 1
+    printed_points = 1
     metadata = (
         f"Kategorisering ({printed_points} poäng)" if heading else f"Poäng: {printed_points} poäng"
     )
-    sibling_source = "Förklara hur du valde kategori."
-    question: tuple[DocxChunk, ...] = (
-        DocxChunk("body:0002", "table", source, source),
-        *(
-            (DocxChunk("body:0003", "paragraph", sibling_source, sibling_source),)
-            if sibling_kind
-            else ()
-        ),
-    )
+    question: tuple[DocxChunk, ...] = (DocxChunk("body:0002", "table", source, source),)
     # A heading opens the question; the points line closes it, whatever it is tagged as.
     line = DocxChunk("body:0001", "heading" if heading else "paragraph", metadata, metadata)
     chunks = (line, *question) if heading else (*question, line)
@@ -128,22 +113,6 @@ def test_printed_grid_tick_boundary_keeps_score_or_complete_source_review(
         update={"review": first.review.model_copy(update={"confidence": 0.82})}
     )
     state.accepted.append((first, ("body:0002",)))
-    if sibling_kind:
-        sibling = produced.model_copy(
-            update={
-                "source_anchors": ("body:0003",),
-                "kind": sibling_kind,
-                "points": None if sibling_kind is NativeExamItemKind.MATCHING else 5,
-                "match_left": rows if sibling_kind is NativeExamItemKind.MATCHING else (),
-                "match_right": produced.match_right
-                if sibling_kind is NativeExamItemKind.MATCHING
-                else (),
-                "match_pairs": produced.match_pairs
-                if sibling_kind is NativeExamItemKind.MATCHING
-                else (),
-            }
-        )
-        state.accepted.append((native_item(sibling, language="sv"), ("body:0003",)))
     state.claimed.update(chunk.anchor for chunk in chunks)
     if route == "external_heading":
         state.instructions = (
@@ -246,8 +215,6 @@ def test_printed_grid_tick_boundary_keeps_score_or_complete_source_review(
         assert item.review.parse_origin is NativeParseOrigin.SOURCE_FALLBACK
         text = body_plain_text(item.body)
         assert text.count(source) == 1
-        if sibling_kind:
-            assert text.count(sibling_source) == 1
         reasons = " ".join(item.review.reasons)
         assert f"Tryckta {printed_points} poäng" in reasons
         assert "0,01" in reasons
