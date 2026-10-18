@@ -24,6 +24,7 @@ import type { ExamWorkspaceReadinessReason } from "./examWorkspaceItemReadiness"
 import { examWorkspaceListEntries, examWorkspaceListTotal } from "./examWorkspaceListEntries";
 import type { ExamWorkspaceItemEntry, ExamWorkspaceParentEntry } from "./examWorkspaceListEntries";
 import { bodyText } from "./examWorkspaceRichText";
+import { isEmptyBody } from "./examWorkspaceRichTextDocument";
 import type { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
 import type { ExamWorkspaceNotice } from "./useExamWorkspaceStructure";
 
@@ -143,7 +144,7 @@ export function useExamWorkspaceSelection({ editing, importOpen, listOpen, after
    */
   const stepOrder = computed(() => {
     const ids = entries.value.map((entry) => entry.id);
-    const hasInstructions = (workspaceDocument.value?.instructions.length ?? 0) > 0;
+    const hasInstructions = !isEmptyBody(workspaceDocument.value?.instructions ?? []);
     return hasInstructions || examInstructionsSelected.value ? [EXAM_INSTRUCTIONS_ENTRY_ID, ...ids] : ids;
   });
 

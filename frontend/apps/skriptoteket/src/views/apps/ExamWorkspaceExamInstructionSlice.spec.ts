@@ -209,6 +209,61 @@ describe("exam without an instruction", () => {
   });
 });
 
+describe("an instruction that prints nothing counts as absent", () => {
+  const blankInstructions = [
+    { name: "spaces", segments: [{ kind: "text" as const, marks: [], text: "   " }] },
+    { name: "a hard break", segments: [{ kind: "text" as const, marks: [], text: "\n" }] },
+    { name: "spaces around a hard break", segments: [{ kind: "text" as const, marks: [], text: " \n  " }] },
+  ];
+
+  it.each(blankInstructions)("treats an instruction of $name as none", async ({ segments }) => {
+    const wrapper = await openDocument(withInstructions([{ heading_level: null, segments }]));
+
+    expect(wrapper.get(ADD).text()).toBe("Lägg till instruktioner");
+    expect(wrapper.find(ENTRY).exists()).toBe(false);
+    expect(wrapper.text()).not.toContain("Bild");
+  });
+
+  it.each(blankInstructions)("ArrowUp from the first question skips an instruction of $name", async ({ segments }) => {
+    const wrapper = await openDocument(withInstructions([{ heading_level: null, segments }]));
+    const first = wrapper.find('[role="row"][aria-selected="true"]').attributes("data-entry-id") ?? null;
+
+    window.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, key: "ArrowUp" }));
+    await flushPromises();
+
+    expect(wrapper.find(EDITOR).exists()).toBe(false);
+    expect(wrapper.find('[role="row"][aria-selected="true"]').attributes("data-entry-id") ?? null).toBe(first);
+  });
+
+  it("keeps the editor open and brings back the quiet entry when the text is cleared down to a hard break", async () => {
+    const wrapper = await openDocument(buildDocument());
+    await openEditor(wrapper, ENTRY);
+
+    editorBehind(wrapper, TEXT).chain().selectAll().deleteSelection().setHardBreak().run();
+    await flushPromises();
+
+    expect(wrapper.find(ENTRY).exists()).toBe(false);
+    expect(wrapper.get(ADD).text()).toBe("Lägg till instruktioner");
+    expect(wrapper.text()).not.toContain("Bild");
+    expect(wrapper.find(EDITOR).exists()).toBe(true);
+    expect(wrapper.get(ADD).attributes("aria-current")).toBe("true");
+  });
+
+  it("shows Bild only for an instruction whose text is blank but holds a picture", async () => {
+    const document = withInstructions([
+      {
+        heading_level: null,
+        segments: [{ kind: "text", marks: [], text: " \n " }, { kind: "asset", asset_id: "asset_001" }],
+      },
+    ]);
+    document.assets = [{ asset_id: "asset_001", byte_length: 10, media_type: "image/png", sha256: "0".repeat(64) }];
+    const wrapper = await openDocument(document);
+
+    expect(wrapper.find(ADD).exists()).toBe(false);
+    expect(wrapper.get(ENTRY).text()).toContain("Bild");
+  });
+});
+
 describe("exam instruction on a phone", () => {
   it("names the open instruction in the question strip", async () => {
     const wrapper = await openDocument(buildDocument(), "phone");

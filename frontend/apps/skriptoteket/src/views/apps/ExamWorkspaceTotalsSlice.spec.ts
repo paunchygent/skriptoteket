@@ -49,6 +49,8 @@ const mounted: ViewWrapper[] = [];
 let history: ReturnType<typeof arrangeStepHistory>;
 const WARNING = '[data-test="exam-workspace-points-warning"]';
 const EXAM_POINTS = '[data-test="exam-workspace-exam-points"]';
+const FOOTER_ACTIONS = '[data-test="exam-workspace-footer-actions"]';
+const PART_POINTS_LINE = '[data-test="exam-workspace-part-points-line"]';
 
 function documentWithTotals(printed: number | null, points: (number | null)[]): NativeExamDocument {
   return {
@@ -75,6 +77,16 @@ async function openDocument(document: NativeExamDocument, layout: ExamWorkspaceL
   mounted.push(wrapper);
   await importFixtureDocument(wrapper);
   return wrapper;
+}
+
+function rowLine(parentId: string) {
+  return `[data-test="exam-workspace-row-${parentId}"] ${PART_POINTS_LINE}`;
+}
+
+/** The element tags and classes of a row's lines, top to bottom: what must not change when a total is accepted. */
+function rowShape(wrapper: ViewWrapper, id: string): string[] {
+  const body = wrapper.get(`[data-test="exam-workspace-row-${id}"]`).element.querySelector(".row__body");
+  return Array.from(body?.children ?? []).map((line) => `${line.tagName}.${line.className}`);
 }
 
 function partLine(wrapper: ViewWrapper, parentId: string) {
@@ -220,6 +232,9 @@ describe("total comparison edge cases", () => {
   });
 });
 
+/** The class that sets `visibility: hidden` on a footer action (jsdom has no layout, so structure is asserted). */
+const IDLE_ACTION = "list__action--idle";
+
 describe("accepting the computed totals", () => {
   const ACCEPT_EXAM = '[data-test="exam-workspace-accept-exam-total"]';
   const ACCEPT_ALL = '[data-test="exam-workspace-accept-all-totals"]';
@@ -249,7 +264,7 @@ describe("accepting the computed totals", () => {
     await flushPromises();
 
     expect(wrapper.get(EXAM_POINTS).text()).toBe("Totalt 10 p");
-    expect(wrapper.find(ACCEPT_EXAM).exists()).toBe(false);
+    expect(wrapper.get(ACCEPT_EXAM).classes()).toContain(IDLE_ACTION);
     expect(partLine(wrapper, "parent_001").text()).toBe("5 p · provtexten anger 8 p");
     expect(partLine(wrapper, "parent_002").text()).toBe("5 p · provtexten anger 6 p");
     expect(apiMocks.saveExamWorkspaceDocument).not.toHaveBeenCalled();
@@ -269,6 +284,7 @@ describe("accepting the computed totals", () => {
     await flushPromises();
 
     expect(partLine(wrapper, "parent_001").exists()).toBe(false);
+    expect(wrapper.get(rowLine("parent_001")).text()).toBe("5 p");
     expect(partLine(wrapper, "parent_002").text()).toBe("5 p · provtexten anger 6 p");
     expect(wrapper.get(EXAM_POINTS).text()).toBe("Totalt 10 p · provtexten anger 14 p");
     expect(wrapper.get('[aria-selected="true"]').attributes("data-entry-id")).toBe(selectedBefore);
@@ -312,7 +328,7 @@ describe("accepting the computed totals", () => {
     await flushPromises();
 
     expect(wrapper.text()).not.toContain("provtexten anger");
-    expect(wrapper.find(ACCEPT_ALL).exists()).toBe(false);
+    expect(wrapper.get(ACCEPT_ALL).classes()).toContain(IDLE_ACTION);
     expect(apiMocks.storeExamWorkspaceUndoStep).toHaveBeenCalledTimes(1);
 
     await undo(wrapper);
@@ -324,15 +340,16 @@ describe("accepting the computed totals", () => {
 
   it("offers the footer action only while a level differs, also when only a part does", async () => {
     const equal = await openDocument(documentWithTotals(5, [2, 3]));
-    expect(equal.find(ACCEPT_ALL).exists()).toBe(false);
-    expect(equal.find(ACCEPT_EXAM).exists()).toBe(false);
+    expect(equal.get(ACCEPT_ALL).classes()).toContain(IDLE_ACTION);
+    expect(equal.get(ACCEPT_EXAM).classes()).toContain(IDLE_ACTION);
 
     const onlyPart = await openDocument(twoPartsPrintingOtherTotals(10));
-    expect(onlyPart.find(ACCEPT_EXAM).exists()).toBe(false);
+    expect(onlyPart.get(ACCEPT_EXAM).classes()).toContain(IDLE_ACTION);
+    expect(onlyPart.get(ACCEPT_ALL).classes()).not.toContain(IDLE_ACTION);
     expect(onlyPart.get(ACCEPT_ALL).text()).toBe("Använd beräknade summor");
     await onlyPart.get(ACCEPT_ALL).trigger("click");
     await flushPromises();
-    expect(onlyPart.find(ACCEPT_ALL).exists()).toBe(false);
+    expect(onlyPart.get(ACCEPT_ALL).classes()).toContain(IDLE_ACTION);
   });
 
   it("names a decimal sum as the line shows it", async () => {
@@ -343,5 +360,87 @@ describe("accepting the computed totals", () => {
     const wrapper = await openDocument(document);
     expect(wrapper.get(ACCEPT_EXAM).text()).toBe("Använd 7,5 p");
     expect(wrapper.get(acceptPart("parent_001")).text()).toBe("Använd 7,5 p");
+  });
+});
+
+describe("accepting a total never changes the layout slots", () => {
+  const ACCEPT_EXAM = '[data-test="exam-workspace-accept-exam-total"]';
+  const ACCEPT_ALL = '[data-test="exam-workspace-accept-all-totals"]';
+  const acceptPart = (parentId: string) => `[data-test="exam-workspace-accept-part-total-${parentId}"]`;
+
+  function printingOtherTotals(): NativeExamDocument {
+    const document = documentWithTotals(14, [2, 3, 1, 4]);
+    document.parents = [
+      { parent_id: "parent_001", item_ids: ["item_001", "item_002"], printed_total: 8, instruction: [] },
+      { parent_id: "parent_002", item_ids: ["item_003", "item_004"], printed_total: 6, instruction: [] },
+    ];
+    return document;
+  }
+
+  const footerShape = (wrapper: ViewWrapper) => ({
+    foot: Array.from(wrapper.get(".list__foot").element.children).map((child) => `${child.tagName}.${child.classList[0]}`),
+    actions: Array.from(wrapper.get(FOOTER_ACTIONS).element.children).map((child) => child.getAttribute("data-test")),
+  });
+
+  it("keeps both footer lines and both actions after the exam total is accepted, the actions hidden", async () => {
+    const wrapper = await openDocument(documentWithTotals(14, [2, 3]));
+    const before = footerShape(wrapper);
+    expect(wrapper.get(ACCEPT_EXAM).classes()).not.toContain(IDLE_ACTION);
+    expect(wrapper.get(EXAM_POINTS).attributes("title")).toBe("Totalt 5 p · provtexten anger 14 p");
+
+    await wrapper.get(ACCEPT_EXAM).trigger("click");
+    await flushPromises();
+
+    expect(footerShape(wrapper)).toEqual(before);
+    expect(before.actions).toEqual([
+      "exam-workspace-accept-exam-total",
+      "exam-workspace-accept-all-totals",
+    ]);
+    expect(wrapper.get(ACCEPT_EXAM).classes()).toContain(IDLE_ACTION);
+    expect(wrapper.get(ACCEPT_ALL).classes()).toContain(IDLE_ACTION);
+    expect(wrapper.get(EXAM_POINTS).attributes("title")).toBeUndefined();
+    expect(wrapper.get(EXAM_POINTS).text()).toBe("Totalt 5 p");
+  });
+
+  it("keeps the parent row's three lines when its part total is accepted, now plain points", async () => {
+    const wrapper = await openDocument(printingOtherTotals());
+    const before = rowShape(wrapper, "parent_001");
+    expect(before).toHaveLength(3);
+    expect(wrapper.get(rowLine("parent_001")).get('[data-test="exam-workspace-part-points"]').attributes("title"))
+      .toBe("5 p · provtexten anger 8 p");
+
+    await wrapper.get(acceptPart("parent_001")).trigger("click");
+    await flushPromises();
+
+    expect(rowShape(wrapper, "parent_001")).toEqual(before);
+    expect(wrapper.get(rowLine("parent_001")).text()).toBe("5 p");
+    expect(partLine(wrapper, "parent_001").exists()).toBe(false);
+    expect(wrapper.find(acceptPart("parent_001")).exists()).toBe(false);
+    // The meta line names the questions only, in both states.
+    expect(wrapper.get('[data-test="exam-workspace-row-parent_001"] .row__meta').text()).toBe("Instruktion · 2 frågor");
+    expect(rowShape(wrapper, "parent_002")).toEqual(before);
+  });
+
+  it("keeps the parent row's three lines for a part that never printed a total", async () => {
+    const document = documentWithTotals(null, [2, 3]);
+    document.parents = [{
+      parent_id: "parent_001", item_ids: ["item_001", "item_002"], printed_total: null, instruction: [],
+    }];
+    const wrapper = await openDocument(document);
+
+    expect(rowShape(wrapper, "parent_001")).toHaveLength(3);
+    expect(wrapper.get(rowLine("parent_001")).text()).toBe("5 p");
+  });
+
+  it("leaves the all-totals accept with both footer actions in place and every row's lines unchanged", async () => {
+    const wrapper = await openDocument(printingOtherTotals());
+    const rows = ["parent_001", "parent_002"].map((id) => rowShape(wrapper, id));
+    const foot = footerShape(wrapper);
+
+    await wrapper.get(ACCEPT_ALL).trigger("click");
+    await flushPromises();
+
+    expect(["parent_001", "parent_002"].map((id) => rowShape(wrapper, id))).toEqual(rows);
+    expect(footerShape(wrapper)).toEqual(foot);
   });
 });

@@ -48,6 +48,7 @@ import { isTeacherReviewed } from "./exam-workspace/examWorkspaceItemEdits";
 import type { TeacherItemKind } from "./exam-workspace/examWorkspaceItemEdits";
 import { examWorkspaceDocumentLabel } from "./exam-workspace/examWorkspaceRows";
 import { bodyText } from "./exam-workspace/examWorkspaceRichText";
+import { isEmptyBody } from "./exam-workspace/examWorkspaceRichTextDocument";
 import { examWorkspaceExamPrintedDifference } from "./exam-workspace/examWorkspaceTotals";
 import { useExamWorkspaceAddress } from "./exam-workspace/useExamWorkspaceAddress";
 import { useExamWorkspaceContentSuggestions } from "./exam-workspace/useExamWorkspaceContentSuggestions";
@@ -149,10 +150,13 @@ provideExamWorkspaceHistoryKeys({
   redo: () => void history.redo(),
 });
 
-/** The list's "Instruktioner" preview: the text, or "Bild" for an instruction of pictures only; `null` without one. */
+/**
+ * The list's "Instruktioner" preview: the text, or "Bild" for an instruction
+ * of pictures without visible text; `null` for an instruction that prints nothing.
+ */
 const examInstructionsPreview = computed(() => {
   const instructions = workspaceDocument.value?.instructions ?? [];
-  return instructions.length > 0 ? bodyText(instructions) || "Bild" : null;
+  return isEmptyBody(instructions) ? null : bodyText(instructions) || "Bild";
 });
 const examPrintedTotal = computed(() =>
   workspaceDocument.value ? examWorkspaceExamPrintedDifference(workspaceDocument.value) : null,

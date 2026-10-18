@@ -7,11 +7,12 @@
  *   one line naming its type and points, or the first thing that stops its
  *   export in red. A question shows whether the AI wrote its key and whether
  *   it is reviewed, needs review or still converts. An instruction row shows
- *   how many deluppgifter it holds and their points; when the exam text
- *   prints another part total, the points line says so in amber and wraps
- *   instead of truncating, and its "Använd N p" sits in its own cell, so
- *   accepting a part total never selects the row. Its deluppgifter are
- *   indented under it.
+ *   how many deluppgifter it holds on its second line and their points on a
+ *   third line of fixed height; when the exam text prints another part total,
+ *   that line says so in amber, truncating with the full text in a tooltip,
+ *   beside "Använd N p", which never shrinks and never selects the row.
+ *   Accepting only swaps the content of the line, so no row moves. Its
+ *   deluppgifter are indented under it.
  *
  * Relationships:
  *   - A `row` of the list's grid: every child is a `gridcell`, which may hold
@@ -38,8 +39,7 @@ const meta = computed(() => {
   const entry = props.entry;
   if (entry.kind === "parent") {
     const count = entry.childIds.length;
-    const questions = `Instruktion · ${count} ${count === 1 ? "fråga" : "frågor"}`;
-    return entry.printedTotal === null ? `${questions} · ${examWorkspaceFormatPoints(entry.points)} p` : questions;
+    return `Instruktion · ${count} ${count === 1 ? "fråga" : "frågor"}`;
   }
   if (entry.status === "converting") {
     return "Konverteras …";
@@ -84,22 +84,30 @@ const aiTitle = computed(() =>
         <template v-else>{{ meta }}</template>
       </span>
       <span
-        v-if="entry.kind === 'parent' && entry.printedTotal !== null"
-        class="row__printedline"
+        v-if="entry.kind === 'parent'"
+        class="row__pointsline"
+        data-test="exam-workspace-part-points-line"
       >
+        <template v-if="entry.printedTotal !== null">
+          <span
+            class="row__printed"
+            :title="examWorkspacePointsLine(entry.points, entry.printedTotal)"
+            data-test="exam-workspace-part-points"
+          >{{ examWorkspacePointsLine(entry.points, entry.printedTotal) }}</span>
+          <button
+            type="button"
+            class="xw-btn xw-btn--compact xw-btn--ghost row__accept"
+            :disabled="disabled"
+            :data-test="`exam-workspace-accept-part-total-${entry.id}`"
+            @click.stop="emit('acceptTotal', entry.id)"
+          >
+            Använd {{ examWorkspaceFormatPoints(entry.points) }} p
+          </button>
+        </template>
         <span
-          class="row__printed"
-          data-test="exam-workspace-part-points"
-        >{{ examWorkspacePointsLine(entry.points, entry.printedTotal) }}</span>
-        <button
-          type="button"
-          class="xw-btn xw-btn--compact xw-btn--ghost"
-          :disabled="disabled"
-          :data-test="`exam-workspace-accept-part-total-${entry.id}`"
-          @click.stop="emit('acceptTotal', entry.id)"
-        >
-          Använd {{ examWorkspaceFormatPoints(entry.points) }} p
-        </button>
+          v-else
+          class="row__points"
+        >{{ examWorkspaceFormatPoints(entry.points) }} p</span>
       </span>
     </span>
     <span role="gridcell"><span
@@ -165,8 +173,17 @@ const aiTitle = computed(() =>
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .row__problem { font-weight: var(--huleedu-font-medium); }
-.row__printedline { display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--huleedu-space-2); }
-.row__printed { font-size: var(--huleedu-text-xs); color: var(--huleedu-warning); overflow-wrap: anywhere; }
+/* The points line is one compact button tall with or without a printed difference, so accepting moves no row. */
+.row__pointsline {
+  display: flex; flex-wrap: nowrap; align-items: center; gap: var(--huleedu-space-2);
+  height: var(--xw-ctl-compact, 28px); min-width: 0;
+}
+.row__points, .row__printed {
+  min-width: 0; font-size: var(--huleedu-text-xs); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.row__points { color: var(--huleedu-navy-60); }
+.row__printed { color: var(--huleedu-warning); }
+.row__accept { flex: none; }
 .row--parent .row__text { font-weight: var(--huleedu-font-normal); }
 .row--child { padding-left: calc(var(--huleedu-space-6) + 24px); }
 .row--child::before {
