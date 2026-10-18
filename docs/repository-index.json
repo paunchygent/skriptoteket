@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "bd7d1146eed47abe38e21d604ae20dbe029f855461c28e75b8110830cf5096e8",
+  "source_set_digest": "8f9d0d777a013029d267cd004c9cd0b25081fa0868457f7e9a55ca01b20eef3c",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5064,6 +5064,25 @@
         "decided_at": "2026-10-18",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "Independent ruthless-reviewer approved 62e178088 after the changes_requested review b313b2b1 (F1, F2 repaired) (root 01a14ea8 evidence/reviews/5d0e4e46-60ae-4112-a287-42f6e5e093aa.md); Hemma suite 4569 passed at 62e178088; D5-D7 user-accepted 2026-10-18 after the measurement and interpretive drop audit (task doc Validation); merged into main with docs-only 263b72713."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-04-16",
+      "type": "task",
+      "title": "Gap paragraphs are built from their source paragraph, so no cue or lead clause beside a gap is lost",
+      "path": "docs/backlog/tasks/task-skript-39-04-16-gap-paragraphs-are-built-from-their-source-paragraph-so-no-cue-or-lead-clause-beside-a-gap-is-lost.md",
+      "status": "proposed",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {
