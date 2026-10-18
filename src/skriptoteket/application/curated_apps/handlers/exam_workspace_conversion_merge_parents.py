@@ -23,37 +23,76 @@ def merge_parents(
     delivered_digest: str | None,
     id_map: dict[str, str],
     items: tuple[NativeExamItem, ...],
+    head_items: tuple[NativeExamItem, ...],
 ) -> tuple[tuple[NativeExamParent, ...], str | None]:
     """Conversion's parents while the teacher kept the delivered ones (D30).
 
     A parent whose saved children no longer form one consecutive run is split into such runs,
     each carrying the instruction, so no child loses its instruction. Children of any kinds
-    share a parent (D27).
+    share a parent (D27). A part with no children is a teacher-made instruction block: it keeps
+    the place it held before the merge, anchored to the saved question before it.
     """
     delivered = proposed is not None and parents_digest(current) == delivered_digest
     if delivered and proposed is not None:
         candidates = [
-            parent.model_copy(
-                update={"item_ids": tuple(id_map[i] for i in parent.item_ids if i in id_map)}
+            (
+                parent.model_copy(
+                    update={"item_ids": tuple(id_map[i] for i in parent.item_ids if i in id_map)}
+                ),
+                bool(parent.item_ids),
             )
             for parent in proposed
         ]
     else:
-        candidates = list(current)
+        candidates = [(parent, bool(parent.item_ids)) for parent in current]
     by_id = {item.item_id: item for item in items}
-    parent_ids = _ParentIds(parent.parent_id for parent in candidates)
+    position = {item.item_id: index for index, item in enumerate(items)}
+    parent_ids = _ParentIds(parent.parent_id for parent, _ in candidates)
     claimed: set[str] = set()
-    accepted: list[NativeExamParent] = []
-    for parent in candidates:
+    child_parts: list[NativeExamParent] = []
+    blocks: list[NativeExamParent] = []
+    placed_blocks: list[NativeExamParent] = []
+    for parent, had_children in candidates:
+        if not parent.item_ids:
+            # A delivered part loses every child when the merge drops them all.
+            if not had_children:
+                blocks.append(parent)
+            continue
         children = sorted(
             (by_id[i] for i in dict.fromkeys(parent.item_ids) if i in by_id and i not in claimed),
             key=lambda item: item.sequence,
         )
         for index, run in enumerate(_consecutive_runs(children)):
             parent_id = parent.parent_id if index == 0 else parent_ids.fresh()
-            accepted.append(parent.model_copy(update={"parent_id": parent_id, "item_ids": run}))
+            child_parts.append(
+                parent.model_copy(
+                    update={
+                        "parent_id": parent_id,
+                        "place": by_id[run[0]].sequence - 1,
+                        "item_ids": run,
+                    }
+                )
+            )
             claimed.update(run)
-    parents = tuple(accepted)
+    for parent in blocks:
+        place = next(
+            (
+                position[earlier.item_id] + 1
+                for earlier in reversed(head_items[: parent.place])
+                if earlier.item_id in position
+            ),
+            0,
+        )
+        for part in child_parts:
+            if part.place < place < part.place + len(part.item_ids):
+                place = part.place + len(part.item_ids)
+        placed_blocks.append(parent.model_copy(update={"place": place, "item_ids": ()}))
+    parents = tuple(
+        sorted(
+            (*child_parts, *placed_blocks),
+            key=lambda parent: (parent.place, 0 if not parent.item_ids else 1),
+        )
+    )
     validate_parent_structure(parents, items)
     return parents, (parents_digest(parents) if delivered else delivered_digest)
 

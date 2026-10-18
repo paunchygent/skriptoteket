@@ -431,6 +431,7 @@ def place_section_instructions(
     parents = tuple(
         NativeExamParent(
             parent_id=f"parent_{number:03d}",
+            place=group[0].reach[0],
             instruction=_parent_instruction(group),
             item_ids=tuple(_item_id(k) for k in group[0].reach),
         )

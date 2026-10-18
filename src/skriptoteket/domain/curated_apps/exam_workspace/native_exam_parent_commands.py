@@ -1,8 +1,12 @@
-"""Teacher parent commands over immutable documents (TASK-SKRIPT-39-06-03/07).
+"""Teacher parent commands over immutable documents (TASK-SKRIPT-39-06-03/07/10).
 
-Positions are zero-based insertion indexes: top-level units for a new parent,
-and children for additions. Existing parents are indivisible top-level units.
+Positions are zero-based insertion indexes: top-level outline entries for a new
+parent, and children for additions. Every command writes through the outline
+owner, so item sequences and each part's stored place come from the new order.
 """
+
+from collections.abc import Sequence
+from typing import cast
 
 from pydantic import ValidationError
 
@@ -14,6 +18,13 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import NativeExamItem
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_ordering import (
     ordering_inside_parent_error,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_outline import (
+    OutlineEntry,
+    OutlinePart,
+    OutlineQuestion,
+    document_outline,
+    outline_items_and_parts,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import NativeExamParent
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
@@ -44,6 +55,14 @@ def _parent(document: NativeExamDocument, parent_id: str) -> NativeExamParent:
     )
 
 
+def _part_index(outline: Sequence[OutlineEntry], parent_id: str) -> int:
+    return next(
+        index
+        for index, entry in enumerate(outline)
+        if isinstance(entry, OutlinePart) and entry.part.parent_id == parent_id
+    )
+
+
 def _new_child(document: NativeExamDocument, child: NativeExamItem) -> NativeExamItem:
     if child.kind is NativeExamItemKind.ORDERING:
         raise ordering_inside_parent_error(child.item_id)
@@ -53,13 +72,10 @@ def _new_child(document: NativeExamDocument, child: NativeExamItem) -> NativeExa
     return NativeExamItem.model_validate(data)
 
 
-def _rebuild(
-    document: NativeExamDocument,
-    items: list[NativeExamItem],
-    parents: tuple[NativeExamParent, ...],
-) -> NativeExamDocument:
+def _rebuild(document: NativeExamDocument, outline: Sequence[OutlineEntry]) -> NativeExamDocument:
+    items, parents = outline_items_and_parts(outline)
     data = document.model_dump()
-    data["items"] = [dict(item.model_dump(), sequence=index) for index, item in enumerate(items, 1)]
+    data["items"] = [item.model_dump() for item in items]
     data["parents"] = [parent.model_dump() for parent in parents]
     surviving_ids = {item.item_id for item in items}
     data["header"]["tags"] = [
@@ -100,34 +116,20 @@ def create_parent(
     child: NativeExamItem,
     position: int,
 ) -> NativeExamDocument:
-    starts = [
-        index
-        for index, item in enumerate(document.items)
-        if (parent := document.parent_of(item.item_id)) is None
-        or parent.item_ids[0] == item.item_id
-    ]
-    _position(position, len(starts))
-    offset = starts[position] if position < len(starts) else len(document.items)
+    outline = list(document_outline(document))
+    _position(position, len(outline))
     new_child = _new_child(document, child)
     try:
         parent = NativeExamParent(
             parent_id=_next_id("parent", {parent.parent_id for parent in document.parents}, 999),
+            place=0,
             instruction=instruction,
             item_ids=(new_child.item_id,),
         )
     except ValidationError as exc:
         raise validation_error("Uppgiftens instruktion är ogiltig.") from exc
-    items = list(document.items)
-    items.insert(offset, new_child)
-    parents = tuple(
-        sorted(
-            (*document.parents, parent),
-            key=lambda entry: next(
-                i for i, item in enumerate(items) if item.item_id == entry.item_ids[0]
-            ),
-        )
-    )
-    return _rebuild(document, items, parents)
+    outline.insert(position, OutlinePart(part=parent, children=(new_child,)))
+    return _rebuild(document, outline)
 
 
 def add_child(
@@ -137,16 +139,16 @@ def add_child(
     child: NativeExamItem,
     position: int,
 ) -> NativeExamDocument:
-    parent = _parent(document, parent_id)
-    _position(position, len(parent.item_ids))
+    _parent(document, parent_id)
+    outline = list(document_outline(document))
+    index = _part_index(outline, parent_id)
+    part = cast(OutlinePart, outline[index])
+    _position(position, len(part.children))
     new_child = _new_child(document, child)
-    offset = document.item_by_id(parent.item_ids[0]).sequence - 1 + position
-    items = list(document.items)
-    items.insert(offset, new_child)
-    ids = list(parent.item_ids)
-    ids.insert(position, new_child.item_id)
-    updated = NativeExamParent.model_validate(dict(parent.model_dump(), item_ids=tuple(ids)))
-    return _rebuild(document, items, tuple(updated if p == parent else p for p in document.parents))
+    children = list(part.children)
+    children.insert(position, new_child)
+    outline[index] = OutlinePart(part=part.part, children=tuple(children))
+    return _rebuild(document, outline)
 
 
 def delete_parent(
@@ -156,11 +158,11 @@ def delete_parent(
 ) -> NativeExamDocument:
     """Remove the shared instruction, leaving every child in place as a standalone."""
     _parent(document, parent_id)
-    return _rebuild(
-        document,
-        list(document.items),
-        tuple(parent for parent in document.parents if parent.parent_id != parent_id),
-    )
+    outline = list(document_outline(document))
+    index = _part_index(outline, parent_id)
+    part = cast(OutlinePart, outline[index])
+    outline[index : index + 1] = [OutlineQuestion(item=item) for item in part.children]
+    return _rebuild(document, outline)
 
 
 def delete_parent_with_children(
@@ -176,11 +178,12 @@ def delete_parent_with_children(
             "Provet måste ha minst en fråga.",
             details={"reason": "exam_requires_question", "parent_id": parent_id},
         )
-    return _rebuild(
-        document,
-        [item for item in document.items if item.item_id not in child_ids],
-        tuple(parent for parent in document.parents if parent.parent_id != parent_id),
-    )
+    outline = [
+        entry
+        for entry in document_outline(document)
+        if not (isinstance(entry, OutlinePart) and entry.part.parent_id == parent_id)
+    ]
+    return _rebuild(document, outline)
 
 
 def delete_child(
@@ -198,17 +201,14 @@ def delete_child(
         )
     if len(parent.item_ids) == 1:
         return delete_parent_with_children(document, parent_id=parent_id)
-    updated = NativeExamParent.model_validate(
-        dict(
-            parent.model_dump(),
-            item_ids=tuple(value for value in parent.item_ids if value != item_id),
-        )
+    outline = list(document_outline(document))
+    index = _part_index(outline, parent_id)
+    part = cast(OutlinePart, outline[index])
+    outline[index] = OutlinePart(
+        part=part.part,
+        children=tuple(child for child in part.children if child.item_id != item_id),
     )
-    return _rebuild(
-        document,
-        [item for item in document.items if item.item_id != item_id],
-        tuple(updated if p == parent else p for p in document.parents),
-    )
+    return _rebuild(document, outline)
 
 
 def reorder_children(
@@ -223,8 +223,11 @@ def reorder_children(
             "Ordningen måste innehålla varje deluppgift exakt en gång.",
             details={"parent_id": parent_id},
         )
-    start = document.item_by_id(parent.item_ids[0]).sequence - 1
-    items = list(document.items)
-    items[start : start + len(item_ids)] = [document.item_by_id(item_id) for item_id in item_ids]
-    updated = NativeExamParent.model_validate(dict(parent.model_dump(), item_ids=item_ids))
-    return _rebuild(document, items, tuple(updated if p == parent else p for p in document.parents))
+    outline = list(document_outline(document))
+    index = _part_index(outline, parent_id)
+    part = cast(OutlinePart, outline[index])
+    by_id = {child.item_id: child for child in part.children}
+    outline[index] = OutlinePart(
+        part=part.part, children=tuple(by_id[item_id] for item_id in item_ids)
+    )
+    return _rebuild(document, outline)

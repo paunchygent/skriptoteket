@@ -425,6 +425,7 @@ def merge_conversion(
         delivered_digest=progress.parents_digest,
         id_map=id_map,
         items=items,
+        head_items=head.items,
     )
     assets = merged_assets(
         head=head,

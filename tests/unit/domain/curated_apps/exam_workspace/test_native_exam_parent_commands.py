@@ -20,7 +20,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document_json i
     native_exam_document_json_bytes,
     parse_native_exam_document,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import parent_points
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import (
+    NativeExamParent,
+    parent_points,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent_commands import (
     add_child,
     create_parent,
@@ -46,6 +49,17 @@ _DELETE_CASES = [
     pytest.param(delete_parent_with_children, False, id="cascade"),
     pytest.param(partial(delete_child, item_id="item_002"), True, id="last-child"),
 ]
+
+
+def _childless(parent_id: str, instruction: str, place: int) -> NativeExamParent:
+    return NativeExamParent(parent_id=parent_id, place=place, instruction=plain_body(instruction))
+
+
+def _with_parts(document: NativeExamDocument, *parts: NativeExamParent) -> NativeExamDocument:
+    parents = sorted(
+        (*document.parents, *parts), key=lambda parent: (parent.place, bool(parent.item_ids))
+    )
+    return NativeExamDocument.model_validate({**document.model_dump(), "parents": parents})
 
 
 def _exam() -> NativeExamDocument:
@@ -95,7 +109,9 @@ def test_create_parent_inserts_among_atomic_top_level_units_without_losing_exist
     assert child.body == template.body
     assert child.points == template.points
     assert child.review.parse_origin is NativeParseOrigin.TEACHER_CREATED
-    assert result.parent_of("item_002") == base.parents[0]
+    assert result.parent_of("item_002") == base.parents[0].model_copy(
+        update={"place": result.item_by_id("item_002").sequence - 1}
+    )
     assert result.revision == base.revision
     _check_structure(result)
 
@@ -167,7 +183,13 @@ def test_reorder_changes_only_the_requested_parent_and_delete_updates_sum() -> N
     _check_structure(deleted)
     last_child_deleted = delete_child(deleted, parent_id="parent_001", item_id="item_002")
 
-    assert last_child_deleted.parents == (base.parents[1],)
+    assert last_child_deleted.parents == (
+        base.parents[1].model_copy(
+            update={
+                "place": last_child_deleted.item_by_id(base.parents[1].item_ids[0]).sequence - 1
+            }
+        ),
+    )
     assert last_child_deleted.parent_of("item_002") is None
     assert [item.item_id for item in last_child_deleted.items] == [
         item.item_id for item in base.items if item.item_id not in {"item_002", "item_003"}
@@ -316,7 +338,11 @@ def test_cascade_removes_exactly_the_three_children_and_renumbers_all_survivors(
         dict(item.model_dump(), sequence=sequence)
         for sequence, item in enumerate(survivors, start=1)
     ]
-    assert result.parents == (base.parents[1],)
+    assert result.parents == (
+        base.parents[1].model_copy(
+            update={"place": result.item_by_id(base.parents[1].item_ids[0]).sequence - 1}
+        ),
+    )
     assert [result.item_by_id(item_id).sequence for item_id in result.parents[0].item_ids] == [3, 4]
     assert parent_points(result, result.parents[0]) == parent_points(base, base.parents[1])
     assert result.document_id == base.document_id
@@ -333,7 +359,11 @@ def test_deleting_the_last_child_removes_its_parent_without_changing_other_items
 
     result = delete_child(base, parent_id="parent_001", item_id="item_002")
 
-    assert result.parents == (base.parents[1],)
+    assert result.parents == (
+        base.parents[1].model_copy(
+            update={"place": result.item_by_id(base.parents[1].item_ids[0]).sequence - 1}
+        ),
+    )
     assert not any(parent.parent_id == "parent_001" for parent in result.parents)
     assert [item.model_dump() for item in result.items] == [
         dict(item.model_dump(), sequence=sequence)
@@ -452,3 +482,65 @@ def test_deleting_the_only_heading_still_keeps_the_document_nonempty() -> None:
     assert result.parents == ()
     assert result.items == base.items
     _check_structure(result)
+
+
+def test_create_parent_counts_a_childless_part_as_a_top_level_position() -> None:
+    base = _with_parts(_exam(), _childless("parent_002", "Instruktionsblock", 4))
+    template = next(item for item in base.items if item.kind is NativeExamItemKind.GAP_FILL)
+
+    result = create_parent(base, instruction=plain_body("Ny del"), child=template, position=3)
+
+    new_parent = next(
+        parent for parent in result.parents if parent.parent_id not in {"parent_001", "parent_002"}
+    )
+    (child_id,) = new_parent.item_ids
+    assert [item.item_id for item in result.items[:6]] == [
+        "item_001",
+        "item_002",
+        "item_003",
+        "item_004",
+        child_id,
+        "item_005",
+    ]
+    assert new_parent.place == 4
+    preserved = next(parent for parent in result.parents if parent.parent_id == "parent_002")
+    assert preserved.item_ids == ()
+    assert preserved.place == 5, "The inserted question now stands before the block"
+    assert result.parents.index(preserved) > result.parents.index(new_parent)
+    _check_structure(result)
+
+
+def test_delete_parent_leaves_children_standalone_at_the_parts_place() -> None:
+    base = _with_parts(_saved_exam(), _childless("parent_003", "Instruktionsblock", 4))
+    block = next(parent for parent in base.parents if parent.parent_id == "parent_003")
+
+    result = delete_parent(base, parent_id="parent_001")
+
+    assert all(
+        result.parent_of(item_id) is None for item_id in ("item_002", "item_003", "item_004")
+    )
+    assert [
+        result.item_by_id(item_id).sequence for item_id in ("item_002", "item_003", "item_004")
+    ] == [
+        2,
+        3,
+        4,
+    ]
+    assert next(parent for parent in result.parents if parent.parent_id == "parent_003") == block
+    _check_structure(result)
+
+
+def test_reorder_children_and_add_child_keep_a_childless_part_at_its_place() -> None:
+    base = _with_parts(_exam(), _childless("parent_002", "Instruktionsblock", 5))
+    block = next(parent for parent in base.parents if parent.parent_id == "parent_002")
+    template = next(item for item in base.items if item.kind is NativeExamItemKind.GAP_FILL)
+
+    reordered = reorder_children(base, parent_id="parent_001", item_ids=("item_003", "item_002"))
+    assert next(parent for parent in reordered.parents if parent.parent_id == "parent_002") == block
+
+    added = add_child(reordered, parent_id="parent_001", child=template, position=1)
+    preserved = next(parent for parent in added.parents if parent.parent_id == "parent_002")
+    assert preserved.item_ids == ()
+    assert preserved.place == block.place + 1
+    assert preserved.place == added.item_by_id("item_005").sequence
+    _check_structure(added)

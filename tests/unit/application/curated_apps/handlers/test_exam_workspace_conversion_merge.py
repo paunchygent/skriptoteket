@@ -20,6 +20,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import (
+    NativeExamParent,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
     NativeParseOrigin,
@@ -39,6 +42,11 @@ def _teacher_save(document: NativeExamDocument, **changes: object) -> NativeExam
     return NativeExamDocument.model_validate(
         document.model_copy(update={"revision": document.revision + 1, **changes}).model_dump()
     )
+
+
+def _block(parent_id: str, place: int, text: str = "Lärarens instruktion") -> NativeExamParent:
+    """A teacher-made instruction block: a part with no questions."""
+    return NativeExamParent(parent_id=parent_id, place=place, instruction=body(text))
 
 
 def _texts(document: NativeExamDocument) -> list[str]:
@@ -448,3 +456,127 @@ def test_teacher_retyped_first_child_keeps_it_under_the_same_parent(
     assert merged.document.items[0].kind is NativeExamItemKind.FREE_TEXT
     assert [p.item_ids for p in merged.document.parents] == [("item_001", "item_002", "item_003")]
     assert set(_instruction_of(merged.document).values()) == {("Välj rätt svar.",)}
+
+
+def test_teacher_childless_part_survives_a_merge_that_replaces_the_first_question(
+    first: tuple[NativeExamDocument, ConversionProgress],
+) -> None:
+    head, progress = first
+    block = _block("parent_001", 2)
+    teacher_head = _teacher_save(head, parents=(block,))
+
+    merged = merge_conversion(
+        head=teacher_head,
+        progress=progress,
+        target=target_from_update(
+            conversion_update(
+                [
+                    ("q1", [choice("p1", "Fråga ett igen")]),
+                    ("q2", [placeholder("p2", "Källtext två")]),
+                    ("q3", [placeholder("p3", "Källtext tre")]),
+                ],
+                pending=("q2", "q3"),
+            )
+        ),
+    )
+
+    assert _texts(merged.document) == ["Fråga ett igen", "Källtext två", "Källtext tre"]
+    assert merged.document.parents == (block,)
+    assert merged.document.parents[0].place == 2
+    assert merged.document.parents[0].item_ids == ()
+
+
+def test_childless_part_moves_back_to_the_nearest_surviving_earlier_question(
+    first: tuple[NativeExamDocument, ConversionProgress],
+) -> None:
+    head, progress = first
+    block = _block("parent_001", 2)
+    teacher_head = _teacher_save(head, parents=(block,))
+
+    merged = merge_conversion(
+        head=teacher_head,
+        progress=progress,
+        target=target_from_update(
+            conversion_update(
+                [
+                    ("q1", [choice("p1", "Fråga ett")]),
+                    ("q2", []),
+                    ("q3", [placeholder("p3", "Källtext tre")]),
+                ],
+                pending=("q2", "q3"),
+            )
+        ),
+    )
+
+    assert [item.item_id for item in merged.document.items] == ["item_001", "item_003"]
+    (parent,) = merged.document.parents
+    assert parent.item_ids == ()
+    assert parent.place == 1, "The anchor is gone, so the block follows item_001"
+
+
+def test_childless_part_at_place_zero_stays_at_zero(
+    first: tuple[NativeExamDocument, ConversionProgress],
+) -> None:
+    head, progress = first
+    block = _block("parent_001", 0)
+    teacher_head = _teacher_save(head, parents=(block,))
+
+    merged = merge_conversion(
+        head=teacher_head,
+        progress=progress,
+        target=target_from_update(
+            conversion_update(
+                [
+                    ("q1", [choice("p1", "Fråga ett igen")]),
+                    ("q2", [placeholder("p2", "Källtext två")]),
+                    ("q3", [placeholder("p3", "Källtext tre")]),
+                ],
+                pending=("q2", "q3"),
+            )
+        ),
+    )
+
+    assert merged.document.parents == (block,)
+    assert merged.document.parents[0].place == 0
+
+
+def test_a_split_part_gets_each_run_its_own_place() -> None:
+    first_merge = first_conversion(
+        update=conversion_update(
+            [
+                ("q1", [choice("p1", "Fråga ett")]),
+                ("q2", [placeholder("p2", "Källtext två")]),
+                ("q3", [placeholder("p3", "Källtext tre")]),
+            ],
+            pending=("q2", "q3"),
+            parents=(("section", ("q2", "q3")),),
+        ),
+        progress=ConversionProgress.from_question_ids(["q1", "q2", "q3"]),
+    )
+    # The teacher's block keeps the saved parents; expanding q2 then splits the part.
+    head = _teacher_save(
+        first_merge.document,
+        parents=(_block("parent_002", 0), *first_merge.document.parents),
+    )
+
+    merged = merge_conversion(
+        head=head,
+        progress=first_merge.progress,
+        target=target_from_update(
+            conversion_update(
+                [
+                    ("q1", [choice("p1", "Fråga ett")]),
+                    ("q2", [choice("p2", "Fråga två a"), choice("p2b", "Fråga två b")]),
+                    ("q3", [placeholder("p3", "Källtext tre")]),
+                ],
+                pending=("q3",),
+            )
+        ),
+    )
+
+    assert [parent.item_ids for parent in merged.document.parents] == [
+        (),
+        ("item_002",),
+        ("item_003",),
+    ]
+    assert [parent.place for parent in merged.document.parents] == [0, 1, 3]
