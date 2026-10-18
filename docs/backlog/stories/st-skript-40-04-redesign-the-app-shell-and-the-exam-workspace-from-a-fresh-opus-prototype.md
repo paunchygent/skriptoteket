@@ -135,7 +135,7 @@ their own tasks own.
 6. TASK-SKRIPT-40-04-06: exam texts edit as one document per field, exam
    instructions are editable and printed totals can be accepted.
 7. TASK-SKRIPT-40-04-07: teachers set the writing area of printed DOCX and PDF
-   exams and imports drop paper answer lines. Planned in its own grilling.
+   exams and imports drop paper answer lines.
 
 Tasks 2 and 3 run in parallel.
 

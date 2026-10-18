@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "517b1bf7e3dab01850e8dde6a67ddb4202b654e2735d826b6f449cbeda32c6e6",
+  "source_set_digest": "61cf4f33b168c9d2b5689c309aaa9ae234b384229f26aeea7b646b6cab18ba1c",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6361,7 +6361,7 @@
       "type": "task",
       "title": "Teachers set the writing area of printed DOCX and PDF exams and imports drop paper answer lines",
       "path": "docs/backlog/tasks/task-skript-40-04-07-teachers-set-the-writing-area-of-printed-docx-and-pdf-exams-and-imports-drop-paper-answer-lines.md",
-      "status": "proposed",
+      "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
