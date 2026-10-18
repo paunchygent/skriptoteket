@@ -7079,6 +7079,11 @@ export interface components {
              * @default false
              */
             points_estimated: boolean;
+            /**
+             * Print Order
+             * @default []
+             */
+            print_order: string[];
             /** Printed Label */
             printed_label?: string | null;
             retry_source?: components["schemas"]["NativeExamRetrySource-Input"] | null;
@@ -7135,6 +7140,11 @@ export interface components {
              * @default false
              */
             points_estimated: boolean;
+            /**
+             * Print Order
+             * @default []
+             */
+            print_order: string[];
             /** Printed Label */
             printed_label: string | null;
             retry_source: components["schemas"]["NativeExamRetrySource-Output"] | null;
@@ -7152,7 +7162,7 @@ export interface components {
          * @description Writer-proven item subset (EPIC-SKRIPT-39 E3).
          * @enum {string}
          */
-        NativeExamItemKind: "free_text" | "single_choice" | "multiple_response" | "gap_fill" | "inline_choice" | "matching";
+        NativeExamItemKind: "free_text" | "single_choice" | "multiple_response" | "gap_fill" | "inline_choice" | "matching" | "ordering";
         /**
          * NativeExamOriginalWording
          * @description Source wording kept independently of later teacher edits.
@@ -7612,6 +7622,11 @@ export interface components {
              * @default false
              */
             points_estimated: boolean;
+            /**
+             * Print Order
+             * @default []
+             */
+            print_order: string[];
             /** Printed Label */
             printed_label?: string | null;
             retry_source?: components["schemas"]["NativeExamRetrySource-Input"] | null;

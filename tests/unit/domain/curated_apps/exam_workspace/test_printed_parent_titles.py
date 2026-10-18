@@ -17,7 +17,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_item_xml impor
     serialize_qti_assessment_item,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.exam_language_labels import (
-    exam_language_labels,
+    SWEDISH_EXAM_LABELS,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.examnet_qti_export import (
     native_exam_to_examnet_qti_items,
@@ -79,7 +79,7 @@ def _titles(document: NativeExamDocument) -> dict[str, str]:
 async def test_parent_titles_span_the_childrens_printed_labels(stem: str):
     build = await _build(stem)
     document = build.document
-    labels = exam_language_labels(document)
+    labels = SWEDISH_EXAM_LABELS
     titles = _titles(document)
 
     assert document.parents
@@ -94,7 +94,7 @@ async def test_parent_titles_span_the_childrens_printed_labels(stem: str):
 async def test_a_part_whose_numbering_restarts_titles_the_printed_span_not_the_running_numbers():
     build = await _build(_POETRY)
     document = build.document
-    labels = exam_language_labels(document)
+    labels = SWEDISH_EXAM_LABELS
     parent = build.parent_of(_RESTARTED)
     assert parent is not None
     children = build.children(parent)
@@ -102,7 +102,7 @@ async def test_a_part_whose_numbering_restarts_titles_the_printed_span_not_the_r
 
     running = labels.question_label(children[0].sequence, children[-1].sequence)
     printed = labels.printed_span(children[0].printed_label or "", children[-1].printed_label or "")
-    assert running == "Question 22–28"
+    assert running == "Fråga 22–28"
     assert printed == "Question 1–7"
     assert titles[parent.parent_id] == printed != running
 
@@ -134,7 +134,7 @@ async def test_every_item_keeps_its_running_title_and_an_unnumbered_image_alt(st
     names it."""
     build = await _build(stem)
     document = build.document
-    labels = exam_language_labels(document)
+    labels = SWEDISH_EXAM_LABELS
     untitled = [item for item in document.items if item.printed_label]
     assert untitled
 

@@ -1,5 +1,6 @@
 """Retype the selected working copy and append exactly one server undo step."""
 
+import random
 from uuid import UUID
 
 from skriptoteket.application.curated_apps.exam_workspace_history import (
@@ -22,8 +23,10 @@ class ChangeExamWorkspaceItemTypeHandler:
         *,
         reader: GetExamWorkspaceDocumentHandlerProtocol,
         undo_steps: StoreExamWorkspaceUndoStepHandlerProtocol,
+        rng: random.Random,
     ) -> None:
         self._reader = reader
+        self._rng = rng
         self._undo_steps = undo_steps
 
     async def handle(
@@ -45,7 +48,10 @@ class ChangeExamWorkspaceItemTypeHandler:
                 },
             )
         result = change_item_type(
-            current.document, item_id=request.item_id, target_kind=request.target_kind
+            current.document,
+            item_id=request.item_id,
+            target_kind=request.target_kind,
+            rng=self._rng,
         )
         # The existing seam checks the cursor again atomically with the autosave.
         stored = await self._undo_steps.handle(

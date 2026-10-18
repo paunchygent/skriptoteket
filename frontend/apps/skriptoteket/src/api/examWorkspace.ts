@@ -93,7 +93,9 @@ export type ExamWorkspaceExportBlockerReason =
   | "inline_choice_option_heading"
   | "empty_choice"
   | "empty_gap_option"
-  | "empty_match_entry";
+  | "empty_match_entry"
+  | "ordering_too_few_steps"
+  | "empty_ordering_step";
 
 export type ExamWorkspaceExportBlocker = {
   item_id: string;

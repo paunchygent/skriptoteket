@@ -31,6 +31,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import (
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     ASSET_ID_PATTERN,
     SHA256_PATTERN,
+    NativeExamItemKind,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 
@@ -153,6 +154,13 @@ class NativeExamDocument(BaseModel):
         if orphans:
             raise ValueError(f"unreferenced assets: {sorted(orphans)}")
         validate_parent_structure(self.parents, self.items)
+        child_ids = {item_id for parent in self.parents for item_id in parent.item_ids}
+        if any(
+            item.kind is NativeExamItemKind.ORDERING and item.item_id in child_ids
+            for item in self.items
+        ):
+            # Ordering questions are standalone only (ST-SKRIPT-39-06 P3).
+            raise ValueError("ordering items cannot sit inside a parent")
         return self
 
     def parent_of(self, item_id: str) -> NativeExamParent | None:

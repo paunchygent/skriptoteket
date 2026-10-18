@@ -5,7 +5,7 @@ from enum import StrEnum
 from typing import Annotated, Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from skriptoteket.domain.curated_apps.exam_workspace.exam_course_catalog import ExamCourse
 from skriptoteket.domain.curated_apps.exam_workspace.exam_index import ExamListOrdering
@@ -19,6 +19,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
     NativeAnswerKeySuggestion,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    IMPORTABLE_ITEM_KINDS,
     NativeExamItemKind,
 )
 
@@ -185,6 +186,13 @@ class RetryExamWorkspaceItemRequest(BaseModel):
     document: NativeExamDocument
     item_id: str
     kind: NativeExamItemKind
+
+    @field_validator("kind")
+    @classmethod
+    def _importable_kind(cls, value: NativeExamItemKind) -> NativeExamItemKind:
+        if value not in IMPORTABLE_ITEM_KINDS:
+            raise ValueError("a retry never produces ordering questions")
+        return value
 
 
 class ExamWorkspaceItemRetryResponse(BaseModel):

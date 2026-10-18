@@ -209,3 +209,45 @@ describe("export blocker fixes", () => {
     });
   });
 });
+
+describe("ordering blocker rows", () => {
+  function ordering(texts: string[]): NativeExamItem {
+    return {
+      ...choice(),
+      answer_key: { correct_choice_ids: [], match_pairs: [], origin: "teacher_authored" },
+      choices: texts.map((text, index) => ({ choice_id: `choice_00${index + 1}`, body: plainBody(text) })),
+      kind: "ordering",
+      print_order: [],
+    };
+  }
+
+  it("points too few steps at the add-step button with no fix", () => {
+    expect(rows([ordering(["Ensam"])])).toEqual([
+      {
+        fix: null,
+        focus: '[data-test="exam-workspace-ordering-add-step"]',
+        itemId: "item_001",
+        label: "1",
+        problem: "för få steg",
+        reason: "ordering_too_few_steps",
+      },
+    ]);
+  });
+
+  it("points an empty step at its own text field and never offers remove_empty", () => {
+    const [row, ...rest] = rows([ordering(["Först", " ", "", "Sist"])]);
+    expect(rest).toEqual([]);
+    expect(row).toMatchObject({
+      fix: null,
+      focus: '[data-test^="exam-workspace-ordering-step-text-choice_002"]',
+      problem: "tomt steg",
+      reason: "empty_ordering_step",
+    });
+  });
+
+  it("keeps the remove_empty fix for a single_choice empty option", () => {
+    const item = choice();
+    item.choices = [...item.choices, { choice_id: "choice_004", body: BLANK }];
+    expect(rows([item])[0]).toMatchObject({ fix: "remove_empty", reason: "empty_choice" });
+  });
+});

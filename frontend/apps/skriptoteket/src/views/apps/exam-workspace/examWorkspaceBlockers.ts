@@ -150,6 +150,12 @@ function blockerFocus(item: NativeExamItem, reason: ExamWorkspaceReadinessReason
     case "negative_points":
     case "criteria_points_mismatch":
       return POINTS;
+    case "ordering_too_few_steps":
+      return testId("exam-workspace-ordering-add-step");
+    case "empty_ordering_step": {
+      const step = item.choices.find((choice) => isEmpty(choice.body))?.choice_id;
+      return step ? `[data-test^="exam-workspace-ordering-step-text-${step}"]` : null;
+    }
     case "empty_choice":
       return choiceText(item.choices.find((choice) => isEmpty(choice.body))?.choice_id);
     case "empty_gap_option":

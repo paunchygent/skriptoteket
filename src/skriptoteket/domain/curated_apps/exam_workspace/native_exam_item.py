@@ -24,6 +24,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_matching import
     NativeMatchRight,
     validate_matching_pairs,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_ordering import (
+    validate_print_order,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_retry_records import (
     NativeExamRetrySource,
 )
@@ -66,6 +69,9 @@ class NativeExamItem(BaseModel):
     # questions (D6), or a prose marking guide's single-criterion estimate (R14).
     points_estimated: bool = False
     choices: tuple[NativeChoice, ...] = ()
+    # An ordering question's steps in their saved printed order; its choices' list order
+    # is the answer key (TASK-SKRIPT-39-06-08 D1, D5).
+    print_order: tuple[str, ...] = ()
     gaps: tuple[NativeGap, ...] = ()
     match_left: tuple[NativeMatchLeft, ...] = ()
     match_right: tuple[NativeMatchRight, ...] = ()
@@ -124,6 +130,8 @@ class NativeExamItem(BaseModel):
             raise ValueError("match entry ids must be unique")
         if self.kind is not NativeExamItemKind.MATCHING and (self.match_left or self.match_right):
             raise ValueError("only matching items carry match lists")
+        if self.kind is not NativeExamItemKind.ORDERING and self.print_order:
+            raise ValueError("only ordering items carry a print order")
 
         if self.kind in (
             NativeExamItemKind.SINGLE_CHOICE,
@@ -143,6 +151,13 @@ class NativeExamItem(BaseModel):
                 raise ValueError("matching items need left entries and at least two right entries")
             if self.choices or self.gaps:
                 raise ValueError("matching items must not declare choices or gaps")
+        elif self.kind is NativeExamItemKind.ORDERING:
+            # Fewer than two steps saves and blocks export (D7); the editor keeps one.
+            if not self.choices:
+                raise ValueError("ordering items need at least one step")
+            if self.gaps:
+                raise ValueError("ordering items must not declare gaps")
+            validate_print_order(choice_ids, self.print_order)
         else:
             if self.choices or self.gaps:
                 raise ValueError("free_text items carry no choices or gaps")
@@ -165,6 +180,13 @@ class NativeExamItem(BaseModel):
             return
         if key.origin is NativeAnswerKeyOrigin.NOT_APPLICABLE:
             raise ValueError("keyed item kinds cannot use not_applicable origin")
+        if self.kind is NativeExamItemKind.ORDERING:
+            # The steps' list order is the key; the teacher always authors it (D1).
+            if key.origin is not NativeAnswerKeyOrigin.TEACHER_AUTHORED:
+                raise ValueError("ordering answer-key origin must be teacher_authored")
+            if key.correct_choice_ids or key.match_pairs:
+                raise ValueError("ordering items key their steps' order, not choices")
+            return
 
         if key.match_pairs and self.kind is not NativeExamItemKind.MATCHING:
             raise ValueError("only matching items key match pairs")

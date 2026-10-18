@@ -9,7 +9,9 @@
  *   source fallback or an item missing a picture that the teacher has not
  *   marked reviewed; a converted item that needs review does not block),
  *   dropdown option headings, and choices, gap options or matching entries
- *   without non-whitespace text. Save validity remains separate. Readiness
+ *   without non-whitespace text (an ordering question names its blank
+ *   steps "empty_ordering_step" and needs at least two steps, otherwise
+ *   "ordering_too_few_steps"). Save validity remains separate. Readiness
  *   also adds the item states the save refuses:
  *   a partial gap key, an incomplete matching key, invalid points, and
  *   free-text criteria that lack text, carry invalid points, are not the
@@ -55,6 +57,7 @@ const KEYED_KINDS = new Set<NativeExamItemKind>([
   "inline_choice",
   "matching",
   "multiple_response",
+  "ordering",
   "single_choice",
 ]);
 
@@ -112,8 +115,11 @@ export function examWorkspaceItemReadiness(item: NativeExamItem): ExamWorkspaceR
     reasons.push("negative_points");
   }
   // Export needs non-whitespace text; save validity deliberately remains separate.
+  if (item.kind === "ordering" && item.choices.length < 2) {
+    reasons.push("ordering_too_few_steps");
+  }
   if (item.choices.some((choice) => bodyText(choice.body).length === 0)) {
-    reasons.push("empty_choice");
+    reasons.push(item.kind === "ordering" ? "empty_ordering_step" : "empty_choice");
   }
   if (item.gaps.some((gap) => gap.options.some((option) => bodyText(option.body).length === 0))) {
     reasons.push("empty_gap_option");
