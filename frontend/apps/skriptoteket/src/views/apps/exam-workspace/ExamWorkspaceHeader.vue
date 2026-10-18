@@ -16,7 +16,7 @@
  *     intent. Exportera comes in through the `export` slot.
  */
 
-import { ref } from "vue";
+import { ref, useId } from "vue";
 
 import { UiGlyph } from "../../../components/ui";
 import { AI_ADMIN_ONLY_NOTE, useAiAccess } from "../../../composables/useAiAccess";
@@ -58,6 +58,7 @@ const saveKeys = mac ? "Meta+S" : "Control+S";
 const saveMenuTrigger = ref<HTMLButtonElement | null>(null);
 const saveMenuOpen = ref(false);
 const { canUseAi } = useAiAccess();
+const aiNoteId = useId();
 
 function chooseSave(action: "save" | "saveAs"): void {
   saveMenuOpen.value = false;
@@ -251,6 +252,7 @@ const DIRTY_TITLE = "Ändringarna sparas automatiskt som utkast. Spara skriver �
         :disabled="suggestDisabled || suggestBusy || !canUseAi"
         :title="!canUseAi ? AI_ADMIN_ONLY_NOTE : suggestBusy ? 'Facitförslagen tas fram …' : 'Föreslå facit för frågor som saknar facit'"
         :aria-label="suggestBusy ? 'Facitförslagen tas fram …' : 'Föreslå facit för frågor som saknar facit'"
+        :aria-describedby="!canUseAi ? aiNoteId : undefined"
         data-test="exam-workspace-suggest-all"
         @click="emit('suggestAll')"
       >
@@ -260,6 +262,11 @@ const DIRTY_TITLE = "Ändringarna sparas automatiskt som utkast. Spara skriver �
           :class="{ 'xw-spin': suggestBusy }"
         />
       </button>
+      <span
+        v-if="!canUseAi"
+        :id="aiNoteId"
+        class="xw-hint ws-tools__note"
+      >{{ AI_ADMIN_ONLY_NOTE }}</span>
       <span class="xw-sep ws-tools__spacer" />
       <div
         class="ws-tools__group"
@@ -330,6 +337,7 @@ const DIRTY_TITLE = "Ändringarna sparas automatiskt som utkast. Spara skriver �
 .ws-meta__text { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .ws-tools { display: flex; align-items: center; gap: var(--huleedu-space-3); flex: none; }
 .ws-tools__group { display: flex; align-items: center; gap: var(--huleedu-space-2); }
+.ws-tools__note { flex: 0 1 auto; min-width: 0; margin: 0; max-width: 26em; line-height: 1.35; }
 .ws-kbd { font-family: var(--huleedu-font-mono); font-size: var(--huleedu-text-xs); color: var(--huleedu-navy-60); }
 
 @media (max-width: 1279px) {

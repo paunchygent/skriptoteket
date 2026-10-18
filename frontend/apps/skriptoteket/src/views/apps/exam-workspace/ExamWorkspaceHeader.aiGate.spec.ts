@@ -3,9 +3,11 @@
  * until the AI spend cap ships (TASK-SKRIPT-REP-0044 L3).
  *
  * Expected behavior:
- *   With role "user" or "contributor" the icon button is disabled and its title
- *   is the admin-only note. With role "admin" or "superuser" the note is absent,
- *   the button works, and the existing busy/disabled reasons still hold.
+ *   With role "user" or "contributor" the icon button is disabled, its title is
+ *   the admin-only note, and the exact note is rendered once as visible inline
+ *   text the button points to with aria-describedby. With role "admin" or
+ *   "superuser" the note is absent, the button works, and the existing
+ *   busy/disabled reasons still hold.
  */
 
 import { mount } from "@vue/test-utils";
@@ -45,6 +47,11 @@ function mountHeader(pinia: Pinia, overrides: Partial<HeaderProps> = {}) {
   return mount(ExamWorkspaceHeader, { props: props(overrides), global: { plugins: [pinia] } });
 }
 
+/** Elements carrying the exact note as their visible text, found without test hooks. */
+function noteElements(wrapper: ReturnType<typeof mountHeader>) {
+  return wrapper.findAll("*").filter((element) => element.text().trim() === AI_ADMIN_ONLY_NOTE);
+}
+
 let pinia: Pinia;
 beforeEach(() => {
   pinia = createPinia();
@@ -52,7 +59,7 @@ beforeEach(() => {
 
 describe("ExamWorkspaceHeader AI gate", () => {
   it.each(["user", "contributor"] as const)(
-    "disables the suggest-all button and titles it with the note for role %s",
+    "disables the suggest-all button and shows the note inline for role %s",
     (role) => {
       setActivePinia(pinia);
       useAuthStore().user = { id: "u1", email: "u@example.test", role, auth_provider: "local" };
@@ -61,6 +68,12 @@ describe("ExamWorkspaceHeader AI gate", () => {
       const button = wrapper.get('[data-test="exam-workspace-suggest-all"]');
       expect(button.attributes("disabled")).toBeDefined();
       expect(button.attributes("title")).toBe(AI_ADMIN_ONLY_NOTE);
+
+      const notes = noteElements(wrapper);
+      expect(notes).toHaveLength(1);
+      const note = notes[0]!;
+      expect(note.isVisible()).toBe(true);
+      expect(button.attributes("aria-describedby")).toBe(note.element.id);
       wrapper.unmount();
     },
   );
@@ -75,6 +88,8 @@ describe("ExamWorkspaceHeader AI gate", () => {
       const button = wrapper.get('[data-test="exam-workspace-suggest-all"]');
       expect(button.attributes("disabled")).toBeUndefined();
       expect(button.attributes("title")).toBe(SUGGEST_TITLE);
+      expect(button.attributes("aria-describedby")).toBeUndefined();
+      expect(noteElements(wrapper)).toHaveLength(0);
       await button.trigger("click");
       expect(wrapper.emitted("suggestAll")).toHaveLength(1);
       wrapper.unmount();
