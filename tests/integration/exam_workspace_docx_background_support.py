@@ -24,6 +24,7 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_document_stor
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_pipeline import (
     DocxConversionPipeline,
+    placed_manifest,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_serial_uow import (
     SerializedUnitOfWork,
@@ -152,8 +153,11 @@ class RecordedTransport:
             source = PythonDocxLabelerMarkdown().source(content=content).chunks
         except ValueError:
             source = chunks
-        manifest = manifest_from_output(
-            json.loads((self._dir / "docx_grouping_1.json").read_text()), chunks
+        manifest = placed_manifest(
+            manifest_from_output(
+                json.loads((self._dir / "docx_grouping_1.json").read_text()), chunks
+            ),
+            chunks,
         )
         return {
             p.stem: question_source(manifest, source, p.stem.removeprefix("label_b_"))
