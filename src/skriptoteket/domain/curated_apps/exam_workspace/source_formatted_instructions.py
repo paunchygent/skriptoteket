@@ -4,7 +4,7 @@ from collections.abc import Mapping
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedMetadata
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
-from skriptoteket.domain.curated_apps.exam_workspace.docx_instruction_runs import _shown_heading
+from skriptoteket.domain.curated_apps.exam_workspace.docx_heading_wording import shown_heading
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import QUESTION_HEADING_LABEL
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import NativeParagraph
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import (
@@ -34,7 +34,7 @@ def instruction_paragraphs(
     if body_plain_text(raw) == instruction.text:
         return raw
     normalized = source_paragraphs(
-        _shown_heading(chunk, None, QUESTION_HEADING_LABEL.match(chunk.text))
+        shown_heading(chunk, None, QUESTION_HEADING_LABEL.match(chunk.text))
         if chunk.kind == "heading"
         else chunk
         for chunk in sources

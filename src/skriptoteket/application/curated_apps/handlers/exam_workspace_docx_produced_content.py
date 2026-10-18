@@ -11,7 +11,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedSegment,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
-from skriptoteket.domain.curated_apps.exam_workspace.docx_instruction_runs import heading_wording
+from skriptoteket.domain.curated_apps.exam_workspace.docx_heading_wording import heading_wording
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     POINT_LABEL,
     QUESTION_HEADING_LABEL,
