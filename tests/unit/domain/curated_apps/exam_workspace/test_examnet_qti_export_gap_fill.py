@@ -89,6 +89,7 @@ class TestGapFillMapping:
                     "parents": (
                         NativeExamParent(
                             parent_id="parent_001",
+                            place=item.sequence - 1,
                             instruction=text_body("Gemensam instruktion."),
                             item_ids=(item.item_id,),
                         ),

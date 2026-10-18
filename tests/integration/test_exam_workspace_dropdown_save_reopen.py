@@ -243,6 +243,7 @@ async def test_dropdown_save_reopen_and_qti_from_persisted_container(
         (
             NativeExamParent(
                 parent_id="parent_001",
+                place=items[0].sequence - 1,
                 instruction=text_body("Välj svar."),
                 item_ids=tuple(item.item_id for item in items),
             ),

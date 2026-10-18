@@ -106,6 +106,7 @@ def _suggestion(
 def _parent(instruction: tuple[str, ...]) -> NativeExamParent:
     return NativeExamParent(
         parent_id="parent_001",
+        place=0,
         instruction=tuple(
             NativeParagraph(heading_level=None, segments=(NativeTextSegment(text=text, marks=()),))
             for text in instruction

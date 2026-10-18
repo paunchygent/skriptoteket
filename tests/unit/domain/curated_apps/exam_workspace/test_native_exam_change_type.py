@@ -468,7 +468,7 @@ def test_v6_document_round_trip_stores_suggested_kind(
     restored = parse_native_exam_document(encoded)
 
     assert restored == document
-    assert restored.schema_version == "native_exam_document_v6"
+    assert restored.schema_version == "native_exam_document_v7"
     assert restored.items[0].suggested_kind is suggestion
     assert restored.model_dump(mode="json")["items"][0]["suggested_kind"] == (
         suggestion.value if suggestion is not None else None
@@ -479,5 +479,5 @@ def test_v5_document_is_rejected_without_an_old_reader() -> None:
     payload = make_document(make_free_text_item()).model_dump()
     payload["schema_version"] = "native_exam_document_v5"
 
-    with pytest.raises(ValidationError, match="native_exam_document_v6"):
+    with pytest.raises(ValidationError, match="native_exam_document_v7"):
         NativeExamDocument.model_validate(payload)
