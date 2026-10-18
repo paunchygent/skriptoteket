@@ -127,6 +127,14 @@ source line breaks changed 10 correct items.
   records `gap_count_mismatch`.
 - Tests: `test_source_gap_paragraphs.py`,
   `test_exam_workspace_docx_gap_count_admission.py`.
+- `test_exam_workspace_docx_label_kinds` tested reply-printed part labels by
+  prefixing "a) " to a gap_fill stem the source does not label; D4/D8 discard
+  that wording, so the test now uses the matching item `body:0059` (a choice
+  stem strips a leading enumeration) and selects the reply by the recording
+  served.
+- On Hemma at `f4dfe336`: the touched-domain suite passes (4118 passed, 59
+  skipped; `~/logs/suite-39-04-16-final.log`); lint, typecheck and
+  `docs-validate` pass.
 
 ## Stop Conditions
 
