@@ -85,8 +85,8 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_item_alignment import 
     AlignedItem,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions import (
+    left_out_chunks,
     with_left_out_mark,
-    wording_left_out,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import (
     parent_openers,
@@ -164,8 +164,9 @@ def _with_left_out(
     seen: set[str],
     item_held: frozenset[str],
 ) -> Admitted:
-    """A converted item holds the own chunks of its question it leaves out; those whose wording
-    it lacks show under a check mark as printed, a possible parsing issue (D41, D4).
+    """A converted item holds the own chunks of its question it leaves out; those no body
+    paragraph is aligned to show under a check mark as printed, a possible parsing issue (D41,
+    D4).
 
     A left-out chunk is an own chunk of a question the item touches that no entry holds yet
     and no item of the reply lists, except as a points line alone (D2).
@@ -195,7 +196,7 @@ def _with_left_out(
     if not left_out:
         return aligned, anchors
     seen.update(left_out)
-    missing = wording_left_out(item, [state.chunk_by_anchor[a] for a in left_out])
+    missing = left_out_chunks(aligned, [state.chunk_by_anchor[a] for a in left_out])
     if missing:
         moved = tuple(c.anchor for c in missing)
         state.record("admission", "own_chunks_left_out", item=index, anchors=moved)

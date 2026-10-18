@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "7673ca51573935d2fedfe47a09f4d35cc8264db234a5b568a094a91ecedbc973",
+  "source_set_digest": "05169b8e28e1eff3c3cf596c329376f7e7b2b1d7a12017de0c4a44d05c30ca4d",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5025,6 +5025,25 @@
       "type": "task",
       "title": "Section instructions are placed and deduplicated by source alignment, never by wording",
       "path": "docs/backlog/tasks/task-skript-39-04-13-section-instructions-are-placed-and-deduplicated-by-source-alignment-never-by-wording.md",
+      "status": "in_progress",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-04-14",
+      "type": "task",
+      "title": "Governing chunks leave items and left-out own chunks are marked by source alignment, never by wording",
+      "path": "docs/backlog/tasks/task-skript-39-04-14-governing-chunks-leave-items-and-left-out-own-chunks-are-marked-by-source-alignment-never-by-wording.md",
       "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-04",
