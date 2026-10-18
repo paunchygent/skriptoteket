@@ -4,7 +4,7 @@ from dataclasses import replace
 
 import pytest
 
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import native_item
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import aligned_native_item
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedItem
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxChunk,
@@ -81,12 +81,12 @@ def test_question_label_omission_never_deletes_continuation_content(continuation
         _chunk("body:0002", continuation, marks=("bold",)),
     )
     paths: list[str] = []
-    result = native_item(
+    result = aligned_native_item(
         _item(chunks, ["Read the values.", "State the measured value."]),
         chunks=chunks,
         language="en",
         formatting_observer=paths.append,
-    )
+    ).item
     assert body_plain_text(result.body) == "Read the values.\n" + continuation
     assert _as_text(result.body[1].segments[0]).marks == ("bold",)
     assert paths == ["rebuilt"]
@@ -135,7 +135,7 @@ def test_omitted_size_heading_merges_into_body_without_copying_choices(heading_a
     options = (_chunk("body:0003", "A. red"), _chunk("body:0004", "B. blue"))
     chunks = (prompt, heading, *options) if heading_at_end else (heading, prompt, *options)
     paths: list[str] = []
-    result = native_item(
+    result = aligned_native_item(
         _item(
             chunks,
             [wording],
@@ -145,7 +145,7 @@ def test_omitted_size_heading_merges_into_body_without_copying_choices(heading_a
         chunks=chunks,
         language="en",
         formatting_observer=paths.append,
-    )
+    ).item
     expected = [wording, "Read this section carefully."]
     if not heading_at_end:
         expected.reverse()
@@ -182,7 +182,7 @@ def test_heading_recovery_retains_picture_and_gap_atoms_in_their_native_paragrap
             }
         ],
     )
-    result = native_item(produced, chunks=chunks, language="en")
+    result = aligned_native_item(produced, chunks=chunks, language="en").item
     assert result.body[0].heading_level == 3
     assert body_plain_text(result.body).startswith("Complete this section.\n")
     assert [s.kind for s in result.body[1].segments] == ["asset", "text", "gap", "text"]
@@ -221,7 +221,7 @@ def test_heading_merge_orders_standalone_pictures_around_the_recovered_heading(
             ],
         }
     )
-    result = native_item(produced, chunks=chunks, language="en")
+    result = aligned_native_item(produced, chunks=chunks, language="en").item
     assert result.body[0].segments[0].kind == "asset"
     assert result.body[1].heading_level == 2
     if repeat_after_heading:

@@ -16,6 +16,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import (
     PrintedPart,
     PrintedPoints,
     PrintedQuestion,
+    parent_openers,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_section_instructions import (
     with_question_points,
@@ -54,19 +55,23 @@ def apply_printed_points(
     no point, or an unkeyed grid, keeps the model's own reading. The part's total then
     checks the parent that holds exactly the part's items; a parent over only some of them
     keeps its own total. When an inner part holds the same items as the outer part around
-    it, the outer part's line opens the parent, so the outer total checks it. A question's
-    item is the item that starts at one of its own chunks, or at the line of a part that
-    holds only that question, which no question holds.
+    it, the outer part's line opens the parent, so the outer total checks it; a parent with
+    one child is checked the same way. A question's item is the item that starts at one of
+    its own chunks, or at a part line that heads only that question (no ``parent_openers``
+    line), which no question holds.
     """
     scored = list(items)
     events: list[DocxBuildEvent] = []
 
-    # A one-question part's item may start at the part's line, which no question holds.
-    opened = {part.opener: part.questions[0] for part in printed.parts if len(part.questions) == 1}
+    # A question's item may start at the part line that heads it, which no question holds.
+    parent_lines = parent_openers(printed.parts)
+    opened = {
+        part.opener: part.questions[0] for part in printed.parts if part.opener not in parent_lines
+    }
 
     def member(number: int) -> NativeExamItem | None:
         """The question's one item: the first item that starts at one of its own chunks, else
-        the first that starts at the line of a part that holds only this question."""
+        the first that starts at the part line that heads this question."""
         own = set(printed.questions[number].anchors)
         first = next((item for item in scored if item.source_anchor in own), None)
         if first is not None:

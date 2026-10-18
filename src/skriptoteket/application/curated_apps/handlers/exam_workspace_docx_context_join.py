@@ -142,8 +142,9 @@ def joined_body(
     shows its source paragraphs, marks and pictures; a heading shows its wording without its
     points label and question number (``shown_heading``), the form its heading run in
     assembly gives it. Each joined chunk stands after the body paragraphs whose place comes
-    before it and before those whose place comes after it, in source order
-    (``source_places``).
+    before it and before those whose place is its own or comes after it, in source order
+    (``source_places``): an unaligned paragraph that took the place of the reply's copy of a
+    heading follows the joined heading (review 4).
     """
     position = {chunk.anchor: n for n, chunk in enumerate(state.chunks)}
     first = position[own[0].anchor] if own else len(position)
@@ -166,7 +167,8 @@ def joined_body(
     ]
     for anchor in sorted(shown, key=position.__getitem__):
         place = position[anchor]
-        at = next((n for n, (p, _) in enumerate(body) if p > place), len(body))
+        # A paragraph at the same place inherited it from the reply's copy of this chunk.
+        at = next((n for n, (p, _) in enumerate(body) if p >= place), len(body))
         body.insert(at, (place, tuple((paragraph, anchor) for paragraph in shown[anchor])))
     entries = [entry for _, entries in body for entry in entries]
     return AlignedItem(

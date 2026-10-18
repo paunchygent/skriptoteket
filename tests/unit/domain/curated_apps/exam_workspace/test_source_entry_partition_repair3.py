@@ -2,7 +2,7 @@
 
 import pytest
 
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import native_item
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import aligned_native_item
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedItem
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxChunk,
@@ -42,7 +42,7 @@ def _convert(text, *, choices=(), left=(), right=()):
             "match_right": right,
         }
     )
-    result = native_item(item, chunks=chunks, language="en")
+    result = aligned_native_item(item, chunks=chunks, language="en").item
     assert body_plain_text(result.body) == prompt
     assert result.facit_text is None
     assert all(isinstance(entry.body, tuple) for entry in result.choices)

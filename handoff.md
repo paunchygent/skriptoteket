@@ -65,12 +65,18 @@
   `f193466c`, root `01a14bdc-65b7-73e1-a8ee-3c75001a36fa`): repairs through 97d47894
   (section opens where the running part changes); parent admits and merges to main.
   TASK-SKRIPT-39-04-12 on `codex/task-skript-39-04-12-remote` (same lead and root):
-  bd7ba585 merged to main as 36b1d352 (omprov staging walk passed). Review-3
-  repairs N1-N6 at 60fbb42a (D10a recorded in 39-04-11; response:
-  root evidence/39-04-12/R3/review-3-response.md); next: parent rereview, merge,
-  exempelprov staging re-walk (heading duplicate).
-  User gate: DEL 4 one-question part instruction (one-child parent vs item-level
-  instruction task); interim heading opens the question's body.
+  15b213f3 (review-3 repairs, R4 approved) merged to main. DEL 4 user ruling
+  (a part named once opens a parent, also over one question), R4 lows and the
+  chapter_4 "Part 3," fragment at 37b70940; response: root
+  evidence/39-04-12/DEL4/response.md. Next: parent focused review, merge,
+  exempelprov staging re-walk. Editor grouping (move questions into new or
+  existing parts) is a separate parent-owned 39-06 task.
+  TASK-SKRIPT-39-04-13 `in_progress` on local `claude/bold-dijkstra-162ba8`
+  (Claude side session of the 39-04 parent): section instructions placed and
+  deduplicated by source alignment (`AlignedItem` chunks), text matches deleted;
+  main 69ac991ae merged, ten replays identical to main. Next: independent review,
+  parent merge. Follow-ups: wording rules in `docx_governing_chunks._item_without`
+  and `docx_own_instructions.wording_left_out`.
   Next lanes: 39-07-03 retire old converter routes (40-04-03 now on main); implement
   39-06-08 ordering; stories 39-04, 39-06, 39-07 await closeout.
   Ready (user grilling 2026-10-18, plans in root 01a14c27): 40-04-04 dropdown option editor, 40-04-05 export names from the exam title, 39-06-09 Exam.net probe of ordering inside a part.

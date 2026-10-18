@@ -90,8 +90,10 @@ def test_a_section_parent_ends_at_the_next_part_heading_whatever_its_rank(
 
     document = state.result().document
 
+    # Del 2 over its one question is a parent with one child (user ruling 2026-10-18).
     assert [(p.item_ids, p.printed_total) for p in document.parents] == [
-        (("item_001", "item_002"), 2)
+        (("item_001", "item_002"), 2),
+        (("item_003",), 7),
     ]
     assert [item.points for item in document.items] == [1, 1, 7]
 

@@ -11,9 +11,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedSegment,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
-from skriptoteket.domain.curated_apps.exam_workspace.docx_heading_wording import heading_wording
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
-    POINT_LABEL,
     QUESTION_HEADING_LABEL,
 )
 
@@ -80,7 +78,12 @@ def without_header_content(produced: ProducedItem, header_texts: tuple[str, ...]
 
 
 def with_heading_content(produced: ProducedItem, headings: tuple[DocxChunk, ...]) -> ProducedItem:
-    """Put printed heading fields in metadata, leaving heading words in the body."""
+    """Put printed heading fields in metadata, leaving heading words in the body.
+
+    The reply's text keeps every points label: a reply paragraph that copies the heading
+    aligns to the heading chunk, and the join shows that chunk without its label
+    (``exam_workspace_docx_context_join.joined_body``), the one owner of that removal.
+    """
     if not headings:
         return produced
     label = QUESTION_HEADING_LABEL.match(headings[0].text)
@@ -94,10 +97,6 @@ def with_heading_content(produced: ProducedItem, headings: tuple[DocxChunk, ...]
         for segment_index, segment in enumerate(paragraph.segments):
             if paragraph_index == 0 and segment.kind == "text" and segment.text:
                 text = segment.text
-                wording = heading_wording(headings[0], None)
-                if not wording or wording.casefold() in text.casefold():
-                    for point_label in POINT_LABEL.findall(headings[0].text):
-                        text = text.replace(point_label, "", 1)
                 if segment_index == 0 and label:
                     printed = QUESTION_HEADING_LABEL.match(text)
                     if printed and (printed.group(1) or printed.group(2)) == (

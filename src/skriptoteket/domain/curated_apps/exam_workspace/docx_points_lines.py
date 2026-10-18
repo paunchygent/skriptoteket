@@ -33,6 +33,7 @@ A question starts at its first own chunk that is no standalone total line and no
 so where the grouping places a points line or a part heading never moves a question's start.
 """
 
+from collections import Counter
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, replace
 from types import MappingProxyType
@@ -297,6 +298,24 @@ def part_openers(parts: Iterable[PrintedPart]) -> frozenset[str]:
     return frozenset(part.opener for part in parts)
 
 
+def parent_openers(parts: Iterable[PrintedPart]) -> frozenset[str]:
+    """The part lines that open a parent; every other part line is its question's heading.
+
+    A part over two or more questions opens a parent. A part-labelled line whose part
+    identity no other part line repeats opens a parent whatever its number of questions, so
+    "DEL 4" over one question is a parent with one child (user ruling 2026-10-18). Part lines
+    that repeat one identity ("Part 3, Question 1 (1 point)", "Part 3, Question 2 (1 point)")
+    and a numbered heading over one question ("Uppgift 2: Verb (2 p)") head their question.
+    """
+    listed = tuple(parts)
+    named = Counter(part.identity for part in listed if part.identity is not None)
+    return frozenset(
+        part.opener
+        for part in listed
+        if len(part.questions) > 1 or (part.identity is not None and named[part.identity] == 1)
+    )
+
+
 def _section_runs(parts: Iterable[PrintedPart]) -> tuple[frozenset[str], frozenset[str]]:
     """The part lines that open a section, and those nested in a part that names its part.
 
@@ -330,11 +349,14 @@ class PartLines:
     ``sections`` holds the openers that change the running part.
     ``nested`` holds the openers that name no part inside a part that names its part, such as
     "Uppgift 1.1 (4 p)" under "DEL 1": the outer part's run passes them.
+    ``parents`` holds the openers that open a parent whatever their number of questions
+    (``parent_openers``).
     """
 
     openers: frozenset[str] = frozenset()
     sections: frozenset[str] = frozenset()
     nested: frozenset[str] = frozenset()
+    parents: frozenset[str] = frozenset()
 
 
 NO_PART_LINES = PartLines()
@@ -342,7 +364,7 @@ NO_PART_LINES = PartLines()
 
 def part_lines(parts: tuple[PrintedPart, ...]) -> PartLines:
     sections, nested = _section_runs(parts)
-    return PartLines(part_openers(parts), sections, nested)
+    return PartLines(part_openers(parts), sections, nested, parent_openers(parts))
 
 
 def manifest_questions(manifest: ExamManifest) -> tuple[tuple[str, ...], ...]:
@@ -358,7 +380,9 @@ def assign_points_lines(manifest: ExamManifest, chunks: tuple[DocxChunk, ...]) -
     contexts, title and header tags. A part-labelled line ("Del 2", "Part 2A: enrich (1
     point)") is never a question anchor, whatever number of questions its part holds: it is
     unplaced section structure in the same way, and so is a part heading with no part label
-    over several questions. A part line with no part label over one question, such as
+    over several questions. Whether such a line opens a parent or heads its one question is
+    ``parent_openers``' decision, read downstream. A part line with no part label over one
+    question, such as
     "Uppgift 2: Verb (2 p)", joins that question's anchors as its own points line does and
     leaves every other placement, so the heading has one owner whatever the reply lists.
     Every part line scores its questions whatever its placement. Run after question headings

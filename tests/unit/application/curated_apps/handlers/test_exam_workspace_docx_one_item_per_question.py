@@ -362,7 +362,7 @@ def test_a_part_labelled_one_question_heading_misplaced_by_the_grouping_ignores_
     # Control for review-2 F1: the grouping gives q2's part-labelled heading to q1. A
     # part-labelled line is never a question anchor, so the normalised manifest gives it to
     # no question. Whatever the reply order, both questions stay as the model parsed them,
-    # and the heading still opens q2's item, where the reply lists it.
+    # and the heading opens q2's one-child parent (user ruling 2026-10-18).
     heading = ("heading", "Del 2: Verb (2 p)")
     state = _normalised_state((_NOUN[0], heading, _VERB_BODY), ((0, 1), (2,)))
     entries: list[JsonValue] = [
@@ -380,7 +380,10 @@ def test_a_part_labelled_one_question_heading_misplaced_by_the_grouping_ignores_
     assert noun.review.parse_origin is NativeParseOrigin.LLM_PARSED
     assert verb.review.parse_origin is NativeParseOrigin.LLM_PARSED
     assert not [text for text in _texts(noun) if "Del 2" in text]
-    assert _texts(verb)[0].startswith("Del 2: Verb")
+    assert not [text for text in _texts(verb) if "Del 2" in text]
+    assert [(p.item_ids, _paragraph_texts(p.instruction)) for p in document.parents] == [
+        ((verb.item_id,), ["Del 2: Verb"])
+    ]
     assert not [
         e
         for e in state.events
@@ -394,7 +397,7 @@ def test_a_part_heading_the_reply_lists_with_another_question_opens_its_own_ques
 ):
     # Review-2 F1: the reply copies the grouping's misplacement and lists q2's part-labelled
     # heading in q1's entry. The heading opens a part over q2 alone, so q1's item never holds
-    # it: it opens q2's item, as when the reply lists it as an instruction.
+    # it: it opens q2's one-child parent (user ruling 2026-10-18).
     heading = ("heading", "Del 2: Verb (2 p)")
     state = _normalised_state((_NOUN[0], heading, _VERB_BODY), ((0, 1), (2,)))
     entries: list[JsonValue] = [
@@ -408,7 +411,8 @@ def test_a_part_heading_the_reply_lists_with_another_question_opens_its_own_ques
     noun, verb = sorted(document.items, key=lambda item: item.sequence)
     assert noun.source_anchor == "body:0001"
     assert not [text for text in _texts(noun) if "Del 2" in text]
-    assert _texts(verb)[0].startswith("Del 2: Verb")
+    assert not [text for text in _texts(verb) if "Del 2" in text]
+    assert [(p.item_ids, p.printed_total) for p in document.parents] == [((verb.item_id,), 2)]
     assert noun.review.parse_origin is NativeParseOrigin.LLM_PARSED
     assert verb.review.parse_origin is NativeParseOrigin.LLM_PARSED
     assert (noun.points, verb.points) == (4, 2)
@@ -419,9 +423,10 @@ def test_a_part_heading_the_reply_lists_with_another_question_opens_its_own_ques
     ]
 
 
-def test_a_one_question_part_total_reaches_the_item_that_opens_with_its_part_heading():
-    # Chapter_4 shape: q2's item starts at its part heading, which no question holds, and the
-    # reply's points disagree with the part's printed total. The printed total wins.
+def test_a_one_question_part_total_reaches_its_item_and_its_one_child_parent():
+    # Q2's part heading names its own part, so it opens q2's one-child parent (user ruling
+    # 2026-10-18) and q2's item starts at its own chunk. The reply's points disagree with the
+    # part's printed total; the printed total wins and checks the parent.
     state = _normalised_state(
         (_NOUN[0], ("heading", "Del 2: Verb (2 p)"), _VERB_BODY), ((0,), (2,))
     )
@@ -432,9 +437,12 @@ def test_a_one_question_part_total_reaches_the_item_that_opens_with_its_part_hea
     admit_batch({"items": [noun, verb]}, state)
     _, opened = sorted(state.result().document.items, key=lambda item: item.sequence)
 
-    assert opened.source_anchor == "body:0002"
-    assert _texts(opened)[0].startswith("Del 2: Verb")
+    assert opened.source_anchor == "body:0003"
+    assert not [text for text in _texts(opened) if "Del 2" in text]
     assert opened.points == 2
+    assert [(p.item_ids, p.printed_total) for p in state.result().document.parents] == [
+        ((opened.item_id,), 2)
+    ]
 
 
 _VERB = (

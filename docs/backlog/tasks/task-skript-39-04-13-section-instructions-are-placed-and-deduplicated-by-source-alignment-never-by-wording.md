@@ -80,13 +80,22 @@ records it too. Section placement reads it. The cost is one tuple per item.
 
 ### Replay outcome (2026-10-18)
 
-Nine of the ten recorded replays produce byte-identical documents (document ids
-aside). `chapter_4_poetry_and_lyrics_quiz_med_facit` changes in items 22-28 only,
-and the change is a fix: each reply splits the heading "Part 3, Question N
-(1 point)" into `printed_label` "Question N" and a body line "Part 3," that
-the alignment maps to the heading chunk. The wording check did not match that
-line and prepended a second copy, "Part 3, Question N". The item now shows its
-heading once. The gold prompt for these questions has no heading line.
+Before merging `main` at 69ac991ae, nine of the ten recorded replays were
+byte-identical (document ids aside). `chapter_4_poetry_and_lyrics_quiz_med_facit`
+changed in items 22-28: each reply splits the heading "Part 3, Question N
+(1 point)" into `printed_label` "Question N" and a body line "Part 3," aligned
+to the heading chunk; the wording check missed that line and prepended a
+second copy. TASK-SKRIPT-39-04-12 DEL 4 on `main` fixes the same fragment, so
+after the merge all ten replays are byte-identical to `main`.
+
+### Implementation state (2026-10-18)
+
+Implemented on branch `claude/bold-dijkstra-162ba8`; the text matches
+`_printed` and `_renders_one_of` are deleted with no fallback. Validation above
+passes. The task awaits independent review; closeout stays with the reviewer.
+Two other wording rules remain outside this contract and are follow-ups:
+`_item_without` in `docx_governing_chunks.py` and `wording_left_out` in
+`docx_own_instructions.py`.
 
 ## Stop Conditions
 

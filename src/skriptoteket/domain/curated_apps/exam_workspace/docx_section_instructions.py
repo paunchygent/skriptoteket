@@ -8,7 +8,8 @@ instruction that reaches a single item, or a reach that skips an item between tw
 ones, is copied into exactly the items it reaches. An instruction printed inside an item's
 own chunks keeps its source position there. Printed headings are runs of their own in the
 same pass (``docx_instruction_runs``): over one question a heading opens its body, and
-over two or more consecutive questions it opens their parent's instruction (T1, T2).
+over two or more consecutive questions it opens their parent's instruction (T1, T2). A part
+line that opens a parent (``PartLines.parents``) opens one over a single question too.
 """
 
 from collections.abc import Mapping, Sequence
@@ -304,7 +305,9 @@ def place_section_instructions(
     instruction printed after one of the run's items. Points lines are structure and are
     never instruction text, except in a non-heading chunk the grouping marks as governing,
     which keeps its whole text (D40). A printed heading is a run starting at the heading
-    under the same section rule: over one question it opens its body, and over two or more
+    under the same section rule: over one question it opens its body, unless it is a part
+    line that opens a parent (``PartLines.parents``), which is the instruction of a parent
+    with that one child; over two or more
     consecutive questions it is the first line of their parent's instruction, ahead of the
     run's other instruction lines in source order (T1, T2). Heading points become the
     parent's printed total, never instruction words. A heading whose run cannot form or

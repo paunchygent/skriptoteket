@@ -10,7 +10,7 @@ from decimal import Decimal
 import pytest
 from pydantic import ValidationError
 
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import native_item
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import aligned_native_item
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedItem,
     ProducedMatchPair,
@@ -70,7 +70,7 @@ def _number(value: Decimal | int | float | None) -> float:
 
 
 def test_exact_division_gives_every_tick_the_printed_points_over_the_ticks():
-    item = native_item(_grid(points=6), language="sv")
+    item = aligned_native_item(_grid(points=6), language="sv").item
 
     assert item.kind is NativeExamItemKind.MATCHING
     assert _number(item.tick_points) == 2.0
@@ -80,7 +80,7 @@ def test_exact_division_gives_every_tick_the_printed_points_over_the_ticks():
 
 
 def test_inexact_division_floors_the_tick_to_two_decimals_and_marks_points_estimated():
-    item = native_item(_grid(points=10), language="sv")
+    item = aligned_native_item(_grid(points=10), language="sv").item
 
     assert _number(item.tick_points) == 3.33
     assert _number(item.points) == pytest.approx(9.99)
@@ -88,9 +88,9 @@ def test_inexact_division_floors_the_tick_to_two_decimals_and_marks_points_estim
 
 
 def test_half_point_ticks_are_exact():
-    item = native_item(
+    item = aligned_native_item(
         _grid(points=1, left=_LEFT[:2], right=_RIGHT[:2], pairs=_ONE_TO_ONE[:2]), language="sv"
-    )
+    ).item
 
     assert _number(item.tick_points) == 0.5
     assert _number(item.points) == 1.0
@@ -98,7 +98,7 @@ def test_half_point_ticks_are_exact():
 
 
 def test_missing_answer_key_points_use_the_default_tick_one_and_estimate_the_points():
-    item = native_item(_grid(points=None), language="sv")
+    item = aligned_native_item(_grid(points=None), language="sv").item
 
     assert _number(item.tick_points) == 1.0
     assert _number(item.points) == 3.0
@@ -106,7 +106,7 @@ def test_missing_answer_key_points_use_the_default_tick_one_and_estimate_the_poi
 
 
 def test_many_to_many_columns_and_an_unused_column_build_one_native_pair_per_tick():
-    item = native_item(
+    item = aligned_native_item(
         _grid(
             points=6,
             left=("Katt", "Bil", "Äpple"),
@@ -114,7 +114,7 @@ def test_many_to_many_columns_and_an_unused_column_build_one_native_pair_per_tic
             pairs=(("Katt", "Djur"), ("Bil", "Djur"), ("Äpple", "Fordon")),
         ),
         language="sv",
-    )
+    ).item
 
     assert item.answer_key.origin is NativeAnswerKeyOrigin.SOURCE_PROVIDED
     assert [(p.left_id, p.right_id) for p in item.answer_key.match_pairs] == [
@@ -128,7 +128,7 @@ def test_many_to_many_columns_and_an_unused_column_build_one_native_pair_per_tic
 
 
 def test_one_row_may_tick_two_categories_and_a_category_may_stay_unused():
-    item = native_item(
+    item = aligned_native_item(
         _grid(
             points=4,
             left=("Katt", "Bil"),
@@ -136,7 +136,7 @@ def test_one_row_may_tick_two_categories_and_a_category_may_stay_unused():
             pairs=(("Katt", "Djur"), ("Katt", "Fordon"), ("Bil", "Djur")),
         ),
         language="sv",
-    )
+    ).item
 
     assert [(p.left_id, p.right_id) for p in item.answer_key.match_pairs] == [
         ("left_001", "right_001"),
@@ -164,7 +164,7 @@ def test_a_left_entry_without_any_tick_is_rejected_by_the_produced_contract():
 
 
 def test_unkeyed_grid_keeps_the_default_tick_and_drops_printed_points():
-    item = native_item(_grid(points=6, pairs=()), language="sv")
+    item = aligned_native_item(_grid(points=6, pairs=()), language="sv").item
 
     assert item.answer_key.origin is NativeAnswerKeyOrigin.ABSENT
     assert item.tick_points == Decimal(1)
@@ -177,4 +177,6 @@ def test_a_grid_whose_floor_cannot_be_positive_is_refused_not_rounded_up():
     pairs = tuple((entry, "Kategori") for entry in left)
 
     with pytest.raises(ValueError, match="cannot give a positive tick value"):
-        native_item(_grid(points=1, left=left, right=("Kategori",), pairs=pairs), language="sv")
+        aligned_native_item(
+            _grid(points=1, left=left, right=("Kategori",), pairs=pairs), language="sv"
+        ).item

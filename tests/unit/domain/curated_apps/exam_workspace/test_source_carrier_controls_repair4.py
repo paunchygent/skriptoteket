@@ -9,7 +9,7 @@ a point-like phrase.
 
 import pytest
 
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import native_item
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import aligned_native_item
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedItem
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxChunk,
@@ -31,9 +31,9 @@ def test_quoted_point_content_crossing_source_paragraphs_retains_complete_contex
         _chunk("body:0004", '" here.'),
     )
     if through_item:
-        result = native_item(
+        result = aligned_native_item(
             _produced(chunks, kind="free_text", choices=[]), chunks=chunks, language="en"
-        ).body
+        ).item.body
     else:
         result = SourceFormatting(chunks).rebuild_body({})
     assert body_plain_text(result) == 'Choose an answer.\nQuote "\n(2 p)\n" here.'
@@ -81,7 +81,7 @@ def _choice_result(source_text, choices):
         chunks,
         choices=[{"text": text, "correct": False} for text in choices],
     )
-    return native_item(produced, chunks=chunks, language="en")
+    return aligned_native_item(produced, chunks=chunks, language="en").item
 
 
 def test_curly_quoted_answer_word_keeps_its_closing_quote_before_the_tail():
@@ -211,7 +211,7 @@ def test_quoted_literal_answer_label_survives_with_and_without_a_bound_facit(fac
         ],
         facit_text=facit,
     )
-    result = native_item(produced, chunks=chunks, language="en")
+    result = aligned_native_item(produced, chunks=chunks, language="en").item
     assert [body_plain_text(choice.body) for choice in result.choices] == ["red", wording]
     assert result.facit_text == facit
 
