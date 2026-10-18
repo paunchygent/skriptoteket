@@ -19,6 +19,7 @@ repos:
         language: system
         stages: [pre-push]
         always_run: true
+        verbose: true
         pass_filenames: false
 
       - id: ruff-format

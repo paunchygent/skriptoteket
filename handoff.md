@@ -169,6 +169,7 @@
 
 - Session Date: 2026-10-15
 - Last Refreshed: 2026-10-15
+- Pushing `main` runs the full `pdm run typecheck` and `pdm run test` on Hemma first (`scripts/hemma_pre_push_check.sh`, pre-push hook, ~10 min; install with `pre-commit install --hook-type pre-push`). Run the push in the background; a failure blocks it, unreachable Hemma warns, Markdown-only commits reuse the last pass.
 - Current docs validate with `pdm run docs-validate`.
 - Historical terminal docs audit separately with `pdm run python -m scripts.historical_docs.validate_historical_docs`.
 - Full typecheck passed 2026-10-15: backend (1,588 source files) and SPA;
