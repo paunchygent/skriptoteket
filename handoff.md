@@ -74,6 +74,7 @@
   Next lanes: 39-07-03 retire old converter routes (40-04-03 now on main); implement
   39-06-08 ordering; stories 39-04, 39-06, 39-07 await closeout.
   Ready (user grilling 2026-10-18, plans in root 01a14c27): 40-04-04 dropdown option editor, 40-04-05 export names from the exam title, 39-06-09 Exam.net probe of ordering inside a part.
+  Ready 2026-10-18 (plan root 01a14e1f): 40-04-06 one TipTap editor per exam text field, editable exam instructions, accept printed totals. 40-04-07 writing area, student/facit PDF and paper answer forms also ready.
   Hemma Opus lead `3b164d53`: 40-03-01..09 and 08-36-02 `done`; 40-02-01 tranche 1 on
   main 761b1b59, tranche 2 a67afa90 (`in_progress`: shared `play` meaning in
   session add-a-shared-play-glyph, exam-held wrappers and lucide removal open).

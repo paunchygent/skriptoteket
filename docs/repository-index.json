@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "c4d8da574313bdd930da0d8be00ce390c8b1d34a9bbd5926313dd8281c5738d3",
+  "source_set_digest": "c2004641b25464674200845a9ac4d3ff0f3b024c90c68d5c88bd4c92d7735066",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6324,6 +6324,44 @@
       "title": "Exported files are named after the exam title",
       "path": "docs/backlog/tasks/task-skript-40-04-05-exported-files-are-named-after-the-exam-title.md",
       "status": "in_progress",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-06",
+      "type": "task",
+      "title": "Exam texts edit as one document per field, exam instructions are editable and printed totals can be accepted",
+      "path": "docs/backlog/tasks/task-skript-40-04-06-exam-texts-edit-as-one-document-per-field-exam-instructions-are-editable-and-printed-totals-can-be-accepted.md",
+      "status": "in_progress",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-07",
+      "type": "task",
+      "title": "Teachers set the writing area of printed DOCX and PDF exams and imports drop paper answer lines",
+      "path": "docs/backlog/tasks/task-skript-40-04-07-teachers-set-the-writing-area-of-printed-docx-and-pdf-exams-and-imports-drop-paper-answer-lines.md",
+      "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
