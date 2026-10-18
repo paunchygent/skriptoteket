@@ -76,8 +76,11 @@
   deduplicated by source alignment (`AlignedItem` chunks), text matches deleted;
   main 69ac991ae merged, ten replays identical to main. Review 7a083063
   (changes_requested) F1-F3 repaired (task D4, D8, D9); rereview F1 (per-paragraph
-  source origin, D9) and F4 (module split, D11) repaired. Next: F1 re-review, parent merge. Follow-ups: wording rules in `docx_governing_chunks._item_without`
-  and `docx_own_instructions.wording_left_out`.
+  source origin, D9) and F4 (module split, D11) repaired. Next: F1 re-review, parent merge.
+  TASK-SKRIPT-39-04-14 `in_progress` on local `claude/affectionate-payne-93506d`
+  (Claude side session, built on 39-04-13): governing-chunk release and left-out
+  own-chunk marks read the alignment; wording rules deleted. Next: independent
+  review, parent merge after 39-04-13.
   Next lanes: 39-07-03 retire old converter routes (40-04-03 now on main); implement
   39-06-08 ordering; stories 39-04, 39-06, 39-07 await closeout.
   Ready (user grilling 2026-10-18, plans in root 01a14c27): 40-04-04 dropdown option editor, 40-04-05 export names from the exam title, 39-06-09 Exam.net probe of ordering inside a part.

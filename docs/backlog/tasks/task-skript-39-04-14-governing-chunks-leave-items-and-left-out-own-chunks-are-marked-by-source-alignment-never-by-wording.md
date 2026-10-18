@@ -83,6 +83,24 @@ data is produced. Removal is one pass over the body per governing anchor.
 - `PYTHONHASHSEED=0 pdm run test-parallel tests/unit/application/curated_apps tests/unit/domain/curated_apps tests/unit/web -q -p no:randomly`
   on Hemma, `pdm run lint`, `pdm run typecheck`, `pdm run docs-validate`.
 
+### Replay outcome (2026-10-18)
+
+The ten recorded replays, dumped with documents and events (UUIDs masked) at
+the base `f2a00f3a3` (TASK-SKRIPT-39-04-13 head) and at `a51672799`, are
+identical (`diff -r` empty; Hemma `~/logs/replays-39-04-14/`). No recorded
+replay produces `own_chunks_left_out`, `governing_text_kept` or
+`own_instruction_returned`, so the changed decisions are proven by the
+adversarial unit tests, not by the replays.
+
+### Implementation state (2026-10-18)
+
+Implemented on local branch `claude/affectionate-payne-93506d` (merges
+`claude/bold-dijkstra-162ba8` at `f2a00f3a3`). The suite above passes on Hemma
+(4567 passed, 59 skipped; `~/logs/verify-39-04-14.log`); lint, mypy and
+`docs-validate` pass. The first suite run failed 12 admission tests that
+encoded the old token reading; D4-D7 record how each was decided. The task
+awaits independent review; closeout stays with the reviewer.
+
 ## Stop Conditions
 
 - A replay difference that is not a proven fix goes to the parent before merge.
