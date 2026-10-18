@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "61cf4f33b168c9d2b5689c309aaa9ae234b384229f26aeea7b646b6cab18ba1c",
+  "source_set_digest": "c2004641b25464674200845a9ac4d3ff0f3b024c90c68d5c88bd4c92d7735066",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6342,7 +6342,7 @@
       "type": "task",
       "title": "Exam texts edit as one document per field, exam instructions are editable and printed totals can be accepted",
       "path": "docs/backlog/tasks/task-skript-40-04-06-exam-texts-edit-as-one-document-per-field-exam-instructions-are-editable-and-printed-totals-can-be-accepted.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
