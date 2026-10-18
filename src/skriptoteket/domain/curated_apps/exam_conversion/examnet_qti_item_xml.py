@@ -103,8 +103,7 @@ def _indent_block_structure(element: ElementTree.Element, level: int = 0) -> Non
     element. A block-only element gets the same whitespace as
     ``ElementTree.indent(element, space="  ")`` at ``level``, so structure-only
     trees stay byte-identical. Any other element keeps its whole subtree exactly
-    as built: ``ElementTree.indent`` here injected newlines inside mixed inline
-    content that the user then sees as spurious spaces.
+    as built.
     """
 
     child_tags = [child.tag for child in element]
