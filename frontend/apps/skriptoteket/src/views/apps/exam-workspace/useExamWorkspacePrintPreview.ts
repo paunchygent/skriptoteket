@@ -3,16 +3,16 @@
  *
  * Domain purpose:
  *   Keep the rendered student print copy beside the editor (W5). The panel
- *   renders the saved revision's pages and refreshes after a save: it waits
- *   `PREVIEW_DEBOUNCE_MS` after the last saved-revision change, so a burst of
- *   saves renders once, and it keeps the last ready pages while a new render
- *   runs or the exam cannot be rendered. A moved saved revision answers 409
- *   and is dropped for the next revision change; any other failure keeps the
- *   pages and reports once through the workspace's failure toast. Editing
- *   never waits on a render.
+ *   renders the persisted working state the editor stands on and refreshes
+ *   after the last saved edit or save: it waits `PREVIEW_DEBOUNCE_MS` after the
+ *   last history-cursor change, so a burst of edits renders once, and it keeps
+ *   the last ready pages while a new render runs or the exam cannot be
+ *   rendered. A moved revision or cursor answers 409 and is dropped for the
+ *   next change; any other failure keeps the pages and reports once through
+ *   the workspace's failure toast. Editing never waits on a render.
  *
  * Relationships:
- *   - Transport to `api/examWorkspace.ts`.
+ *   - Transport to `api/examWorkspaceExports.ts`.
  *   - Consumed by `ExamWorkspaceView` and rendered by
  *     `ExamWorkspacePrintPreviewPanel`.
  */
@@ -25,7 +25,7 @@ import { fetchExamWorkspacePrintPreview } from "../../../api/examWorkspaceExport
 import type { ExamWorkspacePrintPreview } from "../../../api/examWorkspaceExports";
 import { useToast } from "../../../composables/useToast";
 
-/** Wait after the last saved-revision change before rendering, so a burst of saves renders once. */
+/** Wait after the last saved-revision or history-cursor change before rendering, so a burst of edits renders once. */
 export const PREVIEW_DEBOUNCE_MS = 1200;
 
 const REFRESH_FAILED_COPY = "Förhandsgranskningen kunde inte uppdateras.";
@@ -34,12 +34,19 @@ export interface ExamWorkspacePrintPreviewDeps {
   lineageId: Ref<string | null>;
   /** The saved version the open copy stands on; a number triggers a render. */
   savedRevision: Ref<number | null>;
+  /** The server's newest undo step: the persisted working state the editor stands on after each saved edit. */
+  historyCursor: Ref<string | null>;
   open: Ref<boolean>;
   /** The question the panel scrolls to; the panel owns that scroll. */
   selectedItemId: Ref<string | null>;
 }
 
-export function useExamWorkspacePrintPreview({ lineageId, savedRevision, open }: ExamWorkspacePrintPreviewDeps) {
+export function useExamWorkspacePrintPreview({
+  historyCursor,
+  lineageId,
+  savedRevision,
+  open,
+}: ExamWorkspacePrintPreviewDeps) {
   const toast = useToast();
 
   /** The pages of the last ready render, kept while a new render runs or the exam is blocked. */
@@ -73,28 +80,34 @@ export function useExamWorkspacePrintPreview({ lineageId, savedRevision, open }:
     message.value = response.message;
   }
 
-  async function load(requestId: number, lineage: string, expectedRevision: number): Promise<void> {
+  async function load(
+    requestId: number,
+    lineage: string,
+    expectedRevision: number,
+    expectedCursor: string,
+  ): Promise<void> {
     try {
-      const response = await fetchExamWorkspacePrintPreview(lineage, expectedRevision);
+      const response = await fetchExamWorkspacePrintPreview(lineage, expectedRevision, expectedCursor);
       if (requestId !== requestSeq) return;
       apply(response);
       loading.value = false;
     } catch (error) {
       if (requestId !== requestSeq) return;
       loading.value = false;
-      // 409: the saved revision moved on; the next revision change fetches again.
+      // 409: the persisted state moved on; the next change fetches again.
       if (isApiError(error) && error.status === 409) return;
       toast.failure(REFRESH_FAILED_COPY);
     }
   }
 
   watch(
-    () => [open.value, lineageId.value, savedRevision.value] as const,
+    () => [open.value, lineageId.value, savedRevision.value, historyCursor.value] as const,
     () => {
       cancelScheduled();
       const lineage = lineageId.value;
       const revision = savedRevision.value;
-      if (!open.value || lineage === null || typeof revision !== "number") {
+      const cursor = historyCursor.value;
+      if (!open.value || lineage === null || typeof revision !== "number" || cursor === null) {
         // A closed panel or an unsaved exam drops every in-flight response.
         requestSeq += 1;
         loading.value = false;
@@ -103,7 +116,7 @@ export function useExamWorkspacePrintPreview({ lineageId, savedRevision, open }:
       const requestId = ++requestSeq;
       loading.value = true;
       timer = setTimeout(() => {
-        void load(requestId, lineage, revision);
+        void load(requestId, lineage, revision, cursor);
       }, PREVIEW_DEBOUNCE_MS);
     },
     { immediate: true },

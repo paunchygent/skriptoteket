@@ -104,18 +104,20 @@ export async function saveExamWorkspaceExport(
 export type ExamWorkspacePrintPreview = Schemas["ExamWorkspacePrintPreviewResponse"];
 
 /**
- * Render the saved revision's student print pages page by page: `pages` holds
+ * Render the working state the editor stands on into page images: `pages` holds
  * one PNG data URL per printed page in print order, and `question_pages` maps
  * a question's item id to the 0-based page it first appears on, so the
  * Förhandsgranska panel can scroll to the selected question. `status`
- * "blocked" means the exam cannot be rendered at all. A saved revision the
- * server has moved past answers 409.
+ * "blocked" means the exam cannot be rendered at all. The saved head revision
+ * and the history `expectedCursor` both guard the render: a revision or cursor
+ * the server has moved past answers 409.
  */
 export async function fetchExamWorkspacePrintPreview(
   lineageId: string,
   expectedRevision: number,
+  expectedCursor: string,
 ): Promise<ExamWorkspacePrintPreview> {
   return await apiGet<ExamWorkspacePrintPreview>(
-    `${documentPath(lineageId)}/print-preview?expected_revision=${expectedRevision}`,
+    `${documentPath(lineageId)}/print-preview?expected_revision=${expectedRevision}&expected_cursor=${encodeURIComponent(expectedCursor)}`,
   );
 }

@@ -74,6 +74,7 @@ const {
   structure,
   applyArrivingSuggestions,
   conflictNotice,
+  historyCursor,
   isBusy,
   isDirty,
   isOpen,
@@ -96,12 +97,13 @@ const drawer = ref<DrawerName | null>(null);
 const listOpen = ref(false);
 const importOpen = ref(false);
 
-// Förhandsgranska (W5): the saved revision's print pages beside the editor, refreshed after saves.
+// Förhandsgranska (W5): the persisted working state's print pages beside the editor, refreshed after each saved edit or save.
 const previewOpen = ref(false);
 const printPreview = useExamWorkspacePrintPreview({
   lineageId: computed(() => summary.value?.lineage_id ?? null),
   open: previewOpen,
   savedRevision,
+  historyCursor,
   selectedItemId: editing.selectedItemId,
 });
 const {

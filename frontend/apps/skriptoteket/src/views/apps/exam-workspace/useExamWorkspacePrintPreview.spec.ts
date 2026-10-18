@@ -2,10 +2,11 @@
  * Exam workspace Förhandsgranska composable (TASK-SKRIPT-40-04-07, W5).
  *
  * Expected behavior:
- *   The panel renders nothing while closed, renders once for a burst of saved
- *   revisions, ignores a response an older request left behind, keeps the last
- *   ready pages while the exam is blocked or a request fails, and reports a
- *   failure once. A 409 (the saved revision moved on) is dropped silently.
+ *   The panel renders nothing while closed, renders once for a burst of
+ *   persisted history-cursor changes, ignores a response an older request left
+ *   behind, keeps the last ready pages while the exam is blocked or a request
+ *   fails, and reports a failure once. A 409 (the persisted state moved on) is
+ *   dropped silently.
  */
 
 import { createPinia, setActivePinia } from "pinia";
@@ -40,14 +41,15 @@ function deferred<T>() {
 function mountPreview() {
   const lineageId = ref<string | null>("lineage-1");
   const savedRevision = ref<number | null>(1);
+  const historyCursor = ref<string | null>("cursor-1");
   const open = ref(false);
   const selectedItemId = ref<string | null>(null);
   const scope = effectScope();
   const preview = scope.run(() =>
-    useExamWorkspacePrintPreview({ lineageId, open, savedRevision, selectedItemId }),
+    useExamWorkspacePrintPreview({ historyCursor, lineageId, open, savedRevision, selectedItemId }),
   );
   if (!preview) throw new Error("preview composable did not mount");
-  return { lineageId, open, preview, savedRevision, scope, selectedItemId };
+  return { historyCursor, lineageId, open, preview, savedRevision, scope, selectedItemId };
 }
 
 describe("useExamWorkspacePrintPreview", () => {
@@ -84,7 +86,54 @@ describe("useExamWorkspacePrintPreview", () => {
     await vi.advanceTimersByTimeAsync(PREVIEW_DEBOUNCE_MS);
 
     expect(apiMocks.fetchExamWorkspacePrintPreview).toHaveBeenCalledTimes(1);
-    expect(apiMocks.fetchExamWorkspacePrintPreview).toHaveBeenCalledWith("lineage-1", 3);
+    expect(apiMocks.fetchExamWorkspacePrintPreview).toHaveBeenCalledWith("lineage-1", 3, "cursor-1");
+    scope.stop();
+  });
+
+  it("renders once with the new persisted cursor and the current revision after a Skrivyta edit", async () => {
+    apiMocks.fetchExamWorkspacePrintPreview.mockResolvedValue(ready(["page-1"]));
+    const { historyCursor, open, scope } = mountPreview();
+
+    open.value = true;
+    await nextTick();
+    await vi.advanceTimersByTimeAsync(PREVIEW_DEBOUNCE_MS);
+    // The autosave stored the edit as a new undo step; the saved revision did not move.
+    historyCursor.value = "cursor-2";
+    await nextTick();
+    await vi.advanceTimersByTimeAsync(PREVIEW_DEBOUNCE_MS);
+
+    expect(apiMocks.fetchExamWorkspacePrintPreview).toHaveBeenCalledTimes(2);
+    expect(apiMocks.fetchExamWorkspacePrintPreview).toHaveBeenLastCalledWith("lineage-1", 1, "cursor-2");
+    scope.stop();
+  });
+
+  it("renders once for the last cursor after a burst of three cursor changes", async () => {
+    apiMocks.fetchExamWorkspacePrintPreview.mockResolvedValue(ready(["page-1"]));
+    const { historyCursor, open, scope } = mountPreview();
+
+    open.value = true;
+    await nextTick();
+    for (const cursor of ["cursor-2", "cursor-3", "cursor-4"]) {
+      historyCursor.value = cursor;
+      await nextTick();
+    }
+    await vi.advanceTimersByTimeAsync(PREVIEW_DEBOUNCE_MS);
+
+    expect(apiMocks.fetchExamWorkspacePrintPreview).toHaveBeenCalledTimes(1);
+    expect(apiMocks.fetchExamWorkspacePrintPreview).toHaveBeenCalledWith("lineage-1", 1, "cursor-4");
+    scope.stop();
+  });
+
+  it("fetches nothing while the history cursor is not persisted yet", async () => {
+    const { historyCursor, open, scope } = mountPreview();
+    historyCursor.value = null;
+    await nextTick();
+
+    open.value = true;
+    await nextTick();
+    await vi.advanceTimersByTimeAsync(5000);
+
+    expect(apiMocks.fetchExamWorkspacePrintPreview).not.toHaveBeenCalled();
     scope.stop();
   });
 
@@ -153,16 +202,20 @@ describe("useExamWorkspacePrintPreview", () => {
     scope.stop();
   });
 
-  it("drops a 409 (the saved revision moved on) without a toast", async () => {
-    apiMocks.fetchExamWorkspacePrintPreview.mockRejectedValue(
-      new ApiError({ code: "CONFLICT", message: "stale", status: 409 }),
-    );
-    const { open, preview, scope } = mountPreview();
+  it("keeps the pages and drops a 409 (the persisted state moved on) without a toast", async () => {
+    apiMocks.fetchExamWorkspacePrintPreview
+      .mockResolvedValueOnce(ready(["page-1"]))
+      .mockRejectedValue(new ApiError({ code: "CONFLICT", message: "stale", status: 409 }));
+    const { historyCursor, open, preview, scope } = mountPreview();
 
     open.value = true;
     await nextTick();
     await vi.advanceTimersByTimeAsync(PREVIEW_DEBOUNCE_MS);
+    historyCursor.value = "cursor-2";
+    await nextTick();
+    await vi.advanceTimersByTimeAsync(PREVIEW_DEBOUNCE_MS);
 
+    expect(preview.pages.value).toEqual(["page-1"]);
     expect(useToastStore().toasts).toHaveLength(0);
     expect(preview.loading.value).toBe(false);
     scope.stop();

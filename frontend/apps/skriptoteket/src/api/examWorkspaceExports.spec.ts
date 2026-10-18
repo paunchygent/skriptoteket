@@ -13,6 +13,7 @@ import { describe, expect, it, vi } from "vitest";
 import { apiFetchBlobResponse, apiGet } from "./client";
 import {
   downloadExamWorkspaceExport,
+  fetchExamWorkspacePrintPreview,
   getExamWorkspaceExportChecklist,
 } from "./examWorkspaceExports";
 
@@ -66,6 +67,24 @@ describe("examWorkspaceExports transport", () => {
 
     expect(apiGetMock).toHaveBeenCalledWith(
       `${DOCUMENTS_ROOT}/lineage-1/export-checklist?expected_revision=2`,
+    );
+    expect(result).toBe(response);
+  });
+
+  it("renders the preview for the persisted history cursor with both guards", async () => {
+    const response = {
+      message: null,
+      pages: ["data:image/png;base64,page"],
+      question_pages: {},
+      revision: 2,
+      status: "ready" as const,
+    };
+    apiGetMock.mockResolvedValueOnce(response);
+
+    const result = await fetchExamWorkspacePrintPreview("lineage-1", 2, "cursor/one");
+
+    expect(apiGetMock).toHaveBeenCalledWith(
+      `${DOCUMENTS_ROOT}/lineage-1/print-preview?expected_revision=2&expected_cursor=cursor%2Fone`,
     );
     expect(result).toBe(response);
   });
