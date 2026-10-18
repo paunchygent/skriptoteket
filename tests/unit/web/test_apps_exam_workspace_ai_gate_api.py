@@ -12,40 +12,24 @@ Relationships:
       `apps_conversion_hub_exam_workspace_enrichment` through the real FastAPI
       dependency graph with Dishka protocol stubs.
     - The handlers own job enqueue, synchronous conversion and the token
-      lease, so a handler that is never awaited proves no job, no call and no
+      lease, so a handler that records no call proves no job, no call and no
       lease draw.
 """
 
 from __future__ import annotations
 
 from collections.abc import AsyncIterator
-from dataclasses import dataclass
 from datetime import datetime
-from typing import cast
-from unittest.mock import AsyncMock
 from uuid import UUID, uuid4
 
 import httpx
 import pytest
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
-from dishka import Provider, Scope, make_async_container, provide
+from dishka import make_async_container
 from fastapi import FastAPI
 from starlette_dishka import setup_dishka
 
-from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
-    ExamAnswerKeyEnrichmentJobStatus,
-)
-from skriptoteket.application.curated_apps.exam_workspace import (
-    ExamWorkspaceAnswerKeySuggestionsResponse,
-    ExamWorkspaceConversionStatus,
-    ExamWorkspaceEnrichmentState,
-    ExamWorkspaceItemRetryResponse,
-)
-from skriptoteket.application.curated_apps.handlers.exam_workspace_content_tags import (
-    ContentSuggestionsResponse,
-    RequestExamContentSuggestionsHandler,
-)
 from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import NativeExamItem
 from skriptoteket.domain.curated_apps.models import (
@@ -54,13 +38,6 @@ from skriptoteket.domain.curated_apps.models import (
     curated_app_tool_id,
 )
 from skriptoteket.domain.identity.models import Role
-from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
-from skriptoteket.protocols.exam_workspace import (
-    ImportExamWorkspaceDigiExamDocumentHandlerProtocol,
-    ImportExamWorkspaceDocumentHandlerProtocol,
-    RequestExamWorkspaceAnswerKeySuggestionsHandlerProtocol,
-    RetryExamWorkspaceItemHandlerProtocol,
-)
 from skriptoteket.web.api.v1 import apps_conversion_hub_exam_workspace as exam_workspace_api
 from skriptoteket.web.api.v1 import (
     apps_conversion_hub_exam_workspace_enrichment as enrichment_api,
@@ -74,6 +51,12 @@ from tests.fixtures.profile_app_continuation_support import (
     UserRepositoryStub,
     seed_huleedu_projection,
     signed_huleedu_headers,
+)
+from tests.unit.web.exam_workspace_ai_gate_test_support import (
+    ExamWorkspaceAiGateProvider,
+    HandlerDoubles,
+    RecordingDouble,
+    build_handler_doubles,
 )
 
 pytestmark = pytest.mark.unit
@@ -172,64 +155,6 @@ class ConversionHubRegistryStub:
         return None
 
 
-@dataclass(frozen=True)
-class HandlerDoubles:
-    """The five route handlers the gated and DigiExam routes receive."""
-
-    content_suggestions: AsyncMock
-    docx_import: AsyncMock
-    digiexam_import: AsyncMock
-    retry_item: AsyncMock
-    answer_key_suggestions: AsyncMock
-
-
-class ExamWorkspaceAiGateProvider(Provider):
-    def __init__(
-        self,
-        *,
-        registry: CuratedAppRegistryProtocol,
-        handlers: HandlerDoubles,
-    ) -> None:
-        super().__init__()
-        self._registry = registry
-        self._handlers = handlers
-
-    @provide(scope=Scope.REQUEST)
-    def registry(self) -> CuratedAppRegistryProtocol:
-        return self._registry
-
-    @provide(scope=Scope.REQUEST)
-    def request_exam_content_suggestions_handler(self) -> RequestExamContentSuggestionsHandler:
-        return cast(RequestExamContentSuggestionsHandler, self._handlers.content_suggestions)
-
-    @provide(scope=Scope.REQUEST)
-    def import_exam_workspace_document_handler(
-        self,
-    ) -> ImportExamWorkspaceDocumentHandlerProtocol:
-        return cast(ImportExamWorkspaceDocumentHandlerProtocol, self._handlers.docx_import)
-
-    @provide(scope=Scope.REQUEST)
-    def import_exam_workspace_digiexam_document_handler(
-        self,
-    ) -> ImportExamWorkspaceDigiExamDocumentHandlerProtocol:
-        return cast(
-            ImportExamWorkspaceDigiExamDocumentHandlerProtocol, self._handlers.digiexam_import
-        )
-
-    @provide(scope=Scope.REQUEST)
-    def retry_exam_workspace_item_handler(self) -> RetryExamWorkspaceItemHandlerProtocol:
-        return cast(RetryExamWorkspaceItemHandlerProtocol, self._handlers.retry_item)
-
-    @provide(scope=Scope.REQUEST)
-    def request_exam_workspace_answer_key_suggestions_handler(
-        self,
-    ) -> RequestExamWorkspaceAnswerKeySuggestionsHandlerProtocol:
-        return cast(
-            RequestExamWorkspaceAnswerKeySuggestionsHandlerProtocol,
-            self._handlers.answer_key_suggestions,
-        )
-
-
 @pytest.fixture
 def private_key() -> rsa.RSAPrivateKey:
     return rsa.generate_private_key(public_exponent=65537, key_size=2048)
@@ -263,51 +188,7 @@ def profiles() -> ProfileRepositoryStub:
 
 @pytest.fixture
 def handlers() -> HandlerDoubles:
-    lineage_id = uuid4()
-    content_suggestions = AsyncMock(spec=RequestExamContentSuggestionsHandler)
-    content_suggestions.handle.return_value = ContentSuggestionsResponse(
-        job_id=uuid4(),
-        lineage_id=lineage_id,
-        document_revision=1,
-        course_key="MATMAT01a",
-        state=ExamAnswerKeyEnrichmentJobStatus.QUEUED,
-    )
-    docx_import = AsyncMock(spec=ImportExamWorkspaceDocumentHandlerProtocol)
-    docx_import.handle.return_value = _conversion_status(lineage_id)
-    digiexam_import = AsyncMock(spec=ImportExamWorkspaceDigiExamDocumentHandlerProtocol)
-    digiexam_import.handle.return_value = _conversion_status(lineage_id)
-    retry_item = AsyncMock(spec=RetryExamWorkspaceItemHandlerProtocol)
-    retry_item.handle.return_value = ExamWorkspaceItemRetryResponse(
-        lineage_id=lineage_id,
-        item=_SAMPLE_ITEM,
-    )
-    answer_key_suggestions = AsyncMock(spec=RequestExamWorkspaceAnswerKeySuggestionsHandlerProtocol)
-    answer_key_suggestions.handle.return_value = ExamWorkspaceAnswerKeySuggestionsResponse(
-        job_id=uuid4(),
-        lineage_id=lineage_id,
-        state=ExamWorkspaceEnrichmentState.QUEUED,
-    )
-    return HandlerDoubles(
-        content_suggestions=content_suggestions,
-        docx_import=docx_import,
-        digiexam_import=digiexam_import,
-        retry_item=retry_item,
-        answer_key_suggestions=answer_key_suggestions,
-    )
-
-
-def _conversion_status(lineage_id: UUID) -> ExamWorkspaceConversionStatus:
-    return ExamWorkspaceConversionStatus(
-        job_id=uuid4(),
-        lineage_id=lineage_id,
-        state="queued",
-        error_message=None,
-        document_revision=None,
-        questions_total=0,
-        questions_done=0,
-        units=(),
-        summary=None,
-    )
+    return build_handler_doubles(sample_item=_SAMPLE_ITEM)
 
 
 @pytest.fixture
@@ -385,7 +266,7 @@ async def _send(
     raise AssertionError(f"unknown gated route: {route}")
 
 
-def _handler_for(handlers: HandlerDoubles, route: str) -> AsyncMock:
+def _handler_for(handlers: HandlerDoubles, route: str) -> RecordingDouble:
     return {
         "content_suggestions": handlers.content_suggestions,
         "docx_import": handlers.docx_import,
@@ -422,7 +303,7 @@ async def test_gated_routes_reject_non_admin_roles_without_reaching_the_handler(
     details = response.json()["error"]["details"]
     assert set(details["required_roles"]) == {"admin", "superuser"}
     assert details["actual_role"] == role.value
-    _handler_for(handlers, route).handle.assert_not_awaited()
+    assert _handler_for(handlers, route).calls == []
 
 
 @pytest.mark.asyncio
@@ -450,7 +331,7 @@ async def test_gated_routes_admit_admin_roles_and_reach_the_handler(
     )
 
     assert response.status_code == _EXPECTED_STATUS[route]
-    _handler_for(handlers, route).handle.assert_awaited_once()
+    assert len(_handler_for(handlers, route).calls) == 1
 
 
 @pytest.mark.asyncio
@@ -472,4 +353,4 @@ async def test_digiexam_import_stays_open_for_signed_in_users(
     )
 
     assert response.status_code == 202
-    handlers.digiexam_import.handle.assert_awaited_once()
+    assert len(handlers.digiexam_import.calls) == 1
