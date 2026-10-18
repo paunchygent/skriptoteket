@@ -35,7 +35,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.container import (
     ExamWorkspaceContainerContent,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import NativeExamDocument
-from skriptoteket.domain.errors import validation_error
 from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.scripting.vault_names import rename_vault_filename
 from skriptoteket.protocols.clock import ClockProtocol
@@ -48,7 +47,6 @@ from skriptoteket.protocols.exam_workspace_guest_drafts import (
 )
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
-from skriptoteket.protocols.vault import VaultFileRepositoryProtocol
 
 _COPY_EXTENSION = ".provdokument.zip"
 
@@ -61,7 +59,6 @@ class ImportGuestExamDraftHandler:
         *,
         handoffs: ExamGuestDraftHandoffRepositoryProtocol,
         reader: GetExamWorkspaceDocumentHandlerProtocol,
-        vault_files: VaultFileRepositoryProtocol,
         codec: ExamWorkspaceContainerCodecProtocol,
         store: ExamWorkspaceDocumentStore,
         uow: UnitOfWorkProtocol,
@@ -70,7 +67,6 @@ class ImportGuestExamDraftHandler:
     ) -> None:
         self._handoffs = handoffs
         self._reader = reader
-        self._vault_files = vault_files
         self._codec = codec
         self._store = store
         self._uow = uow
@@ -128,14 +124,6 @@ class ImportGuestExamDraftHandler:
                 notes=(),
             )
         )
-        await self._vault_files.lock_owner_renames(user_id=actor.id)
-        if await self._vault_files.name_in_use(
-            user_id=actor.id, name=name, exclude_lineage_id=None, exclude_file_id=None
-        ):
-            raise validation_error(
-                "Namnet används redan av en annan fil.",
-                details={"code": "vault_name_in_use", "name": name},
-            )
         vault_file = await self._store.save(
             actor=actor,
             file_id=self._id_generator.new_uuid(),

@@ -1,7 +1,7 @@
 """DI bindings for the exam workspace sign-in guest-draft handoff (P5).
 
 The handoff repository and its import handler are request-scoped so they share
-the request session, UoW, document store, and vault repositories with the
+the request session, UoW, document store, and container codec with the
 signed-in exam workspace handlers.
 """
 
@@ -30,7 +30,6 @@ from skriptoteket.protocols.exam_workspace_guest_drafts import (
 )
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
-from skriptoteket.protocols.vault import VaultFileRepositoryProtocol
 
 
 class ExamWorkspaceGuestDraftsProvider(Provider):
@@ -47,7 +46,6 @@ class ExamWorkspaceGuestDraftsProvider(Provider):
         self,
         handoffs: ExamGuestDraftHandoffRepositoryProtocol,
         reader: GetExamWorkspaceDocumentHandlerProtocol,
-        vault_files: VaultFileRepositoryProtocol,
         codec: ExamWorkspaceContainerCodecProtocol,
         store: ExamWorkspaceDocumentStore,
         uow: UnitOfWorkProtocol,
@@ -57,7 +55,6 @@ class ExamWorkspaceGuestDraftsProvider(Provider):
         return ImportGuestExamDraftHandler(
             handoffs=handoffs,
             reader=reader,
-            vault_files=vault_files,
             codec=codec,
             store=store,
             uow=uow,

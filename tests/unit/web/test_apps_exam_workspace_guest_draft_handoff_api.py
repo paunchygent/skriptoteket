@@ -25,6 +25,7 @@ from starlette_dishka import setup_dishka
 from skriptoteket.application.curated_apps.handlers.exam_workspace_guest_draft_handoff import (
     ImportGuestExamDraftHandler,
 )
+from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeAssetSegment,
     NativeParagraph,
@@ -41,6 +42,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document_json i
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.auth_outcomes import AuthOutcomeRecorderProtocol
+from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.protocols.exam_workspace_guest_drafts import (
     ImportGuestExamDraftHandlerProtocol,
@@ -58,6 +60,7 @@ from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents 
     FakeUow,
     _actor,
     _Env,
+    _settings,
 )
 from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders import (
     make_free_text_item,
@@ -133,7 +136,6 @@ def _handoff_handler(
     return ImportGuestExamDraftHandler(
         handoffs=handoffs,
         reader=env.get_handler,
-        vault_files=env.vault_files,
         codec=env.codec,
         store=env.store,
         uow=FakeUow(),
@@ -145,6 +147,7 @@ def _handoff_handler(
 def _app(env: _Env, actor: User, handoffs: InMemoryGuestDraftHandoffRepository) -> FastAPI:
     container = make_async_container(
         context={
+            Settings: _settings(),
             CuratedAppRegistryProtocol: FakeRegistry(),
             ImportGuestExamDraftHandlerProtocol: _handoff_handler(env, handoffs),
         },
@@ -161,6 +164,8 @@ def _unauthenticated_app(env: _Env, handoffs: InMemoryGuestDraftHandoffRepositor
     container = make_async_container(
         _AuthStubProvider(),
         context={
+            Settings: _settings(),
+            ClockProtocol: FixedClock(_NOW),
             CuratedAppRegistryProtocol: FakeRegistry(),
             ImportGuestExamDraftHandlerProtocol: _handoff_handler(env, handoffs),
         },
@@ -267,7 +272,7 @@ async def test_first_post_creates_one_vault_file_and_returns_the_posted_content(
         container = env.codec.parse(
             content=await env.store.load(actor=actor, vault_file=vault_file)
         )
-        assert container.document == created["saved_document"]
+        assert container.document == NativeExamDocument.model_validate(created["saved_document"])
         assert container.assets_by_id == {asset_id: payload}
         assert container.notes == ()
     finally:
@@ -292,9 +297,12 @@ async def test_repeated_post_returns_the_first_exam_without_creating_anything() 
             created = first.json()
             lineage_id = UUID(created["summary"]["lineage_id"])
 
-            # A repeated post may carry different bytes; the first exam still answers.
+            # A repeated post may carry different content; the first exam still answers.
             repeated = await _post_draft(
-                client, document.model_copy(update={"title": "Annat"}), draft_id=draft_id
+                client,
+                document.model_copy(update={"title": "Annat"}),
+                draft_id=draft_id,
+                assets={asset_id: payload},
             )
 
         assert repeated.status_code == 200, repeated.text
