@@ -309,6 +309,7 @@ def test_machine_proposed_overlay_preserves_manual_marking_follow_up() -> None:
     assert adapter_result.manual_follow_ups == ()
     qti_plan = build_examnet_qti_package_plan(
         package_name="mixed-exam",
+        assessment_title="mixed-exam",
         items=adapter_result.items,
     )
     assert qti_plan.status is ExamNetQtiPackageStatus.PASSED

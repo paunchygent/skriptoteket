@@ -56,6 +56,7 @@ export const succeededConversion: ExamWorkspaceConversionStatus = {
 /** The imported exam's document, fetched once its conversion has succeeded. */
 export function buildResponse(): ExamWorkspaceDocumentResponse {
   return {
+    export_blockers: [],
     history_cursor: "00000000-0000-4000-8000-000000000001",
     conversion: succeededConversion,
     document: buildDocument(),

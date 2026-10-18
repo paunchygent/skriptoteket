@@ -40,6 +40,7 @@ import type {
 import { useToast } from "../../../composables/useToast";
 import { triggerBrowserDownload } from "../exam-converter/browserDownload";
 import { examWorkspaceSavedAt } from "./examWorkspaceFormat";
+import type { ExamWorkspaceTitleVerdict } from "./useExamWorkspaceTitleVerdict";
 
 /** A save from elsewhere moved the head; the workspace reads the latest version in. */
 const EXPORT_STALE_COPY =
@@ -59,8 +60,18 @@ export const EXAM_WORKSPACE_EXPORT_BLOCKER_COPY: Record<ExamWorkspaceExportBlock
       "Frågan kunde inte konverteras och visas som i källan. Kontrollera den och markera den som granskad.",
   };
 
-export const EXAM_WORKSPACE_EXPORT_BLOCKED_COPY =
-  "Filen kan inte skapas ännu. Åtgärda frågorna i listan och exportera igen.";
+/** The refusal names what blocks: the title, the questions, or both. */
+export function examWorkspaceExportBlockedCopy(blockers: readonly ExamWorkspaceExportBlocker[]): string {
+  const titleBlocked = blockers.some((blocker) => blocker.item_id === null);
+  const questionsBlocked = blockers.some((blocker) => blocker.item_id !== null);
+  if (titleBlocked && questionsBlocked) {
+    return "Filen kan inte skapas ännu. Åtgärda titeln och frågorna i listan och exportera igen.";
+  }
+  if (titleBlocked) {
+    return "Filen kan inte skapas ännu. Ge provet en titel med bokstäver eller siffror och exportera igen.";
+  }
+  return "Filen kan inte skapas ännu. Åtgärda frågorna i listan och exportera igen.";
+}
 
 const EXPORT_TARGET_LABELS: Record<ExamWorkspaceExportTarget, string> = {
   docx: "Word-filen",
@@ -133,6 +144,8 @@ export type ExamWorkspaceExportSteps = {
   saveFirst: () => Promise<boolean>;
   /** Read in the latest saved version after a save elsewhere moved it. */
   readLatest: () => Promise<void>;
+  /** The export gate's refusal of the title just saved, for the title blocker. */
+  noteBlockers: ExamWorkspaceTitleVerdict;
 };
 
 export function useExamWorkspaceExports(
@@ -144,8 +157,6 @@ export function useExamWorkspaceExports(
 
   const exportingTarget = ref<ExamWorkspaceExportTarget | null>(null);
   const refusedItems = ref<Record<string, RefusedItem>>({});
-  /** The title the server last refused for having no letter or digit, until the teacher changes it. */
-  const refusedTitle = ref<string | null>(null);
   /**
    * The reasons the server gave when it last refused an export, per question,
    * until the teacher changes that question: items change by replacement, so
@@ -159,9 +170,6 @@ export function useExamWorkspaceExports(
         .map(([itemId, refused]) => [itemId, refused.reasons]),
     );
   });
-  const exportTitleRefused = computed(
-    () => refusedTitle.value !== null && refusedTitle.value === workspaceDocument.value?.title,
-  );
   const exportNotice = ref<string | null>(null);
   /** What the last export made, shown in Exportera; toasts report failures only (user rule 2026-10-17). */
   const exportResult = ref<string | null>(null);
@@ -173,7 +181,6 @@ export function useExamWorkspaceExports(
 
   function clearExportFeedback(): void {
     refusedItems.value = {};
-    refusedTitle.value = null;
     exportNotice.value = null;
     exportResult.value = null;
   }
@@ -238,21 +245,17 @@ export function useExamWorkspaceExports(
     const blockers = isApiError(error) && error.status === 422 ? parseBlockers(error.details) : [];
     if (blockers.length > 0) {
       refusedItems.value = groupBlockers(blockers, workspaceDocument.value?.items ?? []);
-      refusedTitle.value = blockers.some((blocker) => blocker.reason === "title_without_text")
-        ? (workspaceDocument.value?.title ?? null)
-        : null;
-      exportNotice.value = EXAM_WORKSPACE_EXPORT_BLOCKED_COPY;
-      toast.warning(EXAM_WORKSPACE_EXPORT_BLOCKED_COPY);
+      steps.noteBlockers(workspaceDocument.value?.title ?? "", blockers);
+      exportNotice.value = examWorkspaceExportBlockedCopy(blockers);
+      toast.warning(exportNotice.value);
     } else if (isApiError(error) && error.status === 409) {
       refusedItems.value = {};
-      refusedTitle.value = null;
-      await steps.readLatest();
+        await steps.readLatest();
       exportNotice.value = EXPORT_STALE_COPY;
       toast.warning(EXPORT_STALE_COPY);
     } else {
       refusedItems.value = {};
-      refusedTitle.value = null;
-      exportNotice.value = `${EXPORT_TARGET_LABELS[target]} kunde inte skapas. Försök igen.`;
+        exportNotice.value = `${EXPORT_TARGET_LABELS[target]} kunde inte skapas. Försök igen.`;
       toast.failure(exportNotice.value);
     }
   }
@@ -330,7 +333,6 @@ export function useExamWorkspaceExports(
   return {
     clearExportFeedback,
     exportBlockersByItemId,
-    exportTitleRefused,
     exportChecklist,
     exportDocument,
     exportNotice,

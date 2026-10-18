@@ -7,6 +7,9 @@ from skriptoteket.application.curated_apps.exam_workspace import (
     SaveExamWorkspaceDocumentRequest,
 )
 from skriptoteket.application.curated_apps.exam_workspace_exports import export_file_base_name
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_export_rules import (
+    NativeExportBlocker,
+)
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents import _Env
 from tests.unit.application.curated_apps.handlers.test_exam_workspace_exports_handler import (
@@ -118,7 +121,8 @@ async def test_title_of_only_punctuation_refuses_every_export_and_names_no_file(
             assert error.details == {
                 "blockers": [{"item_id": None, "reason": "title_without_text"}]
             }
-            assert "Ge provet en titel med bokstäver eller siffror." in error.message
+            assert "titel" in error.message
+            assert "frågor" not in error.message
 
 
 @pytest.mark.asyncio
@@ -146,3 +150,49 @@ async def test_checklist_refuses_a_title_without_letters_or_digits_and_clears_af
         ),
     )
     await handler.checklist(actor=actor, lineage_id=lineage_id, expected_revision=fixed.revision)
+
+
+@pytest.mark.parametrize(
+    ("title", "names_title", "names_questions"),
+    [("?!...", True, False), ("Prov 1", False, True), ("?!...", True, True)],
+    ids=["title-only", "questions-only", "title-and-questions"],
+)
+def test_refusal_names_only_the_objects_that_block(
+    env: _Env, title: str, names_title: bool, names_questions: bool
+) -> None:
+    document = _source_fallback_document().model_copy(update={"title": title})
+    if not names_questions:
+        document = document.model_copy(update={"items": ()})
+
+    with pytest.raises(DomainError) as refusal:
+        _export_handler(env)._raise_for_blockers(document)
+
+    assert ("titel" in refusal.value.message) is names_title
+    assert ("frågor" in refusal.value.message) is names_questions
+
+
+@pytest.mark.asyncio
+async def test_saved_document_response_carries_the_gates_title_verdict(env: _Env) -> None:
+    actor, lineage_id = await _imported_and_reviewed(env, b"")
+    head = await env.vault_files.get_document_head(user_id=actor.id, document_lineage_id=lineage_id)
+    assert head is not None
+    container = env.codec.parse(content=await env.store.load(actor=actor, vault_file=head))
+
+    responses = []
+    for revision, title in ((2, "?!..."), (3, "Prov 1")):
+        document = with_next_revision(container.document.model_copy(update={"title": title}))
+        responses.append(
+            await env.save_handler.handle(
+                actor=actor,
+                lineage_id=lineage_id,
+                request=SaveExamWorkspaceDocumentRequest(
+                    expected_revision=revision, document=document, position_step_id=lineage_id
+                ),
+            )
+        )
+        container = container.model_copy(update={"document": document})
+
+    assert responses[0].export_blockers == (
+        NativeExportBlocker(item_id=None, reason="title_without_text"),
+    )
+    assert responses[1].export_blockers == ()

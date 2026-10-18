@@ -46,7 +46,7 @@ export function arrangeStepHistory(api: HistoryApiMocks) {
     documents.set(stepId, request.document);
     state.steps = [...state.steps, stepId].slice(-10);
     state.position = stepId;
-    return { document: request.document, history: history() };
+    return { document: request.document, export_blockers: [], history: history() };
   });
   return { documents, state };
 }

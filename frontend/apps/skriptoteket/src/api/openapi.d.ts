@@ -3869,6 +3869,8 @@ export interface components {
             document: components["schemas"]["NativeExamDocument-Output"];
             /** Dropped Content */
             dropped_content: string[];
+            /** Export Blockers */
+            readonly export_blockers: components["schemas"]["NativeExportBlocker"][];
             /**
              * History Cursor
              * Format: uuid
@@ -5668,6 +5670,8 @@ export interface components {
         ExamWorkspaceDeleteResponse: {
             conversion: components["schemas"]["ExamWorkspaceConversionStatus"] | null;
             document: components["schemas"]["NativeExamDocument-Output"];
+            /** Export Blockers */
+            readonly export_blockers: components["schemas"]["NativeExportBlocker"][];
             /**
              * History Cursor
              * Format: uuid
@@ -5715,10 +5719,14 @@ export interface components {
          *     file at ``summary.version``, the baseline for Spara and dirty state.
          *     ``conversion`` is read under the same lock as the document, so its units name exactly
          *     the placeholders this revision still holds; it is None for a lineage no import created.
+         *     ``export_blockers`` is the export gate's verdict on ``document``, so the workspace shows
+         *     what the gate will refuse without a rule of its own.
          */
         ExamWorkspaceDocumentResponse: {
             conversion: components["schemas"]["ExamWorkspaceConversionStatus"] | null;
             document: components["schemas"]["NativeExamDocument-Output"];
+            /** Export Blockers */
+            readonly export_blockers: components["schemas"]["NativeExportBlocker"][];
             /**
              * History Cursor
              * Format: uuid
@@ -5900,6 +5908,11 @@ export interface components {
         /** ExamWorkspaceUndoStepResponse */
         ExamWorkspaceUndoStepResponse: {
             document: components["schemas"]["NativeExamDocument-Output"];
+            /**
+             * Export Blockers
+             * @description The export gate's verdict on the stored step, for the workspace's blocker rows.
+             */
+            readonly export_blockers: components["schemas"]["NativeExportBlocker"][];
             history: components["schemas"]["ExamWorkspaceHistoryResponse"];
         };
         /** FavoriteCuratedAppItem */
@@ -7396,6 +7409,19 @@ export interface components {
              * @enum {string}
              */
             reason: "type_conflict" | "teacher_request";
+        };
+        /**
+         * NativeExportBlocker
+         * @description One refusal; `item_id` is None for a refusal that belongs to the exam, not a question.
+         */
+        NativeExportBlocker: {
+            /** Item Id */
+            item_id: string | null;
+            /**
+             * Reason
+             * @enum {string}
+             */
+            reason: "title_without_text" | "unbuilt_question" | "machine_proposed_key_unreviewed" | "missing_points" | "missing_answer_key" | "inline_choice_option_heading" | "empty_choice" | "empty_gap_option" | "empty_match_entry";
         };
         /** NativeGap */
         "NativeGap-Input": {

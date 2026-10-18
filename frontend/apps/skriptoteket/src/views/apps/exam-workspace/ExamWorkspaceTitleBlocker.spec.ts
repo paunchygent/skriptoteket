@@ -2,17 +2,23 @@
  * Exam title export blocker (TASK-SKRIPT-40-04-05).
  *
  * Expected behavior:
- *   A title with no letter or digit is a red "Kan inte exporteras ännu" row
- *   before any click, with every format disabled; the row jumps to the title
- *   field in Provets uppgifter, and typing a valid title clears it. The
- *   server's own title refusal shows the same row until the title changes.
- *   The download uses the file name the server sent.
+ *   The workspace owns no title rule: a title the server's export gate judged
+ *   without a letter or digit (on open, Spara, the autosave after a typing
+ *   pause, or a refused export) is a red "Kan inte exporteras ännu" row before
+ *   any click, with every format disabled; the row jumps to the title field in
+ *   Provets uppgifter, and changing the title clears it at once. The refusal
+ *   names the title, not the questions. The download uses the file name the
+ *   server sent.
+ *
+ *   The server here is a test double: `judge` stands in for the gate's
+ *   `title_without_text` verdict. It is synthetic, not observed server behavior.
  */
 
 import { flushPromises } from "@vue/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ApiError } from "../../../api/client";
+import { useToastStore } from "../../../stores/toast";
 import {
   arrangeExportApis,
   exportableResponse,
@@ -25,6 +31,7 @@ import {
   unmountWrappers,
 } from "../ExamWorkspaceExportsSlice.specSupport";
 import { arrangeStepHistory } from "../ExamWorkspaceHistory.specSupport";
+import { EXAM_WORKSPACE_TYPING_PAUSE_MS } from "./useExamWorkspaceHistory";
 
 const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceHistory: vi.fn(),
@@ -50,6 +57,17 @@ const downloadMocks = vi.hoisted(() => ({ triggerBrowserDownload: vi.fn() }));
 vi.mock("../exam-converter/browserDownload", () => downloadMocks);
 
 const TITLE_ROW = "Ge provet en titel med bokstäver eller siffror";
+const TITLE_REFUSAL = {
+  code: "VALIDATION_ERROR",
+  details: { blockers: [{ item_id: null, reason: "title_without_text" }] },
+  message: "Ge provet en titel med bokstäver eller siffror.",
+  status: 422,
+} as const;
+
+/** The test double's verdict: the server's `title_without_text` for this title. */
+function judge(title: string) {
+  return /[\p{L}\p{N}]/u.test(title) ? [] : [{ item_id: null, reason: "title_without_text" as const }];
+}
 
 function importTitled(title: string): void {
   apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
@@ -57,7 +75,7 @@ function importTitled(title: string): void {
     response.document.title = title;
     response.saved_document.title = title;
     response.summary.title = title;
-    apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(response);
+    apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce({ ...response, export_blockers: judge(title) });
     return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null,
       document_revision: null, questions_total: 0, questions_done: 0, units: [] };
   });
@@ -68,15 +86,40 @@ function savedWithTitle(title: string) {
   response.document.title = title;
   response.saved_document.title = title;
   response.summary.title = title;
-  return response;
+  return { ...response, export_blockers: judge(title) };
+}
+
+/** The autosave double judges the stored step like the server does. */
+function judgeAutosaves(): void {
+  const store = apiMocks.storeExamWorkspaceUndoStep.getMockImplementation()!;
+  apiMocks.storeExamWorkspaceUndoStep.mockImplementation(async (lineage, request) => ({
+    ...(await store(lineage, request)),
+    export_blockers: judge(request.document.title),
+  }));
 }
 
 beforeEach(() => {
   arrangeExportApis({ api: apiMocks, download: downloadMocks });
   arrangeStepHistory(apiMocks);
+  judgeAutosaves();
+  apiMocks.saveExamWorkspaceDocument.mockImplementation(async (_lineage, body) =>
+    savedWithTitle(body.document.title),
+  );
 });
 
-afterEach(unmountWrappers);
+afterEach(() => {
+  vi.useRealTimers();
+  unmountWrappers();
+});
+
+async function typeTitle(wrapper: Awaited<ReturnType<typeof mountImported>>, title: string): Promise<void> {
+  await wrapper.get('[data-test="exam-workspace-metadata-title"]').setValue(title);
+}
+
+async function openTitleField(wrapper: Awaited<ReturnType<typeof mountImported>>) {
+  await wrapper.get('[data-test="exam-workspace-title"]').trigger("click");
+  await flushPromises();
+}
 
 describe("ExamWorkspaceView title export blocker", () => {
   it.each(["?!...", "  ", " - / ", "(…)"])(
@@ -99,7 +142,7 @@ describe("ExamWorkspaceView title export blocker", () => {
     },
   );
 
-  it("leaves a title with a letter or digit unblocked even when it is mostly punctuation", async () => {
+  it("leaves a title the server accepted unblocked even when it is mostly punctuation", async () => {
     importTitled("?! 7 ...");
     const wrapper = await mountImported();
 
@@ -109,11 +152,8 @@ describe("ExamWorkspaceView title export blocker", () => {
     expect(menuFormatDisabled("qti")).toBeUndefined();
   });
 
-  it("jumps to the title field, clears after a valid title, and then downloads under the server's name", async () => {
+  it("jumps to the title field, clears at once on a changed title, and then downloads under the server's name", async () => {
     importTitled("?!...");
-    apiMocks.saveExamWorkspaceDocument.mockImplementation(async (_lineage, body) =>
-      savedWithTitle(body.document.title),
-    );
     apiMocks.downloadExamWorkspaceExport.mockResolvedValue({
       blob: new Blob(["zip"]),
       contentType: "application/zip",
@@ -129,7 +169,7 @@ describe("ExamWorkspaceView title export blocker", () => {
     expect(wrapper.find('[data-test="exam-workspace-drawer-details"]').exists()).toBe(true);
     expect(document.activeElement?.getAttribute("data-test")).toBe("exam-workspace-metadata-title");
 
-    await wrapper.get('[data-test="exam-workspace-metadata-title"]').setValue("Prov 1");
+    await typeTitle(wrapper, "Prov 1");
     await flushPromises();
     await openMenu(wrapper);
 
@@ -140,30 +180,76 @@ describe("ExamWorkspaceView title export blocker", () => {
     expect(downloadMocks.triggerBrowserDownload).toHaveBeenCalledWith(expect.any(Blob), "Server Prov 1.zip");
   });
 
-  it("shows the title row again when the title is emptied of letters, then clears it", async () => {
+  it("shows the row once the autosave after the typing pause has judged an emptied title, then clears it on the next edit", async () => {
     importTitled("Prov 1");
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
     const wrapper = await mountImported();
-    await wrapper.get('[data-test="exam-workspace-title"]').trigger("click");
-    await flushPromises();
-    const input = wrapper.get('[data-test="exam-workspace-metadata-title"]');
+    await openTitleField(wrapper);
 
-    await input.setValue("!!!");
+    await typeTitle(wrapper, "!!!");
     await openMenu(wrapper);
-    expect(requirePage("exam-workspace-blocker-title").text()).toBe(TITLE_ROW);
+    expect(page("exam-workspace-blocker-title")).toBeNull();
 
-    await input.setValue("Prov 2");
+    await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_TYPING_PAUSE_MS);
+    await flushPromises();
+    expect(requirePage("exam-workspace-blocker-title").text()).toBe(TITLE_ROW);
+    expect(menuFormatDisabled("pdf")).toBe("true");
+
+    await typeTitle(wrapper, "Prov 2");
     await flushPromises();
     expect(page("exam-workspace-blocker-title")).toBeNull();
   });
 
-  it("shows the server's title refusal as the same row until the title changes", async () => {
+  it("shows the row when the server refuses an export clicked before the autosave judged the title", async () => {
+    importTitled("Prov 1");
+    apiMocks.downloadExamWorkspaceExport.mockRejectedValue(new ApiError(TITLE_REFUSAL));
+    const wrapper = await mountImported();
+    await openTitleField(wrapper);
+
+    await typeTitle(wrapper, "!!!");
+    await openMenu(wrapper);
+    expect(menuFormatDisabled("pdf")).toBeUndefined();
+    await requirePage("exam-workspace-export-pdf").trigger("click");
+    await flushPromises();
+
+    expect(downloadMocks.triggerBrowserDownload).not.toHaveBeenCalled();
+    expect(requirePage("exam-workspace-blocker-title").text()).toBe(TITLE_ROW);
+    expect(menuFormatDisabled("pdf")).toBe("true");
+  });
+
+  it("names the title, not the questions, when the title is the only refusal", async () => {
+    importTitled("Prov 1");
+    apiMocks.downloadExamWorkspaceExport.mockRejectedValue(new ApiError(TITLE_REFUSAL));
+    const wrapper = await mountImported();
+
+    await openMenu(wrapper);
+    await requirePage("exam-workspace-export-pdf").trigger("click");
+    await flushPromises();
+
+    const [notice] = vi.mocked(useToastStore().warning).mock.calls[0] ?? [];
+    expect(notice).toContain("titel");
+    expect(notice).not.toContain("frågorna");
+    expect(requirePage("exam-workspace-blocker-title").text()).toBe(TITLE_ROW);
+
+    await requirePage("exam-workspace-blocker-title").trigger("click");
+    await flushPromises();
+    await typeTitle(wrapper, "Prov 2");
+    await flushPromises();
+    await openMenu(wrapper);
+    expect(page("exam-workspace-blocker-title")).toBeNull();
+  });
+
+  it("names the title and the questions when both refuse", async () => {
     importTitled("Prov 1");
     apiMocks.downloadExamWorkspaceExport.mockRejectedValue(
       new ApiError({
-        code: "VALIDATION_ERROR",
-        details: { blockers: [{ item_id: null, reason: "title_without_text" }] },
-        message: "Provet har frågor som måste åtgärdas före export.",
-        status: 422,
+        ...TITLE_REFUSAL,
+        details: {
+          blockers: [
+            { item_id: null, reason: "title_without_text" },
+            { item_id: "item_003", reason: "unbuilt_question" },
+          ],
+        },
       }),
     );
     const wrapper = await mountImported();
@@ -172,15 +258,8 @@ describe("ExamWorkspaceView title export blocker", () => {
     await requirePage("exam-workspace-export-pdf").trigger("click");
     await flushPromises();
 
-    expect(downloadMocks.triggerBrowserDownload).not.toHaveBeenCalled();
-    expect(requirePage("exam-workspace-blocker-title").text()).toBe(TITLE_ROW);
-    expect(menuFormatDisabled("pdf")).toBe("true");
-
-    await requirePage("exam-workspace-blocker-title").trigger("click");
-    await flushPromises();
-    await wrapper.get('[data-test="exam-workspace-metadata-title"]').setValue("Prov 2");
-    await flushPromises();
-    await openMenu(wrapper);
-    expect(page("exam-workspace-blocker-title")).toBeNull();
+    const [notice] = vi.mocked(useToastStore().warning).mock.calls[0] ?? [];
+    expect(notice).toContain("titeln");
+    expect(notice).toContain("frågorna");
   });
 });

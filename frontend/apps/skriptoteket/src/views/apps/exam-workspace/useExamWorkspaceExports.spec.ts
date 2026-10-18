@@ -33,6 +33,7 @@ function mountExports(title: string) {
   const scope = effectScope();
   const exports = scope.run(() =>
     exportsModule.useExamWorkspaceExports(summary, workspaceDocument, {
+      noteBlockers: vi.fn(),
       readLatest: async () => undefined,
       saveFirst: async () => true,
     }),
@@ -46,10 +47,6 @@ describe("useExamWorkspaceExports download names", () => {
     setActivePinia(createPinia());
     vi.clearAllMocks();
     apiMocks.getExamWorkspaceExportChecklist.mockResolvedValue({ entries: [] });
-  });
-
-  it("builds no file name itself: the frontend exports no naming helper", () => {
-    expect(Object.keys(exportsModule).filter((name) => /filename|basename/i.test(name))).toEqual([]);
   });
 
   it("downloads each format under the server's name, not under one derived from the title", async () => {

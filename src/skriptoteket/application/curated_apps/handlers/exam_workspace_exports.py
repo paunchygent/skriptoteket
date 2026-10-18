@@ -210,9 +210,14 @@ class ExportExamWorkspaceDocumentHandler:
                 for blocker in blockers
                 if blocker.reason == "title_without_text"
             ]
+            has_item_blockers = any(blocker.item_id is not None for blocker in blockers)
             message = " ".join(
                 [
-                    "Provet har frågor som måste åtgärdas före export.",
+                    *(
+                        ["Provet har frågor som måste åtgärdas före export."]
+                        if has_item_blockers
+                        else []
+                    ),
                     *title_messages,
                     *heading_messages,
                 ]

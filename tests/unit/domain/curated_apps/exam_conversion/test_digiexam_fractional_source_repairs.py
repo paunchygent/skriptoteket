@@ -303,6 +303,7 @@ def test_fractional_scores_survive_qti_mapping_maximum_and_gap_allocation() -> N
     adapter_result = build_examnet_qti_items_from_digiexam_ir(exam)
     plan = build_examnet_qti_package_plan(
         package_name="fractional",
+        assessment_title="fractional",
         items=adapter_result.items,
     )
 

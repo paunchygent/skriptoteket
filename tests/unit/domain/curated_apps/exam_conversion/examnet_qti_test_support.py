@@ -46,7 +46,9 @@ def keyed_sample(name: str) -> ExamNetQtiSamplePackage:
 def write_sample(sample: ExamNetQtiSamplePackage, root: Path) -> Path:
     sample_dir = root / str(sample.name)
     sample_dir.mkdir(parents=True, exist_ok=True)
-    plan = build_examnet_qti_package_plan(package_name=sample.name, items=sample.items)
+    plan = build_examnet_qti_package_plan(
+        package_name=sample.name, assessment_title=sample.name, items=sample.items
+    )
     package_bytes: bytes | None = None
     if plan.status == ExamNetQtiPackageStatus.PASSED:
         package_bytes = QTI_PACKAGE_WRITER.build_package_bytes(plan)

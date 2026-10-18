@@ -83,6 +83,7 @@ const {
   savedRevision,
   setTags,
   summary,
+  titleWithoutText,
   workspaceDocument,
 } = editing;
 
@@ -96,6 +97,7 @@ const { showDocument } = useExamWorkspaceAddress({ isDirty, openDocument, summar
 const sourceFile = useExamWorkspaceSourceFile(importDocument, importBlocked);
 // Spara before an export is the save flow's, which is built after the exports it feeds.
 const exports = useExamWorkspaceExports(summary, workspaceDocument, {
+  noteBlockers: editing.noteExportBlockers,
   readLatest: editing.reloadDocument,
   saveFirst: () => saveFlow.saveBeforeExport(),
 });
@@ -131,9 +133,7 @@ const {
 
 const disabled = computed(() => isBusy.value || structure.running.value);
 const blockers = computed(() => [
-  ...(workspaceDocument.value
-    ? examWorkspaceTitleBlockerEntries(workspaceDocument.value.title, exports.exportTitleRefused.value)
-    : []),
+  ...examWorkspaceTitleBlockerEntries(titleWithoutText.value),
   ...examWorkspaceBlockerEntries(entries.value, items.value, readiness.value, exports.exportBlockersByItemId.value),
 ]);
 const saveFlow = useExamWorkspaceSaveFlow({

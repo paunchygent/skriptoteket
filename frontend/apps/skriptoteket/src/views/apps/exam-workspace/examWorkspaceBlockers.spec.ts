@@ -216,8 +216,8 @@ describe("export blocker fixes", () => {
 });
 
 describe("examWorkspaceTitleBlockerEntries", () => {
-  it.each(["", "  ", "?!...", "(…) – /", "\u0301"])("gives the title row for %j", (title) => {
-    expect(examWorkspaceTitleBlockerEntries(title, false)).toEqual([
+  it("gives the title row when the server judged the title without text", () => {
+    expect(examWorkspaceTitleBlockerEntries(true)).toEqual([
       {
         fix: null,
         focus: '[data-test="exam-workspace-metadata-title"]',
@@ -229,11 +229,7 @@ describe("examWorkspaceTitleBlockerEntries", () => {
     ]);
   });
 
-  it.each(["Prov", "7", "åk. 9!", "?! Ö"])("gives no row for %j", (title) => {
-    expect(examWorkspaceTitleBlockerEntries(title, false)).toEqual([]);
-  });
-
-  it("keeps the row for a title the server refused until the caller says it changed", () => {
-    expect(examWorkspaceTitleBlockerEntries("Prov", true)).toHaveLength(1);
+  it("gives no row while the title is not judged without text", () => {
+    expect(examWorkspaceTitleBlockerEntries(false)).toEqual([]);
   });
 });

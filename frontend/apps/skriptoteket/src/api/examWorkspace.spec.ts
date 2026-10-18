@@ -73,6 +73,7 @@ function buildDocument(revision: number): NativeExamDocument {
 
 function buildResponse(revision: number): ExamWorkspaceDocumentResponse {
   return {
+    export_blockers: [],
     history_cursor: "00000000-0000-4000-8000-000000000001",
     conversion: null,
     document: buildDocument(revision),
