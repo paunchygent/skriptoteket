@@ -91,7 +91,8 @@ def _expected_dropped(source: NativeExamItem, target: NativeExamItemKind) -> set
         if target not in GAP_KINDS:
             dropped.add("gaps")
         if source.kind is NativeExamItemKind.GAP_FILL:
-            dropped.add("accepted_values")
+            if target is not NativeExamItemKind.INLINE_CHOICE:
+                dropped.add("accepted_values")
         else:
             dropped.update(("options", "correct_option_id"))
     if source.kind is NativeExamItemKind.MATCHING:

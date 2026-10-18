@@ -48,7 +48,6 @@ class PostgreSQLExamAnswerKeyEnrichmentJobRepository(
         model = ExamAnswerKeyEnrichmentJobModel(
             id=job.id,
             source_kind=job.source_kind.value,
-            conversion_job_id=job.conversion_job_id,
             owner_user_id=job.owner_user_id,
             status=job.status.value,
             input_filename=job.input_filename,

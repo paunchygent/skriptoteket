@@ -51,7 +51,7 @@ vi.mock("../../api/examWorkspace", async () => ({
 
 const downloadMocks = vi.hoisted(() => ({ triggerBrowserDownload: vi.fn() }));
 
-vi.mock("./exam-converter/browserDownload", () => downloadMocks);
+vi.mock("../../utils/browserDownload", () => downloadMocks);
 
 
 beforeEach(() => {
@@ -155,7 +155,7 @@ describe("ExamWorkspaceView export download", () => {
     apiMocks.downloadExamWorkspaceExport.mockResolvedValue({
       blob: new Blob(["pdf"]),
       contentType: "application/pdf",
-      filename: null,
+      filename: "Prov.pdf",
     });
     const wrapper = await mountImported();
     await selectItemRow(wrapper, "item_002");
@@ -177,7 +177,7 @@ describe("ExamWorkspaceView export download", () => {
     apiMocks.downloadExamWorkspaceExport.mockResolvedValue({
       blob: new Blob(["docx"]),
       contentType: "application/octet-stream",
-      filename: null,
+      filename: "Prov.docx",
     });
     const wrapper = await mountImported();
 
@@ -207,7 +207,7 @@ describe("ExamWorkspaceView export download", () => {
   it("shows the export running on the format and the drawer while the save and the export run", async () => {
     const save = deferred<ReturnType<typeof exportableResponse>>();
     apiMocks.saveExamWorkspaceDocument.mockReturnValue(save.promise);
-    const download = deferred<{ blob: Blob; contentType: string; filename: null }>();
+    const download = deferred<{ blob: Blob; contentType: string; filename: string }>();
     apiMocks.downloadExamWorkspaceExport.mockReturnValue(download.promise);
     const wrapper = await mountImported();
     await selectItemRow(wrapper, "item_002");
@@ -222,7 +222,7 @@ describe("ExamWorkspaceView export download", () => {
     await flushPromises();
     expect(apiMocks.downloadExamWorkspaceExport).toHaveBeenCalledWith("lineage-1", "qti", 2);
     expect(requirePage("exam-workspace-export-running").text()).toBe("Exporterar …");
-    download.resolve({ blob: new Blob(["zip"]), contentType: "application/zip", filename: null });
+    download.resolve({ blob: new Blob(["zip"]), contentType: "application/zip", filename: "Prov.zip" });
     await flushPromises();
     expect(page("exam-workspace-export-running")).toBeNull();
     expect(requirePage("exam-workspace-export-menu-result").text()).toBe("QTI-paketet är skapat.");

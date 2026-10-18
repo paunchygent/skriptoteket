@@ -85,7 +85,7 @@ export type ChangeExamWorkspaceItemTypeResponse = Schemas["ChangeExamWorkspaceIt
 export type SavedExamExport = Schemas["VaultFile"];
 
 /** Reasons the server-side S4 export gate reports per item (422 `details.blockers`). */
-export type ExamWorkspaceExportBlockerReason =
+export type ExamWorkspaceItemExportBlockerReason =
   | "unbuilt_question"
   | "machine_proposed_key_unreviewed"
   | "missing_points"
@@ -95,10 +95,15 @@ export type ExamWorkspaceExportBlockerReason =
   | "empty_gap_option"
   | "empty_match_entry"
   | "ordering_too_few_steps"
-  | "empty_ordering_step";
+  | "empty_ordering_step"
+  | "too_few_gap_options";
+
+/** Every reason the gate reports; the title reason belongs to the exam, not a question. */
+export type ExamWorkspaceExportBlockerReason = ExamWorkspaceItemExportBlockerReason | "title_without_text";
 
 export type ExamWorkspaceExportBlocker = {
-  item_id: string;
+  /** Null for a reason that belongs to the exam. */
+  item_id: string | null;
   reason: ExamWorkspaceExportBlockerReason;
 };
 
@@ -186,14 +191,21 @@ export async function saveExamWorkspaceDocument(
   return await apiPut<ExamWorkspaceDocumentResponse>(documentPath(lineageId), body);
 }
 
+/** The server names every export after the exam title; a response without that name is a fault. */
+export type ExamWorkspaceExportDownload = ApiBlobResponse & { filename: string };
+
 export async function downloadExamWorkspaceExport(
   lineageId: string,
   target: ExamWorkspaceExportTarget,
   expectedRevision: number,
-): Promise<ApiBlobResponse> {
-  return await apiFetchBlobResponse(
+): Promise<ExamWorkspaceExportDownload> {
+  const response = await apiFetchBlobResponse(
     `${documentPath(lineageId)}/exports/${encodeURIComponent(target)}?expected_revision=${expectedRevision}`,
   );
+  if (response.filename === null) {
+    throw new Error("The export response carries no file name in Content-Disposition.");
+  }
+  return { ...response, filename: response.filename };
 }
 
 /**

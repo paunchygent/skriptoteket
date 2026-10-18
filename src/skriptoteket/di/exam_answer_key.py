@@ -1,6 +1,6 @@
 """DI bindings for exam answer-key enrichment.
 
-Enrichment job, token lease, and proposed overlay repositories, provider
+Enrichment job and token lease repositories, provider
 selection, the structured provider, and the enrichment job and workspace
 handlers.
 """
@@ -54,26 +54,17 @@ from skriptoteket.infrastructure.llm.openrouter.answer_key_profiles import (
 from skriptoteket.infrastructure.repositories.exam_answer_key_enrichment_jobs import (
     PostgreSQLExamAnswerKeyEnrichmentJobRepository,
 )
-from skriptoteket.infrastructure.repositories.exam_answer_key_proposed_overlays import (
-    PostgreSQLExamAnswerKeyProposedOverlayRepository,
-)
 from skriptoteket.infrastructure.repositories.exam_answer_key_token_leases import (
     PostgreSQLAnswerKeyTokenLeaseRepository,
 )
 from skriptoteket.protocols.clock import ClockProtocol
-from skriptoteket.protocols.conversion_hub import ConversionHubJobRepositoryProtocol
 from skriptoteket.protocols.exam_answer_key import (
     AnswerKeyLeaseStatusHandlerProtocol,
     AnswerKeyProviderSelectorProtocol,
     AnswerKeyStructuredProviderProtocol,
     AnswerKeyTokenLeaseRepositoryProtocol,
     ExamAnswerKeyEnrichmentJobRepositoryProtocol,
-    ExamAnswerKeyProposedOverlayRepositoryProtocol,
     ExamWorkspaceSuggestionJobQueryProtocol,
-)
-from skriptoteket.protocols.exam_conversion import (
-    ExamConversionArtifactStoreProtocol,
-    InProcessExamConverterProtocol,
 )
 from skriptoteket.protocols.exam_workspace import (
     FindExamWorkspaceAnswerKeySuggestionsHandlerProtocol,
@@ -110,12 +101,6 @@ class ExamAnswerKeyProvider(Provider):
             session,
             daily_token_limit=settings.LLM_ANSWER_KEY_DAILY_TOKEN_LIMIT,
         )
-
-    @provide(scope=Scope.REQUEST)
-    def exam_answer_key_proposed_overlay_repository(
-        self, session: AsyncSession
-    ) -> ExamAnswerKeyProposedOverlayRepositoryProtocol:
-        return PostgreSQLExamAnswerKeyProposedOverlayRepository(session)
 
     @provide(scope=Scope.REQUEST)
     def answer_key_lease_status_handler(
@@ -160,32 +145,22 @@ class ExamAnswerKeyProvider(Provider):
     def process_exam_answer_key_enrichment_job_handler(
         self,
         enrichment_jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
-        conversion_jobs: ConversionHubJobRepositoryProtocol,
         leases: AnswerKeyTokenLeaseRepositoryProtocol,
-        proposed_overlays: ExamAnswerKeyProposedOverlayRepositoryProtocol,
         provider: AnswerKeyStructuredProviderProtocol,
         provider_selector: AnswerKeyProviderSelectorProtocol,
-        producer: InProcessExamConverterProtocol,
-        artifacts: ExamConversionArtifactStoreProtocol,
         uow: UnitOfWorkProtocol,
         clock: ClockProtocol,
-        id_generator: IdGeneratorProtocol,
         docx_handler: ProcessExamWorkspaceDocxJobHandler,
         digiexam_handler: ProcessExamWorkspaceDigiExamJobHandler,
         content_tags_handler: ProcessExamContentSuggestionsHandler,
     ) -> ProcessExamAnswerKeyEnrichmentJobHandler:
         return ProcessExamAnswerKeyEnrichmentJobHandler(
             enrichment_jobs=enrichment_jobs,
-            conversion_jobs=conversion_jobs,
             leases=leases,
-            proposed_overlays=proposed_overlays,
             provider=provider,
             provider_selector=provider_selector,
-            producer=producer,
-            artifacts=artifacts,
             uow=uow,
             clock=clock,
-            id_generator=id_generator,
             docx_handler=docx_handler,
             digiexam_handler=digiexam_handler,
             content_tags_handler=content_tags_handler,

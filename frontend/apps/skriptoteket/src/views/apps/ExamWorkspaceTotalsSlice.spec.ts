@@ -35,7 +35,7 @@ vi.mock("../../api/examWorkspace", async () => ({
   getExamCourseCatalog: (await import("../../test/examCourseCatalog")).getExamCourseCatalog,
 }));
 const downloadMocks = vi.hoisted(() => ({ triggerBrowserDownload: vi.fn() }));
-vi.mock("./exam-converter/browserDownload", () => downloadMocks);
+vi.mock("../../utils/browserDownload", () => downloadMocks);
 
 const succeeded: ExamWorkspaceConversionStatus = {
   job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null, summary: null,

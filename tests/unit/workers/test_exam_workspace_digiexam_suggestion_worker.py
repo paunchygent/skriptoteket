@@ -124,9 +124,6 @@ async def test_digiexam_worker_keeps_item_identity_review_and_daily_lease(source
     usage = await harness.leases.day_usage(utc_day=NOW.date())
     assert usage.charged_tokens == 17 * len(eligible)
     assert document.model_dump(mode="json") == before
-    assert harness.producer.calls == 0
-    assert harness.proposed_overlays.records == []
-    assert harness.conversion_jobs.jobs == {}
 
 
 async def test_digiexam_worker_refuses_exhausted_daily_lease_before_any_model_call():
@@ -140,4 +137,3 @@ async def test_digiexam_worker_refuses_exhausted_daily_lease_before_any_model_ca
     assert finished.last_error == "daily_token_lease_exhausted"
     assert model.requests == []
     assert finished.workspace_suggestions_json is None
-    assert harness.producer.calls == 0

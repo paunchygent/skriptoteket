@@ -59,7 +59,7 @@ vi.mock("../../api/examWorkspace", async () => ({
 
 const downloadMocks = vi.hoisted(() => ({ triggerBrowserDownload: vi.fn() }));
 
-vi.mock("./exam-converter/browserDownload", () => downloadMocks);
+vi.mock("../../utils/browserDownload", () => downloadMocks);
 
 
 beforeEach(() => {
@@ -248,12 +248,12 @@ describe("ExamWorkspaceView export checklist", () => {
     await openChecklistDrawer(wrapper);
     expect(findLossEntry(wrapper, "Förklara fotosyntesen.")).toBeDefined();
 
-    const pdfDownload = deferred<{ blob: Blob; contentType: string; filename: string | null }>();
+    const pdfDownload = deferred<{ blob: Blob; contentType: string; filename: string }>();
     apiMocks.downloadExamWorkspaceExport.mockReturnValueOnce(pdfDownload.promise);
     await exportFromMenu(wrapper, "pdf");
     expect(findLossEntry(wrapper, "Förklara fotosyntesen.")).toBeUndefined();
 
-    pdfDownload.resolve({ blob: new Blob(["pdf"]), contentType: "application/pdf", filename: null });
+    pdfDownload.resolve({ blob: new Blob(["pdf"]), contentType: "application/pdf", filename: "Prov.pdf" });
     await flushPromises();
     expect(findLossEntry(wrapper, "Förklara fotosyntesen.")).toBeUndefined();
   });
@@ -270,6 +270,7 @@ describe("ExamWorkspaceView export checklist", () => {
     await saveDocument(wrapper);
 
     const freshChecklist: ExamWorkspaceExportChecklistResponse = {
+      inline_choice_min_options: 2,
       entries: [
         {
           kind: "all_or_nothing",

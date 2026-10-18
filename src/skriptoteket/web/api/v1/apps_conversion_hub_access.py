@@ -6,7 +6,7 @@ Purpose:
 
 Relationships:
   - Used by Conversion Hub job/artifact routes.
-  - Used by Exam Converter correction-session routes under the same app.
+  - Used by document converter, transcript and exam workspace routes under the same app.
 """
 
 from skriptoteket.domain.errors import not_found

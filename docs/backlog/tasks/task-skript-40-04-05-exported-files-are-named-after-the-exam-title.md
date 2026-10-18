@@ -7,14 +7,13 @@ owners:
   - kind: service
     id: skriptoteket
 created: "2026-10-18"
-status: ready
+status: in_progress
 closeout_review:
   record: inline
   status: not_started
 task_kind: story
 acceptance_criteria:
-  - QTI, PDF and DOCX exports and their Mina filer copies are named after the exam title
-    without punctuation plus the extension
+  - QTI, PDF and DOCX exports and their Mina filer copies are named after the exam title without punctuation plus the extension
 story: ST-SKRIPT-40-04
 backlog_document_profile: contract-derived
 ---

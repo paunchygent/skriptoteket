@@ -306,7 +306,7 @@ def test_auth_helper_can_opt_into_bounded_huleedu_rate_limit_backoff(
         base_url="https://skriptoteket.hule.education",
         email="teacher@example.invalid",
         password="secret-password",
-        next_path="/apps/exam-converter",
+        next_path="/apps/exam-workspace",
         success_heading_pattern=r"Konvertera prov",
         success_selector='[data-test="proof-ready"]',
         attempts=2,
@@ -317,8 +317,8 @@ def test_auth_helper_can_opt_into_bounded_huleedu_rate_limit_backoff(
     assert state.waits == [1_250]
     assert [response.status for response in state.submitted_responses] == [400, 200]
     assert state.visited_urls == [
-        "https://skriptoteket.hule.education/auth/login?next=/apps/exam-converter",
-        "https://skriptoteket.hule.education/auth/login?next=/apps/exam-converter",
+        "https://skriptoteket.hule.education/auth/login?next=/apps/exam-workspace",
+        "https://skriptoteket.hule.education/auth/login?next=/apps/exam-workspace",
     ]
 
 
@@ -344,7 +344,7 @@ def test_auth_helper_rate_limit_failure_text_redacts_credentials(
             base_url="https://skriptoteket.hule.education",
             email="teacher@example.invalid",
             password="secret-password",
-            next_path="/apps/exam-converter",
+            next_path="/apps/exam-workspace",
             success_heading_pattern=r"Konvertera prov",
             success_selector='[data-test="proof-ready"]',
             attempts=1,

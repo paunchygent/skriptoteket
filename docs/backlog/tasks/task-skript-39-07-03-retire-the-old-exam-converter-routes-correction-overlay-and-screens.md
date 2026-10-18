@@ -176,12 +176,13 @@ behave as before.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term                                                                                                                                                                                                                                         |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| R1  | The separate DigiExam converter views get no layout work and retire when ST-SKRIPT-39-07 lands; the exam workspace is the main exam conversion and editing app (EPIC-SKRIPT-39 E16, user 2026-10-12).                                                         |
-| R2  | The old correction overlay, correction sessions and their routes retire with the old converter (G21, user 2026-10-17).                                                                                                                                        |
-| R3  | The DigiExam entry in the Öppna drawer is built by ST-SKRIPT-40-04; this story ships no workspace UI (G2, user 2026-10-17).                                                                                                                                   |
-| R4  | The public guest exam converter (ADR-SKRIPT-0085) stays with its routes and modules; this story retires only the signed-in old converter, its correction overlay and correction sessions; a later decision covers the guest converter (user 2026-10-17, G27). |
+| ID  | Decided contract term                                                                                                                                                                                                                                                                                        |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| R1  | The separate DigiExam converter views get no layout work and retire when ST-SKRIPT-39-07 lands; the exam workspace is the main exam conversion and editing app (EPIC-SKRIPT-39 E16, user 2026-10-12).                                                                                                        |
+| R2  | The old correction overlay, correction sessions and their routes retire with the old converter (G21, user 2026-10-17).                                                                                                                                                                                       |
+| R3  | The DigiExam entry in the Öppna drawer is built by ST-SKRIPT-40-04; this story ships no workspace UI (G2, user 2026-10-17).                                                                                                                                                                                  |
+| R4  | The public guest exam converter (ADR-SKRIPT-0085) stays with its routes and modules; this story retires only the signed-in old converter, its correction overlay and correction sessions; a later decision covers the guest converter (user 2026-10-17, G27).                                                |
+| R5  | Transcript mode leaves the old converter: `ConversionHubTranscriptHost` mounts directly on `/apps/audio-transcription`, the home transcript card stays `unavailable`, and `ExamConverterAuthenticatedView` is removed with the rest (user decision 2026-10-18, option (a) of the transcript stop condition). |
 
 ## Progress
 
@@ -189,3 +190,29 @@ behave as before.
   home `Provhantering` card links to `/apps/exam-workspace`, and the signed-in
   `documents.conversion_hub` host opens the exam workspace; the public guest
   host is unchanged. The removals follow.
+- 2026-10-18, removal commit: the signed-in `exam-converter` API routes, the
+  correction-session routes, handlers, protocol, repository, model and domain
+  module, the old conversion and product handlers, the correction overlay
+  modules (`digiexam_ingestion_overlay*`, `digiexam_effective_item_patch`,
+  `digiexam_point_correction`), `exam_conversion_correction_source.py`, the
+  `dxe` enrichment lane and source kind, and the machine-proposed overlay
+  records are removed. Migration `e8a3c5f1b7d2` drops
+  `exam_converter_correction_sessions`, `exam_converter_correction_intents` and
+  `exam_answer_key_proposed_overlays`, deletes `dxe` enrichment jobs, and drops
+  `exam_answer_key_enrichment_jobs.conversion_job_id`, the `source_kind`
+  default and `conversion_hub_jobs.submission_idempotency_key`; these became
+  unused once the old converter was gone. The frontend old converter view, its
+  modules, API clients, routes and help entry are removed;
+  `/apps/audio-transcription` mounts `ConversionHubTranscriptHost` (R5).
+  `browserDownload.ts` moved to `frontend/apps/skriptoteket/src/utils/`; the
+  upload panel and target types moved into `views/apps/exam-converter-public/`.
+  ADR-SKRIPT-0087 is superseded.
+- Kept under the removal rule, because the public guest exam converter uses
+  them: `InProcessExamConversionProducer` (now with only the public inputs) and
+  `exam_conversion_review_artifacts.py` (public bundle and manifest). The
+  generic Conversion Hub job routes stay: no frontend caller exists, but the
+  document converter and transcript lanes share their `conversion_hub_jobs`
+  handlers, so removing them is a separate decision.
+- One public bundle change: the manual-follow-up `qti_validation_report_v1`
+  inside the public bundle no longer carries `"retry_identity": null`; only the
+  removed dxe lane set it, and no reader uses it.

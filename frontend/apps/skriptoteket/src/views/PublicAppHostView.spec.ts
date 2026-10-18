@@ -10,9 +10,10 @@ import { defineComponent, nextTick } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
 
-import { DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION } from "../api/examConverterContracts";
 import PublicAppHostView from "./PublicAppHostView.vue";
 import type { components } from "../api/openapi";
+
+const DIGIEXAM_MIGRATION_BUNDLE_SCHEMA_VERSION = "digiexam_migration_bundle_v3";
 
 type PublicAppBootstrapResponse = components["schemas"]["PublicAppBootstrapResponse"];
 type PublicAppCapabilityBootstrapResponse =

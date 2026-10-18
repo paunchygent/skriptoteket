@@ -30,6 +30,7 @@ export function useExamWorkspaceEditing() {
     // Not `isBusy`: that includes the replacing lock the history's own reads hold.
     isBlocked: () => document.isOperationBusy.value,
     lineageId,
+    noteExportBlockers: document.noteExportBlockers,
     onConflict: reload,
     replaceCopy: document.replaceCopy,
     savedRevision: () => document.savedRevision.value,

@@ -43,6 +43,7 @@ import { useExamWorkspaceSaveArrivals } from "./useExamWorkspaceSaveArrivals";
 import { useExamWorkspaceRename } from "./useExamWorkspaceRename";
 import { RELOAD_FAILURE_COPY, useExamWorkspaceSave } from "./useExamWorkspaceSave";
 import { useExamWorkspaceSavedList } from "./useExamWorkspaceSavedList";
+import { useExamWorkspaceTitleVerdict } from "./useExamWorkspaceTitleVerdict";
 
 export { EXAM_WORKSPACE_CONVERSION_POLL_MS } from "./useExamWorkspaceConversion";
 
@@ -80,6 +81,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
   const historyCursor = ref<string | null>(null);
   const notes = ref<string[]>([]);
   const openExam = shallowRef<ExamWorkspaceOpening | null>(null);
+  const { noteExportBlockers, titleWithoutText } = useExamWorkspaceTitleVerdict(workspaceDocument);
   const isDirty = computed(() => !sameDocument(workspaceDocument.value, savedDocument.value));
   /** The saved version the open copy stands on. */
   const savedRevision = computed(() => savedDocument.value?.revision ?? null);
@@ -156,6 +158,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
       openExam.value = { lineageId: response.summary.lineage_id };
     }
     workspaceDocument.value = local;
+    noteExportBlockers(response.document.title, response.export_blockers);
     serverDocument.value = response.document;
     savedDocument.value = response.saved_document;
     summary.value = response.summary;
@@ -439,6 +442,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
     replaceCopy,
     isOpen,
     loadSavedDocuments,
+    noteExportBlockers,
     notes,
     openDocument,
     openExam: computed(() => openExam.value),
@@ -460,6 +464,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
     selectedItem,
     selectedItemId,
     summary,
+    titleWithoutText,
     updateItemGapValues: keying.updateItemGapValues,
     removeItemAutomaticValue: keying.removeItemAutomaticValue,
     workspaceDocument,

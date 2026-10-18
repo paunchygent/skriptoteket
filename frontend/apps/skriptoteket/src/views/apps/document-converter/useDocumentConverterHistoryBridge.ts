@@ -15,7 +15,7 @@
 
 import { watch, type Ref } from "vue";
 
-import { triggerBrowserDownload } from "../exam-converter/browserDownload";
+import { triggerBrowserDownload } from "../../../utils/browserDownload";
 import {
   downloadDocumentConverterJobArtifact,
   saveDocumentConverterJobArtifact,

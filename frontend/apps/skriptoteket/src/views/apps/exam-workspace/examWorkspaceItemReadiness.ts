@@ -8,17 +8,18 @@
  *   this mirrors its reasons, including the unbuilt question (an explicit
  *   source fallback or an item missing a picture that the teacher has not
  *   marked reviewed; a converted item that needs review does not block),
- *   dropdown option headings, and choices, gap options or matching entries
- *   without non-whitespace text (an ordering question names its blank
- *   steps "empty_ordering_step" and needs at least two steps, otherwise
- *   "ordering_too_few_steps"). Save validity remains separate. Readiness
+ *   dropdown option headings, a dropdown with fewer than two options, and
+ *   choices, gap options or matching entries without non-whitespace text (an
+ *   ordering question names its blank steps "empty_ordering_step" and needs at
+ *   least two steps, otherwise "ordering_too_few_steps"). Save validity remains
+ *   separate. Readiness
  *   also adds the item states the save refuses:
  *   a partial gap key, an incomplete matching key, invalid points, and
  *   free-text criteria that lack text, carry invalid points, are not the
  *   item's points, or sit on a non-free-text item.
  *
  * Relationships:
- *   - Mirrors `native_export_blockers` in
+ *   - Mirrors the per-item rules of `native_export_blockers` in
  *     `domain/curated_apps/exam_workspace/native_exam_export_rules.py`.
  *   - Reads the save rules from `examWorkspaceItemSaveRules` and
  *     `examWorkspaceAnswerKeyRules`.
@@ -27,11 +28,15 @@
  */
 
 import type {
-  ExamWorkspaceExportBlockerReason,
+  ExamWorkspaceExportChecklistResponse,
+  ExamWorkspaceItemExportBlockerReason,
+  NativeExamGap,
   NativeExamItem,
   NativeExamItemKind,
 } from "../../../api/examWorkspace";
 import {
+  dropdownGapsWithoutCorrectOption,
+  GAP_WITHOUT_CORRECT_OPTION_GUIDANCE,
   INCOMPLETE_MATCH_KEY_GUIDANCE,
   isIncompleteMatchingItem,
   isPartiallyKeyedGapItem,
@@ -61,11 +66,24 @@ const KEYED_KINDS = new Set<NativeExamItemKind>([
   "single_choice",
 ]);
 
+// The server's export rule owns this minimum and publishes it on the export
+// checklist contract; a changed server value fails this typecheck.
+const INLINE_CHOICE_MIN_OPTIONS =
+  2 satisfies ExamWorkspaceExportChecklistResponse["inline_choice_min_options"];
+
+/** Dropdown gaps with fewer options than the export allows (D3). */
+export function dropdownGapsWithTooFewOptions(item: NativeExamItem): NativeExamGap[] {
+  return item.kind === "inline_choice"
+    ? item.gaps.filter((gap) => gap.options.length < INLINE_CHOICE_MIN_OPTIONS)
+    : [];
+}
+
 export type ExamWorkspaceReadinessReason =
-  | ExamWorkspaceExportBlockerReason
+  | ExamWorkspaceItemExportBlockerReason
   | "criteria_on_wrong_kind"
   | "criteria_points_mismatch"
   | "empty_criterion_text"
+  | "gap_without_correct_option"
   | "incomplete_match_key"
   | "invalid_criterion_points"
   | "negative_points"
@@ -76,6 +94,7 @@ const READINESS_COPY: Record<ExamWorkspaceReadinessReason, string> = {
   criteria_on_wrong_kind: CRITERIA_ON_WRONG_KIND_GUIDANCE,
   criteria_points_mismatch: CRITERIA_POINTS_MISMATCH_GUIDANCE,
   empty_criterion_text: EMPTY_CRITERION_TEXT_GUIDANCE,
+  gap_without_correct_option: GAP_WITHOUT_CORRECT_OPTION_GUIDANCE,
   incomplete_match_key: INCOMPLETE_MATCH_KEY_GUIDANCE,
   invalid_criterion_points: INVALID_CRITERION_POINTS_GUIDANCE,
   negative_points: NEGATIVE_POINTS_GUIDANCE,
@@ -104,6 +123,10 @@ export function examWorkspaceItemReadiness(item: NativeExamItem): ExamWorkspaceR
   }
   if (isPartiallyKeyedGapItem(item)) {
     reasons.push("partial_gap_key");
+  }
+  // An absent key already reports missing_answer_key; a claimed key needs every gap keyed.
+  if (item.answer_key.origin !== "absent" && dropdownGapsWithoutCorrectOption(item).length > 0) {
+    reasons.push("gap_without_correct_option");
   }
   if (isIncompleteMatchingItem(item)) {
     reasons.push("incomplete_match_key");
@@ -136,6 +159,9 @@ export function examWorkspaceItemReadiness(item: NativeExamItem): ExamWorkspaceR
     ))
   ) {
     reasons.push("inline_choice_option_heading");
+  }
+  if (dropdownGapsWithTooFewOptions(item).length > 0) {
+    reasons.push("too_few_gap_options");
   }
   if (hasEmptyCriterionText(item)) {
     reasons.push("empty_criterion_text");

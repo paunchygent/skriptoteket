@@ -47,6 +47,7 @@ import type { NativeExamDocument } from "../../../api/examWorkspace";
 import { useToast } from "../../../composables/useToast";
 import { sameDocument } from "./examWorkspaceConversionMerge";
 import { examWorkspaceSaveRefusalCopy } from "./examWorkspaceItemSaveRules";
+import type { ExamWorkspaceTitleVerdict } from "./useExamWorkspaceTitleVerdict";
 
 export const EXAM_WORKSPACE_TYPING_PAUSE_MS = 900;
 
@@ -71,6 +72,8 @@ export type ExamWorkspaceHistoryDeps = {
   replaceCopy: <T>(run: () => Promise<T>) => Promise<T>;
   /** Put a stored step's document in front of the teacher. */
   install: (document: NativeExamDocument) => void;
+  /** The export gate's verdict on a stored step, for the title blocker. */
+  noteExportBlockers: ExamWorkspaceTitleVerdict;
   /** Another tab moved the history; reload the exam. */
   onConflict: () => Promise<void>;
 };
@@ -183,9 +186,13 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
    * Stores `snapshot`, or the working copy: "stored" when the server's newest
    * step now holds it (or nothing needed storing), "refused" when the save
    * rules reject it, so it can never be a step, and "failed" otherwise.
+   * The typing timer belongs to the working copy: storing it makes the pause
+   * moot, while storing an owed snapshot leaves typing's pause running.
    */
   async function store(settle = false, snapshot: NativeExamDocument | null = null): Promise<StoreOutcome> {
-    clearTimer();
+    if (snapshot === null) {
+      clearTimer();
+    }
     const lineageId = deps.lineageId();
     const cursor = deps.historyCursor.value;
     if (lineageId && cursor && position.value === null) {
@@ -215,6 +222,7 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
       if (deps.lineageId() !== lineageId) {
         return "failed";
       }
+      deps.noteExportBlockers(response.document.title, response.export_blockers);
       ownCursor = response.history.cursor;
       deps.historyCursor.value = response.history.cursor;
       baselineId.value = response.history.baseline_step_id;

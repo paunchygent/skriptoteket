@@ -19,16 +19,23 @@
  *   - Reads shapes from `api/examWorkspace.ts`.
  */
 
-import type { NativeExamItem } from "../../../api/examWorkspace";
+import type { NativeExamGap, NativeExamItem } from "../../../api/examWorkspace";
 
 export const PARTIAL_GAP_KEY_GUIDANCE =
   "Fyll i godkända svar för varje lucka, eller lämna alla luckor tomma om frågan ska sakna facit.";
+
+export const GAP_WITHOUT_CORRECT_OPTION_GUIDANCE = "Markera rätt alternativ i varje rullista.";
 
 export const INCOMPLETE_MATCH_KEY_GUIDANCE =
   "Kryssa minst en kategori för varje rad, eller lämna alla rader utan kryss om frågan ska sakna facit.";
 
 function hasKeyedOrigin(item: NativeExamItem): boolean {
   return item.answer_key.origin !== "absent" && item.answer_key.origin !== "not_applicable";
+}
+
+/** Dropdown gaps with no option marked correct; the server refuses to save them (D3). */
+export function dropdownGapsWithoutCorrectOption(item: NativeExamItem): NativeExamGap[] {
+  return item.kind === "inline_choice" ? item.gaps.filter((gap) => gap.correct_option_id === null) : [];
 }
 
 /** Keyed gap items need accepted values in every gap; the server refuses partial keys. */

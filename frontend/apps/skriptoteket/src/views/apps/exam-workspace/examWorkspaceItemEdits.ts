@@ -265,12 +265,52 @@ export function withGapValues(
   };
 }
 
+/** Replace one dropdown gap's options and its correct option; the same item when nothing changes. */
+export function withGapOptions(
+  item: NativeExamItem,
+  gapId: string,
+  options: NativeExamChoice[],
+  correctOptionId: string | null,
+): NativeExamItem {
+  const current = item.gaps.find((gap) => gap.gap_id === gapId);
+  if (
+    !current ||
+    (current.correct_option_id === correctOptionId &&
+      current.options.length === options.length &&
+      current.options.every((option, index) => option === options[index]))
+  ) {
+    return item;
+  }
+  const gaps = item.gaps.map((gap) =>
+    gap.gap_id === gapId ? { ...gap, options, correct_option_id: correctOptionId } : gap,
+  );
+  // Only a changed correct option is the teacher's decision; a text, add,
+  // remove or reorder edit leaves an AI or machine-proposed key unapproved.
+  if (current.correct_option_id === correctOptionId) {
+    return { ...item, gaps };
+  }
+  const hasKeyData = gaps.some((gap) => gap.correct_option_id !== null);
+  return {
+    ...item,
+    answer_key: { ...item.answer_key, origin: teacherKeyOrigin(hasKeyData) },
+    gaps,
+  };
+}
+
+/**
+ * The AI interpretation can be undone for every kind except a dropdown, which
+ * has no valid keyless state.
+ */
+export function canUndoInterpretation(item: NativeExamItem): boolean {
+  return item.answer_key.origin === "ai_interpreted" && item.kind !== "inline_choice";
+}
+
 /**
  * Remove the conversion interpretation without losing the teacher's source
  * facit. A spelling the teacher suppressed stays suppressed.
  */
 export function withoutInterpretedKey(item: NativeExamItem): NativeExamItem {
-  if (item.answer_key.origin !== "ai_interpreted") {
+  if (!canUndoInterpretation(item)) {
     return item;
   }
   return withGridPoints({

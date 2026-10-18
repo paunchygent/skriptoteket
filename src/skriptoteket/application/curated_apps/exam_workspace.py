@@ -5,12 +5,17 @@ from enum import StrEnum
 from typing import Annotated, Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator
 
 from skriptoteket.domain.curated_apps.exam_workspace.exam_course_catalog import ExamCourse
 from skriptoteket.domain.curated_apps.exam_workspace.exam_index import ExamListOrdering
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_export_rules import (
+    InlineChoiceMinOptions,
+    NativeExportBlocker,
+    native_export_blockers,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
@@ -79,6 +84,8 @@ class ExamWorkspaceDocumentResponse(BaseModel):
     file at ``summary.version``, the baseline for Spara and dirty state.
     ``conversion`` is read under the same lock as the document, so its units name exactly
     the placeholders this revision still holds; it is None for a lineage no import created.
+    ``export_blockers`` is the export gate's verdict on ``document``, so the workspace shows
+    what the gate will refuse without a rule of its own.
     """
 
     model_config = ConfigDict(frozen=True)
@@ -89,6 +96,11 @@ class ExamWorkspaceDocumentResponse(BaseModel):
     history_cursor: UUID
     notes: tuple[str, ...] = ()
     conversion: ExamWorkspaceConversionStatus | None
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def export_blockers(self) -> tuple[NativeExportBlocker, ...]:
+        return native_export_blockers(self.document)
 
 
 class ExamWorkspaceDocumentGroup(BaseModel):
@@ -271,8 +283,13 @@ ExamWorkspaceExportChecklistEntry = Annotated[
 
 
 class ExamWorkspaceExportChecklistResponse(BaseModel):
-    """What an Exam.net import of this document's QTI package loses (Q15-Q17)."""
+    """What an Exam.net import of this document's QTI package loses (Q15-Q17).
+
+    ``inline_choice_min_options`` publishes the export rule's dropdown minimum, so the
+    workspace readiness mirror reads it from this contract instead of restating it.
+    """
 
     model_config = ConfigDict(frozen=True)
 
     entries: tuple[ExamWorkspaceExportChecklistEntry, ...]
+    inline_choice_min_options: InlineChoiceMinOptions

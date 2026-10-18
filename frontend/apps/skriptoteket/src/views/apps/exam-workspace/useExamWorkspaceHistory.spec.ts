@@ -73,7 +73,7 @@ function fakeServer(baseline: NativeExamDocument) {
       state.steps = [...steps, stepId].slice(-MAX_STEPS);
       state.cursor = stepId;
       state.position = stepId;
-      return { document: request.document, history: history() };
+      return { document: request.document, export_blockers: [], history: history() };
     },
   );
   return state;
@@ -103,6 +103,7 @@ function setup(failFirstLoad = false) {
       isReplacing: () => false,
       replaceCopy: (run) => run(),
       lineageId: () => "lineage-1",
+      noteExportBlockers: vi.fn(),
       onConflict,
       savedRevision: () => baseline.revision,
       serverDocument,

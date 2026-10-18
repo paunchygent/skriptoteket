@@ -68,6 +68,8 @@ const SHORT_PROBLEM: Record<ExamWorkspaceReadinessReason, string> = {
   negative_points: "negativa poäng",
   ordering_too_few_steps: "för få steg",
   partial_gap_key: "lucka utan svar",
+  gap_without_correct_option: "rullista utan rätt svar",
+  too_few_gap_options: "rullista med färre än två alternativ",
   unbuilt_question: "kunde inte konverteras",
 };
 

@@ -29,10 +29,14 @@ from scripts._playwright_config import get_config
 
 ARTIFACT_ROOT = Path(".artifacts/authenticated-app-identity-split")
 IDENTITY_PATHS = {
-    "exam": "/apps/exam-converter",
+    "exam": "/apps/exam-workspace",
     "transcript": "/apps/audio-transcription",
 }
-SUCCESS_HEADING_PATTERN = r"Konvertera prov|Transkribera samtal|Välj inspelning"
+SUCCESS_HEADING_PATTERN = r"Transkribera samtal|Välj inspelning"
+SUCCESS_SELECTORS = {
+    "exam": '[data-test="exam-workspace-frame"]',
+    "transcript": '[data-test="transcript-host-layout"]',
+}
 VIEWPORT = {"label": "desktop", "width": 1512, "height": 900}
 JsonValue = str | int | float | bool | None | dict[str, "JsonValue"] | list["JsonValue"]
 JsonObject = dict[str, JsonValue]
@@ -85,8 +89,7 @@ def _assert_url_mode(page: Page, *, mode: str) -> None:
 def _assert_exam_mode(page: Page) -> None:
     expect(page.locator('[data-test="conversion-hub-mode-exam"]')).to_have_count(0)
     expect(page.locator('[data-test="conversion-hub-mode-transcript"]')).to_have_count(0)
-    expect(page.locator('[data-test="exam-converter-workflow-rail-shell"]')).to_be_visible()
-    expect(page.locator('[data-test="exam-converter-workspace-shell"]')).to_be_visible()
+    expect(page.locator('[data-test="exam-workspace-frame"]')).to_be_visible()
     expect(page.locator('[data-test="transcript-host-layout"]')).to_have_count(0)
 
 
@@ -96,7 +99,7 @@ def _assert_transcript_mode(page: Page) -> None:
     expect(page.locator('[data-test="transcript-host-layout"]')).to_be_visible()
     expect(page.locator('[data-test="transcript-workflow-rail-shell"]')).to_be_visible()
     expect(page.locator('[data-test="transcript-workspace-shell"]')).to_be_visible()
-    expect(page.locator('[data-test="exam-converter-workflow-rail-shell"]')).to_have_count(0)
+    expect(page.locator('[data-test="exam-workspace-frame"]')).to_have_count(0)
 
 
 def _assert_mode(page: Page, *, mode: str) -> None:
@@ -125,6 +128,7 @@ def _open_authenticated_mode(
             password=password,
             next_path=next_path,
             success_heading_pattern=SUCCESS_HEADING_PATTERN,
+            success_selector=SUCCESS_SELECTORS[mode],
             failure_artifacts_dir=artifact_dir,
             failure_screenshot_name=f"login-failure-{mode}.png",
             success_timeout_ms=45_000,

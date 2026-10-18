@@ -2,8 +2,7 @@
 
 Purpose:
     Give the workspace-lane enrichment worker tests (TASK-SKRIPT-39-04-07) a
-    fixed clock instant, a conversion producer double that must never be
-    called, unkeyed choice-question documents, a harness wiring the
+    fixed clock instant, unkeyed choice-question documents, a harness wiring the
     enrichment processor to in-memory fakes, and scripted structured
     providers that answer or fail one call at a time.
 
@@ -26,10 +25,6 @@ from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeySourceKind,
     enqueue_workspace_enrichment_job,
 )
-from skriptoteket.application.curated_apps.exam_conversion import (
-    ExamConversionStoredArtifact,
-)
-from skriptoteket.application.curated_apps.handlers.conversion_hub_jobs import ConversionHubUpload
 from skriptoteket.application.curated_apps.handlers.exam_answer_key_enrichment_jobs import (
     ProcessExamAnswerKeyEnrichmentJobHandler,
 )
@@ -49,12 +44,6 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
     StructuredLLMRequest,
     StructuredLLMResponse,
     StructuredLLMUsage,
-)
-from skriptoteket.domain.curated_apps.exam_conversion.digiexam_contracts import (
-    DigiExamAnswerKeyProvenance,
-)
-from skriptoteket.domain.curated_apps.exam_converter_correction_sessions import (
-    SourceBoundCorrectionIntent,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.answer_key_view import (
     answer_key_item_views,
@@ -90,13 +79,9 @@ from skriptoteket.infrastructure.llm.answer_key_provider_selection import (
 from tests.fixtures.application_fixtures import FakeUow
 from tests.unit.application.curated_apps.handlers.answer_key_enrichment_test_support import (
     FixedClock,
-    InMemoryConversionHubJobRepository,
     InMemoryEnrichmentJobRepository,
     InMemoryLeaseRepository,
-    InMemoryProposedOverlayRepository,
-    RecordingArtifactStore,
     StubProvider,
-    UUIDGenerator,
     _route,
     docx_job_handler,
 )
@@ -109,34 +94,6 @@ from tests.unit.application.curated_apps.handlers.vault_file_repository_test_sup
 from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders import plain_body
 
 NOW = datetime(2026, 10, 13, 12, 0, 0, tzinfo=UTC)
-
-
-class CountingProducer:
-    """DXE-only producer double that must never be called on this lane."""
-
-    def __init__(self) -> None:
-        self.calls = 0
-
-    async def convert(
-        self,
-        *,
-        job_id: UUID,
-        upload: ConversionHubUpload,
-        overlay_bytes: bytes | None,
-        proposal_overlay_bytes: bytes | None = None,
-        proposal_provider_profile_id: str | None = None,
-        proposal_model: str | None = None,
-        teacher_answer_key_item_ids: frozenset[str] = frozenset(),
-        correction_intents: tuple[SourceBoundCorrectionIntent, ...] = (),
-        enrichment_failure_code: str | None = None,
-        retry_identity: str | None = None,
-        correlation_id: str | None,
-        overlay_key_provenance: DigiExamAnswerKeyProvenance = (
-            DigiExamAnswerKeyProvenance.MANUAL_TEACHER_KEY
-        ),
-    ) -> ExamConversionStoredArtifact:
-        self.calls += 1
-        raise AssertionError("Workspace enrichment must never call the conversion producer.")
 
 
 def unkeyed_choice_document(*, document_id: UUID) -> NativeExamDocument:
@@ -182,13 +139,9 @@ class WorkspaceHarness:
         daily_token_limit: int = 1_000_000,
     ) -> None:
         self.owner_user_id = uuid4()
-        self.conversion_jobs = InMemoryConversionHubJobRepository()
         self.enrichment_jobs = InMemoryEnrichmentJobRepository()
         self.leases = InMemoryLeaseRepository(daily_token_limit=daily_token_limit)
-        self.proposed_overlays = InMemoryProposedOverlayRepository()
         self.provider = provider
-        self.producer = CountingProducer()
-        self.artifacts = RecordingArtifactStore()
         self.document = document
 
         vault_files = InMemoryVaultFileRepository()
@@ -196,21 +149,15 @@ class WorkspaceHarness:
         codec = ExamWorkspaceContainerCodec()
         self.handler = ProcessExamAnswerKeyEnrichmentJobHandler(
             enrichment_jobs=self.enrichment_jobs,
-            conversion_jobs=self.conversion_jobs,
             leases=self.leases,
-            proposed_overlays=self.proposed_overlays,
             provider=provider,
             provider_selector=FixedRouteAnswerKeyProviderSelector(route=_route()),
-            producer=self.producer,
-            artifacts=self.artifacts,
             uow=FakeUow(),
             clock=FixedClock(NOW),
-            id_generator=UUIDGenerator(),
             digiexam_handler=AsyncMock(spec=ProcessExamWorkspaceDigiExamJobHandler),
             content_tags_handler=AsyncMock(spec=ProcessExamContentSuggestionsHandler),
             docx_handler=docx_job_handler(
                 enrichment_jobs=self.enrichment_jobs,
-                proposed_overlays=self.proposed_overlays,
                 leases=self.leases,
                 provider=provider,
                 vault_files=vault_files,

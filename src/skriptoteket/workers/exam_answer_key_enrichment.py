@@ -73,7 +73,6 @@ async def process_next_answer_key_enrichment_job(
             logger.warning(
                 "Answer-key enrichment job fail-closed after worker lease expiry",
                 job_id=str(expired.id),
-                conversion_job_id=str(expired.conversion_job_id),
                 worker_id=worker_id,
             )
             return True
@@ -101,7 +100,6 @@ async def process_next_answer_key_enrichment_job(
         logger.info(
             "Exam enrichment queue job claimed",
             job_id=str(job.id),
-            conversion_job_id=str(job.conversion_job_id),
             worker_id=worker_id,
             source_kind=job.source_kind.value,
         )

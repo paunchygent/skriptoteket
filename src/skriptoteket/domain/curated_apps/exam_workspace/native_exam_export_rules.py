@@ -44,11 +44,20 @@ _KEYED_KINDS = frozenset(
 )
 
 
+# The fewest options a dropdown gap exports with; one option gives the answer away
+# (TASK-SKRIPT-40-04-04 D3). Published to the workspace through the export checklist.
+InlineChoiceMinOptions = Literal[2]
+INLINE_CHOICE_MIN_OPTIONS: InlineChoiceMinOptions = 2
+
+
 class NativeExportBlocker(BaseModel):
+    """One refusal; `item_id` is None for a refusal that belongs to the exam, not a question."""
+
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    item_id: str
+    item_id: str | None
     reason: Literal[
+        "title_without_text",
         "unbuilt_question",
         "machine_proposed_key_unreviewed",
         "missing_points",
@@ -59,7 +68,13 @@ class NativeExportBlocker(BaseModel):
         "empty_match_entry",
         "ordering_too_few_steps",
         "empty_ordering_step",
+        "too_few_gap_options",
     ]
+
+
+def title_has_text(title: str) -> bool:
+    """Whether a title has a letter or digit, the least an export file name is built from."""
+    return any(char.isalnum() for char in title)
 
 
 def native_export_blockers(document: NativeExamDocument) -> tuple[NativeExportBlocker, ...]:
@@ -70,10 +85,13 @@ def native_export_blockers(document: NativeExamDocument) -> tuple[NativeExportBl
     other converted items that need review do not block.
     Keyed kinds without an answer key block export: Exam.net QTI would carry an
     automatic item with no correct response and the Exam.net PDF prints the key.
+    A title without a letter or digit blocks too: every export file is named after the title.
     An ordering question needs two steps and a text in every step; its key is its step order,
     always teacher-authored, so it never lacks one (TASK-SKRIPT-39-06-08).
     """
     blockers: list[NativeExportBlocker] = []
+    if not title_has_text(document.title):
+        blockers.append(NativeExportBlocker(item_id=None, reason="title_without_text"))
     for item in document.items:
         for reason, bodies in (
             (
@@ -120,6 +138,10 @@ def native_export_blockers(document: NativeExamDocument) -> tuple[NativeExportBl
             blockers.append(
                 NativeExportBlocker(item_id=item.item_id, reason="inline_choice_option_heading")
             )
+        if item.kind is NativeExamItemKind.INLINE_CHOICE and any(
+            len(gap.options) < INLINE_CHOICE_MIN_OPTIONS for gap in item.gaps
+        ):
+            blockers.append(NativeExportBlocker(item_id=item.item_id, reason="too_few_gap_options"))
         if item.points is None:
             blockers.append(NativeExportBlocker(item_id=item.item_id, reason="missing_points"))
     return tuple(blockers)

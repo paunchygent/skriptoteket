@@ -238,7 +238,7 @@ class TestFullPackageBuild:
         assert "grammatik-omprov" not in titles
         assert "grammatik-omprov" not in manifest
 
-    def test_blank_exam_title_falls_back_and_special_characters_are_escaped(
+    def test_special_characters_in_the_exam_title_are_escaped(
         self, reviewed_document: NativeExamDocument
     ) -> None:
         def assessment_title(title: str) -> str | None:
@@ -251,5 +251,19 @@ class TestFullPackageBuild:
                     "title"
                 )
 
-        assert assessment_title("   ") == "grammatik-omprov"
         assert assessment_title('Prov <A> & "B"') == 'Prov <A> & "B"'
+
+    def test_title_without_letters_or_digits_is_refused_not_replaced_by_the_package_name(
+        self, reviewed_document: NativeExamDocument
+    ) -> None:
+        for title in ("   ", "?!..."):
+            document = reviewed_document.model_copy(update={"title": title})
+            with pytest.raises(DomainError) as exc_info:
+                build_native_examnet_qti_package(
+                    document,
+                    package_name="grammatik-omprov",
+                    qti_writer=ExamNetQtiPackageWriter(),
+                )
+            assert exc_info.value.details == {
+                "blockers": [{"item_id": None, "reason": "title_without_text"}]
+            }

@@ -130,6 +130,7 @@ def test_gap_fill_package_encodes_text_entries_and_accepted_values(tmp_path: Pat
 def test_gap_fill_package_splits_max_score_equally_across_gaps() -> None:
     plan = build_examnet_qti_package_plan(
         package_name="gap-split",
+        assessment_title="gap-split",
         items=(
             ExamNetQtiItem(
                 item_id="item_001",
@@ -260,6 +261,7 @@ def test_matching_package_is_valid_but_examnet_proof_gated(tmp_path: Path) -> No
 def test_many_to_many_grid_maps_every_row_with_columns_free() -> None:
     plan = build_examnet_qti_package_plan(
         package_name="kategorisera-grid",
+        assessment_title="kategorisera-grid",
         items=(
             ExamNetQtiItem(
                 item_id="item_001",

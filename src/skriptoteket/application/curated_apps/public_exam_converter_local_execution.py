@@ -81,7 +81,6 @@ class ProcessPublicExamConverterJobHandler:
             artifact = await self._producer.convert(
                 job_id=job.local_job_id,
                 upload=upload,
-                overlay_bytes=None,
                 answer_evidence=answer_evidence,
                 enrichment_failure_code=(
                     None
