@@ -13,10 +13,12 @@
  */
 
 import { mount } from "@vue/test-utils";
-import { describe, expect, it } from "vitest";
+import type { VueWrapper } from "@vue/test-utils";
+import { afterEach, describe, expect, it } from "vitest";
 
 import type { NativeExamItem } from "../../../api/examWorkspace";
 import ExamWorkspaceQuestionEditor from "./ExamWorkspaceQuestionEditor.vue";
+import { editorBehind, press, settleEditors, surfaceOf } from "./ExamWorkspaceRichTextEntry.specSupport";
 import { INCOMPLETE_MATCH_KEY_GUIDANCE } from "./examWorkspaceAnswerKeyRules";
 import { plainBody } from "./examWorkspaceRichText";
 import {
@@ -25,8 +27,17 @@ import {
   buildMatchingItemWithPairs,
 } from "./examWorkspaceMatchingItem.specSupport";
 
-function mountEditor(item: NativeExamItem) {
-  return mount(ExamWorkspaceQuestionEditor, {
+let mounted: VueWrapper | null = null;
+
+afterEach(() => {
+  mounted?.unmount();
+  mounted = null;
+  document.body.innerHTML = "";
+});
+
+async function mountEditor(item: NativeExamItem) {
+  mounted = mount(ExamWorkspaceQuestionEditor, {
+    attachTo: document.body,
     props: {
       item,
       label: "1",
@@ -39,6 +50,8 @@ function mountEditor(item: NativeExamItem) {
       importOpen: false,
     },
   });
+  await settleEditors();
+  return mounted;
 }
 
 function tick(leftId: string, rightId: string): string {
@@ -46,8 +59,8 @@ function tick(leftId: string, rightId: string): string {
 }
 
 describe("ExamWorkspaceQuestionEditor Kategorisera grid", () => {
-  it("renders the grid with the key ticked and the Kategorisera labels", () => {
-    const wrapper = mountEditor(buildMatchingItem());
+  it("renders the grid with the key ticked and the Kategorisera labels", async () => {
+    const wrapper = await mountEditor(buildMatchingItem());
 
     expect(wrapper.get('[data-test="exam-workspace-kategorisera-grid"]').text()).toContain(
       "Kategorisera",
@@ -66,7 +79,7 @@ describe("ExamWorkspaceQuestionEditor Kategorisera grid", () => {
   });
 
   it("emits a second tick in a row, keeping row and column order", async () => {
-    const wrapper = mountEditor(buildMatchingItem());
+    const wrapper = await mountEditor(buildMatchingItem());
 
     await wrapper.get(tick("left_002", "right_003")).setValue(true);
 
@@ -84,15 +97,15 @@ describe("ExamWorkspaceQuestionEditor Kategorisera grid", () => {
   });
 
   it("emits an empty tick list when the only tick is cleared", async () => {
-    const wrapper = mountEditor(buildMatchingItemWithPairs([[2, 1]]));
+    const wrapper = await mountEditor(buildMatchingItemWithPairs([[2, 1]]));
 
     await wrapper.get(tick("left_002", "right_001")).setValue(false);
 
     expect(wrapper.emitted("updateMatchPairs")).toEqual([["item_001", []]]);
   });
 
-  it("accepts one column serving several rows", () => {
-    const wrapper = mountEditor(
+  it("accepts one column serving several rows", async () => {
+    const wrapper = await mountEditor(
       buildMatchingItemWithPairs([
         [1, 2],
         [2, 2],
@@ -103,8 +116,8 @@ describe("ExamWorkspaceQuestionEditor Kategorisera grid", () => {
     expect(wrapper.find('[data-test="exam-workspace-match-key-hint"]').exists()).toBe(false);
   });
 
-  it("shows the key guidance while a keyed row has no tick", () => {
-    const wrapper = mountEditor(
+  it("shows the key guidance while a keyed row has no tick", async () => {
+    const wrapper = await mountEditor(
       buildMatchingItemWithPairs([
         [1, 2],
         [2, 1],
@@ -116,15 +129,15 @@ describe("ExamWorkspaceQuestionEditor Kategorisera grid", () => {
     );
   });
 
-  it("keeps the key complete beside an unused column", () => {
-    const wrapper = mountEditor(buildMatchingItemWithDistractor());
+  it("keeps the key complete beside an unused column", async () => {
+    const wrapper = await mountEditor(buildMatchingItemWithDistractor());
 
     expect(wrapper.find('[data-test="exam-workspace-match-key-hint"]').exists()).toBe(false);
     expect(wrapper.find(tick("left_001", "right_004")).exists()).toBe(true);
   });
 
   it("shows read-only points and emits a valid tick value", async () => {
-    const wrapper = mountEditor(buildMatchingItem());
+    const wrapper = await mountEditor(buildMatchingItem());
     const points = wrapper.get<HTMLInputElement>('[data-test="exam-workspace-item-points-input"]');
     const tickPoints = wrapper.get('[data-test="exam-workspace-item-tick-points-input"]');
 
@@ -137,7 +150,7 @@ describe("ExamWorkspaceQuestionEditor Kategorisera grid", () => {
   });
 
   it("marks a tick value with three decimals and emits nothing", async () => {
-    const wrapper = mountEditor(buildMatchingItem());
+    const wrapper = await mountEditor(buildMatchingItem());
     const tickPoints = wrapper.get('[data-test="exam-workspace-item-tick-points-input"]');
 
     await tickPoints.setValue("0.125");
@@ -147,7 +160,7 @@ describe("ExamWorkspaceQuestionEditor Kategorisera grid", () => {
   });
 
   it("accepts a tick value of zero, which the question editor allows", async () => {
-    const wrapper = mountEditor(buildMatchingItem());
+    const wrapper = await mountEditor(buildMatchingItem());
     const tickPoints = wrapper.get('[data-test="exam-workspace-item-tick-points-input"]');
 
     await tickPoints.setValue("0");
@@ -157,16 +170,18 @@ describe("ExamWorkspaceQuestionEditor Kategorisera grid", () => {
   });
 
   it("emits the side and id of an edited entry text", async () => {
-    const wrapper = mountEditor(buildMatchingItem());
-    const left = wrapper.get('[data-test="exam-workspace-match-left-text-left_001"]')
-      .element as HTMLElement;
-    const right = wrapper.get('[data-test="exam-workspace-match-right-text-right_001"]')
-      .element as HTMLElement;
+    const wrapper = await mountEditor(buildMatchingItem());
+    const leftTest = "exam-workspace-match-left-text-left_001";
+    const rightTest = "exam-workspace-match-right-text-right_001";
 
-    left.textContent = "skipping class";
-    right.textContent = "jail time";
-    await wrapper.get('[data-test="exam-workspace-match-left-text-left_001"]').trigger("input");
-    await wrapper.get('[data-test="exam-workspace-match-right-text-right_001"]').trigger("input");
+    for (const [testId, value] of [
+      [leftTest, "skipping class"],
+      [rightTest, "jail time"],
+    ] as const) {
+      const editor = editorBehind(wrapper, testId);
+      editor.commands.selectAll();
+      editor.commands.insertContent(value);
+    }
 
     expect(wrapper.emitted("updateMatchEntryBody")).toEqual([
       ["item_001", "left", "left_001", plainBody("skipping class")],
@@ -174,9 +189,25 @@ describe("ExamWorkspaceQuestionEditor Kategorisera grid", () => {
     ]);
   });
 
-  it("marks an empty entry text with the hint", () => {
+  it("emits the empty body when a row or category text is cleared", async () => {
+    const wrapper = await mountEditor(buildMatchingItem());
+    const leftTest = "exam-workspace-match-left-text-left_002";
+    const rightTest = "exam-workspace-match-right-text-right_003";
+
+    editorBehind(wrapper, leftTest).commands.selectAll();
+    press(surfaceOf(wrapper, leftTest), "Backspace");
+    editorBehind(wrapper, rightTest).commands.selectAll();
+    press(surfaceOf(wrapper, rightTest), "Backspace");
+
+    expect(wrapper.emitted("updateMatchEntryBody")).toEqual([
+      ["item_001", "left", "left_002", []],
+      ["item_001", "right", "right_003", []],
+    ]);
+  });
+
+  it("marks an empty entry text with the hint", async () => {
     const item = buildMatchingItem();
-    const wrapper = mountEditor({
+    const wrapper = await mountEditor({
       ...item,
       match_left: item.match_left.map((entry) =>
         entry.left_id === "left_003" ? { ...entry, body: plainBody("") } : entry,

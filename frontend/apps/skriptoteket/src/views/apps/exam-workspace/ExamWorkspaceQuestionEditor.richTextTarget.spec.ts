@@ -2,25 +2,42 @@
  * Exam workspace question editor, shared rich-text formatting target.
  *
  * Expected behavior:
- *   The item editor has one formatting toolbar and one active rich target:
- *   the question paragraph, choice option or Kategorisera entry that owns
- *   the current selection. Moving the selection from the question text to
- *   an option and pressing a glyph edits the option and never the stale
- *   question selection. Superscript, subscript and heading glyphs reach the
- *   selected entry, and a locked editor emits nothing.
+ *   The item editor has one formatting toolbar and one active rich target: the
+ *   question text, choice option or Kategorisera entry that last had focus.
+ *   ProseMirror keeps each editor's own selection, so a glyph edits the text
+ *   the teacher is in and never a stale surface: not the question after focus
+ *   moved to an option, not the first option after focus moved to the second,
+ *   not an entry of the previous item, and not an entry that was removed.
+ *   Superscript, subscript and heading glyphs reach the focused entry, and a
+ *   locked editor emits nothing.
  */
 
 import { mount } from "@vue/test-utils";
-import { describe, expect, it } from "vitest";
+import type { VueWrapper } from "@vue/test-utils";
+import { afterEach, describe, expect, it } from "vitest";
 
 import type { NativeExamBodyParagraph, NativeExamItem } from "../../../api/examWorkspace";
 import ExamWorkspaceQuestionEditor from "./ExamWorkspaceQuestionEditor.vue";
+import {
+  editorBehind,
+  selectText,
+  settleEditors,
+  surfaceOf,
+} from "./ExamWorkspaceRichTextEntry.specSupport";
 import { choiceItem } from "./examWorkspaceKeyedItems.specSupport";
 import { buildMatchingItem } from "./examWorkspaceMatchingItem.specSupport";
 import { plainBody } from "./examWorkspaceRichText";
 
-function mountEditor(item: NativeExamItem, disabled = false) {
-  return mount(ExamWorkspaceQuestionEditor, {
+let mounted: VueWrapper | null = null;
+
+afterEach(() => {
+  mounted?.unmount();
+  mounted = null;
+  document.body.innerHTML = "";
+});
+
+async function mountEditor(item: NativeExamItem, disabled = false): Promise<VueWrapper> {
+  mounted = mount(ExamWorkspaceQuestionEditor, {
     attachTo: document.body,
     props: {
       item,
@@ -34,40 +51,14 @@ function mountEditor(item: NativeExamItem, disabled = false) {
       importOpen: false,
     },
   });
+  await settleEditors();
+  return mounted;
 }
 
-/** Select one surface's whole text and report it like a real selection change. */
-function selectSurface(element: HTMLElement): void {
-  const node = document.createTreeWalker(element, NodeFilter.SHOW_TEXT).nextNode();
-  if (!node) {
-    throw new Error("rich surface has no text node");
-  }
-  const range = document.createRange();
-  range.selectNodeContents(node);
-  const selection = window.getSelection()!;
-  selection.removeAllRanges();
-  selection.addRange(range);
-  document.dispatchEvent(new Event("selectionchange"));
-}
-
-/** Select a character range inside one surface's first text node, like a drag. */
-function selectTextRange(element: HTMLElement, start: number, end: number): void {
-  const node = document.createTreeWalker(element, NodeFilter.SHOW_TEXT).nextNode();
-  if (!node) {
-    throw new Error("rich surface has no text node");
-  }
-  const range = document.createRange();
-  range.setStart(node, start);
-  range.setEnd(node, end);
-  const selection = window.getSelection()!;
-  selection.removeAllRanges();
-  selection.addRange(range);
-  document.dispatchEvent(new Event("selectionchange"));
-}
-
-const QUESTION = '[data-test="exam-workspace-body-paragraph-0"]';
-const OPTION = '[data-test="exam-workspace-choice-text-choice_001"]';
-const MATCH_LEFT = '[data-test="exam-workspace-match-left-text-left_001"]';
+const QUESTION = "exam-workspace-body-editor-surface";
+const OPTION_1 = "exam-workspace-choice-text-choice_001";
+const OPTION_2 = "exam-workspace-choice-text-choice_002";
+const MATCH_LEFT = "exam-workspace-match-left-text-left_001";
 const BOLD = '[data-test="exam-workspace-body-mark-bold"]';
 const SUPERSCRIPT = '[data-test="exam-workspace-body-mark-superscript"]';
 const SUBSCRIPT = '[data-test="exam-workspace-body-mark-subscript"]';
@@ -84,67 +75,49 @@ function buildChoiceWithText(): NativeExamItem {
   };
 }
 
+/** Put the caret into a surface and select `needle`, the way a teacher clicks and drags. */
+function selectIn(wrapper: VueWrapper, testId: string, needle: string): void {
+  surfaceOf(wrapper, testId).focus();
+  selectText(editorBehind(wrapper, testId), needle, 0, needle.length);
+}
+
 function bodyOf(emitted: unknown[][] | undefined, index: number): NativeExamBodyParagraph[] {
-  return emitted![index]![2] as NativeExamBodyParagraph[];
+  return emitted![index]!.find(Array.isArray) as NativeExamBodyParagraph[];
+}
+
+function boldOf(text: string): NativeExamBodyParagraph[] {
+  return [{ heading_level: null, segments: [{ kind: "text", marks: ["bold"], text }] }];
 }
 
 describe("ExamWorkspaceQuestionEditor shared rich-text target", () => {
-  it("edits the selected option instead of the stale question selection", async () => {
-    const wrapper = mountEditor(buildChoiceWithText());
-    const question = wrapper.get(QUESTION);
-    const option = wrapper.get(OPTION);
-
-    await question.trigger("focus");
-    selectSurface(question.element as HTMLElement);
-    await option.trigger("focus");
-    selectSurface(option.element as HTMLElement);
+  it("bolds the second option only after the caret was in the question and the first option", async () => {
+    const wrapper = await mountEditor(buildChoiceWithText());
+    selectIn(wrapper, QUESTION, "Question");
+    selectIn(wrapper, OPTION_1, "Option");
+    selectIn(wrapper, OPTION_2, "Other");
 
     await wrapper.get(BOLD).trigger("click");
 
-    expect(wrapper.emitted("updateParagraphSegments")).toBeUndefined();
-    expect(wrapper.emitted("updateChoiceBody")).toEqual([
-      [
-        "item_001",
-        "choice_001",
-        [
-          {
-            heading_level: null,
-            segments: [{ kind: "text", marks: ["bold"], text: "Option" }],
-          },
-        ],
-      ],
-    ]);
-    wrapper.unmount();
+    expect(wrapper.emitted("updateChoiceBody")).toEqual([["item_001", "choice_002", boldOf("Other")]]);
+    expect(wrapper.emitted("updateBody")).toBeUndefined();
   });
 
-  it("switches to the option from the selection report alone, without focusing it", async () => {
-    const wrapper = mountEditor(buildChoiceWithText());
-    const question = wrapper.get(QUESTION);
-    const option = wrapper.get(OPTION);
-
-    await question.trigger("focus");
-    selectSurface(question.element as HTMLElement);
-    // The browser reports the new selection without a focus event on the option.
-    selectSurface(option.element as HTMLElement);
+  it("follows focus back from an option to the question text", async () => {
+    const wrapper = await mountEditor(buildChoiceWithText());
+    selectIn(wrapper, OPTION_1, "Option");
+    selectIn(wrapper, QUESTION, "Question");
 
     await wrapper.get(BOLD).trigger("click");
 
-    expect(wrapper.emitted("updateParagraphSegments")).toBeUndefined();
-    expect(bodyOf(wrapper.emitted("updateChoiceBody"), 0)[0]!.segments).toEqual([
-      { kind: "text", marks: ["bold"], text: "Option" },
-    ]);
-    wrapper.unmount();
+    expect(wrapper.emitted("updateChoiceBody")).toBeUndefined();
+    expect(wrapper.emitted("updateBody")).toHaveLength(1);
+    expect(bodyOf(wrapper.emitted("updateBody"), 0)).toEqual(boldOf("Question"));
   });
 
-  it("applies superscript, subscript and a heading to the selected option", async () => {
-    const wrapper = mountEditor(buildChoiceWithText());
-    const question = wrapper.get(QUESTION);
-    const option = wrapper.get(OPTION);
-
-    await question.trigger("focus");
-    selectSurface(question.element as HTMLElement);
-    await option.trigger("focus");
-    selectSurface(option.element as HTMLElement);
+  it("applies superscript, subscript and a heading to the focused option", async () => {
+    const wrapper = await mountEditor(buildChoiceWithText());
+    selectIn(wrapper, QUESTION, "Question");
+    selectIn(wrapper, OPTION_1, "Option");
 
     await wrapper.get(SUPERSCRIPT).trigger("click");
     expect(bodyOf(wrapper.emitted("updateChoiceBody"), 0)[0]!.segments).toEqual([
@@ -158,249 +131,89 @@ describe("ExamWorkspaceQuestionEditor shared rich-text target", () => {
 
     await wrapper.get(HEADING_2).trigger("click");
     expect(bodyOf(wrapper.emitted("updateChoiceBody"), 2)[0]!.heading_level).toBe(2);
-    expect(wrapper.emitted("updateParagraphSegments")).toBeUndefined();
-    wrapper.unmount();
+    expect(wrapper.emitted("updateBody")).toBeUndefined();
   });
 
-  it("applies the toolbar to the selected Kategorisera entry", async () => {
-    const wrapper = mountEditor(buildMatchingItem());
-    const question = wrapper.get(QUESTION);
-    const entry = wrapper.get(MATCH_LEFT);
-
-    await question.trigger("focus");
-    selectSurface(question.element as HTMLElement);
-    // The selection report alone moves the active target to the matching entry.
-    selectSurface(entry.element as HTMLElement);
+  it("applies the toolbar to the focused Kategorisera entry", async () => {
+    const wrapper = await mountEditor(buildMatchingItem());
+    selectIn(wrapper, QUESTION, "Match each");
+    selectIn(wrapper, MATCH_LEFT, "absence from school without permission");
 
     await wrapper.get(BOLD).trigger("click");
 
-    expect(wrapper.emitted("updateParagraphSegments")).toBeUndefined();
+    expect(wrapper.emitted("updateBody")).toBeUndefined();
     expect(wrapper.emitted("updateMatchEntryBody")).toEqual([
-      [
-        "item_001",
-        "left",
-        "left_001",
-        [
-          {
-            heading_level: null,
-            segments: [
-              { kind: "text", marks: ["bold"], text: "absence from school without permission" },
-            ],
-          },
-        ],
-      ],
+      ["item_001", "left", "left_001", boldOf("absence from school without permission")],
     ]);
-    wrapper.unmount();
   });
 
-  it("releases the previous item's saved option selection when the native item is replaced", async () => {
-    const wrapper = mountEditor(buildChoiceWithText());
-    const option = wrapper.get(OPTION);
+  it("never edits the previous item's option after the editor shows another item", async () => {
+    const wrapper = await mountEditor(buildChoiceWithText());
+    selectIn(wrapper, OPTION_1, "Option");
 
-    await option.trigger("focus");
-    selectSurface(option.element as HTMLElement);
-
+    // The pane reuses this editor for the next item; its choices repeat the ids
+    // and the text, so nothing but the item changes under the old selection.
     const next = buildChoiceWithText();
     next.item_id = "item_002";
-    next.choices[0]!.body = plainBody("New option");
     await wrapper.setProps({ item: next });
-
-    window.getSelection()!.removeAllRanges();
-    document.dispatchEvent(new Event("selectionchange"));
+    await settleEditors();
 
     await wrapper.get(BOLD).trigger("click");
 
     expect(wrapper.emitted("updateChoiceBody")).toBeUndefined();
-    expect(wrapper.emitted("updateParagraphSegments")).toBeUndefined();
-    wrapper.unmount();
+    expect(wrapper.emitted("updateBody")).toBeUndefined();
   });
 
-  it("releases a saved option selection when a replacement item repeats the same entry text", async () => {
-    const wrapper = mountEditor(buildChoiceWithText());
-    const option = wrapper.get(OPTION);
+  it("never edits an option that was removed while it had focus", async () => {
+    const wrapper = await mountEditor(buildChoiceWithText());
+    selectIn(wrapper, OPTION_2, "Other");
 
-    await option.trigger("focus");
-    selectSurface(option.element as HTMLElement);
-
-    const sameText = buildChoiceWithText();
-    sameText.item_id = "item_002";
-    await wrapper.setProps({ item: sameText });
-
-    window.getSelection()!.removeAllRanges();
-    document.dispatchEvent(new Event("selectionchange"));
+    const shorter = buildChoiceWithText();
+    shorter.choices = shorter.choices.slice(0, 1);
+    await wrapper.setProps({ item: shorter });
 
     await wrapper.get(BOLD).trigger("click");
 
     expect(wrapper.emitted("updateChoiceBody")).toBeUndefined();
-    wrapper.unmount();
   });
 
-  it("releases a saved option selection when the same item's option body is replaced", async () => {
-    const wrapper = mountEditor(buildChoiceWithText());
-    const option = wrapper.get(OPTION);
-
-    await option.trigger("focus");
-    selectSurface(option.element as HTMLElement);
-
-    const replaced = buildChoiceWithText();
-    replaced.choices[0]!.body = plainBody("Replaced option");
-    await wrapper.setProps({ item: replaced });
-
-    window.getSelection()!.removeAllRanges();
-    document.dispatchEvent(new Event("selectionchange"));
-
-    await wrapper.get(BOLD).trigger("click");
-
-    expect(wrapper.emitted("updateChoiceBody")).toBeUndefined();
-    wrapper.unmount();
-  });
-
-  it("releases a saved matching entry when the matching item is replaced with the same entry ids", async () => {
-    const wrapper = mountEditor(buildMatchingItem());
-    const entry = wrapper.get(MATCH_LEFT);
-
-    await entry.trigger("focus");
-    selectSurface(entry.element as HTMLElement);
-
-    const base = buildMatchingItem();
-    const next = buildMatchingItem({
-      item_id: "item_002",
-      match_left: base.match_left.map((left) =>
-        left.left_id === "left_001" ? { ...left, body: plainBody("another row") } : left,
-      ),
-    });
+  it("edits the option again when the teacher returns to it after another item", async () => {
+    const wrapper = await mountEditor(buildChoiceWithText());
+    selectIn(wrapper, OPTION_1, "Option");
+    const next = buildChoiceWithText();
+    next.item_id = "item_002";
     await wrapper.setProps({ item: next });
+    await settleEditors();
 
-    window.getSelection()!.removeAllRanges();
-    document.dispatchEvent(new Event("selectionchange"));
-
+    selectIn(wrapper, OPTION_2, "Other");
     await wrapper.get(BOLD).trigger("click");
 
-    expect(wrapper.emitted("updateMatchEntryBody")).toBeUndefined();
-    wrapper.unmount();
+    expect(wrapper.emitted("updateChoiceBody")).toEqual([["item_002", "choice_002", boldOf("Other")]]);
   });
 
-  it("keeps every glyph off a stale question when the browser range crosses rich surfaces", async () => {
-    const wrapper = mountEditor(buildChoiceWithText());
-    const question = wrapper.get(QUESTION);
-    const option = wrapper.get(OPTION);
-
-    await question.trigger("focus");
-    selectSurface(question.element as HTMLElement);
-
-    const questionText = document
-      .createTreeWalker(question.element, NodeFilter.SHOW_TEXT)
-      .nextNode()!;
-    const optionText = document.createTreeWalker(option.element, NodeFilter.SHOW_TEXT).nextNode()!;
-    const range = document.createRange();
-    range.setStart(questionText, 0);
-    range.setEnd(optionText, 3);
-    const selection = window.getSelection()!;
-    selection.removeAllRanges();
-    selection.addRange(range);
-    document.dispatchEvent(new Event("selectionchange"));
-
-    await wrapper.get(BOLD).trigger("click");
-    await wrapper.get(HEADING_2).trigger("click");
-
-    expect(wrapper.emitted("updateParagraphSegments")).toBeUndefined();
-    expect(wrapper.emitted("updateParagraphHeading")).toBeUndefined();
-    expect(wrapper.emitted("updateChoiceBody")).toBeUndefined();
-    wrapper.unmount();
-  });
-
-  it("keeps the same option selection across repeated toggles while the toolbar holds focus", async () => {
-    const wrapper = mountEditor(buildChoiceWithText());
-    const option = wrapper.get(OPTION);
-
-    await option.trigger("focus");
-    selectSurface(option.element as HTMLElement);
+  it("keeps toggling the same option across repeated toolbar clicks", async () => {
+    const wrapper = await mountEditor(buildChoiceWithText());
+    selectIn(wrapper, OPTION_1, "Option");
 
     await wrapper.get(BOLD).trigger("click");
     expect(bodyOf(wrapper.emitted("updateChoiceBody"), 0)[0]!.segments).toEqual([
       { kind: "text", marks: ["bold"], text: "Option" },
     ]);
 
-    // The browser drops the range while the toolbar button holds focus; the
-    // saved paragraph offsets must keep the same surface for the next toggle.
-    window.getSelection()!.removeAllRanges();
-    document.dispatchEvent(new Event("selectionchange"));
-
-    await wrapper.get(BOLD).trigger("click");
-    expect(bodyOf(wrapper.emitted("updateChoiceBody"), 1)[0]!.segments).toEqual([
-      { kind: "text", marks: [], text: "Option" },
-    ]);
-    wrapper.unmount();
-  });
-
-  it("keeps a split-run saved selection when the emitted body echoes back as props", async () => {
-    const wrapper = mountEditor(buildChoiceWithText());
-    const option = wrapper.get(OPTION);
-
-    await option.trigger("focus");
-    selectTextRange(option.element as HTMLElement, 0, 2);
-
-    await wrapper.get(BOLD).trigger("click");
-    const marked = bodyOf(wrapper.emitted("updateChoiceBody"), 0)[0]!;
-    expect(marked.segments).toEqual([
-      { kind: "text", marks: ["bold"], text: "Op" },
-      { kind: "text", marks: [], text: "tion" },
-    ]);
-
-    // The document stores the body exactly as the toggle emitted it.
+    // The owner stores the emitted body and passes it back; the selection stays.
     const echoed = buildChoiceWithText();
-    echoed.choices[0]!.body = [marked];
+    echoed.choices[0]!.body = bodyOf(wrapper.emitted("updateChoiceBody"), 0);
     await wrapper.setProps({ item: echoed });
 
-    // The browser drops the range while the toolbar button holds focus; the
-    // saved offsets must survive the split run and still cover "Op".
-    window.getSelection()!.removeAllRanges();
-    document.dispatchEvent(new Event("selectionchange"));
-
     await wrapper.get(BOLD).trigger("click");
     expect(bodyOf(wrapper.emitted("updateChoiceBody"), 1)[0]!.segments).toEqual([
       { kind: "text", marks: [], text: "Option" },
     ]);
-    wrapper.unmount();
-  });
-
-  it("keeps a saved selection when a mark-only update merges the split run back", async () => {
-    const wrapper = mountEditor(buildChoiceWithText());
-    const option = wrapper.get(OPTION);
-
-    await option.trigger("focus");
-    selectTextRange(option.element as HTMLElement, 0, 2);
-    await wrapper.get(BOLD).trigger("click");
-    expect(bodyOf(wrapper.emitted("updateChoiceBody"), 0)[0]!.segments).toEqual([
-      { kind: "text", marks: ["bold"], text: "Op" },
-      { kind: "text", marks: [], text: "tion" },
-    ]);
-
-    // The owner normalizes the mark-split run back into one text run; only
-    // run boundaries changed, so the saved offsets must survive.
-    const merged = buildChoiceWithText();
-    merged.choices[0]!.body = [
-      { heading_level: null, segments: [{ kind: "text", marks: ["bold"], text: "Option" }] },
-    ];
-    await wrapper.setProps({ item: merged });
-
-    window.getSelection()!.removeAllRanges();
-    document.dispatchEvent(new Event("selectionchange"));
-
-    await wrapper.get(BOLD).trigger("click");
-    expect(bodyOf(wrapper.emitted("updateChoiceBody"), 1)[0]!.segments).toEqual([
-      { kind: "text", marks: [], text: "Op" },
-      { kind: "text", marks: ["bold"], text: "tion" },
-    ]);
-    wrapper.unmount();
   });
 
   it("keeps the toolbar and its glyphs silent while the editor is locked", async () => {
-    const wrapper = mountEditor(buildChoiceWithText(), true);
-    const option = wrapper.get(OPTION);
-
-    await option.trigger("focus");
-    selectSurface(option.element as HTMLElement);
+    const wrapper = await mountEditor(buildChoiceWithText(), true);
+    selectIn(wrapper, OPTION_1, "Option");
 
     expect(wrapper.get(BOLD).attributes("disabled")).toBeDefined();
     expect(wrapper.get(HEADING_2).attributes("disabled")).toBeDefined();
@@ -409,7 +222,6 @@ describe("ExamWorkspaceQuestionEditor shared rich-text target", () => {
     await wrapper.get(HEADING_2).trigger("click");
 
     expect(wrapper.emitted("updateChoiceBody")).toBeUndefined();
-    expect(wrapper.emitted("updateParagraphSegments")).toBeUndefined();
-    wrapper.unmount();
+    expect(wrapper.emitted("updateBody")).toBeUndefined();
   });
 });

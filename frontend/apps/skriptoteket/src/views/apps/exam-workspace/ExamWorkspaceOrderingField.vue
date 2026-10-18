@@ -9,7 +9,7 @@
  *   an empty step at the end. Below the list "Utskriftsordning" shows the
  *   saved print order exactly as printed, each step after an empty number box
  *   the student fills in, and "Blanda om" asks for a new one. A step whose
- *   body carries no text is marked, because the save refuses it. While
+ *   body carries no text still saves and is marked, because export refuses it. While
  *   `disabled` is set, every control is disabled.
  *
  * Relationships:
@@ -24,7 +24,6 @@ import type { NativeExamBodyParagraph, NativeExamItem } from "../../../api/examW
 import { UiGlyph } from "../../../components/ui";
 import ExamWorkspaceRichTextEntry from "./ExamWorkspaceRichTextEntry.vue";
 import { bodyText } from "./examWorkspaceRichText";
-import type { RichTextSurfaceOwner } from "./useExamWorkspaceRichTextTarget";
 
 const props = defineProps<{
   disabled?: boolean;
@@ -57,10 +56,6 @@ function isEmptyStep(body: NativeExamBodyParagraph[]): boolean {
 
 const hasEmptyStep = computed(() => props.item.choices.some((choice) => isEmptyStep(choice.body)));
 const onlyStep = computed(() => props.item.choices.length <= 1);
-
-function stepOwner(choiceId: string): RichTextSurfaceOwner {
-  return { itemId: props.item.item_id, surface: "choice", entryId: choiceId };
-}
 </script>
 
 <template>
@@ -88,13 +83,13 @@ function stepOwner(choiceId: string): RichTextSurfaceOwner {
         aria-hidden="true"
       >{{ index + 1 }}</span>
       <ExamWorkspaceRichTextEntry
+        :key="`${item.item_id}-${choice.choice_id}`"
         :body="choice.body"
         :border-class="isEmptyStep(choice.body) ? 'border-warning' : 'border-navy/35'"
         :described-by="isEmptyStep(choice.body) ? stepHintId : hintId"
         :disabled="disabled"
         :invalid="isEmptyStep(choice.body)"
         :label="`Text för steg ${index + 1}`"
-        :owner="stepOwner(choice.choice_id)"
         :test-id="`exam-workspace-ordering-step-text-${choice.choice_id}`"
         @update-body="(body) => emit('updateBody', choice.choice_id, body)"
       />
