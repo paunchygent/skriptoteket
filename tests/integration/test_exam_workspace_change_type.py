@@ -148,7 +148,12 @@ async def test_change_reopens_as_one_autosave_and_one_undo_restores_exact_questi
                 cursor = response.json()["history"]["cursor"]
             retained_before_save = (await client.get(path + "/history")).json()
             response = await client.put(
-                path, json={"expected_revision": 1, "document": prepared.model_dump(mode="json")}
+                path,
+                json={
+                    "expected_revision": 1,
+                    "document": prepared.model_dump(mode="json"),
+                    "position_step_id": retained_before_save["position_step_id"],
+                },
             )
             assert response.status_code == 200, response.text
             saved = response.json()
