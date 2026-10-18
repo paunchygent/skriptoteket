@@ -1,0 +1,11 @@
+## Language Choice (6 points)
+Choose one answer for each question.
+**3.** Sam Nilsson is writing a formal e-mail to Ms. Lind. Which complete closing follows the class model? (1 point)
+A. Sincerely,
+Sam Nilsson
+B. Yours faithfully,
+Sam Nilsson
+C. Yours sincerely,
+Sam
+Correct answer: <i>A. Sincerely,</i>
+<i>Sam Nilsson</i>

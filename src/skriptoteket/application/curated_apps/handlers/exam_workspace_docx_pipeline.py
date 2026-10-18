@@ -81,7 +81,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_batches import (
     pack_batches,
     question_families,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.docx_header import (
     resolve_header_course,
 )
@@ -156,14 +155,6 @@ def _labeling_item(
     return LabelingItem(item_id=question_id, source_text=text, images=tuple(images))
 
 
-def placed_manifest(manifest: ExamManifest, chunks: tuple[DocxChunk, ...]) -> ExamManifest:
-    """The grouping manifest after question headings, points lines and inner chunks are placed,
-    as every later step reads it."""
-    return claim_inner_chunks(
-        assign_points_lines(assign_question_headings(manifest, chunks), chunks), chunks
-    )
-
-
 class DocxConversionPipeline:
     """Group, label and convert type batches concurrently into one native exam."""
 
@@ -213,7 +204,12 @@ class DocxConversionPipeline:
         for usage in grouping.usage:
             run.state.record_usage(usage)
         run.timed("grouping", started)
-        manifest = placed_manifest(grouping.manifest, job.chunks)
+        manifest = claim_inner_chunks(
+            assign_points_lines(
+                assign_question_headings(grouping.manifest, job.chunks), job.chunks
+            ),
+            job.chunks,
+        )
         run.manifest = manifest
         run.state.header_anchors = frozenset(h.anchor for h in manifest.header)
         run.families = question_families(manifest, job.chunks)

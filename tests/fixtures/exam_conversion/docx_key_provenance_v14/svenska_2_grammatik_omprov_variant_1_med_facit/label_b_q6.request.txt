@@ -1,0 +1,10 @@
+## **Del 3: Bisatser och komplex meningsbyggnad, 10 poäng**
+Använd dessa typer: att-sats, relativsats, tidsbisats, orsaksbisats, villkorsbisats, avsiktsbisats.
+### **<i>Fråga 6. Ange bisatsens typ och vilken satsdel den utgör: S, Pf, DO, IO eller Adv.</i>**
+a) Jag vet att lektionen börjar klockan tio. Bisats: <i>att lektionen börjar klockan tio</i> Typ: <i>att-sats</i> Satsdel: <i>DO</i>
+b) Problemet var att eleven satt längst fram. Bisats: <i>att eleven satt längst fram</i> Typ: <i>att-sats</i> Satsdel: <i>Pf</i>
+c) När genomgången var slut började eleverna skriva. Bisats: <i>När genomgången var slut</i> Typ: <i>tidsbisats</i> Satsdel: <i>Adv</i>
+d) Klassen stannade kvar eftersom läraren ville förklara uppgiften igen. Bisats: <i>eftersom läraren ville förklara uppgiften igen</i> Typ: <i>orsaksbisats</i> Satsdel: <i>Adv</i>
+e) Om alla lämnar in i tid hinner läraren läsa texterna. Bisats: <i>Om alla lämnar in i tid</i> Typ: <i>villkorsbisats</i> Satsdel: <i>Adv</i>
+f) Hon skrev en plan för att gruppen skulle hinna klart. Bisats: <i>för att gruppen skulle hinna klart</i> Typ: <i>avsiktsbisats</i> Satsdel: <i>Adv</i>
+Poäng: 6 poäng

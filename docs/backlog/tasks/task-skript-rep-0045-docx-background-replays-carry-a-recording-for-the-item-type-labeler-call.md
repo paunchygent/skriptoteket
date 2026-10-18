@@ -51,3 +51,13 @@ Stop and report to the parent before making any live model call beyond re-record
 | R1  | The root cause is named in the closeout before any fix. |
 | R2  | If the recordings predate the labeler step, only the missing labeler responses for the three exams are re-recorded live, and the token count is reported; nothing else is re-recorded. |
 | R3  | The replay rule that every build request needs its own recording stays. |
+
+### R2 amendment (user ruling 2026-10-18)
+
+Re-record live exactly the 14 stale `label_b` labeler calls: Svenska grammatik variant 1 `q2`, `q5`, `q6`, `q7` (4); variant 2 `q1`-`q7` (7); kursavslutande course final `q21`, `q22`, `q24` (3). Report the token count. The test support keeps capture-time request keys, so a changed labeler request shows as unmatched. Nothing else is re-recorded.
+
+## Root Cause (R1)
+
+The three Svenska exams' `label_b` recordings were captured on 2026-10-14 at `c270419e`. At that revision the second-pass labeler request was built from the raw grouping manifest. Commit `c67dcb70` (2026-10-17, "printed point totals reach their questions through one owner per points line") added `assign_points_lines` before labeling. Since then, the source text of all 14 recorded second-pass questions in those exams includes the points line (for example, course-final `q21` gains `Poäng: 1 poäng`). The replay support derived each recording's expected request text from the current production code instead of storing the request the recording answered. So it could not tell a stale recording from a current one. Deriving from the raw manifest left the new requests unmatched. Deriving from the placed manifest (`343f4eef`) served the old replies to the new requests, which was review finding F1.
+
+Fix: each `label_b_<qid>.json` recording carries its capture-time request key in `label_b_<qid>.request.txt`. The transport matches only that stored key. The 14 stale replies are re-recorded live against the exact current requests. The production `placed_manifest` extraction from `343f4eef` is reverted, because the test support was its only other consumer.

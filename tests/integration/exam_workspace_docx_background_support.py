@@ -3,13 +3,16 @@
 ``RecordedTransport`` serves the live replies recorded in
 ``tests/fixtures/exam_conversion/docx_key_provenance_v14/<exam>/`` to the real HTTP adapters, so the
 job handler, ``build_docx_conversion_pipeline`` composition, progress port, job queue, token
-ledger, vault storage and QTI validators run unchanged around it.
+ledger, vault storage and QTI validators run unchanged around it. Each ``label_b`` recording
+carries its capture-time request key in ``label_b_<qid>.request.txt``, followed by one final
+newline.
 """
 
 from __future__ import annotations
 
 import json
 from collections.abc import Awaitable, Callable
+from pathlib import Path
 from uuid import UUID
 
 import httpx
@@ -24,25 +27,14 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_document_stor
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_pipeline import (
     DocxConversionPipeline,
-    placed_manifest,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_serial_uow import (
     SerializedUnitOfWork,
 )
 from skriptoteket.config import Settings
 from skriptoteket.di.docx_conversion import build_docx_conversion_pipeline
-from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import (
-    manifest_from_output,
-    question_source,
-)
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_container import (
     ExamWorkspaceContainerCodec,
-)
-from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (  # noqa: E501
-    PythonDocxExamChunker,
-)
-from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_labeler_markdown import (  # noqa: E501
-    PythonDocxLabelerMarkdown,
 )
 from skriptoteket.infrastructure.db.uow import SQLAlchemyUnitOfWork
 from skriptoteket.infrastructure.llm.openai.answer_key_structured_provider import (
@@ -67,10 +59,6 @@ from skriptoteket.protocols.docx_conversion_progress import (
 from skriptoteket.protocols.exam_answer_key import AnswerKeyTokenLeaseRepositoryProtocol
 from skriptoteket.protocols.sleeper import SleeperProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
-from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
-    RECORDINGS,
-    corpus_docx,
-)
 
 API_KEY = "fixture-key"
 
@@ -130,37 +118,35 @@ def _anchors(node: JsonValue) -> set[str]:
 class RecordedTransport:
     """Serve each real HTTP request the recording the live run got for the same request."""
 
-    def __init__(self, exam: str) -> None:
-        self._dir = RECORDINGS / exam
+    def __init__(self, recordings: Path) -> None:
+        self._dir = recordings
         self._decisions = sorted(
             self._dir.glob("decisions_*.json"), key=lambda p: int(p.stem.rsplit("_", 1)[1])
         )
         self._batches: dict[str, JsonValue] = {
             p.stem: json.loads(p.read_text()) for p in self._dir.glob("docx_w*.json")
         }
-        self._label_texts = self._label_b_source_texts(exam)
+        self._label_keys = self._label_b_request_keys()
         self._groupings = 0
         self.served: list[str] = []
         self.unmatched: list[str] = []
         self.decisions_requests = 0
         self.responses_requests = 0
 
-    def _label_b_source_texts(self, exam: str) -> dict[str, str]:
-        """The second-pass source text of each recorded label_b question."""
-        content = corpus_docx(exam)
-        chunks = PythonDocxExamChunker().chunk(content=content)
-        try:
-            source = PythonDocxLabelerMarkdown().source(content=content).chunks
-        except ValueError:
-            source = chunks
-        manifest = placed_manifest(
-            manifest_from_output(
-                json.loads((self._dir / "docx_grouping_1.json").read_text()), chunks
-            ),
-            chunks,
+    def _label_b_request_keys(self) -> dict[str, str]:
+        """Each label_b recording's capture-time request key, read from its sidecar file."""
+        recordings = {p.stem for p in self._dir.glob("label_b_*.json")}
+        keys = {
+            p.name.removesuffix(".request.txt") for p in self._dir.glob("label_b_*.request.txt")
+        }
+        missing = sorted(recordings - keys)
+        extra = sorted(keys - recordings)
+        assert recordings == keys, (
+            f"{self._dir}: label_b request keys must match their recordings; "
+            f"missing sidecars for {missing}, unexpected sidecars for {extra}"
         )
         return {
-            p.stem: question_source(manifest, source, p.stem.removeprefix("label_b_"))
+            p.stem: (self._dir / f"{p.stem}.request.txt").read_text().removesuffix("\n")
             for p in self._dir.glob("label_b_*.json")
         }
 
@@ -203,8 +189,8 @@ class RecordedTransport:
             return next(
                 (
                     n
-                    for n, src in self._label_texts.items()
-                    if n not in self.served and text.endswith(f"### Question q1\n{src}")
+                    for n, key in self._label_keys.items()
+                    if n not in self.served and text.endswith(f"### Question q1\n{key}")
                 ),
                 None,
             )

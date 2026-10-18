@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "2a76c06531b7ac8b2c2b255d758203a5a3948f2440f0e949c8a5d9234a3ed900",
+  "source_set_digest": "7f4a49b1f3c4db0864abe2b539e25b66af8506ba49fdf7e9a11170a2aa3b5d19",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5623,25 +5623,6 @@
       "title": "Retire the old exam converter routes, correction overlay and screens",
       "path": "docs/backlog/tasks/task-skript-39-07-03-retire-the-old-exam-converter-routes-correction-overlay-and-screens.md",
       "status": "in_progress",
-      "task_kind": "story",
-      "story": "ST-SKRIPT-39-07",
-      "owners": [
-        {
-          "kind": "service",
-          "id": "skriptoteket"
-        }
-      ],
-      "closeout_review": {
-        "record": "inline",
-        "status": "not_started"
-      }
-    },
-    {
-      "id": "TASK-SKRIPT-39-07-04",
-      "type": "task",
-      "title": "The guest exam converter makes QTI for Exam.net and offers the Exam.net PDF only as a fallback",
-      "path": "docs/backlog/tasks/task-skript-39-07-04-the-guest-exam-converter-makes-qti-for-exam-net-and-offers-the-exam-net-pdf-only-as-a-fallback.md",
-      "status": "proposed",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-07",
       "owners": [
