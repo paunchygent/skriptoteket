@@ -243,3 +243,33 @@ def test_an_empty_exam_instruction_prints_nothing() -> None:
     assert 'class="document-instruction"' not in html
     (qti_item,) = native_exam_to_examnet_qti_items(document)
     assert qti_item.prompt_lines == ("Resonera om renässansen.",)
+
+
+def _with_exam_instructions(*paragraphs: NativeParagraph) -> NativeExamDocument:
+    document = make_document(make_free_text_item())
+    return NativeExamDocument.model_validate({**document.model_dump(), "instructions": paragraphs})
+
+
+def test_a_whitespace_only_exam_instruction_prints_nothing_in_any_export() -> None:
+    blank = _with_exam_instructions(make_paragraph("   "), _EMPTY_PARAGRAPH)
+    bare = make_document(make_free_text_item())
+
+    html = native_exam_to_pdf_document(blank).html
+    assert 'class="document-instruction"' not in html
+    assert "<p>   </p>" not in html and "<p></p>" not in html
+
+    def paragraphs(source: NativeExamDocument) -> list[str]:
+        data = ExamWorkspaceDocxWriter().build_docx_bytes(source)
+        return [paragraph.text for paragraph in Document(io.BytesIO(data)).paragraphs]
+
+    assert paragraphs(blank) == paragraphs(bare)
+    (qti_item,) = native_exam_to_examnet_qti_items(blank)
+    assert qti_item.prompt_lines == ("Resonera om renässansen.",)
+
+
+def test_an_exam_instruction_with_visible_text_still_prints_its_blank_lines() -> None:
+    document = _with_exam_instructions(make_paragraph("Läs noga."), make_paragraph("  "))
+
+    html = native_exam_to_pdf_document(document).html
+
+    assert '<div class="document-instruction"><p>Läs noga.</p><p>  </p></div>' in html

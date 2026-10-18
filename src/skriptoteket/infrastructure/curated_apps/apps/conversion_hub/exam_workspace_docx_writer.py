@@ -102,7 +102,7 @@ class ExamWorkspaceDocxWriter:
         output.add_heading(title, level=1)
         for line in header_details:
             output.add_paragraph(line)
-        _write_shared_body(output, document.instructions, assets_by_id=assets_by_id)
+        _write_shared_body(output, document.printed_instructions(), assets_by_id=assets_by_id)
 
         for item in document.items:
             parent = document.printed_parent_of(item.item_id)

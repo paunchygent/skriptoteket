@@ -299,7 +299,9 @@ def _document_instruction_html(
     labels: ExamExportLabels,
 ) -> str:
     """The exam-wide shared instruction, printed once with every top-level item."""
-    body = _body_html(document.instructions, asset_paths_by_id=asset_paths_by_id, labels=labels)
+    body = _body_html(
+        document.printed_instructions(), asset_paths_by_id=asset_paths_by_id, labels=labels
+    )
     return f'<div class="document-instruction">{body}</div>' if body else ""
 
 

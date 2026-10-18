@@ -172,6 +172,10 @@ class NativeExamDocument(BaseModel):
         parent = self.parent_of(item_id)
         return None if parent is not None and is_empty_body(parent.instruction) else parent
 
+    def printed_instructions(self) -> tuple[NativeParagraph, ...]:
+        """The exam instruction the exports print; a whitespace-only one prints nothing."""
+        return () if is_empty_body(self.instructions) else self.instructions
+
     def item_by_id(self, item_id: str) -> NativeExamItem:
         for item in self.items:
             if item.item_id == item_id:

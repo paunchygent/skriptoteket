@@ -67,7 +67,7 @@ def native_exam_to_examnet_qti_items(
             qti_items.append(
                 _standalone_with_stem(
                     item=item,
-                    stem=document.instructions,
+                    stem=document.printed_instructions(),
                     assets=assets,
                     assets_by_id=assets_by_id,
                     labels=labels,
@@ -79,7 +79,7 @@ def native_exam_to_examnet_qti_items(
             qti_items.append(
                 _parent_qti_item(
                     parent=parent,
-                    global_stem=document.instructions,
+                    global_stem=document.printed_instructions(),
                     children=children,
                     assets=assets,
                     assets_by_id=assets_by_id,
