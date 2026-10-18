@@ -108,7 +108,7 @@ def test_blank_runs_follow_character_class_only(text, expected):
 def test_source_paragraph_without_runs_is_the_trimmed_plain_source_text():
     chunks = (_chunk("body:0001", "  The important idea.  ", marks=("italic",)),)
     source = SourceFormatting(chunks)
-    paragraph = source_paragraph(
+    (paragraph,) = source_paragraph(
         source,
         source.paragraphs[0].start,
         source.paragraphs[0].end,
@@ -144,6 +144,30 @@ def test_a_dropped_lead_clause_before_the_gap_comes_back_from_the_source():
     result = aligned_native_item(produced, chunks=chunks, language="en").item
     assert body_plain_text(result.body).startswith("The jacket looked thin. ")
     assert "19." not in body_plain_text(result.body)
+
+
+def test_a_cue_after_a_gap_that_starts_the_paragraph_keeps_its_space():
+    source = "8. ______ (Det här är) the only seats"
+    chunks = (_chunk("body:0001", source),)
+    produced = _item(
+        chunks,
+        [{"segments": [_text(" "), _gap(), _text("(Det här är) the only seats")]}],
+        printed_label="8",
+    )
+    result = aligned_native_item(produced, chunks=chunks, language="sv").item
+    assert body_plain_text(result.body) == "[___] (Det här är) the only seats"
+
+
+def test_a_gap_that_ends_the_paragraph_keeps_the_space_before_it():
+    source = "1. The answer is ______"
+    chunks = (_chunk("body:0001", source),)
+    produced = _item(
+        chunks,
+        [{"segments": [_text("The answer is "), _gap()]}],
+        printed_label="1",
+    )
+    result = aligned_native_item(produced, chunks=chunks, language="en").item
+    assert body_plain_text(result.body) == "The answer is [___]"
 
 
 def test_too_few_gaps_for_the_blank_runs_raises_a_count_mismatch():
@@ -216,6 +240,56 @@ def test_two_reply_paragraphs_aligned_to_one_source_paragraph_become_one():
     assert body_plain_text(aligned.item.body) == "alpha [___] beta [___] gamma"
     assert len(aligned.item.body) == 1
     assert len(aligned.chunks) == len(aligned.item.body)
+
+
+def test_a_two_line_source_paragraph_builds_one_paragraph_per_line():
+    source = "Write most or the most.\nOf these three questions, this is ______ difficult one."
+    chunks = (_chunk("body:0001", source),)
+    produced = _item(
+        chunks,
+        [
+            {"segments": [_text("Write most or the most.")]},
+            {
+                "segments": [
+                    _text("Of these three questions, this is "),
+                    _gap(),
+                    _text(" difficult one."),
+                ]
+            },
+        ],
+    )
+    aligned = aligned_native_item(produced, chunks=chunks, language="en")
+    assert body_plain_text(aligned.item.body) == (
+        "Write most or the most.\nOf these three questions, this is [___] difficult one."
+    )
+    assert len(aligned.item.body) == 2
+    assert len(aligned.chunks) == len(aligned.item.body)
+    assert aligned.chunks == ("body:0001", "body:0001")
+
+
+def test_a_marked_run_across_the_line_break_keeps_its_marks_on_both_lines():
+    text = "First line\nSecond ______ line."
+    chunk = DocxChunk(
+        "body:0001",
+        "paragraph",
+        text,
+        text,
+        runs=(DocxSourceRun(0, text, ("italic",)),),
+        paragraphs=(DocxSourceParagraph(0, text, None),),
+    )
+    chunks = (chunk,)
+    produced = _item(
+        chunks,
+        [{"segments": [_text("First line Second "), _gap(), _text(" line.")]}],
+    )
+    result = aligned_native_item(produced, chunks=chunks, language="en").item
+    assert body_plain_text(result.body) == "First line\nSecond [___] line."
+    assert [
+        segment.marks
+        for paragraph in result.body
+        for segment in paragraph.segments
+        if isinstance(segment, NativeTextSegment)
+    ] == [("italic",), ("italic",), ("italic",)]
 
 
 def test_source_text_from_an_inline_answer_label_onward_stays_out():
