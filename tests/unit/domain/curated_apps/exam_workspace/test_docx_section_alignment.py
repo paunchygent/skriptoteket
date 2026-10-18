@@ -155,7 +155,7 @@ def test_an_unaligned_reply_line_keeps_the_place_of_the_line_before_it() -> None
     )
 
 
-def test_a_joined_instruction_the_reply_already_shows_is_not_repeated() -> None:
+def test_a_joined_instruction_the_reply_shows_reworded_stands_once_in_its_source_form() -> None:
     item = _aligned(
         ("Läs om vulkaner.", "body:0002"),
         ("Ta hjälp av ordlistan.", "body:0003"),
@@ -164,7 +164,20 @@ def test_a_joined_instruction_the_reply_already_shows_is_not_repeated() -> None:
 
     lines = _lines(_JOINED, [(1, ("body:0002", "body:0004"), item)], (_JOINED_INSTRUCTION,))
 
-    assert lines == ("Läs om vulkaner.", "Ta hjälp av ordlistan.", "Förklara magma.")
+    assert lines == ("Läs om vulkaner.", "Använd ordlistan nedan.", "Förklara magma.")
+
+
+def test_a_reply_that_splits_a_joined_instruction_shows_it_once_at_its_first_line() -> None:
+    item = _aligned(
+        ("Läs om vulkaner.", "body:0002"),
+        ("Använd", "body:0003"),
+        ("ordlistan.", "body:0003"),
+        ("Förklara magma.", "body:0004"),
+    )
+
+    lines = _lines(_JOINED, [(1, ("body:0002", "body:0004"), item)], (_JOINED_INSTRUCTION,))
+
+    assert lines == ("Läs om vulkaner.", "Använd ordlistan nedan.", "Förklara magma.")
 
 
 def test_a_body_aligned_to_nothing_ends_with_the_joined_instruction() -> None:

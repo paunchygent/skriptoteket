@@ -229,6 +229,34 @@ def _unshown(aligned: AlignedItem, sources: Sequence[DocxChunk]) -> tuple[_Shown
     )
 
 
+def _in_source_form(aligned: AlignedItem, sources: Sequence[DocxChunk]) -> AlignedItem:
+    """The item with each instruction chunk in ``sources`` it shows in its source form.
+
+    The body paragraphs aligned to such a chunk are that chunk: they give way, at the first
+    one's place, to the chunk's source paragraphs with their marks and pictures, so a reply
+    line that echoes an instruction without its picture never drops it. A heading keeps the
+    reply's line, which carries the printed label assembly reads.
+    """
+    for chunk in sources:
+        if chunk.kind == "heading" or not aligned.shows(chunk.anchor):
+            continue
+        at = aligned.chunks.index(chunk.anchor)
+        kept = [
+            (paragraph, anchor)
+            for paragraph, anchor in zip(aligned.item.body, aligned.chunks, strict=True)
+            if anchor != chunk.anchor
+        ]
+        aligned = _inserted(
+            AlignedItem(
+                aligned.item.model_copy(update={"body": tuple(p for p, _ in kept)}),
+                tuple(anchor for _, anchor in kept),
+            ),
+            at,
+            tuple((paragraph, chunk.anchor) for paragraph in source_paragraphs((chunk,))),
+        )
+    return aligned
+
+
 def _inserted(aligned: AlignedItem, at: int, added: Sequence[_Shown]) -> AlignedItem:
     body, chunks = aligned.item.body, aligned.chunks
     return AlignedItem(
@@ -376,7 +404,10 @@ def place_section_instructions(
                             ].strip()
                         }
                     )
-        aligned = replace(aligned, item=item)
+        aligned = _in_source_form(
+            replace(aligned, item=item),
+            [*(c for entry in joined.get(k, []) for c in entry.sources), *carried.get(k, [])],
+        )
         aligned = _with_joined(aligned, joined.get(k, []), positions, first)
         aligned = _inserted(aligned, 0, _unshown(aligned, carried.get(k, [])))
         items.append(aligned.item.model_copy(update={"item_id": _item_id(k), "sequence": k + 1}))
