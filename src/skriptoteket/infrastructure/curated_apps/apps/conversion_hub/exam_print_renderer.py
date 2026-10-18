@@ -9,9 +9,10 @@ Purpose:
 
 Relationships:
     Implements ``ExamPrintRendererProtocol``. Calls WeasyPrint directly for the PDF
-    (pictures are data URIs, so no base URL is needed) and pypdfium2 for the page
-    images, mirroring the labeler's rasterizing pattern. It is a pure leaf: it
-    renders and returns bytes and writes nothing back.
+    (pictures are data URIs, so no base URL is needed) and the process-wide
+    ``rasterize_pdf_pages`` gate for the page images, mirroring the labeler's
+    rasterizing pattern. It is a pure leaf: it renders and returns bytes and writes
+    nothing back.
 """
 
 from __future__ import annotations
@@ -59,16 +60,11 @@ class WeasyPrintExamPrintRenderer(ExamPrintRendererProtocol):
     def _page_pngs(self, pdf: bytes) -> tuple[bytes, ...]:
         import io
 
-        import pypdfium2
+        from skriptoteket.infrastructure.documents.pdfium_access import rasterize_pdf_pages
 
-        document = pypdfium2.PdfDocument(pdf)
-        try:
-            pages: list[bytes] = []
-            for index in range(len(document)):
-                image = document[index].render(scale=PREVIEW_SCALE).to_pil()
-                output = io.BytesIO()
-                image.save(output, format="PNG")
-                pages.append(output.getvalue())
-        finally:
-            document.close()
+        pages: list[bytes] = []
+        for image in rasterize_pdf_pages(pdf, scale=PREVIEW_SCALE):
+            output = io.BytesIO()
+            image.save(output, format="PNG")
+            pages.append(output.getvalue())
         return tuple(pages)
