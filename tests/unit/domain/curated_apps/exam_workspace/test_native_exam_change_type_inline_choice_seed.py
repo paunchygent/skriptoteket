@@ -165,6 +165,9 @@ def test_gap_without_accepted_values_keeps_blank_option_pair_per_gap() -> None:
         rng=random.Random(1),
     )
     for gap in result.document.items[0].gaps:
-        assert _option_texts(gap) == [("choice_001", " "), ("choice_002", " ")]
+        assert [(option.choice_id, option.body) for option in gap.options] == [
+            ("choice_001", ()),
+            ("choice_002", ()),
+        ]
         assert gap.correct_option_id == "choice_001"
     assert result.document.items[0].answer_key.origin is NativeAnswerKeyOrigin.TEACHER_AUTHORED

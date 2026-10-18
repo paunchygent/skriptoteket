@@ -315,7 +315,7 @@ def _parent_instruction_html(
     Every paragraph keeps its wording and every shared picture at its source place, exactly
     as an item body does; a missing or invalid picture already blocked the whole export.
     """
-    parent = document.parent_of(item.item_id)
+    parent = document.printed_parent_of(item.item_id)
     if parent is None or parent.item_ids[0] != item.item_id:
         return ""
     body = _body_html(parent.instruction, asset_paths_by_id=asset_paths_by_id, labels=labels)

@@ -105,7 +105,7 @@ class ExamWorkspaceDocxWriter:
         _write_shared_body(output, document.instructions, assets_by_id=assets_by_id)
 
         for item in document.items:
-            parent = document.parent_of(item.item_id)
+            parent = document.printed_parent_of(item.item_id)
             if parent is not None and parent.item_ids[0] == item.item_id:
                 _write_shared_body(output, parent.instruction, assets_by_id=assets_by_id)
             output.add_heading(labels.item_title(item), level=3)

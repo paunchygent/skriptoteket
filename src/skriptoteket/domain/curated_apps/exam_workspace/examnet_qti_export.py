@@ -62,7 +62,7 @@ def native_exam_to_examnet_qti_items(
     qti_items: list[ExamNetQtiItem] = []
     emitted_parent_ids: set[str] = set()
     for item in document.items:
-        parent = document.parent_of(item.item_id)
+        parent = document.printed_parent_of(item.item_id)
         if parent is None:
             qti_items.append(
                 _standalone_with_stem(

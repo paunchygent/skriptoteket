@@ -20,6 +20,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeAssetSegment,
     NativeGapSegment,
     NativeParagraph,
+    is_empty_body,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
@@ -165,6 +166,11 @@ class NativeExamDocument(BaseModel):
 
     def parent_of(self, item_id: str) -> NativeExamParent | None:
         return next((parent for parent in self.parents if item_id in parent.item_ids), None)
+
+    def printed_parent_of(self, item_id: str) -> NativeExamParent | None:
+        """The parent whose instruction the exports print; an empty instruction prints none."""
+        parent = self.parent_of(item_id)
+        return None if parent is not None and is_empty_body(parent.instruction) else parent
 
     def item_by_id(self, item_id: str) -> NativeExamItem:
         for item in self.items:

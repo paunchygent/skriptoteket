@@ -154,7 +154,6 @@ def test_one_child_listed_twice_is_rejected():
     [
         {"parent_id": "parent_1"},
         {"parent_id": "item_001"},
-        {"instruction": ()},
         {
             "instruction": (
                 NativeParagraph(heading_level=None, segments=(NativeGapSegment(gap_id="gap_001"),)),
@@ -166,7 +165,6 @@ def test_one_child_listed_twice_is_rejected():
     ids=[
         "short_id",
         "wrong_prefix",
-        "no_instruction",
         "gap_instruction",
         "no_children",
         "extra_field",

@@ -61,7 +61,7 @@ class NativeExamItem(BaseModel):
     suggested_kind: NativeExamItemKind | None = None
     printed_label: str | None = None  # "Fråga 3", "a": printed metadata only, never shown (D20)
     facit_text: str | None = None  # the teacher's original facit wording, kept after undo (D2)
-    body: tuple[NativeParagraph, ...] = Field(min_length=1)
+    body: tuple[NativeParagraph, ...]  # empty while the teacher has not written the text
     points: int | float | None = None
     # One uniform non-negative two-decimal tick value per grid; never default saved grids.
     tick_points: Decimal | None = Field(default=None, ge=0, decimal_places=2, allow_inf_nan=False)
@@ -142,8 +142,6 @@ class NativeExamItem(BaseModel):
             if self.gaps:
                 raise ValueError("choice items must not declare gaps")
         elif self.kind in (NativeExamItemKind.GAP_FILL, NativeExamItemKind.INLINE_CHOICE):
-            if not self.gaps:
-                raise ValueError("gap_fill items need at least one gap")
             if self.choices:
                 raise ValueError("gap_fill items must not declare choices")
         elif self.kind is NativeExamItemKind.MATCHING:

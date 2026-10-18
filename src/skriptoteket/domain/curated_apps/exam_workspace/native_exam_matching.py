@@ -18,7 +18,7 @@ class NativeMatchLeft(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     left_id: str = Field(pattern=MATCH_LEFT_ID_PATTERN)
-    body: tuple[NativeParagraph, ...] = Field(min_length=1)
+    body: tuple[NativeParagraph, ...]
 
     @field_validator("body")
     @classmethod
@@ -33,7 +33,7 @@ class NativeMatchRight(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     right_id: str = Field(pattern=MATCH_RIGHT_ID_PATTERN)
-    body: tuple[NativeParagraph, ...] = Field(min_length=1)
+    body: tuple[NativeParagraph, ...]
 
     @field_validator("body")
     @classmethod
