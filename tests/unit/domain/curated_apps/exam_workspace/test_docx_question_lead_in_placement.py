@@ -8,6 +8,7 @@ its first numbered line belong to that question alone.
 import pytest
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
+from skriptoteket.domain.curated_apps.exam_workspace.docx_item_alignment import AlignedItem
 from skriptoteket.domain.curated_apps.exam_workspace.docx_section_instructions import (
     Placed,
     place_section_instructions,
@@ -67,12 +68,12 @@ def test_lead_in_of_one_question_never_lands_in_the_next_question(heading_kind: 
         (
             1,
             ("body:0002", "body:0003", "body:0004", "body:0005"),
-            _item(1, ("1. springer", "2. sprang")),
+            AlignedItem(_item(1, ("1. springer", "2. sprang")), ("body:0004", "body:0005")),
         ),
         (
             5,
             ("body:0006", "body:0007", "body:0008", "body:0009"),
-            _item(2, ("1. hund", "2. hundar")),
+            AlignedItem(_item(2, ("1. hund", "2. hundar")), ("body:0008", "body:0009")),
         ),
     ]
 

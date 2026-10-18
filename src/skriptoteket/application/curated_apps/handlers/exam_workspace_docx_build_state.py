@@ -21,6 +21,11 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedMetadata,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
+from skriptoteket.domain.curated_apps.exam_workspace.docx_item_alignment import (
+    Accepted,
+    AcceptedEntry,
+    aligned_source_item,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import (
     PrintedPoints,
     part_openers,
@@ -34,9 +39,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
 from skriptoteket.domain.curated_apps.exam_workspace.exam_document_language import (
     Language,
     infer_exam_document_language,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
-    NativeExamItem,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
@@ -89,7 +91,7 @@ class DocxBuildState:
     known_anchors: frozenset[str] = field(init=False, repr=False, compare=False)
     chunk_by_anchor: dict[str, DocxChunk] = field(init=False, repr=False, compare=False)
     question_by_anchor: dict[str, tuple[str, ...]] = field(init=False, repr=False, compare=False)
-    accepted: list[tuple[NativeExamItem, tuple[str, ...]]] = field(default_factory=list)
+    accepted: list[AcceptedEntry] = field(default_factory=list)
     title: ProducedMetadata | None = None
     instructions: tuple[ProducedMetadata, ...] = ()
     key_anchors: set[str] = field(default_factory=set)
@@ -171,9 +173,7 @@ class DocxBuildState:
         trial.events = list(self.events)
         return trial
 
-    def printed(
-        self, anchors: tuple[str, ...], reason: str, taken: set[str]
-    ) -> tuple[NativeExamItem, tuple[str, ...]]:
+    def printed(self, anchors: tuple[str, ...], reason: str, taken: set[str]) -> AcceptedEntry:
         """The question ``anchors`` belong to as printed, facit included, as one review item.
 
         The item shows every own chunk of each grouped question ``anchors`` touch, every
@@ -197,7 +197,7 @@ class DocxBuildState:
         own = [c.anchor for c in chunks if c.anchor not in contexts]
         if own:
             item = item.model_copy(update={"source_anchor": own[0]})
-        return item, (*anchors, *extra)
+        return aligned_source_item(item, chunks), (*anchors, *extra)
 
     def review_questions(
         self,
@@ -313,7 +313,7 @@ class DocxBuildState:
         review_reasons: dict[str, str],
         governed: Mapping[str, frozenset[str]],
         exam_wide: frozenset[str],
-    ) -> tuple[tuple[NativeExamItem, tuple[str, ...]], ...]:
+    ) -> Accepted:
         """Each question no accepted item holds, as one review item showing its source as
         printed, whatever role the reply gave its chunks.
 
@@ -325,7 +325,7 @@ class DocxBuildState:
         held = {a for _, anchors in self.accepted for a in anchors}
         owned = self.owned
         taken = set(self.claimed)
-        omitted: list[tuple[NativeExamItem, tuple[str, ...]]] = []
+        omitted: list[AcceptedEntry] = []
         for question in questions:
             own = tuple(
                 a for a in question if a in owned and a not in governed and a not in exam_wide

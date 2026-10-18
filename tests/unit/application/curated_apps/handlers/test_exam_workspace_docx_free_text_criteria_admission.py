@@ -82,7 +82,7 @@ def _content(points: JsonValue, criteria: list[JsonValue]) -> dict[str, JsonValu
 
 
 def _assert_source_review_without_failing_the_batch(state: DocxBuildState) -> None:
-    (entry,) = state.accepted
+    (entry,) = [(a.item, h) for a, h in state.accepted]
     item, anchors = entry
     assert anchors == ("body:0001",)
     assert item.review.state is NativeItemReviewState.REVIEW_REQUIRED

@@ -15,22 +15,20 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_examnet_pdf_contr
     DigiExamExamNetPdfStatus,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import (
+    aligned_native_item,
     assemble_build_result,
-    native_item,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedItem,
     ProducedMetadata,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk, DocxImage
+from skriptoteket.domain.curated_apps.exam_workspace.docx_item_alignment import AlignedItem
 from skriptoteket.domain.curated_apps.exam_workspace.examnet_pdf_export import (
     native_exam_to_pdf_document,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
-    NativeExamItem,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_retry_source import (
     question_retry_source,
@@ -72,8 +70,8 @@ def _chunk(anchor: str, text: str, payload: bytes | None = None) -> DocxChunk:
     return DocxChunk(anchor, "paragraph", text, text, images)
 
 
-def _converted(anchor: str, text: str) -> NativeExamItem:
-    return native_item(
+def _converted(anchor: str, text: str) -> AlignedItem:
+    return aligned_native_item(
         ProducedItem.model_validate(
             {
                 "source_anchors": [anchor],

@@ -17,6 +17,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxChunk,
     DocxSourceParagraph,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_item_alignment import aligned_source_item
 
 pytestmark = pytest.mark.unit
 
@@ -49,8 +50,9 @@ def test_the_part_shares_what_remains_after_the_printed_question_points(
         header_anchors=frozenset({"body:0003"}) if line_tag == "header" else frozenset(),
     )
     for anchor, points in (("body:0002", q1_reply), ("body:0004", None)):
-        item = review_chunk_item(chunks[int(anchor[-1]) - 1], "test")
-        state.accepted.append((item.model_copy(update={"points": points}), (anchor,)))
+        chunk = chunks[int(anchor[-1]) - 1]
+        item = review_chunk_item(chunk, "test").model_copy(update={"points": points})
+        state.accepted.append((aligned_source_item(item, (chunk,)), (anchor,)))
     state.claimed.update(chunk.anchor for chunk in chunks)
 
     document = state.result().document
@@ -81,7 +83,9 @@ def test_a_section_parent_ends_at_the_next_part_heading_whatever_its_rank(
         questions=(("body:0002",), ("body:0003",), ("body:0005",)),
     )
     for chunk in (chunks[2], chunks[3], chunks[5]):
-        state.accepted.append((review_chunk_item(chunk, "test"), (chunk.anchor,)))
+        state.accepted.append(
+            (aligned_source_item(review_chunk_item(chunk, "test"), (chunk,)), (chunk.anchor,))
+        )
     state.claimed.update(chunk.anchor for chunk in chunks)
 
     document = state.result().document
@@ -113,7 +117,12 @@ def test_part_headings_that_repeat_their_part_stay_inside_it(level: int | None) 
         questions=(("body:0002", "body:0003"), ("body:0004", "body:0005")),
     )
     for heading, body in ((chunks[2], chunks[3]), (chunks[4], chunks[5])):
-        state.accepted.append((review_chunk_item(body, "test"), (heading.anchor, body.anchor)))
+        state.accepted.append(
+            (
+                aligned_source_item(review_chunk_item(body, "test"), (body,)),
+                (heading.anchor, body.anchor),
+            )
+        )
     state.instructions = (
         ProducedMetadata(text=chunks[1].text, source_anchors=(chunks[1].anchor,)),
     )
@@ -149,7 +158,9 @@ def test_a_part_heading_no_question_owns_ends_the_section_whatever_it_names(
         questions=(("body:0002",), ("body:0003",), ("body:0005",), ("body:0006",)),
     )
     for chunk in (chunks[2], chunks[3], chunks[5], chunks[6]):
-        state.accepted.append((review_chunk_item(chunk, "test"), (chunk.anchor,)))
+        state.accepted.append(
+            (aligned_source_item(review_chunk_item(chunk, "test"), (chunk,)), (chunk.anchor,))
+        )
     state.claimed.update(chunk.anchor for chunk in chunks)
 
     document = state.result().document
@@ -187,7 +198,12 @@ def test_a_section_ends_exactly_where_the_running_part_changes(level: int | None
         ),
     )
     for heading, body in ((chunks[2], chunks[3]), (chunks[4], chunks[5]), (chunks[6], chunks[7])):
-        state.accepted.append((review_chunk_item(body, "test"), (heading.anchor, body.anchor)))
+        state.accepted.append(
+            (
+                aligned_source_item(review_chunk_item(body, "test"), (body,)),
+                (heading.anchor, body.anchor),
+            )
+        )
     state.instructions = (
         ProducedMetadata(text=chunks[1].text, source_anchors=(chunks[1].anchor,)),
     )

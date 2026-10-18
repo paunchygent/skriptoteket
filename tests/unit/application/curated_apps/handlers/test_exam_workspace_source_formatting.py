@@ -97,7 +97,7 @@ async def test_failed_reconstruction_uses_the_exact_swedish_review_reason():
     admit_batch(
         {"title": None, "instructions": [], "answer_key_anchors": [], "items": [raw]}, state
     )
-    item = state.accepted[0][0]
+    item = state.accepted[0][0].item
     assert item.review.reasons == (FORMATTING_REASON,)
     assert any(
         "italic" in segment.marks

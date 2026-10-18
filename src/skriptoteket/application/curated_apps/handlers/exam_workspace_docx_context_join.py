@@ -22,7 +22,10 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_one_item
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.docx_heading_wording import shown_heading
-from skriptoteket.domain.curated_apps.exam_workspace.docx_item_alignment import AlignedItem
+from skriptoteket.domain.curated_apps.exam_workspace.docx_item_alignment import (
+    AlignedItem,
+    source_places,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     QUESTION_HEADING_LABEL,
 )
@@ -124,38 +127,23 @@ def without_held_owned_contexts(
     }
 
 
-def _places(aligned: AlignedItem, position: dict[str, int], first: int) -> list[int]:
-    """Each body paragraph's source place: its aligned chunk's position.
-
-    An unaligned paragraph takes the place of the aligned paragraph before it; with none
-    before it, of the first aligned paragraph after it; with none at all, of the question's
-    first own chunk.
-    """
-    known = [position[c] if c is not None and c in position else None for c in aligned.chunks]
-    following = next((p for p in known if p is not None), first)
-    places: list[int] = []
-    for place in known:
-        places.append(place if place is not None else places[-1] if places else following)
-    return places
-
-
 def joined_body(
     aligned: AlignedItem,
     passages: tuple[DocxChunk, ...],
     headings: tuple[DocxChunk, ...],
     own: tuple[DocxChunk, ...],
     state: DocxBuildState,
-) -> tuple[NativeParagraph, ...]:
-    """``aligned.item``'s body with the joined contexts and question headings at their source
-    place.
+) -> AlignedItem:
+    """``aligned.item`` with the joined contexts and question headings at their source place,
+    and the chunk each paragraph of the new body shows.
 
     A reply paragraph aligned to a joined context or to one of the question's ``headings`` is
     that chunk: it leaves the body, and the chunk shows once, in its joined form. A context
     shows its source paragraphs, marks and pictures; a heading shows its wording without its
     points label and question number (``shown_heading``), the form its heading run in
-    assembly gives it, so assembly finds it delivered. Each joined chunk stands after the body
-    paragraphs whose place comes before it and before those whose place comes after it, in
-    source order (``_places``).
+    assembly gives it. Each joined chunk stands after the body paragraphs whose place comes
+    before it and before those whose place comes after it, in source order
+    (``source_places``).
     """
     position = {chunk.anchor: n for n, chunk in enumerate(state.chunks)}
     first = position[own[0].anchor] if own else len(position)
@@ -166,12 +154,12 @@ def joined_body(
         for c in headings
     }
     shown |= {c.anchor: source_paragraphs((c,)) for c in passages}
-    body: list[tuple[int, tuple[NativeParagraph, ...]]] = [
-        (place, (paragraph,))
+    body: list[tuple[int, tuple[tuple[NativeParagraph, str | None], ...]]] = [
+        (place, ((paragraph, chunk),))
         for paragraph, chunk, place in zip(
             aligned.item.body,
             aligned.chunks,
-            _places(aligned, position, first),
+            source_places(aligned.chunks, position, first),
             strict=True,
         )
         if chunk not in shown
@@ -179,5 +167,9 @@ def joined_body(
     for anchor in sorted(shown, key=position.__getitem__):
         place = position[anchor]
         at = next((n for n, (p, _) in enumerate(body) if p > place), len(body))
-        body.insert(at, (place, shown[anchor]))
-    return tuple(paragraph for _, paragraphs in body for paragraph in paragraphs)
+        body.insert(at, (place, tuple((paragraph, anchor) for paragraph in shown[anchor])))
+    entries = [entry for _, entries in body for entry in entries]
+    return AlignedItem(
+        aligned.item.model_copy(update={"body": tuple(paragraph for paragraph, _ in entries)}),
+        tuple(chunk for _, chunk in entries),
+    )

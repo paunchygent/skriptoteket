@@ -12,13 +12,14 @@ section parent (D40) and is never sent back.
 
 import re
 from collections.abc import Iterable, Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     DocxBuildEvent,
     ProducedMetadata,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
+from skriptoteket.domain.curated_apps.exam_workspace.docx_item_alignment import Accepted
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import POINT_LABEL
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeGapSegment,
@@ -38,8 +39,6 @@ LEFT_OUT_REASON = (
     "Källtext som saknas:"
 )
 DRAWING_SHOWN = "[Bild utan text]"
-
-Accepted = tuple[tuple[NativeExamItem, tuple[str, ...]], ...]
 
 
 @dataclass(frozen=True)
@@ -167,7 +166,9 @@ def _owner(accepted: Accepted, own: frozenset[str]) -> int | None:
     """The converted item holding the question's own chunks, else any item holding them."""
     holding = [k for k, (_, anchors) in enumerate(accepted) if own.intersection(anchors)]
     converted = [
-        k for k in holding if accepted[k][0].review.parse_origin is NativeParseOrigin.LLM_PARSED
+        k
+        for k in holding
+        if accepted[k][0].item.review.parse_origin is NativeParseOrigin.LLM_PARSED
     ]
     return next(iter(converted or holding), None)
 
@@ -213,13 +214,14 @@ def return_misplaced_own_chunks(
     updated = list(accepted)
     events = []
     for k, anchors in back.items():
-        item, held = updated[k]
+        aligned, held = updated[k]
+        item = aligned.item
         ordered = sorted(anchors, key=positions.__getitem__)
         if item.review.parse_origin is NativeParseOrigin.LLM_PARSED and (
             missing := wording_left_out(item, [by_anchor[a] for a in ordered])
         ):
             item = with_left_out_mark(item, missing)
-        updated[k] = (item, (*held, *ordered))
+        updated[k] = (replace(aligned, item=item), (*held, *ordered))
         events.append(
             DocxBuildEvent(
                 stage="assembly",

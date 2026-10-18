@@ -33,7 +33,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_governing_chunks impor
     unclaimed_governing,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_item_alignment import (
+    Accepted,
     AlignedItem,
+    aligned_source_item,
     paragraph_chunks,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions import (
@@ -319,7 +321,7 @@ def review_chunk_item(chunk: DocxChunk, reason: str) -> NativeExamItem:
 
 def _ordered_items(
     chunks: tuple[DocxChunk, ...],
-    accepted: tuple[tuple[NativeExamItem, tuple[str, ...]], ...],
+    accepted: Accepted,
     review_reasons: dict[str, str],
     instructions: tuple[ProducedMetadata, ...],
     governed: Mapping[str, frozenset[str]],
@@ -333,7 +335,7 @@ def _ordered_items(
         (
             positions[chunk.anchor],
             (chunk.anchor,),
-            review_chunk_item(chunk, review_reasons[chunk.anchor]),
+            aligned_source_item(review_chunk_item(chunk, review_reasons[chunk.anchor]), (chunk,)),
         )
         for chunk in chunks
         if chunk.anchor in review_reasons
@@ -356,7 +358,7 @@ def assemble_build_result(
     filename: str,
     source_sha256: str,
     chunks: tuple[DocxChunk, ...],
-    accepted: tuple[tuple[NativeExamItem, tuple[str, ...]], ...] = (),
+    accepted: Accepted = (),
     review_reasons: dict[str, str],
     key_anchors: frozenset[str] = frozenset(),
     title: ProducedMetadata | None = None,

@@ -212,9 +212,9 @@ def test_printed_question_points_own_scores_and_never_become_exam_text(case: Pri
         state.kept_conflicts.update(question_anchors)
         with_type_check_mark(state)
         for accepted_item, _ in state.accepted:
-            assert accepted_item.review.confidence is not None
-            assert 0 < accepted_item.review.confidence < 0.95
-    admitted = tuple(item for item, _ in state.accepted)
+            assert accepted_item.item.review.confidence is not None
+            assert 0 < accepted_item.item.review.confidence < 0.95
+    admitted = tuple(aligned.item for aligned, _ in state.accepted)
     document = apply_header(
         state.result(questions=questions).document, manifest, chunks, course_key=None, courses=()
     ).document

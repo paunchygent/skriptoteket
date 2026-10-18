@@ -5,6 +5,7 @@ from uuid import uuid4
 import pytest
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import (
+    aligned_native_item,
     assemble_build_result,
     native_item,
 )
@@ -92,7 +93,7 @@ def test_assembled_item_keeps_an_omitted_size_heading():
     question = _chunk(
         "body:0002", "Answer the question.", (DocxSourceRun(0, "Answer the question.", ()),)
     )
-    item = native_item(
+    item = aligned_native_item(
         _produced("Answer the question.", (heading.anchor, question.anchor)),
         chunks=(heading, question),
         language="en",
