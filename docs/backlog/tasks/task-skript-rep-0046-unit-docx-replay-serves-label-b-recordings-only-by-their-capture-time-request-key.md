@@ -65,11 +65,18 @@ Method: a detached throwaway worktree at `b7ca932c` replayed both exams through 
 | R4  | An `item_type_label` request is matched only on `request.user_payload` ending with `### Question q1\n<key>` against an unused recording. An unmatched request raises `MissingRecording`. The provider has no id-derived fallback. |
 | R5  | No re-recording and no live model calls; the converter-batch anchor match is out of scope. |
 
+### Capture-Revision Correction (review finding, 2026-10-18)
+
+The reviewer found that the recordings were captured at `4717a9d3`, not `b7ca932c`. The fixture README and the `b7ca932c` commit message both say so. The same no-live derivation was then run in a throwaway detached worktree at `4717a9d3`, with the two user DOCX files copied into that worktree's `docx_corpus/`. The script is `evidence/probes/capture_user_exam_label_b_keys_4717a9d3.py` and its keys are in `evidence/probes/keys-4717a9d3/`, both in the retained root. The throwaway worktree was removed.
+
+- `exempelprov_grammatik_sve2_v2_1` q1-q5, q7, q8: identical to the committed sidecars, so they are current, with `4717a9d3` as the capture revision.
+- `omprov_grammatik_sve2` q1-q8: all 8 differ. At `4717a9d3` each request began with its part heading line (`**DEL 1: MORFEM OCH FRASER**` for q1-q4, `**DEL 2: SATSLÖSNING**` for q5-q6, `**DEL 3: BISATSER**` for q7-q8), and today's requests lack it. These 8 recordings answered a different request and are stale. The committed `omprov` sidecars hold today's text, so they do not record the capture-time request; they stay unchanged until the user rules.
+
 ## Resume Here (2026-10-18)
 
 - State: in independent review; reviewer pending. Branch `codex/task-skript-rep-0046-remote` in worktree `/home/paunchygent/apps/skriptoteket-task-skript-rep-0046-remote`; implementation head `bcc4047c`.
 - Done: the shared key module, the unit replay key match, the 15 user-exam capture-time sidecars and the adversarial test file. Proof: new test file 12/12, user-exam replay 10/10, other replay importers 1150 passed, Docker integration 11/11, ruff, format and mypy clean.
-- Next: the parent routes the review verdict; repair any admitted findings.
-- Open findings: none. A note for the reviewer: the key does not cover the fixed classification instruction (same as in REP-0045).
+- Next: a user ruling on the 8 stale `omprov_grammatik_sve2` label_b recordings (see Capture-Revision Correction), for example re-recording them live and writing their sidecars from the captured requests. After that, the review continues.
+- Open findings: the reviewer's provenance finding. The 7 `exempelprov` keys are confirmed at `4717a9d3`; the 8 `omprov` recordings are stale. A note for the reviewer: the key does not cover the fixed classification instruction (same as in REP-0045).
 - Retained root: `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a14f5e-1cc7-74d6-abf4-0d911114f415`.
-- Blockers and user gates: none. No children are running.
+- Blockers and user gates: re-recording the 8 `omprov` replies needs the user. No children are running.
