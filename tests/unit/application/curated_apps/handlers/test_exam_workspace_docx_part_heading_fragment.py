@@ -7,8 +7,8 @@ The recorded reply lists it and gives the body ["Part 3,", stem] with printed_la
 replaces the question's own headings, so the item published
 ["Part 3, Question 3", "Part 3,", stem]: the placed heading plus the reply's leftover of it.
 
-The owner that must change is admission's ``headings`` (outside this unit's write boundary,
-reported in CH4FRAG/diagnosis.md); both tests are strict xfail until it does.
+Admission's ``headings`` owns the repair: a part line that opens no parent and heads its one
+question is one of that question's headings, so the join replaces the aligned reply paragraph.
 """
 
 from uuid import UUID
@@ -51,10 +51,6 @@ from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
 
 pytestmark = pytest.mark.unit
 
-_PENDING = pytest.mark.xfail(
-    strict=True,
-    reason="CH4FRAG: admission's headings omit the one-question part opener (diagnosis.md)",
-)
 _POETRY = "chapter_4_poetry_and_lyrics_quiz_med_facit"
 # Two part lines that repeat one part identity, as chapter_4's "Part 3, Question N" lines do:
 # each heads its one question and opens no parent.
@@ -67,11 +63,13 @@ _CHUNKS = (
     DocxChunk("body:0004", "paragraph", _STEMS[1], _STEMS[1]),
 )
 # As the chapter_4 grouping gives them: a part-labelled heading is never a question anchor.
-_QUESTIONS = {"q1": ("body:0002",), "q2": ("body:0004",)}
+_QUESTIONS: dict[str, tuple[str, ...]] = {"q1": ("body:0002",), "q2": ("body:0004",)}
 _FREE_TEXT = frozenset({NativeExamItemKind.FREE_TEXT})
 
 
-def _run() -> DocxConversionRun:
+def _run(
+    chunks: tuple[DocxChunk, ...] = _CHUNKS, questions: dict[str, tuple[str, ...]] = _QUESTIONS
+) -> DocxConversionRun:
     job = DocxConversionJob(
         job_id=UUID(int=1),
         worker_id="worker",
@@ -79,13 +77,13 @@ def _run() -> DocxConversionRun:
         filename="prov.docx",
         source_sha256="0" * 64,
         source_docx=b"",
-        chunks=_CHUNKS,
+        chunks=chunks,
         course_key=None,
     )
     run = DocxConversionRun(job, 0.0)
     run.contexts = ()
     manifest = ExamManifest(
-        questions=tuple(ManifestQuestion(q, a, (), ()) for q, a in _QUESTIONS.items()),
+        questions=tuple(ManifestQuestion(q, a, (), ()) for q, a in questions.items()),
         contexts=(),
         title_anchors=(),
         header=(),
@@ -94,10 +92,10 @@ def _run() -> DocxConversionRun:
         unplaced_anchors=(),
     )
     run.context_anchors = frozenset()
-    run.families = question_families(manifest, _CHUNKS)
-    run.kinds = dict.fromkeys(_QUESTIONS, NativeExamItemKind.FREE_TEXT)
+    run.families = question_families(manifest, chunks)
+    run.kinds = dict.fromkeys(questions, NativeExamItemKind.FREE_TEXT)
     run.label_kinds = dict(run.kinds)
-    run.own_anchors = dict(_QUESTIONS)
+    run.own_anchors = dict(questions)
     return run
 
 
@@ -132,7 +130,6 @@ def _heading_fragments(heading: str, lines: tuple[str, ...]) -> list[str]:
     return [line for line in lines if line != shown and line and shown.startswith(line)]
 
 
-@_PENDING
 def test_reply_leftover_of_a_part_heading_leaves_the_item_body():
     run = _run()
     claims = frozenset().union(*(f.claims for f in run.families))
@@ -154,7 +151,6 @@ def test_reply_leftover_of_a_part_heading_leaves_the_item_body():
         assert item.plain_text_lines() == (heading.split(" (")[0], stem)
 
 
-@_PENDING
 @pytest.mark.asyncio
 async def test_chapter_4_replay_has_no_heading_leftover_paragraph():
     replay = build_replay(_POETRY)
@@ -169,3 +165,27 @@ async def test_chapter_4_replay_has_no_heading_leftover_paragraph():
         if (fragments := _heading_fragments(chunk.text, item.plain_text_lines()))
     }
     assert leftovers == {}
+
+
+def test_part_line_that_opens_a_parent_over_one_question_is_no_heading_of_it():
+    """A part line naming its part once opens a parent (DEL 4); the question's heading rule
+    does not take it, so the reply's own paragraph stays the only text the entry gives."""
+    line = "Del 4: Textanalys (1 p)"
+    chunks = (
+        DocxChunk("body:0001", "heading", line, line),
+        DocxChunk("body:0002", "paragraph", _STEMS[0], _STEMS[0]),
+    )
+    questions: dict[str, tuple[str, ...]] = {"q1": ("body:0002",)}
+    run = _run(chunks, questions)
+    claims = frozenset().union(*(f.claims for f in run.families))
+    batch = ConversionBatch("w1-01", _FREE_TEXT, tuple(questions), claims, frozenset())
+    state = batch_state(run, batch)
+    entries: list[JsonValue] = [_entry("body:0001", "body:0002", _STEMS[0], "Del 4:", "Question 1")]
+    admit_batch(
+        {"items": entries, "answer_key_anchors": [], "title": None, "instructions": []}, state
+    )
+    merge_batch(run.state, state, frozenset())
+    document = final_publication(run, None).result.document
+
+    (item,) = [i for i in document.items if _STEMS[0] in i.plain_text_lines()]
+    assert line.split(" (")[0] not in item.plain_text_lines()

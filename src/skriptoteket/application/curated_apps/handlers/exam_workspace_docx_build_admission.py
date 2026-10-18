@@ -240,10 +240,13 @@ def _admit_item(
             )
             return
     own = set().union(*(state.question_by_anchor.get(a, ()) for a in anchors))
+    shown_lines = own | _part_lines_heading(anchors, state)
     headings = tuple(
         c
         for c in state.chunks
-        if c.anchor in own and c.anchor not in state.header_anchors and is_question_heading(c)
+        if c.anchor in shown_lines
+        and c.anchor not in state.header_anchors
+        and is_question_heading(c)
     )
     if headings and set(anchors).issubset(c.anchor for c in headings):
         # A separately emitted heading is not a second question when the reply also
@@ -368,6 +371,26 @@ def _admit_item(
 
     built = _built(index, anchors, state, seen, build)
     state.accepted.append(_with_left_out(index, built, state, seen, item_held))
+
+
+def _part_lines_heading(anchors: tuple[str, ...], state: DocxBuildState) -> set[str]:
+    """The part lines that head the one question these anchors hold.
+
+    A part line no question owns that opens no parent (``parent_openers``) heads the one
+    question of its part. Such a line is a heading of that question, which the join shows
+    at its source place (CH4FRAG); the plan decides it, never the line's wording.
+    """
+    held = {state.question_by_anchor[a] for a in anchors if a in state.question_by_anchor}
+    plan = printed_points_plan(state.chunks, state.questions)
+    parents = parent_openers(plan.parts)
+    return {
+        part.opener
+        for part in plan.parts
+        if part.opener not in parents
+        and part.opener not in state.question_by_anchor
+        and len(part.questions) == 1
+        and state.questions[part.questions[0]] in held
+    }
 
 
 def _without_part_lines(
