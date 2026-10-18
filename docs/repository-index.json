@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "c2004641b25464674200845a9ac4d3ff0f3b024c90c68d5c88bd4c92d7735066",
+  "source_set_digest": "cf4cde2c888f720e9974b8c85b9187d2fce3c4449f4c773744309da780ecfe6d",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5515,6 +5515,25 @@
       "type": "task",
       "title": "Exam.net probe of an ordering question inside a part",
       "path": "docs/backlog/tasks/task-skript-39-06-09-exam-net-probe-of-an-ordering-question-inside-a-part.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-06",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-06-10",
+      "type": "task",
+      "title": "Teachers group questions into new parts and move questions into, out of and between parts",
+      "path": "docs/backlog/tasks/task-skript-39-06-10-teachers-group-questions-into-new-parts-and-move-questions-into-out-of-and-between-parts.md",
       "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-06",
