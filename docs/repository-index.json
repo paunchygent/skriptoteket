@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "861fb3c49442359d3d972cc13fa05784065949b1766c919d772ef7db3e0674a1",
+  "source_set_digest": "802bd976c4328070d9ff379fcf84d29b8d0bc35be5fccd43f4db01ebc22c4da8",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5492,6 +5492,25 @@
       }
     },
     {
+      "id": "TASK-SKRIPT-39-06-09",
+      "type": "task",
+      "title": "Exam.net probe of an ordering question inside a part",
+      "path": "docs/backlog/tasks/task-skript-39-06-09-exam-net-probe-of-an-ordering-question-inside-a-part.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-06",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
       "id": "TASK-SKRIPT-39-07-01",
       "type": "task",
       "title": "Import a DigiExam export into the exam workspace as a native exam document",
@@ -6259,6 +6278,44 @@
         "decided_at": "2026-10-18",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "Pi ruthless-reviewer session 0ff04626 (rereview b5338e7a, f2379108; retained session 01a149c9-5bc7-7713-ba64-12dee0470bdd, evidence/reviews/TASK-SKRIPT-40-04-03/review-1.md..review-3.md): review-3 clears the high R2-F1 saved-position finding and requests only one medium fixture repair (two integration tests seeded malformed container bytes, failing identically on main). That repair landed in 9f3ec452 and, as a medium finding, was admitted by the parent on focused checks without rereview. Merged to main 10eef9fd; affected frontend Vitest 1896 passed, vue-tsc, ESLint, backend lint and typecheck clean. The parent's staging walk on 10eef9fd on 2026-10-18 passed: fresh Svenska 2 import, edit, Spara, undo/redo, reopen and undo (evidence/staging-walk-10eef9fd/walk.md)."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-04",
+      "type": "task",
+      "title": "Teachers edit a dropdown gap's options and mark the correct one in the gap popover",
+      "path": "docs/backlog/tasks/task-skript-40-04-04-teachers-edit-a-dropdown-gap-s-options-and-mark-the-correct-one-in-the-gap-popover.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-05",
+      "type": "task",
+      "title": "Exported files are named after the exam title",
+      "path": "docs/backlog/tasks/task-skript-40-04-05-exported-files-are-named-after-the-exam-title.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {
