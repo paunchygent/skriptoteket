@@ -20,8 +20,8 @@ from uuid import uuid4
 import pytest
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import (
+    aligned_native_item,
     assemble_build_result,
-    native_item,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedItem,
@@ -93,7 +93,7 @@ def _rewritten_instruction(anchors: tuple[str, ...]) -> ProducedMetadata:
 
 
 def _converted(anchor: str, text: str) -> NativeExamItem:
-    return native_item(
+    return aligned_native_item(
         ProducedItem(
             source_anchors=(anchor,),
             outcome="converted",
@@ -110,7 +110,7 @@ def _converted(anchor: str, text: str) -> NativeExamItem:
             choices=(),
         ),
         language="en",
-    )
+    ).item
 
 
 def _rendered(

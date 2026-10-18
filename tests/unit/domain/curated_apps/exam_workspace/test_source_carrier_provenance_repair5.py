@@ -4,7 +4,7 @@ import random
 
 import pytest
 
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import native_item
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import aligned_native_item
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedItem
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxChunk,
@@ -47,7 +47,7 @@ def convert(source, wordings, *, points=2, prompt="Choose.", source_prompt=None)
             "choices": [{"text": text, "correct": False} for text in wordings],
         }
     )
-    return native_item(produced, chunks=chunks, language="en")
+    return aligned_native_item(produced, chunks=chunks, language="en").item
 
 
 @pytest.mark.parametrize(

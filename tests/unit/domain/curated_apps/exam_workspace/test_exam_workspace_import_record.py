@@ -5,7 +5,7 @@ from uuid import uuid4
 import pytest
 from pydantic import ValidationError
 
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import native_item
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import aligned_native_item
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     DocxBuildEvent,
     ProducedItem,
@@ -106,7 +106,7 @@ def test_docx_capture_keeps_plain_own_wording_and_import_time_key_origin(
             {"text": "Rött", "correct": has_key},
             {"text": "Blått", "correct": False},
         ]
-    built = native_item(ProducedItem.model_validate(payload), language="sv")
+    built = aligned_native_item(ProducedItem.model_validate(payload), language="sv").item
     own = source(text="Frågan i original.", key_anchors=("body:0008",))
     own = own.model_copy(
         update={
@@ -176,7 +176,7 @@ def test_successful_resend_keeps_first_label_and_chosen_type_despite_review_reas
             "choices": [{"text": "Röd", "correct": True}, {"text": "Blå", "correct": True}],
         }
     )
-    built = native_item(ProducedItem.model_validate(payload), language="sv")
+    built = aligned_native_item(ProducedItem.model_validate(payload), language="sv").item
     built = built.model_copy(
         update={
             "retry_source": source(label_kind=NativeExamItemKind.SINGLE_CHOICE),

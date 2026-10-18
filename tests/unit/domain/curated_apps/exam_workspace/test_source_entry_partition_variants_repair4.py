@@ -1,6 +1,6 @@
 """Adversarial source-entry partition variants beyond the R6/R9 reviewer probes.
 
-Every case drives the real ``native_item`` assembly and asserts which source
+Every case drives the real ``aligned_native_item`` assembly and asserts which source
 characters each entry owns: the complete source wording, its source marks, and
 no neighbour's words. Unlabelled rewrites deliberately keep word evidence for
 their own sentence (usually its first and last word) so the intended sentence
@@ -11,7 +11,7 @@ import re
 
 import pytest
 
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import native_item
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import aligned_native_item
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedItem
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxChunk,
@@ -85,7 +85,7 @@ def _convert_runs(runs, *, choices=(), left=(), right=()):
             "match_right": right,
         }
     )
-    result = native_item(item, chunks=chunks, language="en")
+    result = aligned_native_item(item, chunks=chunks, language="en").item
     assert body_plain_text(result.body) == prompt
     assert result.facit_text is None
     assert all(isinstance(entry.body, tuple) for entry in result.choices)

@@ -6,8 +6,8 @@ from uuid import uuid4
 import pytest
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import (
+    aligned_native_item,
     missing_picture_reasons,
-    native_item,
     review_source_item,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedItem
@@ -136,7 +136,7 @@ def test_native_item_maps_the_model_carrier_to_the_source_picture() -> None:
         ]
     )
 
-    item = native_item(produced, chunks=(chunk,), language="sv")
+    item = aligned_native_item(produced, chunks=(chunk,), language="sv").item
 
     (paragraph,) = item.body
     assert paragraph.segments == (
@@ -159,7 +159,7 @@ def test_native_item_rejects_a_picture_the_source_does_not_carry() -> None:
     )
 
     with pytest.raises(ValueError):
-        native_item(produced, chunks=(), language="sv")
+        aligned_native_item(produced, chunks=(), language="sv").item
 
 
 def test_manifest_carries_a_retry_only_picture_without_exporting_it() -> None:
@@ -179,7 +179,7 @@ def test_manifest_carries_a_retry_only_picture_without_exporting_it() -> None:
             },
         ]
     )
-    item = native_item(produced, chunks=(chunk,), language="sv").model_copy(
+    item = aligned_native_item(produced, chunks=(chunk,), language="sv").item.model_copy(
         update={
             "retry_source": NativeExamRetrySource(
                 chunks=(
@@ -239,7 +239,7 @@ def test_manifest_drops_a_picture_no_item_references() -> None:
             },
         ]
     )
-    item = native_item(produced, chunks=(chunk,), language="sv")
+    item = aligned_native_item(produced, chunks=(chunk,), language="sv").item
 
     assets, payloads = asset_manifest((item,), (chunk,))
 
@@ -264,7 +264,7 @@ def test_native_item_refuses_a_question_whose_source_picture_is_missing() -> Non
     )
 
     with pytest.raises(ValueError) as raised:
-        native_item(produced, chunks=(chunk,), language="sv")
+        aligned_native_item(produced, chunks=(chunk,), language="sv").item
 
     assert "unresolved source pictures" in str(raised.value)
     assert "/word/media/figur.emf" in str(raised.value)

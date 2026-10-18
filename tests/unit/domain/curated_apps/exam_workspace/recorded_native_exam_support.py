@@ -11,7 +11,7 @@ import json
 from pathlib import Path
 from uuid import uuid4
 
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import native_item
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import aligned_native_item
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedItem
 from skriptoteket.domain.curated_apps.exam_workspace.exam_document_language import Language
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
@@ -66,7 +66,7 @@ def recorded_items(exam: str = ENGLISH_EXAM) -> tuple[NativeExamItem, ...]:
     """Every converted item of the exam, numbered in source order."""
     language = recorded_exam_language(exam)
     return tuple(
-        native_item(produced, language=language).model_copy(
+        aligned_native_item(produced, language=language).item.model_copy(
             update={"item_id": f"item_{number:03d}", "sequence": number}
         )
         for number, produced in enumerate(recorded_converted_items(exam), start=1)

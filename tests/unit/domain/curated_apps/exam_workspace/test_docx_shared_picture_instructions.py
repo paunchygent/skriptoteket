@@ -15,8 +15,8 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_examnet_pdf_contr
     DigiExamExamNetPdfStatus,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import (
+    aligned_native_item,
     assemble_build_result,
-    native_item,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedItem,
@@ -73,7 +73,7 @@ def _chunk(anchor: str, text: str, payload: bytes | None = None) -> DocxChunk:
 
 
 def _converted(anchor: str, text: str) -> NativeExamItem:
-    return native_item(
+    return aligned_native_item(
         ProducedItem.model_validate(
             {
                 "source_anchors": [anchor],
@@ -98,7 +98,7 @@ def _converted(anchor: str, text: str) -> NativeExamItem:
             }
         ),
         language="sv",
-    )
+    ).item
 
 
 def _assembled() -> tuple[NativeExamDocument, dict[str, bytes], str, str]:

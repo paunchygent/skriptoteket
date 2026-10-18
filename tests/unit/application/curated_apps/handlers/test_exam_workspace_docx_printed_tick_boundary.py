@@ -17,7 +17,7 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_run impo
     DocxConversionJob,
     DocxConversionRun,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import native_item
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import aligned_native_item
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedItem,
     ProducedMatchPair,
@@ -108,7 +108,7 @@ def test_printed_grid_tick_boundary_keeps_score_or_complete_source_review(
         questions=(own,),
         header_anchors=frozenset() if heading else frozenset({"body:0001"}),
     )
-    first = native_item(produced, language="sv")
+    first = aligned_native_item(produced, language="sv").item
     first = first.model_copy(
         update={"review": first.review.model_copy(update={"confidence": 0.82})}
     )

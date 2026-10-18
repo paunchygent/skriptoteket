@@ -5,8 +5,8 @@ from uuid import uuid4
 import pytest
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import (
+    aligned_native_item,
     assemble_build_result,
-    native_item,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedItem,
@@ -73,9 +73,9 @@ def test_native_item_rebuilds_a_marked_free_text_prefix_from_source():
         text,
         (DocxSourceRun(0, "Safety.", ("bold",)), DocxSourceRun(7, text[7:], ())),
     )
-    item = native_item(
+    item = aligned_native_item(
         _produced("Do not mix acids.", (safety.anchor,)), chunks=(safety,), language="en"
-    )
+    ).item
     assert item.review.state is NativeItemReviewState.REVIEW_COMPLETE
     assert body_plain_text(item.body) == text
     assert _as_text(item.body[0].segments[0]).text == "Safety."
@@ -92,11 +92,11 @@ def test_assembled_item_keeps_an_omitted_size_heading():
     question = _chunk(
         "body:0002", "Answer the question.", (DocxSourceRun(0, "Answer the question.", ()),)
     )
-    item = native_item(
+    item = aligned_native_item(
         _produced("Answer the question.", (heading.anchor, question.anchor)),
         chunks=(heading, question),
         language="en",
-    )
+    ).item
     result = assemble_build_result(
         document_id=uuid4(),
         filename="heading.docx",

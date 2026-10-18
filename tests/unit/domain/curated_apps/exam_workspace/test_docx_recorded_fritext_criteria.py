@@ -3,7 +3,7 @@
 import json
 from pathlib import Path
 
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import native_item
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import aligned_native_item
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedItem
 from tests.unit.domain.curated_apps.exam_workspace.recorded_native_exam_support import (
     recorded_exam_language,
@@ -24,7 +24,9 @@ def test_recorded_prose_guides_become_estimated_native_criteria() -> None:
             (criterion,) = produced.criteria
             # These recordings contain prose guides, not per-criterion point breakdowns.
             assert criterion.points is None, path
-            native = native_item(produced, language=recorded_exam_language(path.parent.name))
+            native = aligned_native_item(
+                produced, language=recorded_exam_language(path.parent.name)
+            ).item
             assert len(native.criteria) == 1, path
             assert native.criteria[0].text == criterion.text, path
             assert native.criteria[0].points == (produced.points or 1), path
