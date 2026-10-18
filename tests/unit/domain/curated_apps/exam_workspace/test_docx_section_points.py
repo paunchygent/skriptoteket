@@ -155,6 +155,16 @@ def test_printed_question_points_beat_the_reply_before_the_part_shares_what_rema
         assert _marked(scored) == [False, False]
 
 
+def test_a_question_label_before_the_part_line_scores_the_first_question():
+    """R3-1: the labelled line heads q1 across the part line; q2 takes the remainder."""
+    chunks, questions = _exam("Poäng: 2 poäng", "# Del 1: 10 poäng", "Q 1. Fråga", "Q 2. Fråga")
+
+    scored = _score(chunks, questions, _items(chunks, questions, (None, None)))
+
+    assert _points(scored) == [2, 8]
+    assert _marked(scored) == [False, False]
+
+
 def test_a_printed_point_beats_a_reply_of_seven():
     chunks, questions = _exam(
         "# Del 3: kortsvar, 5 poäng",
@@ -269,20 +279,29 @@ def test_an_unkeyed_grid_keeps_no_total_until_ticks_can_determine_it():
     assert scored.items[1].points == 5
 
 
-def test_the_part_total_checks_the_largest_parent_that_holds_only_its_items():
+def test_the_part_total_checks_only_a_parent_over_the_whole_part():
+    """R3-3: a parent over part of a part's questions keeps its own total."""
     chunks, questions = _exam(
-        "# Del 1: 2 poäng", "Q 1.", "Q 2.", "# Del 2: 3 poäng", "Q 3.", "Q 4."
+        "# Del 1: 10 poäng",
+        "Q 1.",
+        "Poäng: 2 poäng",
+        "Q 2.",
+        "Poäng: 3 poäng",
+        "Q 3.",
+        "Poäng: 5 poäng",
+        "# Del 2: 4 poäng",
+        "Q 4.",
+        "Q 5.",
     )
-    items = _items(chunks, questions, (1, 1, 1, 2))
+    items = _items(chunks, questions, (2, 3, 5, 2, 2))
     parents = (
         _parent("parent_001", "item_001", "item_002"),
-        _parent("parent_002", "item_002", "item_003"),
-        _parent("parent_003", "item_004"),
+        _parent("parent_002", "item_004", "item_005"),
     )
 
     scored = _score(chunks, questions, items, parents)
 
-    assert [parent.printed_total for parent in scored.parents] == [2, None, 3]
+    assert [parent.printed_total for parent in scored.parents] == [None, 4]
 
 
 def test_questions_outside_every_part_keep_the_models_reading():

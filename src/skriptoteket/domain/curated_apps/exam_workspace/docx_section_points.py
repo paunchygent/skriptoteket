@@ -2,7 +2,7 @@
 
 The pass reads only ``PrintedPoints``: each question that prints its points takes them
 over the reply first, then each part gives what remains of its total to its questions
-that print none, and each part's total checks the parent that holds its items.
+that print none, and each part's total checks the parent that holds exactly its items.
 """
 
 from collections.abc import Mapping
@@ -47,7 +47,8 @@ def apply_printed_points(
     them (Q12/R14) and the rest share what remains in whole points, as evenly as possible,
     earlier questions taking the extra point; such shares are marked estimated. A share of
     no point, or an unkeyed grid, keeps the model's own reading. The part's total then
-    checks the largest parent that holds only its items.
+    checks the parent that holds exactly the part's items; a parent over only some of them
+    keeps its own total.
     """
     scored = list(items)
     events: list[DocxBuildEvent] = []
@@ -102,15 +103,10 @@ def apply_printed_points(
         held = {
             item.item_id for number in part.questions for item in members(printed.questions[number])
         }
-        inside = [
-            (len(parent.item_ids), index)
-            for index, parent in enumerate(parents)
-            if parent.item_ids and held.issuperset(parent.item_ids)
-        ]
-        if inside:
-            chosen = max(inside)[1]
-            parents = tuple(
-                parent.model_copy(update={"printed_total": part.total}) if i == chosen else parent
-                for i, parent in enumerate(parents)
-            )
+        parents = tuple(
+            parent.model_copy(update={"printed_total": part.total})
+            if held and set(parent.item_ids) == held
+            else parent
+            for parent in parents
+        )
     return ScoredItems(tuple(scored), tuple(parents), tuple(events))

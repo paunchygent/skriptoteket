@@ -12,13 +12,13 @@ placed it:
   that prints that same total closes the part; it is the part's line too.
 - A question line lies in a question's span, from the question's start to the next question
   start or part line: any total line there without an exam label. Outside every span, a
-  question-labelled line ("Poäng: 2 poäng") heads the question right after it. A question
-  line prints that question's own points.
+  question-labelled line ("Poäng: 2 poäng") heads the question right after it, or the last
+  question when none follows. A question line prints that question's own points.
 - Outside every question span, any other standalone total line is an exam-total candidate.
   One distinct candidate value is the exam total; differing values give none (D3).
 
-A question starts at its first own chunk that is no points line, so a points line never moves
-a question's start.
+A question starts at its first own chunk that is no standalone total line, so where the
+grouping places a points line or a total heading never moves a question's start.
 """
 
 from collections.abc import Mapping
@@ -101,13 +101,10 @@ def printed_points_plan(
         if (total := printed_points((chunk,))) is not None
     }
     openers = sorted(index for index in totals if _opens_part(chunks[index]))
+    standalone = {index for index in totals if _stands_alone(chunks[index])}
     starts: list[tuple[int, int]] = []
     for number, own in enumerate(questions):
-        body = [
-            positions[a]
-            for a in own
-            if a in positions and line_points(chunks[positions[a]]) is None
-        ]
+        body = [positions[a] for a in own if a in positions and positions[a] not in standalone]
         if body:
             starts.append((min(body), number))
     if not starts:
@@ -132,10 +129,10 @@ def printed_points_plan(
             if label != "exam":
                 lines[span_of[index]].append(index)
         elif label == "question":
-            # A question's points label outside its span heads the question right after it.
-            following = next(((s, n) for s, n in starts if s > index), None)
-            if following and not any(index < o < following[0] for o in openers):
-                lines[following[1]].append(index)
+            # A question's points label outside its span heads the question right after it,
+            # or the last question when none follows.
+            following = next((n for s, n in starts if s > index), starts[-1][1])
+            lines[following].append(index)
         elif _stands_alone(chunk):
             candidates.add(total)
     parts: list[PrintedPart] = []

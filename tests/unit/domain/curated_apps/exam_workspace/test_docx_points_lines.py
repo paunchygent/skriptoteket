@@ -127,6 +127,14 @@ _CASES = (
         "10 heading prints points", ((_P, "Q1"), (_H, "(2 p)")), {"q1": (0,)}, 1, "unplaced", None
     ),
     _Case(
+        "12 question label before a part line heads the next question",
+        (_LINE, (_H, "Del 1: 10 poäng"), (_P, "Q1"), (_P, "Q2")),
+        {"q1": (2,), "q2": (3,)},
+        0,
+        "unplaced",
+        "q1",
+    ),
+    _Case(
         "11 line with more words",
         ((_P, "Q1"), (_P, "Svara med 2 hela meningar för 2 poäng"), (_P, "Q2")),
         {"q1": (0,), "q2": (2,)},
