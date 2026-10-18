@@ -46,7 +46,10 @@ from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.exam_workspace.exam_course_catalog import (
     load_exam_course_catalog,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import NativeExamDocument
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    ExamCourseChoice,
+    NativeExamDocument,
+)
 from skriptoteket.domain.errors import DomainError, ErrorCode, validation_error
 from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.scripting.input_files import sanitize_input_filename
@@ -71,7 +74,36 @@ def _document_not_found(lineage_id: UUID) -> DomainError:
     )
 
 
-def _summary(vault_file: VaultFile, document: NativeExamDocument) -> ExamWorkspaceDocumentSummary:
+def validated_exam_course(course_key: str | None) -> ExamCourseChoice | None:
+    """Return the catalog course for a chosen key, or ``None`` when none is chosen.
+
+    A key over 64 characters and a key absent from the catalog raise the same
+    Swedish validation errors the import routes have always returned.
+    """
+
+    selected_course_key = (course_key or "").strip() or None
+    if selected_course_key is None:
+        return None
+    if len(selected_course_key) > 64:
+        raise validation_error(
+            "Kurskoden får vara högst 64 tecken.", details={"field": "course_key"}
+        )
+    course = next(
+        (
+            course
+            for course in load_exam_course_catalog().courses
+            if course.key == selected_course_key
+        ),
+        None,
+    )
+    if course is None:
+        raise validation_error("Välj en kurs ur kurslistan.", details={"field": "course_key"})
+    return ExamCourseChoice(key=course.key, name=course.name)
+
+
+def document_summary(
+    vault_file: VaultFile, document: NativeExamDocument
+) -> ExamWorkspaceDocumentSummary:
     assert vault_file.document_lineage_id is not None
     assert vault_file.document_version is not None
     assert vault_file.document_saved_at is not None
@@ -120,18 +152,8 @@ class ImportExamWorkspaceDocumentHandler:
         if len(content) > self._settings.VAULT_MAX_FILE_BYTES:
             raise validation_error("Filen är större än maxstorleken för Mina filer.")
 
-        selected_course_key = (course_key or "").strip() or None
-        if selected_course_key is not None:
-            if len(selected_course_key) > 64:
-                raise validation_error(
-                    "Kurskoden får vara högst 64 tecken.", details={"field": "course_key"}
-                )
-            if not any(
-                course.key == selected_course_key for course in load_exam_course_catalog().courses
-            ):
-                raise validation_error(
-                    "Välj en kurs ur kurslistan.", details={"field": "course_key"}
-                )
+        course = validated_exam_course(course_key)
+        selected_course_key = None if course is None else course.key
 
         document_id = self._id_generator.new_uuid()
         now = self._clock.now()
@@ -296,7 +318,7 @@ class GetExamWorkspaceDocumentHandler:
         return ExamWorkspaceDocumentResponse(
             document=document,
             saved_document=container.document,
-            summary=_summary(head, container.document),
+            summary=document_summary(head, container.document),
             history_cursor=history.cursor,
             notes=container.notes,
             conversion=None if job is None else conversion_status(job),
@@ -401,7 +423,7 @@ class SaveExamWorkspaceDocumentHandler:
             document=document,
             saved_document=document,
             history_cursor=history.cursor,
-            summary=_summary(vault_file, document),
+            summary=document_summary(vault_file, document),
             notes=head_container.notes,
             conversion=None if job is None else conversion_status(job),
         )
@@ -485,7 +507,7 @@ class SaveExamWorkspaceDocumentHandler:
             return ExamWorkspaceDocumentResponse(
                 document=copied,
                 saved_document=copied,
-                summary=_summary(vault_file, copied),
+                summary=document_summary(vault_file, copied),
                 history_cursor=copy_id,
                 notes=saved.notes,
                 conversion=None,

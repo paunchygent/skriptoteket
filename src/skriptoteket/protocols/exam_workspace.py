@@ -12,6 +12,7 @@ from skriptoteket.application.curated_apps.exam_workspace import (
     ExamWorkspaceConversionStatus,
     ExamWorkspaceDocumentListResponse,
     ExamWorkspaceDocumentResponse,
+    ExamWorkspaceDocumentSummary,
     ExamWorkspaceExportChecklistResponse,
     ExamWorkspaceExportFile,
     ExamWorkspaceExportTarget,
@@ -126,6 +127,18 @@ class ImportExamWorkspaceDigiExamDocumentHandlerProtocol(Protocol):
     async def handle(
         self, *, actor: User, filename: str, content: bytes, course_key: str | None
     ) -> ExamWorkspaceConversionStatus: ...
+
+
+class ParseExamWorkspaceQtiPackageHandlerProtocol(Protocol):
+    def handle(
+        self, *, filename: str, content: bytes, course_key: str | None
+    ) -> ExamWorkspaceContainerContent: ...
+
+
+class ImportExamWorkspaceQtiDocumentHandlerProtocol(Protocol):
+    async def handle(
+        self, *, actor: User, filename: str, content: bytes, course_key: str | None
+    ) -> ExamWorkspaceDocumentSummary: ...
 
 
 class GetExamCourseCatalogHandlerProtocol(Protocol):

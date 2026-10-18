@@ -13,16 +13,16 @@ Purpose:
 Relationships:
     - Consumes the read-side contracts of ``examnet_qti_import_contracts``.
     - Uses ``examnet_qti_body_reader`` for prompt paragraphs, choices and gaps.
-    - Consumed by ``exam_workspace.qti_import``; parent items with several
-      interactions or a gap-match separator arrive in a later unit.
+    - Consumed by ``exam_workspace.qti_import``; a parent item reads back as one
+      item with its supported children and one skipped entry per unsupported child.
 """
 
 from __future__ import annotations
 
 import posixpath
 from collections.abc import Mapping
-from dataclasses import dataclass
-from decimal import Decimal, InvalidOperation
+from dataclasses import dataclass, replace
+from decimal import ROUND_CEILING, Decimal, InvalidOperation
 from xml.etree import ElementTree
 
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_body_reader import (
@@ -69,6 +69,12 @@ _BLOCK_INTERACTIONS = frozenset(
     }
 )
 _SEPARATOR = qti_tag("qti-gap-match-interaction")
+_GAP_INTERACTIONS = frozenset(
+    {
+        qti_tag("qti-text-entry-interaction"),
+        qti_tag("qti-inline-choice-interaction"),
+    }
+)
 _PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 _JPEG_SIGNATURE = b"\xff\xd8\xff"
 _OPENING_TEXT_LIMIT = 200
@@ -132,17 +138,15 @@ def read_examnet_qti_item(
     files: Mapping[str, bytes],
     sequence: int,
 ) -> tuple[ExamNetQtiReadItem, ...]:
-    """Read one item; a tuple because a later unit may return a parent plus skipped children."""
+    """Read one item; a parent layout returns the item plus one entry per skipped child."""
 
     root = _parse_item(xml, item_path=item_path)
     try:
-        return (
-            _read_item(
-                root,
-                item_path=item_path,
-                files=files,
-                sequence=sequence,
-            ),
+        return _read_item(
+            root,
+            item_path=item_path,
+            files=files,
+            sequence=sequence,
         )
     except _UnsupportedImage:
         return (_unsupported_item(root, sequence, ExamNetQtiUnsupportedReason.IMAGE),)
@@ -168,51 +172,425 @@ def _read_item(
     item_path: str,
     files: Mapping[str, bytes],
     sequence: int,
-) -> ExamNetQtiReadItem:
+) -> tuple[ExamNetQtiReadItem, ...]:
     body = root.find(qti_tag("qti-item-body"))
     if body is None:
         raise _UnsupportedInteraction
 
     body_children = list(body)
     blocks = [element for element in body_children if element.tag in _BLOCK_INTERACTIONS]
-    has_separator = any(
-        element.tag == _SEPARATOR and len(element) == 0 for element in body_children
-    )
+    starts = [element for element in body_children if _is_child_start(element)]
     declarations = _response_declarations(root)
     max_score = _max_score(root)
 
-    if len(blocks) == 1 and not has_separator:
-        return _read_block_item(
-            root,
-            body=body,
-            block=blocks[0],
-            declarations=declarations,
-            max_score=max_score,
-            item_path=item_path,
-            files=files,
-            sequence=sequence,
+    if len(blocks) == 1 and len(starts) == 1:
+        return (
+            _read_block_item(
+                root,
+                body=body,
+                block=blocks[0],
+                declarations=declarations,
+                max_score=max_score,
+                item_path=item_path,
+                files=files,
+                sequence=sequence,
+            ),
         )
-    if not blocks and not has_separator:
-        return _read_gap_item(
-            root,
-            body=body,
-            declarations=declarations,
-            max_score=max_score,
-            item_path=item_path,
-            files=files,
-            sequence=sequence,
+    if not starts:
+        return (
+            _read_gap_item(
+                root,
+                body=body,
+                declarations=declarations,
+                max_score=max_score,
+                item_path=item_path,
+                files=files,
+                sequence=sequence,
+            ),
         )
-    return _read_parent_layout(root, sequence=sequence)
+    return _read_parent_layout(
+        root,
+        body=body,
+        declarations=declarations,
+        max_score=max_score,
+        item_path=item_path,
+        files=files,
+        sequence=sequence,
+    )
 
 
 def _read_parent_layout(
     root: ElementTree.Element,
     *,
+    body: ElementTree.Element,
+    declarations: Mapping[str, _ResponseDeclaration],
+    max_score: int | float | None,
+    item_path: str,
+    files: Mapping[str, bytes],
     sequence: int,
-) -> ExamNetQtiUnsupportedItem:
-    """Parent items arrive in a later unit; until then the item is skipped."""
+) -> tuple[ExamNetQtiReadItem, ...]:
+    """Read the shared-instruction layout: one item plus one entry per skipped child.
 
-    return _unsupported_item(root, sequence, ExamNetQtiUnsupportedReason.INTERACTION)
+    The instruction is the content before the first interaction or separator. A
+    block interaction is one child read from its own prompt; a separator opens a
+    gap child whose body runs to the next child. Content after a block child is
+    carried into the next child's prompt, or the last child's prompt when none.
+    """
+
+    nodes = list(body)
+    start_positions = [index for index, element in enumerate(nodes) if _is_child_start(element)]
+    identifier = root.get("identifier") or ""
+
+    instruction_body = read_rich_content(nodes[: start_positions[0]], leading_text=body.text)
+    if instruction_body.gap_elements:
+        raise _UnsupportedInteraction
+    instruction_images = _image_resources(
+        instruction_body.image_elements, item_path=item_path, files=files
+    )
+
+    children: list[ExamNetQtiItem] = []
+    unsupported: list[ExamNetQtiUnsupportedItem] = []
+    carry: tuple[ElementTree.Element, ...] = ()
+    for position, start in enumerate(start_positions):
+        end = start_positions[position + 1] if position + 1 < len(start_positions) else len(nodes)
+        element = nodes[start]
+        trailing = tuple(nodes[start + 1 : end])
+        is_last = position == len(start_positions) - 1
+        is_separator = element.tag == _SEPARATOR and len(element) == 0
+        try:
+            if is_separator:
+                child = _read_gap_child(
+                    element,
+                    body_nodes=(*carry, *trailing),
+                    identifier=identifier,
+                    child_number=position + 1,
+                    declarations=declarations,
+                    item_path=item_path,
+                    files=files,
+                )
+            elif element.tag in _BLOCK_INTERACTIONS:
+                child = _read_block_child(
+                    root,
+                    block=element,
+                    carry=carry,
+                    trailing=trailing,
+                    is_last=is_last,
+                    identifier=identifier,
+                    child_number=position + 1,
+                    declarations=declarations,
+                    item_path=item_path,
+                    files=files,
+                )
+            else:
+                raise _UnsupportedInteraction
+        except _UnsupportedImage:
+            unsupported.append(
+                _unsupported_child(element, trailing, sequence, ExamNetQtiUnsupportedReason.IMAGE)
+            )
+            carry = () if (is_separator or is_last) else trailing
+            continue
+        except (ExamNetQtiUnsupportedContent, _UnsupportedInteraction):
+            unsupported.append(
+                _unsupported_child(
+                    element, trailing, sequence, ExamNetQtiUnsupportedReason.INTERACTION
+                )
+            )
+            carry = () if (is_separator or is_last) else trailing
+            continue
+        children.append(child)
+        carry = () if (is_separator or is_last) else trailing
+
+    _apply_unknown_remainder(children, max_score)
+    if not children:
+        return tuple(unsupported)
+
+    first = children[0]
+    instruction_lines = _prompt_lines(instruction_body.paragraphs)
+    parent = ExamNetQtiItem(
+        item_id=identifier,
+        sequence=sequence,
+        title=root.get("title") or "",
+        interaction_type=first.interaction_type,
+        prompt_lines=instruction_lines,
+        max_score=max_score,
+        prompt_paragraphs=instruction_body.paragraphs,
+        evaluation_mode=(
+            ExamNetQtiEvaluationMode.MANUAL_UNKEYED
+            if any(
+                child.evaluation_mode is ExamNetQtiEvaluationMode.MANUAL_UNKEYED
+                for child in children
+            )
+            else ExamNetQtiEvaluationMode.AUTOMATIC
+        ),
+        image_resources=(
+            *instruction_images,
+            *(image for child in children for image in child.image_resources),
+        ),
+        instruction_lines=instruction_lines,
+        children=tuple(children),
+    )
+    return (parent, *unsupported)
+
+
+def _read_block_child(
+    root: ElementTree.Element,
+    *,
+    block: ElementTree.Element,
+    carry: tuple[ElementTree.Element, ...],
+    trailing: tuple[ElementTree.Element, ...],
+    is_last: bool,
+    identifier: str,
+    child_number: int,
+    declarations: Mapping[str, _ResponseDeclaration],
+    item_path: str,
+    files: Mapping[str, bytes],
+) -> ExamNetQtiItem:
+    lead = read_rich_content(carry, leading_text=None)
+    prompt_element = block.find(qti_tag("qti-prompt"))
+    if prompt_element is None:
+        prompt = read_rich_content(())
+    else:
+        prompt = read_rich_content(
+            list(prompt_element),
+            leading_text=prompt_element.text,
+            image_offset=len(lead.image_elements),
+            gap_offset=len(lead.gap_elements),
+        )
+    if is_last:
+        after = read_rich_content(
+            trailing,
+            leading_text=block.tail,
+            image_offset=len(lead.image_elements) + len(prompt.image_elements),
+            gap_offset=len(lead.gap_elements) + len(prompt.gap_elements),
+        )
+    else:
+        after = read_rich_content(())
+    if lead.gap_elements or prompt.gap_elements or after.gap_elements:
+        raise _UnsupportedInteraction
+
+    prompt_paragraphs = (*lead.paragraphs, *prompt.paragraphs, *after.paragraphs)
+    image_resources = _image_resources(
+        (*lead.image_elements, *prompt.image_elements, *after.image_elements),
+        item_path=item_path,
+        files=files,
+    )
+    response_identifier = block.get("response-identifier")
+    declaration = declarations.get(response_identifier) if response_identifier else None
+    if response_identifier is None or declaration is None:
+        raise _UnsupportedInteraction
+
+    child_root = _child_root(identifier, child_number)
+    child_max_score = _block_child_points(root, response_identifier, declaration)
+    if block.tag == qti_tag("qti-choice-interaction"):
+        return _choice_item(
+            child_root,
+            block=block,
+            declaration=declaration,
+            prompt_paragraphs=prompt_paragraphs,
+            image_resources=image_resources,
+            max_score=child_max_score,
+            sequence=child_number,
+        )
+    if block.tag == qti_tag("qti-order-interaction"):
+        return _ordering_item(
+            child_root,
+            block=block,
+            declaration=declaration,
+            prompt_paragraphs=prompt_paragraphs,
+            image_resources=image_resources,
+            max_score=child_max_score,
+            sequence=child_number,
+        )
+    if block.tag == qti_tag("qti-match-interaction"):
+        return _matching_item(
+            child_root,
+            block=block,
+            declaration=declaration,
+            prompt_paragraphs=prompt_paragraphs,
+            image_resources=image_resources,
+            max_score=child_max_score,
+            sequence=child_number,
+        )
+    return _free_text_item(
+        child_root,
+        declaration=declaration,
+        prompt_paragraphs=prompt_paragraphs,
+        image_resources=image_resources,
+        max_score=child_max_score,
+        sequence=child_number,
+    )
+
+
+def _read_gap_child(
+    separator: ElementTree.Element,
+    *,
+    body_nodes: tuple[ElementTree.Element, ...],
+    identifier: str,
+    child_number: int,
+    declarations: Mapping[str, _ResponseDeclaration],
+    item_path: str,
+    files: Mapping[str, bytes],
+) -> ExamNetQtiItem:
+    read_body = read_rich_content(body_nodes, leading_text=separator.tail)
+    if not read_body.gap_elements:
+        raise _UnsupportedInteraction
+    gap_names = {_local_name(element.tag) for element in read_body.gap_elements}
+    if gap_names not in (
+        {"qti-text-entry-interaction"},
+        {"qti-inline-choice-interaction"},
+    ):
+        raise _UnsupportedInteraction
+
+    child_root = _child_root(identifier, child_number)
+    child_max_score = _gap_child_points(declarations, read_body.gap_elements)
+    if gap_names == {"qti-text-entry-interaction"}:
+        return _gap_fill_item(
+            child_root,
+            read_body=read_body,
+            declarations=declarations,
+            max_score=child_max_score,
+            item_path=item_path,
+            files=files,
+            sequence=child_number,
+        )
+    return _inline_choice_item(
+        child_root,
+        read_body=read_body,
+        declarations=declarations,
+        max_score=child_max_score,
+        item_path=item_path,
+        files=files,
+        sequence=child_number,
+    )
+
+
+def _block_child_points(
+    root: ElementTree.Element,
+    response_identifier: str,
+    declaration: _ResponseDeclaration,
+) -> int | float | None:
+    if declaration.mapping is not None and declaration.mapping.upper_bound is not None:
+        return _number(declaration.mapping.upper_bound)
+    return _all_or_nothing_points(root, response_identifier)
+
+
+def _all_or_nothing_points(
+    root: ElementTree.Element,
+    response_identifier: str,
+) -> int | float | None:
+    processing = root.find(qti_tag("qti-response-processing"))
+    if processing is None:
+        return None
+    for condition in processing.findall(qti_tag("qti-response-condition")):
+        response_if = condition.find(qti_tag("qti-response-if"))
+        if response_if is None:
+            continue
+        match = response_if.find(qti_tag("qti-match"))
+        if match is None:
+            continue
+        variable = match.find(qti_tag("qti-variable"))
+        correct = match.find(qti_tag("qti-correct"))
+        if variable is None or correct is None:
+            continue
+        if (
+            variable.get("identifier") != response_identifier
+            or correct.get("identifier") != response_identifier
+        ):
+            continue
+        set_outcome = response_if.find(qti_tag("qti-set-outcome-value"))
+        if set_outcome is None:
+            return None
+        total = set_outcome.find(qti_tag("qti-sum"))
+        if total is None:
+            return None
+        points = total.find(qti_tag("qti-base-value"))
+        if points is None or points.text is None:
+            return None
+        return _number(points.text)
+    return None
+
+
+def _gap_child_points(
+    declarations: Mapping[str, _ResponseDeclaration],
+    gap_elements: tuple[ElementTree.Element, ...],
+) -> int | float | None:
+    values: set[Decimal] = set()
+    for element in gap_elements:
+        response_identifier = element.get("response-identifier")
+        declaration = declarations.get(response_identifier) if response_identifier else None
+        if declaration is None or declaration.mapping is None or not declaration.mapping.entries:
+            return None
+        for entry in declaration.mapping.entries:
+            values.add(_decimal(entry.mapped_value))
+    if len(values) != 1:
+        return None
+    return _recover_total(len(gap_elements), next(iter(values)))
+
+
+def _recover_total(gap_count: int, gap_value: Decimal) -> int | float:
+    """The export's total from its rounded-down per-gap share (see gap_point_values)."""
+
+    lower = gap_count * gap_value
+    upper = lower + gap_count * Decimal("0.01")
+    smallest_integer = lower.to_integral_value(rounding=ROUND_CEILING)
+    if smallest_integer < upper:
+        return _to_number(smallest_integer)
+    smallest_tenth = (lower * 10).to_integral_value(rounding=ROUND_CEILING) / Decimal(10)
+    if smallest_tenth < upper:
+        return _to_number(smallest_tenth)
+    return _to_number(lower)
+
+
+def _apply_unknown_remainder(
+    children: list[ExamNetQtiItem],
+    max_score: int | float | None,
+) -> None:
+    """Give a single child without its own points the parent total's remainder."""
+
+    if max_score is None:
+        return
+    unknown = [index for index, child in enumerate(children) if child.max_score is None]
+    if len(unknown) != 1:
+        return
+    known = sum(
+        (Decimal(str(child.max_score)) for child in children if child.max_score is not None),
+        Decimal(0),
+    )
+    remainder = Decimal(str(max_score)) - known
+    if remainder <= 0:
+        return
+    position = unknown[0]
+    children[position] = replace(children[position], max_score=_to_number(remainder))
+
+
+def _child_root(identifier: str, child_number: int) -> ElementTree.Element:
+    return ElementTree.Element(
+        qti_tag("qti-assessment-item"),
+        {"identifier": f"{identifier}_child_{child_number}"},
+    )
+
+
+def _is_child_start(element: ElementTree.Element) -> bool:
+    tag = element.tag
+    if not isinstance(tag, str) or tag in _GAP_INTERACTIONS:
+        return False
+    return tag.rsplit("}", 1)[-1].endswith("-interaction")
+
+
+def _unsupported_child(
+    element: ElementTree.Element,
+    trailing: tuple[ElementTree.Element, ...],
+    sequence: int,
+    reason: ExamNetQtiUnsupportedReason,
+) -> ExamNetQtiUnsupportedItem:
+    is_separator = element.tag == _SEPARATOR and len(element) == 0
+    nodes = (element, *trailing) if is_separator else (element,)
+    text = " ".join("".join(node.itertext()) for node in nodes)
+    return ExamNetQtiUnsupportedItem(
+        sequence=sequence,
+        opening_text=" ".join(text.split())[:_OPENING_TEXT_LIMIT],
+        reason=reason,
+    )
 
 
 def _read_block_item(
@@ -757,12 +1135,20 @@ def _max_score(root: ElementTree.Element) -> int | float | None:
 
 
 def _number(text: str) -> int | float:
+    return _to_number(_decimal(text))
+
+
+def _decimal(text: str) -> Decimal:
     try:
         value = Decimal(text.strip())
     except InvalidOperation as error:
         raise _UnsupportedInteraction from error
     if not value.is_finite():
         raise _UnsupportedInteraction
+    return value
+
+
+def _to_number(value: Decimal) -> int | float:
     if value == value.to_integral_value():
         return int(value)
     return float(value)

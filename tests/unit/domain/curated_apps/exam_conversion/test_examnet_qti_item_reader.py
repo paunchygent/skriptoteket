@@ -627,7 +627,7 @@ def test_a_response_identifier_without_a_declaration_is_unsupported() -> None:
     _unsupported(root)
 
 
-def test_two_choice_interactions_are_left_for_the_parent_unit() -> None:
+def test_two_choice_interactions_read_as_one_parent_with_two_children() -> None:
     root = _root()
     _declaration(root, identifier="FIRST", base_type="identifier", correct=("choice_001",))
     _declaration(root, identifier="SECOND", base_type="identifier", correct=("choice_002",))
@@ -647,10 +647,18 @@ def test_two_choice_interactions_are_left_for_the_parent_unit() -> None:
             {"identifier": choice_identifier},
         ).text = "Ett alternativ"
 
-    unsupported = _unsupported(root, sequence=4)
+    (read,) = _read_root(root, sequence=4)
 
-    assert unsupported.sequence == 4
-    assert unsupported.opening_text == "Ett alternativ Ett alternativ"
+    assert isinstance(read, ExamNetQtiItem)
+    assert read.item_id == "item_001"
+    assert read.sequence == 4
+    assert read.interaction_type is ExamNetQtiInteractionType.SINGLE_CHOICE
+    assert [child.sequence for child in read.children] == [1, 2]
+    assert [child.correct_choice_identifiers for child in read.children] == [
+        ("choice_001",),
+        ("choice_002",),
+    ]
+    assert all(child.max_score is None for child in read.children)
 
 
 def test_a_gap_match_with_children_is_unsupported() -> None:
@@ -669,7 +677,7 @@ def test_a_gap_match_with_children_is_unsupported() -> None:
     _unsupported(root)
 
 
-def test_an_empty_gap_match_separator_is_left_for_the_parent_unit() -> None:
+def test_a_separator_child_without_a_declaration_is_one_note() -> None:
     root = _root()
     _max_score(root)
     body = _body(root)
