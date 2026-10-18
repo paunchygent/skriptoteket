@@ -11,9 +11,7 @@ from __future__ import annotations
 
 import re
 from bisect import bisect_right
-from collections import Counter
 from collections.abc import Iterable
-from dataclasses import dataclass
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
@@ -35,19 +33,17 @@ from skriptoteket.domain.curated_apps.exam_workspace.source_format_scope import 
     question_label_span,
     visible_intervals,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.source_paragraph_match import (
+    SourceParagraph,
+    overlap_scores,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.source_provenance import ChunkProvenance
 
 FORMATTING_REASON = "Formateringen kunde inte föras över"
 
 
 class FormattingTransferError(ValueError):
     """No source-backed rendering can preserve the model's response structure."""
-
-
-@dataclass(frozen=True)
-class SourceParagraph:
-    start: int
-    end: int
-    heading: int | None
 
 
 class SourceFormatting:
@@ -63,19 +59,14 @@ class SourceFormatting:
         parts: list[str] = []
         marks: list[tuple[str, ...]] = []
         paragraphs: list[SourceParagraph] = []
-        # Each chunk's anchor and the offset its text starts at, in source order.
-        self.chunk_starts: list[tuple[int, str]] = []
-        self.asset_positions: dict[str, list[int]] = {}
-        self._asset_cursors: dict[str, int] = {}
+        self.provenance = ChunkProvenance()
         offset = 0
         for chunk in chunks:
             if parts:
                 parts.append("\n")
                 marks.append(())
                 offset += 1
-            for image in chunk.images:
-                self.asset_positions.setdefault(image.asset_id, []).append(offset + image.offset)
-            self.chunk_starts.append((offset, chunk.anchor))
+            self.provenance.add(offset, chunk)
             parts.append(chunk.text)
             chunk_marks: list[tuple[str, ...]] = [()] * len(chunk.text)
             for run in chunk.runs:
@@ -187,7 +178,12 @@ class SourceFormatting:
         return tuple(result)
 
     def fragments(self, start: int, end: int) -> list[NativeParagraph]:
-        result: list[NativeParagraph] = []
+        return [fragment for fragment, _ in self.sourced_fragments(start, end)]
+
+    def sourced_fragments(self, start: int, end: int) -> list[tuple[NativeParagraph, int]]:
+        """The visible source text in ``start``-``end`` as paragraphs, each with the start of
+        the source paragraph it begins in; table cells of one row join one paragraph."""
+        result: list[tuple[NativeParagraph, int]] = []
         previous_end: int | None = None
         for paragraph in self.paragraphs_in(start, end):
             left, right = max(start, paragraph.start), min(end, paragraph.end)
@@ -205,20 +201,27 @@ class SourceFormatting:
                     result
                     and previous_end is not None
                     and separator == " | "
-                    and result[-1].heading_level == paragraph.heading
+                    and result[-1][0].heading_level == paragraph.heading
                 ):
-                    result[-1] = result[-1].model_copy(
-                        update={
-                            "segments": (
-                                *result[-1].segments,
-                                *self.text_segments(previous_end, left),
-                                *segments,
-                            )
-                        }
+                    joined, origin = result[-1]
+                    result[-1] = (
+                        joined.model_copy(
+                            update={
+                                "segments": (
+                                    *joined.segments,
+                                    *self.text_segments(previous_end, left),
+                                    *segments,
+                                )
+                            }
+                        ),
+                        origin,
                     )
                 else:
                     result.append(
-                        NativeParagraph(heading_level=paragraph.heading, segments=segments)
+                        (
+                            NativeParagraph(heading_level=paragraph.heading, segments=segments),
+                            paragraph.start,
+                        )
                     )
                 previous_end = right
         return result
@@ -235,9 +238,11 @@ class SourceFormatting:
             coverage_before = self.covered.copy()
             projected_before = self.projected.copy()
             self._entry_span = (-1, -1)
-            output_before = len(result)
+            # Each emitted paragraph with the start of the one source paragraph its text
+            # was projected from, -1 when it keeps the model's wording.
+            produced: list[tuple[NativeParagraph, int]]
             try:
-                result.extend(self._paragraph(paragraph, answers or {}))
+                produced = self._paragraph(paragraph, answers or {})
             except FormattingTransferError:
                 self.cursor = checkpoint
                 self.covered = coverage_before
@@ -246,39 +251,31 @@ class SourceFormatting:
                 if aligned is not None:
                     if self.path == "exact":
                         self.path = "aligned"
-                    result.append(aligned)
+                    produced = [(aligned, self._entry_span[0])]
                 else:
                     self.path = "rebuilt"
-                    result.extend(self._rebuild(paragraph, answers or {}))
+                    rebuilt = self._rebuild(paragraph, answers or {})
+                    produced = [(output, self._entry_span[0]) for output in rebuilt]
             self.entry_spans.append(self._entry_span)
-            left, right = self._entry_span
-            origins = [p.start for p in self.paragraphs_in(left, right)]
-            for index, output in enumerate(result[output_before:]):
-                anchor = origins[min(index, len(origins) - 1)] if origins else -1
-                pictures = []
-                for segment in output.segments:
-                    if segment.kind != "asset" or segment.asset_id not in self.asset_positions:
-                        continue
-                    positions = self.asset_positions[segment.asset_id]
-                    ordinal = self._asset_cursors.get(segment.asset_id, 0)
-                    pictures.append(positions[min(ordinal, len(positions) - 1)])
-                    self._asset_cursors[segment.asset_id] = ordinal + 1
-                if pictures:
-                    anchor = min(pictures + ([anchor] if anchor >= 0 else []))
-                self.output_anchors.append(anchor)
+            for output, text_origin in produced:
+                for origin, piece in self.provenance.pieces(output, text_origin):
+                    result.append(piece)
+                    self.output_anchors.append(origin)
         return tuple(result)
 
     def _paragraph(
         self, paragraph: NativeParagraph, answers: dict[str, tuple[str, ...]]
-    ) -> list[NativeParagraph]:
+    ) -> list[tuple[NativeParagraph, int]]:
         if any(s.kind == "gap" for s in paragraph.segments) and ANSWER_LABEL.search(self.text):
             # Matching each fragment independently can steal a repeated word
             # from the question before its formatted inline-key expression.
             raise FormattingTransferError("inline key requires whole-paragraph alignment")
-        result: list[NativeParagraph] = []
+        result: list[tuple[NativeParagraph, int]] = []
         pending: list[NativeSegment] = []
         heading: int | None = None
         previous_block: int | None = None
+        # Where the pending text was projected from; a new source block starts a paragraph.
+        origin = -1
         for segment in paragraph.segments:
             if segment.kind != "text":
                 pending.append(segment)
@@ -286,21 +283,25 @@ class SourceFormatting:
                     self._skip_gap(answers.get(segment.gap_id, ()))
                 continue
             start, end = self.span(segment.text)
-            fragments = self.fragments(start, end)
+            fragments = self.sourced_fragments(start, end)
             if not fragments:
                 raise FormattingTransferError("span outside source paragraphs")
-            for index, fragment in enumerate(fragments):
+            for index, (fragment, source_start) in enumerate(fragments):
                 # A source paragraph break, not the model's typography, starts a block.
                 block = bisect_right(self._paragraph_ends, start) + index
                 crossed = previous_block is not None and block != previous_block
                 if pending and (index > 0 or crossed):
-                    result.append(NativeParagraph(heading_level=heading, segments=tuple(pending)))
+                    result.append(
+                        (NativeParagraph(heading_level=heading, segments=tuple(pending)), origin)
+                    )
                     pending = []
+                    origin = -1
                 heading = fragment.heading_level
+                origin = source_start
                 pending.extend(fragment.segments)
                 previous_block = block
         if pending:
-            result.append(NativeParagraph(heading_level=heading, segments=tuple(pending)))
+            result.append((NativeParagraph(heading_level=heading, segments=tuple(pending)), origin))
         return result
 
     def _skip_gap(self, answers: tuple[str, ...]) -> None:
@@ -330,20 +331,9 @@ class SourceFormatting:
         self, paragraph: NativeParagraph, answers: dict[str, tuple[str, ...]]
     ) -> NativeParagraph | None:
         text = " ".join(s.text for s in paragraph.segments if s.kind == "text")
-        words = Counter(re.findall(r"\w+", text.casefold()))
         start = self.positions[self.cursor] if self.cursor < len(self.positions) else len(self.text)
         candidates = [p for p in self.available_paragraphs if p.end > start]
-        scored = [
-            (
-                sum(
-                    (
-                        words & Counter(re.findall(r"\w+", self.text[p.start : p.end].casefold()))
-                    ).values()
-                ),
-                p,
-            )
-            for p in candidates
-        ]
+        scored = overlap_scores(text, self.text, candidates)
         best = max((score for score, _ in scored), default=0)
         winners = [p for score, p in scored if score == best]
         if best == 0:
@@ -388,22 +378,11 @@ class SourceFormatting:
         if any(s.kind == "asset" for s in paragraph.segments):
             raise FormattingTransferError("cannot rebuild picture placement")
         text = " ".join(s.text for s in paragraph.segments if s.kind == "text")
-        words = Counter(re.findall(r"\w+", text.casefold()))
         source_start = (
             self.positions[self.cursor] if self.cursor < len(self.positions) else len(self.text)
         )
         candidates = [p for p in self.available_paragraphs if p.end > source_start]
-        scored = [
-            (
-                sum(
-                    (
-                        words & Counter(re.findall(r"\w+", self.text[p.start : p.end].casefold()))
-                    ).values()
-                ),
-                p,
-            )
-            for p in candidates
-        ]
+        scored = overlap_scores(text, self.text, candidates)
         if not scored:
             raise FormattingTransferError("no remaining source paragraph")
         best = max(score for score, _ in scored)

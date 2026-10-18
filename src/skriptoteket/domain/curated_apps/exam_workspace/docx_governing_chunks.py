@@ -12,23 +12,23 @@ becomes an instruction built from its source text. No reply is rejected or resen
 
 import re
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     DocxBuildEvent,
     ProducedMetadata,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
+from skriptoteket.domain.curated_apps.exam_workspace.docx_item_alignment import (
+    Accepted,
+    AcceptedEntry,
+    AlignedItem,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeParagraph,
     NativeSegment,
     NativeTextSegment,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
-    NativeExamItem,
-)
-
-Accepted = tuple[tuple[NativeExamItem, tuple[str, ...]], ...]
 
 
 @dataclass(frozen=True)
@@ -130,16 +130,23 @@ def _paragraph_without(
     return None
 
 
-def _item_without(item: NativeExamItem, chunk_text: str) -> NativeExamItem | None:
+def _item_without(aligned: AlignedItem, chunk_text: str) -> AlignedItem | None:
     """The item without the chunk's wording; the item itself when it does not print it; None
-    when it prints it where no faithful removal exists, or where removing it leaves no body."""
+    when it prints it where no faithful removal exists, or where removing it leaves no body.
+    A paragraph that keeps the rest of its wording keeps its aligned chunk."""
+    item = aligned.item
     for k, paragraph in enumerate(item.body):
         without = _paragraph_without(paragraph, chunk_text)
         if without is not None:
             body = (*item.body[:k], *without, *item.body[k + 1 :])
-            return item.model_copy(update={"body": body}) if body else None
+            chunks = (
+                *aligned.chunks[:k],
+                *(aligned.chunks[k] for _ in without),
+                *aligned.chunks[k + 1 :],
+            )
+            return AlignedItem(item.model_copy(update={"body": body}), chunks) if body else None
     printed = _squash(" ".join(item.plain_text_lines()))
-    return None if _squash(chunk_text) in printed else item
+    return None if _squash(chunk_text) in printed else aligned
 
 
 def release_governing_chunks(
@@ -154,31 +161,32 @@ def release_governing_chunks(
     listed = {anchor for instruction in instructions for anchor in instruction.source_anchors}
     released: list[str] = []
     events: list[DocxBuildEvent] = []
-    kept: list[tuple[NativeExamItem, tuple[str, ...]]] = []
-    for item, anchors in accepted:
+    kept: list[AcceptedEntry] = []
+    for aligned, anchors in accepted:
         governing = [a for a in anchors if a in governed]
         if not governing:
-            kept.append((item, anchors))
+            kept.append((aligned, anchors))
             continue
         for anchor in governing:
-            without = _item_without(item, by_anchor[anchor].text)
+            without = _item_without(aligned, by_anchor[anchor].text)
             if without is None:
                 events.append(
                     DocxBuildEvent(
                         stage="assembly",
                         code="governing_text_kept",
                         anchors=(anchor,),
-                        detail=item.source_anchor or "",
+                        detail=aligned.item.source_anchor or "",
                     )
                 )
             else:
-                item = without
+                aligned = without
             if anchor not in listed and anchor not in released:
                 released.append(anchor)
         own = tuple(a for a in anchors if a not in governed)
         if own:
             first = min(own, key=positions.__getitem__)
-            kept.append((item.model_copy(update={"source_anchor": first}), own))
+            item = aligned.item.model_copy(update={"source_anchor": first})
+            kept.append((replace(aligned, item=item), own))
     added = tuple(
         ProducedMetadata(text=by_anchor[anchor].text, source_anchors=(anchor,))
         for anchor in released

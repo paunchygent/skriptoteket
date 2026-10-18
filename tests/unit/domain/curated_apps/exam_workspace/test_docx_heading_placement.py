@@ -18,6 +18,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxChunk,
     DocxSourceParagraph,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_item_alignment import AlignedItem
 from skriptoteket.domain.curated_apps.exam_workspace.docx_section_instructions import (
     Placed,
     SectionInstructions,
@@ -75,6 +76,11 @@ def _item(text: str) -> NativeExamItem:
     )
 
 
+def _aligned(item: NativeExamItem, *chunks: str | None) -> AlignedItem:
+    """The item with the source chunk each body paragraph shows."""
+    return AlignedItem(item, chunks)
+
+
 def _place(
     chunks: tuple[DocxChunk, ...],
     placed: list[Placed],
@@ -93,7 +99,10 @@ def _place(
 
 def _ordered(chunks: tuple[DocxChunk, ...], *anchors: str) -> list[Placed]:
     positions = {chunk.anchor: index for index, chunk in enumerate(chunks)}
-    return [(positions[anchor], (anchor,), _item(f"Frågetext {anchor}")) for anchor in anchors]
+    return [
+        (positions[anchor], (anchor,), _aligned(_item(f"Frågetext {anchor}"), anchor))
+        for anchor in anchors
+    ]
 
 
 def test_heading_over_one_question_opens_its_body_verbatim() -> None:
@@ -123,7 +132,9 @@ def test_heading_owned_by_one_question_opens_its_body() -> None:
         _chunk("body:0002", "heading", "Classification"),
         _chunk("body:0003", "paragraph", "Frågan?"),
     )
-    ordered: list[Placed] = [(1, ("body:0002", "body:0003"), _item("Frågetext"))]
+    ordered: list[Placed] = [
+        (1, ("body:0002", "body:0003"), _aligned(_item("Frågetext"), "body:0003"))
+    ]
     placed = _place(chunks, ordered, title_anchors=frozenset({"body:0001"}))
 
     assert placed.items[0].plain_text_lines() == ("Classification", "Frågetext")
@@ -148,7 +159,11 @@ def test_heading_already_in_the_body_is_not_repeated() -> None:
             )
         }
     )
-    placed = _place(chunks, [(2, ("body:0003",), item)], title_anchors=frozenset({"body:0001"}))
+    placed = _place(
+        chunks,
+        [(2, ("body:0003",), _aligned(item, "body:0002", "body:0003"))],
+        title_anchors=frozenset({"body:0001"}),
+    )
 
     assert placed.items[0].plain_text_lines() == ("Facts", "Frågetext")
 
@@ -216,7 +231,11 @@ def test_heading_that_is_only_a_question_number_and_points_leaves_nothing() -> N
         _chunk("body:0003", "paragraph", "Frågan?"),
     )
     item = _item("Frågetext").model_copy(update={"printed_label": "Fråga 3"})
-    placed = _place(chunks, [(2, ("body:0003",), item)], title_anchors=frozenset({"body:0001"}))
+    placed = _place(
+        chunks,
+        [(2, ("body:0003",), _aligned(item, "body:0003"))],
+        title_anchors=frozenset({"body:0001"}),
+    )
 
     assert placed.items[0].plain_text_lines() == ("Frågetext",)
 
@@ -239,8 +258,8 @@ def test_section_heading_before_owned_question_headings_forms_the_parent() -> No
         update={"printed_label": "Fråga 2"}
     )
     ordered: list[Placed] = [
-        (2, ("body:0003", "body:0004"), first),
-        (4, ("body:0005", "body:0006"), second),
+        (2, ("body:0003", "body:0004"), _aligned(first, "body:0003")),
+        (4, ("body:0005", "body:0006"), _aligned(second, "body:0005")),
     ]
     instruction = ProducedMetadata(text="Cellens delar", source_anchors=("body:0002",))
     placed = _place(
@@ -336,9 +355,9 @@ def test_governing_heading_subset_of_wider_parent_opens_every_governed_questions
         _chunk("body:0006", "paragraph", "Tredje frågan?"),
     )
     accepted = (
-        (_item("Första frågan?"), ("body:0003",)),
-        (_item("Andra frågan?"), ("body:0005",)),
-        (_item("Tredje frågan?"), ("body:0006",)),
+        (_aligned(_item("Första frågan?"), "body:0003"), ("body:0003",)),
+        (_aligned(_item("Andra frågan?"), "body:0005"), ("body:0005",)),
+        (_aligned(_item("Tredje frågan?"), "body:0006"), ("body:0006",)),
     )
     instructions = (
         ProducedMetadata(text="Besvara alla frågor.", source_anchors=("body:0002",)),

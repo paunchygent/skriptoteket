@@ -186,7 +186,7 @@ def test_admission_gives_the_states_document_language_to_the_gap_producer(monkey
         state,
     )
 
-    ((item, anchors),) = state.accepted
+    ((item, anchors),) = [(a.item, h) for a, h in state.accepted]
     assert anchors == ("body:0001",)
     assert calls == [
         {"accepted_values": ("Stockholm",), "language": "en", "other_gold_answers": ()}

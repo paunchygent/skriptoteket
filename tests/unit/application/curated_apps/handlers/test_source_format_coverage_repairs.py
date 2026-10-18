@@ -96,7 +96,7 @@ def test_assembled_item_keeps_an_omitted_size_heading():
         _produced("Answer the question.", (heading.anchor, question.anchor)),
         chunks=(heading, question),
         language="en",
-    ).item
+    )
     result = assemble_build_result(
         document_id=uuid4(),
         filename="heading.docx",

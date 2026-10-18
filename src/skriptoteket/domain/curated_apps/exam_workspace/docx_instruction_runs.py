@@ -19,6 +19,7 @@ from dataclasses import dataclass
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedMetadata
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.docx_heading_wording import shown_heading
+from skriptoteket.domain.curated_apps.exam_workspace.docx_item_alignment import AlignedItem
 from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import PartLines
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     POINT_LABEL,
@@ -27,11 +28,8 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     points_line,
     uses_term,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
-    NativeExamItem,
-)
 
-Placed = tuple[int, tuple[str, ...], NativeExamItem]
+Placed = tuple[int, tuple[str, ...], AlignedItem]
 
 # A question line that opens with quoted material, after any list label.
 _OPENS_WITH_QUOTE = re.compile(r"^\s*(?:\w{1,3}[.)]\s*)?[\"“‘«„]")
@@ -64,18 +62,13 @@ class Run:
 class Joined:
     """An instruction printed inside an item's own chunks, and where in the item it belongs.
 
-    ``sources`` are the instruction's exact source chunks, pictures and offsets included,
-    so the body it becomes keeps every chunk at its own place.
+    ``sources`` are the instruction's exact source chunks in source order, pictures and
+    offsets included, so the body it becomes keeps every chunk at its own place.
     """
 
     origin: int
     sources: tuple[DocxChunk, ...]
-    later: tuple[str, ...]
     opens: bool
-
-
-def folded(text: str) -> str:
-    return " ".join(text.replace("[___]", " ").split()).casefold()
 
 
 def _is_lead_in(chunk: DocxChunk) -> bool:
@@ -159,12 +152,10 @@ def instruction_runs(
         if governs:
             runs.append(Run(origin, at[-1], sources, governs=governs))
         elif owner is not None:
-            own = [c for c in item_sources[owner] if c.kind != "heading"]
             joined.setdefault(owner, []).append(
                 Joined(
                     origin=origin,
                     sources=sources,
-                    later=tuple(folded(c.text) for c in own if positions[c.anchor] > at[-1]),
                     # The item's own heading counts: an instruction printed after it
                     # never opens the body ahead of the heading's line.
                     opens=not any(positions[c.anchor] < at[0] for c in item_sources[owner]),
@@ -352,7 +343,7 @@ def reaches(
             # or governs a parent: only its wording is displayed.
             opens = len(reach) == 1 and not run.part
             shown = shown_heading(
-                chunk, ordered[reach[0]][2] if opens else None, run.question_label
+                chunk, ordered[reach[0]][2].item if opens else None, run.question_label
             )
             if not reach:
                 reached.append(Run(run.origin, run.start, (), heading=True, raw=run.raw))

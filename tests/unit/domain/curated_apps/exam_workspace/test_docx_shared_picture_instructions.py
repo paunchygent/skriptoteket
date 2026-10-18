@@ -23,14 +23,12 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedMetadata,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk, DocxImage
+from skriptoteket.domain.curated_apps.exam_workspace.docx_item_alignment import AlignedItem
 from skriptoteket.domain.curated_apps.exam_workspace.examnet_pdf_export import (
     native_exam_to_pdf_document,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
-    NativeExamItem,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_retry_source import (
     question_retry_source,
@@ -72,7 +70,7 @@ def _chunk(anchor: str, text: str, payload: bytes | None = None) -> DocxChunk:
     return DocxChunk(anchor, "paragraph", text, text, images)
 
 
-def _converted(anchor: str, text: str) -> NativeExamItem:
+def _converted(anchor: str, text: str) -> AlignedItem:
     return aligned_native_item(
         ProducedItem.model_validate(
             {
@@ -98,7 +96,7 @@ def _converted(anchor: str, text: str) -> NativeExamItem:
             }
         ),
         language="sv",
-    ).item
+    )
 
 
 def _assembled() -> tuple[NativeExamDocument, dict[str, bytes], str, str]:

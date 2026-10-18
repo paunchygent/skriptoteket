@@ -132,7 +132,7 @@ def test_a_question_split_into_one_item_per_sentence_becomes_one_source_review_i
         state,
     )
 
-    ((item, anchors),) = state.accepted
+    ((item, anchors),) = [(a.item, h) for a, h in state.accepted]
     assert _is_source_review(item, SPLIT_QUESTION_REASON)
     assert anchors == ("body:0001", "body:0002", "body:0003", "body:0004")
     assert _texts(item) == [text for _, text in _QUESTION]
@@ -159,7 +159,7 @@ def test_a_split_question_leaves_its_neighbour_converted():
         state,
     )
 
-    (split, split_anchors), (other, other_anchors) = state.accepted
+    (split, split_anchors), (other, other_anchors) = [(a.item, h) for a, h in state.accepted]
     assert _is_source_review(split, SPLIT_QUESTION_REASON)
     assert split_anchors == ("body:0001", "body:0002", "body:0003", "body:0004")
     assert other.review.parse_origin is NativeParseOrigin.LLM_PARSED
@@ -183,7 +183,7 @@ def test_two_questions_merged_into_one_item_each_become_their_own_source_review_
         state,
     )
 
-    (first, first_anchors), (second, second_anchors) = state.accepted
+    (first, first_anchors), (second, second_anchors) = [(a.item, h) for a, h in state.accepted]
     assert _is_source_review(first, MERGED_QUESTIONS_REASON)
     assert _is_source_review(second, MERGED_QUESTIONS_REASON)
     assert first_anchors == ("body:0001", "body:0002", "body:0003", "body:0004")
@@ -216,7 +216,7 @@ def test_a_separately_emitted_heading_or_points_line_is_no_split(label: tuple[st
         state,
     )
 
-    ((item, anchors),) = state.accepted
+    ((item, anchors),) = [(a.item, h) for a, h in state.accepted]
     assert item.review.parse_origin is NativeParseOrigin.LLM_PARSED
     assert set(anchors) == {"body:0001", "body:0002"}
     assert not [e for e in state.events if e.code in {"question_split", "questions_merged"}]
@@ -275,7 +275,7 @@ def test_an_entry_holding_another_questions_heading_merges_both_questions(headin
     )
     document = state.result().document
 
-    (first, first_anchors), (second, second_anchors) = state.accepted
+    (first, first_anchors), (second, second_anchors) = [(a.item, h) for a, h in state.accepted]
     assert _is_source_review(first, MERGED_QUESTIONS_REASON)
     assert _is_source_review(second, MERGED_QUESTIONS_REASON)
     assert first_anchors == ("body:0001",)

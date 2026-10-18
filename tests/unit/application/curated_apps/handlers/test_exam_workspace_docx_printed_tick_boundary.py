@@ -1,6 +1,7 @@
 """Synthetic boundary proof: printed grid totals use one scoring/review route."""
 
 import time
+from dataclasses import replace
 from decimal import Decimal
 from uuid import uuid4
 
@@ -108,9 +109,12 @@ def test_printed_grid_tick_boundary_keeps_score_or_complete_source_review(
         questions=(own,),
         header_anchors=frozenset() if heading else frozenset({"body:0001"}),
     )
-    first = aligned_native_item(produced, language="sv").item
-    first = first.model_copy(
-        update={"review": first.review.model_copy(update={"confidence": 0.82})}
+    first = aligned_native_item(produced, language="sv")
+    first = replace(
+        first,
+        item=first.item.model_copy(
+            update={"review": first.item.review.model_copy(update={"confidence": 0.82})}
+        ),
     )
     state.accepted.append((first, ("body:0002",)))
     state.claimed.update(chunk.anchor for chunk in chunks)
@@ -196,9 +200,9 @@ def test_printed_grid_tick_boundary_keeps_score_or_complete_source_review(
     for parent in document.parents:
         assert parent.item_ids == (item.item_id,)
     assert item.retry_source == retry
-    assert item.item_id == first.item_id
-    assert item.source_anchor == first.source_anchor
-    assert item.review.confidence == first.review.confidence
+    assert item.item_id == first.item.item_id
+    assert item.source_anchor == first.item.source_anchor
+    assert item.review.confidence == first.item.review.confidence
     assert item.points == printed_points
     assert item.points_estimated is False
     assert not any(

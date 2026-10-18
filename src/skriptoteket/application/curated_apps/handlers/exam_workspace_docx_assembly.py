@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import Mapping
+from dataclasses import replace
 from types import MappingProxyType
 
 from pydantic import ValidationError
@@ -33,6 +34,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     DocxBuildResult,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_batches import QuestionFamily
+from skriptoteket.domain.curated_apps.exam_workspace.docx_item_alignment import (
+    AlignedItem,
+    aligned_source_item,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import (
     ExamManifest,
     SharedContext,
@@ -101,11 +106,11 @@ def with_type_check_mark(state: DocxBuildState) -> None:
     because the first-pass label probability says nothing once conversion settles the type.
     """
     updated = []
-    for item, anchors in state.accepted:
+    for aligned, anchors in state.accepted:
         if state.kept_conflicts.intersection(anchors):
-            review = item.review.model_copy(update={"confidence": _BELOW_ACCEPT})
-            item = item.model_copy(update={"review": review})
-        updated.append((item, anchors))
+            review = aligned.item.review.model_copy(update={"confidence": _BELOW_ACCEPT})
+            aligned = replace(aligned, item=aligned.item.model_copy(update={"review": review}))
+        updated.append((aligned, anchors))
     state.accepted = updated
 
 
@@ -114,32 +119,31 @@ def validated(state: DocxBuildState) -> None:
     copy items without validation; an item that fails holds its whole question's source text
     for review."""
     checked = []
-    for item, anchors in state.accepted:
+    for aligned, anchors in state.accepted:
         try:
-            item = NativeExamItem.model_validate(item.model_dump())
+            item = NativeExamItem.model_validate(aligned.item.model_dump())
+            aligned = replace(aligned, item=item)
         except ValidationError as error:
             detail = validation_detail(error)
             state.record("admission", "native_contract_invalid", anchors=anchors, detail=detail)
             reason = f"Frågan följer inte provformatet ({detail})."
-            item, anchors = state.printed(anchors, reason, state.claimed)
-        checked.append((item, anchors))
+            aligned, anchors = state.printed(anchors, reason, state.claimed)
+        checked.append((aligned, anchors))
     state.accepted = checked
 
 
-def placeholder_item(state: DocxBuildState, family: QuestionFamily) -> NativeExamItem:
+def placeholder_item(state: DocxBuildState, family: QuestionFamily) -> AlignedItem:
     """A converting question shows its own source text and pictures until its batch fills it.
 
     The placeholder is one review item over the question's own chunks, so a picture keeps
     its exact place while the converter runs and the question stays locked for the teacher.
     """
-    return review_source_item(
-        tuple(
-            state.chunk_by_anchor[anchor]
-            for anchor in family.question_anchors
-            if anchor not in state.header_anchors
-        ),
-        PLACEHOLDER_REASON,
+    chunks = tuple(
+        state.chunk_by_anchor[anchor]
+        for anchor in family.question_anchors
+        if anchor not in state.header_anchors
     )
+    return aligned_source_item(review_source_item(chunks, PLACEHOLDER_REASON), chunks)
 
 
 def exam_metadata_anchors(contexts: tuple[SharedContext, ...]) -> frozenset[str]:

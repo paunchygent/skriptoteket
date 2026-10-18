@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "cf4cde2c888f720e9974b8c85b9187d2fce3c4449f4c773744309da780ecfe6d",
+  "source_set_digest": "a7db0f3db447f92fa962034531d632da9bc59f88cfd9845e10f1495a187712af",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5007,6 +5007,25 @@
       "title": "Grammar exams convert with each lead-in, exam-wide text, question and table in its own place",
       "path": "docs/backlog/tasks/task-skript-39-04-12-grammar-exams-convert-with-each-lead-in-exam-wide-text-question-and-table-in-its-own-place.md",
       "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-04-13",
+      "type": "task",
+      "title": "Section instructions are placed and deduplicated by source alignment, never by wording",
+      "path": "docs/backlog/tasks/task-skript-39-04-13-section-instructions-are-placed-and-deduplicated-by-source-alignment-never-by-wording.md",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-04",
       "owners": [

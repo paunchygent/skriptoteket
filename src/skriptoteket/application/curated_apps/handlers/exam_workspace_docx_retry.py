@@ -357,8 +357,8 @@ def _with_owned_contexts(admitted: Admitted, owned: tuple[str, ...]) -> NativeEx
     build's join and alignment, which also shows the question's heading once. An item that
     does not hold them all ends as the source review item, which shows every owned context.
     """
-    item, held = admitted
-    return None if frozenset(owned).difference(held) else item
+    aligned, held = admitted
+    return None if frozenset(owned).difference(held) else aligned.item
 
 
 def _review_reason(state: DocxBuildState, outcome: BatchOutcome, admitted: Admitted | None) -> str:
@@ -366,9 +366,9 @@ def _review_reason(state: DocxBuildState, outcome: BatchOutcome, admitted: Admit
         return _TYPE_CONFLICT_REASON
     if len(state.accepted) > 1:
         return _MULTIPLE_ITEMS_REASON
-    if admitted is not None and admitted[0].review.reasons:
+    if admitted is not None and admitted[0].item.review.reasons:
         # The single item could not hold the contexts its question owns.
-        return " ".join(admitted[0].review.reasons)
+        return " ".join(admitted[0].item.review.reasons)
     return next(iter(state.reasons.values()), _DEFAULT_FAILURE_REASON)
 
 

@@ -12,8 +12,8 @@ from collections.abc import Iterable, Mapping
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedMetadata
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
+from skriptoteket.domain.curated_apps.exam_workspace.docx_item_alignment import AcceptedEntry
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import NativeParagraph
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import NativeExamItem
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import (
     body_plain_text,
     source_paragraphs,
@@ -37,7 +37,7 @@ def placement_exclusions(
 def placement_chunks(
     chunks: tuple[DocxChunk, ...],
     excluded: frozenset[str],
-    accepted: Iterable[tuple[NativeExamItem, tuple[str, ...]]],
+    accepted: Iterable[AcceptedEntry],
 ) -> tuple[DocxChunk, ...]:
     """The chunks section placement scans: every chunk outside ``excluded``.
 

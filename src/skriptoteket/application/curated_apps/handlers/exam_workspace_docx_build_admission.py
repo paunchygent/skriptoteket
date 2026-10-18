@@ -80,6 +80,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_gap_material import (
     GAPPED_MATERIAL_REASON,
     gapped_material,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_item_alignment import (
+    AcceptedEntry,
+    AlignedItem,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions import (
     with_left_out_mark,
     wording_left_out,
@@ -93,9 +97,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     definition_context,
     with_accepted_forms,
     with_printed_points,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
-    NativeExamItem,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
@@ -112,7 +113,7 @@ CONFLICT_WITHOUT_KIND_REASON = (
 )
 
 
-Admitted = tuple[NativeExamItem, tuple[str, ...]]
+Admitted = AcceptedEntry
 
 
 def _source_review(
@@ -133,7 +134,7 @@ def _built(
     anchors: tuple[str, ...],
     state: DocxBuildState,
     seen: set[str],
-    build: Callable[[], NativeExamItem],
+    build: Callable[[], AlignedItem],
 ) -> Admitted:
     """The item ``build`` makes, or its source review item when the item cannot be built."""
     try:
@@ -169,7 +170,8 @@ def _with_left_out(
     A left-out chunk is an own chunk of a question the item touches that no entry holds yet
     and no item of the reply lists, except as a points line alone (D2).
     """
-    item, anchors = admitted
+    aligned, anchors = admitted
+    item = aligned.item
     if item.review.parse_origin is not NativeParseOrigin.LLM_PARSED:
         return admitted
     own = set().union(*(state.question_by_anchor.get(a, ()) for a in anchors))
@@ -191,14 +193,14 @@ def _with_left_out(
     anchors = (*anchors, *(a for a in left_out if a in held))
     left_out = tuple(a for a in left_out if a not in keys and a not in held)
     if not left_out:
-        return item, anchors
+        return aligned, anchors
     seen.update(left_out)
     missing = wording_left_out(item, [state.chunk_by_anchor[a] for a in left_out])
     if missing:
         moved = tuple(c.anchor for c in missing)
         state.record("admission", "own_chunks_left_out", item=index, anchors=moved)
         item = with_left_out_mark(item, missing)
-    return item, (*anchors, *left_out)
+    return replace(aligned, item=item), (*anchors, *left_out)
 
 
 def _admit_item(
@@ -313,7 +315,7 @@ def _admit_item(
         *state.context_anchors,
     )
 
-    def build() -> NativeExamItem:
+    def build() -> AlignedItem:
         context = definition_context(state.chunks, question, instructions)
         # The question's own paragraphs, also those the reply does not list (D3).
         shown = set(question).union(*(state.question_by_anchor.get(a, ()) for a in question))
@@ -347,14 +349,13 @@ def _admit_item(
                         .strip()
                     }
                 )
+        aligned = replace(aligned, item=item)
         passages = tuple(c for c in state.chunks if c.anchor in joined)
         if passages or headings:
             # The body's source alignment places each joined context and question heading
             # at its source place, in place of the reply's copy (review-3 N5/N6).
-            aligned = replace(aligned, item=item)
-            item = item.model_copy(
-                update={"body": joined_body(aligned, passages, headings, own, state)}
-            )
+            aligned = joined_body(aligned, passages, headings, own, state)
+            item = aligned.item
             own = (*passages, *own)
         source_images = Counter(image.asset_id for chunk in own for image in chunk.images)
         emitted = Counter(item.body_asset_ids())
@@ -367,7 +368,7 @@ def _admit_item(
             raise ValueError(
                 f"source pictures differ: missing {dict(missing)}, extra {dict(extra)}"
             )
-        return item
+        return aligned
 
     built = _built(index, anchors, state, seen, build)
     state.accepted.append(_with_left_out(index, built, state, seen, item_held))

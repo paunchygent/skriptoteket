@@ -8,6 +8,7 @@ conversion finishes. A lost job lease still stops the conversion.
 """
 
 from collections.abc import Callable, Mapping
+from dataclasses import replace
 from types import MappingProxyType
 from uuid import UUID
 
@@ -130,8 +131,9 @@ def _anchor(item: NativeExamItem) -> str:
 
 def _converted_at(state: DocxBuildState, anchor: str) -> bool:
     return any(
-        item.source_anchor == anchor and item.review.parse_origin is NativeParseOrigin.LLM_PARSED
-        for item, _ in state.accepted
+        a.item.source_anchor == anchor
+        and a.item.review.parse_origin is NativeParseOrigin.LLM_PARSED
+        for a, _ in state.accepted
     )
 
 
@@ -334,12 +336,12 @@ async def test_an_item_a_later_update_breaks_never_reaches_final_assembly(baseli
         mark(state)
         state.accepted = [
             (
-                item.model_copy(update={"points": -1})
-                if item.source_anchor == "body:0019"
-                else item,
+                replace(a, item=a.item.model_copy(update={"points": -1}))
+                if a.item.source_anchor == "body:0019"
+                else a,
                 anchors,
             )
-            for item, anchors in state.accepted
+            for a, anchors in state.accepted
         ]
 
     monkeypatch.setattr(exam_workspace_docx_pipeline, "with_type_check_mark", breaking_mark)

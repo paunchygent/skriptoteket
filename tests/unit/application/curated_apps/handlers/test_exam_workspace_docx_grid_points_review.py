@@ -71,7 +71,7 @@ def test_impossible_section_tick_share_keeps_source_as_blocking_review_item():
         chunks=chunks,
         questions=(("body:0002",),),
     )
-    state.accepted.append((aligned_native_item(produced, language="sv").item, ("body:0002",)))
+    state.accepted.append((aligned_native_item(produced, language="sv"), ("body:0002",)))
     state.claimed.update(chunk.anchor for chunk in chunks)
     state.instructions = (
         ProducedMetadata(text=chunks[0].text, points=1, source_anchors=("body:0001",)),

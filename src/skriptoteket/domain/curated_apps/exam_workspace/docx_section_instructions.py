@@ -30,11 +30,14 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_instruction_runs impor
     Joined,
     Placed,
     Run,
-    folded,
     instruction_runs,
     parent_groups,
     reaches,
     with_heading_runs,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.docx_item_alignment import (
+    AlignedItem,
+    source_places,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import (
     ExamManifest,
@@ -43,6 +46,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import (
     NO_PART_LINES,
     PartLines,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_source_form import source_form
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_review import review_source_item
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     POINT_LABEL,
@@ -61,12 +65,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeExamItemKind,
     NativeItemReviewState,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.shared_body import (
-    body_asset_ids,
-    body_plain_text,
-    body_text_lines,
-    source_paragraphs,
-)
+from skriptoteket.domain.curated_apps.exam_workspace.shared_body import source_paragraphs
+
+# A body paragraph and the anchor of the source chunk it shows.
+_Shown = tuple[NativeParagraph, str]
 
 
 def assign_question_headings(manifest: ExamManifest, chunks: tuple[DocxChunk, ...]) -> ExamManifest:
@@ -212,106 +214,99 @@ def with_question_points(
     return QuestionPoints(item.model_copy(update=updates))
 
 
-def _lines(text: str) -> list[str]:
-    return [line for raw in text.splitlines() if (line := " ".join(raw.split()))]
+def _unshown(aligned: AlignedItem, sources: Sequence[DocxChunk]) -> tuple[_Shown, ...]:
+    """The source paragraphs of each chunk in ``sources`` the item does not show yet, each
+    with its chunk.
 
-
-def _printed(item: NativeExamItem, text: str) -> bool:
-    """Whether the item already prints the text as whole lines of its body."""
-    wanted = _lines(text)
-    shown = [
-        *(part for line in item.plain_text_lines() for part in _lines(line)),
-    ]
-    return (
-        not wanted
-        or " ".join(wanted) in shown
-        or any(shown[i : i + len(wanted)] == wanted for i in range(len(shown) - len(wanted) + 1))
-    )
-
-
-def _paragraph_content(paragraph: NativeParagraph) -> tuple[tuple[str, str], ...]:
-    """Positioned content independent of how adjacent text runs were split."""
-    parts: list[tuple[str, str]] = []
-    for segment in paragraph.segments:
-        if segment.kind == "text":
-            if parts and parts[-1][0] == "text":
-                parts[-1] = ("text", parts[-1][1] + segment.text)
-            else:
-                parts.append(("text", segment.text))
-        elif segment.kind == "asset":
-            parts.append(("asset", segment.asset_id))
-        else:
-            parts.append(("gap", segment.gap_id))
-    return tuple(parts)
-
-
-def _body_paragraphs(
-    item: NativeExamItem,
-    paragraphs: Sequence[NativeParagraph],
-    delivered: list[NativeParagraph],
-) -> tuple[NativeParagraph, ...]:
-    """Omit only already-delivered content, accounting for each paragraph occurrence.
-
-    A text echo is not a positioned picture paragraph, and an asset id identifies bytes,
-    not a source occurrence. Each complete matching body paragraph consumes one source
-    occurrence; repeated source paragraphs remain repeated. Text-only instructions keep
-    the existing whole-line wording check.
+    The item shows a chunk when one of its body paragraphs is aligned to it; its wording is
+    never compared, so a reworded reply line aligned to the chunk counts as showing it and a
+    line that only repeats its words does not (TASK-SKRIPT-39-04-13).
     """
-    kept: list[NativeParagraph] = []
-    for paragraph in paragraphs:
-        matching = next(
-            (
-                shown
-                for shown in delivered
-                if _paragraph_content(shown) == _paragraph_content(paragraph)
-            ),
-            None,
-        )
-        if matching is not None:
-            delivered.remove(matching)
-            continue
-        text = body_plain_text((paragraph,))
-        if not body_asset_ids((paragraph,)) and text and _printed(item, text):
-            continue
-        kept.append(paragraph)
-    return tuple(kept)
-
-
-def _with_paragraphs(
-    item: NativeExamItem, paragraphs: Sequence[NativeParagraph], delivered: list[NativeParagraph]
-) -> NativeExamItem:
-    return item.model_copy(
-        update={"body": (*_body_paragraphs(item, paragraphs, delivered), *item.body)}
+    return tuple(
+        (paragraph, chunk.anchor)
+        for chunk in sources
+        if not aligned.shows(chunk.anchor)
+        for paragraph in source_paragraphs((chunk,))
     )
 
 
-def _renders_one_of(paragraph: NativeParagraph, chunks: Sequence[str]) -> bool:
-    text = folded(" ".join(body_text_lines((paragraph,))))
-    return bool(text) and any(chunk.startswith(text) for chunk in chunks)
+def _in_source_form(aligned: AlignedItem, sources: Sequence[DocxChunk]) -> AlignedItem:
+    """The item with each instruction chunk in ``sources`` it shows in its source form.
+
+    The body paragraphs aligned to such a chunk are that chunk: they give way, at the first
+    one's place, to the chunk's source paragraphs with their marks and pictures, so a reply
+    line that echoes an instruction without its picture never drops it. A response gap the
+    item placed there stays, at its source location (``source_form``); when no unique source
+    location exists, the item's paragraphs stay as they are, since the source form could not
+    carry its response. A heading keeps the reply's line, which carries the printed label
+    assembly reads.
+    """
+    answers = {gap.gap_id: gap.accepted_values for gap in aligned.item.gaps}
+    for chunk in sources:
+        if chunk.kind == "heading" or not aligned.shows(chunk.anchor):
+            continue
+        pairs = list(zip(aligned.item.body, aligned.chunks, strict=True))
+        shown = [paragraph for paragraph, anchor in pairs if anchor == chunk.anchor]
+        restored = source_form(chunk, shown, answers)
+        if restored is None:
+            continue
+        at = aligned.chunks.index(chunk.anchor)
+        kept = [(paragraph, anchor) for paragraph, anchor in pairs if anchor != chunk.anchor]
+        aligned = _inserted(
+            AlignedItem(
+                aligned.item.model_copy(update={"body": tuple(p for p, _ in kept)}),
+                tuple(anchor for _, anchor in kept),
+            ),
+            at,
+            tuple((paragraph, chunk.anchor) for paragraph in restored),
+        )
+    return aligned
+
+
+def _inserted(aligned: AlignedItem, at: int, added: Sequence[_Shown]) -> AlignedItem:
+    body, chunks = aligned.item.body, aligned.chunks
+    return AlignedItem(
+        aligned.item.model_copy(
+            update={"body": (*body[:at], *(paragraph for paragraph, _ in added), *body[at:])}
+        ),
+        (*chunks[:at], *(anchor for _, anchor in added), *chunks[at:]),
+    )
 
 
 def _with_joined(
-    item: NativeExamItem, joined: Sequence[Joined], delivered: list[NativeParagraph]
-) -> NativeExamItem:
-    """Place each joined instruction before the body paragraph that renders the next own chunk.
+    aligned: AlignedItem, joined: Sequence[Joined], position: Mapping[str, int], first: int
+) -> AlignedItem:
+    """Place each joined instruction as one source-ordered unit among the body paragraphs.
 
-    Every source chunk keeps its exact place, a shared picture included; a paragraph the
-    item's own body already holds is not placed again. The first body paragraph stands in
-    when the item prints nothing of its own before the instruction. An instruction no
-    paragraph can be located by ends the body.
+    A chunk the item already shows keeps its place (``_in_source_form``); every other chunk
+    of the instruction is placed in source order: right after the instruction's paragraphs
+    that come before it in the source, or, with none, first when the instruction opens the
+    item and otherwise before the first body paragraph whose source place comes after it. A
+    paragraph's place is its aligned chunk's position, and an unaligned paragraph takes the
+    place of the aligned paragraph before it (``source_places``). Every source chunk keeps
+    its exact place, a shared picture included. An instruction no later paragraph follows
+    ends the body.
     """
     for entry in joined:
-        added = _body_paragraphs(item, source_paragraphs(entry.sources), delivered)
-        at = (
-            0
-            if entry.opens
-            else next(
-                (k for k, p in enumerate(item.body) if _renders_one_of(p, entry.later)),
-                len(item.body),
-            )
-        )
-        item = item.model_copy(update={"body": (*item.body[:at], *added, *item.body[at:])})
-    return item
+        own = {chunk.anchor for chunk in entry.sources}
+        for chunk in entry.sources:
+            if aligned.shows(chunk.anchor):
+                continue
+            here = position[chunk.anchor]
+            prior = [
+                n
+                for n, anchor in enumerate(aligned.chunks)
+                if anchor in own and position[anchor] < here
+            ]
+            if prior:
+                at = prior[-1] + 1
+            elif entry.opens:
+                at = 0
+            else:
+                places = source_places(aligned.chunks, position, first)
+                at = next((n for n, place in enumerate(places) if place > here), len(places))
+            aligned = _inserted(aligned, at, _unshown(aligned, (chunk,)))
+    return aligned
 
 
 def _item_id(index: int) -> str:
@@ -369,8 +364,8 @@ def place_section_instructions(
     question opening with quoted material reaches only the run's items that open with quotes.
     Every other instruction, and every instruction whose reach cannot be a parent, is copied
     into the items it reaches. An instruction an item prints inside its own chunks is placed
-    at that position in the item's body, and text the item already prints as whole lines is
-    never repeated.
+    at that position in the item's body, and a chunk the item already shows, by the source
+    alignment of its body paragraphs, is never repeated.
     """
     positions = {c.anchor: i for i, c in enumerate(chunks)}
     item_sources = [
@@ -394,7 +389,7 @@ def place_section_instructions(
     for group in groups:
         for run in group:
             parented.setdefault((run.origin, run.start), set()).update(run.reach)
-    carried: dict[int, list[NativeParagraph]] = {}
+    carried: dict[int, list[DocxChunk]] = {}
     landed: dict[int, set[str]] = {}
     for k, entries in joined.items():
         for entry in entries:
@@ -411,16 +406,10 @@ def place_section_instructions(
             # instruction that cannot be a parent.
             targets = targets[:1]
         for k in targets:
-            if (
-                run.heading
-                and run.raw
-                and not any(chunk.images or chunk.missing_images for chunk in run.sources)
-                and _printed(ordered[k][2], run.raw)
-            ):
-                continue
-            carried.setdefault(k, []).extend(source_paragraphs(run.sources))
+            carried.setdefault(k, []).extend(run.sources)
     items: list[NativeExamItem] = []
-    for k, (_, _, item) in enumerate(ordered):
+    for k, (first, _, aligned) in enumerate(ordered):
+        item = aligned.item
         for run in reached:
             if run.heading and run.reach == (k,):
                 label = run.question_label
@@ -432,10 +421,13 @@ def place_section_instructions(
                             ].strip()
                         }
                     )
-        delivered = list(item.body)
-        item = _with_joined(item, joined.get(k, []), delivered)
-        item = _with_paragraphs(item, carried.get(k, []), delivered)
-        items.append(item.model_copy(update={"item_id": _item_id(k), "sequence": k + 1}))
+        aligned = _in_source_form(
+            replace(aligned, item=item),
+            [*(c for entry in joined.get(k, []) for c in entry.sources), *carried.get(k, [])],
+        )
+        aligned = _with_joined(aligned, joined.get(k, []), positions, first)
+        aligned = _inserted(aligned, 0, _unshown(aligned, carried.get(k, [])))
+        items.append(aligned.item.model_copy(update={"item_id": _item_id(k), "sequence": k + 1}))
     parents = tuple(
         NativeExamParent(
             parent_id=f"parent_{number:03d}",
