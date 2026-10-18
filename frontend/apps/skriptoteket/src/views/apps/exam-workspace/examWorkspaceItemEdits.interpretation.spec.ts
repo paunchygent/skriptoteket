@@ -16,6 +16,7 @@ import {
   withMatchPairs,
 } from "./examWorkspaceItemEdits";
 import { plainBody } from "./examWorkspaceRichText";
+import { placedGapIds } from "./examWorkspaceRichTextDocument";
 import { buildMatchingItem } from "./examWorkspaceMatchingItem.specSupport";
 
 function interpretedGap(): NativeExamItem {
@@ -118,9 +119,19 @@ describe("conversion answer-key transitions", () => {
       }
       expect(source.gaps).toHaveLength(2);
       expect(hasInvalidAnswerKey(result)).toBe(false);
-      expect(withGapAsText(result, "gap_002")).toBe(result);
     },
   );
+
+  it("turns the item's only gap into text and leaves a question with no gap", () => {
+    const afterFirst = withGapAsText(interpretedGap(), "gap_001");
+    const lastGap = afterFirst.gaps[0]!;
+
+    const result = withGapAsText(afterFirst, lastGap.gap_id);
+
+    expect(result.gaps).toEqual([]);
+    expect(placedGapIds(result.body)).toEqual([]);
+    expect(result.body[0]?.segments.some((segment) => segment.kind === "gap")).toBe(false);
+  });
 
   it("refuses unknown gaps and gaps with no first accepted value", () => {
     const source = interpretedGap();

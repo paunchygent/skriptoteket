@@ -35,6 +35,7 @@ import { useToast } from "../../../composables/useToast";
 import { examWorkspaceAssetUrls } from "./examWorkspaceAssetUrls";
 import { sameDocument } from "./examWorkspaceConversionMerge";
 import { useExamWorkspaceItemEdits } from "./useExamWorkspaceItemEdits";
+import { withReferencedAssetsOnly } from "./examWorkspaceStructure";
 import { withRestoredSuggestion } from "./examWorkspaceSuggestionEdits";
 import { useExamWorkspaceConversion } from "./useExamWorkspaceConversion";
 import { useExamWorkspaceGapKeying } from "./useExamWorkspaceGapKeying";
@@ -280,7 +281,10 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
     }
   }
 
-  /** The one path every item edit takes; a placeholder whose batch still converts is refused. */
+  /**
+   * The one path every item edit takes; a placeholder whose batch still converts is refused.
+   * A picture the edit removed takes its asset record with it.
+   */
   function patchItem(
     itemId: string,
     patch: (item: NativeExamItem) => NativeExamItem,
@@ -301,7 +305,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
     if (!changed) {
       return false;
     }
-    workspaceDocument.value = { ...current, items };
+    workspaceDocument.value = withReferencedAssetsOnly({ ...current, items });
     noteEdit(structural, current);
     return true;
   }
@@ -341,7 +345,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
     if (!current || isBusy.value) {
       return false;
     }
-    workspaceDocument.value = edit(current);
+    workspaceDocument.value = withReferencedAssetsOnly(edit(current));
     if (selectId !== null) {
       selectedItemId.value = selectId;
     }

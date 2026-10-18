@@ -17,7 +17,6 @@
 
 import type {
   NativeExamBodyParagraph,
-  NativeExamBodySegment,
   NativeExamChoice,
   NativeExamCriterion,
   NativeExamItem,
@@ -26,6 +25,7 @@ import type {
 import {
   reviewed,
   unreviewed,
+  withBody,
   withChoiceBody,
   withCorrectChoices,
   withCriteria,
@@ -34,8 +34,6 @@ import {
   withoutInterpretedKey,
   withMatchEntryBody,
   withMatchPairs,
-  withParagraphHeading,
-  withParagraphSegments,
   withPoints,
   withTickPoints,
 } from "./examWorkspaceItemEdits";
@@ -59,20 +57,9 @@ export function useExamWorkspaceItemEdits(patchItem: ExamWorkspaceItemPatch) {
     patchItem(itemId, (item) => withPoints(item, points));
   }
 
-  function updateItemParagraphSegments(
-    itemId: string,
-    paragraphIndex: number,
-    segments: NativeExamBodySegment[],
-  ): void {
-    patchItem(itemId, (item) => withParagraphSegments(item, paragraphIndex, segments));
-  }
-
-  function updateItemParagraphHeading(
-    itemId: string,
-    paragraphIndex: number,
-    headingLevel: NativeExamBodyParagraph["heading_level"],
-  ): void {
-    patchItem(itemId, (item) => withParagraphHeading(item, paragraphIndex, headingLevel));
+  /** The question text as one document; typing waits for the pause, a gap or picture change is one undo step. */
+  function updateItemBody(itemId: string, body: NativeExamBodyParagraph[], structural: boolean): void {
+    patchItem(itemId, (item) => withBody(item, body), structural);
   }
 
   function updateItemGapOptions(
@@ -164,14 +151,13 @@ export function useExamWorkspaceItemEdits(patchItem: ExamWorkspaceItemPatch) {
     unmarkItemReviewed,
     showItemGapAsText,
     undoItemInterpretation,
+    updateItemBody,
     updateItemChoiceBody,
     updateItemCorrectChoices,
     updateItemCriteria,
     updateItemGapOptions,
     updateItemMatchEntryBody,
     updateItemMatchPairs,
-    updateItemParagraphHeading,
-    updateItemParagraphSegments,
     updateItemPoints,
     updateItemTickPoints,
   };

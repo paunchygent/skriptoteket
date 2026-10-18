@@ -15,7 +15,7 @@ import { describe, expect, it } from "vitest";
 
 import type { NativeExamChoice, NativeExamGap } from "../../../api/examWorkspace";
 import ExamWorkspaceGapPopover from "./ExamWorkspaceGapPopover.vue";
-import { mountEditor, buildGapItem } from "./ExamWorkspaceBodyEditor.specSupport";
+import { buildGapItem, clickGap, mountEditor } from "./ExamWorkspaceBodyEditor.specSupport";
 import { buildGap } from "./examWorkspaceKeyedItems.specSupport";
 import { plainBody } from "./examWorkspaceRichText";
 
@@ -38,7 +38,7 @@ function dropdownGap(overrides: Partial<NativeExamGap> = {}): NativeExamGap {
 function mountPopover(gap: NativeExamGap, dropdown = true) {
   return mount(ExamWorkspaceGapPopover, {
     attachTo: document.body,
-    props: { dropdown, gap, gapCount: 1, gapId: "gap_001", gapNumber: 1, itemId: "item_001", left: 0, top: 0 },
+    props: { dropdown, gap, gapId: "gap_001", gapNumber: 1, itemId: "item_001", left: 0, top: 0 },
   });
 }
 
@@ -291,8 +291,9 @@ describe("ExamWorkspaceBodyEditor dropdown gap options", () => {
       kind: "inline_choice",
       gaps: [dropdownGap(), buildGap("gap_002", [])],
     });
-    const wrapper = mountEditor(item);
-    await wrapper.get('[data-gap-id="gap_001"]').trigger("click");
+    const wrapper = await mountEditor(item);
+    clickGap(wrapper, "gap_001");
+    await wrapper.vm.$nextTick();
     expect(wrapper.find('[data-test="exam-workspace-gap-options"]').exists()).toBe(true);
     await wrapper.get(sel("correct", "choice_005")).setValue(true);
     const [event] = wrapper.emitted("updateGapOptions") ?? [];
@@ -303,8 +304,10 @@ describe("ExamWorkspaceBodyEditor dropdown gap options", () => {
   });
 
   it("keeps the accepted answers field for a gap-fill item", async () => {
-    const wrapper = mountEditor();
-    await wrapper.get('[data-gap-id="gap_001"]').trigger("click");
+    const wrapper = await mountEditor();
+    clickGap(wrapper, "gap_001");
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find('[data-test="exam-workspace-gap-values-gap_001"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="exam-workspace-gap-options"]').exists()).toBe(false);
     wrapper.unmount();
   });

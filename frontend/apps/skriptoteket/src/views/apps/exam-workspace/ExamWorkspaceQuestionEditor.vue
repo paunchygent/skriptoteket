@@ -26,7 +26,6 @@ import { computed, ref, useId, watch } from "vue";
 
 import type {
   NativeExamBodyParagraph,
-  NativeExamBodySegment,
   NativeExamChoice,
   NativeExamCriterion,
   NativeExamDocument,
@@ -96,8 +95,7 @@ const emit = defineEmits<{
   updateGapOptions: [itemId: string, gapId: string, options: NativeExamChoice[], correctOptionId: string | null];
   updateMatchEntryBody: [itemId: string, side: "left" | "right", entryId: string, body: NativeExamBodyParagraph[]];
   updateMatchPairs: [itemId: string, pairs: NativeExamMatchPair[]];
-  updateParagraphSegments: [itemId: string, paragraphIndex: number, segments: NativeExamBodySegment[]];
-  updateParagraphHeading: [itemId: string, paragraphIndex: number, headingLevel: NativeExamBodyParagraph["heading_level"]];
+  updateBody: [itemId: string, body: NativeExamBodyParagraph[], structural: boolean];
   updatePoints: [itemId: string, points: number | null];
   updateTickPoints: [itemId: string, tickPoints: string];
 }>();
@@ -275,8 +273,7 @@ function handleTickPointsInput(event: Event): void {
       @update-gap-options="(itemId, gapId, options, correctOptionId) => emit('updateGapOptions', itemId, gapId, options, correctOptionId)"
       @remove-automatic-value="(itemId, gapId, value) => emit('removeAutomaticValue', itemId, gapId, value)"
       @show-gap-as-text="(itemId, gapId) => emit('showGapAsText', itemId, gapId)"
-      @update-paragraph-segments="(itemId, index, segments) => emit('updateParagraphSegments', itemId, index, segments)"
-      @update-paragraph-heading="(itemId, index, level) => emit('updateParagraphHeading', itemId, index, level)"
+      @update-body="(itemId, body, structural) => emit('updateBody', itemId, body, structural)"
     />
 
     <template v-if="showFields">

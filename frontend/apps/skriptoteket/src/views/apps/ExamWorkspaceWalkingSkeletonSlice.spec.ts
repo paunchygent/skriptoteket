@@ -16,6 +16,7 @@
  *   marking a machine proposal as reviewed becomes `reviewed_advisory`.
  */
 
+import type { Editor } from "@tiptap/core";
 import { flushPromises } from "@vue/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -66,6 +67,25 @@ function lastSavedDocument(): NativeExamDocument {
 }
 
 /** Choose a question type from the list's Ny fråga menu (teleported to the body). */
+/**
+ * Click a gap in the question text as a user does. jsdom has no layout, so the
+ * editor's own click handler is called with the gap as the clicked node.
+ */
+async function clickGap(wrapper: ViewWrapper, gapId: string): Promise<void> {
+  const { editor } = wrapper.get('[data-test="exam-workspace-body-editor-surface"]')
+    .element as HTMLElement & { editor: Editor };
+  let pos = -1;
+  editor.state.doc.descendants((node, nodePos) => {
+    if (pos < 0 && node.type.name === "examGap" && node.attrs.gapId === gapId) pos = nodePos;
+    return pos < 0;
+  });
+  const node = editor.state.doc.nodeAt(pos)!;
+  editor.view.someProp("handleClickOn", (handler) =>
+    handler(editor.view, pos, node, pos, new MouseEvent("click"), true),
+  );
+  await flushPromises();
+}
+
 async function addQuestion(wrapper: ViewWrapper, kind: string) {
   await wrapper.find('[data-test="exam-workspace-new"]').trigger("click");
   document.body.querySelector<HTMLElement>(`[data-test="exam-workspace-new-${kind}"]`)!.click();
@@ -277,7 +297,7 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
       .setValue(true);
 
     await selectItemRow(wrapper, "item_004");
-    await wrapper.get('[data-gap-id="gap_001"]').trigger("click");
+    await clickGap(wrapper, "gap_001");
     const gapInput = wrapper.find('[data-test="exam-workspace-gap-values-gap_001"]');
     await gapInput.setValue("hundra, 100");
     await gapInput.trigger("change");
@@ -306,7 +326,7 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
     await wrapper.find('[data-test="exam-workspace-choice-correct-choice_002"]').setValue(false);
 
     await selectItemRow(wrapper, "item_004");
-    await wrapper.get('[data-gap-id="gap_001"]').trigger("click");
+    await clickGap(wrapper, "gap_001");
     const gapInput = wrapper.find('[data-test="exam-workspace-gap-values-gap_001"]');
     await gapInput.setValue("  ");
     await gapInput.trigger("change");
@@ -331,7 +351,7 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
     await importFixtureDocument(wrapper);
 
     await selectItemRow(wrapper, "item_004");
-    await wrapper.get('[data-gap-id="gap_002"]').trigger("click");
+    await clickGap(wrapper, "gap_002");
     const gapInput = wrapper.find('[data-test="exam-workspace-gap-values-gap_002"]');
     await gapInput.setValue("");
     await gapInput.trigger("change");
@@ -358,7 +378,7 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
 
     for (const itemId of ["item_004", "item_005"]) {
       await selectItemRow(wrapper, itemId);
-      await wrapper.get('[data-gap-id="gap_002"]').trigger("click");
+      await clickGap(wrapper, "gap_002");
       const gapInput = wrapper.find('[data-test="exam-workspace-gap-values-gap_002"]');
       await gapInput.setValue("");
       await gapInput.trigger("change");
@@ -384,7 +404,7 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
     await choiceA.setValue(true);
 
     await selectItemRow(wrapper, "item_004");
-    await wrapper.get('[data-gap-id="gap_001"]').trigger("click");
+    await clickGap(wrapper, "gap_001");
     const gapInput = wrapper.find('[data-test="exam-workspace-gap-values-gap_001"]');
     await gapInput.setValue("");
     await gapInput.trigger("change");

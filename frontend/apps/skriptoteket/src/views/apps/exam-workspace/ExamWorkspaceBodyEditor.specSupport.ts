@@ -4,10 +4,14 @@
  * Purpose:
  *   Shared fixture and mount helpers for the `ExamWorkspaceBodyEditor` specs:
  *   a gap-fill item with two gaps (one keyed, one empty) and an image marker,
- *   a mounted editor attached to the document, and a paragraph lookup.
+ *   a mounted editor attached to the document, and TipTap helpers. jsdom has
+ *   no layout, so selections are set through TipTap commands and a gap click
+ *   calls the view's click handler; every key is a real `keydown`.
  */
 
 import { mount } from "@vue/test-utils";
+import type { Editor } from "@tiptap/core";
+import { nextTick } from "vue";
 
 import type { NativeExamItem } from "../../../api/examWorkspace";
 import ExamWorkspaceBodyEditor from "./ExamWorkspaceBodyEditor.vue";
@@ -59,10 +63,117 @@ export function buildGapItem(overrides: Partial<NativeExamItem> = {}): NativeExa
   };
 }
 
-export function mountEditor(item: NativeExamItem = buildGapItem()) {
-  return mount(ExamWorkspaceBodyEditor, { props: { item }, attachTo: document.body });
+/**
+ * A gap-fill item whose first paragraph ends with a gap and whose second
+ * starts with a picture: "A [gap_001] B [gap_002] C" and "[asset_001] D".
+ */
+export function buildMergeItem(): NativeExamItem {
+  return buildGapItem({
+    body: [
+      {
+        heading_level: null,
+        segments: [
+          { kind: "text", marks: [], text: "A " },
+          { gap_id: "gap_001", kind: "gap" },
+          { kind: "text", marks: [], text: " B " },
+          { gap_id: "gap_002", kind: "gap" },
+          { kind: "text", marks: [], text: " C" },
+        ],
+      },
+      {
+        heading_level: null,
+        segments: [{ asset_id: "asset_001", kind: "asset" }, { kind: "text", marks: [], text: " D" }],
+      },
+    ],
+  });
 }
 
-export function paragraph(wrapper: ReturnType<typeof mountEditor>, index: number): HTMLElement {
-  return wrapper.get(`[data-test="exam-workspace-body-paragraph-${index}"]`).element as HTMLElement;
+/**
+ * Mount the editor with its props, wait for TipTap to build the surface, and
+ * hand back the wrapper. `props` can carry `assetUrls` and `disabled`.
+ */
+export async function mountEditor(
+  item: NativeExamItem = buildGapItem(),
+  props: { assetUrls?: Record<string, string>; disabled?: boolean } = {},
+) {
+  const wrapper = mount(ExamWorkspaceBodyEditor, { props: { item, ...props }, attachTo: document.body });
+  await nextTick();
+  await nextTick();
+  return wrapper;
+}
+
+export type MountedBodyEditor = Awaited<ReturnType<typeof mountEditor>>;
+
+/** The question text's editing surface (the ProseMirror DOM). */
+export function surface(wrapper: MountedBodyEditor): HTMLElement {
+  return wrapper.get('[data-test="exam-workspace-body-editor-surface"]').element as HTMLElement;
+}
+
+/** The TipTap editor behind the surface, to set selections jsdom cannot place by pointer. */
+export function tiptap(wrapper: MountedBodyEditor): Editor {
+  const { editor } = surface(wrapper) as HTMLElement & { editor?: Editor };
+  if (!editor) {
+    throw new Error("the question text editor did not mount");
+  }
+  return editor;
+}
+
+/** Position `offset` characters into the first text node that contains `needle`. */
+export function posIn(editor: Editor, needle: string, offset: number): number {
+  let found = -1;
+  editor.state.doc.descendants((node, pos) => {
+    if (found < 0 && node.isText && node.text?.includes(needle)) {
+      found = pos + (node.text.indexOf(needle) + offset);
+    }
+    return found < 0;
+  });
+  if (found < 0) {
+    throw new Error(`no text "${needle}"`);
+  }
+  return found;
+}
+
+/** Position of the first atom of a node type (`examGap` or `examPicture`) whose attribute matches. */
+export function atomPos(editor: Editor, type: string, id: string): number {
+  let found = -1;
+  editor.state.doc.descendants((node, pos) => {
+    if (found < 0 && node.type.name === type && Object.values(node.attrs).includes(id)) {
+      found = pos;
+    }
+    return found < 0;
+  });
+  if (found < 0) {
+    throw new Error(`no ${type} ${id}`);
+  }
+  return found;
+}
+
+/** A real `keydown` on the surface; ProseMirror's own delete handling reads `keyCode`, as browsers set it. */
+export function press(
+  target: HTMLElement,
+  key: string,
+  modifiers: { shiftKey?: boolean; ctrlKey?: boolean; metaKey?: boolean } = {},
+): KeyboardEvent {
+  const keyCode = { Backspace: 8, Enter: 13, Delete: 46 }[key];
+  const event = new KeyboardEvent("keydown", { key, keyCode, bubbles: true, cancelable: true, ...modifiers });
+  target.dispatchEvent(event);
+  return event;
+}
+
+/**
+ * Activate a gap as a click on it does. jsdom has no layout, so the view's own
+ * click handler (`handleClickOn`) is called with the gap as the clicked node.
+ */
+export function clickGap(wrapper: MountedBodyEditor, gapId: string): void {
+  const editor = tiptap(wrapper);
+  const pos = atomPos(editor, "examGap", gapId);
+  const node = editor.state.doc.nodeAt(pos)!;
+  editor.view.someProp("handleClickOn", (handler) =>
+    handler(editor.view, pos, node, pos, new MouseEvent("click"), true),
+  );
+}
+
+/** The drawn element of one gap. */
+export function gapElement(wrapper: MountedBodyEditor, gapId: string): HTMLElement {
+  return wrapper.get(`[data-gap-id="${gapId}"]`).element as HTMLElement;
 }

@@ -44,6 +44,7 @@ import ExamWorkspaceSharedInstruction from "./exam-workspace/ExamWorkspaceShared
 import "./exam-workspace/examWorkspace.css";
 import { examWorkspaceBlockerEntries, examWorkspaceTitleBlockerEntries } from "./exam-workspace/examWorkspaceBlockers";
 import { examWorkspaceSavedAt } from "./exam-workspace/examWorkspaceFormat";
+import { provideExamWorkspaceHistoryKeys } from "./exam-workspace/examWorkspaceHistoryKeys";
 import { isTeacherReviewed } from "./exam-workspace/examWorkspaceItemEdits";
 import type { TeacherItemKind } from "./exam-workspace/examWorkspaceItemEdits";
 import { examWorkspaceDocumentLabel } from "./exam-workspace/examWorkspaceRows";
@@ -143,6 +144,11 @@ const saveFlow = useExamWorkspaceSaveFlow({
 const { canSave, fixBlocker, gotoBlocker, handleSave, handleSaveAs, openSaveAs, runExport, saveAsOpen, saveAsTaken, saveState } =
   saveFlow;
 useExamWorkspaceKeyboard({ save: handleSave, undo: history.undo, redo: history.redo, step, listOpen });
+// Ctrl/Cmd+Z inside an exam text editor is the same Ångra / Gör om the buttons run.
+provideExamWorkspaceHistoryKeys({
+  undo: () => void history.undo(),
+  redo: () => void history.redo(),
+});
 
 const globalInstructions = computed(() =>
   examWorkspaceSharedParagraphs(workspaceDocument.value?.instructions ?? [], assetUrls.value),

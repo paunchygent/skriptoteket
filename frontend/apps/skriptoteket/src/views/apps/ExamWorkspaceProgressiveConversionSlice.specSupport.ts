@@ -178,7 +178,7 @@ export function expectEditable(view: ViewWrapper, editable: boolean) {
       expect(element.attributes("disabled"), `${control} disabled`).toBe("");
     }
   }
-  const body = view.get('[data-test="exam-workspace-body-paragraph-0"]').attributes("contenteditable");
+  const body = view.get('[data-test="exam-workspace-body-editor-surface"]').attributes("contenteditable");
   if (editable) {
     expect(body).not.toBe("false");
   } else {
