@@ -9,7 +9,7 @@ check the answers. The rulings:
    the user rules on its instruction its heading opens that question's body.
 2. The summary line is no exam text; its totals are the parts' printed totals.
 3. Name, date, class and exam-total lines are header data, never exam text; the exam total
-   is the header's printed total.
+   is the header's printed total, kept even where the questions' points sum to less.
 4. "— SLUT PÅ PROVET —" is a print-only line and appears nowhere.
 5. The instruction box and the closing reminder are the exam's instructions, shown once.
 """
@@ -33,6 +33,9 @@ HEADER_LINES = {
     "exempelprov_grammatik_sve2_v2_1": ("Namn:", "Datum:", "Totalt: 70 poäng"),
 }
 LAST_POINTS = {"omprov_grammatik_sve2": 12, "exempelprov_grammatik_sve2_v2_1": 15}
+# Omprov prints 70 p in total but its questions print 67 p (DEL 4's question 12 p where the
+# summary says 15 p); the workspace's exam-level amber line shows that difference.
+ITEM_SUMS = {"omprov_grammatik_sve2": 67, "exempelprov_grammatik_sve2_v2_1": 70}
 BOX = "Provet består av fyra delar. Läs varje uppgift noggrant. Skriv tydligt."
 REMINDER = "Kontrollera dina svar innan du lämnar in."
 
@@ -93,6 +96,7 @@ async def test_header_lines_are_header_data_never_exam_text(exam: str) -> None:
     for header_line in HEADER_LINES[exam]:
         assert not [line for line in text if line.startswith(header_line)]
     assert document.header.printed_total == 70
+    assert sum(item.points or 0 for item in document.items) == ITEM_SUMS[exam]
 
 
 @pytest.mark.parametrize("exam", EXAMS)
