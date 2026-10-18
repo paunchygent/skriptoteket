@@ -7,6 +7,9 @@ Purpose:
 Relationships:
     - Consumes asset reference paths prepared by
       `domain.digiexam_examnet_pdf_assets`.
+    - Binds every prompt image through the position that
+      `domain.digiexam_prompt_repair.prompt_image_positions`, the single
+      interpreter of prompt images, returns for that image's own start tag.
     - Used by `domain.digiexam_examnet_pdf_items` before item sections are
       assembled.
 """
@@ -27,6 +30,27 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_examnet_pdf_contr
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ir_contracts import DigiExamIrItem
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_prompt_repair import (
     PROMPT_IMAGE_PLACEHOLDER_HTML,
+    prompt_image_positions,
+)
+
+# HTML void elements (WHATWG): they never have content or an end tag, so they
+# never open or close a nesting level.
+_VOID_ELEMENTS = frozenset(
+    {
+        "area",
+        "base",
+        "br",
+        "col",
+        "embed",
+        "hr",
+        "img",
+        "input",
+        "link",
+        "meta",
+        "source",
+        "track",
+        "wbr",
+    }
 )
 
 
@@ -82,12 +106,13 @@ class _PromptHtmlRenderer(HTMLParser):
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         """Handle allowed prompt start tags."""
 
-        if self._gap_span_depth:
-            self._gap_span_depth += 1
-            return
         normalized_tag = tag.lower()
         if normalized_tag == "img":
-            self._handle_image(attrs)
+            self._handle_image()
+            return
+        if self._gap_span_depth:
+            if normalized_tag not in _VOID_ELEMENTS:
+                self._gap_span_depth += 1
             return
         if normalized_tag == "span" and _has_gap_id(attrs):
             self._parts.append('<span class="gap-placeholder">[____]</span>')
@@ -108,7 +133,9 @@ class _PromptHtmlRenderer(HTMLParser):
 
         normalized_tag = tag.lower()
         if normalized_tag == "img":
-            self._handle_image(attrs)
+            self._handle_image()
+            return
+        if self._gap_span_depth:
             return
         if normalized_tag == "span" and _has_gap_id(attrs):
             self._parts.append('<span class="gap-placeholder">[____]</span>')
@@ -119,10 +146,11 @@ class _PromptHtmlRenderer(HTMLParser):
     def handle_endtag(self, tag: str) -> None:
         """Handle allowed prompt end tags."""
 
-        if self._gap_span_depth:
-            self._gap_span_depth -= 1
-            return
         normalized_tag = tag.lower()
+        if self._gap_span_depth:
+            if normalized_tag not in _VOID_ELEMENTS:
+                self._gap_span_depth -= 1
+            return
         if normalized_tag in {"p", "strong", "em", "sup", "sub"}:
             self._parts.append(f"</{normalized_tag}>")
             return
@@ -137,9 +165,10 @@ class _PromptHtmlRenderer(HTMLParser):
             return
         self._parts.append(escape(data))
 
-    def _handle_image(self, attrs: list[tuple[str, str | None]]) -> None:
-        image_id = _image_id(attrs)
-        if image_id is None:
+    def _handle_image(self) -> None:
+        (position,) = prompt_image_positions(self.get_starttag_text())
+        image_id = position.reference_index
+        if position.ambiguous or image_id is None:
             self._warnings.append(_missing_image_warning(self._item_id, "unresolved"))
             self._parts.append(PROMPT_IMAGE_PLACEHOLDER_HTML)
             return
@@ -155,14 +184,6 @@ class _PromptHtmlRenderer(HTMLParser):
             f'src="{escape(relative_path, quote=True)}" '
             f'alt="embedded image {image_id + 1}">'
         )
-
-
-def _image_id(attrs: list[tuple[str, str | None]]) -> int | None:
-    attr_map = {key.lower(): value for key, value in attrs if value is not None}
-    value = attr_map.get("data-image-id")
-    if value is None or not value.isdecimal():
-        return None
-    return int(value)
 
 
 def _has_gap_id(attrs: list[tuple[str, str | None]]) -> bool:
