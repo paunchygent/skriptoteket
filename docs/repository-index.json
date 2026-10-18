@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "236a4b756dace35209bd4bc677f84deef9c9542911ec080667b09627507a6f10",
+  "source_set_digest": "ac4c21e8af05d9637be1758b76355c31b48b9933104a318ba77e87fd649dde02",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -7668,7 +7668,7 @@
       "type": "task",
       "title": "DOCX background replays carry a recording for the item-type labeler call",
       "path": "docs/backlog/tasks/task-skript-rep-0045-docx-background-replays-carry-a-recording-for-the-item-type-labeler-call.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "repository",
       "owners": [
         {
@@ -7678,7 +7678,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-18",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Independent ruthless-reviewer review of the delivery (root 01a14f23 evidence/reviews/10b693b6-1db4-4125-a880-ac5f7273bde7.md); its only finding F1 (medium) repaired at cbd290bd (capture-time request key sidecar per label_b recording, refused without one) and admitted on focused proof; user-approved re-recording of exactly 14 labeler calls (16,286 in, 1,315 out tokens); integration file 11/11, domain suite 3586 passed on Hemma; merged into main."
       }
     },
     {

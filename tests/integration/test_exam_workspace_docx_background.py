@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import shutil
 from collections import Counter
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -104,6 +105,7 @@ from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
 pytestmark = [pytest.mark.integration, pytest.mark.docker, pytest.mark.asyncio(loop_scope="module")]
 _EXAM = "chapter_4_poetry_and_lyrics_quiz_med_facit"
 _QUIZ = CORPUS / f"{_EXAM}.docx"
+_LABEL_EXAM = "bf26_diagnostic_grammar_test_ht26_med_facit"
 
 
 async def test_quiz_job_saves_batches_progressively_and_publishes_complete_document(
@@ -122,7 +124,7 @@ async def test_quiz_job_saves_batches_progressively_and_publishes_complete_docum
         OPENAI_LLM_ANSWER_KEY_API_KEY=API_KEY,
         LLM_DOCX_BATCH_FAMILIES=RECORDED_FAMILIES_PER_BATCH,
     )
-    transport = RecordedTransport(_EXAM)
+    transport = RecordedTransport(RECORDINGS / _EXAM)
     batch_count = len(list((RECORDINGS / _EXAM).glob("docx_w*.json")))
     saved: list[tuple[str, int, int, int, int, int, int]] = []
 
@@ -285,7 +287,7 @@ async def test_quiz_job_saves_batches_progressively_and_publishes_complete_docum
 @pytest.mark.parametrize("exam", recorded_exams())
 async def test_every_recording_is_served_once_to_its_own_request(exam: str) -> None:
     """The HTTP-level request keying matches each live recording exactly once, in every exam."""
-    transport = RecordedTransport(exam)
+    transport = RecordedTransport(RECORDINGS / exam)
     progress = RecordingProgress()
     content = corpus_docx(exam)
     job = DocxConversionJob(
@@ -316,3 +318,48 @@ async def test_every_recording_is_served_once_to_its_own_request(exam: str) -> N
     assert transport.unmatched == []
     assert sorted(transport.served) == transport.all_recordings()
     assert not [i for i in outcome.result.document.items if PLACEHOLDER_REASON in i.review.reasons]
+
+
+def _labeler_request(text: str) -> httpx.Request:
+    """A second-pass item_type_label request carrying ``text`` as its rendered source."""
+    return httpx.Request(
+        "POST",
+        "https://api.openai.com/v1/responses",
+        headers={"Authorization": f"Bearer {API_KEY}"},
+        json={
+            "text": {"format": {"name": "item_type_label", "strict": True}},
+            "input": [{"content": [{"text": text}]}],
+        },
+    )
+
+
+async def test_a_changed_labeler_request_has_no_recording() -> None:
+    """A labeler prompt that differs from the recorded one is refused, not rebound to it."""
+    exam_dir = RECORDINGS / _LABEL_EXAM
+    stem = sorted(p.stem for p in exam_dir.glob("label_b_*.json"))[0]
+    key = (exam_dir / f"{stem}.request.txt").read_text().removesuffix("\n")
+
+    changed = RecordedTransport(exam_dir)
+    assert (
+        changed(_labeler_request(f"prefix\n\n### Question q1\n{key}\nPoäng: 1 poäng")).status_code
+        == 500
+    )
+    assert changed.unmatched == ["no recording for item_type_label"]
+    assert changed.served == []
+
+    unchanged = RecordedTransport(exam_dir)
+    assert unchanged(_labeler_request(f"prefix\n\n### Question q1\n{key}")).status_code == 200
+    assert unchanged.served == [stem]
+    assert unchanged.unmatched == []
+
+
+async def test_a_recording_without_its_request_key_is_refused(tmp_path: Path) -> None:
+    """A label_b recording with no capture-time key is refused, never matched by default."""
+    source = RECORDINGS / _LABEL_EXAM
+    copied = tmp_path / source.name
+    shutil.copytree(source, copied)
+    stem = sorted(p.stem for p in copied.glob("label_b_*.json"))[0]
+    (copied / f"{stem}.request.txt").unlink()
+
+    with pytest.raises(AssertionError, match=stem):
+        RecordedTransport(copied)

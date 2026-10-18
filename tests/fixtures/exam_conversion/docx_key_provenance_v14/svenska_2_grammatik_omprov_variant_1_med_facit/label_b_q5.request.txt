@@ -1,0 +1,7 @@
+## **Del 2: Satsdelar, 8 poäng**
+Använd S = subjekt, P = predikat, DO = direkt objekt, IO = indirekt objekt, Pf = predikativ/predikatsfyllnad, Adv = adverbial och SA = satsadverbial.
+### **<i>Fråga 5. Gör satsdelsanalys av meningarna.</i>**
+a) Eleverna lämnade inte sina mobiler i skåpet. Analys: <i>Eleverna (S) lämnade (P) inte (SA) sina mobiler (DO) i skåpet (Adv).</i>
+b) Läraren gav klassen tydliga instruktioner före provet. Analys: <i>Läraren (S) gav (P) klassen (IO) tydliga instruktioner (DO) före provet (Adv).</i>
+c) Stämningen blev lugn efter genomgången. Analys: <i>Stämningen (S) blev (P) lugn (Pf) efter genomgången (Adv).</i>
+Poäng: 6 poäng
