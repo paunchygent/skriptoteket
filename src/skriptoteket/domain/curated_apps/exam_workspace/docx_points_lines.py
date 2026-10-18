@@ -83,7 +83,9 @@ class PrintedPoints:
     """Every printed total and its owner.
 
     ``owners`` maps each points line a question owns to that question's index. ``metadata``
-    holds every other points line: part and exam lines, never exam text or review items.
+    holds every other points line except a part's opener: closing part lines, exam lines and
+    summaries, never exam text or review items. A part's opener is section structure whatever
+    its Word kind (``part_openers``), so its text reaches its part's parent.
     """
 
     questions: tuple[PrintedQuestion, ...] = ()
@@ -266,12 +268,17 @@ def printed_points_plan(
         for index in indices
         if index not in closers and line_points(chunks[index]) is not None
     }
+    # A part's opener is section structure, never metadata; a line that opens no part (D3)
+    # stays metadata as any other points line no question owns.
+    opened = part_openers(parts)
     metadata = frozenset(
         {
             *(
                 chunks[index].anchor
                 for index in totals
-                if line_points(chunks[index]) is not None and chunks[index].anchor not in owners
+                if line_points(chunks[index]) is not None
+                and chunks[index].anchor not in owners
+                and chunks[index].anchor not in opened
             ),
             *(chunks[index].anchor for index in summaries),
         }
@@ -285,25 +292,57 @@ def printed_points_plan(
     )
 
 
-def section_openers(parts: Iterable[PrintedPart]) -> frozenset[str]:
-    """The part lines that open a section: each that changes the running part.
+def part_openers(parts: Iterable[PrintedPart]) -> frozenset[str]:
+    """Every part's opener: section structure whatever its Word kind, never an item."""
+    return frozenset(part.opener for part in parts)
 
-    A part line that repeats the identity of the part line before it, such as "Part 3,
-    Question 2" after "Part 3, Question 1", continues that part. A line that names no part
-    opens one, unless it lies inside a part that names its part ("Uppgift 1.1 (4 p)" under
-    "DEL 1"): that outer part keeps running over all of its questions.
+
+def _section_runs(parts: Iterable[PrintedPart]) -> tuple[frozenset[str], frozenset[str]]:
+    """The part lines that open a section, and those nested in a part that names its part.
+
+    A part line opens a section when it changes the running part. A part line that repeats
+    the identity of the part line before it, such as "Part 3, Question 2" after "Part 3,
+    Question 1", continues that part. A line that names no part opens one, unless it lies
+    inside a part that names its part ("Uppgift 1.1 (4 p)" under "DEL 1"): it is nested, and
+    that outer part keeps running over all of its questions.
     """
     openers: list[str] = []
+    nested: list[str] = []
     running: str | None = None
     outer: frozenset[int] = frozenset()
     for part in parts:
         if part.identity is None and outer.issuperset(part.questions):
+            nested.append(part.opener)
             continue
         if part.identity is None or part.identity != running:
             openers.append(part.opener)
         running = part.identity
         outer = frozenset(part.questions) if part.identity is not None else frozenset()
-    return frozenset(openers)
+    return frozenset(openers), frozenset(nested)
+
+
+@dataclass(frozen=True)
+class PartLines:
+    """The plan's part lines as section placement reads them.
+
+    ``openers`` holds every part's opener: section structure whatever its Word kind, so it
+    opens a run as a heading does and shows its wording without its points label.
+    ``sections`` holds the openers that change the running part.
+    ``nested`` holds the openers that name no part inside a part that names its part, such as
+    "Uppgift 1.1 (4 p)" under "DEL 1": the outer part's run passes them.
+    """
+
+    openers: frozenset[str] = frozenset()
+    sections: frozenset[str] = frozenset()
+    nested: frozenset[str] = frozenset()
+
+
+NO_PART_LINES = PartLines()
+
+
+def part_lines(parts: tuple[PrintedPart, ...]) -> PartLines:
+    sections, nested = _section_runs(parts)
+    return PartLines(part_openers(parts), sections, nested)
 
 
 def manifest_questions(manifest: ExamManifest) -> tuple[tuple[str, ...], ...]:

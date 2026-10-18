@@ -230,7 +230,8 @@ def provisional_result(
         a for family in families if family.question_id not in pending for a in family.claims
     )
     questions = tuple(family.question_anchors for family in families)
-    heading_instructions = state.heading_instructions
+    printed = printed_points_plan(state.chunks, questions)
+    heading_instructions = state.heading_instructions(printed)
     heading_anchors = {
         a for instruction in heading_instructions for a in instruction.source_anchors
     }
@@ -255,7 +256,7 @@ def provisional_result(
         exam_wide=exam_wide,
         exam_metadata=exam_metadata,
         questions=questions,
-        printed=printed_points_plan(state.chunks, questions),
+        printed=printed,
     )
 
 

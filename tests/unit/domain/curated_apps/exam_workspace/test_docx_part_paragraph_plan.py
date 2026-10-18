@@ -72,6 +72,23 @@ def test_a_long_titled_part_paragraph_opens_its_part_and_is_no_question_anchor(
     assert [q.prints for q in plan.questions] == [False, False]
 
 
+@pytest.mark.parametrize("kind", ["paragraph", "heading"])
+def test_a_short_part_line_opens_its_part_and_is_never_metadata(kind: str) -> None:
+    # N3b requirement 2: "DEL 1 (6 p)" is also a points line, yet as a part opener it is
+    # section structure, never metadata: placement must see its text.
+    chunks = _chunks(
+        (kind, "DEL 1 (6 p)"),
+        ("paragraph", "1. Förklara vad ett substantiv är."),
+        ("paragraph", "2. Förklara vad ett adjektiv är."),
+    )
+
+    plan = printed_points_plan(chunks, (("body:0002",), ("body:0003",)))
+
+    assert plan.parts == (PrintedPart(6, (0, 1), "body:0001", "1"),)
+    assert "body:0001" not in plan.metadata
+    assert "body:0001" not in plan.owners
+
+
 def test_a_part_labelled_paragraph_printing_two_totals_is_only_a_summary_candidate() -> None:
     chunks = _chunks(
         ("paragraph", "Del 1: Ordklasser (6 p) och Del 2: Satsdelar (4 p)"),

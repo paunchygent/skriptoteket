@@ -32,16 +32,12 @@ from skriptoteket.application.curated_apps.exam_workspace import (
 from skriptoteket.application.curated_apps.handlers.exam_workspace_document_store import (
     ExamWorkspaceDocumentStore,
 )
-from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_admit_metadata import (
-    is_question_heading,
-)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build import (
     BatchOutcome,
     convert_batch,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_admission import (
     Admitted,
-    _joined_body,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_rounds import (
     DocxBuildExchangeProtocol,
@@ -298,7 +294,7 @@ class RetryExamWorkspaceItemHandler:
             profile=self._profile,
         )
         admitted = _single_item(state, outcome)
-        produced = None if admitted is None else _with_owned_contexts(admitted, owned, state)
+        produced = None if admitted is None else _with_owned_contexts(admitted, owned)
         if produced is None:
             review = source_review_item(
                 original=saved_item,
@@ -353,28 +349,16 @@ def _single_item(state: DocxBuildState, outcome: BatchOutcome) -> Admitted | Non
     return state.accepted[0]
 
 
-def _with_owned_contexts(
-    admitted: Admitted, owned: tuple[str, ...], state: DocxBuildState
-) -> NativeExamItem | None:
+def _with_owned_contexts(admitted: Admitted, owned: tuple[str, ...]) -> NativeExamItem | None:
     """The item with every context its question owns, or None when it cannot hold them.
 
-    Admission joins an owned context the reply leaves out. One the reply lists in another
-    role (an instruction, the title or an answer key) is no instruction or key of a
-    one-question retry: it joins the converted item at its source place through the build's
-    join (ruling 2026-10-18 c). An item that is not converted cannot join it, so the retry
-    ends as the source review item, which shows every owned context. Joining adds exactly the
-    contexts' pictures, so the item's source pictures still match its body.
+    Admission joins every owned context to the item at its source place, also one the reply
+    lists as an instruction, the title or an answer key (ruling 2026-10-18 c), with the
+    build's join and alignment, which also shows the question's heading once. An item that
+    does not hold them all ends as the source review item, which shows every owned context.
     """
     item, held = admitted
-    elsewhere = frozenset(owned).difference(held)
-    if not elsewhere:
-        return item
-    if item.review.parse_origin is not NativeParseOrigin.LLM_PARSED:
-        return None
-    passages = tuple(chunk for chunk in state.chunks if chunk.anchor in elsewhere)
-    own = tuple(chunk for chunk in state.chunks if chunk.anchor in state.question_by_anchor)
-    headings = tuple(chunk for chunk in own if is_question_heading(chunk))
-    return item.model_copy(update={"body": _joined_body(item, passages, own, state, headings)})
+    return None if frozenset(owned).difference(held) else item
 
 
 def _review_reason(state: DocxBuildState, outcome: BatchOutcome, admitted: Admitted | None) -> str:

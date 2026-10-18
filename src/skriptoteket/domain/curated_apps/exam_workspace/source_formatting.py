@@ -63,6 +63,8 @@ class SourceFormatting:
         parts: list[str] = []
         marks: list[tuple[str, ...]] = []
         paragraphs: list[SourceParagraph] = []
+        # Each chunk's anchor and the offset its text starts at, in source order.
+        self.chunk_starts: list[tuple[int, str]] = []
         self.asset_positions: dict[str, list[int]] = {}
         self._asset_cursors: dict[str, int] = {}
         offset = 0
@@ -73,6 +75,7 @@ class SourceFormatting:
                 offset += 1
             for image in chunk.images:
                 self.asset_positions.setdefault(image.asset_id, []).append(offset + image.offset)
+            self.chunk_starts.append((offset, chunk.anchor))
             parts.append(chunk.text)
             chunk_marks: list[tuple[str, ...]] = [()] * len(chunk.text)
             for run in chunk.runs:
@@ -114,9 +117,9 @@ class SourceFormatting:
         )
         self.path = "exact"
         self.covered: set[int] = set()
-        # Paragraph starts this projection consumed, and one source anchor per
-        # body() input paragraph in input order; (-1, -1) means the paragraph
-        # kept the model's wording without a unique source paragraph.
+        # Paragraph starts this projection consumed, and the source paragraph start of
+        # each paragraph of the body last produced (body, rebuild_body or the coverage
+        # restore); -1 means it kept the model's wording without a unique source paragraph.
         self.projected: set[int] = set()
         self.entry_spans: list[tuple[int, int]] = []
         self.output_anchors: list[int] = []
@@ -448,6 +451,7 @@ class SourceFormatting:
         gaps = [NativeGapSegment(gap_id=gap_id) for gap_id in answers]
         placements = self._gap_placements(SourceParagraph(0, len(self.text), None), gaps, answers)
         result: list[NativeParagraph] = []
+        self.output_anchors = []
         for paragraph in self.available_paragraphs:
             cursor = self._content_start(paragraph)
             segments: list[NativeSegment] = []
@@ -461,6 +465,7 @@ class SourceFormatting:
             segments.extend(self._rebuilt_text_segments(cursor, paragraph.end))
             if segments:
                 self.projected.add(paragraph.start)
+                self.output_anchors.append(paragraph.start)
                 result.append(
                     NativeParagraph(heading_level=paragraph.heading, segments=tuple(segments))
                 )

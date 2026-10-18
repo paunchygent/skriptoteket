@@ -2,7 +2,9 @@
 
 Every run is decided in one pass with one section rule: a section boundary is a heading
 no item owns or a part line that changes the running part, other than a heading that labels
-a stretch inside one instruction printed in several paragraphs. A printed heading over
+a stretch inside one instruction printed in several paragraphs. A part's opener in the points
+plan is a heading here whatever its Word kind: the plan, not the Word style, decides that it
+is section structure. A printed heading over
 questions is a run of its own starting at the heading, reaching the questions up to the
 next boundary, so a parent formed from same-reach runs opens with the heading by
 construction (T1, T2). A heading a question owns reaches that question alone. A heading
@@ -17,6 +19,7 @@ from dataclasses import dataclass
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedMetadata
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.docx_heading_wording import shown_heading
+from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import PartLines
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     POINT_LABEL,
     QUESTION_HEADING_LABEL,
@@ -89,24 +92,31 @@ def _lead_in_labels(
     own: set[str],
     positions: dict[str, int],
     item_starts: list[int],
+    openers: frozenset[str],
 ) -> set[int]:
     """Headings that label a stretch of an instruction lead-in, such as one passage of two.
 
     Such a heading prints no points and sits between instruction paragraphs that no item
     owns, and the lead-in it sits in serves the one question that follows it. A heading
     over a run of two or more questions is a section heading, never a label, even when
-    instruction lines stand on both sides of it: the run before it ends there.
+    instruction lines stand on both sides of it: the run before it ends there. A plan part
+    opener (``openers``) is a heading here whatever its Word kind, as everywhere in the
+    section rule.
     """
+
+    def heading(index: int) -> bool:
+        return chunks[index].kind == "heading" or chunks[index].anchor in openers
+
     lead_in = {positions[c.anchor] for run in runs for c in run.sources if not points_line(c.text)}
     provisional = {
         i
         for i in range(1, len(chunks) - 1)
-        if chunks[i].kind == "heading"
+        if heading(i)
         and chunks[i].anchor not in own
         and not POINT_LABEL.search(chunks[i].text)
         and {i - 1, i + 1} <= lead_in
-        and chunks[i - 1].kind != "heading"
-        and chunks[i + 1].kind != "heading"
+        and not heading(i - 1)
+        and not heading(i + 1)
     }
     labels = set()
     for i in provisional:
@@ -114,9 +124,7 @@ def _lead_in_labels(
             (
                 j
                 for j in range(i + 1, len(chunks))
-                if chunks[j].kind == "heading"
-                and chunks[j].anchor not in own
-                and j not in provisional
+                if heading(j) and chunks[j].anchor not in own and j not in provisional
             ),
             len(chunks),
         )
@@ -167,12 +175,17 @@ def instruction_runs(
 
 @dataclass(frozen=True)
 class SectionShape:
-    """The one section rule for a document: its boundary headings and lead-in labels."""
+    """The one section rule for a document: its boundary headings and lead-in labels.
+
+    ``parts`` are the boundaries that change the running part; ``nested`` the boundaries
+    that open a part inside a part that names its part, which that part's run passes.
+    """
 
     boundaries: list[int]
     labels: set[int]
     heading_anchors: frozenset[str]
     parts: frozenset[int] = frozenset()
+    nested: frozenset[int] = frozenset()
 
 
 def with_heading_runs(
@@ -184,12 +197,13 @@ def with_heading_runs(
     positions: dict[str, int],
     title_anchors: frozenset[str],
     own_anchors: frozenset[str],
-    part_lines: frozenset[str],
+    part_lines: PartLines,
 ) -> tuple[list[Run], SectionShape]:
     """Add one run per printed heading, under the same boundary rule as every other run.
 
-    A part line that changes the running part (``part_lines``) is a section boundary even
-    when a question owns it, so the part before it never runs on into the part it opens.
+    Every part's opener (``part_lines.openers``) is a printed heading whatever its Word kind.
+    A part line that changes the running part (``part_lines.sections``) is a section boundary
+    even when a question owns it, so the part before it never runs on into the part it opens.
 
     The document's opening heading is the exam title, never a question heading. A
     question's own heading chunk a reply lists as an instruction instead of in its item
@@ -198,12 +212,14 @@ def with_heading_runs(
     """
     own = {anchor for _, anchors, _ in ordered for anchor in anchors}
     owner = {a: k for k, (_, anchors, _) in enumerate(ordered) for a in anchors}
-    labels = _lead_in_labels(chunks, runs, own, positions, [start for start, _, _ in ordered])
+    labels = _lead_in_labels(
+        chunks, runs, own, positions, [start for start, _, _ in ordered], part_lines.openers
+    )
     boundaries = [
         i
         for i, chunk in enumerate(chunks)
-        if chunk.kind == "heading"
-        and (chunk.anchor not in own or chunk.anchor in part_lines)
+        if (chunk.kind == "heading" or chunk.anchor in part_lines.openers)
+        and (chunk.anchor not in own or chunk.anchor in part_lines.sections)
         and i not in labels
     ]
     boundary_anchors = {chunks[i].anchor for i in boundaries}
@@ -216,7 +232,7 @@ def with_heading_runs(
     for chunk in chunks:
         at = positions[chunk.anchor]
         if (
-            chunk.kind != "heading"
+            (chunk.kind != "heading" and chunk.anchor not in part_lines.openers)
             or (not chunk.text.strip() and not chunk.images and not chunk.missing_images)
             or (at == 0 and chunk.anchor not in assigned)
             or chunk.anchor in title_anchors
@@ -248,7 +264,8 @@ def with_heading_runs(
         boundaries,
         labels,
         frozenset(r.sources[0].anchor for r in headings),
-        frozenset(i for i in boundaries if chunks[i].anchor in part_lines),
+        frozenset(i for i in boundaries if chunks[i].anchor in part_lines.sections),
+        frozenset(i for i in boundaries if chunks[i].anchor in part_lines.nested),
     )
     return [*runs, *headings], shape
 
@@ -275,7 +292,8 @@ def _span(
     the same or a higher level, so a section title directly above a subsection heading
     still reaches its section's questions. A part line that changes the running part ends
     every run whatever its level, once the run has reached a question: a run directly above a
-    part line serves that part.
+    part line serves that part. A run opening a part that names its part passes the part
+    lines nested in it, so its line reaches every question of its part.
     """
     chunk_count = len(chunks)
     rank = _heading_rank(run.sources[0]) if run.heading else None
@@ -288,6 +306,7 @@ def _span(
                 for i in shape.boundaries
                 if i > run.start
                 and not (i in shape.parts and i <= first_item)
+                and not (run.heading and run.start in shape.parts and i in shape.nested)
                 and (rank is None or i in shape.parts or _heading_rank(chunks[i]) <= rank)
             ),
             chunk_count,
@@ -362,6 +381,7 @@ def reaches(
                 for c in run.sources
                 if not points_line(c.text)
                 and (c.kind != "heading" or positions[c.anchor] in shape.labels)
+                and c.anchor not in shape.heading_anchors
             )
         )
         if not sources:

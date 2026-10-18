@@ -22,6 +22,8 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import (
+    PrintedPoints,
+    part_openers,
     printed_points_plan,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
@@ -128,18 +130,27 @@ class DocxBuildState:
             if chunk.anchor in owned and chunk.anchor not in self.claimed
         )
 
-    @property
-    def heading_instructions(self) -> tuple[ProducedMetadata, ...]:
-        """Headings omitted by a successful build stay structural until T1/T2 decides reach.
+    def heading_instructions(self, printed: PrintedPoints) -> tuple[ProducedMetadata, ...]:
+        """Headings and part openers omitted by a successful build stay structural until
+        T1/T2 decides reach.
 
-        A failed batch's headings keep its failure reason and source-review path.
+        Every part's opener in ``printed`` is section structure whatever its Word kind, so an
+        omitted part paragraph opens its part's parent as a part heading does, never an item.
+        A failed batch's headings and part openers keep its failure reason and source-review
+        path.
         """
+        openers = part_openers(printed.parts)
         return tuple(
             ProducedMetadata(text=chunk.text, source_anchors=(chunk.anchor,))
             for chunk in self.pending
-            if chunk.kind == "heading"
-            and chunk.anchor not in self.reasons
-            and (QUESTION_HEADING_LABEL.match(chunk.text) or POINT_LABEL.search(chunk.text))
+            if chunk.anchor not in self.reasons
+            and (
+                chunk.anchor in openers
+                or (
+                    chunk.kind == "heading"
+                    and (QUESTION_HEADING_LABEL.match(chunk.text) or POINT_LABEL.search(chunk.text))
+                )
+            )
         )
 
     def left_out_contexts(self, anchors: Iterable[str], held: set[str]) -> tuple[str, ...]:
@@ -201,10 +212,12 @@ class DocxBuildState:
 
         Each question with an unclaimed own chunk becomes one review item holding the source
         text of all its own chunks at the question's place. Answer-key chunks stay teacher
-        notes, the grouped title stays the title, and shared section text and headings stay
-        section text, each in its source wording.
+        notes, the grouped title stays the title, and shared section text, headings and
+        every plan part opener whatever its Word kind (``part_openers``, as on the normal
+        path) stay section text, each in its source wording.
         Every other pending chunk becomes a review item with ``reason``.
         """
+        openers = part_openers(printed_points_plan(self.chunks, self.questions).parts)
         for anchors in questions:
             own = tuple(c.anchor for c in self.pending if c.anchor in anchors)
             if own:
@@ -215,7 +228,7 @@ class DocxBuildState:
             if chunk.anchor in keys:
                 self.key_anchors.add(chunk.anchor)
             elif chunk.anchor not in title and (
-                chunk.anchor in contexts or chunk.kind == "heading"
+                chunk.anchor in contexts or chunk.anchor in openers or chunk.kind == "heading"
             ):
                 section = ProducedMetadata(text=chunk.text, source_anchors=(chunk.anchor,))
                 self.instructions = (*self.instructions, section)
@@ -365,13 +378,13 @@ class DocxBuildState:
         (``printed_points_plan``); assembly scores the items from them. A points line that is
         no question's own is part or exam metadata, never a review item.
         """
-        heading_instructions = self.heading_instructions
+        questions = questions or self.questions
+        printed = printed_points_plan(self.chunks, questions)
+        heading_instructions = self.heading_instructions(printed)
         heading_anchors = {
             a for instruction in heading_instructions for a in instruction.source_anchors
         }
         instructions = (*self.instructions, *heading_instructions)
-        questions = questions or self.questions
-        printed = printed_points_plan(self.chunks, questions)
         review_reasons: dict[str, str] = {}
         for chunk in self.pending:
             if (

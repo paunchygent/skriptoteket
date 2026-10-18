@@ -267,9 +267,7 @@ async def test_retry_reply_listing_one_passage_line_as_an_instruction_keeps_both
     item = await _retry(env, _Q2, _listed((held,), instructions=("body:0005",)))
 
     assert item.review.parse_origin is NativeParseOrigin.LLM_PARSED
-    assert item.plain_text_lines().count(_PASSAGE) == 1
-    assert item.plain_text_lines()[-1] == _Q2
-    assert set(item.plain_text_lines()) == {_TEXT_A, _PASSAGE, _Q2}
+    assert item.plain_text_lines() == (_TEXT_A, _PASSAGE, _Q2)
 
 
 @pytest.mark.asyncio
