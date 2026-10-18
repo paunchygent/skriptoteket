@@ -6,7 +6,8 @@
  *   persisted history-cursor changes, ignores a response an older request left
  *   behind, keeps the last ready pages while the exam is blocked or a request
  *   fails, and reports a failure once. A 409 (the persisted state moved on) is
- *   dropped silently.
+ *   dropped silently. Disposing the owning scope cancels the scheduled render
+ *   and drops every pending answer without applying it or raising a toast.
  */
 
 import { createPinia, setActivePinia } from "pinia";
@@ -134,6 +135,70 @@ describe("useExamWorkspacePrintPreview", () => {
     await vi.advanceTimersByTimeAsync(5000);
 
     expect(apiMocks.fetchExamWorkspacePrintPreview).not.toHaveBeenCalled();
+    scope.stop();
+  });
+
+  it("fetches nothing when the scope is disposed during the debounce", async () => {
+    const { open, scope } = mountPreview();
+
+    open.value = true;
+    await nextTick();
+    scope.stop();
+    await vi.advanceTimersByTimeAsync(PREVIEW_DEBOUNCE_MS + 5000);
+
+    expect(apiMocks.fetchExamWorkspacePrintPreview).not.toHaveBeenCalled();
+  });
+
+  it("drops a failing in-flight response after disposal without a toast", async () => {
+    const call = deferred<ReturnType<typeof ready>>();
+    apiMocks.fetchExamWorkspacePrintPreview.mockReturnValue(call.promise);
+    const { open, preview, scope } = mountPreview();
+
+    open.value = true;
+    await nextTick();
+    await vi.advanceTimersByTimeAsync(PREVIEW_DEBOUNCE_MS);
+    expect(apiMocks.fetchExamWorkspacePrintPreview).toHaveBeenCalledTimes(1);
+
+    scope.stop();
+    call.reject(new Error("boom"));
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(useToastStore().toasts).toHaveLength(0);
+    expect(preview.loading.value).toBe(false);
+  });
+
+  it("keeps the pages empty when an in-flight response resolves after disposal", async () => {
+    const call = deferred<ReturnType<typeof ready>>();
+    apiMocks.fetchExamWorkspacePrintPreview.mockReturnValue(call.promise);
+    const { open, preview, scope } = mountPreview();
+
+    open.value = true;
+    await nextTick();
+    await vi.advanceTimersByTimeAsync(PREVIEW_DEBOUNCE_MS);
+
+    scope.stop();
+    call.resolve(ready(["late-page"]));
+    await vi.advanceTimersByTimeAsync(0);
+
+    expect(preview.pages.value).toEqual([]);
+    expect(preview.loading.value).toBe(false);
+  });
+
+  it("fetches again after a close and reopen without disposal", async () => {
+    apiMocks.fetchExamWorkspacePrintPreview.mockResolvedValue(ready(["page-1"]));
+    const { open, preview, scope } = mountPreview();
+
+    open.value = true;
+    await nextTick();
+    await vi.advanceTimersByTimeAsync(PREVIEW_DEBOUNCE_MS);
+    open.value = false;
+    await nextTick();
+    open.value = true;
+    await nextTick();
+    await vi.advanceTimersByTimeAsync(PREVIEW_DEBOUNCE_MS);
+
+    expect(apiMocks.fetchExamWorkspacePrintPreview).toHaveBeenCalledTimes(2);
+    expect(preview.pages.value).toEqual(["page-1"]);
     scope.stop();
   });
 

@@ -9,7 +9,10 @@
  *   the last ready pages while a new render runs or the exam cannot be
  *   rendered. A moved revision or cursor answers 409 and is dropped for the
  *   next change; any other failure keeps the pages and reports once through
- *   the workspace's failure toast. Editing never waits on a render.
+ *   the workspace's failure toast. Editing never waits on a render. Disposing
+ *   the owning scope cancels the scheduled render and drops every pending
+ *   response, so a destroyed workspace neither triggers a server render nor a
+ *   failure toast.
  *
  * Relationships:
  *   - Transport to `api/examWorkspaceExports.ts`.
@@ -17,7 +20,7 @@
  *     `ExamWorkspacePrintPreviewPanel`.
  */
 
-import { ref, watch } from "vue";
+import { onScopeDispose, ref, watch } from "vue";
 import type { Ref } from "vue";
 
 import { isApiError } from "../../../api/client";
@@ -128,6 +131,15 @@ export function useExamWorkspacePrintPreview({
     questionPages.value = {};
     blocked.value = false;
     message.value = null;
+  });
+
+  // Destroying the owning workspace stops the watchers above, but not this raw
+  // timer or an in-flight request; disposal cancels the scheduled render and
+  // drops every pending answer without applying it or raising a toast.
+  onScopeDispose(() => {
+    cancelScheduled();
+    requestSeq += 1;
+    loading.value = false;
   });
 
   return { blocked, loading, message, pages, questionPages };
