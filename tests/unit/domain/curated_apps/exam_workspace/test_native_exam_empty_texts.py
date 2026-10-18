@@ -2,7 +2,6 @@
 part instruction (TASK-SKRIPT-40-04-06 D3, D4)."""
 
 import io
-from typing import Any
 
 import pytest
 from docx import Document
@@ -33,6 +32,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_export_rules im
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import NativeExamItem
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import NativeExamParent
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
+    NativeChoice,
+    NativeGap,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
 )
@@ -55,7 +58,19 @@ _ASSET = NativeExamAsset(
 )
 
 
-def _changed(item: NativeExamItem, **update: Any) -> NativeExamItem:
+def _changed(
+    item: NativeExamItem,
+    *,
+    body: tuple[NativeParagraph, ...] | None = None,
+    kind: NativeExamItemKind | None = None,
+    gaps: tuple[NativeGap, ...] | None = None,
+    choices: tuple[NativeChoice, ...] | None = None,
+) -> NativeExamItem:
+    update: dict[str, object] = {
+        field: value
+        for field, value in (("body", body), ("kind", kind), ("gaps", gaps), ("choices", choices))
+        if value is not None
+    }
     return NativeExamItem.model_validate({**item.model_dump(), **update})
 
 
@@ -84,7 +99,7 @@ def test_a_question_with_no_text_validates() -> None:
 
 def test_a_choice_with_no_text_validates() -> None:
     item = make_single_choice_item()
-    choices = [{**choice.model_dump(), "body": ()} for choice in item.choices]
+    choices = tuple(choice.model_copy(update={"body": ()}) for choice in item.choices)
 
     assert all(choice.body == () for choice in _changed(item, choices=choices).choices)
 

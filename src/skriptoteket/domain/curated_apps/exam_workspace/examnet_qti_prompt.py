@@ -52,22 +52,6 @@ def prompt_paragraphs(
     return tuple(paragraphs)
 
 
-def body_carries_formatting(body: tuple[NativeParagraph, ...]) -> bool:
-    """True when any text run carries a mark or any paragraph declares a heading level.
-
-    The native exporter uses this to choose the rich rendering path, so formatting
-    is never dropped for an item that has no picture or gap carrier to trigger it.
-    """
-
-    for paragraph in body:
-        if paragraph.heading_level is not None:
-            return True
-        for segment in paragraph.segments:
-            if isinstance(segment, NativeTextSegment) and segment.marks:
-                return True
-    return False
-
-
 def image_resources(
     body: tuple[NativeParagraph, ...],
     *,

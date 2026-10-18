@@ -13,6 +13,7 @@ Relationships:
 
 from __future__ import annotations
 
+import re
 from decimal import Decimal
 from uuid import uuid4
 from xml.etree import ElementTree
@@ -27,6 +28,9 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts impo
     ExamNetQtiMatchEntry,
     ExamNetQtiPromptParagraph,
     ExamNetQtiPromptText,
+)
+from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_item_admissibility import (
+    blocking_errors,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_item_xml import (
     serialize_qti_assessment_item,
@@ -119,6 +123,90 @@ def _free_text_item(*, sequence: int, body: tuple[NativeParagraph, ...]) -> Nati
 def _serialize(item: ExamNetQtiItem) -> tuple[str, ElementTree.Element]:
     xml_text = serialize_qti_assessment_item(item).decode("utf-8")
     return xml_text, ElementTree.fromstring(xml_text)
+
+
+_EMPTY_PARAGRAPH = NativeParagraph(segments=(), heading_level=None)
+_STRUCTURE = "<p>First<br/>Second</p><p/><p>Third</p>"
+
+
+def _unformatted_structure(*marks: NativeTextMark) -> tuple[NativeParagraph, ...]:
+    return (
+        _paragraph(_text("First\nSecond", *marks)),
+        _EMPTY_PARAGRAPH,
+        _paragraph(_text("Third")),
+    )
+
+
+def _compact(xml_text: str) -> str:
+    """The serialized markup without indentation or the pretty-printer's space before ``/>``."""
+    return re.sub(r">\s+<", "><", xml_text).replace(" />", "/>")
+
+
+class TestUnformattedStructure:
+    """Hard breaks and empty paragraphs survive whether or not any run is marked."""
+
+    @pytest.mark.parametrize("marks", [(), ("bold",)])
+    def test_question_text_keeps_its_breaks_and_empty_paragraph(
+        self, marks: tuple[NativeTextMark, ...]
+    ) -> None:
+        item = _free_text_item(sequence=1, body=_unformatted_structure(*marks))
+        (qti_item,) = native_exam_to_examnet_qti_items(_document(item))
+
+        xml_text, _ = _serialize(qti_item)
+
+        compact = _compact(xml_text)
+        if marks:
+            assert (
+                "<p><strong>First</strong><br/><strong>Second</strong></p><p/><p>Third</p>"
+                in compact
+            )
+        else:
+            assert f"<qti-prompt>{_STRUCTURE}</qti-prompt>" in compact
+        assert blocking_errors((qti_item,)) == ()
+
+    def test_exam_instruction_precedes_the_question_with_its_breaks(self) -> None:
+        item = _free_text_item(sequence=1, body=(_paragraph(_text("Fråga.")),))
+        document = _document(item, instructions=_unformatted_structure())
+        (qti_item,) = native_exam_to_examnet_qti_items(document)
+
+        xml_text, _ = _serialize(qti_item)
+
+        assert f"<qti-prompt>{_STRUCTURE}<p>Fråga.</p></qti-prompt>" in _compact(xml_text)
+        assert blocking_errors((qti_item,)) == ()
+
+    def test_part_instruction_of_one_child_keeps_its_breaks_in_the_child_prompt(self) -> None:
+        item = _free_text_item(sequence=1, body=(_paragraph(_text("Fråga.")),))
+        parent = NativeExamParent(
+            parent_id="parent_001",
+            instruction=_unformatted_structure(),
+            item_ids=("item_001",),
+        )
+        (qti_item,) = native_exam_to_examnet_qti_items(_document(item, parents=(parent,)))
+
+        xml_text, _ = _serialize(qti_item)
+
+        assert f"<qti-prompt>{_STRUCTURE}<p>Fråga.</p></qti-prompt>" in _compact(xml_text)
+        assert blocking_errors((qti_item,)) == ()
+
+    def test_part_instruction_of_several_children_keeps_its_breaks_in_the_shared_stem(
+        self,
+    ) -> None:
+        children = (
+            _free_text_item(sequence=1, body=(_paragraph(_text("Fråga ett.")),)),
+            _free_text_item(sequence=2, body=(_paragraph(_text("Fråga två.")),)),
+        )
+        parent = NativeExamParent(
+            parent_id="parent_001",
+            instruction=_unformatted_structure(),
+            item_ids=("item_001", "item_002"),
+        )
+        (qti_item,) = native_exam_to_examnet_qti_items(_document(*children, parents=(parent,)))
+
+        xml_text, _ = _serialize(qti_item)
+
+        assert qti_item.children
+        assert f"<qti-item-body>{_STRUCTURE}<qti-extended-text" in _compact(xml_text)
+        assert blocking_errors((qti_item,)) == ()
 
 
 class TestPromptFormatting:

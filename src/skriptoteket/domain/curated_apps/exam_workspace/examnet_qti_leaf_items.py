@@ -23,9 +23,6 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts impo
 )
 from skriptoteket.domain.curated_apps.exam_workspace.exam_language_labels import ExamExportLabels
 from skriptoteket.domain.curated_apps.exam_workspace.examnet_qti_prompt import (
-    body_carries_formatting,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.examnet_qti_prompt import (
     prompt_paragraphs as body_prompt_paragraphs,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
@@ -252,13 +249,7 @@ def placed_gap_ids(item: NativeExamItem) -> tuple[str, ...]:
 
 
 def _prompt_paragraphs(item: NativeExamItem) -> tuple[ExamNetQtiPromptParagraph, ...]:
-    """Keep positioned picture/gap carriers and every formatting carrier."""
-    if (
-        item.kind not in (NativeExamItemKind.GAP_FILL, NativeExamItemKind.INLINE_CHOICE)
-        and not item.body_asset_ids()
-        and not body_carries_formatting(item.body)
-    ):
-        return ()
+    """Keep the body's paragraph and hard-break structure whatever it carries."""
     return body_prompt_paragraphs(item.body, gap_ids=placed_gap_ids(item))
 
 
