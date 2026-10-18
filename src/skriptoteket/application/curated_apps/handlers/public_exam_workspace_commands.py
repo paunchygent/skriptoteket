@@ -17,6 +17,7 @@ from collections.abc import Callable
 from skriptoteket.application.curated_apps.public_exam_workspace import (
     PublicExamBlankResponse,
     PublicExamChangeTypeResponse,
+    PublicExamCreatedPartResponse,
     PublicExamDocumentCommandResponse,
     PublicExamDocumentDeleteResponse,
 )
@@ -110,6 +111,27 @@ class PublicExamWorkspaceCommandHandler:
     ) -> PublicExamDocumentCommandResponse:
         return PublicExamDocumentCommandResponse(
             document=commands.reorder_children(document, parent_id=parent_id, item_ids=item_ids)
+        )
+
+    def group_items(
+        self, *, document: NativeExamDocument, item_ids: tuple[str, ...]
+    ) -> PublicExamCreatedPartResponse:
+        result, created_parent_id = commands.group_items(document, item_ids=item_ids)
+        return PublicExamCreatedPartResponse(document=result, created_parent_id=created_parent_id)
+
+    def create_empty_part(
+        self, *, document: NativeExamDocument, position: int
+    ) -> PublicExamCreatedPartResponse:
+        result, created_parent_id = commands.create_empty_part(document, position=position)
+        return PublicExamCreatedPartResponse(document=result, created_parent_id=created_parent_id)
+
+    def move_item(
+        self, *, document: NativeExamDocument, item_id: str, target_parent_id: str | None
+    ) -> PublicExamDocumentCommandResponse:
+        return PublicExamDocumentCommandResponse(
+            document=commands.move_item(
+                document, item_id=item_id, target_parent_id=target_parent_id
+            )
         )
 
     def change_type(

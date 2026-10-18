@@ -59,6 +59,12 @@ class PublicExamChangeTypeResponse(PublicExamDocumentCommandResponse):
     dropped_content: tuple[str, ...]
 
 
+class PublicExamCreatedPartResponse(PublicExamDocumentCommandResponse):
+    """One guest part creation; names the new part the UI opens in its editor."""
+
+    created_parent_id: str
+
+
 class PublicExamWorkspaceDocumentRequest(BaseModel):
     """The browser-held document every guest command carries."""
 
@@ -87,6 +93,25 @@ class PublicReorderExamChildrenRequest(PublicExamWorkspaceDocumentRequest):
 
 class PublicDeleteExamParentRequest(PublicExamWorkspaceDocumentRequest):
     mode: Literal["keep_questions", "with_questions"]
+
+
+class PublicGroupExamItemsRequest(PublicExamWorkspaceDocumentRequest):
+    """Marked standalone questions become one new part (G2, G10)."""
+
+    item_ids: tuple[str, ...] = Field(min_length=1)
+
+
+class PublicCreateEmptyExamPartRequest(PublicExamWorkspaceDocumentRequest):
+    """Insert a part with an empty instruction at a top-level position (G9)."""
+
+    position: int = Field(ge=0, description="Zero-based index among top-level questions and parts.")
+
+
+class PublicMoveExamItemRequest(PublicExamWorkspaceDocumentRequest):
+    """Move one question into a part, or to None for "Ingen del (fristående)" (G3, R3, R4)."""
+
+    item_id: str
+    target_parent_id: str | None
 
 
 class PublicChangeExamItemTypeRequest(PublicExamWorkspaceDocumentRequest):

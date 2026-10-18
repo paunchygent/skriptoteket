@@ -33,13 +33,17 @@ from skriptoteket.application.curated_apps.handlers.public_exam_workspace_comman
 from skriptoteket.application.curated_apps.public_exam_workspace import (
     PublicAddExamChildRequest,
     PublicChangeExamItemTypeRequest,
+    PublicCreateEmptyExamPartRequest,
     PublicCreateExamParentRequest,
     PublicDeleteExamParentRequest,
     PublicExamBlankResponse,
     PublicExamChangeTypeResponse,
+    PublicExamCreatedPartResponse,
     PublicExamDocumentCommandResponse,
     PublicExamDocumentDeleteResponse,
     PublicExamWorkspaceDocumentRequest,
+    PublicGroupExamItemsRequest,
+    PublicMoveExamItemRequest,
     PublicReorderExamChildrenRequest,
 )
 from skriptoteket.config import Settings
@@ -124,6 +128,67 @@ async def create_public_exam_workspace_parent(
         instruction=body.instruction,
         child=body.child,
         position=body.position,
+    )
+
+
+@router.post("/workspace/parents/group", response_model=PublicExamCreatedPartResponse)
+async def group_public_exam_workspace_items(
+    request: Request,
+    registry: FromDishka[CuratedAppRegistryProtocol],
+    settings: FromDishka[Settings],
+    admit_handler: FromDishka[AdmitPublicRequestHandlerProtocol],
+    handler: FromDishka[PublicExamWorkspaceCommandHandler],
+) -> PublicExamCreatedPartResponse:
+    await admit_guest_request(
+        request=request,
+        registry=registry,
+        settings=settings,
+        admit_handler=admit_handler,
+        bucket=PublicRequestBucket.GUEST_EDIT,
+    )
+    body = await _json_body(request=request, settings=settings, model=PublicGroupExamItemsRequest)
+    return handler.group_items(document=body.document, item_ids=body.item_ids)
+
+
+@router.post("/workspace/parents/empty", response_model=PublicExamCreatedPartResponse)
+async def create_public_exam_workspace_empty_part(
+    request: Request,
+    registry: FromDishka[CuratedAppRegistryProtocol],
+    settings: FromDishka[Settings],
+    admit_handler: FromDishka[AdmitPublicRequestHandlerProtocol],
+    handler: FromDishka[PublicExamWorkspaceCommandHandler],
+) -> PublicExamCreatedPartResponse:
+    await admit_guest_request(
+        request=request,
+        registry=registry,
+        settings=settings,
+        admit_handler=admit_handler,
+        bucket=PublicRequestBucket.GUEST_EDIT,
+    )
+    body = await _json_body(
+        request=request, settings=settings, model=PublicCreateEmptyExamPartRequest
+    )
+    return handler.create_empty_part(document=body.document, position=body.position)
+
+
+@router.post("/workspace/parents/move", response_model=PublicExamDocumentCommandResponse)
+async def move_public_exam_workspace_item(
+    request: Request,
+    registry: FromDishka[CuratedAppRegistryProtocol],
+    settings: FromDishka[Settings],
+    admit_handler: FromDishka[AdmitPublicRequestHandlerProtocol],
+    handler: FromDishka[PublicExamWorkspaceCommandHandler],
+) -> PublicExamDocumentCommandResponse:
+    await admit_guest_request(
+        request=request,
+        registry=registry,
+        settings=settings,
+        admit_handler=admit_handler,
+        bucket=PublicRequestBucket.GUEST_EDIT,
+    )
+    body = await _json_body(request=request, settings=settings, model=PublicMoveExamItemRequest)
+    return handler.move_item(
+        document=body.document, item_id=body.item_id, target_parent_id=body.target_parent_id
     )
 
 

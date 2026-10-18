@@ -104,10 +104,25 @@ class RecordingCommandHandler(PublicExamWorkspaceCommandHandler):
     def __init__(self, *, rng: random.Random) -> None:
         super().__init__(rng=rng)
         self.create_parent_calls = 0
+        self.group_items_calls = 0
+        self.create_empty_part_calls = 0
+        self.move_item_calls = 0
 
     def create_parent(self, **kwargs: Any):
         self.create_parent_calls += 1
         return super().create_parent(**kwargs)
+
+    def group_items(self, **kwargs: Any):
+        self.group_items_calls += 1
+        return super().group_items(**kwargs)
+
+    def create_empty_part(self, **kwargs: Any):
+        self.create_empty_part_calls += 1
+        return super().create_empty_part(**kwargs)
+
+    def move_item(self, **kwargs: Any):
+        self.move_item_calls += 1
+        return super().move_item(**kwargs)
 
 
 def make_registry(
@@ -384,6 +399,71 @@ async def test_reorder_children_matches_the_domain_function(client: httpx.AsyncC
     assert _response_document(response) == expected
 
 
+async def test_group_items_matches_the_domain_function(
+    client: httpx.AsyncClient, admit: FakeAdmitHandler
+) -> None:
+    document = _parented_document()
+    expected, created_parent_id = commands.group_items(document, item_ids=("item_001",))
+
+    response = await client.post(
+        f"{_BASE}/parents/group",
+        json=_body(document, item_ids=("item_001",)),
+    )
+
+    assert response.status_code == 200
+    assert response.json()["created_parent_id"] == created_parent_id
+    assert _response_document(response) == expected
+    assert admit.calls == [(PublicRequestBucket.GUEST_EDIT, _CLIENT_IP)]
+    assert response.headers.get("set-cookie") is None
+
+
+async def test_create_empty_part_matches_the_domain_function(
+    client: httpx.AsyncClient, admit: FakeAdmitHandler
+) -> None:
+    document = _parented_document()
+    expected, created_parent_id = commands.create_empty_part(document, position=1)
+
+    response = await client.post(f"{_BASE}/parents/empty", json=_body(document, position=1))
+
+    assert response.status_code == 200
+    assert created_parent_id == "parent_002"
+    assert response.json()["created_parent_id"] == created_parent_id
+    assert _response_document(response) == expected
+    assert admit.calls == [(PublicRequestBucket.GUEST_EDIT, _CLIENT_IP)]
+    assert response.headers.get("set-cookie") is None
+
+
+async def test_move_item_into_a_part_matches_the_domain_function(
+    client: httpx.AsyncClient,
+) -> None:
+    document = _parented_document()
+    expected = commands.move_item(document, item_id="item_001", target_parent_id="parent_001")
+
+    response = await client.post(
+        f"{_BASE}/parents/move",
+        json=_body(document, item_id="item_001", target_parent_id="parent_001"),
+    )
+
+    assert response.status_code == 200
+    assert _response_document(response) == expected
+
+
+async def test_move_item_to_standalone_matches_the_domain_function(
+    client: httpx.AsyncClient,
+) -> None:
+    document = _parented_document()
+    expected = commands.move_item(document, item_id="item_002", target_parent_id=None)
+
+    response = await client.post(
+        f"{_BASE}/parents/move",
+        json=_body(document, item_id="item_002", target_parent_id=None),
+    )
+
+    assert response.status_code == 200
+    assert _response_document(response) == expected
+    assert response.headers.get("set-cookie") is None
+
+
 @pytest.mark.parametrize("mode", ["keep_questions", "with_questions"])
 async def test_delete_parent_matches_the_domain_function(
     client: httpx.AsyncClient, mode: str
@@ -451,6 +531,30 @@ async def test_deleting_the_last_question_refuses(client: httpx.AsyncClient) -> 
 
     assert response.status_code == 422
     assert response.json()["error"]["details"]["reason"] == "exam_requires_question"
+
+
+async def test_grouping_an_item_already_in_a_part_refuses(client: httpx.AsyncClient) -> None:
+    document = _parented_document()
+
+    response = await client.post(
+        f"{_BASE}/parents/group",
+        json=_body(document, item_ids=("item_002",)),
+    )
+
+    assert response.status_code == 422
+    assert response.json()["error"]["details"]["reason"] == "item_in_part"
+
+
+async def test_moving_into_an_unknown_part_refuses(client: httpx.AsyncClient) -> None:
+    document = _parented_document()
+
+    response = await client.post(
+        f"{_BASE}/parents/move",
+        json=_body(document, item_id="item_001", target_parent_id="parent_999"),
+    )
+
+    assert response.status_code == 404
+    assert response.json()["error"]["code"] == "NOT_FOUND"
 
 
 async def test_misspellings_match_the_signed_in_handler(client: httpx.AsyncClient) -> None:
@@ -527,6 +631,32 @@ async def test_refused_admission_returns_429_and_never_runs_the_command(
     assert command_handler.create_parent_calls == 0
 
 
+@pytest.mark.parametrize(
+    "refusal", [PublicRequestRefusal.CALLER_LIMIT, PublicRequestRefusal.POOL_LIMIT]
+)
+async def test_refused_admission_returns_429_and_never_runs_the_part_commands(
+    client: httpx.AsyncClient,
+    admit: FakeAdmitHandler,
+    command_handler: RecordingCommandHandler,
+    refusal: PublicRequestRefusal,
+) -> None:
+    admit.refusal = refusal
+
+    response = await client.post(
+        f"{_BASE}/parents/group",
+        json=_body(_parented_document(), item_ids=("item_001",)),
+    )
+
+    assert response.status_code == 429
+    assert response.json()["error"]["details"] == {
+        "reason": refusal.value,
+        "bucket": PublicRequestBucket.GUEST_EDIT.value,
+    }
+    assert command_handler.group_items_calls == 0
+    assert command_handler.create_empty_part_calls == 0
+    assert command_handler.move_item_calls == 0
+
+
 async def test_unknown_extra_field_in_a_body_is_refused(client: httpx.AsyncClient) -> None:
     body = _body(
         _parented_document(),
@@ -537,6 +667,17 @@ async def test_unknown_extra_field_in_a_body_is_refused(client: httpx.AsyncClien
     body["expected_cursor"] = "5f0e5e5e-0000-0000-0000-000000000000"
 
     response = await client.post(f"{_BASE}/parents", json=body)
+
+    assert response.status_code == 422
+
+
+async def test_unknown_extra_field_in_a_part_command_body_is_refused(
+    client: httpx.AsyncClient,
+) -> None:
+    body = _body(_parented_document(), position=0)
+    body["expected_cursor"] = "5f0e5e5e-0000-0000-0000-000000000000"
+
+    response = await client.post(f"{_BASE}/parents/empty", json=body)
 
     assert response.status_code == 422
 
