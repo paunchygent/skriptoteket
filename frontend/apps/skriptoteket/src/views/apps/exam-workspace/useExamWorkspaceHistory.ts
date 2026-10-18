@@ -54,6 +54,8 @@ const UNDO_FAILURE_COPY = "Det gick inte att ångra. Försök igen.";
 const REDO_FAILURE_COPY = "Det gick inte att göra om. Försök igen.";
 const AUTOSAVE_FAILURE_COPY = "Ändringen kunde inte sparas som utkast. Försök igen.";
 
+type StoreOutcome = "stored" | "refused" | "failed";
+
 export type ExamWorkspaceHistoryDeps = {
   workspaceDocument: Ref<NativeExamDocument | null>;
   /** The server's working copy from the last response; the step the cursor names. */
@@ -94,6 +96,12 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
   let ownCursor: string | null = null;
   let timer: ReturnType<typeof setTimeout> | null = null;
   let chain: Promise<boolean> = Promise.resolve(true);
+  /**
+   * Structural-edit snapshots not stored yet, oldest first: the copy just
+   * before the edit, then the copy right after it. Each must be a step before
+   * anything newer is stored, so a failed store never merges them.
+   */
+  let owed: NativeExamDocument[] = [];
   let loadToken = 0;
 
   const ids = computed(() => (baselineId.value ? [baselineId.value, ...stepIds.value] : []));
@@ -120,6 +128,7 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
 
   function reset(): void {
     clearTimer();
+    owed = [];
     baselineId.value = null;
     stepIds.value = [];
     position.value = null;
@@ -163,13 +172,19 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
         deps.historyCursor.value = ownCursor;
         return;
       }
+      // The server replaced the copy, so snapshots owed from the old copy no longer apply.
+      owed = [];
       void load(lineageId);
     },
     { immediate: true },
   );
 
-  /** Resolves whether the server's newest step now holds `document` (or nothing needed storing). */
-  async function store(settle = false, snapshot: NativeExamDocument | null = null): Promise<boolean> {
+  /**
+   * Stores `snapshot`, or the working copy: "stored" when the server's newest
+   * step now holds it (or nothing needed storing), "refused" when the save
+   * rules reject it, so it can never be a step, and "failed" otherwise.
+   */
+  async function store(settle = false, snapshot: NativeExamDocument | null = null): Promise<StoreOutcome> {
     clearTimer();
     const lineageId = deps.lineageId();
     const cursor = deps.historyCursor.value;
@@ -180,15 +195,15 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
     const document = snapshot ?? deps.workspaceDocument.value;
     const after = position.value;
     if (!lineageId || !cursor || !document || after === null) {
-      return false;
+      return "failed";
     }
     const undone = after !== newestId.value;
     if (sameContent(document, stepDocument.value) && !(settle && undone)) {
-      return true;
+      return "stored";
     }
     if (deps.isBlocked()) {
       schedule();
-      return false;
+      return "failed";
     }
     storing.value = true;
     try {
@@ -198,7 +213,7 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
         expectedCursor: cursor,
       });
       if (deps.lineageId() !== lineageId) {
-        return false;
+        return "failed";
       }
       ownCursor = response.history.cursor;
       deps.historyCursor.value = response.history.cursor;
@@ -206,7 +221,7 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
       stepIds.value = [...response.history.step_ids];
       position.value = response.history.position_step_id;
       stepDocument.value = document;
-      return true;
+      return "stored";
     } catch (error) {
       if (isApiError(error) && error.status === 409) {
         await deps.onConflict();
@@ -216,25 +231,48 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
         if (examWorkspaceSaveRefusalCopy(document.items) === null) {
           toast.failure(error.code === "VALIDATION_ERROR" ? AUTOSAVE_FAILURE_COPY : error.message);
         }
-      } else {
-        toast.failure(AUTOSAVE_FAILURE_COPY);
+        return "refused";
       }
-      return false;
+      toast.failure(AUTOSAVE_FAILURE_COPY);
+      return "failed";
     } finally {
       storing.value = false;
     }
   }
 
   /**
-   * Store the pending edit now; resolves after every earlier write, with
-   * whether the server's newest step holds the editor's document. `settle`
-   * also stores an undone step as the newest one, because the server's
-   * commands (parents, Byt frågetyp) apply to its newest step.
+   * Stores the owed snapshots in order and stops at the first that fails, so
+   * nothing newer is stored past it; it stays owed for the next write. A
+   * refused snapshot is dropped, since no retry can store it.
    */
-  function flush(settle = false, snapshot: NativeExamDocument | null = null): Promise<boolean> {
-    const run = () => store(settle, snapshot);
+  async function storeOwed(): Promise<boolean> {
+    while (owed.length > 0) {
+      const next = owed[0]!;
+      if ((await store(false, next)) === "failed") {
+        return false;
+      }
+      if (owed[0] === next) {
+        owed.shift();
+      }
+    }
+    return true;
+  }
+
+  function enqueue(run: () => Promise<boolean>): Promise<boolean> {
     chain = chain.then(run, run);
     return chain;
+  }
+
+  /**
+   * Store the pending edit now; resolves after every earlier write, with
+   * whether the server's newest step holds the editor's document. Owed
+   * structural snapshots are stored first; when one fails, the working copy
+   * is not stored and flush resolves false. `settle` also stores an undone
+   * step as the newest one, because the server's commands (parents, Byt
+   * frågetyp) apply to its newest step.
+   */
+  function flush(settle = false): Promise<boolean> {
+    return enqueue(async () => (await storeOwed()) && (await store(settle)) === "stored");
   }
 
   function schedule(): void {
@@ -251,14 +289,20 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
    * quick structural edits stay two steps. Typing still waiting for its pause
    * is stored first as its own step, from `before`, the copy just before the
    * structural edit; undo then takes back only the structural edit. A store
-   * of `before` that matches the step already stored writes nothing.
+   * of `before` that matches the step already stored writes nothing. Both
+   * snapshots stay owed until stored, so a failed store of `before` is
+   * retried before the edit by the next flush, undo or Spara.
    */
   function noteEdit(structural = false, before: NativeExamDocument | null = null): void {
     if (structural) {
+      const after = deps.workspaceDocument.value;
       if (before !== null) {
-        void flush(false, before);
+        owed.push(before);
       }
-      void flush(false, deps.workspaceDocument.value);
+      if (after !== null) {
+        owed.push(after);
+      }
+      void enqueue(storeOwed);
     } else {
       schedule();
     }

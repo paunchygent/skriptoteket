@@ -103,6 +103,57 @@ describe("ordering edits through the editing session", () => {
     expect(redone.choices[0]!.body).toEqual(typed);
   });
 
+  it("a failed store of the typing before Blanda om keeps both as separate steps once writes work", async () => {
+    // Review-2 F1: the shuffle used to be stored on its own after the typing failed, merging the two.
+    const { editing, server } = await openEditing(api, orderingExam());
+    const before = [...editing.workspaceDocument.value!.items[0]!.print_order];
+    const typed = [{ heading_level: null, segments: [{ kind: "text" as const, text: "Tes", marks: [] }] }];
+    api.storeExamWorkspaceUndoStep.mockRejectedValueOnce(new Error("offline"));
+
+    editing.updateItemChoiceBody("item_001", "choice_001", typed);
+    const random = vi.spyOn(Math, "random").mockReturnValue(0);
+    editing.shuffleItemOrderingSteps("item_001");
+    random.mockRestore();
+    const shuffled = [...editing.workspaceDocument.value!.items[0]!.print_order];
+
+    // The shuffle waits behind the failed typing store instead of being stored past it.
+    expect(server.state.steps).toHaveLength(0);
+    expect(await editing.history.flush()).toBe(true);
+    expect(server.state.steps).toHaveLength(2);
+
+    await editing.history.undo();
+    const undone = editing.workspaceDocument.value!.items[0]!;
+    expect(undone.print_order).toEqual(before);
+    expect(undone.choices[0]!.body).toEqual(typed);
+
+    await editing.history.redo();
+    expect(editing.workspaceDocument.value!.items[0]!.print_order).toEqual(shuffled);
+  });
+
+  it("undo while the typing before Blanda om cannot be stored keeps the text and the shuffle", async () => {
+    const { editing, server } = await openEditing(api, orderingExam());
+    const typed = [{ heading_level: null, segments: [{ kind: "text" as const, text: "Tes", marks: [] }] }];
+    api.storeExamWorkspaceUndoStep.mockRejectedValueOnce(new Error("offline")).mockRejectedValueOnce(new Error("offline"));
+
+    editing.updateItemChoiceBody("item_001", "choice_001", typed);
+    const random = vi.spyOn(Math, "random").mockReturnValue(0);
+    editing.shuffleItemOrderingSteps("item_001");
+    random.mockRestore();
+    const shuffled = [...editing.workspaceDocument.value!.items[0]!.print_order];
+
+    // The second failure hits undo's own flush; undo stops instead of storing the shuffle alone.
+    await editing.history.undo();
+    expect(server.state.steps).toHaveLength(0);
+    const kept = editing.workspaceDocument.value!.items[0]!;
+    expect(kept.print_order).toEqual(shuffled);
+    expect(kept.choices[0]!.body).toEqual(typed);
+
+    // Writes work again: the next undo stores both steps first and takes back only the shuffle.
+    await editing.history.undo();
+    expect(server.state.steps).toHaveLength(2);
+    expect(editing.workspaceDocument.value!.items[0]!.choices[0]!.body).toEqual(typed);
+  });
+
   it("a structural edit with nothing pending stores exactly one step", async () => {
     const { editing, server } = await openEditing(api, orderingExam());
     // Two pinned draws that give two different print orders, so each shuffle is a real change.
