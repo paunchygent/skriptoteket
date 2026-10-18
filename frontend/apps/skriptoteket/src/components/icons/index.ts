@@ -25,7 +25,6 @@ export { default as IconSave } from "./IconSave.vue";
 export { default as IconSeatingPlan } from "./IconSeatingPlan.vue";
 export { default as IconSeparatePdfs } from "./IconSeparatePdfs.vue";
 export { default as IconStudents } from "./IconStudents.vue";
-export { default as IconRun } from "./IconRun.vue";
 export { default as IconTeacherAnchor } from "./IconTeacherAnchor.vue";
 export { default as IconTrash } from "./IconTrash.vue";
 export { default as IconUndo } from "./IconUndo.vue";

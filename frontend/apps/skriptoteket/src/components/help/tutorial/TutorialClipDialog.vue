@@ -18,7 +18,6 @@ import { computed, nextTick, onBeforeUnmount, ref, watch } from "vue";
 
 import UiDenseIconButton from "../../ui/shared/components/UiDenseIconButton.vue";
 import SystemMessage from "../../ui/shared/components/SystemMessage.vue";
-import IconRun from "../../icons/IconRun.vue";
 import { UiGlyph } from "../../ui/shared";
 import { resolveTutorialMediaUrl, type TutorialClip } from "../../../api/tutorialClips";
 import { formatClipDuration, TUTORIAL_COPY } from "./tutorialCopy";
@@ -243,7 +242,10 @@ onBeforeUnmount(() => {
               @click="play"
             >
               <span class="tutorial-clip-play-disc">
-                <IconRun :size="36" />
+                <UiGlyph
+                  meaning="play"
+                  :size="36"
+                />
               </span>
             </button>
             <div

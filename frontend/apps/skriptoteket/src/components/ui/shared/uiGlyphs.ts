@@ -148,6 +148,7 @@ export type UiGlyphActionMeaning =
   | "redo"
   | "restore"
   | "start"
+  | "play"
   | "refresh"
   | "search"
   | "share-link"
@@ -292,6 +293,7 @@ const actionGlyphs: Record<UiGlyphActionMeaning, UiGlyphSource> = {
   redo: lucide(Redo2),
   restore: lucide(Undo2),
   start: lucide(Play),
+  play: lucide(Play),
   refresh: lucide(RefreshCw),
   search: lucide(Search),
   "share-link": lucide(Link2),

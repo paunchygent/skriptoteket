@@ -90,7 +90,9 @@ metric, baseline and budget before becoming a gate.
 - 2026-10-18, tranche 2 merged to main a67afa90 (review 74648746 approved
   b3541a50 for the bounded tranche, no findings): the help components render
   the shared `help` and `close` meanings; IconHelp is deleted.
-- Open: the tutorial play button keeps IconRun until a shared `play` meaning is
-  released (user decision 2026-10-18: add a play meaning). The 13 exam-held
-  wrappers migrate after TASK-SKRIPT-40-04-03 and TASK-SKRIPT-39-07-03 reach
-  main; then remove `lucide-vue-next` and reconcile the frontend lock.
+- 2026-10-18, tranche 3: huleedu-integrated 0.1.32 (skill-repository ae2261f9)
+  is synced; the tutorial play disc renders the shared `play` meaning and
+  IconRun, which had no other consumer, is deleted.
+- Open: the 13 exam-held wrappers migrate after TASK-SKRIPT-40-04-03 and
+  TASK-SKRIPT-39-07-03 reach main; then remove `lucide-vue-next` and reconcile
+  the frontend lock.
