@@ -148,10 +148,17 @@ def exam_metadata_anchors(contexts: tuple[SharedContext, ...]) -> frozenset[str]
 def exam_wide_anchors(
     contexts: tuple[SharedContext, ...], families: tuple[QuestionFamily, ...]
 ) -> frozenset[str]:
-    """Anchors of exam-owned contexts that govern every question, plus every metadata anchor."""
+    """Anchors of exam-owned contexts that govern every question or none, plus every metadata
+    anchor.
+
+    An exam-owned context that governs no question is exam-wide text: it belongs to the
+    document's instructions, never to a section parent's heading run or instruction.
+    """
     every = {family.question_id for family in families}
     return exam_metadata_anchors(contexts) | frozenset(
-        c.anchor for c in contexts if c.owner == "exam" and every <= set(c.governs)
+        c.anchor
+        for c in contexts
+        if c.owner == "exam" and (not c.governs or every <= set(c.governs))
     )
 
 
