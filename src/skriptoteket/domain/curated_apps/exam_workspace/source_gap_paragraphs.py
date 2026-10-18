@@ -12,10 +12,12 @@ rebuild never runs for a count mismatch.
 from __future__ import annotations
 
 import re
+from collections import Counter
 from collections.abc import Sequence
 from dataclasses import dataclass
 
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+    NativeAssetSegment,
     NativeGapSegment,
     NativeParagraph,
     NativeSegment,
@@ -73,6 +75,7 @@ class _GapUnit:
     anchor: int
     start: int
     end: int
+    source_end: int
     heading: int | None
     blank_runs: tuple[tuple[int, int], ...]
 
@@ -146,7 +149,7 @@ def _gap_unit(source: SourceFormatting, anchor: int) -> _GapUnit | None:
     runs = _unit_blank_runs(source, unit, start, end)
     if not runs:
         return None
-    return _GapUnit(unit[0].start, start, end, unit[0].heading, tuple(runs))
+    return _GapUnit(unit[0].start, start, end, unit[-1].end, unit[0].heading, tuple(runs))
 
 
 def _trim_light_edges(segments: list[NativeSegment]) -> list[NativeSegment]:
@@ -189,19 +192,44 @@ def source_paragraph(
     heading: int | None,
     runs: Sequence[tuple[int, int]] = (),
     gaps: Sequence[NativeGapSegment] = (),
+    pictures: Sequence[tuple[int, str]] = (),
 ) -> NativeParagraph:
     """Build one paragraph from a source span, with each gap in its blank run (2g).
 
-    ``runs`` and ``gaps`` line up one to one; the caller checks their lengths. With no
-    runs and no gaps the plain source paragraph text is returned.
+    ``runs`` and ``gaps`` line up one to one; the caller checks their lengths. ``pictures``
+    are (source place, asset id), sorted, and each is emitted at its place: a place before
+    ``start`` stands at ``start``, a place after ``end`` at ``end``, and a place inside a
+    text stretch splits the text there. A picture at a blank run's start stands before the
+    gap. With no runs, no gaps and no pictures the plain source paragraph text is returned.
     """
     segments: list[NativeSegment] = []
     cursor = start
+    placed = [(min(max(place, start), end), asset_id) for place, asset_id in pictures]
+    index = 0
+
+    def text_until(target: int) -> None:
+        nonlocal cursor
+        if target > cursor:
+            segments.extend(source.visible_text_segments(cursor, target))
+            cursor = target
+
     for (run_start, run_end), gap in zip(runs, gaps, strict=True):
-        segments.extend(source.visible_text_segments(cursor, run_start))
+        while index < len(placed) and placed[index][0] < run_start:
+            text_until(placed[index][0])
+            segments.append(NativeAssetSegment(asset_id=placed[index][1]))
+            index += 1
+        while index < len(placed) and placed[index][0] == run_start:
+            text_until(run_start)
+            segments.append(NativeAssetSegment(asset_id=placed[index][1]))
+            index += 1
+        text_until(run_start)
         segments.append(gap)
         cursor = run_end
-    segments.extend(source.visible_text_segments(cursor, end))
+    while index < len(placed):
+        text_until(placed[index][0])
+        segments.append(NativeAssetSegment(asset_id=placed[index][1]))
+        index += 1
+    text_until(end)
     return NativeParagraph(heading_level=heading, segments=tuple(_trim_light_edges(segments)))
 
 
@@ -231,7 +259,14 @@ def gap_paragraphs_from_source(
         members = grouped[(unit.anchor, unit.end)]
         if members[0] != index:
             continue
-        if any(segment.kind == "asset" for member in members for segment in body[member].segments):
+        pictures = source.provenance.pictures_in(unit.anchor, unit.source_end)
+        reply_pictures = Counter(
+            segment.asset_id
+            for member in members
+            for segment in body[member].segments
+            if segment.kind == "asset"
+        )
+        if reply_pictures != Counter(asset_id for _, asset_id in pictures):
             raise FormattingTransferError("cannot rebuild picture placement")
         gaps = [
             segment
@@ -242,7 +277,15 @@ def gap_paragraphs_from_source(
         if len(gaps) != len(unit.blank_runs):
             raise GapCountMismatchError(f"{len(gaps)} gaps for {len(unit.blank_runs)} blank runs")
         result.append(
-            source_paragraph(source, unit.start, unit.end, unit.heading, unit.blank_runs, gaps)
+            source_paragraph(
+                source,
+                unit.start,
+                unit.end,
+                unit.heading,
+                unit.blank_runs,
+                gaps,
+                pictures,
+            )
         )
         result_anchors.append(unit.anchor)
     source.output_anchors = result_anchors

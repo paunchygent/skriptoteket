@@ -39,6 +39,15 @@ class ChunkProvenance:
             return None
         return self._anchors[bisect_right(self._starts, offset) - 1]
 
+    def pictures_in(self, start: int, end: int) -> list[tuple[int, str]]:
+        """Every (source place, asset id) with ``start <= place < end``, sorted by place."""
+        return sorted(
+            (place, asset_id)
+            for asset_id, places in self._pictures.items()
+            for place in places
+            if start <= place < end
+        )
+
     def pieces(
         self, output: NativeParagraph, text_origin: int
     ) -> list[tuple[int, NativeParagraph]]:
