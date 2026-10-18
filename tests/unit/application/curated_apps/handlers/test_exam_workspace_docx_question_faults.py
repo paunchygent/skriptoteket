@@ -276,6 +276,8 @@ async def test_a_provisional_build_failing_on_one_batch_reviews_only_that_batch(
         families: tuple[QuestionFamily, ...],
         pending: frozenset[str],
         governed: Mapping[str, frozenset[str]],
+        exam_wide: frozenset[str],
+        exam_metadata: frozenset[str],
     ) -> DocxBuildResult:
         if _converted_at(state, _BATCH_ANCHOR):
             everything = frozenset(f.question_id for f in families)
@@ -283,7 +285,7 @@ async def test_a_provisional_build_failing_on_one_batch_reviews_only_that_batch(
             failed.append(set(before) - set(pending))
             raise KeyError("provisional build met content it cannot hold")
         previous_pending[0] = pending
-        return build(state, families, pending, governed)
+        return build(state, families, pending, governed, exam_wide, exam_metadata)
 
     monkeypatch.setattr(exam_workspace_docx_publication, "provisional_result", failing_build)
     outcome = await _convert()

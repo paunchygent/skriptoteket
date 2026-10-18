@@ -322,6 +322,53 @@ def _ordered_items(
     )
 
 
+def _split_exam_wide(
+    chunks: tuple[DocxChunk, ...],
+    instructions: tuple[ProducedMetadata, ...],
+    exam_wide: frozenset[str],
+    exam_metadata: frozenset[str],
+) -> tuple[tuple[ProducedMetadata, ...], tuple[ProducedMetadata, ...]]:
+    """The instructions that stay for placement, and the exam-wide ones for the document.
+
+    An instruction whose anchors all lie in ``exam_wide`` leaves placement; it is kept for the
+    document unless every anchor is exam metadata. An exam-wide chunk with text that no
+    instruction holds becomes an instruction of its own source text.
+    """
+    kept = tuple(i for i in instructions if not set(i.source_anchors) <= exam_wide)
+    removed = tuple(i for i in instructions if set(i.source_anchors) <= exam_wide)
+    shown = [i for i in removed if not set(i.source_anchors) <= exam_metadata]
+    held = {a for i in removed for a in i.source_anchors}
+    shown.extend(
+        ProducedMetadata(text=chunk.text, source_anchors=(chunk.anchor,))
+        for chunk in chunks
+        if chunk.anchor in exam_wide
+        and chunk.anchor not in exam_metadata
+        and chunk.anchor not in held
+        and chunk.text
+    )
+    return kept, tuple(shown)
+
+
+def _in_source_order(
+    chunks: tuple[DocxChunk, ...], instructions: tuple[ProducedMetadata, ...]
+) -> tuple[ProducedMetadata, ...]:
+    """Each instruction once by its anchors, in the order of its first source chunk."""
+    positions = {chunk.anchor: index for index, chunk in enumerate(chunks)}
+    ordered = sorted(
+        instructions,
+        key=lambda i: min((positions.get(a, len(positions)) for a in i.source_anchors), default=0),
+    )
+    seen: set[str] = set()
+    unique = []
+    for instruction in ordered:
+        anchors = set(instruction.source_anchors)
+        if anchors and anchors <= seen:
+            continue
+        seen |= anchors
+        unique.append(instruction)
+    return tuple(unique)
+
+
 def assemble_build_result(
     *,
     document_id: UUID,
@@ -334,6 +381,8 @@ def assemble_build_result(
     title: ProducedMetadata | None = None,
     instructions: tuple[ProducedMetadata, ...] = (),
     governed: Mapping[str, frozenset[str]] = NOTHING_GOVERNED,
+    exam_wide: frozenset[str] = frozenset(),
+    exam_metadata: frozenset[str] = frozenset(),
     questions: tuple[tuple[str, ...], ...] = (),
     printed: PrintedPoints = NO_PRINTED_POINTS,
     events: tuple[DocxBuildEvent, ...] = (),
@@ -347,11 +396,22 @@ def assemble_build_result(
     instruction that placement does not put at its question goes back to its question's item,
     and placement runs again without it (D42). ``printed`` owns every printed total; it
     scores the placed items once (``apply_printed_points``).
+
+    ``exam_wide`` holds the anchors of exam-wide text and of exam metadata; ``exam_metadata``
+    is the metadata subset. Exam-wide text is never placed: it joins the document's
+    instructions once and is never an item body, parent or review item. Metadata lines go
+    nowhere.
     """
     if not chunks:
         empty = "Dokumentet saknar läsbart innehåll."
         chunks = (DocxChunk("empty", "paragraph", empty, empty),)
         review_reasons = {"empty": "Dokumentet saknar läsbart innehåll."}
+    exam_instructions: tuple[ProducedMetadata, ...] = ()
+    if exam_wide:
+        instructions, exam_instructions = _split_exam_wide(
+            chunks, instructions, exam_wide, exam_metadata
+        )
+        review_reasons = {a: r for a, r in review_reasons.items() if a not in exam_wide}
     unclaimed, review_reasons = unclaimed_governing(chunks, review_reasons, governed)
     instructions = (*instructions, *unclaimed)
     released = release_governing_chunks(chunks, accepted, instructions, governed)
@@ -389,10 +449,14 @@ def assemble_build_result(
     scored = apply_printed_points(placed.items, placed.parents, printed, by_anchor)
     items, parents = scored.items, scored.parents
     events = (*events, *scored.events)
+    global_metadata = tuple(
+        instruction for index, instruction in enumerate(instructions) if index not in placed.landed
+    )
+    if exam_instructions:
+        global_metadata = _in_source_order(chunks, (*global_metadata, *exam_instructions))
     global_instructions = tuple(
         paragraph
-        for index, instruction in enumerate(instructions)
-        if index not in placed.landed
+        for instruction in global_metadata
         for paragraph in instruction_paragraphs(instruction, by_anchor)
     )
     shared_bodies = (

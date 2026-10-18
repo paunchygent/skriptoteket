@@ -140,15 +140,34 @@ def placeholder_item(state: DocxBuildState, family: QuestionFamily) -> NativeExa
     )
 
 
+def exam_metadata_anchors(contexts: tuple[SharedContext, ...]) -> frozenset[str]:
+    """The anchors of exam-metadata contexts (Namn, Klass, Datum): never item text."""
+    return frozenset(c.anchor for c in contexts if c.scope == "exam_metadata")
+
+
+def exam_wide_anchors(
+    contexts: tuple[SharedContext, ...], families: tuple[QuestionFamily, ...]
+) -> frozenset[str]:
+    """Anchors of exam-owned contexts that govern every question, plus every metadata anchor."""
+    every = {family.question_id for family in families}
+    return exam_metadata_anchors(contexts) | frozenset(
+        c.anchor for c in contexts if c.owner == "exam" and every <= set(c.governs)
+    )
+
+
 def governed_anchors(
     contexts: tuple[SharedContext, ...], families: tuple[QuestionFamily, ...]
 ) -> dict[str, frozenset[str]]:
-    """Each shared context that governs two or more questions, with every anchor they own."""
+    """Each shared context that governs two or more questions, with every anchor they own.
+
+    Exam-wide text and exam metadata govern nothing: they belong to the document.
+    """
     claims = {family.question_id: family.claims for family in families}
+    exam_wide = exam_wide_anchors(contexts, families)
     return {
         context.anchor: frozenset().union(*(claims[q] for q in context.governs if q in claims))
         for context in contexts
-        if len(context.governs) >= 2
+        if len(context.governs) >= 2 and context.anchor not in exam_wide
     }
 
 
@@ -157,6 +176,8 @@ def provisional_result(
     families: tuple[QuestionFamily, ...],
     pending: frozenset[str],
     governed: Mapping[str, frozenset[str]],
+    exam_wide: frozenset[str] = frozenset(),
+    exam_metadata: frozenset[str] = frozenset(),
 ) -> DocxBuildResult:
     """Converted batches plus one placeholder per pending question; nothing else is shown."""
     placeholders = [
@@ -190,6 +211,8 @@ def provisional_result(
         title=state.title,
         instructions=(*state.instructions, *heading_instructions),
         governed=governed,
+        exam_wide=exam_wide,
+        exam_metadata=exam_metadata,
         questions=questions,
         printed=printed_points_plan(state.chunks, questions),
     )

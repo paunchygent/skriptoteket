@@ -281,6 +281,8 @@ class DocxBuildState:
         self,
         governed: Mapping[str, frozenset[str]] = NOTHING_GOVERNED,
         questions: tuple[tuple[str, ...], ...] = (),
+        exam_wide: frozenset[str] = frozenset(),
+        exam_metadata: frozenset[str] = frozenset(),
     ) -> DocxBuildResult:
         """Every chunk not built or used as metadata/facit becomes a review item, except a
         governing chunk, which becomes its section parent's instruction.
@@ -288,7 +290,9 @@ class DocxBuildState:
         ``governed`` maps each grouping instruction that governs two or more questions to the
         anchors those questions own; it decides which items the instruction is the parent of.
         ``questions`` holds each grouped question's own anchors; an instruction holding one
-        stands only where it lands at that question (D42).
+        stands only where it lands at that question (D42). ``exam_wide`` holds the anchors of
+        exam-wide text and exam metadata (``exam_metadata`` is the metadata subset); assembly
+        keeps them in the document's instructions or drops them, never as review items.
 
         Printed totals are classified once over the whole document, header lines included
         (``printed_points_plan``); assembly scores the items from them. A points line that is
@@ -303,7 +307,11 @@ class DocxBuildState:
         printed = printed_points_plan(self.chunks, questions)
         review_reasons: dict[str, str] = {}
         for chunk in self.pending:
-            if chunk.anchor in printed.metadata or chunk.anchor in heading_anchors:
+            if (
+                chunk.anchor in printed.metadata
+                or chunk.anchor in heading_anchors
+                or chunk.anchor in exam_wide
+            ):
                 continue
             if chunk.anchor in governed and chunk.text:
                 # Assembly makes it its section parent's instruction (D40).
@@ -324,6 +332,8 @@ class DocxBuildState:
             title=self.title,
             instructions=instructions,
             governed=governed,
+            exam_wide=exam_wide,
+            exam_metadata=exam_metadata,
             questions=questions,
             printed=printed,
             events=tuple(self.events),
