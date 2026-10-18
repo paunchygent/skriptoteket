@@ -7,6 +7,8 @@ they share the request session, UoW, and vault repositories.
 
 from __future__ import annotations
 
+import random
+
 import httpx
 from dishka import Provider, Scope, provide
 
@@ -69,6 +71,9 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_parents impor
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_undo_steps import (
     StoreExamWorkspaceUndoStepHandler,
+)
+from skriptoteket.application.curated_apps.handlers.public_exam_workspace_commands import (
+    PublicExamWorkspaceCommandHandler,
 )
 from skriptoteket.application.curated_apps.handlers.public_exam_workspace_exports import (
     PublicExamWorkspaceExportHandler,
@@ -471,6 +476,11 @@ class ExamWorkspaceProvider(Provider):
     ) -> PublicExamWorkspaceExportHandler:
         """Provide the stateless guest export handler."""
         return PublicExamWorkspaceExportHandler(renderer=renderer)
+
+    @provide(scope=Scope.REQUEST)
+    def public_command_handler(self) -> PublicExamWorkspaceCommandHandler:
+        """Provide the stateless guest document command handler."""
+        return PublicExamWorkspaceCommandHandler(rng=random.SystemRandom())
 
     @provide(scope=Scope.REQUEST)
     def undo_step_handler(

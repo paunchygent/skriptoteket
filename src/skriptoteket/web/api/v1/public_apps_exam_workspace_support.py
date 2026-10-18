@@ -13,10 +13,6 @@ from __future__ import annotations
 
 from fastapi import Request
 
-from skriptoteket.application.curated_apps.handlers.public_exam_converter_jobs import (
-    APP_ID,
-    CAPABILITY,
-)
 from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.models import CuratedAppPublicRuntimeStatus
 from skriptoteket.domain.errors import DomainError, ErrorCode
@@ -25,6 +21,7 @@ from skriptoteket.protocols.public_request_limits import (
     AdmitPublicRequestHandlerProtocol,
     PublicRequestBucket,
 )
+from skriptoteket.web.api.v1.public_apps import EXAM_CONVERTER_APP_ID, EXAM_CONVERTER_SCOPE
 from skriptoteket.web.api.v1.public_apps_support import require_public_curated_app_capability
 from skriptoteket.web.request_metadata import get_client_ip
 
@@ -33,8 +30,8 @@ def require_active_exam_converter(*, registry: CuratedAppRegistryProtocol) -> No
     """Fail closed unless the public Exam Converter runtime capability is active."""
 
     _app, capability = require_public_curated_app_capability(
-        app_id=APP_ID,
-        scope=CAPABILITY,
+        app_id=EXAM_CONVERTER_APP_ID,
+        scope=EXAM_CONVERTER_SCOPE,
         registry=registry,
     )
     if capability.runtime_status is not CuratedAppPublicRuntimeStatus.ACTIVE:
@@ -42,8 +39,8 @@ def require_active_exam_converter(*, registry: CuratedAppRegistryProtocol) -> No
             code=ErrorCode.NOT_FOUND,
             message="Public Exam Converter runtime is not active.",
             details={
-                "app_id": APP_ID,
-                "capability": CAPABILITY,
+                "app_id": EXAM_CONVERTER_APP_ID,
+                "capability": EXAM_CONVERTER_SCOPE,
                 "reason_code": "public_exam_converter_runtime_inactive",
             },
         )
