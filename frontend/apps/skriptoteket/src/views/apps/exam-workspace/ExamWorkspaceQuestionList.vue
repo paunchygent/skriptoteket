@@ -6,8 +6,10 @@
  *   Every question of the open exam in order under "Frågor (N)", with "Ny
  *   uppgift" adding a question or an instruction with deluppgifter after the
  *   selected one, and a footer with the exam total, which says in amber
- *   when the exam text prints another total. The exam's shared instructions, when it has any,
- *   come in through the `intro` slot above the rows. On a phone the list
+ *   when the exam text prints another total. Above the rows the exam
+ *   instruction is one entry: "Instruktioner" with a short preview when the
+ *   exam has one, otherwise a quiet "Lägg till instruktioner"; both open it in
+ *   the editor. On a phone the list
  *   opens full screen over the editor from the question strip and closes
  *   with Tillbaka or a choice.
  *
@@ -24,10 +26,13 @@ import ExamWorkspaceQuestionRow from "./ExamWorkspaceQuestionRow.vue";
 import type { TeacherItemKind } from "./examWorkspaceItemEdits";
 import type { ExamWorkspaceListEntry } from "./examWorkspaceListEntries";
 import { examWorkspaceFormatPoints, examWorkspacePointsParts } from "./examWorkspaceTotals";
+import { EXAM_INSTRUCTIONS_ENTRY_ID } from "./useExamWorkspaceSelection";
 
 const props = defineProps<{
   entries: ExamWorkspaceListEntry[];
   selectedId: string | null;
+  /** The start of the exam instruction's text, or `null` when the exam has none. */
+  examInstructionsPreview: string | null;
   questionCount: number;
   total: number;
   /** The exam total the exam text prints, only when it differs from `total`. */
@@ -39,6 +44,7 @@ const props = defineProps<{
   overlay: boolean;
 }>();
 
+const examInstructionsSelected = computed(() => props.selectedId === EXAM_INSTRUCTIONS_ENTRY_ID);
 const totalParts = computed(() => examWorkspacePointsParts(props.total, props.printedTotal));
 const anyPrintedDifference = computed(
   () =>
@@ -114,7 +120,32 @@ watch(
       </button>
     </div>
     <div class="list__scroll">
-      <slot name="intro" />
+      <div
+        class="list__intro"
+        :class="{ 'list__intro--selected': examInstructionsSelected }"
+      >
+        <button
+          v-if="examInstructionsPreview !== null"
+          type="button"
+          class="list__instructions"
+          :aria-current="examInstructionsSelected ? 'true' : undefined"
+          data-test="exam-workspace-exam-instructions-entry"
+          @click="emit('select', EXAM_INSTRUCTIONS_ENTRY_ID)"
+        >
+          <span class="list__instructions-title">Instruktioner</span>
+          <span class="list__instructions-preview">{{ examInstructionsPreview }}</span>
+        </button>
+        <button
+          v-else
+          type="button"
+          class="xw-btn xw-btn--compact xw-btn--ghost list__add"
+          :aria-current="examInstructionsSelected ? 'true' : undefined"
+          data-test="exam-workspace-exam-instructions-add"
+          @click="emit('select', EXAM_INSTRUCTIONS_ENTRY_ID)"
+        >
+          Lägg till instruktioner
+        </button>
+      </div>
       <div
         ref="rows"
         class="list__rows"
@@ -180,6 +211,21 @@ watch(
 }
 .list__title { margin: 0; font-size: var(--huleedu-text-base); font-weight: var(--huleedu-font-semibold); }
 .list__scroll { flex: 1; min-height: 0; overflow-y: auto; }
+.list__intro {
+  padding: var(--huleedu-space-1-5) var(--huleedu-space-4) var(--huleedu-space-1-5) var(--huleedu-space-6);
+  border-bottom: 1px solid var(--huleedu-surface-divider);
+}
+.list__intro--selected { background: var(--huleedu-action-10); box-shadow: inset 4px 0 0 var(--huleedu-action); }
+.list__instructions {
+  all: unset; box-sizing: border-box; display: flex; flex-direction: column; width: 100%; min-width: 0;
+  padding: var(--huleedu-space-1) 0; cursor: pointer;
+}
+.list__instructions:focus-visible { outline: 2px solid var(--huleedu-action-40); outline-offset: 2px; }
+.list__instructions-title { font-size: var(--huleedu-text-sm); font-weight: var(--huleedu-font-medium); }
+.list__instructions-preview {
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
+  font-size: var(--huleedu-text-xs); color: var(--huleedu-navy-60);
+}
 .list__foot {
   display: flex; flex-wrap: wrap; align-items: center; gap: var(--huleedu-space-1) var(--huleedu-space-2); flex: none; min-height: 44px;
   padding: var(--huleedu-space-2) var(--huleedu-space-6); border-top: 1px solid var(--huleedu-surface-divider);
@@ -191,6 +237,7 @@ watch(
 @media (max-width: 1279px) {
   .list__head { padding: 0 var(--huleedu-space-3) 0 var(--huleedu-space-4); }
   .list__foot { padding: var(--huleedu-space-2) var(--huleedu-space-4); }
+  .list__intro { padding-left: var(--huleedu-space-4); padding-right: var(--huleedu-space-3); }
 }
 @media (max-width: 767px) {
   .list { display: none; }

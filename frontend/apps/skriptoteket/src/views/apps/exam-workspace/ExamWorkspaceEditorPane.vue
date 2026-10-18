@@ -3,8 +3,8 @@
  * The exam workspace's editor column (TASK-SKRIPT-40-04-03).
  *
  * Domain purpose:
- *   Show the editor for what the teacher selected: the instruction with its
- *   deluppgifter, a question, or the empty state when no exam is open.
+ *   Show the editor for what the teacher selected: the exam instruction, an
+ *   instruction with its deluppgifter, a question, or the empty state when no exam is open.
  *
  * Relationships:
  *   - Edits through the `editing` composable result, whose `structure`
@@ -15,6 +15,7 @@
 import type { NativeExamDocument } from "../../../api/examWorkspace";
 import type { TeacherItemKind } from "./examWorkspaceItemEdits";
 import type { ExamWorkspaceItemEntry, ExamWorkspaceParentEntry } from "./examWorkspaceListEntries";
+import ExamWorkspaceExamInstructionEditor from "./ExamWorkspaceExamInstructionEditor.vue";
 import ExamWorkspaceInstructionEditor from "./ExamWorkspaceInstructionEditor.vue";
 import ExamWorkspaceQuestionEditor from "./ExamWorkspaceQuestionEditor.vue";
 import type { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
@@ -26,6 +27,7 @@ type ExamWorkspaceParent = NativeExamDocument["parents"][number];
 const props = defineProps<{
   editing: ReturnType<typeof useExamWorkspaceEditing>;
   workspaceDocument: NativeExamDocument | null;
+  examInstructionsSelected: boolean;
   selectedParent: ExamWorkspaceParent | null;
   selectedParentEntry: ExamWorkspaceParentEntry | null;
   parentChildren: ExamWorkspaceItemEntry[];
@@ -79,8 +81,15 @@ const { structure, assetUrls } = props.editing;
       v-else
       class="ws__in"
     >
+      <ExamWorkspaceExamInstructionEditor
+        v-if="examInstructionsSelected"
+        :instructions="workspaceDocument.instructions"
+        :disabled="disabled"
+        :asset-urls="assetUrls"
+        @update-instructions="editing.setExamInstructions"
+      />
       <ExamWorkspaceInstructionEditor
-        v-if="selectedParent && selectedParentEntry"
+        v-else-if="selectedParent && selectedParentEntry"
         :parent="selectedParent"
         :label="selectedParentEntry.label"
         :children="parentChildren"

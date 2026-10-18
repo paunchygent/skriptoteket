@@ -367,6 +367,11 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
     );
   }
 
+  /** The exam instruction printed before the first question, typed like a question's text; emptied it is `[]`. */
+  function setExamInstructions(instructions: NativeExamDocument["instructions"]): void {
+    editDocument((document) => ({ ...document, instructions }), null, false);
+  }
+
   /** The exam's Centralt innehåll ticks; each tick is its own undo step. */
   function setTags(tags: NativeExamHeader["tags"]): void {
     editDocument((document) => ({ ...document, header: { ...document.header, tags } }));
@@ -482,6 +487,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
     selectItem,
     setTitle,
     setCourse,
+    setExamInstructions,
     setParentInstruction,
     setTags,
     selectedItem,
