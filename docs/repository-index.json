@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "103edae912846397e1936f95ee7b19120ea77a59ee59368b3adb7c39459a09ee",
+  "source_set_digest": "2a76c06531b7ac8b2c2b255d758203a5a3948f2440f0e949c8a5d9234a3ed900",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -7470,6 +7470,24 @@
       "type": "task",
       "title": "Paid AI routes are limited to admins until the AI spend cap and rate limits ship",
       "path": "docs/backlog/tasks/task-skript-rep-0044-paid-ai-routes-are-limited-to-admins-until-the-ai-spend-cap-and-rate-limits-ship.md",
+      "status": "ready",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0045",
+      "type": "task",
+      "title": "DOCX background replays carry a recording for the item-type labeler call",
+      "path": "docs/backlog/tasks/task-skript-rep-0045-docx-background-replays-carry-a-recording-for-the-item-type-labeler-call.md",
       "status": "ready",
       "task_kind": "repository",
       "owners": [
