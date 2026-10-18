@@ -150,10 +150,6 @@ def _q2(path: str) -> NativeExamItem:
     return item
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="review-3 N5/N6: awaits reply-paragraph source alignment (2026-10-18)",
-)
 @pytest.mark.parametrize("path", sorted(_PATHS))
 def test_context_printed_after_the_first_own_chunk_follows_that_chunk_content(path):
     item = _q2(path)
@@ -161,3 +157,45 @@ def test_context_printed_after_the_first_own_chunk_follows_that_chunk_content(pa
     assert item.review.parse_origin is NativeParseOrigin.LLM_PARSED
     assert item.plain_text_lines() == (_STEM, _PASSAGE, _SUB)
     assert item.source_anchor == "body:0002"
+
+
+# A reply paragraph no source chunk aligns to: no word of it appears in the source, and two
+# or more source paragraphs remain for it, so the source formatting finds no unique one.
+_UNALIGNED = "Motivera."
+
+
+def _q2_with_body(path: str, body: tuple[str, ...]) -> NativeExamItem:
+    run = _run()
+    claims = frozenset().union(*(f.claims for f in run.families))
+    batch = ConversionBatch("w1-01", _FREE_TEXT, tuple(_QUESTIONS), claims, frozenset())
+    state = batch_state(run, batch)
+    paragraphs: list[JsonValue] = [
+        {"segments": [{"kind": "text", "text": text, "accepted_values": []}]} for text in body
+    ]
+    q2 = _item(("body:0002", "body:0004"), 6)
+    q2["body"] = paragraphs
+    items: list[JsonValue] = [_item(("body:0001",), 5), q2]
+    admit_batch(
+        {"items": items, "answer_key_anchors": [], "title": None, "instructions": []}, state
+    )
+    result = _PATHS[path](run, state)
+    (item,) = [i for i in result.document.items if _SUB in i.plain_text_lines()]
+    return item
+
+
+@pytest.mark.parametrize("path", sorted(_PATHS))
+@pytest.mark.parametrize(
+    ("body", "expected"),
+    [
+        # An unaligned paragraph keeps the place of the aligned paragraph before it.
+        ((_STEM, _SUB, _UNALIGNED), (_STEM, _PASSAGE, _SUB, _UNALIGNED)),
+        # With no aligned paragraph before it, it keeps the place of the first one after it.
+        ((_UNALIGNED, _STEM, _SUB), (_UNALIGNED, _STEM, _PASSAGE, _SUB)),
+    ],
+    ids=["trailing", "leading"],
+)
+def test_unaligned_reply_paragraph_keeps_the_place_of_its_aligned_neighbour(path, body, expected):
+    item = _q2_with_body(path, body)
+
+    assert item.review.parse_origin is NativeParseOrigin.LLM_PARSED
+    assert item.plain_text_lines() == expected

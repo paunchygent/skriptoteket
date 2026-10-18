@@ -216,6 +216,7 @@ def complete_source_formatting(
             body_source.covered.update(range(paragraph.start, paragraph.end))
         body_source.path = "rebuilt"
         body = tuple(value for _, value in merged)
+        body_source.output_anchors = [anchor for anchor, _ in merged]
         missing = [index for index in missing if index not in covered]
     if not missing:
         return body

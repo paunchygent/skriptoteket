@@ -24,16 +24,21 @@ no item (review-3 N2). Every moved line is recorded once; unless an item of its 
 it stands as an instruction, which placement puts at its part's parent or question. Building
 one question's item never fails the batch: an item that cannot be built becomes a review item
 holding that question's own source text. A context the grouping gives a question as its owner
-that no entry holds opens that question's item as its source paragraphs, and joins its review
-item otherwise; it is never an item of its own (ruling 2026-10-18 c). Such a context an entry
-of another question lists leaves that entry before any item is built and is recorded once
-(``owned_context_moved``, review-3 N5), so its owner joins it. A question reported as
+that no entry holds joins that question's item as its source paragraphs, and joins its review
+item otherwise; it is never an item of its own (ruling 2026-10-18 c). An entry of another
+question that lists such a context is not converted: its question becomes its source-review
+item (``foreign_context_listed``), and the context, recorded once (``owned_context_moved``),
+joins its owner (review-3 N5, parent ruling 2026-10-18 a). One the reply lists as the title,
+an instruction or an answer key joins its owner's item too when an item entry holds the owner
+(review-3 N4). Joined contexts and the question's printed headings stand at their source place,
+read from the source alignment of the item's body paragraphs (review-3 N6). A question reported as
 a type conflict leaves the batch for the pipeline to resend with the kind the source shows,
 once: in the resend it is kept as converted.
 """
 
 from collections import Counter
 from collections.abc import Callable
+from dataclasses import replace
 
 from pydantic import JsonValue, ValidationError
 
@@ -50,8 +55,10 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_st
     TypeConflict,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_context_join import (
+    FOREIGN_CONTEXT_REASON,
     joined_body,
     without_foreign_contexts,
+    without_held_owned_contexts,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_one_item import (
     raw_anchors,
@@ -63,7 +70,7 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_produced
     with_heading_content,
     without_header_content,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import native_item
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import aligned_native_item
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedItem,
     ProducedMetadata,
@@ -312,7 +319,7 @@ def _admit_item(
             with_accepted_forms(produced, context),
             (chunk for chunk in own if chunk.kind != "heading"),
         )
-        item = native_item(
+        aligned = aligned_native_item(
             scored,
             chunks=own,
             language=state.language,
@@ -320,6 +327,7 @@ def _admit_item(
                 path, item=index, anchors=anchors
             ),
         )
+        item = aligned.item
         if headings:
             printed_label = QUESTION_HEADING_LABEL.match(headings[0].text)
             if printed_label:
@@ -334,10 +342,13 @@ def _admit_item(
                         .strip()
                     }
                 )
-        if joined:
-            passages = tuple(c for c in state.chunks if c.anchor in joined)
+        passages = tuple(c for c in state.chunks if c.anchor in joined)
+        if passages or headings:
+            # The body's source alignment places each joined context and question heading
+            # at its source place, in place of the reply's copy (review-3 N5/N6).
+            aligned = replace(aligned, item=item)
             item = item.model_copy(
-                update={"body": joined_body(item, passages, own, state, headings)}
+                update={"body": joined_body(aligned, passages, headings, own, state)}
             )
             own = (*passages, *own)
         source_images = Counter(image.asset_id for chunk in own for image in chunk.images)
@@ -404,11 +415,23 @@ def admit_batch(content: dict[str, JsonValue], state: DocxBuildState) -> None:
         if not any(state.question_by_anchor.get(a) in refused for a in raw_anchors(raw))
     ]
     items, moved = _without_part_lines(items, state)
-    # A context another question owns leaves the entry before ``item_held`` is read, so its
-    # owner's item joins it as a context no entry holds (review-3 N5).
-    items, foreign = without_foreign_contexts(items, state)
-    if foreign := free_anchors(foreign, state, seen):
-        state.record("admission", "owned_context_moved", anchors=foreign)
+    # An entry listing another question's owned context is its questions' source-review
+    # item, and the context joins its owner's item (review-3 N5, parent ruling 2026-10-18 a).
+    foreign = without_foreign_contexts(items, state)
+    items = foreign.items
+    for question in foreign.refused:
+        own = tuple(
+            c.anchor for c in state.pending if c.anchor in question and c.anchor not in seen
+        )
+        if own:
+            state.record("admission", "foreign_context_listed", anchors=own)
+            seen.update(own)
+            state.accepted.append(state.printed(own, FOREIGN_CONTEXT_REASON, seen))
+    if moved_contexts := free_anchors(foreign.moved, state, seen):
+        state.record("admission", "owned_context_moved", anchors=moved_contexts)
+    # A context an item entry's question owns joins that item, whatever other role the
+    # reply gives it (ruling 2026-10-18 c, review-3 N4).
+    content = without_held_owned_contexts(content, items, state)
     item_held = frozenset(a for raw in items for a in raw_anchors(raw))
     admit_keys(content.get("answer_key_anchors"), state, seen, item_held)
     if content.get("title"):

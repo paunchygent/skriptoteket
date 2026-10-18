@@ -261,10 +261,6 @@ async def test_retry_reply_listing_the_passage_as_an_answer_key_joins_it_ahead(e
     assert item.source_anchor == "body:0006"
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="review-3 N5/N6: awaits reply-paragraph source alignment (2026-10-18)",
-)
 @pytest.mark.asyncio
 async def test_retry_reply_listing_one_passage_line_as_an_instruction_keeps_both(env: Env):
     held = _entry(("body:0004", "body:0006"), 10)

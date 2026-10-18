@@ -284,16 +284,20 @@ def test_context_another_question_lists_opens_its_owner_item(case, path):
     assert all(e.detail == "" for e in state.events if e.code == "owned_context_moved")
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="review-3 N5/N6: awaits reply-paragraph source alignment (2026-10-18)",
-)
 @pytest.mark.parametrize("path", sorted(_PATHS))
-def test_question_listing_another_question_context_holds_only_its_own_text(path):
-    item = _q1(_foreign("text_a", path)[0])
+def test_question_listing_another_question_context_is_its_source_review_item(path):
+    """Parent ruling 2026-10-18 (a): the entry is not converted; it shows its own source."""
+    result, state = _foreign("text_a", path)
+    item = _q1(result)
 
-    assert item.review.parse_origin is NativeParseOrigin.LLM_PARSED
+    assert item.review.parse_origin is NativeParseOrigin.SOURCE_FALLBACK
     assert item.plain_text_lines() == (_Q1,)
+    assert [e.anchors for e in state.events if e.code == "foreign_context_listed"] == [
+        ("body:0001",)
+    ]
+    q2 = _q2(result)
+    assert q2.review.parse_origin is NativeParseOrigin.LLM_PARSED
+    assert q2.plain_text_lines() == (_TEXT_A, _PASSAGE, _Q2)
 
 
 @pytest.mark.parametrize("path", sorted(_PATHS))
