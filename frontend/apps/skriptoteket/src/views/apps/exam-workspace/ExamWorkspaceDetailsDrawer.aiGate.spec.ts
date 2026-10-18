@@ -10,6 +10,7 @@
  */
 
 import { flushPromises, mount } from "@vue/test-utils";
+import type { DOMWrapper, VueWrapper } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 import type { Pinia } from "pinia";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -33,6 +34,12 @@ const apiMocks = vi.hoisted(() => ({
 vi.mock("../../../api/examWorkspace", () => apiMocks);
 
 type Role = "user" | "contributor" | "admin" | "superuser";
+
+function findNotes(wrapper: VueWrapper): DOMWrapper<Element>[] {
+  return wrapper
+    .findAll("p, small, span")
+    .filter((node) => node.text().trim() === AI_ADMIN_ONLY_NOTE);
+}
 
 const COURSE = {
   code: "ENGENG05",
@@ -96,7 +103,9 @@ describe("ExamWorkspaceDetailsDrawer AI gate", () => {
       const wrapper = mountDrawer(pinia);
       await flushPromises();
 
-      const note = wrapper.get('[data-test="exam-workspace-content-suggest-note"]');
+      const notes = findNotes(wrapper);
+      expect(notes).toHaveLength(1);
+      const note = notes[0]!;
       expect(note.text()).toBe(AI_ADMIN_ONLY_NOTE);
 
       const button = wrapper.get('[data-test="exam-workspace-content-suggest"]');
@@ -116,7 +125,7 @@ describe("ExamWorkspaceDetailsDrawer AI gate", () => {
       const wrapper = mountDrawer(pinia);
       await flushPromises();
 
-      expect(wrapper.find('[data-test="exam-workspace-content-suggest-note"]').exists()).toBe(false);
+      expect(findNotes(wrapper)).toHaveLength(0);
       const button = wrapper.get('[data-test="exam-workspace-content-suggest"]');
       expect(button.attributes("disabled")).toBeUndefined();
       await button.trigger("click");

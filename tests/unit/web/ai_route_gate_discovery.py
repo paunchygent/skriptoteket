@@ -14,9 +14,10 @@ Relationships:
     - Derives reachability from `skriptoteket.di.build_providers`; `build_providers`
       is imported here so probes can patch
       `ai_route_gate_discovery.build_providers`.
-    - Reads the resolved Dishka type that
-      `skriptoteket.web.dishka_dependencies.from_dishka` records on each inner
-      FastAPI dependency.
+    - Reads each FastAPI dependency's declared `Annotated` parameter type from
+      the route and dependency-function signatures. Dishka services resolved by
+      `skriptoteket.web.dishka_dependencies.FromDishka` appear there as
+      `Annotated[service_type, Depends(...)]`.
 """
 
 from __future__ import annotations
@@ -27,9 +28,11 @@ import inspect
 import pkgutil
 import types
 from collections.abc import Iterator, Set
+from typing import Annotated, get_args, get_origin
 
 from fastapi import FastAPI
 from fastapi.dependencies.models import Dependant
+from fastapi.dependencies.utils import get_typed_signature
 from fastapi.routing import APIRoute
 
 from skriptoteket.config import Settings
@@ -150,12 +153,21 @@ def iter_dependant(dependant: Dependant) -> Iterator[Dependant]:
         yield from iter_dependant(child)
 
 
-def dishka_types(dependant: Dependant) -> set[type]:
+def dependency_types(dependant: Dependant) -> set[type]:
     found: set[type] = set()
-    for dependency in iter_dependant(dependant):
-        resolved = getattr(dependency.call, "dishka_dependency_type", None)
-        if resolved is not None:
-            found.add(resolved)
+    for node in iter_dependant(dependant):
+        if node.call is None:
+            continue
+        signature = get_typed_signature(node.call)
+        for child in node.dependencies:
+            if child.name is None:
+                continue
+            parameter = signature.parameters.get(child.name)
+            if parameter is None:
+                continue
+            annotation = parameter.annotation
+            if get_origin(annotation) is Annotated:
+                found.add(get_args(annotation)[0])
     return found
 
 
@@ -171,7 +183,7 @@ def dependency_call_names(dependant: Dependant) -> set[str]:
 def is_paid_llm_route(route: APIRoute, reached: set[type]) -> bool:
     return any(
         dependency_type in reached or dependency_type in JOB_ENQUEUERS
-        for dependency_type in dishka_types(route.dependant)
+        for dependency_type in dependency_types(route.dependant)
     )
 
 

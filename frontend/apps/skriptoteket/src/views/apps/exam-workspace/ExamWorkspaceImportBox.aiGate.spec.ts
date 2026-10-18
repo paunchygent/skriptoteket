@@ -10,6 +10,7 @@
  */
 
 import { mount } from "@vue/test-utils";
+import type { DOMWrapper, VueWrapper } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 import type { Pinia } from "pinia";
 import { beforeEach, describe, expect, it } from "vitest";
@@ -20,6 +21,12 @@ import { useAuthStore } from "../../../stores/auth";
 import ExamWorkspaceImportBox from "./ExamWorkspaceImportBox.vue";
 
 type Role = "user" | "contributor" | "admin" | "superuser";
+
+function findNotes(wrapper: VueWrapper): DOMWrapper<Element>[] {
+  return wrapper
+    .findAll("p, small, span")
+    .filter((node) => node.text().trim() === AI_ADMIN_ONLY_NOTE);
+}
 
 function reviewItem(): NativeExamItem {
   return {
@@ -77,7 +84,9 @@ describe("ExamWorkspaceImportBox AI gate", () => {
 
       expect(wrapper.get('[data-test="exam-workspace-retry-kind"]').attributes("disabled")).toBeDefined();
 
-      const note = wrapper.get('[data-test="exam-workspace-retry-note"]');
+      const notes = findNotes(wrapper);
+      expect(notes).toHaveLength(1);
+      const note = notes[0]!;
       expect(note.text()).toBe(AI_ADMIN_ONLY_NOTE);
 
       const button = wrapper.get('[data-test="exam-workspace-retry"]');
@@ -96,7 +105,7 @@ describe("ExamWorkspaceImportBox AI gate", () => {
       signIn(pinia, role);
       const wrapper = mountBox(pinia);
 
-      expect(wrapper.find('[data-test="exam-workspace-retry-note"]').exists()).toBe(false);
+      expect(findNotes(wrapper)).toHaveLength(0);
       expect(wrapper.get('[data-test="exam-workspace-retry-kind"]').attributes("disabled")).toBeUndefined();
 
       const button = wrapper.get('[data-test="exam-workspace-retry"]');

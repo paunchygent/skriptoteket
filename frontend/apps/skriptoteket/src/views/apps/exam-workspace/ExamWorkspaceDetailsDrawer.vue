@@ -308,7 +308,6 @@ function cites(entryId: string): string | null {
       v-if="!canUseAi"
       :id="contentAiNoteId"
       class="xw-hint"
-      data-test="exam-workspace-content-suggest-note"
     >
       {{ AI_ADMIN_ONLY_NOTE }}
     </p>

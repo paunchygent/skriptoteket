@@ -213,7 +213,6 @@ function openEntry(entry: ExamWorkspaceDocumentSummary): void {
       <small
         v-if="!canUseAi"
         class="xw-muted"
-        data-test="exam-workspace-ai-admin-only-note"
       >{{ aiAdminOnlyNote }}</small>
     </div>
     <p

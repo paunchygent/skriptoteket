@@ -1,4 +1,5 @@
 import { mount } from "@vue/test-utils";
+import type { DOMWrapper, VueWrapper } from "@vue/test-utils";
 import { describe, expect, it } from "vitest";
 
 import { AI_ADMIN_ONLY_NOTE } from "../../composables/useAiAccess";
@@ -9,6 +10,12 @@ function mountComposer(overrides: Record<string, unknown> = {}) {
   return mount(ChatComposer, {
     props: { isStreaming: false, isEditOpsLoading: false, canClear: true, ...overrides },
   });
+}
+
+function findNotes(wrapper: VueWrapper): DOMWrapper<Element>[] {
+  return wrapper
+    .findAll("p, small, span")
+    .filter((node) => node.text().trim() === AI_ADMIN_ONLY_NOTE);
 }
 
 describe("ChatComposer shared controls", () => {
@@ -132,9 +139,9 @@ describe("ChatComposer shared controls", () => {
 
       expect(wrapper.emitted("send")).toBeUndefined();
       expect(wrapper.emitted("requestEditOps")).toBeUndefined();
-      expect(wrapper.get('[data-testid="editor-ai-admin-only-note"]').text()).toBe(
-        AI_ADMIN_ONLY_NOTE,
-      );
+      const notes = findNotes(wrapper);
+      expect(notes).toHaveLength(1);
+      expect(notes[0]!.text()).toBe(AI_ADMIN_ONLY_NOTE);
       wrapper.unmount();
     },
   );
@@ -153,7 +160,7 @@ describe("ChatComposer shared controls", () => {
 
   it("keeps the ungated submission path when the note is null", async () => {
     const wrapper = mountComposer({ aiBlockedNote: null });
-    expect(wrapper.find('[data-testid="editor-ai-admin-only-note"]').exists()).toBe(false);
+    expect(findNotes(wrapper)).toHaveLength(0);
     await wrapper.get("textarea").setValue("Hej igen");
     await wrapper.get('button[aria-label="Skicka"]').trigger("click");
     expect(wrapper.emitted("send")).toEqual([["Hej igen"]]);

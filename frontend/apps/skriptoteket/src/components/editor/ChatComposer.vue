@@ -197,7 +197,6 @@ watch(
     <p
       v-if="props.aiBlockedNote"
       class="text-[10px] text-navy/60"
-      data-testid="editor-ai-admin-only-note"
     >
       {{ props.aiBlockedNote }}
     </p>

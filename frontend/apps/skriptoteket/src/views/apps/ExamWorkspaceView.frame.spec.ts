@@ -13,6 +13,7 @@
 
 import { createPinia, setActivePinia } from "pinia";
 import { flushPromises } from "@vue/test-utils";
+import type { DOMWrapper, VueWrapper } from "@vue/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AI_ADMIN_ONLY_NOTE } from "../../composables/useAiAccess";
@@ -39,6 +40,12 @@ const FORBIDDEN_VISIBLE_WORDS = [
   "pipeline",
   "lineage",
 ];
+
+function findNotes(wrapper: VueWrapper): DOMWrapper<Element>[] {
+  return wrapper
+    .findAll("p, small, span")
+    .filter((node) => node.text().trim() === AI_ADMIN_ONLY_NOTE);
+}
 
 const apiMocks = vi.hoisted(() => ({
   copyExamWorkspaceDocument: vi.fn(),
@@ -238,7 +245,6 @@ describe("ExamWorkspaceView host frame", () => {
 
 describe("ExamWorkspaceView AI gate in the Öppna drawer", () => {
   const ACCEPT = '[data-test="exam-workspace-source-file-input"]';
-  const NOTE = '[data-test="exam-workspace-ai-admin-only-note"]';
   const PICK = '[data-test="exam-workspace-pick-file"]';
   const DROP = '[data-test="exam-workspace-drop-zone"]';
 
@@ -250,7 +256,7 @@ describe("ExamWorkspaceView AI gate in the Öppna drawer", () => {
     const wrapper = await mountView("user");
 
     expect(wrapper.get(ACCEPT).attributes("accept")).toBe(".dxe");
-    expect(wrapper.get(NOTE).text()).toBe(AI_ADMIN_ONLY_NOTE);
+    expect(findNotes(wrapper).length).toBeGreaterThan(0);
     expect(wrapper.text()).not.toContain("Word .docx");
     expect(wrapper.get(PICK).attributes("disabled")).toBeUndefined();
 
@@ -267,7 +273,7 @@ describe("ExamWorkspaceView AI gate in the Öppna drawer", () => {
 
     expect(apiMocks.importExamWorkspaceDocument).not.toHaveBeenCalled();
     expect(apiMocks.importExamWorkspaceDigiExam).not.toHaveBeenCalled();
-    expect(wrapper.find(NOTE).exists()).toBe(true);
+    expect(findNotes(wrapper).length).toBeGreaterThan(0);
     expect(wrapper.find('[data-test="exam-workspace-empty"]').exists()).toBe(true);
   });
 
@@ -281,7 +287,7 @@ describe("ExamWorkspaceView AI gate in the Öppna drawer", () => {
 
     expect(apiMocks.importExamWorkspaceDocument).not.toHaveBeenCalled();
     expect(apiMocks.importExamWorkspaceDigiExam).not.toHaveBeenCalled();
-    expect(wrapper.find(NOTE).exists()).toBe(true);
+    expect(findNotes(wrapper).length).toBeGreaterThan(0);
   });
 
   it("refuses a Word file for a contributor through both the picker and a drop", async () => {
@@ -295,7 +301,7 @@ describe("ExamWorkspaceView AI gate in the Öppna drawer", () => {
 
     expect(apiMocks.importExamWorkspaceDocument).not.toHaveBeenCalled();
     expect(apiMocks.importExamWorkspaceDigiExam).not.toHaveBeenCalled();
-    expect(wrapper.find(NOTE).exists()).toBe(true);
+    expect(findNotes(wrapper).length).toBeGreaterThan(0);
   });
 
   it("keeps every Word control for an admin and imports the .docx", async () => {
@@ -306,7 +312,7 @@ describe("ExamWorkspaceView AI gate in the Öppna drawer", () => {
     const wrapper = await mountView("admin");
 
     expect(wrapper.get(ACCEPT).attributes("accept")).toBe(".docx,.dxe");
-    expect(wrapper.find(NOTE).exists()).toBe(false);
+    expect(findNotes(wrapper)).toHaveLength(0);
     expect(wrapper.text()).toContain("Word .docx");
 
     await chooseSourceFile(wrapper, new File(["prov"], "NO_Prov_HT25.docx"));

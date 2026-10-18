@@ -153,7 +153,6 @@ function chooseKind(event: Event): void {
             v-if="!canUseAi"
             :id="aiNoteId"
             class="xw-hint imp__retry-note"
-            data-test="exam-workspace-retry-note"
           >
             {{ AI_ADMIN_ONLY_NOTE }}
           </p>

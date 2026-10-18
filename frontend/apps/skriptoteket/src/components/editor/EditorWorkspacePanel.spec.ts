@@ -1,5 +1,6 @@
 import { createTestingPinia } from "@pinia/testing";
 import { mount } from "@vue/test-utils";
+import type { DOMWrapper, VueWrapper } from "@vue/test-utils";
 import { describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 
@@ -122,6 +123,12 @@ function buildProps(overrides: Partial<EditorWorkspacePanelProps> = {}): EditorW
   };
 }
 
+function findNotes(wrapper: VueWrapper): DOMWrapper<Element>[] {
+  return wrapper
+    .findAll("p, small, span")
+    .filter((node) => node.text().trim() === AI_ADMIN_ONLY_NOTE);
+}
+
 function drawerStubs() {
   return {
     ScriptEditorHeaderPanel: true,
@@ -185,7 +192,7 @@ describe("EditorWorkspacePanel", () => {
     const wrapper = mountPanelWithChatDrawer({ aiBlockedNote: AI_ADMIN_ONLY_NOTE });
     await nextTick();
 
-    const notes = wrapper.findAll('[data-testid="editor-ai-admin-only-note"]');
+    const notes = findNotes(wrapper);
     expect(notes.length).toBeGreaterThan(0);
     expect(notes.every((note) => note.text() === AI_ADMIN_ONLY_NOTE)).toBe(true);
 
@@ -198,7 +205,7 @@ describe("EditorWorkspacePanel", () => {
     const wrapper = mountPanelWithChatDrawer({ aiBlockedNote: null });
     await nextTick();
 
-    expect(wrapper.find('[data-testid="editor-ai-admin-only-note"]').exists()).toBe(false);
+    expect(findNotes(wrapper)).toHaveLength(0);
     const textarea = wrapper.get('textarea[aria-label="Meddelande till kodassistenten"]');
     expect(textarea.attributes("disabled")).toBeUndefined();
     wrapper.unmount();

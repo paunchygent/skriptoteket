@@ -62,7 +62,6 @@ const hasAiControl = computed(() => missingKeys.value > 0);
       v-if="!canUseAi && hasAiControl"
       :id="aiNoteId"
       class="xw-hint"
-      data-test="exam-workspace-blocker-ai-note"
     >
       {{ AI_ADMIN_ONLY_NOTE }}
     </p>

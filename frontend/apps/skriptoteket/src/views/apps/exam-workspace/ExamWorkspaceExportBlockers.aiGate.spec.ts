@@ -13,6 +13,7 @@
  */
 
 import { mount } from "@vue/test-utils";
+import type { DOMWrapper, VueWrapper } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
 import type { Pinia } from "pinia";
 import { beforeEach, describe, expect, it } from "vitest";
@@ -23,6 +24,12 @@ import ExamWorkspaceExportBlockers from "./ExamWorkspaceExportBlockers.vue";
 import type { ExamWorkspaceBlockerEntry } from "./examWorkspaceBlockers";
 
 type Role = "user" | "contributor" | "admin" | "superuser";
+
+function findNotes(wrapper: VueWrapper): DOMWrapper<Element>[] {
+  return wrapper
+    .findAll("p, small, span")
+    .filter((node) => node.text().trim() === AI_ADMIN_ONLY_NOTE);
+}
 
 function keyBlocker(itemId: string, label: string): ExamWorkspaceBlockerEntry {
   return {
@@ -61,9 +68,10 @@ describe("ExamWorkspaceExportBlockers AI gate", () => {
       signIn(pinia, role);
       const wrapper = mountBlockers(pinia, TWO_KEYLESS);
 
-      const note = wrapper.get('[data-test="exam-workspace-blocker-ai-note"]');
+      const notes = findNotes(wrapper);
+      expect(notes).toHaveLength(1);
+      const note = notes[0]!;
       expect(note.text()).toBe(AI_ADMIN_ONLY_NOTE);
-      expect(wrapper.findAll('[data-test="exam-workspace-blocker-ai-note"]')).toHaveLength(1);
 
       const all = wrapper.get('[data-test="exam-workspace-blocker-suggest-all"]');
       expect(all.attributes("disabled")).toBeDefined();
@@ -102,7 +110,7 @@ describe("ExamWorkspaceExportBlockers AI gate", () => {
       { fix: "review", focus: null, itemId: "item_001", label: "1", problem: "kunde inte konverteras", reason: "unbuilt_question" },
     ]);
 
-    expect(wrapper.find('[data-test="exam-workspace-blocker-ai-note"]').exists()).toBe(false);
+    expect(findNotes(wrapper)).toHaveLength(0);
     expect(wrapper.find('[data-test="exam-workspace-blocker-suggest-all"]').exists()).toBe(false);
     const fix = wrapper.get('[data-test="exam-workspace-blocker-fix-item_001"]');
     expect(fix.attributes("disabled")).toBeUndefined();
@@ -117,7 +125,9 @@ describe("ExamWorkspaceExportBlockers AI gate", () => {
       const wrapper = mountBlockers(pinia, [keyBlocker("item_001", "1")]);
 
       expect(wrapper.find('[data-test="exam-workspace-blocker-suggest-all"]').exists()).toBe(false);
-      const note = wrapper.get('[data-test="exam-workspace-blocker-ai-note"]');
+      const notes = findNotes(wrapper);
+      expect(notes).toHaveLength(1);
+      const note = notes[0]!;
       expect(note.text()).toBe(AI_ADMIN_ONLY_NOTE);
 
       const fix = wrapper.get('[data-test="exam-workspace-blocker-fix-item_001"]');
@@ -133,7 +143,7 @@ describe("ExamWorkspaceExportBlockers AI gate", () => {
       signIn(pinia, role);
       const wrapper = mountBlockers(pinia, TWO_KEYLESS);
 
-      expect(wrapper.find('[data-test="exam-workspace-blocker-ai-note"]').exists()).toBe(false);
+      expect(findNotes(wrapper)).toHaveLength(0);
 
       const all = wrapper.get('[data-test="exam-workspace-blocker-suggest-all"]');
       expect(all.attributes("disabled")).toBeUndefined();

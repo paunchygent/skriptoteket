@@ -35,17 +35,21 @@ from skriptoteket.infrastructure.llm.openai.inline_completion_provider import (
     OpenAIInlineCompletionProvider,
 )
 from skriptoteket.protocols.exam_answer_key import ExamAnswerKeyEnrichmentJobRepositoryProtocol
+from skriptoteket.protocols.identity import HuleEduInternalIdentityVerifierProtocol
 from skriptoteket.protocols.llm import InlineCompletionHandlerProtocol
 from skriptoteket.web.app import create_app
-from skriptoteket.web.auth.huleedu_app_projection import require_app_contributor_api
+from skriptoteket.web.auth.huleedu_app_projection import (
+    require_app_contributor_api,
+    require_app_user_api,
+)
 from skriptoteket.web.dishka_dependencies import FromDishka
 from tests.unit.web.ai_route_gate_discovery import (
     ai_gated_route_keys,
     build_di_graph,
     closure,
     dependency_call_names,
+    dependency_types,
     describe_routes,
-    dishka_types,
     is_paid_llm_route,
     llm_client_classes,
     paid_llm_route_keys,
@@ -112,7 +116,7 @@ def test_route_resolved_job_repository_users_are_classified(
     for route in app.routes:
         if not isinstance(route, APIRoute):
             continue
-        for dependency_type in dishka_types(route.dependant):
+        for dependency_type in dependency_types(route.dependant):
             if ExamAnswerKeyEnrichmentJobRepositoryProtocol in closure(dependency_type, edges):
                 discovered.add(dependency_type)
 
@@ -175,7 +179,7 @@ def test_no_websocket_route_reaches_llm(app: FastAPI, reached_llm: set[type]) ->
             continue
         hits = sorted(
             type_name(dependency_type)
-            for dependency_type in dishka_types(route.dependant)
+            for dependency_type in dependency_types(route.dependant)
             if dependency_type in reached_llm or dependency_type in JOB_ENQUEUERS
         )
         if hits:
@@ -203,6 +207,30 @@ def test_guard_detects_an_ungated_llm_route(reached_llm: set[type]) -> None:
     )
     assert AI_ROLE_GATE.__name__ not in dependency_call_names(probe_route.dependant), (
         "the guard failed its adversarial self-check: an ungated LLM route was reported as gated"
+    )
+
+
+def test_dependency_types_reads_annotated_types_through_nested_dependencies() -> None:
+    router = APIRouter()
+
+    @router.post("/__guard_probe__/dependency-types")
+    async def dependency_types_probe(
+        handler: FromDishka[InlineCompletionHandlerProtocol],
+        user: User = Depends(require_app_user_api),
+    ) -> None:
+        del handler, user
+
+    probe_app = FastAPI()
+    probe_app.include_router(router)
+    probe_route = next(route for route in probe_app.routes if isinstance(route, APIRoute))
+
+    found = dependency_types(probe_route.dependant)
+
+    assert InlineCompletionHandlerProtocol in found, (
+        "the guard did not read the route's own Annotated Dishka parameter"
+    )
+    assert HuleEduInternalIdentityVerifierProtocol in found, (
+        "the guard did not traverse a nested dependency's Annotated Dishka parameter"
     )
 
 
