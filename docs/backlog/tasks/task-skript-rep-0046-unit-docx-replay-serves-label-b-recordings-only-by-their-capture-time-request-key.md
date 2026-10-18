@@ -64,3 +64,12 @@ Method: a detached throwaway worktree at `b7ca932c` replayed both exams through 
 | R3  | `ReplayProvider` loads the keys for `root / exam` when it is constructed. A `label_b_*.json` without its `.request.txt`, or a sidecar without its recording, is refused there. |
 | R4  | An `item_type_label` request is matched only on `request.user_payload` ending with `### Question q1\n<key>` against an unused recording. An unmatched request raises `MissingRecording`. The provider has no id-derived fallback. |
 | R5  | No re-recording and no live model calls; the converter-batch anchor match is out of scope. |
+
+## Resume Here (2026-10-18)
+
+- State: in independent review; reviewer pending. Branch `codex/task-skript-rep-0046-remote` in worktree `/home/paunchygent/apps/skriptoteket-task-skript-rep-0046-remote`; implementation head `bcc4047c`.
+- Done: the shared key module, the unit replay key match, the 15 user-exam capture-time sidecars and the adversarial test file. Proof: new test file 12/12, user-exam replay 10/10, other replay importers 1150 passed, Docker integration 11/11, ruff, format and mypy clean.
+- Next: the parent routes the review verdict; repair any admitted findings.
+- Open findings: none. A note for the reviewer: the key does not cover the fixed classification instruction (same as in REP-0045).
+- Retained root: `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a14f5e-1cc7-74d6-abf4-0d911114f415`.
+- Blockers and user gates: none. No children are running.
