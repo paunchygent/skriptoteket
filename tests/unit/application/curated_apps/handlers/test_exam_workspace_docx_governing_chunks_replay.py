@@ -2,10 +2,10 @@
 
 Both tests serve the fresh course-exam recording with the first wave reply rewritten in
 memory (explicitly synthetic): the governing chunk body:0009 leaves the reply's instructions
-and joins q1's item instead, the shape the historical recordings captured. When the item
-prints the chunk's line, assembly releases it to the parent and removes it from the item.
-When the chunk is the item's whole body, removing it would leave no body: the item keeps the
-wording, an event names the chunk, and the parent still shows it.
+and joins q1's item instead, the shape the historical recordings captured. When a body paragraph
+is aligned to the chunk, assembly releases the chunk to the parent and removes that paragraph
+from the item (TASK-SKRIPT-39-04-14). When the chunk is the item's whole body, removing it would
+leave no body: the item keeps it, an event names the chunk, and the parent still shows it.
 """
 
 from __future__ import annotations
