@@ -26,10 +26,13 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import (
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent_commands import (
     add_child,
+    create_empty_part,
     create_parent,
     delete_child,
     delete_parent,
     delete_parent_with_children,
+    group_items,
+    move_item,
     reorder_children,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
@@ -37,7 +40,12 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeParseOrigin,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
-from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders import plain_body
+from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders import (
+    make_document,
+    make_free_text_item,
+    make_ordering_item,
+    plain_body,
+)
 from tests.unit.domain.curated_apps.exam_workspace.recorded_native_exam_support import (
     parent_over,
     recorded_document,
@@ -183,12 +191,13 @@ def test_reorder_changes_only_the_requested_parent_and_delete_updates_sum() -> N
     _check_structure(deleted)
     last_child_deleted = delete_child(deleted, parent_id="parent_001", item_id="item_002")
 
-    assert last_child_deleted.parents == (
-        base.parents[1].model_copy(
-            update={
-                "place": last_child_deleted.item_by_id(base.parents[1].item_ids[0]).sequence - 1
-            }
-        ),
+    kept = last_child_deleted.parents[0]
+    assert kept.parent_id == "parent_001"
+    assert kept.item_ids == ()
+    assert kept.place == 1, "The empty part stays where its first question stood (G8)"
+    assert kept.instruction == base.parents[0].instruction
+    assert last_child_deleted.parents[1] == base.parents[1].model_copy(
+        update={"place": last_child_deleted.item_by_id(base.parents[1].item_ids[0]).sequence - 1}
     )
     assert last_child_deleted.parent_of("item_002") is None
     assert [item.item_id for item in last_child_deleted.items] == [
@@ -353,18 +362,21 @@ def test_cascade_removes_exactly_the_three_children_and_renumbers_all_survivors(
     _check_structure(result)
 
 
-def test_deleting_the_last_child_removes_its_parent_without_changing_other_items_content() -> None:
+def test_deleting_the_last_child_keeps_its_parent_as_a_childless_instruction_block() -> None:
     base = _saved_exam(single_child=True)
     original = native_exam_document_json_bytes(base)
 
     result = delete_child(base, parent_id="parent_001", item_id="item_002")
 
-    assert result.parents == (
+    kept = next(parent for parent in result.parents if parent.parent_id == "parent_001")
+    assert kept.item_ids == ()
+    assert kept.place == 1
+    assert kept.instruction == base.parents[0].instruction
+    assert next(parent for parent in result.parents if parent.parent_id == "parent_002") == (
         base.parents[1].model_copy(
             update={"place": result.item_by_id(base.parents[1].item_ids[0]).sequence - 1}
-        ),
+        )
     )
-    assert not any(parent.parent_id == "parent_001" for parent in result.parents)
     assert [item.model_dump() for item in result.items] == [
         dict(item.model_dump(), sequence=sequence)
         for sequence, item in enumerate(
@@ -544,3 +556,251 @@ def test_reorder_children_and_add_child_keep_a_childless_part_at_its_place() -> 
     assert preserved.place == block.place + 1
     assert preserved.place == added.item_by_id("item_005").sequence
     _check_structure(added)
+
+
+def _six() -> NativeExamDocument:
+    return recorded_document(items=recorded_items()[:6])
+
+
+def test_group_non_adjacent_questions_takes_the_first_place_and_keeps_the_rest_in_order() -> None:
+    base = _six()
+    original = native_exam_document_json_bytes(base)
+
+    result, parent_id = group_items(base, item_ids=("item_002", "item_005"))
+
+    assert [item.item_id for item in result.items] == [
+        "item_001",
+        "item_002",
+        "item_005",
+        "item_003",
+        "item_004",
+        "item_006",
+    ]
+    assert [item.sequence for item in result.items] == [1, 2, 3, 4, 5, 6]
+    part = next(parent for parent in result.parents if parent.parent_id == parent_id)
+    assert part.item_ids == ("item_002", "item_005")
+    assert part.place == 1, "The part takes the place of the earliest marked question (G10)"
+    assert part.instruction == (), "A new part starts with an empty instruction (G4)"
+    assert [result.item_by_id(item_id).sequence for item_id in part.item_ids] == [2, 3]
+    assert native_exam_document_json_bytes(base) == original
+    _check_structure(result)
+
+
+def test_group_one_question_makes_a_part_holding_exactly_that_question() -> None:
+    base = _six()
+
+    result, parent_id = group_items(base, item_ids=("item_002",))
+
+    part = next(parent for parent in result.parents if parent.parent_id == parent_id)
+    assert part.item_ids == ("item_002",)
+    assert part.place == 1
+    assert [item.item_id for item in result.items] == [
+        "item_001",
+        "item_002",
+        "item_003",
+        "item_004",
+        "item_005",
+        "item_006",
+    ]
+    _check_structure(result)
+
+
+def test_group_refuses_empty_duplicate_and_unknown_items_with_named_reasons() -> None:
+    base = _six()
+
+    with pytest.raises(DomainError) as empty:
+        group_items(base, item_ids=())
+    assert empty.value.code is ErrorCode.VALIDATION_ERROR
+    assert empty.value.message == "Markera minst en fråga."
+    assert empty.value.details == {"reason": "no_items"}
+
+    with pytest.raises(DomainError) as duplicate:
+        group_items(base, item_ids=("item_002", "item_002"))
+    assert duplicate.value.details == {"reason": "duplicate_items"}
+
+    with pytest.raises(DomainError) as unknown:
+        group_items(base, item_ids=("item_999",))
+    assert unknown.value.code is ErrorCode.NOT_FOUND
+    assert unknown.value.details == {"item_id": "item_999"}
+
+
+def test_group_refuses_an_existing_child_and_an_ordering_question() -> None:
+    with pytest.raises(DomainError) as child:
+        group_items(_exam(), item_ids=("item_002",))
+    assert child.value.code is ErrorCode.VALIDATION_ERROR
+    assert child.value.message == "Frågan ligger redan i en del. Flytta den med Flytta till…"
+    assert child.value.details == {"reason": "item_in_part", "item_id": "item_002"}
+
+    ordering = make_document(
+        make_free_text_item(sequence=1, item_id="item_001"),
+        make_ordering_item(sequence=2, item_id="item_002"),
+    )
+    with pytest.raises(DomainError) as ordering_error:
+        group_items(ordering, item_ids=("item_002",))
+    assert ordering_error.value.details == {
+        "reason": "ordering_inside_parent",
+        "item_id": "item_002",
+    }
+
+
+def test_move_standalone_into_a_part_lands_last_and_keeps_the_parts_place() -> None:
+    base = _exam()
+
+    result = move_item(base, item_id="item_001", target_parent_id="parent_001")
+
+    part = result.parents[0]
+    assert part.parent_id == "parent_001"
+    assert part.item_ids == ("item_002", "item_003", "item_001")
+    assert part.place == 0
+    assert [result.item_by_id(item_id).sequence for item_id in part.item_ids] == [1, 2, 3]
+    assert result.item_by_id("item_001").sequence == 3
+    _check_structure(result)
+
+
+def test_move_between_parts_lands_last_in_the_target_and_the_source_keeps_its_place() -> None:
+    base = recorded_document(
+        (parent_over("parent_001", "A", 2, 3), parent_over("parent_002", "B", 5, 6))
+    )
+
+    result = move_item(base, item_id="item_002", target_parent_id="parent_002")
+
+    source = next(parent for parent in result.parents if parent.parent_id == "parent_001")
+    target = next(parent for parent in result.parents if parent.parent_id == "parent_002")
+    assert source.item_ids == ("item_003",)
+    assert source.place == 1
+    assert target.item_ids == ("item_005", "item_006", "item_002")
+    assert result.item_by_id("item_002").sequence == target.place + 3
+    _check_structure(result)
+
+    emptied = move_item(result, item_id="item_003", target_parent_id="parent_002")
+
+    source = next(parent for parent in emptied.parents if parent.parent_id == "parent_001")
+    target = next(parent for parent in emptied.parents if parent.parent_id == "parent_002")
+    assert source.item_ids == (), "A part left with no questions stays (G8)"
+    assert source.place == 1
+    assert target.item_ids[-1] == "item_003"
+    _check_structure(emptied)
+
+
+def test_move_out_lands_directly_after_the_part_it_left() -> None:
+    base = _exam()
+
+    result = move_item(base, item_id="item_002", target_parent_id=None)
+
+    part = result.parents[0]
+    assert part.item_ids == ("item_003",)
+    assert result.item_by_id("item_002").sequence == part.place + len(part.item_ids) + 1
+    assert [item.item_id for item in result.items][:4] == [
+        "item_001",
+        "item_003",
+        "item_002",
+        "item_004",
+    ]
+    _check_structure(result)
+
+
+def test_move_out_of_a_one_question_part_leaves_a_childless_part_before_the_question() -> None:
+    base = recorded_document((parent_over("parent_001", "A", 2),))
+
+    result = move_item(base, item_id="item_002", target_parent_id=None)
+
+    part = result.parents[0]
+    assert part.item_ids == ()
+    assert part.place == 1
+    assert result.item_by_id("item_002").sequence == 2
+    _check_structure(result)
+
+
+def test_move_refuses_unknown_ids_the_same_part_and_ordering_into_a_part() -> None:
+    base = _exam()
+
+    with pytest.raises(DomainError) as unknown_part:
+        move_item(base, item_id="item_002", target_parent_id="parent_999")
+    assert unknown_part.value.code is ErrorCode.NOT_FOUND
+    assert unknown_part.value.details == {"parent_id": "parent_999"}
+
+    with pytest.raises(DomainError) as same_part:
+        move_item(base, item_id="item_002", target_parent_id="parent_001")
+    assert same_part.value.details == {
+        "reason": "already_in_part",
+        "parent_id": "parent_001",
+        "item_id": "item_002",
+    }
+
+    with pytest.raises(DomainError) as standalone:
+        move_item(base, item_id="item_001", target_parent_id=None)
+    assert standalone.value.details == {"reason": "already_standalone", "item_id": "item_001"}
+
+    with pytest.raises(DomainError) as unknown_item:
+        move_item(base, item_id="item_999", target_parent_id=None)
+    assert unknown_item.value.code is ErrorCode.NOT_FOUND
+    assert unknown_item.value.details == {"item_id": "item_999"}
+
+    ordering = _with_parts(
+        make_document(
+            make_free_text_item(sequence=1, item_id="item_001"),
+            make_ordering_item(sequence=2, item_id="item_002"),
+        ),
+        _childless("parent_001", "Block", 1),
+    )
+    with pytest.raises(DomainError) as ordering_error:
+        move_item(ordering, item_id="item_002", target_parent_id="parent_001")
+    assert ordering_error.value.details == {
+        "reason": "ordering_inside_parent",
+        "item_id": "item_002",
+    }
+
+
+@pytest.mark.parametrize("position", [0, 3, 6])
+def test_create_empty_part_inserts_a_childless_instruction_block_at_the_position(
+    position: int,
+) -> None:
+    base = _six()
+
+    result, parent_id = create_empty_part(base, position=position)
+
+    part = next(parent for parent in result.parents if parent.parent_id == parent_id)
+    assert part.item_ids == ()
+    assert part.instruction == ()
+    assert part.place == position
+    assert [item.item_id for item in result.items] == [
+        "item_001",
+        "item_002",
+        "item_003",
+        "item_004",
+        "item_005",
+        "item_006",
+    ]
+    _check_structure(result)
+
+
+def test_create_empty_part_refuses_a_position_beyond_the_outline() -> None:
+    with pytest.raises(DomainError) as error:
+        create_empty_part(_six(), position=7)
+
+    assert error.value.code is ErrorCode.VALIDATION_ERROR
+    assert error.value.message == "Positionen finns inte."
+    assert error.value.details == {"position": 7}
+
+
+def test_a_childless_part_is_never_lost_by_group_move_empty_or_delete() -> None:
+    base = _with_parts(_six(), _childless("parent_001", "Instruktionsblock", 3))
+
+    grouped, new_part_id = group_items(base, item_ids=("item_002", "item_005"))
+    assert next(p for p in grouped.parents if p.parent_id == "parent_001").item_ids == ()
+
+    moved = move_item(grouped, item_id="item_006", target_parent_id=new_part_id)
+    assert next(p for p in moved.parents if p.parent_id == "parent_001").item_ids == ()
+
+    emptied, _ = create_empty_part(moved, position=0)
+    surviving = next(p for p in emptied.parents if p.parent_id == "parent_001")
+    assert surviving.item_ids == ()
+    assert surviving.place == 5
+
+    deleted = delete_child(emptied, parent_id=new_part_id, item_id="item_002")
+    surviving = next(p for p in deleted.parents if p.parent_id == "parent_001")
+    assert surviving.item_ids == ()
+    assert surviving.place == 4
+    target = next(p for p in deleted.parents if p.parent_id == new_part_id)
+    assert target.item_ids == ("item_005", "item_006")
+    _check_structure(deleted)

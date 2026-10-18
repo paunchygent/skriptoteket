@@ -21,6 +21,12 @@ class ExamWorkspaceDeleteResponse(ExamWorkspaceDocumentResponse):
     removed_parent_id: str | None
 
 
+class ExamWorkspaceCreatedPartResponse(ExamWorkspaceDocumentResponse):
+    """One undoable part creation; names the new part the UI opens in its editor (G4)."""
+
+    created_parent_id: str
+
+
 class NewParentChild(NativeExamItem):
     """Item content; identity and order are assigned by the server."""
 
@@ -44,3 +50,22 @@ class AddExamChildRequest(ParentCommandRequest):
 
 class ReorderExamChildrenRequest(ParentCommandRequest):
     item_ids: tuple[str, ...] = Field(min_length=1)
+
+
+class GroupExamItemsRequest(ParentCommandRequest):
+    """Marked standalone questions become one new part (G2, G10)."""
+
+    item_ids: tuple[str, ...] = Field(min_length=1)
+
+
+class MoveExamItemRequest(ParentCommandRequest):
+    """Move one question into a part, or to None for "Ingen del (fristående)" (G3, R3, R4)."""
+
+    item_id: str
+    target_parent_id: str | None
+
+
+class CreateEmptyExamPartRequest(ParentCommandRequest):
+    """Insert a part with an empty instruction at a top-level position (G9)."""
+
+    position: int = Field(ge=0, description="Zero-based index among top-level questions and parts.")

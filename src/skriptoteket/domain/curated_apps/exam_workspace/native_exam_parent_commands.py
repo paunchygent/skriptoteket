@@ -192,6 +192,7 @@ def delete_child(
     parent_id: str,
     item_id: str,
 ) -> NativeExamDocument:
+    """Remove one child; a part that loses its last child stays as an instruction block (G8)."""
     parent = _parent(document, parent_id)
     if item_id not in parent.item_ids:
         raise DomainError(
@@ -199,8 +200,11 @@ def delete_child(
             message="Deluppgiften finns inte.",
             details={"parent_id": parent_id, "item_id": item_id},
         )
-    if len(parent.item_ids) == 1:
-        return delete_parent_with_children(document, parent_id=parent_id)
+    if len(document.items) == 1:
+        raise validation_error(
+            "Provet måste ha minst en fråga.",
+            details={"reason": "exam_requires_question", "parent_id": parent_id},
+        )
     outline = list(document_outline(document))
     index = _part_index(outline, parent_id)
     part = cast(OutlinePart, outline[index])
@@ -209,6 +213,133 @@ def delete_child(
         children=tuple(child for child in part.children if child.item_id != item_id),
     )
     return _rebuild(document, outline)
+
+
+def _standalone_index(outline: Sequence[OutlineEntry], item_id: str) -> int | None:
+    """The top-level index of a standalone question, or None when it is not standalone."""
+    for index, entry in enumerate(outline):
+        if isinstance(entry, OutlineQuestion) and entry.item.item_id == item_id:
+            return index
+    return None
+
+
+def group_items(
+    document: NativeExamDocument,
+    *,
+    item_ids: tuple[str, ...],
+) -> tuple[NativeExamDocument, str]:
+    """Group marked standalone questions into one new part at the first marked place (G10)."""
+    if not item_ids:
+        raise validation_error("Markera minst en fråga.", details={"reason": "no_items"})
+    if len(set(item_ids)) != len(item_ids):
+        raise validation_error(
+            "Samma fråga är markerad flera gånger.", details={"reason": "duplicate_items"}
+        )
+    outline = list(document_outline(document))
+    marked: list[tuple[int, NativeExamItem]] = []
+    for item_id in item_ids:
+        item = document.item_by_id(item_id)
+        index = _standalone_index(outline, item_id)
+        if index is None:
+            raise validation_error(
+                "Frågan ligger redan i en del. Flytta den med Flytta till…",
+                details={"reason": "item_in_part", "item_id": item_id},
+            )
+        if item.kind is NativeExamItemKind.ORDERING:
+            raise ordering_inside_parent_error(item_id)
+        marked.append((index, item))
+    marked.sort(key=lambda entry: entry[0])
+    parent = NativeExamParent(
+        parent_id=_next_id("parent", {part.parent_id for part in document.parents}, 999),
+        place=0,
+        instruction=(),
+        item_ids=tuple(item.item_id for _, item in marked),
+    )
+    new_part = OutlinePart(part=parent, children=tuple(item for _, item in marked))
+    marked_ids = {item.item_id for _, item in marked}
+    grouped: list[OutlineEntry] = []
+    inserted = False
+    for entry in outline:
+        if isinstance(entry, OutlineQuestion) and entry.item.item_id in marked_ids:
+            if not inserted:
+                grouped.append(new_part)
+                inserted = True
+            continue
+        grouped.append(entry)
+    return _rebuild(document, grouped), parent.parent_id
+
+
+def move_item(
+    document: NativeExamDocument,
+    *,
+    item_id: str,
+    target_parent_id: str | None,
+) -> NativeExamDocument:
+    """Move one question into a part (R3), out to standalone (R4), or between parts."""
+    if target_parent_id is None:
+        part = document.parent_of(item_id)
+        if part is None:
+            document.item_by_id(item_id)
+            raise validation_error(
+                "Frågan är redan fristående.",
+                details={"reason": "already_standalone", "item_id": item_id},
+            )
+        outline = list(document_outline(document))
+        index = _part_index(outline, part.parent_id)
+        current = cast(OutlinePart, outline[index])
+        moved = next(child for child in current.children if child.item_id == item_id)
+        outline[index] = OutlinePart(
+            part=current.part,
+            children=tuple(child for child in current.children if child.item_id != item_id),
+        )
+        outline.insert(index + 1, OutlineQuestion(item=moved))
+        return _rebuild(document, outline)
+    _parent(document, target_parent_id)
+    owner = document.parent_of(item_id)
+    if owner is not None and owner.parent_id == target_parent_id:
+        raise validation_error(
+            "Frågan ligger redan i den delen.",
+            details={
+                "reason": "already_in_part",
+                "parent_id": target_parent_id,
+                "item_id": item_id,
+            },
+        )
+    item = document.item_by_id(item_id)
+    if item.kind is NativeExamItemKind.ORDERING:
+        raise ordering_inside_parent_error(item_id)
+    outline = list(document_outline(document))
+    for index, entry in enumerate(outline):
+        if isinstance(entry, OutlineQuestion) and entry.item.item_id == item_id:
+            del outline[index]
+            break
+        if isinstance(entry, OutlinePart) and item_id in {c.item_id for c in entry.children}:
+            outline[index] = OutlinePart(
+                part=entry.part,
+                children=tuple(child for child in entry.children if child.item_id != item_id),
+            )
+            break
+    target_index = _part_index(outline, target_parent_id)
+    target = cast(OutlinePart, outline[target_index])
+    outline[target_index] = OutlinePart(part=target.part, children=(*target.children, item))
+    return _rebuild(document, outline)
+
+
+def create_empty_part(
+    document: NativeExamDocument,
+    *,
+    position: int,
+) -> tuple[NativeExamDocument, str]:
+    """Insert a part with an empty instruction and no children at a top-level position (G9)."""
+    outline = list(document_outline(document))
+    _position(position, len(outline))
+    parent = NativeExamParent(
+        parent_id=_next_id("parent", {part.parent_id for part in document.parents}, 999),
+        place=0,
+        instruction=(),
+    )
+    outline.insert(position, OutlinePart(part=parent, children=()))
+    return _rebuild(document, outline), parent.parent_id
 
 
 def reorder_children(
