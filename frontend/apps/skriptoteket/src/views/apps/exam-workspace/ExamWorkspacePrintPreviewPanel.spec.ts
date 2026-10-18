@@ -80,7 +80,10 @@ describe("ExamWorkspacePrintPreviewPanel", () => {
       pages: ["data:1", "data:2", "data:3"],
       questionPages: { item_2: 2 },
     });
-    const target = wrapper.findAll("img")[2].element as HTMLElement;
+    const target = wrapper.get('img[alt="Sida 3"]').element;
+    if (!(target instanceof HTMLElement)) {
+      throw new Error("Expected the Sida 3 preview page to be an HTMLElement");
+    }
     const scrollIntoView = vi.fn();
     target.scrollIntoView = scrollIntoView;
 
