@@ -69,8 +69,37 @@ def llm_client_classes() -> set[type]:
     return paid_llm_client_classes()
 
 
+def module_attributes(modules: list[types.ModuleType], names: set[str]) -> Iterator[object]:
+    """Resolve the named attributes of the given modules, following submodules.
+
+    A module-qualified reference such as ``pkg.module.Class`` appears in bytecode
+    as separate ``LOAD_GLOBAL``/``LOAD_ATTR`` names, so the module and the class
+    are both in ``co_names`` while only the module (or an outer package) is in the
+    function globals. Following module attributes, and modules reached through
+    them, recovers the class the factory actually constructs.
+    """
+    seen_modules: set[types.ModuleType] = set()
+    pending = list(modules)
+    while pending:
+        module = pending.pop()
+        if module in seen_modules:
+            continue
+        seen_modules.add(module)
+        for name in names:
+            referenced = getattr(module, name, None)
+            if referenced is None:
+                continue
+            yield referenced
+            if isinstance(referenced, types.ModuleType):
+                pending.append(referenced)
+
+
 def code_builds_llm(source: object, seen: set[object] | None = None) -> bool:
-    """True when a factory body references an LLM client class, following di helpers."""
+    """True when a factory body references an LLM client class, following di helpers.
+
+    Names are resolved directly in the function globals and, for module-qualified
+    constructors, as attributes of any module those globals name.
+    """
     seen = set() if seen is None else seen
     function = getattr(source, "__func__", source)
     code = getattr(function, "__code__", None)
@@ -79,23 +108,28 @@ def code_builds_llm(source: object, seen: set[object] | None = None) -> bool:
     seen.add(function)
 
     globals_ = getattr(function, "__globals__", {})
-    names = set(code.co_names)
-    for constant in code.co_consts:
-        if isinstance(constant, types.CodeType):
-            names |= set(constant.co_names)
+    names: set[str] = set()
+    for code_object in (code, *(c for c in code.co_consts if isinstance(c, types.CodeType))):
+        names |= set(code_object.co_names)
 
     llm_classes = llm_client_classes()
-    for name in names:
-        referenced = globals_.get(name)
-        if referenced in llm_classes:
+
+    def references_llm(referenced: object) -> bool:
+        if isinstance(referenced, type) and referenced in llm_classes:
             return True
-        if (
+        return (
             isinstance(referenced, types.FunctionType)
             and referenced.__module__.startswith("skriptoteket.di")
             and code_builds_llm(referenced, seen)
-        ):
-            return True
-    return False
+        )
+
+    if any(references_llm(globals_.get(name)) for name in names):
+        return True
+
+    modules = [
+        module for name in names if isinstance((module := globals_.get(name)), types.ModuleType)
+    ]
+    return any(references_llm(attribute) for attribute in module_attributes(modules, names))
 
 
 def build_di_graph() -> tuple[dict[type, set[type]], set[type]]:

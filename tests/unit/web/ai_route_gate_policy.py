@@ -51,6 +51,8 @@ from skriptoteket.protocols.exam_workspace_history import (
 )
 from skriptoteket.protocols.exam_workspace_parents import ExamWorkspaceParentsHandlerProtocol
 from skriptoteket.protocols.item_type_labeler import (
+    ExamContentTagClassifierProtocol,
+    ItemTypeLabelerProtocol,
     MeteredItemTypeLabelerProtocol,
     SecondPassItemTypeLabelerProtocol,
 )
@@ -67,6 +69,12 @@ from skriptoteket.web.auth.huleedu_app_projection import (
 PAID_LLM_PROTOCOLS: frozenset[type] = frozenset(
     {
         AnswerKeyStructuredProviderProtocol,
+        # Content-classification port implemented by the paid
+        # OpenAIDecisionsItemTypeLabeler (infrastructure/llm/openai/decisions_item_labeler.py),
+        # which also serves the metered first pass.
+        ExamContentTagClassifierProtocol,
+        # Two-pass labeling port consumed by the DOCX pipeline's paid labelers.
+        ItemTypeLabelerProtocol,
         MeteredItemTypeLabelerProtocol,
         SecondPassItemTypeLabelerProtocol,
         llm_protocols.InlineCompletionProviderProtocol,
