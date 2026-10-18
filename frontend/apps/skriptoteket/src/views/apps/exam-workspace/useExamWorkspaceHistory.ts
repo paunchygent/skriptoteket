@@ -248,10 +248,16 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
   /**
    * A teacher edit happened: typing waits for a pause; a structural edit is a
    * step now, holding the document as it was right after that edit, so two
-   * quick structural edits stay two steps.
+   * quick structural edits stay two steps. Typing still waiting for its pause
+   * is stored first as its own step, from `before`, the copy just before the
+   * structural edit; undo then takes back only the structural edit. A store
+   * of `before` that matches the step already stored writes nothing.
    */
-  function noteEdit(structural = false): void {
+  function noteEdit(structural = false, before: NativeExamDocument | null = null): void {
     if (structural) {
+      if (before !== null) {
+        void flush(false, before);
+      }
       void flush(false, deps.workspaceDocument.value);
     } else {
       schedule();

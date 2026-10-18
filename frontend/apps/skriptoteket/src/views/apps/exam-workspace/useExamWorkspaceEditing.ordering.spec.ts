@@ -72,6 +72,50 @@ describe("ordering edits through the editing session", () => {
     expect(editing.workspaceDocument.value!.items[0]!.print_order).toEqual(shuffled);
   });
 
+  it("typing still waiting for its pause stays when Blanda om right after it is undone", async () => {
+    // Review-1 F1: the pending text and the shuffle used to become one step, so undo lost the text.
+    const { editing, server } = await openEditing(api, orderingExam());
+    const before = [...editing.workspaceDocument.value!.items[0]!.print_order];
+    const typed = [{ heading_level: null, segments: [{ kind: "text" as const, text: "Tes", marks: [] }] }];
+
+    editing.updateItemChoiceBody("item_001", "choice_001", typed);
+    const random = vi.spyOn(Math, "random").mockReturnValue(0);
+    editing.shuffleItemOrderingSteps("item_001");
+    random.mockRestore();
+    await editing.history.flush();
+
+    const shuffled = editing.workspaceDocument.value!.items[0]!.print_order;
+    expect(shuffled).not.toEqual(before);
+    expect(server.state.steps).toHaveLength(2);
+
+    await editing.history.undo();
+    const undone = editing.workspaceDocument.value!.items[0]!;
+    expect(undone.print_order).toEqual(before);
+    expect(undone.choices[0]!.body).toEqual(typed);
+
+    await editing.history.undo();
+    expect(editing.workspaceDocument.value!.items[0]!.choices[0]!.body).not.toEqual(typed);
+
+    await editing.history.redo();
+    await editing.history.redo();
+    const redone = editing.workspaceDocument.value!.items[0]!;
+    expect(redone.print_order).toEqual(shuffled);
+    expect(redone.choices[0]!.body).toEqual(typed);
+  });
+
+  it("a structural edit with nothing pending stores exactly one step", async () => {
+    const { editing, server } = await openEditing(api, orderingExam());
+    // Two pinned draws that give two different print orders, so each shuffle is a real change.
+    const random = vi.spyOn(Math, "random").mockReturnValue(0);
+    editing.shuffleItemOrderingSteps("item_001");
+    random.mockReturnValue(0.99);
+    editing.shuffleItemOrderingSteps("item_001");
+    random.mockRestore();
+    await editing.history.flush();
+
+    expect(server.state.steps).toHaveLength(2);
+  });
+
   it("adding a step is one undoable step", async () => {
     const { editing, server } = await openEditing(api, orderingExam());
 
