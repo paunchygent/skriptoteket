@@ -89,6 +89,45 @@ event formats are unchanged except the new admission code `gap_count_mismatch`.
   `PYTHONHASHSEED=0 pdm run test-parallel tests/unit/application/curated_apps tests/unit/domain/curated_apps -q -p no:randomly`,
   `pdm run lint`, `pdm run typecheck`, `pdm run docs-validate`.
 
+### Replay outcome (2026-10-18)
+
+The ten recorded replays, dumped with documents and events (UUIDs masked) at
+the base `6e3453b2e` and at `d6c2f9af`, differ in 11 item bodies in 4 exams
+and in nothing else: no event, item set, key or review state changes, and no
+`gap_count_mismatch` (Hemma `~/logs/replays-39-04-gap-source/`,
+`classified.txt`). Every difference is a fix:
+
+- Cue or lead clause restored: `bf26_diagnostic` item_072 "(ett eget hus)",
+  item_078 "(De flesta av oss)", item_103 "(skulle vara)"; `bf26_english`
+  item_019 "The jacket looked thin.", item_006 "(självfallet)" back beside
+  its gap instead of at the sentence end.
+- Source wording restored: `sa24` item_034 loses a comma the reply inserted
+  after the cue; `chapter_4` Part 3 Question 4 (item_025) gets back its word
+  bank, "Use the best word or phrase." and "Two words are extra.", as
+  Questions 1-3 and 5-7 already show.
+- Whitespace: `bf26_english` item_044 drops a trailing space and `sa24`
+  item_020 a leading space.
+- Paragraph shape: `bf26_english` item_045 and item_047 show their source
+  paragraph as one paragraph with its line breaks, as items 034-046 of the
+  same exam already did, where the reply had split it.
+
+Two intermediate states were repaired before this outcome: the edge trim
+removed the space after a paragraph-initial gap (38 items), and a split at
+source line breaks changed 10 correct items.
+
+### Implementation state (2026-10-18)
+
+- D2-D4, D6, D7: `source_gap_paragraphs.py` (`blank_runs`, `source_paragraph`,
+  `gap_paragraphs_from_source`), wired in `docx_ai_build.aligned_native_item`
+  for gap_fill items after `complete_source_formatting`;
+  `ChunkProvenance.pictures_in`; `SourceFormatting.visible_text_segments` and
+  `content_start` made public. `source_paragraph` also builds a gapless
+  paragraph, for TASK-SKRIPT-39-04-15 to reuse.
+- D5: `GapCountMismatchError`; `exam_workspace_docx_build_admission._built`
+  records `gap_count_mismatch`.
+- Tests: `test_source_gap_paragraphs.py`,
+  `test_exam_workspace_docx_gap_count_admission.py`.
+
 ## Stop Conditions
 
 - A replay difference that is not a proven fix goes to the parent before merge.
