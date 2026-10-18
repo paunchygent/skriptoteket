@@ -1,4 +1,5 @@
-default_install_hook_types: [pre-commit]
+default_install_hook_types: [pre-commit, pre-push]
+default_stages: [pre-commit]
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -12,6 +13,14 @@ repos:
 
   - repo: local
     hooks:
+      - id: hemma-pre-push-check
+        name: Full typecheck and tests on Hemma (push to main)
+        entry: scripts/hemma_pre_push_check.sh
+        language: system
+        stages: [pre-push]
+        always_run: true
+        pass_filenames: false
+
       - id: ruff-format
         name: Ruff format (staged files)
         entry: pdm run ruff format --force-exclude
