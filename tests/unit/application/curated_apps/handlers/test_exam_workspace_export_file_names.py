@@ -101,10 +101,12 @@ async def test_three_formats_share_one_title_base_and_save_to_mina_filer_under_i
 
 
 @pytest.mark.asyncio
-async def test_title_of_only_punctuation_refuses_every_export_and_names_no_file(
+@pytest.mark.parametrize("title", ["?!...", "", "   "])
+async def test_title_of_only_punctuation_or_blank_refuses_every_export_and_names_no_file(
     env: _Env,
+    title: str,
 ) -> None:
-    actor, lineage_id, revision = await _retitled(env, "?!...")
+    actor, lineage_id, revision = await _retitled(env, title)
     handler = _export_handler(env)
 
     for target in ExamWorkspaceExportTarget:

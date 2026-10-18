@@ -173,7 +173,7 @@ function cites(entryId: string): string | null {
       <UiGlyph
         meaning="blocker"
         :size="16"
-      />Skriv en titel innan du sparar provet.
+      />Skriv en titel innan du exporterar provet.
     </p>
   </section>
 

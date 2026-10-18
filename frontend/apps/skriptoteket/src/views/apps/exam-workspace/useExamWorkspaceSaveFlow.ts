@@ -56,7 +56,7 @@ export function useExamWorkspaceSaveFlow({
 
   const saveState = computed(() => (saving.value ? "saving" : isDirty.value ? "dirty" : "saved"));
   // Spara stays available on a clean exam too, where it writes nothing; it is unavailable only while nothing can be written.
-  const canSave = computed(() => !disabled.value && !!workspaceDocument.value?.title.trim());
+  const canSave = computed(() => !disabled.value && workspaceDocument.value !== null);
 
   async function handleSave(): Promise<void> {
     if (!canSave.value || !isDirty.value) return;
