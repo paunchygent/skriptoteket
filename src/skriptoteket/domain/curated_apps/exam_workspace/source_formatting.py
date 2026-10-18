@@ -397,12 +397,12 @@ class SourceFormatting:
         gaps = [s for s in paragraph.segments if s.kind == "gap"]
         placements = self._gap_placements(source, gaps, answers)
         segments: list[NativeSegment] = []
-        cursor = self._content_start(source)
+        cursor = self.content_start(source)
         for left, right, gap in placements:
-            segments.extend(self._rebuilt_text_segments(cursor, left))
+            segments.extend(self.visible_text_segments(cursor, left))
             segments.append(gap)
             cursor = right
-        segments.extend(self._rebuilt_text_segments(cursor, source.end))
+        segments.extend(self.visible_text_segments(cursor, source.end))
         self.covered.update(range(source.start, source.end))
         if not segments:
             raise FormattingTransferError("empty reconstruction")
@@ -410,14 +410,14 @@ class SourceFormatting:
             self.cursor += 1
         return [NativeParagraph(heading_level=source.heading, segments=tuple(segments))]
 
-    def _rebuilt_text_segments(self, start: int, end: int) -> tuple[NativeTextSegment, ...]:
+    def visible_text_segments(self, start: int, end: int) -> tuple[NativeTextSegment, ...]:
         return tuple(
             segment
             for left, right in visible_intervals(start, end, self.excluded)
             for segment in self.text_segments(left, right)
         )
 
-    def _content_start(self, paragraph: SourceParagraph) -> int:
+    def content_start(self, paragraph: SourceParagraph) -> int:
         """Skip the printed label a native field already carries, as rebuild_body does."""
         if self.label_span is not None and paragraph.start == self.label_span[0]:
             return self.label_span[1]
@@ -432,16 +432,16 @@ class SourceFormatting:
         result: list[NativeParagraph] = []
         self.output_anchors = []
         for paragraph in self.available_paragraphs:
-            cursor = self._content_start(paragraph)
+            cursor = self.content_start(paragraph)
             segments: list[NativeSegment] = []
             for start, end, gap in placements:
                 if paragraph.start <= start and end <= paragraph.end:
-                    segments.extend(self._rebuilt_text_segments(cursor, start))
+                    segments.extend(self.visible_text_segments(cursor, start))
                     segments.append(gap)
                     cursor = end
                 elif start < paragraph.end and end > paragraph.start:
                     raise FormattingTransferError("gap crosses source paragraph boundary")
-            segments.extend(self._rebuilt_text_segments(cursor, paragraph.end))
+            segments.extend(self.visible_text_segments(cursor, paragraph.end))
             if segments:
                 self.projected.add(paragraph.start)
                 self.output_anchors.append(paragraph.start)
