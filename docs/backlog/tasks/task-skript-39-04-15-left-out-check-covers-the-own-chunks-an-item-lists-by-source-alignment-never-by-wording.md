@@ -86,13 +86,14 @@ paragraph from them is one pass over its characters.
   - Inline answer-key paragraphs (`Svar:`) in svenska_2 omprov variants 1 and 2 Fråga 1
     a-c (6): the reply shows the morpheme split and drops the word. The interpretive read
     decides whether this is worse.
-- Adversarial unit tests: a reply paragraph that repeats another question's stem
-  shows its own source paragraph; a reply that drops a sentence of a gapless paragraph
-  shows the whole paragraph; the label, the points and the inline options a choice is
-  aligned to stay out of the built paragraph; marks carry over from the source; a paragraph
-  with an inline answer label is unchanged; the listed-chunk check marks a listed word-bank
-  chunk no paragraph shows, does not mark a listed chunk a paragraph shows, and does not
-  mark a listed facit line.
+- Adversarial unit tests: a reply paragraph that repeats another question's stem shows the
+  item's own source paragraph without its label or points and with its marks; the same
+  paragraph not found in another question's source keeps the model's wording; shared
+  boilerplate in both items stays; a misplaced paragraph with nothing left to show is
+  dropped; a gap paragraph is untouched; a match across two other chunks is not
+  misplaced. The listed-chunk check marks a listed word-bank chunk no paragraph shows,
+  does not mark a listed chunk a paragraph shows, a listed facit line or a listed blank
+  answer line.
 - Interpretive read by a fresh junior, source and converted item side by side (drop-audit
   method): the 21 chunks at base, and every replay difference after the fix. A
   meaning-preserving edit is fine; a drop with no improving reason is a defect.
@@ -100,6 +101,35 @@ paragraph from them is one pass over its characters.
   sentence, and every other difference is classified.
 - On Hemma: `PYTHONHASHSEED=0 pdm run test-parallel tests/unit/application/curated_apps tests/unit/domain/curated_apps tests/unit/web -q -p no:randomly`,
   `pdm run lint`, `pdm run typecheck`, `pdm run docs-validate`.
+
+### Outcome (2026-10-18)
+
+Evidence: retained root `01a14f3e-12df-7020-8c18-18ad39a131cf` (`evidence/probes/`,
+`evidence/read/`); Hemma `~/logs/replays-39-04-listed/` (`base` at `6e3453b2e`, `d4b` at
+`6249a2e8`).
+
+- Replays: the ten recorded replays at `6249a2e8` differ from base in one item only.
+  chapter_4 q8's body is its own stem, "Read the stanza: … Which term names the
+  arrangement of the same end sounds in the lines?", in place of q7's stem; its formatting
+  event reads `rebuilt` in place of `aligned`. D1 and D2 change no replay; the first D1 run
+  without the blank-line exclusion marked ten blank answer lines, which led to the D2
+  amendment.
+- Interpretive read, base (fresh junior, 21 chunks, `base_verdicts.json`): q8 and
+  metodprov 1 are worse (stem dropped or replaced); bf26 diagnostic 72, 78 and 103, bf26
+  english 19 and chapter_4 Question 4 are worse (gap sentence rewritten, Task 1); bf26
+  english 6, the seven "Part 3, Question n" headings and every points text are the same;
+  svenska_2 omprov variants 1 and 2 Fråga 1 a-c (6) are worse.
+- Interpretive read, after the fix (fresh junior, `post_verdicts.json`): q8 matches its
+  source and is better than before, with no drop. metodprov 1 is unchanged and still worse.
+- metodprov 1 does not meet D4. The reply's paragraph is the first sentence of its own
+  source paragraph (an exact span), so it is correctly placed, and the dropped sentence
+  "Gruppen har slumpat fram 120 tvåor från en fullständig elevlista." falls under
+  TASK-SKRIPT-39-04-14 D7. Its cause is a reply that shortens its own paragraph; the user
+  ruling keeps the model's wording there. Reported to the parent, not fixed.
+- svenska_2 Fråga 1 a-c share neither cause. These are gap paragraphs with an inline
+  `Svar:` key and no blank runs: the reply drops the word to analyse ("snöbollarnas") and
+  shows its morpheme split from the key with gaps for the labels. Neither D4 nor Task 1
+  reaches them. Reported to the parent, not fixed.
 
 ## Stop Conditions
 
