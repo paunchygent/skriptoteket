@@ -69,12 +69,16 @@ def test_lead_in_of_one_question_never_lands_in_the_next_question(heading_kind: 
         (
             1,
             ("body:0002", "body:0003", "body:0004", "body:0005"),
-            AlignedItem(_item(1, ("1. springer", "2. sprang")), ("body:0004", "body:0005")),
+            AlignedItem(
+                _item(1, ("1. springer", "2. sprang")), ("body:0004", "body:0005"), frozenset()
+            ),
         ),
         (
             5,
             ("body:0006", "body:0007", "body:0008", "body:0009"),
-            AlignedItem(_item(2, ("1. hund", "2. hundar")), ("body:0008", "body:0009")),
+            AlignedItem(
+                _item(2, ("1. hund", "2. hundar")), ("body:0008", "body:0009"), frozenset()
+            ),
         ),
     ]
 

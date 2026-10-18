@@ -29,6 +29,7 @@ import type {
   NativeExamHeader,
 } from "../../../api/examWorkspace";
 import { UiGlyph } from "../../../components/ui";
+import { AI_ADMIN_ONLY_NOTE, useAiAccess } from "../../../composables/useAiAccess";
 import ExamCourseCombobox from "./ExamCourseCombobox.vue";
 import { useExamCourseCatalog } from "./useExamCourseCatalog";
 import { useExamWorkspaceMyCourses } from "./useExamWorkspaceMyCourses";
@@ -58,6 +59,8 @@ const emit = defineEmits<{
 }>();
 
 const id = useId();
+const contentAiNoteId = `${id}-ai-note`;
+const { canUseAi } = useAiAccess();
 const { courses, courseByKey, error: catalogError } = useExamCourseCatalog();
 const myCourses = useExamWorkspaceMyCourses();
 
@@ -288,8 +291,9 @@ function cites(entryId: string): string | null {
       <button
         type="button"
         class="xw-btn xw-btn--compact"
-        :disabled="!content || contentBusy || suggestBlocked !== null || disabled"
-        :title="suggestBlocked ?? undefined"
+        :disabled="!content || contentBusy || suggestBlocked !== null || disabled || !canUseAi"
+        :title="!canUseAi ? AI_ADMIN_ONLY_NOTE : suggestBlocked ?? undefined"
+        :aria-describedby="!canUseAi ? contentAiNoteId : undefined"
         data-test="exam-workspace-content-suggest"
         @click="emit('suggestContent')"
       >
@@ -300,6 +304,13 @@ function cites(entryId: string): string | null {
         />Föreslå innehåll
       </button>
     </h3>
+    <p
+      v-if="!canUseAi"
+      :id="contentAiNoteId"
+      class="xw-hint"
+    >
+      {{ AI_ADMIN_ONLY_NOTE }}
+    </p>
     <p
       v-if="!courseKey"
       class="xw-hint"

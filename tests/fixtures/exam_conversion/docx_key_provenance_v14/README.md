@@ -37,3 +37,5 @@ These are the eval runner's reported conversion token counts, not a separate
 measurement of Decisions-service billing.
 
 2026-10-17: recorded BF26's current `docx_w2-10-01c01` typed resend on Hemma staging revision `d92b828e` with `gpt-6-luna` as `docx_w2-11-01c01.json` (after its original conflict recording); the reply repeats a type conflict, using 3,571 input and 373 output tokens (3,944 total).
+
+2026-10-18 (TASK-SKRIPT-REP-0045, user ruling 2026-10-18): re-recorded the 14 Svenska second-pass labeler replies whose requests changed when points lines joined their questions (`c67dcb70`): variant 1 `q2`, `q5`, `q6`, `q7`; variant 2 `q1`-`q7`; course final `q21`, `q22`, `q24`. Each request body was forwarded byte-identically from the current pipeline to the provider with `gpt-6-luna`, once each, using 16,286 input and 1,315 output tokens (17,601 total). Variant 2 `q5` now answers `gap_fill` (previously `free_text`); the other 13 labels are unchanged. Every `label_b_<qid>.json` carries the request source text it answered in `label_b_<qid>.request.txt`, followed by one final newline; the replay serves a label reply only to a request ending in that text.

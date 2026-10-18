@@ -56,7 +56,7 @@ def _aligned(*paragraphs: tuple[str, str | None]) -> AlignedItem:
             parse_origin=NativeParseOrigin.LLM_PARSED,
         ),
     )
-    return AlignedItem(item, tuple(anchor for _, anchor in paragraphs))
+    return AlignedItem(item, tuple(anchor for _, anchor in paragraphs), frozenset())
 
 
 def _lines(
@@ -193,4 +193,4 @@ def test_an_aligned_item_body_and_chunks_must_have_the_same_length() -> None:
     item = _aligned(("Läs om vulkaner.", "body:0002")).item
 
     with pytest.raises(ValueError, match="aligned chunks"):
-        AlignedItem(item, ())
+        AlignedItem(item, (), frozenset())

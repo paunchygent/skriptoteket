@@ -154,6 +154,7 @@ def test_no_op_merge_keeps_a_picture_only_a_parent_instruction_references() -> N
         parents=(
             NativeExamParent(
                 parent_id="parent_001",
+                place=items[0].sequence - 1,
                 instruction=_stem(asset.asset_id),
                 item_ids=tuple(item.item_id for item in items),
             ),
@@ -234,6 +235,7 @@ def test_a_delivered_picture_is_kept_when_the_selected_parent_references_it() ->
         parents=(
             NativeExamParent(
                 parent_id="parent_001",
+                place=0,
                 instruction=_stem(asset.asset_id),
                 item_ids=("item_500",),
             ),

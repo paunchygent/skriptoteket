@@ -253,10 +253,7 @@ def _in_source_form(aligned: AlignedItem, sources: Sequence[DocxChunk]) -> Align
         at = aligned.chunks.index(chunk.anchor)
         kept = [(paragraph, anchor) for paragraph, anchor in pairs if anchor != chunk.anchor]
         aligned = _inserted(
-            AlignedItem(
-                aligned.item.model_copy(update={"body": tuple(p for p, _ in kept)}),
-                tuple(anchor for _, anchor in kept),
-            ),
+            aligned.with_body(kept),
             at,
             tuple((paragraph, chunk.anchor) for paragraph in restored),
         )
@@ -264,13 +261,8 @@ def _in_source_form(aligned: AlignedItem, sources: Sequence[DocxChunk]) -> Align
 
 
 def _inserted(aligned: AlignedItem, at: int, added: Sequence[_Shown]) -> AlignedItem:
-    body, chunks = aligned.item.body, aligned.chunks
-    return AlignedItem(
-        aligned.item.model_copy(
-            update={"body": (*body[:at], *(paragraph for paragraph, _ in added), *body[at:])}
-        ),
-        (*chunks[:at], *(anchor for _, anchor in added), *chunks[at:]),
-    )
+    pairs = list(zip(aligned.item.body, aligned.chunks, strict=True))
+    return aligned.with_body((*pairs[:at], *added, *pairs[at:]))
 
 
 def _with_joined(
@@ -431,6 +423,7 @@ def place_section_instructions(
     parents = tuple(
         NativeExamParent(
             parent_id=f"parent_{number:03d}",
+            place=group[0].reach[0],
             instruction=_parent_instruction(group),
             item_ids=tuple(_item_id(k) for k in group[0].reach),
         )

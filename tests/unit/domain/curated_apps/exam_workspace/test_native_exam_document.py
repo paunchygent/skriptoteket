@@ -65,6 +65,16 @@ class TestSerializationRoundTrip:
 
         assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
 
+    def test_saved_v6_payload_has_no_compatibility_reader(self) -> None:
+        document = make_document(make_free_text_item())
+        payload = json.loads(native_exam_document_json_bytes(document))
+        payload["schema_version"] = "native_exam_document_v6"
+
+        with pytest.raises(DomainError) as exc_info:
+            parse_native_exam_document(json.dumps(payload).encode("utf-8"))
+
+        assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
+
     def test_round_trip_preserves_facit_text_and_automatic_values(self) -> None:
         document = make_document(
             make_gap_fill_item(

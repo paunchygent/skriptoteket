@@ -117,6 +117,7 @@ class TestUnformattedStructure:
         item = _free_text_item(sequence=1, body=(paragraph(text("Fråga.")),))
         parent = NativeExamParent(
             parent_id="parent_001",
+            place=item.sequence - 1,
             instruction=_unformatted_structure(),
             item_ids=("item_001",),
         )
@@ -136,6 +137,7 @@ class TestUnformattedStructure:
         )
         parent = NativeExamParent(
             parent_id="parent_001",
+            place=children[0].sequence - 1,
             instruction=_unformatted_structure(),
             item_ids=("item_001", "item_002"),
         )
@@ -302,6 +304,7 @@ class TestInstructionFormatting:
         )
         parent = NativeExamParent(
             parent_id="parent_001",
+            place=children[0].sequence - 1,
             instruction=(
                 paragraph(text("Gäller alla delar."), heading_level=2),
                 paragraph(text("Läs ", "bold"), text("noggrant.", "italic")),

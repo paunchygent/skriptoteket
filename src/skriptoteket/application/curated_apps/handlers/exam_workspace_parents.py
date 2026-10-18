@@ -9,8 +9,12 @@ from skriptoteket.application.curated_apps.exam_workspace_history import (
 )
 from skriptoteket.application.curated_apps.exam_workspace_parents import (
     AddExamChildRequest,
+    CreateEmptyExamPartRequest,
     CreateExamParentRequest,
+    ExamWorkspaceCreatedPartResponse,
     ExamWorkspaceDeleteResponse,
+    GroupExamItemsRequest,
+    MoveExamItemRequest,
     ParentCommandRequest,
     ReorderExamChildrenRequest,
 )
@@ -102,6 +106,74 @@ class ExamWorkspaceParentsHandler:
             operation=lambda document: commands.add_child(
                 document, parent_id=parent_id, child=request.child, position=request.position
             ),
+        )
+
+    async def group_items(
+        self,
+        *,
+        actor: User,
+        lineage_id: UUID,
+        request: GroupExamItemsRequest,
+    ) -> ExamWorkspaceCreatedPartResponse:
+        created_parent_id = ""
+
+        def operation(document: NativeExamDocument) -> NativeExamDocument:
+            nonlocal created_parent_id
+            result, created_parent_id = commands.group_items(document, item_ids=request.item_ids)
+            return result
+
+        response = await self._apply(
+            actor=actor,
+            lineage_id=lineage_id,
+            expected_cursor=request.expected_cursor,
+            operation=operation,
+        )
+        return ExamWorkspaceCreatedPartResponse(
+            **response.model_dump(), created_parent_id=created_parent_id
+        )
+
+    async def move_item(
+        self,
+        *,
+        actor: User,
+        lineage_id: UUID,
+        request: MoveExamItemRequest,
+    ) -> ExamWorkspaceDocumentResponse:
+        return await self._apply(
+            actor=actor,
+            lineage_id=lineage_id,
+            expected_cursor=request.expected_cursor,
+            operation=lambda document: commands.move_item(
+                document,
+                item_id=request.item_id,
+                target_parent_id=request.target_parent_id,
+            ),
+        )
+
+    async def create_empty_part(
+        self,
+        *,
+        actor: User,
+        lineage_id: UUID,
+        request: CreateEmptyExamPartRequest,
+    ) -> ExamWorkspaceCreatedPartResponse:
+        created_parent_id = ""
+
+        def operation(document: NativeExamDocument) -> NativeExamDocument:
+            nonlocal created_parent_id
+            result, created_parent_id = commands.create_empty_part(
+                document, position=request.position
+            )
+            return result
+
+        response = await self._apply(
+            actor=actor,
+            lineage_id=lineage_id,
+            expected_cursor=request.expected_cursor,
+            operation=operation,
+        )
+        return ExamWorkspaceCreatedPartResponse(
+            **response.model_dump(), created_parent_id=created_parent_id
         )
 
     async def _delete(

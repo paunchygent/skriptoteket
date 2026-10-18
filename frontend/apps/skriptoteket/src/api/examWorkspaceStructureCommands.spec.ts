@@ -10,7 +10,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { apiFetch } from "./client";
-import { deleteExamWorkspaceChild, deleteExamWorkspaceParent } from "./examWorkspaceStructure";
+import { deleteExamWorkspaceChild, deleteExamWorkspaceParent } from "./examWorkspaceStructureCommands";
 
 vi.mock("./client", () => ({
   apiFetch: vi.fn(),
@@ -24,7 +24,7 @@ const apiFetchMock = vi.mocked(apiFetch);
 
 const DOCUMENTS_ROOT = "/api/v1/apps/documents.conversion_hub/exam-workspace/documents";
 
-describe("examWorkspaceStructure transport", () => {
+describe("examWorkspaceStructureCommands transport", () => {
   it("deletes an instruction, with or without its questions, and one deluppgift", async () => {
     apiFetchMock.mockResolvedValue({});
     const body = { body: { expected_cursor: "cursor-1" }, method: "DELETE" };

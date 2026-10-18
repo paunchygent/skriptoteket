@@ -98,6 +98,7 @@ def test_shared_picture_is_positioned_once_and_child_resources_stay_bound(
         else (
             NativeExamParent(
                 parent_id="parent_001",
+                place=items[0].sequence - 1,
                 instruction=stem,
                 item_ids=tuple(item.item_id for item in items),
             ),

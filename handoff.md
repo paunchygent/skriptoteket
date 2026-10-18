@@ -71,17 +71,23 @@
   evidence/39-04-12/DEL4/response.md. Next: parent focused review, merge,
   exempelprov staging re-walk. Editor grouping (move questions into new or
   existing parts) is a separate parent-owned 39-06 task.
-  TASK-SKRIPT-39-04-13 `in_progress` on local `claude/bold-dijkstra-162ba8`
-  (Claude side session of the 39-04 parent): section instructions placed and
-  deduplicated by source alignment (`AlignedItem` chunks), text matches deleted;
-  main 69ac991ae merged, ten replays identical to main. Review 7a083063
-  (changes_requested) F1-F3 repaired (task D4, D8, D9); rereview F1 (per-paragraph
-  source origin, D9) and F4 (module split, D11) repaired. Next: F1 re-review, parent merge. Follow-ups: wording rules in `docx_governing_chunks._item_without`
-  and `docx_own_instructions.wording_left_out`.
+  TASK-SKRIPT-39-04-13 and TASK-SKRIPT-40-04-06 `done` 2026-10-18: merged and published in
+  a0a81ab5a (Hemma-verified) and walked on staging (root 01a14e1f
+  evidence/staging-walk-a0a81ab5a/walk.md).
+  TASK-SKRIPT-39-04-14 `done` 2026-10-18: left-out own chunks and governing release read the
+  alignment, wording rules deleted; review approved at 62e178088 (root 01a14ea8
+  evidence/reviews/5d0e4e46…), D5-D7 user-accepted, drop audit in the task doc. Follow-ups held
+  on Hemma: gap paragraphs built from the source; left-out check on listed own chunks.
   Next lanes: 39-07-03 retire old converter routes (40-04-03 now on main); implement
   39-06-08 ordering; stories 39-04, 39-06, 39-07 await closeout.
   Ready (user grilling 2026-10-18, plans in root 01a14c27): 40-04-04 dropdown option editor, 40-04-05 export names from the exam title, 39-06-09 Exam.net probe of ordering inside a part.
-  Ready 2026-10-18: 40-04-07 writing area (plan root 01a14e1f) and 39-06-10 grouping and moving parts (plan root 01a14e65); both go to the Hemma orchestrator (tmux skript-orchestrator, Remote Control) and start in parallel once 40-04-06 (Mac lead 78acfdff) merges.
+  In progress on Hemma 2026-10-18 (orchestrator tmux skript-orchestrator): 40-04-07 lead e492bfbb and
+  39-06-10 lead 146bc2d8, both from a0a81ab5a; 39-06-10 ruling: a question moved out lands after its part.
+  40-04-07 ruling (user 2026-10-18): print PDF renders the DOCX house template; Exam.net import PDF stays a fallback only; QTI is the Exam.net route (W1/W11, lead amends the task doc).
+  39-06-10 `done` 2026-10-18, merged (schema v7); 40-04-07 (repair lead 715cef23) merges second: ports _print_walk to document_outline, bumps to v8; then re-import the staging fixture and walk both.
+  Hemma lanes 2026-10-18: REP-0044 `done` 2026-10-18, merged (paid AI admin-only until EPIC-41 ships); REP-0045 `done` 2026-10-18, merged (label_b recordings carry capture-time request keys; 14 calls re-recorded).
+  39-04 follow-ups on Hemma from 6e3453b2e: 39-04-16 gap paragraphs from source (lead ec3b7ed9); 39-04-15 re-scoped by user to fix the q8 stem drop at its root (lead bb15ad98, merges after 39-04-16).
+  EPIC-SKRIPT-41 ready 2026-10-18: ST-41-02 guest workspace + QTI import + guest DXE line removal (Hemma, parallel); ST-41-01 paid AI through the HuleEdu LLM provider door (TASK-HULE-14-03-01 in huleedu first, then 41-01-03, 41-01-02, 41-01-04 capacity for 1,000 concurrent calls).
   Hemma Opus lead `3b164d53`: 40-03-01..09 and 08-36-02 `done`; 40-02-01 tranche 1 on
   main 761b1b59, tranche 2 a67afa90 (`in_progress`: shared `play` meaning in
   session add-a-shared-play-glyph, exam-held wrappers and lucide removal open).

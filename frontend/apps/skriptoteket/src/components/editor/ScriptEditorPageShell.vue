@@ -275,6 +275,7 @@ const {
               :chat-error="aiPanel.chatError"
               :chat-notice-message="aiPanel.chatNoticeMessage"
               :chat-notice-variant="aiPanel.chatNoticeVariant"
+              :ai-blocked-note="aiPanel.aiBlockedNote"
               :remote-fallback-prompt="aiPanel.remoteFallbackPrompt"
               :edit-ops-request-error="aiPanel.editOpsRequestError"
               :edit-ops-disabled-message="aiPanel.editOpsDisabledMessage"

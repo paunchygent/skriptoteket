@@ -39,6 +39,9 @@ _SAFE_IDENTIFIER_PATTERN = re.compile(r"^[A-Za-z][A-Za-z0-9_-]*$")
 def manual_follow_ups(items: tuple[ExamNetQtiItem, ...]) -> tuple[ExamNetQtiManualFollowUp, ...]:
     follow_ups: list[ExamNetQtiManualFollowUp] = []
     for item in _leaf_items(items):
+        if item.interaction_type is ExamNetQtiInteractionType.INFORMATION:
+            # An information block holds no question, so it needs no follow-up.
+            continue
         for resource in item.unsupported_resources:
             follow_ups.append(_unsupported_resource_follow_up(item, resource))
         if item.evaluation_mode == ExamNetQtiEvaluationMode.MANUAL_UNKEYED:
@@ -107,6 +110,10 @@ def _item_errors(item: ExamNetQtiItem) -> tuple[str, ...]:
     )
     if not any(line.strip() for line in item.prompt_lines) and not positioned_picture:
         errors.append(f"Item {item.item_id} has no prompt text.")
+    if item.interaction_type is ExamNetQtiInteractionType.INFORMATION:
+        # An information block has no score and no answer key: only the identifier and
+        # its rendered text or positioned picture need to hold.
+        return tuple(errors)
     if item.evaluation_mode == ExamNetQtiEvaluationMode.AUTOMATIC and (
         item.max_score is None or not math.isfinite(item.max_score) or item.max_score < 0
     ):

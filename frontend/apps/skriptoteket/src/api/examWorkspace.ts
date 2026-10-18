@@ -49,6 +49,8 @@ export type ExamCourseCatalogResponse = Schemas["ExamCourseCatalogResponse"];
 export type ExamWorkspaceDocumentResponse = Schemas["ExamWorkspaceDocumentResponse"];
 /** A deletion's document response; `removed_parent_id` names an instruction that went with it. */
 export type ExamWorkspaceDeleteResponse = Schemas["ExamWorkspaceDeleteResponse"];
+/** A part creation's document response; `created_parent_id` names the part the editor opens. */
+export type ExamWorkspaceCreatedPartResponse = Schemas["ExamWorkspaceCreatedPartResponse"];
 export type ExamWorkspaceDocumentListResponse = Schemas["ExamWorkspaceDocumentListResponse"];
 export type ExamWorkspaceEnrichmentState = Schemas["ExamWorkspaceEnrichmentState"];
 export type ExamWorkspaceAnswerKeySuggestionsStatus =
@@ -262,17 +264,6 @@ export async function copyExamWorkspaceDocument(
 ): Promise<ExamWorkspaceDocumentResponse> {
   const body: Schemas["SaveAsExamWorkspaceDocumentRequest"] = { document, name };
   return await apiPost<ExamWorkspaceDocumentResponse>(`${documentPath(lineageId)}/copy`, body);
-}
-
-/** Change one question's type; the response names the content the new type could not keep. */
-export async function changeExamWorkspaceItemType(
-  lineageId: string,
-  body: Schemas["ChangeExamWorkspaceItemTypeRequest"],
-): Promise<ChangeExamWorkspaceItemTypeResponse> {
-  return await apiPost<ChangeExamWorkspaceItemTypeResponse>(
-    `${documentPath(lineageId)}/change-type`,
-    body,
-  );
 }
 
 /** Import a DigiExam export (.dxe); conversion runs in the background like a Word import. */

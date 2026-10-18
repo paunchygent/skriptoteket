@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "023c9a0df89c50e79eab90834905babcf5bde1d3ef890dab00720cfe19c38545",
+  "source_set_digest": "e1c51c81dc7c0c1a10040a0bb75ffe3a3e786232881ad22d619bf3d806446984",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -572,6 +572,26 @@
       "title": "Shared design-system convergence",
       "path": "docs/backlog/epics/epic-skript-40-shared-design-system-convergence.md",
       "status": "active",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "links": {
+        "decisions": []
+      },
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "EPIC-SKRIPT-41",
+      "type": "epic",
+      "title": "Teachers try the exam workspace without login and AI spend stays inside a fixed daily budget",
+      "path": "docs/backlog/epics/epic-skript-41-teachers-try-the-exam-workspace-without-login-and-ai-spend-stays-inside-a-fixed-daily-budget.md",
+      "status": "ready",
       "owners": [
         {
           "kind": "service",
@@ -2464,6 +2484,48 @@
       "path": "docs/backlog/stories/st-skript-40-04-redesign-the-app-shell-and-the-exam-workspace-from-a-fresh-opus-prototype.md",
       "status": "ready",
       "epic": "EPIC-SKRIPT-40",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "links": {
+        "decisions": []
+      },
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "ST-SKRIPT-41-01",
+      "type": "story",
+      "title": "Paid AI calls stop at a fixed daily token and cost budget",
+      "path": "docs/backlog/stories/st-skript-41-01-paid-ai-calls-stop-at-a-fixed-daily-token-and-cost-budget.md",
+      "status": "ready",
+      "epic": "EPIC-SKRIPT-41",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "links": {
+        "decisions": []
+      },
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "ST-SKRIPT-41-02",
+      "type": "story",
+      "title": "Guests open, edit and export exams in the workspace without login or AI",
+      "path": "docs/backlog/stories/st-skript-41-02-guests-open-edit-and-export-exams-in-the-workspace-without-login-or-ai.md",
+      "status": "ready",
+      "epic": "EPIC-SKRIPT-41",
       "owners": [
         {
           "kind": "service",
@@ -5025,7 +5087,7 @@
       "type": "task",
       "title": "Section instructions are placed and deduplicated by source alignment, never by wording",
       "path": "docs/backlog/tasks/task-skript-39-04-13-section-instructions-are-placed-and-deduplicated-by-source-alignment-never-by-wording.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-04",
       "owners": [
@@ -5036,7 +5098,34 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-18",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Independent ruthless-reviewer 7a083063 (Pi, Sol 6.1 high) approved f2a00f3a3 on second re-review after F1-F4 repairs; merged into main as b365fdefd and published in a0a81ab5a after the Hemma full typecheck and test pass; staging walk at a0a81ab5a on omprov_grammatik_sve2.docx showed each section instruction once in its own part, in the editor and in the QTI export (root 01a14e1f evidence/staging-walk-a0a81ab5a/walk.md)."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-04-14",
+      "type": "task",
+      "title": "Governing chunks leave items and left-out own chunks are marked by source alignment, never by wording",
+      "path": "docs/backlog/tasks/task-skript-39-04-14-governing-chunks-leave-items-and-left-out-own-chunks-are-marked-by-source-alignment-never-by-wording.md",
+      "status": "done",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-18",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Independent ruthless-reviewer approved 62e178088 after the changes_requested review b313b2b1 (F1, F2 repaired) (root 01a14ea8 evidence/reviews/5d0e4e46-60ae-4112-a287-42f6e5e093aa.md); Hemma suite 4569 passed at 62e178088; D5-D7 user-accepted 2026-10-18 after the measurement and interpretive drop audit (task doc Validation); merged into main with docs-only 263b72713."
       }
     },
     {
@@ -5553,7 +5642,7 @@
       "type": "task",
       "title": "Teachers group questions into new parts and move questions into, out of and between parts",
       "path": "docs/backlog/tasks/task-skript-39-06-10-teachers-group-questions-into-new-parts-and-move-questions-into-out-of-and-between-parts.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-06",
       "owners": [
@@ -5564,7 +5653,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-18",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Independent ruthless-reviewer 47f15e2d review changes_requested (F1 high, F2-F8; root 01a14e6d evidence/reviews/47f15e2d-1489-4434-8fcf-e662fe6bb770.md); F2-F8 admitted on focused proof (evidence/lead-2061895e/final-report.md); re-review cleared F1 and found F9 high (-rereview.md); second re-review approved F9 at 7667692c (-rereview2.md); merged into main. Staging walk follows with the 40-04-07 merge (v8 seam)."
       }
     },
     {
@@ -6380,7 +6473,30 @@
       "type": "task",
       "title": "Exam texts edit as one document per field, exam instructions are editable and printed totals can be accepted",
       "path": "docs/backlog/tasks/task-skript-40-04-06-exam-texts-edit-as-one-document-per-field-exam-instructions-are-editable-and-printed-totals-can-be-accepted.md",
-      "status": "in_progress",
+      "status": "done",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-18",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Independent ruthless-reviewer 1122a276 (Pi, Sol 6.1 high) approved 4f9f6945b on re-review after F1-F6 repairs; merged into main as af5b147a0 and published with a stale-spec fix in a0a81ab5a after the Hemma full typecheck and test pass; staging walk at a0a81ab5a on omprov_grammatik_sve2.docx deleted an underscore line, edited the exam instruction with a hard break (exported as br in QTI) and accepted a printed total with no layout shift (root 01a14e1f evidence/staging-walk-a0a81ab5a/walk.md)."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-07",
+      "type": "task",
+      "title": "Teachers set the writing area of printed DOCX and PDF exams and imports drop paper answer lines",
+      "path": "docs/backlog/tasks/task-skript-40-04-07-teachers-set-the-writing-area-of-printed-docx-and-pdf-exams-and-imports-drop-paper-answer-lines.md",
+      "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -6395,13 +6511,108 @@
       }
     },
     {
-      "id": "TASK-SKRIPT-40-04-07",
+      "id": "TASK-SKRIPT-41-01-02",
       "type": "task",
-      "title": "Teachers set the writing area of printed DOCX and PDF exams and imports drop paper answer lines",
-      "path": "docs/backlog/tasks/task-skript-40-04-07-teachers-set-the-writing-area-of-printed-docx-and-pdf-exams-and-imports-drop-paper-answer-lines.md",
+      "title": "The script editor's AI runs on Sol 6.1 low through the Sol pool",
+      "path": "docs/backlog/tasks/task-skript-41-01-02-the-script-editor-s-ai-runs-on-sol-6-1-low-through-the-sol-pool.md",
       "status": "ready",
       "task_kind": "story",
-      "story": "ST-SKRIPT-40-04",
+      "story": "ST-SKRIPT-41-01",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-41-01-03",
+      "type": "task",
+      "title": "Exam AI calls go through the LLM provider door and the local token ledger is removed",
+      "path": "docs/backlog/tasks/task-skript-41-01-03-exam-ai-calls-go-through-the-llm-provider-door-and-the-local-token-ledger-is-removed.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-41-01",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-41-01-04",
+      "type": "task",
+      "title": "Skriptoteket serves a thousand concurrent AI calls with bounded fan-out and a try-again message",
+      "path": "docs/backlog/tasks/task-skript-41-01-04-skriptoteket-serves-a-thousand-concurrent-ai-calls-with-bounded-fan-out-and-a-try-again-message.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-41-01",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-41-02-01",
+      "type": "task",
+      "title": "Teachers and guests import a QTI package into the exam workspace",
+      "path": "docs/backlog/tasks/task-skript-41-02-01-teachers-and-guests-import-a-qti-package-into-the-exam-workspace.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-41-02",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-41-02-02",
+      "type": "task",
+      "title": "Guests open, edit and export exams in the workspace without login",
+      "path": "docs/backlog/tasks/task-skript-41-02-02-guests-open-edit-and-export-exams-in-the-workspace-without-login.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-41-02",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-41-02-03",
+      "type": "task",
+      "title": "The public guest DigiExam converter line is removed",
+      "path": "docs/backlog/tasks/task-skript-41-02-03-the-public-guest-digiexam-converter-line-is-removed.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-41-02",
       "owners": [
         {
           "kind": "service",
@@ -7436,6 +7647,50 @@
         "decided_at": "2026-10-18",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "Pi ruthless-reviewer 6a23c23d reviewed 1d4e669b (retained session 01a14bdc-65b7-73e1-a8ee-3c75001a36fa, evidence/reviews/TASK-SKRIPT-REP-0043/review-1.md): changes_requested with F1 medium (Any-typed fixture calls in the migrated_db tests) and N1 low (stale delete docstring); D1, D2 and the lock-order barrier test hold, 61 unit and 17 PostgreSQL integration tests pass. Both were repaired in 1011cff9 and, as medium and low findings, admitted by the parent on focused checks without rereview (focused cleanup tests, lint and typecheck pass). Merged to main 2026-10-18."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0044",
+      "type": "task",
+      "title": "Paid AI routes are limited to admins until the AI spend cap and rate limits ship",
+      "path": "docs/backlog/tasks/task-skript-rep-0044-paid-ai-routes-are-limited-to-admins-until-the-ai-spend-cap-and-rate-limits-ship.md",
+      "status": "done",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-18",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Independent ruthless-reviewer a262cc37 review changes_requested (F1 high, F2-F6 medium; root 01a14efe evidence/reviews/a262cc37-8bf9-4eb6-9137-4793d6507e86.md); F2-F6 repaired and admitted on focused proof; F1 re-review approved at 39e15eac (same dir, -rereview.md), ItemTypeLabelerProtocol accepted as a paid root; unit 6415 passed, Vitest and fe-build ok on Hemma; merged into main."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0045",
+      "type": "task",
+      "title": "DOCX background replays carry a recording for the item-type labeler call",
+      "path": "docs/backlog/tasks/task-skript-rep-0045-docx-background-replays-carry-a-recording-for-the-item-type-labeler-call.md",
+      "status": "done",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-18",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Independent ruthless-reviewer review of the delivery (root 01a14f23 evidence/reviews/10b693b6-1db4-4125-a880-ac5f7273bde7.md); its only finding F1 (medium) repaired at cbd290bd (capture-time request key sidecar per label_b recording, refused without one) and admitted on focused proof; user-approved re-recording of exactly 14 labeler calls (16,286 in, 1,315 out tokens); integration file 11/11, domain suite 3586 passed on Hemma; merged into main."
       }
     },
     {

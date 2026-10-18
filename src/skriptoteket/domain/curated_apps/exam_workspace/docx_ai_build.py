@@ -39,6 +39,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_item_alignment import 
     Accepted,
     AlignedItem,
     aligned_source_item,
+    entry_chunks,
     paragraph_chunks,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions import (
@@ -309,7 +310,13 @@ def aligned_native_item(
         ),
         source_anchor=produced.source_anchors[0],
     )
-    return AlignedItem(item, paragraph_chunks(body_source))
+    entries = frozenset().union(
+        *(
+            entry_chunks(surface.source, surface.source.entry_spans)
+            for surface in formatting.surfaces
+        )
+    )
+    return AlignedItem(item, paragraph_chunks(body_source), entries)
 
 
 def review_chunk_item(chunk: DocxChunk, reason: str) -> NativeExamItem:

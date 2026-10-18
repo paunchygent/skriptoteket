@@ -65,7 +65,9 @@ def serialize_qti_assessment_item(
             xsi_tag("schemaLocation"): QTI_SCHEMA_LOCATION,
         },
     )
-    if item.children:
+    if item.interaction_type is ExamNetQtiInteractionType.INFORMATION:
+        _append_information_item(root, item, image_paths)
+    elif item.children:
         _append_parent_item(root, item, image_paths)
     else:
         _append_standalone_item(root, item, image_paths)
@@ -78,6 +80,21 @@ def serialize_qti_assessment_item(
         short_empty_elements=True,
     )
     return f'<?xml version="1.0" encoding="UTF-8"?>\n{xml_text}\n'.encode("utf-8")
+
+
+def _append_information_item(
+    root: ElementTree.Element,
+    item: ExamNetQtiItem,
+    image_paths: tuple[str, ...],
+) -> None:
+    """Write an unnumbered information block: the prompt body and nothing else.
+
+    Exam.net imports the item as an information block, so it carries no response
+    declaration, no outcome declaration, no response processing and no rubric.
+    """
+
+    item_body = ElementTree.SubElement(root, qti_tag("qti-item-body"))
+    append_shared_instruction_body(item_body, item, image_paths)
 
 
 def _append_standalone_item(

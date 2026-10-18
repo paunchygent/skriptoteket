@@ -23,7 +23,9 @@ from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
 pytestmark = [pytest.mark.unit, pytest.mark.asyncio]
 
 _EXAM = "bf26_diagnostic_grammar_test_ht26_med_facit"
-_ESCALATED = sorted(p.stem.removeprefix("label_b_") for p in (RECORDINGS / _EXAM).glob("label_b_*"))
+_ESCALATED = sorted(
+    p.stem.removeprefix("label_b_") for p in (RECORDINGS / _EXAM).glob("label_b_*.json")
+)
 _HELD = _ESCALATED[0]
 
 

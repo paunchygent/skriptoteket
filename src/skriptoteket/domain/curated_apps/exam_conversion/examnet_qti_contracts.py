@@ -45,6 +45,9 @@ class ExamNetQtiInteractionType(StrEnum):
     FREE_TEXT = "free_text"
     MATCHING = "matching"
     ORDERING = "ordering"
+    # An item whose body holds only text and pictures, no interaction; Exam.net imports
+    # it as an information block (TASK-SKRIPT-39-06-10 G5).
+    INFORMATION = "information"
 
 
 class ExamNetQtiEvaluationMode(StrEnum):

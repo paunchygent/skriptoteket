@@ -3,14 +3,13 @@
 The instruction stands when section placement puts it at that question: in the body of an
 item that holds the question's other own chunks, or on a parent that holds such an item. A
 chunk whose instruction lands anywhere else, such as the exam-wide instructions or another
-section, goes back to its question's item. A converted item that lacks the chunk's wording holds
-it under the check mark that shows left-out chunks as printed (D41, D4); a review item already
-prints every own chunk of its question. The rest of the instruction keeps the
+section, goes back to its question's item. A converted item no body paragraph of which is aligned
+to the chunk holds it under the check mark that shows left-out chunks as printed (D41, D4); a
+review item already prints every own chunk of its question. The rest of the instruction keeps the
 source text of its other chunks. A chunk the grouping marks as governing belongs to its
 section parent (D40) and is never sent back.
 """
 
-import re
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, replace
 
@@ -19,12 +18,11 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedMetadata,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
-from skriptoteket.domain.curated_apps.exam_workspace.docx_item_alignment import Accepted
-from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import POINT_LABEL
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
-    NativeGapSegment,
-    NativeTextSegment,
+from skriptoteket.domain.curated_apps.exam_workspace.docx_item_alignment import (
+    Accepted,
+    AlignedItem,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import answer_line
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
 )
@@ -32,7 +30,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeItemReviewState,
     NativeParseOrigin,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_plain_text
 
 LEFT_OUT_REASON = (
     "Delar av källtexten saknas i den konverterade frågan – kontrollera mot källan. "
@@ -50,103 +47,16 @@ class ReturnedChunks:
     events: tuple[DocxBuildEvent, ...]
 
 
-# A unit's own number, letter or bullet, such as "3.", "b)", "Fråga 3:" or "- ", and an answer
-# or facit line.
-_NUMBERING = re.compile(
-    r"^\s*(?:(?:fråga|uppgift|question|task)\s+\d+[a-z]?\s*[.):]?|\d+[a-z]?\s*[.):]|[a-z]\s*[.)]"
-    r"|[-–—•*](?=\s))\s*",
-    re.IGNORECASE,
-)
-_ANSWER_LINE = re.compile(
-    r"^\s*\(?\s*(?:(?:correct|right|rätt|korrekt)\s+)?"
-    r"(?:svar|svarsexempel|facit|answers?(?:\s+key)?|key)\s*:",
-    re.IGNORECASE,
-)
-# Where a printed line holds several units: a table cell boundary or an inline option letter.
-_UNIT_BREAK = re.compile(r"\s\|\s|\s(?=[a-z]\s*[.)]\s)", re.IGNORECASE)
-# Words, numbers and single letters, and the symbols that carry mathematical content.
-_TOKEN = re.compile(r"[^\W_]+|[+−=<>≤≥×÷*/^%]")
-# Every dash reads as one token, so a minus or sign is never lost; a copied hyphen or prose dash
-# reads the same on both sides.
-_DASH = re.compile(r"[-−–—]")
-
-Gap = tuple[tuple[str, ...], ...]
-# A picture in the body: no printed unit reads across it.
-_PICTURE = ""
-Stream = tuple[str | Gap, ...]
-
-
-def _tokens(text: str | None) -> tuple[str, ...]:
-    words = _DASH.sub(" − ", text or "")
-    return tuple(token.casefold() for token in _TOKEN.findall(words))
-
-
-def _units(chunk: DocxChunk) -> tuple[tuple[str, ...], ...]:
-    """The chunk's printed units in order, without points labels, numbering and facit lines."""
-    units = []
-    for line in chunk.text.splitlines():
-        for part in _UNIT_BREAK.split(POINT_LABEL.sub(" ", line)):
-            unit = _NUMBERING.sub("", part)
-            if not _ANSWER_LINE.match(unit) and (tokens := _tokens(unit)):
-                units.append(tokens)
-    return tuple(units)
-
-
-def _streams(item: NativeExamItem) -> tuple[Stream, ...]:
-    """The item's texts in order; a gap reads as nothing or as one of its accepted values."""
-    gaps = {gap.gap_id: tuple(_tokens(value) for value in gap.accepted_values) for gap in item.gaps}
-    body: list[str | Gap] = []
-    for paragraph in item.body:
-        run = ""  # adjacent text segments read as one text, so a word may span them
-        for segment in paragraph.segments:
-            if isinstance(segment, NativeTextSegment):
-                run += segment.text
-                continue
-            body.extend(_tokens(run))
-            run = ""
-            if isinstance(segment, NativeGapSegment):
-                body.append(gaps.get(segment.gap_id, ()))
-            else:
-                body.append(_PICTURE)
-        body.extend(_tokens(run))
-    texts = [
-        *(criterion.text for criterion in item.criteria),
-        *(value for gap in item.gaps for value in gap.accepted_values),
-        *(body_plain_text(choice.body) for choice in item.choices),
-        *(body_plain_text(entry.body) for entry in item.match_left),
-        *(body_plain_text(entry.body) for entry in item.match_right),
-    ]
-    return (tuple(body), *(_tokens(text) for text in texts))
-
-
-def _occurs(unit: tuple[str, ...], stream: Stream) -> bool:
-    """Whether ``unit`` reads in order, without a break, somewhere in ``stream``."""
-    matched: set[int] = set()
-    for token in stream:
-        matched.add(0)
-        if isinstance(token, tuple):
-            matched |= {
-                k + len(value)
-                for k in matched
-                for value in token
-                if value and unit[k : k + len(value)] == value
-            }
-        else:
-            matched = {k + 1 for k in matched if k < len(unit) and unit[k] == token}
-        if len(unit) in matched:
-            return True
-    return False
-
-
-def wording_left_out(item: NativeExamItem, chunks: Iterable[DocxChunk]) -> tuple[DocxChunk, ...]:
-    """The chunks with a unit the item does not read in order (D4); a drawing is never wording
-    the item holds."""
-    streams = _streams(item)
+def left_out_chunks(aligned: AlignedItem, chunks: Iterable[DocxChunk]) -> tuple[DocxChunk, ...]:
+    """The chunks no body paragraph, choice or matching entry of the item is aligned to (D4):
+    the alignment, never the reply's wording, says what the item shows. A source answer or
+    facit line is the item's key, never left-out text (TASK-SKRIPT-39-04-14)."""
     return tuple(
         chunk
         for chunk in chunks
-        if chunk.kind == "drawing"
-        or not all(any(_occurs(unit, s) for s in streams) for unit in _units(chunk))
+        if not aligned.shows(chunk.anchor)
+        and chunk.anchor not in aligned.entry_chunks
+        and not answer_line(chunk.text)
     )
 
 
@@ -218,7 +128,7 @@ def return_misplaced_own_chunks(
         item = aligned.item
         ordered = sorted(anchors, key=positions.__getitem__)
         if item.review.parse_origin is NativeParseOrigin.LLM_PARSED and (
-            missing := wording_left_out(item, [by_anchor[a] for a in ordered])
+            missing := left_out_chunks(aligned, [by_anchor[a] for a in ordered])
         ):
             item = with_left_out_mark(item, missing)
         updated[k] = (replace(aligned, item=item), (*held, *ordered))

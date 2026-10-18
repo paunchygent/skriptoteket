@@ -106,6 +106,7 @@ type EditorWorkspacePanelProps = {
   chatError: string | null;
   chatNoticeMessage: string | null;
   chatNoticeVariant: "info" | "warning";
+  aiBlockedNote: string | null;
   remoteFallbackPrompt: RemoteFallbackPrompt | null;
   editOpsRequestError: string | null;
   editOpsDisabledMessage: string | null;

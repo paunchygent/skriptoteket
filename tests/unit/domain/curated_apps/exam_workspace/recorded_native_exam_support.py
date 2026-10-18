@@ -96,6 +96,7 @@ def item_numbers(items: tuple[NativeExamItem, ...], kind: NativeExamItemKind) ->
 def parent_over(parent_id: str, instruction: str, *numbers: int) -> NativeExamParent:
     return NativeExamParent(
         parent_id=parent_id,
+        place=numbers[0] - 1 if numbers else 0,
         instruction=(
             NativeParagraph(
                 heading_level=None, segments=(NativeTextSegment(text=instruction, marks=()),)

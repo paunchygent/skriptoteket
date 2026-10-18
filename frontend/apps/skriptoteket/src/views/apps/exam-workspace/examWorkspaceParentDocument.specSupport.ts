@@ -97,6 +97,7 @@ export function buildRecordedParent(): NativeExamParent {
     instruction: buildRecordedParentInstruction(),
     item_ids: Array.from({ length: CHILD_COUNT }, (_, index) => itemId(index + 1)),
     parent_id: "parent_001",
+    place: 0,
   };
 }
 

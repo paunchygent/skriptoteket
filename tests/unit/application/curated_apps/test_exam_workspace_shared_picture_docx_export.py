@@ -51,9 +51,11 @@ from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents 
     _actor,
     _Env,
 )
-from tests.unit.infrastructure.curated_apps.test_exam_workspace_docx_writer import (
-    _drawing_payload,
-    _only_paragraph,
+from tests.unit.infrastructure.curated_apps.exam_workspace_docx_writer_test_support import (
+    drawing_payload,
+    only_paragraph,
+)
+from tests.unit.infrastructure.curated_apps.test_exam_workspace_docx_writer_pictures import (
     shared_picture_document,
 )
 
@@ -113,13 +115,13 @@ async def test_docx_export_embeds_shared_instruction_pictures_from_stored_payloa
 
     global_text = _instruction_text(fixture.document.instructions)
     assert (
-        _drawing_payload(parsed, _only_paragraph(paragraphs, global_text))
+        drawing_payload(parsed, only_paragraph(paragraphs, global_text))
         == fixture.assets_by_id[fixture.global_asset_id]
     )
 
     parent_text = _instruction_text(fixture.document.parents[0].instruction)
     assert (
-        _drawing_payload(parsed, _only_paragraph(paragraphs, parent_text))
+        drawing_payload(parsed, only_paragraph(paragraphs, parent_text))
         == fixture.assets_by_id[fixture.parent_asset_id]
     )
     assert texts.count(parent_text) == 1

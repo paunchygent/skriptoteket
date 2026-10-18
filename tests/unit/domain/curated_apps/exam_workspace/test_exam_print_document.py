@@ -160,6 +160,7 @@ class TestParents:
     def test_a_parent_instruction_prints_once_before_its_first_child(self) -> None:
         parent = NativeExamParent(
             parent_id="parent_001",
+            place=0,
             instruction=(make_paragraph("Del 1"),),
             item_ids=("item_001", "item_002"),
         )

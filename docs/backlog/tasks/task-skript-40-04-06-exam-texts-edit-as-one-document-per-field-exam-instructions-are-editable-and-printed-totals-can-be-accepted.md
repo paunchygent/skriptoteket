@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-18'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-18'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: Independent ruthless-reviewer 1122a276 (Pi, Sol 6.1 high) approved 4f9f6945b on re-review after F1-F6 repairs; merged into main as af5b147a0 and published with a stale-spec fix in a0a81ab5a after the Hemma full typecheck and test pass; staging walk at a0a81ab5a on omprov_grammatik_sve2.docx deleted an underscore line, edited the exam instruction with a hard break (exported as br in QTI) and accepted a printed total with no layout shift (root 01a14e1f evidence/staging-walk-a0a81ab5a/walk.md).
 task_kind: story
 acceptance_criteria:
   - A teacher deletes a selection spanning paragraphs, gaps or pictures, merges paragraphs with Backspace and removes an underscore line in question text, part instructions and exam instructions; the change autosaves, survives reload and Ångra restores it
