@@ -6,6 +6,9 @@ from decimal import Decimal
 from types import MappingProxyType
 from uuid import UUID
 
+from skriptoteket.domain.curated_apps.exam_conversion.exam_print_house_template import (
+    DEFAULT_WRITING_LINES,
+)
 from skriptoteket.domain.curated_apps.exam_workspace import docx_build_assets
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     DocxBuildEvent,
@@ -101,6 +104,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeItemReviewState,
     NativeParseOrigin,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.shared_body import (
+    is_printed_answer_line,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.source_entry_ownership import (
     produced_entry_body,
 )
@@ -191,7 +197,7 @@ def aligned_native_item(
                 segments.append(NativeGapSegment(gap_id=gap_id))
             elif segment.text:
                 segments.append(NativeTextSegment(text=segment.text, marks=()))
-        if segments:
+        if segments and not is_printed_answer_line(segments):
             body.append(NativeParagraph(heading_level=None, segments=tuple(segments)))
     body_source = formatting.body
     answers = {gap.gap_id: gap.accepted_values for gap in gaps}
@@ -287,6 +293,9 @@ def aligned_native_item(
         points=points,
         points_estimated=points_estimated,
         tick_points=tick_points,
+        writing_lines=(
+            DEFAULT_WRITING_LINES if produced.kind is NativeExamItemKind.FREE_TEXT else None
+        ),
         choices=choices,
         gaps=tuple(gaps),
         match_left=match_left,

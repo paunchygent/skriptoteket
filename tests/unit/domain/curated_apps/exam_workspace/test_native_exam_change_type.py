@@ -6,6 +6,9 @@ from decimal import Decimal
 import pytest
 from pydantic import ValidationError
 
+from skriptoteket.domain.curated_apps.exam_conversion.exam_print_house_template import (
+    DEFAULT_WRITING_LINES,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeGapSegment,
     NativeTextSegment,
@@ -259,6 +262,25 @@ def test_dropped_names_are_per_content_kind_not_per_gap_or_option() -> None:
     assert len(result.dropped_content) == 3
 
 
+def test_retype_to_free_text_sets_the_house_default_writing_lines() -> None:
+    document = make_document(make_gap_fill_item())
+    result = change_item_type(
+        document, item_id="item_001", target_kind=NativeExamItemKind.FREE_TEXT, rng=random.Random(1)
+    )
+    assert result.document.items[0].writing_lines == DEFAULT_WRITING_LINES
+
+
+def test_retype_from_free_text_drops_the_writing_lines() -> None:
+    document = make_document(make_free_text_item())
+    result = change_item_type(
+        document,
+        item_id="item_001",
+        target_kind=NativeExamItemKind.SINGLE_CHOICE,
+        rng=random.Random(1),
+    )
+    assert result.document.items[0].writing_lines is None
+
+
 @pytest.mark.parametrize("target", KINDS, ids=lambda kind: kind.value)
 def test_unstated_points_are_not_invented(target: NativeExamItemKind) -> None:
     item = make_free_text_item().model_copy(update={"points": None})
@@ -454,7 +476,7 @@ def test_invalid_suggested_kind_is_rejected(
 
 
 @pytest.mark.parametrize("suggestion", [None, NativeExamItemKind.SINGLE_CHOICE])
-def test_v6_document_round_trip_stores_suggested_kind(
+def test_v7_document_round_trip_stores_suggested_kind(
     suggestion: NativeExamItemKind | None,
 ) -> None:
     payload = make_free_text_item().model_dump()
@@ -468,7 +490,7 @@ def test_v6_document_round_trip_stores_suggested_kind(
     restored = parse_native_exam_document(encoded)
 
     assert restored == document
-    assert restored.schema_version == "native_exam_document_v6"
+    assert restored.schema_version == "native_exam_document_v7"
     assert restored.items[0].suggested_kind is suggestion
     assert restored.model_dump(mode="json")["items"][0]["suggested_kind"] == (
         suggestion.value if suggestion is not None else None
@@ -479,5 +501,5 @@ def test_v5_document_is_rejected_without_an_old_reader() -> None:
     payload = make_document(make_free_text_item()).model_dump()
     payload["schema_version"] = "native_exam_document_v5"
 
-    with pytest.raises(ValidationError, match="native_exam_document_v6"):
+    with pytest.raises(ValidationError, match="native_exam_document_v7"):
         NativeExamDocument.model_validate(payload)

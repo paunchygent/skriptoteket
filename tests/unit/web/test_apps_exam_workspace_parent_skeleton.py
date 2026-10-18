@@ -35,6 +35,7 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_qti_wr
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.protocols.exam_conversion import ExamNetPdfRendererProtocol
 from skriptoteket.protocols.exam_workspace import (
+    ExamPrintRendererProtocol,
     ExamWorkspaceDocxWriterProtocol,
     ExportExamWorkspaceDocumentHandlerProtocol,
     GetExamWorkspaceDocumentHandlerProtocol,
@@ -86,6 +87,7 @@ async def build_parent_skeleton_package() -> tuple[bytes, NativeExamDocument]:
         qti_writer=ExamNetQtiPackageWriter(),
         pdf_renderer=Mock(spec=ExamNetPdfRendererProtocol),
         docx_writer=Mock(spec=ExamWorkspaceDocxWriterProtocol),
+        print_renderer=Mock(spec=ExamPrintRendererProtocol),
     )
     container = make_async_container(
         SkeletonProvider(),

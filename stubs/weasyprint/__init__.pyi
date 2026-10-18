@@ -4,6 +4,7 @@ from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import IO, overload
 
+from weasyprint.document import Document as Document
 from weasyprint.text.fonts import FontConfiguration as FontConfiguration
 from weasyprint.urls import URLFetcherResponse
 
@@ -25,6 +26,12 @@ class HTML:
         base_url: str | Path | None = None,
         url_fetcher: Callable[[str], URLFetcherResponse] | None = None,
     ) -> None: ...
+    def render(
+        self,
+        font_config: FontConfiguration | None = None,
+        counter_style: object | None = None,
+        **options: object,
+    ) -> Document: ...
     @overload
     def write_pdf(
         self,

@@ -12,6 +12,8 @@
  *     as props from `ExamWorkspaceView`, which owns them.
  */
 
+import { computed } from "vue";
+
 import type { NativeExamDocument } from "../../../api/examWorkspace";
 import type { TeacherItemKind } from "./examWorkspaceItemEdits";
 import type { ExamWorkspaceItemEntry, ExamWorkspaceParentEntry } from "./examWorkspaceListEntries";
@@ -53,6 +55,21 @@ defineEmits<{
 }>();
 
 const { structure, assetUrls } = props.editing;
+
+/** The writing-line count every free-text question shares, or null when they differ. */
+const allFreeTextWritingLines = computed<number | null>(() => {
+  const counts = (props.workspaceDocument?.items ?? [])
+    .filter((item) => item.kind === "free_text")
+    .map((item) => item.writing_lines);
+  if (counts.length === 0) {
+    return null;
+  }
+  const first = counts[0]!;
+  if (first === null || counts.some((count) => count !== first)) {
+    return null;
+  }
+  return first;
+});
 </script>
 
 <template>
@@ -119,6 +136,7 @@ const { structure, assetUrls } = props.editing;
         :notice="itemNotice"
         :import-open="importOpen"
         :asset-urls="assetUrls"
+        :all-free-text-writing-lines="allFreeTextWritingLines"
         @change-type="(kind) => structure.changeType(selectedItem!.item_id, kind)"
         @move="(delta) => $emit('move-selected', delta)"
         @remove="structure.deleteItem(selectedItem!.item_id)"
@@ -144,6 +162,8 @@ const { structure, assetUrls } = props.editing;
         @update-body="editing.updateItemBody"
         @update-points="editing.updateItemPoints"
         @update-tick-points="editing.updateItemTickPoints"
+        @update-writing-lines="editing.updateItemWritingLines"
+        @apply-writing-lines-to-all="editing.applyWritingLinesToAllFreeText"
       />
       <p
         v-else

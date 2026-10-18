@@ -4,6 +4,9 @@ from __future__ import annotations
 
 from uuid import UUID
 
+from skriptoteket.domain.curated_apps.exam_conversion.exam_print_house_template import (
+    DEFAULT_WRITING_LINES,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeParagraph,
     NativeTextSegment,
@@ -47,6 +50,7 @@ def placeholder(anchor: str, text: str) -> NativeExamItem:
         sequence=1,
         kind=NativeExamItemKind.FREE_TEXT,
         body=body(text),
+        writing_lines=DEFAULT_WRITING_LINES,
         answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
         review=NativeItemReview(
             state=NativeItemReviewState.REVIEW_REQUIRED,

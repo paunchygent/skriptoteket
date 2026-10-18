@@ -192,7 +192,7 @@ def test_document_saved_without_parents_still_parses_and_keeps_its_schema_versio
     document = NativeExamDocument.model_validate(saved)
 
     assert document.parents == ()
-    assert document.schema_version == "native_exam_document_v6"
+    assert document.schema_version == "native_exam_document_v7"
 
 
 def test_legacy_fixture_without_parents_parses():

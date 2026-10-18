@@ -143,6 +143,8 @@ class TestSuggestionStorageAcrossKindChanges:
             base["answer_key"] = NativeAnswerKey(origin=NativeAnswerKeyOrigin.TEACHER_AUTHORED)
         else:
             base["answer_key"] = NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE)
+            if kind is NativeExamItemKind.FREE_TEXT:
+                base["writing_lines"] = 8
         return base
 
     @staticmethod

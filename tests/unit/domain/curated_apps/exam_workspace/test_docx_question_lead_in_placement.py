@@ -39,6 +39,7 @@ def _item(sequence: int, lines: tuple[str, ...]) -> NativeExamItem:
         item_id=f"item_{sequence:03d}",
         sequence=sequence,
         kind=NativeExamItemKind.FREE_TEXT,
+        writing_lines=8,
         body=tuple(
             NativeParagraph(heading_level=None, segments=(NativeTextSegment(text=t, marks=()),))
             for t in lines

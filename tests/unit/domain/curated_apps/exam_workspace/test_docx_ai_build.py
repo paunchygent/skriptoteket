@@ -1,9 +1,20 @@
-"""Producer schema sent to the provider in strict mode."""
+"""DOCX build output: the producer schema and the native body projection (W10)."""
 
 import pytest
 from pydantic import JsonValue
 
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import aligned_native_item
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
+    ProducedItem,
+    ProducedParagraph,
+    ProducedSegment,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_schema import docx_build_output_spec
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+    NativeGapSegment,
+    NativeTextSegment,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import NativeExamItem
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
 )
@@ -60,3 +71,100 @@ def test_strict_schema_preserves_title_properties_and_requires_every_object_fiel
         _object(_object(_object(definitions["ProducedMetadata"])["properties"])["source_anchors"]),
     ):
         assert _object(node["items"])["enum"] == anchors
+
+
+def _text_paragraph(text: str) -> ProducedParagraph:
+    return ProducedParagraph(
+        segments=(ProducedSegment(kind="text", text=text, accepted_values=()),)
+    )
+
+
+def _gap_paragraph(*accepted: str) -> ProducedParagraph:
+    return ProducedParagraph(
+        segments=(ProducedSegment(kind="gap", text=None, accepted_values=accepted),)
+    )
+
+
+def _item(
+    *paragraphs: ProducedParagraph,
+    kind: NativeExamItemKind = NativeExamItemKind.FREE_TEXT,
+) -> ProducedItem:
+    keyed = kind is not NativeExamItemKind.FREE_TEXT
+    return ProducedItem(
+        source_anchors=("body:0001",),
+        outcome="converted",
+        review_reason=None,
+        kind=kind,
+        printed_label=None,
+        key_source="copied" if keyed else None,
+        facit_text="svar" if keyed else None,
+        body=tuple(paragraphs),
+        points=1,
+        choices=(),
+        match_left=(),
+        match_right=(),
+        match_pairs=(),
+        criteria=(),
+    )
+
+
+def _body_text(item: NativeExamItem) -> list[str]:
+    return [
+        "".join(
+            segment.text for segment in paragraph.segments if isinstance(segment, NativeTextSegment)
+        )
+        for paragraph in item.body
+    ]
+
+
+def test_underscore_answer_lines_never_reach_a_free_text_body() -> None:
+    item = aligned_native_item(
+        _item(_text_paragraph("Förklara."), _text_paragraph("_____"), _text_paragraph("  __ _  ")),
+        language="sv",
+    ).item
+
+    assert _body_text(item) == ["Förklara."]
+
+
+def test_a_free_text_paragraph_of_only_a_model_gap_is_dropped() -> None:
+    item = aligned_native_item(
+        _item(_text_paragraph("Förklara."), _gap_paragraph()),
+        language="sv",
+    ).item
+
+    assert _body_text(item) == ["Förklara."]
+
+
+def test_a_free_text_label_keeps_its_gap_blank() -> None:
+    item = aligned_native_item(
+        _item(
+            ProducedParagraph(
+                segments=(
+                    ProducedSegment(kind="text", text="Svar: ", accepted_values=()),
+                    ProducedSegment(kind="gap", text=None, accepted_values=()),
+                )
+            )
+        ),
+        language="sv",
+    ).item
+
+    assert _body_text(item) == ["Svar: ____"]
+
+
+def test_dash_and_dot_lines_are_kept() -> None:
+    item = aligned_native_item(
+        _item(_text_paragraph("-------"), _text_paragraph(".......")),
+        language="sv",
+    ).item
+
+    assert _body_text(item) == ["-------", "......."]
+
+
+def test_a_gap_fill_paragraph_with_only_a_gap_is_kept() -> None:
+    item = aligned_native_item(
+        _item(_gap_paragraph("svar"), kind=NativeExamItemKind.GAP_FILL),
+        language="sv",
+    ).item
+
+    (paragraph,) = item.body
+    assert paragraph.segments == (NativeGapSegment(gap_id="gap_001"),)

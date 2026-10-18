@@ -117,6 +117,7 @@ function freeTextItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
     retry_source: retrySource("gap_fill"),
     suggested_kind: null,
     tick_points: null,
+    writing_lines: 8,
     ...overrides,
   };
 }
@@ -124,6 +125,7 @@ function freeTextItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
 function convertedItem(): NativeExamItem {
   return freeTextItem({
     kind: "matching",
+    writing_lines: null,
     review: {
       confidence: 0.9,
       parse_origin: "llm_parsed",

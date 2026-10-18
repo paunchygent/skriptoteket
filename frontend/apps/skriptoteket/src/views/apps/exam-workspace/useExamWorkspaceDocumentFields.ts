@@ -15,6 +15,7 @@
 
 import type { NativeExamDocument, NativeExamHeader, NativeExamParent } from "../../../api/examWorkspace";
 import { withoutExamPrintedTotal, withoutPartPrintedTotal, withoutPrintedTotals } from "./examWorkspaceTotals";
+import { withWritingLinesForAllFreeText } from "./examWorkspaceWritingLines";
 
 /** The open document's one edit path for the whole copy. */
 export type EditExamWorkspaceDocument = (
@@ -71,10 +72,16 @@ export function useExamWorkspaceDocumentFields({
     editDocument(withoutPrintedTotals);
   }
 
+  /** Copy one writing-line count to every free-text question; one undo step. */
+  function applyWritingLinesToAllFreeText(lines: number): void {
+    editDocument((document) => withWritingLinesForAllFreeText(document, lines));
+  }
+
   return {
     acceptAllPrintedTotals,
     acceptExamPrintedTotal,
     acceptPartPrintedTotal,
+    applyWritingLinesToAllFreeText,
     setExamInstructions,
     setParentInstruction,
     setTags,

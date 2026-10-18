@@ -75,6 +75,7 @@ def _free_text_item(
         item_id=item_id,
         sequence=sequence,
         kind=NativeExamItemKind.FREE_TEXT,
+        writing_lines=8,
         printed_label=printed_label,
         body=text_body(text),
         points=points,

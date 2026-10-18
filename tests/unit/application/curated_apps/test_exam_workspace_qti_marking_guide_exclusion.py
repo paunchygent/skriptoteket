@@ -60,6 +60,7 @@ def test_teacher_criteria_text_is_absent_from_every_qti_package_member() -> None
                 item_id="item_001",
                 sequence=1,
                 kind=NativeExamItemKind.FREE_TEXT,
+                writing_lines=8,
                 body=(
                     NativeParagraph(
                         heading_level=None,
@@ -98,6 +99,7 @@ def test_a_picture_retained_only_as_teacher_key_source_is_not_exported_to_studen
         item_id="item_001",
         sequence=1,
         kind=NativeExamItemKind.FREE_TEXT,
+        writing_lines=8,
         body=(
             NativeParagraph(
                 heading_level=None,

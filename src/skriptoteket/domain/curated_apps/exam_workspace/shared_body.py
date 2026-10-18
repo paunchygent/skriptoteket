@@ -18,7 +18,8 @@ Relationships:
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+import re
+from collections.abc import Iterable, Sequence
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxChunk,
@@ -38,6 +39,20 @@ _GAP_MARKER = "[___]"
 
 def _missing_picture_text(missing: DocxMissingImage) -> str:
     return f"[Bild saknas: {missing.reference} ({missing.media_type})]"
+
+
+# A paragraph of nothing but whitespace and underscores is a printed answer line (W10).
+_ANSWER_LINE_TEXT = re.compile(r"[\s_]*")
+
+
+def is_printed_answer_line(segments: Sequence[NativeSegment]) -> bool:
+    """A printed answer line is answer space, not question text (W10).
+
+    True only for a paragraph of text segments whose whole wording is whitespace and
+    underscores. Any gap or asset segment keeps the paragraph.
+    """
+    texts = [segment.text for segment in segments if isinstance(segment, NativeTextSegment)]
+    return len(texts) == len(segments) and _ANSWER_LINE_TEXT.fullmatch("".join(texts)) is not None
 
 
 def source_paragraph(chunk: DocxChunk) -> NativeParagraph | None:
@@ -136,6 +151,25 @@ def source_paragraphs(chunks: Iterable[DocxChunk]) -> tuple[NativeParagraph, ...
                         NativeParagraph(heading_level=block.heading_level, segments=tuple(segments))
                     )
                 previous_end = end
+    return tuple(result)
+
+
+def review_source_paragraphs(
+    chunks: Iterable[DocxChunk],
+) -> tuple[tuple[str, NativeParagraph], ...]:
+    """The review fallback body with each paragraph's source chunk.
+
+    Printed answer lines are answer space, not question text (W10), so they are skipped;
+    every kept paragraph is paired with the anchor of the chunk that produced it, so the
+    review body and its alignment always come from the same render.
+    """
+    result: list[tuple[str, NativeParagraph]] = []
+    for chunk in chunks:
+        result.extend(
+            (chunk.anchor, paragraph)
+            for paragraph in source_paragraphs((chunk,))
+            if not is_printed_answer_line(paragraph.segments)
+        )
     return tuple(result)
 
 

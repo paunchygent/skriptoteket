@@ -22,6 +22,7 @@ from skriptoteket.application.curated_apps.exam_workspace import (
     ExamWorkspaceExportChecklistResponse,
     ExamWorkspaceExportTarget,
     ExamWorkspaceItemRetryResponse,
+    ExamWorkspacePrintPreviewResponse,
     RetryExamWorkspaceItemRequest,
     SaveExamWorkspaceDocumentRequest,
 )
@@ -55,6 +56,7 @@ from skriptoteket.protocols.exam_workspace import (
     ImportExamWorkspaceDigiExamDocumentHandlerProtocol,
     ImportExamWorkspaceDocumentHandlerProtocol,
     ListExamWorkspaceDocumentsHandlerProtocol,
+    PreviewExamWorkspacePrintHandlerProtocol,
     RetryExamWorkspaceItemHandlerProtocol,
     SaveExamWorkspaceDocumentHandlerProtocol,
 )
@@ -256,6 +258,25 @@ async def export_exam_workspace_document_checklist(
 
     require_conversion_hub_access(registry=registry, user=user)
     return await handler.checklist(
+        actor=user, lineage_id=lineage_id, expected_revision=expected_revision
+    )
+
+
+@router.get(
+    "/exam-workspace/documents/{lineage_id}/print-preview",
+    response_model=ExamWorkspacePrintPreviewResponse,
+)
+async def preview_exam_workspace_document_print(
+    lineage_id: UUID,
+    expected_revision: int,
+    registry: FromDishka[CuratedAppRegistryProtocol],
+    handler: FromDishka[PreviewExamWorkspacePrintHandlerProtocol],
+    user: User = Depends(require_app_user_api),
+) -> ExamWorkspacePrintPreviewResponse:
+    """Render the saved revision's student print pages for the Förhandsgranska panel (W5)."""
+
+    require_conversion_hub_access(registry=registry, user=user)
+    return await handler.handle(
         actor=user, lineage_id=lineage_id, expected_revision=expected_revision
     )
 

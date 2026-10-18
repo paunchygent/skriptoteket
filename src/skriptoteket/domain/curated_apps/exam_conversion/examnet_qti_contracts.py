@@ -250,6 +250,8 @@ class ExamNetQtiItem:
     )
     source_item_type: str | None = None
     free_text_criterion_points: int | float | None = None
+    # Free-text answer box height in lines; the question's writing lines (W2).
+    expected_lines: int | None = None
     choices: tuple[ExamNetQtiChoice, ...] = ()
     correct_choice_identifiers: tuple[str, ...] = ()
     text_entry_gaps: tuple[ExamNetQtiTextEntryGap, ...] = ()

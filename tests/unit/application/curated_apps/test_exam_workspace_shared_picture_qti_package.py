@@ -73,6 +73,7 @@ def test_shared_picture_is_positioned_once_and_child_resources_stay_bound(
             item_id=f"item_{index:03d}",
             sequence=index,
             kind=NativeExamItemKind.FREE_TEXT,
+            writing_lines=8,
             body=(
                 NativeParagraph(
                     heading_level=None,

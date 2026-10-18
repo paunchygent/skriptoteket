@@ -113,6 +113,7 @@ def _free_text_item(*, sequence: int, body: tuple[NativeParagraph, ...]) -> Nati
         item_id=f"item_{sequence:03d}",
         sequence=sequence,
         kind=NativeExamItemKind.FREE_TEXT,
+        writing_lines=8,
         body=body,
         points=1,
         answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),

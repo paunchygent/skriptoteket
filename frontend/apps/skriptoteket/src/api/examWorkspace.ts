@@ -348,6 +348,26 @@ export async function saveExamWorkspaceExport(
   );
 }
 
+/** The saved student print copy as page images, for the Förhandsgranska panel (W5). */
+export type ExamWorkspacePrintPreview = Schemas["ExamWorkspacePrintPreviewResponse"];
+
+/**
+ * Render the saved revision's student print pages page by page: `pages` holds
+ * one PNG data URL per printed page in print order, and `question_pages` maps
+ * a question's item id to the 0-based page it first appears on, so the
+ * Förhandsgranska panel can scroll to the selected question. `status`
+ * "blocked" means the exam cannot be rendered at all. A saved revision the
+ * server has moved past answers 409.
+ */
+export async function fetchExamWorkspacePrintPreview(
+  lineageId: string,
+  expectedRevision: number,
+): Promise<ExamWorkspacePrintPreview> {
+  return await apiGet<ExamWorkspacePrintPreview>(
+    `${documentPath(lineageId)}/print-preview?expected_revision=${expectedRevision}`,
+  );
+}
+
 function parentsPath(lineageId: string): string {
   return `${documentPath(lineageId)}/parents`;
 }

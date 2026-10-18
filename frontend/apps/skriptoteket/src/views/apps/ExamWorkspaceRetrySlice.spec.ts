@@ -94,6 +94,7 @@ function reviewItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
     source_anchor: "body:0001",
     suggested_kind: null,
     tick_points: null,
+    writing_lines: 8,
     ...overrides,
   };
 }
@@ -106,6 +107,7 @@ function convertedItem(): NativeExamItem {
       origin: "source_provided",
     },
     kind: "matching",
+    writing_lines: null,
     match_left: [{ body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Första begreppet" }] }], left_id: "left_001" }],
     match_right: [{ body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Första svaret" }] }], right_id: "right_001" }],
     review: {

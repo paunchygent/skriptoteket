@@ -2,6 +2,9 @@
 
 from uuid import uuid4
 
+from skriptoteket.domain.curated_apps.exam_conversion.exam_print_house_template import (
+    DEFAULT_WRITING_LINES,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeGapSegment,
     NativeParagraph,
@@ -51,6 +54,7 @@ def make_free_text_item(*, sequence: int = 1, item_id: str = "item_001") -> Nati
         kind=NativeExamItemKind.FREE_TEXT,
         body=(make_paragraph("Resonera om renässansen."),),
         points=4,
+        writing_lines=DEFAULT_WRITING_LINES,
         answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
         review=make_review(),
     )

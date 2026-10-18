@@ -64,7 +64,7 @@ function documentOf(overrides: Partial<NativeExamDocument>): NativeExamDocument 
     origin: { kind: "docx_import" },
     parents: [],
     revision: 1,
-    schema_version: "native_exam_document_v6",
+    schema_version: "native_exam_document_v7",
     title: "Prov",
     ...overrides,
   } as NativeExamDocument;

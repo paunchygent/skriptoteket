@@ -7,6 +7,15 @@ from docx import Document
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_examnet_pdf_contracts import (
     DigiExamExamNetPdfStatus,
 )
+from skriptoteket.domain.curated_apps.exam_conversion.exam_print_house_template import (
+    ExamPrintVariant,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.exam_print_document import (
+    build_print_document,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.exam_print_html import (
+    render_print_html,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.examnet_pdf_export import (
     native_exam_to_pdf_document,
 )
@@ -94,9 +103,17 @@ def test_pdf_words_are_swedish_for_an_english_exam() -> None:
 
 
 def test_docx_words_are_swedish_for_an_english_exam() -> None:
-    content = ExamWorkspaceDocxWriter().build_docx_bytes(_english_exam())
+    document = _english_exam()
+    content = ExamWorkspaceDocxWriter().build_docx_bytes(document)
     text = "\n".join(paragraph.text for paragraph in Document(io.BytesIO(content)).paragraphs)
     assert "Fråga 1" in text
     assert "Poäng" in text
-    assert "Rätt ordning" in text
+    # The ordering key moved to the facit; the student copy never prints it.
+    assert "Rätt ordning" not in text
     _assert_no_english_label(text)
+
+    facit = build_print_document(document, variant=ExamPrintVariant.FACIT)
+    html = render_print_html(facit, assets=document.assets, assets_by_id={})
+    assert "Rätt ordning" in html
+    assert "Rätt svar" in html
+    _assert_no_english_label(html)
