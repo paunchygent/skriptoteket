@@ -18,7 +18,6 @@ Relationships:
 
 from __future__ import annotations
 
-import re
 from collections.abc import Iterable, Sequence
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
@@ -32,6 +31,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeSegment,
     NativeTextSegment,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.source_answer_space import (
+    is_answer_line_text,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import SourceFormatting
 
 _GAP_MARKER = "[___]"
@@ -41,18 +43,14 @@ def _missing_picture_text(missing: DocxMissingImage) -> str:
     return f"[Bild saknas: {missing.reference} ({missing.media_type})]"
 
 
-# A paragraph of nothing but whitespace and underscores is a printed answer line (W10).
-_ANSWER_LINE_TEXT = re.compile(r"[\s_]*")
-
-
 def is_printed_answer_line(segments: Sequence[NativeSegment]) -> bool:
     """A printed answer line is answer space, not question text (W10).
 
     True only for a paragraph of text segments whose whole wording is whitespace and
-    underscores. Any gap or asset segment keeps the paragraph.
+    underscores with at least one underscore. Any gap or asset segment keeps the paragraph.
     """
     texts = [segment.text for segment in segments if isinstance(segment, NativeTextSegment)]
-    return len(texts) == len(segments) and _ANSWER_LINE_TEXT.fullmatch("".join(texts)) is not None
+    return len(texts) == len(segments) and is_answer_line_text("".join(texts))
 
 
 def source_paragraph(chunk: DocxChunk) -> NativeParagraph | None:

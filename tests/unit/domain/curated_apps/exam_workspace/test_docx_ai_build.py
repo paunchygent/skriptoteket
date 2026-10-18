@@ -15,7 +15,11 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedSegment,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_schema import docx_build_output_spec
-from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
+from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
+    DocxChunk,
+    DocxSourceParagraph,
+    DocxSourceRun,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeGapSegment,
     NativeTextSegment,
@@ -126,6 +130,27 @@ def _body_text(item: NativeExamItem) -> list[str]:
 def test_underscore_answer_lines_never_reach_a_free_text_body() -> None:
     item = aligned_native_item(
         _item(_text_paragraph("Förklara."), _text_paragraph("_____"), _text_paragraph("  __ _  ")),
+        language="sv",
+    ).item
+
+    assert _body_text(item) == ["Förklara."]
+
+
+def test_a_source_backed_marked_answer_line_never_reaches_a_free_text_body() -> None:
+    chunks = (
+        DocxChunk("body:0001", "paragraph", "Förklara.", "Förklara."),
+        DocxChunk(
+            "body:0002",
+            "paragraph",
+            "_____",
+            "_____",
+            runs=(DocxSourceRun(0, "_____", ("underline",)),),
+            paragraphs=(DocxSourceParagraph(0, "_____"),),
+        ),
+    )
+    item = aligned_native_item(
+        _item(_text_paragraph("Förklara."), _text_paragraph("_____")),
+        chunks=chunks,
         language="sv",
     ).item
 

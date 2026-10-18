@@ -11,6 +11,9 @@ from dataclasses import dataclass
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import NativeParagraph
+from skriptoteket.domain.curated_apps.exam_workspace.source_answer_space import (
+    is_answer_space_paragraph,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import (
     FormattingTransferError,
     SourceFormatting,
@@ -183,10 +186,25 @@ def complete_source_formatting(
         offset += len(chunk.text)
     if body_source.label_span is not None:
         covered.update(range(*body_source.label_span))
+    # A source paragraph that is just a printed answer line is answer space, not an omitted
+    # question (W10). It is unprojected only when no aligned paragraph, for example a
+    # standalone gap, already owns it; either way its marked underscores are not missing.
+    answer_space = {
+        index
+        for paragraph in body_source.available_paragraphs
+        if paragraph.start not in body_source.projected
+        and is_answer_space_paragraph(
+            body_source.text, paragraph.start, paragraph.end, body_source.picture_offsets
+        )
+        for index in range(paragraph.start, paragraph.end)
+    }
     missing = [
         index
         for index, marks in enumerate(body_source.marks)
-        if marks and not body_source.text[index].isspace() and index not in covered
+        if marks
+        and not body_source.text[index].isspace()
+        and index not in covered
+        and index not in answer_space
     ]
     # A heading level is deterministic source formatting too, equally for a
     # size-derived or table-contained heading paragraph with no run marks.
@@ -217,7 +235,7 @@ def complete_source_formatting(
         body_source.path = "rebuilt"
         body = tuple(value for _, value in merged)
         body_source.output_anchors = [anchor for anchor, _ in merged]
-        missing = [index for index in missing if index not in covered]
+        missing = [index for index in missing if index not in covered and index not in answer_space]
     if not missing:
         return body
     if not can_rebuild_body:

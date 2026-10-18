@@ -20,6 +20,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeSegment,
     NativeTextSegment,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.source_answer_space import (
+    is_answer_space_paragraph,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.source_format_alignment import (
     ANSWER_LABEL,
     align_paragraph,
@@ -61,12 +64,14 @@ class SourceFormatting:
         paragraphs: list[SourceParagraph] = []
         self.provenance = ChunkProvenance()
         offset = 0
+        picture_offsets: list[int] = []
         for chunk in chunks:
             if parts:
                 parts.append("\n")
                 marks.append(())
                 offset += 1
             self.provenance.add(offset, chunk)
+            picture_offsets.extend(offset + image.offset for image in chunk.images)
             parts.append(chunk.text)
             chunk_marks: list[tuple[str, ...]] = [()] * len(chunk.text)
             for run in chunk.runs:
@@ -85,6 +90,8 @@ class SourceFormatting:
         self.text = "".join(parts)
         self.marks = marks
         self.paragraphs = paragraphs
+        # Absolute source offsets of this source's pictures, for the W10 answer-space rule.
+        self.picture_offsets = tuple(picture_offsets)
         self.entry_units = [
             SourceParagraph(*unit)
             for unit in entry_unit_intervals(
@@ -434,13 +441,22 @@ class SourceFormatting:
         for paragraph in self.available_paragraphs:
             cursor = self._content_start(paragraph)
             segments: list[NativeSegment] = []
+            gap_inside = False
             for start, end, gap in placements:
                 if paragraph.start <= start and end <= paragraph.end:
                     segments.extend(self._rebuilt_text_segments(cursor, start))
                     segments.append(gap)
                     cursor = end
+                    gap_inside = True
                 elif start < paragraph.end and end > paragraph.start:
                     raise FormattingTransferError("gap crosses source paragraph boundary")
+            if not gap_inside and is_answer_space_paragraph(
+                self.text, paragraph.start, paragraph.end, self.picture_offsets
+            ):
+                # A gap-less printed answer line is not question text (W10); account for its
+                # characters so coverage never restores it, and project no anchor for it.
+                self.covered.update(range(paragraph.start, paragraph.end))
+                continue
             segments.extend(self._rebuilt_text_segments(cursor, paragraph.end))
             if segments:
                 self.projected.add(paragraph.start)
