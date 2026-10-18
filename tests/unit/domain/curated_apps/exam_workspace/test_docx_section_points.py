@@ -20,6 +20,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_criteria import
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import NativeExamItem
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import NativeExamParent
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeItemReviewState,
+)
 from tests.unit.domain.curated_apps.exam_workspace.matching_recording_support import (
     recorded_matching_items,
 )
@@ -346,3 +349,32 @@ def test_questions_outside_every_part_keep_the_models_reading():
 
     assert _points(scored) == [None, 4]
     assert _marked(scored) == [False, False]
+
+
+def test_an_outer_part_never_shares_its_total_over_questions_that_print_their_own():
+    # "Del 1 (20 p)" holds q1, which prints "/18 p", and q2 under its inner part heading
+    # "(3 p)". The outer total is shared only over questions with neither, so q2 is never
+    # first given the 2 points its three-criterion rubric cannot carry in whole points.
+    chunks, questions = _exam(
+        "# Del 1: Grammatik (20 p)",
+        "Q Analysera meningen.",
+        "/18 p",
+        "# Uppgift 1.2: Ordklasser (3 p)",
+        "Q Ange ordklass för de tre orden.",
+    )
+    items = _items(chunks, questions, (None, 3))
+    rubric = items[1].model_copy(
+        update={
+            "criteria": tuple(NativeExamCriterion(text=f"Ord {n}.", points=1) for n in range(1, 4)),
+            "review": items[1].review.model_copy(
+                update={"state": NativeItemReviewState.REVIEW_COMPLETE, "reasons": ()}
+            ),
+        }
+    )
+
+    scored = _score(chunks, questions, (items[0], rubric))
+
+    assert _points(scored) == [18, 3]
+    assert _marked(scored) == [False, False]
+    assert scored.items[1].review == rubric.review
+    assert scored.items[1].criteria == rubric.criteria

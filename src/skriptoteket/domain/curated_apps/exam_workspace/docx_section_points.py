@@ -2,7 +2,8 @@
 
 The pass reads only ``PrintedPoints``: each question that prints its points takes them
 over the reply first, then each part gives what remains of its total to its questions
-that print none, and each part's total checks the parent that holds exactly its items.
+that print none, inner parts before the outer part around them, and each part's total
+checks the parent that holds exactly its items.
 """
 
 from collections.abc import Mapping
@@ -12,6 +13,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import Do
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_scoring import point_shares
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import (
+    PrintedPart,
     PrintedPoints,
     PrintedQuestion,
 )
@@ -41,9 +43,12 @@ def apply_printed_points(
     """Give every question's one item its printed points or its share of its part, in that
     order.
 
-    A question that prints its points keeps them. In each part, the total less the points
-    of its other questions goes to the questions that print none: one such question takes
-    the exact remainder. Among two or more, a question whose criteria fix its points keeps
+    A question that prints its points keeps them. Inner parts score first. In each part, the
+    total less the points of its other questions goes to the questions that print none: one
+    such question takes the exact remainder. An outer part ("Del 1") shares its total only
+    over its questions that print no points and lie in no inner part ("Uppgift 1.2 (3 p)"):
+    a question with its own points or inner total keeps that value and is never first given
+    a share. Among two or more, a question whose criteria fix its points keeps
     them (Q12/R14) and the rest share what remains in whole points, as evenly as possible,
     earlier questions taking the extra point; such shares are marked estimated. A share of
     no point, or an unkeyed grid, keeps the model's own reading. The part's total then
@@ -74,13 +79,12 @@ def apply_printed_points(
     for question in printed.questions:
         if question.points is not None and (item := member(question)) is not None:
             score(item, question, question.points, estimated=False)
-    for part in printed.parts:
-        questions = [
-            (question, item)
-            for question in (printed.questions[number] for number in part.questions)
-            if (item := member(question)) is not None
-        ]
-        unprinted = [(q, item) for q, item in questions if not q.prints]
+    # Inner parts (no part label) score their questions before an outer part shares its total.
+    for part in sorted(printed.parts, key=lambda p: p.identity is not None):
+        inner = _inner_questions(part, printed.parts)
+        flagged = [(printed.questions[number], number in inner) for number in part.questions]
+        questions = [(q, item, nested) for q, nested in flagged if (item := member(q)) is not None]
+        unprinted = [(q, item) for q, item, nested in questions if not q.prints and not nested]
         sharing = (
             unprinted
             if len(unprinted) == 1
@@ -90,7 +94,7 @@ def apply_printed_points(
             continue
         shared = {item.item_id for _, item in sharing}
         remaining = part.total - sum(
-            item.points or 0 for _, item in questions if item.item_id not in shared
+            item.points or 0 for _, item, _ in questions if item.item_id not in shared
         )
         if len(sharing) > 1:
             remaining = int(remaining)
@@ -113,3 +117,20 @@ def apply_printed_points(
             for parent in parents
         )
     return ScoredItems(tuple(scored), tuple(parents), tuple(events))
+
+
+def _inner_questions(part: PrintedPart, parts: tuple[PrintedPart, ...]) -> frozenset[int]:
+    """The questions of an outer part that an inner part inside it totals.
+
+    An outer part names its part ("Del 1"); an inner part names none ("Uppgift 1.2 (3 p)")
+    and holds only questions of the outer part. A part that names none has no inner parts.
+    """
+    if part.identity is None:
+        return frozenset()
+    held = frozenset(part.questions)
+    return frozenset(
+        number
+        for other in parts
+        if other.identity is None and held.issuperset(other.questions)
+        for number in other.questions
+    )

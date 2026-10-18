@@ -12,10 +12,7 @@ from pydantic import JsonValue
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_state import (
     DocxBuildState,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import (
-    line_points,
-    printed_points_plan,
-)
+from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import line_points
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     POINT_LABEL,
     QUESTION_HEADING_LABEL,
@@ -51,22 +48,14 @@ def refused_questions(items: list[JsonValue], state: DocxBuildState) -> dict[tup
     with the admission event code that names why.
 
     An entry touches every question one of its anchors belongs to, heading and points lines
-    included; the questions one entry touches are merged. A line that prints a total belongs
-    to the question the points plan gives it, wherever the grouping placed it: a points line
-    to its owner, a heading to the one question of the part it opens. An entry that touches
-    one question holds its body unless it lists only the question's heading and points lines,
-    which the admission joins to the body. A question whose body several entries hold is split.
+    included; the questions one entry touches are merged. ``state.question_by_anchor`` is the
+    one owner of every anchor, as admission and assembly read it: the normalised manifest
+    already gives each line that prints a total to its owner (``assign_points_lines``). An
+    entry that touches one question holds its body unless it lists only the question's heading
+    and points lines, which the admission joins to the body. A question whose body several
+    entries hold is split.
     """
-    plan = printed_points_plan(state.chunks, state.questions)
-    owner = {
-        **state.question_by_anchor,
-        **{anchor: state.questions[number] for anchor, number in plan.owners.items()},
-        **{
-            part.opener: state.questions[part.questions[0]]
-            for part in plan.parts
-            if len(part.questions) == 1
-        },
-    }
+    owner = state.question_by_anchor
     holders: Counter[tuple[str, ...]] = Counter()
     refused: dict[tuple[str, ...], str] = {}
     for raw in items:

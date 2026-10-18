@@ -285,6 +285,12 @@ def printed_points(own: Iterable[DocxChunk]) -> int | float | None:
     return _printed_points(labels[0]) if len(labels) == 1 else None
 
 
+def text_points(text: str) -> int | float | None:
+    """The one points label a text prints, as a number; None with none or several."""
+    labels = [label.group() for label in POINT_LABEL.finditer(text)]
+    return _printed_points(labels[0]) if len(labels) == 1 else None
+
+
 def with_printed_points(item: ProducedItem, own: Iterable[DocxChunk]) -> ProducedItem:
     """D3: a reply without points takes the one points label its own chunks print.
 
