@@ -45,6 +45,10 @@ vi.mock("../../../api/examWorkspace", async (original) => ({
   ...(await original<typeof import("../../../api/examWorkspace")>()),
   ...api,
 }));
+vi.mock("../../../api/examWorkspaceStructureCommands", async (original) => ({
+  ...(await original<typeof import("../../../api/examWorkspaceStructureCommands")>()),
+  changeExamWorkspaceItemType: api.changeExamWorkspaceItemType,
+}));
 vi.mock("../../../composables/useToast", () => ({ useToast: () => toast }));
 
 beforeEach(() => {
@@ -112,6 +116,7 @@ function baselineSharingPicture(shared: "item" | "instructions" | "parent"): Nat
     parent_id: "parent_001",
     instruction: pictureOnly(PICTURE),
     item_ids: ["item_002"],
+    place: 1,
   };
   const overrides: Partial<NativeExamDocument> = { assets: [asset(PICTURE)] };
   if (shared === "instructions") overrides.instructions = pictureOnly(PICTURE);

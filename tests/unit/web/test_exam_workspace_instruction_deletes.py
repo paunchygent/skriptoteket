@@ -202,11 +202,17 @@ async def _exercise_delete(
     )
     assert response.status_code == 200, response.text
     result = ExamWorkspaceDeleteResponse.model_validate(response.json())
-    assert result.removed_parent_id == (None if command == "child" else "parent_001")
+    assert result.removed_parent_id == ("parent_001" if command in {"heading", "cascade"} else None)
     assert result.document.title == before.title
     assert result.saved_document == saved.document
     assert result.summary == saved.summary
-    assert result.document.parents[-1] == before.parents[-1]
+    untouched = before.parents[-1]
+    after_untouched = next(
+        parent for parent in result.document.parents if parent.parent_id == untouched.parent_id
+    )
+    assert after_untouched.item_ids == untouched.item_ids
+    assert after_untouched.instruction == untouched.instruction
+    assert after_untouched.place == result.document.item_by_id(untouched.item_ids[0]).sequence - 1
     assert result.history_cursor != initial.history.cursor
     _assert_deletion(before, result.document, command)
     history = ExamWorkspaceHistoryResponse.model_validate(
@@ -254,6 +260,15 @@ def _assert_deletion(before: NativeExamDocument, after: NativeExamDocument, comm
     if command == "heading":
         assert after.items == before.items
         assert all(after.parent_of(i) is None for i in before.parents[0].item_ids)
+    elif command == "last-child":
+        kept = next(parent for parent in after.parents if parent.parent_id == "parent_001")
+        assert kept.item_ids == (), "A part that loses its last child stays (G8)"
+        assert after.parent_of("item_002") is None
+        expected = [item for item in before.items if item.item_id != "item_002"]
+        assert after.items == tuple(
+            item.model_copy(update={"sequence": sequence})
+            for sequence, item in enumerate(expected, 1)
+        )
     else:
         removed = set(before.parents[0].item_ids) if command == "cascade" else {"item_002"}
         expected = [item for item in before.items if item.item_id not in removed]

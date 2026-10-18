@@ -77,7 +77,7 @@ function buildDocument(
     parents: [],
     revision,
     header: { tags: [] },
-    schema_version: "native_exam_document_v6",
+    schema_version: "native_exam_document_v7",
     title: "Prov",
     ...overrides,
   };
@@ -231,6 +231,7 @@ describe("mergeConversionRevision", () => {
           instruction: [paragraph("Gemensam text")],
           item_ids: ["item_003", "item_004"],
           parent_id: "parent_001",
+          place: 2,
         },
       ],
     });
@@ -387,6 +388,7 @@ describe("mergeConversionRevision", () => {
           instruction: [paragraph("Gemensam")],
           item_ids: ["item_001", "item_002"],
           parent_id: "parent_001",
+          place: 0,
         },
       ],
     });
@@ -400,11 +402,13 @@ describe("mergeConversionRevision", () => {
             instruction: [paragraph("Gemensam")],
             item_ids: ["item_002", "item_004"],
             parent_id: "parent_001",
+            place: 1,
           },
           {
             instruction: [paragraph("Borta")],
             item_ids: ["item_099"],
             parent_id: "parent_002",
+            place: 4,
           },
         ],
         title: "Serverns titel",
@@ -450,5 +454,33 @@ describe("mergeConversionRevision", () => {
       ["item_004", 2, { kind: "text", marks: [], text: "Andra flikens fråga" }],
     ]);
     expect(document.revision).toBe(3);
+  });
+
+  it("keeps a childless part between two kept questions at its place through the merge", () => {
+    const block = {
+      instruction: [paragraph("Mellanrubrik")],
+      item_ids: [] as string[],
+      parent_id: "parent_001",
+      place: 2,
+    };
+    const first = buildDocument(1, [buildItem("item_001", "Fråga 1"), buildItem("item_002", "Fråga 2"), buildItem("item_003", "Fråga 3")], {
+      parents: [block],
+    });
+    const head = buildDocument(2, [buildItem("item_001", "Fråga 1 ny"), buildItem("item_002", "Fråga 2"), buildItem("item_003", "Fråga 3")], {
+      parents: [block],
+    });
+
+    const document = mergeConversionRevision({
+      base: first,
+      baseUnits: [],
+      head,
+      headUnits: [],
+      local: first,
+    });
+
+    expect(document.items.map(textOf)).toEqual(["Fråga 1 ny", "Fråga 2", "Fråga 3"]);
+    expect(document.parents).toEqual([
+      { instruction: [paragraph("Mellanrubrik")], item_ids: [], parent_id: "parent_001", place: 2 },
+    ]);
   });
 });

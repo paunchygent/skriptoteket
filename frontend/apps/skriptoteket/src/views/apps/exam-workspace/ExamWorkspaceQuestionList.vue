@@ -13,7 +13,10 @@
  *   exam has one, otherwise a quiet "Lägg till instruktioner"; both open it in
  *   the editor. On a phone the list
  *   opens full screen over the editor from the question strip and closes
- *   with Tillbaka or a choice.
+ *   with Tillbaka or a choice. "Markera" turns the list into Markera mode: a
+ *   standalone question carries a checkbox (an ordering question's is
+ *   disabled, G6) and a bar at the top groups the ticked questions into a new
+ *   part (G2, G11); a part and a question inside a part carry no checkbox.
  *
  * Relationships:
  *   - Rendered by `ExamWorkspaceView`; rows are `ExamWorkspaceQuestionRow`,
@@ -60,7 +63,8 @@ const anyPrintedDifference = computed(
 
 const emit = defineEmits<{
   select: [id: string];
-  add: [kind: TeacherItemKind | "instruction"];
+  add: [kind: TeacherItemKind | "instruction" | "part"];
+  group: [itemIds: string[]];
   acceptExamTotal: [];
   acceptPartTotal: [parentId: string];
   acceptAllTotals: [];
@@ -70,6 +74,57 @@ const emit = defineEmits<{
 const rows = ref<HTMLElement | null>(null);
 const newTrigger = ref<HTMLButtonElement | null>(null);
 const newMenuOpen = ref(false);
+
+/** The Markera mode: the list shows a checkbox per standalone question and a group bar. */
+const marking = ref(false);
+/** The ticked question ids, which only ever hold standalone questions (G11). */
+const marked = ref<Set<string>>(new Set());
+
+/** The ticks in document order, as the group command takes them (G10). */
+const markedIds = computed(() =>
+  props.entries
+    .filter((entry) => entry.kind === "item" && entry.parentId === null && marked.value.has(entry.id))
+    .map((entry) => entry.id),
+);
+
+function startMarking(): void {
+  marked.value = new Set();
+  marking.value = true;
+}
+
+function cancelMarking(): void {
+  marked.value = new Set();
+  marking.value = false;
+}
+
+function toggleMark(id: string): void {
+  if (props.disabled) {
+    return;
+  }
+  const next = new Set(marked.value);
+  if (next.has(id)) {
+    next.delete(id);
+  } else {
+    next.add(id);
+  }
+  marked.value = next;
+}
+
+function groupMarked(): void {
+  if (markedIds.value.length === 0) {
+    return;
+  }
+  emit("group", markedIds.value);
+}
+
+// A successful group turns the ticked questions into a part's children, so no
+// tick is a standalone question any more and the mode leaves with them; a
+// refused group changes nothing and keeps the ticks for a retry.
+watch(markedIds, (ids) => {
+  if (marking.value && marked.value.size > 0 && ids.length === 0) {
+    cancelMarking();
+  }
+});
 
 watch(
   () => props.selectedId,
@@ -109,20 +164,50 @@ watch(
       >
         Frågor ({{ questionCount }})
       </h2>
+      <div class="list__head-actions">
+        <button
+          ref="newTrigger"
+          type="button"
+          class="xw-btn xw-btn--compact"
+          :disabled="!canAdd"
+          aria-haspopup="menu"
+          :aria-expanded="newMenuOpen"
+          data-test="exam-workspace-new"
+          @click="newMenuOpen = !newMenuOpen"
+        >
+          <UiGlyph
+            meaning="add"
+            :size="16"
+          />Ny uppgift
+        </button>
+      </div>
+    </div>
+    <div
+      class="list__markbar"
+      data-test="exam-workspace-marking-bar"
+    >
       <button
-        ref="newTrigger"
         type="button"
-        class="xw-btn xw-btn--compact"
-        :disabled="!canAdd"
-        aria-haspopup="menu"
-        :aria-expanded="newMenuOpen"
-        data-test="exam-workspace-new"
-        @click="newMenuOpen = !newMenuOpen"
+        class="xw-btn xw-btn--compact xw-btn--primary list__markbar-group"
+        :class="{ 'list__markbar-group--idle': !marking }"
+        :disabled="disabled || markedIds.length === 0"
+        data-test="exam-workspace-group-marked"
+        @click="groupMarked"
+      >
+        Skapa del av markerade ({{ markedIds.length }})
+      </button>
+      <button
+        type="button"
+        class="xw-btn xw-btn--compact list__markbar-toggle"
+        :disabled="disabled"
+        :data-test="marking ? 'exam-workspace-marking-cancel' : 'exam-workspace-marking-start'"
+        @click="marking ? cancelMarking() : startMarking()"
       >
         <UiGlyph
-          meaning="add"
+          v-if="!marking"
+          meaning="checkbox-off"
           :size="16"
-        />Ny uppgift
+        />{{ marking ? "Avbryt" : "Markera" }}
       </button>
     </div>
     <div class="list__scroll">
@@ -165,8 +250,11 @@ watch(
           :entry="entry"
           :selected="entry.id === selectedId"
           :disabled="disabled"
+          :marking="marking"
+          :marked="marked.has(entry.id)"
           @select="emit('select', $event)"
           @accept-total="emit('acceptPartTotal', $event)"
+          @toggle-mark="toggleMark"
         />
       </div>
     </div>
@@ -222,6 +310,17 @@ watch(
   height: 52px; padding: 0 var(--huleedu-space-4) 0 var(--huleedu-space-6); border-bottom: 1px solid var(--huleedu-surface-divider);
 }
 .list__title { margin: 0; font-size: var(--huleedu-text-base); font-weight: var(--huleedu-font-semibold); }
+.list__head-actions { display: flex; align-items: center; gap: var(--huleedu-space-2); }
+.list__markbar {
+  display: flex; align-items: center; gap: var(--huleedu-space-2); flex: none;
+  height: calc(var(--xw-ctl-compact, 28px) + 2 * var(--huleedu-space-2));
+  padding: 0 var(--huleedu-space-4) 0 var(--huleedu-space-6);
+  border-bottom: 1px solid var(--huleedu-surface-divider);
+}
+/* The group action keeps its box in both states; hidden when the list is not marking. */
+.list__markbar-group--idle { visibility: hidden; }
+/* One slot for Markera/Avbryt: a fixed width so swapping the label moves nothing. */
+.list__markbar-toggle { min-width: 100px; }
 .list__scroll { flex: 1; min-height: 0; overflow-y: auto; }
 .list__intro {
   padding: var(--huleedu-space-1-5) var(--huleedu-space-4) var(--huleedu-space-1-5) var(--huleedu-space-6);
@@ -258,6 +357,7 @@ watch(
 .list__action--idle { visibility: hidden; }
 @media (max-width: 1279px) {
   .list__head { padding: 0 var(--huleedu-space-3) 0 var(--huleedu-space-4); }
+  .list__markbar { padding: 0 var(--huleedu-space-3) 0 var(--huleedu-space-4); }
   .list__foot { padding: var(--huleedu-space-2) var(--huleedu-space-4); }
   .list__intro { padding-left: var(--huleedu-space-4); padding-right: var(--huleedu-space-3); }
 }

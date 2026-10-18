@@ -163,6 +163,7 @@ def shared_picture_document() -> SharedPictureDocument:
         parents=(
             NativeExamParent(
                 parent_id="parent_001",
+                place=0,
                 instruction=(
                     NativeParagraph(
                         heading_level=None,

@@ -35,6 +35,11 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders import plain_body
+from tests.unit.domain.curated_apps.exam_workspace.parent_commands_test_support import (
+    _check_structure,
+    _exam,
+    _saved_exam,
+)
 from tests.unit.domain.curated_apps.exam_workspace.recorded_native_exam_support import (
     parent_over,
     recorded_document,
@@ -46,28 +51,6 @@ _DELETE_CASES = [
     pytest.param(delete_parent_with_children, False, id="cascade"),
     pytest.param(partial(delete_child, item_id="item_002"), True, id="last-child"),
 ]
-
-
-def _exam() -> NativeExamDocument:
-    # Keep a converted mixed-kind parent in place while authoring another parent.
-    return recorded_document((parent_over("parent_001", "Existing instruction", 2, 3),))
-
-
-def _saved_exam(*, single_child: bool = False) -> NativeExamDocument:
-    # Recorded conversion items, with explicit test grouping, reopened from the saved JSON shape.
-    document = recorded_document(
-        (
-            parent_over("parent_001", "First instruction", *((2,) if single_child else (2, 3, 4))),
-            parent_over("parent_002", "Untouched instruction", 6, 7),
-        )
-    )
-    return parse_native_exam_document(native_exam_document_json_bytes(document))
-
-
-def _check_structure(document: NativeExamDocument) -> None:
-    # Re-enter full validation: model_copy alone does not establish the invariants.
-    NativeExamDocument.model_validate(document.model_dump())
-    assert [item.sequence for item in document.items] == list(range(1, len(document.items) + 1))
 
 
 @pytest.mark.parametrize("position", [0, 1, 2])
@@ -95,7 +78,9 @@ def test_create_parent_inserts_among_atomic_top_level_units_without_losing_exist
     assert child.body == template.body
     assert child.points == template.points
     assert child.review.parse_origin is NativeParseOrigin.TEACHER_CREATED
-    assert result.parent_of("item_002") == base.parents[0]
+    assert result.parent_of("item_002") == base.parents[0].model_copy(
+        update={"place": result.item_by_id("item_002").sequence - 1}
+    )
     assert result.revision == base.revision
     _check_structure(result)
 
@@ -167,7 +152,14 @@ def test_reorder_changes_only_the_requested_parent_and_delete_updates_sum() -> N
     _check_structure(deleted)
     last_child_deleted = delete_child(deleted, parent_id="parent_001", item_id="item_002")
 
-    assert last_child_deleted.parents == (base.parents[1],)
+    kept = last_child_deleted.parents[0]
+    assert kept.parent_id == "parent_001"
+    assert kept.item_ids == ()
+    assert kept.place == 1, "The empty part stays where its first question stood (G8)"
+    assert kept.instruction == base.parents[0].instruction
+    assert last_child_deleted.parents[1] == base.parents[1].model_copy(
+        update={"place": last_child_deleted.item_by_id(base.parents[1].item_ids[0]).sequence - 1}
+    )
     assert last_child_deleted.parent_of("item_002") is None
     assert [item.item_id for item in last_child_deleted.items] == [
         item.item_id for item in base.items if item.item_id not in {"item_002", "item_003"}
@@ -316,7 +308,11 @@ def test_cascade_removes_exactly_the_three_children_and_renumbers_all_survivors(
         dict(item.model_dump(), sequence=sequence)
         for sequence, item in enumerate(survivors, start=1)
     ]
-    assert result.parents == (base.parents[1],)
+    assert result.parents == (
+        base.parents[1].model_copy(
+            update={"place": result.item_by_id(base.parents[1].item_ids[0]).sequence - 1}
+        ),
+    )
     assert [result.item_by_id(item_id).sequence for item_id in result.parents[0].item_ids] == [3, 4]
     assert parent_points(result, result.parents[0]) == parent_points(base, base.parents[1])
     assert result.document_id == base.document_id
@@ -327,14 +323,21 @@ def test_cascade_removes_exactly_the_three_children_and_renumbers_all_survivors(
     _check_structure(result)
 
 
-def test_deleting_the_last_child_removes_its_parent_without_changing_other_items_content() -> None:
+def test_deleting_the_last_child_keeps_its_parent_as_a_childless_instruction_block() -> None:
     base = _saved_exam(single_child=True)
     original = native_exam_document_json_bytes(base)
 
     result = delete_child(base, parent_id="parent_001", item_id="item_002")
 
-    assert result.parents == (base.parents[1],)
-    assert not any(parent.parent_id == "parent_001" for parent in result.parents)
+    kept = next(parent for parent in result.parents if parent.parent_id == "parent_001")
+    assert kept.item_ids == ()
+    assert kept.place == 1
+    assert kept.instruction == base.parents[0].instruction
+    assert next(parent for parent in result.parents if parent.parent_id == "parent_002") == (
+        base.parents[1].model_copy(
+            update={"place": result.item_by_id(base.parents[1].item_ids[0]).sequence - 1}
+        )
+    )
     assert [item.model_dump() for item in result.items] == [
         dict(item.model_dump(), sequence=sequence)
         for sequence, item in enumerate(

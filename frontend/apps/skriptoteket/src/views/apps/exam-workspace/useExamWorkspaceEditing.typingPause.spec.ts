@@ -28,6 +28,10 @@ vi.mock("../../../api/examWorkspace", async (original) => ({
   ...(await original<typeof import("../../../api/examWorkspace")>()),
   ...api,
 }));
+vi.mock("../../../api/examWorkspaceStructureCommands", async (original) => ({
+  ...(await original<typeof import("../../../api/examWorkspaceStructureCommands")>()),
+  changeExamWorkspaceItemType: api.changeExamWorkspaceItemType,
+}));
 vi.mock("../../../composables/useToast", () => ({ useToast: () => toast }));
 
 const ROUND_TRIP_MS = 50;

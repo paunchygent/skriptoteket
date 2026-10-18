@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "43f056f7a5a24726884c080b539fff87ecdd34379681c9ad34ba3315428efb54",
+  "source_set_digest": "678e8d8d36b830d4890605b8a5f368454e21fa31ab90a81efee74d8d7765c824",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5642,7 +5642,7 @@
       "type": "task",
       "title": "Teachers group questions into new parts and move questions into, out of and between parts",
       "path": "docs/backlog/tasks/task-skript-39-06-10-teachers-group-questions-into-new-parts-and-move-questions-into-out-of-and-between-parts.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-06",
       "owners": [
@@ -5653,7 +5653,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-18",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Independent ruthless-reviewer 47f15e2d review changes_requested (F1 high, F2-F8; root 01a14e6d evidence/reviews/47f15e2d-1489-4434-8fcf-e662fe6bb770.md); F2-F8 admitted on focused proof (evidence/lead-2061895e/final-report.md); re-review cleared F1 and found F9 high (-rereview.md); second re-review approved F9 at 7667692c (-rereview2.md); merged into main. Staging walk follows with the 40-04-07 merge (v8 seam)."
       }
     },
     {
