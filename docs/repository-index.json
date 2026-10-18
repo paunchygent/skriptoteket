@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "678e8d8d36b830d4890605b8a5f368454e21fa31ab90a81efee74d8d7765c824",
+  "source_set_digest": "fc68dca3670a256880678192d0c0588f1d5304297fe5ae5dea27fc3d87fa996d",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -7691,6 +7691,24 @@
         "decided_at": "2026-10-18",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "Independent ruthless-reviewer review of the delivery (root 01a14f23 evidence/reviews/10b693b6-1db4-4125-a880-ac5f7273bde7.md); its only finding F1 (medium) repaired at cbd290bd (capture-time request key sidecar per label_b recording, refused without one) and admitted on focused proof; user-approved re-recording of exactly 14 labeler calls (16,286 in, 1,315 out tokens); integration file 11/11, domain suite 3586 passed on Hemma; merged into main."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0048",
+      "type": "task",
+      "title": "QTI item serializer indents block structure only and never mixed inline content",
+      "path": "docs/backlog/tasks/task-skript-rep-0048-qti-item-serializer-indents-block-structure-only-and-never-mixed-inline-content.md",
+      "status": "in_progress",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {
