@@ -4,8 +4,8 @@ id: TASK-SKRIPT-REP-0047
 title: Exam content-suggestion handlers are typed and provided through protocols
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-18'
 status: ready
 closeout_review:
@@ -55,12 +55,12 @@ Stop and report to the parent if the guard's expected paid-route snapshot would 
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| P1  | `ContentSuggestionsResponse` moves to a new application model module `src/skriptoteket/application/curated_apps/exam_workspace_content_suggestions.py`; the old definition in the handler module is deleted and every importer imports from the new module. No re-export from the handler module. |
+| ID  | Decided contract term                                                                                                                                                                                                                                                                                                                                                                              |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P1  | `ContentSuggestionsResponse` moves to a new application model module `src/skriptoteket/application/curated_apps/exam_workspace_content_suggestions.py`; the old definition in the handler module is deleted and every importer imports from the new module. No re-export from the handler module.                                                                                                  |
 | P2  | `protocols/exam_workspace.py` gains `RequestExamContentSuggestionsHandlerProtocol` (`handle(*, actor, lineage_id) -> ContentSuggestionsResponse`) and `GetExamContentSuggestionsHandlerProtocol` (`handle(*, actor, lineage_id, job_id) -> ContentSuggestionsResponse`). The concrete handlers stay plain classes that satisfy the protocols structurally, like the other exam-workspace handlers. |
-| P3  | The DI providers `request_content_suggestions` and `get_content_suggestions` return the protocol types. |
-| P4  | Both routes resolve `FromDishka[...Protocol]`. The request route keeps `require_app_ai_api`; the status route keeps `require_app_user_api`. |
-| P5  | The guard policy keys `JOB_ENQUEUERS` by `RequestExamContentSuggestionsHandlerProtocol` and `NON_AI_JOB_REPOSITORY_USERS` by `GetExamContentSuggestionsHandlerProtocol`. `EXPECTED_AI_ROUTES` is unchanged. |
-| P6  | `ContentSuggestionsDouble` subclasses `RecordingDouble` and `RequestExamContentSuggestionsHandlerProtocol` only, like the sibling doubles, and the test provider returns the protocol type. |
-| P7  | The status handler is included under the same rule (Boy Scout: the same defect on the sibling route in the same files). |
+| P3  | The DI providers `request_content_suggestions` and `get_content_suggestions` return the protocol types.                                                                                                                                                                                                                                                                                            |
+| P4  | Both routes resolve `FromDishka[...Protocol]`. The request route keeps `require_app_ai_api`; the status route keeps `require_app_user_api`.                                                                                                                                                                                                                                                        |
+| P5  | The guard policy keys `JOB_ENQUEUERS` by `RequestExamContentSuggestionsHandlerProtocol` and `NON_AI_JOB_REPOSITORY_USERS` by `GetExamContentSuggestionsHandlerProtocol`. `EXPECTED_AI_ROUTES` is unchanged.                                                                                                                                                                                        |
+| P6  | `ContentSuggestionsDouble` subclasses `RecordingDouble` and `RequestExamContentSuggestionsHandlerProtocol` only, like the sibling doubles, and the test provider returns the protocol type.                                                                                                                                                                                                        |
+| P7  | The status handler is included under the same rule (Boy Scout: the same defect on the sibling route in the same files).                                                                                                                                                                                                                                                                            |
