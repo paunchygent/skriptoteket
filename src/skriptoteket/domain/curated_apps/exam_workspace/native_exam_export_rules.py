@@ -1,5 +1,7 @@
 """Which items block a native exam document's export, and which hold a trusted answer key.
 
+Ordering steps are choices; a blank step blocks as ``empty_ordering_step``.
+
 Export needs every value the export carries, never a parsing doubt (TASK-SKRIPT-39-05-07 D1).
 """
 
@@ -37,6 +39,7 @@ _KEYED_KINDS = frozenset(
         NativeExamItemKind.GAP_FILL,
         NativeExamItemKind.INLINE_CHOICE,
         NativeExamItemKind.MATCHING,
+        NativeExamItemKind.ORDERING,
     }
 )
 
@@ -67,11 +70,20 @@ def native_export_blockers(document: NativeExamDocument) -> tuple[NativeExportBl
     other converted items that need review do not block.
     Keyed kinds without an answer key block export: Exam.net QTI would carry an
     automatic item with no correct response and the Exam.net PDF prints the key.
+    An ordering question needs two steps and a text in every step; its key is its step order,
+    always teacher-authored, so it never lacks one (TASK-SKRIPT-39-06-08).
     """
     blockers: list[NativeExportBlocker] = []
     for item in document.items:
         for reason, bodies in (
-            ("empty_choice", (choice.body for choice in item.choices)),
+            (
+                (
+                    "empty_ordering_step"
+                    if item.kind is NativeExamItemKind.ORDERING
+                    else "empty_choice"
+                ),
+                (choice.body for choice in item.choices),
+            ),
             ("empty_gap_option", (option.body for gap in item.gaps for option in gap.options)),
             ("empty_match_entry", (entry.body for entry in item.match_left)),
             ("empty_match_entry", (entry.body for entry in item.match_right)),
@@ -84,6 +96,10 @@ def native_export_blockers(document: NativeExamDocument) -> tuple[NativeExportBl
                     if isinstance(segment, NativeTextSegment)
                 ):
                     blockers.append(NativeExportBlocker(item_id=item.item_id, reason=reason))
+        if item.kind is NativeExamItemKind.ORDERING and len(item.choices) < 2:
+            blockers.append(
+                NativeExportBlocker(item_id=item.item_id, reason="ordering_too_few_steps")
+            )
         if is_unbuilt_question(item):
             blockers.append(NativeExportBlocker(item_id=item.item_id, reason="unbuilt_question"))
         if item.answer_key.origin is NativeAnswerKeyOrigin.MACHINE_PROPOSED:

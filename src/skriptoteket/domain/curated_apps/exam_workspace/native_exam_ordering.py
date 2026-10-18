@@ -17,6 +17,8 @@ from __future__ import annotations
 import random
 from collections.abc import Sequence
 
+from skriptoteket.domain.errors import DomainError, validation_error
+
 
 def draw_print_order(step_ids: Sequence[str], rng: random.Random) -> tuple[str, ...]:
     """A shuffled order of the steps that is never the key order once there are two."""
@@ -37,3 +39,11 @@ def validate_print_order(step_ids: Sequence[str], print_order: Sequence[str]) ->
         raise ValueError("ordering print order must hold every step exactly once")
     if len(step_ids) >= 2 and tuple(print_order) == tuple(step_ids):
         raise ValueError("ordering print order must differ from the answer-key order")
+
+
+def ordering_inside_parent_error(item_id: str) -> DomainError:
+    """Ordering questions are standalone only (TASK-SKRIPT-39-06-08 D4)."""
+    return validation_error(
+        "Ordningsfrågor kan bara vara fristående frågor, inte deluppgifter.",
+        details={"reason": "ordering_inside_parent", "item_id": item_id},
+    )
