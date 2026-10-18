@@ -9,9 +9,13 @@
  *   it is reviewed, needs review or still converts. An instruction row shows
  *   how many deluppgifter it holds and their points; when the exam text
  *   prints another part total, the points line says so in amber and wraps
- *   instead of truncating. Its deluppgifter are indented under it.
+ *   instead of truncating, and its "Använd N p" sits in its own cell, so
+ *   accepting a part total never selects the row. Its deluppgifter are
+ *   indented under it.
  *
  * Relationships:
+ *   - A `row` of the list's grid: every child is a `gridcell`, which may hold
+ *     the part's accept button, unlike a listbox option.
  *   - Rendered by `ExamWorkspaceQuestionList`; receives `selected` as a
  *     boolean, so moving the selection re-renders only the two rows involved.
  */
@@ -57,15 +61,21 @@ const aiTitle = computed(() =>
       'row--child': entry.kind === 'item' && entry.parentId !== null,
       'row--converting': entry.kind === 'item' && entry.status === 'converting',
     }"
-    role="option"
+    role="row"
     :aria-selected="selected"
     :tabindex="selected ? 0 : -1"
     :data-entry-id="entry.id"
     :data-test="`exam-workspace-row-${entry.id}`"
     @click="emit('select', entry.id)"
   >
-    <span class="row__n">{{ entry.label }}</span>
-    <span class="row__body">
+    <span
+      class="row__n"
+      role="gridcell"
+    >{{ entry.label }}</span>
+    <span
+      class="row__body"
+      role="gridcell"
+    >
       <span class="row__text">{{ entry.text || "Ny fråga" }}</span>
       <span class="row__meta">
         <template v-if="entry.kind === 'item' && entry.problem && entry.status !== 'converting'">
@@ -92,7 +102,7 @@ const aiTitle = computed(() =>
         </button>
       </span>
     </span>
-    <span
+    <span role="gridcell"><span
       v-if="entry.kind === 'item' && entry.aiKey"
       class="xw-ai"
       :title="aiTitle"
@@ -101,10 +111,10 @@ const aiTitle = computed(() =>
     ><UiGlyph
       meaning="ai-assist"
       :size="16"
-    /></span>
-    <span v-else />
-    <span v-if="entry.kind === 'parent'" />
-    <span
+    /></span></span>
+    <span role="gridcell"><span
+      v-if="entry.kind === 'parent'"
+    /><span
       v-else-if="entry.status === 'converting'"
       class="xw-muted"
       title="Konverteras"
@@ -114,8 +124,7 @@ const aiTitle = computed(() =>
       meaning="busy"
       :size="16"
       class="xw-spin"
-    /></span>
-    <span
+    /></span><span
       v-else-if="entry.status === 'ok'"
       class="xw-ok"
       title="Granskad"
@@ -124,8 +133,7 @@ const aiTitle = computed(() =>
     ><UiGlyph
       meaning="status-success"
       :size="16"
-    /></span>
-    <span
+    /></span><span
       v-else
       class="xw-warn"
       title="Behöver granskas"
@@ -134,7 +142,7 @@ const aiTitle = computed(() =>
     ><UiGlyph
       meaning="status-warning"
       :size="16"
-    /></span>
+    /></span></span>
   </div>
 </template>
 

@@ -14,10 +14,12 @@
 import { mount } from "@vue/test-utils";
 import type { VueWrapper } from "@vue/test-utils";
 import { afterEach, describe, expect, it } from "vitest";
-import { nextTick } from "vue";
+import { defineComponent, h, nextTick } from "vue";
 
 import type { NativeExamBodyParagraph, NativeExamBodySegment } from "../../../api/examWorkspace";
 import ExamWorkspaceRichTextEntry from "./ExamWorkspaceRichTextEntry.vue";
+import { provideRichTextTargetRegistry } from "./examWorkspaceRichTextTarget";
+import type { RichTextTargetRegistry } from "./examWorkspaceRichTextTarget";
 import {
   editorBehind,
   posIn,
@@ -73,6 +75,37 @@ describe("ExamWorkspaceRichTextEntry", () => {
     expect(bodies(wrapper).at(-1)).toEqual([
       paragraph(text("Syregas", ["italic"]), text(" och kväve")),
     ]);
+  });
+
+  it("marks a toolbar edit structural so it is its own undo step, and typing not", async () => {
+    let registry: RichTextTargetRegistry | null = null;
+    const Host = defineComponent({
+      emits: ["updateBody"],
+      setup(_props, { emit }) {
+        registry = provideRichTextTargetRegistry();
+        return () =>
+          h(ExamWorkspaceRichTextEntry, {
+            body: [paragraph(text("Syre"))],
+            label: "Text för svarsalternativ A",
+            testId: TEST_ID,
+            onUpdateBody: (body: Body, structural: boolean) => emit("updateBody", body, structural),
+          });
+      },
+    });
+    mounted = mount(Host, { attachTo: document.body });
+    await settleEditors();
+    const editor = editorBehind(mounted, TEST_ID);
+
+    surfaceOf(mounted, TEST_ID).focus();
+    await nextTick();
+    editor.commands.setTextSelection(posIn(editor, "Syre", 4));
+    editor.commands.insertContent("gas");
+    editor.commands.setTextSelection({ from: posIn(editor, "Syregas", 0), to: posIn(editor, "Syregas", 7) });
+    registry!.active.value!.toggleMark("bold");
+
+    const emitted = (mounted.emitted("updateBody") ?? []) as Array<[Body, boolean]>;
+    expect(emitted.map(([, structural]) => structural)).toEqual([false, true]);
+    expect(emitted.at(-1)?.[0]).toEqual([paragraph(text("Syregas", ["bold"]))]);
   });
 
   describe("word-processor editing", () => {

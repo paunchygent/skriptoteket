@@ -84,6 +84,7 @@ describe("ExamWorkspaceInstructionEditor pictures", () => {
           ],
         },
       ],
+      false,
     ]);
     expect(wrapper.find('[data-asset-id="asset_001"] img').attributes("src")).toBe(URL);
   });
@@ -94,7 +95,8 @@ describe("ExamWorkspaceInstructionEditor pictures", () => {
 
     press(surfaceOf(wrapper, INSTRUCTION), "Backspace");
 
-    expect(wrapper.emitted("updateInstruction")).toEqual([[[]]]);
+    // The picture goes with the text, so the edit is its own undo step.
+    expect(wrapper.emitted("updateInstruction")).toEqual([[[], true]]);
   });
 
   it("does not edit the instruction while the editor is locked", async () => {

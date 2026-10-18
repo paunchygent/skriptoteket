@@ -29,7 +29,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  updateBody: [choiceId: string, body: NativeExamBodyParagraph[]];
+  updateBody: [choiceId: string, body: NativeExamBodyParagraph[], structural: boolean];
   updateCorrectChoices: [correctChoiceIds: string[]];
 }>();
 
@@ -118,7 +118,7 @@ function choiceLetter(index: number): string {
         :invalid="isEmptyBody(choice.body)"
         :label="`Text för svarsalternativ ${choiceLetter(choiceIndex)}`"
         :test-id="`exam-workspace-choice-text-${choice.choice_id}`"
-        @update-body="(body) => emit('updateBody', choice.choice_id, body)"
+        @update-body="(body, structural) => emit('updateBody', choice.choice_id, body, structural)"
       />
     </div>
     <p

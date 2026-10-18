@@ -408,11 +408,11 @@ function blankGap(inlineChoice: boolean): NativeExamGap {
 }
 
 /**
- * The question a teacher adds: "Ny fråga" with the kind's empty structure,
- * the same structure the server gives a question it retypes (TASK-SKRIPT-39-06-05).
- * Choice kinds get two empty choices, gap kinds one gap after the question
- * text (Kort svar is a Lucktext with one gap, Q14), a rullista one gap whose
- * first empty option is the key, and Kategorisera one row, two categories and
+ * The question a teacher adds: no question text, and the kind's empty
+ * structure, the same structure the server gives a question it retypes
+ * (TASK-SKRIPT-39-06-05). Choice kinds get two empty choices, gap kinds one
+ * paragraph holding only the gap (Kort svar is a Lucktext with one gap, Q14),
+ * a rullista one gap whose first empty option is the key, and Kategorisera one row, two categories and
  * a zero tick value. Empty texts block export until the teacher fills them in.
  */
 export function newTeacherItem(
@@ -421,10 +421,6 @@ export function newTeacherItem(
   teacherKind: TeacherItemKind,
 ): NativeExamItem {
   const kind: NativeExamItemKind = teacherKind === "short_answer" ? "gap_fill" : teacherKind;
-  const question: NativeExamBodyParagraph = {
-    heading_level: null,
-    segments: [{ kind: "text", text: "Ny fråga", marks: [] }],
-  };
   const gapped = kind === "gap_fill" || kind === "inline_choice";
   const choice = kind === "single_choice" || kind === "multiple_response";
   const matching = kind === "matching";
@@ -446,9 +442,7 @@ export function newTeacherItem(
             ? "teacher_authored"
             : "absent",
     },
-    body: gapped
-      ? [question, { heading_level: null, segments: [{ kind: "gap", gap_id: "gap_001" }] }]
-      : [question],
+    body: gapped ? [{ heading_level: null, segments: [{ kind: "gap", gap_id: "gap_001" }] }] : [],
     choices: choice || ordering ? blankChoices() : [],
     gaps: gapped ? [blankGap(kind === "inline_choice")] : [],
     item_id: itemId,

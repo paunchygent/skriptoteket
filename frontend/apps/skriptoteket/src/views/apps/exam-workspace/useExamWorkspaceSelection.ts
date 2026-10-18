@@ -103,7 +103,6 @@ export function useExamWorkspaceSelection({ editing, importOpen, listOpen, after
   const converting = computed(
     () => selectedItem.value !== null && convertingItemIds.value.has(selectedItem.value.item_id),
   );
-  const entryIndex = computed(() => entries.value.findIndex((entry) => entry.id === selectedEntryId.value));
   const stripState = computed(() => {
     const entry = selectedEntry.value;
     if (!entry) return null;
@@ -138,9 +137,28 @@ export function useExamWorkspaceSelection({ editing, importOpen, listOpen, after
     listOpen.value = false;
   }
 
+  /**
+   * The ids arrow keys and the phone strip walk, top to bottom: the exam
+   * instruction sits above the first entry while the exam has one or it is open.
+   */
+  const stepOrder = computed(() => {
+    const ids = entries.value.map((entry) => entry.id);
+    const hasInstructions = (workspaceDocument.value?.instructions.length ?? 0) > 0;
+    return hasInstructions || examInstructionsSelected.value ? [EXAM_INSTRUCTIONS_ENTRY_ID, ...ids] : ids;
+  });
+
+  function stepTarget(delta: -1 | 1): string | null {
+    const at = stepOrder.value.indexOf(selectedEntryId.value ?? "");
+    return at < 0 ? null : (stepOrder.value[at + delta] ?? null);
+  }
+
+  function canStep(delta: -1 | 1): boolean {
+    return stepTarget(delta) !== null;
+  }
+
   function step(delta: -1 | 1): void {
-    const target = entries.value[entryIndex.value + delta];
-    if (target) selectEntry(target.id);
+    const target = stepTarget(delta);
+    if (target !== null) selectEntry(target);
   }
 
   function gotoItem(itemId: string): void {
@@ -180,10 +198,10 @@ export function useExamWorkspaceSelection({ editing, importOpen, listOpen, after
   );
 
   return {
+    canStep,
     converting,
     dismissItemNotice,
     entries,
-    entryIndex,
     examInstructionsSelected,
     gotoItem,
     itemChild,

@@ -78,7 +78,7 @@ describe("ordering edits through the editing session", () => {
     const before = [...editing.workspaceDocument.value!.items[0]!.print_order];
     const typed = [{ heading_level: null, segments: [{ kind: "text" as const, text: "Tes", marks: [] }] }];
 
-    editing.updateItemChoiceBody("item_001", "choice_001", typed);
+    editing.updateItemChoiceBody("item_001", "choice_001", typed, false);
     const random = vi.spyOn(Math, "random").mockReturnValue(0);
     editing.shuffleItemOrderingSteps("item_001");
     random.mockRestore();
@@ -110,7 +110,7 @@ describe("ordering edits through the editing session", () => {
     const typed = [{ heading_level: null, segments: [{ kind: "text" as const, text: "Tes", marks: [] }] }];
     api.storeExamWorkspaceUndoStep.mockRejectedValueOnce(new Error("offline"));
 
-    editing.updateItemChoiceBody("item_001", "choice_001", typed);
+    editing.updateItemChoiceBody("item_001", "choice_001", typed, false);
     const random = vi.spyOn(Math, "random").mockReturnValue(0);
     editing.shuffleItemOrderingSteps("item_001");
     random.mockRestore();
@@ -135,7 +135,7 @@ describe("ordering edits through the editing session", () => {
     const typed = [{ heading_level: null, segments: [{ kind: "text" as const, text: "Tes", marks: [] }] }];
     api.storeExamWorkspaceUndoStep.mockRejectedValueOnce(new Error("offline")).mockRejectedValueOnce(new Error("offline"));
 
-    editing.updateItemChoiceBody("item_001", "choice_001", typed);
+    editing.updateItemChoiceBody("item_001", "choice_001", typed, false);
     const random = vi.spyOn(Math, "random").mockReturnValue(0);
     editing.shuffleItemOrderingSteps("item_001");
     random.mockRestore();

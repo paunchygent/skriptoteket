@@ -215,6 +215,7 @@ watch(
         class="xw-rich__body relative grid gap-2"
       >
         <ExamWorkspaceRichTextEditor
+          :key="item.item_id"
           ref="editor"
           :body="item.body"
           label="Frågetext"

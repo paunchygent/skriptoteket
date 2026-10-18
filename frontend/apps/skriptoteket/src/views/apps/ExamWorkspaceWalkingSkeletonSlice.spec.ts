@@ -231,7 +231,6 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
     expect(added.kind).toBe("gap_fill");
     expect(added.answer_key.origin).toBe("absent");
     expect(added.body).toEqual([
-      { heading_level: null, segments: [{ kind: "text", marks: [], text: "Ny fråga" }] },
       { heading_level: null, segments: [{ kind: "gap", gap_id: "gap_001" }] },
     ]);
     expect(added.gaps).toEqual([

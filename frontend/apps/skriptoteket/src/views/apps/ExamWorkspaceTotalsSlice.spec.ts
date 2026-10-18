@@ -285,6 +285,26 @@ describe("accepting the computed totals", () => {
     expect(wrapper.find('[data-test="exam-workspace-accept-part-total"]').exists()).toBe(false);
   });
 
+  it("keeps the part's accept button in a cell of its grid row, never inside a listbox option", async () => {
+    const wrapper = await openDocument(twoPartsPrintingOtherTotals());
+    const grid = wrapper.get('[role="grid"]').element;
+    const button = wrapper.get(acceptPart("parent_001")).element;
+
+    expect(grid.querySelector('[role="option"], [role="listbox"]')).toBeNull();
+    expect(button.closest('[role="gridcell"]')?.parentElement).toBe(
+      wrapper.get('[data-test="exam-workspace-row-parent_001"]').element,
+    );
+    for (const row of Array.from(grid.querySelectorAll('[role="row"]'))) {
+      expect(row.parentElement).toBe(grid);
+      expect(Array.from(row.children).map((cell) => cell.getAttribute("role"))).toEqual([
+        "gridcell",
+        "gridcell",
+        "gridcell",
+        "gridcell",
+      ]);
+    }
+  });
+
   it("clears the exam and every part in one step that one Ångra restores", async () => {
     const wrapper = await openDocument(twoPartsPrintingOtherTotals());
 

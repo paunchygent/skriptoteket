@@ -354,7 +354,11 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
   }
 
   /** The instruction text above an instruction's deluppgifter, typed like a question's text. */
-  function setParentInstruction(parentId: string, instruction: NativeExamParent["instruction"]): void {
+  function setParentInstruction(
+    parentId: string,
+    instruction: NativeExamParent["instruction"],
+    structural: boolean,
+  ): void {
     editDocument(
       (document) => ({
         ...document,
@@ -363,13 +367,13 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
         ),
       }),
       null,
-      false,
+      structural,
     );
   }
 
   /** The exam instruction printed before the first question, typed like a question's text; emptied it is `[]`. */
-  function setExamInstructions(instructions: NativeExamDocument["instructions"]): void {
-    editDocument((document) => ({ ...document, instructions }), null, false);
+  function setExamInstructions(instructions: NativeExamDocument["instructions"], structural: boolean): void {
+    editDocument((document) => ({ ...document, instructions }), null, structural);
   }
 
   /** The exam's Centralt innehåll ticks; each tick is its own undo step. */

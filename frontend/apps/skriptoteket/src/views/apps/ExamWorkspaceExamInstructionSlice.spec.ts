@@ -219,3 +219,39 @@ describe("exam instruction on a phone", () => {
     expect(wrapper.find(EDITOR).exists()).toBe(true);
   });
 });
+
+describe("arrow keys and the exam instruction", () => {
+  const arrow = async (key: "ArrowDown" | "ArrowUp") => {
+    window.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, key }));
+    await flushPromises();
+  };
+  const selectedRow = (wrapper: ViewWrapper) =>
+    wrapper.find('[role="row"][aria-selected="true"]').attributes("data-entry-id") ?? null;
+
+  it("walks from the instruction to the first question and back, and stops at the instruction", async () => {
+    const wrapper = await openDocument(buildDocument());
+    await openEditor(wrapper, ENTRY);
+    const first = wrapper.get('[role="row"]').attributes("data-entry-id");
+
+    await arrow("ArrowDown");
+    expect(wrapper.find(EDITOR).exists()).toBe(false);
+    expect(selectedRow(wrapper)).toBe(first);
+
+    await arrow("ArrowUp");
+    expect(wrapper.find(EDITOR).exists()).toBe(true);
+    expect(wrapper.get(ENTRY).attributes("aria-current")).toBe("true");
+
+    await arrow("ArrowUp");
+    expect(wrapper.find(EDITOR).exists()).toBe(true);
+  });
+
+  it("does not open the empty instruction from the first question of an exam without one", async () => {
+    const wrapper = await openDocument(withInstructions([]));
+    const first = selectedRow(wrapper);
+
+    await arrow("ArrowUp");
+
+    expect(wrapper.find(EDITOR).exists()).toBe(false);
+    expect(selectedRow(wrapper)).toBe(first);
+  });
+});

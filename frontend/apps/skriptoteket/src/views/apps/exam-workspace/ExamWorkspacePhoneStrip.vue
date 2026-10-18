@@ -50,7 +50,7 @@ const emit = defineEmits<{ previous: []; next: []; openList: [] }>();
       <button
         type="button"
         class="strip__pos"
-        aria-haspopup="listbox"
+        aria-haspopup="grid"
         :aria-expanded="listOpen"
         data-test="exam-workspace-phone-list"
         @click="emit('openList')"

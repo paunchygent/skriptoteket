@@ -30,7 +30,7 @@ defineProps<{
   assetUrls?: Record<string, string>;
 }>();
 
-const emit = defineEmits<{ updateInstructions: [body: NativeExamBodyParagraph[]] }>();
+const emit = defineEmits<{ updateInstructions: [body: NativeExamBodyParagraph[], structural: boolean] }>();
 
 const targets = provideRichTextTargetRegistry();
 const activeMarks = computed(() => targets.active.value?.marks.value ?? []);
@@ -78,7 +78,7 @@ function toggleHeading(level: RichTextHeadingLevel): void {
         test-id="exam-workspace-exam-instruction-text"
         variant="paragraph"
         :asset-urls="assetUrls"
-        @update-body="emit('updateInstructions', $event)"
+        @update-body="(body, structural) => emit('updateInstructions', body, structural)"
       />
     </div>
   </section>

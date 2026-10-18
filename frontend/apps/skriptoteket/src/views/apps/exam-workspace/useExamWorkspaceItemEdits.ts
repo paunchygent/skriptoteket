@@ -75,8 +75,9 @@ export function useExamWorkspaceItemEdits(patchItem: ExamWorkspaceItemPatch) {
     itemId: string,
     choiceId: string,
     body: NativeExamBodyParagraph[],
+    structural: boolean,
   ): void {
-    patchItem(itemId, (item) => withChoiceBody(item, choiceId, body));
+    patchItem(itemId, (item) => withChoiceBody(item, choiceId, body), structural);
   }
 
   function updateItemCorrectChoices(itemId: string, correctChoiceIds: string[]): void {
@@ -88,8 +89,9 @@ export function useExamWorkspaceItemEdits(patchItem: ExamWorkspaceItemPatch) {
     side: "left" | "right",
     entryId: string,
     body: NativeExamBodyParagraph[],
+    structural: boolean,
   ): void {
-    patchItem(itemId, (item) => withMatchEntryBody(item, side, entryId, body));
+    patchItem(itemId, (item) => withMatchEntryBody(item, side, entryId, body), structural);
   }
 
   function updateItemMatchPairs(itemId: string, pairs: NativeExamMatchPair[]): void {

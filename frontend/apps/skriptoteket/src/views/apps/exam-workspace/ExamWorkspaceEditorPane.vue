@@ -98,7 +98,7 @@ const { structure, assetUrls } = props.editing;
         :disabled="disabled"
         :notice="structure.deleteNotice.value"
         :asset-urls="assetUrls"
-        @update-instruction="(body) => editing.setParentInstruction(selectedParent!.parent_id, body)"
+        @update-instruction="(body, structural) => editing.setParentInstruction(selectedParent!.parent_id, body, structural)"
         @goto-child="$emit('select', $event)"
         @move-child="(itemId, delta) => structure.moveChild(selectedParent!.parent_id, itemId, delta)"
         @delete-child="structure.deleteItem"

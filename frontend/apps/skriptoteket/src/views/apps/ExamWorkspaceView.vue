@@ -125,7 +125,7 @@ const selection = useExamWorkspaceSelection({
   },
 });
 const {
-  converting, dismissItemNotice, entries, entryIndex, examInstructionsSelected, gotoItem, itemChild, itemEntries,
+  canStep, converting, dismissItemNotice, entries, examInstructionsSelected, gotoItem, itemChild, itemEntries,
   itemEntry, itemNotice, itemParent, items, moveSelected, parentChildren, questionLabel, readiness, selectedEntry,
   selectedEntryId, selectedItem, selectedParent, selectedParentEntry, selectedParentId, selectEntry, step, stripState,
   total,
@@ -320,8 +320,8 @@ onMounted(() => {
       :label="selectedEntry?.label ?? null"
       :heading="examInstructionsSelected ? 'Instruktioner' : null"
       :state="stripState"
-      :can-previous="entryIndex > 0"
-      :can-next="entryIndex >= 0 && entryIndex < entries.length - 1"
+      :can-previous="canStep(-1)"
+      :can-next="canStep(1)"
       :list-open="listOpen"
       @previous="step(-1)"
       @next="step(1)"

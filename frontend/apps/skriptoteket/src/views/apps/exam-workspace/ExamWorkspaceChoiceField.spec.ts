@@ -50,8 +50,8 @@ async function mountField(item: NativeExamItem, disabled = false): Promise<VueWr
   return mounted;
 }
 
-function emittedBodies(wrapper: VueWrapper): Array<[string, NativeExamBodyParagraph[]]> {
-  return (wrapper.emitted("updateBody") ?? []) as Array<[string, NativeExamBodyParagraph[]]>;
+function emittedBodies(wrapper: VueWrapper): Array<[string, NativeExamBodyParagraph[], boolean]> {
+  return (wrapper.emitted("updateBody") ?? []) as Array<[string, NativeExamBodyParagraph[], boolean]>;
 }
 
 afterEach(() => {
@@ -71,7 +71,7 @@ describe("ExamWorkspaceChoiceField", () => {
 
     press(surfaceOf(wrapper, OPTION_1), "Backspace");
 
-    expect(emittedBodies(wrapper)).toEqual([["choice_001", [paragraph("fördra")]]]);
+    expect(emittedBodies(wrapper)).toEqual([["choice_001", [paragraph("fördra")], false]]);
   });
 
   it("adds a paragraph on Enter and a line break inside the paragraph on Shift+Enter", async () => {
@@ -80,12 +80,12 @@ describe("ExamWorkspaceChoiceField", () => {
 
     editor.commands.setTextSelection(posIn(editor, "abcd", 2));
     press(surfaceOf(wrapper, OPTION_1), "Enter");
-    expect(emittedBodies(wrapper).at(-1)).toEqual(["choice_001", [paragraph("ab"), paragraph("cd")]]);
+    expect(emittedBodies(wrapper).at(-1)).toEqual(["choice_001", [paragraph("ab"), paragraph("cd")], false]);
 
     await wrapper.setProps({ item: buildItem([paragraph("abcd")]) });
     editor.commands.setTextSelection(posIn(editor, "abcd", 2));
     press(surfaceOf(wrapper, OPTION_1), "Enter", { shiftKey: true });
-    expect(emittedBodies(wrapper).at(-1)).toEqual(["choice_001", [paragraph("ab\ncd")]]);
+    expect(emittedBodies(wrapper).at(-1)).toEqual(["choice_001", [paragraph("ab\ncd")], false]);
   });
 
   it("emits the empty body when the option is cleared and keeps it empty and marked", async () => {
@@ -93,7 +93,7 @@ describe("ExamWorkspaceChoiceField", () => {
     editorBehind(wrapper, OPTION_1).commands.selectAll();
 
     press(surfaceOf(wrapper, OPTION_1), "Backspace");
-    expect(emittedBodies(wrapper)).toEqual([["choice_001", []]]);
+    expect(emittedBodies(wrapper)).toEqual([["choice_001", [], false]]);
     expect(wrapper.find('[data-test="exam-workspace-choice-text-hint"]').exists()).toBe(false);
 
     await wrapper.setProps({ item: buildItem([]) });

@@ -98,7 +98,7 @@ describe("ExamWorkspaceQuestionEditor shared rich-text target", () => {
 
     await wrapper.get(BOLD).trigger("click");
 
-    expect(wrapper.emitted("updateChoiceBody")).toEqual([["item_001", "choice_002", boldOf("Other")]]);
+    expect(wrapper.emitted("updateChoiceBody")).toEqual([["item_001", "choice_002", boldOf("Other"), true]]);
     expect(wrapper.emitted("updateBody")).toBeUndefined();
   });
 
@@ -143,7 +143,7 @@ describe("ExamWorkspaceQuestionEditor shared rich-text target", () => {
 
     expect(wrapper.emitted("updateBody")).toBeUndefined();
     expect(wrapper.emitted("updateMatchEntryBody")).toEqual([
-      ["item_001", "left", "left_001", boldOf("absence from school without permission")],
+      ["item_001", "left", "left_001", boldOf("absence from school without permission"), true],
     ]);
   });
 
@@ -188,7 +188,7 @@ describe("ExamWorkspaceQuestionEditor shared rich-text target", () => {
     selectIn(wrapper, OPTION_2, "Other");
     await wrapper.get(BOLD).trigger("click");
 
-    expect(wrapper.emitted("updateChoiceBody")).toEqual([["item_002", "choice_002", boldOf("Other")]]);
+    expect(wrapper.emitted("updateChoiceBody")).toEqual([["item_002", "choice_002", boldOf("Other"), true]]);
   });
 
   it("keeps toggling the same option across repeated toolbar clicks", async () => {

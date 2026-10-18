@@ -149,7 +149,7 @@ watch(
       <div
         ref="rows"
         class="list__rows"
-        role="listbox"
+        role="grid"
         aria-labelledby="exam-workspace-list-title"
         aria-keyshortcuts="ArrowUp ArrowDown"
       >

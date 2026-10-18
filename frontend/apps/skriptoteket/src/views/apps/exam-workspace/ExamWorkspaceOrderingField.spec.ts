@@ -121,7 +121,7 @@ describe("ExamWorkspaceOrderingField", () => {
 
     press(surfaceOf(wrapper, stepText), "Backspace");
 
-    expect(wrapper.emitted("updateBody")).toEqual([["choice_002", []]]);
+    expect(wrapper.emitted("updateBody")).toEqual([["choice_002", [], false]]);
   });
 
   it("does not edit a step while disabled", async () => {

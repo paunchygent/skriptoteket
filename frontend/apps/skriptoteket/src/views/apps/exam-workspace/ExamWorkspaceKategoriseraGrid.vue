@@ -37,7 +37,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  updateEntryBody: [side: "left" | "right", entryId: string, body: NativeExamBodyParagraph[]];
+  updateEntryBody: [side: "left" | "right", entryId: string, body: NativeExamBodyParagraph[], structural: boolean];
   updatePairs: [pairs: NativeExamMatchPair[]];
 }>();
 
@@ -104,7 +104,7 @@ function entryBorderClass(body: NativeExamBodyParagraph[]): string {
                 :label="`Text för kategori ${rightIndex + 1}`"
                 :test-id="`exam-workspace-match-right-text-${right.right_id}`"
                 class="font-semibold"
-                @update-body="(body) => emit('updateEntryBody', 'right', right.right_id, body)"
+                @update-body="(body, structural) => emit('updateEntryBody', 'right', right.right_id, body, structural)"
               />
             </th>
           </tr>
@@ -128,7 +128,7 @@ function entryBorderClass(body: NativeExamBodyParagraph[]): string {
                 :invalid="isEmptyBody(left.body)"
                 :label="`Text för rad ${leftIndex + 1}`"
                 :test-id="`exam-workspace-match-left-text-${left.left_id}`"
-                @update-body="(body) => emit('updateEntryBody', 'left', left.left_id, body)"
+                @update-body="(body, structural) => emit('updateEntryBody', 'left', left.left_id, body, structural)"
               />
             </th>
             <td

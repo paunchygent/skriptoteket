@@ -184,8 +184,8 @@ describe("ExamWorkspaceQuestionEditor Kategorisera grid", () => {
     }
 
     expect(wrapper.emitted("updateMatchEntryBody")).toEqual([
-      ["item_001", "left", "left_001", plainBody("skipping class")],
-      ["item_001", "right", "right_001", plainBody("jail time")],
+      ["item_001", "left", "left_001", plainBody("skipping class"), false],
+      ["item_001", "right", "right_001", plainBody("jail time"), false],
     ]);
   });
 
@@ -200,8 +200,8 @@ describe("ExamWorkspaceQuestionEditor Kategorisera grid", () => {
     press(surfaceOf(wrapper, rightTest), "Backspace");
 
     expect(wrapper.emitted("updateMatchEntryBody")).toEqual([
-      ["item_001", "left", "left_002", []],
-      ["item_001", "right", "right_003", []],
+      ["item_001", "left", "left_002", [], false],
+      ["item_001", "right", "right_003", [], false],
     ]);
   });
 

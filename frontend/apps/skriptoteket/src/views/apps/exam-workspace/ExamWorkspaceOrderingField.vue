@@ -35,7 +35,7 @@ const emit = defineEmits<{
   moveStep: [choiceId: string, delta: -1 | 1];
   removeStep: [choiceId: string];
   shuffle: [];
-  updateBody: [choiceId: string, body: NativeExamBodyParagraph[]];
+  updateBody: [choiceId: string, body: NativeExamBodyParagraph[], structural: boolean];
 }>();
 
 const EMPTY_STEP_GUIDANCE = "Ett steg saknar text.";
@@ -91,7 +91,7 @@ const onlyStep = computed(() => props.item.choices.length <= 1);
         :invalid="isEmptyStep(choice.body)"
         :label="`Text för steg ${index + 1}`"
         :test-id="`exam-workspace-ordering-step-text-${choice.choice_id}`"
-        @update-body="(body) => emit('updateBody', choice.choice_id, body)"
+        @update-body="(body, structural) => emit('updateBody', choice.choice_id, body, structural)"
       />
       <div class="ord__actions">
         <button

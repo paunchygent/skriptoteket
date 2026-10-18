@@ -191,10 +191,13 @@ describe("ExamWorkspaceView frame layout", () => {
     await flushPromises();
     expect(editorText(wrapper)).toContain("Fråga 1");
 
-    // Before the first question there is nowhere to go.
+    // The exam instruction sits above the first question, and nothing above it.
     window.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, key: "ArrowUp" }));
     await flushPromises();
-    expect(editorText(wrapper)).toContain("Fråga 1");
+    expect(wrapper.find('[data-test="exam-workspace-exam-instruction-editor"]').exists()).toBe(true);
+    window.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, key: "ArrowUp" }));
+    await flushPromises();
+    expect(wrapper.find('[data-test="exam-workspace-exam-instruction-editor"]').exists()).toBe(true);
   });
 
   it("does not step questions when an arrow key is pressed inside a text field", async () => {
@@ -249,9 +252,10 @@ describe("ExamWorkspaceView frame layout", () => {
     expect(wrapper.find('[data-test="exam-workspace-list-back"]').exists()).toBe(false);
     const strip = wrapper.get('[data-test="exam-workspace-phone-list"]');
     expect(strip.text()).toContain("Fråga 1");
+    // The exam's instruction sits above the first question.
     expect(
       wrapper.get('[data-test="exam-workspace-phone-previous"]').attributes("disabled"),
-    ).toBeDefined();
+    ).toBeUndefined();
 
     await wrapper.get('[data-test="exam-workspace-phone-next"]').trigger("click");
     expect(wrapper.get('[data-test="exam-workspace-phone-list"]').text()).toContain("Fråga 2");

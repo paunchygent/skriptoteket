@@ -56,7 +56,7 @@ withDefaults(
 );
 
 const emit = defineEmits<{
-  updateBody: [body: NativeExamBodyParagraph[]];
+  updateBody: [body: NativeExamBodyParagraph[], structural: boolean];
   focusEntry: [];
 }>();
 </script>
@@ -73,7 +73,7 @@ const emit = defineEmits<{
     :variant="variant === 'input' ? 'compact' : 'field'"
     :asset-urls="assetUrls"
     :gaps-interactive="false"
-    @update="(next) => emit('updateBody', next)"
+    @update="(next, structural) => emit('updateBody', next, structural)"
     @focus="emit('focusEntry')"
   />
 </template>

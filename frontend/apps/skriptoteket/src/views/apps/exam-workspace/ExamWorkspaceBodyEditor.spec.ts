@@ -15,6 +15,7 @@
  */
 
 import { describe, expect, it } from "vitest";
+import { nextTick } from "vue";
 
 import { buildGapItem, buildMergeItem, mountEditor, posIn, press, surface, tiptap } from "./ExamWorkspaceBodyEditor.specSupport";
 
@@ -143,10 +144,37 @@ describe("ExamWorkspaceBodyEditor text editing", () => {
         gaps: [],
       }),
     });
+    await nextTick();
+    await nextTick();
 
     expect(surface(wrapper).textContent).toBe("Annan fråga");
     expect(surface(wrapper).querySelectorAll("p")).toHaveLength(1);
     expect(wrapper.emitted("updateBody")).toBeUndefined();
+    wrapper.unmount();
+  });
+
+  it("gives each question its own editor, so the first edit after switching is the new question's typing", async () => {
+    const wrapper = await mountEditor();
+    const first = tiptap(wrapper);
+    first.commands.setTextSelection(posIn(first, "Vatten kokar vid ", 6));
+    await wrapper.setProps({
+      item: buildGapItem({
+        item_id: "item_002",
+        body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Annan fråga" }] }],
+        gaps: [],
+      }),
+    });
+    await nextTick();
+    await nextTick();
+    const second = tiptap(wrapper);
+
+    expect(second).not.toBe(first);
+    second.commands.setTextSelection(posIn(second, "Annan fråga", 11));
+    second.commands.insertContent("?");
+
+    expect(wrapper.emitted("updateBody")).toEqual([
+      ["item_002", [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Annan fråga?" }] }], false],
+    ]);
     wrapper.unmount();
   });
 

@@ -55,7 +55,7 @@ defineProps<{
 }>();
 
 const emit = defineEmits<{
-  updateInstruction: [body: NativeExamBodyParagraph[]];
+  updateInstruction: [body: NativeExamBodyParagraph[], structural: boolean];
   gotoChild: [itemId: string];
   moveChild: [itemId: string, delta: -1 | 1];
   deleteChild: [itemId: string];
@@ -145,7 +145,7 @@ function chooseDelete(mode: ExamParentDeleteMode): void {
         test-id="exam-workspace-instruction-text"
         variant="paragraph"
         :asset-urls="assetUrls"
-        @update-body="emit('updateInstruction', $event)"
+        @update-body="(body, structural) => emit('updateInstruction', body, structural)"
       />
     </div>
 
