@@ -28,7 +28,8 @@ import {
   isIncompleteMatchingItem,
 } from "./examWorkspaceAnswerKeyRules";
 import { EMPTY_MATCH_TEXT_GUIDANCE, hasEmptyMatchText } from "./examWorkspaceItemSaveRules";
-import { bodyText, isEmptyBody } from "./examWorkspaceRichText";
+import { bodyText } from "./examWorkspaceRichText";
+import { isEmptyBody } from "./examWorkspaceRichTextDocument";
 
 const props = defineProps<{
   disabled?: boolean;

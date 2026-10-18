@@ -29,7 +29,7 @@
  * Relationships:
  *   - Opened by `ExamWorkspaceBodyEditor`, which keys it by item and gap so
  *     the ids below never change while it is open.
- *   - Uses `parseAcceptedValues` from `examWorkspaceBodySegments`.
+ *   - Uses `parseAcceptedValues` from `examWorkspaceGapLabels`.
  */
 
 import { computed, nextTick, onMounted, reactive, ref, useId, watch } from "vue";
@@ -37,7 +37,7 @@ import { computed, nextTick, onMounted, reactive, ref, useId, watch } from "vue"
 import type { NativeExamChoice, NativeExamGap } from "../../../api/examWorkspace";
 import { IconX } from "../../../components/icons";
 import { UiGlyph } from "../../../components/ui";
-import { parseAcceptedValues } from "./examWorkspaceBodySegments";
+import { parseAcceptedValues } from "./examWorkspaceGapLabels";
 import { bodyText, plainBody } from "./examWorkspaceRichText";
 
 const MISSING_ANSWER_COPY = "Fyll i ett godkänt svar först.";

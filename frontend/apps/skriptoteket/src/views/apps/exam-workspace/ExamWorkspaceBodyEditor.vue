@@ -40,11 +40,10 @@ import {
   PARTIAL_GAP_KEY_GUIDANCE,
 } from "./examWorkspaceAnswerKeyRules";
 import type { BodyMark } from "./examWorkspaceBodyMarks";
-import { gapChipLabel, gapNumberIn } from "./examWorkspaceBodySegments";
+import { examGapStates, gapNumberIn } from "./examWorkspaceGapLabels";
 import ExamWorkspaceGapPopover from "./ExamWorkspaceGapPopover.vue";
 import ExamWorkspaceMarkToolbar from "./ExamWorkspaceMarkToolbar.vue";
 import ExamWorkspaceRichTextEditor from "./ExamWorkspaceRichTextEditor.vue";
-import type { ExamGapState } from "./examWorkspaceRichTextSchema";
 import { useRichTextTargetRegistry } from "./examWorkspaceRichTextTarget";
 
 type HeadingLevel = 1 | 2 | 3;
@@ -96,18 +95,7 @@ const activeHeading = computed<HeadingLevel | null>(
 );
 
 /** How each gap of the item reads in the text: its accepted answers, or "Lucka N" while it has none. */
-const gapStates = computed<Record<string, ExamGapState>>(() =>
-  Object.fromEntries(
-    props.item.gaps.map((gap, index) => {
-      const label = gapChipLabel(gap, index + 1);
-      const empty = gap.accepted_values.length === 0;
-      const accessibleLabel = empty
-        ? `Lucka ${index + 1}, saknar godkända svar`
-        : `Lucka ${index + 1}, godkända svar: ${label}`;
-      return [gap.gap_id, { label, accessibleLabel, empty }];
-    }),
-  ),
-);
+const gapStates = computed(() => examGapStates(props.item.gaps));
 
 function handleToggleMark(mark: BodyMark): void {
   activeRichTextTarget.value?.toggleMark(mark);

@@ -101,9 +101,9 @@ describe("examWorkspaceSaveRefusalCopy", () => {
       buildChoiceItem(3, { choices: EMPTY_CHOICES, points: -1 }),
     ];
 
+    // An empty choice saves (TASK-SKRIPT-40-04-06 D3); only the negative points refuse.
     expect(examWorkspaceSaveRefusalCopy(items)).toBe(
-      "Frågorna 1 och 3 har negativa poäng. Poängen kan inte vara negativ. " +
-        "Frågorna 2 och 3 har svarsalternativ utan text. Skriv text i varje svarsalternativ.",
+      "Frågorna 1 och 3 har negativa poäng. Poängen kan inte vara negativ.",
     );
   });
 });
@@ -155,7 +155,7 @@ describe("examWorkspaceSaveRefusalCopy for matching items", () => {
     );
   });
 
-  it("refuses an empty left or right entry text", () => {
+  it("saves an empty left or right entry text", () => {
     const item = buildMatchingItem();
     const emptyLeft = {
       ...item,
@@ -164,9 +164,8 @@ describe("examWorkspaceSaveRefusalCopy for matching items", () => {
       ),
     };
 
-    expect(examWorkspaceSaveRefusalCopy([emptyLeft])).toBe(
-      "Fråga 1 har rader eller kategorier utan text. Skriv text i varje rad och varje kategori.",
-    );
+    expect(examWorkspaceSaveRefusalCopy([emptyLeft])).toBeNull();
+    expect(examWorkspaceSaveRefusalCopy([{ ...emptyLeft, match_left: emptyLeft.match_left.map((entry) => ({ ...entry, body: [] })) }])).toBeNull();
   });
 });
 

@@ -21,7 +21,7 @@ import { useId } from "vue";
 import type { NativeExamBodyParagraph, NativeExamItem } from "../../../api/examWorkspace";
 import ExamWorkspaceRichTextEntry from "./ExamWorkspaceRichTextEntry.vue";
 import { EMPTY_CHOICE_TEXT_GUIDANCE, hasEmptyChoiceText } from "./examWorkspaceItemSaveRules";
-import { isEmptyBody } from "./examWorkspaceRichText";
+import { isEmptyBody } from "./examWorkspaceRichTextDocument";
 
 const props = defineProps<{
   disabled?: boolean;

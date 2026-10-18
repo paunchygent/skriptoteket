@@ -6,13 +6,13 @@
  *   save, so the teacher sees them at the question and a save is refused
  *   with Swedish copy naming the questions instead of a generic failure.
  *   Mirrors these `NativeExamItem` field rules exactly: points must be
- *   non-negative and finite (`_nonnegative_finite_points`), a choice's rich body must
- *   not be empty (`NativeChoice.body`, text segments with `min_length=1`),
- *   and so must a matching entry's. A free-text item's criteria must have
+ *   non-negative and finite (`_nonnegative_finite_points`). A free-text item's criteria must have
  *   non-empty text and whole points of at least 1, only free-text items
  *   carry them, and a non-empty list's points are exactly the item's points.
  *   A partial gap key or an incomplete matching key
  *   (`_answer_key_invariants`) comes from `examWorkspaceAnswerKeyRules`.
+ *   An empty choice or matching entry saves (TASK-SKRIPT-40-04-06 D3); it is
+ *   only flagged at the field here and blocks export through readiness.
  *
  * Relationships:
  *   - Mirrors `domain/curated_apps/exam_workspace/native_exam_document.py`.
@@ -29,7 +29,7 @@ import {
   partialGapKeyCopy,
   questionSubject,
 } from "./examWorkspaceAnswerKeyRules";
-import { isEmptyBody } from "./examWorkspaceRichText";
+import { isEmptyBody } from "./examWorkspaceRichTextDocument";
 
 export const NEGATIVE_POINTS_GUIDANCE = "Poängen kan inte vara negativ.";
 export const EMPTY_CHOICE_TEXT_GUIDANCE = "Ett svarsalternativ saknar text.";
@@ -106,18 +106,6 @@ export function examWorkspaceSaveRefusalCopy(items: NativeExamItem[]): string | 
       hasNegativePoints,
       (refused) =>
         `${questionSubject(refused)} har negativa poäng. ${NEGATIVE_POINTS_GUIDANCE}`,
-    ),
-    refusal(
-      items,
-      hasEmptyChoiceText,
-      (refused) =>
-        `${questionSubject(refused)} har svarsalternativ utan text. Skriv text i varje svarsalternativ.`,
-    ),
-    refusal(
-      items,
-      hasEmptyMatchText,
-      (refused) =>
-        `${questionSubject(refused)} har rader eller kategorier utan text. Skriv text i varje rad och varje kategori.`,
     ),
     refusal(
       items,

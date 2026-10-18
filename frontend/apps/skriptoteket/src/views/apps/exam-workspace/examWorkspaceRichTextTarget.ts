@@ -2,21 +2,19 @@
  * Exam workspace shared rich-text target.
  *
  * Domain purpose:
- *   The one rich surface the formatting toolbar acts on. Every editable
- *   paragraph — a question paragraph, a choice option or a Kategorisera
- *   entry — becomes the active target when the teacher focuses it or
- *   selects inside it. The toolbar reads that target's pressed state and
+ *   The one rich surface the formatting toolbar acts on. Every exam text
+ *   editor (the question text, a choice option, a Kategorisera entry, an
+ *   ordering step or an instruction) becomes the active target when the
+ *   teacher focuses it. The toolbar reads that target's pressed state and
  *   calls its mark and heading actions, so a glyph action edits the text the
- *   teacher is looking at and can never reach a stale selection in another
- *   surface. The previous target drops its saved selection when another one
- *   becomes active.
+ *   teacher is looking at and never another surface.
  *
  * Relationships:
- *   - Provided once per item editor (`ExamWorkspaceQuestionEditor`) and consumed
- *     by `ExamWorkspaceBodyParagraph` (registers) and
- *     `ExamWorkspaceBodyEditor` (dispatches the toolbar).
+ *   - Provided once per item editor (`ExamWorkspaceQuestionEditor`) and per
+ *     instruction editor; `ExamWorkspaceRichTextEditor` registers on focus and
+ *     the toolbars dispatch to the active target.
  *   - A component subtree mounted without a provider creates and provides
- *     its own registry, so a standalone paragraph keeps working.
+ *     its own registry, so a standalone editor keeps working.
  */
 
 import { inject, provide, shallowRef } from "vue";
