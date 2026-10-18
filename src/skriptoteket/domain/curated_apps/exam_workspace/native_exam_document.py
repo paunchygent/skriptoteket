@@ -105,7 +105,7 @@ class NativeExamDocument(BaseModel):
     schema_version: Literal["native_exam_document_v6"] = NATIVE_EXAM_DOCUMENT_SCHEMA_VERSION
     document_id: UUID
     revision: int = Field(ge=1)
-    title: str = Field(min_length=1)
+    title: str
     header: NativeExamHeader = NativeExamHeader()
     instructions: tuple[NativeParagraph, ...] = ()
     items: tuple[NativeExamItem, ...] = Field(min_length=1)
