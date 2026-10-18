@@ -140,6 +140,8 @@ def test_a_part_line_over_one_question_opens_a_one_child_parent(kind: str):
     ]
     assert not [line for line in body_text_lines(noun.body) if line.startswith("Del ")]
     assert not [line for line in body_text_lines(verb.body) if line.startswith("Del ")]
+    assert body_text_lines(noun.body)[0] == _NOUN
+    assert body_text_lines(verb.body)[0] == _VERB
     assert (noun.points, verb.points) == (4, 2)
 
 
