@@ -2,8 +2,10 @@ import { describe, expect, it } from "vitest";
 import { nextTick } from "vue";
 
 import { mountWithContext } from "../../test/utils";
+import { AI_ADMIN_ONLY_NOTE } from "../../composables/useAiAccess";
 import { SystemMessage } from "../ui";
 import { UiGlyph } from "../ui/shared";
+import ChatComposer from "./ChatComposer.vue";
 import ChatDrawer from "./ChatDrawer.vue";
 
 describe("ChatDrawer", () => {
@@ -222,5 +224,28 @@ describe("ChatDrawer", () => {
     expect(dismissButton.exists()).toBe(true);
     await dismissButton.trigger("click");
     expect(wrapper.emitted("dismissRemoteFallbackPrompt")).toBeTruthy();
+  });
+
+  it("forwards the AI admin-only note through to the composer", () => {
+    const wrapper = mountWithContext(ChatDrawer, {
+      props: {
+        variant: "column",
+        isOpen: true,
+        isCollapsed: false,
+        messages: [],
+        isStreaming: false,
+        isEditOpsLoading: false,
+        disabledMessage: null,
+        error: null,
+        aiBlockedNote: AI_ADMIN_ONLY_NOTE,
+      },
+    });
+
+    const composer = wrapper.findComponent(ChatComposer);
+    expect(composer.props("aiBlockedNote")).toBe(AI_ADMIN_ONLY_NOTE);
+    expect(wrapper.get('[data-testid="editor-ai-admin-only-note"]').text()).toBe(
+      AI_ADMIN_ONLY_NOTE,
+    );
+    wrapper.unmount();
   });
 });

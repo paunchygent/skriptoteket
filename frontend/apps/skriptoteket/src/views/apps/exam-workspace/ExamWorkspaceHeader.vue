@@ -19,6 +19,7 @@
 import { ref } from "vue";
 
 import { UiGlyph } from "../../../components/ui";
+import { AI_ADMIN_ONLY_NOTE, useAiAccess } from "../../../composables/useAiAccess";
 import ExamWorkspaceMenu from "./ExamWorkspaceMenu.vue";
 import { examWorkspaceShortcut, isMacPlatform } from "./examWorkspaceFormat";
 
@@ -56,6 +57,7 @@ const mac = isMacPlatform();
 const saveKeys = mac ? "Meta+S" : "Control+S";
 const saveMenuTrigger = ref<HTMLButtonElement | null>(null);
 const saveMenuOpen = ref(false);
+const { canUseAi } = useAiAccess();
 
 function chooseSave(action: "save" | "saveAs"): void {
   saveMenuOpen.value = false;
@@ -246,8 +248,8 @@ const DIRTY_TITLE = "Ändringarna sparas automatiskt som utkast. Spara skriver �
       <button
         type="button"
         class="xw-btn xw-btn--icon"
-        :disabled="suggestDisabled || suggestBusy"
-        :title="suggestBusy ? 'Facitförslagen tas fram …' : 'Föreslå facit för frågor som saknar facit'"
+        :disabled="suggestDisabled || suggestBusy || !canUseAi"
+        :title="!canUseAi ? AI_ADMIN_ONLY_NOTE : suggestBusy ? 'Facitförslagen tas fram …' : 'Föreslå facit för frågor som saknar facit'"
         :aria-label="suggestBusy ? 'Facitförslagen tas fram …' : 'Föreslå facit för frågor som saknar facit'"
         data-test="exam-workspace-suggest-all"
         @click="emit('suggestAll')"

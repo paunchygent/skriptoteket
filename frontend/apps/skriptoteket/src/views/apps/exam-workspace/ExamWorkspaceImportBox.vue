@@ -13,10 +13,11 @@
  *   - Rendered by `ExamWorkspaceQuestionEditor` under the question header.
  */
 
-import { computed, ref, watch } from "vue";
+import { computed, ref, useId, watch } from "vue";
 
 import type { NativeExamDocument, NativeExamItem, NativeExamItemKind } from "../../../api/examWorkspace";
 import { UiGlyph } from "../../../components/ui";
+import { AI_ADMIN_ONLY_NOTE, useAiAccess } from "../../../composables/useAiAccess";
 import { examWorkspaceImportSteps } from "./examWorkspaceImportSteps";
 import { EXAM_WORKSPACE_TYPE_LABELS, examWorkspaceReviewReasonLabel } from "./examWorkspaceRows";
 
@@ -37,6 +38,9 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{ retry: [kind: NativeExamItemKind] }>();
+
+const { canUseAi } = useAiAccess();
+const aiNoteId = useId();
 
 /** Null until the teacher picks, so the type the file was read as shows first. */
 const retryKind = ref<NativeExamItemKind | null>(null);
@@ -119,7 +123,7 @@ function chooseKind(event: Event): void {
           <select
             :id="`retry-${item.item_id}`"
             :value="selectedKind"
-            :disabled="disabled"
+            :disabled="disabled || !canUseAi"
             data-test="exam-workspace-retry-kind"
             @change="chooseKind"
           >
@@ -134,7 +138,9 @@ function chooseKind(event: Event): void {
           <button
             type="button"
             class="xw-btn xw-btn--compact"
-            :disabled="disabled"
+            :disabled="disabled || !canUseAi"
+            :title="!canUseAi ? AI_ADMIN_ONLY_NOTE : undefined"
+            :aria-describedby="!canUseAi ? aiNoteId : undefined"
             data-test="exam-workspace-retry"
             @click="emit('retry', selectedKind)"
           >
@@ -143,6 +149,14 @@ function chooseKind(event: Event): void {
               :size="16"
             />Konvertera igen
           </button>
+          <p
+            v-if="!canUseAi"
+            :id="aiNoteId"
+            class="xw-hint imp__retry-note"
+            data-test="exam-workspace-retry-note"
+          >
+            {{ AI_ADMIN_ONLY_NOTE }}
+          </p>
         </div>
       </div>
     </div>
@@ -181,6 +195,7 @@ function chooseKind(event: Event): void {
   margin-top: var(--huleedu-space-3); padding-top: var(--huleedu-space-3); border-top: 1px solid var(--huleedu-surface-divider);
 }
 .imp__retry-label { font-size: var(--huleedu-text-xs); }
+.imp__retry-note { flex-basis: 100%; margin: 0; }
 .imp__retry select {
   height: 28px; padding: 0 var(--huleedu-space-2); font: inherit; font-size: var(--huleedu-text-xs);
   border: 1px solid var(--huleedu-panel-border); border-radius: var(--huleedu-workbench-control-radius);

@@ -35,6 +35,7 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_enrichment im
     WorkspaceAnswerKeyRequestPayload,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import NativeExamDocument
+from skriptoteket.domain.identity.models import Role
 from skriptoteket.infrastructure.llm.answer_key_provider_selection import (
     FixedRouteAnswerKeyProviderSelector,
 )
@@ -84,7 +85,7 @@ class SuggestionApiProvider(Provider):
 async def test_real_ak7_import_request_poll_and_review_with_http_di_and_postgres(
     session_factory: async_sessionmaker[AsyncSession], tmp_path: Path
 ) -> None:
-    actor = await create_owner(session_factory)
+    actor = await create_owner(session_factory, role=Role.ADMIN)
     clock = FixedClock(datetime.now(UTC))
     storage = LocalVaultStorage(vault_root=tmp_path)
     async with session_factory() as session:
