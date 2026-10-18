@@ -22,7 +22,11 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_one_item
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+    NativeParagraph,
     NativeTextSegment,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeExamDocument,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
@@ -226,3 +230,119 @@ def test_a_question_the_reply_omits_becomes_one_source_review_item():
     assert _texts(omitted) == [text for _, text in _QUESTION]
     assert omitted.points == 4
     assert omitted.source_anchor == "body:0002"
+
+
+_NOUN = (("paragraph", "Förklara vad som kännetecknar ett substantiv. (4 p)"),)
+_VERB_BODY = ("paragraph", "Förklara vad som kännetecknar ett verb.")
+
+
+def _paragraph_texts(paragraphs: tuple[NativeParagraph, ...]) -> list[str]:
+    return [
+        segment.text
+        for paragraph in paragraphs
+        for segment in paragraph.segments
+        if isinstance(segment, NativeTextSegment)
+    ]
+
+
+@pytest.mark.parametrize("heading_kind", ["heading", "paragraph"])
+def test_an_entry_holding_another_questions_heading_merges_both_questions(heading_kind: str):
+    # Review-1 F1: q2's own heading in q1's entry makes that entry hold two questions, also
+    # when the heading is a label line that would join its own question's body.
+    verb = ((heading_kind, "Uppgift 2: Verb (2 p)"), _VERB_BODY)
+    state = _state(_NOUN, verb)
+
+    admit_batch(
+        {
+            "items": [
+                _item(
+                    ["body:0001", "body:0002"],
+                    "Förklara vad som kännetecknar ett substantiv. Uppgift 2: Verb",
+                    "1",
+                ),
+                _item(["body:0003"], "Förklara vad som kännetecknar ett verb.", "2"),
+            ]
+        },
+        state,
+    )
+    document = state.result().document
+
+    (first, first_anchors), (second, second_anchors) = state.accepted
+    assert _is_source_review(first, MERGED_QUESTIONS_REASON)
+    assert _is_source_review(second, MERGED_QUESTIONS_REASON)
+    assert first_anchors == ("body:0001",)
+    assert set(second_anchors) == {"body:0002", "body:0003"}
+    assert _texts(first) == [_NOUN[0][1]]
+    assert _texts(second) == [text for _, text in verb]
+    assert [e.code for e in state.events if e.stage == "admission"] == [
+        "questions_merged",
+        "questions_merged",
+    ]
+    assert len(document.items) == 2
+    assert not [
+        item
+        for item in document.items
+        if item.source_anchor == "body:0001" and _texts(item)[0].startswith("Uppgift 2")
+    ]
+
+
+def test_a_total_heading_the_grouping_misplaces_belongs_to_the_question_it_opens():
+    # The grouping gives q2's heading to q1; the points plan gives it to q2, the one question
+    # of the part it opens, so a reply listing it with q2's body touches q2 alone.
+    state = _state((_NOUN[0], ("heading", "Uppgift 2: Verb (2 p)")), (_VERB_BODY,))
+
+    admit_batch(
+        {
+            "items": [
+                _item(["body:0001"], "Förklara vad som kännetecknar ett substantiv.", "1"),
+                _item(["body:0002", "body:0003"], "Förklara vad som kännetecknar ett verb.", "2"),
+            ]
+        },
+        state,
+    )
+
+    (first, _), (second, _) = state.accepted
+    assert first.review.parse_origin is NativeParseOrigin.LLM_PARSED
+    assert second.review.parse_origin is NativeParseOrigin.LLM_PARSED
+    assert not [e for e in state.events if e.code in {"question_split", "questions_merged"}]
+
+
+_VERB = (
+    ("paragraph", "Uppgift 2: Förklara vad som kännetecknar ett verb. (2 p)"),
+    ("paragraph", "Ge två exempel på verb."),
+)
+
+
+@pytest.mark.parametrize("role", ["instruction", "title"])
+@pytest.mark.parametrize("alone", [False, True], ids=["after_q1", "alone"])
+def test_a_question_the_reply_lists_as_metadata_becomes_one_source_review_item(
+    role: str, alone: bool
+):
+    # Review-1 F4: no item holds q2 although no chunk of it stays unclaimed.
+    state = _state(_VERB) if alone else _state(_OTHER, _VERB)
+    own: list[JsonValue] = [
+        chunk.anchor for chunk in state.chunks if chunk.text in {t for _, t in _VERB}
+    ]
+    metadata: dict[str, JsonValue] = {"text": " ".join(t for _, t in _VERB), "source_anchors": own}
+    content: dict[str, JsonValue] = {
+        "items": [] if alone else [_item(["body:0001"], "Förklara vad ett predikat är.", "1.2")]
+    }
+    if role == "title":
+        content["title"] = metadata
+    else:
+        content["instructions"] = [metadata]
+
+    admit_batch(content, state)
+    result = state.result()
+    document = NativeExamDocument.model_validate(result.document.model_dump())
+
+    assert len(document.items) == (1 if alone else 2)
+    omitted = document.items[-1]
+    assert _is_source_review(omitted, NO_ITEM_REASON)
+    assert _texts(omitted) == [text for _, text in _VERB]
+    assert omitted.source_anchor == own[0]
+    placed = _paragraph_texts(document.instructions) + [
+        text for parent in document.parents for text in _paragraph_texts(parent.instruction)
+    ]
+    assert not [text for text in placed for _, own_text in _VERB if own_text in text]
+    assert not [own_text for _, own_text in _VERB if own_text in document.title]

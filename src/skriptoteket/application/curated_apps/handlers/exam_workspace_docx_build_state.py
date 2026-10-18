@@ -282,24 +282,44 @@ class DocxBuildState:
         questions: tuple[tuple[str, ...], ...],
         review_reasons: dict[str, str],
         governed: Mapping[str, frozenset[str]],
+        exam_wide: frozenset[str],
     ) -> tuple[tuple[NativeExamItem, tuple[str, ...]], ...]:
-        """Each question no item holds, as one review item showing its source as printed.
+        """Each question no accepted item holds, as one review item showing its source as
+        printed, whatever role the reply gave its chunks.
 
-        Its own chunks leave ``review_reasons``, so a question is one item however many chunks
-        it prints; the item carries the reason of its first chunk.
+        The item holds all the question's own chunks, also those the reply lists as an
+        instruction, the title or an answer key; they leave ``review_reasons``. It carries the
+        reason of the question's first pending chunk.
         """
         held = {a for _, anchors in self.accepted for a in anchors}
+        owned = self.owned
         taken = set(self.claimed)
         omitted: list[tuple[NativeExamItem, tuple[str, ...]]] = []
-        for own in questions:
-            missing = tuple(a for a in own if a in review_reasons and a not in governed)
-            if not missing or held.intersection(own):
+        for question in questions:
+            own = tuple(
+                a for a in question if a in owned and a not in governed and a not in exam_wide
+            )
+            if not own or held.intersection(question):
                 continue
-            reason = review_reasons[missing[0]]
-            for anchor in missing:
-                del review_reasons[anchor]
-            omitted.append(self.printed(missing, reason, taken))
+            pending = next((c.anchor for c in self.pending if c.anchor in own), None)
+            reason = (
+                self.reasons.get(pending, NO_ITEM_REASON) if pending is not None else NO_ITEM_REASON
+            )
+            for anchor in own:
+                review_reasons.pop(anchor, None)
+            omitted.append(self.printed(own, reason, taken))
         return tuple(omitted)
+
+    def _without(self, metadata: ProducedMetadata, removed: set[str]) -> ProducedMetadata | None:
+        """``metadata`` without ``removed``, showing the source text of the chunks it keeps;
+        None when it keeps none."""
+        anchors = tuple(a for a in metadata.source_anchors if a not in removed)
+        if not anchors:
+            return None
+        if anchors == metadata.source_anchors:
+            return metadata
+        text = "\n".join(self.chunk_by_anchor[a].text for a in anchors)
+        return metadata.model_copy(update={"text": text, "source_anchors": anchors})
 
     def result(
         self,
@@ -317,6 +337,10 @@ class DocxBuildState:
         stands only where it lands at that question (D42). ``exam_wide`` holds the anchors of
         exam-wide text and exam metadata (``exam_metadata`` is the metadata subset); assembly
         keeps them in the document's instructions or drops them, never as review items.
+
+        A question no accepted item holds becomes one review item holding all its own chunks;
+        the instructions, title and answer keys passed to assembly no longer hold them. The
+        state itself is left unchanged, so the result may be built again.
 
         Printed totals are classified once over the whole document, header lines included
         (``printed_points_plan``); assembly scores the items from them. A points line that is
@@ -345,16 +369,22 @@ class DocxBuildState:
             reason = self.reasons.get(chunk.anchor, NO_ITEM_REASON)
             review_reasons[chunk.anchor] = reason
             self.record("fallback", "review_item", anchors=(chunk.anchor,), detail=reason)
+        omitted = self._omitted(questions, review_reasons, governed, exam_wide)
+        # An omitted question's review item holds its own chunks; no instruction, title or
+        # answer key the reply listed them as keeps them.
+        removed = {a for _, anchors in omitted for a in anchors}
+        kept = (self._without(m, removed) for m in instructions)
+        title = self._without(self.title, removed) if self.title is not None else None
         result = assemble_build_result(
             document_id=self.document_id,
             filename=self.filename,
             source_sha256=self.source_sha256,
             chunks=tuple(c for c in self.chunks if c.anchor not in self.header_anchors),
-            accepted=(*self.accepted, *self._omitted(questions, review_reasons, governed)),
+            accepted=(*self.accepted, *omitted),
             review_reasons=review_reasons,
-            key_anchors=frozenset(self.key_anchors),
-            title=self.title,
-            instructions=instructions,
+            key_anchors=frozenset(self.key_anchors - removed),
+            title=title,
+            instructions=tuple(m for m in kept if m is not None),
             governed=governed,
             exam_wide=exam_wide,
             exam_metadata=exam_metadata,

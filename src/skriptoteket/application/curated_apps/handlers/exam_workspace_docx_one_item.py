@@ -12,7 +12,10 @@ from pydantic import JsonValue
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_state import (
     DocxBuildState,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import line_points
+from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import (
+    line_points,
+    printed_points_plan,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     POINT_LABEL,
     QUESTION_HEADING_LABEL,
@@ -47,22 +50,32 @@ def refused_questions(items: list[JsonValue], state: DocxBuildState) -> dict[tup
     """The grouped questions this reply does not return as one item each, in source order,
     with the admission event code that names why.
 
-    An entry holds the body of each question one of its anchors belongs to, apart from the
-    question's heading and points lines, which the admission joins to the body. A question
-    whose body several entries hold is split; the questions whose bodies one entry holds are
-    merged.
+    An entry touches every question one of its anchors belongs to, heading and points lines
+    included; the questions one entry touches are merged. A line that prints a total belongs
+    to the question the points plan gives it, wherever the grouping placed it: a points line
+    to its owner, a heading to the one question of the part it opens. An entry that touches
+    one question holds its body unless it lists only the question's heading and points lines,
+    which the admission joins to the body. A question whose body several entries hold is split.
     """
+    plan = printed_points_plan(state.chunks, state.questions)
+    owner = {
+        **state.question_by_anchor,
+        **{anchor: state.questions[number] for anchor, number in plan.owners.items()},
+        **{
+            part.opener: state.questions[part.questions[0]]
+            for part in plan.parts
+            if len(part.questions) == 1
+        },
+    }
     holders: Counter[tuple[str, ...]] = Counter()
     refused: dict[tuple[str, ...], str] = {}
     for raw in items:
-        bodies = {
-            state.question_by_anchor[a]
-            for a in raw_anchors(raw)
-            if a in state.question_by_anchor and not _label_line(a, state)
-        }
-        holders.update(bodies)
-        if len(bodies) > 1:
-            refused.update((question, "questions_merged") for question in bodies)
+        owned = [a for a in raw_anchors(raw) if a in owner]
+        touched = {owner[a] for a in owned}
+        if len(touched) > 1:
+            refused.update((question, "questions_merged") for question in touched)
+        elif not all(_label_line(a, state) for a in owned):
+            holders.update(touched)
     for question, count in holders.items():
         if count > 1:
             refused.setdefault(question, "question_split")
