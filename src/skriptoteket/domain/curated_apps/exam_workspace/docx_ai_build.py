@@ -31,6 +31,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions impor
 from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import (
     NO_PRINTED_POINTS,
     PrintedPoints,
+    section_openers,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_section_instructions import (
     SectionInstructions,
@@ -359,7 +360,7 @@ def assemble_build_result(
     events = (*events, *released.events)
     title_anchors = frozenset(title.source_anchors) if title is not None else frozenset()
     own_anchors = frozenset(anchor for own in questions for anchor in own)
-    part_lines = frozenset(part.opener for part in printed.parts)
+    part_lines = section_openers(printed.parts)
     placed = _ordered_items(
         chunks,
         accepted,
