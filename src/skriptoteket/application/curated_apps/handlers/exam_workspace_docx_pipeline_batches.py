@@ -10,13 +10,17 @@ family, or every family, depends on an unavailable picture.
 A converting part admits the batch's response, marks conflicts kept for a type check, and
 checks every item against the native contract; a failure leaves that part's own questions
 holding their source text for review and never fails the conversion.
+
+Exam-wide text and exam metadata belong to the document, never to a question: no batch
+claims them, and every batch whose families own or read them sends them as read-only context.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_assembly import (
+    exam_wide_anchors,
     governed_anchors,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build import (
@@ -68,14 +72,24 @@ def source_parts(run: DocxConversionRun, batch: ConversionBatch) -> tuple[BatchP
     missing = {f.question_id: _missing_chunks(run, f.claims | f.reads) for f in families}
     gated = tuple(f for f in families if missing[f.question_id])
     if not gated:
-        return (BatchPart(batch),)
+        return (BatchPart(_exam_wide_read(run, batch)),)
     reasons = _missing_chunks(run, frozenset().union(*(f.claims | f.reads for f in gated)))
     if len(gated) == len(families):
-        return (BatchPart(batch, reasons),)
+        return (BatchPart(_exam_wide_read(run, batch), reasons),)
     converted = tuple(f for f in families if not missing[f.question_id])
     return (
-        BatchPart(_subset(batch, gated), reasons),
-        BatchPart(_subset(batch, converted)),
+        BatchPart(_exam_wide_read(run, _subset(batch, gated)), reasons),
+        BatchPart(_exam_wide_read(run, _subset(batch, converted))),
+    )
+
+
+def _exam_wide_read(run: DocxConversionRun, batch: ConversionBatch) -> ConversionBatch:
+    """The batch reading the exam-wide chunks it would claim, so the model still sees them."""
+    exam_wide = exam_wide_anchors(run.contexts, run.families)
+    return replace(
+        batch,
+        claims=batch.claims - exam_wide,
+        reads=batch.reads | (batch.claims & exam_wide),
     )
 
 
@@ -92,17 +106,22 @@ def source_reviewed(run: DocxConversionRun, part: BatchPart) -> BatchOutcome:
 
 
 def batch_state(run: DocxConversionRun, batch: ConversionBatch) -> DocxBuildState:
-    """The batch's admission state: its claims, its read-only context and its allowed kinds."""
+    """The batch's admission state: its claims, its read-only context and its allowed kinds.
+
+    Exam-wide and exam-metadata anchors are never claimable; they are read-only context, so no
+    reply can list them in an item, an instruction or the title.
+    """
     job = run.job
+    exam_wide = exam_wide_anchors(run.contexts, run.families)
     return DocxBuildState(
         job.job_id,
         job.document_id,
         job.filename,
         job.source_sha256,
         job.chunks,
-        claimable=batch.claims,
+        claimable=batch.claims - exam_wide,
         header_anchors=run.state.header_anchors,
-        context_anchors=batch.reads,
+        context_anchors=batch.reads | exam_wide,
         allowed_kinds=batch.kinds,
         batch=batch.batch_id,
         keep_conflicts=any(qid in run.resent for qid in batch.question_ids),

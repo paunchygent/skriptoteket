@@ -1,47 +1,180 @@
-"""Exam-wide text belongs to the document's instructions once; metadata lines go nowhere."""
+"""Exam-wide text belongs to the document's instructions once; metadata lines go nowhere.
 
+The grouping's anchors decide it, never how a build reply bundles them: exam-wide chunks are
+no batch's claims, so a reply can only read them as context, and assembly shows each one from
+its own source. A printed total the points plan classifies as metadata is never instruction
+text, even when a reply lists it as one.
+"""
+
+import json
+from typing import Any
 from uuid import UUID
 
 import pytest
+from pydantic import JsonValue
 
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import assemble_build_result
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
-    DocxBuildResult,
-    ProducedMetadata,
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_assembly import (
+    exam_metadata_anchors,
+    exam_wide_anchors,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_admission import (
+    admit_batch,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_rounds import (
+    build_batch_request,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_state import (
+    DocxBuildState,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_pipeline_batches import (
+    batch_state,
+    source_parts,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_run import (
+    DocxConversionJob,
+    DocxConversionRun,
+)
+from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
+    StructuredLLMEndpointKind,
+    StructuredLLMProviderProfile,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import DocxBuildResult
+from skriptoteket.domain.curated_apps.exam_workspace.docx_batches import (
+    ConversionBatch,
+    QuestionFamily,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
+from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import SharedContext
+from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import printed_points_plan
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeExamItemKind,
+)
 
+pytestmark = pytest.mark.unit
+
+_TOTAL = "Totalt: 70 poäng"
 _BOX = "Instruktioner: Skriv tydligt."
 _NAME = "Namn: ______"
 _CHECK = "Kontrollera dina svar."
 _DEL = "DEL A"
-_QUESTIONS = {"body:0005": "1. Första frågan", "body:0006": "2. Andra frågan"}
+_Q1 = "1. Förklara vad ett substantiv är. (35 p)"
+_Q2 = "2. Förklara vad ett verb är. (35 p)"
+_TEXTS = {
+    "body:0000": _TOTAL,
+    "body:0001": _BOX,
+    "body:0002": _NAME,
+    "body:0003": _CHECK,
+    "body:0004": _DEL,
+    "body:0005": _Q1,
+    "body:0006": _Q2,
+}
+_EXAM_WIDE = ("body:0001", "body:0003")
+_METADATA = "body:0002"
+_FREE_TEXT = frozenset({NativeExamItemKind.FREE_TEXT})
 
 
-def _chunks(del_kind: str) -> tuple[DocxChunk, ...]:
-    lines = {
-        "body:0001": ("paragraph", _BOX),
-        "body:0002": ("paragraph", _NAME),
-        "body:0003": ("paragraph", _CHECK),
-        "body:0004": (del_kind, _DEL),
-        **{anchor: ("paragraph", text) for anchor, text in _QUESTIONS.items()},
-    }
-    return tuple(DocxChunk(a, kind, text, text) for a, (kind, text) in lines.items())
-
-
-def _build(del_kind: str, *, listed: tuple[str, ...]) -> DocxBuildResult:
-    texts = {"body:0001": _BOX, "body:0002": _NAME, "body:0003": _CHECK, "body:0004": _DEL}
-    return assemble_build_result(
-        document_id=UUID(int=1),
+def _run(del_kind: str, *, exam_wide_total: bool = False) -> DocxConversionRun:
+    chunks = tuple(
+        DocxChunk(anchor, del_kind if anchor == "body:0004" else "paragraph", text, text)
+        for anchor, text in _TEXTS.items()
+    )
+    job = DocxConversionJob(
+        job_id=UUID(int=1),
+        worker_id="worker",
+        document_id=UUID(int=2),
         filename="prov.docx",
         source_sha256="0" * 64,
-        chunks=_chunks(del_kind),
-        review_reasons=dict.fromkeys(_QUESTIONS, "Ingen fråga."),
-        instructions=tuple(ProducedMetadata(text=texts[a], source_anchors=(a,)) for a in listed),
-        exam_wide=frozenset({"body:0001", "body:0002", "body:0003"}),
-        exam_metadata=frozenset({"body:0002"}),
-        questions=tuple((a,) for a in _QUESTIONS),
+        source_docx=b"",
+        chunks=chunks,
+        course_key=None,
     )
+    run = DocxConversionRun(job, 0.0)
+    total = (SharedContext("body:0000", "other", "exam", ("q1", "q2")),) if exam_wide_total else ()
+    run.contexts = (
+        *total,
+        SharedContext("body:0001", "other", "exam", ("q1", "q2")),
+        SharedContext(_METADATA, "exam_metadata", "exam", ()),
+        SharedContext("body:0003", "other", "exam", ("q1", "q2")),
+    )
+    run.context_anchors = frozenset(context.anchor for context in run.contexts)
+    # The first question owns the exam-level lines before it; the second reads the shared ones.
+    run.families = (
+        QuestionFamily(
+            question_id="q1",
+            position=0,
+            question_anchors=("body:0005",),
+            claims=frozenset({"body:0000", "body:0001", _METADATA, "body:0003", "body:0004"})
+            | {"body:0005"},
+            reads=frozenset(),
+        ),
+        QuestionFamily(
+            question_id="q2",
+            position=1,
+            question_anchors=("body:0006",),
+            claims=frozenset({"body:0006"}),
+            reads=frozenset(_EXAM_WIDE),
+        ),
+    )
+    run.kinds = {"q1": NativeExamItemKind.FREE_TEXT, "q2": NativeExamItemKind.FREE_TEXT}
+    return run
+
+
+def _batch(run: DocxConversionRun) -> ConversionBatch:
+    claims = frozenset().union(*(f.claims for f in run.families))
+    return ConversionBatch(
+        batch_id="w1-01",
+        kinds=_FREE_TEXT,
+        question_ids=("q1", "q2"),
+        claims=claims,
+        reads=frozenset().union(*(f.reads for f in run.families)) - claims,
+    )
+
+
+def _item(anchor: str, text: str) -> dict[str, JsonValue]:
+    return {
+        "source_anchors": [anchor],
+        "outcome": "converted",
+        "conflict_kind": None,
+        "review_reason": None,
+        "kind": "free_text",
+        "key_source": None,
+        "facit_text": None,
+        "printed_label": anchor[-1],
+        "body": [{"segments": [{"kind": "text", "text": text, "accepted_values": []}]}],
+        "points": 35,
+        "choices": [],
+        "match_left": [],
+        "match_right": [],
+        "match_pairs": [],
+        "criteria": [],
+    }
+
+
+def _instruction(*anchors: str) -> dict[str, JsonValue]:
+    return {"text": "\n".join(_TEXTS[a] for a in anchors), "source_anchors": list(anchors)}
+
+
+def _build(
+    del_kind: str, instructions: tuple[tuple[str, ...], ...], *, exam_wide_total: bool = False
+) -> tuple[DocxBuildResult, DocxBuildState]:
+    run = _run(del_kind, exam_wide_total=exam_wide_total)
+    state = batch_state(run, _batch(run))
+    admit_batch(
+        {
+            "items": [_item("body:0005", _Q1), _item("body:0006", _Q2)],
+            "answer_key_anchors": [],
+            "title": None,
+            "instructions": [_instruction(*anchors) for anchors in instructions],
+        },
+        state,
+    )
+    questions = tuple(f.question_anchors for f in run.families)
+    result = state.result(
+        questions=questions,
+        exam_wide=exam_wide_anchors(run.contexts, run.families),
+        exam_metadata=exam_metadata_anchors(run.contexts),
+    )
+    return result, state
 
 
 def _lines(paragraphs) -> list[str]:
@@ -51,37 +184,115 @@ def _lines(paragraphs) -> list[str]:
     ]
 
 
-@pytest.mark.parametrize("del_kind", ["paragraph", "heading"])
-@pytest.mark.parametrize(
-    "listed",
-    [("body:0001", "body:0002", "body:0004"), ("body:0004",)],
-    ids=["reply_lists_exam_wide", "reply_lists_only_del"],
-)
-def test_exam_wide_text_lands_in_document_instructions_once(del_kind, listed):
-    document = _build(del_kind, listed=listed).document
-
-    assert _lines(document.instructions) == [_BOX, _CHECK]
-    for item in document.items:
-        assert not set(item.plain_text_lines()) & {_BOX, _NAME, _CHECK}
-    for parent in document.parents:
-        assert not set(_lines(parent.instruction)) & {_BOX, _NAME, _CHECK}
-
-
-@pytest.mark.parametrize("del_kind", ["paragraph", "heading"])
-def test_del_parent_still_forms(del_kind):
-    document = _build(del_kind, listed=("body:0001", "body:0002", "body:0004")).document
-
-    assert len(document.items) == 2
-    assert len(document.parents) == 1
-    assert _DEL in _lines(document.parents[0].instruction)
-
-
-def test_listed_metadata_line_appears_nowhere():
-    document = _build("paragraph", listed=("body:0002", "body:0004")).document
-
-    shown = [
+def _shown(result: DocxBuildResult) -> list[str]:
+    document = result.document
+    return [
         *_lines(document.instructions),
         *(line for item in document.items for line in item.plain_text_lines()),
         *(line for parent in document.parents for line in _lines(parent.instruction)),
     ]
-    assert not [line for line in shown if line.startswith("Namn")]
+
+
+_MIXED_BOX_NAME = (("body:0001", _METADATA), ("body:0004",))
+_MIXED_BOX_NAME_DEL = (("body:0001", _METADATA, "body:0004"),)
+
+
+@pytest.mark.parametrize("del_kind", ["paragraph", "heading"])
+@pytest.mark.parametrize(
+    "instructions",
+    [
+        _MIXED_BOX_NAME,
+        _MIXED_BOX_NAME_DEL,
+        (("body:0001",), (_METADATA,), ("body:0004",)),
+        (("body:0004",),),
+    ],
+    ids=["box_and_name", "box_name_and_del", "each_alone", "only_del"],
+)
+def test_exam_wide_text_lands_in_document_instructions_once(del_kind, instructions):
+    result, _ = _build(del_kind, instructions)
+    document = result.document
+
+    assert _lines(document.instructions) == [_BOX, _CHECK]
+    assert not [line for line in _shown(result) if line.startswith("Namn")]
+    for item in document.items:
+        assert not set(item.plain_text_lines()) & {_BOX, _NAME, _CHECK}
+
+
+@pytest.mark.parametrize("del_kind", ["paragraph", "heading"])
+@pytest.mark.parametrize(
+    "instructions",
+    [_MIXED_BOX_NAME, _MIXED_BOX_NAME_DEL],
+    ids=["box_name_separate", "box_name_in_del"],
+)
+def test_the_del_parent_holds_only_its_own_text(del_kind, instructions):
+    document = _build(del_kind, instructions)[0].document
+
+    assert len(document.items) == 2
+    assert len(document.parents) == 1
+    assert _lines(document.parents[0].instruction) == [_DEL]
+
+
+def test_exam_wide_anchors_are_no_claims_of_the_batch_and_only_its_context():
+    run = _run("heading")
+    (part,) = source_parts(run, _batch(run))
+    state = batch_state(run, part.batch)
+    exam_wide = {*_EXAM_WIDE, _METADATA}
+
+    assert not exam_wide & state.owned
+    assert not exam_wide & {chunk.anchor for chunk in state.pending}
+    assert exam_wide <= state.context_anchors
+    assert exam_wide <= part.batch.reads
+    assert not exam_wide & part.batch.claims
+    request = build_batch_request(
+        job_id=run.job.job_id,
+        request_id="docx_w1-01",
+        pending=state.pending,
+        context=tuple(c for c in state.chunks if c.anchor in part.batch.reads),
+        questions=state.questions,
+        kinds=_FREE_TEXT,
+        profile=StructuredLLMProviderProfile(
+            provider_id="test",
+            model="test",
+            endpoint_kind=StructuredLLMEndpointKind.RESPONSES,
+            is_remote=False,
+            context_window_tokens=200_000,
+            max_output_tokens=4_096,
+        ),
+    )
+    schema: dict[str, Any] = json.loads(json.dumps(request.output_spec.json_schema))
+    definitions = schema["$defs"]
+    enums = [
+        schema["properties"]["answer_key_anchors"]["items"]["enum"],
+        *(
+            definitions[name]["properties"]["source_anchors"]["items"]["enum"]
+            for name in ("ProducedItem", "ProducedMetadata")
+        ),
+    ]
+    for anchors in enums:
+        assert "body:0005" in anchors
+        assert not exam_wide & set(anchors)
+    payload: dict[str, Any] = json.loads(request.user_payload)
+    assert exam_wide <= {chunk["anchor"] for chunk in payload["context_chunks"]}
+
+
+def test_a_printed_exam_total_a_reply_lists_as_an_instruction_stays_header_metadata():
+    listed, state = _build("heading", (("body:0000",), ("body:0004",)))
+    unlisted, _ = _build("heading", (("body:0004",),))
+    printed = printed_points_plan(state.chunks, state.questions)
+
+    assert "body:0000" in printed.metadata
+    assert printed.exam_total == 70
+    assert _TOTAL not in _shown(listed)
+    assert _lines(listed.document.instructions) == [_BOX, _CHECK]
+    assert [item.points for item in listed.document.items] == [
+        item.points for item in unlisted.document.items
+    ]
+    assert [item.points for item in listed.document.items] == [35, 35]
+
+
+def test_a_printed_exam_total_the_grouping_calls_exam_wide_stays_header_metadata():
+    result, state = _build("heading", (("body:0004",),), exam_wide_total=True)
+
+    assert "body:0000" in printed_points_plan(state.chunks, state.questions).metadata
+    assert _TOTAL not in _shown(result)
+    assert _lines(result.document.instructions) == [_BOX, _CHECK]

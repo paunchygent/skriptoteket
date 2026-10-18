@@ -15,6 +15,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     POINT_LABEL,
     defined_terms,
     points_line,
+    printed_points,
     uses_term,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
@@ -173,16 +174,17 @@ async def test_points_lines_are_structure_and_never_reach_a_parent_or_an_item():
         assert not [
             line for item in document.items for line in item.plain_text_lines() if points_line(line)
         ]
-        # The exam total is kept, once, as a document-level instruction; the per-question
-        # points lines are structure and reach neither a parent nor an item.
+        # The exam total is header metadata, never instruction text (39-04-12 F3); the
+        # per-question points lines are structure and reach neither a parent nor an item.
         totals = [
-            chunk.text
+            chunk
             for chunk in build.chunks.values()
             if points_line(chunk.text) and chunk.text.casefold().startswith("total")
         ]
         assert totals
         kept = body_text_lines(document.instructions)
-        assert all(total in kept for total in totals), exam
+        assert not any(total.text in kept for total in totals), exam
+        assert document.header.printed_total in {printed_points((t,)) for t in totals}, exam
 
 
 async def test_a_shared_term_defining_instruction_is_parented_and_not_copied():
@@ -228,4 +230,9 @@ async def test_every_recorded_instruction_is_in_a_parent_or_an_item_or_stays_doc
                 variant in kept or any(variant in item_text for item_text in item_texts)
                 for variant in _shown_variants(text)
             )
-            assert reached != (text in body_text_lines(document.instructions)), (exam, anchors)
+            published = text in body_text_lines(document.instructions)
+            if points_line(text) and not reached:
+                # A printed total outside every section is header metadata (39-04-12 F3).
+                assert not published, (exam, anchors)
+                continue
+            assert reached != published, (exam, anchors)
