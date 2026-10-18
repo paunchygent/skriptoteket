@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "package": "huleedu-integrated-frontend-design-system",
-  "version": "0.1.31",
+  "version": "0.1.32",
   "compatibility": {
     "tailwind": ">=4.0.0",
     "vue": ">=3.5.0",
@@ -58,7 +58,7 @@
       "id": "ui-glyphs",
       "kind": "typescript.primitive",
       "path": "src/vue/uiGlyphs.ts",
-      "sha256": "50d92c05e3c628483b68c007b906845d024a1195bdb37a0e16b68a7019f6937b"
+      "sha256": "f98a4532346b6b2a3c4dca82a6808a2eb4b314d5ff059e2effe8c1f894392b10"
     },
     {
       "id": "ui-dense-action-button",
