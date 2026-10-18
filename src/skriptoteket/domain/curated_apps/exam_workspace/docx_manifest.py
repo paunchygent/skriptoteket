@@ -20,7 +20,7 @@ ContextScope = Literal[
     "section_instruction", "shared_passage", "word_bank", "exam_metadata", "other"
 ]
 _SCOPES: frozenset[str] = frozenset(get_args(ContextScope))
-HeaderKind = Literal["course", "exam_total", "part_total", "question_total"]
+HeaderKind = Literal["course", "part_total", "question_total"]
 _HEADER_KINDS: frozenset[str] = frozenset(get_args(HeaderKind))
 _EXAM_OWNER = "exam"
 
@@ -53,8 +53,8 @@ class SharedContext:
 class HeaderAnchor:
     """A source header line: exam metadata, never exam text (TASK-SKRIPT-39-05-14 D1).
 
-    ``governs`` names the questions of a part or question total; it is empty for the course line
-    and the exam total.
+    ``governs`` names the questions of a part or question total; it is empty for the course line.
+    Code reads the exam total from the source text, so it has no header kind.
     """
 
     anchor: str

@@ -152,6 +152,7 @@ class ExamAnswerKeyProvider(Provider):
                 base_url=settings.LLM_ANSWER_KEY_FAILOVER_BASE_URL,
                 api_key=settings.OPENROUTER_LLM_ANSWER_KEY_API_KEY,
                 timeout_seconds=float(settings.LLM_ANSWER_KEY_TIMEOUT_SECONDS),
+                temperature=settings.LLM_ANSWER_KEY_TEMPERATURE,
             ),
         )
 

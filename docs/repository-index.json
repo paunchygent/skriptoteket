@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "5737af8fe9955547eac510efcc4ad6115874794ca391aaa606b6359f84744b4d",
+  "source_set_digest": "b01d5d31abda6b6e5f1cf2a930069bd033eb0ceea870b40d0b60951ea222c0c8",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -4987,7 +4987,7 @@
       "type": "task",
       "title": "Printed point totals reach their questions through one owner per points line",
       "path": "docs/backlog/tasks/task-skript-39-04-11-printed-point-totals-reach-their-questions-through-one-owner-per-points-line.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-04",
       "owners": [

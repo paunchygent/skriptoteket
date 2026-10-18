@@ -44,15 +44,19 @@ class OpenRouterAnswerKeyChatProvider(AnswerKeyStructuredProviderProtocol):
         base_url: str,
         api_key: str,
         timeout_seconds: float,
+        temperature: float,
     ) -> None:
         if not base_url.strip():
             raise ValueError("Answer-key failover base_url must be non-empty.")
         if timeout_seconds <= 0:
             raise ValueError("Answer-key failover timeout_seconds must be positive.")
+        if temperature < 0 or temperature > 2:
+            raise ValueError("Answer-key failover temperature must be between 0 and 2.")
         self._client = client
         self._base_url = base_url.strip().rstrip("/")
         self._api_key = api_key.strip()
         self._timeout_seconds = timeout_seconds
+        self._temperature = temperature
 
     async def complete_structured(
         self,
@@ -72,7 +76,9 @@ class OpenRouterAnswerKeyChatProvider(AnswerKeyStructuredProviderProtocol):
                 message="Answer-key failover provider API key is not configured.",
                 provider_id=profile.provider_id,
             )
-        payload = build_answer_key_chat_completions_payload(profile=profile, request=request)
+        payload = build_answer_key_chat_completions_payload(
+            profile=profile, request=request, temperature=self._temperature
+        )
         try:
             response = await self._client.post(
                 f"{self._base_url}/chat/completions",
@@ -116,8 +122,12 @@ def build_answer_key_chat_completions_payload(
     *,
     profile: StructuredLLMProviderProfile,
     request: StructuredLLMRequest,
+    temperature: float,
 ) -> _JsonObject:
-    """Build the Chat Completions payload with strict JSON Schema output."""
+    """Build the Chat Completions payload with strict JSON Schema output.
+
+    Temperature is this provider's own setting: only the OpenRouter failover sends one.
+    """
 
     if request.user_images:
         raise ValueError("The Chat Completions answer-key lane takes no source images.")
@@ -129,7 +139,7 @@ def build_answer_key_chat_completions_payload(
         ],
         "stream": False,
         "max_tokens": request.max_output_tokens,
-        "temperature": profile.temperature,
+        "temperature": temperature,
         "provider": {"require_parameters": True},
         "response_format": {
             "type": "json_schema",

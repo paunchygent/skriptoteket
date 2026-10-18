@@ -35,7 +35,6 @@ def build_luna_answer_key_profile(settings: Settings) -> StructuredLLMProviderPr
         is_remote=True,
         context_window_tokens=settings.LLM_ANSWER_KEY_CONTEXT_WINDOW_TOKENS,
         max_output_tokens=settings.LLM_ANSWER_KEY_MAX_OUTPUT_TOKENS,
-        temperature=settings.LLM_ANSWER_KEY_TEMPERATURE,
         reasoning_effort=StructuredLLMReasoningEffort(settings.LLM_ANSWER_KEY_REASONING_EFFORT),
         text_verbosity=StructuredLLMTextVerbosity(settings.LLM_ANSWER_KEY_TEXT_VERBOSITY),
     )

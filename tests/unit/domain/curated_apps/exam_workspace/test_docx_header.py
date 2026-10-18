@@ -10,7 +10,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import (
     ExamManifest,
     HeaderAnchor,
     ManifestQuestion,
-    SharedContext,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import (
+    manifest_questions,
+    printed_points_plan,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import NativeExamDocument
 from tests.unit.application.curated_apps.handlers.exam_workspace_conversion_support import (
@@ -46,57 +49,142 @@ def _document() -> NativeExamDocument:
     return conversion_update([("q1", [choice("p1", "Frågan")])], pending=()).document
 
 
+def _heading(anchor: str, text: str) -> DocxChunk:
+    return DocxChunk(anchor=anchor, kind="heading", text=text, marked_text=text)
+
+
+_Q1 = _manifest((), (_question("q1", "q1"),))
+
+
+_Q12 = _manifest((), (_question("q1", "q1"), _question("q2", "q2")))
+
+
 @pytest.mark.parametrize(
-    ("line", "expected"),
+    ("chunks", "expected"),
     [
-        ("Total: 36 poäng", 36),
-        ("Totalt 40 p", 40),
-        ("Poäng: 15 poäng", 15),
-        ("Max 36p", 36),
-        ("36 poäng totalt", 36),
-        ("Totalt: 7,5 p", 7.5),
-        ("Totalt: 7.5 p", 7.5),
-        ("Del 2: 15 poäng", 15),
-        ("Totalpoäng saknas", None),
+        ((_chunk("t", "Total: 36 poäng"), _chunk("q1", "1. Fråga")), 36),
+        ((_chunk("n", "Namn:"), _chunk("q1", "1. Fråga")), None),
+        # Two totals that differ are no exam total, in either order and with or without a
+        # part line between them and the first question (D3, R2-1).
+        ((_chunk("a", "Total: 36 poäng"), _chunk("b", "Max 40 p"), _chunk("q1", "1.")), None),
+        ((_chunk("a", "Total: 36 poäng"), _chunk("b", "Totalt 40 p"), _chunk("q1", "1.")), None),
+        ((_chunk("b", "Totalt 40 p"), _chunk("a", "Total: 36 poäng"), _chunk("q1", "1.")), None),
+        (
+            (
+                _chunk("a", "Total: 36 poäng"),
+                _chunk("b", "Max 40 p"),
+                _heading("h", "Del 1: 15 poäng"),
+                _chunk("q1", "1."),
+            ),
+            None,
+        ),
+        (
+            (_chunk("a", "Total: 36 poäng"), _chunk("b", "Max 36p"), _chunk("q1", "1.")),
+            36,
+        ),
+        ((_chunk("q1", "1. Fråga"), _chunk("t", "Total: 36 poäng")), None),
+        # A line opening the first section is never the exam total, heading or paragraph.
+        (
+            (_chunk("t", "Total: 36 poäng"), _heading("h", "Del 1: 15 poäng"), _chunk("q1", "1.")),
+            36,
+        ),
+        (
+            (_chunk("t", "Total: 36 poäng"), _chunk("d", "Del 1: 15 poäng"), _chunk("q1", "1.")),
+            36,
+        ),
+        # A heading can print the exam total.
+        ((_heading("h", "Total: 36 poäng"), _chunk("q1", "1. Fråga")), 36),
+        ((_heading("h", "Prov i svenska, 40 poäng"), _chunk("q1", "1. Fråga")), 40),
+        # A part label opens a part, heading or paragraph; it is never the exam total.
+        (
+            (
+                _chunk("d", "Del 1: 15 poäng"),
+                _chunk("q1", "1."),
+                _chunk("d2", "Del 2: 21 poäng"),
+                _chunk("q2", "2."),
+            ),
+            None,
+        ),
+        (
+            (
+                _heading("h1", "Del 1: 15 poäng"),
+                _chunk("q1", "1."),
+                _heading("h2", "Del 2: 21 poäng"),
+                _chunk("q2", "2."),
+            ),
+            None,
+        ),
+        # The sa24 shape: a plain total before q1; later parts open with headings.
+        (
+            (
+                _chunk("t", "Total: 74 points"),
+                _chunk("q1", "1."),
+                _heading("h", "E Choose the words (15 points)"),
+                _chunk("q2", "2."),
+            ),
+            74,
+        ),
+        # The Svenska 2 shape: total, part heading, questions, a closing line, next part.
+        (
+            (
+                _chunk("t", "Total: 36 poäng"),
+                _heading("h1", "Del 1: litteraturhistoria, 15 poäng"),
+                _chunk("q1", "1."),
+                _chunk("c", "Poäng: 15 poäng"),
+                _heading("h2", "Del 2: grammatik, 21 poäng"),
+                _chunk("q2", "2."),
+            ),
+            36,
+        ),
+        ((_chunk("t", "Total: 36,5 poäng"), _chunk("q1", "1. Fråga")), 36.5),
+        ((_chunk("t", "Del 1: 15 poäng, del 2: 21 poäng"), _chunk("q1", "1.")), None),
     ],
 )
-def test_printed_exam_total_reads_the_points_not_an_earlier_part_number(
-    line: str, expected: int | float | None
+def test_printed_exam_total_is_the_one_total_line_before_the_first_question(
+    chunks: tuple[DocxChunk, ...], expected: int | float | None
 ) -> None:
+    assert printed_points_plan(chunks, manifest_questions(_Q12)).exam_total == expected
+
+
+def test_paragraph_part_lines_each_open_their_part() -> None:
+    chunks = (
+        _chunk("d", "Del 1: 15 poäng"),
+        _chunk("q1", "1."),
+        _chunk("d2", "Del 2: 21 poäng"),
+        _chunk("q2", "2."),
+    )
+
+    plan = printed_points_plan(chunks, manifest_questions(_Q12))
+
+    assert plan.exam_total is None
+    assert [(part.total, part.questions) for part in plan.parts] == [(15, (0,)), (21, (1,))]
+    assert plan.metadata == {"d", "d2"}
+    assert not plan.owners
+
+
+def test_apply_header_takes_the_exam_total_from_the_text_without_a_header_anchor() -> None:
     result = apply_header(
         _document(),
-        _manifest((HeaderAnchor("h1", "exam_total", ()),)),
-        (_chunk("h1", line),),
+        _Q1,
+        (_chunk("t", "Total: 36 poäng"), _chunk("q1", "Frågan")),
         course_key=None,
         courses=(),
     )
-    assert result.document.header.printed_total == expected
+    assert result.document.header.printed_total == 36
 
 
-def test_course_lines_keep_plain_source_order_and_first_parsable_exam_total() -> None:
+def test_course_lines_keep_plain_source_order() -> None:
     result = apply_header(
         _document(),
-        _manifest(
-            (
-                HeaderAnchor("c2", "course", ()),
-                HeaderAnchor("t3", "exam_total", ()),
-                HeaderAnchor("c1", "course", ()),
-                HeaderAnchor("t2", "exam_total", ()),
-                HeaderAnchor("t1", "exam_total", ()),
-            )
-        ),
+        _manifest((HeaderAnchor("c2", "course", ()), HeaderAnchor("c1", "course", ()))),
         (
             _chunk("c1", "Svenska 2", marked="**Svenska** <i>2</i>"),
             _chunk("c2", "Kursavslutande", marked="<u>Kursavslutande</u>"),
-            _chunk("t1", "Total saknas"),
-            _chunk("t2", "Total: 36 poäng"),
-            _chunk("t3", "Total: 99 poäng"),
         ),
         course_key=None,
         courses=(),
     )
     assert result.document.header.course_hint == "Svenska 2 Kursavslutande"
-    assert result.document.header.printed_total == 36
     assert result.document.instructions == ()
 
 
@@ -109,114 +197,3 @@ def test_empty_course_line_has_no_hint() -> None:
         courses=(),
     )
     assert result.document.header.course_hint is None
-
-
-def test_part_totals_follow_source_ownership_into_adjacent_parents() -> None:
-    document = conversion_update(
-        [
-            ("q1", [choice("p1", "Ett")]),
-            ("q2", [choice("p2", "Två")]),
-            ("q21", [choice("p21a", "Tjugoett a"), choice("p21b", "Tjugoett b")]),
-            ("q22", [choice("p22", "Tjugotvå")]),
-        ],
-        pending=(),
-        parents=(("left", ("q1", "q2")), ("right", ("q21", "q22"))),
-    ).document
-    result = apply_header(
-        document,
-        _manifest(
-            (HeaderAnchor("h2", "part_total", ("q21", "q22")),),
-            (
-                _question("q1", "p1"),
-                _question("q2", "p2"),
-                _question("q21", "p21a", "p21b"),
-                _question("q22", "p22"),
-            ),
-        ),
-        (
-            _chunk("p1", "Ett"),
-            _chunk("p2", "Två"),
-            _chunk("h2", "Del 2: 15 poäng"),
-            _chunk("p21a", "Tjugoett a"),
-            _chunk("p21b", "Tjugoett b"),
-            _chunk("p22", "Tjugotvå"),
-        ),
-        course_key=None,
-        courses=(),
-    )
-    assert [parent.printed_total for parent in result.document.parents] == [None, 15]
-    assert [item.points for item in result.document.items] == [1, 1, 1, 1, 1]
-
-
-def test_part_total_uses_largest_overlap_even_when_some_questions_are_unparented() -> None:
-    document = conversion_update(
-        [(f"q{i}", [choice(f"p{i}", f"Fråga {i}")]) for i in range(1, 7)],
-        pending=(),
-        parents=(("left", ("q1", "q2")), ("right", ("q3", "q4", "q5"))),
-    ).document
-    result = apply_header(
-        document,
-        _manifest(
-            (HeaderAnchor("h", "part_total", ("q2", "q3", "q4", "q6")),),
-            tuple(_question(f"q{i}", f"p{i}") for i in range(1, 7)),
-        ),
-        (_chunk("h", "Totalt 40 p"), *(_chunk(f"p{i}", f"Fråga {i}") for i in range(1, 7))),
-        course_key=None,
-        courses=(),
-    )
-    assert [parent.printed_total for parent in result.document.parents] == [None, 40]
-
-
-def test_part_total_uses_the_same_owned_context_mapping_as_pipeline_assembly() -> None:
-    document = conversion_update(
-        [("q1", [choice("c1", "Ett")]), ("q2", [choice("p2", "Två")])],
-        pending=(),
-        parents=(("part", ("q1", "q2")),),
-    ).document
-    manifest = _manifest(
-        (HeaderAnchor("h", "part_total", ("q1",)),),
-        (_question("q1", "p1"), _question("q2", "p2")),
-    )
-    manifest = ExamManifest(
-        questions=manifest.questions,
-        contexts=(SharedContext("c1", "section_instruction", "q1", ("q1",)),),
-        title_anchors=(),
-        header=manifest.header,
-        invalid_anchors=(),
-        duplicate_anchors=(),
-        unplaced_anchors=(),
-    )
-    result = apply_header(
-        document,
-        manifest,
-        (
-            _chunk("h", "Poäng: 15 poäng"),
-            _chunk("c1", "Läs texten och svara."),
-            _chunk("p1", "Ett"),
-            _chunk("p2", "Två"),
-        ),
-        course_key=None,
-        courses=(),
-    )
-    assert result.document.parents[0].printed_total is None
-    assert result.document.items[0].points == 15
-    assert result.document.items[1].points == 1
-
-
-@pytest.mark.parametrize("existing_points", [None, 3, 7.5])
-def test_single_unparented_question_owns_its_printed_points(
-    existing_points: int | float | None,
-) -> None:
-    document = _document()
-    item = document.items[0].model_copy(update={"points": existing_points})
-    document = document.model_copy(update={"items": (item,)})
-    result = apply_header(
-        document,
-        _manifest((HeaderAnchor("h", "part_total", ("q1",)),), (_question("q1", "p1"),)),
-        (_chunk("h", "Totalt 7,5 p"), _chunk("p1", "Frågan")),
-        course_key=None,
-        courses=(),
-    )
-    assert result.document.parents == ()
-    assert result.document.items[0].points == 7.5
-    assert result.document.items[0].review == item.review

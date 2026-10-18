@@ -20,7 +20,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     QUESTION_HEADING_LABEL,
     defined_terms,
     points_line,
-    printed_points,
     uses_term,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
@@ -54,7 +53,6 @@ class Run:
     heading: bool = False
     only: int | None = None
     raw: str = ""
-    printed_total: int | float | None = None
     question_label: re.Match[str] | None = None
 
 
@@ -414,7 +412,6 @@ def reaches(
                     heading=True,
                     only=run.only,
                     raw=run.raw,
-                    printed_total=printed_points((chunk,)),
                     question_label=run.question_label,
                 )
             )

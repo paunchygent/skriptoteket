@@ -144,9 +144,7 @@ async def test_replay_batches_require_visible_anchors_and_an_unused_recording(wa
 
     # A pre-change build may cite a header omitted from the current conversion batch.
     grouping = recording(exam, "docx_grouping_1", tmp_path)
-    grouping["header_anchors"] = [
-        {"anchor": "recorded_header", "kind": "exam_total", "governs": []}
-    ]
+    grouping["header_anchors"] = [{"anchor": "recorded_header", "kind": "course", "governs": []}]
     (directory / "docx_grouping_1.json").write_text(json.dumps(grouping))
     reply = recording(exam, name, tmp_path)
     reply["answer_key_anchors"] = [*_list(reply["answer_key_anchors"]), "recorded_header"]

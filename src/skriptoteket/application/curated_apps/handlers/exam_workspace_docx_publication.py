@@ -117,8 +117,6 @@ def final_publication(
         courses=load_exam_course_catalog().courses,
     )
     document = header.document
-    for event in header.events:
-        logger.warning("DOCX build failure observed", job_id=str(run.job.job_id), **event.as_json())
     update = conversion_update(
         document, run.families, tuple(run.filled), (), assets_by_id=result.assets_by_id
     )
@@ -146,7 +144,7 @@ def final_publication(
         result=replace(
             result,
             document=document,
-            events=(*result.events, *header.events, *checks),
+            events=(*result.events, *checks),
             timings=tuple(run.timings),
         ),
         update=update,

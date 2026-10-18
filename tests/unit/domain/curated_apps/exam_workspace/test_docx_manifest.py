@@ -180,6 +180,16 @@ def test_invalid_scope_is_manifest_shape(chunks: tuple[DocxChunk, ...]) -> None:
     assert error.value.code == "manifest_shape"
 
 
+def test_exam_total_is_no_header_kind(chunks: tuple[DocxChunk, ...]) -> None:
+    raw = _raw(
+        [_question("q1", Q1)],
+        header=[{"anchor": _b(6), "kind": "exam_total", "governs": []}],
+    )
+    with pytest.raises(ManifestInvalid) as error:
+        manifest_from_output(raw, chunks)
+    assert error.value.code == "manifest_shape"
+
+
 def test_zero_questions_is_manifest_empty(chunks: tuple[DocxChunk, ...]) -> None:
     with pytest.raises(ManifestInvalid) as error:
         manifest_from_output(_raw([]), chunks)
@@ -228,7 +238,7 @@ def test_question_source_has_section_heading_and_instruction_but_no_metadata() -
                 _context(_b(4), scope="exam_metadata", governs=["q1"]),
             ],
             title=[_b(2)],
-            header=[{"anchor": _b(6), "kind": "exam_total", "governs": []}],
+            header=[{"anchor": _b(6), "kind": "course", "governs": []}],
         ),
         labeler_chunks,
     )

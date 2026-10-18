@@ -1,379 +1,294 @@
-"""Split of printed section totals (D38), checked against real corpus chunks."""
+"""Printed points reach the built items in one pass: question points, then part shares (D2, D38)."""
 
 from decimal import Decimal
-from pathlib import Path
 
 import pytest
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import review_chunk_item
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedMetadata
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
+from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import printed_points_plan
 from skriptoteket.domain.curated_apps.exam_workspace.docx_section_points import (
-    SectionPoints,
-    split_section_totals,
+    ScoredItems,
+    apply_printed_points,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+    NativeParagraph,
+    NativeTextSegment,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_criteria import (
     NativeExamCriterion,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
-    NativeExamItem,
-)
-from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (  # noqa: E501
-    PythonDocxExamChunker,
-)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import NativeExamItem
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import NativeExamParent
 from tests.unit.domain.curated_apps.exam_workspace.matching_recording_support import (
     recorded_matching_items,
 )
 
 pytestmark = pytest.mark.unit
 
-_CORPUS = Path("tests/fixtures/exam_conversion/docx_corpus")
-_SECTIONED = "svenska_2_kursavslutande_prov_med_facit"
-_ALL_PRINTED = "bf26_english_1_unit_test_kap_1_2_med_facit"
-_GRAMMAR = "svenska_2_grammatik_omprov_variant_1_med_facit"
 
-Accepted = tuple[tuple[NativeExamItem, tuple[str, ...]], ...]
+def _exam(*lines: str) -> tuple[tuple[DocxChunk, ...], tuple[tuple[str, ...], ...]]:
+    """Chunks from source lines: "# " marks a heading and "Q " a question's opening line."""
+    chunks: list[DocxChunk] = []
+    questions: list[tuple[str, ...]] = []
+    for number, line in enumerate(lines):
+        anchor = f"body:{number:04d}"
+        kind = "heading" if line.startswith("# ") else "paragraph"
+        text = line.removeprefix("# ").removeprefix("Q ")
+        chunks.append(DocxChunk(anchor, kind, text, text))
+        if line.startswith("Q "):
+            questions.append((anchor,))
+    return tuple(chunks), tuple(questions)
 
 
-def _chunks(name: str) -> tuple[DocxChunk, ...]:
-    return PythonDocxExamChunker().chunk(content=(_CORPUS / f"{name}.docx").read_bytes())
-
-
-def _anchor(number: int) -> str:
-    return f"body:{number:04d}"
-
-
-def _entry(
-    chunks: tuple[DocxChunk, ...], anchors: tuple[str, ...], points: int | None
-) -> tuple[NativeExamItem, tuple[str, ...]]:
+def _items(
+    chunks: tuple[DocxChunk, ...],
+    questions: tuple[tuple[str, ...], ...],
+    points: tuple[int | float | None, ...],
+) -> tuple[NativeExamItem, ...]:
     by_anchor = {chunk.anchor: chunk for chunk in chunks}
-    assert all(anchor in by_anchor for anchor in anchors)
-    item = review_chunk_item(by_anchor[anchors[0]], "test").model_copy(update={"points": points})
-    return item, anchors
-
-
-def _line(anchor: str, points: int | None) -> ProducedMetadata:
-    return ProducedMetadata(text="line", source_anchors=(anchor,), points=points)
-
-
-def _sectioned_inputs(
-    chunks: tuple[DocxChunk, ...],
-    *,
-    printing_member: int | None = None,
-    dropped_member: int | None = None,
-) -> tuple[Accepted, tuple[ProducedMetadata, ...]]:
-    unprinted = [
-        _entry(
-            chunks,
-            (_anchor(start), _anchor(start + 1), _anchor(start + 2)),
-            2 if member == printing_member else None,
+    return tuple(
+        review_chunk_item(by_anchor[own[0]], "test").model_copy(
+            update={"item_id": f"item_{n:03d}", "sequence": n, "points": p}
         )
-        for member, start in enumerate(range(10, 53, 3))
-        if member != dropped_member
-    ]
-    printed = [
-        _entry(chunks, (_anchor(start), _anchor(start + 1), _anchor(start + 2)), points)
-        for start, points in ((61, 3), (67, 3), (73, 4), (79, 4), (85, 2))
-    ]
-    # Listed out of document order: the printed items come first.
-    accepted = (*printed, *unprinted)
-    instructions = (
-        _line(_anchor(4), None),
-        _line(_anchor(59), 16),
-        _line(_anchor(6), 15),
-        _line(_anchor(55), 15),
+        for n, (own, p) in enumerate(zip(questions, points, strict=True), 1)
     )
-    return accepted, instructions
 
 
-def _points(accepted: Accepted) -> list[int | float | None]:
-    return [item.points for item, _ in accepted]
-
-
-def _marked(accepted: Accepted) -> list[bool]:
-    return [item.points_estimated for item, _ in accepted]
-
-
-def _split(
+def _score(
     chunks: tuple[DocxChunk, ...],
-    accepted: Accepted,
-    instructions: tuple[ProducedMetadata, ...],
-    unbuilt: frozenset[str] = frozenset(),
-) -> SectionPoints:
-    return split_section_totals(chunks, accepted, instructions, unbuilt)
-
-
-def test_section_total_is_shared_equally_and_each_share_carries_the_check_mark():
-    chunks = _chunks(_SECTIONED)
-    accepted, instructions = _sectioned_inputs(chunks)
-    assert len(accepted) == 20
-
-    split = _split(chunks, accepted, instructions)
-
-    assert [anchors for _, anchors in split.accepted] == [anchors for _, anchors in accepted]
-    assert _points(split.accepted) == [3, 3, 4, 4, 2] + [1] * 15
-    assert _marked(split.accepted) == [False] * 5 + [True] * 15
-    assert [item for item, _ in split.accepted[:5]] == [item for item, _ in accepted[:5]]
-    assert split.absorbed == frozenset()
-
-
-def test_criteria_points_are_fixed_before_splitting_the_remaining_section_total():
-    chunks = _chunks(_SECTIONED)
-    accepted, instructions = _sectioned_inputs(chunks)
-    item, anchors = accepted[5]
-    criterion_item = NativeExamItem.model_validate(
-        {
-            **item.model_dump(),
-            "points": 3,
-            "points_estimated": True,
-            "criteria": [NativeExamCriterion(text="Bedöm resonemanget.", points=3)],
-        }
+    questions: tuple[tuple[str, ...], ...],
+    items: tuple[NativeExamItem, ...],
+    parents: tuple[NativeExamParent, ...] = (),
+) -> ScoredItems:
+    return apply_printed_points(
+        items,
+        parents,
+        printed_points_plan(chunks, questions),
+        {chunk.anchor: chunk for chunk in chunks},
     )
-    accepted = (*accepted[:5], (criterion_item, anchors), *accepted[6:])
-
-    split = _split(chunks, accepted, instructions)
-
-    assert split.accepted[5][0] == criterion_item
-    assert _points(split.accepted)[6:] == [1] * 12 + [None] * 2
-    for result, _ in split.accepted:
-        if result.criteria:
-            assert result.points == sum(criterion.points for criterion in result.criteria)
 
 
-def test_points_the_model_gave_a_member_whose_source_prints_none_become_the_share():
-    chunks = _chunks(_SECTIONED)
-    accepted, instructions = _sectioned_inputs(chunks, printing_member=7)
-
-    split = _split(chunks, accepted, instructions)
-
-    assert _points(split.accepted) == [3, 3, 4, 4, 2] + [1] * 15
+def _points(scored: ScoredItems) -> list[int | float | None]:
+    return [item.points for item in scored.items]
 
 
-def test_unclaimed_points_line_after_the_last_question_is_absorbed_not_that_questions_points():
-    """Replay of the recorded one-family run: the last question of the section took the
-    section's closing points line as its own points without claiming it, and the line was
-    left unbuilt."""
-    chunks = _chunks(_SECTIONED)
-    accepted, _ = _sectioned_inputs(chunks)
-    last = len(accepted) - 1
-    item, anchors = accepted[last]
-    assert anchors == (_anchor(52), _anchor(53), _anchor(54))
-    accepted = (*accepted[:last], (item.model_copy(update={"points": 15}), anchors))
-    instructions = (_line(_anchor(4), 36), _line(_anchor(6), 15), _line(_anchor(59), 16))
-
-    split = _split(chunks, accepted, instructions, frozenset({_anchor(55)}))
-
-    assert _points(split.accepted) == [3, 3, 4, 4, 2] + [1] * 15
-    assert split.absorbed == frozenset({_anchor(55)})
+def _marked(scored: ScoredItems) -> list[bool]:
+    return [item.points_estimated for item in scored.items]
 
 
-def test_claimed_closing_points_line_does_not_make_the_last_question_print_points():
-    chunks = _chunks(_SECTIONED)
-    accepted, _ = _sectioned_inputs(chunks)
-    last = len(accepted) - 1
-    item, anchors = accepted[last]
-    accepted = (
-        *accepted[:last],
-        (item.model_copy(update={"points": 15}), (*anchors, _anchor(55))),
+def _parent(parent_id: str, *item_ids: str) -> NativeExamParent:
+    return NativeExamParent(
+        parent_id=parent_id,
+        instruction=(
+            NativeParagraph(
+                segments=(NativeTextSegment(kind="text", text="Del", marks=()),), heading_level=None
+            ),
+        ),
+        item_ids=item_ids,
     )
-    instructions = (_line(_anchor(6), 15), _line(_anchor(59), 16))
-
-    split = _split(chunks, accepted, instructions)
-
-    assert _points(split.accepted) == [3, 3, 4, 4, 2] + [1] * 15
-    assert split.absorbed == frozenset()
 
 
-def test_uneven_total_gives_earlier_questions_the_extra_point_in_document_order():
-    chunks = _chunks(_SECTIONED)
-    accepted, instructions = _sectioned_inputs(chunks, dropped_member=14)
-    # Listed against document order, so the extra point must follow the source.
-    accepted = (*accepted[:5], *reversed(accepted[5:]))
-    assert len(accepted) == 19
-
-    split = _split(chunks, accepted, instructions)
-
-    assert _points(split.accepted) == [3, 3, 4, 4, 2] + [1] * 13 + [2]
-    assert _marked(split.accepted) == [False] * 5 + [True] * 14
+_DEL_1 = ("# Del 1: litteraturhistoria, 15 poäng", *(f"Q {n}. Fråga {n}" for n in range(1, 16)))
 
 
-def test_ten_over_three_questions_gives_four_three_three():
-    chunks = _chunks(_SECTIONED)
-    accepted, _ = _sectioned_inputs(chunks)
-    first_three = accepted[5:8]
-    instructions = (_line(_anchor(6), 10), _line(_anchor(19), 5))
+def test_a_part_total_is_shared_equally_over_its_unprinted_questions_and_marked():
+    chunks, questions = _exam(*_DEL_1, "Poäng: 15 poäng")
 
-    split = _split(chunks, first_three, instructions)
+    scored = _score(chunks, questions, _items(chunks, questions, (None,) * 15))
 
-    assert _points(split.accepted) == [4, 3, 3]
-    assert _marked(split.accepted) == [True] * 3
+    assert _points(scored) == [1] * 15
+    assert _marked(scored) == [True] * 15
+
+
+@pytest.mark.parametrize("reply", [None, 1, 15, 7])
+def test_the_closing_line_is_the_parts_whatever_the_last_question_replied(reply):
+    """Del 1's closing "Poäng: 15 poäng" restates the part's total: it is never q15's own."""
+    chunks, questions = _exam(*_DEL_1, "Poäng: 15 poäng", "# Del 2: grammatik, 3 poäng")
+    replies = (None,) * 14 + (reply,)
+
+    scored = _score(chunks, questions, _items(chunks, questions, replies))
+
+    assert _points(scored) == [1] * 15
+    assert _marked(scored) == [True] * 15
+
+
+def test_the_closing_line_is_the_parts_even_when_the_question_holds_it():
+    chunks, questions = _exam(*_DEL_1, "Poäng: 15 poäng")
+    held = (*questions[:14], (*questions[14], chunks[-1].anchor))
+
+    scored = _score(chunks, held, _items(chunks, held, (None,) * 14 + (15,)))
+
+    assert _points(scored) == [1] * 15
+
+
+def test_a_last_question_line_with_another_value_is_that_questions_own():
+    chunks, questions = _exam(
+        "# Del 2: grammatik, 16 poäng",
+        "Q Fråga 16",
+        "Poäng: 3 poäng",
+        "Q Fråga 17",
+        "Poäng: 3 poäng",
+        "Q Fråga 18",
+        "Poäng: 4 poäng",
+        "Q Fråga 19",
+        "Poäng: 4 poäng",
+        "Q Fråga 20",
+        "Poäng: 2 poäng",
+        "# Del 3: kortsvar, 5 poäng",
+    )
+
+    scored = _score(chunks, questions, _items(chunks, questions, (9, 9, 9, 9, 9)))
+
+    assert _points(scored) == [3, 3, 4, 4, 2]
+    assert _marked(scored) == [False] * 5
+
+
+def test_printed_question_points_beat_the_reply_before_the_part_shares_what_remains():
+    """F1: the part prints 10, q1 prints 2 and the reply says 8; q2 prints none."""
+    chunks, questions = _exam("# Del 1: 10 poäng", "Q 1. Fråga", "Poäng: 2 poäng", "Q 2. Fråga")
+
+    for reply in (2, 8):
+        scored = _score(chunks, questions, _items(chunks, questions, (reply, None)))
+
+        assert _points(scored) == [2, 8]
+        assert _marked(scored) == [False, False]
+
+
+def test_a_printed_point_beats_a_reply_of_seven():
+    chunks, questions = _exam(
+        "# Del 3: kortsvar, 5 poäng",
+        "Q Fråga 21",
+        "Poäng: 1 poäng",
+        "Q Fråga 22",
+        "Poäng: 2 poäng",
+        "Q Fråga 23",
+        "Poäng: 1 poäng",
+        "Q Fråga 24",
+        "Poäng: 1 poäng",
+    )
+
+    scored = _score(chunks, questions, _items(chunks, questions, (1, 2, 7, 1)))
+
+    assert _points(scored) == [1, 2, 1, 1]
+    assert _marked(scored) == [False] * 4
+
+
+def test_an_uneven_total_gives_earlier_questions_the_extra_point_in_document_order():
+    chunks, questions = _exam("# Del 1: 10 poäng", "Q 1.", "Q 2.", "Q 3.")
+    items = _items(chunks, questions, (None, None, None))
+
+    scored = _score(chunks, questions, tuple(reversed(items)))
+
+    by_anchor = {item.source_anchor: item.points for item in scored.items}
+    assert [by_anchor[own[0]] for own in questions] == [4, 3, 3]
+    assert _marked(scored) == [True] * 3
+
+
+def test_criteria_keep_their_points_while_two_or_more_questions_share_the_rest():
+    chunks, questions = _exam("# Del 1: 8 poäng", "Q 1.", "Q 2.", "Q 3.")
+    items = _items(chunks, questions, (None, None, None))
+    rubric = items[0].model_copy(
+        update={"points": 4, "criteria": (NativeExamCriterion(text="Resonemang.", points=4),)}
+    )
+
+    scored = _score(chunks, questions, (rubric, *items[1:]))
+
+    assert scored.items[0] == rubric
+    assert _points(scored) == [4, 2, 2]
+    assert _marked(scored) == [False, True, True]
+
+
+def test_one_unprinted_question_takes_the_exact_remainder_unmarked():
+    chunks, questions = _exam(
+        "# Del 1: 10 poäng", "Q 1.", "Poäng: 3 poäng", "Q 2.", "Poäng: 3 poäng", "Q 3."
+    )
+
+    scored = _score(chunks, questions, _items(chunks, questions, (3, 3, 9)))
+
+    assert _points(scored) == [3, 3, 4]
+    assert _marked(scored) == [False] * 3
+
+
+def test_a_one_question_part_gives_it_the_whole_total_whether_or_not_it_restates_it():
+    for lines in (
+        ("# Del 4: 8 poäng", "Q Fråga 8."),
+        ("# Del 4: 8 poäng", "Q Fråga 8.", "Poäng: 8 poäng"),
+    ):
+        chunks, questions = _exam(*lines)
+
+        scored = _score(chunks, questions, _items(chunks, questions, (5,)))
+
+        assert _points(scored) == [8]
+        assert _marked(scored) == [False]
+
+
+def test_when_nothing_remains_the_models_reading_stands_unmarked():
+    chunks, questions = _exam("# Del 1: 4 poäng", "Q 1.", "Poäng: 4 poäng", "Q 2.", "Q 3.")
+
+    scored = _score(chunks, questions, _items(chunks, questions, (4, None, 2)))
+
+    assert _points(scored) == [4, None, 2]
+    assert _marked(scored) == [False] * 3
+
+
+def test_a_question_left_without_a_whole_point_keeps_the_models_reading():
+    chunks, questions = _exam("# Del 1: 3 poäng", "Q 1.", "Poäng: 2 poäng", "Q 2.", "Q 3.")
+
+    scored = _score(chunks, questions, _items(chunks, questions, (2, None, 5)))
+
+    assert _points(scored) == [2, 1, 5]
+    assert _marked(scored) == [False, True, False]
 
 
 @pytest.mark.parametrize(("total", "tick_points", "points"), [(10, "1.66", 4.98), (6, "1", 3)])
-def test_section_share_updates_matching_tick_and_total_together(total, tick_points, points):
-    chunks = _chunks(_SECTIONED)
-    accepted, _ = _sectioned_inputs(chunks)
+def test_a_share_updates_a_grids_tick_value_and_total_together(total, tick_points, points):
+    chunks, questions = _exam(f"# Del 1: {total} poäng", "Q 1.", "Q 2.")
     matching = recorded_matching_items(keyed=True)[0]
     assert len(matching.answer_key.match_pairs) == 3
-    members = ((matching, accepted[5][1]), accepted[6])
+    grid = matching.model_copy(update={"item_id": "item_001", "source_anchor": questions[0][0]})
+    items = (grid, _items(chunks, questions, (None, None))[1])
 
-    split = _split(chunks, members, (_line(_anchor(6), total), _line(_anchor(19), 1)))
+    scored = _score(chunks, questions, items)
 
-    updated = split.accepted[0][0]
+    updated = scored.items[0]
     assert updated.tick_points == Decimal(tick_points)
     assert updated.points == points
     assert updated.points_estimated is True
     assert NativeExamItem.model_validate(dict(updated)) == updated
 
 
-def test_unkeyed_grid_keeps_no_total_until_ticks_can_determine_it():
-    chunks = _chunks(_SECTIONED)
-    accepted, _ = _sectioned_inputs(chunks)
+def test_an_unkeyed_grid_keeps_no_total_until_ticks_can_determine_it():
+    chunks, questions = _exam("# Del 1: 10 poäng", "Q 1.", "Q 2.")
     matching = recorded_matching_items()[0]
-    members = ((matching, accepted[5][1]), accepted[6])
+    grid = matching.model_copy(update={"item_id": "item_001", "source_anchor": questions[0][0]})
 
-    split = _split(chunks, members, (_line(_anchor(6), 10),))
+    scored = _score(chunks, questions, (grid, _items(chunks, questions, (None, None))[1]))
 
-    updated = split.accepted[0][0]
-    assert updated.points is None
-    assert updated == matching
-    assert NativeExamItem.model_validate(dict(updated)) == updated
+    assert scored.items[0] == grid
+    assert scored.items[1].points == 5
 
 
-def test_printed_matching_points_are_not_reallocated_by_section_total():
-    chunks = _chunks(_ALL_PRINTED)
-    matching = recorded_matching_items(keyed=True)[0]
-    members = ((matching, (_anchor(7), _anchor(8))),)
-
-    split = _split(chunks, members, (_line(_anchor(5), 24),))
-
-    assert split.accepted == members
-
-
-def test_mixed_section_splits_what_remains_after_the_printed_points():
-    """One total of 33 over both parts of the exam. Question 15's run reaches the first
-    part's points line and the second part's heading, so its own 2 points stay beside the
-    printed 16, and 15 remain for questions 1-14."""
-    chunks = _chunks(_SECTIONED)
-    accepted, _ = _sectioned_inputs(chunks, printing_member=14)
-
-    split = _split(chunks, accepted, (_line(_anchor(6), 33),))
-
-    assert _points(split.accepted) == [3, 3, 4, 4, 2] + [2] + [1] * 13 + [2]
-    assert _marked(split.accepted) == [False] * 5 + [True] * 14 + [False]
-
-
-def test_question_left_without_a_whole_point_keeps_the_models_reading():
-    chunks = _chunks(_SECTIONED)
-    accepted, _ = _sectioned_inputs(chunks, printing_member=13)
-    accepted = (*accepted[:19], (accepted[19][0].model_copy(update={"points": 2}), accepted[19][1]))
-
-    split = _split(chunks, accepted, (_line(_anchor(6), 30),))
-
-    # 30 less the printed 18 leaves 12 for 14 questions: the last two keep the model's
-    # reading, none for question 13 and 2 for question 14.
-    assert _points(split.accepted) == [3, 3, 4, 4, 2] + [1] * 12 + [None, 2] + [2]
-    assert _marked(split.accepted) == [False] * 5 + [True] * 12 + [False] * 3
-
-
-def test_when_nothing_remains_the_models_reading_stands_and_is_not_estimated():
-    chunks = _chunks(_SECTIONED)
-    accepted, _ = _sectioned_inputs(chunks, printing_member=3)
-
-    split = _split(chunks, accepted, (_line(_anchor(6), 16),))
-
-    assert _points(split.accepted) == [3, 3, 4, 4, 2] + [None] * 3 + [2] + [None] * 11
-    assert _marked(split.accepted) == [False] * 20
-
-
-def test_unbuilt_chunk_inside_the_section_does_not_withhold_the_split():
-    chunks = _chunks(_SECTIONED)
-    accepted, instructions = _sectioned_inputs(chunks)
-
-    split = _split(chunks, accepted, instructions, frozenset({_anchor(9)}))
-
-    assert _points(split.accepted) == [3, 3, 4, 4, 2] + [1] * 15
-    assert _marked(split.accepted) == [False] * 5 + [True] * 15
-    assert split.absorbed == frozenset()
-
-
-def test_unbuilt_chunk_outside_every_section_range_does_not_block_the_split():
-    chunks = _chunks(_SECTIONED)
-    accepted, instructions = _sectioned_inputs(chunks)
-
-    split = _split(chunks, accepted, instructions, frozenset({_anchor(3), "body:9999"}))
-
-    assert _points(split.accepted) == [3, 3, 4, 4, 2] + [1] * 15
-
-
-def test_member_whose_own_points_line_went_unclaimed_keeps_its_points():
-    chunks = _chunks(_SECTIONED)
-    accepted, instructions = _sectioned_inputs(chunks)
-    printed = [(item, anchors[:2]) for item, anchors in accepted[:5]]
-    accepted = (*printed, *accepted[5:])
-
-    split = _split(chunks, accepted, instructions)
-
-    assert _points(split.accepted)[:5] == [3, 3, 4, 4, 2]
-    assert _marked(split.accepted)[:5] == [False] * 5
-
-
-def test_section_whose_members_all_print_points_is_unchanged_and_not_reported():
-    chunks = _chunks(_ALL_PRINTED)
-    accepted = tuple(
-        _entry(chunks, (_anchor(start), _anchor(start + 1)), 1) for start in range(7, 55, 2)
+def test_the_part_total_checks_the_largest_parent_that_holds_only_its_items():
+    chunks, questions = _exam(
+        "# Del 1: 2 poäng", "Q 1.", "Q 2.", "# Del 2: 3 poäng", "Q 3.", "Q 4."
     )
-    assert len(accepted) == 24
-    instructions = (_line(_anchor(3), None), _line(_anchor(5), 24))
-
-    split = _split(chunks, accepted, instructions)
-
-    assert split.accepted == accepted
-
-
-def test_single_question_section_keeps_the_points_line_after_it_as_its_own():
-    """The last section of the grammar exam prints its total on the heading and the same
-    number on the one question's own points line, which is no section points line."""
-    chunks = _chunks(_GRAMMAR)
-    claimed = _entry(chunks, tuple(_anchor(n) for n in range(85, 95)), 8)
-    unclaimed = _entry(chunks, tuple(_anchor(n) for n in range(85, 94)), 8)
-    instructions = (_line(_anchor(74), 8),)
-
-    for accepted in ((claimed,), (unclaimed,)):
-        split = _split(chunks, accepted, instructions, frozenset({_anchor(94)}))
-
-        assert split.accepted == accepted
-        assert split.absorbed == frozenset()
-
-
-def test_single_question_that_prints_no_points_gets_the_whole_total_marked():
-    chunks = _chunks(_SECTIONED)
-    accepted, _ = _sectioned_inputs(chunks)
-    instructions = (_line(_anchor(6), 15), _line(_anchor(13), 16))
-
-    split = _split(chunks, accepted[5:6], instructions)
-
-    assert _points(split.accepted) == [15]
-    assert _marked(split.accepted) == [True]
-
-
-def test_points_lines_reported_as_instructions_start_no_section():
-    """A question's own trailing points line misread as a section total closes the
-    questions before it, so each question keeps its printed points unmarked."""
-    chunks = _chunks(_GRAMMAR)
-    accepted = (
-        _entry(chunks, tuple(_anchor(n) for n in range(8, 13)), 6),
-        _entry(chunks, tuple(_anchor(n) for n in range(16, 22)), 2),
-        _entry(chunks, tuple(_anchor(n) for n in range(25, 30)), 4),
-    )
-    instructions = (
-        _line(_anchor(6), 12),
-        _line(_anchor(13), 6),
-        _line(_anchor(22), 2),
-        _line(_anchor(30), 4),
-        _line(_anchor(34), 8),
+    items = _items(chunks, questions, (1, 1, 1, 2))
+    parents = (
+        _parent("parent_001", "item_001", "item_002"),
+        _parent("parent_002", "item_002", "item_003"),
+        _parent("parent_003", "item_004"),
     )
 
-    split = _split(chunks, accepted, instructions)
+    scored = _score(chunks, questions, items, parents)
 
-    assert split.accepted == accepted
+    assert [parent.printed_total for parent in scored.parents] == [2, None, 3]
+
+
+def test_questions_outside_every_part_keep_the_models_reading():
+    chunks, questions = _exam("Total: 30 poäng", "Q 1.", "Q 2.")
+
+    scored = _score(chunks, questions, _items(chunks, questions, (None, 4)))
+
+    assert _points(scored) == [None, 4]
+    assert _marked(scored) == [False, False]

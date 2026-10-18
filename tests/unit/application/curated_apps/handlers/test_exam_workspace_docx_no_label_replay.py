@@ -40,7 +40,8 @@ pytestmark = [pytest.mark.unit, pytest.mark.asyncio]
 
 _EXAM = "svenska_2_kursavslutande_prov_med_facit"
 _QUESTION = "q21"
-_OWN = ("body:0093", "body:0094")
+# q21's own chunks; "Poäng: 1 poäng" (body:0096) is its own points line (TASK-SKRIPT-39-04-11 D2).
+_OWN = ("body:0093", "body:0094", "body:0096")
 
 
 def _refusing_decisions(exam: str, root=None) -> httpx.AsyncClient:

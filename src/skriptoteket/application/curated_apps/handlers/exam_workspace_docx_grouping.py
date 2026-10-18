@@ -76,15 +76,16 @@ GROUPING_INSTRUCTIONS = (
     "anchors.\n"
     "- title_anchors: the exam title.\n"
     "- header_anchors: lines whose whole content is metadata at their own scope. "
-    "Each entry gives its anchor, kind and governs: course and exam_total have empty "
+    "Each entry gives its anchor, kind and governs: course has empty "
     "governs, part_total governs its part's questions, and question_total governs "
     "exactly the one question whose points it prints. For example, a standalone "
     '"Poäng: 3 poäng" belonging to q16 has kind question_total and governs ["q16"]. '
     "A line that also carries heading words is structure, not a header anchor: "
     "it opens its question, or is a section_instruction over several questions; "
     "its points are that question's or part's printed points.\n"
-    "- Other metadata lines, such as name and date lines, are shared_contexts with "
-    'scope exam_metadata and owner "exam". Course and totals go to header_anchors.\n'
+    "- Other metadata lines, such as name and date lines and the exam's total points, "
+    'are shared_contexts with scope exam_metadata and owner "exam". Course, part totals '
+    "and question totals go to header_anchors.\n"
     "- Every input anchor appears exactly once across questions[].anchors, "
     "questions[].answer_key_anchors, shared_contexts, title_anchors and "
     "header_anchors. subpart_anchors repeat anchors already in the question's anchors."
@@ -143,7 +144,7 @@ GROUPING_SCHEMA: dict[str, JsonValue] = {
                     "anchor": {"type": "string"},
                     "kind": {
                         "type": "string",
-                        "enum": ["course", "exam_total", "part_total", "question_total"],
+                        "enum": ["course", "part_total", "question_total"],
                     },
                     "governs": {"type": "array", "items": {"type": "string"}},
                 },

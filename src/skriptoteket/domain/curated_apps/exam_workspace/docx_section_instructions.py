@@ -121,7 +121,6 @@ class SectionInstructions:
     items: tuple[NativeExamItem, ...]
     parents: tuple[NativeExamParent, ...]
     landed: Mapping[int, frozenset[str]]
-    printed_totals: Mapping[frozenset[str], int | float]
 
 
 @dataclass(frozen=True)
@@ -135,23 +134,27 @@ def with_question_points(
     points: int | float | None,
     *,
     source_chunks: tuple[DocxChunk, ...],
+    estimated: bool = False,
 ) -> QuestionPoints:
-    """Printed question points own the total, including rubric/grid and split scores.
+    """The question's points own its total, including rubric/grid and split scores.
 
-    Reuse the section allocator in source order; never change only an item's total
-    while leaving its rubric or uniform tick value inconsistent.
+    ``points`` is what the question prints, or its share of a part's total, marked
+    ``estimated`` (D6). Reuse the section allocator in source order; never change only an
+    item's total while leaving its rubric or uniform tick value inconsistent.
     """
     if points is None or not items:
         return QuestionPoints(items)
     result: list[NativeExamItem] = []
     try:
         for item, share in zip(items, point_shares(points, len(items)), strict=True):
-            updates: dict[str, object] = {"points": share, "points_estimated": False}
+            updates: dict[str, object] = {"points": share, "points_estimated": estimated}
             if share <= 0:
                 raise ValueError("the printed total cannot give each item positive points")
             if item.kind is NativeExamItemKind.MATCHING:
-                tick, total, estimated = matching_score(share, len(item.answer_key.match_pairs))
-                updates.update(tick_points=tick, points=total, points_estimated=estimated)
+                tick, total, rounded = matching_score(share, len(item.answer_key.match_pairs))
+                updates.update(
+                    tick_points=tick, points=total, points_estimated=estimated or rounded
+                )
             if item.criteria and sum(criterion.points for criterion in item.criteria) != share:
                 shares = point_shares(share, len(item.criteria))
                 if any(value < 1 or not float(value).is_integer() for value in shares):
@@ -190,7 +193,7 @@ def with_question_points(
             source = source.model_copy(
                 update={
                     "points": points,
-                    "points_estimated": False,
+                    "points_estimated": estimated,
                     "item_id": first.item_id,
                     "sequence": first.sequence,
                     "printed_label": first.printed_label,
@@ -465,14 +468,6 @@ def place_section_instructions(
         NativeExamParent(
             parent_id=f"parent_{number:03d}",
             instruction=_parent_instruction(group),
-            printed_total=next(
-                (
-                    run.printed_total
-                    for run in group
-                    if run.heading and run.printed_total is not None
-                ),
-                None,
-            ),
             item_ids=tuple(_item_id(k) for k in group[0].reach),
         )
         for number, group in enumerate(groups, start=1)
@@ -481,11 +476,4 @@ def place_section_instructions(
         tuple(items),
         parents,
         MappingProxyType({o: frozenset(a) for o, a in landed.items()}),
-        MappingProxyType(
-            {
-                frozenset(_item_id(k) for k in run.reach): run.printed_total
-                for run in reached
-                if run.heading and run.printed_total is not None and run.reach
-            }
-        ),
     )
