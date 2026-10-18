@@ -182,6 +182,21 @@ def test_too_few_gaps_for_the_blank_runs_raises_a_count_mismatch():
     assert not isinstance(raised.value, FormattingTransferError)
 
 
+@pytest.mark.parametrize(
+    ("gaps", "blanks", "reason"),
+    [
+        (1, 2, "Frågan följer inte provformatet: 1 lucka men 2 tomma svarsrader."),
+        (2, 1, "Frågan följer inte provformatet: 2 luckor men 1 tom svarsrad."),
+        (0, 1, "Frågan följer inte provformatet: 0 luckor men 1 tom svarsrad."),
+        (3, 4, "Frågan följer inte provformatet: 3 luckor men 4 tomma svarsrader."),
+    ],
+)
+def test_the_mismatch_reason_is_swedish_and_inflected_by_each_count(gaps, blanks, reason):
+    error = GapCountMismatchError(gaps, blanks)
+    assert error.reason == reason
+    assert str(error) == f"{gaps} gaps for {blanks} blank runs"
+
+
 def test_too_many_gaps_for_the_blank_runs_raises_a_count_mismatch():
     source = "The answer is ______."
     chunks = (_chunk("body:0001", source),)

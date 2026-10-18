@@ -123,6 +123,9 @@ def test_one_gap_for_a_two_blank_source_paragraph_goes_to_review_with_the_mismat
     assert admitted.review.state is NativeItemReviewState.REVIEW_REQUIRED
     assert admitted.review.parse_origin is NativeParseOrigin.SOURCE_FALLBACK
     assert _TWO_BLANKS[3:] in " ".join(_texts(admitted)), "the review item lost its source text"
+    assert admitted.review.reasons == (
+        "Frågan följer inte provformatet: 1 lucka men 2 tomma svarsrader.",
+    )
 
 
 def test_a_reply_that_drops_the_cue_but_keeps_the_gap_count_is_admitted_with_the_cue_back():

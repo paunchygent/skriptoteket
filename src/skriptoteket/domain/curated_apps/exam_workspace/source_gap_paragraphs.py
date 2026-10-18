@@ -44,6 +44,18 @@ _DOT_RUN = re.compile(r"[.…]+")
 class GapCountMismatchError(ValueError):
     """A gap paragraph's reply gaps do not fill its source blank runs one to one."""
 
+    def __init__(self, gaps: int, blanks: int) -> None:
+        super().__init__(f"{gaps} gaps for {blanks} blank runs")
+        self.gaps = gaps
+        self.blanks = blanks
+
+    @property
+    def reason(self) -> str:
+        """The teacher's review reason, inflected by count (user decision 2026-10-18)."""
+        gaps = f"{self.gaps} {'lucka' if self.gaps == 1 else 'luckor'}"
+        blanks = f"{self.blanks} {'tom svarsrad' if self.blanks == 1 else 'tomma svarsrader'}"
+        return f"Frågan följer inte provformatet: {gaps} men {blanks}."
+
 
 def blank_runs(text: str) -> list[tuple[int, int]]:
     """One paragraph's blank runs by character class, never by letter content (D3).
@@ -266,7 +278,7 @@ def gap_paragraphs_from_source(
             if segment.kind == "gap"
         ]
         if len(gaps) != len(unit.blank_runs):
-            raise GapCountMismatchError(f"{len(gaps)} gaps for {len(unit.blank_runs)} blank runs")
+            raise GapCountMismatchError(len(gaps), len(unit.blank_runs))
         result.append(
             source_paragraph(
                 source,
