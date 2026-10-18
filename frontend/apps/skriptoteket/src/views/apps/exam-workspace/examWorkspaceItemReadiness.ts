@@ -55,6 +55,7 @@ import {
   NEGATIVE_POINTS_GUIDANCE,
 } from "./examWorkspaceItemSaveRules";
 import { bodyText } from "./examWorkspaceRichText";
+import { isEmptyBody } from "./examWorkspaceRichTextDocument";
 import { EXAM_WORKSPACE_EXPORT_BLOCKER_COPY } from "./useExamWorkspaceExports";
 
 const KEYED_KINDS = new Set<NativeExamItemKind>([
@@ -65,6 +66,8 @@ const KEYED_KINDS = new Set<NativeExamItemKind>([
   "ordering",
   "single_choice",
 ]);
+
+const GAP_KINDS = new Set<NativeExamItemKind>(["gap_fill", "inline_choice"]);
 
 // The server's export rule owns this minimum and publishes it on the export
 // checklist contract; a changed server value fails this typecheck.
@@ -114,6 +117,12 @@ export function examWorkspaceItemReadiness(item: NativeExamItem): ExamWorkspaceR
     (item.review.parse_origin === "source_fallback" || missingPicture)
   ) {
     reasons.push("unbuilt_question");
+  }
+  if (isEmptyBody(item.body)) {
+    reasons.push("empty_question_text");
+  }
+  if (GAP_KINDS.has(item.kind) && item.gaps.length === 0) {
+    reasons.push("no_gaps");
   }
   if (item.answer_key.origin === "machine_proposed") {
     reasons.push("machine_proposed_key_unreviewed");

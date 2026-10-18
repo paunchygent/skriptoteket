@@ -12,6 +12,9 @@
  *   - Reports each teacher edit through `onEdit`, which the undo history
  *     (`useExamWorkspaceHistory`) turns into autosaved steps; installs the
  *     history's steps and the server commands' results.
+ *   - The whole-document field commands (exam and part instructions, tags,
+ *     printed-total accepts) in `useExamWorkspaceDocumentFields`, built on
+ *     `editDocument` here.
  *   - Spara, Spara som and stale-save recovery (`useExamWorkspaceSave`), the
  *     saved-exams list (`useExamWorkspaceSavedList`), AI suggestion arrivals,
  *     conversion merges and one-question retries through their own composables.
@@ -26,17 +29,17 @@ import type {
   ExamWorkspaceDocumentSummary,
   ExamCourseChoice,
   NativeExamDocument,
-  NativeExamHeader,
   NativeExamItem,
   NativeExamItemKind,
-  NativeExamParent,
 } from "../../../api/examWorkspace";
 import { useToast } from "../../../composables/useToast";
 import { examWorkspaceAssetUrls } from "./examWorkspaceAssetUrls";
 import { sameDocument } from "./examWorkspaceConversionMerge";
 import { useExamWorkspaceItemEdits } from "./useExamWorkspaceItemEdits";
+import { withReferencedAssetsOnly } from "./examWorkspaceStructure";
 import { withRestoredSuggestion } from "./examWorkspaceSuggestionEdits";
 import { useExamWorkspaceConversion } from "./useExamWorkspaceConversion";
+import { useExamWorkspaceDocumentFields } from "./useExamWorkspaceDocumentFields";
 import { useExamWorkspaceGapKeying } from "./useExamWorkspaceGapKeying";
 import { useExamWorkspaceItemRetry } from "./useExamWorkspaceItemRetry";
 import { useExamWorkspaceSaveArrivals } from "./useExamWorkspaceSaveArrivals";
@@ -279,7 +282,10 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
     }
   }
 
-  /** The one path every item edit takes; a placeholder whose batch still converts is refused. */
+  /**
+   * The one path every item edit takes; a placeholder whose batch still converts is refused.
+   * A picture the edit removed takes its asset record with it.
+   */
   function patchItem(
     itemId: string,
     patch: (item: NativeExamItem) => NativeExamItem,
@@ -300,7 +306,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
     if (!changed) {
       return false;
     }
-    workspaceDocument.value = { ...current, items };
+    workspaceDocument.value = withReferencedAssetsOnly({ ...current, items });
     noteEdit(structural, current);
     return true;
   }
@@ -340,7 +346,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
     if (!current || isBusy.value) {
       return false;
     }
-    workspaceDocument.value = edit(current);
+    workspaceDocument.value = withReferencedAssetsOnly(edit(current));
     if (selectId !== null) {
       selectedItemId.value = selectId;
     }
@@ -348,24 +354,8 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
     return true;
   }
 
-  /** The instruction text above an instruction's deluppgifter, typed like a question's text. */
-  function setParentInstruction(parentId: string, instruction: NativeExamParent["instruction"]): void {
-    editDocument(
-      (document) => ({
-        ...document,
-        parents: document.parents.map((parent) =>
-          parent.parent_id === parentId ? { ...parent, instruction } : parent,
-        ),
-      }),
-      null,
-      false,
-    );
-  }
-
-  /** The exam's Centralt innehåll ticks; each tick is its own undo step. */
-  function setTags(tags: NativeExamHeader["tags"]): void {
-    editDocument((document) => ({ ...document, header: { ...document.header, tags } }));
-  }
+  // The whole-document field commands, each one `editDocument` call.
+  const fieldCommands = useExamWorkspaceDocumentFields({ editDocument });
 
   function keepSelection(document: NativeExamDocument): void {
     if (!document.items.some((item) => item.item_id === selectedItemId.value)) {
@@ -418,6 +408,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
 
   return {
     ...itemEdits,
+    ...fieldCommands,
     applyCommandResponse,
     editDocument,
     historyCursor,
@@ -459,8 +450,6 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
     selectItem,
     setTitle,
     setCourse,
-    setParentInstruction,
-    setTags,
     selectedItem,
     selectedItemId,
     summary,

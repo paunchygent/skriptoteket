@@ -3,8 +3,8 @@
  * The exam workspace's editor column (TASK-SKRIPT-40-04-03).
  *
  * Domain purpose:
- *   Show the editor for what the teacher selected: the instruction with its
- *   deluppgifter, a question, or the empty state when no exam is open.
+ *   Show the editor for what the teacher selected: the exam instruction, an
+ *   instruction with its deluppgifter, a question, or the empty state when no exam is open.
  *
  * Relationships:
  *   - Edits through the `editing` composable result, whose `structure`
@@ -15,6 +15,7 @@
 import type { NativeExamDocument } from "../../../api/examWorkspace";
 import type { TeacherItemKind } from "./examWorkspaceItemEdits";
 import type { ExamWorkspaceItemEntry, ExamWorkspaceParentEntry } from "./examWorkspaceListEntries";
+import ExamWorkspaceExamInstructionEditor from "./ExamWorkspaceExamInstructionEditor.vue";
 import ExamWorkspaceInstructionEditor from "./ExamWorkspaceInstructionEditor.vue";
 import ExamWorkspaceQuestionEditor from "./ExamWorkspaceQuestionEditor.vue";
 import type { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
@@ -26,6 +27,7 @@ type ExamWorkspaceParent = NativeExamDocument["parents"][number];
 const props = defineProps<{
   editing: ReturnType<typeof useExamWorkspaceEditing>;
   workspaceDocument: NativeExamDocument | null;
+  examInstructionsSelected: boolean;
   selectedParent: ExamWorkspaceParent | null;
   selectedParentEntry: ExamWorkspaceParentEntry | null;
   parentChildren: ExamWorkspaceItemEntry[];
@@ -79,8 +81,15 @@ const { structure, assetUrls } = props.editing;
       v-else
       class="ws__in"
     >
+      <ExamWorkspaceExamInstructionEditor
+        v-if="examInstructionsSelected"
+        :instructions="workspaceDocument.instructions"
+        :disabled="disabled"
+        :asset-urls="assetUrls"
+        @update-instructions="editing.setExamInstructions"
+      />
       <ExamWorkspaceInstructionEditor
-        v-if="selectedParent && selectedParentEntry"
+        v-else-if="selectedParent && selectedParentEntry"
         :parent="selectedParent"
         :label="selectedParentEntry.label"
         :children="parentChildren"
@@ -89,13 +98,14 @@ const { structure, assetUrls } = props.editing;
         :disabled="disabled"
         :notice="structure.deleteNotice.value"
         :asset-urls="assetUrls"
-        @update-instruction="(body) => editing.setParentInstruction(selectedParent!.parent_id, body)"
+        @update-instruction="(body, structural) => editing.setParentInstruction(selectedParent!.parent_id, body, structural)"
         @goto-child="$emit('select', $event)"
         @move-child="(itemId, delta) => structure.moveChild(selectedParent!.parent_id, itemId, delta)"
         @delete-child="structure.deleteItem"
         @add-child="(kind) => $emit('add-child', kind)"
         @delete-parent="(mode) => structure.deleteParent(selectedParent!.parent_id, mode)"
         @dismiss-notice="structure.dismissDeleteNotice"
+        @accept-part-total="editing.acceptPartPrintedTotal(selectedParent!.parent_id)"
       />
       <ExamWorkspaceQuestionEditor
         v-else-if="selectedItem && itemEntry"
@@ -131,8 +141,7 @@ const { structure, assetUrls } = props.editing;
         @update-gap-options="editing.updateItemGapOptions"
         @update-match-entry-body="editing.updateItemMatchEntryBody"
         @update-match-pairs="editing.updateItemMatchPairs"
-        @update-paragraph-segments="editing.updateItemParagraphSegments"
-        @update-paragraph-heading="editing.updateItemParagraphHeading"
+        @update-body="editing.updateItemBody"
         @update-points="editing.updateItemPoints"
         @update-tick-points="editing.updateItemTickPoints"
       />

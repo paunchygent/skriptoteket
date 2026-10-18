@@ -38,6 +38,9 @@ export interface ExamWorkspaceSaveFlowDeps {
   openDetails: () => void;
 }
 
+/** Ticks `gotoBlocker` waits for a field that mounts after its question opens. */
+const FOCUS_TARGET_MAX_TICKS = 5;
+
 export function useExamWorkspaceSaveFlow({
   editing,
   enrichment,
@@ -106,8 +109,13 @@ export function useExamWorkspaceSaveFlow({
       gotoItem(blocker.itemId);
     }
     if (!blocker.focus) return;
+    // The question opens after one tick; a rich-text surface mounts a few ticks later.
     await nextTick();
-    const field = frame.value?.querySelector<HTMLElement>(blocker.focus);
+    let field = frame.value?.querySelector<HTMLElement>(blocker.focus);
+    for (let tick = 0; !field && tick < FOCUS_TARGET_MAX_TICKS; tick += 1) {
+      await nextTick();
+      field = frame.value?.querySelector<HTMLElement>(blocker.focus);
+    }
     field?.scrollIntoView?.({ block: "center" });
     if (field?.hasAttribute("data-gap-id")) {
       field.click();

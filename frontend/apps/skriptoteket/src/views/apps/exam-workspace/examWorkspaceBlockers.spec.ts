@@ -87,6 +87,37 @@ describe("examWorkspaceBlockerEntries", () => {
     ]);
   });
 
+  it("leads an empty question text and a gap question without gaps to the Frågetext surface, with no fix", () => {
+    const emptyText = { ...choice("item_001", 1), body: [] };
+    const gapless = {
+      ...choice("item_002", 2),
+      body: plainBody("Fyll i."),
+      choices: [],
+      kind: "gap_fill" as const,
+    };
+    const both = { ...gapless, body: plainBody("  "), item_id: "item_003", sequence: 3 };
+
+    expect(rows([emptyText, gapless, both])).toEqual([
+      {
+        fix: null,
+        focus: '[data-test="exam-workspace-body-editor-surface"]',
+        itemId: "item_001",
+        label: "1",
+        problem: "Frågetexten är tom.",
+        reason: "empty_question_text",
+      },
+      {
+        fix: null,
+        focus: '[data-test="exam-workspace-body-editor-surface"]',
+        itemId: "item_002",
+        label: "2",
+        problem: "Frågan saknar luckor.",
+        reason: "no_gaps",
+      },
+      expect.objectContaining({ itemId: "item_003", problem: "Frågetexten är tom." }),
+    ]);
+  });
+
   it("offers Godkänn for an unapproved AI key and Föreslå facit for a missing key", () => {
     const proposed = withId(choiceItem("single_choice", "machine_proposed", ["choice_002"], null), "item_001", 1);
     const absent = withId(reviewed(choiceItem("multiple_response", "absent", [], null)), "item_002", 2);

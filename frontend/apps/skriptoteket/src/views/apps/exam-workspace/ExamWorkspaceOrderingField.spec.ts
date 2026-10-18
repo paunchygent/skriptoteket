@@ -17,6 +17,7 @@ import ExamWorkspaceNewItemMenu from "./ExamWorkspaceNewItemMenu.vue";
 import ExamWorkspaceOrderingField from "./ExamWorkspaceOrderingField.vue";
 import ExamWorkspaceQuestionHead from "./ExamWorkspaceQuestionHead.vue";
 import ExamWorkspaceQuestionEditor from "./ExamWorkspaceQuestionEditor.vue";
+import { editorBehind, press, settleEditors, surfaceOf } from "./ExamWorkspaceRichTextEntry.specSupport";
 import { hasInvalidAnswerKey } from "./examWorkspaceAnswerKeyRules";
 import { newTeacherItem } from "./examWorkspaceItemEdits";
 import { EXAM_WORKSPACE_TYPE_LABELS } from "./examWorkspaceRows";
@@ -34,15 +35,27 @@ function stepped(texts: string[], printOrder: string[]): NativeExamItem {
   };
 }
 
-function mountField(item: NativeExamItem) {
-  return mount(ExamWorkspaceOrderingField, { props: { item } });
+const mountedFields: Array<{ unmount(): void }> = [];
+
+async function mountField(item: NativeExamItem, disabled = false) {
+  const wrapper = mount(ExamWorkspaceOrderingField, { attachTo: document.body, props: { item, disabled } });
+  mountedFields.push(wrapper);
+  await settleEditors();
+  return wrapper;
 }
+
+afterEach(() => {
+  for (const wrapper of mountedFields.splice(0)) {
+    wrapper.unmount();
+  }
+  document.body.innerHTML = "";
+});
 
 const three = () => stepped(["Först", "Sedan", "Sist"], ["choice_003", "choice_001", "choice_002"]);
 
 describe("ExamWorkspaceOrderingField", () => {
-  it("renders steps in key order and the print block in print order", () => {
-    const wrapper = mountField(three());
+  it("renders steps in key order and the print block in print order", async () => {
+    const wrapper = await mountField(three());
 
     expect(wrapper.text()).toContain("Steg i rätt ordning");
     expect(wrapper.text()).toContain("Ordningen i listan är facit.");
@@ -54,7 +67,7 @@ describe("ExamWorkspaceOrderingField", () => {
   });
 
   it("emits add, move, remove and shuffle", async () => {
-    const wrapper = mountField(three());
+    const wrapper = await mountField(three());
 
     await wrapper.get('[data-test="exam-workspace-ordering-add-step"]').trigger("click");
     await wrapper.get('[data-test="exam-workspace-ordering-step-down-choice_001"]').trigger("click");
@@ -68,8 +81,8 @@ describe("ExamWorkspaceOrderingField", () => {
     expect(wrapper.emitted("shuffle")).toHaveLength(1);
   });
 
-  it("disables moves at the ends", () => {
-    const wrapper = mountField(three());
+  it("disables moves at the ends", async () => {
+    const wrapper = await mountField(three());
 
     expect(wrapper.get('[data-test="exam-workspace-ordering-step-up-choice_001"]').attributes("disabled")).toBeDefined();
     expect(wrapper.get('[data-test="exam-workspace-ordering-step-down-choice_003"]').attributes("disabled")).toBeDefined();
@@ -77,7 +90,7 @@ describe("ExamWorkspaceOrderingField", () => {
   });
 
   it("disables remove and Blanda om at one step", async () => {
-    const wrapper = mountField(stepped(["Ensam"], ["choice_001"]));
+    const wrapper = await mountField(stepped(["Ensam"], ["choice_001"]));
 
     const remove = wrapper.get('[data-test="exam-workspace-ordering-step-remove-choice_001"]');
     expect(remove.attributes("disabled")).toBeDefined();
@@ -89,11 +102,37 @@ describe("ExamWorkspaceOrderingField", () => {
     expect(wrapper.emitted("removeStep")).toBeUndefined();
   });
 
-  it("marks an empty step invalid", () => {
-    const wrapper = mountField(stepped(["Först", ""], ["choice_002", "choice_001"]));
+  it("marks an empty step invalid", async () => {
+    const wrapper = await mountField(stepped(["Först", ""], ["choice_002", "choice_001"]));
 
     expect(wrapper.find('[data-test="exam-workspace-ordering-empty-hint"]').exists()).toBe(true);
-    expect(mountField(three()).find('[data-test="exam-workspace-ordering-empty-hint"]').exists()).toBe(false);
+    expect(wrapper.get('[data-test="exam-workspace-ordering-step-text-choice_002"]').attributes("aria-invalid")).toBe(
+      "true",
+    );
+    expect(
+      (await mountField(three())).find('[data-test="exam-workspace-ordering-empty-hint"]').exists(),
+    ).toBe(false);
+  });
+
+  it("emits the empty body when a step's text is cleared", async () => {
+    const wrapper = await mountField(three());
+    const stepText = "exam-workspace-ordering-step-text-choice_002";
+    editorBehind(wrapper, stepText).commands.selectAll();
+
+    press(surfaceOf(wrapper, stepText), "Backspace");
+
+    expect(wrapper.emitted("updateBody")).toEqual([["choice_002", [], false]]);
+  });
+
+  it("does not edit a step while disabled", async () => {
+    const wrapper = await mountField(three(), true);
+    const stepText = "exam-workspace-ordering-step-text-choice_002";
+    editorBehind(wrapper, stepText).commands.selectAll();
+
+    press(surfaceOf(wrapper, stepText), "Backspace");
+
+    expect(surfaceOf(wrapper, stepText).getAttribute("contenteditable")).toBe("false");
+    expect(wrapper.emitted("updateBody")).toBeUndefined();
   });
 });
 

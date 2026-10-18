@@ -26,7 +26,6 @@ import { computed, ref, useId, watch } from "vue";
 
 import type {
   NativeExamBodyParagraph,
-  NativeExamBodySegment,
   NativeExamChoice,
   NativeExamCriterion,
   NativeExamDocument,
@@ -89,15 +88,20 @@ const emit = defineEmits<{
   moveOrderingStep: [itemId: string, choiceId: string, delta: -1 | 1];
   removeOrderingStep: [itemId: string, choiceId: string];
   shuffleOrderingSteps: [itemId: string];
-  updateChoiceBody: [itemId: string, choiceId: string, body: NativeExamBodyParagraph[]];
+  updateChoiceBody: [itemId: string, choiceId: string, body: NativeExamBodyParagraph[], structural: boolean];
   updateCorrectChoices: [itemId: string, correctChoiceIds: string[]];
   updateCriteria: [itemId: string, criteria: NativeExamCriterion[]];
   updateGapValues: [itemId: string, gapId: string, acceptedValues: string[]];
   updateGapOptions: [itemId: string, gapId: string, options: NativeExamChoice[], correctOptionId: string | null];
-  updateMatchEntryBody: [itemId: string, side: "left" | "right", entryId: string, body: NativeExamBodyParagraph[]];
+  updateMatchEntryBody: [
+    itemId: string,
+    side: "left" | "right",
+    entryId: string,
+    body: NativeExamBodyParagraph[],
+    structural: boolean,
+  ];
   updateMatchPairs: [itemId: string, pairs: NativeExamMatchPair[]];
-  updateParagraphSegments: [itemId: string, paragraphIndex: number, segments: NativeExamBodySegment[]];
-  updateParagraphHeading: [itemId: string, paragraphIndex: number, headingLevel: NativeExamBodyParagraph["heading_level"]];
+  updateBody: [itemId: string, body: NativeExamBodyParagraph[], structural: boolean];
   updatePoints: [itemId: string, points: number | null];
   updateTickPoints: [itemId: string, tickPoints: string];
 }>();
@@ -275,8 +279,7 @@ function handleTickPointsInput(event: Event): void {
       @update-gap-options="(itemId, gapId, options, correctOptionId) => emit('updateGapOptions', itemId, gapId, options, correctOptionId)"
       @remove-automatic-value="(itemId, gapId, value) => emit('removeAutomaticValue', itemId, gapId, value)"
       @show-gap-as-text="(itemId, gapId) => emit('showGapAsText', itemId, gapId)"
-      @update-paragraph-segments="(itemId, index, segments) => emit('updateParagraphSegments', itemId, index, segments)"
-      @update-paragraph-heading="(itemId, index, level) => emit('updateParagraphHeading', itemId, index, level)"
+      @update-body="(itemId, body, structural) => emit('updateBody', itemId, body, structural)"
     />
 
     <template v-if="showFields">
@@ -289,7 +292,7 @@ function handleTickPointsInput(event: Event): void {
       <ExamWorkspaceChoiceField
         :disabled="locked"
         :item="item"
-        @update-body="(choiceId, body) => emit('updateChoiceBody', item.item_id, choiceId, body)"
+        @update-body="(choiceId, body, structural) => emit('updateChoiceBody', item.item_id, choiceId, body, structural)"
         @update-correct-choices="(ids) => emit('updateCorrectChoices', item.item_id, ids)"
       />
       <ExamWorkspaceOrderingField
@@ -300,13 +303,16 @@ function handleTickPointsInput(event: Event): void {
         @move-step="(choiceId, delta) => emit('moveOrderingStep', item.item_id, choiceId, delta)"
         @remove-step="(choiceId) => emit('removeOrderingStep', item.item_id, choiceId)"
         @shuffle="emit('shuffleOrderingSteps', item.item_id)"
-        @update-body="(choiceId, body) => emit('updateChoiceBody', item.item_id, choiceId, body)"
+        @update-body="(choiceId, body, structural) => emit('updateChoiceBody', item.item_id, choiceId, body, structural)"
       />
       <ExamWorkspaceKategoriseraGrid
         v-if="isGrid"
         :disabled="locked"
         :item="item"
-        @update-entry-body="(side, entryId, body) => emit('updateMatchEntryBody', item.item_id, side, entryId, body)"
+        @update-entry-body="
+          (side, entryId, body, structural) =>
+            emit('updateMatchEntryBody', item.item_id, side, entryId, body, structural)
+        "
         @update-pairs="(pairs) => emit('updateMatchPairs', item.item_id, pairs)"
       />
       <div

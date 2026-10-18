@@ -6,9 +6,9 @@
  *   Edit a single-choice or multiple-response item's options as rich text:
  *   each option is one editable entry that shows and toggles the kept marks,
  *   next to the radio or checkbox that declares the correct answer. An
- *   option whose body carries no text is marked at the field with the Swedish
- *   hint the save refusal uses, because the save refuses it. While `disabled`
- *   is set, every control is disabled.
+ *   option whose body carries no text still saves; the field marks it with
+ *   the Swedish hint the export blocker uses. While `disabled` is set, every
+ *   control is disabled.
  *
  * Relationships:
  *   - Rendered by `ExamWorkspaceQuestionEditor` for choice kinds.
@@ -21,8 +21,7 @@ import { useId } from "vue";
 import type { NativeExamBodyParagraph, NativeExamItem } from "../../../api/examWorkspace";
 import ExamWorkspaceRichTextEntry from "./ExamWorkspaceRichTextEntry.vue";
 import { EMPTY_CHOICE_TEXT_GUIDANCE, hasEmptyChoiceText } from "./examWorkspaceItemSaveRules";
-import { isEmptyBody } from "./examWorkspaceRichText";
-import type { RichTextSurfaceOwner } from "./useExamWorkspaceRichTextTarget";
+import { isEmptyBody } from "./examWorkspaceRichTextDocument";
 
 const props = defineProps<{
   disabled?: boolean;
@@ -30,7 +29,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  updateBody: [choiceId: string, body: NativeExamBodyParagraph[]];
+  updateBody: [choiceId: string, body: NativeExamBodyParagraph[], structural: boolean];
   updateCorrectChoices: [correctChoiceIds: string[]];
 }>();
 
@@ -69,11 +68,6 @@ function handleMultipleCorrectChoice(choiceId: string, event: Event): void {
 
 function choiceLetter(index: number): string {
   return String.fromCharCode(65 + index);
-}
-
-/** The semantic owner of one option, so its saved toolbar selection follows this item's entry. */
-function choiceOwner(choiceId: string): RichTextSurfaceOwner {
-  return { itemId: props.item.item_id, surface: "choice", entryId: choiceId };
 }
 </script>
 
@@ -116,15 +110,15 @@ function choiceOwner(choiceId: string): RichTextSurfaceOwner {
         aria-hidden="true"
       >{{ choiceLetter(choiceIndex) }}</span>
       <ExamWorkspaceRichTextEntry
+        :key="`${item.item_id}-${choice.choice_id}`"
         :body="choice.body"
         :border-class="choiceBorderClass(choice.choice_id, choice.body)"
         :described-by="isEmptyBody(choice.body) ? choiceHintId : undefined"
         :disabled="disabled"
         :invalid="isEmptyBody(choice.body)"
         :label="`Text för svarsalternativ ${choiceLetter(choiceIndex)}`"
-        :owner="choiceOwner(choice.choice_id)"
         :test-id="`exam-workspace-choice-text-${choice.choice_id}`"
-        @update-body="(body) => emit('updateBody', choice.choice_id, body)"
+        @update-body="(body, structural) => emit('updateBody', choice.choice_id, body, structural)"
       />
     </div>
     <p

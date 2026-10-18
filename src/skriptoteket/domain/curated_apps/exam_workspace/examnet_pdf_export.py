@@ -299,7 +299,9 @@ def _document_instruction_html(
     labels: ExamExportLabels,
 ) -> str:
     """The exam-wide shared instruction, printed once with every top-level item."""
-    body = _body_html(document.instructions, asset_paths_by_id=asset_paths_by_id, labels=labels)
+    body = _body_html(
+        document.printed_instructions(), asset_paths_by_id=asset_paths_by_id, labels=labels
+    )
     return f'<div class="document-instruction">{body}</div>' if body else ""
 
 
@@ -315,7 +317,7 @@ def _parent_instruction_html(
     Every paragraph keeps its wording and every shared picture at its source place, exactly
     as an item body does; a missing or invalid picture already blocked the whole export.
     """
-    parent = document.parent_of(item.item_id)
+    parent = document.printed_parent_of(item.item_id)
     if parent is None or parent.item_ids[0] != item.item_id:
         return ""
     body = _body_html(parent.instruction, asset_paths_by_id=asset_paths_by_id, labels=labels)

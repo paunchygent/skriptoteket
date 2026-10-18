@@ -6,9 +6,10 @@
  *   Edit a matching item as the Exam.net Kategorisera grid (Q7–Q9): the row
  *   texts, the column (category) texts, and the correct ticks, where a row
  *   has one or more correct columns and a column may serve several rows or
- *   none. Row and category texts are rich entries, so the marks the source
- *   gave them show and toggle. Empty bodies and an incomplete key are marked
- *   with the Swedish guidance the save refusal uses.
+ *   none. Row and category texts are rich entries on the shared editor, so
+ *   the marks the source gave them show and toggle. An emptied text still
+ *   saves; empty bodies and an incomplete key are marked with the Swedish
+ *   guidance the export blocker uses.
  *
  * Relationships:
  *   - Rendered by `ExamWorkspaceQuestionEditor` for matching items; the tick
@@ -27,8 +28,8 @@ import {
   isIncompleteMatchingItem,
 } from "./examWorkspaceAnswerKeyRules";
 import { EMPTY_MATCH_TEXT_GUIDANCE, hasEmptyMatchText } from "./examWorkspaceItemSaveRules";
-import { bodyText, isEmptyBody } from "./examWorkspaceRichText";
-import type { RichTextSurfaceOwner } from "./useExamWorkspaceRichTextTarget";
+import { bodyText } from "./examWorkspaceRichText";
+import { isEmptyBody } from "./examWorkspaceRichTextDocument";
 
 const props = defineProps<{
   disabled?: boolean;
@@ -36,7 +37,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  updateEntryBody: [side: "left" | "right", entryId: string, body: NativeExamBodyParagraph[]];
+  updateEntryBody: [side: "left" | "right", entryId: string, body: NativeExamBodyParagraph[], structural: boolean];
   updatePairs: [pairs: NativeExamMatchPair[]];
 }>();
 
@@ -67,15 +68,6 @@ function handleTick(leftId: string, rightId: string, event: Event): void {
 function entryBorderClass(body: NativeExamBodyParagraph[]): string {
   return isEmptyBody(body) ? "border-warning" : "border-navy/35";
 }
-
-/** The semantic owner of one matching entry, so its saved toolbar selection follows the row or column. */
-function matchOwner(side: "left" | "right", entryId: string): RichTextSurfaceOwner {
-  return {
-    itemId: props.item.item_id,
-    surface: side === "left" ? "match-left" : "match-right",
-    entryId,
-  };
-}
 </script>
 
 <template>
@@ -103,16 +95,16 @@ function matchOwner(side: "left" | "right", entryId: string): RichTextSurfaceOwn
               class="min-w-32 p-1 align-bottom"
             >
               <ExamWorkspaceRichTextEntry
+                :key="`${item.item_id}-${right.right_id}`"
                 :body="right.body"
                 :border-class="entryBorderClass(right.body)"
                 :described-by="isEmptyBody(right.body) ? textHintId : undefined"
                 :disabled="disabled"
                 :invalid="isEmptyBody(right.body)"
                 :label="`Text för kategori ${rightIndex + 1}`"
-                :owner="matchOwner('right', right.right_id)"
                 :test-id="`exam-workspace-match-right-text-${right.right_id}`"
                 class="font-semibold"
-                @update-body="(body) => emit('updateEntryBody', 'right', right.right_id, body)"
+                @update-body="(body, structural) => emit('updateEntryBody', 'right', right.right_id, body, structural)"
               />
             </th>
           </tr>
@@ -128,15 +120,15 @@ function matchOwner(side: "left" | "right", entryId: string): RichTextSurfaceOwn
               class="min-w-48 p-1 font-normal"
             >
               <ExamWorkspaceRichTextEntry
+                :key="`${item.item_id}-${left.left_id}`"
                 :body="left.body"
                 :border-class="entryBorderClass(left.body)"
                 :described-by="isEmptyBody(left.body) ? textHintId : undefined"
                 :disabled="disabled"
                 :invalid="isEmptyBody(left.body)"
                 :label="`Text för rad ${leftIndex + 1}`"
-                :owner="matchOwner('left', left.left_id)"
                 :test-id="`exam-workspace-match-left-text-${left.left_id}`"
-                @update-body="(body) => emit('updateEntryBody', 'left', left.left_id, body)"
+                @update-body="(body, structural) => emit('updateEntryBody', 'left', left.left_id, body, structural)"
               />
             </th>
             <td

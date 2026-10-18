@@ -37,7 +37,7 @@ class NativeExamChangeTypeResult:
 
 
 def _empty_body() -> tuple[NativeParagraph, ...]:
-    return (NativeParagraph(segments=(NativeTextSegment(text=" ", marks=()),), heading_level=None),)
+    return ()
 
 
 def _empty_choices() -> tuple[NativeChoice, ...]:

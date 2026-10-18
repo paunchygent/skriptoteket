@@ -12,8 +12,8 @@
  *   gap (automatic misspellings) show as removable chips marked
  *   "automatisk" with no AI glyph. "Visa som text" replaces the gap with
  *   its first accepted answer as plain text; it is disabled with a visible
- *   explanation on the item's last gap or while the answers field (including
- *   unsaved typing) holds no accepted answer.
+ *   explanation while the answers field (including unsaved typing) holds no
+ *   accepted answer.
  *
  *   A dropdown gap (`dropdown`) edits its options instead: one row per
  *   option with a radio for the correct one, an editable text, move up/down
@@ -29,7 +29,7 @@
  * Relationships:
  *   - Opened by `ExamWorkspaceBodyEditor`, which keys it by item and gap so
  *     the ids below never change while it is open.
- *   - Uses `parseAcceptedValues` from `examWorkspaceBodySegments`.
+ *   - Uses `parseAcceptedValues` from `examWorkspaceGapLabels`.
  */
 
 import { computed, nextTick, onMounted, reactive, ref, useId, watch } from "vue";
@@ -37,10 +37,9 @@ import { computed, nextTick, onMounted, reactive, ref, useId, watch } from "vue"
 import type { NativeExamChoice, NativeExamGap } from "../../../api/examWorkspace";
 import { IconX } from "../../../components/icons";
 import { UiGlyph } from "../../../components/ui";
-import { parseAcceptedValues } from "./examWorkspaceBodySegments";
+import { parseAcceptedValues } from "./examWorkspaceGapLabels";
 import { bodyText, plainBody } from "./examWorkspaceRichText";
 
-const LAST_GAP_COPY = "Frågan måste behålla minst en lucka.";
 const MISSING_ANSWER_COPY = "Fyll i ett godkänt svar först.";
 const REMOVE_CORRECT_COPY = "Markera ett annat alternativ som rätt först";
 
@@ -49,7 +48,6 @@ const props = defineProps<{
   gapId: string;
   gapNumber: number;
   gap: NativeExamGap | null;
-  gapCount: number;
   dropdown?: boolean;
   top: number;
   left: number;
@@ -77,9 +75,6 @@ const automaticValues = computed(() => props.gap?.automatic_values ?? []);
 const draft = ref(props.gap?.accepted_values.join(", ") ?? "");
 const draftAcceptedValues = computed(() => parseAcceptedValues(draft.value));
 const showAsTextDisabledReason = computed(() => {
-  if (props.gapCount <= 1) {
-    return LAST_GAP_COPY;
-  }
   if (!draftAcceptedValues.value[0]) {
     return MISSING_ANSWER_COPY;
   }

@@ -95,6 +95,21 @@ export function examWorkspaceIsOnlyQuestion(document: NativeExamDocument, itemId
 }
 
 /**
+ * Keep only the pictures something still references (an item's body or retry
+ * source, the exam instruction, a part instruction), as the server's rebuild
+ * does; a picture an edit removed takes its asset record with it.
+ */
+export function withReferencedAssetsOnly(document: NativeExamDocument): NativeExamDocument {
+  const referenced = new Set<string>([
+    ...document.items.flatMap(itemAssetIds),
+    ...bodyAssetIds(document.instructions),
+    ...document.parents.flatMap((parent) => bodyAssetIds(parent.instruction)),
+  ]);
+  const assets = document.assets.filter((asset) => referenced.has(asset.asset_id));
+  return assets.length === document.assets.length ? document : { ...document, assets };
+}
+
+/**
  * Remove a standalone question; a child leaves through its parent's server command.
  * Content tags stop citing it and only still-referenced pictures stay, as on the server.
  */
@@ -104,14 +119,8 @@ export function withoutStandaloneItem(document: NativeExamDocument, itemId: stri
   }
   const items = resequenced(document.items.filter((item) => item.item_id !== itemId));
   const surviving = new Set(items.map((item) => item.item_id));
-  const referenced = new Set<string>([
-    ...items.flatMap(itemAssetIds),
-    ...bodyAssetIds(document.instructions),
-    ...document.parents.flatMap((parent) => bodyAssetIds(parent.instruction)),
-  ]);
-  return {
+  return withReferencedAssetsOnly({
     ...document,
-    assets: document.assets.filter((asset) => referenced.has(asset.asset_id)),
     header: {
       ...document.header,
       tags: document.header.tags.map((tag) => ({
@@ -120,7 +129,7 @@ export function withoutStandaloneItem(document: NativeExamDocument, itemId: stri
       })),
     },
     items,
-  };
+  });
 }
 
 /** The item to select after `itemId` leaves: the next one, else the previous one. */

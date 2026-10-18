@@ -3,10 +3,11 @@
  * Exam workspace instruction editor.
  *
  * Domain purpose:
- *   Edit an instruction with deluppgifter: the instruction text with the
- *   formatting toolbar, and its deluppgifter in order, each opening the
- *   question, moving up or down, or being removed. "+ Deluppgift" adds a
- *   question of any kind last. The part line is the sum of the deluppgifter
+ *   Edit an instruction with deluppgifter: the instruction text on the shared
+ *   rich-text editor with the formatting toolbar (word-processor editing; an
+ *   emptied instruction saves as empty and is not printed), and its
+ *   deluppgifter in order, each opening the question, moving up or down, or
+ *   being removed. "+ Deluppgift" adds a question of any kind last. The part line is the sum of the deluppgifter
  *   and says in amber when the exam text prints another part total; an
  *   instruction owns no points of its own.
  *
@@ -39,7 +40,7 @@ import type { RichTextHeadingLevel } from "./examWorkspaceRichTextTarget";
 import type { BodyMark } from "./examWorkspaceBodyMarks";
 import type { ExamWorkspaceNotice } from "./useExamWorkspaceStructure";
 
-const props = defineProps<{
+defineProps<{
   parent: NativeExamParent;
   label: string;
   children: ExamWorkspaceItemEntry[];
@@ -54,13 +55,14 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  updateInstruction: [body: NativeExamBodyParagraph[]];
+  updateInstruction: [body: NativeExamBodyParagraph[], structural: boolean];
   gotoChild: [itemId: string];
   moveChild: [itemId: string, delta: -1 | 1];
   deleteChild: [itemId: string];
   addChild: [kind: TeacherItemKind];
   deleteParent: [mode: ExamParentDeleteMode];
   dismissNotice: [];
+  acceptPartTotal: [];
 }>();
 
 const targets = provideRichTextTargetRegistry();
@@ -71,8 +73,6 @@ const addTrigger = ref<HTMLButtonElement | null>(null);
 const moreTrigger = ref<HTMLButtonElement | null>(null);
 const addOpen = ref(false);
 const moreOpen = ref(false);
-
-const owner = computed(() => ({ itemId: props.parent.parent_id, surface: "question" as const, entryId: null }));
 
 function toggleMark(mark: BodyMark): void {
   targets.active.value?.toggleMark(mark);
@@ -137,15 +137,15 @@ function chooseDelete(mode: ExamParentDeleteMode): void {
         @toggle-heading="toggleHeading"
       />
       <ExamWorkspaceRichTextEntry
+        :key="parent.parent_id"
         class="xw-rich__body"
         :body="parent.instruction"
         :disabled="disabled"
         label="Instruktion"
         test-id="exam-workspace-instruction-text"
-        :owner="owner"
         variant="paragraph"
         :asset-urls="assetUrls"
-        @update-body="emit('updateInstruction', $event)"
+        @update-body="(body, structural) => emit('updateInstruction', body, structural)"
       />
     </div>
 
@@ -239,6 +239,16 @@ function chooseDelete(mode: ExamParentDeleteMode): void {
         :class="{ 'psum__points--printed': printedTotal !== null }"
         data-test="exam-workspace-part-points"
       >{{ examWorkspacePointsLine(subtotal, printedTotal) }}</span>
+      <button
+        v-if="printedTotal !== null"
+        type="button"
+        class="xw-btn xw-btn--compact xw-btn--ghost"
+        :disabled="disabled"
+        data-test="exam-workspace-accept-part-total"
+        @click="emit('acceptPartTotal')"
+      >
+        Använd {{ examWorkspaceFormatPoints(subtotal) }} p
+      </button>
       <span>Poängen sätts på varje deluppgift.</span>
     </p>
 

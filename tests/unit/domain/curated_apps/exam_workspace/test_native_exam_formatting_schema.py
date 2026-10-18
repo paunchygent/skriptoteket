@@ -93,9 +93,8 @@ class TestChoiceBodies:
         assert segment.marks == ("bold",)
         assert not hasattr(choice, "text")
 
-    def test_choice_body_requires_at_least_one_paragraph(self) -> None:
-        with pytest.raises(ValidationError):
-            NativeChoice(choice_id="choice_001", body=())
+    def test_choice_body_may_be_empty_while_the_teacher_edits(self) -> None:
+        assert NativeChoice(choice_id="choice_001", body=()).body == ()
 
     def test_choice_body_rejects_a_gap_segment(self) -> None:
         with pytest.raises(ValidationError, match="choice body carries text"):

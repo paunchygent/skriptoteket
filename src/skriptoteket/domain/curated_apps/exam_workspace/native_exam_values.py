@@ -31,7 +31,7 @@ class NativeChoice(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     choice_id: str = Field(pattern=CHOICE_ID_PATTERN)
-    body: tuple[NativeParagraph, ...] = Field(min_length=1)
+    body: tuple[NativeParagraph, ...]
 
     @field_validator("body")
     @classmethod

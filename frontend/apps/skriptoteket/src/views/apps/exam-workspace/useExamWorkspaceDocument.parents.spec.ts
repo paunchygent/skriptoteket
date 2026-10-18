@@ -90,7 +90,7 @@ describe("parents in useExamWorkspaceDocument", () => {
 
     state.updateItemPoints("item_002", 2);
     state.updateItemGapValues("item_002", gapId, ["grieve", "mourn"]);
-    state.updateItemParagraphSegments("item_002", 0, [{ kind: "text", marks: [], text: "Edited." }]);
+    state.updateItemBody("item_002", [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Edited." }] }], false);
     state.markItemReviewed("item_002");
 
     await expect(state.saveDocument("position-1")).resolves.toBe(true);

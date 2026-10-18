@@ -26,9 +26,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.examnet_qti_leaf_items impo
     safe_identifier,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.examnet_qti_prompt import (
-    body_carries_formatting,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.examnet_qti_prompt import (
     image_resources as stem_image_resources,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.examnet_qti_prompt import (
@@ -62,12 +59,12 @@ def native_exam_to_examnet_qti_items(
     qti_items: list[ExamNetQtiItem] = []
     emitted_parent_ids: set[str] = set()
     for item in document.items:
-        parent = document.parent_of(item.item_id)
+        parent = document.printed_parent_of(item.item_id)
         if parent is None:
             qti_items.append(
                 _standalone_with_stem(
                     item=item,
-                    stem=document.instructions,
+                    stem=document.printed_instructions(),
                     assets=assets,
                     assets_by_id=assets_by_id,
                     labels=labels,
@@ -79,7 +76,7 @@ def native_exam_to_examnet_qti_items(
             qti_items.append(
                 _parent_qti_item(
                     parent=parent,
-                    global_stem=document.instructions,
+                    global_stem=document.printed_instructions(),
                     children=children,
                     assets=assets,
                     assets_by_id=assets_by_id,
@@ -119,9 +116,7 @@ def _standalone_with_stem(
         prompt_paragraphs=body_prompt_paragraphs(
             (*stem, *item.body),
             gap_ids=placed_gap_ids(item),
-        )
-        if stem_resources or child.prompt_paragraphs or body_carries_formatting(stem)
-        else (),
+        ),
         image_resources=(*stem_resources, *child.image_resources),
     )
 
@@ -169,14 +164,7 @@ def _parent_qti_item(
             prompt_lines=(*body_text_lines(stem), *first.prompt_lines),
             prompt_paragraphs=body_prompt_paragraphs(
                 (*stem, *children[0].body), gap_ids=placed_gap_ids(children[0])
-            )
-            if (
-                stem_resources
-                or first.image_resources
-                or first.prompt_paragraphs
-                or body_carries_formatting(stem)
-            )
-            else (),
+            ),
             image_resources=(*stem_resources, *first.image_resources),
         )
     manual = any(
@@ -189,9 +177,7 @@ def _parent_qti_item(
         title=_parent_title(children, labels),
         interaction_type=first.interaction_type,
         prompt_lines=body_text_lines(stem),
-        prompt_paragraphs=body_prompt_paragraphs(stem)
-        if stem_resources or body_carries_formatting(stem)
-        else (),
+        prompt_paragraphs=body_prompt_paragraphs(stem),
         max_score=sum(scored) if scored else None,
         evaluation_mode=(
             ExamNetQtiEvaluationMode.MANUAL_UNKEYED

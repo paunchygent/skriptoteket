@@ -14,7 +14,6 @@
 import type {
   NativeExamAnswerKeyOrigin,
   NativeExamBodyParagraph,
-  NativeExamBodySegment,
   NativeExamChoice,
   NativeExamCriterion,
   NativeExamGap,
@@ -23,6 +22,7 @@ import type {
   NativeExamMatchPair,
 } from "../../../api/examWorkspace";
 import { criteriaPointsTotal } from "./examWorkspaceItemSaveRules";
+import { placedGapIds } from "./examWorkspaceRichTextDocument";
 
 function teacherKeyOrigin(hasKeyData: boolean): NativeExamAnswerKeyOrigin {
   return hasKeyData ? "teacher_authored" : "absent";
@@ -53,32 +53,14 @@ export function withPoints(item: NativeExamItem, points: number | null): NativeE
   return { ...item, points, points_estimated: false };
 }
 
-/** Replace one paragraph's rich text, keeping its heading level. */
-export function withParagraphSegments(
-  item: NativeExamItem,
-  paragraphIndex: number,
-  segments: NativeExamBodySegment[],
-): NativeExamItem {
-  return {
-    ...item,
-    body: item.body.map((paragraph, candidateParagraphIndex) =>
-      candidateParagraphIndex === paragraphIndex ? { ...paragraph, segments } : paragraph,
-    ),
-  };
-}
-
-/** Set one paragraph's heading level; null returns it to body text. */
-export function withParagraphHeading(
-  item: NativeExamItem,
-  paragraphIndex: number,
-  headingLevel: NativeExamBodyParagraph["heading_level"],
-): NativeExamItem {
-  return {
-    ...item,
-    body: item.body.map((paragraph, candidateParagraphIndex) =>
-      candidateParagraphIndex === paragraphIndex ? { ...paragraph, heading_level: headingLevel } : paragraph,
-    ),
-  };
+/**
+ * Replace the item's whole body. A gap record whose gap the new body no longer
+ * places leaves with it, the rest keep their declared order; an edit never
+ * adds a record.
+ */
+export function withBody(item: NativeExamItem, body: NativeExamBodyParagraph[]): NativeExamItem {
+  const placed = new Set(placedGapIds(body));
+  return { ...item, body, gaps: item.gaps.filter((gap) => placed.has(gap.gap_id)) };
 }
 
 /** Replace one choice's rich paragraphs. */
@@ -359,11 +341,11 @@ export function withoutAutomaticValue(
   };
 }
 
-/** Keep at least one gap and the item's points when turning an answer into text. */
+/** Replace a gap with its first accepted answer as plain text; a gap without an answer stays. */
 export function withGapAsText(item: NativeExamItem, gapId: string): NativeExamItem {
   const gap = item.gaps.find((candidate) => candidate.gap_id === gapId);
   const text = gap?.accepted_values[0];
-  if (item.gaps.length <= 1 || !text) {
+  if (!text) {
     return item;
   }
   return {
@@ -405,9 +387,9 @@ export function unreviewed(item: NativeExamItem): NativeExamItem {
 /** The kinds of question a teacher adds from "Ny uppgift": every item kind, and Kort svar. */
 export type TeacherItemKind = NativeExamItemKind | "short_answer";
 
-/** An empty paragraph, as the server writes one: a text segment needs one character. */
+/** An empty body, as the server writes one: no paragraph at all. */
 function blankBody(): NativeExamBodyParagraph[] {
-  return [{ heading_level: null, segments: [{ kind: "text", text: " ", marks: [] }] }];
+  return [];
 }
 
 function blankChoices(): NativeExamChoice[] {
@@ -426,11 +408,11 @@ function blankGap(inlineChoice: boolean): NativeExamGap {
 }
 
 /**
- * The question a teacher adds: "Ny fråga" with the kind's empty structure,
- * the same structure the server gives a question it retypes (TASK-SKRIPT-39-06-05).
- * Choice kinds get two empty choices, gap kinds one gap after the question
- * text (Kort svar is a Lucktext with one gap, Q14), a rullista one gap whose
- * first empty option is the key, and Kategorisera one row, two categories and
+ * The question a teacher adds: no question text, and the kind's empty
+ * structure, the same structure the server gives a question it retypes
+ * (TASK-SKRIPT-39-06-05). Choice kinds get two empty choices, gap kinds one
+ * paragraph holding only the gap (Kort svar is a Lucktext with one gap, Q14),
+ * a rullista one gap whose first empty option is the key, and Kategorisera one row, two categories and
  * a zero tick value. Empty texts block export until the teacher fills them in.
  */
 export function newTeacherItem(
@@ -439,10 +421,6 @@ export function newTeacherItem(
   teacherKind: TeacherItemKind,
 ): NativeExamItem {
   const kind: NativeExamItemKind = teacherKind === "short_answer" ? "gap_fill" : teacherKind;
-  const question: NativeExamBodyParagraph = {
-    heading_level: null,
-    segments: [{ kind: "text", text: "Ny fråga", marks: [] }],
-  };
   const gapped = kind === "gap_fill" || kind === "inline_choice";
   const choice = kind === "single_choice" || kind === "multiple_response";
   const matching = kind === "matching";
@@ -464,9 +442,7 @@ export function newTeacherItem(
             ? "teacher_authored"
             : "absent",
     },
-    body: gapped
-      ? [question, { heading_level: null, segments: [{ kind: "gap", gap_id: "gap_001" }] }]
-      : [question],
+    body: gapped ? [{ heading_level: null, segments: [{ kind: "gap", gap_id: "gap_001" }] }] : [],
     choices: choice || ordering ? blankChoices() : [],
     gaps: gapped ? [blankGap(kind === "inline_choice")] : [],
     item_id: itemId,

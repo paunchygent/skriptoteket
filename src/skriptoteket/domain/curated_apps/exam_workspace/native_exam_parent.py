@@ -41,7 +41,7 @@ class NativeExamParent(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     parent_id: str = Field(pattern=_PARENT_ID_PATTERN)
-    instruction: tuple[NativeParagraph, ...] = Field(min_length=1)
+    instruction: tuple[NativeParagraph, ...]  # empty: the parent prints no instruction
     item_ids: tuple[str, ...] = Field(min_length=1)
     printed_total: int | float | None = Field(default=None, gt=0)
 

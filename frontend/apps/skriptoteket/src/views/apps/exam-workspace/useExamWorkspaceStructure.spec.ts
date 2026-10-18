@@ -25,6 +25,7 @@ import type {
 } from "../../../api/examWorkspace";
 import { useToastStore } from "../../../stores/toast";
 import { newTeacherItem } from "./examWorkspaceItemEdits";
+import { examWorkspaceItemReadiness } from "./examWorkspaceItemReadiness";
 import { buildParentDocument } from "./examWorkspaceParentDocument.specSupport";
 import { buildSavedExamSummary } from "./useExamWorkspaceDocument.specSupport";
 import { useExamWorkspaceStructure } from "./useExamWorkspaceStructure";
@@ -190,13 +191,21 @@ describe("new questions keep the server's structure rules", () => {
       } else {
         expect(item.tick_points).toBeNull();
       }
-      for (const text of [...item.choices, ...item.match_left, ...item.match_right].flatMap((entry) =>
-        entry.body.flatMap((paragraph) => paragraph.segments),
-      )) {
-        expect(text.kind === "text" && text.text.length).toBeGreaterThan(0);
+      for (const entry of [...item.choices, ...item.match_left, ...item.match_right]) {
+        expect(entry.body).toEqual([]);
       }
+      expect(item.body.flatMap((paragraph) => paragraph.segments).some((segment) => segment.kind === "text")).toBe(
+        false,
+      );
     },
   );
+
+  it("starts a question without text, so the empty-text blocker shows at once", () => {
+    const item = newTeacherItem("item_009", 9, "free_text");
+
+    expect(item.body).toEqual([]);
+    expect(examWorkspaceItemReadiness(item)).toContain("empty_question_text");
+  });
 });
 
 describe("server commands", () => {

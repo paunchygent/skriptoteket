@@ -40,14 +40,15 @@ import ExamWorkspacePhoneStrip from "./exam-workspace/ExamWorkspacePhoneStrip.vu
 import ExamWorkspaceQuestionList from "./exam-workspace/ExamWorkspaceQuestionList.vue";
 import ExamWorkspaceQuestionTools from "./exam-workspace/ExamWorkspaceQuestionTools.vue";
 import ExamWorkspaceSaveAsDialog from "./exam-workspace/ExamWorkspaceSaveAsDialog.vue";
-import ExamWorkspaceSharedInstruction from "./exam-workspace/ExamWorkspaceSharedInstruction.vue";
 import "./exam-workspace/examWorkspace.css";
 import { examWorkspaceBlockerEntries, examWorkspaceTitleBlockerEntries } from "./exam-workspace/examWorkspaceBlockers";
 import { examWorkspaceSavedAt } from "./exam-workspace/examWorkspaceFormat";
+import { provideExamWorkspaceHistoryKeys } from "./exam-workspace/examWorkspaceHistoryKeys";
 import { isTeacherReviewed } from "./exam-workspace/examWorkspaceItemEdits";
 import type { TeacherItemKind } from "./exam-workspace/examWorkspaceItemEdits";
 import { examWorkspaceDocumentLabel } from "./exam-workspace/examWorkspaceRows";
-import { examWorkspaceSharedParagraphs } from "./exam-workspace/examWorkspaceSharedInstruction";
+import { bodyText } from "./exam-workspace/examWorkspaceRichText";
+import { isEmptyBody } from "./exam-workspace/examWorkspaceRichTextDocument";
 import { examWorkspaceExamPrintedDifference } from "./exam-workspace/examWorkspaceTotals";
 import { useExamWorkspaceAddress } from "./exam-workspace/useExamWorkspaceAddress";
 import { useExamWorkspaceContentSuggestions } from "./exam-workspace/useExamWorkspaceContentSuggestions";
@@ -69,7 +70,6 @@ const {
   history,
   structure,
   applyArrivingSuggestions,
-  assetUrls,
   conflictNotice,
   isBusy,
   isDirty,
@@ -126,9 +126,10 @@ const selection = useExamWorkspaceSelection({
   },
 });
 const {
-  converting, dismissItemNotice, entries, entryIndex, gotoItem, itemChild, itemEntries, itemEntry, itemNotice,
-  itemParent, items, moveSelected, parentChildren, questionLabel, readiness, selectedEntry, selectedEntryId,
-  selectedItem, selectedParent, selectedParentEntry, selectedParentId, selectEntry, step, stripState, total,
+  canStep, converting, dismissItemNotice, entries, examInstructionsSelected, gotoItem, itemChild, itemEntries,
+  itemEntry, itemNotice, itemParent, items, moveSelected, parentChildren, questionLabel, readiness, selectedEntry,
+  selectedEntryId, selectedItem, selectedParent, selectedParentEntry, selectedParentId, selectEntry, step, stripState,
+  total,
 } = selection;
 
 const disabled = computed(() => isBusy.value || structure.running.value);
@@ -143,10 +144,20 @@ const saveFlow = useExamWorkspaceSaveFlow({
 const { canSave, fixBlocker, gotoBlocker, handleSave, handleSaveAs, openSaveAs, runExport, saveAsOpen, saveAsTaken, saveState } =
   saveFlow;
 useExamWorkspaceKeyboard({ save: handleSave, undo: history.undo, redo: history.redo, step, listOpen });
+// Ctrl/Cmd+Z inside an exam text editor is the same Ångra / Gör om the buttons run.
+provideExamWorkspaceHistoryKeys({
+  undo: () => void history.undo(),
+  redo: () => void history.redo(),
+});
 
-const globalInstructions = computed(() =>
-  examWorkspaceSharedParagraphs(workspaceDocument.value?.instructions ?? [], assetUrls.value),
-);
+/**
+ * The list's "Instruktioner" preview: the text, or "Bild" for an instruction
+ * of pictures without visible text; `null` for an instruction that prints nothing.
+ */
+const examInstructionsPreview = computed(() => {
+  const instructions = workspaceDocument.value?.instructions ?? [];
+  return isEmptyBody(instructions) ? null : bodyText(instructions) || "Bild";
+});
 const examPrintedTotal = computed(() =>
   workspaceDocument.value ? examWorkspaceExamPrintedDifference(workspaceDocument.value) : null,
 );
@@ -311,9 +322,10 @@ onMounted(() => {
     <ExamWorkspacePhoneStrip
       v-if="isPhone && workspaceDocument"
       :label="selectedEntry?.label ?? null"
+      :heading="examInstructionsSelected ? 'Instruktioner' : null"
       :state="stripState"
-      :can-previous="entryIndex > 0"
-      :can-next="entryIndex >= 0 && entryIndex < entries.length - 1"
+      :can-previous="canStep(-1)"
+      :can-next="canStep(1)"
       :list-open="listOpen"
       @previous="step(-1)"
       @next="step(1)"
@@ -338,28 +350,25 @@ onMounted(() => {
         v-if="workspaceDocument"
         :entries="entries"
         :selected-id="selectedEntryId"
+        :exam-instructions-preview="examInstructionsPreview"
         :question-count="itemEntries.length"
         :total="total"
         :printed-total="examPrintedTotal"
         :can-add="!disabled"
+        :disabled="disabled"
         :overlay="isPhone && listOpen"
         @select="selectEntry"
         @add="addEntry"
+        @accept-exam-total="editing.acceptExamPrintedTotal"
+        @accept-part-total="editing.acceptPartPrintedTotal"
+        @accept-all-totals="editing.acceptAllPrintedTotals"
         @close="listOpen = false"
-      >
-        <template #intro>
-          <ExamWorkspaceSharedInstruction
-            v-if="globalInstructions.length > 0"
-            :paragraphs="globalInstructions"
-            class="ws__shared"
-            data-test="exam-workspace-global-instruction"
-          />
-        </template>
-      </ExamWorkspaceQuestionList>
+      />
 
       <ExamWorkspaceEditorPane
         :editing="editing"
         :workspace-document="workspaceDocument"
+        :exam-instructions-selected="examInstructionsSelected"
         :selected-parent="selectedParent"
         :selected-parent-entry="selectedParentEntry"
         :parent-children="parentChildren"
@@ -429,12 +438,10 @@ onMounted(() => {
 .ws--drawer .ws__body { grid-template-columns: var(--xw-list) minmax(0, 1fr) var(--xw-drawer); }
 .ws__body--empty, .ws--drawer .ws__body--empty { grid-template-columns: minmax(0, 1fr); }
 .ws--drawer .ws__body--empty { grid-template-columns: minmax(0, 1fr) var(--xw-drawer); }
-.ws__shared { padding: var(--huleedu-space-2) var(--huleedu-space-6); border-bottom: 1px solid var(--huleedu-surface-divider); }
 @media (max-width: 1279px) {
   .ws__body, .ws--drawer .ws__body { grid-template-columns: 280px minmax(0, 1fr); }
   .ws__body--empty, .ws--drawer .ws__body--empty { grid-template-columns: minmax(0, 1fr); }
   .ws__bar { margin: var(--huleedu-space-2) var(--huleedu-space-4) 0; }
-  .ws__shared { padding: var(--huleedu-space-2) var(--huleedu-space-4); }
 }
 @media (max-width: 767px) {
   .ws__body, .ws--drawer .ws__body { grid-template-columns: minmax(0, 1fr); }

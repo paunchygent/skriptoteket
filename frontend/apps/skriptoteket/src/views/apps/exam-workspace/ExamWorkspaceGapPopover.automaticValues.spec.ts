@@ -21,12 +21,11 @@ function gapWithAutomaticValues(): NativeExamGap {
   });
 }
 
-function mountPopover(gap: NativeExamGap | null, gapCount = 2) {
+function mountPopover(gap: NativeExamGap | null) {
   return mount(ExamWorkspaceGapPopover, {
     attachTo: document.body,
     props: {
       gap,
-      gapCount,
       gapId: "gap_001",
       gapNumber: 1,
       itemId: "item_001",
