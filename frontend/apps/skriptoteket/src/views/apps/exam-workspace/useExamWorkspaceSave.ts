@@ -113,10 +113,6 @@ export function useExamWorkspaceSave(state: SaveState) {
       toast.failure(SAVE_FAILURE_COPY);
       return false;
     }
-    if (!current.title.trim()) {
-      toast.failure("Skriv en titel innan du sparar provet.");
-      return false;
-    }
     const refusalCopy = examWorkspaceSaveRefusalCopy(current.items);
     if (refusalCopy) {
       toast.failure(refusalCopy);
@@ -184,10 +180,6 @@ export function useExamWorkspaceSave(state: SaveState) {
     const current = workspaceDocument.value;
     const currentSummary = summary.value;
     if (!current || !currentSummary || state.isBusy.value) {
-      return "failed";
-    }
-    if (!current.title.trim()) {
-      toast.failure("Skriv en titel innan du sparar provet.");
       return "failed";
     }
     operationBusy.value = true;

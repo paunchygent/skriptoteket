@@ -96,22 +96,22 @@ describe("ExamWorkspaceView metadata", () => {
     expect(saveState(wrapper)).not.toContain("Osparat");
   });
 
-  it("keeps blank title input local and refuses to send it, then recovers after correction", async () => {
+  it("sends a blank title with Spara, keeps the guidance line, and recovers after correction", async () => {
     const wrapper = await openWorkspace();
     await openMetadata(wrapper);
     const title = wrapper.get<HTMLInputElement>('[data-test="exam-workspace-metadata-title"]');
     await title.setValue("");
     expect(title.element.value).toBe("");
     expect(title.attributes("aria-invalid")).toBe("true");
-    await saveDocument(wrapper);
-    expect(api.saveExamWorkspaceDocument).not.toHaveBeenCalled();
-    await title.setValue("   ");
-    await saveDocument(wrapper);
-    expect(api.saveExamWorkspaceDocument).not.toHaveBeenCalled();
-    await title.setValue("Korrigerad titel");
-    api.saveExamWorkspaceDocument.mockResolvedValue(buildResponse({ version: 2, title: "Korrigerad titel" }));
+    api.saveExamWorkspaceDocument.mockResolvedValue(buildResponse({ version: 2, title: "" }));
     await saveDocument(wrapper);
     expect(api.saveExamWorkspaceDocument).toHaveBeenCalledTimes(1);
+    expect(api.saveExamWorkspaceDocument.mock.calls[0]?.[1].document.title).toBe("");
+    await title.setValue("Korrigerad titel");
+    api.saveExamWorkspaceDocument.mockResolvedValue(buildResponse({ version: 3, title: "Korrigerad titel" }));
+    await saveDocument(wrapper);
+    expect(api.saveExamWorkspaceDocument).toHaveBeenCalledTimes(2);
+    expect(title.attributes("aria-invalid")).toBeUndefined();
   });
 
   it("shows one drawer at a time: Öppna and Provets uppgifter replace each other", async () => {

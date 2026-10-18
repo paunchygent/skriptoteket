@@ -200,6 +200,46 @@ describe("ExamWorkspaceView title export blocker", () => {
     expect(page("exam-workspace-blocker-title")).toBeNull();
   });
 
+  it.each(["", "   "])(
+    "stores the emptied title %j with the autosave, shows the red row with every format disabled and no failure toast",
+    async (title) => {
+      importTitled("Prov 1");
+      vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+      const wrapper = await mountImported();
+      await openTitleField(wrapper);
+
+      await typeTitle(wrapper, title);
+      await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_TYPING_PAUSE_MS);
+      await flushPromises();
+
+      const stored = apiMocks.storeExamWorkspaceUndoStep.mock.calls.at(-1)?.[1];
+      expect(stored?.document.title).toBe(title);
+      expect(useToastStore().failure).not.toHaveBeenCalled();
+      await openMenu(wrapper);
+      expect(requirePage("exam-workspace-blocker-title").text()).toBe(TITLE_ROW);
+      for (const target of ["qti", "pdf", "docx"]) {
+        expect(menuFormatDisabled(target)).toBe("true");
+      }
+    },
+  );
+
+  it("saves an emptied title with Spara, shows the red row and raises no failure toast", async () => {
+    importTitled("Prov 1");
+    const wrapper = await mountImported();
+    await openTitleField(wrapper);
+
+    await typeTitle(wrapper, "   ");
+    await wrapper.get('[data-test="exam-workspace-save"]').trigger("click");
+    await flushPromises();
+
+    expect(apiMocks.saveExamWorkspaceDocument).toHaveBeenCalledTimes(1);
+    expect(apiMocks.saveExamWorkspaceDocument.mock.calls[0]?.[1].document.title).toBe("   ");
+    expect(useToastStore().failure).not.toHaveBeenCalled();
+    await openMenu(wrapper);
+    expect(requirePage("exam-workspace-blocker-title").text()).toBe(TITLE_ROW);
+    expect(menuFormatDisabled("qti")).toBe("true");
+  });
+
   it("shows the row when the server refuses an export clicked before the autosave judged the title", async () => {
     importTitled("Prov 1");
     apiMocks.downloadExamWorkspaceExport.mockRejectedValue(new ApiError(TITLE_REFUSAL));
