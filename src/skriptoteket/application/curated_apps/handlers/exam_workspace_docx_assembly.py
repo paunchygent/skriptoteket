@@ -164,22 +164,30 @@ def exam_wide_anchors(
     )
 
 
-def question_owned_contexts(
+def contexts_owned_by_question(
     contexts: tuple[SharedContext, ...], families: tuple[QuestionFamily, ...]
 ) -> dict[str, tuple[str, ...]]:
-    """Each question's own anchor, mapped to the contexts that question owns, in manifest order.
+    """Each question, mapped to the contexts it alone owns, in manifest order.
 
     A context a question owns joins that question's item, or its source-review item, when no
-    reply entry holds it (ruling 2026-10-18 c). A context governing two or more questions is
-    its section parent's instruction (D40), so no single question owns it here.
+    reply entry holds it (ruling 2026-10-18 c); its retry source keeps it with the question.
+    A context governing two or more questions is its section parent's instruction (D40), so
+    no single question owns it here.
     """
     governed = governed_anchors(contexts, families)
-    owned = {
+    return {
         family.question_id: tuple(
             c.anchor for c in contexts if c.owner == family.question_id and c.anchor not in governed
         )
         for family in families
     }
+
+
+def question_owned_contexts(
+    contexts: tuple[SharedContext, ...], families: tuple[QuestionFamily, ...]
+) -> dict[str, tuple[str, ...]]:
+    """Each question's own anchor, mapped to the contexts that question owns."""
+    owned = contexts_owned_by_question(contexts, families)
     return {
         anchor: owned[family.question_id]
         for family in families

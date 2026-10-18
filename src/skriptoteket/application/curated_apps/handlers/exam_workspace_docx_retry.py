@@ -248,11 +248,16 @@ class RetryExamWorkspaceItemHandler:
     ) -> NativeExamItem:
         pending = pending_chunks(source, assets=assets, payloads=payloads)
         context = context_chunks(source, assets=assets, payloads=payloads)
+        # A context the question owns is pending like its own chunks: admission joins it to
+        # the item when the reply leaves it out, as the build does (ruling 2026-10-18 c).
+        owned = source.owned_context_anchors
         family = QuestionFamily(
             question_id=saved_item.item_id,
             position=0,
             question_anchors=tuple(
-                chunk.anchor for chunk in own_chunks(source, assets=assets, payloads=payloads)
+                chunk.anchor
+                for chunk in own_chunks(source, assets=assets, payloads=payloads)
+                if chunk.anchor not in owned
             ),
             claims=frozenset(chunk.anchor for chunk in pending),
             reads=frozenset(chunk.anchor for chunk in context),
@@ -275,6 +280,7 @@ class RetryExamWorkspaceItemHandler:
             allowed_kinds=frozenset({kind}),
             batch=batch.batch_id,
             questions=(family.question_anchors,),
+            owned_contexts=dict.fromkeys(family.question_anchors, owned),
             document_language=infer_exam_document_language(native_exam_document_text(saved)),
         )
         outcome = await convert_batch(

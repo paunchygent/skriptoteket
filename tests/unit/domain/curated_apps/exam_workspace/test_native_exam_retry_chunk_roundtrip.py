@@ -149,6 +149,7 @@ def test_stored_runs_and_paragraphs_survive_a_document_round_trip():
     )
     source = question_retry_source(
         own_anchors=("body:0001",),
+        owned_context_anchors=(),
         key_anchors=(),
         read_anchors=frozenset(),
         chunks=(chunk,),

@@ -59,10 +59,12 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedItem,
     ProducedMetadata,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.docx_gap_material import (
     GAPPED_MATERIAL_REASON,
     gapped_material,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_heading_wording import heading_wording
 from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions import (
     with_left_out_mark,
     wording_left_out,
@@ -76,6 +78,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     definition_context,
     with_accepted_forms,
     with_printed_points,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+    NativeParagraph,
+    NativeTextSegment,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
@@ -185,6 +191,39 @@ def _with_left_out(
     return item, (*anchors, *left_out)
 
 
+def _text(paragraph: NativeParagraph) -> str:
+    return "".join(s.text for s in paragraph.segments if isinstance(s, NativeTextSegment))
+
+
+def _joined_body(
+    item: NativeExamItem,
+    passages: tuple[DocxChunk, ...],
+    own: tuple[DocxChunk, ...],
+    state: DocxBuildState,
+    headings: tuple[DocxChunk, ...],
+) -> tuple[NativeParagraph, ...]:
+    """``item``'s body with the joined contexts' source paragraphs, marks and pictures at
+    their source place, both in source order: a context printed before the question's first
+    own chunk opens the body; one printed after it follows the content of the question's
+    leading heading, which is the body's first paragraph when it holds the heading's wording.
+    """
+    position = {chunk.anchor: n for n, chunk in enumerate(state.chunks)}
+    first = position[own[0].anchor] if own else len(position)
+    before = tuple(c for c in passages if position[c.anchor] < first)
+    after = tuple(c for c in passages if position[c.anchor] > first)
+    lead = 0
+    if after and headings and own and headings[0].anchor == own[0].anchor and item.body:
+        wording = heading_wording(headings[0], item).casefold()
+        if wording and wording in _text(item.body[0]).casefold():
+            lead = 1
+    return (
+        *source_paragraphs(before),
+        *item.body[:lead],
+        *source_paragraphs(after),
+        *item.body[lead:],
+    )
+
+
 def _admit_item(
     index: int, raw: JsonValue, state: DocxBuildState, seen: set[str], item_held: frozenset[str]
 ) -> None:
@@ -248,9 +287,10 @@ def _admit_item(
         if c.anchor not in anchors and c.anchor not in seen | state.claimed
     )
     question = (*leading, *anchors)
-    # A context the question owns that no entry holds opens its item (ruling 2026-10-18 c).
+    # A context the question owns that no entry holds joins its item (ruling 2026-10-18 c);
+    # the question's first anchor stays the item's source anchor.
     joined = state.left_out_contexts(question, seen | item_held)
-    anchors = (*joined, *question)
+    anchors = (*question, *joined)
     produced = produced.model_copy(update={"source_anchors": anchors})
     produced = with_heading_content(produced, headings)
     seen.update(anchors)
@@ -330,9 +370,10 @@ def _admit_item(
                     }
                 )
         if joined:
-            # The joined contexts' source paragraphs, marks and pictures as printed.
             passages = tuple(c for c in state.chunks if c.anchor in joined)
-            item = item.model_copy(update={"body": (*source_paragraphs(passages), *item.body)})
+            item = item.model_copy(
+                update={"body": _joined_body(item, passages, own, state, headings)}
+            )
             own = (*passages, *own)
         source_images = Counter(image.asset_id for chunk in own for image in chunk.images)
         emitted = Counter(item.body_asset_ids())

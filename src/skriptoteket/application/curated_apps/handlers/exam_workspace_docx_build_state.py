@@ -168,9 +168,11 @@ class DocxBuildState:
         The item shows every own chunk of each grouped question ``anchors`` touch, every
         context those questions own that no entry holds (ruling 2026-10-18 c) and every chunk
         in ``anchors``, in source order. It holds ``anchors`` plus the shown chunks no entry
-        holds yet, which join ``taken``.
+        holds yet, which join ``taken``. A context the question owns never names the item:
+        its source anchor is the first shown chunk of the question's own.
         """
         shown = set(anchors).union(*(self.question_by_anchor.get(a, ()) for a in anchors))
+        contexts = set().union(*(self.owned_contexts.get(a, ()) for a in anchors))
         shown.update(self.left_out_contexts(anchors, taken))
         shown -= self.header_anchors
         extra = tuple(
@@ -179,7 +181,11 @@ class DocxBuildState:
             if c.anchor in shown and c.anchor not in anchors and c.anchor not in taken
         )
         taken.update(extra)
-        item = review_source_item(tuple(c for c in self.chunks if c.anchor in shown), reason)
+        chunks = tuple(c for c in self.chunks if c.anchor in shown)
+        item = review_source_item(chunks, reason)
+        own = [c.anchor for c in chunks if c.anchor not in contexts]
+        if own:
+            item = item.model_copy(update={"source_anchor": own[0]})
         return item, (*anchors, *extra)
 
     def review_questions(

@@ -132,6 +132,7 @@ def test_printed_grid_tick_boundary_keeps_score_or_complete_source_review(
             assert not failures
     retry = question_retry_source(
         own_anchors=own,
+        owned_context_anchors=(),
         key_anchors=(),
         read_anchors=frozenset(),
         chunks=chunks,

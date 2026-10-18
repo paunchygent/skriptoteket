@@ -129,6 +129,7 @@ def _assembled() -> tuple[NativeExamDocument, dict[str, bytes], str, str]:
     sources = {
         anchor: question_retry_source(
             own_anchors=(anchor,),
+            owned_context_anchors=(),
             key_anchors=("body:0004",),
             read_anchors=frozenset({"body:0003"}),
             chunks=chunks,

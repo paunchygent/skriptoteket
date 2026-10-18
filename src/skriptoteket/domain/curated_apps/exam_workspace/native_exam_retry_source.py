@@ -202,12 +202,14 @@ def _attach_source(item: NativeExamItem, source: NativeExamRetrySource) -> Nativ
 def question_retry_source(
     *,
     own_anchors: tuple[str, ...],
+    owned_context_anchors: tuple[str, ...],
     key_anchors: tuple[str, ...],
     read_anchors: frozenset[str],
     chunks: tuple[DocxChunk, ...],
     label_kind: NativeExamItemKind,
 ) -> NativeExamRetrySource:
-    """The question's original source: own chunks, key chunks and read-only context."""
+    """The question's original source: own chunks with the contexts it owns at their source
+    place, key chunks and read-only context."""
     position = {chunk.anchor: index for index, chunk in enumerate(chunks)}
     by_anchor = {chunk.anchor: chunk for chunk in chunks}
     context = tuple(
@@ -215,8 +217,15 @@ def question_retry_source(
         for anchor in sorted(read_anchors, key=lambda anchor: position[anchor])
         if anchor in by_anchor
     )
+    owned = tuple(a for a in dict.fromkeys(owned_context_anchors) if a in by_anchor)
+    question: list[str] = [a for a in own_anchors if a in by_anchor]
+    for anchor in sorted(owned, key=lambda a: position[a]):
+        # An owned context keeps its source place among the question's own chunks.
+        later = [n for n, a in enumerate(question) if position[a] > position[anchor]]
+        question.insert(later[0] if later else len(question), anchor)
     return NativeExamRetrySource(
-        chunks=tuple(chunk_record(by_anchor[a]) for a in own_anchors if a in by_anchor),
+        chunks=tuple(chunk_record(by_anchor[a]) for a in question),
+        owned_context_anchors=owned,
         key_chunks=tuple(chunk_record(by_anchor[a]) for a in key_anchors if a in by_anchor),
         context_chunks=tuple(chunk_record(chunk) for chunk in context),
         label_kind=label_kind,
@@ -227,6 +236,7 @@ def retry_sources_by_anchor(
     *,
     families: tuple[QuestionFamily, ...],
     own_anchors: Mapping[str, tuple[str, ...]],
+    owned_contexts: Mapping[str, tuple[str, ...]],
     key_anchors: Mapping[str, tuple[str, ...]],
     chunks: tuple[DocxChunk, ...],
     label_kinds: Mapping[str, NativeExamItemKind],
@@ -234,10 +244,12 @@ def retry_sources_by_anchor(
     """Every anchor a family claims, mapped to that question's retry source.
 
     An item's ``source_anchor`` may be any chunk the question's conversion claimed, so the
-    map covers each family's claims; a chunk no family claims maps to nothing. The source's
-    context is the read-only side: every claimed chunk that is neither the question's own nor
-    its answer key — the shared heading, word box or passage the first family owns — together
-    with everything the family reads. Pending stays exactly the own and key chunks.
+    map covers each family's claims; a chunk no family claims maps to nothing.
+    ``owned_contexts`` maps each question to the contexts it alone owns; the source keeps them
+    with the question's own chunks. The source's context is the read-only side: every claimed
+    chunk that is neither the question's own, a context it owns nor its answer key — the
+    shared heading, word box or passage the first family owns — together with everything the
+    family reads. Pending stays exactly the own, owned-context and key chunks.
     """
     sources: dict[str, NativeExamRetrySource] = {}
     for family in families:
@@ -246,9 +258,13 @@ def retry_sources_by_anchor(
         # An own chunk the grouping also marks as facit is stored as a key; the retry's item
         # may still hold it as question text.
         own_listed = tuple(a for a in own_anchors.get(question_id, ()) if a not in keys)
-        context = (family.claims - set(own_listed) - keys) | family.reads
+        owned = tuple(
+            a for a in owned_contexts.get(question_id, ()) if a not in keys and a not in own_listed
+        )
+        context = (family.claims - set(own_listed) - set(owned) - keys) | family.reads
         source = question_retry_source(
             own_anchors=own_listed,
+            owned_context_anchors=owned,
             key_anchors=key_anchors.get(question_id, ()),
             read_anchors=frozenset(context),
             chunks=chunks,
@@ -306,7 +322,8 @@ def own_chunks(
     assets: Mapping[str, NativeExamAsset],
     payloads: Mapping[str, bytes],
 ) -> tuple[DocxChunk, ...]:
-    """The question's own chunks as the conversion reads them, in source order."""
+    """The question's own chunks and the contexts it owns as the conversion reads them, in
+    source order."""
     return tuple(
         chunk_from_record(record, assets=assets, payloads=payloads) for record in source.chunks
     )
@@ -318,7 +335,8 @@ def pending_chunks(
     assets: Mapping[str, NativeExamAsset],
     payloads: Mapping[str, bytes],
 ) -> tuple[DocxChunk, ...]:
-    """Every chunk one retry sends the converter: the question's own and its answer key."""
+    """Every chunk one retry sends the converter: the question's own, the contexts it owns
+    and its answer key."""
     return tuple(
         chunk_from_record(record, assets=assets, payloads=payloads)
         for record in (*source.chunks, *source.key_chunks)
@@ -367,7 +385,8 @@ def source_review_item(
     payloads: Mapping[str, bytes],
     reason: str,
 ) -> NativeExamItem:
-    """The question's source text as a review item that keeps the original's identity."""
+    """The question's source text, the contexts it owns included, as a review item that keeps
+    the original's identity."""
     review = review_source_item(own_chunks(source, assets=assets, payloads=payloads), reason)
     return _attach_source(
         review.model_copy(

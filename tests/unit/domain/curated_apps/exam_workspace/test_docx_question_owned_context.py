@@ -196,7 +196,7 @@ def test_left_out_owned_passage_opens_its_question_item(path):
     passage = item.body[1].segments
     assert passage[0] == NativeTextSegment(text="Igår", marks=("italic",))
     assert passage[-1] == NativeAssetSegment(asset_id=_PICTURE.asset_id)
-    assert item.source_anchor == "body:0002"
+    assert item.source_anchor == "body:0004"
 
 
 @pytest.mark.parametrize("path", sorted(_PATHS))
@@ -218,6 +218,7 @@ def test_question_without_converted_item_reviews_its_passage_with_its_source(pat
     assert len(result.document.items) == 2
     assert item.review.parse_origin is NativeParseOrigin.SOURCE_FALLBACK
     assert item.plain_text_lines() == (_TEXT_A, _PASSAGE, _Q2)
+    assert item.source_anchor == "body:0004"
 
 
 @pytest.mark.parametrize("path", sorted(_PATHS))
