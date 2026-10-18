@@ -275,6 +275,40 @@ describe("export-only content readiness", () => {
     expect(examWorkspaceItemReadiness(item)).toEqual([]);
   });
 
+  // The same shapes as TOO_FEW_GAP_OPTIONS_PARITY in test_native_exam_export_blockers.py.
+  it.each([
+    [[2], false],
+    [[3], false],
+    [[1], true],
+    [[2, 2, 1], true],
+    [[1, 2, 2], true],
+    [[2, 2, 2], false],
+  ] as const)("matches the server rule for option counts %j", (counts, blocked) => {
+    const item = dropdown();
+    item.body = counts.map((_, index) => ({
+      heading_level: null,
+      segments: [{ kind: "gap" as const, gap_id: `gap_00${index + 1}` }],
+    }));
+    item.gaps = counts.map((count, index) => buildGap(`gap_00${index + 1}`, [], {
+      correct_option_id: "choice_001",
+      options: Array.from({ length: count }, (_, n) => ({
+        choice_id: `choice_00${n + 1}`, body: plainBody(`alt${n}`),
+      })),
+    }));
+    expect(examWorkspaceItemReadiness(item)).toEqual(blocked ? ["too_few_gap_options"] : []);
+  });
+
+  it("reports a one-option dropdown with a blank option under both reasons and gap_fill under neither", () => {
+    const item = dropdown();
+    item.gaps[0]!.options = [{ choice_id: "option_001", body: plainBody(" ") }];
+    expect(examWorkspaceItemReadiness(item)).toEqual(["empty_gap_option", "too_few_gap_options"]);
+    expect(examWorkspaceReadinessByItemId([item])[item.item_id]).toContain(
+      "En rullista i en lucka har färre än två alternativ.",
+    );
+    const gapFill: NativeExamItem = { ...item, kind: "gap_fill", gaps: [buildGap("gap_001", ["NF"])] };
+    expect(examWorkspaceItemReadiness(gapFill)).not.toContain("too_few_gap_options");
+  });
+
   it.each(["", " \n\t "])("blocks a blank dropdown option %j", (text) => {
     const item = dropdown();
     item.gaps[0]!.options[1]!.body = plainBody(text);

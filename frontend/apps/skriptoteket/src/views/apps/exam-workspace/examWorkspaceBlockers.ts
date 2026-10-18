@@ -159,6 +159,8 @@ function blockerFocus(item: NativeExamItem, reason: ExamWorkspaceReadinessReason
         item.gaps.find((gap) => gap.options.some((option) => option.body.some((p) => p.heading_level !== null)))
           ?.gap_id,
       );
+    case "too_few_gap_options":
+      return gapChip(item.gaps.find((gap) => gap.options.length < 2)?.gap_id);
     case "empty_match_entry": {
       const left = item.match_left.find((entry) => isEmpty(entry.body));
       if (left) return `[data-test^="exam-workspace-match-left-text-${left.left_id}"]`;

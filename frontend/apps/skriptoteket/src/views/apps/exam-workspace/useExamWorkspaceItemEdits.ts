@@ -18,6 +18,7 @@
 import type {
   NativeExamBodyParagraph,
   NativeExamBodySegment,
+  NativeExamChoice,
   NativeExamCriterion,
   NativeExamItem,
   NativeExamMatchPair,
@@ -29,6 +30,7 @@ import {
   withCorrectChoices,
   withCriteria,
   withGapAsText,
+  withGapOptions,
   withoutInterpretedKey,
   withMatchEntryBody,
   withMatchPairs,
@@ -70,6 +72,15 @@ export function useExamWorkspaceItemEdits(patchItem: ExamWorkspaceItemPatch) {
     headingLevel: NativeExamBodyParagraph["heading_level"],
   ): void {
     patchItem(itemId, (item) => withParagraphHeading(item, paragraphIndex, headingLevel));
+  }
+
+  function updateItemGapOptions(
+    itemId: string,
+    gapId: string,
+    options: NativeExamChoice[],
+    correctOptionId: string,
+  ): void {
+    patchItem(itemId, (item) => withGapOptions(item, gapId, options, correctOptionId), true);
   }
 
   function updateItemChoiceBody(
@@ -135,6 +146,7 @@ export function useExamWorkspaceItemEdits(patchItem: ExamWorkspaceItemPatch) {
     updateItemChoiceBody,
     updateItemCorrectChoices,
     updateItemCriteria,
+    updateItemGapOptions,
     updateItemMatchEntryBody,
     updateItemMatchPairs,
     updateItemParagraphHeading,

@@ -5,11 +5,20 @@ from pydantic import ValidationError
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk, DocxMissingImage
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_review import review_source_item
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+    NativeGapSegment,
+    NativeParagraph,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_export_rules import (
     item_has_trusted_key,
     native_export_blockers,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import NativeExamItem
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
+    NativeAnswerKey,
+    NativeChoice,
+    NativeGap,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeAnswerKeyOrigin,
     NativeExamItemKind,
@@ -22,6 +31,7 @@ from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders imp
     make_gap_fill_item,
     make_review,
     make_single_choice_item,
+    plain_body,
 )
 
 
@@ -143,3 +153,71 @@ class TestExportBlockers:
         item = make_free_text_item().model_copy(update={"points": None})
         reasons = {blocker.reason for blocker in native_export_blockers(make_document(item))}
         assert "missing_points" in reasons
+
+
+def _dropdown_gap(gap_id: str, option_texts: tuple[str, ...]) -> NativeGap:
+    options = tuple(
+        NativeChoice(choice_id=f"choice_{index:03d}", body=plain_body(text))
+        for index, text in enumerate(option_texts, start=1)
+    )
+    return NativeGap(gap_id=gap_id, options=options, correct_option_id="choice_001")
+
+
+def _dropdown_item(*gaps: NativeGap) -> NativeExamItem:
+    return NativeExamItem(
+        item_id="item_001",
+        sequence=1,
+        kind=NativeExamItemKind.INLINE_CHOICE,
+        body=tuple(
+            NativeParagraph(heading_level=None, segments=(NativeGapSegment(gap_id=gap.gap_id),))
+            for gap in gaps
+        ),
+        points=1,
+        gaps=gaps,
+        answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.TEACHER_AUTHORED),
+        review=make_review(),
+    )
+
+
+def _reasons(item: NativeExamItem) -> list[str]:
+    return [blocker.reason for blocker in native_export_blockers(make_document(item))]
+
+
+# Shared fixture shapes: the frontend readiness spec asserts the same table (option counts
+# per gap -> blocked), so the server rule and the workspace mirror visibly agree.
+TOO_FEW_GAP_OPTIONS_PARITY = (
+    ((2,), False),
+    ((3,), False),
+    ((1,), True),
+    ((2, 2, 1), True),
+    ((1, 2, 2), True),
+    ((2, 2, 2), False),
+)
+
+
+class TestTooFewGapOptions:
+    @pytest.mark.parametrize(("counts", "blocked"), TOO_FEW_GAP_OPTIONS_PARITY)
+    def test_parity_table(self, counts: tuple[int, ...], blocked: bool) -> None:
+        gaps = tuple(
+            _dropdown_gap(f"gap_{index:03d}", tuple(f"alt{n}" for n in range(count)))
+            for index, count in enumerate(counts, start=1)
+        )
+        expected = ["too_few_gap_options"] if blocked else []
+        assert _reasons(_dropdown_item(*gaps)) == expected
+
+    def test_one_blocker_per_item_even_when_several_gaps_are_short(self) -> None:
+        item = _dropdown_item(
+            _dropdown_gap("gap_001", ("a",)),
+            _dropdown_gap("gap_002", ("a", "b")),
+            _dropdown_gap("gap_003", ("a",)),
+        )
+        assert _reasons(item) == ["too_few_gap_options"]
+
+    def test_gap_fill_item_never_gets_it(self) -> None:
+        assert "too_few_gap_options" not in _reasons(make_gap_fill_item())
+
+    def test_single_empty_option_blocks_for_both_reasons(self) -> None:
+        assert _reasons(_dropdown_item(_dropdown_gap("gap_001", (" ",)))) == [
+            "empty_gap_option",
+            "too_few_gap_options",
+        ]

@@ -33,7 +33,7 @@
 import { computed, ref, useId, watch } from "vue";
 import type { ComponentPublicInstance } from "vue";
 
-import type { NativeExamBodySegment, NativeExamItem } from "../../../api/examWorkspace";
+import type { NativeExamBodySegment, NativeExamChoice, NativeExamItem } from "../../../api/examWorkspace";
 import {
   isPartiallyKeyedGapItem,
   PARTIAL_GAP_KEY_GUIDANCE,
@@ -62,6 +62,7 @@ const emit = defineEmits<{
   updateParagraphSegments: [itemId: string, paragraphIndex: number, segments: NativeExamBodySegment[]];
   updateParagraphHeading: [itemId: string, paragraphIndex: number, headingLevel: HeadingLevel | null];
   updateGapValues: [itemId: string, gapId: string, acceptedValues: string[]];
+  updateGapOptions: [itemId: string, gapId: string, options: NativeExamChoice[], correctOptionId: string];
   removeAutomaticValue: [itemId: string, gapId: string, value: string];
   showGapAsText: [itemId: string, gapId: string];
 }>();
@@ -166,6 +167,18 @@ function handleGapCommit(itemId: string, gapId: string, acceptedValues: string[]
   emit("updateGapValues", itemId, gapId, acceptedValues);
 }
 
+function handleGapOptions(
+  itemId: string,
+  gapId: string,
+  options: NativeExamChoice[],
+  correctOptionId: string,
+): void {
+  if (props.disabled) {
+    return;
+  }
+  emit("updateGapOptions", itemId, gapId, options, correctOptionId);
+}
+
 function handleGapAutomaticValueRemoval(itemId: string, gapId: string, value: string): void {
   if (props.disabled) {
     return;
@@ -249,9 +262,11 @@ watch(
           :gap-number="openGapNumber"
           :gap="openGapModel"
           :gap-count="item.gaps.length"
+          :dropdown="item.kind === 'inline_choice'"
           :top="openGap.top"
           :left="openGap.left"
           @commit="handleGapCommit"
+          @update-options="handleGapOptions"
           @remove-automatic-value="handleGapAutomaticValueRemoval"
           @show-gap-as-text="handleGapAsText"
           @close="closePopover"

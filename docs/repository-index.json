@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "802bd976c4328070d9ff379fcf84d29b8d0bc35be5fccd43f4db01ebc22c4da8",
+  "source_set_digest": "465ed0871267fc4eb6c4bee46307ab7d45ea31ec340f5631b4025db69f6fb7da",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6285,7 +6285,7 @@
       "type": "task",
       "title": "Teachers edit a dropdown gap's options and mark the correct one in the gap popover",
       "path": "docs/backlog/tasks/task-skript-40-04-04-teachers-edit-a-dropdown-gap-s-options-and-mark-the-correct-one-in-the-gap-popover.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [

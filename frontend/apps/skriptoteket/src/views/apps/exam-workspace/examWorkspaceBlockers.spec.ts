@@ -152,6 +152,36 @@ describe("examWorkspaceBlockerEntries", () => {
       problem: "rubrik i rullista",
     });
   });
+
+  it("leads a too-short dropdown to its first short gap with no one-click fix", () => {
+    const item = rullista(
+      [{ body: plainBody("är"), choice_id: "choice_001" }, { body: plainBody("var"), choice_id: "choice_002" }],
+      "choice_001",
+    );
+    item.body = [{
+      heading_level: null,
+      segments: [
+        { kind: "gap", gap_id: "gap_001" }, { kind: "gap", gap_id: "gap_002" }, { kind: "gap", gap_id: "gap_003" },
+      ],
+    }];
+    item.gaps = [
+      item.gaps[0]!,
+      buildGap("gap_002", [], { correct_option_id: "choice_001", options: [{ body: plainBody("är"), choice_id: "choice_001" }] }),
+      buildGap("gap_003", [], { correct_option_id: "choice_001", options: [{ body: plainBody("är"), choice_id: "choice_001" }] }),
+    ];
+
+    expect(rows([item])[0]).toMatchObject({
+      fix: null,
+      focus: '[data-gap-id="gap_002"]',
+      problem: "rullista med färre än två alternativ",
+      reason: "too_few_gap_options",
+    });
+  });
+
+  it("names an earlier reason first when the dropdown also lacks points", () => {
+    const item = { ...rullista([{ body: plainBody("är"), choice_id: "choice_001" }], "choice_001"), points: null };
+    expect(rows([item])[0]).toMatchObject({ reason: "missing_points" });
+  });
 });
 
 describe("export blocker fixes", () => {

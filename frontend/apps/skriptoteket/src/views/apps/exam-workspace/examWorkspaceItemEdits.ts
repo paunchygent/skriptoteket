@@ -265,6 +265,30 @@ export function withGapValues(
   };
 }
 
+/** Replace one dropdown gap's options and its correct option; the same item when nothing changes. */
+export function withGapOptions(
+  item: NativeExamItem,
+  gapId: string,
+  options: NativeExamChoice[],
+  correctOptionId: string,
+): NativeExamItem {
+  const current = item.gaps.find((gap) => gap.gap_id === gapId);
+  if (
+    !current ||
+    (current.correct_option_id === correctOptionId &&
+      current.options.length === options.length &&
+      current.options.every((option, index) => option === options[index]))
+  ) {
+    return item;
+  }
+  return {
+    ...item,
+    gaps: item.gaps.map((gap) =>
+      gap.gap_id === gapId ? { ...gap, options, correct_option_id: correctOptionId } : gap,
+    ),
+  };
+}
+
 /**
  * Remove the conversion interpretation without losing the teacher's source
  * facit. A spelling the teacher suppressed stays suppressed.

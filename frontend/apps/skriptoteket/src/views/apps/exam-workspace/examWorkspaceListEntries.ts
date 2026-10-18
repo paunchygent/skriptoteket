@@ -66,6 +66,7 @@ const SHORT_PROBLEM: Record<ExamWorkspaceReadinessReason, string> = {
   missing_points: "poäng saknas",
   negative_points: "negativa poäng",
   partial_gap_key: "lucka utan svar",
+  too_few_gap_options: "rullista med färre än två alternativ",
   unbuilt_question: "kunde inte konverteras",
 };
 

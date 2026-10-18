@@ -8,8 +8,8 @@
  *   this mirrors its reasons, including the unbuilt question (an explicit
  *   source fallback or an item missing a picture that the teacher has not
  *   marked reviewed; a converted item that needs review does not block),
- *   dropdown option headings, and choices, gap options or matching entries
- *   without non-whitespace text. Save validity remains separate. Readiness
+ *   dropdown option headings, a dropdown with fewer than two options, and
+ *   choices, gap options or matching entries without non-whitespace text. Save validity remains separate. Readiness
  *   also adds the item states the save refuses:
  *   a partial gap key, an incomplete matching key, invalid points, and
  *   free-text criteria that lack text, carry invalid points, are not the
@@ -130,6 +130,9 @@ export function examWorkspaceItemReadiness(item: NativeExamItem): ExamWorkspaceR
     ))
   ) {
     reasons.push("inline_choice_option_heading");
+  }
+  if (item.kind === "inline_choice" && item.gaps.some((gap) => gap.options.length < 2)) {
+    reasons.push("too_few_gap_options");
   }
   if (hasEmptyCriterionText(item)) {
     reasons.push("empty_criterion_text");

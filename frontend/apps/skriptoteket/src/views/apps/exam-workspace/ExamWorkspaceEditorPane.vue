@@ -124,6 +124,7 @@ const { structure, assetUrls } = props.editing;
         @update-correct-choices="editing.updateItemCorrectChoices"
         @update-criteria="editing.updateItemCriteria"
         @update-gap-values="editing.updateItemGapValues"
+        @update-gap-options="editing.updateItemGapOptions"
         @update-match-entry-body="editing.updateItemMatchEntryBody"
         @update-match-pairs="editing.updateItemMatchPairs"
         @update-paragraph-segments="editing.updateItemParagraphSegments"

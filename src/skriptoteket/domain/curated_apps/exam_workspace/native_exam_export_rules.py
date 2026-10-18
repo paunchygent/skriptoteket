@@ -54,6 +54,7 @@ class NativeExportBlocker(BaseModel):
         "empty_choice",
         "empty_gap_option",
         "empty_match_entry",
+        "too_few_gap_options",
     ]
 
 
@@ -102,6 +103,10 @@ def native_export_blockers(document: NativeExamDocument) -> tuple[NativeExportBl
             blockers.append(
                 NativeExportBlocker(item_id=item.item_id, reason="inline_choice_option_heading")
             )
+        if item.kind is NativeExamItemKind.INLINE_CHOICE and any(
+            len(gap.options) < 2 for gap in item.gaps
+        ):
+            blockers.append(NativeExportBlocker(item_id=item.item_id, reason="too_few_gap_options"))
         if item.points is None:
             blockers.append(NativeExportBlocker(item_id=item.item_id, reason="missing_points"))
     return tuple(blockers)
