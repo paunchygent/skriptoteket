@@ -43,10 +43,7 @@ def _item_without(aligned: AlignedItem, anchor: str) -> AlignedItem | None:
     ]
     if not kept:
         return None
-    body = tuple(paragraph for paragraph, _ in kept)
-    return AlignedItem(
-        aligned.item.model_copy(update={"body": body}), tuple(chunk for _, chunk in kept)
-    )
+    return aligned.with_body(kept)
 
 
 def release_governing_chunks(

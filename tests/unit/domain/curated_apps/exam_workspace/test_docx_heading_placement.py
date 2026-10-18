@@ -78,7 +78,7 @@ def _item(text: str) -> NativeExamItem:
 
 def _aligned(item: NativeExamItem, *chunks: str | None) -> AlignedItem:
     """The item with the source chunk each body paragraph shows."""
-    return AlignedItem(item, chunks)
+    return AlignedItem(item, chunks, frozenset())
 
 
 def _place(

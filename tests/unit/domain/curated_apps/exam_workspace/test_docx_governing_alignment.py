@@ -74,7 +74,7 @@ def _aligned(*paragraphs: tuple[str, str | None]) -> AlignedItem:
         ),
         source_anchor=_GOVERNING,
     )
-    return AlignedItem(item, tuple(anchor for _, anchor in paragraphs))
+    return AlignedItem(item, tuple(anchor for _, anchor in paragraphs), frozenset())
 
 
 def _released(aligned: AlignedItem) -> ReleasedChunks:
@@ -192,14 +192,35 @@ def test_a_left_out_chunk_a_reworded_paragraph_is_aligned_to_is_shown() -> None:
     assert left_out_chunks(aligned, (_LEFT_OUT,)) == ()
 
 
-def test_a_left_out_chunk_printed_only_as_a_choice_is_marked() -> None:
-    # Choices carry no chunk alignment, so their wording is no evidence the item shows it.
-    aligned = _aligned((_QUESTION, _STEM))
+def _with_choice(aligned: AlignedItem, entries: frozenset[str]) -> AlignedItem:
     item = aligned.item.model_copy(
         update={
             "kind": NativeExamItemKind.SINGLE_CHOICE,
             "choices": (NativeChoice(choice_id="choice_001", body=_body("Motivera ditt svar.")),),
         }
     )
+    return AlignedItem(item, aligned.chunks, entries)
 
-    assert left_out_chunks(AlignedItem(item, aligned.chunks), (_LEFT_OUT,)) == (_LEFT_OUT,)
+
+def test_a_left_out_chunk_a_choice_repeats_without_alignment_is_marked() -> None:
+    # The choice copies the chunk's wording, but no entry is aligned to the chunk.
+    aligned = _with_choice(_aligned((_QUESTION, _STEM)), frozenset())
+
+    assert left_out_chunks(aligned, (_LEFT_OUT,)) == (_LEFT_OUT,)
+
+
+def test_a_left_out_chunk_a_choice_is_aligned_to_is_shown() -> None:
+    aligned = _with_choice(_aligned((_QUESTION, _STEM)), frozenset({_LEFT_OUT.anchor}))
+
+    assert left_out_chunks(aligned, (_LEFT_OUT,)) == ()
+
+
+def test_a_left_out_source_answer_line_is_the_key_not_left_out_text() -> None:
+    facit = DocxChunk("body:0005", "paragraph", "b) Rätt svar: 1869", "b) Rätt svar: 1869")
+    answer_in_stem = DocxChunk(
+        "body:0006", "paragraph", "Skriv ditt svar: ett årtal", "Skriv ditt svar: ett årtal"
+    )
+
+    aligned = _aligned((_QUESTION, _STEM))
+
+    assert left_out_chunks(aligned, (facit, answer_in_stem)) == (answer_in_stem,)

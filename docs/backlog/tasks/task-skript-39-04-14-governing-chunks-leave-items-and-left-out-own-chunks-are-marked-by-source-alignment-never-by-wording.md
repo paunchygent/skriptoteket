@@ -40,9 +40,10 @@ This task applies the 39-04-13 rule to both:
 - A body paragraph aligned to a governing chunk the item lists is that chunk:
   the paragraph leaves the body with its alignment entry. Paragraphs aligned to
   any other chunk, or to none, stay unchanged, whatever their wording.
-- An item shows a left-out own chunk if and only if a body paragraph is aligned
-  to it (`AlignedItem.shows`). Any other left-out chunk goes under the check
-  mark that shows it as printed (D41).
+- An item shows a left-out own chunk if and only if a body paragraph, choice or
+  matching entry is aligned to it (`AlignedItem.shows`, `AlignedItem.entry_chunks`).
+  A source answer or facit line is the item's key, never left-out text. Any
+  other left-out chunk goes under the check mark that shows it as printed (D41).
 
 The wording code is deleted with no fallback.
 
@@ -73,7 +74,9 @@ data is produced. Removal is one pass over the body per governing anchor.
   body is aligned to the governing chunk keeps it and reports it; a left-out
   own chunk whose wording the reply repeats in an unaligned or other-chunk
   paragraph is marked; a left-out own chunk a body paragraph is aligned to is
-  not marked.
+  not marked; a choice aligned to a left-out chunk shows it, a choice that only
+  repeats its wording does not; a source answer line is held unmarked while a
+  stem line that mentions "svar:" is not.
 - The ten recorded replays (eight `docx_key_provenance_v14` corpus exams and
   the two `docx_user_exams`) produce identical documents and events, or each
   difference is shown to be a fix.
@@ -88,13 +91,15 @@ data is produced. Removal is one pass over the body per governing anchor.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term                                                                                                                                                                                                                                                                                          |
-| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| D1  | A body paragraph whose alignment entry is a governing chunk the item lists leaves the item's body together with that entry; no other paragraph changes.                                                                                                                                                        |
-| D2  | When that removal would leave the body empty, the item keeps its body and `governing_text_kept` names the chunk; the parent still shows the chunk. This is the only case of the event. An item that lists no own chunk is dropped as before.                                                                   |
-| D3  | A listed governing chunk no body paragraph is aligned to changes nothing in the item and reports nothing; wording in an unaligned or other-chunk paragraph stays.                                                                                                                                              |
-| D4  | An item shows a left-out own chunk if and only if a body paragraph is aligned to it; every other left-out chunk is marked (D41), in admission and in the return of misplaced own instructions alike.                                                                                                           |
-| D5  | Choice, matching-entry, gap-value and criterion text no longer counts as showing a left-out own chunk: none carries chunk alignment, and wording is not evidence. A drawing chunk counts as shown when a body paragraph is aligned to it (its picture), not unconditionally left out.                          |
-| D6  | `_item_without`, `_paragraph_without`, `_removed`, `_without_lines`, `_without_edge`, `_squash`, `_words`, `wording_left_out` and its token helpers are deleted; the marking-guide test that asserted criterion wording counts as shown is deleted with them. No wording comparison or fallback replaces them. |
-| D7  | Replay identity is the regression bar: any difference in the ten recorded replays is classified as a proven fix or stops the task.                                                                                                                                                                             |
-| D8  | Owning story is ST-SKRIPT-39-04; the task builds on TASK-SKRIPT-39-04-13 at `cb3863f7d`.                                                                                                                                                                                                                       |
+| ID  | Decided contract term                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | A body paragraph whose alignment entry is a governing chunk the item lists leaves the item's body together with that entry; no other paragraph changes.                                                                                                                                                                                                                                                                                      |
+| D2  | When that removal would leave the body empty, the item keeps its body and `governing_text_kept` names the chunk; the parent still shows the chunk. This is the only case of the event. An item that lists no own chunk is dropped as before.                                                                                                                                                                                                 |
+| D3  | A listed governing chunk no body paragraph is aligned to changes nothing in the item and reports nothing; wording in an unaligned or other-chunk paragraph stays.                                                                                                                                                                                                                                                                            |
+| D4  | An item shows a left-out own chunk if and only if a body paragraph is aligned to it (`AlignedItem.shows`) or one of its choices or matching entries is (`AlignedItem.entry_chunks`, the chunk at the start of each aligned entry span from the entry ownership); every other left-out chunk is marked (D41), in admission and in the return of misplaced own instructions alike. Body edits keep the entry chunks (`AlignedItem.with_body`). |
+| D5  | Gap-value and criterion text never counts as showing a left-out own chunk: neither carries chunk alignment, and wording is not evidence. A drawing chunk counts as shown when a body paragraph is aligned to it (its picture), not unconditionally left out.                                                                                                                                                                                 |
+| D6  | A left-out own chunk whose every line is a source answer or facit line (`docx_source_rules.answer_line`: an optional number, letter or bullet, then `Svar:`, `Rätt svar:`, `Facit:`, `Svarsexempel:`, `Correct answer:`, `Answer key:` and the like) is the item's key and is held unmarked. This classifies the source line, like `points_line`; it compares no reply wording with the source.                                              |
+| D7  | Detection is per chunk: a reply paragraph aligned to a chunk shows that chunk even when the reply shortens it, so a dropped sentence inside an aligned paragraph is no longer marked; a table or stem chunk whose words another paragraph repeats is marked. The admission tests that asserted the old token reading are rewritten to these rules.                                                                                           |
+| D8  | `_item_without`, `_paragraph_without`, `_removed`, `_without_lines`, `_without_edge`, `_squash`, `_words`, `wording_left_out` and its token helpers are deleted; the marking-guide test that asserted criterion wording counts as shown is deleted with them. No wording comparison or fallback replaces them.                                                                                                                               |
+| D9  | Replay identity is the regression bar: any difference in the ten recorded replays is classified as a proven fix or stops the task.                                                                                                                                                                                                                                                                                                           |
+| D10 | Owning story is ST-SKRIPT-39-04; the task builds on TASK-SKRIPT-39-04-13 at `cb3863f7d`.                                                                                                                                                                                                                                                                                                                                                     |

@@ -228,6 +228,26 @@ def points_line(text: str) -> bool:
     return rest != text and len(_WORD.findall(rest)) < 3
 
 
+# A line's own number, letter or bullet, such as "3.", "b)", "Fråga 3:" or "- ".
+_NUMBERING = re.compile(
+    r"^\s*(?:(?:fråga|uppgift|question|task)\s+\d+[a-z]?\s*[.):]?|\d+[a-z]?\s*[.):]|[a-z]\s*[.)]"
+    r"|[-–—•*](?=\s))\s*",
+    re.IGNORECASE,
+)
+_ANSWER_LINE = re.compile(
+    r"^\s*\(?\s*(?:(?:correct|right|rätt|korrekt)\s+)?"
+    r"(?:svar|svarsexempel|facit|answers?(?:\s+key)?|key)\s*:",
+    re.IGNORECASE,
+)
+
+
+def answer_line(text: str) -> bool:
+    """A source chunk whose every line prints an answer or facit, such as "Svar: …" or
+    "b) Correct answer: …"."""
+    lines = [line for line in text.splitlines() if line.strip()]
+    return bool(lines) and all(_ANSWER_LINE.match(_NUMBERING.sub("", line)) for line in lines)
+
+
 def defined_terms(text: str) -> tuple[str, ...]:
     """The terms an instruction defines: each "short = term" pair, or a list after a colon."""
     terms = [
