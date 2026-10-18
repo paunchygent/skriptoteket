@@ -21,6 +21,7 @@ type ChatDrawerProps = {
   clearDraftToken?: number;
   disabledMessage: string | null;
   error: string | null;
+  aiBlockedNote?: string | null;
   noticeMessage?: string | null;
   noticeVariant?: Extract<SystemMessageTone, "info" | "warning">;
   remoteFallbackPrompt?: RemoteFallbackPrompt | null;
@@ -32,6 +33,7 @@ const props = withDefaults(defineProps<ChatDrawerProps>(), {
   editOpsError: null,
   editOpsDisabledMessage: null,
   clearDraftToken: 0,
+  aiBlockedNote: null,
   noticeMessage: null,
   noticeVariant: "info",
   remoteFallbackPrompt: null,
@@ -241,6 +243,7 @@ const assistantActivity = computed(() => {
               :can-clear="props.messages.length > 0"
               :edit-ops-is-slow="props.editOpsIsSlow"
               :clear-draft-token="props.clearDraftToken"
+              :ai-blocked-note="props.aiBlockedNote"
               @send="emit('send', $event)"
               @clear="emit('clear')"
               @cancel="emit('cancel')"

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "fa82615273d54ef5a8f92874940eb187fc3eadd8a300203c8a5f6136c4aa01e8",
+  "source_set_digest": "43f056f7a5a24726884c080b539fff87ecdd34379681c9ad34ba3315428efb54",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -7650,7 +7650,7 @@
       "type": "task",
       "title": "Paid AI routes are limited to admins until the AI spend cap and rate limits ship",
       "path": "docs/backlog/tasks/task-skript-rep-0044-paid-ai-routes-are-limited-to-admins-until-the-ai-spend-cap-and-rate-limits-ship.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "repository",
       "owners": [
         {
@@ -7660,7 +7660,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-18",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Independent ruthless-reviewer a262cc37 review changes_requested (F1 high, F2-F6 medium; root 01a14efe evidence/reviews/a262cc37-8bf9-4eb6-9137-4793d6507e86.md); F2-F6 repaired and admitted on focused proof; F1 re-review approved at 39e15eac (same dir, -rereview.md), ItemTypeLabelerProtocol accepted as a paid root; unit 6415 passed, Vitest and fe-build ok on Hemma; merged into main."
       }
     },
     {

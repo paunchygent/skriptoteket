@@ -34,7 +34,7 @@ from skriptoteket.web.api.v1.apps_conversion_hub_access import (
     APP_ID,
     require_conversion_hub_access,
 )
-from skriptoteket.web.auth.huleedu_app_projection import require_app_user_api
+from skriptoteket.web.auth.huleedu_app_projection import require_app_ai_api, require_app_user_api
 from skriptoteket.web.dishka_dependencies import FromDishka
 
 router = APIRouter(prefix=f"/api/v1/apps/{APP_ID}", tags=["apps"])
@@ -49,7 +49,7 @@ async def request_exam_workspace_answer_key_suggestions(
     request: RequestExamWorkspaceAnswerKeySuggestionsRequest,
     registry: FromDishka[CuratedAppRegistryProtocol],
     handler: FromDishka[RequestExamWorkspaceAnswerKeySuggestionsHandlerProtocol],
-    user: User = Depends(require_app_user_api),
+    user: User = Depends(require_app_ai_api),
 ) -> ExamWorkspaceAnswerKeySuggestionsResponse:
     """Start one suggestion job on the editor-sent document content."""
 

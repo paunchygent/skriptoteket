@@ -34,6 +34,7 @@ import type {
   ExamWorkspaceAnswerKeySuggestionsStatus,
   NativeExamDocument,
 } from "../../../api/examWorkspace";
+import { useAiAccess } from "../../../composables/useAiAccess";
 import { useToast } from "../../../composables/useToast";
 import type { ExamWorkspaceOpening } from "./useExamWorkspaceDocument";
 
@@ -66,6 +67,8 @@ type Job = { opening: ExamWorkspaceOpening; status: ExamWorkspaceAnswerKeySugges
 
 export function useExamWorkspaceEnrichment(binding: ExamWorkspaceEnrichmentBinding) {
   const toast = useToast();
+  // The paid answer-key request is admin-only until the spend cap ships (TASK-SKRIPT-REP-0044 L3).
+  const { canUseAi } = useAiAccess();
 
   const job = shallowRef<Job | null>(null);
   const requestingIn = shallowRef<ExamWorkspaceOpening | null>(null);
@@ -188,7 +191,13 @@ export function useExamWorkspaceEnrichment(binding: ExamWorkspaceEnrichmentBindi
   async function requestSuggestions(itemId?: string): Promise<void> {
     const opening = binding.openExam.value;
     const currentDocument = binding.document.value;
-    if (!opening || !currentDocument || isRequesting.value || isEnrichmentPending.value) {
+    if (
+      !canUseAi.value ||
+      !opening ||
+      !currentDocument ||
+      isRequesting.value ||
+      isEnrichmentPending.value
+    ) {
       return;
     }
     requestingIn.value = opening;
