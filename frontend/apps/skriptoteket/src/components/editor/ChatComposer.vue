@@ -10,6 +10,7 @@ type ChatComposerProps = {
   canClear?: boolean;
   editOpsIsSlow?: boolean;
   clearDraftToken?: number;
+  aiBlockedNote?: string | null;
 };
 
 const props = withDefaults(defineProps<ChatComposerProps>(), {
@@ -17,6 +18,7 @@ const props = withDefaults(defineProps<ChatComposerProps>(), {
   canClear: false,
   editOpsIsSlow: false,
   clearDraftToken: 0,
+  aiBlockedNote: null,
 });
 
 const emit = defineEmits<{
@@ -37,7 +39,11 @@ const draft = ref("");
 const textarea = ref<HTMLTextAreaElement | null>(null);
 
 const canSubmit = computed(
-  () => !props.isStreaming && !props.isEditOpsLoading && draft.value.trim().length > 0,
+  () =>
+    !props.isStreaming &&
+    !props.isEditOpsLoading &&
+    !props.aiBlockedNote &&
+    draft.value.trim().length > 0,
 );
 
 const primaryActionLabel = computed(() => (mode.value === "chat" ? "Skicka" : "Föreslå ändringar"));
@@ -70,6 +76,9 @@ function resizeDraftTextarea(): void {
 }
 
 function handleSend(): void {
+  if (props.aiBlockedNote) {
+    return;
+  }
   const message = draft.value.trim();
   if (!message || props.isStreaming || props.isEditOpsLoading) {
     return;
@@ -79,6 +88,9 @@ function handleSend(): void {
 }
 
 function handleRequestEditOps(): void {
+  if (props.aiBlockedNote) {
+    return;
+  }
   const message = draft.value.trim();
   if (!message || props.isStreaming || props.isEditOpsLoading) {
     return;
@@ -87,6 +99,9 @@ function handleRequestEditOps(): void {
 }
 
 function handleSubmit(): void {
+  if (props.aiBlockedNote) {
+    return;
+  }
   if (mode.value === "chat") {
     handleSend();
     return;
@@ -134,7 +149,7 @@ watch(
         aria-label="Meddelande till kodassistenten"
         class="w-full resize-none border border-navy/30 bg-panel px-3 py-2 pr-10 text-sm text-navy shadow-none"
         :placeholder="mode === 'chat' ? 'Fråga mig vad du vill' : 'Beskriv vad du vill ändra...'"
-        :disabled="props.isStreaming"
+        :disabled="props.isStreaming || Boolean(props.aiBlockedNote)"
         @keydown="handleKeydown"
       />
 
@@ -178,6 +193,13 @@ watch(
         />
       </div>
     </div>
+
+    <p
+      v-if="props.aiBlockedNote"
+      class="text-[10px] text-navy/60"
+    >
+      {{ props.aiBlockedNote }}
+    </p>
 
     <div class="text-[10px] text-navy/60">
       <template v-if="props.isStreaming">

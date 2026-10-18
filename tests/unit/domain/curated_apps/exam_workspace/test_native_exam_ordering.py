@@ -133,6 +133,7 @@ def test_an_ordering_item_inside_a_parent_is_refused() -> None:
     payload["parents"] = [
         {
             "parent_id": "parent_001",
+            "place": 0,
             "instruction": [
                 {"heading_level": None, "segments": [{"kind": "text", "text": "Läs.", "marks": []}]}
             ],

@@ -21,6 +21,7 @@ import { computed, ref } from "vue";
 
 import type { ExamListOrdering, ExamWorkspaceDocumentSummary } from "../../../api/examWorkspace";
 import { UiGlyph } from "../../../components/ui";
+import { AI_ADMIN_ONLY_NOTE, useAiAccess } from "../../../composables/useAiAccess";
 import ExamCourseCombobox from "./ExamCourseCombobox.vue";
 import { examWorkspaceOpenGroups } from "./examWorkspaceOpenGroups";
 import { examWorkspaceDocumentLabel, examWorkspaceSavedAtLabel } from "./examWorkspaceRows";
@@ -56,6 +57,8 @@ const emit = defineEmits<{
 
 const store = useInjectedExamWorkspaceStore();
 const { courses, courseByKey, registeredCourseKeys, error: courseCatalogError } = useExamCourseCatalog(store.shared);
+const { canUseAi } = useAiAccess();
+const aiAdminOnlyNote = AI_ADMIN_ONLY_NOTE;
 const courseKey = ref<string | null>(null);
 const dragOver = ref(false);
 const fileInput = ref<HTMLInputElement | null>(null);
@@ -178,12 +181,18 @@ function openEntry(entry: ExamWorkspaceDocumentSummary): void {
         class="drop__glyph"
       />
       <b class="drop__title">Provfil</b>
-      <span class="drop__formats"><span class="xw-chip">Word .docx</span><span class="xw-chip">DigiExam .dxe</span></span>
+      <span class="drop__formats">
+        <span
+          v-if="canUseAi"
+          class="xw-chip"
+        >Word .docx</span>
+        <span class="xw-chip">DigiExam .dxe</span>
+      </span>
       <input
         ref="fileInput"
         class="drop__input"
         type="file"
-        accept=".docx,.dxe"
+        :accept="canUseAi ? '.docx,.dxe' : '.dxe'"
         :disabled="importBlocked"
         tabindex="-1"
         aria-hidden="true"
@@ -203,6 +212,10 @@ function openEntry(entry: ExamWorkspaceDocumentSummary): void {
         />Välj provfil
       </button>
       <small>eller dra hit filen</small>
+      <small
+        v-if="!canUseAi"
+        class="xw-muted"
+      >{{ aiAdminOnlyNote }}</small>
     </div>
     <p
       v-if="sourceFileError"

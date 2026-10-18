@@ -21,12 +21,7 @@
 import { inject, type InjectionKey } from "vue";
 
 import {
-  addExamWorkspaceChild,
-  changeExamWorkspaceItemType,
   copyExamWorkspaceDocument,
-  createExamWorkspaceParent,
-  deleteExamWorkspaceChild,
-  deleteExamWorkspaceParent,
   downloadExamWorkspaceExport,
   examWorkspaceAssetUrl,
   findExamWorkspaceAnswerKeySuggestions,
@@ -42,7 +37,6 @@ import {
   importExamWorkspaceDigiExam,
   importExamWorkspaceDocument,
   listExamWorkspaceDocuments,
-  reorderExamWorkspaceChildren,
   requestExamWorkspaceAnswerKeySuggestions,
   requestExamWorkspaceAnswerMisspellings,
   requestExamWorkspaceContentSuggestions,
@@ -52,6 +46,17 @@ import {
   storeExamWorkspaceUndoStep,
   updateExamListOrdering,
 } from "../../../api/examWorkspace";
+import {
+  addExamWorkspaceChild,
+  changeExamWorkspaceItemType,
+  createEmptyExamWorkspacePart,
+  createExamWorkspaceParent,
+  deleteExamWorkspaceChild,
+  deleteExamWorkspaceParent,
+  groupExamWorkspaceItems,
+  moveExamWorkspaceItem,
+  reorderExamWorkspaceChildren,
+} from "../../../api/examWorkspaceStructureCommands";
 import { renameVaultFile } from "../../../api/vault";
 
 /** What every exam workspace mode can do, guest included. */
@@ -66,6 +71,9 @@ export type ExamWorkspaceSharedStore = {
   deleteExamWorkspaceChild: typeof deleteExamWorkspaceChild;
   reorderExamWorkspaceChildren: typeof reorderExamWorkspaceChildren;
   deleteExamWorkspaceParent: typeof deleteExamWorkspaceParent;
+  groupExamWorkspaceItems: typeof groupExamWorkspaceItems;
+  createEmptyExamWorkspacePart: typeof createEmptyExamWorkspacePart;
+  moveExamWorkspaceItem: typeof moveExamWorkspaceItem;
   changeExamWorkspaceItemType: typeof changeExamWorkspaceItemType;
   downloadExamWorkspaceExport: typeof downloadExamWorkspaceExport;
   getExamWorkspaceExportChecklist: typeof getExamWorkspaceExportChecklist;
@@ -111,6 +119,9 @@ export const serverExamWorkspaceStore: ExamWorkspaceStore = {
     deleteExamWorkspaceChild: (...args) => deleteExamWorkspaceChild(...args),
     reorderExamWorkspaceChildren: (...args) => reorderExamWorkspaceChildren(...args),
     deleteExamWorkspaceParent: (...args) => deleteExamWorkspaceParent(...args),
+    groupExamWorkspaceItems: (...args) => groupExamWorkspaceItems(...args),
+    createEmptyExamWorkspacePart: (...args) => createEmptyExamWorkspacePart(...args),
+    moveExamWorkspaceItem: (...args) => moveExamWorkspaceItem(...args),
     changeExamWorkspaceItemType: (...args) => changeExamWorkspaceItemType(...args),
     downloadExamWorkspaceExport: (...args) => downloadExamWorkspaceExport(...args),
     getExamWorkspaceExportChecklist: (...args) => getExamWorkspaceExportChecklist(...args),

@@ -84,8 +84,8 @@
   In progress on Hemma 2026-10-18 (orchestrator tmux skript-orchestrator): 40-04-07 lead e492bfbb and
   39-06-10 lead 146bc2d8, both from a0a81ab5a; 39-06-10 ruling: a question moved out lands after its part.
   40-04-07 ruling (user 2026-10-18): print PDF renders the DOCX house template; Exam.net import PDF stays a fallback only; QTI is the Exam.net route (W1/W11, lead amends the task doc).
-  39-06-10 delivered at 92ff33e2, Sol review running; merge after 40-04-07 (v8 bump, openapi regen).
-  Hemma lanes 2026-10-18: REP-0044 paid AI admin-only gate (lead 20270b35); REP-0045 docx_background labeler recordings (pre-existing failure on main).
+  39-06-10 `done` 2026-10-18, merged (schema v7); 40-04-07 (repair lead 715cef23) merges second: ports _print_walk to document_outline, bumps to v8; then re-import the staging fixture and walk both.
+  Hemma lanes 2026-10-18: REP-0044 `done` 2026-10-18, merged (paid AI admin-only until EPIC-41 ships); REP-0045 `done` 2026-10-18, merged (label_b recordings carry capture-time request keys; 14 calls re-recorded).
   39-04 follow-ups on Hemma from 6e3453b2e: 39-04-16 gap paragraphs from source (lead ec3b7ed9); 39-04-15 re-scoped by user to fix the q8 stem drop at its root (lead bb15ad98, merges after 39-04-16).
   EPIC-SKRIPT-41 ready 2026-10-18: ST-41-02 guest workspace + QTI import + guest DXE line removal (Hemma, parallel); ST-41-01 paid AI through the HuleEdu LLM provider door (TASK-HULE-14-03-01 in huleedu first, then 41-01-03, 41-01-02, 41-01-04 capacity for 1,000 concurrent calls).
   Hemma Opus lead `3b164d53`: 40-03-01..09 and 08-36-02 `done`; 40-02-01 tranche 1 on

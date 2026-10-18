@@ -162,7 +162,7 @@ async def test_inline_completion_success(
     handler: AsyncMock,
     now: datetime,
 ) -> None:
-    seed_huleedu_projection(users=users, profiles=profiles, role=Role.CONTRIBUTOR, now=now)
+    seed_huleedu_projection(users=users, profiles=profiles, role=Role.ADMIN, now=now)
     handler.handle.return_value = InlineCompletionResult(completion="pass\n", enabled=True)
 
     response = await client.post(
@@ -187,7 +187,7 @@ async def test_inline_completion_includes_replace_suffix_chars(
     handler: AsyncMock,
     now: datetime,
 ) -> None:
-    seed_huleedu_projection(users=users, profiles=profiles, role=Role.CONTRIBUTOR, now=now)
+    seed_huleedu_projection(users=users, profiles=profiles, role=Role.ADMIN, now=now)
     handler.handle.return_value = InlineCompletionResult(
         completion="rn",
         enabled=True,
@@ -217,7 +217,7 @@ async def test_inline_completion_passes_ai_settings_to_handler(
     seed_huleedu_projection(
         users=users,
         profiles=profiles,
-        role=Role.CONTRIBUTOR,
+        role=Role.ADMIN,
         now=now,
         allow_remote_fallback=True,
         inline_completion_provider="external",
@@ -251,7 +251,7 @@ async def test_inline_completion_includes_notice_fields_when_present(
     handler: AsyncMock,
     now: datetime,
 ) -> None:
-    seed_huleedu_projection(users=users, profiles=profiles, role=Role.CONTRIBUTOR, now=now)
+    seed_huleedu_projection(users=users, profiles=profiles, role=Role.ADMIN, now=now)
     handler.handle.return_value = InlineCompletionResult(
         completion="",
         enabled=True,
@@ -277,28 +277,55 @@ async def test_inline_completion_includes_notice_fields_when_present(
 
 
 @pytest.mark.asyncio
-async def test_inline_completion_eval_headers_require_admin(
+@pytest.mark.parametrize("role", [Role.USER, Role.CONTRIBUTOR])
+async def test_inline_completion_ai_gate_rejects_non_admin_roles(
     client: httpx.AsyncClient,
     private_key: rsa.RSAPrivateKey,
     clock: ClockStub,
     users: UserRepositoryStub,
     profiles: ProfileRepositoryStub,
+    handler: AsyncMock,
+    role: Role,
     now: datetime,
 ) -> None:
-    seed_huleedu_projection(users=users, profiles=profiles, role=Role.CONTRIBUTOR, now=now)
+    seed_huleedu_projection(users=users, profiles=profiles, role=role, now=now)
 
-    headers = signed_huleedu_headers(private_key=private_key, clock=clock)
-    headers["X-Skriptoteket-Eval"] = "1"
     response = await client.post(
         "/api/v1/editor/completions",
-        headers=headers,
+        headers=signed_huleedu_headers(private_key=private_key, clock=clock),
         json={"prefix": "def x():\n    ", "suffix": ""},
     )
 
     assert response.status_code == 403
     details = response.json()["error"]["details"]
     assert set(details["required_roles"]) == {"admin", "superuser"}
-    assert details["actual_role"] == "contributor"
+    assert details["actual_role"] == role.value
+    handler.handle.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("role", [Role.ADMIN, Role.SUPERUSER])
+async def test_inline_completion_ai_gate_admits_admin_roles(
+    client: httpx.AsyncClient,
+    private_key: rsa.RSAPrivateKey,
+    clock: ClockStub,
+    users: UserRepositoryStub,
+    profiles: ProfileRepositoryStub,
+    handler: AsyncMock,
+    role: Role,
+    now: datetime,
+) -> None:
+    seed_huleedu_projection(users=users, profiles=profiles, role=role, now=now)
+    handler.handle.return_value = InlineCompletionResult(completion="pass\n", enabled=True)
+
+    response = await client.post(
+        "/api/v1/editor/completions",
+        headers=signed_huleedu_headers(private_key=private_key, clock=clock),
+        json={"prefix": "def x():\n    ", "suffix": ""},
+    )
+
+    assert response.status_code == 200
+    handler.handle.assert_awaited_once()
 
 
 @pytest.mark.asyncio

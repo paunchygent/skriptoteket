@@ -96,6 +96,7 @@ export function buildRecordedParent(): NativeExamParent {
     instruction: buildRecordedParentInstruction(),
     item_ids: Array.from({ length: CHILD_COUNT }, (_, index) => itemId(index + 1)),
     parent_id: "parent_001",
+    place: 0,
   };
 }
 
@@ -117,7 +118,7 @@ export function buildParentDocument(): NativeExamDocument {
     parents: [buildRecordedParent()],
     revision: 1,
     header: { tags: [] },
-    schema_version: "native_exam_document_v6",
+    schema_version: "native_exam_document_v7",
     title: "English 1",
   };
 }

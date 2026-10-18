@@ -16,13 +16,15 @@ describe("conversion merge header metadata", () => {
     const base = baseDocument();
     const first = base.parents[0]!;
     base.parents = [
-      { ...first, item_ids: ["item_001", "item_002"], printed_total: null },
-      { ...first, parent_id: "parent_002", item_ids: ["item_003", "item_004"], printed_total: null },
+      { ...first, item_ids: ["item_001", "item_002"], place: 0, printed_total: null },
+      { ...first, parent_id: "parent_002", item_ids: ["item_003", "item_004"], place: 2, printed_total: null },
     ];
     const head = {
       ...base,
       revision: 2,
       header: { course_hint: "Svenska 2", printed_total: 36, tags: [] },
+      // Deliberately not in document order: the merge pairs each total with its
+      // own part and puts the parts back into order by place.
       parents: [
         { ...base.parents[1]!, printed_total: 15 },
         { ...base.parents[0]!, printed_total: 21 },
@@ -33,10 +35,12 @@ describe("conversion merge header metadata", () => {
 
     expect(merged.header).toEqual({ course_hint: "Svenska 2", printed_total: 36, tags: [] });
     expect(merged.parents.map((parent) => [parent.parent_id, parent.printed_total])).toEqual([
-      ["parent_002", 15],
       ["parent_001", 21],
+      ["parent_002", 15],
     ]);
-    expect(sameDocument(merged, head)).toBe(true);
+    expect(
+      sameDocument(merged, { ...head, parents: [...head.parents].sort((a, b) => a.place - b.place) }),
+    ).toBe(true);
   });
 
   it("preserves a local header change through a newer head and its re-delivery", () => {

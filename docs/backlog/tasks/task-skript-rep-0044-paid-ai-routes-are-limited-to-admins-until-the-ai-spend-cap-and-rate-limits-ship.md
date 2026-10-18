@@ -8,10 +8,14 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-18'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-18'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: Independent ruthless-reviewer a262cc37 review changes_requested (F1 high, F2-F6 medium; root 01a14efe evidence/reviews/a262cc37-8bf9-4eb6-9137-4793d6507e86.md); F2-F6 repaired and admitted on focused proof; F1 re-review approved at 39e15eac (same dir, -rereview.md), ItemTypeLabelerProtocol accepted as a paid root; unit 6415 passed, Vitest and fe-build ok on Hemma; merged into main.
 task_kind: repository
 acceptance_criteria:
   - A signed-in user or contributor who calls any route that can start a paid LLM call gets 403 and no LLM call is made and no token lease is drawn

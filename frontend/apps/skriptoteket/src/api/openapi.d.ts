@@ -1642,6 +1642,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/parents/empty": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create Empty Exam Part
+         * @description Insert a part with an empty instruction at the requested position (G9).
+         */
+        post: operations["create_empty_exam_part_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__parents_empty_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/parents/group": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Group Exam Items
+         * @description Create one new part from the marked standalone questions (G10).
+         */
+        post: operations["group_exam_items_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__parents_group_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/parents/move": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Move Exam Item
+         * @description Move one question into a part, out to standalone, or between parts (R3, R4).
+         */
+        post: operations["move_exam_item_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__parents_move_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/parents/{parent_id}": {
         parameters: {
             query?: never;
@@ -4261,6 +4321,22 @@ export interface components {
             /** Usage Instructions */
             usage_instructions?: string | null;
         };
+        /**
+         * CreateEmptyExamPartRequest
+         * @description Insert a part with an empty instruction at a top-level position (G9).
+         */
+        CreateEmptyExamPartRequest: {
+            /**
+             * Expected Cursor
+             * Format: uuid
+             */
+            expected_cursor: string;
+            /**
+             * Position
+             * @description Zero-based index among top-level questions and parts.
+             */
+            position: number;
+        };
         /** CreateExamParentRequest */
         CreateExamParentRequest: {
             child: components["schemas"]["NewParentChild"];
@@ -5342,6 +5418,30 @@ export interface components {
             unit_id: string;
         };
         /**
+         * ExamWorkspaceCreatedPartResponse
+         * @description One undoable part creation; names the new part the UI opens in its editor (G4).
+         */
+        ExamWorkspaceCreatedPartResponse: {
+            conversion: components["schemas"]["ExamWorkspaceConversionStatus"] | null;
+            /** Created Parent Id */
+            created_parent_id: string;
+            document: components["schemas"]["NativeExamDocument-Output"];
+            /** Export Blockers */
+            readonly export_blockers: components["schemas"]["NativeExportBlocker"][];
+            /**
+             * History Cursor
+             * Format: uuid
+             */
+            history_cursor: string;
+            /**
+             * Notes
+             * @default []
+             */
+            notes: string[];
+            saved_document: components["schemas"]["NativeExamDocument-Output"];
+            summary: components["schemas"]["ExamWorkspaceDocumentSummary"];
+        };
+        /**
          * ExamWorkspaceDeleteResponse
          * @description One undoable deletion; names a removed instruction for an inline notice.
          */
@@ -5760,6 +5860,19 @@ export interface components {
             group_id: string;
             /** Student Id */
             student_id: string;
+        };
+        /**
+         * GroupExamItemsRequest
+         * @description Marked standalone questions become one new part (G2, G10).
+         */
+        GroupExamItemsRequest: {
+            /**
+             * Expected Cursor
+             * Format: uuid
+             */
+            expected_cursor: string;
+            /** Item Ids */
+            item_ids: string[];
         };
         /**
          * GroupingExportJobDto
@@ -6374,6 +6487,21 @@ export interface components {
             /** Usage Instructions Seen */
             usage_instructions_seen: boolean;
         };
+        /**
+         * MoveExamItemRequest
+         * @description Move one question into a part, or to None for "Ingen del (fristående)" (G3, R3, R4).
+         */
+        MoveExamItemRequest: {
+            /**
+             * Expected Cursor
+             * Format: uuid
+             */
+            expected_cursor: string;
+            /** Item Id */
+            item_id: string;
+            /** Target Parent Id */
+            target_parent_id: string | null;
+        };
         /** MyRunItem */
         MyRunItem: {
             /** Finished At */
@@ -6633,10 +6761,10 @@ export interface components {
             revision: number;
             /**
              * Schema Version
-             * @default native_exam_document_v6
+             * @default native_exam_document_v7
              * @constant
              */
-            schema_version: "native_exam_document_v6";
+            schema_version: "native_exam_document_v7";
             /** Title */
             title: string;
         };
@@ -6675,10 +6803,10 @@ export interface components {
             revision: number;
             /**
              * Schema Version
-             * @default native_exam_document_v6
+             * @default native_exam_document_v7
              * @constant
              */
-            schema_version: "native_exam_document_v6";
+            schema_version: "native_exam_document_v7";
             /** Title */
             title: string;
         };
@@ -6874,43 +7002,59 @@ export interface components {
         };
         /**
          * NativeExamParent
-         * @description Shared instruction for a run of consecutive child items of any mix of kinds.
+         * @description A part: shared instruction over child items, or an instruction block with none.
          *
          *     A parent owns no points and no answer key: each child item keeps its own kind, points
          *     and answer key, as an Exam.net information block holds questions of any type (D27).
-         *     ``printed_total`` is the part total the source prints over these children; it is
-         *     compared with their points and never shown as instruction text (TASK-SKRIPT-39-05-14).
-         *     Its instruction is one body of positioned paragraphs: the shared wording with every
-         *     shared picture at its exact source place (F2), never a gap the student fills.
+         *     ``place`` is the part's own stored place in the document order: the number of questions
+         *     that come before it (G5, R1). ``item_ids`` may be empty, so a part with no questions is
+         *     an instruction block that keeps its position. ``printed_total`` is the part total the
+         *     source prints over these children; it is compared with their points and never shown as
+         *     instruction text (TASK-SKRIPT-39-05-14). Its instruction is one body of positioned
+         *     paragraphs: the shared wording with every shared picture at its exact source place (F2),
+         *     never a gap the student fills.
          */
         "NativeExamParent-Input": {
             /** Instruction */
             instruction: components["schemas"]["NativeParagraph"][];
-            /** Item Ids */
+            /**
+             * Item Ids
+             * @default []
+             */
             item_ids: string[];
             /** Parent Id */
             parent_id: string;
+            /** Place */
+            place: number;
             /** Printed Total */
             printed_total?: (number) | null;
         };
         /**
          * NativeExamParent
-         * @description Shared instruction for a run of consecutive child items of any mix of kinds.
+         * @description A part: shared instruction over child items, or an instruction block with none.
          *
          *     A parent owns no points and no answer key: each child item keeps its own kind, points
          *     and answer key, as an Exam.net information block holds questions of any type (D27).
-         *     ``printed_total`` is the part total the source prints over these children; it is
-         *     compared with their points and never shown as instruction text (TASK-SKRIPT-39-05-14).
-         *     Its instruction is one body of positioned paragraphs: the shared wording with every
-         *     shared picture at its exact source place (F2), never a gap the student fills.
+         *     ``place`` is the part's own stored place in the document order: the number of questions
+         *     that come before it (G5, R1). ``item_ids`` may be empty, so a part with no questions is
+         *     an instruction block that keeps its position. ``printed_total`` is the part total the
+         *     source prints over these children; it is compared with their points and never shown as
+         *     instruction text (TASK-SKRIPT-39-05-14). Its instruction is one body of positioned
+         *     paragraphs: the shared wording with every shared picture at its exact source place (F2),
+         *     never a gap the student fills.
          */
         "NativeExamParent-Output": {
             /** Instruction */
             instruction: components["schemas"]["NativeParagraph"][];
-            /** Item Ids */
+            /**
+             * Item Ids
+             * @default []
+             */
             item_ids: string[];
             /** Parent Id */
             parent_id: string;
+            /** Place */
+            place: number;
             /** Printed Total */
             printed_total?: (number) | null;
         };
@@ -13661,6 +13805,111 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["CreateExamParentRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamWorkspaceDocumentResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_empty_exam_part_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__parents_empty_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lineage_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateEmptyExamPartRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamWorkspaceCreatedPartResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    group_exam_items_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__parents_group_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lineage_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GroupExamItemsRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamWorkspaceCreatedPartResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    move_exam_item_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__parents_move_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lineage_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MoveExamItemRequest"];
             };
         };
         responses: {

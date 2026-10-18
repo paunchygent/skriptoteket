@@ -27,6 +27,7 @@ import type {
   NativeExamDocument,
   NativeExamItemKind,
 } from "../../../api/examWorkspace";
+import { useAiAccess } from "../../../composables/useAiAccess";
 import { useToast } from "../../../composables/useToast";
 import { sameValue } from "./examWorkspaceConversionMerge";
 import type { ExamWorkspaceTeacherServices } from "./examWorkspaceStore";
@@ -53,6 +54,8 @@ export type ExamWorkspaceItemRetryBinding = {
 
 export function useExamWorkspaceItemRetry(binding: ExamWorkspaceItemRetryBinding) {
   const toast = useToast();
+  // The paid reconversion is admin-only until the spend cap ships (TASK-SKRIPT-REP-0044 L3).
+  const { canUseAi } = useAiAccess();
 
   /**
    * The opening, lineage and saved revision a retry request was sent for are
@@ -77,7 +80,7 @@ export function useExamWorkspaceItemRetry(binding: ExamWorkspaceItemRetryBinding
     const currentSummary = binding.summary.value;
     const opening = binding.openExam.value;
     const teacher = binding.teacher;
-    if (!current || !currentSummary || !opening || !teacher || binding.isBusy()) {
+    if (!canUseAi.value || !current || !currentSummary || !opening || !teacher || binding.isBusy()) {
       return;
     }
     const target = current.items.find((item) => item.item_id === itemId) ?? null;

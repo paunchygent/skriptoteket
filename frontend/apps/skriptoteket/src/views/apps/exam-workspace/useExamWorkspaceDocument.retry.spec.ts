@@ -30,6 +30,7 @@ import type {
   NativeExamItem,
   NativeExamItemKind,
 } from "../../../api/examWorkspace";
+import { useAuthStore } from "../../../stores/auth";
 import { useToastStore } from "../../../stores/toast";
 import { buildResponse, currentItem, deferred, openingOf } from "./useExamWorkspaceDocument.specSupport";
 import type { DocumentState } from "./useExamWorkspaceDocument.specSupport";
@@ -165,10 +166,16 @@ function toastCount(message: string): number {
 
 beforeEach(() => {
   setActivePinia(createPinia());
+  signInAs("admin");
   for (const mock of Object.values(apiMocks)) {
     mock.mockReset();
   }
 });
+
+/** Seed the signed-in actor the AI gate reads (TASK-SKRIPT-REP-0044 L3). */
+function signInAs(role: "user" | "contributor" | "admin" | "superuser"): void {
+  useAuthStore().user = { id: "teacher-a", email: "teacher-a@example.test", role, auth_provider: "local" };
+}
 
 describe("retryItem", () => {
   it("sends the draft, question and type, then replaces only that item", async () => {
@@ -316,5 +323,34 @@ describe("assetUrls", () => {
     expect(urls).toEqual({
       asset_001: "/protected/lineage-1/asset_001?revision=1",
     });
+  });
+});
+
+describe("useExamWorkspaceItemRetry admin gate (TASK-SKRIPT-REP-0044 L3)", () => {
+  it.each(["user", "contributor"] as const)(
+    "sends no retry for role %s and leaves the draft untouched",
+    async (role) => {
+      const state = await openRetryDocument();
+      signInAs(role);
+
+      await state.retryItem("item_001", "matching");
+
+      expect(apiMocks.retryExamWorkspaceItem).not.toHaveBeenCalled();
+      expect(currentItem(state).kind).toBe("free_text");
+      expect(state.isDirty.value).toBe(false);
+    },
+  );
+
+  it("sends the retry for an admin", async () => {
+    const state = await openRetryDocument();
+    apiMocks.retryExamWorkspaceItem.mockResolvedValue({
+      lineage_id: "lineage-1",
+      item: convertedItem(),
+    });
+
+    await state.retryItem("item_001", "matching");
+
+    expect(apiMocks.retryExamWorkspaceItem).toHaveBeenCalledTimes(1);
+    expect(currentItem(state).kind).toBe("matching");
   });
 });

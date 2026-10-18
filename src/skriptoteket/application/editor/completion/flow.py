@@ -10,8 +10,7 @@ from structlog.contextvars import get_contextvars
 
 from skriptoteket.application.editor.remote_fallback import RemoteFallbackConsent
 from skriptoteket.config import Settings
-from skriptoteket.domain.identity.models import Role, User
-from skriptoteket.domain.identity.role_guards import require_at_least_role
+from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.llm import (
     InlineCompletionCommand,
     InlineCompletionProvidersProtocol,
@@ -176,8 +175,6 @@ class InlineCompletionFlow:
         actor: User,
         command: InlineCompletionCommand,
     ) -> InlineCompletionResult:
-        require_at_least_role(user=actor, role=Role.CONTRIBUTOR)
-
         if not self._settings.LLM_COMPLETION_ENABLED:
             return InlineCompletionResult(
                 completion="",

@@ -24,6 +24,7 @@ import type {
   NativeExamDocument,
   NativeExamItem,
 } from "../../api/examWorkspace";
+import type { AuthUser } from "../../api/sharedAuth";
 import { buildFreeTextItem } from "../../test/examWorkspaceFixtures";
 import ExamWorkspaceView from "./ExamWorkspaceView.vue";
 import { serverExamWorkspaceStore } from "./exam-workspace/examWorkspaceStore";
@@ -36,6 +37,25 @@ import {
 } from "./exam-workspace/useExamWorkspaceLayout";
 
 export const EXAM_WORKSPACE_PATH = "/apps/exam-workspace";
+
+/**
+ * The signed-in admin the shared exam-workspace harnesses mount as.
+ *
+ * The exam workspace's AI controls are admin-only until the spend cap ships
+ * (TASK-SKRIPT-REP-0044 L3). Shared harnesses mount as the "no change" role so
+ * the AI paths keep exercising AI behaviour; the dedicated `*.aiGate.spec.ts`
+ * files cover the denied roles.
+ *
+ * The mount harnesses keep `hasAtLeastRole` unstubbed: it is a setup-store
+ * function, so `createTestingPinia` registers it as an action and would
+ * otherwise replace it with a no-op spy that refuses every AI path.
+ */
+export const adminUser: AuthUser = {
+  id: "admin-1",
+  email: "admin@example.test",
+  role: "admin",
+  auth_provider: "local",
+};
 
 export function buildDocument(): NativeExamDocument {
   const items: NativeExamItem[] = [
@@ -110,7 +130,7 @@ export function buildDocument(): NativeExamDocument {
     parents: [],
     revision: 1,
     header: { tags: [] },
-    schema_version: "native_exam_document_v6",
+    schema_version: "native_exam_document_v7",
     title: "NO-prov HT25",
   };
 }
@@ -155,7 +175,11 @@ export async function mountExamWorkspace(
   query: Record<string, string> = {},
   layout: ExamWorkspaceLayout = "desktop",
   attachTo?: HTMLElement,
-  pinia = createTestingPinia({ createSpy: vi.fn }),
+  pinia = createTestingPinia({
+    createSpy: vi.fn,
+    initialState: { auth: { user: adminUser } },
+    stubActions: (name) => name !== "hasAtLeastRole",
+  }),
 ) {
   const router = createRouter({
     history: createMemoryHistory(),

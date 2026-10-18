@@ -5,8 +5,7 @@ from collections.abc import Callable
 from skriptoteket.application.editor.edit_ops.flow import EditOpsFlow
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode
-from skriptoteket.domain.identity.models import Role, User
-from skriptoteket.domain.identity.role_guards import require_at_least_role
+from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.edit_ops_payload_parser import EditOpsPayloadParserProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
@@ -73,8 +72,6 @@ class EditOpsHandler(EditOpsHandlerProtocol):
         actor: User,
         command: EditOpsCommand,
     ) -> EditOpsResult:
-        require_at_least_role(user=actor, role=Role.CONTRIBUTOR)
-
         guard_acquired = await self._guard.try_acquire(user_id=actor.id, tool_id=command.tool_id)
         if not guard_acquired:
             raise DomainError(code=ErrorCode.CONFLICT, message=IN_FLIGHT_MESSAGE)

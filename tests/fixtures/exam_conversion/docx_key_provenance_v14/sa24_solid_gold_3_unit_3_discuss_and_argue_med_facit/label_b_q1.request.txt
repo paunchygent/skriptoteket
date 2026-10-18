@@ -1,0 +1,5 @@
+**1.** This sentence is somewhat ___. It could be interpreted in two ways. You’d better rewrite it to make it clearer. (1 point)
+A. two-faced
+B. ambiguous
+C. unreliable
+Correct answer: <i>B. ambiguous</i>

@@ -9,7 +9,9 @@ from skriptoteket.domain.identity.models import AuthProvider, Role, User
 from skriptoteket.infrastructure.db.models.user import UserModel
 
 
-async def create_owner(session_factory: async_sessionmaker[AsyncSession]) -> User:
+async def create_owner(
+    session_factory: async_sessionmaker[AsyncSession], role: Role = Role.USER
+) -> User:
     owner_id = uuid4()
     now = datetime.now(UTC)
     async with session_factory() as session, session.begin():
@@ -18,7 +20,7 @@ async def create_owner(session_factory: async_sessionmaker[AsyncSession]) -> Use
                 id=owner_id,
                 email=f"exam-workspace-{owner_id}@example.test",
                 password_hash="hash",
-                role=Role.USER,
+                role=role,
                 auth_provider=AuthProvider.LOCAL,
                 created_at=now,
                 updated_at=now,
@@ -27,7 +29,7 @@ async def create_owner(session_factory: async_sessionmaker[AsyncSession]) -> Use
     return User(
         id=owner_id,
         email=f"exam-workspace-{owner_id}@example.test",
-        role=Role.USER,
+        role=role,
         auth_provider=AuthProvider.LOCAL,
         created_at=now,
         updated_at=now,

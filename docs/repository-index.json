@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "236a4b756dace35209bd4bc677f84deef9c9542911ec080667b09627507a6f10",
+  "source_set_digest": "678e8d8d36b830d4890605b8a5f368454e21fa31ab90a81efee74d8d7765c824",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5642,7 +5642,7 @@
       "type": "task",
       "title": "Teachers group questions into new parts and move questions into, out of and between parts",
       "path": "docs/backlog/tasks/task-skript-39-06-10-teachers-group-questions-into-new-parts-and-move-questions-into-out-of-and-between-parts.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-06",
       "owners": [
@@ -5653,7 +5653,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-18",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Independent ruthless-reviewer 47f15e2d review changes_requested (F1 high, F2-F8; root 01a14e6d evidence/reviews/47f15e2d-1489-4434-8fcf-e662fe6bb770.md); F2-F8 admitted on focused proof (evidence/lead-2061895e/final-report.md); re-review cleared F1 and found F9 high (-rereview.md); second re-review approved F9 at 7667692c (-rereview2.md); merged into main. Staging walk follows with the 40-04-07 merge (v8 seam)."
       }
     },
     {
@@ -7650,7 +7654,7 @@
       "type": "task",
       "title": "Paid AI routes are limited to admins until the AI spend cap and rate limits ship",
       "path": "docs/backlog/tasks/task-skript-rep-0044-paid-ai-routes-are-limited-to-admins-until-the-ai-spend-cap-and-rate-limits-ship.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "repository",
       "owners": [
         {
@@ -7660,7 +7664,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-18",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Independent ruthless-reviewer a262cc37 review changes_requested (F1 high, F2-F6 medium; root 01a14efe evidence/reviews/a262cc37-8bf9-4eb6-9137-4793d6507e86.md); F2-F6 repaired and admitted on focused proof; F1 re-review approved at 39e15eac (same dir, -rereview.md), ItemTypeLabelerProtocol accepted as a paid root; unit 6415 passed, Vitest and fe-build ok on Hemma; merged into main."
       }
     },
     {
@@ -7668,7 +7676,7 @@
       "type": "task",
       "title": "DOCX background replays carry a recording for the item-type labeler call",
       "path": "docs/backlog/tasks/task-skript-rep-0045-docx-background-replays-carry-a-recording-for-the-item-type-labeler-call.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "repository",
       "owners": [
         {
@@ -7678,7 +7686,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-18",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Independent ruthless-reviewer review of the delivery (root 01a14f23 evidence/reviews/10b693b6-1db4-4125-a880-ac5f7273bde7.md); its only finding F1 (medium) repaired at cbd290bd (capture-time request key sidecar per label_b recording, refused without one) and admitted on focused proof; user-approved re-recording of exactly 14 labeler calls (16,286 in, 1,315 out tokens); integration file 11/11, domain suite 3586 passed on Hemma; merged into main."
       }
     },
     {

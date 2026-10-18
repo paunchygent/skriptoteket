@@ -6,8 +6,12 @@ from uuid import UUID
 from skriptoteket.application.curated_apps.exam_workspace import ExamWorkspaceDocumentResponse
 from skriptoteket.application.curated_apps.exam_workspace_parents import (
     AddExamChildRequest,
+    CreateEmptyExamPartRequest,
     CreateExamParentRequest,
+    ExamWorkspaceCreatedPartResponse,
     ExamWorkspaceDeleteResponse,
+    GroupExamItemsRequest,
+    MoveExamItemRequest,
     ParentCommandRequest,
     ReorderExamChildrenRequest,
 )
@@ -31,6 +35,30 @@ class ExamWorkspaceParentsHandlerProtocol(Protocol):
         parent_id: str,
         request: AddExamChildRequest,
     ) -> ExamWorkspaceDocumentResponse: ...
+
+    async def group_items(
+        self,
+        *,
+        actor: User,
+        lineage_id: UUID,
+        request: GroupExamItemsRequest,
+    ) -> ExamWorkspaceCreatedPartResponse: ...
+
+    async def move_item(
+        self,
+        *,
+        actor: User,
+        lineage_id: UUID,
+        request: MoveExamItemRequest,
+    ) -> ExamWorkspaceDocumentResponse: ...
+
+    async def create_empty_part(
+        self,
+        *,
+        actor: User,
+        lineage_id: UUID,
+        request: CreateEmptyExamPartRequest,
+    ) -> ExamWorkspaceCreatedPartResponse: ...
 
     async def delete_parent(
         self,

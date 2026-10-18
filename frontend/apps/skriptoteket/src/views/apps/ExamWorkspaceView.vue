@@ -139,6 +139,7 @@ const {
   selectedEntryId, selectedItem, selectedParent, selectedParentEntry, selectedParentId, selectEntry, step, stripState,
   total,
 } = selection;
+editing.registerSelectParent(selectEntry);
 
 const disabled = computed(() => isBusy.value || structure.running.value);
 const blockers = computed(() => [
@@ -221,10 +222,12 @@ function toggleReviewed(): void {
   }
 }
 
-function addEntry(kind: TeacherItemKind | "instruction"): void {
+function addEntry(kind: TeacherItemKind | "instruction" | "part"): void {
   listOpen.value = false;
   if (kind === "instruction") {
     void structure.addInstruction();
+  } else if (kind === "part") {
+    void structure.addEmptyPart();
   } else {
     structure.addItem(kind);
   }
@@ -369,6 +372,7 @@ onMounted(() => {
         :overlay="isPhone && listOpen"
         @select="selectEntry"
         @add="addEntry"
+        @group="(itemIds) => structure.groupItems(itemIds)"
         @accept-exam-total="editing.acceptExamPrintedTotal"
         @accept-part-total="editing.acceptPartPrintedTotal"
         @accept-all-totals="editing.acceptAllPrintedTotals"
@@ -382,6 +386,7 @@ onMounted(() => {
         :selected-parent="selectedParent"
         :selected-parent-entry="selectedParentEntry"
         :parent-children="parentChildren"
+        :entries="entries"
         :selected-item="selectedItem"
         :item-entry="itemEntry"
         :item-parent="itemParent"

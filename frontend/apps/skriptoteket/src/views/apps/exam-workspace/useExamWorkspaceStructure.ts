@@ -2,20 +2,23 @@
  * Exam workspace structure commands.
  *
  * Domain purpose:
- *   Add a question of any kind after the selected unit, delete a standalone
- *   question, add an instruction with deluppgifter, add, move and delete a
- *   deluppgift, and change a question's type (TASK-SKRIPT-39-06-03, 39-06-05,
- *   40-04-03). Adding and deleting a standalone question are local structural
- *   edits; the parent commands and Byt frågetyp run on the server against its
- *   newest undo step, so the pending edit is stored first and the response's
- *   document becomes the next step. After Byt frågetyp the question shows an
- *   inline notice naming what the change removed; the header Ångra reverts it
- *   (user ruling 2026-10-17: no Ångra in toasts). Deleting an instruction
- *   keeps its questions as standalone questions by default, or deletes them
- *   with it; deleting its last question removes the emptied heading too, and
- *   an inline notice says so (TASK-SKRIPT-39-06-07, user ruling 2026-10-17).
- *   A delete that would leave the exam without a question is refused inline,
- *   never in a toast.
+ *   Add a question of any kind after the selected top-level unit — the selected
+ *   part entry when one is selected, otherwise the selected question — delete a
+ *   standalone question, add an instruction with deluppgifter, group marked
+ *   questions into a new part, add an empty part, move a question into, out of
+ *   or between parts, add, move and delete a deluppgift, and change a question's
+ *   type (TASK-SKRIPT-39-06-03, 39-06-05, 39-06-10, 40-04-03). Adding and
+ *   deleting a standalone question are local structural edits; the parent
+ *   commands and Byt frågetyp run on the server against its newest undo step, so
+ *   the pending edit is stored first and the response's document becomes the
+ *   next step. After Byt frågetyp the question shows an inline notice naming what
+ *   the change removed;
+ *   the header Ångra reverts it (user ruling 2026-10-17: no Ångra in toasts).
+ *   Deleting an instruction keeps its questions as standalone questions by
+ *   default, or deletes them with it; deleting its last question keeps the part
+ *   as an instruction block (TASK-SKRIPT-39-06-10 G8; TASK-SKRIPT-39-06-07,
+ *   user ruling 2026-10-17). A delete that would leave the exam without a
+ *   question is refused inline, never in a toast.
  *
  * Relationships:
  *   - Edits through `useExamWorkspaceDocument` (`editDocument`,
@@ -27,8 +30,8 @@ import { computed, ref } from "vue";
 import type { Ref } from "vue";
 
 import { isApiError } from "../../../api/client";
+import type { ExamParentDeleteMode } from "../../../api/examWorkspaceStructureCommands";
 import type {
-  ExamParentDeleteMode,
   ExamWorkspaceDocumentResponse,
   NativeExamDocument,
   NativeExamItemKind,
@@ -54,6 +57,8 @@ const NEW_INSTRUCTION_TEXT = "Ny instruktion";
 export type ExamWorkspaceStructureDeps = {
   workspaceDocument: Ref<NativeExamDocument | null>;
   selectedItemId: Ref<string | null>;
+  /** The part entry the teacher selected, or null; a structural insert lands after it (G9). */
+  selectedParentId: Ref<string | null>;
   historyCursor: Ref<string | null>;
   lineageId: () => string | null;
   savedRevision: () => number | null;
@@ -66,6 +71,8 @@ export type ExamWorkspaceStructureDeps = {
   ) => boolean;
   applyCommandResponse: (response: ExamWorkspaceDocumentResponse) => void;
   selectItem: (itemId: string) => void;
+  /** Open a part's instruction in the editor, reusing the selection composable's entry selection. */
+  selectParent: (parentId: string) => void;
   /** Store the pending edit, and an undone step as the newest one; false when that failed. */
   flush: (settle: boolean) => Promise<boolean>;
   onConflict: () => Promise<void>;
@@ -75,11 +82,10 @@ export type ExamWorkspaceStructureDeps = {
 
 export type ExamWorkspaceTypeNotice = { itemId: string; kind: NativeExamItemKind; text: string };
 
-/** An inline outcome: a type change, an instruction removed with its last question, or a refused delete. */
-export type ExamWorkspaceNotice = { kind: "type" | "delete" | "refused"; text: string };
+/** An inline outcome: a type change, or a refused delete. */
+export type ExamWorkspaceNotice = { kind: "type" | "refused"; text: string };
 
 const LAST_QUESTION_COPY = "Provet måste ha minst en fråga.";
-const HEADING_REMOVED_COPY = "Instruktionen hade inga frågor kvar och togs också bort.";
 
 /** The server's refusal of a delete that would leave the exam without a question. */
 function isExamRequiresQuestion(error: unknown): boolean {
@@ -101,13 +107,21 @@ export function useExamWorkspaceStructure(deps: ExamWorkspaceStructureDeps) {
   const toast = useToast();
   const running = ref(false);
   const typeNotice = ref<ExamWorkspaceTypeNotice | null>(null);
-  /** Said once where the selection lands after a delete took more than the teacher picked. */
+  /** The refusal of a delete that would leave the exam without a question, shown inline. */
   const deleteNotice = ref<ExamWorkspaceNotice | null>(null);
 
   const blocked = computed(() => running.value || deps.isBusy());
 
+  /**
+   * The unit a structural insert lands after: the selected part entry when the
+   * teacher selected one, otherwise the document's selected question.
+   */
   function selectedUnitIndex(document: NativeExamDocument): number {
-    return examWorkspaceUnitIndex(examWorkspaceUnits(document), { itemId: deps.selectedItemId.value });
+    const parentId = deps.selectedParentId.value;
+    return examWorkspaceUnitIndex(
+      examWorkspaceUnits(document),
+      parentId === null ? { itemId: deps.selectedItemId.value } : { parentId },
+    );
   }
 
   /** Run one server command against the newest stored step; select what it added. */
@@ -192,11 +206,9 @@ export function useExamWorkspaceStructure(deps: ExamWorkspaceStructureDeps) {
         if (!response) {
           return;
         }
+        // The part stays as an instruction block, so no notice is needed.
         if (next && response.document.items.some((item) => item.item_id === next)) {
           deps.selectItem(next);
-        }
-        if (response.removed_parent_id !== null) {
-          deleteNotice.value = { kind: "delete", text: HEADING_REMOVED_COPY };
         }
       });
       return;
@@ -268,6 +280,44 @@ export function useExamWorkspaceStructure(deps: ExamWorkspaceStructureDeps) {
     );
   }
 
+  /** Group marked standalone questions into one new part and open its instruction (G4, G10). */
+  async function groupItems(itemIds: string[]): Promise<boolean> {
+    const response = await runCommand((lineageId, cursor) =>
+      deps.shared.groupExamWorkspaceItems(lineageId, itemIds, cursor),
+    );
+    if (!response) {
+      return false;
+    }
+    deps.selectParent(response.created_parent_id);
+    return true;
+  }
+
+  /** Insert a part with an empty instruction after the selected top-level unit and open its editor (G9). */
+  async function addEmptyPart(): Promise<void> {
+    const document = deps.workspaceDocument.value;
+    if (!document) {
+      return;
+    }
+    const after = selectedUnitIndex(document);
+    const position = after < 0 ? examWorkspaceUnits(document).length : after + 1;
+    const response = await runCommand((lineageId, cursor) =>
+      deps.shared.createEmptyExamWorkspacePart(lineageId, position, cursor),
+    );
+    if (response) {
+      deps.selectParent(response.created_parent_id);
+    }
+  }
+
+  /** Move one question into a part, out to standalone, or between parts (G3, R3, R4). */
+  async function moveItem(itemId: string, targetParentId: string | null): Promise<void> {
+    const response = await runCommand((lineageId, cursor) =>
+      deps.shared.moveExamWorkspaceItem(lineageId, itemId, targetParentId, cursor),
+    );
+    if (response) {
+      deps.selectItem(itemId);
+    }
+  }
+
   async function moveChild(parentId: string, itemId: string, delta: -1 | 1): Promise<void> {
     const parent = deps.workspaceDocument.value?.parents.find((entry) => entry.parent_id === parentId);
     const from = parent?.item_ids.indexOf(itemId) ?? -1;
@@ -311,6 +361,7 @@ export function useExamWorkspaceStructure(deps: ExamWorkspaceStructureDeps) {
 
   return {
     addChild,
+    addEmptyPart,
     addInstruction,
     addItem,
     changeType,
@@ -319,7 +370,9 @@ export function useExamWorkspaceStructure(deps: ExamWorkspaceStructureDeps) {
     deleteParent,
     dismissDeleteNotice,
     dismissTypeNotice,
+    groupItems,
     moveChild,
+    moveItem,
     running: computed(() => running.value),
     typeNotice: computed(() => typeNotice.value),
   };

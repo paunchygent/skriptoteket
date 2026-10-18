@@ -37,7 +37,7 @@ export function exam(title = "Original", itemCount = 2): NativeExamDocument {
     origin: { kind: "created" },
     parents: [],
     revision: 1,
-    schema_version: "native_exam_document_v6",
+    schema_version: "native_exam_document_v7",
     title,
   } as NativeExamDocument;
 }

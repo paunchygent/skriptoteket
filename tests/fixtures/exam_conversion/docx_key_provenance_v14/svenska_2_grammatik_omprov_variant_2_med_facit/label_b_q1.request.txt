@@ -1,0 +1,7 @@
+## **Del 1: Morfem och fraser, 12 poäng**
+### **<i>Fråga 1. Dela upp orden i morfem.</i>**
+Använd R = rotmorfem, A = avledningsmorfem och B = böjningsmorfem. Skriv R, A eller B under varje morfem. Foge-s kan markeras om det finns, men ger inte egen poäng.
+a) solrosornas Svar: <i>sol (R) + ros (R) + or (B) + na (B) + s (B)</i>
+b) läsbarheten Svar: <i>läs (R) + bar (A) + het (A) + en (B)</i>
+c) handbollsspelarnas Svar: <i>hand (R) + boll (R) + foge-s + spel (R) + are (A) + na (B) + s (B)</i>
+Poäng: 6 poäng

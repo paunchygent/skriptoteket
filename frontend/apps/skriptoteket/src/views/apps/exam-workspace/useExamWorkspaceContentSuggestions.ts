@@ -21,6 +21,7 @@ import type {
   NativeExamHeader,
 } from "../../../api/examWorkspace";
 import { isApiError } from "../../../api/client";
+import { useAiAccess } from "../../../composables/useAiAccess";
 import { useToast } from "../../../composables/useToast";
 import type { ExamWorkspaceTeacherServices } from "./examWorkspaceStore";
 import type { ExamWorkspaceOpening } from "./useExamWorkspaceDocument";
@@ -62,6 +63,8 @@ export function useExamWorkspaceContentSuggestions(deps: {
   teacher: ExamWorkspaceTeacherServices | null;
 }) {
   const toast = useToast();
+  // The paid content suggestion is admin-only until the spend cap ships (TASK-SKRIPT-REP-0044 L3).
+  const { canUseAi } = useAiAccess();
   const busy = ref(false);
   /** Said in the drawer when the job ticked nothing; toasts report failures only. */
   const message = ref<string | null>(null);
@@ -138,7 +141,7 @@ export function useExamWorkspaceContentSuggestions(deps: {
   async function suggest(): Promise<void> {
     const opening = deps.openExam();
     const teacher = deps.teacher;
-    if (!opening || !teacher || busy.value) return;
+    if (!canUseAi.value || !opening || !teacher || busy.value) return;
     const request: Request = {
       opening,
       courseKey: deps.document()?.header.course?.key ?? null,
