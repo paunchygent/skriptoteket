@@ -71,7 +71,7 @@ describe("ExamWorkspaceChoiceField", () => {
 
     press(surfaceOf(wrapper, OPTION_1), "Backspace");
 
-    expect(emittedBodies(wrapper)).toEqual([["choice_001", [paragraph("fördra")], false]]);
+    expect(emittedBodies(wrapper)).toEqual([["choice_001", [paragraph("fördra")], true]]);
   });
 
   it("adds a paragraph on Enter and a line break inside the paragraph on Shift+Enter", async () => {
