@@ -29,6 +29,7 @@ const {
   isPolling,
   isSubmitting,
   manifest,
+  needsAnswerKey,
   refreshJob,
   selectedTargets,
   setGradedResultPdfFile,
@@ -53,7 +54,7 @@ const {
       <div
         class="inline-flex h-10 items-center gap-2 border px-3 text-sm font-semibold"
         :class="
-          status?.status === 'succeeded'
+          status?.status === 'succeeded' && !needsAnswerKey
             ? 'border-success/45 bg-success/10 text-success'
             : errorMessage
               ? 'border-error/40 bg-error/10 text-error'
@@ -62,7 +63,7 @@ const {
         :data-state="status?.status ?? 'idle'"
       >
         <CheckCircle2
-          v-if="status?.status === 'succeeded'"
+          v-if="status?.status === 'succeeded' && !needsAnswerKey"
           class="h-[18px] w-[18px]"
           aria-hidden="true"
         />
@@ -72,7 +73,7 @@ const {
           aria-hidden="true"
         />
         <AlertCircle
-          v-else-if="errorMessage"
+          v-else-if="errorMessage || needsAnswerKey"
           class="h-[18px] w-[18px]"
           aria-hidden="true"
         />
