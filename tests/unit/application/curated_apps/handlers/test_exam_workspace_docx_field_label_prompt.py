@@ -61,6 +61,7 @@ def test_the_converter_system_prompt_carries_the_field_label_rule() -> None:
             ),
         ),
         context=(),
+        questions=(("body:0001",),),
         kinds=frozenset({NativeExamItemKind.GAP_FILL}),
         profile=_profile(),
     )

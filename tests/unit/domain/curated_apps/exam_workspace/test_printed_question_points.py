@@ -49,10 +49,6 @@ class PrintedCase:
         PrintedCase("part_total"),
         PrintedCase("heading"),
         PrintedCase("heading", heading_owned=True),
-        PrintedCase("question_total", (5, 1), (2, 1)),
-        PrintedCase("part_total", (5, 1), (2, 1)),
-        PrintedCase("heading", (5, 1), (2, 1), heading_owned=True),
-        PrintedCase("heading", (5, 1), (2, 1)),
         PrintedCase("question_total", kind="rubric"),
         PrintedCase("heading", kind="rubric", heading_owned=True),
         PrintedCase("question_total", kind="matching"),
@@ -61,16 +57,6 @@ class PrintedCase:
         PrintedCase("heading", (4,), (4,), kind="rubric_overflow"),
         PrintedCase("heading", kind="rubric_missing_total", heading_owned=True),
         PrintedCase("question_total", (3,), kind="rubric", criteria=(1, 2)),
-        PrintedCase("question_total", (5, 1, 1, 1), (5, 1, 1, 1), kind="split_overflow"),
-        PrintedCase(
-            "heading", (5, 1, 1, 1), (5, 1, 1, 1), kind="split_overflow", heading_owned=True
-        ),
-        PrintedCase("heading", (5, 1, 1, 1), (5, 1, 1, 1), kind="split_overflow"),
-        PrintedCase("question_total", (5, 1), (2, 1.5), kind="mixed_rubric", printed=3.5),
-        PrintedCase(
-            "heading", (5, 1), (2, 1.5), kind="mixed_rubric", heading_owned=True, printed=3.5
-        ),
-        PrintedCase("heading", (5, 1), (2, 1.5), kind="mixed_rubric", printed=3.5),
         PrintedCase("heading", heading_owned=True, type_conflict=True),
         # The heading prints 3 over both questions under it, wherever the grouping put it.
         PrintedCase("heading", (1, 5), (2, 1), heading_owned=True, separate_questions=True),
@@ -80,10 +66,6 @@ class PrintedCase:
         "single-question-part-overrides-build",
         "omitted-heading-overrides-build",
         "owned-heading-overrides-build",
-        "question-line-split-distribution",
-        "single-question-part-split-distribution",
-        "owned-heading-split-distribution",
-        "omitted-heading-split-distribution",
         "question-line-rubric-rescaled",
         "owned-heading-rubric-rescaled",
         "question-line-matching-rescaled",
@@ -92,12 +74,6 @@ class PrintedCase:
         "impossible-rubric-goes-to-teacher",
         "owned-heading-rubric-without-build-total",
         "matching-total-preserves-uneven-rubric",
-        "impossible-split-goes-to-teacher-atomically",
-        "owned-heading-impossible-split-is-atomic",
-        "omitted-heading-impossible-split-is-atomic",
-        "question-line-fractional-mixed-split-no-false-review",
-        "owned-heading-fractional-mixed-split-no-false-review",
-        "omitted-heading-fractional-mixed-split-no-false-review",
         "owned-heading-preserves-repeated-type-conflict-mark",
         "question-owned-heading-opens-a-part-over-the-questions-under-it",
     ],
@@ -205,12 +181,6 @@ def test_printed_question_points_own_scores_and_never_become_exam_text(case: Pri
                 if case.kind == "rubric_overflow"
                 else [{"text": "Visar förståelse för tempus.", "points": score}]
             )
-        if case.kind == "mixed_rubric" and index == 0:
-            item["facit_text"] = "Visar förståelse för tempus."
-            item["criteria"] = [
-                {"text": "Identifierar tempus.", "points": 3},
-                {"text": "Förklarar användningen.", "points": 2},
-            ]
         if case.criteria:
             item["criteria"] = [
                 {"text": f"Bedömning {n}.", "points": points}
@@ -270,16 +240,5 @@ def test_printed_question_points_own_scores_and_never_become_exam_text(case: Pri
         assert tuple(c.points for c in document.items[0].criteria) == case.criteria
     if case.kind == "matching":
         assert document.items[0].tick_points == Decimal("1")
-    if case.kind == "mixed_rubric":
-        assert tuple(c.points for c in document.items[0].criteria) == (1, 1)
-        assert all(item.review.state.value == "review_complete" for item in document.items)
-        assert all(item.review.reasons == () for item in document.items)
-    if case.kind == "split_overflow":
-        for before, after in zip(admitted, document.items, strict=True):
-            assert after.model_dump(
-                include={"points", "criteria", "tick_points", "points_estimated"}
-            ) == before.model_dump(
-                include={"points", "criteria", "tick_points", "points_estimated"}
-            )
     if case.type_conflict:
         assert document.items[0].review == admitted[0].review

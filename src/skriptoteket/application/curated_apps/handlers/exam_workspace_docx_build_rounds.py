@@ -81,10 +81,15 @@ def build_batch_request(
     request_id: str,
     pending: tuple[DocxChunk, ...],
     context: tuple[DocxChunk, ...],
+    questions: tuple[tuple[str, ...], ...],
     kinds: frozenset[NativeExamItemKind],
     profile: StructuredLLMProviderProfile,
 ) -> StructuredLLMRequest:
-    """Prepare one batch within the provider's text budget; its schema names its anchors."""
+    """Prepare one batch within the provider's text budget; its schema names its anchors.
+
+    ``questions`` holds each grouped question's own anchors; the payload lists those in
+    ``pending``, so the model returns each question as one item.
+    """
     spec = docx_build_output_spec(
         anchors=(chunk.anchor for chunk in pending),
         kinds=kinds,
@@ -94,6 +99,11 @@ def build_batch_request(
         {
             "item_kinds": sorted(kind.value for kind in kinds),
             "chunks": [_model_chunk(chunk) for chunk in pending],
+            "questions": [
+                listed
+                for question in questions
+                if (listed := [chunk.anchor for chunk in pending if chunk.anchor in question])
+            ],
             "context_chunks": [_model_chunk(chunk) for chunk in context],
         },
         ensure_ascii=False,

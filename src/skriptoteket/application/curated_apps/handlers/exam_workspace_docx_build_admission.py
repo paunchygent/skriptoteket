@@ -1,8 +1,11 @@
 """Admit one schema-valid batch response into the build state (TASK-SKRIPT-39-05-04).
 
-The strict output schema is the only gate on model output: it limits every anchor to the
-batch's own chunks and every kind to the batch's kinds. Admission never rejects or retries
-a schema-valid response. A chunk two entries name stays with the first; the later entry
+The strict output schema limits every anchor to the batch's own chunks and every kind to the
+batch's kinds. A grouped question is admitted as one item (TASK-SKRIPT-39-04-12 C3): a
+question whose body the reply spreads over several entries, or merges into one entry with
+another question's body, is refused and becomes its source review item, which the teacher
+reconverts through the single-question retry. Admission otherwise never rejects or retries a
+schema-valid response. A chunk two entries name stays with the first; the later entry
 keeps its other chunks. A question the native contract cannot hold, a question the model
 marks for review, and every chunk no entry names become review items that keep their
 source text; a question's review item shows all its own chunks as printed. A chunk the
@@ -29,6 +32,11 @@ from pydantic import JsonValue, ValidationError
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_state import (
     DocxBuildState,
     TypeConflict,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_one_item import (
+    raw_anchors,
+    refuse_questions,
+    refused_questions,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_produced_content import (
     normalized_content,
@@ -224,11 +232,6 @@ def _points_line(anchor: str, state: DocxBuildState) -> bool:
     return line_points(state.chunk_by_anchor[anchor]) is not None
 
 
-def _raw_anchors(raw: JsonValue) -> tuple[str, ...]:
-    anchors = raw.get("source_anchors") if isinstance(raw, dict) else None
-    return tuple(a for a in anchors if isinstance(a, str)) if isinstance(anchors, list) else ()
-
-
 def _with_left_out(
     index: int,
     admitted: Admitted,
@@ -281,7 +284,7 @@ def _admit_item(
         produced = ProducedItem.model_validate(raw)
     except ValidationError as error:
         # The question the entry names becomes one review item holding its source text.
-        anchors = _free(_raw_anchors(raw), state, seen)
+        anchors = _free(raw_anchors(raw), state, seen)
         detail = validation_detail(error)
         if not anchors:
             state.record("admission", "item_unparsed", item=index, detail=detail)
@@ -437,7 +440,14 @@ def admit_batch(content: dict[str, JsonValue], state: DocxBuildState) -> None:
     seen: set[str] = set()
     raw_items = content.get("items")
     items = raw_items if isinstance(raw_items, list) else []
-    item_held = frozenset(a for raw in items for a in _raw_anchors(raw))
+    refused = refused_questions(items, state)
+    refuse_questions(refused, state, seen)
+    items = [
+        raw
+        for raw in items
+        if not any(state.question_by_anchor.get(a) in refused for a in raw_anchors(raw))
+    ]
+    item_held = frozenset(a for raw in items for a in raw_anchors(raw))
     _admit_keys(content.get("answer_key_anchors"), state, seen, item_held)
     if content.get("title"):
         _admit_metadata(content["title"], "title", state, seen, item_held)
