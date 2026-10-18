@@ -432,6 +432,63 @@ async def test_public_exam_converter_rate_limits_anonymous_submit(
 
 
 @pytest.mark.asyncio
+async def test_public_exam_converter_status_polling_has_its_own_budget(
+    now: datetime,
+    registry: CuratedAppRegistryProtocol,
+) -> None:
+    runtime = RuntimeHarness()
+    app = FastAPI()
+    app.middleware("http")(error_handler_middleware)
+    app.include_router(api.router)
+    settings = Settings(
+        PUBLIC_EXAM_CONVERTER_RATE_LIMIT_MAX_REQUESTS=1,
+        PUBLIC_EXAM_CONVERTER_STATUS_POLL_MAX_REQUESTS=4,
+    )
+    container = make_async_container(
+        RuntimeProvider(
+            settings=settings,
+            clock=FixedClock(now=now),
+            registry=registry,
+            throttle=InMemoryPublicHelperRequestThrottle(),
+            store=runtime.store,
+            artifacts=runtime.artifacts,
+        )
+    )
+    setup_dishka(container, app)
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app),
+        base_url="http://test",
+    ) as polling_client:
+        submitted = await polling_client.post(
+            "/api/v1/public/apps/documents.conversion_hub/exam-converter/jobs",
+            files={"source_dxe": ("exam.dxe", b"{}", "application/octet-stream")},
+        )
+        poll_url = submitted.json()["poll_url"]
+        polls = [await polling_client.get(poll_url) for _ in range(5)]
+        manifest = await polling_client.get(f"{poll_url}/artifacts")
+        second_manifest = await polling_client.get(f"{poll_url}/artifacts")
+
+    assert submitted.status_code == 200
+    assert [poll.status_code for poll in polls] == [200, 200, 200, 200, 429]
+    assert polls[-1].json()["error"]["details"]["reason_code"] == (
+        "public_exam_converter_rate_limited"
+    )
+    assert manifest.status_code == 200
+    assert second_manifest.status_code == 429
+
+
+def test_public_exam_converter_default_status_budget_covers_a_minute_of_polling() -> None:
+    settings = Settings()
+    client_poll_interval_seconds = 3
+    polls_per_window = settings.PUBLIC_EXAM_CONVERTER_RATE_LIMIT_WINDOW_SECONDS // (
+        client_poll_interval_seconds
+    )
+
+    assert settings.PUBLIC_EXAM_CONVERTER_STATUS_POLL_MAX_REQUESTS > polls_per_window
+    assert settings.PUBLIC_EXAM_CONVERTER_RATE_LIMIT_MAX_REQUESTS == 3
+
+
+@pytest.mark.asyncio
 async def test_public_exam_converter_queued_job_remains_pollable_and_enforces_concurrency_limit(
     now: datetime,
     registry: CuratedAppRegistryProtocol,

@@ -305,7 +305,7 @@ describe("ExamConverterPublicView", () => {
     await submitDxe(wrapper);
 
     const notice = wrapper.get(".exam-converter__needs-answer-key");
-    expect(notice.text()).toContain("Exam.net-PDF och QTI-paket kunde inte skapas.");
+    expect(notice.text()).toContain("Exam.net PDF och QTI-paket kunde inte skapas.");
     expect(notice.text()).toContain("saknar facit");
     expect(notice.text()).toContain("resultat-PDF:en från DigiExam");
     expect(wrapper.text()).not.toContain("Väntar på färdiga filer.");
@@ -321,6 +321,20 @@ describe("ExamConverterPublicView", () => {
 
     await advancePoll();
     expect(clientMocks.publicApiGet).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not keep waiting when the manifest request fails after success", async () => {
+    vi.useFakeTimers();
+    clientMocks.publicApiPost.mockResolvedValue(QUEUED_SUBMIT);
+    clientMocks.publicApiGet
+      .mockResolvedValueOnce(statusResponse("succeeded"))
+      .mockRejectedValueOnce(new Error("network"));
+
+    const wrapper = mount(ExamConverterPublicView);
+    await submitDxe(wrapper);
+
+    expect(wrapper.text()).toContain("Konverteringen kunde inte genomföras. Försök igen.");
+    expect(wrapper.text()).not.toContain("Väntar på färdiga filer.");
   });
 
   it("stops polling and stops waiting when the job fails", async () => {

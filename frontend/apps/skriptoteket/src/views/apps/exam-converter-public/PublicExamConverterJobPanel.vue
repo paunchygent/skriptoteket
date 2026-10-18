@@ -37,7 +37,7 @@ const emit = defineEmits<{
   download: [artifact: ArtifactEntry];
 }>();
 
-const FINAL_FAILURE_STATUSES = new Set(["failed", "canceled", "expired"]);
+const FINAL_STATUSES = new Set(["succeeded", "failed", "canceled", "expired"]);
 
 const needsAnswerKey = computed(() => props.manifest?.bundle_status === "needs_review");
 
@@ -46,7 +46,7 @@ const waitingMessage = computed(() => {
     return "Redo för en engångskonvertering.";
   }
   const value = props.status?.status;
-  return value && FINAL_FAILURE_STATUSES.has(value) ? null : "Väntar på färdiga filer.";
+  return value && FINAL_STATUSES.has(value) ? null : "Väntar på färdiga filer.";
 });
 
 function availabilityLabel(value: string): string {
@@ -115,7 +115,7 @@ function availabilityLabel(value: string): string {
         aria-hidden="true"
       />
       <span>
-        Exam.net-PDF och QTI-paket kunde inte skapas. Provfilen saknar facit för en eller
+        Exam.net PDF och QTI-paket kunde inte skapas. Provfilen saknar facit för en eller
         flera flervals- eller luckfrågor. Välj resultat-PDF:en från DigiExam med rätta svar
         och konvertera igen.
       </span>

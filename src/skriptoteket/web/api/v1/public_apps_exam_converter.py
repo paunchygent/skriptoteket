@@ -218,6 +218,7 @@ def _enforce_anonymous_rate_limit(
     clock: ClockProtocol,
     throttle: PublicHelperThrottleProtocol,
     helper_name: str,
+    max_requests: int,
 ) -> tuple[str | None, str]:
     _require_active_exam_converter(registry=registry)
     client_ip = get_client_ip(request, settings=settings)
@@ -230,7 +231,7 @@ def _enforce_anonymous_rate_limit(
         helper_name=helper_name,
         client_ip=client_ip,
         user_agent=user_agent,
-        max_requests=settings.PUBLIC_EXAM_CONVERTER_RATE_LIMIT_MAX_REQUESTS,
+        max_requests=max_requests,
         window_seconds=settings.PUBLIC_EXAM_CONVERTER_RATE_LIMIT_WINDOW_SECONDS,
         now=now,
     )
@@ -258,7 +259,7 @@ def _enforce_anonymous_rate_limit(
         helper_name=helper_name,
         client_ip=client_ip,
         user_agent=user_agent,
-        max_requests=settings.PUBLIC_EXAM_CONVERTER_RATE_LIMIT_MAX_REQUESTS,
+        max_requests=max_requests,
         window_seconds=settings.PUBLIC_EXAM_CONVERTER_RATE_LIMIT_WINDOW_SECONDS,
         now=now,
     )
@@ -304,6 +305,7 @@ async def submit_public_exam_converter_job(
         clock=clock,
         throttle=throttle,
         helper_name=SUBMIT_HELPER_NAME,
+        max_requests=settings.PUBLIC_EXAM_CONVERTER_RATE_LIMIT_MAX_REQUESTS,
     )
     targets = _parse_targets(targets_json=targets_json)
     source = await _read_upload(
@@ -374,6 +376,7 @@ async def get_public_exam_converter_job_status(
         clock=clock,
         throttle=throttle,
         helper_name=STATUS_HELPER_NAME,
+        max_requests=settings.PUBLIC_EXAM_CONVERTER_STATUS_POLL_MAX_REQUESTS,
     )
     return await _with_request_time_budget(
         settings=settings,
@@ -398,6 +401,7 @@ async def get_public_exam_converter_job_result(
         clock=clock,
         throttle=throttle,
         helper_name=RESULT_HELPER_NAME,
+        max_requests=settings.PUBLIC_EXAM_CONVERTER_RATE_LIMIT_MAX_REQUESTS,
     )
     return await _with_request_time_budget(
         settings=settings,
@@ -429,6 +433,7 @@ async def get_public_exam_converter_artifacts(
         clock=clock,
         throttle=throttle,
         helper_name=ARTIFACT_MANIFEST_HELPER_NAME,
+        max_requests=settings.PUBLIC_EXAM_CONVERTER_RATE_LIMIT_MAX_REQUESTS,
     )
     return await _with_request_time_budget(
         settings=settings,
@@ -458,6 +463,7 @@ async def download_public_exam_converter_artifact(
         clock=clock,
         throttle=throttle,
         helper_name=ARTIFACT_DOWNLOAD_HELPER_NAME,
+        max_requests=settings.PUBLIC_EXAM_CONVERTER_RATE_LIMIT_MAX_REQUESTS,
     )
     artifact = await _with_request_time_budget(
         settings=settings,

@@ -32,7 +32,7 @@ import {
 
 const DEFAULT_TARGETS: ExamConverterTarget[] = ["examnet_pdf", "qti_package"];
 
-export const STATUS_POLL_INTERVAL_MS = 2000;
+export const STATUS_POLL_INTERVAL_MS = 3000;
 
 const TERMINAL_STATUSES: ReadonlySet<PublicJobStatus> = new Set([
   "succeeded",
