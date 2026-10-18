@@ -165,6 +165,18 @@ def test_a_question_label_before_the_part_line_scores_the_first_question():
     assert _marked(scored) == [False, False]
 
 
+def test_a_same_total_line_after_the_next_part_line_scores_the_last_question():
+    """Review-4: a part's closer lies inside its part; after the next part line it is q2's."""
+    chunks, questions = _exam(
+        "# Del 1: 2 poäng", "Q 1. Fråga", "Q 2. Fråga", "# Del 2: 7 poäng", "Poäng: 2 poäng"
+    )
+
+    scored = _score(chunks, questions, _items(chunks, questions, (None, None)))
+
+    assert _points(scored) == [None, 2]
+    assert _marked(scored) == [False, False]
+
+
 def test_a_printed_point_beats_a_reply_of_seven():
     chunks, questions = _exam(
         "# Del 3: kortsvar, 5 poäng",

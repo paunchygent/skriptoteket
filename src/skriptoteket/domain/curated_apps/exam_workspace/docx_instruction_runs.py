@@ -1,12 +1,12 @@
 """The runs a section placement is built from: instructions, headings, and their reach.
 
 Every run is decided in one pass with one section rule: a section boundary is a heading
-no item owns, other than a heading that labels a stretch inside one instruction printed
-in several paragraphs. A printed heading over questions is a run of its own starting at
-the heading, reaching the questions up to the next boundary, so a parent formed from
-same-reach runs opens with the heading by construction (T1, T2). A heading a question
-owns reaches that question alone. A heading the grouping marks as governing reaches
-exactly the governed questions (D40).
+no item owns or a heading that opens a printed part, other than a heading that labels a
+stretch inside one instruction printed in several paragraphs. A printed heading over
+questions is a run of its own starting at the heading, reaching the questions up to the
+next boundary, so a parent formed from same-reach runs opens with the heading by
+construction (T1, T2). A heading a question owns reaches that question alone. A heading
+the grouping marks as governing reaches exactly the governed questions (D40).
 """
 
 import re
@@ -238,8 +238,12 @@ def with_heading_runs(
     positions: dict[str, int],
     title_anchors: frozenset[str],
     own_anchors: frozenset[str],
+    part_lines: frozenset[str],
 ) -> tuple[list[Run], SectionShape]:
     """Add one run per printed heading, under the same boundary rule as every other run.
+
+    A heading that opens a printed part (``part_lines``) is a section boundary even when a
+    question owns it, so the part before it never runs on into the part it opens.
 
     The document's opening heading is the exam title, never a question heading. A
     question's own heading chunk a reply lists as an instruction instead of in its item
@@ -252,7 +256,9 @@ def with_heading_runs(
     boundaries = [
         i
         for i, chunk in enumerate(chunks)
-        if chunk.kind == "heading" and chunk.anchor not in own and i not in labels
+        if chunk.kind == "heading"
+        and (chunk.anchor not in own or chunk.anchor in part_lines)
+        and i not in labels
     ]
     boundary_anchors = {chunks[i].anchor for i in boundaries}
     held = {a for m in instructions for a in m.source_anchors}

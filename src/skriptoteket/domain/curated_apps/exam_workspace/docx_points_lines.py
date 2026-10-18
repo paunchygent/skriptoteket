@@ -8,8 +8,9 @@ placed it:
 
 - A part line opens a part: a standalone line with a part label, or a heading with no exam
   or question label. The part runs to the next part line and prints the total of the
-  questions that start in it. A points line after the start of the part's last question
-  that prints that same total closes the part; it is the part's line too.
+  questions that start in it. A points line after the start of the part's last question,
+  before the next part line, that prints that same total closes the part; it is the part's
+  line too.
 - A question line lies in a question's span, from the question's start to the next question
   start or part line: any total line there without an exam label. Outside every span, a
   question-labelled line ("Poäng: 2 poäng") heads the question right after it, or the last
@@ -49,10 +50,11 @@ class PrintedQuestion:
 
 @dataclass(frozen=True)
 class PrintedPart:
-    """A part's printed total and the indices of the questions that start in it."""
+    """A part's printed total, its part line's anchor and the questions that start in it."""
 
     total: int | float
     questions: tuple[int, ...]
+    opener: str
 
 
 @dataclass(frozen=True)
@@ -147,9 +149,9 @@ def printed_points_plan(
         closers.update(
             index
             for index in lines[members[-1]]
-            if index > last_start and line_points(chunks[index]) == total
+            if last_start < index < end and line_points(chunks[index]) == total
         )
-        parts.append(PrintedPart(total, members))
+        parts.append(PrintedPart(total, members, chunks[opener].anchor))
     printed = tuple(
         PrintedQuestion(
             anchors=own,
@@ -184,15 +186,25 @@ def manifest_questions(manifest: ExamManifest) -> tuple[tuple[str, ...], ...]:
 
 
 def assign_points_lines(manifest: ExamManifest, chunks: tuple[DocxChunk, ...]) -> ExamManifest:
-    """Place every points line by its owner alone, wherever the grouping put it.
+    """Place every points line and part heading by its owner alone, wherever the grouping put it.
 
     A question's own points line joins its anchors; every other points line is unplaced
-    metadata. The line leaves every other placement: anchors, subparts, answer keys,
-    contexts, title and header tags. Run after question headings join their questions.
+    metadata. Each such line leaves every other placement: anchors, subparts, answer keys,
+    contexts, title and header tags. A part heading over several questions is unplaced
+    section structure in the same way, which placement opens the part's parent with. A part
+    heading over one question scores that question whatever its placement, and only leaves
+    the context, title and header tags: no tag drops it from the source. Run after question
+    headings join their questions.
     """
     plan = printed_points_plan(chunks, manifest_questions(manifest))
+    by_anchor = {chunk.anchor: chunk for chunk in chunks}
+    headings = [part for part in plan.parts if by_anchor[part.opener].kind == "heading"]
+    sections = {part.opener for part in headings if len(part.questions) > 1}
+    untagged = {part.opener for part in headings} - sections
     positions = {chunk.anchor: index for index, chunk in enumerate(chunks)}
-    placed = set(plan.owners) | plan.metadata
+    placed = set(plan.owners) | plan.metadata | sections
+    owned = {a for question in manifest.questions for a in question.anchors}
+    tagged = placed | untagged
     ids = [question.question_id for question in manifest.questions]
     questions = tuple(
         replace(
@@ -218,12 +230,17 @@ def assign_points_lines(manifest: ExamManifest, chunks: tuple[DocxChunk, ...]) -
     return replace(
         manifest,
         questions=questions,
-        contexts=tuple(c for c in manifest.contexts if c.anchor not in placed),
-        title_anchors=tuple(a for a in manifest.title_anchors if a not in placed),
-        header=tuple(h for h in manifest.header if h.anchor not in placed),
+        contexts=tuple(c for c in manifest.contexts if c.anchor not in tagged),
+        title_anchors=tuple(a for a in manifest.title_anchors if a not in tagged),
+        header=tuple(h for h in manifest.header if h.anchor not in tagged),
         unplaced_anchors=tuple(
             sorted(
-                {*(a for a in manifest.unplaced_anchors if a not in placed), *plan.metadata},
+                {
+                    *(a for a in manifest.unplaced_anchors if a not in placed),
+                    *plan.metadata,
+                    *sections,
+                    *(untagged - owned),
+                },
                 key=positions.__getitem__,
             )
         ),
