@@ -79,8 +79,10 @@
   source origin, D9) and F4 (module split, D11) repaired. Next: F1 re-review, parent merge.
   TASK-SKRIPT-39-04-14 `in_progress` on local `claude/affectionate-payne-93506d`
   (Claude side session, built on 39-04-13): governing-chunk release and left-out
-  own-chunk marks read the alignment; wording rules deleted. Next: independent
-  review, parent merge after 39-04-13.
+  own-chunk marks read the alignment; wording rules deleted. Review approved at
+  62e178088 (root 01a14ea8 `evidence/reviews/5d0e4e46…`); D5-D7 measured and drop audit
+  done (task doc). Next: parent merge after 39-04-13; propose follow-ups gap-paragraph
+  from source and listed-chunk left-out check.
   Next lanes: 39-07-03 retire old converter routes (40-04-03 now on main); implement
   39-06-08 ordering; stories 39-04, 39-06, 39-07 await closeout.
   Ready (user grilling 2026-10-18, plans in root 01a14c27): 40-04-04 dropdown option editor, 40-04-05 export names from the exam title, 39-06-09 Exam.net probe of ordering inside a part.
