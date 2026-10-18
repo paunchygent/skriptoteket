@@ -14,10 +14,11 @@ placed it:
   before the part's end, that prints that same total closes the part; it is the part's
   line too.
 - A summary line, outside every question span, names two or more parts with a total each
-  (``part_totals``). A part-labelled standalone line that prints no total of its own opens
-  a part when a summary gives its part a total. A part's total is the one distinct value
-  its own line and the summaries print for it; when they differ it opens no part (D3). A
-  summary line is metadata: never an exam-total candidate, never a question line.
+  (``part_totals``). A part-labelled line that prints no total of its own opens a part when
+  a summary gives its part a total, whatever its Word kind: a heading or a paragraph. A
+  part's total is the one distinct value its own line and the summaries print for it; when
+  they differ it opens no part (D3). A summary line is metadata: never an exam-total
+  candidate, never a question line.
 - A question line lies in a question's span, from the question's start to the next question
   start or part line of either kind: any total line there without an exam label. Outside
   every span, a question-labelled line ("Poäng: 2 poäng") heads the question right after
@@ -42,6 +43,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_points_labels import (
     points_label,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
+    POINT_LABEL,
     points_line,
     printed_points,
 )
@@ -116,11 +118,15 @@ def _opens_part(chunk: DocxChunk) -> bool:
 
 
 def _summary_part(chunk: DocxChunk) -> bool:
-    """A part-labelled standalone line printing no total, which a summary can give one."""
+    """A part-labelled line printing no total of its own, which a summary can give one.
+
+    A summary naming its part is the structural evidence, so its Word kind does not matter.
+    A paragraph that is no points line qualifies only when it prints no points label at all.
+    """
     return (
-        _stands_alone(chunk)
-        and points_label(chunk.text) == "part"
+        points_label(chunk.text) == "part"
         and printed_points((chunk,)) is None
+        and (_stands_alone(chunk) or POINT_LABEL.search(chunk.text) is None)
     )
 
 

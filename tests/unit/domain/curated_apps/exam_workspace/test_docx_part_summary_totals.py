@@ -365,3 +365,48 @@ def test_a_points_line_printing_the_part_total_closes_the_outer_part():
     assert chunks[5].anchor not in plan.owners
     assert chunks[5].anchor in plan.metadata
     assert not plan.questions[1].prints
+
+
+# Omprov grammatik sve2: the same summary, but the part lines are Word paragraphs.
+_PARAGRAPH_PARTS = tuple(
+    (_P, text) if text.startswith("DEL ") else (kind, text) for kind, text in _EXEMPELPROV
+)
+
+
+def test_a_part_paragraph_a_summary_names_opens_its_part_with_the_summary_total():
+    chunks, plan = _plan(_PARAGRAPH_PARTS, _EXEMPELPROV_QUESTIONS)
+
+    assert _parts(plan) == [
+        ("1", 20, (0, 1), "a2"),
+        ("2", 20, (2,), "a5"),
+        ("3", 15, (3,), "a7"),
+        ("4", 15, (4,), "a9"),
+    ]
+    assert chunks[0].anchor in plan.metadata
+    assert plan.exam_total == 70
+
+
+def test_a_part_paragraph_no_summary_names_opens_nothing():
+    lines = (
+        (_P, "Del 1: Ord (10 p) • Del 2: Satser (20 p)"),
+        (_P, "DEL 3: BISATSER"),
+        (_H, "Uppgift 1: Bisatstyp"),
+        (_P, "Ange bisatstyp."),
+    )
+
+    _, plan = _plan(lines, ((2, 3),))
+
+    assert plan.parts == ()
+
+
+def test_a_part_labelled_prose_sentence_with_several_totals_opens_no_part():
+    lines = (
+        (_P, _TWO_PART_SUMMARY),
+        (_P, "Del 1 ger 4 p för rätt ordklass och 6 p för rätt böjning i varje rad."),
+        (_H, "Uppgift 1: Ordklasser"),
+        (_P, "Ange ordklass."),
+    )
+
+    _, plan = _plan(lines, ((2, 3),))
+
+    assert plan.parts == ()
