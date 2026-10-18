@@ -31,6 +31,7 @@ from skriptoteket.di.exam_answer_key import ExamAnswerKeyProvider
 from skriptoteket.di.exam_converter import ExamConverterProvider
 from skriptoteket.di.exam_workspace import ExamWorkspaceProvider
 from skriptoteket.di.exam_workspace_change_type import ExamWorkspaceChangeTypeProvider
+from skriptoteket.di.exam_workspace_guest_drafts import ExamWorkspaceGuestDraftsProvider
 from skriptoteket.di.exam_workspace_index import ExamWorkspaceIndexProvider
 from skriptoteket.di.favorites import FavoritesProvider
 from skriptoteket.di.flunk_out_frenzy import FlunkOutFrenzyProvider
@@ -68,6 +69,7 @@ __all__ = [
     "EditorProvider",
     "ExamWorkspaceProvider",
     "ExamWorkspaceChangeTypeProvider",
+    "ExamWorkspaceGuestDraftsProvider",
     "ExamWorkspaceIndexProvider",
     "FavoritesProvider",
     "IdentityProvider",
@@ -117,6 +119,7 @@ def build_providers(settings: Settings) -> tuple[Provider, ...]:
         EditorProvider(),
         ExamWorkspaceProvider(),
         ExamWorkspaceChangeTypeProvider(),
+        ExamWorkspaceGuestDraftsProvider(),
         ExamWorkspaceIndexProvider(),
         LlmProvider(),
         PublicRequestLimitsProvider(),

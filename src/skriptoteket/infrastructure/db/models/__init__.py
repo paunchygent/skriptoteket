@@ -60,6 +60,9 @@ from skriptoteket.infrastructure.db.models.exam_answer_key_enrichment_job import
 from skriptoteket.infrastructure.db.models.exam_answer_key_token_lease import (
     ExamAnswerKeyTokenLeaseModel,
 )
+from skriptoteket.infrastructure.db.models.exam_guest_draft_handoff import (
+    ExamGuestDraftHandoffModel,
+)
 from skriptoteket.infrastructure.db.models.exam_index import ExamIndexModel
 from skriptoteket.infrastructure.db.models.identity_projection import (
     IdentityProjectionEventModel,
@@ -91,6 +94,7 @@ __all__ = [
     "ConversionHubTranscriptSpeakerOverlayModel",
     "ExamAnswerKeyEnrichmentJobModel",
     "ExamAnswerKeyTokenLeaseModel",
+    "ExamGuestDraftHandoffModel",
     "GroupingExportCheckpointModel",
     "GroupingExportJobModel",
     "GroupAssignmentModel",
