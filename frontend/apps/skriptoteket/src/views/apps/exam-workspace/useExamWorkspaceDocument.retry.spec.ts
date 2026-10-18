@@ -33,6 +33,7 @@ import type {
 import { useToastStore } from "../../../stores/toast";
 import { buildResponse, currentItem, deferred, openingOf } from "./useExamWorkspaceDocument.specSupport";
 import type { DocumentState } from "./useExamWorkspaceDocument.specSupport";
+import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceDocument } from "./useExamWorkspaceDocument";
 
 type NativeExamAsset = ExamWorkspaceDocumentResponse["document"]["assets"][number];
@@ -147,7 +148,9 @@ async function openRetryDocument(
   assets: NativeExamAsset[] = [],
 ): Promise<DocumentState> {
   apiMocks.getExamWorkspaceDocument.mockResolvedValue(responseWith(items, assets));
-  const state = effectScope().run(() => useExamWorkspaceDocument());
+  const state = effectScope().run(() =>
+    useExamWorkspaceDocument({ store: serverExamWorkspaceStore }),
+  );
   if (!state) {
     throw new Error("expected the document state to be created");
   }

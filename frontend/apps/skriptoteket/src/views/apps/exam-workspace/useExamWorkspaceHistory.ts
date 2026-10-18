@@ -38,15 +38,11 @@ import { computed, onScopeDispose, ref, shallowRef, watch } from "vue";
 import type { Ref } from "vue";
 
 import { isApiError } from "../../../api/client";
-import {
-  getExamWorkspaceHistory,
-  getExamWorkspaceHistoryStep,
-  storeExamWorkspaceUndoStep,
-} from "../../../api/examWorkspace";
 import type { NativeExamDocument } from "../../../api/examWorkspace";
 import { useToast } from "../../../composables/useToast";
 import { sameDocument } from "./examWorkspaceConversionMerge";
 import { examWorkspaceSaveRefusalCopy } from "./examWorkspaceItemSaveRules";
+import type { ExamWorkspaceSharedStore } from "./examWorkspaceStore";
 import type { ExamWorkspaceTitleVerdict } from "./useExamWorkspaceTitleVerdict";
 
 export const EXAM_WORKSPACE_TYPING_PAUSE_MS = 900;
@@ -64,6 +60,8 @@ export type ExamWorkspaceHistoryDeps = {
   historyCursor: Ref<string | null>;
   lineageId: () => string | null;
   savedRevision: () => number | null;
+  /** The shared store half the history reads and writes run through. */
+  shared: ExamWorkspaceSharedStore;
   /** True while an import or a save may not be interleaved with a step write; excludes the replacing lock. */
   isBlocked: () => boolean;
   /** Another undo, redo or server command is replacing the copy; undo and redo wait for it. */
@@ -142,7 +140,7 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
     const token = ++loadToken;
     const base = deps.serverDocument.value;
     try {
-      const history = await getExamWorkspaceHistory(lineageId);
+      const history = await deps.shared.getExamWorkspaceHistory(lineageId);
       if (token !== loadToken || deps.lineageId() !== lineageId) {
         return;
       }
@@ -214,7 +212,7 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
     }
     storing.value = true;
     try {
-      const response = await storeExamWorkspaceUndoStep(lineageId, {
+      const response = await deps.shared.storeExamWorkspaceUndoStep(lineageId, {
         afterStepId: after,
         document,
         expectedCursor: cursor,
@@ -323,7 +321,7 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
       return;
     }
     try {
-      const response = await getExamWorkspaceHistoryStep(lineageId, stepId);
+      const response = await deps.shared.getExamWorkspaceHistoryStep(lineageId, stepId);
       if (deps.lineageId() !== lineageId) {
         return;
       }

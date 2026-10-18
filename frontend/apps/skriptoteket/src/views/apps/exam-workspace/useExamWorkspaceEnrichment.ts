@@ -17,24 +17,20 @@
  *
  * Relationships:
  *   - Used by `ExamWorkspaceView` next to `useExamWorkspaceDocument`.
- *   - Delegates transport to `api/examWorkspace.ts`.
+ *   - Delegates transport to the exam workspace store's teacher services.
  *   - Reads the open exam opening from `useExamWorkspaceDocument`.
  */
 
 import { computed, onScopeDispose, shallowRef, watch } from "vue";
 import type { Ref } from "vue";
 
-import {
-  findExamWorkspaceAnswerKeySuggestions,
-  getExamWorkspaceAnswerKeySuggestions,
-  requestExamWorkspaceAnswerKeySuggestions,
-} from "../../../api/examWorkspace";
 import type {
   ExamWorkspaceAnswerKeySuggestionItem,
   ExamWorkspaceAnswerKeySuggestionsStatus,
   NativeExamDocument,
 } from "../../../api/examWorkspace";
 import { useToast } from "../../../composables/useToast";
+import type { ExamWorkspaceTeacherServices } from "./examWorkspaceStore";
 import type { ExamWorkspaceOpening } from "./useExamWorkspaceDocument";
 
 export const EXAM_WORKSPACE_ENRICHMENT_POLL_MS = 3000;
@@ -60,6 +56,8 @@ export type ExamWorkspaceEnrichmentBinding = {
     opening: ExamWorkspaceOpening,
     suggestions: ExamWorkspaceAnswerKeySuggestionItem[],
   ) => void;
+  /** The teacher services the suggestion requests and polls run through; null in guest mode. */
+  teacher: ExamWorkspaceTeacherServices | null;
 };
 
 type Job = { opening: ExamWorkspaceOpening; status: ExamWorkspaceAnswerKeySuggestionsStatus };
@@ -165,11 +163,12 @@ export function useExamWorkspaceEnrichment(binding: ExamWorkspaceEnrichmentBindi
   }
 
   async function refreshStatus(opening: ExamWorkspaceOpening, jobId: string): Promise<void> {
-    if (!isLive(opening)) {
+    const teacher = binding.teacher;
+    if (!isLive(opening) || !teacher) {
       return;
     }
     try {
-      const status = await getExamWorkspaceAnswerKeySuggestions(opening.lineageId, jobId);
+      const status = await teacher.getExamWorkspaceAnswerKeySuggestions(opening.lineageId, jobId);
       applyStatus(opening, status);
     } catch {
       if (!isLive(opening)) {
@@ -188,14 +187,15 @@ export function useExamWorkspaceEnrichment(binding: ExamWorkspaceEnrichmentBindi
   async function requestSuggestions(itemId?: string): Promise<void> {
     const opening = binding.openExam.value;
     const currentDocument = binding.document.value;
-    if (!opening || !currentDocument || isRequesting.value || isEnrichmentPending.value) {
+    const teacher = binding.teacher;
+    if (!opening || !currentDocument || !teacher || isRequesting.value || isEnrichmentPending.value) {
       return;
     }
     requestingIn.value = opening;
     lookupFailedIn.value = null;
     pollFailures = 0;
     try {
-      const status = await requestExamWorkspaceAnswerKeySuggestions(
+      const status = await teacher.requestExamWorkspaceAnswerKeySuggestions(
         opening.lineageId,
         currentDocument,
         itemId,
@@ -221,14 +221,15 @@ export function useExamWorkspaceEnrichment(binding: ExamWorkspaceEnrichmentBindi
    * failure is shown under the same conditions, minus the version check.
    */
   async function resumeLostJob(opening: ExamWorkspaceOpening): Promise<void> {
+    const teacher = binding.teacher;
     const revision = binding.savedRevision.value;
-    if (revision === null) {
+    if (!teacher || revision === null) {
       return;
     }
     const ownJobStarted = () => job.value?.opening === opening || requestingIn.value === opening;
     let status: ExamWorkspaceAnswerKeySuggestionsStatus | null;
     try {
-      status = await findExamWorkspaceAnswerKeySuggestions(opening.lineageId, revision);
+      status = await teacher.findExamWorkspaceAnswerKeySuggestions(opening.lineageId, revision);
     } catch {
       if (isLive(opening) && !ownJobStarted()) {
         lookupFailedIn.value = opening;

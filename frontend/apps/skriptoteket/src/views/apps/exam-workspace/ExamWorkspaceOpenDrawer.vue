@@ -26,6 +26,7 @@ import { examWorkspaceOpenGroups } from "./examWorkspaceOpenGroups";
 import { examWorkspaceDocumentLabel, examWorkspaceSavedAtLabel } from "./examWorkspaceRows";
 import { examWorkspaceSameNameCounts } from "./examWorkspaceSavedDocuments";
 import { useExamCourseCatalog } from "./useExamCourseCatalog";
+import { useInjectedExamWorkspaceStore } from "./examWorkspaceStore";
 
 const props = defineProps<{
   documents: ExamWorkspaceDocumentSummary[];
@@ -53,7 +54,8 @@ const emit = defineEmits<{
   retryConversion: [];
 }>();
 
-const { courses, courseByKey, registeredCourseKeys, error: courseCatalogError } = useExamCourseCatalog();
+const store = useInjectedExamWorkspaceStore();
+const { courses, courseByKey, registeredCourseKeys, error: courseCatalogError } = useExamCourseCatalog(store.shared);
 const courseKey = ref<string | null>(null);
 const dragOver = ref(false);
 const fileInput = ref<HTMLInputElement | null>(null);

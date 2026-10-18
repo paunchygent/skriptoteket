@@ -27,10 +27,9 @@
  *     phone list and the Import box.
  */
 
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, provide, ref, watch } from "vue";
 
 import type { ExamWorkspaceExportTarget, ExamListOrdering } from "../../api/examWorkspace";
-import { updateExamListOrdering } from "../../api/examWorkspace";
 import { useToast } from "../../composables/useToast";
 import ExamWorkspaceDrawers from "./exam-workspace/ExamWorkspaceDrawers.vue";
 import ExamWorkspaceEditorPane from "./exam-workspace/ExamWorkspaceEditorPane.vue";
@@ -50,6 +49,8 @@ import { examWorkspaceDocumentLabel } from "./exam-workspace/examWorkspaceRows";
 import { bodyText } from "./exam-workspace/examWorkspaceRichText";
 import { isEmptyBody } from "./exam-workspace/examWorkspaceRichTextDocument";
 import { examWorkspaceExamPrintedDifference } from "./exam-workspace/examWorkspaceTotals";
+import { EXAM_WORKSPACE_STORE_KEY } from "./exam-workspace/examWorkspaceStore";
+import type { ExamWorkspaceStore } from "./exam-workspace/examWorkspaceStore";
 import { useExamWorkspaceAddress } from "./exam-workspace/useExamWorkspaceAddress";
 import { useExamWorkspaceContentSuggestions } from "./exam-workspace/useExamWorkspaceContentSuggestions";
 import { useExamWorkspaceEditing } from "./exam-workspace/useExamWorkspaceEditing";
@@ -63,9 +64,13 @@ import { useExamWorkspaceSourceFile } from "./exam-workspace/useExamWorkspaceSou
 
 type DrawerName = "open" | "export" | "details";
 
+const props = defineProps<{ store: ExamWorkspaceStore }>();
+
+provide(EXAM_WORKSPACE_STORE_KEY, props.store);
+
 const layout = useExamWorkspaceLayout();
 const toast = useToast();
-const editing = useExamWorkspaceEditing();
+const editing = useExamWorkspaceEditing(props.store);
 const {
   history,
   structure,
@@ -100,6 +105,7 @@ const exports = useExamWorkspaceExports(summary, workspaceDocument, {
   noteBlockers: editing.noteExportBlockers,
   readLatest: editing.reloadDocument,
   saveFirst: () => saveFlow.saveBeforeExport(),
+  store: props.store,
 });
 const enrichment = useExamWorkspaceEnrichment({
   applySuggestions: applyArrivingSuggestions,
@@ -107,6 +113,7 @@ const enrichment = useExamWorkspaceEnrichment({
   isOpen,
   openExam,
   savedRevision,
+  teacher: props.store.teacher,
 });
 const content = useExamWorkspaceContentSuggestions({
   document: () => workspaceDocument.value,
@@ -114,6 +121,7 @@ const content = useExamWorkspaceContentSuggestions({
   openExam: () => openExam.value,
   savedRevision: () => savedRevision.value,
   setTags,
+  teacher: props.store.teacher,
 });
 
 const selection = useExamWorkspaceSelection({
@@ -191,10 +199,12 @@ watch(isPhone, (phone) => {
 });
 
 async function setOrdering(ordering: ExamListOrdering): Promise<void> {
+  const teacher = props.store.teacher;
+  if (!teacher) return;
   const previous = listOrdering.value;
   listOrdering.value = ordering;
   try {
-    await updateExamListOrdering(ordering);
+    await teacher.updateExamListOrdering(ordering);
   } catch {
     listOrdering.value = previous;
     toast.failure("Ordningen kunde inte sparas. Försök igen.");

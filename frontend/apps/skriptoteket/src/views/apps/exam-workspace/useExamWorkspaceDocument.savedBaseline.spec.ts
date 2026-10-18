@@ -7,6 +7,7 @@ import { ApiError } from "../../../api/client";
 import type { ExamWorkspaceDocumentResponse } from "../../../api/examWorkspace";
 import { buildResponse } from "./useExamWorkspaceDocument.specSupport";
 import { buildParentDocument } from "./examWorkspaceParentDocument.specSupport";
+import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceDocument } from "./useExamWorkspaceDocument";
 
 const api = vi.hoisted(() => ({
@@ -38,7 +39,7 @@ describe("saved exam baseline", () => {
     const response = commandResponse();
     api.getExamWorkspaceDocument.mockResolvedValue(response);
     const scope = effectScope();
-    const state = scope.run(() => useExamWorkspaceDocument())!;
+    const state = scope.run(() => useExamWorkspaceDocument({ store: serverExamWorkspaceStore }))!;
     try {
       await state.openDocument("lineage-1");
       if (path === "reload") await state.reloadDocument();
@@ -68,7 +69,7 @@ describe("saved exam baseline", () => {
     const response = { ...base, document: { ...base.document, title: "Arbetskopia" } };
     api.getExamWorkspaceDocument.mockResolvedValue(response);
     const scope = effectScope();
-    const state = scope.run(() => useExamWorkspaceDocument())!;
+    const state = scope.run(() => useExamWorkspaceDocument({ store: serverExamWorkspaceStore }))!;
     try {
       await state.openDocument("lineage-1");
       expect(state.isDirty.value).toBe(true);
@@ -90,7 +91,7 @@ describe("saved exam baseline", () => {
   it("keeps unsaved commands dirty after a stale save reloads the working copy", async () => {
     api.getExamWorkspaceDocument.mockResolvedValue(buildResponse());
     const scope = effectScope();
-    const state = scope.run(() => useExamWorkspaceDocument())!;
+    const state = scope.run(() => useExamWorkspaceDocument({ store: serverExamWorkspaceStore }))!;
     try {
       await state.openDocument("lineage-1");
       state.setTitle("Lokal ändring");
@@ -117,7 +118,7 @@ describe("saved exam baseline", () => {
     const response = buildResponse();
     api.getExamWorkspaceDocument.mockResolvedValue({ ...response, saved_document: response.document });
     const scope = effectScope();
-    const state = scope.run(() => useExamWorkspaceDocument())!;
+    const state = scope.run(() => useExamWorkspaceDocument({ store: serverExamWorkspaceStore }))!;
     try {
       await state.openDocument("lineage-1");
       expect(state.isDirty.value).toBe(false);

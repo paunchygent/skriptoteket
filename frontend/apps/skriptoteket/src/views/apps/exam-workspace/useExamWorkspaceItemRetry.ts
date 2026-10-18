@@ -15,14 +15,13 @@
  *     refs, its request lock and its combined busy state.
  *   - Reads and replaces only the retry target through the document owner's
  *     `workspaceDocument` ref.
- *   - Delegates transport to `api/examWorkspace.ts`.
+ *   - Delegates transport to the exam workspace store's teacher services.
  *   - Compares the target with `sameValue` from `examWorkspaceConversionMerge`.
  */
 
 import type { Ref, ShallowRef } from "vue";
 
 import { isApiError } from "../../../api/client";
-import { retryExamWorkspaceItem } from "../../../api/examWorkspace";
 import type {
   ExamWorkspaceDocumentSummary,
   NativeExamDocument,
@@ -30,6 +29,7 @@ import type {
 } from "../../../api/examWorkspace";
 import { useToast } from "../../../composables/useToast";
 import { sameValue } from "./examWorkspaceConversionMerge";
+import type { ExamWorkspaceTeacherServices } from "./examWorkspaceStore";
 import type { ExamWorkspaceOpening } from "./useExamWorkspaceDocument";
 
 const RETRY_FAILURE_COPY = "Det gick inte att konvertera om frågan. Försök igen.";
@@ -47,6 +47,8 @@ export type ExamWorkspaceItemRetryBinding = {
   operationBusy: Ref<boolean>;
   /** The document owner's combined busy state; a retry sends nothing while it holds. */
   isBusy: () => boolean;
+  /** The teacher services the retry runs through; null in guest mode. */
+  teacher: ExamWorkspaceTeacherServices | null;
 };
 
 export function useExamWorkspaceItemRetry(binding: ExamWorkspaceItemRetryBinding) {
@@ -74,7 +76,8 @@ export function useExamWorkspaceItemRetry(binding: ExamWorkspaceItemRetryBinding
     const current = binding.workspaceDocument.value;
     const currentSummary = binding.summary.value;
     const opening = binding.openExam.value;
-    if (!current || !currentSummary || !opening || binding.isBusy()) {
+    const teacher = binding.teacher;
+    if (!current || !currentSummary || !opening || !teacher || binding.isBusy()) {
       return;
     }
     const target = current.items.find((item) => item.item_id === itemId) ?? null;
@@ -89,7 +92,7 @@ export function useExamWorkspaceItemRetry(binding: ExamWorkspaceItemRetryBinding
     const revision = current.revision;
     binding.operationBusy.value = true;
     try {
-      const response = await retryExamWorkspaceItem(lineageId, current, itemId, kind);
+      const response = await teacher.retryExamWorkspaceItem(lineageId, current, itemId, kind);
       const draft = binding.workspaceDocument.value;
       const draftTarget = draft?.items.find((item) => item.item_id === itemId) ?? null;
       if (

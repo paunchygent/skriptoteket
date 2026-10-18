@@ -18,18 +18,12 @@
  *   - Used by `useExamWorkspaceDocument`, which hands over its document refs
  *     through `ExamWorkspaceConversionBinding`.
  *   - Merges with `mergeConversionRevision` (client twin of the server merge).
- *   - Delegates transport to `api/examWorkspace.ts`.
+ *   - Delegates transport to the exam workspace store.
  */
 
 import { computed, onScopeDispose, ref } from "vue";
 import type { Ref } from "vue";
 
-import {
-  getExamWorkspaceConversionStatus,
-  getExamWorkspaceDocument,
-  importExamWorkspaceDigiExam,
-  importExamWorkspaceDocument as requestImportExamWorkspaceDocument,
-} from "../../../api/examWorkspace";
 import type {
   ExamWorkspaceConversionStatus,
   ExamWorkspaceConversionUnit,
@@ -39,6 +33,7 @@ import type {
 } from "../../../api/examWorkspace";
 import { useToast } from "../../../composables/useToast";
 import { mergeConversionRevision } from "./examWorkspaceConversionMerge";
+import type { ExamWorkspaceStore } from "./examWorkspaceStore";
 
 export const EXAM_WORKSPACE_CONVERSION_POLL_MS = 3000;
 const CONVERSION_MAX_POLL_MS = 30_000;
@@ -60,6 +55,8 @@ export type ExamWorkspaceConversionBinding = {
   beforeFirstRevision: () => void;
   /** A save is in flight; its response replaces the copy, so merging waits. */
   isSaving: () => boolean;
+  /** The store the document reads and the import lifecycle run through. */
+  store: ExamWorkspaceStore;
 };
 
 /** What a save conflict turned out to be, once the conversion revision was checked. */
@@ -226,7 +223,7 @@ export function useExamWorkspaceConversion(
     const first = binding.summary.value?.lineage_id !== status.lineage_id;
     const shown = shownUnits.value ?? [];
     const reconcile = binding.beginDocumentRead();
-    const response = reconcile(await getExamWorkspaceDocument(status.lineage_id));
+    const response = reconcile(await binding.store.shared.getExamWorkspaceDocument(status.lineage_id));
     if (pollGeneration !== generation) return false;
     const conversion = response.conversion;
     if (conversion === null) {
@@ -276,10 +273,12 @@ export function useExamWorkspaceConversion(
     status: ExamWorkspaceConversionStatus,
     pollGeneration: number,
   ): Promise<void> {
+    const teacher = binding.store.teacher;
+    if (!teacher) return;
     try {
       const next = isFinished(status)
         ? status
-        : await getExamWorkspaceConversionStatus(status.job_id);
+        : await teacher.getExamWorkspaceConversionStatus(status.job_id);
       await applyConversionStatus(next, pollGeneration);
       if (pollGeneration === generation) {
         pollFailures = 0;
@@ -319,6 +318,8 @@ export function useExamWorkspaceConversion(
    * the next poll merges it. Outside conversion it returns "unrelated".
    */
   async function syncAfterConflict(expectedRevision: number): Promise<ConflictSync> {
+    const teacher = binding.store.teacher;
+    if (!teacher) return "unrelated";
     const pollGeneration = generation;
     while (statusRequest) await statusRequest;
     const status = conversionStatus.value;
@@ -327,7 +328,7 @@ export function useExamWorkspaceConversion(
     }
     let conversionRevision = 0;
     const request = (async () => {
-      const next = await getExamWorkspaceConversionStatus(status.job_id);
+      const next = await teacher.getExamWorkspaceConversionStatus(status.job_id);
       if (pollGeneration !== generation) return;
       conversionStatus.value = next;
       conversionRevision = next.document_revision ?? 0;
@@ -349,7 +350,8 @@ export function useExamWorkspaceConversion(
   }
 
   async function importDocument(file: File, courseKey: string | null): Promise<void> {
-    if (importBlocked.value || isConverting.value) return;
+    const teacher = binding.store.teacher;
+    if (importBlocked.value || isConverting.value || !teacher) return;
     const pollGeneration = ++generation;
     isImporting.value = true;
     conversionError.value = null;
@@ -359,8 +361,8 @@ export function useExamWorkspaceConversion(
     try {
       // A DigiExam export (.dxe) is read by its own importer; both follow the same conversion.
       const request = file.name.toLowerCase().endsWith(".dxe")
-        ? importExamWorkspaceDigiExam
-        : requestImportExamWorkspaceDocument;
+        ? teacher.importExamWorkspaceDigiExam
+        : teacher.importExamWorkspaceDocument;
       const status = await request(file, courseKey);
       if (pollGeneration !== generation) return;
       isConverting.value = true;

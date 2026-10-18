@@ -15,6 +15,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { NativeExamAsset, NativeExamBodyParagraph, NativeExamDocument, NativeExamItem } from "../../../api/examWorkspace";
 import { useToastStore } from "../../../stores/toast";
 import { newTeacherItem } from "./examWorkspaceItemEdits";
+import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceStructure } from "./useExamWorkspaceStructure";
 
 vi.mock("../../../api/examWorkspace", () => ({}));
@@ -90,6 +91,7 @@ function setup(initial: NativeExamDocument) {
       savedRevision: () => 1,
       selectItem: vi.fn(),
       selectedItemId,
+      shared: serverExamWorkspaceStore.shared,
       workspaceDocument,
     }),
   )!;

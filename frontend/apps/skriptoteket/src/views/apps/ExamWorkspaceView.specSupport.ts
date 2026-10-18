@@ -22,6 +22,7 @@ import { buildFreeTextItem } from "../../test/examWorkspaceFixtures";
 import { mountWithContext } from "../../test/utils";
 import ExamWorkspaceView from "./ExamWorkspaceView.vue";
 import { buildSavedExamSummary } from "./exam-workspace/useExamWorkspaceDocument.specSupport";
+import { serverExamWorkspaceStore } from "./exam-workspace/examWorkspaceStore";
 
 export function buildDocument(): NativeExamDocument {
   return {
@@ -75,7 +76,9 @@ export type ViewWrapper = ReturnType<typeof mountWithContext>;
 export const mounted: ViewWrapper[] = [];
 
 export async function mountView() {
-  const wrapper = mountWithContext(ExamWorkspaceView);
+  const wrapper = mountWithContext(ExamWorkspaceView, {
+    props: { store: serverExamWorkspaceStore },
+  });
   mounted.push(wrapper);
   await flushPromises();
   return wrapper;

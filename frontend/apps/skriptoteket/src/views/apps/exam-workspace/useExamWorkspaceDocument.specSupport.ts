@@ -20,6 +20,7 @@ import type {
   NativeExamItem,
 } from "../../../api/examWorkspace";
 import { buildMatchingItem } from "./examWorkspaceMatchingItem.specSupport";
+import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceDocument } from "./useExamWorkspaceDocument";
 import type { ExamWorkspaceOpening } from "./useExamWorkspaceDocument";
 
@@ -87,7 +88,9 @@ export async function openMatchingDocument(
   item?: NativeExamItem,
 ): Promise<DocumentState> {
   getDocument.mockResolvedValue(buildResponse(item));
-  const state = effectScope().run(() => useExamWorkspaceDocument());
+  const state = effectScope().run(() =>
+    useExamWorkspaceDocument({ store: serverExamWorkspaceStore }),
+  );
   if (!state) {
     throw new Error("expected the document state to be created");
   }

@@ -22,6 +22,7 @@ import { ApiError } from "../../../api/client";
 import type { NativeExamDocument } from "../../../api/examWorkspace";
 import { useToastStore } from "../../../stores/toast";
 import { buildParentDocument } from "./examWorkspaceParentDocument.specSupport";
+import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { EXAM_WORKSPACE_TYPING_PAUSE_MS, useExamWorkspaceHistory } from "./useExamWorkspaceHistory";
 
 const apiMocks = vi.hoisted(() => ({
@@ -107,6 +108,7 @@ function setup(failFirstLoad = false) {
       onConflict,
       savedRevision: () => baseline.revision,
       serverDocument,
+      shared: serverExamWorkspaceStore.shared,
       workspaceDocument,
     }),
   )!;

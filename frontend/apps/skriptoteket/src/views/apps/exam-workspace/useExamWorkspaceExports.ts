@@ -14,19 +14,14 @@
  *
  * Relationships:
  *   - Used by `ExamWorkspaceView` next to `useExamWorkspaceDocument`.
- *   - Delegates transport to `api/examWorkspace.ts` and downloads through the
- *     shared browser download helper.
+ *   - Delegates transport to the exam workspace store and downloads through
+ *     the shared browser download helper.
  */
 
 import { computed, ref, watch } from "vue";
 import type { Ref } from "vue";
 
 import { isApiError } from "../../../api/client";
-import {
-  downloadExamWorkspaceExport,
-  getExamWorkspaceExportChecklist,
-  saveExamWorkspaceExport,
-} from "../../../api/examWorkspace";
 import type {
   ExamWorkspaceDocumentSummary,
   ExamWorkspaceExportBlocker,
@@ -40,6 +35,7 @@ import type {
 import { useToast } from "../../../composables/useToast";
 import { triggerBrowserDownload } from "../../../utils/browserDownload";
 import { examWorkspaceSavedAt } from "./examWorkspaceFormat";
+import type { ExamWorkspaceStore } from "./examWorkspaceStore";
 import type { ExamWorkspaceTitleVerdict } from "./useExamWorkspaceTitleVerdict";
 
 /** A save from elsewhere moved the head; the workspace reads the latest version in. */
@@ -151,6 +147,8 @@ export type ExamWorkspaceExportSteps = {
   readLatest: () => Promise<void>;
   /** The export gate's refusal of the title just saved, for the title blocker. */
   noteBlockers: ExamWorkspaceTitleVerdict;
+  /** The store the export reads, downloads and Mina filer saves run through. */
+  store: ExamWorkspaceStore;
 };
 
 export function useExamWorkspaceExports(
@@ -228,7 +226,7 @@ export function useExamWorkspaceExports(
     requestId: number,
   ): Promise<void> {
     try {
-      const response = await getExamWorkspaceExportChecklist(lineageId, expectedRevision);
+      const response = await steps.store.shared.getExamWorkspaceExportChecklist(lineageId, expectedRevision);
       if (!isCurrentChecklistRequest(requestId, lineageId)) {
         return;
       }
@@ -277,8 +275,10 @@ export function useExamWorkspaceExports(
   ): Promise<boolean> {
     try {
       if (destination === "files") {
+        const teacher = steps.store.teacher;
+        if (!teacher) return false;
         const replaced = savedExports.value[target] ?? null;
-        const saved = await saveExamWorkspaceExport(savedSummary.lineage_id, target, savedSummary.version);
+        const saved = await teacher.saveExamWorkspaceExport(savedSummary.lineage_id, target, savedSummary.version);
         if (summary.value?.lineage_id === savedSummary.lineage_id) {
           savedExports.value = { ...savedExports.value, [target]: saved.created_at };
         }
@@ -287,7 +287,7 @@ export function useExamWorkspaceExports(
           ? `${EXPORT_FORMAT_NAMES[target]} sparad i Mina filer och ersatte filen från ${examWorkspaceSavedAt(replaced)}.`
           : `${EXPORT_FORMAT_NAMES[target]} sparad i Mina filer.`;
       } else {
-        const response = await downloadExamWorkspaceExport(savedSummary.lineage_id, target, savedSummary.version);
+        const response = await steps.store.shared.downloadExamWorkspaceExport(savedSummary.lineage_id, target, savedSummary.version);
         triggerBrowserDownload(response.blob, response.filename);
         clearExportFeedback();
         exportResult.value = EXPORT_CREATED_MESSAGES[target];

@@ -20,6 +20,7 @@ import {
 } from "../../composables/useProfile";
 import { useToast } from "../../composables/useToast";
 import ExamCourseCombobox from "../../views/apps/exam-workspace/ExamCourseCombobox.vue";
+import { serverExamWorkspaceStore } from "../../views/apps/exam-workspace/examWorkspaceStore";
 import { useExamCourseCatalog } from "../../views/apps/exam-workspace/useExamCourseCatalog";
 import { SystemMessage } from "../ui";
 import { UiDenseIconButton, UiGlyph } from "../ui/shared";
@@ -32,7 +33,7 @@ const props = defineProps<{
 
 const { updateExamCourses } = useProfile();
 const { courses, error: catalogError, courseByKey, setRegisteredCourseKeys } =
-  useExamCourseCatalog();
+  useExamCourseCatalog(serverExamWorkspaceStore.shared);
 const toast = useToast();
 
 const schoolFormLabels: Record<ExamCourseSchoolForm, string> = {

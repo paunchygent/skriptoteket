@@ -20,7 +20,6 @@
 
 import { computed, ref, useId, watch } from "vue";
 
-import { getExamCourseContent } from "../../../api/examWorkspace";
 import type {
   ExamCourseChoice,
   ExamCourseContent,
@@ -31,6 +30,7 @@ import type {
 import { UiGlyph } from "../../../components/ui";
 import ExamCourseCombobox from "./ExamCourseCombobox.vue";
 import { useExamCourseCatalog } from "./useExamCourseCatalog";
+import { useInjectedExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceMyCourses } from "./useExamWorkspaceMyCourses";
 import type { ExamWorkspaceRenameFailure } from "./useExamWorkspaceRename";
 
@@ -58,8 +58,9 @@ const emit = defineEmits<{
 }>();
 
 const id = useId();
-const { courses, courseByKey, error: catalogError } = useExamCourseCatalog();
-const myCourses = useExamWorkspaceMyCourses();
+const store = useInjectedExamWorkspaceStore();
+const { courses, courseByKey, error: catalogError } = useExamCourseCatalog(store.shared);
+const myCourses = useExamWorkspaceMyCourses(store.shared);
 
 const courseKey = computed(() => props.document.header.course?.key ?? null);
 const selectedCourse = computed(() => courseByKey(courseKey.value));
@@ -116,9 +117,10 @@ watch(
   async (key) => {
     content.value = null;
     contentError.value = false;
-    if (!key) return;
+    const teacher = store.teacher;
+    if (!key || !teacher) return;
     try {
-      const response = await getExamCourseContent(key);
+      const response = await teacher.getExamCourseContent(key);
       if (courseKey.value === key) content.value = response;
     } catch {
       if (courseKey.value === key) contentError.value = true;

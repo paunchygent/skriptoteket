@@ -15,10 +15,6 @@
 
 import { onScopeDispose, ref } from "vue";
 
-import {
-  getExamWorkspaceContentSuggestions,
-  requestExamWorkspaceContentSuggestions,
-} from "../../../api/examWorkspace";
 import type {
   ExamWorkspaceContentSuggestions,
   NativeExamDocument,
@@ -26,6 +22,7 @@ import type {
 } from "../../../api/examWorkspace";
 import { isApiError } from "../../../api/client";
 import { useToast } from "../../../composables/useToast";
+import type { ExamWorkspaceTeacherServices } from "./examWorkspaceStore";
 import type { ExamWorkspaceOpening } from "./useExamWorkspaceDocument";
 
 export const EXAM_WORKSPACE_CONTENT_POLL_MS = 1500;
@@ -61,6 +58,8 @@ export function useExamWorkspaceContentSuggestions(deps: {
   document: () => NativeExamDocument | null;
   savedRevision: () => number | null;
   setTags: (tags: Tags) => void;
+  /** The teacher services the content-suggestion jobs run through; null in guest mode. */
+  teacher: ExamWorkspaceTeacherServices | null;
 }) {
   const toast = useToast();
   const busy = ref(false);
@@ -122,7 +121,12 @@ export function useExamWorkspaceContentSuggestions(deps: {
     }
     const lineageId = request.opening.lineageId;
     timer = setTimeout(() => {
-      void getExamWorkspaceContentSuggestions(lineageId, response.job_id)
+      const teacher = deps.teacher;
+      if (!teacher) {
+        busy.value = false;
+        return;
+      }
+      void teacher.getExamWorkspaceContentSuggestions(lineageId, response.job_id)
         .then((next) => follow(request, next))
         .catch(() => {
           busy.value = false;
@@ -133,7 +137,8 @@ export function useExamWorkspaceContentSuggestions(deps: {
 
   async function suggest(): Promise<void> {
     const opening = deps.openExam();
-    if (!opening || busy.value) return;
+    const teacher = deps.teacher;
+    if (!opening || !teacher || busy.value) return;
     const request: Request = {
       opening,
       courseKey: deps.document()?.header.course?.key ?? null,
@@ -141,7 +146,7 @@ export function useExamWorkspaceContentSuggestions(deps: {
     busy.value = true;
     message.value = null;
     try {
-      const started = await requestExamWorkspaceContentSuggestions(opening.lineageId);
+      const started = await teacher.requestExamWorkspaceContentSuggestions(opening.lineageId);
       follow(request, started);
     } catch (error) {
       busy.value = false;
