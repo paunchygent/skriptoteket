@@ -16,6 +16,9 @@ from skriptoteket.application.curated_apps.exam_workspace_history import (
     ExamWorkspaceHistoryResponse,
     ExamWorkspaceUndoStepResponse,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_export_renderer import (
+    ExamWorkspaceExportRenderer,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_exports import (
     ExportExamWorkspaceDocumentHandler,
 )
@@ -83,9 +86,11 @@ async def build_parent_skeleton_package() -> tuple[bytes, NativeExamDocument]:
         vault_files=env.vault_files,
         codec=env.codec,
         store=env.store,
-        qti_writer=ExamNetQtiPackageWriter(),
-        pdf_renderer=Mock(spec=ExamNetPdfRendererProtocol),
-        docx_writer=Mock(spec=ExamWorkspaceDocxWriterProtocol),
+        renderer=ExamWorkspaceExportRenderer(
+            qti_writer=ExamNetQtiPackageWriter(),
+            pdf_renderer=Mock(spec=ExamNetPdfRendererProtocol),
+            docx_writer=Mock(spec=ExamWorkspaceDocxWriterProtocol),
+        ),
     )
     container = make_async_container(
         SkeletonProvider(),

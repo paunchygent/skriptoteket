@@ -167,7 +167,7 @@ def test_refusal_names_only_the_objects_that_block(
         document = document.model_copy(update={"items": ()})
 
     with pytest.raises(DomainError) as refusal:
-        _export_handler(env)._raise_for_blockers(document)
+        _export_handler(env)._renderer._raise_for_blockers(document)
 
     assert ("titel" in refusal.value.message) is names_title
     assert ("frågor" in refusal.value.message) is names_questions

@@ -16,6 +16,9 @@ from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from skriptoteket.application.curated_apps.exam_workspace import ExamWorkspaceExportTarget
+from skriptoteket.application.curated_apps.handlers.exam_workspace_export_renderer import (
+    ExamWorkspaceExportRenderer,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_exports import (
     ExportExamWorkspaceDocumentHandler,
 )
@@ -69,9 +72,11 @@ def exporter(world: ConversionWorld) -> ExportExamWorkspaceDocumentHandler:
         vault_files=world.vault_files,
         codec=world.codec,
         store=world.store,
-        qti_writer=ExamNetQtiPackageWriter(),
-        pdf_renderer=WeasyPrintExamNetPdfRenderer(),
-        docx_writer=ExamWorkspaceDocxWriter(),
+        renderer=ExamWorkspaceExportRenderer(
+            qti_writer=ExamNetQtiPackageWriter(),
+            pdf_renderer=WeasyPrintExamNetPdfRenderer(),
+            docx_writer=ExamWorkspaceDocxWriter(),
+        ),
     )
 
 

@@ -34,13 +34,14 @@ from skriptoteket.application.curated_apps.public_exam_converter import (
     PublicExamConverterUpload,
 )
 from skriptoteket.config import Settings
-from skriptoteket.domain.curated_apps.models import CuratedAppPublicRuntimeStatus
 from skriptoteket.domain.errors import DomainError, ErrorCode, validation_error
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.protocols.public_helpers import PublicHelperThrottleProtocol
 from skriptoteket.web.api.v1.public_apps import EXAM_CONVERTER_PUBLIC_API_NAMESPACE
-from skriptoteket.web.api.v1.public_apps_support import require_public_curated_app_capability
+from skriptoteket.web.api.v1.public_apps_exam_workspace_support import (
+    require_active_exam_converter as _require_active_exam_converter,
+)
 from skriptoteket.web.content_disposition import attachment_content_disposition
 from skriptoteket.web.dishka_dependencies import FromDishka
 from skriptoteket.web.request_metadata import get_client_ip, get_correlation_id, get_user_agent
@@ -64,27 +65,6 @@ router = APIRouter(
     prefix=EXAM_CONVERTER_PUBLIC_API_NAMESPACE,
     tags=["public-apps", "exam-converter"],
 )
-
-
-def _require_active_exam_converter(
-    *,
-    registry: CuratedAppRegistryProtocol,
-) -> None:
-    _app, capability = require_public_curated_app_capability(
-        app_id=APP_ID,
-        scope=CAPABILITY,
-        registry=registry,
-    )
-    if capability.runtime_status is not CuratedAppPublicRuntimeStatus.ACTIVE:
-        raise DomainError(
-            code=ErrorCode.NOT_FOUND,
-            message="Public Exam Converter runtime is not active.",
-            details={
-                "app_id": APP_ID,
-                "capability": CAPABILITY,
-                "reason_code": "public_exam_converter_runtime_inactive",
-            },
-        )
 
 
 def _parse_targets(*, targets_json: str | None) -> tuple[PublicExamConverterTarget, ...]:

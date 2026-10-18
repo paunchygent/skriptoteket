@@ -69,6 +69,9 @@ from skriptoteket.infrastructure.db.models.password_reset_token import PasswordR
 from skriptoteket.infrastructure.db.models.public_exam_converter_job import (
     PublicExamConverterJobModel,
 )
+from skriptoteket.infrastructure.db.models.public_request_window import (
+    PublicRequestWindowModel,
+)
 from skriptoteket.infrastructure.db.models.user_favorite import (
     UserFavoriteAppModel,
     UserFavoriteToolModel,
@@ -96,6 +99,7 @@ __all__ = [
     "PlanDraftModel",
     "PasswordResetTokenModel",
     "PublicExamConverterJobModel",
+    "PublicRequestWindowModel",
     "RosterFixedSeatRuleModel",
     "RosterRelationshipRuleModel",
     "RoomTemplateModel",

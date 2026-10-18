@@ -55,6 +55,9 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_retry im
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_serial_uow import (
     SerializedUnitOfWork,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_export_renderer import (
+    ExamWorkspaceExportRenderer,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_exports import (
     ExportExamWorkspaceDocumentHandler,
 )
@@ -66,6 +69,9 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_parents impor
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_undo_steps import (
     StoreExamWorkspaceUndoStepHandler,
+)
+from skriptoteket.application.curated_apps.handlers.public_exam_workspace_exports import (
+    PublicExamWorkspaceExportHandler,
 )
 from skriptoteket.config import Settings
 from skriptoteket.di.docx_conversion import build_docx_conversion_pipeline
@@ -434,21 +440,37 @@ class ExamWorkspaceProvider(Provider):
         return GetExamWorkspaceAssetHandler(vault_files=vault_files, codec=codec, store=store)
 
     @provide(scope=Scope.REQUEST)
+    def export_renderer(self) -> ExamWorkspaceExportRenderer:
+        """Provide the shared QTI/PDF/DOCX renderer and checklist builder."""
+        return ExamWorkspaceExportRenderer(
+            qti_writer=ExamNetQtiPackageWriter(),
+            pdf_renderer=WeasyPrintExamNetPdfRenderer(),
+            docx_writer=ExamWorkspaceDocxWriter(),
+        )
+
+    @provide(scope=Scope.REQUEST)
     def export_handler(
         self,
         vault_files: VaultFileRepositoryProtocol,
         codec: ExamWorkspaceContainerCodecProtocol,
         store: ExamWorkspaceDocumentStore,
+        renderer: ExamWorkspaceExportRenderer,
     ) -> ExportExamWorkspaceDocumentHandlerProtocol:
         """Provide the on-demand export handler (QTI/PDF/DOCX)."""
         return ExportExamWorkspaceDocumentHandler(
             vault_files=vault_files,
             codec=codec,
             store=store,
-            qti_writer=ExamNetQtiPackageWriter(),
-            pdf_renderer=WeasyPrintExamNetPdfRenderer(),
-            docx_writer=ExamWorkspaceDocxWriter(),
+            renderer=renderer,
         )
+
+    @provide(scope=Scope.REQUEST)
+    def public_export_handler(
+        self,
+        renderer: ExamWorkspaceExportRenderer,
+    ) -> PublicExamWorkspaceExportHandler:
+        """Provide the stateless guest export handler."""
+        return PublicExamWorkspaceExportHandler(renderer=renderer)
 
     @provide(scope=Scope.REQUEST)
     def undo_step_handler(

@@ -45,6 +45,7 @@ from skriptoteket.di.infrastructure import (
     InfrastructureSessionFilesProvider,
 )
 from skriptoteket.di.llm import LlmProvider
+from skriptoteket.di.public_request_limits import PublicRequestLimitsProvider
 from skriptoteket.di.reagent_prep_chef import ReagentPrepChefProvider
 from skriptoteket.di.scripting import ScriptingProvider
 from skriptoteket.di.suggestions import SuggestionsProvider
@@ -78,6 +79,7 @@ __all__ = [
     "InfrastructureServicesProvider",
     "InfrastructureSessionFilesProvider",
     "LlmProvider",
+    "PublicRequestLimitsProvider",
     "ScriptingProvider",
     "SuggestionsProvider",
     "create_container",
@@ -116,6 +118,7 @@ def create_container(settings: Settings) -> AsyncContainer:
         ExamWorkspaceChangeTypeProvider(),
         ExamWorkspaceIndexProvider(),
         LlmProvider(),
+        PublicRequestLimitsProvider(),
         ScriptingProvider(),
         SuggestionsProvider(),
     )
