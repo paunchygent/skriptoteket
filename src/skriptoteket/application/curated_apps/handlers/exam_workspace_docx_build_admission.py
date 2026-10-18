@@ -351,6 +351,17 @@ def _admit_item(
         shown -= (state.key_anchors | state.grouped_keys) - set(question)
         shown -= state.header_anchors
         own = tuple(chunk for chunk in state.chunks if chunk.anchor in shown)
+        # Every other question's own chunks: the source a misplaced paragraph repeats, never
+        # this item's content (TASK-SKRIPT-39-04-15 D4).
+        foreign = (
+            set().union(*state.questions)
+            - shown
+            - state.governing
+            - state.header_anchors
+            - set(instructions)
+            - state.context_anchors
+        )
+        foreign_chunks = tuple(chunk for chunk in state.chunks if chunk.anchor in foreign)
         scored = with_printed_points(
             with_accepted_forms(produced, context),
             (chunk for chunk in own if chunk.kind != "heading"),
@@ -358,6 +369,7 @@ def _admit_item(
         aligned = aligned_native_item(
             scored,
             chunks=own,
+            foreign_chunks=foreign_chunks,
             language=state.language,
             formatting_observer=lambda path: state.record_formatting(
                 path, item=index, anchors=anchors

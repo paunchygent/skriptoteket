@@ -66,7 +66,7 @@ def recorded_items(exam: str = ENGLISH_EXAM) -> tuple[NativeExamItem, ...]:
     """Every converted item of the exam, numbered in source order."""
     language = recorded_exam_language(exam)
     return tuple(
-        aligned_native_item(produced, language=language).item.model_copy(
+        aligned_native_item(produced, language=language, foreign_chunks=()).item.model_copy(
             update={"item_id": f"item_{number:03d}", "sequence": number}
         )
         for number, produced in enumerate(recorded_converted_items(exam), start=1)

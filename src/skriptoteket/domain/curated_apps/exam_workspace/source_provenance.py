@@ -39,6 +39,10 @@ class ChunkProvenance:
             return None
         return self._anchors[bisect_right(self._starts, offset) - 1]
 
+    def has_picture_in(self, start: int, end: int) -> bool:
+        """Whether an indexed picture sits in the source interval ``[start, end)``."""
+        return any(start <= place < end for places in self._pictures.values() for place in places)
+
     def pieces(
         self, output: NativeParagraph, text_origin: int
     ) -> list[tuple[int, NativeParagraph]]:

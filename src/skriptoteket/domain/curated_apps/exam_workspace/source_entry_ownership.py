@@ -153,7 +153,7 @@ def _body_spans(
             offset += 1
         spans.extend((offset + image.offset, offset + image.offset) for image in chunk.images)
         offset += len(chunk.text)
-    probe = SourceFormatting(chunks)
+    probe = SourceFormatting(chunks, foreign=())
     for text in body_texts:
         try:
             start, end = probe.span(text)
@@ -242,7 +242,12 @@ def plan_entry_ownership(
     """
     surface_list = tuple(surfaces)
     probes = [
-        SourceFormatting(chunks, ignored=surface.source.ignored, excluded=surface.source.excluded)
+        SourceFormatting(
+            chunks,
+            ignored=surface.source.ignored,
+            excluded=surface.source.excluded,
+            foreign=(),
+        )
         for surface in surface_list
     ]
     body_spans = _body_spans(chunks, body_texts)

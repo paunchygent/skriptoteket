@@ -61,7 +61,7 @@ def _text(text):
 
 def test_copy_marks_splits_source_runs_and_keeps_spacing_around_gap():
     source = _source(("Frasen ", ()), ("tre korta svar", ("italic",)), (" är en NF.", ()))
-    body = SourceFormatting((source,)).body(
+    body = SourceFormatting((source,), foreign=()).body(
         (
             _paragraph(
                 _text("Frasen tre korta svar är en "),
@@ -83,13 +83,15 @@ def test_copy_marks_splits_source_runs_and_keeps_spacing_around_gap():
 def test_text_across_source_paragraphs_keeps_each_heading_level():
     heading = _source(("En rubrik", ("bold",)), heading=2)
     normal = _source(("Vanlig text", ()))
-    result = formatted_text("En rubrik\nVanlig text", SourceFormatting((heading, normal)))
+    result = formatted_text(
+        "En rubrik\nVanlig text", SourceFormatting((heading, normal), foreign=())
+    )
     assert [p.heading_level for p in result] == [2, None]
     assert body_plain_text(result) == "En rubrik\nVanlig text"
 
 
 def test_plain_teacher_repeated_word_copies_each_occurrence_marks_in_order():
-    source = SourceFormatting((_source(("ord ", ("italic",)), ("ord", ("bold",))),))
+    source = SourceFormatting((_source(("ord ", ("italic",)), ("ord", ("bold",))),), foreign=())
     first = formatted_text("ord", source)
     second = formatted_text("ord", source)
     assert _as_text(first[0].segments[0]).marks == ("italic",)
@@ -98,7 +100,7 @@ def test_plain_teacher_repeated_word_copies_each_occurrence_marks_in_order():
 
 def test_rebuilt_prompt_keeps_source_marks_and_model_gap():
     source = _source(("Skriv ordet ", ()), ("katt", ("bold",)), (" i luckan.", ("italic",)))
-    result = SourceFormatting((source,)).body(
+    result = SourceFormatting((source,), foreign=()).body(
         (_paragraph(_text("Ange rätt substantiv "), NativeGapSegment(gap_id="gap_001")),),
         answers={"gap_001": ("katt",)},
     )
@@ -110,7 +112,7 @@ def test_rebuilt_prompt_keeps_source_marks_and_model_gap():
 
 def test_alignment_repeated_inline_answers_cover_their_wrappers_without_facit_leak():
     source = _source(("a) snöbollarnas Svar: ", ()), ("snö (R) + boll (R) + ar (B)", ("italic",)))
-    result = SourceFormatting((source,)).body(
+    result = SourceFormatting((source,), foreign=()).body(
         (
             _paragraph(
                 _text("a) snö + boll + ar"),
@@ -130,7 +132,7 @@ def test_alignment_repeated_inline_answers_cover_their_wrappers_without_facit_le
 def test_rebuild_refuses_gap_without_unique_source_position():
     source = _source(("Skriv katt eller katt.", ("underline",)))
     with pytest.raises(FormattingTransferError, match="unique source location"):
-        SourceFormatting((source,)).body(
+        SourceFormatting((source,), foreign=()).body(
             (_paragraph(_text("Ange svaret "), NativeGapSegment(gap_id="gap_001")),),
             answers={"gap_001": ("katt",)},
         )
@@ -139,11 +141,11 @@ def test_rebuild_refuses_gap_without_unique_source_position():
 def test_rebuild_refuses_ambiguous_paragraphs_instead_of_dropping_marks():
     sources = (_source(("Första raden", ("bold",))), _source(("Andra raden", ("italic",))))
     with pytest.raises(FormattingTransferError, match="ambiguous"):
-        formatted_text("Helt ändrat språk", SourceFormatting(sources))
+        formatted_text("Helt ändrat språk", SourceFormatting(sources, foreign=()))
 
 
 def test_unmarked_rewrite_preserves_model_wording_instead_of_rebuilding():
-    source = SourceFormatting((_source(("Ursprunglig fråga", ())),))
+    source = SourceFormatting((_source(("Ursprunglig fråga", ())),), foreign=())
     result = formatted_text("Omskriven fråga", source)
     assert body_plain_text(result) == "Omskriven fråga"
     assert source.path == "aligned"
@@ -151,7 +153,8 @@ def test_unmarked_rewrite_preserves_model_wording_instead_of_rebuilding():
 
 def test_inserted_characters_never_inherit_source_marks():
     result = formatted_text(
-        "Frasen stora katt", SourceFormatting((_source(("Frasen ", ()), ("katt", ("italic",))),))
+        "Frasen stora katt",
+        SourceFormatting((_source(("Frasen ", ()), ("katt", ("italic",))),), foreign=()),
     )
     assert [(_as_text(s).text, _as_text(s).marks) for p in result for s in p.segments] == [
         ("Frasen stora ", ()),
@@ -161,7 +164,7 @@ def test_inserted_characters_never_inherit_source_marks():
 
 def test_wholly_omitted_marked_paragraph_is_rebuilt_not_silently_lost():
     chunks = (_source(("Läs frågan.", ())), _source(("Viktig fras", ("italic",))))
-    source = SourceFormatting(chunks)
+    source = SourceFormatting(chunks, foreign=())
     body = formatted_text("Läs frågan.", source)
     result = complete_source_formatting(
         chunks,
@@ -181,7 +184,7 @@ def test_wholly_omitted_marked_paragraph_is_rebuilt_not_silently_lost():
 def test_an_omitted_facit_paragraph_is_never_rebuilt_into_the_body(label):
     # Live Diagnostic 85 2026-10-16: an omitted "Correct answer:" line was rebuilt as text.
     chunks = (_source(("Läs frågan.", ())), _source((f"{label} ", ()), ("svaret", ("italic",))))
-    source = SourceFormatting(chunks)
+    source = SourceFormatting(chunks, foreign=())
     body = formatted_text("Läs frågan.", source)
     with pytest.raises(FormattingTransferError, match="expose facit wording"):
         complete_source_formatting(
@@ -208,7 +211,10 @@ def test_flattened_table_rows_keep_separators_and_each_cell_mark():
             for offset, value in ((0, "a"), (4, "b"), (6, "c"), (10, "d"))
         ),
     )
-    for body in (source_paragraphs((chunk,)), formatted_text(text, SourceFormatting((chunk,)))):
+    for body in (
+        source_paragraphs((chunk,)),
+        formatted_text(text, SourceFormatting((chunk,), foreign=())),
+    ):
         assert body_plain_text(body) == text
         assert _as_text(body[0].segments[0]).marks == ("bold",)
         assert _as_text(body[0].segments[-1]).marks == ("italic",)
@@ -230,7 +236,7 @@ def test_source_review_preserves_all_marks_and_heading():
 def test_rebuilt_paragraph_drops_the_printed_label_native_field_already_carries():
     text = "1. Identify the important concept."
     chunk = _source((text, ("bold",)))
-    source = SourceFormatting((chunk,), ignored=("1",))
+    source = SourceFormatting((chunk,), ignored=("1",), foreign=())
     body = formatted_text("Describe the important concept.", source)
     result = complete_source_formatting(
         (chunk,), (source,), source, body, printed_label="1", answers={}, can_rebuild_body=True
@@ -242,7 +248,7 @@ def test_rebuilt_paragraph_drops_the_printed_label_native_field_already_carries(
 def test_omitted_size_heading_paragraph_is_rebuilt_with_its_level():
     heading = _source(("Läs det här avsnittet noga.", ()), heading=2)
     question = _source(("Svara på frågan.", ()))
-    source = SourceFormatting((heading, question))
+    source = SourceFormatting((heading, question), foreign=())
     body = formatted_text("Svara på frågan.", source)
     result = complete_source_formatting(
         (heading, question),
@@ -260,7 +266,7 @@ def test_omitted_size_heading_paragraph_is_rebuilt_with_its_level():
 
 def test_rewritten_unmarked_heading_keeps_model_wording_and_source_level():
     heading = _source(("Viktig rubrik", ()), heading=2)
-    source = SourceFormatting((heading,))
+    source = SourceFormatting((heading,), foreign=())
     result = formatted_text("Ny rubrik", source)
     assert body_plain_text(result) == "Ny rubrik"
     assert result[0].heading_level == 2
@@ -280,7 +286,7 @@ def test_omitted_table_heading_paragraph_is_rebuilt_with_its_level():
             DocxSourceParagraph(13, "Svarstext", None),
         ),
     )
-    source = SourceFormatting((table,))
+    source = SourceFormatting((table,), foreign=())
     body = formatted_text("Svarstext", source)
     result = complete_source_formatting(
         (table,), (source,), source, body, printed_label=None, answers={}, can_rebuild_body=True
@@ -292,7 +298,7 @@ def test_omitted_table_heading_paragraph_is_rebuilt_with_its_level():
 
 def test_omitted_marked_word_before_free_text_body_is_rebuilt_from_source():
     safety = _source(("Safety.", ("bold",)), (" Do not mix acids.", ()))
-    source = SourceFormatting((safety,))
+    source = SourceFormatting((safety,), foreign=())
     body = formatted_text("Do not mix acids.", source)
     result = complete_source_formatting(
         (safety,), (source,), source, body, printed_label=None, answers={}, can_rebuild_body=True
@@ -322,8 +328,8 @@ def test_marked_choice_labels_are_exempt_through_their_native_ordinals():
         ),
         paragraphs=(DocxSourceParagraph(0, text, None),),
     )
-    body_source = SourceFormatting((chunk,))
-    choice_source = SourceFormatting((chunk,))
+    body_source = SourceFormatting((chunk,), foreign=())
+    choice_source = SourceFormatting((chunk,), foreign=())
     body = formatted_text("Which city?", body_source)
     choices = (formatted_text("Paris", choice_source), formatted_text("Lyon", choice_source))
     assert choice_source.entry_spans == [(15, 20), (24, 28)]
@@ -366,8 +372,8 @@ def test_ordinal_labels_extend_beyond_z_and_the_roman_numeral_cap():
         ),
         paragraphs=(DocxSourceParagraph(0, text, None),),
     )
-    body_source = SourceFormatting((chunk,))
-    choice_source = SourceFormatting((chunk,))
+    body_source = SourceFormatting((chunk,), foreign=())
+    choice_source = SourceFormatting((chunk,), foreign=())
     body = formatted_text("Which city?", body_source)
     formatted_text("Paris", choice_source)
     formatted_text("Lyon", choice_source)
@@ -405,8 +411,8 @@ def test_heading_projected_by_an_entry_surface_is_already_accounted():
             DocxSourceParagraph(9, "a) Rubrik", 2),
         ),
     )
-    body_source = SourceFormatting((table,))
-    choice_source = SourceFormatting((table,))
+    body_source = SourceFormatting((table,), foreign=())
+    choice_source = SourceFormatting((table,), foreign=())
     body = formatted_text("Fråga?", body_source)
     formatted_text("Rubrik", choice_source)
     entries = (NativeSourceEntry("choices", 1, 12, 18),)

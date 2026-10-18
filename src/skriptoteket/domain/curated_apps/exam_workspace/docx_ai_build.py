@@ -1,7 +1,7 @@
 """Map produced items to the native contract and assemble the build result."""
 
 import re
-from collections.abc import Callable, Iterable, Mapping
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from decimal import Decimal
 from types import MappingProxyType
 from uuid import UUID
@@ -128,13 +128,17 @@ def aligned_native_item(
     produced: ProducedItem,
     *,
     chunks: Iterable[DocxChunk] = (),
+    foreign_chunks: Sequence[DocxChunk],
     language: Language,
     formatting_observer: Callable[[str], None] | None = None,
 ) -> AlignedItem:
     """Assign IDs and provenance; the native contract raises on any invalid shape.
 
     The result names, per body paragraph, the source chunk that paragraph shows: the one
-    alignment the source formatting made, never a second reading of the wording.
+    alignment the source formatting made, never a second reading of the wording. A paragraph
+    whose text is another question's source is not this item's content: ``foreign_chunks``
+    holds the other questions' own chunks, and such a paragraph is rebuilt from this item's
+    source instead (TASK-SKRIPT-39-04-15 D4).
 
     An asset segment becomes a native picture reference only when its id belongs to one of
     the provided source chunks; a model-invented id raises, so admission falls back to the
@@ -149,7 +153,7 @@ def aligned_native_item(
     if unresolved:
         raise ValueError(f"unresolved source pictures: {', '.join(unresolved)}")
     known_assets = {image.asset_id for chunk in chunk_list for image in chunk.images}
-    formatting = item_source_formatting(produced, chunk_list)
+    formatting = item_source_formatting(produced, chunk_list, foreign_chunks=foreign_chunks)
     choices = tuple(
         NativeChoice(choice_id=f"choice_{index:03d}", body=produced_entry_body(choice.text))
         for index, choice in enumerate(produced.choices, start=1)

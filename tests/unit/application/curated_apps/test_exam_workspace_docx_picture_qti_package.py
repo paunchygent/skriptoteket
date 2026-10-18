@@ -117,7 +117,7 @@ def test_a_converted_picture_keeps_its_position_and_packaged_resource(
             "criteria": [],
         }
     )
-    converted = aligned_native_item(produced, chunks=(chunk,), language="sv")
+    converted = aligned_native_item(produced, chunks=(chunk,), language="sv", foreign_chunks=())
     assert converted.item.review.parse_origin is NativeParseOrigin.LLM_PARSED
     assert converted.item.review.state is NativeItemReviewState.REVIEW_COMPLETE
     assert isinstance(converted.item.body[0].segments[0 if picture_only else 1], NativeAssetSegment)

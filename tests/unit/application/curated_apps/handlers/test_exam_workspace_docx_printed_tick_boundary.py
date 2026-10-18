@@ -109,7 +109,7 @@ def test_printed_grid_tick_boundary_keeps_score_or_complete_source_review(
         questions=(own,),
         header_anchors=frozenset() if heading else frozenset({"body:0001"}),
     )
-    first = aligned_native_item(produced, language="sv")
+    first = aligned_native_item(produced, language="sv", foreign_chunks=())
     first = replace(
         first,
         item=first.item.model_copy(

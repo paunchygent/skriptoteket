@@ -73,6 +73,7 @@ def test_native_choices_account_for_each_marked_source_label_in_one_chunk():
         chunks=chunks,
         language="en",
         formatting_observer=paths.append,
+        foreign_chunks=(),
     ).item
     assert paths == ["exact"]
     assert [body_plain_text(choice.body) for choice in result.choices] == ["red", "blue"]
@@ -93,6 +94,7 @@ def test_native_matching_accounts_for_marked_row_and_column_entry_labels():
         chunks=chunks,
         language="en",
         formatting_observer=paths.append,
+        foreign_chunks=(),
     ).item
     assert paths == ["exact"]
     assert [body_plain_text(entry.body) for entry in result.match_left] == ["red", "blue"]
@@ -124,6 +126,7 @@ def test_choice_rebuild_restores_marked_content_before_its_aligned_wording(prefi
         chunks=chunks,
         language="en",
         formatting_observer=paths.append,
+        foreign_chunks=(),
     ).item
     expected = original.removeprefix("a) ")
     assert body_plain_text(result.choices[0].body) == expected
@@ -151,6 +154,7 @@ def test_matching_rebuilds_missing_marked_words_on_each_entry_side():
         _item("matching", chunks, match_left=["red", "blue"], match_right=["warm", "cold"]),
         chunks=chunks,
         language="en",
+        foreign_chunks=(),
     ).item
     assert [body_plain_text(entry.body) for entry in result.match_left] == ["Safety. red", "blue"]
     assert [body_plain_text(entry.body) for entry in result.match_right] == [
@@ -186,6 +190,7 @@ def test_native_item_keeps_unmarked_model_wording_and_recovers_the_omitted_headi
         chunks=chunks,
         language="en",
         formatting_observer=paths.append,
+        foreign_chunks=(),
     ).item
     assert paths == ["rebuilt"]
     assert [paragraph.heading_level for paragraph in result.body] == [2, None]
@@ -216,6 +221,7 @@ def test_interleaved_matching_entries_never_share_one_anothers_source():
         _item("matching", chunks, match_left=["red", "blue"], match_right=["warm", "cold"]),
         chunks=chunks,
         language="en",
+        foreign_chunks=(),
     ).item
     assert [body_plain_text(entry.body) for entry in result.match_left] == [
         "Safety. red",
@@ -242,6 +248,7 @@ def test_rewritten_matching_entry_rebuilds_only_its_own_span():
         ),
         chunks=chunks,
         language="en",
+        foreign_chunks=(),
     ).item
     assert [body_plain_text(entry.body) for entry in result.match_left] == [
         "Safety. red",
@@ -277,6 +284,7 @@ def test_rewritten_adjacent_choices_keep_their_own_source_spans():
         ),
         chunks=chunks,
         language="en",
+        foreign_chunks=(),
     ).item
     assert [body_plain_text(choice.body) for choice in result.choices] == [
         "Identify the important concept.",
@@ -314,6 +322,7 @@ def test_continuation_heading_paragraph_belongs_to_its_entry(continuation_label)
         ),
         chunks=chunks,
         language="en",
+        foreign_chunks=(),
     ).item
     assert [body_plain_text(choice.body) for choice in result.choices] == [
         "red\nFollow the safety note.",
@@ -344,6 +353,7 @@ def test_marked_continuation_after_the_last_choice_belongs_to_that_choice():
         ),
         chunks=chunks,
         language="en",
+        foreign_chunks=(),
     ).item
     assert [body_plain_text(choice.body) for choice in result.choices] == [
         "red",
@@ -370,6 +380,7 @@ def test_marked_continuation_after_the_last_matching_entry_belongs_to_it():
         _item("matching", chunks, match_left=["red", "blue"], match_right=["warm", "cold"]),
         chunks=chunks,
         language="en",
+        foreign_chunks=(),
     ).item
     assert [body_plain_text(entry.body) for entry in result.match_left] == ["red", "blue"]
     assert [body_plain_text(entry.body) for entry in result.match_right] == [
@@ -405,6 +416,7 @@ def test_unlabelled_entry_prefix_is_excluded_from_a_rewritten_body():
         ),
         chunks=chunks,
         language="en",
+        foreign_chunks=(),
     ).item
     assert body_plain_text(result.choices[0].body) == "Safety. blue"
     assert _as_text(result.choices[0].body[0].segments[0]).marks == ("bold",)
@@ -427,6 +439,7 @@ def test_entry_label_delimiter_never_consumes_a_content_dot():
         ),
         chunks=chunks,
         language="en",
+        foreign_chunks=(),
     ).item
     assert [body_plain_text(choice.body) for choice in result.choices] == [
         ".NET is useful",
@@ -463,6 +476,7 @@ def test_duplicate_word_matching_entries_keep_their_own_side_formatting():
         _item("matching", chunks, match_left=["red", "blue"], match_right=["red", "blue"]),
         chunks=chunks,
         language="en",
+        foreign_chunks=(),
     ).item
     assert [body_plain_text(entry.body) for entry in result.match_left] == ["red", "blue"]
     assert [body_plain_text(entry.body) for entry in result.match_right] == ["red", "blue"]
@@ -488,6 +502,7 @@ def test_wholly_rewritten_first_choice_keeps_its_labeled_source_span():
         ),
         chunks=chunks,
         language="en",
+        foreign_chunks=(),
     ).item
     assert [body_plain_text(choice.body) for choice in result.choices] == ["Safety. red", "blue"]
     assert _as_text(result.choices[0].body[0].segments[0]).marks == ("bold",)

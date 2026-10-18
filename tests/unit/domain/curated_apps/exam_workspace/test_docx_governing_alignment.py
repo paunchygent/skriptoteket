@@ -113,7 +113,7 @@ def test_a_reworded_governing_line_the_aligner_ties_to_the_chunk_leaves_the_item
             "choices": [],
         }
     )
-    aligned = aligned_native_item(produced, chunks=_CHUNKS[1:], language="sv")
+    aligned = aligned_native_item(produced, chunks=_CHUNKS[1:], language="sv", foreign_chunks=())
     assert aligned.chunks == (_GOVERNING, _STEM)
     assert aligned.item.plain_text_lines()[0] != _INSTRUCTION
 

@@ -70,7 +70,9 @@ def test_key_source_maps_without_treating_invented_answers_as_teacher_keys(
         lambda *_, **__: ("KATT", "kat", "kattn", "ktat", "hund", "kattnn"),
     )
     item = aligned_native_item(
-        _gap_item(source, facit, answers=() if source is None else ("katt",)), language="sv"
+        _gap_item(source, facit, answers=() if source is None else ("katt",)),
+        language="sv",
+        foreign_chunks=(),
     ).item
     assert item.answer_key.origin is origin
     assert item.facit_text == facit
@@ -173,7 +175,9 @@ def test_choice_and_matching_keys_use_the_same_provenance_mapping(kind: str, sou
         )
     else:
         payload["choices"] = [{"text": "Katt", "correct": True}, {"text": "Bil", "correct": False}]
-    item = aligned_native_item(ProducedItem.model_validate(payload), language="sv").item
+    item = aligned_native_item(
+        ProducedItem.model_validate(payload), language="sv", foreign_chunks=()
+    ).item
     assert (
         item.answer_key.origin.value
         == {
@@ -208,7 +212,7 @@ def test_free_text_retains_facit_but_has_no_objective_key_source() -> None:
             ),
         ),
     )
-    native = aligned_native_item(item, language="sv").item
+    native = aligned_native_item(item, language="sv", foreign_chunks=()).item
     assert native.facit_text == item.facit_text
     assert native.answer_key.origin is NativeAnswerKeyOrigin.NOT_APPLICABLE
     # R14: a guide without per-criterion points is one estimated criterion at 1 point

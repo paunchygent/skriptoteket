@@ -45,7 +45,7 @@ def instruction_paragraphs(
         raise ValueError(
             f"instruction pictures have no faithful place: {instruction.source_anchors}"
         )
-    source = SourceFormatting(sources)
+    source = SourceFormatting(sources, foreign=())
     try:
         body = formatted_text(instruction.text, source)
         return complete_source_formatting(

@@ -46,6 +46,23 @@ class FormattingTransferError(ValueError):
     """No source-backed rendering can preserve the model's response structure."""
 
 
+def _trim_edge_whitespace(
+    segments: tuple[NativeTextSegment, ...],
+) -> tuple[NativeTextSegment, ...]:
+    """Drop a rebuilt paragraph's outer whitespace without touching any mark.
+
+    An excluded span such as a points label can leave a space at a rebuilt
+    paragraph's boundary, so only the first and last text segment lose
+    whitespace; an emptied segment disappears and interior spacing stays.
+    """
+    if not segments:
+        return segments
+    trimmed = list(segments)
+    trimmed[0] = trimmed[0].model_copy(update={"text": trimmed[0].text.lstrip()})
+    trimmed[-1] = trimmed[-1].model_copy(update={"text": trimmed[-1].text.rstrip()})
+    return tuple(segment for segment in trimmed if segment.text)
+
+
 class SourceFormatting:
     """One question's indexed source; cursors are local to each visible surface."""
 
@@ -55,6 +72,7 @@ class SourceFormatting:
         *,
         ignored: tuple[str, ...] = (),
         excluded: tuple[tuple[int, int], ...] = (),
+        foreign: tuple[str, ...],
     ) -> None:
         parts: list[str] = []
         marks: list[tuple[str, ...]] = []
@@ -101,6 +119,9 @@ class SourceFormatting:
         ]
         self._paragraph_ends = [p.end for p in paragraphs]
         self.normalized, self.positions = normalized_source_index(self.text)
+        self.foreign_normalized = tuple(
+            normalized_source_index(chunk_text)[0] for chunk_text in foreign
+        )
         self.cursor = 0
         self.ignored = ignored
         self.label_span = question_label_span(
@@ -232,6 +253,8 @@ class SourceFormatting:
         *,
         answers: dict[str, tuple[str, ...]] | None = None,
     ) -> tuple[NativeParagraph, ...]:
+        """Project the reply's body; a paragraph whose text is another question's source is
+        not this item's content, so it is rebuilt from this item's own source (D4)."""
         result: list[NativeParagraph] = []
         for paragraph in body:
             checkpoint = self.cursor
@@ -247,21 +270,75 @@ class SourceFormatting:
                 self.cursor = checkpoint
                 self.covered = coverage_before
                 self.projected = projected_before
-                aligned = self._aligned(paragraph, answers or {})
-                if aligned is not None:
-                    if self.path == "exact":
-                        self.path = "aligned"
-                    produced = [(aligned, self._entry_span[0])]
+                if self._is_misplaced(paragraph):
+                    produced = self._rebuild_misplaced()
                 else:
-                    self.path = "rebuilt"
-                    rebuilt = self._rebuild(paragraph, answers or {})
-                    produced = [(output, self._entry_span[0]) for output in rebuilt]
+                    aligned = self._aligned(paragraph, answers or {})
+                    if aligned is not None:
+                        if self.path == "exact":
+                            self.path = "aligned"
+                        produced = [(aligned, self._entry_span[0])]
+                    else:
+                        self.path = "rebuilt"
+                        rebuilt = self._rebuild(paragraph, answers or {})
+                        produced = [(output, self._entry_span[0]) for output in rebuilt]
             self.entry_spans.append(self._entry_span)
             for output, text_origin in produced:
                 for origin, piece in self.provenance.pieces(output, text_origin):
                     result.append(piece)
                     self.output_anchors.append(origin)
         return tuple(result)
+
+    def _is_misplaced(self, paragraph: NativeParagraph) -> bool:
+        """Whether a text-only reply paragraph is another question's source and so never this
+        item's content (TASK-SKRIPT-39-04-15 D4): its whole text is one other chunk's source span,
+        never a match straddling the boundary between two chunks."""
+        if any(segment.kind != "text" for segment in paragraph.segments):
+            return False
+        text = "".join(segment.text for segment in paragraph.segments if segment.kind == "text")
+        wanted, _ = normalized_source_index(text)
+        return bool(wanted) and any(wanted in chunk for chunk in self.foreign_normalized)
+
+    def _rebuild_misplaced(self) -> list[tuple[NativeParagraph, int]]:
+        """Rebuild a misplaced paragraph from this item's next own source paragraph no output
+        has shown, or return nothing to drop it; the entry span stays unaligned."""
+        start = self.positions[self.cursor] if self.cursor < len(self.positions) else len(self.text)
+        paragraph = next(
+            (
+                p
+                for p in self.available_paragraphs
+                if p.start >= start and p.start not in self.projected
+            ),
+            None,
+        )
+        if paragraph is None:
+            return []
+        built = self._source_paragraph(paragraph.start)
+        if built is None:
+            return []
+        self.path = "rebuilt"
+        while self.cursor < len(self.positions) and self.positions[self.cursor] < paragraph.end:
+            self.cursor += 1
+        return [(built, paragraph.start)]
+
+    def _source_paragraph(self, origin: int) -> NativeParagraph | None:
+        """Build this item's own source paragraph, never another question's source: a
+        paragraph whose text is another question's source is not this item's content (D4)."""
+        paragraph = next((p for p in self.available_paragraphs if p.start <= origin < p.end), None)
+        if paragraph is None:
+            return None
+        start = self._content_start(paragraph)
+        if ANSWER_LABEL.search(self.text[start : paragraph.end]):
+            return None
+        if self.provenance.has_picture_in(paragraph.start, paragraph.end):
+            return None
+        segments = _trim_edge_whitespace(self._rebuilt_text_segments(start, paragraph.end))
+        if not any(segment.text.strip() for segment in segments):
+            return None
+        for left, right in visible_intervals(start, paragraph.end, self.excluded):
+            self.covered.update(range(left, right))
+        self.projected.add(paragraph.start)
+        return NativeParagraph(heading_level=paragraph.heading, segments=segments)
 
     def _paragraph(
         self, paragraph: NativeParagraph, answers: dict[str, tuple[str, ...]]
