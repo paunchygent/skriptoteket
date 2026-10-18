@@ -1,8 +1,10 @@
 """The one owner of every printed total, decided from document structure (TASK-SKRIPT-39-04-11).
 
 A total line is a chunk that prints exactly one points label. Outside question spans it must
-stand alone: a heading, or a points line (a label and at most two words); a prose sentence
-that mentions a rate prints no total. Its label (``docx_points_labels``) and its place among
+stand alone: a heading, a points line (a label and at most two words), or a paragraph that
+opens with a part label, whatever its title length (D10a); a prose sentence that mentions a
+rate prints no total. A part-labelled line printing two or more points labels prints no total
+of its own: it is only a summary candidate. Its label (``docx_points_labels``) and its place among
 the questions give it exactly one owner, whatever the grouping tagged it as or where it
 placed it:
 
@@ -108,8 +110,16 @@ def _one_value(values: Iterable[int | float]) -> int | float | None:
 
 
 def _stands_alone(chunk: DocxChunk) -> bool:
-    """A heading or a points line prints a total of its own; a prose sentence does not."""
-    return chunk.kind == "heading" or points_line(chunk.text)
+    """A heading, a points line or a part line prints a total of its own; prose does not.
+
+    A part line (D10a) opens with a part label and prints exactly one points label, so
+    "Del 1: Ordklasser och ordbildning (6 p)" stands alone whatever its title length.
+    """
+    return (
+        chunk.kind == "heading"
+        or points_line(chunk.text)
+        or (points_label(chunk.text) == "part" and printed_points((chunk,)) is not None)
+    )
 
 
 def _opens_part(chunk: DocxChunk) -> bool:
