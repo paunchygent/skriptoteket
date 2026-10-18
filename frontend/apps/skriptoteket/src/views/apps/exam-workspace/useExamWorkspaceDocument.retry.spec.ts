@@ -82,6 +82,7 @@ function retrySource(labelKind: NativeExamItemKind): NonNullable<NativeExamItem[
       },
     ],
     context_chunks: [],
+    owned_context_anchors: [],
     key_chunks: [],
     label_kind: labelKind,
   };

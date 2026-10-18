@@ -86,6 +86,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_header import (
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import (
     ExamManifest,
+    claim_inner_chunks,
     question_source_anchors,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import (
@@ -203,8 +204,11 @@ class DocxConversionPipeline:
         for usage in grouping.usage:
             run.state.record_usage(usage)
         run.timed("grouping", started)
-        manifest = assign_points_lines(
-            assign_question_headings(grouping.manifest, job.chunks), job.chunks
+        manifest = claim_inner_chunks(
+            assign_points_lines(
+                assign_question_headings(grouping.manifest, job.chunks), job.chunks
+            ),
+            job.chunks,
         )
         run.manifest = manifest
         run.state.header_anchors = frozenset(h.anchor for h in manifest.header)

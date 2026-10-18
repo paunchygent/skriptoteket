@@ -6,7 +6,8 @@ a stretch inside one instruction printed in several paragraphs. A printed headin
 questions is a run of its own starting at the heading, reaching the questions up to the
 next boundary, so a parent formed from same-reach runs opens with the heading by
 construction (T1, T2). A heading a question owns reaches that question alone. A heading
-the grouping marks as governing reaches exactly the governed questions (D40).
+the grouping marks as governing reaches exactly the governed questions (D40). Lines a
+question prints before its own numbered lines belong to that question alone and form no run.
 """
 
 import re
@@ -29,15 +30,13 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
 
 Placed = tuple[int, tuple[str, ...], NativeExamItem]
 
-# A question line that starts with its printed number.
-_NUMBERED = re.compile(r"^\s*\d{1,3}[.)]\s")
 # A question line that opens with quoted material, after any list label.
 _OPENS_WITH_QUOTE = re.compile(r"^\s*(?:\w{1,3}[.)]\s*)?[\"“‘«„]")
 
 
 @dataclass(frozen=True)
 class Run:
-    """One instruction (or lines an item prints before its numbered line) and the items after it.
+    """One instruction and the items after it.
 
     A heading run carries one printed heading: ``only`` is the item that owns the heading
     chunk, and ``raw`` is the heading as printed, before its wording loses the printed
@@ -163,11 +162,6 @@ def instruction_runs(
             )
         else:
             runs.append(Run(origin, at[-1], sources))
-    for item_chunks in item_sources:
-        lines = [c for c in item_chunks if c.kind != "heading"]
-        numbered = next((i for i, c in enumerate(lines) if _NUMBERED.match(c.text)), 0)
-        if numbered:
-            runs.append(Run(None, positions[lines[numbered - 1].anchor], tuple(lines[:numbered])))
     return runs, joined
 
 

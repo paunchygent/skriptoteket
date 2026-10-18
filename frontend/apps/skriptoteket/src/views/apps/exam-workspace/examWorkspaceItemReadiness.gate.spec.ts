@@ -97,7 +97,7 @@ describe("examWorkspaceItemReadiness", () => {
   it.each(["chunks", "key_chunks", "context_chunks"] as const)(
     "blocks a named missing picture in %s until the teacher marks it reviewed", (part) => {
       const source: NonNullable<NativeExamItem["retry_source"]> = {
-        label_kind: "single_choice", key_chunks: [], context_chunks: [],
+        label_kind: "single_choice", key_chunks: [], context_chunks: [], owned_context_anchors: [],
         chunks: [{anchor: "body:0001", kind: "paragraph", text: "Question", marked_text: "Question", images: [], missing_images: [], paragraphs: [], runs: []}],
       };
       source[part] = [{

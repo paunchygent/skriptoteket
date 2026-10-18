@@ -97,6 +97,7 @@ async def convert_batch(
             request_id=f"docx_{batch.batch_id}",
             pending=state.pending,
             context=tuple(c for c in state.chunks if c.anchor in batch.reads),
+            questions=state.questions,
             kinds=batch.kinds,
             profile=profile,
         )

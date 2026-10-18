@@ -30,12 +30,16 @@ The input
   <image asset_id="..."/>. The <i> tags show formatting: every output field, facit_text and
   accepted_values included, carries the words without the tags.
 - item_kinds lists the kinds of question this part holds.
+- questions lists each question in chunks as the anchors of its own chunks, in source order.
 
 Where each chunk goes
 Every chunk in chunks goes to exactly one place: one item's source_anchors, the exam title,
 an instruction or answer_key_anchors. This holds up to the last chunk, also after the last
 question.
 - The exam title is the document's opening heading, copied verbatim.
+- Each question in questions becomes exactly one item, and an item holds one question. Its
+  numbered sentences, lettered parts and lines stay in that one item, also when each of them
+  asks the student for an answer.
 - An item is one question with every line printed for it alone: its heading or label line,
   an instruction, word list or passage printed only for this question, its stem, options,
   blanks, pictures and its own points line. A heading or label line printed for one question,

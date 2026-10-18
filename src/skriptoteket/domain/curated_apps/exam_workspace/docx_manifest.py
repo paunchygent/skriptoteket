@@ -9,7 +9,7 @@ the chunks. Code adds or removes no text (D14).
 from __future__ import annotations
 
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Literal, get_args
 
 from pydantic import JsonValue
@@ -303,3 +303,51 @@ def question_source_anchors(
         if heading is not None:
             included.add(heading)
     return frozenset(included)
+
+
+def claim_inner_chunks(manifest: ExamManifest, chunks: tuple[DocxChunk, ...]) -> ExamManifest:
+    """Give an unplaced chunk inside one question's anchor span to that question.
+
+    A question's span runs from its first to its last own anchor in source order. An
+    unplaced chunk strictly inside exactly one span joins that question's anchors. A chunk
+    inside several overlapping spans stays unplaced. Contexts, title, header and answer
+    keys are placed, so they never move. Run after points lines find their owners.
+    """
+    positions = {chunk.anchor: index for index, chunk in enumerate(chunks)}
+    spans = {
+        question.question_id: (
+            min(positions[a] for a in question.anchors),
+            max(positions[a] for a in question.anchors),
+        )
+        for question in manifest.questions
+        if any(a in positions for a in question.anchors)
+    }
+    claimed: dict[str, list[str]] = {}
+    for anchor in manifest.unplaced_anchors:
+        index = positions.get(anchor)
+        if index is None:
+            continue
+        owners = [qid for qid, (first, last) in spans.items() if first < index < last]
+        if len(owners) == 1:
+            claimed.setdefault(owners[0], []).append(anchor)
+    if not claimed:
+        return manifest
+    taken = {a for anchors in claimed.values() for a in anchors}
+    return replace(
+        manifest,
+        questions=tuple(
+            replace(
+                question,
+                anchors=tuple(
+                    sorted(
+                        (*question.anchors, *claimed[question.question_id]),
+                        key=positions.__getitem__,
+                    )
+                ),
+            )
+            if question.question_id in claimed
+            else question
+            for question in manifest.questions
+        ),
+        unplaced_anchors=tuple(a for a in manifest.unplaced_anchors if a not in taken),
+    )

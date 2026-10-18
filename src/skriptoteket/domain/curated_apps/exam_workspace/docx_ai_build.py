@@ -21,6 +21,13 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_scoring import (
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxChunk,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_document_instructions import (
+    exam_wide_instructions,
+    global_instructions,
+    placement_chunks,
+    placement_exclusions,
+    without_excluded,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_governing_chunks import (
     release_governing_chunks,
     unclaimed_governing,
@@ -92,9 +99,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.source_entry_ownership impo
 from skriptoteket.domain.curated_apps.exam_workspace.source_format_coverage import (
     NativeSourceEntry,
     complete_source_formatting,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.source_formatted_instructions import (
-    instruction_paragraphs,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import (
     FormattingTransferError,
@@ -335,6 +339,8 @@ def assemble_build_result(
     title: ProducedMetadata | None = None,
     instructions: tuple[ProducedMetadata, ...] = (),
     governed: Mapping[str, frozenset[str]] = NOTHING_GOVERNED,
+    exam_wide: frozenset[str] = frozenset(),
+    exam_metadata: frozenset[str] = frozenset(),
     questions: tuple[tuple[str, ...], ...] = (),
     printed: PrintedPoints = NO_PRINTED_POINTS,
     events: tuple[DocxBuildEvent, ...] = (),
@@ -348,21 +354,36 @@ def assemble_build_result(
     instruction that placement does not put at its question goes back to its question's item,
     and placement runs again without it (D42). ``printed`` owns every printed total; it
     scores the placed items once (``apply_printed_points``).
+
+    ``exam_wide`` holds the anchors of exam-wide text and of exam metadata; ``exam_metadata``
+    is the metadata subset. No batch claims them. Exam-wide text is never placed: each chunk
+    joins the document's instructions once, from its own source text, and is never an item
+    body, parent or review item. Metadata lines go nowhere. These anchors and every printed
+    total the points plan classifies as metadata (``printed.metadata``) are kept out of
+    placement: no instruction holds them and no heading of theirs opens, joins or ends a run.
     """
     if not chunks:
         empty = "Dokumentet saknar läsbart innehåll."
         chunks = (DocxChunk("empty", "paragraph", empty, empty),)
         review_reasons = {"empty": "Dokumentet saknar läsbart innehåll."}
+    by_anchor = {chunk.anchor: chunk for chunk in chunks}
+    excluded = placement_exclusions(exam_wide, exam_metadata, printed.metadata)
+    exam_instructions = exam_wide_instructions(chunks, exam_wide, exam_metadata, printed.metadata)
+    review_reasons = {a: r for a, r in review_reasons.items() if a not in excluded}
     unclaimed, review_reasons = unclaimed_governing(chunks, review_reasons, governed)
     instructions = (*instructions, *unclaimed)
     released = release_governing_chunks(chunks, accepted, instructions, governed)
-    accepted, instructions = released.accepted, released.instructions
+    accepted = released.accepted
+    # No excluded chunk is a review item or an instruction, and placement sees only the
+    # excluded chunks an item holds as its own.
+    instructions = without_excluded(released.instructions, excluded, by_anchor)
+    placeable = placement_chunks(chunks, excluded, accepted)
     events = (*events, *released.events)
     title_anchors = frozenset(title.source_anchors) if title is not None else frozenset()
     own_anchors = frozenset(anchor for own in questions for anchor in own)
     part_lines = section_openers(printed.parts)
     placed = _ordered_items(
-        chunks,
+        placeable,
         accepted,
         review_reasons,
         instructions,
@@ -377,7 +398,7 @@ def assemble_build_result(
         accepted, instructions = returned.accepted, returned.instructions
         events = (*events, *returned.events)
         placed = _ordered_items(
-            chunks,
+            placeable,
             accepted,
             review_reasons,
             instructions,
@@ -386,19 +407,18 @@ def assemble_build_result(
             own_anchors,
             part_lines,
         )
-    by_anchor = {chunk.anchor: chunk for chunk in chunks}
     scored = apply_printed_points(placed.items, placed.parents, printed, by_anchor)
     items, parents = scored.items, scored.parents
     events = (*events, *scored.events)
-    global_instructions = tuple(
-        paragraph
-        for index, instruction in enumerate(instructions)
-        if index not in placed.landed
-        for paragraph in instruction_paragraphs(instruction, by_anchor)
+    document_instructions = global_instructions(
+        chunks,
+        tuple(m for index, m in enumerate(instructions) if index not in placed.landed),
+        exam_instructions,
+        by_anchor,
     )
     shared_bodies = (
         *(parent.instruction for parent in parents),
-        global_instructions,
+        document_instructions,
     )
     assets, assets_by_id = docx_build_assets.asset_manifest(
         items, chunks, shared_bodies=shared_bodies
@@ -416,7 +436,7 @@ def assemble_build_result(
         document_id=document_id,
         revision=1,
         title=document_title,
-        instructions=global_instructions,
+        instructions=document_instructions,
         items=items,
         parents=parents,
         assets=assets,

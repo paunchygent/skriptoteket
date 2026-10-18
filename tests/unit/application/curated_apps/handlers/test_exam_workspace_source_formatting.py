@@ -92,6 +92,7 @@ async def test_failed_reconstruction_uses_the_exact_swedish_review_reason():
         filename=f"{exam}.docx",
         source_sha256="a" * 64,
         chunks=chunks,
+        questions=(tuple(c.anchor for c in chunks),),
     )
     admit_batch(
         {"title": None, "instructions": [], "answer_key_anchors": [], "items": [raw]}, state

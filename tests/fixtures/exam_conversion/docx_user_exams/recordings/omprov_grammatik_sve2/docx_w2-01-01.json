@@ -1,0 +1,123 @@
+{
+  "title": null,
+  "instructions": [],
+  "answer_key_anchors": [],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0045",
+        "body:0046",
+        "body:0047",
+        "body:0048",
+        "body:0049",
+        "body:0050",
+        "body:0051",
+        "body:0052",
+        "body:0053",
+        "body:0054",
+        "body:0055",
+        "body:0056",
+        "body:0057",
+        "body:0058",
+        "body:0059",
+        "body:0060",
+        "body:0061"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "free_text",
+      "printed_label": "Uppgift 1.4",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Analysera nominalfrasens uppbyggnad",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Analysera varje NF enligt modellen: ange bestämningar före huvudordet, huvudord och bestämningar efter huvudordet (inklusive eventuella PF).",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Exempel: \"den lilla flickan med det röda håret\"",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "→ Före: den lilla | Huvudord: flickan | Efter: med det röda håret (PF)",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "1. de unga lärarna från Stockholm",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "2. våra allra skickligaste landskapsmålares vackraste tavlor",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "3. en vän från pianokursen som jag började förra året",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "4. alla aporna i träden",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": null,
+      "facit_text": null,
+      "points": 4,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    }
+  ]
+}

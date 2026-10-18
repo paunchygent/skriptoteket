@@ -64,6 +64,8 @@ class DocxBuildState:
     ``allowed_kinds`` (None: every kind). ``questions`` holds each grouped question's own
     anchors, never its answer keys. ``governing`` holds the grouping's chunks that govern two
     or more questions; one no entry holds becomes its section parent's instruction (D40).
+    ``owned_contexts`` maps each question's own anchor to the contexts the question owns; one
+    no entry holds joins the question's item, or its review item (ruling 2026-10-18 c).
     """
 
     job_id: UUID
@@ -79,6 +81,7 @@ class DocxBuildState:
     governing: frozenset[str] = frozenset()
     grouped_keys: frozenset[str] = frozenset()
     header_anchors: frozenset[str] = frozenset()
+    owned_contexts: dict[str, tuple[str, ...]] = field(default_factory=dict)
     document_language: InitVar[Language | None] = None
     language: Language = field(init=False)
     known_anchors: frozenset[str] = field(init=False, repr=False, compare=False)
@@ -139,6 +142,12 @@ class DocxBuildState:
             and (QUESTION_HEADING_LABEL.match(chunk.text) or POINT_LABEL.search(chunk.text))
         )
 
+    def left_out_contexts(self, anchors: Iterable[str], held: set[str]) -> tuple[str, ...]:
+        """The contexts owned by the questions ``anchors`` touch that this state still owns
+        and no entry holds, neither ``held`` nor a claim, in source order."""
+        owned = set().union(*(self.owned_contexts.get(a, ()) for a in anchors))
+        return tuple(c.anchor for c in self.pending if c.anchor in owned and c.anchor not in held)
+
     def snapshot(self) -> "DocxBuildState":
         """A copy a trial merge may change without changing this state; items are frozen."""
         trial = copy.copy(self)
@@ -156,11 +165,15 @@ class DocxBuildState:
     ) -> tuple[NativeExamItem, tuple[str, ...]]:
         """The question ``anchors`` belong to as printed, facit included, as one review item.
 
-        The item shows every own chunk of each grouped question ``anchors`` touch and every
-        chunk in ``anchors``, in source order. It holds ``anchors`` plus the shown chunks no
-        entry holds yet, which join ``taken``.
+        The item shows every own chunk of each grouped question ``anchors`` touch, every
+        context those questions own that no entry holds (ruling 2026-10-18 c) and every chunk
+        in ``anchors``, in source order. It holds ``anchors`` plus the shown chunks no entry
+        holds yet, which join ``taken``. A context the question owns never names the item:
+        its source anchor is the first shown chunk of the question's own.
         """
         shown = set(anchors).union(*(self.question_by_anchor.get(a, ()) for a in anchors))
+        contexts = set().union(*(self.owned_contexts.get(a, ()) for a in anchors))
+        shown.update(self.left_out_contexts(anchors, taken))
         shown -= self.header_anchors
         extra = tuple(
             c.anchor
@@ -168,7 +181,11 @@ class DocxBuildState:
             if c.anchor in shown and c.anchor not in anchors and c.anchor not in taken
         )
         taken.update(extra)
-        item = review_source_item(tuple(c for c in self.chunks if c.anchor in shown), reason)
+        chunks = tuple(c for c in self.chunks if c.anchor in shown)
+        item = review_source_item(chunks, reason)
+        own = [c.anchor for c in chunks if c.anchor not in contexts]
+        if own:
+            item = item.model_copy(update={"source_anchor": own[0]})
         return item, (*anchors, *extra)
 
     def review_questions(
@@ -277,10 +294,58 @@ class DocxBuildState:
         else:
             self.output_complete = False
 
+    def _omitted(
+        self,
+        questions: tuple[tuple[str, ...], ...],
+        review_reasons: dict[str, str],
+        governed: Mapping[str, frozenset[str]],
+        exam_wide: frozenset[str],
+    ) -> tuple[tuple[NativeExamItem, tuple[str, ...]], ...]:
+        """Each question no accepted item holds, as one review item showing its source as
+        printed, whatever role the reply gave its chunks.
+
+        The item holds all the question's own chunks, also those the reply lists as an
+        instruction, the title or an answer key, and the contexts it owns that no entry holds;
+        every chunk it holds leaves ``review_reasons``. It carries the reason of the question's
+        first pending chunk.
+        """
+        held = {a for _, anchors in self.accepted for a in anchors}
+        owned = self.owned
+        taken = set(self.claimed)
+        omitted: list[tuple[NativeExamItem, tuple[str, ...]]] = []
+        for question in questions:
+            own = tuple(
+                a for a in question if a in owned and a not in governed and a not in exam_wide
+            )
+            if not own or held.intersection(question):
+                continue
+            pending = next((c.anchor for c in self.pending if c.anchor in own), None)
+            reason = (
+                self.reasons.get(pending, NO_ITEM_REASON) if pending is not None else NO_ITEM_REASON
+            )
+            review = self.printed(own, reason, taken)
+            for anchor in review[1]:
+                review_reasons.pop(anchor, None)
+            omitted.append(review)
+        return tuple(omitted)
+
+    def _without(self, metadata: ProducedMetadata, removed: set[str]) -> ProducedMetadata | None:
+        """``metadata`` without ``removed``, showing the source text of the chunks it keeps;
+        None when it keeps none."""
+        anchors = tuple(a for a in metadata.source_anchors if a not in removed)
+        if not anchors:
+            return None
+        if anchors == metadata.source_anchors:
+            return metadata
+        text = "\n".join(self.chunk_by_anchor[a].text for a in anchors)
+        return metadata.model_copy(update={"text": text, "source_anchors": anchors})
+
     def result(
         self,
         governed: Mapping[str, frozenset[str]] = NOTHING_GOVERNED,
         questions: tuple[tuple[str, ...], ...] = (),
+        exam_wide: frozenset[str] = frozenset(),
+        exam_metadata: frozenset[str] = frozenset(),
     ) -> DocxBuildResult:
         """Every chunk not built or used as metadata/facit becomes a review item, except a
         governing chunk, which becomes its section parent's instruction.
@@ -288,7 +353,13 @@ class DocxBuildState:
         ``governed`` maps each grouping instruction that governs two or more questions to the
         anchors those questions own; it decides which items the instruction is the parent of.
         ``questions`` holds each grouped question's own anchors; an instruction holding one
-        stands only where it lands at that question (D42).
+        stands only where it lands at that question (D42). ``exam_wide`` holds the anchors of
+        exam-wide text and exam metadata (``exam_metadata`` is the metadata subset); assembly
+        keeps them in the document's instructions or drops them, never as review items.
+
+        A question no accepted item holds becomes one review item holding all its own chunks;
+        the instructions, title and answer keys passed to assembly no longer hold them. The
+        state itself is left unchanged, so the result may be built again.
 
         Printed totals are classified once over the whole document, header lines included
         (``printed_points_plan``); assembly scores the items from them. A points line that is
@@ -303,7 +374,11 @@ class DocxBuildState:
         printed = printed_points_plan(self.chunks, questions)
         review_reasons: dict[str, str] = {}
         for chunk in self.pending:
-            if chunk.anchor in printed.metadata or chunk.anchor in heading_anchors:
+            if (
+                chunk.anchor in printed.metadata
+                or chunk.anchor in heading_anchors
+                or chunk.anchor in exam_wide
+            ):
                 continue
             if chunk.anchor in governed and chunk.text:
                 # Assembly makes it its section parent's instruction (D40).
@@ -313,17 +388,25 @@ class DocxBuildState:
             reason = self.reasons.get(chunk.anchor, NO_ITEM_REASON)
             review_reasons[chunk.anchor] = reason
             self.record("fallback", "review_item", anchors=(chunk.anchor,), detail=reason)
+        omitted = self._omitted(questions, review_reasons, governed, exam_wide)
+        # An omitted question's review item holds its own chunks; no instruction, title or
+        # answer key the reply listed them as keeps them.
+        removed = {a for _, anchors in omitted for a in anchors}
+        kept = (self._without(m, removed) for m in instructions)
+        title = self._without(self.title, removed) if self.title is not None else None
         result = assemble_build_result(
             document_id=self.document_id,
             filename=self.filename,
             source_sha256=self.source_sha256,
             chunks=tuple(c for c in self.chunks if c.anchor not in self.header_anchors),
-            accepted=tuple(self.accepted),
+            accepted=(*self.accepted, *omitted),
             review_reasons=review_reasons,
-            key_anchors=frozenset(self.key_anchors),
-            title=self.title,
-            instructions=instructions,
+            key_anchors=frozenset(self.key_anchors - removed),
+            title=title,
+            instructions=tuple(m for m in kept if m is not None),
             governed=governed,
+            exam_wide=exam_wide,
+            exam_metadata=exam_metadata,
             questions=questions,
             printed=printed,
             events=tuple(self.events),

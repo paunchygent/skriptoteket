@@ -20,6 +20,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_criteria import
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import NativeExamItem
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import NativeExamParent
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeItemReviewState,
+)
 from tests.unit.domain.curated_apps.exam_workspace.matching_recording_support import (
     recorded_matching_items,
 )
@@ -346,3 +349,67 @@ def test_questions_outside_every_part_keep_the_models_reading():
 
     assert _points(scored) == [None, 4]
     assert _marked(scored) == [False, False]
+
+
+def test_an_outer_part_never_shares_its_total_over_questions_that_print_their_own():
+    # "Del 1 (20 p)" holds q1, which prints "/18 p", and q2 under its inner part heading
+    # "(3 p)". The outer total is shared only over questions with neither, so q2 is never
+    # first given the 2 points its three-criterion rubric cannot carry in whole points.
+    chunks, questions = _exam(
+        "# Del 1: Grammatik (20 p)",
+        "Q Analysera meningen.",
+        "/18 p",
+        "# Uppgift 1.2: Ordklasser (3 p)",
+        "Q Ange ordklass för de tre orden.",
+    )
+    items = _items(chunks, questions, (None, 3))
+    rubric = items[1].model_copy(
+        update={
+            "criteria": tuple(NativeExamCriterion(text=f"Ord {n}.", points=1) for n in range(1, 4)),
+            "review": items[1].review.model_copy(
+                update={"state": NativeItemReviewState.REVIEW_COMPLETE, "reasons": ()}
+            ),
+        }
+    )
+
+    scored = _score(chunks, questions, (items[0], rubric))
+
+    assert _points(scored) == [18, 3]
+    assert _marked(scored) == [False, False]
+    assert scored.items[1].review == rubric.review
+    assert scored.items[1].criteria == rubric.criteria
+
+
+def test_a_one_question_part_total_reaches_the_item_that_opens_with_its_part_heading():
+    # Chapter_4 shape: the item of each one-question part starts at its part heading, an
+    # anchor no question holds. The part's printed total still reaches that item.
+    chunks, questions = _exam(
+        "# Del 1: Substantiv (2 p)",
+        "Q Förklara vad som kännetecknar ett substantiv.",
+        "# Del 2: Verb (3 p)",
+        "Q Förklara vad som kännetecknar ett verb.",
+    )
+    noun, verb = _items(chunks, questions, (2, 5))
+    opened = verb.model_copy(update={"source_anchor": "body:0002"})
+
+    scored = _score(chunks, questions, (noun, opened))
+
+    assert _points(scored) == [2, 3]
+    assert _marked(scored) == [False, False]
+
+
+def test_a_part_heading_review_item_never_takes_its_questions_total():
+    # The part heading stayed unclaimed and became its own review item, ahead of the
+    # question's item, which starts at the question's own chunk: the total reaches the latter.
+    chunks, questions = _exam(
+        "# Del 1: Substantiv (2 p)",
+        "Q Förklara vad som kännetecknar ett substantiv.",
+    )
+    heading = review_chunk_item(chunks[0], "test").model_copy(
+        update={"item_id": "item_000", "sequence": 0, "points": None}
+    )
+    (noun,) = _items(chunks, questions, (5,))
+
+    scored = _score(chunks, questions, (heading, noun))
+
+    assert _points(scored) == [None, 2]

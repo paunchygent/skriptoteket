@@ -47,4 +47,5 @@ async def test_section_total_is_split_over_its_questions_and_its_points_line_is_
     assert all(item.points_estimated for item in section)
     assert not any(item.review.reasons for item in section)
     assert _POINTS_LINE not in by_anchor
-    assert _POINTS_TEXT in body_text_lines(document.instructions)
+    # The section total is points metadata: it scores the section, never instruction text (F3).
+    assert _POINTS_TEXT not in body_text_lines(document.instructions)

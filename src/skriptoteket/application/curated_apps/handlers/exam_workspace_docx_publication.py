@@ -15,7 +15,10 @@ import structlog
 
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_assembly import (
     assembly_check,
+    contexts_owned_by_question,
     conversion_update,
+    exam_metadata_anchors,
+    exam_wide_anchors,
     governed_anchors,
     provisional_result,
 )
@@ -59,6 +62,7 @@ def _with_source_evidence(
     sources = retry_sources_by_anchor(
         families=families,
         own_anchors=run.own_anchors,
+        owned_contexts=contexts_owned_by_question(run.contexts, families),
         key_anchors=run.key_anchors,
         chunks=run.job.chunks,
         label_kinds=run.label_kinds,
@@ -84,7 +88,12 @@ def provisional_publication(
 ) -> ConversionUpdate:
     """Prepare a batch's trial state without accepting it into the live run."""
     result = provisional_result(
-        trial, families, frozenset(pending), governed_anchors(run.contexts, families)
+        trial,
+        families,
+        frozenset(pending),
+        governed_anchors(run.contexts, families),
+        exam_wide_anchors(run.contexts, families),
+        exam_metadata_anchors(run.contexts),
     )
     result = _with_source_evidence(run, result, families, tuple(trial.events))
     document = result.document
@@ -107,6 +116,8 @@ def final_publication(
     result = run.state.result(
         governed_anchors(run.contexts, run.families),
         tuple(f.question_anchors for f in run.families),
+        exam_wide_anchors(run.contexts, run.families),
+        exam_metadata_anchors(run.contexts),
     )
     result = _with_source_evidence(run, result, run.families, result.events)
     header = apply_header(

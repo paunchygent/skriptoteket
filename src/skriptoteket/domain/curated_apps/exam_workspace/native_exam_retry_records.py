@@ -118,18 +118,34 @@ class NativeExamRetrySource(BaseModel):
     """The original source and first label of one grouped question (D1).
 
     The DOCX bytes are gone once conversion ends, so this is the only source a question can
-    be reconverted from after save and reopen: ``chunks`` hold the question's own chunks,
-    ``key_chunks`` its answer-key chunks, and ``context_chunks`` the read-only shared context
-    the conversion read. ``label_kind`` is the labeler's first type, kept before a
-    type-conflict resend changed the pipeline's kind.
+    be reconverted from after save and reopen: ``chunks`` hold the question's own chunks and
+    the contexts it owns, each context at its source place; ``owned_context_anchors`` name
+    those contexts, ``key_chunks`` hold its answer-key chunks, and ``context_chunks`` the
+    read-only shared context the conversion read. The writer always records all three, so
+    none has a default. A retry treats an owned context as the question's own: a
+    reply that leaves it out joins it to the item as the build does (ruling 2026-10-18 c).
+    ``label_kind`` is the labeler's first type, kept before a type-conflict resend changed the
+    pipeline's kind.
     """
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     chunks: tuple[NativeExamRetryChunk, ...] = Field(min_length=1)
-    key_chunks: tuple[NativeExamRetryChunk, ...] = ()
-    context_chunks: tuple[NativeExamRetryChunk, ...] = ()
+    owned_context_anchors: tuple[str, ...]
+    key_chunks: tuple[NativeExamRetryChunk, ...]
+    context_chunks: tuple[NativeExamRetryChunk, ...]
     label_kind: NativeExamItemKind
+
+    @model_validator(mode="after")
+    def _owned_contexts_among_chunks(self) -> "NativeExamRetrySource":
+        """Each owned context is one of ``chunks``, and the question keeps a chunk of its own."""
+        anchors = [chunk.anchor for chunk in self.chunks]
+        owned = set(self.owned_context_anchors)
+        if len(owned) != len(self.owned_context_anchors) or not owned.issubset(anchors):
+            raise ValueError("an owned context must be one of the question's chunks, once")
+        if owned.issuperset(anchors):
+            raise ValueError("a retry source needs a chunk of the question's own")
+        return self
 
     def has_missing_pictures(self) -> bool:
         return any(

@@ -7015,50 +7015,50 @@ export interface components {
          * @description The original source and first label of one grouped question (D1).
          *
          *     The DOCX bytes are gone once conversion ends, so this is the only source a question can
-         *     be reconverted from after save and reopen: ``chunks`` hold the question's own chunks,
-         *     ``key_chunks`` its answer-key chunks, and ``context_chunks`` the read-only shared context
-         *     the conversion read. ``label_kind`` is the labeler's first type, kept before a
-         *     type-conflict resend changed the pipeline's kind.
+         *     be reconverted from after save and reopen: ``chunks`` hold the question's own chunks and
+         *     the contexts it owns, each context at its source place; ``owned_context_anchors`` name
+         *     those contexts, ``key_chunks`` hold its answer-key chunks, and ``context_chunks`` the
+         *     read-only shared context the conversion read. The writer always records all three, so
+         *     none has a default. A retry treats an owned context as the question's own: a
+         *     reply that leaves it out joins it to the item as the build does (ruling 2026-10-18 c).
+         *     ``label_kind`` is the labeler's first type, kept before a type-conflict resend changed the
+         *     pipeline's kind.
          */
         "NativeExamRetrySource-Input": {
             /** Chunks */
             chunks: components["schemas"]["NativeExamRetryChunk"][];
-            /**
-             * Context Chunks
-             * @default []
-             */
+            /** Context Chunks */
             context_chunks: components["schemas"]["NativeExamRetryChunk"][];
-            /**
-             * Key Chunks
-             * @default []
-             */
+            /** Key Chunks */
             key_chunks: components["schemas"]["NativeExamRetryChunk"][];
             label_kind: components["schemas"]["NativeExamItemKind"];
+            /** Owned Context Anchors */
+            owned_context_anchors: string[];
         };
         /**
          * NativeExamRetrySource
          * @description The original source and first label of one grouped question (D1).
          *
          *     The DOCX bytes are gone once conversion ends, so this is the only source a question can
-         *     be reconverted from after save and reopen: ``chunks`` hold the question's own chunks,
-         *     ``key_chunks`` its answer-key chunks, and ``context_chunks`` the read-only shared context
-         *     the conversion read. ``label_kind`` is the labeler's first type, kept before a
-         *     type-conflict resend changed the pipeline's kind.
+         *     be reconverted from after save and reopen: ``chunks`` hold the question's own chunks and
+         *     the contexts it owns, each context at its source place; ``owned_context_anchors`` name
+         *     those contexts, ``key_chunks`` hold its answer-key chunks, and ``context_chunks`` the
+         *     read-only shared context the conversion read. The writer always records all three, so
+         *     none has a default. A retry treats an owned context as the question's own: a
+         *     reply that leaves it out joins it to the item as the build does (ruling 2026-10-18 c).
+         *     ``label_kind`` is the labeler's first type, kept before a type-conflict resend changed the
+         *     pipeline's kind.
          */
         "NativeExamRetrySource-Output": {
             /** Chunks */
             chunks: components["schemas"]["NativeExamRetryChunk"][];
-            /**
-             * Context Chunks
-             * @default []
-             */
+            /** Context Chunks */
             context_chunks: components["schemas"]["NativeExamRetryChunk"][];
-            /**
-             * Key Chunks
-             * @default []
-             */
+            /** Key Chunks */
             key_chunks: components["schemas"]["NativeExamRetryChunk"][];
             label_kind: components["schemas"]["NativeExamItemKind"];
+            /** Owned Context Anchors */
+            owned_context_anchors: string[];
         };
         /**
          * NativeExamRetryStep

@@ -1,0 +1,124 @@
+{
+  "title": {
+    "text": "PROV: GRAMMATIK OCH SPRÅKSTRUKTURER",
+    "source_anchors": [
+      "body:0001"
+    ],
+    "points": null
+  },
+  "instructions": [
+    {
+      "text": "Del 1: Morfem och fraser (20 p) • Del 2: Satslösning (20 p) • Del 3: Bisatser (15 p) • Del 4: Textanalys (15 p)",
+      "source_anchors": [
+        "body:0010"
+      ],
+      "points": null
+    },
+    {
+      "text": "Totalt: 70 poäng",
+      "source_anchors": [
+        "body:0011"
+      ],
+      "points": null
+    },
+    {
+      "text": "DEL 1: MORFEM OCH FRASER",
+      "source_anchors": [
+        "body:0014"
+      ],
+      "points": null
+    }
+  ],
+  "answer_key_anchors": [],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0016",
+        "body:0019",
+        "body:0020",
+        "body:0021",
+        "body:0022",
+        "body:0023",
+        "body:0024",
+        "body:0025",
+        "body:0026",
+        "body:0027"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "free_text",
+      "printed_label": "Uppgift 1.1",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Morfemanalys",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Dela upp följande ord i morfem. Ange typ: R = rotmorfem, A = avledningsmorfem, B = böjningsmorfem.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "1. otrolig",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "2. läsarens",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "3. oförutsägbarhet",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "4. överenskommelsen",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": null,
+      "facit_text": null,
+      "points": 4,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    }
+  ]
+}

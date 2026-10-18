@@ -123,6 +123,7 @@ def _source(
             )
             for index, anchor in enumerate(own)
         ),
+        owned_context_anchors=(),
         key_chunks=tuple(
             NativeExamRetryChunk(
                 anchor=anchor,
@@ -159,6 +160,7 @@ def test_question_source_keeps_own_key_and_context_chunks_in_source_order():
 
     source = question_retry_source(
         own_anchors=("body:0002", "body:0001"),
+        owned_context_anchors=(),
         key_anchors=("body:0004",),
         read_anchors=frozenset({"body:0003"}),
         chunks=chunks,
@@ -192,6 +194,7 @@ def test_retry_sources_map_every_anchor_a_family_claims():
     sources = retry_sources_by_anchor(
         families=families,
         own_anchors={"q1": ("body:0001",), "q2": ("body:0003",)},
+        owned_contexts={},
         key_anchors={"q1": ("body:0002",), "q2": ()},
         chunks=tuple(_chunk(f"body:{n:04d}", "x") for n in range(1, 6)),
         label_kinds={"q1": NativeExamItemKind.FREE_TEXT, "q2": NativeExamItemKind.MATCHING},
@@ -224,6 +227,7 @@ def test_the_first_owner_of_a_shared_instruction_keeps_it_as_read_only_context()
     sources = retry_sources_by_anchor(
         families=families,
         own_anchors={"q1": ("body:0001",), "q2": ("body:0003",)},
+        owned_contexts={},
         key_anchors={},
         chunks=tuple(_chunk(f"body:{n:04d}", "x") for n in range(1, 6)),
         label_kinds={},
@@ -250,6 +254,7 @@ def test_a_missing_label_kind_captures_as_free_text():
     sources = retry_sources_by_anchor(
         families=families,
         own_anchors={"q1": ("body:0001",)},
+        owned_contexts={},
         key_anchors={},
         chunks=(_chunk("body:0001", "x"),),
         label_kinds={},
@@ -272,6 +277,7 @@ def test_missing_picture_records_survive_capture_and_block_export_until_teacher_
     )
     source = question_retry_source(
         own_anchors=("body:0001",),
+        owned_context_anchors=(),
         key_anchors=(),
         read_anchors=frozenset(),
         chunks=(_chunk("body:0001", "Fråga?"),),
@@ -391,6 +397,7 @@ def test_source_asset_ids_cover_own_key_and_context_pictures():
                 images=(NativeExamRetryImage(asset_id=_ASSET_ID, offset=0, marked_offset=0),),
             ),
         ),
+        owned_context_anchors=(),
         key_chunks=(),
         context_chunks=(),
         label_kind=NativeExamItemKind.FREE_TEXT,
@@ -417,6 +424,7 @@ def test_a_source_only_picture_is_a_referenced_asset_without_entering_the_body()
                 paragraphs=(NativeExamRetryParagraph(offset=0, text="fråga", heading_level=None),),
             ),
         ),
+        owned_context_anchors=(),
         key_chunks=(
             NativeExamRetryChunk(
                 anchor="body:0002",

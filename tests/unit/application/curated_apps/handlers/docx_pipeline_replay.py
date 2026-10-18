@@ -72,8 +72,8 @@ def recorded_exams() -> tuple[str, ...]:
     return tuple(sorted(path.name for path in RECORDINGS.iterdir() if path.is_dir()))
 
 
-def corpus_docx(exam: str) -> bytes:
-    return (CORPUS / f"{exam}.docx").read_bytes()
+def corpus_docx(exam: str, corpus: Path | None = None) -> bytes:
+    return ((corpus or CORPUS) / f"{exam}.docx").read_bytes()
 
 
 def corpus_chunks(exam: str) -> tuple[DocxChunk, ...]:
@@ -298,9 +298,10 @@ class Replay:
     pipeline: DocxConversionPipeline
     provider: ReplayProvider
     progress: RecordingProgress
+    corpus: Path | None = None
 
     def job(self) -> DocxConversionJob:
-        content = corpus_docx(self.exam)
+        content = corpus_docx(self.exam, self.corpus)
         return DocxConversionJob(
             job_id=uuid4(),
             worker_id=WORKER,
@@ -321,6 +322,7 @@ def build_replay(
     leases: AnswerKeyTokenLeaseRepositoryProtocol | None = None,
     enabled: bool = True,
     root: Path = RECORDINGS,
+    corpus: Path | None = None,
     families_per_batch: int = RECORDED_FAMILIES_PER_BATCH,
     provider: ReplayProvider | None = None,
 ) -> Replay:
@@ -341,4 +343,4 @@ def build_replay(
         ),
         progress=progress,
     )
-    return Replay(exam=exam, pipeline=pipeline, provider=provider, progress=progress)
+    return Replay(exam=exam, pipeline=pipeline, provider=provider, progress=progress, corpus=corpus)

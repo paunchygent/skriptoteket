@@ -72,7 +72,7 @@ async def test_every_grouped_question_maps_to_items_once_and_in_source_order(exa
     assert list(update.item_ids) == grouped
     assert update.pending == ()
     assert set(update.filled) == set(grouped)
-    assert all(update.item_ids[qid] for qid in grouped), "a grouped question lost all its items"
+    assert all(len(update.item_ids[qid]) == 1 for qid in grouped), "a question is not one item"
     mapped = [item_id for ids in update.item_ids.values() for item_id in ids]
     mapped += update.extra_item_ids
     assert sorted(mapped) == sorted(item.item_id for item in document.items)

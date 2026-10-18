@@ -125,129 +125,86 @@ class SectionInstructions:
 
 @dataclass(frozen=True)
 class QuestionPoints:
-    items: tuple[NativeExamItem, ...]
+    item: NativeExamItem
     events: tuple[DocxBuildEvent, ...] = ()
 
 
 def with_question_points(
-    items: tuple[NativeExamItem, ...],
-    points: int | float | None,
+    item: NativeExamItem,
+    points: int | float,
     *,
     source_chunks: tuple[DocxChunk, ...],
     estimated: bool = False,
 ) -> QuestionPoints:
-    """The question's points own its total, including rubric/grid and split scores.
+    """The question's one item owns its printed points, rubric and tick value included.
 
     ``points`` is what the question prints, or its share of a part's total, marked
-    ``estimated`` (D6). Reuse the section allocator in source order; never change only an
-    item's total while leaving its rubric or uniform tick value inconsistent.
+    ``estimated`` (D6). The item's rubric is reshared in whole points and a matching item's
+    tick value follows the total, so no total is changed alone. Points the rubric or ticks
+    cannot carry send the item to teacher review.
     """
-    if points is None or not items:
-        return QuestionPoints(items)
-    result: list[NativeExamItem] = []
+    updates: dict[str, object] = {"points": points, "points_estimated": estimated}
     try:
-        for item, share in zip(items, point_shares(points, len(items)), strict=True):
-            updates: dict[str, object] = {"points": share, "points_estimated": estimated}
-            if share <= 0:
-                raise ValueError("the printed total cannot give each item positive points")
-            if item.kind is NativeExamItemKind.MATCHING:
-                tick, total, rounded = matching_score(share, len(item.answer_key.match_pairs))
-                updates.update(
-                    tick_points=tick, points=total, points_estimated=estimated or rounded
-                )
-            if item.criteria and sum(criterion.points for criterion in item.criteria) != share:
-                shares = point_shares(share, len(item.criteria))
-                if any(value < 1 or not float(value).is_integer() for value in shares):
-                    raise ValueError("the printed total cannot give each criterion whole points")
-                updates["criteria"] = tuple(
-                    criterion.model_copy(update={"points": int(value)})
-                    for criterion, value in zip(item.criteria, shares, strict=True)
-                )
-            result.append(item.model_copy(update=updates))
-    except ValueError as error:
+        if points <= 0:
+            raise ValueError("the printed total gives the question no points")
+        if item.kind is NativeExamItemKind.MATCHING:
+            tick, total, rounded = matching_score(points, len(item.answer_key.match_pairs))
+            updates.update(tick_points=tick, points=total, points_estimated=estimated or rounded)
+        if item.criteria and sum(criterion.points for criterion in item.criteria) != points:
+            shares = point_shares(points, len(item.criteria))
+            if any(value < 1 or not float(value).is_integer() for value in shares):
+                raise ValueError("the printed total cannot give each criterion whole points")
+            updates["criteria"] = tuple(
+                criterion.model_copy(update={"points": int(value)})
+                for criterion, value in zip(item.criteria, shares, strict=True)
+            )
+    except InvalidTickValue:
+        reason = (
+            f"Tryckta {points:g} poäng ger mindre än 0,01 poäng per kryss. "
+            "Kontrollera kategoriseringen."
+        )
+        source = review_source_item(source_chunks, reason)
+        source = source.model_copy(
+            update={
+                "points": points,
+                "points_estimated": estimated,
+                "item_id": item.item_id,
+                "sequence": item.sequence,
+                "printed_label": item.printed_label,
+                "source_anchor": item.source_anchor,
+                "retry_source": item.retry_source,
+                "review": source.review.model_copy(
+                    update={
+                        "confidence": item.review.confidence,
+                        "reasons": tuple(
+                            dict.fromkeys((*item.review.reasons, *source.review.reasons))
+                        ),
+                    }
+                ),
+            }
+        )
+        return QuestionPoints(
+            source,
+            (
+                DocxBuildEvent(
+                    stage="fallback",
+                    code="invalid_tick_value",
+                    anchors=tuple(chunk.anchor for chunk in source_chunks),
+                ),
+            ),
+        )
+    except ValueError:
         reason = (
             f"Tryckta {points:g} poäng kan inte fördelas på frågans bedömning. Kontrollera poängen."
         )
-        if isinstance(error, InvalidTickValue):
-            reason = (
-                f"Tryckta {points:g} poäng ger mindre än 0,01 poäng per kryss. "
-                "Kontrollera kategoriseringen."
-            )
-        reviewed = tuple(
-            item.model_copy(
-                update={
-                    "review": item.review.model_copy(
-                        update={
-                            "state": NativeItemReviewState.REVIEW_REQUIRED,
-                            "reasons": tuple(dict.fromkeys((*item.review.reasons, reason))),
-                        }
-                    )
-                }
-            )
-            for item in items
+        review = item.review.model_copy(
+            update={
+                "state": NativeItemReviewState.REVIEW_REQUIRED,
+                "reasons": tuple(dict.fromkeys((*item.review.reasons, reason))),
+            }
         )
-        if isinstance(error, InvalidTickValue):
-            first = items[0]
-            prior_reasons = tuple(reason for item in items for reason in item.review.reasons)
-            source = review_source_item(source_chunks, reason)
-            source = source.model_copy(
-                update={
-                    "points": points,
-                    "points_estimated": estimated,
-                    "item_id": first.item_id,
-                    "sequence": first.sequence,
-                    "printed_label": first.printed_label,
-                    "source_anchor": first.source_anchor,
-                    "retry_source": first.retry_source,
-                    "review": source.review.model_copy(
-                        update={
-                            "confidence": first.review.confidence,
-                            "reasons": tuple(
-                                dict.fromkeys((*prior_reasons, *source.review.reasons))
-                            ),
-                        }
-                    ),
-                }
-            )
-            return QuestionPoints(
-                (source,),
-                (
-                    DocxBuildEvent(
-                        stage="fallback",
-                        code="invalid_tick_value",
-                        anchors=tuple(chunk.anchor for chunk in source_chunks),
-                    ),
-                ),
-            )
-        return QuestionPoints(reviewed)
-    return QuestionPoints(tuple(result))
-
-
-def replace_question_items(
-    items: Sequence[NativeExamItem],
-    parents: Sequence[NativeExamParent],
-    members: tuple[NativeExamItem, ...],
-    scored: QuestionPoints,
-) -> tuple[list[NativeExamItem], tuple[NativeExamParent, ...]]:
-    """Apply a question result atomically, including collapsed source-review membership."""
-    member_ids = {item.item_id for item in members}
-    replacements = iter(scored.items)
-    updated: list[NativeExamItem] = []
-    for item in items:
-        if item.item_id not in member_ids:
-            updated.append(item)
-        elif replacement := next(replacements, None):
-            updated.append(replacement)
-    kept_ids = {item.item_id for item in updated}
-    updated_parents = tuple(
-        parent.model_copy(update={"item_ids": tuple(i for i in parent.item_ids if i in kept_ids)})
-        for parent in parents
-        if any(i in kept_ids for i in parent.item_ids)
-    )
-    return (
-        [item.model_copy(update={"sequence": n}) for n, item in enumerate(updated, 1)],
-        updated_parents,
-    )
+        return QuestionPoints(item.model_copy(update={"review": review}))
+    return QuestionPoints(item.model_copy(update=updates))
 
 
 def _lines(text: str) -> list[str]:
@@ -401,8 +358,7 @@ def place_section_instructions(
     student-visible.
     The instructions that reach two or more consecutive items become the parent of
     exactly those items, whatever their kinds. An instruction that defines terms reaches only
-    the run's items whose own chunks use one; lines an item prints before its numbered
-    question line are such an instruction too; a lead-in ending in a colon that introduces a
+    the run's items whose own chunks use one; a lead-in ending in a colon that introduces a
     question opening with quoted material reaches only the run's items that open with quotes.
     Every other instruction, and every instruction whose reach cannot be a parent, is copied
     into the items it reaches. An instruction an item prints inside its own chunks is placed

@@ -279,8 +279,9 @@ def test_a_part_heading_tagged_as_a_header_stays_source_structure(
 ) -> None:
     """Cause B: no header tag drops a part heading; its part keeps its total.
 
-    "Del 2" opens a part over two questions and becomes unplaced section structure. "Del 3"
-    opens a part over one question that owns it, and keeps that placement.
+    "Del 2" opens a part over two questions and "Del 3" a part over one question that holds
+    it. A part-labelled line is never a question anchor: both become unplaced section
+    structure.
     """
     texts = ((_H, "Del 2: 16 poäng"), (_P, "Q1"), (_P, "Q2"), (_H, "Del 3: 5 poäng"), (_P, "Q3"))
     chunks = tuple(_chunk(i, k, text) for i, (k, text) in enumerate(texts))
@@ -306,8 +307,11 @@ def test_a_part_heading_tagged_as_a_header_stays_source_structure(
     result = assign_points_lines(manifest, chunks)
 
     assert result.header == ()
-    assert result.unplaced_anchors == (anchors[0],)
-    assert result.questions == manifest.questions
+    assert result.unplaced_anchors == (anchors[0], anchors[3])
+    assert result.questions == (
+        *manifest.questions[:2],
+        ManifestQuestion("q3", (anchors[4],), (), ()),
+    )
 
 
 @pytest.mark.parametrize("placement", ["anchors", "key_anchors"])

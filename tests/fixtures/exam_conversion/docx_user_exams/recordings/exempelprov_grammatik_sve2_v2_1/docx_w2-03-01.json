@@ -1,0 +1,107 @@
+{
+  "title": null,
+  "instructions": [
+    {
+      "text": "Analysera meningen nedan.",
+      "source_anchors": [
+        "body:0148"
+      ],
+      "points": null
+    }
+  ],
+  "answer_key_anchors": [],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0147",
+        "body:0150",
+        "body:0152",
+        "body:0153",
+        "body:0154",
+        "body:0155",
+        "body:0156",
+        "body:0157",
+        "body:0158",
+        "body:0159",
+        "body:0160",
+        "body:0161",
+        "body:0162"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "free_text",
+      "printed_label": "Uppgift 3.2",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Analysera komplex mening",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "\"Hon sa att hon skulle ringa när hon kom hem.\"",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "a) Hur många satser finns? Markera alla finita verb.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "b) Vilken är huvudsatsen?",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "c) Markera bisatserna med hakparenteser [ ] och ange nivå (1 eller 2).",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "d) Ange varje bisats typ och funktion.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": null,
+      "facit_text": null,
+      "points": 6,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    }
+  ]
+}

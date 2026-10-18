@@ -57,6 +57,9 @@ def _source_image(item: NativeExamItem) -> NativeExamItem:
                 images=(NativeExamRetryImage(asset_id=_ASSET_ID, offset=0, marked_offset=0),),
             ),
         ),
+        owned_context_anchors=(),
+        key_chunks=(),
+        context_chunks=(),
     )
     return item.model_copy(update={"retry_source": source})
 

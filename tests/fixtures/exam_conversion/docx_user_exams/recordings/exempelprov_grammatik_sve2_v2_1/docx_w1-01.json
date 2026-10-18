@@ -1,0 +1,252 @@
+{
+  "title": null,
+  "instructions": [
+    {
+      "text": "Gör fullständig satsdelsanalys. Tänk på att bisatser kan vara satsdelar och att satsadverbial (SA) har en särskild position.",
+      "source_anchors": [
+        "body:0103"
+      ],
+      "points": null
+    },
+    {
+      "text": "/10 p",
+      "source_anchors": [
+        "body:0120"
+      ],
+      "points": 10
+    },
+    {
+      "text": "DEL 4: TEXTANALYS – SPRÅKLIGA DRAG",
+      "source_anchors": [
+        "body:0164"
+      ],
+      "points": null
+    },
+    {
+      "text": "Läs de två texterna nedan. De beskriver samma händelse men är skrivna i olika stilar.",
+      "source_anchors": [
+        "body:0165"
+      ],
+      "points": null
+    },
+    {
+      "text": "Text A\n\"Igår kom jag till skolan och då märkte jag att det var jättekallt i klassrummet. Läraren sa att värmesystemet hade gått sönder på natten. Vi frös alla och kunde inte koncentrera oss på lektionen. Till slut fick vi gå hem tidigare.\"\nText B\n\"Ett haveri i skolans värmesystem under natten resulterade i en kraftig temperatursänkning i samtliga klassrum. Den bristande uppvärmningen påverkade elevernas koncentrationsförmåga negativt, vilket ledde till ett beslut om ett tidigareläggande av avslutning av skoldagen.\"",
+      "source_anchors": [
+        "body:0167",
+        "body:0168",
+        "body:0170",
+        "body:0171"
+      ],
+      "points": null
+    },
+    {
+      "text": "Beskriv minst fyra skillnader mellan texterna. Använd grammatiska begrepp i din analys. Ge exempel från texterna.",
+      "source_anchors": [
+        "body:0174"
+      ],
+      "points": null
+    },
+    {
+      "text": "Tips: Tänk på nominalfraser, verb/nominaliseringar, bisatser, konkret/abstrakt, handlingar/processer.",
+      "source_anchors": [
+        "body:0176"
+      ],
+      "points": null
+    },
+    {
+      "text": "/15 p",
+      "source_anchors": [
+        "body:0198"
+      ],
+      "points": 15
+    }
+  ],
+  "answer_key_anchors": [],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0102",
+        "body:0105",
+        "body:0106",
+        "body:0107",
+        "body:0108",
+        "body:0109",
+        "body:0110",
+        "body:0111",
+        "body:0112",
+        "body:0113",
+        "body:0114",
+        "body:0115",
+        "body:0116",
+        "body:0117",
+        "body:0118",
+        "body:0119"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "free_text",
+      "printed_label": "Uppgift 2.2",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Komplex satslösning",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "1. Han kommer förmodligen inte imorgon.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "2. Att du kom överraskade mig.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "3. Jag förstår inte varför du är trött.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "4. När hon hade tänkt länge och väl berättade hon sanningen för honom.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "5. Mannen som bor här verkar trevlig.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": null,
+      "facit_text": null,
+      "points": 10,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    },
+    {
+      "source_anchors": [
+        "body:0173",
+        "body:0178",
+        "body:0179",
+        "body:0180",
+        "body:0181",
+        "body:0182",
+        "body:0183",
+        "body:0184",
+        "body:0185",
+        "body:0186",
+        "body:0187",
+        "body:0188",
+        "body:0189",
+        "body:0190",
+        "body:0191",
+        "body:0192",
+        "body:0193",
+        "body:0194",
+        "body:0195",
+        "body:0196",
+        "body:0197"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "free_text",
+      "printed_label": "Uppgift 4.1",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Jämför texterna",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Skillnad 1:",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Skillnad 2:",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Skillnad 3:",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Skillnad 4:",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": null,
+      "facit_text": null,
+      "points": 15,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    }
+  ]
+}

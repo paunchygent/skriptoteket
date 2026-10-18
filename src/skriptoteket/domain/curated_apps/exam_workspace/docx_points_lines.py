@@ -1,26 +1,36 @@
 """The one owner of every printed total, decided from document structure (TASK-SKRIPT-39-04-11).
 
 A total line is a chunk that prints exactly one points label. Outside question spans it must
-stand alone: a heading, or a points line (a label and at most two words); a prose sentence
-that mentions a rate prints no total. Its label (``docx_points_labels``) and its place among
+stand alone: a heading, a points line (a label and at most two words), or a paragraph that
+opens with a part label, whatever its title length (D10a); a prose sentence that mentions a
+rate prints no total. A part-labelled line printing two or more points labels prints no total
+of its own: it is only a summary candidate. Its label (``docx_points_labels``) and its place among
 the questions give it exactly one owner, whatever the grouping tagged it as or where it
 placed it:
 
 - A part line opens a part: a standalone line with a part label, or a heading with no exam
-  or question label. The part runs to the next part line and prints the total of the
+  or question label. Parts nest: a part-labelled line opens an outer part that runs to the
+  next part-labelled line; a part line with no part label (a numbered heading) opens an
+  inner part that runs to the next part line of either kind. A part prints the total of the
   questions that start in it. A points line after the start of the part's last question,
-  before the next part line, that prints that same total closes the part; it is the part's
+  before the part's end, that prints that same total closes the part; it is the part's
   line too.
+- A summary line, outside every question span, names two or more parts with a total each
+  (``part_totals``). A part-labelled line that prints no total of its own opens a part when
+  a summary gives its part a total, whatever its Word kind: a heading or a paragraph. A
+  part's total is the one distinct value its own line and the summaries print for it; when
+  they differ it opens no part (D3). A summary line is metadata: never an exam-total
+  candidate, never a question line.
 - A question line lies in a question's span, from the question's start to the next question
-  start or part line: any total line there without an exam label. Outside every span, a
-  question-labelled line ("Poäng: 2 poäng") heads the question right after it, or the last
-  question when none follows. A question's lines print its own points: their one distinct
-  value, or none when they differ.
+  start or part line of either kind: any total line there without an exam label. Outside
+  every span, a question-labelled line ("Poäng: 2 poäng") heads the question right after
+  it, or the last question when none follows. A question's lines print its own points:
+  their one distinct value, or none when they differ.
 - Outside every question span, any other standalone total line is an exam-total candidate.
   One distinct candidate value is the exam total; differing values give none (D3).
 
-A question starts at its first own chunk that is no standalone total line, so where the
-grouping places a points line or a total heading never moves a question's start.
+A question starts at its first own chunk that is no standalone total line and no part line,
+so where the grouping places a points line or a part heading never moves a question's start.
 """
 
 from collections.abc import Iterable, Mapping
@@ -31,9 +41,11 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChun
 from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import ExamManifest
 from skriptoteket.domain.curated_apps.exam_workspace.docx_points_labels import (
     part_identity,
+    part_totals,
     points_label,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
+    POINT_LABEL,
     points_line,
     printed_points,
 )
@@ -98,13 +110,57 @@ def _one_value(values: Iterable[int | float]) -> int | float | None:
 
 
 def _stands_alone(chunk: DocxChunk) -> bool:
-    """A heading or a points line prints a total of its own; a prose sentence does not."""
-    return chunk.kind == "heading" or points_line(chunk.text)
+    """A heading, a points line or a part line prints a total of its own; prose does not.
+
+    A part line (D10a) opens with a part label and prints exactly one points label, so
+    "Del 1: Ordklasser och ordbildning (6 p)" stands alone whatever its title length.
+    """
+    return (
+        chunk.kind == "heading"
+        or points_line(chunk.text)
+        or (points_label(chunk.text) == "part" and printed_points((chunk,)) is not None)
+    )
 
 
 def _opens_part(chunk: DocxChunk) -> bool:
     label = points_label(chunk.text)
     return _stands_alone(chunk) and (label == "part" or (chunk.kind == "heading" and label is None))
+
+
+def _summary_part(chunk: DocxChunk) -> bool:
+    """A part-labelled line printing no total of its own, which a summary can give one.
+
+    A summary naming its part is the structural evidence, so its Word kind does not matter.
+    A paragraph that is no points line qualifies only when it prints no points label at all.
+    """
+    return (
+        points_label(chunk.text) == "part"
+        and printed_points((chunk,)) is None
+        and (_stands_alone(chunk) or POINT_LABEL.search(chunk.text) is None)
+    )
+
+
+def _starts(
+    questions: tuple[tuple[str, ...], ...], positions: Mapping[str, int], lines: set[int]
+) -> list[tuple[int, int]]:
+    """Each question's start and number in source order: its first own chunk outside ``lines``."""
+    starts: list[tuple[int, int]] = []
+    for number, own in enumerate(questions):
+        body = [positions[a] for a in own if a in positions and positions[a] not in lines]
+        if body:
+            starts.append((min(body), number))
+    return sorted(starts)
+
+
+def _spans(starts: list[tuple[int, int]], openers: Iterable[int], size: int) -> dict[int, int]:
+    """Each chunk inside a question's span, from its start to the next start or part line."""
+    bounds = sorted(openers)
+    span_of: dict[int, int] = {}
+    for rank, (start, number) in enumerate(starts):
+        end = min([s for s, _ in starts[rank + 1 :]] + [o for o in bounds if o > start] + [size])
+        for index in range(start, end):
+            span_of[index] = number
+    return span_of
 
 
 def printed_points_plan(
@@ -117,24 +173,43 @@ def printed_points_plan(
         for index, chunk in enumerate(chunks)
         if (total := printed_points((chunk,))) is not None
     }
-    openers = sorted(index for index in totals if _opens_part(chunks[index]))
     standalone = {index for index in totals if _stands_alone(chunks[index])}
-    starts: list[tuple[int, int]] = []
-    for number, own in enumerate(questions):
-        body = [positions[a] for a in own if a in positions and positions[a] not in standalone]
-        if body:
-            starts.append((min(body), number))
+    summary_named = {identity for chunk in chunks for identity, _ in part_totals(chunk.text)}
+    # A part line a summary may total never starts a question, as a total line never does.
+    unprinted = {
+        index
+        for index, chunk in enumerate(chunks)
+        if _summary_part(chunk) and part_identity(chunk.text) in summary_named
+    }
+    own_openers = [index for index in totals if _opens_part(chunks[index])]
+    starts = _starts(questions, positions, standalone | unprinted)
     if not starts:
         # Without questions nothing owns a total; every line stays source text.
         return NO_PRINTED_POINTS
-    starts.sort()
-    span_of: dict[int, int] = {}
-    for rank, (start, number) in enumerate(starts):
-        end = min(
-            [s for s, _ in starts[rank + 1 :]] + [o for o in openers if o > start] + [len(chunks)]
-        )
-        for index in range(start, end):
-            span_of[index] = number
+    first_spans = _spans(starts, own_openers, len(chunks))
+    summaries = [
+        index
+        for index, chunk in enumerate(chunks)
+        if index not in first_spans and part_totals(chunk.text)
+    ]
+    summary_totals: dict[str, set[int | float]] = {}
+    for index in summaries:
+        for identity, total in part_totals(chunks[index].text):
+            summary_totals.setdefault(identity, set()).add(total)
+    openers = sorted(
+        {
+            *own_openers,
+            *(index for index in unprinted if part_identity(chunks[index].text) in summary_totals),
+        }
+    )
+    # A part line opens its part with the one distinct total it and the summaries print.
+    part_total: dict[int, int | float | None] = {}
+    for index in openers:
+        named = part_identity(chunks[index].text)
+        own_total = {totals[index]} if index in totals else set()
+        summarised = summary_totals.get(named, set()) if named is not None else set()
+        part_total[index] = _one_value({*own_total, *summarised})
+    span_of = _spans(starts, openers, len(chunks))
     lines: dict[int, list[int]] = {number: [] for _, number in starts}
     candidates: set[int | float] = set()
     for index, total in totals.items():
@@ -152,23 +227,31 @@ def printed_points_plan(
             lines[following].append(index)
         elif _stands_alone(chunk):
             candidates.add(total)
+    named_part = {index: part_identity(chunks[index].text) for index in openers}
     parts: list[PrintedPart] = []
     closers: set[int] = set()
-    for rank, opener in enumerate(openers):
-        end = openers[rank + 1] if rank + 1 < len(openers) else len(chunks)
+    for opener in openers:
+        # An outer part (one that names its part) runs to the next outer part line; an inner
+        # part to the next part line of either kind.
+        end = next(
+            (
+                index
+                for index in openers
+                if index > opener and (named_part[opener] is None or named_part[index] is not None)
+            ),
+            len(chunks),
+        )
         members = tuple(number for start, number in starts if opener <= start < end)
-        if not members:
+        total = part_total[opener]
+        if not members or total is None:
             continue
-        total = totals[opener]
         last_start = max(start for start, number in starts if number == members[-1])
         closers.update(
             index
             for index in lines[members[-1]]
             if last_start < index < end and line_points(chunks[index]) == total
         )
-        parts.append(
-            PrintedPart(total, members, chunks[opener].anchor, part_identity(chunks[opener].text))
-        )
+        parts.append(PrintedPart(total, members, chunks[opener].anchor, named_part[opener]))
     printed = tuple(
         PrintedQuestion(
             anchors=own,
@@ -184,9 +267,14 @@ def printed_points_plan(
         if index not in closers and line_points(chunks[index]) is not None
     }
     metadata = frozenset(
-        chunks[index].anchor
-        for index in totals
-        if line_points(chunks[index]) is not None and chunks[index].anchor not in owners
+        {
+            *(
+                chunks[index].anchor
+                for index in totals
+                if line_points(chunks[index]) is not None and chunks[index].anchor not in owners
+            ),
+            *(chunks[index].anchor for index in summaries),
+        }
     )
     return PrintedPoints(
         questions=printed,
@@ -202,14 +290,19 @@ def section_openers(parts: Iterable[PrintedPart]) -> frozenset[str]:
 
     A part line that repeats the identity of the part line before it, such as "Part 3,
     Question 2" after "Part 3, Question 1", continues that part. A line that names no part
-    always opens one.
+    opens one, unless it lies inside a part that names its part ("Uppgift 1.1 (4 p)" under
+    "DEL 1"): that outer part keeps running over all of its questions.
     """
     openers: list[str] = []
     running: str | None = None
+    outer: frozenset[int] = frozenset()
     for part in parts:
+        if part.identity is None and outer.issuperset(part.questions):
+            continue
         if part.identity is None or part.identity != running:
             openers.append(part.opener)
         running = part.identity
+        outer = frozenset(part.questions) if part.identity is not None else frozenset()
     return frozenset(openers)
 
 
@@ -219,26 +312,38 @@ def manifest_questions(manifest: ExamManifest) -> tuple[tuple[str, ...], ...]:
 
 
 def assign_points_lines(manifest: ExamManifest, chunks: tuple[DocxChunk, ...]) -> ExamManifest:
-    """Place every points line and part heading by its owner alone, wherever the grouping put it.
+    """Place every points line and part line by its owner alone, wherever the grouping put it.
 
     A question's own points line joins its anchors; every other points line is unplaced
     metadata. Each such line leaves every other placement: anchors, subparts, answer keys,
-    contexts, title and header tags. A part heading over several questions is unplaced
-    section structure in the same way, which placement opens the part's parent with. A part
-    heading over one question scores that question whatever its placement, and only leaves
-    the context, title and header tags: no tag drops it from the source. Run after question
-    headings join their questions.
+    contexts, title and header tags. A part-labelled line ("Del 2", "Part 2A: enrich (1
+    point)") is never a question anchor, whatever number of questions its part holds: it is
+    unplaced section structure in the same way, and so is a part heading with no part label
+    over several questions. A part line with no part label over one question, such as
+    "Uppgift 2: Verb (2 p)", joins that question's anchors as its own points line does and
+    leaves every other placement, so the heading has one owner whatever the reply lists.
+    Every part line scores its questions whatever its placement. Run after question headings
+    join their questions.
     """
     plan = printed_points_plan(chunks, manifest_questions(manifest))
     by_anchor = {chunk.anchor: chunk for chunk in chunks}
-    headings = [part for part in plan.parts if by_anchor[part.opener].kind == "heading"]
-    sections = {part.opener for part in headings if len(part.questions) > 1}
-    untagged = {part.opener for part in headings} - sections
-    positions = {chunk.anchor: index for index, chunk in enumerate(chunks)}
-    placed = set(plan.owners) | plan.metadata | sections
-    owned = {a for question in manifest.questions for a in question.anchors}
-    tagged = placed | untagged
     ids = [question.question_id for question in manifest.questions]
+    sections = {
+        part.opener
+        for part in plan.parts
+        if part.identity is not None
+        or (len(part.questions) > 1 and by_anchor[part.opener].kind == "heading")
+    }
+    joins = {
+        **{anchor: ids[number] for anchor, number in plan.owners.items()},
+        **{
+            part.opener: ids[part.questions[0]]
+            for part in plan.parts
+            if len(part.questions) == 1 and part.identity is None
+        },
+    }
+    positions = {chunk.anchor: index for index, chunk in enumerate(chunks)}
+    placed = set(joins) | plan.metadata | sections
     questions = tuple(
         replace(
             question,
@@ -246,11 +351,7 @@ def assign_points_lines(manifest: ExamManifest, chunks: tuple[DocxChunk, ...]) -
                 sorted(
                     (
                         *(a for a in question.anchors if a not in placed),
-                        *(
-                            a
-                            for a, owner in plan.owners.items()
-                            if ids[owner] == question.question_id
-                        ),
+                        *(a for a, owner in joins.items() if owner == question.question_id),
                     ),
                     key=positions.__getitem__,
                 )
@@ -263,16 +364,15 @@ def assign_points_lines(manifest: ExamManifest, chunks: tuple[DocxChunk, ...]) -
     return replace(
         manifest,
         questions=questions,
-        contexts=tuple(c for c in manifest.contexts if c.anchor not in tagged),
-        title_anchors=tuple(a for a in manifest.title_anchors if a not in tagged),
-        header=tuple(h for h in manifest.header if h.anchor not in tagged),
+        contexts=tuple(c for c in manifest.contexts if c.anchor not in placed),
+        title_anchors=tuple(a for a in manifest.title_anchors if a not in placed),
+        header=tuple(h for h in manifest.header if h.anchor not in placed),
         unplaced_anchors=tuple(
             sorted(
                 {
                     *(a for a in manifest.unplaced_anchors if a not in placed),
-                    *plan.metadata,
+                    *(a for a in plan.metadata if a not in joins),
                     *sections,
-                    *(untagged - owned),
                 },
                 key=positions.__getitem__,
             )

@@ -1,0 +1,128 @@
+{
+  "title": {
+    "text": "DEL 2: SATSLÖSNING",
+    "source_anchors": [
+      "body:0063"
+    ],
+    "points": null
+  },
+  "instructions": [
+    {
+      "text": "Använd förkortningarna: S = subjekt, P = predikat (finit verb + verb i infinit form), DO = direkt objekt, IO = indirekt objekt, Pf = predikativ, Adv = adverbial, SA = satsadverbial",
+      "source_anchors": [
+        "body:0064"
+      ],
+      "points": null
+    }
+  ],
+  "answer_key_anchors": [],
+  "items": [
+    {
+      "source_anchors": [
+        "body:0065",
+        "body:0066",
+        "body:0067",
+        "body:0068",
+        "body:0069",
+        "body:0070",
+        "body:0071",
+        "body:0072",
+        "body:0073",
+        "body:0074",
+        "body:0075",
+        "body:0076",
+        "body:0077",
+        "body:0078",
+        "body:0079",
+        "body:0080",
+        "body:0081",
+        "body:0082"
+      ],
+      "outcome": "converted",
+      "conflict_kind": null,
+      "review_reason": null,
+      "kind": "free_text",
+      "printed_label": "Uppgift 2.1",
+      "body": [
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Enkel satslösning",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "Gör fullständig satsdelsanalys av följande meningar.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "1. Eleverna studerar ofta på biblioteket.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "2. Min Mamma köpte mig en tröja.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "3. Maten doftade underbart.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "4. Katten sover under sängen.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        },
+        {
+          "segments": [
+            {
+              "kind": "text",
+              "text": "5. Det var så himla roligt.",
+              "accepted_values": [],
+              "asset_id": null
+            }
+          ]
+        }
+      ],
+      "key_source": null,
+      "facit_text": null,
+      "points": 10,
+      "choices": [],
+      "match_left": [],
+      "match_right": [],
+      "match_pairs": [],
+      "criteria": []
+    }
+  ]
+}

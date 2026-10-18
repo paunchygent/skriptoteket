@@ -36,6 +36,7 @@ def test_request_schema_offers_only_owned_picture_ids_not_context_pictures() -> 
         request_id="picture-question",
         pending=(DocxChunk("body:0002", "drawing", "", "", (image,)),),
         context=(DocxChunk("body:0001", "drawing", "", "", (context_image,)),),
+        questions=(("body:0002",),),
         kinds=frozenset({NativeExamItemKind.FREE_TEXT}),
         profile=StructuredLLMProviderProfile(
             provider_id="test",

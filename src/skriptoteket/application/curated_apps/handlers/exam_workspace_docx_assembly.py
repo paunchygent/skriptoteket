@@ -17,7 +17,7 @@ from types import MappingProxyType
 
 from pydantic import ValidationError
 
-from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_admission import (
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_admit_metadata import (
     validation_detail,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_state import (
@@ -77,6 +77,8 @@ def merge_batch(
         *batch.instructions,
     )
     target.key_anchors |= batch.key_anchors
+    # A new mapping: a trial snapshot shares the run state's mapping until it is replaced.
+    target.owned_contexts = {**target.owned_contexts, **batch.owned_contexts}
     target.claimed |= batch.claimed
     target.reasons.update(
         (anchor, reason) for anchor, reason in batch.reasons.items() if anchor not in batch.claimed
@@ -140,15 +142,73 @@ def placeholder_item(state: DocxBuildState, family: QuestionFamily) -> NativeExa
     )
 
 
+def exam_metadata_anchors(contexts: tuple[SharedContext, ...]) -> frozenset[str]:
+    """The anchors of exam-metadata contexts (Namn, Klass, Datum): never item text."""
+    return frozenset(c.anchor for c in contexts if c.scope == "exam_metadata")
+
+
+def exam_wide_anchors(
+    contexts: tuple[SharedContext, ...], families: tuple[QuestionFamily, ...]
+) -> frozenset[str]:
+    """Anchors of exam-owned contexts that govern every question or none, plus every metadata
+    anchor.
+
+    An exam-owned context that governs no question is exam-wide text: it belongs to the
+    document's instructions, never to a section parent's heading run or instruction.
+    """
+    every = {family.question_id for family in families}
+    return exam_metadata_anchors(contexts) | frozenset(
+        c.anchor
+        for c in contexts
+        if c.owner == "exam" and (not c.governs or every <= set(c.governs))
+    )
+
+
+def contexts_owned_by_question(
+    contexts: tuple[SharedContext, ...], families: tuple[QuestionFamily, ...]
+) -> dict[str, tuple[str, ...]]:
+    """Each question, mapped to the contexts it alone owns, in manifest order.
+
+    A context a question owns joins that question's item, or its source-review item, when no
+    reply entry holds it (ruling 2026-10-18 c); its retry source keeps it with the question.
+    A context governing two or more questions is its section parent's instruction (D40), so
+    no single question owns it here.
+    """
+    governed = governed_anchors(contexts, families)
+    return {
+        family.question_id: tuple(
+            c.anchor for c in contexts if c.owner == family.question_id and c.anchor not in governed
+        )
+        for family in families
+    }
+
+
+def question_owned_contexts(
+    contexts: tuple[SharedContext, ...], families: tuple[QuestionFamily, ...]
+) -> dict[str, tuple[str, ...]]:
+    """Each question's own anchor, mapped to the contexts that question owns."""
+    owned = contexts_owned_by_question(contexts, families)
+    return {
+        anchor: owned[family.question_id]
+        for family in families
+        if owned[family.question_id]
+        for anchor in family.question_anchors
+    }
+
+
 def governed_anchors(
     contexts: tuple[SharedContext, ...], families: tuple[QuestionFamily, ...]
 ) -> dict[str, frozenset[str]]:
-    """Each shared context that governs two or more questions, with every anchor they own."""
+    """Each shared context that governs two or more questions, with every anchor they own.
+
+    Exam-wide text and exam metadata govern nothing: they belong to the document.
+    """
     claims = {family.question_id: family.claims for family in families}
+    exam_wide = exam_wide_anchors(contexts, families)
     return {
         context.anchor: frozenset().union(*(claims[q] for q in context.governs if q in claims))
         for context in contexts
-        if len(context.governs) >= 2
+        if len(context.governs) >= 2 and context.anchor not in exam_wide
     }
 
 
@@ -157,6 +217,8 @@ def provisional_result(
     families: tuple[QuestionFamily, ...],
     pending: frozenset[str],
     governed: Mapping[str, frozenset[str]],
+    exam_wide: frozenset[str] = frozenset(),
+    exam_metadata: frozenset[str] = frozenset(),
 ) -> DocxBuildResult:
     """Converted batches plus one placeholder per pending question; nothing else is shown."""
     placeholders = [
@@ -190,6 +252,8 @@ def provisional_result(
         title=state.title,
         instructions=(*state.instructions, *heading_instructions),
         governed=governed,
+        exam_wide=exam_wide,
+        exam_metadata=exam_metadata,
         questions=questions,
         printed=printed_points_plan(state.chunks, questions),
     )

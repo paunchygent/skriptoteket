@@ -80,6 +80,9 @@ def _item(
                         ),
                     ),
                 ),
+                owned_context_anchors=(),
+                key_chunks=(),
+                context_chunks=(),
                 label_kind=NativeExamItemKind.FREE_TEXT,
             )
         }
