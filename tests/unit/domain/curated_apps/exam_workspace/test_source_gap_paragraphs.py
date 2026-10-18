@@ -27,6 +27,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import (
 from skriptoteket.domain.curated_apps.exam_workspace.source_gap_paragraphs import (
     GapCountMismatchError,
     blank_runs,
+    source_paragraph,
 )
 
 pytestmark = pytest.mark.unit
@@ -92,6 +93,21 @@ def _projected(chunks, paragraphs):
 )
 def test_blank_runs_follow_character_class_only(text, expected):
     assert blank_runs(text) == expected
+
+
+def test_source_paragraph_without_runs_is_the_trimmed_plain_source_text():
+    chunks = (_chunk("body:0001", "  The important idea.  ", marks=("italic",)),)
+    source = SourceFormatting(chunks)
+    paragraph = source_paragraph(
+        source,
+        source.paragraphs[0].start,
+        source.paragraphs[0].end,
+        source.paragraphs[0].heading,
+    )
+    (segment,) = paragraph.segments
+    assert isinstance(segment, NativeTextSegment)
+    assert segment.text == "The important idea."
+    assert segment.marks == ("italic",)
 
 
 def test_a_dropped_cue_beside_the_gap_comes_back_from_the_source():
