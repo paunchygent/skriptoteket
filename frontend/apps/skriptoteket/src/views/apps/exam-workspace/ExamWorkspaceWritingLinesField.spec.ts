@@ -12,7 +12,6 @@
 import { mount } from "@vue/test-utils";
 import { describe, expect, it } from "vitest";
 
-import { buildFreeTextItem } from "../../../test/examWorkspaceFixtures";
 import ExamWorkspaceWritingLinesField from "./ExamWorkspaceWritingLinesField.vue";
 import {
   MAX_WRITING_LINES,
@@ -25,12 +24,12 @@ const PLUS = '[data-test="exam-workspace-writing-lines-plus"]';
 const APPLY_ALL = '[data-test="exam-workspace-writing-lines-apply-all"]';
 
 function mountField(
-  lines: number | null,
+  lines: number,
   options: { disabled?: boolean; allFreeTextMatch?: boolean } = {},
 ) {
   return mount(ExamWorkspaceWritingLinesField, {
     props: {
-      item: buildFreeTextItem(1, { writing_lines: lines }),
+      lines,
       disabled: options.disabled ?? false,
       allFreeTextMatch: options.allFreeTextMatch ?? false,
     },

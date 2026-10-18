@@ -52,6 +52,12 @@ describe("ExamWorkspaceQuestionEditor Skrivyta", () => {
     expect(wrapper.emitted("applyWritingLinesToAll")).toEqual([[8]]);
   });
 
+  it("shows no writing-area field on a free-text question without a count", () => {
+    const wrapper = mountEditor(buildFreeTextItem(1, { writing_lines: null }));
+
+    expect(wrapper.find(FIELD).exists()).toBe(false);
+  });
+
   it("shows no writing-area field on a single-choice question", () => {
     const wrapper = mountEditor(choiceItem("single_choice", "source_provided", ["choice_001"], null));
 

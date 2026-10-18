@@ -10,8 +10,10 @@
  *   transition the command applies.
  *
  * Relationships:
- *   - Rendered by `ExamWorkspaceQuestionEditor` for free-text items only,
- *     directly above its criteria.
+ *   - Rendered by `ExamWorkspaceQuestionEditor` for a free-text item that
+ *     carries a writing-line count, directly above its criteria.
+ *   - Receives the count from the item; the editor renders no field when the
+ *     item has none.
  *   - Emits the value; `useExamWorkspaceItemEdits` (`updateItemWritingLines`)
  *     and `useExamWorkspaceDocumentFields` (`applyWritingLinesToAllFreeText`)
  *     own the state.
@@ -20,16 +22,12 @@
 
 import { computed } from "vue";
 
-import type { NativeExamItem } from "../../../api/examWorkspace";
-import {
-  DEFAULT_WRITING_LINES,
-  MAX_WRITING_LINES,
-  MIN_WRITING_LINES,
-} from "./examWorkspaceWritingLines";
+import { MAX_WRITING_LINES, MIN_WRITING_LINES } from "./examWorkspaceWritingLines";
 
 const props = defineProps<{
   disabled?: boolean;
-  item: NativeExamItem;
+  /** The question's writing-line count; the editor renders the field only when the item has one. */
+  lines: number;
   /** True when every free-text question in the exam already has this count. */
   allFreeTextMatch: boolean;
 }>();
@@ -39,18 +37,17 @@ const emit = defineEmits<{
   applyToAll: [lines: number];
 }>();
 
-/** The question's writing lines; a free-text question's area is never unset. */
-const lines = computed(() => props.item.writing_lines ?? DEFAULT_WRITING_LINES);
-const label = computed(() => (lines.value === 1 ? "1 rad" : `${lines.value} rader`));
-const atMin = computed(() => lines.value <= MIN_WRITING_LINES);
-const atMax = computed(() => lines.value >= MAX_WRITING_LINES);
+/** The question's writing lines, passed in by the editor. */
+const label = computed(() => (props.lines === 1 ? "1 rad" : `${props.lines} rader`));
+const atMin = computed(() => props.lines <= MIN_WRITING_LINES);
+const atMax = computed(() => props.lines >= MAX_WRITING_LINES);
 
 function step(delta: -1 | 1): void {
-  emit("update", lines.value + delta);
+  emit("update", props.lines + delta);
 }
 
 function applyToAll(): void {
-  emit("applyToAll", lines.value);
+  emit("applyToAll", props.lines);
 }
 </script>
 

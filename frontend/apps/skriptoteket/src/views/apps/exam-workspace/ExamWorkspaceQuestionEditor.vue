@@ -293,8 +293,8 @@ function handleTickPointsInput(event: Event): void {
 
     <template v-if="showFields">
       <ExamWorkspaceWritingLinesField
-        v-if="item.kind === 'free_text'"
-        :item="item"
+        v-if="item.kind === 'free_text' && item.writing_lines !== null"
+        :lines="item.writing_lines"
         :disabled="locked"
         :all-free-text-match="allFreeTextWritingLinesMatch"
         @update="(lines) => emit('updateWritingLines', item.item_id, lines)"
