@@ -22,6 +22,7 @@ from skriptoteket.application.curated_apps.exam_workspace import (
 )
 from skriptoteket.application.curated_apps.exam_workspace_exports import (
     build_native_examnet_qti_package,
+    export_file_base_name,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_document_store import (
     ExamWorkspaceDocumentStore,
@@ -49,6 +50,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeExamDocument,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_export_rules import (
+    INLINE_CHOICE_MIN_OPTIONS,
     native_export_blockers,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
@@ -65,7 +67,6 @@ from skriptoteket.protocols.exam_workspace import (
 from skriptoteket.protocols.vault import VaultFileRepositoryProtocol
 
 _DOCX_MEDIA_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-_CONTAINER_SUFFIX = ".provdokument.zip"
 
 
 class ExportExamWorkspaceDocumentHandler:
@@ -96,13 +97,13 @@ class ExportExamWorkspaceDocumentHandler:
         target: ExamWorkspaceExportTarget,
         expected_revision: int,
     ) -> ExamWorkspaceExportFile:
-        head, container = await self._load_head(
+        _head, container = await self._load_head(
             actor=actor, lineage_id=lineage_id, expected_revision=expected_revision
         )
         document = container.document
         self._raise_for_blockers(document)
 
-        base = head.name.removesuffix(_CONTAINER_SUFFIX) or "prov"
+        base = export_file_base_name(document)
         if target is ExamWorkspaceExportTarget.QTI:
             package_bytes, _report_bytes = build_native_examnet_qti_package(
                 document,
@@ -111,7 +112,7 @@ class ExportExamWorkspaceDocumentHandler:
                 assets_by_id=container.assets_by_id,
             )
             return ExamWorkspaceExportFile(
-                filename=f"{base}-qti.zip",
+                filename=f"{base}.zip",
                 media_type="application/zip",
                 content=package_bytes,
             )
@@ -135,7 +136,7 @@ class ExportExamWorkspaceDocumentHandler:
                     },
                 )
             return ExamWorkspaceExportFile(
-                filename=f"{base}-examnet.pdf",
+                filename=f"{base}.pdf",
                 media_type="application/pdf",
                 content=self._pdf_renderer.render_pdf(document=pdf_document),
             )
@@ -189,7 +190,8 @@ class ExportExamWorkspaceDocumentHandler:
         self._raise_for_blockers(document)
         entries = native_exam_export_checklist(document, assets_by_id=container.assets_by_id)
         return ExamWorkspaceExportChecklistResponse(
-            entries=tuple(_checklist_entry(entry) for entry in entries)
+            entries=tuple(_checklist_entry(entry) for entry in entries),
+            inline_choice_min_options=INLINE_CHOICE_MIN_OPTIONS,
         )
 
     def _raise_for_blockers(self, document: NativeExamDocument) -> None:
@@ -205,8 +207,22 @@ class ExportExamWorkspaceDocumentHandler:
                 for item in document.items
                 if item.item_id in heading_items
             ]
+            title_messages = [
+                "Ge provet en titel med bokstäver eller siffror."
+                for blocker in blockers
+                if blocker.reason == "title_without_text"
+            ]
+            has_item_blockers = any(blocker.item_id is not None for blocker in blockers)
             message = " ".join(
-                ["Provet har frågor som måste åtgärdas före export.", *heading_messages]
+                [
+                    *(
+                        ["Provet har frågor som måste åtgärdas före export."]
+                        if has_item_blockers
+                        else []
+                    ),
+                    *title_messages,
+                    *heading_messages,
+                ]
             )
             raise DomainError(
                 code=ErrorCode.VALIDATION_ERROR,

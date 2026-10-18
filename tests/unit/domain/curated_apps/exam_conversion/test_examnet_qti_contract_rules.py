@@ -287,7 +287,9 @@ def test_sibling_body_content_before_interaction_fails_preflight() -> None:
 def _sample_plan(sample_name: str) -> ExamNetQtiPackagePlan:
     samples = {sample.name: sample for sample in examnet_qti_keyed_samples()}
     sample = samples[sample_name]
-    plan = build_examnet_qti_package_plan(package_name=sample.name, items=sample.items)
+    plan = build_examnet_qti_package_plan(
+        package_name=sample.name, assessment_title=sample.name, items=sample.items
+    )
     assert plan.status == ExamNetQtiPackageStatus.PASSED
     return plan
 

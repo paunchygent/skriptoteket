@@ -51,21 +51,25 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_item_xml impor
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_manifest import (
     serialize_qti_manifest,
 )
+from skriptoteket.domain.errors import validation_error
 
 
 def build_examnet_qti_package_plan(
     *,
     package_name: str,
     items: tuple[ExamNetQtiItem, ...],
-    assessment_title: str | None = None,
+    assessment_title: str,
     course: str | None = None,
 ) -> ExamNetQtiPackagePlan:
     """Build a deterministic QTI package plan for the supplied items.
 
-    ``assessment_title`` names the assessment test and its section; a missing or
-    blank value falls back to ``package_name``.
+    ``assessment_title`` names the assessment test and its section. Each caller
+    supplies the title its own source owns; a blank title is refused, never
+    replaced by another name.
     """
 
+    if not assessment_title.strip():
+        raise validation_error("The QTI package needs an assessment title from its source.")
     follow_ups = manual_follow_ups(items)
     errors = blocking_errors(items)
     if errors:
@@ -94,13 +98,12 @@ def build_examnet_qti_package_plan(
         )
         image_files_by_item_id[item.item_id] = image_files
 
-    title = assessment_title if assessment_title and assessment_title.strip() else package_name
-    assessment_file = _assessment_test_file(title=title, items=ordered_items)
+    assessment_file = _assessment_test_file(title=assessment_title, items=ordered_items)
     manifest = _package_file(
         relative_path="imsmanifest.xml",
         content_type="application/xml",
         payload=serialize_qti_manifest(
-            title=title,
+            title=assessment_title,
             course=course,
             item_files=tuple(item_files),
             image_files_by_item_id=image_files_by_item_id,
@@ -253,6 +256,7 @@ def _has_proof_gated_interaction(items: tuple[ExamNetQtiItem, ...]) -> bool:
             ExamNetQtiInteractionType.GAP_FILL,
             ExamNetQtiInteractionType.INLINE_CHOICE,
             ExamNetQtiInteractionType.MATCHING,
+            ExamNetQtiInteractionType.ORDERING,
         }
         for item in items
         for leaf in (item.children or (item,))

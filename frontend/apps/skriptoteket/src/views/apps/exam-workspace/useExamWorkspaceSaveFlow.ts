@@ -34,6 +34,8 @@ export interface ExamWorkspaceSaveFlowDeps {
   disabled: Readonly<Ref<boolean>>;
   frame: Ref<HTMLElement | null>;
   gotoItem: (itemId: string) => void;
+  /** Open Provets uppgifter, which holds the title field. */
+  openDetails: () => void;
 }
 
 export function useExamWorkspaceSaveFlow({
@@ -44,6 +46,7 @@ export function useExamWorkspaceSaveFlow({
   disabled,
   frame,
   gotoItem,
+  openDetails,
 }: ExamWorkspaceSaveFlowDeps) {
   const { isDirty, workspaceDocument } = editing;
 
@@ -95,9 +98,13 @@ export function useExamWorkspaceSaveFlow({
     void (destination === "files" ? exports.saveExportToFiles(target) : exports.exportDocument(target));
   }
 
-  /** Lead to the question and the field that stops its export; a gap chip opens its popover. */
+  /** Lead to the question, or to the title, and the field that stops its export; a gap chip opens its popover. */
   async function gotoBlocker(blocker: ExamWorkspaceBlockerEntry): Promise<void> {
-    gotoItem(blocker.itemId);
+    if (blocker.itemId === null) {
+      openDetails();
+    } else {
+      gotoItem(blocker.itemId);
+    }
     if (!blocker.focus) return;
     await nextTick();
     const field = frame.value?.querySelector<HTMLElement>(blocker.focus);
@@ -110,6 +117,7 @@ export function useExamWorkspaceSaveFlow({
   }
 
   function fixBlocker(blocker: ExamWorkspaceBlockerEntry): void {
+    if (blocker.itemId === null) return;
     switch (blocker.fix) {
       case "review":
       case "approve":

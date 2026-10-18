@@ -40,6 +40,7 @@ export const EXAM_WORKSPACE_TYPE_LABELS: Record<NativeExamItemKind, string> = {
   inline_choice: "Lucktext med rullista",
   matching: "Kategorisera",
   multiple_response: "Flerval: flera val",
+  ordering: "Ordna",
   single_choice: "Flerval: ett val",
 };
 

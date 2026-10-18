@@ -13,7 +13,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts impo
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import native_item
 from skriptoteket.domain.curated_apps.exam_workspace.exam_language_labels import (
-    exam_language_labels,
+    SWEDISH_EXAM_LABELS,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.examnet_qti_export import (
     native_exam_to_examnet_qti_items,
@@ -128,7 +128,7 @@ def test_distractors_are_listed_by_the_docx_writer_and_stay_out_of_its_pairs():
     )
 
     texts = [paragraph.text for paragraph in DocxDocument(io.BytesIO(content)).paragraphs]
-    pair = f"{exam_language_labels(single_item_document(item)).pair}:"
+    pair = f"{SWEDISH_EXAM_LABELS.pair}:"
     assert f"D) {DISTRACTOR_TEXT}" in texts
     assert not [t for t in texts if t.startswith(pair) and DISTRACTOR_TEXT in t]
     assert len([t for t in texts if t.startswith(pair)]) == len(item.answer_key.match_pairs)

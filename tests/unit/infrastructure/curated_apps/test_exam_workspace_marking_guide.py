@@ -115,27 +115,27 @@ def test_criteria_survive_the_container_round_trip() -> None:
 
 @pytest.mark.parametrize(
     ("body", "label"),
-    [(_SWEDISH_BODY, "Rättningsmall"), (_ENGLISH_BODY, "Marking guide")],
+    [(_SWEDISH_BODY, "Rättningsmall"), (_ENGLISH_BODY, "Rättningsmall")],
 )
 def test_docx_answer_key_prints_each_criterion_with_points(body: str, label: str) -> None:
     lines = _docx_lines(_document(body, criteria=_CRITERIA))
     assert f"{label}:" in lines
     assert "• Definitionen (2 p)" in lines
     assert "• <exemplet> & motiveringen\nmed detaljer (1 p)" in lines
-    other = "Marking guide" if label == "Rättningsmall" else "Rättningsmall"
+    other = "Marking guide"
     assert not any(line.startswith(other) for line in lines)
 
 
 @pytest.mark.parametrize("body", [_SWEDISH_BODY, _ENGLISH_BODY])
 def test_docx_without_criteria_has_no_answer_key_section(body: str) -> None:
     lines = _docx_lines(_document(body, criteria=()))
-    assert not any(line in ("Facit", "Answer key") for line in lines)
+    assert not any(line in ("Facit",) for line in lines)
     assert not any(line.startswith(("Rättningsmall", "Marking guide")) for line in lines)
 
 
 @pytest.mark.parametrize(
     ("body", "label"),
-    [(_SWEDISH_BODY, "Rättningsmall"), (_ENGLISH_BODY, "Marking guide")],
+    [(_SWEDISH_BODY, "Rättningsmall"), (_ENGLISH_BODY, "Rättningsmall")],
 )
 def test_pdf_prints_each_escaped_criterion_with_points(body: str, label: str) -> None:
     result = native_exam_to_pdf_document(_document(body, criteria=_CRITERIA))

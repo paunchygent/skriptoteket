@@ -44,6 +44,7 @@ function response(document: NativeExamDocument): ExamWorkspaceDocumentResponse {
   return {
     conversion: null,
     document,
+    export_blockers: [],
     history_cursor: "cursor-after-command",
     notes: [],
     saved_document: document,

@@ -126,6 +126,7 @@ function choiceItem(
     import_record: null,
     criteria: [],
     printed_label: null,
+    print_order: [],
     retry_source: null,
     answer_key: { correct_choice_ids: [...correctChoiceIds], match_pairs: [], origin },
     body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Vilket är huvudordet?" }] }],

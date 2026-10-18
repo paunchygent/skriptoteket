@@ -1,5 +1,6 @@
 """Revision/cursor guards and exactly-one-autosave behavior through application ports."""
 
+import random
 from unittest.mock import AsyncMock
 from uuid import uuid4
 
@@ -49,7 +50,9 @@ async def test_one_command_uses_one_atomic_autosave_and_returns_authoritative_re
             cursor=cursor, baseline_step_id=uuid4(), step_ids=(cursor,), position_step_id=cursor
         ),
     )
-    handler = ChangeExamWorkspaceItemTypeHandler(reader=reader, undo_steps=steps)
+    handler = ChangeExamWorkspaceItemTypeHandler(
+        reader=reader, undo_steps=steps, rng=random.Random(1)
+    )
     response = await handler.handle(
         actor=actor,
         lineage_id=current.document.document_id,
@@ -85,7 +88,9 @@ async def test_one_command_uses_one_atomic_autosave_and_returns_authoritative_re
 @pytest.mark.parametrize("stale", ["revision", "cursor", "both"])
 async def test_stale_precondition_never_stores_a_step(stale: str) -> None:
     current, reader, steps = _ports()
-    handler = ChangeExamWorkspaceItemTypeHandler(reader=reader, undo_steps=steps)
+    handler = ChangeExamWorkspaceItemTypeHandler(
+        reader=reader, undo_steps=steps, rng=random.Random(1)
+    )
     with pytest.raises(DomainError) as error:
         await handler.handle(
             actor=make_user(),
@@ -109,7 +114,9 @@ async def test_concurrent_autosave_conflict_is_not_retried_or_hidden() -> None:
     current, reader, steps = _ports()
     conflict = DomainError(code=ErrorCode.CONFLICT, message="Another editor won")
     steps.handle.side_effect = conflict
-    handler = ChangeExamWorkspaceItemTypeHandler(reader=reader, undo_steps=steps)
+    handler = ChangeExamWorkspaceItemTypeHandler(
+        reader=reader, undo_steps=steps, rng=random.Random(1)
+    )
     with pytest.raises(DomainError) as error:
         await handler.handle(
             actor=make_user(),
@@ -134,7 +141,9 @@ async def test_matching_precision_error_never_autosaves_or_rounds_points() -> No
     )
     reader.handle.return_value = current
     with pytest.raises(DomainError) as error:
-        await ChangeExamWorkspaceItemTypeHandler(reader=reader, undo_steps=steps).handle(
+        await ChangeExamWorkspaceItemTypeHandler(
+            reader=reader, undo_steps=steps, rng=random.Random(1)
+        ).handle(
             actor=make_user(),
             lineage_id=current.document.document_id,
             request=ChangeExamWorkspaceItemTypeRequest(
@@ -153,7 +162,9 @@ async def test_matching_precision_error_never_autosaves_or_rounds_points() -> No
 async def test_unknown_question_never_stores_a_step() -> None:
     current, reader, steps = _ports()
     with pytest.raises(DomainError) as error:
-        await ChangeExamWorkspaceItemTypeHandler(reader=reader, undo_steps=steps).handle(
+        await ChangeExamWorkspaceItemTypeHandler(
+            reader=reader, undo_steps=steps, rng=random.Random(1)
+        ).handle(
             actor=make_user(),
             lineage_id=current.document.document_id,
             request=ChangeExamWorkspaceItemTypeRequest(

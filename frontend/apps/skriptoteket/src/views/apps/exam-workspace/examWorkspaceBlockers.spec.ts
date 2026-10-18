@@ -2,8 +2,14 @@ import { describe, expect, it } from "vitest";
 
 import type { NativeExamItem } from "../../../api/examWorkspace";
 import { buildDocument } from "../ExamWorkspaceSlice.specSupport";
-import { examWorkspaceBlockerEntries, withoutEmptyOptions, withoutOptionHeadings } from "./examWorkspaceBlockers";
+import {
+  examWorkspaceBlockerEntries,
+  examWorkspaceTitleBlockerEntries,
+  withoutEmptyOptions,
+  withoutOptionHeadings,
+} from "./examWorkspaceBlockers";
 import { examWorkspaceItemReadiness } from "./examWorkspaceItemReadiness";
+import type { ExamWorkspaceReadinessReason } from "./examWorkspaceItemReadiness";
 import { reviewed } from "./examWorkspaceItemEdits";
 import { buildMatchingItemWithPairs } from "./examWorkspaceMatchingItem.specSupport";
 import { buildGap, choiceItem } from "./examWorkspaceKeyedItems.specSupport";
@@ -31,7 +37,11 @@ function rullista(options: NativeExamItem["gaps"][number]["options"], key: strin
   };
 }
 
-function rows(items: NativeExamItem[], server: Record<string, NativeExamItem["item_id"][]> = {}, converting: string[] = []) {
+function rows(
+  items: NativeExamItem[],
+  server: Record<string, ExamWorkspaceReadinessReason[]> = {},
+  converting: string[] = [],
+) {
   const document = { ...buildDocument(), items, parents: [] };
   const readiness = Object.fromEntries(items.map((item) => [item.item_id, examWorkspaceItemReadiness(item)]));
   const entries = examWorkspaceListEntries(document, readiness, new Set(converting));
@@ -39,7 +49,7 @@ function rows(items: NativeExamItem[], server: Record<string, NativeExamItem["it
     entries,
     items,
     readiness,
-    server as Parameters<typeof examWorkspaceBlockerEntries>[3],
+    server,
   );
 }
 
@@ -152,6 +162,57 @@ describe("examWorkspaceBlockerEntries", () => {
       problem: "rubrik i rullista",
     });
   });
+
+  it("leads a too-short dropdown to its first short gap with no one-click fix", () => {
+    const item = rullista(
+      [{ body: plainBody("är"), choice_id: "choice_001" }, { body: plainBody("var"), choice_id: "choice_002" }],
+      "choice_001",
+    );
+    item.body = [{
+      heading_level: null,
+      segments: [
+        { kind: "gap", gap_id: "gap_001" }, { kind: "gap", gap_id: "gap_002" }, { kind: "gap", gap_id: "gap_003" },
+      ],
+    }];
+    item.gaps = [
+      item.gaps[0]!,
+      buildGap("gap_002", [], { correct_option_id: "choice_001", options: [{ body: plainBody("är"), choice_id: "choice_001" }] }),
+      buildGap("gap_003", [], { correct_option_id: "choice_001", options: [{ body: plainBody("är"), choice_id: "choice_001" }] }),
+    ];
+
+    expect(rows([item])[0]).toMatchObject({
+      fix: null,
+      focus: '[data-gap-id="gap_002"]',
+      problem: "rullista med färre än två alternativ",
+      reason: "too_few_gap_options",
+    });
+  });
+
+  it("leads a dropdown without a correct option to the first unkeyed gap, not the first gap", () => {
+    const options = [{ body: plainBody("är"), choice_id: "choice_001" }, { body: plainBody("var"), choice_id: "choice_002" }];
+    const item = rullista(options, "choice_001");
+    item.body = [{
+      heading_level: null,
+      segments: [{ kind: "gap", gap_id: "gap_001" }, { kind: "gap", gap_id: "gap_002" }, { kind: "gap", gap_id: "gap_003" }],
+    }];
+    item.gaps = [
+      item.gaps[0]!,
+      buildGap("gap_002", [], { correct_option_id: null, options }),
+      buildGap("gap_003", [], { correct_option_id: null, options }),
+    ];
+
+    expect(rows([item])[0]).toMatchObject({
+      fix: null,
+      focus: '[data-gap-id="gap_002"]',
+      problem: "rullista utan rätt svar",
+      reason: "gap_without_correct_option",
+    });
+  });
+
+  it("names an earlier reason first when the dropdown also lacks points", () => {
+    const item = { ...rullista([{ body: plainBody("är"), choice_id: "choice_001" }], "choice_001"), points: null };
+    expect(rows([item])[0]).toMatchObject({ reason: "missing_points" });
+  });
 });
 
 describe("export blocker fixes", () => {
@@ -207,5 +268,66 @@ describe("export blocker fixes", () => {
     it("targets the first row when that is the unticked one", () => {
       expect(focusOf([[2, 1], [3, 3]])).toBe('[data-test^="exam-workspace-match-tick-left_001-"]');
     });
+  });
+});
+
+describe("examWorkspaceTitleBlockerEntries", () => {
+  it("gives the title row when the server judged the title without text", () => {
+    expect(examWorkspaceTitleBlockerEntries(true)).toEqual([
+      {
+        fix: null,
+        focus: '[data-test="exam-workspace-metadata-title"]',
+        itemId: null,
+        label: null,
+        problem: "Ge provet en titel med bokstäver eller siffror",
+        reason: "title_without_text",
+      },
+    ]);
+  });
+
+  it("gives no row while the title is not judged without text", () => {
+    expect(examWorkspaceTitleBlockerEntries(false)).toEqual([]);
+  });
+});
+
+describe("ordering blocker rows", () => {
+  function ordering(texts: string[]): NativeExamItem {
+    return {
+      ...choice(),
+      answer_key: { correct_choice_ids: [], match_pairs: [], origin: "teacher_authored" },
+      choices: texts.map((text, index) => ({ choice_id: `choice_00${index + 1}`, body: plainBody(text) })),
+      kind: "ordering",
+      print_order: [],
+    };
+  }
+
+  it("points too few steps at the add-step button with no fix", () => {
+    expect(rows([ordering(["Ensam"])])).toEqual([
+      {
+        fix: null,
+        focus: '[data-test="exam-workspace-ordering-add-step"]',
+        itemId: "item_001",
+        label: "1",
+        problem: "för få steg",
+        reason: "ordering_too_few_steps",
+      },
+    ]);
+  });
+
+  it("points an empty step at its own text field and never offers remove_empty", () => {
+    const [row, ...rest] = rows([ordering(["Först", " ", "", "Sist"])]);
+    expect(rest).toEqual([]);
+    expect(row).toMatchObject({
+      fix: null,
+      focus: '[data-test^="exam-workspace-ordering-step-text-choice_002"]',
+      problem: "tomt steg",
+      reason: "empty_ordering_step",
+    });
+  });
+
+  it("keeps the remove_empty fix for a single_choice empty option", () => {
+    const item = choice();
+    item.choices = [...item.choices, { choice_id: "choice_004", body: BLANK }];
+    expect(rows([item])[0]).toMatchObject({ fix: "remove_empty", reason: "empty_choice" });
   });
 });

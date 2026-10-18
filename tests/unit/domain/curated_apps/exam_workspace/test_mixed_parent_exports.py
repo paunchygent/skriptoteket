@@ -186,7 +186,9 @@ def test_each_mixed_child_keeps_its_own_response_and_mapping_and_score_sums_them
 def test_package_with_a_mixed_parent_passes_and_is_gated_by_any_child_interaction():
     _, items, _ = _mixed_parent()
 
-    plan = build_examnet_qti_package_plan(package_name="recorded", items=items)
+    plan = build_examnet_qti_package_plan(
+        package_name="recorded", assessment_title="recorded", items=items
+    )
     assert plan.status is ExamNetQtiPackageStatus.PASSED, plan.warnings
     assert plan.target_support_status is ExamNetQtiTargetSupportStatus.PROOF_GATED
     assert plan.examnet_proof_status is ExamNetQtiExamNetProofStatus.NOT_PROVEN
@@ -212,7 +214,9 @@ def test_package_status_reads_a_gated_child_behind_a_choice_first_child():
     (parent,) = only_parent
     assert parent.children[0].interaction_type is ExamNetQtiInteractionType.SINGLE_CHOICE
 
-    plan = build_examnet_qti_package_plan(package_name="recorded", items=only_parent)
+    plan = build_examnet_qti_package_plan(
+        package_name="recorded", assessment_title="recorded", items=only_parent
+    )
 
     assert plan.target_support_status is ExamNetQtiTargetSupportStatus.PROOF_GATED
     assert plan.examnet_proof_status is ExamNetQtiExamNetProofStatus.NOT_PROVEN
@@ -269,7 +273,9 @@ def test_a_parent_of_gap_fills_and_one_free_text_passes_package_validation():
         (parent_over("parent_001", _INSTRUCTION, 1, 2, 3),), items=renumbered
     )
     plan = build_examnet_qti_package_plan(
-        package_name="mixed", items=native_exam_to_examnet_qti_items(document)
+        package_name="mixed",
+        assessment_title="mixed",
+        items=native_exam_to_examnet_qti_items(document),
     )
     writer = ExamNetQtiPackageWriter()
     package = writer.build_package_bytes(plan)

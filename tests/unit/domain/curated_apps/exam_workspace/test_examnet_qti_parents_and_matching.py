@@ -128,7 +128,9 @@ def _correct_pairs(
 
 
 def _package(items: tuple[ExamNetQtiItem, ...]) -> tuple[zipfile.ZipFile, str]:
-    plan = build_examnet_qti_package_plan(package_name="recorded", items=items)
+    plan = build_examnet_qti_package_plan(
+        package_name="recorded", assessment_title="recorded", items=items
+    )
     assert plan.status is ExamNetQtiPackageStatus.PASSED, plan.warnings
     package = ExamNetQtiPackageWriter().build_package_bytes(plan)
     report = build_examnet_qti_validation_report(

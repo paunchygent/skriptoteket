@@ -226,6 +226,7 @@ def test_unresolved_prompt_image_positions_become_qti_placeholder_without_resour
     adapter_result = build_examnet_qti_items_from_digiexam_ir(exam)
     plan = build_examnet_qti_package_plan(
         package_name="missing-image",
+        assessment_title="missing-image",
         items=adapter_result.items,
     )
     zip_bytes = _WRITER.build_package_bytes(plan)
@@ -327,6 +328,7 @@ def test_missing_and_blank_titles_keep_question_n_fallback_in_pdf_and_qti() -> N
         qti_result = build_examnet_qti_items_from_digiexam_ir(exam)
         plan = build_examnet_qti_package_plan(
             package_name=f"missing-title-{blank}",
+            assessment_title=f"missing-title-{blank}",
             items=qti_result.items,
         )
         assert plan.status == ExamNetQtiPackageStatus.PASSED

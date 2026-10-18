@@ -81,7 +81,7 @@ describe("ExamWorkspaceView export blockers", () => {
     apiMocks.downloadExamWorkspaceExport.mockResolvedValue({
       blob: new Blob(["zip"]),
       contentType: "application/zip",
-      filename: null,
+      filename: "NO-prov HT25.zip",
     });
     apiMocks.saveExamWorkspaceDocument.mockResolvedValue(exportableResponse({ version: 2 }));
     importDefaultFixture();

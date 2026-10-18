@@ -77,7 +77,9 @@ def _rounded_entry() -> ExamWorkspaceExportChecklistRoundedGaps:
 @pytest.mark.asyncio
 async def test_route_delegates_the_head_document_checklist() -> None:
     entry = _rounded_entry()
-    handler = CapturingChecklistHandler(ExamWorkspaceExportChecklistResponse(entries=(entry,)))
+    handler = CapturingChecklistHandler(
+        ExamWorkspaceExportChecklistResponse(entries=(entry,), inline_choice_min_options=2)
+    )
     lineage_id = uuid4()
     user = make_user()
 
@@ -97,7 +99,9 @@ async def test_route_delegates_the_head_document_checklist() -> None:
 @pytest.mark.asyncio
 async def test_route_json_carries_the_required_kind_discriminator() -> None:
     entry = _rounded_entry()
-    handler = CapturingChecklistHandler(ExamWorkspaceExportChecklistResponse(entries=(entry,)))
+    handler = CapturingChecklistHandler(
+        ExamWorkspaceExportChecklistResponse(entries=(entry,), inline_choice_min_options=2)
+    )
 
     response = await api.export_exam_workspace_document_checklist(
         lineage_id=uuid4(),
@@ -116,7 +120,8 @@ async def test_route_json_carries_the_required_kind_discriminator() -> None:
                 "points": 6,
                 "gap_points": 0.42,
             }
-        ]
+        ],
+        "inline_choice_min_options": 2,
     }
 
 
@@ -126,7 +131,9 @@ async def test_route_checks_app_access_before_the_checklist() -> None:
         def get_by_app_id(self, *, app_id: str) -> None:
             return None
 
-    handler = CapturingChecklistHandler(ExamWorkspaceExportChecklistResponse(entries=()))
+    handler = CapturingChecklistHandler(
+        ExamWorkspaceExportChecklistResponse(entries=(), inline_choice_min_options=2)
+    )
 
     with pytest.raises(DomainError):
         await api.export_exam_workspace_document_checklist(

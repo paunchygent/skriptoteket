@@ -3704,6 +3704,8 @@ export interface components {
             document: components["schemas"]["NativeExamDocument-Output"];
             /** Dropped Content */
             dropped_content: string[];
+            /** Export Blockers */
+            readonly export_blockers: components["schemas"]["NativeExportBlocker"][];
             /**
              * History Cursor
              * Format: uuid
@@ -5346,6 +5348,8 @@ export interface components {
         ExamWorkspaceDeleteResponse: {
             conversion: components["schemas"]["ExamWorkspaceConversionStatus"] | null;
             document: components["schemas"]["NativeExamDocument-Output"];
+            /** Export Blockers */
+            readonly export_blockers: components["schemas"]["NativeExportBlocker"][];
             /**
              * History Cursor
              * Format: uuid
@@ -5393,10 +5397,14 @@ export interface components {
          *     file at ``summary.version``, the baseline for Spara and dirty state.
          *     ``conversion`` is read under the same lock as the document, so its units name exactly
          *     the placeholders this revision still holds; it is None for a lineage no import created.
+         *     ``export_blockers`` is the export gate's verdict on ``document``, so the workspace shows
+         *     what the gate will refuse without a rule of its own.
          */
         ExamWorkspaceDocumentResponse: {
             conversion: components["schemas"]["ExamWorkspaceConversionStatus"] | null;
             document: components["schemas"]["NativeExamDocument-Output"];
+            /** Export Blockers */
+            readonly export_blockers: components["schemas"]["NativeExportBlocker"][];
             /**
              * History Cursor
              * Format: uuid
@@ -5491,10 +5499,18 @@ export interface components {
         /**
          * ExamWorkspaceExportChecklistResponse
          * @description What an Exam.net import of this document's QTI package loses (Q15-Q17).
+         *
+         *     ``inline_choice_min_options`` publishes the export rule's dropdown minimum, so the
+         *     workspace readiness mirror reads it from this contract instead of restating it.
          */
         ExamWorkspaceExportChecklistResponse: {
             /** Entries */
             entries: (components["schemas"]["ExamWorkspaceExportChecklistFreeTextCriteria"] | components["schemas"]["ExamWorkspaceExportChecklistAllOrNothing"] | components["schemas"]["ExamWorkspaceExportChecklistRoundedGaps"])[];
+            /**
+             * Inline Choice Min Options
+             * @constant
+             */
+            inline_choice_min_options: 2;
         };
         /**
          * ExamWorkspaceExportChecklistRoundedGaps
@@ -5578,6 +5594,11 @@ export interface components {
         /** ExamWorkspaceUndoStepResponse */
         ExamWorkspaceUndoStepResponse: {
             document: components["schemas"]["NativeExamDocument-Output"];
+            /**
+             * Export Blockers
+             * @description The export gate's verdict on the stored step, for the workspace's blocker rows.
+             */
+            readonly export_blockers: components["schemas"]["NativeExportBlocker"][];
             history: components["schemas"]["ExamWorkspaceHistoryResponse"];
         };
         /** FavoriteCuratedAppItem */
@@ -6757,6 +6778,11 @@ export interface components {
              * @default false
              */
             points_estimated: boolean;
+            /**
+             * Print Order
+             * @default []
+             */
+            print_order: string[];
             /** Printed Label */
             printed_label?: string | null;
             retry_source?: components["schemas"]["NativeExamRetrySource-Input"] | null;
@@ -6813,6 +6839,11 @@ export interface components {
              * @default false
              */
             points_estimated: boolean;
+            /**
+             * Print Order
+             * @default []
+             */
+            print_order: string[];
             /** Printed Label */
             printed_label: string | null;
             retry_source: components["schemas"]["NativeExamRetrySource-Output"] | null;
@@ -6830,7 +6861,7 @@ export interface components {
          * @description Writer-proven item subset (EPIC-SKRIPT-39 E3).
          * @enum {string}
          */
-        NativeExamItemKind: "free_text" | "single_choice" | "multiple_response" | "gap_fill" | "inline_choice" | "matching";
+        NativeExamItemKind: "free_text" | "single_choice" | "multiple_response" | "gap_fill" | "inline_choice" | "matching" | "ordering";
         /**
          * NativeExamOriginalWording
          * @description Source wording kept independently of later teacher edits.
@@ -7075,6 +7106,19 @@ export interface components {
              */
             reason: "type_conflict" | "teacher_request";
         };
+        /**
+         * NativeExportBlocker
+         * @description One refusal; `item_id` is None for a refusal that belongs to the exam, not a question.
+         */
+        NativeExportBlocker: {
+            /** Item Id */
+            item_id: string | null;
+            /**
+             * Reason
+             * @enum {string}
+             */
+            reason: "title_without_text" | "unbuilt_question" | "machine_proposed_key_unreviewed" | "missing_points" | "missing_answer_key" | "inline_choice_option_heading" | "empty_choice" | "empty_gap_option" | "empty_match_entry" | "ordering_too_few_steps" | "empty_ordering_step" | "too_few_gap_options";
+        };
         /** NativeGap */
         "NativeGap-Input": {
             /**
@@ -7290,6 +7334,11 @@ export interface components {
              * @default false
              */
             points_estimated: boolean;
+            /**
+             * Print Order
+             * @default []
+             */
+            print_order: string[];
             /** Printed Label */
             printed_label?: string | null;
             retry_source?: components["schemas"]["NativeExamRetrySource-Input"] | null;

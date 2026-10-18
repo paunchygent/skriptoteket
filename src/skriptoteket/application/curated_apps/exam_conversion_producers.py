@@ -210,9 +210,12 @@ def _build_qti_package_plan(
     adapter_result = build_examnet_qti_items_from_digiexam_ir(exam)
     if adapter_result.manual_follow_ups:
         raise validation_error(_MANUAL_FOLLOW_UP_MESSAGE)
+    # A DigiExam upload carries no exam title; the upload's own name is the source's name.
+    source_name = _package_name(input_filename)
     plan = build_examnet_qti_package_plan(
-        package_name=_package_name(input_filename),
+        package_name=source_name,
         items=adapter_result.items,
+        assessment_title=source_name,
     )
     if plan.status is not ExamNetQtiPackageStatus.PASSED:
         raise validation_error(_MANUAL_FOLLOW_UP_MESSAGE)

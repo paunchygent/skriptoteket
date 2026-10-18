@@ -58,6 +58,7 @@ const SHORT_PROBLEM: Record<ExamWorkspaceReadinessReason, string> = {
   empty_criterion_text: "tomt kriterium",
   empty_gap_option: "tomt alternativ i rullista",
   empty_match_entry: "tom rad eller kategori",
+  empty_ordering_step: "tomt steg",
   incomplete_match_key: "rad utan kryss",
   inline_choice_option_heading: "rubrik i rullista",
   invalid_criterion_points: "ogiltiga kriteriepoäng",
@@ -65,7 +66,10 @@ const SHORT_PROBLEM: Record<ExamWorkspaceReadinessReason, string> = {
   missing_answer_key: "facit saknas",
   missing_points: "poäng saknas",
   negative_points: "negativa poäng",
+  ordering_too_few_steps: "för få steg",
   partial_gap_key: "lucka utan svar",
+  gap_without_correct_option: "rullista utan rätt svar",
+  too_few_gap_options: "rullista med färre än två alternativ",
   unbuilt_question: "kunde inte konverteras",
 };
 

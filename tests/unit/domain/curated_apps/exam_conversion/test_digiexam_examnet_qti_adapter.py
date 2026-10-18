@@ -50,6 +50,7 @@ def test_zero_or_absent_open_ended_points_stay_manual_native_text(
     adapted_item = adapter_result.items[0]
     plan = build_examnet_qti_package_plan(
         package_name="zero-or-absent-open-ended",
+        assessment_title="zero-or-absent-open-ended",
         items=adapter_result.items,
     )
     item_xml = _planned_item_xml(plan)
@@ -70,6 +71,7 @@ def test_positive_open_ended_points_keep_criterion_scoring() -> None:
     adapted_item = adapter_result.items[0]
     plan = build_examnet_qti_package_plan(
         package_name="positive-open-ended",
+        assessment_title="positive-open-ended",
         items=adapter_result.items,
     )
     item_xml = _planned_item_xml(plan)

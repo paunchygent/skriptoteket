@@ -10,7 +10,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts impo
     ExamNetQtiPromptSegment,
     ExamNetQtiPromptText,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.exam_language_labels import ExamLanguageLabels
+from skriptoteket.domain.curated_apps.exam_workspace.exam_language_labels import ExamExportLabels
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeAssetSegment,
     NativeParagraph,
@@ -72,7 +72,7 @@ def image_resources(
     body: tuple[NativeParagraph, ...],
     *,
     owner_id: str,
-    labels: ExamLanguageLabels,
+    labels: ExamExportLabels,
     assets: Mapping[str, NativeExamAsset],
     assets_by_id: Mapping[str, bytes],
     first_image_number: int = 1,

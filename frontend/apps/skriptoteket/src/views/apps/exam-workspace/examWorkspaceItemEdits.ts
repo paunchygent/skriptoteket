@@ -265,12 +265,52 @@ export function withGapValues(
   };
 }
 
+/** Replace one dropdown gap's options and its correct option; the same item when nothing changes. */
+export function withGapOptions(
+  item: NativeExamItem,
+  gapId: string,
+  options: NativeExamChoice[],
+  correctOptionId: string | null,
+): NativeExamItem {
+  const current = item.gaps.find((gap) => gap.gap_id === gapId);
+  if (
+    !current ||
+    (current.correct_option_id === correctOptionId &&
+      current.options.length === options.length &&
+      current.options.every((option, index) => option === options[index]))
+  ) {
+    return item;
+  }
+  const gaps = item.gaps.map((gap) =>
+    gap.gap_id === gapId ? { ...gap, options, correct_option_id: correctOptionId } : gap,
+  );
+  // Only a changed correct option is the teacher's decision; a text, add,
+  // remove or reorder edit leaves an AI or machine-proposed key unapproved.
+  if (current.correct_option_id === correctOptionId) {
+    return { ...item, gaps };
+  }
+  const hasKeyData = gaps.some((gap) => gap.correct_option_id !== null);
+  return {
+    ...item,
+    answer_key: { ...item.answer_key, origin: teacherKeyOrigin(hasKeyData) },
+    gaps,
+  };
+}
+
+/**
+ * The AI interpretation can be undone for every kind except a dropdown, which
+ * has no valid keyless state.
+ */
+export function canUndoInterpretation(item: NativeExamItem): boolean {
+  return item.answer_key.origin === "ai_interpreted" && item.kind !== "inline_choice";
+}
+
 /**
  * Remove the conversion interpretation without losing the teacher's source
  * facit. A spelling the teacher suppressed stays suppressed.
  */
 export function withoutInterpretedKey(item: NativeExamItem): NativeExamItem {
-  if (item.answer_key.origin !== "ai_interpreted") {
+  if (!canUndoInterpretation(item)) {
     return item;
   }
   return withGridPoints({
@@ -406,6 +446,7 @@ export function newTeacherItem(
   const gapped = kind === "gap_fill" || kind === "inline_choice";
   const choice = kind === "single_choice" || kind === "multiple_response";
   const matching = kind === "matching";
+  const ordering = kind === "ordering";
   return {
     ai_suggestion: null,
     import_record: null,
@@ -419,14 +460,14 @@ export function newTeacherItem(
       origin:
         kind === "free_text"
           ? "not_applicable"
-          : kind === "inline_choice"
+          : kind === "inline_choice" || ordering
             ? "teacher_authored"
             : "absent",
     },
     body: gapped
       ? [question, { heading_level: null, segments: [{ kind: "gap", gap_id: "gap_001" }] }]
       : [question],
-    choices: choice ? blankChoices() : [],
+    choices: choice || ordering ? blankChoices() : [],
     gaps: gapped ? [blankGap(kind === "inline_choice")] : [],
     item_id: itemId,
     kind,
@@ -434,8 +475,9 @@ export function newTeacherItem(
     match_right: matching
       ? ["right_001", "right_002"].map((rightId) => ({ body: blankBody(), right_id: rightId }))
       : [],
-    points: null,
+    points: ordering ? 1 : null,
     points_estimated: false,
+    print_order: ordering ? ["choice_002", "choice_001"] : [],
     review: {
       confidence: null,
       parse_origin: "teacher_created",

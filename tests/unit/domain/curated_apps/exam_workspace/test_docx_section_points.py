@@ -155,6 +155,51 @@ def test_printed_question_points_beat_the_reply_before_the_part_shares_what_rema
         assert _marked(scored) == [False, False]
 
 
+def test_a_question_label_before_the_part_line_scores_the_first_question():
+    """R3-1: the labelled line heads q1 across the part line; q2 takes the remainder."""
+    chunks, questions = _exam("Poäng: 2 poäng", "# Del 1: 10 poäng", "Q 1. Fråga", "Q 2. Fråga")
+
+    scored = _score(chunks, questions, _items(chunks, questions, (None, None)))
+
+    assert _points(scored) == [2, 8]
+    assert _marked(scored) == [False, False]
+
+
+def test_a_same_total_line_after_the_next_part_line_scores_the_last_question():
+    """Review-4: a part's closer lies inside its part; after the next part line it is q2's."""
+    chunks, questions = _exam(
+        "# Del 1: 2 poäng", "Q 1. Fråga", "Q 2. Fråga", "# Del 2: 7 poäng", "Poäng: 2 poäng"
+    )
+
+    scored = _score(chunks, questions, _items(chunks, questions, (None, None)))
+
+    assert _points(scored) == [None, 2]
+    assert _marked(scored) == [False, False]
+
+
+@pytest.mark.parametrize(
+    ("closing", "expected"),
+    [("/4 p", [4, 8]), ("/5 p", [7, 8])],
+    ids=["same-value-pair", "differing-pair"],
+)
+def test_a_questions_lines_print_their_one_distinct_value(
+    closing: str, expected: list[int]
+) -> None:
+    """The omprov heading "(4 p)" and its "/4 p" line print 4; a differing pair prints none."""
+    chunks, questions = _exam(
+        "Q Uppgift 1.1: Morfemanalys (4 p)",
+        "Dela upp följande ord i morfem.",
+        closing,
+        "Q Uppgift 1.2: Identifiera fraser i texten (8 p)",
+        "/8 p",
+    )
+
+    scored = _score(chunks, questions, _items(chunks, questions, (7, 2)))
+
+    assert _points(scored) == expected
+    assert _marked(scored) == [False, False]
+
+
 def test_a_printed_point_beats_a_reply_of_seven():
     chunks, questions = _exam(
         "# Del 3: kortsvar, 5 poäng",
@@ -269,20 +314,29 @@ def test_an_unkeyed_grid_keeps_no_total_until_ticks_can_determine_it():
     assert scored.items[1].points == 5
 
 
-def test_the_part_total_checks_the_largest_parent_that_holds_only_its_items():
+def test_the_part_total_checks_only_a_parent_over_the_whole_part():
+    """R3-3: a parent over part of a part's questions keeps its own total."""
     chunks, questions = _exam(
-        "# Del 1: 2 poäng", "Q 1.", "Q 2.", "# Del 2: 3 poäng", "Q 3.", "Q 4."
+        "# Del 1: 10 poäng",
+        "Q 1.",
+        "Poäng: 2 poäng",
+        "Q 2.",
+        "Poäng: 3 poäng",
+        "Q 3.",
+        "Poäng: 5 poäng",
+        "# Del 2: 4 poäng",
+        "Q 4.",
+        "Q 5.",
     )
-    items = _items(chunks, questions, (1, 1, 1, 2))
+    items = _items(chunks, questions, (2, 3, 5, 2, 2))
     parents = (
         _parent("parent_001", "item_001", "item_002"),
-        _parent("parent_002", "item_002", "item_003"),
-        _parent("parent_003", "item_004"),
+        _parent("parent_002", "item_004", "item_005"),
     )
 
     scored = _score(chunks, questions, items, parents)
 
-    assert [parent.printed_total for parent in scored.parents] == [2, None, 3]
+    assert [parent.printed_total for parent in scored.parents] == [None, 4]
 
 
 def test_questions_outside_every_part_keep_the_models_reading():

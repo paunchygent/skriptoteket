@@ -14,6 +14,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import DocxBuildEnvelope
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    IMPORTABLE_ITEM_KINDS,
     NativeExamItemKind,
 )
 
@@ -81,6 +82,13 @@ def docx_build_output_spec(
     item_fields = _object(_object(definitions["ProducedItem"])["properties"])
     enum: list[JsonValue] = [kind.value for kind in sorted(batch_kinds, key=lambda k: k.value)]
     item_fields["kind"] = {"type": "string", "enum": enum}
+    # An import never produces ordering questions (TASK-SKRIPT-39-06-08 D3).
+    conflict_enum: list[JsonValue] = [*sorted(kind.value for kind in IMPORTABLE_ITEM_KINDS)]
+    item_fields["conflict_kind"] = {
+        **_object(item_fields["conflict_kind"]),
+        "anyOf": [{"type": "string", "enum": conflict_enum}, {"type": "null"}],
+    }
+    definitions.pop("NativeExamItemKind", None)
     segment = _object(definitions["ProducedSegment"])
     segment_fields = _object(segment["properties"])
     description = _object(segment_fields["text"]).get("description", "")

@@ -31,6 +31,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_contracts import 
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_prompt_repair import (
     missing_prompt_image_message,
     prompt_image_positions,
+    unresolved_prompt_image_positions,
 )
 
 
@@ -283,10 +284,9 @@ def _missing_prompt_image_warning(
 ) -> DigiExamWarning | None:
     """Return the item-bound non-blocking canonical warning for an unresolved prompt image."""
 
-    if not any(
-        position.reference_index not in assets_by_index
-        for position in prompt_image_positions(prompt_html)
-        if not position.ambiguous
+    if all(
+        position.ambiguous
+        for position in unresolved_prompt_image_positions(prompt_html, assets_by_index)
     ):
         return None
     return DigiExamWarning(

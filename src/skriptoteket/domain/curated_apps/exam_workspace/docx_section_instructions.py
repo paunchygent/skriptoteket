@@ -379,6 +379,7 @@ def place_section_instructions(
     governed: Mapping[str, frozenset[str]],
     title_anchors: frozenset[str] = frozenset(),
     own_anchors: frozenset[str] = frozenset(),
+    part_lines: frozenset[str] = frozenset(),
 ) -> SectionInstructions:
     """Build the parents and copy the instructions that stay with single items.
 
@@ -388,16 +389,16 @@ def place_section_instructions(
 
     An instruction printed inside an item's own chunks joins that item. Any other instruction
     opens the items of its run, which ends at the next section heading (a heading no item
-    owns, other than a lead-in label) or at the next instruction printed after one of the
-    run's items. Points lines are structure and are never instruction text, except in a
-    non-heading chunk the grouping marks as governing, which keeps its whole text (D40).
-    A printed
-    heading is a run starting at the heading under the same section rule: over one question
-    it opens its body, and over two or more consecutive questions it is the first line of
-    their parent's instruction, ahead of the run's other instruction lines in source order
-    (T1, T2). Heading points become the parent's printed total, never instruction words.
-    A heading whose run cannot form or join a parent opens the body of the run's
-    first question, so its wording stays student-visible.
+    owns or one that opens a printed part, other than a lead-in label) or at the next
+    instruction printed after one of the run's items. Points lines are structure and are
+    never instruction text, except in a non-heading chunk the grouping marks as governing,
+    which keeps its whole text (D40). A printed heading is a run starting at the heading
+    under the same section rule: over one question it opens its body, and over two or more
+    consecutive questions it is the first line of their parent's instruction, ahead of the
+    run's other instruction lines in source order (T1, T2). Heading points become the
+    parent's printed total, never instruction words. A heading whose run cannot form or
+    join a parent opens the body of the run's first question, so its wording stays
+    student-visible.
     The instructions that reach two or more consecutive items become the parent of
     exactly those items, whatever their kinds. An instruction that defines terms reaches only
     the run's items whose own chunks use one; lines an item prints before its numbered
@@ -414,7 +415,15 @@ def place_section_instructions(
     ]
     runs, joined = instruction_runs(chunks, instructions, item_sources, positions, governed)
     runs, shape = with_heading_runs(
-        chunks, ordered, runs, instructions, governed, positions, title_anchors, own_anchors
+        chunks,
+        ordered,
+        runs,
+        instructions,
+        governed,
+        positions,
+        title_anchors,
+        own_anchors,
+        part_lines,
     )
     reached = reaches(chunks, ordered, runs, item_sources, positions, shape)
     groups = parent_groups(reached)

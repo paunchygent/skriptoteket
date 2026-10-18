@@ -45,6 +45,7 @@ export function response(document: NativeExamDocument, cursor: string): ExamWork
   return {
     conversion: null,
     document,
+    export_blockers: [],
     history_cursor: cursor,
     notes: [],
     saved_document: document,
@@ -104,7 +105,7 @@ export function fakeServer(api: EditingApiMocks, baseline: NativeExamDocument) {
       truncateAfter(request.afterStepId ?? state.position);
       state.cursor = append(request.document);
       state.position = state.cursor;
-      return { document: request.document, history: history() };
+      return { document: request.document, export_blockers: [], history: history() };
     },
   );
   api.saveExamWorkspaceDocument.mockImplementation(
