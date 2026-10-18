@@ -1,22 +1,36 @@
-"""Invariance: where the grouping places a points line never changes the published points.
+"""Invariance: where the grouping places a total line never changes the published points.
 
 Every printed points line in each recorded conversion is moved to every placement the
 grouping can give it. Each question's published points and estimate mark, the parts'
 totals and the exam total must equal the recorded conversion's every time (TASK-SKRIPT-39-04-11).
 A changed batch claim would raise ``MissingRecording``: that fails the test like any other
 difference.
+
+Every heading that prints a total is moved the same way (R3-2), but the recordings answer
+only the batches the live run sent. A heading is question or section text, so moving it can
+change what a batch shows the model; such a placement is skipped, because a recorded reply
+cannot stand for a request it never answered. Every placement that keeps each batch's
+content must keep each item's kind and points in order, the parts' totals and the exam
+total; an item's source anchor may follow its heading.
 """
 
 import json
 import shutil
+from collections import Counter
 from collections.abc import Callable
 from pathlib import Path
 
 import pytest
 
+from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
+    StructuredLLMRequest,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import line_points
+from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import printed_points
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
     RECORDINGS,
+    MissingRecording,
     build_replay,
     corpus_chunks,
     recorded_exams,
@@ -119,20 +133,45 @@ def _neighbours(exam: str, grouping: Grouping, line: str) -> tuple[str | None, s
     return (before[-1] if before else None), (after[0] if after else None)
 
 
+def _heading_total(chunk: DocxChunk) -> bool:
+    return chunk.kind == "heading" and printed_points((chunk,)) is not None
+
+
 def _cases() -> list[tuple[str, str, str]]:
     return [
         (exam, chunk.anchor, placement)
         for exam in recorded_exams()
         for chunk in corpus_chunks(exam)
-        if line_points(chunk) is not None
+        if line_points(chunk) is not None or _heading_total(chunk)
         for placement in _PLACEMENTS
     ]
 
 
-async def _published(exam: str, root: Path) -> tuple:
+Batches = Counter[tuple[frozenset[str], frozenset[str]]]
+
+
+def _batches(requests: list[StructuredLLMRequest]) -> Batches:
+    """Each build batch's own and context anchors: the content a recorded reply answers."""
+    shown: Batches = Counter()
+    for request in requests:
+        if request.output_spec.schema_name == "docx_exam_build":
+            payload = json.loads(request.user_payload)
+            shown[
+                (
+                    frozenset(chunk["anchor"] for chunk in payload["chunks"]),
+                    frozenset(chunk["anchor"] for chunk in payload["context_chunks"]),
+                )
+            ] += 1
+    return shown
+
+
+async def _published(exam: str, root: Path) -> tuple[tuple, Batches]:
     replay = build_replay(exam, root=root)
-    document = (await replay.pipeline.convert(job=replay.job())).result.document
-    return (
+    try:
+        document = (await replay.pipeline.convert(job=replay.job())).result.document
+    except MissingRecording:
+        return (), _batches(replay.provider.requests)
+    published = (
         tuple(
             (item.source_anchor, item.kind, item.points, item.points_estimated, item.tick_points)
             for item in sorted(document.items, key=lambda item: item.sequence)
@@ -140,9 +179,15 @@ async def _published(exam: str, root: Path) -> tuple:
         tuple(parent.printed_total for parent in document.parents),
         document.header.printed_total,
     )
+    return published, _batches(replay.provider.requests)
 
 
-_BASELINES: dict[str, tuple] = {}
+def _without_anchors(published: tuple) -> tuple:
+    items, *totals = published or ((),)
+    return (tuple(item[1:] for item in items), *totals)
+
+
+_BASELINES: dict[str, tuple[tuple, Batches]] = {}
 
 
 @pytest.mark.parametrize(("exam", "line", "placement"), _cases())
@@ -159,4 +204,12 @@ async def test_a_points_lines_placement_never_changes_the_published_points(
     shutil.copytree(RECORDINGS / exam, tmp_path / exam)
     (tmp_path / exam / "docx_grouping_1.json").write_text(json.dumps(grouping))
 
-    assert await _published(exam, tmp_path) == _BASELINES[exam]
+    published, batches = await _published(exam, tmp_path)
+    baseline, baseline_batches = _BASELINES[exam]
+    heading = _heading_total(next(c for c in corpus_chunks(exam) if c.anchor == line))
+    if heading and batches != baseline_batches:
+        pytest.skip(f"{line} placed as {placement} changes a batch's content")
+    if heading:
+        # An item's source anchor is its first own chunk, which a question heading moves.
+        published, baseline = _without_anchors(published), _without_anchors(baseline)
+    assert published == baseline
