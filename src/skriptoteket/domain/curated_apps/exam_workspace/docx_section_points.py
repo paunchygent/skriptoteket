@@ -53,8 +53,10 @@ def apply_printed_points(
     earlier questions taking the extra point; such shares are marked estimated. A share of
     no point, or an unkeyed grid, keeps the model's own reading. The part's total then
     checks the parent that holds exactly the part's items; a parent over only some of them
-    keeps its own total. A question's item is the item that starts at one of its own chunks,
-    or at the line of a part that holds only that question, which no question holds.
+    keeps its own total. When an inner part holds the same items as the outer part around
+    it, the outer part's line opens the parent, so the outer total checks it. A question's
+    item is the item that starts at one of its own chunks, or at the line of a part that
+    holds only that question, which no question holds.
     """
     scored = list(items)
     events: list[DocxBuildEvent] = []
@@ -89,8 +91,10 @@ def apply_printed_points(
     for number, question in enumerate(printed.questions):
         if question.points is not None and (item := member(number)) is not None:
             score(item, question, question.points, estimated=False)
-    # Inner parts (no part label) score their questions before an outer part shares its total.
-    for part in sorted(printed.parts, key=lambda p: p.identity is not None):
+    # Inner parts (no part label) score their questions before an outer part shares its total,
+    # and an outer part's total checks a parent after an inner part over the same items.
+    inner_first = sorted(printed.parts, key=lambda p: p.identity is not None)
+    for part in inner_first:
         inner = _inner_questions(part, printed.parts)
         flagged = [(number, number in inner) for number in part.questions]
         questions = [
@@ -118,7 +122,7 @@ def apply_printed_points(
             unkeyed = item.kind is NativeExamItemKind.MATCHING and not item.answer_key.match_pairs
             if share > 0 and not unkeyed:
                 score(item, question, share, estimated=len(sharing) > 1)
-    for part in printed.parts:
+    for part in inner_first:
         held = {item.item_id for number in part.questions if (item := member(number)) is not None}
         parents = tuple(
             parent.model_copy(update={"printed_total": part.total})

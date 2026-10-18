@@ -17,9 +17,11 @@ its other chunks. A converted item that leaves out own chunks of its question ho
 whose wording it lacks show under a check mark as printed (D41, D4). A reply without points
 takes the one points label its question's own chunks print (D3). A gap_fill item that makes a gap of
 material its line talks about becomes a review item showing its question as printed (D43).
-A part's line (``PrintedPart.opener``) is never held by an item for a question outside its
-part (review-2 F1): it leaves that entry before the item is built and, unless an item of its
-part lists it, stands as an instruction, which placement puts at its part's question. Building
+A part's line no question owns (``PrintedPart.opener``) leaves, before any item is built,
+every entry when its part holds two or more questions, and every entry for a question outside
+its part when it holds one (review-2 F1, review-3 N1). An entry holding no question anchor is
+no item (review-3 N2). Every moved line is recorded once; unless an item of its part lists it,
+it stands as an instruction, which placement puts at its part's parent or question. Building
 one question's item never fails the batch: an item that cannot be built becomes a review item
 holding that question's own source text. A context the grouping gives a question as its owner
 that no entry holds opens that question's item as its source paragraphs, and joins its review
@@ -392,20 +394,38 @@ def _admit_item(
     state.accepted.append(_with_left_out(index, built, state, seen, item_held))
 
 
-def _strip_foreign_openers(items: list[JsonValue], state: DocxBuildState) -> tuple[str, ...]:
-    """Remove from ``items`` every part opener an entry lists for a question its part does not
-    hold, and return those openers: a part's line opens only a question of its part."""
+def _without_part_lines(
+    items: list[JsonValue], state: DocxBuildState
+) -> tuple[list[JsonValue], tuple[str, ...]]:
+    """``items`` without the part lines no entry may hold, and those lines, each once.
+
+    This is the one owner of which part lines leave an entry. A part line no question owns
+    (``PrintedPart.opener``) leaves every entry when its part holds two or more questions, and
+    every entry whose questions lie outside its part when it holds one question. An entry that
+    holds no question anchor is no item: it leaves the reply, its part lines among the moved
+    ones, and its other chunks stay unlisted for the rules of chunks no entry holds.
+    """
     plan = printed_points_plan(state.chunks, state.questions)
-    parts = {part.opener: {state.questions[n] for n in part.questions} for part in plan.parts}
+    parts = {
+        part.opener: {state.questions[n] for n in part.questions}
+        for part in plan.parts
+        if part.opener not in state.question_by_anchor
+    }
+    kept: list[JsonValue] = []
     moved: list[str] = []
-    for index, raw in enumerate(items):
+    for raw in items:
         listed = raw_anchors(raw)
         held = {state.question_by_anchor[a] for a in listed if a in state.question_by_anchor}
-        foreign = [a for a in listed if a in parts and held and not held & parts[a]]
-        if foreign and isinstance(raw, dict):
-            items[index] = {**raw, "source_anchors": [a for a in listed if a not in foreign]}
-            moved.extend(foreign)
-    return tuple(dict.fromkeys(moved))
+        lines = [a for a in listed if a in parts and (len(parts[a]) > 1 or not held & parts[a])]
+        moved.extend(lines)
+        if not held:
+            continue
+        kept.append(
+            {**raw, "source_anchors": [a for a in listed if a not in lines]}
+            if lines and isinstance(raw, dict)
+            else raw
+        )
+    return kept, tuple(dict.fromkeys(moved))
 
 
 def admit_batch(content: dict[str, JsonValue], state: DocxBuildState) -> None:
@@ -420,7 +440,7 @@ def admit_batch(content: dict[str, JsonValue], state: DocxBuildState) -> None:
         for raw in items
         if not any(state.question_by_anchor.get(a) in refused for a in raw_anchors(raw))
     ]
-    moved = _strip_foreign_openers(items, state)
+    items, moved = _without_part_lines(items, state)
     item_held = frozenset(a for raw in items for a in raw_anchors(raw))
     admit_keys(content.get("answer_key_anchors"), state, seen, item_held)
     if content.get("title"):
@@ -428,9 +448,11 @@ def admit_batch(content: dict[str, JsonValue], state: DocxBuildState) -> None:
     raw_instructions = content.get("instructions")
     for raw in raw_instructions if isinstance(raw_instructions, list) else ():
         admit_metadata(raw, "instructions", state, seen, item_held)
-    # A moved opener no item of its part lists is an instruction, which placement places.
-    if unheld := tuple(a for a in free_anchors(moved, state, seen) if a not in item_held):
-        state.record("admission", "part_heading_moved", anchors=unheld)
+    # Every moved part line is recorded; one no item of its part lists is an instruction,
+    # which placement places.
+    if moved := free_anchors(moved, state, seen):
+        state.record("admission", "part_heading_moved", anchors=moved)
+    if unheld := tuple(a for a in moved if a not in item_held):
         seen.update(unheld)
         by = state.chunk_by_anchor
         moved_lines = (ProducedMetadata(text=by[a].text, source_anchors=(a,)) for a in unheld)

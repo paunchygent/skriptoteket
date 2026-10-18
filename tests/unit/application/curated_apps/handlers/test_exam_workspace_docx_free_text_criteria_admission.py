@@ -39,6 +39,7 @@ def _state(question_text: str) -> DocxBuildState:
             _chunk("body:0001", question_text),
             _chunk("body:0002", "Bedöm helheten."),
         ),
+        questions=(("body:0001",),),
     )
 
 
