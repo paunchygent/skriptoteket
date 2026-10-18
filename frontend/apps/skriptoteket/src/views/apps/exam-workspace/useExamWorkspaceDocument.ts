@@ -12,6 +12,9 @@
  *   - Reports each teacher edit through `onEdit`, which the undo history
  *     (`useExamWorkspaceHistory`) turns into autosaved steps; installs the
  *     history's steps and the server commands' results.
+ *   - The whole-document field commands (exam and part instructions, tags,
+ *     printed-total accepts) in `useExamWorkspaceDocumentFields`, built on
+ *     `editDocument` here.
  *   - Spara, Spara som and stale-save recovery (`useExamWorkspaceSave`), the
  *     saved-exams list (`useExamWorkspaceSavedList`), AI suggestion arrivals,
  *     conversion merges and one-question retries through their own composables.
@@ -26,10 +29,8 @@ import type {
   ExamWorkspaceDocumentSummary,
   ExamCourseChoice,
   NativeExamDocument,
-  NativeExamHeader,
   NativeExamItem,
   NativeExamItemKind,
-  NativeExamParent,
 } from "../../../api/examWorkspace";
 import { useToast } from "../../../composables/useToast";
 import { examWorkspaceAssetUrls } from "./examWorkspaceAssetUrls";
@@ -38,6 +39,7 @@ import { useExamWorkspaceItemEdits } from "./useExamWorkspaceItemEdits";
 import { withReferencedAssetsOnly } from "./examWorkspaceStructure";
 import { withRestoredSuggestion } from "./examWorkspaceSuggestionEdits";
 import { useExamWorkspaceConversion } from "./useExamWorkspaceConversion";
+import { useExamWorkspaceDocumentFields } from "./useExamWorkspaceDocumentFields";
 import { useExamWorkspaceGapKeying } from "./useExamWorkspaceGapKeying";
 import { useExamWorkspaceItemRetry } from "./useExamWorkspaceItemRetry";
 import { useExamWorkspaceSaveArrivals } from "./useExamWorkspaceSaveArrivals";
@@ -45,7 +47,6 @@ import { useExamWorkspaceRename } from "./useExamWorkspaceRename";
 import { RELOAD_FAILURE_COPY, useExamWorkspaceSave } from "./useExamWorkspaceSave";
 import { useExamWorkspaceSavedList } from "./useExamWorkspaceSavedList";
 import { useExamWorkspaceTitleVerdict } from "./useExamWorkspaceTitleVerdict";
-import { withoutExamPrintedTotal, withoutPartPrintedTotal, withoutPrintedTotals } from "./examWorkspaceTotals";
 
 export { EXAM_WORKSPACE_CONVERSION_POLL_MS } from "./useExamWorkspaceConversion";
 
@@ -353,48 +354,8 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
     return true;
   }
 
-  /** The instruction text above an instruction's deluppgifter, typed like a question's text. */
-  function setParentInstruction(
-    parentId: string,
-    instruction: NativeExamParent["instruction"],
-    structural: boolean,
-  ): void {
-    editDocument(
-      (document) => ({
-        ...document,
-        parents: document.parents.map((parent) =>
-          parent.parent_id === parentId ? { ...parent, instruction } : parent,
-        ),
-      }),
-      null,
-      structural,
-    );
-  }
-
-  /** The exam instruction printed before the first question, typed like a question's text; emptied it is `[]`. */
-  function setExamInstructions(instructions: NativeExamDocument["instructions"], structural: boolean): void {
-    editDocument((document) => ({ ...document, instructions }), null, structural);
-  }
-
-  /** The exam's Centralt innehåll ticks; each tick is its own undo step. */
-  function setTags(tags: NativeExamHeader["tags"]): void {
-    editDocument((document) => ({ ...document, header: { ...document.header, tags } }));
-  }
-
-  /** Use the questions' sum over the printed exam total; one undo step. */
-  function acceptExamPrintedTotal(): void {
-    editDocument(withoutExamPrintedTotal);
-  }
-
-  /** Use the questions' sum over one part's printed total; one undo step. */
-  function acceptPartPrintedTotal(parentId: string): void {
-    editDocument((document) => withoutPartPrintedTotal(document, parentId));
-  }
-
-  /** Use the questions' sums over the exam and every part's printed total; one undo step. */
-  function acceptAllPrintedTotals(): void {
-    editDocument(withoutPrintedTotals);
-  }
+  // The whole-document field commands, each one `editDocument` call.
+  const fieldCommands = useExamWorkspaceDocumentFields({ editDocument });
 
   function keepSelection(document: NativeExamDocument): void {
     if (!document.items.some((item) => item.item_id === selectedItemId.value)) {
@@ -447,9 +408,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
 
   return {
     ...itemEdits,
-    acceptAllPrintedTotals,
-    acceptExamPrintedTotal,
-    acceptPartPrintedTotal,
+    ...fieldCommands,
     applyCommandResponse,
     editDocument,
     historyCursor,
@@ -491,9 +450,6 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
     selectItem,
     setTitle,
     setCourse,
-    setExamInstructions,
-    setParentInstruction,
-    setTags,
     selectedItem,
     selectedItemId,
     summary,
