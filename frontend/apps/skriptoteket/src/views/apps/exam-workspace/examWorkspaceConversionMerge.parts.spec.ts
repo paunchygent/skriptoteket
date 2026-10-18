@@ -6,7 +6,8 @@
  *   part in the first item's slot, with the teacher's edited part instruction
  *   kept, whether that child was earlier in the part or the last child. A
  *   childless block keeps its index among the units, so its place follows the
- *   number of items before it once an earlier expansion landed. Every result is
+ *   number of items before it once an earlier expansion landed, and a run of
+ *   adjacent childless blocks keeps the head's delivered order. Every result is
  *   a valid outline: the structure owner's round trip is the identity and each
  *   part's children are consecutive in the merged items.
  */
@@ -242,5 +243,138 @@ describe("conversion merge keeps a split question inside its part", () => {
     expect(merged.parents[0]!.instruction).toEqual(instruction("Teacher edited block"));
     expect(merged.parents[0]!.place).toBe(3);
     expectOwnerRoundTrip(merged);
+  });
+});
+
+describe("conversion merge keeps delivered adjacent instruction blocks in order (F9)", () => {
+  const first = item("item_001", "One");
+  const second = item("item_002", "Two");
+  const third = item("item_003", "Three");
+  const units = [
+    unit("q1", "ready", ["item_001"]),
+    unit("q2", "ready", ["item_002"]),
+    unit("q3", "ready", ["item_003"]),
+  ];
+
+  function headWith(place: number): NativeExamDocument {
+    return document(2, [first, second, third], [
+      part("parent_001", place, [], "First instruction"),
+      part("parent_002", place, [], "Second instruction"),
+    ]);
+  }
+
+  function merge(
+    place: number,
+    localTitle: string,
+  ): { head: NativeExamDocument; merged: NativeExamDocument } {
+    const base = document(1, [first, second, third], []);
+    const local = { ...document(1, [first, second, third], []), title: localTitle };
+    const head = headWith(place);
+    const merged = mergeConversionRevision({ base, baseUnits: units, head, headUnits: units, local });
+    return { head, merged };
+  }
+
+  function unitIds(document: NativeExamDocument): string[] {
+    return examWorkspaceUnits(document).map((unit) =>
+      unit.kind === "item" ? unit.itemId : unit.parentId,
+    );
+  }
+
+  function expectHeadBlocks(
+    merged: NativeExamDocument,
+    head: NativeExamDocument,
+    place: number,
+  ): void {
+    expect(examWorkspaceUnits(merged)).toEqual(examWorkspaceUnits(head));
+    expect(merged.items.map((entry) => entry.item_id)).toEqual([
+      "item_001",
+      "item_002",
+      "item_003",
+    ]);
+    expect(merged.parents.map((parent) => parent.parent_id)).toEqual([
+      "parent_001",
+      "parent_002",
+    ]);
+    expect(merged.parents.map((parent) => parent.place)).toEqual([place, place]);
+    expect(merged.parents.map((parent) => parent.instruction)).toEqual([
+      instruction("First instruction"),
+      instruction("Second instruction"),
+    ]);
+    expectOwnerRoundTrip(merged);
+  }
+
+  it("keeps a leading run in head order when the copy is clean", () => {
+    const { head, merged } = merge(0, "Prov");
+    expectHeadBlocks(merged, head, 0);
+    expect(unitIds(merged)).toEqual([
+      "parent_001",
+      "parent_002",
+      "item_001",
+      "item_002",
+      "item_003",
+    ]);
+  });
+
+  it("keeps a leading run in head order under a dirty local title", () => {
+    const { head, merged } = merge(0, "Lokal rubrik");
+    expectHeadBlocks(merged, head, 0);
+    expect(unitIds(merged)).toEqual([
+      "parent_001",
+      "parent_002",
+      "item_001",
+      "item_002",
+      "item_003",
+    ]);
+    expect(merged.title).toBe("Lokal rubrik");
+  });
+
+  it("keeps a middle run in head order when the copy is clean", () => {
+    const { head, merged } = merge(1, "Prov");
+    expectHeadBlocks(merged, head, 1);
+    expect(unitIds(merged)).toEqual([
+      "item_001",
+      "parent_001",
+      "parent_002",
+      "item_002",
+      "item_003",
+    ]);
+  });
+
+  it("keeps a middle run in head order under a dirty local title", () => {
+    const { head, merged } = merge(1, "Lokal rubrik");
+    expectHeadBlocks(merged, head, 1);
+    expect(unitIds(merged)).toEqual([
+      "item_001",
+      "parent_001",
+      "parent_002",
+      "item_002",
+      "item_003",
+    ]);
+    expect(merged.title).toBe("Lokal rubrik");
+  });
+
+  it("keeps a trailing run in head order when the copy is clean", () => {
+    const { head, merged } = merge(3, "Prov");
+    expectHeadBlocks(merged, head, 3);
+    expect(unitIds(merged)).toEqual([
+      "item_001",
+      "item_002",
+      "item_003",
+      "parent_001",
+      "parent_002",
+    ]);
+  });
+
+  it("keeps a trailing run in head order under a dirty local title", () => {
+    const { head, merged } = merge(3, "Lokal rubrik");
+    expectHeadBlocks(merged, head, 3);
+    expect(unitIds(merged)).toEqual([
+      "item_001",
+      "item_002",
+      "item_003",
+      "parent_001",
+      "parent_002",
+    ]);
+    expect(merged.title).toBe("Lokal rubrik");
   });
 });

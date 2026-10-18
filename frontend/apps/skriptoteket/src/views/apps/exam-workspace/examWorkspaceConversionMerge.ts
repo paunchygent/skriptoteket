@@ -186,7 +186,11 @@ function neighbourParentId(entries: Entry[], index: number): string | null {
 /**
  * The members the delivered parents define: every item entry takes the head
  * part that owns it (by item id), else none, and the head's childless parts are
- * blocks again, each after the nearest earlier head item member.
+ * blocks again. One forward walk over the head's members carries a cursor, the
+ * index in `members` where the next block goes: a head item moves the cursor
+ * past its merged entry (or leaves it when the item is absent), and a block
+ * lands at the cursor. Consecutive blocks therefore keep the head's order,
+ * including a leading run, and every run stays after the head item before it.
  */
 function membersFromHead(entries: Entry[], head: NativeExamDocument): ExamWorkspaceMember[] {
   const parentIdByItem = new Map<string, string>();
@@ -199,27 +203,20 @@ function membersFromHead(entries: Entry[], head: NativeExamDocument): ExamWorksp
     entry.parentId = parentIdByItem.get(entry.item.item_id) ?? null;
     return { kind: "item", item: entry.item, parentId: entry.parentId };
   });
-  const headMembers = examWorkspaceMembers(head);
-  headMembers.forEach((member, position) => {
-    if (member.kind !== "block") {
-      return;
-    }
-    let earlierItemId: string | null = null;
-    for (let at = position - 1; at >= 0; at -= 1) {
-      const earlier = headMembers[at]!;
-      if (earlier.kind === "item") {
-        earlierItemId = earlier.item.item_id;
-        break;
+  let cursor = 0;
+  for (const member of examWorkspaceMembers(head)) {
+    if (member.kind === "item") {
+      const at = members.findIndex(
+        (entry) => entry.kind === "item" && entry.item.item_id === member.item.item_id,
+      );
+      if (at !== -1) {
+        cursor = at + 1;
       }
+      continue;
     }
-    const after =
-      earlierItemId === null
-        ? -1
-        : members.findIndex(
-            (entry) => entry.kind === "item" && entry.item.item_id === earlierItemId,
-          );
-    members.splice(after + 1, 0, { kind: "block", parentId: member.parentId });
-  });
+    members.splice(cursor, 0, { kind: "block", parentId: member.parentId });
+    cursor += 1;
+  }
   return members;
 }
 
