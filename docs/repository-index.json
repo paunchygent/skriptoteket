@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "b01d5d31abda6b6e5f1cf2a930069bd033eb0ceea870b40d0b60951ea222c0c8",
+  "source_set_digest": "c999378e2d4589baed3005950771dc8bd5500eddbf68be258667b55895b2d99f",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5542,7 +5542,7 @@
       "type": "task",
       "title": "Retire the old exam converter routes, correction overlay and screens",
       "path": "docs/backlog/tasks/task-skript-39-07-03-retire-the-old-exam-converter-routes-correction-overlay-and-screens.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-07",
       "owners": [
