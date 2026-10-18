@@ -53,15 +53,25 @@ def apply_printed_points(
     earlier questions taking the extra point; such shares are marked estimated. A share of
     no point, or an unkeyed grid, keeps the model's own reading. The part's total then
     checks the parent that holds exactly the part's items; a parent over only some of them
-    keeps its own total.
+    keeps its own total. A question's item is the item that starts at one of its own chunks,
+    or at the line of a part that holds only that question, which no question holds.
     """
     scored = list(items)
     events: list[DocxBuildEvent] = []
 
-    def member(question: PrintedQuestion) -> NativeExamItem | None:
-        """The question's one item: the first item that starts at one of its own chunks."""
-        own = set(question.anchors)
-        return next((item for item in scored if item.source_anchor in own), None)
+    # A one-question part's item may start at the part's line, which no question holds.
+    opened = {part.opener: part.questions[0] for part in printed.parts if len(part.questions) == 1}
+
+    def member(number: int) -> NativeExamItem | None:
+        """The question's one item: the first item that starts at one of its own chunks, else
+        the first that starts at the line of a part that holds only this question."""
+        own = set(printed.questions[number].anchors)
+        first = next((item for item in scored if item.source_anchor in own), None)
+        if first is not None:
+            return first
+        return next(
+            (i for i in scored if i.source_anchor and opened.get(i.source_anchor) == number), None
+        )
 
     def score(
         item: NativeExamItem, question: PrintedQuestion, points: int | float, *, estimated: bool
@@ -76,14 +86,18 @@ def apply_printed_points(
         events.extend(result.events)
         scored = [result.item if i.item_id == item.item_id else i for i in scored]
 
-    for question in printed.questions:
-        if question.points is not None and (item := member(question)) is not None:
+    for number, question in enumerate(printed.questions):
+        if question.points is not None and (item := member(number)) is not None:
             score(item, question, question.points, estimated=False)
     # Inner parts (no part label) score their questions before an outer part shares its total.
     for part in sorted(printed.parts, key=lambda p: p.identity is not None):
         inner = _inner_questions(part, printed.parts)
-        flagged = [(printed.questions[number], number in inner) for number in part.questions]
-        questions = [(q, item, nested) for q, nested in flagged if (item := member(q)) is not None]
+        flagged = [(number, number in inner) for number in part.questions]
+        questions = [
+            (printed.questions[n], item, nested)
+            for n, nested in flagged
+            if (item := member(n)) is not None
+        ]
         unprinted = [(q, item) for q, item, nested in questions if not q.prints and not nested]
         sharing = (
             unprinted
@@ -105,11 +119,7 @@ def apply_printed_points(
             if share > 0 and not unkeyed:
                 score(item, question, share, estimated=len(sharing) > 1)
     for part in printed.parts:
-        held = {
-            item.item_id
-            for number in part.questions
-            if (item := member(printed.questions[number])) is not None
-        }
+        held = {item.item_id for number in part.questions if (item := member(number)) is not None}
         parents = tuple(
             parent.model_copy(update={"printed_total": part.total})
             if held and set(parent.item_ids) == held

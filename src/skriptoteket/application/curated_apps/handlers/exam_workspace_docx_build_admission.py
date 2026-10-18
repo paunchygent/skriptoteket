@@ -17,8 +17,10 @@ its other chunks. A converted item that leaves out own chunks of its question ho
 whose wording it lacks show under a check mark as printed (D41, D4). A reply without points
 takes the one points label its question's own chunks print (D3). A gap_fill item that makes a gap of
 material its line talks about becomes a review item showing its question as printed (D43).
-Building one
-question's item never fails the batch: an item that cannot be built becomes a review item
+A part's line (``PrintedPart.opener``) is never held by an item for a question outside its
+part (review-2 F1): it leaves that entry before the item is built and, unless an item of its
+part lists it, stands as an instruction, which placement puts at its part's question. Building
+one question's item never fails the batch: an item that cannot be built becomes a review item
 holding that question's own source text. A question reported as a type conflict leaves the
 batch for the pipeline to resend with the kind the source shows, once: in the resend it is kept
 as converted.
@@ -56,7 +58,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions impor
     with_left_out_mark,
     wording_left_out,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import line_points
+from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import (
+    line_points,
+    printed_points_plan,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     POINT_LABEL,
     QUESTION_HEADING_LABEL,
@@ -435,6 +440,22 @@ def _admit_item(
     state.accepted.append(_with_left_out(index, built, state, seen, item_held))
 
 
+def _strip_foreign_openers(items: list[JsonValue], state: DocxBuildState) -> tuple[str, ...]:
+    """Remove from ``items`` every part opener an entry lists for a question its part does not
+    hold, and return those openers: a part's line opens only a question of its part."""
+    plan = printed_points_plan(state.chunks, state.questions)
+    parts = {part.opener: {state.questions[n] for n in part.questions} for part in plan.parts}
+    moved: list[str] = []
+    for index, raw in enumerate(items):
+        listed = raw_anchors(raw)
+        held = {state.question_by_anchor[a] for a in listed if a in state.question_by_anchor}
+        foreign = [a for a in listed if a in parts and held and not held & parts[a]]
+        if foreign and isinstance(raw, dict):
+            items[index] = {**raw, "source_anchors": [a for a in listed if a not in foreign]}
+            moved.extend(foreign)
+    return tuple(dict.fromkeys(moved))
+
+
 def admit_batch(content: dict[str, JsonValue], state: DocxBuildState) -> None:
     """Admit every entry once; chunks no entry names become review items."""
     seen: set[str] = set()
@@ -447,6 +468,7 @@ def admit_batch(content: dict[str, JsonValue], state: DocxBuildState) -> None:
         for raw in items
         if not any(state.question_by_anchor.get(a) in refused for a in raw_anchors(raw))
     ]
+    moved = _strip_foreign_openers(items, state)
     item_held = frozenset(a for raw in items for a in raw_anchors(raw))
     _admit_keys(content.get("answer_key_anchors"), state, seen, item_held)
     if content.get("title"):
@@ -454,6 +476,13 @@ def admit_batch(content: dict[str, JsonValue], state: DocxBuildState) -> None:
     raw_instructions = content.get("instructions")
     for raw in raw_instructions if isinstance(raw_instructions, list) else ():
         _admit_metadata(raw, "instructions", state, seen, item_held)
+    # A moved opener no item of its part lists is an instruction, which placement places.
+    if unheld := tuple(a for a in _free(moved, state, seen) if a not in item_held):
+        state.record("admission", "part_heading_moved", anchors=unheld)
+        seen.update(unheld)
+        by = state.chunk_by_anchor
+        moved_lines = (ProducedMetadata(text=by[a].text, source_anchors=(a,)) for a in unheld)
+        state.instructions = (*state.instructions, *moved_lines)
     for index, raw in enumerate(items):
         _admit_item(index, raw, state, seen, item_held)
     conflicted = {a for conflict in state.conflicts for a in conflict.anchors}

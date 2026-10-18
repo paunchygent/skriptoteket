@@ -378,3 +378,38 @@ def test_an_outer_part_never_shares_its_total_over_questions_that_print_their_ow
     assert _marked(scored) == [False, False]
     assert scored.items[1].review == rubric.review
     assert scored.items[1].criteria == rubric.criteria
+
+
+def test_a_one_question_part_total_reaches_the_item_that_opens_with_its_part_heading():
+    # Chapter_4 shape: the item of each one-question part starts at its part heading, an
+    # anchor no question holds. The part's printed total still reaches that item.
+    chunks, questions = _exam(
+        "# Del 1: Substantiv (2 p)",
+        "Q Förklara vad som kännetecknar ett substantiv.",
+        "# Del 2: Verb (3 p)",
+        "Q Förklara vad som kännetecknar ett verb.",
+    )
+    noun, verb = _items(chunks, questions, (2, 5))
+    opened = verb.model_copy(update={"source_anchor": "body:0002"})
+
+    scored = _score(chunks, questions, (noun, opened))
+
+    assert _points(scored) == [2, 3]
+    assert _marked(scored) == [False, False]
+
+
+def test_a_part_heading_review_item_never_takes_its_questions_total():
+    # The part heading stayed unclaimed and became its own review item, ahead of the
+    # question's item, which starts at the question's own chunk: the total reaches the latter.
+    chunks, questions = _exam(
+        "# Del 1: Substantiv (2 p)",
+        "Q Förklara vad som kännetecknar ett substantiv.",
+    )
+    heading = review_chunk_item(chunks[0], "test").model_copy(
+        update={"item_id": "item_000", "sequence": 0, "points": None}
+    )
+    (noun,) = _items(chunks, questions, (5,))
+
+    scored = _score(chunks, questions, (heading, noun))
+
+    assert _points(scored) == [None, 2]

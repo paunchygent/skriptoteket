@@ -388,6 +388,55 @@ def test_a_part_labelled_one_question_heading_misplaced_by_the_grouping_ignores_
     ]
 
 
+@pytest.mark.parametrize("reverse", [False, True], ids=["q1_first", "q2_first"])
+def test_a_part_heading_the_reply_lists_with_another_question_opens_its_own_question(
+    reverse: bool,
+):
+    # Review-2 F1: the reply copies the grouping's misplacement and lists q2's part-labelled
+    # heading in q1's entry. The heading opens a part over q2 alone, so q1's item never holds
+    # it: it opens q2's item, as when the reply lists it as an instruction.
+    heading = ("heading", "Del 2: Verb (2 p)")
+    state = _normalised_state((_NOUN[0], heading, _VERB_BODY), ((0, 1), (2,)))
+    entries: list[JsonValue] = [
+        _item(["body:0001", "body:0002"], "Förklara vad som kännetecknar ett substantiv.", "1"),
+        _item(["body:0003"], "Förklara vad som kännetecknar ett verb.", "2"),
+    ]
+
+    admit_batch({"items": entries[::-1] if reverse else entries}, state)
+    document = state.result().document
+
+    noun, verb = sorted(document.items, key=lambda item: item.sequence)
+    assert noun.source_anchor == "body:0001"
+    assert not [text for text in _texts(noun) if "Del 2" in text]
+    assert _texts(verb)[0].startswith("Del 2: Verb")
+    assert noun.review.parse_origin is NativeParseOrigin.LLM_PARSED
+    assert verb.review.parse_origin is NativeParseOrigin.LLM_PARSED
+    assert (noun.points, verb.points) == (4, 2)
+    assert not [
+        e
+        for e in state.events
+        if e.code in {"question_split", "questions_merged", "anchor_conflict"}
+    ]
+
+
+def test_a_one_question_part_total_reaches_the_item_that_opens_with_its_part_heading():
+    # Chapter_4 shape: q2's item starts at its part heading, which no question holds, and the
+    # reply's points disagree with the part's printed total. The printed total wins.
+    state = _normalised_state(
+        (_NOUN[0], ("heading", "Del 2: Verb (2 p)"), _VERB_BODY), ((0,), (2,))
+    )
+    verb = {**_item(["body:0002", "body:0003"], "Förklara vad som kännetecknar ett verb.", "2")}
+    verb["points"] = 5
+    noun = _item(["body:0001"], "Förklara vad som kännetecknar ett substantiv.", "1")
+
+    admit_batch({"items": [noun, verb]}, state)
+    _, opened = sorted(state.result().document.items, key=lambda item: item.sequence)
+
+    assert opened.source_anchor == "body:0002"
+    assert _texts(opened)[0].startswith("Del 2: Verb")
+    assert opened.points == 2
+
+
 _VERB = (
     ("paragraph", "Uppgift 2: Förklara vad som kännetecknar ett verb. (2 p)"),
     ("paragraph", "Ge två exempel på verb."),
