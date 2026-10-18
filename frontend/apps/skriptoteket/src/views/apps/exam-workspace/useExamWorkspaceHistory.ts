@@ -183,9 +183,13 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
    * Stores `snapshot`, or the working copy: "stored" when the server's newest
    * step now holds it (or nothing needed storing), "refused" when the save
    * rules reject it, so it can never be a step, and "failed" otherwise.
+   * The typing timer belongs to the working copy: storing it makes the pause
+   * moot, while storing an owed snapshot leaves typing's pause running.
    */
   async function store(settle = false, snapshot: NativeExamDocument | null = null): Promise<StoreOutcome> {
-    clearTimer();
+    if (snapshot === null) {
+      clearTimer();
+    }
     const lineageId = deps.lineageId();
     const cursor = deps.historyCursor.value;
     if (lineageId && cursor && position.value === null) {
