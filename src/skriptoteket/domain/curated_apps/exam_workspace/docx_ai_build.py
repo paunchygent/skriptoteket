@@ -21,6 +21,13 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_scoring import (
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxChunk,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_document_instructions import (
+    exam_wide_instructions,
+    global_instructions,
+    placement_chunks,
+    placement_exclusions,
+    without_excluded,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_governing_chunks import (
     release_governing_chunks,
     unclaimed_governing,
@@ -86,19 +93,12 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeItemReviewState,
     NativeParseOrigin,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.shared_body import (
-    body_plain_text,
-    source_paragraphs,
-)
 from skriptoteket.domain.curated_apps.exam_workspace.source_entry_ownership import (
     produced_entry_body,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.source_format_coverage import (
     NativeSourceEntry,
     complete_source_formatting,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.source_formatted_instructions import (
-    instruction_paragraphs,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import (
     FormattingTransferError,
@@ -327,69 +327,6 @@ def _ordered_items(
     )
 
 
-def _exam_wide_instructions(
-    chunks: tuple[DocxChunk, ...],
-    exam_wide: frozenset[str],
-    exam_metadata: frozenset[str],
-    printed_metadata: frozenset[str],
-) -> tuple[ProducedMetadata, ...]:
-    """Each exam-wide chunk with text as an instruction of its own source text.
-
-    No batch claims an exam-wide chunk, so its placement never depends on a reply. Exam
-    metadata and a printed total the points plan classifies as metadata go nowhere.
-    """
-    return tuple(
-        ProducedMetadata(text=chunk.text, source_anchors=(chunk.anchor,))
-        for chunk in chunks
-        if chunk.anchor in exam_wide
-        and chunk.anchor not in exam_metadata
-        and chunk.anchor not in printed_metadata
-        and chunk.text
-    )
-
-
-def _without_printed_metadata(
-    instructions: tuple[ProducedMetadata, ...],
-    printed_metadata: frozenset[str],
-    by_anchor: Mapping[str, DocxChunk],
-) -> tuple[ProducedMetadata, ...]:
-    """Each instruction narrowed to its anchors outside ``printed_metadata``.
-
-    A printed total the points plan classifies as metadata stays in its header or scoring
-    representation. A narrowed instruction shows the source text of the chunks it keeps; one
-    left with no anchors is dropped.
-    """
-    narrowed: list[ProducedMetadata] = []
-    for instruction in instructions:
-        kept = tuple(a for a in instruction.source_anchors if a not in printed_metadata)
-        if kept == instruction.source_anchors:
-            narrowed.append(instruction)
-        elif kept:
-            text = body_plain_text(source_paragraphs(by_anchor[a] for a in kept))
-            narrowed.append(ProducedMetadata(text=text, source_anchors=kept))
-    return tuple(narrowed)
-
-
-def _in_source_order(
-    chunks: tuple[DocxChunk, ...], instructions: tuple[ProducedMetadata, ...]
-) -> tuple[ProducedMetadata, ...]:
-    """Each instruction once by its anchors, in the order of its first source chunk."""
-    positions = {chunk.anchor: index for index, chunk in enumerate(chunks)}
-    ordered = sorted(
-        instructions,
-        key=lambda i: min((positions.get(a, len(positions)) for a in i.source_anchors), default=0),
-    )
-    seen: set[str] = set()
-    unique = []
-    for instruction in ordered:
-        anchors = set(instruction.source_anchors)
-        if anchors and anchors <= seen:
-            continue
-        seen |= anchors
-        unique.append(instruction)
-    return tuple(unique)
-
-
 def assemble_build_result(
     *,
     document_id: UUID,
@@ -421,26 +358,32 @@ def assemble_build_result(
     ``exam_wide`` holds the anchors of exam-wide text and of exam metadata; ``exam_metadata``
     is the metadata subset. No batch claims them. Exam-wide text is never placed: each chunk
     joins the document's instructions once, from its own source text, and is never an item
-    body, parent or review item. Metadata lines go nowhere. An unplaced instruction never
-    shows a printed total the points plan classifies as metadata (``printed.metadata``).
+    body, parent or review item. Metadata lines go nowhere. These anchors and every printed
+    total the points plan classifies as metadata (``printed.metadata``) are kept out of
+    placement: no instruction holds them and no heading of theirs opens, joins or ends a run.
     """
     if not chunks:
         empty = "Dokumentet saknar läsbart innehåll."
         chunks = (DocxChunk("empty", "paragraph", empty, empty),)
         review_reasons = {"empty": "Dokumentet saknar läsbart innehåll."}
-    # No batch claims an exam-wide chunk, so none is a review item or a reply's instruction.
-    exam_instructions = _exam_wide_instructions(chunks, exam_wide, exam_metadata, printed.metadata)
-    review_reasons = {a: r for a, r in review_reasons.items() if a not in exam_wide}
+    by_anchor = {chunk.anchor: chunk for chunk in chunks}
+    excluded = placement_exclusions(exam_wide, exam_metadata, printed.metadata)
+    exam_instructions = exam_wide_instructions(chunks, exam_wide, exam_metadata, printed.metadata)
+    review_reasons = {a: r for a, r in review_reasons.items() if a not in excluded}
     unclaimed, review_reasons = unclaimed_governing(chunks, review_reasons, governed)
     instructions = (*instructions, *unclaimed)
     released = release_governing_chunks(chunks, accepted, instructions, governed)
-    accepted, instructions = released.accepted, released.instructions
+    accepted = released.accepted
+    # No excluded chunk is a review item or an instruction, and placement sees only the
+    # excluded chunks an item holds as its own.
+    instructions = without_excluded(released.instructions, excluded, by_anchor)
+    placeable = placement_chunks(chunks, excluded, accepted)
     events = (*events, *released.events)
     title_anchors = frozenset(title.source_anchors) if title is not None else frozenset()
     own_anchors = frozenset(anchor for own in questions for anchor in own)
     part_lines = section_openers(printed.parts)
     placed = _ordered_items(
-        chunks,
+        placeable,
         accepted,
         review_reasons,
         instructions,
@@ -455,7 +398,7 @@ def assemble_build_result(
         accepted, instructions = returned.accepted, returned.instructions
         events = (*events, *returned.events)
         placed = _ordered_items(
-            chunks,
+            placeable,
             accepted,
             review_reasons,
             instructions,
@@ -464,29 +407,18 @@ def assemble_build_result(
             own_anchors,
             part_lines,
         )
-    by_anchor = {chunk.anchor: chunk for chunk in chunks}
     scored = apply_printed_points(placed.items, placed.parents, printed, by_anchor)
     items, parents = scored.items, scored.parents
     events = (*events, *scored.events)
-    global_metadata = _without_printed_metadata(
-        tuple(
-            instruction
-            for index, instruction in enumerate(instructions)
-            if index not in placed.landed
-        ),
-        printed.metadata,
+    document_instructions = global_instructions(
+        chunks,
+        tuple(m for index, m in enumerate(instructions) if index not in placed.landed),
+        exam_instructions,
         by_anchor,
-    )
-    if exam_instructions:
-        global_metadata = _in_source_order(chunks, (*global_metadata, *exam_instructions))
-    global_instructions = tuple(
-        paragraph
-        for instruction in global_metadata
-        for paragraph in instruction_paragraphs(instruction, by_anchor)
     )
     shared_bodies = (
         *(parent.instruction for parent in parents),
-        global_instructions,
+        document_instructions,
     )
     assets, assets_by_id = docx_build_assets.asset_manifest(
         items, chunks, shared_bodies=shared_bodies
@@ -504,7 +436,7 @@ def assemble_build_result(
         document_id=document_id,
         revision=1,
         title=document_title,
-        instructions=global_instructions,
+        instructions=document_instructions,
         items=items,
         parents=parents,
         assets=assets,

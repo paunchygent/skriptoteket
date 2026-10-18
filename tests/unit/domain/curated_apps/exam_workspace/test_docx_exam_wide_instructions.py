@@ -7,7 +7,8 @@ text, even when a reply lists it as one.
 """
 
 import json
-from typing import Any
+from collections.abc import Mapping
+from types import MappingProxyType
 from uuid import UUID
 
 import pytest
@@ -73,9 +74,23 @@ _METADATA = "body:0002"
 _FREE_TEXT = frozenset({NativeExamItemKind.FREE_TEXT})
 
 
-def _run(del_kind: str, *, exam_wide_total: bool = False) -> DocxConversionRun:
+_UNGOVERNED: Mapping[str, frozenset[str]] = MappingProxyType({})
+_DEL_GOVERNS_BOTH: Mapping[str, frozenset[str]] = MappingProxyType(
+    {"body:0004": frozenset({"body:0005", "body:0006"})}
+)
+
+
+def _run(
+    del_kind: str, *, exam_wide_total: bool = False, headings: frozenset[str] = frozenset()
+) -> DocxConversionRun:
+    """``headings`` holds the anchors other than the DEL line that are Word headings."""
     chunks = tuple(
-        DocxChunk(anchor, del_kind if anchor == "body:0004" else "paragraph", text, text)
+        DocxChunk(
+            anchor,
+            del_kind if anchor == "body:0004" else "heading" if anchor in headings else "paragraph",
+            text,
+            text,
+        )
         for anchor, text in _TEXTS.items()
     )
     job = DocxConversionJob(
@@ -155,9 +170,14 @@ def _instruction(*anchors: str) -> dict[str, JsonValue]:
 
 
 def _build(
-    del_kind: str, instructions: tuple[tuple[str, ...], ...], *, exam_wide_total: bool = False
+    del_kind: str,
+    instructions: tuple[tuple[str, ...], ...],
+    *,
+    exam_wide_total: bool = False,
+    headings: frozenset[str] = frozenset(),
+    governed: Mapping[str, frozenset[str]] = _UNGOVERNED,
 ) -> tuple[DocxBuildResult, DocxBuildState]:
-    run = _run(del_kind, exam_wide_total=exam_wide_total)
+    run = _run(del_kind, exam_wide_total=exam_wide_total, headings=headings)
     state = batch_state(run, _batch(run))
     admit_batch(
         {
@@ -170,6 +190,7 @@ def _build(
     )
     questions = tuple(f.question_anchors for f in run.families)
     result = state.result(
+        governed=governed,
         questions=questions,
         exam_wide=exam_wide_anchors(run.contexts, run.families),
         exam_metadata=exam_metadata_anchors(run.contexts),
@@ -259,20 +280,39 @@ def test_exam_wide_anchors_are_no_claims_of_the_batch_and_only_its_context():
             max_output_tokens=4_096,
         ),
     )
-    schema: dict[str, Any] = json.loads(json.dumps(request.output_spec.json_schema))
-    definitions = schema["$defs"]
+    schema = request.output_spec.json_schema
+    definitions = _object(schema["$defs"])
     enums = [
-        schema["properties"]["answer_key_anchors"]["items"]["enum"],
+        _path(schema, "properties", "answer_key_anchors", "items", "enum"),
         *(
-            definitions[name]["properties"]["source_anchors"]["items"]["enum"]
+            _path(definitions, name, "properties", "source_anchors", "items", "enum")
             for name in ("ProducedItem", "ProducedMetadata")
         ),
     ]
-    for anchors in enums:
+    for anchors in (_array(enum) for enum in enums):
         assert "body:0005" in anchors
-        assert not exam_wide & set(anchors)
-    payload: dict[str, Any] = json.loads(request.user_payload)
-    assert exam_wide <= {chunk["anchor"] for chunk in payload["context_chunks"]}
+        assert not exam_wide & {a for a in anchors if isinstance(a, str)}
+    payload = _object(json.loads(request.user_payload))
+    context = {_object(chunk)["anchor"] for chunk in _array(payload["context_chunks"])}
+    assert exam_wide <= context
+
+
+def _object(value: JsonValue) -> dict[str, JsonValue]:
+    assert isinstance(value, dict)
+    return value
+
+
+def _array(value: JsonValue) -> list[JsonValue]:
+    assert isinstance(value, list)
+    return value
+
+
+def _path(value: dict[str, JsonValue], *keys: str) -> JsonValue:
+    """The value at ``keys``, each step an object of the producer's JSON schema."""
+    found: JsonValue = value
+    for key in keys:
+        found = _object(found)[key]
+    return found
 
 
 def test_a_printed_exam_total_a_reply_lists_as_an_instruction_stays_header_metadata():
@@ -296,3 +336,44 @@ def test_a_printed_exam_total_the_grouping_calls_exam_wide_stays_header_metadata
     assert "body:0000" in printed_points_plan(state.chunks, state.questions).metadata
     assert _TOTAL not in _shown(result)
     assert _lines(result.document.instructions) == [_BOX, _CHECK]
+
+
+_EXAM_WIDE_OWNERS = {"box": "body:0001", "name": _METADATA}
+
+
+@pytest.mark.parametrize("governed", [_UNGOVERNED, _DEL_GOVERNS_BOTH], ids=["run", "governed"])
+@pytest.mark.parametrize("del_kind", ["paragraph", "heading"])
+@pytest.mark.parametrize("owner_kind", ["paragraph", "heading"])
+@pytest.mark.parametrize("owner", sorted(_EXAM_WIDE_OWNERS))
+def test_an_exam_wide_or_metadata_heading_never_opens_or_ends_a_section(
+    owner, owner_kind, del_kind, governed
+):
+    headings = frozenset({_EXAM_WIDE_OWNERS[owner]}) if owner_kind == "heading" else frozenset()
+    result, _ = _build(del_kind, _MIXED_BOX_NAME_DEL, headings=headings, governed=governed)
+    document = result.document
+    shown = _shown(result)
+
+    assert _lines(document.instructions) == [_BOX, _CHECK]
+    assert shown.count(_BOX) == 1
+    assert not [line for line in shown if "Namn" in line]
+    assert [_lines(parent.instruction) for parent in document.parents] == [[_DEL]]
+    assert [len(parent.item_ids) for parent in document.parents] == [2]
+
+
+@pytest.mark.parametrize("governed", [_UNGOVERNED, _DEL_GOVERNS_BOTH], ids=["run", "governed"])
+@pytest.mark.parametrize("del_kind", ["paragraph", "heading"])
+def test_a_printed_exam_total_listed_with_the_del_line_is_no_exam_text(del_kind, governed):
+    mixed, state = _build(del_kind, (("body:0000", "body:0004"),), governed=governed)
+    alone, _ = _build(del_kind, (("body:0004",),), governed=governed)
+    shown = _shown(mixed)
+
+    assert "body:0000" in printed_points_plan(state.chunks, state.questions).metadata
+    assert not [line for line in shown if "Totalt" in line]
+    assert _lines(mixed.document.instructions) == [_BOX, _CHECK]
+    assert shown.count(_DEL) == 1
+    assert [_lines(parent.instruction) for parent in mixed.document.parents] == [[_DEL]]
+    assert mixed.document.header == alone.document.header
+    assert [item.points for item in mixed.document.items] == [35, 35]
+    assert [item.points for item in mixed.document.items] == [
+        item.points for item in alone.document.items
+    ]
