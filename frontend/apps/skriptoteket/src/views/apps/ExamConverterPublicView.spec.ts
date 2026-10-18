@@ -5,10 +5,11 @@
  * public runtime API without involving auth stores, CSRF, or protected routes.
  */
 
-import { mount, type VueWrapper } from "@vue/test-utils";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { flushPromises, mount, type VueWrapper } from "@vue/test-utils";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import ExamConverterPublicView from "./ExamConverterPublicView.vue";
+import { STATUS_POLL_INTERVAL_MS } from "./exam-converter-public/usePublicExamConverterRuntime";
 
 const clientMocks = vi.hoisted(() => ({
   isApiError: vi.fn(),
@@ -41,6 +42,79 @@ async function chooseFile(
   await input.trigger("change");
 }
 
+const JOB_URL = "/api/v1/public/apps/documents.conversion_hub/exam-converter/jobs/public-job-1";
+
+const QUEUED_SUBMIT = {
+  public_job_id: "public-job-1",
+  status: "queued",
+  requested_targets: ["examnet_pdf", "qti_package"],
+  expires_at: "2026-10-18T13:00:00Z",
+  poll_url: JOB_URL,
+  result_url: `${JOB_URL}/result`,
+  artifact_manifest_url: `${JOB_URL}/artifacts`,
+};
+
+function statusResponse(status: string, error: string | null = null) {
+  return {
+    public_job_id: "public-job-1",
+    status,
+    expires_at: "2026-10-18T13:00:00Z",
+    error,
+  };
+}
+
+function unavailableTarget(artifactKey: string, filename: string) {
+  return {
+    artifact_key: artifactKey,
+    filename,
+    content_type: "application/octet-stream",
+    availability: "unavailable",
+    size_bytes: null,
+    sha256: null,
+    download_url: null,
+    unavailable_code: "manual_answer_key_required",
+  };
+}
+
+// Shape observed from the guest worker path for 1776888013-ak7-lag-och-ratt.dxe.
+const NEEDS_REVIEW_MANIFEST = {
+  public_job_id: "public-job-1",
+  status: "succeeded",
+  bundle_status: "needs_review",
+  artifacts: [
+    unavailableTarget("qti_package", "examnet-qti.zip"),
+    unavailableTarget("examnet_pdf", "examnet-import.pdf"),
+    unavailableTarget("qti_validation_report", "qti-validation-report.json"),
+    {
+      artifact_key: "target_readiness_report",
+      filename: "target-readiness-report.json",
+      content_type: "application/json",
+      availability: "available",
+      size_bytes: 10,
+      sha256: "sha256:readiness",
+      download_url: `${JOB_URL}/artifacts/target_readiness_report/download`,
+      unavailable_code: null,
+    },
+  ],
+  manual_follow_up: { required: true, artifact_key: "target_readiness_report", count: 12 },
+  warnings: null,
+};
+
+async function submitDxe(wrapper: VueWrapper): Promise<void> {
+  await chooseFile(
+    'input[accept=".dxe"]',
+    new File(["{}"], "exam.dxe", { type: "application/octet-stream" }),
+    wrapper,
+  );
+  await wrapper.find("form").trigger("submit");
+  await flushPromises();
+}
+
+async function advancePoll(): Promise<void> {
+  await vi.advanceTimersByTimeAsync(STATUS_POLL_INTERVAL_MS);
+  await flushPromises();
+}
+
 describe("ExamConverterPublicView", () => {
   beforeEach(() => {
     clientMocks.isApiError.mockReset();
@@ -56,6 +130,10 @@ describe("ExamConverterPublicView", () => {
       configurable: true,
       value: vi.fn(),
     });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it("uses the public Provhantering lane label instead of the compatibility-shell name", () => {
@@ -86,16 +164,20 @@ describe("ExamConverterPublicView", () => {
         error: null,
       })
       .mockResolvedValueOnce({
+        public_job_id: "public-job-1",
         status: "succeeded",
+        bundle_status: "complete",
         artifacts: [
           {
             artifact_key: "examnet_pdf",
             filename: "examnet-import.pdf",
             content_type: "application/pdf",
             availability: "available",
+            size_bytes: 3,
+            sha256: "sha256:pdf",
             download_url:
               "/api/v1/public/apps/documents.conversion_hub/exam-converter/jobs/public-job-1/artifacts/examnet_pdf/download",
-            blocker_code: null,
+            unavailable_code: null,
           },
         ],
         manual_follow_up: null,
@@ -144,16 +226,20 @@ describe("ExamConverterPublicView", () => {
         error: null,
       })
       .mockResolvedValueOnce({
+        public_job_id: "public-job-1",
         status: "succeeded",
+        bundle_status: "complete",
         artifacts: [
           {
             artifact_key: "examnet_pdf",
             filename: "examnet-import.pdf",
             content_type: "application/pdf",
             availability: "available",
+            size_bytes: 3,
+            sha256: "sha256:pdf",
             download_url:
               "/api/v1/public/apps/documents.conversion_hub/exam-converter/jobs/public-job-1/artifacts/examnet_pdf/download",
-            blocker_code: null,
+            unavailable_code: null,
           },
         ],
         manual_follow_up: null,
@@ -178,5 +264,95 @@ describe("ExamConverterPublicView", () => {
     expect(clientMocks.publicApiFetchBlobResponse).toHaveBeenCalledWith(
       "/api/v1/public/apps/documents.conversion_hub/exam-converter/jobs/public-job-1/artifacts/examnet_pdf/download",
     );
+  });
+
+  it("polls a queued job until it succeeds and then stops polling", async () => {
+    vi.useFakeTimers();
+    clientMocks.publicApiPost.mockResolvedValue(QUEUED_SUBMIT);
+    clientMocks.publicApiGet
+      .mockResolvedValueOnce(statusResponse("queued"))
+      .mockResolvedValueOnce(statusResponse("processing"))
+      .mockResolvedValueOnce(statusResponse("succeeded"))
+      .mockResolvedValueOnce(NEEDS_REVIEW_MANIFEST);
+
+    const wrapper = mount(ExamConverterPublicView);
+    await submitDxe(wrapper);
+
+    expect(clientMocks.publicApiGet).toHaveBeenCalledTimes(1);
+    expect(wrapper.text()).toContain("Väntar på färdiga filer.");
+
+    await advancePoll();
+    expect(clientMocks.publicApiGet).toHaveBeenCalledTimes(2);
+
+    await advancePoll();
+    expect(clientMocks.publicApiGet).toHaveBeenCalledTimes(4);
+    expect(clientMocks.publicApiGet).toHaveBeenLastCalledWith(`${JOB_URL}/artifacts`);
+    expect(wrapper.text()).not.toContain("Väntar på färdiga filer.");
+
+    await advancePoll();
+    await advancePoll();
+    expect(clientMocks.publicApiGet).toHaveBeenCalledTimes(4);
+  });
+
+  it("shows a final needs-answer-key state instead of waiting for files", async () => {
+    vi.useFakeTimers();
+    clientMocks.publicApiPost.mockResolvedValue(QUEUED_SUBMIT);
+    clientMocks.publicApiGet
+      .mockResolvedValueOnce(statusResponse("succeeded"))
+      .mockResolvedValueOnce(NEEDS_REVIEW_MANIFEST);
+
+    const wrapper = mount(ExamConverterPublicView);
+    await submitDxe(wrapper);
+
+    const notice = wrapper.get(".exam-converter__needs-answer-key");
+    expect(notice.text()).toContain("Exam.net-PDF och QTI-paket kunde inte skapas.");
+    expect(notice.text()).toContain("saknar facit");
+    expect(notice.text()).toContain("resultat-PDF:en från DigiExam");
+    expect(wrapper.text()).not.toContain("Väntar på färdiga filer.");
+    expect(wrapper.get("header [data-state]").text()).toBe("Facit saknas");
+    expect(wrapper.get("header [data-state]").classes()).not.toContain("text-success");
+
+    const rows = wrapper.findAll("li");
+    const pdfRow = rows.find((row) => row.text().includes("examnet-import.pdf"));
+    expect(pdfRow?.text()).toContain("Kunde inte skapas");
+    expect(pdfRow?.text()).toContain("Facit saknas i provfilen.");
+    expect(pdfRow?.find(".exam-converter__download").exists()).toBe(false);
+    expect(wrapper.text()).not.toContain("Status okänd");
+
+    await advancePoll();
+    expect(clientMocks.publicApiGet).toHaveBeenCalledTimes(2);
+  });
+
+  it("stops polling and stops waiting when the job fails", async () => {
+    vi.useFakeTimers();
+    clientMocks.publicApiPost.mockResolvedValue(QUEUED_SUBMIT);
+    clientMocks.publicApiGet
+      .mockResolvedValueOnce(statusResponse("processing"))
+      .mockResolvedValueOnce(
+        statusResponse("failed", "Konverteringen kunde inte genomföras. Försök igen."),
+      );
+
+    const wrapper = mount(ExamConverterPublicView);
+    await submitDxe(wrapper);
+    await advancePoll();
+
+    expect(wrapper.text()).toContain("Konverteringen stannade.");
+    expect(wrapper.text()).not.toContain("Väntar på färdiga filer.");
+
+    await advancePoll();
+    expect(clientMocks.publicApiGet).toHaveBeenCalledTimes(2);
+  });
+
+  it("stops polling when the view unmounts", async () => {
+    vi.useFakeTimers();
+    clientMocks.publicApiPost.mockResolvedValue(QUEUED_SUBMIT);
+    clientMocks.publicApiGet.mockResolvedValue(statusResponse("processing"));
+
+    const wrapper = mount(ExamConverterPublicView);
+    await submitDxe(wrapper);
+    wrapper.unmount();
+    await advancePoll();
+
+    expect(clientMocks.publicApiGet).toHaveBeenCalledTimes(1);
   });
 });

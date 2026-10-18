@@ -4,7 +4,8 @@
  * Domain purpose:
  *   Orchestrate the anonymous upload, polling, manifest, and artifact download
  *   state for the public Exam Converter without coupling presentation
- *   components to backend transport details.
+ *   components to backend transport details. After a submit or refresh it
+ *   polls the job status until the job reaches a final status.
  *
  * Relationships:
  *   - Uses `examConverterPublicApi` for all public backend calls.
@@ -12,7 +13,7 @@
  *     `PublicExamConverterJobPanel` with focused view state and actions.
  */
 
-import { computed, ref } from "vue";
+import { computed, getCurrentScope, onScopeDispose, ref } from "vue";
 
 import { isApiError } from "../../../api/client";
 import { triggerBrowserDownload } from "../../../utils/browserDownload";
@@ -30,6 +31,15 @@ import {
 } from "./examConverterPublicApi";
 
 const DEFAULT_TARGETS: ExamConverterTarget[] = ["examnet_pdf", "qti_package"];
+
+export const STATUS_POLL_INTERVAL_MS = 2000;
+
+const TERMINAL_STATUSES: ReadonlySet<PublicJobStatus> = new Set([
+  "succeeded",
+  "failed",
+  "canceled",
+  "expired",
+]);
 
 const STATUS_LABELS: Record<PublicJobStatus, string> = {
   canceled: "Avbruten",
@@ -52,6 +62,11 @@ export function usePublicExamConverterRuntime() {
   const isPolling = ref(false);
   const downloadingArtifactKey = ref<string | null>(null);
   const errorMessage = ref<string | null>(null);
+  let pollTimer: ReturnType<typeof setTimeout> | null = null;
+
+  if (getCurrentScope()) {
+    onScopeDispose(stopPolling);
+  }
 
   const sourceDxeFileName = computed(() => sourceDxeFile.value?.name ?? null);
   const gradedResultPdfFileName = computed(() => gradedResultPdfFile.value?.name ?? null);
@@ -64,7 +79,12 @@ export function usePublicExamConverterRuntime() {
     );
   });
 
+  const needsAnswerKey = computed(() => manifest.value?.bundle_status === "needs_review");
+
   const statusLabel = computed(() => {
+    if (needsAnswerKey.value) {
+      return "Facit saknas";
+    }
     const value = status.value?.status ?? currentJob.value?.status;
     return value ? STATUS_LABELS[value] : "Redo";
   });
@@ -101,6 +121,7 @@ export function usePublicExamConverterRuntime() {
       return;
     }
 
+    stopPolling();
     isSubmitting.value = true;
     errorMessage.value = null;
     manifest.value = null;
@@ -132,6 +153,7 @@ export function usePublicExamConverterRuntime() {
       return;
     }
 
+    stopPolling();
     isPolling.value = true;
     errorMessage.value = null;
 
@@ -143,10 +165,23 @@ export function usePublicExamConverterRuntime() {
           currentJob.value.artifact_manifest_url,
         );
       }
+      if (!TERMINAL_STATUSES.has(nextStatus.status)) {
+        pollTimer = setTimeout(() => {
+          pollTimer = null;
+          void refreshJob();
+        }, STATUS_POLL_INTERVAL_MS);
+      }
     } catch (error: unknown) {
       errorMessage.value = toUserFacingError(error);
     } finally {
       isPolling.value = false;
+    }
+  }
+
+  function stopPolling(): void {
+    if (pollTimer !== null) {
+      clearTimeout(pollTimer);
+      pollTimer = null;
     }
   }
 
@@ -181,6 +216,7 @@ export function usePublicExamConverterRuntime() {
     isPolling,
     isSubmitting,
     manifest,
+    needsAnswerKey,
     selectedTargets,
     setGradedResultPdfFile,
     setSourceDxeFile,

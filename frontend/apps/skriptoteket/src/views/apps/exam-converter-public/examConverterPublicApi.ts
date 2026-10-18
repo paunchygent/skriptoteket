@@ -52,12 +52,18 @@ export type ArtifactEntry = {
   filename: string | null;
   content_type: string | null;
   availability: string;
+  size_bytes: number | null;
+  sha256: string | null;
   download_url: string | null;
-  blocker_code: string | null;
+  unavailable_code: string | null;
 };
 
+export type BundleStatus = "complete" | "needs_review";
+
 export type ArtifactManifest = {
+  public_job_id: string;
   status: PublicJobStatus;
+  bundle_status: BundleStatus | null;
   artifacts: ArtifactEntry[];
   manual_follow_up: Record<string, unknown> | null;
   warnings: Record<string, unknown> | null;
