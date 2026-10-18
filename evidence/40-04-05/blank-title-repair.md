@@ -54,4 +54,4 @@ validation, so they never reached the request schema.
 The drawer shows its own blank-title cue (`!document.title.trim()`) next to the server verdict; it
 gates nothing, but it is a second client-side reading of "blank".
 
-Commit: see `git log -1 --format=%H -- evidence/40-04-05/blank-title-repair.md`.
+Commit: c7226069b8d6ac326e9927f6b868b2ffa5645ae6
