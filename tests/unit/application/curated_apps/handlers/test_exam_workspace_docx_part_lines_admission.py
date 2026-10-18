@@ -203,6 +203,7 @@ def test_an_entry_holding_only_a_part_line_is_no_item():
     assert noun.source_anchor == "body:0001"
     assert (noun.points, verb.points) == (4, 2)
     assert not [t for t in _texts(verb) if "Del 2" in t]
+    assert _texts(verb)[0] == "Förklara vad som kännetecknar ett verb."
     assert [(p.item_ids, p.printed_total) for p in document.parents] == [((verb.item_id,), 2)]
     assert all(i.review.parse_origin is NativeParseOrigin.LLM_PARSED for i in document.items)
     assert _moved(state) == [("body:0002",)]
@@ -227,7 +228,9 @@ def test_a_one_question_part_line_another_entry_of_its_part_holds_is_recorded_on
 
     noun, verb = sorted(document.items, key=lambda item: item.sequence)
     assert not [t for t in _texts(noun) if "Del 2" in t]
+    assert _texts(noun)[0] == "Förklara vad som kännetecknar ett substantiv."
     assert verb.source_anchor == "body:0003"
     assert not [t for t in _texts(verb) if "Del 2" in t]
+    assert _texts(verb)[0] == "Förklara vad som kännetecknar ett verb."
     assert [(p.item_ids, p.printed_total) for p in document.parents] == [((verb.item_id,), 2)]
     assert _moved(state) == [("body:0002",)]

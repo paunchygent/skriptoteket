@@ -3,6 +3,7 @@
 import copy
 from collections.abc import Iterable, Mapping
 from dataclasses import InitVar, dataclass, field
+from functools import cached_property
 from uuid import UUID
 
 import structlog
@@ -115,6 +116,16 @@ class DocxBuildState:
             else infer_exam_document_language("\n".join(chunk.text for chunk in self.chunks))
         )
 
+    @cached_property
+    def plan(self) -> PrintedPoints:
+        """The printed-points plan of this batch's chunks and questions, built once.
+
+        The state's chunks and questions are fixed for its lifetime and admission reads the
+        plan for every entry it admits, so the state owns it: no entry rebuilds it, and a
+        snapshot shares it.
+        """
+        return printed_points_plan(self.chunks, self.questions)
+
     @property
     def owned(self) -> frozenset[str]:
         return (
@@ -217,7 +228,7 @@ class DocxBuildState:
         path) stay section text, each in its source wording.
         Every other pending chunk becomes a review item with ``reason``.
         """
-        openers = part_openers(printed_points_plan(self.chunks, self.questions).parts)
+        openers = part_openers(self.plan.parts)
         for anchors in questions:
             own = tuple(c.anchor for c in self.pending if c.anchor in anchors)
             if own:

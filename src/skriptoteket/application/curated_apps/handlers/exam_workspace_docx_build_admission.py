@@ -85,8 +85,8 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions impor
     wording_left_out,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import (
+    heading_openers,
     parent_openers,
-    printed_points_plan,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     QUESTION_HEADING_LABEL,
@@ -376,19 +376,15 @@ def _admit_item(
 def _part_lines_heading(anchors: tuple[str, ...], state: DocxBuildState) -> set[str]:
     """The part lines that head the one question these anchors hold.
 
-    A part line no question owns that opens no parent (``parent_openers``) heads the one
+    A part line no question owns that opens no parent (``heading_openers``) heads the one
     question of its part. Such a line is a heading of that question, which the join shows
     at its source place (CH4FRAG); the plan decides it, never the line's wording.
     """
     held = {state.question_by_anchor[a] for a in anchors if a in state.question_by_anchor}
-    plan = printed_points_plan(state.chunks, state.questions)
-    parents = parent_openers(plan.parts)
     return {
         part.opener
-        for part in plan.parts
-        if part.opener not in parents
-        and part.opener not in state.question_by_anchor
-        and len(part.questions) == 1
+        for part in heading_openers(state.plan.parts)
+        if part.opener not in state.question_by_anchor
         and state.questions[part.questions[0]] in held
     }
 
@@ -400,16 +396,15 @@ def _without_part_lines(
 
     This is the one owner of which part lines leave an entry. A part line no question owns
     (``PrintedPart.opener``) leaves every entry when it opens a parent (``parent_openers``),
-    and every entry whose questions lie outside its part when it heads its one question. An
-    entry that
-    holds no question anchor is no item: it leaves the reply, its part lines among the moved
-    ones, and its other chunks stay unlisted for the rules of chunks no entry holds.
+    and every entry whose questions lie outside its part when it heads its one question
+    (``heading_openers``). An entry that holds no question anchor is no item: it leaves the
+    reply, its part lines among the moved ones, and its other chunks stay unlisted for the
+    rules of chunks no entry holds.
     """
-    plan = printed_points_plan(state.chunks, state.questions)
-    parents = parent_openers(plan.parts)
-    parts = {
-        part.opener: {state.questions[n] for n in part.questions}
-        for part in plan.parts
+    parents = {a for a in parent_openers(state.plan.parts) if a not in state.question_by_anchor}
+    headed = {
+        part.opener: state.questions[part.questions[0]]
+        for part in heading_openers(state.plan.parts)
         if part.opener not in state.question_by_anchor
     }
     kept: list[JsonValue] = []
@@ -417,7 +412,7 @@ def _without_part_lines(
     for raw in items:
         listed = raw_anchors(raw)
         held = {state.question_by_anchor[a] for a in listed if a in state.question_by_anchor}
-        lines = [a for a in listed if a in parts and (a in parents or not held & parts[a])]
+        lines = [a for a in listed if a in parents or (a in headed and headed[a] not in held)]
         moved.extend(lines)
         if not held:
             continue

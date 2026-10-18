@@ -381,6 +381,8 @@ def test_a_part_labelled_one_question_heading_misplaced_by_the_grouping_ignores_
     assert verb.review.parse_origin is NativeParseOrigin.LLM_PARSED
     assert not [text for text in _texts(noun) if "Del 2" in text]
     assert not [text for text in _texts(verb) if "Del 2" in text]
+    assert _texts(noun)[0] == "Förklara vad som kännetecknar ett substantiv."
+    assert _texts(verb)[0] == "Förklara vad som kännetecknar ett verb."
     assert [(p.item_ids, _paragraph_texts(p.instruction)) for p in document.parents] == [
         ((verb.item_id,), ["Del 2: Verb"])
     ]
@@ -412,6 +414,8 @@ def test_a_part_heading_the_reply_lists_with_another_question_opens_its_own_ques
     assert noun.source_anchor == "body:0001"
     assert not [text for text in _texts(noun) if "Del 2" in text]
     assert not [text for text in _texts(verb) if "Del 2" in text]
+    assert _texts(noun)[0] == "Förklara vad som kännetecknar ett substantiv."
+    assert _texts(verb)[0] == "Förklara vad som kännetecknar ett verb."
     assert [(p.item_ids, p.printed_total) for p in document.parents] == [((verb.item_id,), 2)]
     assert noun.review.parse_origin is NativeParseOrigin.LLM_PARSED
     assert verb.review.parse_origin is NativeParseOrigin.LLM_PARSED
@@ -439,6 +443,7 @@ def test_a_one_question_part_total_reaches_its_item_and_its_one_child_parent():
 
     assert opened.source_anchor == "body:0003"
     assert not [text for text in _texts(opened) if "Del 2" in text]
+    assert _texts(opened)[0] == "Förklara vad som kännetecknar ett verb."
     assert opened.points == 2
     assert [(p.item_ids, p.printed_total) for p in state.result().document.parents] == [
         ((opened.item_id,), 2)

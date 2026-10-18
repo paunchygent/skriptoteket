@@ -316,6 +316,17 @@ def parent_openers(parts: Iterable[PrintedPart]) -> frozenset[str]:
     )
 
 
+def heading_openers(parts: Iterable[PrintedPart]) -> tuple[PrintedPart, ...]:
+    """The parts whose line heads their one question: every part that opens no parent.
+
+    A part over two or more questions opens a parent (``parent_openers``), so each part
+    returned here holds exactly one question and its line is that question's heading.
+    """
+    listed = tuple(parts)
+    parents = parent_openers(listed)
+    return tuple(part for part in listed if part.opener not in parents)
+
+
 def _section_runs(parts: Iterable[PrintedPart]) -> tuple[frozenset[str], frozenset[str]]:
     """The part lines that open a section, and those nested in a part that names its part.
 
