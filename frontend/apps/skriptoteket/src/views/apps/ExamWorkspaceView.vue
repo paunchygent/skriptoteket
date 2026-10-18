@@ -376,6 +376,7 @@ onMounted(() => {
         :selected-parent="selectedParent"
         :selected-parent-entry="selectedParentEntry"
         :parent-children="parentChildren"
+        :entries="entries"
         :selected-item="selectedItem"
         :item-entry="itemEntry"
         :item-parent="itemParent"

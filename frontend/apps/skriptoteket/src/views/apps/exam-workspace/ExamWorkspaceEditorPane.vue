@@ -16,9 +16,7 @@ import { computed } from "vue";
 
 import type { NativeExamDocument } from "../../../api/examWorkspace";
 import type { TeacherItemKind } from "./examWorkspaceItemEdits";
-import { examWorkspaceItemReadiness } from "./examWorkspaceItemReadiness";
-import { examWorkspaceListEntries } from "./examWorkspaceListEntries";
-import type { ExamWorkspaceItemEntry, ExamWorkspaceParentEntry } from "./examWorkspaceListEntries";
+import type { ExamWorkspaceItemEntry, ExamWorkspaceListEntry, ExamWorkspaceParentEntry } from "./examWorkspaceListEntries";
 import ExamWorkspaceExamInstructionEditor from "./ExamWorkspaceExamInstructionEditor.vue";
 import ExamWorkspaceInstructionEditor from "./ExamWorkspaceInstructionEditor.vue";
 import ExamWorkspaceQuestionEditor from "./ExamWorkspaceQuestionEditor.vue";
@@ -35,6 +33,7 @@ const props = defineProps<{
   selectedParent: ExamWorkspaceParent | null;
   selectedParentEntry: ExamWorkspaceParentEntry | null;
   parentChildren: ExamWorkspaceItemEntry[];
+  entries: ExamWorkspaceListEntry[];
   selectedItem: ExamWorkspaceItem | null;
   itemEntry: ExamWorkspaceItemEntry | null;
   itemParent: { id: string; label: string; text: string } | null;
@@ -68,18 +67,11 @@ function moveTargetLabel(entry: ExamWorkspaceParentEntry): string {
  * The places Flytta till offers, in list order: every part with its list label
  * and instruction excerpt (G3).
  */
-const moveTargets = computed<{ id: string; label: string }[]>(() => {
-  const document = props.workspaceDocument;
-  if (!document) {
-    return [];
-  }
-  const readiness = Object.fromEntries(
-    document.items.map((item) => [item.item_id, examWorkspaceItemReadiness(item)]),
-  );
-  return examWorkspaceListEntries(document, readiness, props.editing.convertingItemIds.value)
+const moveTargets = computed<{ id: string; label: string }[]>(() =>
+  props.entries
     .filter((entry): entry is ExamWorkspaceParentEntry => entry.kind === "parent")
-    .map((entry) => ({ id: entry.id, label: moveTargetLabel(entry) }));
-});
+    .map((entry) => ({ id: entry.id, label: moveTargetLabel(entry) })),
+);
 
 /** The part the selected question sits in; null when it is standalone. */
 const currentParentId = computed(() => props.itemEntry?.parentId ?? null);
