@@ -151,17 +151,18 @@ Evidence: retained root `01a14f3e-12df-7020-8c18-18ad39a131cf` (`evidence/probes
   - F4 (medium): four files are over 500 lines.
     F1 and F2 go back to reviewer 898d311f; F3 and F4 are admitted on focused proof. Each
     finding gets its own commit and a fresh junior.
-- In flight at the break: the F1 junior `cf28dc3e-1c3d-4818-b734-a8f8ca0c5355`
-  (OpenCode, scope `review-f1`, order `evidence/orders/junior-f1.md`, result
-  `evidence/results/cf28dc3e-1c3d-4818-b734-a8f8ca0c5355.json`) was still running. Its
-  partial edit to `source_formatting.py` is committed as unreviewed WIP. On resume, read
-  its result, finish F1 against the order, and rerun its focused tests.
+- F1 is done (code in `a2ec34d0`, tests in the following commit), by junior
+  `cf28dc3e-1c3d-4818-b734-a8f8ca0c5355`, which has finished. The rebuild picks whole source
+  paragraphs and removes the excluded intervals inside them. Proof: 7 new adversarial tests
+  (points in the middle of a stem, in a table cell, right after the label, and marks around
+  the interval); focused files 87 passed; lint clean. The ten replays are unchanged from
+  `6249a2e8`, so q8 is still the only difference. F1 is not yet re-reviewed: the user said
+  no reviews at this break. No child runs.
 - Next units, in order:
-  1. F1 (finish).
-  2. F2: order ready at `evidence/orders/junior-f2.md`.
-  3. F3 (`evidence/orders/junior-f3.md`) and F4 part 1, the admission and test-file split
+  1. F2: order ready at `evidence/orders/junior-f2.md`.
+  2. F3 (`evidence/orders/junior-f3.md`) and F4 part 1, the admission and test-file split
      (`evidence/orders/junior-f4a.md`). These two can run in parallel.
-  4. F4 part 2: split `source_formatting.py`, with no order written yet.
+  3. F4 part 2: split `source_formatting.py`, with no order written yet.
      Then rerun the ten replays (q8 must stay the only difference) and the domain suite, and
      send F1-F2 to reviewer 898d311f.
 - Gates: merge `origin/main` only when the parent says TASK-SKRIPT-39-04-16 has landed,

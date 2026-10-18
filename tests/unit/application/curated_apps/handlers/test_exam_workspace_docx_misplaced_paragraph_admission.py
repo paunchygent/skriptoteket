@@ -12,7 +12,10 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_ad
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_state import (
     DocxBuildState,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
+from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
+    DocxChunk,
+    DocxSourceParagraph,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeItemReviewState,
 )
@@ -22,17 +25,28 @@ pytestmark = pytest.mark.unit
 
 _Q1 = "1. Which term names the pattern?"
 _Q2 = "2. Read the stanza: We played all day."
+_FOREIGN = "1. Explain the water cycle."
 
 
 def _chunk(anchor: str, text: str) -> DocxChunk:
     return DocxChunk(anchor, "paragraph", text, text)
 
 
+def _table_chunk(anchor: str, *cells: str) -> DocxChunk:
+    text = " | ".join(cells)
+    paragraphs = []
+    offset = 0
+    for cell in cells:
+        paragraphs.append(DocxSourceParagraph(offset, cell))
+        offset += len(cell) + len(" | ")
+    return DocxChunk(anchor, "table", text, text, paragraphs=tuple(paragraphs))
+
+
 def _text(text: str) -> dict[str, JsonValue]:
     return {"kind": "text", "text": text, "accepted_values": []}
 
 
-def _item(anchors: tuple[str, ...], label: str, body_text: str) -> dict[str, JsonValue]:
+def _item(anchors: tuple[str, ...], label: str, *body_texts: str) -> dict[str, JsonValue]:
     return {
         "source_anchors": list(anchors),
         "outcome": "converted",
@@ -42,7 +56,7 @@ def _item(anchors: tuple[str, ...], label: str, body_text: str) -> dict[str, Jso
         "key_source": None,
         "facit_text": None,
         "printed_label": label,
-        "body": [{"segments": [_text(body_text)]}],
+        "body": [{"segments": [_text(text)]} for text in body_texts],
         "points": 2,
         "choices": [],
         "match_left": [],
@@ -76,5 +90,100 @@ def test_an_item_repeating_another_questions_stem_shows_its_own_stem_without_a_l
     first, second = (aligned.item for aligned, _ in state.accepted)
     assert body_plain_text(first.body) == _Q1[3:]
     assert body_plain_text(second.body) == _Q2[3:]
+    assert second.review.state is NativeItemReviewState.REVIEW_COMPLETE
+    assert [event for event in state.events if event.code == "own_chunks_left_out"] == []
+
+
+def test_points_in_the_middle_of_a_stem_leaves_the_whole_stem_rebuilt():
+    chunks = (
+        _chunk("body:0001", _FOREIGN),
+        _chunk("body:0002", "2. Describe (2 p) the rock cycle."),
+        _chunk("body:0003", "Use a diagram."),
+    )
+    state = DocxBuildState(
+        job_id=uuid4(),
+        document_id=uuid4(),
+        filename="prov.docx",
+        source_sha256="0" * 64,
+        chunks=chunks,
+        questions=(("body:0001",), ("body:0002", "body:0003")),
+    )
+
+    admit_batch(
+        {
+            "items": [
+                _item(("body:0001",), "1", _FOREIGN[3:]),
+                _item(("body:0002", "body:0003"), "2", _FOREIGN[3:], "Use a diagram."),
+            ]
+        },
+        state,
+    )
+
+    first, second = (aligned.item for aligned, _ in state.accepted)
+    assert body_plain_text(first.body) == _FOREIGN[3:]
+    assert body_plain_text(second.body) == "Describe the rock cycle.\nUse a diagram."
+    assert second.review.state is NativeItemReviewState.REVIEW_COMPLETE
+    assert [event for event in state.events if event.code == "own_chunks_left_out"] == []
+
+
+def test_points_in_a_table_cell_leaves_the_whole_cell_rebuilt():
+    chunks = (
+        _chunk("body:0001", _FOREIGN),
+        _table_chunk("body:0002", "2. Describe (2 p) the rock cycle.", "Use a diagram."),
+    )
+    state = DocxBuildState(
+        job_id=uuid4(),
+        document_id=uuid4(),
+        filename="prov.docx",
+        source_sha256="0" * 64,
+        chunks=chunks,
+        questions=(("body:0001",), ("body:0002",)),
+    )
+
+    admit_batch(
+        {
+            "items": [
+                _item(("body:0001",), "1", _FOREIGN[3:]),
+                _item(("body:0002",), "2", _FOREIGN[3:], "Use a diagram."),
+            ]
+        },
+        state,
+    )
+
+    first, second = (aligned.item for aligned, _ in state.accepted)
+    assert body_plain_text(first.body) == _FOREIGN[3:]
+    assert body_plain_text(second.body) == "Describe the rock cycle.\nUse a diagram."
+    assert second.review.state is NativeItemReviewState.REVIEW_COMPLETE
+    assert [event for event in state.events if event.code == "own_chunks_left_out"] == []
+
+
+def test_points_right_after_the_label_leaves_the_whole_stem_rebuilt():
+    chunks = (
+        _chunk("body:0001", _FOREIGN),
+        _chunk("body:0002", "2. (2 p) Describe the rock cycle."),
+        _chunk("body:0003", "Use a diagram."),
+    )
+    state = DocxBuildState(
+        job_id=uuid4(),
+        document_id=uuid4(),
+        filename="prov.docx",
+        source_sha256="0" * 64,
+        chunks=chunks,
+        questions=(("body:0001",), ("body:0002", "body:0003")),
+    )
+
+    admit_batch(
+        {
+            "items": [
+                _item(("body:0001",), "1", _FOREIGN[3:]),
+                _item(("body:0002", "body:0003"), "2", _FOREIGN[3:], "Use a diagram."),
+            ]
+        },
+        state,
+    )
+
+    first, second = (aligned.item for aligned, _ in state.accepted)
+    assert body_plain_text(first.body) == _FOREIGN[3:]
+    assert body_plain_text(second.body) == "Describe the rock cycle.\nUse a diagram."
     assert second.review.state is NativeItemReviewState.REVIEW_COMPLETE
     assert [event for event in state.events if event.code == "own_chunks_left_out"] == []

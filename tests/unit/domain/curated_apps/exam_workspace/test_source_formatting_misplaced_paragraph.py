@@ -169,3 +169,98 @@ def test_a_reply_inside_one_foreign_chunk_is_still_misplaced():
 
     assert body_plain_text(body) == "Egen fråga."
     assert source.path == "rebuilt"
+
+
+def test_a_rebuilt_paragraph_shows_the_whole_stem_around_an_excluded_points_interval():
+    own = "2. Describe (2 p) the rock cycle."
+    points = own.index("(2 p)")
+    source = SourceFormatting(
+        (_chunk("own", (own, ())), _chunk("next", ("Use a diagram.", ()))),
+        ignored=("2.",),
+        excluded=((points, points + len("(2 p)")),),
+        foreign=("1. Explain the water cycle.",),
+    )
+
+    body = source.body(
+        (_paragraph(_text("Explain the water cycle.")), _paragraph(_text("Use a diagram.")))
+    )
+
+    assert body_plain_text(body) == "Describe the rock cycle.\nUse a diagram."
+    assert source.path == "rebuilt"
+
+
+def test_a_rebuilt_table_cell_shows_the_whole_cell_around_an_excluded_points_interval():
+    cell = "2. Describe (2 p) the rock cycle. | Use a diagram."
+    points = cell.index("(2 p)")
+    source = SourceFormatting(
+        (
+            DocxChunk(
+                "own",
+                "table",
+                cell,
+                cell,
+                paragraphs=(
+                    DocxSourceParagraph(0, "2. Describe (2 p) the rock cycle."),
+                    DocxSourceParagraph(cell.index("Use a diagram."), "Use a diagram."),
+                ),
+            ),
+        ),
+        ignored=("2.",),
+        excluded=((points, points + len("(2 p)")),),
+        foreign=("1. Explain the water cycle.",),
+    )
+
+    body = source.body(
+        (_paragraph(_text("Explain the water cycle.")), _paragraph(_text("Use a diagram.")))
+    )
+
+    assert body_plain_text(body) == "Describe the rock cycle.\nUse a diagram."
+    assert source.path == "rebuilt"
+
+
+def test_a_points_interval_right_after_the_label_leaves_the_whole_stem_rebuilt():
+    own = "2. (2 p) Describe the rock cycle."
+    points = own.index("(2 p)")
+    source = SourceFormatting(
+        (_chunk("own", (own, ())), _chunk("next", ("Use a diagram.", ()))),
+        ignored=("2.",),
+        excluded=((points, points + len("(2 p)")),),
+        foreign=("1. Explain the water cycle.",),
+    )
+
+    body = source.body((_paragraph(_text("Explain the water cycle.")),))
+
+    assert body_plain_text(body) == "Describe the rock cycle."
+    assert source.path == "rebuilt"
+
+
+def test_a_rebuilt_paragraph_keeps_the_marks_around_an_excluded_points_interval():
+    own = "2. The red (2 p) blue house."
+    points = own.index("(2 p)")
+    source = SourceFormatting(
+        (
+            _chunk(
+                "own",
+                ("2. The ", ()),
+                ("red ", ("bold",)),
+                ("(2 p)", ()),
+                (" blue", ("bold",)),
+                (" house.", ()),
+            ),
+        ),
+        ignored=("2.",),
+        excluded=((points, points + len("(2 p)")),),
+        foreign=("1. Explain the water cycle.",),
+    )
+
+    body = source.body((_paragraph(_text("Explain the water cycle.")),))
+
+    assert body_plain_text(body) == "The red blue house."
+    marks = [
+        (segment.text, segment.marks)
+        for paragraph in body
+        for segment in paragraph.segments
+        if isinstance(segment, NativeTextSegment)
+    ]
+    assert marks == [("The ", ()), ("red", ("bold",)), (" blue", ("bold",)), (" house.", ())]
+    assert source.path == "rebuilt"
