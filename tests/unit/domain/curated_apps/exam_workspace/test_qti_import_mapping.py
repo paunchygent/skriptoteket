@@ -13,7 +13,12 @@ from uuid import uuid4
 import pytest
 
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts import (
+    ExamNetQtiChoice,
+    ExamNetQtiInlineChoiceGap,
+    ExamNetQtiInteractionType,
     ExamNetQtiItem,
+    ExamNetQtiMatchEntry,
+    ExamNetQtiMatchPair,
     ExamNetQtiPromptImage,
     ExamNetQtiPromptText,
 )
@@ -127,6 +132,48 @@ def _round_trip(
         source_sha256=_SOURCE_SHA,
     )
     return items, container
+
+
+def _qti_item(
+    interaction: ExamNetQtiInteractionType,
+    *,
+    sequence: int,
+    opening: str = "Fråga",
+    choices: tuple[ExamNetQtiChoice, ...] = (),
+    correct_choice_identifiers: tuple[str, ...] = (),
+    inline_choice_gaps: tuple[ExamNetQtiInlineChoiceGap, ...] = (),
+    match_left: tuple[ExamNetQtiMatchEntry, ...] = (),
+    match_right: tuple[ExamNetQtiMatchEntry, ...] = (),
+    match_pairs: tuple[ExamNetQtiMatchPair, ...] = (),
+    children: tuple[ExamNetQtiItem, ...] = (),
+) -> ExamNetQtiItem:
+    """A read QTI item built by hand, independent of what the exporter produces."""
+
+    return ExamNetQtiItem(
+        item_id=f"item_{sequence:03d}",
+        sequence=sequence,
+        title=opening,
+        interaction_type=interaction,
+        prompt_lines=(opening,),
+        max_score=1,
+        choices=choices,
+        correct_choice_identifiers=correct_choice_identifiers,
+        inline_choice_gaps=inline_choice_gaps,
+        match_left=match_left,
+        match_right=match_right,
+        match_pairs=match_pairs,
+        children=children,
+    )
+
+
+def _imported(*items: ExamNetQtiItem) -> tuple[tuple[NativeExamItem, ...], tuple[str, ...]]:
+    container = build_native_exam_from_qti(
+        items=items,
+        document_id=uuid4(),
+        source_filename="robust.zip",
+        source_sha256=_SOURCE_SHA,
+    )
+    return container.document.items, container.notes
 
 
 def _body_text(body: tuple[NativeParagraph, ...]) -> str:
@@ -782,3 +829,165 @@ def test_the_read_contracts_keep_package_items_in_test_order() -> None:
     assert package.items == (item_source,)
     assert package.files["assessment.xml"] == b"<test/>"
     assert isinstance(package.files, dict)
+
+
+def test_a_single_choice_with_two_correct_identifiers_becomes_a_note_and_keeps_others() -> None:
+    invalid = _qti_item(
+        ExamNetQtiInteractionType.SINGLE_CHOICE,
+        sequence=1,
+        opening="Välj ett alternativ",
+        choices=(
+            ExamNetQtiChoice(identifier="c1", text="Ett"),
+            ExamNetQtiChoice(identifier="c2", text="Två"),
+            ExamNetQtiChoice(identifier="c3", text="Tre"),
+        ),
+        correct_choice_identifiers=("c1", "c3"),
+    )
+    valid = _qti_item(ExamNetQtiInteractionType.FREE_TEXT, sequence=2, opening="Resonera")
+
+    items, notes = _imported(invalid, valid)
+
+    assert [item.kind for item in items] == [NativeExamItemKind.FREE_TEXT]
+    assert notes == ("Fråga 1 – Välj ett alternativ: frågetypen stöds inte och importerades inte.",)
+
+
+def test_a_choice_item_with_one_choice_becomes_a_note() -> None:
+    invalid = _qti_item(
+        ExamNetQtiInteractionType.SINGLE_CHOICE,
+        sequence=1,
+        opening="Bara ett alternativ",
+        choices=(ExamNetQtiChoice(identifier="c1", text="Ett"),),
+        correct_choice_identifiers=("c1",),
+    )
+    valid = _qti_item(ExamNetQtiInteractionType.FREE_TEXT, sequence=2, opening="Resonera")
+
+    items, notes = _imported(invalid, valid)
+
+    assert [item.kind for item in items] == [NativeExamItemKind.FREE_TEXT]
+    assert notes == ("Fråga 1 – Bara ett alternativ: frågetypen stöds inte och importerades inte.",)
+
+
+def test_a_correct_identifier_naming_no_choice_becomes_a_note() -> None:
+    invalid = _qti_item(
+        ExamNetQtiInteractionType.SINGLE_CHOICE,
+        sequence=1,
+        opening="Okänt facit",
+        choices=(
+            ExamNetQtiChoice(identifier="c1", text="Ett"),
+            ExamNetQtiChoice(identifier="c2", text="Två"),
+        ),
+        correct_choice_identifiers=("saknas",),
+    )
+    valid = _qti_item(ExamNetQtiInteractionType.FREE_TEXT, sequence=2, opening="Resonera")
+
+    items, notes = _imported(invalid, valid)
+
+    assert [item.kind for item in items] == [NativeExamItemKind.FREE_TEXT]
+    assert notes == ("Fråga 1 – Okänt facit: frågetypen stöds inte och importerades inte.",)
+
+
+def test_a_match_pair_naming_an_unknown_left_identifier_becomes_a_note() -> None:
+    invalid = _qti_item(
+        ExamNetQtiInteractionType.MATCHING,
+        sequence=1,
+        opening="Para ihop",
+        match_left=(ExamNetQtiMatchEntry(identifier="l1", text="Hund"),),
+        match_right=(
+            ExamNetQtiMatchEntry(identifier="r1", text="Däggdjur"),
+            ExamNetQtiMatchEntry(identifier="r2", text="Fåglar"),
+        ),
+        match_pairs=(
+            ExamNetQtiMatchPair(
+                left_identifier="saknas",
+                left_text="?",
+                right_identifier="r1",
+                right_text="Däggdjur",
+            ),
+        ),
+    )
+    valid = _qti_item(ExamNetQtiInteractionType.FREE_TEXT, sequence=2, opening="Resonera")
+
+    items, notes = _imported(invalid, valid)
+
+    assert [item.kind for item in items] == [NativeExamItemKind.FREE_TEXT]
+    assert notes == ("Fråga 1 – Para ihop: frågetypen stöds inte och importerades inte.",)
+
+
+def test_an_inline_correct_option_naming_no_option_becomes_a_note() -> None:
+    invalid = _qti_item(
+        ExamNetQtiInteractionType.INLINE_CHOICE,
+        sequence=1,
+        opening="Välj i listan",
+        inline_choice_gaps=(
+            ExamNetQtiInlineChoiceGap(
+                response_identifier="g1",
+                options=(
+                    ExamNetQtiChoice(identifier="o1", text="Alfa"),
+                    ExamNetQtiChoice(identifier="o2", text="Beta"),
+                ),
+                correct_option_identifier="saknas",
+            ),
+        ),
+    )
+    valid = _qti_item(ExamNetQtiInteractionType.FREE_TEXT, sequence=2, opening="Resonera")
+
+    items, notes = _imported(invalid, valid)
+
+    assert [item.kind for item in items] == [NativeExamItemKind.FREE_TEXT]
+    assert notes == ("Fråga 1 – Välj i listan: frågetypen stöds inte och importerades inte.",)
+
+
+def test_an_ordering_child_in_a_parent_becomes_a_note_and_the_parent_keeps_its_other_child() -> (
+    None
+):
+    ordering_child = _qti_item(
+        ExamNetQtiInteractionType.ORDERING,
+        sequence=1,
+        opening="Sortera stegen",
+        choices=(
+            ExamNetQtiChoice(identifier="s1", text="Tes"),
+            ExamNetQtiChoice(identifier="s2", text="Argument"),
+        ),
+        correct_choice_identifiers=("s1", "s2"),
+    )
+    text_child = _qti_item(ExamNetQtiInteractionType.FREE_TEXT, sequence=2, opening="Resonera")
+    parent = _qti_item(
+        ExamNetQtiInteractionType.SINGLE_CHOICE,
+        sequence=3,
+        opening="Deluppgifter",
+        children=(ordering_child, text_child),
+    )
+
+    container = build_native_exam_from_qti(
+        items=(parent,),
+        document_id=uuid4(),
+        source_filename="foralder.zip",
+        source_sha256=_SOURCE_SHA,
+    )
+
+    assert [item.kind for item in container.document.items] == [NativeExamItemKind.FREE_TEXT]
+    assert container.document.parents[0].item_ids == ("item_001",)
+    assert container.notes == (
+        "Fråga 1 – Sortera stegen: frågetypen stöds inte och importerades inte.",
+    )
+
+
+def test_a_package_with_only_an_invalid_item_raises_the_swedish_validation_error() -> None:
+    invalid = _qti_item(
+        ExamNetQtiInteractionType.SINGLE_CHOICE,
+        sequence=1,
+        opening="Bara ett alternativ",
+        choices=(ExamNetQtiChoice(identifier="c1", text="Ett"),),
+        correct_choice_identifiers=("c1",),
+    )
+
+    with pytest.raises(DomainError) as exc_info:
+        build_native_exam_from_qti(
+            items=(invalid,),
+            document_id=uuid4(),
+            source_filename="trasigt.zip",
+            source_sha256=_SOURCE_SHA,
+        )
+
+    assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
+    assert exc_info.value.message == "QTI-paketet innehåller inga frågetyper som stöds."

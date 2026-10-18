@@ -24,6 +24,8 @@ from pathlib import PurePath
 from typing import Literal
 from uuid import UUID
 
+from pydantic import ValidationError
+
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts import (
     ExamNetQtiChoice,
     ExamNetQtiImageResource,
@@ -167,8 +169,8 @@ def build_native_exam_from_qti(
     referenced.update(
         asset_id for parent in parents for asset_id in body_asset_ids(parent.instruction)
     )
-    return ExamWorkspaceContainerContent(
-        document=NativeExamDocument(
+    try:
+        document = NativeExamDocument(
             document_id=document_id,
             revision=1,
             title=PurePath(source_filename).stem,
@@ -183,7 +185,11 @@ def build_native_exam_from_qti(
                 source_filename=source_filename,
                 source_sha256=source_sha256,
             ),
-        ),
+        )
+    except ValidationError as exc:
+        raise validation_error("QTI-paketet kunde inte läsas som ett prov.") from exc
+    return ExamWorkspaceContainerContent(
+        document=document,
         assets_by_id={
             asset_id: payload
             for asset_id, payload in assets.payloads.items()
@@ -205,6 +211,10 @@ def _append_parent(
 
     child_ids: list[str] = []
     for child in source.children:
+        if _KINDS[child.interaction_type] is NativeExamItemKind.ORDERING:
+            # Ordering questions are standalone only; a parent cannot hold one.
+            notes.append(_interaction_note(child.sequence, _opening_text(child)))
+            continue
         leaf = _leaf_item(child, sequence=len(native_items) + 1, assets=assets)
         if leaf is None:
             notes.append(_interaction_note(child.sequence, _opening_text(child)))
@@ -264,10 +274,10 @@ def _leaf_item(
     sequence: int,
     assets: _AssetRegistry,
 ) -> NativeExamItem | None:
-    """Map one leaf; ``None`` means its broken ordering key becomes a note."""
+    """Map one leaf; ``None`` means it cannot be a native item and becomes a note."""
 
     kind = _KINDS[source.interaction_type]
-    if kind is NativeExamItemKind.ORDERING and not _ordering_key_names_every_step(source):
+    if not _key_identifiers_are_declared(source, kind):
         return None
     image_ids = tuple(assets.register(resource) for resource in source.image_resources)
     body = _paragraphs(
@@ -393,29 +403,32 @@ def _leaf_item(
             points = None
             answer_key = NativeAnswerKey(origin=NativeAnswerKeyOrigin.ABSENT)
 
-    item = NativeExamItem(
-        item_id=f"item_{sequence:03d}",
-        sequence=sequence,
-        kind=kind,
-        body=body,
-        points=points,
-        tick_points=tick_points,
-        choices=choices,
-        print_order=print_order,
-        gaps=gaps,
-        match_left=match_left,
-        match_right=match_right,
-        answer_key=answer_key,
-        review=NativeItemReview(
-            state=(
-                NativeItemReviewState.REVIEW_REQUIRED
-                if reasons
-                else NativeItemReviewState.REVIEW_COMPLETE
+    try:
+        item = NativeExamItem(
+            item_id=f"item_{sequence:03d}",
+            sequence=sequence,
+            kind=kind,
+            body=body,
+            points=points,
+            tick_points=tick_points,
+            choices=choices,
+            print_order=print_order,
+            gaps=gaps,
+            match_left=match_left,
+            match_right=match_right,
+            answer_key=answer_key,
+            review=NativeItemReview(
+                state=(
+                    NativeItemReviewState.REVIEW_REQUIRED
+                    if reasons
+                    else NativeItemReviewState.REVIEW_COMPLETE
+                ),
+                parse_origin=NativeParseOrigin.DETERMINISTIC,
+                reasons=tuple(reasons),
             ),
-            parse_origin=NativeParseOrigin.DETERMINISTIC,
-            reasons=tuple(reasons),
-        ),
-    )
+        )
+    except ValidationError:
+        return None
     return item.model_copy(
         update={
             "import_record": NativeExamImportRecord(
@@ -538,6 +551,34 @@ def _accepted_values(values: tuple[str, ...]) -> tuple[str, ...]:
         if stripped and stripped not in accepted:
             accepted.append(stripped)
     return tuple(accepted)
+
+
+def _key_identifiers_are_declared(source: ExamNetQtiItem, kind: NativeExamItemKind) -> bool:
+    """Whether every answer-key identifier names an identifier the item declares.
+
+    A package from another producer can key an identifier the item never declares;
+    building that item's ids then raises ``KeyError``. Such an item cannot become a
+    native item, so the caller turns it into a note instead.
+    """
+
+    if kind is NativeExamItemKind.ORDERING:
+        return _ordering_key_names_every_step(source)
+    if kind in _CHOICE_KINDS:
+        declared = {choice.identifier for choice in source.choices}
+        return all(identifier in declared for identifier in source.correct_choice_identifiers)
+    if kind is NativeExamItemKind.INLINE_CHOICE:
+        return all(
+            entry.correct_option_identifier in {option.identifier for option in entry.options}
+            for entry in source.inline_choice_gaps
+        )
+    if kind is NativeExamItemKind.MATCHING:
+        left = {entry.identifier for entry in source.match_left}
+        right = {entry.identifier for entry in source.match_right}
+        return all(
+            pair.left_identifier in left and pair.right_identifier in right
+            for pair in source.match_pairs
+        )
+    return True
 
 
 def _ordering_key_names_every_step(item: ExamNetQtiItem) -> bool:
