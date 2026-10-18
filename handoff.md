@@ -69,8 +69,9 @@
   repairs N1-N6 at 60fbb42a (D10a recorded in 39-04-11; response:
   root evidence/39-04-12/R3/review-3-response.md); next: parent rereview, merge,
   exempelprov staging re-walk (heading duplicate).
-  User gate: DEL 4 one-question part instruction (one-child parent vs item-level
-  instruction task); interim heading opens the question's body.
+  User ruled 2026-10-18: DEL 4 is a one-child parent like DEL 1-3 (a part line
+  whose part identity no other line repeats opens a parent); sent to parent,
+  implementation pending its go.
   Next lanes: 39-07-03 retire old converter routes (40-04-03 now on main); implement
   39-06-08 ordering; stories 39-04, 39-06, 39-07 await closeout.
   Ready (user grilling 2026-10-18, plans in root 01a14c27): 40-04-04 dropdown option editor, 40-04-05 export names from the exam title, 39-06-09 Exam.net probe of ordering inside a part.
