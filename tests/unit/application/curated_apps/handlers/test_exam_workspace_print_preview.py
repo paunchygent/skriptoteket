@@ -165,7 +165,10 @@ async def test_ready_returns_page_data_urls_and_question_pages(env: _Env) -> Non
     renderer = _FakePrintRenderer()
 
     response = await _preview_handler(env, print_renderer=renderer).handle(
-        actor=actor, lineage_id=imported.summary.lineage_id, expected_revision=1
+        actor=actor,
+        lineage_id=imported.summary.lineage_id,
+        expected_revision=1,
+        expected_cursor=imported.history_cursor,
     )
 
     assert response.status == "ready"
@@ -186,7 +189,10 @@ async def test_a_blocked_export_state_still_renders_the_student_copy(env: _Env) 
     imported = await env.seed_document(actor=actor, document=document)
 
     response = await _preview_handler(env).handle(
-        actor=actor, lineage_id=imported.summary.lineage_id, expected_revision=1
+        actor=actor,
+        lineage_id=imported.summary.lineage_id,
+        expected_revision=1,
+        expected_cursor=imported.history_cursor,
     )
 
     assert response.status == "ready"
@@ -213,7 +219,12 @@ async def test_missing_picture_payload_returns_blocked_without_raising(env: _Env
 
     response = await _preview_handler(
         env, print_renderer=renderer, codec=_AssetsStrippedCodec(env.codec)
-    ).handle(actor=actor, lineage_id=document.document_id, expected_revision=1)
+    ).handle(
+        actor=actor,
+        lineage_id=document.document_id,
+        expected_revision=1,
+        expected_cursor=document.document_id,
+    )
 
     assert response.status == "blocked"
     assert response.revision == 1
@@ -239,7 +250,12 @@ async def test_stale_expected_revision_conflicts_with_the_preview_message(env: _
 
     with pytest.raises(DomainError) as exc_info:
         await _preview_handler(env).handle(
-            actor=actor, lineage_id=imported.summary.lineage_id, expected_revision=1
+            actor=actor,
+            lineage_id=imported.summary.lineage_id,
+            expected_revision=1,
+            expected_cursor=(
+                await env.save_handler.history(actor=actor, lineage_id=imported.summary.lineage_id)
+            ).cursor,
         )
 
     assert exc_info.value.code is ErrorCode.CONFLICT
@@ -253,7 +269,10 @@ async def test_stale_expected_revision_conflicts_with_the_preview_message(env: _
 async def test_unknown_lineage_is_not_found(env: _Env) -> None:
     with pytest.raises(DomainError) as exc_info:
         await _preview_handler(env).handle(
-            actor=_actor(), lineage_id=UUID(int=0), expected_revision=1
+            actor=_actor(),
+            lineage_id=UUID(int=0),
+            expected_revision=1,
+            expected_cursor=uuid4(),
         )
 
     assert exc_info.value.code is ErrorCode.NOT_FOUND

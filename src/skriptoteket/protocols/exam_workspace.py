@@ -222,6 +222,7 @@ class PreviewExamWorkspacePrintHandlerProtocol(Protocol):
         actor: User,
         lineage_id: UUID,
         expected_revision: int,
+        expected_cursor: UUID,
     ) -> ExamWorkspacePrintPreviewResponse: ...
 
 

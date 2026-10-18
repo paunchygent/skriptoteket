@@ -286,11 +286,7 @@ class GetExamWorkspaceDocumentHandler:
                 "Den sparade dokumentversionen är skadad.",
                 details={"lineage_id": str(lineage_id)},
             )
-        current = next(
-            step
-            for step in (history.baseline, *history.steps)
-            if step.step_id == history.current_step_id
-        )
+        current = history.current_step()
         latest = self._codec.parse(content=current.content)
         document = latest.document.model_copy(update={"revision": head.document_version})
         return ExamWorkspaceDocumentResponse(

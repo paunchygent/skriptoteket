@@ -1742,7 +1742,7 @@ export interface paths {
         };
         /**
          * Preview Exam Workspace Document Print
-         * @description Render the saved revision's student print pages for the Förhandsgranska panel (W5).
+         * @description Render the working state the editor stands on for the Förhandsgranska panel (W5).
          */
         get: operations["preview_exam_workspace_document_print_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__print_preview_get"];
         put?: never;
@@ -13923,6 +13923,7 @@ export interface operations {
         parameters: {
             query: {
                 expected_revision: number;
+                expected_cursor: string;
             };
             header?: never;
             path: {

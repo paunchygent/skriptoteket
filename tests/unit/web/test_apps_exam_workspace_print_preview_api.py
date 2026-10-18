@@ -28,12 +28,17 @@ class CapturingPreviewHandler:
 
     def __init__(self, response: ExamWorkspacePrintPreviewResponse) -> None:
         self.response = response
-        self.calls: list[tuple[UUID, UUID, int]] = []
+        self.calls: list[tuple[UUID, UUID, int, UUID]] = []
 
     async def handle(
-        self, *, actor: User, lineage_id: UUID, expected_revision: int
+        self,
+        *,
+        actor: User,
+        lineage_id: UUID,
+        expected_revision: int,
+        expected_cursor: UUID,
     ) -> ExamWorkspacePrintPreviewResponse:
-        self.calls.append((actor.id, lineage_id, expected_revision))
+        self.calls.append((actor.id, lineage_id, expected_revision, expected_cursor))
         return self.response
 
 
@@ -48,22 +53,24 @@ def _response() -> ExamWorkspacePrintPreviewResponse:
 
 
 @pytest.mark.asyncio
-async def test_route_delegates_the_saved_head_preview() -> None:
+async def test_route_delegates_the_working_state_preview() -> None:
     response = _response()
     handler = CapturingPreviewHandler(response)
     lineage_id = uuid4()
+    cursor = uuid4()
     user = make_user()
 
     result = await api.preview_exam_workspace_document_print(
         lineage_id=lineage_id,
         expected_revision=2,
+        expected_cursor=cursor,
         registry=FakeRegistry(),
         handler=handler,
         user=user,
     )
 
     assert result is response
-    assert handler.calls == [(user.id, lineage_id, 2)]
+    assert handler.calls == [(user.id, lineage_id, 2, cursor)]
 
 
 @pytest.mark.asyncio
@@ -73,6 +80,7 @@ async def test_route_json_carries_pages_question_pages_and_status() -> None:
     result = await api.preview_exam_workspace_document_print(
         lineage_id=uuid4(),
         expected_revision=2,
+        expected_cursor=uuid4(),
         registry=FakeRegistry(),
         handler=handler,
         user=make_user(),
@@ -99,6 +107,7 @@ async def test_route_checks_app_access_before_the_preview() -> None:
         await api.preview_exam_workspace_document_print(
             lineage_id=uuid4(),
             expected_revision=2,
+            expected_cursor=uuid4(),
             registry=MissingAppRegistry(),
             handler=handler,
             user=make_user(),

@@ -1,11 +1,13 @@
 """Server-side print preview for native exam workspace documents (W5).
 
-The saved head revision's student print HTML is rendered into one PNG per printed
-page through the print renderer, so the Förhandsgranska panel can show the exam
-page by page and scroll to the selected question. The student copy prints drafts,
-so this never runs the S4 export blocker gate; a document the renderer cannot
-render at all (for example a declared picture without its stored payload) comes
-back as ``status="blocked"`` with a message instead of raising.
+The working state the editor stands on is rendered into one PNG per printed page
+through the print renderer, so the Förhandsgranska panel can show the exam page by
+page and scroll to the selected question. The saved head revision and the history
+cursor both guard the render, and no handler here writes the teacher's saved file.
+The student copy prints drafts, so this never runs the S4 export blocker gate; a
+document the renderer cannot render at all (for example a declared picture without
+its stored payload) comes back as ``status="blocked"`` with a message instead of
+raising.
 """
 
 from __future__ import annotations
@@ -20,7 +22,7 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_document_stor
     ExamWorkspaceDocumentStore,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_head_reader import (
-    read_exam_workspace_head,
+    read_exam_workspace_working_state,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.exam_print_house_template import (
     ExamPrintVariant,
@@ -44,7 +46,7 @@ _HEAD_CONFLICT_MESSAGE = "Det sparade provet har ändrats. Förhandsgranskningen
 
 
 class PreviewExamWorkspacePrintHandler:
-    """Render the saved head revision's student print copy into preview page images."""
+    """Render the working state the editor stands on into preview page images."""
 
     def __init__(
         self,
@@ -65,14 +67,16 @@ class PreviewExamWorkspacePrintHandler:
         actor: User,
         lineage_id: UUID,
         expected_revision: int,
+        expected_cursor: UUID,
     ) -> ExamWorkspacePrintPreviewResponse:
-        _head, container = await read_exam_workspace_head(
+        container = await read_exam_workspace_working_state(
             store=self._store,
             vault_files=self._vault_files,
             codec=self._codec,
             actor=actor,
             lineage_id=lineage_id,
             expected_revision=expected_revision,
+            expected_cursor=expected_cursor,
             conflict_message=_HEAD_CONFLICT_MESSAGE,
         )
         document = container.document
