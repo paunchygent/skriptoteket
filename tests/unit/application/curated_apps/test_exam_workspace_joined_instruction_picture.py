@@ -115,12 +115,7 @@ def _joined_chunks() -> tuple[DocxChunk, ...]:
 
 
 def _joined_item(paragraphs: _PARAGRAPHS) -> AlignedItem:
-    """The question's item as admission aligns it: over the question's own chunks only.
-
-    The instruction chunk's picture stays a known asset, so a reply may echo it, but no
-    reply paragraph can be aligned to the instruction chunk, which the question does not hold.
-    """
-    converted = aligned_native_item(
+    return aligned_native_item(
         ProducedItem.model_validate(
             {
                 "source_anchors": ["body:0001"],
@@ -136,11 +131,6 @@ def _joined_item(paragraphs: _PARAGRAPHS) -> AlignedItem:
         ),
         chunks=_joined_chunks(),
         language="sv",
-    )
-    instruction = _JOINED_INSTRUCTION.source_anchors[0]
-    return AlignedItem(
-        converted.item,
-        tuple(None if chunk == instruction else chunk for chunk in converted.chunks),
     )
 
 
