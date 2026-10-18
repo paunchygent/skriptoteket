@@ -92,24 +92,31 @@ def _lead_in_labels(
     own: set[str],
     positions: dict[str, int],
     item_starts: list[int],
+    openers: frozenset[str],
 ) -> set[int]:
     """Headings that label a stretch of an instruction lead-in, such as one passage of two.
 
     Such a heading prints no points and sits between instruction paragraphs that no item
     owns, and the lead-in it sits in serves the one question that follows it. A heading
     over a run of two or more questions is a section heading, never a label, even when
-    instruction lines stand on both sides of it: the run before it ends there.
+    instruction lines stand on both sides of it: the run before it ends there. A plan part
+    opener (``openers``) is a heading here whatever its Word kind, as everywhere in the
+    section rule.
     """
+
+    def heading(index: int) -> bool:
+        return chunks[index].kind == "heading" or chunks[index].anchor in openers
+
     lead_in = {positions[c.anchor] for run in runs for c in run.sources if not points_line(c.text)}
     provisional = {
         i
         for i in range(1, len(chunks) - 1)
-        if chunks[i].kind == "heading"
+        if heading(i)
         and chunks[i].anchor not in own
         and not POINT_LABEL.search(chunks[i].text)
         and {i - 1, i + 1} <= lead_in
-        and chunks[i - 1].kind != "heading"
-        and chunks[i + 1].kind != "heading"
+        and not heading(i - 1)
+        and not heading(i + 1)
     }
     labels = set()
     for i in provisional:
@@ -117,9 +124,7 @@ def _lead_in_labels(
             (
                 j
                 for j in range(i + 1, len(chunks))
-                if chunks[j].kind == "heading"
-                and chunks[j].anchor not in own
-                and j not in provisional
+                if heading(j) and chunks[j].anchor not in own and j not in provisional
             ),
             len(chunks),
         )
@@ -207,7 +212,9 @@ def with_heading_runs(
     """
     own = {anchor for _, anchors, _ in ordered for anchor in anchors}
     owner = {a: k for k, (_, anchors, _) in enumerate(ordered) for a in anchors}
-    labels = _lead_in_labels(chunks, runs, own, positions, [start for start, _, _ in ordered])
+    labels = _lead_in_labels(
+        chunks, runs, own, positions, [start for start, _, _ in ordered], part_lines.openers
+    )
     boundaries = [
         i
         for i, chunk in enumerate(chunks)

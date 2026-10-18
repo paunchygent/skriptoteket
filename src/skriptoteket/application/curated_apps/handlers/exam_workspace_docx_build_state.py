@@ -212,10 +212,12 @@ class DocxBuildState:
 
         Each question with an unclaimed own chunk becomes one review item holding the source
         text of all its own chunks at the question's place. Answer-key chunks stay teacher
-        notes, the grouped title stays the title, and shared section text and headings stay
-        section text, each in its source wording.
+        notes, the grouped title stays the title, and shared section text, headings and
+        every plan part opener whatever its Word kind (``part_openers``, as on the normal
+        path) stay section text, each in its source wording.
         Every other pending chunk becomes a review item with ``reason``.
         """
+        openers = part_openers(printed_points_plan(self.chunks, self.questions).parts)
         for anchors in questions:
             own = tuple(c.anchor for c in self.pending if c.anchor in anchors)
             if own:
@@ -226,7 +228,7 @@ class DocxBuildState:
             if chunk.anchor in keys:
                 self.key_anchors.add(chunk.anchor)
             elif chunk.anchor not in title and (
-                chunk.anchor in contexts or chunk.kind == "heading"
+                chunk.anchor in contexts or chunk.anchor in openers or chunk.kind == "heading"
             ):
                 section = ProducedMetadata(text=chunk.text, source_anchors=(chunk.anchor,))
                 self.instructions = (*self.instructions, section)
