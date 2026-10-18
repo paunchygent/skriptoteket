@@ -84,8 +84,11 @@ GROUPING_INSTRUCTIONS = (
     "it opens its question, or is a section_instruction over several questions; "
     "its points are that question's or part's printed points.\n"
     "- Other metadata lines, such as name and date lines and the exam's total points, "
-    'are shared_contexts with scope exam_metadata and owner "exam". Course, part totals '
-    "and question totals go to header_anchors.\n"
+    'are shared_contexts with scope exam_metadata and owner "exam". So are lines that '
+    "only mark the printed page and give the student no task or instruction, such as "
+    "an end-of-exam marker, and the label line of a metadata block, such as the label "
+    "above a list of part totals. Course, part totals and question totals go to "
+    "header_anchors.\n"
     "- Every input anchor appears exactly once across questions[].anchors, "
     "questions[].answer_key_anchors, shared_contexts, title_anchors and "
     "header_anchors. subpart_anchors repeat anchors already in the question's anchors."
