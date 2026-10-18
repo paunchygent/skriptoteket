@@ -64,20 +64,18 @@ Stop and report if Exam.net's own export uses item kinds the export never writes
   `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a14f56-3344-77cc-a009-f435f5884ea7`;
   work orders are under its `evidence/work-orders/`.
 - Units done and committed: U4 zip reader, U1a rich-content reader, U1b item
-  reader, U2 native mapper with robustness repair, U3 parent reader, and U5
-  application handlers, the stateless guest parse entry
+  reader, U2 native mapper with robustness repair, U3 parent reader, U5
+  application handlers with the stateless guest parse entry
   `ParseExamWorkspaceQtiPackageHandler` and the signed-in route
-  `POST /exam-workspace/import-qti`.
-- Units in flight at the break (OpenCode juniors on GLM; they keep running and
-  write uncommitted files into the worktree):
-  - U6 frontend Öppna-drawer QTI entry, work order `u6-frontend.md`, child
-    `7663d340-0ce8-4e89-a82e-5100d97391c9`. Only the regenerated
-    `openapi.d.ts` was committed at the break.
-  - U7 round trip of the omprov exports, work order `u7-round-trip.md`, child
-    `01685541-4cb2-4728-aef1-7e105a8e462c`.
-  - Each result lands at the retained root's `evidence/results/<child id>.json`.
-- Next action: read both results, then verify and commit the U6 and U7 files.
-  Rerun any unit whose child died as a fresh junior from the same work order.
+  `POST /exam-workspace/import-qti`, U6 Öppna-drawer QTI `.zip` entry with
+  Vitest, and U7 round trip over the two omprov exports with one test per
+  accepted loss. The Svenska 2 exam is left out of the round trip because its
+  recorded items have no points and cannot be exported.
+- No children run. Results are at the retained root's `evidence/results/`
+  (U6 `7663d340-0ce8-4e89-a82e-5100d97391c9.json`, U7
+  `01685541-4cb2-4728-aef1-7e105a8e462c.json`).
+- Next action: add the Exam.net fixture when the parent supplies it and prove
+  it, then run closeout and return the final checkpoint for review routing.
 - Open findings: the plain space between two marked runs is lost to
   `ElementTree.indent` in the writer. TASK-SKRIPT-REP-0048 removes it; after it
   merges, flip `test_plain_space_between_marked_runs_is_lost_to_writer_indentation`

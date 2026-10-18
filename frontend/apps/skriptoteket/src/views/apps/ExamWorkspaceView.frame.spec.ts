@@ -7,13 +7,17 @@
  *   document is imported or opened.
  *
  * Expected behavior:
- *   The frame accepts .docx and .dxe source files with Swedish guidance for
- *   rejected files and keeps service jargon out of all visible copy.
+ *   The frame accepts .docx, .dxe and .zip source files with Swedish
+ *   guidance for rejected files and keeps service jargon out of all visible
+ *   copy.
  */
 
 import { flushPromises } from "@vue/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { ApiError } from "../../api/client";
+import { useToastStore } from "../../stores/toast";
+import { buildSavedExamSummary } from "./exam-workspace/useExamWorkspaceDocument.specSupport";
 import {
   arrangeViewApis,
   buildResponse,
@@ -44,6 +48,7 @@ const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceHistoryStep: vi.fn(),
   importExamWorkspaceDigiExam: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
+  importExamWorkspaceQti: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
   saveExamWorkspaceDocument: vi.fn(),
@@ -78,6 +83,12 @@ describe("ExamWorkspaceView host frame", () => {
     expect(wrapper.text()).toContain("Välj provfil");
     expect(wrapper.text()).toContain("Word .docx");
     expect(wrapper.text()).toContain("DigiExam .dxe");
+    expect(wrapper.text()).toContain("QTI .zip");
+    expect(
+      wrapper.find<HTMLInputElement>('[data-test="exam-workspace-source-file-input"]').attributes(
+        "accept",
+      ),
+    ).toBe(".docx,.dxe,.zip");
     expect(wrapper.find('[data-test="exam-workspace-question-list"]').exists()).toBe(false);
     expect(wrapper.find('[data-test="exam-workspace-save-state"]').exists()).toBe(false);
   });
@@ -117,7 +128,7 @@ describe("ExamWorkspaceView host frame", () => {
 
     expect(apiMocks.importExamWorkspaceDocument).not.toHaveBeenCalled();
     expect(wrapper.find('[data-test="exam-workspace-source-file-error"]').text()).toBe(
-      "Det gick inte att använda filen. Välj en Word-fil (.docx) eller en DigiExam-fil (.dxe).",
+      "Det gick inte att använda filen. Välj en Word-fil (.docx), en DigiExam-fil (.dxe) eller en QTI-fil (.zip).",
     );
     expect(wrapper.find('[data-test="exam-workspace-empty"]').exists()).toBe(true);
   });
@@ -203,5 +214,61 @@ describe("ExamWorkspaceView host frame", () => {
     const [file] = apiMocks.importExamWorkspaceDigiExam.mock.calls[0] as [File];
     expect(file.name).toBe("Prov_HT25.dxe");
     expect(wrapper.find('[data-test="exam-workspace-title"]').text()).toBe("NO-prov HT25");
+  });
+
+  it("sends a .zip chosen in the Öppna drawer to the QTI importer and opens the saved exam without any conversion", async () => {
+    apiMocks.importExamWorkspaceQti.mockResolvedValue(
+      buildSavedExamSummary({ name: "NO-prov HT25.zip", title: "NO-prov HT25" }),
+    );
+    apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildResponse());
+    const wrapper = await mountView();
+
+    await chooseSourceFile(wrapper, new File(["qti"], "Prov_HT25.zip", { type: "application/zip" }));
+
+    expect(wrapper.find('[data-test="exam-workspace-source-file-error"]').exists()).toBe(false);
+    expect(apiMocks.importExamWorkspaceDocument).not.toHaveBeenCalled();
+    expect(apiMocks.importExamWorkspaceDigiExam).not.toHaveBeenCalled();
+    expect(apiMocks.importExamWorkspaceQti).toHaveBeenCalledTimes(1);
+    const [file] = apiMocks.importExamWorkspaceQti.mock.calls[0] as [File];
+    expect(file.name).toBe("Prov_HT25.zip");
+    // The package is read at once: the saved exam opens by its lineage, and no conversion is polled.
+    expect(apiMocks.getExamWorkspaceDocument).toHaveBeenCalledWith("lineage-1");
+    expect(apiMocks.getExamWorkspaceConversionStatus).not.toHaveBeenCalled();
+    expect(wrapper.find('[data-test="exam-workspace-title"]').text()).toBe("NO-prov HT25");
+    expect(vi.mocked(useToastStore().failure)).not.toHaveBeenCalled();
+  });
+
+  it("shows the server's Swedish refusal as the inline error and the failure toast when a .zip import is rejected", async () => {
+    apiMocks.importExamWorkspaceQti.mockRejectedValue(
+      new ApiError({
+        code: "QTI_PACKAGE_UNREADABLE",
+        message: "Det gick inte att läsa QTI-paketet. Kontrollera att filen är en provexport.",
+        status: 422,
+      }),
+    );
+    const wrapper = await mountView();
+
+    await chooseSourceFile(wrapper, new File(["qti"], "Prov_HT25.zip", { type: "application/zip" }));
+
+    expect(apiMocks.getExamWorkspaceDocument).not.toHaveBeenCalled();
+    expect(
+      wrapper.find('[data-test="exam-workspace-conversion-status"]').text(),
+    ).toContain("Det gick inte att läsa QTI-paketet. Kontrollera att filen är en provexport.");
+    expect(vi.mocked(useToastStore().failure)).toHaveBeenCalledWith(
+      "Det gick inte att läsa QTI-paketet. Kontrollera att filen är en provexport.",
+    );
+    expect(wrapper.find('[data-test="exam-workspace-title"]').text()).toBe("Inget prov öppet");
+  });
+
+  it("rejects a .txt with Swedish guidance naming every accepted format", async () => {
+    const wrapper = await mountView();
+
+    await chooseSourceFile(wrapper, new File(["text"], "anteckningar.txt", { type: "text/plain" }));
+
+    expect(apiMocks.importExamWorkspaceQti).not.toHaveBeenCalled();
+    expect(apiMocks.importExamWorkspaceDocument).not.toHaveBeenCalled();
+    expect(wrapper.find('[data-test="exam-workspace-source-file-error"]').text()).toBe(
+      "Det gick inte att använda filen. Välj en Word-fil (.docx), en DigiExam-fil (.dxe) eller en QTI-fil (.zip).",
+    );
   });
 });
