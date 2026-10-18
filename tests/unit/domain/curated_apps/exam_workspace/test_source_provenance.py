@@ -74,7 +74,9 @@ def test_text_skipping_an_omitted_paragraph_names_the_chunk_it_was_found_in() ->
         _chunk("body:0003", "Skriv ditt svar."),
     )
 
-    anchors = _project(chunks, _text("Läs texten. Skriv ditt svar."))
+    # Two exact pieces of one reply paragraph; the omitted middle paragraph lies inside the
+    # projected span, so the second piece's ordinal would name it.
+    anchors = _project(chunks, _text("Läs texten. "), _text("Skriv ditt svar."))
 
     assert anchors == ("body:0001", "body:0003")
 
