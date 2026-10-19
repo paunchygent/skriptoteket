@@ -1,12 +1,11 @@
 ---
 type: task
 id: TASK-SKRIPT-39-04-18
-title: An inline answer key cut from a review question is carried into its facit exactly
-  as printed and marked as taken from the source
+title: An inline answer key cut from a review question is carried into its facit exactly as printed and marked as taken from the source
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-19'
 status: in_progress
 closeout_review:
@@ -14,10 +13,7 @@ closeout_review:
   status: not_started
 task_kind: story
 acceptance_criteria:
-- When the 39-04-17 D7 cut removes an inline answer key from a review item's body,
-  the item's facit holds that key text exactly as printed, its answer key is marked
-  as taken from the source, the key never appears in the student-visible body, and
-  the item stays review_required
+  - When the 39-04-17 D7 cut removes an inline answer key from a review item's body, the item's facit holds that key text exactly as printed, its answer key is marked as taken from the source, the key never appears in the student-visible body, and the item stays review_required
 story: ST-SKRIPT-39-04
 backlog_document_profile: contract-derived
 ---
@@ -90,7 +86,7 @@ document or event format change, no migration.
 - U1: adversarial unit tests in `test_review_answer_key_cut.py`: one key line
   per cut paragraph in body order, verbatim from the label (and from the
   wrapper "(" in the "(Svar: …)" form); a picture after the cut stays in the
-  body and out of the key; a printed answer line "Svar: ______" is not
+  body and out of the key; a printed answer line "Svar: \_\_\_\_\_\_" is not
   carried and leaves `facit_text` null; a paragraph without a label adds no
   line; each line keeps the paragraph's leading list label ("a) Svar: …")
   and a paragraph without one starts at the label; the body never holds the
@@ -140,18 +136,18 @@ document or event format change, no migration.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| U-A | When the 39-04-17 D7 cut removes an inline answer key from an item's body, that key text is carried into the item's facit, copied exactly as in the source with nothing rewritten, so the teacher sees it while reviewing. It never appears in the student-visible body. User 2026-10-19 via the Mac parent. |
-| U-B | The facit is marked as taken from the source, so the teacher can see where it came from. User 2026-10-19 via the Mac parent. |
-| U-C | The rule applies to every item that the D7 cut changes, not only svenska_2. User 2026-10-19 via the Mac parent. |
-| U-D | The item stays `review_required`; the teacher confirms the result. User 2026-10-19 via the Mac parent. |
-| D1  | The carry has one owner, `review_answer_key_cut.py` (`without_inline_answer_keys`), reached only from the `GapCountMismatchError` branch of `_built` (`exam_workspace_docx_build_admission.py:167-172`), the only D7 caller; so it covers every item the D7 cut changes (U-C). No other `state.printed` caller changes. Lead decision 2026-10-19. |
-| D2  | Each cut paragraph gives one key line: the paragraph's leading list label when it has one (Q3), then its source text from the cut point that `answer_label_cut` returns (the label, or the wrapper "(" before it) to the paragraph's text end, verbatim, trailing whitespace trimmed. `facit_text` is the key lines joined by a newline in body order. A picture or gap after the cut stays in the body (39-04-17 D7) and is not part of the key line. Lead decision 2026-10-19 under U-A, amended by Q3. |
-| D3  | A cut tail that holds nothing after its label but whitespace and blank runs (a printed answer line such as "Svar: ______") is not a key and is not carried; the test is structural (the existing blank-run recognition), never by wording. With no key line, `facit_text` stays null. Lead decision 2026-10-19 under U-A. |
-| D4  | `import_record.original_wording.answer_key_text` gets no second write: `with_docx_import_records` copies `item.facit_text` after admission on the publication path. Lead decision 2026-10-19 from the code map. |
-| D5  | Owning story ST-SKRIPT-39-04; the task builds on main at `ffbfa953`. Regression bar: the ten replays differ only in items the D7 cut changes (today the two svenska_2 omprov item_001), and each difference is the carried key. Lead decision 2026-10-19. |
-| Q1  | Carry `facit_text` only; `answer_key.origin` stays `not_applicable`. The existing "Facit ur provfilen:" (editor facit line) and "Facit i provfilen" (import box) labels show the key's source. No origin-rule change. User 2026-10-19, given directly in the Hemma orchestrator session. |
-| Q2  | The question editor shows the existing facit line on an unbuilt (`review_required` + `source_fallback`) item that has `facit_text` (unit U2). User 2026-10-19, given directly in the Hemma orchestrator session. |
+| ID  | Decided contract term                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| U-A | When the 39-04-17 D7 cut removes an inline answer key from an item's body, that key text is carried into the item's facit, copied exactly as in the source with nothing rewritten, so the teacher sees it while reviewing. It never appears in the student-visible body. User 2026-10-19 via the Mac parent.                                                                                                                                                                                                                                                                   |
+| U-B | The facit is marked as taken from the source, so the teacher can see where it came from. User 2026-10-19 via the Mac parent.                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| U-C | The rule applies to every item that the D7 cut changes, not only svenska_2. User 2026-10-19 via the Mac parent.                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| U-D | The item stays `review_required`; the teacher confirms the result. User 2026-10-19 via the Mac parent.                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| D1  | The carry has one owner, `review_answer_key_cut.py` (`without_inline_answer_keys`), reached only from the `GapCountMismatchError` branch of `_built` (`exam_workspace_docx_build_admission.py:167-172`), the only D7 caller; so it covers every item the D7 cut changes (U-C). No other `state.printed` caller changes. Lead decision 2026-10-19.                                                                                                                                                                                                                              |
+| D2  | Each cut paragraph gives one key line: the paragraph's leading list label when it has one (Q3), then its source text from the cut point that `answer_label_cut` returns (the label, or the wrapper "(" before it) to the paragraph's text end, verbatim, trailing whitespace trimmed. `facit_text` is the key lines joined by a newline in body order. A picture or gap after the cut stays in the body (39-04-17 D7) and is not part of the key line. Lead decision 2026-10-19 under U-A, amended by Q3.                                                                      |
+| D3  | A cut tail that holds nothing after its label but whitespace and blank runs (a printed answer line such as "Svar: \_\_\_\_\_\_") is not a key and is not carried; the test is structural (the existing blank-run recognition), never by wording. With no key line, `facit_text` stays null. Lead decision 2026-10-19 under U-A.                                                                                                                                                                                                                                                |
+| D4  | `import_record.original_wording.answer_key_text` gets no second write: `with_docx_import_records` copies `item.facit_text` after admission on the publication path. Lead decision 2026-10-19 from the code map.                                                                                                                                                                                                                                                                                                                                                                |
+| D5  | Owning story ST-SKRIPT-39-04; the task builds on main at `ffbfa953`. Regression bar: the ten replays differ only in items the D7 cut changes (today the two svenska_2 omprov item_001), and each difference is the carried key. Lead decision 2026-10-19.                                                                                                                                                                                                                                                                                                                      |
+| Q1  | Carry `facit_text` only; `answer_key.origin` stays `not_applicable`. The existing "Facit ur provfilen:" (editor facit line) and "Facit i provfilen" (import box) labels show the key's source. No origin-rule change. User 2026-10-19, given directly in the Hemma orchestrator session.                                                                                                                                                                                                                                                                                       |
+| Q2  | The question editor shows the existing facit line on an unbuilt (`review_required` + `source_fallback`) item that has `facit_text` (unit U2). User 2026-10-19, given directly in the Hemma orchestrator session.                                                                                                                                                                                                                                                                                                                                                               |
 | Q3  | Each key line keeps its part prefix, so it reads "a) Svar: snö (R) + boll (R) + …". The prefix is the source paragraph's own leading list label, an ordinal token with its delimiter at the paragraph start as `entry_label_end` (`source_format_coverage.py`) recognizes it, taken structurally and never by wording, without its trailing whitespace and followed by one space. A paragraph with no such label gives a line that starts at the cut point. User 2026-10-19, given directly in the Hemma orchestrator session; overrides the planning lead's prefix-free line. |
-| D6  | The user accepted the plan on 2026-10-19; status `ready` then `in_progress` under `agent-planning:user-closure-gate`. |
+| D6  | The user accepted the plan on 2026-10-19; status `ready` then `in_progress` under `agent-planning:user-closure-gate`.                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
