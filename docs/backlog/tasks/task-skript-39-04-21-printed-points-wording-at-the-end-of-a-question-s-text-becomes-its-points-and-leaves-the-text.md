@@ -210,8 +210,10 @@ Units, each for one fresh junior:
 
 ### Resume here (2026-10-19)
 
-- State: contract accepted, status ready. U1 is running (fresh junior `90d2414d`), steered
-  to add no review reason (D7). Lead `d19390d2`
+- State: contract accepted, status ready. U1 done at `04456045` (grammar D5, shared rule
+  `points_wording.py`). U2 running: the `leftover_points_text` field, Word final gate and retry,
+  `with_printed_points` reads only, whole points line in `native_carrier_spans` (work order
+  `evidence/work-orders/u2-word-wiring-and-field.md` in the retained root). Lead `d19390d2`
   (implementation-specialist), branch `codex/task-skript-39-04-strip-points-wording-remote`,
   worktree `/home/paunchygent/apps/skriptoteket-task-skript-39-04-strip-points-wording-remote`;
   never pushed.
