@@ -60,6 +60,11 @@ Stop and report if the shared editor cannot run on a browser store without forki
 
 ## Repair After The Guest Staging Walk (lead 3, 2026-10-19)
 
+### Resume Here (lead 3, 2026-10-19)
+
+- Branch `codex/task-skript-41-02-02-guest-save-repair-remote`, repair commit b32c45d0. Next: the domain suite on the orchestrator's slot, then independent review and the Mac re-walk.
+- Open: the walk saw no autosave failure report, but the code and a mock-level test show the toast. The re-walk types one edit, waits past the typing pause without Spara, and watches for the toast.
+
 The guest staging walk at main eba9d0f2 failed on 2026-10-19 (Mac parent, Edge). The task stays in_progress and the production deploy stays gated. Branch `codex/task-skript-41-02-02-guest-save-repair-remote`; retained root `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a153b4-2cc7-787b-820e-330f2c1510ee`. The guest layout complaint is routed separately and is out of scope here.
 
 ### Defects
@@ -88,9 +93,9 @@ The guest staging walk at main eba9d0f2 failed on 2026-10-19 (Mac parent, Edge).
 
 - U1 (RP1-RP3): `createExamWorkspaceGuestDraftStorage` snapshots every write; the in-memory port structured-clones the draft; guest view and store specs go through the factory. Before the fix 8 tests failed: DataCloneError on the autosave and Spara paths, the export after an edit sent nothing, and three reference-identity assertions. The autosave failure toast test (RP3) passed before the fix: `useExamWorkspaceHistory` already shows "Ändringen kunde inte sparas som utkast. Försök igen." for any non-409 failure, a `DataCloneError` included. After the fix 17 focused spec files (132 tests) pass. Evidence: `evidence/u1-fail-first.log` and `evidence/u1-pass.log` in the retained root.
 - U2 (RP4): the reader rejects a manifest outside the QTI 3.0 IMS CP namespace with the version message. The QTI 2.1 package test failed first with "inga frågor"; the namespace-less comment-safety test now uses the QTI 3.0 namespace, and a new test covers a namespace-less manifest. 30 reader tests pass.
-- `pdm run lint`, `pdm run typecheck`, `fe-lint`, `fe-type-check` and `fe-build` pass. Next: the domain suite on the orchestrator's slot, then independent review and the Mac re-walk.
+- `pdm run lint`, `pdm run typecheck`, `fe-lint`, `fe-type-check` and `fe-build` pass. Lead 2's history below is kept for its evidence pointers.
 
-## Resume Here (lead 2, 2026-10-19)
+## Lead 2 History (2026-10-19)
 
 - Branch `codex/task-skript-41-02-02-remote`. origin/main d4d267cc (REP-0047) merged at d7f99dee; G1 and the AI route-gate guard pass after the merge. No independent review yet.
 - Retained root: `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a14f56-345b-7f38-ab9e-a441663b90d8`. Design: `evidence/planning/synthesis-41-02-02.md`. Lead-2 work orders: `evidence/planning/work-orders-lead2/`. Child results: `evidence/results/<id>.json`.
