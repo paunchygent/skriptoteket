@@ -114,6 +114,7 @@ def test_rich_free_text_prompt_places_the_image_between_its_text_runs() -> None:
         interaction_type=ExamNetQtiInteractionType.FREE_TEXT,
         prompt_lines=("Beskriv bilden.",),
         max_score=1,
+        expected_lines=1,
         prompt_paragraphs=(
             ExamNetQtiPromptParagraph(
                 segments=(
@@ -145,6 +146,7 @@ def test_rich_prompt_repeated_image_occurrences_use_their_own_resource_index() -
         interaction_type=ExamNetQtiInteractionType.FREE_TEXT,
         prompt_lines=("Jämför bilderna.",),
         max_score=1,
+        expected_lines=1,
         prompt_paragraphs=(
             ExamNetQtiPromptParagraph(
                 segments=(
@@ -300,6 +302,7 @@ def test_positionless_prompts_still_append_images() -> None:
         interaction_type=ExamNetQtiInteractionType.FREE_TEXT,
         prompt_lines=("Beskriv bilden.",),
         max_score=1,
+        expected_lines=1,
         image_resources=(_image(1, "Bild 1"),),
     )
     free_text_root = _root(free_text, (_IMAGE_PATHS[0],))
@@ -340,6 +343,7 @@ def test_rich_multiple_paragraphs_use_p_children_and_lf_breaks_use_br() -> None:
         interaction_type=ExamNetQtiInteractionType.FREE_TEXT,
         prompt_lines=("Rad ett", "Rad två"),
         max_score=1,
+        expected_lines=1,
         prompt_paragraphs=(
             ExamNetQtiPromptParagraph(segments=(ExamNetQtiPromptText("Rad ett\nRad två"),)),
             ExamNetQtiPromptParagraph(
@@ -375,6 +379,7 @@ def test_out_of_range_prompt_image_index_fails_closed(image_index: int) -> None:
         interaction_type=ExamNetQtiInteractionType.FREE_TEXT,
         prompt_lines=("Beskriv bilden.",),
         max_score=1,
+        expected_lines=1,
         prompt_paragraphs=(
             ExamNetQtiPromptParagraph(segments=(ExamNetQtiPromptImage(image_index),)),
         ),

@@ -53,7 +53,6 @@ function findNotes(wrapper: VueWrapper): DOMWrapper<Element>[] {
 
 const apiMocks = vi.hoisted(() => ({
   copyExamWorkspaceDocument: vi.fn(),
-  downloadExamWorkspaceExport: vi.fn(),
   findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceHistory: vi.fn(),
@@ -66,7 +65,11 @@ const apiMocks = vi.hoisted(() => ({
   saveExamWorkspaceDocument: vi.fn(),
   storeExamWorkspaceUndoStep: vi.fn(),
 }));
+const exportApiMocks = vi.hoisted(() => ({
+  downloadExamWorkspaceExport: vi.fn(),
+}));
 
+vi.mock("../../api/examWorkspaceExports", () => exportApiMocks);
 vi.mock("../../api/examWorkspace", async () => ({
   ...apiMocks,
   getExamCourseCatalog: (await import("../../test/examCourseCatalog")).getExamCourseCatalog,

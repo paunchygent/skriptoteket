@@ -219,7 +219,9 @@ class ExamWorkspaceItemRetryResponse(BaseModel):
 class ExamWorkspaceExportTarget(StrEnum):
     QTI = "qti"
     PDF = "pdf"
+    PDF_FACIT = "pdf_facit"
     DOCX = "docx"
+    EXAMNET_PDF = "examnet_pdf"
 
 
 class ExamWorkspaceExportFile(BaseModel):
@@ -293,3 +295,23 @@ class ExamWorkspaceExportChecklistResponse(BaseModel):
 
     entries: tuple[ExamWorkspaceExportChecklistEntry, ...]
     inline_choice_min_options: InlineChoiceMinOptions
+
+
+class ExamWorkspacePrintPreviewResponse(BaseModel):
+    """The saved student print copy as preview page images, or why it cannot be rendered (W5).
+
+    ``pages`` holds one PNG data URL per printed page, in print order, so the
+    Förhandsgranska panel can show the exam page by page. ``question_pages`` maps each
+    question's item id to the 0-based index of the page it first appears on, so the
+    panel can scroll to the selected question. ``status`` is ``blocked`` when the
+    document cannot be rendered at all (for example a declared picture without stored
+    payload); the student copy prints drafts, so the export blocker gate never runs here.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    revision: int
+    status: Literal["ready", "blocked"]
+    pages: list[str]
+    question_pages: dict[str, int]
+    message: str | None

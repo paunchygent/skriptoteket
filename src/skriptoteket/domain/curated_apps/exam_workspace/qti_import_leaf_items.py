@@ -91,6 +91,7 @@ def leaf_item(
     reasons: list[str] = []
     points = source.max_score
     tick_points: Decimal | None = None
+    writing_lines: int | None = None
     choices: tuple[NativeChoice, ...] = ()
     gaps: tuple[NativeGap, ...] = ()
     print_order: tuple[str, ...] = ()
@@ -100,6 +101,9 @@ def leaf_item(
     answer_key_text: str | None = None
 
     if kind is NativeExamItemKind.FREE_TEXT:
+        if source.expected_lines is None:
+            return None
+        writing_lines = source.expected_lines
         answer_key = NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE)
     elif kind in _CHOICE_KINDS:
         choices, choice_ids = _choices(source.choices, image_ids=image_ids)
@@ -217,6 +221,7 @@ def leaf_item(
             body=body,
             points=points,
             tick_points=tick_points,
+            writing_lines=writing_lines,
             choices=choices,
             print_order=print_order,
             gaps=gaps,

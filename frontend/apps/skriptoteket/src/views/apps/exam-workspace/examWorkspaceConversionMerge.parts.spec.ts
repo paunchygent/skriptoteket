@@ -27,6 +27,7 @@ import { examWorkspaceUnits, withUnits } from "./examWorkspaceStructure";
 function item(itemId: string, text: string, sequence = 0): NativeExamItem {
   return {
     ai_suggestion: null,
+    writing_lines: null,
     answer_key: { correct_choice_ids: [], match_pairs: [], origin: "not_applicable" },
     body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text }] }],
     choices: [],
@@ -78,7 +79,7 @@ function document(
     origin: { kind: "docx_import" },
     parents,
     revision,
-    schema_version: "native_exam_document_v7",
+    schema_version: "native_exam_document_v8",
     title: "Prov",
   };
 }

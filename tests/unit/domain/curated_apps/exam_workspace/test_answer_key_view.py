@@ -145,6 +145,7 @@ def _free_text_item(*, sequence: int, item_id: str) -> NativeExamItem:
         item_id=item_id,
         sequence=sequence,
         kind=NativeExamItemKind.FREE_TEXT,
+        writing_lines=8,
         body=(
             NativeParagraph(
                 heading_level=None, segments=(NativeTextSegment(text="Resonera.", marks=()),)

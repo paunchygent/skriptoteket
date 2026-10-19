@@ -147,6 +147,7 @@ function choiceItem(
     source_anchor: null,
     suggested_kind: null,
     tick_points: null,
+    writing_lines: null,
   };
 }
 

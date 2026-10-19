@@ -9,8 +9,15 @@ from docx import Document
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_examnet_pdf_contracts import (
     DigiExamExamNetPdfStatus,
 )
+from skriptoteket.domain.curated_apps.exam_conversion.exam_print_house_template import (
+    ExamPrintVariant,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.container import (
     ExamWorkspaceContainerContent,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.exam_print_document import (
+    PrintAnswerKey,
+    build_print_document,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.examnet_pdf_export import (
     native_exam_to_pdf_document,
@@ -64,6 +71,7 @@ def _document(body: str, *, criteria: tuple[NativeExamCriterion, ...]) -> Native
                 item_id="item_001",
                 sequence=1,
                 kind=NativeExamItemKind.FREE_TEXT,
+                writing_lines=8,
                 body=(
                     NativeParagraph(
                         heading_level=None, segments=(NativeTextSegment(text=body, marks=()),)
@@ -98,13 +106,26 @@ def test_criteria_survive_the_container_round_trip() -> None:
     ("body", "label"),
     [(_SWEDISH_BODY, "Rättningsmall"), (_ENGLISH_BODY, "Rättningsmall")],
 )
-def test_docx_answer_key_prints_each_criterion_with_points(body: str, label: str) -> None:
-    lines = _docx_lines(_document(body, criteria=_CRITERIA))
+def test_facit_print_document_prints_each_criterion_with_points(body: str, label: str) -> None:
+    document = _document(body, criteria=_CRITERIA)
+    facit = build_print_document(document, variant=ExamPrintVariant.FACIT)
+    lines = [
+        line
+        for entry in facit.entries
+        for block in entry.blocks
+        if isinstance(block, PrintAnswerKey)
+        for line in block.lines
+    ]
     assert f"{label}:" in lines
     assert "• Definitionen (2 p)" in lines
     assert "• <exemplet> & motiveringen\nmed detaljer (1 p)" in lines
     other = "Marking guide"
     assert not any(line.startswith(other) for line in lines)
+
+    # The student copy is the DOCX under test and never carries the criteria.
+    student = "\n".join(_docx_lines(document))
+    assert f"{label}:" not in student
+    assert "• Definitionen (2 p)" not in student
 
 
 @pytest.mark.parametrize("body", [_SWEDISH_BODY, _ENGLISH_BODY])

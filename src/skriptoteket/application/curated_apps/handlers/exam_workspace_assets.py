@@ -18,7 +18,7 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_document_stor
     ExamWorkspaceDocumentStore,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
-    _document_not_found,
+    document_not_found,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import User
@@ -67,7 +67,7 @@ class GetExamWorkspaceAssetHandler:
             user_id=actor.id, document_lineage_id=lineage_id
         )
         if head is None:
-            raise _document_not_found(lineage_id)
+            raise document_not_found(lineage_id)
         content = await self._store.load(actor=actor, vault_file=head)
         container = self._codec.parse(content=content)
         history = await self._store.get_history(actor=actor, lineage_id=lineage_id)

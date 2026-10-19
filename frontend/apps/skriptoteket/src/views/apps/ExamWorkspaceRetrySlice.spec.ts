@@ -25,7 +25,6 @@ import type { ViewWrapper } from "./ExamWorkspaceSlice.specSupport";
 type NativeExamAsset = ExamWorkspaceDocumentResponse["document"]["assets"][number];
 
 const apiMocks = vi.hoisted(() => ({
-  downloadExamWorkspaceExport: vi.fn(),
   examWorkspaceAssetUrl: vi.fn(),
   findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
@@ -35,7 +34,11 @@ const apiMocks = vi.hoisted(() => ({
   retryExamWorkspaceItem: vi.fn(),
   saveExamWorkspaceDocument: vi.fn(),
 }));
+const exportApiMocks = vi.hoisted(() => ({
+  downloadExamWorkspaceExport: vi.fn(),
+}));
 
+vi.mock("../../api/examWorkspaceExports", () => exportApiMocks);
 vi.mock("../../api/examWorkspace", async () => ({
   ...apiMocks,
   getExamCourseCatalog: (await import("../../test/examCourseCatalog")).getExamCourseCatalog,
@@ -94,6 +97,7 @@ function reviewItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
     source_anchor: "body:0001",
     suggested_kind: null,
     tick_points: null,
+    writing_lines: 8,
     ...overrides,
   };
 }
@@ -106,6 +110,7 @@ function convertedItem(): NativeExamItem {
       origin: "source_provided",
     },
     kind: "matching",
+    writing_lines: null,
     match_left: [{ body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Första begreppet" }] }], left_id: "left_001" }],
     match_right: [{ body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Första svaret" }] }], right_id: "right_001" }],
     review: {
@@ -144,7 +149,7 @@ async function clickRetry(wrapper: ViewWrapper): Promise<void> {
 }
 
 beforeEach(() => {
-  for (const mock of Object.values(apiMocks)) {
+  for (const mock of [...Object.values(apiMocks), ...Object.values(exportApiMocks)]) {
     mock.mockReset();
   }
 });

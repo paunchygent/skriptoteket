@@ -33,7 +33,7 @@ const document: NativeExamDocument = {
     { instruction: [], item_ids: ["item_003", "item_004"], parent_id: "parent_002", place: 2 },
   ] satisfies NativeExamParent[],
   revision: 1,
-  schema_version: "native_exam_document_v7",
+  schema_version: "native_exam_document_v8",
   title: "Prov",
 };
 

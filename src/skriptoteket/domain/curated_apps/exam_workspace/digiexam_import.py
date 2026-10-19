@@ -14,6 +14,9 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_ir_contracts impo
     DigiExamIntermediateExam,
     DigiExamIrItem,
 )
+from skriptoteket.domain.curated_apps.exam_conversion.exam_print_house_template import (
+    DEFAULT_WRITING_LINES,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.container import ExamWorkspaceContainerContent
 from skriptoteket.domain.curated_apps.exam_workspace.digiexam_body import (
     digiexam_body,
@@ -179,6 +182,7 @@ def _item(
         printed_label=source.title,
         body=body,
         points=source.max_score,
+        writing_lines=DEFAULT_WRITING_LINES if kind is NativeExamItemKind.FREE_TEXT else None,
         choices=tuple(
             NativeChoice(
                 choice_id=f"choice_{alternative.id:03d}",

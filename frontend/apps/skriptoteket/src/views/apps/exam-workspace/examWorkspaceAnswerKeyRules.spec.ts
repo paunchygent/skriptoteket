@@ -70,6 +70,7 @@ function buildGapItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
     source_anchor: null,
     suggested_kind: null,
     tick_points: null,
+    writing_lines: null,
     ...overrides,
   };
 }

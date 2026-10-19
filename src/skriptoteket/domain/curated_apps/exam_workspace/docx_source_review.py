@@ -6,6 +6,9 @@ without importing the build module.
 
 from collections.abc import Iterable
 
+from skriptoteket.domain.curated_apps.exam_conversion.exam_print_house_template import (
+    DEFAULT_WRITING_LINES,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxChunk,
     DocxMissingImage,
@@ -31,7 +34,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeParseOrigin,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import (
-    source_paragraphs,
+    review_source_paragraphs,
 )
 
 
@@ -59,11 +62,12 @@ def review_source_item(chunks: tuple[DocxChunk, ...], reason: str) -> NativeExam
     chunk in source order, whatever the model wrote; it keeps the question's printed points
     and every picture at its exact place in the chunk's text, and names every picture the
     conversion could not show beside the caller's ``reason``."""
-    body = source_paragraphs(chunks)
+    body = tuple(paragraph for _, paragraph in review_source_paragraphs(chunks))
     return NativeExamItem(
         item_id="item_001",
         sequence=1,
         kind=NativeExamItemKind.FREE_TEXT,
+        writing_lines=DEFAULT_WRITING_LINES,
         points=printed_points(chunks),
         body=body
         or (

@@ -43,6 +43,7 @@ import ExamWorkspaceKategoriseraGrid from "./ExamWorkspaceKategoriseraGrid.vue";
 import ExamWorkspaceOrderingField from "./ExamWorkspaceOrderingField.vue";
 import ExamWorkspaceQuestionHead from "./ExamWorkspaceQuestionHead.vue";
 import ExamWorkspaceQuestionTools from "./ExamWorkspaceQuestionTools.vue";
+import ExamWorkspaceWritingLinesField from "./ExamWorkspaceWritingLinesField.vue";
 import { canUndoInterpretation, isTeacherReviewed } from "./examWorkspaceItemEdits";
 import { examWorkspaceItemReadiness } from "./examWorkspaceItemReadiness";
 import { hasNegativePoints, NEGATIVE_POINTS_GUIDANCE } from "./examWorkspaceItemSaveRules";
@@ -73,8 +74,10 @@ const props = withDefaults(
     /** The part the question sits in; null when it is standalone. */
     currentParentId?: string | null;
     assetUrls?: Record<string, string>;
+    /** The writing-line count every free-text question shares, or null when they differ. */
+    allFreeTextWritingLines?: number | null;
   }>(),
-  { assetUrls: undefined, currentParentId: null, moveTargets: () => [] },
+  { allFreeTextWritingLines: null, assetUrls: undefined, currentParentId: null, moveTargets: () => [] },
 );
 
 provideRichTextTargetRegistry();
@@ -112,11 +115,15 @@ const emit = defineEmits<{
   updateBody: [itemId: string, body: NativeExamBodyParagraph[], structural: boolean];
   updatePoints: [itemId: string, points: number | null];
   updateTickPoints: [itemId: string, tickPoints: string];
+  updateWritingLines: [itemId: string, lines: number];
+  applyWritingLinesToAll: [lines: number];
 }>();
 
 const pointsId = useId();
 const pointsMessageId = useId();
 const tickId = useId();
+/** The converting notice's stable id, so the locked fields can point at their reason. */
+const convertingNoticeId = useId();
 const parentOpen = ref(false);
 const tickInvalid = ref(false);
 
@@ -144,6 +151,10 @@ const pointsEstimated = computed(
   () => props.item.points_estimated && !pointsMissing.value && !pointsNegative.value && !isGrid.value && !hasCriteria.value,
 );
 const showFields = computed(() => !props.converting && !unbuilt.value);
+/** True when this free-text question already carries the shared writing-line count. */
+const allFreeTextWritingLinesMatch = computed(
+  () => props.allFreeTextWritingLines === props.item.writing_lines,
+);
 
 /** Where the answer key came from, with the key text the file printed. */
 const keyLine = computed(() => {
@@ -236,6 +247,7 @@ function handleTickPointsInput(event: Event): void {
 
     <div
       v-if="converting"
+      :id="convertingNoticeId"
       class="xw-notice qed__notice"
       data-test="exam-workspace-converting-notice"
     >
@@ -294,6 +306,15 @@ function handleTickPointsInput(event: Event): void {
     />
 
     <template v-if="showFields">
+      <ExamWorkspaceWritingLinesField
+        v-if="item.kind === 'free_text' && item.writing_lines !== null"
+        :lines="item.writing_lines"
+        :disabled="locked"
+        :all-free-text-match="allFreeTextWritingLinesMatch"
+        :locked-reason-id="converting ? convertingNoticeId : null"
+        @update="(lines) => emit('updateWritingLines', item.item_id, lines)"
+        @apply-to-all="(lines) => emit('applyWritingLinesToAll', lines)"
+      />
       <ExamWorkspaceCriteriaField
         v-if="item.kind === 'free_text'"
         :disabled="locked"
