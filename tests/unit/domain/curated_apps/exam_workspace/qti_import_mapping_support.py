@@ -7,6 +7,9 @@ import helpers instead of copying them.
 import hashlib
 from uuid import uuid4
 
+from skriptoteket.domain.curated_apps.exam_conversion.exam_print_house_template import (
+    DEFAULT_WRITING_LINES,
+)
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts import (
     ExamNetQtiChoice,
     ExamNetQtiInlineChoiceGap,
@@ -96,6 +99,7 @@ def _qti_item(
     *,
     sequence: int,
     opening: str = "Fråga",
+    expected_lines: int | None = None,
     choices: tuple[ExamNetQtiChoice, ...] = (),
     correct_choice_identifiers: tuple[str, ...] = (),
     inline_choice_gaps: tuple[ExamNetQtiInlineChoiceGap, ...] = (),
@@ -104,8 +108,15 @@ def _qti_item(
     match_pairs: tuple[ExamNetQtiMatchPair, ...] = (),
     children: tuple[ExamNetQtiItem, ...] = (),
 ) -> ExamNetQtiItem:
-    """A read QTI item built by hand, independent of what the exporter produces."""
+    """A read QTI item built by hand, independent of what the exporter produces.
 
+    Free-text fixtures carry the writing area the reader would have read: an
+    absent ``expected-lines`` attribute takes the product default (W4), so the
+    helper defaults to it unless the fixture states a count.
+    """
+
+    if interaction is ExamNetQtiInteractionType.FREE_TEXT and expected_lines is None:
+        expected_lines = DEFAULT_WRITING_LINES
     return ExamNetQtiItem(
         item_id=f"item_{sequence:03d}",
         sequence=sequence,
@@ -113,6 +124,9 @@ def _qti_item(
         interaction_type=interaction,
         prompt_lines=(opening,),
         max_score=1,
+        expected_lines=(
+            expected_lines if interaction is ExamNetQtiInteractionType.FREE_TEXT else None
+        ),
         choices=choices,
         correct_choice_identifiers=correct_choice_identifiers,
         inline_choice_gaps=inline_choice_gaps,

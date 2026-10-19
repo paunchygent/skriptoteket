@@ -34,16 +34,19 @@ const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceHistory: vi.fn(),
   getExamWorkspaceHistoryStep: vi.fn(),
   storeExamWorkspaceUndoStep: vi.fn(),
-  downloadExamWorkspaceExport: vi.fn(),
   findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
-  getExamWorkspaceExportChecklist: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
   saveExamWorkspaceDocument: vi.fn(),
 }));
+const exportApiMocks = vi.hoisted(() => ({
+  downloadExamWorkspaceExport: vi.fn(),
+  getExamWorkspaceExportChecklist: vi.fn(),
+}));
 
+vi.mock("../../api/examWorkspaceExports", () => exportApiMocks);
 vi.mock("../../api/examWorkspace", async () => ({
   ...apiMocks,
   getExamCourseCatalog: (await import("../../test/examCourseCatalog")).getExamCourseCatalog,
@@ -55,7 +58,7 @@ vi.mock("../../utils/browserDownload", () => downloadMocks);
 
 
 beforeEach(() => {
-  arrangeExportApis({ api: apiMocks, download: downloadMocks });
+  arrangeExportApis({ api: apiMocks, exportApi: exportApiMocks, download: downloadMocks });
   arrangeStepHistory(apiMocks);
 });
 
@@ -70,7 +73,7 @@ describe("ExamWorkspaceView export download", () => {
     "downloads the %s export from the saved version with the server filename and reports it inline",
     async (target, filename, created) => {
       const blob = new Blob(["export"]);
-      apiMocks.downloadExamWorkspaceExport.mockResolvedValue({
+      exportApiMocks.downloadExamWorkspaceExport.mockResolvedValue({
         blob,
         contentType: "application/octet-stream",
         filename,
@@ -79,7 +82,7 @@ describe("ExamWorkspaceView export download", () => {
 
       await exportFromMenu(wrapper, target);
 
-      expect(apiMocks.downloadExamWorkspaceExport).toHaveBeenCalledWith("lineage-1", target, 1);
+      expect(exportApiMocks.downloadExamWorkspaceExport).toHaveBeenCalledWith("lineage-1", target, 1);
       expect(downloadMocks.triggerBrowserDownload).toHaveBeenCalledWith(blob, filename);
       expect(useToastStore().success).not.toHaveBeenCalled();
       await openMenu(wrapper);
@@ -91,7 +94,7 @@ describe("ExamWorkspaceView export download", () => {
   );
 
   it("exports from the drawer with the chosen format and reports it inline", async () => {
-    apiMocks.downloadExamWorkspaceExport.mockResolvedValue({
+    exportApiMocks.downloadExamWorkspaceExport.mockResolvedValue({
       blob: new Blob(["pdf"]),
       contentType: "application/pdf",
       filename: "NO-prov-examnet.pdf",
@@ -103,8 +106,8 @@ describe("ExamWorkspaceView export download", () => {
     await wrapper.get('[data-test="exam-workspace-export-run"]').trigger("click");
     await flushPromises();
 
-    expect(apiMocks.downloadExamWorkspaceExport).toHaveBeenCalledTimes(1);
-    expect(apiMocks.downloadExamWorkspaceExport).toHaveBeenCalledWith("lineage-1", "pdf", 1);
+    expect(exportApiMocks.downloadExamWorkspaceExport).toHaveBeenCalledTimes(1);
+    expect(exportApiMocks.downloadExamWorkspaceExport).toHaveBeenCalledWith("lineage-1", "pdf", 1);
     expect(downloadMocks.triggerBrowserDownload).toHaveBeenCalledWith(
       expect.any(Blob),
       "NO-prov-examnet.pdf",
@@ -116,7 +119,7 @@ describe("ExamWorkspaceView export download", () => {
   });
 
   it("shows a Swedish failure notice and toast when an export fails without question blockers", async () => {
-    apiMocks.downloadExamWorkspaceExport.mockRejectedValue(
+    exportApiMocks.downloadExamWorkspaceExport.mockRejectedValue(
       new ApiError({ code: "INTERNAL_ERROR", message: "boom", status: 500 }),
     );
     const wrapper = await mountImported();
@@ -135,7 +138,7 @@ describe("ExamWorkspaceView export download", () => {
   });
 
   it("reads the latest version in when a save elsewhere moved the saved exam", async () => {
-    apiMocks.downloadExamWorkspaceExport.mockRejectedValue(
+    exportApiMocks.downloadExamWorkspaceExport.mockRejectedValue(
       new ApiError({ code: "CONFLICT", message: "stale", status: 409 }),
     );
     const wrapper = await mountImported();
@@ -152,7 +155,7 @@ describe("ExamWorkspaceView export download", () => {
 
   it("saves unsaved edits first and exports the version just saved, in one click", async () => {
     apiMocks.saveExamWorkspaceDocument.mockResolvedValue(exportableResponse({ version: 2 }));
-    apiMocks.downloadExamWorkspaceExport.mockResolvedValue({
+    exportApiMocks.downloadExamWorkspaceExport.mockResolvedValue({
       blob: new Blob(["pdf"]),
       contentType: "application/pdf",
       filename: "Prov.pdf",
@@ -169,12 +172,12 @@ describe("ExamWorkspaceView export download", () => {
 
     const saved = apiMocks.saveExamWorkspaceDocument.mock.calls[0]![1].document;
     expect(saved.items.find((item: { item_id: string }) => item.item_id === "item_002").points).toBe(7);
-    expect(apiMocks.downloadExamWorkspaceExport).toHaveBeenCalledWith("lineage-1", "pdf", 2);
+    expect(exportApiMocks.downloadExamWorkspaceExport).toHaveBeenCalledWith("lineage-1", "pdf", 2);
     expect(wrapper.get('[data-test="exam-workspace-save-state"]').text()).toMatch(/^Sparat /);
   });
 
   it("exports a clean exam without saving it again", async () => {
-    apiMocks.downloadExamWorkspaceExport.mockResolvedValue({
+    exportApiMocks.downloadExamWorkspaceExport.mockResolvedValue({
       blob: new Blob(["docx"]),
       contentType: "application/octet-stream",
       filename: "Prov.docx",
@@ -184,7 +187,7 @@ describe("ExamWorkspaceView export download", () => {
     await exportFromMenu(wrapper, "docx");
 
     expect(apiMocks.saveExamWorkspaceDocument).not.toHaveBeenCalled();
-    expect(apiMocks.downloadExamWorkspaceExport).toHaveBeenCalledWith("lineage-1", "docx", 1);
+    expect(exportApiMocks.downloadExamWorkspaceExport).toHaveBeenCalledWith("lineage-1", "docx", 1);
   });
 
   it("exports nothing when the save before it fails, and toasts the save failure", async () => {
@@ -197,7 +200,7 @@ describe("ExamWorkspaceView export download", () => {
 
     await exportFromMenu(wrapper, "qti");
 
-    expect(apiMocks.downloadExamWorkspaceExport).not.toHaveBeenCalled();
+    expect(exportApiMocks.downloadExamWorkspaceExport).not.toHaveBeenCalled();
     expect(useToastStore().failure).toHaveBeenCalledTimes(1);
     expect(useToastStore().failure).toHaveBeenCalledWith("Det gick inte att spara provet. Försök igen.");
     expect(page("exam-workspace-export-running")).toBeNull();
@@ -208,7 +211,7 @@ describe("ExamWorkspaceView export download", () => {
     const save = deferred<ReturnType<typeof exportableResponse>>();
     apiMocks.saveExamWorkspaceDocument.mockReturnValue(save.promise);
     const download = deferred<{ blob: Blob; contentType: string; filename: string }>();
-    apiMocks.downloadExamWorkspaceExport.mockReturnValue(download.promise);
+    exportApiMocks.downloadExamWorkspaceExport.mockReturnValue(download.promise);
     const wrapper = await mountImported();
     await selectItemRow(wrapper, "item_002");
     await wrapper.find('[data-test="exam-workspace-item-points-input"]').setValue("7");
@@ -220,7 +223,7 @@ describe("ExamWorkspaceView export download", () => {
     expect(menuFormatDisabled("pdf")).toBe("true");
     save.resolve(exportableResponse({ version: 2 }));
     await flushPromises();
-    expect(apiMocks.downloadExamWorkspaceExport).toHaveBeenCalledWith("lineage-1", "qti", 2);
+    expect(exportApiMocks.downloadExamWorkspaceExport).toHaveBeenCalledWith("lineage-1", "qti", 2);
     expect(requirePage("exam-workspace-export-running").text()).toBe("Exporterar …");
     download.resolve({ blob: new Blob(["zip"]), contentType: "application/zip", filename: "Prov.zip" });
     await flushPromises();

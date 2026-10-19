@@ -8,10 +8,17 @@ from zipfile import ZipFile
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_examnet_pdf_contracts import (
     DigiExamExamNetPdfStatus,
 )
+from skriptoteket.domain.curated_apps.exam_conversion.exam_print_house_template import (
+    ExamPrintVariant,
+)
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_item_xml import (
     serialize_qti_assessment_item,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_terms import qti_tag
+from skriptoteket.domain.curated_apps.exam_workspace.exam_print_document import (
+    PrintAnswerKey,
+    build_print_document,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.examnet_pdf_export import (
     native_exam_to_pdf_document,
 )
@@ -91,20 +98,26 @@ def test_pdf_dropdown_options_render_in_stored_order() -> None:
     assert escape("Gotland") not in key
 
 
-def test_docx_dropdown_brackets_options_in_stored_order_and_keys_correct() -> None:
-    content = exam_workspace_docx_writer.ExamWorkspaceDocxWriter().build_docx_bytes(
-        document_of((_item(),))
-    )
+def test_docx_dropdown_brackets_options_in_stored_order_and_facit_key_correct() -> None:
+    document = document_of((_item(),))
+    content = exam_workspace_docx_writer.ExamWorkspaceDocxWriter().build_docx_bytes(document)
     with ZipFile(BytesIO(content)) as archive:
         root = ElementTree.fromstring(archive.read("word/document.xml"))
     ns = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
     text = "\n".join(
-        "".join(node.itertext())
+        "".join(node.text or "" for node in paragraph.findall(".//w:t", ns))
         for paragraph in root.findall(".//w:p", ns)
-        for node in paragraph.findall("w:r/w:t", ns)
     )
-    prompt, key = text.split("Facit", maxsplit=1)
-    assert "Ön: [Öland / Gotland / Ven]" in prompt
-    assert "Lucka 1: Ven" in key
-    assert "Öland" not in key
-    assert "Gotland" not in key
+    assert "Ön: [Öland / Gotland / Ven]" in text
+    assert "Facit" not in text
+
+    facit = build_print_document(document, variant=ExamPrintVariant.FACIT)
+    key_lines = [
+        line
+        for entry in facit.entries
+        for block in entry.blocks
+        if isinstance(block, PrintAnswerKey)
+        for line in block.lines
+    ]
+    assert "Lucka 1: Ven" in key_lines
+    assert not any("Öland" in line or "Gotland" in line for line in key_lines)

@@ -11,6 +11,9 @@ from uuid import uuid4
 
 import pytest
 
+from skriptoteket.domain.curated_apps.exam_conversion.exam_print_house_template import (
+    DEFAULT_WRITING_LINES,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.examnet_qti_export import (
     native_exam_to_examnet_qti_items,
 )
@@ -224,6 +227,7 @@ def test_free_text_criteria_are_a_named_loss_while_points_are_kept() -> None:
         kind=NativeExamItemKind.FREE_TEXT,
         body=plain_body("Resonera om renässansen."),
         points=3,
+        writing_lines=DEFAULT_WRITING_LINES,
         criteria=(
             NativeExamCriterion(text="Ett korrekt exempel.", points=2),
             NativeExamCriterion(text="En korrekt förklaring.", points=1),

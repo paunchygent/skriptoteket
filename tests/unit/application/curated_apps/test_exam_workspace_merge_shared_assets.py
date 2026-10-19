@@ -74,6 +74,7 @@ def _free_text(item_id: str, sequence: int, text: str) -> NativeExamItem:
         item_id=item_id,
         sequence=sequence,
         kind=NativeExamItemKind.FREE_TEXT,
+        writing_lines=8,
         body=(
             NativeParagraph(heading_level=None, segments=(NativeTextSegment(text=text, marks=()),)),
         ),

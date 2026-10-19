@@ -31,6 +31,39 @@ ASSET_ID = "asset_0123456789abcdef"
 ASSET_PAYLOAD = b"\x89PNG fake payload"
 
 
+def tag(local_name: str) -> str:
+    return f"{{{QTI_NAMESPACE}}}{local_name}"
+
+
+def text(value: str, *marks: NativeTextMark) -> NativeTextSegment:
+    return NativeTextSegment(text=value, marks=marks)
+
+
+def paragraph(*segments: NativeSegment, heading_level: int | None = None) -> NativeParagraph:
+    return NativeParagraph(segments=segments, heading_level=heading_level)
+
+
+def document(
+    *items: NativeExamItem,
+    instructions: tuple[NativeParagraph, ...] = (),
+    parents: tuple[NativeExamParent, ...] = (),
+) -> NativeExamDocument:
+    return NativeExamDocument(
+        document_id=uuid4(),
+        revision=1,
+        title="Formateringsprov",
+        instructions=instructions,
+        items=items,
+        parents=parents,
+        origin=NativeExamDocumentOrigin(kind="created"),
+    )
+
+
+def serialize(item: ExamNetQtiItem) -> tuple[str, ElementTree.Element]:
+    xml_text = serialize_qti_assessment_item(item).decode("utf-8")
+    return xml_text, ElementTree.fromstring(xml_text)
+
+
 def review_complete() -> NativeItemReview:
     return NativeItemReview(
         state=NativeItemReviewState.REVIEW_COMPLETE,
@@ -56,43 +89,3 @@ def text_body(text: str) -> tuple[NativeParagraph, ...]:
     return (
         NativeParagraph(heading_level=None, segments=(NativeTextSegment(text=text, marks=()),)),
     )
-
-
-def _tag(local_name: str) -> str:
-    return f"{{{QTI_NAMESPACE}}}{local_name}"
-
-
-def _text(text: str, *marks: NativeTextMark) -> NativeTextSegment:
-    return NativeTextSegment(text=text, marks=marks)
-
-
-def _paragraph(*segments: NativeSegment, heading_level: int | None = None) -> NativeParagraph:
-    return NativeParagraph(segments=segments, heading_level=heading_level)
-
-
-def _review() -> NativeItemReview:
-    return NativeItemReview(
-        state=NativeItemReviewState.REVIEW_COMPLETE,
-        parse_origin=NativeParseOrigin.TEACHER_CREATED,
-    )
-
-
-def _document(
-    *items: NativeExamItem,
-    instructions: tuple[NativeParagraph, ...] = (),
-    parents: tuple[NativeExamParent, ...] = (),
-) -> NativeExamDocument:
-    return NativeExamDocument(
-        document_id=uuid4(),
-        revision=1,
-        title="Formateringsprov",
-        instructions=instructions,
-        items=items,
-        parents=parents,
-        origin=NativeExamDocumentOrigin(kind="created"),
-    )
-
-
-def _serialize(item: ExamNetQtiItem) -> tuple[str, ElementTree.Element]:
-    xml_text = serialize_qti_assessment_item(item).decode("utf-8")
-    return xml_text, ElementTree.fromstring(xml_text)

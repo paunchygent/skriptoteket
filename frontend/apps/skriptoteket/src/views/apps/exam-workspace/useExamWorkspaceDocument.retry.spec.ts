@@ -42,7 +42,6 @@ const RETRY_FAILURE_COPY = "Det gick inte att konvertera om frågan. Försök ig
 const CONFLICT_COPY = "Dokumentet har ändrats sedan det öppnades.";
 
 const apiMocks = vi.hoisted(() => ({
-  downloadExamWorkspaceExport: vi.fn(),
   examWorkspaceAssetUrl: vi.fn(),
   findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
@@ -52,7 +51,11 @@ const apiMocks = vi.hoisted(() => ({
   retryExamWorkspaceItem: vi.fn(),
   saveExamWorkspaceDocument: vi.fn(),
 }));
+const exportApiMocks = vi.hoisted(() => ({
+  downloadExamWorkspaceExport: vi.fn(),
+}));
 
+vi.mock("../../../api/examWorkspaceExports", () => exportApiMocks);
 vi.mock("../../../api/examWorkspace", async () => ({
   ...apiMocks,
   getExamCourseCatalog: (await import("../../../test/examCourseCatalog")).getExamCourseCatalog,
@@ -118,6 +121,7 @@ function freeTextItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
     retry_source: retrySource("gap_fill"),
     suggested_kind: null,
     tick_points: null,
+    writing_lines: 8,
     ...overrides,
   };
 }
@@ -125,6 +129,7 @@ function freeTextItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
 function convertedItem(): NativeExamItem {
   return freeTextItem({
     kind: "matching",
+    writing_lines: null,
     review: {
       confidence: 0.9,
       parse_origin: "llm_parsed",
@@ -164,7 +169,7 @@ function toastCount(message: string): number {
 beforeEach(() => {
   setActivePinia(createPinia());
   signInAs("admin");
-  for (const mock of Object.values(apiMocks)) {
+  for (const mock of [...Object.values(apiMocks), ...Object.values(exportApiMocks)]) {
     mock.mockReset();
   }
 });

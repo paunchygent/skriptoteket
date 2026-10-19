@@ -8,6 +8,9 @@ removed together with its aligned chunk entry.
 
 import pytest
 
+from skriptoteket.domain.curated_apps.exam_conversion.exam_print_house_template import (
+    DEFAULT_WRITING_LINES,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_item_alignment import (
     AlignedItem,
 )
@@ -57,6 +60,7 @@ def _aligned(
         sequence=1,
         kind=kind,
         body=paragraphs,
+        writing_lines=DEFAULT_WRITING_LINES if kind is NativeExamItemKind.FREE_TEXT else None,
         gaps=((NativeGap(gap_id="gap_001"),) if kind is NativeExamItemKind.GAP_FILL else ()),
         answer_key=NativeAnswerKey(
             origin=(

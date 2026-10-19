@@ -18,7 +18,8 @@
 import { computed, ref } from "vue";
 import type { Ref } from "vue";
 
-import type { ExamWorkspaceExportBlocker, NativeExamDocument } from "../../../api/examWorkspace";
+import type { NativeExamDocument } from "../../../api/examWorkspace";
+import type { ExamWorkspaceExportBlocker } from "../../../api/examWorkspaceExports";
 
 export type ExamWorkspaceTitleVerdict = (title: string, blockers: readonly ExamWorkspaceExportBlocker[]) => void;
 

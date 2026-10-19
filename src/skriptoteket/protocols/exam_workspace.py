@@ -17,6 +17,7 @@ from skriptoteket.application.curated_apps.exam_workspace import (
     ExamWorkspaceExportFile,
     ExamWorkspaceExportTarget,
     ExamWorkspaceItemRetryResponse,
+    ExamWorkspacePrintPreviewResponse,
     RequestExamWorkspaceAnswerKeySuggestionsRequest,
     RetryExamWorkspaceItemRequest,
     SaveExamWorkspaceDocumentRequest,
@@ -116,6 +117,27 @@ class ExamWorkspaceDocxWriterProtocol(Protocol):
     def validate_docx_bytes(self, content: bytes, *, expected_item_count: int) -> None: ...
 
 
+@dataclass(frozen=True)
+class ExamPrintPreviewPages:
+    """One rendered preview: a PNG per printed page and where each item first appears.
+
+    ``pages`` holds PNG bytes for every page of the print document. ``question_pages``
+    maps a question's item id to the 0-based index of the page its first appearance
+    renders on, so the preview can scroll to the selected question (W5).
+    """
+
+    pages: tuple[bytes, ...]
+    question_pages: Mapping[str, int]
+
+
+class ExamPrintRendererProtocol(Protocol):
+    """Render print-PDF HTML to PDF bytes and to preview page images (W1)."""
+
+    def render_pdf(self, *, html: str) -> bytes: ...
+
+    async def render_preview(self, *, html: str) -> ExamPrintPreviewPages: ...
+
+
 class ListExamWorkspaceDocumentsHandlerProtocol(Protocol):
     async def handle(self, *, actor: User) -> ExamWorkspaceDocumentListResponse: ...
 
@@ -210,6 +232,18 @@ class ExportExamWorkspaceDocumentHandlerProtocol(Protocol):
         lineage_id: UUID,
         expected_revision: int,
     ) -> ExamWorkspaceExportChecklistResponse: ...
+
+
+class PreviewExamWorkspacePrintHandlerProtocol(Protocol):
+    async def handle(
+        self,
+        *,
+        actor: User,
+        lineage_id: UUID,
+        expected_revision: int,
+        expected_cursor: UUID,
+        step_id: UUID,
+    ) -> ExamWorkspacePrintPreviewResponse: ...
 
 
 class RequestExamWorkspaceAnswerKeySuggestionsHandlerProtocol(Protocol):

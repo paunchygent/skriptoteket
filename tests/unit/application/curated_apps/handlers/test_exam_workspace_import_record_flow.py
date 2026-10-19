@@ -449,6 +449,7 @@ async def test_put_and_get_return_import_record_even_after_teacher_changes_facit
     choice_item = original.items[0].model_copy(
         update={
             "kind": NativeExamItemKind.SINGLE_CHOICE,
+            "writing_lines": None,
             "choices": (
                 NativeChoice(choice_id="choice_001", body=original.items[0].body),
                 NativeChoice(choice_id="choice_002", body=original.items[0].body),

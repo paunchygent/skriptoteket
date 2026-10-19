@@ -249,6 +249,7 @@ def _read_block_child(
         )
     return free_text_item(
         child_root,
+        block=block,
         declaration=declaration,
         prompt_paragraphs=prompt_paragraphs,
         image_resources=resolved_images,

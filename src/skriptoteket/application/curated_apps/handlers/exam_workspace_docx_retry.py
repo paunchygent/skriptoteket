@@ -48,6 +48,9 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_st
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
     StructuredLLMProviderProfile,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_answer_line_gate import (
+    gated_item,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_batches import (
     ConversionBatch,
     QuestionFamily,
@@ -192,51 +195,57 @@ class RetryExamWorkspaceItemHandler:
         payloads = container.assets_by_id
         missing_pictures = source_missing_picture_reasons(source)
         if missing_pictures:
-            return ExamWorkspaceItemRetryResponse(
-                lineage_id=lineage_id,
-                item=_placed(
-                    source_review_item(
-                        original=saved_item,
-                        source=source,
-                        assets=assets,
-                        payloads=payloads,
-                        reason=" ".join(missing_pictures),
-                    ),
-                    draft_item,
+            item = _placed(
+                source_review_item(
                     original=saved_item,
-                    chosen_kind=request.kind,
-                    converted=False,
+                    source=source,
+                    assets=assets,
+                    payloads=payloads,
+                    reason=" ".join(missing_pictures),
                 ),
+                draft_item,
+                original=saved_item,
+                chosen_kind=request.kind,
+                converted=False,
             )
-        if not self._enabled:
+        elif not self._enabled:
             # The conversion kill switch also governs retry: no provider call, the
             # question's own source as a review item instead.
-            return ExamWorkspaceItemRetryResponse(
-                lineage_id=lineage_id,
-                item=_placed(
-                    source_review_item(
-                        original=saved_item,
-                        source=source,
-                        assets=assets,
-                        payloads=payloads,
-                        reason=_DISABLED_REASON,
-                    ),
-                    draft_item,
+            item = _placed(
+                source_review_item(
                     original=saved_item,
-                    chosen_kind=request.kind,
-                    converted=False,
+                    source=source,
+                    assets=assets,
+                    payloads=payloads,
+                    reason=_DISABLED_REASON,
                 ),
+                draft_item,
+                original=saved_item,
+                chosen_kind=request.kind,
+                converted=False,
             )
-        replacement = await self._reconvert(
-            saved=saved,
-            assets=assets,
-            payloads=payloads,
-            saved_item=saved_item,
-            draft_item=draft_item,
-            source=source,
-            kind=request.kind,
+        else:
+            item = await self._reconvert(
+                saved=saved,
+                assets=assets,
+                payloads=payloads,
+                saved_item=saved_item,
+                draft_item=draft_item,
+                source=source,
+                kind=request.kind,
+            )
+        # Retry never reaches assemble_build_result, so every item it returns passes the
+        # build's own W10 gate here, against the question's saved source chunks.
+        by_anchor = {
+            chunk.anchor: chunk
+            for chunk in (
+                *pending_chunks(source, assets=assets, payloads=payloads),
+                *context_chunks(source, assets=assets, payloads=payloads),
+            )
+        }
+        return ExamWorkspaceItemRetryResponse(
+            lineage_id=lineage_id, item=gated_item(item, by_anchor)
         )
-        return ExamWorkspaceItemRetryResponse(lineage_id=lineage_id, item=replacement)
 
     async def _reconvert(
         self,

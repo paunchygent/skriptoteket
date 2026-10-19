@@ -23,6 +23,7 @@ import type {
 } from "../../../api/examWorkspace";
 import { criteriaPointsTotal } from "./examWorkspaceItemSaveRules";
 import { placedGapIds } from "./examWorkspaceRichTextDocument";
+import { DEFAULT_WRITING_LINES } from "./examWorkspaceWritingLines";
 
 function teacherKeyOrigin(hasKeyData: boolean): NativeExamAnswerKeyOrigin {
   return hasKeyData ? "teacher_authored" : "absent";
@@ -464,5 +465,6 @@ export function newTeacherItem(
     source_anchor: null,
     suggested_kind: null,
     tick_points: matching ? "0" : null,
+    writing_lines: kind === "free_text" ? DEFAULT_WRITING_LINES : null,
   };
 }

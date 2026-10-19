@@ -6,9 +6,16 @@ single block interaction and its surrounding prompt.
 
 from __future__ import annotations
 
+import re
 from collections.abc import Mapping
+from dataclasses import replace
 from xml.etree import ElementTree
 
+from skriptoteket.domain.curated_apps.exam_conversion.exam_print_house_template import (
+    DEFAULT_WRITING_LINES,
+    MAX_WRITING_LINES,
+    MIN_WRITING_LINES,
+)
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_body_reader import (
     ExamNetQtiReadBody,
     read_rich_content,
@@ -101,6 +108,7 @@ def read_block_item(
         )
     return free_text_item(
         root,
+        block=block,
         declaration=declaration,
         prompt_paragraphs=prompt_paragraphs,
         image_resources=resolved_images,
@@ -245,35 +253,68 @@ def matching_item(
 def free_text_item(
     root: ElementTree.Element,
     *,
+    block: ElementTree.Element,
     declaration: ResponseDeclaration,
     prompt_paragraphs: tuple[ExamNetQtiPromptParagraph, ...],
     image_resources: tuple[ExamNetQtiImageResource, ...],
     max_score: int | float | None,
     sequence: int,
 ) -> ExamNetQtiItem:
+    expected_lines = _expected_lines(block)
     if declaration.mapping is None:
-        return item(
+        return replace(
+            item(
+                root,
+                sequence=sequence,
+                interaction_type=ExamNetQtiInteractionType.FREE_TEXT,
+                prompt_paragraphs=prompt_paragraphs,
+                image_resources=image_resources,
+                max_score=max_score,
+                evaluation_mode=ExamNetQtiEvaluationMode.MANUAL_UNKEYED,
+                free_text_criterion_points=None,
+            ),
+            expected_lines=expected_lines,
+        )
+    if not declaration.mapping.entries:
+        raise UnsupportedInteraction
+    return replace(
+        item(
             root,
             sequence=sequence,
             interaction_type=ExamNetQtiInteractionType.FREE_TEXT,
             prompt_paragraphs=prompt_paragraphs,
             image_resources=image_resources,
             max_score=max_score,
-            evaluation_mode=ExamNetQtiEvaluationMode.MANUAL_UNKEYED,
-            free_text_criterion_points=None,
-        )
-    if not declaration.mapping.entries:
-        raise UnsupportedInteraction
-    return item(
-        root,
-        sequence=sequence,
-        interaction_type=ExamNetQtiInteractionType.FREE_TEXT,
-        prompt_paragraphs=prompt_paragraphs,
-        image_resources=image_resources,
-        max_score=max_score,
-        evaluation_mode=ExamNetQtiEvaluationMode.AUTOMATIC,
-        free_text_criterion_points=number(declaration.mapping.entries[0].mapped_value),
+            evaluation_mode=ExamNetQtiEvaluationMode.AUTOMATIC,
+            free_text_criterion_points=number(declaration.mapping.entries[0].mapped_value),
+        ),
+        expected_lines=expected_lines,
     )
+
+
+def _expected_lines(block: ElementTree.Element) -> int:
+    """Free-text answer box height in lines (W2) from the interaction element.
+
+    A present ``expected-lines`` attribute must match the XML Schema integer
+    lexical form: after stripping only XML whitespace (space, tab, line feed,
+    carriage return) from both ends, an optional single '+' or '-' sign
+    followed by one or more ASCII digits 0-9, inside the writing-lines
+    bounds; anything else makes the interaction unsupported. An absent
+    attribute takes DEFAULT_WRITING_LINES, the product default for a
+    free-text question with no set writing area (W4), not an old-data
+    fallback.
+    """
+
+    raw = block.get("expected-lines")
+    if raw is None:
+        return DEFAULT_WRITING_LINES
+    collapsed = raw.strip(" \t\n\r")
+    if re.fullmatch(r"[+-]?[0-9]+", collapsed, flags=re.ASCII) is None:
+        raise UnsupportedInteraction
+    lines = int(collapsed)
+    if not MIN_WRITING_LINES <= lines <= MAX_WRITING_LINES:
+        raise UnsupportedInteraction
+    return lines
 
 
 def choice(element: ElementTree.Element) -> ExamNetQtiChoice:

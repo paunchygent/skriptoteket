@@ -7,6 +7,10 @@ from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from skriptoteket.domain.curated_apps.exam_conversion.exam_print_house_template import (
+    MAX_WRITING_LINES,
+    MIN_WRITING_LINES,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeAssetSegment,
     NativeGapSegment,
@@ -65,6 +69,8 @@ class NativeExamItem(BaseModel):
     points: int | float | None = None
     # One uniform non-negative two-decimal tick value per grid; never default saved grids.
     tick_points: Decimal | None = Field(default=None, ge=0, decimal_places=2, allow_inf_nan=False)
+    # Ruled handwriting lines printed under a free-text question (W4); only free_text has them.
+    writing_lines: int | None = Field(default=None, ge=MIN_WRITING_LINES, le=MAX_WRITING_LINES)
     # Points no source stated per question: a printed section total split over its
     # questions (D6), or a prose marking guide's single-criterion estimate (R14).
     points_estimated: bool = False
@@ -106,6 +112,13 @@ class NativeExamItem(BaseModel):
         if points < 0:
             raise ValueError("points must be non-negative")
         return points
+
+    @field_validator("writing_lines", mode="before")
+    @classmethod
+    def _writing_lines_not_bool(cls, writing_lines: object) -> object:
+        if isinstance(writing_lines, bool):
+            raise ValueError("writing_lines must be an integer")
+        return writing_lines
 
     @model_validator(mode="after")
     def _kind_invariants(self) -> "NativeExamItem":
@@ -164,6 +177,7 @@ class NativeExamItem(BaseModel):
 
         self._answer_key_invariants(frozenset(choice_ids))
         self._tick_points_invariants()
+        self._writing_lines_invariants()
         validate_answer_key_suggestion(self.ai_suggestion)
         self._body_gap_invariants(gap_ids)
         return self
@@ -258,6 +272,21 @@ class NativeExamItem(BaseModel):
             return
         if Decimal(str(self.points)) != self.tick_points * ticks:
             raise ValueError("matching points must equal tick_points times the number of pairs")
+
+    def _writing_lines_invariants(self) -> None:
+        """Ruled handwriting lines belong to a free-text question alone (W4).
+
+        A stored free-text question always carries its line count; every other kind
+        carries none, so an imported or retyped non-free-text item never claims a
+        writing area.
+        """
+
+        if self.kind is NativeExamItemKind.FREE_TEXT:
+            if self.writing_lines is None:
+                raise ValueError("free_text items need writing_lines")
+            return
+        if self.writing_lines is not None:
+            raise ValueError("only free_text items carry writing_lines")
 
     def _body_gap_invariants(self, gap_ids: list[str]) -> None:
         placed: list[str] = []
