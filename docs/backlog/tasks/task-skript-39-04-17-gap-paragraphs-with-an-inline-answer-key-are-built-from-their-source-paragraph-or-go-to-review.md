@@ -101,7 +101,15 @@ event `aligned` becomes the admission event `gap_count_mismatch` ("5 gaps for
   (`~/logs/replays-39-04-17-merged/`, retained
   `evidence/read/replay-merged.diff`) repeat the replay outcome above: only
   the two svenska_2 item_001 and their formatting event change.
-- Next: the domain suite in the orchestrator's slot, then independent review.
+- Domain suite at `2def276f`: 19 failed, 4230 passed, 59 skipped
+  (`~/logs/suite-39-04-17.log`). The five failing files pass at `a8195345`.
+  Eighteen are replay guards asserting no `gap_count_mismatch` or 15 gaps for
+  this item. One, `test_unmarked_morpheme_alignment_keeps_model_wording_and_never_leaks_facit`
+  (`a864a085`, 2026-10-15), pins the old body and that "Svar:" and the key
+  never show in the body; the D4 review body is the whole source and shows the
+  key.
+- Blocked: G2 below, returned to the orchestrator 2026-10-19. No code change
+  until it is decided.
 - Open: G1 (review copy) with the user.
 - Branch `codex/task-skript-39-04-17-remote`, worktree
   `/home/paunchygent/apps/skriptoteket-task-skript-39-04-17-remote`; never
@@ -126,3 +134,4 @@ event `aligned` becomes the admission event `gap_count_mismatch` ("5 gaps for
 | D5  | Review with the source intact, instead of today's admitted item with the word lost, meets "never worse off than today". Orchestrator ruling 2026-10-19 on the TASK-SKRIPT-39-04-15 F2 re-review precedent (`898d311f`); no user gate.                                                                                                                                                                                                                                                                      |
 | D6  | The change stays local to `_gap_unit`, `_unit_blank_runs` and `_content_end` in `source_gap_paragraphs.py`; `source_paragraph`, which TASK-SKRIPT-39-04-15 folds its builder onto, is not touched. 39-04-15 lands first; this branch then merges `origin/main` and reruns its tests and the replays. Orchestrator ruling 2026-10-19.                                                                                                                                                                       |
 | G1  | Open user gate (copy), routed to the Mac parent 2026-10-19: the review reason for this mismatch. Until the user decides, the existing 39-04-16 D10 text built by `GapCountMismatchError.reason` is used, and the wording stays in that one place.                                                                                                                                                                                                                                                          |
+| G2  | Open, orchestrator gate (2026-10-19): the D4 review body is the whole source, so it shows the inline answer key, against the 2026-10-15 "never leaks facit" test. Options: A cut each paragraph's inline key out of the review body on `gap_count_mismatch` (lead's recommendation; widens D6); B accept the key in the review_required body; C withdraw D4.                                                                                                                                               |
