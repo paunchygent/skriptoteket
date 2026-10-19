@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "254dd737922fa0f231f5ce40b231b2887888ef896a1ab0f2c7f8b6a948fda4a5",
+  "source_set_digest": "ba411331af56535af5ba200200f45cea8b9d4ce554e0499114cd468e5fa60e9a",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6584,7 +6584,7 @@
       "type": "task",
       "title": "Teachers set the writing area of printed DOCX and PDF exams and imports drop paper answer lines",
       "path": "docs/backlog/tasks/task-skript-40-04-07-teachers-set-the-writing-area-of-printed-docx-and-pdf-exams-and-imports-drop-paper-answer-lines.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -6595,7 +6595,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-19",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer 09d50acc (Hemma retained evidence/reviews): approved at f14ba5f0 in rereview5; its merge check cleared the merges, W10 and R2 with two medium findings admitted (M1 fixed at a6147d0b, M2 moved to a separate ST-SKRIPT-39-04 left-out accounting repair). Merged to main at 14f643c9; the pre-push Hemma typecheck and suite passed at 003c874a. Staging walk 2026-10-19 at 003c874a (Mac .artifacts/staging-walk-40-04-07/evidence/walk-record.md): omprov import, stepper and apply-to-all, live preview, menu order, student PDF, PDF med facit with a criterion, and DOCX all observed; W6-W8 not exercised by this all-free-text exam."
       }
     },
     {
