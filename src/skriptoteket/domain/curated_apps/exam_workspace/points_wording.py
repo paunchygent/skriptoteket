@@ -3,18 +3,22 @@
 Printed points wording ("(1 point)", "Poäng: 6 poäng") states the item's
 points, never its text: ``trailing_points`` finds such wording at the end of
 a text. When its number equals the item's points, ``body_without_trailing_points``
-drops it from the last paragraph (keeping the word of a whole-text one-word
-line, D13), and ``body_without_first_paragraph_points``
+drops it from the last paragraph of a non-heading body (keeping the word of a
+whole-text one-word line, D13), and ``body_without_first_paragraph_points``
 drops a parenthesised label ending the first paragraph or a first paragraph
-that is only points wording (a points-only line with an empty or colon head,
-or a bare label as its only words); a points-only line with a one-word head
-without a colon keeps its word and loses only the label (D12 fourth
-extension); when the shape matches
+that is only points wording; a points-only line is cut by its head shape,
+which decides bare and parenthesised labels alike: an empty or colon head
+leaves whole, a one-word head without a colon keeps its word (D12
+Correction). ``body_without_heading_points`` drops an equal label ending a
+heading paragraph anywhere in the body only as a parenthesised label, as a
+bare label a dash or colon precedes, or as a whole points-only line cut by the
+same head shape; any other bare label in a heading stays, so a sentence or
+range ending never loses words. A heading last paragraph is never the
+end-of-body rule's case. When the shape matches
 but the number differs, the wording stays and ``leftover_points_wording``
-reports it for the points-note offer. ``body_without_heading_points`` drops
-any equal points label ending a heading paragraph anywhere in the body; a
-points-only line there with a one-word head without a colon keeps its word
-the same way. ``with_settled_points_wording`` settles
+reports it for the points-note offer; a terminal heading reports a differing
+number for exactly the shapes its rule would remove at an equal number, while
+a sentence or range ending records nothing. ``with_settled_points_wording`` settles
 each outcome on the final item. Only the label's position and its number
 decide; the stem itself is never read or rewritten.
 """
@@ -210,13 +214,17 @@ def body_without_trailing_points(
 
     Only the last paragraph is examined, through its trailing run of text
     segments; a paragraph ending in a gap or a picture is never touched. A
-    whole points line leaves only when its line starts inside the run. Each
+    heading last paragraph is never touched here either: the heading rule
+    owns it, so a terminal topic word is kept (D12 Correction, R2). A whole
+    points line leaves only when its line starts inside the run. Each
     segment keeps its marks; a paragraph left with no segments is dropped. A
     body left with no text, gap or picture keeps its original paragraphs,
     except for a whole-text line of one letter-only word and a label (D13):
     the word stays and only the label leaves.
     """
     if points is None:
+        return body
+    if body and body[-1].heading_level is not None:
         return body
     located = _trailing_run_wording(body)
     if located is None:
@@ -234,28 +242,6 @@ def body_without_trailing_points(
             if _body_keeps_text(narrowed):
                 return narrowed
     return body
-
-
-def _first_paragraph_parenthesised_label_start(run_text: str) -> int | None:
-    """The label start when a points-only first-paragraph line ends in a parenthesised label.
-
-    D12 says the label leaves, never the line: only the label and the blank
-    space before it leave, whether or not the line is also a points-only line.
-    A bare, non-parenthesised label stays (D12 names parenthesised labels only).
-    """
-    stripped = run_text.rstrip()
-    line_start = stripped.rfind("\n") + 1
-    line = stripped[line_start:]
-    matches = list(POINT_LABEL.finditer(line))
-    if len(matches) != 1:
-        return None
-    match = matches[0]
-    if not match.group().startswith("("):
-        return None
-    start = line_start + match.start()
-    while start > line_start and stripped[start - 1] in " \t":
-        start -= 1
-    return start
 
 
 def _points_only_word_head_label_start(run_text: str) -> int | None:
@@ -347,15 +333,15 @@ def body_without_first_paragraph_points(
 
     A parenthesised label ending the first paragraph's last line leaves with
     the blank space before it when its number equals the given points, heading
-    or not; the paragraph keeps its heading level. Only the label leaves, never
-    the line, whether or not that line is also a points-only line (D12). A
-    points-only last line with a one-word head without a colon ("Tempus
-    3 poäng", "Max 36p") keeps its word and loses only the label (D12 fourth
-    extension); a first paragraph that holds only points wording with an empty
-    or colon head (a points-only line such as "Poäng: 2 poäng", or one bare
-    label as its only words, "1 point") is dropped whole when its number
-    equals the points and the body keeps other text (D12 E); a label beside
-    other words stays. A one-paragraph body is the
+    or not; the paragraph keeps its heading level. A last line that is a
+    points-only line is cut by its head shape instead, for bare and
+    parenthesised labels alike: an empty or colon head leaves the whole line,
+    a one-word head without a colon keeps its word and loses only the label
+    (D12 Correction); a first paragraph that holds only points wording with
+    an empty or colon head (a points-only line such as "Poäng: 2 poäng", or
+    one bare label as its only words, "1 point") is dropped whole when its
+    number equals the points and the body keeps other text (D12 E); a label
+    beside other words stays. A one-paragraph body is the
     end-of-body rule's case, and a differing number records nothing. The cut
     keeps each segment's marks; a paragraph left with no segments is dropped
     when the body keeps other text, while a body of only that label stays (D6).
@@ -369,12 +355,7 @@ def body_without_first_paragraph_points(
     if found.value != points:
         return body
     if found.whole_line:
-        label_start = _first_paragraph_parenthesised_label_start(run_text)
-        if label_start is None:
-            label_start = _points_only_word_head_label_start(run_text)
-        if label_start is None:
-            return _without_bare_only_first_paragraph(body, points)
-        start = label_start
+        start = _points_only_line_start(run_text)
     else:
         start = found.start
     paragraph = body[0]
@@ -405,8 +386,11 @@ def body_without_first_paragraph_points(
 
 # One trailing dash or colon with the blank space before it, left by a
 # bare-label cut at the end of a heading paragraph ("Uppgift 3 –" gives
-# "Uppgift 3"; a colon without a blank space before it stays).
-_HEADING_TRAILING_SEPARATOR = re.compile(r"[ \t]+[–—\-:]$")
+# "Uppgift 3"; an attached colon is stripped the same way, "Fråga 2:").
+_HEADING_TRAILING_SEPARATOR = re.compile(r"[ \t]*[–—\-:]$")
+# A dash or colon with the blank space after it, before a bare label at the
+# end of a heading line ("Uppgift 3 – 4 poäng", "Fråga 2: 1 point").
+_HEADING_BARE_LABEL_SEPARATOR = re.compile(r"[–—\-:][ \t]+$")
 
 
 def _whole_line_start(run_text: str) -> int:
@@ -416,14 +400,31 @@ def _whole_line_start(run_text: str) -> int:
     return line_start - 1 if line_start else 0
 
 
+def _points_only_line_start(run_text: str) -> int:
+    """The cut start for a last line that is a points-only line, by head shape.
+
+    One head-shape decision for the heading and first-paragraph paths: a
+    one-word head without a colon keeps its word and loses only the label,
+    while an empty or colon head leaves the whole line.
+    """
+    label_start = _points_only_word_head_label_start(run_text)
+    if label_start is not None:
+        return label_start
+    return _whole_line_start(run_text)
+
+
 def _heading_bare_label_cut(
     paragraph: NativeParagraph,
 ) -> tuple[list[NativeTextSegment], str, int, int | float] | None:
-    """The trailing run, cut start and value when a bare label ends the line.
+    """The trailing run, cut start and value when a bare label ends the line after a separator.
 
-    D12 extension (D5): a single bare label ending a heading paragraph's last
-    line counts. A parenthesised label is the shared wording's case, several
-    labels never count, and a label with more words after it never matches.
+    D12 Correction: a bare label in a heading leaves only when a dash or
+    colon precedes it with a blank space before the label ("Uppgift 3 –
+    4 poäng" gives "Uppgift 3", "Fråga 2: 1 point" gives "Fråga 2"). A bare
+    label ending a sentence or a range ("Använd mellan 3 poäng och
+    5 poäng.", "Väljer eleven det får den 2 poäng.") stays. A parenthesised
+    label is the shared wording's case, several labels never count, and a
+    label with more words after it never matches.
     """
     located = _trailing_text_run(paragraph)
     if located is None:
@@ -437,6 +438,8 @@ def _heading_bare_label_cut(
         return None
     match = matches[0]
     if match.group().startswith("("):
+        return None
+    if _HEADING_BARE_LABEL_SEPARATOR.search(line[: match.start()]) is None:
         return None
     value = label_points(match.group())
     if value is None:
@@ -453,13 +456,13 @@ def body_without_heading_points(
     """The body without points wording ending any heading paragraph.
 
     Any single points label ending a heading paragraph's last line leaves when
-    its number equals the given points: a parenthesised label (only it leaves),
-    a whole points-only line with an empty or colon head (it leaves), a
-    points-only line with a one-word head without a colon (only the label
-    leaves and the word stays, D12 fourth extension), or a bare label ending
-    its line
-    (D5; it leaves with the blank space before it, plus one trailing dash or
-    colon with its blank space). The paragraph keeps its heading level, and a
+    its number equals the given points: a parenthesised label (only it
+    leaves), a whole points-only line cut by its head shape (an empty or
+    colon head leaves whole, a one-word head without a colon keeps its word,
+    D12 Correction), or a bare label a dash or colon precedes with a blank
+    space before it (it leaves with the blank space, plus the separator).
+    Any other bare label in a heading stays, so a sentence or range ending
+    never loses words. The paragraph keeps its heading level, and a
     non-heading paragraph is never touched. A differing number records nothing.
     The cut keeps each segment's marks; a paragraph left with no segments is
     dropped when the body keeps other text, while a body left with no text
@@ -492,13 +495,7 @@ def body_without_heading_points(
                 index += 1
                 continue
             if found.whole_line:
-                label_start = _first_paragraph_parenthesised_label_start(run_text)
-                if label_start is None:
-                    label_start = _points_only_word_head_label_start(run_text)
-                if label_start is None:
-                    start = _whole_line_start(run_text)
-                else:
-                    start = label_start
+                start = _points_only_line_start(run_text)
             else:
                 start = found.start
         kept_text = run_text[:start].rstrip()
@@ -527,17 +524,51 @@ def body_without_heading_points(
     return tuple(settled)
 
 
+def _heading_last_leftover(body: tuple[NativeParagraph, ...], points: int | float) -> str | None:
+    """The wording a terminal heading would leave at an equal number, when it differs.
+
+    One shape decision serves the cut and the recording: the shared run
+    wording decides parenthesised and whole-line shapes, the latter cut by
+    the head shape, while the bare-label cut decides separator-preceded bare
+    labels; any other bare ending stays and records nothing.
+    """
+    paragraph = body[-1]
+    located = _trailing_run_wording((paragraph,))
+    if located is not None:
+        run, run_text, found = located
+        if found.value == points:
+            return None
+        start = _points_only_line_start(run_text) if found.whole_line else found.start
+        if run_text[:start].rstrip().strip() or _body_keeps_text(body[:-1]):
+            return run_text[start:].strip()
+        return None
+    bare = _heading_bare_label_cut(paragraph)
+    if bare is None:
+        return None
+    run, run_text, start, value = bare
+    if value == points:
+        return None
+    kept_text = _HEADING_TRAILING_SEPARATOR.sub("", run_text[:start].rstrip())
+    if kept_text.strip() or _body_keeps_text(body[:-1]):
+        return run_text[start:].strip()
+    return None
+
+
 def leftover_points_wording(
     body: tuple[NativeParagraph, ...], points: int | float | None
 ) -> str | None:
     """The trailing points wording whose number differs from the given points.
 
     The same run and shape check as the removal decides: an equal number, no
-    settled points, and a wording that is the whole question text record nothing.
-    A bare label inside a sentence never matches, so it is never recorded.
+    settled points, and a wording that is the whole question text record
+    nothing. A terminal heading records a differing number for exactly the
+    shapes its rule would remove at an equal number. A bare label inside a
+    sentence never matches, so it is never recorded.
     """
     if points is None:
         return None
+    if body and body[-1].heading_level is not None:
+        return _heading_last_leftover(body, points)
     located = _trailing_run_wording(body)
     if located is None:
         return None
@@ -584,11 +615,14 @@ def _body_label_count(body: tuple[NativeParagraph, ...]) -> int:
 def with_settled_points_wording(item: NativeExamItem) -> NativeExamItem:
     """The item with its trailing points wording settled against its points.
 
-    An equal number leaves the wording from the body's end, then from its
-    first paragraph, then from any heading paragraph; a differing
-    number at the end keeps the wording and records
-    it in ``leftover_points_text`` for the points-note offer, while a differing
-    first-paragraph or heading number records nothing. Only the body and the leftover field
+    An equal number leaves the wording from the body's end (never from a
+    heading last paragraph), then from its first paragraph, then from any
+    heading paragraph; a heading never loses its own words. A differing
+    number at the non-heading end keeps the wording and records
+    it in ``leftover_points_text`` for the points-note offer, as does a
+    differing number at a terminal heading for exactly the shapes its rule
+    would remove; a differing first-paragraph or non-terminal heading number
+    records nothing. Only the body and the leftover field
     change; points, review and every source record stay as they are. A missing
     number, a stem of only wording or a body the rule never matches returns the
     item untouched. A body holding several labels is left untouched as well:

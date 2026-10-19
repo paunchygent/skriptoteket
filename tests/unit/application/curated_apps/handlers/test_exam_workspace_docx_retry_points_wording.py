@@ -177,6 +177,34 @@ async def test_in_sentence_item_heading_keeps_its_wording_at_differing_points() 
     assert item.leftover_points_text is None
 
 
+_RANGE = "Använd mellan 3 poäng och 5 poäng."
+_VOLT = (
+    "Pelle gör en fin volt, Sara gör en ful. Sätt poäng på Sara och Pelles volter. "
+    "Använd mellan 3 poäng och 5 poäng."
+)
+_SENTENCE = "Väljer eleven det får den 2 poäng."
+
+
+@pytest.mark.parametrize(
+    ("heading", "points", "expected"),
+    [
+        ("2. " + _RANGE, 5, (_RANGE, _PROSE)),
+        ("2. " + _VOLT, 5, (_VOLT, _PROSE)),
+        ("2. " + _SENTENCE, 2, (_SENTENCE, _PROSE)),
+    ],
+)
+async def test_retry_range_or_sentence_heading_keeps_its_words(
+    heading: str, points: int, expected: tuple[str, ...]
+) -> None:
+    """D12 Correction (rereview R1): the production retry keeps sentence and range endings."""
+
+    item = await _retry_heading(heading, points)
+
+    assert body_text_lines(item.body) == expected
+    assert item.points == points
+    assert item.leftover_points_text is None
+
+
 def _build_with_heading(heading: str, points: int | float):
     """The build path for an item heading, through the production assembly."""
 

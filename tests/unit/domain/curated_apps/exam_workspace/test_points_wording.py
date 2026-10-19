@@ -36,6 +36,10 @@ def _heading(text: str, level: int = 3) -> NativeParagraph:
     return NativeParagraph(heading_level=level, segments=(_text(text),))
 
 
+def _heading2(text: str) -> NativeParagraph:
+    return NativeParagraph(heading_level=2, segments=(_text(text),))
+
+
 def _item(body: tuple[NativeParagraph, ...], points: int | float | None) -> NativeExamItem:
     return make_free_text_item().model_copy(update={"body": body, "points": points})
 
@@ -818,3 +822,140 @@ def test_first_paragraph_trailing_bare_label_in_a_sentence_stays() -> None:
     result = with_settled_points_wording(_item(body, 2))
     assert result.body == body
     assert result.leftover_points_text is None
+
+
+@pytest.mark.parametrize(
+    ("heading", "points"),
+    [
+        ("Använd mellan 3 poäng och 5 poäng.", 5),
+        (_VOLT, 5),
+        ("Väljer eleven det får den 2 poäng.", 2),
+    ],
+)
+def test_heading_sentence_or_range_ending_stays_at_equal_points(heading: str, points: int) -> None:
+    # D12 Correction (rereview R1): a bare label ending a sentence or a range
+    # stays, whatever its number, and records nothing.
+    body = (_heading2(heading), _paragraph(_text("Svara utförligt.")))
+    result = with_settled_points_wording(_item(body, points))
+    assert result.body == body
+    assert result.leftover_points_text is None
+
+
+def test_range_heading_between_paragraphs_stays_at_equal_points() -> None:
+    body = (
+        _paragraph(_text("Läs texten.")),
+        _heading2("Använd mellan 3 poäng och 5 poäng."),
+        _paragraph(_text("Svara utförligt.")),
+    )
+    result = with_settled_points_wording(_item(body, 5))
+    assert result.body == body
+    assert result.leftover_points_text is None
+
+
+@pytest.mark.parametrize(
+    ("body", "points", "expected"),
+    [
+        (
+            (_heading2("Tempus 3 poäng"), _paragraph(_text("Svara utförligt."))),
+            3,
+            (_heading2("Tempus"), _paragraph(_text("Svara utförligt."))),
+        ),
+        (
+            (
+                _paragraph(_text("Läs texten.")),
+                _heading2("Tempus 3 poäng"),
+                _paragraph(_text("Svara utförligt.")),
+            ),
+            3,
+            (
+                _paragraph(_text("Läs texten.")),
+                _heading2("Tempus"),
+                _paragraph(_text("Svara utförligt.")),
+            ),
+        ),
+        (
+            (_paragraph(_text("Läs texten.")), _heading2("Tempus 3 poäng")),
+            3,
+            (_paragraph(_text("Läs texten.")), _heading2("Tempus")),
+        ),
+        (
+            (_paragraph(_text("Fråga.")), _paragraph(_text("Max 36p"))),
+            36,
+            (_paragraph(_text("Fråga.")),),
+        ),
+    ],
+)
+def test_topic_word_head_keeps_its_word_by_position(
+    body: tuple[NativeParagraph, ...],
+    points: int,
+    expected: tuple[NativeParagraph, ...],
+) -> None:
+    # D12 Correction (rereview R2): a terminal heading keeps its topic word;
+    # D13 whole-line removal applies only to a non-heading last line.
+    result = with_settled_points_wording(_item(body, points))
+    assert result.body == expected
+    assert result.body[0].heading_level == body[0].heading_level
+    assert result.leftover_points_text is None
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        (
+            _paragraph(_text("Poäng: (2 p)")),
+            _paragraph(_text("Svara utförligt.")),
+        ),
+        (
+            _heading2("Poäng: (2 p)"),
+            _paragraph(_text("Svara utförligt.")),
+        ),
+    ],
+)
+def test_colon_head_parenthesised_line_leaves_whole(
+    body: tuple[NativeParagraph, ...],
+) -> None:
+    # D12 Correction (rereview R3): the colon head decides the cut for bare
+    # and parenthesised labels alike, in the first paragraph too.
+    result = with_settled_points_wording(_item(body, 2))
+    assert result.body == (_paragraph(_text("Svara utförligt.")),)
+    assert result.leftover_points_text is None
+
+
+@pytest.mark.parametrize(
+    ("heading", "points", "expected"),
+    [
+        ("Uppgift 3 – 4 poäng", 4, "Uppgift 3"),
+        ("Uppgift 3: 4 poäng", 4, "Uppgift 3"),
+        ("Fråga 2: 1 point", 1, "Fråga 2"),
+        ("Jämför texterna (15 p)", 15, "Jämför texterna"),
+    ],
+)
+def test_heading_kept_shapes_still_leave(heading: str, points: int, expected: str) -> None:
+    body = (_heading2(heading), _paragraph(_text("Svara utförligt.")))
+    result = with_settled_points_wording(_item(body, points))
+    assert result.body == (_heading2(expected), _paragraph(_text("Svara utförligt.")))
+    assert result.body[0].heading_level == 2
+    assert result.leftover_points_text is None
+
+
+@pytest.mark.parametrize(
+    ("terminal", "points", "expected_leftover"),
+    [
+        ("Svara utförligt och tydligt. (2 p)", 3, "(2 p)"),
+        ("Uppgift 3 – 4 poäng", 5, "4 poäng"),
+        ("Poäng: 2 poäng", 3, "Poäng: 2 poäng"),
+        ("Tempus 3 poäng", 4, "3 poäng"),
+        ("Använd mellan 3 poäng och 5 poäng.", 4, None),
+        ("Väljer eleven det får den 2 poäng.", 3, None),
+    ],
+)
+def test_terminal_heading_differing_number_records_removable_shape(
+    terminal: str, points: int, expected_leftover: str | None
+) -> None:
+    # D12 Correction: a terminal heading records a differing number for
+    # exactly the shapes the heading rule would remove at an equal number;
+    # a sentence or range ending is never recorded.
+    body = (_paragraph(_text("Läs texten.")), _heading2(terminal))
+    result = with_settled_points_wording(_item(body, points))
+    assert result.body == body
+    assert result.leftover_points_text == expected_leftover
