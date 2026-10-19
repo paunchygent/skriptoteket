@@ -58,11 +58,11 @@ Stop and report to the parent if a test fails only in parallel and its cause can
 
 | ID  | Decided contract term |
 | --- | --------------------- |
-| D1  | `addopts` is `-n auto --dist worksteal --durations=10 --import-mode=importlib -m 'not (financial or slow or docker or simulation)'`. `log_cli*` settings are deleted; `log_level = "INFO"` keeps INFO records captured, so they print under a failing test only. |
+| D1  | `addopts` is `-n logical --dist worksteal --durations=10 --import-mode=importlib -m 'not (financial or slow or docker or simulation)'`. `log_cli*` settings are deleted; `log_level = "INFO"` keeps INFO records captured, so they print under a failing test only. |
 | D2  | `tests/conftest.py` registers `--serial-reason`. On the controller (not on xdist workers, detected by `config.workerinput`), a run without workers raises `pytest.UsageError` unless the reason is non-blank; the reason prints in the report header. This covers `-n 0`, `--pdb` (xdist turns distribution off) and `-o addopts=`. |
 | D3  | `pdm run pytest` is a pdm script for `scripts.run_pytest_with_native_libs`, so focused runs carry the native-library environment. `test-parallel` and `test-sequential` are deleted with no alias. |
 | D4  | `pdm run test-serial` is the only named serial route: `-n 0 -s -v --log-cli-level=INFO`, and it still needs `--serial-reason`. Valid reasons: stepping through a test with `--pdb`, or live log output of one failing test. |
 | D5  | The governance `backend-test` producer and the pre-commit targeted runner call `pytest`. The pre-push check is unchanged: it calls `pdm run test`, which resolves through the producer. |
 | D6  | `test-simulations` is `-m simulation` under the parallel default; the simulation suites print nothing. |
-| D7  | Worker count is `auto` (24 on Hemma) unless the timing run shows thrashing. |
+| D7  | Worker count is `logical`: one worker per hardware thread, 24 on Hemma (user decision 2026-10-19, relayed by the Hemma orchestrator). `auto` counts physical cores and gave 12. `addopts` is the one owner of the count; the pre-push check reaches it through `pdm run test`. |
 | D8  | Docker integration tests stay outside the default selection; their worker setting is decided from the timing sample recorded below. |

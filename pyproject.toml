@@ -269,7 +269,7 @@ python_functions = "test_*"
 # records captured and shown only for failing tests. A serial run (`-n 0`) must
 # state why with `--serial-reason` (tests/conftest.py); `pdm run test-serial`
 # is the named live-output debugging route.
-addopts = "-n auto --dist worksteal --durations=10 --import-mode=importlib -m 'not (financial or slow or docker or simulation)'"
+addopts = "-n logical --dist worksteal --durations=10 --import-mode=importlib -m 'not (financial or slow or docker or simulation)'"
 log_level = "INFO"
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "module"

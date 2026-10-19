@@ -37,7 +37,7 @@ application tests.
 ## Execution Mode
 
 - Every pytest run is parallel and quiet by default: `addopts` in
-  `pyproject.toml` carries `-n auto --dist worksteal`, no `-s`, `-v` or live
+  `pyproject.toml` carries `-n logical --dist worksteal` (one worker per hardware thread, 24 on Hemma), no `-s`, `-v` or live
   log streaming. INFO logs and stdout are captured and printed only for
   failing tests, and the ten slowest tests are listed.
 - `pdm run pytest <target>` is the focused command. Pass `-q` or `-v` only

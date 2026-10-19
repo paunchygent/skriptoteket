@@ -30,7 +30,7 @@ def test_default_addopts_are_parallel_and_quiet() -> None:
     ]["ini_options"]
     addopts = options["addopts"].split()
 
-    assert addopts[:4] == ["-n", "auto", "--dist", "worksteal"]
+    assert addopts[:4] == ["-n", "logical", "--dist", "worksteal"]
     assert not {"-s", "-v", "-vv"} & set(addopts)
     assert not any(option.startswith("--log-cli") for option in addopts)
     assert "log_cli" not in options

@@ -54,7 +54,7 @@ pdm run test-simulations
 ```
 
 - `pdm run test` runs the changed-component route; `pdm run pytest <target>`
-  runs a focused target. Both run in parallel (`-n auto --dist worksteal` in
+  runs a focused target. Both run in parallel (`-n logical --dist worksteal` in
   `addopts`) and quietly: no live log streaming, and captured INFO logs and
   stdout are printed only for failing tests.
 - A serial run must state why. `-n 0`, `--pdb` or an overridden `addopts`
