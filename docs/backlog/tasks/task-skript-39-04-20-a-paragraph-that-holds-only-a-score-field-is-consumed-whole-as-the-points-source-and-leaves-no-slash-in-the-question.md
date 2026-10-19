@@ -121,8 +121,11 @@ changes. The user accepted these consequences (Q3 = A, 2026-10-19); D7 records t
   `docx_ai_item`. The four focused files pass, 130 tests; lint passes; backend typecheck
   is clean. The ten replays at `92373773` and at the merged head differ exactly as the
   accepted Q3 diff (`~/logs/replays-39-04-score-field/{main-92373773,merged}`).
-- Waiting on: the domain-suite slot (main moved 58 commits) and the user's confirmation
-  of the corrected Q3 counts.
+- Domain suite at `b550968c` (orchestrator go 2026-10-19): 4655 passed, 59 skipped
+  (`~/logs/suite-39-04-20-merged.log`). `git merge-tree` against `origin/main` `92373773`
+  is clean; the branch is 0 commits behind it.
+- Waiting on: the user's confirmation of the corrected Q3 counts, then the orchestrator's
+  integration into main.
 - Branch `codex/task-skript-39-04-score-field-remote`, worktree
   `/home/paunchygent/apps/skriptoteket-task-skript-39-04-score-field-remote`; never pushed.
 - Retained root:
