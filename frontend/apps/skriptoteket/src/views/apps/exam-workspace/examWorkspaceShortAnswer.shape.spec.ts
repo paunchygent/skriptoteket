@@ -16,7 +16,7 @@ import type { NativeExamBodyParagraph, NativeExamItem } from "../../../api/examW
 import { newTeacherItem, withBody } from "./examWorkspaceItemEdits";
 import { buildGap } from "./examWorkspaceKeyedItems.specSupport";
 import { plainBody } from "./examWorkspaceRichText";
-import { placedGapIds } from "./examWorkspaceRichTextDocument";
+import { bodyFromEditor, editorContentFrom, placedGapIds } from "./examWorkspaceRichTextDocument";
 import {
   canBecomeShortAnswer,
   isShortAnswer,
@@ -58,14 +58,23 @@ describe("withGapTextShape", () => {
     expect(result).not.toBe(item);
     expect(isShortAnswer(result)).toBe(false);
     expect(placedGapIds(result.body)).toEqual(["gap_001"]);
-    const last = result.body[result.body.length - 1]!;
+    const last = result.body[result.body.length - 1];
+    expect(last).toBeDefined();
+    if (last === undefined) {
+      throw new Error("expected a last paragraph");
+    }
     expect(last.segments).toEqual([
       { kind: "text", marks: [], text: "Vad heter huvudstaden?" },
       { kind: "text", marks: [], text: " " },
       { kind: "gap", gap_id: "gap_001" },
     ]);
     expect(result.gaps).toEqual(item.gaps);
-    expect(result.gaps[0]!.accepted_values).toEqual(["Stockholm"]);
+    const gap = result.gaps[0];
+    expect(gap).toBeDefined();
+    if (gap === undefined) {
+      throw new Error("expected the gap record");
+    }
+    expect(gap.accepted_values).toEqual(["Stockholm"]);
   });
 
   it("adds no extra space when the question already ends in a space", () => {
@@ -73,7 +82,11 @@ describe("withGapTextShape", () => {
 
     const result = withGapTextShape(item);
 
-    const last = result.body[result.body.length - 1]!;
+    const last = result.body[result.body.length - 1];
+    expect(last).toBeDefined();
+    if (last === undefined) {
+      throw new Error("expected a last paragraph");
+    }
     expect(last.segments).toEqual([
       { kind: "text", marks: [], text: "Vad heter huvudstaden? " },
       { kind: "gap", gap_id: "gap_001" },
@@ -89,6 +102,74 @@ describe("withGapTextShape", () => {
     expect(result.body).toEqual([gapParagraph("gap_001"), { heading_level: null, segments: [] }]);
     expect(isShortAnswer(result)).toBe(false);
     expect(result.gaps).toEqual(item.gaps);
+  });
+
+  it("moves the gap onto the text paragraph when the last question paragraph is empty", () => {
+    const item = gapFillItem(
+      [...plainBody("Vad heter huvudstaden?"), { heading_level: null, segments: [] }, gapParagraph("gap_001")],
+      [buildGap("gap_001", ["Stockholm"])],
+    );
+
+    const result = withGapTextShape(item);
+
+    expect(isShortAnswer(result)).toBe(false);
+    expect(placedGapIds(result.body)).toEqual(["gap_001"]);
+    const last = result.body[result.body.length - 1];
+    expect(last).toBeDefined();
+    if (last === undefined) {
+      throw new Error("expected a last paragraph");
+    }
+    expect(last.segments).toEqual([
+      { kind: "text", marks: [], text: "Vad heter huvudstaden?" },
+      { kind: "text", marks: [], text: " " },
+      { kind: "gap", gap_id: "gap_001" },
+    ]);
+    expect(result.gaps).toEqual(item.gaps);
+    const mapped = bodyFromEditor(editorContentFrom(result.body));
+    expect(isShortAnswer(withBody(result, mapped))).toBe(false);
+  });
+
+  it("keeps the gap paragraph first and adds an empty paragraph for a question of one empty paragraph", () => {
+    const item = gapFillItem(
+      [{ heading_level: null, segments: [] }, gapParagraph("gap_001")],
+      [buildGap("gap_001", ["Stockholm"])],
+    );
+
+    const result = withGapTextShape(item);
+
+    expect(result.body).toEqual([gapParagraph("gap_001"), { heading_level: null, segments: [] }]);
+    expect(isShortAnswer(result)).toBe(false);
+    expect(result.gaps).toEqual(item.gaps);
+    const mapped = bodyFromEditor(editorContentFrom(result.body));
+    expect(isShortAnswer(withBody(result, mapped))).toBe(false);
+  });
+
+  it("moves the gap onto the text paragraph when several trailing question paragraphs are empty", () => {
+    const item = gapFillItem(
+      [...plainBody("Vad heter huvudstaden?"),
+        { heading_level: null, segments: [] },
+        { heading_level: null, segments: [] },
+        gapParagraph("gap_001")],
+      [buildGap("gap_001", ["Stockholm"])],
+    );
+
+    const result = withGapTextShape(item);
+
+    expect(isShortAnswer(result)).toBe(false);
+    expect(placedGapIds(result.body)).toEqual(["gap_001"]);
+    const last = result.body[result.body.length - 1];
+    expect(last).toBeDefined();
+    if (last === undefined) {
+      throw new Error("expected a last paragraph");
+    }
+    expect(last.segments).toEqual([
+      { kind: "text", marks: [], text: "Vad heter huvudstaden?" },
+      { kind: "text", marks: [], text: " " },
+      { kind: "gap", gap_id: "gap_001" },
+    ]);
+    expect(result.gaps).toEqual(item.gaps);
+    const mapped = bodyFromEditor(editorContentFrom(result.body));
+    expect(isShortAnswer(withBody(result, mapped))).toBe(false);
   });
 
   it("returns the same Lucktext item", () => {
@@ -128,7 +209,12 @@ describe("withShortAnswerShape", () => {
       gapParagraph("gap_001"),
     ]);
     expect(result.gaps).toEqual(item.gaps);
-    expect(result.gaps[0]!.accepted_values).toEqual(["Stockholm"]);
+    const inlineGap = result.gaps[0];
+    expect(inlineGap).toBeDefined();
+    if (inlineGap === undefined) {
+      throw new Error("expected the gap record");
+    }
+    expect(inlineGap.accepted_values).toEqual(["Stockholm"]);
   });
 
   it("drops a paragraph that held only the gap", () => {
@@ -156,8 +242,13 @@ describe("withShortAnswerShape", () => {
     expect(isShortAnswer(result)).toBe(true);
     expect(result.body).toEqual([...plainBody("Berätta om Stockholm."), gapParagraph("gap_001")]);
     expect(result.gaps).toHaveLength(1);
-    expect(result.gaps[0]!.gap_id).toBe("gap_001");
-    expect(result.gaps[0]!.accepted_values).toEqual([]);
+    const createdGap = result.gaps[0];
+    expect(createdGap).toBeDefined();
+    if (createdGap === undefined) {
+      throw new Error("expected the gap record");
+    }
+    expect(createdGap.gap_id).toBe("gap_001");
+    expect(createdGap.accepted_values).toEqual([]);
   });
 
   it("returns the same item for two gaps, a dropdown, free text and an already Kort svar item", () => {

@@ -106,8 +106,10 @@ export function canBecomeShortAnswer(item: NativeExamItem): boolean {
 
 /**
  * A Kort svar as a Lucktext: the answer gap at the end of the last question
- * paragraph, separated from the text by one space. An empty question keeps
- * the gap paragraph first and follows it with an empty paragraph, which the
+ * paragraph, separated from the text by one space. Trailing question
+ * paragraphs without segments hold no content, so they drop away before the
+ * gap is placed; when nothing with content remains, the question is empty and
+ * the gap paragraph first is followed by an empty paragraph, which the
  * backend accepts and the body mapping keeps. The gap record and its answers
  * stay untouched through `withBody`. Anything but a Kort svar passes through.
  */
@@ -116,10 +118,18 @@ export function withGapTextShape(item: NativeExamItem): NativeExamItem {
   if (parts === null) {
     return item;
   }
-  if (parts.question.length === 0) {
+  const question = parts.question;
+  let kept = question.length;
+  while (kept > 0 && question[kept - 1]?.segments.length === 0) {
+    kept -= 1;
+  }
+  if (kept === 0) {
     return withBody(item, [parts.answer, { heading_level: null, segments: [] }]);
   }
-  const last = parts.question[parts.question.length - 1]!;
+  const last = question[kept - 1];
+  if (last === undefined) {
+    return withBody(item, [parts.answer, { heading_level: null, segments: [] }]);
+  }
   const gapSegment: NativeExamBodySegment = { kind: "gap", gap_id: parts.gap.gap_id };
   const trailing = last.segments[last.segments.length - 1];
   const separator: NativeExamBodySegment[] =
@@ -127,7 +137,7 @@ export function withGapTextShape(item: NativeExamItem): NativeExamItem {
       ? [{ kind: "text", marks: [], text: " " }]
       : [];
   return withBody(item, [
-    ...parts.question.slice(0, -1),
+    ...question.slice(0, kept - 1),
     { ...last, segments: [...last.segments, ...separator, gapSegment] },
   ]);
 }
