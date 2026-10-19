@@ -68,7 +68,7 @@ Paths are under `frontend/apps/skriptoteket/src/views/apps/exam-workspace/` unle
 | Unit | Wave | Files | Behaviour | Focused tests |
 | --- | --- | --- | --- | --- |
 | G1 tool click | 1 | `useExamWorkspaceMakeGap.ts`; `ExamWorkspaceRichTextEditor.vue` (`gapTool` prop, click and drag paths) | L2, L3, Q2, Q3, Q6 | new `ExamWorkspaceRichTextEditor.gapTool.spec.ts` (word click converts with no floating button; space click only moves the caret; gap click opens the popover; drag in one paragraph makes one gap; typing unchanged; each gap one undo step) |
-| G2 shortcut key | 1 | `examWorkspaceRichTextSchema.ts` (`gapToolKey` extension, `onToggleGapTool` option) | L6, Q1 | new `examWorkspaceGapToolKey.spec.ts` (Ctrl+Alt+G calls the callback; AltGr-style events on Windows do not), new `examWorkspaceGapToolKey.mac.spec.ts` (Cmd+Option+G) |
+| G2 shortcut key | 1 | `examWorkspaceRichTextSchema.ts` (`gapToolKey` extension, `onToggleGapTool` option) | L6, Q1 | new `examWorkspaceGapToolKey.spec.ts` (Ctrl+Alt+G calls the callback on Windows and Linux; a Ctrl+Alt event that types a character, such as AltGr+2 for `@` on a Swedish Windows keyboard, does not), new `examWorkspaceGapToolKey.mac.spec.ts` (Cmd+Option+G calls it; Ctrl+Option+G does not) |
 | G3 toolbar | 1 | `ExamWorkspaceMarkToolbar.vue`; new `examWorkspaceShortcutLabels.ts` | L7, Q5: tool toggle button with pressed state, shortcut text in every tooltip and `aria-keyshortcuts` per platform | `ExamWorkspaceMarkToolbar.gap.spec.ts` (extended), new `examWorkspaceShortcutLabels.spec.ts` |
 | G4 wiring | 2 | `ExamWorkspaceBodyEditor.vue`; `ExamWorkspaceRichTextEditor.vue` (pass `onToggleGapTool`) | L1, L4, L5, Q4 end to end | new `ExamWorkspaceBodyEditor.gapTool.spec.ts` (three gaps from three clicks, Escape order, cap, leaving the question ends the tool); `src/views/apps/ExamWorkspaceWalkingSkeletonSlice.spec.ts` gains the tool path |
 | W1 native width (if carried) | 3 | `src/skriptoteket/domain/curated_apps/exam_workspace/native_exam_values.py`, `native_exam_item.py` (no width on dropdown gaps), `examnet_qti_leaf_items.py`; `src/skriptoteket/domain/curated_apps/exam_conversion/examnet_qti_contracts.py`, `examnet_qti_inline_prompt.py`; `exam_print_layout.py` (Q9); OpenAPI regeneration | Q7-Q10 | `tests/unit/domain/curated_apps/exam_workspace/test_native_exam_gap.py`, `test_examnet_qti_export_gap_fill.py` (set width written as `expected-length`, unset keeps the derived value, dropdown width refused), `test_exam_print_layout.py` |
@@ -78,10 +78,10 @@ G1 and G4 both touch `ExamWorkspaceRichTextEditor.vue` and run in different wave
 
 ## Validation
 
-- Per unit: the focused files in the Planned units table, frontend as `pdm run fe-test -- <spec path>`, backend as `pdm run pytest <test path>`.
+- Per unit: the focused files in the Planned units table, frontend as `pdm run fe-test -- <spec path>`, backend as `pdm run test-sequential <test path>`.
 - Walking-skeleton spec: `src/views/apps/ExamWorkspaceWalkingSkeletonSlice.spec.ts` switches the tool on, makes gaps with word clicks, and turns the tool off with the shortcut and with Escape.
 - If width is carried: the QTI export test proves a set width is written as `expected-length` on its text gap and an unset width keeps today's derived value; `pdm run lint` and `pdm run typecheck` for the backend.
-- At the end: `pdm run fe-type-check`, `pdm run fe-build`, and one domain suite per touched domain on the orchestrator's go.
+- At the end: `pdm run fe-type-check`, `pdm run fe-lint`, `pdm run fe-build`, and one domain suite per touched domain on the orchestrator's go.
 - Staging walk on Hemma in a real browser: switch the tool on, click three words, see three gaps and no popover between them; toggle with the shortcut; Escape ends the tool; the tooltips name the shortcuts. If width is carried, export a gap with a set width and import it into Exam.net.
 - Swedish copy (tool button, tooltips, Bredd field) goes to `ui-copy-reviewer`.
 
