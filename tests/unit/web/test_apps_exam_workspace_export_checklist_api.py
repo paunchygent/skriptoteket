@@ -67,7 +67,7 @@ class CapturingChecklistHandler:
 def _rounded_entry() -> ExamWorkspaceExportChecklistRoundedGaps:
     return ExamWorkspaceExportChecklistRoundedGaps(
         kind="rounded_gaps",
-        question_number="5",
+        item_id="item_005",
         question_text="Gör satsdelsanalys av meningarna.",
         points=6,
         gap_points=0.42,
@@ -115,7 +115,7 @@ async def test_route_json_carries_the_required_kind_discriminator() -> None:
         "entries": [
             {
                 "kind": "rounded_gaps",
-                "question_number": "5",
+                "item_id": "item_005",
                 "question_text": "Gör satsdelsanalys av meningarna.",
                 "points": 6,
                 "gap_points": 0.42,

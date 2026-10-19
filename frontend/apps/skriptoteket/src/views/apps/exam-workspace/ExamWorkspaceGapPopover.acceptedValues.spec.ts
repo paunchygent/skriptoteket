@@ -4,10 +4,11 @@
  * Expected behavior:
  *   The text-gap section edits accepted answers as one row per answer: the
  *   heading drops the old comma wording, commas stay ordinary characters in a
- *   value, editing a row then leaving the popover commits the full list
- *   exactly once, Enter in a row adds a row without closing, Escape after
- *   typing closes discarded with no commit even when a `change` fires late,
- *   and "Visa som text" follows unsaved typing and commits before it emits.
+ *   value, typing commits while it happens (leaving the popover commits any
+ *   remainder exactly once), Enter in a row adds a row without closing,
+ *   Escape closes and keeps the typed text with no further commit even when
+ *   a `change` fires late, and "Visa som text" follows unsaved typing and
+ *   commits before it emits.
  */
 
 import { mount } from "@vue/test-utils";
@@ -113,37 +114,40 @@ describe("ExamWorkspaceGapPopover accepted answers", () => {
     wrapper.unmount();
   });
 
-  it("adds a row on Enter without closing or committing", async () => {
+  it("adds a row on Enter without closing and commits typing at once", async () => {
     const wrapper = mountPopover(buildGap(GAP_ID, ["ett"]));
     const row = firstRow();
     row.element.value = "etta";
     await row.trigger("input");
+    // Typing already committed; Enter only adds the row.
+    expect(commits(wrapper)).toEqual([[ITEM_ID, GAP_ID, ["etta"]]]);
     await row.trigger("keydown", { key: "Enter" });
     await wrapper.vm.$nextTick();
 
     expect(rowInputs()).toHaveLength(2);
     expect(rowInputs()[1]).toBe(document.activeElement);
-    expect(wrapper.emitted("commit")).toBeUndefined();
+    expect(commits(wrapper)).toEqual([[ITEM_ID, GAP_ID, ["etta"]]]);
     expect(wrapper.emitted("close")).toBeUndefined();
     wrapper.unmount();
   });
 
-  it("discards on Escape with no commit even when a change fires late", async () => {
+  it("keeps typed text on Escape with no further commit when a change fires late", async () => {
     const wrapper = mountPopover(buildGap(GAP_ID, ["ett"]));
     const row = firstRow();
     row.element.value = "kasta";
     await row.trigger("input");
+    expect(commits(wrapper)).toEqual([[ITEM_ID, GAP_ID, ["kasta"]]]);
     await row.trigger("keydown", { key: "Escape" });
 
     expect(wrapper.emitted("close")).toEqual([[true]]);
 
     row.element.dispatchEvent(new Event("change", { bubbles: true }));
     await wrapper.vm.$nextTick();
-    expect(wrapper.emitted("commit")).toBeUndefined();
+    expect(commits(wrapper)).toEqual([[ITEM_ID, GAP_ID, ["kasta"]]]);
     wrapper.unmount();
   });
 
-  it("disables Visa som text with no answers and enables it on unsaved typing", async () => {
+  it("enables Visa som text on typing and keeps the typed commit", async () => {
     const wrapper = mountPopover(buildGap(GAP_ID, []));
     const button = documentControl<HTMLButtonElement>(
       '[data-test="exam-workspace-gap-as-text"]',
@@ -158,7 +162,7 @@ describe("ExamWorkspaceGapPopover accepted answers", () => {
     expect(
       document.querySelector('[data-test="exam-workspace-gap-as-text-disabled"]'),
     ).toBeNull();
-    expect(wrapper.emitted("commit")).toBeUndefined();
+    expect(commits(wrapper)).toEqual([[ITEM_ID, GAP_ID, ["hundra"]]]);
     wrapper.unmount();
   });
 

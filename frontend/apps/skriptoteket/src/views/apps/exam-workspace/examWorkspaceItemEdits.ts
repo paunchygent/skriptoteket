@@ -270,6 +270,7 @@ export function newTeacherItem(
     body: gapped ? [{ heading_level: null, segments: [{ kind: "gap", gap_id: "gap_001" }] }] : [],
     choices: choice || ordering ? blankChoices() : [],
     gaps: gapped ? [blankGap(kind === "inline_choice")] : [],
+    kept_gaps: [],
     item_id: itemId,
     kind,
     match_left: matching ? [{ body: blankBody(), left_id: "left_001" }] : [],

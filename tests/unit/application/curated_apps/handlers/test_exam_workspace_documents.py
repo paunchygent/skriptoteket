@@ -6,12 +6,13 @@ from unittest.mock import AsyncMock
 from uuid import UUID, uuid4
 
 import pytest
-from pydantic import ValidationError
 from sqlalchemy.exc import IntegrityError
 
 from skriptoteket.application.curated_apps.exam_workspace import (
     ExamWorkspaceDocumentResponse,
-    SaveExamWorkspaceDocumentRequest,
+)
+from skriptoteket.application.curated_apps.exam_workspace_history import (
+    StoreExamWorkspaceUndoStepRequest,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_document_store import (
     ExamWorkspaceDocumentStore,
@@ -23,6 +24,9 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_documents imp
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_saved_index import (
     ListExamWorkspaceDocumentsHandler,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_undo_steps import (
+    StoreExamWorkspaceUndoStepHandler,
 )
 from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.exam_workspace.container import ExamWorkspaceContainerContent
@@ -99,13 +103,6 @@ def _actor() -> User:
         auth_provider=AuthProvider.HULEEDU,
         created_at=_NOW,
         updated_at=_NOW,
-    )
-
-
-def _first_spara(document: NativeExamDocument, lineage: UUID) -> SaveExamWorkspaceDocumentRequest:
-    """Spara of revision 1 while the editor stands on the import baseline."""
-    return SaveExamWorkspaceDocumentRequest(
-        expected_revision=1, document=document, position_step_id=lineage
     )
 
 
@@ -188,6 +185,26 @@ class _Env:
         )
 
 
+def _steps(env: _Env) -> StoreExamWorkspaceUndoStepHandler:
+    """One save-model store over the same persistence ports."""
+    return StoreExamWorkspaceUndoStepHandler(
+        vault_files=env.vault_files,
+        codec=env.codec,
+        store=env.store,
+        id_generator=SequenceIdGenerator([uuid4() for _ in range(100)]),
+        jobs=env.enrichment_jobs,
+    )
+
+
+async def _store_step(env: _Env, actor: User, lineage: UUID, document: NativeExamDocument) -> None:
+    cursor = (await env.save_handler.history(actor=actor, lineage_id=lineage)).cursor
+    await _steps(env).handle(
+        actor=actor,
+        lineage_id=lineage,
+        request=StoreExamWorkspaceUndoStepRequest(expected_cursor=cursor, document=document),
+    )
+
+
 @pytest.fixture()
 def env() -> _Env:
     return _Env()
@@ -258,10 +275,8 @@ async def test_reopen_unknown_lineage_is_not_found(env: _Env) -> None:
 async def test_list_returns_only_head_version_per_lineage(env: _Env, fixture_bytes: bytes) -> None:
     actor = _actor()
     imported = await env.seed_document(actor=actor)
-    await env.save_handler.handle(
-        actor=actor,
-        lineage_id=imported.summary.lineage_id,
-        request=_first_spara(with_next_revision(imported.document), imported.summary.lineage_id),
+    await _store_step(
+        env, actor, imported.summary.lineage_id, with_next_revision(imported.document)
     )
 
     listed = await env.list_handler.handle(actor=actor)
@@ -273,7 +288,7 @@ async def test_list_returns_only_head_version_per_lineage(env: _Env, fixture_byt
 
 
 @pytest.mark.asyncio
-async def test_save_advances_version_and_reopens_faithfully(
+async def test_store_advances_version_and_reopens_faithfully(
     env: _Env, fixture_bytes: bytes
 ) -> None:
     actor = _actor()
@@ -290,67 +305,13 @@ async def test_save_advances_version_and_reopens_faithfully(
         }
     )
     edited_item = first_item.model_copy(update={"body": (edited_paragraph, *first_item.body[1:])})
-    edited = with_next_revision(
-        document.model_copy(update={"items": (edited_item, *document.items[1:])})
-    )
+    edited = document.model_copy(update={"items": (edited_item, *document.items[1:])})
 
-    saved = await env.save_handler.handle(
-        actor=actor,
-        lineage_id=imported.summary.lineage_id,
-        request=_first_spara(edited, imported.summary.lineage_id),
-    )
-    assert saved.summary.version == 2
-
+    await _store_step(env, actor, imported.summary.lineage_id, edited)
     reopened = await env.get_handler.handle(actor=actor, lineage_id=imported.summary.lineage_id)
     assert reopened.summary.version == 2
     assert reopened.document.items[0].plain_text_lines()[0] == "Fråga 1 (redigerad)"
-    assert reopened.document == edited
-
-
-@pytest.mark.asyncio
-async def test_save_with_stale_revision_conflicts(env: _Env, fixture_bytes: bytes) -> None:
-    actor = _actor()
-    imported = await env.seed_document(actor=actor)
-    edited = with_next_revision(imported.document)
-    await env.save_handler.handle(
-        actor=actor,
-        lineage_id=imported.summary.lineage_id,
-        request=_first_spara(edited, imported.summary.lineage_id),
-    )
-    with pytest.raises(DomainError) as exc_info:
-        await env.save_handler.handle(
-            actor=actor,
-            lineage_id=imported.summary.lineage_id,
-            request=_first_spara(edited, imported.summary.lineage_id),
-        )
-    assert exc_info.value.code is ErrorCode.CONFLICT
-
-
-@pytest.mark.asyncio
-async def test_save_rejects_wrong_document_identity(env: _Env, fixture_bytes: bytes) -> None:
-    actor = _actor()
-    imported = await env.seed_document(actor=actor)
-    foreign = with_next_revision(imported.document.model_copy(update={"document_id": uuid4()}))
-    with pytest.raises(DomainError) as exc_info:
-        await env.save_handler.handle(
-            actor=actor,
-            lineage_id=imported.summary.lineage_id,
-            request=_first_spara(foreign, imported.summary.lineage_id),
-        )
-    assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
-
-
-@pytest.mark.asyncio
-async def test_save_requires_revision_advance_by_one(env: _Env, fixture_bytes: bytes) -> None:
-    actor = _actor()
-    imported = await env.seed_document(actor=actor)
-    with pytest.raises(DomainError) as exc_info:
-        await env.save_handler.handle(
-            actor=actor,
-            lineage_id=imported.summary.lineage_id,
-            request=_first_spara(imported.document, imported.summary.lineage_id),
-        )
-    assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
+    assert reopened.document == edited.model_copy(update={"revision": 2})
 
 
 @pytest.mark.asyncio
@@ -380,77 +341,8 @@ async def test_other_user_cannot_reopen_document(env: _Env, fixture_bytes: bytes
     assert exc_info.value.code is ErrorCode.NOT_FOUND
 
 
-def test_save_request_refuses_the_deleted_rejected_proposal_ids_field() -> None:
-    document = NativeExamDocument.model_validate_json(_FIXTURE.read_bytes())
-    with pytest.raises(ValidationError):
-        SaveExamWorkspaceDocumentRequest.model_validate(
-            {
-                "expected_revision": 1,
-                "document": document.model_dump(mode="json"),
-                "position_step_id": str(document.document_id),
-                "rejected_proposal_item_ids": ["item_001"],
-            }
-        )
-
-
-def _save_payload_with_key(
-    item_id: str, key: dict[str, object], gap_values: list[str]
-) -> dict[str, object]:
-    payload = NativeExamDocument.model_validate_json(_FIXTURE.read_bytes()).model_dump(mode="json")
-    payload["revision"] = 2
-    item = next(entry for entry in payload["items"] if entry["item_id"] == item_id)
-    item["answer_key"] = {"correct_choice_ids": [], "match_pairs": [], **key}
-    for gap in item["gaps"]:
-        gap["accepted_values"] = gap_values
-    return {"expected_revision": 1, "document": payload, "position_step_id": str(uuid4())}
-
-
-def test_save_request_accepts_a_machine_proposed_key_that_fits_its_question() -> None:
-    request = SaveExamWorkspaceDocumentRequest.model_validate(
-        _save_payload_with_key("item_001", {"origin": "machine_proposed"}, ["förslag"])
-    )
-
-    assert request.document.items[0].answer_key.origin.value == "machine_proposed"
-
-
-@pytest.mark.parametrize(
-    ("label", "item_id", "key", "gap_values"),
-    [
-        (
-            "choice ids on a gap question",
-            "item_001",
-            {"origin": "machine_proposed", "correct_choice_ids": ["choice_001"]},
-            ["förslag"],
-        ),
-        (
-            "match pairs on a gap question",
-            "item_001",
-            {
-                "origin": "machine_proposed",
-                "match_pairs": [{"left_id": "left_001", "right_id": "right_001"}],
-            },
-            ["förslag"],
-        ),
-        ("gap key with gaps left unkeyed", "item_001", {"origin": "machine_proposed"}, []),
-        (
-            "choice key on a free_text question",
-            "item_008",
-            {"origin": "machine_proposed", "correct_choice_ids": ["choice_001"]},
-            [],
-        ),
-    ],
-)
-def test_save_request_refuses_a_key_that_does_not_fit_its_question(
-    label: str, item_id: str, key: dict[str, object], gap_values: list[str]
-) -> None:
-    with pytest.raises(ValidationError):
-        SaveExamWorkspaceDocumentRequest.model_validate(
-            _save_payload_with_key(item_id, key, gap_values)
-        )
-
-
 @pytest.mark.asyncio
-async def test_save_and_reopen_keep_the_ai_suggestion_on_its_question(
+async def test_store_and_reopen_keep_the_ai_suggestion_on_its_question(
     env: _Env, fixture_bytes: bytes
 ) -> None:
     actor = _actor()
@@ -468,7 +360,6 @@ async def test_save_and_reopen_keep_the_ai_suggestion_on_its_question(
     )
     saved_document = imported.document.model_copy(
         update={
-            "revision": 2,
             "items": (
                 first.model_copy(update={"ai_suggestion": suggestion}),
                 *imported.document.items[1:],
@@ -476,11 +367,7 @@ async def test_save_and_reopen_keep_the_ai_suggestion_on_its_question(
         }
     )
 
-    await env.save_handler.handle(
-        actor=actor,
-        lineage_id=imported.summary.lineage_id,
-        request=_first_spara(saved_document, imported.summary.lineage_id),
-    )
+    await _store_step(env, actor, imported.summary.lineage_id, saved_document)
     reopened = await env.get_handler.handle(actor=actor, lineage_id=imported.summary.lineage_id)
 
     kept = reopened.document.items[0].ai_suggestion

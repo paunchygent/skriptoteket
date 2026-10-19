@@ -153,6 +153,8 @@ async function mountQuestionText(editing: Awaited<ReturnType<typeof openEditing>
       provideExamWorkspaceHistoryKeys({
         undo: () => void editing.history.undo(),
         redo: () => void editing.history.redo(),
+        canUndo: editing.history.canUndo,
+        canRedo: editing.history.canRedo,
       });
       const item = computed(() => editing.workspaceDocument.value!.items[0]!);
       return () =>

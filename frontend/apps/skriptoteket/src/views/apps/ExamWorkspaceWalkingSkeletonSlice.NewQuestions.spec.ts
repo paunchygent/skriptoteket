@@ -5,7 +5,7 @@
  *   Lock how a teacher adds Kort svar and Lucktext questions: a new Kort svar
  *   starts as one unkeyed gap after the question text, shows only Frågetext
  *   and Godkända svar, and saves as a one-gap Lucktext; a new Lucktext saves
- *   empty and shows the Frågetext editor with the Lucka button.
+ *   empty and shows the Frågetext editor with the gap tool switch.
  */
 
 import { flushPromises } from "@vue/test-utils";
@@ -129,7 +129,7 @@ describe("ExamWorkspaceView walking skeleton slice: new questions", () => {
     expect(added.gaps[0]?.accepted_values).toEqual(["Stockholm"]);
   });
 
-  it("a new Lucktext saves empty and shows the Frågetext editor with the Lucka button", async () => {
+  it("a new Lucktext saves empty and shows the Frågetext editor with the gap tool switch", async () => {
     apiMocks.saveExamWorkspaceDocument.mockResolvedValue(buildResponse({ version: 2 }));
     const { wrapper } = await mountExamWorkspace();
     await importFixtureDocument(wrapper);
@@ -140,7 +140,7 @@ describe("ExamWorkspaceView walking skeleton slice: new questions", () => {
     expect(wrapper.find('[data-test="exam-workspace-short-answer"]').exists()).toBe(false);
     expect(wrapper.find('[data-test="exam-workspace-body-editor"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="exam-workspace-body-editor"]').text()).toContain("Frågetext");
-    expect(wrapper.find('[data-test="exam-workspace-toolbar-make-gap"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="exam-workspace-toolbar-gap-tool"]').exists()).toBe(true);
 
     await saveDocument(wrapper);
 

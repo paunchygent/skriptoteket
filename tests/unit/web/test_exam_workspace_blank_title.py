@@ -71,37 +71,3 @@ async def test_autosave_stores_a_blank_title_and_returns_the_title_blocker(title
             )
     finally:
         await container.close()
-
-
-@pytest.mark.parametrize("title", ["", "   "])
-async def test_save_stores_a_blank_title_and_returns_the_title_blocker(title: str) -> None:
-    env = _Env()
-    actor = _actor()
-    imported = await env.seed_document(actor=actor)
-    app, container = _app(env, actor, _undo_handler(env))
-    path = (
-        "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/"
-        f"{imported.summary.lineage_id}"
-    )
-    document = imported.document.model_dump(mode="json") | {
-        "title": title,
-        "revision": imported.document.revision + 1,
-    }
-    try:
-        async with httpx.AsyncClient(
-            transport=httpx.ASGITransport(app=app), base_url="http://test"
-        ) as client:
-            saved = await client.put(
-                path,
-                json={
-                    "expected_revision": imported.document.revision,
-                    "document": document,
-                    "position_step_id": str(imported.history_cursor),
-                },
-            )
-            assert saved.status_code == 200, saved.text
-            response = ExamWorkspaceDocumentResponse.model_validate(saved.json())
-            assert response.document.title == title
-            assert _TITLE_BLOCKER in response.export_blockers
-    finally:
-        await container.close()

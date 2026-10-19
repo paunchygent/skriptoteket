@@ -49,8 +49,16 @@ export type ExamWorkspaceItemPatch = (
 ) => boolean;
 
 export function useExamWorkspaceItemEdits(patchItem: ExamWorkspaceItemPatch) {
-  function updateItemCriteria(itemId: string, criteria: NativeExamCriterion[]): void {
-    patchItem(itemId, (item) => withCriteria(item, criteria));
+  /**
+   * Replace one item's criteria. Adding a row is a structural edit (one step
+   * at once); typing a text or a valid points value waits for the pause.
+   */
+  function updateItemCriteria(
+    itemId: string,
+    criteria: NativeExamCriterion[],
+    structural: boolean,
+  ): void {
+    patchItem(itemId, (item) => withCriteria(item, criteria), structural);
   }
 
   function updateItemPoints(itemId: string, points: number | null): void {
@@ -62,13 +70,19 @@ export function useExamWorkspaceItemEdits(patchItem: ExamWorkspaceItemPatch) {
     patchItem(itemId, (item) => withBody(item, body), structural);
   }
 
+  /**
+   * Replace one dropdown gap's options. Radio, add, remove and move are
+   * structural edits (one step at once); typed option text waits for the
+   * pause, and rides along with the next structural edit.
+   */
   function updateItemGapOptions(
     itemId: string,
     gapId: string,
     options: NativeExamChoice[],
     correctOptionId: string | null,
+    structural: boolean,
   ): void {
-    patchItem(itemId, (item) => withGapOptions(item, gapId, options, correctOptionId), true);
+    patchItem(itemId, (item) => withGapOptions(item, gapId, options, correctOptionId), structural);
   }
 
   function updateItemChoiceBody(

@@ -65,6 +65,7 @@ function toNativeItem(recorded: RecordedItem, sequence: number): NativeExamItem 
     body,
     choices,
     gaps,
+    kept_gaps: [],
     item_id: itemId(sequence),
     kind: recorded.kind as NativeExamItem["kind"],
     writing_lines: recorded.kind === "free_text" ? 8 : null,

@@ -4,10 +4,10 @@
  * Expected behavior:
  *   A dropdown gap lists its options in stored order with a radio for the
  *   correct one. Radio, add, remove and move each emit the whole option
- *   state once and keep the popover open. Typed text commits on `change`,
- *   never on input, rides along as plain text, and is discarded by Escape.
- *   The correct option cannot be removed. A Lucktext gap keeps the accepted
- *   answers field and shows no option editor.
+ *   state once as a structural edit and keep the popover open. Typed text
+ *   commits while typing as a typing edit, rides along as plain text, and
+ *   is kept on Escape. The correct option cannot be removed. A Lucktext gap
+ *   keeps the accepted answers field and shows no option editor.
  */
 
 import { mount } from "@vue/test-utils";
@@ -52,7 +52,7 @@ function text(wrapper: Wrapper, id: string) {
   return documentControl<HTMLInputElement>(sel("text", id));
 }
 
-type UpdateOptionsEvent = [string, string, NativeExamChoice[], string | null];
+type UpdateOptionsEvent = [string, string, NativeExamChoice[], string | null, boolean];
 
 function updates(wrapper: Wrapper): UpdateOptionsEvent[] {
   return wrapper.emitted<UpdateOptionsEvent>("updateOptions") ?? [];
@@ -107,7 +107,7 @@ describe("ExamWorkspaceGapPopover dropdown options", () => {
     filled.unmount();
   });
 
-  it("emits the new correct option from the radio and stays open", async () => {
+  it("emits the new correct option from the radio as structural and stays open", async () => {
     const wrapper = mountPopover(dropdownGap());
     await documentControl(sel("correct", "choice_005")).setValue(true);
     const [event] = updates(wrapper);
@@ -115,6 +115,7 @@ describe("ExamWorkspaceGapPopover dropdown options", () => {
     expect(event[1]).toBe("gap_001");
     expect(ids(event[2])).toEqual(["choice_003", "choice_001", "choice_005"]);
     expect(event[3]).toBe("choice_005");
+    expect(event[4]).toBe(true);
     expect(wrapper.emitted("close")).toBeUndefined();
     wrapper.unmount();
   });
@@ -174,21 +175,22 @@ describe("ExamWorkspaceGapPopover dropdown options", () => {
     wrapper.unmount();
   });
 
-  it("emits typed text once on change as plain text and keeps other bodies", async () => {
+  it("emits typed text at once while typing as a typing edit, once per content", async () => {
     const wrapper = mountPopover(dropdownGap());
     const input = text(wrapper, "choice_005");
     input.element.value = "gorilla";
     await input.trigger("input");
-    expect(wrapper.emitted("updateOptions")).toBeUndefined();
 
-    await input.trigger("change");
-    await input.trigger("change");
     const events = updates(wrapper);
     expect(events).toHaveLength(1);
     const sent = events[0][2];
     expect(sent[2]).toEqual({ body: plainBody("gorilla"), choice_id: "choice_005" });
     expect(sent[1].body).toEqual(MARKED_BODY);
     expect(sent[0].body).toEqual(plainBody("zebra"));
+    expect(events[0][4]).toBe(false);
+
+    await input.trigger("change");
+    expect(updates(wrapper)).toHaveLength(1);
     wrapper.unmount();
   });
 
@@ -203,50 +205,47 @@ describe("ExamWorkspaceGapPopover dropdown options", () => {
     wrapper.unmount();
   });
 
-  it("emits nothing for typing without a change", async () => {
-    const wrapper = mountPopover(dropdownGap());
-    const input = text(wrapper, "choice_003");
-    input.element.value = "annat";
-    await input.trigger("input");
-    expect(wrapper.emitted("updateOptions")).toBeUndefined();
-    wrapper.unmount();
-  });
-
   it("commits typed text on Enter and closes", async () => {
     const wrapper = mountPopover(dropdownGap());
     const input = text(wrapper, "choice_003");
     input.element.value = "zeta";
     await input.trigger("input");
     await input.trigger("keydown", { key: "Enter" });
+    // The input already sent the text; Enter sends nothing more.
     expect(wrapper.emitted("updateOptions")).toHaveLength(1);
     expect(wrapper.emitted("close")).toEqual([[true]]);
     wrapper.unmount();
   });
 
-  it("discards typed text on Escape", async () => {
+  it("keeps typed text on Escape with no further commit", async () => {
     const wrapper = mountPopover(dropdownGap());
     const input = text(wrapper, "choice_003");
     input.element.value = "borta";
     await input.trigger("input");
+    expect(wrapper.emitted("updateOptions")).toHaveLength(1);
     await input.trigger("keydown", { key: "Escape" });
     await input.trigger("change");
-    expect(wrapper.emitted("updateOptions")).toBeUndefined();
+    expect(wrapper.emitted("updateOptions")).toHaveLength(1);
     expect(wrapper.emitted("close")).toEqual([[true]]);
     wrapper.unmount();
   });
 
-  it("carries pending typed text with the next structural edit", async () => {
+  it("carries typed text with the next structural edit", async () => {
     const wrapper = mountPopover(dropdownGap());
     const input = text(wrapper, "choice_003");
     input.element.value = "zeta";
     await input.trigger("input");
     await documentControl(sel("down", "choice_003")).trigger("click");
     const events = updates(wrapper);
-    expect(events).toHaveLength(1);
-    expect((events[0][2])[1]).toEqual({
-      body: plainBody("zeta"),
-      choice_id: "choice_003",
-    });
+    expect(events).toHaveLength(2);
+    for (const event of events) {
+      expect(event[2].find((option) => option.choice_id === "choice_003")).toEqual({
+        body: plainBody("zeta"),
+        choice_id: "choice_003",
+      });
+    }
+    expect(events[0][4]).toBe(false);
+    expect(events[1][4]).toBe(true);
     wrapper.unmount();
   });
 

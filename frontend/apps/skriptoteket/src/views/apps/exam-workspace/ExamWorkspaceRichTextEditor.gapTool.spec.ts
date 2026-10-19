@@ -7,7 +7,7 @@
  *   and a drag selection inside one paragraph turns into one gap on mouseup.
  *   A click on a space only places the caret, a click on a gap chip still
  *   opens it (`activateGap`), typing still emits `update`, and with the prop
- *   off a word click shows the floating button exactly as before.
+ *   off a word click only places the caret and never shows a button.
  *
  * jsdom has no layout, so selections are set through TipTap commands, clicks
  * reach the view through `someProp("handleClick")`, a drag release is a real
@@ -37,8 +37,7 @@ import {
   gapButton,
   openEditor,
   pressMouse,
-  releaseMouse,
-  stubGeometry,
+  releaseMouse
 } from "./ExamWorkspaceRichTextEditor.gapTool.specSupport";
 import {
   gapPointerMiddle,
@@ -349,13 +348,12 @@ describe("ExamWorkspaceRichTextEditor gap tool", () => {
     expect(opened.editor.getText()).toBe("hello worldx");
   });
 
-  it("shows the floating button, not a gap, on a word click with the tool off", async () => {
+  it("with the tool off, a word click creates no gap and shows no button", async () => {
     const opened = await openEditor({
       body: [paragraph(text("hello world"))],
       gapsInteractive: true,
       nextGapId: "gap_002",
     });
-    stubGeometry(opened);
     opened.editor.commands.setTextSelection(posIn(opened.editor, "world", 1));
     const handled = clickAt(opened, posIn(opened.editor, "world", 1));
     await nextTick();
@@ -363,21 +361,20 @@ describe("ExamWorkspaceRichTextEditor gap tool", () => {
 
     expect(handled).toBeFalsy();
     expect(opened.creations).toHaveLength(0);
-    expect(gapButton()).not.toBeNull();
+    expect(gapButton()).toBeNull();
   });
 
-  it("removes a shown floating button when the tool turns on", async () => {
+  it("with the tool off, turning the tool on still creates nothing by itself", async () => {
     const opened = await openEditor({
       body: [paragraph(text("hello world"))],
       gapsInteractive: true,
       nextGapId: "gap_002",
     });
-    stubGeometry(opened);
     opened.editor.commands.setTextSelection(posIn(opened.editor, "world", 1));
     clickAt(opened, posIn(opened.editor, "world", 1));
     await nextTick();
     await nextTick();
-    expect(gapButton()).not.toBeNull();
+    expect(gapButton()).toBeNull();
 
     await opened.setProps({ gapTool: true });
 

@@ -21,6 +21,10 @@ class ExamWorkspaceHistoryStep(BaseModel):
     content: bytes
 
 
+MAX_RETAINED_UNDO_STEPS = 100
+"""Undo steps kept after the import baseline; older steps fall away on the next store."""
+
+
 class ExamWorkspaceHistoryState(BaseModel):
     model_config = ConfigDict(frozen=True)
 
@@ -51,6 +55,15 @@ class StoreExamWorkspaceUndoStepRequest(BaseModel):
     expected_cursor: UUID
     document: NativeExamDocument
     after_step_id: UUID | None = None
+
+
+class MoveExamWorkspaceHistoryPositionRequest(BaseModel):
+    """Undo or redo to an already retained snapshot without storing a new step."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    expected_cursor: UUID
+    step_id: UUID
 
 
 class SaveAsExamWorkspaceDocumentRequest(BaseModel):

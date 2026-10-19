@@ -54,18 +54,16 @@ class ChangeExamWorkspaceItemTypeHandler:
             rng=self._rng,
         )
         # The existing seam checks the cursor again atomically with the autosave.
-        stored = await self._undo_steps.handle(
+        await self._undo_steps.handle(
             actor=actor,
             lineage_id=lineage_id,
             request=StoreExamWorkspaceUndoStepRequest(
                 expected_cursor=request.expected_cursor, document=result.document
             ),
         )
+        # The step also overwrote the exam file, so the pre-store read is stale: reopen.
+        current = await self._reader.handle(actor=actor, lineage_id=lineage_id)
         return ChangeExamWorkspaceItemTypeResponse(
-            **{
-                **current.model_dump(),
-                "document": stored.document,
-                "history_cursor": stored.history.cursor,
-            },
+            **current.model_dump(),
             dropped_content=result.dropped_content,
         )

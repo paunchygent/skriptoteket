@@ -13,7 +13,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from skriptoteket.application.curated_apps.exam_workspace import (
     ExamWorkspaceDocumentResponse,
-    SaveExamWorkspaceDocumentRequest,
+)
+from skriptoteket.application.curated_apps.exam_workspace_history import (
+    StoreExamWorkspaceUndoStepRequest,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_progress import (
     ExamWorkspaceConversionProgress,
@@ -24,7 +26,9 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_document_stor
 from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
     GetExamWorkspaceConversionStatusHandler,
     GetExamWorkspaceDocumentHandler,
-    SaveExamWorkspaceDocumentHandler,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_undo_steps import (
+    StoreExamWorkspaceUndoStepHandler,
 )
 from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
@@ -120,23 +124,22 @@ class ConversionWorld:
     async def teacher_save(
         self, actor: User, document: NativeExamDocument
     ) -> ExamWorkspaceDocumentResponse:
-        return await SaveExamWorkspaceDocumentHandler(
+        history = await self.store.get_history(actor=actor, lineage_id=document.document_id)
+        await StoreExamWorkspaceUndoStepHandler(
             vault_files=self.vault_files,
             codec=self.codec,
             store=self.store,
-            id_generator=Ids(),
             jobs=self.jobs,
+            id_generator=Ids(),
         ).handle(
             actor=actor,
             lineage_id=document.document_id,
-            request=SaveExamWorkspaceDocumentRequest(
-                expected_revision=document.revision,
-                document=document.model_copy(update={"revision": document.revision + 1}),
-                position_step_id=(
-                    await self.store.get_history(actor=actor, lineage_id=document.document_id)
-                ).current_step_id,
+            request=StoreExamWorkspaceUndoStepRequest(
+                expected_cursor=history.cursor,
+                document=document,
             ),
         )
+        return await self.opened(actor, document.document_id)
 
 
 def batch(lineage_id: UUID, *, q2: str | None, q3: str | None) -> ConversionUpdate:

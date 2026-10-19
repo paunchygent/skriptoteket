@@ -21,7 +21,7 @@
 import { mount } from "@vue/test-utils";
 import type { VueWrapper } from "@vue/test-utils";
 import { Editor } from "@tiptap/core";
-import { defineComponent, h, nextTick, reactive } from "vue";
+import { defineComponent, h, nextTick, reactive, ref } from "vue";
 import { vi } from "vitest";
 
 import type { NativeExamBodyParagraph } from "../../../api/examWorkspace";
@@ -65,7 +65,7 @@ export async function openEditor(initial: EditorProps): Promise<Opened> {
   const activations: Array<[string, HTMLElement]> = [];
   const toggles: string[] = [];
   const escapes: string[] = [];
-  const keys: ExamWorkspaceHistoryKeys = { undo: vi.fn(), redo: vi.fn() };
+  const keys: ExamWorkspaceHistoryKeys = { undo: vi.fn(), redo: vi.fn(), canUndo: ref(false), canRedo: ref(false) };
   const live = reactive<EditorProps>({ ...initial });
   let registry!: RichTextTargetRegistry;
   const Host = defineComponent({
@@ -144,12 +144,7 @@ export async function releaseMouse(opened: Opened): Promise<void> {
   await nextTick();
 }
 
-export function stubGeometry(opened: Opened): void {
-  const rect = new DOMRect(50, 60, 40, 14);
-  vi.spyOn(opened.editor.view, "coordsAtPos").mockReturnValue(rect);
-}
-
-/** The floating button teleports to `document.body`, outside the wrapper. */
+/** The floating button is removed: this query always finds nothing. */
 export function gapButton(): HTMLElement | null {
   const candidate = document.body.querySelector("[data-test='exam-workspace-make-gap']");
   return candidate instanceof HTMLElement ? candidate : null;

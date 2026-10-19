@@ -3,8 +3,9 @@
  *
  * Expected behavior (TASK-SKRIPT-40-04-09 G1 wiring):
  *   Ctrl+Alt+G emits `toggleGapTool` while gaps are interactive (never while
- *   gaps are not interactive or while disabled), and Escape first lets the
- *   shown floating button take its own Escape before emitting `escape`.
+ *   gaps are not interactive or while disabled), and Escape in the surface
+ *   emits `escape`. A repeated Escape emits nothing, while a fresh one emits
+ *   once. No floating button exists any more: the switch is the only control.
  *
  * Shared mount helpers live in `ExamWorkspaceRichTextEditor.gapTool.specSupport`;
  * pointer and selection conversion live in `ExamWorkspaceRichTextEditor.gapTool.spec`.
@@ -13,15 +14,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 
-import { paragraph, posIn, text } from "./ExamWorkspaceRichTextEditor.specSupport";
+import { paragraph, text } from "./ExamWorkspaceRichTextEditor.specSupport";
 import type { Opened } from "./ExamWorkspaceRichTextEditor.gapTool.specSupport";
-import {
-  clickAt,
-  closeGapToolEditors,
-  gapButton,
-  openEditor,
-  stubGeometry,
-} from "./ExamWorkspaceRichTextEditor.gapTool.specSupport";
+import { closeGapToolEditors, openEditor } from "./ExamWorkspaceRichTextEditor.gapTool.specSupport";
 
 describe("ExamWorkspaceRichTextEditor gap tool wiring", () => {
   afterEach(() => {
@@ -79,23 +74,12 @@ describe("ExamWorkspaceRichTextEditor gap tool wiring", () => {
     expect(event.defaultPrevented).toBe(false);
   });
 
-  it("emits escape on Escape, after the floating button takes its own Escape", async () => {
+  it("emits escape on Escape in the surface", async () => {
     const wired = await openEditor({
       body: [paragraph(text("hello world"))],
       gapsInteractive: true,
       nextGapId: "gap_002",
     });
-    stubGeometry(wired);
-    wired.editor.commands.setTextSelection(posIn(wired.editor, "world", 1));
-    clickAt(wired, posIn(wired.editor, "world", 1));
-    await nextTick();
-    await nextTick();
-    expect(gapButton()).not.toBeNull();
-
-    pressEscape(wired);
-    await nextTick();
-    expect(gapButton()).toBeNull();
-    expect(wired.escapes).toHaveLength(0);
 
     pressEscape(wired);
     await nextTick();

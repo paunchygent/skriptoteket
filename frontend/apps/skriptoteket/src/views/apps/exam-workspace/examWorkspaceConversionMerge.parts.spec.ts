@@ -34,6 +34,7 @@ function item(itemId: string, text: string, sequence = 0): NativeExamItem {
     criteria: [],
     facit_text: null,
     gaps: [],
+    kept_gaps: [],
     import_record: null,
     item_id: itemId,
     kind: "free_text",

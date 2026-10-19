@@ -277,7 +277,7 @@ describe("ExamWorkspaceView export checklist", () => {
       entries: [
         {
           kind: "all_or_nothing",
-          question_number: "3",
+          item_id: "item_003",
           question_text: "Ny fråga efter sparning.",
           points: 2,
         },

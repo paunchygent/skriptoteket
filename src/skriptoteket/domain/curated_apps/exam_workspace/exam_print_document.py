@@ -20,7 +20,9 @@ Relationships:
     minimum (``exam_conversion.exam_print_house_template``), the Swedish export
     labels (``exam_language_labels``) and the generated header
     (``exam_export_header``). It copies the DOCX writer's content order and its
-    facit wording; it is a pure leaf builder and writes nothing back.
+    facit wording; it is a pure leaf builder and writes nothing back. It numbers
+    every question with the workspace list label (``native_exam_list_labels``),
+    the same label the question list and the editor heading show.
 """
 
 from __future__ import annotations
@@ -58,6 +60,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_list_labels import (
+    native_exam_question_labels,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_outline import (
     OutlineQuestion,
@@ -213,15 +218,19 @@ def build_print_document(
         for text in details
     )
     header_blocks.extend(_instruction_blocks(document.printed_instructions()))
+    question_labels = native_exam_question_labels(document)
     entries: tuple[PrintInstruction | PrintQuestion, ...] = (
         PrintInstruction(blocks=tuple(header_blocks)),
-        *_print_walk(document, variant=variant),
+        *_print_walk(document, variant=variant, question_labels=question_labels),
     )
     return PrintDocument(variant=variant, title=title, entries=entries)
 
 
 def _print_walk(
-    document: NativeExamDocument, *, variant: ExamPrintVariant
+    document: NativeExamDocument,
+    *,
+    variant: ExamPrintVariant,
+    question_labels: Mapping[str, str],
 ) -> tuple[PrintInstruction | PrintQuestion, ...]:
     """Every entry after the exam header, in the one outline order.
 
@@ -229,12 +238,17 @@ def _print_walk(
     its own question, and a part prints its instruction (unless empty) followed
     by one question per child, in order. A childless part with a non-empty
     instruction prints only its instruction at its own place; a childless part
-    with an empty instruction prints nothing.
+    with an empty instruction prints nothing. Every question heading uses its
+    workspace list label from ``question_labels``, computed once per document.
     """
     entries: list[PrintInstruction | PrintQuestion] = []
     for entry in document_outline(document):
         if isinstance(entry, OutlineQuestion):
-            groups = _question_blocks(entry.item, variant=variant)
+            groups = _question_blocks(
+                entry.item,
+                variant=variant,
+                question_label=question_labels[entry.item.item_id],
+            )
             entries.append(
                 PrintQuestion(
                     item_id=entry.item.item_id,
@@ -246,7 +260,9 @@ def _print_walk(
         if not is_empty_body(entry.part.instruction):
             entries.append(PrintInstruction(blocks=_instruction_blocks(entry.part.instruction)))
         for child in entry.children:
-            groups = _question_blocks(child, variant=variant)
+            groups = _question_blocks(
+                child, variant=variant, question_label=question_labels[child.item_id]
+            )
             entries.append(
                 PrintQuestion(item_id=child.item_id, text=groups.text, answer=groups.answer)
             )
@@ -286,12 +302,18 @@ class QuestionBlockGroups:
     answer: tuple[PrintBlock, ...]
 
 
-def _question_blocks(item: NativeExamItem, *, variant: ExamPrintVariant) -> QuestionBlockGroups:
-    """One question's blocks, in the DOCX writer's today order (W1, W6-W9)."""
+def _question_blocks(
+    item: NativeExamItem, *, variant: ExamPrintVariant, question_label: str
+) -> QuestionBlockGroups:
+    """One question's blocks, in the DOCX writer's today order (W1, W6-W9).
+
+    The heading names the question with its workspace list label ("2", "1b"),
+    never its running sequence.
+    """
     labels = SWEDISH_EXAM_LABELS
     layout = item_print_layout(item)
     gaps_by_id = {gap.gap_id: gap for gap in item.gaps}
-    text: list[PrintBlock] = [PrintHeading(level=3, text=labels.item_title(item))]
+    text: list[PrintBlock] = [PrintHeading(level=3, text=labels.question_label(question_label))]
     answer: list[PrintBlock] = []
 
     for paragraph in item.body:

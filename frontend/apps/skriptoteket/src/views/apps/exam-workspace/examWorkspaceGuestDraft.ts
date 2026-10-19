@@ -200,7 +200,7 @@ export function storeGuestUndoStep(
     return { kind: "conflict" };
   }
   const document = withRevision(request.document, draft.saved_document.revision);
-  const refusalCopy = examWorkspaceSaveRefusalCopy(document.items);
+  const refusalCopy = examWorkspaceSaveRefusalCopy(document);
   if (refusalCopy !== null) {
     return { kind: "refused", copy: refusalCopy };
   }
@@ -278,7 +278,7 @@ export function saveGuestDraft(
   if (draft.saved_document.revision !== request.expectedRevision) {
     return { kind: "conflict" };
   }
-  const refusalCopy = examWorkspaceSaveRefusalCopy(request.document.items);
+  const refusalCopy = examWorkspaceSaveRefusalCopy(request.document);
   if (refusalCopy !== null) {
     return { kind: "refused", copy: refusalCopy };
   }

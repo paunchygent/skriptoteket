@@ -20,7 +20,6 @@ from skriptoteket.application.curated_apps.exam_workspace import (
     ExamWorkspacePrintPreviewResponse,
     RequestExamWorkspaceAnswerKeySuggestionsRequest,
     RetryExamWorkspaceItemRequest,
-    SaveExamWorkspaceDocumentRequest,
 )
 from skriptoteket.application.curated_apps.exam_workspace_content_suggestions import (
     ContentSuggestionsResponse,
@@ -179,14 +178,6 @@ class GetExamWorkspaceDocumentHandlerProtocol(Protocol):
 
 
 class SaveExamWorkspaceDocumentHandlerProtocol(Protocol):
-    async def handle(
-        self,
-        *,
-        actor: User,
-        lineage_id: UUID,
-        request: SaveExamWorkspaceDocumentRequest,
-    ) -> ExamWorkspaceDocumentResponse: ...
-
     async def history(self, *, actor: User, lineage_id: UUID) -> ExamWorkspaceHistoryResponse: ...
 
     async def history_step(

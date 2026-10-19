@@ -25,7 +25,6 @@ from skriptoteket.application.curated_apps.exam_workspace import (
     ExamWorkspaceItemRetryResponse,
     ExamWorkspacePrintPreviewResponse,
     RetryExamWorkspaceItemRequest,
-    SaveExamWorkspaceDocumentRequest,
 )
 from skriptoteket.application.curated_apps.exam_workspace_content_suggestions import (
     ContentSuggestionsResponse,
@@ -34,6 +33,7 @@ from skriptoteket.application.curated_apps.exam_workspace_history import (
     ExamWorkspaceHistoryDocumentResponse,
     ExamWorkspaceHistoryResponse,
     ExamWorkspaceUndoStepResponse,
+    MoveExamWorkspaceHistoryPositionRequest,
     SaveAsExamWorkspaceDocumentRequest,
     StoreExamWorkspaceUndoStepRequest,
 )
@@ -319,21 +319,6 @@ async def preview_exam_workspace_document_print(
     )
 
 
-@router.put(
-    "/exam-workspace/documents/{lineage_id}",
-    response_model=ExamWorkspaceDocumentResponse,
-)
-async def save_exam_workspace_document(
-    lineage_id: UUID,
-    request: SaveExamWorkspaceDocumentRequest,
-    registry: FromDishka[CuratedAppRegistryProtocol],
-    handler: FromDishka[SaveExamWorkspaceDocumentHandlerProtocol],
-    user: User = Depends(require_app_user_api),
-) -> ExamWorkspaceDocumentResponse:
-    require_conversion_hub_access(registry=registry, user=user)
-    return await handler.handle(actor=user, lineage_id=lineage_id, request=request)
-
-
 @router.post(
     "/exam-workspace/documents/{lineage_id}/autosaves", response_model=ExamWorkspaceUndoStepResponse
 )
@@ -374,6 +359,22 @@ async def get_exam_workspace_history_step(
 ) -> ExamWorkspaceHistoryDocumentResponse:
     require_conversion_hub_access(registry=registry, user=user)
     return await handler.history_step(actor=user, lineage_id=lineage_id, step_id=step_id)
+
+
+@router.post(
+    "/exam-workspace/documents/{lineage_id}/history/position",
+    response_model=ExamWorkspaceUndoStepResponse,
+)
+async def move_exam_workspace_history_position(
+    lineage_id: UUID,
+    request: MoveExamWorkspaceHistoryPositionRequest,
+    registry: FromDishka[CuratedAppRegistryProtocol],
+    handler: FromDishka[StoreExamWorkspaceUndoStepHandlerProtocol],
+    user: User = Depends(require_app_user_api),
+) -> ExamWorkspaceUndoStepResponse:
+    """Ångra or Gör om: stand on a retained step and write it to the exam file, no new step."""
+    require_conversion_hub_access(registry=registry, user=user)
+    return await handler.move_to_step(actor=user, lineage_id=lineage_id, request=request)
 
 
 @router.post(

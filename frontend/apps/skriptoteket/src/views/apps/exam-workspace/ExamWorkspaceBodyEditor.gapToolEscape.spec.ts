@@ -1,9 +1,12 @@
 /**
  * Exam workspace question-text editor: one Escape with a gap popover open closes only the popover.
  *
- * Expected behavior (TASK-SKRIPT-40-04-09 L4):
+ * Expected behavior (TASK-SKRIPT-40-04-09 L4, TASK-SKRIPT-40-04-14 Q2):
  *   With the gap tool on and a gap popover open, one Escape closes the
- *   popover, keeps the tool on and returns focus to the question text. With
+ *   popover, keeps the tool on and returns focus to the question text. Typed
+ *   answers and option text were already committed while typing, so Escape
+ *   keeps them (they are stored after the typing pause); only the late
+ *   `change` of the closing focus move commits nothing more. With
  *   no popover open, Escape turns the tool off. A repeated Escape keydown in
  *   the same press must not turn the tool off.
  *
@@ -21,6 +24,7 @@ import { defineComponent, h, nextTick, ref } from "vue";
 
 import type {
   NativeExamBodyParagraph,
+  NativeExamChoice,
   NativeExamItem,
 } from "../../../api/examWorkspace";
 import ExamWorkspaceBodyEditor from "./ExamWorkspaceBodyEditor.vue";
@@ -48,6 +52,8 @@ const BODY_EDITOR_SURFACE = '[data-test="exam-workspace-body-editor-surface"]';
 /** Mount the body editor inside a small owner that applies each edit like the real store. */
 function mountHarness(item: NativeExamItem) {
   const current = ref(item);
+  const gapValues: Array<[string, string, string[]]> = [];
+  const gapOptions: Array<[string, string, NativeExamChoice[], string | null, boolean]> = [];
   const Host = defineComponent({
     setup() {
       return () =>
@@ -71,12 +77,24 @@ function mountHarness(item: NativeExamItem) {
             void itemId;
             void structural;
           },
+          onUpdateGapValues: (itemId: string, gapId: string, acceptedValues: string[]) => {
+            gapValues.push([itemId, gapId, acceptedValues]);
+          },
+          onUpdateGapOptions: (
+            itemId: string,
+            gapId: string,
+            options: NativeExamChoice[],
+            correctOptionId: string | null,
+            structural: boolean,
+          ) => {
+            gapOptions.push([itemId, gapId, options, correctOptionId, structural]);
+          },
         });
     },
   });
   const host = mount(Host, { attachTo: document.body });
   mounted.push(host);
-  return { host };
+  return { gapOptions, gapValues, host };
 }
 
 type Harness = ReturnType<typeof mountHarness>;
@@ -269,7 +287,7 @@ describe("ExamWorkspaceBodyEditor gap tool Escape", () => {
     expect(toolPressed(harness)).toBe("false");
   });
 
-  it("closes the popover on Escape with typed, uncommitted text and keeps the tool on", async () => {
+  it("closes the popover on Escape with typed text, keeps the text and the tool on", async () => {
     const harness = mountHarness(plainGapItem());
     await settle();
     const gapId = await openToolMadePopover(harness);
@@ -277,15 +295,18 @@ describe("ExamWorkspaceBodyEditor gap tool Escape", () => {
     const input = popoverInput(gapId);
     input.setValue("solen skin");
     expect(input.element.value).toBe("solen skin");
+    // Typing already committed while it happened.
+    expect(harness.gapValues).toEqual([["item_001", gapId, ["solen skin"]]]);
 
     dispatchEscape(input.element);
     await settle();
 
     expect(popoverExists()).toBe(false);
     expect(toolPressed(harness)).toBe("true");
+    expect(harness.gapValues).toEqual([["item_001", gapId, ["solen skin"]]]);
   });
 
-  it("ignores a repeated Escape in a text-gap popover and keeps the typed draft", async () => {
+  it("ignores a repeated Escape in a text-gap popover and keeps the typed text", async () => {
     const harness = mountHarness(plainGapItem());
     await settle();
     const gapId = await openToolMadePopover(harness);
@@ -293,6 +314,7 @@ describe("ExamWorkspaceBodyEditor gap tool Escape", () => {
     const input = popoverInput(gapId);
     await input.setValue("solen skin");
     expect(input.element.value).toBe("solen skin");
+    expect(harness.gapValues).toEqual([["item_001", gapId, ["solen skin"]]]);
 
     dispatchEscape(input.element, { repeat: true });
     await settle();
@@ -306,9 +328,10 @@ describe("ExamWorkspaceBodyEditor gap tool Escape", () => {
 
     expect(popoverExists()).toBe(false);
     expect(toolPressed(harness)).toBe("true");
+    expect(harness.gapValues).toEqual([["item_001", gapId, ["solen skin"]]]);
   });
 
-  it("ignores a repeated Escape in a dropdown popover and keeps the typed option draft", async () => {
+  it("ignores a repeated Escape in a dropdown popover and keeps the typed option text", async () => {
     const harness = mountHarness(dropdownGapItem());
     await settle();
     await toolToggle(harness).trigger("click");
@@ -325,6 +348,12 @@ describe("ExamWorkspaceBodyEditor gap tool Escape", () => {
     option.element.value = "zebra randig";
     await option.trigger("input");
     expect(option.element.value).toBe("zebra randig");
+    // Typing already committed as a typing edit.
+    expect(harness.gapOptions).toHaveLength(1);
+    expect(harness.gapOptions[0]?.[4]).toBe(false);
+    expect(
+      harness.gapOptions[0]?.[2].find((entry) => entry.choice_id === "choice_001")?.body,
+    ).toEqual(plainBody("zebra randig"));
 
     dispatchEscape(option.element, { repeat: true });
     await settle();
@@ -346,6 +375,7 @@ describe("ExamWorkspaceBodyEditor gap tool Escape", () => {
 
     expect(popoverExists()).toBe(false);
     expect(toolPressed(harness)).toBe("true");
+    expect(harness.gapOptions).toHaveLength(1);
   });
 
   it("returns focus inside the body editor root when the popover closes, through a chip re-render", async () => {

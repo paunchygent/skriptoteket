@@ -212,7 +212,7 @@ describe("ExamWorkspaceRichTextEditor gap tool selection", () => {
     expectNoEmptySeeds(opened);
   });
 
-  it("ignores a keyboard selection until the Lucka control converts it", async () => {
+  it("ignores a keyboard selection until the gap command converts it", async () => {
     const opened = await openEditor({
       body: [paragraph(text("eat two words daily"))],
       gapsInteractive: true,

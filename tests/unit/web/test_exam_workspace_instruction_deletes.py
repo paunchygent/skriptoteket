@@ -13,7 +13,6 @@ from starlette_dishka import setup_dishka
 
 from skriptoteket.application.curated_apps.exam_workspace import (
     ExamWorkspaceDocumentResponse,
-    SaveExamWorkspaceDocumentRequest,
 )
 from skriptoteket.application.curated_apps.exam_workspace_history import (
     ExamWorkspaceHistoryDocumentResponse,
@@ -69,13 +68,15 @@ async def _saved_conversion(
     document = NativeExamDocument.model_validate(
         dict(imported.document.model_dump(), revision=2, items=items, parents=parents)
     )
-    return await env.save_handler.handle(
+    history = await env.save_handler.history(actor=actor, lineage_id=document.document_id)
+    await _undo_handler(env).handle(
         actor=actor,
         lineage_id=document.document_id,
-        request=SaveExamWorkspaceDocumentRequest(
-            expected_revision=1, document=document, position_step_id=document.document_id
+        request=StoreExamWorkspaceUndoStepRequest(
+            expected_cursor=history.cursor, document=document
         ),
     )
+    return await env.get_handler.handle(actor=actor, lineage_id=document.document_id)
 
 
 def _app(
@@ -105,13 +106,13 @@ def _app(
 
 
 @pytest.mark.parametrize("command", ["heading", "cascade", "child", "last-child"])
-async def test_delete_is_one_guarded_undo_step_and_never_writes_saved_file(command: str) -> None:
+async def test_delete_is_one_guarded_undo_step_and_writes_the_file(command: str) -> None:
     env = _Env()
     actor = _actor()
     saved = await _saved_conversion(env, actor, last_child=command == "last-child")
     lineage_id = saved.document.document_id
     undo_steps = _undo_handler(env)
-    # Force a newer unsaved step; the delete must not start from the saved file.
+    # Force a newer unsaved step; the delete must start from the saved file.
     before = saved.document.model_copy(update={"title": "Unsaved draft retained by delete"})
     initial = await undo_steps.handle(
         actor=actor,
@@ -121,7 +122,6 @@ async def test_delete_is_one_guarded_undo_step_and_never_writes_saved_file(comma
         ),
     )
     vault_file = env.vault_files.files[saved.summary.vault_file_id]
-    original_bytes = await env.store.load(actor=actor, vault_file=vault_file)
     app, container = _app(env, actor, undo_steps)
     path = f"/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}"
     suffix = {
@@ -135,10 +135,25 @@ async def test_delete_is_one_guarded_undo_step_and_never_writes_saved_file(comma
         async with httpx.AsyncClient(
             transport=httpx.ASGITransport(app=app), base_url="http://test"
         ) as client:
+            # The unsaved step already overwrote the file: the delete starts from it.
+            unsaved_file = env.codec.parse(
+                content=await env.store.load(actor=actor, vault_file=vault_file)
+            )
+            assert unsaved_file.document == initial.document
             result = await _exercise_delete(client, path, delete_path, saved, initial, command)
-            assert await env.store.load(actor=actor, vault_file=vault_file) == original_bytes
+            deleted_file = env.codec.parse(
+                content=await env.store.load(actor=actor, vault_file=vault_file)
+            )
+            assert deleted_file.document == result.document
             await _undo_delete(client, path, initial, result)
-            assert await env.store.load(actor=actor, vault_file=vault_file) == original_bytes
+            restored_file = env.codec.parse(
+                content=await env.store.load(actor=actor, vault_file=vault_file)
+            )
+            reopened = ExamWorkspaceDocumentResponse.model_validate((await client.get(path)).json())
+            assert restored_file.document == reopened.document
+            assert reopened.document == initial.document.model_copy(
+                update={"revision": reopened.summary.version}
+            )
     finally:
         await container.close()
 
@@ -204,8 +219,8 @@ async def _exercise_delete(
     result = ExamWorkspaceDeleteResponse.model_validate(response.json())
     assert result.removed_parent_id == ("parent_001" if command in {"heading", "cascade"} else None)
     assert result.document.title == before.title
-    assert result.saved_document == saved.document
-    assert result.summary == saved.summary
+    assert result.saved_document == result.document
+    assert result.summary.version == saved.summary.version + 2
     untouched = before.parents[-1]
     after_untouched = next(
         parent for parent in result.document.parents if parent.parent_id == untouched.parent_id
@@ -236,9 +251,12 @@ async def _undo_delete(
     initial: ExamWorkspaceUndoStepResponse,
     result: ExamWorkspaceDeleteResponse,
 ) -> None:
+    deleted = ExamWorkspaceDocumentResponse.model_validate((await client.get(path)).json())
     previous = await client.get(path + "/history/" + str(initial.history.cursor))
     predecessor = ExamWorkspaceHistoryDocumentResponse.model_validate(previous.json())
-    assert predecessor.document == initial.document
+    assert predecessor.document == initial.document.model_copy(
+        update={"revision": deleted.summary.version}
+    )
     undone = await client.post(
         path + "/autosaves",
         json={
@@ -250,7 +268,10 @@ async def _undo_delete(
     assert undone.status_code == 200, undone.text
     restored = ExamWorkspaceUndoStepResponse.model_validate(undone.json())
     reopened = ExamWorkspaceDocumentResponse.model_validate((await client.get(path)).json())
-    assert restored.document == reopened.document == initial.document
+    assert restored.document == reopened.document
+    assert reopened.document == initial.document.model_copy(
+        update={"revision": reopened.summary.version}
+    )
     assert result.history_cursor not in restored.history.step_ids
 
 

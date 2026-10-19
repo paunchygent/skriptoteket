@@ -4,12 +4,17 @@ from uuid import UUID, uuid4
 
 import pytest
 
-from skriptoteket.application.curated_apps.exam_workspace import SaveExamWorkspaceDocumentRequest
 from skriptoteket.application.curated_apps.exam_workspace_history import (
     ExamWorkspaceHistoryState,
     ExamWorkspaceHistoryStep,
+    MoveExamWorkspaceHistoryPositionRequest,
     StoreExamWorkspaceUndoStepRequest,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeExamDocument,
+)
+from skriptoteket.domain.errors import DomainError, ErrorCode
+from skriptoteket.domain.identity.models import User
 from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents import (
     _actor,
     _Env,
@@ -20,7 +25,9 @@ from tests.unit.application.curated_apps.handlers.test_exam_workspace_history_co
 )
 
 
-async def _autosave(env: _Env, actor, lineage, document, after: UUID | None = None) -> UUID:
+async def _store_step(
+    env: _Env, actor: User, lineage: UUID, document: NativeExamDocument, after: UUID | None = None
+) -> UUID:
     cursor = (await _handler(env).history(actor=actor, lineage_id=lineage)).cursor
     response = await _undo_handler(env).handle(
         actor=actor,
@@ -32,19 +39,17 @@ async def _autosave(env: _Env, actor, lineage, document, after: UUID | None = No
     return response.history.position_step_id
 
 
-async def _spara(env: _Env, actor, lineage, document, expected_revision: int, position) -> None:
-    await _handler(env).handle(
+async def _move(env: _Env, actor: User, lineage: UUID, step: UUID) -> UUID:
+    cursor = (await _handler(env).history(actor=actor, lineage_id=lineage)).cursor
+    response = await _undo_handler(env).move_to_step(
         actor=actor,
         lineage_id=lineage,
-        request=SaveExamWorkspaceDocumentRequest(
-            expected_revision=expected_revision,
-            document=document.model_copy(update={"revision": expected_revision + 1}),
-            position_step_id=position,
-        ),
+        request=MoveExamWorkspaceHistoryPositionRequest(expected_cursor=cursor, step_id=step),
     )
+    return response.history.position_step_id
 
 
-async def _titles(env: _Env, actor, lineage, step_ids) -> list[str]:
+async def _titles(env: _Env, actor: User, lineage: UUID, step_ids: tuple[UUID, ...]) -> list[str]:
     return [
         (
             await _handler(env).history_step(actor=actor, lineage_id=lineage, step_id=step)
@@ -64,121 +69,91 @@ async def test_a_fresh_import_stands_on_its_baseline() -> None:
 
 
 @pytest.mark.asyncio
-async def test_spara_of_the_autosaved_copy_keeps_the_position_on_its_step() -> None:
+async def test_each_stored_step_moves_the_position_to_itself() -> None:
     env = _Env()
     actor = _actor()
     imported = await env.seed_document(actor=actor)
     lineage = imported.summary.lineage_id
-    edited = imported.document.model_copy(update={"title": "Första"})
-    await _autosave(env, actor, lineage, edited)
-    second = await _autosave(env, actor, lineage, edited.model_copy(update={"title": "Andra"}))
-    before = await _handler(env).history(actor=actor, lineage_id=lineage)
+    first = await _store_step(
+        env, actor, lineage, imported.document.model_copy(update={"title": "Första"})
+    )
+    second = await _store_step(
+        env, actor, lineage, imported.document.model_copy(update={"title": "Andra"})
+    )
+    history = await _handler(env).history(actor=actor, lineage_id=lineage)
 
-    await _spara(env, actor, lineage, edited.model_copy(update={"title": "Andra"}), 1, second)
-
-    after = await _handler(env).history(actor=actor, lineage_id=lineage)
-    # The cursor rotates for concurrency, but it names no step; the position does.
-    assert after.cursor != before.cursor
-    assert after.cursor not in (after.baseline_step_id, *after.step_ids)
-    assert after.step_ids == before.step_ids
-    assert after.position_step_id == second
+    # The cursor rotates for concurrency, but it names the newest step; the position does too.
+    assert history.step_ids == (first, second)
+    assert history.cursor == second
+    assert history.position_step_id == second
 
 
 @pytest.mark.asyncio
-async def test_spara_keeps_the_teachers_position_among_equal_steps() -> None:
-    """A -> B -> A -> C, undo to the first A, Spara: redo must still lead to B."""
+async def test_a_store_after_a_move_drops_the_redo_steps() -> None:
     env = _Env()
     actor = _actor()
     imported = await env.seed_document(actor=actor)
     lineage = imported.summary.lineage_id
     base = imported.document
-    first_a = await _autosave(env, actor, lineage, base.model_copy(update={"title": "A"}))
-    for title in ("B", "A", "C"):
-        await _autosave(env, actor, lineage, base.model_copy(update={"title": title}))
+    first = await _store_step(env, actor, lineage, base.model_copy(update={"title": "Ett"}))
+    await _store_step(env, actor, lineage, base.model_copy(update={"title": "Två"}))
+    await _move(env, actor, lineage, first)
+
+    position = await _store_step(env, actor, lineage, base.model_copy(update={"title": "Ny gren"}))
+
+    history = await _handler(env).history(actor=actor, lineage_id=lineage)
+    assert history.step_ids == (first, position)
+    assert history.position_step_id == position
+    assert await _titles(env, actor, lineage, history.step_ids) == ["Ett", "Ny gren"]
+    reopened = await env.get_handler.handle(actor=actor, lineage_id=lineage)
+    assert reopened.document.title == "Ny gren"
+
+
+@pytest.mark.asyncio
+async def test_a_move_stands_on_the_named_snapshot_without_storing() -> None:
+    env = _Env()
+    actor = _actor()
+    imported = await env.seed_document(actor=actor)
+    lineage = imported.summary.lineage_id
+    first = await _store_step(
+        env, actor, lineage, imported.document.model_copy(update={"title": "Ett"})
+    )
+    await _store_step(env, actor, lineage, imported.document.model_copy(update={"title": "Två"}))
     before = await _handler(env).history(actor=actor, lineage_id=lineage)
 
-    await _spara(env, actor, lineage, base.model_copy(update={"title": "A"}), 1, first_a)
+    await _move(env, actor, lineage, first)
 
     after = await _handler(env).history(actor=actor, lineage_id=lineage)
     assert after.step_ids == before.step_ids
-    assert after.position_step_id == first_a
-    following = after.step_ids[after.step_ids.index(first_a) + 1]
-    assert await _titles(env, actor, lineage, [following]) == ["B"]
+    assert after.position_step_id == first
+    assert after.cursor != before.cursor
     reopened = await env.get_handler.handle(actor=actor, lineage_id=lineage)
-    assert reopened.document.title == "A"
+    assert reopened.document.title == "Ett"
 
 
 @pytest.mark.asyncio
-async def test_spara_of_an_unmodified_import_keeps_the_position_on_the_baseline() -> None:
+async def test_a_stale_move_is_a_conflict_and_keeps_the_file() -> None:
     env = _Env()
     actor = _actor()
     imported = await env.seed_document(actor=actor)
     lineage = imported.summary.lineage_id
-    await _spara(env, actor, lineage, imported.document, 1, lineage)
-    history = await _handler(env).history(actor=actor, lineage_id=lineage)
-    assert history.position_step_id == history.baseline_step_id
+    await _store_step(env, actor, lineage, imported.document.model_copy(update={"title": "Nyare"}))
+    opened = await _handler(env).history(actor=actor, lineage_id=imported.summary.lineage_id)
+    await _store_step(env, actor, lineage, imported.document.model_copy(update={"title": "Nyast"}))
+    saved_before = (await env.get_handler.handle(actor=actor, lineage_id=lineage)).document.title
 
+    with pytest.raises(DomainError) as error:
+        await _undo_handler(env).move_to_step(
+            actor=actor,
+            lineage_id=lineage,
+            request=MoveExamWorkspaceHistoryPositionRequest(
+                expected_cursor=opened.cursor, step_id=opened.step_ids[0]
+            ),
+        )
 
-@pytest.mark.asyncio
-async def test_spara_after_a_failed_autosave_retains_the_saved_copy_after_the_position() -> None:
-    """The edit's step write never landed; Spara keeps it as the next step at once."""
-    env = _Env()
-    actor = _actor()
-    imported = await env.seed_document(actor=actor)
-    lineage = imported.summary.lineage_id
-    first = await _autosave(
-        env, actor, lineage, imported.document.model_copy(update={"title": "Steg"})
-    )
-    unsaved = imported.document.model_copy(update={"title": "Aldrig autosparad"})
-
-    await _spara(env, actor, lineage, unsaved, 1, first)
-
-    history = await _handler(env).history(actor=actor, lineage_id=lineage)
-    assert history.step_ids[:-1] == (first,)
-    assert history.position_step_id == history.step_ids[-1]
-    assert await _titles(env, actor, lineage, history.step_ids) == ["Steg", "Aldrig autosparad"]
+    assert error.value.code is ErrorCode.CONFLICT
     reopened = await env.get_handler.handle(actor=actor, lineage_id=lineage)
-    assert reopened.document.title == "Aldrig autosparad"
-
-
-@pytest.mark.asyncio
-async def test_spara_after_undo_with_an_unstored_edit_branches_after_the_undone_step() -> None:
-    env = _Env()
-    actor = _actor()
-    imported = await env.seed_document(actor=actor)
-    lineage = imported.summary.lineage_id
-    first = await _autosave(
-        env, actor, lineage, imported.document.model_copy(update={"title": "Ett"})
-    )
-    await _autosave(env, actor, lineage, imported.document.model_copy(update={"title": "Två"}))
-
-    await _spara(
-        env, actor, lineage, imported.document.model_copy(update={"title": "Ett, ändrad"}), 1, first
-    )
-
-    history = await _handler(env).history(actor=actor, lineage_id=lineage)
-    assert await _titles(env, actor, lineage, history.step_ids) == ["Ett", "Ett, ändrad"]
-    assert history.position_step_id == history.step_ids[-1]
-
-
-@pytest.mark.asyncio
-async def test_a_command_without_a_position_follows_the_current_step() -> None:
-    env = _Env()
-    actor = _actor()
-    imported = await env.seed_document(actor=actor)
-    lineage = imported.summary.lineage_id
-    first = await _autosave(
-        env, actor, lineage, imported.document.model_copy(update={"title": "Ett"})
-    )
-    await _autosave(env, actor, lineage, imported.document.model_copy(update={"title": "Två"}))
-    await _spara(
-        env, actor, lineage, imported.document.model_copy(update={"title": "Ett"}), 1, first
-    )
-
-    await _autosave(env, actor, lineage, imported.document.model_copy(update={"title": "Kommando"}))
-
-    history = await _handler(env).history(actor=actor, lineage_id=lineage)
-    assert await _titles(env, actor, lineage, history.step_ids) == ["Ett", "Kommando"]
+    assert reopened.document.title == saved_before
 
 
 def test_the_position_must_name_a_retained_snapshot() -> None:

@@ -42,7 +42,7 @@ async def test_one_command_uses_one_atomic_autosave_and_returns_authoritative_re
     current, reader, steps = _ports()
     actor = make_user()
     cursor = uuid4()
-    # The autosave port can normalize data; handler must return its document and cursor.
+    # The autosave port can normalize data; the re-read after the store is authoritative.
     normalized = current.document.model_copy(update={"title": "Normalized editor document"})
     steps.handle.return_value = ExamWorkspaceUndoStepResponse(
         document=normalized,
@@ -50,6 +50,8 @@ async def test_one_command_uses_one_atomic_autosave_and_returns_authoritative_re
             cursor=cursor, baseline_step_id=uuid4(), step_ids=(cursor,), position_step_id=cursor
         ),
     )
+    reread = current.model_copy(update={"document": normalized, "history_cursor": cursor})
+    reader.handle.side_effect = [current, reread]
     handler = ChangeExamWorkspaceItemTypeHandler(
         reader=reader, undo_steps=steps, rng=random.Random(1)
     )
@@ -63,7 +65,8 @@ async def test_one_command_uses_one_atomic_autosave_and_returns_authoritative_re
             expected_cursor=current.history_cursor,
         ),
     )
-    reader.handle.assert_awaited_once_with(actor=actor, lineage_id=current.document.document_id)
+    assert reader.handle.await_count == 2
+    reader.handle.assert_awaited_with(actor=actor, lineage_id=current.document.document_id)
     steps.handle.assert_awaited_once()
     call = steps.handle.call_args.kwargs
     assert call["actor"] == actor

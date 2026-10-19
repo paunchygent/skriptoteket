@@ -106,9 +106,9 @@ const emit = defineEmits<{
   shuffleOrderingSteps: [itemId: string];
   updateChoiceBody: [itemId: string, choiceId: string, body: NativeExamBodyParagraph[], structural: boolean];
   updateCorrectChoices: [itemId: string, correctChoiceIds: string[]];
-  updateCriteria: [itemId: string, criteria: NativeExamCriterion[]];
+  updateCriteria: [itemId: string, criteria: NativeExamCriterion[], structural: boolean];
   updateGapValues: [itemId: string, gapId: string, acceptedValues: string[]];
-  updateGapOptions: [itemId: string, gapId: string, options: NativeExamChoice[], correctOptionId: string | null];
+  updateGapOptions: [itemId: string, gapId: string, options: NativeExamChoice[], correctOptionId: string | null, structural: boolean];
   updateMatchEntryBody: [
     itemId: string,
     side: "left" | "right",
@@ -284,7 +284,7 @@ const keyLine = computed(() => {
       :disabled="locked"
       :item="item"
       @update-gap-values="(itemId, gapId, values) => emit('updateGapValues', itemId, gapId, values)"
-      @update-gap-options="(itemId, gapId, options, correctOptionId) => emit('updateGapOptions', itemId, gapId, options, correctOptionId)"
+      @update-gap-options="(itemId, gapId, options, correctOptionId, structural) => emit('updateGapOptions', itemId, gapId, options, correctOptionId, structural)"
       @remove-automatic-value="(itemId, gapId, value) => emit('removeAutomaticValue', itemId, gapId, value)"
       @create-gap="(itemId, body, gapId, seed) => emit('createGap', itemId, body, gapId, seed)"
       @show-gap-as-text="(itemId, gapId) => emit('showGapAsText', itemId, gapId)"
@@ -305,7 +305,7 @@ const keyLine = computed(() => {
         v-if="item.kind === 'free_text'"
         :disabled="locked"
         :item="item"
-        @update="(criteria) => emit('updateCriteria', item.item_id, criteria)"
+        @update="(criteria, structural) => emit('updateCriteria', item.item_id, criteria, structural)"
       />
       <ExamWorkspaceChoiceField
         :disabled="locked"

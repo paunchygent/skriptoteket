@@ -203,7 +203,7 @@ describe("examWorkspaceGuestDraft", () => {
     const before = structuredClone(draft);
     const issuedBefore = issued.length;
     const refused = refusedExam();
-    const copy = examWorkspaceSaveRefusalCopy(refused.items);
+    const copy = examWorkspaceSaveRefusalCopy(refused);
     expect(copy).not.toBeNull();
 
     const outcome = storeGuestUndoStep(

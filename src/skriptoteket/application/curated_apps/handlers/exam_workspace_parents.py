@@ -1,4 +1,4 @@
-"""Apply one parent command to the newest editor step without saving the exam file."""
+"""Apply one parent command to the newest editor step; the step also overwrites the exam file."""
 
 from collections.abc import Callable
 from uuid import UUID
@@ -61,16 +61,15 @@ class ExamWorkspaceParentsHandler:
         document = operation(current.document)
         # The shared seam checks the cursor atomically, including changes after this read.
         # Omit the branch position: commands always append to the newest undo step.
-        stored = await self._undo_steps.handle(
+        await self._undo_steps.handle(
             actor=actor,
             lineage_id=lineage_id,
             request=StoreExamWorkspaceUndoStepRequest(
                 expected_cursor=expected_cursor, document=document
             ),
         )
-        return current.model_copy(
-            update={"document": stored.document, "history_cursor": stored.history.cursor}
-        )
+        # The step also overwrote the exam file, so the pre-store read is stale: reopen.
+        return await self._reader.handle(actor=actor, lineage_id=lineage_id)
 
     async def create_parent(
         self,

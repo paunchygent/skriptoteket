@@ -6,7 +6,9 @@ from uuid import uuid4
 
 import pytest
 
-from skriptoteket.application.curated_apps.exam_workspace import SaveExamWorkspaceDocumentRequest
+from skriptoteket.application.curated_apps.exam_workspace_history import (
+    StoreExamWorkspaceUndoStepRequest,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_saved_index import (
     ListExamWorkspaceDocumentsHandler,
 )
@@ -28,6 +30,9 @@ from skriptoteket.protocols.identity import ProfileRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from tests.unit.application.curated_apps.handlers.exam_workspace_conversion_support import choice
 from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents import _actor, _Env
+from tests.unit.application.curated_apps.handlers.test_exam_workspace_history_contract import (
+    _undo_handler,
+)
 
 _NOW = datetime(2026, 10, 17, 12, tzinfo=UTC)
 
@@ -185,18 +190,17 @@ async def test_first_save_and_changed_course_replace_one_index_row_with_current_
     assert indexed.saved_at == file.document_saved_at
     changed = document.model_copy(
         update={
-            "revision": 2,
             "title": "Changed title",
             "header": NativeExamHeader(course=ExamCourseChoice(key="ENGENG05", name="Engelska 5")),
         }
     )
-    response = await env.save_handler.handle(
+    history = await env.save_handler.history(actor=actor, lineage_id=document.document_id)
+    await _undo_handler(env).handle(
         actor=actor,
         lineage_id=document.document_id,
-        request=SaveExamWorkspaceDocumentRequest(
-            expected_revision=1, document=changed, position_step_id=document.document_id
-        ),
+        request=StoreExamWorkspaceUndoStepRequest(expected_cursor=history.cursor, document=changed),
     )
+    response = await env.get_handler.handle(actor=actor, lineage_id=document.document_id)
     listed = await env.list_handler.handle(actor=actor)
     assert len(env.index.entries) == 1
     assert len(listed.documents) == 1
@@ -207,18 +211,14 @@ async def test_first_save_and_changed_course_replace_one_index_row_with_current_
     assert response.summary.version == 2
     assert response.summary.name == "Filename differs from title.provdokument.zip"
     # Clearing a course must clear the persisted metadata, not retain the previous key.
-    cleared = changed.model_copy(update={"revision": 3, "header": NativeExamHeader()})
-    response = await env.save_handler.handle(
+    cleared = changed.model_copy(update={"header": NativeExamHeader()})
+    history = await env.save_handler.history(actor=actor, lineage_id=document.document_id)
+    await _undo_handler(env).handle(
         actor=actor,
         lineage_id=document.document_id,
-        request=SaveExamWorkspaceDocumentRequest(
-            expected_revision=2,
-            document=cleared,
-            position_step_id=(
-                await env.save_handler.history(actor=actor, lineage_id=document.document_id)
-            ).position_step_id,
-        ),
+        request=StoreExamWorkspaceUndoStepRequest(expected_cursor=history.cursor, document=cleared),
     )
+    response = await env.get_handler.handle(actor=actor, lineage_id=document.document_id)
     assert response.summary.course_key is None
     listed = await env.list_handler.handle(actor=actor)
     assert listed.groups[-1].course_name == "Utan kurs"

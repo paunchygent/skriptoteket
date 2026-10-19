@@ -174,7 +174,7 @@ export function refuseSaveRefusedDrafts(api: EditingApiMocks): void {
       lineage: string,
       request: { afterStepId: string | null; document: NativeExamDocument; expectedCursor: string },
     ) => {
-      if (examWorkspaceSaveRefusalCopy(request.document.items) !== null) {
+      if (examWorkspaceSaveRefusalCopy(request.document) !== null) {
         throw new ApiError({
           code: "VALIDATION_ERROR",
           message: "Validation error",

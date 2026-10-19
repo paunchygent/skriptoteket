@@ -5,8 +5,9 @@
  *   The toolbar Luckverktyg toggle and Ctrl+Alt+G switch one tool per
  *   question on; while it is on, word clicks become gaps at once with no
  *   popover and no floating button. The tool ends by its toggle, its
- *   shortcut, Escape with no popover open, a move to another question,
- *   disabling, or the gap_999 cap. Escape with a popover open closes the
+ *   shortcut, Escape with no popover open, a move to another question, or
+ *   the gap_999 cap; a disabled editor only suspends it (TASK-SKRIPT-40-04-09
+ *   walk finding A3). Escape with a popover open closes the
  *   popover first and keeps the tool on. Free text shows no toggle and the
  *   shortcut does nothing there; Kort svar renders no toggle either.
  *
@@ -266,7 +267,7 @@ describe("ExamWorkspaceBodyEditor gap tool", () => {
     }
   });
 
-  it("shows the floating button again after the tool is switched off", async () => {
+  it("creates no gap and shows no button after the tool is switched off", async () => {
     const harness = mountHarness(plainGapItem());
     await settle();
 
@@ -281,7 +282,7 @@ describe("ExamWorkspaceBodyEditor gap tool", () => {
     clickWord(harness, "stjärna");
     await settle();
 
-    expect(document.querySelector(FLOATING_GAP)).not.toBeNull();
+    expect(document.querySelector(FLOATING_GAP)).toBeNull();
     expect(creationsOf(harness)).toHaveLength(0);
     expect(popoverExists()).toBe(false);
   });
@@ -338,7 +339,7 @@ describe("ExamWorkspaceBodyEditor gap tool", () => {
     expect(bodyEditorOf(harness).props("item").item_id).toBe("item_002");
   });
 
-  it("turns the tool off while disabled and the toggle and shortcut cannot turn it on", async () => {
+  it("suspends the tool while disabled: it stays on and the toggle and shortcut do nothing", async () => {
     const harness = mountHarness(plainGapItem());
     await settle();
 
@@ -349,15 +350,21 @@ describe("ExamWorkspaceBodyEditor gap tool", () => {
     harness.setDisabled(true);
     await settle();
 
-    expect(toolPressed(harness)).toBe("false");
+    expect(toolPressed(harness)).toBe("true");
+    expect(richEditorOf(harness).props("gapTool")).toBe(true);
     expect(toolToggle(harness).attributes("disabled")).toBeDefined();
     await toolToggle(harness).trigger("click");
     await settle();
-    expect(toolPressed(harness)).toBe("false");
+    expect(toolPressed(harness)).toBe("true");
     pressGapShortcut(surfaceOf(harness));
     await settle();
-    expect(toolPressed(harness)).toBe("false");
+    expect(toolPressed(harness)).toBe("true");
     expect(creationsOf(harness)).toHaveLength(0);
+
+    harness.setDisabled(false);
+    await settle();
+    expect(toolPressed(harness)).toBe("true");
+    expect(richEditorOf(harness).props("gapTool")).toBe(true);
   });
 
   it("turns the tool off at the gap_999 cap and disables the toggle", async () => {

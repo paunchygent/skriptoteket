@@ -5,8 +5,8 @@ from uuid import uuid4
 
 import pytest
 
-from skriptoteket.application.curated_apps.exam_workspace import SaveExamWorkspaceDocumentRequest
 from skriptoteket.application.curated_apps.exam_workspace_history import (
+    MAX_RETAINED_UNDO_STEPS,
     SaveAsExamWorkspaceDocumentRequest,
     StoreExamWorkspaceUndoStepRequest,
 )
@@ -37,9 +37,6 @@ from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents 
     _actor,
     _Env,
 )
-from tests.unit.domain.curated_apps.exam_workspace.native_exam_document_test_support import (
-    with_next_revision,
-)
 
 
 def _handler(env: _Env) -> SaveExamWorkspaceDocumentHandler:
@@ -64,7 +61,7 @@ def _undo_handler(env: _Env) -> StoreExamWorkspaceUndoStepHandler:
 
 
 @pytest.mark.asyncio
-async def test_twelve_autosaves_keep_ten_steps_across_save_and_fresh_requests() -> None:
+async def test_hundred_and_one_stores_keep_hundred_steps_and_overwrite_the_file() -> None:
     env = _Env()
     actor = _actor()
     imported = await env.seed_document(actor=actor)
@@ -72,55 +69,45 @@ async def test_twelve_autosaves_keep_ten_steps_across_save_and_fresh_requests() 
     handler = _handler(env)
     initial = await handler.history(actor=actor, lineage_id=lineage)
     assert initial.step_ids == ()  # Import is the baseline, never a counted undo step.
-    for index in range(12):
+    for index in range(MAX_RETAINED_UNDO_STEPS + 1):
         await _undo_handler(env).handle(
             actor=actor,
             lineage_id=lineage,
             request=StoreExamWorkspaceUndoStepRequest(
                 expected_cursor=(await handler.history(actor=actor, lineage_id=lineage)).cursor,
                 document=imported.document.model_copy(
-                    update={"revision": 2, "title": f"Lärarens redigering {index}"}
+                    update={"title": f"Lärarens redigering {index}"}
                 ),
             ),
         )
     history = await _handler(env).history(actor=actor, lineage_id=lineage)
-    assert len(history.step_ids) == 10
+    assert len(history.step_ids) == MAX_RETAINED_UNDO_STEPS
     titles = [
         (
             await _handler(env).history_step(actor=actor, lineage_id=lineage, step_id=step)
         ).document.title
         for step in history.step_ids
     ]
-    assert titles == [f"Lärarens redigering {index}" for index in range(2, 12)]
+    assert titles == [
+        f"Lärarens redigering {index}" for index in range(1, MAX_RETAINED_UNDO_STEPS + 1)
+    ]
     reopened = await env.get_handler.handle(actor=actor, lineage_id=lineage)
-    assert reopened.document.title == "Lärarens redigering 11"
+    assert reopened.document.title == f"Lärarens redigering {MAX_RETAINED_UNDO_STEPS}"
     assert reopened.history_cursor == history.cursor
-    # Autosave must not overwrite the durable exam file or create vault rows.
+    # Every stored step overwrites the durable exam file in the same transaction.
     saved_file = env.vault_files.files[imported.summary.vault_file_id]
     saved_container = env.codec.parse(
         content=await env.store.load(actor=actor, vault_file=saved_file)
     )
-    assert saved_container.document.title == imported.document.title
-    assert len(await env.vault_files.list_active_for_user(user_id=actor.id)) == 1
-    await handler.handle(
-        actor=actor,
-        lineage_id=lineage,
-        request=SaveExamWorkspaceDocumentRequest(
-            expected_revision=1,
-            document=reopened.document.model_copy(update={"revision": 2}),
-            position_step_id=history.position_step_id,
-        ),
+    assert saved_container.document.title == f"Lärarens redigering {MAX_RETAINED_UNDO_STEPS}"
+    assert (
+        saved_container.document.revision == imported.summary.version + MAX_RETAINED_UNDO_STEPS + 1
     )
-    after_save = await _handler(env).history(actor=actor, lineage_id=lineage)
-    assert after_save.step_ids == history.step_ids
-    assert after_save.baseline_step_id == history.baseline_step_id
-    assert after_save.cursor != history.cursor
-    reopened_after_save = await env.get_handler.handle(actor=actor, lineage_id=lineage)
-    assert reopened_after_save.history_cursor == after_save.cursor
+    assert len(await env.vault_files.list_active_for_user(user_id=actor.id)) == 1
     previous = await _handler(env).history_step(
         actor=actor, lineage_id=lineage, step_id=history.step_ids[-2]
     )
-    assert previous.document.title == "Lärarens redigering 10"
+    assert previous.document.title == f"Lärarens redigering {MAX_RETAINED_UNDO_STEPS - 1}"
 
 
 @pytest.mark.asyncio
@@ -167,7 +154,7 @@ async def test_edit_after_undo_discards_redo_without_damaging_other_exam_history
 
 
 @pytest.mark.asyncio
-async def test_undo_response_roundtrips_through_existing_save_revision_contract() -> None:
+async def test_each_stored_step_advances_the_file_revision_by_one() -> None:
     env = _Env()
     actor = _actor()
     imported = await env.seed_document(actor=actor)
@@ -180,22 +167,21 @@ async def test_undo_response_roundtrips_through_existing_save_revision_contract(
             document=imported.document.model_copy(update={"title": "Aktuell redigering"}),
         ),
     )
-    saved = await _handler(env).handle(
+    again = await _undo_handler(env).handle(
         actor=actor,
         lineage_id=lineage,
-        request=SaveExamWorkspaceDocumentRequest(
-            expected_revision=edited.document.revision,
-            document=with_next_revision(edited.document),
-            position_step_id=edited.history.position_step_id,
+        request=StoreExamWorkspaceUndoStepRequest(
+            expected_cursor=edited.history.cursor,
+            document=edited.document.model_copy(update={"title": "Nästa redigering"}),
         ),
     )
-    assert edited.document.revision == imported.document.revision
-    assert saved.summary.vault_file_id == imported.summary.vault_file_id
-    assert saved.document.revision == imported.document.revision + 1
+    assert edited.document.revision == imported.summary.version + 1
+    assert again.document.revision == imported.summary.version + 2
     head = env.vault_files.files[imported.summary.vault_file_id]
+    assert head.document_version == imported.summary.version + 2
     durable = env.codec.parse(content=await env.store.load(actor=actor, vault_file=head))
-    assert durable.document.title == "Aktuell redigering"
-    assert durable.document.revision == saved.document.revision
+    assert durable.document.title == "Nästa redigering"
+    assert durable.document.revision == imported.summary.version + 2
 
 
 @pytest.mark.asyncio
@@ -225,38 +211,22 @@ async def test_undo_response_carries_the_gates_title_verdict_for_the_stored_step
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("intervening_write", ["autosave", "save"])
-async def test_stale_cursor_cannot_overwrite_an_intervening_editor_write(
-    intervening_write: str,
-) -> None:
+async def test_stale_cursor_cannot_overwrite_an_intervening_stored_step() -> None:
     env = _Env()
     actor = _actor()
     imported = await env.seed_document(actor=actor)
     lineage = imported.summary.lineage_id
     handler = _handler(env)
     opened_history = await handler.history(actor=actor, lineage_id=lineage)
-    winning_document = imported.document.model_copy(
-        update={"revision": 2, "title": "Nyare ändring"}
+    winning_document = imported.document.model_copy(update={"title": "Nyare ändring"})
+    accepted = await _undo_handler(env).handle(
+        actor=actor,
+        lineage_id=lineage,
+        request=StoreExamWorkspaceUndoStepRequest(
+            expected_cursor=opened_history.cursor, document=winning_document
+        ),
     )
-    if intervening_write == "autosave":
-        accepted = await _undo_handler(env).handle(
-            actor=actor,
-            lineage_id=lineage,
-            request=StoreExamWorkspaceUndoStepRequest(
-                expected_cursor=opened_history.cursor, document=winning_document
-            ),
-        )
-        assert accepted.history.cursor != opened_history.cursor
-    else:
-        await handler.handle(
-            actor=actor,
-            lineage_id=lineage,
-            request=SaveExamWorkspaceDocumentRequest(
-                expected_revision=1,
-                document=winning_document,
-                position_step_id=opened_history.position_step_id,
-            ),
-        )
+    assert accepted.history.cursor != opened_history.cursor
     before_stale_attempt = await handler.history(actor=actor, lineage_id=lineage)
     with pytest.raises(DomainError) as error:
         await _undo_handler(env).handle(
@@ -264,9 +234,7 @@ async def test_stale_cursor_cannot_overwrite_an_intervening_editor_write(
             lineage_id=lineage,
             request=StoreExamWorkspaceUndoStepRequest(
                 expected_cursor=opened_history.cursor,
-                document=imported.document.model_copy(
-                    update={"revision": 2, "title": "Gammal flik"}
-                ),
+                document=imported.document.model_copy(update={"title": "Gammal flik"}),
             ),
         )
     assert error.value.code is ErrorCode.CONFLICT
@@ -277,7 +245,7 @@ async def test_stale_cursor_cannot_overwrite_an_intervening_editor_write(
 
 
 @pytest.mark.asyncio
-async def test_history_picture_can_be_restored_after_save_removes_it() -> None:
+async def test_history_picture_can_be_restored_after_a_step_removes_it() -> None:
     env = _Env()
     actor = _actor()
     imported = await env.seed_document(actor=actor)
@@ -293,7 +261,6 @@ async def test_history_picture_can_be_restored_after_save_removes_it() -> None:
     paragraph = first.body[0]
     pictured = imported.document.model_copy(
         update={
-            "revision": 2,
             "assets": (asset,),
             "items": (
                 first.model_copy(
@@ -321,7 +288,8 @@ async def test_history_picture_can_be_restored_after_save_removes_it() -> None:
         name=imported.summary.name,
         content=env.codec.build(
             content=ExamWorkspaceContainerContent(
-                document=pictured, assets_by_id={asset.asset_id: payload}
+                document=pictured.model_copy(update={"revision": 2}),
+                assets_by_id={asset.asset_id: payload},
             )
         ),
         lineage_id=lineage,
@@ -335,19 +303,20 @@ async def test_history_picture_can_be_restored_after_save_removes_it() -> None:
         lineage_id=lineage,
         request=StoreExamWorkspaceUndoStepRequest(
             expected_cursor=(await handler.history(actor=actor, lineage_id=lineage)).cursor,
-            document=pictured.model_copy(update={"revision": 3}),
+            document=pictured,
         ),
     )
     history = await handler.history(actor=actor, lineage_id=lineage)
-    await handler.handle(
+    await _undo_handler(env).handle(
         actor=actor,
         lineage_id=lineage,
-        request=SaveExamWorkspaceDocumentRequest(
-            expected_revision=2,
-            document=imported.document.model_copy(update={"revision": 3}),
-            position_step_id=history.position_step_id,
+        request=StoreExamWorkspaceUndoStepRequest(
+            expected_cursor=history.cursor,
+            document=imported.document,
         ),
     )
+    unpictured = await env.get_handler.handle(actor=actor, lineage_id=lineage)
+    assert unpictured.document.assets == ()
     restored = await _handler(env).history_step(
         actor=actor, lineage_id=lineage, step_id=history.step_ids[-1]
     )
@@ -357,15 +326,12 @@ async def test_history_picture_can_be_restored_after_save_removes_it() -> None:
     ).handle(actor=actor, lineage_id=lineage, asset_id=asset.asset_id)
     assert served.content == payload
     assert served.media_type == "image/png"
-    await _handler(env).handle(
+    await _undo_handler(env).handle(
         actor=actor,
         lineage_id=lineage,
-        request=SaveExamWorkspaceDocumentRequest(
-            expected_revision=3,
-            document=restored.document.model_copy(update={"revision": 4}),
-            position_step_id=(
-                await handler.history(actor=actor, lineage_id=lineage)
-            ).position_step_id,
+        request=StoreExamWorkspaceUndoStepRequest(
+            expected_cursor=(await handler.history(actor=actor, lineage_id=lineage)).cursor,
+            document=restored.document,
         ),
     )
     saved_file = env.vault_files.files[imported.summary.vault_file_id]

@@ -153,7 +153,7 @@ async def _invoke(
     "command",
     ["create", "add", "delete", "reorder", "delete_parent", "cascade", "group", "move", "empty"],
 )
-async def test_each_command_stores_one_step_without_advancing_file_revision(
+async def test_each_command_stores_one_step_and_reopens_the_written_file(
     command: Command,
 ) -> None:
     actor = make_user()
@@ -174,6 +174,8 @@ async def test_each_command_stores_one_step_without_advancing_file_revision(
             position_step_id=next_cursor,
         ),
     )
+    reread = current.model_copy(update={"document": normalized, "history_cursor": next_cursor})
+    reader.handle.side_effect = [current, reread]
     handler = ExamWorkspaceParentsHandler(reader=reader, undo_steps=undo_steps)
 
     response = await _invoke(handler, command, actor, document, current.history_cursor)
@@ -183,14 +185,15 @@ async def test_each_command_stores_one_step_without_advancing_file_revision(
     assert response.summary == current.summary
     assert response.notes == current.notes
     assert response.conversion == current.conversion
-    reader.handle.assert_awaited_once_with(actor=actor, lineage_id=document.document_id)
+    assert reader.handle.await_count == 2
+    reader.handle.assert_awaited_with(actor=actor, lineage_id=document.document_id)
     undo_steps.handle.assert_awaited_once()
     call = undo_steps.handle.call_args.kwargs
     assert call["actor"] == actor
     assert call["lineage_id"] == document.document_id
     request = call["request"]
     assert request.expected_cursor == current.history_cursor
-    # Spara can rotate a cursor without creating a step; cursor is not a branch step ID.
+    # Commands always append to the newest undo step; the cursor is not a branch step ID.
     assert request.after_step_id is None
     assert request.document.document_id == document.document_id
     assert request.document.revision == document.revision
@@ -265,7 +268,10 @@ async def test_undo_command_restores_pre_command_document_through_real_editor_se
     previous = await env.save_handler.history_step(
         actor=actor, lineage_id=lineage_id, step_id=created.history_cursor
     )
-    assert previous.document == created.document
+    current_head = await env.get_handler.handle(actor=actor, lineage_id=lineage_id)
+    assert previous.document == created.document.model_copy(
+        update={"revision": current_head.summary.version}
+    )
     restored = await undo_steps.handle(
         actor=actor,
         lineage_id=lineage_id,
@@ -276,7 +282,10 @@ async def test_undo_command_restores_pre_command_document_through_real_editor_se
         ),
     )
     reopened = await env.get_handler.handle(actor=actor, lineage_id=lineage_id)
-    assert restored.document == created.document == reopened.document
+    assert restored.document == reopened.document
+    assert reopened.document == created.document.model_copy(
+        update={"revision": reopened.summary.version}
+    )
     assert reopened.history_cursor == restored.history.cursor
     assert added.history_cursor not in restored.history.step_ids
     with pytest.raises(DomainError) as error:
@@ -286,7 +295,7 @@ async def test_undo_command_restores_pre_command_document_through_real_editor_se
     assert error.value.code is ErrorCode.NOT_FOUND
     saved_file = env.vault_files.files[imported.summary.vault_file_id]
     saved = env.codec.parse(content=await env.store.load(actor=actor, vault_file=saved_file))
-    assert saved.document == imported.document
+    assert saved.document == reopened.document
 
 
 async def test_group_and_empty_name_the_created_part_and_are_each_one_undo_step() -> None:
@@ -350,7 +359,10 @@ async def test_move_is_one_undo_step_restoring_the_exact_previous_document() -> 
     previous = await env.save_handler.history_step(
         actor=actor, lineage_id=lineage_id, step_id=grouped.history_cursor
     )
-    assert previous.document == grouped.document
+    current_head = await env.get_handler.handle(actor=actor, lineage_id=lineage_id)
+    assert previous.document == grouped.document.model_copy(
+        update={"revision": current_head.summary.version}
+    )
     restored = await undo_steps.handle(
         actor=actor,
         lineage_id=lineage_id,
@@ -361,5 +373,8 @@ async def test_move_is_one_undo_step_restoring_the_exact_previous_document() -> 
         ),
     )
     reopened = await env.get_handler.handle(actor=actor, lineage_id=lineage_id)
-    assert restored.document == grouped.document == reopened.document
+    assert restored.document == reopened.document
+    assert reopened.document == grouped.document.model_copy(
+        update={"revision": reopened.summary.version}
+    )
     assert moved.history_cursor not in restored.history.step_ids

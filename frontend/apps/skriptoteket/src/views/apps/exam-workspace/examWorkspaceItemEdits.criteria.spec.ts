@@ -12,6 +12,7 @@ import { describe, expect, it } from "vitest";
 
 import type { NativeExamItem } from "../../../api/examWorkspace";
 import { newTeacherItem, withCriteria } from "./examWorkspaceItemEdits";
+import { plainBody } from "./examWorkspaceRichText";
 
 function buildFreeTextItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
   return {
@@ -26,6 +27,7 @@ function buildFreeTextItem(overrides: Partial<NativeExamItem> = {}): NativeExamI
     body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Förklara begreppet." }] }],
     choices: [],
     gaps: [],
+    kept_gaps: [],
     item_id: "item_001",
     kind: "free_text",
     match_left: [],
@@ -81,5 +83,35 @@ describe("withCriteria", () => {
 describe("newTeacherItem", () => {
   it("starts a new free-text question with no criteria", () => {
     expect(newTeacherItem("item_009", 9, "free_text").criteria).toEqual([]);
+  });
+});
+
+describe("kept-answers wire format (TASK-SKRIPT-40-04-13 T1)", () => {
+  it("carries no kept gaps on a fresh fixture item", () => {
+    expect(buildFreeTextItem().kept_gaps).toEqual([]);
+  });
+
+  it("carries no kept gaps on a new teacher item of every kind", () => {
+    for (const teacherKind of [
+      "free_text",
+      "single_choice",
+      "multiple_response",
+      "gap_fill",
+      "inline_choice",
+      "matching",
+      "ordering",
+      "short_answer",
+    ] as const) {
+      expect(newTeacherItem("item_009", 9, teacherKind).kept_gaps).toEqual([]);
+    }
+  });
+
+  it("carries a null kept-gap link on a fresh plain-text segment", () => {
+    expect(plainBody("Vilket ämne är en gas?")[0]!.segments[0]).toEqual({
+      kept_gap_id: null,
+      kind: "text",
+      marks: [],
+      text: "Vilket ämne är en gas?",
+    });
   });
 });

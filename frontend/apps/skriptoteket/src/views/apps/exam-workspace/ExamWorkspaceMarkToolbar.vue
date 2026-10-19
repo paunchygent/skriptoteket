@@ -21,7 +21,7 @@
  */
 
 import {
-  Bold, Heading1, Heading2, Heading3, Italic, MousePointerClick, Subscript, Superscript, TextCursorInput, Underline,
+  Bold, Heading1, Heading2, Heading3, Italic, MousePointerClick, Subscript, Superscript, Underline,
 } from "lucide-vue-next";
 
 import { BODY_MARKS, MARK_LABELS } from "./examWorkspaceBodyMarks";
@@ -37,22 +37,19 @@ withDefaults(
     activeHeading?: HeadingLevel | null;
     disabled?: boolean;
     showHeadings?: boolean;
-    /** Show the "Lucka" gap button after the marks. */
+    /** Show the gap tool toggle after the marks. */
     showGap?: boolean;
-    /** Why no more gaps can be added; disables the gap button while set. */
-    gapDisabledReason?: string | null;
     /** Why the gap tool toggle is off at the cap; disables the toggle while set. */
     gapToolDisabledReason?: string | null;
     /** Whether the gap tool toggle reads pressed. */
     gapToolOn?: boolean;
   }>(),
-  { activeMarks: () => [], activeHeading: null, disabled: false, showHeadings: false, showGap: false, gapDisabledReason: null, gapToolDisabledReason: null, gapToolOn: false },
+  { activeMarks: () => [], activeHeading: null, disabled: false, showHeadings: false, showGap: false, gapToolDisabledReason: null, gapToolOn: false },
 );
 
 const emit = defineEmits<{
   toggleMark: [mark: BodyMark];
   toggleHeading: [level: HeadingLevel];
-  makeGap: [];
   toggleGapTool: [];
 }>();
 
@@ -108,49 +105,28 @@ const isMac = isMacPlatform();
         aria-hidden="true"
       />
     </button>
-    <template v-if="showGap">
-      <button
-        type="button"
-        class="inline-flex h-8 items-center justify-center gap-1 border px-2 text-navy disabled:opacity-40"
-        :class="
-          gapDisabledReason === null && !disabled
-            ? 'border-transparent hover:bg-canvas'
-            : 'border-transparent'
-        "
-        aria-label="Gör till lucka"
-        :title="gapDisabledReason ?? 'Gör till lucka'"
-        :disabled="disabled || gapDisabledReason !== null"
-        data-test="exam-workspace-toolbar-make-gap"
-        @click="emit('makeGap')"
-      >
-        <TextCursorInput
-          :size="16"
-          aria-hidden="true"
-        />
-        Lucka
-      </button>
-      <button
-        type="button"
-        class="inline-flex h-8 w-8 items-center justify-center border text-navy disabled:opacity-40"
-        :class="
-          gapToolOn
-            ? 'border-navy/60 bg-panel-muted'
-            : 'border-transparent hover:bg-canvas'
-        "
-        :aria-pressed="gapToolOn ? 'true' : 'false'"
-        :aria-keyshortcuts="ariaKeyshortcuts('gapTool', isMac)"
-        aria-label="Luckverktyg"
-        :title="gapToolDisabledReason ?? `Luckverktyg (${shortcutLabel('gapTool', isMac)})`"
-        :disabled="disabled || gapToolDisabledReason !== null"
-        data-test="exam-workspace-toolbar-gap-tool"
-        @click="emit('toggleGapTool')"
-      >
-        <MousePointerClick
-          :size="16"
-          aria-hidden="true"
-        />
-      </button>
-    </template>
+    <button
+      v-if="showGap"
+      type="button"
+      class="inline-flex h-8 w-8 items-center justify-center border text-navy disabled:opacity-40"
+      :class="
+        gapToolOn
+          ? 'border-navy/60 bg-panel-muted'
+          : 'border-transparent hover:bg-canvas'
+      "
+      :aria-pressed="gapToolOn ? 'true' : 'false'"
+      :aria-keyshortcuts="ariaKeyshortcuts('gapTool', isMac)"
+      aria-label="Luckverktyg"
+      :title="gapToolDisabledReason ?? `Luckverktyg (${shortcutLabel('gapTool', isMac)})`"
+      :disabled="disabled || gapToolDisabledReason !== null"
+      data-test="exam-workspace-toolbar-gap-tool"
+      @click="emit('toggleGapTool')"
+    >
+      <MousePointerClick
+        :size="16"
+        aria-hidden="true"
+      />
+    </button>
     <template v-if="showHeadings">
       <span
         class="mx-1.5 h-5 w-px bg-navy/40"

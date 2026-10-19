@@ -5,13 +5,16 @@
  * Domain purpose:
  *   Edit one list of accepted answers as one row per answer: a text input
  *   and a remove glyph per row, with a glyph-only add button ("Lägg till
- *   svar" accessible name and tooltip) under the rows. Typing alone never
- *   emits; an input's `change`, removing
+ *   svar" accessible name and tooltip) under the rows. Typing commits while
+ *   it happens (each input emits the normalized list, so the owner stores it
+ *   after its typing pause), and an input's `change`, removing
  *   a row and the exposed `commit()` emit the normalized list (trimmed,
  *   empty rows dropped, exact duplicates after trim collapsed, commas kept
- *   as ordinary characters) exactly once per change. Every row input, add,
- *   Enter-add and remove also emits the normalized list as `draft`, so the
- *   owner can follow unsaved typing without a commit. Enter in a row inserts
+ *   as ordinary characters) exactly once per change. Typing that normalizes
+ *   to an empty list commits nothing: an empty accepted value is refused by
+ *   the save rules, so only `change`, remove and `commit()` can emit it.
+ *   Every row input, add, Enter-add and remove also emits the normalized
+ *   list as `draft`, so the owner can follow unsaved typing without a commit. Enter in a row inserts
  *   an empty row directly below it and focuses it; the new row stays in
  *   local state until a commit normalizes, and a commit never removes the
  *   focused empty row from local state. At least one row is always shown;
@@ -134,6 +137,11 @@ function handleRowInput(key: number, event: Event): void {
     if (row) {
       row.text = target.value;
       emitDraft();
+      // Typing an empty list commits nothing: the save rules refuse an empty
+      // accepted value. `change` and the exposed `commit()` still emit it.
+      if (normalizedRows().length > 0) {
+        commit();
+      }
     }
   }
 }

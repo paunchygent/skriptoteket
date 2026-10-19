@@ -114,7 +114,7 @@ export function useExamWorkspaceSave(state: SaveState) {
       toast.failure(SAVE_FAILURE_COPY);
       return false;
     }
-    const refusalCopy = examWorkspaceSaveRefusalCopy(current.items);
+    const refusalCopy = examWorkspaceSaveRefusalCopy(current);
     if (refusalCopy) {
       toast.failure(refusalCopy);
       return false;

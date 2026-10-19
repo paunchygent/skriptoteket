@@ -252,7 +252,7 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
       } else if (isApiError(error) && error.status === 422) {
         // A draft the save rules refuse already shows why inline in the editor; the
         // server's request-shape rejection carries no Swedish copy of its own.
-        if (examWorkspaceSaveRefusalCopy(document.items) === null) {
+        if (examWorkspaceSaveRefusalCopy(document) === null) {
           toast.failure(error.code === "VALIDATION_ERROR" ? AUTOSAVE_FAILURE_COPY : error.message);
         }
         return "refused";

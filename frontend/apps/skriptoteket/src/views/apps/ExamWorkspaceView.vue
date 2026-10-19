@@ -210,6 +210,8 @@ useExamWorkspaceKeyboard({ save: handleSave, undo: history.undo, redo: history.r
 provideExamWorkspaceHistoryKeys({
   undo: () => void history.undo(),
   redo: () => void history.redo(),
+  canUndo: history.canUndo,
+  canRedo: history.canRedo,
 });
 
 /**

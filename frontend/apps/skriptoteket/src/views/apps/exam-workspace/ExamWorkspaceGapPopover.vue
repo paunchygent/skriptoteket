@@ -6,10 +6,11 @@
  *   Let the teacher edit one gap's accepted answers as one row per answer
  *   right next to the gap chip through `ExamWorkspaceGapAnswerList`: a text
  *   input and a remove glyph per row with a glyph-only add button ("Lägg
- *   till svar" accessible name and tooltip) under the rows. Leaving the
- *   popover commits the answers; Escape
- *   discards them. Each commit is emitted once, even when the browser also
- *   fires `change` while focus returns to the chip. Enter inside an answer
+ *   till svar" accessible name and tooltip) under the rows. Typing commits
+ *   the answers while it happens, so the history stores them after its
+ *   typing pause; Escape closes and keeps the text typed so far. Each commit
+ *   is emitted once, even when the browser also fires `change` while focus
+ *   returns to the chip. Enter inside an answer
  *   row adds a row below it and never closes the popover. Enter and Escape
  *   pressed while an IME composition is active belong to the composition and
  *   are ignored. Answers the conversion wrote for the
@@ -24,8 +25,9 @@
  *   and remove, plus a glyph-only add button ("Lägg till alternativ"
  *   accessible name and tooltip). Radio, add, remove and move emit
  *   the whole option state at once (one patch each); typed option text
- *   commits on `change`, Enter and leaving the popover, and rides along with
- *   the next such emit. Escape discards typed text. The correct option
+ *   commits while typing and is stored after the typing pause, and rides
+ *   along with the next such emit. Enter commits and closes; Escape closes
+ *   and keeps the typed text. The correct option
  *   cannot be removed; a gap with no correct option shows no radio checked,
  *   keeps that state through add, move, remove and text edits, and lets every
  *   option be removed. The accepted answers, automatic answers and "Visa som
@@ -67,7 +69,7 @@ const emit = defineEmits<{
   commit: [itemId: string, gapId: string, acceptedValues: string[]];
   removeAutomaticValue: [itemId: string, gapId: string, value: string];
   showGapAsText: [itemId: string, gapId: string];
-  updateOptions: [itemId: string, gapId: string, options: NativeExamChoice[], correctOptionId: string | null];
+  updateOptions: [itemId: string, gapId: string, options: NativeExamChoice[], correctOptionId: string | null, structural: boolean];
   close: [returnFocus: boolean];
 }>();
 
@@ -93,16 +95,12 @@ const showAsTextDisabledReason = computed(() => {
   return null;
 });
 let lastCommitted = props.gap?.accepted_values ?? [];
-let discarded = false;
 
 function sameValues(left: string[], right: string[]): boolean {
   return left.length === right.length && left.every((value, index) => value === right[index]);
 }
 
 function handleAnswersCommit(values: string[]): void {
-  if (discarded) {
-    return;
-  }
   lastCommitted = values;
   emit("commit", itemId, gapId, values);
 }
@@ -158,9 +156,6 @@ function handleShowAsText(): void {
   }
   // Persist pending edits first, so the first current accepted value is shown.
   answerList.value?.commit();
-  // The gap disappears with this conversion; later focusout/change events
-  // must not write the removed gap's answers back.
-  discarded = true;
   emit("showGapAsText", itemId, gapId);
 }
 
@@ -191,31 +186,57 @@ function optionsWithDrafts(): NativeExamChoice[] {
   });
 }
 
-function emitOptions(next: NativeExamChoice[], correct: string | null): void {
+/** The option state already sent upward; typing that changes nothing sends nothing. */
+let lastSent: { correct: string | null; options: NativeExamChoice[] } | null = null;
+
+function sameSent(next: NativeExamChoice[], correct: string | null): boolean {
+  const sent = lastSent;
+  return (
+    sent !== null &&
+    sent.correct === correct &&
+    sent.options.length === next.length &&
+    next.every(
+      (option, index) =>
+        option.choice_id === sent.options[index]?.choice_id &&
+        bodyText(option.body) === bodyText(sent.options[index]?.body ?? []),
+    )
+  );
+}
+
+function emitOptions(next: NativeExamChoice[], correct: string | null, structural: boolean): void {
   for (const key of Object.keys(optionDrafts)) {
     delete optionDrafts[key];
   }
-  emit("updateOptions", itemId, gapId, next, correct);
+  lastSent = { correct, options: next };
+  emit("updateOptions", itemId, gapId, next, correct, structural);
+}
+
+/** Commit the option text typed so far without clearing it, once per content. */
+function emitTypingOptions(): void {
+  const next = optionsWithDrafts();
+  if (
+    sameSent(next, correctOptionId.value) ||
+    next.every((option, index) => option === options.value[index])
+  ) {
+    return;
+  }
+  lastSent = { correct: correctOptionId.value, options: next };
+  emit("updateOptions", itemId, gapId, next, correctOptionId.value, false);
 }
 
 function commitOptionDrafts(): void {
-  if (discarded || Object.keys(optionDrafts).length === 0) {
+  if (Object.keys(optionDrafts).length === 0) {
     return;
   }
-  const next = optionsWithDrafts();
-  if (next.every((option, index) => option === options.value[index])) {
-    for (const key of Object.keys(optionDrafts)) {
-      delete optionDrafts[key];
-    }
-    return;
-  }
-  emitOptions(next, correctOptionId.value);
+  emitTypingOptions();
 }
 
 function handleOptionInput(choiceId: string, event: Event): void {
   const target = event.target;
   if (target instanceof HTMLInputElement) {
     optionDrafts[choiceId] = target.value;
+    // Typing commits while it happens; the owner stores it after its pause.
+    emitTypingOptions();
   }
 }
 
@@ -237,10 +258,7 @@ function handleRootKeydown(event: KeyboardEvent): void {
     return;
   }
   event.preventDefault();
-  discarded = true;
-  for (const key of Object.keys(optionDrafts)) {
-    delete optionDrafts[key];
-  }
+  // Escape closes and keeps the typed text: it was committed while typing.
   emit("close", true);
 }
 
@@ -251,7 +269,7 @@ function optionInput(choiceId: string): HTMLInputElement | null {
 }
 
 function handleSelectCorrect(choiceId: string): void {
-  emitOptions(optionsWithDrafts(), choiceId);
+  emitOptions(optionsWithDrafts(), choiceId, true);
 }
 
 function nextOptionId(): string {
@@ -266,7 +284,11 @@ function nextOptionId(): string {
 
 function handleAddOption(): void {
   const choiceId = nextOptionId();
-  emitOptions([...optionsWithDrafts(), { body: plainBody(" "), choice_id: choiceId }], correctOptionId.value);
+  emitOptions(
+    [...optionsWithDrafts(), { body: plainBody(" "), choice_id: choiceId }],
+    correctOptionId.value,
+    true,
+  );
   void nextTick(() => optionInput(choiceId)?.focus());
 }
 
@@ -277,6 +299,7 @@ function handleRemoveOption(choiceId: string): void {
   emitOptions(
     optionsWithDrafts().filter((option) => option.choice_id !== choiceId),
     correctOptionId.value,
+    true,
   );
   // The row and its button disappear; keep keyboard focus in the popover.
   void nextTick(() => root.value?.querySelector<HTMLElement>('[data-test="exam-workspace-gap-option-add"]')?.focus());
@@ -291,7 +314,7 @@ function handleMoveOption(index: number, step: -1 | 1): void {
   const moved = next[index];
   next[index] = next[target];
   next[target] = moved;
-  emitOptions(next, correctOptionId.value);
+  emitOptions(next, correctOptionId.value, true);
   // The clicked button moves with the row or becomes disabled; the text stays put.
   void nextTick(() => optionInput(moved.choice_id)?.focus());
 }
