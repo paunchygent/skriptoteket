@@ -94,7 +94,8 @@ Stop and report to the parent when the staging reproduction shows a defect outsi
 ## Resume here (2026-10-19, planning)
 
 - Branch `codex/task-skript-40-04-points-mismatch-remote`, worktree `/home/paunchygent/apps/skriptoteket-task-skript-40-04-points-mismatch-remote`, from `06985163`.
-- Plan ACCEPTED 2026-10-19 (user answers 2026-10-19, AskUserQuestion in the Hemma orchestrator session); C1 and C2 confirmed; the retained plan validates with --require-closed. Design: the v2 yes/no glyph mockup. No code has been written.
-- Unit 1 (v9) waits until TASK-SKRIPT-39-04-20 and TASK-SKRIPT-40-04-08 have merged to main.
+- Plan accepted 2026-10-19 (user answers, AskUserQuestion in the Hemma orchestrator session); every plan row closed. Status in_progress.
+- 2026-10-19: origin/main f7eeada5 (TASK-SKRIPT-39-04-20) merged at c339584c, handoff conflict resolved explicitly; the orchestrator started unit 1 before 40-04-08 reached main.
+- Unit 1 split: 1a backend v9 (source_points, printed_total_dismissed, importers, version, openapi regen), junior launched with order evidence/lead-4ebb41f3/orders/u1a-backend-v9.md; 1b frontend fixtures and v9 literals follows on the regenerated types.
 - Retained root `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a15330-34cd-7103-bb71-cc8ef9b8a56f` (explorer discovery under `discovery/explorer/`).
-- Next: run the staging reproduction; launch unit 1 when the orchestrator reports TASK-SKRIPT-39-04-20 and TASK-SKRIPT-40-04-08 both on main.
+- Next: integrate 1a, launch 1b, then units 2 and 3; staging reproduction (F5) still owed before the display unit.
