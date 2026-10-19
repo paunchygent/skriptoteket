@@ -134,6 +134,16 @@ Stop and report to the parent in either case:
 - 2026-10-19, rereview2 at `b6bb2fbb`: R1 and R3 clear; R2 reopened. A
   Heading 1-styled answer line came back through final section assembly. Fixed
   in `b2aaac08`: `with_heading_runs` and `_unshown` apply the W10 owner, proven
-  through the real chunker, `assemble_build_result` and `admit_batch`. Next:
-  the domain suite after the orchestrator's go (queued), then R2 goes back to
-  09d50acc. User gates: none open.
+  through the real chunker, `assemble_build_result` and `admit_batch`. Round-3
+  domain suite passed at `b2aaac08`.
+- 2026-10-19, rereview3: R2 reopened again. A table cell shown as an
+  instruction restores the answer line through `_in_source_form`. Explorers
+  listed nine rebuild paths (P1-P9); all reach the final document only through
+  `docx_ai_build.assemble_build_result`. In progress, unit R4.1
+  (`orders/r4-1-w10-final-gate.md`): one W10 gate at the end of
+  `assemble_build_result` drops printed answer lines from item bodies, part
+  instructions and document instructions, and the round-3 `_unshown` filter
+  is removed. The gate keeps `source_anchor` and review status unchanged and
+  sends a body it empties to review with a named reason. Next: focused proof,
+  the orchestrator's suite slot, then R2 goes back to 09d50acc. User gates:
+  none open.

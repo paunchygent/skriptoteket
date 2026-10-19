@@ -108,6 +108,8 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import (
     is_answer_line_chunk,
     is_printed_answer_line,
+    without_item_answer_lines,
+    without_printed_answer_lines,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.source_entry_ownership import (
     produced_entry_body,
@@ -437,7 +439,13 @@ def assemble_build_result(
             parts,
         )
     scored = apply_printed_points(placed.items, placed.parents, printed, by_anchor)
-    items, parents = scored.items, scored.parents
+    # The one W10 gate on the final document: no printed answer line reaches any item
+    # body, parent instruction or document instruction, whichever path rebuilt it.
+    items = tuple(without_item_answer_lines(item) for item in scored.items)
+    parents = tuple(
+        parent.model_copy(update={"instruction": without_printed_answer_lines(parent.instruction)})
+        for parent in scored.parents
+    )
     events = (*events, *scored.events)
     document_instructions = global_instructions(
         chunks,
@@ -445,6 +453,7 @@ def assemble_build_result(
         exam_instructions,
         by_anchor,
     )
+    document_instructions = without_printed_answer_lines(document_instructions)
     shared_bodies = (
         *(parent.instruction for parent in parents),
         document_instructions,

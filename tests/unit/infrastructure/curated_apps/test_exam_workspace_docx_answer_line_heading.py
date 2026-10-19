@@ -85,6 +85,21 @@ def test_a_larger_font_answer_line_marked_as_heading_stays_out_of_the_body() -> 
     assert body_plain_text(aligned.item.body) == "Förklara."
 
 
+def test_a_larger_font_answer_line_stays_out_through_final_assembly_and_admission() -> None:
+    chunks = _chunked("Förklara.", "_____")
+
+    assert chunks[1].paragraphs[0].heading_level is not None
+
+    produced = _produced_owned(("body:0001", "body:0002"), "Förklara.", "_____")
+    assembled = _assembled(chunks, produced)
+
+    assert [body_plain_text(item.body) for item in assembled.document.items] == ["Förklara."]
+
+    admitted = _admitted(chunks, produced)
+
+    assert [body_plain_text(item.body) for item in admitted.document.items] == ["Förklara."]
+
+
 def test_a_larger_font_real_heading_is_still_restored() -> None:
     chunks = _chunked("Förklara.", "Del A")
 

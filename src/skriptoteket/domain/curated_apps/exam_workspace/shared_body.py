@@ -12,13 +12,15 @@ Relationships:
       ``docx_section_instructions`` (parent instructions and carried wording).
     - Read by every plain-text consumer through ``body_text_lines``/``body_plain_text``
       and by asset accounting and the QTI/PDF exporters through ``body_asset_ids``.
-    - Imports only the body leaf and the DOCX chunk record, so nothing here can cycle
-      back into the document or parent models.
+    - Imports only the body leaf, the DOCX chunk record and the review-state vocabulary
+      (the item itself only for typing), so nothing here can cycle back into the
+      document or parent models.
 """
 
 from __future__ import annotations
 
 from collections.abc import Iterable, Sequence
+from typing import TYPE_CHECKING
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxChunk,
@@ -31,10 +33,18 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeSegment,
     NativeTextSegment,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeItemReviewState,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.source_answer_space import (
     is_answer_line_text,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import SourceFormatting
+
+if TYPE_CHECKING:
+    from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
+        NativeExamItem,
+    )
 
 _GAP_MARKER = "[___]"
 
@@ -51,6 +61,40 @@ def is_printed_answer_line(segments: Sequence[NativeSegment]) -> bool:
     """
     texts = [segment.text for segment in segments if isinstance(segment, NativeTextSegment)]
     return len(texts) == len(segments) and is_answer_line_text("".join(texts))
+
+
+ANSWER_LINE_ONLY_REASON = "Frågan innehöll bara skrivlinjer i källan – kontrollera mot källan."
+
+
+def without_printed_answer_lines(
+    body: Iterable[NativeParagraph],
+) -> tuple[NativeParagraph, ...]:
+    """Every paragraph of ``body`` that is not a printed answer line, in order (W10).
+
+    The gate only removes whole paragraphs; a kept paragraph is never edited, merged or
+    rewritten. A paragraph carrying a gap or a picture is never a printed answer line.
+    """
+    return tuple(paragraph for paragraph in body if not is_printed_answer_line(paragraph.segments))
+
+
+def without_item_answer_lines(item: NativeExamItem) -> NativeExamItem:
+    """The item without printed answer-line paragraphs, whichever path rebuilt its body.
+
+    An item the gate empties goes to teacher review with ``ANSWER_LINE_ONLY_REASON``,
+    appended once to its existing reasons; an item whose body was already empty, or that
+    keeps every paragraph, is returned untouched. Gaps, pictures and the source anchor
+    are never changed.
+    """
+    kept = without_printed_answer_lines(item.body)
+    if len(kept) == len(item.body):
+        return item
+    if kept:
+        return item.model_copy(update={"body": kept})
+    reasons = tuple(dict.fromkeys((*item.review.reasons, ANSWER_LINE_ONLY_REASON)))
+    review = item.review.model_copy(
+        update={"state": NativeItemReviewState.REVIEW_REQUIRED, "reasons": reasons}
+    )
+    return item.model_copy(update={"body": kept, "review": review})
 
 
 def source_paragraph(chunk: DocxChunk) -> NativeParagraph | None:

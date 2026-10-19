@@ -66,7 +66,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeItemReviewState,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import (
-    is_printed_answer_line,
     source_paragraphs,
 )
 
@@ -230,7 +229,6 @@ def _unshown(aligned: AlignedItem, sources: Sequence[DocxChunk]) -> tuple[_Shown
         for chunk in sources
         if not aligned.shows(chunk.anchor)
         for paragraph in source_paragraphs((chunk,))
-        if not is_printed_answer_line(paragraph.segments)
     )
 
 
