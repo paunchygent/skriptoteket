@@ -5,8 +5,9 @@
  *   A 422 carrying the server's vault_full marker reports vault_full; every
  *   other 4xx reports permanent; 401 and a superseded session report
  *   deferred; 5xx, 408, 429, sub-400 statuses, and anything that is not an
- *   API error report transient. Classification is by status only, never by
- *   code or message text, and lookalike details never escape their status.
+ *   API error report transient. Classification is by status and the server's
+ *   vault_full detail only, never by code or message text, and lookalike
+ *   details never escape their status.
  */
 
 import { describe, expect, it } from "vitest";

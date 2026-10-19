@@ -9,107 +9,23 @@
  */
 
 import { createPinia, setActivePinia } from "pinia";
-import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 
-import { ApiError } from "../../../api/client";
-import { useToastStore } from "../../../stores/toast";
 import {
   createInMemoryExamWorkspaceGuestDraftStorage,
-  type ExamWorkspaceGuestDraftStoragePort,
   type StoredGuestDraft,
 } from "./examWorkspaceGuestDraftStorage";
+import { createInMemoryGuestHandoffRejectionStorage } from "./examWorkspaceGuestHandoffRejection";
 import {
-  createInMemoryGuestHandoffRejectionStorage,
-  type GuestHandoffRejectionStoragePort,
-} from "./examWorkspaceGuestHandoffRejection";
-import {
-  newGuestDraft,
-  storeGuestUndoStep,
-  type ExamWorkspaceGuestDraft,
-  type ExamWorkspaceGuestDraftIdSource,
-} from "./examWorkspaceGuestDraft";
-import { buildParentDocument } from "./examWorkspaceParentDocument.specSupport";
-import {
-  runGuestHandoff,
-  type GuestHandoffTeacher,
-} from "./useExamWorkspaceGuestHandoff";
-
-const NOW = "2026-10-18T10:00:00.000Z";
-
-function createIds(start = 0): ExamWorkspaceGuestDraftIdSource {
-  let counter = start;
-  return {
-    now: () => NOW,
-    uuid: () => {
-      counter += 1;
-      return `10000000-0000-4000-8000-${String(counter).padStart(12, "0")}`;
-    },
-  };
-}
-
-function assetEntry(assetId: string) {
-  return {
-    asset_id: assetId,
-    byte_length: 1,
-    height: 1,
-    media_type: "image/png" as const,
-    sha256: "a".repeat(64),
-    width: 1,
-  };
-}
-
-function pictureDocument() {
-  return {
-    ...buildParentDocument(),
-    assets: [assetEntry("asset_a"), assetEntry("asset_b")],
-  };
-}
-
-function editedDraft(): { draft: ExamWorkspaceGuestDraft } {
-  const ids = createIds();
-  const draft = newGuestDraft(pictureDocument(), ids, []);
-  const outcome = storeGuestUndoStep(
-    draft,
-    { afterStepId: null, document: { ...pictureDocument(), title: "Redigerad" }, expectedCursor: draft.cursor },
-    ids,
-  );
-  if (outcome.kind !== "ok") {
-    throw new Error(`expected a stored step, got ${outcome.kind}`);
-  }
-  return { draft: outcome.draft };
-}
-
-function apiError(status: number, code = "ERROR", details: unknown = null): ApiError {
-  return new ApiError({ code, details, message: code, status });
-}
-
-function teacherMock(): { importExamWorkspaceGuestDraft: Mock<GuestHandoffTeacher["importExamWorkspaceGuestDraft"]> } {
-  return {
-    importExamWorkspaceGuestDraft: vi.fn<GuestHandoffTeacher["importExamWorkspaceGuestDraft"]>(),
-  };
-}
-
-type Harness = {
-  storage: ExamWorkspaceGuestDraftStoragePort;
-  rejections: GuestHandoffRejectionStoragePort;
-  teacher: { importExamWorkspaceGuestDraft: Mock<GuestHandoffTeacher["importExamWorkspaceGuestDraft"]> };
-  draft: ExamWorkspaceGuestDraft;
-};
-
-async function seedHarness(): Promise<Harness> {
-  const storage = createInMemoryExamWorkspaceGuestDraftStorage();
-  const rejections = createInMemoryGuestHandoffRejectionStorage();
-  const { draft } = editedDraft();
-  expect(await storage.replaceIf(null, {
-    assets: { asset_a: new Blob(["a"]), asset_b: new Blob(["b"]) },
-    draft,
-  })).toBe(true);
-  return { draft, rejections, storage, teacher: teacherMock() };
-}
-
-function failureToasts(): string[] {
-  return useToastStore().toasts.map((toast) => toast.message);
-}
+  editedGuestDraft as editedDraft,
+  guestHandoffApiError as apiError,
+  guestHandoffFailureToasts as failureToasts,
+  guestHandoffTeacherMock as teacherMock,
+  GUEST_HANDOFF_SPEC_NOW as NOW,
+  seedGuestHandoffHarness as seedHarness,
+} from "./useExamWorkspaceGuestHandoff.specSupport";
+import type { ExamWorkspaceGuestDraft } from "./examWorkspaceGuestDraft";
+import { runGuestHandoff } from "./useExamWorkspaceGuestHandoff";
 
 beforeEach(() => {
   setActivePinia(createPinia());

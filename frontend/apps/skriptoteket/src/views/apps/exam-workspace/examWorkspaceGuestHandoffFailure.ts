@@ -36,7 +36,7 @@ function isVaultFullDetails(details: unknown): boolean {
 
 /**
  * Classify the error a guest-draft handoff POST threw. Classification is by
- * status only, never by message or code text.
+ * status and the server's vault_full detail only, never by message or code text.
  */
 export function classifyGuestHandoffFailure(error: unknown): GuestHandoffFailureKind {
   if (error instanceof SupersededAuthSessionError) {
