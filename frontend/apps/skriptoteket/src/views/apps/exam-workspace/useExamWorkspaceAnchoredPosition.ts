@@ -52,9 +52,13 @@ export function useExamWorkspaceAnchoredPosition(
     const spaceAbove = box.top - ANCHORED_GAP_PX - ANCHORED_EDGE_PX;
     const placement: AnchoredPosition["placement"] =
       height <= spaceBelow || spaceBelow >= spaceAbove ? "below" : "above";
-    const maxHeight = Math.max(0, placement === "below" ? spaceBelow : spaceAbove);
+    const viewportBudget = Math.max(0, viewportHeight - 2 * ANCHORED_EDGE_PX);
+    const maxHeight = Math.min(Math.max(0, placement === "below" ? spaceBelow : spaceAbove), viewportBudget);
     const shown = Math.min(height, maxHeight);
-    const top = placement === "below" ? box.bottom + ANCHORED_GAP_PX : box.top - ANCHORED_GAP_PX - shown;
+    const rawTop = placement === "below" ? box.bottom + ANCHORED_GAP_PX : box.top - ANCHORED_GAP_PX - shown;
+    const minTop = ANCHORED_EDGE_PX;
+    const maxTop = Math.max(minTop, viewportHeight - ANCHORED_EDGE_PX - shown);
+    const top = Math.min(Math.max(rawTop, minTop), maxTop);
     const maxLeft = viewportWidth - width - ANCHORED_EDGE_PX;
     const left = maxLeft < ANCHORED_EDGE_PX ? ANCHORED_EDGE_PX : Math.min(Math.max(box.left, ANCHORED_EDGE_PX), maxLeft);
     position.value = { top, left, maxHeight, placement };
