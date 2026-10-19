@@ -49,13 +49,13 @@ Cause: the workspace has no single control owner, so each surface sizes its own 
 
 The shared tokens already define a 28 px workbench control (`--huleedu-workbench-control-height`), a 16 px workbench glyph and a 20 px navigation glyph. The workspace uses them in only a few places.
 
-This task puts one control system into `examWorkspace.css` and moves every exam workspace control onto it. Every value is an existing huleedu-integrated token or a calc of tokens, so the shared package needs no new token. The system is drafted in `evidence/mockups/controls/proposed-controls.css` in the retained root, and the mocks at 1440 and 1920 px are beside it.
+This task puts one control system into `examWorkspace.css` and moves every exam workspace control onto it. Under the recommended answers to D12 and D13, every value is an existing huleedu-integrated token or a calc of tokens, so the shared package needs no new token. The system is drafted in `evidence/mockups/controls/proposed-controls.css` in the retained root, and the mocks at 1440 and 1920 px are beside it.
 
 The export menu's rows and its download and save logic belong to a separate lead (user correction, 2026-10-19). This task touches the export files only to rename classes and to put the Exportera trigger in the header's tier 2.
 
 Non-goals:
 
-- No new token in the shared package, and no change to the shell top bar or the navigation rail.
+- No change to the shell top bar or the navigation rail.
 - No backend or document change.
 - No change to the 40-04-10 points notes beyond the class rename; their decided glyph look is 40-04-10's.
 
@@ -146,7 +146,7 @@ Planned junior units, in order. Each unit has its own focused spec. The final li
 
 | ID  | Decided contract term |
 | --- | --------------------- |
-| T1  | One owner: `examWorkspace.css` holds the tier rule's classes, every control size, the bar heights, the gaps and the states, as a `.xw-root` token block whose values alias existing huleedu-integrated tokens. Components add no control CSS and pass no glyph size to a control; `.xw-tool svg` and `.xw-cmd svg` set it. No new shared token (user 2026-10-19 scope clarification; package contract lines 86-100). |
+| T1  | One owner: `examWorkspace.css` holds the tier rule's classes, every control size, the bar heights, the gaps and the states, as a `.xw-root` token block whose values alias existing huleedu-integrated tokens. Components add no control CSS and pass no glyph size to a control; `.xw-tool svg` and `.xw-cmd svg` set it (user 2026-10-19 scope clarification). Whether any value needs a new shared token is D12 and D13. |
 | T2  | Three tiers (user 2026-10-19). Tier 1, `.xw-tool`: the glyph only, where the glyph is a convention or its row names it. Tier 2, `.xw-tool--eyebrow`: a short word directly above the glyph where the glyph alone is ambiguous. Tier 3, `.xw-cmd`: text inside a container for primary, committing and dialog commands. Menu rows, list entries, segment options and value triggers (title, question type) are not tiered controls and keep their text. |
 | T3  | Names: a tier 1 or tier 2 control's action phrase is its aria-label and native title; a tier 2 aria-label contains its eyebrow word (WCAG 2.5.3). While disabled by a bound or a no-op, the title gives the reason. Glyphs are decorative to assistive technology. |
 | T4  | Apply-to-all (user 2026-10-19): a tier 1 glyph with the new shared meaning `apply-to-all` (Lucide Layers). Tooltip and aria-label "Använd {n} rader för alla fritextfrågor"; while every free-text item already has n lines, the title is "Alla fritextfrågor har redan {n} rader". It runs at once, with no confirmation; Ångra reverses it. |
@@ -164,7 +164,7 @@ Status stays proposed. The user has answered Q1-Q3 and the glyph authority (T4-T
 
 The open user questions are in the retained ledger:
 
-- D12 sizes: (A) a 28 px box with a 20 px glyph, the rail's glyph size; (B) 28 px with a 16 px glyph, as in VS Code; (C) 32 px with a 20 px glyph, which needs a new shared token. Recommended: A. With A, the bars are 36 px for tools and 52 px for heads, which takes the header from 60 to 52 px. Tools sit 4 px apart, with 8 px either side of a separator, and bars have 16 px side padding.
+- D12 sizes: (A) a 28 px box with a 20 px glyph, the rail's glyph size; (B) 28 px with a 16 px glyph, as in VS Code; (C) 32 px with a 20 px glyph, which needs a new shared token. Recommended: A. With A, the bars are 36 px for tools and 52 px for heads, which takes the header from 60 to 52 px. Tools sit 4 px apart, with 8 px either side of a separator, and bars have 16 px side padding. Every option matches the rail's 20 px glyph, not its 40 px item height; the user says if they meant the item height.
 - D13 token owner: (A) a workspace alias block in `examWorkspace.css` over existing shared tokens; (B) new shared `--huleedu-workbench-*` roles in the skill repository. Recommended: A, since option A of D12 needs no new value.
 - D14 touch: (A) a coarse pointer switches `--xw-box` to 44 px, keeping the same boxless look; (B) desktop only, with 28 px on touch. Recommended: A.
 - D15 tier per control: the full table is in the retained plan. These choices are the user's:
