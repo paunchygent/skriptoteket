@@ -7,19 +7,16 @@
  *   one line naming its type and points, or the first thing that stops its
  *   export in red. A question shows whether the AI wrote its key and whether
  *   it is reviewed, needs review or still converts. An instruction row shows
- *   how many deluppgifter it holds on its second line and their points on a
- *   third line of fixed height; when the exam text prints another part total,
- *   that line says so in amber, truncating with the full text in a tooltip,
- *   beside "Använd N p", which never shrinks and never selects the row.
- *   Accepting only swaps the content of the line, so no row moves. Its
+ *   how many deluppgifter it holds on its second line and their plain points
+ *   on a third line of fixed height, like every other row; a printed-total
+ *   difference lives only in the footer's points note. Its
  *   deluppgifter are indented under it. A part with no questions is an
  *   unnumbered instruction block: its text or "Tom instruktion", the meta
  *   "Instruktion utan frågor" and no points. In Markera mode a standalone
  *   question carries a checkbox; a part and a question inside a part do not.
  *
  * Relationships:
- *   - A `row` of the list's grid: every child is a `gridcell`, which may hold
- *     the part's accept button, unlike a listbox option.
+ *   - A `row` of the list's grid: every child is a `gridcell`.
  *   - Rendered by `ExamWorkspaceQuestionList`; receives `selected` as a
  *     boolean, so moving the selection re-renders only the two rows involved.
  */
@@ -28,7 +25,7 @@ import { computed } from "vue";
 
 import { UiGlyph } from "../../../components/ui";
 import type { ExamWorkspaceListEntry } from "./examWorkspaceListEntries";
-import { examWorkspaceFormatPoints, examWorkspacePointsLine } from "./examWorkspaceTotals";
+import { examWorkspaceFormatPoints } from "./examWorkspaceTotals";
 
 const props = defineProps<{
   entry: ExamWorkspaceListEntry;
@@ -42,7 +39,6 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   select: [id: string];
-  acceptTotal: [parentId: string];
   toggleMark: [id: string];
 }>();
 
@@ -136,25 +132,9 @@ const ORDERING_REASON = "Ordna-frågor kan inte ligga i en del";
         :aria-hidden="childlessPart ? 'true' : undefined"
       >
         <template v-if="!childlessPart">
-          <template v-if="entry.printedTotal !== null">
-            <span
-              class="row__printed"
-              :title="examWorkspacePointsLine(entry.points, entry.printedTotal)"
-              data-test="exam-workspace-part-points"
-            >{{ examWorkspacePointsLine(entry.points, entry.printedTotal) }}</span>
-            <button
-              type="button"
-              class="xw-btn xw-btn--compact xw-btn--ghost row__accept"
-              :disabled="disabled"
-              :data-test="`exam-workspace-accept-part-total-${entry.id}`"
-              @click.stop="emit('acceptTotal', entry.id)"
-            >
-              Använd {{ examWorkspaceFormatPoints(entry.points) }} p
-            </button>
-          </template>
           <span
-            v-else
             class="row__points"
+            data-test="exam-workspace-part-points"
           >{{ examWorkspaceFormatPoints(entry.points) }} p</span>
         </template>
       </span>
@@ -225,17 +205,15 @@ const ORDERING_REASON = "Ordna-frågor kan inte ligga i en del";
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .row__problem { font-weight: var(--huleedu-font-medium); }
-/* The points line is one compact button tall with or without a printed difference, so accepting moves no row. */
+/* The points line keeps its height with or without a printed difference, so no row moves. */
 .row__pointsline {
   display: flex; flex-wrap: nowrap; align-items: center; gap: var(--huleedu-space-2);
   height: var(--xw-ctl-compact, 28px); min-width: 0;
 }
-.row__points, .row__printed {
+.row__points {
   min-width: 0; font-size: var(--huleedu-text-xs); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  color: var(--huleedu-navy-60);
 }
-.row__points { color: var(--huleedu-navy-60); }
-.row__printed { color: var(--huleedu-warning); }
-.row__accept { flex: none; }
 .row--parent .row__text { font-weight: var(--huleedu-font-normal); }
 .row--child { padding-left: calc(var(--huleedu-space-6) + 24px); }
 .row--child::before {

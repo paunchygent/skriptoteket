@@ -165,6 +165,26 @@ def test_source_choice_key_keeps_exact_wording_independent_of_later_edits(has_ke
     assert edited.import_record == item.import_record
 
 
+def test_source_max_score_is_recorded_as_source_points():
+    fixture = _FIXTURES / "1772718003-test-samma-prov-i-digiexam.dxe"
+    content = fixture.read_bytes()
+    exam = parse_source_exam(
+        upload=ConversionHubUpload(
+            filename=fixture.name, file_bytes=content, content_type="application/octet-stream"
+        )
+    )
+    mapped = build_native_exam_from_digiexam(
+        exam=exam, document_id=uuid4(), source_sha256=hashlib.sha256(content).hexdigest()
+    )
+    supported = [source for source in exam.items if source.item_type.value != "unknown"]
+
+    assert len(mapped.document.items) == len(supported)
+    assert any(source.max_score is not None for source in supported)
+    assert [native.source_points for native in mapped.document.items] == [
+        source.max_score for source in supported
+    ]
+
+
 @pytest.mark.parametrize("score", [0, 0.0, 0.5, 2, 2.5])
 def test_real_fixture_score_mutation_preserves_finite_nonnegative_points(score):
     """Synthetic JSON mutation of the reviewer's real fixture, through production owners."""

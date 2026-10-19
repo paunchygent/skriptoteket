@@ -47,7 +47,7 @@ function question(
 }
 
 function part(id: string, label: string, childIds: string[]): ExamWorkspaceParentEntry {
-  return { childIds, id, kind: "parent", label, points: 2, printedTotal: null, text: "Delinstruktion" };
+  return { childIds, id, kind: "parent", label, points: 2, text: "Delinstruktion" };
 }
 
 const ENTRIES: ExamWorkspaceListEntry[] = [
@@ -73,12 +73,12 @@ const mounted: Array<VueWrapper> = [];
 function mountList(entries: ExamWorkspaceListEntry[] = ENTRIES, disabled = false): VueWrapper {
   const wrapper = mount(ExamWorkspaceQuestionList, {
     props: {
+      mismatches: [],
       canAdd: true,
       disabled,
       entries,
       examInstructionsPreview: null,
       overlay: false,
-      printedTotal: null,
       questionCount: entries.filter((entry) => entry.kind === "item").length,
       selectedId: null,
       total: 5,

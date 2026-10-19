@@ -250,6 +250,9 @@ def aligned_native_item(
         body=formatted_body,
         points=points,
         points_estimated=points_estimated,
+        # The reply's printed reading, filled from the question's own label upstream;
+        # matching and rubric derivation change points but never this printed value.
+        source_points=produced.points,
         tick_points=tick_points,
         writing_lines=(
             DEFAULT_WRITING_LINES if produced.kind is NativeExamItemKind.FREE_TEXT else None

@@ -5,13 +5,25 @@
  * Domain purpose:
  *   Every question of the open exam in order under "Frågor (N)", with "Ny
  *   uppgift" adding a question or an instruction with deluppgifter after the
- *   selected one, and a footer of two fixed lines: the exam total, which says
- *   in amber when the exam text prints another total (cut with an ellipsis,
- *   the full text in a tooltip), and a slot holding both accept actions,
- *   hidden while there is nothing to accept so nothing moves. Above the rows the exam
+ *   selected one. The footer holds the exam total ("Totalt N p", cut with an
+ *   ellipsis, the full text in a tooltip) at a fixed height. One neutral
+ *   line per printed total that differs from its questions' sum floats over
+ *   the bottom edge of the scrolling list directly above the footer: the
+ *   exam line first, then one line per differing part in document order.
+ *   The lines are absolutely positioned, so adding or removing a line never
+ *   changes the size of the scrolling list or the footer. The scroll content
+ *   always ends with a fixed one-row end room of one line's height, on every
+ *   exam, so the scroll height never changes when a line appears, goes or
+ *   returns on undo. Each line is
+ *   followed by two compact glyph-only buttons: confirm ("Godta frågornas
+ *   summa, {sum} p", clears that line's own stored printed total) and
+ *   continue ("Visa frågorna", selects the line's target, hidden when the
+ *   line has none).
+ *   A line goes as soon as its level agrees. Above the rows the exam
  *   instruction is one entry: "Instruktioner" with a short preview when the
  *   exam has one, otherwise a quiet "Lägg till instruktioner"; both open it in
- *   the editor. On a phone the list
+ *   the editor. On desktop the list collapses to a rail and resizes with a
+ *   handle. On a phone the list
  *   opens full screen over the editor from the question strip and closes
  *   with Tillbaka or a choice. "Markera" turns the list into Markera mode: a
  *   standalone question carries a checkbox (an ordering question's is
@@ -19,8 +31,10 @@
  *   part (G2, G11); a part and a question inside a part carry no checkbox.
  *
  * Relationships:
- *   - Rendered by `ExamWorkspaceView`; rows are `ExamWorkspaceQuestionRow`,
- *     each told only whether it is selected.
+ *   - Rendered by `ExamWorkspaceView`; the lines come from
+ *     `examWorkspaceNoteLines` (the `mismatches` from `examWorkspaceTotals`
+ *     with the list's entry labels) and render through
+ *     `ExamWorkspaceNoteLine`; the list never recomputes the difference.
  */
 
 import { computed, nextTick, ref, watch } from "vue";
@@ -28,10 +42,15 @@ import { computed, nextTick, ref, watch } from "vue";
 import { UiGlyph } from "../../../components/ui";
 import ExamWorkspaceColumnHandle from "./ExamWorkspaceColumnHandle.vue";
 import ExamWorkspaceNewItemMenu from "./ExamWorkspaceNewItemMenu.vue";
+import ExamWorkspaceNoteLine from "./ExamWorkspaceNoteLine.vue";
+import type { ExamWorkspaceNoteLineAction } from "./ExamWorkspaceNoteLine.vue";
 import ExamWorkspaceQuestionRow from "./ExamWorkspaceQuestionRow.vue";
 import type { TeacherItemKind } from "./examWorkspaceItemEdits";
 import type { ExamWorkspaceListEntry } from "./examWorkspaceListEntries";
-import { examWorkspaceFormatPoints, examWorkspacePointsLine, examWorkspacePointsParts } from "./examWorkspaceTotals";
+import { buildExamWorkspaceNoteLines } from "./examWorkspaceNoteLines";
+import type { ExamWorkspaceNoteLine as NoteLine } from "./examWorkspaceNoteLines";
+import { examWorkspaceFormatExactPoints, examWorkspaceFormatPoints } from "./examWorkspaceTotals";
+import type { PrintedTotalMismatch } from "./examWorkspaceTotals";
 import { EXAM_INSTRUCTIONS_ENTRY_ID } from "./useExamWorkspaceSelection";
 
 const props = withDefaults(
@@ -42,10 +61,10 @@ const props = withDefaults(
     examInstructionsPreview: string | null;
     questionCount: number;
     total: number;
-    /** The exam total the exam text prints, only when it differs from `total`. */
-    printedTotal: number | null;
+    /** One entry per printed total that differs from its questions' sum: the exam first, then parts in order. */
+    mismatches: PrintedTotalMismatch[];
     canAdd: boolean;
-    /** The workspace is busy: the accept actions wait like the other list actions. */
+    /** The workspace is busy: the lines' buttons wait like the list's other actions. */
     disabled: boolean;
     /** The phone shows the list as a full-screen layer. */
     overlay: boolean;
@@ -58,24 +77,14 @@ const props = withDefaults(
 );
 
 const examInstructionsSelected = computed(() => props.selectedId === EXAM_INSTRUCTIONS_ENTRY_ID);
-const totalParts = computed(() => examWorkspacePointsParts(props.total, props.printedTotal));
-/** The footer line in full, for the tooltip when a long printed note is cut by the ellipsis. */
-const totalTitle = computed(() =>
-  props.printedTotal === null ? undefined : `Totalt ${examWorkspacePointsLine(props.total, props.printedTotal)}`,
-);
-const anyPrintedDifference = computed(
-  () =>
-    props.printedTotal !== null ||
-    props.entries.some((entry) => entry.kind === "parent" && entry.printedTotal !== null),
-);
+/** The exam total line in full, for the tooltip when a long total is cut by the ellipsis. */
+const totalTitle = computed(() => `Totalt ${formattedTotal.value}`);
 
 const emit = defineEmits<{
   select: [id: string];
   add: [kind: TeacherItemKind | "instruction" | "part"];
   group: [itemIds: string[]];
-  acceptExamTotal: [];
-  acceptPartTotal: [parentId: string];
-  acceptAllTotals: [];
+  clearPrintedTotal: [parentId: string | null];
   close: [];
   /** The resize handle reports a dragged or stepped width in px. */
   set: [px: number];
@@ -84,6 +93,50 @@ const emit = defineEmits<{
   /** The collapse glyph, the expand glyph or Enter on the handle. */
   "toggle-collapse": [];
 }>();
+
+/** The footer note lines in order, named with the list's part numbers. */
+const lines = computed<NoteLine[]>(() => buildExamWorkspaceNoteLines(props.mismatches, props.entries));
+
+/** Each line's glyph-only actions; a second line kind adds its branch here. */
+function actionsFor(line: NoteLine): ExamWorkspaceNoteLineAction[] {
+  switch (line.kind) {
+    case "printed-total": {
+      const changeLabel = `Godta frågornas summa, ${examWorkspaceFormatExactPoints(line.sum)} p`;
+      const actions: ExamWorkspaceNoteLineAction[] = [
+        { dataTest: "exam-workspace-printed-total-change", key: "change", label: changeLabel, meaning: "confirm" },
+      ];
+      if (line.target !== null) {
+        actions.push({ dataTest: "exam-workspace-printed-total-show", key: "show", label: "Visa frågorna", meaning: "continue" });
+      }
+      return actions;
+    }
+    default: {
+      const exhaustive: never = line.kind;
+      return exhaustive;
+    }
+  }
+}
+
+function handleNoteAction(line: NoteLine, key: string): void {
+  switch (line.kind) {
+    case "printed-total":
+      if (key === "change") {
+        emit("clearPrintedTotal", line.parentId);
+        return;
+      }
+      if (key === "show" && line.target !== null) {
+        emit("select", line.target);
+        return;
+      }
+      return;
+    default: {
+      const exhaustive: never = line.kind;
+      return exhaustive;
+    }
+  }
+}
+
+const formattedTotal = computed(() => `${examWorkspaceFormatPoints(props.total)} p`);
 
 const rows = ref<HTMLElement | null>(null);
 const newTrigger = ref<HTMLButtonElement | null>(null);
@@ -321,45 +374,36 @@ async function expandFromGlyph(): Promise<void> {
               :marking="marking"
               :marked="marked.has(entry.id)"
               @select="emit('select', $event)"
-              @accept-total="emit('acceptPartTotal', $event)"
               @toggle-mark="toggleMark"
             />
           </div>
+          <div
+            class="list__end-room"
+            aria-hidden="true"
+            data-test="exam-workspace-list-end-room"
+          />
+        </div>
+        <div
+          v-if="lines.length > 0"
+          class="list__printed-lines"
+          data-test="exam-workspace-printed-total-lines"
+        >
+          <ExamWorkspaceNoteLine
+            v-for="line in lines"
+            :key="line.key"
+            data-test="exam-workspace-printed-total-line"
+            :text="line.text"
+            :actions="actionsFor(line)"
+            :disabled="disabled"
+            @action="handleNoteAction(line, $event)"
+          />
         </div>
         <div class="list__foot">
           <span
             class="list__total"
             :title="totalTitle"
             data-test="exam-workspace-exam-points"
-          >Totalt <strong class="list__sum">{{ totalParts.sum }}</strong><span
-            v-if="totalParts.printedNote"
-            class="list__printed"
-          > · {{ totalParts.printedNote }}</span></span>
-          <div
-            class="list__actions"
-            data-test="exam-workspace-footer-actions"
-          >
-            <button
-              type="button"
-              class="xw-btn xw-btn--compact xw-btn--ghost list__action"
-              :class="{ 'list__action--idle': printedTotal === null }"
-              :disabled="disabled"
-              data-test="exam-workspace-accept-exam-total"
-              @click="emit('acceptExamTotal')"
-            >
-              Använd {{ examWorkspaceFormatPoints(total) }} p
-            </button>
-            <button
-              type="button"
-              class="xw-btn xw-btn--compact xw-btn--ghost list__action"
-              :class="{ 'list__action--idle': !anyPrintedDifference }"
-              :disabled="disabled"
-              data-test="exam-workspace-accept-all-totals"
-              @click="emit('acceptAllTotals')"
-            >
-              Använd beräknade summor
-            </button>
-          </div>
+          >Totalt <strong class="list__sum">{{ formattedTotal }}</strong></span>
         </div>
         <ExamWorkspaceNewItemMenu
           :open="newMenuOpen"
@@ -387,7 +431,7 @@ async function expandFromGlyph(): Promise<void> {
 
 <style scoped>
 .list { display: flex; flex-direction: column; min-height: 0; position: relative; border-right: 1px solid var(--huleedu-surface-divider); }
-.list__frame { display: flex; flex-direction: column; flex: 1; min-height: 0; min-width: 0; }
+.list__frame { display: flex; flex-direction: column; flex: 1; min-height: 0; min-width: 0; position: relative; }
 /* The collapsed desktop list is a 44px rail with one expand glyph and the draggable edge. */
 .list__rail { display: flex; justify-content: center; padding: var(--huleedu-space-2) 0; }
 @media (min-width: 1280px) {
@@ -396,6 +440,7 @@ async function expandFromGlyph(): Promise<void> {
   .list:not(.list--collapsed) .list__frame > .list__head,
   .list:not(.list--collapsed) .list__frame > .list__markbar,
   .list:not(.list--collapsed) .list__frame > .list__scroll,
+  .list:not(.list--collapsed) .list__frame > .list__printed-lines,
   .list:not(.list--collapsed) .list__frame > .list__foot { min-width: var(--xw-list-min); }
 }
 .list__head {
@@ -415,6 +460,10 @@ async function expandFromGlyph(): Promise<void> {
 /* One slot for Markera/Avbryt: a fixed width so swapping the label moves nothing. */
 .list__markbar-toggle { min-width: 100px; }
 .list__scroll { flex: 1; min-height: 0; overflow-y: auto; }
+/* The fixed one-row end room: one note line's height at the end of the scroll
+   content on every exam, so the scroll height never changes when a floating
+   line appears, goes or returns on undo. */
+.list__end-room { flex: none; height: var(--xw-note-line); }
 .list__intro {
   padding: var(--huleedu-space-1-5) var(--huleedu-space-4) var(--huleedu-space-1-5) var(--huleedu-space-6);
   border-bottom: 1px solid var(--huleedu-surface-divider);
@@ -427,31 +476,37 @@ async function expandFromGlyph(): Promise<void> {
 .list__instructions:focus-visible { outline: 2px solid var(--huleedu-action-40); outline-offset: 2px; }
 .list__instructions-title { font-size: var(--huleedu-text-sm); font-weight: var(--huleedu-font-medium); }
 .list__instructions-preview {
-  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
+  display: -webkit-box; -webkit-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
   font-size: var(--huleedu-text-xs); color: var(--huleedu-navy-60);
 }
 .list__foot {
-  display: flex; flex-direction: column; gap: var(--huleedu-space-1); flex: none;
-  padding: var(--huleedu-space-2) var(--huleedu-space-6); border-top: 1px solid var(--huleedu-surface-divider);
-  font-size: var(--huleedu-text-sm);
+  display: flex; flex-direction: column; justify-content: center; flex: none;
+  height: var(--xw-list-foot);
+  padding: 0 var(--huleedu-space-6); border-top: 1px solid var(--huleedu-surface-divider);
+  font-size: var(--huleedu-text-sm); color: var(--huleedu-navy);
 }
-/* Two lines of fixed height: the sum with its note, then the action slot; accepting a total changes neither. */
+/* The total line keeps its height whether the mismatch lines show or not. */
 .list__total {
   flex: none; height: 20px; line-height: 20px; min-width: 0;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .list__sum { font-weight: var(--huleedu-font-semibold); }
-.list__printed { color: var(--huleedu-warning); }
-/* The ghost buttons' own padding spaces them, so the slot reaches past the footer padding to hold both on one line. */
-.list__actions {
-  display: flex; flex-wrap: nowrap; align-items: center; flex: none;
-  height: var(--xw-ctl-compact, 28px); margin-inline: calc(-1 * var(--huleedu-workbench-control-padding-inline));
+/* The floating mismatch lines: absolutely positioned over the bottom edge of
+   the scrolling list directly above the footer, so adding or removing a line
+   never changes the size of the scroll viewport or the footer. With two or
+   more lines the extra lines stack upward over the list and may cover the
+   last rows at the very end. The opaque list surface keeps the rows under
+   them from showing through. */
+.list__printed-lines {
+  position: absolute; left: 0; right: 0; bottom: var(--xw-list-foot); z-index: 2;
+  display: flex; flex-direction: column; gap: var(--huleedu-space-1);
+  padding: 0 var(--huleedu-space-6); background: var(--huleedu-canvas);
 }
-.list__action--idle { visibility: hidden; }
 @media (max-width: 1279px) {
   .list__head { padding: 0 var(--huleedu-space-3) 0 var(--huleedu-space-4); }
   .list__markbar { padding: 0 var(--huleedu-space-3) 0 var(--huleedu-space-4); }
-  .list__foot { padding: var(--huleedu-space-2) var(--huleedu-space-4); }
+  .list__foot { padding: 0 var(--huleedu-space-4); }
+  .list__printed-lines { padding: 0 var(--huleedu-space-4); }
   .list__intro { padding-left: var(--huleedu-space-4); padding-right: var(--huleedu-space-3); }
 }
 @media (max-width: 767px) {

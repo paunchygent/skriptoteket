@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "62058b24455f29846e6aad3e06feaf251a4da4d7120dcb475a4ef320b25761b1",
+  "source_set_digest": "ad9bf6c960a7796df73d85dfcf7655ec9151bfb403a8710d8ad1b43c9aaaf5d6",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6677,6 +6677,25 @@
       "title": "Teachers switch on a gap tool and click words to make gaps, and the toolbar names every keyboard shortcut",
       "path": "docs/backlog/tasks/task-skript-40-04-09-teachers-switch-on-a-gap-tool-and-click-words-to-make-gaps-and-the-toolbar-names-every-keyboard-shortcut.md",
       "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-10",
+      "type": "task",
+      "title": "Teachers see a printed-total difference in one line and fix the exam text or the questions",
+      "path": "docs/backlog/tasks/task-skript-40-04-10-teachers-see-which-questions-and-parts-cause-a-printed-total-difference-and-can-dismiss-it.md",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [

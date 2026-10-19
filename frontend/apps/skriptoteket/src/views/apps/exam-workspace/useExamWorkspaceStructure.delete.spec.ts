@@ -101,7 +101,7 @@ function documentOf(overrides: Partial<NativeExamDocument>): NativeExamDocument 
     },
     parents: [],
     revision: 1,
-    schema_version: "native_exam_document_v8",
+    schema_version: "native_exam_document_v9",
     title: "Prov",
     ...overrides,
   } as NativeExamDocument;

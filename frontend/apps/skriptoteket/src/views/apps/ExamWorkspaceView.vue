@@ -46,6 +46,7 @@ import { examWorkspaceSavedAt } from "./exam-workspace/examWorkspaceFormat";
 import { provideExamWorkspaceHistoryKeys } from "./exam-workspace/examWorkspaceHistoryKeys";
 import { isTeacherReviewed } from "./exam-workspace/examWorkspaceItemEdits";
 import { examWorkspaceDocumentLabel } from "./exam-workspace/examWorkspaceRows";
+import { examWorkspacePrintedTotalMismatches } from "./exam-workspace/examWorkspaceTotals";
 import { EXAM_WORKSPACE_STORE_KEY } from "./exam-workspace/examWorkspaceStore";
 import type { ExamWorkspaceStore } from "./exam-workspace/examWorkspaceStore";
 import { useExamWorkspaceAddress } from "./exam-workspace/useExamWorkspaceAddress";
@@ -214,15 +215,19 @@ provideExamWorkspaceHistoryKeys({
 
 /**
  * The derived labels (TASK-SKRIPT-41-02-04), owned by
- * `useExamWorkspaceViewLabels`: the instruction preview, the printed total,
- * the course label, the formatted saved exports, and the zero-points flag.
+ * `useExamWorkspaceViewLabels`: the instruction preview, the course label,
+ * the formatted saved exports, and the zero-points flag.
  */
-const { courseLabel, examInstructionsPreview, examPrintedTotal, formattedSavedExports, zeroPoints } =
+const { courseLabel, examInstructionsPreview, formattedSavedExports, zeroPoints } =
   useExamWorkspaceViewLabels({
     items,
     savedExports: exports.savedExports,
     workspaceDocument,
   });
+/** One entry per printed total that differs from its questions' sum, for the list's note lines. */
+const printedMismatches = computed(() =>
+  workspaceDocument.value ? examWorkspacePrintedTotalMismatches(workspaceDocument.value) : [],
+);
 const enrichmentBusy = computed(() => enrichment.isRequesting.value || enrichment.isEnrichmentPending.value);
 
 /**
@@ -381,7 +386,7 @@ onMounted(() => {
         :exam-instructions-preview="examInstructionsPreview"
         :question-count="itemEntries.length"
         :total="total"
-        :printed-total="examPrintedTotal"
+        :mismatches="printedMismatches"
         :can-add="!disabled"
         :disabled="disabled"
         :overlay="isPhone && listOpen"
@@ -390,9 +395,7 @@ onMounted(() => {
         @select="selectEntry"
         @add="addEntry"
         @group="(itemIds) => structure.groupItems(itemIds)"
-        @accept-exam-total="editing.acceptExamPrintedTotal"
-        @accept-part-total="editing.acceptPartPrintedTotal"
-        @accept-all-totals="editing.acceptAllPrintedTotals"
+        @clear-printed-total="editing.clearPrintedTotal"
         @close="listOpen = false"
         @set="setListWidth"
         @reset="resetWidth('list')"
