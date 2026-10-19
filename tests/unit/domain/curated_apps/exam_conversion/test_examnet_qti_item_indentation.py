@@ -65,6 +65,7 @@ def _free_text_item(
         interaction_type=ExamNetQtiInteractionType.FREE_TEXT,
         prompt_lines=("Beskriv bilden.",),
         max_score=1,
+        expected_lines=1,
         prompt_paragraphs=paragraphs,
     )
 
