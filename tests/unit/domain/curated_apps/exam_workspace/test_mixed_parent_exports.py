@@ -240,7 +240,8 @@ def test_pdf_and_docx_print_a_mixed_parent_instruction_once_before_its_first_chi
     writer.validate_docx_bytes(content, expected_item_count=len(document.items))
     lines = [p.text for p in Document(io.BytesIO(content)).paragraphs]
     assert lines.count(_INSTRUCTION) == 1
-    first_child_heading = f"Fråga {numbers[0]}"
+    # Sequences 24-28 form one part, so the part takes list number 24.
+    first_child_heading = "Fråga 24a"
     assert first_child_heading in lines
     assert lines.index(_INSTRUCTION) < lines.index(first_child_heading)
 
