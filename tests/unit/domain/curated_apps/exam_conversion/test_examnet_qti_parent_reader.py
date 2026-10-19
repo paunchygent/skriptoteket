@@ -26,6 +26,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts impo
     ExamNetQtiInteractionType,
     ExamNetQtiItem,
     ExamNetQtiPromptImage,
+    ExamNetQtiPromptParagraph,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_import_contracts import (
     ExamNetQtiReadItem,
@@ -179,7 +180,7 @@ def _export(
 
 def _round_trip(
     items: tuple[ExamNetQtiItem, ...],
-) -> tuple[ExamNetQtiItem, ...]:
+) -> tuple[ExamNetQtiReadItem, ...]:
     """Serialize like the package does, then read every item back in test order."""
 
     files: dict[str, bytes] = {}
@@ -422,7 +423,7 @@ def test_instruction_and_child_pictures_keep_their_own_indexes() -> None:
     assert _child_projection(parent.children[1]) == _child_projection(exported.children[1])
 
 
-def _image_indexes(paragraphs: tuple[object, ...]) -> list[int]:
+def _image_indexes(paragraphs: tuple[ExamNetQtiPromptParagraph, ...]) -> list[int]:
     return [
         segment.image_index
         for paragraph in paragraphs
@@ -535,7 +536,11 @@ def test_an_item_with_only_unsupported_children_returns_only_their_notes() -> No
     assert len(read) == 2
     assert all(isinstance(item, ExamNetQtiUnsupportedItem) for item in read)
     assert [item.sequence for item in read] == [4, 4]
-    assert all(item.reason is ExamNetQtiUnsupportedReason.INTERACTION for item in read)
+    assert all(
+        isinstance(item, ExamNetQtiUnsupportedItem)
+        and item.reason is ExamNetQtiUnsupportedReason.INTERACTION
+        for item in read
+    )
 
 
 def test_a_skipped_middle_child_keeps_the_later_children_positions() -> None:
@@ -686,7 +691,9 @@ def _manual_parent_xml() -> bytes:
     extended_prompt = ElementTree.SubElement(extended, _tag("qti-prompt"))
     ElementTree.SubElement(extended_prompt, _tag("p")).text = "Resonera."
     ElementTree.indent(root, space="  ")
-    return ElementTree.tostring(root, encoding="utf-8")
+    payload = ElementTree.tostring(root, encoding="utf-8")
+    assert isinstance(payload, bytes)
+    return payload
 
 
 def test_the_three_scoring_routes_read_their_own_points() -> None:

@@ -231,7 +231,9 @@ def _body(root: ElementTree.Element) -> ElementTree.Element:
 
 def _xml(root: ElementTree.Element) -> bytes:
     ElementTree.indent(root, space="  ")
-    return ElementTree.tostring(root, encoding="utf-8")
+    payload = ElementTree.tostring(root, encoding="utf-8")
+    assert isinstance(payload, bytes)
+    return payload
 
 
 def _read_root(
@@ -705,7 +707,9 @@ def test_the_reference_package_reads_every_item_in_test_order() -> None:
 
     assert all(isinstance(item, ExamNetQtiItem) for item in read)
     assert [item.sequence for item in read] == list(range(1, 8))
-    assert [item.interaction_type for item in read] == [
+    supported = [item for item in read if isinstance(item, ExamNetQtiItem)]
+    assert len(supported) == len(read)
+    assert [item.interaction_type for item in supported] == [
         ExamNetQtiInteractionType.FREE_TEXT,
         ExamNetQtiInteractionType.SINGLE_CHOICE,
         ExamNetQtiInteractionType.SINGLE_CHOICE,
@@ -714,4 +718,4 @@ def test_the_reference_package_reads_every_item_in_test_order() -> None:
         ExamNetQtiInteractionType.MULTIPLE_RESPONSE,
         ExamNetQtiInteractionType.GAP_FILL,
     ]
-    assert [item.max_score for item in read] == [5, 2, 2, 2, 4, 6, 3]
+    assert [item.max_score for item in supported] == [5, 2, 2, 2, 4, 6, 3]

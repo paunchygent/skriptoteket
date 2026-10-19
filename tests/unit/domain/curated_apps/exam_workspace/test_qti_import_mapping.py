@@ -49,6 +49,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeExamDocument,
     NativeExamDocumentOrigin,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_import_record import (
+    NativeExamImportRecord,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import NativeExamItem
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import (
     NativeExamParent,
@@ -643,7 +646,7 @@ def test_an_ordering_item_with_a_broken_key_becomes_an_interaction_note() -> Non
 
 
 def test_import_records_snapshot_the_package_wording_and_key_per_kind() -> None:
-    def imported(item: NativeExamItem) -> NativeExamItem:
+    def imported(item: NativeExamItem) -> NativeExamImportRecord:
         _, container = _round_trip(_document((item,)))
         record = container.document.items[0].import_record
         assert record is not None
