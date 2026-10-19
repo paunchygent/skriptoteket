@@ -21,6 +21,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_scoring import (
     free_text_criteria,
     matching_score,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_answer_line_gate import (
+    gated_item,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxChunk,
 )
@@ -108,7 +111,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import (
     is_answer_line_chunk,
     is_printed_answer_line,
-    without_item_answer_lines,
     without_printed_answer_lines,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.source_entry_ownership import (
@@ -441,7 +443,7 @@ def assemble_build_result(
     scored = apply_printed_points(placed.items, placed.parents, printed, by_anchor)
     # The one W10 gate on the final document: no printed answer line reaches any item
     # body, parent instruction or document instruction, whichever path rebuilt it.
-    items = tuple(without_item_answer_lines(item) for item in scored.items)
+    items = tuple(gated_item(item, by_anchor) for item in scored.items)
     parents = tuple(
         parent.model_copy(update={"instruction": without_printed_answer_lines(parent.instruction)})
         for parent in scored.parents

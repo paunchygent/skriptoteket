@@ -11,8 +11,10 @@ import io
 from uuid import uuid4
 
 from docx import Document
+from docx.document import Document as DocxDocument
 from docx.shared import Pt
 from PIL import Image
+from pydantic import JsonValue
 
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_admission import (
     admit_batch,
@@ -31,6 +33,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedParagraph,
     ProducedSegment,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_answer_line_gate import (
+    ANSWER_LINE_ONLY_REASON,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
@@ -44,11 +49,10 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace
     PythonDocxExamChunker,
 )
 
-_ANSWER_LINE_ONLY_REASON = "Frågan innehöll bara skrivlinjer i källan – kontrollera mot källan."
 _NO_ITEM_REASON = "AI-tolkningen gav ingen fråga eller rubrik för källstycket."
 
 
-def _chunked(document: Document) -> tuple[DocxChunk, ...]:
+def _chunked(document: DocxDocument) -> tuple[DocxChunk, ...]:
     stream = io.BytesIO()
     document.save(stream)
     return PythonDocxExamChunker().chunk(content=stream.getvalue())
@@ -113,7 +117,7 @@ def _assemble(
         instructions=instructions,
         questions=questions
         if questions is not None
-        else tuple(item.source_anchors for item in items),  # noqa: E501
+        else tuple(item.source_anchors for item in items),
         exam_wide=exam_wide,
     )
 
@@ -135,14 +139,14 @@ def _admit(
         if questions is not None
         else (tuple(chunk.anchor for chunk in chunks),),
     )
-    payload = {"items": [item.model_dump(mode="json") for item in items]}
+    payload: dict[str, JsonValue] = {"items": [item.model_dump(mode="json") for item in items]}
     if instructions:
         payload["instructions"] = [entry.model_dump(mode="json") for entry in instructions]
     admit_batch(payload, state)
     return state.result(exam_wide=exam_wide)
 
 
-def _table_cell_document(first: str, cell_first: str, cell_second: str, last: str) -> Document:
+def _table_cell_document(first: str, cell_first: str, cell_second: str, last: str) -> DocxDocument:
     document = Document()
     document.add_paragraph(first)
     cell = document.add_table(rows=1, cols=1).cell(0, 0)
@@ -152,7 +156,7 @@ def _table_cell_document(first: str, cell_first: str, cell_second: str, last: st
     return document
 
 
-def _two_chunk_answer_document() -> Document:
+def _two_chunk_answer_document() -> DocxDocument:
     document = Document()
     document.add_paragraph("Fråga ett?")
     cell = document.add_table(rows=1, cols=1).cell(0, 0)
@@ -164,7 +168,7 @@ def _two_chunk_answer_document() -> Document:
 def test_a_table_cell_instruction_source_drops_the_answer_line_on_both_paths() -> None:
     chunks = _chunked(
         _table_cell_document("1. Beskriv försöket.", "Förklara.", "_____", "Motivera slutsatsen.")
-    )  # noqa: E501
+    )
     assert [chunk.kind for chunk in chunks] == ["paragraph", "table", "paragraph"]
 
     anchors = tuple(chunk.anchor for chunk in chunks)
@@ -243,7 +247,7 @@ def test_an_omitted_question_review_item_drops_the_answer_line() -> None:
     admitted = _admit(chunks, (produced,), (), questions)
     assert [
         (body_plain_text(item.body), item.review.state) for item in admitted.document.items
-    ] == [  # noqa: E501
+    ] == [
         ("Fråga ett?", NativeItemReviewState.REVIEW_COMPLETE),
         ("Förklara.", NativeItemReviewState.REVIEW_REQUIRED),
     ]
@@ -399,7 +403,7 @@ def test_source_anchors_are_unchanged_by_the_gate() -> None:
 def test_review_accounting_is_unchanged_by_removing_the_unshown_filter() -> None:
     chunks = _chunked(
         _table_cell_document("1. Beskriv försöket.", "Förklara.", "_____", "Motivera slutsatsen.")
-    )  # noqa: E501
+    )
     anchors = tuple(chunk.anchor for chunk in chunks)
     produced = _produced(anchors, "1. Beskriv försöket.", "Förklara.", "Motivera slutsatsen.")
     instruction = _metadata(chunks[1].text, chunks[1].anchor)
@@ -422,34 +426,52 @@ def test_review_accounting_is_unchanged_by_removing_the_unshown_filter() -> None
 
 
 def test_an_answer_line_only_body_becomes_review_required_on_both_paths() -> None:
-    from skriptoteket.domain.curated_apps.exam_workspace.shared_body import (
-        ANSWER_LINE_ONLY_REASON,
-    )
-
-    assert ANSWER_LINE_ONLY_REASON == _ANSWER_LINE_ONLY_REASON
-
     document = Document()
-    cell = document.add_table(rows=1, cols=1).cell(0, 0)
-    cell.text = "_____"
+    document.add_paragraph("_____")
     chunks = _chunked(document)
 
     only = _produced((chunks[0].anchor,), "_____")
-    instruction = _metadata(chunks[0].text, chunks[0].anchor)
     questions = ((chunks[0].anchor,),)
 
-    assembled = _assemble(chunks, (only,), (instruction,), questions)
+    assembled = _assemble(chunks, (only,), (), questions)
     assert [
         (body_plain_text(item.body), item.review.state) for item in assembled.document.items
-    ] == [  # noqa: E501
-        ("", NativeItemReviewState.REVIEW_REQUIRED),
-    ]
-    assert _ANSWER_LINE_ONLY_REASON in assembled.document.items[0].review.reasons
+    ] == [("", NativeItemReviewState.REVIEW_REQUIRED)]
+    assert assembled.document.items[0].review.reasons.count(ANSWER_LINE_ONLY_REASON) == 1
 
-    # Admission drops an instruction listing on an anchor its item already claims, so the
-    # body is already empty before the final gate and the gate leaves it untouched.
-    admitted = _admit(chunks, (only,), (instruction,), questions)
+    admitted = _admit(chunks, (only,), (), questions)
     assert [
         (body_plain_text(item.body), item.review.state) for item in admitted.document.items
-    ] == [  # noqa: E501
-        ("", NativeItemReviewState.REVIEW_COMPLETE),
+    ] == [("", NativeItemReviewState.REVIEW_REQUIRED)]
+    assert admitted.document.items[0].review.reasons.count(ANSWER_LINE_ONLY_REASON) == 1
+
+
+def test_an_answer_line_only_item_beside_a_question_keeps_the_question_untouched() -> None:
+    document = Document()
+    document.add_paragraph("Fråga ett?")
+    document.add_paragraph("_____")
+    chunks = _chunked(document)
+
+    first = _produced((chunks[0].anchor,), "Fråga ett?")
+    second = _produced((chunks[1].anchor,), "_____")
+    questions = ((chunks[0].anchor,), (chunks[1].anchor,))
+
+    assembled = _assemble(chunks, (first, second), (), questions)
+    assert [
+        (body_plain_text(item.body), item.review.state) for item in assembled.document.items
+    ] == [
+        ("Fråga ett?", NativeItemReviewState.REVIEW_COMPLETE),
+        ("", NativeItemReviewState.REVIEW_REQUIRED),
     ]
+    assert assembled.document.items[0].review.reasons == ()
+    assert assembled.document.items[1].review.reasons.count(ANSWER_LINE_ONLY_REASON) == 1
+
+    admitted = _admit(chunks, (first, second), (), questions)
+    assert [
+        (body_plain_text(item.body), item.review.state) for item in admitted.document.items
+    ] == [
+        ("Fråga ett?", NativeItemReviewState.REVIEW_COMPLETE),
+        ("", NativeItemReviewState.REVIEW_REQUIRED),
+    ]
+    assert admitted.document.items[0].review.reasons == ()
+    assert admitted.document.items[1].review.reasons.count(ANSWER_LINE_ONLY_REASON) == 1

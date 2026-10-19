@@ -139,11 +139,13 @@ Stop and report to the parent in either case:
 - 2026-10-19, rereview3: R2 reopened again. A table cell shown as an
   instruction restores the answer line through `_in_source_form`. Explorers
   listed nine rebuild paths (P1-P9); all reach the final document only through
-  `docx_ai_build.assemble_build_result`. In progress, unit R4.1
-  (`orders/r4-1-w10-final-gate.md`): one W10 gate at the end of
-  `assemble_build_result` drops printed answer lines from item bodies, part
-  instructions and document instructions, and the round-3 `_unshown` filter
-  is removed. The gate keeps `source_anchor` and review status unchanged and
-  sends a body it empties to review with a named reason. Next: focused proof,
-  the orchestrator's suite slot, then R2 goes back to 09d50acc. User gates:
-  none open.
+  `docx_ai_build.assemble_build_result`. R4.1 (`adbefd72`): one W10 gate at
+  the end of `assemble_build_result` drops printed answer lines from item
+  bodies, part instructions and document instructions; the round-3 `_unshown`
+  filter is removed; `source_anchor` and review status are unchanged. R4.2
+  (the commit after `adbefd72`): `docx_answer_line_gate.gated_item` sends an
+  item to review with `ANSWER_LINE_ONLY_REASON` when its body ends empty and
+  either the gate removed a line or its source chunk is only an answer line.
+  Focused proof: 132 tests pass, ruff and full typecheck clean. Next: the
+  orchestrator's suite slot, then R2 goes back to 09d50acc. User gates: none
+  open.
