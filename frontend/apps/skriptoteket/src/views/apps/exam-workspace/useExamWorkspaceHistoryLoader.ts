@@ -27,12 +27,37 @@ export function createHistoryLoader(
   reset: () => void,
 ): { load: (lineageId: string) => Promise<boolean> } {
   let loadToken = 0;
+  /** The read in flight, if any, with the lineage and server document it captured. */
+  let inFlight: {
+    base: NativeExamDocument | null;
+    lineageId: string;
+    promise: Promise<boolean>;
+    token: number;
+  } | null = null;
 
   /** Reload the step list; true when it matches the fresh server copy, false
-   * when the lineage moved on, a newer load started, or the read failed. */
+   * when the lineage moved on, a newer load started, or the read failed. A
+   * load for the same lineage and server document as the read in flight
+   * shares it instead of sending a second read. */
   async function load(lineageId: string): Promise<boolean> {
-    const token = ++loadToken;
     const base = deps.serverDocument.value;
+    const running = inFlight;
+    if (running !== null && running.lineageId === lineageId && running.base === base) {
+      return running.promise;
+    }
+    const token = ++loadToken;
+    const pending = read(lineageId, base, token);
+    inFlight = { base, lineageId, promise: pending, token };
+    try {
+      return await pending;
+    } finally {
+      if (inFlight !== null && inFlight.token === token) {
+        inFlight = null;
+      }
+    }
+  }
+
+  async function read(lineageId: string, base: NativeExamDocument | null, token: number): Promise<boolean> {
     try {
       const history = await deps.shared.getExamWorkspaceHistory(lineageId);
       if (token !== loadToken || deps.lineageId() !== lineageId) {

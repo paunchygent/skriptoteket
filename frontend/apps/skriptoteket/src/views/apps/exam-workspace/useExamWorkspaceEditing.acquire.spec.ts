@@ -354,13 +354,13 @@ describe("a heartbeat reclaim during a kept-edit recovery", () => {
     await flushPromises();
     expect(documentGets).toBe(1);
     firstDocument.resolve(response(JSON.parse(JSON.stringify(other)), "step-B"));
-    for (let attempt = 0; attempt < 20 && historyGets < 2; attempt += 1) {
+    for (let attempt = 0; attempt < 20 && historyGets < 1; attempt += 1) {
       await flushPromises();
     }
-    // Two history reads: the recovery's resync and the history watcher's
-    // reload follow-up for the fresh cursor (the same pair the previous
-    // version of this test documented); no second recovery phase reads.
-    expect(historyGets).toBe(2);
+    // One history read: the recovery's resync shares its in-flight read with
+    // the history watcher's reload follow-up for the fresh cursor; no second
+    // recovery phase reads.
+    expect(historyGets).toBe(1);
 
     // (a) While the recovery's history read is pending, the replacing lock
     // refuses typing: the standing value is unchanged.
@@ -385,9 +385,9 @@ describe("a heartbeat reclaim during a kept-edit recovery", () => {
     await vi.advanceTimersByTimeAsync(20000);
     await flushPromises();
     // (b) No second concurrent recovery phase started: still one document GET
-    // and the same two history reads, and the lock never released meanwhile.
+    // and the same single history read, and the lock never released meanwhile.
     expect(documentGets).toBe(1);
-    expect(historyGets).toBe(2);
+    expect(historyGets).toBe(1);
     expect(editing.isReplacing.value).toBe(true);
 
     firstHistory.resolve({
@@ -415,7 +415,7 @@ describe("a heartbeat reclaim during a kept-edit recovery", () => {
         (order) => order < storeOrder,
       );
     expect(documentGetsBeforeStore).toHaveLength(1);
-    expect(historyGetsBeforeStore).toHaveLength(2);
+    expect(historyGetsBeforeStore).toHaveLength(1);
     // The queued reclaim flush stored nothing of its own: one merged store.
     expect(api.storeExamWorkspaceUndoStep).toHaveBeenCalledTimes(1);
     expect(editing.isReplacing.value).toBe(false);
