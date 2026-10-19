@@ -15,7 +15,8 @@ closeout_review:
 task_kind: story
 acceptance_criteria:
 - Review ecea35b6 findings F1-F3 are repaired with real-collection proof; default
-  discovery lists all 505 src/**/*.spec.ts files.
+  discovery lists exactly the src/**/*.spec.ts set (505 at bf79abce, 506 after the
+  new vitestInclude.spec.ts).
 story: ST-SKRIPT-06-18
 backlog_document_profile: contract-derived
 ---
@@ -25,6 +26,7 @@ backlog_document_profile: contract-derived
 - 2026-10-19, lead cebb6d3d in worktree `skriptoteket-fe-vitest-run-repair-remote` (branch `codex/fe-vitest-run-repair-remote`, base `bf79abce`). Retained root `01a15524-776a-7857-8a94-c2c3e11dce51`: review in `evidence/reviews/ecea35b6-46f1-4148-b483-02cfe0e36e89.md`, work orders U1-U5 in `evidence/work-orders/`, proof in `evidence/repair-proof/`.
 - Delivered: U1 typed include transport (F3), U2 real-match resolution and separator handling (F1, F2), U3 Node tsconfig project for `vitest.config.ts`, U4 loud `statSync` and file-only line selector, U5 the two Node-environment wrapper specs moved into the Node project.
 - Real collection, `before-bf79abce.txt` -> `after-worktree.txt`: brace file+folder glob 1 -> 2 files (run: 2 files, 34 tests); `src/test/*.{spec,test}.ts` and `src/test/*.ts` exit 1 -> exit 0 with 2 specs; `list --filesOnly -- -- src/no-such-folder` exit 0 with 505 specs -> exit 1. Kept: spec + folder 2 files; missing and spec-free folders exit 1; typo exits 1 in watch and coverage mode; line selector 1 passed, 1 skipped; repo-root and absolute folders; `--reporter dot`. Default discovery equals the `src/**/*.spec.ts` set exactly (506 = 505 + the new `vitestInclude.spec.ts`).
+- Real route: `pdm run fe-test -- src/composables/home` and `pdm run fe-test -- --reporter dot src/composables/home` each run 1 file, 2 tests; an absolute out-of-app spec plus an in-app folder lists 2 files (`real-route-checks.txt`).
 - Checks: focused specs 43/43, fe-type-check, fe-lint, docs-validate, handoff-validate pass.
 - Next: orchestrator routes F1 (high) to reviewer ecea35b6 for rereview; F2 and F3 return with this proof.
 
@@ -67,5 +69,6 @@ Stop and report to the orchestrator if a fix needs a change to Vitest's own conf
 | D3  | The first `--` is package-manager forwarding and is removed. Every token after a remaining `--` is a path target and is validated; none is forwarded to Vitest unexamined. Flag values such as `--reporter dot` before it stay flag values. |
 | D4  | `scripts/vitest-include.mjs` owns the include transport: `VITEST_INCLUDE_ENV`, `encodeVitestInclude` and `decodeVitestInclude` (a non-empty JSON array of strings, validated at runtime, typed by `vitest-include.d.mts`). No cast and no comma-separated decoder. |
 | D5  | `vitest.config.ts` joins the vue-tsc `include` so the decoder's type is checked at its consumer. |
-| D6  | A line selector is valid only on a literal target that resolves to one spec file. |
+| D6  | A line selector is valid only on a literal target that is itself a spec file; a folder holding one spec file with a selector is rejected. |
+| D8  | Lead-found repairs of returned work: U3 moves `vitest.config.ts` into `tsconfig.node.json` because adding it to the browser project leaked Node `Timeout` types; U4 lets a `statSync` failure stop the run instead of dropping the match, and narrows D6 to file targets; U5 type-checks the two Node-environment wrapper specs in the Node project. |
 | D7  | The repaired F1 (high) returns to reviewer ecea35b6 for rereview through the orchestrator; F2 and F3 return with focused proof. |
