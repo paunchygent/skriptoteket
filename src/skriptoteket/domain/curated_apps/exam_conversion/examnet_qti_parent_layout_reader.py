@@ -36,7 +36,6 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_item_scores im
     ResponseDeclaration,
     apply_unknown_remainder,
     block_child_points,
-    gap_child_points,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_item_support import (
     BLOCK_INTERACTIONS,
@@ -135,7 +134,7 @@ def read_parent_layout(
         children.append(child)
         carry = () if (is_separator or is_last) else trailing
 
-    apply_unknown_remainder(children, max_score, declarations)
+    apply_unknown_remainder(children, max_score, declarations=declarations)
     if not children:
         return tuple(unsupported)
 
@@ -277,7 +276,9 @@ def _read_gap_child(
         raise UnsupportedInteraction
 
     child_root = _child_root(identifier, child_number)
-    child_max_score = gap_child_points(declarations, read_body.gap_elements)
+    # The package never states a parent gap child's score exactly; the parent
+    # remainder in apply_unknown_remainder is the only exact evidence.
+    child_max_score = None
     if gap_names == {"qti-text-entry-interaction"}:
         return gap_fill_item(
             child_root,

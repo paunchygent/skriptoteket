@@ -201,25 +201,11 @@ def _all_or_nothing_points(
     return None
 
 
-def gap_child_points(
-    declarations: AbcMapping[str, ResponseDeclaration],
-    gap_elements: tuple[ElementTree.Element, ...],
-) -> int | float | None:
-    """A parent gap child's own score: the package never states it exactly.
-
-    The exporter writes only a per-gap share rounded down to 0.01, whose
-    interval does not identify the total, so a gap or inline-choice child
-    inside a parent keeps None here. The parent remainder in
-    apply_unknown_remainder is the only exact evidence and assigns it there.
-    """
-
-    return None
-
-
 def apply_unknown_remainder(
     children: list[ExamNetQtiItem],
     max_score: int | float | None,
-    declarations: AbcMapping[str, ResponseDeclaration] | None = None,
+    *,
+    declarations: AbcMapping[str, ResponseDeclaration],
 ) -> None:
     """Give a single child without its own points the parent total's remainder.
 
@@ -244,7 +230,7 @@ def apply_unknown_remainder(
         return
     position = unknown[0]
     child = children[position]
-    if declarations is not None and child.interaction_type in (
+    if child.interaction_type in (
         ExamNetQtiInteractionType.GAP_FILL,
         ExamNetQtiInteractionType.INLINE_CHOICE,
     ):
