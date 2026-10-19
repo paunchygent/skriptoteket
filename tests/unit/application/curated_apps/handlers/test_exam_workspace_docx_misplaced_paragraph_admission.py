@@ -214,8 +214,8 @@ def test_an_unrenderable_own_picture_paragraph_goes_to_source_review():
         chunks=chunks,
         questions=(("body:0001",), ("body:0002",)),
     )
-    reply = _item(("body:0002",), "2", _FOREIGN[3:])
-    reply["body"].append(
+    body: list[JsonValue] = [
+        {"segments": [_text(_FOREIGN[3:])]},
         {
             "segments": [
                 {
@@ -225,8 +225,10 @@ def test_an_unrenderable_own_picture_paragraph_goes_to_source_review():
                     "accepted_values": [],
                 }
             ]
-        }
-    )
+        },
+    ]
+    reply = _item(("body:0002",), "2", _FOREIGN[3:])
+    reply["body"] = body
 
     admit_batch(
         {
