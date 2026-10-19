@@ -63,15 +63,15 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_parent_layout_
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_terms import (
     qti_tag,
 )
+from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_untrusted_xml import (
+    parse_untrusted_qti_xml,
+)
 from skriptoteket.domain.errors import validation_error
 
 __all__ = [
     "read_examnet_qti_item",
     "read_examnet_qti_items",
 ]
-
-
-_UNSAFE_XML = "QTI-paketet innehåller en otillåten XML-konstruktion."
 
 
 _INVALID_ITEM_XML = "QTI-paketet innehåller en fråga som inte är giltig XML."
@@ -124,12 +124,7 @@ def read_examnet_qti_item(
 
 
 def _parse_item(xml: bytes, *, item_path: str) -> ElementTree.Element:
-    if b"<!DOCTYPE" in xml or b"<!ENTITY" in xml:
-        raise validation_error(_UNSAFE_XML, {"path": item_path})
-    try:
-        root = ElementTree.fromstring(xml)
-    except ElementTree.ParseError as error:
-        raise validation_error(_INVALID_ITEM_XML, {"path": item_path}) from error
+    root = parse_untrusted_qti_xml(xml, path=item_path, invalid_message=_INVALID_ITEM_XML)
     if root.tag != qti_tag("qti-assessment-item"):
         raise validation_error(_UNSUPPORTED_VERSION, {"path": item_path})
     return root

@@ -32,6 +32,9 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_manifest impor
     IMSCP_NAMESPACE,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_terms import QTI_NAMESPACE
+from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_untrusted_xml import (
+    parse_untrusted_qti_xml,
+)
 from skriptoteket.domain.errors import validation_error
 
 MAX_MEMBERS = 2000
@@ -47,8 +50,8 @@ _TOO_LARGE = "QTI-paketet är för stort eller innehåller för många filer."
 _ENCRYPTED = "QTI-paketet är krypterat och kan inte läsas."
 _INVALID_PATH = "QTI-paketet innehåller en ogiltig sökväg."
 _MISSING_MANIFEST = "QTI-paketet saknar imsmanifest.xml."
-_UNSAFE_XML = "QTI-paketet innehåller en otillåten XML-konstruktion."
 _INVALID_XML = "QTI-paketet innehåller ogiltig XML."
+_DUPLICATE_ITEM_REFERENCE = "QTI-paketet hänvisar till samma fråga mer än en gång."
 _UNSUPPORTED_VERSION = (
     "QTI-paketet använder en QTI-version som inte stöds. Endast QTI 3.0 kan importeras."
 )
@@ -67,7 +70,7 @@ class ExamNetQtiPackageReader:
         manifest_bytes = files.get(_MANIFEST_NAME)
         if manifest_bytes is None:
             raise validation_error(_MISSING_MANIFEST)
-        manifest = _parse_xml(manifest_bytes)
+        manifest = _parse_xml(manifest_bytes, path=_MANIFEST_NAME)
 
         item_paths = _item_paths_in_test_order(manifest=manifest, files=files)
         if not item_paths:
@@ -136,13 +139,8 @@ def _normalized_member_name(raw_name: str) -> str:
     return normalized
 
 
-def _parse_xml(payload: bytes) -> ElementTree.Element:
-    if b"<!DOCTYPE" in payload or b"<!ENTITY" in payload:
-        raise validation_error(_UNSAFE_XML)
-    try:
-        return ElementTree.fromstring(payload)
-    except (ElementTree.ParseError, ValueError) as error:
-        raise validation_error(_INVALID_XML) from error
+def _parse_xml(payload: bytes, *, path: str) -> ElementTree.Element:
+    return parse_untrusted_qti_xml(payload, path=path, invalid_message=_INVALID_XML)
 
 
 def _item_paths_in_test_order(
@@ -184,7 +182,7 @@ def _test_referenced_item_paths(
     if test_bytes is None:
         raise validation_error(_MISSING_FILE, {"path": test_path})
 
-    test_root = _parse_xml(test_bytes)
+    test_root = _parse_xml(test_bytes, path=test_path)
     if _namespace_of(test_root.tag) != QTI_NAMESPACE:
         raise validation_error(_UNSUPPORTED_VERSION)
 
@@ -192,6 +190,15 @@ def _test_referenced_item_paths(
     paths: list[str] = []
     for ref in test_root.iter(f"{{{QTI_NAMESPACE}}}qti-assessment-item-ref"):
         paths.append(_resolve_path(base_dir=base_dir, href=_required_href(ref)))
+    # Distinct hrefs stay bounded by the archive's member count, and their
+    # bytes by its uncompressed limits; only a repeated href can multiply
+    # admitted work, so the exporter contract (one reference per item file)
+    # is enforced here before any item is parsed.
+    seen: set[str] = set()
+    for path in paths:
+        if path in seen:
+            raise validation_error(_DUPLICATE_ITEM_REFERENCE, {"path": path})
+        seen.add(path)
     return paths
 
 

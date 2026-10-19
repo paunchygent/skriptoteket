@@ -54,6 +54,7 @@ _UNSUPPORTED_VERSION = (
 )
 _MISSING_FILE = "QTI-paketet saknar en fil som manifestet pekar på."
 _NO_ITEMS = "QTI-paketet innehåller inga frågor."
+_DUPLICATE_REFERENCE = "QTI-paketet hänvisar till samma fråga mer än en gång."
 
 
 def _zip_bytes(entries: list[tuple[str, bytes]]) -> bytes:
@@ -114,6 +115,12 @@ def _item_xml(item_id: str) -> bytes:
         '<?xml version="1.0" encoding="UTF-8"?>'
         f'<qti-assessment-item xmlns="{QTI_NAMESPACE}" identifier="{item_id}" />'
     ).encode("utf-8")
+
+
+def _utf16_with_entity(xml: bytes, *, root_name: str) -> bytes:
+    text = xml.decode("utf-8").split("?>", 1)[1]
+    dtd = f'<!DOCTYPE {root_name} [<!ENTITY a "ENTITY_EXPANDED"><!ENTITY b "' + "&a;" * 100 + '">]>'
+    return ('<?xml version="1.0" encoding="UTF-16"?>' + dtd + text).encode("utf-16")
 
 
 def _two_item_package_bytes() -> bytes:
@@ -220,13 +227,14 @@ def test_doctype_in_manifest_is_refused() -> None:
     assert refusal.value.message == _UNSAFE_XML
 
 
-def test_entity_marker_in_manifest_is_refused() -> None:
+def test_entity_like_text_in_a_comment_is_not_unsafe() -> None:
     manifest = b'<?xml version="1.0"?><!-- <!ENTITY x "y"> --><manifest />'
 
     with pytest.raises(DomainError) as refusal:
         _READER.read(content=_zip_bytes([("imsmanifest.xml", manifest)]))
 
-    assert refusal.value.message == _UNSAFE_XML
+    assert refusal.value.message != _UNSAFE_XML
+    assert refusal.value.message == _NO_ITEMS
 
 
 def test_malformed_manifest_xml_is_refused() -> None:
@@ -360,3 +368,118 @@ def test_test_without_item_refs_is_refused() -> None:
         _READER.read(content=content)
 
     assert refusal.value.message == _NO_ITEMS
+
+
+def test_utf16_manifest_with_internal_entity_is_refused() -> None:
+    manifest = _manifest_xml(_test_resource(href="assessment.xml"))
+    manifest = _utf16_with_entity(manifest, root_name="manifest")
+    content = _zip_bytes(
+        [
+            ("imsmanifest.xml", manifest),
+            ("assessment.xml", _assessment_xml("items/item_001.xml")),
+            ("items/item_001.xml", _item_xml("item_001")),
+        ]
+    )
+
+    with pytest.raises(DomainError) as refusal:
+        _READER.read(content=content)
+
+    assert refusal.value.code is ErrorCode.VALIDATION_ERROR
+    assert refusal.value.message == _UNSAFE_XML
+
+
+def test_utf16_manifest_with_doctype_only_is_refused() -> None:
+    text = _manifest_xml(_test_resource(href="assessment.xml")).decode("utf-8").split("?>", 1)[1]
+    manifest = ('<?xml version="1.0" encoding="UTF-16"?><!DOCTYPE manifest>' + text).encode(
+        "utf-16"
+    )
+    content = _zip_bytes(
+        [
+            ("imsmanifest.xml", manifest),
+            ("assessment.xml", _assessment_xml("items/item_001.xml")),
+            ("items/item_001.xml", _item_xml("item_001")),
+        ]
+    )
+
+    with pytest.raises(DomainError) as refusal:
+        _READER.read(content=content)
+
+    assert refusal.value.message == _UNSAFE_XML
+
+
+def test_utf16_assessment_with_internal_entity_is_refused() -> None:
+    manifest = _manifest_xml(_test_resource(href="assessment.xml"))
+    assessment = _utf16_with_entity(
+        _assessment_xml("items/item_001.xml"), root_name="qti-assessment-test"
+    )
+    content = _zip_bytes(
+        [
+            ("imsmanifest.xml", manifest),
+            ("assessment.xml", assessment),
+            ("items/item_001.xml", _item_xml("item_001")),
+        ]
+    )
+
+    with pytest.raises(DomainError) as refusal:
+        _READER.read(content=content)
+
+    assert refusal.value.code is ErrorCode.VALIDATION_ERROR
+    assert refusal.value.message == _UNSAFE_XML
+
+
+def test_manifest_with_unknown_encoding_is_a_typed_refusal() -> None:
+    manifest = _manifest_xml(_test_resource(href="assessment.xml")).replace(
+        b'encoding="UTF-8"', b'encoding="x-does-not-exist"'
+    )
+
+    with pytest.raises(DomainError) as refusal:
+        _READER.read(content=_zip_bytes([("imsmanifest.xml", manifest)]))
+
+    assert refusal.value.code is ErrorCode.VALIDATION_ERROR
+    assert refusal.value.message == _INVALID_XML
+
+
+def test_assessment_referencing_the_same_item_twice_is_refused() -> None:
+    manifest = _manifest_xml(_test_resource(href="assessment.xml"))
+    content = _zip_bytes(
+        [
+            ("imsmanifest.xml", manifest),
+            (
+                "assessment.xml",
+                _assessment_xml("items/item_001.xml", "items/item_001.xml"),
+            ),
+            ("items/item_001.xml", _item_xml("item_001")),
+        ]
+    )
+
+    with pytest.raises(DomainError) as refusal:
+        _READER.read(content=content)
+
+    assert refusal.value.code is ErrorCode.VALIDATION_ERROR
+    assert refusal.value.message == _DUPLICATE_REFERENCE
+    assert refusal.value.details == {"path": "items/item_001.xml"}
+
+
+def test_repeated_references_are_refused_before_any_item_is_parsed() -> None:
+    refs = "".join(
+        '<qti-assessment-item-ref identifier="ref_' + str(index) + '" href="items/item_001.xml"/>'
+        for index in range(2001)
+    )
+    assessment = (
+        '<?xml version="1.0" encoding="UTF-8"?>'
+        f'<qti-assessment-test xmlns="{QTI_NAMESPACE}">{refs}</qti-assessment-test>'
+    ).encode("utf-8")
+    manifest = _manifest_xml(_test_resource(href="assessment.xml"))
+    content = _zip_bytes(
+        [
+            ("imsmanifest.xml", manifest),
+            ("assessment.xml", assessment),
+        ]
+    )
+
+    with pytest.raises(DomainError) as refusal:
+        _READER.read(content=content)
+
+    assert refusal.value.code is ErrorCode.VALIDATION_ERROR
+    assert refusal.value.message == _DUPLICATE_REFERENCE
+    assert refusal.value.details == {"path": "items/item_001.xml"}
