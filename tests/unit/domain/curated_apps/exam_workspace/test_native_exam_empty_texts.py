@@ -228,7 +228,16 @@ def test_docx_writes_no_instruction_paragraph_for_an_empty_instruction() -> None
         data = ExamWorkspaceDocxWriter().build_docx_bytes(source)
         return [paragraph.text for paragraph in Document(io.BytesIO(data)).paragraphs]
 
-    assert paragraphs(document) == paragraphs(bare)
+    grouped = paragraphs(document)
+    standalone = paragraphs(bare)
+    # The parent takes list number 1, so its children print as 1a and 1b.
+    assert "Fråga 1a" in grouped
+    assert "Fråga 1b" in grouped
+    assert "Fråga 1" not in grouped
+    assert "Fråga 2" not in grouped
+    assert [line for line in grouped if line not in ("Fråga 1a", "Fråga 1b")] == [
+        line for line in standalone if line not in ("Fråga 1", "Fråga 2")
+    ]
 
 
 def test_qti_exports_the_children_of_an_empty_instruction_as_standalone_items() -> None:
