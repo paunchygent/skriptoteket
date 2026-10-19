@@ -132,21 +132,24 @@ def _unit_blank_runs(
     start: int,
     end: int,
 ) -> list[tuple[int, int]]:
-    """Each unit paragraph's blank runs, in source order, inside the visible build span."""
+    """The whole unit's blank runs, in source order, inside the visible build span.
+
+    The blank-class choice is made once over the whole D2 source unit: the unit's cells
+    are joined by exactly " | " (checked by _joins_row), which holds no "_", "." or "…"
+    and no letter, so every per-cell letter-adjacency decision stays the same.
+    """
     visible = visible_intervals(start, end, source.excluded)
     result: list[tuple[int, int]] = []
-    for paragraph in unit:
-        text = source.text[paragraph.start : paragraph.end]
-        for left, right in blank_runs(text):
-            run_start, run_end = paragraph.start + left, paragraph.start + right
-            if run_start < start or run_end > end:
-                continue
-            if not any(
-                visible_start <= run_start and run_end <= visible_end
-                for visible_start, visible_end in visible
-            ):
-                continue
-            result.append((run_start, run_end))
+    for left, right in blank_runs(source.text[unit[0].start : unit[-1].end]):
+        run_start, run_end = unit[0].start + left, unit[0].start + right
+        if run_start < start or run_end > end:
+            continue
+        if not any(
+            visible_start <= run_start and run_end <= visible_end
+            for visible_start, visible_end in visible
+        ):
+            continue
+        result.append((run_start, run_end))
     return result
 
 

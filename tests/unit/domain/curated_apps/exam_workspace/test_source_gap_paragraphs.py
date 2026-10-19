@@ -351,3 +351,95 @@ def test_a_paragraph_without_blank_runs_keeps_the_reply_projection():
     )
     assert result.body == _projected(chunks, reply)
     assert body_plain_text(result.body) == "Give an [___]."
+
+
+def _mixed_class_row_chunks():
+    text = "Wait ... | The answer is ____."
+    return (
+        DocxChunk(
+            "body:0001",
+            "table",
+            text,
+            text,
+            runs=(DocxSourceRun(0, text, ()),),
+            paragraphs=(
+                DocxSourceParagraph(0, "Wait ...", None),
+                DocxSourceParagraph(11, "The answer is ____.", None),
+            ),
+        ),
+    )
+
+
+def test_a_mixed_class_table_row_builds_one_underscore_blank():
+    chunks = _mixed_class_row_chunks()
+    produced = _item(
+        chunks,
+        [{"segments": [_text("Wait ... | The answer is "), _gap(), _text(".")]}],
+    )
+    result = aligned_native_item(produced, chunks=chunks, language="en").item
+    assert body_plain_text(result.body) == "Wait ... | The answer is [___]."
+
+
+def test_a_mixed_class_table_row_with_two_gaps_raises_a_count_mismatch():
+    chunks = _mixed_class_row_chunks()
+    produced = _item(
+        chunks,
+        [
+            {
+                "segments": [
+                    _text("Wait "),
+                    _gap(),
+                    _text(" | The answer is "),
+                    _gap(),
+                    _text("."),
+                ]
+            }
+        ],
+    )
+    with pytest.raises(GapCountMismatchError) as raised:
+        aligned_native_item(produced, chunks=chunks, language="en")
+    assert (raised.value.gaps, raised.value.blanks) == (2, 1)
+
+
+def _dot_only_row_chunks():
+    text = "Wait ... | Then ... ."
+    return (
+        DocxChunk(
+            "body:0001",
+            "table",
+            text,
+            text,
+            runs=(DocxSourceRun(0, text, ()),),
+            paragraphs=(
+                DocxSourceParagraph(0, "Wait ...", None),
+                DocxSourceParagraph(11, "Then ... .", None),
+            ),
+        ),
+    )
+
+
+def test_a_dot_only_table_row_keeps_two_blank_runs():
+    chunks = _dot_only_row_chunks()
+    produced = _item(
+        chunks,
+        [
+            {
+                "segments": [
+                    _text("Wait "),
+                    _gap(),
+                    _text(" | Then "),
+                    _gap(),
+                    _text(" ."),
+                ]
+            }
+        ],
+    )
+    result = aligned_native_item(produced, chunks=chunks, language="en").item
+    assert body_plain_text(result.body) == "Wait [___] | Then [___] ."
+    short = _item(
+        chunks,
+        [{"segments": [_text("Wait ... | Then "), _gap(), _text(" .")]}],
+    )
+    with pytest.raises(GapCountMismatchError) as raised:
+        aligned_native_item(short, chunks=chunks, language="en")
+    assert (raised.value.gaps, raised.value.blanks) == (1, 2)

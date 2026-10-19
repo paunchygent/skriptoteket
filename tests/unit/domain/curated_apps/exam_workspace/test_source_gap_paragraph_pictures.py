@@ -201,3 +201,107 @@ def test_pictures_in_includes_a_picture_at_end_but_not_beyond():
     assert provenance.pictures_in(10, 15) == [(15, image.asset_id)]
     assert provenance.pictures_in(10, 14) == []
     assert provenance.pictures_in(10, 16) == [(15, image.asset_id)]
+
+
+def _aba_images():
+    first_a = DocxImage(payload=b"beta-figure-b", media_type="image/png", offset=7, marked_offset=7)
+    middle_b = DocxImage(payload=b"figure-a-red", media_type="image/png", offset=7, marked_offset=7)
+    second_a = DocxImage(
+        payload=b"beta-figure-b", media_type="image/png", offset=7, marked_offset=7
+    )
+    assert middle_b.asset_id < first_a.asset_id
+    assert second_a.asset_id == first_a.asset_id
+    return first_a, middle_b, second_a
+
+
+def _built_asset_ids(paragraph):
+    return [segment.asset_id for segment in paragraph.segments if segment.kind == "asset"]
+
+
+def test_three_pictures_at_one_offset_keep_source_occurrence_order():
+    first_a, middle_b, second_a = _aba_images()
+    chunks = (
+        chunk(
+            "body:0001",
+            "1. The answer is ___ here.",
+            images=(first_a, middle_b, second_a),
+        ),
+    )
+    produced = item(
+        chunks,
+        [
+            {
+                "segments": [
+                    text("The answer is "),
+                    gap(),
+                    text(" here."),
+                    picture(first_a.asset_id),
+                    picture(middle_b.asset_id),
+                    picture(second_a.asset_id),
+                ]
+            }
+        ],
+        printed_label="1",
+    )
+
+    result = aligned_native_item(produced, chunks=chunks, language="en").item
+
+    assert _built_asset_ids(result.body[0]) == [
+        first_a.asset_id,
+        middle_b.asset_id,
+        second_a.asset_id,
+    ]
+
+
+def test_reply_picture_order_does_not_change_the_built_source_order():
+    first_a, middle_b, second_a = _aba_images()
+    chunks = (
+        chunk(
+            "body:0001",
+            "1. The answer is ___ here.",
+            images=(first_a, middle_b, second_a),
+        ),
+    )
+    produced = item(
+        chunks,
+        [
+            {
+                "segments": [
+                    text("The answer is "),
+                    gap(),
+                    text(" here."),
+                    picture(middle_b.asset_id),
+                    picture(first_a.asset_id),
+                    picture(second_a.asset_id),
+                ]
+            }
+        ],
+        printed_label="1",
+    )
+
+    result = aligned_native_item(produced, chunks=chunks, language="en").item
+
+    assert _built_asset_ids(result.body[0]) == [
+        first_a.asset_id,
+        middle_b.asset_id,
+        second_a.asset_id,
+    ]
+
+
+def test_pictures_in_keeps_occurrence_order_for_equal_places():
+    first_a, middle_b, second_a = _aba_images()
+    provenance = ChunkProvenance()
+    provenance.add(
+        0,
+        chunk(
+            "body:0001",
+            "1. The answer is ___ here.",
+            images=(first_a, middle_b, second_a),
+        ),
+    )
+
+    assert provenance.pictures_in(0, 30) == [
+        (7, first_a.asset_id),
+        (7, middle_b.asset_id),
+        (7, second_a.asset_id),
+    ]
