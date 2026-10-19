@@ -81,7 +81,7 @@ performance concern.
   commands.
 - Staging walk (`staging-walk`, exam converter UI) on the guest and signed-in workspaces with an exam
   open. For each side kind, it reads `getBoundingClientRect().width` of the list, editor and side
-  tracks at 1280, 1440, 1920 and 2560 px window widths. It checks that the editor is widest and that
+  tracks at 1280, 1440 and 1920 px window widths, and at 2560 px through DevTools device emulation, since the Mac display is narrower. It checks that the editor is widest and that
   `document.documentElement.scrollWidth === clientWidth`. It takes screenshots at 1440 and 1920 px of
   the guest workspace with Öppna open and the signed-in workspace with the print preview open.
   Evidence goes to the retained root.
