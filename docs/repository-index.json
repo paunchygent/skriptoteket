@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "0bef90c2eae34eb8c477c3b1cba88bfc7a33a38db6431ba7e25eb6377294121c",
+  "source_set_digest": "e38bf575cad68d8938baff8deb18ee796d7879cf5a40cc4971d624d7dfe8621e",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6588,6 +6588,25 @@
       "type": "task",
       "title": "Short-answer and gap-text questions look different, teachers create gaps by clicking a word, and the gap popover shows its whole answer list",
       "path": "docs/backlog/tasks/task-skript-40-04-08-short-answer-and-gap-text-questions-look-different-teachers-create-gaps-by-clicking-a-word-and-the-gap-popover-shows-its-whole-answer-list.md",
+      "status": "proposed",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-11",
+      "type": "task",
+      "title": "Exam workspace tools show only their glyph and name their action in a tooltip",
+      "path": "docs/backlog/tasks/task-skript-40-04-11-exam-workspace-tools-show-only-their-glyph-and-name-their-action-in-a-tooltip.md",
       "status": "proposed",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
