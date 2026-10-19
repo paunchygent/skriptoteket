@@ -18,8 +18,8 @@ import type { ExamWorkspaceExportTarget } from "../../../api/examWorkspaceExport
 export type ExamWorkspaceExportFormat = {
   target: ExamWorkspaceExportTarget;
   name: string;
-  /** What the file is for, beside the name in the menu. */
-  use: string;
+  /** What the file is for, beside the name in the menu; null hides the suffix. */
+  use: string | null;
   /** The drawer's hint under the format toggle. */
   hint: string;
 };
@@ -27,7 +27,7 @@ export type ExamWorkspaceExportFormat = {
 export const EXAM_WORKSPACE_EXPORT_FORMATS: ExamWorkspaceExportFormat[] = [
   { hint: "För import i Exam.net", name: "QTI", target: "qti", use: "Exam.net" },
   { hint: "Elevexemplar för utskrift", name: "PDF", target: "pdf", use: "utskrift" },
-  { hint: "Samma sidor med facit och bedömning", name: "PDF med facit", target: "pdf_facit", use: "utskrift med facit" },
+  { hint: "Samma sidor med facit och bedömning", name: "PDF med facit", target: "pdf_facit", use: null },
   { hint: "För redigering i Word", name: "DOCX", target: "docx", use: "Word" },
   { hint: "Reserv om QTI-importen inte fungerar. Inte för utskrift.", name: "PDF för Exam.net", target: "examnet_pdf", use: "reserv" },
 ];

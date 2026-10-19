@@ -290,6 +290,7 @@ onMounted(() => {
           :fix-disabled="disabled"
           :suggest-busy="enrichmentBusy"
           :exporting-target="exports.exportingTarget.value"
+          :exporting-destination="exports.exportingDestination.value"
           :saved-exports="formattedSavedExports"
           :result="exports.exportResult.value"
           :checklist-count="exports.exportChecklist.value.length"
