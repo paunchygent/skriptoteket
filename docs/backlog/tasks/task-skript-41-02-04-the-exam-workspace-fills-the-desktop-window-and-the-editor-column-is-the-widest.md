@@ -7,7 +7,7 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-19'
-status: proposed
+status: ready
 closeout_review:
   record: inline
   status: not_started
@@ -63,6 +63,8 @@ This task changes four things:
   1040 / 320 / 380 CSS px at about 1.4x scaling. User answers the same day: Q2, Q3 and Q4 as
   recommended, and Q5 yes, with direction on resizing, collapsing and internal scrolling. Q1 and
   Q6-Q10 answered as recommended the same day; the user saw a mock of the collapsed list rail.
+- Plan accepted by the user on 2026-10-19 (AskUserQuestion, Hemma orchestrator session 944b5a5a);
+  status moved to `ready` under `agent-planning:user-closure-gate`.
 - Retained plan, evidence and ledger:
   `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a153bf-e25e-7acd-b6b4-551ee64c8708/evidence/planning/TASK-SKRIPT-41-02-04/plan.md`.
 - Code: `components/layout/LandingLayout.vue:52-56, 109-126`; `components/layout/AuthLayout.vue:53-78, 249-270, 345-351`;
@@ -123,8 +125,9 @@ listener is added. No performance concern.
   `eba9d0f2`. Never pushed.
 - Retained root `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a153bf-e25e-7acd-b6b4-551ee64c8708`.
   It holds the plan and the Explorer discoveries.
-- Status `proposed`. Every ledger row is closed (user answers 2026-10-19), and the plan passes
-  `validate --require-closed`. No code is written. No junior launches until the user accepts the plan.
+- Status `ready`: the user accepted the plan on 2026-10-19 (`agent-planning:user-closure-gate`).
+  Every ledger row is closed. `origin/main` `708b2b57` is merged in at `b519dd31`. The junior units
+  start now.
 - Junior units after acceptance:
   - `ew-width-owner`: `examWorkspace.css`, `ExamWorkspaceView.vue`, `ExamWorkspaceEditorPane.vue`,
     `ExamWorkspaceDrawer.vue`, `ExamWorkspacePrintPreviewPanel.vue`, `ExamWorkspaceLayoutSlice.spec.ts`.

@@ -37,7 +37,7 @@ The public guest converter today converts DigiExam files through its own jobs ta
 | TASK-SKRIPT-41-02-01 | QTI package import into a native exam document, signed-in and guest | None |
 | TASK-SKRIPT-41-02-02 | The public workspace: entry, browser storage, public exports, limits, sign-in handoff | TASK-SKRIPT-41-02-01 for the QTI start |
 | TASK-SKRIPT-41-02-03 | Removal of the guest DigiExam line and closure of superseded docs | TASK-SKRIPT-41-02-02 |
-| TASK-SKRIPT-41-02-04 | The workspace fills the desktop window; the editor column is the widest; per-kind side-panel widths (proposed) | TASK-SKRIPT-41-02-02 |
+| TASK-SKRIPT-41-02-04 | The workspace fills the desktop window; the editor column is the widest; resizable, collapsible panels with one shared drawer width | TASK-SKRIPT-41-02-02 |
 
 ## Verification
 
