@@ -30,7 +30,7 @@ On 2026-10-19 the user saw two problems in the exam workspace on staging (main 5
 2. Answer block (Q3). For a free-text question, `ExamWorkspaceQuestionEditor.vue` renders `ExamWorkspaceWritingLinesField` and `ExamWorkspaceCriteriaField` as rows of one bordered block with an 11rem label column ("Skrivyta", "Bedömningskriterier"), so the labels align and no longer collide with the row above.
 3. Skrivyta row. Boxless − and + in the `.xw-tool` look, the count "N rader" in a fixed 5.5rem slot sized for "40 rader", a separator, and an "Alla fritextfrågor" word tool with the copy glyph. The row ends after that tool; it does not stretch.
 4. Apply-to-all popover (Q2). "Alla fritextfrågor" opens a popover anchored to it: "Samma skrivyta för alla fritextfrågor", "Alla N fritextfrågor får M rader.", and, when some differ, "1a, 1b och 3a har i dag en annan skrivyta.", with Avbryt and the primary "Använd M rader", which emits the existing `applyToAll`. When every free-text question already has the count, the popover shows a check, "Alla N fritextfrågor har redan M rader." and Stäng. The tool is never disabled for that reason, so it stops looking grey. Escape and Avbryt close the popover and return focus to the tool. The field needs the free-text question labels and their counts from `ExamWorkspaceEditorPane.vue` in place of the boolean `allFreeTextMatch`.
-5. Criteria rows. Each criterion has its text field, a points field with a "p" suffix and a boxless trash tool; below the rows sit a boxless "+ Kriterium" and the line "X av Y p".
+5. Criteria rows. Each criterion has its text field, a points field with a "p" suffix and a boxless trash tool; below the rows sits a boxless "+ Kriterium". The mockup's "X av Y p" line is left out (L1).
 
 Units, each for one implementer, in order. Every glyph is already in the shared catalogue (`info`, `copy`, `decrement`, `add`, `delete`, `completed`), so no shared-package change is needed.
 
@@ -52,7 +52,7 @@ Non-goals: no change to the document format, the stepper bounds (1-40), the crit
 
 ### Resume here
 
-2026-10-20: written from the approved mockup; units planned and status `ready` (the user asked for both in this session). Next action: start implementation in a task worktree through `agent-implementation`.
+2026-10-20: `in_progress` (user start 2026-10-20) on `codex/task-skript-40-04-18` (worktree `Skriptoteket-task-skript-40-04-18`, from main 25b7352e), retained root `01a15680-e9d9-7d82-83b6-4797464fa46e`. Units 1-2 integrated at 08c3023c and unit 3 at 0f3eaa4e, with a lead fix: a single free-text question reads "Det här är provets enda fritextfråga." Proof: vitest over `src/views/apps/exam-workspace` and `src/views/apps/ExamWorkspace*`, 244 files passed; fe-type-check and fe-lint clean. Review db7cc9e8 (Pi) on 25b7352e..0f3eaa4e: `changes_requested`, three medium findings (F1 narrow editor grid, F2 popover bounds, F3 close paths and focus), all admitted for repair on focused proof (record: root `evidence/reviews/task-skript-40-04-18-review-0f3eaa4e.md`). Repaired by R1-R3 (junior): a container query on the answer block stacks the rows below 36rem, the popover is bounded by that container, and the close paths follow L2; admitted on focused proof without rereview (exam-workspace vitest 244 files passed, fe-type-check, fe-lint and fe-build rc 0). Next: merge to main, then the staging walk, including a 400 px editor.
 
 ### Map
 
@@ -83,3 +83,5 @@ Paths under `frontend/apps/skriptoteket/src/views/apps/exam-workspace/`.
 | Q2  | Applying one writing area to all free-text questions goes through a popover that names the changes and asks for confirmation (user 2026-10-20). |
 | Q3  | Skrivyta and Bedömningskriterier sit in one bordered answer block with a label column, as in the mockup (user 2026-10-20). |
 | Q4  | The approved mockup becomes this implementation task (user 2026-10-20). |
+| L1  | Lead decision 2026-10-20: the criteria row has no "X av Y p" line, because the question's points field already shows the criteria sum (the points always match), and the design system asks for the least text. |
+| L2  | Lead decision 2026-10-20 (review F3): Escape anywhere closes the popover and returns focus to the tool; Tab out of it closes it and leaves focus where the teacher moved; an outside click returns focus to the tool unless it lands on another control, which keeps the focus. |

@@ -162,6 +162,60 @@ Relationships:
   font-size: var(--huleedu-type-field-label-size); font-weight: var(--huleedu-type-field-label-weight);
 }
 .xw-grow { flex: 1; min-width: 0; }
+/* One bordered answer block: each setting is a row with an 11rem label column (TASK-SKRIPT-40-04-18). The block is a
+   container, so the rows and the popover follow the editor's width, not the viewport's. */
+.xw-answer {
+  container: xw-answer / inline-size; margin-top: 24px; border: 1px solid var(--huleedu-panel-border); border-radius: var(--huleedu-radius-lg);
+  background: var(--huleedu-surface-content);
+}
+.xw-answer-row {
+  display: grid; grid-template-columns: 11rem minmax(0, 1fr); column-gap: 16px; align-items: start; padding: 12px 16px;
+}
+.xw-answer-row + .xw-answer-row { border-top: 1px solid var(--huleedu-surface-divider); }
+.xw-answer-label {
+  font-size: var(--huleedu-type-field-label-size); font-weight: var(--huleedu-type-field-label-weight); line-height: 28px;
+}
+.xw-answer-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 2px; min-width: 0; }
+/* Skrivyta row: the controls keep their own width and the popover floats over the answer block, so nothing in the row
+   moves when it opens or the count changes. */
+.xw-lines { display: inline-flex; justify-self: start; max-width: 100%; position: relative; }
+/* The stepper and the apply tools are nowrap groups: the count slot never separates from its buttons, and the
+   separator moves with the tool when the controls wrap. */
+.xw-lines__stepper, .xw-lines__tail { display: inline-flex; align-items: center; flex: none; gap: 2px; }
+.xw-lines__value {
+  width: 5.5rem; text-align: center; font-size: var(--huleedu-text-sm); font-variant-numeric: tabular-nums;
+}
+.xw-lines__apply { display: inline-flex; }
+.xw-pop {
+  position: absolute; top: calc(100% + 6px); left: 0; z-index: 5; width: min(340px, calc(100cqi - 2rem));
+  background: var(--huleedu-modal); border: 1px solid var(--huleedu-panel-border); border-radius: var(--huleedu-radius-lg);
+  box-shadow: var(--huleedu-shadow-md), 0 0 0 1px rgba(0, 0, 0, 0.02); padding: 14px 16px; white-space: normal;
+}
+.xw-pop h3 { margin: 0 0 6px; font-size: var(--huleedu-text-sm); font-weight: 600; }
+.xw-pop p { margin: 0; font-size: var(--huleedu-text-sm); line-height: 1.45; color: var(--huleedu-navy-80); }
+.xw-pop p + p { margin-top: 4px; color: var(--huleedu-navy-60); font-size: var(--huleedu-text-xs); }
+.xw-pop__ok { display: flex; gap: 8px; align-items: flex-start; }
+.xw-pop__ok svg { width: 18px; height: 18px; color: var(--huleedu-success); flex: none; margin-top: 1px; }
+.xw-pop__acts { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+.xw-answer-criteria { display: grid; gap: 6px; min-width: 0; }
+.xw-answer-criterion {
+  display: grid; grid-template-columns: minmax(0, 1fr) 5.5rem 28px; gap: 8px; align-items: center;
+}
+.xw-answer-points { position: relative; display: block; }
+.xw-answer-points .xw-input { padding-right: 1.75rem; font-variant-numeric: tabular-nums; }
+.xw-answer-points__unit {
+  position: absolute; top: 0; right: var(--huleedu-space-3); bottom: 0; display: flex; align-items: center;
+  color: var(--huleedu-navy-60); pointer-events: none;
+}
+.xw-tool--danger { color: var(--huleedu-error); }
+.xw-input.xw-input--warning { border-color: var(--huleedu-warning); box-shadow: 0 0 0 1px var(--huleedu-warning); }
+.xw-answer-points .xw-input { appearance: textfield; }
+.xw-answer-points .xw-input::-webkit-inner-spin-button, .xw-answer-points .xw-input::-webkit-outer-spin-button { appearance: none; margin: 0; }
+/* Below 36rem of answer block the label sits above its controls. The popover anchors to the controls (`.xw-lines`),
+   whose column is the block width minus its padding, so it stays inside the editor at every width. */
+@container xw-answer (max-width: 36rem) {
+  .xw-answer-row { grid-template-columns: minmax(0, 1fr); row-gap: 6px; }
+}
 /* One bordered rich-text box: the formatting toolbar is its top strip and the text flows below it. */
 .xw-rich {
   border: 1px solid var(--huleedu-panel-border); border-radius: var(--huleedu-radius-lg);
