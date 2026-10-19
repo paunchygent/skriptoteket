@@ -9,9 +9,10 @@
  *   ellipsis, the full text in a tooltip) with one neutral line below it per
  *   printed total that differs from its questions' sum: the exam line first,
  *   then one line per differing part in document order. Each line is
- *   followed by two compact glyph-only buttons: edit ("Ändra provtexten
- *   till {sum} p", clears that line's own level) and continue ("Visa
- *   frågorna", selects the line's target, hidden when the line has none).
+ *   followed by two compact glyph-only buttons: confirm ("Godta frågornas
+ *   summa, {sum} p", clears that line's own stored printed total) and
+ *   continue ("Visa frågorna", selects the line's target, hidden when the
+ *   line has none).
  *   A line goes as soon as its level agrees. Above the rows the exam
  *   instruction is one entry: "Instruktioner" with a short preview when the
  *   exam has one, otherwise a quiet "Lägg till instruktioner"; both open it in

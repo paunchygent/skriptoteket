@@ -22,12 +22,12 @@ export function examWorkspacePrintedDifference(
   return Math.abs(printed - computed) <= tolerance ? null : printed;
 }
 
-/** The exam text prints no exam total any more; the questions' sum stands. */
+/** Removes the exam's stored printed total, so the questions' sum stands (no exported text holds the printed total). */
 export function withoutExamPrintedTotal(document: NativeExamDocument): NativeExamDocument {
   return { ...document, header: { ...document.header, printed_total: null } };
 }
 
-/** The exam text prints no total over this part any more. */
+/** Removes this part's stored printed total, so the questions' sum stands (no exported text holds the printed total). */
 export function withoutPartPrintedTotal(document: NativeExamDocument, parentId: string): NativeExamDocument {
   return {
     ...document,
