@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "09056fec1f704c963ee5e1838c9ab322ef0a391bad1a32f952c3441aa8264ea6",
+  "source_set_digest": "fd7b0de47274126a23582617c65904058e391d1ee309d6f7aec3718c356b6cc5",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5195,6 +5195,29 @@
         "decided_at": "2026-10-19",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "Pi ruthless-reviewer 7ac4ca2f reviewed 5d70a359: no high findings, one medium (two test guards skipped every fallback item, so a review_complete item with a leaked label passed). Repaired at a8cd8181 (guards skip only review_required fallback-imported items, D9 amended, a test built on the reviewer probe failed before the fix) and admitted by the parent on focused proof without rereview: 120 focused tests, lint, typecheck and docs-validate pass; domain suite 4262 passed at 48852ace; replays change only svenska_2 item_001 in both variants, as decided in G1/G2 (user 2026-10-19). Merged to main at a8cd8181 on 2026-10-19."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-04-18",
+      "type": "task",
+      "title": "An inline answer key cut from a review question is carried into its facit exactly as printed and marked as taken from the source",
+      "path": "docs/backlog/tasks/task-skript-39-04-18-an-inline-answer-key-cut-from-a-review-question-is-carried-into-its-facit-exactly-as-printed-and-marked-as-taken-from-the-source.md",
+      "status": "done",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-19",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer 9f931df3 (Hemma): high F1 (label-prefix ordinal runaway on plain \"text Svar: x\") repaired; rereview approved at 2b419ec0 with no new findings. Domain suite at 2b419ec0: 4630 passed. origin/main 92373773 merged at 79858153; the U2 editor spec gained main's providers plugin at cf69469d with no assertion change (57 passed). Ten replays differ only in the two svenska_2 omprov item_001, where the carried facit appears exactly. Merged to main from cf69469d on 2026-10-19."
       }
     },
     {

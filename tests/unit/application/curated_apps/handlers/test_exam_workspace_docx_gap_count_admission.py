@@ -126,6 +126,7 @@ def test_one_gap_for_a_two_blank_source_paragraph_goes_to_review_with_the_mismat
     assert admitted.review.reasons == (
         "Frågan följer inte provformatet: 1 lucka men 2 svarsplatser.",
     )
+    assert admitted.facit_text is None
 
 
 def test_a_reply_that_drops_the_cue_but_keeps_the_gap_count_is_admitted_with_the_cue_back():
@@ -199,3 +200,4 @@ def test_an_underscore_mismatch_with_an_inline_answer_key_goes_to_review_without
     text = " ".join(_texts(admitted))
     assert "The bands" in text
     assert "Svar:" not in text
+    assert admitted.facit_text == "1. Svar: play"

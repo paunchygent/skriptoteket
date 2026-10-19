@@ -6,6 +6,7 @@ first choice A/a/1/i, second B/b/2/ii, and so on. No arbitrary word before an
 entry body ever becomes an exemption.
 """
 
+import re
 from collections.abc import Iterable
 from dataclasses import dataclass
 
@@ -85,6 +86,31 @@ def _ordinal_token(family: str, ordinal: int) -> str | None:
     return "".join(token).lower() if family == "roman_lower" else "".join(token)
 
 
+def _delimited_label_end(text: str, token_end: int, opened: str) -> int | None:
+    """End of a label whose token ends at ``token_end``, with its delimiters.
+
+    The delimiter grammar is single-owned here: a matching closer when an
+    opener was seen, else one char from ``")]}"`` plus ``_LABEL_SEPARATORS``,
+    then further separators, then whitespace. None without a delimiter, so no
+    ordinal is ever inferred for unlabelled text.
+    """
+    end = token_end
+    if opened:
+        closing = {"(": ")", "[": "]", "{": "}"}[opened]
+        if end >= len(text) or text[end] != closing:
+            return None
+        end += 1
+    elif end < len(text) and text[end] in ")]}" + _LABEL_SEPARATORS:
+        end += 1
+    else:
+        return None
+    while end < len(text) and text[end] in _LABEL_SEPARATORS:
+        end += 1
+    while end < len(text) and text[end].isspace():
+        end += 1
+    return end
+
+
 def entry_label_end(text: str, ordinal: int) -> int | None:
     """End of this native ordinal's delimited prefix, never a prefix inside a word.
 
@@ -102,26 +128,88 @@ def entry_label_end(text: str, ordinal: int) -> int | None:
         token = _ordinal_token(family, ordinal)
         if token is None or not text.startswith(token, at):
             continue
-        end = at + len(token)
-        if opened:
-            closing = {"(": ")", "[": "]", "{": "}"}[opened]
-            if end >= len(text) or text[end] != closing:
-                continue
-            end += 1
-        elif end < len(text) and text[end] in ")]}" + _LABEL_SEPARATORS:
-            end += 1
-        else:
+        end = _delimited_label_end(text, at + len(token), opened)
+        if end is None:
             continue
-        while end < len(text) and text[end] in _LABEL_SEPARATORS:
-            end += 1
-        while end < len(text) and text[end].isspace():
-            end += 1
         return end
     return None
 
 
 def _is_ordinal_label(prefix: str, ordinal: int) -> bool:
     return entry_label_end(prefix, ordinal) == len(prefix)
+
+
+_LEADING_TOKEN = re.compile(r"[A-Za-z0-9]+")
+
+_ROMAN_VALUES = {"I": 1, "V": 5, "X": 10, "L": 50, "C": 100, "D": 500, "M": 1000}
+
+
+def _roman_value(token: str) -> int | None:
+    """The token's roman value, or None when it holds no roman numeral."""
+    upper = token.upper()
+    if not upper or any(char not in _ROMAN_VALUES for char in upper):
+        return None
+    total, previous = 0, 0
+    for char in reversed(upper):
+        value = _ROMAN_VALUES[char]
+        if value < previous:
+            total -= value
+        else:
+            total += value
+            previous = value
+    return total if total >= 1 else None
+
+
+def _alpha_value(token: str) -> int:
+    """The token's bijective base-26 value: A is 1, Z is 26, AA follows Z."""
+    value = 0
+    for char in token.upper():
+        value = value * 26 + (ord(char) - ord("A") + 1)
+    return value
+
+
+def leading_entry_label_end(text: str) -> int | None:
+    """End of the paragraph's leading ordinal list label, or None without one.
+
+    The structure comes first: leading whitespace and one optional opener are
+    skipped, then the leading token must carry a delimiter exactly as
+    ``_delimited_label_end`` recognizes it. Only then is the token checked as
+    a valid ordinal of its own families by round trip. Structural only, never
+    wording; cost stays linear in the token length.
+    """
+    at = 0
+    while at < len(text) and text[at].isspace():
+        at += 1
+    opened = text[at] if at < len(text) and text[at] in "([{" else ""
+    if opened:
+        at += 1
+    match = _LEADING_TOKEN.match(text, at)
+    if match is None:
+        return None
+    token = match.group()
+    end = _delimited_label_end(text, match.end(), opened)
+    if end is None:
+        return None
+    candidates: list[tuple[str, int]] = []
+    if token.isdigit():
+        if token[0] != "0":
+            return end
+        return None
+    if token.isalpha():
+        if token.isupper():
+            candidates.append(("upper", _alpha_value(token)))
+        if token.islower():
+            candidates.append(("lower", _alpha_value(token)))
+        roman = _roman_value(token)
+        if roman is not None:
+            if token.isupper():
+                candidates.append(("roman_upper", roman))
+            if token.islower():
+                candidates.append(("roman_lower", roman))
+    for family, ordinal in candidates:
+        if _ordinal_token(family, ordinal) == token:
+            return end
+    return None
 
 
 def entry_source_extent(source: SourceFormatting, entry: NativeSourceEntry) -> tuple[int, int]:
