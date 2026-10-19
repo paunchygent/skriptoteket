@@ -82,12 +82,16 @@ The user decided "Re-record now" for exactly the 8 stale `omprov_grammatik_sve2`
 - Every label is unchanged (q3 `unsupported`, the others `free_text`). The 8 request-key sidecars are byte-identical to the committed ones, which already held today's request text. They now record the request each new reply answered.
 - Proof after the merge and re-recording: `test_docx_pipeline_replay_label_b_keys.py` and `test_exam_workspace_docx_user_exams_replay.py` 22 passed; `test_exam_workspace_docx_build.py` and `test_exam_workspace_docx_second_wave.py` 63 passed; `tests/integration/test_exam_workspace_docx_background.py` 11 passed under Docker; ruff, format and mypy clean on the 4 touched Python files.
 
+### Admission (2026-10-19)
+
+Review `511155e5` raised one medium finding, F1: the user-exam capture provenance was wrong. The parent admitted the F1 repair at `278ff319` on its focused proof, with no rereview. The proof: exactly 8 live labeler calls (9,139 input, 941 output, 10,080 tokens), labels unchanged, sidecars byte-identical, 22 + 63 unit tests and 11 integration tests passing. Merge-tree against origin/main is clean and the branch is 0 commits behind. The Mac parent merges the branch into main.
+
 ## Resume Here (2026-10-19)
 
-- State: repaired and awaiting rereview. Branch `codex/task-skript-rep-0046-remote` in worktree `/home/paunchygent/apps/skriptoteket-task-skript-rep-0046-remote`; the head is the commit that adds this note.
+- State: F1 admitted on focused proof (no rereview); awaiting the Mac merge into main. Branch `codex/task-skript-rep-0046-remote` in worktree `/home/paunchygent/apps/skriptoteket-task-skript-rep-0046-remote`; the head is the commit that adds this note.
 - Done: the shared key module, the unit replay key match, the 15 user-exam capture-time sidecars and the adversarial test file. Proof: new test file 12/12, user-exam replay 10/10, other replay importers 1150 passed, Docker integration 11/11, ruff, format and mypy clean.
 - Done since review 511155e5: origin/main `06985163` merged; the 8 stale `omprov` recordings re-recorded live (see Re-recording).
-- Next: rereview of review 511155e5, routed by the parent.
+- Next: the Mac parent merges into main and closes the task.
 - Open findings: none. The provenance finding is repaired: `exempelprov` is confirmed at `4717a9d3`, and `omprov` is re-recorded. A note for the reviewer: the key does not cover the fixed classification instruction (same as in REP-0045).
 - Retained root: `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a14f5e-1cc7-74d6-abf4-0d911114f415`.
 - Blockers and user gates: none. No children are running.
