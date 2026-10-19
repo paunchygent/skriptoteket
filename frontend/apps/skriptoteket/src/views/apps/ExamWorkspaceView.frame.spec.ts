@@ -259,6 +259,7 @@ describe("ExamWorkspaceView host frame", () => {
     );
     apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildResponse());
     const wrapper = await mountView();
+    const failure = vi.spyOn(useToastStore(), "failure");
 
     await chooseSourceFile(wrapper, new File(["qti"], "Prov_HT25.zip", { type: "application/zip" }));
 
@@ -272,7 +273,7 @@ describe("ExamWorkspaceView host frame", () => {
     expect(apiMocks.getExamWorkspaceDocument).toHaveBeenCalledWith("lineage-1");
     expect(apiMocks.getExamWorkspaceConversionStatus).not.toHaveBeenCalled();
     expect(wrapper.find('[data-test="exam-workspace-title"]').text()).toBe("NO-prov HT25");
-    expect(vi.mocked(useToastStore().failure)).not.toHaveBeenCalled();
+    expect(failure).not.toHaveBeenCalled();
   });
 
   it("shows the server's Swedish refusal as the inline error and the failure toast when a .zip import is rejected", async () => {
@@ -284,6 +285,7 @@ describe("ExamWorkspaceView host frame", () => {
       }),
     );
     const wrapper = await mountView();
+    const failure = vi.spyOn(useToastStore(), "failure");
 
     await chooseSourceFile(wrapper, new File(["qti"], "Prov_HT25.zip", { type: "application/zip" }));
 
@@ -291,7 +293,7 @@ describe("ExamWorkspaceView host frame", () => {
     expect(
       wrapper.find('[data-test="exam-workspace-conversion-status"]').text(),
     ).toContain("Det gick inte att läsa QTI-paketet. Kontrollera att filen är en provexport.");
-    expect(vi.mocked(useToastStore().failure)).toHaveBeenCalledWith(
+    expect(failure).toHaveBeenCalledWith(
       "Det gick inte att läsa QTI-paketet. Kontrollera att filen är en provexport.",
     );
     expect(wrapper.find('[data-test="exam-workspace-title"]').text()).toBe("Inget prov öppet");
@@ -369,6 +371,50 @@ describe("ExamWorkspaceView AI gate in the Öppna drawer", () => {
     expect(apiMocks.importExamWorkspaceDocument).not.toHaveBeenCalled();
     expect(apiMocks.importExamWorkspaceDigiExam).not.toHaveBeenCalled();
     expect(findNotes(wrapper).length).toBeGreaterThan(0);
+  });
+
+  it("imports a .zip a user chooses through the picker without any Word control", async () => {
+    apiMocks.importExamWorkspaceQti.mockResolvedValue(
+      buildSavedExamSummary({ name: "NO-prov HT25.zip", title: "NO-prov HT25" }),
+    );
+    apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildResponse());
+    const wrapper = await mountView("user");
+
+    expect(wrapper.get(ACCEPT).attributes("accept")).toBe(".dxe,.zip");
+    expect(wrapper.text()).toContain("QTI .zip");
+    expect(wrapper.text()).not.toContain("Word .docx");
+
+    await chooseSourceFile(wrapper, new File(["qti"], "Prov_HT25.zip", { type: "application/zip" }));
+
+    expect(apiMocks.importExamWorkspaceQti).toHaveBeenCalledTimes(1);
+    expect(apiMocks.importExamWorkspaceDocument).not.toHaveBeenCalled();
+    expect(apiMocks.importExamWorkspaceDigiExam).not.toHaveBeenCalled();
+    expect(apiMocks.getExamWorkspaceDocument).toHaveBeenCalledWith("lineage-1");
+    expect(apiMocks.getExamWorkspaceConversionStatus).not.toHaveBeenCalled();
+    expect(wrapper.find('[data-test="exam-workspace-title"]').text()).toBe("NO-prov HT25");
+  });
+
+  it("imports a .zip a user drops on the zone without any Word control", async () => {
+    apiMocks.importExamWorkspaceQti.mockResolvedValue(
+      buildSavedExamSummary({ name: "NO-prov HT25.zip", title: "NO-prov HT25" }),
+    );
+    apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildResponse());
+    const wrapper = await mountView("user");
+
+    expect(wrapper.text()).toContain("QTI .zip");
+    expect(wrapper.text()).not.toContain("Word .docx");
+
+    await wrapper.get(DROP).trigger("drop", {
+      dataTransfer: { files: [new File(["qti"], "Prov_HT25.zip", { type: "application/zip" })] },
+    });
+    await flushPromises();
+
+    expect(apiMocks.importExamWorkspaceQti).toHaveBeenCalledTimes(1);
+    expect(apiMocks.importExamWorkspaceDocument).not.toHaveBeenCalled();
+    expect(apiMocks.importExamWorkspaceDigiExam).not.toHaveBeenCalled();
+    expect(apiMocks.getExamWorkspaceDocument).toHaveBeenCalledWith("lineage-1");
+    expect(apiMocks.getExamWorkspaceConversionStatus).not.toHaveBeenCalled();
+    expect(wrapper.find('[data-test="exam-workspace-title"]').text()).toBe("NO-prov HT25");
   });
 
   it("keeps every Word control for an admin and imports the .docx", async () => {
