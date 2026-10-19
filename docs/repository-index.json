@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "b675baec93fc82c6b9b95ffcdda9299554e91162c3a8c7edfbdf03a819006375",
+  "source_set_digest": "4874461e5a31c5ce9c302977da459bf701be8054b4427c5c8ae98c35dbe85eae",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6936,6 +6936,25 @@
         "decided_at": "2026-10-19",
         "approval_protocol": "agent-planning:user-closure-gate",
         "approval_evidence": "User closure 2026-10-19 in Mac session 0b6afee3 (\"Close TASK-SKRIPT-40-04-17 as done\"). Independent ruthless-reviewer fd5c66c4 (Pi) at f87c2d44 returned changes_requested with F1-F3 medium and N1 low; all repaired at 7073e58e and admitted on focused proof without rereview. Merged to main as aac5bdfd and 32460f67. Hemma staging walks at 6a557b5d and 32460f67 passed every walked check; the 375 px coarse-pointer composition was not walked because Edge cannot emulate a coarse pointer or a window under 500 px."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-18",
+      "type": "task",
+      "title": "The exam workspace header opens Provets uppgifter from an Uppgifter command and free-text questions set their writing area and criteria in one boxless answer block",
+      "path": "docs/backlog/tasks/task-skript-40-04-18-the-exam-workspace-header-opens-provets-uppgifter-from-an-uppgifter-command-and-free-text-questions-set-their-writing-area-and-criteria-in-one-boxless-answer-block.md",
+      "status": "proposed",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {
