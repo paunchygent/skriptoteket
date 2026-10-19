@@ -113,18 +113,23 @@ document or event format change, no migration.
 ### Resume here (2026-10-19)
 
 - State: in_progress. The user answered Q1 (b), Q2 (yes) and Q3 (keep the
-  part prefix) and accepted the plan on 2026-10-19; ledger closed. Lead
-  `e82661eb` runs U1 (backend carry) and U2 (editor facit line) through
-  fresh juniors.
+  part prefix) and accepted the plan on 2026-10-19; ledger closed. U1
+  (backend carry, `3c49c605`) and U2 (editor facit line, `cfe1f25c`) are
+  committed with focused proof (33 pytest, 4 Vitest). `origin/main`
+  `14f643c9` (TASK-SKRIPT-40-04-07) is merged at `8d7d812b`.
+- Replays (retained root `evidence/replays/TASK-SKRIPT-39-04-18/`):
+  `14f643c9` -> `cfe1f25c` differs only in the two svenska_2 omprov item_001,
+  in `facit_text` and `answer_key_text`, which hold the carried key lines. No
+  key line holds answer-line text that W10 strips. `ffbfa953` ->
+  `14f643c9` is the effect of 40-04-07 alone.
 - Branch `codex/task-skript-39-04-facit-carry-remote`, worktree
   `/home/paunchygent/apps/skriptoteket-task-skript-39-04-facit-carry-remote`,
   from `origin/main` `ffbfa953`; never pushed.
 - Retained root:
   `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a152e0-e3d9-79cd-b575-f90bfb3109f7`
   (plan `evidence/planning/TASK-SKRIPT-39-04-18/plan.md`).
-- Next: integrate U1 and U2, run the ten replays against `ffbfa953`, merge
-  `main` once TASK-SKRIPT-40-04-07 lands (W10 answer-line gate runs after the
-  cut), then the domain suite after the orchestrator's go.
+- Next: the touched-domain suite after the orchestrator's go, then
+  independent review routed by the orchestrator.
 
 ## Stop Conditions
 
