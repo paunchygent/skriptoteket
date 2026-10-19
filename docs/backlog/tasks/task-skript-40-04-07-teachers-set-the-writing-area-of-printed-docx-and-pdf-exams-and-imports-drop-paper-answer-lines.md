@@ -123,5 +123,12 @@ Stop and report to the parent in either case:
   (2026-10-19, `evidence/lead-e12a2a36/suite/`): vitest 942/942; pytest 17
   failed, 4308 passed, all from the merge. Main's free-text fixtures lacked
   `writing_lines` (fixed `7de1486b`), and one test called a fixture directly
-  (fixed `b035ea13`). Those three files rerun green (25). Next: R1–R4 go back
-  to reviewer 09d50acc. User gates: none open.
+  (fixed `b035ea13`). Those three files rerun green (25).
+- 2026-10-19, rereview at `b3ab4b85`: changes requested on R1–R3 (R4 cleared,
+  v8 seam clean; `evidence/reviews/09d50acc-…-rereview.md`). Repairs: R1
+  `f44b5631` (body reset, proven on the WeasyPrint box tree); R2 `e112c3e3`
+  (heading restoration skips W10 answer space, proven through the real
+  chunker); R3 `6f457750` + `c1511017` (the preview sends the history owner's
+  position as `step_id` and the server renders that retained step). Next: the
+  domain suite after the orchestrator's go (queued), then R1–R3 go back to
+  09d50acc. User gates: none open.
