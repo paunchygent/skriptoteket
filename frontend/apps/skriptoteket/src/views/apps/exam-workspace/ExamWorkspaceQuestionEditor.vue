@@ -15,8 +15,11 @@
  * Relationships:
  *   - Rendered by `ExamWorkspaceView` for a selected question.
  *   - Composes `ExamWorkspaceQuestionHead`, `ExamWorkspaceImportBox` and the
- *     existing answer fields (`ExamWorkspaceBodyEditor`, `ExamWorkspaceChoiceField`,
- *     `ExamWorkspaceCriteriaField`, `ExamWorkspaceKategoriseraGrid`).
+ *     existing answer fields (`ExamWorkspaceBodyEditor`,
+ *     `ExamWorkspaceShortAnswerField`, `ExamWorkspaceChoiceField`,
+ *     `ExamWorkspaceCriteriaField`, `ExamWorkspaceKategoriseraGrid`). A Kort
+ *     svar question renders the Kort svar branch (`ExamWorkspaceShortAnswerField`
+ *     with only Fråga and Svar) instead of the Frågetext body editor.
  *   - Provides the shared rich-text target registry, so the one formatting
  *     toolbar edits the surface the teacher last selected.
  *   - Holds no document state; every edit is emitted with the item id.
@@ -43,9 +46,12 @@ import ExamWorkspaceKategoriseraGrid from "./ExamWorkspaceKategoriseraGrid.vue";
 import ExamWorkspaceOrderingField from "./ExamWorkspaceOrderingField.vue";
 import ExamWorkspaceQuestionHead from "./ExamWorkspaceQuestionHead.vue";
 import ExamWorkspaceQuestionTools from "./ExamWorkspaceQuestionTools.vue";
+import ExamWorkspaceShortAnswerField from "./ExamWorkspaceShortAnswerField.vue";
 import { canUndoInterpretation, isTeacherReviewed } from "./examWorkspaceItemEdits";
 import { examWorkspaceItemReadiness } from "./examWorkspaceItemReadiness";
 import { hasNegativePoints, NEGATIVE_POINTS_GUIDANCE } from "./examWorkspaceItemSaveRules";
+import { examWorkspaceItemTypeLabel } from "./examWorkspaceRows";
+import { isShortAnswer } from "./examWorkspaceShortAnswer";
 import { provideRichTextTargetRegistry } from "./examWorkspaceRichTextTarget";
 import type { ExamWorkspaceNotice } from "./useExamWorkspaceStructure";
 
@@ -186,6 +192,7 @@ function handleTickPointsInput(event: Event): void {
     <ExamWorkspaceQuestionHead
       :label="label"
       :kind="item.kind"
+      :type-label="unbuilt ? 'Ej konverterad' : examWorkspaceItemTypeLabel(item)"
       :unbuilt="unbuilt"
       :converting="converting"
       :child="child"
@@ -283,7 +290,18 @@ function handleTickPointsInput(event: Event): void {
       </div>
     </div>
 
+    <ExamWorkspaceShortAnswerField
+      v-if="isShortAnswer(item)"
+      :item="item"
+      :disabled="locked"
+      :asset-urls="assetUrls"
+      @update-body="(itemId, body, structural) => emit('updateBody', itemId, body, structural)"
+      @update-gap-values="(itemId, gapId, values) => emit('updateGapValues', itemId, gapId, values)"
+      @remove-automatic-value="(itemId, gapId, value) => emit('removeAutomaticValue', itemId, gapId, value)"
+    />
+
     <ExamWorkspaceBodyEditor
+      v-else
       :asset-urls="assetUrls"
       :disabled="locked"
       :item="item"

@@ -54,6 +54,8 @@ const props = withDefaults(
     moveTargets?: { id: string; label: string }[];
     /** The part the question sits in; null when it is standalone. */
     currentParentId?: string | null;
+    /** The visible type button text: "Kort svar" for that shape, else the kind label. */
+    typeLabel: string;
   }>(),
   { currentParentId: null, moveTargets: () => [] },
 );
@@ -78,7 +80,6 @@ const typeOpen = ref(false);
 const moreOpen = ref(false);
 const moveOpen = ref(false);
 
-const typeLabel = computed(() => (props.unbuilt ? "Ej konverterad" : EXAM_WORKSPACE_TYPE_LABELS[props.kind]));
 /** Offered while the question has another type, or has not been converted at all. */
 const offeredKind = computed(() =>
   props.suggestedKind !== null && (props.suggestedKind !== props.kind || props.unbuilt) ? props.suggestedKind : null,

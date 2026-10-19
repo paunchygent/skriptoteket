@@ -37,6 +37,7 @@ function mountHead(kind: NativeExamItemKind, currentParentId: string | null): Vu
       label: "3",
       moveTargets: TARGETS,
       suggestedKind: null,
+      typeLabel: "Fritext",
       unbuilt: false,
     },
   });
