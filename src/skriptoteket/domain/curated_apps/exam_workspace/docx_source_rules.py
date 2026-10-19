@@ -212,15 +212,18 @@ def with_accepted_forms(item: ProducedItem, context: Iterable[DocxChunk]) -> Pro
     return item.model_copy(update={"body": tuple(body)})
 
 
-# A number and a complete points-unit token, optionally ending in one period.
-# Whitespace, punctuation other than a period, or end of text must end the token.
+# A printed points label is parenthesised or ends its line; a bare label
+# followed by more words is prose, never points.
+_NUMBER_UNIT = r"\d+(?:[.,]\d+)?\s*(?:poäng|points?|pts?|p)\.?"
 POINT_LABEL = re.compile(
-    r"(?:\(\s*)?\b\d+(?:[.,]\d+)?\s*(?:poäng|points?|pts?|p)"
-    r"\.?(?=$|[^\w.])(?:\s*\))?",
-    re.IGNORECASE,
+    r"\(\s*" + _NUMBER_UNIT + r"\s*\)|\b" + _NUMBER_UNIT + r"(?=[ \t]*[.,;:!?]?[ \t]*$)",
+    re.IGNORECASE | re.MULTILINE,
 )
 # A line that holds only a score field, such as "/4 p" or "____ /8 p".
-SCORE_FIELD = re.compile(r"[ \t_]*/[ \t]*(?:" + POINT_LABEL.pattern + r")[ \t]*", re.IGNORECASE)
+SCORE_FIELD = re.compile(
+    r"[ \t_]*/[ \t]*(?:" + POINT_LABEL.pattern + r")[ \t]*",
+    re.IGNORECASE | re.MULTILINE,
+)
 _WORD = re.compile(r"\w+")
 
 
@@ -280,10 +283,10 @@ def uses_term(terms: Iterable[str], sources: Iterable[DocxChunk]) -> bool:
     return any(re.search(rf"(?<!\w){re.escape(term.casefold())}(?!\w)", text) for term in terms)
 
 
-_LABEL_RUN = re.compile(r"\s*(?:" + POINT_LABEL.pattern + ")", re.IGNORECASE)
+_LABEL_RUN = re.compile(r"\s*(?:" + POINT_LABEL.pattern + ")", re.IGNORECASE | re.MULTILINE)
 
 
-def _printed_points(label: str) -> int | float | None:
+def label_points(label: str) -> int | float | None:
     number = re.search(r"\d+(?:[.,]\d+)?", label)
     if number is None:
         return None
@@ -314,13 +317,13 @@ def _joined_text_runs(segments: Iterable[ProducedSegment]) -> list[ProducedSegme
 def printed_points(own: Iterable[DocxChunk]) -> int | float | None:
     """The one points label the chunks print, as a number; None with none or several."""
     labels = [label.group() for chunk in own for label in POINT_LABEL.finditer(chunk.text)]
-    return _printed_points(labels[0]) if len(labels) == 1 else None
+    return label_points(labels[0]) if len(labels) == 1 else None
 
 
 def text_points(text: str) -> int | float | None:
     """The one points label a text prints, as a number; None with none or several."""
     labels = [label.group() for label in POINT_LABEL.finditer(text)]
-    return _printed_points(labels[0]) if len(labels) == 1 else None
+    return label_points(labels[0]) if len(labels) == 1 else None
 
 
 def with_printed_points(item: ProducedItem, own: Iterable[DocxChunk]) -> ProducedItem:

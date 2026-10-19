@@ -67,6 +67,8 @@ def test_sentence_or_heading_that_mentions_points_is_not_a_points_line(docx: str
         ("The train leaves at 3 p.m. Translate the sentence.", None, None),
         ("p. 3", None, None),
         ("Read 3 pages.", None, None),
+        ("Give 3 points of view.", None, None),
+        ("Svara 2 p snabbt.", None, None),
         ("The train leaves at 3 p.m. (2 p)", 2, "The train leaves at 3 p.m."),
     ],
 )
@@ -99,3 +101,7 @@ def test_only_complete_points_units_supply_points_and_leave_prose_intact(
     result = with_printed_points(item, own)
     assert result.points == points
     assert result.body[0].segments[0].text == (text if remaining is None else remaining)
+
+
+def test_bare_label_followed_by_words_is_not_a_points_line() -> None:
+    assert not points_line("Give 3 points of view.")
