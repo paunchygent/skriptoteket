@@ -77,7 +77,6 @@ Stop and report if the shared editor cannot run on a browser store without forki
   4. Check real client IPs. `docker logs skriptoteket-web 2>&1 | grep -c public_guest_limiter_proxy_trust_loopback_only` prints 0. Make one guest edit from the Mac at `https://skriptoteket.hule.education/apps/exam-workspace`. Then `docker logs --since 5m skriptoteket-web 2>&1 | grep -c public_guest_limiter_proxy_untrusted` prints 0, and `docker logs --since 5m skriptoteket-web 2>&1 | grep exam-workspace | tail -3` shows the Mac's public IP, not a 172.18.x address.
   5. Rollback (only if a step fails): restore the compose backup, run `docker compose up -d --no-deps nginx-proxy`, set `TRUSTED_PROXY_CIDRS` to nginx-proxy's new dynamic address as a /32, and recreate `skriptoteket-web`.
 - Lint: `pdm run lint` fails only on `compose.prod.yaml`, whose YAML line-length errors predate this task: 39 on origin/main dcad0217 and 32 at this branch head after the semantic-free fixes. The orchestrator routes that debt as a separate repair; this task adds no yamllint config.
-- Blocked: F6 (a print PDF separate from the Exam.net fallback PDF) waits for TASK-SKRIPT-40-04-07, which owns the student print PDF. When each one lands, the lead merges main and integrates it here.
 - Domain suite 2026-10-19 at f0bc8d14: backend 3092 passed, 0 failed; frontend 439 files, 3016 passed.
 - U7: the app logs `public_guest_limiter_proxy_untrusted` once per process at guest admission when uvicorn did not trust the proxy hop, and `public_guest_limiter_proxy_trust_loopback_only` at production startup when FORWARDED_ALLOW_IPS is loopback-only. Neither log line contains an IP.
 - Rereview da90f12c cleared F1-F3 at 31f7d966 and kept F4 open: text typed during the departure write was lost. R9 fix: `useExamWorkspaceHistory.settleForDeparture` runs the settle flush inside the `replaceCopy` editing lock and resolves true only when the flush stored and no edit is pending. Departure resolves false while an undo, redo or server command holds the copy. Before the fix, the new departure spec failed (2 of 4 tests); after it, 48 focused tests pass and fe-type-check passes.
@@ -94,7 +93,18 @@ Stop and report if the shared editor cannot run on a browser store without forki
   - F11 (ccfe1d7f): `startBlank` and `startFromQti` capture the slot cursor before awaiting the public route, through one helper.
   - F12: a departure pending when the history scope is disposed neither leaves nor holds the lock.
 - Full Vitest at bbbc677a: 444 files, 3069 passed. Rereview 4 (da90f12c) approved F10 and F11 with no new findings; the orchestrator admitted F12 on focused proof. Every finding is cleared except F6.
-- Next: hold until TASK-SKRIPT-40-04-07 is on origin/main. Then merge main, build F6 (the guest print PDF, offered separately from the Exam.net fallback) through a fresh junior, and send it to review da90f12c.
+- Merge 821c598e: origin/main 14f643c9 (TASK-SKRIPT-40-04-07, printed writing area):
+  - The shared export renderer carries the print, facit and Exam.net PDF targets.
+  - The view's side-column state moved to `useExamWorkspaceSideColumns`.
+  - Blank free-text items get the default writing lines.
+  - `test_exam_workspace_parts_vertical` now uses the real print renderer; main passed a Mock there while asserting PDF bytes.
+- Commit a73533ec holds both F6 and R12:
+  - F6: the merge delivered the guest print PDF separately from the Exam.net fallback, and new backend and frontend tests prove all four contracted guest exports. The backend test fails to import on pre-merge 670b46fc.
+  - R12: the print preview goes through `store.teacher` and is hidden for guests. Before the fix 5 tests failed; after it 136 pass.
+- Open product questions for the user:
+  - Guests also get "PDF med facit" from the shared format list.
+  - A guest print preview would need a new stateless public preview route.
+- Next: one slot for full Vitest plus the backend files the merge and F6 touch; then F6, R12 and the merge go to review da90f12c.
 - Open findings:
   - The caller key is an unsalted sha256 of the client IP; rows are pruned after about 2 hours.
   - `ExamConverterPublicView.vue` stays until 41-02-03.
