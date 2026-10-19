@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "6ee5b5b5b4efee3fd4812a4535ceef1b48c70a58e11824848a26258d507ad0be",
+  "source_set_digest": "6ce123992906be37bc83c836abe85813a28cb97bc37a220500fafe062fbec125",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6710,7 +6710,7 @@
       "type": "task",
       "title": "Guests open, edit and export exams in the workspace without login",
       "path": "docs/backlog/tasks/task-skript-41-02-02-guests-open-edit-and-export-exams-in-the-workspace-without-login.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-41-02",
       "owners": [
