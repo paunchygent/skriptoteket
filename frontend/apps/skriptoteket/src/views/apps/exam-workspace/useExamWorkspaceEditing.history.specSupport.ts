@@ -11,6 +11,7 @@ import type { Mock } from "vitest";
 
 import { ApiError } from "../../../api/client";
 import type { ExamWorkspaceDocumentResponse, NativeExamDocument } from "../../../api/examWorkspace";
+import { examWorkspaceSaveRefusalCopy } from "./examWorkspaceItemSaveRules";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { newTeacherItem } from "./examWorkspaceItemEdits";
 import { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
@@ -146,4 +147,34 @@ export async function openEditing(api: EditingApiMocks, baseline = exam()) {
   editing.applyCommandResponse(response(baseline, "step-0"));
   await flushPromises();
   return { editing, server };
+}
+
+/**
+ * Make the fake step store answer 422 for drafts the save rules refuse, as the
+ * server's `_answer_key_invariants` do: the wrapped store throws a
+ * VALIDATION_ERROR instead of storing, so a refused edit stays pending and
+ * undo must discard it.
+ */
+export function refuseSaveRefusedDrafts(api: EditingApiMocks): void {
+  const inner = api.storeExamWorkspaceUndoStep.getMockImplementation();
+  if (!inner) {
+    throw new Error("expected the step store double");
+  }
+  api.storeExamWorkspaceUndoStep.mockImplementation(
+    async (
+      lineage: string,
+      request: { afterStepId: string | null; document: NativeExamDocument; expectedCursor: string },
+    ) => {
+      if (examWorkspaceSaveRefusalCopy(request.document.items) !== null) {
+        throw new ApiError({
+          code: "VALIDATION_ERROR",
+          message: "Validation error",
+          details: [],
+          correlationId: null,
+          status: 422,
+        });
+      }
+      return inner(lineage, request);
+    },
+  );
 }

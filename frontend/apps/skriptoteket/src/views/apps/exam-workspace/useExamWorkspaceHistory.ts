@@ -25,7 +25,9 @@
  *   succeeds the lock stays held while the navigation runs, so no edit typed
  *   or pasted after the redirect starts is stored past it and lost; a
  *   departure that meets a replacing read resolves false and keeps the
- *   working copy mounted.
+ *   working copy mounted. A pending edit the save rules refuse is discarded
+ *   by undo instead: undo reinstalls the standing step, and the refused edit
+ *   can never be redone.
  *
  *   No `beforeunload` handler is mounted on the exam-workspace routes:
  *   `composables/editor/useUnsavedChangesGuards.ts` is the SPA's only one
@@ -109,7 +111,7 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
   const storing = ref(false);
   let ownCursor: string | null = null;
   let timer: ReturnType<typeof setTimeout> | null = null;
-  let chain: Promise<boolean> = Promise.resolve(true);
+  let chain: Promise<void> = Promise.resolve();
   /**
    * Structural-edit snapshots not stored yet, oldest first: the copy just
    * before the edit, then the copy right after it. Each must be a step before
@@ -281,9 +283,13 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
     return true;
   }
 
-  function enqueue(run: () => Promise<boolean>): Promise<boolean> {
-    chain = chain.then(run, run);
-    return chain;
+  function enqueue<T>(run: () => Promise<T>): Promise<T> {
+    const next = chain.then(run, run);
+    chain = next.then(
+      () => undefined,
+      () => undefined,
+    );
+    return next;
   }
 
   /**
@@ -295,7 +301,22 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
    * frågetyp) apply to its newest step.
    */
   function flush(settle = false): Promise<boolean> {
-    return enqueue(async () => (await storeOwed()) && (await store(settle)) === "stored");
+    return flushOutcome(settle).then((outcome) => outcome === "stored");
+  }
+
+  /**
+   * The flush with its store outcome kept: "refused" when the working copy or
+   * an owed snapshot is a draft the save rules refuse, "failed" when a write
+   * could not be stored. Undo tells them apart; every other caller only needs
+   * whether the server's newest step holds the editor's document.
+   */
+  function flushOutcome(settle = false): Promise<StoreOutcome> {
+    return enqueue(async () => {
+      if (!(await storeOwed())) {
+        return "failed";
+      }
+      return await store(settle);
+    });
   }
 
   function schedule(): void {
@@ -435,7 +456,22 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
     navigating.value = true;
     try {
       await deps.replaceCopy(async () => {
-        if (!(await flush())) {
+        const outcome = await flushOutcome();
+        if (outcome === "failed") {
+          return;
+        }
+        if (outcome === "refused") {
+          // The pending edit can never be a step: discard the refused working
+          // copy and stand on the stored step, keeping the saved revision as
+          // `goTo` does. The refused edit is gone, so this press moves nowhere
+          // and there is nothing to redo.
+          const standing = stepDocument.value;
+          if (standing !== null) {
+            const revision = deps.savedRevision() ?? standing.revision;
+            const document = { ...standing, revision };
+            deps.install(document);
+            stepDocument.value = document;
+          }
           return;
         }
         const at = index.value;

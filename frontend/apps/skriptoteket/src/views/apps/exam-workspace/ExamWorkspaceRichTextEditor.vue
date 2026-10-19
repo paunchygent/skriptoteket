@@ -209,6 +209,10 @@ const editor = useEditor({
         focusMakeGapButton();
         return true;
       }
+      if (event.key === "Escape" && event.repeat) {
+        // A held Escape is one press: repeats emit nothing.
+        return false;
+      }
       if (event.key === "Escape" && makeGapButton.value !== null) {
         hideMakeGap();
         return false;

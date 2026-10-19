@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "d9ef765934aa5a024daf37a54c7360fab17477f20e616048bee406664037d9a5",
+  "source_set_digest": "371a1731add8324fd6bd48ac7d5dcba341d877ad58556b674cd2760a31d2abe8",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6673,6 +6673,44 @@
       "title": "Printed PDF exams keep each question's text and its alternatives on one page",
       "path": "docs/backlog/tasks/task-skript-40-04-12-printed-pdf-exams-keep-each-question-s-text-and-its-alternatives-on-one-page.md",
       "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-13",
+      "type": "task",
+      "title": "With the gap tool on, a click on a gap turns it back into its words, any highlighted span becomes one gap, and one gap control replaces the Lucka button",
+      "path": "docs/backlog/tasks/task-skript-40-04-13-with-the-gap-tool-on-a-click-on-a-gap-turns-it-back-into-its-words-any-highlighted-span-becomes-one-gap-and-one-gap-control-replaces-the-lucka-button.md",
+      "status": "proposed",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-14",
+      "type": "task",
+      "title": "The question editor toolbar has its own Ångra and Gör om, and every question edit autosaves after a short pause",
+      "path": "docs/backlog/tasks/task-skript-40-04-14-the-question-editor-toolbar-has-its-own-ångra-and-gör-om-and-every-question-edit-autosaves-after-a-short-pause.md",
+      "status": "proposed",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
