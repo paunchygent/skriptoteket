@@ -51,12 +51,17 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeGapSegment,
     NativeParagraph,
     NativeTextSegment,
+    is_empty_body,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_outline import (
+    OutlineQuestion,
+    document_outline,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
     NativeChoice,
@@ -210,20 +215,32 @@ def build_print_document(
 def _print_walk(
     document: NativeExamDocument, *, variant: ExamPrintVariant
 ) -> tuple[PrintInstruction | PrintQuestion, ...]:
-    """Every entry after the exam header, in the DOCX writer's today order.
+    """Every entry after the exam header, in the one outline order.
 
-    For each item, the printed parent's instruction prints once before its first
-    child, then the item's own question. The parts task replaces this order with the
-    native exam outline owner.
+    The walk reads the native exam outline owner: a standalone question prints
+    its own question, and a part prints its instruction (unless empty) followed
+    by one question per child, in order. A childless part with a non-empty
+    instruction prints only its instruction at its own place; a childless part
+    with an empty instruction prints nothing.
     """
     entries: list[PrintInstruction | PrintQuestion] = []
-    for item in document.items:
-        parent = document.printed_parent_of(item.item_id)
-        if parent is not None and parent.item_ids[0] == item.item_id:
-            entries.append(PrintInstruction(blocks=_instruction_blocks(parent.instruction)))
-        entries.append(
-            PrintQuestion(item_id=item.item_id, blocks=_question_blocks(item, variant=variant))
-        )
+    for entry in document_outline(document):
+        if isinstance(entry, OutlineQuestion):
+            entries.append(
+                PrintQuestion(
+                    item_id=entry.item.item_id,
+                    blocks=_question_blocks(entry.item, variant=variant),
+                )
+            )
+            continue
+        if not is_empty_body(entry.part.instruction):
+            entries.append(PrintInstruction(blocks=_instruction_blocks(entry.part.instruction)))
+        for child in entry.children:
+            entries.append(
+                PrintQuestion(
+                    item_id=child.item_id, blocks=_question_blocks(child, variant=variant)
+                )
+            )
     return tuple(entries)
 
 

@@ -221,3 +221,118 @@ class TestVariants:
         assert student.variant is ExamPrintVariant.STUDENT
         assert facit.variant is ExamPrintVariant.FACIT
         assert student.title == facit.title == "Omprov: grammatik"
+
+
+def _entry_signature(document: PrintDocument) -> tuple[tuple[str, str | None], ...]:
+    """Entry types and question ids after the header, in print order."""
+    return tuple(
+        ("question", entry.item_id) if isinstance(entry, PrintQuestion) else ("instruction", None)
+        for entry in document.entries[1:]
+    )
+
+
+def _part_document(
+    parent: NativeExamParent,
+    *items: NativeExamItem,
+) -> NativeExamDocument:
+    return NativeExamDocument(
+        document_id=uuid4(),
+        revision=1,
+        title="Omprov: grammatik",
+        items=tuple(items),
+        parents=(parent,),
+        origin=NativeExamDocumentOrigin(kind="created"),
+    )
+
+
+class TestOutlineWalk:
+    """The print walk reads the one outline owner, in outline order."""
+
+    def test_part_before_standalone_prints_instruction_then_children_then_question(self) -> None:
+        parent = NativeExamParent(
+            parent_id="parent_001",
+            place=0,
+            instruction=(make_paragraph("Del 1"),),
+            item_ids=("item_001", "item_002"),
+        )
+        document = _part_document(
+            parent,
+            free_text_item(sequence=1, item_id="item_001"),
+            free_text_item(sequence=2, item_id="item_002"),
+            free_text_item(sequence=3, item_id="item_003"),
+        )
+
+        student = build_print_document(document, variant=ExamPrintVariant.STUDENT)
+
+        assert _entry_signature(student) == (
+            ("instruction", None),
+            ("question", "item_001"),
+            ("question", "item_002"),
+            ("question", "item_003"),
+        )
+
+    def test_part_with_empty_instruction_prints_only_its_children(self) -> None:
+        parent = NativeExamParent(
+            parent_id="parent_001",
+            place=0,
+            instruction=(make_paragraph("   "),),
+            item_ids=("item_001", "item_002"),
+        )
+        document = _part_document(
+            parent,
+            free_text_item(sequence=1, item_id="item_001"),
+            free_text_item(sequence=2, item_id="item_002"),
+        )
+
+        student = build_print_document(document, variant=ExamPrintVariant.STUDENT)
+
+        assert _entry_signature(student) == (
+            ("question", "item_001"),
+            ("question", "item_002"),
+        )
+
+    def test_childless_part_with_instruction_prints_at_its_place(self) -> None:
+        parent = NativeExamParent(
+            parent_id="parent_001",
+            place=1,
+            instruction=(make_paragraph("Mellanrubrik"),),
+            item_ids=(),
+        )
+        document = _part_document(
+            parent,
+            free_text_item(sequence=1, item_id="item_001"),
+            free_text_item(sequence=2, item_id="item_002"),
+        )
+
+        student = build_print_document(document, variant=ExamPrintVariant.STUDENT)
+
+        assert _entry_signature(student) == (
+            ("question", "item_001"),
+            ("instruction", None),
+            ("question", "item_002"),
+        )
+        instruction = student.entries[2]
+        assert isinstance(instruction, PrintInstruction)
+        assert instruction.blocks == (
+            PrintParagraph(runs=(PrintText("Mellanrubrik"),), style=PrintParagraphStyle.BODY),
+        )
+
+    def test_childless_part_with_empty_instruction_prints_nothing(self) -> None:
+        parent = NativeExamParent(
+            parent_id="parent_001",
+            place=1,
+            instruction=(),
+            item_ids=(),
+        )
+        document = _part_document(
+            parent,
+            free_text_item(sequence=1, item_id="item_001"),
+            free_text_item(sequence=2, item_id="item_002"),
+        )
+
+        student = build_print_document(document, variant=ExamPrintVariant.STUDENT)
+
+        assert _entry_signature(student) == (
+            ("question", "item_001"),
+            ("question", "item_002"),
+        )

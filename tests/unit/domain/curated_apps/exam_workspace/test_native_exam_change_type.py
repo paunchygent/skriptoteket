@@ -294,5 +294,5 @@ def test_v5_document_is_rejected_without_an_old_reader() -> None:
     payload = make_document(make_free_text_item()).model_dump()
     payload["schema_version"] = "native_exam_document_v5"
 
-    with pytest.raises(ValidationError, match="native_exam_document_v7"):
+    with pytest.raises(ValidationError, match="native_exam_document_v8"):
         NativeExamDocument.model_validate(payload)

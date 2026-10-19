@@ -6809,10 +6809,10 @@ export interface components {
             revision: number;
             /**
              * Schema Version
-             * @default native_exam_document_v7
+             * @default native_exam_document_v8
              * @constant
              */
-            schema_version: "native_exam_document_v7";
+            schema_version: "native_exam_document_v8";
             /** Title */
             title: string;
         };
@@ -6851,10 +6851,10 @@ export interface components {
             revision: number;
             /**
              * Schema Version
-             * @default native_exam_document_v7
+             * @default native_exam_document_v8
              * @constant
              */
-            schema_version: "native_exam_document_v7";
+            schema_version: "native_exam_document_v8";
             /** Title */
             title: string;
         };
