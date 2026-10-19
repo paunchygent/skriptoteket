@@ -160,19 +160,14 @@ class _PrintDocxRenderer:
         A question or instruction closes with its own space after; a block's larger own
         space wins, as the print CSS's collapsed margins do.
         """
-        if isinstance(entry, PrintQuestion):
-            blocks = entry.text + entry.answer
-            last_block = entry.answer[-1] if entry.answer else entry.text[-1]
-        else:
-            blocks = entry.blocks
-            last_block = entry.blocks[-1]
+        blocks = entry.text + entry.answer if isinstance(entry, PrintQuestion) else entry.blocks
         for block in blocks:
             self._block(block)
         if isinstance(entry, PrintInstruction):
             space_after_mm = INSTRUCTION_SPACE_AFTER_MM
         else:
             space_after_mm = QUESTION_SPACE_AFTER_MM
-        if isinstance(last_block, PrintGrid):
+        if isinstance(blocks[-1], PrintGrid):
             # A table has no paragraph spacing of its own: one exact-height spacer holds it.
             spacer = self._new_paragraph()
             spacer.paragraph_format.space_after = Pt(0)
