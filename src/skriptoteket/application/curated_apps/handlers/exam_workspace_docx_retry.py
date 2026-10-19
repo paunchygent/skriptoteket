@@ -55,6 +55,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_batches import (
     ConversionBatch,
     QuestionFamily,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions import (
+    with_placed_left_out_mark,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.exam_document_language import (
     infer_exam_document_language,
 )
@@ -303,6 +306,12 @@ class RetryExamWorkspaceItemHandler:
             profile=self._profile,
         )
         admitted = _single_item(state, outcome)
+        if admitted is not None:
+            aligned, held = admitted
+            admitted = (
+                with_placed_left_out_mark(aligned, state.chunks, frozenset()),
+                held,
+            )
         produced = None if admitted is None else _with_owned_contexts(admitted, owned)
         if produced is None:
             review = source_review_item(

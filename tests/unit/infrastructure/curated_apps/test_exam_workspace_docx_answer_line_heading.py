@@ -31,6 +31,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_answer_line_gate impor
     ANSWER_LINE_ONLY_REASON,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
+from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions import (
+    LEFT_OUT_REASON,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
     NativeItemReviewState,
@@ -226,7 +229,14 @@ def test_a_real_heading_keeps_its_section_behaviour_through_application_admissio
     final = _admitted(chunks, produced)
 
     assert [body_plain_text(item.body) for item in final.document.items] == ["Del A\nFörklara."]
-    # Stale missing-text reason: 09d50acc 40-04-07 merge-check M2, owned by
-    # a separate ST-SKRIPT-39-04 left-out accounting repair.
+    # A listed heading that section placement restores keeps no missing-text reason
+    # (TASK-SKRIPT-39-04-19): the admission event records it, the placed item shows it.
     assert all(ANSWER_LINE_ONLY_REASON not in item.review.reasons for item in final.document.items)
+    assert all(LEFT_OUT_REASON not in item.review.reasons for item in final.document.items)
+    assert all(
+        "Del A" not in reason for item in final.document.items for reason in item.review.reasons
+    )
+    assert [item.review.state for item in final.document.items] == [
+        NativeItemReviewState.REVIEW_COMPLETE
+    ]
     assert final.document.parents == ()

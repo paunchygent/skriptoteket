@@ -61,6 +61,10 @@ def test_an_own_facit_line_listed_only_as_an_answer_key_joins_the_item_unmarked(
     assert [e for e in state.events if e.stage != "formatting"] == []
     assert state.pending == ()
 
+    (final,) = state.result().document.items
+    assert final.review.state is NativeItemReviewState.REVIEW_COMPLETE
+    assert final.review.reasons == ()
+
 
 def test_an_own_facit_line_the_grouping_and_the_reply_list_as_a_key_is_its_answer_key():
     # Live SA24 and Diagnostic 85 2026-10-16: the grouping listed each facit line both among
@@ -96,6 +100,10 @@ def test_an_own_facit_line_the_grouping_and_the_reply_list_as_a_key_is_its_answe
     assert _FACIT not in " ".join(_stem_texts(admitted))
     assert admitted.review.state is NativeItemReviewState.REVIEW_COMPLETE
 
+    (final,) = state.result().document.items
+    assert final.review.state is NativeItemReviewState.REVIEW_COMPLETE
+    assert final.review.reasons == ()
+
 
 @pytest.mark.parametrize(
     "facit",
@@ -119,6 +127,10 @@ def test_an_own_facit_line_the_reply_leaves_out_is_not_flagged_in_any_printed_fo
     assert admitted.review.state is NativeItemReviewState.REVIEW_COMPLETE
     assert admitted.review.reasons == ()
 
+    (final,) = state.result().document.items
+    assert final.review.state is NativeItemReviewState.REVIEW_COMPLETE
+    assert final.review.reasons == ()
+
 
 def test_an_answer_options_line_the_reply_leaves_out_is_still_flagged():
     options = "Svarsalternativ: intervju, enkät eller observation"
@@ -126,9 +138,13 @@ def test_an_answer_options_line_the_reply_leaves_out_is_still_flagged():
 
     admit_batch({"items": [_item(["body:0001"])]}, state)
 
-    ((admitted, _),) = [(a.item, h) for a, h in state.accepted]
-    assert admitted.review.state is NativeItemReviewState.REVIEW_REQUIRED
-    assert admitted.review.reasons == (LEFT_OUT_REASON, options)
+    ((aligned, _),) = [(a, h) for a, h in state.accepted]
+    assert aligned.left_out == frozenset({"body:0002"})
+    assert LEFT_OUT_REASON not in aligned.item.review.reasons
+
+    (final,) = state.result().document.items
+    assert final.review.state is NativeItemReviewState.REVIEW_REQUIRED
+    assert final.review.reasons == (LEFT_OUT_REASON, options)
 
 
 def test_a_reply_that_leaves_out_the_stem_anchor_but_copies_its_wording_is_not_flagged():
@@ -142,6 +158,10 @@ def test_a_reply_that_leaves_out_the_stem_anchor_but_copies_its_wording_is_not_f
     assert anchors == ("body:0002", "body:0001")
     assert admitted.review.state is NativeItemReviewState.REVIEW_COMPLETE
     assert admitted.review.reasons == ()
+
+    (final,) = state.result().document.items
+    assert final.review.state is NativeItemReviewState.REVIEW_COMPLETE
+    assert final.review.reasons == ()
 
 
 def test_a_reply_that_shortens_an_aligned_stem_paragraph_shows_its_chunk():
@@ -157,6 +177,10 @@ def test_a_reply_that_shortens_an_aligned_stem_paragraph_shows_its_chunk():
     assert anchors == ("body:0002", "body:0001")
     assert admitted.review.state is NativeItemReviewState.REVIEW_COMPLETE
     assert [e for e in state.events if e.stage != "formatting"] == []
+
+    (final,) = state.result().document.items
+    assert final.review.state is NativeItemReviewState.REVIEW_COMPLETE
+    assert final.review.reasons == ()
 
 
 @pytest.mark.parametrize(
@@ -194,9 +218,13 @@ def test_a_dropped_paragraph_is_flagged_even_when_the_item_shares_its_words(drop
         state,
     )
 
-    ((admitted, _),) = [(a.item, h) for a, h in state.accepted]
-    assert admitted.review.state is NativeItemReviewState.REVIEW_REQUIRED
-    assert admitted.review.reasons == (LEFT_OUT_REASON, dropped)
+    ((aligned, _),) = [(a, h) for a, h in state.accepted]
+    assert aligned.left_out == frozenset({"body:0001"})
+    assert LEFT_OUT_REASON not in aligned.item.review.reasons
+
+    (final,) = state.result().document.items
+    assert final.review.state is NativeItemReviewState.REVIEW_REQUIRED
+    assert final.review.reasons == (LEFT_OUT_REASON, dropped)
 
 
 def test_a_dropped_stem_read_through_its_gap_answer_is_not_flagged():
@@ -225,6 +253,10 @@ def test_a_dropped_stem_read_through_its_gap_answer_is_not_flagged():
     assert anchors == ("body:0001", "body:0002")
     assert admitted.review.reasons == ()
 
+    (final,) = state.result().document.items
+    assert final.review.state is NativeItemReviewState.REVIEW_COMPLETE
+    assert final.review.reasons == ()
+
 
 def test_a_dropped_line_of_inline_options_is_read_option_by_option():
     options = "A) play B) plays"
@@ -251,6 +283,10 @@ def test_a_dropped_line_of_inline_options_is_read_option_by_option():
 
     ((admitted, _),) = [(a.item, h) for a, h in state.accepted]
     assert admitted.review.reasons == ()
+
+    (final,) = state.result().document.items
+    assert final.review.state is NativeItemReviewState.REVIEW_COMPLETE
+    assert final.review.reasons == ()
 
 
 def test_a_dropped_bullet_list_of_options_is_read_without_its_bullets():
@@ -279,6 +315,10 @@ def test_a_dropped_bullet_list_of_options_is_read_without_its_bullets():
     ((admitted, _),) = [(a.item, h) for a, h in state.accepted]
     assert admitted.review.reasons == ()
 
+    (final,) = state.result().document.items
+    assert final.review.state is NativeItemReviewState.REVIEW_COMPLETE
+    assert final.review.reasons == ()
+
 
 @pytest.mark.parametrize(
     "stem",
@@ -293,8 +333,13 @@ def test_a_dropped_table_the_stem_repeats_is_flagged(stem):
 
     admit_batch({"items": [_item(["body:0001"], body=[{"segments": [_text(stem)]}])]}, state)
 
-    ((admitted, _),) = [(a.item, h) for a, h in state.accepted]
-    assert admitted.review.reasons == (LEFT_OUT_REASON, table)
+    ((aligned, _),) = [(a, h) for a, h in state.accepted]
+    assert aligned.left_out == frozenset({"body:0002"})
+    assert LEFT_OUT_REASON not in aligned.item.review.reasons
+
+    (final,) = state.result().document.items
+    assert final.review.state is NativeItemReviewState.REVIEW_REQUIRED
+    assert final.review.reasons == (LEFT_OUT_REASON, table)
 
 
 def test_a_dropped_stem_whose_words_span_text_segments_is_not_flagged():
@@ -310,6 +355,10 @@ def test_a_dropped_stem_whose_words_span_text_segments_is_not_flagged():
     ((admitted, _),) = [(a.item, h) for a, h in state.accepted]
     assert admitted.review.reasons == ()
 
+    (final,) = state.result().document.items
+    assert final.review.state is NativeItemReviewState.REVIEW_COMPLETE
+    assert final.review.reasons == ()
+
 
 def test_a_points_label_split_across_text_segments_leaves_the_stem():
     stem = "Vilket ord är ett substantiv? (1 p)"
@@ -321,6 +370,12 @@ def test_a_points_label_split_across_text_segments_leaves_the_stem():
     ((admitted, _),) = [(a.item, h) for a, h in state.accepted]
     assert admitted.points == 1
     assert _stem_texts(admitted) == ["Vilket ord är ett substantiv?"]
+
+    (final,) = state.result().document.items
+    assert final.points == 1
+    assert _stem_texts(final) == ["Vilket ord är ett substantiv?"]
+    assert final.review.state is NativeItemReviewState.REVIEW_COMPLETE
+    assert final.review.reasons == ()
 
 
 def test_a_choice_stem_ending_in_one_point_label_takes_the_point_and_loses_the_label():
@@ -354,17 +409,25 @@ def test_a_choice_stem_ending_in_one_point_label_takes_the_point_and_loses_the_l
     assert _stem_texts(admitted) == ["Vilket ord är ett substantiv?"]
     assert admitted.review.reasons == ()
 
+    (final,) = state.result().document.items
+    assert final.points == 1
+    assert _stem_texts(final) == ["Vilket ord är ett substantiv?"]
+    assert final.review.state is NativeItemReviewState.REVIEW_COMPLETE
+    assert final.review.reasons == ()
+
 
 @pytest.mark.parametrize(
-    "texts",
+    ("texts", "final_points"),
     [
-        ("Vilket ord är ett substantiv?", "A. bord", "B. springa"),
-        ("Vilket ord är ett substantiv? (1 p)", "A. bord (1 p)", "B. springa"),
-        ("Vilket ord är ett substantiv? (0 p)", "A. bord", "B. springa"),
+        (("Vilket ord är ett substantiv?", "A. bord", "B. springa"), None),
+        (("Vilket ord är ett substantiv? (1 p)", "A. bord (1 p)", "B. springa"), 1),
+        (("Vilket ord är ett substantiv? (0 p)", "A. bord", "B. springa"), None),
     ],
     ids=["no-label", "two-labels", "zero-points"],
 )
-def test_a_reply_without_points_keeps_no_points_without_exactly_one_positive_label(texts):
+def test_a_reply_without_points_keeps_no_points_without_exactly_one_positive_label(
+    texts, final_points
+):
     state = _state(*texts)
     choices: list[JsonValue] = [
         {"text": "bord", "correct": True},
@@ -392,6 +455,12 @@ def test_a_reply_without_points_keeps_no_points_without_exactly_one_positive_lab
     assert admitted.points is None
     assert _stem_texts(admitted) == [texts[0]]
 
+    (final,) = state.result().document.items
+    assert final.points == final_points
+    assert _stem_texts(final) == [texts[0]]
+    assert final.review.state is NativeItemReviewState.REVIEW_COMPLETE
+    assert final.review.reasons == ()
+
 
 def test_points_the_reply_gives_win_over_a_printed_label():
     stem = "Vilket ord är ett substantiv? (1 p)"
@@ -402,6 +471,12 @@ def test_points_the_reply_gives_win_over_a_printed_label():
     ((admitted, _),) = [(a.item, h) for a, h in state.accepted]
     assert admitted.points == 2
     assert _stem_texts(admitted) == [stem]
+
+    (final,) = state.result().document.items
+    assert final.points == 1
+    assert _stem_texts(final) == [stem]
+    assert final.review.state is NativeItemReviewState.REVIEW_COMPLETE
+    assert final.review.reasons == ()
 
 
 def test_a_points_paragraph_the_reply_does_not_list_still_gives_its_question_the_points():
@@ -433,3 +508,8 @@ def test_a_points_paragraph_the_reply_does_not_list_still_gives_its_question_the
     assert anchors[-1] == "body:0004"
     assert admitted.review.state is NativeItemReviewState.REVIEW_COMPLETE
     assert admitted.review.reasons == ()
+
+    (final,) = state.result().document.items
+    assert final.points == 1
+    assert final.review.state is NativeItemReviewState.REVIEW_COMPLETE
+    assert final.review.reasons == ()
