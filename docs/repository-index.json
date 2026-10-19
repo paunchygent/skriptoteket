@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "787ad64f79ffbd8a0bbbe3023e012792b1d3d1fd29efc7443aa5aa31c5828a50",
+  "source_set_digest": "2b8bdbb74298da244a119a045b8967547516b365e5e02083976cf2c844cce149",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6670,8 +6670,8 @@
     {
       "id": "TASK-SKRIPT-40-04-11",
       "type": "task",
-      "title": "Exam workspace tools show only their glyph and name their action in a tooltip",
-      "path": "docs/backlog/tasks/task-skript-40-04-11-exam-workspace-tools-show-only-their-glyph-and-name-their-action-in-a-tooltip.md",
+      "title": "Exam workspace controls follow one compact three-tier control system",
+      "path": "docs/backlog/tasks/task-skript-40-04-11-exam-workspace-controls-follow-one-compact-three-tier-control-system.md",
       "status": "proposed",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
