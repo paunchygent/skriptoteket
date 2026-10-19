@@ -152,10 +152,11 @@ def test_too_few_gaps_for_the_blank_runs_raises_a_count_mismatch():
 @pytest.mark.parametrize(
     ("gaps", "blanks", "reason"),
     [
-        (1, 2, "Frågan följer inte provformatet: 1 lucka men 2 tomma svarsrader."),
-        (2, 1, "Frågan följer inte provformatet: 2 luckor men 1 tom svarsrad."),
-        (0, 1, "Frågan följer inte provformatet: 0 luckor men 1 tom svarsrad."),
-        (3, 4, "Frågan följer inte provformatet: 3 luckor men 4 tomma svarsrader."),
+        (1, 2, "Frågan följer inte provformatet: 1 lucka men 2 svarsplatser."),
+        (2, 1, "Frågan följer inte provformatet: 2 luckor men 1 svarsplats."),
+        (0, 1, "Frågan följer inte provformatet: 0 luckor men 1 svarsplats."),
+        (3, 4, "Frågan följer inte provformatet: 3 luckor men 4 svarsplatser."),
+        (1, 1, "Frågan följer inte provformatet: 1 lucka men 1 svarsplats."),
     ],
 )
 def test_the_mismatch_reason_is_swedish_and_inflected_by_each_count(gaps, blanks, reason):

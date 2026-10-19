@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "12fa699ba3f6fce7bef1ae00bab6d45fd65ee77d76ab24c709fa476da045b3ab",
+  "source_set_digest": "81f56de368112de9ad390eae8d3eab1f910295f44ee908f2cde28bedc4be7110",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5172,6 +5172,29 @@
         "decided_at": "2026-10-19",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "Pi ruthless-reviewer 5805cf6e reviewed the implementation (Hemma retained session 01a14f3e-11d5-7745-90e8-6323496fbf74): changes_requested with three medium findings (picture at paragraph end counted as a mismatch; D3 blank class per table cell instead of per row; adjacent pictures reordered). Repaired in 2fdaeb8f and 389b1aee, each with a test that failed before the fix, and admitted by the parent on focused proof without rereview: 102 focused tests, lint, typecheck and docs-validate pass; replays byte-identical to d6c2f9af with no gap_count_mismatch; domain suite 4131 passed, 59 skipped. Merged to main at d80a7131 on 2026-10-19."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-04-17",
+      "type": "task",
+      "title": "Gap paragraphs with an inline answer key are built from their source paragraph or go to review, so the question word is never lost",
+      "path": "docs/backlog/tasks/task-skript-39-04-17-gap-paragraphs-with-an-inline-answer-key-are-built-from-their-source-paragraph-or-go-to-review.md",
+      "status": "done",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-19",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer 7ac4ca2f reviewed 5d70a359: no high findings, one medium (two test guards skipped every fallback item, so a review_complete item with a leaked label passed). Repaired at a8cd8181 (guards skip only review_required fallback-imported items, D9 amended, a test built on the reviewer probe failed before the fix) and admitted by the parent on focused proof without rereview: 120 focused tests, lint, typecheck and docs-validate pass; domain suite 4262 passed at 48852ace; replays change only svenska_2 item_001 in both variants, as decided in G1/G2 (user 2026-10-19). Merged to main at a8cd8181 on 2026-10-19."
       }
     },
     {
