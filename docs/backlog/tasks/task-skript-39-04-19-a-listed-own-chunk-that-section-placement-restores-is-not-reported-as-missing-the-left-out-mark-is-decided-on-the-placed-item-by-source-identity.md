@@ -101,8 +101,14 @@ chunks and its parent's source anchors.
   `/home/paunchygent/apps/skriptoteket-task-skript-39-04-left-out-remote`, from
   `origin/main` `ffbfa953`. Never pushed.
 - Retained root `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a15302-b287-7db2-91ec-8e9629121eb1`.
-- State: U1 and U2 done; waiting for the orchestrator's domain-suite slot, then
-  independent review (routed by the orchestrator).
+- State: U1 and U2 done; domain suite run; waiting for independent review (routed by
+  the orchestrator).
+- Domain suite at `fbf9ed95` (application, domain, web and infrastructure curated_apps;
+  `evidence/domain-suite-fbf9ed95.log`): 5480 passed, 59 skipped, 15 failed. All 15 are
+  `tests/unit/web/test_spa_fallback.py` (HTTP 500). They fail the same way at
+  `origin/main` `14f643c9` in this worktree: the fallback serves
+  `src/skriptoteket/web/static/spa/index.html`, which exists only after a frontend
+  build, and this worktree has none.
 - U1 domain (junior `1e3a096f`, `5761395c`): `AlignedItem.left_out`,
   `with_placed_left_out_mark`, the placement call and the D42 return; order
   `evidence/orders/u1-domain-left-out-mark.md`.
