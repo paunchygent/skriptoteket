@@ -26,7 +26,7 @@ Relationships:
 from __future__ import annotations
 
 from collections.abc import Iterable, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from enum import StrEnum
 
 from skriptoteket.domain.curated_apps.exam_conversion.exam_print_house_template import (
@@ -107,7 +107,6 @@ class PrintParagraphStyle(StrEnum):
 
     BODY = "body"
     GAP_LINE = "gap_line"  # writing-height spacing so a sentence's blanks stay writable (W7)
-    POINTS = "points"
     DETAIL = "detail"  # a generated header line, such as the course or the total
 
 
@@ -182,9 +181,11 @@ class PrintQuestion:
     """One question's printed blocks in two explicit groups (TASK-SKRIPT-40-04-12 K8).
 
     ``text`` is the question text: the heading, every body block including gap
-    lines and one-line answer lines from ANSWER_LINE paragraphs, and the points
-    paragraph. ``answer`` is the answer form: the FREE_TEXT writing area, the
-    choice or ordering options, the matching grid, and the facit answer key.
+    lines and one-line answer lines from ANSWER_LINE paragraphs, and the question's
+    points printed inline as "(N p)" at the end of the last text paragraph (or of
+    the heading when the question has no text paragraph). ``answer`` is the answer
+    form: the FREE_TEXT writing area, the choice or ordering options, the matching
+    grid, and the facit answer key.
     The two groups concatenate to the DOCX writer's today order, text first.
     """
 
@@ -310,12 +311,7 @@ def _question_blocks(item: NativeExamItem, *, variant: ExamPrintVariant) -> Ques
             if runs:
                 text.append(PrintParagraph(runs=runs, style=PrintParagraphStyle.BODY))
 
-    text.append(
-        PrintParagraph(
-            runs=(PrintText(_points_line(item, labels)),),
-            style=PrintParagraphStyle.POINTS,
-        )
-    )
+    _append_inline_points(text, item, labels)
 
     if item.kind is NativeExamItemKind.FREE_TEXT:
         answer.append(PrintRuledLines(count=layout.writing_lines))
@@ -382,8 +378,30 @@ def _gap_line_runs(paragraph: NativeParagraph, layout: ItemPrintLayout) -> tuple
     return tuple(runs)
 
 
-def _points_line(item: NativeExamItem, labels: ExamExportLabels) -> str:
-    return labels.points_line(None if item.points is None else _format_points(item.points))
+def _append_inline_points(
+    text: list[PrintBlock], item: NativeExamItem, labels: ExamExportLabels
+) -> None:
+    """Append the question's points as " (N p)" to its last text paragraph.
+
+    The inline run extends the last ``BODY`` or ``GAP_LINE`` paragraph, searching
+    backward so a trailing ruled answer line is skipped. When the question has no
+    text paragraph, the points extend the heading instead. A question with missing
+    points prints no points text at all.
+    """
+    if item.points is None:
+        return
+    inline = PrintText(" " + labels.points_inline(_format_points(item.points)))
+    for index in range(len(text) - 1, -1, -1):
+        block = text[index]
+        if isinstance(block, PrintParagraph) and block.style in (
+            PrintParagraphStyle.BODY,
+            PrintParagraphStyle.GAP_LINE,
+        ):
+            text[index] = replace(block, runs=block.runs + (inline,))
+            return
+    heading = text[0]
+    assert isinstance(heading, PrintHeading)
+    text[0] = replace(heading, text=heading.text + inline.text)
 
 
 def _format_points(points: int | float) -> str:
@@ -410,7 +428,10 @@ def _facit_lines(item: NativeExamItem, labels: ExamExportLabels) -> tuple[str, .
             return ()
         return (
             f"{labels.marking_guide}:",
-            *(f"• {criterion.text} ({criterion.points} p)" for criterion in item.criteria),
+            *(
+                f"• {criterion.text} {labels.points_inline(str(criterion.points))}"
+                for criterion in item.criteria
+            ),
         )
     if item.kind in _CHOICE_KINDS and item.answer_key.correct_choice_ids:
         text_by_choice_id = {

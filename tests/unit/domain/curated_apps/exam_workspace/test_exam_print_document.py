@@ -117,10 +117,13 @@ class TestFreeText:
         student = build_print_document(document, variant=ExamPrintVariant.STUDENT)
         question_entry = question(student, "item_001")
 
-        points_index = question_blocks(question_entry).index(
-            PrintParagraph(runs=(PrintText("Poäng: 4 poäng"),), style=PrintParagraphStyle.POINTS)
+        stem_index = question_blocks(question_entry).index(
+            PrintParagraph(
+                runs=(PrintText("Resonera om renässansen."), PrintText(" (4 p)")),
+                style=PrintParagraphStyle.BODY,
+            )
         )
-        assert question_blocks(question_entry)[points_index + 1] == PrintRuledLines(count=5)
+        assert question_blocks(question_entry)[stem_index + 1] == PrintRuledLines(count=5)
         assert criterion.text not in all_texts(student)
         assert not has_answer_key(student)
 
@@ -155,7 +158,8 @@ class TestPointsFormatting:
         student = build_print_document(document, variant=ExamPrintVariant.STUDENT)
 
         assert PrintParagraph(
-            runs=(PrintText("Poäng: 2,5 poäng"),), style=PrintParagraphStyle.POINTS
+            runs=(PrintText("Vilket är huvudordet?"), PrintText(" (2,5 p)")),
+            style=PrintParagraphStyle.BODY,
         ) in question_blocks(question(student, "item_001"))
 
 
@@ -357,15 +361,9 @@ class TestQuestionGroups:
         entry = question(student, "item_001")
 
         assert entry.text[0] == PrintHeading(level=3, text="Fråga 1")
-        assert (
-            PrintParagraph(
-                runs=(PrintText("Resonera om renässansen."),),
-                style=PrintParagraphStyle.BODY,
-            )
-            in entry.text
-        )
         assert entry.text[-1] == PrintParagraph(
-            runs=(PrintText("Poäng: 4 poäng"),), style=PrintParagraphStyle.POINTS
+            runs=(PrintText("Resonera om renässansen."), PrintText(" (4 p)")),
+            style=PrintParagraphStyle.BODY,
         )
         assert entry.answer == (PrintRuledLines(count=5),)
         assert question_blocks(entry) == entry.text + entry.answer
@@ -378,7 +376,8 @@ class TestQuestionGroups:
 
         assert entry.text[0] == PrintHeading(level=3, text="Fråga 1")
         assert entry.text[-1] == PrintParagraph(
-            runs=(PrintText("Poäng: 1 poäng"),), style=PrintParagraphStyle.POINTS
+            runs=(PrintText("Vilket är huvudordet?"), PrintText(" (1 p)")),
+            style=PrintParagraphStyle.BODY,
         )
         assert not any(isinstance(block, PrintOption) for block in entry.text)
         assert entry.answer == (
@@ -393,9 +392,12 @@ class TestQuestionGroups:
         entry = question(student, "item_001")
 
         assert entry.text[0] == PrintHeading(level=3, text="Fråga 1")
-        last_text = entry.text[-1]
-        assert (
-            isinstance(last_text, PrintParagraph) and last_text.style is PrintParagraphStyle.POINTS
+        assert entry.text[-1] == PrintParagraph(
+            runs=(
+                PrintText("Sätt stegen i en argumenterande text i rätt ordning."),
+                PrintText(" (1 p)"),
+            ),
+            style=PrintParagraphStyle.BODY,
         )
         assert entry.answer == (
             PrintOption(box=PrintBox.NUMBER, label="", text="Avslutning"),
@@ -411,9 +413,9 @@ class TestQuestionGroups:
         entry = question(student, "item_001")
 
         assert entry.text[0] == PrintHeading(level=3, text="Fråga 1")
-        last_text = entry.text[-1]
-        assert (
-            isinstance(last_text, PrintParagraph) and last_text.style is PrintParagraphStyle.POINTS
+        assert entry.text[-1] == PrintParagraph(
+            runs=(PrintText("Kategorisera orden i rätt ordklass."), PrintText(" (3 p)")),
+            style=PrintParagraphStyle.BODY,
         )
         assert entry.answer == (
             PrintGrid(rows=("hund", "katt", "fågel"), columns=("däggdjur", "fåglar", "fiskar")),
@@ -427,7 +429,8 @@ class TestQuestionGroups:
         entry = question(facit, "item_001")
 
         assert entry.text[-1] == PrintParagraph(
-            runs=(PrintText("Poäng: 4 poäng"),), style=PrintParagraphStyle.POINTS
+            runs=(PrintText("Resonera om renässansen."), PrintText(" (4 p)")),
+            style=PrintParagraphStyle.BODY,
         )
         assert entry.answer[-1] == PrintAnswerKey(
             lines=("Rättningsmall:", f"• {criterion.text} (4 p)")
