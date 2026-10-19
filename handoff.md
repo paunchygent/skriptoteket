@@ -74,7 +74,7 @@
   - 40-04-12 PDF keep-together on main 8d51a6ba; the K7 "/" check is for the Mac walk. 40-04-15 inline "(N p)" points: Hemma lead 600fa5a8, domain suite running.
   - 41-02-02 `done`: deployed to production at f7eeada5 on 2026-10-19 with the nginx-proxy /32 trust (task doc "Production Deploy").
   - REP-0048: 6 Exam.net walk checks (Mac walk).
-  - 41-02-04 workspace width on main ffab920a. Staging walk F3/F4/F6 PASS; walk findings G1, G2, W1, W3 and W4 go to lead bd0f1693 on `codex/task-skript-41-02-04-walk-repair-remote`. W2 (header overflow) is closed by 40-04-17 T12.
+  - 41-02-04 workspace width (ready, user-accepted 2026-10-19): merged to main `ffab920a`; the walk passed widths, clamping and the rail. Lead bd0f1693 repaired walk findings G1, G2, W3 and W4 on `codex/task-skript-41-02-04-walk-repair-remote` (fe-test 495 files, 3505 tests); W1 went to the toolbar session (user answer 2026-10-19); W2 is closed by 40-04-17 T12. Next: a Mac walk of the repairs, including the G2 font-fallback check.
   - HuleEdu after HULE-14-03-01: 41-01-03, 41-01-02, 41-01-04; http_runtime workers repair.
     Hemma Opus lead `3b164d53`: 40-03-01..09 and 08-36-02 `done`; 40-02-01 tranche 1 on
     main 761b1b59, tranche 2 a67afa90 (`in_progress`: shared `play` meaning in

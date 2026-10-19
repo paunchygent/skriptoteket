@@ -148,9 +148,19 @@ listener is added. No performance concern.
   keep the minimum; F5 truthful separator values; F6 guest full frame on desktop only; F7 minimums
   read from the CSS tokens; F8 grid CSS in `examWorkspaceGrid.css` plus column-layout, list-action
   and label composables (view 494 lines, slice spec 433); F9 no type assertions in changed files.
-- Next: the domain suite slot from the orchestrator, then the staging walk at 1280/1440/1920 (2560 by
-  DevTools emulation) for widths, the drag, the collapse rail, remembered widths in a smaller
-  window, and below-minimum panels (F3, F4, F6 are CSS that jsdom cannot evaluate).
+- Merged to main at `ffab920a`. The staging walk (Mac, Edge, guest and signed in) passed F3, F4, F6,
+  the defaults, clamping, remembered widths and the rail. Not walked: 2560 px, double-click reset,
+  keyboard operation (covered in component tests) and below-minimum scroll.
+- Walk repairs on branch `codex/task-skript-41-02-04-walk-repair-remote` (from `ffab920a`):
+  - G1 guest workspace held to the window: the landing shell holds the window height on the
+    conversion hub, and the guest host is a flex column (`4cdfcab3`).
+  - W3 separator values re-read on every track change through a ResizeObserver (`4cdfcab3`).
+  - W4 rail expand glyph `expand`, collapse glyph `toggle-sidebar` (`4cdfcab3`).
+  - G2 Öppna formats as one plain row "Word (.docx)", "DigiExam (.dxe)", "QTI (.zip)" (user answer
+    2026-10-19), fitted to the 300 px drawer minimum.
+  - W1 (marking bar overflows a 280 px list) and W2 (header row at a 1040 px workspace) are handed
+    to the toolbar redesign session (user answer 2026-10-19); this task does not change them.
+- Next: the domain suite slot from the orchestrator, then a walk of G1, G2, W3 and W4.
 
 ## Stop Conditions
 
