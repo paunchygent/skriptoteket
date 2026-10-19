@@ -347,33 +347,34 @@ function handleTickPointsInput(event: Event): void {
         "
         @update-pairs="(pairs) => emit('updateMatchPairs', item.item_id, pairs)"
       />
-      <div
-        v-if="keyLine"
-        class="keyline"
-        data-test="exam-workspace-original-facit"
+    </template>
+
+    <div
+      v-if="keyLine && !converting"
+      class="keyline"
+      data-test="exam-workspace-original-facit"
+    >
+      <UiGlyph
+        :meaning="keyLine.ai ? 'ai-assist' : 'document'"
+        :size="16"
+        :class="{ 'xw-ai': keyLine.ai }"
+      />
+      <span class="xw-grow">{{ keyLine.lead }} <q>{{ keyLine.facit }}</q></span>
+      <button
+        v-if="keyLine.ai && canUndoInterpretation(item)"
+        type="button"
+        class="xw-btn xw-btn--compact"
+        title="Ångra AI-tolkningen och lämna frågan utan facit"
+        :disabled="locked"
+        data-test="exam-workspace-undo-interpretation"
+        @click="emit('undoInterpretation', item.item_id)"
       >
         <UiGlyph
-          :meaning="keyLine.ai ? 'ai-assist' : 'document'"
+          meaning="undo"
           :size="16"
-          :class="{ 'xw-ai': keyLine.ai }"
-        />
-        <span class="xw-grow">{{ keyLine.lead }} <q>{{ keyLine.facit }}</q></span>
-        <button
-          v-if="keyLine.ai && canUndoInterpretation(item)"
-          type="button"
-          class="xw-btn xw-btn--compact"
-          title="Ångra AI-tolkningen och lämna frågan utan facit"
-          :disabled="locked"
-          data-test="exam-workspace-undo-interpretation"
-          @click="emit('undoInterpretation', item.item_id)"
-        >
-          <UiGlyph
-            meaning="undo"
-            :size="16"
-          />Ångra AI-tolkningen
-        </button>
-      </div>
-    </template>
+        />Ångra AI-tolkningen
+      </button>
+    </div>
 
     <div class="pts">
       <template v-if="isGrid && !converting">
