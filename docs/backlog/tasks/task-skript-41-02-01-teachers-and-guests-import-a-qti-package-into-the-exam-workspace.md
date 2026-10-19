@@ -4,8 +4,8 @@ id: TASK-SKRIPT-41-02-01
 title: Teachers and guests import a QTI package into the exam workspace
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-18'
 status: ready
 closeout_review:
@@ -13,8 +13,8 @@ closeout_review:
   status: not_started
 task_kind: story
 acceptance_criteria:
-- A QTI package exported by Skriptoteket, including one Exam.net accepted on import, imports into a native exam document with its items, points and answer keys, signed-in and as a guest, with no AI
-- Unsupported QTI items are skipped with a visible note
+  - A QTI package exported by Skriptoteket, including one Exam.net accepted on import, imports into a native exam document with its items, points and answer keys, signed-in and as a guest, with no AI
+  - Unsupported QTI items are skipped with a visible note
 story: ST-SKRIPT-41-02
 backlog_document_profile: contract-derived
 ---
@@ -49,11 +49,11 @@ Stop and report if the Exam.net-accepted fixture shows a round-trip loss that is
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| Q1  | QTI import is deterministic and makes no AI call. |
+| ID  | Decided contract term                                                                  |
+| --- | -------------------------------------------------------------------------------------- |
+| Q1  | QTI import is deterministic and makes no AI call.                                      |
 | Q2  | A Skriptoteket QTI export imported again gives the same items, points and answer keys. |
-| Q3  | Unsupported items are skipped with a visible note, as in the DigiExam import. |
+| Q3  | Unsupported items are skipped with a visible note, as in the DigiExam import.          |
 
 ## Resume Here (lead 769b36fd, 2026-10-19)
 
@@ -66,12 +66,14 @@ Stop and report if the Exam.net-accepted fixture shows a round-trip loss that is
   Öppna QTI `.zip` entry, omprov round trip with named losses). Merge of
   `origin/main` (REP-0044, 39-06-10) is commit 368f6bb4; a QTI `.zip` stays
   open to every role past the REP-0044 Word gate.
-- In progress: U8 parent `place` repair (39-06-10 made `NativeExamParent.place`
-  required); U10 frontend test repair and a non-AI user `.zip` import test.
-- Next: U9 reads a QTI information item (body, no interaction) back as a part
-  with no questions at its place, the mirror of the 39-06-10 G5 export; U11
-  commits the Exam.net-accepted Svenska 2 rev11 package as a fixture with its
-  import proof. Then closeout and one domain suite after the parent's go.
+- Done after the merge: U8 parent `place` (820b6056), U10 frontend repair and
+  non-AI `.zip` import tests (4cebc401), U12 test typing (e1350ce0), U11
+  Exam.net-accepted Svenska 2 rev11 fixture with named losses (023a58fc), U9
+  QTI information item imports as a part with no questions (217751b8) and its
+  fallback removal. Lint, typecheck, frontend build/ESLint and docs-validate
+  pass.
+- Next: one domain suite after the parent's go, then the final checkpoint for
+  review routing by the parent.
 - Open finding: the plain space between two marked runs is lost to
   `ElementTree.indent` in the writer. After TASK-SKRIPT-REP-0048 lands on main,
   merge it and flip

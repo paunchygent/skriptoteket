@@ -220,7 +220,7 @@ def _append_information_parent(
     instruction = _paragraphs(
         source.prompt_paragraphs,
         image_ids=image_ids,
-        plain_lines=source.instruction_lines or source.prompt_lines,
+        plain_lines=source.instruction_lines,
     )
     parents.append(
         NativeExamParent(
