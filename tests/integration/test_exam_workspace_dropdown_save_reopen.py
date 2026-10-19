@@ -243,6 +243,7 @@ async def test_dropdown_save_reopen_and_qti_from_persisted_container(
         (
             NativeExamParent(
                 parent_id="parent_001",
+                place=items[0].sequence - 1,
                 instruction=text_body("Välj svar."),
                 item_ids=tuple(item.item_id for item in items),
             ),
@@ -261,6 +262,7 @@ async def test_dropdown_save_reopen_and_qti_from_persisted_container(
         path = _BASE + str(document.document_id)
         payload = document.model_dump(mode="json")
         async with _client(world, actor) as client:
+            position_step_id = (await client.get(path + "/history")).json()["position_step_id"]
             for fault in ("wrong-key", "missing-options"):
                 invalid = deepcopy(payload)
                 gap = invalid["items"][0]["gaps"][0]
@@ -269,13 +271,25 @@ async def test_dropdown_save_reopen_and_qti_from_persisted_container(
                 else:
                     del gap["options"]
                 response = await client.put(
-                    path, json={"expected_revision": 1, "document": invalid}
+                    path,
+                    json={
+                        "expected_revision": 1,
+                        "document": invalid,
+                        "position_step_id": position_step_id,
+                    },
                 )
                 assert response.status_code == 422, response.text
                 unchanged = await client.get(path)
                 assert unchanged.status_code == 200, unchanged.text
                 assert unchanged.json()["document"]["revision"] == 1
-            response = await client.put(path, json={"expected_revision": 1, "document": payload})
+            response = await client.put(
+                path,
+                json={
+                    "expected_revision": 1,
+                    "document": payload,
+                    "position_step_id": position_step_id,
+                },
+            )
             assert response.status_code == 200, response.text
             assert response.json()["document"]["items"] == payload["items"]
 

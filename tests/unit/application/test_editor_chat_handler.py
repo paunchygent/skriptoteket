@@ -864,3 +864,109 @@ async def test_editor_chat_drops_expired_thread_history() -> None:
         user_id=actor.id,
         context="editor_chat",
     )
+
+
+@pytest.mark.unit
+@pytest.mark.asyncio
+async def test_stream_leaves_role_admission_to_the_web_gate() -> None:
+    settings = Settings(LLM_CHAT_ENABLED=True)
+    provider = MagicMock(spec=ChatStreamProviderProtocol)
+
+    sessions = MagicMock(spec=ToolSessionRepositoryProtocol)
+    sessions.get = AsyncMock(return_value=None)
+    sessions.get_or_create = AsyncMock()
+
+    turns = MagicMock(spec=ToolSessionTurnRepositoryProtocol)
+    turns.list_tail = AsyncMock(return_value=[])
+    turns.cancel_pending_turn = AsyncMock(return_value=None)
+    turns.create_turn = AsyncMock()
+    turns.update_status = AsyncMock()
+
+    messages = MagicMock(spec=ToolSessionMessageRepositoryProtocol)
+    messages.list_by_turn_ids = AsyncMock(return_value=[])
+    messages.create_message = AsyncMock()
+    messages.update_message_content_if_pending_turn = AsyncMock(return_value=True)
+
+    clock = MagicMock(spec=ClockProtocol)
+    id_generator = MagicMock(spec=IdGeneratorProtocol)
+
+    tool_id = uuid4()
+    actor = make_user(role=Role.USER)
+    session = _make_tool_session(
+        tool_id=tool_id,
+        user_id=actor.id,
+        state={},
+        state_rev=0,
+        updated_at=datetime(2025, 1, 1, tzinfo=timezone.utc),
+    )
+    sessions.get_or_create.return_value = session
+
+    turn_id = uuid4()
+    user_message_id = uuid4()
+    assistant_message_id = uuid4()
+    new_session_id = uuid4()
+    id_generator.new_uuid.side_effect = [
+        turn_id,
+        user_message_id,
+        assistant_message_id,
+        new_session_id,
+    ]
+
+    turns.create_turn.return_value = _make_turn(
+        turn_id=turn_id,
+        tool_session_id=session.id,
+        status="pending",
+        created_at=session.created_at,
+    )
+    turns.update_status.return_value = _make_turn(
+        turn_id=turn_id,
+        tool_session_id=session.id,
+        status="complete",
+        created_at=session.created_at,
+    )
+
+    messages.create_message.return_value = _dummy_message(
+        tool_session_id=session.id, turn_id=turn_id, message_id=user_message_id
+    )
+
+    async def stream() -> AsyncIterator[str]:
+        yield "Hej"
+
+    provider.stream_chat.return_value = stream()
+
+    providers = MagicMock()
+    providers.primary = provider
+    providers.fallback = None
+    providers.fallback_is_remote = False
+
+    handler = _make_handler(
+        settings=settings,
+        providers=providers,
+        guard=DummyChatGuard(),
+        failover=DummyFailover(),
+        uow=DummyUow(),
+        sessions=sessions,
+        turns=turns,
+        messages=messages,
+        clock=clock,
+        id_generator=id_generator,
+        token_counters=FakeTokenCounterResolver(),
+        system_prompt_loader=lambda _template_id: "system prompt",
+    )
+
+    events = [
+        event
+        async for event in handler.stream(
+            actor=actor,
+            command=EditorChatCommand(
+                tool_id=tool_id,
+                message="Hej",
+            ),
+        )
+    ]
+
+    assert [event.event for event in events] == ["meta", "delta", "done"]
+    assert isinstance(events[-1], EditorChatDoneEvent)
+    assert isinstance(events[-1].data, EditorChatDoneEnabledData)
+    provider.stream_chat.assert_called_once()
+    turns.create_turn.assert_awaited_once()

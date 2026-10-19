@@ -1,10 +1,31 @@
+import { createPinia, setActivePinia } from "pinia";
 import { defineComponent } from "vue";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
-import { mountWithContext } from "../../test/utils";
+import type { components } from "../../api/openapi";
+import { useAuthStore } from "../../stores/auth";
+import { createTestRouter, mountWithContext } from "../../test/utils";
 import groupingPy from "../../../../../../src/skriptoteket/script_bank/scripts/gruppgenerator/grouping.py?raw";
 import rosterPy from "../../../../../../src/skriptoteket/script_bank/scripts/gruppgenerator/roster.py?raw";
 import EditorSourceCodePanel from "./EditorSourceCodePanel.vue";
+
+type ApiRole = components["schemas"]["Role"];
+
+type GhostTextOptions = {
+  ghostText?: { enabled: { value: boolean } };
+};
+
+const intelligence = vi.hoisted(() => ({ options: null as GhostTextOptions | null }));
+
+vi.mock("../../composables/editor/useSkriptoteketIntelligenceExtensions", async () => {
+  const { ref } = await import("vue");
+  return {
+    useSkriptoteketIntelligenceExtensions: (options: GhostTextOptions) => {
+      intelligence.options = options;
+      return { extensions: ref([]), isLoading: ref(false), error: ref(null) };
+    },
+  };
+});
 
 const CodeMirrorEditorStub = defineComponent({
   name: "CodeMirrorEditor",
@@ -18,7 +39,15 @@ const CodeMirrorEditorStub = defineComponent({
   template: '<div data-test="codemirror-stub" :data-value="modelValue" />',
 });
 
-function mountPanel(bundleFiles: Record<string, string> = {}) {
+function mountPanel(bundleFiles: Record<string, string> = {}, role: ApiRole = "admin") {
+  const pinia = createPinia();
+  setActivePinia(pinia);
+  useAuthStore(pinia).user = {
+    id: "user-1",
+    email: "teacher@example.com",
+    role,
+    auth_provider: "huleedu",
+  };
   return mountWithContext(EditorSourceCodePanel, {
     props: {
       entrypoint: "tool.py",
@@ -27,6 +56,7 @@ function mountPanel(bundleFiles: Record<string, string> = {}) {
       bundleFiles,
     },
     global: {
+      plugins: [pinia, createTestRouter()],
       stubs: { CodeMirrorEditor: CodeMirrorEditorStub },
     },
   });
@@ -78,5 +108,19 @@ describe("EditorSourceCodePanel bundle file tabs", () => {
 
     expect(wrapper.find('[role="tablist"]').exists()).toBe(false);
     expect(wrapper.findAllComponents(CodeMirrorEditorStub)).toHaveLength(1);
+  });
+});
+
+describe("EditorSourceCodePanel AI access gate", () => {
+  it.each([
+    ["user", false],
+    ["contributor", false],
+    ["admin", true],
+    ["superuser", true],
+  ] as const)("gates inline completion for role %s", (role, expected) => {
+    const wrapper = mountPanel({}, role);
+
+    expect(intelligence.options?.ghostText?.enabled.value).toBe(expected);
+    wrapper.unmount();
   });
 });

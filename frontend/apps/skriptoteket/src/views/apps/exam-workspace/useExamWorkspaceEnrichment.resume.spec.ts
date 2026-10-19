@@ -28,6 +28,7 @@ import type {
   NativeAnswerKeySuggestion,
   NativeExamItem,
 } from "../../../api/examWorkspace";
+import { useAuthStore } from "../../../stores/auth";
 import { useToastStore } from "../../../stores/toast";
 import { buildMatchingItem } from "./examWorkspaceMatchingItem.specSupport";
 import { buildResponse, currentItem, deferred } from "./useExamWorkspaceDocument.specSupport";
@@ -102,6 +103,9 @@ function jobStatus(
 beforeEach(() => {
   vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
   setActivePinia(createPinia());
+  useAuthStore().user = {
+    id: "teacher-a", email: "teacher-a@example.test", role: "admin", auth_provider: "local",
+  };
   for (const mock of Object.values(apiMocks)) {
     mock.mockReset();
   }

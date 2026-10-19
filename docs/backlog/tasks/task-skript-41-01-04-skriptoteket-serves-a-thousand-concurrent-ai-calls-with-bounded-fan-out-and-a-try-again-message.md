@@ -26,6 +26,8 @@ backlog_document_profile: contract-derived
 
 Give Skriptoteket the capacity of ST-SKRIPT-41-01 B7. Today web is one uvicorn process (`pyproject.toml` `serve`), the worker handles one job at a time (`workers/execution_queue_worker.py:98-166`, `RUNNER_MAX_CONCURRENCY=1`), DOCX jobs fan out without limit (`exam_workspace_docx_pipeline.py:225-240`, `item_type_labeling.py:141`), the shared httpx client uses default limits (100 connections) and the database pool is 5 plus 10 per process. Use the existing patterns (the `FOR UPDATE SKIP LOCKED` job claim, the shared client, the error mapping in `web/error_mapping.py`).
 
+Reuse before writing (user 2026-10-18): HuleEdu's `libs/huleedu_service_libs/src/huleedu_service_libs/http_client/httpx_policy.py` (bounded httpx limits with contextual errors) is the pattern for the door client's limits; the lessons of TASK-HULE-23-05-05 apply here too: connection limits and concurrency limits are separate and both sized, retries on a door 429 back off with its `Retry-After` instead of adding pressure, and the load proof counts active calls, not configured ones. The load proof drives the door's D8 mock (ST-HULE-14-03) and may reuse HuleEdu's pressure runner probes.
+
 Non-goals: door internals (TASK-HULE-14-03-01).
 
 ## Contract Inputs

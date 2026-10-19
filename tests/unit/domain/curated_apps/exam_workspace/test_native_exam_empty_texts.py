@@ -105,7 +105,7 @@ def test_a_choice_with_no_text_validates() -> None:
 
 
 def test_a_parent_with_no_instruction_validates() -> None:
-    assert NativeExamParent(parent_id="parent_001", instruction=(), item_ids=("item_001",))
+    assert NativeExamParent(parent_id="parent_001", place=0, instruction=(), item_ids=("item_001",))
 
 
 def test_a_gap_fill_question_with_no_gap_and_no_text_validates() -> None:
@@ -205,7 +205,10 @@ def _two_children_under_an_empty_instruction() -> NativeExamDocument:
         make_free_text_item(sequence=2, item_id="item_002"),
     )
     parent = NativeExamParent(
-        parent_id="parent_001", instruction=(), item_ids=("item_001", "item_002")
+        parent_id="parent_001",
+        place=document.items[0].sequence - 1,
+        instruction=(),
+        item_ids=("item_001", "item_002"),
     )
     return NativeExamDocument.model_validate({**document.model_dump(), "parents": (parent,)})
 

@@ -19,8 +19,7 @@ from skriptoteket.application.editor.prompt_composer import (
 from skriptoteket.application.editor.remote_fallback import RemoteFallbackConsent
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode
-from skriptoteket.domain.identity.models import Role, User
-from skriptoteket.domain.identity.role_guards import require_at_least_role
+from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.editor_chat import (
     EditorChatStreamOrchestratorProtocol,
     EditorChatTurnPreparerProtocol,
@@ -72,8 +71,6 @@ class EditorChatHandler(EditorChatHandlerProtocol):
         actor: User,
         command: EditorChatCommand,
     ) -> AsyncIterator[EditorChatStreamEvent]:
-        require_at_least_role(user=actor, role=Role.CONTRIBUTOR)
-
         guard_acquired = await self._guard.try_acquire(user_id=actor.id, tool_id=command.tool_id)
         if not guard_acquired:
             raise DomainError(code=ErrorCode.CONFLICT, message=IN_FLIGHT_MESSAGE)

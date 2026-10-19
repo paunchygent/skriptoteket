@@ -18,6 +18,7 @@ type EditorWorkspaceDrawersProps = {
   chatError: string | null;
   chatNoticeMessage: string | null;
   chatNoticeVariant: "info" | "warning";
+  aiBlockedNote: string | null;
   isEditOpsLoading: boolean;
   isEditOpsSlow: boolean;
 
@@ -62,6 +63,7 @@ const emit = defineEmits<{
     :error="props.chatError"
     :notice-message="props.chatNoticeMessage"
     :notice-variant="props.chatNoticeVariant"
+    :ai-blocked-note="props.aiBlockedNote"
     :remote-fallback-prompt="props.remoteFallbackPrompt ?? null"
     :is-edit-ops-loading="props.isEditOpsLoading"
     :edit-ops-is-slow="props.isEditOpsSlow"

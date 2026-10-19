@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: "2026-10-18"
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-18'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: Independent ruthless-reviewer 47f15e2d review changes_requested (F1 high, F2-F8; root 01a14e6d evidence/reviews/47f15e2d-1489-4434-8fcf-e662fe6bb770.md); F2-F8 admitted on focused proof (evidence/lead-2061895e/final-report.md); re-review cleared F1 and found F9 high (-rereview.md); second re-review approved F9 at 7667692c (-rereview2.md); merged into main. Staging walk follows with the 40-04-07 merge (v8 seam).
 task_kind: story
 acceptance_criteria:
   - A teacher groups marked standalone questions into a new part, adds an empty part with Ny del, and moves a question into, out of and between parts with Flytta till, each as one undoable step
@@ -79,20 +83,21 @@ Stop and report to the parent in any of these cases:
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term                                                                                                                                                                                                                        |
-| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| G1  | Teachers group one or more standalone questions into a new part with a shared instruction. They move a question into a part, out of a part to standalone, and from one part to another (user 2026-10-18; reverses story P7).                 |
-| G2  | A teacher marks several questions with checkboxes in the question list, and a toolbar action creates a part from them (user 2026-10-18).                                                                                                     |
-| G3  | "Flytta till…" in a question's menu lists the parts and "Ingen del (fristående)" (user 2026-10-18).                                                                                                                                          |
-| G4  | A new part starts with an empty instruction and opens in the instruction editor. An empty instruction is allowed, not printed and has no printed total (user 2026-10-18; 40-04-06 D4).                                                       |
-| G5  | A part may hold no questions. It then exports to QTI as a plain item whose body holds its instruction text and no interaction, which Exam.net imports as an information block, and it never blocks export (user 2026-10-18 after the probe). |
-| G6  | A part's questions stay consecutive, so grouping non-adjacent questions moves them together. Ordering questions are never part members, and the action is refused with a named reason (story P3).                                            |
-| G7  | Every command has one API route, the concurrency guard and one undo step, and none writes the file before Spara. The task ships workspace controls and a real-browser walk (39-06-03 pattern).                                               |
-| G8  | Deleting a part's last question keeps the part as an instruction block, like moving the question out. "Ta bort instruktion" removes the part. This replaces TASK-SKRIPT-39-06-07 D5 (user 2026-10-18).                                       |
-| G9  | "Ny del" in the add menu creates an empty part at the insertion point, with an empty instruction and the editor open (user 2026-10-18).                                                                                                      |
-| G10 | A new part made from non-adjacent questions takes the place of the first marked question. The other marked questions move up to it in their current order, and the questions in between follow the part (user 2026-10-18).                   |
-| G11 | Only standalone questions get a checkbox. A question already in a part moves with "Flytta till…" (user 2026-10-18).                                                                                                                          |
-| G12 | Implementation starts after TASK-SKRIPT-40-04-06 is merged and runs on Hemma in parallel with TASK-SKRIPT-40-04-07. The two leads coordinate the PDF and DOCX printing files (user 2026-10-18).                                              |
-| R1  | A part has its own stored place in the document order, so a part with no questions keeps its position. The exporters, printers, printed totals and the left column read that place.                                                          |
-| R2  | A part with no questions prints its instruction as a text block in its place in the PDF and DOCX. If the instruction is also empty, the part is skipped in QTI, PDF and DOCX and never blocks export.                                        |
-| R3  | A question moved into a part lands at the end of that part.                                                                                                                                                                                  |
+| ID  | Decided contract term                                                                                                                                                                                                                         |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| G1  | Teachers group one or more standalone questions into a new part with a shared instruction. They move a question into a part, out of a part to standalone, and from one part to another (user 2026-10-18; reverses story P7).                  |
+| G2  | A teacher marks several questions with checkboxes in the question list, and a toolbar action creates a part from them (user 2026-10-18).                                                                                                      |
+| G3  | "Flytta till…" in a question's menu lists the parts and "Ingen del (fristående)" (user 2026-10-18).                                                                                                                                           |
+| G4  | A new part starts with an empty instruction and opens in the instruction editor. An empty instruction is allowed, not printed and has no printed total (user 2026-10-18; 40-04-06 D4).                                                        |
+| G5  | A part may hold no questions. It then exports to QTI as a plain item whose body holds its instruction text and no interaction, which Exam.net imports as an information block, and it never blocks export (user 2026-10-18 after the probe).  |
+| G6  | A part's questions stay consecutive, so grouping non-adjacent questions moves them together. Ordering questions are never part members, and the action is refused with a named reason (story P3).                                             |
+| G7  | Every command has one API route, the concurrency guard and one undo step, and none writes the file before Spara. The task ships workspace controls and a real-browser walk (39-06-03 pattern).                                                |
+| G8  | Deleting a part's last question keeps the part as an instruction block, like moving the question out. "Ta bort instruktion" removes the part. This replaces TASK-SKRIPT-39-06-07 D5 (user 2026-10-18).                                        |
+| G9  | "Ny del" in the add menu creates an empty part at the insertion point, with an empty instruction and the editor open (user 2026-10-18).                                                                                                       |
+| G10 | A new part made from non-adjacent questions takes the place of the first marked question. The other marked questions move up to it in their current order, and the questions in between follow the part (user 2026-10-18).                    |
+| G11 | Only standalone questions get a checkbox. A question already in a part moves with "Flytta till…" (user 2026-10-18).                                                                                                                           |
+| G12 | Implementation starts after TASK-SKRIPT-40-04-06 is merged and runs on Hemma in parallel with TASK-SKRIPT-40-04-07. The two leads coordinate the PDF and DOCX printing files (user 2026-10-18).                                               |
+| R1  | A part has its own stored place in the document order, so a part with no questions keeps its position. The exporters, printers, printed totals and the left column read that place.                                                           |
+| R2  | A part with no questions prints its instruction as a text block in its place in the PDF and DOCX. If the instruction is also empty, the part is skipped in QTI, PDF and DOCX and never blocks export.                                         |
+| R3  | A question moved into a part lands at the end of that part.                                                                                                                                                                                   |
+| R4  | A question moved out to "Ingen del (fristående)" lands directly after the part it left; the part keeps its place and its remaining questions, and a part left with no questions stays as an instruction block (Mac parent ruling 2026-10-18). |

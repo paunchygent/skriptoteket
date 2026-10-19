@@ -1,0 +1,5 @@
+## Del 3: kortsvar, 5 poäng
+### Fråga 24. Satsstruktur
+Förklara BIFF-regeln med en mening.
+Svarsexempel: <i>I bisats står inte och andra satsadverbial före det finita verbet.</i>
+Poäng: 1 poäng
