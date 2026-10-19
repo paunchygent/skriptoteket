@@ -19,7 +19,10 @@
  *   disabled. Enter during an IME composition is ignored. An external
  *   `values` change replaces the rows only while nothing is pending (the
  *   local normalized list still equals the last committed list), keeping a
- *   focused empty row the teacher added.
+ *   focused empty row the teacher added. An owner echo of the last commit
+ *   changes no row and no key; a real external change reuses the keys of
+ *   rows whose text is unchanged at the same position, keeping a focused
+ *   empty row at its insertion position.
  *
  * Relationships:
  *   - Rendered later by `ExamWorkspaceGapPopover` for the text-gap section
@@ -191,23 +194,51 @@ function focusFirst(): void {
 }
 
 // Follow externally changed values, but never clobber answers being typed.
+// An echo of the last commit changes no row and no key; a real external
+// change reuses the keys of rows whose text is unchanged at the same
+// position, keeping a focused empty row at its insertion position.
 watch(
   () => props.values,
   (values) => {
     if (!sameValues(normalizedRows(), lastCommitted)) {
       return;
     }
+    if (sameValues(values, normalizedRows())) {
+      lastCommitted = [...values];
+      return;
+    }
     const inputs = rowInputs();
-    const focusedEmptyRow = rows.value.find(
+    const focusedIndex = rows.value.findIndex(
       (row, index) => row.text === "" && inputs[index] === document.activeElement,
     );
-    rows.value = rowsFromValues(values);
+    const focusedEmptyRow = focusedIndex >= 0 ? rows.value[focusedIndex] : undefined;
+    const kept =
+      focusedIndex >= 0
+        ? rows.value.filter((row, index) => index !== focusedIndex)
+        : rows.value;
+    const next: AnswerRow[] = values.map((value, index) =>
+      kept[index] !== undefined && kept[index].text === value
+        ? kept[index]
+        : makeRow(value),
+    );
+    if (next.length === 0) {
+      if (focusedEmptyRow !== undefined) {
+        next.push(focusedEmptyRow);
+      } else {
+        next.push(makeRow(""));
+      }
+    } else if (focusedEmptyRow !== undefined) {
+      next.splice(Math.min(focusedIndex, next.length), 0, focusedEmptyRow);
+    }
+    rows.value = next;
     lastCommitted = [...values];
-    if (focusedEmptyRow) {
-      // Reuse the focused row's key so its input keeps DOM identity and
-      // focus through the patch; the nextTick focus below is a safety net.
-      rows.value.push(focusedEmptyRow);
-      void nextTick(() => focusRowInput(rows.value.length - 1));
+    if (focusedEmptyRow !== undefined) {
+      const keptRow = focusedEmptyRow;
+      // The row keeps its DOM identity through the patch; refocus it at its
+      // reconciled position as a safety net.
+      void nextTick(() => {
+        focusRowInput(rows.value.indexOf(keptRow));
+      });
     }
   },
 );

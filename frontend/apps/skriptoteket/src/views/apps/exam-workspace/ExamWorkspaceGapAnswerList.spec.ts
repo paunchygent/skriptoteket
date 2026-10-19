@@ -19,6 +19,7 @@
 
 import { mount } from "@vue/test-utils";
 import { describe, expect, it } from "vitest";
+import { defineComponent, h, nextTick, ref } from "vue";
 
 import ExamWorkspaceGapAnswerList from "./ExamWorkspaceGapAnswerList.vue";
 
@@ -53,6 +54,29 @@ function removes(wrapper: Wrapper) {
 
 function addButton(wrapper: Wrapper) {
   return wrapper.get<HTMLButtonElement>(`[data-test="${TEST_ID}-add"]`);
+}
+
+/** Mount the list inside a reactive owner that writes every commit back into values. */
+function mountOwner(initial: string[]) {
+  const Host = defineComponent({
+    setup() {
+      const values = ref(initial);
+      return () =>
+        h(ExamWorkspaceGapAnswerList, {
+          values: values.value,
+          label: "Godkända svar för lucka 1",
+          testId: TEST_ID,
+          onCommit: (next: string[]) => {
+            values.value = next;
+          },
+        });
+    },
+  });
+  return mount(Host, { attachTo: document.body });
+}
+
+function ownerInputs(host: ReturnType<typeof mountOwner>) {
+  return host.findAll<HTMLInputElement>(`[data-test="${TEST_ID}-input"]`);
 }
 
 function commits(wrapper: Wrapper): string[][] {
@@ -238,15 +262,15 @@ describe("ExamWorkspaceGapAnswerList", () => {
     wrapper.unmount();
   });
 
-  it("keeps a focused empty row when external values replace the rows", async () => {
+  it("keeps a focused empty row at its insertion position when external values replace the rows", async () => {
     const wrapper = mountList({ values: ["a"] });
     await inputs(wrapper)[0].trigger("keydown", { key: "Enter" });
     await wrapper.vm.$nextTick();
     expect(document.activeElement).toBe(inputs(wrapper)[1].element);
     await wrapper.setProps({ values: ["a", "b"] });
     const rows = inputs(wrapper);
-    expect(rows.map((row) => row.element.value)).toEqual(["a", "b", ""]);
-    expect(document.activeElement).toBe(rows[2].element);
+    expect(rows.map((row) => row.element.value)).toEqual(["a", "", "b"]);
+    expect(document.activeElement).toBe(rows[1].element);
     wrapper.unmount();
   });
 
@@ -255,6 +279,53 @@ describe("ExamWorkspaceGapAnswerList", () => {
     const remove = removes(wrapper)[0];
     expect(remove.attributes("aria-label")).toBe("Ta bort svaret");
     expect(remove.attributes("title")).toBe("Ta bort svaret");
+    wrapper.unmount();
+  });
+
+  it("keeps the focused row through the owner's commit echo", async () => {
+    const host = mountOwner(["a", "b"]);
+    const first = ownerInputs(host)[0];
+    first.element.value = "aa";
+    await first.trigger("input");
+    const committed = first.trigger("change");
+    ownerInputs(host)[1].element.focus();
+    await committed;
+    await nextTick();
+    const after = ownerInputs(host);
+    expect(after.map((row) => row.element.value)).toEqual(["aa", "b"]);
+    expect(after[1].element.isConnected).toBe(true);
+    expect(document.activeElement).toBe(after[1].element);
+    host.unmount();
+  });
+
+  it("keeps an Enter-inserted row at its position through the owner's commit echo", async () => {
+    const host = mountOwner(["a", "b"]);
+    const first = ownerInputs(host)[0];
+    first.element.value = "ax";
+    await first.trigger("input");
+    await first.trigger("keydown", { key: "Enter" });
+    await nextTick();
+    const placed = ownerInputs(host);
+    expect(placed.map((row) => row.element.value)).toEqual(["ax", "", "b"]);
+    const empty = placed[1].element;
+    expect(document.activeElement).toBe(empty);
+    const committed = placed[0].trigger("change");
+    await committed;
+    await nextTick();
+    const after = ownerInputs(host);
+    expect(after.map((row) => row.element.value)).toEqual(["ax", "", "b"]);
+    expect(after[1].element).toBe(empty);
+    expect(document.activeElement).toBe(empty);
+    host.unmount();
+  });
+
+  it("reuses unchanged row keys on a real external change", async () => {
+    const wrapper = mountList({ values: ["a", "b"] });
+    const first = inputs(wrapper)[0].element;
+    await wrapper.setProps({ values: ["a", "c"] });
+    const rows = inputs(wrapper);
+    expect(rows.map((row) => row.element.value)).toEqual(["a", "c"]);
+    expect(rows[0].element).toBe(first);
     wrapper.unmount();
   });
 });
