@@ -52,6 +52,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeItemReviewState,
     NativeParseOrigin,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.points_wording import (
+    with_settled_points_wording,
+)
 from skriptoteket.domain.errors import validation_error
 
 _KINDS = {
@@ -114,7 +117,9 @@ def build_native_exam_from_digiexam(
             for follow in exam.manual_follow_ups
             if follow.item_id in {source.item_id, "exam"}
         )
-        item = _item(source, sequence=len(items) + 1, image_ids=image_ids, reasons=reasons)
+        item = with_settled_points_wording(
+            _item(source, sequence=len(items) + 1, image_ids=image_ids, reasons=reasons)
+        )
         items.append(item)
     if not items:
         raise validation_error("DigiExam-exporten innehåller inga frågetyper som stöds.")

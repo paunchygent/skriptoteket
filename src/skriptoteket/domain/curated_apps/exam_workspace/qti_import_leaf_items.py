@@ -44,6 +44,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeItemReviewState,
     NativeParseOrigin,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.points_wording import (
+    with_settled_points_wording,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.qti_import_body import (
     label_body,
     paragraphs,
@@ -240,19 +243,21 @@ def leaf_item(
         )
     except ValidationError:
         return None
-    return item.model_copy(
-        update={
-            "import_record": NativeExamImportRecord(
-                original_wording=NativeExamOriginalWording(
-                    question_text="\n".join(item.plain_text_lines()),
-                    answer_key_text=answer_key_text,
-                ),
-                steps=(
-                    NativeExamChosenTypeStep(chosen_kind=kind),
-                    NativeExamAnswerKeyStep(origin=answer_key.origin),
-                ),
-            )
-        }
+    return with_settled_points_wording(
+        item.model_copy(
+            update={
+                "import_record": NativeExamImportRecord(
+                    original_wording=NativeExamOriginalWording(
+                        question_text="\n".join(item.plain_text_lines()),
+                        answer_key_text=answer_key_text,
+                    ),
+                    steps=(
+                        NativeExamChosenTypeStep(chosen_kind=kind),
+                        NativeExamAnswerKeyStep(origin=answer_key.origin),
+                    ),
+                )
+            }
+        )
     )
 
 

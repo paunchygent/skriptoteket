@@ -232,6 +232,26 @@ def points_line(text: str) -> bool:
     return rest != text and len(_WORD.findall(rest)) < 3
 
 
+_POINTS_ONLY_REST = re.compile(r"[ \t]*(?:[^\W\d_]+:?[ \t]+[^\W\d_]+:|[^\W\d_]+:?)?[ \t]*")
+
+
+def points_only_line(text: str) -> bool:
+    """A points line holding nothing but an optional short label, such as "Poäng: 6 poäng".
+
+    Exactly one points label, no answer line, and only letter-only label words
+    beside it: nothing, one word with an optional colon ("Max", "Totalt:") or
+    two words ending in a colon ("Max poäng:"). A stem ("Beskriv processen.
+    (2 p)"), an answer blank ("Answer: ____________ (1 point)") and any digit,
+    underscore or punctuation beside the label is prose, never a points-only
+    line.
+    """
+    matches = list(POINT_LABEL.finditer(text))
+    if len(matches) != 1 or not points_line(text) or answer_line(text):
+        return False
+    match = matches[0]
+    return _POINTS_ONLY_REST.fullmatch(text[: match.start()] + text[match.end() :]) is not None
+
+
 # A line's own number, letter or bullet, such as "3.", "b)", "Fråga 3:" or "- ".
 _NUMBERING = re.compile(
     r"^\s*(?:(?:fråga|uppgift|question|task)\s+\d+[a-z]?\s*[.):]?|\d+[a-z]?\s*[.):]|[a-z]\s*[.)]"

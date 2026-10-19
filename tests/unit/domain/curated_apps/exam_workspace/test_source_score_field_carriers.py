@@ -248,3 +248,16 @@ def test_a_points_line_for_other_points_keeps_its_line(line):
 
     assert list(body_text_lines(item.body)) == [QUESTION, line]
     assert item.points == 5
+
+
+def test_a_recovered_label_on_an_answer_line_leaves_the_answer_visible():
+    line = "Answer: ____________ (1 point)"
+    text = f"{QUESTION}\n{line}"
+    spans = native_carrier_spans(
+        text,
+        points=1,
+        emitted=emitted_positions(text, QUESTION),
+        regions=((0, len(text)),),
+    )
+
+    assert spans == ((len(QUESTION) + 1 + line.index("(1 point)"), len(text)),)

@@ -79,6 +79,7 @@ def test_zero_label_is_not_wording() -> None:
         ("Dela upp orden.\n(1 poäng)", 1, "Dela upp orden."),
         ("Svara utförligt och tydligt.\t(2 p)", 2, "Svara utförligt och tydligt."),
         ("Räkna ut svaret. (4,5 p)", 4.5, "Räkna ut svaret."),
+        ("Svara. (1 poäng)", 1, "Svara."),
     ],
 )
 def test_matching_wording_leaves_the_text(
@@ -93,7 +94,6 @@ def test_matching_wording_leaves_the_text(
         ("Fråga. (3 p)", 2),
         ("Fråga. (3 p)", None),
         ("(2 p)", 2),
-        ("Svara. (1 poäng)", 1),
         ("Svara (2 p) och motivera.", 2),
         ("Give 3 points of view.", 3),
     ],
@@ -189,9 +189,15 @@ def test_settled_item_loses_matching_decimal_wording() -> None:
 def test_differing_number_keeps_text_and_review_even_when_run_twice() -> None:
     item = _item((_paragraph(_text("Fråga. (3 p)")),), 2)
     result = with_settled_points_wording(item)
-    assert result == item
+    assert result.body == item.body
+    assert result.points == item.points
     assert result.review == item.review
-    assert with_settled_points_wording(result) == item
+    assert result.leftover_points_text == "(3 p)"
+    second = with_settled_points_wording(result)
+    assert second.body == item.body
+    assert second.points == item.points
+    assert second.review == item.review
+    assert second.leftover_points_text == "(3 p)"
 
 
 def test_missing_points_keeps_text_and_review() -> None:
@@ -277,3 +283,24 @@ def test_settled_item_is_idempotent_and_keeps_points_and_review() -> None:
     assert once.points == 2
     assert once.review == item.review
     assert with_settled_points_wording(once) == once
+
+
+def test_label_on_an_answer_line_is_shape_b_and_leaves_only_the_label() -> None:
+    text = "We have alot.\nAnswer: ____________ (1 point)"
+    assert trailing_points(text) == TrailingPoints(
+        start=text.index(" (1 point)"), value=1, whole_line=False
+    )
+    assert without_trailing_points(text, 1) == "We have alot.\nAnswer: ____________"
+
+
+def test_one_line_stem_with_matching_label_leaves_the_stem() -> None:
+    assert without_trailing_points("Beskriv processen. (2 p)", 2) == "Beskriv processen."
+    assert without_trailing_points("Beskriv processen (2 p)", 2) == "Beskriv processen"
+
+
+def test_one_line_stem_with_other_points_records_the_label() -> None:
+    body = (_paragraph(_text("Beskriv processen. (2 p)")),)
+    assert leftover_points_wording(body, 3) == "(2 p)"
+    item = with_settled_points_wording(_item(body, 3))
+    assert item.body == body
+    assert item.leftover_points_text == "(2 p)"

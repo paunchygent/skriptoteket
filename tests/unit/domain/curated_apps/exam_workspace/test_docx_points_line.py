@@ -10,6 +10,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     points_line,
+    points_only_line,
     printed_points,
     with_printed_points,
 )
@@ -105,6 +106,28 @@ def test_only_complete_points_units_supply_points_and_leave_the_text(
 
 def test_bare_label_followed_by_words_is_not_a_points_line() -> None:
     assert not points_line("Give 3 points of view.")
+
+
+@pytest.mark.parametrize(
+    "text",
+    ["Poäng: 6 poäng", "Totalt: 6 p", "6 p", "(2 p)", "Max 36p", "Max poäng: 6 p"],
+)
+def test_short_label_lines_are_points_only_lines(text: str) -> None:
+    assert points_only_line(text)
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Answer: ____________ (1 point)",
+        "Svar: ______ (2 p)",
+        "Beskriv processen. (2 p)",
+        "Beskriv processen (2 p)",
+        "Give 3 points of view.",
+    ],
+)
+def test_stem_and_answer_lines_are_not_points_only_lines(text: str) -> None:
+    assert not points_only_line(text)
 
 
 def test_a_reply_without_points_keeps_every_body_segment_text() -> None:

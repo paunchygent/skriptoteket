@@ -17,7 +17,7 @@ from dataclasses import dataclass
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     POINT_LABEL,
     label_points,
-    points_line,
+    points_only_line,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeAssetSegment,
@@ -51,7 +51,7 @@ def trailing_points(text: str) -> TrailingPoints | None:
     matches = list(POINT_LABEL.finditer(line))
     if not matches:
         return None
-    if len(matches) == 1 and points_line(line):
+    if len(matches) == 1 and points_only_line(line):
         value = label_points(matches[0].group())
         if value is None:
             return None
