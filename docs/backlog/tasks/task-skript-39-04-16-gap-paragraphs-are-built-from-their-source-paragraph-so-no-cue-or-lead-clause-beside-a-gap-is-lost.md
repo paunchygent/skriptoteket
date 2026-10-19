@@ -147,11 +147,15 @@ source line breaks changed 10 correct items.
 - Branch `codex/task-skript-39-04-gap-source`, worktree
   `/home/paunchygent/apps/skriptoteket-task-skript-39-04-gap-source`; never
   pushed.
-- Units: F1 running (work order `evidence/work-orders/repair-f1-end-picture.md`);
-  F2 and F3 start after F1, in parallel on disjoint files.
-- Next: replays dumped to `~/logs/replays-39-04-gap-source/head2` and
-  classified against `head`; any non-fix difference goes to the parent; then
-  lint, typecheck, `docs-validate` and, on the parent's go, the domain suite.
+- Repairs: F1 `2fdaeb8f` (`pictures_in` end inclusive; picture tests in
+  `test_source_gap_paragraph_pictures.py`), F2 and F3 `389b1aee` (one
+  `blank_runs` call over the whole row unit; `ChunkProvenance` keeps picture
+  occurrences in source order). Each new test fails before its fix; the
+  focused files pass (102 tests); lint and typecheck pass.
+- Replays at `389b1aee` (`~/logs/replays-39-04-gap-source/head2`) are
+  byte-identical to `head` (`d6c2f9af`): no difference, no
+  `gap_count_mismatch`; the 2026-10-18 replay outcome stands.
+- Next: the domain suite on the parent's go; then the parent merges.
 - Retained root:
   `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a14f3e-11d5-7745-90e8-6323496fbf74`.
 
