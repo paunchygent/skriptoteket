@@ -4,18 +4,12 @@ mark as printed; a source answer or facit line is never marked (D4, TASK-SKRIPT-
 reply without points takes the one points label the item's own chunks print, and the label
 leaves the stem (D3)."""
 
-from uuid import uuid4
-
 import pytest
 from pydantic import JsonValue
 
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_admission import (
     admit_batch,
 )
-from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_state import (
-    DocxBuildState,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions import (
     LEFT_OUT_REASON,
 )
@@ -29,54 +23,16 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeItemReviewState,
     NativeParseOrigin,
 )
+from tests.unit.application.curated_apps.handlers.exam_workspace_docx_left_out_test_support import (
+    _STEM,
+    _item,
+    _state,
+    _text,
+)
 
 pytestmark = pytest.mark.unit
 
-_STEM = "1. Beskriv kort hur en intervju planeras."
 _FACIT = "Svar: syfte, urval och frågor bestäms i förväg."
-
-
-def _chunk(anchor: str, text: str) -> DocxChunk:
-    return DocxChunk(anchor, "paragraph", text, text)
-
-
-def _state(*texts: str, grouped_keys: frozenset[str] = frozenset()) -> DocxBuildState:
-    chunks = tuple(_chunk(f"body:{n:04d}", text) for n, text in enumerate(texts, start=1))
-    return DocxBuildState(
-        job_id=uuid4(),
-        document_id=uuid4(),
-        filename="prov.docx",
-        source_sha256="0" * 64,
-        chunks=chunks,
-        questions=(tuple(c.anchor for c in chunks),),
-        grouped_keys=grouped_keys,
-    )
-
-
-def _text(text: str) -> dict[str, JsonValue]:
-    return {"kind": "text", "text": text, "accepted_values": []}
-
-
-def _item(anchors: list[str], **fields: JsonValue) -> dict[str, JsonValue]:
-    item: dict[str, JsonValue] = {
-        "source_anchors": list(anchors),
-        "outcome": "converted",
-        "conflict_kind": None,
-        "review_reason": None,
-        "kind": "free_text",
-        "key_source": None,
-        "facit_text": None,
-        "printed_label": "1",
-        "body": [{"segments": [_text(_STEM[3:])]}],
-        "points": 2,
-        "choices": [],
-        "match_left": [],
-        "match_right": [],
-        "match_pairs": [],
-        "criteria": [],
-    }
-    item.update(fields)
-    return item
 
 
 def _stem_texts(item: NativeExamItem) -> list[str]:

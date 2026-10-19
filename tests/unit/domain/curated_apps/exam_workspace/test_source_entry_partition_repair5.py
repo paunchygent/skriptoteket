@@ -40,7 +40,7 @@ def test_seeded_every_source_word_has_exactly_one_owner():
         text += rng.choice(["", " (2 p)", "\nSvar:\nprivate_answer\nExplanation."])
         chunks = (DocxChunk("body:0001", "paragraph", text, text),)
         surfaces = tuple(
-            EntrySurface(sequence, tuple(models[sequence]), SourceFormatting(chunks))
+            EntrySurface(sequence, tuple(models[sequence]), SourceFormatting(chunks, foreign=()))
             for sequence in sequences
         )
         ownership = plan_entry_ownership(chunks, surfaces)

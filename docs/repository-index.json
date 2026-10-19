@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "0a4b0fccfd147c722b33ae86cbcf6471e50ed585daa955181cf40bde039664ad",
+  "source_set_digest": "0061e6c7b6d19a3271397e689edb4448988530627f3c80b8bf94e8b921431ecb",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5126,6 +5126,25 @@
         "decided_at": "2026-10-18",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "Independent ruthless-reviewer approved 62e178088 after the changes_requested review b313b2b1 (F1, F2 repaired) (root 01a14ea8 evidence/reviews/5d0e4e46-60ae-4112-a287-42f6e5e093aa.md); Hemma suite 4569 passed at 62e178088; D5-D7 user-accepted 2026-10-18 after the measurement and interpretive drop audit (task doc Validation); merged into main with docs-only 263b72713."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-04-15",
+      "type": "task",
+      "title": "A body paragraph aligned to another item's source is rebuilt from the item's own source; listed own chunks are checked for left-out text",
+      "path": "docs/backlog/tasks/task-skript-39-04-15-left-out-check-covers-the-own-chunks-an-item-lists-by-source-alignment-never-by-wording.md",
+      "status": "proposed",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {

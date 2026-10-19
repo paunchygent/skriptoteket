@@ -53,4 +53,4 @@ def item(chunks, body, *, printed_label=None, points=None, key_source=None, faci
 
 
 def projected(chunks, paragraphs):
-    return SourceFormatting(chunks).body(paragraphs)
+    return SourceFormatting(chunks, foreign=()).body(paragraphs)
