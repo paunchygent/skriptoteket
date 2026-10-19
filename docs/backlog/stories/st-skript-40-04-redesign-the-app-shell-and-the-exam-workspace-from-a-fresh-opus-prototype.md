@@ -143,7 +143,7 @@ their own tasks own.
    (done 2026-10-19: main aac5bdfd and 32460f67, staging walks passed).
 10. TASK-SKRIPT-40-04-18: the header opens Provets uppgifter from an Uppgifter
     command, and free-text questions set their writing area and criteria in
-    one boxless answer block (proposed, mockup approved 2026-10-20).
+    one boxless answer block (ready, mockup approved 2026-10-20).
 
 Tasks 2 and 3 run in parallel.
 

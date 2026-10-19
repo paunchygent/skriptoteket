@@ -9,7 +9,7 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-20'
-status: proposed
+status: ready
 closeout_review:
   record: inline
   status: not_started
@@ -32,6 +32,14 @@ On 2026-10-19 the user saw two problems in the exam workspace on staging (main 5
 4. Apply-to-all popover (Q2). "Alla fritextfrågor" opens a popover anchored to it: "Samma skrivyta för alla fritextfrågor", "Alla N fritextfrågor får M rader.", and, when some differ, "1a, 1b och 3a har i dag en annan skrivyta.", with Avbryt and the primary "Använd M rader", which emits the existing `applyToAll`. When every free-text question already has the count, the popover shows a check, "Alla N fritextfrågor har redan M rader." and Stäng. The tool is never disabled for that reason, so it stops looking grey. Escape and Avbryt close the popover and return focus to the tool. The field needs the free-text question labels and their counts from `ExamWorkspaceEditorPane.vue` in place of the boolean `allFreeTextMatch`.
 5. Criteria rows. Each criterion has its text field, a points field with a "p" suffix and a boxless trash tool; below the rows sit a boxless "+ Kriterium" and the line "X av Y p".
 
+Units, each for one implementer, in order. Every glyph is already in the shared catalogue (`info`, `copy`, `decrement`, `add`, `delete`, `completed`), so no shared-package change is needed.
+
+1. Header (item 1): add the Uppgifter command and its separator in `ExamWorkspaceHeader.vue`; turn `.ws-meta` into plain text and delete its button styles; update `ExamWorkspaceHeader.layout.spec.ts` and the other header specs that click `.ws-meta`.
+2. Answer block and criteria (items 2 and 5): in `ExamWorkspaceQuestionEditor.vue`, wrap both free-text fields in one bordered block with the 11rem label column; make the fields render rows for that column in place of their own legends, keeping each row a labelled group for assistive technology; restyle `ExamWorkspaceCriteriaField.vue` (boxless trash and "+ Kriterium", the "p" suffix, the "X av Y p" line); update `ExamWorkspaceQuestionEditor.criteria.spec.ts` and `ExamWorkspaceQuestionEditor.writingLines.spec.ts`.
+3. Skrivyta row and popover (items 3 and 4): restyle the stepper and the fixed count slot in `ExamWorkspaceWritingLinesField.vue`; add the "Alla fritextfrågor" tool and its popover with both states. Replace `allFreeTextWritingLines` in `ExamWorkspaceEditorPane.vue` and `allFreeTextWritingLinesMatch` in the question editor with one summary of the free-text questions: how many there are and the numbers (as the question list shows them, for example 1a) of those whose count differs from this question's. The popover closes on Escape, Avbryt, Stäng, an outside click and after Använd, and returns focus to the tool. Update `ExamWorkspaceWritingLinesField.spec.ts`.
+
+Unit 3 starts after unit 2, because both change the free-text branch of `ExamWorkspaceQuestionEditor.vue`. Unit 1 touches other files and can run in parallel with unit 2.
+
 Non-goals: no change to the document format, the stepper bounds (1-40), the criteria data or the drawer's contents; no new glyph meaning.
 
 ## Contract Inputs
@@ -44,7 +52,7 @@ Non-goals: no change to the document format, the stepper bounds (1-40), the crit
 
 ### Resume here
 
-2026-10-20: written from the approved mockup. Next action: plan the units and mark the task `ready` for implementation.
+2026-10-20: written from the approved mockup; units planned and status `ready` (the user asked for both in this session). Next action: start implementation in a task worktree through `agent-implementation`.
 
 ### Map
 

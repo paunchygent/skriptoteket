@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "4874461e5a31c5ce9c302977da459bf701be8054b4427c5c8ae98c35dbe85eae",
+  "source_set_digest": "81f943a179bd8a487f19033031c0f48f037437439610125049b48afba98236f8",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6943,7 +6943,7 @@
       "type": "task",
       "title": "The exam workspace header opens Provets uppgifter from an Uppgifter command and free-text questions set their writing area and criteria in one boxless answer block",
       "path": "docs/backlog/tasks/task-skript-40-04-18-the-exam-workspace-header-opens-provets-uppgifter-from-an-uppgifter-command-and-free-text-questions-set-their-writing-area-and-criteria-in-one-boxless-answer-block.md",
-      "status": "proposed",
+      "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
