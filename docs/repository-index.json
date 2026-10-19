@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "0bef90c2eae34eb8c477c3b1cba88bfc7a33a38db6431ba7e25eb6377294121c",
+  "source_set_digest": "a1d17c72042c0713c7d364bc9070923e54a47f55701e1c5b675dccccb0e5af94",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5195,6 +5195,25 @@
         "decided_at": "2026-10-19",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "Pi ruthless-reviewer 7ac4ca2f reviewed 5d70a359: no high findings, one medium (two test guards skipped every fallback item, so a review_complete item with a leaked label passed). Repaired at a8cd8181 (guards skip only review_required fallback-imported items, D9 amended, a test built on the reviewer probe failed before the fix) and admitted by the parent on focused proof without rereview: 120 focused tests, lint, typecheck and docs-validate pass; domain suite 4262 passed at 48852ace; replays change only svenska_2 item_001 in both variants, as decided in G1/G2 (user 2026-10-19). Merged to main at a8cd8181 on 2026-10-19."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-04-20",
+      "type": "task",
+      "title": "A paragraph that holds only a score field is consumed whole as the points source and leaves no slash in the question",
+      "path": "docs/backlog/tasks/task-skript-39-04-20-a-paragraph-that-holds-only-a-score-field-is-consumed-whole-as-the-points-source-and-leaves-no-slash-in-the-question.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {
