@@ -101,8 +101,18 @@ chunks and its parent's source anchors.
   `/home/paunchygent/apps/skriptoteket-task-skript-39-04-left-out-remote`, from
   `origin/main` `ffbfa953`. Never pushed.
 - Retained root `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a15302-b287-7db2-91ec-8e9629121eb1`.
-- State: U1 and U2 done; domain suite run; waiting for independent review (routed by
-  the orchestrator).
+- State: review c54c4ae4 at `e3410b1e` changes_requested, two medium structural
+  findings, both repaired as pure moves; waiting for the orchestrator's admission (no
+  rereview required).
+- Review c54c4ae4 M1 (junior `3c47a310`, `760dc1ff`): the printed-points admission tests
+  moved from `test_exam_workspace_docx_left_out_admission.py` (344 lines) to
+  `test_exam_workspace_docx_points_label_admission.py` (176 lines); `_stem_texts` moved
+  into the shared test support module; 17 tests before and after.
+- Review c54c4ae4 M2 (junior `5d4ca7b7`, `952da449`): `aligned_native_item` and its
+  helpers moved from `docx_ai_build.py` (239 lines) to `docx_ai_item.py` (275 lines); every
+  importer imports each symbol from its owner (`review_source_item` from
+  `docx_source_review`); every function body unchanged.
+- Proof after the repairs: 544 focused tests pass; lint and backend typecheck clean.
 - Domain suite at `fbf9ed95` (application, domain, web and infrastructure curated_apps;
   `evidence/domain-suite-fbf9ed95.log`): 5480 passed, 59 skipped, 15 failed. All 15 are
   `tests/unit/web/test_spa_fallback.py` (HTTP 500). They fail the same way at
