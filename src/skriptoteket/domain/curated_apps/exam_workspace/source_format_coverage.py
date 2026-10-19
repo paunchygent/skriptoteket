@@ -214,6 +214,9 @@ def complete_source_formatting(
         if paragraph.heading is not None
         and paragraph.start not in heading_chunk_paragraphs
         and paragraph.start not in projected
+        and not is_answer_space_paragraph(
+            body_source.text, paragraph.start, paragraph.end, body_source.picture_offsets
+        )
     ]
     if unprojected_headings:
         # Restore only the omitted source-backed blocks. Existing native
