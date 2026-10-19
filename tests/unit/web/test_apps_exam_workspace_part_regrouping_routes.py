@@ -29,6 +29,7 @@ from skriptoteket.web.middleware.error_handler import error_handler_middleware
 from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents import (
     _actor,
     _Env,
+    _leased_tab,
 )
 from tests.unit.application.curated_apps.handlers.test_exam_workspace_history_contract import (
     _undo_handler,
@@ -42,6 +43,7 @@ async def test_group_empty_and_move_routes_are_guarded_undoable_and_named() -> N
     actor = _actor()
     imported = await env.seed_document(actor=actor)
     lineage_id = imported.document.document_id
+    tab = str(await _leased_tab(env, actor, lineage_id))
     undo_steps = _undo_handler(env)
     handler = ExamWorkspaceParentsHandler(reader=env.get_handler, undo_steps=undo_steps)
     container = make_async_container(
@@ -72,14 +74,22 @@ async def test_group_empty_and_move_routes_are_guarded_undoable_and_named() -> N
             ).history_cursor
             stale = await client.post(
                 path + "/group",
-                json={"expected_cursor": str(uuid4()), "item_ids": ["item_001", "item_003"]},
+                json={
+                    "expected_cursor": str(uuid4()),
+                    "item_ids": ["item_001", "item_003"],
+                    "tab_id": tab,
+                },
             )
             assert stale.status_code == 409, stale.text
             assert stale.json()["error"]["code"] == "CONFLICT"
 
             grouped_response = await client.post(
                 path + "/group",
-                json={"expected_cursor": str(cursor), "item_ids": ["item_001", "item_003"]},
+                json={
+                    "expected_cursor": str(cursor),
+                    "item_ids": ["item_001", "item_003"],
+                    "tab_id": tab,
+                },
             )
             assert grouped_response.status_code == 200, grouped_response.text
             grouped = ExamWorkspaceCreatedPartResponse.model_validate(grouped_response.json())
@@ -91,7 +101,7 @@ async def test_group_empty_and_move_routes_are_guarded_undoable_and_named() -> N
 
             empty_response = await client.post(
                 path + "/empty",
-                json={"expected_cursor": str(grouped.history_cursor), "position": 0},
+                json={"expected_cursor": str(grouped.history_cursor), "position": 0, "tab_id": tab},
             )
             assert empty_response.status_code == 200, empty_response.text
             emptied = ExamWorkspaceCreatedPartResponse.model_validate(empty_response.json())
@@ -105,6 +115,7 @@ async def test_group_empty_and_move_routes_are_guarded_undoable_and_named() -> N
                 path + "/move",
                 json={
                     "expected_cursor": str(emptied.history_cursor),
+                    "tab_id": tab,
                     "item_id": "item_005",
                     "target_parent_id": grouped.created_parent_id,
                 },
@@ -120,6 +131,7 @@ async def test_group_empty_and_move_routes_are_guarded_undoable_and_named() -> N
                 path + "/move",
                 json={
                     "expected_cursor": str(moved_in.history_cursor),
+                    "tab_id": tab,
                     "item_id": "item_005",
                     "target_parent_id": None,
                 },
@@ -130,7 +142,11 @@ async def test_group_empty_and_move_routes_are_guarded_undoable_and_named() -> N
 
             in_part = await client.post(
                 path + "/group",
-                json={"expected_cursor": str(moved_out.history_cursor), "item_ids": ["item_001"]},
+                json={
+                    "expected_cursor": str(moved_out.history_cursor),
+                    "item_ids": ["item_001"],
+                    "tab_id": tab,
+                },
             )
             assert in_part.status_code == 422, in_part.text
             assert in_part.json()["error"]["details"]["reason"] == "item_in_part"
@@ -139,6 +155,7 @@ async def test_group_empty_and_move_routes_are_guarded_undoable_and_named() -> N
                 path + "/move",
                 json={
                     "expected_cursor": str(moved_out.history_cursor),
+                    "tab_id": tab,
                     "item_id": "item_005",
                     "target_parent_id": None,
                 },
@@ -150,6 +167,7 @@ async def test_group_empty_and_move_routes_are_guarded_undoable_and_named() -> N
                 path + "/move",
                 json={
                     "expected_cursor": str(moved_out.history_cursor),
+                    "tab_id": tab,
                     "item_id": "item_005",
                     "target_parent_id": "parent_999",
                 },
@@ -159,7 +177,11 @@ async def test_group_empty_and_move_routes_are_guarded_undoable_and_named() -> N
 
             unmarked = await client.post(
                 path + "/group",
-                json={"expected_cursor": str(moved_out.history_cursor), "item_ids": []},
+                json={
+                    "expected_cursor": str(moved_out.history_cursor),
+                    "item_ids": [],
+                    "tab_id": tab,
+                },
             )
             assert unmarked.status_code == 422, unmarked.text
             assert "detail" in unmarked.json()

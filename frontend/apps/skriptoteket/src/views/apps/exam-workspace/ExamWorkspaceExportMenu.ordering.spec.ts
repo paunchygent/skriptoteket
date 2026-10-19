@@ -2,8 +2,10 @@
  * Exam workspace export menu with an ordering blocker.
  *
  * Expected behavior:
- *   A red ordering row in the blocker list disables every format before any
- *   click, and an exam without blockers leaves them enabled.
+ *   A red ordering row in the blocker list marks every split part
+ *   aria-disabled before any click, and an exam without blockers leaves them
+ *   enabled. Parts never take the native disabled attribute, so focus stays
+ *   on the running part.
  */
 
 import { createTestingPinia } from "@pinia/testing";
@@ -46,6 +48,7 @@ function mountMenu(blockers: ExamWorkspaceBlockerEntry[]) {
       blockers,
       checklistCount: 0,
       disabled: false,
+      exportingDestination: null,
       exportingTarget: null,
       fixDisabled: false,
       isPhone: false,
@@ -62,11 +65,13 @@ async function openMenu(wrapper: ReturnType<typeof mountMenu>): Promise<void> {
 }
 
 function formatState(target: string) {
-  const row = document.body.querySelector(`[data-test="exam-workspace-export-${target}"]`);
+  const download = document.body.querySelector(`[data-test="exam-workspace-export-${target}"]`);
   const save = document.body.querySelector(`[data-test="exam-workspace-export-save-${target}"]`);
   return {
-    ariaDisabled: row?.getAttribute("aria-disabled"),
-    saveDisabled: (save as HTMLButtonElement | null)?.disabled,
+    downloadAriaDisabled: download?.getAttribute("aria-disabled"),
+    downloadNativeDisabled: download?.hasAttribute("disabled"),
+    saveAriaDisabled: save?.getAttribute("aria-disabled"),
+    saveNativeDisabled: save?.hasAttribute("disabled"),
   };
 }
 
@@ -79,7 +84,12 @@ describe("ExamWorkspaceExportMenu ordering blocker", () => {
 
     expect(document.body.textContent).toContain("för få steg");
     for (const { target } of EXAM_WORKSPACE_EXPORT_FORMATS) {
-      expect(formatState(target)).toEqual({ ariaDisabled: "true", saveDisabled: true });
+      expect(formatState(target)).toEqual({
+        downloadAriaDisabled: "true",
+        downloadNativeDisabled: false,
+        saveAriaDisabled: "true",
+        saveNativeDisabled: false,
+      });
     }
     wrapper.unmount();
   });
@@ -87,7 +97,9 @@ describe("ExamWorkspaceExportMenu ordering blocker", () => {
   it("emits no download when a disabled format is clicked", async () => {
     const wrapper = mountMenu([ORDERING_ROW]);
     await openMenu(wrapper);
-    (document.body.querySelector('[data-test="exam-workspace-export-qti"]') as HTMLElement).click();
+    const qti = document.body.querySelector<HTMLElement>('[data-test="exam-workspace-export-qti"]');
+    expect(qti).not.toBeNull();
+    qti?.click();
 
     expect(wrapper.emitted("download")).toBeUndefined();
     wrapper.unmount();
@@ -98,7 +110,12 @@ describe("ExamWorkspaceExportMenu ordering blocker", () => {
     await openMenu(wrapper);
 
     for (const { target } of EXAM_WORKSPACE_EXPORT_FORMATS) {
-      expect(formatState(target)).toEqual({ ariaDisabled: null, saveDisabled: false });
+      expect(formatState(target)).toEqual({
+        downloadAriaDisabled: null,
+        downloadNativeDisabled: false,
+        saveAriaDisabled: null,
+        saveNativeDisabled: false,
+      });
     }
     wrapper.unmount();
   });

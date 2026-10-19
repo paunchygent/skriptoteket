@@ -34,6 +34,7 @@ function item(itemId: string, text: string, sequence = 0): NativeExamItem {
     criteria: [],
     facit_text: null,
     gaps: [],
+    kept_gaps: [],
     import_record: null,
     item_id: itemId,
     kind: "free_text",
@@ -52,6 +53,7 @@ function item(itemId: string, text: string, sequence = 0): NativeExamItem {
     },
     sequence,
     source_anchor: null,
+    source_points: null,
     suggested_kind: null,
     tick_points: null,
   };
@@ -79,7 +81,7 @@ function document(
     origin: { kind: "docx_import" },
     parents,
     revision,
-    schema_version: "native_exam_document_v8",
+    schema_version: "native_exam_document_v9",
     title: "Prov",
   };
 }

@@ -11,7 +11,7 @@
  */
 
 import { flushPromises } from "@vue/test-utils";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type {
   ExamWorkspaceDocumentResponse,
@@ -19,7 +19,8 @@ import type {
   NativeExamItemKind,
 } from "../../api/examWorkspace";
 import ExamWorkspaceQuestionEditor from "./exam-workspace/ExamWorkspaceQuestionEditor.vue";
-import { buildResponse, mountExamWorkspace } from "./ExamWorkspaceSlice.specSupport";
+import { buildResponse, mountExamWorkspace, unmountExamWorkspace } from "./ExamWorkspaceSlice.specSupport";
+import { arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
 import type { ViewWrapper } from "./ExamWorkspaceSlice.specSupport";
 
 type NativeExamAsset = ExamWorkspaceDocumentResponse["document"]["assets"][number];
@@ -29,10 +30,13 @@ const apiMocks = vi.hoisted(() => ({
   findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
+  getExamWorkspaceHistory: vi.fn(),
+  getExamWorkspaceHistoryStep: vi.fn(),
+  moveExamWorkspaceHistoryPosition: vi.fn(),
+  storeExamWorkspaceUndoStep: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
   retryExamWorkspaceItem: vi.fn(),
-  saveExamWorkspaceDocument: vi.fn(),
 }));
 const exportApiMocks = vi.hoisted(() => ({
   downloadExamWorkspaceExport: vi.fn(),
@@ -80,6 +84,7 @@ function reviewItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
     body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Förklara begreppet." }] }],
     choices: [],
     gaps: [],
+    kept_gaps: [],
     item_id: "item_001",
     kind: "free_text",
     match_left: [],
@@ -95,6 +100,7 @@ function reviewItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
     retry_source: retrySource("gap_fill"),
     sequence: 1,
     source_anchor: "body:0001",
+    source_points: null,
     suggested_kind: null,
     tick_points: null,
     writing_lines: 8,
@@ -152,6 +158,11 @@ beforeEach(() => {
   for (const mock of [...Object.values(apiMocks), ...Object.values(exportApiMocks)]) {
     mock.mockReset();
   }
+  arrangeStepHistory(apiMocks);
+});
+
+afterEach(() => {
+  unmountExamWorkspace();
 });
 
 describe("ExamWorkspaceView retry slice", () => {

@@ -41,13 +41,13 @@ import { arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
 const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceHistory: vi.fn(),
   getExamWorkspaceHistoryStep: vi.fn(),
+  moveExamWorkspaceHistoryPosition: vi.fn(),
   storeExamWorkspaceUndoStep: vi.fn(),
   findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
-  saveExamWorkspaceDocument: vi.fn(),
 }));
 const exportApiMocks = vi.hoisted(() => ({
   downloadExamWorkspaceExport: vi.fn(),
@@ -105,9 +105,9 @@ describe("ExamWorkspaceView export zero-points note", () => {
     const menuNotes = pageAll("exam-workspace-export-zero-points");
     expect(menuNotes).toHaveLength(1);
     expect(menuNotes[0]?.text()).toBe(ZERO_POINTS_NOTE);
-    expect(requirePage("exam-workspace-export-qti").text()).toContain(ZERO_POINTS_NOTE);
-    expect(requirePage("exam-workspace-export-pdf").text()).not.toContain("0 poäng");
-    expect(requirePage("exam-workspace-export-docx").text()).not.toContain("0 poäng");
+    expect(requirePage("exam-workspace-export-row-qti").text()).toContain(ZERO_POINTS_NOTE);
+    expect(requirePage("exam-workspace-export-row-pdf").text()).not.toContain("0 poäng");
+    expect(requirePage("exam-workspace-export-row-docx").text()).not.toContain("0 poäng");
     expect(menuFormatDisabled("qti")).toBeUndefined();
     await requirePage("exam-workspace-export-qti").trigger("click");
     await flushPromises();
@@ -119,9 +119,9 @@ describe("ExamWorkspaceView export zero-points note", () => {
     expect(drawer.get('[data-test="exam-workspace-export-zero-points"]').text()).toBe(
       ZERO_POINTS_NOTE,
     );
-    await wrapper.get('[data-test="exam-workspace-export-format-pdf"]').trigger("click");
+    await wrapper.get<HTMLInputElement>('[data-test="exam-workspace-export-format-pdf"]').setValue(true);
     expect(drawer.find('[data-test="exam-workspace-export-zero-points"]').exists()).toBe(false);
-    await wrapper.get('[data-test="exam-workspace-export-format-qti"]').trigger("click");
+    await wrapper.get<HTMLInputElement>('[data-test="exam-workspace-export-format-qti"]').setValue(true);
     expect(drawer.get('[data-test="exam-workspace-export-zero-points"]').text()).toBe(
       ZERO_POINTS_NOTE,
     );
@@ -138,10 +138,10 @@ describe("ExamWorkspaceView export zero-points note", () => {
 
     await openMenu(wrapper);
     expect(page("exam-workspace-export-zero-points")).toBeNull();
-    expect(requirePage("exam-workspace-export-qti").text()).not.toContain("0 poäng");
+    expect(requirePage("exam-workspace-export-row-qti").text()).not.toContain("0 poäng");
     await closeMenu(wrapper);
     await openExportDrawer(wrapper);
-    await wrapper.get('[data-test="exam-workspace-export-format-qti"]').trigger("click");
+    await wrapper.get<HTMLInputElement>('[data-test="exam-workspace-export-format-qti"]').setValue(true);
     expect(wrapper.find('[data-test="exam-workspace-export-zero-points"]').exists()).toBe(false);
     expect(wrapper.get('[data-test="exam-workspace-drawer-export"]').text()).not.toContain(
       "0 poäng",
@@ -269,7 +269,6 @@ describe("ExamWorkspaceView export checklist", () => {
 
     await selectItemRow(wrapper, "item_002");
     await wrapper.find('[data-test="exam-workspace-item-points-input"]').setValue("7");
-    apiMocks.saveExamWorkspaceDocument.mockResolvedValue(exportableResponse({ version: 2 }));
     await saveDocument(wrapper);
 
     const freshChecklist: ExamWorkspaceExportChecklistResponse = {
@@ -277,7 +276,7 @@ describe("ExamWorkspaceView export checklist", () => {
       entries: [
         {
           kind: "all_or_nothing",
-          question_number: "3",
+          item_id: "item_003",
           question_text: "Ny fråga efter sparning.",
           points: 2,
         },
@@ -294,7 +293,7 @@ describe("ExamWorkspaceView export checklist", () => {
     expect(findLossEntry(wrapper, "Ny fråga efter sparning.")).toBeDefined();
     expect(findLossEntry(wrapper, "Förklara fotosyntesen.")).toBeUndefined();
     expect(exportApiMocks.getExamWorkspaceExportChecklist).toHaveBeenNthCalledWith(1, "lineage-1", 1);
-    expect(exportApiMocks.getExamWorkspaceExportChecklist).toHaveBeenNthCalledWith(2, "lineage-1", 2);
+    expect(exportApiMocks.getExamWorkspaceExportChecklist).toHaveBeenNthCalledWith(2, "lineage-1", 1);
   });
 
   it("warns without claiming the export failed when the checklist request fails", async () => {

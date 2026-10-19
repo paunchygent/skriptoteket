@@ -21,6 +21,7 @@ import {
   createIds,
   exam,
   installGuestStoreObjectUrls,
+  LEASE_TAB_ID,
   pictureExam,
   setupGuestStore,
   startBlank,
@@ -51,6 +52,7 @@ describe("examWorkspaceGuestStore exports and limits", () => {
       .createExamWorkspaceParent(DOCUMENT_ID, {
         child: newTeacherItem("item_002", 2, "free_text"),
         expected_cursor: opened.history_cursor,
+        tab_id: LEASE_TAB_ID,
         instruction: [],
         position: 0,
       })
@@ -70,13 +72,21 @@ describe("examWorkspaceGuestStore exports and limits", () => {
       true,
     );
 
-    // The editor's working copy drops the picture; the saved copy still declares it.
+    // A stored step is the save: the saved copy follows the step at once.
     const step = await context.store.store.shared.storeExamWorkspaceUndoStep(DOCUMENT_ID, {
       afterStepId: null,
       document: exam("Utkast"),
       expectedCursor: seeded.cursor,
+      tabId: LEASE_TAB_ID,
     });
     expect(step.document.title).toBe("Utkast");
+
+    // The old saved revision no longer owns the slot.
+    const superseded = await context.store.store.shared
+      .downloadExamWorkspaceExport(DOCUMENT_ID, "qti", 1)
+      .catch((caught: unknown) => caught);
+    expect(superseded).toBeInstanceOf(ApiError);
+    expect(superseded).toMatchObject({ code: "CONFLICT", status: 409 });
 
     context.mocks.exportDownload.mockResolvedValueOnce({
       blob: new Blob(["zip"]),
@@ -86,13 +96,13 @@ describe("examWorkspaceGuestStore exports and limits", () => {
     const result = await context.store.store.shared.downloadExamWorkspaceExport(
       DOCUMENT_ID,
       "qti",
-      1,
+      2,
     );
 
     const [target, request] = context.mocks.exportDownload.mock.calls[0]!;
     expect(target).toBe("qti");
-    expect(request.document).toEqual(saved);
-    expect(request.document.title).toBe("Sparad");
+    expect(request.document.title).toBe("Utkast");
+    expect(request.document.revision).toBe(2);
     expect(Object.keys(request.assets)).toEqual(["asset_001"]);
     expect(request.assets["asset_001"]).toBe(png);
     expect(result.filename).toBe("prov.zip");

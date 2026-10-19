@@ -45,6 +45,7 @@ function reviewItem(): NativeExamItem {
     body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Förklara begreppet." }] }],
     choices: [],
     gaps: [],
+    kept_gaps: [],
     item_id: "item_001",
     kind: "free_text",
     match_left: [],
@@ -55,6 +56,7 @@ function reviewItem(): NativeExamItem {
     retry_source: { chunks: [], context_chunks: [], owned_context_anchors: [], key_chunks: [], label_kind: "gap_fill" },
     sequence: 1,
     source_anchor: "body:0001",
+    source_points: null,
     suggested_kind: null,
     tick_points: null,
   };

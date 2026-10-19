@@ -6,10 +6,13 @@
  *   One floating menu for every workspace menu (Spara, Exportera, Ny uppgift,
  *   Byt frågetyp, ⋮): it opens under its trigger, right- or left-aligned and
  *   kept inside the window, full width with 12 px margins on a phone. The
- *   first enabled entry takes focus; ArrowUp/ArrowDown, Home and End move
- *   between enabled entries (disabled and reserved entries are skipped);
- *   Escape closes and returns focus to the trigger; Tab or a press outside
- *   closes it.
+ *   menu holds rows: a row is either a `role="group"` wrapping that row's
+ *   entries or one standalone entry. The first enabled entry takes focus;
+ *   ArrowUp/ArrowDown move between rows keeping the part column,
+ *   ArrowLeft/ArrowRight move between the parts of one group row and stop at
+ *   its ends (disabled and reserved entries are skipped); Home and End move
+ *   to the first and last row; Escape closes and returns focus to the
+ *   trigger; Tab or a press outside closes it.
  *
  * Relationships:
  *   - Rendered by the trigger's owner, which supplies the entries (`.xw-mi`
@@ -46,6 +49,31 @@ function entries(): HTMLElement[] {
   return Array.from(surface.value?.querySelectorAll<HTMLElement>(ENTRY_SELECTOR) ?? []);
 }
 
+function rows(): HTMLElement[][] {
+  const menu = surface.value;
+  if (menu === null) {
+    return [];
+  }
+  const result: HTMLElement[][] = [];
+  const grouped = new Map<Element, HTMLElement[]>();
+  for (const entry of entries()) {
+    const candidate = entry.closest('[role="group"]');
+    const group = candidate !== null && menu.contains(candidate) ? candidate : null;
+    if (group === null) {
+      result.push([entry]);
+      continue;
+    }
+    let row = grouped.get(group);
+    if (row === undefined) {
+      row = [];
+      grouped.set(group, row);
+      result.push(row);
+    }
+    row.push(entry);
+  }
+  return result;
+}
+
 function place(): void {
   const anchor = props.anchor;
   const menu = surface.value;
@@ -75,8 +103,15 @@ function close(restoreFocus: boolean): void {
 }
 
 function onPointerDown(event: PointerEvent): void {
-  const target = event.target as Node | null;
-  if (!target || surface.value?.contains(target) || props.anchor?.contains(target)) {
+  const target = event.target;
+  if (target === null) {
+    return;
+  }
+  if (!(target instanceof Node)) {
+    close(false);
+    return;
+  }
+  if (surface.value?.contains(target) || props.anchor?.contains(target)) {
     return;
   }
   close(false);
@@ -93,25 +128,49 @@ function onKeydown(event: KeyboardEvent): void {
     close(false);
     return;
   }
+  const all = rows();
+  if (all.length === 0) {
+    return;
+  }
+  const focused = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  const activeRow = focused === null ? -1 : all.findIndex((row) => row.includes(focused));
+  const activeColumn = focused === null || activeRow < 0 ? 0 : (all[activeRow]?.indexOf(focused) ?? 0);
+  if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+    const group = focused?.closest('[role="group"]') ?? null;
+    if (focused === null || group === null || !(surface.value?.contains(group) ?? false)) {
+      return;
+    }
+    const row = all[activeRow];
+    if (row === undefined) {
+      return;
+    }
+    const next = activeColumn + (event.key === "ArrowRight" ? 1 : -1);
+    event.preventDefault();
+    if (next < 0 || next >= row.length) {
+      return;
+    }
+    row[next]?.focus();
+    return;
+  }
   if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) {
     return;
   }
-  const list = entries();
-  if (list.length === 0) {
-    return;
-  }
   event.preventDefault();
-  const at = list.indexOf(document.activeElement as HTMLElement);
-  const last = list.length - 1;
-  const next =
+  const last = all.length - 1;
+  const rowIndex =
     event.key === "Home"
       ? 0
       : event.key === "End"
         ? last
-        : at < 0
+        : activeRow < 0
           ? event.key === "ArrowDown" ? 0 : last
-          : (at + (event.key === "ArrowDown" ? 1 : -1) + list.length) % list.length;
-  list[next]?.focus();
+          : (activeRow + (event.key === "ArrowDown" ? 1 : -1) + all.length) % all.length;
+  const target = all[rowIndex];
+  if (target === undefined) {
+    return;
+  }
+  const column = event.key === "Home" || event.key === "End" || activeColumn >= target.length ? 0 : activeColumn;
+  target[column]?.focus();
 }
 
 function onResize(): void {

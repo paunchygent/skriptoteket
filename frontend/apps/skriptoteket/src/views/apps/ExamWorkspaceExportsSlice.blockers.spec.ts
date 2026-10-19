@@ -39,13 +39,13 @@ import { arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
 const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceHistory: vi.fn(),
   getExamWorkspaceHistoryStep: vi.fn(),
+  moveExamWorkspaceHistoryPosition: vi.fn(),
   storeExamWorkspaceUndoStep: vi.fn(),
   findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
-  saveExamWorkspaceDocument: vi.fn(),
 }));
 const exportApiMocks = vi.hoisted(() => ({
   downloadExamWorkspaceExport: vi.fn(),
@@ -88,7 +88,6 @@ describe("ExamWorkspaceView export blockers", () => {
       contentType: "application/zip",
       filename: "NO-prov HT25.zip",
     });
-    apiMocks.saveExamWorkspaceDocument.mockResolvedValue(exportableResponse({ version: 2 }));
     importDefaultFixture();
     const wrapper = await mountImported();
 
@@ -98,7 +97,7 @@ describe("ExamWorkspaceView export blockers", () => {
     expect(requirePage("exam-workspace-blocker-item_004").text()).toBe("Fråga 4: facit ej granskat");
     for (const target of ["qti", "pdf", "docx"]) {
       expect(menuFormatDisabled(target)).toBe("true");
-      expect(requirePage(`exam-workspace-export-save-${target}`).attributes("disabled")).toBeDefined();
+      expect(requirePage(`exam-workspace-export-save-${target}`).attributes("aria-disabled")).toBe("true");
     }
     await requirePage("exam-workspace-export-qti").trigger("click");
     await flushPromises();
@@ -118,14 +117,16 @@ describe("ExamWorkspaceView export blockers", () => {
     // One click on the enabled format saves the approvals and exports that version.
     await requirePage("exam-workspace-export-qti").trigger("click");
     await flushPromises();
-    expect(apiMocks.saveExamWorkspaceDocument).toHaveBeenCalledTimes(1);
-    const saved = apiMocks.saveExamWorkspaceDocument.mock.calls[0]![1].document;
+    // The export stores the approvals as steps first, then exports the confirmed file version.
+    const stores = apiMocks.storeExamWorkspaceUndoStep.mock.calls;
+    expect(stores.length).toBeGreaterThan(0);
+    const saved = stores[stores.length - 1]![1].document;
     for (const itemId of ["item_003", "item_004"]) {
       expect(saved.items.find((item: { item_id: string }) => item.item_id === itemId).answer_key.origin)
         .toBe("reviewed_advisory");
     }
-    expect(exportApiMocks.downloadExamWorkspaceExport).toHaveBeenCalledWith("lineage-1", "qti", 2);
-    expect(apiMocks.saveExamWorkspaceDocument.mock.invocationCallOrder[0]!).toBeLessThan(
+    expect(exportApiMocks.downloadExamWorkspaceExport).toHaveBeenCalledWith("lineage-1", "qti", 1);
+    expect(apiMocks.storeExamWorkspaceUndoStep.mock.invocationCallOrder[0]!).toBeLessThan(
       exportApiMocks.downloadExamWorkspaceExport.mock.invocationCallOrder[0]!,
     );
     expect(requirePage("exam-workspace-export-menu-result").text()).toBe("QTI-paketet är skapat.");
@@ -369,7 +370,6 @@ describe("ExamWorkspaceView export blockers", () => {
         status: 422,
       }),
     );
-    apiMocks.saveExamWorkspaceDocument.mockResolvedValue(exportableResponse({ version: 2 }));
     const wrapper = await mountImported();
     await exportFromMenu(wrapper, "docx");
     await openExportDrawer(wrapper);

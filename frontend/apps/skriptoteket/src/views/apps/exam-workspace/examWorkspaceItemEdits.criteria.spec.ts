@@ -11,7 +11,8 @@
 import { describe, expect, it } from "vitest";
 
 import type { NativeExamItem } from "../../../api/examWorkspace";
-import { newTeacherItem, withCriteria } from "./examWorkspaceItemEdits";
+import { newTeacherItem, withCriteria, withPoints } from "./examWorkspaceItemEdits";
+import { plainBody } from "./examWorkspaceRichText";
 
 function buildFreeTextItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
   return {
@@ -26,6 +27,7 @@ function buildFreeTextItem(overrides: Partial<NativeExamItem> = {}): NativeExamI
     body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Förklara begreppet." }] }],
     choices: [],
     gaps: [],
+    kept_gaps: [],
     item_id: "item_001",
     kind: "free_text",
     match_left: [],
@@ -40,6 +42,7 @@ function buildFreeTextItem(overrides: Partial<NativeExamItem> = {}): NativeExamI
     },
     sequence: 1,
     source_anchor: null,
+    source_points: null,
     suggested_kind: null,
     tick_points: null,
     writing_lines: 8,
@@ -81,5 +84,45 @@ describe("withCriteria", () => {
 describe("newTeacherItem", () => {
   it("starts a new free-text question with no criteria", () => {
     expect(newTeacherItem("item_009", 9, "free_text").criteria).toEqual([]);
+  });
+
+  it("carries no printed source value on teacher items but keeps it through teacher edits", () => {
+    expect(newTeacherItem("item_009", 9, "free_text").source_points).toBeNull();
+
+    const imported = buildFreeTextItem({ points: 2, source_points: 7 });
+    expect(withPoints(imported, 5).source_points).toBe(7);
+    expect(
+      withCriteria(imported, [{ points: 5, text: "Hela svaret" }]).source_points,
+    ).toBe(7);
+  });
+});
+
+describe("kept-answers wire format (TASK-SKRIPT-40-04-13 T1)", () => {
+  it("carries no kept gaps on a fresh fixture item", () => {
+    expect(buildFreeTextItem().kept_gaps).toEqual([]);
+  });
+
+  it("carries no kept gaps on a new teacher item of every kind", () => {
+    for (const teacherKind of [
+      "free_text",
+      "single_choice",
+      "multiple_response",
+      "gap_fill",
+      "inline_choice",
+      "matching",
+      "ordering",
+      "short_answer",
+    ] as const) {
+      expect(newTeacherItem("item_009", 9, teacherKind).kept_gaps).toEqual([]);
+    }
+  });
+
+  it("carries a null kept-gap link on a fresh plain-text segment", () => {
+    expect(plainBody("Vilket ämne är en gas?")[0]!.segments[0]).toEqual({
+      kept_gap_id: null,
+      kind: "text",
+      marks: [],
+      text: "Vilket ämne är en gas?",
+    });
   });
 });

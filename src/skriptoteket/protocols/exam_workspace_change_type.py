@@ -20,6 +20,8 @@ class ChangeExamWorkspaceItemTypeRequest(BaseModel):
     target_kind: NativeExamItemKind
     expected_revision: int = Field(ge=1)
     expected_cursor: UUID
+    tab_id: UUID
+    """The editing tab's id; the server refuses a command from a tab without the lease."""
 
 
 class ChangeExamWorkspaceItemTypeResponse(ExamWorkspaceDocumentResponse):

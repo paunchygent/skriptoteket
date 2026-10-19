@@ -11,6 +11,7 @@ import type { Mock } from "vitest";
 
 import { ApiError } from "../../../api/client";
 import type { ExamWorkspaceDocumentResponse, NativeExamDocument } from "../../../api/examWorkspace";
+import { examWorkspaceSaveRefusalCopy } from "./examWorkspaceItemSaveRules";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { newTeacherItem } from "./examWorkspaceItemEdits";
 import { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
@@ -18,14 +19,14 @@ import { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
 export type EditingApiMocks = {
   getExamWorkspaceHistory: Mock;
   getExamWorkspaceHistoryStep: Mock;
-  saveExamWorkspaceDocument: Mock;
+  moveExamWorkspaceHistoryPosition: Mock;
   storeExamWorkspaceUndoStep: Mock;
 };
 
 export const LINEAGE = "00000000-0000-4000-8000-000000000001";
 
 export function exam(title = "Original", itemCount = 2): NativeExamDocument {
-  return {
+  const document: NativeExamDocument = {
     assets: [],
     document_id: LINEAGE,
     header: { tags: [] },
@@ -37,13 +38,14 @@ export function exam(title = "Original", itemCount = 2): NativeExamDocument {
     origin: { kind: "created" },
     parents: [],
     revision: 1,
-    schema_version: "native_exam_document_v8",
+    schema_version: "native_exam_document_v9",
     title,
-  } as NativeExamDocument;
+  };
+  return document;
 }
 
 export function response(document: NativeExamDocument, cursor: string): ExamWorkspaceDocumentResponse {
-  return {
+  const payload: ExamWorkspaceDocumentResponse = {
     conversion: null,
     document,
     export_blockers: [],
@@ -59,26 +61,28 @@ export function response(document: NativeExamDocument, cursor: string): ExamWork
       vault_file_id: LINEAGE,
       version: document.revision,
     },
-  } as ExamWorkspaceDocumentResponse;
+  };
+  return payload;
 }
 
 export function conflict(): ApiError {
   return new ApiError({ code: "CONFLICT", message: "Dokumentet har ändrats sedan det öppnades.", status: 409 });
 }
 
-function withoutRevision(document: NativeExamDocument): string {
-  return JSON.stringify({ ...document, revision: 0 });
-}
-
+/** The fake server's mutable history position; the step list holds step ids in order. */
+type FakeServerState = {
+  cursor: string;
+  position: string;
+  steps: string[];
+};
 /** The server's history: the same position rules as exam_workspace_document_store.py and undo_steps. */
 export function fakeServer(api: EditingApiMocks, baseline: NativeExamDocument) {
   let counter = 0;
   const documents = new Map<string, NativeExamDocument>([["step-0", baseline]]);
-  const state = {
+  const state: FakeServerState = {
     cursor: "step-0",
     position: "step-0",
-    saved: baseline,
-    steps: [] as string[],
+    steps: [],
   };
   const history = () => ({
     baseline_step_id: "step-0",
@@ -97,6 +101,15 @@ export function fakeServer(api: EditingApiMocks, baseline: NativeExamDocument) {
     document: documents.get(stepId)!,
     step_id: stepId,
   }));
+  api.moveExamWorkspaceHistoryPosition.mockImplementation(
+    async (_l: string, request: { expectedCursor: string; stepId: string }) => {
+      if (request.expectedCursor !== state.cursor) throw conflict();
+      state.position = request.stepId;
+      state.cursor = `move-${++counter}`;
+      const document = documents.get(request.stepId)!;
+      return { document, export_blockers: [], history: history() };
+    },
+  );
   const truncateAfter = (after: string) => {
     state.steps = state.steps.slice(0, ["step-0", ...state.steps].indexOf(after));
   };
@@ -107,22 +120,6 @@ export function fakeServer(api: EditingApiMocks, baseline: NativeExamDocument) {
       state.cursor = append(request.document);
       state.position = state.cursor;
       return { document: request.document, export_blockers: [], history: history() };
-    },
-  );
-  api.saveExamWorkspaceDocument.mockImplementation(
-    async (_l: string, request: { document: NativeExamDocument; positionStepId: string }) => {
-      state.saved = request.document;
-      const snapshots = ["step-0", ...state.steps];
-      const at = snapshots.includes(request.positionStepId) ? request.positionStepId : snapshots[snapshots.length - 1]!;
-      // The saved copy stays at the editor's position; a copy no step holds becomes the next step.
-      if (withoutRevision(documents.get(at)!) === withoutRevision(request.document)) {
-        state.position = at;
-      } else {
-        truncateAfter(at);
-        state.position = append(request.document);
-      }
-      state.cursor = `saved-${++counter}`;
-      return response(request.document, state.cursor);
     },
   );
   return { documents, state };
@@ -142,8 +139,72 @@ export function inScope<T>(run: () => T): T {
 
 export async function openEditing(api: EditingApiMocks, baseline = exam()) {
   const server = fakeServer(api, baseline);
-  const editing = inScope(() => useExamWorkspaceEditing(serverExamWorkspaceStore));
+  const editing = inScope(() =>
+    useExamWorkspaceEditing(serverExamWorkspaceStore, {
+      server: {
+        claim: () =>
+          Promise.resolve({
+            holder_tab_id: "tab-1",
+            renewed_at: "2026-10-19T12:00:00.000Z",
+            takeover_requested: false,
+            takeover_requested_by: null,
+          }),
+        release: () =>
+          Promise.resolve({
+            holder_tab_id: null,
+            renewed_at: null,
+            takeover_requested: false,
+            takeover_requested_by: null,
+          }),
+        renew: () =>
+          Promise.resolve({
+            holder_tab_id: "tab-1",
+            renewed_at: "2026-10-19T12:00:00.000Z",
+            takeover_requested: false,
+            takeover_requested_by: null,
+          }),
+        requestTakeover: () =>
+          Promise.resolve({
+            holder_tab_id: "tab-1",
+            renewed_at: "2026-10-19T12:00:00.000Z",
+            takeover_requested: false,
+            takeover_requested_by: null,
+          }),
+      },
+      tabId: "tab-1",
+    }),
+  );
   editing.applyCommandResponse(response(baseline, "step-0"));
   await flushPromises();
   return { editing, server };
+}
+
+/**
+ * Make the fake step store answer 422 for drafts the save rules refuse, as the
+ * server's `_answer_key_invariants` do: the wrapped store throws a
+ * VALIDATION_ERROR instead of storing, so a refused edit stays pending and
+ * undo must discard it.
+ */
+export function refuseSaveRefusedDrafts(api: EditingApiMocks): void {
+  const inner = api.storeExamWorkspaceUndoStep.getMockImplementation();
+  if (!inner) {
+    throw new Error("expected the step store double");
+  }
+  api.storeExamWorkspaceUndoStep.mockImplementation(
+    async (
+      lineage: string,
+      request: { afterStepId: string | null; document: NativeExamDocument; expectedCursor: string },
+    ) => {
+      if (examWorkspaceSaveRefusalCopy(request.document) !== null) {
+        throw new ApiError({
+          code: "VALIDATION_ERROR",
+          message: "Validation error",
+          details: [],
+          correlationId: null,
+          status: 422,
+        });
+      }
+      return inner(lineage, request);
+    },
+  );
 }

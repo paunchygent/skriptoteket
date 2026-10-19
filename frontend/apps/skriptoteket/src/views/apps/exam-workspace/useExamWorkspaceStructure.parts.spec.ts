@@ -81,6 +81,7 @@ function setup(selected: string | null = null) {
     return true;
   });
   const onConflict = vi.fn(async () => undefined);
+  const noteLeaseLost = vi.fn();
   const applied: ExamWorkspaceDocumentResponse[] = [];
   // The view wires this to the selection composable's selectEntry, which sets the shared part ref.
   const selectParent = vi.fn((parentId: string) => {
@@ -104,7 +105,9 @@ function setup(selected: string | null = null) {
       flush,
       historyCursor,
       isBusy: () => busy,
+      isReadOnly: () => false,
       lineageId: () => "lineage-1",
+      noteLeaseLost,
       onConflict,
       replaceCopy: (run) => run(),
       savedRevision: () => 7,
@@ -113,6 +116,7 @@ function setup(selected: string | null = null) {
       selectParent,
       selectedItemId,
       selectedParentId,
+      tabId: () => "tab-1",
       workspaceDocument,
     }),
   )!;
@@ -120,6 +124,7 @@ function setup(selected: string | null = null) {
     applied,
     calls,
     flush,
+    noteLeaseLost,
     onConflict,
     selectItem,
     selectParent,
@@ -161,6 +166,7 @@ describe("groupItems", () => {
       "lineage-1",
       ["item_004"],
       "cursor-after-flush",
+      "tab-1",
     ]);
     expect(applied).toHaveLength(1);
     expect(selectParent).toHaveBeenCalledWith("parent_002");
@@ -197,6 +203,7 @@ describe("addEmptyPart", () => {
       "lineage-1",
       1,
       "cursor-after-flush",
+      "tab-1",
     ]);
     expect(applied).toHaveLength(1);
     expect(selectParent).toHaveBeenCalledWith("parent_002");
@@ -214,6 +221,7 @@ describe("addEmptyPart", () => {
       "lineage-1",
       2,
       "cursor-after-flush",
+      "tab-1",
     ]);
   });
 
@@ -231,6 +239,7 @@ describe("addEmptyPart", () => {
       "lineage-1",
       3,
       "cursor-after-flush",
+      "tab-1",
     ]);
     expect(selectParent).toHaveBeenCalledWith("parent_003");
   });
@@ -266,6 +275,7 @@ describe("addEmptyPart", () => {
       "lineage-1",
       1,
       "cursor-after-flush",
+      "tab-1",
     ]);
   });
 });
@@ -282,6 +292,7 @@ describe("moveItem", () => {
       "item_001",
       null,
       "cursor-after-flush",
+      "tab-1",
     ]);
     expect(selectItem).toHaveBeenCalledWith("item_001");
   });
@@ -297,6 +308,7 @@ describe("moveItem", () => {
       "item_004",
       "parent_001",
       "cursor-after-flush",
+      "tab-1",
     ]);
     expect(selectItem).toHaveBeenCalledWith("item_004");
   });
@@ -313,6 +325,25 @@ describe("moveItem", () => {
     expect(applied).toEqual([]);
     expect(selectParent).not.toHaveBeenCalled();
     expect(selectItem).not.toHaveBeenCalled();
+  });
+
+  it("turns read-only on a lease-held move instead of reloading", async () => {
+    const { applied, noteLeaseLost, onConflict, selectItem, structure } = setup("item_004");
+    apiMocks.moveExamWorkspaceItem.mockRejectedValue(
+      new ApiError({
+        code: "EDIT_LEASE_HELD",
+        message: "Provet redigeras i en annan flik.",
+        status: 409,
+      }),
+    );
+
+    await structure.moveItem("item_004", null);
+
+    expect(noteLeaseLost).toHaveBeenCalledOnce();
+    expect(onConflict).not.toHaveBeenCalled();
+    expect(applied).toEqual([]);
+    expect(selectItem).not.toHaveBeenCalled();
+    expect(useToastStore().toasts).toEqual([]);
   });
 });
 

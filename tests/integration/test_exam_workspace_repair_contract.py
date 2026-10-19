@@ -10,7 +10,6 @@ from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from skriptoteket.application.curated_apps.exam_workspace import SaveExamWorkspaceDocumentRequest
 from skriptoteket.application.curated_apps.exam_workspace_history import (
     StoreExamWorkspaceUndoStepRequest,
 )
@@ -33,14 +32,20 @@ from skriptoteket.infrastructure.repositories.user_vault_usage_repository import
 from skriptoteket.infrastructure.vault.local_vault_storage import LocalVaultStorage
 from skriptoteket.protocols.exam_workspace import DocxExamChunkerProtocol
 from tests.fixtures.time_fixtures import FixedClock
-from tests.integration.exam_workspace_conversion_support import WORKER, ConversionWorld, Ids, batch
+from tests.integration.exam_workspace_conversion_support import (
+    WORKER,
+    ConversionWorld,
+    Ids,
+    batch,
+    lease_tab,
+)
 from tests.integration.exam_workspace_repair_support import editor, running_exam, seed_exam
 from tests.integration.infrastructure.repositories.exam_workspace_test_support import create_owner
 
 pytestmark = [pytest.mark.integration, pytest.mark.docker, pytest.mark.asyncio(loop_scope="module")]
 
 
-async def test_explicit_save_retains_the_saved_copy_after_the_position_then_autosave_follows(
+async def test_each_stored_edit_advances_the_file_and_keeps_steps_in_order(
     session_factory: async_sessionmaker[AsyncSession], tmp_path: Path
 ) -> None:
     actor = await create_owner(session_factory)
@@ -50,8 +55,10 @@ async def test_explicit_save_retains_the_saved_copy_after_the_position_then_auto
         world = ConversionWorld(session, storage, clock)
         document = await seed_exam(world, actor)
         lineage = document.document_id
+        tab = await lease_tab(world, actor, lineage)
         opened = await world.opened(actor, lineage)
         undo = StoreExamWorkspaceUndoStepHandler(
+            clock=world.clock,
             vault_files=world.vault_files,
             codec=world.codec,
             store=world.store,
@@ -62,49 +69,50 @@ async def test_explicit_save_retains_the_saved_copy_after_the_position_then_auto
             actor=actor,
             lineage_id=lineage,
             request=StoreExamWorkspaceUndoStepRequest(
+                tab_id=tab,
                 expected_cursor=opened.history_cursor,
-                document=document.model_copy(update={"title": "Earlier autosave"}),
+                document=document.model_copy(update={"title": "Earlier stored edit"}),
             ),
         )
         before = await world.store.get_history(actor=actor, lineage_id=lineage)
-        saved = await world.teacher_save(
-            actor, document.model_copy(update={"title": "Latest explicit Spara"})
-        )
+        await world.teacher_save(actor, document.model_copy(update={"title": "Latest stored edit"}))
         after = await world.store.get_history(actor=actor, lineage_id=lineage)
         assert after.cursor != before.cursor
         assert after.baseline == before.baseline
-        # The saved copy differs from the position's snapshot, so Spara appends it as the
-        # next step after that position and leaves the earlier steps untouched.
+        # The stored edit is the next step after the position; earlier steps stay untouched.
         assert after.steps[:-1] == before.steps
         assert len(after.steps) == len(before.steps) + 1
         assert after.current_step_id == after.steps[-1].step_id
         saved_step = world.codec.parse(content=after.steps[-1].content)
-        assert saved_step.document.title == "Latest explicit Spara"
-        # Keep the file guard independent of the history cursor.
+        assert saved_step.document.title == "Latest stored edit"
+        # A stale cursor stores nothing and keeps the file.
         with pytest.raises(DomainError) as stale:
-            await editor(world).handle(
+            await undo.handle(
                 actor=actor,
                 lineage_id=lineage,
-                request=SaveExamWorkspaceDocumentRequest(
-                    expected_revision=1,
-                    document=saved.document,
-                    position_step_id=after.current_step_id,
+                request=StoreExamWorkspaceUndoStepRequest(
+                    tab_id=tab,
+                    expected_cursor=before.cursor,
+                    document=document.model_copy(update={"title": "Stale edit"}),
                 ),
             )
         assert stale.value.code is ErrorCode.CONFLICT
     async with session_factory() as session:
         world = ConversionWorld(session, storage, clock)
+        # Same browser tab, new server session: the tab keeps its id across reloads.
+        world.edit_tabs[(actor.id, lineage)] = tab
         reopened = await world.opened(actor, lineage)
-        assert reopened.document.title == "Latest explicit Spara"
-        assert reopened.document.revision == 2
+        assert reopened.document.title == "Latest stored edit"
+        assert reopened.document.revision == 3
         old_step = await editor(world).history_step(
             actor=actor, lineage_id=lineage, step_id=before.steps[0].step_id
         )
-        assert old_step.document.title == "Earlier autosave"
+        assert old_step.document.title == "Earlier stored edit"
         assert (await world.store.get_history(actor=actor, lineage_id=lineage)).steps[
             :-1
         ] == before.steps
         await StoreExamWorkspaceUndoStepHandler(
+            clock=world.clock,
             vault_files=world.vault_files,
             codec=world.codec,
             store=world.store,
@@ -114,14 +122,15 @@ async def test_explicit_save_retains_the_saved_copy_after_the_position_then_auto
             actor=actor,
             lineage_id=lineage,
             request=StoreExamWorkspaceUndoStepRequest(
+                tab_id=await lease_tab(world, actor, lineage),
                 expected_cursor=reopened.history_cursor,
-                document=reopened.document.model_copy(update={"title": "Later autosave"}),
+                document=reopened.document.model_copy(update={"title": "Later stored edit"}),
             ),
         )
     async with session_factory() as session:
         latest = await ConversionWorld(session, storage, clock).opened(actor, lineage)
-        assert latest.document.title == "Later autosave"
-        assert latest.document.revision == 2
+        assert latest.document.title == "Later stored edit"
+        assert latest.document.revision == 4
 
 
 @pytest.mark.parametrize("delivery", ["batch", "final"])

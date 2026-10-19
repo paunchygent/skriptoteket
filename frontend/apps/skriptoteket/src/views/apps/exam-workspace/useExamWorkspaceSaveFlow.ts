@@ -2,12 +2,15 @@
  * Exam workspace save flow.
  *
  * Domain purpose:
- *   Spara and Spara som, the save state the header shows, an export that
- *   saves unsaved changes first, and the red export-blocker panel's jump to a
- *   blocking field and its in-place fixes.
+ *   Spara som, the save status the header shows (TASK-SKRIPT-40-04-14, item
+ *   6: `Sparar …`, `Sparat HH:MM`, `Inte sparat` with the reason), an export
+ *   that stores a pending edit first, and the red export-blocker panel's jump
+ *   to a blocking field and its in-place fixes. There is no Spara button:
+ *   every stored history step also writes the exam file, so the history's
+ *   status is the save state.
  *
  * Relationships:
- *   - Saves through `useExamWorkspaceEditing`; exports through
+ *   - Status and storing through `useExamWorkspaceEditing`; exports through
  *     `useExamWorkspaceExports`; a suggested answer key through
  *     `useExamWorkspaceEnrichment`.
  *   - Jumps through the selection's `gotoItem`; the view owns the frame
@@ -21,6 +24,7 @@ import type { Ref } from "vue";
 
 import type { ExamWorkspaceExportTarget } from "../../../api/examWorkspaceExports";
 import type { ExamWorkspaceBlockerEntry } from "./examWorkspaceBlockers";
+import { openBlockerField } from "./examWorkspaceGapOpenRequest";
 import type { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
 import type { useExamWorkspaceEnrichment } from "./useExamWorkspaceEnrichment";
 import type { useExamWorkspaceExports } from "./useExamWorkspaceExports";
@@ -32,6 +36,8 @@ export interface ExamWorkspaceSaveFlowDeps {
   blockers: Readonly<Ref<readonly ExamWorkspaceBlockerEntry[]>>;
   /** True while the exam is busy or a structure command runs. */
   disabled: Readonly<Ref<boolean>>;
+  /** True for a guest exam, whose saved status names the browser instead of Mina filer. */
+  isGuest: boolean;
   frame: Ref<HTMLElement | null>;
   gotoItem: (itemId: string) => void;
   /** Open Provets uppgifter, which holds the title field. */
@@ -41,34 +47,42 @@ export interface ExamWorkspaceSaveFlowDeps {
 /** Ticks `gotoBlocker` waits for a field that mounts after its question opens. */
 const FOCUS_TARGET_MAX_TICKS = 5;
 
+/** The saved exam file holds every confirmed edit. */
+const SAVED_TITLE = "Provet i Mina filer har alla ändringar";
+
 export function useExamWorkspaceSaveFlow({
   editing,
   enrichment,
   exports,
   blockers,
   disabled,
+  isGuest,
   frame,
   gotoItem,
   openDetails,
 }: ExamWorkspaceSaveFlowDeps) {
-  const { isDirty, workspaceDocument } = editing;
-
-  const saving = ref(false);
   const saveAsOpen = ref(false);
   const saveAsTaken = ref<string | null>(null);
 
-  const saveState = computed(() => (saving.value ? "saving" : isDirty.value ? "dirty" : "saved"));
-  // Spara stays available on a clean exam too, where it writes nothing; it is unavailable only while nothing can be written.
-  const canSave = computed(() => !disabled.value && workspaceDocument.value !== null);
-
-  async function handleSave(): Promise<void> {
-    if (!canSave.value || !isDirty.value) return;
-    saving.value = true;
-    try {
-      await editing.save();
-    } finally {
-      saving.value = false;
+  /** The one save status, straight from the history's confirmed snapshots. */
+  const saveState = computed(() => editing.history.saveStatus.value.state);
+  /** The header's status text: `Sparar …`, `Sparat HH:MM` (guest: `Sparat i webbläsaren HH:MM`), or `Inte sparat`. */
+  const saveText = computed(() => editing.history.saveText.value);
+  /** The status tooltip: the `Inte sparat` reason, or the saved confirmation. */
+  const saveTitle = computed(() => {
+    const status = editing.history.saveStatus.value;
+    if (status.state === "unsaved") {
+      return status.detail;
     }
+    if (status.state === "saved" && !isGuest) {
+      return SAVED_TITLE;
+    }
+    return null;
+  });
+
+  /** Ctrl/Cmd+S: store a pending edit at once. */
+  async function handleSave(): Promise<void> {
+    await editing.save();
   }
 
   function openSaveAs(): void {
@@ -85,15 +99,9 @@ export function useExamWorkspaceSaveFlow({
     }
   }
 
-  /** An export saves unsaved changes first, through Spara; a failed save has toasted why. */
+  /** An export stores a pending edit first; a failed store stops it. */
   async function saveBeforeExport(): Promise<boolean> {
-    if (!isDirty.value) return true;
-    saving.value = true;
-    try {
-      return await editing.save();
-    } finally {
-      saving.value = false;
-    }
+    return await editing.save();
   }
 
   function runExport(target: ExamWorkspaceExportTarget, destination: "download" | "files"): void {
@@ -116,12 +124,7 @@ export function useExamWorkspaceSaveFlow({
       await nextTick();
       field = frame.value?.querySelector<HTMLElement>(blocker.focus);
     }
-    field?.scrollIntoView?.({ block: "center" });
-    if (field?.hasAttribute("data-gap-id")) {
-      field.click();
-    } else {
-      field?.focus();
-    }
+    if (field) openBlockerField(field);
   }
 
   function fixBlocker(blocker: ExamWorkspaceBlockerEntry): void {
@@ -146,7 +149,6 @@ export function useExamWorkspaceSaveFlow({
   }
 
   return {
-    canSave,
     fixBlocker,
     gotoBlocker,
     handleSave,
@@ -157,5 +159,7 @@ export function useExamWorkspaceSaveFlow({
     saveAsTaken,
     saveBeforeExport,
     saveState,
+    saveText,
+    saveTitle,
   };
 }

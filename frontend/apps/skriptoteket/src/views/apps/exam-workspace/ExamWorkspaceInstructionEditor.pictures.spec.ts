@@ -46,7 +46,7 @@ async function mountEditor(assetUrls?: Record<string, string>, disabled = false)
   ];
   mounted = mount(ExamWorkspaceInstructionEditor, {
     attachTo: document.body,
-    props: { parent, label: "1", children: [], subtotal: 0, printedTotal: null, disabled, notice: null, assetUrls },
+    props: { parent, label: "1", children: [], subtotal: 0, disabled, notice: null, assetUrls },
   });
   await settleEditors();
   return mounted;
@@ -79,7 +79,7 @@ describe("ExamWorkspaceInstructionEditor pictures", () => {
         {
           heading_level: null,
           segments: [
-            { kind: "text", marks: [], text: "S" },
+            { kind: "text", marks: [], text: "S", kept_gap_id: null },
             { kind: "asset", asset_id: "asset_001" },
           ],
         },
@@ -121,8 +121,8 @@ describe("ExamWorkspaceInstructionEditor pictures", () => {
       {
         heading_level: null,
         segments: [
-          { kind: "text", marks: ["bold"], text: "Se" },
-          { kind: "text", marks: [], text: " " },
+          { kind: "text", marks: ["bold"], text: "Se", kept_gap_id: null },
+          { kind: "text", marks: [], text: " ", kept_gap_id: null },
           { kind: "asset", asset_id: "asset_001" },
         ],
       },

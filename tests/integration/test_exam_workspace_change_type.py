@@ -36,7 +36,7 @@ from skriptoteket.web.api.v1 import apps_conversion_hub_exam_workspace_change_ty
 from skriptoteket.web.auth.huleedu_app_projection import require_app_user_api
 from skriptoteket.web.middleware.error_handler import error_handler_middleware
 from tests.fixtures.time_fixtures import FixedClock
-from tests.integration.exam_workspace_conversion_support import ConversionWorld, Ids
+from tests.integration.exam_workspace_conversion_support import ConversionWorld, Ids, lease_tab
 from tests.integration.exam_workspace_repair_support import editor, seed_exam
 from tests.integration.infrastructure.repositories.exam_workspace_test_support import create_owner
 from tests.unit.domain.curated_apps.exam_workspace.inline_choice_test_support import (
@@ -80,6 +80,7 @@ async def _client(world: ConversionWorld, actor: User) -> AsyncIterator[httpx.As
                 store=world.store,
                 id_generator=Ids(),
                 jobs=world.jobs,
+                clock=world.clock,
             ),
         },
     )
@@ -132,6 +133,7 @@ async def test_change_reopens_as_one_autosave_and_one_undo_restores_exact_questi
             }
         )
         path = _BASE + str(prepared.document_id)
+        tab = str(await lease_tab(world, actor, prepared.document_id))
         async with _client(world, actor) as client:
             cursor = (await client.get(path)).json()["history_cursor"]
             for index in range(prior_steps):
@@ -142,29 +144,28 @@ async def test_change_reopens_as_one_autosave_and_one_undo_restores_exact_questi
                         "document": seeded.model_copy(
                             update={"title": f"Earlier edit {index}"}
                         ).model_dump(mode="json"),
+                        "tab_id": tab,
                     },
                 )
                 assert response.status_code == 200, response.text
                 cursor = response.json()["history"]["cursor"]
             retained_before_save = (await client.get(path + "/history")).json()
-            response = await client.put(
-                path,
+            response = await client.post(
+                path + "/autosaves",
                 json={
-                    "expected_revision": 1,
+                    "expected_cursor": retained_before_save["cursor"],
                     "document": prepared.model_dump(mode="json"),
-                    "position_step_id": retained_before_save["position_step_id"],
+                    "tab_id": tab,
                 },
             )
             assert response.status_code == 200, response.text
             saved = response.json()
             before_history = (await client.get(path + "/history")).json()
-            # TASK-SKRIPT-40-04-03: Spara keeps the saved copy at the sent position only
-            # when that snapshot already holds it. The saved document here is an unsaved
-            # edit no snapshot holds, so Spara appends it as exactly one new step after
-            # the retained ones; a full ten-step history drops its oldest step to fit.
+            # Every stored step also overwrites the exam file: the prepared document is one
+            # new step after the retained ones; a full hundred-step history drops its oldest.
             retained_before_ids = retained_before_save["step_ids"]
-            assert before_history["step_ids"][:-1] == retained_before_ids[-9:]
-            assert len(before_history["step_ids"]) == min(10, len(retained_before_ids) + 1)
+            assert before_history["step_ids"][:-1] == retained_before_ids[-99:]
+            assert len(before_history["step_ids"]) == min(100, len(retained_before_ids) + 1)
             draft = prepared
             if autosave_before_change:
                 # Also challenge handlers which retype the file instead of editor state.
@@ -172,20 +173,23 @@ async def test_change_reopens_as_one_autosave_and_one_undo_restores_exact_questi
                 response = await client.post(
                     path + "/autosaves",
                     json={
-                        "expected_cursor": saved["history_cursor"],
+                        "expected_cursor": saved["history"]["cursor"],
                         "document": draft.model_dump(mode="json"),
+                        "tab_id": tab,
                     },
                 )
                 assert response.status_code == 200, response.text
                 before_history = response.json()["history"]
+            version = (await client.get(path)).json()["summary"]["version"]
             command = {
                 "item_id": question.item_id,
                 "target_kind": "free_text",
-                "expected_revision": 2,
+                "expected_revision": version,
                 "expected_cursor": before_history["cursor"],
+                "tab_id": tab,
             }
             response = await client.post(
-                path + "/change-type", json={**command, "expected_revision": 1}
+                path + "/change-type", json={**command, "expected_revision": version - 1}
             )
             assert response.status_code == 409, response.text
             assert response.json()["error"]["code"] == "CONFLICT"
@@ -205,16 +209,16 @@ async def test_change_reopens_as_one_autosave_and_one_undo_restores_exact_questi
             assert actual.items[0].kind is NativeExamItemKind.FREE_TEXT
             assert actual.items[0].points == 2
             assert actual.items[0].gaps == ()
-            assert actual.revision == 2
-            assert changed["saved_document"] == saved["document"]
+            assert actual.revision == version + 1
+            assert changed["saved_document"] == changed["document"]
             history = (await client.get(path + "/history")).json()
             # The retype itself appends exactly one step after the snapshot the
-            # editor stands on; before_history already holds Spara's and any
-            # autosave's steps, so only this one command is new.
+            # editor stands on; before_history already holds the stored steps, so only
+            # this one command is new.
             appended = 1
-            retained_ids = before_history["step_ids"][-(10 - appended) :]
+            retained_ids = before_history["step_ids"][-(100 - appended) :]
             assert history["step_ids"][:-appended] == retained_ids
-            assert len(history["step_ids"]) == min(10, len(before_history["step_ids"]) + appended)
+            assert len(history["step_ids"]) == min(100, len(before_history["step_ids"]) + appended)
             assert history["cursor"] == changed["history_cursor"]
             # Revision remains 2, so a repeated request must be rejected by the cursor guard.
             response = await client.post(path + "/change-type", json=command)
@@ -232,28 +236,34 @@ async def test_change_reopens_as_one_autosave_and_one_undo_restores_exact_questi
             head = await world.vault_files.get_document_head(
                 user_id=actor.id, document_lineage_id=prepared.document_id
             )
-            assert head is not None and head.document_version == 2
+            assert head is not None and head.document_version == version + 1
             persisted = world.codec.parse(
                 content=await world.store.load(actor=actor, vault_file=head)
             )
-            assert persisted.document == prepared, "Autosave cannot overwrite Spara's baseline"
-            # Exactly one undo selects the immediate predecessor, even after Spara
-            # with no autosave and when recording the checkpoint pruned old history.
+            assert persisted.document == NativeExamDocument.model_validate(changed["document"])
+            # Exactly one undo selects the immediate predecessor, even when recording the
+            # checkpoint pruned old history.
             response = await client.get(path + "/history/" + history["step_ids"][-2])
             assert response.status_code == 200, response.text
             undo = response.json()
-            assert undo["document"] == draft.model_dump(mode="json")
+            expected_undo = draft.model_copy(update={"revision": version + 1}).model_dump(
+                mode="json"
+            )
+            assert undo["document"] == expected_undo
             response = await client.post(
                 path + "/autosaves",
                 json={
                     "expected_cursor": history["cursor"],
                     "after_step_id": undo["step_id"],
                     "document": undo["document"],
+                    "tab_id": tab,
                 },
             )
             assert response.status_code == 200, response.text
             restored = response.json()
-            assert restored["document"] == draft.model_dump(mode="json")
+            assert restored["document"] == draft.model_copy(
+                update={"revision": version + 2}
+            ).model_dump(mode="json")
             assert restored["document"]["items"][0] == question.model_dump(mode="json")
             assert changed["history_cursor"] not in restored["history"]["step_ids"]
             assert (await client.get(path)).json()["document"] == restored["document"]

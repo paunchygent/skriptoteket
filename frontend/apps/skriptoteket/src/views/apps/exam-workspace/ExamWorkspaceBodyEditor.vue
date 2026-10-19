@@ -10,18 +10,23 @@
  *   text or a choice option / Kategorisera entry — and Ctrl/Cmd+B, I and U
  *   toggle marks from the keyboard. Activating a gap chip opens a small
  *   popover where the teacher edits that gap's accepted answers, removes an
- *   automatic answer the conversion added, or replaces the whole gap with its
- *   first accepted answer as plain text ("Visa som text"). A Lucktext or
- *   dropdown-Lucktext question grows its gaps from here: the toolbar's Lucka
- *   button turns the selection, or the word at the caret, into a gap (or
- *   inserts an empty gap), and a click inside a word shows a small floating
- *   "Lucka" button ("Gör till lucka" tooltip and accessible name) that
- *   converts that word. The toolbar's Luckverktyg toggle (Ctrl+Alt+G,
+ *   automatic the conversion added, or replaces the whole gap with its
+ *   first accepted answer as plain text ("Visa som text"). Closing the
+ *   popover of a gap with no answer removes the gap in one structural undo
+ *   step, which Ångra brings back; a gap with an answer is untouched on
+ *   close. The export-blocker
+ *   jump opens a gap the same way through a bubbling open-gap request on its
+ *   chip (see `examWorkspaceGapOpenRequest`). A Lucktext or
+ *   dropdown-Lucktext question grows its gaps from here: the toolbar's
+ *   Luckverktyg toggle (Ctrl+Alt+G,
  *   Cmd+Option+G on macOS) switches one gap tool per question on: while it
  *   is on, a word click or a drag inside one paragraph becomes a gap at
- *   once with no popover and no floating button. The tool ends by its
+ *   once with no popover, a gap click reverts the gap instead of opening
+ *   its popover, and a kept-word click restores the gap. The tool ends by its
  *   toggle, its shortcut, Escape with no popover open, a move to another
- *   question, or the gap_999 cap. The editor emits the
+ *   question, or the gap_999 cap. A disabled editor only suspends the tool:
+ *   the tool stays on, tool clicks make no gap, and an open popover closes;
+ *   when the editor is enabled again the tool is still on. The editor emits the
  *   change as one `createGap`, the owner adds the gap record as one
  *   structural edit, and the new gap's popover opens at once.
  *
@@ -30,7 +35,8 @@
  *   an unreferenced picture's asset, and Ångra (Ctrl/Cmd+Z included) brings
  *   text, record and asset back. Paste and drop never carry a gap or picture.
  *   While `disabled` is set, nothing can be edited, an open popover closes
- *   without committing, and no gap change is forwarded.
+ *   without committing, and no gap change is forwarded; the gap tool stays
+ *   on through the same suspension.
  *
  * Relationships:
  *   - Rendered by `ExamWorkspaceQuestionEditor` for the selected item.
@@ -54,7 +60,7 @@ import {
   PARTIAL_GAP_KEY_GUIDANCE,
 } from "./examWorkspaceAnswerKeyRules";
 import { examGapStates, gapNumberIn } from "./examWorkspaceGapLabels";
-import { nextGapId } from "./examWorkspaceGapEdits";
+import { bodyWithoutGap, gapHasAnswer, nextGapId } from "./examWorkspaceGapEdits";
 import ExamWorkspaceGapPopover from "./ExamWorkspaceGapPopover.vue";
 import ExamWorkspaceMarkToolbar from "./ExamWorkspaceMarkToolbar.vue";
 import ExamWorkspaceRichTextEditor from "./ExamWorkspaceRichTextEditor.vue";
@@ -71,9 +77,13 @@ const emit = defineEmits<{
   updateBody: [itemId: string, body: NativeExamBodyParagraph[], structural: boolean];
   createGap: [itemId: string, body: NativeExamBodyParagraph[], gapId: string, seed: string];
   updateGapValues: [itemId: string, gapId: string, acceptedValues: string[]];
-  updateGapOptions: [itemId: string, gapId: string, options: NativeExamChoice[], correctOptionId: string | null];
+  updateGapOptions: [itemId: string, gapId: string, options: NativeExamChoice[], correctOptionId: string | null, structural: boolean];
   removeAutomaticValue: [itemId: string, gapId: string, value: string];
   showGapAsText: [itemId: string, gapId: string];
+  /** With the tool on, a gap click reverts it through the owner. */
+  revertGap: [itemId: string, gapId: string];
+  /** With the tool on, a kept-word click restores its gap through the owner. */
+  restoreKeptGap: [itemId: string, keptGapId: string, blockIndex: number];
 }>();
 
 type OpenGap = {
@@ -82,11 +92,20 @@ type OpenGap = {
   anchor: HTMLElement;
 };
 
+/** The open gap's last seen answer state and body, so a close after a question switch still removes the right gap. */
+type OpenGapSnapshot = {
+  itemId: string;
+  gapId: string;
+  hasAnswer: boolean;
+  body: NativeExamBodyParagraph[];
+};
+
 const labelId = useId();
 const editor = ref<InstanceType<typeof ExamWorkspaceRichTextEditor> | null>(null);
 const root = ref<HTMLElement | null>(null);
 const openGap = ref<OpenGap | null>(null);
-const { activeRichTextTarget, activeMarks, activeHeading, toggleMark, toggleHeading } =
+const openGapSnapshot = ref<OpenGapSnapshot | null>(null);
+const { activeMarks, activeHeading, toggleMark, toggleHeading } =
   useExamWorkspaceRichTextToolbar();
 let openChip: HTMLElement | null = null;
 
@@ -107,20 +126,26 @@ const newGapId = computed(() => (gapKind.value ? nextGapId(props.item) : null));
 /** The gap tool: while on, word clicks become gaps at once with no popover. */
 const gapToolOn = ref(false);
 
-/** Switch the tool on only while this question can still grow gaps. */
+/** Switch the tool on only while this question can still grow gaps; a disabled editor suspends the tool, so the switch does nothing while disabled. */
 function toggleGapTool(): void {
+  if (props.disabled) {
+    return;
+  }
   if (gapToolOn.value) {
     gapToolOn.value = false;
     return;
   }
-  if (props.disabled || !gapKind.value || newGapId.value === null) {
+  if (!gapKind.value || newGapId.value === null) {
     return;
   }
   gapToolOn.value = true;
 }
 
-/** Escape closes an open gap popover first and the tool second. */
+/** Escape closes an open gap popover first and the tool second; never while disabled, when the tool is suspended. */
 function handleSurfaceEscape(): void {
+  if (props.disabled) {
+    return;
+  }
   if (openGap.value !== null) {
     closePopover(true);
     return;
@@ -130,35 +155,8 @@ function handleSurfaceEscape(): void {
   }
 }
 
-/** How each gap of the item reads in the text: its accepted answers, or "Lucka N" while it has none. */
-const gapStates = computed(() => examGapStates(props.item.gaps));
-
-/** Turn the selection, or the word at the caret, into the next free gap. */
-function handleMakeGap(): void {
-  const gapId = newGapId.value;
-  if (props.disabled || gapId === null) {
-    return;
-  }
-  const target = activeRichTextTarget.value;
-  if (target !== null) {
-    target.makeGap(gapId);
-    return;
-  }
-  // No surface is active yet: the caret lands at the end of the question
-  // text, while the focus — and with it the registration as the active
-  // target — lands on the next animation frame (TipTap defers `focus()`),
-  // so the gap command runs once this surface owns the toolbar.
-  editor.value?.focus();
-  requestAnimationFrame(() => {
-    if (props.disabled || newGapId.value !== gapId) {
-      return;
-    }
-    if (root.value?.contains(document.activeElement) !== true) {
-      return;
-    }
-    activeRichTextTarget.value?.makeGap(gapId);
-  });
-}
+/** How each gap of the item reads in the text: its answers, or "Lucka N" while it has none. */
+const gapStates = computed(() => examGapStates(props.item.gaps, props.item.kind));
 
 function openPopover(gapId: string, chip: HTMLElement): void {
   if (props.disabled) {
@@ -173,19 +171,79 @@ function openPopover(gapId: string, chip: HTMLElement): void {
     gapId,
     anchor: chip,
   };
+  openGapSnapshot.value = {
+    itemId: props.item.item_id,
+    gapId,
+    hasAnswer: gapHasAnswer(
+      props.item.gaps.find((gap) => gap.gap_id === gapId),
+      props.item.kind,
+    ),
+    body: props.item.body,
+  };
+}
+
+/** Follow the owner's write-back while the popover is open, so a close reads the gap as it stands. */
+watch(openGapModel, (gap) => {
+  if (openGap.value !== null && gap !== null) {
+    openGapSnapshot.value = {
+      itemId: props.item.item_id,
+      gapId: gap.gap_id,
+      hasAnswer: gapHasAnswer(gap, props.item.kind),
+      body: props.item.body,
+    };
+  }
+});
+
+/**
+ * Open the popover for the chip an open-gap request bubbled from (the event
+ * mirrors EXAM_WORKSPACE_OPEN_GAP_EVENT in `examWorkspaceGapOpenRequest`);
+ * anything without a gap id opens nothing.
+ */
+function handleOpenGapRequest(event: Event): void {
+  const target = event.target;
+  if (!(target instanceof HTMLElement)) {
+    return;
+  }
+  const chip = target.closest("[data-gap-id]");
+  if (!(chip instanceof HTMLElement) || root.value?.contains(chip) !== true) {
+    return;
+  }
+  const gapId = chip.getAttribute("data-gap-id");
+  if (gapId === null) {
+    return;
+  }
+  openPopover(gapId, chip);
 }
 
 function closePopover(returnFocus: boolean): void {
-  if (openGap.value === null) {
+  const closing = openGap.value;
+  if (closing === null) {
     return;
   }
+  // Escape commits the rows before it closes, and other routes commit on
+  // their way out, so the owner has the gap as it stands; a close after a
+  // question switch reads the snapshot of the closed question.
+  const snapshot = openGapSnapshot.value;
+  const model = closing.itemId === props.item.item_id ? openGapModel.value : null;
+  const answered = model
+    ? gapHasAnswer(model, props.item.kind)
+    : (snapshot?.hasAnswer ?? true);
+  const body = model ? props.item.body : (snapshot?.body ?? props.item.body);
   const chip = openChip;
   openChip = null;
   openGap.value = null;
+  openGapSnapshot.value = null;
   chip?.setAttribute("aria-expanded", "false");
   if (returnFocus && chip?.isConnected) {
     // The text surface takes focus back with its selection (the gap) intact.
     chip.closest<HTMLElement>("[contenteditable='true']")?.focus();
+  }
+  // Closing the popover of a gap with no answer removes the gap: the body
+  // without its placement goes out as one structural edit, and the owner drops
+  // its record through `withBody`, so Ångra brings the gap back. A gap with an
+  // answer is untouched. A suspended editor forwards no gap change.
+  if (!answered && !props.disabled) {
+    emit("updateBody", closing.itemId, bodyWithoutGap(body, closing.gapId), true);
   }
 }
 
@@ -201,11 +259,12 @@ function handleGapOptions(
   gapId: string,
   options: NativeExamChoice[],
   correctOptionId: string | null,
+  structural: boolean,
 ): void {
   if (props.disabled) {
     return;
   }
-  emit("updateGapOptions", itemId, gapId, options, correctOptionId);
+  emit("updateGapOptions", itemId, gapId, options, correctOptionId, structural);
 }
 
 function handleGapAutomaticValueRemoval(itemId: string, gapId: string, value: string): void {
@@ -223,6 +282,23 @@ function handleGapAsText(itemId: string, gapId: string): void {
   closePopover(false);
   emit("showGapAsText", itemId, gapId);
   editor.value?.focus();
+}
+
+/** With the tool on, a gap click reverts the gap as one structural edit. */
+function handleRevertGap(gapId: string): void {
+  if (props.disabled) {
+    return;
+  }
+  closePopover(false);
+  emit("revertGap", props.item.item_id, gapId);
+}
+
+/** With the tool on, a kept-word click restores the clicked kept block. */
+function handleRestoreKeptGap(keptGapId: string, blockIndex: number): void {
+  if (props.disabled) {
+    return;
+  }
+  emit("restoreKeptGap", props.item.item_id, keptGapId, blockIndex);
 }
 
 /** Forward one gap creation; the new gap's popover opens only while the tool is off. */
@@ -244,11 +320,11 @@ function handleCreateGap(body: NativeExamBodyParagraph[], gapId: string, seed: s
   });
 }
 
+/** A disabled editor suspends the gap tool instead of ending it: the tool stays on while only an open popover closes. */
 watch(
   () => props.disabled,
   (disabled) => {
     if (disabled) {
-      gapToolOn.value = false;
       closePopover(false);
     }
   },
@@ -276,6 +352,7 @@ watch(newGapId, (gapId) => {
     role="group"
     :aria-labelledby="labelId"
     data-test="exam-workspace-body-editor"
+    @exam-workspace-open-gap="handleOpenGapRequest"
   >
     <div
       :id="labelId"
@@ -291,12 +368,10 @@ watch(newGapId, (gapId) => {
         :disabled="disabled"
         show-headings
         :show-gap="gapKind"
-        :gap-disabled-reason="gapKind && newGapId === null ? 'Högst 999 luckor' : null"
         :gap-tool-disabled-reason="gapKind && newGapId === null ? 'Luckverktyg – högst 999 luckor' : null"
         :gap-tool-on="gapToolOn"
         @toggle-mark="toggleMark"
         @toggle-heading="toggleHeading"
-        @make-gap="handleMakeGap"
         @toggle-gap-tool="toggleGapTool"
       />
       <div class="xw-rich__body grid gap-2">
@@ -315,6 +390,8 @@ watch(newGapId, (gapId) => {
           :gap-tool="gapToolOn"
           @activate-gap="openPopover"
           @create-gap="handleCreateGap"
+          @revert-gap="handleRevertGap"
+          @restore-kept-gap="handleRestoreKeptGap"
           @toggle-gap-tool="toggleGapTool"
           @escape="handleSurfaceEscape"
           @update="(body, structural) => emit('updateBody', item.item_id, body, structural)"

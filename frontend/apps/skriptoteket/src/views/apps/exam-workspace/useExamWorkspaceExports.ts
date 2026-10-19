@@ -5,8 +5,8 @@
  *   Download QTI, PDF, and DOCX files generated from the saved head revision,
  *   or keep one in Mina filer as the exam's one file of that format, which
  *   the next save of that format replaces (TASK-SKRIPT-39-04-08). An export
- *   saves the exam first, so one click exports what the teacher sees; a
- *   failed save stops it (user rule 2026-10-17). The server owns the export
+ *   stores a pending edit first through the save flow, so one click exports
+ *   what the teacher sees; a failed store stops it (user rule 2026-10-17). The server owns the export
  *   gate; when it refuses with per-item blockers, keep their reasons per
  *   question, and a refused title, for the export menu's blocker rows. The
  *   file name is the server's: the Content-Disposition name is used as sent. When a save elsewhere moved
@@ -37,6 +37,7 @@ import type {
 import { useToast } from "../../../composables/useToast";
 import { triggerBrowserDownload } from "../../../utils/browserDownload";
 import { examWorkspaceSavedAt } from "./examWorkspaceFormat";
+import { EXAM_WORKSPACE_EXPORT_FORMAT_BY_TARGET } from "./examWorkspaceExportFormats";
 import type { ExamWorkspaceStore } from "./examWorkspaceStore";
 import type { ExamWorkspaceTitleVerdict } from "./useExamWorkspaceTitleVerdict";
 
@@ -92,16 +93,7 @@ const EXPORT_CREATED_MESSAGES: Record<ExamWorkspaceExportTarget, string> = {
   examnet_pdf: "PDF-filen för Exam.net är skapad.",
 };
 
-/** The format's name in the Mina filer messages. */
-export const EXPORT_FORMAT_NAMES: Record<ExamWorkspaceExportTarget, string> = {
-  docx: "DOCX",
-  pdf: "PDF",
-  qti: "QTI",
-  pdf_facit: "PDF med facit",
-  examnet_pdf: "PDF för Exam.net",
-};
-
-type ExportDestination = "download" | "files";
+export type ExportDestination = "download" | "files";
 
 const BLOCKER_REASONS = new Set<string>(Object.keys(EXAM_WORKSPACE_EXPORT_BLOCKER_COPY));
 
@@ -149,10 +141,14 @@ function groupBlockers(
 }
 
 export type ExamWorkspaceExportSteps = {
-  /** Spara before the export; false when the save failed and has reported why. */
+  /** Store a pending edit before the export; false when the store failed. */
   saveFirst: () => Promise<boolean>;
   /** Read in the latest saved version after a save elsewhere moved it. */
   readLatest: () => Promise<void>;
+  /** The confirmed history position; every store and move writes the file, so exports watch it. */
+  historyPosition: Readonly<Ref<string | null>>;
+  /** The confirmed file version of the open exam; every stored step writes the file. */
+  savedVersion: () => number | null;
   /** The export gate's refusal of the title just saved, for the title blocker. */
   noteBlockers: ExamWorkspaceTitleVerdict;
   /** The store the export reads, downloads and Mina filer saves run through. */
@@ -166,7 +162,17 @@ export function useExamWorkspaceExports(
 ) {
   const toast = useToast();
 
-  const exportingTarget = ref<ExamWorkspaceExportTarget | null>(null);
+  const exporting = ref<{ target: ExamWorkspaceExportTarget; destination: ExportDestination } | null>(
+    null,
+  );
+  /** The format running an export, if any; the menu spins that part. */
+  const exportingTarget = computed<ExamWorkspaceExportTarget | null>(() =>
+    exporting.value === null ? null : exporting.value.target,
+  );
+  /** Whether the running export downloads or saves to Mina filer; the menu spins that part. */
+  const exportingDestination = computed<ExportDestination | null>(() =>
+    exporting.value === null ? null : exporting.value.destination,
+  );
   const refusedItems = ref<Record<string, RefusedItem>>({});
   /**
    * The reasons the server gave when it last refused an export, per question,
@@ -202,7 +208,7 @@ export function useExamWorkspaceExports(
   }
 
   watch(
-    () => [summary.value?.lineage_id, summary.value?.version],
+    () => [summary.value?.lineage_id, summary.value?.version, steps.historyPosition.value],
     () => clearExportFeedback(),
   );
 
@@ -281,21 +287,23 @@ export function useExamWorkspaceExports(
     destination: ExportDestination,
     savedSummary: ExamWorkspaceDocumentSummary,
   ): Promise<boolean> {
+    // The file version confirmed by the last store, not the summary read at open.
+    const savedVersion = steps.savedVersion() ?? savedSummary.version;
     try {
       if (destination === "files") {
         const teacher = steps.store.teacher;
         if (!teacher) return false;
         const replaced = savedExports.value[target] ?? null;
-        const saved = await teacher.saveExamWorkspaceExport(savedSummary.lineage_id, target, savedSummary.version);
+        const saved = await teacher.saveExamWorkspaceExport(savedSummary.lineage_id, target, savedVersion);
         if (summary.value?.lineage_id === savedSummary.lineage_id) {
           savedExports.value = { ...savedExports.value, [target]: saved.created_at };
         }
         clearExportFeedback();
         exportResult.value = replaced
-          ? `${EXPORT_FORMAT_NAMES[target]} sparad i Mina filer och ersatte filen från ${examWorkspaceSavedAt(replaced)}.`
-          : `${EXPORT_FORMAT_NAMES[target]} sparad i Mina filer.`;
+          ? `${EXAM_WORKSPACE_EXPORT_FORMAT_BY_TARGET[target].name} sparad i Mina filer och ersatte filen från ${examWorkspaceSavedAt(replaced)}.`
+          : `${EXAM_WORKSPACE_EXPORT_FORMAT_BY_TARGET[target].name} sparad i Mina filer.`;
       } else {
-        const response = await steps.store.shared.downloadExamWorkspaceExport(savedSummary.lineage_id, target, savedSummary.version);
+        const response = await steps.store.shared.downloadExamWorkspaceExport(savedSummary.lineage_id, target, savedVersion);
         triggerBrowserDownload(response.blob, response.filename);
         clearExportFeedback();
         exportResult.value = EXPORT_CREATED_MESSAGES[target];
@@ -308,14 +316,15 @@ export function useExamWorkspaceExports(
   }
 
   /**
-   * Spara, then export the version just saved, in one click. The format shows
-   * the export running from the save on; a failed save exports nothing.
+   * Store a pending edit, then export the version just stored, in one click.
+   * The format shows the export running from the store on; a failed store
+   * exports nothing.
    */
   async function runExport(target: ExamWorkspaceExportTarget, destination: ExportDestination): Promise<void> {
-    if (!summary.value || exportingTarget.value !== null) {
+    if (!summary.value || exporting.value !== null) {
       return;
     }
-    exportingTarget.value = target;
+    exporting.value = { target, destination };
     let savedSummary: ExamWorkspaceDocumentSummary | null = null;
     let created = false;
     let requestId = checklistRequestId;
@@ -328,10 +337,14 @@ export function useExamWorkspaceExports(
       requestId = checklistRequestId;
       created = await createExport(target, destination, savedSummary);
     } finally {
-      exportingTarget.value = null;
+      exporting.value = null;
     }
     if (created && target === "qti") {
-      await loadExportChecklist(savedSummary.lineage_id, savedSummary.version, requestId);
+      await loadExportChecklist(
+        savedSummary.lineage_id,
+        steps.savedVersion() ?? savedSummary.version,
+        requestId,
+      );
     }
   }
 
@@ -350,6 +363,7 @@ export function useExamWorkspaceExports(
     exportDocument,
     exportNotice,
     exportResult,
+    exportingDestination,
     exportingTarget,
     saveExportToFiles,
     savedExports,

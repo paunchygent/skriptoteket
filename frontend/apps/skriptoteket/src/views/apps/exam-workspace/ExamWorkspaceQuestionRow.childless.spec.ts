@@ -18,7 +18,7 @@ import ExamWorkspaceQuestionRow from "./ExamWorkspaceQuestionRow.vue";
 import type { ExamWorkspaceListEntry, ExamWorkspaceParentEntry } from "./examWorkspaceListEntries";
 
 function part(id: string, label: string, childIds: string[], text: string): ExamWorkspaceParentEntry {
-  return { childIds, id, kind: "parent", label, points: 0, printedTotal: null, text };
+  return { childIds, id, kind: "parent", label, points: 0, text };
 }
 
 const mounted: Array<VueWrapper> = [];

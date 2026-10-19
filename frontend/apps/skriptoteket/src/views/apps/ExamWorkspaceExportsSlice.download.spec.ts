@@ -29,19 +29,20 @@ import {
 } from "./ExamWorkspaceExportsSlice.specSupport";
 import { selectItemRow } from "./ExamWorkspaceSlice.specSupport";
 import { EXAM_WORKSPACE_EXPORT_FORMATS } from "./exam-workspace/examWorkspaceExportFormats";
+import { AUTOSAVE_FAILURE_COPY } from "./exam-workspace/useExamWorkspaceSaveStatus";
 
 import { arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
 
 const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceHistory: vi.fn(),
   getExamWorkspaceHistoryStep: vi.fn(),
+  moveExamWorkspaceHistoryPosition: vi.fn(),
   storeExamWorkspaceUndoStep: vi.fn(),
   findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
-  saveExamWorkspaceDocument: vi.fn(),
 }));
 const exportApiMocks = vi.hoisted(() => ({
   downloadExamWorkspaceExport: vi.fn(),
@@ -101,6 +102,45 @@ describe("ExamWorkspaceView export download", () => {
     },
   );
 
+  it("offers the formats as a radio list and exports the chosen format", async () => {
+    exportApiMocks.downloadExamWorkspaceExport.mockResolvedValue({
+      blob: new Blob(["pdf"]),
+      contentType: "application/pdf",
+      filename: "NO-prov-examnet.pdf",
+    });
+    const wrapper = await mountImported();
+    await openExportDrawer(wrapper);
+
+    const drawer = wrapper.get('[data-test="exam-workspace-drawer-export"]');
+    const fieldset = drawer.get("fieldset");
+    expect(fieldset.get("legend").text()).toBe("Format");
+    const inputs = fieldset.findAll('input[type="radio"]');
+    expect(inputs.map((input) => input.attributes("data-test"))).toEqual(
+      EXAM_WORKSPACE_EXPORT_FORMATS.map((format) => `exam-workspace-export-format-${format.target}`),
+    );
+    expect(fieldset.findAll('input[type="radio"]:checked')).toHaveLength(1);
+    expect(
+      drawer.get<HTMLInputElement>('[data-test="exam-workspace-export-format-qti"]').element.checked,
+    ).toBe(true);
+
+    await drawer.get<HTMLInputElement>('[data-test="exam-workspace-export-format-pdf"]').setValue(true);
+    expect(
+      drawer.get<HTMLInputElement>('[data-test="exam-workspace-export-format-pdf"]').element.checked,
+    ).toBe(true);
+    expect(
+      drawer.get<HTMLInputElement>('[data-test="exam-workspace-export-format-qti"]').element.checked,
+    ).toBe(false);
+
+    await wrapper.get('[data-test="exam-workspace-export-run"]').trigger("click");
+    await flushPromises();
+
+    expect(exportApiMocks.downloadExamWorkspaceExport).toHaveBeenCalledTimes(1);
+    expect(exportApiMocks.downloadExamWorkspaceExport).toHaveBeenCalledWith("lineage-1", "pdf", 1);
+    expect(wrapper.get('[data-test="exam-workspace-export-result"]').text()).toBe(
+      "PDF-filen är skapad.",
+    );
+  });
+
   it("exports from the drawer with the chosen format and reports it inline", async () => {
     exportApiMocks.downloadExamWorkspaceExport.mockResolvedValue({
       blob: new Blob(["pdf"]),
@@ -110,7 +150,7 @@ describe("ExamWorkspaceView export download", () => {
     const wrapper = await mountImported();
     await openExportDrawer(wrapper);
 
-    await wrapper.get('[data-test="exam-workspace-export-format-pdf"]').trigger("click");
+    await wrapper.get<HTMLInputElement>('[data-test="exam-workspace-export-format-pdf"]').setValue(true);
     await wrapper.get('[data-test="exam-workspace-export-run"]').trigger("click");
     await flushPromises();
 
@@ -162,7 +202,6 @@ describe("ExamWorkspaceView export download", () => {
   });
 
   it("saves unsaved edits first and exports the version just saved, in one click", async () => {
-    apiMocks.saveExamWorkspaceDocument.mockResolvedValue(exportableResponse({ version: 2 }));
     exportApiMocks.downloadExamWorkspaceExport.mockResolvedValue({
       blob: new Blob(["pdf"]),
       contentType: "application/pdf",
@@ -178,9 +217,10 @@ describe("ExamWorkspaceView export download", () => {
     await requirePage("exam-workspace-export-pdf").trigger("click");
     await flushPromises();
 
-    const saved = apiMocks.saveExamWorkspaceDocument.mock.calls[0]![1].document;
+    const stores = apiMocks.storeExamWorkspaceUndoStep.mock.calls;
+    const saved = stores[stores.length - 1]![1].document;
     expect(saved.items.find((item: { item_id: string }) => item.item_id === "item_002").points).toBe(7);
-    expect(exportApiMocks.downloadExamWorkspaceExport).toHaveBeenCalledWith("lineage-1", "pdf", 2);
+    expect(exportApiMocks.downloadExamWorkspaceExport).toHaveBeenCalledWith("lineage-1", "pdf", 1);
     expect(wrapper.get('[data-test="exam-workspace-save-state"]').text()).toMatch(/^Sparat /);
   });
 
@@ -194,12 +234,12 @@ describe("ExamWorkspaceView export download", () => {
 
     await exportFromMenu(wrapper, "docx");
 
-    expect(apiMocks.saveExamWorkspaceDocument).not.toHaveBeenCalled();
+    expect(apiMocks.storeExamWorkspaceUndoStep).not.toHaveBeenCalled();
     expect(exportApiMocks.downloadExamWorkspaceExport).toHaveBeenCalledWith("lineage-1", "docx", 1);
   });
 
   it("exports nothing when the save before it fails, and toasts the save failure", async () => {
-    apiMocks.saveExamWorkspaceDocument.mockRejectedValue(
+    apiMocks.storeExamWorkspaceUndoStep.mockRejectedValue(
       new ApiError({ code: "INTERNAL_ERROR", message: "boom", status: 500 }),
     );
     const wrapper = await mountImported();
@@ -210,14 +250,25 @@ describe("ExamWorkspaceView export download", () => {
 
     expect(exportApiMocks.downloadExamWorkspaceExport).not.toHaveBeenCalled();
     expect(useToastStore().failure).toHaveBeenCalledTimes(1);
-    expect(useToastStore().failure).toHaveBeenCalledWith("Det gick inte att spara provet. Försök igen.");
+    expect(useToastStore().failure).toHaveBeenCalledWith(AUTOSAVE_FAILURE_COPY);
     expect(page("exam-workspace-export-running")).toBeNull();
+    expect(requirePage("exam-workspace-export-qti").attributes("aria-busy")).toBeUndefined();
+    expect(requirePage("exam-workspace-export-save-qti").attributes("aria-busy")).toBeUndefined();
     expect(menuFormatDisabled("qti")).toBeUndefined();
   });
 
   it("shows the export running on the format and the drawer while the save and the export run", async () => {
-    const save = deferred<ReturnType<typeof exportableResponse>>();
-    apiMocks.saveExamWorkspaceDocument.mockReturnValue(save.promise);
+    const inner = apiMocks.storeExamWorkspaceUndoStep.getMockImplementation();
+    if (!inner) {
+      throw new Error("expected the step store double");
+    }
+    let release!: () => void;
+    apiMocks.storeExamWorkspaceUndoStep.mockImplementationOnce(
+      (...args: unknown[]) =>
+        new Promise((resolve) => {
+          release = () => resolve((inner as (...innerArgs: unknown[]) => unknown)(...args));
+        }),
+    );
     const download = deferred<{ blob: Blob; contentType: string; filename: string }>();
     exportApiMocks.downloadExamWorkspaceExport.mockReturnValue(download.promise);
     const wrapper = await mountImported();
@@ -225,17 +276,25 @@ describe("ExamWorkspaceView export download", () => {
     await wrapper.find('[data-test="exam-workspace-item-points-input"]').setValue("7");
 
     await exportFromMenu(wrapper, "qti");
-    // Saving: the format already shows the export running, and no format starts another.
-    expect(requirePage("exam-workspace-export-running").text()).toBe("Exporterar …");
+    // Saving: the download part already shows the export running, and no format starts another.
+    expect(page("exam-workspace-export-running")).toBeNull();
     expect(requirePage("exam-workspace-export-qti").attributes("aria-busy")).toBe("true");
+    expect(requirePage("exam-workspace-export-qti").attributes("aria-disabled")).toBe("true");
+    expect(requirePage("exam-workspace-export-save-qti").attributes("aria-busy")).toBeUndefined();
+    expect(requirePage("exam-workspace-export-save-qti").attributes("aria-disabled")).toBe("true");
     expect(menuFormatDisabled("pdf")).toBe("true");
-    save.resolve(exportableResponse({ version: 2 }));
+    expect(requirePage("exam-workspace-export-save-pdf").attributes("aria-disabled")).toBe("true");
+    release();
     await flushPromises();
-    expect(exportApiMocks.downloadExamWorkspaceExport).toHaveBeenCalledWith("lineage-1", "qti", 2);
-    expect(requirePage("exam-workspace-export-running").text()).toBe("Exporterar …");
+    expect(exportApiMocks.downloadExamWorkspaceExport).toHaveBeenCalledWith("lineage-1", "qti", 1);
+    expect(page("exam-workspace-export-running")).toBeNull();
+    expect(requirePage("exam-workspace-export-qti").attributes("aria-busy")).toBe("true");
+    expect(requirePage("exam-workspace-export-save-qti").attributes("aria-busy")).toBeUndefined();
     download.resolve({ blob: new Blob(["zip"]), contentType: "application/zip", filename: "Prov.zip" });
     await flushPromises();
     expect(page("exam-workspace-export-running")).toBeNull();
+    expect(requirePage("exam-workspace-export-qti").attributes("aria-busy")).toBeUndefined();
+    expect(requirePage("exam-workspace-export-save-qti").attributes("aria-busy")).toBeUndefined();
     expect(requirePage("exam-workspace-export-menu-result").text()).toBe("QTI-paketet är skapat.");
   });
 });

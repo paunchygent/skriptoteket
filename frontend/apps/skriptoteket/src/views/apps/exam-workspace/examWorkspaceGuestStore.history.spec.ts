@@ -1,12 +1,13 @@
 /**
- * Guest exam workspace store: history and save.
+ * Guest exam workspace store: history and the one save model.
  *
  * Expected behavior:
  *   A guest's exam lives only in the browser. Starting blank, autosaving,
- *   branching after an undo, dropping the redo steps, Spara and reopening a
- *   NEW store over the same storage reproduce the server's document/history
- *   state; a stale cursor on autosave or a parent command is the server's
- *   409 without persisting, and a refused Spara document its 422.
+ *   branching after an undo, dropping the redo steps, moving the position
+ *   for Ångra and Gör om and reopening a NEW store over the same storage
+ *   reproduce the server's document/history state; a stale cursor on
+ *   autosave or a parent command is the server's 409 without persisting,
+ *   and a refused autosave document its 422.
  */
 
 import { describe, expect, it } from "vitest";
@@ -18,6 +19,7 @@ import {
   DOCUMENT_ID,
   exam,
   installGuestStoreObjectUrls,
+  LEASE_TAB_ID,
   refusedExam,
   setupGuestStore,
   startBlank,
@@ -66,17 +68,21 @@ describe("examWorkspaceGuestStore history and save", () => {
     });
   });
 
-  it("reproduces autosave, an undo branch, redo-drop, Spara and a reload over the same storage", async () => {
+  it("reproduces autosave, an undo branch, redo-drop, a position move and a reload over the same storage", async () => {
     const context = await startBlankSetup();
     const lineageId = DOCUMENT_ID;
     const opened = await context.store.store.shared.getExamWorkspaceDocument(lineageId);
     const history = await context.store.store.shared.getExamWorkspaceHistory(lineageId);
+    // A stored step is the save: the saved draft follows the step at once.
+    expect(opened.saved_document.revision).toBe(1);
 
     const autosaved = await context.store.store.shared.storeExamWorkspaceUndoStep(lineageId, {
       afterStepId: null,
       document: exam("A"),
       expectedCursor: opened.history_cursor,
+      tabId: LEASE_TAB_ID,
     });
+    expect(autosaved.document.title).toBe("A");
 
     // Undo is a pure read of the baseline; nothing moves until the next write.
     const baseline = await context.store.store.shared.getExamWorkspaceHistoryStep(
@@ -89,18 +95,30 @@ describe("examWorkspaceGuestStore history and save", () => {
       afterStepId: history.baseline_step_id,
       document: exam("B"),
       expectedCursor: autosaved.history.cursor,
+      tabId: LEASE_TAB_ID,
     });
     // A branch after the baseline drops the redo step A.
     expect(branched.history.step_ids).toEqual([branched.history.position_step_id]);
     expect(branched.document.title).toBe("B");
 
-    const saved = await context.store.store.shared.saveExamWorkspaceDocument(lineageId, {
-      document: exam("Sparad"),
-      expectedRevision: 1,
-      positionStepId: branched.history.position_step_id,
+    // Ångra moves the position to the baseline and the saved draft follows.
+    const undone = await context.store.moveToHistoryStep(lineageId, {
+      expectedCursor: branched.history.cursor,
+      tabId: LEASE_TAB_ID,
+      stepId: history.baseline_step_id,
     });
-    expect(saved.saved_document.revision).toBe(2);
-    expect(saved.document.title).toBe("Sparad");
+    expect(undone.history.step_ids).toEqual([branched.history.position_step_id]);
+    const undoneOpen = await context.store.store.shared.getExamWorkspaceDocument(lineageId);
+    expect(undoneOpen.document.title).toBe("Original");
+    expect(undoneOpen.saved_document.title).toBe("Original");
+
+    // Gör om moves back to the step without storing anything new.
+    const redone = await context.store.moveToHistoryStep(lineageId, {
+      expectedCursor: undone.history.cursor,
+      tabId: LEASE_TAB_ID,
+      stepId: branched.history.position_step_id,
+    });
+    expect(redone.history.step_ids).toEqual([branched.history.position_step_id]);
 
     const firstOpen = await context.store.store.shared.getExamWorkspaceDocument(lineageId);
     const firstHistory = await context.store.store.shared.getExamWorkspaceHistory(lineageId);
@@ -116,9 +134,9 @@ describe("examWorkspaceGuestStore history and save", () => {
 
     expect(secondOpen).toEqual(firstOpen);
     expect(secondHistory).toEqual(firstHistory);
-    expect(secondOpen.document.title).toBe("Sparad");
-    expect(secondOpen.saved_document.title).toBe("Sparad");
-    expect(secondOpen.saved_document.revision).toBe(2);
+    expect(secondOpen.document.title).toBe("B");
+    expect(secondOpen.saved_document.title).toBe("B");
+    expect(secondOpen.saved_document.revision).toBe(5);
     expect(secondHistory.position_step_id).toBe(firstHistory.position_step_id);
   });
 
@@ -132,6 +150,7 @@ describe("examWorkspaceGuestStore history and save", () => {
         afterStepId: null,
         document: exam("X"),
         expectedCursor: "99999999-9999-4999-8999-999999999999",
+        tabId: LEASE_TAB_ID,
       })
       .catch((caught: unknown) => caught);
 
@@ -143,6 +162,7 @@ describe("examWorkspaceGuestStore history and save", () => {
       .createExamWorkspaceParent(lineageId, {
         child: newTeacherItem("item_002", 2, "free_text"),
         expected_cursor: "99999999-9999-4999-8999-999999999999",
+        tab_id: LEASE_TAB_ID,
         instruction: [],
         position: 0,
       })
@@ -154,15 +174,17 @@ describe("examWorkspaceGuestStore history and save", () => {
     expect(await context.storage.load()).toEqual(persisted);
   });
 
-  it("rejects Spara with the server's 422 for a document the save rules refuse", async () => {
+  it("rejects an autosave the save rules refuse with the server's 422", async () => {
     const context = await startBlankSetup();
     const persisted = await context.storage.load();
+    const opened = await context.store.store.shared.getExamWorkspaceDocument(DOCUMENT_ID);
 
     const error = await context.store.store.shared
-      .saveExamWorkspaceDocument(DOCUMENT_ID, {
+      .storeExamWorkspaceUndoStep(DOCUMENT_ID, {
+        afterStepId: null,
         document: refusedExam(),
-        expectedRevision: 1,
-        positionStepId: DOCUMENT_ID,
+        expectedCursor: opened.history_cursor,
+      tabId: LEASE_TAB_ID,
       })
       .catch((caught: unknown) => caught);
 

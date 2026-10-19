@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "623551fbcf5392d3e6460f0c847d84a6090128cab1a55504b24081b8af6935fd",
+  "source_set_digest": "28a6e2244e7d14b8925f5ed7206ddfc2ffe77988b4092f18e1f622e48df17775",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -776,6 +776,27 @@
       "type": "story",
       "title": "Migration idempotency harness supports merge revisions",
       "path": "docs/backlog/stories/st-skript-06-17-migration-idempotency-harness-supports-merge-revisions.md",
+      "status": "proposed",
+      "epic": "EPIC-SKRIPT-06",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "links": {
+        "decisions": []
+      },
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "ST-SKRIPT-06-18",
+      "type": "story",
+      "title": "The SPA Vitest wrapper runs exactly the spec files its targets name",
+      "path": "docs/backlog/stories/st-skript-06-18-the-spa-vitest-wrapper-runs-exactly-the-spec-files-its-targets-name.md",
       "status": "proposed",
       "epic": "EPIC-SKRIPT-06",
       "owners": [
@@ -2594,6 +2615,25 @@
       "status": "proposed",
       "task_kind": "story",
       "story": "ST-SKRIPT-06-17",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-06-18-01",
+      "type": "task",
+      "title": "Repair vitest-run target resolution, separator handling and the include transport type",
+      "path": "docs/backlog/tasks/task-skript-06-18-01-repair-vitest-run-target-resolution-separator-handling-and-the-include-transport-type.md",
+      "status": "proposed",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-06-18",
       "owners": [
         {
           "kind": "service",
@@ -6569,7 +6609,7 @@
       "type": "task",
       "title": "Teachers edit a dropdown gap's options and mark the correct one in the gap popover",
       "path": "docs/backlog/tasks/task-skript-40-04-04-teachers-edit-a-dropdown-gap-s-options-and-mark-the-correct-one-in-the-gap-popover.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -6580,7 +6620,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-19",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Independent ruthless-reviewer e7dac097 (Pi) approved the review-1 repair F1-F5 at 471f2209 with no findings (retained 01a14c27 evidence/reviews/TASK-SKRIPT-40-04-04/review-2.md); merged to main as 36ca27c0. The D3 walk failure was repaired under TASK-SKRIPT-40-04-08 WR1 (4885c37d, review cd5a1b4c, merged be979cd7). The Mac staging walk at cf9547fa passed the owed Validation walk: blocker jump, fix, then QTI export 200 (Mac .artifacts/staging-walk-cf9547fa/walk-record.md)."
       }
     },
     {
@@ -6653,7 +6697,7 @@
       "type": "task",
       "title": "Short-answer and gap-text questions look different, teachers create gaps by clicking a word, and the gap popover shows its whole answer list",
       "path": "docs/backlog/tasks/task-skript-40-04-08-short-answer-and-gap-text-questions-look-different-teachers-create-gaps-by-clicking-a-word-and-the-gap-popover-shows-its-whole-answer-list.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -6664,7 +6708,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-19",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Independent ruthless-reviewer 9633a403 (Pi) cleared F1 and F2 (high) on rereview at 3f498eda and approved the copy; F3-F6 medium admitted on focused proof. Merged to main as eee7c32f. The staging walk found six defects; walk-repair review cd5a1b4c at 5644f908 returned three medium findings, repaired and admitted on focused proof without rereview (retained 01a153be evidence/reviews/cd5a1b4c-d09a-4648-b53f-76f0124e21e7.md). Repair merged to main as be979cd7; the Hemma pre-push suite passed (505 files, 3565 tests); the Mac re-walk of findings 1-5 on staging at be979cd7 passed (Mac .artifacts/staging-walk-40-04-08-repair/walk-record.md). Finding 6 moved to TASK-SKRIPT-40-04-09."
       }
     },
     {
@@ -6687,10 +6735,132 @@
       }
     },
     {
+      "id": "TASK-SKRIPT-40-04-10",
+      "type": "task",
+      "title": "Teachers see a printed-total difference in one line and fix the exam text or the questions",
+      "path": "docs/backlog/tasks/task-skript-40-04-10-teachers-see-which-questions-and-parts-cause-a-printed-total-difference-and-can-dismiss-it.md",
+      "status": "in_progress",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
       "id": "TASK-SKRIPT-40-04-12",
       "type": "task",
       "title": "Printed PDF exams keep each question's text and its alternatives on one page",
       "path": "docs/backlog/tasks/task-skript-40-04-12-printed-pdf-exams-keep-each-question-s-text-and-its-alternatives-on-one-page.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-13",
+      "type": "task",
+      "title": "With the gap tool on, a click on a gap turns it back into its words, any highlighted span becomes one gap, and one gap control replaces the Lucka button",
+      "path": "docs/backlog/tasks/task-skript-40-04-13-with-the-gap-tool-on-a-click-on-a-gap-turns-it-back-into-its-words-any-highlighted-span-becomes-one-gap-and-one-gap-control-replaces-the-lucka-button.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-14",
+      "type": "task",
+      "title": "The question editor toolbar has its own Ångra and Gör om, and every question edit autosaves after a short pause",
+      "path": "docs/backlog/tasks/task-skript-40-04-14-the-question-editor-toolbar-has-its-own-ångra-and-gör-om-and-every-question-edit-autosaves-after-a-short-pause.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-15",
+      "type": "task",
+      "title": "Printed PDF exams show each question's points as (N p) at the end of the question text",
+      "path": "docs/backlog/tasks/task-skript-40-04-15-printed-pdf-exams-show-each-question-s-points-as-n-p-at-the-end-of-the-question-text.md",
+      "status": "done",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-19",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Independent ruthless-reviewer 9aa64d69 (Pi) approved dbbb5f8d with one low finding, fixed in R3 fae44edb and admitted on focused proof (retained 01a1542c evidence/results/9aa64d69-fc20-41eb-8993-eded036ef865.json). Merged to main as df87d633; the Mac staging walk at df87d633 passed (Mac .artifacts/staging-walk-40-04-15/walk-record.md)."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-16",
+      "type": "task",
+      "title": "Each export format downloads or saves to Mina filer from one split button at the right of its menu row",
+      "path": "docs/backlog/tasks/task-skript-40-04-16-each-export-format-downloads-or-saves-to-mina-filer-from-one-split-button-at-the-right-of-its-menu-row.md",
+      "status": "done",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-19",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Independent ruthless-reviewer 39d1f3fc (Pi) at eac9eba2 returned changes_requested with one medium, F1 (a duplicate export-format name table); repaired at e4fd8b51 (catalogue keyed by target, EXPORT_FORMAT_NAMES removed, close-twice menu spec) and admitted on focused proof without rereview (6 spec files, 54 passed; fe-type-check and fe-lint rc 0). Merged to main as cf9547fa; the Hemma pre-push suite passed. The Mac staging walk at cf9547fa passed every check (Mac .artifacts/staging-walk-cf9547fa/walk-record.md)."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-17",
+      "type": "task",
+      "title": "The exam workspace header and toolbars share one compact control system with autosave status, file commands and a gap switch",
+      "path": "docs/backlog/tasks/task-skript-40-04-17-the-exam-workspace-header-and-toolbars-share-one-compact-control-system-with-autosave-status-file-commands-and-a-gap-switch.md",
       "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
@@ -6790,7 +6960,7 @@
       "type": "task",
       "title": "Guests open, edit and export exams in the workspace without login",
       "path": "docs/backlog/tasks/task-skript-41-02-02-guests-open-edit-and-export-exams-in-the-workspace-without-login.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-41-02",
       "owners": [
@@ -6801,7 +6971,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-19",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Independent ruthless-reviewer da90f12c (Pi) cleared every finding of the first build over five rereviews; the last medium (R13) was admitted on focused proof. After the guest staging walk failed, repair review b141ae75 at 13209269 returned two medium structural findings, repaired by fresh juniors and admitted on focused proof without rereview under the review gates (retained 01a153b4 evidence/reviews/b141ae75-a891-4b35-85c0-78040454e990.md). Merged to main as ba4fe22ab; the Mac re-walk on staging passed; deployed to production at f7eeada5 on 2026-10-19 with the F1/G6 proxy change, see Production Deploy below."
       }
     },
     {
@@ -6821,6 +6995,29 @@
       "closeout_review": {
         "record": "inline",
         "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-41-02-04",
+      "type": "task",
+      "title": "The exam workspace fills the desktop window and the editor column is the widest",
+      "path": "docs/backlog/tasks/task-skript-41-02-04-the-exam-workspace-fills-the-desktop-window-and-the-editor-column-is-the-widest.md",
+      "status": "done",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-41-02",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-19",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Independent ruthless-reviewer ea60b045 returned nine medium findings at 4b526ce1, repaired by fresh juniors and admitted on focused proof without rereview (retained 01a153bf evidence/reviews/ea60b045-1ef0-4a1d-950c-df04bf72027c.md). Merged to main as ffab920a; the first staging walk (Mac, Edge, guest and signed in) passed F3, F4 and F6, the default widths, clamping, remembered widths and the rail, and found G1, G2, W1, W2, W3 and W4. Review f31c37a1 of the walk repair returned one medium finding (the column handle spec over 500 lines), repaired and admitted on focused proof (evidence/reviews/f31c37a1-2b2e-45c9-bba4-d3eabe9dd6ca.md). The repair merged to main as 67861ab3 and the second staging walk passed G1, G2 (IBM Plex Sans confirmed), W3 and W4 (Mac record .artifacts/staging-walk-41-02-04-repair/walk-record.md). W1 and W2 are handed to the toolbar session (TASK-SKRIPT-40-04-17)."
       }
     },
     {
@@ -7934,6 +8131,24 @@
         "decided_at": "2026-10-19",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "Pi ruthless-reviewer 7c83bec8 reviewed f7dd14d7 (Hemma retained session 01a14f6a-f57b-7b24-9672-320bf5884dbc, evidence/reviews/7c83bec8-d3ba-47cc-9881-6e50e14e2364.md): approved with no findings; three adversarial probes pass (new top-level and nested paid routes are still caught by the AI route-gate guard). Merged to main 2026-10-19."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0048",
+      "type": "task",
+      "title": "QTI item serializer indents block structure only and never mixed inline content",
+      "path": "docs/backlog/tasks/task-skript-rep-0048-qti-item-serializer-indents-block-structure-only-and-never-mixed-inline-content.md",
+      "status": "in_progress",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {

@@ -33,5 +33,5 @@ export function bodyText(body: NativeExamBodyParagraph[]): string {
 
 /** The plain one-paragraph body a teacher-created question or option starts with. */
 export function plainBody(text: string): NativeExamBodyParagraph[] {
-  return [{ heading_level: null, segments: [{ kind: "text", text, marks: [] }] }];
+  return [{ heading_level: null, segments: [{ kind: "text", text, marks: [], kept_gap_id: null }] }];
 }

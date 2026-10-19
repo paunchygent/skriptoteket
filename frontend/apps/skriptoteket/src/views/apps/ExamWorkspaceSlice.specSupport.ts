@@ -14,7 +14,7 @@
 
 import { createTestingPinia } from "@pinia/testing";
 import { flushPromises, mount } from "@vue/test-utils";
-import { vi } from "vitest";
+import { expect, vi } from "vitest";
 import { ref } from "vue";
 import { createMemoryHistory, createRouter } from "vue-router";
 
@@ -130,7 +130,7 @@ export function buildDocument(): NativeExamDocument {
     parents: [],
     revision: 1,
     header: { tags: [] },
-    schema_version: "native_exam_document_v8",
+    schema_version: "native_exam_document_v9",
     title: "NO-prov HT25",
   };
 }
@@ -197,10 +197,22 @@ export async function mountExamWorkspace(
     },
   });
   await flushPromises();
+  mountedViews.push(wrapper);
   return { layout: layoutRef, router, wrapper };
 }
 
 export type ViewWrapper = Awaited<ReturnType<typeof mountExamWorkspace>>["wrapper"];
+
+/** Every view a slice spec mounted, tracked only for teardown between tests. */
+const mountedViews: Array<{ unmount: () => void }> = [];
+
+/** Unmount every view the slice specs mounted. */
+export function unmountExamWorkspace(): void {
+  for (const wrapper of mountedViews.splice(0)) wrapper.unmount();
+  // The test router uses the browser history: an open exam's address must not leak into the next test.
+  window.history.replaceState({}, "", "/");
+  document.body.replaceChildren();
+}
 
 export async function importFixtureDocument(wrapper: ViewWrapper) {
   const input = wrapper.find<HTMLInputElement>(
@@ -222,7 +234,15 @@ export async function selectItemRow(wrapper: ViewWrapper, itemId: string) {
   await wrapper.find(`[data-test="exam-workspace-row-${itemId}"]`).trigger("click");
 }
 
+/**
+ * Store a pending edit at once through Ctrl+S, the new model where every
+ * stored history step also writes the exam file (TASK-SKRIPT-40-04-14, one
+ * save model). There is no Spara button to click.
+ */
 export async function saveDocument(wrapper: ViewWrapper) {
-  await wrapper.find('[data-test="exam-workspace-save"]').trigger("click");
+  expect(wrapper.find('[data-test="exam-workspace-save"]').exists()).toBe(false);
+  const event = new KeyboardEvent("keydown", { bubbles: true, cancelable: true, key: "s", ctrlKey: true });
+  window.dispatchEvent(event);
+  expect(event.defaultPrevented).toBe(true);
   await flushPromises();
 }

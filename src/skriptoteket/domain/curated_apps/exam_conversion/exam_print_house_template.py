@@ -66,7 +66,6 @@ HEADING_GEOMETRY: Mapping[int, HeadingGeometry] = MappingProxyType(
 )
 
 PARAGRAPH_SPACING = BlockSpacing(0, 2)  # an ordinary body paragraph.
-POINTS_BOLD = True  # whether the points paragraph prints bold.
 QUESTION_SPACE_AFTER_MM = 8.0  # space after a whole question block.
 INSTRUCTION_SPACE_AFTER_MM = 6.0  # space after a whole shared instruction block.
 OPTION_SPACING = BlockSpacing(0, 3)  # one answer option paragraph.

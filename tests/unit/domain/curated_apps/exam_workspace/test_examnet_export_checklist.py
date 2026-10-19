@@ -171,7 +171,7 @@ def test_free_text_with_criteria_lists_each_criterion_text_and_points() -> None:
 
     assert entries == (
         ExamNetExportChecklistFreeTextCriteria(
-            question_number="1",
+            item_id="item_001",
             question_text="Resonera om satsdelar.",
             points=3,
             criteria=(
@@ -201,7 +201,7 @@ def test_shared_subquestion_all_or_nothing_at_two_points_or_more_is_listed() -> 
 
     assert entries == (
         ExamNetExportChecklistAllOrNothing(
-            question_number="1",
+            item_id="item_001",
             question_text="Välj alla korrekta alternativ.",
             points=5,
         ),
@@ -235,7 +235,7 @@ def test_folded_single_child_parent_keeps_the_childs_own_loss() -> None:
 
     assert entries == (
         ExamNetExportChecklistFreeTextCriteria(
-            question_number="1",
+            item_id="item_001",
             question_text="Resonera om satsdelar.",
             points=2,
             criteria=(ExamNetExportChecklistCriterion(text="Rätt begrepp.", points=2),),
@@ -243,20 +243,51 @@ def test_folded_single_child_parent_keeps_the_childs_own_loss() -> None:
     )
 
 
-def test_question_number_is_the_native_sequence_not_the_printed_label() -> None:
-    plain = _free_text_item(sequence=1, item_id="item_001", points=1)
-    labelled = _free_text_item(
-        sequence=2,
-        item_id="item_002",
+def test_entries_name_questions_by_item_id_never_the_flat_sequence() -> None:
+    """A part of three children before a loss item: entries carry item ids.
+
+    The drawer keys the list label off the item id, so the row after the part
+    reads the list label ("Fråga 2") rather than the flat sequence ("Fråga 4").
+    """
+    children = [
+        _free_text_item(sequence=sequence, item_id=f"item_00{sequence}") for sequence in (1, 2, 3)
+    ]
+    loss = _free_text_item(
+        sequence=4,
+        item_id="item_004",
+        points=2,
+        criteria=(NativeExamCriterion(text="Rätt begrepp.", points=2),),
+    )
+    document = _with_parent(
+        document_of((*children, loss)),
+        tuple(child.item_id for child in children),
+    )
+
+    entries = native_exam_export_checklist(document)
+
+    assert [entry.item_id for entry in entries] == ["item_004"]
+
+
+def test_child_loss_names_the_child_item_id() -> None:
+    """A loss on a part child carries the child's id for its "1b" list label."""
+    children = [
+        _free_text_item(sequence=sequence, item_id=f"item_00{sequence}") for sequence in (1, 2)
+    ]
+    loss = _free_text_item(
+        sequence=3,
+        item_id="item_003",
         printed_label="c",
         points=2,
         criteria=(NativeExamCriterion(text="Rätt begrepp.", points=2),),
     )
-    document = _with_parent(document_of((plain, labelled)), (plain.item_id, labelled.item_id))
+    document = _with_parent(
+        document_of((*children, loss)),
+        tuple(child.item_id for child in (*children, loss)),
+    )
 
     entries = native_exam_export_checklist(document)
 
-    assert [entry.question_number for entry in entries] == ["2"]
+    assert [entry.item_id for entry in entries] == ["item_003"]
 
 
 @pytest.mark.parametrize("shared_parent", [False, True])
@@ -272,7 +303,7 @@ def test_uneven_gap_points_list_the_rounded_gap_value(shared_parent: bool) -> No
 
     assert entries == (
         ExamNetExportChecklistRoundedGaps(
-            question_number="1",
+            item_id="item_001",
             question_text="Lucka 1: [___] Lucka 2: [___] Lucka 3: [___]",
             points=5,
             gap_points=1.66,
@@ -293,7 +324,7 @@ def test_gap_share_floored_to_zero_lists_the_rounded_value() -> None:
 
     assert entries == (
         ExamNetExportChecklistRoundedGaps(
-            question_number="1",
+            item_id="item_001",
             question_text="Lucka 1: [___] Lucka 2: [___]",
             points=0.01,
             gap_points=0,
@@ -358,4 +389,4 @@ def test_entries_stand_in_document_order() -> None:
         ExamNetExportChecklistFreeTextCriteria,
         ExamNetExportChecklistRoundedGaps,
     ]
-    assert [entry.question_number for entry in entries] == ["1", "2"]
+    assert [entry.item_id for entry in entries] == ["item_001", "item_002"]

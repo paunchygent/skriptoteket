@@ -7,8 +7,8 @@
  *   rich-text editor with the formatting toolbar (word-processor editing; an
  *   emptied instruction saves as empty and is not printed), and its
  *   deluppgifter in order, each opening the question, moving up or down, or
- *   being removed. "+ Deluppgift" adds a question of any kind last. The part line is the sum of the deluppgifter
- *   and says in amber when the exam text prints another part total; an
+ *   being removed. "+ Deluppgift" adds a question of any kind last. The part line is the plain subtotal of
+ *   the deluppgifter; a printed-total difference lives only in the question list's points note. An
  *   instruction owns no points of its own.
  *
  *   Removing an instruction keeps its questions as standalone questions by
@@ -35,7 +35,7 @@ import ExamWorkspaceNewItemMenu from "./ExamWorkspaceNewItemMenu.vue";
 import ExamWorkspaceRichTextEntry from "./ExamWorkspaceRichTextEntry.vue";
 import type { TeacherItemKind } from "./examWorkspaceItemEdits";
 import type { ExamWorkspaceItemEntry } from "./examWorkspaceListEntries";
-import { examWorkspaceFormatPoints, examWorkspacePointsLine } from "./examWorkspaceTotals";
+import { examWorkspaceFormatPoints } from "./examWorkspaceTotals";
 import { provideRichTextTargetRegistry } from "./examWorkspaceRichTextTarget";
 import type { RichTextHeadingLevel } from "./examWorkspaceRichTextTarget";
 import type { BodyMark } from "./examWorkspaceBodyMarks";
@@ -46,8 +46,6 @@ defineProps<{
   label: string;
   children: ExamWorkspaceItemEntry[];
   subtotal: number;
-  /** The part total the exam text prints, only when it differs from `subtotal`. */
-  printedTotal: number | null;
   disabled: boolean;
   /** The last command's inline outcome, e.g. a refused delete. */
   notice: ExamWorkspaceNotice | null;
@@ -63,7 +61,6 @@ const emit = defineEmits<{
   addChild: [kind: TeacherItemKind];
   deleteParent: [mode: ExamParentDeleteMode];
   dismissNotice: [];
-  acceptPartTotal: [];
 }>();
 
 const targets = provideRichTextTargetRegistry();
@@ -237,19 +234,8 @@ function chooseDelete(mode: ExamParentDeleteMode): void {
     <p class="psum">
       <span
         class="psum__points"
-        :class="{ 'psum__points--printed': printedTotal !== null }"
         data-test="exam-workspace-part-points"
-      >{{ examWorkspacePointsLine(subtotal, printedTotal) }}</span>
-      <button
-        v-if="printedTotal !== null"
-        type="button"
-        class="xw-btn xw-btn--compact xw-btn--ghost"
-        :disabled="disabled"
-        data-test="exam-workspace-accept-part-total"
-        @click="emit('acceptPartTotal')"
-      >
-        Använd {{ examWorkspaceFormatPoints(subtotal) }} p
-      </button>
+      >{{ examWorkspaceFormatPoints(subtotal) }} p</span>
       <span>Poängen sätts på varje deluppgift.</span>
     </p>
 
@@ -322,7 +308,6 @@ function chooseDelete(mode: ExamParentDeleteMode): void {
   font-size: var(--huleedu-text-sm); color: var(--huleedu-navy-70);
 }
 .psum__points { font-weight: var(--huleedu-font-semibold); color: var(--huleedu-navy); overflow-wrap: anywhere; }
-.psum__points--printed { color: var(--huleedu-warning); }
 @media (max-width: 767px) {
   .ied__number { display: none; }
   .kid { grid-template-columns: 28px minmax(0, 1fr) auto; }

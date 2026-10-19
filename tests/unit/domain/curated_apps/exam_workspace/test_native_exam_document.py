@@ -53,7 +53,7 @@ class TestSerializationRoundTrip:
         assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
 
     def test_document_declares_the_current_schema(self) -> None:
-        assert make_document(make_free_text_item()).schema_version == "native_exam_document_v8"
+        assert make_document(make_free_text_item()).schema_version == "native_exam_document_v9"
 
     def test_saved_v1_payload_has_no_compatibility_reader(self) -> None:
         document = make_document(make_free_text_item())
@@ -74,6 +74,37 @@ class TestSerializationRoundTrip:
             parse_native_exam_document(json.dumps(payload).encode("utf-8"))
 
         assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
+
+    def test_saved_v8_payload_has_no_compatibility_reader(self) -> None:
+        document = make_document(make_free_text_item())
+        payload = json.loads(native_exam_document_json_bytes(document))
+        payload["schema_version"] = "native_exam_document_v8"
+
+        with pytest.raises(DomainError) as exc_info:
+            parse_native_exam_document(json.dumps(payload).encode("utf-8"))
+
+        assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
+
+    def test_v9_header_with_dismissed_mark_is_refused(self) -> None:
+        document = make_document(make_free_text_item())
+        payload = json.loads(native_exam_document_json_bytes(document))
+        assert isinstance(payload["header"], dict)
+        payload["header"]["printed_total_dismissed"] = True
+
+        with pytest.raises(DomainError) as exc_info:
+            parse_native_exam_document(json.dumps(payload).encode("utf-8"))
+
+        assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
+
+    def test_source_points_round_trip(self) -> None:
+        item = make_free_text_item().model_copy(update={"points": 2, "source_points": 3})
+        document = make_document(item)
+
+        parsed = parse_native_exam_document(native_exam_document_json_bytes(document))
+
+        assert parsed == document
+        assert parsed.items[0].points == 2
+        assert parsed.items[0].source_points == 3
 
     def test_round_trip_preserves_facit_text_and_automatic_values(self) -> None:
         document = make_document(

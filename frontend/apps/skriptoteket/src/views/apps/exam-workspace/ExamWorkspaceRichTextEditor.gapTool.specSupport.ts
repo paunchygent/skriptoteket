@@ -21,7 +21,7 @@
 import { mount } from "@vue/test-utils";
 import type { VueWrapper } from "@vue/test-utils";
 import { Editor } from "@tiptap/core";
-import { defineComponent, h, nextTick, reactive } from "vue";
+import { defineComponent, h, nextTick, reactive, ref } from "vue";
 import { vi } from "vitest";
 
 import type { NativeExamBodyParagraph } from "../../../api/examWorkspace";
@@ -31,6 +31,7 @@ import { provideExamWorkspaceHistoryKeys } from "./examWorkspaceHistoryKeys";
 import type { ExamWorkspaceHistoryKeys } from "./examWorkspaceHistoryKeys";
 import { dispatchGapToolClick } from "./examWorkspaceGapToolPointer.specSupport";
 import { provideRichTextTargetRegistry } from "./examWorkspaceRichTextTarget";
+import type { RichTextTargetRegistry } from "./examWorkspaceRichTextTarget";
 
 export type Body = NativeExamBodyParagraph[];
 export type Creation = [Body, string, string];
@@ -39,9 +40,12 @@ export type Opened = {
   wrapper: VueWrapper;
   editor: Editor;
   surface: HTMLElement;
+  registry: RichTextTargetRegistry;
   updates: Array<[Body, boolean]>;
   creations: Creation[];
   activations: Array<[string, HTMLElement]>;
+  reverts: string[];
+  restores: Array<[string, number]>;
   toggles: string[];
   escapes: string[];
   setProps: (props: Partial<EditorProps>) => Promise<void>;
@@ -61,13 +65,16 @@ export async function openEditor(initial: EditorProps): Promise<Opened> {
   const updates: Array<[Body, boolean]> = [];
   const creations: Creation[] = [];
   const activations: Array<[string, HTMLElement]> = [];
+  const reverts: string[] = [];
+  const restores: Array<[string, number]> = [];
   const toggles: string[] = [];
   const escapes: string[] = [];
-  const keys: ExamWorkspaceHistoryKeys = { undo: vi.fn(), redo: vi.fn() };
+  const keys: ExamWorkspaceHistoryKeys = { undo: vi.fn(), redo: vi.fn(), canUndo: ref(false), canRedo: ref(false) };
   const live = reactive<EditorProps>({ ...initial });
+  let registry!: RichTextTargetRegistry;
   const Host = defineComponent({
     setup() {
-      provideRichTextTargetRegistry();
+      registry = provideRichTextTargetRegistry();
       provideExamWorkspaceHistoryKeys(keys);
       return () =>
         h(ExamWorkspaceRichTextEditor, {
@@ -81,6 +88,8 @@ export async function openEditor(initial: EditorProps): Promise<Opened> {
           onUpdate: (body: Body, structural: boolean) => updates.push([body, structural]),
           onCreateGap: (body: Body, gapId: string, seed: string) => creations.push([body, gapId, seed]),
           onActivateGap: (gapId: string, element: HTMLElement) => activations.push([gapId, element]),
+          onRevertGap: (gapId: string) => reverts.push(gapId),
+          onRestoreKeptGap: (keptGapId: string, blockIndex: number) => restores.push([keptGapId, blockIndex]),
           onToggleGapTool: () => toggles.push("toggle"),
           onEscape: () => escapes.push("escape"),
         });
@@ -102,9 +111,12 @@ export async function openEditor(initial: EditorProps): Promise<Opened> {
     wrapper,
     editor: attached,
     surface: candidate,
+    registry,
     updates,
     creations,
     activations,
+    reverts,
+    restores,
     toggles,
     escapes,
     setProps: async (props) => {
@@ -140,13 +152,18 @@ export async function releaseMouse(opened: Opened): Promise<void> {
   await nextTick();
 }
 
-export function stubGeometry(opened: Opened): void {
-  const rect = new DOMRect(50, 60, 40, 14);
-  vi.spyOn(opened.editor.view, "coordsAtPos").mockReturnValue(rect);
-}
-
-/** The floating button teleports to `document.body`, outside the wrapper. */
+/** The floating button is removed: this query always finds nothing. */
 export function gapButton(): HTMLElement | null {
   const candidate = document.body.querySelector("[data-test='exam-workspace-make-gap']");
   return candidate instanceof HTMLElement ? candidate : null;
+}
+
+/** The active rich-text target, after focusing the surface as a toolbar would. */
+export function targetOf(opened: Opened) {
+  opened.surface.focus();
+  const target = opened.registry.active.value;
+  if (!target) {
+    throw new Error("no active target");
+  }
+  return target;
 }

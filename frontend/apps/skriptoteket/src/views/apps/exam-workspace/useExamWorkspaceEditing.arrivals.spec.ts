@@ -27,7 +27,7 @@ const api = vi.hoisted(() => ({
   getExamWorkspaceHistory: vi.fn(),
   getExamWorkspaceHistoryStep: vi.fn(),
   requestExamWorkspaceAnswerMisspellings: vi.fn(),
-  saveExamWorkspaceDocument: vi.fn(),
+  moveExamWorkspaceHistoryPosition: vi.fn(),
   storeExamWorkspaceUndoStep: vi.fn(),
 }));
 const toast = vi.hoisted(() => ({ failure: vi.fn(), warning: vi.fn() }));
@@ -60,10 +60,20 @@ describe("AI arrivals during a replacing read (R2-F3)", () => {
     editing.setTitle("Steg ett");
     await editing.history.flush();
     let release!: () => void;
-    api.getExamWorkspaceHistoryStep.mockImplementationOnce(
-      (_l: string, stepId: string) =>
+    api.moveExamWorkspaceHistoryPosition.mockImplementationOnce(
+      (_l: string, request: { expectedCursor: string; stepId: string }) =>
         new Promise((resolve) => {
-          release = () => resolve({ document: server.documents.get(stepId)!, step_id: stepId });
+          release = () =>
+            resolve({
+              document: server.documents.get(request.stepId)!,
+              export_blockers: [],
+              history: {
+                baseline_step_id: "step-0",
+                cursor: server.state.cursor,
+                position_step_id: request.stepId,
+                step_ids: [...server.state.steps],
+              },
+            });
         }),
     );
 
@@ -84,10 +94,20 @@ describe("AI arrivals during a replacing read (R2-F3)", () => {
     await editing.history.flush();
     await editing.history.undo();
     let release!: () => void;
-    api.getExamWorkspaceHistoryStep.mockImplementationOnce(
-      (_l: string, stepId: string) =>
+    api.moveExamWorkspaceHistoryPosition.mockImplementationOnce(
+      (_l: string, request: { expectedCursor: string; stepId: string }) =>
         new Promise((resolve) => {
-          release = () => resolve({ document: server.documents.get(stepId)!, step_id: stepId });
+          release = () =>
+            resolve({
+              document: server.documents.get(request.stepId)!,
+              export_blockers: [],
+              history: {
+                baseline_step_id: "step-0",
+                cursor: server.state.cursor,
+                position_step_id: request.stepId,
+                step_ids: [...server.state.steps],
+              },
+            });
         }),
     );
 
@@ -141,10 +161,20 @@ describe("spelling replies during a replacing read (R2-F3)", () => {
     editing.setTitle("Steg två");
     await editing.history.flush();
     let release!: () => void;
-    api.getExamWorkspaceHistoryStep.mockImplementationOnce(
-      (_l: string, stepId: string) =>
+    api.moveExamWorkspaceHistoryPosition.mockImplementationOnce(
+      (_l: string, request: { expectedCursor: string; stepId: string }) =>
         new Promise((resolve) => {
-          release = () => resolve({ document: server.documents.get(stepId)!, step_id: stepId });
+          release = () =>
+            resolve({
+              document: server.documents.get(request.stepId)!,
+              export_blockers: [],
+              history: {
+                baseline_step_id: "step-0",
+                cursor: server.state.cursor,
+                position_step_id: request.stepId,
+                step_ids: [...server.state.steps],
+              },
+            });
         }),
     );
 

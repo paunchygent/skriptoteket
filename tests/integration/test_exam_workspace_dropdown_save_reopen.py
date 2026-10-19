@@ -26,6 +26,9 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_export_render
 from skriptoteket.application.curated_apps.handlers.exam_workspace_exports import (
     ExportExamWorkspaceDocumentHandler,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_undo_steps import (
+    StoreExamWorkspaceUndoStepHandler,
+)
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_xml import QTI_NAMESPACE
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeGapSegment,
@@ -53,11 +56,14 @@ from skriptoteket.protocols.exam_workspace import (
     GetExamWorkspaceDocumentHandlerProtocol,
     SaveExamWorkspaceDocumentHandlerProtocol,
 )
+from skriptoteket.protocols.exam_workspace_history import (
+    StoreExamWorkspaceUndoStepHandlerProtocol,
+)
 from skriptoteket.web.api.v1 import apps_conversion_hub_exam_workspace as documents_api
 from skriptoteket.web.auth.huleedu_app_projection import require_app_user_api
 from skriptoteket.web.middleware.error_handler import error_handler_middleware
 from tests.fixtures.time_fixtures import FixedClock
-from tests.integration.exam_workspace_conversion_support import ConversionWorld
+from tests.integration.exam_workspace_conversion_support import ConversionWorld, Ids, lease_tab
 from tests.integration.exam_workspace_repair_support import editor, seed_exam
 from tests.integration.infrastructure.repositories.exam_workspace_test_support import create_owner
 from tests.unit.domain.curated_apps.exam_workspace.examnet_qti_export_test_support import (
@@ -76,6 +82,7 @@ class DropdownApiProvider(Provider):
     reader = from_context(provides=GetExamWorkspaceDocumentHandlerProtocol, scope=Scope.APP)
     writer = from_context(provides=SaveExamWorkspaceDocumentHandlerProtocol, scope=Scope.APP)
     exporter = from_context(provides=ExportExamWorkspaceDocumentHandlerProtocol, scope=Scope.APP)
+    steps = from_context(provides=StoreExamWorkspaceUndoStepHandlerProtocol, scope=Scope.APP)
 
 
 @asynccontextmanager
@@ -92,6 +99,14 @@ async def _client(world: ConversionWorld, actor: User) -> AsyncIterator[httpx.As
                 uow=world.uow,
             ),
             SaveExamWorkspaceDocumentHandlerProtocol: editor(world),
+            StoreExamWorkspaceUndoStepHandlerProtocol: StoreExamWorkspaceUndoStepHandler(
+                vault_files=world.vault_files,
+                codec=world.codec,
+                store=world.store,
+                jobs=world.jobs,
+                id_generator=Ids(),
+                clock=world.clock,
+            ),
             ExportExamWorkspaceDocumentHandlerProtocol: ExportExamWorkspaceDocumentHandler(
                 vault_files=world.vault_files,
                 codec=world.codec,
@@ -268,8 +283,9 @@ async def test_dropdown_save_reopen_and_qti_from_persisted_container(
         )
         path = _BASE + str(document.document_id)
         payload = document.model_dump(mode="json")
+        tab = str(await lease_tab(world, actor, document.document_id))
         async with _client(world, actor) as client:
-            position_step_id = (await client.get(path + "/history")).json()["position_step_id"]
+            cursor = (await client.get(path + "/history")).json()["cursor"]
             for fault in ("wrong-key", "missing-options"):
                 invalid = deepcopy(payload)
                 gap = invalid["items"][0]["gaps"][0]
@@ -277,25 +293,17 @@ async def test_dropdown_save_reopen_and_qti_from_persisted_container(
                     gap["correct_option_id"] = "choice_999"
                 else:
                     del gap["options"]
-                response = await client.put(
-                    path,
-                    json={
-                        "expected_revision": 1,
-                        "document": invalid,
-                        "position_step_id": position_step_id,
-                    },
+                response = await client.post(
+                    path + "/autosaves",
+                    json={"expected_cursor": cursor, "document": invalid, "tab_id": tab},
                 )
                 assert response.status_code == 422, response.text
                 unchanged = await client.get(path)
                 assert unchanged.status_code == 200, unchanged.text
                 assert unchanged.json()["document"]["revision"] == 1
-            response = await client.put(
-                path,
-                json={
-                    "expected_revision": 1,
-                    "document": payload,
-                    "position_step_id": position_step_id,
-                },
+            response = await client.post(
+                path + "/autosaves",
+                json={"expected_cursor": cursor, "document": payload, "tab_id": tab},
             )
             assert response.status_code == 200, response.text
             assert response.json()["document"]["items"] == payload["items"]

@@ -8,8 +8,8 @@ from uuid import UUID, uuid4
 
 import pytest
 
-from skriptoteket.application.curated_apps.exam_workspace import (
-    SaveExamWorkspaceDocumentRequest,
+from skriptoteket.application.curated_apps.exam_workspace_history import (
+    StoreExamWorkspaceUndoStepRequest,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_print_preview import (
     PreviewExamWorkspacePrintHandler,
@@ -43,6 +43,10 @@ from skriptoteket.protocols.exam_workspace import (
 from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents import (
     _actor,
     _Env,
+    _leased_tab,
+)
+from tests.unit.application.curated_apps.handlers.test_exam_workspace_history_contract import (
+    _undo_handler,
 )
 from tests.unit.domain.curated_apps.exam_workspace.native_exam_document_test_support import (
     with_next_revision,
@@ -241,13 +245,14 @@ async def test_missing_picture_payload_returns_blocked_without_raising(env: _Env
 async def test_stale_expected_revision_conflicts_with_the_preview_message(env: _Env) -> None:
     actor = _actor()
     imported = await env.seed_document(actor=actor)
-    await env.save_handler.handle(
+    history = await env.save_handler.history(actor=actor, lineage_id=imported.summary.lineage_id)
+    await _undo_handler(env).handle(
         actor=actor,
         lineage_id=imported.summary.lineage_id,
-        request=SaveExamWorkspaceDocumentRequest(
-            expected_revision=1,
+        request=StoreExamWorkspaceUndoStepRequest(
+            tab_id=await _leased_tab(env, actor, imported.summary.lineage_id),
+            expected_cursor=history.cursor,
             document=with_next_revision(imported.document),
-            position_step_id=imported.summary.lineage_id,
         ),
     )
 

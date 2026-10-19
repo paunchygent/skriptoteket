@@ -12,7 +12,6 @@ const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceDocument: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
-  saveExamWorkspaceDocument: vi.fn(),
 }));
 const exportApiMocks = vi.hoisted(() => ({
   downloadExamWorkspaceExport: vi.fn(),
@@ -107,7 +106,7 @@ describe("Exam workspace background conversion", () => {
     expect(wrapper.find('[data-test="exam-workspace-drawer-open"]').exists()).toBe(true);
     await importFixtureDocument(wrapper);
     expect(wrapper.get('[data-test="exam-workspace-title"]').text()).toBe(title);
-    expect(wrapper.get('[data-test="exam-workspace-save"]').attributes("disabled")).toBeDefined();
+    expect(wrapper.get('[data-test="exam-workspace-save-menu"]').attributes("disabled")).toBeDefined();
     expect(wrapper.get('[data-test="exam-workspace-suggest-all"]').attributes("disabled")).toBeDefined();
     expect(wrapper.get('[data-test="exam-workspace-item-points-input"]').attributes("disabled")).toBeDefined();
     apiMocks.getExamWorkspaceConversionStatus.mockResolvedValueOnce(status("failed", "Konverteringen misslyckades."));

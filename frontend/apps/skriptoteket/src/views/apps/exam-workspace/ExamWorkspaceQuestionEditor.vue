@@ -52,7 +52,8 @@ import ExamWorkspaceWritingLinesField from "./ExamWorkspaceWritingLinesField.vue
 import { canUndoInterpretation, isTeacherReviewed } from "./examWorkspaceItemEdits";
 import { examWorkspaceItemReadiness } from "./examWorkspaceItemReadiness";
 import { examWorkspaceItemTypeLabel } from "./examWorkspaceRows";
-import { isShortAnswer } from "./examWorkspaceShortAnswer";
+import { canBecomeShortAnswer, isShortAnswer } from "./examWorkspaceShortAnswer";
+import type { ExamWorkspaceItemShape } from "./examWorkspaceShortAnswer";
 import { provideRichTextTargetRegistry } from "./examWorkspaceRichTextTarget";
 import type { ExamWorkspaceNotice } from "./useExamWorkspaceStructure";
 
@@ -88,6 +89,7 @@ provideRichTextTargetRegistry();
 
 const emit = defineEmits<{
   changeType: [kind: NativeExamItemKind];
+  changeShape: [shape: ExamWorkspaceItemShape];
   move: [delta: -1 | 1];
   remove: [];
   moveTo: [targetParentId: string | null];
@@ -100,15 +102,17 @@ const emit = defineEmits<{
   removeAutomaticValue: [itemId: string, gapId: string, value: string];
   createGap: [itemId: string, body: NativeExamBodyParagraph[], gapId: string, seed: string];
   showGapAsText: [itemId: string, gapId: string];
+  revertGap: [itemId: string, gapId: string];
+  restoreKeptGap: [itemId: string, keptGapId: string, blockIndex: number];
   addOrderingStep: [itemId: string];
   moveOrderingStep: [itemId: string, choiceId: string, delta: -1 | 1];
   removeOrderingStep: [itemId: string, choiceId: string];
   shuffleOrderingSteps: [itemId: string];
   updateChoiceBody: [itemId: string, choiceId: string, body: NativeExamBodyParagraph[], structural: boolean];
   updateCorrectChoices: [itemId: string, correctChoiceIds: string[]];
-  updateCriteria: [itemId: string, criteria: NativeExamCriterion[]];
+  updateCriteria: [itemId: string, criteria: NativeExamCriterion[], structural: boolean];
   updateGapValues: [itemId: string, gapId: string, acceptedValues: string[]];
-  updateGapOptions: [itemId: string, gapId: string, options: NativeExamChoice[], correctOptionId: string | null];
+  updateGapOptions: [itemId: string, gapId: string, options: NativeExamChoice[], correctOptionId: string | null, structural: boolean];
   updateMatchEntryBody: [
     itemId: string,
     side: "left" | "right",
@@ -177,7 +181,10 @@ const keyLine = computed(() => {
       :suggested-kind="item.suggested_kind"
       :move-targets="moveTargets"
       :current-parent-id="currentParentId"
+      :short-answer="!unbuilt && isShortAnswer(item)"
+      :short-answer-offered="!unbuilt && canBecomeShortAnswer(item)"
       @change-type="emit('changeType', $event)"
+      @change-shape="emit('changeShape', $event)"
       @move="emit('move', $event)"
       @remove="emit('remove')"
       @move-to="emit('moveTo', $event)"
@@ -284,10 +291,12 @@ const keyLine = computed(() => {
       :disabled="locked"
       :item="item"
       @update-gap-values="(itemId, gapId, values) => emit('updateGapValues', itemId, gapId, values)"
-      @update-gap-options="(itemId, gapId, options, correctOptionId) => emit('updateGapOptions', itemId, gapId, options, correctOptionId)"
+      @update-gap-options="(itemId, gapId, options, correctOptionId, structural) => emit('updateGapOptions', itemId, gapId, options, correctOptionId, structural)"
       @remove-automatic-value="(itemId, gapId, value) => emit('removeAutomaticValue', itemId, gapId, value)"
       @create-gap="(itemId, body, gapId, seed) => emit('createGap', itemId, body, gapId, seed)"
       @show-gap-as-text="(itemId, gapId) => emit('showGapAsText', itemId, gapId)"
+      @revert-gap="(itemId, gapId) => emit('revertGap', itemId, gapId)"
+      @restore-kept-gap="(itemId, keptGapId, blockIndex) => emit('restoreKeptGap', itemId, keptGapId, blockIndex)"
       @update-body="(itemId, body, structural) => emit('updateBody', itemId, body, structural)"
     />
 
@@ -305,7 +314,7 @@ const keyLine = computed(() => {
         v-if="item.kind === 'free_text'"
         :disabled="locked"
         :item="item"
-        @update="(criteria) => emit('updateCriteria', item.item_id, criteria)"
+        @update="(criteria, structural) => emit('updateCriteria', item.item_id, criteria, structural)"
       />
       <ExamWorkspaceChoiceField
         :disabled="locked"

@@ -39,6 +39,7 @@ function choiceItem(
       { choice_id: "choice_002", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "eleverna" }] }] },
     ],
     gaps: [],
+    kept_gaps: [],
     item_id: "item_001",
     kind: "single_choice",
     match_left: [],
@@ -53,6 +54,7 @@ function choiceItem(
     },
     sequence: 1,
     source_anchor: null,
+    source_points: null,
     suggested_kind: null,
     tick_points: null,
     writing_lines: null,
@@ -155,6 +157,7 @@ describe("review, teacher choice and restore (T6)", () => {
       ] }],
       choices: [],
       gaps: [buildGap("gap_001", [], { options, correct_option_id: "choice_001" })],
+      kept_gaps: [],
       kind: "inline_choice",
     };
 

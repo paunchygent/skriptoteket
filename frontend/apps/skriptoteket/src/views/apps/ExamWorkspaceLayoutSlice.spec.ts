@@ -33,7 +33,6 @@ const apiMocks = vi.hoisted(() => ({
   importExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
-  saveExamWorkspaceDocument: vi.fn(),
 }));
 const exportApiMocks = vi.hoisted(() => ({
   downloadExamWorkspaceExport: vi.fn(),
@@ -132,7 +131,7 @@ describe("ExamWorkspaceView frame layout", () => {
     expect(wrapper.find('[data-test="exam-workspace-question-list"]').exists()).toBe(false);
     expect(wrapper.find('[data-test="exam-workspace-item-editor"]').exists()).toBe(false);
     expect(wrapper.get('[data-test="exam-workspace-title"]').attributes("disabled")).toBeDefined();
-    expect(wrapper.get('[data-test="exam-workspace-save"]').attributes("disabled")).toBeDefined();
+    expect(wrapper.get('[data-test="exam-workspace-save-menu"]').attributes("disabled")).toBeDefined();
   });
 
   it("opens an imported exam with its list and editor and keeps the Öppna drawer docked on desktop", async () => {
@@ -146,7 +145,7 @@ describe("ExamWorkspaceView frame layout", () => {
       "NO-prov HT25",
     );
     expect(wrapper.get('[data-test="exam-workspace-save-state"]').text()).toContain("Sparat");
-    expect(wrapper.find('[data-test="exam-workspace-save"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="exam-workspace-save-menu"]').exists()).toBe(true);
   });
 
   it("closes the Öppna drawer after an import on tablet", async () => {
@@ -224,10 +223,10 @@ describe("ExamWorkspaceView frame layout", () => {
     expect(wrapper.find('[data-test="exam-workspace-list-back"]').exists()).toBe(false);
   });
 
-  it("orders the desktop toolbar Öppna, Spara, Exportera, AI facit, Ångra and Gör om", async () => {
+  it("orders the desktop toolbar Öppna, Spara som, Exportera, AI facit, Ångra and Gör om", async () => {
     const wrapper = await mountImported("desktop");
     const order = [
-      "exam-workspace-open", "exam-workspace-save", "exam-workspace-export",
+      "exam-workspace-open", "exam-workspace-save-menu", "exam-workspace-export",
       "exam-workspace-suggest-all", "exam-workspace-undo", "exam-workspace-redo",
     ];
     const found = wrapper.get('[data-test="exam-workspace-header"]').findAll("[data-test]")

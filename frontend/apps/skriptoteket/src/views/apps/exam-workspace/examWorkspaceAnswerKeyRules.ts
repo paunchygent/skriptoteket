@@ -19,7 +19,8 @@
  *   - Reads shapes from `api/examWorkspace.ts`.
  */
 
-import type { NativeExamGap, NativeExamItem } from "../../../api/examWorkspace";
+import type { NativeExamDocument, NativeExamGap, NativeExamItem } from "../../../api/examWorkspace";
+import { examWorkspaceQuestionLabels } from "./examWorkspaceListEntries";
 
 export const PARTIAL_GAP_KEY_GUIDANCE =
   "Fyll i godkända svar för varje lucka, eller lämna alla luckor tomma om frågan ska sakna facit.";
@@ -137,17 +138,25 @@ function joinSwedishList(values: string[]): string {
   return `${values.slice(0, -1).join(", ")} och ${values[values.length - 1]}`;
 }
 
-/** "Fråga 4" for one question, "Frågorna 4 och 5" for several. */
-export function questionSubject(items: NativeExamItem[]): string {
-  return items.length === 1
-    ? `Fråga ${items[0]?.sequence}`
-    : `Frågorna ${joinSwedishList(items.map((item) => String(item.sequence)))}`;
+/** "Fråga 4" for one question, "Frågorna 4 och 5" for several, using the list labels. */
+export function questionSubject(document: NativeExamDocument, items: NativeExamItem[]): string {
+  const labels = examWorkspaceQuestionLabels(document);
+  const names = items.map((item) => {
+    const label = labels.get(item.item_id);
+    if (label === undefined) {
+      throw new Error(`Missing list label for item ${item.item_id}`);
+    }
+    return label;
+  });
+  return names.length === 1
+    ? `Fråga ${names[0]}`
+    : `Frågorna ${joinSwedishList(names)}`;
 }
 
-export function partialGapKeyCopy(items: NativeExamItem[]): string {
-  return `${questionSubject(items)} saknar godkända svar i vissa luckor. ${PARTIAL_GAP_KEY_GUIDANCE}`;
+export function partialGapKeyCopy(document: NativeExamDocument, items: NativeExamItem[]): string {
+  return `${questionSubject(document, items)} saknar godkända svar i vissa luckor. ${PARTIAL_GAP_KEY_GUIDANCE}`;
 }
 
-export function incompleteMatchKeyCopy(items: NativeExamItem[]): string {
-  return `${questionSubject(items)} har en kategorisering där facit inte är komplett. ${INCOMPLETE_MATCH_KEY_GUIDANCE}`;
+export function incompleteMatchKeyCopy(document: NativeExamDocument, items: NativeExamItem[]): string {
+  return `${questionSubject(document, items)} har en kategorisering där facit inte är komplett. ${INCOMPLETE_MATCH_KEY_GUIDANCE}`;
 }

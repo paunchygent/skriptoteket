@@ -8,14 +8,13 @@
 import { flushPromises } from "@vue/test-utils";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
-import type { ExamWorkspaceDocumentResponse } from "../../api/examWorkspace";
+import type { NativeExamItem } from "../../api/examWorkspace";
 import { useToastStore } from "../../stores/toast";
 import {
   convertingNoticeShown,
   converted,
   editPoints,
   expectEditable,
-  FIRST_STATUS,
   installProgressiveConversionLifecycle,
   placeholder,
   revision,
@@ -25,20 +24,20 @@ import {
   pointsOf,
   uploadFirstBatch,
 } from "./ExamWorkspaceProgressiveConversionSlice.specSupport";
-import { selectItemRow } from "./ExamWorkspaceSlice.specSupport";
+import { saveDocument, selectItemRow } from "./ExamWorkspaceSlice.specSupport";
 
 import { arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
 
 const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceHistory: vi.fn(),
   getExamWorkspaceHistoryStep: vi.fn(),
+  moveExamWorkspaceHistoryPosition: vi.fn(),
   storeExamWorkspaceUndoStep: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
   findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
-  saveExamWorkspaceDocument: vi.fn(),
 }));
 const exportApiMocks = vi.hoisted(() => ({
   downloadExamWorkspaceExport: vi.fn(),
@@ -55,35 +54,44 @@ beforeEach(() => {
 });
 
 describe("Exam workspace progressive conversion completion", () => {
-  it("keeps a placeholder locked until the final revision that arrived during a save is merged", async () => {
+  it("merges a batch that arrives during a store without losing the pending edit", async () => {
     const view = await uploadFirstBatch();
     await editPoints(view, "item_001", "11");
-    let resolveSave!: (value: ExamWorkspaceDocumentResponse) => void;
-    apiMocks.saveExamWorkspaceDocument.mockReturnValueOnce(new Promise((resolve) => { resolveSave = resolve; }));
-    await view.get('[data-test="exam-workspace-save"]').trigger("click");
-
-    const savedFirst = revision(
-      2,
-      [{ ...converted(1), points: 11 }, placeholder(2), placeholder(3)],
-      FIRST_STATUS,
+    const inner = apiMocks.storeExamWorkspaceUndoStep.getMockImplementation();
+    if (!inner) {
+      throw new Error("expected the step store double");
+    }
+    let release!: () => void;
+    apiMocks.storeExamWorkspaceUndoStep.mockImplementationOnce(
+      (...args: unknown[]) =>
+        new Promise((resolve) => {
+          release = () => resolve((inner as (...innerArgs: unknown[]) => unknown)(...args));
+        }),
     );
+    await saveDocument(view);
+
     const finalItems = [{ ...converted(1), points: 11 }, converted(2), converted(3)];
     const succeeded = status("succeeded", 3, ["ready", "ready", "ready"]);
     apiMocks.getExamWorkspaceConversionStatus.mockResolvedValueOnce(succeeded);
     apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(revision(3, finalItems, succeeded));
+    // A store does not block the merge the way Spara did: the batch merges
+    // while the step is in flight, and the stored step follows after.
     await tick();
-    expect(apiMocks.getExamWorkspaceDocument).toHaveBeenCalledTimes(1);
+    expect(apiMocks.getExamWorkspaceDocument).toHaveBeenCalledTimes(2);
 
-    resolveSave(savedFirst);
-    await flushPromises();
-    // The status already reports every batch ready, but its revision is not merged yet.
-    await selectItemRow(view, "item_002");
-    expect(convertingNoticeShown(view)).toBe(true);
-    expectEditable(view, false);
-    await tick();
-
+    // The batch merges at once: the teacher's points stay, the batch fills the rest.
+    expect(await pointsOf(view, "item_001")).toBe("11");
+    expect(await pointsOf(view, "item_002")).toBe("22");
     expect(convertingNoticeShown(view)).toBe(false);
 
+    release();
+    await flushPromises();
+    // The stored step follows the merge, so the file ends on the merged copy.
+    await selectItemRow(view, "item_002");
+    expect(convertingNoticeShown(view)).toBe(false);
+    expectEditable(view, true);
+
+    await tick();
     expect(apiMocks.getExamWorkspaceDocument).toHaveBeenCalledTimes(2);
     expect(apiMocks.getExamWorkspaceConversionStatus).toHaveBeenCalledTimes(2);
     expect(await pointsOf(view, "item_002")).toBe("22");
@@ -113,11 +121,11 @@ describe("Exam workspace progressive conversion completion", () => {
     expectEditable(view, true);
     expect(view.find('[data-test="exam-workspace-conversion-status"]').exists()).toBe(false);
 
-    apiMocks.saveExamWorkspaceDocument.mockResolvedValueOnce(revision(4, otherTab.document.items, done));
-    await view.get('[data-test="exam-workspace-save"]').trigger("click");
+    await saveDocument(view);
     await flushPromises();
-    const [, params] = apiMocks.saveExamWorkspaceDocument.mock.calls[0];
-    expect(params.expectedRevision).toBe(3);
+    const stores = apiMocks.storeExamWorkspaceUndoStep.mock.calls;
+    const stored = stores[stores.length - 1]![1].document;
+    expect(stored.items.map((item: NativeExamItem) => item.points)).toEqual([11, 32, 23]);
     await tick();
     expect(apiMocks.getExamWorkspaceConversionStatus).toHaveBeenCalledTimes(2);
   });

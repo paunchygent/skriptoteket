@@ -101,7 +101,7 @@ function documentOf(overrides: Partial<NativeExamDocument>): NativeExamDocument 
     },
     parents: [],
     revision: 1,
-    schema_version: "native_exam_document_v8",
+    schema_version: "native_exam_document_v9",
     title: "Prov",
     ...overrides,
   } as NativeExamDocument;
@@ -136,7 +136,9 @@ function setup(initial: NativeExamDocument) {
       flush: vi.fn(async () => true),
       historyCursor: ref("cursor"),
       isBusy: () => false,
+      isReadOnly: () => false,
       lineageId: () => "lineage-1",
+      noteLeaseLost: vi.fn(),
       onConflict: vi.fn(async () => undefined),
       replaceCopy: (run) => run(),
       savedRevision: () => 1,
@@ -145,6 +147,7 @@ function setup(initial: NativeExamDocument) {
       selectedItemId,
       selectedParentId,
       shared: serverExamWorkspaceStore.shared,
+      tabId: () => "tab-1",
       workspaceDocument,
     }),
   )!;

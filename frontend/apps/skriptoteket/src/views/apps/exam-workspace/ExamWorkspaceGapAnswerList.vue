@@ -5,16 +5,23 @@
  * Domain purpose:
  *   Edit one list of accepted answers as one row per answer: a text input
  *   and a remove glyph per row, with a glyph-only add button ("Lägg till
- *   svar" accessible name and tooltip) under the rows. Typing alone never
- *   emits; an input's `change`, removing
+ *   svar" accessible name and tooltip) under the rows. Typing commits while
+ *   it happens (each input emits the normalized list, so the owner stores it
+ *   after its typing pause), and an input's `change`, removing
  *   a row and the exposed `commit()` emit the normalized list (trimmed,
  *   empty rows dropped, exact duplicates after trim collapsed, commas kept
- *   as ordinary characters) exactly once per change. Every row input, add,
- *   Enter-add and remove also emits the normalized list as `draft`, so the
- *   owner can follow unsaved typing without a commit. Enter in a row inserts
+ *   as ordinary characters) exactly once per change. Typing that normalizes
+ *   to an empty list commits nothing: an empty accepted value is refused by
+ *   the save rules, so only `change`, remove and `commit()` can emit it.
+ *   Every row input, add, Enter-add and remove also emits the normalized
+ *   list as `draft`, so the owner can follow unsaved typing without a commit. Enter in a row inserts
  *   an empty row directly below it and focuses it; the new row stays in
  *   local state until a commit normalizes, and a commit never removes the
- *   focused empty row from local state. At least one row is always shown;
+ *   focused empty row from local state. Removing a row moves focus first,
+ *   synchronously before the splice, to the previous row's input, else the
+ *   next row's input, else the add button, so the focused remove button is
+ *   never detached while focused and the owning popover stays open. At least
+ *   one row is always shown;
  *   the list caps at 100 rows with the add button kept rendered and
  *   disabled. Enter during an IME composition is ignored. An external
  *   `values` change replaces the rows only while nothing is pending (the
@@ -134,6 +141,11 @@ function handleRowInput(key: number, event: Event): void {
     if (row) {
       row.text = target.value;
       emitDraft();
+      // Typing an empty list commits nothing: the save rules refuse an empty
+      // accepted value. `change` and the exposed `commit()` still emit it.
+      if (normalizedRows().length > 0) {
+        commit();
+      }
     }
   }
 }
@@ -163,21 +175,16 @@ function handleRemove(index: number): void {
   if (props.disabled) {
     return;
   }
+  // The row and its button disappear; move focus before the splice so the
+  // focused remove button is never detached while focused.
+  const inputs = rowInputs();
+  (inputs[index - 1] ?? inputs[index + 1] ?? addButtonElement())?.focus();
   rows.value.splice(index, 1);
   if (rows.value.length === 0) {
     rows.value.push(makeRow(""));
   }
   emitDraft();
   commit();
-  // The row and its button disappear; keep keyboard focus in the list.
-  const focusIndex = index - 1;
-  void nextTick(() => {
-    if (focusIndex >= 0) {
-      focusRowInput(focusIndex);
-    } else {
-      addButtonElement()?.focus();
-    }
-  });
 }
 
 function handleAdd(): void {

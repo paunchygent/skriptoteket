@@ -25,8 +25,7 @@ import type {
 import { UiGlyph } from "../../../components/ui";
 import ExamWorkspaceExportBlockers from "./ExamWorkspaceExportBlockers.vue";
 import type { ExamWorkspaceBlockerEntry } from "./examWorkspaceBlockers";
-import { EXAM_WORKSPACE_EXPORT_FORMATS, QTI_ZERO_POINTS_NOTE } from "./examWorkspaceExportFormats";
-import { examWorkspaceQuestionLabel } from "./examWorkspaceRows";
+import { EXAM_WORKSPACE_EXPORT_FORMATS, EXAM_WORKSPACE_EXPORT_FORMAT_BY_TARGET, QTI_ZERO_POINTS_NOTE } from "./examWorkspaceExportFormats";
 import { useInjectedExamWorkspaceStore } from "./examWorkspaceStore";
 
 type Destination = "download" | "files";
@@ -44,6 +43,12 @@ const props = defineProps<{
   result: string | null;
   /** Some question is worth 0 points, which Exam.net imports as 1. */
   zeroPoints: boolean;
+  /**
+   * The question list's label per item id ("2", "1b"), the one source the
+   * list rows and the editor headings read; the drawer names each row with
+   * it. Empty while the host has not wired the list in.
+   */
+  questionLabel?: (itemId: string) => string | null;
 }>();
 
 const emit = defineEmits<{
@@ -58,9 +63,15 @@ const destination = ref<Destination>("download");
 const store = useInjectedExamWorkspaceStore();
 const isGuest = computed(() => store.teacher === null);
 
-const format = computed(() => EXAM_WORKSPACE_EXPORT_FORMATS.find((entry) => entry.target === target.value)!);
+const format = computed(() => EXAM_WORKSPACE_EXPORT_FORMAT_BY_TARGET[target.value]);
 const replaced = computed(() => props.savedExports[target.value] ?? null);
 const disabled = computed(() => props.blockers.length > 0 || props.busy || props.exportingTarget !== null);
+
+/** The row heading: the list label for the entry's item id, else the bare text. */
+function checklistHeading(entry: ExamWorkspaceExportChecklistEntry): string {
+  const label = props.questionLabel?.(entry.item_id) ?? null;
+  return label === null ? entry.question_text : `Fråga ${label}: ${entry.question_text}`;
+}
 </script>
 
 <template>
@@ -76,23 +87,24 @@ const disabled = computed(() => props.blockers.length > 0 || props.busy || props
   />
 
   <section class="sect">
-    <h3>Format</h3>
-    <div
-      class="xw-seg xw-seg--large"
-      role="group"
-      aria-label="Format"
-    >
-      <button
+    <fieldset class="format-list">
+      <legend>Format</legend>
+      <label
         v-for="entry in EXAM_WORKSPACE_EXPORT_FORMATS"
         :key="entry.target"
-        type="button"
-        :aria-pressed="target === entry.target"
-        :data-test="`exam-workspace-export-format-${entry.target}`"
-        @click="target = entry.target"
+        class="choice"
       >
-        {{ entry.name }}
-      </button>
-    </div>
+        <input
+          type="radio"
+          name="exam-workspace-export-format"
+          class="xw-radio"
+          :checked="target === entry.target"
+          :data-test="`exam-workspace-export-format-${entry.target}`"
+          @change="target = entry.target"
+        >
+        <span>{{ entry.name }}</span>
+      </label>
+    </fieldset>
     <p class="xw-hint">
       {{ format.hint }}
     </p>
@@ -190,7 +202,7 @@ const disabled = computed(() => props.blockers.length > 0 || props.busy || props
         :key="index"
         class="xl"
       >
-        <b :title="entry.question_text">{{ examWorkspaceQuestionLabel(Number(entry.question_number)) }}: {{ entry.question_text }}</b>
+        <b :title="entry.question_text">{{ checklistHeading(entry) }}</b>
         <template v-if="entry.kind === 'free_text_criteria'">
           <span
             v-for="(criterion, criterionIndex) in entry.criteria"
@@ -205,10 +217,11 @@ const disabled = computed(() => props.blockers.length > 0 || props.busy || props
 </template>
 
 <style scoped>
-.sect h3 {
+.sect h3, .sect legend {
   display: flex; align-items: center; gap: var(--huleedu-space-2); min-height: 28px; margin: 0 0 var(--huleedu-space-2-5);
   font-size: var(--huleedu-text-sm); font-weight: var(--huleedu-font-semibold);
 }
+.sect fieldset { border: 0; margin: 0; padding: 0; }
 .choice { display: flex; align-items: flex-start; gap: var(--huleedu-space-3); padding: var(--huleedu-space-1-5) 0; font-size: var(--huleedu-text-sm); cursor: pointer; }
 .choice small { display: block; color: var(--huleedu-navy-60); font-size: var(--huleedu-text-xs); }
 .choice input { flex: none; width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--huleedu-action); }

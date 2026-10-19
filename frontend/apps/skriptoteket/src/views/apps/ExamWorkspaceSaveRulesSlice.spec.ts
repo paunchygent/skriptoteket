@@ -7,8 +7,6 @@
  *   negative or non-finite, and a choice without text. The field is marked
  *   invalid with an inline hint, the question list and the export blocker
  *   lists carry the reason, and no save request is sent.
- *   While a save runs, the item editor's inputs are disabled so a typed
- *   edit is not lost when the saved version replaces the document.
  */
 
 import { flushPromises } from "@vue/test-utils";
@@ -22,7 +20,6 @@ import type {
 } from "../../api/examWorkspace";
 import { buildFreeTextItem } from "../../test/examWorkspaceFixtures";
 import { useToastStore } from "../../stores/toast";
-import ExamWorkspaceBodyEditor from "./exam-workspace/ExamWorkspaceBodyEditor.vue";
 import {
   buildResponse,
   importFixtureDocument,
@@ -37,13 +34,13 @@ import { arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
 const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceHistory: vi.fn(),
   getExamWorkspaceHistoryStep: vi.fn(),
+  moveExamWorkspaceHistoryPosition: vi.fn(),
   storeExamWorkspaceUndoStep: vi.fn(),
   findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
-  saveExamWorkspaceDocument: vi.fn(),
 }));
 const exportApiMocks = vi.hoisted(() => ({
   downloadExamWorkspaceExport: vi.fn(),
@@ -113,7 +110,7 @@ describe("ExamWorkspaceView save rules", () => {
 
     expect(points.attributes("aria-invalid")).toBe("true");
     const hint = wrapper.get('[data-test="exam-workspace-points-hint"]');
-    expect(hint.text()).toBe("Poängen kan inte vara negativ.");
+    expect(hint.text()).toBe("Ange 0 poäng eller mer.");
     expect(points.attributes("aria-describedby")).toBe(hint.attributes("id"));
     expect(wrapper.get('[data-test="exam-workspace-row-item_002"]').text()).toContain("negativa poäng");
 
@@ -122,10 +119,13 @@ describe("ExamWorkspaceView save rules", () => {
 
     await saveDocument(wrapper);
 
-    expect(apiMocks.saveExamWorkspaceDocument).not.toHaveBeenCalled();
-    expect(vi.mocked(useToastStore().failure)).toHaveBeenCalledWith(
-      "Fråga 2 har negativa poäng. Poängen kan inte vara negativ.",
+    // The refused draft never reaches the server; it is held with its reason.
+    expect(apiMocks.storeExamWorkspaceUndoStep).not.toHaveBeenCalled();
+    expect(wrapper.get('[data-test="exam-workspace-save-state"]').text()).toBe("Inte sparat");
+    expect(wrapper.get('[data-test="exam-workspace-save-state"]').attributes("title")).toBe(
+      "Fråga 2 har negativa poäng. Ange 0 poäng eller mer.",
     );
+    expect(vi.mocked(useToastStore().failure)).not.toHaveBeenCalled();
   });
 
   it("flags negative points in the export drawer's blocker list", async () => {
@@ -155,7 +155,6 @@ describe("ExamWorkspaceView save rules", () => {
     }
     apiMocks.getExamWorkspaceDocument.mockReset();
     apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(response);
-    apiMocks.saveExamWorkspaceDocument.mockResolvedValue(buildResponse({ version: 2 }));
     await importFixtureDocument(wrapper);
 
     await selectItemRow(wrapper, "item_002");
@@ -175,8 +174,8 @@ describe("ExamWorkspaceView save rules", () => {
     await saveDocument(wrapper);
 
     expect(vi.mocked(useToastStore().failure)).not.toHaveBeenCalled();
-    expect(apiMocks.saveExamWorkspaceDocument).toHaveBeenCalledTimes(1);
-    const [, request] = apiMocks.saveExamWorkspaceDocument.mock.calls[0]!;
+    expect(apiMocks.storeExamWorkspaceUndoStep).toHaveBeenCalledTimes(1);
+    const [, request] = apiMocks.storeExamWorkspaceUndoStep.mock.calls[0]!;
     const saved = request.document.items.find((item: NativeExamItem) => item.item_id === "item_002")!;
     expect(saved.choices.find((entry: NativeExamChoice) => entry.choice_id === "choice_002")!.body).toEqual([]);
   });
@@ -194,22 +193,11 @@ describe("ExamWorkspaceView save rules", () => {
       },
       items: [buildFreeTextItem(1), buildFreeTextItem(2)],
     };
-    const savedDocument: NativeExamDocument = {
-      ...document,
-      revision: 2,
-      items: document.items.map((item) => item.item_id === "item_002" ? { ...item, points: 0 } : item),
-    };
     apiMocks.importExamWorkspaceDocument.mockResolvedValue({
       ...succeededConversion, state: "queued", document_revision: null,
     });
     apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce({
       ...response, document, saved_document: document,
-    });
-    apiMocks.saveExamWorkspaceDocument.mockResolvedValue({
-      ...response,
-      document: savedDocument,
-      saved_document: savedDocument,
-      summary: { ...response.summary, version: 2 },
     });
     const wrapper = await mountImported();
 
@@ -221,8 +209,8 @@ describe("ExamWorkspaceView save rules", () => {
     expect(wrapper.find('[data-test="exam-workspace-points-hint"]').exists()).toBe(false);
     await saveDocument(wrapper);
 
-    expect(apiMocks.saveExamWorkspaceDocument).toHaveBeenCalledTimes(1);
-    expect(apiMocks.saveExamWorkspaceDocument).toHaveBeenCalledWith(
+    expect(apiMocks.storeExamWorkspaceUndoStep).toHaveBeenCalledTimes(1);
+    expect(apiMocks.storeExamWorkspaceUndoStep).toHaveBeenCalledWith(
       "lineage-1",
       expect.objectContaining({
         document: expect.objectContaining({
@@ -232,8 +220,7 @@ describe("ExamWorkspaceView save rules", () => {
     );
   });
 
-  it("saves again once the refused fields are corrected", async () => {
-    apiMocks.saveExamWorkspaceDocument.mockResolvedValue(buildResponse({ version: 2 }));
+  it("stores again once the refused fields are corrected", async () => {
     const wrapper = await mountImported();
 
     await selectItemRow(wrapper, "item_002");
@@ -242,43 +229,7 @@ describe("ExamWorkspaceView save rules", () => {
     await points.setValue("3");
     await saveDocument(wrapper);
 
-    expect(apiMocks.saveExamWorkspaceDocument).toHaveBeenCalledTimes(1);
+    expect(apiMocks.storeExamWorkspaceUndoStep).toHaveBeenCalledTimes(1);
   });
 
-  it("disables the item editor's inputs while a save runs", async () => {
-    let resolveSave: (value: ReturnType<typeof buildResponse>) => void = () => {};
-    apiMocks.saveExamWorkspaceDocument.mockReturnValue(
-      new Promise((resolve) => {
-        resolveSave = resolve;
-      }),
-    );
-    const wrapper = await mountImported();
-
-    await selectItemRow(wrapper, "item_002");
-    await wrapper.get('[data-test="exam-workspace-item-points-input"]').setValue("7");
-    await wrapper.get('[data-test="exam-workspace-save"]').trigger("click");
-    await flushPromises();
-
-    for (const testId of [
-      "exam-workspace-item-points-input",
-      "exam-workspace-choice-text-choice_001",
-      "exam-workspace-choice-correct-choice_001",
-    ]) {
-      const control = wrapper.get(`[data-test="${testId}"]`);
-      if (testId === "exam-workspace-choice-text-choice_001") {
-        expect(control.attributes("contenteditable")).toBe("false");
-      } else {
-        expect(control.attributes("disabled")).toBeDefined();
-      }
-    }
-    expect(wrapper.findComponent(ExamWorkspaceBodyEditor).props("disabled")).toBe(true);
-
-    resolveSave(buildResponse({ version: 2 }));
-    await flushPromises();
-
-    expect(
-      wrapper.get('[data-test="exam-workspace-item-points-input"]').attributes("disabled"),
-    ).toBeUndefined();
-    expect(wrapper.findComponent(ExamWorkspaceBodyEditor).props("disabled")).toBe(false);
-  });
 });

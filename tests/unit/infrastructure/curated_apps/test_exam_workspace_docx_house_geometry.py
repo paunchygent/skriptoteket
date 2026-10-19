@@ -244,7 +244,7 @@ class TestGrid:
         _assert_mm(spacer.paragraph_format.line_spacing.mm, house_template.QUESTION_SPACE_AFTER_MM)
 
         before_table = parsed.paragraphs[-2]
-        assert before_table.text.startswith("Poäng:")
+        assert before_table.text == "Kategorisera orden i rätt ordklass. (3 p)"
         _assert_mm(
             before_table.paragraph_format.space_after.mm,
             house_template.GRID_SPACING.space_before_mm,
@@ -272,10 +272,10 @@ class TestWritingArea:
             ruled[-1].paragraph_format.space_after.mm, house_template.QUESTION_SPACE_AFTER_MM
         )
 
-    def test_the_points_paragraph_prints_bold(self, parsed: DocxDocument) -> None:
-        points = only_paragraph(list(parsed.paragraphs), "Poäng: 4 poäng")
+    def test_the_inline_points_run_prints_plain(self, parsed: DocxDocument) -> None:
+        stem = only_paragraph(list(parsed.paragraphs), "Resonera om bisatser. (4 p)")
 
-        assert [run.font.bold for run in points.runs] == [house_template.POINTS_BOLD]
+        assert all(run.font.bold in (False, None) for run in stem.runs)
 
 
 class TestEntrySpacing:

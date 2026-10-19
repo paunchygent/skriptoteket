@@ -50,7 +50,8 @@ const storageMocks = vi.hoisted(() => ({
   stored: null as StoredGuestDraft | null,
 }));
 
-vi.mock("./exam-workspace/examWorkspaceGuestDraftStorage", () => ({
+vi.mock("./exam-workspace/examWorkspaceGuestDraftStorage", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("./exam-workspace/examWorkspaceGuestDraftStorage")>()),
   createExamWorkspaceGuestDraftStorage: () => ({
     async load() {
       return storageMocks.stored;
@@ -166,6 +167,22 @@ describe("ExamWorkspaceGuestHost", () => {
     expect(typeof store.guest?.startBlank).toBe("function");
     expect(routeMocks.replace).not.toHaveBeenCalled();
     expect(apiMocks.createBlank).not.toHaveBeenCalled();
+
+    wrapper.unmount();
+  });
+
+  it("keeps the guest host root in the flex height chain with the workspace as its child", async () => {
+    const wrapper = mount(ExamWorkspaceGuestHost, {
+      global: { plugins: [createPinia()] },
+    });
+    await flushPromises();
+
+    const host = wrapper.find("[data-test='exam-workspace-guest-host']");
+    expect(host.exists()).toBe(true);
+    expect(host.classes()).toContain("guest-host");
+    const stub = wrapper.findComponent({ name: "ExamWorkspaceViewStub" });
+    expect(stub.exists()).toBe(true);
+    expect(stub.element.parentElement).toBe(host.element);
 
     wrapper.unmount();
   });
