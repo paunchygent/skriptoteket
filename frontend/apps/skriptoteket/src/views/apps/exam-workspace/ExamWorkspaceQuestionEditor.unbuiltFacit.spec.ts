@@ -13,6 +13,7 @@ import { describe, expect, it } from "vitest";
 import type { NativeExamItem } from "../../../api/examWorkspace";
 import { buildFreeTextItem } from "../../../test/examWorkspaceFixtures";
 import ExamWorkspaceQuestionEditor from "./ExamWorkspaceQuestionEditor.vue";
+import { examWorkspaceProvidersPlugin } from "./examWorkspaceProviders.specSupport";
 import { examWorkspaceItemReadiness } from "./examWorkspaceItemReadiness";
 
 const FACIT_LINE = '[data-test="exam-workspace-original-facit"]';
@@ -29,6 +30,7 @@ function unbuiltItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
 
 function mountEditor(item: NativeExamItem, converting = false) {
   return mount(ExamWorkspaceQuestionEditor, {
+    global: { plugins: [examWorkspaceProvidersPlugin()] },
     props: {
       item,
       label: "1",
