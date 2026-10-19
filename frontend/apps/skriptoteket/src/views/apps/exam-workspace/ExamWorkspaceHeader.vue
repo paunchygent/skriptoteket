@@ -19,12 +19,12 @@
 import { computed, ref, useId } from "vue";
 
 import { UiGlyph } from "../../../components/ui";
-import { AI_ADMIN_ONLY_NOTE, useAiAccess } from "../../../composables/useAiAccess";
+import { AI_ADMIN_ONLY_NOTE } from "../../../composables/useAiAccess";
 import { GUEST_AI_SIGN_IN } from "./examWorkspaceGuestCopy";
-import { useInjectedExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceSignIn } from "./examWorkspaceSignIn";
 import ExamWorkspaceMenu from "./ExamWorkspaceMenu.vue";
 import { examWorkspaceShortcut, isMacPlatform } from "./examWorkspaceFormat";
+import { useExamWorkspaceAiMode } from "./useExamWorkspaceAiMode";
 
 export type ExamWorkspaceSaveState = "saving" | "dirty" | "saved";
 
@@ -60,15 +60,11 @@ const mac = isMacPlatform();
 const saveKeys = mac ? "Meta+S" : "Control+S";
 const saveMenuTrigger = ref<HTMLButtonElement | null>(null);
 const saveMenuOpen = ref(false);
-const { canUseAi } = useAiAccess();
-const store = useInjectedExamWorkspaceStore();
 const requestSignIn = useExamWorkspaceSignIn();
 const aiNoteId = useId();
 /** Guest controls stay enabled and ask for sign-in; signed-in controls follow the admin gate. */
-const aiMode = computed(() =>
-  store.teacher === null ? "guest" : canUseAi.value ? "allowed" : "admin_only",
-);
-const isGuest = computed(() => store.teacher === null);
+const aiMode = useExamWorkspaceAiMode();
+const isGuest = computed(() => aiMode.value === "guest");
 
 function handleSuggestAll(): void {
   if (isGuest.value) {

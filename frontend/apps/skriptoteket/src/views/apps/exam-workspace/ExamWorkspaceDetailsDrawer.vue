@@ -28,7 +28,7 @@ import type {
   NativeExamHeader,
 } from "../../../api/examWorkspace";
 import { UiGlyph } from "../../../components/ui";
-import { AI_ADMIN_ONLY_NOTE, useAiAccess } from "../../../composables/useAiAccess";
+import { AI_ADMIN_ONLY_NOTE } from "../../../composables/useAiAccess";
 import ExamCourseCombobox from "./ExamCourseCombobox.vue";
 import { GUEST_AI_SIGN_IN } from "./examWorkspaceGuestCopy";
 import { useExamWorkspaceSignIn } from "./examWorkspaceSignIn";
@@ -36,6 +36,7 @@ import { useExamCourseCatalog } from "./useExamCourseCatalog";
 import { useInjectedExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceMyCourses } from "./useExamWorkspaceMyCourses";
 import type { ExamWorkspaceRenameFailure } from "./useExamWorkspaceRename";
+import { useExamWorkspaceAiMode } from "./useExamWorkspaceAiMode";
 
 const EXTENSION = ".provdokument.zip";
 
@@ -62,13 +63,10 @@ const emit = defineEmits<{
 
 const id = useId();
 const contentAiNoteId = `${id}-ai-note`;
-const { canUseAi } = useAiAccess();
 const store = useInjectedExamWorkspaceStore();
 const requestSignIn = useExamWorkspaceSignIn();
 /** Guest controls stay enabled and ask for sign-in; signed-in controls follow the admin gate. */
-const aiMode = computed(() =>
-  store.teacher === null ? "guest" : canUseAi.value ? "allowed" : "admin_only",
-);
+const aiMode = useExamWorkspaceAiMode();
 const isGuest = computed(() => aiMode.value === "guest");
 const adminOnly = computed(() => aiMode.value === "admin_only");
 const { courses, courseByKey, error: catalogError } = useExamCourseCatalog(store.shared);

@@ -20,12 +20,12 @@
 import { computed, useId } from "vue";
 
 import { UiGlyph } from "../../../components/ui";
-import { AI_ADMIN_ONLY_NOTE, useAiAccess } from "../../../composables/useAiAccess";
+import { AI_ADMIN_ONLY_NOTE } from "../../../composables/useAiAccess";
 import { EXAM_WORKSPACE_BLOCKER_FIX_LABELS } from "./examWorkspaceBlockers";
 import type { ExamWorkspaceBlockerEntry } from "./examWorkspaceBlockers";
 import { GUEST_AI_SIGN_IN } from "./examWorkspaceGuestCopy";
-import { useInjectedExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceSignIn } from "./examWorkspaceSignIn";
+import { useExamWorkspaceAiMode } from "./useExamWorkspaceAiMode";
 
 const props = defineProps<{
   blockers: ExamWorkspaceBlockerEntry[];
@@ -41,14 +41,10 @@ const emit = defineEmits<{
   suggestAll: [];
 }>();
 
-const { canUseAi } = useAiAccess();
-const store = useInjectedExamWorkspaceStore();
 const requestSignIn = useExamWorkspaceSignIn();
 const aiNoteId = useId();
 /** Guest controls stay enabled and ask for sign-in; signed-in controls follow the admin gate. */
-const aiMode = computed(() =>
-  store.teacher === null ? "guest" : canUseAi.value ? "allowed" : "admin_only",
-);
+const aiMode = useExamWorkspaceAiMode();
 const isGuest = computed(() => aiMode.value === "guest");
 const adminOnly = computed(() => aiMode.value === "admin_only");
 const missingKeys = computed(() => props.blockers.filter((blocker) => blocker.fix === "suggest_key").length);

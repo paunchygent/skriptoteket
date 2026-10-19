@@ -17,12 +17,12 @@ import { computed, ref, useId, watch } from "vue";
 
 import type { NativeExamDocument, NativeExamItem, NativeExamItemKind } from "../../../api/examWorkspace";
 import { UiGlyph } from "../../../components/ui";
-import { AI_ADMIN_ONLY_NOTE, useAiAccess } from "../../../composables/useAiAccess";
+import { AI_ADMIN_ONLY_NOTE } from "../../../composables/useAiAccess";
 import { examWorkspaceImportSteps } from "./examWorkspaceImportSteps";
 import { GUEST_AI_SIGN_IN } from "./examWorkspaceGuestCopy";
-import { useInjectedExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceSignIn } from "./examWorkspaceSignIn";
 import { EXAM_WORKSPACE_TYPE_LABELS, examWorkspaceReviewReasonLabel } from "./examWorkspaceRows";
+import { useExamWorkspaceAiMode } from "./useExamWorkspaceAiMode";
 
 /** The five types the converter produces, in the order the retry selector offers them. */
 const RETRY_KINDS: readonly NativeExamItemKind[] = [
@@ -42,14 +42,10 @@ const props = defineProps<{
 
 const emit = defineEmits<{ retry: [kind: NativeExamItemKind] }>();
 
-const { canUseAi } = useAiAccess();
-const store = useInjectedExamWorkspaceStore();
 const requestSignIn = useExamWorkspaceSignIn();
 const aiNoteId = useId();
 /** Guest controls stay enabled and ask for sign-in; signed-in controls follow the admin gate. */
-const aiMode = computed(() =>
-  store.teacher === null ? "guest" : canUseAi.value ? "allowed" : "admin_only",
-);
+const aiMode = useExamWorkspaceAiMode();
 const isGuest = computed(() => aiMode.value === "guest");
 const adminOnly = computed(() => aiMode.value === "admin_only");
 
