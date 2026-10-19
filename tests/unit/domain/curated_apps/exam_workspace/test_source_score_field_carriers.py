@@ -12,6 +12,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeExamItemKind,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_text_lines
+from skriptoteket.domain.curated_apps.exam_workspace.source_native_carriers import (
+    emitted_positions,
+    native_carrier_spans,
+)
 from tests.unit.domain.curated_apps.exam_workspace.test_source_carrier_provenance_repair5 import (
     chunk,
 )
@@ -113,4 +117,65 @@ def test_a_bare_points_label_still_leaves_no_paragraph():
     item = _convert(QUESTION, "4 p", points=4)
 
     assert list(body_text_lines(item.body)) == [QUESTION]
+    assert item.points == 4
+
+
+def _convert_sources(*sources, points=4):
+    chunks = tuple(chunk(f"body:{index:04d}", text) for index, text in enumerate(sources, start=1))
+    produced = ProducedItem(
+        source_anchors=tuple(own.anchor for own in chunks),
+        outcome="converted",
+        review_reason=None,
+        kind=NativeExamItemKind.FREE_TEXT,
+        printed_label=None,
+        key_source=None,
+        facit_text=None,
+        body=(
+            ProducedParagraph(
+                segments=(ProducedSegment(kind="text", text=sources[0], accepted_values=()),)
+            ),
+        ),
+        points=points,
+        choices=(),
+        match_left=(),
+        match_right=(),
+        match_pairs=(),
+        criteria=(),
+    )
+    return aligned_native_item(produced, chunks=chunks, language="sv", foreign_chunks=()).item
+
+
+@pytest.mark.parametrize(
+    "sources",
+    [
+        (QUESTION, "/4", "p"),
+        (QUESTION, "/4 p", ")"),
+        (QUESTION, "/(4", "p)"),
+    ],
+)
+def test_a_cross_line_points_label_keeps_its_own_span(sources):
+    text = "\n".join(sources)
+    spans = native_carrier_spans(
+        text,
+        points=4,
+        emitted=emitted_positions(text, sources[0]),
+        regions=((0, len(text)),),
+    )
+
+    assert spans
+    assert all("/" not in text[start:end] for start, end in spans)
+
+
+@pytest.mark.parametrize(
+    "sources",
+    [
+        (QUESTION, "/4", "p"),
+        (QUESTION, "/4 p", ")"),
+        (QUESTION, "/(4", "p)"),
+    ],
+)
+def test_a_cross_line_points_label_leaves_the_slash_visible(sources):
+    item = _convert_sources(*sources, points=4)
+
+    assert any("/" in line for line in body_text_lines(item.body))
     assert item.points == 4

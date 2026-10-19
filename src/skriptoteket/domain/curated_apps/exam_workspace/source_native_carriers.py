@@ -93,10 +93,11 @@ def native_carrier_spans(
             ):
                 continue
             line_start = text.rfind("\n", 0, match.start()) + 1
-            line_end = text.find("\n", match.end())
+            line_end = text.find("\n", match.start())
             if line_end < 0:
                 line_end = len(text)
-            if SCORE_FIELD.fullmatch(text, line_start, line_end):
+            # A score field widens only within the line that holds the match start.
+            if match.end() <= line_end and SCORE_FIELD.fullmatch(text, line_start, line_end):
                 spans.append((line_start, line_end))
             else:
                 spans.append((match.start(), match.end()))
