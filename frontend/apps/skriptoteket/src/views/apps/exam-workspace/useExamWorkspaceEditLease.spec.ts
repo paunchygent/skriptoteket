@@ -267,11 +267,54 @@ describe("useExamWorkspaceEditLease on the server lease", () => {
       await flushPromises();
       window.dispatchEvent(new Event("pagehide"));
       await flushPromises();
-      expect(release).toHaveBeenCalledWith(LINEAGE, "tab-a");
+      // The unload release must survive the page teardown, so it goes out
+      // with `keepalive`; a plain fetch is cancelled and the lease lingers.
+      expect(release).toHaveBeenCalledWith(LINEAGE, "tab-a", { keepalive: true });
 
       const taking = second.lease.requestTakeover();
       await taking;
       expect(second.lease.readOnly.value).toBe(false);
+    } finally {
+      first.stop();
+      second.stop();
+    }
+  });
+
+  it("retries a refused claim at the heartbeat and takes the freed lease without Ta över", async () => {
+    const fake = createFakeLeaseServer();
+    const first = setupLease(fake, { tabId: "tab-a" });
+    const second = setupLease(fake, { tabId: "tab-b" });
+    try {
+      await flushPromises();
+      expect(second.lease.readOnly.value).toBe(true);
+      // The only tab reloads: its pagehide release frees the lease at once,
+      // and the reloaded tab reclaims it on its next retry, not on Ta över.
+      window.dispatchEvent(new Event("pagehide"));
+      await flushPromises();
+      await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_EDIT_LEASE_HEARTBEAT_MS);
+      expect(fake.state().holder).toBe("tab-b");
+      expect(second.lease.readOnly.value).toBe(false);
+      expect(second.acquired).toEqual(["reloaded"]);
+    } finally {
+      first.stop();
+      second.stop();
+    }
+  });
+
+  it("takes the lease after expiry without Ta över when the holder never releases", async () => {
+    const fake = createFakeLeaseServer();
+    const first = setupLease(fake, { tabId: "tab-a" });
+    const second = setupLease(fake, { tabId: "tab-b" });
+    try {
+      await flushPromises();
+      expect(second.lease.readOnly.value).toBe(true);
+      // The holder crashes without releasing: the refused claim retries and
+      // takes the dead lease once the 15 s TTL passes, with no Ta över.
+      fake.advance(EXAM_WORKSPACE_EDIT_LEASE_TTL_MS + 1);
+      await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_EDIT_LEASE_HEARTBEAT_MS);
+      expect(fake.state().holder).toBe("tab-b");
+      expect(second.lease.readOnly.value).toBe(false);
+      expect(second.acquired).toEqual(["reloaded"]);
     } finally {
       first.stop();
       second.stop();

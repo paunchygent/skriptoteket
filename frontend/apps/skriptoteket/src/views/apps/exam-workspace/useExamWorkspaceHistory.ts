@@ -223,7 +223,8 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
    * network or server failure keeps the pending edit, while a stale-cursor
    * 409 reloads the server copy through `onConflict`, which replaces it. A
    * 409 that names the edit lease instead turns the tab read-only and keeps
-   *   the pending edit visible, with no reload and no toast. A draft
+   *   the pending edit visible, with no reload and no toast; the status reads
+   *   `Inte sparat` with the lease reason while that edit stays unconfirmed. A draft
    * the save rules refuse never reaches the server: the refusal is decided
    * from the snapshot itself, with the server's 422 as the backstop for
    * refusals only it can see. The typing timer belongs to the working copy:
@@ -296,7 +297,10 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
     } catch (error) {
       if (isEditLeaseHeldError(error)) {
         // Another tab holds the lease: turn read-only and keep the pending
-        // edit visible, with no reload, no toast and no retry scheduled.
+        // edit visible, with no reload, no toast and no retry scheduled. The
+        // status leaves `Sparar …` for `Inte sparat` with the lease reason
+        // while that edit stays unconfirmed.
+        status.noteLeaseLost();
         deps.noteLeaseLost();
       } else if (isApiError(error) && error.status === 409) {
         await deps.onConflict();

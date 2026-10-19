@@ -15,7 +15,7 @@
  *     `useExamWorkspaceExports.ts`, and `useExamWorkspaceEnrichment.ts`.
  */
 
-import { apiGet, apiPatch, apiPost, resolveProtectedApiUrl } from "./client";
+import { apiFetch, apiGet, apiPatch, apiPost, resolveProtectedApiUrl } from "./client";
 import type { components } from "./openapi";
 
 type Schemas = components["schemas"];
@@ -196,8 +196,19 @@ export async function requestExamWorkspaceEditLeaseTakeover(
 export async function releaseExamWorkspaceEditLease(
   lineageId: string,
   tabId: string,
+  options: { keepalive?: boolean } = {},
 ): Promise<ExamWorkspaceEditLeaseResponse> {
   const body: Schemas["ExamWorkspaceEditLeaseRequest"] = { tab_id: tabId };
+  if (options.keepalive === true) {
+    // A `pagehide` release must survive the unload: `keepalive` lets the
+    // browser finish the POST after the page is gone. `sendBeacon` cannot
+    // carry the CSRF header, so it cannot use this transport.
+    return await apiFetch<ExamWorkspaceEditLeaseResponse>(editLeasePath(lineageId, "release"), {
+      body,
+      keepalive: true,
+      method: "POST",
+    });
+  }
   return await apiPost<ExamWorkspaceEditLeaseResponse>(editLeasePath(lineageId, "release"), body);
 }
 

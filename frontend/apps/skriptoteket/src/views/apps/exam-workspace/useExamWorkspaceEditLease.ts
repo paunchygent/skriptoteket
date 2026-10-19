@@ -13,17 +13,22 @@
  *   pending edit, releases the lease and turns read-only. `Ta över` requests
  *   the lease and claims it once the holder has released or its lease has
  *   expired, then reads the newest state. A closed tab releases its lease on
- *   `pagehide`. A claim refused with `EDIT_LEASE_HELD` opens read-only; any
+ *   `pagehide` with `keepalive`, so the release reaches the server after the
+ *   page is gone. A claim refused with `EDIT_LEASE_HELD` opens read-only and
+ *   retries at the heartbeat cadence, taking the lease as soon as it is free
+ *   (expired or released) with no `Ta över`; any
  *   other claim failure stays editable, since the write guard is
  *   authoritative and refuses a tab without the lease.
  *
  * Relationships:
  *   - The server half runs on the edit-lease transport of
- *     `api/examWorkspace.ts`. The guest half drives K7's
+ *     `api/examWorkspace.ts` through the drivers in
+ *     `examWorkspaceEditLeaseDrivers.ts`. The guest half drives K7's
  *     `createGuestEditLeaseController` against the IndexedDB-bound lease slot
  *     (`createIndexedDbGuestEditLeaseStorage`), whose own heartbeat, channel
  *     signal and `pagehide` release answer takeovers. The composable owns the
- *     read-only state, its own heartbeat, the takeover wait and `pagehide`
+ *     read-only state, its own heartbeat (which both renews the held lease
+ *     and retries a refused claim), the takeover wait and `pagehide`
  *     release in both modes; the guest controller's heartbeat stays as a
  *     redundant poller.
  *   - Owned by `useExamWorkspaceEditing`, which feeds the tab id into the
@@ -34,17 +39,23 @@
 
 import { computed, onScopeDispose, ref, watch } from "vue";
 
-import { isApiError } from "../../../api/client";
+import {
+  createGuestDriver,
+  createServerDriver,
+  isEditLeaseHeldError,
+  type ExamWorkspaceEditLeaseDriver,
+  type ExamWorkspaceEditLeaseServer,
+} from "./examWorkspaceEditLeaseDrivers";
+export { isEditLeaseHeldError };
+export type { ExamWorkspaceEditLeaseServer };
 import {
   claimExamWorkspaceEditLease,
   releaseExamWorkspaceEditLease,
   renewExamWorkspaceEditLease,
   requestExamWorkspaceEditLeaseTakeover,
-  type ExamWorkspaceEditLeaseResponse,
 } from "../../../api/examWorkspace";
 import {
   createGuestEditLeaseChannel,
-  createGuestEditLeaseController,
   type GuestEditLeaseChannel,
   type GuestEditLeaseStoragePort,
 } from "./examWorkspaceGuestEditLease";
@@ -65,130 +76,13 @@ export function createExamWorkspaceEditLeaseTabId(): string {
   return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
-/** A 409 whose code names the edit lease, not a stale cursor. */
-export function isEditLeaseHeldError(error: unknown): boolean {
-  return isApiError(error) && error.status === 409 && error.code === "EDIT_LEASE_HELD";
-}
-
-export type ExamWorkspaceEditLeaseServer = {
-  claim(lineageId: string, tabId: string): Promise<ExamWorkspaceEditLeaseResponse>;
-  renew(lineageId: string, tabId: string): Promise<ExamWorkspaceEditLeaseResponse>;
-  requestTakeover(lineageId: string, tabId: string): Promise<ExamWorkspaceEditLeaseResponse>;
-  release(lineageId: string, tabId: string): Promise<ExamWorkspaceEditLeaseResponse>;
-};
-
 const defaultServer: ExamWorkspaceEditLeaseServer = {
   claim: (lineageId, tabId) => claimExamWorkspaceEditLease(lineageId, tabId),
-  release: (lineageId, tabId) => releaseExamWorkspaceEditLease(lineageId, tabId),
+  release: (lineageId, tabId, options) =>
+    releaseExamWorkspaceEditLease(lineageId, tabId, options),
   renew: (lineageId, tabId) => renewExamWorkspaceEditLease(lineageId, tabId),
   requestTakeover: (lineageId, tabId) => requestExamWorkspaceEditLeaseTakeover(lineageId, tabId),
 };
-
-export type ExamWorkspaceEditLeaseDriver = {
-  readonly tabId: string;
-  claim(lineageId: string): Promise<"held" | "readonly">;
-  renew(lineageId: string): Promise<boolean>;
-  requestTakeover(lineageId: string): Promise<"claimed" | "requested" | "own">;
-  release(lineageId: string): Promise<boolean>;
-  dispose(): void;
-};
-
-function createServerDriver(
-  server: ExamWorkspaceEditLeaseServer,
-  tabId: string,
-  yieldLease: (lineageId: string) => Promise<void>,
-): ExamWorkspaceEditLeaseDriver {
-  const driver: ExamWorkspaceEditLeaseDriver = {
-    tabId,
-    async claim(lineageId) {
-      try {
-        await server.claim(lineageId, tabId);
-        return "held";
-      } catch (error) {
-        // A live foreign lease opens read-only; any other failure stays
-        // editable, since the write guard refuses a tab without the lease.
-        return isEditLeaseHeldError(error) ? "readonly" : "held";
-      }
-    },
-    async renew(lineageId) {
-      try {
-        const response = await server.renew(lineageId, tabId);
-        if (response.takeover_requested) {
-          await yieldLease(lineageId);
-          return false;
-        }
-        return true;
-      } catch (error) {
-        if (isEditLeaseHeldError(error)) {
-          return false;
-        }
-        // A transient failure keeps the hold; the write guard stays authoritative.
-        return true;
-      }
-    },
-    async requestTakeover(lineageId) {
-      let response: ExamWorkspaceEditLeaseResponse;
-      try {
-        response = await server.requestTakeover(lineageId, tabId);
-      } catch (error) {
-        if (isEditLeaseHeldError(error)) {
-          return "requested";
-        }
-        throw error;
-      }
-      if (response.holder_tab_id === tabId) {
-        return "own";
-      }
-      return (await driver.claim(lineageId)) === "held" ? "claimed" : "requested";
-    },
-    async release(lineageId) {
-      try {
-        await server.release(lineageId, tabId);
-        return true;
-      } catch {
-        return false;
-      }
-    },
-    dispose() {},
-  };
-  return driver;
-}
-
-function createGuestDriver(
-  tabId: string,
-  guestStorage: GuestEditLeaseStoragePort,
-  openChannel: () => GuestEditLeaseChannel,
-  now: (() => number) | undefined,
-  onTakeoverRequested: () => Promise<void> | void,
-  noteLostLease: () => void,
-): ExamWorkspaceEditLeaseDriver {
-  const controller = createGuestEditLeaseController({
-    now,
-    onTakeoverRequested: async () => {
-      await onTakeoverRequested();
-      noteLostLease();
-    },
-    openChannel,
-    storage: guestStorage,
-    tabId,
-  });
-  return {
-    tabId,
-    claim: () => controller.claim(),
-    dispose: () => controller.dispose(),
-    release: () => controller.release(),
-    renew: async () => {
-      // The controller's own heartbeat calls this too, so a lost lease turns
-      // read-only even when this tab's heartbeat is the one that finds it.
-      const held = await controller.renew();
-      if (!held) {
-        noteLostLease();
-      }
-      return held;
-    },
-    requestTakeover: () => controller.requestTakeover(),
-  };
-}
 
 export type ExamWorkspaceEditLeaseDeps = {
   lineageId: () => string | null;
@@ -239,12 +133,18 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
     stopHeartbeat();
   }
 
-  async function tryRelease(lineageId: string): Promise<void> {
+  async function tryRelease(lineageId: string, keepalive = false): Promise<void> {
     if (driver === null) {
       return;
     }
     try {
-      await driver.release(lineageId);
+      // Only the `pagehide` release carries options, so the recorded calls
+      // of every other release keep their two-argument shape.
+      if (keepalive) {
+        await driver.release(lineageId, { keepalive: true });
+      } else {
+        await driver.release(lineageId);
+      }
     } catch {
       // Best effort: closing and yielding never fail the session.
     }
@@ -299,7 +199,28 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
     }
     const lineageId = deps.lineageId();
     const active = ensureDriver();
-    if (lineageId === null || active === null || !holding.value) {
+    if (lineageId === null || active === null) {
+      return;
+    }
+    // A read-only tab retries its refused claim at the heartbeat cadence and
+    // takes the lease as soon as it is free, with no `Ta över`. A waiting
+    // takeover claims on its own faster poll instead.
+    if (!holding.value) {
+      if (waiting.value) {
+        return;
+      }
+      let outcome: "held" | "readonly";
+      try {
+        outcome = await active.claim(lineageId);
+      } catch {
+        return;
+      }
+      if (disposed || deps.lineageId() !== lineageId || holding.value) {
+        return;
+      }
+      if (outcome === "held") {
+        await noteAcquired(lineageId);
+      }
       return;
     }
     let held: boolean;
@@ -312,9 +233,8 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
       return;
     }
     holding.value = held;
-    if (!held) {
-      stopHeartbeat();
-    }
+    // A lost lease keeps the heartbeat: the next tick retries the claim and
+    // takes the lease back as soon as it is free.
   }
 
   async function claimCurrent(lineageId: string): Promise<void> {
@@ -336,9 +256,9 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
       return;
     }
     holding.value = outcome === "held";
-    if (holding.value) {
-      startHeartbeat();
-    }
+    // The heartbeat both renews a held lease and retries a refused claim, so
+    // a reloaded tab takes the lease as soon as it is free, with no `Ta över`.
+    startHeartbeat();
   }
 
   async function noteAcquired(lineageId: string): Promise<void> {
@@ -418,7 +338,10 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
     const lineageId = deps.lineageId();
     stopWaiting();
     if (lineageId !== null && holding.value) {
-      void tryRelease(lineageId);
+      // The page is going away: `keepalive` lets the browser finish the
+      // release POST after the unload, or the old lease blocks the reloaded
+      // tab until the 15 s TTL dies.
+      void tryRelease(lineageId, true);
     }
   }
 
