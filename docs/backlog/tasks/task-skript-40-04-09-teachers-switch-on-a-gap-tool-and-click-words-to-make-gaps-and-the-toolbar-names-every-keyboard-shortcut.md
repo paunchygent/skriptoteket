@@ -51,7 +51,7 @@ All under `frontend/apps/skriptoteket/src/views/apps/exam-workspace/`: `useExamW
 
 ### Design
 
-- Tool state (L1, Q4). `ExamWorkspaceBodyEditor` owns one `gapToolOn` flag per question and passes it to its rich-text editor and toolbar. The tool turns off by its toggle button, by the shortcut, by Escape, or when focus moves to another question (a `focusin` outside this body editor's root and outside its open popover). Clicks elsewhere in the same question, including the popover, keep it on.
+- Tool state (L1, Q4). `ExamWorkspaceBodyEditor` owns one `gapToolOn` flag per question and passes it to its rich-text editor and toolbar. The tool turns off by its toggle button, by the shortcut, by Escape, or when another question is selected (a click into another question selects it; the body editor's `item_id` watcher ends the tool, with no `focusin` listener). Clicks elsewhere in the same question, including the popover, keep it on.
 - Click (L2, L3, Q2, Q3, Q6). With the tool on, `useExamWorkspaceMakeGap` converts the clicked word at once through `replaceRangeWithGap` (same word resolver, seed, next gap id, one `withNewGap` undo step) and shows no floating Lucka button. A click on a space or punctuation only places the caret. A mouseup that leaves a non-empty selection inside one paragraph converts it under `makeGap`'s existing guards. A click on a gap chip keeps `handleClickOn` and opens its popover. The body editor does not open the new gap's popover while the tool is on.
 - Escape (L4). Escape closes an open gap popover first; with none open, it turns the tool off.
 - Cap (L5). When no next gap id is left (`gap_999`), the tool turns off and its toggle is disabled with the Högst 999 luckor tooltip.
@@ -108,7 +108,7 @@ Stop and ask the user if Ctrl+Alt+G or Cmd+Option+G turns out to be taken by the
 | Q1  | Ctrl+Alt+G on Windows and Linux, Cmd+Option+G on macOS, toggles the gap tool (user 2026-10-19) |
 | Q2  | With the tool on, a word click makes a gap at once and no popover opens (user 2026-10-19) |
 | Q3  | With the tool on, a click on an existing gap opens its popover (user 2026-10-19) |
-| Q4  | The tool ends by its button, its shortcut, Escape, or moving to another question; clicks elsewhere in the same question keep it on (user 2026-10-19) |
+| Q4  | The tool ends by its button, its shortcut, Escape, or selecting another question (clicking into another question selects it); clicks elsewhere in the same question keep it on (user 2026-10-19; wording made exact by the orchestrator 2026-10-19) |
 | Q5  | A separate toggle button next to the Lucka button; Lucka keeps its 40-04-08 behaviour (user 2026-10-19) |
 | Q6  | With the tool on, a drag selection inside one paragraph becomes one gap on release (user 2026-10-19) |
 | A1  | The plan with frontend-only units G1-G4 is accepted (user 2026-10-19, AskUserQuestion in the Hemma orchestrator session) |
