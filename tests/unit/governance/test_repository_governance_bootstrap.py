@@ -135,7 +135,7 @@ def test_repository_facts_and_generated_bindings_are_complete() -> None:
         "cmd": "pnpm --filter @skriptoteket/spa build",
         "working_dir": "frontend",
     }
-    assert scripts["test-parallel"] == "python -m scripts.run_pytest_with_native_libs -n auto"
+    assert scripts["pytest"] == "python -m scripts.run_pytest_with_native_libs"
     assert scripts["hemma-deploy"] == "bash ./scripts/hemma_deploy_start.sh"
     assert scripts["dev-stack"] == "python -m scripts.dev_stack"
 

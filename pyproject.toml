@@ -265,11 +265,12 @@ pythonpath = [
 python_files = "test_*.py *_test.py"
 python_classes = "Test*"
 python_functions = "test_*"
-addopts = "-s -v --durations=10 --log-cli-level=INFO --import-mode=importlib -m 'not (financial or slow or docker or simulation)'"
-log_cli = true
-log_cli_level = "INFO"
-log_cli_format = "%(message)s"
-log_cli_date_format = "%Y-%m-%d %H:%M:%S"
+# Parallel and quiet by default: xdist workers, no live log streaming, INFO
+# records captured and shown only for failing tests. A serial run (`-n 0`) must
+# state why with `--serial-reason` (tests/conftest.py); `pdm run test-serial`
+# is the named live-output debugging route.
+addopts = "-n auto --dist worksteal --durations=10 --import-mode=importlib -m 'not (financial or slow or docker or simulation)'"
+log_level = "INFO"
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "module"
 
@@ -369,7 +370,7 @@ arguments = ["--config-file", "pyproject.toml"]
 name = "backend-test"
 intent = "test"
 project = "."
-command = "test-parallel"
+command = "pytest"
 arguments = []
 
 [[tool.repository-governance.quality.producers]]
@@ -518,9 +519,9 @@ shellcheck = "shellcheck"
 shellcheck-all = 'find . -type f \( -name "*.sh" -o -name "*.bash" \) -not -path "./.git/*" -not -path "./.venv/*" -not -path "./node_modules/*" -not -path "./frontend/node_modules/*" -exec shellcheck {} +'
 
 # Tests
-test-parallel = "python -m scripts.run_pytest_with_native_libs -n auto"
-test-sequential = "python -m scripts.run_pytest_with_native_libs -n 0"
-test-simulations = "python -m scripts.run_pytest_with_native_libs -m simulation -s -v --durations=10 --log-cli-level=INFO --import-mode=importlib --override-ini addopts=''"
+pytest = "python -m scripts.run_pytest_with_native_libs"
+test-serial = "python -m scripts.run_pytest_with_native_libs -n 0 -s -v --log-cli-level=INFO"
+test-simulations = "python -m scripts.run_pytest_with_native_libs -m simulation"
 
 # Docs-as-code governance
 handoff-validate = "python -m scripts.check_agent_doc_budgets"

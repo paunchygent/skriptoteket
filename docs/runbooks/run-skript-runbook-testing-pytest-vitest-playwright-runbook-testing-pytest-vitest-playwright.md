@@ -49,6 +49,21 @@ pdm run check
 
 ```bash
 pdm run test
+pdm run pytest tests/unit/domain/curated_apps
+pdm run test-simulations
+```
+
+- `pdm run test` runs the changed-component route; `pdm run pytest <target>`
+  runs a focused target. Both run in parallel (`-n auto --dist worksteal` in
+  `addopts`) and quietly: no live log streaming, and captured INFO logs and
+  stdout are printed only for failing tests.
+- A serial run must state why. `-n 0`, `--pdb` or an overridden `addopts`
+  stops with a usage error unless `--serial-reason "<reason>"` is given. Use
+  the named serial route only to step through a test with `--pdb` or to read
+  live log output of one failing test:
+
+```bash
+pdm run test-serial --serial-reason "live log of the curated-app model test" tests/unit/domain/curated_apps/test_models.py
 ```
 
 ### Notes
@@ -58,8 +73,8 @@ pdm run test
 
 ### Local PDF renderer checks
 
-- Use the canonical `pdm run test` surface for WeasyPrint-backed PDF renderer
-  tests. On macOS, that wrapper starts pytest with Homebrew/MacPorts native
+- Use the canonical `pdm run test` or `pdm run pytest` surface for
+  WeasyPrint-backed PDF renderer tests. On macOS, that wrapper starts pytest with Homebrew/MacPorts native
   library directories available to the child process before WeasyPrint imports
   Pango, Harfbuzz, Fontconfig, and GObject.
 - If native libraries live outside `/opt/homebrew/lib`, `/usr/local/lib`, or
