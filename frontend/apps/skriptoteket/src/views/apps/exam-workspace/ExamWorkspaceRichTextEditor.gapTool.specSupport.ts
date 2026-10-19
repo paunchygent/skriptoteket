@@ -31,6 +31,7 @@ import { provideExamWorkspaceHistoryKeys } from "./examWorkspaceHistoryKeys";
 import type { ExamWorkspaceHistoryKeys } from "./examWorkspaceHistoryKeys";
 import { dispatchGapToolClick } from "./examWorkspaceGapToolPointer.specSupport";
 import { provideRichTextTargetRegistry } from "./examWorkspaceRichTextTarget";
+import type { RichTextTargetRegistry } from "./examWorkspaceRichTextTarget";
 
 export type Body = NativeExamBodyParagraph[];
 export type Creation = [Body, string, string];
@@ -39,6 +40,7 @@ export type Opened = {
   wrapper: VueWrapper;
   editor: Editor;
   surface: HTMLElement;
+  registry: RichTextTargetRegistry;
   updates: Array<[Body, boolean]>;
   creations: Creation[];
   activations: Array<[string, HTMLElement]>;
@@ -65,9 +67,10 @@ export async function openEditor(initial: EditorProps): Promise<Opened> {
   const escapes: string[] = [];
   const keys: ExamWorkspaceHistoryKeys = { undo: vi.fn(), redo: vi.fn() };
   const live = reactive<EditorProps>({ ...initial });
+  let registry!: RichTextTargetRegistry;
   const Host = defineComponent({
     setup() {
-      provideRichTextTargetRegistry();
+      registry = provideRichTextTargetRegistry();
       provideExamWorkspaceHistoryKeys(keys);
       return () =>
         h(ExamWorkspaceRichTextEditor, {
@@ -102,6 +105,7 @@ export async function openEditor(initial: EditorProps): Promise<Opened> {
     wrapper,
     editor: attached,
     surface: candidate,
+    registry,
     updates,
     creations,
     activations,
@@ -149,4 +153,14 @@ export function stubGeometry(opened: Opened): void {
 export function gapButton(): HTMLElement | null {
   const candidate = document.body.querySelector("[data-test='exam-workspace-make-gap']");
   return candidate instanceof HTMLElement ? candidate : null;
+}
+
+/** The active rich-text target, after focusing the surface as a toolbar would. */
+export function targetOf(opened: Opened) {
+  opened.surface.focus();
+  const target = opened.registry.active.value;
+  if (!target) {
+    throw new Error("no active target");
+  }
+  return target;
 }
