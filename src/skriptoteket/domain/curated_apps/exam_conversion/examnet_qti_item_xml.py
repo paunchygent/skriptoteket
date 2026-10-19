@@ -28,6 +28,9 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_inline_prompt 
     append_images,
     append_shared_instruction_body,
 )
+from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_rich_text import (
+    MARK_ELEMENT_NAMES,
+)
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_terms import (
     QTI_NAMESPACE,
     QTI_SCHEMA_LOCATION,
@@ -43,6 +46,16 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_xml import (
     append_score_outcome,
     emits_all_or_nothing,
     emits_map_response,
+)
+
+_INLINE_TAGS: frozenset[str] = frozenset(
+    {qti_tag(name) for name in MARK_ELEMENT_NAMES.values()}
+    | {
+        qti_tag("br"),
+        qti_tag("img"),
+        qti_tag("qti-text-entry-interaction"),
+        qti_tag("qti-inline-choice-interaction"),
+    }
 )
 
 
@@ -72,7 +85,7 @@ def serialize_qti_assessment_item(
     else:
         _append_standalone_item(root, item, image_paths)
 
-    ElementTree.indent(root, space="  ")
+    _indent_block_structure(root)
     xml_text = ElementTree.tostring(
         root,
         encoding="unicode",
@@ -80,6 +93,34 @@ def serialize_qti_assessment_item(
         short_empty_elements=True,
     )
     return f'<?xml version="1.0" encoding="UTF-8"?>\n{xml_text}\n'.encode("utf-8")
+
+
+def _indent_block_structure(element: ElementTree.Element, level: int = 0) -> None:
+    """Indent a block-only subtree and leave mixed inline content untouched.
+
+    An element is block-only when it has children, its own text is ``None`` or
+    empty, every child tail is ``None`` or empty, and no child is an inline
+    element. A block-only element gets the same whitespace as
+    ``ElementTree.indent(element, space="  ")`` at ``level``, so structure-only
+    trees stay byte-identical. Any other element keeps its whole subtree exactly
+    as built.
+    """
+
+    child_tags = [child.tag for child in element]
+    if (
+        not child_tags
+        or element.text not in (None, "")
+        or any(child.tail not in (None, "") for child in element)
+        or any(tag in _INLINE_TAGS for tag in child_tags)
+    ):
+        return
+
+    child_indentation = "\n" + "  " * (level + 1)
+    element.text = child_indentation
+    for index, child in enumerate(element):
+        child.tail = "\n" + "  " * level if index == len(element) - 1 else child_indentation
+    for child in element:
+        _indent_block_structure(child, level + 1)
 
 
 def _append_information_item(

@@ -37,6 +37,7 @@ import type {
 import { useToast } from "../../../composables/useToast";
 import { triggerBrowserDownload } from "../../../utils/browserDownload";
 import { examWorkspaceSavedAt } from "./examWorkspaceFormat";
+import { EXAM_WORKSPACE_EXPORT_FORMAT_BY_TARGET } from "./examWorkspaceExportFormats";
 import type { ExamWorkspaceStore } from "./examWorkspaceStore";
 import type { ExamWorkspaceTitleVerdict } from "./useExamWorkspaceTitleVerdict";
 
@@ -92,16 +93,7 @@ const EXPORT_CREATED_MESSAGES: Record<ExamWorkspaceExportTarget, string> = {
   examnet_pdf: "PDF-filen för Exam.net är skapad.",
 };
 
-/** The format's name in the Mina filer messages. */
-export const EXPORT_FORMAT_NAMES: Record<ExamWorkspaceExportTarget, string> = {
-  docx: "DOCX",
-  pdf: "PDF",
-  qti: "QTI",
-  pdf_facit: "PDF med facit",
-  examnet_pdf: "PDF för Exam.net",
-};
-
-type ExportDestination = "download" | "files";
+export type ExportDestination = "download" | "files";
 
 const BLOCKER_REASONS = new Set<string>(Object.keys(EXAM_WORKSPACE_EXPORT_BLOCKER_COPY));
 
@@ -170,7 +162,17 @@ export function useExamWorkspaceExports(
 ) {
   const toast = useToast();
 
-  const exportingTarget = ref<ExamWorkspaceExportTarget | null>(null);
+  const exporting = ref<{ target: ExamWorkspaceExportTarget; destination: ExportDestination } | null>(
+    null,
+  );
+  /** The format running an export, if any; the menu spins that part. */
+  const exportingTarget = computed<ExamWorkspaceExportTarget | null>(() =>
+    exporting.value === null ? null : exporting.value.target,
+  );
+  /** Whether the running export downloads or saves to Mina filer; the menu spins that part. */
+  const exportingDestination = computed<ExportDestination | null>(() =>
+    exporting.value === null ? null : exporting.value.destination,
+  );
   const refusedItems = ref<Record<string, RefusedItem>>({});
   /**
    * The reasons the server gave when it last refused an export, per question,
@@ -298,8 +300,8 @@ export function useExamWorkspaceExports(
         }
         clearExportFeedback();
         exportResult.value = replaced
-          ? `${EXPORT_FORMAT_NAMES[target]} sparad i Mina filer och ersatte filen från ${examWorkspaceSavedAt(replaced)}.`
-          : `${EXPORT_FORMAT_NAMES[target]} sparad i Mina filer.`;
+          ? `${EXAM_WORKSPACE_EXPORT_FORMAT_BY_TARGET[target].name} sparad i Mina filer och ersatte filen från ${examWorkspaceSavedAt(replaced)}.`
+          : `${EXAM_WORKSPACE_EXPORT_FORMAT_BY_TARGET[target].name} sparad i Mina filer.`;
       } else {
         const response = await steps.store.shared.downloadExamWorkspaceExport(savedSummary.lineage_id, target, savedVersion);
         triggerBrowserDownload(response.blob, response.filename);
@@ -319,10 +321,10 @@ export function useExamWorkspaceExports(
    * exports nothing.
    */
   async function runExport(target: ExamWorkspaceExportTarget, destination: ExportDestination): Promise<void> {
-    if (!summary.value || exportingTarget.value !== null) {
+    if (!summary.value || exporting.value !== null) {
       return;
     }
-    exportingTarget.value = target;
+    exporting.value = { target, destination };
     let savedSummary: ExamWorkspaceDocumentSummary | null = null;
     let created = false;
     let requestId = checklistRequestId;
@@ -335,7 +337,7 @@ export function useExamWorkspaceExports(
       requestId = checklistRequestId;
       created = await createExport(target, destination, savedSummary);
     } finally {
-      exportingTarget.value = null;
+      exporting.value = null;
     }
     if (created && target === "qti") {
       await loadExportChecklist(
@@ -361,6 +363,7 @@ export function useExamWorkspaceExports(
     exportDocument,
     exportNotice,
     exportResult,
+    exportingDestination,
     exportingTarget,
     saveExportToFiles,
     savedExports,

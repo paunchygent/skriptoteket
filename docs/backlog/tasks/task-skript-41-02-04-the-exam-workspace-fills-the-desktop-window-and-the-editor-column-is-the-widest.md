@@ -4,8 +4,8 @@ id: TASK-SKRIPT-41-02-04
 title: The exam workspace fills the desktop window and the editor column is the widest
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-19'
 status: done
 closeout_review:
@@ -17,11 +17,11 @@ closeout_review:
   approval_evidence: 'Independent ruthless-reviewer ea60b045 returned nine medium findings at 4b526ce1, repaired by fresh juniors and admitted on focused proof without rereview (retained 01a153bf evidence/reviews/ea60b045-1ef0-4a1d-950c-df04bf72027c.md). Merged to main as ffab920a; the first staging walk (Mac, Edge, guest and signed in) passed F3, F4 and F6, the default widths, clamping, remembered widths and the rail, and found G1, G2, W1, W2, W3 and W4. Review f31c37a1 of the walk repair returned one medium finding (the column handle spec over 500 lines), repaired and admitted on focused proof (evidence/reviews/f31c37a1-2b2e-45c9-bba4-d3eabe9dd6ca.md). The repair merged to main as 67861ab3 and the second staging walk passed G1, G2 (IBM Plex Sans confirmed), W3 and W4 (Mac record .artifacts/staging-walk-41-02-04-repair/walk-record.md). W1 and W2 are handed to the toolbar session (TASK-SKRIPT-40-04-17).'
 task_kind: story
 acceptance_criteria:
-- On desktop (1280 px and wider) the guest exam workspace fills the window width, with no centred page column or side gutters
-- At the default widths the editor column is the widest column whenever a drawer or the print preview is open, on the guest and signed-in workspaces, with no horizontal page scroll
-- On desktop the user drags any panel border to resize it, collapses and reopens panels, and the widths are remembered per browser
-- A panel narrower than its designed minimum keeps its minimum layout and scrolls inside itself; nothing else reflows
-- Tablet and phone layouts are unchanged
+  - On desktop (1280 px and wider) the guest exam workspace fills the window width, with no centred page column or side gutters
+  - At the default widths the editor column is the widest column whenever a drawer or the print preview is open, on the guest and signed-in workspaces, with no horizontal page scroll
+  - On desktop the user drags any panel border to resize it, collapses and reopens panels, and the widths are remembered per browser
+  - A panel narrower than its designed minimum keeps its minimum layout and scrolls inside itself; nothing else reflows
+  - Tablet and phone layouts are unchanged
 story: ST-SKRIPT-41-02
 backlog_document_profile: contract-derived
 ---
@@ -161,25 +161,25 @@ Stop and report in any of these cases:
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| L1  | The empty margins come from LandingLayout's 1040 px `.landing-frame` and `.landing-main` padding; the workspace sets no width cap. |
-| L2  | The column and side-panel widths apply to the guest and signed-in workspaces; the full-width change touches the guest route only; the signed-in 240 px sidebar stays. |
-| L3  | LandingLayout fills the frame on the public `documents.conversion_hub` routes, selected by route name plus appId like AuthLayout; the top bar stays; other public pages keep 1040 px. |
-| L4  | One width owner: tokens on `.xw-root` and `data-side` on the workspace root; `.ws--drawer`, `.ws--preview` and `var(--xw-drawer, 380px)` fallbacks are deleted. |
-| L5  | At the default widths the editor is the widest column with any side panel open at every desktop workspace width from 1040 px, with no horizontal page scroll; a user drag may override this down to the editor's minimum. |
-| L6  | Tablet and phone layouts are unchanged and get no resize handles; tablet floating panels read a named 380 px token. |
-| L7  | jsdom tests prove state and contract; rendered widths and resizing are proven by the staging walk. |
-| L8  | Desktop drag handles on each panel border, pointer-captured; JS writes only the requested width as an inline custom property; CSS clamps; panel content keeps its minimum layout and scrolls internally; the drag is the documented layout-geometry exception. |
+| ID  | Decided contract term                                                                                                                                                                                                                                                                                        |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| L1  | The empty margins come from LandingLayout's 1040 px `.landing-frame` and `.landing-main` padding; the workspace sets no width cap.                                                                                                                                                                           |
+| L2  | The column and side-panel widths apply to the guest and signed-in workspaces; the full-width change touches the guest route only; the signed-in 240 px sidebar stays.                                                                                                                                        |
+| L3  | LandingLayout fills the frame on the public `documents.conversion_hub` routes, selected by route name plus appId like AuthLayout; the top bar stays; other public pages keep 1040 px.                                                                                                                        |
+| L4  | One width owner: tokens on `.xw-root` and `data-side` on the workspace root; `.ws--drawer`, `.ws--preview` and `var(--xw-drawer, 380px)` fallbacks are deleted.                                                                                                                                              |
+| L5  | At the default widths the editor is the widest column with any side panel open at every desktop workspace width from 1040 px, with no horizontal page scroll; a user drag may override this down to the editor's minimum.                                                                                    |
+| L6  | Tablet and phone layouts are unchanged and get no resize handles; tablet floating panels read a named 380 px token.                                                                                                                                                                                          |
+| L7  | jsdom tests prove state and contract; rendered widths and resizing are proven by the staging walk.                                                                                                                                                                                                           |
+| L8  | Desktop drag handles on each panel border, pointer-captured; JS writes only the requested width as an inline custom property; CSS clamps; panel content keeps its minimum layout and scrolls internally; the drag is the documented layout-geometry exception.                                               |
 | L9  | One zod-validated localStorage key `skriptoteket.exam-workspace.columns` shared by both routes; every read and write wrapped; defaults when missing, invalid or unreadable; no versioned readers; stored widths are clipped by CSS, never rewritten; `stores/layout.ts` storage calls get the same wrapping. |
-| L10 | Each handle is a focusable `role="separator"` with aria-valuenow/min/max and a Swedish label; arrows 16 px, Shift+arrows 64 px, Home/End to minimum/maximum, Enter collapses and restores, Shift+Enter and double-click reset to the default. |
-| Q2  | The question list is `clamp(260px, 18%, 340px)` of the workspace width. |
-| Q3  | The print preview is `clamp(360px, 34%, 800px)` of the workspace width, page scaled to fit; the editor stays widest at default widths. |
-| Q4  | The editor content cap is 1040 px, centred in the editor column. |
-| Q5  | Panels are resizable with a drag handle, collapsible, have designed minimums with internal scroll below them, and widths are remembered per browser. |
-| Q1  | Öppna, Exportera and Provets uppgifter share one drawer width, 320 px default and 300 px minimum; Exportera's format choice is a vertical list; the preview keeps its own width. |
-| Q6  | The editor-widest rule applies to the default layout only; a drag may make a side panel wider than the editor, down to the editor's minimum. |
-| Q7  | When space runs out the side panel squeezes first, then the list, the editor last; a squeezed panel keeps its minimum layout and scrolls inside itself; nothing closes on its own. |
-| Q8  | The list collapses to a 44 px rail with one expand glyph and a draggable edge; a side panel closes with its × and reopens from its header button. |
-| Q9  | A drag stops at the panel's minimum; collapse happens only through the glyph or Enter on the handle. |
-| Q10 | Minimum widths: question list 260 px, editor 400 px, drawer 300 px, print preview 300 px. |
+| L10 | Each handle is a focusable `role="separator"` with aria-valuenow/min/max and a Swedish label; arrows 16 px, Shift+arrows 64 px, Home/End to minimum/maximum, Enter collapses and restores, Shift+Enter and double-click reset to the default.                                                                |
+| Q2  | The question list is `clamp(260px, 18%, 340px)` of the workspace width.                                                                                                                                                                                                                                      |
+| Q3  | The print preview is `clamp(360px, 34%, 800px)` of the workspace width, page scaled to fit; the editor stays widest at default widths.                                                                                                                                                                       |
+| Q4  | The editor content cap is 1040 px, centred in the editor column.                                                                                                                                                                                                                                             |
+| Q5  | Panels are resizable with a drag handle, collapsible, have designed minimums with internal scroll below them, and widths are remembered per browser.                                                                                                                                                         |
+| Q1  | Öppna, Exportera and Provets uppgifter share one drawer width, 320 px default and 300 px minimum; Exportera's format choice is a vertical list; the preview keeps its own width.                                                                                                                             |
+| Q6  | The editor-widest rule applies to the default layout only; a drag may make a side panel wider than the editor, down to the editor's minimum.                                                                                                                                                                 |
+| Q7  | When space runs out the side panel squeezes first, then the list, the editor last; a squeezed panel keeps its minimum layout and scrolls inside itself; nothing closes on its own.                                                                                                                           |
+| Q8  | The list collapses to a 44 px rail with one expand glyph and a draggable edge; a side panel closes with its × and reopens from its header button.                                                                                                                                                            |
+| Q9  | A drag stops at the panel's minimum; collapse happens only through the glyph or Enter on the handle.                                                                                                                                                                                                         |
+| Q10 | Minimum widths: question list 260 px, editor 400 px, drawer 300 px, print preview 300 px.                                                                                                                                                                                                                    |

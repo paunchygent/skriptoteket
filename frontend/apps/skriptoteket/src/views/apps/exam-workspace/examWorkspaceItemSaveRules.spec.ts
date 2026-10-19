@@ -60,6 +60,7 @@ function buildChoiceItem(
     },
     sequence,
     source_anchor: null,
+    source_points: null,
     suggested_kind: null,
     tick_points: null,
     writing_lines: null,
@@ -83,7 +84,7 @@ function examDocument(items: NativeExamItem[], parents: NativeExamParent[] = [])
     origin: { kind: "created" },
     parents,
     revision: 1,
-    schema_version: "native_exam_document_v8",
+    schema_version: "native_exam_document_v9",
     title: "Prov",
   };
 }

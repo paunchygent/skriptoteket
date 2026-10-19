@@ -74,6 +74,9 @@ class NativeExamItem(BaseModel):
     # Points no source stated per question: a printed section total split over its
     # questions (D6), or a prose marking guide's single-criterion estimate (R14).
     points_estimated: bool = False
+    # The points the source printed for this question; None when it printed none, for
+    # a share of a part total, and for teacher-created and split questions.
+    source_points: int | float | None = None
     choices: tuple[NativeChoice, ...] = ()
     # An ordering question's steps in their saved printed order; its choices' list order
     # is the answer key (TASK-SKRIPT-39-06-08 D1, D5).

@@ -7,8 +7,8 @@
  *
  * Relationships:
  *   - `vite.config.ts` owns Tailwind and production/development asset builds.
- *   - `scripts/vitest-run.mjs` normalizes test path filters before Vitest
- *     reads this config.
+ *   - `scripts/vitest-run.mjs` turns every path argument into the include
+ *     list before Vitest reads this config.
  */
 
 import { fileURLToPath } from "node:url";
@@ -20,8 +20,10 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "jsdom",
+    // `scripts/vitest-run.mjs` passes named targets as a JSON array so glob
+    // braces such as `{a,b}` survive intact.
     include: process.env.VITEST_INCLUDE
-      ? process.env.VITEST_INCLUDE.split(",").map((entry) => entry.trim()).filter(Boolean)
+      ? (JSON.parse(process.env.VITEST_INCLUDE) as string[])
       : ["src/**/*.spec.ts"],
     exclude: ["node_modules", "dist"],
     setupFiles: ["./src/test/setup.ts"],

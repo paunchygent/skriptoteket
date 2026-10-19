@@ -26,6 +26,7 @@ export function buildFreeTextItem(sequence: number, overrides: Partial<NativeExa
     review: { confidence: 0.9, parse_origin: "deterministic", reasons: [], state: "review_complete" },
     sequence,
     source_anchor: null,
+    source_points: null,
     suggested_kind: null,
     tick_points: null,
     writing_lines: 8,

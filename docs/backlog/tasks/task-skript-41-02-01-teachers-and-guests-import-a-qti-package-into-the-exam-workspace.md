@@ -103,7 +103,7 @@ Stop and report if the Exam.net-accepted fixture shows a round-trip loss that is
 - Product consequence of F4: a part with two or more gap children imports
   those children with points absent and review required, because the export
   states only rounded-down per-gap shares.
-- Open finding: the plain space between two marked runs is lost to
-  `ElementTree.indent` in the writer. After TASK-SKRIPT-REP-0048 lands on main,
-  merge it and flip
-  `test_plain_space_between_marked_runs_is_lost_to_writer_indentation`.
+- Resolved finding: the plain space between two marked runs was lost to
+  `ElementTree.indent` in the writer. TASK-SKRIPT-REP-0048 merged to main on
+  2026-10-19, and the test is now
+  `test_plain_space_between_marked_runs_survives_the_round_trip`.

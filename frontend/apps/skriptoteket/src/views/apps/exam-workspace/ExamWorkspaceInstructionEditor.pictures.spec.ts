@@ -46,7 +46,7 @@ async function mountEditor(assetUrls?: Record<string, string>, disabled = false)
   ];
   mounted = mount(ExamWorkspaceInstructionEditor, {
     attachTo: document.body,
-    props: { parent, label: "1", children: [], subtotal: 0, printedTotal: null, disabled, notice: null, assetUrls },
+    props: { parent, label: "1", children: [], subtotal: 0, disabled, notice: null, assetUrls },
   });
   await settleEditors();
   return mounted;

@@ -34,6 +34,8 @@ Relationships:
   --xw-list-size: var(--xw-list-default);
   --xw-drawer-size: var(--xw-drawer-default);
   --xw-preview-size: var(--xw-preview-default);
+  --xw-note-line: 28px;
+  --xw-list-foot: calc(20px + 2 * var(--huleedu-space-2));
 }
 
 /* Buttons */
@@ -205,12 +207,6 @@ Relationships:
 .xw-mi__hint { flex: none; padding-right: var(--huleedu-space-2); font-size: var(--huleedu-text-xs); color: var(--huleedu-navy-60); }
 .xw-mi__stack { flex: 1; min-width: 0; display: flex; flex-direction: column; padding: 6px 0; }
 .xw-mi__stack small { display: flex; align-items: center; gap: 4px; font-size: var(--huleedu-text-xs); color: var(--huleedu-navy-60); }
-.xw-mi__mini {
-  width: 32px; height: 32px; flex: none; border: 0; background: none; cursor: pointer; color: var(--huleedu-navy-70);
-  display: inline-flex; align-items: center; justify-content: center; border-radius: var(--huleedu-radius-md);
-}
-.xw-mi__mini:disabled { color: var(--huleedu-navy-30); cursor: not-allowed; }
-@media (hover: hover) { .xw-mi__mini:not(:disabled):hover { background: var(--huleedu-action-10); color: var(--huleedu-action); } }
 .xw-mhead {
   padding: var(--huleedu-space-1-5) var(--huleedu-space-4) var(--huleedu-space-1);
   font-size: var(--huleedu-text-xs); font-weight: var(--huleedu-font-semibold); color: var(--huleedu-navy-60);

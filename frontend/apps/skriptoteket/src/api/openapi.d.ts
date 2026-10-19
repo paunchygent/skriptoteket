@@ -7296,10 +7296,10 @@ export interface components {
             revision: number;
             /**
              * Schema Version
-             * @default native_exam_document_v8
+             * @default native_exam_document_v9
              * @constant
              */
-            schema_version: "native_exam_document_v8";
+            schema_version: "native_exam_document_v9";
             /** Title */
             title: string;
         };
@@ -7338,10 +7338,10 @@ export interface components {
             revision: number;
             /**
              * Schema Version
-             * @default native_exam_document_v8
+             * @default native_exam_document_v9
              * @constant
              */
-            schema_version: "native_exam_document_v8";
+            schema_version: "native_exam_document_v9";
             /** Title */
             title: string;
         };
@@ -7459,6 +7459,8 @@ export interface components {
             sequence: number;
             /** Source Anchor */
             source_anchor?: string | null;
+            /** Source Points */
+            source_points?: number | null;
             suggested_kind?: components["schemas"]["NativeExamItemKind"] | null;
             /** Tick Points */
             tick_points?: number | string | null;
@@ -7527,6 +7529,8 @@ export interface components {
             sequence: number;
             /** Source Anchor */
             source_anchor: string | null;
+            /** Source Points */
+            source_points: number | null;
             suggested_kind: components["schemas"]["NativeExamItemKind"] | null;
             /** Tick Points */
             tick_points: string | null;
@@ -8050,6 +8054,8 @@ export interface components {
             sequence: number;
             /** Source Anchor */
             source_anchor?: string | null;
+            /** Source Points */
+            source_points?: number | null;
             suggested_kind?: components["schemas"]["NativeExamItemKind"] | null;
             /** Tick Points */
             tick_points?: number | string | null;

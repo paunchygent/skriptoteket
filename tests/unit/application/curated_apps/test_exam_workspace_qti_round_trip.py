@@ -267,7 +267,7 @@ def test_single_non_gap_child_parent_is_flattened() -> None:
     )
 
 
-def test_plain_space_between_marked_runs_is_lost_to_writer_indentation() -> None:
+def test_plain_space_between_marked_runs_survives_the_round_trip() -> None:
     body = (
         NativeParagraph(
             heading_level=None,
@@ -284,7 +284,14 @@ def test_plain_space_between_marked_runs_is_lost_to_writer_indentation() -> None
 
     imported = container.document.items[0]
     assert _body_projection(imported.body, {}) == (
-        (None, (("text", ("Fet", ("bold",))), ("text", ("kursiv", ("italic",))))),
+        (
+            None,
+            (
+                ("text", ("Fet", ("bold",))),
+                ("text", (" ", ())),
+                ("text", ("kursiv", ("italic",))),
+            ),
+        ),
     )
 
 

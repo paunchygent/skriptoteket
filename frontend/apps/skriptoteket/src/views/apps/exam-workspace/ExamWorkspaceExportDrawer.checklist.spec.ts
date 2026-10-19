@@ -40,7 +40,7 @@ function examDocument(items: NativeExamItem[]): NativeExamDocument {
       },
     ],
     revision: 1,
-    schema_version: "native_exam_document_v8",
+    schema_version: "native_exam_document_v9",
     title: "Prov",
   };
 }

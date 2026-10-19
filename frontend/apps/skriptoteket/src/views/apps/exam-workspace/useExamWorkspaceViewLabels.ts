@@ -3,8 +3,8 @@
  *
  * Domain purpose:
  *   Own the view's derived labels (TASK-SKRIPT-41-02-04): the list's
- *   instruction preview, the printed total, the course label, the formatted
- *   saved exports, and the zero-points flag.
+ *   instruction preview, the course label, the formatted saved exports, and
+ *   the zero-points flag.
  *
  * Relationships:
  *   - Consumed by `ExamWorkspaceView`, which binds the labels to the header,
@@ -20,7 +20,6 @@ import { examWorkspaceSavedAt } from "./examWorkspaceFormat";
 import { EXAM_WORKSPACE_EXPORT_FORMATS } from "./examWorkspaceExportFormats";
 import { bodyText } from "./examWorkspaceRichText";
 import { isEmptyBody } from "./examWorkspaceRichTextDocument";
-import { examWorkspaceExamPrintedDifference } from "./examWorkspaceTotals";
 
 export type ExamWorkspaceViewLabelsDeps = {
   workspaceDocument: Ref<NativeExamDocument | null>;
@@ -30,7 +29,6 @@ export type ExamWorkspaceViewLabelsDeps = {
 
 export type ExamWorkspaceViewLabels = {
   examInstructionsPreview: ComputedRef<string | null>;
-  examPrintedTotal: ComputedRef<number | null>;
   courseLabel: ComputedRef<string | null>;
   formattedSavedExports: ComputedRef<Partial<Record<ExamWorkspaceExportTarget, string>>>;
   zeroPoints: ComputedRef<boolean>;
@@ -45,9 +43,6 @@ export function useExamWorkspaceViewLabels(deps: ExamWorkspaceViewLabelsDeps): E
     const instructions = deps.workspaceDocument.value?.instructions ?? [];
     return isEmptyBody(instructions) ? null : bodyText(instructions) || "Bild";
   });
-  const examPrintedTotal = computed(() =>
-    deps.workspaceDocument.value ? examWorkspaceExamPrintedDifference(deps.workspaceDocument.value) : null,
-  );
   const courseLabel = computed(() => deps.workspaceDocument.value?.header.course?.name ?? null);
   const formattedSavedExports = computed(() => {
     const formatted: Partial<Record<ExamWorkspaceExportTarget, string>> = {};
@@ -64,7 +59,6 @@ export function useExamWorkspaceViewLabels(deps: ExamWorkspaceViewLabelsDeps): E
   return {
     courseLabel,
     examInstructionsPreview,
-    examPrintedTotal,
     formattedSavedExports,
     zeroPoints,
   };

@@ -97,7 +97,7 @@ describe("ExamWorkspaceView export blockers", () => {
     expect(requirePage("exam-workspace-blocker-item_004").text()).toBe("Fråga 4: facit ej granskat");
     for (const target of ["qti", "pdf", "docx"]) {
       expect(menuFormatDisabled(target)).toBe("true");
-      expect(requirePage(`exam-workspace-export-save-${target}`).attributes("disabled")).toBeDefined();
+      expect(requirePage(`exam-workspace-export-save-${target}`).attributes("aria-disabled")).toBe("true");
     }
     await requirePage("exam-workspace-export-qti").trigger("click");
     await flushPromises();

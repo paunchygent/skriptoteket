@@ -294,5 +294,16 @@ def test_v5_document_is_rejected_without_an_old_reader() -> None:
     payload = make_document(make_free_text_item()).model_dump()
     payload["schema_version"] = "native_exam_document_v5"
 
-    with pytest.raises(ValidationError, match="native_exam_document_v8"):
+    with pytest.raises(ValidationError, match="native_exam_document_v9"):
         NativeExamDocument.model_validate(payload)
+
+
+@pytest.mark.parametrize("target", KINDS, ids=lambda kind: kind.value)
+def test_a_type_change_keeps_source_points(target: NativeExamItemKind) -> None:
+    item = make_free_text_item().model_copy(update={"source_points": 4})
+
+    result = change_item_type(
+        make_document(item), item_id=item.item_id, target_kind=target, rng=random.Random(1)
+    )
+
+    assert result.document.items[0].source_points == 4

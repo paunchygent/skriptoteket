@@ -252,6 +252,8 @@ describe("ExamWorkspaceView export download", () => {
     expect(useToastStore().failure).toHaveBeenCalledTimes(1);
     expect(useToastStore().failure).toHaveBeenCalledWith(AUTOSAVE_FAILURE_COPY);
     expect(page("exam-workspace-export-running")).toBeNull();
+    expect(requirePage("exam-workspace-export-qti").attributes("aria-busy")).toBeUndefined();
+    expect(requirePage("exam-workspace-export-save-qti").attributes("aria-busy")).toBeUndefined();
     expect(menuFormatDisabled("qti")).toBeUndefined();
   });
 
@@ -274,17 +276,25 @@ describe("ExamWorkspaceView export download", () => {
     await wrapper.find('[data-test="exam-workspace-item-points-input"]').setValue("7");
 
     await exportFromMenu(wrapper, "qti");
-    // Saving: the format already shows the export running, and no format starts another.
-    expect(requirePage("exam-workspace-export-running").text()).toBe("Exporterar …");
+    // Saving: the download part already shows the export running, and no format starts another.
+    expect(page("exam-workspace-export-running")).toBeNull();
     expect(requirePage("exam-workspace-export-qti").attributes("aria-busy")).toBe("true");
+    expect(requirePage("exam-workspace-export-qti").attributes("aria-disabled")).toBe("true");
+    expect(requirePage("exam-workspace-export-save-qti").attributes("aria-busy")).toBeUndefined();
+    expect(requirePage("exam-workspace-export-save-qti").attributes("aria-disabled")).toBe("true");
     expect(menuFormatDisabled("pdf")).toBe("true");
+    expect(requirePage("exam-workspace-export-save-pdf").attributes("aria-disabled")).toBe("true");
     release();
     await flushPromises();
     expect(exportApiMocks.downloadExamWorkspaceExport).toHaveBeenCalledWith("lineage-1", "qti", 1);
-    expect(requirePage("exam-workspace-export-running").text()).toBe("Exporterar …");
+    expect(page("exam-workspace-export-running")).toBeNull();
+    expect(requirePage("exam-workspace-export-qti").attributes("aria-busy")).toBe("true");
+    expect(requirePage("exam-workspace-export-save-qti").attributes("aria-busy")).toBeUndefined();
     download.resolve({ blob: new Blob(["zip"]), contentType: "application/zip", filename: "Prov.zip" });
     await flushPromises();
     expect(page("exam-workspace-export-running")).toBeNull();
+    expect(requirePage("exam-workspace-export-qti").attributes("aria-busy")).toBeUndefined();
+    expect(requirePage("exam-workspace-export-save-qti").attributes("aria-busy")).toBeUndefined();
     expect(requirePage("exam-workspace-export-menu-result").text()).toBe("QTI-paketet är skapat.");
   });
 });

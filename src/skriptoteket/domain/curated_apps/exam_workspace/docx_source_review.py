@@ -63,12 +63,14 @@ def review_source_item(chunks: tuple[DocxChunk, ...], reason: str) -> NativeExam
     and every picture at its exact place in the chunk's text, and names every picture the
     conversion could not show beside the caller's ``reason``."""
     body = tuple(paragraph for _, paragraph in review_source_paragraphs(chunks))
+    printed = printed_points(chunks)
     return NativeExamItem(
         item_id="item_001",
         sequence=1,
         kind=NativeExamItemKind.FREE_TEXT,
         writing_lines=DEFAULT_WRITING_LINES,
-        points=printed_points(chunks),
+        points=printed,
+        source_points=printed,
         body=body
         or (
             NativeParagraph(

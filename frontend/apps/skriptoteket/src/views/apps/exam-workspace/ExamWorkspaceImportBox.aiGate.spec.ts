@@ -56,6 +56,7 @@ function reviewItem(): NativeExamItem {
     retry_source: { chunks: [], context_chunks: [], owned_context_anchors: [], key_chunks: [], label_kind: "gap_fill" },
     sequence: 1,
     source_anchor: "body:0001",
+    source_points: null,
     suggested_kind: null,
     tick_points: null,
   };
