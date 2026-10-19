@@ -104,6 +104,32 @@ export async function addQuestion(wrapper: ViewWrapper, kind: string): Promise<v
   await flushPromises();
 }
 
+/**
+ * Click a word in the question text as the gap tool does. jsdom has no
+ * layout, so the editor's own click handler is called at a position inside
+ * the word, with the caret placed first as a real pointer press would.
+ */
+export async function clickWord(wrapper: ViewWrapper, word: string): Promise<void> {
+  const editor = editorBehind(
+    wrapper.get('[data-test="exam-workspace-body-editor-surface"]').element,
+  );
+  let pos = -1;
+  editor.state.doc.descendants((node, nodePos) => {
+    if (pos < 0 && node.isText && node.text?.includes(word)) {
+      pos = nodePos + (node.text.indexOf(word) + 1);
+    }
+    return pos < 0;
+  });
+  if (pos < 0) {
+    throw new Error(`no text "${word}"`);
+  }
+  editor.commands.setTextSelection(pos);
+  editor.view.someProp("handleClick", (handler) =>
+    handler(editor.view, pos, new MouseEvent("click", { bubbles: true, cancelable: true })),
+  );
+  await flushPromises();
+}
+
 export function rowStatus(wrapper: ViewWrapper, itemId: string): string | undefined {
   return wrapper
     .find(`[data-test="exam-workspace-row-${itemId}"] [role="img"][aria-label$="granskas"], [data-test="exam-workspace-row-${itemId}"] [role="img"][aria-label="Granskad"]`)

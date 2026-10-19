@@ -28,7 +28,9 @@
  *   one click on it converts the word. While the optional `gapTool` prop is
  *   true, a click inside a word or a drag selection inside one paragraph
  *   becomes a gap at once through the same replacement, and the button never
- *   shows. The button
+ *   shows. Escape in the surface reaches the owner as `escape` (after the
+ *   button takes its own Escape), so the owner closes a popover first and
+ *   the tool second. The button
  *   teleports to the document body and sits fixed at viewport coordinates, so
  *   the editor's clipping never cuts it; later transactions keep it while the
  *   document is unchanged and the caret stays inside the word.
@@ -120,6 +122,11 @@ const emit = defineEmits<{
   activateGap: [gapId: string, element: HTMLElement];
   /** Ctrl+Alt+G (Cmd+Option+G on macOS) in an editor whose gaps are interactive. */
   toggleGapTool: [];
+  /**
+   * Escape in the surface, after the floating button takes its own Escape.
+   * The owner closes an open gap popover first and the gap tool second.
+   */
+  escape: [];
   focus: [];
 }>();
 
@@ -186,6 +193,10 @@ const editor = useEditor({
     handleKeyDown: (view, event) => {
       if (event.key === "Escape" && makeGapButton.value !== null) {
         hideMakeGap();
+        return false;
+      }
+      if (event.key === "Escape") {
+        emit("escape");
         return false;
       }
       const { selection } = view.state;
