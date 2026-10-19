@@ -188,7 +188,7 @@ def _without_bare_only_first_paragraph(
 
 
 def body_without_first_paragraph_points(
-    body: tuple[NativeParagraph, ...], points: int | float | None
+    body: tuple[NativeParagraph, ...], points: int | float | None, allow_single_paragraph: bool
 ) -> tuple[NativeParagraph, ...]:
     """The body without points wording ending its first paragraph.
 
@@ -202,12 +202,15 @@ def body_without_first_paragraph_points(
     an empty or colon head (a points-only line such as "Poäng: 2 poäng", or
     one bare label as its only words, "1 point") is dropped whole when its
     number equals the points and the body keeps other text (D12 E); a label
-    beside other words stays. A one-paragraph body is the
-    end-of-body rule's case, and a differing number records nothing. The cut
-    keeps each segment's marks; a paragraph left with no segments is dropped
-    when the body keeps other text, while a body of only that label stays (D6).
+    beside other words stays. With ``allow_single_paragraph`` a one-paragraph
+    body is this rule's case when the cut paragraph keeps text of its own,
+    for a heading the reader read reaching the body alone; otherwise a
+    one-paragraph body is the end-of-body rule's case, and a differing number
+    records nothing. The cut keeps each segment's marks; a paragraph left
+    with no segments is dropped when the body keeps other text, while a body
+    of only that label stays (D6).
     """
-    if points is None or len(body) < 2:
+    if points is None or (len(body) < 2 and not allow_single_paragraph):
         return body
     located = trailing_run_wording(body[:1])
     if located is None:

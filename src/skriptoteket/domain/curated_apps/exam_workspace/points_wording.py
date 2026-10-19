@@ -133,7 +133,11 @@ def with_settled_points_wording(
     ``leftover_points_text`` for the points-note offer, as does a differing
     number at a terminal heading for exactly the shapes its rule would remove;
     a differing first-paragraph or non-terminal heading number records nothing.
-    Only the body and the leftover field
+    When ``read_heading_points`` holds the reader's number, the first-paragraph
+    cut runs with that number before the end-of-body path, allowed a
+    one-paragraph body that keeps text of its own; when it changes the body it
+    returns it with no leftover, else today's order runs unchanged. Only the
+    body and the leftover field
     change; points, review and every source record stay as they are. A missing
     number, a stem of only wording or a body the rule never matches returns the
     item untouched. A body holding several labels is left untouched as well:
@@ -141,6 +145,12 @@ def with_settled_points_wording(
     """
     if _body_label_count(item.body) > 1:
         return item
+    if read_heading_points is not None:
+        read_first = body_without_first_paragraph_points(
+            item.body, read_heading_points, allow_single_paragraph=True
+        )
+        if read_first != item.body:
+            return item.model_copy(update={"body": read_first})
     heading_points = read_heading_points if read_heading_points is not None else item.points
     settled = body_without_trailing_points(item.body, item.points)
     if settled == item.body:
@@ -150,9 +160,13 @@ def with_settled_points_wording(
         )
         if leftover is not None:
             return item.model_copy(update={"leftover_points_text": leftover})
-        settled = body_without_first_paragraph_points(item.body, heading_points)
+        settled = body_without_first_paragraph_points(
+            item.body, heading_points, allow_single_paragraph=False
+        )
     else:
-        settled = body_without_first_paragraph_points(settled, heading_points)
+        settled = body_without_first_paragraph_points(
+            settled, heading_points, allow_single_paragraph=False
+        )
     if settled != item.body:
         return item.model_copy(update={"body": settled})
     settled = body_without_heading_points(item.body, heading_points)
