@@ -62,6 +62,10 @@ class SourceIndex:
         self.text = "".join(parts)
         self.marks = marks
         self.paragraphs = paragraphs
+        # Absolute source offsets of this source's pictures, for the W10 answer-space rule.
+        self.picture_offsets = tuple(
+            place for place, _ in self.provenance.pictures_in(0, len(self.text))
+        )
         self.entry_units = [
             SourceParagraph(*unit)
             for unit in entry_unit_intervals(

@@ -15,15 +15,7 @@
  *     `useExamWorkspaceExports.ts`, and `useExamWorkspaceEnrichment.ts`.
  */
 
-import {
-  apiFetchBlobResponse,
-  apiGet,
-  apiPatch,
-  apiPost,
-  apiPut,
-  resolveProtectedApiUrl,
-} from "./client";
-import type { ApiBlobResponse } from "./client";
+import { apiGet, apiPatch, apiPost, apiPut, resolveProtectedApiUrl } from "./client";
 import type { components } from "./openapi";
 
 type Schemas = components["schemas"];
@@ -60,7 +52,6 @@ export type ExamWorkspaceDeleteResponse = Schemas["ExamWorkspaceDeleteResponse"]
 /** A part creation's document response; `created_parent_id` names the part the editor opens. */
 export type ExamWorkspaceCreatedPartResponse = Schemas["ExamWorkspaceCreatedPartResponse"];
 export type ExamWorkspaceDocumentListResponse = Schemas["ExamWorkspaceDocumentListResponse"];
-export type ExamWorkspaceExportTarget = Schemas["ExamWorkspaceExportTarget"];
 export type ExamWorkspaceEnrichmentState = Schemas["ExamWorkspaceEnrichmentState"];
 export type ExamWorkspaceAnswerKeySuggestionsStatus =
   Schemas["ExamWorkspaceAnswerKeySuggestionsResponse"];
@@ -77,47 +68,11 @@ export type ExamListOrdering = Schemas["UpdateExamListOrderingRequest"]["orderin
 export type ExamWorkspaceHistory = Schemas["ExamWorkspaceHistoryResponse"];
 export type ExamWorkspaceHistoryDocument = Schemas["ExamWorkspaceHistoryDocumentResponse"];
 export type ExamWorkspaceUndoStep = Schemas["ExamWorkspaceUndoStepResponse"];
-export type NewParentChild = Schemas["NewParentChild"];
 export type NativeExamContentTag = Schemas["NativeExamContentTag"];
 export type ExamCourseContent = Schemas["ExamCourseContentResponse"];
 export type ExamWorkspaceContentSuggestions = Schemas["ContentSuggestionsResponse"];
 export type NativeExamImportRecord = Schemas["NativeExamImportRecord-Output"];
 export type ChangeExamWorkspaceItemTypeResponse = Schemas["ChangeExamWorkspaceItemTypeResponse"];
-export type SavedExamExport = Schemas["VaultFile"];
-
-/** Reasons the server-side S4 export gate reports per item (422 `details.blockers`). */
-export type ExamWorkspaceItemExportBlockerReason =
-  | "unbuilt_question"
-  | "machine_proposed_key_unreviewed"
-  | "missing_points"
-  | "missing_answer_key"
-  | "inline_choice_option_heading"
-  | "empty_choice"
-  | "empty_gap_option"
-  | "empty_match_entry"
-  | "ordering_too_few_steps"
-  | "empty_ordering_step"
-  | "too_few_gap_options"
-  | "empty_question_text"
-  | "no_gaps";
-
-/** Every reason the gate reports; the title reason belongs to the exam, not a question. */
-export type ExamWorkspaceExportBlockerReason = ExamWorkspaceItemExportBlockerReason | "title_without_text";
-
-export type ExamWorkspaceExportBlocker = {
-  /** Null for a reason that belongs to the exam. */
-  item_id: string | null;
-  reason: ExamWorkspaceExportBlockerReason;
-};
-
-export type ExamWorkspaceExportChecklistCriterion =
-  Schemas["ExamWorkspaceExportChecklistCriterion"];
-export type ExamWorkspaceExportChecklistEntry =
-  | Schemas["ExamWorkspaceExportChecklistFreeTextCriteria"]
-  | Schemas["ExamWorkspaceExportChecklistAllOrNothing"]
-  | Schemas["ExamWorkspaceExportChecklistRoundedGaps"];
-export type ExamWorkspaceExportChecklistResponse =
-  Schemas["ExamWorkspaceExportChecklistResponse"];
 
 export type SaveExamWorkspaceDocumentParams = {
   expectedRevision: number;
@@ -126,6 +81,10 @@ export type SaveExamWorkspaceDocumentParams = {
   positionStepId: string;
 };
 
+/**
+ * Protected path of one exam workspace document, shared by the transport
+ * modules that build on this document root.
+ */
 export function documentPath(lineageId: string): string {
   return `${ROOT}/documents/${encodeURIComponent(lineageId)}`;
 }
@@ -192,37 +151,6 @@ export async function saveExamWorkspaceDocument(
     position_step_id: params.positionStepId,
   };
   return await apiPut<ExamWorkspaceDocumentResponse>(documentPath(lineageId), body);
-}
-
-/** The server names every export after the exam title; a response without that name is a fault. */
-export type ExamWorkspaceExportDownload = ApiBlobResponse & { filename: string };
-
-export async function downloadExamWorkspaceExport(
-  lineageId: string,
-  target: ExamWorkspaceExportTarget,
-  expectedRevision: number,
-): Promise<ExamWorkspaceExportDownload> {
-  const response = await apiFetchBlobResponse(
-    `${documentPath(lineageId)}/exports/${encodeURIComponent(target)}?expected_revision=${expectedRevision}`,
-  );
-  if (response.filename === null) {
-    throw new Error("The export response carries no file name in Content-Disposition.");
-  }
-  return { ...response, filename: response.filename };
-}
-
-/**
- * What Exam.net loses when it imports the saved revision: Fritext criteria,
- * all-or-nothing subquestions, and rounded gap values, computed from the QTI
- * items the export itself builds.
- */
-export async function getExamWorkspaceExportChecklist(
-  lineageId: string,
-  expectedRevision: number,
-): Promise<ExamWorkspaceExportChecklistResponse> {
-  return await apiGet<ExamWorkspaceExportChecklistResponse>(
-    `${documentPath(lineageId)}/export-checklist?expected_revision=${expectedRevision}`,
-  );
 }
 
 /**
@@ -336,17 +264,6 @@ export async function copyExamWorkspaceDocument(
 ): Promise<ExamWorkspaceDocumentResponse> {
   const body: Schemas["SaveAsExamWorkspaceDocumentRequest"] = { document, name };
   return await apiPost<ExamWorkspaceDocumentResponse>(`${documentPath(lineageId)}/copy`, body);
-}
-
-/** Save one export format of the saved revision to Mina filer, replacing the earlier one. */
-export async function saveExamWorkspaceExport(
-  lineageId: string,
-  target: ExamWorkspaceExportTarget,
-  expectedRevision: number,
-): Promise<SavedExamExport> {
-  return await apiPost<SavedExamExport>(
-    `${documentPath(lineageId)}/exports/${encodeURIComponent(target)}?expected_revision=${expectedRevision}`,
-  );
 }
 
 /**

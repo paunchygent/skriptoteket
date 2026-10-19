@@ -23,6 +23,9 @@ from typing import Literal
 from uuid import uuid4
 from xml.etree import ElementTree
 
+from skriptoteket.domain.curated_apps.exam_conversion.exam_print_house_template import (
+    DEFAULT_WRITING_LINES,
+)
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts import (
     ExamNetQtiImageResource,
     ExamNetQtiInteractionType,
@@ -394,6 +397,7 @@ def body_free_text(
     *,
     text_entry_gaps: tuple[ExamNetQtiTextEntryGap, ...] = (),
     image_resources: tuple[ExamNetQtiImageResource, ...] = (),
+    expected_lines: int = DEFAULT_WRITING_LINES,
 ) -> ExamNetQtiItem:
     return ExamNetQtiItem(
         item_id="q1",
@@ -405,6 +409,7 @@ def body_free_text(
         prompt_paragraphs=paragraphs,
         text_entry_gaps=text_entry_gaps,
         image_resources=image_resources,
+        expected_lines=expected_lines,
     )
 
 

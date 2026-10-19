@@ -44,6 +44,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.exam_document_language impo
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.shared_body import (
+    is_answer_line_chunk,
+)
 from skriptoteket.domain.errors import DomainError
 
 logger = structlog.get_logger(__name__)
@@ -372,7 +375,8 @@ class DocxBuildState:
         exam_metadata: frozenset[str] = frozenset(),
     ) -> DocxBuildResult:
         """Every chunk not built or used as metadata/facit becomes a review item, except a
-        governing chunk, which becomes its section parent's instruction.
+        governing chunk, which becomes its section parent's instruction, and a printed answer
+        line, which is answer space (W10) and never a review reason or item.
 
         ``governed`` maps each grouping instruction that governs two or more questions to the
         anchors those questions own; it decides which items the instruction is the parent of.
@@ -402,6 +406,7 @@ class DocxBuildState:
                 chunk.anchor in printed.metadata
                 or chunk.anchor in heading_anchors
                 or chunk.anchor in exam_wide
+                or is_answer_line_chunk(chunk)
             ):
                 continue
             if chunk.anchor in governed and chunk.text:

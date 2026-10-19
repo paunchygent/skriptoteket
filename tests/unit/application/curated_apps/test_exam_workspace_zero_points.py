@@ -13,6 +13,9 @@ from pydantic import ValidationError
 from skriptoteket.application.curated_apps.exam_workspace_exports import (
     build_native_examnet_qti_package,
 )
+from skriptoteket.domain.curated_apps.exam_conversion.exam_print_house_template import (
+    DEFAULT_WRITING_LINES,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.exam_export_header import (
     exam_export_header_lines,
 )
@@ -81,6 +84,7 @@ def _item(kind="single_choice", points=0):
         )
     else:
         data["answer_key"] = NativeAnswerKey(origin="not_applicable")
+        data["writing_lines"] = DEFAULT_WRITING_LINES
     return NativeExamItem.model_validate(data)
 
 

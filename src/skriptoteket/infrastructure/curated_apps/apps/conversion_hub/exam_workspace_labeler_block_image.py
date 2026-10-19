@@ -4,9 +4,9 @@ Purpose:
     Content that markdown cannot carry faithfully goes to the labeler as an image of that
     block. This module renders one body paragraph or table (pictures, VML previews, text
     boxes, merged cells, nested tables and Word-generated list numbers) to HTML, prints it
-    with WeasyPrint on one tall page, rasterizes that page with pypdfium2 and crops it to
-    the drawn content. A block that cannot be imaged faithfully raises
-    ``LabelerSourceImageUnavailable``.
+    with WeasyPrint on one tall page, rasterizes that page through the
+    process-wide PDFium gate and crops it to the drawn content. A block that cannot
+    be imaged faithfully raises ``LabelerSourceImageUnavailable``.
 
 Relationships:
     ``PythonDocxLabelerMarkdown`` calls ``DocxBlockImageRenderer.render`` for each block
@@ -21,7 +21,6 @@ import io
 import re
 from collections.abc import Iterator
 
-import pypdfium2
 from docx.document import Document as DocxDocument
 from docx.oxml.ns import qn
 from docx.oxml.table import CT_Tbl
@@ -36,6 +35,7 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace
     picture_from_relationship,
 )
 from skriptoteket.infrastructure.documents.pdf_rendering import render_html_to_pdf_bytes
+from skriptoteket.infrastructure.documents.pdfium_access import rasterize_pdf_pages
 
 _MC = "{http://schemas.openxmlformats.org/markup-compatibility/2006}"
 _R = "{http://schemas.openxmlformats.org/officeDocument/2006/relationships}"
@@ -233,13 +233,10 @@ class DocxBlockImageRenderer:
             '<!doctype html><html><head><meta charset="utf-8">'
             f"<style>{_CSS}</style></head><body>{fragment}</body></html>"
         )
-        pdf = pypdfium2.PdfDocument(render_html_to_pdf_bytes(html=page))
-        try:
-            if len(pdf) != 1:
-                raise LabelerSourceImageUnavailable(anchor, "block taller than one page")
-            image = pdf[0].render(scale=2).to_pil().convert("RGB")
-        finally:
-            pdf.close()
+        images = rasterize_pdf_pages(render_html_to_pdf_bytes(html=page), scale=2)
+        if len(images) != 1:
+            raise LabelerSourceImageUnavailable(anchor, "block taller than one page")
+        image = images[0].convert("RGB")
         box = image.convert("L").point(lambda v: 255 if v < 250 else 0).getbbox()
         if box is None:
             raise LabelerSourceImageUnavailable(anchor, "empty render")

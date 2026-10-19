@@ -31,6 +31,7 @@ function findNotes(wrapper: VueWrapper): DOMWrapper<Element>[] {
 function reviewItem(): NativeExamItem {
   return {
     ai_suggestion: null,
+    writing_lines: null,
     criteria: [],
     facit_text: null,
     import_record: {

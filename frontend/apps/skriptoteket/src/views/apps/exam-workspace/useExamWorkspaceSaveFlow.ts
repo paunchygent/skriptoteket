@@ -19,7 +19,7 @@
 import { computed, nextTick, ref } from "vue";
 import type { Ref } from "vue";
 
-import type { ExamWorkspaceExportTarget } from "../../../api/examWorkspace";
+import type { ExamWorkspaceExportTarget } from "../../../api/examWorkspaceExports";
 import type { ExamWorkspaceBlockerEntry } from "./examWorkspaceBlockers";
 import type { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
 import type { useExamWorkspaceEnrichment } from "./useExamWorkspaceEnrichment";

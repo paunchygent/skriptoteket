@@ -16,7 +16,8 @@
 
 import { computed } from "vue";
 
-import type { ExamListOrdering, ExamWorkspaceExportTarget } from "../../../api/examWorkspace";
+import type { ExamListOrdering } from "../../../api/examWorkspace";
+import type { ExamWorkspaceExportTarget } from "../../../api/examWorkspaceExports";
 import type { ExamWorkspaceBlockerEntry } from "./examWorkspaceBlockers";
 import ExamWorkspaceDetailsDrawer from "./ExamWorkspaceDetailsDrawer.vue";
 import ExamWorkspaceDrawer from "./ExamWorkspaceDrawer.vue";

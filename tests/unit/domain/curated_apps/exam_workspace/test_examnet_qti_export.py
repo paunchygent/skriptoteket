@@ -44,6 +44,7 @@ class TestFreeTextMapping:
             item_id="item_001",
             sequence=1,
             kind=NativeExamItemKind.FREE_TEXT,
+            writing_lines=8,
             body=text_body("Resonera om satsdelar."),
             points=4,
             answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
@@ -65,6 +66,7 @@ class TestFreeTextMapping:
             item_id="item_001",
             sequence=1,
             kind=NativeExamItemKind.FREE_TEXT,
+            writing_lines=8,
             body=text_body("Resonera fritt."),
             answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
             review=review_complete(),
@@ -80,6 +82,7 @@ class TestFreeTextMapping:
             item_id="item_001",
             sequence=1,
             kind=NativeExamItemKind.FREE_TEXT,
+            writing_lines=8,
             body=text_body("Resonera om satsdelar."),
             points=3,
             criteria=(

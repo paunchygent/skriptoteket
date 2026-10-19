@@ -369,12 +369,14 @@ def append_interaction(
         _append_order_interaction(parent, item, image_paths, response_id)
         return
     if item.interaction_type == ExamNetQtiInteractionType.FREE_TEXT:
+        if item.expected_lines is None:
+            raise ValueError("free-text QTI items need expected_lines")
         interaction = ElementTree.SubElement(
             parent,
             qti_tag("qti-extended-text-interaction"),
             {
                 "response-identifier": response_id,
-                "expected-lines": "8",
+                "expected-lines": str(item.expected_lines),
             },
         )
         append_interaction_prompt(interaction, item, image_paths)

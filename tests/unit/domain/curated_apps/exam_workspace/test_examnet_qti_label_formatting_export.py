@@ -38,12 +38,12 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeExamItemKind,
 )
 from tests.unit.domain.curated_apps.exam_workspace.examnet_qti_export_test_support import (
-    _document,
-    _paragraph,
-    _review,
-    _serialize,
-    _tag,
-    _text,
+    document,
+    paragraph,
+    review_complete,
+    serialize,
+    tag,
+    text,
 )
 
 pytestmark = pytest.mark.unit
@@ -55,35 +55,33 @@ class TestChoiceAndMatchFormatting:
             item_id="item_001",
             sequence=1,
             kind=NativeExamItemKind.SINGLE_CHOICE,
-            body=(_paragraph(_text("Välj.")),),
+            body=(paragraph(text("Välj.")),),
             points=1,
             choices=(
                 NativeChoice(
                     choice_id="choice_001",
-                    body=(
-                        _paragraph(_text("fet", "bold"), _text(" två", "italic"), heading_level=2),
-                    ),
+                    body=(paragraph(text("fet", "bold"), text(" två", "italic"), heading_level=2),),
                 ),
-                NativeChoice(choice_id="choice_002", body=(_paragraph(_text("vanlig")),)),
+                NativeChoice(choice_id="choice_002", body=(paragraph(text("vanlig")),)),
             ),
             answer_key=NativeAnswerKey(
                 origin=NativeAnswerKeyOrigin.SOURCE_PROVIDED,
                 correct_choice_ids=("choice_001",),
             ),
-            review=_review(),
+            review=review_complete(),
         )
-        (qti_item,) = native_exam_to_examnet_qti_items(_document(item))
+        (qti_item,) = native_exam_to_examnet_qti_items(document(item))
 
         assert [choice.text for choice in qti_item.choices] == ["fet två", "vanlig"]
-        _, root = _serialize(qti_item)
+        _, root = serialize(qti_item)
 
-        choices = root.findall(f".//{_tag('qti-simple-choice')}")
+        choices = root.findall(f".//{tag('qti-simple-choice')}")
         assert len(choices) == 2
         rich, plain = choices
-        rich_heading = rich.find(_tag("h2"))
-        strong = rich.find(f".//{_tag('strong')}")
-        emphasis = rich.find(f".//{_tag('em')}")
-        plain_paragraph = plain.find(_tag("p"))
+        rich_heading = rich.find(tag("h2"))
+        strong = rich.find(f".//{tag('strong')}")
+        emphasis = rich.find(f".//{tag('em')}")
+        plain_paragraph = plain.find(tag("p"))
         assert rich_heading is not None
         assert strong is not None and strong.text == "fet"
         assert emphasis is not None and emphasis.text == " två"
@@ -94,40 +92,40 @@ class TestChoiceAndMatchFormatting:
             item_id="item_001",
             sequence=1,
             kind=NativeExamItemKind.MATCHING,
-            body=(_paragraph(_text("Matcha.")),),
+            body=(paragraph(text("Matcha.")),),
             points=1,
             tick_points=Decimal("1"),
             match_left=(
                 NativeMatchLeft(
                     left_id="left_001",
-                    body=(_paragraph(_text("A", "bold")),),
+                    body=(paragraph(text("A", "bold")),),
                 ),
             ),
             match_right=(
                 NativeMatchRight(
                     right_id="right_001",
-                    body=(_paragraph(_text("ett", "italic")),),
+                    body=(paragraph(text("ett", "italic")),),
                 ),
-                NativeMatchRight(right_id="right_002", body=(_paragraph(_text("två")),)),
+                NativeMatchRight(right_id="right_002", body=(paragraph(text("två")),)),
             ),
             answer_key=NativeAnswerKey(
                 origin=NativeAnswerKeyOrigin.SOURCE_PROVIDED,
                 match_pairs=(NativeMatchPair(left_id="left_001", right_id="right_001"),),
             ),
-            review=_review(),
+            review=review_complete(),
         )
-        (qti_item,) = native_exam_to_examnet_qti_items(_document(item))
+        (qti_item,) = native_exam_to_examnet_qti_items(document(item))
 
         assert [entry.text for entry in qti_item.match_left] == ["A"]
         assert [entry.text for entry in qti_item.match_right] == ["ett", "två"]
-        _, root = _serialize(qti_item)
+        _, root = serialize(qti_item)
 
-        entries = root.findall(f".//{_tag('qti-simple-associable-choice')}")
+        entries = root.findall(f".//{tag('qti-simple-associable-choice')}")
         assert len(entries) == 3
         left, right = entries[0], entries[1]
-        strong = left.find(f".//{_tag('strong')}")
-        emphasis = right.find(f".//{_tag('em')}")
-        plain_paragraph = entries[2].find(_tag("p"))
+        strong = left.find(f".//{tag('strong')}")
+        emphasis = right.find(f".//{tag('em')}")
+        plain_paragraph = entries[2].find(tag("p"))
         assert strong is not None and strong.text == "A"
         assert emphasis is not None and emphasis.text == "ett"
         assert plain_paragraph is not None and plain_paragraph.text == "två"
@@ -154,8 +152,8 @@ class TestPlainSharedValues:
             correct_choice_identifiers=("choice_001",),
         )
 
-        _, root = _serialize(item)
+        _, root = serialize(item)
 
-        choices = root.findall(f".//{_tag('qti-simple-choice')}")
+        choices = root.findall(f".//{tag('qti-simple-choice')}")
         assert [choice.text for choice in choices] == ["Ett", "Två"]
         assert [list(choice) for choice in choices] == [[], []]

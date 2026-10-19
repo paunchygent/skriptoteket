@@ -10,6 +10,7 @@ from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 from io import BytesIO
 from pathlib import Path
+from unittest.mock import Mock
 from xml.etree import ElementTree
 from zipfile import ZipFile
 
@@ -71,6 +72,7 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_qti_wr
 from skriptoteket.infrastructure.vault.local_vault_storage import LocalVaultStorage
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.protocols.exam_workspace import (
+    ExamPrintRendererProtocol,
     ExportExamWorkspaceDocumentHandlerProtocol,
     GetExamWorkspaceDocumentHandlerProtocol,
     SaveExamWorkspaceDocumentHandlerProtocol,
@@ -148,6 +150,7 @@ async def _client(world: ConversionWorld, actor: User) -> AsyncIterator[httpx.As
                 store=world.store,
                 qti_writer=ExamNetQtiPackageWriter(),
                 pdf_renderer=WeasyPrintExamNetPdfRenderer(),
+                print_renderer=Mock(spec=ExamPrintRendererProtocol),
                 docx_writer=exam_workspace_docx_writer.ExamWorkspaceDocxWriter(),
             ),
         },

@@ -227,7 +227,6 @@ def test_pdf_and_docx_print_a_mixed_parent_instruction_once_before_its_first_chi
     document = recorded_document((parent_over("parent_001", _INSTRUCTION, *numbers),))
     children = [document.item_by_id(f"item_{n:03d}") for n in numbers]
     assert len({child.kind for child in children}) == 3
-    opening = children[0].plain_text_lines()[0]
 
     pdf = native_exam_to_pdf_document(document)
     assert pdf.status is DigiExamExamNetPdfStatus.SUCCESS, pdf.warnings
@@ -241,8 +240,9 @@ def test_pdf_and_docx_print_a_mixed_parent_instruction_once_before_its_first_chi
     writer.validate_docx_bytes(content, expected_item_count=len(document.items))
     lines = [p.text for p in Document(io.BytesIO(content)).paragraphs]
     assert lines.count(_INSTRUCTION) == 1
-    opening_at = next(k for k, line in enumerate(lines) if opening in line)
-    assert lines.index(_INSTRUCTION) < opening_at
+    first_child_heading = f"Fråga {numbers[0]}"
+    assert first_child_heading in lines
+    assert lines.index(_INSTRUCTION) < lines.index(first_child_heading)
 
 
 def test_a_parent_of_gap_fills_and_one_free_text_passes_package_validation():
@@ -255,6 +255,7 @@ def test_a_parent_of_gap_fills_and_one_free_text_passes_package_validation():
     free_text = gap_fills[2].model_copy(
         update={
             "kind": NativeExamItemKind.FREE_TEXT,
+            "writing_lines": 8,
             "body": (
                 NativeParagraph(
                     heading_level=None, segments=(NativeTextSegment(text="Explain why.", marks=()),)

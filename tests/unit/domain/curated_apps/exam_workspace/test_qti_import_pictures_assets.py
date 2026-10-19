@@ -8,6 +8,9 @@ and the read package contracts.
 import hashlib
 from uuid import uuid4
 
+from skriptoteket.domain.curated_apps.exam_conversion.exam_print_house_template import (
+    DEFAULT_WRITING_LINES,
+)
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_import_contracts import (
     ExamNetQtiPackageItemSource,
     ExamNetQtiPackageSource,
@@ -143,6 +146,7 @@ def test_repeated_picture_payloads_become_one_asset() -> None:
             ),
         ),
         points=1,
+        writing_lines=DEFAULT_WRITING_LINES,
         answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
         review=make_review(),
     )

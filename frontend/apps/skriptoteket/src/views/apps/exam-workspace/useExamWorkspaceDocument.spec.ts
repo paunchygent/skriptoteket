@@ -21,7 +21,6 @@ import {
 } from "./useExamWorkspaceDocument.specSupport";
 
 const apiMocks = vi.hoisted(() => ({
-  downloadExamWorkspaceExport: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
   findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
@@ -29,7 +28,11 @@ const apiMocks = vi.hoisted(() => ({
   listExamWorkspaceDocuments: vi.fn(),
   saveExamWorkspaceDocument: vi.fn(),
 }));
+const exportApiMocks = vi.hoisted(() => ({
+  downloadExamWorkspaceExport: vi.fn(),
+}));
 
+vi.mock("../../../api/examWorkspaceExports", () => exportApiMocks);
 vi.mock("../../../api/examWorkspace", async () => ({
   ...apiMocks,
   getExamCourseCatalog: (await import("../../../test/examCourseCatalog")).getExamCourseCatalog,
