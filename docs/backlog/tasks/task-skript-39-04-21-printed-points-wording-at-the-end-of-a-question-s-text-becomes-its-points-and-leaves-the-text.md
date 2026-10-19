@@ -243,5 +243,6 @@ Units, each for one fresh junior:
   segment-preserving run trim). Merge of `origin/main` `54e9c5db` (repository-governance
   0.11.148) at `f542828f`: 80 files 2262 passed, 58 skipped; lint and typecheck pass; replay
   bar u19->u20->u21 empty (`evidence/proof/lead-f542828f-focused.log`). Never pushed.
-- Next: the orchestrator's full-suite slot and the Mac step. U4 (the offer line, D10) is parked
+- Full suite at `060a7de0`: 3 failed, 7879 passed, 59 skipped. The governance identity test was environment (fixed by `pdm sync`); two `test_printed_question_points.py` cases regressed at `b9bec1d2` because that file was never in the focused lists (`evidence/proof/full-suite-060a7de0-classification.md`). D12 read-label correction (`7d2690d7`, `6b949dc1`, `71786d15`) in U22/U22b `edd4a47a`: assembly hands the final gate the points reader's number for the item that holds the read heading. Focused list now built by grep (`evidence/proof/u22-files.txt`, 121 files): 2643 passed, 58 skipped; lint and typecheck pass; replay bar u21->u22 empty (`evidence/proof/lead-edd4a47a-focused.log`). Never pushed.
+- Next: rereview 4 by 82849a3b, then the full-suite slot and the Mac step. U4 (the offer line, D10) is parked
   for a later batch; its work order is `evidence/work-orders/u4-offer-line.md`.
