@@ -63,7 +63,7 @@ async function mountImported(layout: ExamWorkspaceLayout) {
   return (await mountWithLayout(layout)).wrapper;
 }
 
-/** The title button lives in the shell's top bar on a phone, outside the wrapper. */
+/** The Uppgifter command; queried on the document so it is found in any layout. */
 async function clickTitle(): Promise<void> {
   document.querySelector<HTMLElement>('[data-test="exam-workspace-details"]')?.click();
   await flushPromises();

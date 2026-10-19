@@ -97,7 +97,7 @@ describe("the preview follows the persisted history cursor after a real edit (R3
     scope.stop();
   });
 
-  it("re-renders after Använd för alla fritextfrågor with its own new cursor", async () => {
+  it("re-renders after applying one writing area to all free-text questions with its own new cursor", async () => {
     previewApi.fetchExamWorkspacePrintPreview.mockResolvedValue(ready(["page-1"]));
     const { editing } = await openEditing(api, exam("Original", 2));
 

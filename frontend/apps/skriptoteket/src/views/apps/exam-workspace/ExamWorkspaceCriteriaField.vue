@@ -24,7 +24,7 @@
 import { nextTick, ref, useId, watch } from "vue";
 
 import type { NativeExamCriterion, NativeExamItem } from "../../../api/examWorkspace";
-import { IconPlus, IconTrash } from "../../../components/icons";
+import { UiGlyph } from "../../../components/ui";
 import {
   EMPTY_CRITERION_TEXT_GUIDANCE,
   hasEmptyCriterionText,
@@ -40,11 +40,12 @@ const emit = defineEmits<{
   update: [criteria: NativeExamCriterion[], structural: boolean];
 }>();
 
+const labelId = useId();
 const textHintId = useId();
 const pointsHintId = useId();
 /** Rows whose typed points are not a whole number of at least 1; never emitted. */
 const invalidPoints = ref<Set<number>>(new Set());
-const fieldset = ref<HTMLFieldSetElement | null>(null);
+const root = ref<HTMLDivElement | null>(null);
 /** The row an add asked for; its text field takes focus when the parent renders it. */
 const pendingFocusRow = ref<number | null>(null);
 
@@ -65,7 +66,7 @@ watch(
     }
     pendingFocusRow.value = null;
     await nextTick();
-    fieldset.value
+    root.value
       ?.querySelector<HTMLInputElement>(`[data-test="exam-workspace-criterion-text-${row}"]`)
       ?.focus();
   },
@@ -145,88 +146,109 @@ function isEmptyText(criterion: NativeExamCriterion): boolean {
 </script>
 
 <template>
-  <fieldset
-    ref="fieldset"
-    class="grid gap-2"
+  <div
+    ref="root"
+    class="xw-answer-row"
+    role="group"
+    :aria-labelledby="labelId"
     data-test="exam-workspace-criteria"
   >
-    <legend class="mb-2 text-xs font-semibold text-navy/80">
-      Bedömningskriterier
-    </legend>
     <div
-      v-for="(criterion, index) in item.criteria"
-      :key="index"
-      class="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2"
+      :id="labelId"
+      class="xw-answer-label"
     >
-      <input
-        class="min-h-10 w-full border bg-panel px-3 text-sm text-navy"
-        :class="isEmptyText(criterion) ? 'border-warning' : 'border-navy/35'"
-        type="text"
-        :value="criterion.text"
-        :disabled="disabled"
-        :aria-label="`Kriterium ${index + 1}`"
-        :aria-invalid="isEmptyText(criterion) ? 'true' : undefined"
-        :aria-describedby="isEmptyText(criterion) ? textHintId : undefined"
-        :data-test="`exam-workspace-criterion-text-${index}`"
-        @input="handleText(index, $event)"
-      >
-      <input
-        class="min-h-10 w-20 border bg-panel px-3 text-sm text-navy"
-        :class="invalidPoints.has(index) ? 'border-warning' : 'border-navy/35'"
-        type="number"
-        min="1"
-        step="1"
-        inputmode="numeric"
-        :value="criterion.points"
-        :disabled="disabled"
-        :aria-label="`Poäng för kriterium ${index + 1}`"
-        :aria-invalid="invalidPoints.has(index) ? 'true' : undefined"
-        :aria-describedby="invalidPoints.has(index) ? pointsHintId : undefined"
-        :data-test="`exam-workspace-criterion-points-${index}`"
-        @input="handlePoints(index, $event)"
-        @blur="handlePointsBlur(index, $event)"
-      >
-      <button
-        type="button"
-        class="inline-flex h-10 w-10 items-center justify-center border border-transparent text-burgundy hover:bg-burgundy/5 disabled:opacity-50"
-        :disabled="disabled"
-        :title="`Ta bort kriterium ${index + 1}`"
-        :aria-label="`Ta bort kriterium ${index + 1}`"
-        :data-test="`exam-workspace-criterion-remove-${index}`"
-        @click="handleRemove(index)"
-      >
-        <IconTrash :size="14" />
-      </button>
+      Bedömningskriterier
     </div>
-    <div>
-      <button
-        type="button"
-        class="inline-flex min-h-10 items-center gap-2 border border-navy/35 bg-panel px-3 text-sm font-semibold text-navy hover:bg-canvas disabled:opacity-50"
-        :disabled="disabled"
-        title="Lägg till kriterium"
-        aria-label="Lägg till kriterium"
-        data-test="exam-workspace-criterion-add"
-        @click="handleAdd"
+    <div class="grid min-w-0 gap-1.5">
+      <div class="xw-answer-criteria">
+        <div
+          v-for="(criterion, index) in item.criteria"
+          :key="index"
+          class="xw-answer-criterion"
+        >
+          <input
+            class="xw-input"
+            :class="{ 'xw-input--warning': isEmptyText(criterion) }"
+            type="text"
+            :value="criterion.text"
+            :disabled="disabled"
+            :aria-label="`Kriterium ${index + 1}`"
+            :aria-invalid="isEmptyText(criterion) ? 'true' : undefined"
+            :aria-describedby="isEmptyText(criterion) ? textHintId : undefined"
+            :data-test="`exam-workspace-criterion-text-${index}`"
+            @input="handleText(index, $event)"
+          >
+          <span class="xw-answer-points">
+            <input
+              class="xw-input"
+              :class="{ 'xw-input--warning': invalidPoints.has(index) }"
+              type="number"
+              min="1"
+              step="1"
+              inputmode="numeric"
+              :value="criterion.points"
+              :disabled="disabled"
+              :aria-label="`Poäng för kriterium ${index + 1}`"
+              :aria-invalid="invalidPoints.has(index) ? 'true' : undefined"
+              :aria-describedby="invalidPoints.has(index) ? pointsHintId : undefined"
+              :data-test="`exam-workspace-criterion-points-${index}`"
+              @input="handlePoints(index, $event)"
+              @blur="handlePointsBlur(index, $event)"
+            >
+            <span
+              class="xw-answer-points__unit"
+              aria-hidden="true"
+            >p</span>
+          </span>
+          <button
+            type="button"
+            class="xw-tool xw-tool--danger"
+            :disabled="disabled"
+            :title="`Ta bort kriterium ${index + 1}`"
+            :aria-label="`Ta bort kriterium ${index + 1}`"
+            :data-test="`exam-workspace-criterion-remove-${index}`"
+            @click="handleRemove(index)"
+          >
+            <UiGlyph
+              meaning="delete"
+              :size="16"
+            />
+          </button>
+        </div>
+      </div>
+      <div>
+        <button
+          type="button"
+          class="xw-tool xw-tool--word"
+          :disabled="disabled"
+          title="Lägg till kriterium"
+          aria-label="Lägg till kriterium"
+          data-test="exam-workspace-criterion-add"
+          @click="handleAdd"
+        >
+          <UiGlyph
+            meaning="add"
+            :size="16"
+          />
+          Kriterium
+        </button>
+      </div>
+      <p
+        v-if="hasEmptyCriterionText(item)"
+        :id="textHintId"
+        class="border-l-4 border-warning pl-2 text-sm leading-snug text-navy"
+        data-test="exam-workspace-criterion-text-hint"
       >
-        <IconPlus :size="14" />
-        Kriterium
-      </button>
+        {{ EMPTY_CRITERION_TEXT_GUIDANCE }}
+      </p>
+      <p
+        v-if="invalidPoints.size > 0"
+        :id="pointsHintId"
+        class="border-l-4 border-warning pl-2 text-sm leading-snug text-navy"
+        data-test="exam-workspace-criterion-points-hint"
+      >
+        {{ INVALID_CRITERION_POINTS_GUIDANCE }}
+      </p>
     </div>
-    <p
-      v-if="hasEmptyCriterionText(item)"
-      :id="textHintId"
-      class="border-l-4 border-warning pl-2 text-sm leading-snug text-navy"
-      data-test="exam-workspace-criterion-text-hint"
-    >
-      {{ EMPTY_CRITERION_TEXT_GUIDANCE }}
-    </p>
-    <p
-      v-if="invalidPoints.size > 0"
-      :id="pointsHintId"
-      class="border-l-4 border-warning pl-2 text-sm leading-snug text-navy"
-      data-test="exam-workspace-criterion-points-hint"
-    >
-      {{ INVALID_CRITERION_POINTS_GUIDANCE }}
-    </p>
-  </fieldset>
+  </div>
 </template>
