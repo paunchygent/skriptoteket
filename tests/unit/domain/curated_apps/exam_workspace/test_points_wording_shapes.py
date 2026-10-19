@@ -101,7 +101,8 @@ def test_volt_question_is_unchanged_and_records_nothing(points: int) -> None:
     body = (paragraph(text_segment(VOLT)),)
     assert trailing_points(VOLT) is None
     assert leftover_points_wording(body, points) is None
-    assert with_settled_points_wording(item(body, points)) == item(body, points)
+    settled = with_settled_points_wording(item(body, points), read_heading_points=None)
+    assert settled == item(body, points)
 
 
 def test_label_on_an_answer_line_is_shape_b_and_leaves_only_the_label() -> None:

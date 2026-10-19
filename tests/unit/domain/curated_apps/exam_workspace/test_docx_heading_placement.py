@@ -163,10 +163,10 @@ def test_heading_of_only_a_question_number_and_points_keeps_the_label_until_the_
 
     assert placed.items[0].plain_text_lines() == ("(2 p)", "Frågetext")
     assert with_settled_points_wording(
-        placed.items[0].model_copy(update={"points": 2})
+        placed.items[0].model_copy(update={"points": 2}), read_heading_points=None
     ).plain_text_lines() == ("Frågetext",)
     assert with_settled_points_wording(
-        placed.items[0].model_copy(update={"points": 3})
+        placed.items[0].model_copy(update={"points": 3}), read_heading_points=None
     ).plain_text_lines() == ("(2 p)", "Frågetext")
 
 

@@ -118,7 +118,8 @@ def build_native_exam_from_digiexam(
             if follow.item_id in {source.item_id, "exam"}
         )
         item = with_settled_points_wording(
-            _item(source, sequence=len(items) + 1, image_ids=image_ids, reasons=reasons)
+            _item(source, sequence=len(items) + 1, image_ids=image_ids, reasons=reasons),
+            read_heading_points=None,
         )
         items.append(item)
     if not items:

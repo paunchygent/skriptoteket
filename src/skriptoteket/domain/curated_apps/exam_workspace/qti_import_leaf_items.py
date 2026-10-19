@@ -258,7 +258,8 @@ def leaf_item(
                     ),
                 )
             }
-        )
+        ),
+        read_heading_points=None,
     )
 
 

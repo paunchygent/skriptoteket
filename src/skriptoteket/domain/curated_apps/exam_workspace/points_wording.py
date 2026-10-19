@@ -6,7 +6,10 @@ heading reports a differing number for exactly the shapes its rule would
 remove at an equal number, while a sentence or range ending records nothing.
 ``with_settled_points_wording`` settles each outcome on the final item. Only
 the label's position and its number decide; the stem itself is never read or
-rewritten.
+rewritten. A first paragraph or heading paragraph compares against the
+reader's number for that heading (``read_heading_points``) when assembly has
+one, else the settled points; any other paragraph always compares against the
+settled points.
 """
 
 from __future__ import annotations
@@ -114,17 +117,23 @@ def _body_label_count(body: tuple[NativeParagraph, ...]) -> int:
     return len(list(POINT_LABEL.finditer(joined)))
 
 
-def with_settled_points_wording(item: NativeExamItem) -> NativeExamItem:
+def with_settled_points_wording(
+    item: NativeExamItem, *, read_heading_points: int | float | None
+) -> NativeExamItem:
     """The item with its trailing points wording settled against its points.
 
     An equal number leaves the wording from the body's end (never from a
     heading last paragraph), then from its first paragraph, then from any
-    heading paragraph; a heading never loses its own words. A differing
-    number at the non-heading end keeps the wording and records
-    it in ``leftover_points_text`` for the points-note offer, as does a
-    differing number at a terminal heading for exactly the shapes its rule
-    would remove; a differing first-paragraph or non-terminal heading number
-    records nothing. Only the body and the leftover field
+    heading paragraph; a heading never loses its own words. A first paragraph
+    or heading paragraph compares against ``read_heading_points`` when
+    assembly has one (the points reader's number for that heading, D12
+    read-label correction), else the settled points; a non-heading last
+    paragraph always compares against the settled points. A differing number
+    at the non-heading end keeps the wording and records it in
+    ``leftover_points_text`` for the points-note offer, as does a differing
+    number at a terminal heading for exactly the shapes its rule would remove;
+    a differing first-paragraph or non-terminal heading number records nothing.
+    Only the body and the leftover field
     change; points, review and every source record stay as they are. A missing
     number, a stem of only wording or a body the rule never matches returns the
     item untouched. A body holding several labels is left untouched as well:
@@ -132,17 +141,21 @@ def with_settled_points_wording(item: NativeExamItem) -> NativeExamItem:
     """
     if _body_label_count(item.body) > 1:
         return item
+    heading_points = read_heading_points if read_heading_points is not None else item.points
     settled = body_without_trailing_points(item.body, item.points)
     if settled == item.body:
-        leftover = leftover_points_wording(item.body, item.points)
+        last_heading = bool(item.body) and item.body[-1].heading_level is not None
+        leftover = leftover_points_wording(
+            item.body, heading_points if last_heading else item.points
+        )
         if leftover is not None:
             return item.model_copy(update={"leftover_points_text": leftover})
-        settled = body_without_first_paragraph_points(item.body, item.points)
+        settled = body_without_first_paragraph_points(item.body, heading_points)
     else:
-        settled = body_without_first_paragraph_points(settled, item.points)
+        settled = body_without_first_paragraph_points(settled, heading_points)
     if settled != item.body:
         return item.model_copy(update={"body": settled})
-    settled = body_without_heading_points(item.body, item.points)
+    settled = body_without_heading_points(item.body, heading_points)
     if settled != item.body:
         return item.model_copy(update={"body": settled})
     return item

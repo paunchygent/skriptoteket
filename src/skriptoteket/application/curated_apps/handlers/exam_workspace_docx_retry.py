@@ -251,7 +251,7 @@ class RetryExamWorkspaceItemHandler:
         }
         return ExamWorkspaceItemRetryResponse(
             lineage_id=lineage_id,
-            item=with_settled_points_wording(gated_item(item, by_anchor)),
+            item=with_settled_points_wording(gated_item(item, by_anchor), read_heading_points=None),
         )
 
     async def _reconvert(

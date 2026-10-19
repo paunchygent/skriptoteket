@@ -194,7 +194,10 @@ def assemble_build_result(
     # The one W10 gate on the final document: no printed answer line reaches any item
     # body, parent instruction or document instruction, whichever path rebuilt it.
     # The settled points wording leaves beside it: points are settled by now (D2).
-    items = tuple(with_settled_points_wording(gated_item(item, by_anchor)) for item in scored.items)
+    items = tuple(
+        with_settled_points_wording(gated_item(item, by_anchor), read_heading_points=read)
+        for item, read in zip(scored.items, scored.read_heading_points, strict=True)
+    )
     parents = tuple(
         parent.model_copy(update={"instruction": without_printed_answer_lines(parent.instruction)})
         for parent in scored.parents

@@ -348,3 +348,25 @@ def test_a_part_heading_review_item_never_takes_its_questions_total():
     scored = _score(chunks, questions, (heading, noun))
 
     assert _points(scored) == [None, 2]
+
+
+def test_a_heading_part_opener_total_reaches_only_the_item_holding_it():
+    # D12 read-label correction: the reader's number goes only to the one item
+    # holding the read heading chunk; every other member gets None.
+    chunks, questions = _exam("# Tempus (3 p)", "Q Förklara tempus 1.", "Q Förklara tempus 2.")
+    held = ((chunks[0].anchor, *questions[0]), questions[1])
+
+    scored = _score(chunks, held, _items(chunks, held, (None, None)))
+
+    assert _points(scored) == [2, 1]
+    assert list(scored.read_heading_points) == [3, None]
+
+
+def test_a_plain_paragraph_part_opener_gives_no_read_number():
+    # A part opener that is no heading carries no heading label.
+    chunks, questions = _exam("Del 1: 6 poäng", "Q Fråga 1.", "Q Fråga 2.")
+
+    scored = _score(chunks, questions, _items(chunks, questions, (None, None)))
+
+    assert _points(scored) == [3, 3]
+    assert list(scored.read_heading_points) == [None, None]

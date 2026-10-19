@@ -45,7 +45,7 @@ def test_mid_body_heading_label_with_equal_points_leaves_only_the_label() -> Non
     # D12 extension (decision A): an equal parenthesised label ending any
     # heading paragraph leaves, with the blank space before it.
     body = _uppgift_4_1_body()
-    result = with_settled_points_wording(item(body, 15))
+    result = with_settled_points_wording(item(body, 15), read_heading_points=None)
     assert result.body == (
         paragraph(text_segment("Läs texterna.")),
         paragraph(text_segment("Text A")),
@@ -61,7 +61,7 @@ def test_mid_body_heading_label_with_equal_points_leaves_only_the_label() -> Non
 
 def test_mid_body_heading_label_with_other_points_stays() -> None:
     body = _uppgift_4_1_body()
-    result = with_settled_points_wording(item(body, 12))
+    result = with_settled_points_wording(item(body, 12), read_heading_points=None)
     assert result.body == body
     assert result.leftover_points_text is None
 
@@ -76,7 +76,7 @@ def test_mid_body_non_heading_paragraph_is_never_touched() -> None:
         paragraph(text_segment("Jämför texterna (15 p)")),
         paragraph(text_segment("Beskriv minst fyra skillnader.")),
     )
-    result = with_settled_points_wording(item(body, 15))
+    result = with_settled_points_wording(item(body, 15), read_heading_points=None)
     assert result.body == body
     assert result.leftover_points_text is None
 
@@ -85,14 +85,14 @@ def test_heading_bare_points_only_line_with_equal_points_is_dropped() -> None:
     # D12 extension (decision A): any points label ending a heading paragraph
     # leaves when its number equals the points.
     body = (heading("1 point"), paragraph(text_segment("Svara utförligt.")))
-    result = with_settled_points_wording(item(body, 1))
+    result = with_settled_points_wording(item(body, 1), read_heading_points=None)
     assert result.body == (paragraph(text_segment("Svara utförligt.")),)
     assert result.leftover_points_text is None
 
 
 def test_heading_bare_points_only_line_with_other_points_stays() -> None:
     body = (heading("1 point"), paragraph(text_segment("Svara utförligt.")))
-    result = with_settled_points_wording(item(body, 2))
+    result = with_settled_points_wording(item(body, 2), read_heading_points=None)
     assert result.body == body
     assert result.leftover_points_text is None
 
@@ -101,7 +101,7 @@ def test_heading_bare_label_ending_line_leaves_the_head_trimmed() -> None:
     # The bare label leaves with the blank space before it, plus one trailing
     # dash with its blank space.
     body = (heading("Uppgift 3 – 4 poäng"), paragraph(text_segment("Svara utförligt.")))
-    result = with_settled_points_wording(item(body, 4))
+    result = with_settled_points_wording(item(body, 4), read_heading_points=None)
     assert result.body == (heading("Uppgift 3"), paragraph(text_segment("Svara utförligt.")))
     assert result.body[0].heading_level == 3
     assert result.leftover_points_text is None
@@ -109,14 +109,14 @@ def test_heading_bare_label_ending_line_leaves_the_head_trimmed() -> None:
 
 def test_heading_bare_label_ending_line_with_other_points_stays() -> None:
     body = (heading("Uppgift 3 – 4 poäng"), paragraph(text_segment("Svara utförligt.")))
-    result = with_settled_points_wording(item(body, 5))
+    result = with_settled_points_wording(item(body, 5), read_heading_points=None)
     assert result.body == body
     assert result.leftover_points_text is None
 
 
 def test_heading_headed_points_only_line_with_equal_points_is_dropped() -> None:
     body = (heading("Poäng: 2 p"), paragraph(text_segment("Svara utförligt.")))
-    result = with_settled_points_wording(item(body, 2))
+    result = with_settled_points_wording(item(body, 2), read_heading_points=None)
     assert result.body == (paragraph(text_segment("Svara utförligt.")),)
     assert result.leftover_points_text is None
 
@@ -125,7 +125,7 @@ def test_heading_topic_word_head_keeps_its_word_and_level() -> None:
     # D12 fourth extension: a one-word head without a colon keeps its word;
     # only the label leaves, and the paragraph keeps its heading level.
     body = (heading("Tempus 3 poäng"), paragraph(text_segment("Svara utförligt.")))
-    result = with_settled_points_wording(item(body, 3))
+    result = with_settled_points_wording(item(body, 3), read_heading_points=None)
     assert result.body == (heading("Tempus"), paragraph(text_segment("Svara utförligt.")))
     assert result.body[0].heading_level == 3
     assert result.leftover_points_text is None
@@ -134,7 +134,7 @@ def test_heading_topic_word_head_keeps_its_word_and_level() -> None:
 def test_heading_topic_word_head_with_other_points_stays() -> None:
     # D12 fourth extension stays gated on D3: a differing number stays.
     body = (heading("Tempus 3 poäng"), paragraph(text_segment("Svara utförligt.")))
-    result = with_settled_points_wording(item(body, 4))
+    result = with_settled_points_wording(item(body, 4), read_heading_points=None)
     assert result.body == body
     assert result.leftover_points_text is None
 
@@ -142,7 +142,7 @@ def test_heading_topic_word_head_with_other_points_stays() -> None:
 def test_heading_colon_head_points_only_line_leaves_whole() -> None:
     # D12 fourth extension: an empty or colon head leaves whole.
     body = (heading("Poäng: 2 poäng"), paragraph(text_segment("Svara utförligt.")))
-    result = with_settled_points_wording(item(body, 2))
+    result = with_settled_points_wording(item(body, 2), read_heading_points=None)
     assert result.body == (paragraph(text_segment("Svara utförligt.")),)
     assert result.leftover_points_text is None
 
@@ -150,7 +150,7 @@ def test_heading_colon_head_points_only_line_leaves_whole() -> None:
 def test_heading_totalt_points_only_line_leaves_whole() -> None:
     # D12 fourth extension: an empty or colon head leaves whole.
     body = (heading("Totalt: 36 p"), paragraph(text_segment("Svara utförligt.")))
-    result = with_settled_points_wording(item(body, 36))
+    result = with_settled_points_wording(item(body, 36), read_heading_points=None)
     assert result.body == (paragraph(text_segment("Svara utförligt.")),)
     assert result.leftover_points_text is None
 
@@ -161,7 +161,7 @@ def test_mid_body_non_heading_bare_label_is_never_touched() -> None:
         paragraph(text_segment("Uppgift 3 – 4 poäng")),
         paragraph(text_segment("Beskriv skillnaderna.")),
     )
-    result = with_settled_points_wording(item(body, 4))
+    result = with_settled_points_wording(item(body, 4), read_heading_points=None)
     assert result.body == body
     assert result.leftover_points_text is None
 
@@ -178,7 +178,7 @@ def test_heading_sentence_or_range_ending_stays_at_equal_points(heading: str, po
     # D12 Correction (rereview R1): a bare label ending a sentence or a range
     # stays, whatever its number, and records nothing.
     body = (heading2(heading), paragraph(text_segment("Svara utförligt.")))
-    result = with_settled_points_wording(item(body, points))
+    result = with_settled_points_wording(item(body, points), read_heading_points=None)
     assert result.body == body
     assert result.leftover_points_text is None
 
@@ -189,7 +189,7 @@ def test_range_heading_between_paragraphs_stays_at_equal_points() -> None:
         heading2("Använd mellan 3 poäng och 5 poäng."),
         paragraph(text_segment("Svara utförligt.")),
     )
-    result = with_settled_points_wording(item(body, 5))
+    result = with_settled_points_wording(item(body, 5), read_heading_points=None)
     assert result.body == body
     assert result.leftover_points_text is None
 
@@ -234,7 +234,7 @@ def test_topic_word_head_keeps_its_word_by_position(
 ) -> None:
     # D12 Correction (rereview R2): a terminal heading keeps its topic word;
     # D13 whole-line removal applies only to a non-heading last line.
-    result = with_settled_points_wording(item(body, points))
+    result = with_settled_points_wording(item(body, points), read_heading_points=None)
     assert result.body == expected
     assert result.body[0].heading_level == body[0].heading_level
     assert result.leftover_points_text is None
@@ -258,7 +258,7 @@ def test_colon_head_parenthesised_line_leaves_whole(
 ) -> None:
     # D12 Correction (rereview R3): the colon head decides the cut for bare
     # and parenthesised labels alike, in the first paragraph too.
-    result = with_settled_points_wording(item(body, 2))
+    result = with_settled_points_wording(item(body, 2), read_heading_points=None)
     assert result.body == (paragraph(text_segment("Svara utförligt.")),)
     assert result.leftover_points_text is None
 
@@ -274,7 +274,7 @@ def test_colon_head_parenthesised_line_leaves_whole(
 )
 def test_heading_kept_shapes_still_leave(heading: str, points: int, expected: str) -> None:
     body = (heading2(heading), paragraph(text_segment("Svara utförligt.")))
-    result = with_settled_points_wording(item(body, points))
+    result = with_settled_points_wording(item(body, points), read_heading_points=None)
     assert result.body == (heading2(expected), paragraph(text_segment("Svara utförligt.")))
     assert result.body[0].heading_level == 2
     assert result.leftover_points_text is None
@@ -298,7 +298,7 @@ def test_terminal_heading_differing_number_records_removable_shape(
     # exactly the shapes the heading rule would remove at an equal number;
     # a sentence or range ending is never recorded.
     body = (paragraph(text_segment("Läs texten.")), heading2(terminal))
-    result = with_settled_points_wording(item(body, points))
+    result = with_settled_points_wording(item(body, points), read_heading_points=None)
     assert result.body == body
     assert result.leftover_points_text == expected_leftover
 
@@ -313,7 +313,8 @@ def test_terminal_heading_gap_prefix_newline_label_leaves_at_equal_points() -> N
         text_segment("Skriv rätt ord "), NativeGapSegment(gap_id="gap_001"), text_segment("\n(2 p)")
     )
     result = with_settled_points_wording(
-        make_gap_fill_item().model_copy(update={"body": body, "points": 2})
+        make_gap_fill_item().model_copy(update={"body": body, "points": 2}),
+        read_heading_points=None,
     )
     assert result.body == _gap_heading_body(
         text_segment("Skriv rätt ord "), NativeGapSegment(gap_id="gap_001")
@@ -328,7 +329,8 @@ def test_terminal_heading_gap_prefix_newline_label_records_at_other_points() -> 
         text_segment("Skriv rätt ord "), NativeGapSegment(gap_id="gap_001"), text_segment("\n(2 p)")
     )
     result = with_settled_points_wording(
-        make_gap_fill_item().model_copy(update={"body": body, "points": 3})
+        make_gap_fill_item().model_copy(update={"body": body, "points": 3}),
+        read_heading_points=None,
     )
     assert result.body == body
     assert result.leftover_points_text == "(2 p)"
@@ -339,7 +341,7 @@ def test_terminal_heading_picture_prefix_newline_label_leaves_at_equal_points() 
     body = _gap_heading_body(
         NativeAssetSegment(asset_id="asset_0123456789abcdef"), text_segment("\n(2 p)")
     )
-    result = with_settled_points_wording(item(body, 2))
+    result = with_settled_points_wording(item(body, 2), read_heading_points=None)
     assert result.body == _gap_heading_body(NativeAssetSegment(asset_id="asset_0123456789abcdef"))
     assert result.body[0].heading_level == 2
     assert result.leftover_points_text is None
@@ -350,7 +352,7 @@ def test_terminal_heading_picture_prefix_newline_label_records_at_other_points()
     body = _gap_heading_body(
         NativeAssetSegment(asset_id="asset_0123456789abcdef"), text_segment("\n(2 p)")
     )
-    result = with_settled_points_wording(item(body, 3))
+    result = with_settled_points_wording(item(body, 3), read_heading_points=None)
     assert result.body == body
     assert result.leftover_points_text == "(2 p)"
 
@@ -363,7 +365,8 @@ def test_terminal_heading_gap_prefix_bare_label_leaves_at_equal_points() -> None
         text_segment(" – 2 poäng"),
     )
     result = with_settled_points_wording(
-        make_gap_fill_item().model_copy(update={"body": body, "points": 2})
+        make_gap_fill_item().model_copy(update={"body": body, "points": 2}),
+        read_heading_points=None,
     )
     assert result.body == _gap_heading_body(
         text_segment("Skriv rätt ord "), NativeGapSegment(gap_id="gap_001")
@@ -380,7 +383,8 @@ def test_terminal_heading_gap_prefix_bare_label_records_at_other_points() -> Non
         text_segment(" – 2 poäng"),
     )
     result = with_settled_points_wording(
-        make_gap_fill_item().model_copy(update={"body": body, "points": 3})
+        make_gap_fill_item().model_copy(update={"body": body, "points": 3}),
+        read_heading_points=None,
     )
     assert result.body == body
     assert result.leftover_points_text == "2 poäng"
@@ -394,7 +398,69 @@ def test_terminal_heading_gap_prefix_inline_label_stays_at_both_numbers(points: 
         text_segment("Skriv rätt ord "), NativeGapSegment(gap_id="gap_001"), text_segment(" (2 p)")
     )
     result = with_settled_points_wording(
-        make_gap_fill_item().model_copy(update={"body": body, "points": points})
+        make_gap_fill_item().model_copy(update={"body": body, "points": points}),
+        read_heading_points=None,
     )
     assert result.body == body
     assert result.leftover_points_text is None
+
+
+def test_read_heading_points_equal_to_label_leaves_heading_label() -> None:
+    # D12 read-label correction: the heading label the reader read leaves
+    # through the final gate whatever the settled number.
+    body = (heading("Tempus (3 p)"), paragraph(text_segment("Förklara tempus 1.")))
+    result = with_settled_points_wording(item(body, 4), read_heading_points=3)
+    assert result.body == (heading("Tempus"), paragraph(text_segment("Förklara tempus 1.")))
+    assert result.body[0].heading_level == 3
+    assert result.leftover_points_text is None
+
+
+def test_read_heading_points_none_keeps_differing_heading_label() -> None:
+    # Without a reader number the gate keeps today's rule: a heading label
+    # differing from the settled points stays.
+    body = (heading("Tempus (3 p)"), paragraph(text_segment("Förklara tempus 1.")))
+    result = with_settled_points_wording(item(body, 4), read_heading_points=None)
+    assert result.body == body
+    assert result.leftover_points_text is None
+
+
+def test_read_heading_points_differing_from_label_keeps_heading_text() -> None:
+    # The label matches the settled points but not the reader's number, so it
+    # stays; a differing first-paragraph heading label records nothing.
+    body = (heading("Tempus (3 p)"), paragraph(text_segment("Förklara tempus 1.")))
+    result = with_settled_points_wording(item(body, 3), read_heading_points=5)
+    assert result.body == body
+    assert result.leftover_points_text is None
+
+
+def test_read_heading_points_governs_a_non_heading_first_paragraph() -> None:
+    # D12 read-label correction: a heading the reader read reaches the body as
+    # a plain first paragraph, so the read number governs it whatever its level.
+    body = (paragraph(text_segment("Tempus (3 p)")), paragraph(text_segment("Förklara tempus 1.")))
+    result = with_settled_points_wording(item(body, 4), read_heading_points=3)
+    assert result.body == (
+        paragraph(text_segment("Tempus")),
+        paragraph(text_segment("Förklara tempus 1.")),
+    )
+    assert result.leftover_points_text is None
+
+
+def test_read_heading_points_absent_keeps_a_differing_first_paragraph() -> None:
+    # Without a reader number the gate keeps today's rule: a first-paragraph
+    # label differing from the settled points stays.
+    body = (paragraph(text_segment("Tempus (3 p)")), paragraph(text_segment("Förklara tempus 1.")))
+    result = with_settled_points_wording(item(body, 4), read_heading_points=None)
+    assert result.body == body
+    assert result.leftover_points_text is None
+
+
+def test_non_heading_last_paragraph_compares_with_the_settled_points() -> None:
+    # The end-of-body rule never sees the read number: a differing label stays
+    # and D7 records it.
+    body = (
+        paragraph(text_segment("Förklara tempus 1.")),
+        paragraph(text_segment("Svara utförligt. (3 p)")),
+    )
+    result = with_settled_points_wording(item(body, 4), read_heading_points=3)
+    assert result.body == body
+    assert result.leftover_points_text == "(3 p)"
