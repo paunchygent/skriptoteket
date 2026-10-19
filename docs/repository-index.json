@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "9a5e48ffd7deccb3b15321b481d6353fa0246fc0e27ad6cc752b3df15c549fbd",
+  "source_set_digest": "1fc07015b828938f8c3e57330d0fb14bf97e6560f6c86eff84b11f66c6e1eea4",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6601,8 +6601,8 @@
     {
       "id": "TASK-SKRIPT-40-04-09",
       "type": "task",
-      "title": "Teachers switch on a gap tool and click words to make gaps, the gap tool has a keyboard shortcut, and a text gap's width can be set for Exam.net",
-      "path": "docs/backlog/tasks/task-skript-40-04-09-teachers-switch-on-a-gap-tool-and-click-words-to-make-gaps-the-gap-tool-has-a-keyboard-shortcut-and-a-text-gap-s-width-can-be-set-for-exam-net.md",
+      "title": "Teachers switch on a gap tool and click words to make gaps, and the toolbar names every keyboard shortcut",
+      "path": "docs/backlog/tasks/task-skript-40-04-09-teachers-switch-on-a-gap-tool-and-click-words-to-make-gaps-and-the-toolbar-names-every-keyboard-shortcut.md",
       "status": "proposed",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
