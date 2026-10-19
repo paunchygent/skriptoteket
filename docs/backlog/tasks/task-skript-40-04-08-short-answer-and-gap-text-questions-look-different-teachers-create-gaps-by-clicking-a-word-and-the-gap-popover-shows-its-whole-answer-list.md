@@ -8,7 +8,7 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-19'
-status: proposed
+status: in_progress
 closeout_review:
   record: inline
   status: not_started
@@ -41,7 +41,7 @@ The user walked the redesigned exam workspace editor on 2026-10-19 and found thr
 
 ### Resume here
 
-Planning by the 40-04-08 lead on 2026-10-19 (retained root `01a152b4-0314-7471-91ad-340323c3f2c1`, plan `evidence/planning/TASK-SKRIPT-40-04-08/plan.md`, ledger L1-L13, Explorer discovery under `discovery/explorer/`). Status: plan written; ledger row L2 (what makes a Kort svar) is open as a user question; units J1-J6 do not depend on it, J7 and J8 do. Next action: the orchestrator routes L2 to the user, then accepts the plan and applies `proposed -> ready`.
+Implementation by a fresh 40-04-08 lead from 2026-10-19 (retained root `01a152b4-0314-7471-91ad-340323c3f2c1`, plan `evidence/planning/TASK-SKRIPT-40-04-08/plan.md`, ledger L1-L13 closed; the user decided L2 option A on 2026-10-19). Status: `in_progress`; wave 1 (J1-J4) starting. Next action: brief fresh juniors for J1-J4, integrate, then wave 2 (J5-J7) and wave 3 (J8).
 
 ### Root causes (ledger L1)
 
@@ -51,7 +51,7 @@ Planning by the 40-04-08 lead on 2026-10-19 (retained root `01a152b4-0314-7471-9
 
 ### Design
 
-- Kort svar (L2 recommendation A, L3): a `gap_fill` whose only gap is the sole segment of its last paragraph shows two fields, Fråga (the body without that paragraph) and Svar (the accepted-answer rows plus automatic answers). Question-text edits always re-attach the gap paragraph before `withBody`. A new Lucktext starts with empty text and no gap.
+- Kort svar (L2 option A, decided by the user 2026-10-19; L3): a `gap_fill` whose only gap is the sole segment of its last paragraph shows two fields, Fråga (the body without that paragraph) and Svar (the accepted-answer rows plus automatic answers). Question-text edits always re-attach the gap paragraph before `withBody`. A new Lucktext starts with empty text and no gap.
 - Gap creation (L4-L6): a Lucka glyph button in the mark toolbar turns the selection, or the word at the caret, into a gap, or inserts an empty gap; a click inside a word shows a floating Gör till lucka button above it. The new gap is seeded from the text (accepted value, or the correct dropdown option), takes the next free `gap_NNN`, and is written by one atomic structural edit `withNewGap`, never through `withBody`. Its popover opens at once.
 - Popover (L7-L9): Teleported to `body`, `position: fixed`, z-index 30 as in `ExamWorkspaceMenu`, anchored to the chip, flipped above when the space below is too small, viewport-capped with its own scroll, repositioned on resize and ancestor scroll. Text gaps get one row per accepted answer (add, edit, remove, Enter adds a row, 1-100 rows, editor-only cap, commas allowed); dropdown rows from TASK-SKRIPT-40-04-04 keep their radio and move buttons in the same row layout.
 - TASK-SKRIPT-40-04-04 is already on `origin/main` (471f2209 is an ancestor of 0cb1df1a): it landed first and this task builds on it (L8).
@@ -70,8 +70,8 @@ Each unit goes to a fresh junior with disjoint files. Units in one wave run conc
 | J4 editor gap command | 1 | `ExamWorkspaceRichTextEditor.vue`; the `RichTextTarget` type file; `ExamWorkspaceMarkToolbar.vue`; new `examWorkspaceGapWord.ts` | L4: `makeGap` on the target, word-at-caret, floating Gör till lucka button, `createGap(body, gapId, seed)` emit, Lucka toolbar button with disabled state | new `examWorkspaceGapWord.spec.ts`, new `ExamWorkspaceRichTextEditor.makeGap.spec.ts`, existing `ExamWorkspaceMarkToolbar` spec |
 | J5 popover rows | 2 | `ExamWorkspaceGapPopover.vue` (text section); `examWorkspaceGapLabels.ts` (delete `parseAcceptedValues`) and its spec; `ExamWorkspaceBodyEditor.gaps.spec.ts` | L9 inside the popover, shared row layout with dropdown options, heading Lucka N – godkända svar | new `ExamWorkspaceGapPopover.acceptedValues.spec.ts`, updated `ExamWorkspaceBodyEditor.gaps.spec.ts`, `examWorkspaceGapLabels.spec.ts`, `ExamWorkspaceGapPopover.options.spec.ts` |
 | J6 gap wiring | 2 | `ExamWorkspaceBodyEditor.vue` (toolbar to target, `createGap`, open the new gap's popover); `ExamWorkspaceQuestionEditor.vue` (forward); `ExamWorkspaceEditorPane.vue` (`createItemGap`) | L4, L6 end to end in the component tree | new `ExamWorkspaceBodyEditor.makeGap.spec.ts` (three gaps by word clicks, popover opens on each, undo removes one gap per step) |
-| J7 Kort svar model | 2, after L2 | new `examWorkspaceShortAnswer.ts` (`isShortAnswer`, question body split and re-attach); `examWorkspaceItemEdits.ts` (`newTeacherItem`: new Lucktext starts empty) and the specs that assume a new Lucktext has a gap | L2 A, L3 | new `examWorkspaceShortAnswer.spec.ts` (adversarial: typing in the question keeps the gap record and its placement; text next to the gap is not a Kort svar), updated `useExamWorkspaceStructure.spec.ts`, `examWorkspaceInlineChoice.spec.ts` |
-| J8 Kort svar view | 3, after L2 | new `ExamWorkspaceShortAnswerField.vue`; `ExamWorkspaceQuestionEditor.vue` (branch); `ExamWorkspaceQuestionHead.vue` (Kort svar label) | L3 | new `ExamWorkspaceShortAnswerField.spec.ts`, `ExamWorkspaceWalkingSkeletonSlice.spec.ts` (adds a Kort svar) |
+| J7 Kort svar model | 2 | new `examWorkspaceShortAnswer.ts` (`isShortAnswer`, question body split and re-attach); `examWorkspaceItemEdits.ts` (`newTeacherItem`: new Lucktext starts empty) and the specs that assume a new Lucktext has a gap | L2 A, L3 | new `examWorkspaceShortAnswer.spec.ts` (adversarial: typing in the question keeps the gap record and its placement; text next to the gap is not a Kort svar), updated `useExamWorkspaceStructure.spec.ts`, `examWorkspaceInlineChoice.spec.ts` |
+| J8 Kort svar view | 3 | new `ExamWorkspaceShortAnswerField.vue`; `ExamWorkspaceQuestionEditor.vue` (branch); `ExamWorkspaceQuestionHead.vue` (Kort svar label) | L3 | new `ExamWorkspaceShortAnswerField.spec.ts`, `ExamWorkspaceWalkingSkeletonSlice.spec.ts` (adds a Kort svar) |
 
 J3 and J7 both edit `examWorkspaceItemEdits.ts` and run in different waves. J1, J5 and J6 edit the popover or body editor in different waves. Every work order tells the junior to map existing code before writing new code, to fetch TipTap and Vue docs through `ctx7`, to launch its own Explorers through `agent-harness claude launch` with the `PATH=$HOME/.local/agent-bin:$HOME/.local/bin:$PATH` prefix, and to run only its focused spec files.
 
@@ -93,3 +93,12 @@ Stop and ask the user if the planned design changes the native exam document for
 | U1  | Short-answer and gap-text questions are visibly different; short answer is a question field plus an answer-key field (user 2026-10-19) |
 | U2  | Gaps are created by inserting a gap or by clicking a word in existing text and confirming; any number of gaps per question (user 2026-10-19) |
 | U3  | The gap popover is fully visible above the editor and holds one to a hundred accepted answers, one row each (user 2026-10-19) |
+| L2  | Kort svar is decided by shape: a Lucktext whose only gap stands alone in its last paragraph shows as Kort svar with a Fråga field and a Svar field; Ny fråga starts an empty Lucktext with no gap; no native-format or export change (user 2026-10-19) |
+| L3  | The Kort svar editor shows only Fråga (body without the gap paragraph, mark toolbar, no gap button) and Svar (accepted-answer rows plus automatic answers); question-text edits re-attach the gap paragraph before `withBody` |
+| L4  | A Lucka toolbar glyph converts the selection or the word at the caret into a gap, or inserts an empty gap; a click inside a word shows a floating Gör till lucka button; the new gap's popover opens at once; any number of gaps |
+| L5  | A new gap is seeded from the converted text (accepted value, or one correct dropdown option) and takes the next free `gap_NNN`; at `gap_999` the Lucka button is disabled with a tooltip |
+| L6  | Gap creation is one atomic structural edit `withNewGap` (body plus record), never through `withBody`, and the written body JSON-equals the editor's emit |
+| L7  | The popover is Teleported to `body`, `position: fixed`, z-index 30, anchored to the chip, flipped above when needed, viewport-capped with own scroll, repositioned on resize and ancestor scroll; no positioning library |
+| L9  | Accepted answers are one row each with remove glyph, Lägg till svar, Enter adds and focuses a row, at least one row shown, empty and duplicate rows dropped on commit, commas allowed, editor-only cap of 100 |
+| L10 | The 40-04-06 removal of the last-gap rule stays: a Lucktext may have zero gaps, reported as `no_gaps` |
+| L11 | The native exam document format, API schema and export rules do not change |
