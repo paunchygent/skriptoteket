@@ -181,7 +181,7 @@ class NativeExamItem(BaseModel):
         else:
             if self.choices or self.gaps:
                 raise ValueError("free_text items carry no choices or gaps")
-        self._gap_options_invariants(self.gaps)
+        self._gap_options_invariants(self.gaps, allow_empty=True)
         self._criteria_invariants()
 
         self._answer_key_invariants(frozenset(choice_ids))
@@ -235,13 +235,10 @@ class NativeExamItem(BaseModel):
                 key.match_pairs, self.match_left, self.match_right, key.correct_choice_ids
             )
         else:
+            # A keyed gap_fill item may hold gaps with no accepted values: an
+            # empty gap is a valid draft that the export gate refuses (U4, L2).
             if key.correct_choice_ids:
                 raise ValueError("gap_fill items key gaps, not choices")
-            for gap in self.gaps:
-                if self.kind is NativeExamItemKind.INLINE_CHOICE:
-                    continue
-                if not gap.accepted_values:
-                    raise ValueError(f"gap {gap.gap_id} needs accepted values for a keyed item")
 
     def _kept_gap_invariants(self, live_gap_ids: set[str]) -> None:
         """A kept gap's hidden answers and the word link that carries them (H1).
@@ -289,7 +286,16 @@ class NativeExamItem(BaseModel):
         for gap_id in sorted(set(kept_ids) - set(linked)):
             raise ValueError(f"kept gap {gap_id} has no text run")
 
-    def _gap_options_invariants(self, gaps: tuple[NativeGap, ...]) -> None:
+    def _gap_options_invariants(
+        self, gaps: tuple[NativeGap, ...], *, allow_empty: bool = False
+    ) -> None:
+        """Dropdown option lists and their key, shared by live and kept gaps.
+
+        A live empty dropdown gap (no correct option, possibly no options at
+        all) is a valid draft the export gate refuses
+        (TASK-SKRIPT-40-04-13 U4, L2); kept gaps keep the old strict rule
+        because a revert never keeps an answerless gap.
+        """
         for gap in gaps:
             if self.kind is not NativeExamItemKind.INLINE_CHOICE:
                 if gap.options or gap.correct_option_id is not None:
@@ -298,11 +304,17 @@ class NativeExamItem(BaseModel):
             if gap.accepted_values or gap.automatic_values or gap.excluded_automatic_values:
                 raise ValueError("inline_choice gaps must not carry typed accepted values")
             option_ids = [option.choice_id for option in gap.options]
-            if not option_ids:
+            if not allow_empty and not option_ids:
                 raise ValueError("inline_choice gaps need an option list")
             if len(set(option_ids)) != len(option_ids):
                 raise ValueError("gap option ids must be unique within the gap")
-            if gap.correct_option_id is None or gap.correct_option_id not in option_ids:
+            if gap.correct_option_id is None:
+                if not allow_empty:
+                    raise ValueError(
+                        "inline_choice gaps need exactly one correct option in their list"
+                    )
+                continue
+            if gap.correct_option_id not in option_ids:
                 raise ValueError("inline_choice gaps need exactly one correct option in their list")
 
     def _tick_points_invariants(self) -> None:

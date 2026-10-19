@@ -417,7 +417,7 @@ describe("ExamWorkspaceBodyEditor gap tool Escape", () => {
     }
   });
 
-  it("removes a gap with no answer on Escape and keeps the tool on", async () => {
+  it("keeps a gap with no answer on Escape and keeps the tool on", async () => {
     const harness = mountHarness(buildGapItem());
     await settle();
 
@@ -433,13 +433,12 @@ describe("ExamWorkspaceBodyEditor gap tool Escape", () => {
     dispatchEscape(requireInput(document.activeElement, "the popover answer"));
     await settle();
 
+    // U4 rule 2 (replacing Q7): the empty gap stays while its question is edited.
     expect(popoverExists()).toBe(false);
     expect(toolPressed(harness)).toBe("true");
     const updates =
       harness.host.findComponent(ExamWorkspaceBodyEditor).emitted("updateBody") ?? [];
-    expect(updates).toHaveLength(1);
-    expect(updates[0]?.[0]).toBe("item_001");
-    expect(updates[0]?.[2]).toBe(true);
+    expect(updates).toHaveLength(0);
   });
 
   it("does not turn the tool off on a repeated Escape keydown in the same press", async () => {

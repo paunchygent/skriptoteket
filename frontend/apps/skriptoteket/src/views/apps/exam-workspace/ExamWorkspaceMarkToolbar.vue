@@ -6,7 +6,9 @@
  *   The compact glyph toolbar for the five kept marks, the three heading
  *   levels and the gap tool. Lucide glyphs follow the app's established icon
  *   imports (the shared catalogue is not adopted here). Every button keeps its
- *   exact size in every state. A pressed glyph shows
+ *   exact size in every state. It declares the Tom lucka `insertEmptyGap`
+ *   emit; no button is wired to it yet
+ *   (TASK-SKRIPT-40-04-17 wires a glyph later). A pressed glyph shows
  *   what the selection already carries, the native tooltip and accessible
  *   name carry the action name, and a heading glyph toggles its level off
  *   when pressed again. Every tooltip and `aria-keyshortcuts` names its
@@ -51,6 +53,8 @@ const emit = defineEmits<{
   toggleMark: [mark: BodyMark];
   toggleHeading: [level: HeadingLevel];
   toggleGapTool: [];
+  /** Tom lucka: the body editor inserts one empty gap at the caret. No button yet: TASK-SKRIPT-40-04-17 wires a glyph to this emit later. */
+  insertEmptyGap: [];
 }>();
 
 const MARK_ICONS = {

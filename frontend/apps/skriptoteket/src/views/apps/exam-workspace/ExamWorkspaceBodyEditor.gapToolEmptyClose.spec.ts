@@ -1,13 +1,15 @@
 /**
- * Exam workspace question-text editor: closing a gap popover without an answer removes the gap.
+ * Exam workspace question-text editor: closing a gap popover keeps an empty gap.
  *
- * Expected behavior (TASK-SKRIPT-40-04-13 H6):
- *   Closing the popover of a gap with no answer (Escape, a click outside,
- *   selecting another question) removes the gap from the body and from the
- *   item's gaps as one structural undo step; Ångra brings the gap back. A
- *   Lucktext gap with no accepted answer and a dropdown gap with no correct
- *   option are unanswered. A gap with an answer, and a gap whose answer was
- *   typed before the close, stays. A suspended editor forwards no gap change.
+ * Expected behavior (TASK-SKRIPT-40-04-13 Behaviour 10, U4 rule 2, replacing Q7):
+ *   An empty gap stays while its question is edited, including clicks into it
+ *   and opening and closing its popover. Closing the popover (Escape, a click
+ *   outside, selecting another question) removes nothing: a Lucktext gap with
+ *   no accepted answer and a dropdown gap with no correct option both stay,
+ *   with their records untouched. Removing empty gaps when the teacher leaves
+ *   the question belongs to the selection layer, so this editor emits no body
+ *   change on a question switch either. A suspended editor still forwards no
+ *   gap change.
  *
  * jsdom has no layout, so a gap click reaches the view through its own click
  * handler, Escape and focusout are real DOM events, and the popover is
@@ -36,28 +38,15 @@ import { buildGap } from "./examWorkspaceKeyedItems.specSupport";
 import { placedGapIds } from "./examWorkspaceRichTextDocument";
 import { plainBody } from "./examWorkspaceRichText";
 import {
-  exam,
-  openEditing,
   stopScopes,
 } from "./useExamWorkspaceEditing.history.specSupport";
 
-const api = vi.hoisted(() => ({
-  getExamWorkspaceHistory: vi.fn(),
-  getExamWorkspaceHistoryStep: vi.fn(),
-  moveExamWorkspaceHistoryPosition: vi.fn(),
-  saveExamWorkspaceDocument: vi.fn(),
-  storeExamWorkspaceUndoStep: vi.fn(),
-}));
 const toast = vi.hoisted(() => ({ failure: vi.fn(), warning: vi.fn() }));
 
-vi.mock("../../../api/examWorkspace", async (original) => ({
-  ...(await original<typeof import("../../../api/examWorkspace")>()),
-  ...api,
-}));
 vi.mock("../../../composables/useToast", () => ({ useToast: () => toast }));
 
 beforeEach(() => {
-  for (const fn of [...Object.values(api), ...Object.values(toast)]) fn.mockReset();
+  for (const fn of Object.values(toast)) fn.mockReset();
 });
 
 type UpdateBodyEvent = [string, NativeExamBodyParagraph[], boolean];
@@ -248,8 +237,8 @@ function dropdownItem(): NativeExamItem {
   });
 }
 
-describe("ExamWorkspaceBodyEditor gap popover close without an answer", () => {
-  it("removes an empty text gap on Escape as one structural edit", async () => {
+describe("ExamWorkspaceBodyEditor gap popover close keeps an empty gap", () => {
+  it("keeps an empty text gap on Escape", async () => {
     const harness = mountHarness(buildGapItem());
     await settle();
 
@@ -261,13 +250,9 @@ describe("ExamWorkspaceBodyEditor gap popover close without an answer", () => {
     await settle();
 
     expect(popoverExists()).toBe(false);
-    const updates = bodyUpdates(harness);
-    expect(updates).toHaveLength(1);
-    expect(updates[0]?.[0]).toBe("item_001");
-    expect(updates[0]?.[2]).toBe(true);
-    expect(placedGapIds(updates[0]?.[1] ?? [])).toEqual(["gap_001"]);
-    // The owner drops the record through `withBody`.
-    expect(harness.current().gaps.map((gap) => gap.gap_id)).toEqual(["gap_001"]);
+    expect(bodyUpdates(harness)).toHaveLength(0);
+    expect(harness.current().gaps.map((gap) => gap.gap_id)).toEqual(["gap_001", "gap_002"]);
+    expect(placedGapIds(harness.current().body)).toEqual(["gap_001", "gap_002"]);
   });
 
   it("keeps a gap with an answer on Escape", async () => {
@@ -286,7 +271,7 @@ describe("ExamWorkspaceBodyEditor gap popover close without an answer", () => {
     expect(harness.current().gaps.map((gap) => gap.gap_id)).toEqual(["gap_001", "gap_002"]);
   });
 
-  it("removes an empty gap on a click outside and keeps an answered one", async () => {
+  it("keeps every gap on a click outside", async () => {
     const harness = mountHarness(buildGapItem());
     await settle();
 
@@ -298,8 +283,8 @@ describe("ExamWorkspaceBodyEditor gap popover close without an answer", () => {
     await settle();
 
     expect(popoverExists()).toBe(false);
-    expect(bodyUpdates(harness)).toHaveLength(1);
-    expect(harness.current().gaps.map((gap) => gap.gap_id)).toEqual(["gap_001"]);
+    expect(bodyUpdates(harness)).toHaveLength(0);
+    expect(harness.current().gaps.map((gap) => gap.gap_id)).toEqual(["gap_001", "gap_002"]);
 
     clickGapChip(harness, "gap_001");
     await settle();
@@ -309,11 +294,11 @@ describe("ExamWorkspaceBodyEditor gap popover close without an answer", () => {
     await settle();
 
     expect(popoverExists()).toBe(false);
-    expect(bodyUpdates(harness)).toHaveLength(1);
-    expect(harness.current().gaps.map((gap) => gap.gap_id)).toEqual(["gap_001"]);
+    expect(bodyUpdates(harness)).toHaveLength(0);
+    expect(harness.current().gaps.map((gap) => gap.gap_id)).toEqual(["gap_001", "gap_002"]);
   });
 
-  it("removes the closed question's empty gap when selecting another question", async () => {
+  it("emits no removal of its own when selecting another question", async () => {
     const harness = mountHarness(buildGapItem());
     await settle();
 
@@ -321,15 +306,12 @@ describe("ExamWorkspaceBodyEditor gap popover close without an answer", () => {
     await settle();
     expect(popoverExists()).toBe(true);
 
+    // The selection layer owns empty-gap cleanup; this editor only closes the popover.
     harness.setItem({ ...buildGapItem(), item_id: "item_002" });
     await settle();
 
     expect(popoverExists()).toBe(false);
-    const updates = bodyUpdates(harness);
-    expect(updates).toHaveLength(1);
-    expect(updates[0]?.[0]).toBe("item_001");
-    expect(updates[0]?.[2]).toBe(true);
-    expect(placedGapIds(updates[0]?.[1] ?? [])).toEqual(["gap_001"]);
+    expect(bodyUpdates(harness)).toHaveLength(0);
   });
 
   it("keeps a gap whose answer was typed before Escape closes", async () => {
@@ -352,7 +334,7 @@ describe("ExamWorkspaceBodyEditor gap popover close without an answer", () => {
     expect(harness.current().gaps.map((gap) => gap.gap_id)).toEqual(["gap_001", "gap_002"]);
   });
 
-  it("removes a gap cleared by typing once Escape commits the empty rows", async () => {
+  it("keeps a gap cleared by typing once Escape commits the empty rows", async () => {
     const harness = mountHarness(buildGapItem());
     await settle();
 
@@ -367,15 +349,12 @@ describe("ExamWorkspaceBodyEditor gap popover close without an answer", () => {
     await settle();
 
     expect(popoverExists()).toBe(false);
-    const updates = bodyUpdates(harness);
-    expect(updates).toHaveLength(1);
-    expect(updates[0]?.[0]).toBe("item_001");
-    expect(updates[0]?.[2]).toBe(true);
-    expect(placedGapIds(updates[0]?.[1] ?? [])).toEqual(["gap_002"]);
-    expect(harness.current().gaps.map((gap) => gap.gap_id)).toEqual(["gap_002"]);
+    expect(bodyUpdates(harness)).toHaveLength(0);
+    expect(harness.current().gaps.map((gap) => gap.gap_id)).toEqual(["gap_001", "gap_002"]);
+    expect(placedGapIds(harness.current().body)).toEqual(["gap_001", "gap_002"]);
   });
 
-  it("removes a dropdown gap with no correct option and keeps a keyed one", async () => {
+  it("keeps a dropdown gap with no correct option and a keyed one", async () => {
     const harness = mountHarness(dropdownItem());
     await settle();
 
@@ -386,8 +365,8 @@ describe("ExamWorkspaceBodyEditor gap popover close without an answer", () => {
     await settle();
 
     expect(popoverExists()).toBe(false);
-    expect(bodyUpdates(harness)).toHaveLength(1);
-    expect(harness.current().gaps.map((gap) => gap.gap_id)).toEqual(["gap_001"]);
+    expect(bodyUpdates(harness)).toHaveLength(0);
+    expect(harness.current().gaps.map((gap) => gap.gap_id)).toEqual(["gap_001", "gap_002"]);
 
     clickGapChip(harness, "gap_001");
     await settle();
@@ -395,8 +374,8 @@ describe("ExamWorkspaceBodyEditor gap popover close without an answer", () => {
     await settle();
 
     expect(popoverExists()).toBe(false);
-    expect(bodyUpdates(harness)).toHaveLength(1);
-    expect(harness.current().gaps.map((gap) => gap.gap_id)).toEqual(["gap_001"]);
+    expect(bodyUpdates(harness)).toHaveLength(0);
+    expect(harness.current().gaps.map((gap) => gap.gap_id)).toEqual(["gap_001", "gap_002"]);
   });
 
   it("forwards no gap change when a suspended editor closes the popover", async () => {
@@ -413,84 +392,5 @@ describe("ExamWorkspaceBodyEditor gap popover close without an answer", () => {
     expect(popoverExists()).toBe(false);
     expect(bodyUpdates(harness)).toHaveLength(0);
     expect(harness.current().gaps.map((gap) => gap.gap_id)).toEqual(["gap_001", "gap_002"]);
-  });
-
-  it("stores the removal as one structural step that Ångra brings back", async () => {
-    const baseline = exam("Prov", 2);
-    baseline.items[0] = buildGapItem();
-    const { editing, server } = await openEditing(api, baseline);
-    // The position move stands on a retained step, as the history specs fake it.
-    api.moveExamWorkspaceHistoryPosition.mockImplementation(
-      async (_lineage: string, request: { expectedCursor: string; stepId: string }) => {
-        const position = request.stepId;
-        server.state.position = position;
-        server.state.cursor = `move-${position}`;
-        return {
-          document: server.documents.get(position)!,
-          export_blockers: [],
-          history: {
-            baseline_step_id: "step-0",
-            cursor: server.state.cursor,
-            position_step_id: server.state.position,
-            step_ids: [...server.state.steps],
-          },
-        };
-      },
-    );
-    const host = mount(Host, {
-      attachTo: document.body,
-      props: {
-        state: {
-          item: () => editing.workspaceDocument.value!.items[0]!,
-          disabled: () => editing.isBusy.value,
-          onUpdateBody: editing.updateItemBody,
-          onUpdateGapValues: editing.updateItemGapValues,
-          onUpdateGapOptions: editing.updateItemGapOptions,
-        } satisfies BodyEditorHost,
-      },
-    });
-    mounted.push(host);
-    await settle();
-    const editor = innerEditorOf(host);
-    const openChip = (gapId: string): void => {
-      let pos = -1;
-      editor.state.doc.descendants((node, nodePos) => {
-        if (pos < 0 && node.type.name === "examGap" && node.attrs.gapId === gapId) {
-          pos = nodePos;
-        }
-        return pos < 0;
-      });
-      if (pos < 0) {
-        throw new Error(`no gap ${gapId}`);
-      }
-      const node = editor.state.doc.nodeAt(pos);
-      if (!node) {
-        throw new Error(`no gap ${gapId}`);
-      }
-      editor.view.someProp("handleClickOn", (handler) =>
-        handler(editor.view, pos, node, pos, new MouseEvent("click"), true),
-      );
-    };
-    openChip("gap_002");
-    await settle();
-    expect(popoverExists()).toBe(true);
-
-    dispatchEscape(popoverInput("gap_002").element);
-    await settle();
-    await flushPromises();
-
-    expect(popoverExists()).toBe(false);
-    const removed = editing.workspaceDocument.value?.items[0];
-    expect(removed?.gaps.map((gap) => gap.gap_id)).toEqual(["gap_001"]);
-    expect(placedGapIds(removed?.body ?? [])).toEqual(["gap_001"]);
-    expect(server.state.steps).toHaveLength(1);
-
-    await editing.history.undo();
-    await settle();
-    await flushPromises();
-
-    const restored = editing.workspaceDocument.value?.items[0];
-    expect(restored?.gaps.map((gap) => gap.gap_id)).toEqual(["gap_001", "gap_002"]);
-    expect(placedGapIds(restored?.body ?? [])).toEqual(["gap_001", "gap_002"]);
   });
 });

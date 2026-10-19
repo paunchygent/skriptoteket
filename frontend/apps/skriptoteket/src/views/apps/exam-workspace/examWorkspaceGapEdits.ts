@@ -21,7 +21,7 @@ import type {
   NativeExamItem,
   NativeExamItemKind,
 } from "../../../api/examWorkspace";
-import { blankChoices, teacherKeyOrigin } from "./examWorkspaceItemEdits";
+import { teacherKeyOrigin } from "./examWorkspaceItemEdits";
 import { plainBody } from "./examWorkspaceRichText";
 import { placedGapIds } from "./examWorkspaceRichTextDocument";
 
@@ -229,22 +229,30 @@ export function nextGapId(item: NativeExamItem): string | null {
 /**
  * The gap record one creation seeds: a Lucktext gap carries the converted
  * text as its accepted value, a dropdown gap carries it as its one correct
- * option, and an empty insertion carries a blank gap of the item's kind.
+ * option, and an empty insertion carries a blank gap of the item's kind: a
+ * Lucktext gap with no accepted values, a dropdown gap with no options and
+ * no correct option, so the teacher adds the first option in the popover.
  */
 function newGapRecord(kind: NativeExamItemKind, gapId: string, seed: string): NativeExamGap {
   const text = seed.trim();
   if (kind === "inline_choice") {
-    const options: NativeExamChoice[] =
-      text.length > 0
-        ? [{ body: plainBody(text), choice_id: "choice_001" }]
-        : blankChoices();
+    if (text.length === 0) {
+      return {
+        accepted_values: [],
+        automatic_values: [],
+        correct_option_id: null,
+        excluded_automatic_values: [],
+        gap_id: gapId,
+        options: [],
+      };
+    }
     return {
       accepted_values: [],
       automatic_values: [],
       correct_option_id: "choice_001",
       excluded_automatic_values: [],
       gap_id: gapId,
-      options,
+      options: [{ body: plainBody(text), choice_id: "choice_001" }],
     };
   }
   return {
@@ -272,8 +280,8 @@ function newGapRecord(kind: NativeExamItemKind, gapId: string, seed: string): Na
  * insertion that adds no key data of its own leaves the answer key exactly
  * as it is, so it never silently approves an AI or machine-proposed key.
  * Only a new record with a non-empty accepted list or a set correct option
- * re-keys the item; a dropdown record always carries a correct option, so a
- * dropdown insertion always keys the item.
+ * re-keys the item; an empty dropdown gap carries neither, so a Tom lucka
+ * insertion never keys the item.
  */
 export function withNewGap(
   item: NativeExamItem,
@@ -321,10 +329,11 @@ export function withNewGap(
 /**
  * Whether the gap holds an answer: a Lucktext gap with at least one accepted
  * value, a dropdown gap whose correct option names one of its declared
- * options. This mirrors the save refusal (`isPartiallyKeyedGapItem`) and the
- * readiness rules (`dropdownGapsWithoutCorrectOption`, `hasInvalidAnswerKey`)
- * instead of restating them: an empty accepted list, a missing correct option
- * or no declared options is the unanswered gap.
+ * options. This mirrors the export refusal (`partial_gap_key` for Lucktext,
+ * `gap_without_correct_option` for dropdowns) and the readiness rules
+ * (`isPartiallyKeyedGapItem`, `dropdownGapsWithoutCorrectOption`) instead of
+ * restating them: an empty accepted list, a missing correct option or no
+ * declared options is the unanswered gap.
  */
 export function gapHasAnswer(gap: NativeExamGap | undefined, kind: NativeExamItemKind): boolean {
   if (!gap) {

@@ -42,9 +42,15 @@ describe("inline-choice answer keys", () => {
     expect(hasInvalidAnswerKey(inlineChoiceItem())).toBe(false);
   });
 
-  it.each([null, "choice_003"])("rejects a gap whose selected option is %j", (correctOptionId) => {
+  it("accepts a gap with no correct option as an empty draft the export refuses", () => {
     const item = inlineChoiceItem();
-    item.gaps[1].correct_option_id = correctOptionId;
+    item.gaps[1].correct_option_id = null;
+    expect(hasInvalidAnswerKey(item)).toBe(false);
+  });
+
+  it('rejects a gap whose selected option is "choice_003"', () => {
+    const item = inlineChoiceItem();
+    item.gaps[1].correct_option_id = "choice_003";
     expect(hasInvalidAnswerKey(item)).toBe(true);
   });
 

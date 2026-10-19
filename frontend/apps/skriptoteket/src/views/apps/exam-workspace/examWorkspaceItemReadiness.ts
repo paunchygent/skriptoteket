@@ -14,9 +14,10 @@
  *   least two steps, otherwise "ordering_too_few_steps"). Save validity remains
  *   separate. Readiness
  *   also adds the item states the save refuses:
- *   a partial gap key, an incomplete matching key, invalid points, and
+ *   an incomplete matching key, invalid points, and
  *   free-text criteria that lack text, carry invalid points, are not the
- *   item's points, or sit on a non-free-text item.
+ *   item's points, or sit on a non-free-text item. An empty gap saves as a
+ *   draft (TASK-SKRIPT-40-04-13 U4, L2) and blocks export here instead.
  *
  * Relationships:
  *   - Mirrors the per-item rules of `native_export_blockers` in

@@ -52,6 +52,12 @@ describe("ExamWorkspaceMarkToolbar gap control", () => {
     expect(wrapper.emitted("toggleGapTool")).toHaveLength(1);
     expect(wrapper.emitted("makeGap")).toBeUndefined();
   });
+
+  it("declares the Tom lucka emit for the glyph TASK-SKRIPT-40-04-17 wires later", async () => {
+    const wrapper = mount(ExamWorkspaceMarkToolbar, { props: { showGap: true } });
+    wrapper.vm.$emit("insertEmptyGap");
+    expect(wrapper.emitted("insertEmptyGap")).toHaveLength(1);
+  });
 });
 
 describe("ExamWorkspaceMarkToolbar gap tool toggle", () => {

@@ -1,5 +1,6 @@
 /**
- * Exam workspace make-gap command and the gap tool click path.
+ * Exam workspace make-gap command, the Tom lucka command and the empty gap's
+ * definition.
  *
  * Domain purpose:
  *   The one place that turns written text into a gap: the word at the
@@ -7,7 +8,8 @@
  *   seeded from the replaced document text. The caret ends collapsed
  *   directly after the new chip, so typing continues after the gap and never
  *   replaces it. A caret outside a word creates
- *   nothing: no control inserts an empty gap. While the gap tool is on, a
+ *   nothing. Tom lucka is the only empty-gap path: one empty gap at the
+ *   caret, or at a selection's end without deleting text. While the gap tool is on, a
  *   word click converts at once through the same replacement and a drag
  *   selection converts on mouseup. A tool click converts only the word the
  *   pointer actually hit (a click on a space or punctuation only places the
@@ -16,12 +18,14 @@
  *   click on a word that keeps hidden answers reports its kept link through
  *   `keptGapAtPointer` instead of making a gap, and the second click of a
  *   double click converts nothing. The
- *   gap tool switch is the only gap control.
+ *   gap tool switch is the only gap control for existing text.
  *
  * Relationships:
  *   - Wired in by `ExamWorkspaceRichTextEditor`, which owns the editor and
  *     the `createGap` emit boundary.
  *   - Resolves words with `examWorkspaceGapWord`.
+ *   - The selection layer consumes `bodyWithoutEmptyGaps` for the silent
+ *     empty-gap cleanup when the teacher leaves the question.
  */
 
 import type { Editor } from "@tiptap/core";
@@ -30,11 +34,80 @@ import { TextSelection } from "@tiptap/pm/state";
 import type { EditorView } from "@tiptap/pm/view";
 import type { Ref } from "vue";
 
+import type {
+  NativeExamBodyParagraph,
+  NativeExamItem,
+  NativeExamItemKind,
+} from "../../../api/examWorkspace";
+import { bodyWithoutGap, gapHasAnswer } from "./examWorkspaceGapEdits";
+import { hasKeyedOrigin } from "./examWorkspaceAnswerKeyRules";
 import { EXAM_GAP_NODE, EXAM_KEPT_GAP_MARK, EXAM_PICTURE_NODE } from "./examWorkspaceRichTextSchema";
 import { wordRangeAtDocCharacter, wordRangeAtDocPosition } from "./examWorkspaceGapWord";
 
 /** A kept link the pointer hit: its kept id and the clicked block's index. */
 export type KeptGapHit = { keptGapId: string; blockIndex: number };
+
+/** Why Tom lucka is unavailable for a question that is not a gap question. */
+export const EMPTY_GAP_NOT_GAP_KIND_REASON = "Tom lucka – endast luckfrågor";
+/** Why Tom lucka is unavailable when there is no next gap id. */
+export const EMPTY_GAP_AT_CAP_REASON = "Tom lucka – högst 999 luckor";
+
+/**
+ * Why the Tom lucka command is unavailable: the question is not a gap
+ * question, or there is no next gap id. Null while the command can run.
+ */
+export function gapDisabledReason(
+  kind: NativeExamItemKind,
+  nextGapId: string | null | undefined,
+): string | null {
+  if (kind !== "gap_fill" && kind !== "inline_choice") {
+    return EMPTY_GAP_NOT_GAP_KIND_REASON;
+  }
+  if (typeof nextGapId !== "string") {
+    return EMPTY_GAP_AT_CAP_REASON;
+  }
+  return null;
+}
+
+/**
+ * The item's empty gaps in gap order (TASK-SKRIPT-40-04-13 Q9): a Lucktext
+ * gap with no accepted answer in a question that has an answer key, or a
+ * dropdown gap with no correct option. The answer half reuses `gapHasAnswer`;
+ * a question without an answer key, or any other kind, has none. The
+ * key-presence check is the canonical `hasKeyedOrigin` from
+ * `examWorkspaceAnswerKeyRules`.
+ */
+export function emptyGapIds(item: NativeExamItem): string[] {
+  if (item.kind !== "gap_fill" && item.kind !== "inline_choice") {
+    return [];
+  }
+  if (!hasKeyedOrigin(item)) {
+    return [];
+  }
+  return item.gaps
+    .filter((gap) => !gapHasAnswer(gap, item.kind))
+    .map((gap) => gap.gap_id);
+}
+
+/**
+ * The body with every empty gap's placement removed, for the silent cleanup
+ * when the teacher leaves the question. Null when there is nothing to
+ * remove, so the cleanup emits no edit. The owner drops each removed gap's
+ * record through `withBody`, so one structural edit removes them in one undo
+ * step.
+ */
+export function bodyWithoutEmptyGaps(
+  item: NativeExamItem,
+): NativeExamBodyParagraph[] | null {
+  const ids = emptyGapIds(item);
+  if (ids.length === 0) {
+    return null;
+  }
+  return ids.reduce<NativeExamBodyParagraph[]>(
+    (body, gapId) => bodyWithoutGap(body, gapId),
+    [...item.body],
+  );
+}
 
 export function useExamWorkspaceMakeGap(options: {
   editor: Ref<Editor | undefined>;
@@ -45,6 +118,8 @@ export function useExamWorkspaceMakeGap(options: {
 }): {
   pendingGapCreation: () => { gapId: string; seed: string } | null;
   makeGap: (gapId: string) => void;
+  /** Tom lucka: insert one empty gap at the caret or at the selection's end. */
+  insertEmptyGapAtCursor: (gapId: string) => void;
   handleMakeGapClick: (view: EditorView, pos: number, event: MouseEvent) => boolean;
   handleGapToolMouseDown: (event: MouseEvent) => void;
   handleGapToolMouseUp: (event: MouseEvent) => void;
@@ -85,8 +160,8 @@ export function useExamWorkspaceMakeGap(options: {
 
   /**
    * Turn the selection, or the word at the caret, into one new gap with
-   * `gapId`. A caret outside a word creates nothing: no control inserts an
-   * empty gap. The replacement dispatches as one transaction and reports
+   * `gapId`. A caret outside a word creates nothing (Tom lucka owns the one
+   * empty-gap path). The replacement dispatches as one transaction and reports
    * one pending creation, never an `update`.
    */
   function makeGap(gapId: string): void {
@@ -123,6 +198,34 @@ export function useExamWorkspaceMakeGap(options: {
         replaceRangeWithGap(gapId, word.from, word.to, state.doc.textBetween(word.from, word.to, "\n", " "));
       }
     }
+  }
+
+  /**
+   * Tom lucka: insert one empty gap at the caret, or at a selection's end
+   * without deleting text, with `gapId`. The insertion dispatches as one
+   * transaction and reports one pending creation with an empty seed, never an
+   * `update`, so the owner adds the empty record through `withNewGap` and the
+   * new gap's popover opens at once. It works with the gap tool on or off; a
+   * selection across two paragraphs inserts nothing.
+   */
+  function insertEmptyGapAtCursor(gapId: string): void {
+    const current = options.editor.value;
+    if (!current || !options.canMakeGap()) {
+      return;
+    }
+    const { selection } = current.state;
+    if (!(selection instanceof TextSelection)) {
+      return;
+    }
+    if (selection.empty) {
+      replaceRangeWithGap(gapId, selection.from, selection.from, "");
+      return;
+    }
+    const { $from, $to } = selection;
+    if (!$from.sameParent($to) || !$to.parent.isTextblock) {
+      return;
+    }
+    replaceRangeWithGap(gapId, $to.pos, $to.pos, "");
   }
 
   /** A tool-off click only places the caret: the tool is the only gap control. */
@@ -333,6 +436,7 @@ export function useExamWorkspaceMakeGap(options: {
   return {
     pendingGapCreation,
     makeGap,
+    insertEmptyGapAtCursor,
     handleMakeGapClick,
     handleGapToolMouseDown,
     handleGapToolMouseUp,

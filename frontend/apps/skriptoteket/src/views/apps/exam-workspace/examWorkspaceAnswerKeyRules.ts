@@ -23,23 +23,28 @@ import type { NativeExamDocument, NativeExamGap, NativeExamItem } from "../../..
 import { examWorkspaceQuestionLabels } from "./examWorkspaceListEntries";
 
 export const PARTIAL_GAP_KEY_GUIDANCE =
-  "Fyll i godkända svar för varje lucka, eller lämna alla luckor tomma om frågan ska sakna facit.";
+  "Fyll i godkända svar i varje lucka.";
 
 export const GAP_WITHOUT_CORRECT_OPTION_GUIDANCE = "Markera rätt alternativ i varje rullista.";
 
 export const INCOMPLETE_MATCH_KEY_GUIDANCE =
   "Kryssa minst en kategori för varje rad, eller lämna alla rader utan kryss om frågan ska sakna facit.";
 
-function hasKeyedOrigin(item: NativeExamItem): boolean {
+/** Whether the question carries an answer key; a question without one has no empty gaps (Q9). */
+export function hasKeyedOrigin(item: NativeExamItem): boolean {
   return item.answer_key.origin !== "absent" && item.answer_key.origin !== "not_applicable";
 }
 
-/** Dropdown gaps with no option marked correct; the server refuses to save them (D3). */
+/** Dropdown gaps with no option marked correct: an empty gap is a valid draft (U4, L2). */
 export function dropdownGapsWithoutCorrectOption(item: NativeExamItem): NativeExamGap[] {
   return item.kind === "inline_choice" ? item.gaps.filter((gap) => gap.correct_option_id === null) : [];
 }
 
-/** Keyed gap items need accepted values in every gap; the server refuses partial keys. */
+/** A keyed Lucktext item with a gap that holds no accepted answer (Q9).
+ *
+ * Saving accepts it as a draft (U4, L2); the export readiness and the
+ * export drawer refuse it instead, naming the question by its list label.
+ */
 export function isPartiallyKeyedGapItem(item: NativeExamItem): boolean {
   return (
     item.kind === "gap_fill" &&
@@ -77,10 +82,14 @@ export function isIncompleteMatchingItem(item: NativeExamItem): boolean {
  * keyed kind has no `not_applicable` key; an absent key carries no key
  * data; only matching items key pairs; correct choices are declared
  * choices, exactly one for single choice and at least one for multiple
- * response; matching keys pair every left entry once; gap keys fill every
- * gap; inline-choice keys select an option declared in each gap and carry
- * no typed values; neither
- * gap kind keys top-level choices.
+ * response; matching keys pair every left entry once; inline-choice keys
+ * carry no typed values and a correct option that names a declared option,
+ * but an empty dropdown gap (no correct option, possibly no options) is a
+ * valid draft; neither
+ * gap kind keys top-level choices. An empty gap is a valid draft
+ * (TASK-SKRIPT-40-04-13 U4, L2): a keyed Lucktext gap needs no accepted
+ * values to save and a keyed dropdown gap needs no correct option, so only
+ * the export readiness flags them.
  */
 export function hasInvalidAnswerKey(item: NativeExamItem): boolean {
   const key = item.answer_key;
@@ -119,14 +128,16 @@ export function hasInvalidAnswerKey(item: NativeExamItem): boolean {
     case "matching":
       return key.correct_choice_ids.length > 0 || isIncompleteMatchingItem(item);
     case "gap_fill":
-      return key.correct_choice_ids.length > 0 || isPartiallyKeyedGapItem(item);
+      // An empty gap saves as a draft; the export readiness owns the refusal (U4, L2).
+      return key.correct_choice_ids.length > 0;
     case "inline_choice":
       return key.correct_choice_ids.length > 0 || item.gaps.some((gap) =>
         gap.accepted_values.length > 0 ||
         gap.automatic_values.length > 0 ||
         gap.excluded_automatic_values.length > 0 ||
-        gap.correct_option_id === null ||
-        !gap.options.some((option) => option.choice_id === gap.correct_option_id),
+        // An empty dropdown gap saves as a draft; the export readiness owns the refusal (U4, L2).
+        (gap.correct_option_id !== null &&
+          !gap.options.some((option) => option.choice_id === gap.correct_option_id)),
       );
   }
 }

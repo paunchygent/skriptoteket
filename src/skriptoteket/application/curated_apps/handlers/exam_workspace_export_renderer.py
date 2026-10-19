@@ -200,11 +200,29 @@ class ExamWorkspaceExportRenderer:
                 for blocker in blockers
                 if blocker.reason == "inline_choice_option_heading"
             }
+            partial_gap_items = {
+                blocker.item_id for blocker in blockers if blocker.reason == "partial_gap_key"
+            }
+            empty_dropdown_items = {
+                blocker.item_id
+                for blocker in blockers
+                if blocker.reason == "gap_without_correct_option"
+            }
             labels = native_exam_question_labels(document)
             heading_messages = [
                 f"Fråga {labels[item.item_id]}: Rubrikformat är inte tillåtet i rullistealternativ."
                 for item in document.items
                 if item.item_id in heading_items
+            ]
+            empty_gap_messages = [
+                f"Fråga {labels[item.item_id]} saknar godkända svar i vissa luckor."
+                for item in document.items
+                if item.item_id in partial_gap_items
+            ]
+            empty_dropdown_messages = [
+                f"Fråga {labels[item.item_id]} saknar rätt alternativ i vissa rullistor."
+                for item in document.items
+                if item.item_id in empty_dropdown_items
             ]
             title_messages = [
                 "Ge provet en titel med bokstäver eller siffror."
@@ -221,6 +239,8 @@ class ExamWorkspaceExportRenderer:
                     ),
                     *title_messages,
                     *heading_messages,
+                    *empty_gap_messages,
+                    *empty_dropdown_messages,
                 ]
             )
             raise DomainError(

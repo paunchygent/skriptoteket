@@ -43,8 +43,9 @@
  *     `examWorkspaceRichTextDocument` maps the body to and from them.
  *   - `examWorkspaceRichTextEditKind` classifies a transaction as a discrete edit.
  *   - `examWorkspaceRichTextTarget` registers the surface for the toolbar.
- *   - `useExamWorkspaceMakeGap` owns the gap command and the gap tool
- *     click path; it resolves words with `examWorkspaceGapWord`.
+ *   - `useExamWorkspaceMakeGap` owns the gap command, the Tom lucka
+ *     command and the gap tool click path; it resolves words with
+ *     `examWorkspaceGapWord`.
  *   - `examWorkspaceHistoryKeys` receives the undo and redo shortcuts; the
  *     gap tool shortcut reaches the owner as `toggleGapTool`.
  *   - Atom and heading styles are global in `examWorkspace.css`.
@@ -281,6 +282,7 @@ const editor = useEditor({
 const {
   pendingGapCreation,
   makeGap,
+  insertEmptyGapAtCursor,
   handleMakeGapClick,
   handleGapToolMouseDown,
   handleGapToolMouseUp,
@@ -411,6 +413,13 @@ const wrapperClass = computed(() =>
 defineExpose({
   focus(): void {
     editor.value?.commands.focus("end");
+  },
+  /** Tom lucka: insert one empty gap at the caret through the owner's next id. */
+  insertEmptyGap(): void {
+    const gapId = props.nextGapId;
+    if (typeof gapId === "string") {
+      insertEmptyGapAtCursor(gapId);
+    }
   },
 });
 </script>

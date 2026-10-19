@@ -12,8 +12,9 @@
  *   revision as `expected_revision`. A 409 shows Swedish conflict handling and
  *   reloads the latest saved version. Teacher answer-key edits become
  *   `teacher_authored`; clearing every key value makes the key `absent`; a
- *   gap item keyed in only some gaps is refused locally with Swedish copy;
- *   marking a machine proposal as reviewed becomes `reviewed_advisory`.
+ *   gap item keyed in only some gaps still saves as a draft and is flagged
+ *   for export instead; marking a machine proposal as reviewed becomes
+ *   `reviewed_advisory`.
  */
 
 import { DOMWrapper, flushPromises } from "@vue/test-utils";
@@ -237,56 +238,62 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
     expect(gapItem?.gaps[0]?.accepted_values).toEqual([]);
   });
 
-  it("refuses to save a gap item keyed in only some gaps and says why in Swedish", async () => {
+  it("stores a gap item draft keyed in only some gaps and flags it for export in Swedish", async () => {
     apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
       apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildTwoGapResponse());
       return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null, summary: null,
       document_revision: null, questions_total: 0, questions_done: 0, units: [] };
     });
-    const { wrapper } = await mountExamWorkspace();
+    const { wrapper } = await mountExamWorkspace({}, "desktop", document.body);
     await importFixtureDocument(wrapper);
 
     await selectItemRow(wrapper, "item_004");
     await clickGap(wrapper, "gap_002");
     await commitGapRow("gap_002", 0, "");
 
-    expect(wrapper.find('[data-test="exam-workspace-gap-key-hint"]').text()).toContain(
-      "lämna alla luckor tomma",
+    // The inline hint keeps the new guidance: the draft is unfinished, not forbidden.
+    expect(wrapper.find('[data-test="exam-workspace-gap-key-hint"]').text()).toBe(
+      "Fyll i godkända svar i varje lucka.",
     );
+    await saveDocument(wrapper);
+
+    // An empty gap saves as a draft (U4, L2), so the step reaches the store with
+    // the empty gap and the kept key, without a toast.
+    expect(apiMocks.storeExamWorkspaceUndoStep).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(useToastStore().failure)).not.toHaveBeenCalled();
+    expect(wrapper.find('[data-test="exam-workspace-save-state"]').text()).toMatch(/^Sparat /);
+    const gapItem = lastStoredDocument(apiMocks.storeExamWorkspaceUndoStep).items.find(
+      (item) => item.item_id === "item_004",
+    );
+    expect(gapItem?.answer_key.origin).toBe("teacher_authored");
+    expect(gapItem?.gaps.find((gap) => gap.gap_id === "gap_002")?.accepted_values).toEqual([]);
+
+    // Export refuses the draft instead, naming the question by its list label.
+    await wrapper.get('[data-test="exam-workspace-export"]').trigger("click");
+    await flushPromises();
+    expect(
+      document.body.querySelector('[data-test="exam-workspace-blocker-item_004"]')?.textContent?.trim(),
+    ).toBe("Fråga 4: lucka utan svar");
+  });
+
+  it("names every refused question in the plural save-refusal copy", async () => {
+    const { wrapper } = await mountExamWorkspace();
+    await importFixtureDocument(wrapper);
+
+    // Negative points are still a save refusal, so two refused questions pin
+    // the plural list-label wording the partial-gap refusal used to carry.
+    await selectItemRow(wrapper, "item_004");
+    await wrapper.find('[data-test="exam-workspace-item-points-input"]').setValue("-1");
+    await selectItemRow(wrapper, "item_005");
+    await wrapper.find('[data-test="exam-workspace-item-points-input"]').setValue("-1");
+
     await saveDocument(wrapper);
 
     expect(apiMocks.storeExamWorkspaceUndoStep).not.toHaveBeenCalled();
     expect(vi.mocked(useToastStore().failure)).not.toHaveBeenCalled();
     expect(wrapper.find('[data-test="exam-workspace-save-state"]').text()).toBe("Inte sparat");
     expect(wrapper.find('[data-test="exam-workspace-save-state"]').attributes("title")).toBe(
-      "Fråga 4 saknar godkända svar i vissa luckor. Fyll i godkända svar för varje lucka, eller lämna alla luckor tomma om frågan ska sakna facit.",
-    );
-  });
-
-  it("names every partially keyed gap item in the plural refusal copy", async () => {
-    apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
-      apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildTwoGapResponse(["item_004", "item_005"]));
-      return { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null, summary: null,
-      document_revision: null, questions_total: 0, questions_done: 0, units: [] };
-    });
-    const { wrapper } = await mountExamWorkspace();
-    await importFixtureDocument(wrapper);
-
-    for (const itemId of ["item_004", "item_005"]) {
-      await selectItemRow(wrapper, itemId);
-      await clickGap(wrapper, "gap_002");
-      await commitGapRow("gap_002", 0, "");
-    }
-
-    await saveDocument(wrapper);
-
-    // The in-between snapshot was still fully keyed, so it stored; the final
-    // draft refuses and is held with its reason, without a toast.
-    expect(apiMocks.storeExamWorkspaceUndoStep).toHaveBeenCalledTimes(1);
-    expect(vi.mocked(useToastStore().failure)).not.toHaveBeenCalled();
-    expect(wrapper.find('[data-test="exam-workspace-save-state"]').text()).toBe("Inte sparat");
-    expect(wrapper.find('[data-test="exam-workspace-save-state"]').attributes("title")).toContain(
-      "saknar godkända svar i vissa luckor",
+      "Frågorna 4 och 5 har negativa poäng. Ange 0 poäng eller mer.",
     );
   });
 
