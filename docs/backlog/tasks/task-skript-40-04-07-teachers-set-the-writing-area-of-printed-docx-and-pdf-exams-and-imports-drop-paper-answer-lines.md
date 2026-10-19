@@ -170,5 +170,9 @@ Stop and report to the parent in either case:
   `expected-lines` into writing lines, for standalone and parent-child items
   (absent = the W4 default; malformed = unsupported). Suite
   (`evidence/lead-e12a2a36/suite7/`): pytest 4646 passed. The QTI integration
-  test, run with docker: 1 passed. Next: 09d50acc checks both merges. User
+  test, run with docker: 1 passed.
+- 2026-10-19: origin/main `ffbfa953` (39-04-17 answer-key cut) merged
+  (`3840825f`). Main's cut fixture now states writing lines. A gap-count
+  mismatch with an inline key and an answer line ends in review without
+  either; focused: 77 passed. Next: 09d50acc checks all three merges. User
   gates: none open.
