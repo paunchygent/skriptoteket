@@ -1,9 +1,10 @@
 /**
  * Exam workspace rich-text editor: the floating gap button.
  *
- * Expected behavior (TASK-SKRIPT-40-04-08 J4):
- *   A click inside a word shows a small floating "Lucka" button above that
- *   word ("Gör till lucka" tooltip and accessible name); one click on it converts
+ * Expected behavior (TASK-SKRIPT-40-04-09 Q12):
+ *   A click inside a word shows a small glyph-only floating button right
+ *   after that word, on the word's own line ("Gör till lucka" tooltip and
+ *   accessible name only, no border, fill or shadow); one click on it converts
  *   the word. The button stays while later
  *   transactions leave the document and the caret inside the word, and hides
  *   on any document change, on a caret move out of the word, on scroll or
@@ -35,6 +36,17 @@ import {
   stubGeometry,
 } from "./ExamWorkspaceRichTextEditor.makeGap.specSupport";
 import { ATOM_STATE_KEY } from "./examWorkspaceRichTextSchema";
+import { ANCHORED_EDGE_PX, ANCHORED_GAP_PX } from "./useExamWorkspaceAnchoredPosition";
+import { wordRangeAtDocPosition } from "./examWorkspaceGapWord";
+
+/**
+ * jsdom has no layout: `coordsAtPos` returns one fixed line box for every
+ * position, and the floating button's `offsetHeight`/`offsetWidth` are 0.
+ * The placement under test is therefore `left = box.right +
+ * ANCHORED_GAP_PX` (clamped to the viewport) and `top = box.top +
+ * (boxHeight - 0) / 2`, which keeps the button on the word's own line.
+ */
+const LINE_BOX = { left: 50, top: 60, right: 90, bottom: 74 };
 
 describe("ExamWorkspaceRichTextEditor makeGap floating button", () => {
   afterEach(() => {
@@ -43,7 +55,74 @@ describe("ExamWorkspaceRichTextEditor makeGap floating button", () => {
     releaseEditor();
   });
 
-  it("shows above the clicked word and converts it on click", async () => {
+  it("is glyph-only: no visible text, the name lives in the tooltip and aria-label only", async () => {
+    const opened = await openEditor({
+      body: [paragraph(text("Huvudstaden är Paris."))],
+      gapsInteractive: true,
+      nextGapId: "gap_002",
+    });
+    stubGeometry(opened, LINE_BOX);
+    opened.editor.commands.setTextSelection(posIn(opened.editor, "Paris", 1));
+    clickAt(opened, posIn(opened.editor, "Paris", 1));
+    await nextTick();
+    await nextTick();
+
+    const button = shownGapButton();
+    expect(button.textContent?.trim()).toBe("");
+    expect(button.getAttribute("aria-label")).toBe("Gör till lucka");
+    expect(button.getAttribute("title")).toBe("Gör till lucka");
+    const classes = Array.from(button.classList);
+    expect(classes.some((name) => name.startsWith("border-") || name.startsWith("bg-") || name.startsWith("shadow"))).toBe(false);
+    expect(button.classList.contains("fixed")).toBe(true);
+    expect(classes.some((name) => name.startsWith("focus-visible"))).toBe(true);
+  });
+
+  it("sits right after the clicked word on that word's line", async () => {
+    const opened = await openEditor({
+      body: [paragraph(text("Huvudstaden är Paris."))],
+      gapsInteractive: true,
+      nextGapId: "gap_002",
+    });
+    stubGeometry(opened, LINE_BOX);
+    const clickPos = posIn(opened.editor, "Paris", 1);
+    const word = wordRangeAtDocPosition(opened.editor.state.doc, clickPos);
+    opened.editor.commands.setTextSelection(clickPos);
+    clickAt(opened, clickPos);
+    await nextTick();
+    await nextTick();
+
+    const calls = vi.mocked(opened.editor.view.coordsAtPos).mock.calls;
+    expect(calls.some(([pos, side]) => pos === word?.to && side === -1)).toBe(true);
+    const button = shownGapButton();
+    expect(button.style.left).toBe(`${LINE_BOX.right + ANCHORED_GAP_PX}px`);
+    const top = Number.parseFloat(button.style.top);
+    expect(top).toBe(LINE_BOX.top + (LINE_BOX.bottom - LINE_BOX.top) / 2);
+    expect(top).toBeGreaterThanOrEqual(LINE_BOX.top);
+    expect(top).toBeLessThanOrEqual(LINE_BOX.bottom);
+  });
+
+  it("stays on the word's line with left clamped at the right viewport edge", async () => {
+    const opened = await openEditor({
+      body: [paragraph(text("Huvudstaden är Paris."))],
+      gapsInteractive: true,
+      nextGapId: "gap_002",
+    });
+    stubGeometry(opened, LINE_BOX);
+    vi.spyOn(window, "innerWidth", "get").mockReturnValue(LINE_BOX.right + ANCHORED_GAP_PX + 2);
+    opened.editor.commands.setTextSelection(posIn(opened.editor, "Paris", 1));
+    clickAt(opened, posIn(opened.editor, "Paris", 1));
+    await nextTick();
+    await nextTick();
+
+    const button = shownGapButton();
+    const maxLeft = LINE_BOX.right + ANCHORED_GAP_PX + 2 - ANCHORED_EDGE_PX;
+    expect(button.style.left).toBe(`${maxLeft}px`);
+    const top = Number.parseFloat(button.style.top);
+    expect(top).toBeGreaterThanOrEqual(LINE_BOX.top);
+    expect(top).toBeLessThanOrEqual(LINE_BOX.bottom);
+  });
+
+  it("shows right after the clicked word and converts it on click", async () => {
     const opened = await openEditor({
       body: [paragraph(text("Huvudstaden är Paris."))],
       gapsInteractive: true,
@@ -57,12 +136,11 @@ describe("ExamWorkspaceRichTextEditor makeGap floating button", () => {
 
     const button = gapButton();
     expect(button).not.toBeNull();
-    expect(button?.textContent).toContain("Lucka");
-    expect(button?.textContent).not.toContain("Gör till lucka");
+    expect(button?.textContent?.trim()).toBe("");
     expect(button?.getAttribute("aria-label")).toBe("Gör till lucka");
     expect(button?.getAttribute("title")).toBe("Gör till lucka");
-    expect(button?.style.left).toBe("50px");
-    expect(button?.style.top).toBe("56px");
+    expect(button?.style.left).toBe("94px");
+    expect(button?.style.top).toBe("67px");
 
     shownGapButton().click();
     await nextTick();
@@ -96,7 +174,7 @@ describe("ExamWorkspaceRichTextEditor makeGap floating button", () => {
     expect(gapButton()).toBeNull();
   });
 
-  it("places the button below the word when there is no room above it", async () => {
+  it("stays on the word's line when there is no room above it", async () => {
     const opened = await openEditor({
       body: [paragraph(text("Huvudstaden är Paris."))],
       gapsInteractive: true,
@@ -108,7 +186,10 @@ describe("ExamWorkspaceRichTextEditor makeGap floating button", () => {
     await nextTick();
     await nextTick();
 
-    expect(gapButton()?.style.top).toBe("28px");
+    const top = Number.parseFloat(gapButton()?.style.top ?? "");
+    expect(top).toBe(10 + (24 - 10) / 2);
+    expect(top).toBeGreaterThanOrEqual(10);
+    expect(top).toBeLessThanOrEqual(24);
   });
 
   it("hides the button when the document changes", async () => {

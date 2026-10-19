@@ -23,6 +23,11 @@ import type {
   saveExamWorkspaceDocument,
 } from "../../api/examWorkspace";
 import {
+  dispatchGapToolClick,
+  gapPointerMiddle,
+  stubLinearGapPointerGeometry,
+} from "./exam-workspace/examWorkspaceGapToolPointer.specSupport";
+import {
   buildResponse,
   type ViewWrapper,
 } from "./ExamWorkspaceSlice.specSupport";
@@ -107,12 +112,14 @@ export async function addQuestion(wrapper: ViewWrapper, kind: string): Promise<v
 /**
  * Click a word in the question text as the gap tool does. jsdom has no
  * layout, so the editor's own click handler is called at a position inside
- * the word, with the caret placed first as a real pointer press would.
+ * the word, with the caret placed first as a real pointer press would and
+ * the pointer stubbed onto the same 10px grid the gap tool reads.
  */
 export async function clickWord(wrapper: ViewWrapper, word: string): Promise<void> {
   const editor = editorBehind(
     wrapper.get('[data-test="exam-workspace-body-editor-surface"]').element,
   );
+  stubLinearGapPointerGeometry(editor);
   let pos = -1;
   editor.state.doc.descendants((node, nodePos) => {
     if (pos < 0 && node.isText && node.text?.includes(word)) {
@@ -124,9 +131,7 @@ export async function clickWord(wrapper: ViewWrapper, word: string): Promise<voi
     throw new Error(`no text "${word}"`);
   }
   editor.commands.setTextSelection(pos);
-  editor.view.someProp("handleClick", (handler) =>
-    handler(editor.view, pos, new MouseEvent("click", { bubbles: true, cancelable: true })),
-  );
+  dispatchGapToolClick(editor, pos, gapPointerMiddle(pos));
   await flushPromises();
 }
 

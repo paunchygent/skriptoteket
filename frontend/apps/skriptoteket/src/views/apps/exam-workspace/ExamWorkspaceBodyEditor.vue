@@ -292,6 +292,7 @@ watch(newGapId, (gapId) => {
         show-headings
         :show-gap="gapKind"
         :gap-disabled-reason="gapKind && newGapId === null ? 'Högst 999 luckor' : null"
+        :gap-tool-disabled-reason="gapKind && newGapId === null ? 'Luckverktyg – högst 999 luckor' : null"
         :gap-tool-on="gapToolOn"
         @toggle-mark="toggleMark"
         @toggle-heading="toggleHeading"

@@ -12,7 +12,10 @@
  * jsdom has no layout, so selections are set through TipTap commands, clicks
  * reach the view through `someProp("handleClick")`, a drag release is a real
  * `mouseup` event on the surface (the tool reads the finished selection on
- * the next tick), and coordinates are stubbed where the button is asserted.
+ * the next tick), and character boxes are stubbed as fixed 10px columns so
+ * pointer hits can be told apart from caret positions. A primary drag is a
+ * real `mousedown` button 0 followed by `mouseup` button 0; any other button
+ * or a release with no press in this editor converts nothing.
  * The button teleports to document.body, so it is found through `document`.
  */
 
@@ -34,6 +37,11 @@ import {
 } from "./ExamWorkspaceRichTextEditor.specSupport";
 import { provideExamWorkspaceHistoryKeys } from "./examWorkspaceHistoryKeys";
 import type { ExamWorkspaceHistoryKeys } from "./examWorkspaceHistoryKeys";
+import {
+  dispatchGapToolClick,
+  gapPointerMiddle,
+  stubLinearGapPointerGeometry,
+} from "./examWorkspaceGapToolPointer.specSupport";
 import { provideRichTextTargetRegistry } from "./examWorkspaceRichTextTarget";
 
 type Body = NativeExamBodyParagraph[];
@@ -118,19 +126,20 @@ async function openEditor(initial: EditorProps): Promise<Opened> {
   };
 }
 
-/** A primary click at `pos`; returns whether a handler consumed it. */
-function clickAt(opened: Opened, pos: number): unknown {
-  let result: unknown;
-  opened.editor.view.someProp("handleClick", (handler) => {
-    result = handler(opened.editor.view, pos, new MouseEvent("click", { bubbles: true, cancelable: true }));
-    return result;
-  });
-  return result;
+/** A primary click at `pos` with the pointer at `clientX`; returns whether a handler consumed it. */
+function clickAt(opened: Opened, pos: number, clientX = 0): unknown {
+  return dispatchGapToolClick(opened.editor, pos, clientX);
 }
 
-/** A drag release: a real mouseup on the surface, then the tool's next tick. */
+/** A real DOM press on the surface, as ProseMirror's `handleDOMEvents` sees it. */
+function pressMouse(opened: Opened, type: "mousedown" | "mouseup", button: number): void {
+  opened.surface.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, button }));
+}
+
+/** A primary drag release: mousedown button 0, then a real mouseup, then the tool's next tick. */
 async function releaseMouse(opened: Opened): Promise<void> {
-  opened.surface.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true }));
+  pressMouse(opened, "mousedown", 0);
+  pressMouse(opened, "mouseup", 0);
   await new Promise((resolve) => setTimeout(resolve, 0));
   await nextTick();
 }
@@ -162,11 +171,13 @@ describe("ExamWorkspaceRichTextEditor gap tool", () => {
       nextGapId: "gap_002",
       gapTool: true,
     });
-    opened.editor.commands.setTextSelection(posIn(opened.editor, "world", 1));
+    stubLinearGapPointerGeometry(opened.editor);
+    const caret = posIn(opened.editor, "world", 1);
+    opened.editor.commands.setTextSelection(caret);
     // The browser's mouseup runs before the click; the deferred release check
     // must not add a second gap after the click already converted the word.
-    opened.surface.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true }));
-    const handled = clickAt(opened, posIn(opened.editor, "world", 1));
+    pressMouse(opened, "mouseup", 0);
+    const handled = clickAt(opened, caret, gapPointerMiddle(caret));
     await new Promise((resolve) => setTimeout(resolve, 0));
     await nextTick();
 
@@ -187,14 +198,125 @@ describe("ExamWorkspaceRichTextEditor gap tool", () => {
       nextGapId: "gap_002",
       gapTool: true,
     });
+    stubLinearGapPointerGeometry(opened.editor);
+    const space = posIn(opened.editor, "hello world ", 11);
     const end = posIn(opened.editor, "hello world ", 12);
     opened.editor.commands.setTextSelection(end);
-    const handled = clickAt(opened, end);
+    const handled = clickAt(opened, end, gapPointerMiddle(space));
     await nextTick();
 
     expect(handled).toBeFalsy();
     expect(opened.creations).toHaveLength(0);
     expect(opened.updates).toHaveLength(0);
+    expect(opened.editor.getText()).toBe("hello world ");
+    expect(gapButton()).toBeNull();
+  });
+
+  it("makes no gap on a click on the space between two words, from either edge", async () => {
+    const opened = await openEditor({
+      body: [paragraph(text("Solen är"))],
+      gapsInteractive: true,
+      nextGapId: "gap_002",
+      gapTool: true,
+    });
+    stubLinearGapPointerGeometry(opened.editor);
+    const space = posIn(opened.editor, "Solen är", 5);
+    opened.editor.commands.setTextSelection(space);
+
+    expect(clickAt(opened, space, gapPointerMiddle(space))).toBeFalsy();
+    expect(clickAt(opened, space + 1, gapPointerMiddle(space))).toBeFalsy();
+    await nextTick();
+
+    expect(opened.creations).toHaveLength(0);
+    expect(opened.updates).toHaveLength(0);
+    expect(opened.editor.getText()).toBe("Solen är");
+    expect(gapButton()).toBeNull();
+  });
+
+  it("makes no gap on a click on the period after a word", async () => {
+    const opened = await openEditor({
+      body: [paragraph(text("Huvudstaden är Paris."))],
+      gapsInteractive: true,
+      nextGapId: "gap_002",
+      gapTool: true,
+    });
+    stubLinearGapPointerGeometry(opened.editor);
+    const period = posIn(opened.editor, "Paris.", 5);
+    opened.editor.commands.setTextSelection(period);
+
+    expect(clickAt(opened, period, gapPointerMiddle(period))).toBeFalsy();
+    await nextTick();
+
+    expect(opened.creations).toHaveLength(0);
+    expect(opened.updates).toHaveLength(0);
+    expect(opened.editor.getText()).toBe("Huvudstaden är Paris.");
+    expect(gapButton()).toBeNull();
+  });
+
+  it("makes no gap when a right-click releases over an existing selection", async () => {
+    const opened = await openEditor({
+      body: [paragraph(text("hello world"))],
+      gapsInteractive: true,
+      nextGapId: "gap_002",
+      gapTool: true,
+    });
+    pressMouse(opened, "mousedown", 2);
+    opened.editor.commands.setTextSelection({
+      from: posIn(opened.editor, "hello world", 0),
+      to: posIn(opened.editor, "hello world", 5),
+    });
+    pressMouse(opened, "mouseup", 2);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await nextTick();
+
+    expect(opened.editor.state.selection.empty).toBe(false);
+    expect(opened.creations).toHaveLength(0);
+    expect(opened.updates).toHaveLength(0);
+    expect(opened.editor.getText()).toBe("hello world");
+  });
+
+  it("makes no gap on a primary release with no press in this editor", async () => {
+    const opened = await openEditor({
+      body: [paragraph(text("hello world"))],
+      gapsInteractive: true,
+      nextGapId: "gap_002",
+      gapTool: true,
+    });
+    opened.editor.commands.setTextSelection({
+      from: posIn(opened.editor, "hello world", 0),
+      to: posIn(opened.editor, "hello world", 5),
+    });
+    pressMouse(opened, "mouseup", 0);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await nextTick();
+
+    expect(opened.creations).toHaveLength(0);
+    expect(opened.updates).toHaveLength(0);
+    expect(opened.editor.getText()).toBe("hello world");
+  });
+
+  it("still gaps a primary drag selection on release", async () => {
+    const opened = await openEditor({
+      body: [paragraph(text("hello world"))],
+      gapsInteractive: true,
+      nextGapId: "gap_002",
+      gapTool: true,
+    });
+    pressMouse(opened, "mousedown", 0);
+    opened.editor.commands.setTextSelection({
+      from: posIn(opened.editor, "hello world", 6),
+      to: posIn(opened.editor, "hello world", 11),
+    });
+    pressMouse(opened, "mouseup", 0);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await nextTick();
+
+    expect(opened.creations).toHaveLength(1);
+    expect(opened.updates).toHaveLength(0);
+    const [body, gapId, seed] = opened.creations[0]!;
+    expect(gapId).toBe("gap_002");
+    expect(seed).toBe("world");
+    expect(body).toEqual([paragraph(text("hello "), gap("gap_002"))]);
     expect(gapButton()).toBeNull();
   });
 

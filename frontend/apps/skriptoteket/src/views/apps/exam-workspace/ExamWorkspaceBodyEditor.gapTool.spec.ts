@@ -33,6 +33,11 @@ import {
   popoverExists,
   posIn,
 } from "./ExamWorkspaceBodyEditor.specSupport";
+import {
+  dispatchGapToolClick,
+  gapPointerMiddle,
+  stubLinearGapPointerGeometry,
+} from "./examWorkspaceGapToolPointer.specSupport";
 import { withBody, newTeacherItem } from "./examWorkspaceItemEdits";
 import { buildGap } from "./examWorkspaceKeyedItems.specSupport";
 import { withNewGap } from "./examWorkspaceGapEdits";
@@ -40,7 +45,7 @@ import { plainBody } from "./examWorkspaceRichText";
 
 const TOOLBAR_GAP_TOOL = '[data-test="exam-workspace-toolbar-gap-tool"]';
 const FLOATING_GAP = '[data-test="exam-workspace-make-gap"]';
-const GAP_AT_CAP = "Högst 999 luckor";
+const TOOL_AT_CAP = "Luckverktyg – högst 999 luckor";
 
 /** Mount the body editor inside a small owner that applies each edit like the real store. */
 function mountHarness(item: NativeExamItem) {
@@ -146,19 +151,18 @@ function innerEditor(harness: Harness): Editor {
   return candidate;
 }
 
-/** A primary click at `pos` that leaves the caret behind, as a mousedown would. */
-function clickAt(editor: Editor, pos: number): void {
-  editor.view.someProp("handleClick", (handler) =>
-    handler(editor.view, pos, new MouseEvent("click", { bubbles: true, cancelable: true })),
-  );
+/** A primary click at `pos` with the pointer inside the clicked word. */
+function clickAt(editor: Editor, pos: number, clientX: number): void {
+  dispatchGapToolClick(editor, pos, clientX);
 }
 
 /** Click the word, setting the caret first as a real pointer press would. */
 function clickWord(harness: Harness, word: string): void {
   const editor = innerEditor(harness);
+  stubLinearGapPointerGeometry(editor);
   const pos = posIn(editor, word, 1);
   editor.commands.setTextSelection(pos);
-  clickAt(editor, pos);
+  clickAt(editor, pos, gapPointerMiddle(pos));
 }
 
 /** Ctrl+Alt+G as ProseMirror's keymap reads it: the key code comes from `keyCode`, as browsers set it. */
@@ -370,7 +374,7 @@ describe("ExamWorkspaceBodyEditor gap tool", () => {
     const toggle = toolToggle(harness);
     expect(toolPressed(harness)).toBe("false");
     expect(toggle.attributes("disabled")).toBeDefined();
-    expect(toggle.attributes("title")).toBe(GAP_AT_CAP);
+    expect(toggle.attributes("title")).toBe(TOOL_AT_CAP);
     await toggle.trigger("click");
     await settle();
     expect(toolPressed(harness)).toBe("false");

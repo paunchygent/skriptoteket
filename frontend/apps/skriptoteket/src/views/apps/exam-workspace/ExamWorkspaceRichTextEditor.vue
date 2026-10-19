@@ -23,12 +23,15 @@
  *   it makes it the surface the shared formatting toolbar acts on. The target
  *   also carries `makeGap`: the selection, or the word at the caret, becomes
  *   one new gap in one `createGap` event, never an `update`. A click inside a
- *   word shows a small floating "Lucka" button above that word ("Gör till
- *   lucka" tooltip and accessible name) while a next gap id is available;
+ *   word shows a small glyph-only floating button right after that word,
+ *   on the word's own line ("Gör till lucka" tooltip and accessible name
+ *   only) while a next gap id is available;
  *   one click on it converts the word. While the optional `gapTool` prop is
- *   true, a click inside a word or a drag selection inside one paragraph
- *   becomes a gap at once through the same replacement, and the button never
- *   shows. Escape in the surface reaches the owner as `escape` (after the
+ *   true, a click on the pointer-hit word or a primary drag selection inside
+ *   one paragraph becomes a gap at once through the same replacement, and
+ *   the button never shows: a click on a space or punctuation only places
+ *   the caret, and a release converts only after a primary press started in
+ *   this editor. Escape in the surface reaches the owner as `escape` (after the
  *   button takes its own Escape), so the owner closes a popover first and
  *   the tool second. The button
  *   teleports to the document body and sits fixed at viewport coordinates, so
@@ -185,8 +188,12 @@ const editor = useEditor({
       return handleMakeGapClick(view, pos, event);
     },
     handleDOMEvents: {
-      mouseup: () => {
-        handleGapToolMouseUp();
+      mousedown: (_view, event) => {
+        handleGapToolMouseDown(event);
+        return false;
+      },
+      mouseup: (_view, event) => {
+        handleGapToolMouseUp(event);
         return false;
       },
     },
@@ -254,6 +261,7 @@ const {
   makeGap,
   confirmMakeGap,
   handleMakeGapClick,
+  handleGapToolMouseDown,
   handleGapToolMouseUp,
   maybeHideMakeGapButton,
   hideMakeGap,
@@ -424,7 +432,7 @@ defineExpose({
         v-if="makeGapButton !== null"
         ref="makeGapButtonElement"
         type="button"
-        class="fixed z-30 inline-flex items-center gap-1 border border-navy/60 bg-panel px-2 py-1 text-xs text-navy shadow"
+        class="fixed z-30 inline-flex h-6 w-6 items-center justify-center text-navy focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action/40"
         :style="{ left: `${makeGapButton.left}px`, top: `${makeGapButton.top}px` }"
         aria-label="Gör till lucka"
         title="Gör till lucka"
@@ -436,7 +444,6 @@ defineExpose({
           :size="14"
           aria-hidden="true"
         />
-        Lucka
       </button>
     </Teleport>
   </div>

@@ -9,8 +9,9 @@
  *   Mousedown on the button is prevented so the caret stays in the paragraph.
  *   Right after the Lucka button sits a glyph-only gap tool toggle: no visible
  *   text, its shortcut in the tooltip and `aria-keyshortcuts`, pressed while
- *   the tool is on, emitting `toggleGapTool`, and disabled with the cap reason
- *   or `disabled`. Every mark and heading tooltip names its shortcut for the
+ *   the tool is on, emitting `toggleGapTool`, and disabled with its own cap
+ *   reason (`gapToolDisabledReason`) or `disabled`, while the Lucka button
+ *   keeps its own `gapDisabledReason`. Every mark and heading tooltip names its shortcut for the
  *   viewer's platform.
  */
 
@@ -106,9 +107,13 @@ describe("ExamWorkspaceMarkToolbar gap tool toggle", () => {
     expect(wrapper.emitted("toggleGapTool")).toBeUndefined();
   });
 
-  it("disables the toggle with the cap reason as its tooltip", () => {
+  it("disables the toggle with its own cap reason while the Lucka button keeps its reason", () => {
     const wrapper = mount(ExamWorkspaceMarkToolbar, {
-      props: { showGap: true, gapDisabledReason: "Högst 999 luckor" },
+      props: {
+        showGap: true,
+        gapDisabledReason: "Högst 999 luckor",
+        gapToolDisabledReason: "Luckverktyg – högst 999 luckor",
+      },
     });
     const toggle = wrapper.get(GAP_TOOL);
     const element = toggle.element;
@@ -116,7 +121,8 @@ describe("ExamWorkspaceMarkToolbar gap tool toggle", () => {
       throw new Error("the gap tool toggle is not a button");
     }
     expect(element.disabled).toBe(true);
-    expect(toggle.attributes("title")).toBe("Högst 999 luckor");
+    expect(toggle.attributes("title")).toBe("Luckverktyg – högst 999 luckor");
+    expect(wrapper.get(MAKE_GAP).attributes("title")).toBe("Högst 999 luckor");
   });
 
   it("disables the toggle with disabled", () => {

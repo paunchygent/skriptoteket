@@ -41,10 +41,12 @@ withDefaults(
     showGap?: boolean;
     /** Why no more gaps can be added; disables the gap button while set. */
     gapDisabledReason?: string | null;
+    /** Why the gap tool toggle is off at the cap; disables the toggle while set. */
+    gapToolDisabledReason?: string | null;
     /** Whether the gap tool toggle reads pressed. */
     gapToolOn?: boolean;
   }>(),
-  { activeMarks: () => [], activeHeading: null, disabled: false, showHeadings: false, showGap: false, gapDisabledReason: null, gapToolOn: false },
+  { activeMarks: () => [], activeHeading: null, disabled: false, showHeadings: false, showGap: false, gapDisabledReason: null, gapToolDisabledReason: null, gapToolOn: false },
 );
 
 const emit = defineEmits<{
@@ -138,8 +140,8 @@ const isMac = isMacPlatform();
         :aria-pressed="gapToolOn ? 'true' : 'false'"
         :aria-keyshortcuts="ariaKeyshortcuts('gapTool', isMac)"
         aria-label="Luckverktyg"
-        :title="gapDisabledReason ?? `Luckverktyg (${shortcutLabel('gapTool', isMac)})`"
-        :disabled="disabled || gapDisabledReason !== null"
+        :title="gapToolDisabledReason ?? `Luckverktyg (${shortcutLabel('gapTool', isMac)})`"
+        :disabled="disabled || gapToolDisabledReason !== null"
         data-test="exam-workspace-toolbar-gap-tool"
         @click="emit('toggleGapTool')"
       >

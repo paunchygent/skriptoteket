@@ -3,14 +3,17 @@
  *
  * Domain purpose:
  *   The one place that turns a word into a gap: the shared toolbar's Lucka
- *   command (the selection, or the word at the caret) and the small floating
- *   "Lucka" button ("Gör till lucka" tooltip and accessible name) above a
- *   clicked word. Both paths resolve the word with the same whole-textblock
+ *   command (the selection, or the word at the caret) and the small
+ *   glyph-only floating button ("Gör till lucka" tooltip and accessible
+ *   name only) right after a clicked word, on that word's own line. Both paths resolve the word with the same whole-textblock
  *   resolver in document positions, replace it with one gap atom in one
  *   transaction, and seed the gap from the replaced document text. While the
  *   gap tool is on, a word click converts at once through the same
  *   replacement and a drag selection converts on mouseup; the button never
- *   shows. The button
+ *   shows. A tool click converts only the word the pointer actually hit (a
+ *   click on a space or punctuation only places the caret), and a release
+ *   converts only after a primary press started in this editor, so a
+ *   right-click over a selection never makes a gap. The button
  *   teleports to the document body and sits fixed at viewport coordinates, so
  *   the editor's clipping never cuts it; later transactions keep it while the
  *   document is unchanged and the caret stays inside the word.
@@ -30,7 +33,7 @@ import { nextTick, ref } from "vue";
 import type { Ref } from "vue";
 
 import { EXAM_GAP_NODE, EXAM_PICTURE_NODE } from "./examWorkspaceRichTextSchema";
-import { wordRangeAtDocPosition } from "./examWorkspaceGapWord";
+import { wordRangeAtDocCharacter, wordRangeAtDocPosition } from "./examWorkspaceGapWord";
 import { ANCHORED_EDGE_PX, ANCHORED_GAP_PX } from "./useExamWorkspaceAnchoredPosition";
 
 /** The floating "Lucka" button: the stored word it converts and where it sits. */
@@ -49,7 +52,8 @@ export function useExamWorkspaceMakeGap(options: {
   makeGap: (gapId: string) => void;
   confirmMakeGap: () => void;
   handleMakeGapClick: (view: EditorView, pos: number, event: MouseEvent) => boolean;
-  handleGapToolMouseUp: () => void;
+  handleGapToolMouseDown: (event: MouseEvent) => void;
+  handleGapToolMouseUp: (event: MouseEvent) => void;
   maybeHideMakeGapButton: (transaction: Transaction) => void;
   hideMakeGap: () => void;
   removeMakeGapListeners: () => void;
@@ -115,31 +119,31 @@ export function useExamWorkspaceMakeGap(options: {
     }
   }
 
-  /** Place the floating button above its word, or below it when there is no room above. */
+  /** Place the floating button right after its word, on that word's own line. */
   function placeMakeGapButton(): void {
     const current = makeGapButton.value;
     const view = options.editor.value?.view;
     if (current === null || !view) {
       return;
     }
-    let coords: { left: number; top: number; bottom: number };
+    let coords: { left: number; top: number; right: number; bottom: number };
     try {
-      coords = view.coordsAtPos(current.from);
+      // The -1 bias keeps the caret on the line where the word ends, so a
+      // word ending a line never moves the button to the next line.
+      coords = view.coordsAtPos(current.to, -1);
     } catch {
       hideMakeGap();
       return;
     }
     const height = makeGapButtonElement.value?.offsetHeight ?? 0;
     const width = makeGapButtonElement.value?.offsetWidth ?? 0;
-    let top = coords.top - height - ANCHORED_GAP_PX;
-    if (top < ANCHORED_EDGE_PX) {
-      top = coords.bottom + ANCHORED_GAP_PX;
-    }
+    const lineHeight = coords.bottom - coords.top;
+    const top = coords.top + (lineHeight - height) / 2;
     const maxLeft = window.innerWidth - width - ANCHORED_EDGE_PX;
     const left =
       maxLeft < ANCHORED_EDGE_PX
         ? ANCHORED_EDGE_PX
-        : Math.min(Math.max(coords.left, ANCHORED_EDGE_PX), maxLeft);
+        : Math.min(Math.max(coords.right + ANCHORED_GAP_PX, ANCHORED_EDGE_PX), maxLeft);
     if (makeGapButton.value !== current) {
       return;
     }
@@ -239,28 +243,87 @@ export function useExamWorkspaceMakeGap(options: {
     if (event instanceof MouseEvent && event.button !== 0) {
       return false;
     }
+    if (options.gapTool()) {
+      const word = gapToolWordAtPointer(view, pos, event);
+      if (word === null) {
+        return false;
+      }
+      replaceRangeWithGap(gapId, word.from, word.to, view.state.doc.textBetween(word.from, word.to, "\n", " "));
+      return true;
+    }
     const word = wordRangeAtDocPosition(view.state.doc, pos);
     if (word === null) {
       return false;
     }
     const seed = view.state.doc.textBetween(word.from, word.to, "\n", " ");
-    if (options.gapTool()) {
-      replaceRangeWithGap(gapId, word.from, word.to, seed);
-      return true;
-    }
     showMakeGapButton(gapId, word.from, word.to, seed);
     return false;
   }
 
   /**
-   * Convert a drag selection into one gap on release while the gap tool is
-   * on. The browser finishes the selection after mouseup, so the selection
-   * is read on the next tick; `makeGap` keeps its guards (one textblock, no
-   * atom, non-blank). A plain click leaves an empty selection behind, so it
-   * converts nothing here; the click handler owns that path.
+   * The word the pointer hit while the gap tool is on, or null when the
+   * pointer is on a separator or its character cannot be told apart. The
+   * click position is a caret between two characters; the pointer is on one
+   * of those two neighbours exactly when `clientX` lies between that
+   * character's left edge (`coordsAtPos` at its start) and its right edge
+   * (`coordsAtPos` past its end). A separator hit, an unreadable position
+   * and a zero-width character all resolve to nothing, so ProseMirror places
+   * the caret instead.
    */
-  function handleGapToolMouseUp(): void {
-    if (!options.gapTool()) {
+  function gapToolWordAtPointer(
+    view: EditorView,
+    pos: number,
+    event: MouseEvent,
+  ): { from: number; to: number } | null {
+    const clientX = event.clientX;
+    if (!Number.isFinite(clientX)) {
+      return null;
+    }
+    const size = view.state.doc.content.size;
+    for (const charPos of [pos, pos - 1]) {
+      if (charPos < 0 || charPos + 1 > size) {
+        continue;
+      }
+      let left: number;
+      let right: number;
+      try {
+        left = view.coordsAtPos(charPos, 1).left;
+        right = view.coordsAtPos(charPos + 1, -1).left;
+      } catch {
+        continue;
+      }
+      if (!Number.isFinite(left) || !Number.isFinite(right) || right <= left) {
+        continue;
+      }
+      if (clientX >= left && clientX < right) {
+        return wordRangeAtDocCharacter(view.state.doc, charPos);
+      }
+    }
+    return null;
+  }
+
+  /** True after a primary press started in this editor; cleared on every release. */
+  let gapToolPrimaryDown = false;
+
+  /** Record a press started in this editor; only a primary press starts a gap gesture. */
+  function handleGapToolMouseDown(event: MouseEvent): void {
+    gapToolPrimaryDown = event.button === 0;
+  }
+
+  /**
+   * Convert a drag selection into one gap on release while the gap tool is
+   * on, but only for the primary gesture: a primary press in this editor
+   * followed by a primary release. A right-click (or any non-primary
+   * release) over an existing selection converts nothing and leaves the
+   * document unchanged; the browser finishes the selection after mouseup, so
+   * the selection is read on the next tick; `makeGap` keeps its guards (one
+   * textblock, no atom, non-blank). A plain click leaves an empty selection
+   * behind, so it converts nothing here; the click handler owns that path.
+   */
+  function handleGapToolMouseUp(event: MouseEvent): void {
+    const primaryRelease = event.button === 0 && gapToolPrimaryDown;
+    gapToolPrimaryDown = false;
+    if (!primaryRelease || !options.gapTool()) {
       return;
     }
     setTimeout(() => {
@@ -287,6 +350,7 @@ export function useExamWorkspaceMakeGap(options: {
     makeGap,
     confirmMakeGap,
     handleMakeGapClick,
+    handleGapToolMouseDown,
     handleGapToolMouseUp,
     maybeHideMakeGapButton,
     hideMakeGap,
