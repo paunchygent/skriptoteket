@@ -34,9 +34,11 @@ import {
   posIn,
 } from "./ExamWorkspaceBodyEditor.specSupport";
 import { buildGap } from "./examWorkspaceKeyedItems.specSupport";
+import { examWorkspaceProvidersPlugin } from "./examWorkspaceProviders.specSupport";
 import { withBody } from "./examWorkspaceItemEdits";
 import { nextGapId, withNewGap } from "./examWorkspaceGapEdits";
 import { plainBody } from "./examWorkspaceRichText";
+import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
 import {
   exam,
@@ -343,6 +345,7 @@ describe("ExamWorkspaceBodyEditor gap creation", () => {
     const item = plainGapItem();
     const question = mount(ExamWorkspaceQuestionEditor, {
       attachTo: document.body,
+      global: { plugins: [examWorkspaceProvidersPlugin()] },
       props: {
         item,
         label: "1",
@@ -364,7 +367,7 @@ describe("ExamWorkspaceBodyEditor gap creation", () => {
     ]);
     question.unmount();
 
-    const editing = inScope(() => useExamWorkspaceEditing());
+    const editing = inScope(() => useExamWorkspaceEditing(serverExamWorkspaceStore));
     const created = vi.spyOn(editing, "createItemGap");
     const entry: ExamWorkspaceItemEntry = {
       kind: "item",
@@ -381,6 +384,7 @@ describe("ExamWorkspaceBodyEditor gap creation", () => {
     };
     const pane = mount(ExamWorkspaceEditorPane, {
       attachTo: document.body,
+      global: { plugins: [examWorkspaceProvidersPlugin()] },
       props: {
         editing,
         workspaceDocument: exam(),
