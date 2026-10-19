@@ -129,6 +129,11 @@ Stop and report to the parent in either case:
   `f44b5631` (body reset, proven on the WeasyPrint box tree); R2 `e112c3e3`
   (heading restoration skips W10 answer space, proven through the real
   chunker); R3 `6f457750` + `c1511017` (the preview sends the history owner's
-  position as `step_id` and the server renders that retained step). Next: the
-  domain suite after the orchestrator's go (queued), then R1–R3 go back to
+  position as `step_id` and the server renders that retained step). Round-2
+  domain suite: pytest 4333 passed, vitest 949 passed.
+- 2026-10-19, rereview2 at `b6bb2fbb`: R1 and R3 clear; R2 reopened. A
+  Heading 1-styled answer line came back through final section assembly. Fixed
+  in `b2aaac08`: `with_heading_runs` and `_unshown` apply the W10 owner, proven
+  through the real chunker, `assemble_build_result` and `admit_batch`. Next:
+  the domain suite after the orchestrator's go (queued), then R2 goes back to
   09d50acc. User gates: none open.
