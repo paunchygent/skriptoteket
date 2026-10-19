@@ -54,29 +54,20 @@ Stop and report if the shared editor cannot run on a browser store without forki
 | G3  | Limit numbers are settings; the lead proposes defaults and the user confirms them before merge. |
 | G4  | Sign-in prompts read "Logga in för att importera från DigiExam eller Word." and "Logga in för att få AI-hjälp." |
 
-## Resume Here (clean break 2026-10-18)
+## Resume Here (lead 2, 2026-10-19)
 
-- Branch `codex/task-skript-41-02-02-remote`. The head is the commit that adds this note. Merged origin/main 188a2139 (REP-0044 and 39-06-10) at b454590b. The lead has proven every unit below with focused tests. There has been no independent review yet.
-- Retained root: `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a14f56-345b-7f38-ab9e-a441663b90d8`. Design and facts: `evidence/planning/synthesis-41-02-02.md`. Junior work orders: `evidence/planning/work-orders/` (each one is `_preamble.md` plus `<unit>.body.md`). Child results: `evidence/results/<id>.json`.
-- Done and committed:
-  - B1 and B1m: database limiter, table `public_request_windows`, migration a1c2e3f4b5d6 (P4).
-  - B2a: public guest exports and export checklist (P3).
-  - B2b and B2c: public stateless blank, part, group/empty/move, change-type, misspellings and course routes.
-  - B3: signed-in POST `/exam-workspace/guest-drafts`. The `exam_guest_draft_handoffs` ledger (migration c8e4f2a6d9b3) makes sure each draft is saved once per user (P5).
-  - F1a-c: one injected exam workspace store (G2).
-  - F2a-c: the guest browser store in IndexedDB (P2).
-  - G1: `tests/unit/web/test_ai_route_gate_public_routes.py` proves that no public or guest route reaches an AI client. The REP-0044 modules are unchanged apart from one `NON_AI_JOB_REPOSITORY_USERS` entry for the guest-draft handler.
-- Next units, in order (orders are written):
-  1. `f3a-guest-host`: guest host, entry swap, sign-in prompt, copy constants, limit notice. One run completed it and then reverted its edits on the lead's stop order. Rerun it fresh; its design is recorded in result `22a5493f-c8bd-41d9-a6a3-0bb9bb47be31.json`.
-  2. `f3b-guest-gating`: its addendum covers main's `canUseAi` gate.
-  3. `f4-guest-handoff` (P5, client side of B3).
-  4. The guest QTI start, after the parent confirms that 41-02-01 is on main.
-  5. Then lint, typecheck, frontend checks, docs-validate and one domain-wide suite.
+- Branch `codex/task-skript-41-02-02-remote`. origin/main d4d267cc (REP-0047) merged at d7f99dee; G1 and the AI route-gate guard pass after the merge. No independent review yet.
+- Retained root: `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a14f56-345b-7f38-ab9e-a441663b90d8`. Design: `evidence/planning/synthesis-41-02-02.md`. Lead-2 work orders: `evidence/planning/work-orders-lead2/`. Child results: `evidence/results/<id>.json`.
+- Done and committed: B1, B1m, B2a-c, B3, F1a-c, F2a-c, G1 (see the earlier units in git history), and:
+  - R1 (2dbac7e6): the parts-vertical test builds the export handler with its `renderer`; mypy clean.
+  - F3a (8f598329): the public converter URL mounts `ExamWorkspaceGuestHost.vue` on the guest store, with the browser-only notice, the limit sign-in prompt and a redirect to the signed-in workspace for a signed-in visitor.
+  - F4 + R2 (c8e61d9e): `ExamWorkspaceTeacherHost.vue` hands a stored guest draft to Mina filer once on mount; an unreadable browser store hands off nothing and the workspace still renders.
+  - F3b (9de1523d): blank start, G4 sign-in prompts on every AI control and the DigiExam/Word import, teacher-only controls hidden in guest mode.
+- R3: each guest control is gated once, in its component; the shared AI mode lives in `useExamWorkspaceAiMode`.
+- Open unit: the guest QTI start waits for TASK-SKRIPT-41-02-01 on main.
+- Next: lint, typecheck, frontend checks, docs-validate, then one domain-wide suite after the orchestrator's go.
 - Open findings:
-  - `tests/integration/test_exam_workspace_parts_vertical.py:145` fails mypy because B2a (5372014a) gave the export handler a `renderer` argument. The lead must repair this.
-  - B3 does not refuse a title that is already in use in Mina filer, so a handoff can create a second exam with the same title. The signed-in save path has no name uniqueness either. Returned to the parent as a product decision.
-  - The caller key is an unsalted sha256 of the client IP. Rows are pruned after about 2 hours.
+  - B3 does not refuse a title that is already used in Mina filer, so a handoff can create a second exam with the same title. This is a product decision for the user.
+  - The caller key is an unsalted sha256 of the client IP; rows are pruned after about 2 hours.
   - `ExamConverterPublicView.vue` stays until 41-02-03.
-- User gate (G3): the six `PUBLIC_GUEST_*_PER_HOUR` settings hold provisional values in `config.py`. The user must confirm them before merge. Local render timing for an 8-question exam with no images: QTI 3 ms, PDF about 0.11 s, DOCX about 0.05 s. The probe is `evidence/probes/render_timing.py`; it has not been run on Hemma.
-- No children are running.
-- Remove the temporary worktree `/tmp/sk-4102-head` with `git worktree remove`.
+- User gate (G3): the six `PUBLIC_GUEST_*_PER_HOUR` settings in `config.py` hold provisional values (import 10/200, export 30/300, edit 600/6000 per caller/pool per hour). The user must confirm them before merge. Local render timing for an 8-question exam: QTI 3 ms, PDF about 0.11 s, DOCX about 0.05 s; it has not been measured on Hemma.
