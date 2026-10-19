@@ -93,7 +93,8 @@ Stop and report if the shared editor cannot run on a browser store without forki
   - F10 (ad01ffeb): the browser decodes QTI picture bytes in Pydantic's URL-safe base64, the producer's declared encoding.
   - F11 (ccfe1d7f): `startBlank` and `startFromQti` capture the slot cursor before awaiting the public route, through one helper.
   - F12: a departure pending when the history scope is disposed neither leaves nor holds the lock.
-- Next: full Vitest after the orchestrator assigns a slot; then F10 and F11 go back to da90f12c, and F12 is admitted on focused proof.
+- Full Vitest at bbbc677a: 444 files, 3069 passed. Rereview 4 (da90f12c) approved F10 and F11 with no new findings; the orchestrator admitted F12 on focused proof. Every finding is cleared except F6.
+- Next: hold until TASK-SKRIPT-40-04-07 is on origin/main. Then merge main, build F6 (the guest print PDF, offered separately from the Exam.net fallback) through a fresh junior, and send it to review da90f12c.
 - Open findings:
   - The caller key is an unsalted sha256 of the client IP; rows are pruned after about 2 hours.
   - `ExamConverterPublicView.vue` stays until 41-02-03.
