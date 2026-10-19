@@ -38,10 +38,8 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import (
 )
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import build_replay
 from tests.unit.domain.curated_apps.exam_workspace.recorded_build_events_support import (
-    unexpected_build_events,
-)
-from tests.unit.domain.curated_apps.exam_workspace.test_replay_guard_pending_source_review import (
     is_pending_source_review,
+    unexpected_build_events,
 )
 
 _GRAMMAR_1 = "svenska_2_grammatik_omprov_variant_1_med_facit"

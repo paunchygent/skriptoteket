@@ -10,6 +10,13 @@ exactly that one decided admission event.
 from collections.abc import Iterable
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import DocxBuildEvent
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
+    NativeExamItem,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeItemReviewState,
+    NativeParseOrigin,
+)
 
 TASK_SKRIPT_39_04_17_ADMITTED_EXAMS = (
     "svenska_2_grammatik_omprov_variant_1_med_facit",
@@ -24,6 +31,14 @@ TASK_SKRIPT_39_04_17_ADMITTED_ANCHORS = (
     "body:0012",
     "body:0013",
 )
+
+
+def is_pending_source_review(item: NativeExamItem) -> bool:
+    """Whether the item keeps the D9 exemption: still pending source review."""
+    return (
+        item.review.state is NativeItemReviewState.REVIEW_REQUIRED
+        and item.review.parse_origin is NativeParseOrigin.SOURCE_FALLBACK
+    )
 
 
 def unexpected_build_events(exam: str, events: Iterable[DocxBuildEvent]) -> list[DocxBuildEvent]:

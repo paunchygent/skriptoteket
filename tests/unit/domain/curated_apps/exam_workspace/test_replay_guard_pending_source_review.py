@@ -33,14 +33,6 @@ from tests.unit.domain.curated_apps.exam_workspace.gap_paragraph_test_support im
 )
 
 
-def is_pending_source_review(item: NativeExamItem) -> bool:
-    """Whether the item keeps the D9 exemption: still pending source review."""
-    return (
-        item.review.state is NativeItemReviewState.REVIEW_REQUIRED
-        and item.review.parse_origin is NativeParseOrigin.SOURCE_FALLBACK
-    )
-
-
 def _leaking_document(
     state: NativeItemReviewState, origin: NativeParseOrigin
 ) -> tuple[NativeExamDocument, DocxChunk]:

@@ -51,13 +51,11 @@ from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
     recording,
 )
 from tests.unit.domain.curated_apps.exam_workspace.recorded_build_events_support import (
+    is_pending_source_review,
     unexpected_build_events,
 )
 from tests.unit.domain.curated_apps.exam_workspace.source_rules_test_support import (
     recorded_produced_items,
-)
-from tests.unit.domain.curated_apps.exam_workspace.test_replay_guard_pending_source_review import (
-    is_pending_source_review,
 )
 
 _NUMBERED_LINE = re.compile(r"^\s*(?:[^\W\d_]+\s+)?\d{1,3}\s*[.)]\s+")
