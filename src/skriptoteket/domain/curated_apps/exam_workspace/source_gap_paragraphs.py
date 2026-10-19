@@ -4,11 +4,10 @@ A gap_fill body paragraph aligned to a source paragraph with blank runs is rebui
 that source paragraph: its visible source text, starting after the printed question label
 and ending before an inline answer label, with the reply's gaps filling the blank runs in
 source order. A paragraph with no blank run before its inline answer label has one blank
-run at the label's place (TASK-SKRIPT-39-04-17). The reply supplies only its gaps
-and their accepted values; its wording is
-discarded, never compared. A gap count that differs from the blank-run count raises
-``GapCountMismatchError``, which is not a ``FormattingTransferError``, so the whole-body
-rebuild never runs for a count mismatch.
+run at the label's place (TASK-SKRIPT-39-04-17). The reply supplies only its gaps and
+their accepted values; its wording is discarded, never compared. A gap count that differs
+from the blank-run count raises ``GapCountMismatchError``, which is not a
+``FormattingTransferError``, so the whole-body rebuild never runs for a count mismatch.
 """
 
 from __future__ import annotations

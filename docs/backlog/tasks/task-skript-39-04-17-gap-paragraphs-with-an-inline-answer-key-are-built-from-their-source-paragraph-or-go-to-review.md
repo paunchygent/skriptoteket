@@ -1,12 +1,11 @@
 ---
 type: task
 id: TASK-SKRIPT-39-04-17
-title: Gap paragraphs with an inline answer key are built from their source paragraph
-  or go to review, so the question word is never lost
+title: Gap paragraphs with an inline answer key are built from their source paragraph or go to review, so the question word is never lost
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-19'
 status: proposed
 closeout_review:
@@ -14,9 +13,7 @@ closeout_review:
   status: not_started
 task_kind: story
 acceptance_criteria:
-- A gap_fill body paragraph aligned to a source paragraph with an inline answer label
-  and no blank run before it is built from that source paragraph or sends the item
-  to review; the reply's wording never replaces the source wording
+  - A gap_fill body paragraph aligned to a source paragraph with an inline answer label and no blank run before it is built from that source paragraph or sends the item to review; the reply's wording never replaces the source wording
 story: ST-SKRIPT-39-04
 backlog_document_profile: contract-derived
 ---
@@ -26,9 +23,7 @@ backlog_document_profile: contract-derived
 The TASK-SKRIPT-39-04-15 baseline read (2026-10-18) found that in
 `svenska_2_grammatik_omprov_variant_1_med_facit` and `variant_2`, item_001
 (Fråga 1, gap_fill, admitted `review_complete`) loses the word to be split and
-shows the inline answer key's morpheme split instead: `a) sol[gap] + ros[gap] +
-or[gap] + na[gap] + s[gap]` (variant 2) and `a) snö + boll + ar + na +
-s[gap][gap][gap][gap][gap]` (variant 1).
+shows the inline answer key's morpheme split instead: `a) sol[gap] + ros[gap] + or[gap] + na[gap] + s[gap]` (variant 2) and `a) snö + boll + ar + na + s[gap][gap][gap][gap][gap]` (variant 1).
 
 Root cause (R1). The source paragraphs `body:0010`-`body:0012` are each
 `a) <word> Svar: <split with (R)/(A)/(B)>`. They hold no underscore, dot or
@@ -99,12 +94,12 @@ the document and event formats are unchanged.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| D1  | The rule applies to gap_fill body paragraphs aligned (`SourceFormatting.output_anchors`) to a source paragraph whose 39-04-16 build span holds no blank run and that carries an inline answer label (`ANSWER_LABEL`). Decided by the implementation lead from the root cause. |
-| D2  | No wording comparison and no fallback: the reply's wording never replaces the source wording in such a paragraph (39-04-16 D8, ST-SKRIPT-39-04). |
-| D3  | Owning story is ST-SKRIPT-39-04; the task builds on main at `7bcc7f5b7`. Replay identity outside the two svenska_2 item_001 is the regression bar. |
+| ID  | Decided contract term                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | The rule applies to gap_fill body paragraphs aligned (`SourceFormatting.output_anchors`) to a source paragraph whose 39-04-16 build span holds no blank run and that carries an inline answer label (`ANSWER_LABEL`). Decided by the implementation lead from the root cause.                                                                                                                                                                                                                                     |
+| D2  | No wording comparison and no fallback: the reply's wording never replaces the source wording in such a paragraph (39-04-16 D8, ST-SKRIPT-39-04).                                                                                                                                                                                                                                                                                                                                                                  |
+| D3  | Owning story is ST-SKRIPT-39-04; the task builds on main at `7bcc7f5b7`. Replay identity outside the two svenska_2 item_001 is the regression bar.                                                                                                                                                                                                                                                                                                                                                                |
 | D4  | In a gap_fill item, a source paragraph with no blank run before an inline answer label (`ANSWER_LABEL`) has one blank run at the label's place. The paragraph is built from source up to the label (39-04-16 D2 span, with the gap after the trimmed text: `a) solrosornas [gap]`). A reply gap count other than 1 raises `GapCountMismatchError`, and admission sends the item to review (39-04-16 D5). Orchestrator ruling 2026-10-19 (option A; a merged gap would change gap ids, which 39-04-16 D4 forbids). |
-| D5  | Review with the source intact, instead of today's admitted item with the word lost, meets "never worse off than today". Orchestrator ruling 2026-10-19 on the TASK-SKRIPT-39-04-15 F2 re-review precedent (`898d311f`); no user gate. |
-| D6  | The change stays local to `_gap_unit`, `_unit_blank_runs` and `_content_end` in `source_gap_paragraphs.py`; `source_paragraph`, which TASK-SKRIPT-39-04-15 folds its builder onto, is not touched. 39-04-15 lands first; this branch then merges `origin/main` and reruns its tests and the replays. Orchestrator ruling 2026-10-19. |
-| G1  | Open user gate (copy), routed to the Mac parent 2026-10-19: the review reason for this mismatch. Until the user decides, the existing 39-04-16 D10 text built by `GapCountMismatchError.reason` is used, and the wording stays in that one place. |
+| D5  | Review with the source intact, instead of today's admitted item with the word lost, meets "never worse off than today". Orchestrator ruling 2026-10-19 on the TASK-SKRIPT-39-04-15 F2 re-review precedent (`898d311f`); no user gate.                                                                                                                                                                                                                                                                             |
+| D6  | The change stays local to `_gap_unit`, `_unit_blank_runs` and `_content_end` in `source_gap_paragraphs.py`; `source_paragraph`, which TASK-SKRIPT-39-04-15 folds its builder onto, is not touched. 39-04-15 lands first; this branch then merges `origin/main` and reruns its tests and the replays. Orchestrator ruling 2026-10-19.                                                                                                                                                                              |
+| G1  | Open user gate (copy), routed to the Mac parent 2026-10-19: the review reason for this mismatch. Until the user decides, the existing 39-04-16 D10 text built by `GapCountMismatchError.reason` is used, and the wording stays in that one place.                                                                                                                                                                                                                                                                 |
