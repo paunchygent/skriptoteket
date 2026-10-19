@@ -2,15 +2,15 @@
  * Exam workspace guest handoff after sign-in.
  *
  * Expected behavior:
- *   With no stored draft the handoff calls nothing and returns null. With a
- *   draft it posts the newest (position) document keyed by the snapshot
+ *   With no stored draft the handoff calls nothing and returns none. With
+ *   a draft it posts the newest (position) document keyed by the snapshot
  *   cursor with only the declared picture bytes, then clears only that
- *   snapshot and returns the new lineage id. A failed post keeps the browser
- *   copy, shows one failure toast and returns null. A failed clearIf after a
- *   successful post still returns the lineage id, and the clear never runs
- *   before the post resolves. A newer draft or newer edits stored while the
- *   post is in flight are kept; a second handoff posts the new cursor as its
- *   own key.
+ *   snapshot and returns handed_off with the new lineage id. A transient
+ *   post failure keeps the browser copy, records nothing and returns
+ *   transient with no toast. A failed clearIf after a successful post still
+ *   returns handed_off, and the clear never runs before the post resolves.
+ *   A newer draft or newer edits stored while the post is in flight are
+ *   kept; a second handoff posts the new cursor as its own key.
  */
 
 import { createPinia, setActivePinia } from "pinia";
@@ -27,6 +27,10 @@ import {
 } from "./examWorkspaceGuestDraftStorage";
 import type { ExamWorkspaceGuestDraftStoragePort } from "./examWorkspaceGuestDraftStorage";
 import {
+  createInMemoryGuestHandoffRejectionStorage,
+  type GuestHandoffRejectionStoragePort,
+} from "./examWorkspaceGuestHandoffRejection";
+import {
   guestDocumentResponse,
   newGuestDraft,
   storeGuestUndoStep,
@@ -35,8 +39,8 @@ import {
 } from "./examWorkspaceGuestDraft";
 import { buildParentDocument } from "./examWorkspaceParentDocument.specSupport";
 import {
-  GUEST_HANDOFF_FAILURE_COPY,
   runGuestHandoff,
+  type GuestHandoffDeps,
   type GuestHandoffTeacher,
 } from "./useExamWorkspaceGuestHandoff";
 
@@ -113,6 +117,14 @@ function teacherMock(): { importExamWorkspaceGuestDraft: Mock<GuestHandoffTeache
   };
 }
 
+function depsOf(
+  storage: ExamWorkspaceGuestDraftStoragePort,
+  teacher: { importExamWorkspaceGuestDraft: Mock<GuestHandoffTeacher["importExamWorkspaceGuestDraft"]> },
+  rejections: GuestHandoffRejectionStoragePort = createInMemoryGuestHandoffRejectionStorage(),
+): GuestHandoffDeps {
+  return { rejections, storage, teacher };
+}
+
 function failureToasts(): string[] {
   return useToastStore().toasts.map((toast) => toast.message);
 }
@@ -129,11 +141,11 @@ beforeEach(() => {
 });
 
 describe("runGuestHandoff", () => {
-  it("calls nothing and returns null without a stored draft", async () => {
+  it("calls nothing and returns none without a stored draft", async () => {
     const storage = createInMemoryExamWorkspaceGuestDraftStorage();
     const teacher = teacherMock();
 
-    await expect(runGuestHandoff({ storage, teacher })).resolves.toBeNull();
+    await expect(runGuestHandoff(depsOf(storage, teacher))).resolves.toEqual({ kind: "none" });
 
     expect(teacher.importExamWorkspaceGuestDraft).not.toHaveBeenCalled();
     await expect(storage.load()).resolves.toBeNull();
@@ -152,7 +164,10 @@ describe("runGuestHandoff", () => {
     const teacher = teacherMock();
     teacher.importExamWorkspaceGuestDraft.mockResolvedValue(handoffResponse("lineage-new"));
 
-    await expect(runGuestHandoff({ storage, teacher })).resolves.toBe("lineage-new");
+    await expect(runGuestHandoff(depsOf(storage, teacher))).resolves.toEqual({
+      kind: "handed_off",
+      lineageId: "lineage-new",
+    });
 
     expect(teacher.importExamWorkspaceGuestDraft).toHaveBeenCalledTimes(1);
     expect(teacher.importExamWorkspaceGuestDraft).toHaveBeenCalledWith(draft.cursor, position, {
@@ -173,7 +188,10 @@ describe("runGuestHandoff", () => {
     const teacher = teacherMock();
     teacher.importExamWorkspaceGuestDraft.mockResolvedValue(handoffResponse("lineage-new"));
 
-    await expect(runGuestHandoff({ storage, teacher })).resolves.toBe("lineage-new");
+    await expect(runGuestHandoff(depsOf(storage, teacher))).resolves.toEqual({
+      kind: "handed_off",
+      lineageId: "lineage-new",
+    });
 
     expect(teacher.importExamWorkspaceGuestDraft).toHaveBeenCalledTimes(1);
     expect(teacher.importExamWorkspaceGuestDraft).toHaveBeenCalledWith(
@@ -185,7 +203,7 @@ describe("runGuestHandoff", () => {
     await expect(storage.load()).resolves.toBeNull();
   });
 
-  it("keeps the browser copy, toasts once and returns null when the post fails", async () => {
+  it("keeps the browser copy, records nothing and returns transient when the post fails transiently", async () => {
     const storage = createInMemoryExamWorkspaceGuestDraftStorage();
     const { draft } = editedDraft();
     const stored = {
@@ -193,19 +211,26 @@ describe("runGuestHandoff", () => {
       draft,
     };
     await seed(storage, stored);
+    const rejections = createInMemoryGuestHandoffRejectionStorage();
     const teacher = teacherMock();
-    teacher.importExamWorkspaceGuestDraft.mockRejectedValue(new Error("nätverksfel"));
+    teacher.importExamWorkspaceGuestDraft.mockRejectedValue(new TypeError("Failed to fetch"));
 
-    await expect(runGuestHandoff({ storage, teacher })).resolves.toBeNull();
+    await expect(runGuestHandoff(depsOf(storage, teacher, rejections))).resolves.toEqual({
+      kind: "transient",
+    });
 
     await expect(storage.load()).resolves.toEqual(stored);
-    expect(failureToasts()).toEqual([GUEST_HANDOFF_FAILURE_COPY]);
+    expect(rejections.read()).toBeNull();
+    expect(failureToasts()).toEqual([]);
   });
 
   it("still returns the lineage when clearing the snapshot fails after a successful post", async () => {
     const inner = createInMemoryExamWorkspaceGuestDraftStorage();
     const { draft } = editedDraft();
-    await seed(inner, { assets: {}, draft });
+    await seed(inner, {
+      assets: { asset_a: new Blob(["a"]), asset_b: new Blob(["b"]) },
+      draft,
+    });
     const clearIf = vi.fn().mockRejectedValue(new Error("lagringen svarar inte"));
     const storage: ExamWorkspaceGuestDraftStoragePort = {
       clearIf,
@@ -215,7 +240,10 @@ describe("runGuestHandoff", () => {
     const teacher = teacherMock();
     teacher.importExamWorkspaceGuestDraft.mockResolvedValue(handoffResponse("lineage-new"));
 
-    await expect(runGuestHandoff({ storage, teacher })).resolves.toBe("lineage-new");
+    await expect(runGuestHandoff(depsOf(storage, teacher))).resolves.toEqual({
+      kind: "handed_off",
+      lineageId: "lineage-new",
+    });
 
     expect(teacher.importExamWorkspaceGuestDraft).toHaveBeenCalledTimes(1);
     expect(clearIf).toHaveBeenCalledTimes(1);
@@ -226,7 +254,10 @@ describe("runGuestHandoff", () => {
   it("never clears the browser snapshot before the post resolves", async () => {
     const inner = createInMemoryExamWorkspaceGuestDraftStorage();
     const { draft } = editedDraft();
-    await seed(inner, { assets: {}, draft });
+    await seed(inner, {
+      assets: { asset_a: new Blob(["a"]), asset_b: new Blob(["b"]) },
+      draft,
+    });
     const clearIf = vi.fn().mockImplementation((expected: string) => inner.clearIf(expected));
     const storage: ExamWorkspaceGuestDraftStoragePort = {
       clearIf,
@@ -240,12 +271,12 @@ describe("runGuestHandoff", () => {
     const teacher = teacherMock();
     teacher.importExamWorkspaceGuestDraft.mockReturnValue(post);
 
-    const handoff = runGuestHandoff({ storage, teacher });
+    const handoff = runGuestHandoff(depsOf(storage, teacher));
     await Promise.resolve();
     expect(clearIf).not.toHaveBeenCalled();
 
     resolvePost(handoffResponse("lineage-new"));
-    await expect(handoff).resolves.toBe("lineage-new");
+    await expect(handoff).resolves.toEqual({ kind: "handed_off", lineageId: "lineage-new" });
     expect(clearIf).toHaveBeenCalledTimes(1);
   });
 
@@ -260,7 +291,7 @@ describe("runGuestHandoff", () => {
     const teacher = teacherMock();
     teacher.importExamWorkspaceGuestDraft.mockReturnValue(post);
 
-    const handoff = runGuestHandoff({ storage, teacher });
+    const handoff = runGuestHandoff(depsOf(storage, teacher));
     await vi.waitFor(() => expect(teacher.importExamWorkspaceGuestDraft).toHaveBeenCalledOnce());
     expect(teacher.importExamWorkspaceGuestDraft).toHaveBeenCalledWith(
       old.cursor,
@@ -277,7 +308,7 @@ describe("runGuestHandoff", () => {
     expect(await storage.replaceIf(old.cursor, { assets: {}, draft: newer })).toBe(true);
 
     resolvePost(handoffResponse("lineage-old"));
-    await expect(handoff).resolves.toBe("lineage-old");
+    await expect(handoff).resolves.toEqual({ kind: "handed_off", lineageId: "lineage-old" });
 
     // The posted snapshot is gone but the newer draft owns the slot now.
     const kept = await storage.load();
@@ -291,7 +322,10 @@ describe("runGuestHandoff", () => {
     // so the mid-post edit must not reuse the seeded draft's cursor string.
     const editIds = createIds(100);
     const { draft } = editedDraft();
-    await seed(storage, { assets: {}, draft });
+    await seed(storage, {
+      assets: { asset_a: new Blob(["a"]), asset_b: new Blob(["b"]) },
+      draft,
+    });
     let resolvePost!: (response: ExamWorkspaceDocumentResponse) => void;
     const post = new Promise<ExamWorkspaceDocumentResponse>((resolve) => {
       resolvePost = resolve;
@@ -299,7 +333,7 @@ describe("runGuestHandoff", () => {
     const teacher = teacherMock();
     teacher.importExamWorkspaceGuestDraft.mockReturnValue(post);
 
-    const first = runGuestHandoff({ storage, teacher });
+    const first = runGuestHandoff(depsOf(storage, teacher));
     await vi.waitFor(() => expect(teacher.importExamWorkspaceGuestDraft).toHaveBeenCalledOnce());
 
     const edited = storeGuestUndoStep(
@@ -314,16 +348,24 @@ describe("runGuestHandoff", () => {
     if (edited.kind !== "ok") {
       throw new Error(`expected a stored step, got ${edited.kind}`);
     }
-    expect(await storage.replaceIf(draft.cursor, { assets: {}, draft: edited.draft })).toBe(true);
+    expect(
+      await storage.replaceIf(draft.cursor, {
+        assets: { asset_a: new Blob(["a"]), asset_b: new Blob(["b"]) },
+        draft: edited.draft,
+      }),
+    ).toBe(true);
 
     resolvePost(handoffResponse("lineage-old"));
-    await expect(first).resolves.toBe("lineage-old");
+    await expect(first).resolves.toEqual({ kind: "handed_off", lineageId: "lineage-old" });
 
     const kept = await storage.load();
     expect(kept?.draft.cursor).toBe(edited.draft.cursor);
 
     teacher.importExamWorkspaceGuestDraft.mockResolvedValue(handoffResponse("lineage-new"));
-    await expect(runGuestHandoff({ storage, teacher })).resolves.toBe("lineage-new");
+    await expect(runGuestHandoff(depsOf(storage, teacher))).resolves.toEqual({
+      kind: "handed_off",
+      lineageId: "lineage-new",
+    });
     expect(teacher.importExamWorkspaceGuestDraft).toHaveBeenCalledTimes(2);
     expect(teacher.importExamWorkspaceGuestDraft).toHaveBeenNthCalledWith(
       2,
@@ -338,7 +380,7 @@ describe("runGuestHandoff", () => {
     await expect(storage.load()).resolves.toBeNull();
   });
 
-  it("returns null without posting, toasting or clearing when the stored draft cannot be read", async () => {
+  it("returns none without posting or clearing when the stored draft cannot be read", async () => {
     const clearIf = vi.fn();
     const storage: ExamWorkspaceGuestDraftStoragePort = {
       clearIf,
@@ -347,7 +389,7 @@ describe("runGuestHandoff", () => {
     };
     const teacher = teacherMock();
 
-    await expect(runGuestHandoff({ storage, teacher })).resolves.toBeNull();
+    await expect(runGuestHandoff(depsOf(storage, teacher))).resolves.toEqual({ kind: "none" });
 
     expect(teacher.importExamWorkspaceGuestDraft).not.toHaveBeenCalled();
     expect(clearIf).not.toHaveBeenCalled();

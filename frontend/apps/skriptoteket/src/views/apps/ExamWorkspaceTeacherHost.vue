@@ -21,6 +21,7 @@ import { useRoute, useRouter } from "vue-router";
 
 import ExamWorkspaceView from "./ExamWorkspaceView.vue";
 import { createExamWorkspaceGuestDraftStorage } from "./exam-workspace/examWorkspaceGuestDraftStorage";
+import { createLocalStorageGuestHandoffRejectionStorage } from "./exam-workspace/examWorkspaceGuestHandoffRejection";
 import { serverExamWorkspaceStore } from "./exam-workspace/examWorkspaceStore";
 import { runGuestHandoff } from "./exam-workspace/useExamWorkspaceGuestHandoff";
 
@@ -30,12 +31,13 @@ const router = useRouter();
 const handoffSettled = ref(false);
 
 onMounted(async () => {
-  const lineageId = await runGuestHandoff({
+  const outcome = await runGuestHandoff({
+    rejections: createLocalStorageGuestHandoffRejectionStorage(),
     storage: createExamWorkspaceGuestDraftStorage(),
     teacher: serverExamWorkspaceStore.teacher,
   });
-  if (lineageId) {
-    await router.replace({ query: { ...route.query, document: lineageId } });
+  if (outcome.kind === "handed_off") {
+    await router.replace({ query: { ...route.query, document: outcome.lineageId } });
   }
   handoffSettled.value = true;
 });
