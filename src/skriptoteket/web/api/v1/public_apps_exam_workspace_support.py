@@ -9,8 +9,6 @@ Relationships:
   - Admits through ``AdmitPublicRequestHandlerProtocol`` with the client IP only.
 """
 
-from __future__ import annotations
-
 from fastapi import Request
 
 from skriptoteket.config import Settings

@@ -11,8 +11,6 @@ Relationships:
   - Delegates rendering to ``PublicExamWorkspaceExportHandler``.
 """
 
-from __future__ import annotations
-
 from fastapi import APIRouter, Request, Response
 from starlette.datastructures import UploadFile
 

@@ -12,8 +12,6 @@ Relationships:
       deterministic misspellings handler and the profile-free catalog function.
 """
 
-from __future__ import annotations
-
 from typing import TypeVar
 
 from fastapi import APIRouter, Request
