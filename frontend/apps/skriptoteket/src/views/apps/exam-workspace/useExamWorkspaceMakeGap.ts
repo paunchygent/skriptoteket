@@ -49,6 +49,9 @@ export type KeptGapHit = { keptGapId: string; blockIndex: number };
 /** Why Tom lucka is unavailable when there is no next gap id. */
 export const EMPTY_GAP_AT_CAP_REASON = "Tom lucka – inga fler luckor kan läggas till i frågan";
 
+/** Why the gap tool toggle is unavailable when there is no next gap id. */
+export const GAP_TOOL_AT_CAP_REASON = "Luckverktyg – inga fler luckor kan läggas till i frågan";
+
 /**
  * Why the Tom lucka command is unavailable: there is no next gap id. Null
  * while the command can run. A question that is not a gap question never
