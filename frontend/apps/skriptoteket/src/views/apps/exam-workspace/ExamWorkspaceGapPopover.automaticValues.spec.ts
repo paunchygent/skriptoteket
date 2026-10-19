@@ -48,10 +48,14 @@ describe("ExamWorkspaceGapPopover automatic answers", () => {
     const chips = automaticChips();
 
     expect(chips).toHaveLength(2);
-    expect(chips[0]!.textContent).toContain("hundraa");
-    expect(chips[0]!.textContent).not.toContain("automatisk");
-    expect(chips[1]!.textContent).toContain("hundar");
-    expect(chips[1]!.textContent).not.toContain("automatisk");
+    const texts = chips.map((chip) => chip.textContent ?? "");
+    expect(texts).toEqual([
+      expect.stringContaining("hundraa"),
+      expect.stringContaining("hundar"),
+    ]);
+    for (const text of texts) {
+      expect(text).not.toContain("automatisk");
+    }
     expect(popoverRoot().innerHTML).not.toContain("lucide-sparkles");
     wrapper.unmount();
   });
