@@ -26,6 +26,7 @@ import type {
 import ExamWorkspaceBodyEditor from "./ExamWorkspaceBodyEditor.vue";
 import {
   buildGapItem,
+  documentControl,
   popoverExists,
   popoverInput,
   posIn,
@@ -37,6 +38,8 @@ import {
 } from "./examWorkspaceGapToolPointer.specSupport";
 import { withBody } from "./examWorkspaceItemEdits";
 import { withNewGap } from "./examWorkspaceGapEdits";
+import { buildGap } from "./examWorkspaceKeyedItems.specSupport";
+import { plainBody } from "./examWorkspaceRichText";
 
 const TOOLBAR_GAP_TOOL = '[data-test="exam-workspace-toolbar-gap-tool"]';
 const BODY_EDITOR_ROOT = '[data-test="exam-workspace-body-editor"]';
@@ -180,6 +183,23 @@ function plainGapItem(): NativeExamItem {
   });
 }
 
+/** A dropdown question with one optioned gap, for the inline-choice popover. */
+function dropdownGapItem(): NativeExamItem {
+  return buildGapItem({
+    kind: "inline_choice",
+    gaps: [
+      buildGap("gap_001", [], {
+        correct_option_id: "choice_001",
+        options: [
+          { body: plainBody("zebra"), choice_id: "choice_001" },
+          { body: plainBody("apa"), choice_id: "choice_002" },
+        ],
+      }),
+      buildGap("gap_002", []),
+    ],
+  });
+}
+
 function requireInput(element: Element | null, what: string): HTMLInputElement {
   if (!(element instanceof HTMLInputElement)) {
     throw new Error(`${what} is not focused in an input`);
@@ -259,6 +279,69 @@ describe("ExamWorkspaceBodyEditor gap tool Escape", () => {
     expect(input.element.value).toBe("solen skin");
 
     dispatchEscape(input.element);
+    await settle();
+
+    expect(popoverExists()).toBe(false);
+    expect(toolPressed(harness)).toBe("true");
+  });
+
+  it("ignores a repeated Escape in a text-gap popover and keeps the typed draft", async () => {
+    const harness = mountHarness(plainGapItem());
+    await settle();
+    const gapId = await openToolMadePopover(harness);
+
+    const input = popoverInput(gapId);
+    await input.setValue("solen skin");
+    expect(input.element.value).toBe("solen skin");
+
+    dispatchEscape(input.element, { repeat: true });
+    await settle();
+
+    expect(popoverExists()).toBe(true);
+    expect(popoverInput(gapId).element.value).toBe("solen skin");
+    expect(toolPressed(harness)).toBe("true");
+
+    dispatchEscape(popoverInput(gapId).element);
+    await settle();
+
+    expect(popoverExists()).toBe(false);
+    expect(toolPressed(harness)).toBe("true");
+  });
+
+  it("ignores a repeated Escape in a dropdown popover and keeps the typed option draft", async () => {
+    const harness = mountHarness(dropdownGapItem());
+    await settle();
+    await toolToggle(harness).trigger("click");
+    await settle();
+    expect(toolPressed(harness)).toBe("true");
+
+    clickGapChip(harness, "gap_001");
+    await settle();
+    expect(popoverExists()).toBe(true);
+
+    const option = documentControl<HTMLInputElement>(
+      '[data-test="exam-workspace-gap-option-text-choice_001"]',
+    );
+    option.element.value = "zebra randig";
+    await option.trigger("input");
+    expect(option.element.value).toBe("zebra randig");
+
+    dispatchEscape(option.element, { repeat: true });
+    await settle();
+
+    expect(popoverExists()).toBe(true);
+    expect(
+      documentControl<HTMLInputElement>(
+        '[data-test="exam-workspace-gap-option-text-choice_001"]',
+      ).element.value,
+    ).toBe("zebra randig");
+    expect(toolPressed(harness)).toBe("true");
+
+    dispatchEscape(
+      documentControl<HTMLInputElement>(
+        '[data-test="exam-workspace-gap-option-text-choice_001"]',
+      ).element,
+    );
     await settle();
 
     expect(popoverExists()).toBe(false);

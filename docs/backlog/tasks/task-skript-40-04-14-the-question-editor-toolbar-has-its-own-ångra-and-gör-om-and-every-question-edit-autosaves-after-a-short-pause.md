@@ -85,4 +85,4 @@ Stop and ask the user if a per-question history turns out to be needed (Q1 optio
 | F1  | There is no editor-local undo; Ctrl/Cmd+Z in an editor, the window handler outside editables and the top-bar Ångra and Gör om all run the one workspace history |
 | F2  | Every edit is stored on the server as an undo step, typing after a 900 ms pause and structural edits at once, at most 10 steps after the import baseline; the guest store writes each command to IndexedDB at once |
 | F3  | The header save state reads Osparat until Spara even after steps are stored; the draft wording is only in its tooltip |
-| F4  | Gap popover answer rows and dropdown option text are stored only on change, blur or Escape; adding a criterion is recorded as typing, not as a structural step |
+| F4  | Gap popover answer rows and dropdown option text are committed only on change or blur; Escape cancels the popover and discards uncommitted typing at main 26f84883 (the 40-04-08 walk repair changes Escape to commit it); adding a criterion is recorded as typing, not as a structural step |

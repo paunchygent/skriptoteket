@@ -26,7 +26,7 @@ export type EditingApiMocks = {
 export const LINEAGE = "00000000-0000-4000-8000-000000000001";
 
 export function exam(title = "Original", itemCount = 2): NativeExamDocument {
-  return {
+  const document: NativeExamDocument = {
     assets: [],
     document_id: LINEAGE,
     header: { tags: [] },
@@ -40,11 +40,12 @@ export function exam(title = "Original", itemCount = 2): NativeExamDocument {
     revision: 1,
     schema_version: "native_exam_document_v8",
     title,
-  } as NativeExamDocument;
+  };
+  return document;
 }
 
 export function response(document: NativeExamDocument, cursor: string): ExamWorkspaceDocumentResponse {
-  return {
+  const payload: ExamWorkspaceDocumentResponse = {
     conversion: null,
     document,
     export_blockers: [],
@@ -60,7 +61,8 @@ export function response(document: NativeExamDocument, cursor: string): ExamWork
       vault_file_id: LINEAGE,
       version: document.revision,
     },
-  } as ExamWorkspaceDocumentResponse;
+  };
+  return payload;
 }
 
 export function conflict(): ApiError {
@@ -71,15 +73,22 @@ function withoutRevision(document: NativeExamDocument): string {
   return JSON.stringify({ ...document, revision: 0 });
 }
 
+/** The fake server's mutable history position; the step list holds step ids in order. */
+type FakeServerState = {
+  cursor: string;
+  position: string;
+  saved: NativeExamDocument;
+  steps: string[];
+};
 /** The server's history: the same position rules as exam_workspace_document_store.py and undo_steps. */
 export function fakeServer(api: EditingApiMocks, baseline: NativeExamDocument) {
   let counter = 0;
   const documents = new Map<string, NativeExamDocument>([["step-0", baseline]]);
-  const state = {
+  const state: FakeServerState = {
     cursor: "step-0",
     position: "step-0",
     saved: baseline,
-    steps: [] as string[],
+    steps: [],
   };
   const history = () => ({
     baseline_step_id: "step-0",
