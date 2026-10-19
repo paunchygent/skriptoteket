@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "ba7639c24173b4fb5981e0c5c5bcda96f975becc6e6af0c416477d17bc4f6352",
+  "source_set_digest": "45cc997aa72ff9cf026a0350e9f3b29e923991397b0e465479bc4b52dabc22d3",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5249,6 +5249,25 @@
       "title": "A paragraph that holds only a score field is consumed whole as the points source and leaves no slash in the question",
       "path": "docs/backlog/tasks/task-skript-39-04-20-a-paragraph-that-holds-only-a-score-field-is-consumed-whole-as-the-points-source-and-leaves-no-slash-in-the-question.md",
       "status": "in_progress",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-04-21",
+      "type": "task",
+      "title": "Printed points wording at the end of a question's text becomes its points and leaves the text",
+      "path": "docs/backlog/tasks/task-skript-39-04-21-printed-points-wording-at-the-end-of-a-question-s-text-becomes-its-points-and-leaves-the-text.md",
+      "status": "proposed",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-04",
       "owners": [
