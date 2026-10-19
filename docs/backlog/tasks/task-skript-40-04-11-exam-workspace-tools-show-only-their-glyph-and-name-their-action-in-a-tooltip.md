@@ -23,13 +23,14 @@ Source: the user's request of 2026-10-19 in the Hemma orchestrator session, with
 
 Cause: the Skrivyta field (TASK-SKRIPT-40-04-07) and the criteria field draw their own bordered buttons with Tailwind classes (`border border-navy/35 bg-panel`, `ExamWorkspaceWritingLinesField.vue:78/90/102`, `ExamWorkspaceCriteriaField.vue:190`) instead of the workspace's control family in `examWorkspace.css`. That family already has a boxless glyph button, `xw-btn xw-btn--compact xw-btn--icon xw-btn--ghost`, used by the ordering field's move and remove tools, and a boxless remove button, `xw-rm`. The prototype's other tools (`xw-btn` with a word) and the gap popover's `btn-ghost` buttons are boxed as well; `.btn-ghost` has a solid border, so TASK-SKRIPT-40-04-08's glyph-only add buttons are still boxed.
 
-This task makes each tool in scope a glyph with no visible container. The action phrase becomes the native tooltip and the accessible name (T1, T2). The Skrivyta row becomes one compact row, and the overlap of that row with the Bedömningskriterier label is fixed from its measured cause (T3). Commands that commit or navigate keep their form: Spara, Öppna, Exportera, Förhandsgranska, the drawer and dialog buttons, and every primary button.
+This task makes each tool in scope a glyph with no visible container. The action phrase becomes the native tooltip and the accessible name (T1, T2), and a one-off decision becomes text that states the choice plus glyphs (T6). The Skrivyta row becomes one compact row, and the overlap of that row with the Bedömningskriterier label is fixed from its measured cause (T3). Menu items, list entries and segment options keep their text, because their text names a choice or a destination, not an action. Persistent commands keep their form: Spara, Öppna, Exportera, Förhandsgranska, Tillbaka, the export-blocker fixes, and the drawer and dialog buttons. Three one-off decisions in the inventory are text buttons today and are in scope: the type offer "Gör om till {typ}" (`ExamWorkspaceQuestionHead.vue:164`), "Ångra AI-tolkningen" (`ExamWorkspaceQuestionEditor.vue:361`) and "Lägg till i mina kurser" (`ExamWorkspaceDetailsDrawer.vue:254`). The printed-total Använd buttons belong to TASK-SKRIPT-40-04-10, which replaces them.
 
 Non-goals: no change to the drift-checked mirrors in this repository (`components/ui/shared/`, `styles/action-buttons.css`, `design-system/huleedu-integrated/`); no new button component; no backend or document change.
 
 ## Contract Inputs
 
 - Story: ST-SKRIPT-40-04 (exam workspace redesign); the approved prototype's control family in `frontend/apps/skriptoteket/src/views/apps/exam-workspace/examWorkspace.css`.
+- User rule, 2026-10-19 (Hemma orchestrator session), with its refinement the same day: a simple one-off decision is never a button; it is text that states the choice plus yes/no glyphs from the shared glyph semantics, such as accept (`confirm`, "Acceptera") and dismiss (`close`), named only in the tooltip and aria-label. A control that is always there may sometimes keep text. Tools are glyph-only with no container.
 - `huleedu-ui-design`: a button shows a glyph from the shared catalogue; the action phrase belongs in the native tooltip and accessible name; an icon-only action has no frame; hover and press tint the glyph's area; the layout holds still.
 - TASK-SKRIPT-40-04-07 (done): the Skrivyta stepper and apply-to-all (`useExamWorkspaceDocumentFields.ts:76`, undoable through `editDocument` and `noteEdit`).
 - TASK-SKRIPT-40-04-08 (in review): its copy decision L12 (add buttons carry their phrase as tooltip and accessible name). Its branch rewrites `ExamWorkspaceGapPopover.vue` and adds `ExamWorkspaceGapAnswerList.vue`.
@@ -45,9 +46,10 @@ Planned junior units, each with its own focused spec; their final list depends o
 2. Tool class: `examWorkspace.css` gives the ghost icon tool its pressed look without a border and, if accepted, a 44 px hit area on coarse pointers.
 3. Skrivyta row: `ExamWorkspaceWritingLinesField.vue` and its spec.
 4. Criteria field: `ExamWorkspaceCriteriaField.vue` (add glyph `add`, phrase "Lägg till kriterium"; remove moves to `xw-rm`) and its spec.
-5. Editor tools, if the scope is the whole workspace: `ExamWorkspaceOrderingField.vue`, `ExamWorkspaceInstructionEditor.vue`, `ExamWorkspaceQuestionEditor.vue`, `ExamWorkspaceQuestionHead.vue`.
-6. Gap tools, after TASK-SKRIPT-40-04-08 merges: `ExamWorkspaceGapPopover.vue`, `ExamWorkspaceGapAnswerList.vue`.
-7. Header and list tools, if the scope is the whole workspace: `ExamWorkspaceHeader.vue` (AI, Ångra, Gör om), `ExamWorkspaceQuestionTools.vue`, `ExamWorkspaceQuestionList.vue` (Ny uppgift, Markera).
+5. Editor tools, if the scope is the whole workspace: `ExamWorkspaceOrderingField.vue` (Lägg till steg, Blanda om), `ExamWorkspaceInstructionEditor.vue` (Deluppgift), `ExamWorkspaceQuestionEditor.vue` (Redigera instruktionen; Ångra AI-tolkningen becomes the `undo` glyph after the key line, which already states the AI reading), `ExamWorkspaceQuestionHead.vue` (the type offer becomes the text "Provfilen tyder på {typ}" plus an accept glyph named "Gör om till {typ}", and a dismiss glyph if Q5 adds one).
+6. Gap tools, after TASK-SKRIPT-40-04-08 merges: `ExamWorkspaceGapPopover.vue` (Lägg till alternativ, remove an automatic spelling, Visa som text with `convert-type`), `ExamWorkspaceGapAnswerList.vue`.
+7. Header and list tools, if the scope is the whole workspace: `ExamWorkspaceHeader.vue` (AI, Ångra, Gör om), `ExamWorkspaceQuestionTools.vue`, `ExamWorkspaceQuestionList.vue` (Ny uppgift, Markera, Lägg till instruktioner).
+9. Course offer: `ExamWorkspaceDetailsDrawer.vue` shows the text "Inte i mina kurser" plus an `add` glyph named "Lägg till i mina kurser".
 8. Apply-to-all glyph, if a new meaning is accepted: the shared catalogue in the skill repository, then the mirror sync here (needs the parent's cross-repository authority).
 
 ## Validation
@@ -75,14 +77,16 @@ Planned junior units, each with its own focused spec; their final list depends o
 | T3  | The Skrivyta controls and the Bedömningskriterier label do not overlap at 390, 1024 and 1440 px. The fix follows the cause measured in a real browser. |
 | T4  | Work starts from main after TASK-SKRIPT-40-04-08 merges; the lead merges current main into this branch before a unit touches a file that TASK-SKRIPT-40-04-09 or TASK-SKRIPT-40-04-10 also changes. |
 | T5  | Validation is the focused component specs, keyboard reach and focus ring, and screenshots for copy review named above; no staging walk. |
+| T6  | A simple one-off decision is never a text button (user 2026-10-19): text states the choice and shared-catalogue glyphs answer it, such as accept (`confirm`, "Acceptera") and dismiss (`close`), named only in the tooltip and aria-label. Tools are glyph-only. Persistent commands, menu items, list entries and segment options keep their text. |
 
 ## Resume here (2026-10-19, planning)
 
-Status stays proposed. Four user questions are open in the retained plan's ledger (D3-D6); each has options and a recommendation:
+Status stays proposed. Five user questions are open in the retained plan's ledger (D3-D6, D11); each has options and a recommendation:
 
 - Scope: (A) the Fritextfråga item only; (B) every off-system box (Skrivyta, criteria, gap popover, gap answer list); (C) every tool in the workspace while commands keep their form. Recommended: C.
 - Apply-to-all: a new shared glyph meaning `apply-to-all` with Lucide Layers (alternatives CopyCheck, CheckCheck; none is in the catalogue yet, and the names are not yet checked against @lucide/vue 1.47.0; `copy` already means "Spara som …"); tooltip "Använd {n} rader för alla fritextfrågor"; disabled "Alla fritextfrågor har redan {n} rader"; no confirmation, since Ångra reverts it. The new meaning is a skill-repository change.
 - Stepper: the count "{n} rader" between − and + in a slot sized for "40 rader"; the label reads "Skrivyta". Recommended.
 - Look: the workspace's existing hover tint, focus ring and pressed tint without a border, plus a 44 px hit area on coarse pointers. Recommended.
+- Q5, the type offer "Gör om till {typ}": the text "Provfilen tyder på {typ}" plus an accept glyph only (recommended; the offer already disappears once the type changes, and a dismiss would need a new stored mark), or accept plus a dismiss glyph that hides the offer.
 
 Next: when the user answers, record each answer as a closed ledger row, add the accepted terms here, fill the acceptance criteria, and ask the parent for ready.
