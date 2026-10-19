@@ -84,8 +84,15 @@ Stop and report if the Exam.net-accepted fixture shows a round-trip loss that is
   point and refused repeated references (F1, F6, F2); 2afe9833 and 91b914a3
   bounded, exact scores and kept zeros (F3, F4, F5); d4a3991a test splits (F7).
   Lint, typecheck and 407 focused tests plus the PostgreSQL QTI API test pass.
-- Next: one domain suite on the parent's go (shared DI and handler modules
-  moved), then rereview of F1-F5 by 596c1654 through the parent.
+- Domain suite passed on the parent's go. Rereview 596c1654 at 693d970f
+  cleared F1, F3 and F5 and returned F2, F4 and F6.
+- Repair round 2 done: 8049a526 refuses a repeated reference once, in
+  `ExamNetQtiPackageReader.read`, for manifest and item references alike
+  (F2), and maps a UTF-7 `ValueError` to the typed refusal (F6); a96da3db
+  assigns no remainder when a sibling was skipped, so the skipped score is a
+  named loss and the gap child goes to review (F4). Lint, typecheck, 277
+  focused tests and the PostgreSQL QTI API test pass.
+- Next: rereview of F2, F4 and F6 by 596c1654 through the parent.
 - Product consequence of F4: a part with two or more gap children imports
   those children with points absent and review required, because the export
   states only rounded-down per-gap shares.
