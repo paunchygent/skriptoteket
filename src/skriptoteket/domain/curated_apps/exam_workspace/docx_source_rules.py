@@ -220,8 +220,11 @@ POINT_LABEL = re.compile(
 )
 # Any mention of points, wherever it stands: the number-unit pair with a leading
 # word boundary and no position rule. A prose sentence such as "Del 1 ger 4 p
-# för ..." mentions points without printing a label.
-POINTS_MENTION = re.compile(r"\b" + _NUMBER_UNIT, re.IGNORECASE)
+# för ..." mentions points without printing a label. A unit letter followed by
+# more letters, or a dot followed by a letter, is no mention: "3 personer",
+# "2 pass" and "3 p.m." mention none, while "(2 p)", "36p", "5 poäng." and
+# "Totalt: 36 p" do.
+POINTS_MENTION = re.compile(r"\b" + _NUMBER_UNIT + r"(?=$|[^\w.])", re.IGNORECASE)
 # A line that holds only a score field, such as "/4 p" or "____ /8 p".
 SCORE_FIELD = re.compile(
     r"[ \t_]*/[ \t]*(?:" + POINT_LABEL.pattern + r")[ \t]*",
@@ -321,15 +324,30 @@ def label_points(label: str) -> int | float | None:
 
 
 def printed_points(own: Iterable[DocxChunk]) -> int | float | None:
-    """The one points label the chunks print, as a number; None with none or several."""
-    labels = [label.group() for chunk in own for label in POINT_LABEL.finditer(chunk.text)]
-    return label_points(labels[0]) if len(labels) == 1 else None
+    """The one points label the chunks print, as a number; None with none or several.
+
+    A second points mention anywhere in the chunks abstains, as base did: "mellan
+    3 poäng och 5 poäng" prints one label but mentions points twice, so no number.
+    """
+    texts = [chunk.text for chunk in own]
+    labels = [label.group() for text in texts for label in POINT_LABEL.finditer(text)]
+    mentions = [mention.group() for text in texts for mention in POINTS_MENTION.finditer(text)]
+    if len(labels) != 1 or len(mentions) != 1:
+        return None
+    return label_points(labels[0])
 
 
 def text_points(text: str) -> int | float | None:
-    """The one points label a text prints, as a number; None with none or several."""
+    """The one points label a text prints, as a number; None with none or several.
+
+    A second points mention anywhere in the text abstains, as base did: one label
+    with another mention is ambiguous, never authoritative points.
+    """
     labels = [label.group() for label in POINT_LABEL.finditer(text)]
-    return label_points(labels[0]) if len(labels) == 1 else None
+    mentions = [mention.group() for mention in POINTS_MENTION.finditer(text)]
+    if len(labels) != 1 or len(mentions) != 1:
+        return None
+    return label_points(labels[0])
 
 
 def with_printed_points(item: ProducedItem, own: Iterable[DocxChunk]) -> ProducedItem:

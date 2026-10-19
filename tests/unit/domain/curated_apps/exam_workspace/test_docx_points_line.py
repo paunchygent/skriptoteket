@@ -12,6 +12,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     points_line,
     points_only_line,
     printed_points,
+    text_points,
     with_printed_points,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
@@ -106,6 +107,31 @@ def test_only_complete_points_units_supply_points_and_leave_the_text(
 
 def test_bare_label_followed_by_words_is_not_a_points_line() -> None:
     assert not points_line("Give 3 points of view.")
+
+
+@pytest.mark.parametrize(
+    ("text", "points"),
+    [
+        (
+            "Pelle gör en fin volt, Sara gör en ful. Sätt poäng på Sara och Pelles volter. "
+            "Använd mellan 3 poäng och 5 poäng.",
+            None,
+        ),
+        ("Ta 3 personer med. (2 p)", 2),
+        ("Give 3 points of view. (2 p)", None),
+        ("Vilket ord är ett verb? (2 p)", 2),
+        ("Totalt: 36 p", 36),
+        ("The train leaves at 3 p.m. (2 p)", 2),
+    ],
+)
+def test_a_second_mention_means_no_source_points_from_either_reader(
+    text: str, points: int | float | None
+) -> None:
+    """Review F2: one label with another mention abstains, as base did for the volt range."""
+    own = (DocxChunk(anchor="body:0001", kind="paragraph", text=text, marked_text=text),)
+
+    assert printed_points(own) == points
+    assert text_points(text) == points
 
 
 @pytest.mark.parametrize(

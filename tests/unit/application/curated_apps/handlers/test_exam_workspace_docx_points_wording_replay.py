@@ -275,3 +275,51 @@ def test_a_sentence_that_mentions_points_keeps_its_text_through_the_build() -> N
     assert body_plain_text(item.body) == stem
     assert item.points == 2
     assert item.leftover_points_text is None
+
+
+def test_a_volt_range_keeps_its_admitted_points_through_the_plan_and_assembly() -> None:
+    """Review F2: "mellan 3 poäng och 5 poäng" mentions points twice, so the source
+    plan prints none; the admitted item keeps points 4 with no source provenance."""
+    from uuid import uuid4
+
+    from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import (
+        assemble_build_result,
+    )
+    from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
+    from skriptoteket.domain.curated_apps.exam_workspace.docx_item_alignment import (
+        aligned_source_item,
+    )
+    from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import (
+        printed_points_plan,
+    )
+    from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders import (
+        make_free_text_item,
+        make_paragraph,
+    )
+
+    volt = (
+        "Pelle gör en fin volt, Sara gör en ful. Sätt poäng på Sara och Pelles volter. "
+        "Använd mellan 3 poäng och 5 poäng."
+    )
+    chunk = DocxChunk(anchor="body:0001", kind="paragraph", text=volt, marked_text=volt)
+    item = make_free_text_item().model_copy(
+        update={"body": (make_paragraph(volt),), "source_anchor": "body:0001"}
+    )
+    assert item.points == 4
+    assert item.source_points is None
+    own = ("body:0001",)
+    result = assemble_build_result(
+        document_id=uuid4(),
+        filename="prov.docx",
+        source_sha256="0" * 64,
+        chunks=(chunk,),
+        accepted=((aligned_source_item(item, (chunk,)), own),),
+        review_reasons={},
+        questions=(own,),
+        printed=printed_points_plan((chunk,), (own,)),
+    )
+
+    (converted,) = result.document.items
+    assert converted.points == 4
+    assert converted.source_points is None
+    assert converted.plain_text_lines() == (volt,)
