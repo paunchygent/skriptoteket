@@ -93,4 +93,9 @@ Focused tests only:
 
 ## Resume here
 
-2026-10-19, lead `600fa5a8`: unit 1 `5c0edd33` (fail-first, 21 failing), unit 2 `1f7558d3` (implementation and test updates: 22 new and 524 focused tests pass). Repair R1 (replace a type-narrowing assert in `_append_inline_points`) is running. Next: lint, typecheck, the domain suite after the orchestrator's go, then the staging walk. Work orders are in the retained root's `work/`.
+2026-10-19, lead `600fa5a8`: built and committed through `bba2cf09`.
+
+- Commits: unit 1 `5c0edd33` (fail-first), unit 2 `1f7558d3` (implementation), R1 `b3fa0683` (no type-narrowing assert), R2 `bba2cf09` (three tests the domain suite found still matching the stem without its points).
+- Domain suite at `b3fa0683` (curated_apps domain, application and infrastructure unit tests): 3 failed, 5354 passed. All three failures were exact-text tests, fixed in R2, and their files now pass (23). Log: retained root `evidence/suite/curated-apps-b3fa0683.log`.
+- Observed: imported stems that still hold source points wording print it next to the inline points. Two omprov review items print "Poäng: 6 poäng (6 p)", and an English exam prints "(1 point) (1 p)". This belongs to the import side.
+- Next: the orchestrator decides on a suite rerun and routes review; then the staging walk of the preview, the student PDF and the PDF med facit.
