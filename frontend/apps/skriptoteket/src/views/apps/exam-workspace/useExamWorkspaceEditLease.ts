@@ -32,7 +32,17 @@
  *   successful claim or renew is within the 15 s lease TTL; once the TTL
  *   has passed it turns read-only, keeps retrying the claim at the
  *   heartbeat cadence and reads the newest state when it takes the lease
- *   back.
+ *   back. The local deadline is enforced on every heartbeat tick before
+ *   awaiting, so the holder turns read-only even while a renew is still
+ *   pending. In-flight renews settle in order, one sequence number per
+ *   request: an older result never overwrites a newer one, a late success
+ *   never revives a lost or expired lease, and a success extends the
+ *   deadline only from the time its request was sent. Takeover and claim
+ *   work is tied to an identity (the lineage plus an acquisition epoch
+ *   bumped on every open, lineage switch, dispose and `pagehide`): the
+ *   identity is rechecked after every await before holding changes, a late
+ *   successful old-lineage claim is released, and cancelling wakes a
+ *   sleeping takeover poll so `requestTakeover` always settles.
  *
  * Relationships:
  *   - The server half runs on the edit-lease transport of
@@ -68,6 +78,7 @@ import {
   renewExamWorkspaceEditLease,
   requestExamWorkspaceEditLeaseTakeover,
 } from "../../../api/examWorkspace";
+import { createTakeoverPoll } from "./examWorkspaceEditLeaseTakeover";
 import {
   createGuestEditLeaseChannel,
   type GuestEditLeaseChannel,
@@ -125,9 +136,18 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
   let disposed = false;
   let driver: ExamWorkspaceEditLeaseDriver | null = null;
   let heartbeat: ReturnType<typeof setInterval> | null = null;
-  let takeoverTimer: ReturnType<typeof setTimeout> | null = null;
+  const takeoverPoll = createTakeoverPoll(EXAM_WORKSPACE_EDIT_LEASE_TAKEOVER_POLL_MS);
   const clock = deps.now ?? (() => Date.now());
   let lastLeaseSuccessAt = clock();
+  // The acquisition identity: the lineage plus an epoch bumped on every
+  // open, lineage switch, dispose and `pagehide`. Async claim/takeover work
+  // captures the epoch before awaiting and rechecks it after, so a late
+  // result for an old identity is released instead of granting editability.
+  let acquisitionEpoch = 0;
+  // In-flight renew ordering: every request takes a sequence number, and a
+  // result older than one already applied is ignored.
+  let renewSeq = 0;
+  let appliedRenewSeq = 0;
 
   function stopHeartbeat(): void {
     if (heartbeat !== null) {
@@ -138,10 +158,9 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
 
   function stopWaiting(): void {
     waiting.value = false;
-    if (takeoverTimer !== null) {
-      clearTimeout(takeoverTimer);
-      takeoverTimer = null;
-    }
+    // Wake a sleeping takeover poll so `requestTakeover` settles on
+    // cancellation instead of staying pending forever.
+    takeoverPoll.cancel();
   }
 
   function noteLostLease(): void {
@@ -233,6 +252,7 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
     if (lineageId === null || active === null) {
       return;
     }
+    const tickEpoch = acquisitionEpoch;
     // A read-only tab retries its refused claim at the heartbeat cadence and
     // takes the lease as soon as it is free, with no `Ta över`. A waiting
     // takeover claims on its own faster poll instead. A `failed` retry claim
@@ -248,25 +268,52 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
       } catch {
         return;
       }
-      if (disposed || deps.lineageId() !== lineageId || holding.value) {
+      if (disposed || acquisitionEpoch !== tickEpoch || deps.lineageId() !== lineageId || holding.value) {
+        if (outcome === "held") {
+          await tryRelease(lineageId);
+        }
         return;
       }
       if (outcome === "held") {
-        await noteAcquired(lineageId);
+        await noteAcquired(lineageId, tickEpoch);
       }
       return;
     }
+    // The local deadline is enforced before awaiting: a holder whose last
+    // success is past the TTL turns read-only even while a renew is still
+    // pending. The next ticks then retry the claim at the heartbeat cadence.
+    if (clock() - lastLeaseSuccessAt >= EXAM_WORKSPACE_EDIT_LEASE_TTL_MS) {
+      noteLostLease();
+      return;
+    }
+    const seq = renewSeq + 1;
+    renewSeq = seq;
+    const sentAt = clock();
     let renewed: "held" | "lost" | "failed";
     try {
       renewed = await active.renew(lineageId);
     } catch {
       renewed = "failed";
     }
-    if (disposed || deps.lineageId() !== lineageId) {
+    // In-flight renews settle in order: a result older than one already
+    // applied is ignored, so an earlier success cannot overwrite a later
+    // loss.
+    if (seq <= appliedRenewSeq) {
+      return;
+    }
+    appliedRenewSeq = seq;
+    if (disposed || acquisitionEpoch !== tickEpoch || deps.lineageId() !== lineageId) {
       return;
     }
     if (renewed === "held") {
-      lastLeaseSuccessAt = clock();
+      // A late success never revives a lease that was lost or expired while
+      // it was in flight, and it extends the deadline only from the time its
+      // request was sent, never from the receipt time.
+      if (!holding.value || clock() - sentAt >= EXAM_WORKSPACE_EDIT_LEASE_TTL_MS) {
+        noteLostLease();
+        return;
+      }
+      lastLeaseSuccessAt = sentAt;
       holding.value = true;
     } else if (renewed === "lost") {
       holding.value = false;
@@ -281,6 +328,7 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
   }
 
   async function claimCurrent(lineageId: string): Promise<void> {
+    const openEpoch = acquisitionEpoch;
     const active = ensureDriver();
     if (active === null) {
       holding.value = true;
@@ -295,7 +343,7 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
     } catch {
       outcome = "held";
     }
-    if (disposed || deps.lineageId() !== lineageId) {
+    if (disposed || acquisitionEpoch !== openEpoch || deps.lineageId() !== lineageId) {
       if (outcome === "held") {
         await tryRelease(lineageId);
       }
@@ -310,23 +358,18 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
     startHeartbeat();
   }
 
-  async function noteAcquired(lineageId: string): Promise<void> {
+  async function noteAcquired(lineageId: string, epoch: number): Promise<void> {
+    // Guarded before mutating shared state: a late success for an old
+    // identity is released and changes nothing.
+    if (disposed || acquisitionEpoch !== epoch || deps.lineageId() !== lineageId) {
+      await tryRelease(lineageId);
+      return;
+    }
     lastLeaseSuccessAt = clock();
     holding.value = true;
     stopWaiting();
     startHeartbeat();
-    if (!disposed && deps.lineageId() === lineageId) {
-      await deps.onAcquired();
-    }
-  }
-
-  function sleepTakeoverPoll(): Promise<void> {
-    return new Promise<void>((resolve) => {
-      takeoverTimer = setTimeout(() => {
-        takeoverTimer = null;
-        resolve();
-      }, EXAM_WORKSPACE_EDIT_LEASE_TAKEOVER_POLL_MS);
-    });
+    await deps.onAcquired();
   }
 
   /**
@@ -340,46 +383,23 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
     if (lineageId === null || active === null || holding.value || waiting.value || disposed) {
       return;
     }
+    const takeoverEpoch = acquisitionEpoch;
+    const isCurrent = (): boolean =>
+      !disposed && acquisitionEpoch === takeoverEpoch && deps.lineageId() === lineageId;
     waiting.value = true;
     try {
-      let outcome: "claimed" | "requested" | "own";
-      try {
-        outcome = await active.requestTakeover(lineageId);
-      } catch {
-        outcome = "requested";
-      }
-      if (disposed || deps.lineageId() !== lineageId) {
-        return;
-      }
-      if (outcome === "own") {
-        lastLeaseSuccessAt = clock();
-        holding.value = true;
-        stopWaiting();
-        startHeartbeat();
-        return;
-      }
-      if (outcome === "claimed") {
-        await noteAcquired(lineageId);
-        return;
-      }
-      while (!disposed && waiting.value && deps.lineageId() === lineageId && !holding.value) {
-        await sleepTakeoverPoll();
-        if (disposed || !waiting.value || deps.lineageId() !== lineageId) {
-          return;
-        }
-        let next: "held" | "readonly" | "failed";
-        try {
-          next = await active.claim(lineageId);
-        } catch {
-          continue;
-        }
-        // A `failed` poll claim keeps waiting read-only; only the claim on
-        // open stays editable on such a failure.
-        if (next === "held") {
-          await noteAcquired(lineageId);
-          return;
-        }
-      }
+      await takeoverPoll.run(active, lineageId, {
+        isCurrent,
+        noteAcquired: (acquiredLineage: string) => noteAcquired(acquiredLineage, takeoverEpoch),
+        noteOwn: () => {
+          lastLeaseSuccessAt = clock();
+          holding.value = true;
+          stopWaiting();
+          startHeartbeat();
+        },
+        release: (staleLineage: string) => tryRelease(staleLineage),
+        shouldWait: () => waiting.value && !holding.value,
+      });
     } finally {
       if (!holding.value) {
         stopWaiting();
@@ -389,6 +409,7 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
 
   function handlePagehide(): void {
     const lineageId = deps.lineageId();
+    acquisitionEpoch += 1;
     stopWaiting();
     if (lineageId !== null && holding.value) {
       // The page is going away: `keepalive` lets the browser finish the
@@ -406,6 +427,9 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
   watch(
     () => deps.lineageId(),
     (next, previous) => {
+      // A new identity: in-flight work for the old lineage is stale and
+      // must be released instead of granting editability.
+      acquisitionEpoch += 1;
       stopWaiting();
       if (previous !== null && previous !== undefined && holding.value) {
         const active = ensureDriver();
@@ -424,6 +448,7 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
 
   onScopeDispose(() => {
     disposed = true;
+    acquisitionEpoch += 1;
     stopWaiting();
     stopHeartbeat();
     const lineageId = deps.lineageId();
