@@ -20,13 +20,23 @@
  *   it; typing, Enter and paste coalesce. Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z and
  *   Ctrl+Y are the workspace's Ångra and Gör om (`examWorkspaceHistoryKeys`),
  *   never an editor-local undo. The component is a `RichTextTarget`: focusing
- *   it makes it the surface the shared formatting toolbar acts on.
+ *   it makes it the surface the shared formatting toolbar acts on. The target
+ *   also carries `makeGap`: the selection, or the word at the caret, becomes
+ *   one new gap in one `createGap` event, never an `update`. A click inside a
+ *   word shows a small floating "Lucka" button above that word ("Gör till
+ *   lucka" tooltip and accessible name) while a next gap id is available;
+ *   one click on it converts the word. The button
+ *   teleports to the document body and sits fixed at viewport coordinates, so
+ *   the editor's clipping never cuts it; later transactions keep it while the
+ *   document is unchanged and the caret stays inside the word.
  *
  * Relationships:
  *   - `examWorkspaceRichTextSchema` builds the editor's extensions;
  *     `examWorkspaceRichTextDocument` maps the body to and from them.
  *   - `examWorkspaceRichTextEditKind` classifies a transaction as a discrete edit.
  *   - `examWorkspaceRichTextTarget` registers the surface for the toolbar.
+ *   - `useExamWorkspaceMakeGap` owns the Lucka command and the floating
+ *     button; it resolves words with `examWorkspaceGapWord`.
  *   - `examWorkspaceHistoryKeys` receives the undo and redo shortcuts.
  *   - Atom and heading styles are global in `examWorkspace.css`.
  */
@@ -35,6 +45,7 @@ import { EditorContent, useEditor } from "@tiptap/vue-3";
 import { NodeSelection } from "@tiptap/pm/state";
 import { computed, onBeforeUnmount, ref, watch } from "vue";
 import type { Ref } from "vue";
+import { TextCursorInput } from "lucide-vue-next";
 
 import type { NativeExamBodyParagraph } from "../../../api/examWorkspace";
 import { BODY_MARKS } from "./examWorkspaceBodyMarks";
@@ -53,8 +64,11 @@ import {
   examRichTextExtensions,
 } from "./examWorkspaceRichTextSchema";
 import type { ExamGapState } from "./examWorkspaceRichTextSchema";
+import { useExamWorkspaceMakeGap } from "./useExamWorkspaceMakeGap";
 import { useRichTextTargetRegistry } from "./examWorkspaceRichTextTarget";
 import type { RichTextHeadingLevel, RichTextTarget } from "./examWorkspaceRichTextTarget";
+
+defineOptions({ inheritAttrs: false });
 
 const props = withDefaults(
   defineProps<{
@@ -76,6 +90,8 @@ const props = withDefaults(
     assetUrls?: Record<string, string>;
     /** Whether a click on a gap, or Enter on a selected gap, opens it. */
     gapsInteractive?: boolean;
+    /** The id the next created gap takes; the floating gap button needs a string. */
+    nextGapId?: string | null;
   }>(),
   {
     disabled: false,
@@ -86,11 +102,14 @@ const props = withDefaults(
     gapStates: undefined,
     assetUrls: undefined,
     gapsInteractive: false,
+    nextGapId: undefined,
   },
 );
 
 const emit = defineEmits<{
   update: [body: NativeExamBodyParagraph[], structural: boolean];
+  /** One new gap replaced text at the caret: the owner adds the gap record. */
+  createGap: [body: NativeExamBodyParagraph[], gapId: string, seed: string];
   activateGap: [gapId: string, element: HTMLElement];
   focus: [];
 }>();
@@ -111,6 +130,11 @@ let knownAtoms = atomKey(props.body);
 let toolbarEdit = false;
 
 const marks: Ref<BodyMark[]> = ref([]);
+
+/** Gap creation is available only while gaps are interactive and the editor is enabled. */
+function canMakeGap(): boolean {
+  return props.gapsInteractive && !props.disabled;
+}
 
 const editor = useEditor({
   content: editorContentFrom(props.body),
@@ -134,7 +158,14 @@ const editor = useEditor({
       emit("activateGap", String(node.attrs.gapId), element);
       return true;
     },
+    handleClick: (view, pos, event) => {
+      return handleMakeGapClick(view, pos, event);
+    },
     handleKeyDown: (view, event) => {
+      if (event.key === "Escape" && makeGapButton.value !== null) {
+        hideMakeGap();
+        return false;
+      }
       const { selection } = view.state;
       if (
         (event.key !== "Enter" && event.key !== " ") ||
@@ -154,23 +185,49 @@ const editor = useEditor({
     },
   },
   onUpdate: ({ editor: current, transaction }) => {
+    maybeHideMakeGapButton(transaction);
     if (props.disabled) {
       return;
     }
     const body = bodyFromEditor(current.getJSON());
     const atoms = atomKey(body);
+    const creation = pendingGapCreation();
     const structural = toolbarEdit || atoms !== knownAtoms || isDiscreteEdit(transaction);
     emitted = JSON.stringify(body);
     knownAtoms = atoms;
+    if (creation !== null) {
+      emit("createGap", body, creation.gapId, creation.seed);
+      return;
+    }
     emit("update", body, structural);
   },
-  onTransaction: ({ editor: current }) => {
+  onTransaction: ({ editor: current, transaction }) => {
+    maybeHideMakeGapButton(transaction);
     marks.value = BODY_MARKS.filter((mark) => current.isActive(mark));
   },
   onFocus: () => {
     registry.activate(target);
     emit("focus");
   },
+  onBlur: () => {
+    hideMakeGap();
+  },
+});
+
+const {
+  makeGapButton,
+  makeGapButtonElement,
+  pendingGapCreation,
+  makeGap,
+  confirmMakeGap,
+  handleMakeGapClick,
+  maybeHideMakeGapButton,
+  hideMakeGap,
+  removeMakeGapListeners,
+} = useExamWorkspaceMakeGap({
+  editor,
+  canMakeGap,
+  nextGapId: () => props.nextGapId,
 });
 
 function surfaceAttributes(): Record<string, string> {
@@ -224,11 +281,17 @@ const target: RichTextTarget = {
       }
     });
   },
+  makeGap: (gapId) => {
+    makeGap(gapId);
+  },
   // ProseMirror keeps its own selection while the toolbar has focus.
   release: () => undefined,
 };
 
-onBeforeUnmount(() => registry.deactivate(target));
+onBeforeUnmount(() => {
+  registry.deactivate(target);
+  removeMakeGapListeners();
+});
 
 watch(
   () => props.body,
@@ -247,6 +310,18 @@ watch(
   () => props.disabled,
   (disabled) => {
     editor.value?.setEditable(!disabled, false);
+    if (disabled) {
+      hideMakeGap();
+    }
+  },
+);
+
+watch(
+  () => props.nextGapId,
+  (nextGapId) => {
+    if (typeof nextGapId !== "string") {
+      hideMakeGap();
+    }
   },
 );
 
@@ -292,10 +367,33 @@ defineExpose({
 </script>
 
 <template>
-  <EditorContent
-    :editor="editor"
-    class="xw-richtext"
-    :class="wrapperClass"
-    :data-disabled="disabled ? 'true' : undefined"
-  />
+  <div class="contents">
+    <EditorContent
+      :editor="editor"
+      v-bind="$attrs"
+      class="xw-richtext"
+      :class="wrapperClass"
+      :data-disabled="disabled ? 'true' : undefined"
+    />
+    <Teleport to="body">
+      <button
+        v-if="makeGapButton !== null"
+        ref="makeGapButtonElement"
+        type="button"
+        class="fixed z-30 inline-flex items-center gap-1 border border-navy/60 bg-panel px-2 py-1 text-xs text-navy shadow"
+        :style="{ left: `${makeGapButton.left}px`, top: `${makeGapButton.top}px` }"
+        aria-label="Gör till lucka"
+        title="Gör till lucka"
+        data-test="exam-workspace-make-gap"
+        @mousedown.prevent
+        @click="confirmMakeGap"
+      >
+        <TextCursorInput
+          :size="14"
+          aria-hidden="true"
+        />
+        Lucka
+      </button>
+    </Teleport>
+  </div>
 </template>

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "f8dcd97ab3d8abf31bafc45c904d4655a739c4b3032ac31dcf6e10231b6dcc90",
+  "source_set_digest": "de923c80edd3f89704f2234ccced299e9504846bbb4ef34f8226b11d98c601bf",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6634,7 +6634,7 @@
       "type": "task",
       "title": "Short-answer and gap-text questions look different, teachers create gaps by clicking a word, and the gap popover shows its whole answer list",
       "path": "docs/backlog/tasks/task-skript-40-04-08-short-answer-and-gap-text-questions-look-different-teachers-create-gaps-by-clicking-a-word-and-the-gap-popover-shows-its-whole-answer-list.md",
-      "status": "proposed",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [

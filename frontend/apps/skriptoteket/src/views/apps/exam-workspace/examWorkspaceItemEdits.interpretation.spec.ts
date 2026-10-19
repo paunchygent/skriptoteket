@@ -9,12 +9,14 @@ import {
   canUndoInterpretation,
   reviewed,
   withCorrectChoices,
-  withGapAsText,
-  withGapValues,
-  withoutAutomaticValue,
   withoutInterpretedKey,
   withMatchPairs,
 } from "./examWorkspaceItemEdits";
+import {
+  withGapAsText,
+  withGapValues,
+  withoutAutomaticValue,
+} from "./examWorkspaceGapEdits";
 import { plainBody } from "./examWorkspaceRichText";
 import { placedGapIds } from "./examWorkspaceRichTextDocument";
 import { buildMatchingItem } from "./examWorkspaceMatchingItem.specSupport";

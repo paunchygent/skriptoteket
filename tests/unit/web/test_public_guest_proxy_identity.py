@@ -13,6 +13,7 @@ from pathlib import Path
 from uuid import UUID
 
 import pytest
+import structlog
 import yaml
 from starlette.requests import Request
 from structlog.testing import capture_logs
@@ -266,7 +267,10 @@ _PROXY_UNTRUSTED_EVENT = "public_guest_limiter_proxy_untrusted"
 
 
 @pytest.fixture
-def reset_proxy_warning():
+def reset_proxy_warning(monkeypatch: pytest.MonkeyPatch):
+    # An unbound logger: a module logger cached before a later configure_logging
+    # call keeps the older processors and bypasses capture_logs.
+    monkeypatch.setattr(support, "logger", structlog.get_logger(support.__name__))
     support._PROXY_UNTRUSTED_WARNING_EMITTED = False
     yield
     support._PROXY_UNTRUSTED_WARNING_EMITTED = False

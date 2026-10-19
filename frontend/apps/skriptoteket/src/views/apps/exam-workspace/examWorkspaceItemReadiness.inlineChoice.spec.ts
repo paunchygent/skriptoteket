@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 
 import type { NativeExamChoice, NativeExamGap, NativeExamItem } from "../../../api/examWorkspace";
 import { GAP_WITHOUT_CORRECT_OPTION_GUIDANCE } from "./examWorkspaceAnswerKeyRules";
-import { withGapOptions } from "./examWorkspaceItemEdits";
+import { withGapOptions } from "./examWorkspaceGapEdits";
 import {
   examWorkspaceItemReadiness,
   examWorkspaceReadinessByItemId,

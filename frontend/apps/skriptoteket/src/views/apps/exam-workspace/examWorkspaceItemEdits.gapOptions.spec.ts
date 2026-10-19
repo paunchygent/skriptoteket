@@ -10,7 +10,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { NativeExamAnswerKeyOrigin, NativeExamChoice } from "../../../api/examWorkspace";
-import { withGapOptions } from "./examWorkspaceItemEdits";
+import { withGapOptions } from "./examWorkspaceGapEdits";
 import { buildGap } from "./examWorkspaceKeyedItems.specSupport";
 import { buildGapItem } from "./ExamWorkspaceBodyEditor.specSupport";
 import { plainBody } from "./examWorkspaceRichText";

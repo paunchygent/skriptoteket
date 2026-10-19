@@ -28,7 +28,6 @@ import { UiGlyph } from "../../../components/ui";
 import ExamWorkspaceMenu from "./ExamWorkspaceMenu.vue";
 import { EXAM_WORKSPACE_TYPE_LABELS } from "./examWorkspaceRows";
 
-const KINDS = Object.entries(EXAM_WORKSPACE_TYPE_LABELS) as [NativeExamItemKind, string][];
 const PROTOTYPE_KIND_ORDER: NativeExamItemKind[] = [
   "free_text",
   "single_choice",
@@ -38,6 +37,13 @@ const PROTOTYPE_KIND_ORDER: NativeExamItemKind[] = [
   "matching",
   "ordering",
 ];
+
+type QuestionTypeOption = { kind: NativeExamItemKind; label: string };
+
+const KINDS: QuestionTypeOption[] = PROTOTYPE_KIND_ORDER.map((kind) => ({
+  kind,
+  label: EXAM_WORKSPACE_TYPE_LABELS[kind],
+}));
 
 const props = withDefaults(
   defineProps<{
@@ -54,15 +60,15 @@ const props = withDefaults(
     moveTargets?: { id: string; label: string }[];
     /** The part the question sits in; null when it is standalone. */
     currentParentId?: string | null;
+    /** The visible type button text: "Kort svar" for that shape, else the kind label. */
+    typeLabel: string;
   }>(),
   { currentParentId: null, moveTargets: () => [] },
 );
 
 /** Ordering questions are standalone only (ST-SKRIPT-39-06 P3), so a deluppgift cannot change to Ordna. */
-const orderedKinds = computed(() =>
-  PROTOTYPE_KIND_ORDER.filter((kind) => !(props.child !== null && kind === "ordering")).map(
-    (kind) => KINDS.find(([entry]) => entry === kind)!,
-  ),
+const orderedKinds = computed<QuestionTypeOption[]>(() =>
+  KINDS.filter((option) => !(props.child !== null && option.kind === "ordering")),
 );
 
 const emit = defineEmits<{
@@ -78,7 +84,6 @@ const typeOpen = ref(false);
 const moreOpen = ref(false);
 const moveOpen = ref(false);
 
-const typeLabel = computed(() => (props.unbuilt ? "Ej konverterad" : EXAM_WORKSPACE_TYPE_LABELS[props.kind]));
 /** Offered while the question has another type, or has not been converted at all. */
 const offeredKind = computed(() =>
   props.suggestedKind !== null && (props.suggestedKind !== props.kind || props.unbuilt) ? props.suggestedKind : null,
@@ -99,9 +104,11 @@ function targetHint(targetParentId: string | null): string | null {
 }
 
 /** The Flytta till entries: "Ingen del (fristående)" first, then every part in list order (G3). */
-const moveOptions = computed(() => [
-  { hint: targetHint(null), id: null as string | null, label: "Ingen del (fristående)" },
-  ...props.moveTargets.map((target) => ({ hint: targetHint(target.id), id: target.id as string | null, label: target.label })),
+type MoveOption = { hint: string | null; id: string | null; label: string };
+
+const moveOptions = computed<MoveOption[]>(() => [
+  { hint: targetHint(null), id: null, label: "Ingen del (fristående)" },
+  ...props.moveTargets.map<MoveOption>((target) => ({ hint: targetHint(target.id), id: target.id, label: target.label })),
 ]);
 
 function openMove(): void {
@@ -209,24 +216,24 @@ function chooseMore(action: "up" | "down" | "remove"): void {
         Byt frågetyp
       </div>
       <button
-        v-for="[entryKind, entryLabel] in orderedKinds"
-        :key="entryKind"
+        v-for="option in orderedKinds"
+        :key="option.kind"
         type="button"
         class="xw-mi"
         role="menuitemradio"
-        :aria-checked="!unbuilt && entryKind === kind"
-        :data-test="`exam-workspace-type-${entryKind}`"
-        @click="chooseKind(entryKind)"
+        :aria-checked="!unbuilt && option.kind === kind"
+        :data-test="`exam-workspace-type-${option.kind}`"
+        @click="chooseKind(option.kind)"
       >
         <UiGlyph
-          v-if="!unbuilt && entryKind === kind"
+          v-if="!unbuilt && option.kind === kind"
           meaning="selected"
           :size="20"
         /><span
           v-else
           class="xw-mi__pad"
-        /><span class="xw-grow">{{ entryLabel }}</span><span
-          v-if="entryKind === offeredKind"
+        /><span class="xw-grow">{{ option.label }}</span><span
+          v-if="option.kind === offeredKind"
           class="xw-chip xw-chip--teal"
           data-test="exam-workspace-type-suggested"
         ><UiGlyph

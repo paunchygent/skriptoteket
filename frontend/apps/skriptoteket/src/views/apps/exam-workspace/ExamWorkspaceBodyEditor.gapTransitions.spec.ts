@@ -13,7 +13,7 @@ import { nextTick } from "vue";
 
 import ExamWorkspaceGapPopover from "./ExamWorkspaceGapPopover.vue";
 import { buildGap } from "./examWorkspaceKeyedItems.specSupport";
-import { buildGapItem, clickGap, mountEditor, surface } from "./ExamWorkspaceBodyEditor.specSupport";
+import { buildGapItem, clickGap, documentControl, mountEditor, popoverExists, surface } from "./ExamWorkspaceBodyEditor.specSupport";
 
 function itemWithAutomaticValue() {
   return buildGapItem({
@@ -38,8 +38,9 @@ describe("ExamWorkspaceBodyEditor gap transitions", () => {
     const wrapper = await mountEditor(itemWithAutomaticValue());
     clickGap(wrapper, "gap_001");
     await nextTick();
+    await nextTick();
 
-    await wrapper.get('[data-test="exam-workspace-gap-automatic-remove-hundra"]').trigger("click");
+    await documentControl('[data-test="exam-workspace-gap-automatic-remove-hundra"]').trigger("click");
 
     expect(wrapper.emitted("removeAutomaticValue")).toEqual([
       ["item_001", "gap_001", "hundra"],
@@ -51,12 +52,13 @@ describe("ExamWorkspaceBodyEditor gap transitions", () => {
     const wrapper = await mountEditor(itemWithAutomaticValue());
     clickGap(wrapper, "gap_001");
     await nextTick();
-    expect(wrapper.find('[data-test="exam-workspace-gap-popover"]').exists()).toBe(true);
+    await nextTick();
+    expect(popoverExists()).toBe(true);
 
-    await wrapper.get('[data-test="exam-workspace-gap-as-text"]').trigger("click");
+    await documentControl('[data-test="exam-workspace-gap-as-text"]').trigger("click");
 
     expect(wrapper.emitted("showGapAsText")).toEqual([["item_001", "gap_001"]]);
-    expect(wrapper.find('[data-test="exam-workspace-gap-popover"]').exists()).toBe(false);
+    expect(popoverExists()).toBe(false);
     // TipTap moves focus on the next animation frame.
     await vi.waitFor(() => expect(document.activeElement).toBe(surface(wrapper)));
     wrapper.unmount();
@@ -75,14 +77,15 @@ describe("ExamWorkspaceBodyEditor gap transitions", () => {
     const wrapper = await mountEditor(item);
     clickGap(wrapper, "gap_001");
     await nextTick();
+    await nextTick();
 
-    const button = wrapper.get('[data-test="exam-workspace-gap-as-text"]');
-    expect((button.element as HTMLButtonElement).disabled).toBe(false);
-    expect(wrapper.find('[data-test="exam-workspace-gap-as-text-disabled"]').exists()).toBe(false);
+    const button = documentControl<HTMLButtonElement>('[data-test="exam-workspace-gap-as-text"]');
+    expect(button.element.disabled).toBe(false);
+    expect(document.querySelector('[data-test="exam-workspace-gap-as-text-disabled"]')).toBeNull();
     await button.trigger("click");
 
     expect(wrapper.emitted("showGapAsText")).toEqual([["item_001", "gap_001"]]);
-    expect(wrapper.find('[data-test="exam-workspace-gap-popover"]').exists()).toBe(false);
+    expect(popoverExists()).toBe(false);
     wrapper.unmount();
   });
 
@@ -90,9 +93,10 @@ describe("ExamWorkspaceBodyEditor gap transitions", () => {
     const wrapper = await mountEditor(itemWithAutomaticValue());
     clickGap(wrapper, "gap_001");
     await nextTick();
+    await nextTick();
     const popover = wrapper.findComponent(ExamWorkspaceGapPopover);
     await wrapper.setProps({ disabled: true });
-    expect(wrapper.find('[data-test="exam-workspace-gap-popover"]').exists()).toBe(false);
+    expect(popoverExists()).toBe(false);
 
     popover.vm.$emit("removeAutomaticValue", "item_001", "gap_001", "hundra");
     popover.vm.$emit("showGapAsText", "item_001", "gap_001");

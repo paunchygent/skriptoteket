@@ -173,6 +173,7 @@ const currentParentId = computed(() => props.itemEntry?.parentId ?? null);
         @dismiss-notice="$emit('dismiss-item-notice')"
         @undo-interpretation="editing.undoItemInterpretation"
         @remove-automatic-value="editing.removeItemAutomaticValue"
+        @create-gap="editing.createItemGap"
         @show-gap-as-text="editing.showItemGapAsText"
         @add-ordering-step="editing.addItemOrderingStep"
         @move-ordering-step="editing.moveItemOrderingStep"

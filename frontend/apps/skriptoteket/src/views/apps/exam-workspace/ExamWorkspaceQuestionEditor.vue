@@ -15,8 +15,11 @@
  * Relationships:
  *   - Rendered by `ExamWorkspaceView` for a selected question.
  *   - Composes `ExamWorkspaceQuestionHead`, `ExamWorkspaceImportBox` and the
- *     existing answer fields (`ExamWorkspaceBodyEditor`, `ExamWorkspaceChoiceField`,
- *     `ExamWorkspaceCriteriaField`, `ExamWorkspaceKategoriseraGrid`).
+ *     existing answer fields (`ExamWorkspaceBodyEditor`,
+ *     `ExamWorkspaceShortAnswerField`, `ExamWorkspaceChoiceField`,
+ *     `ExamWorkspaceCriteriaField`, `ExamWorkspaceKategoriseraGrid`). A Kort
+ *     svar question renders the Kort svar branch (`ExamWorkspaceShortAnswerField`
+ *     with only Fråga and Svar) instead of the Frågetext body editor.
  *   - Provides the shared rich-text target registry, so the one formatting
  *     toolbar edits the surface the teacher last selected.
  *   - Holds no document state; every edit is emitted with the item id.
@@ -41,19 +44,20 @@ import ExamWorkspaceImportBox from "./ExamWorkspaceImportBox.vue";
 import ExamWorkspaceInlineNotice from "./ExamWorkspaceInlineNotice.vue";
 import ExamWorkspaceKategoriseraGrid from "./ExamWorkspaceKategoriseraGrid.vue";
 import ExamWorkspaceOrderingField from "./ExamWorkspaceOrderingField.vue";
+import ExamWorkspacePointsField from "./ExamWorkspacePointsField.vue";
 import ExamWorkspaceQuestionHead from "./ExamWorkspaceQuestionHead.vue";
 import ExamWorkspaceQuestionTools from "./ExamWorkspaceQuestionTools.vue";
+import ExamWorkspaceShortAnswerField from "./ExamWorkspaceShortAnswerField.vue";
 import ExamWorkspaceWritingLinesField from "./ExamWorkspaceWritingLinesField.vue";
 import { canUndoInterpretation, isTeacherReviewed } from "./examWorkspaceItemEdits";
 import { examWorkspaceItemReadiness } from "./examWorkspaceItemReadiness";
-import { hasNegativePoints, NEGATIVE_POINTS_GUIDANCE } from "./examWorkspaceItemSaveRules";
+import { examWorkspaceItemTypeLabel } from "./examWorkspaceRows";
+import { isShortAnswer } from "./examWorkspaceShortAnswer";
 import { provideRichTextTargetRegistry } from "./examWorkspaceRichTextTarget";
 import type { ExamWorkspaceNotice } from "./useExamWorkspaceStructure";
 
 /** A type the labeler read with less confidence than this is marked for checking. */
 const TYPE_CONFIDENCE_THRESHOLD = 0.95;
-/** A tick value is a number of at least 0 with at most 2 decimals (Q10). */
-const TICK_POINTS_PATTERN = /^\d+(\.\d{1,2})?$/;
 
 const props = withDefaults(
   defineProps<{
@@ -94,6 +98,7 @@ const emit = defineEmits<{
   dismissNotice: [];
   undoInterpretation: [itemId: string];
   removeAutomaticValue: [itemId: string, gapId: string, value: string];
+  createGap: [itemId: string, body: NativeExamBodyParagraph[], gapId: string, seed: string];
   showGapAsText: [itemId: string, gapId: string];
   addOrderingStep: [itemId: string];
   moveOrderingStep: [itemId: string, choiceId: string, delta: -1 | 1];
@@ -119,18 +124,13 @@ const emit = defineEmits<{
   applyWritingLinesToAll: [lines: number];
 }>();
 
-const pointsId = useId();
-const pointsMessageId = useId();
-const tickId = useId();
 /** The converting notice's stable id, so the locked fields can point at their reason. */
 const convertingNoticeId = useId();
 const parentOpen = ref(false);
-const tickInvalid = ref(false);
 
 watch(
   () => props.item.item_id,
   () => {
-    tickInvalid.value = false;
     parentOpen.value = false;
   },
 );
@@ -143,13 +143,6 @@ const typeUncertain = computed(
   () => typeof props.item.review.confidence === "number" && props.item.review.confidence < TYPE_CONFIDENCE_THRESHOLD,
 );
 const isGrid = computed(() => props.item.kind === "matching");
-const hasCriteria = computed(() => props.item.criteria.length > 0);
-const pointsMissing = computed(() => props.item.points === null);
-const pointsNegative = computed(() => hasNegativePoints(props.item));
-/** Points the import spread from the section total; shown as a nonblocking cue until the teacher sets them. */
-const pointsEstimated = computed(
-  () => props.item.points_estimated && !pointsMissing.value && !pointsNegative.value && !isGrid.value && !hasCriteria.value,
-);
 const showFields = computed(() => !props.converting && !unbuilt.value);
 /** True when this free-text question already carries the shared writing-line count. */
 const allFreeTextWritingLinesMatch = computed(
@@ -165,26 +158,6 @@ const keyLine = computed(() => {
   if (origin === "absent") return { ai: false, lead: "Facit i provfilen:", facit };
   return { ai: false, lead: "Facit ur provfilen:", facit };
 });
-
-function handlePointsInput(event: Event): void {
-  const raw = (event.target as HTMLInputElement).value.trim().replace(",", ".");
-  if (raw.length === 0) {
-    emit("updatePoints", props.item.item_id, null);
-    return;
-  }
-  const parsed = Number(raw);
-  emit("updatePoints", props.item.item_id, Number.isFinite(parsed) ? parsed : null);
-}
-
-/** Keep the last valid tick value in the document; mark the field while the typed value is invalid. */
-function handleTickPointsInput(event: Event): void {
-  const raw = (event.target as HTMLInputElement).value.trim().replace(",", ".");
-  const valid = TICK_POINTS_PATTERN.test(raw);
-  tickInvalid.value = !valid;
-  if (valid) {
-    emit("updateTickPoints", props.item.item_id, String(Number(raw)));
-  }
-}
 </script>
 
 <template>
@@ -196,6 +169,7 @@ function handleTickPointsInput(event: Event): void {
     <ExamWorkspaceQuestionHead
       :label="label"
       :kind="item.kind"
+      :type-label="examWorkspaceItemTypeLabel(item, unbuilt)"
       :unbuilt="unbuilt"
       :converting="converting"
       :child="child"
@@ -294,13 +268,25 @@ function handleTickPointsInput(event: Event): void {
       </div>
     </div>
 
+    <ExamWorkspaceShortAnswerField
+      v-if="isShortAnswer(item)"
+      :item="item"
+      :disabled="locked"
+      :asset-urls="assetUrls"
+      @update-body="(itemId, body, structural) => emit('updateBody', itemId, body, structural)"
+      @update-gap-values="(itemId, gapId, values) => emit('updateGapValues', itemId, gapId, values)"
+      @remove-automatic-value="(itemId, gapId, value) => emit('removeAutomaticValue', itemId, gapId, value)"
+    />
+
     <ExamWorkspaceBodyEditor
+      v-else
       :asset-urls="assetUrls"
       :disabled="locked"
       :item="item"
       @update-gap-values="(itemId, gapId, values) => emit('updateGapValues', itemId, gapId, values)"
       @update-gap-options="(itemId, gapId, options, correctOptionId) => emit('updateGapOptions', itemId, gapId, options, correctOptionId)"
       @remove-automatic-value="(itemId, gapId, value) => emit('removeAutomaticValue', itemId, gapId, value)"
+      @create-gap="(itemId, body, gapId, seed) => emit('createGap', itemId, body, gapId, seed)"
       @show-gap-as-text="(itemId, gapId) => emit('showGapAsText', itemId, gapId)"
       @update-body="(itemId, body, structural) => emit('updateBody', itemId, body, structural)"
     />
@@ -376,75 +362,13 @@ function handleTickPointsInput(event: Event): void {
       </button>
     </div>
 
-    <div class="pts">
-      <template v-if="isGrid && !converting">
-        <label
-          class="xw-label pts__label"
-          :for="tickId"
-        >Poäng per kryss</label>
-        <input
-          :id="tickId"
-          class="xw-input pts__input"
-          type="number"
-          min="0"
-          step="0.01"
-          inputmode="decimal"
-          :value="item.tick_points ?? ''"
-          :disabled="locked"
-          :aria-invalid="tickInvalid || undefined"
-          data-test="exam-workspace-item-tick-points-input"
-          @input="handleTickPointsInput"
-        >
-      </template>
-      <label
-        class="xw-label pts__label"
-        :for="pointsId"
-      >Poäng</label>
-      <!-- A grid's points are its tick value times its ticks (Q10), and a free-text item's points are its criteria sum, so they are read-only. -->
-      <input
-        :id="pointsId"
-        class="xw-input pts__input"
-        type="number"
-        min="0"
-        step="any"
-        inputmode="decimal"
-        :value="item.points ?? ''"
-        :disabled="locked"
-        :readonly="isGrid || hasCriteria"
-        :title="isGrid ? 'Poäng per kryss × antal kryss' : hasCriteria ? 'Summan av kriteriernas poäng' : undefined"
-        :aria-invalid="pointsMissing || pointsNegative || undefined"
-        :aria-describedby="pointsMissing || pointsNegative || pointsEstimated ? pointsMessageId : undefined"
-        data-test="exam-workspace-item-points-input"
-        @input="handlePointsInput"
-      >
-      <span
-        v-if="pointsNegative"
-        :id="pointsMessageId"
-        class="xw-errline pts__msg"
-        data-test="exam-workspace-points-hint"
-      ><UiGlyph
-        meaning="blocker"
-        :size="16"
-      />{{ NEGATIVE_POINTS_GUIDANCE }}</span>
-      <span
-        v-else-if="pointsMissing && !converting"
-        :id="pointsMessageId"
-        class="xw-errline pts__msg"
-        data-test="exam-workspace-points-missing"
-      ><UiGlyph
-        meaning="blocker"
-        :size="16"
-      />Saknas</span>
-      <span
-        v-else-if="pointsEstimated && !converting"
-        :id="pointsMessageId"
-        class="xw-hint pts__msg"
-        data-test="exam-workspace-points-estimated"
-      ><UiGlyph
-        meaning="info"
-        :size="16"
-      />Uppskattad utifrån avsnittets totalpoäng</span>
-    </div>
+    <ExamWorkspacePointsField
+      :item="item"
+      :disabled="locked"
+      :converting="converting"
+      @update-points="(points) => emit('updatePoints', item.item_id, points)"
+      @update-tick-points="(tickPoints) => emit('updateTickPoints', item.item_id, tickPoints)"
+    />
   </section>
 </template>
 
@@ -475,11 +399,6 @@ function handleTickPointsInput(event: Event): void {
   font-size: var(--huleedu-text-sm); color: var(--huleedu-navy-70);
 }
 .keyline q { font-family: var(--huleedu-font-serif); color: var(--huleedu-navy); }
-.pts { display: flex; flex-wrap: wrap; align-items: center; gap: var(--huleedu-space-2) var(--huleedu-space-3); margin-top: var(--huleedu-space-5); }
-.pts .pts__label { margin: 0; }
-.pts__input { width: 96px; }
-.pts__input[readonly] { background: var(--huleedu-navy-02); }
-.pts__msg { margin: 0; }
 @media (max-width: 767px) {
   .keyline { flex-wrap: wrap; }
 }

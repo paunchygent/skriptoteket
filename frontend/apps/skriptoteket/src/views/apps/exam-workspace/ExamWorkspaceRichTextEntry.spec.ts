@@ -54,8 +54,8 @@ async function mountEntry(
   return mounted;
 }
 
-function bodies(wrapper: VueWrapper): Body[] {
-  return (wrapper.emitted("updateBody") ?? []).map((args) => args[0] as Body);
+function bodies(wrapper: VueWrapper): unknown[] {
+  return (wrapper.emitted("updateBody") ?? []).map((args) => args[0]);
 }
 
 afterEach(() => {
@@ -103,8 +103,8 @@ describe("ExamWorkspaceRichTextEntry", () => {
     editor.commands.setTextSelection({ from: posIn(editor, "Syregas", 0), to: posIn(editor, "Syregas", 7) });
     registry!.active.value!.toggleMark("bold");
 
-    const emitted = (mounted.emitted("updateBody") ?? []) as Array<[Body, boolean]>;
-    expect(emitted.map(([, structural]) => structural)).toEqual([false, true]);
+    const emitted = mounted.emitted("updateBody") ?? [];
+    expect(emitted.map((args) => args[1])).toEqual([false, true]);
     expect(emitted.at(-1)?.[0]).toEqual([paragraph(text("Syregas", ["bold"]))]);
   });
 
@@ -195,12 +195,30 @@ describe("ExamWorkspaceRichTextEntry", () => {
 
   it("draws the input variant with its own border and the paragraph variant without", async () => {
     const input = await mountEntry([paragraph(text("Syre"))], { borderClass: "border-success" });
-    expect(input.classes()).toContain("border-success");
+    expect(input.classes()).toContain("contents");
+    const inputBox = input.find(".xw-richtext");
+    expect(inputBox.classes()).toContain("border-success");
     input.unmount();
 
     const flowing = await mountEntry([paragraph(text("Syre"))], { variant: "paragraph" });
-    expect(flowing.classes()).not.toContain("border");
-    expect(flowing.classes()).not.toContain("xw-richtext--compact");
+    const flowingBox = flowing.find(".xw-richtext");
+    expect(flowingBox.classes()).not.toContain("border");
+    expect(flowingBox.classes()).not.toContain("xw-richtext--compact");
+  });
+
+  it("lets a parent class fall through to the layout box", async () => {
+    const mountedWithClass = mount(ExamWorkspaceRichTextEntry, {
+      attachTo: document.body,
+      attrs: { class: "flex-1" },
+      props: { body: [paragraph(text("Syre"))], label: "Text för svarsalternativ A", testId: TEST_ID },
+    });
+    const previous = mounted;
+    mounted = mountedWithClass;
+    previous?.unmount();
+    await settleEditors();
+
+    expect(mountedWithClass.classes()).toContain("contents");
+    expect(mountedWithClass.find(".xw-richtext").classes()).toContain("flex-1");
   });
 
   describe("while disabled", () => {

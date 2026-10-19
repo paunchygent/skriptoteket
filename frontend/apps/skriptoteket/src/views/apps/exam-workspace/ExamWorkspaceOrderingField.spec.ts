@@ -204,6 +204,7 @@ describe("Byt frågetyp", () => {
       props: {
         label: "1",
         kind: "free_text",
+        typeLabel: "Fritext",
         unbuilt: false,
         converting: false,
         child,
