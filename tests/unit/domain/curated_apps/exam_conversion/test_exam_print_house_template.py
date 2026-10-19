@@ -15,6 +15,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.exam_print_document import 
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
 )
+from tests.unit.domain.curated_apps.exam_workspace.exam_print_document_test_support import (
+    entry_blocks,
+)
 from tests.unit.domain.curated_apps.exam_workspace.native_exam_change_type_test_support import (
     KINDS,
     source_item,
@@ -43,7 +46,7 @@ def _emitted_heading_levels() -> set[int]:
     return {
         block.level
         for entry in document.entries
-        for block in entry.blocks
+        for block in entry_blocks(entry)
         if isinstance(block, PrintHeading)
     }
 

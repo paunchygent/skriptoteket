@@ -18,6 +18,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_writer import (  # noqa: E501
     ExamWorkspaceDocxWriter,
 )
+from tests.unit.domain.curated_apps.exam_workspace.exam_print_document_test_support import (
+    entry_blocks,
+)
 from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders import (
     make_document,
     make_ordering_item,
@@ -57,7 +60,7 @@ def _facit_lines(*, english: bool = False) -> list[str]:
     return [
         line
         for entry in facit.entries
-        for block in entry.blocks
+        for block in entry_blocks(entry)
         if isinstance(block, PrintAnswerKey)
         for line in block.lines
     ]

@@ -179,10 +179,18 @@ class PrintInstruction:
 
 @dataclass(frozen=True)
 class PrintQuestion:
-    """One question's printed blocks."""
+    """One question's printed blocks in two explicit groups (TASK-SKRIPT-40-04-12 K8).
+
+    ``text`` is the question text: the heading, every body block including gap
+    lines and one-line answer lines from ANSWER_LINE paragraphs, and the points
+    paragraph. ``answer`` is the answer form: the FREE_TEXT writing area, the
+    choice or ordering options, the matching grid, and the facit answer key.
+    The two groups concatenate to the DOCX writer's today order, text first.
+    """
 
     item_id: str
-    blocks: tuple[PrintBlock, ...]
+    text: tuple[PrintBlock, ...]
+    answer: tuple[PrintBlock, ...]
 
 
 @dataclass(frozen=True)
@@ -226,20 +234,21 @@ def _print_walk(
     entries: list[PrintInstruction | PrintQuestion] = []
     for entry in document_outline(document):
         if isinstance(entry, OutlineQuestion):
+            groups = _question_blocks(entry.item, variant=variant)
             entries.append(
                 PrintQuestion(
                     item_id=entry.item.item_id,
-                    blocks=_question_blocks(entry.item, variant=variant),
+                    text=groups.text,
+                    answer=groups.answer,
                 )
             )
             continue
         if not is_empty_body(entry.part.instruction):
             entries.append(PrintInstruction(blocks=_instruction_blocks(entry.part.instruction)))
         for child in entry.children:
+            groups = _question_blocks(child, variant=variant)
             entries.append(
-                PrintQuestion(
-                    item_id=child.item_id, blocks=_question_blocks(child, variant=variant)
-                )
+                PrintQuestion(item_id=child.item_id, text=groups.text, answer=groups.answer)
             )
     return tuple(entries)
 
@@ -269,19 +278,28 @@ def _instruction_runs(paragraph: NativeParagraph) -> tuple[PrintRun, ...]:
     return tuple(runs)
 
 
-def _question_blocks(item: NativeExamItem, *, variant: ExamPrintVariant) -> tuple[PrintBlock, ...]:
+@dataclass(frozen=True)
+class QuestionBlockGroups:
+    """One question's blocks split into the text group and the answer-form group."""
+
+    text: tuple[PrintBlock, ...]
+    answer: tuple[PrintBlock, ...]
+
+
+def _question_blocks(item: NativeExamItem, *, variant: ExamPrintVariant) -> QuestionBlockGroups:
     """One question's blocks, in the DOCX writer's today order (W1, W6-W9)."""
     labels = SWEDISH_EXAM_LABELS
     layout = item_print_layout(item)
     gaps_by_id = {gap.gap_id: gap for gap in item.gaps}
-    blocks: list[PrintBlock] = [PrintHeading(level=3, text=labels.item_title(item))]
+    text: list[PrintBlock] = [PrintHeading(level=3, text=labels.item_title(item))]
+    answer: list[PrintBlock] = []
 
     for paragraph in item.body:
         role = paragraph_print_role(item, paragraph)
         if role is ParagraphPrintRole.ANSWER_LINE:
-            blocks.append(PrintRuledLines(count=1))
+            text.append(PrintRuledLines(count=1))
         elif role is ParagraphPrintRole.GAP_LINE:
-            blocks.append(
+            text.append(
                 PrintParagraph(
                     runs=_gap_line_runs(paragraph, layout),
                     style=PrintParagraphStyle.GAP_LINE,
@@ -290,9 +308,9 @@ def _question_blocks(item: NativeExamItem, *, variant: ExamPrintVariant) -> tupl
         else:
             runs = _text_paragraph_runs(paragraph, gaps_by_id)
             if runs:
-                blocks.append(PrintParagraph(runs=runs, style=PrintParagraphStyle.BODY))
+                text.append(PrintParagraph(runs=runs, style=PrintParagraphStyle.BODY))
 
-    blocks.append(
+    text.append(
         PrintParagraph(
             runs=(PrintText(_points_line(item, labels)),),
             style=PrintParagraphStyle.POINTS,
@@ -300,10 +318,10 @@ def _question_blocks(item: NativeExamItem, *, variant: ExamPrintVariant) -> tupl
     )
 
     if item.kind is NativeExamItemKind.FREE_TEXT:
-        blocks.append(PrintRuledLines(count=layout.writing_lines))
+        answer.append(PrintRuledLines(count=layout.writing_lines))
     elif item.kind in _CHOICE_KINDS:
         for index, choice in enumerate(item.choices):
-            blocks.append(
+            answer.append(
                 PrintOption(
                     box=PrintBox.TICK,
                     label=f"{_choice_letter(index)})",
@@ -312,11 +330,11 @@ def _question_blocks(item: NativeExamItem, *, variant: ExamPrintVariant) -> tupl
             )
     elif item.kind is NativeExamItemKind.ORDERING:
         for choice in _ordering_steps_in_print_order(item):
-            blocks.append(
+            answer.append(
                 PrintOption(box=PrintBox.NUMBER, label="", text=body_plain_text(choice.body))
             )
     elif item.kind is NativeExamItemKind.MATCHING:
-        blocks.append(
+        answer.append(
             PrintGrid(
                 rows=tuple(body_plain_text(entry.body) for entry in item.match_left),
                 columns=tuple(body_plain_text(entry.body) for entry in item.match_right),
@@ -326,8 +344,8 @@ def _question_blocks(item: NativeExamItem, *, variant: ExamPrintVariant) -> tupl
     if variant is ExamPrintVariant.FACIT:
         key_lines = _facit_lines(item, labels)
         if key_lines:
-            blocks.append(PrintAnswerKey(lines=key_lines))
-    return tuple(blocks)
+            answer.append(PrintAnswerKey(lines=key_lines))
+    return QuestionBlockGroups(text=tuple(text), answer=tuple(answer))
 
 
 def _text_paragraph_runs(
