@@ -60,9 +60,13 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
 pytestmark = pytest.mark.unit
 
 _Q1 = "1. Förklara vad ett substantiv är. (5 p)"
+# D6+D3: a trailing label that equals the settled points leaves the final body,
+# so lookups and expectations use these literals, never the labelled source text.
+_Q1_SHOWN = "1. Förklara vad ett substantiv är."
 _TEXT_A = "Text A"
 _PASSAGE = "Igår kom en ny elev till klassen. Han var blyg."
 _Q2 = "2. Jämför texterna och ge exempel. (10 p)"
+_Q2_SHOWN = "2. Jämför texterna och ge exempel."
 _PICTURE = DocxImage(b"passage picture", "image/png", offset=len(_PASSAGE), marked_offset=0)
 _CHUNKS = (
     DocxChunk("body:0001", "paragraph", _Q1, _Q1),
@@ -183,7 +187,7 @@ def _build(items: list[JsonValue], path: str) -> DocxBuildResult:
 
 
 def _q2(result: DocxBuildResult) -> NativeExamItem:
-    (item,) = [i for i in result.document.items if _Q2 in i.plain_text_lines()]
+    (item,) = [i for i in result.document.items if _Q2_SHOWN in i.plain_text_lines()]
     return item
 
 
@@ -198,7 +202,7 @@ def test_left_out_owned_passage_opens_its_question_item(path):
     item = _q2(result)
 
     assert len(result.document.items) == 2
-    assert item.plain_text_lines() == (_TEXT_A, _PASSAGE, _Q2)
+    assert item.plain_text_lines() == (_TEXT_A, _PASSAGE, _Q2_SHOWN)
     assert item.review.parse_origin is NativeParseOrigin.LLM_PARSED
     assert item.kind is NativeExamItemKind.FREE_TEXT
     assert item.points == 10
@@ -226,7 +230,7 @@ def test_question_without_converted_item_reviews_its_passage_with_its_source(pat
 
     assert len(result.document.items) == 2
     assert item.review.parse_origin is NativeParseOrigin.SOURCE_FALLBACK
-    assert item.plain_text_lines() == (_TEXT_A, _PASSAGE, _Q2)
+    assert item.plain_text_lines() == (_TEXT_A, _PASSAGE, _Q2_SHOWN)
     assert item.source_anchor == "body:0004"
 
 
@@ -246,7 +250,7 @@ def test_passage_the_reply_holds_is_not_joined_again(path):
 
     assert len(result.document.items) == 2
     assert item.review.parse_origin is NativeParseOrigin.LLM_PARSED
-    assert item.plain_text_lines() == (_TEXT_A, _PASSAGE, _Q2)
+    assert item.plain_text_lines() == (_TEXT_A, _PASSAGE, _Q2_SHOWN)
 
 
 def _paragraph(text: str) -> dict[str, JsonValue]:
@@ -275,7 +279,7 @@ def test_context_another_question_lists_opens_its_owner_item(case, path):
     item = _q2(result)
 
     assert len(result.document.items) == 2
-    assert item.plain_text_lines() == (_TEXT_A, _PASSAGE, _Q2)
+    assert item.plain_text_lines() == (_TEXT_A, _PASSAGE, _Q2_SHOWN)
     assert item.review.parse_origin is NativeParseOrigin.LLM_PARSED
     assert item.body[1].segments[-1] == NativeAssetSegment(asset_id=_PICTURE.asset_id)
     assert item.source_anchor == "body:0004"
@@ -291,13 +295,13 @@ def test_question_listing_another_question_context_is_its_source_review_item(pat
     item = _q1(result)
 
     assert item.review.parse_origin is NativeParseOrigin.SOURCE_FALLBACK
-    assert item.plain_text_lines() == (_Q1,)
+    assert item.plain_text_lines() == (_Q1_SHOWN,)
     assert [e.anchors for e in state.events if e.code == "foreign_context_listed"] == [
         ("body:0001",)
     ]
     q2 = _q2(result)
     assert q2.review.parse_origin is NativeParseOrigin.LLM_PARSED
-    assert q2.plain_text_lines() == (_TEXT_A, _PASSAGE, _Q2)
+    assert q2.plain_text_lines() == (_TEXT_A, _PASSAGE, _Q2_SHOWN)
 
 
 @pytest.mark.parametrize("path", sorted(_PATHS))
@@ -307,4 +311,4 @@ def test_question_placing_the_moved_context_picture_is_its_source_review_item(pa
     item = _q1(_foreign("text_a_and_passage", path)[0])
 
     assert item.review.parse_origin is NativeParseOrigin.SOURCE_FALLBACK
-    assert item.plain_text_lines() == (_Q1,)
+    assert item.plain_text_lines() == (_Q1_SHOWN,)

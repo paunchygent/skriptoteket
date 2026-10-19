@@ -110,7 +110,7 @@ def test_bare_label_followed_by_words_is_not_a_points_line() -> None:
 
 @pytest.mark.parametrize(
     "text",
-    ["Poäng: 6 poäng", "Totalt: 6 p", "6 p", "(2 p)", "Max 36p", "Max poäng: 6 p"],
+    ["Poäng: 6 poäng", "Totalt: 6 p", "6 p", "(2 p)", "Max poäng: 6 p"],
 )
 def test_short_label_lines_are_points_only_lines(text: str) -> None:
     assert points_only_line(text)
@@ -124,6 +124,9 @@ def test_short_label_lines_are_points_only_lines(text: str) -> None:
         "Beskriv processen. (2 p)",
         "Beskriv processen (2 p)",
         "Give 3 points of view.",
+        "Max 36p",
+        "Show (2 p) Svar:",
+        "Show (2 p)",
     ],
 )
 def test_stem_and_answer_lines_are_not_points_only_lines(text: str) -> None:

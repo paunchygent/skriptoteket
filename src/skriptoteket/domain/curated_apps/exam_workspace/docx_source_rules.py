@@ -218,6 +218,10 @@ POINT_LABEL = re.compile(
     r"\(\s*" + _NUMBER_UNIT + r"\s*\)|\b" + _NUMBER_UNIT + r"(?=[ \t]*[.,;:!?]?[ \t]*$)",
     re.IGNORECASE | re.MULTILINE,
 )
+# Any mention of points, wherever it stands: the number-unit pair with a leading
+# word boundary and no position rule. A prose sentence such as "Del 1 ger 4 p
+# för ..." mentions points without printing a label.
+POINTS_MENTION = re.compile(r"\b" + _NUMBER_UNIT, re.IGNORECASE)
 # A line that holds only a score field, such as "/4 p" or "____ /8 p".
 SCORE_FIELD = re.compile(
     r"[ \t_]*/[ \t]*(?:" + POINT_LABEL.pattern + r")[ \t]*",
@@ -232,24 +236,28 @@ def points_line(text: str) -> bool:
     return rest != text and len(_WORD.findall(rest)) < 3
 
 
-_POINTS_ONLY_REST = re.compile(r"[ \t]*(?:[^\W\d_]+:?[ \t]+[^\W\d_]+:|[^\W\d_]+:?)?[ \t]*")
+_POINTS_ONLY_HEAD = re.compile(r"[ \t]*(?:[^\W\d_]+[ \t]+)?[^\W\d_]+:[ \t]*")
+_POINTS_ONLY_TAIL = re.compile(r"[ \t]*[.,;:!?]?[ \t]*")
 
 
 def points_only_line(text: str) -> bool:
     """A points line holding nothing but an optional short label, such as "Poäng: 6 poäng".
 
-    Exactly one points label, no answer line, and only letter-only label words
-    beside it: nothing, one word with an optional colon ("Max", "Totalt:") or
-    two words ending in a colon ("Max poäng:"). A stem ("Beskriv processen.
-    (2 p)"), an answer blank ("Answer: ____________ (1 point)") and any digit,
-    underscore or punctuation beside the label is prose, never a points-only
-    line.
+    Exactly one points label, no answer line, an empty head or one or two
+    letter-only words ending in a colon ("Poäng:", "Totalt:", "Max poäng:"),
+    and after the label only blank space and at most one punctuation mark. A
+    head without a colon ("Max 36p", "Show (2 p)"), a stem ("Beskriv
+    processen. (2 p)"), an answer blank ("Answer: ____________ (1 point)")
+    and any digit, underscore or further word beside the label is prose,
+    never a points-only line.
     """
     matches = list(POINT_LABEL.finditer(text))
     if len(matches) != 1 or not points_line(text) or answer_line(text):
         return False
     match = matches[0]
-    return _POINTS_ONLY_REST.fullmatch(text[: match.start()] + text[match.end() :]) is not None
+    head, tail = text[: match.start()], text[match.end() :]
+    head_ok = not head.strip() or _POINTS_ONLY_HEAD.fullmatch(head) is not None
+    return head_ok and _POINTS_ONLY_TAIL.fullmatch(tail) is not None
 
 
 # A line's own number, letter or bullet, such as "3.", "b)", "Fråga 3:" or "- ".

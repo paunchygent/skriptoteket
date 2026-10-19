@@ -68,6 +68,68 @@ _EMPTY_BODY_ANCHOR = "body:0015"
 _PAIRED_TEXTS_BATCH = "docx_w1-04"
 _PAIRED_TEXTS_ANCHOR = "body:0075"
 _BATCH_ANCHOR = "body:0041"
+# D6+D3: each faulted review item below settles at 1 point, so its trailing
+# "(1 point)" leaves the body; the body shows these literals. The full source
+# text stays in retry_source and original_wording (asserted in the helpers).
+_SHOWN = {
+    "body:0015": "5. Regular breaks can _____________ (lindra) stress during a busy day.",
+    "body:0019": (
+        "7. After several lessons, I am ____________ (först nu) starting to understand the rules."
+    ),
+    "body:0041": "18. The group discussed ____________ (olika) ways to solve the problem.",
+    "body:0043": "19. The jacket looked thin. ____________ (emellertid), it kept me warm.",
+    "body:0045": (
+        "20. The stain on the white shirt was ______________ (märkbar) from across the room."
+    ),
+    "body:0047": "21. Can you _____________ (känna igen) this song from its first few seconds?",
+    "body:0049": (
+        "22. Her ______________ (återhämtningsförmåga) helped her "
+        "start again after she lost her job."
+    ),
+    "body:0051": (
+        "23. After a hard year, we hope to _______________ (repa sig) and enjoy school again."
+    ),
+    "body:0053": "24. A strong fence can ____________ (förhindra) animals from reaching the road.",
+    "body:0075": (
+        "1. Milan tends to boast when he meets new teammates.\n\nWhat does boast mean here?"
+    ),
+    "body:0097": (
+        "1. Write the full form of the bold contraction.\n"
+        "We can’t come to the meeting.\nAnswer: ____________"
+    ),
+    "body:0099": (
+        "2. Write the full form of the bold contraction.\n"
+        "We’re waiting for your reply.\nAnswer: ____________"
+    ),
+    "body:0101": (
+        "3. Use a form of book. Write the whole missing word.\n"
+        "I borrowed three ____________ from the library."
+    ),
+    "body:0103": (
+        "4. Use a form of student. Write the whole missing word.\n"
+        "Both ____________ finished their work."
+    ),
+    "body:0105": (
+        "5. Use the present form of walk. Write the whole missing word.\n"
+        "Mia ____________ to school every day."
+    ),
+    "body:0107": (
+        "6. Use the present form of play. Write the whole missing word.\n"
+        "My friends ____________ soccer after school every Friday."
+    ),
+    "body:0109": (
+        "7. The car belongs to one teacher. Complete the sentence with a form of teacher.\n"
+        "This is the _____________ car."
+    ),
+    "body:0113": (
+        "9. Replace only the bold word. Write one word.\nIts time for lunch.\nAnswer: ____________"
+    ),
+    "body:0121": (
+        "13. Use can and you once each to complete the statement. "
+        "Write only the two missing words.\n"
+        "Tomorrow ____________ bring your notebook."
+    ),
+}
 Corruption = Callable[[dict[str, JsonValue]], None]
 
 
@@ -159,7 +221,15 @@ def _assert_only_reviewed(
         assert item.review.reasons, f"{anchor} names no failure reason"
         source_anchor = _anchor(item)
         lines = _text(item)
-        assert text[source_anchor] in lines, f"{source_anchor} lost its source text"
+        # D6+D3+D2: trailing wording that equals the settled points leaves the
+        # body; the full source text stays in retry_source and original_wording.
+        expected = _SHOWN.get(source_anchor, text[source_anchor])
+        assert expected in lines, f"{source_anchor} lost its source text"
+        kept = [c.text for c in item.retry_source.chunks] if item.retry_source else []
+        wording = item.import_record.original_wording.question_text if item.import_record else ""
+        assert text[source_anchor] in "\n".join([*kept, wording]), (
+            f"{source_anchor} left no traceable source"
+        )
         source = "\n".join(text.values())
         assert all(line in source for line in lines), f"{source_anchor} shows text the source lacks"
 
@@ -175,7 +245,15 @@ def _assert_question_reviewed(outcome: DocxConversionOutcome, question_id: str) 
     assert item.review.parse_origin is NativeParseOrigin.SOURCE_FALLBACK
     assert item.review.reasons, f"{question_id} names no failure reason"
     text = {chunk.anchor: chunk.text for chunk in corpus_chunks(_EXAM)}
-    assert text[item.source_anchor or ""] in _text(item), f"{question_id} lost its source text"
+    source = text[item.source_anchor or ""]
+    # Same D6+D3+D2 shape as above: trailing wording equal to the settled points
+    # leaves the body; the full source text stays traceable.
+    assert _SHOWN.get(item.source_anchor or "", source) in _text(item), (
+        f"{question_id} lost its source text"
+    )
+    kept = [c.text for c in item.retry_source.chunks] if item.retry_source else []
+    wording = item.import_record.original_wording.question_text if item.import_record else ""
+    assert source in "\n".join([*kept, wording]), f"{question_id} left no traceable source"
 
 
 def _batch_questions(failed_claims: frozenset[str]) -> set[str]:
