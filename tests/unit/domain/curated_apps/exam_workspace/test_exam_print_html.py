@@ -259,6 +259,72 @@ class TestBlocks:
         )
 
 
+class TestKeepTogetherGroups:
+    def _question(self) -> PrintQuestion:
+        return PrintQuestion(
+            item_id="item_001",
+            text=(
+                PrintHeading(level=3, text="Fråga 1"),
+                PrintParagraph(
+                    runs=(PrintText("Brödtext."),),
+                    style=PrintParagraphStyle.BODY,
+                ),
+                PrintParagraph(
+                    runs=(PrintText("Poäng: 2 poäng"),),
+                    style=PrintParagraphStyle.POINTS,
+                ),
+            ),
+            answer=(
+                PrintRuledLines(count=2),
+                PrintOption(box=PrintBox.TICK, label="A)", text="vägen"),
+                PrintOption(box=PrintBox.TICK, label="B)", text="skolan"),
+            ),
+        )
+
+    def test_text_group_contains_heading_body_and_points(self) -> None:
+        html = _render(_document(self._question()))
+        text_start = html.index('<div class="print-question-text">')
+        options_start = html.index('<div class="print-options">')
+        text_slice = html[text_start:options_start]
+
+        assert "<h3>Fråga 1</h3>" in text_slice
+        assert "Brödtext." in text_slice
+        assert "Poäng: 2 poäng" in text_slice
+
+    def test_consecutive_options_share_one_wrapper(self) -> None:
+        html = _render(_document(self._question()))
+
+        assert html.count('<div class="print-options">') == 1
+        options_start = html.index('<div class="print-options">')
+        options_slice = html[options_start : html.index("</section>")]
+        assert "A) vägen" in options_slice
+        assert "B) skolan" in options_slice
+
+    def test_writing_area_renders_outside_the_text_group(self) -> None:
+        html = _render(_document(self._question()))
+        text_start = html.index('<div class="print-question-text">')
+        text_end = html.index("</div>", text_start)
+
+        assert "writing-area" not in html[text_start:text_end]
+        assert html.count('class="writing-line"') == 2
+
+    def test_house_css_keeps_groups_together_and_instruction_with_question(self) -> None:
+        css = _style_text(_render(_document(self._question())))
+
+        assert ".print-question-text { break-inside: avoid }" in css
+        assert ".print-options { break-inside: avoid }" in css
+        assert "p.print-body, p.print-option { break-inside: avoid }" in css
+        assert ".print-grid tr { break-inside: avoid }" in css
+        assert ".print-instruction {" in css
+        assert "break-after: avoid;" in css
+
+    def test_writing_area_may_split_while_single_lines_do_not(self) -> None:
+        css = _style_text(_render(_document(self._question())))
+
+        assert ".writing-area { break-inside" not in css
+        assert ".writing-line {" in css
+
+
 class TestPictures:
     def _image_question(self) -> PrintQuestion:
         return PrintQuestion(
