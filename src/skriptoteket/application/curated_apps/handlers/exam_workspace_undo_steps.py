@@ -10,12 +10,9 @@ the cursor stays the only guard while the server assigns each file revision.
 from uuid import UUID
 
 from skriptoteket.application.curated_apps.exam_workspace_history import (
-    MAX_RETAINED_UNDO_STEPS,
-    ExamWorkspaceHistoryStep,
     ExamWorkspaceUndoStepResponse,
     MoveExamWorkspaceHistoryPositionRequest,
     StoreExamWorkspaceUndoStepRequest,
-    history_response,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_document_store import (
     ExamWorkspaceDocumentStore,
@@ -67,15 +64,14 @@ class StoreExamWorkspaceUndoStepHandler:
             )
             if head is None:
                 raise DomainError(code=ErrorCode.NOT_FOUND, message="Provdokumentet finns inte.")
-            history = await self._store.get_history(actor=actor, lineage_id=lineage_id)
-            assert history is not None
-            if history.cursor != request.expected_cursor:
+            history_head = await self._store.ensure_history_head(actor=actor, lineage_id=lineage_id)
+            if history_head.cursor != request.expected_cursor:
                 raise DomainError(
                     code=ErrorCode.CONFLICT,
                     message="Dokumentet har ändrats sedan det öppnades.",
                     details={
                         "expected_cursor": str(request.expected_cursor),
-                        "current_cursor": str(history.cursor),
+                        "current_cursor": str(history_head.cursor),
                     },
                 )
             assert head.document_version is not None
@@ -93,19 +89,11 @@ class StoreExamWorkspaceUndoStepHandler:
             # A new step follows the snapshot the editor stands on and drops its redo steps;
             # the server's commands send no position and follow the current one.
             after = (
-                history.current_step_id if request.after_step_id is None else request.after_step_id
+                history_head.current_step_id
+                if request.after_step_id is None
+                else request.after_step_id
             )
-            ids = (history.baseline.step_id, *(step.step_id for step in history.steps))
-            if after not in ids:
-                raise DomainError(code=ErrorCode.CONFLICT, message="Ångrasteget finns inte längre.")
-            steps = history.steps[: ids.index(after)]
             step_id = self._ids.new_uuid()
-            steps = (*steps, ExamWorkspaceHistoryStep(step_id=step_id, content=content))[
-                -MAX_RETAINED_UNDO_STEPS:
-            ]
-            history = history.model_copy(
-                update={"cursor": step_id, "current_step_id": step_id, "steps": steps}
-            )
             await self._store.write_step_file(
                 actor=actor,
                 lineage_id=lineage_id,
@@ -113,10 +101,18 @@ class StoreExamWorkspaceUndoStepHandler:
                 document=document,
                 version=version,
             )
-            await self._store.put_history(actor=actor, lineage_id=lineage_id, history=history)
-            return ExamWorkspaceUndoStepResponse(
-                document=document, history=history_response(history)
+            stored = self._codec.parse(content=content)
+            history = await self._store.append_history_step(
+                actor=actor,
+                lineage_id=lineage_id,
+                head=history_head,
+                step_id=step_id,
+                document=document,
+                assets_by_id=dict(stored.assets_by_id),
+                notes=stored.notes,
+                after_step_id=after,
             )
+            return ExamWorkspaceUndoStepResponse(document=document, history=history)
 
     async def move_to_step(
         self,
@@ -138,32 +134,22 @@ class StoreExamWorkspaceUndoStepHandler:
             )
             if head is None:
                 raise DomainError(code=ErrorCode.NOT_FOUND, message="Provdokumentet finns inte.")
-            history = await self._store.get_history(actor=actor, lineage_id=lineage_id)
-            assert history is not None
-            if history.cursor != request.expected_cursor:
+            history_head = await self._store.ensure_history_head(actor=actor, lineage_id=lineage_id)
+            if history_head.cursor != request.expected_cursor:
                 raise DomainError(
                     code=ErrorCode.CONFLICT,
                     message="Dokumentet har ändrats sedan det öppnades.",
                     details={
                         "expected_cursor": str(request.expected_cursor),
-                        "current_cursor": str(history.cursor),
+                        "current_cursor": str(history_head.cursor),
                     },
                 )
-            step = next(
-                (
-                    snapshot
-                    for snapshot in (history.baseline, *history.steps)
-                    if snapshot.step_id == request.step_id
-                ),
-                None,
+            snapshot = await self._store.get_history_step_document(
+                actor=actor, lineage_id=lineage_id, step_id=request.step_id
             )
-            if step is None:
-                raise DomainError(code=ErrorCode.NOT_FOUND, message="Ångrasteget finns inte.")
             assert head.document_version is not None
             version = head.document_version + 1
-            document = self._codec.parse(content=step.content).document.model_copy(
-                update={"revision": version}
-            )
+            document = snapshot.model_copy(update={"revision": version})
             _head, saved, content = await prepare_editor_content(
                 actor=actor,
                 lineage_id=lineage_id,
@@ -173,9 +159,6 @@ class StoreExamWorkspaceUndoStepHandler:
                 store=self._store,
             )
             refuse_placeholder_changes(job=job, base=saved.document, saved=document)
-            history = history.model_copy(
-                update={"cursor": self._ids.new_uuid(), "current_step_id": step.step_id}
-            )
             await self._store.write_step_file(
                 actor=actor,
                 lineage_id=lineage_id,
@@ -183,7 +166,11 @@ class StoreExamWorkspaceUndoStepHandler:
                 document=document,
                 version=version,
             )
-            await self._store.put_history(actor=actor, lineage_id=lineage_id, history=history)
-            return ExamWorkspaceUndoStepResponse(
-                document=document, history=history_response(history)
+            history = await self._store.move_history_position(
+                actor=actor,
+                lineage_id=lineage_id,
+                head=history_head,
+                step_id=request.step_id,
+                new_cursor=self._ids.new_uuid(),
             )
+            return ExamWorkspaceUndoStepResponse(document=document, history=history)

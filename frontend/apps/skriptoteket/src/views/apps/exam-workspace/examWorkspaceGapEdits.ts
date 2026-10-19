@@ -195,7 +195,7 @@ export function withGapAsText(item: NativeExamItem, gapId: string): NativeExamIt
       ...paragraph,
       segments: paragraph.segments.map((segment) =>
         segment.kind === "gap" && segment.gap_id === gapId
-          ? { kind: "text" as const, text, marks: [] }
+          ? { kind: "text" as const, text, marks: [], kept_gap_id: null }
           : segment,
       ),
     })),
@@ -315,4 +315,43 @@ export function withNewGap(
     body,
     gaps,
   };
+}
+
+/**
+ * Whether the gap holds an answer: a Lucktext gap with at least one accepted
+ * value, a dropdown gap whose correct option names one of its declared
+ * options. This mirrors the save refusal (`isPartiallyKeyedGapItem`) and the
+ * readiness rules (`dropdownGapsWithoutCorrectOption`, `hasInvalidAnswerKey`)
+ * instead of restating them: an empty accepted list, a missing correct option
+ * or no declared options is the unanswered gap.
+ */
+export function gapHasAnswer(gap: NativeExamGap | undefined, kind: NativeExamItemKind): boolean {
+  if (!gap) {
+    return false;
+  }
+  if (kind === "inline_choice") {
+    return (
+      gap.correct_option_id !== null &&
+      gap.options.some((option) => option.choice_id === gap.correct_option_id)
+    );
+  }
+  return gap.accepted_values.length > 0;
+}
+
+/**
+ * The body with one gap's placement removed; the other segments keep their
+ * order, and an emptied paragraph keeps no segments, as `bodyFromEditor`
+ * writes one. The owner drops the gap's record through `withBody`, so
+ * emitting this body as one structural edit removes the gap in one undo step.
+ */
+export function bodyWithoutGap(
+  body: readonly NativeExamBodyParagraph[],
+  gapId: string,
+): NativeExamBodyParagraph[] {
+  return body.map((paragraph) => ({
+    ...paragraph,
+    segments: paragraph.segments.filter(
+      (segment) => !(segment.kind === "gap" && segment.gap_id === gapId),
+    ),
+  }));
 }

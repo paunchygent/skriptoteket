@@ -325,9 +325,9 @@ async def test_one_step_store_with_one_hundred_retained_picture_steps_is_fast() 
         lineage_id=lineage,
         version=2,
         expected_revision=1,
-        editor_step_id=lineage,
+        preserve_editor_position=True,
     )
-    for index in range(MAX_RETAINED_UNDO_STEPS - 1):
+    for index in range(MAX_RETAINED_UNDO_STEPS):
         await _store(
             env, actor, lineage, pictured.model_copy(update={"title": f"Bildsteg {index}"})
         )

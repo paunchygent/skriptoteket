@@ -56,9 +56,9 @@ describe("ExamWorkspaceBodyEditor text editing", () => {
     const [event] = wrapper.emitted("updateBody") as UpdateEvent[];
     expect(event![0]).toBe("item_001");
     expect(event![1]).toHaveLength(2);
-    expect(event![1][0]!.segments[0]).toEqual({ kind: "text", marks: [], text: "Vatten x kokar vid " });
+    expect(event![1][0]!.segments[0]).toEqual({ kind: "text", marks: [], text: "Vatten x kokar vid ", kept_gap_id: null });
     expect(event![1][1]!.segments).toEqual([
-      { kind: "text", marks: [], text: "Se " },
+      { kind: "text", marks: [], text: "Se ", kept_gap_id: null },
       { kind: "asset", asset_id: "asset_001" },
     ]);
     expect(event![2]).toBe(false);
@@ -87,9 +87,9 @@ describe("ExamWorkspaceBodyEditor text editing", () => {
       {
         heading_level: null,
         segments: [
-          { kind: "text", marks: [], text: "A " },
+          { kind: "text", marks: [], text: "A ", kept_gap_id: null },
           { kind: "gap", gap_id: "gap_001" },
-          { kind: "text", marks: [], text: " B D" },
+          { kind: "text", marks: [], text: " B D", kept_gap_id: null },
         ],
       },
     ]);
@@ -114,7 +114,7 @@ describe("ExamWorkspaceBodyEditor text editing", () => {
 
     const [event] = wrapper.emitted("updateBody") as UpdateEvent[];
     expect(event![1]).toEqual([
-      { heading_level: null, segments: [{ kind: "text", marks: [], text: "EttTvå" }] },
+      { heading_level: null, segments: [{ kind: "text", marks: [], text: "EttTvå", kept_gap_id: null }] },
     ]);
     wrapper.unmount();
   });
@@ -173,7 +173,7 @@ describe("ExamWorkspaceBodyEditor text editing", () => {
     second.commands.insertContent("?");
 
     expect(wrapper.emitted("updateBody")).toEqual([
-      ["item_002", [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Annan fråga?" }] }], false],
+      ["item_002", [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Annan fråga?", kept_gap_id: null }] }], false],
     ]);
     wrapper.unmount();
   });

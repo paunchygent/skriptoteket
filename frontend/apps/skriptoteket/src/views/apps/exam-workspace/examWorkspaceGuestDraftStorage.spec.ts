@@ -109,7 +109,7 @@ describe("examWorkspaceGuestDraftStorage", () => {
     const second: StoredGuestDraft = { assets: {}, draft: outcome.draft };
 
     expect(await storage.replaceIf(first.draft.cursor, second)).toBe(true);
-    expect((await storage.load())?.draft.saved_document.title).toBe("Första");
+    expect((await storage.load())?.draft.saved_document.title).toBe("Andra");
     expect((await storage.load())?.draft.cursor).toBe(outcome.draft.cursor);
   });
 

@@ -29,7 +29,7 @@ const api = vi.hoisted(() => ({
   getExamWorkspaceHistory: vi.fn(),
   getExamWorkspaceHistoryStep: vi.fn(),
   requestExamWorkspaceAnswerMisspellings: vi.fn(),
-  saveExamWorkspaceDocument: vi.fn(),
+  moveExamWorkspaceHistoryPosition: vi.fn(),
   storeExamWorkspaceUndoStep: vi.fn(),
 }));
 const toast = vi.hoisted(() => ({ failure: vi.fn(), warning: vi.fn() }));
@@ -87,7 +87,11 @@ function dropdownItem(): NativeExamItem {
 
 function baseline() {
   const document = exam("Original", 3);
-  document.items[0] = buildGapItem();
+  // Fully keyed: a refused draft never becomes a step, so cadence needs a valid baseline.
+  document.items[0] = {
+    ...buildGapItem(),
+    gaps: [buildGap("gap_001", ["100"]), buildGap("gap_002", ["0"])],
+  };
   document.items[1] = dropdownItem();
   return document;
 }

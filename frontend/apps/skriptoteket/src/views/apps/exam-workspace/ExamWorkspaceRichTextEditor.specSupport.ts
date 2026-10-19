@@ -37,7 +37,7 @@ export type EditorProps = {
 };
 
 export function text(value: string, marks: BodyMark[] = []): NativeExamBodySegment {
-  return { kind: "text", text: value, marks };
+  return { kind: "text", text: value, marks, kept_gap_id: null };
 }
 export function gap(id: string): NativeExamBodySegment {
   return { kind: "gap", gap_id: id };

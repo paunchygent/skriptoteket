@@ -18,10 +18,9 @@ import { flushPromises } from "@vue/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useToastStore } from "../../stores/toast";
+import type { NativeExamDocument, NativeExamItem } from "../../api/examWorkspace";
 import { EXAM_WORKSPACE_ENRICHMENT_POLL_MS } from "./exam-workspace/useExamWorkspaceEnrichment";
 import {
-  buildUnkeyedResponse,
-  lastSavedItem,
   requestProposals,
   resetEnrichmentApiMocks,
   status,
@@ -39,6 +38,7 @@ import { arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
 const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceHistory: vi.fn(),
   getExamWorkspaceHistoryStep: vi.fn(),
+  moveExamWorkspaceHistoryPosition: vi.fn(),
   storeExamWorkspaceUndoStep: vi.fn(),
   getExamWorkspaceAnswerKeySuggestions: vi.fn(),
   findExamWorkspaceAnswerKeySuggestions: vi.fn(),
@@ -47,7 +47,6 @@ const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceConversionStatus: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
   requestExamWorkspaceAnswerKeySuggestions: vi.fn(),
-  saveExamWorkspaceDocument: vi.fn(),
 }));
 const exportApiMocks = vi.hoisted(() => ({
   downloadExamWorkspaceExport: vi.fn(),
@@ -60,6 +59,13 @@ vi.mock("../../api/examWorkspace", async () => ({
 }));
 
 const STATUS_FAILURE_COPY = "Det gick inte att hämta facitförslagen. Försök igen.";
+
+/** The newest stored step's version of one question. */
+function lastStoredItem(storeMock: { mock: { calls: unknown[][] } }, itemId: string) {
+  const calls = storeMock.mock.calls;
+  const [, request] = calls[calls.length - 1] as [string, { document: NativeExamDocument }];
+  return request.document.items.find((item: NativeExamItem) => item.item_id === itemId);
+}
 
 function deferred<T>() {
   let resolve!: (value: T) => void;
@@ -93,7 +99,6 @@ describe("ExamWorkspaceView answer-key suggestion request and polling", () => {
     apiMocks.getExamWorkspaceAnswerKeySuggestions
       .mockResolvedValueOnce(status("running"))
       .mockResolvedValueOnce(SUCCEEDED);
-    apiMocks.saveExamWorkspaceDocument.mockResolvedValue(buildUnkeyedResponse(2));
 
     await requestProposals(wrapper);
     expect(apiMocks.requestExamWorkspaceAnswerKeySuggestions).toHaveBeenCalledTimes(1);
@@ -120,8 +125,8 @@ describe("ExamWorkspaceView answer-key suggestion request and polling", () => {
     expect(wrapper.find('[data-test="exam-workspace-enrichment-message"]').text()).toBe(
       "1 facitförslag har lagts in på frågorna.",
     );
-    // The suggestion was written onto the question, so the exam is dirty.
-    expect(wrapper.get('[data-test="exam-workspace-save-state"]').text()).toContain("Osparat");
+    // The suggestion was written onto the question, so storing it is pending.
+    expect(wrapper.get('[data-test="exam-workspace-save-state"]').text()).toBe("Sparar …");
 
     await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_ENRICHMENT_POLL_MS * 3);
     expect(apiMocks.getExamWorkspaceAnswerKeySuggestions).toHaveBeenCalledTimes(2);
@@ -131,7 +136,7 @@ describe("ExamWorkspaceView answer-key suggestion request and polling", () => {
     );
 
     await saveDocument(wrapper);
-    const saved = lastSavedItem(apiMocks.saveExamWorkspaceDocument, "item_002");
+    const saved = lastStoredItem(apiMocks.storeExamWorkspaceUndoStep, "item_002");
     expect(saved?.answer_key.origin).toBe("machine_proposed");
     expect(saved?.answer_key.correct_choice_ids).toEqual(["choice_003"]);
     expect(saved?.ai_suggestion?.correct_choice_ids).toEqual(["choice_003"]);
@@ -142,7 +147,6 @@ describe("ExamWorkspaceView answer-key suggestion request and polling", () => {
     apiMocks.requestExamWorkspaceAnswerKeySuggestions.mockResolvedValue(status("queued"));
     const { wrapper } = await mountExamWorkspace();
     await importFixtureDocument(wrapper);
-    apiMocks.saveExamWorkspaceDocument.mockResolvedValue(buildUnkeyedResponse(2));
     apiMocks.getExamWorkspaceAnswerKeySuggestions.mockResolvedValueOnce(
       status("failed", {
         message: "Facitförslaget kunde inte hämtas just nu. Försök igen senare.",
@@ -157,9 +161,9 @@ describe("ExamWorkspaceView answer-key suggestion request and polling", () => {
     expect(wrapper.find('[data-test="exam-workspace-enrichment-message"]').text()).toBe(
       "Facitförslaget kunde inte hämtas just nu. Försök igen senare.",
     );
-    expect(wrapper.get('[data-test="exam-workspace-save-state"]').text()).toContain("Osparat");
+    expect(wrapper.get('[data-test="exam-workspace-save-state"]').text()).toBe("Sparar …");
     await saveDocument(wrapper);
-    const saved = lastSavedItem(apiMocks.saveExamWorkspaceDocument, "item_002");
+    const saved = lastStoredItem(apiMocks.storeExamWorkspaceUndoStep, "item_002");
     expect(saved?.ai_suggestion?.correct_choice_ids).toEqual(["choice_003"]);
   });
 

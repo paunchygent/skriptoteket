@@ -42,6 +42,7 @@ import { exam, openEditing, stopScopes } from "./useExamWorkspaceEditing.history
 const api = vi.hoisted(() => ({
   getExamWorkspaceHistory: vi.fn(),
   getExamWorkspaceHistoryStep: vi.fn(),
+  moveExamWorkspaceHistoryPosition: vi.fn(),
   saveExamWorkspaceDocument: vi.fn(),
   storeExamWorkspaceUndoStep: vi.fn(),
 }));

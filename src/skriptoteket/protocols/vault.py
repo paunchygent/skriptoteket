@@ -5,6 +5,11 @@ from datetime import datetime
 from typing import Protocol
 from uuid import UUID
 
+from skriptoteket.application.curated_apps.exam_workspace_history import (
+    ExamWorkspaceHistoryCursor,
+    ExamWorkspaceHistoryStepRef,
+    ExamWorkspaceHistoryStoredStep,
+)
 from skriptoteket.application.scripting.vault import (
     DeleteVaultFileCommand,
     DeleteVaultFileResult,
@@ -80,11 +85,48 @@ class VaultFileRepositoryProtocol(Protocol):
         include_deleted: bool,
     ) -> list[VaultFile]: ...
 
-    async def get_history(self, *, user_id: UUID, document_lineage_id: UUID) -> bytes | None: ...
+    async def get_history_head(
+        self, *, user_id: UUID, document_lineage_id: UUID
+    ) -> ExamWorkspaceHistoryCursor | None: ...
 
-    async def put_history(
-        self, *, user_id: UUID, document_lineage_id: UUID, content: bytes
+    async def upsert_history_head(
+        self, *, user_id: UUID, document_lineage_id: UUID, head: ExamWorkspaceHistoryCursor
     ) -> None: ...
+
+    async def get_history_step(
+        self, *, user_id: UUID, document_lineage_id: UUID, step_id: UUID
+    ) -> ExamWorkspaceHistoryStoredStep | None: ...
+
+    async def list_history_step_refs(
+        self, *, user_id: UUID, document_lineage_id: UUID
+    ) -> list[ExamWorkspaceHistoryStepRef]: ...
+
+    async def list_history_steps(
+        self, *, user_id: UUID, document_lineage_id: UUID
+    ) -> list[ExamWorkspaceHistoryStoredStep]: ...
+
+    async def get_history_assets(
+        self, *, user_id: UUID, document_lineage_id: UUID, asset_ids: tuple[str, ...]
+    ) -> dict[str, bytes]: ...
+
+    async def insert_history_step(
+        self,
+        *,
+        user_id: UUID,
+        document_lineage_id: UUID,
+        step: ExamWorkspaceHistoryStoredStep,
+        assets_by_id: dict[str, bytes],
+    ) -> None: ...
+
+    async def delete_history_steps(
+        self, *, user_id: UUID, document_lineage_id: UUID, step_ids: list[UUID]
+    ) -> None: ...
+
+    async def delete_orphan_history_assets(
+        self, *, user_id: UUID, document_lineage_id: UUID, keep_asset_ids: frozenset[str]
+    ) -> None: ...
+
+    async def delete_history(self, *, user_id: UUID, document_lineage_id: UUID) -> None: ...
 
     async def name_in_use(
         self,

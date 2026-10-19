@@ -22,13 +22,13 @@
  *     `serverExamWorkspaceStore`, so a guest view installs this one.
  */
 
-import type { NativeExamDocument } from "../../../api/examWorkspace";
+import type { ExamWorkspaceUndoStep, NativeExamDocument } from "../../../api/examWorkspace";
 import {
   guestDocumentResponse,
   guestHistory,
   guestHistoryStep,
+  moveGuestHistoryPosition,
   newGuestDraft,
-  saveGuestDraft,
   storeGuestUndoStep,
   type ExamWorkspaceGuestDraftIdSource,
 } from "./examWorkspaceGuestDraft";
@@ -65,6 +65,16 @@ export type ExamWorkspaceGuestStore = {
   startBlank(): Promise<string>;
   /** Start a guest exam from a QTI .zip through the public parse route. */
   startFromQti(file: File, courseKey: string | null): Promise<string>;
+  /**
+   * Move the draft to a retained history step (guest Ångra and Gör om): the
+   * position and the saved draft follow the step, and no new step is
+   * stored. The guest counterpart of the server's history position move
+   * (unit K45 wires the server path and the header).
+   */
+  moveToHistoryStep(
+    lineageId: string,
+    params: { expectedCursor: string; stepId: string },
+  ): Promise<ExamWorkspaceUndoStep>;
   /** Drop the browser draft and every picture byte it kept. */
   clear(): Promise<void>;
 };
@@ -119,29 +129,6 @@ export function createGuestExamWorkspaceStore(
       mountAssets(stored);
       return guestDocumentResponse(stored.draft);
     },
-    async saveExamWorkspaceDocument(lineageId, params) {
-      const stored = await loadStored(lineageId);
-      const outcome = saveGuestDraft(
-        stored.draft,
-        {
-          document: params.document,
-          expectedRevision: params.expectedRevision,
-          positionStepId: params.positionStepId,
-        },
-        deps.ids,
-      );
-      if (outcome.kind === "conflict") {
-        throw conflictError();
-      }
-      if (outcome.kind === "refused") {
-        throw refusalError(outcome.copy);
-      }
-      await persist(stored.draft.cursor, {
-        assets: retainDeclaredAssets(stored, outcome.draft),
-        draft: outcome.draft,
-      });
-      return outcome.response;
-    },
     async storeExamWorkspaceUndoStep(lineageId, params) {
       const stored = await loadStored(lineageId);
       const outcome = storeGuestUndoStep(
@@ -175,6 +162,30 @@ export function createGuestExamWorkspaceStore(
       if (outcome.kind === "not_found") {
         throw notFoundError(lineageId);
       }
+      return outcome.step;
+    },
+    /**
+     * Move the draft to a retained history step (guest Ångra and Gör om):
+     * the position and the saved draft follow the step, and no new step is
+     * stored. Only the cursor guard commits, so a concurrent tab's newer
+     * draft reports the conflict instead.
+     */
+    async moveExamWorkspaceHistoryPosition(lineageId, params) {
+      const stored = await loadStored(lineageId);
+      const outcome = moveGuestHistoryPosition(stored.draft, params, deps.ids);
+      if (outcome.kind === "conflict") {
+        throw conflictError();
+      }
+      if (outcome.kind === "not_found") {
+        throw notFoundError(lineageId);
+      }
+      if (outcome.kind === "refused") {
+        throw refusalError(outcome.copy);
+      }
+      await persist(stored.draft.cursor, {
+        assets: retainDeclaredAssets(stored, outcome.draft),
+        draft: outcome.draft,
+      });
       return outcome.step;
     },
     async createExamWorkspaceParent(lineageId, body) {
@@ -404,6 +415,15 @@ export function createGuestExamWorkspaceStore(
     },
     startBlank,
     startFromQti,
+    /**
+     * Move the draft to a retained history step (guest Ångra and Gör om): the
+     * same move the shared store runs, exposed here for the guest history
+     * wiring (unit K8). The guest counterpart of the server's history
+     * position move (unit K45 wires the server path and the header).
+     */
+    async moveToHistoryStep(lineageId, params) {
+      return await shared.moveExamWorkspaceHistoryPosition(lineageId, params);
+    },
     /**
      * Drop the browser draft. The write commits only when the loaded snapshot
      * still owns the slot; a concurrent tab's newer draft reports the

@@ -40,9 +40,17 @@ async def prepare_editor_content(
     if saved.document.document_id != lineage_id or saved.document.revision != head.document_version:
         raise validation_error("Den sparade dokumentversionen är skadad.")
     assets = dict(saved.assets_by_id)
-    history = await store.get_history(actor=actor, lineage_id=lineage_id)
-    for step in (history.baseline, *history.steps):
-        assets.update(codec.parse(content=step.content).assets_by_id)
+    wanted = tuple(
+        sorted(
+            {asset.asset_id for asset in document.assets} - assets.keys(),
+        )
+    )
+    if wanted:
+        assets.update(
+            await vault_files.get_history_assets(
+                user_id=actor.id, document_lineage_id=lineage_id, asset_ids=wanted
+            )
+        )
     missing = {asset.asset_id for asset in document.assets} - assets.keys()
     if missing:
         raise validation_error(

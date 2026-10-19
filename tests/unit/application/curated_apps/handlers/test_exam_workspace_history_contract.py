@@ -282,6 +282,7 @@ async def test_history_picture_can_be_restored_after_a_step_removes_it() -> None
             ),
         }
     )
+    handler = _handler(env)
     await env.store.save(
         actor=actor,
         file_id=uuid4(),
@@ -295,9 +296,8 @@ async def test_history_picture_can_be_restored_after_a_step_removes_it() -> None
         lineage_id=lineage,
         version=2,
         expected_revision=1,
-        editor_step_id=lineage,
+        preserve_editor_position=True,
     )
-    handler = _handler(env)
     await _undo_handler(env).handle(
         actor=actor,
         lineage_id=lineage,

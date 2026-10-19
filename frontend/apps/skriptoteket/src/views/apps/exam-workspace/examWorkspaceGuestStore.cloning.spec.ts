@@ -3,12 +3,12 @@
  *
  * Expected behavior:
  *   The editor hands the store Vue reactive values: the autosave passes the
- *   working-copy ref's value to `storeExamWorkspaceUndoStep`, and Spara passes
- *   a spread whose nested arrays stay reactive. The store persists those
- *   writes through the cloning in-memory port, which fails the way IndexedDB
- *   does when a reactive value reaches it. A reactive autosave and a reactive
- *   Spara both succeed, a reload returns the edited content, and mutating the
- *   reactive source after the write does not change what a reload returns.
+ *   working-copy ref's value to `storeExamWorkspaceUndoStep`. The store
+ *   persists those writes through the cloning in-memory port, which fails
+ *   the way IndexedDB does when a reactive value reaches it. A reactive
+ *   autosave and a position move both succeed, a reload returns the edited
+ *   content, and mutating the reactive source after the write does not
+ *   change what a reload returns.
  */
 
 import { ref } from "vue";
@@ -95,24 +95,28 @@ describe("examWorkspaceGuestStore reactive snapshots", () => {
     expect(reloaded.document.title).toBe("Redigerad");
   });
 
-  it("stores a reactive Spara payload and reloads it", async () => {
+  it("stores a reactive autosave payload and moves the position back to the baseline", async () => {
     const context = setupCloningStore();
     await startBlank(context);
     const opened = await context.store.store.shared.getExamWorkspaceDocument(DOCUMENT_ID);
     const history = await context.store.store.shared.getExamWorkspaceHistory(DOCUMENT_ID);
 
     const edited = ref(exam("Sparad"));
-    const saved = await context.store.store.shared.saveExamWorkspaceDocument(DOCUMENT_ID, {
-      document: { ...edited.value, revision: opened.document.revision + 1 },
-      expectedRevision: opened.document.revision,
-      positionStepId: history.position_step_id,
+    const step = await context.store.store.shared.storeExamWorkspaceUndoStep(DOCUMENT_ID, {
+      afterStepId: null,
+      document: edited.value,
+      expectedCursor: opened.history_cursor,
     });
 
-    expect(saved.saved_document.title).toBe("Sparad");
-    expect(saved.saved_document.revision).toBe(2);
+    expect(step.document.title).toBe("Sparad");
+    const undone = await context.store.moveToHistoryStep(DOCUMENT_ID, {
+      expectedCursor: step.history.cursor,
+      stepId: history.baseline_step_id,
+    });
+    expect(undone.history.position_step_id).toBe(history.baseline_step_id);
     const reloaded = await context.store.store.shared.getExamWorkspaceDocument(DOCUMENT_ID);
-    expect(reloaded.saved_document.title).toBe("Sparad");
-    expect(reloaded.saved_document.revision).toBe(2);
+    expect(reloaded.saved_document.title).toBe("Original");
+    expect(reloaded.saved_document.revision).toBe(3);
   });
 
   it("keeps the stored draft when the reactive source is mutated after the write", async () => {

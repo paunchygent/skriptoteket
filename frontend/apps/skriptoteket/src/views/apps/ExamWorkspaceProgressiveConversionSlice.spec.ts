@@ -12,6 +12,7 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 import type { NativeExamItem } from "../../api/examWorkspace";
 import {
   convertingNoticeShown,
+  converted,
   editPoints,
   expectEditable,
   FIRST,
@@ -27,20 +28,20 @@ import {
   pointsOf,
   uploadFirstBatch,
 } from "./ExamWorkspaceProgressiveConversionSlice.specSupport";
-import { selectItemRow } from "./ExamWorkspaceSlice.specSupport";
+import { saveDocument, selectItemRow } from "./ExamWorkspaceSlice.specSupport";
 
 import { arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
 
 const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceHistory: vi.fn(),
   getExamWorkspaceHistoryStep: vi.fn(),
+  moveExamWorkspaceHistoryPosition: vi.fn(),
   storeExamWorkspaceUndoStep: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
   findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
-  saveExamWorkspaceDocument: vi.fn(),
 }));
 const exportApiMocks = vi.hoisted(() => ({
   downloadExamWorkspaceExport: vi.fn(),
@@ -98,19 +99,15 @@ describe("Exam workspace progressive conversion", () => {
     await forceClick(view, "exam-workspace-review");
     expect(view.get('[data-test="exam-workspace-review"]').attributes("aria-pressed")).toBe(pressedBefore);
 
-    expect(view.get('[data-test="exam-workspace-save-state"]').text()).not.toContain("Osparat");
-    // Spara stays the available primary action on a clean exam and writes nothing.
-    expect(view.get('[data-test="exam-workspace-save"]').attributes("disabled")).toBeUndefined();
-    await view.get('[data-test="exam-workspace-save"]').trigger("click");
-    await flushPromises();
-    expect(apiMocks.saveExamWorkspaceDocument).not.toHaveBeenCalled();
+    expect(view.get('[data-test="exam-workspace-save-state"]').text()).toBe("Sparat");
+    // Nothing is pending, so there is nothing to store.
+    expect(apiMocks.storeExamWorkspaceUndoStep).not.toHaveBeenCalled();
     await selectItemRow(view, "item_001");
     await selectItemRow(view, "item_002");
     expect((view.get('[data-test="exam-workspace-item-points-input"]').element as HTMLInputElement).value).toBe("2");
   });
 
-  it("keeps unsaved edits of converted items and fills a placeholder from its batch when it arrives", async () => {
-    const view = await uploadFirstBatch();
+  it("keeps unsaved edits of converted items and fills a placeholder from its batch when it arrives", async () => {    const view = await uploadFirstBatch();
     await editPoints(view, "item_001", "11");
     await selectItemRow(view, "item_003");
     await forceInput(view, "exam-workspace-item-points-input", "13");
@@ -126,12 +123,38 @@ describe("Exam workspace progressive conversion", () => {
     expect(await pointsOf(view, "item_003")).toBe("23");
     expectEditable(view, true);
 
-    apiMocks.saveExamWorkspaceDocument.mockResolvedValueOnce(revision(3, SECOND.document.items, SECOND_STATUS));
-    await view.get('[data-test="exam-workspace-save"]').trigger("click");
+    await saveDocument(view);
     await flushPromises();
-    const [, params] = apiMocks.saveExamWorkspaceDocument.mock.calls[0];
-    expect(params.expectedRevision).toBe(2);
-    expect(params.document.items.map((item: NativeExamItem) => item.points)).toEqual([11, 22, 23]);
+    const stores = apiMocks.storeExamWorkspaceUndoStep.mock.calls;
+    const stored = stores[stores.length - 1]![1].document;
+    expect(stored.items.map((item: NativeExamItem) => item.points)).toEqual([11, 22, 23]);
+  });
+
+  it("keeps an edit typed after an autosave when its batch arrives", async () => {
+    const view = await uploadFirstBatch();
+    await editPoints(view, "item_001", "11");
+    // The pause store lands first, so the edit is already in the file.
+    await saveDocument(view);
+    expect(view.get('[data-test="exam-workspace-save-state"]').text()).toMatch(/^Sparat /);
+
+    apiMocks.getExamWorkspaceConversionStatus.mockResolvedValueOnce(SECOND_STATUS);
+    apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(SECOND);
+    await tick();
+    expect(await pointsOf(view, "item_001")).toBe("11");
+    expect(await pointsOf(view, "item_002")).toBe("22");
+
+    // An edit typed after that autosave still merges instead of being replaced.
+    await editPoints(view, "item_001", "12");
+    const third = status("succeeded", 3, ["ready", "ready", "ready"]);
+    apiMocks.getExamWorkspaceConversionStatus.mockResolvedValueOnce(third);
+    apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(
+      revision(3, [{ ...converted(1) }, { ...converted(2), points: 99 }, converted(3)], third),
+    );
+    await tick();
+
+    expect(await pointsOf(view, "item_001")).toBe("12");
+    expect(await pointsOf(view, "item_002")).toBe("99");
+    expect(await pointsOf(view, "item_003")).toBe("23");
   });
 
   it("keeps the placeholders locked when the unfinished exam is opened from its address, until their batch arrives", async () => {
@@ -145,7 +168,7 @@ describe("Exam workspace progressive conversion", () => {
     expect(convertingNoticeShown(view)).toBe(true);
     expectEditable(view, false);
     await forceInput(view, "exam-workspace-item-points-input", "7");
-    expect(view.get('[data-test="exam-workspace-save-state"]').text()).not.toContain("Osparat");
+    expect(view.get('[data-test="exam-workspace-save-state"]').text()).toBe("Sparat");
     await selectItemRow(view, "item_001");
     expectEditable(view, true);
 

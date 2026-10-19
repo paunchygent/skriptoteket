@@ -21,6 +21,9 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_documents imp
     GetExamWorkspaceDocumentHandler,
     SaveExamWorkspaceDocumentHandler,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_undo_steps import (
+    StoreExamWorkspaceUndoStepHandler,
+)
 from skriptoteket.config import Settings
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_container import (
     ExamWorkspaceContainerCodec,
@@ -45,6 +48,9 @@ from skriptoteket.protocols.exam_workspace import (
     ImportExamWorkspaceDigiExamDocumentHandlerProtocol,
     SaveExamWorkspaceDocumentHandlerProtocol,
 )
+from skriptoteket.protocols.exam_workspace_history import (
+    StoreExamWorkspaceUndoStepHandlerProtocol,
+)
 from skriptoteket.web.api.v1 import apps_conversion_hub_exam_workspace as documents_api
 from skriptoteket.web.auth.huleedu_app_projection import require_app_user_api
 from skriptoteket.web.middleware.error_handler import error_handler_middleware
@@ -66,6 +72,7 @@ class DigiExamApiProvider(Provider):
     status = from_context(provides=GetExamWorkspaceConversionStatusHandlerProtocol, scope=Scope.APP)
     reader = from_context(provides=GetExamWorkspaceDocumentHandlerProtocol, scope=Scope.APP)
     writer = from_context(provides=SaveExamWorkspaceDocumentHandlerProtocol, scope=Scope.APP)
+    steps = from_context(provides=StoreExamWorkspaceUndoStepHandlerProtocol, scope=Scope.APP)
 
 
 @pytest.mark.parametrize(
@@ -122,6 +129,13 @@ async def test_real_dxe_upload_job_and_saved_edits_roundtrip_http_and_postgres(
                     store=store,
                     id_generator=ids,
                     jobs=jobs,
+                ),
+                StoreExamWorkspaceUndoStepHandlerProtocol: StoreExamWorkspaceUndoStepHandler(
+                    vault_files=vault,
+                    codec=codec,
+                    store=store,
+                    jobs=jobs,
+                    id_generator=ids,
                 ),
             },
         )
@@ -193,12 +207,11 @@ async def test_real_dxe_upload_job_and_saved_edits_roundtrip_http_and_postgres(
                 document["title"] = "Lärarens redigerade DigiExam-prov"
                 history = await client.get(path + "/history")
                 assert history.status_code == 200, history.text
-                response = await client.put(
-                    path,
+                response = await client.post(
+                    path + "/autosaves",
                     json={
-                        "expected_revision": 1,
+                        "expected_cursor": history.json()["cursor"],
                         "document": document,
-                        "position_step_id": history.json()["position_step_id"],
                     },
                 )
                 assert response.status_code == 200, response.text

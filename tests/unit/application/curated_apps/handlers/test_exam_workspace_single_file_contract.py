@@ -121,7 +121,7 @@ async def test_overwrites_charge_only_size_delta_and_keep_one_file_at_quota() ->
             lineage_id=lineage,
             version=revision,
             expected_revision=None if revision == 1 else revision - 1,
-            editor_step_id=None if revision == 1 else lineage,
+            preserve_editor_position=revision != 1,
         )
         assert saved.id == original_id
         assert saved.bytes == len(content)
@@ -154,7 +154,7 @@ async def test_stale_save_does_not_replace_payload_or_accounting() -> None:
             lineage_id=lineage,
             version=2,
             expected_revision=1,
-            editor_step_id=lineage,
+            preserve_editor_position=True,
         )
     assert error.value.code is ErrorCode.CONFLICT
     assert await store.load(actor=actor, vault_file=saved) == current
@@ -185,7 +185,7 @@ async def test_failed_accounting_does_not_destroy_previous_file_bytes() -> None:
             lineage_id=lineage,
             version=2,
             expected_revision=1,
-            editor_step_id=lineage,
+            preserve_editor_position=True,
         )
     assert await store.load(actor=actor, vault_file=saved) == current
     assert (actor.id, saved.id) not in env.vault_storage.deleted
@@ -229,7 +229,7 @@ async def test_outer_transaction_failure_restores_the_last_successful_file() -> 
                 lineage_id=lineage,
                 version=2,
                 expected_revision=1,
-                editor_step_id=lineage,
+                preserve_editor_position=True,
             )
     assert await store.load(actor=actor, vault_file=saved) == current
 
@@ -258,7 +258,7 @@ async def test_growth_past_quota_keeps_the_previous_durable_file() -> None:
             lineage_id=lineage,
             version=2,
             expected_revision=1,
-            editor_step_id=lineage,
+            preserve_editor_position=True,
         )
     assert error.value.code is ErrorCode.VALIDATION_ERROR
     assert await store.load(actor=actor, vault_file=saved) == current

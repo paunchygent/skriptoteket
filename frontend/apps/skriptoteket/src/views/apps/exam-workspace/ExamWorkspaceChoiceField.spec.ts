@@ -29,7 +29,7 @@ const OPTION_1 = "exam-workspace-choice-text-choice_001";
 const OPTION_2 = "exam-workspace-choice-text-choice_002";
 
 function paragraph(text: string): NativeExamBodyParagraph {
-  return { heading_level: null, segments: [{ kind: "text", marks: [], text }] };
+  return { heading_level: null, segments: [{ kind: "text", marks: [], text, kept_gap_id: null }] };
 }
 
 function buildItem(first: NativeExamBodyParagraph[]): NativeExamItem {

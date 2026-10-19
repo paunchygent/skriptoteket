@@ -42,7 +42,7 @@ const api = vi.hoisted(() => ({
   getExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceHistory: vi.fn(),
   getExamWorkspaceHistoryStep: vi.fn(),
-  saveExamWorkspaceDocument: vi.fn(),
+  moveExamWorkspaceHistoryPosition: vi.fn(),
   storeExamWorkspaceUndoStep: vi.fn(),
 }));
 const toast = vi.hoisted(() => ({ failure: vi.fn(), warning: vi.fn() }));

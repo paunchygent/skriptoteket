@@ -16,8 +16,8 @@
  * Relationships:
  *   - Mirrors `exam_workspace_history.py` (cursor, baseline, steps, bounded
  *     history response) and the handlers in `handlers/exam_workspace_undo_steps.py`
- *     and `handlers/exam_workspace_documents.py` / `exam_workspace_document_store.py`
- *     (open, branch after undo, Spara revision and retained saved copy).
+ *     (open, branch after undo, the stored step that also updates the saved
+ *     copy, the position move that writes a step to the saved copy).
  *   - Uses the transport types of `api/examWorkspace.ts`; imports the client
  *     save rules so a refused document is refused here with the same copy the
  *     server's 422 would name.
@@ -33,11 +33,10 @@ import type {
   ExamWorkspaceUndoStep,
   NativeExamDocument,
 } from "../../../api/examWorkspace";
-import { sameValue } from "./examWorkspaceConversionMerge";
 import { examWorkspaceSaveRefusalCopy } from "./examWorkspaceItemSaveRules";
 
 /** The server keeps at most this many snapshots after the import baseline. */
-const GUEST_HISTORY_STEP_LIMIT = 10;
+export const GUEST_MAX_RETAINED_UNDO_STEPS = 100;
 
 /** Every id and timestamp the draft creates comes from this injected source. */
 export type ExamWorkspaceGuestDraftIdSource = {
@@ -71,23 +70,15 @@ export type ExamWorkspaceGuestUndoStepOutcome =
   | { kind: "conflict" }
   | { kind: "refused"; copy: string };
 
-export type ExamWorkspaceGuestSaveOutcome =
-  | { kind: "ok"; draft: ExamWorkspaceGuestDraft; response: ExamWorkspaceDocumentResponse }
-  | { kind: "conflict" }
-  | { kind: "refused"; copy: string };
-
 export type ExamWorkspaceGuestHistoryStepOutcome =
   | { kind: "ok"; step: ExamWorkspaceHistoryDocument }
   | { kind: "not_found" };
 
-/**
- * The server compares a stored snapshot with the editor's document after
- * setting the snapshot's revision to the saved one (`_retain_saved`); the
- * revision is the file's, never part of the content comparison.
- */
-function sameContent(a: NativeExamDocument, b: NativeExamDocument): boolean {
-  return sameValue({ ...a, revision: 0 }, { ...b, revision: 0 });
-}
+export type ExamWorkspaceGuestHistoryPositionOutcome =
+  | { kind: "ok"; draft: ExamWorkspaceGuestDraft; step: ExamWorkspaceUndoStep }
+  | { kind: "conflict" }
+  | { kind: "not_found" }
+  | { kind: "refused"; copy: string };
 
 function withRevision(document: NativeExamDocument, revision: number): NativeExamDocument {
   return { ...document, revision };
@@ -182,10 +173,13 @@ export function guestDocumentResponse(
 /**
  * Store one undo step. The cursor guard and the branch/retention rules are
  * `StoreExamWorkspaceUndoStepHandler` lines 63-96: a stale cursor is a
- * conflict, the stored snapshot takes the saved revision, a new step follows
- * the position (or `afterStepId`) and drops every later redo step, and only
- * the newest 10 steps are kept. A document the save rules refuse can never be
- * a step, so it is refused with the same copy a 422 would carry.
+ * conflict, a new step follows the position (or `afterStepId`) and drops
+ * every later redo step, and only the newest 100 steps are kept. The stored
+ * step also updates the saved draft in the same write, as the server's step
+ * store overwrites the exam file: the stored snapshot takes the saved
+ * revision + 1, and the saved copy and time follow it. A document the save
+ * rules refuse can never be a step, so it is refused with the same copy a
+ * 422 would carry.
  */
 export function storeGuestUndoStep(
   draft: ExamWorkspaceGuestDraft,
@@ -199,7 +193,7 @@ export function storeGuestUndoStep(
   if (draft.cursor !== request.expectedCursor) {
     return { kind: "conflict" };
   }
-  const document = withRevision(request.document, draft.saved_document.revision);
+  const document = withRevision(request.document, draft.saved_document.revision + 1);
   const refusalCopy = examWorkspaceSaveRefusalCopy(document);
   if (refusalCopy !== null) {
     return { kind: "refused", copy: refusalCopy };
@@ -214,11 +208,13 @@ export function storeGuestUndoStep(
   const steps = [
     ...draft.steps.slice(0, afterIndex),
     { document, step_id: stepId },
-  ].slice(-GUEST_HISTORY_STEP_LIMIT);
+  ].slice(-GUEST_MAX_RETAINED_UNDO_STEPS);
   const nextDraft: ExamWorkspaceGuestDraft = {
     ...draft,
     cursor: stepId,
     position_step_id: stepId,
+    saved_at: ids.now(),
+    saved_document: document,
     steps,
   };
   return {
@@ -259,56 +255,68 @@ export function guestHistoryStep(
 }
 
 /**
- * Spara: `SaveExamWorkspaceDocumentHandler._save` (lines 340-407) with the
- * saved-copy retention of `ExamWorkspaceDocumentStore._retain_saved`
- * (lines 245-271). A stale expected revision is a conflict. The saved file
- * takes revision + 1; the cursor rotates; when the position snapshot already
- * holds the saved copy the editor stays on it, otherwise the saved copy
- * becomes the next step after the position and the later redo steps drop.
+ * Move the draft to a retained step: guest Ångra and Gör om. The server's
+ * position move (`MoveExamWorkspaceHistoryPositionRequest`) sets the
+ * editor's snapshot and writes that snapshot's document to the exam file
+ * without a new step; the replica mirrors it by moving the position and the
+ * saved copy to the snapshot. A stale cursor is a conflict, an unknown step
+ * is not found, and a refused snapshot keeps the draft. Reading never moves
+ * the draft; only this move and a store do.
  */
-export function saveGuestDraft(
+export function moveGuestHistoryPosition(
   draft: ExamWorkspaceGuestDraft,
   request: {
-    document: NativeExamDocument;
-    expectedRevision: number;
-    positionStepId: string;
+    expectedCursor: string;
+    stepId: string;
   },
   ids: ExamWorkspaceGuestDraftIdSource,
-): ExamWorkspaceGuestSaveOutcome {
-  if (draft.saved_document.revision !== request.expectedRevision) {
+): ExamWorkspaceGuestHistoryPositionOutcome {
+  if (draft.cursor !== request.expectedCursor) {
     return { kind: "conflict" };
   }
-  const refusalCopy = examWorkspaceSaveRefusalCopy(request.document);
+  const snapshot = snapshotById(draft, request.stepId);
+  if (snapshot === null) {
+    return { kind: "not_found" };
+  }
+  const document = withRevision(snapshot.document, draft.saved_document.revision + 1);
+  const refusalCopy = examWorkspaceSaveRefusalCopy(document);
   if (refusalCopy !== null) {
     return { kind: "refused", copy: refusalCopy };
-  }
-  const savedDocument = withRevision(request.document, request.expectedRevision + 1);
-  const snapshotsInHistory = snapshots(draft);
-  const idsInHistory = snapshotsInHistory.map((step) => step.step_id);
-  const retainedIndex = idsInHistory.includes(request.positionStepId)
-    ? idsInHistory.indexOf(request.positionStepId)
-    : idsInHistory.length - 1;
-  const retained = snapshotsInHistory[retainedIndex];
-  if (retained === undefined) {
-    throw new Error("The guest draft has no snapshot to retain the saved copy at.");
-  }
-  let steps = draft.steps;
-  let positionStepId = retained.step_id;
-  if (!sameContent(retained.document, savedDocument)) {
-    const savedStepId = ids.uuid();
-    steps = [
-      ...draft.steps.slice(0, retainedIndex),
-      { document: savedDocument, step_id: savedStepId },
-    ].slice(-GUEST_HISTORY_STEP_LIMIT);
-    positionStepId = savedStepId;
   }
   const nextDraft: ExamWorkspaceGuestDraft = {
     ...draft,
     cursor: ids.uuid(),
-    position_step_id: positionStepId,
+    position_step_id: request.stepId,
     saved_at: ids.now(),
-    saved_document: savedDocument,
-    steps,
+    saved_document: document,
+    steps: draft.steps,
   };
-  return { kind: "ok", draft: nextDraft, response: guestDocumentResponse(nextDraft) };
+  return {
+    kind: "ok",
+    draft: nextDraft,
+    step: {
+      document,
+      export_blockers: [],
+      history: guestHistory(nextDraft),
+    },
+  };
+}
+
+const GUEST_SAVED_TIME = new Intl.DateTimeFormat("sv-SE", {
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
+/**
+ * The guest save status the header shows after a store:
+ * `Sparat i webbläsaren HH:MM`. The guest-side counterpart of the server
+ * path's `Sparat HH:MM` status (unit K45): the view renders this string for
+ * a guest exam where the server path renders its own.
+ */
+export function examWorkspaceGuestSaveStatus(savedAt: string): string {
+  const at = new Date(savedAt);
+  if (Number.isNaN(at.getTime())) {
+    return "Sparat i webbläsaren";
+  }
+  return `Sparat i webbläsaren ${GUEST_SAVED_TIME.format(at)}`;
 }

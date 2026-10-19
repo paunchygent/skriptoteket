@@ -60,7 +60,6 @@ const apiMocks = vi.hoisted(() => ({
   requestExamWorkspaceAnswerMisspellings: vi.fn(),
   requestExamWorkspaceContentSuggestions: vi.fn(),
   retryExamWorkspaceItem: vi.fn(),
-  saveExamWorkspaceDocument: vi.fn(),
   saveExamWorkspaceExport: vi.fn(),
   storeExamWorkspaceUndoStep: vi.fn(),
   updateExamListOrdering: vi.fn(),

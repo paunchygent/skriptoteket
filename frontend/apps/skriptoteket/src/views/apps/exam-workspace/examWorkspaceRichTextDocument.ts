@@ -10,9 +10,11 @@
  *   Into the editor: a paragraph with a heading level becomes a heading, a
  *   `"\n"` inside a text segment becomes a hard break carrying that segment's
  *   marks, and an empty body opens as the one empty paragraph the schema
- *   needs. Out of the editor: adjacent text with equal marks merges into one
+ *   needs. Out of the editor: adjacent text with equal marks and an equal
+ *   kept link merges into one
  *   segment, a hard break joins its text as `"\n"`, marks follow the stored
- *   order, and a document without any text, gap or picture is the empty body
+ *   order, the `examKeptGap` mark reads as `kept_gap_id` (null without it),
+ *   and a document without any text, gap or picture is the empty body
  *   (TASK-SKRIPT-40-04-06 D3, D4). Otherwise every paragraph is kept, an
  *   emptied one as a paragraph without segments.
  *
@@ -25,16 +27,27 @@ import type { JSONContent } from "@tiptap/core";
 
 import type { NativeExamBodyParagraph, NativeExamBodySegment } from "../../../api/examWorkspace";
 import { BODY_MARKS, type BodyMark } from "./examWorkspaceBodyMarks";
-import { EXAM_GAP_NODE, EXAM_PICTURE_NODE } from "./examWorkspaceRichTextSchema";
+import { EXAM_GAP_NODE, EXAM_KEPT_GAP_MARK, EXAM_PICTURE_NODE } from "./examWorkspaceRichTextSchema";
 
 type TextSegment = Extract<NativeExamBodySegment, { kind: "text" }>;
 
-function editorMarks(marks: readonly BodyMark[]): JSONContent["marks"] {
-  return BODY_MARKS.filter((mark) => marks.includes(mark)).map((type) => ({ type }));
+type EditorMark = { type: string; attrs?: { keptGapId: string } };
+
+function editorMarks(marks: readonly BodyMark[], keptGapId: string | null): EditorMark[] {
+  const list: EditorMark[] = BODY_MARKS.filter((mark) => marks.includes(mark)).map((type) => ({ type }));
+  if (keptGapId !== null) {
+    list.push({ type: EXAM_KEPT_GAP_MARK, attrs: { keptGapId } });
+  }
+  return list;
 }
 
-function withMarks(node: JSONContent, marks: readonly BodyMark[]): JSONContent {
-  return marks.length > 0 ? { ...node, marks: editorMarks(marks) } : node;
+function withMarks(
+  node: JSONContent,
+  marks: readonly BodyMark[],
+  keptGapId: string | null,
+): JSONContent {
+  const list = editorMarks(marks, keptGapId);
+  return list.length > 0 ? { ...node, marks: list } : node;
 }
 
 function editorInline(segments: readonly NativeExamBodySegment[]): JSONContent[] {
@@ -50,11 +63,11 @@ function editorInline(segments: readonly NativeExamBodySegment[]): JSONContent[]
     }
     segment.text.split("\n").forEach((line, lineIndex) => {
       if (lineIndex > 0) {
-        nodes.push(withMarks({ type: "hardBreak" }, segment.marks));
+        nodes.push(withMarks({ type: "hardBreak" }, segment.marks, segment.kept_gap_id ?? null));
       }
       // ProseMirror has no empty text node; an empty line carries nothing to render.
       if (line.length > 0) {
-        nodes.push(withMarks({ type: "text", text: line }, segment.marks));
+        nodes.push(withMarks({ type: "text", text: line }, segment.marks, segment.kept_gap_id ?? null));
       }
     });
   }
@@ -83,19 +96,32 @@ function bodyMarks(node: JSONContent): BodyMark[] {
   return BODY_MARKS.filter((mark) => names.has(mark));
 }
 
+function bodyKeptGapId(node: JSONContent): string | null {
+  const kept = (node.marks ?? []).find((mark) => mark.type === EXAM_KEPT_GAP_MARK);
+  const id: unknown = kept?.attrs?.keptGapId;
+  return typeof id === "string" ? id : null;
+}
+
 function sameMarks(left: readonly BodyMark[], right: readonly BodyMark[]): boolean {
   return left.length === right.length && left.every((mark, index) => mark === right[index]);
 }
 
 function bodySegments(content: readonly JSONContent[] | undefined): NativeExamBodySegment[] {
   const segments: NativeExamBodySegment[] = [];
-  const appendText = (text: string, marks: BodyMark[]): void => {
+  const appendText = (text: string, marks: BodyMark[], keptGapId: string | null): void => {
     const last = segments.at(-1);
-    if (last?.kind === "text" && sameMarks(last.marks, marks)) {
-      segments[segments.length - 1] = { ...last, text: last.text + text } satisfies TextSegment;
+    if (
+      last?.kind === "text" &&
+      sameMarks(last.marks, marks) &&
+      (last.kept_gap_id ?? null) === keptGapId
+    ) {
+      segments[segments.length - 1] = {
+        ...last,
+        text: last.text + text,
+      } satisfies TextSegment;
       return;
     }
-    segments.push({ kind: "text", text, marks });
+    segments.push({ kind: "text", text, marks, kept_gap_id: keptGapId });
   };
   for (const node of content ?? []) {
     if (node.type === EXAM_GAP_NODE) {
@@ -103,9 +129,9 @@ function bodySegments(content: readonly JSONContent[] | undefined): NativeExamBo
     } else if (node.type === EXAM_PICTURE_NODE) {
       segments.push({ kind: "asset", asset_id: String(node.attrs?.assetId) });
     } else if (node.type === "hardBreak") {
-      appendText("\n", bodyMarks(node));
+      appendText("\n", bodyMarks(node), bodyKeptGapId(node));
     } else if (node.type === "text" && node.text) {
-      appendText(node.text, bodyMarks(node));
+      appendText(node.text, bodyMarks(node), bodyKeptGapId(node));
     }
   }
   return segments;
@@ -131,6 +157,15 @@ export function bodyFromEditor(content: JSONContent): NativeExamBodyParagraph[] 
 export function placedGapIds(body: readonly NativeExamBodyParagraph[]): string[] {
   return body.flatMap((paragraph) =>
     paragraph.segments.flatMap((segment) => (segment.kind === "gap" ? [segment.gap_id] : [])),
+  );
+}
+
+/** Kept gap ids named by text runs, in body order. */
+export function placedKeptGapIds(body: readonly NativeExamBodyParagraph[]): string[] {
+  return body.flatMap((paragraph) =>
+    paragraph.segments.flatMap((segment) =>
+      segment.kind === "text" && segment.kept_gap_id ? [segment.kept_gap_id] : [],
+    ),
   );
 }
 

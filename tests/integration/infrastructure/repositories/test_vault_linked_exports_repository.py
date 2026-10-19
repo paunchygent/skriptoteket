@@ -11,6 +11,9 @@ from uuid import UUID, uuid4
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from skriptoteket.application.curated_apps.exam_workspace_history import (
+    ExamWorkspaceHistoryCursor,
+)
 from skriptoteket.domain.identity.models import AuthProvider, Role
 from skriptoteket.domain.scripting.vault import (
     VaultFile,
@@ -205,21 +208,33 @@ async def test_delete_purges_the_named_row_and_the_exam_history_only(
         export = _export(owner, lineage_id=lineage, export_format="qti")
         await repo.create(file=exam)
         await repo.create(file=export)
-        await repo.put_history(user_id=owner, document_lineage_id=lineage, content=b"history")
+        await repo.upsert_history_head(
+            user_id=owner,
+            document_lineage_id=lineage,
+            head=ExamWorkspaceHistoryCursor(
+                cursor=lineage, current_step_id=lineage, baseline_step_id=lineage
+            ),
+        )
 
         await repo.delete(file_id=exam.id)
 
         assert await repo.get_by_id(file_id=exam.id) is None
-        assert await repo.get_history(user_id=owner, document_lineage_id=lineage) is None
+        assert await repo.get_history_head(user_id=owner, document_lineage_id=lineage) is None
         # The saved export row survives until its own payload is gone: the purge
         # producer deletes the payloads of the expired group before the rows.
         assert await repo.get_by_id(file_id=export.id) is not None
 
-        await repo.put_history(user_id=owner, document_lineage_id=lineage, content=b"history")
+        await repo.upsert_history_head(
+            user_id=owner,
+            document_lineage_id=lineage,
+            head=ExamWorkspaceHistoryCursor(
+                cursor=lineage, current_step_id=lineage, baseline_step_id=lineage
+            ),
+        )
         await repo.delete(file_id=export.id)
 
         assert await repo.get_by_id(file_id=export.id) is None
-        assert await repo.get_history(user_id=owner, document_lineage_id=lineage) == b"history"
+        assert await repo.get_history_head(user_id=owner, document_lineage_id=lineage) is not None
         await session.rollback()
 
 

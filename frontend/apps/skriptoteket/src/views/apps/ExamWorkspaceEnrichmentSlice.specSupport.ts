@@ -30,11 +30,14 @@ export interface EnrichmentApiMocks {
   findExamWorkspaceAnswerKeySuggestions: Mock;
   getExamWorkspaceAnswerKeySuggestions: Mock;
   getExamWorkspaceDocument: Mock;
+  getExamWorkspaceHistory: Mock;
+  getExamWorkspaceHistoryStep: Mock;
+  moveExamWorkspaceHistoryPosition: Mock;
+  storeExamWorkspaceUndoStep: Mock;
   importExamWorkspaceDocument: Mock;
   getExamWorkspaceConversionStatus: Mock;
   listExamWorkspaceDocuments: Mock;
   requestExamWorkspaceAnswerKeySuggestions: Mock;
-  saveExamWorkspaceDocument: Mock;
 }
 
 /** The finished import conversion that every imported revision 1 carries. */

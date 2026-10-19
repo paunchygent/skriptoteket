@@ -250,7 +250,7 @@ async def test_store_uses_authoritative_head_name_not_a_writers_stale_copy(env: 
         lineage_id=imported.summary.lineage_id,
         version=2,
         expected_revision=1,
-        editor_step_id=imported.summary.lineage_id,
+        preserve_editor_position=True,
     )
     assert saved.name == "Lärarens namn.provdokument.zip"
 

@@ -15,7 +15,7 @@
  *     `useExamWorkspaceExports.ts`, and `useExamWorkspaceEnrichment.ts`.
  */
 
-import { apiGet, apiPatch, apiPost, apiPut, resolveProtectedApiUrl } from "./client";
+import { apiGet, apiPatch, apiPost, resolveProtectedApiUrl } from "./client";
 import type { components } from "./openapi";
 
 type Schemas = components["schemas"];
@@ -74,11 +74,15 @@ export type ExamWorkspaceContentSuggestions = Schemas["ContentSuggestionsRespons
 export type NativeExamImportRecord = Schemas["NativeExamImportRecord-Output"];
 export type ChangeExamWorkspaceItemTypeResponse = Schemas["ChangeExamWorkspaceItemTypeResponse"];
 
-export type SaveExamWorkspaceDocumentParams = {
-  expectedRevision: number;
+export type ExamWorkspaceUndoStepParams = {
+  expectedCursor: string;
   document: NativeExamDocument;
-  /** The history snapshot the editor stands on; the server keeps the saved copy there. */
-  positionStepId: string;
+  afterStepId: string | null;
+};
+
+export type MoveExamWorkspaceHistoryPositionParams = {
+  expectedCursor: string;
+  stepId: string;
 };
 
 /**
@@ -141,16 +145,15 @@ export async function getExamWorkspaceDocument(
   return await apiGet<ExamWorkspaceDocumentResponse>(documentPath(lineageId));
 }
 
-export async function saveExamWorkspaceDocument(
+export async function moveExamWorkspaceHistoryPosition(
   lineageId: string,
-  params: SaveExamWorkspaceDocumentParams,
-): Promise<ExamWorkspaceDocumentResponse> {
-  const body: Schemas["SaveExamWorkspaceDocumentRequest"] = {
-    document: params.document,
-    expected_revision: params.expectedRevision,
-    position_step_id: params.positionStepId,
+  params: MoveExamWorkspaceHistoryPositionParams,
+): Promise<ExamWorkspaceUndoStep> {
+  const body: Schemas["MoveExamWorkspaceHistoryPositionRequest"] = {
+    expected_cursor: params.expectedCursor,
+    step_id: params.stepId,
   };
-  return await apiPut<ExamWorkspaceDocumentResponse>(documentPath(lineageId), body);
+  return await apiPost<ExamWorkspaceUndoStep>(`${documentPath(lineageId)}/history/position`, body);
 }
 
 /**

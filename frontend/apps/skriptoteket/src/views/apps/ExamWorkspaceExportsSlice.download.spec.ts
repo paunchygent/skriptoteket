@@ -35,13 +35,13 @@ import { arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
 const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceHistory: vi.fn(),
   getExamWorkspaceHistoryStep: vi.fn(),
+  moveExamWorkspaceHistoryPosition: vi.fn(),
   storeExamWorkspaceUndoStep: vi.fn(),
   findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
-  saveExamWorkspaceDocument: vi.fn(),
 }));
 const exportApiMocks = vi.hoisted(() => ({
   downloadExamWorkspaceExport: vi.fn(),
@@ -201,7 +201,6 @@ describe("ExamWorkspaceView export download", () => {
   });
 
   it("saves unsaved edits first and exports the version just saved, in one click", async () => {
-    apiMocks.saveExamWorkspaceDocument.mockResolvedValue(exportableResponse({ version: 2 }));
     exportApiMocks.downloadExamWorkspaceExport.mockResolvedValue({
       blob: new Blob(["pdf"]),
       contentType: "application/pdf",
@@ -217,9 +216,10 @@ describe("ExamWorkspaceView export download", () => {
     await requirePage("exam-workspace-export-pdf").trigger("click");
     await flushPromises();
 
-    const saved = apiMocks.saveExamWorkspaceDocument.mock.calls[0]![1].document;
+    const stores = apiMocks.storeExamWorkspaceUndoStep.mock.calls;
+    const saved = stores[stores.length - 1]![1].document;
     expect(saved.items.find((item: { item_id: string }) => item.item_id === "item_002").points).toBe(7);
-    expect(exportApiMocks.downloadExamWorkspaceExport).toHaveBeenCalledWith("lineage-1", "pdf", 2);
+    expect(exportApiMocks.downloadExamWorkspaceExport).toHaveBeenCalledWith("lineage-1", "pdf", 1);
     expect(wrapper.get('[data-test="exam-workspace-save-state"]').text()).toMatch(/^Sparat /);
   });
 
@@ -233,12 +233,12 @@ describe("ExamWorkspaceView export download", () => {
 
     await exportFromMenu(wrapper, "docx");
 
-    expect(apiMocks.saveExamWorkspaceDocument).not.toHaveBeenCalled();
+    expect(apiMocks.storeExamWorkspaceUndoStep).not.toHaveBeenCalled();
     expect(exportApiMocks.downloadExamWorkspaceExport).toHaveBeenCalledWith("lineage-1", "docx", 1);
   });
 
   it("exports nothing when the save before it fails, and toasts the save failure", async () => {
-    apiMocks.saveExamWorkspaceDocument.mockRejectedValue(
+    apiMocks.storeExamWorkspaceUndoStep.mockRejectedValue(
       new ApiError({ code: "INTERNAL_ERROR", message: "boom", status: 500 }),
     );
     const wrapper = await mountImported();
@@ -249,14 +249,23 @@ describe("ExamWorkspaceView export download", () => {
 
     expect(exportApiMocks.downloadExamWorkspaceExport).not.toHaveBeenCalled();
     expect(useToastStore().failure).toHaveBeenCalledTimes(1);
-    expect(useToastStore().failure).toHaveBeenCalledWith("Det gick inte att spara provet. Försök igen.");
+    expect(useToastStore().failure).toHaveBeenCalledWith("Ändringen kunde inte sparas som utkast. Försök igen.");
     expect(page("exam-workspace-export-running")).toBeNull();
     expect(menuFormatDisabled("qti")).toBeUndefined();
   });
 
   it("shows the export running on the format and the drawer while the save and the export run", async () => {
-    const save = deferred<ReturnType<typeof exportableResponse>>();
-    apiMocks.saveExamWorkspaceDocument.mockReturnValue(save.promise);
+    const inner = apiMocks.storeExamWorkspaceUndoStep.getMockImplementation();
+    if (!inner) {
+      throw new Error("expected the step store double");
+    }
+    let release!: () => void;
+    apiMocks.storeExamWorkspaceUndoStep.mockImplementationOnce(
+      (...args: unknown[]) =>
+        new Promise((resolve) => {
+          release = () => resolve((inner as (...innerArgs: unknown[]) => unknown)(...args));
+        }),
+    );
     const download = deferred<{ blob: Blob; contentType: string; filename: string }>();
     exportApiMocks.downloadExamWorkspaceExport.mockReturnValue(download.promise);
     const wrapper = await mountImported();
@@ -268,9 +277,9 @@ describe("ExamWorkspaceView export download", () => {
     expect(requirePage("exam-workspace-export-running").text()).toBe("Exporterar …");
     expect(requirePage("exam-workspace-export-qti").attributes("aria-busy")).toBe("true");
     expect(menuFormatDisabled("pdf")).toBe("true");
-    save.resolve(exportableResponse({ version: 2 }));
+    release();
     await flushPromises();
-    expect(exportApiMocks.downloadExamWorkspaceExport).toHaveBeenCalledWith("lineage-1", "qti", 2);
+    expect(exportApiMocks.downloadExamWorkspaceExport).toHaveBeenCalledWith("lineage-1", "qti", 1);
     expect(requirePage("exam-workspace-export-running").text()).toBe("Exporterar …");
     download.resolve({ blob: new Blob(["zip"]), contentType: "application/zip", filename: "Prov.zip" });
     await flushPromises();

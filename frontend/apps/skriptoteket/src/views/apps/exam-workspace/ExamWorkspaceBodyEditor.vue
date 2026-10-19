@@ -11,7 +11,10 @@
  *   toggle marks from the keyboard. Activating a gap chip opens a small
  *   popover where the teacher edits that gap's accepted answers, removes an
  *   automatic the conversion added, or replaces the whole gap with its
- *   first accepted answer as plain text ("Visa som text"). A Lucktext or
+ *   first accepted answer as plain text ("Visa som text"). Closing the
+ *   popover of a gap with no answer removes the gap in one structural undo
+ *   step, which Ångra brings back; a gap with an answer is untouched on
+ *   close. A Lucktext or
  *   dropdown-Lucktext question grows its gaps from here: the toolbar's
  *   Luckverktyg toggle (Ctrl+Alt+G,
  *   Cmd+Option+G on macOS) switches one gap tool per question on: while it
@@ -54,7 +57,7 @@ import {
   PARTIAL_GAP_KEY_GUIDANCE,
 } from "./examWorkspaceAnswerKeyRules";
 import { examGapStates, gapNumberIn } from "./examWorkspaceGapLabels";
-import { nextGapId } from "./examWorkspaceGapEdits";
+import { bodyWithoutGap, gapHasAnswer, nextGapId } from "./examWorkspaceGapEdits";
 import ExamWorkspaceGapPopover from "./ExamWorkspaceGapPopover.vue";
 import ExamWorkspaceMarkToolbar from "./ExamWorkspaceMarkToolbar.vue";
 import ExamWorkspaceRichTextEditor from "./ExamWorkspaceRichTextEditor.vue";
@@ -82,10 +85,19 @@ type OpenGap = {
   anchor: HTMLElement;
 };
 
+/** The open gap's last seen answer state and body, so a close after a question switch still removes the right gap. */
+type OpenGapSnapshot = {
+  itemId: string;
+  gapId: string;
+  hasAnswer: boolean;
+  body: NativeExamBodyParagraph[];
+};
+
 const labelId = useId();
 const editor = ref<InstanceType<typeof ExamWorkspaceRichTextEditor> | null>(null);
 const root = ref<HTMLElement | null>(null);
 const openGap = ref<OpenGap | null>(null);
+const openGapSnapshot = ref<OpenGapSnapshot | null>(null);
 const { activeMarks, activeHeading, toggleMark, toggleHeading } =
   useExamWorkspaceRichTextToolbar();
 let openChip: HTMLElement | null = null;
@@ -152,19 +164,58 @@ function openPopover(gapId: string, chip: HTMLElement): void {
     gapId,
     anchor: chip,
   };
+  openGapSnapshot.value = {
+    itemId: props.item.item_id,
+    gapId,
+    hasAnswer: gapHasAnswer(
+      props.item.gaps.find((gap) => gap.gap_id === gapId),
+      props.item.kind,
+    ),
+    body: props.item.body,
+  };
 }
 
+/** Follow the owner's write-back while the popover is open, so a close reads the gap as it stands. */
+watch(openGapModel, (gap) => {
+  if (openGap.value !== null && gap !== null) {
+    openGapSnapshot.value = {
+      itemId: props.item.item_id,
+      gapId: gap.gap_id,
+      hasAnswer: gapHasAnswer(gap, props.item.kind),
+      body: props.item.body,
+    };
+  }
+});
+
 function closePopover(returnFocus: boolean): void {
-  if (openGap.value === null) {
+  const closing = openGap.value;
+  if (closing === null) {
     return;
   }
+  // Escape commits the rows before it closes, and other routes commit on
+  // their way out, so the owner has the gap as it stands; a close after a
+  // question switch reads the snapshot of the closed question.
+  const snapshot = openGapSnapshot.value;
+  const model = closing.itemId === props.item.item_id ? openGapModel.value : null;
+  const answered = model
+    ? gapHasAnswer(model, props.item.kind)
+    : (snapshot?.hasAnswer ?? true);
+  const body = model ? props.item.body : (snapshot?.body ?? props.item.body);
   const chip = openChip;
   openChip = null;
   openGap.value = null;
+  openGapSnapshot.value = null;
   chip?.setAttribute("aria-expanded", "false");
   if (returnFocus && chip?.isConnected) {
     // The text surface takes focus back with its selection (the gap) intact.
     chip.closest<HTMLElement>("[contenteditable='true']")?.focus();
+  }
+  // Closing the popover of a gap with no answer removes the gap: the body
+  // without its placement goes out as one structural edit, and the owner drops
+  // its record through `withBody`, so Ångra brings the gap back. A gap with an
+  // answer is untouched. A suspended editor forwards no gap change.
+  if (!answered && !props.disabled) {
+    emit("updateBody", closing.itemId, bodyWithoutGap(body, closing.gapId), true);
   }
 }
 

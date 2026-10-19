@@ -1,8 +1,9 @@
 """Real HTTP/database vertical: group, instruct, move out, delete, then export every target.
 
-The parent commands write editor undo steps without touching the exam file; only Spara
-persists the document, so the walk saves once after the part is instructed and once
-before exporting. QTI, PDF and DOCX run on the real writers so each artifact is inspected.
+The parent commands and the editor autosave each store one undo step, and every stored
+step also overwrites the exam file, so the walk stores once for the initial document,
+once for the part instruction, and once per parent command before exporting. QTI, PDF
+and DOCX run on the real writers so each artifact is inspected.
 """
 
 from collections.abc import AsyncIterator
@@ -25,6 +26,7 @@ from starlette_dishka import setup_dishka
 from skriptoteket.application.curated_apps.exam_workspace import ExamWorkspaceDocumentResponse
 from skriptoteket.application.curated_apps.exam_workspace_history import (
     ExamWorkspaceHistoryResponse,
+    ExamWorkspaceUndoStepResponse,
 )
 from skriptoteket.application.curated_apps.exam_workspace_parents import (
     ExamWorkspaceCreatedPartResponse,
@@ -328,18 +330,17 @@ async def test_group_instruct_move_delete_then_export_all_targets(
             history = ExamWorkspaceHistoryResponse.model_validate(
                 (await client.get(path + "/history")).json()
             )
-            response = await client.put(
-                path,
+            response = await client.post(
+                path + "/autosaves",
                 json={
-                    "expected_revision": 1,
+                    "expected_cursor": str(history.cursor),
                     "document": document.model_dump(mode="json"),
-                    "position_step_id": str(history.position_step_id),
                 },
             )
             assert response.status_code == 200, response.text
-            saved_initial = ExamWorkspaceDocumentResponse.model_validate(response.json())
+            saved_initial = ExamWorkspaceUndoStepResponse.model_validate(response.json())
             assert _outline(saved_initial.document) == _ITEM_IDS
-            cursor = str(saved_initial.history_cursor)
+            cursor = str(saved_initial.history.cursor)
 
             # Step 2: group the non-adjacent q2 and q4 into one part at q2's place.
             response = await client.post(
@@ -361,7 +362,7 @@ async def test_group_instruct_move_delete_then_export_all_targets(
             )
             cursor = str(grouped.history_cursor)
 
-            # Step 3: give the part its instruction through Spara, the normal edit path.
+            # Step 3: give the part its instruction through the editor autosave.
             instructed_part = part.model_copy(update={"instruction": text_body(_INSTRUCTION)})
             edited = grouped.document.model_copy(
                 update={
@@ -375,16 +376,17 @@ async def test_group_instruct_move_delete_then_export_all_targets(
             history = ExamWorkspaceHistoryResponse.model_validate(
                 (await client.get(path + "/history")).json()
             )
-            response = await client.put(
-                path,
+            response = await client.post(
+                path + "/autosaves",
                 json={
-                    "expected_revision": grouped.document.revision,
+                    "expected_cursor": str(history.cursor),
                     "document": edited.model_dump(mode="json"),
-                    "position_step_id": str(history.position_step_id),
                 },
             )
             assert response.status_code == 200, response.text
-            instructed = ExamWorkspaceDocumentResponse.model_validate(response.json())
+            instructed = ExamWorkspaceDocumentResponse.model_validate(
+                (await client.get(path)).json()
+            )
             kept = instructed.document.parent_of("item_002")
             assert kept is not None and kept.instruction == text_body(_INSTRUCTION)
             assert _outline(instructed.document) == (
@@ -436,23 +438,12 @@ async def test_group_instruct_move_delete_then_export_all_targets(
                 "item_005",
             )
 
-            # Step 6: Spara, because every export reads the saved head at its revision.
-            final = deleted.document.model_copy(update={"revision": deleted.document.revision + 1})
-            history = ExamWorkspaceHistoryResponse.model_validate(
-                (await client.get(path + "/history")).json()
-            )
-            response = await client.put(
-                path,
-                json={
-                    "expected_revision": deleted.document.revision,
-                    "document": final.model_dump(mode="json"),
-                    "position_step_id": str(history.position_step_id),
-                },
-            )
-            assert response.status_code == 200, response.text
-            saved = ExamWorkspaceDocumentResponse.model_validate(response.json())
+            # Step 6: no extra save. Every stored step already overwrote the exam file,
+            # so the delete above saved the head; every export reads it at its revision.
+            saved = ExamWorkspaceDocumentResponse.model_validate((await client.get(path)).json())
+            assert saved.document == deleted.document
             revision = saved.document.revision
-            assert revision == 4
+            assert revision == 6
 
             response = await client.get(
                 path + "/exports/qti", params={"expected_revision": revision}

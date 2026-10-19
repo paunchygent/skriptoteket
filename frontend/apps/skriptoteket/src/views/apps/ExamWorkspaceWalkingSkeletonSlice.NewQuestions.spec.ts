@@ -11,17 +11,17 @@
 import { flushPromises } from "@vue/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { saveExamWorkspaceDocument } from "../../api/examWorkspace";
 import {
   buildResponse,
   importFixtureDocument,
   mountExamWorkspace,
   saveDocument,
+  unmountExamWorkspace,
 } from "./ExamWorkspaceSlice.specSupport";
 import {
   addQuestion,
-  firstSaveRequest,
-  lastSavedDocument,
+  firstStoreRequest,
+  lastStoredDocument,
   shortAnswerEditor,
   succeededConversion,
 } from "./ExamWorkspaceWalkingSkeletonSlice.specSupport";
@@ -31,6 +31,7 @@ import { arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
 const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceHistory: vi.fn(),
   getExamWorkspaceHistoryStep: vi.fn(),
+  moveExamWorkspaceHistoryPosition: vi.fn(),
   storeExamWorkspaceUndoStep: vi.fn(),
   downloadExamWorkspaceExport: vi.fn(),
   findExamWorkspaceAnswerKeySuggestions: vi.fn(),
@@ -39,7 +40,6 @@ const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceConversionStatus: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
   requestExamWorkspaceAnswerMisspellings: vi.fn(),
-  saveExamWorkspaceDocument: vi.fn<typeof saveExamWorkspaceDocument>(),
 }));
 
 vi.mock("../../api/examWorkspace", async () => ({
@@ -51,7 +51,7 @@ beforeEach(() => {
   apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue(succeededConversion);
   apiMocks.getExamWorkspaceDocument.mockReset();
   apiMocks.importExamWorkspaceDocument.mockReset();
-  apiMocks.saveExamWorkspaceDocument.mockReset();
+  apiMocks.storeExamWorkspaceUndoStep.mockReset();
   arrangeStepHistory(apiMocks);
   apiMocks.listExamWorkspaceDocuments.mockReset();
   apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [], ordering: "course" });
@@ -67,13 +67,11 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  window.history.replaceState({}, "", "/");
-  document.body.replaceChildren();
+  unmountExamWorkspace();
 });
 
 describe("ExamWorkspaceView walking skeleton slice: new questions", () => {
   it("adds a short answer as a Kort svar with one unkeyed gap after the question text", async () => {
-    apiMocks.saveExamWorkspaceDocument.mockResolvedValue(buildResponse({ version: 2 }));
     const { wrapper } = await mountExamWorkspace();
     await importFixtureDocument(wrapper);
 
@@ -83,7 +81,7 @@ describe("ExamWorkspaceView walking skeleton slice: new questions", () => {
     expect(newRow.text()).toContain("Kort svar");
     await saveDocument(wrapper);
 
-    const { params } = firstSaveRequest(apiMocks.saveExamWorkspaceDocument);
+    const { params } = firstStoreRequest(apiMocks.storeExamWorkspaceUndoStep);
     const added = params.document.items.find((item) => item.item_id === "item_009")!;
     expect(added.kind).toBe("gap_fill");
     expect(added.answer_key.origin).toBe("absent");
@@ -97,7 +95,6 @@ describe("ExamWorkspaceView walking skeleton slice: new questions", () => {
   });
 
   it("a Kort svar shows only Frågetext and Godkända svar and saves a one-gap Lucktext", async () => {
-    apiMocks.saveExamWorkspaceDocument.mockResolvedValue(buildResponse({ version: 2 }));
     const { wrapper } = await mountExamWorkspace();
     await importFixtureDocument(wrapper);
 
@@ -120,17 +117,16 @@ describe("ExamWorkspaceView walking skeleton slice: new questions", () => {
 
     await saveDocument(wrapper);
 
-    const added = lastSavedDocument(apiMocks.saveExamWorkspaceDocument).items.find((item) => item.item_id === "item_009")!;
+    const added = lastStoredDocument(apiMocks.storeExamWorkspaceUndoStep).items.find((item) => item.item_id === "item_009")!;
     expect(added.kind).toBe("gap_fill");
     expect(added.body).toEqual([
-      { heading_level: null, segments: [{ kind: "text", marks: [], text: "Vad heter Sveriges huvudstad?" }] },
+      { heading_level: null, segments: [{ kind: "text", marks: [], text: "Vad heter Sveriges huvudstad?", kept_gap_id: null }] },
       { heading_level: null, segments: [{ gap_id: "gap_001", kind: "gap" }] },
     ]);
     expect(added.gaps[0]?.accepted_values).toEqual(["Stockholm"]);
   });
 
   it("a new Lucktext saves empty and shows the Frågetext editor with the gap tool switch", async () => {
-    apiMocks.saveExamWorkspaceDocument.mockResolvedValue(buildResponse({ version: 2 }));
     const { wrapper } = await mountExamWorkspace();
     await importFixtureDocument(wrapper);
 
@@ -144,7 +140,7 @@ describe("ExamWorkspaceView walking skeleton slice: new questions", () => {
 
     await saveDocument(wrapper);
 
-    const added = lastSavedDocument(apiMocks.saveExamWorkspaceDocument).items.find((item) => item.item_id === "item_009")!;
+    const added = lastStoredDocument(apiMocks.storeExamWorkspaceUndoStep).items.find((item) => item.item_id === "item_009")!;
     expect(added.kind).toBe("gap_fill");
     expect(added.body).toEqual([]);
     expect(added.gaps).toEqual([]);

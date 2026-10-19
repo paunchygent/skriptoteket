@@ -121,7 +121,7 @@ async def test_two_retries_keep_original_wording_and_append_in_order_after_reope
         lineage_id=original.document_id,
         version=2,
         expected_revision=1,
-        editor_step_id=original.document_id,
+        preserve_editor_position=True,
     )
     second = await env.retry(after_first)
     assert second.item.import_record is not None

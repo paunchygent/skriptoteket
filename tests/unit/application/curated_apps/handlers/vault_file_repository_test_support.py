@@ -4,6 +4,11 @@ from contextlib import asynccontextmanager
 from datetime import datetime
 from uuid import UUID
 
+from skriptoteket.application.curated_apps.exam_workspace_history import (
+    ExamWorkspaceHistoryCursor,
+    ExamWorkspaceHistoryStepRef,
+    ExamWorkspaceHistoryStoredStep,
+)
 from skriptoteket.domain.scripting.vault import VaultFile, VaultListSort, VaultListState
 
 
@@ -26,7 +31,9 @@ def _matches_search(name: str, search: str) -> bool:
 class InMemoryVaultFileRepository:
     def __init__(self) -> None:
         self.files: dict[UUID, VaultFile] = {}
-        self.histories: dict[tuple[UUID, UUID], bytes] = {}
+        self.history_heads: dict[tuple[UUID, UUID], ExamWorkspaceHistoryCursor] = {}
+        self.history_steps: dict[tuple[UUID, UUID, UUID], ExamWorkspaceHistoryStoredStep] = {}
+        self.history_assets: dict[tuple[UUID, UUID, str], bytes] = {}
         self.calls: list[tuple[str, dict[str, object]]] = []
 
     async def get_by_id(self, *, file_id: UUID) -> VaultFile | None:
@@ -187,13 +194,170 @@ class InMemoryVaultFileRepository:
             ),
         )
 
-    async def get_history(self, *, user_id: UUID, document_lineage_id: UUID) -> bytes | None:
-        return self.histories.get((user_id, document_lineage_id))
+    async def get_history_head(
+        self, *, user_id: UUID, document_lineage_id: UUID
+    ) -> ExamWorkspaceHistoryCursor | None:
+        self.calls.append(
+            (
+                "get_history_head",
+                {"user_id": user_id, "document_lineage_id": document_lineage_id},
+            )
+        )
+        return self.history_heads.get((user_id, document_lineage_id))
 
-    async def put_history(
-        self, *, user_id: UUID, document_lineage_id: UUID, content: bytes
+    async def upsert_history_head(
+        self,
+        *,
+        user_id: UUID,
+        document_lineage_id: UUID,
+        head: ExamWorkspaceHistoryCursor,
     ) -> None:
-        self.histories[(user_id, document_lineage_id)] = content
+        self.calls.append(
+            (
+                "upsert_history_head",
+                {"user_id": user_id, "document_lineage_id": document_lineage_id},
+            )
+        )
+        self.history_heads[(user_id, document_lineage_id)] = head
+
+    async def get_history_step(
+        self, *, user_id: UUID, document_lineage_id: UUID, step_id: UUID
+    ) -> ExamWorkspaceHistoryStoredStep | None:
+        self.calls.append(
+            (
+                "get_history_step",
+                {
+                    "user_id": user_id,
+                    "document_lineage_id": document_lineage_id,
+                    "step_id": step_id,
+                },
+            )
+        )
+        return self.history_steps.get((user_id, document_lineage_id, step_id))
+
+    async def list_history_step_refs(
+        self, *, user_id: UUID, document_lineage_id: UUID
+    ) -> list[ExamWorkspaceHistoryStepRef]:
+        self.calls.append(
+            (
+                "list_history_step_refs",
+                {"user_id": user_id, "document_lineage_id": document_lineage_id},
+            )
+        )
+        refs = [
+            ExamWorkspaceHistoryStepRef(
+                step_id=step_id, position=record.position, asset_ids=record.asset_ids
+            )
+            for (owner_id, row_lineage, step_id), record in self.history_steps.items()
+            if owner_id == user_id and row_lineage == document_lineage_id
+        ]
+        refs.sort(key=lambda ref: ref.position)
+        return refs
+
+    async def list_history_steps(
+        self, *, user_id: UUID, document_lineage_id: UUID
+    ) -> list[ExamWorkspaceHistoryStoredStep]:
+        self.calls.append(
+            (
+                "list_history_steps",
+                {"user_id": user_id, "document_lineage_id": document_lineage_id},
+            )
+        )
+        steps = [
+            record
+            for (owner_id, row_lineage, _), record in self.history_steps.items()
+            if owner_id == user_id and row_lineage == document_lineage_id
+        ]
+        steps.sort(key=lambda record: record.position)
+        return steps
+
+    async def get_history_assets(
+        self, *, user_id: UUID, document_lineage_id: UUID, asset_ids: tuple[str, ...]
+    ) -> dict[str, bytes]:
+        self.calls.append(
+            (
+                "get_history_assets",
+                {"user_id": user_id, "document_lineage_id": document_lineage_id},
+            )
+        )
+        return {
+            asset_id: self.history_assets[(user_id, document_lineage_id, asset_id)]
+            for asset_id in asset_ids
+            if (user_id, document_lineage_id, asset_id) in self.history_assets
+        }
+
+    async def insert_history_step(
+        self,
+        *,
+        user_id: UUID,
+        document_lineage_id: UUID,
+        step: ExamWorkspaceHistoryStoredStep,
+        assets_by_id: dict[str, bytes],
+    ) -> None:
+        self.calls.append(
+            (
+                "insert_history_step",
+                {
+                    "user_id": user_id,
+                    "document_lineage_id": document_lineage_id,
+                    "step_id": step.step_id,
+                },
+            )
+        )
+        self.history_steps[(user_id, document_lineage_id, step.step_id)] = step
+        for asset_id, content in assets_by_id.items():
+            key = (user_id, document_lineage_id, asset_id)
+            if key not in self.history_assets:
+                self.history_assets[key] = content
+
+    async def delete_history_steps(
+        self, *, user_id: UUID, document_lineage_id: UUID, step_ids: list[UUID]
+    ) -> None:
+        self.calls.append(
+            (
+                "delete_history_steps",
+                {"user_id": user_id, "document_lineage_id": document_lineage_id},
+            )
+        )
+        for step_id in step_ids:
+            self.history_steps.pop((user_id, document_lineage_id, step_id), None)
+
+    async def delete_orphan_history_assets(
+        self, *, user_id: UUID, document_lineage_id: UUID, keep_asset_ids: frozenset[str]
+    ) -> None:
+        self.calls.append(
+            (
+                "delete_orphan_history_assets",
+                {"user_id": user_id, "document_lineage_id": document_lineage_id},
+            )
+        )
+        for key in [
+            key
+            for key in self.history_assets
+            if key[:2] == (user_id, document_lineage_id) and key[2] not in keep_asset_ids
+        ]:
+            del self.history_assets[key]
+
+    async def delete_history(self, *, user_id: UUID, document_lineage_id: UUID) -> None:
+        self.calls.append(
+            (
+                "delete_history",
+                {"user_id": user_id, "document_lineage_id": document_lineage_id},
+            )
+        )
+        self.history_heads.pop((user_id, document_lineage_id), None)
+        for step_key in [
+            step_key
+            for step_key in self.history_steps
+            if step_key[:2] == (user_id, document_lineage_id)
+        ]:
+            del self.history_steps[step_key]
+        for asset_key in [
+            asset_key
+            for asset_key in self.history_assets
+            if asset_key[:2] == (user_id, document_lineage_id)
+        ]:
+            del self.history_assets[asset_key]
 
     @asynccontextmanager
     async def guard_document_payload(
@@ -270,4 +434,16 @@ class InMemoryVaultFileRepository:
     async def delete(self, *, file_id: UUID) -> None:
         file = self.files.pop(file_id, None)
         if file is not None and file.document_lineage_id is not None and file.export_format is None:
-            self.histories.pop((file.user_id, file.document_lineage_id), None)
+            self.history_heads.pop((file.user_id, file.document_lineage_id), None)
+            for step_key in [
+                step_key
+                for step_key in self.history_steps
+                if step_key[:2] == (file.user_id, file.document_lineage_id)
+            ]:
+                del self.history_steps[step_key]
+            for asset_key in [
+                key
+                for key in self.history_assets
+                if key[:2] == (file.user_id, file.document_lineage_id)
+            ]:
+                del self.history_assets[asset_key]

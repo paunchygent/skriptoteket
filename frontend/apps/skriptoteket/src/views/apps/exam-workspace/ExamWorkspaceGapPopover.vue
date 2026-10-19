@@ -164,9 +164,6 @@ const optionDrafts = reactive<Record<string, string>>({});
 const options = computed(() => props.gap?.options ?? []);
 // A gap with no correct option stays that way until the teacher picks a radio.
 const correctOptionId = computed<string | null>(() => props.gap?.correct_option_id ?? null);
-const hasCorrectOption = computed(() =>
-  options.value.some((option) => option.choice_id === correctOptionId.value),
-);
 
 function optionText(option: NativeExamChoice): string {
   return optionDrafts[option.choice_id] ?? bodyText(option.body);
@@ -258,7 +255,8 @@ function handleRootKeydown(event: KeyboardEvent): void {
     return;
   }
   event.preventDefault();
-  // Escape closes and keeps the typed text: it was committed while typing.
+  // Escape commits cleared answers first, so the owner reads the gap as it stands.
+  answerList.value?.commit();
   emit("close", true);
 }
 
@@ -430,7 +428,7 @@ onMounted(() => {
           </button>
         </div>
         <p
-          v-if="hasCorrectOption"
+          v-if="options.some((option) => option.choice_id === correctOptionId)"
           :id="removeHintId"
           class="text-[11px] leading-snug text-navy/65"
           data-test="exam-workspace-gap-option-remove-hint"

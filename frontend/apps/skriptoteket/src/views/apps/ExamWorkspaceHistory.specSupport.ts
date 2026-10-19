@@ -1,10 +1,10 @@
 /**
  * A named double of the server's undo-step store for view specs.
  *
- * Spara sends the history position the editor stands on, so a view that
- * saves needs a loaded step list. This double keeps an import baseline and
- * the steps its autosaves store; it models no conflicts and no Spara
- * retention, which `useExamWorkspaceEditing.history.spec.ts` covers.
+ * Every stored step also writes the exam file, so a view that edits needs a
+ * loaded step list. This double keeps an import baseline and the steps its
+ * autosaves store, and moves the position without a new step; it models no
+ * conflicts, which `useExamWorkspaceEditing.history.spec.ts` covers.
  */
 
 import type { Mock } from "vitest";
@@ -16,10 +16,13 @@ export const HISTORY_BASELINE_STEP_ID = "history-step-0";
 type HistoryApiMocks = {
   getExamWorkspaceHistory: Mock;
   getExamWorkspaceHistoryStep: Mock;
+  moveExamWorkspaceHistoryPosition: Mock;
   storeExamWorkspaceUndoStep: Mock;
 };
 
 type StoreRequest = { afterStepId: string | null; document: NativeExamDocument };
+
+type MoveRequest = { expectedCursor: string; stepId: string };
 
 export function arrangeStepHistory(api: HistoryApiMocks) {
   let counter = 0;
@@ -47,6 +50,14 @@ export function arrangeStepHistory(api: HistoryApiMocks) {
     state.steps = [...state.steps, stepId].slice(-10);
     state.position = stepId;
     return { document: request.document, export_blockers: [], history: history() };
+  });
+  api.moveExamWorkspaceHistoryPosition.mockImplementation(async (_lineage: string, request: MoveRequest) => {
+    const document = documents.get(request.stepId);
+    if (!document) {
+      throw new Error(`The history double holds no document for ${request.stepId}.`);
+    }
+    state.position = request.stepId;
+    return { document, export_blockers: [], history: history() };
   });
   return { documents, state };
 }

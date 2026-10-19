@@ -421,7 +421,7 @@ class ExamWorkspaceProvider(Provider):
         id_generator: IdGeneratorProtocol,
         jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
     ) -> SaveExamWorkspaceDocumentHandlerProtocol:
-        """Provide the one-file save handler."""
+        """Provide the history-step reads and the copy-as-new-exam handler."""
         return SaveExamWorkspaceDocumentHandler(
             vault_files=vault_files,
             codec=codec,

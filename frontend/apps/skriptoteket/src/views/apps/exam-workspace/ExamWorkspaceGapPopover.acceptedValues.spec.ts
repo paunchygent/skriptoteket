@@ -181,6 +181,21 @@ describe("ExamWorkspaceGapPopover accepted answers", () => {
     wrapper.unmount();
   });
 
+  it("commits cleared answers on Escape so the owner reads the empty gap", async () => {
+    const keyed = mountPopover(buildGap(GAP_ID, ["ett"]));
+    const row = firstRow();
+    row.element.value = "";
+    await row.trigger("input");
+    // Typing an empty list commits nothing.
+    expect(commits(keyed)).toEqual([]);
+    await row.trigger("keydown", { key: "Escape" });
+
+    // Escape commits the cleared rows; the close itself is unchanged.
+    expect(commits(keyed)).toEqual([[ITEM_ID, GAP_ID, []]]);
+    expect(keyed.emitted("close")).toEqual([[true]]);
+    keyed.unmount();
+  });
+
   it("disables add at 100 rows with its tooltip", () => {
     const wrapper = mountPopover(buildGap(GAP_ID, many(100)));
     const add = documentControl<HTMLButtonElement>(

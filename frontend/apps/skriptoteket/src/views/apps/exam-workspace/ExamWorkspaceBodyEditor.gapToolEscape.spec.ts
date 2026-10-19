@@ -417,6 +417,30 @@ describe("ExamWorkspaceBodyEditor gap tool Escape", () => {
     }
   });
 
+  it("removes a gap with no answer on Escape and keeps the tool on", async () => {
+    const harness = mountHarness(buildGapItem());
+    await settle();
+
+    await toolToggle(harness).trigger("click");
+    await settle();
+    expect(toolPressed(harness)).toBe("true");
+
+    clickGapChip(harness, "gap_002");
+    await settle();
+    expect(popoverExists()).toBe(true);
+
+    dispatchEscape(requireInput(document.activeElement, "the popover answer"));
+    await settle();
+
+    expect(popoverExists()).toBe(false);
+    expect(toolPressed(harness)).toBe("true");
+    const updates =
+      harness.host.findComponent(ExamWorkspaceBodyEditor).emitted("updateBody") ?? [];
+    expect(updates).toHaveLength(1);
+    expect(updates[0]?.[0]).toBe("item_001");
+    expect(updates[0]?.[2]).toBe(true);
+  });
+
   it("does not turn the tool off on a repeated Escape keydown in the same press", async () => {
     const harness = mountHarness(plainGapItem());
     await settle();

@@ -19,8 +19,7 @@ import type {
   ExamWorkspaceConversionStatus,
   ExamWorkspaceDocumentResponse,
   NativeExamDocument,
-  SaveExamWorkspaceDocumentParams,
-  saveExamWorkspaceDocument,
+  storeExamWorkspaceUndoStep,
 } from "../../api/examWorkspace";
 import {
   dispatchGapToolClick,
@@ -32,8 +31,8 @@ import {
   type ViewWrapper,
 } from "./ExamWorkspaceSlice.specSupport";
 
-/** The mocked save transport one walking-skeleton spec reads back. */
-export type SaveDocumentMock = Mock<typeof saveExamWorkspaceDocument>;
+/** The mocked step store one walking-skeleton spec reads back. */
+export type StoreUndoStepMock = Mock<typeof storeExamWorkspaceUndoStep>;
 
 /** Every input of one accepted-answer row list (a gap popover's or the Kort svar Svar field's). */
 export function answerRowInputs(groupTestId: string): HTMLInputElement[] {
@@ -183,25 +182,25 @@ export const succeededConversion: ExamWorkspaceConversionStatus = {
   document_revision: 1, questions_total: 0, questions_done: 0, units: [],
 };
 
-/** The first save request the mocked transport received. */
-export function firstSaveRequest(saveMock: SaveDocumentMock): {
+/** The first step store request the mocked transport received. */
+export function firstStoreRequest(storeMock: StoreUndoStepMock): {
   lineageId: string;
-  params: SaveExamWorkspaceDocumentParams;
+  params: { expectedCursor: string; document: NativeExamDocument; afterStepId: string | null };
 } {
-  const first = saveMock.mock.calls[0];
+  const first = storeMock.mock.calls[0];
   if (!first) {
-    throw new Error("expected a save request");
+    throw new Error("expected a store request");
   }
   const [lineageId, params] = first;
   return { lineageId, params };
 }
 
-/** The document of the latest save request the mocked transport received. */
-export function lastSavedDocument(saveMock: SaveDocumentMock): NativeExamDocument {
-  const calls = saveMock.mock.calls;
+/** The document of the latest step the mocked transport stored. */
+export function lastStoredDocument(storeMock: StoreUndoStepMock): NativeExamDocument {
+  const calls = storeMock.mock.calls;
   const last = calls[calls.length - 1];
   if (!last) {
-    throw new Error("expected a saved document");
+    throw new Error("expected a stored document");
   }
   return last[1].document;
 }

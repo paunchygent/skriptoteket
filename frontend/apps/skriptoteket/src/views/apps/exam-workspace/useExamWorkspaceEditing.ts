@@ -4,8 +4,9 @@
  * Domain purpose:
  *   Join the open exam, its server-stored undo history and the structure
  *   commands into one editing session: every teacher edit becomes an undo
- *   step, Spara stores the pending edit before it overwrites the exam file,
- *   and a stale cursor reloads the exam (TASK-SKRIPT-39-04-08, 40-04-03). It
+ *   step through a 900 ms pause or at once, and the step store also writes
+ *   the exam file (TASK-SKRIPT-40-04-14, one save model). A stale cursor
+ *   reloads the exam. It
  *   owns `selectedParentId` (the part entry the teacher selected) so structural
  *   inserts land after the selected part; the selection composable drives it.
  *
@@ -45,6 +46,8 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore) {
     isBlocked: () => document.isOperationBusy.value,
     lineageId,
     noteExportBlockers: document.noteExportBlockers,
+    noteStored: document.noteStored,
+    isGuest: () => store.guest !== null,
     onConflict: reload,
     replaceCopy: document.replaceCopy,
     savedRevision: () => document.savedRevision.value,
@@ -73,14 +76,12 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore) {
   });
 
   /**
-   * Spara: store the pending edit as an undo step, then overwrite the exam file.
-   * Spara writes the copy itself, so it proceeds when the step write failed: it
-   * sends the editor's position, and the server retains the saved copy as the
-   * step after it, so undo and redo stay available at once.
+   * Ctrl/Cmd+S, and the store-first step of Spara som and exports: store the
+   * pending edit as an undo step now. The step store also overwrites the
+   * exam file, so this is the whole save.
    */
   async function save(): Promise<boolean> {
-    await history.flush(false);
-    return await document.saveDocument(history.position.value);
+    return await history.flush(false);
   }
 
   /** Spara som: store the pending edit, then copy the working exam under `name`. */

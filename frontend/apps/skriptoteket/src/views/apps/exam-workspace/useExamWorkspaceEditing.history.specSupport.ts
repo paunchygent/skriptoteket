@@ -19,7 +19,7 @@ import { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
 export type EditingApiMocks = {
   getExamWorkspaceHistory: Mock;
   getExamWorkspaceHistoryStep: Mock;
-  saveExamWorkspaceDocument: Mock;
+  moveExamWorkspaceHistoryPosition: Mock;
   storeExamWorkspaceUndoStep: Mock;
 };
 
@@ -69,15 +69,10 @@ export function conflict(): ApiError {
   return new ApiError({ code: "CONFLICT", message: "Dokumentet har ändrats sedan det öppnades.", status: 409 });
 }
 
-function withoutRevision(document: NativeExamDocument): string {
-  return JSON.stringify({ ...document, revision: 0 });
-}
-
 /** The fake server's mutable history position; the step list holds step ids in order. */
 type FakeServerState = {
   cursor: string;
   position: string;
-  saved: NativeExamDocument;
   steps: string[];
 };
 /** The server's history: the same position rules as exam_workspace_document_store.py and undo_steps. */
@@ -87,7 +82,6 @@ export function fakeServer(api: EditingApiMocks, baseline: NativeExamDocument) {
   const state: FakeServerState = {
     cursor: "step-0",
     position: "step-0",
-    saved: baseline,
     steps: [],
   };
   const history = () => ({
@@ -107,6 +101,15 @@ export function fakeServer(api: EditingApiMocks, baseline: NativeExamDocument) {
     document: documents.get(stepId)!,
     step_id: stepId,
   }));
+  api.moveExamWorkspaceHistoryPosition.mockImplementation(
+    async (_l: string, request: { expectedCursor: string; stepId: string }) => {
+      if (request.expectedCursor !== state.cursor) throw conflict();
+      state.position = request.stepId;
+      state.cursor = `move-${++counter}`;
+      const document = documents.get(request.stepId)!;
+      return { document, export_blockers: [], history: history() };
+    },
+  );
   const truncateAfter = (after: string) => {
     state.steps = state.steps.slice(0, ["step-0", ...state.steps].indexOf(after));
   };
@@ -117,22 +120,6 @@ export function fakeServer(api: EditingApiMocks, baseline: NativeExamDocument) {
       state.cursor = append(request.document);
       state.position = state.cursor;
       return { document: request.document, export_blockers: [], history: history() };
-    },
-  );
-  api.saveExamWorkspaceDocument.mockImplementation(
-    async (_l: string, request: { document: NativeExamDocument; positionStepId: string }) => {
-      state.saved = request.document;
-      const snapshots = ["step-0", ...state.steps];
-      const at = snapshots.includes(request.positionStepId) ? request.positionStepId : snapshots[snapshots.length - 1]!;
-      // The saved copy stays at the editor's position; a copy no step holds becomes the next step.
-      if (withoutRevision(documents.get(at)!) === withoutRevision(request.document)) {
-        state.position = at;
-      } else {
-        truncateAfter(at);
-        state.position = append(request.document);
-      }
-      state.cursor = `saved-${++counter}`;
-      return response(request.document, state.cursor);
     },
   );
   return { documents, state };

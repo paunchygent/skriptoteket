@@ -1,9 +1,8 @@
-/** Spara compares the working copy with the exam file, not its latest undo step. */
+/** The saved baseline follows the exam file: every confirmed autosave step updates it. */
 import { createPinia, setActivePinia } from "pinia";
 import { effectScope } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { ApiError } from "../../../api/client";
 import type { ExamWorkspaceDocumentResponse } from "../../../api/examWorkspace";
 import { buildResponse } from "./useExamWorkspaceDocument.specSupport";
 import { buildParentDocument } from "./examWorkspaceParentDocument.specSupport";
@@ -12,7 +11,7 @@ import { useExamWorkspaceDocument } from "./useExamWorkspaceDocument";
 
 const api = vi.hoisted(() => ({
   getExamWorkspaceDocument: vi.fn(),
-  saveExamWorkspaceDocument: vi.fn(),
+  copyExamWorkspaceDocument: vi.fn(),
 }));
 vi.mock("../../../api/examWorkspace", async (importOriginal) => ({
   ...await importOriginal<typeof import("../../../api/examWorkspace")>(),
@@ -35,7 +34,7 @@ function commandResponse(): ExamWorkspaceDocumentResponse {
 }
 
 describe("saved exam baseline", () => {
-  it.each(["open", "reload", "reopen"])("keeps command results dirty on %s and saves the whole working copy", async (path) => {
+  it.each(["open", "reload", "reopen"])("keeps command results dirty on %s and opens the copied exam clean", async (path) => {
     const response = commandResponse();
     api.getExamWorkspaceDocument.mockResolvedValue(response);
     const scope = effectScope();
@@ -48,23 +47,25 @@ describe("saved exam baseline", () => {
       expect(state.isDirty.value).toBe(true);
       expect(state.isBusy.value).toBe(false);
       expect(state.savedRevision.value).toBe(1);
-      const next = { ...response.document, revision: 2 };
-      api.saveExamWorkspaceDocument.mockResolvedValue({
-        ...response, document: next, saved_document: next,
-        summary: { ...response.summary, version: 2 },
+      const copied = { ...response.document };
+      api.copyExamWorkspaceDocument.mockResolvedValue({
+        ...response, document: copied, saved_document: copied,
+        summary: { ...response.summary, lineage_id: "lineage-2", version: 1 },
       });
-      expect(await state.saveDocument("position-1")).toBe(true);
-      expect(api.saveExamWorkspaceDocument).toHaveBeenCalledWith("lineage-1", {
-        document: next, expectedRevision: 1, positionStepId: "position-1",
-      });
+      expect(await state.saveDocumentAs("Kopia")).toBe("saved");
+      expect(api.copyExamWorkspaceDocument).toHaveBeenCalledWith(
+        "lineage-1",
+        "Kopia",
+        response.document,
+      );
       expect(state.isDirty.value).toBe(false);
-      expect(state.savedRevision.value).toBe(2);
+      expect(state.savedRevision.value).toBe(1);
     } finally {
       scope.stop();
     }
   });
 
-  it("keeps a reopened autosave dirty until Spara writes it", async () => {
+  it("marks the copy clean once its pending edit is confirmed stored", async () => {
     const base = buildResponse();
     const response = { ...base, document: { ...base.document, title: "Arbetskopia" } };
     api.getExamWorkspaceDocument.mockResolvedValue(response);
@@ -73,42 +74,9 @@ describe("saved exam baseline", () => {
     try {
       await state.openDocument("lineage-1");
       expect(state.isDirty.value).toBe(true);
-      const document = { ...response.document, revision: 2 };
-      api.saveExamWorkspaceDocument.mockResolvedValue({
-        ...response, document, saved_document: document,
-        summary: { ...response.summary, version: 2 },
-      });
-      expect(await state.saveDocument("position-1")).toBe(true);
-      expect(api.saveExamWorkspaceDocument).toHaveBeenCalledWith("lineage-1", {
-        document, expectedRevision: 1, positionStepId: "position-1",
-      });
+      state.noteStored({ ...response.document });
       expect(state.isDirty.value).toBe(false);
-    } finally {
-      scope.stop();
-    }
-  });
-
-  it("keeps unsaved commands dirty after a stale save reloads the working copy", async () => {
-    api.getExamWorkspaceDocument.mockResolvedValue(buildResponse());
-    const scope = effectScope();
-    const state = scope.run(() => useExamWorkspaceDocument({ store: serverExamWorkspaceStore }))!;
-    try {
-      await state.openDocument("lineage-1");
-      state.setTitle("Lokal ändring");
-      const response = commandResponse();
-      api.getExamWorkspaceDocument.mockResolvedValue({
-        ...response,
-        document: { ...response.document, revision: 2 },
-        saved_document: { ...response.saved_document, revision: 2 },
-        summary: { ...response.summary, version: 2 },
-      });
-      api.saveExamWorkspaceDocument.mockRejectedValue(new ApiError({
-        status: 409, code: "CONFLICT", message: "Provet har ändrats.",
-      }));
-      expect(await state.saveDocument("position-1")).toBe(false);
-      expect(state.workspaceDocument.value?.parents).toEqual(response.document.parents);
-      expect(state.savedRevision.value).toBe(2);
-      expect(state.isDirty.value).toBe(true);
+      expect(state.savedRevision.value).toBe(1);
     } finally {
       scope.stop();
     }

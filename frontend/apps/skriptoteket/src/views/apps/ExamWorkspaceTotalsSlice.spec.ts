@@ -26,11 +26,11 @@ const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceHistory: vi.fn(),
   getExamWorkspaceHistoryStep: vi.fn(),
+  moveExamWorkspaceHistoryPosition: vi.fn(),
   storeExamWorkspaceUndoStep: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
-  saveExamWorkspaceDocument: vi.fn(),
 }));
 const exportApiMocks = vi.hoisted(() => ({
   downloadExamWorkspaceExport: vi.fn(),
@@ -164,15 +164,15 @@ describe("workspace printed exam totals", () => {
     expect(wrapper.get(EXAM_POINTS).text()).toBe("Totalt 7,5 p");
     expect(partLine(wrapper, "parent_001").exists()).toBe(false);
     expect(apiMocks.getExamWorkspaceDocument).toHaveBeenCalledTimes(1);
-    expect(apiMocks.saveExamWorkspaceDocument).not.toHaveBeenCalled();
+    expect(apiMocks.storeExamWorkspaceUndoStep).not.toHaveBeenCalled();
   });
 
-  it("never disables Spara for a mismatch", async () => {
+  it("never disables Spara som for a mismatch", async () => {
     const wrapper = await openDocument(documentWithTotals(10, [2, 3]));
     await selectItemRow(wrapper, "item_001");
     await wrapper.get('[data-test="exam-workspace-item-points-input"]').setValue("4");
     expect(wrapper.get(EXAM_POINTS).text()).toBe("Totalt 7 p · provtexten anger 10 p");
-    expect(wrapper.get('[data-test="exam-workspace-save"]').attributes("disabled")).toBeUndefined();
+    expect(wrapper.get('[data-test="exam-workspace-save-menu"]').attributes("disabled")).toBeUndefined();
   });
 
   it("shows no part line without a printed part total", async () => {
@@ -270,7 +270,6 @@ describe("accepting the computed totals", () => {
     expect(wrapper.get(ACCEPT_EXAM).classes()).toContain(IDLE_ACTION);
     expect(partLine(wrapper, "parent_001").text()).toBe("5 p · provtexten anger 8 p");
     expect(partLine(wrapper, "parent_002").text()).toBe("5 p · provtexten anger 6 p");
-    expect(apiMocks.saveExamWorkspaceDocument).not.toHaveBeenCalled();
 
     await undo(wrapper);
     expect(wrapper.get(EXAM_POINTS).text()).toBe("Totalt 10 p · provtexten anger 14 p");

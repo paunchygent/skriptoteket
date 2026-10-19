@@ -11,11 +11,13 @@
  *     path (`useExamWorkspaceItemEdits`, `useExamWorkspaceGapKeying`).
  *   - Reports each teacher edit through `onEdit`, which the undo history
  *     (`useExamWorkspaceHistory`) turns into autosaved steps; installs the
- *     history's steps and the server commands' results.
+ *     history's steps and the server commands' results. Every confirmed step
+ *     also updates the saved baseline through `noteStored`, so dirty means
+ *     the copy differs from the exam file.
  *   - The whole-document field commands (exam and part instructions, tags,
  *     printed-total accepts) in `useExamWorkspaceDocumentFields`, built on
  *     `editDocument` here.
- *   - Spara, Spara som and stale-save recovery (`useExamWorkspaceSave`), the
+ *   - Spara som and stale-save recovery (`useExamWorkspaceSave`), the
  *     saved-exams list (`useExamWorkspaceSavedList`), AI suggestion arrivals,
  *     conversion merges and one-question retries through their own composables.
  *   - Dirty state: the copy differs from the saved exam file (`sameDocument`).
@@ -50,7 +52,6 @@ import { useExamWorkspaceTitleVerdict } from "./useExamWorkspaceTitleVerdict";
 
 export { EXAM_WORKSPACE_CONVERSION_POLL_MS } from "./useExamWorkspaceConversion";
 
-export { EXAM_WORKSPACE_CONFLICT_COPY } from "./useExamWorkspaceSave";
 export type { ExamWorkspaceSaveAsOutcome } from "./useExamWorkspaceSave";
 
 const OPEN_FAILURE_COPY = "Det gick inte att öppna provet. Försök igen.";
@@ -116,7 +117,6 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
       beginDocumentRead,
       beforeFirstRevision: () => {
         selectedItemId.value = null;
-        conflictNotice.value = null;
       },
       isDirty,
       isSaving: () => operationBusy.value,
@@ -207,7 +207,6 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
       selectedItemId.value = null;
       applyResponse(response);
       keying.invalidateCopy();
-      conflictNotice.value = null;
       return true;
     } catch {
       toast.failure(OPEN_FAILURE_COPY);
@@ -236,7 +235,6 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
         // A conflict inside a replacing read: its suggestions run again on the reloaded exam.
         arrivals.replayAfterResponse(held.arrivals);
       }
-      conflictNotice.value = null;
     } catch {
       toast.failure(RELOAD_FAILURE_COPY);
     } finally {
@@ -324,7 +322,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
   // Every gap keying edit and its asynchronous misspelling reply.
   const keying = useExamWorkspaceGapKeying({ openExam, patchItem, workspaceDocument, shared: store.shared });
 
-  const { conflictNotice, saveDocument, saveDocumentAs } = useExamWorkspaceSave({
+  const { saveDocumentAs } = useExamWorkspaceSave({
     applyResponse,
     arrivals,
     beginDocumentRead,
@@ -411,6 +409,21 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     replayHeld();
   }
 
+  /**
+   * A store or a position move confirmed this document; the exam file holds
+   * it now. The saved baseline becomes the confirmed snapshot, and the open
+   * copy's revision follows the file: the working copy keeps its content
+   * (later edits stay), only its revision tracks the confirmed file version,
+   * so dirty still means the content differs from the file.
+   */
+  function noteStored(document: NativeExamDocument): void {
+    savedDocument.value = document;
+    const current = workspaceDocument.value;
+    if (current !== null && current.revision !== document.revision) {
+      workspaceDocument.value = { ...current, revision: document.revision };
+    }
+  }
+
   /** A server command (parent, change type) stored a new step; show its document. */
   function applyCommandResponse(response: ExamWorkspaceDocumentResponse): void {
     applyResponse(response);
@@ -427,7 +440,6 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     listOrdering,
     applyArrivingSuggestions,
     assetUrls,
-    conflictNotice,
     conversionError,
     conversionMessage,
     conversionProgress,
@@ -445,6 +457,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     isOpen,
     loadSavedDocuments,
     noteExportBlockers,
+    noteStored,
     notes,
     openDocument,
     openExam: computed(() => openExam.value),
@@ -453,7 +466,6 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     renameFile,
     restoreItemSuggestion,
     retryItem,
-    saveDocument,
     saveDocumentAs,
     savedDocuments,
     savedRevision,

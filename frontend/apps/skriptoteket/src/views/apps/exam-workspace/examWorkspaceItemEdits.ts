@@ -22,7 +22,7 @@ import type {
   NativeExamMatchPair,
 } from "../../../api/examWorkspace";
 import { criteriaPointsTotal } from "./examWorkspaceItemSaveRules";
-import { placedGapIds } from "./examWorkspaceRichTextDocument";
+import { placedGapIds, placedKeptGapIds } from "./examWorkspaceRichTextDocument";
 import { DEFAULT_WRITING_LINES } from "./examWorkspaceWritingLines";
 
 export function teacherKeyOrigin(hasKeyData: boolean): NativeExamAnswerKeyOrigin {
@@ -56,12 +56,18 @@ export function withPoints(item: NativeExamItem, points: number | null): NativeE
 
 /**
  * Replace the item's whole body. A gap record whose gap the new body no longer
- * places leaves with it, the rest keep their declared order; an edit never
- * adds a record.
+ * places leaves with it, and so does a kept record no text run names any
+ * more; the rest keep their declared order; an edit never adds a record.
  */
 export function withBody(item: NativeExamItem, body: NativeExamBodyParagraph[]): NativeExamItem {
   const placed = new Set(placedGapIds(body));
-  return { ...item, body, gaps: item.gaps.filter((gap) => placed.has(gap.gap_id)) };
+  const kept = new Set(placedKeptGapIds(body));
+  return {
+    ...item,
+    body,
+    gaps: item.gaps.filter((gap) => placed.has(gap.gap_id)),
+    kept_gaps: item.kept_gaps.filter((gap) => kept.has(gap.gap_id)),
+  };
 }
 
 /** Replace one choice's rich paragraphs. */
