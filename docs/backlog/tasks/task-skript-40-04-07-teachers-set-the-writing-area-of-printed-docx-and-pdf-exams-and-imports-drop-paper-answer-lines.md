@@ -156,4 +156,12 @@ Stop and report to the parent in either case:
   source review items, through `gated_item` at one exit, against the saved
   source chunks (`f14ba5f0`). Tests go through the real handler. Round-5
   domain suite at `f14ba5f0` (2026-10-19, `evidence/lead-e12a2a36/suite5/`):
-  pytest 4357 passed. Next: R2 goes back to 09d50acc. User gates: none open.
+  pytest 4357 passed. R2 approved by 09d50acc in rereview5.
+- 2026-10-19: origin/main `dcad0217` merged (`9f8681ae`), conflicts resolved
+  keeping both sides: the W10 rules sit on main's `SourceIndex`, which keeps
+  `picture_offsets` from `ChunkProvenance`. `65e0ef87` tests main's gap and
+  misplaced source-paragraph builds for answer lines. Merge suite
+  (`evidence/lead-e12a2a36/suite6/`): pytest 4452 passed. Open for main's
+  owner: a listed heading left out at admission is marked missing, then
+  restored into the body. Next: 09d50acc checks the merge. User gates: none
+  open.
