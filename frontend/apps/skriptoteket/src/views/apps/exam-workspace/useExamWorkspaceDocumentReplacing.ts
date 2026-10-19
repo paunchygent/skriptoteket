@@ -36,6 +36,8 @@ export function useExamWorkspaceDocumentReplacing(binding: ExamWorkspaceDocument
   const { workspaceDocument, selectedItemId, replacing, arrivals, keying } = binding;
   /** The arrival marks a replacing read was started at; null while none runs. */
   let held: { arrivals: number; keying: number } | null = null;
+  /** How many replacing reads hold the lock; only the outermost sets and clears it. */
+  let depth = 0;
 
   function keepSelection(document: NativeExamDocument): void {
     if (!document.items.some((item) => item.item_id === selectedItemId.value)) {
@@ -48,17 +50,29 @@ export function useExamWorkspaceDocumentReplacing(binding: ExamWorkspaceDocument
    * locked meanwhile, and AI suggestions and spelling replies that arrive
    * during its read run again on the document it installs, so a delivered
    * result is never overwritten. Replies whose question or gap the document
-   * no longer holds do not apply, as everywhere else.
+   * no longer holds do not apply, as everywhere else. A replacing read that
+   * starts inside another one (a conflict recovery inside a server command)
+   * shares the outer lock: the inner exit must not clear it.
    */
   async function replaceCopy<T>(run: () => Promise<T>): Promise<T> {
+    if (depth > 0) {
+      depth += 1;
+      try {
+        return await run();
+      } finally {
+        depth -= 1;
+      }
+    }
     replacing.value = true;
     const marks = { arrivals: arrivals.payloadMark(), keying: keying.payloadMark() };
     const openedArrivals = arrivals.beginHold();
     const openedKeying = keying.beginHold();
     held = marks;
+    depth = 1;
     try {
       return await run();
     } finally {
+      depth = 0;
       held = null;
       arrivals.endHold(openedArrivals);
       keying.endHold(openedKeying);

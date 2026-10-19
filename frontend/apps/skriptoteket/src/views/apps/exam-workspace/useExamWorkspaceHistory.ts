@@ -172,9 +172,14 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
     stepDocument.value = null;
   }
 
-  /** Reload the step list and stand on the fresh server copy; resolves true
-   * when the step list and step document match that fresh read, false when
-   * the lineage moved on, a newer load started, or the read failed. */
+  /** After a failed resync, stand the step document back on the refused base
+   * so the reinstalled copy reads pending again; the next store reloads first. */
+  function restoreKeptBase(base: NativeExamDocument): void {
+    stepDocument.value = base;
+  }
+
+  /** Reload the step list; true when it matches the fresh server copy, false
+   * when the lineage moved on, a newer load started, or the read failed. */
   async function load(lineageId: string): Promise<boolean> {
     const token = ++loadToken;
     const base = deps.serverDocument.value;
@@ -224,21 +229,15 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
   /**
    * Stores `snapshot`, or the working copy: "stored" when the server's newest
    * step now holds it (or nothing needed storing), "refused" when the save
-   * rules reject it, so it can never be a step, and "failed" otherwise: a
-   * network or server failure keeps the pending edit, while a stale-cursor
-   * 409 reloads the server copy through `onConflict`, which replaces it. A
-   * 409 that names the edit lease instead turns the tab read-only and keeps
-   *   the pending edit visible, with no reload and no toast; the status reads
-   *   `Inte sparat` with the lease reason while that edit stays unconfirmed. A draft
-   * the save rules refuse never reaches the server: the refusal is decided
-   * from the snapshot itself, with the server's 422 as the backstop for
-   * refusals only it can see. The typing timer belongs to the working copy:
-   * storing it makes the pause moot, while storing an owed snapshot leaves
-   * typing's pause running.
-   *
-   * A store response never replaces edits made after its snapshot: the step
-   * document is set to the confirmed snapshot, so later typing stays pending
-   * and a store of the newer copy follows at once.
+   * rules reject it so it can never be a step, and "failed" otherwise. A
+   * network failure keeps the pending edit; a stale-cursor 409 reloads through
+   * `onConflict`, while an `EDIT_LEASE_HELD` 409 turns the tab read-only and
+   * keeps the edit visible with no reload, toast or retry; the status reads
+   * `Inte sparat` with the lease reason. Refusals are decided
+   * from the snapshot, with the server's 422 as the backstop. Storing the
+   * working copy ends its pause; storing an owed snapshot leaves typing's
+   * pause running. A response never replaces later typing: the step document
+   * becomes the confirmed snapshot, so a store of the newer copy follows.
    */
   async function store(settle = false, snapshot: NativeExamDocument | null = null): Promise<StoreOutcome> {
     if (snapshot === null) {
@@ -490,6 +489,7 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
     noteEdit,
     pending,
     redo: navigation.redo,
+    restoreKeptBase,
     saveStatus: status.saveStatus,
     saveText: status.saveText,
     /** The step's document; a working copy that differs from it is a pending edit. */

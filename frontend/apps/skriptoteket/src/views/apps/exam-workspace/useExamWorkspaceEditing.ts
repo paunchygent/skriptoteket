@@ -67,6 +67,14 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
   // every await and registers no watcher, so no watcher outlives the editor
   // and every path settles.
   const keptEdit = useExamWorkspaceKeptEdit();
+  /**
+   * True while a kept-edit recovery reloads, resyncs and merges: the history
+   * reads the flag through its `isBlocked` seam and waits instead of writing
+   * the fresh document against the still-old history position, while the
+   * replacing lock refuses normal edits for the same interval. The recovery
+   * clears it before its merged store, so that store still runs.
+   */
+  let recovering = false;
   let disposed = false;
   const recoveryAborters = new Set<() => void>();
   function settleRecoveryAborters(): void {
@@ -117,53 +125,85 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
   /**
    * Merge a kept refused edit onto the newest server document and store it
    * through the normal save path (TASK-SKRIPT-40-04-14, USER decision
-   * 2026-10-19 "Ta över keeps the edit"): capture the pending working copy,
-   * reload, then await the history's own load for that lineage — which also
-   * synchronizes when the cursor is unchanged and the GET returned a fresh
-   * object — and merge with mergeRefusedEdit. A failed reload keeps the
-   * recovery set and the edit visible and pending; disposal or a lineage
-   * change stops the routine without installing or storing. A refused save
-   * or a failed store keeps the existing status and toasts.
+   * 2026-10-19 "Ta över keeps the edit"): the kept base and edited snapshot
+   * stay until a merged store succeeds, and recovery existence comes from
+   * that kept state, not from `history.pending` after a reload has replaced
+   * the copy. The whole reload, history resync and merge runs under the
+   * replacing lock (shared with a server command's own read when nested), so
+   * no edit is accepted into a copy the merge is about to replace and, while
+   * `recovering` holds, no history write starts on the fresh document with
+   * the still-old position. A failed reload keeps the recovery set and the
+   * edit visible and pending; a failed or obsolete resync puts the refused
+   * working copy back in front of the teacher and stands the step document
+   * on its base, so the next acquisition or save recovers it. Disposal or a
+   * lineage change stops the routine without installing or storing. A refused
+   * save or a failed store keeps the existing status and toasts.
    */
   async function recoverKeptEdit(startLineage: string, awaitStore: boolean): Promise<void> {
     if (disposed || lineageId() !== startLineage) {
       return;
     }
-    const edited = history.pending.value ? document.workspaceDocument.value : null;
-    const base = keptEdit.get();
-    if (edited === null || base === null) {
+    const previous = keptEdit.get();
+    if (previous === null) {
+      return;
+    }
+    // Refresh the edited snapshot while the refused edit is still pending, so
+    // a later conflict merges what the teacher sees now, not an older capture.
+    if (history.pending.value) {
+      const current = document.workspaceDocument.value;
+      if (current !== null) {
+        keptEdit.set(previous.base, current);
+      }
+    }
+    const kept = keptEdit.get();
+    if (kept === null) {
       return;
     }
     const startServer = document.serverDocument.value;
-    await abortable(reload());
-    if (disposed || lineageId() !== startLineage) {
-      return;
-    }
-    // reloadDocument catches its own failure and only toasts, so an unchanged
-    // server document means the reload failed: keep the recovery set and the
-    // refused edit pending without merging or storing.
-    if (document.serverDocument.value === startServer) {
-      return;
-    }
-    const synced = await abortable(history.load(startLineage));
-    if (disposed || lineageId() !== startLineage || synced !== true) {
-      return;
-    }
-    const newest = document.workspaceDocument.value;
-    if (disposed || lineageId() !== startLineage || newest === null) {
-      return;
-    }
-    const merged = mergeRefusedEdit(base, edited, newest);
-    if (merged === null) {
-      keptEdit.clear();
-      return;
-    }
-    await abortable(
-      document.replaceCopy(async () => {
+    let mergedInstalled = false;
+    recovering = true;
+    try {
+      await document.replaceCopy(async () => {
+        await abortable(reload());
+        if (disposed || lineageId() !== startLineage) {
+          return;
+        }
+        // reloadDocument catches its own failure and only toasts, so an unchanged
+        // server document means the reload failed: the refused working copy is
+        // still in front of the teacher, so keep the recovery set without
+        // reinstalling.
+        if (document.serverDocument.value === startServer) {
+          return;
+        }
+        const synced = await abortable(history.load(startLineage));
+        if (disposed || lineageId() !== startLineage || synced === null) {
+          return;
+        }
+        if (synced === false) {
+          // The reload replaced the copy but the history resync failed or is
+          // obsolete: put the refused working copy back and stand the step
+          // document on its base, so the edit reads pending again and stays
+          // recoverable. The kept base and snapshot stay for the next attempt.
+          document.installDocument(kept.edited);
+          history.restoreKeptBase(kept.base);
+          return;
+        }
+        const newest = document.workspaceDocument.value;
+        if (disposed || lineageId() !== startLineage || newest === null) {
+          return;
+        }
+        const merged = mergeRefusedEdit(kept.base, kept.edited, newest);
+        if (merged === null) {
+          keptEdit.clear();
+          return;
+        }
         document.installDocument(merged);
-      }),
-    );
-    if (disposed || lineageId() !== startLineage) {
+        mergedInstalled = true;
+      });
+    } finally {
+      recovering = false;
+    }
+    if (disposed || lineageId() !== startLineage || !mergedInstalled) {
       return;
     }
     if (awaitStore) {
@@ -198,11 +238,15 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
     }
     if (history.pending.value) {
       const base = history.stepDocument.value;
-      if (base !== null) {
-        keptEdit.set(base);
+      const edited = document.workspaceDocument.value;
+      if (base !== null && edited !== null) {
+        keptEdit.set(base, edited);
       }
     }
-    if (keptEdit.get() !== null && history.pending.value) {
+    // Recovery existence comes from the kept state, not from history.pending:
+    // a reload already replaced the copy and reset the step document, but the
+    // refused base and edited snapshot are still kept for the next attempt.
+    if (keptEdit.get() !== null) {
       await recoverKeptEdit(startLineage, true);
       return;
     }
@@ -217,7 +261,7 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
    */
   async function handleConflict(): Promise<void> {
     const startLineage = lineageId();
-    if (!disposed && startLineage !== null && keptEdit.get() !== null && history.pending.value) {
+    if (!disposed && startLineage !== null && keptEdit.get() !== null) {
       await recoverKeptEdit(startLineage, false);
       return;
     }
@@ -230,7 +274,10 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
     isReadOnly: () => leaseHolder.session?.readOnly.value ?? true,
     isReplacing: () => document.isReplacing.value,
     // Not `isBusy`: that includes the replacing lock the history's own reads hold.
-    isBlocked: () => document.isOperationBusy.value,
+    // While a kept-edit recovery runs, its replacing lock refuses normal edits
+    // and this flag holds normal history writes, so no edit or store starts on
+    // the fresh document with the still-old history position.
+    isBlocked: () => document.isOperationBusy.value || recovering,
     lineageId,
     noteExportBlockers: document.noteExportBlockers,
     noteLeaseLost: () => leaseHolder.session?.noteLostLease(),
