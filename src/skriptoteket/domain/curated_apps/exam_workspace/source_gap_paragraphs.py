@@ -3,7 +3,9 @@
 A gap_fill body paragraph aligned to a source paragraph with blank runs is rebuilt from
 that source paragraph: its visible source text, starting after the printed question label
 and ending before an inline answer label, with the reply's gaps filling the blank runs in
-source order. The reply supplies only its gaps and their accepted values; its wording is
+source order. A paragraph with no blank run before its inline answer label has one blank
+run at the label's place (TASK-SKRIPT-39-04-17). The reply supplies only its gaps
+and their accepted values; its wording is
 discarded, never compared. A gap count that differs from the blank-run count raises
 ``GapCountMismatchError``, which is not a ``FormattingTransferError``, so the whole-body
 rebuild never runs for a count mismatch.
@@ -115,11 +117,15 @@ def _source_unit(source: SourceFormatting, anchor: int) -> tuple[SourceParagraph
     return tuple(source.paragraphs[first : last + 1])
 
 
-def _content_end(source: SourceFormatting, start: int, end: int) -> int:
-    """Cut the build span at the first inline answer label, with any wrapper ``(``."""
+def _answer_label_cut(source: SourceFormatting, start: int, end: int) -> int | None:
+    """Cut the build span at the first inline answer label, with any wrapper ``(``.
+
+    Returns None when no answer label stands in the span, so the caller keeps the
+    unit's end.
+    """
     label = ANSWER_LABEL.search(source.text, start, end)
     if label is None:
-        return end
+        return None
     opening = source.text.rfind("(", start, label.start())
     if opening >= start and not source.text[opening + 1 : label.start()].strip():
         return opening
@@ -154,16 +160,26 @@ def _unit_blank_runs(
 
 
 def _gap_unit(source: SourceFormatting, anchor: int) -> _GapUnit | None:
+    """One source paragraph's build span with its blank runs, if it has any to fill.
+
+    A span with no blank run before its inline answer label still has one blank run:
+    a zero-width run at the label's place, so the paragraph is built from its source
+    text up to the label. A span with neither a blank run nor an answer label has no
+    unit, and the reply's rendering is kept.
+    """
     if anchor < 0:
         return None
     unit = _source_unit(source, anchor)
     if unit is None:
         return None
     start = source.content_start(unit[0])
-    end = _content_end(source, start, unit[-1].end)
+    cut = _answer_label_cut(source, start, unit[-1].end)
+    end = unit[-1].end if cut is None else cut
     runs = _unit_blank_runs(source, unit, start, end)
     if not runs:
-        return None
+        if cut is None:
+            return None
+        runs = [(cut, cut)]
     return _GapUnit(unit[0].start, start, end, unit[-1].end, unit[0].heading, tuple(runs))
 
 
