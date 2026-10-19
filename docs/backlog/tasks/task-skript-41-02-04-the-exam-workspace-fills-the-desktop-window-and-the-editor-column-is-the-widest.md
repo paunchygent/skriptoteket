@@ -138,8 +138,12 @@ listener is added. No performance concern.
   the collapsed-rail rules to skip the empty body and moved the handles inside the panel edge,
   because each panel root scrolls horizontally. The exam-workspace specs pass (151 files,
   1327 tests); fe-type-check, fe-lint and fe-build pass.
-- Next: the orchestrator assigns the domain suite slot, then the staging walk checks the rendered
-  widths, the drag, and that no handle stays clipped when a panel scrolls below its minimum.
+- `ew-handle-reach` landed at `7497e004`: each resizable panel scrolls inside an inner frame, so the
+  panel root never scrolls and its edge handle stays in view below the minimum.
+- origin/main `26f84883` merged at `cf8aced2`. `pdm run fe-test` passes (491 files, 3450 tests,
+  2 todos that predate this task); fe-type-check passes after the merge.
+- Next: the staging walk at 1280/1440/1920 (2560 by DevTools emulation) checks the rendered
+  widths, the drag, the collapse rail, and a squeezed panel's handle.
 
 ## Stop Conditions
 

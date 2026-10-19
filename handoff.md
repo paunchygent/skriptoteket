@@ -73,7 +73,7 @@
   - 40-04-12 PDF keep-together (branch codex/task-skript-40-04-keep-together-remote): ready (user accepted 2026-10-19); built, F1 repaired, main merged; next Mac merge + staging walk (K11), then the 39-04-20 "/" check. DOCX out of scope.
   - 41-02-02: merged to main (review approved, b9b3e6a9); next Mac guest staging walk (ST-SKRIPT-41-02), then close. Production deploy with nginx-proxy fixed IP 172.18.255.10 and `TRUSTED_PROXY_CIDRS=172.18.255.10/32` is a USER GATE (restarts shared nginx-proxy).
   - REP-0048: 6 Exam.net walk checks (Mac walk).
-  - 41-02-04 workspace width (ready, user-accepted 2026-10-19): lead bd0f1693 is running junior units on branch `codex/task-skript-41-02-workspace-width-remote`. Next: integration, the domain suite slot, then the staging walk.
+  - 41-02-04 workspace width (ready, user-accepted 2026-10-19): lead bd0f1693 integrated all units on branch `codex/task-skript-41-02-workspace-width-remote` (merged origin/main `26f84883`); fe-test passes (491 files, 3450 tests). Next: the staging walk.
   - HuleEdu after HULE-14-03-01: 41-01-03, 41-01-02, 41-01-04; http_runtime workers repair.
     Hemma Opus lead `3b164d53`: 40-03-01..09 and 08-36-02 `done`; 40-02-01 tranche 1 on
     main 761b1b59, tranche 2 a67afa90 (`in_progress`: shared `play` meaning in
