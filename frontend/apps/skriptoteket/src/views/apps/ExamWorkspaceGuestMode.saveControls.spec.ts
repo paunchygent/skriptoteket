@@ -88,7 +88,7 @@ describe("ExamWorkspaceView guest mode save controls", () => {
     await wrapper.get('[data-test="exam-workspace-guest-blank"]').trigger("click");
     await flushPromises();
 
-    expect(wrapper.find('[data-test="exam-workspace-save-menu"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="exam-workspace-save-as-command"]').exists()).toBe(false);
     expect(wrapper.find('[data-test="exam-workspace-save"]').exists()).toBe(false);
 
     await wrapper.get('[data-test="exam-workspace-export"]').trigger("click");
@@ -97,7 +97,7 @@ describe("ExamWorkspaceView guest mode save controls", () => {
       document.querySelectorAll('[data-test^="exam-workspace-export-save-"]').length,
     ).toBe(0);
 
-    await wrapper.get('[data-test="exam-workspace-title"]').trigger("click");
+    await wrapper.get('[data-test="exam-workspace-details"]').trigger("click");
     await flushPromises();
     expect(wrapper.find('[data-test="exam-workspace-metadata-name"]').exists()).toBe(false);
     expect(wrapper.find('[data-test="exam-workspace-metadata-rename"]').exists()).toBe(false);

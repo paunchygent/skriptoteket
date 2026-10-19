@@ -14,7 +14,7 @@
  *   - Rendered by `ExamWorkspaceView` while a drawer is open.
  */
 
-import { computed } from "vue";
+import { computed, ref } from "vue";
 
 import type { ExamListOrdering } from "../../../api/examWorkspace";
 import type { ExamWorkspaceExportTarget } from "../../../api/examWorkspaceExports";
@@ -39,7 +39,7 @@ const DRAWER_TITLES: Record<DrawerName, string> = {
   open: "Öppna",
 };
 const DRAWER_OPENERS: Record<DrawerName, string> = {
-  details: '[data-test="exam-workspace-title"]',
+  details: '[data-test="exam-workspace-details"]',
   export: '[data-test="exam-workspace-export"]',
   open: '[data-test="exam-workspace-open"]',
 };
@@ -102,6 +102,10 @@ const {
 } = props.editing;
 const { handleDroppedFiles, handleSelectedFile, sourceFileError } = props.sourceFile;
 
+const openDrawer = ref<InstanceType<typeof ExamWorkspaceOpenDrawer> | null>(null);
+/** Importera in the header opens Öppna and then the drawer's own file picker. */
+defineExpose({ pickFile: () => openDrawer.value?.handlePickFile() });
+
 const currentExports = computed(() =>
   EXAM_WORKSPACE_EXPORT_FORMATS.filter(
     (format) => props.exports.savedExports.value[format.target] !== undefined,
@@ -124,6 +128,7 @@ const currentExports = computed(() =>
   >
     <ExamWorkspaceOpenDrawer
       v-if="drawer === 'open'"
+      ref="openDrawer"
       :documents="savedDocuments"
       :current-lineage-id="summary?.lineage_id ?? null"
       :ordering="listOrdering"

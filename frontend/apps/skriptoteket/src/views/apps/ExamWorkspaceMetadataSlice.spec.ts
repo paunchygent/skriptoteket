@@ -48,7 +48,7 @@ async function openWorkspace() {
 /** Open Provets uppgifter through the header title; the title button toggles the drawer. */
 async function openMetadata(wrapper: ViewWrapper) {
   if (!wrapper.find('[data-test="exam-workspace-drawer-details"]').exists()) {
-    await wrapper.get('[data-test="exam-workspace-title"]').trigger("click");
+    await wrapper.get('[data-test="exam-workspace-details"]').trigger("click");
   }
   expect(wrapper.find('[data-test="exam-workspace-drawer-details"]').exists()).toBe(true);
 }
@@ -137,7 +137,7 @@ describe("ExamWorkspaceView metadata", () => {
     await wrapper.get('[data-test="exam-workspace-metadata-rename"]').trigger("click");
     await wrapper.get('[data-test="exam-workspace-drawer-close"]').trigger("click");
     expect(wrapper.find('[data-test="exam-workspace-drawer-details"]').exists()).toBe(false);
-    expect(wrapper.get('[data-test="exam-workspace-save-menu"]').attributes("disabled")).toBeDefined();
+    expect(wrapper.get('[data-test="exam-workspace-save-as-command"]').attributes("disabled")).toBeDefined();
     await saveDocument(wrapper);
     expect(api.storeExamWorkspaceUndoStep).not.toHaveBeenCalled();
     finish({ file: { name: "Efter stängning.provdokument.zip" }, renamed_file_ids: ["vault-head-7"] });
@@ -147,7 +147,7 @@ describe("ExamWorkspaceView metadata", () => {
       .toBe("Efter stängning");
     expect(wrapper.get<HTMLInputElement>('[data-test="exam-workspace-metadata-title"]').element.value)
       .toBe("Osparad titel");
-    expect(wrapper.get('[data-test="exam-workspace-save-menu"]').attributes("disabled")).toBeUndefined();
+    expect(wrapper.get('[data-test="exam-workspace-save-as-command"]').attributes("disabled")).toBeUndefined();
   });
 
   it("retains a rejected rename after close, notifies the teacher and retries the rejected stem", async () => {

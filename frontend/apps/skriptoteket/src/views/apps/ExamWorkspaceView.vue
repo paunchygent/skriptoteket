@@ -28,7 +28,7 @@
  *     phone list and the Import box.
  */
 
-import { computed, onMounted, provide, ref } from "vue";
+import { computed, nextTick, onMounted, provide, ref } from "vue";
 
 import { useToast } from "../../composables/useToast";
 import ExamWorkspaceDrawers from "./exam-workspace/ExamWorkspaceDrawers.vue";
@@ -104,6 +104,7 @@ const { depart, dismissSignInPrompt, signInPrompt } = useExamWorkspaceGuestSignI
 defineExpose({ depart });
 
 const frame = ref<HTMLElement | null>(null);
+const drawers = ref<InstanceType<typeof ExamWorkspaceDrawers> | null>(null);
 const { showDocument } = useExamWorkspaceAddress({ isDirty, openDocument, summary });
 const {
   drawer,
@@ -254,6 +255,13 @@ const { addChild, addEntry, setOrdering, toggleReviewed } = useExamWorkspaceList
   toast: useToast(),
 });
 
+/** Importera in the header: open Öppna, then its file picker; the course choice and import gates stay in the drawer. */
+async function openImportPicker(): Promise<void> {
+  drawer.value = "open";
+  await nextTick();
+  drawers.value?.pickFile();
+}
+
 onMounted(() => {
   void loadSavedDocuments();
   if (!summary.value) drawer.value = "open";
@@ -280,8 +288,7 @@ onMounted(() => {
       :total="total"
       :details-open="drawer === 'details'"
       :open-drawer-open="drawer === 'open'"
-      :can-undo="history.canUndo.value && !disabled"
-      :can-redo="history.canRedo.value && !disabled"
+      :can-rename="workspaceDocument !== null && !disabled"
       :can-save-as="workspaceDocument !== null && !disabled"
       :suggest-busy="enrichmentBusy"
       :suggest-disabled="workspaceDocument === null || disabled"
@@ -290,9 +297,9 @@ onMounted(() => {
       @toggle-details="toggleDrawer('details')"
       @toggle-open="toggleDrawer('open')"
       @save-as="openSaveAs"
+      @import-file="openImportPicker"
+      @rename-title="editing.setTitle"
       @suggest-all="enrichment.requestSuggestionsForAll"
-      @undo="history.undo"
-      @redo="history.redo"
       @toggle-preview="togglePreview"
     >
       <template #export>
@@ -452,6 +459,7 @@ onMounted(() => {
       <ExamWorkspaceDrawers
         v-if="drawer"
         id="exam-workspace-side-panel"
+        ref="drawers"
         :drawer="drawer"
         :layout="layout"
         :editing="editing"

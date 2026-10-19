@@ -47,7 +47,7 @@ async function openMetadata() {
   });
   const { wrapper } = await mountExamWorkspace({ document: "lineage-1" }, "desktop", document.body, pinia);
   wrappers.push(wrapper);
-  await wrapper.get('[data-test="exam-workspace-title"]').trigger("click");
+  await wrapper.get('[data-test="exam-workspace-details"]').trigger("click");
   return wrapper;
 }
 /** The header's save state: "Sparar …" while an edit is pending, otherwise "Sparat …". */

@@ -110,7 +110,7 @@ async function typeTitle(wrapper: Awaited<ReturnType<typeof mountImported>>, tit
 }
 
 async function openTitleField(wrapper: Awaited<ReturnType<typeof mountImported>>) {
-  await wrapper.get('[data-test="exam-workspace-title"]').trigger("click");
+  await wrapper.get('[data-test="exam-workspace-details"]').trigger("click");
   await flushPromises();
 }
 

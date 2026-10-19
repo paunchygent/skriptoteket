@@ -108,7 +108,7 @@ function choose(action: () => void): void {
   <button
     ref="trigger"
     type="button"
-    class="xw-btn ex-trigger"
+    class="xw-cmd"
     :disabled="disabled"
     aria-haspopup="menu"
     :aria-expanded="open"
@@ -245,12 +245,5 @@ function choose(action: () => void): void {
 .xw-mi__stack .ex-note { display: block; white-space: normal; color: var(--huleedu-navy-70); }
 @media (max-width: 1279px) {
   .ex-word { display: none; }
-  .ex-trigger { width: calc(var(--huleedu-action-control-height) - var(--huleedu-space-2)); padding: 0; }
-}
-@media (max-width: 1279px) and (pointer: coarse) {
-  .ex-trigger { width: var(--huleedu-action-control-height); }
-}
-@media (max-width: 767px) {
-  .ex-trigger { width: var(--huleedu-action-control-height); }
 }
 </style>

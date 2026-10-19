@@ -88,6 +88,8 @@ function handlePickFile(): void {
   fileInput.value?.click();
 }
 
+defineExpose({ handlePickFile });
+
 function handleFileInput(event: Event): void {
   const input = event.target as HTMLInputElement;
   const [file] = Array.from(input.files ?? []);
