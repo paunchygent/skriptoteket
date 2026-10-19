@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-18'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-19'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Pi ruthless-reviewer 09d50acc (Hemma retained evidence/reviews): approved at f14ba5f0 in rereview5; its merge check cleared the merges, W10 and R2 with two medium findings admitted (M1 fixed at a6147d0b, M2 moved to a separate ST-SKRIPT-39-04 left-out accounting repair). Merged to main at 14f643c9; the pre-push Hemma typecheck and suite passed at 003c874a. Staging walk 2026-10-19 at 003c874a (Mac .artifacts/staging-walk-40-04-07/evidence/walk-record.md): omprov import, stepper and apply-to-all, live preview, menu order, student PDF, PDF med facit with a criterion, and DOCX all observed; W6-W8 not exercised by this all-free-text exam.'
 task_kind: story
 acceptance_criteria:
   - The student PDF and DOCX print each free-text question with its ruled writing area, short-answer gaps as one handwriting line, inline gaps as writable blanks and choice options with tick boxes, and no answers
@@ -183,3 +187,9 @@ Stop and report to the parent in either case:
   repair; the Del A control test no longer pins it. Focused: 400 QTI and 32
   answer-line tests passed. Next: orchestrator reports ready to merge. User
   gates: none open.
+- 2026-10-19: staging walk at `003c874a` as the proof admin on the omprov
+  user exam (`.artifacts/staging-walk-40-04-07/evidence/walk-record.md` on
+  the Mac). Observed W1-W5, W9-W11; W6-W8 are not in this exam. The facit
+  prints "Rättningsmall" after a question once it has a criterion. Found
+  outside this contract: the source score field "/4 p" leaves a lone "/" in
+  each question; sent to the orchestrator as a converter repair. Closed done.
