@@ -206,6 +206,7 @@ def apply_unknown_remainder(
     max_score: int | float | None,
     *,
     declarations: AbcMapping[str, ResponseDeclaration],
+    skipped_child_count: int,
 ) -> None:
     """Give a single child without its own points the parent total's remainder.
 
@@ -213,10 +214,14 @@ def apply_unknown_remainder(
     consistent with its stated per-gap share (remainder / gap count, rounded
     down to 0.01, equals the share). More than one unknown child, a negative
     remainder, or an inconsistent or unstated share leaves the child at None
-    so the mapper sends it to review instead of guessing.
+    so the mapper sends it to review instead of guessing. A skipped sibling
+    takes its score out of the evidence: when any child of the part was
+    skipped, no remainder is assigned and every unknown child keeps None.
     """
 
     if max_score is None:
+        return
+    if skipped_child_count > 0:
         return
     unknown = [index for index, child in enumerate(children) if child.max_score is None]
     if len(unknown) != 1:

@@ -134,7 +134,9 @@ def read_parent_layout(
         children.append(child)
         carry = () if (is_separator or is_last) else trailing
 
-    apply_unknown_remainder(children, max_score, declarations=declarations)
+    apply_unknown_remainder(
+        children, max_score, declarations=declarations, skipped_child_count=len(unsupported)
+    )
     if not children:
         return tuple(unsupported)
 

@@ -172,6 +172,73 @@ def test_inconsistent_remainder_leaves_the_gap_child_without_points() -> None:
     assert container.document.items[1].points == 1
 
 
+def test_skipped_sibling_score_is_a_named_loss_and_the_gap_child_goes_to_review() -> None:
+    gap = _gap_child(sequence=1, item_id="item_001", points=0.99, gap_count=3)
+    other = make_single_choice_item(sequence=2, item_id="item_002").model_copy(
+        update={"points": 0.01}
+    )
+    document = _document((gap, other), parents=(_parent((gap, other)),))
+
+    package, _ = _round_trip(document)
+    tampered = _slider_out_choice(package)
+    container = _parse_handler().handle(filename="paket.zip", content=tampered, course_key=None)
+
+    assert [item.points for item in container.document.items] == [None]
+    assert container.document.items[0].review.state is NativeItemReviewState.REVIEW_REQUIRED
+    assert _MISSING_POINTS_REASON in container.document.items[0].review.reasons
+    assert any("stöds inte" in note for note in container.notes)
+
+
+def test_gap_child_without_a_skipped_sibling_keeps_its_exact_remainder() -> None:
+    gap = _gap_child(sequence=1, item_id="item_001", points=0.99, gap_count=3)
+    other = make_single_choice_item(sequence=2, item_id="item_002").model_copy(
+        update={"points": 0.01}
+    )
+    document = _document((gap, other), parents=(_parent((gap, other)),))
+
+    _, container = _round_trip(document)
+
+    assert container.document.items[0].points == 0.99
+    assert container.document.items[0].review.state is NativeItemReviewState.REVIEW_COMPLETE
+
+
+def test_kept_choice_child_keeps_its_stated_score_when_a_sibling_is_skipped() -> None:
+    first = make_single_choice_item(sequence=1, item_id="item_001")
+    second = make_single_choice_item(sequence=2, item_id="item_002")
+    document = _document((first, second), parents=(_parent((first, second)),))
+
+    package, _ = _round_trip(document)
+    tampered = _slider_out_choice(package, index=1)
+    container = _parse_handler().handle(filename="paket.zip", content=tampered, course_key=None)
+
+    assert [item.points for item in container.document.items] == [1]
+    assert any("stöds inte" in note for note in container.notes)
+
+
+def _slider_out_choice(package: bytes, *, index: int = 0) -> bytes:
+    """Retag the index-th choice interaction as an unsupported slider interaction."""
+
+    namespace = f"{{{QTI_NAMESPACE}}}"
+    seen = 0
+    out = io.BytesIO()
+    with (
+        zipfile.ZipFile(io.BytesIO(package)) as src,
+        zipfile.ZipFile(out, "w", compression=zipfile.ZIP_DEFLATED) as dst,
+    ):
+        for info in src.infolist():
+            payload = src.read(info)
+            if info.filename.startswith("items/") and info.filename.endswith(".xml"):
+                root = ElementTree.fromstring(payload)
+                for choice in root.findall(f".//{namespace}qti-choice-interaction"):
+                    if seen == index:
+                        choice.tag = f"{namespace}qti-slider-interaction"
+                    seen += 1
+                ElementTree.indent(root, space="  ")
+                payload = ElementTree.tostring(root, encoding="utf-8")
+            dst.writestr(info.filename, payload)
+    return out.getvalue()
+
+
 def _replace_parent_maxscore(package: bytes, value: str) -> bytes:
     out = io.BytesIO()
     with (
