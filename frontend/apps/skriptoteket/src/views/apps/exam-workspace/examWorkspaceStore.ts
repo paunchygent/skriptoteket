@@ -47,6 +47,7 @@ import {
 } from "../../../api/examWorkspace";
 import {
   downloadExamWorkspaceExport,
+  fetchExamWorkspacePrintPreview,
   getExamWorkspaceExportChecklist,
   saveExamWorkspaceExport,
 } from "../../../api/examWorkspaceExports";
@@ -105,6 +106,7 @@ export type ExamWorkspaceTeacherServices = {
   updateExamListOrdering: typeof updateExamListOrdering;
   renameVaultFile: typeof renameVaultFile;
   importExamWorkspaceGuestDraft: typeof importExamWorkspaceGuestDraft;
+  fetchExamWorkspacePrintPreview: typeof fetchExamWorkspacePrintPreview;
 };
 
 /** The guest-only actions on the shared exam workspace; null in signed-in mode. */
@@ -165,6 +167,7 @@ export const serverExamWorkspaceStore: ExamWorkspaceStore = {
     updateExamListOrdering: (...args) => updateExamListOrdering(...args),
     renameVaultFile: (...args) => renameVaultFile(...args),
     importExamWorkspaceGuestDraft: (...args) => importExamWorkspaceGuestDraft(...args),
+    fetchExamWorkspacePrintPreview: (...args) => fetchExamWorkspacePrintPreview(...args),
   },
   guest: null,
 };

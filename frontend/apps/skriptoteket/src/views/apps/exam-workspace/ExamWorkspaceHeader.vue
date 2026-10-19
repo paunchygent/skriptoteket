@@ -264,7 +264,7 @@ const DIRTY_TITLE = "Ã„ndringarna sparas automatiskt som utkast. Spara skriver Ã
         </Teleport>
         <slot name="export" />
         <button
-          v-if="!isPhone"
+          v-if="!isPhone && !isGuest"
           type="button"
           class="xw-btn ws-tools__preview"
           :aria-pressed="previewOpen"

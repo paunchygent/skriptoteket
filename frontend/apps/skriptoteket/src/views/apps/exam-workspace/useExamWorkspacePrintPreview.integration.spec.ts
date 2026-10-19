@@ -16,6 +16,7 @@ import { computed, effectScope, nextTick, ref } from "vue";
 
 import { exam, LINEAGE, openEditing, stopScopes } from "./useExamWorkspaceEditing.history.specSupport";
 import { PREVIEW_DEBOUNCE_MS, useExamWorkspacePrintPreview } from "./useExamWorkspacePrintPreview";
+import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 
 const api = vi.hoisted(() => ({
   changeExamWorkspaceItemType: vi.fn(),
@@ -73,6 +74,7 @@ describe("the preview follows the persisted history cursor after a real edit (R3
         open,
         savedRevision: editing.savedRevision,
         selectedItemId: editing.selectedItemId,
+        store: serverExamWorkspaceStore,
       }),
     );
     if (!preview) throw new Error("preview composable did not mount");
@@ -108,6 +110,7 @@ describe("the preview follows the persisted history cursor after a real edit (R3
         open,
         savedRevision: editing.savedRevision,
         selectedItemId: editing.selectedItemId,
+        store: serverExamWorkspaceStore,
       }),
     );
     if (!preview) throw new Error("preview composable did not mount");
@@ -144,6 +147,7 @@ describe("the preview follows the persisted history cursor after a real edit (R3
         open,
         savedRevision: editing.savedRevision,
         selectedItemId: editing.selectedItemId,
+        store: serverExamWorkspaceStore,
       }),
     );
     if (!preview) throw new Error("preview composable did not mount");

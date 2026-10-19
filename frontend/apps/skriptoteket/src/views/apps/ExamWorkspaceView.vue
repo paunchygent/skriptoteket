@@ -126,6 +126,7 @@ const {
   lineageId: computed(() => summary.value?.lineage_id ?? null),
   savedRevision,
   selectedItemId: editing.selectedItemId,
+  store: props.store,
   onLineage: (lineageId) => {
     showDocument(lineageId);
     dismissSignInPrompt();
@@ -427,7 +428,7 @@ onMounted(() => {
       />
 
       <ExamWorkspacePrintPreviewPanel
-        v-if="previewOpen && workspaceDocument && !isPhone"
+        v-if="previewOpen && workspaceDocument && !isPhone && props.store.teacher !== null"
         :pages="previewPages"
         :question-pages="previewQuestionPages"
         :loading="previewLoading"
@@ -470,7 +471,6 @@ onMounted(() => {
     />
   </main>
 </template>
-
 
 <style scoped>
 .ws {

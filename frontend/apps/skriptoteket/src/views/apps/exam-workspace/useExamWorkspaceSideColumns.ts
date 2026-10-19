@@ -21,6 +21,7 @@ import type { Ref } from "vue";
 
 import type { ExamWorkspaceLayout } from "./useExamWorkspaceLayout";
 import { useExamWorkspacePrintPreview } from "./useExamWorkspacePrintPreview";
+import type { ExamWorkspaceStore } from "./examWorkspaceStore";
 
 export type ExamWorkspaceSideDrawer = "open" | "export" | "details";
 
@@ -31,6 +32,7 @@ export function useExamWorkspaceSideColumns(deps: {
   lineageId: Ref<string | null>;
   savedRevision: Ref<number | null>;
   selectedItemId: Ref<string | null>;
+  store: ExamWorkspaceStore;
   onLineage: (lineageId: string | null) => void;
 }) {
   const isPhone = computed(() => deps.layout.value === "phone");
@@ -47,6 +49,7 @@ export function useExamWorkspaceSideColumns(deps: {
     historyCursor: deps.historyCursor,
     historyPosition: deps.historyPosition,
     selectedItemId: deps.selectedItemId,
+    store: deps.store,
   });
   const {
     blocked: previewBlocked,
@@ -57,6 +60,8 @@ export function useExamWorkspaceSideColumns(deps: {
   } = printPreview;
 
   function togglePreview(): void {
+    // The preview renders through the teacher half; guests have none.
+    if (deps.store.teacher === null) return;
     previewOpen.value = !previewOpen.value;
   }
 
