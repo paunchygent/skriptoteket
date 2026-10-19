@@ -90,11 +90,8 @@ function actionsFor(line: NoteLine): ExamWorkspaceNoteLineAction[] {
       return actions;
     }
     default: {
-      // Exhaustiveness: `line` is `never` here. The `const exhaustive:
-      // never = line` assignment belongs here as soon as the union has a
-      // second member; with a single member tsc keeps the member type and
-      // rejects the assignment, so the default throws until then.
-      throw new Error(`Unknown note line kind: ${JSON.stringify(line)}`);
+      const exhaustive: never = line.kind;
+      return exhaustive;
     }
   }
 }
@@ -112,9 +109,8 @@ function handleNoteAction(line: NoteLine, key: string): void {
       }
       return;
     default: {
-      // Exhaustiveness: see actionsFor; the `never` assignment belongs here
-      // as soon as the union has a second member.
-      throw new Error(`Unknown note line kind: ${JSON.stringify(line)}`);
+      const exhaustive: never = line.kind;
+      return exhaustive;
     }
   }
 }
