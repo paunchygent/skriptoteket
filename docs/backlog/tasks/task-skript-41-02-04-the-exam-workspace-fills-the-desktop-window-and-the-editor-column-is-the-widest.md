@@ -7,10 +7,14 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-19'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-19'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Independent ruthless-reviewer ea60b045 returned nine medium findings at 4b526ce1, repaired by fresh juniors and admitted on focused proof without rereview (retained 01a153bf evidence/reviews/ea60b045-1ef0-4a1d-950c-df04bf72027c.md). Merged to main as ffab920a; the first staging walk (Mac, Edge, guest and signed in) passed F3, F4 and F6, the default widths, clamping, remembered widths and the rail, and found G1, G2, W1, W2, W3 and W4. Review f31c37a1 of the walk repair returned one medium finding (the column handle spec over 500 lines), repaired and admitted on focused proof (evidence/reviews/f31c37a1-2b2e-45c9-bba4-d3eabe9dd6ca.md). The repair merged to main as 67861ab3 and the second staging walk passed G1, G2 (IBM Plex Sans confirmed), W3 and W4 (Mac record .artifacts/staging-walk-41-02-04-repair/walk-record.md). W1 and W2 are handed to the toolbar session (TASK-SKRIPT-40-04-17).'
 task_kind: story
 acceptance_criteria:
 - On desktop (1280 px and wider) the guest exam workspace fills the window width, with no centred page column or side gutters
@@ -118,49 +122,33 @@ listener is added. No performance concern.
   - Evidence goes to the retained root.
 - `pdm run docs-validate`.
 
-### Resume here (2026-10-19, implementation by lead bd0f1693)
+### Outcome (2026-10-19, lead bd0f1693)
 
-- Branch `codex/task-skript-41-02-workspace-width-remote`, worktree
-  `/home/paunchygent/apps/skriptoteket-task-skript-41-02-workspace-width-remote`, from `origin/main`
-  `eba9d0f2`. Never pushed.
-- Retained root `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a153bf-e25e-7acd-b6b4-551ee64c8708`.
-  It holds the plan and the Explorer discoveries.
-- Status `ready`: the user accepted the plan on 2026-10-19 (`agent-planning:user-closure-gate`).
-  Every ledger row is closed. `origin/main` `708b2b57` is merged in at `b519dd31`. The junior units
-  start now.
-- Units landed at `e52a5599` (focused specs 114 pass, fe-type-check and fe-lint clean):
-  `ew-width-owner` (width tokens, `data-side` grid), `guest-full-frame` (LandingLayout fills the
-  frame on the public conversion hub), `ew-column-sizes` (stored widths, separator keys,
-  `stores/layout.ts` storage wrapping), `ew-export-format-list` (Exportera format radio list),
-  `ew-column-handle` (`ExamWorkspaceColumnHandle.vue` plus `examWorkspaceHandleBounds.ts`).
-- `ew-splitter-wiring` landed after `e52a5599`: resize handles on the list and side panels, the
-  44 px list rail with collapse and expand glyphs, and stored widths on the root. The lead fixed
-  the collapsed-rail rules to skip the empty body and moved the handles inside the panel edge,
-  because each panel root scrolls horizontally. The exam-workspace specs pass (151 files,
-  1327 tests); fe-type-check, fe-lint and fe-build pass.
-- `ew-handle-reach` landed at `7497e004`: each resizable panel scrolls inside an inner frame, so the
-  panel root never scrolls and its edge handle stays in view below the minimum.
-- origin/main `26f84883` merged at `cf8aced2`. `pdm run fe-test` passes (491 files, 3450 tests,
-  2 todos that predate this task); fe-type-check passes after the merge.
-- Review ea60b045 (changes_requested, nine medium findings, all admitted, no rereview) is repaired
-  by three juniors: F1 side bounds on two tracks; F2 one persistent list handle and glyph focus;
-  F3 grid formulas keep every track at its minimum (side, then list, then editor); F4 panel headers
-  keep the minimum; F5 truthful separator values; F6 guest full frame on desktop only; F7 minimums
-  read from the CSS tokens; F8 grid CSS in `examWorkspaceGrid.css` plus column-layout, list-action
-  and label composables (view 494 lines, slice spec 433); F9 no type assertions in changed files.
-- Merged to main at `ffab920a`. The staging walk (Mac, Edge, guest and signed in) passed F3, F4, F6,
-  the defaults, clamping, remembered widths and the rail. Not walked: 2560 px, double-click reset,
-  keyboard operation (covered in component tests) and below-minimum scroll.
-- Walk repairs on branch `codex/task-skript-41-02-04-walk-repair-remote` (from `ffab920a`):
-  - G1 guest workspace held to the window: the landing shell holds the window height on the
-    conversion hub, and the guest host is a flex column (`4cdfcab3`).
-  - W3 separator values re-read on every track change through a ResizeObserver (`4cdfcab3`).
-  - W4 rail expand glyph `expand`, collapse glyph `toggle-sidebar` (`4cdfcab3`).
-  - G2 Öppna formats as one plain row "Word (.docx)", "DigiExam (.dxe)", "QTI (.zip)" (user answer
-    2026-10-19), fitted to the 300 px drawer minimum.
-  - W1 (marking bar overflows a 280 px list) and W2 (header row at a 1040 px workspace) are handed
-    to the toolbar redesign session (user answer 2026-10-19); this task does not change them.
-- Next: the domain suite slot from the orchestrator, then a walk of G1, G2, W3 and W4.
+- Done. Delivered on branches `codex/task-skript-41-02-workspace-width-remote` (merged to main as
+  `ffab920a`) and `codex/task-skript-41-02-04-walk-repair-remote` (merged as `67861ab3`).
+  Retained root `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a153bf-e25e-7acd-b6b4-551ee64c8708`
+  holds the plan, the work orders, both reviews and the suite logs.
+- Delivered:
+  - one CSS width owner (`examWorkspace.css` tokens, `examWorkspaceGrid.css` tracks), with the
+    editor widest at default widths;
+  - the guest conversion hub at full desktop width and held to the window height;
+  - drag handles on the list and side panels, with the keyboard and the separator role;
+  - the 44 px collapsible list rail;
+  - widths remembered per browser;
+  - below-minimum internal scroll;
+  - one shared 320/300 px drawer width;
+  - Exportera formats as a radio list, and the Öppna formats as one plain row.
+- Review ea60b045: nine medium findings, F1-F9, repaired at `02b9e476`. Review f31c37a1: one medium
+  finding, the handle spec split at `1c28e659`.
+- Staging walks: at `ffab920a`, F3, F4 and F6, the defaults, clamping, remembered widths and the
+  rail passed. At `67861ab3`, G1 (the page is exactly 734 px tall at 1440x734), G2 (the row ends
+  inside the 300 px minimum in IBM Plex Sans), W3 and W4 passed. Not walked: 2560 px, double-click
+  reset, keyboard operation (covered in component tests) and below-minimum scroll.
+- Handed to the toolbar session (TASK-SKRIPT-40-04-17): W1, the marking bar overflowing the 280 px
+  tablet list (and, by arithmetic, the 260 px desktop minimum); W2, the header row at a 1040 px
+  workspace.
+- Reported, outside this task: TASK-SKRIPT-39-04-05 says the desktop breakpoint is 1100 px; the
+  code uses 1280 px.
 
 ## Stop Conditions
 
