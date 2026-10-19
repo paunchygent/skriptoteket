@@ -4,11 +4,11 @@
  *
  * Domain purpose:
  *   The exam's title and state above every question: the title opens
- *   Provets uppgifter; the meta line shows the save state (Sparar …,
- *   Osparat, Sparat <time>), the course and the total points. The toolbar
- *   holds Öppna, Spara with Spara som, Exportera, AI facit for every
- *   question without one, and Ångra and Gör om with their shortcuts.
- *   On a phone the title block and Spara move into the shell's top bar
+ *   Provets uppgifter; the meta line shows the one save status (Sparar …,
+ *   Sparat <time>, Inte sparat with the reason) as plain text, the course
+ *   and the total points. The toolbar holds Öppna, Spara som, Exportera, AI
+ *   facit for every question without one, and Ångra and Gör om with their
+ *   shortcuts. On a phone the title block moves into the shell's top bar
  *   (`#app-topbar-page-slot`), whose remaining row keeps the other tools.
  *
  * Relationships:
@@ -26,19 +26,20 @@ import ExamWorkspaceMenu from "./ExamWorkspaceMenu.vue";
 import { examWorkspaceShortcut, isMacPlatform } from "./examWorkspaceFormat";
 import { useExamWorkspaceAiMode } from "./useExamWorkspaceAiMode";
 
-export type ExamWorkspaceSaveState = "saving" | "dirty" | "saved";
+export type ExamWorkspaceSaveState = "saving" | "saved" | "unsaved";
 
 defineProps<{
   title: string | null;
   saveState: ExamWorkspaceSaveState;
-  savedAt: string | null;
+  saveText: string;
+  /** The status tooltip: the `Inte sparat` reason, or the saved confirmation. */
+  saveTitle: string | null;
   courseLabel: string | null;
   total: number;
   detailsOpen: boolean;
   openDrawerOpen: boolean;
   canUndo: boolean;
   canRedo: boolean;
-  canSave: boolean;
   /** An exam is open and nothing runs, so it can be copied or read again. */
   canSaveAs: boolean;
   suggestBusy: boolean;
@@ -51,7 +52,6 @@ defineProps<{
 const emit = defineEmits<{
   toggleDetails: [];
   toggleOpen: [];
-  save: [];
   saveAs: [];
   suggestAll: [];
   undo: [];
@@ -60,7 +60,6 @@ const emit = defineEmits<{
 }>();
 
 const mac = isMacPlatform();
-const saveKeys = mac ? "Meta+S" : "Control+S";
 const saveMenuTrigger = ref<HTMLButtonElement | null>(null);
 const saveMenuOpen = ref(false);
 const requestSignIn = useExamWorkspaceSignIn();
@@ -77,17 +76,10 @@ function handleSuggestAll(): void {
   emit("suggestAll");
 }
 
-function chooseSave(action: "save" | "saveAs"): void {
+function chooseSaveAs(): void {
   saveMenuOpen.value = false;
-  if (action === "saveAs") {
-    emit("saveAs");
-  } else {
-    emit("save");
-  }
+  emit("saveAs");
 }
-
-const SAVED_TITLE = "Provet i Mina filer har alla ändringar";
-const DIRTY_TITLE = "Ändringarna sparas automatiskt som utkast. Spara skriver över provet i Mina filer.";
 </script>
 
 <template>
@@ -131,29 +123,29 @@ const DIRTY_TITLE = "Ändringarna sparas automatiskt som utkast. Spara skriver �
               meaning="busy"
               :size="16"
               class="xw-spin"
-            />Sparar …
+            />{{ saveText }}
           </span>
           <span
-            v-else-if="saveState === 'dirty'"
+            v-else-if="saveState === 'unsaved'"
             class="ws-meta__state ws-meta__state--dirty"
-            :title="DIRTY_TITLE"
+            :title="saveTitle ?? undefined"
             data-test="exam-workspace-save-state"
           >
             <UiGlyph
               meaning="status-modified"
               :size="16"
-            />Osparat
+            />{{ saveText }}
           </span>
           <span
             v-else
             class="ws-meta__state"
-            :title="SAVED_TITLE"
+            :title="saveTitle ?? undefined"
             data-test="exam-workspace-save-state"
           >
             <UiGlyph
               meaning="completed"
               :size="16"
-            />Sparat{{ savedAt ? ` ${savedAt}` : "" }}
+            />{{ saveText }}
           </span>
           <span class="ws-meta__dot" />
           <span class="ws-meta__text">{{ courseLabel ?? "Utan kurs" }}</span>
@@ -171,25 +163,12 @@ const DIRTY_TITLE = "Ändringarna sparas automatiskt som utkast. Spara skriver �
       @close="saveMenuOpen = false"
     >
       <button
-        type="button"
-        class="xw-mi"
-        role="menuitem"
-        :aria-disabled="!canSave || undefined"
-        data-test="exam-workspace-save-option"
-        @click="canSave && chooseSave('save')"
-      >
-        <UiGlyph
-          meaning="save"
-          :size="20"
-        /><span class="xw-grow">Spara</span><kbd class="ws-kbd">{{ examWorkspaceShortcut("S", false, mac) }}</kbd>
-      </button>
-      <button
         v-if="!isGuest"
         type="button"
         class="xw-mi"
         role="menuitem"
         data-test="exam-workspace-save-as-option"
-        @click="chooseSave('saveAs')"
+        @click="chooseSaveAs"
       >
         <UiGlyph
           meaning="copy"
@@ -228,20 +207,6 @@ const DIRTY_TITLE = "Ändringarna sparas automatiskt som utkast. Spara skriver �
           :disabled="!isPhone"
         >
           <div class="xw-split ws-save">
-            <button
-              type="button"
-              class="xw-btn xw-btn--primary"
-              :disabled="!canSave"
-              :title="`Spara (${examWorkspaceShortcut('S', false, mac)})`"
-              :aria-keyshortcuts="saveKeys"
-              data-test="exam-workspace-save"
-              @click="emit('save')"
-            >
-              <UiGlyph
-                meaning="save"
-                :size="20"
-              />Spara
-            </button>
             <button
               v-if="!isGuest"
               ref="saveMenuTrigger"
@@ -364,7 +329,7 @@ const DIRTY_TITLE = "Ändringarna sparas automatiskt som utkast. Spara skriver �
   display: flex; align-items: center; gap: var(--huleedu-space-2); min-width: 0; overflow: hidden; white-space: nowrap;
   font-size: var(--huleedu-text-xs); color: var(--huleedu-navy-60);
 }
-/* Sized for "Sparat 17 okt 14:05", so Osparat leaves the course in place. */
+/* Sized for "Sparat 14:05", so Inte sparat leaves the course in place. */
 .ws-meta__state { display: inline-flex; align-items: center; gap: var(--huleedu-space-1); flex: none; min-width: 11em; }
 .ws-meta__state--dirty { color: var(--huleedu-warning); font-weight: var(--huleedu-font-medium); }
 .ws-meta__dot { width: 3px; height: 3px; flex: none; border-radius: 50%; background: var(--huleedu-navy-40); }

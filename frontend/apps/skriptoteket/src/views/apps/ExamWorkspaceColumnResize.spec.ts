@@ -40,7 +40,6 @@ const apiMocks = vi.hoisted(() => ({
   importExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
-  saveExamWorkspaceDocument: vi.fn(),
 }));
 const exportApiMocks = vi.hoisted(() => ({
   downloadExamWorkspaceExport: vi.fn(),
@@ -53,7 +52,6 @@ vi.mock("../../api/examWorkspace", async () => ({
   getExamWorkspaceConversionStatus: apiMocks.getExamWorkspaceConversionStatus,
   importExamWorkspaceDocument: apiMocks.importExamWorkspaceDocument,
   listExamWorkspaceDocuments: apiMocks.listExamWorkspaceDocuments,
-  saveExamWorkspaceDocument: apiMocks.saveExamWorkspaceDocument,
   findExamWorkspaceAnswerKeySuggestions: apiMocks.findExamWorkspaceAnswerKeySuggestions,
   getExamCourseCatalog: (await import("../../test/examCourseCatalog")).getExamCourseCatalog,
 }));

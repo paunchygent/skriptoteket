@@ -73,6 +73,7 @@ def _body() -> dict:
         "target_kind": "free_text",
         "expected_revision": 1,
         "expected_cursor": str(uuid4()),
+        "tab_id": str(uuid4()),
     }
 
 
@@ -128,7 +129,7 @@ async def test_invalid_command_does_not_reach_handler(field: str, value: object)
 
 
 @pytest.mark.parametrize(
-    "missing", ["expected_revision", "expected_cursor", "target_kind", "item_id"]
+    "missing", ["expected_revision", "expected_cursor", "target_kind", "item_id", "tab_id"]
 )
 async def test_missing_precondition_or_target_is_rejected(missing: str) -> None:
     handler = AsyncMock(spec=ChangeExamWorkspaceItemTypeHandlerProtocol)

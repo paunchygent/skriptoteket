@@ -10,7 +10,8 @@
  *   point. The first added criterion takes the question's current whole
  *   points, so adding it leaves the total unchanged. An added row's text field
  *   takes focus, and leaving a points field with invalid points restores its
- *   last valid points.
+ *   last valid points. Adding a row is a structural edit (stored at once);
+ *   text, points and remove edits are typing (stored after the pause).
  *
  * Relationships:
  *   - Rendered by `ExamWorkspaceQuestionEditor` for free-text items only; the
@@ -36,7 +37,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  update: [criteria: NativeExamCriterion[]];
+  update: [criteria: NativeExamCriterion[], structural: boolean];
 }>();
 
 const textHintId = useId();
@@ -85,7 +86,7 @@ function handleText(index: number, event: Event): void {
     return;
   }
   const text = event.target.value;
-  emit("update", replaceAt(index, { ...props.item.criteria[index], text }));
+  emit("update", replaceAt(index, { ...props.item.criteria[index], text }), false);
 }
 
 function handlePoints(index: number, event: Event): void {
@@ -101,7 +102,7 @@ function handlePoints(index: number, event: Event): void {
   }
   next.delete(index);
   invalidPoints.value = next;
-  emit("update", replaceAt(index, { ...props.item.criteria[index], points: Number(raw) }));
+  emit("update", replaceAt(index, { ...props.item.criteria[index], points: Number(raw) }), false);
 }
 
 /** Leaving a field with invalid points restores its last valid points. */
@@ -123,7 +124,8 @@ function handleAdd(): void {
   const first = props.item.criteria.length === 0;
   const points = first && current !== null && Number.isInteger(current) && current >= 1 ? current : 1;
   pendingFocusRow.value = props.item.criteria.length;
-  emit("update", [...props.item.criteria, { text: "", points }]);
+  // Adding a row is a structural edit: it is stored at once.
+  emit("update", [...props.item.criteria, { text: "", points }], true);
 }
 
 function handleRemove(index: number): void {
@@ -133,6 +135,7 @@ function handleRemove(index: number): void {
   emit(
     "update",
     props.item.criteria.filter((_, candidate) => candidate !== index),
+    false,
   );
 }
 

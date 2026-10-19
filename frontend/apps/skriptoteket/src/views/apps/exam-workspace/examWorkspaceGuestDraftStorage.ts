@@ -19,12 +19,15 @@
 
 import { openDB, type DBSchema, type IDBPDatabase } from "idb";
 
+import type { GuestEditLeaseRecord, GuestEditLeaseStoragePort } from "./examWorkspaceGuestEditLease";
 import type { ExamWorkspaceGuestDraft } from "./examWorkspaceGuestDraft";
 
 export const EXAM_WORKSPACE_GUEST_DRAFT_DB_NAME = "skriptoteket_exam_workspace_guest";
-export const EXAM_WORKSPACE_GUEST_DRAFT_DB_VERSION = 1;
+export const EXAM_WORKSPACE_GUEST_DRAFT_DB_VERSION = 2;
 export const EXAM_WORKSPACE_GUEST_DRAFT_STORE_NAME = "drafts";
 export const EXAM_WORKSPACE_GUEST_DRAFT_RECORD_KEY = "current";
+export const EXAM_WORKSPACE_GUEST_EDIT_LEASE_STORE_NAME = "edit_lease";
+export const EXAM_WORKSPACE_GUEST_EDIT_LEASE_RECORD_KEY = "current";
 
 export type StoredGuestDraft = {
   draft: ExamWorkspaceGuestDraft;
@@ -55,6 +58,10 @@ type ExamWorkspaceGuestDraftDb = DBSchema & {
     key: string;
     value: StoredGuestDraft;
   };
+  edit_lease: {
+    key: string;
+    value: GuestEditLeaseRecord;
+  };
 };
 
 let dbPromise: Promise<IDBPDatabase<ExamWorkspaceGuestDraftDb>> | null = null;
@@ -68,6 +75,9 @@ function getDb(): Promise<IDBPDatabase<ExamWorkspaceGuestDraftDb>> {
         upgrade(db) {
           if (!db.objectStoreNames.contains(EXAM_WORKSPACE_GUEST_DRAFT_STORE_NAME)) {
             db.createObjectStore(EXAM_WORKSPACE_GUEST_DRAFT_STORE_NAME);
+          }
+          if (!db.objectStoreNames.contains(EXAM_WORKSPACE_GUEST_EDIT_LEASE_STORE_NAME)) {
+            db.createObjectStore(EXAM_WORKSPACE_GUEST_EDIT_LEASE_STORE_NAME);
           }
         },
       },
@@ -191,6 +201,42 @@ export function createExamWorkspaceGuestDraftStorage(deps?: {
     },
     async clearIf(expectedCursor) {
       return await (await port()).clearIf(expectedCursor);
+    },
+  };
+}
+
+/**
+ * The guest edit lease in the same IndexedDB database as the draft: one
+ * plain-JSON record beside it, in its own object store. The lease record and
+ * the draft stay separate stores so a lease renewal never rewrites the draft
+ * and a draft write never touches the lease. Importing this module never
+ * touches a database: the adapter opens lazily on first use.
+ */
+export function createIndexedDbGuestEditLeaseStorage(): GuestEditLeaseStoragePort {
+  return {
+    async load() {
+      const db = await getDb();
+      return (
+        (await db.get(
+          EXAM_WORKSPACE_GUEST_EDIT_LEASE_STORE_NAME,
+          EXAM_WORKSPACE_GUEST_EDIT_LEASE_RECORD_KEY,
+        )) ?? null
+      );
+    },
+    async save(next) {
+      const db = await getDb();
+      if (next === null) {
+        await db.delete(
+          EXAM_WORKSPACE_GUEST_EDIT_LEASE_STORE_NAME,
+          EXAM_WORKSPACE_GUEST_EDIT_LEASE_RECORD_KEY,
+        );
+        return;
+      }
+      await db.put(
+        EXAM_WORKSPACE_GUEST_EDIT_LEASE_STORE_NAME,
+        { ...next },
+        EXAM_WORKSPACE_GUEST_EDIT_LEASE_RECORD_KEY,
+      );
     },
   };
 }

@@ -37,11 +37,11 @@ import {
   importExamWorkspaceGuestDraft,
   importExamWorkspaceQti,
   listExamWorkspaceDocuments,
+  moveExamWorkspaceHistoryPosition,
   requestExamWorkspaceAnswerKeySuggestions,
   requestExamWorkspaceAnswerMisspellings,
   requestExamWorkspaceContentSuggestions,
   retryExamWorkspaceItem,
-  saveExamWorkspaceDocument,
   storeExamWorkspaceUndoStep,
   updateExamListOrdering,
 } from "../../../api/examWorkspace";
@@ -67,8 +67,8 @@ import { renameVaultFile } from "../../../api/vault";
 /** What every exam workspace mode can do, guest included. */
 export type ExamWorkspaceSharedStore = {
   getExamWorkspaceDocument: typeof getExamWorkspaceDocument;
-  saveExamWorkspaceDocument: typeof saveExamWorkspaceDocument;
   storeExamWorkspaceUndoStep: typeof storeExamWorkspaceUndoStep;
+  moveExamWorkspaceHistoryPosition: typeof moveExamWorkspaceHistoryPosition;
   getExamWorkspaceHistory: typeof getExamWorkspaceHistory;
   getExamWorkspaceHistoryStep: typeof getExamWorkspaceHistoryStep;
   createExamWorkspaceParent: typeof createExamWorkspaceParent;
@@ -125,8 +125,8 @@ export type ExamWorkspaceStore = {
 export const serverExamWorkspaceStore: ExamWorkspaceStore = {
   shared: {
     getExamWorkspaceDocument: (...args) => getExamWorkspaceDocument(...args),
-    saveExamWorkspaceDocument: (...args) => saveExamWorkspaceDocument(...args),
     storeExamWorkspaceUndoStep: (...args) => storeExamWorkspaceUndoStep(...args),
+    moveExamWorkspaceHistoryPosition: (...args) => moveExamWorkspaceHistoryPosition(...args),
     getExamWorkspaceHistory: (...args) => getExamWorkspaceHistory(...args),
     getExamWorkspaceHistoryStep: (...args) => getExamWorkspaceHistoryStep(...args),
     createExamWorkspaceParent: (...args) => createExamWorkspaceParent(...args),

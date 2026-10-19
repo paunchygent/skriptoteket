@@ -13,7 +13,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from skriptoteket.application.curated_apps.exam_workspace import (
     ExamWorkspaceDocumentResponse,
-    SaveExamWorkspaceDocumentRequest,
+)
+from skriptoteket.application.curated_apps.exam_workspace_history import (
+    StoreExamWorkspaceUndoStepRequest,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_progress import (
     ExamWorkspaceConversionProgress,
@@ -24,7 +26,12 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_document_stor
 from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
     GetExamWorkspaceConversionStatusHandler,
     GetExamWorkspaceDocumentHandler,
-    SaveExamWorkspaceDocumentHandler,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_edit_lease import (
+    ExamWorkspaceEditLeaseHandler,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_undo_steps import (
+    StoreExamWorkspaceUndoStepHandler,
 )
 from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
@@ -76,6 +83,8 @@ class ConversionWorld:
     def __init__(
         self, session: AsyncSession, storage: LocalVaultStorage, clock: FixedClock
     ) -> None:
+        self.clock = clock
+        self.edit_tabs: dict[tuple[UUID, UUID], UUID] = {}
         self.uow = SQLAlchemyUnitOfWork(session)
         self.jobs = PostgreSQLExamAnswerKeyEnrichmentJobRepository(session)
         self.vault_files = PostgreSQLUserVaultFileRepository(session)
@@ -120,23 +129,37 @@ class ConversionWorld:
     async def teacher_save(
         self, actor: User, document: NativeExamDocument
     ) -> ExamWorkspaceDocumentResponse:
-        return await SaveExamWorkspaceDocumentHandler(
+        history = await self.store.get_history(actor=actor, lineage_id=document.document_id)
+        await StoreExamWorkspaceUndoStepHandler(
             vault_files=self.vault_files,
             codec=self.codec,
             store=self.store,
-            id_generator=Ids(),
             jobs=self.jobs,
+            id_generator=Ids(),
+            clock=self.clock,
         ).handle(
             actor=actor,
             lineage_id=document.document_id,
-            request=SaveExamWorkspaceDocumentRequest(
-                expected_revision=document.revision,
-                document=document.model_copy(update={"revision": document.revision + 1}),
-                position_step_id=(
-                    await self.store.get_history(actor=actor, lineage_id=document.document_id)
-                ).current_step_id,
+            request=StoreExamWorkspaceUndoStepRequest(
+                expected_cursor=history.cursor,
+                document=document,
+                tab_id=await lease_tab(self, actor, document.document_id),
             ),
         )
+        return await self.opened(actor, document.document_id)
+
+
+async def lease_tab(world: ConversionWorld, actor: User, lineage: UUID) -> UUID:
+    """Claim the edit lease for one tab per exam, like the editor's heartbeat."""
+    key = (actor.id, lineage)
+    tab = world.edit_tabs.get(key)
+    if tab is None:
+        tab = uuid4()
+        await ExamWorkspaceEditLeaseHandler(
+            vault_files=world.vault_files, store=world.store, clock=world.clock
+        ).claim(actor=actor, lineage_id=lineage, tab_id=tab)
+        world.edit_tabs[key] = tab
+    return tab
 
 
 def batch(lineage_id: UUID, *, q2: str | None, q3: str | None) -> ConversionUpdate:

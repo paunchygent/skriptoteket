@@ -7,7 +7,6 @@ import pytest
 
 from skriptoteket.application.curated_apps.exam_workspace import (
     ExamWorkspaceExportTarget,
-    SaveExamWorkspaceDocumentRequest,
 )
 from skriptoteket.application.scripting.handlers.delete_vault_file import DeleteVaultFileHandler
 from skriptoteket.application.scripting.handlers.list_vault_files import ListVaultFilesHandler
@@ -29,6 +28,7 @@ from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents 
 )
 from tests.unit.application.curated_apps.handlers.test_exam_workspace_exports_handler import (
     _export_handler,
+    _store_step,
 )
 from tests.unit.application.curated_apps.test_exam_workspace_exports import (
     _reviewed,
@@ -71,14 +71,11 @@ async def test_saving_trashed_format_reuses_its_identity_and_charges_all_replace
     actor = _actor()
     imported = await env.seed_document(actor=actor)
     lineage = imported.summary.lineage_id
-    await env.save_handler.handle(
-        actor=actor,
-        lineage_id=lineage,
-        request=SaveExamWorkspaceDocumentRequest(
-            expected_revision=1,
-            document=_reviewed(imported.document).model_copy(update={"revision": 2}),
-            position_step_id=lineage,
-        ),
+    await _store_step(
+        env,
+        actor,
+        lineage,
+        _reviewed(imported.document).model_copy(update={"revision": 2}),
     )
     exports = _export_handler(env)
     original = await exports.save(
@@ -122,13 +119,7 @@ async def test_resaved_qti_replaces_bytes_and_lists_once_under_its_exam() -> Non
     imported = await env.seed_document(actor=actor)
     lineage = imported.summary.lineage_id
     reviewed = _reviewed(imported.document).model_copy(update={"revision": 2})
-    await env.save_handler.handle(
-        actor=actor,
-        lineage_id=lineage,
-        request=SaveExamWorkspaceDocumentRequest(
-            expected_revision=1, document=reviewed, position_step_id=lineage
-        ),
-    )
+    await _store_step(env, actor, lineage, reviewed)
     exports = _export_handler(env)
     first = await exports.save(
         actor=actor, lineage_id=lineage, target=ExamWorkspaceExportTarget.QTI, expected_revision=2
@@ -159,17 +150,7 @@ async def test_resaved_qti_replaces_bytes_and_lists_once_under_its_exam() -> Non
             ),
         }
     )
-    await env.save_handler.handle(
-        actor=actor,
-        lineage_id=lineage,
-        request=SaveExamWorkspaceDocumentRequest(
-            expected_revision=2,
-            document=changed,
-            position_step_id=(
-                await env.save_handler.history(actor=actor, lineage_id=lineage)
-            ).position_step_id,
-        ),
-    )
+    await _store_step(env, actor, lineage, changed)
     second = await exports.save(
         actor=actor, lineage_id=lineage, target=ExamWorkspaceExportTarget.QTI, expected_revision=3
     )

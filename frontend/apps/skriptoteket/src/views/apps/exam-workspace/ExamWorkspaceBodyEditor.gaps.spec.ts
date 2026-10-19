@@ -3,8 +3,8 @@
  *
  * Expected behavior:
  *   Activating a gap chip opens one row per accepted answer that commits
- *   the full list once on `change` or when focus leaves the popover, and
- *   discards edits on Escape. Enter in a row adds a row below it and never
+ *   while typing (leaving the popover commits any remainder once), and
+ *   keeps typed text on Escape. Enter in a row adds a row below it and never
  *   closes the popover. The popover opens from a click on a gap and from
  *   Enter on a selected gap, anchored below that gap. Chip labels follow
  *   the gap's accepted answers in place and live in a `data-label`
@@ -120,18 +120,18 @@ describe("ExamWorkspaceBodyEditor gap popover and chips", () => {
     }
   });
 
-  it("adds a row on Enter without closing and commits the full list once on change", async () => {
+  it("adds a row on Enter without closing and keeps the typed commit", async () => {
     const wrapper = await mountEditor();
     await openGap(wrapper, "gap_002");
     const input = valuesInput("gap_002");
 
     input.element.value = "noll";
     await input.trigger("input");
-    // Enter belongs to the row list: a row is added, nothing commits or closes.
+    // Typing already committed; Enter only adds the row.
+    expect(wrapper.emitted("updateGapValues")).toEqual([["item_001", "gap_002", ["noll"]]]);
     await input.trigger("keydown", { key: "Enter" });
     await nextTick();
     expect(valuesInputs("gap_002")).toHaveLength(2);
-    expect(wrapper.emitted("updateGapValues")).toBeUndefined();
     expect(popoverExists()).toBe(true);
 
     await input.trigger("change");
@@ -174,7 +174,7 @@ describe("ExamWorkspaceBodyEditor gap popover and chips", () => {
     wrapper.unmount();
   });
 
-  it("commits when focus leaves the popover and keeps typed answers on Escape", async () => {
+  it("commits when focus leaves the popover and keeps typed text on Escape", async () => {
     const wrapper = await mountEditor();
     await openGap(wrapper, "gap_001");
     const input = valuesInput("gap_001");
@@ -201,12 +201,16 @@ describe("ExamWorkspaceBodyEditor gap popover and chips", () => {
     reopened.element.dispatchEvent(new Event("change", { bubbles: true }));
     reopened.element.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
     await nextTick();
-    expect(wrapper.emitted("updateGapValues")).toHaveLength(2);
+    // Typing already committed before Escape; the late events add nothing.
+    expect(wrapper.emitted("updateGapValues")).toEqual([
+      ["item_001", "gap_001", ["hundra"]],
+      ["item_001", "gap_001", ["kasta"]],
+    ]);
     expect(popoverExists()).toBe(false);
     wrapper.unmount();
   });
 
-  it("closes an open popover without committing when the editor becomes disabled", async () => {
+  it("closes an open popover without further commits when the editor becomes disabled", async () => {
     const wrapper = await mountEditor();
     await openGap(wrapper, "gap_001");
     const input = valuesInput("gap_001");
@@ -218,7 +222,8 @@ describe("ExamWorkspaceBodyEditor gap popover and chips", () => {
     input.element.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
 
     expect(popoverExists()).toBe(false);
-    expect(wrapper.emitted("updateGapValues")).toBeUndefined();
+    // The typing committed before the disable; the late events add nothing.
+    expect(wrapper.emitted("updateGapValues")).toEqual([["item_001", "gap_001", ["ändrat"]]]);
     expect(surface(wrapper).getAttribute("contenteditable")).toBe("false");
     wrapper.unmount();
   });

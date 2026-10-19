@@ -82,6 +82,8 @@ async function openWith(
       provideExamWorkspaceHistoryKeys({
         redo: () => void editing.history.redo(),
         undo: () => void editing.history.undo(),
+        canUndo: editing.history.canUndo,
+        canRedo: editing.history.canRedo,
       });
       return () => {
         const item = editing.workspaceDocument.value?.items[0];

@@ -52,7 +52,7 @@ export const LOST_CHECKLIST: ExamWorkspaceExportChecklistResponse = {
   entries: [
     {
       kind: "free_text_criteria",
-      question_number: "2",
+      item_id: "item_002",
       question_text: "Förklara fotosyntesen.",
       points: 3,
       criteria: [
@@ -62,13 +62,13 @@ export const LOST_CHECKLIST: ExamWorkspaceExportChecklistResponse = {
     },
     {
       kind: "all_or_nothing",
-      question_number: "4",
+      item_id: "item_004",
       question_text: "Vatten kokar vid ...",
       points: 2,
     },
     {
       kind: "rounded_gaps",
-      question_number: "6",
+      item_id: "item_006",
       question_text: "Fyll i luckorna.",
       points: 4,
       gap_points: 1.33,

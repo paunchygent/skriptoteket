@@ -108,7 +108,7 @@ describe("examWorkspaceReadinessByItemId", () => {
     });
 
     expect(examWorkspaceReadinessByItemId([item])).toEqual({
-      item_001: ["Poängen kan inte vara negativ.", "Ett svarsalternativ saknar text."],
+      item_001: ["Ange 0 poäng eller mer.", "Ett svarsalternativ saknar text."],
     });
   });
 });

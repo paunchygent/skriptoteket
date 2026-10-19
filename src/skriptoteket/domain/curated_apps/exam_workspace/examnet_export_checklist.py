@@ -41,9 +41,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
 )
 
-# The workspace row excerpt the panel shows (examWorkspaceRows.ts): the checklist
-# question must read exactly as the row the teacher edits. The panel builds the
-# row label from the bare sequence ("Fråga 3").
+# The workspace list label names each checklist row (examWorkspaceListEntries.ts):
+# the server sends the item id and the drawer looks the label up there, so the
+# row reads exactly as the list and the editor heading ("Fråga 2", "1b").
 _QUESTION_TEXT_MAX_LENGTH = 140
 
 # Exam.net gives a shared-instruction subquestion 1 point; a 1-point subquestion
@@ -63,7 +63,7 @@ class ExamNetExportChecklistCriterion:
 class ExamNetExportChecklistFreeTextCriteria:
     """One Fritext question whose criteria import as unlabelled 1-point rows."""
 
-    question_number: str
+    item_id: str
     question_text: str
     points: int | float
     criteria: tuple[ExamNetExportChecklistCriterion, ...]
@@ -73,7 +73,7 @@ class ExamNetExportChecklistFreeTextCriteria:
 class ExamNetExportChecklistAllOrNothing:
     """One shared-instruction subquestion Exam.net gives 1 point instead of its own."""
 
-    question_number: str
+    item_id: str
     question_text: str
     points: int | float
 
@@ -82,7 +82,7 @@ class ExamNetExportChecklistAllOrNothing:
 class ExamNetExportChecklistRoundedGaps:
     """One Lucktext whose rounded per-gap value leaves part of its points unused."""
 
-    question_number: str
+    item_id: str
     question_text: str
     points: int | float
     gap_points: int | float
@@ -174,7 +174,7 @@ def _free_text_criteria_entry(
     if qti_item.max_score is None:
         return None
     return ExamNetExportChecklistFreeTextCriteria(
-        question_number=_question_number(native_item),
+        item_id=native_item.item_id,
         question_text=_question_text(native_item),
         points=qti_item.max_score,
         criteria=tuple(
@@ -197,7 +197,7 @@ def _all_or_nothing_entry(
     if points is None or points < _ALL_OR_NOTHING_MIN_POINTS:
         return None
     return ExamNetExportChecklistAllOrNothing(
-        question_number=_question_number(native_item),
+        item_id=native_item.item_id,
         question_text=_question_text(native_item),
         points=points,
     )
@@ -215,7 +215,7 @@ def _rounded_gaps_entry(
     if points is None:
         return None
     return ExamNetExportChecklistRoundedGaps(
-        question_number=_question_number(native_item),
+        item_id=native_item.item_id,
         question_text=_question_text(native_item),
         points=points,
         gap_points=gap_points,
@@ -245,12 +245,6 @@ def _rounded_gap_points(qti_item: ExamNetQtiItem) -> int | float | None:
     if per_gap * len(qti_item.response_gaps) == Decimal(str(qti_item.max_score)):
         return None
     return _points_number(per_gap)
-
-
-def _question_number(item: NativeExamItem) -> str:
-    """The question's sequence as a string; the panel prints it as the row label."""
-
-    return str(item.sequence)
 
 
 def _question_text(item: NativeExamItem) -> str:

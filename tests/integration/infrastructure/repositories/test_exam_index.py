@@ -195,7 +195,7 @@ async def test_failed_outer_save_transaction_restores_index_vault_and_file_bytes
                     lineage_id=document.document_id,
                     version=2,
                     expected_revision=1,
-                    editor_step_id=document.document_id,
+                    preserve_editor_position=True,
                     content=codec.build(
                         content=ExamWorkspaceContainerContent(
                             document=document.model_copy(

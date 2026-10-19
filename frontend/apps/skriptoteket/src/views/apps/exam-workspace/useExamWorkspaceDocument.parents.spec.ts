@@ -27,7 +27,7 @@ const apiMocks = vi.hoisted(() => ({
   importExamWorkspaceDocument: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
   requestExamWorkspaceAnswerMisspellings: vi.fn(),
-  saveExamWorkspaceDocument: vi.fn(),
+  copyExamWorkspaceDocument: vi.fn(),
 }));
 const exportApiMocks = vi.hoisted(() => ({
   downloadExamWorkspaceExport: vi.fn(),
@@ -81,7 +81,7 @@ function expectParentsValid(document: NativeExamDocument): void {
 beforeEach(() => {
   setActivePinia(createPinia());
   apiMocks.getExamWorkspaceDocument.mockReset();
-  apiMocks.saveExamWorkspaceDocument.mockReset();
+  apiMocks.copyExamWorkspaceDocument.mockReset();
   apiMocks.requestExamWorkspaceAnswerMisspellings.mockReset();
   apiMocks.requestExamWorkspaceAnswerMisspellings.mockResolvedValue({ automatic_values: [] });
 });
@@ -90,7 +90,7 @@ describe("parents in useExamWorkspaceDocument", () => {
   it("keeps parents and children valid through every child edit", async () => {
     const original = buildParentDocument();
     const state = await openParentDocument();
-    apiMocks.saveExamWorkspaceDocument.mockResolvedValue(buildResponse(original));
+    apiMocks.copyExamWorkspaceDocument.mockResolvedValue(buildResponse(original));
     const child = original.items[1]!;
     const gapId = child.gaps[0]!.gap_id;
 
@@ -99,9 +99,9 @@ describe("parents in useExamWorkspaceDocument", () => {
     state.updateItemBody("item_002", [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Edited." }] }], false);
     state.markItemReviewed("item_002");
 
-    await expect(state.saveDocument("position-1")).resolves.toBe(true);
+    await expect(state.saveDocumentAs("Kopia")).resolves.toBe("saved");
 
-    const sent = apiMocks.saveExamWorkspaceDocument.mock.calls[0]![1].document as NativeExamDocument;
+    const sent = apiMocks.copyExamWorkspaceDocument.mock.calls[0]![2] as NativeExamDocument;
     expect(sent.parents).toEqual(original.parents);
     expect(sent.items.map((item) => item.item_id)).toEqual([
       "item_001",

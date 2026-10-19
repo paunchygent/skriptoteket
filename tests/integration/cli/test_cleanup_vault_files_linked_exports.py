@@ -16,6 +16,9 @@ from uuid import UUID, uuid4
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from skriptoteket.application.curated_apps.exam_workspace_history import (
+    ExamWorkspaceHistoryCursor,
+)
 from skriptoteket.cli.commands.cleanup_vault_files import (
     open_vault_cleanup_scope,
     purge_expired_vault_files,
@@ -134,11 +137,21 @@ async def test_purge_deletes_the_trashed_exam_with_its_exports_history_payloads_
         for row in (*purged, live_exam):
             await vault_files.create(file=row)
             await storage.store_file(user_id=owner, file_id=row.id, content=b"payload")
-        await vault_files.put_history(
-            user_id=owner, document_lineage_id=lineage, content=b"exam history"
+        await vault_files.upsert_history_head(
+            user_id=owner,
+            document_lineage_id=lineage,
+            head=ExamWorkspaceHistoryCursor(
+                cursor=lineage, current_step_id=lineage, baseline_step_id=lineage
+            ),
         )
-        await vault_files.put_history(
-            user_id=owner, document_lineage_id=live_lineage, content=b"live history"
+        await vault_files.upsert_history_head(
+            user_id=owner,
+            document_lineage_id=live_lineage,
+            head=ExamWorkspaceHistoryCursor(
+                cursor=live_lineage,
+                current_step_id=live_lineage,
+                baseline_step_id=live_lineage,
+            ),
         )
         # The exam's trashed bytes were released when it moved to the trash, so the user's
         # total counts the live exam and the active orphan export.
@@ -166,12 +179,14 @@ async def test_purge_deletes_the_trashed_exam_with_its_exports_history_payloads_
         for row in purged:
             assert await vault_files.get_by_id(file_id=row.id) is None
             assert not await storage.exists_file(user_id=owner, file_id=row.id)
-        assert await vault_files.get_history(user_id=owner, document_lineage_id=lineage) is None
+        assert (
+            await vault_files.get_history_head(user_id=owner, document_lineage_id=lineage) is None
+        )
         assert await vault_files.get_by_id(file_id=live_exam.id) is not None
         assert await storage.exists_file(user_id=owner, file_id=live_exam.id)
         assert (
-            await vault_files.get_history(user_id=owner, document_lineage_id=live_lineage)
-            == b"live history"
+            await vault_files.get_history_head(user_id=owner, document_lineage_id=live_lineage)
+            is not None
         )
         usage = await vault_usage.get(user_id=owner)
         assert usage is not None

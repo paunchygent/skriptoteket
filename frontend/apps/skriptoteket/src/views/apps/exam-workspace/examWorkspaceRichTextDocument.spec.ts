@@ -16,7 +16,7 @@ import { examRichTextExtensions } from "./examWorkspaceRichTextSchema";
 type Level = NativeExamBodyParagraph["heading_level"];
 
 function text(value: string, marks: BodyMark[] = []): NativeExamBodySegment {
-  return { kind: "text", text: value, marks };
+  return { kind: "text", text: value, marks, kept_gap_id: null };
 }
 function gap(id: string): NativeExamBodySegment {
   return { kind: "gap", gap_id: id };
@@ -34,6 +34,7 @@ function throughEditor(body: NativeExamBodyParagraph[]): NativeExamBodyParagraph
     extensions: examRichTextExtensions({
       gapState: () => ({ label: "Lucka", accessibleLabel: "Lucka", empty: true }),
       pictureUrl: () => undefined,
+      keptGapToolOn: () => false,
       onUndo: () => undefined,
       onRedo: () => undefined,
       onToggleGapTool: () => false,

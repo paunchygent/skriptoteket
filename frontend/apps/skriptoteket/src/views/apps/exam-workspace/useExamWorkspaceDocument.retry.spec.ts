@@ -50,7 +50,7 @@ const apiMocks = vi.hoisted(() => ({
   importExamWorkspaceDocument: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
   retryExamWorkspaceItem: vi.fn(),
-  saveExamWorkspaceDocument: vi.fn(),
+  copyExamWorkspaceDocument: vi.fn(),
 }));
 const exportApiMocks = vi.hoisted(() => ({
   downloadExamWorkspaceExport: vi.fn(),
@@ -105,6 +105,7 @@ function freeTextItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
     body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Förklara begreppet." }] }],
     choices: [],
     gaps: [],
+    kept_gaps: [],
     item_id: "item_001",
     kind: "free_text",
     match_left: [],
@@ -248,7 +249,7 @@ describe("retryItem", () => {
     expect(currentItem(state).kind).toBe("free_text");
   });
 
-  it("sends one request while in flight and refuses the save", async () => {
+  it("sends one request while in flight and refuses the copy", async () => {
     const state = await openRetryDocument();
     const pending = deferred<ExamWorkspaceItemRetryResponse>();
     apiMocks.retryExamWorkspaceItem.mockReturnValue(pending.promise);
@@ -257,8 +258,8 @@ describe("retryItem", () => {
     await state.retryItem("item_001", "free_text");
 
     expect(apiMocks.retryExamWorkspaceItem).toHaveBeenCalledTimes(1);
-    await expect(state.saveDocument("position-1")).resolves.toBe(false);
-    expect(apiMocks.saveExamWorkspaceDocument).not.toHaveBeenCalled();
+    await expect(state.saveDocumentAs("Kopia")).resolves.toBe("failed");
+    expect(apiMocks.copyExamWorkspaceDocument).not.toHaveBeenCalled();
 
     pending.resolve({ lineage_id: "lineage-1", item: convertedItem() });
     await first;

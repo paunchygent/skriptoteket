@@ -31,6 +31,7 @@ export function buildMatchingItem(overrides: Partial<NativeExamItem> = {}): Nati
     body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Match each definition with the right word." }] }],
     choices: [],
     gaps: [],
+    kept_gaps: [],
     item_id: "item_001",
     kind: "matching",
     match_left: [

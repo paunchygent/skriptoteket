@@ -37,6 +37,7 @@ function openEditor(onToggleGapTool: () => boolean): Editor {
     extensions: examRichTextExtensions({
       gapState: () => ({ label: "Lucka", accessibleLabel: "Lucka", empty: true }),
       pictureUrl: () => undefined,
+      keptGapToolOn: () => false,
       onUndo: () => undefined,
       onRedo: () => undefined,
       onToggleGapTool,

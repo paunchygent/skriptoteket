@@ -6,7 +6,8 @@
  *   part instruction, the exam instruction, a choice option, a Kategorisera
  *   entry, an ordering step), composed extension by extension so it admits
  *   exactly the native body vocabulary: paragraphs and headings of level 1
- *   to 3, hard breaks, the five kept marks, and two inline atoms — a gap and
+ *   to 3, hard breaks, the five kept marks, one kept-gap link mark, and two
+ *   inline atoms — a gap and
  *   a picture. No StarterKit bundle, so no list, quote, code, link or rule
  *   enters the schema.
  *
@@ -23,7 +24,8 @@
  *   Neither atom parses from HTML, so a paste or a drop never carries a gap
  *   or a picture, even one cut from the same editor: a gap id must stay
  *   placed once and its record leaves the item with the cut, and only the
- *   importer places pictures. A gap reads its visible and accessible label
+ *   importer places pictures. The kept-gap mark defines no parse rule either,
+ *   so a paste never carries that link. A gap reads its visible and accessible label
  *   and a picture its URL through the options getters, drawn as node
  *   decorations, so the owning component redraws both by dispatching a
  *   transaction with `ATOM_STATE_KEY` meta, without a document change.
@@ -35,7 +37,7 @@
  *     `examRichTextExtensions`.
  */
 
-import { Extension, Node } from "@tiptap/core";
+import { Extension, Mark, Node } from "@tiptap/core";
 import Bold from "@tiptap/extension-bold";
 import Document from "@tiptap/extension-document";
 import HardBreak from "@tiptap/extension-hard-break";
@@ -52,6 +54,8 @@ import { Decoration, DecorationSet } from "@tiptap/pm/view";
 
 export const EXAM_GAP_NODE = "examGap";
 export const EXAM_PICTURE_NODE = "examPicture";
+/** The editor mark a kept gap id maps to; stored text keeps it as `kept_gap_id`, never as a mark name. */
+export const EXAM_KEPT_GAP_MARK = "examKeptGap";
 
 /** Dispatch a transaction with this meta key to redraw gap labels and picture URLs. */
 export const ATOM_STATE_KEY = new PluginKey<DecorationSet>("examAtomState");
@@ -64,6 +68,8 @@ export type ExamRichTextOptions = {
   gapState: (gapId: string) => ExamGapState;
   /** The protected URL of one picture, or undefined while it is not loaded. */
   pictureUrl: (assetId: string) => string | undefined;
+  /** While true, words that keep hidden answers show their dotted underline. */
+  keptGapToolOn: () => boolean;
   /** Ctrl/Cmd+Z: the workspace's Ångra. */
   onUndo: () => void;
   /** Ctrl/Cmd+Shift+Z or Ctrl+Y: the workspace's Gör om. */
@@ -166,10 +172,15 @@ function examPictureNode(options: ExamRichTextOptions) {
   });
 }
 
+/** The tooltip of a word that keeps hidden answers while the gap tool is on. */
+export const KEPT_GAP_TOOLTIP = "Har sparade svar för en lucka";
+
 /**
  * Gap labels and picture URL state as node decorations. CSS draws
  * `data-label`, so copied text never carries a label; a changed decoration
- * makes the picture node view re-read its URL.
+ * makes the picture node view re-read its URL. While the gap tool is on,
+ * every kept word also carries an inline decoration with the kept underline
+ * class and tooltip; with the tool off it renders as plain text.
  */
 function atomState(options: ExamRichTextOptions) {
   return Extension.create({
@@ -178,6 +189,7 @@ function atomState(options: ExamRichTextOptions) {
     addProseMirrorPlugins() {
       const build = (doc: ProseMirrorNode): DecorationSet => {
         const decorations: Decoration[] = [];
+        const showKept = options.keptGapToolOn();
         doc.descendants((node, pos) => {
           if (node.type.name === EXAM_GAP_NODE) {
             const gap = options.gapState(String(node.attrs.gapId));
@@ -197,6 +209,16 @@ function atomState(options: ExamRichTextOptions) {
                 url ? { "data-picture-url": url } : { "data-label": PICTURE_PLACEHOLDER_LABEL },
               ),
             );
+          } else if (showKept && node.isText) {
+            const kept = node.marks.find((mark) => mark.type.name === EXAM_KEPT_GAP_MARK);
+            if (kept && typeof kept.attrs.keptGapId === "string") {
+              decorations.push(
+                Decoration.inline(pos, pos + node.nodeSize, {
+                  class: "xw-kept-gap",
+                  title: KEPT_GAP_TOOLTIP,
+                }),
+              );
+            }
           }
         });
         return DecorationSet.create(doc, decorations);
@@ -252,6 +274,28 @@ function gapToolKeys(options: ExamRichTextOptions) {
 const ExamSuperscript = Superscript.extend({ excludes: "subscript" });
 const ExamSubscript = Subscript.extend({ excludes: "superscript" });
 
+/**
+ * A reverted word's link to its hidden kept gap. The mark is not inclusive,
+ * so typing at the word's edges does not join the link, while typing inside
+ * the word keeps it. It defines no parse rule and renders no identifying
+ * attribute, so a paste or a drop never carries the link, even one cut from
+ * the same editor — the same route that keeps gaps and pictures out of a
+ * paste. While the gap tool is on, the atom state's inline decoration draws
+ * the word with the kept underline and tooltip.
+ */
+const ExamKeptGap = Mark.create({
+  name: EXAM_KEPT_GAP_MARK,
+  inclusive: false,
+
+  addAttributes() {
+    return { keptGapId: { default: null } };
+  },
+
+  renderHTML() {
+    return ["span", { "data-kept-gap": "true" }];
+  },
+});
+
 /** The extension set an exam text editor is built with, in schema order. */
 export function examRichTextExtensions(options: ExamRichTextOptions) {
   return [
@@ -265,6 +309,7 @@ export function examRichTextExtensions(options: ExamRichTextOptions) {
     Underline,
     ExamSuperscript,
     ExamSubscript,
+    ExamKeptGap,
     ExamGap,
     examPictureNode(options),
     atomState(options),

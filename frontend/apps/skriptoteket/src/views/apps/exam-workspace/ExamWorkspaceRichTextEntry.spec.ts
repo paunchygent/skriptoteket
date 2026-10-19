@@ -34,7 +34,7 @@ const TEST_ID = "entry";
 type Body = NativeExamBodyParagraph[];
 
 function text(value: string, marks: Array<"bold" | "italic"> = []): NativeExamBodySegment {
-  return { kind: "text", text: value, marks };
+  return { kind: "text", text: value, marks, kept_gap_id: null };
 }
 function paragraph(...segments: NativeExamBodySegment[]): NativeExamBodyParagraph {
   return { heading_level: null, segments };

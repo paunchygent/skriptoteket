@@ -137,30 +137,32 @@ describe("guest sign-in departure under the editing lock", () => {
         throw new Error("expected the flushed edit to store a draft");
       }
 
-      let releaseRead!: () => void;
-      let enteredReadResolve!: () => void;
-      const readGate = new Promise<void>((resolve) => {
-        releaseRead = resolve;
+      let releaseMove!: () => void;
+      let enteredMoveResolve!: () => void;
+      const moveGate = new Promise<void>((resolve) => {
+        releaseMove = resolve;
       });
-      const readEntered = new Promise<void>((resolve) => {
-        enteredReadResolve = resolve;
+      const moveEntered = new Promise<void>((resolve) => {
+        enteredMoveResolve = resolve;
       });
-      const readStep = guest.store.shared.getExamWorkspaceHistoryStep.bind(guest.store.shared);
-      guest.store.shared.getExamWorkspaceHistoryStep = async (lineageId, stepId) => {
-        enteredReadResolve();
-        await readGate;
-        return readStep(lineageId, stepId);
+      const moveStep = guest.store.shared.moveExamWorkspaceHistoryPosition.bind(
+        guest.store.shared,
+      );
+      guest.store.shared.moveExamWorkspaceHistoryPosition = async (lineageId, params) => {
+        enteredMoveResolve();
+        await moveGate;
+        return moveStep(lineageId, params);
       };
       try {
         const moving = editing.history.undo();
-        await readEntered;
+        await moveEntered;
         await expect(signIn.depart(async () => true)).resolves.toBe(false);
         const during: StoredGuestDraft | null = await backing.load();
         expect(during?.draft.steps).toHaveLength(before.draft.steps.length);
-        releaseRead();
+        releaseMove();
         await moving;
       } finally {
-        releaseRead();
+        releaseMove();
       }
     } finally {
       wrapper.unmount();

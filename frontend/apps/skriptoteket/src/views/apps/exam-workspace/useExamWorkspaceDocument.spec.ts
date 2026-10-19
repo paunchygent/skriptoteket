@@ -26,7 +26,7 @@ const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceDocument: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
-  saveExamWorkspaceDocument: vi.fn(),
+  copyExamWorkspaceDocument: vi.fn(),
 }));
 const exportApiMocks = vi.hoisted(() => ({
   downloadExamWorkspaceExport: vi.fn(),
@@ -72,7 +72,7 @@ describe("mergeSavedDocuments", () => {
 beforeEach(() => {
   setActivePinia(createPinia());
   apiMocks.getExamWorkspaceDocument.mockReset();
-  apiMocks.saveExamWorkspaceDocument.mockReset();
+  apiMocks.copyExamWorkspaceDocument.mockReset();
 });
 
 function openMatchingDocument() {
@@ -113,38 +113,27 @@ describe("matching edits in useExamWorkspaceDocument", () => {
     });
   });
 
-  it("makes the key absent when every pair is cleared, and the save goes through", async () => {
+  it("makes the key absent when every pair is cleared, and the copy carries it", async () => {
     const state = await openMatchingDocument();
-    apiMocks.saveExamWorkspaceDocument.mockResolvedValue(buildResponse());
+    apiMocks.copyExamWorkspaceDocument.mockResolvedValue(buildResponse());
 
     state.updateItemMatchPairs("item_001", []);
 
     expect(currentItem(state).answer_key.origin).toBe("absent");
     expect(currentItem(state).answer_key.match_pairs).toEqual([]);
-    await expect(state.saveDocument("position-1")).resolves.toBe(true);
-    expect(apiMocks.saveExamWorkspaceDocument).toHaveBeenCalledTimes(1);
+    await expect(state.saveDocumentAs("Kopia")).resolves.toBe("saved");
+    expect(apiMocks.copyExamWorkspaceDocument).toHaveBeenCalledTimes(1);
   });
 
-  it("refuses to save a keyed grid with a row left without a tick", async () => {
-    const state = await openMatchingDocument();
-
-    state.updateItemMatchPairs("item_001", [
-      { left_id: "left_001", right_id: "right_002" },
-      { left_id: "left_002", right_id: "right_002" },
-    ]);
-
-    await expect(state.saveDocument("position-1")).resolves.toBe(false);
-    expect(apiMocks.saveExamWorkspaceDocument).not.toHaveBeenCalled();
-  });
 
   it("saves an emptied entry text as an empty body", async () => {
     const state = await openMatchingDocument();
-    apiMocks.saveExamWorkspaceDocument.mockResolvedValue(buildResponse());
+    apiMocks.copyExamWorkspaceDocument.mockResolvedValue(buildResponse());
 
     state.updateItemMatchEntryBody("item_001", "right", "right_001", [], false);
 
-    await expect(state.saveDocument("position-1")).resolves.toBe(true);
-    const saved = apiMocks.saveExamWorkspaceDocument.mock.calls[0]?.[1].document;
+    await expect(state.saveDocumentAs("Kopia")).resolves.toBe("saved");
+    const saved = apiMocks.copyExamWorkspaceDocument.mock.calls[0]?.[2];
     expect(saved?.items[0]?.match_right.find((entry: { right_id: string }) => entry.right_id === "right_001")?.body).toEqual([]);
   });
 });

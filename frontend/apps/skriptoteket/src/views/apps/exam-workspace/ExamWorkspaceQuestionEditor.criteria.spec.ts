@@ -4,9 +4,10 @@
  * Expected behavior:
  *   A free-text item shows its criteria with text and whole points. Adding
  *   the first criterion takes the question's whole points, so the total does
- *   not change; later criteria start at 1 point. Editing a text or valid
- *   points emits the full list; points that are not a whole number of at
- *   least 1 are marked and never emitted. While criteria exist, the question
+ *   not change; later criteria start at 1 point. Adding a row emits the
+ *   list as a structural edit; editing a text or valid
+ *   points emits the full list as a typing edit; points that are not a whole
+ *   number of at least 1 are marked and never emitted. While criteria exist, the question
  *   points are read-only. An added row's text field takes focus once the new
  *   list arrives, and leaving invalid points restores the last valid points.
  *   Other kinds show no criteria.
@@ -69,7 +70,7 @@ describe("ExamWorkspaceQuestionEditor Fritext criteria", () => {
     expect(wrapper.get<HTMLInputElement>(POINTS).attributes("readonly")).toBeUndefined();
     await wrapper.get(ADD).trigger("click");
 
-    expect(wrapper.emitted("updateCriteria")).toEqual([["item_001", [{ text: "", points: 4 }]]]);
+    expect(wrapper.emitted("updateCriteria")).toEqual([["item_001", [{ text: "", points: 4 }], true]]);
   });
 
   it("adds a first criterion worth 1 point when the points are not whole", async () => {
@@ -77,7 +78,7 @@ describe("ExamWorkspaceQuestionEditor Fritext criteria", () => {
 
     await wrapper.get(ADD).trigger("click");
 
-    expect(wrapper.emitted("updateCriteria")).toEqual([["item_001", [{ text: "", points: 1 }]]]);
+    expect(wrapper.emitted("updateCriteria")).toEqual([["item_001", [{ text: "", points: 1 }], true]]);
   });
 
   it("adds later criteria at 1 point and keeps the points read-only", async () => {
@@ -87,19 +88,19 @@ describe("ExamWorkspaceQuestionEditor Fritext criteria", () => {
     await wrapper.get(ADD).trigger("click");
 
     expect(wrapper.emitted("updateCriteria")).toEqual([
-      ["item_001", [...TWO_CRITERIA, { text: "", points: 1 }]],
+      ["item_001", [...TWO_CRITERIA, { text: "", points: 1 }], true],
     ]);
   });
 
-  it("emits the full list when a text or valid points change", async () => {
+  it("emits the full list as typing when a text or valid points change", async () => {
     const wrapper = mountEditor(buildFreeTextItem({ criteria: TWO_CRITERIA, points: 3 }));
 
     await wrapper.get('[data-test="exam-workspace-criterion-text-0"]').setValue("Nämner två orsaker");
     await wrapper.get('[data-test="exam-workspace-criterion-points-1"]').setValue("3");
 
     expect(wrapper.emitted("updateCriteria")).toEqual([
-      ["item_001", [{ text: "Nämner två orsaker", points: 1 }, TWO_CRITERIA[1]]],
-      ["item_001", [TWO_CRITERIA[0], { text: "Förklarar följden", points: 3 }]],
+      ["item_001", [{ text: "Nämner två orsaker", points: 1 }, TWO_CRITERIA[1]], false],
+      ["item_001", [TWO_CRITERIA[0], { text: "Förklarar följden", points: 3 }], false],
     ]);
   });
 
@@ -121,7 +122,9 @@ describe("ExamWorkspaceQuestionEditor Fritext criteria", () => {
     const wrapper = mountEditor(item, { attachTo: document.body });
 
     await wrapper.get(ADD).trigger("click");
-    const [[, criteria]] = wrapper.emitted("updateCriteria") as [[string, typeof TWO_CRITERIA]];
+    const [[, criteria]] = wrapper.emitted("updateCriteria") as Array<
+      [string, typeof TWO_CRITERIA, boolean]
+    >;
     await wrapper.setProps({ item: { ...item, criteria, points: 4 } });
     await nextTick();
 
@@ -151,7 +154,7 @@ describe("ExamWorkspaceQuestionEditor Fritext criteria", () => {
     expect(remove.attributes("aria-label")).toBe("Ta bort kriterium 1");
     await remove.trigger("click");
 
-    expect(wrapper.emitted("updateCriteria")).toEqual([["item_001", [TWO_CRITERIA[1]]]]);
+    expect(wrapper.emitted("updateCriteria")).toEqual([["item_001", [TWO_CRITERIA[1]], false]]);
   });
 
   it("marks a criterion without text with the hint", () => {

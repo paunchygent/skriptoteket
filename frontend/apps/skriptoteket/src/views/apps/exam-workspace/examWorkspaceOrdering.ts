@@ -88,7 +88,7 @@ function nextChoiceId(choiceIds: string[]): string {
 
 /** An empty step, as the server writes an empty paragraph: a text segment needs one character. */
 function blankStepBody(): NativeExamBodyParagraph[] {
-  return [{ heading_level: null, segments: [{ kind: "text", text: " ", marks: [] }] }];
+  return [{ heading_level: null, segments: [{ kind: "text", text: " ", marks: [], kept_gap_id: null }] }];
 }
 
 /** Append one empty step at the end of the key order. */
