@@ -313,7 +313,12 @@ class TestKeepTogetherGroups:
 
         assert ".print-question-text { break-inside: avoid }" in css
         assert ".print-options { break-inside: avoid }" in css
-        assert "p.print-body, p.print-option { break-inside: avoid }" in css
+        assert "p.print-body, p.print-option" not in css
+        assert (
+            f"p {{ margin: {house_template.PARAGRAPH_SPACING.space_before_mm}mm 0 "
+            f"{house_template.PARAGRAPH_SPACING.space_after_mm}mm;"
+            " break-inside: avoid }" in css
+        )
         assert ".print-grid tr { break-inside: avoid }" in css
         assert ".print-instruction {" in css
         assert "break-after: avoid;" in css

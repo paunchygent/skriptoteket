@@ -92,11 +92,10 @@ body {{
   line-height: {template.HOUSE_LINE_HEIGHT};
 }}
 {_heading_rules()}
-p {{ margin: {_block_margin_css(template.PARAGRAPH_SPACING)} }}
+p {{ margin: {_block_margin_css(template.PARAGRAPH_SPACING)}; break-inside: avoid }}
 .print-question {{ margin: 0 0 {template.QUESTION_SPACE_AFTER_MM}mm }}
 .print-question-text {{ break-inside: avoid }}
 .print-options {{ break-inside: avoid }}
-p.print-body, p.print-option {{ break-inside: avoid }}
 .print-instruction {{
   margin: 0 0 {template.INSTRUCTION_SPACE_AFTER_MM}mm;
   break-inside: avoid;
