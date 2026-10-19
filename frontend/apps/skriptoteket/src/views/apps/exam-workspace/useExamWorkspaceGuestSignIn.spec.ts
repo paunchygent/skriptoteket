@@ -5,8 +5,8 @@
  *   Guest mode is the store without the teacher half. A component that
  *   injects the sign-in key sets the one prompt slot, and dismissing clears
  *   it. Settling for departure with no open document resolves true without
- *   flushing; with an open document it flushes as a settle step and resolves
- *   the flush result.
+ *   settling; with an open document it runs the history's departure settle
+ *   and resolves its result.
  */
 
 import { mount } from "@vue/test-utils";
@@ -60,7 +60,7 @@ type SignInApi = ReturnType<typeof useExamWorkspaceGuestSignIn>;
 function mountSignIn(options: {
   store: ExamWorkspaceStore;
   document: NativeExamDocument | null;
-  flush: (settle?: boolean) => Promise<boolean>;
+  settleForDeparture: () => Promise<boolean>;
 }): { api: SignInApi; requestThroughKey: (message: string) => void } {
   let api: SignInApi | null = null;
   let requestThroughKey: ((message: string) => void) | null = null;
@@ -75,7 +75,7 @@ function mountSignIn(options: {
   const probe = defineComponent({
     setup() {
       api = useExamWorkspaceGuestSignIn({
-        history: { flush: options.flush },
+        history: { settleForDeparture: options.settleForDeparture },
         store: options.store,
         workspaceDocument: ref(options.document),
       });
@@ -98,14 +98,14 @@ describe("useExamWorkspaceGuestSignIn", () => {
   it("reports guest mode only for the store without the teacher half", () => {
     const guest = mountSignIn({
       document: null,
-      flush: async () => true,
+      settleForDeparture: async () => true,
       store: setupGuestStore(),
     });
     expect(guest.api.isGuest.value).toBe(true);
 
     const teacher = mountSignIn({
       document: null,
-      flush: async () => true,
+      settleForDeparture: async () => true,
       store: serverExamWorkspaceStore,
     });
     expect(teacher.api.isGuest.value).toBe(false);
@@ -114,7 +114,7 @@ describe("useExamWorkspaceGuestSignIn", () => {
   it("sets the prompt through the injected key and clears it on dismiss", () => {
     const { api, requestThroughKey } = mountSignIn({
       document: null,
-      flush: async () => true,
+      settleForDeparture: async () => true,
       store: setupGuestStore(),
     });
 
@@ -125,24 +125,23 @@ describe("useExamWorkspaceGuestSignIn", () => {
     expect(api.signInPrompt.value).toBeNull();
   });
 
-  it("settles departure without flushing when no document is open", async () => {
-    const flush = vi.fn(async (_settle?: boolean) => true);
-    const { api } = mountSignIn({ document: null, flush, store: setupGuestStore() });
+  it("settles departure without settling when no document is open", async () => {
+    const settleForDeparture = vi.fn(async () => true);
+    const { api } = mountSignIn({ document: null, settleForDeparture, store: setupGuestStore() });
 
     await expect(api.settleForDeparture()).resolves.toBe(true);
-    expect(flush).not.toHaveBeenCalled();
+    expect(settleForDeparture).not.toHaveBeenCalled();
   });
 
-  it("flushes as a settle step with an open document and resolves the result", async () => {
-    const flush = vi.fn(async (_settle?: boolean) => false);
+  it("runs the history's departure settle with an open document and resolves its result", async () => {
+    const settleForDeparture = vi.fn(async () => false);
     const { api } = mountSignIn({
       document: buildParentDocument(),
-      flush,
+      settleForDeparture,
       store: setupGuestStore(),
     });
 
     await expect(api.settleForDeparture()).resolves.toBe(false);
-    expect(flush).toHaveBeenCalledTimes(1);
-    expect(flush).toHaveBeenCalledWith(true);
+    expect(settleForDeparture).toHaveBeenCalledTimes(1);
   });
 });

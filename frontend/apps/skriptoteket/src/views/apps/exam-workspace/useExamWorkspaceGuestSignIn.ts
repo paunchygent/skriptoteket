@@ -9,7 +9,8 @@
  *
  * Relationships:
  *   - Used by `ExamWorkspaceView`, which keeps `defineExpose({ settleForDeparture })`
- *     and clears the prompt from its open-document watcher.
+ *     and clears the prompt from its open-document watcher. The history the
+ *     departure settles through holds the editing lock while it stores.
  *   - Provides `EXAM_WORKSPACE_SIGN_IN_KEY` for the exam-workspace
  *     components that own an AI or import button.
  *   - Rendered through `ExamWorkspaceSignInBar`.
@@ -23,8 +24,8 @@ import { EXAM_WORKSPACE_SIGN_IN_KEY } from "./examWorkspaceSignIn";
 import type { ExamWorkspaceStore } from "./examWorkspaceStore";
 
 export type ExamWorkspaceGuestSignInParams = {
-  /** The undo history whose pending edit a sign-in exit settles first. */
-  history: { flush: (settle?: boolean) => Promise<boolean> };
+  /** The undo history whose departure settle stores the pending edit under the editing lock. */
+  history: { settleForDeparture: () => Promise<boolean> };
   /** The workspace store; a missing teacher half means guest mode. */
   store: ExamWorkspaceStore;
   /** The exam in front of the guest; null while none is open. */
@@ -49,16 +50,18 @@ export function useExamWorkspaceGuestSignIn(params: ExamWorkspaceGuestSignInPara
 
   /**
    * Safe departure for every sign-in exit: store the pending edit as an undo
-   * step first, through the same flush the structural commands use, so signing
-   * in never abandons the working copy before its autosave. With no open
-   * document there is nothing to settle. Resolves the flush result: false
-   * keeps the working copy mounted instead of leaving.
+   * step first, through the history's departure settle, which holds the
+   * editing lock while it stores like undo does, so signing in never
+   * abandons the working copy before its autosave and never loses an edit
+   * typed while the departure write runs. With no open document there is
+   * nothing to settle. Resolves the settle result: false keeps the working
+   * copy mounted instead of leaving.
    */
   async function settleForDeparture(): Promise<boolean> {
     if (params.workspaceDocument.value === null) {
       return true;
     }
-    return params.history.flush(true);
+    return params.history.settleForDeparture();
   }
 
   return { dismissSignInPrompt, isGuest, settleForDeparture, signInPrompt };

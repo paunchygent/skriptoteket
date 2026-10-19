@@ -19,7 +19,12 @@
  *   history stays navigable after any Spara. While undo or redo reads a
  *   step, editing is locked through the document owner's `replaceCopy`, so
  *   no edit is typed into a copy the read is about to replace, and AI
- *   arrivals that land meanwhile run again on the step.
+ *   arrivals that land meanwhile run again on the step. A sign-in exit
+ *   settles the pending edit through `settleForDeparture`, which runs the
+ *   settle flush inside the same `replaceCopy` editing lock, so no edit
+ *   typed while the departure write runs is stored past it and lost; a
+ *   departure that meets a replacing read resolves false and keeps the
+ *   working copy mounted.
  *
  * Relationships:
  *   - Reads the working copy and the cursor the document composable installs;
@@ -290,6 +295,21 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
   }
 
   /**
+   * Settle the pending edit before a sign-in exit leaves the workspace:
+   * refuse while another undo, redo or server command holds the copy,
+   * otherwise run the settle flush inside the `replaceCopy` editing lock
+   * undo uses, so no edit typed while the departure write runs is lost
+   * past it. Resolves true only when the flush stored and nothing is
+   * pending after it.
+   */
+  async function settleForDeparture(): Promise<boolean> {
+    if (deps.isReplacing() || navigating.value) {
+      return false;
+    }
+    return deps.replaceCopy(async () => (await flush(true)) && !pending.value);
+  }
+
+  /**
    * A teacher edit happened: typing waits for a pause; a structural edit is a
    * step now, holding the document as it was right after that edit, so two
    * quick structural edits stay two steps. Typing still waiting for its pause
@@ -385,6 +405,7 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
     noteEdit,
     pending,
     redo,
+    settleForDeparture,
     storing: computed(() => storing.value),
     undo,
   };

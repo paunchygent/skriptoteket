@@ -84,7 +84,13 @@ function titled(document: NativeExamDocument, title: string): NativeExamDocument
   return { ...document, title };
 }
 
-function setup(failFirstLoad = false) {
+function setup(
+  failFirstLoad = false,
+  hooks: {
+    isReplacing?: () => boolean;
+    replaceCopy?: <T>(run: () => Promise<T>) => Promise<T>;
+  } = {},
+) {
   const baseline = buildParentDocument();
   const server = fakeServer(baseline);
   if (failFirstLoad) {
@@ -101,8 +107,8 @@ function setup(failFirstLoad = false) {
         workspaceDocument.value = document;
       },
       isBlocked: () => false,
-      isReplacing: () => false,
-      replaceCopy: (run) => run(),
+      isReplacing: hooks.isReplacing ?? (() => false),
+      replaceCopy: hooks.replaceCopy ?? ((run) => run()),
       lineageId: () => "lineage-1",
       noteExportBlockers: vi.fn(),
       onConflict,
@@ -296,5 +302,55 @@ describe("autosaved undo steps", () => {
     expect(useToastStore().toasts.map((toast) => toast.message)).toEqual([
       "Ändringen kunde inte sparas som utkast. Försök igen.",
     ]);
+  });
+});
+
+describe("departure settle under the editing lock", () => {
+  it("resolves false without storing while another undo holds the copy", async () => {
+    const { edit, history } = setup(false, { isReplacing: () => true });
+    await flushPromises();
+    edit("one");
+    apiMocks.storeExamWorkspaceUndoStep.mockClear();
+
+    await expect(history.settleForDeparture()).resolves.toBe(false);
+
+    expect(apiMocks.storeExamWorkspaceUndoStep).not.toHaveBeenCalled();
+  });
+
+  it("runs the settle flush inside the replacing lock", async () => {
+    const events: string[] = [];
+    const { edit, history } = setup(false, {
+      replaceCopy: async <T>(run: () => Promise<T>): Promise<T> => {
+        events.push("lock");
+        try {
+          return await run();
+        } finally {
+          events.push("unlock");
+        }
+      },
+    });
+    await flushPromises();
+    edit("one");
+    const inner = apiMocks.storeExamWorkspaceUndoStep.getMockImplementation();
+    if (!inner) {
+      throw new Error("expected the step store double");
+    }
+    apiMocks.storeExamWorkspaceUndoStep.mockImplementation(async (...args) => {
+      events.push("store");
+      return inner(...args);
+    });
+
+    await expect(history.settleForDeparture()).resolves.toBe(true);
+
+    expect(events).toEqual(["lock", "store", "unlock"]);
+  });
+
+  it("resolves false when the departure store fails", async () => {
+    const { edit, history } = setup();
+    await flushPromises();
+    edit("one");
+    apiMocks.storeExamWorkspaceUndoStep.mockRejectedValueOnce(new Error("offline"));
+
+    await expect(history.settleForDeparture()).resolves.toBe(false);
   });
 });

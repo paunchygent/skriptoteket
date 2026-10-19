@@ -76,7 +76,8 @@ Stop and report if the shared editor cannot run on a browser store without forki
 - Blocked: F5 (the guest QTI start) waits for TASK-SKRIPT-41-02-01 on main. F6 (a print PDF separate from the Exam.net fallback PDF) waits for TASK-SKRIPT-40-04-07, which owns the student print PDF. When each one lands, the lead merges main and integrates it here.
 - Domain suite 2026-10-19 at f0bc8d14: backend 3092 passed, 0 failed; frontend 439 files, 3016 passed.
 - U7: the app logs `public_guest_limiter_proxy_untrusted` once per process at guest admission when uvicorn did not trust the proxy hop, and `public_guest_limiter_proxy_trust_loopback_only` at production startup when FORWARDED_ALLOW_IPS is loopback-only. Neither log line contains an IP.
-- Next: rereview of the high findings by da90f12c, routed by the orchestrator.
+- Rereview da90f12c cleared F1-F3 at 31f7d966 and kept F4 open: text typed during the departure write was lost. R9 fix: `useExamWorkspaceHistory.settleForDeparture` runs the settle flush inside the `replaceCopy` editing lock and resolves true only when the flush stored and no edit is pending. Departure resolves false while an undo, redo or server command holds the copy. Before the fix, the new departure spec failed (2 of 4 tests); after it, 48 focused tests pass and fe-type-check passes.
+- Next: full Vitest on the R9 commit after the orchestrator assigns a slot, then F4 goes back to review da90f12c.
 - Open findings:
   - B3 does not refuse a title that is already used in Mina filer, so a handoff can create a second exam with the same title. This is a product decision for the user.
   - The caller key is an unsalted sha256 of the client IP; rows are pruned after about 2 hours.
