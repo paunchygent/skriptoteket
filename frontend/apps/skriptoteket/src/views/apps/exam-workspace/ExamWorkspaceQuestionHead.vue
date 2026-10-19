@@ -7,9 +7,11 @@
  *   when the labeler suggests another type (`suggested_kind`), also marked
  *   Förslag in Byt frågetyp; Import, which shows the
  *   question as the exam file had it; the review check; and ⋮ with Flytta
- *   upp, Flytta ned and Ta bort for a deluppgift, or Ta bort for a question.
- *   Removing an instruction's last deluppgift also removes the emptied
- *   heading, and the entry says so before the teacher chooses it.
+ *   upp, Flytta ned, Flytta till… and Ta bort for a deluppgift, or Flytta
+ *   till… and Ta bort for a question. Flytta till lists the parts and "Ingen
+ *   del (fristående)", marking the question's current place and refusing a
+ *   part for an ordering question (G3, G6). Deleting a part's last question
+ *   keeps the part, so the entry needs no warning.
  *   A question that could not be converted shows its type in red. While the
  *   question still converts its type cannot change. Import and the review
  *   check come in through the `tools` slot (`ExamWorkspaceQuestionTools`);
@@ -19,7 +21,7 @@
  *   - Rendered by `ExamWorkspaceQuestionEditor`; emits every intent.
  */
 
-import { computed, ref, useId } from "vue";
+import { computed, ref } from "vue";
 
 import type { NativeExamItemKind } from "../../../api/examWorkspace";
 import { UiGlyph } from "../../../components/ui";
@@ -37,17 +39,24 @@ const PROTOTYPE_KIND_ORDER: NativeExamItemKind[] = [
   "ordering",
 ];
 
-const props = defineProps<{
-  label: string;
-  kind: NativeExamItemKind;
-  unbuilt: boolean;
-  converting: boolean;
-  /** Where a deluppgift sits in its instruction; null for a standalone question. */
-  child: { index: number; count: number } | null;
-  disabled: boolean;
-  /** The type the labeler suggests for this question; null when it has none. */
-  suggestedKind: NativeExamItemKind | null;
-}>();
+const props = withDefaults(
+  defineProps<{
+    label: string;
+    kind: NativeExamItemKind;
+    unbuilt: boolean;
+    converting: boolean;
+    /** Where a deluppgift sits in its instruction; null for a standalone question. */
+    child: { index: number; count: number } | null;
+    disabled: boolean;
+    /** The type the labeler suggests for this question; null when it has none. */
+    suggestedKind: NativeExamItemKind | null;
+    /** The places Flytta till offers, in list order, each with its display label. */
+    moveTargets?: { id: string; label: string }[];
+    /** The part the question sits in; null when it is standalone. */
+    currentParentId?: string | null;
+  }>(),
+  { currentParentId: null, moveTargets: () => [] },
+);
 
 /** Ordering questions are standalone only (ST-SKRIPT-39-06 P3), so a deluppgift cannot change to Ordna. */
 const orderedKinds = computed(() =>
@@ -60,20 +69,53 @@ const emit = defineEmits<{
   changeType: [kind: NativeExamItemKind];
   move: [delta: -1 | 1];
   remove: [];
+  moveTo: [targetParentId: string | null];
 }>();
 
 const typeTrigger = ref<HTMLButtonElement | null>(null);
 const moreTrigger = ref<HTMLButtonElement | null>(null);
 const typeOpen = ref(false);
 const moreOpen = ref(false);
-const deleteHintId = useId();
+const moveOpen = ref(false);
 
 const typeLabel = computed(() => (props.unbuilt ? "Ej konverterad" : EXAM_WORKSPACE_TYPE_LABELS[props.kind]));
 /** Offered while the question has another type, or has not been converted at all. */
 const offeredKind = computed(() =>
   props.suggestedKind !== null && (props.suggestedKind !== props.kind || props.unbuilt) ? props.suggestedKind : null,
 );
-const deleteTakesHeading = computed(() => props.child !== null && props.child.count === 1);
+
+/** An ordering question is never a part member (G6). */
+const ORDERING_REASON = "Ordna-frågor kan inte ligga i en del";
+
+/** The entry's refusal in a few words, or null when the question may move there. */
+function targetHint(targetParentId: string | null): string | null {
+  if (targetParentId === props.currentParentId) {
+    return "Här nu";
+  }
+  if (props.kind === "ordering" && targetParentId !== null) {
+    return ORDERING_REASON;
+  }
+  return null;
+}
+
+/** The Flytta till entries: "Ingen del (fristående)" first, then every part in list order (G3). */
+const moveOptions = computed(() => [
+  { hint: targetHint(null), id: null as string | null, label: "Ingen del (fristående)" },
+  ...props.moveTargets.map((target) => ({ hint: targetHint(target.id), id: target.id as string | null, label: target.label })),
+]);
+
+function openMove(): void {
+  moreOpen.value = false;
+  moveOpen.value = true;
+}
+
+function chooseMove(targetParentId: string | null): void {
+  if (targetHint(targetParentId) !== null) {
+    return;
+  }
+  moveOpen.value = false;
+  emit("moveTo", targetParentId);
+}
 
 function chooseKind(kind: NativeExamItemKind): void {
   typeOpen.value = false;
@@ -234,18 +276,52 @@ function chooseMore(action: "up" | "down" | "remove"): void {
         type="button"
         class="xw-mi"
         role="menuitem"
-        :aria-describedby="deleteTakesHeading ? deleteHintId : undefined"
+        data-test="exam-workspace-move-to"
+        @click="openMove"
+      >
+        <UiGlyph
+          meaning="open-detail"
+          :size="20"
+        /><span class="xw-grow">Flytta till…</span>
+      </button>
+      <button
+        type="button"
+        class="xw-mi"
+        role="menuitem"
         data-test="exam-workspace-delete"
         @click="chooseMore('remove')"
       >
         <UiGlyph
           meaning="delete"
           :size="20"
-        /><span class="xw-grow">{{ child ? "Ta bort deluppgiften" : "Ta bort frågan" }}</span><span
-          v-if="deleteTakesHeading"
-          :id="deleteHintId"
+        /><span class="xw-grow">{{ child ? "Ta bort deluppgiften" : "Ta bort frågan" }}</span>
+      </button>
+    </ExamWorkspaceMenu>
+
+    <ExamWorkspaceMenu
+      :open="moveOpen"
+      :anchor="moreTrigger"
+      label="Flytta till"
+      test-id="exam-workspace-move-menu"
+      @close="moveOpen = false"
+    >
+      <div class="xw-mhead">
+        Flytta till
+      </div>
+      <button
+        v-for="option in moveOptions"
+        :key="option.id ?? 'standalone'"
+        type="button"
+        class="xw-mi"
+        role="menuitem"
+        :aria-disabled="option.hint !== null || undefined"
+        :data-test="option.id === null ? 'exam-workspace-move-standalone' : `exam-workspace-move-${option.id}`"
+        @click="chooseMove(option.id)"
+      >
+        <span class="xw-mi__pad" /><span class="xw-grow">{{ option.label }}</span><span
+          v-if="option.hint"
           class="xw-mi__hint"
-        >Instruktionen tas också bort</span>
+        >{{ option.hint }}</span>
       </button>
     </ExamWorkspaceMenu>
   </div>

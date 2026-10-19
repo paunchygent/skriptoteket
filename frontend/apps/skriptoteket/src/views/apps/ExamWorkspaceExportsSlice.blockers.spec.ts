@@ -40,16 +40,19 @@ const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceHistory: vi.fn(),
   getExamWorkspaceHistoryStep: vi.fn(),
   storeExamWorkspaceUndoStep: vi.fn(),
-  downloadExamWorkspaceExport: vi.fn(),
   findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
-  getExamWorkspaceExportChecklist: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
   saveExamWorkspaceDocument: vi.fn(),
 }));
+const exportApiMocks = vi.hoisted(() => ({
+  downloadExamWorkspaceExport: vi.fn(),
+  getExamWorkspaceExportChecklist: vi.fn(),
+}));
 
+vi.mock("../../api/examWorkspaceExports", () => exportApiMocks);
 vi.mock("../../api/examWorkspace", async () => ({
   ...apiMocks,
   getExamCourseCatalog: (await import("../../test/examCourseCatalog")).getExamCourseCatalog,
@@ -61,7 +64,7 @@ vi.mock("../../utils/browserDownload", () => downloadMocks);
 
 
 beforeEach(() => {
-  arrangeExportApis({ api: apiMocks, download: downloadMocks });
+  arrangeExportApis({ api: apiMocks, exportApi: exportApiMocks, download: downloadMocks });
   arrangeStepHistory(apiMocks);
 });
 
@@ -80,7 +83,7 @@ describe("ExamWorkspaceView export blockers", () => {
   }
 
   it("blocks every format before the click and enables them when the last in-place fix clears the panel", async () => {
-    apiMocks.downloadExamWorkspaceExport.mockResolvedValue({
+    exportApiMocks.downloadExamWorkspaceExport.mockResolvedValue({
       blob: new Blob(["zip"]),
       contentType: "application/zip",
       filename: "NO-prov HT25.zip",
@@ -99,7 +102,7 @@ describe("ExamWorkspaceView export blockers", () => {
     }
     await requirePage("exam-workspace-export-qti").trigger("click");
     await flushPromises();
-    expect(apiMocks.downloadExamWorkspaceExport).not.toHaveBeenCalled();
+    expect(exportApiMocks.downloadExamWorkspaceExport).not.toHaveBeenCalled();
 
     expect(requirePage("exam-workspace-blocker-fix-item_003").text()).toBe("Godkänn");
     await requirePage("exam-workspace-blocker-fix-item_003").trigger("click");
@@ -121,9 +124,9 @@ describe("ExamWorkspaceView export blockers", () => {
       expect(saved.items.find((item: { item_id: string }) => item.item_id === itemId).answer_key.origin)
         .toBe("reviewed_advisory");
     }
-    expect(apiMocks.downloadExamWorkspaceExport).toHaveBeenCalledWith("lineage-1", "qti", 2);
+    expect(exportApiMocks.downloadExamWorkspaceExport).toHaveBeenCalledWith("lineage-1", "qti", 2);
     expect(apiMocks.saveExamWorkspaceDocument.mock.invocationCallOrder[0]!).toBeLessThan(
-      apiMocks.downloadExamWorkspaceExport.mock.invocationCallOrder[0]!,
+      exportApiMocks.downloadExamWorkspaceExport.mock.invocationCallOrder[0]!,
     );
     expect(requirePage("exam-workspace-export-menu-result").text()).toBe("QTI-paketet är skapat.");
   });
@@ -251,7 +254,7 @@ describe("ExamWorkspaceView export blockers", () => {
   });
 
   it("maps 422 export blockers to Swedish copy per blocked question in the drawer and menu", async () => {
-    apiMocks.downloadExamWorkspaceExport.mockRejectedValue(
+    exportApiMocks.downloadExamWorkspaceExport.mockRejectedValue(
       new ApiError({
         code: "VALIDATION_ERROR",
         details: {
@@ -298,7 +301,7 @@ describe("ExamWorkspaceView export blockers", () => {
     ["missing_answer_key", "Fråga 2: facit saknas", "Föreslå facit"],
     ["inline_choice_option_heading", "Fråga 2: rubrik i rullista", "Ta bort rubrikformat"],
   ])("names %s in the list's words with its fix on the blocked question", async (reason, row, fix) => {
-    apiMocks.downloadExamWorkspaceExport.mockRejectedValue(
+    exportApiMocks.downloadExamWorkspaceExport.mockRejectedValue(
       new ApiError({
         code: "VALIDATION_ERROR",
         details: { blockers: [{ item_id: "item_002", reason }] },
@@ -318,7 +321,7 @@ describe("ExamWorkspaceView export blockers", () => {
 
   it.each([false, true])(
     "keeps all empty-content blockers actionable in a 422 (mixed: %s)", async (mixed) => {
-      apiMocks.downloadExamWorkspaceExport.mockRejectedValue(
+      exportApiMocks.downloadExamWorkspaceExport.mockRejectedValue(
         new ApiError({
           code: "VALIDATION_ERROR",
           details: {
@@ -358,7 +361,7 @@ describe("ExamWorkspaceView export blockers", () => {
   );
 
   it("clears export blockers when a new version is saved", async () => {
-    apiMocks.downloadExamWorkspaceExport.mockRejectedValue(
+    exportApiMocks.downloadExamWorkspaceExport.mockRejectedValue(
       new ApiError({
         code: "VALIDATION_ERROR",
         details: { blockers: [{ item_id: "item_005", reason: "missing_points" }] },

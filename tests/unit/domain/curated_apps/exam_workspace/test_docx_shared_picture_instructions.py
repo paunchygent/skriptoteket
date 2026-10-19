@@ -96,6 +96,7 @@ def _converted(anchor: str, text: str) -> AlignedItem:
             }
         ),
         language="sv",
+        foreign_chunks=(),
     )
 
 

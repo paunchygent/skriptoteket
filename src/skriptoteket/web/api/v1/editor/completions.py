@@ -13,12 +13,11 @@ from fastapi import APIRouter, Depends, Header, Response
 
 from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode
-from skriptoteket.domain.identity.models import Role, User
-from skriptoteket.domain.identity.role_guards import require_any_role
+from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.llm import InlineCompletionCommand, InlineCompletionHandlerProtocol
 from skriptoteket.web.auth.ai_preferences import AiPreferences, require_app_ai_preferences
 from skriptoteket.web.auth.huleedu_app_projection import (
-    require_app_contributor_api,
+    require_app_ai_api,
 )
 from skriptoteket.web.dishka_dependencies import FromDishka
 
@@ -39,17 +38,15 @@ async def create_inline_completion(
     response: Response,
     handler: FromDishka[InlineCompletionHandlerProtocol],
     settings: FromDishka[Settings],
-    user: User = Depends(require_app_contributor_api),
+    user: User = Depends(require_app_ai_api),
     ai_preferences: AiPreferences = Depends(require_app_ai_preferences),
     eval_mode: str | None = Header(default=None, alias=_EVAL_REQUEST_HEADER),
 ) -> EditorInlineCompletionResponse:
-    if eval_mode == "1":
-        if settings.ENVIRONMENT == "production":
-            raise DomainError(
-                code=ErrorCode.FORBIDDEN,
-                message="Eval mode is not available in production",
-            )
-        require_any_role(user=user, roles=(Role.ADMIN, Role.SUPERUSER))
+    if eval_mode == "1" and settings.ENVIRONMENT == "production":
+        raise DomainError(
+            code=ErrorCode.FORBIDDEN,
+            message="Eval mode is not available in production",
+        )
     result = await handler.handle(
         actor=user,
         command=InlineCompletionCommand(

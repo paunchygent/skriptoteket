@@ -72,6 +72,7 @@ class TestItemInvariants:
                 sequence=1,
                 kind=NativeExamItemKind.FREE_TEXT,
                 body=(make_paragraph("Fråga"),),
+                writing_lines=8,
                 answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.ABSENT),
                 review=make_review(),
             )
@@ -95,6 +96,7 @@ class TestItemInvariants:
                 item_id="item_001",
                 sequence=1,
                 kind=NativeExamItemKind.FREE_TEXT,
+                writing_lines=8,
                 body=(
                     NativeParagraph(
                         heading_level=None, segments=(NativeGapSegment(gap_id="gap_001"),)
@@ -145,6 +147,7 @@ class TestItemInvariants:
                 sequence=1,
                 kind=NativeExamItemKind.FREE_TEXT,
                 body=(make_paragraph("Resonera."),),
+                writing_lines=8,
                 points=3,
                 criteria=(
                     NativeExamCriterion(text="Ett korrekt exempel.", points=2),
@@ -160,6 +163,7 @@ class TestItemInvariants:
             sequence=1,
             kind=NativeExamItemKind.FREE_TEXT,
             body=(make_paragraph("Resonera."),),
+            writing_lines=8,
             points=3,
             criteria=(
                 NativeExamCriterion(text="Ett korrekt exempel.", points=2),
@@ -211,3 +215,49 @@ class TestItemInvariants:
             NativeExamItem.model_validate(
                 {**make_free_text_item().model_dump(), "marking_guide": "Gammal rättningsmall."}
             )
+
+
+class TestWritingLines:
+    """A free-text question's ruled handwriting lines (W4)."""
+
+    def test_free_text_requires_a_writing_lines_value(self) -> None:
+        payload = make_free_text_item().model_dump()
+        payload.pop("writing_lines")
+
+        with pytest.raises(ValidationError, match="need writing_lines"):
+            NativeExamItem.model_validate(payload)
+
+    @pytest.mark.parametrize("writing_lines", [1, 40])
+    def test_writing_lines_accepts_its_bounds(self, writing_lines: int) -> None:
+        item = NativeExamItem.model_validate(
+            {**make_free_text_item().model_dump(), "writing_lines": writing_lines}
+        )
+
+        assert item.writing_lines == writing_lines
+
+    @pytest.mark.parametrize(
+        ("writing_lines", "message"),
+        [(0, "greater than or equal to 1"), (41, "less than or equal to 40")],
+    )
+    def test_writing_lines_refuses_out_of_range_values(
+        self, writing_lines: int, message: str
+    ) -> None:
+        with pytest.raises(ValidationError, match=message):
+            NativeExamItem.model_validate(
+                {**make_free_text_item().model_dump(), "writing_lines": writing_lines}
+            )
+
+    def test_writing_lines_refuses_a_boolean(self) -> None:
+        with pytest.raises(ValidationError, match="must be an integer"):
+            NativeExamItem.model_validate(
+                {**make_free_text_item().model_dump(), "writing_lines": True}
+            )
+
+    @pytest.mark.parametrize(
+        "item",
+        [make_single_choice_item(), make_gap_fill_item()],
+        ids=["single_choice", "gap_fill"],
+    )
+    def test_only_free_text_carries_writing_lines(self, item: NativeExamItem) -> None:
+        with pytest.raises(ValidationError, match="only free_text items carry writing_lines"):
+            NativeExamItem.model_validate({**item.model_dump(), "writing_lines": 8})

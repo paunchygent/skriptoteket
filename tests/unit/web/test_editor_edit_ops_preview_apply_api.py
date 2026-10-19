@@ -34,6 +34,7 @@ from skriptoteket.protocols.llm import (
     EditOpsPreviewHandlerProtocol,
     EditOpsPreviewMeta,
     EditOpsPreviewResult,
+    EditOpsResult,
 )
 from skriptoteket.web.api.v1.editor import edit_ops as edit_ops_api
 from skriptoteket.web.middleware.error_handler import error_handler_middleware
@@ -212,6 +213,74 @@ async def test_edit_ops_eval_headers_require_admin_role_metadata(
     details = response.json()["error"]["details"]
     assert set(details["required_roles"]) == {"admin", "superuser"}
     assert details["actual_role"] == "contributor"
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("role", [Role.USER, Role.CONTRIBUTOR])
+async def test_edit_ops_ai_gate_rejects_non_admin_roles(
+    client: httpx.AsyncClient,
+    private_key: rsa.RSAPrivateKey,
+    clock: ClockStub,
+    users: UserRepositoryStub,
+    profiles: ProfileRepositoryStub,
+    handler: AsyncMock,
+    role: Role,
+    now: datetime,
+) -> None:
+    seed_huleedu_projection(users=users, profiles=profiles, role=role, now=now)
+
+    response = await client.post(
+        "/api/v1/editor/edit-ops",
+        headers=signed_huleedu_headers(private_key=private_key, clock=clock),
+        json={
+            "tool_id": str(uuid4()),
+            "message": "Patch this",
+            "active_file": "tool.py",
+            "virtual_files": _virtual_files("print('hi')\n"),
+        },
+    )
+
+    assert response.status_code == 403
+    details = response.json()["error"]["details"]
+    assert set(details["required_roles"]) == {"admin", "superuser"}
+    assert details["actual_role"] == role.value
+    handler.handle.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("role", [Role.ADMIN, Role.SUPERUSER])
+async def test_edit_ops_ai_gate_admits_admin_roles(
+    client: httpx.AsyncClient,
+    private_key: rsa.RSAPrivateKey,
+    clock: ClockStub,
+    users: UserRepositoryStub,
+    profiles: ProfileRepositoryStub,
+    handler: AsyncMock,
+    role: Role,
+    now: datetime,
+) -> None:
+    seed_huleedu_projection(users=users, profiles=profiles, role=role, now=now)
+    handler.handle.return_value = EditOpsResult(
+        enabled=True,
+        assistant_message="ok",
+        ops=[],
+        base_fingerprints={},
+    )
+
+    response = await client.post(
+        "/api/v1/editor/edit-ops",
+        headers=signed_huleedu_headers(private_key=private_key, clock=clock),
+        json={
+            "tool_id": str(uuid4()),
+            "message": "Patch this",
+            "active_file": "tool.py",
+            "virtual_files": _virtual_files("print('hi')\n"),
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.json()["enabled"] is True
+    handler.handle.assert_awaited_once()
 
 
 @pytest.mark.asyncio

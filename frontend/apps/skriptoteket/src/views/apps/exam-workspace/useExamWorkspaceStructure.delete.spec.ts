@@ -12,15 +12,43 @@ import { createPinia, setActivePinia } from "pinia";
 import { effectScope, ref } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { NativeExamAsset, NativeExamBodyParagraph, NativeExamDocument, NativeExamItem } from "../../../api/examWorkspace";
+import type {
+  ExamWorkspaceDocumentResponse,
+  NativeExamAsset,
+  NativeExamBodyParagraph,
+  NativeExamDocument,
+  NativeExamItem,
+} from "../../../api/examWorkspace";
 import { useToastStore } from "../../../stores/toast";
 import { newTeacherItem } from "./examWorkspaceItemEdits";
 import { useExamWorkspaceStructure } from "./useExamWorkspaceStructure";
+import { buildSavedExamSummary } from "./useExamWorkspaceDocument.specSupport";
 
-vi.mock("../../../api/examWorkspace", () => ({}));
+const apiMocks = vi.hoisted(() => ({
+  deleteExamWorkspaceChild: vi.fn(),
+}));
+
+vi.mock("../../../api/examWorkspaceStructureCommands", () => apiMocks);
+
+/** The stored retry source and one of its chunks, as the transport declares them. */
+type NativeExamRetrySource = NonNullable<NativeExamItem["retry_source"]>;
+type NativeExamRetryChunk = NativeExamRetrySource["chunks"][number];
+
+/** A stable 64-hex SHA-256-shaped digest, distinct per asset id. */
+function assetDigest(assetId: string): string {
+  const encoded = [...assetId]
+    .map((character) => character.charCodeAt(0).toString(16).padStart(2, "0"))
+    .join("");
+  return encoded.padEnd(64, "0");
+}
 
 function asset(assetId: string): NativeExamAsset {
-  return { asset_id: assetId, byte_length: 1, media_type: "image/png", sha256: assetId };
+  return {
+    asset_id: assetId,
+    byte_length: 1,
+    media_type: "image/png",
+    sha256: assetDigest(assetId),
+  };
 }
 
 function picture(assetId: string): NativeExamBodyParagraph[] {
@@ -32,26 +60,29 @@ function question(sequence: number, assetIds: string[] = []): NativeExamItem {
   return { ...item, body: assetIds.flatMap(picture) };
 }
 
-function withRetrySource(item: NativeExamItem, assetId: string): NativeExamItem {
-  const chunk = {
-    anchor: "a",
-    images: [{ asset_id: assetId, marked_offset: 0, offset: 0 }],
-    kind: "paragraph",
-    marked_text: "",
+function retryChunk(anchor: string, text: string, assetIds: string[] = []): NativeExamRetryChunk {
+  return {
+    anchor,
+    images: assetIds.map((assetId) => ({ asset_id: assetId, marked_offset: 0, offset: 0 })),
+    kind: "question",
+    marked_text: text,
     missing_images: [],
     paragraphs: [],
     runs: [],
+    text,
   };
-  return {
-    ...item,
-    retry_source: {
-      chunks: [],
-      context_chunks: [chunk],
-      owned_context_anchors: [],
-      key_chunks: [],
-      label_kind: "free_text",
-    },
-  } as unknown as NativeExamItem;
+}
+
+/** The retry source a question keeps: one own chunk and one shared context chunk holding the picture. */
+function withRetrySource(item: NativeExamItem, assetId: string): NativeExamItem {
+  const source: NativeExamRetrySource = {
+    chunks: [retryChunk("body:0001", "Fråga två.")],
+    context_chunks: [retryChunk("context:0001", "Delad kontext.", [assetId])],
+    key_chunks: [],
+    label_kind: "free_text",
+    owned_context_anchors: [],
+  };
+  return { ...item, retry_source: source };
 }
 
 function documentOf(overrides: Partial<NativeExamDocument>): NativeExamDocument {
@@ -61,25 +92,45 @@ function documentOf(overrides: Partial<NativeExamDocument>): NativeExamDocument 
     header: { tags: [] },
     instructions: [],
     items: [question(1), question(2)],
-    origin: { kind: "docx_import" },
+    origin: {
+      extractor_version: "docx-extractor-1",
+      kind: "docx_import",
+      source_filename: "prov.docx",
+      source_sha256: "d".repeat(64),
+    },
     parents: [],
     revision: 1,
-    schema_version: "native_exam_document_v6",
+    schema_version: "native_exam_document_v8",
     title: "Prov",
     ...overrides,
   } as NativeExamDocument;
 }
 
+function response(document: NativeExamDocument): ExamWorkspaceDocumentResponse {
+  return {
+    conversion: null,
+    document,
+    export_blockers: [],
+    history_cursor: "cursor-after-command",
+    notes: [],
+    saved_document: document,
+    summary: buildSavedExamSummary({ title: document.title }),
+  };
+}
+
 function setup(initial: NativeExamDocument) {
   const workspaceDocument = ref<NativeExamDocument | null>(initial);
   const selectedItemId = ref<string | null>(null);
+  const selectedParentId = ref<string | null>(null);
   const editDocument = vi.fn((edit: (document: NativeExamDocument) => NativeExamDocument) => {
     workspaceDocument.value = edit(workspaceDocument.value!);
     return true;
   });
   const structure = effectScope().run(() =>
     useExamWorkspaceStructure({
-      applyCommandResponse: vi.fn(),
+      applyCommandResponse: (next) => {
+        workspaceDocument.value = next.document;
+      },
       editDocument,
       flush: vi.fn(async () => true),
       historyCursor: ref("cursor"),
@@ -89,7 +140,9 @@ function setup(initial: NativeExamDocument) {
       replaceCopy: (run) => run(),
       savedRevision: () => 1,
       selectItem: vi.fn(),
+      selectParent: vi.fn(),
       selectedItemId,
+      selectedParentId,
       workspaceDocument,
     }),
   )!;
@@ -98,6 +151,7 @@ function setup(initial: NativeExamDocument) {
 
 beforeEach(() => {
   setActivePinia(createPinia());
+  apiMocks.deleteExamWorkspaceChild.mockReset();
 });
 
 describe("deleting a standalone question", () => {
@@ -164,7 +218,7 @@ describe("deleting a standalone question", () => {
       "a parent instruction",
       {
         items: [question(1, ["asset_a"]), question(2), question(3)],
-        parents: [{ instruction: picture("asset_a"), item_ids: ["item_003"], parent_id: "parent_001" }],
+        parents: [{ instruction: picture("asset_a"), item_ids: ["item_003"], parent_id: "parent_001", place: 2 }],
       },
     ],
   ] as [string, Partial<NativeExamDocument>][])("keeps a picture still used by %s", (_label, overrides) => {
@@ -173,5 +227,28 @@ describe("deleting a standalone question", () => {
     structure.deleteItem("item_001");
 
     expect(workspaceDocument.value!.assets.map((entry) => entry.asset_id)).toEqual(["asset_a"]);
+  });
+});
+
+describe("deleting a part's last question (G8)", () => {
+  it("keeps the part as an instruction block and shows no heading notice", async () => {
+    const part = {
+      instruction: picture("asset_a"),
+      item_ids: ["item_001"],
+      parent_id: "parent_001",
+      place: 0,
+    };
+    const initial = documentOf({ assets: [asset("asset_a")], items: [question(1, ["asset_a"])], parents: [part] });
+    const { structure, workspaceDocument } = setup(initial);
+    const after = { ...initial, items: [], parents: [{ ...part, item_ids: [] }] };
+    apiMocks.deleteExamWorkspaceChild.mockResolvedValue(response(after));
+
+    structure.deleteItem("item_001");
+    await vi.waitFor(() => expect(apiMocks.deleteExamWorkspaceChild).toHaveBeenCalled());
+    await vi.waitFor(() => expect(structure.running.value).toBe(false));
+
+    expect(structure.deleteNotice.value).toBeNull();
+    expect(useToastStore().toasts).toEqual([]);
+    expect(workspaceDocument.value!.parents).toEqual([{ ...part, item_ids: [] }]);
   });
 });

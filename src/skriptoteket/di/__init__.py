@@ -12,7 +12,7 @@ Split into domain-specific providers for maintainability:
 
 from __future__ import annotations
 
-from dishka import AsyncContainer, make_async_container
+from dishka import AsyncContainer, Provider, make_async_container
 from starlette_dishka import StarletteProvider
 
 from skriptoteket.config import Settings
@@ -31,6 +31,7 @@ from skriptoteket.di.exam_answer_key import ExamAnswerKeyProvider
 from skriptoteket.di.exam_converter import ExamConverterProvider
 from skriptoteket.di.exam_workspace import ExamWorkspaceProvider
 from skriptoteket.di.exam_workspace_change_type import ExamWorkspaceChangeTypeProvider
+from skriptoteket.di.exam_workspace_imports import ExamWorkspaceImportProvider
 from skriptoteket.di.exam_workspace_index import ExamWorkspaceIndexProvider
 from skriptoteket.di.favorites import FavoritesProvider
 from skriptoteket.di.flunk_out_frenzy import FlunkOutFrenzyProvider
@@ -66,6 +67,7 @@ __all__ = [
     "ReagentPrepChefProvider",
     "EditorProvider",
     "ExamWorkspaceProvider",
+    "ExamWorkspaceImportProvider",
     "ExamWorkspaceChangeTypeProvider",
     "ExamWorkspaceIndexProvider",
     "FavoritesProvider",
@@ -80,13 +82,14 @@ __all__ = [
     "LlmProvider",
     "ScriptingProvider",
     "SuggestionsProvider",
+    "build_providers",
     "create_container",
 ]
 
 
-def create_container(settings: Settings) -> AsyncContainer:
-    """Create the DI container with all domain providers."""
-    return make_async_container(
+def build_providers(settings: Settings) -> tuple[Provider, ...]:
+    """Build every domain provider in the order the container registers them."""
+    return (
         StarletteProvider(),
         InfrastructureDatabaseProvider(settings),
         InfrastructureRepositoryProvider(),
@@ -113,9 +116,15 @@ def create_container(settings: Settings) -> AsyncContainer:
         FavoritesProvider(),
         EditorProvider(),
         ExamWorkspaceProvider(),
+        ExamWorkspaceImportProvider(),
         ExamWorkspaceChangeTypeProvider(),
         ExamWorkspaceIndexProvider(),
         LlmProvider(),
         ScriptingProvider(),
         SuggestionsProvider(),
     )
+
+
+def create_container(settings: Settings) -> AsyncContainer:
+    """Create the DI container with all domain providers."""
+    return make_async_container(*build_providers(settings))

@@ -36,7 +36,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 
-NATIVE_EXAM_DOCUMENT_SCHEMA_VERSION: Literal["native_exam_document_v6"] = "native_exam_document_v6"
+NATIVE_EXAM_DOCUMENT_SCHEMA_VERSION: Literal["native_exam_document_v8"] = "native_exam_document_v8"
 
 
 class NativeExamAsset(BaseModel):
@@ -53,14 +53,14 @@ class NativeExamAsset(BaseModel):
 class NativeExamDocumentOrigin(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    kind: Literal["docx_import", "digiexam_import", "created"]
+    kind: Literal["docx_import", "digiexam_import", "qti_import", "created"]
     source_filename: str | None = None
     source_sha256: str | None = Field(default=None, pattern=SHA256_PATTERN)
     extractor_version: str | None = None
 
     @model_validator(mode="after")
     def _import_requires_source(self) -> "NativeExamDocumentOrigin":
-        if self.kind in {"docx_import", "digiexam_import"}:
+        if self.kind in {"docx_import", "digiexam_import", "qti_import"}:
             if not self.source_filename or not self.source_sha256:
                 raise ValueError("import origin requires source_filename and source_sha256")
         return self
@@ -103,7 +103,7 @@ class NativeExamHeader(BaseModel):
 class NativeExamDocument(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    schema_version: Literal["native_exam_document_v6"] = NATIVE_EXAM_DOCUMENT_SCHEMA_VERSION
+    schema_version: Literal["native_exam_document_v8"] = NATIVE_EXAM_DOCUMENT_SCHEMA_VERSION
     document_id: UUID
     revision: int = Field(ge=1)
     title: str
@@ -166,11 +166,6 @@ class NativeExamDocument(BaseModel):
 
     def parent_of(self, item_id: str) -> NativeExamParent | None:
         return next((parent for parent in self.parents if item_id in parent.item_ids), None)
-
-    def printed_parent_of(self, item_id: str) -> NativeExamParent | None:
-        """The parent whose instruction the exports print; an empty instruction prints none."""
-        parent = self.parent_of(item_id)
-        return None if parent is not None and is_empty_body(parent.instruction) else parent
 
     def printed_instructions(self) -> tuple[NativeParagraph, ...]:
         """The exam instruction the exports print; a whitespace-only one prints nothing."""

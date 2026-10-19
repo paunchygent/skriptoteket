@@ -28,6 +28,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     points_line,
     uses_term,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.shared_body import is_answer_line_chunk
 
 Placed = tuple[int, tuple[str, ...], AlignedItem]
 
@@ -214,6 +215,7 @@ def with_heading_runs(
         if (chunk.kind == "heading" or chunk.anchor in part_lines.openers)
         and (chunk.anchor not in own or chunk.anchor in part_lines.sections)
         and i not in labels
+        and not is_answer_line_chunk(chunk)
     ]
     boundary_anchors = {chunks[i].anchor for i in boundaries}
     held = {a for m in instructions for a in m.source_anchors}
@@ -229,6 +231,7 @@ def with_heading_runs(
             or (not chunk.text.strip() and not chunk.images and not chunk.missing_images)
             or (at == 0 and chunk.anchor not in assigned)
             or chunk.anchor in title_anchors
+            or is_answer_line_chunk(chunk)
         ):
             continue
         if chunk.anchor in owner:

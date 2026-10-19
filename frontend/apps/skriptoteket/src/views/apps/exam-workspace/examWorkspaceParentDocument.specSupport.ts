@@ -67,6 +67,7 @@ function toNativeItem(recorded: RecordedItem, sequence: number): NativeExamItem 
     gaps,
     item_id: itemId(sequence),
     kind: recorded.kind as NativeExamItem["kind"],
+    writing_lines: recorded.kind === "free_text" ? 8 : null,
     match_left: [],
     match_right: [],
     points: recorded.points,
@@ -96,6 +97,7 @@ export function buildRecordedParent(): NativeExamParent {
     instruction: buildRecordedParentInstruction(),
     item_ids: Array.from({ length: CHILD_COUNT }, (_, index) => itemId(index + 1)),
     parent_id: "parent_001",
+    place: 0,
   };
 }
 
@@ -117,7 +119,7 @@ export function buildParentDocument(): NativeExamDocument {
     parents: [buildRecordedParent()],
     revision: 1,
     header: { tags: [] },
-    schema_version: "native_exam_document_v6",
+    schema_version: "native_exam_document_v8",
     title: "English 1",
   };
 }

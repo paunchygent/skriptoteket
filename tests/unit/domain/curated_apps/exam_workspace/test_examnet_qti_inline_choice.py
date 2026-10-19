@@ -43,6 +43,7 @@ def _saved_document(*, parented: bool, points: float | None) -> NativeExamDocume
                 "parents": (
                     NativeExamParent(
                         parent_id="parent_001",
+                        place=items[0].sequence - 1,
                         instruction=plain_body("Välj rätt ord."),
                         item_ids=tuple(item.item_id for item in items),
                     ),

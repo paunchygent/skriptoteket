@@ -66,7 +66,7 @@ def recorded_items(exam: str = ENGLISH_EXAM) -> tuple[NativeExamItem, ...]:
     """Every converted item of the exam, numbered in source order."""
     language = recorded_exam_language(exam)
     return tuple(
-        aligned_native_item(produced, language=language).item.model_copy(
+        aligned_native_item(produced, language=language, foreign_chunks=()).item.model_copy(
             update={"item_id": f"item_{number:03d}", "sequence": number}
         )
         for number, produced in enumerate(recorded_converted_items(exam), start=1)
@@ -96,6 +96,7 @@ def item_numbers(items: tuple[NativeExamItem, ...], kind: NativeExamItemKind) ->
 def parent_over(parent_id: str, instruction: str, *numbers: int) -> NativeExamParent:
     return NativeExamParent(
         parent_id=parent_id,
+        place=numbers[0] - 1 if numbers else 0,
         instruction=(
             NativeParagraph(
                 heading_level=None, segments=(NativeTextSegment(text=instruction, marks=()),)

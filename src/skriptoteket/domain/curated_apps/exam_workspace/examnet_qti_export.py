@@ -31,12 +31,19 @@ from skriptoteket.domain.curated_apps.exam_workspace.examnet_qti_prompt import (
 from skriptoteket.domain.curated_apps.exam_workspace.examnet_qti_prompt import (
     prompt_paragraphs as body_prompt_paragraphs,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import NativeParagraph
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+    NativeParagraph,
+    is_empty_body,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamAsset,
     NativeExamDocument,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import NativeExamItem
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_outline import (
+    OutlineQuestion,
+    document_outline,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import NativeExamParent
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_text_lines
 
@@ -48,41 +55,67 @@ def native_exam_to_examnet_qti_items(
     *,
     assets_by_id: Mapping[str, bytes] = NO_EXPORT_ASSETS,
 ) -> tuple[ExamNetQtiItem, ...]:
-    """Convert the native exam to reusable Exam.net QTI items.
+    """Convert the native exam to reusable Exam.net QTI items in document order.
 
-    A standalone native item becomes one QTI item. The children of a native parent
-    become one parent QTI item, placed where the parent's first child stands.
+    The document outline names each top-level entry in order. A standalone native item
+    becomes one QTI item. A part with children and a printed instruction becomes one
+    parent QTI item at the part's place; a part whose instruction prints nothing passes
+    each child through as a standalone item. A part with no questions and a printed
+    instruction becomes an unnumbered information block (G5); a childless part whose
+    instruction prints nothing exports nothing.
     """
 
     assets = {asset.asset_id: asset for asset in document.assets}
     labels = SWEDISH_EXAM_LABELS
+    global_stem = document.printed_instructions()
     qti_items: list[ExamNetQtiItem] = []
-    emitted_parent_ids: set[str] = set()
-    for item in document.items:
-        parent = document.printed_parent_of(item.item_id)
-        if parent is None:
+    for entry in document_outline(document):
+        if isinstance(entry, OutlineQuestion):
             qti_items.append(
                 _standalone_with_stem(
-                    item=item,
-                    stem=document.printed_instructions(),
+                    item=entry.item,
+                    stem=global_stem,
                     assets=assets,
                     assets_by_id=assets_by_id,
                     labels=labels,
                 )
             )
-        elif parent.parent_id not in emitted_parent_ids:
-            emitted_parent_ids.add(parent.parent_id)
-            children = tuple(document.item_by_id(item_id) for item_id in parent.item_ids)
+            continue
+        if not entry.children:
+            if is_empty_body(entry.part.instruction):
+                continue
             qti_items.append(
-                _parent_qti_item(
-                    parent=parent,
-                    global_stem=document.printed_instructions(),
-                    children=children,
+                _information_qti_item(
+                    part=entry.part,
+                    global_stem=global_stem,
                     assets=assets,
                     assets_by_id=assets_by_id,
                     labels=labels,
                 )
             )
+            continue
+        if is_empty_body(entry.part.instruction):
+            qti_items.extend(
+                _standalone_with_stem(
+                    item=child,
+                    stem=global_stem,
+                    assets=assets,
+                    assets_by_id=assets_by_id,
+                    labels=labels,
+                )
+                for child in entry.children
+            )
+            continue
+        qti_items.append(
+            _parent_qti_item(
+                parent=entry.part,
+                global_stem=global_stem,
+                children=entry.children,
+                assets=assets,
+                assets_by_id=assets_by_id,
+                labels=labels,
+            )
+        )
     return tuple(qti_items)
 
 
@@ -179,6 +212,7 @@ def _parent_qti_item(
         prompt_lines=body_text_lines(stem),
         prompt_paragraphs=body_prompt_paragraphs(stem),
         max_score=sum(scored) if scored else None,
+        expected_lines=children[0].writing_lines,
         evaluation_mode=(
             ExamNetQtiEvaluationMode.MANUAL_UNKEYED
             if manual
@@ -190,6 +224,42 @@ def _parent_qti_item(
         ),
         instruction_lines=body_text_lines(stem),
         children=tuple(qti_children),
+    )
+
+
+def _information_qti_item(
+    *,
+    part: NativeExamParent,
+    global_stem: tuple[NativeParagraph, ...],
+    assets: Mapping[str, NativeExamAsset],
+    assets_by_id: Mapping[str, bytes],
+    labels: ExamExportLabels,
+) -> ExamNetQtiItem:
+    """A childless part's printed instruction as an unnumbered Exam.net information block.
+
+    The body holds the same stem a parent prints (the exam instruction then the part's
+    own), one positioned prompt, but no interaction and no score; ``sequence`` is the
+    part's stored place so the planner's stable sort keeps it between its neighbours.
+    """
+
+    stem = (*global_stem, *part.instruction)
+    stem_resources = stem_image_resources(
+        stem,
+        owner_id=part.parent_id,
+        labels=labels,
+        assets=assets,
+        assets_by_id=assets_by_id,
+    )
+    return ExamNetQtiItem(
+        item_id=safe_identifier(part.parent_id),
+        sequence=part.place,
+        title="Instruktion",
+        interaction_type=ExamNetQtiInteractionType.INFORMATION,
+        prompt_lines=body_text_lines(stem),
+        prompt_paragraphs=body_prompt_paragraphs(stem),
+        max_score=None,
+        image_resources=stem_resources,
+        instruction_lines=body_text_lines(stem),
     )
 
 

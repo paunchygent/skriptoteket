@@ -55,7 +55,7 @@ from scripts._transcript_parity_evidence import (
 APP_PATH = "/apps/audio-transcription"
 ARTIFACT_ROOT = Path(".artifacts/audio-transcription-parity-live")
 DEFAULT_AUDIO_FILE = Path(
-    "/Users/olofs_mba/Documents/Repos/sir-convert-a-lot/"
+    "/Users/olofs_mba/Repos/sir-convert-a-lot/"
     "build/verification/stt-sidecar-live-fixtures/source-media/"
     "english-dialogue-two-speakers.mp3"
 )

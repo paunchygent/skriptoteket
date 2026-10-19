@@ -111,6 +111,9 @@ def native_exam_export_checklist(
     native_by_sequence = {item.sequence: item for item in document.items}
     entries: list[ExamNetExportChecklistEntry] = []
     for qti_item in qti_items:
+        if qti_item.interaction_type is ExamNetQtiInteractionType.INFORMATION:
+            # An information block holds no native question and loses nothing.
+            continue
         leaves = qti_item.children or (qti_item,)
         for leaf in leaves:
             native_item = _native_item_by_sequence(native_by_sequence, leaf.sequence)

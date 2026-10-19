@@ -26,7 +26,9 @@ import type {
   NativeExamGap,
   NativeExamItem,
 } from "../../../api/examWorkspace";
+import { useAuthStore } from "../../../stores/auth";
 import { useToastStore } from "../../../stores/toast";
+import { adminUser } from "../ExamWorkspaceSlice.specSupport";
 import { gapItem } from "./examWorkspaceKeyedItems.specSupport";
 import {
   buildResponse,
@@ -113,6 +115,9 @@ function pendingReply() {
 
 beforeEach(() => {
   setActivePinia(createPinia());
+  // Item retry is an admin-only AI path (TASK-SKRIPT-REP-0044 L3); this
+  // composable spec signs in so the retry behaviour under test runs.
+  useAuthStore().user = adminUser;
   for (const mock of Object.values(apiMocks)) {
     mock.mockReset();
   }

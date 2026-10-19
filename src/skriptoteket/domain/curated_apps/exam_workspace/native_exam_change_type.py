@@ -4,6 +4,9 @@ import random
 from dataclasses import dataclass
 from decimal import Decimal
 
+from skriptoteket.domain.curated_apps.exam_conversion.exam_print_house_template import (
+    DEFAULT_WRITING_LINES,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeParagraph,
     NativeTextSegment,
@@ -135,6 +138,11 @@ def change_item_type(
         choices=(),
         gaps=(),
         tick_points=None,
+        # Retyping sets the writing area: a new free-text question starts at the
+        # house default, and every other kind carries no writing lines (W4).
+        writing_lines=(
+            DEFAULT_WRITING_LINES if target_kind is NativeExamItemKind.FREE_TEXT else None
+        ),
         ai_suggestion=None,
         print_order=(),
     )

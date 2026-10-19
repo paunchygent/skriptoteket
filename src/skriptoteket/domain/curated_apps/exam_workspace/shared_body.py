@@ -18,7 +18,7 @@ Relationships:
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxChunk,
@@ -31,6 +31,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeSegment,
     NativeTextSegment,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.source_answer_space import (
+    is_answer_line_text,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import SourceFormatting
 
 _GAP_MARKER = "[___]"
@@ -38,6 +41,27 @@ _GAP_MARKER = "[___]"
 
 def _missing_picture_text(missing: DocxMissingImage) -> str:
     return f"[Bild saknas: {missing.reference} ({missing.media_type})]"
+
+
+def is_printed_answer_line(segments: Sequence[NativeSegment]) -> bool:
+    """A printed answer line is answer space, not question text (W10).
+
+    True only for a paragraph of text segments whose whole wording is whitespace and
+    underscores with at least one underscore. Any gap or asset segment keeps the paragraph.
+    """
+    texts = [segment.text for segment in segments if isinstance(segment, NativeTextSegment)]
+    return len(texts) == len(segments) and is_answer_line_text("".join(texts))
+
+
+def without_printed_answer_lines(
+    body: Iterable[NativeParagraph],
+) -> tuple[NativeParagraph, ...]:
+    """Every paragraph of ``body`` that is not a printed answer line, in order (W10).
+
+    The gate only removes whole paragraphs; a kept paragraph is never edited, merged or
+    rewritten. A paragraph carrying a gap or a picture is never a printed answer line.
+    """
+    return tuple(paragraph for paragraph in body if not is_printed_answer_line(paragraph.segments))
 
 
 def source_paragraph(chunk: DocxChunk) -> NativeParagraph | None:
@@ -48,7 +72,7 @@ def source_paragraph(chunk: DocxChunk) -> NativeParagraph | None:
     and where, and a picture-only chunk still becomes a non-empty paragraph. A text-less
     chunk without pictures becomes nothing.
     """
-    source = SourceFormatting((chunk,))
+    source = SourceFormatting((chunk,), foreign=())
     placements: list[tuple[int, NativeSegment]] = [
         (image.offset, NativeAssetSegment(asset_id=image.asset_id)) for image in chunk.images
     ]
@@ -81,6 +105,17 @@ def source_paragraph(chunk: DocxChunk) -> NativeParagraph | None:
     )
 
 
+def is_answer_line_chunk(chunk: DocxChunk) -> bool:
+    """A chunk whose only paragraph is a printed answer line has no question text (W10).
+
+    True only when the chunk renders a paragraph and that whole paragraph is whitespace
+    and underscores. A content-less chunk and a chunk that keeps any other wording or
+    carries a picture are not answer-line chunks: they still become a review item.
+    """
+    paragraph = source_paragraph(chunk)
+    return paragraph is not None and is_printed_answer_line(paragraph.segments)
+
+
 def source_paragraphs(chunks: Iterable[DocxChunk]) -> tuple[NativeParagraph, ...]:
     """Every source chunk as one body, in the given order, contentless chunks skipped."""
     result: list[NativeParagraph] = []
@@ -91,7 +126,7 @@ def source_paragraphs(chunks: Iterable[DocxChunk]) -> tuple[NativeParagraph, ...
                 result.append(paragraph)
             continue
         # Multi-paragraph chunks (for example table cells) retain their block levels.
-        source = SourceFormatting((chunk,))
+        source = SourceFormatting((chunk,), foreign=())
         placements: list[tuple[int, NativeSegment]] = [
             (image.offset, NativeAssetSegment(asset_id=image.asset_id)) for image in chunk.images
         ]
@@ -136,6 +171,25 @@ def source_paragraphs(chunks: Iterable[DocxChunk]) -> tuple[NativeParagraph, ...
                         NativeParagraph(heading_level=block.heading_level, segments=tuple(segments))
                     )
                 previous_end = end
+    return tuple(result)
+
+
+def review_source_paragraphs(
+    chunks: Iterable[DocxChunk],
+) -> tuple[tuple[str, NativeParagraph], ...]:
+    """The review fallback body with each paragraph's source chunk.
+
+    Printed answer lines are answer space, not question text (W10), so they are skipped;
+    every kept paragraph is paired with the anchor of the chunk that produced it, so the
+    review body and its alignment always come from the same render.
+    """
+    result: list[tuple[str, NativeParagraph]] = []
+    for chunk in chunks:
+        result.extend(
+            (chunk.anchor, paragraph)
+            for paragraph in source_paragraphs((chunk,))
+            if not is_printed_answer_line(paragraph.segments)
+        )
     return tuple(result)
 
 

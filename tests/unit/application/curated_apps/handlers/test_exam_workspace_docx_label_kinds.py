@@ -55,9 +55,10 @@ pytestmark = [pytest.mark.unit, pytest.mark.asyncio]
 _PART_LABEL = re.compile(r"^[a-z]\)\s\S")
 _CHOICE_ENUMERATION = re.compile(r"^\s*\(?(?:[A-Za-z]|\d{1,3})[.)]\s")
 _CHOICE_KINDS = (NativeExamItemKind.SINGLE_CHOICE, NativeExamItemKind.MULTIPLE_RESPONSE)
+_STEP_BOX = "☐"
 _MUTATED_EXAM = "bf26_english_1_unit_test_kap_1_2_med_facit"
-_MUTATED_BATCH = "docx_w1-01"
-_MUTATED_ANCHOR = "body:0007"
+_MUTATED_BATCH = "docx_w2-10-01"
+_MUTATED_ANCHOR = "body:0059"
 _converted: dict[str, NativeExamDocument] = {}
 Corruption = Callable[[dict[str, JsonValue]], None]
 
@@ -144,9 +145,9 @@ def _prefix_first_text(entry: dict[str, JsonValue], text: str) -> None:
 class _MutatedProvider(ReplayProvider):
     """Serve the recordings, with the reply entry at ``anchor`` changed by ``mutate``."""
 
-    def __init__(self, exam: str, request_id: str, anchor: str, mutate: Corruption) -> None:
+    def __init__(self, exam: str, batch: str, anchor: str, mutate: Corruption) -> None:
         super().__init__(exam)
-        self._request_id = request_id
+        self._batch = batch
         self._anchor = anchor
         self._mutate = mutate
 
@@ -154,7 +155,9 @@ class _MutatedProvider(ReplayProvider):
         self, *, request: StructuredLLMRequest, profile: StructuredLLMProviderProfile
     ) -> StructuredLLMResponse:
         response = await super().complete_structured(request=request, profile=profile)
-        if request.item_id != self._request_id:
+        # A converter batch is matched to its recording by anchors, so select the reply by the
+        # recording batch that was served, not by the request id.
+        if self.recording_ids.get(request.item_id) != self._batch:
             return response
         content = dict(response.content)
         self._mutate(_entry_at(content, self._anchor))
@@ -162,9 +165,9 @@ class _MutatedProvider(ReplayProvider):
 
 
 async def _mutated_document(
-    exam: str, request_id: str, anchor: str, mutate: Corruption
+    exam: str, batch: str, anchor: str, mutate: Corruption
 ) -> NativeExamDocument:
-    replay = build_replay(exam, provider=_MutatedProvider(exam, request_id, anchor, mutate))
+    replay = build_replay(exam, provider=_MutatedProvider(exam, batch, anchor, mutate))
     return (await replay.pipeline.convert(job=replay.job())).update.document
 
 
@@ -177,6 +180,9 @@ def _print_two_part_labels(entry: dict[str, JsonValue]) -> None:
 
 
 async def test_part_labels_inside_a_body_reach_the_document_and_both_exports_as_printed():
+    # A gap_fill stem is built from its source paragraph (TASK-SKRIPT-39-04-16), so the
+    # reply-printed labels are tested on a matching item (a choice stem strips a
+    # leading enumeration).
     document = await _mutated_document(
         _MUTATED_EXAM, _MUTATED_BATCH, _MUTATED_ANCHOR, _print_two_part_labels
     )
@@ -187,10 +193,13 @@ async def test_part_labels_inside_a_body_reach_the_document_and_both_exports_as_
 
     assert item.review.parse_origin is NativeParseOrigin.LLM_PARSED
     assert len(part_lines) == 2, "the reply's two part labels did not stay two parts"
-    assert _squash(part_lines[0]).startswith("a) This job requires the")
+    assert _squash(part_lines[0]).startswith(_squash("a) Select the word or phrase"))
     assert _squash(part_lines[1]) == "b) A cooperative spirit answers it."
+    # The student DOCX prints an inline gap as a handwriting blank, so the shared part
+    # label is the printed fact both exports must keep.
+    docx_text = "\n".join(_squash(paragraph) for paragraph in paragraphs)
     for line in part_lines:
-        assert line in paragraphs, f"DOCX export lost {line[:20]!r}"
+        assert _leading(line) in docx_text, f"DOCX export lost {line[:20]!r}"
         assert _leading(line) in _qti_text(qti[item.item_id]), f"QTI export lost {line[:20]!r}"
     assert item.printed_label not in {"a", "b", "a)", "b)"}, "a part label became metadata"
 
@@ -222,7 +231,7 @@ async def test_the_docx_export_adds_one_letter_per_choice_and_never_doubles_it(e
             continue
         for index, choice in enumerate(item.choices):
             letter = chr(ord("A") + index)
-            assert f"{letter}) {body_plain_text(choice.body)}" in paragraphs
+            assert f"{_STEP_BOX} {letter}) {body_plain_text(choice.body)}" in paragraphs
 
 
 async def test_a_review_item_shows_its_source_text_as_printed_in_both_exports():

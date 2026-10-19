@@ -72,6 +72,7 @@ dependencies = [
     "starlette-dishka>=1.0.2",
     "xlrd>=2.0.1",
     "pypdfium2>=5.6.0",
+    "defusedxml>=0.7.1",
 ]
 
 [project.optional-dependencies]
@@ -83,7 +84,7 @@ llm = [
 [dependency-groups]
 # Repository tooling (lint/type/test/hooks + validation tooling)
 monorepo-tools = [
-    "repository-governance @ git+https://github.com/paunchygent/skill-repository.git@b2a9e03fcb3dd6081bd8a83fd2031a265165e1c9#subdirectory=packages/repository_governance",
+    "repository-governance @ git+https://github.com/paunchygent/skill-repository.git@be1bef4ade7a757f62ae5fc553e456c98ef84c10#subdirectory=packages/repository_governance",
     "ruff",
     "mypy",
     "pytest",
@@ -104,6 +105,7 @@ monorepo-tools = [
     "types-Markdown",
     "shellcheck-py",
     "types-xlrd>=2.0.0.20260518",
+    "types-defusedxml>=0.7.0.20260504",
 ]
 
 # "Dev everything" extras that are useful locally but not required in prod images.

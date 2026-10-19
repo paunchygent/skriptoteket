@@ -12,15 +12,22 @@
  *   holds. A converted unit is replaced by the head's items only while the
  *   teacher has not touched it since the base the local copy started from;
  *   otherwise the teacher's version stays. The title, the header, the instructions and
- *   the parents follow the converted-unit rule. Items the teacher added
- *   belong to no unit and keep their place; when the head is a later save
- *   from another tab, its edits of such items follow the same rule and the
- *   items it added are kept after the head item they follow.
+ *   the parents follow the converted-unit rule. The merge computes no part
+ *   place: it builds a flat member list in document order (each converted
+ *   item keeps the part of the item it replaces) and hands it to the
+ *   structure owner `withMembers`, whose grouping rule assigns item sequences
+ *   and part places (R1). Items the teacher added belong to no unit and keep
+ *   their place; when the head is a later save from another tab, its edits of
+ *   such items follow the same rule and the items it added are kept after the
+ *   head item they follow.
  *
  * Relationships:
  *   - Client twin of `merge_conversion` in
  *     `application/curated_apps/handlers/exam_workspace_conversion_merge.py`,
  *     which applies the same rule on the server against the saved head.
+ *   - `examWorkspaceMembers` reads the local copy as members and `withMembers`
+ *     groups the merged members back into units. The merge never reconstructs
+ *     the ordering rule itself.
  *   - Pure function consumed by `useExamWorkspaceConversion` and
  *     `useExamWorkspaceDocument`; `sameDocument` is the one rule that tells
  *     `useExamWorkspaceDocument` whether the copy is dirty, and `sameValue`
@@ -32,8 +39,9 @@ import type {
   ExamWorkspaceConversionUnit,
   NativeExamDocument,
   NativeExamItem,
-  NativeExamParent,
 } from "../../../api/examWorkspace";
+import type { ExamWorkspaceMember } from "./examWorkspaceStructure";
+import { examWorkspaceMembers, withMembers } from "./examWorkspaceStructure";
 
 type MergeArgs = {
   base: NativeExamDocument;
@@ -44,7 +52,17 @@ type MergeArgs = {
   headUnits: ExamWorkspaceConversionUnit[];
 };
 
-type Entry = { fromHead: boolean; item: NativeExamItem; unit: string | null };
+type Entry =
+  | {
+      kind: "item";
+      fromHead: boolean;
+      item: NativeExamItem;
+      unit: string | null;
+      parentId: string | null;
+    }
+  | { kind: "block"; parentId: string };
+
+type ItemEntry = Extract<Entry, { kind: "item" }>;
 
 function sortKeys(value: unknown): unknown {
   if (Array.isArray(value)) {
@@ -123,19 +141,83 @@ function pick<T>(base: T, local: T, head: T): { fromHead: boolean; value: T } {
   return { fromHead: false, value: local };
 }
 
+function itemEntries(entries: Entry[]): ItemEntry[] {
+  return entries.filter((entry): entry is ItemEntry => entry.kind === "item");
+}
+
+/** The position after the last item entry of `unitId`, or the start when it has none. */
 function insertionIndex(
   entries: Entry[],
   headUnits: ExamWorkspaceConversionUnit[],
   at: number,
-) {
+): number {
   for (let index = at - 1; index >= 0; index -= 1) {
     const unitId = headUnits[index]!.unit_id;
-    const last = entries.map((entry) => entry.unit).lastIndexOf(unitId);
-    if (last >= 0) {
-      return last + 1;
+    for (let position = entries.length - 1; position >= 0; position -= 1) {
+      const entry = entries[position]!;
+      if (entry.kind === "item" && entry.unit === unitId) {
+        return position + 1;
+      }
     }
   }
   return 0;
+}
+
+/**
+ * The part an inserted item joins: the part shared by the entries around the
+ * insert position, and only when both are item entries carrying that same part.
+ */
+function neighbourParentId(entries: Entry[], index: number): string | null {
+  const before = entries[index - 1];
+  const after = entries[index];
+  if (
+    before !== undefined &&
+    after !== undefined &&
+    before.kind === "item" &&
+    after.kind === "item" &&
+    before.parentId !== null &&
+    before.parentId === after.parentId
+  ) {
+    return before.parentId;
+  }
+  return null;
+}
+
+/**
+ * The members the delivered parents define: every item entry takes the head
+ * part that owns it (by item id), else none, and the head's childless parts are
+ * blocks again. One forward walk over the head's members carries a cursor, the
+ * index in `members` where the next block goes: a head item moves the cursor
+ * past its merged entry (or leaves it when the item is absent), and a block
+ * lands at the cursor. Consecutive blocks therefore keep the head's order,
+ * including a leading run, and every run stays after the head item before it.
+ */
+function membersFromHead(entries: Entry[], head: NativeExamDocument): ExamWorkspaceMember[] {
+  const parentIdByItem = new Map<string, string>();
+  for (const parent of head.parents) {
+    for (const itemId of parent.item_ids) {
+      parentIdByItem.set(itemId, parent.parent_id);
+    }
+  }
+  const members: ExamWorkspaceMember[] = itemEntries(entries).map((entry) => {
+    entry.parentId = parentIdByItem.get(entry.item.item_id) ?? null;
+    return { kind: "item", item: entry.item, parentId: entry.parentId };
+  });
+  let cursor = 0;
+  for (const member of examWorkspaceMembers(head)) {
+    if (member.kind === "item") {
+      const at = members.findIndex(
+        (entry) => entry.kind === "item" && entry.item.item_id === member.item.item_id,
+      );
+      if (at !== -1) {
+        cursor = at + 1;
+      }
+      continue;
+    }
+    members.splice(cursor, 0, { kind: "block", parentId: member.parentId });
+    cursor += 1;
+  }
+  return members;
 }
 
 export function mergeConversionRevision({
@@ -181,62 +263,74 @@ export function mergeConversionRevision({
   const headById = new Map(head.items.map((item) => [item.item_id, item]));
   const entries: Entry[] = [];
   const placed = new Set<string>();
-  for (const item of local.items) {
+  for (const member of examWorkspaceMembers(local)) {
+    if (member.kind === "block") {
+      entries.push({ kind: "block", parentId: member.parentId });
+      continue;
+    }
+    const { item, parentId } = member;
     const unit = unitByItemId.get(item.item_id) ?? null;
     const headItems = unit === null ? undefined : replaced.get(unit);
     const baseItem = baseById.get(item.item_id);
     const headItem = headById.get(item.item_id);
     if (unit === null && baseItem && headItem && !unitItemIds.has(item.item_id)) {
       const chosen = pick(baseItem, item, headItem);
-      entries.push({ fromHead: chosen.fromHead, item: chosen.value, unit });
+      entries.push({ kind: "item", fromHead: chosen.fromHead, item: chosen.value, unit, parentId });
     } else if (unit === null || headItems === undefined) {
-      entries.push({ fromHead: false, item, unit });
+      entries.push({ kind: "item", fromHead: false, item, unit, parentId });
     } else if (!placed.has(unit)) {
       placed.add(unit);
       entries.push(
-        ...headItems.map((headItem) => ({
+        ...headItems.map((entryItem) => ({
+          kind: "item" as const,
           fromHead: true,
-          item: headItem,
+          item: entryItem,
           unit,
+          parentId,
         })),
       );
     }
   }
   for (const { at, items, unit } of inserted) {
     const index = insertionIndex(entries, headUnits, at);
+    const parentId = neighbourParentId(entries, index);
     entries.splice(
       index,
       0,
-      ...items.map((item) => ({ fromHead: true, item, unit })),
+      ...items.map((entryItem) => ({
+        kind: "item" as const,
+        fromHead: true,
+        item: entryItem,
+        unit,
+        parentId,
+      })),
     );
   }
 
   // Items a later save added since the base belong to no unit; keep them after
   // the head item they follow.
-  head.items.forEach((headItem, at) => {
-    if (unitItemIds.has(headItem.item_id) || baseById.has(headItem.item_id)) {
+  head.items.forEach((added, at) => {
+    if (unitItemIds.has(added.item_id) || baseById.has(added.item_id)) {
       return;
     }
     const previous = head.items[at - 1]?.item_id;
-    const index = entries.findIndex((entry) => entry.item.item_id === previous) + 1;
-    entries.splice(index, 0, { fromHead: true, item: headItem, unit: null });
+    const index =
+      entries.findIndex((entry) => entry.kind === "item" && entry.item.item_id === previous) + 1;
+    const parentId = neighbourParentId(entries, index);
+    entries.splice(index, 0, { kind: "item", fromHead: true, item: added, unit: null, parentId });
   });
 
   const headIds = new Set(
-    entries.filter((entry) => entry.fromHead).map((e) => e.item.item_id),
+    itemEntries(entries)
+      .filter((entry) => entry.fromHead)
+      .map((entry) => entry.item.item_id),
   );
-  const renames = new Map<string, string>();
-  for (const entry of entries) {
+  for (const entry of itemEntries(entries)) {
     if (!entry.fromHead && headIds.has(entry.item.item_id)) {
-      const fresh = nextItemId(entries.map((other) => other.item.item_id));
-      renames.set(entry.item.item_id, fresh);
+      const fresh = nextItemId(itemEntries(entries).map((other) => other.item.item_id));
       entry.item = { ...entry.item, item_id: fresh };
     }
   }
-  const items = entries.map((entry, index) => ({
-    ...entry.item,
-    sequence: index + 1,
-  }));
 
   const title = pick(base.title, local.title, head.title).value;
   const header = pick(base.header, local.header, head.header).value;
@@ -246,27 +340,26 @@ export function mergeConversionRevision({
     head.instructions,
   ).value;
   const parentsPick = pick(base.parents, local.parents, head.parents);
-  const present = new Set(items.map((item) => item.item_id));
-  const parents = parentsPick.value
-    .map((parent): NativeExamParent => {
-      const itemIds = parentsPick.fromHead
-        ? parent.item_ids
-        : parent.item_ids.map((itemId) => renames.get(itemId) ?? itemId);
-      return {
-        ...parent,
-        item_ids: itemIds.filter((itemId) => present.has(itemId)),
-      };
-    })
-    .filter((parent) => parent.item_ids.length > 0);
+  const sourceParents = parentsPick.fromHead ? head.parents : local.parents;
+  const members: ExamWorkspaceMember[] = parentsPick.fromHead
+    ? membersFromHead(entries, head)
+    : entries.map((entry) =>
+        entry.kind === "block"
+          ? { kind: "block", parentId: entry.parentId }
+          : { kind: "item", item: entry.item, parentId: entry.parentId },
+      );
 
-  return {
-    ...local,
-    document_id: head.document_id,
-    header,
-    instructions,
-    items,
-    parents,
-    revision: head.revision,
-    title,
-  };
+  return withMembers(
+    {
+      ...local,
+      document_id: head.document_id,
+      header,
+      instructions,
+      revision: head.revision,
+      title,
+      items: [],
+    },
+    members,
+    sourceParents,
+  );
 }

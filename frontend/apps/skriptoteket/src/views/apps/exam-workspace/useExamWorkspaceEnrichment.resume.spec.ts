@@ -28,6 +28,7 @@ import type {
   NativeAnswerKeySuggestion,
   NativeExamItem,
 } from "../../../api/examWorkspace";
+import { useAuthStore } from "../../../stores/auth";
 import { useToastStore } from "../../../stores/toast";
 import { buildMatchingItem } from "./examWorkspaceMatchingItem.specSupport";
 import { buildResponse, currentItem, deferred } from "./useExamWorkspaceDocument.specSupport";
@@ -39,7 +40,6 @@ import {
 } from "./useExamWorkspaceEnrichment";
 
 const apiMocks = vi.hoisted(() => ({
-  downloadExamWorkspaceExport: vi.fn(),
   findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
@@ -49,7 +49,11 @@ const apiMocks = vi.hoisted(() => ({
   requestExamWorkspaceAnswerKeySuggestions: vi.fn(),
   saveExamWorkspaceDocument: vi.fn(),
 }));
+const exportApiMocks = vi.hoisted(() => ({
+  downloadExamWorkspaceExport: vi.fn(),
+}));
 
+vi.mock("../../../api/examWorkspaceExports", () => exportApiMocks);
 vi.mock("../../../api/examWorkspace", async () => ({
   ...apiMocks,
   getExamCourseCatalog: (await import("../../../test/examCourseCatalog")).getExamCourseCatalog,
@@ -102,7 +106,10 @@ function jobStatus(
 beforeEach(() => {
   vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
   setActivePinia(createPinia());
-  for (const mock of Object.values(apiMocks)) {
+  useAuthStore().user = {
+    id: "teacher-a", email: "teacher-a@example.test", role: "admin", auth_provider: "local",
+  };
+  for (const mock of [...Object.values(apiMocks), ...Object.values(exportApiMocks)]) {
     mock.mockReset();
   }
   apiMocks.findExamWorkspaceAnswerKeySuggestions.mockResolvedValue(null);

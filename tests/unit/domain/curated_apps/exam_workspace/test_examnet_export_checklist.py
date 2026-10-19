@@ -75,6 +75,7 @@ def _free_text_item(
         item_id=item_id,
         sequence=sequence,
         kind=NativeExamItemKind.FREE_TEXT,
+        writing_lines=8,
         printed_label=printed_label,
         body=text_body(text),
         points=points,
@@ -142,11 +143,13 @@ def _gap_fill_item(
 
 
 def _with_parent(document: NativeExamDocument, item_ids: tuple[str, ...]) -> NativeExamDocument:
+    item_by_id = {item.item_id: item for item in document.items}
     return document.model_copy(
         update={
             "parents": (
                 NativeExamParent(
                     parent_id="parent_001",
+                    place=item_by_id[item_ids[0]].sequence - 1,
                     instruction=text_body("Gemensam instruktion."),
                     item_ids=item_ids,
                 ),

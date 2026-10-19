@@ -1,13 +1,21 @@
 import { mount } from "@vue/test-utils";
+import type { DOMWrapper, VueWrapper } from "@vue/test-utils";
 import { describe, expect, it } from "vitest";
 
+import { AI_ADMIN_ONLY_NOTE } from "../../composables/useAiAccess";
 import { UiGlyph } from "../ui/shared";
 import ChatComposer from "./ChatComposer.vue";
 
-function mountComposer() {
+function mountComposer(overrides: Record<string, unknown> = {}) {
   return mount(ChatComposer, {
-    props: { isStreaming: false, isEditOpsLoading: false, canClear: true },
+    props: { isStreaming: false, isEditOpsLoading: false, canClear: true, ...overrides },
   });
+}
+
+function findNotes(wrapper: VueWrapper): DOMWrapper<Element>[] {
+  return wrapper
+    .findAll("p, small, span")
+    .filter((node) => node.text().trim() === AI_ADMIN_ONLY_NOTE);
 }
 
 describe("ChatComposer shared controls", () => {
@@ -108,6 +116,54 @@ describe("ChatComposer shared controls", () => {
     await wrapper.findAll("button").find((button) => button.text() === "Ny chatt")!.trigger("click");
     expect(wrapper.emitted("clear")).toEqual([[]]);
     expect(wrapper.emitted("send")).toBeUndefined();
+    wrapper.unmount();
+  });
+
+  it.each([0, 1])(
+    "blocks the textarea, primary action, Enter and shows the note in mode %i under the AI gate",
+    async (modeIndex) => {
+      const wrapper = mountComposer({ aiBlockedNote: AI_ADMIN_ONLY_NOTE });
+      const modes = wrapper.get('[role="radiogroup"]').findAll('[role="radio"]');
+      await modes[modeIndex]!.trigger("click");
+
+      const textarea = wrapper.get("textarea");
+      expect(textarea.attributes("disabled")).toBeDefined();
+      await textarea.setValue("Gör något");
+
+      const label = modeIndex === 0 ? "Skicka" : "Föreslå ändringar";
+      const primary = wrapper.get(`button[aria-label="${label}"]`);
+      expect(primary.attributes("disabled")).toBeDefined();
+
+      await primary.trigger("click");
+      await textarea.trigger("keydown", { key: "Enter" });
+
+      expect(wrapper.emitted("send")).toBeUndefined();
+      expect(wrapper.emitted("requestEditOps")).toBeUndefined();
+      const notes = findNotes(wrapper);
+      expect(notes).toHaveLength(1);
+      expect(notes[0]!.text()).toBe(AI_ADMIN_ONLY_NOTE);
+      wrapper.unmount();
+    },
+  );
+
+  it("keeps cancel and clear behaviour while the AI gate is on", async () => {
+    const wrapper = mountComposer({ aiBlockedNote: AI_ADMIN_ONLY_NOTE });
+    await wrapper.findAll("button").find((button) => button.text() === "Ny chatt")!.trigger("click");
+    expect(wrapper.emitted("clear")).toEqual([[]]);
+
+    await wrapper.setProps({ isStreaming: true });
+    await wrapper.findAll("button").find((button) => button.text() === "Avbryt")!.trigger("click");
+    expect(wrapper.emitted("cancel")).toEqual([[]]);
+    expect(wrapper.emitted("send")).toBeUndefined();
+    wrapper.unmount();
+  });
+
+  it("keeps the ungated submission path when the note is null", async () => {
+    const wrapper = mountComposer({ aiBlockedNote: null });
+    expect(findNotes(wrapper)).toHaveLength(0);
+    await wrapper.get("textarea").setValue("Hej igen");
+    await wrapper.get('button[aria-label="Skicka"]').trigger("click");
+    expect(wrapper.emitted("send")).toEqual([["Hej igen"]]);
     wrapper.unmount();
   });
 });

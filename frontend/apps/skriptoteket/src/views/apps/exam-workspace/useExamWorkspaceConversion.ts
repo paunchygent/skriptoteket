@@ -2,7 +2,10 @@
  * Exam workspace DOCX import and progressive conversion lifecycle.
  *
  * Domain purpose:
- *   A DOCX import converts in batches. The server saves a revision when the
+ *   A DOCX import converts in batches. A DigiExam import follows the same
+ *   conversion. A QTI .zip import is read at once into a saved document and
+ *   opens like one from the Öppna list, with no conversion to follow. The
+ *   server saves a revision when the
  *   first batch is ready, with placeholders for the questions still
  *   converting, and a new revision for each later batch. Every document
  *   response names the import that created its lineage, read under the same
@@ -24,11 +27,13 @@
 import { computed, onScopeDispose, ref } from "vue";
 import type { Ref } from "vue";
 
+import { isApiError } from "../../../api/client";
 import {
   getExamWorkspaceConversionStatus,
   getExamWorkspaceDocument,
   importExamWorkspaceDigiExam,
   importExamWorkspaceDocument as requestImportExamWorkspaceDocument,
+  importExamWorkspaceQti,
 } from "../../../api/examWorkspace";
 import type {
   ExamWorkspaceConversionStatus,
@@ -37,6 +42,7 @@ import type {
   ExamWorkspaceDocumentSummary,
   NativeExamDocument,
 } from "../../../api/examWorkspace";
+import { useAiAccess } from "../../../composables/useAiAccess";
 import { useToast } from "../../../composables/useToast";
 import { mergeConversionRevision } from "./examWorkspaceConversionMerge";
 
@@ -44,6 +50,16 @@ export const EXAM_WORKSPACE_CONVERSION_POLL_MS = 3000;
 const CONVERSION_MAX_POLL_MS = 30_000;
 const STATUS_FAILURE_COPY = "Det gick inte att hämta konverteringen eller öppna provet. Försöker igen …";
 const IMPORT_FAILURE_COPY = "Det gick inte att läsa in provet. Försök igen.";
+
+/** A DigiExam export (.dxe) is read by its own importer and stays open to every role. */
+function isDigiExamFile(file: File): boolean {
+  return file.name.toLowerCase().endsWith(".dxe");
+}
+
+/** A QTI package (.zip) is read without AI and stays open to every role. */
+function isQtiPackageFile(file: File): boolean {
+  return file.name.toLowerCase().endsWith(".zip");
+}
 
 /** The document owner's state that conversion revisions are applied to. */
 export type ExamWorkspaceConversionBinding = {
@@ -68,8 +84,11 @@ export type ConflictSync = "merged" | "unrelated" | "unknown";
 export function useExamWorkspaceConversion(
   isBusy: () => boolean,
   binding: ExamWorkspaceConversionBinding,
+  /** Opens a saved document by its lineage id, as the Öppna list's open command does. */
+  openImported: (lineageId: string) => Promise<boolean>,
 ) {
   const toast = useToast();
+  const { canUseAi } = useAiAccess();
   const isImporting = ref(false);
   const conversionStatus = ref<ExamWorkspaceConversionStatus | null>(null);
   const isConverting = ref(false);
@@ -348,8 +367,22 @@ export function useExamWorkspaceConversion(
     return conversionRevision > expectedRevision ? "unknown" : "unrelated";
   }
 
+  /**
+   * The server's Swedish refusal of an import, or null when the failure
+   * carries no server message to show (the generic 422 envelope or an
+   * HTTP-level fault).
+   */
+  function serverImportMessage(error: unknown): string | null {
+    return isApiError(error) && error.code !== "HTTP_ERROR" && error.message !== "Validation error"
+      ? error.message
+      : null;
+  }
+
   async function importDocument(file: File, courseKey: string | null): Promise<void> {
     if (importBlocked.value || isConverting.value) return;
+    // A Word import is a paid AI conversion and stays admin-only until the spend cap ships;
+    // the Öppna drawer already shows the L3 note for the refused file.
+    if (!isDigiExamFile(file) && !isQtiPackageFile(file) && !canUseAi.value) return;
     const pollGeneration = ++generation;
     isImporting.value = true;
     conversionError.value = null;
@@ -357,8 +390,19 @@ export function useExamWorkspaceConversion(
     shownUnits.value = null;
     pollFailures = 0;
     try {
+      // A QTI package (.zip) is read at once into a saved document: no
+      // conversion follows, and the saved exam opens through the same
+      // `openDocument` path the Öppna list's open command uses.
+      if (isQtiPackageFile(file)) {
+        const summary = await importExamWorkspaceQti(file, courseKey);
+        if (pollGeneration !== generation) return;
+        // `openImported` refuses while this import still counts as busy.
+        isImporting.value = false;
+        await openImported(summary.lineage_id);
+        return;
+      }
       // A DigiExam export (.dxe) is read by its own importer; both follow the same conversion.
-      const request = file.name.toLowerCase().endsWith(".dxe")
+      const request = isDigiExamFile(file)
         ? importExamWorkspaceDigiExam
         : requestImportExamWorkspaceDocument;
       const status = await request(file, courseKey);
@@ -366,10 +410,11 @@ export function useExamWorkspaceConversion(
       isConverting.value = true;
       conversionStatus.value = status;
       await refreshConversion(pollGeneration);
-    } catch {
+    } catch (error) {
       if (pollGeneration !== generation) return;
-      conversionError.value = IMPORT_FAILURE_COPY;
-      toast.failure(IMPORT_FAILURE_COPY);
+      const message = serverImportMessage(error) ?? IMPORT_FAILURE_COPY;
+      conversionError.value = message;
+      toast.failure(message);
     } finally {
       isImporting.value = false;
     }

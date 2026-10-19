@@ -1,5 +1,5 @@
 {
-  "schema_version": "native_exam_document_v6",
+  "schema_version": "native_exam_document_v8",
   "document_id": "00000000-0000-4000-8000-000000000001",
   "revision": 1,
   "title": "Omprov: grammatik och språkstrukturer",
@@ -792,6 +792,7 @@
       "suggested_kind": null,
       "sequence": 8,
       "kind": "free_text",
+      "writing_lines": 8,
       "body": [
         {
           "segments": [

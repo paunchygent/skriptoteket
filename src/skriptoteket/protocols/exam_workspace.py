@@ -12,13 +12,18 @@ from skriptoteket.application.curated_apps.exam_workspace import (
     ExamWorkspaceConversionStatus,
     ExamWorkspaceDocumentListResponse,
     ExamWorkspaceDocumentResponse,
+    ExamWorkspaceDocumentSummary,
     ExamWorkspaceExportChecklistResponse,
     ExamWorkspaceExportFile,
     ExamWorkspaceExportTarget,
     ExamWorkspaceItemRetryResponse,
+    ExamWorkspacePrintPreviewResponse,
     RequestExamWorkspaceAnswerKeySuggestionsRequest,
     RetryExamWorkspaceItemRequest,
     SaveExamWorkspaceDocumentRequest,
+)
+from skriptoteket.application.curated_apps.exam_workspace_content_suggestions import (
+    ContentSuggestionsResponse,
 )
 from skriptoteket.application.curated_apps.exam_workspace_history import (
     ExamWorkspaceHistoryDocumentResponse,
@@ -28,6 +33,9 @@ from skriptoteket.application.curated_apps.exam_workspace_history import (
 from skriptoteket.application.curated_apps.exam_workspace_misspellings import (
     ExamWorkspaceMisspellingsRequest,
     ExamWorkspaceMisspellingsResponse,
+)
+from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_import_contracts import (
+    ExamNetQtiPackageSource,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.container import (
     ExamWorkspaceContainerContent,
@@ -109,6 +117,27 @@ class ExamWorkspaceDocxWriterProtocol(Protocol):
     def validate_docx_bytes(self, content: bytes, *, expected_item_count: int) -> None: ...
 
 
+@dataclass(frozen=True)
+class ExamPrintPreviewPages:
+    """One rendered preview: a PNG per printed page and where each item first appears.
+
+    ``pages`` holds PNG bytes for every page of the print document. ``question_pages``
+    maps a question's item id to the 0-based index of the page its first appearance
+    renders on, so the preview can scroll to the selected question (W5).
+    """
+
+    pages: tuple[bytes, ...]
+    question_pages: Mapping[str, int]
+
+
+class ExamPrintRendererProtocol(Protocol):
+    """Render print-PDF HTML to PDF bytes and to preview page images (W1)."""
+
+    def render_pdf(self, *, html: str) -> bytes: ...
+
+    async def render_preview(self, *, html: str) -> ExamPrintPreviewPages: ...
+
+
 class ListExamWorkspaceDocumentsHandlerProtocol(Protocol):
     async def handle(self, *, actor: User) -> ExamWorkspaceDocumentListResponse: ...
 
@@ -123,6 +152,18 @@ class ImportExamWorkspaceDigiExamDocumentHandlerProtocol(Protocol):
     async def handle(
         self, *, actor: User, filename: str, content: bytes, course_key: str | None
     ) -> ExamWorkspaceConversionStatus: ...
+
+
+class ParseExamWorkspaceQtiPackageHandlerProtocol(Protocol):
+    def handle(
+        self, *, filename: str, content: bytes, course_key: str | None
+    ) -> ExamWorkspaceContainerContent: ...
+
+
+class ImportExamWorkspaceQtiDocumentHandlerProtocol(Protocol):
+    async def handle(
+        self, *, actor: User, filename: str, content: bytes, course_key: str | None
+    ) -> ExamWorkspaceDocumentSummary: ...
 
 
 class GetExamCourseCatalogHandlerProtocol(Protocol):
@@ -193,6 +234,18 @@ class ExportExamWorkspaceDocumentHandlerProtocol(Protocol):
     ) -> ExamWorkspaceExportChecklistResponse: ...
 
 
+class PreviewExamWorkspacePrintHandlerProtocol(Protocol):
+    async def handle(
+        self,
+        *,
+        actor: User,
+        lineage_id: UUID,
+        expected_revision: int,
+        expected_cursor: UUID,
+        step_id: UUID,
+    ) -> ExamWorkspacePrintPreviewResponse: ...
+
+
 class RequestExamWorkspaceAnswerKeySuggestionsHandlerProtocol(Protocol):
     async def handle(
         self,
@@ -215,6 +268,16 @@ class FindExamWorkspaceAnswerKeySuggestionsHandlerProtocol(Protocol):
     ) -> ExamWorkspaceAnswerKeySuggestionsResponse | None: ...
 
 
+class RequestExamContentSuggestionsHandlerProtocol(Protocol):
+    async def handle(self, *, actor: User, lineage_id: UUID) -> ContentSuggestionsResponse: ...
+
+
+class GetExamContentSuggestionsHandlerProtocol(Protocol):
+    async def handle(
+        self, *, actor: User, lineage_id: UUID, job_id: UUID
+    ) -> ContentSuggestionsResponse: ...
+
+
 class RetryExamWorkspaceItemHandlerProtocol(Protocol):
     async def handle(
         self,
@@ -223,3 +286,9 @@ class RetryExamWorkspaceItemHandlerProtocol(Protocol):
         lineage_id: UUID,
         request: RetryExamWorkspaceItemRequest,
     ) -> ExamWorkspaceItemRetryResponse: ...
+
+
+class ExamNetQtiPackageReaderProtocol(Protocol):
+    """Open an uploaded QTI 3.0 package; refuse unsafe or malformed archives in Swedish."""
+
+    def read(self, *, content: bytes) -> ExamNetQtiPackageSource: ...

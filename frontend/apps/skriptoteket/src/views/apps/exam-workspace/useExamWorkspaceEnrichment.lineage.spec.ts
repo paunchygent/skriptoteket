@@ -24,6 +24,7 @@ import type {
   NativeAnswerKeySuggestion,
   NativeExamItem,
 } from "../../../api/examWorkspace";
+import { useAuthStore } from "../../../stores/auth";
 import { useToastStore } from "../../../stores/toast";
 import { buildMatchingItem } from "./examWorkspaceMatchingItem.specSupport";
 import { buildResponse, currentItem, deferred } from "./useExamWorkspaceDocument.specSupport";
@@ -35,7 +36,6 @@ import {
 } from "./useExamWorkspaceEnrichment";
 
 const apiMocks = vi.hoisted(() => ({
-  downloadExamWorkspaceExport: vi.fn(),
   getExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
   findExamWorkspaceAnswerKeySuggestions: vi.fn(),
@@ -45,7 +45,11 @@ const apiMocks = vi.hoisted(() => ({
   requestExamWorkspaceAnswerKeySuggestions: vi.fn(),
   saveExamWorkspaceDocument: vi.fn(),
 }));
+const exportApiMocks = vi.hoisted(() => ({
+  downloadExamWorkspaceExport: vi.fn(),
+}));
 
+vi.mock("../../../api/examWorkspaceExports", () => exportApiMocks);
 vi.mock("../../../api/examWorkspace", async () => ({
   ...apiMocks,
   getExamCourseCatalog: (await import("../../../test/examCourseCatalog")).getExamCourseCatalog,
@@ -102,10 +106,16 @@ function toastCount(message: string): number {
   return useToastStore().toasts.filter((toast) => toast.message === message).length;
 }
 
+/** Seed the signed-in actor the AI gate reads (TASK-SKRIPT-REP-0044 L3). */
+function signInAs(role: "user" | "contributor" | "admin" | "superuser"): void {
+  useAuthStore().user = { id: "teacher-a", email: "teacher-a@example.test", role, auth_provider: "local" };
+}
+
 beforeEach(() => {
   vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
   setActivePinia(createPinia());
-  for (const mock of Object.values(apiMocks)) {
+  signInAs("admin");
+  for (const mock of [...Object.values(apiMocks), ...Object.values(exportApiMocks)]) {
     mock.mockReset();
   }
 });
@@ -303,5 +313,32 @@ describe("a job of the exam that stays open", () => {
     expect(currentItem(document).ai_suggestion).toEqual(SUGGESTION);
     expect(currentItem(document).answer_key.origin).toBe("machine_proposed");
     expect(enrichment.enrichmentStatus.value?.state).toBe("succeeded");
+  });
+});
+
+describe("useExamWorkspaceEnrichment admin gate (TASK-SKRIPT-REP-0044 L3)", () => {
+  it.each(["user", "contributor"] as const)(
+    "sends no request and stays idle for role %s",
+    async (role) => {
+      signInAs(role);
+      const { enrichment } = await openExamA();
+
+      await enrichment.requestSuggestionsForAll();
+      await enrichment.requestSuggestionForItem("item_001");
+
+      expect(apiMocks.requestExamWorkspaceAnswerKeySuggestions).not.toHaveBeenCalled();
+      expect(enrichment.isRequesting.value).toBe(false);
+      expect(enrichment.isEnrichmentPending.value).toBe(false);
+    },
+  );
+
+  it("sends the request for an admin", async () => {
+    signInAs("admin");
+    const { enrichment } = await openExamA();
+    apiMocks.requestExamWorkspaceAnswerKeySuggestions.mockResolvedValue(jobStatus("queued"));
+
+    await enrichment.requestSuggestionsForAll();
+
+    expect(apiMocks.requestExamWorkspaceAnswerKeySuggestions).toHaveBeenCalledTimes(1);
   });
 });

@@ -15,6 +15,9 @@ from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
 from skriptoteket.application.curated_apps.exam_content_tagging import (
     MeteredExamContentTagClassifier,
 )
+from skriptoteket.application.curated_apps.exam_workspace_content_suggestions import (
+    ContentSuggestionsResponse,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.exam_content_tags import (
     ExamContentItem,
     NativeExamContentTag,
@@ -47,17 +50,6 @@ def course_content(course_key: str) -> ExamCourseContentResponse:
     return ExamCourseContentResponse(
         course_key=course_key, items=load_exam_content_catalog()[course_key]
     )
-
-
-class ContentSuggestionsResponse(BaseModel):
-    model_config = ConfigDict(frozen=True, extra="forbid")
-    job_id: UUID
-    lineage_id: UUID
-    document_revision: int
-    course_key: str
-    state: ExamAnswerKeyEnrichmentJobStatus
-    suggestions: tuple[NativeExamContentTag, ...] = ()
-    message: str | None = None
 
 
 class ContentSuggestionsPayload(BaseModel):

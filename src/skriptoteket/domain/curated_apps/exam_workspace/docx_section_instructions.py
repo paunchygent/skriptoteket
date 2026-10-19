@@ -65,7 +65,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeExamItemKind,
     NativeItemReviewState,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.shared_body import source_paragraphs
+from skriptoteket.domain.curated_apps.exam_workspace.shared_body import (
+    source_paragraphs,
+)
 
 # A body paragraph and the anchor of the source chunk it shows.
 _Shown = tuple[NativeParagraph, str]
@@ -423,6 +425,7 @@ def place_section_instructions(
     parents = tuple(
         NativeExamParent(
             parent_id=f"parent_{number:03d}",
+            place=group[0].reach[0],
             instruction=_parent_instruction(group),
             item_ids=tuple(_item_id(k) for k in group[0].reach),
         )

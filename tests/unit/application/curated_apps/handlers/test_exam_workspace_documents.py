@@ -19,7 +19,7 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_document_stor
 from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
     GetExamWorkspaceDocumentHandler,
     SaveExamWorkspaceDocumentHandler,
-    _summary,
+    document_summary,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_saved_index import (
     ListExamWorkspaceDocumentsHandler,
@@ -182,7 +182,7 @@ class _Env:
         return ExamWorkspaceDocumentResponse(
             document=document,
             saved_document=document,
-            summary=_summary(file, document),
+            summary=document_summary(file, document),
             history_cursor=document.document_id,
             conversion=None,
         )

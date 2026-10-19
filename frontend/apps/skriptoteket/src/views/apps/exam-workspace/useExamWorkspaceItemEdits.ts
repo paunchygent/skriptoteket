@@ -39,6 +39,7 @@ import {
 } from "./examWorkspaceItemEdits";
 import { withShuffledSteps, withStepAdded, withStepMoved, withStepRemoved } from "./examWorkspaceOrdering";
 import { withoutEmptyOptions, withoutOptionHeadings } from "./examWorkspaceBlockers";
+import { withWritingLines } from "./examWorkspaceWritingLines";
 
 /** One patch of one item, refused while the document is busy or the item still converts. */
 export type ExamWorkspaceItemPatch = (
@@ -102,6 +103,11 @@ export function useExamWorkspaceItemEdits(patchItem: ExamWorkspaceItemPatch) {
     patchItem(itemId, (item) => withTickPoints(item, tickPoints));
   }
 
+  /** The question's printed writing area; a stepper click is one undo step. */
+  function updateItemWritingLines(itemId: string, lines: number): void {
+    patchItem(itemId, (item) => withWritingLines(item, lines), true);
+  }
+
   function addItemOrderingStep(itemId: string): void {
     patchItem(itemId, (item) => withStepAdded(item), true);
   }
@@ -162,5 +168,6 @@ export function useExamWorkspaceItemEdits(patchItem: ExamWorkspaceItemPatch) {
     updateItemMatchPairs,
     updateItemPoints,
     updateItemTickPoints,
+    updateItemWritingLines,
   };
 }

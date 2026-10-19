@@ -45,6 +45,7 @@ def _aligned(*paragraphs: tuple[str, str | None]) -> AlignedItem:
         item_id="item_001",
         sequence=1,
         kind=NativeExamItemKind.FREE_TEXT,
+        writing_lines=8,
         body=tuple(
             NativeParagraph(heading_level=None, segments=(NativeTextSegment(text=text, marks=()),))
             for text, _ in paragraphs

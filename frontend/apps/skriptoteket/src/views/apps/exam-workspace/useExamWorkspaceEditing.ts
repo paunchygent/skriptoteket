@@ -5,12 +5,16 @@
  *   Join the open exam, its server-stored undo history and the structure
  *   commands into one editing session: every teacher edit becomes an undo
  *   step, Spara stores the pending edit before it overwrites the exam file,
- *   and a stale cursor reloads the exam (TASK-SKRIPT-39-04-08, 40-04-03).
+ *   and a stale cursor reloads the exam (TASK-SKRIPT-39-04-08, 40-04-03). It
+ *   owns `selectedParentId` (the part entry the teacher selected) so structural
+ *   inserts land after the selected part; the selection composable drives it.
  *
  * Relationships:
  *   - Composes `useExamWorkspaceDocument`, `useExamWorkspaceHistory` and
  *     `useExamWorkspaceStructure`; consumed by `ExamWorkspaceView`.
  */
+
+import { ref } from "vue";
 
 import type { NativeExamDocument } from "../../../api/examWorkspace";
 import { useExamWorkspaceDocument } from "./useExamWorkspaceDocument";
@@ -19,6 +23,12 @@ import { useExamWorkspaceStructure } from "./useExamWorkspaceStructure";
 
 export function useExamWorkspaceEditing() {
   let noteEdit: (structural: boolean, before: NativeExamDocument | null) => void = () => undefined;
+  // The selection composable is built by the view after this session; it registers
+  // its part-entry selection here so a new part's instruction opens in the editor.
+  let selectParent: (parentId: string) => void = () => undefined;
+  // The part entry the teacher selected, shared with the selection composable
+  // and the structure commands so Ny del and Ny instruktion land after it.
+  const selectedParentId = ref<string | null>(null);
   const document = useExamWorkspaceDocument({ onEdit: (structural, before) => noteEdit(structural, before) });
   const lineageId = () => document.summary.value?.lineage_id ?? null;
   const reload = () => document.reloadDocument();
@@ -50,7 +60,9 @@ export function useExamWorkspaceEditing() {
     replaceCopy: document.replaceCopy,
     savedRevision: () => document.savedRevision.value,
     selectItem: document.selectItem,
+    selectParent: (parentId) => selectParent(parentId),
     selectedItemId: document.selectedItemId,
+    selectedParentId,
     workspaceDocument: document.workspaceDocument,
   });
 
@@ -71,5 +83,16 @@ export function useExamWorkspaceEditing() {
     return await document.saveDocumentAs(name);
   }
 
-  return { ...document, history, save, saveAs, structure };
+  return {
+    ...document,
+    history,
+    save,
+    saveAs,
+    selectedParentId,
+    structure,
+    /** The view wires its part-entry selection once the selection composable exists. */
+    registerSelectParent: (select: (parentId: string) => void) => {
+      selectParent = select;
+    },
+  };
 }

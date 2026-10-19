@@ -83,6 +83,7 @@ def _marked(scored: ScoredItems) -> list[bool]:
 def _parent(parent_id: str, *item_ids: str) -> NativeExamParent:
     return NativeExamParent(
         parent_id=parent_id,
+        place=int(item_ids[0].removeprefix("item_")) - 1,
         instruction=(
             NativeParagraph(
                 segments=(NativeTextSegment(kind="text", text="Del", marks=()),), heading_level=None

@@ -3,14 +3,14 @@
  * Exam workspace Öppna drawer.
  *
  * Domain purpose:
- *   Import an exam from Word (.docx) or DigiExam (.dxe), optionally for a
- *   course, and open a saved exam. While a conversion runs, its progress
- *   replaces the drop zone; finished questions can be edited at once. The
- *   saved exams group by course (the teacher's own courses first) or list
- *   newest first, and the teacher's choice is kept in the profile. The open
- *   exam is marked "Öppet" with its import notes and the files it saved in
- *   Mina filer this session. Import and opening wait while the open exam has
- *   unsaved changes.
+ *   Import an exam from Word (.docx), DigiExam (.dxe) or QTI (.zip),
+ *   optionally for a course, and open a saved exam. While a conversion runs,
+ *   its progress replaces the drop zone; finished questions can be edited at
+ *   once. The saved exams group by course (the teacher's own courses first)
+ *   or list newest first, and the teacher's choice is kept in the profile.
+ *   The open exam is marked "Öppet" with its import notes and the files it
+ *   saved in Mina filer this session. Import and opening wait while the open
+ *   exam has unsaved changes.
  *
  * Relationships:
  *   - Rendered inside `ExamWorkspaceDrawer` by `ExamWorkspaceView`, which
@@ -21,6 +21,7 @@ import { computed, ref } from "vue";
 
 import type { ExamListOrdering, ExamWorkspaceDocumentSummary } from "../../../api/examWorkspace";
 import { UiGlyph } from "../../../components/ui";
+import { AI_ADMIN_ONLY_NOTE, useAiAccess } from "../../../composables/useAiAccess";
 import ExamCourseCombobox from "./ExamCourseCombobox.vue";
 import { examWorkspaceOpenGroups } from "./examWorkspaceOpenGroups";
 import { examWorkspaceDocumentLabel, examWorkspaceSavedAtLabel } from "./examWorkspaceRows";
@@ -54,6 +55,8 @@ const emit = defineEmits<{
 }>();
 
 const { courses, courseByKey, registeredCourseKeys, error: courseCatalogError } = useExamCourseCatalog();
+const { canUseAi } = useAiAccess();
+const aiAdminOnlyNote = AI_ADMIN_ONLY_NOTE;
 const courseKey = ref<string | null>(null);
 const dragOver = ref(false);
 const fileInput = ref<HTMLInputElement | null>(null);
@@ -176,12 +179,19 @@ function openEntry(entry: ExamWorkspaceDocumentSummary): void {
         class="drop__glyph"
       />
       <b class="drop__title">Provfil</b>
-      <span class="drop__formats"><span class="xw-chip">Word .docx</span><span class="xw-chip">DigiExam .dxe</span></span>
+      <span class="drop__formats">
+        <span
+          v-if="canUseAi"
+          class="xw-chip"
+        >Word .docx</span>
+        <span class="xw-chip">DigiExam .dxe</span>
+        <span class="xw-chip">QTI .zip</span>
+      </span>
       <input
         ref="fileInput"
         class="drop__input"
         type="file"
-        accept=".docx,.dxe"
+        :accept="canUseAi ? '.docx,.dxe,.zip' : '.dxe,.zip'"
         :disabled="importBlocked"
         tabindex="-1"
         aria-hidden="true"
@@ -201,6 +211,10 @@ function openEntry(entry: ExamWorkspaceDocumentSummary): void {
         />Välj provfil
       </button>
       <small>eller dra hit filen</small>
+      <small
+        v-if="!canUseAi"
+        class="xw-muted"
+      >{{ aiAdminOnlyNote }}</small>
     </div>
     <p
       v-if="sourceFileError"

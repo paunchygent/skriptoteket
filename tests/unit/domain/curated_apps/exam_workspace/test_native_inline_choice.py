@@ -28,6 +28,7 @@ def test_json_save_reopen_keeps_gap_local_options_and_keys(parented: bool) -> No
                 "parents": (
                     NativeExamParent(
                         parent_id="parent_001",
+                        place=item.sequence - 1,
                         instruction=plain_body("Välj i varje lucka."),
                         item_ids=(item.item_id,),
                     ),

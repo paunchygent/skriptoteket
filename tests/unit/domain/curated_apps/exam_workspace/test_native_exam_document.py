@@ -52,13 +52,23 @@ class TestSerializationRoundTrip:
             parse_native_exam_document(b'{"schema_version": "native_exam_document_v1"}')
         assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
 
-    def test_document_declares_the_v5_schema(self) -> None:
-        assert make_document(make_free_text_item()).schema_version == "native_exam_document_v6"
+    def test_document_declares_the_current_schema(self) -> None:
+        assert make_document(make_free_text_item()).schema_version == "native_exam_document_v8"
 
     def test_saved_v1_payload_has_no_compatibility_reader(self) -> None:
         document = make_document(make_free_text_item())
         payload = json.loads(native_exam_document_json_bytes(document))
         payload["schema_version"] = "native_exam_document_v1"
+
+        with pytest.raises(DomainError) as exc_info:
+            parse_native_exam_document(json.dumps(payload).encode("utf-8"))
+
+        assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
+
+    def test_saved_v6_payload_has_no_compatibility_reader(self) -> None:
+        document = make_document(make_free_text_item())
+        payload = json.loads(native_exam_document_json_bytes(document))
+        payload["schema_version"] = "native_exam_document_v6"
 
         with pytest.raises(DomainError) as exc_info:
             parse_native_exam_document(json.dumps(payload).encode("utf-8"))

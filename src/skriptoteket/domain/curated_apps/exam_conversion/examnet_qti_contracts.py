@@ -45,6 +45,9 @@ class ExamNetQtiInteractionType(StrEnum):
     FREE_TEXT = "free_text"
     MATCHING = "matching"
     ORDERING = "ordering"
+    # An item whose body holds only text and pictures, no interaction; Exam.net imports
+    # it as an information block (TASK-SKRIPT-39-06-10 G5).
+    INFORMATION = "information"
 
 
 class ExamNetQtiEvaluationMode(StrEnum):
@@ -250,6 +253,8 @@ class ExamNetQtiItem:
     )
     source_item_type: str | None = None
     free_text_criterion_points: int | float | None = None
+    # Free-text answer box height in lines; the question's writing lines (W2).
+    expected_lines: int | None = None
     choices: tuple[ExamNetQtiChoice, ...] = ()
     correct_choice_identifiers: tuple[str, ...] = ()
     text_entry_gaps: tuple[ExamNetQtiTextEntryGap, ...] = ()

@@ -32,10 +32,13 @@ def test_quoted_point_content_crossing_source_paragraphs_retains_complete_contex
     )
     if through_item:
         result = aligned_native_item(
-            _produced(chunks, kind="free_text", choices=[]), chunks=chunks, language="en"
+            _produced(chunks, kind="free_text", choices=[]),
+            chunks=chunks,
+            language="en",
+            foreign_chunks=(),
         ).item.body
     else:
-        result = SourceFormatting(chunks).rebuild_body({})
+        result = SourceFormatting(chunks, foreign=()).rebuild_body({})
     assert body_plain_text(result) == 'Choose an answer.\nQuote "\n(2 p)\n" here.'
 
 
@@ -81,7 +84,7 @@ def _choice_result(source_text, choices):
         chunks,
         choices=[{"text": text, "correct": False} for text in choices],
     )
-    return aligned_native_item(produced, chunks=chunks, language="en").item
+    return aligned_native_item(produced, chunks=chunks, language="en", foreign_chunks=()).item
 
 
 def test_curly_quoted_answer_word_keeps_its_closing_quote_before_the_tail():
@@ -211,7 +214,7 @@ def test_quoted_literal_answer_label_survives_with_and_without_a_bound_facit(fac
         ],
         facit_text=facit,
     )
-    result = aligned_native_item(produced, chunks=chunks, language="en").item
+    result = aligned_native_item(produced, chunks=chunks, language="en", foreign_chunks=()).item
     assert [body_plain_text(choice.body) for choice in result.choices] == ["red", wording]
     assert result.facit_text == facit
 
@@ -221,7 +224,7 @@ def test_body_rebuild_keeps_point_like_mathematical_content():
         _chunk("body:0001", "Choose an answer."),
         _chunk("body:0002", "Calculate (2 p) times q.", marked=True),
     )
-    result = SourceFormatting(chunks).rebuild_body({})
+    result = SourceFormatting(chunks, foreign=()).rebuild_body({})
     assert body_plain_text(result) == "Choose an answer.\nCalculate (2 p) times q."
 
 
@@ -230,7 +233,7 @@ def test_body_rebuild_keeps_short_mathematical_content():
         _chunk("body:0001", "Choose an answer."),
         _chunk("body:0002", "(2 p) times q.", marked=True),
     )
-    result = SourceFormatting(chunks).rebuild_body({})
+    result = SourceFormatting(chunks, foreign=()).rebuild_body({})
     assert body_plain_text(result) == "Choose an answer.\n(2 p) times q."
 
 
@@ -239,7 +242,7 @@ def test_source_only_rebuild_keeps_points_without_a_native_field():
         _chunk("body:0001", "Choose an answer."),
         _chunk("body:0002", "Total: 38 poäng", marked=True),
     )
-    result = SourceFormatting(chunks).rebuild_body({})
+    result = SourceFormatting(chunks, foreign=()).rebuild_body({})
     assert body_plain_text(result) == "Choose an answer.\nTotal: 38 poäng"
 
 

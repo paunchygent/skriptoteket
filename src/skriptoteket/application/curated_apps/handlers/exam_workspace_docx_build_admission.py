@@ -51,6 +51,9 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_admit_me
     is_question_heading,
     validation_detail,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_left_out import (
+    with_left_out,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_state import (
     DocxBuildState,
     TypeConflict,
@@ -84,10 +87,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_item_alignment import 
     AcceptedEntry,
     AlignedItem,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions import (
-    left_out_chunks,
-    with_left_out_mark,
-)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import (
     heading_openers,
     parent_openers,
@@ -100,11 +99,18 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
-    NativeParseOrigin,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.review_answer_key_cut import (
+    without_inline_answer_keys,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.source_format_errors import (
+    FormattingTransferError,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import (
     FORMATTING_REASON,
-    FormattingTransferError,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.source_gap_paragraphs import (
+    GapCountMismatchError,
 )
 
 CONFLICT_WITHOUT_KIND_REASON = (
@@ -158,56 +164,15 @@ def _built(
         )
     except GaplessGapQuestionError as error:
         return _source_review(index, anchors, state, seen, "native_contract_invalid", str(error))
+    except GapCountMismatchError as error:
+        state.record(
+            "admission", "gap_count_mismatch", item=index, anchors=anchors, detail=str(error)
+        )
+        aligned, held = state.printed(anchors, error.reason, seen)
+        return without_inline_answer_keys(aligned), held
     except Exception as error:
         # Model output that breaks an assumption of the item builder affects only its question.
         return _source_review(index, anchors, state, seen, "item_unbuildable", type(error).__name__)
-
-
-def _with_left_out(
-    index: int,
-    admitted: Admitted,
-    state: DocxBuildState,
-    seen: set[str],
-    item_held: frozenset[str],
-) -> Admitted:
-    """A converted item holds the own chunks of its question it leaves out; those no body
-    paragraph is aligned to show under a check mark as printed, a possible parsing issue (D41,
-    D4).
-
-    A left-out chunk is an own chunk of a question the item touches that no entry holds yet
-    and no item of the reply lists, except as a points line alone (D2).
-    """
-    aligned, anchors = admitted
-    item = aligned.item
-    if item.review.parse_origin is not NativeParseOrigin.LLM_PARSED:
-        return admitted
-    own = set().union(*(state.question_by_anchor.get(a, ()) for a in anchors))
-    left_out = tuple(
-        c.anchor
-        for c in state.pending
-        if c.anchor in own
-        and c.anchor not in seen
-        # A points line another entry lists alone is no item; this one holds it (D2).
-        and (c.anchor not in item_held or is_points_line(c.anchor, state))
-    )
-    # A left-out chunk the grouping lists as the question's facit is its answer key.
-    keys = {a for a in left_out if a in state.grouped_keys}
-    state.key_anchors.update(keys)
-    seen.update(keys)
-    # A left-out points line is held without a mark: the item already read its points (D2).
-    held = {a for a in left_out if a not in keys and is_points_line(a, state)}
-    seen.update(held)
-    anchors = (*anchors, *(a for a in left_out if a in held))
-    left_out = tuple(a for a in left_out if a not in keys and a not in held)
-    if not left_out:
-        return aligned, anchors
-    seen.update(left_out)
-    missing = left_out_chunks(aligned, [state.chunk_by_anchor[a] for a in left_out])
-    if missing:
-        moved = tuple(c.anchor for c in missing)
-        state.record("admission", "own_chunks_left_out", item=index, anchors=moved)
-        item = with_left_out_mark(item, missing)
-    return replace(aligned, item=item), (*anchors, *left_out)
 
 
 def _admit_item(
@@ -329,6 +294,17 @@ def _admit_item(
         shown -= (state.key_anchors | state.grouped_keys) - set(question)
         shown -= state.header_anchors
         own = tuple(chunk for chunk in state.chunks if chunk.anchor in shown)
+        # Every other question's own chunks: the source a misplaced paragraph repeats, never
+        # this item's content (TASK-SKRIPT-39-04-15 D4).
+        foreign = (
+            set().union(*state.questions)
+            - shown
+            - state.governing
+            - state.header_anchors
+            - set(instructions)
+            - state.context_anchors
+        )
+        foreign_chunks = tuple(chunk for chunk in state.chunks if chunk.anchor in foreign)
         scored = with_printed_points(
             with_accepted_forms(produced, context),
             (chunk for chunk in own if chunk.kind != "heading"),
@@ -336,6 +312,7 @@ def _admit_item(
         aligned = aligned_native_item(
             scored,
             chunks=own,
+            foreign_chunks=foreign_chunks,
             language=state.language,
             formatting_observer=lambda path: state.record_formatting(
                 path, item=index, anchors=anchors
@@ -383,7 +360,7 @@ def _admit_item(
         return aligned
 
     built = _built(index, anchors, state, seen, build)
-    state.accepted.append(_with_left_out(index, built, state, seen, item_held))
+    state.accepted.append(with_left_out(index, built, state, seen, item_held))
 
 
 def _part_lines_heading(anchors: tuple[str, ...], state: DocxBuildState) -> set[str]:

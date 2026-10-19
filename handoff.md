@@ -61,36 +61,22 @@
   passed, root 01a149c9 evidence/staging-walk-10eef9fd/); REP-0043 `done`; 39-06-02
   `done`; ordering TASK-SKRIPT-39-06-08 `in_progress` (Mac Opus lead 58ebedec, worktree Skriptoteket-task-skript-39-06-08, root 01a14c27); tutorial
   video focus fix 39230851.
-  TASK-SKRIPT-39-04-11 on `codex/task-skript-39-04-11-remote` (Hemma, lead
-  `f193466c`, root `01a14bdc-65b7-73e1-a8ee-3c75001a36fa`): repairs through 97d47894
-  (section opens where the running part changes); parent admits and merges to main.
-  TASK-SKRIPT-39-04-12 on `codex/task-skript-39-04-12-remote` (same lead and root):
-  15b213f3 (review-3 repairs, R4 approved) merged to main. DEL 4 user ruling
-  (a part named once opens a parent, also over one question), R4 lows and the
-  chapter_4 "Part 3," fragment at 37b70940; response: root
-  evidence/39-04-12/DEL4/response.md. Next: parent focused review, merge,
-  exempelprov staging re-walk. Editor grouping (move questions into new or
-  existing parts) is a separate parent-owned 39-06 task.
-  TASK-SKRIPT-39-04-13 and TASK-SKRIPT-40-04-06 `done` 2026-10-18: merged and published in
-  a0a81ab5a (Hemma-verified) and walked on staging (root 01a14e1f
-  evidence/staging-walk-a0a81ab5a/walk.md).
-  TASK-SKRIPT-39-04-14 `done` 2026-10-18: left-out own chunks and governing release read the
-  alignment, wording rules deleted; review approved at 62e178088 (root 01a14ea8
-  evidence/reviews/5d0e4e46…), D5-D7 user-accepted, drop audit in the task doc. Follow-ups held
-  on Hemma: gap paragraphs built from the source; left-out check on listed own chunks.
   Next lanes: 39-07-03 retire old converter routes (40-04-03 now on main); implement
   39-06-08 ordering; stories 39-04, 39-06, 39-07 await closeout.
   Ready (user grilling 2026-10-18, plans in root 01a14c27): 40-04-04 dropdown option editor, 40-04-05 export names from the exam title, 39-06-09 Exam.net probe of ordering inside a part.
-  In progress on Hemma 2026-10-18 (orchestrator tmux skript-orchestrator): 40-04-07 lead e492bfbb and
   39-06-10 lead 146bc2d8, both from a0a81ab5a; 39-06-10 ruling: a question moved out lands after its part.
-  40-04-07 ruling (user 2026-10-18): print PDF renders the DOCX house template; Exam.net import PDF stays a fallback only; QTI is the Exam.net route (W1/W11, lead amends the task doc).
-  39-06-10 delivered at 92ff33e2, Sol review running; merge after 40-04-07 (v8 bump, openapi regen).
-  Hemma lanes 2026-10-18: REP-0044 paid AI admin-only gate (lead 20270b35); REP-0045 `done` 2026-10-18, merged (label_b recordings carry capture-time request keys; 14 calls re-recorded).
-  39-04 follow-ups on Hemma from 6e3453b2e: 39-04-16 gap paragraphs from source (lead ec3b7ed9); 39-04-15 re-scoped by user to fix the q8 stem drop at its root (lead bb15ad98, merges after 39-04-16).
-  EPIC-SKRIPT-41 ready 2026-10-18: ST-41-02 guest workspace + QTI import + guest DXE line removal (Hemma, parallel); ST-41-01 paid AI through the HuleEdu LLM provider door (TASK-HULE-14-03-01 in huleedu first, then 41-01-03, 41-01-02, 41-01-04 capacity for 1,000 concurrent calls).
-  Hemma Opus lead `3b164d53`: 40-03-01..09 and 08-36-02 `done`; 40-02-01 tranche 1 on
-  main 761b1b59, tranche 2 a67afa90 (`in_progress`: shared `play` meaning in
-  session add-a-shared-play-glyph, exam-held wrappers and lucide removal open).
+  40-04-07 ruling (user 2026-10-18): print PDF renders the DOCX house template; Exam.net import PDF is a fallback only; QTI is the Exam.net route.
+  RESUMED 2026-10-19 after the 2026-10-18 account switch: Mac parent session 0d4e482f integrates and pushes; Hemma orchestrator is desktop SSH session local_42174b78 (cwd ~/apps/skriptoteket), briefed to resume every lane below with fresh leads. Roster is identical on Mac and Hemma (routes.toml byte-identical, skill-repository 1a22d64e): juniors OpenCode Spark 1.3 high (`junior-route` default `spark`), task-monitor/researcher OpenCode deepseek-v4.1-flash-free, explorers Haiku, leads Opus 5.5 (no code, never reused across tasks), reviews Pi Sol 6.1. Exam.net has no QTI export (UI + help center checked 2026-10-19): 41-02-01 uses a Skriptoteket package Exam.net accepted as its fixture. Lanes (Hemma branch @ head: next):
+
+  - 40-04-08 (gap/short-answer editor, click-a-word gaps, popover): lead on Hemma; its Mac staging walk also covers the owed 40-04-04 walk, then close 40-04-04.
+  - 39-04-18 facit carry-over and 39-04-19 Del A repair: in progress on Hemma; merge on review approval.
+  - 41-02-02: F5/F6 repair and F4 re-review; then production deploy with nginx-proxy fixed IP 172.18.255.10 and `TRUSTED_PROXY_CIDRS=172.18.255.10/32` (USER GATE: restarts shared nginx-proxy).
+  - REP-0046: USER GATE re-record 8 stale omprov_grammatik_sve2 labeler calls. REP-0048: 6 Exam.net walk checks (Mac walk).
+  - Converter repair (new, 2026-10-19 walk): a source score field "/4 p" leaves a lone "/" in each question text; sent to the Hemma orchestrator.
+  - HuleEdu after HULE-14-03-01: 41-01-03, 41-01-02, 41-01-04; http_runtime workers repair.
+    Hemma Opus lead `3b164d53`: 40-03-01..09 and 08-36-02 `done`; 40-02-01 tranche 1 on
+    main 761b1b59, tranche 2 a67afa90 (`in_progress`: shared `play` meaning in
+    session add-a-shared-play-glyph, exam-held wrappers and lucide removal open).
 
 - Historical 2026-09-05 workspace planning (EPIC-SKRIPT-39 E8-E12, ADR-SKRIPT-0091,
   ST-SKRIPT-39-04): `.codex/long-term-memory/entries/session-2026-09-05-epic-39-handoff-compaction.md`.
@@ -123,6 +109,8 @@
 - Completed REP/ST-38 outcomes and evidence are in the 2026-09-05 archive above.
 
 ## Recent
+
+- 2026-10-19 `done` on main: 40-04-07 writing areas (staging walk at `003c874a`, Mac `.artifacts/staging-walk-40-04-07/evidence/walk-record.md`), 41-02-01 QTI import, 39-04-15, 39-04-16, 39-04-17, REP-0047, HULE-14-03-01. Pre-push hook SIGPIPE false skip fixed (`003c874a`).
 
 - Wave 2 closed 2026-10-17 at `agent-overseer:approved-review-closeout`:
   39-04-06, 39-04-08, 39-04-10, 39-06-03, 39-06-04, 39-06-05, 39-06-07, 39-07-01,
@@ -181,7 +169,7 @@
 ## Facts
 
 - Session Date: 2026-10-15
-- Last Refreshed: 2026-10-15
+- Last Refreshed: 2026-10-19
 - Pushing `main` runs the full `pdm run typecheck` and `pdm run test` on Hemma first (`scripts/hemma_pre_push_check.sh`, pre-push hook, ~10 min; install with `pre-commit install --hook-type pre-push`). Run the push in the background; a failure blocks it, unreachable Hemma warns, Markdown-only commits reuse the last pass.
 - Current docs validate with `pdm run docs-validate`.
 - Historical terminal docs audit separately with `pdm run python -m scripts.historical_docs.validate_historical_docs`.

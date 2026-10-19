@@ -74,7 +74,10 @@ def test_native_item_rebuilds_a_marked_free_text_prefix_from_source():
         (DocxSourceRun(0, "Safety.", ("bold",)), DocxSourceRun(7, text[7:], ())),
     )
     item = aligned_native_item(
-        _produced("Do not mix acids.", (safety.anchor,)), chunks=(safety,), language="en"
+        _produced("Do not mix acids.", (safety.anchor,)),
+        chunks=(safety,),
+        language="en",
+        foreign_chunks=(),
     ).item
     assert item.review.state is NativeItemReviewState.REVIEW_COMPLETE
     assert body_plain_text(item.body) == text
@@ -96,6 +99,7 @@ def test_assembled_item_keeps_an_omitted_size_heading():
         _produced("Answer the question.", (heading.anchor, question.anchor)),
         chunks=(heading, question),
         language="en",
+        foreign_chunks=(),
     )
     result = assemble_build_result(
         document_id=uuid4(),

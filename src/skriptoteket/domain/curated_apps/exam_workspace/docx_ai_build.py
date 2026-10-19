@@ -1,11 +1,14 @@
 """Map produced items to the native contract and assemble the build result."""
 
 import re
-from collections.abc import Callable, Iterable, Mapping
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from decimal import Decimal
 from types import MappingProxyType
 from uuid import UUID
 
+from skriptoteket.domain.curated_apps.exam_conversion.exam_print_house_template import (
+    DEFAULT_WRITING_LINES,
+)
 from skriptoteket.domain.curated_apps.exam_workspace import docx_build_assets
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     DocxBuildEvent,
@@ -17,6 +20,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_gap_values import n
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_scoring import (
     free_text_criteria,
     matching_score,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.docx_answer_line_gate import (
+    gated_item,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxChunk,
@@ -102,6 +108,11 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeItemReviewState,
     NativeParseOrigin,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.shared_body import (
+    is_answer_line_chunk,
+    is_printed_answer_line,
+    without_printed_answer_lines,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.source_entry_ownership import (
     produced_entry_body,
 )
@@ -109,8 +120,11 @@ from skriptoteket.domain.curated_apps.exam_workspace.source_format_coverage impo
     NativeSourceEntry,
     complete_source_formatting,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import (
+from skriptoteket.domain.curated_apps.exam_workspace.source_format_errors import (
     FormattingTransferError,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.source_gap_paragraphs import (
+    gap_paragraphs_from_source,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.source_item_formatting import (
     item_source_formatting,
@@ -128,13 +142,17 @@ def aligned_native_item(
     produced: ProducedItem,
     *,
     chunks: Iterable[DocxChunk] = (),
+    foreign_chunks: Sequence[DocxChunk],
     language: Language,
     formatting_observer: Callable[[str], None] | None = None,
 ) -> AlignedItem:
     """Assign IDs and provenance; the native contract raises on any invalid shape.
 
     The result names, per body paragraph, the source chunk that paragraph shows: the one
-    alignment the source formatting made, never a second reading of the wording.
+    alignment the source formatting made, never a second reading of the wording. A paragraph
+    whose text is another question's source is not this item's content: ``foreign_chunks``
+    holds the other questions' own chunks, and such a paragraph is rebuilt from this item's
+    source instead (TASK-SKRIPT-39-04-15 D4).
 
     An asset segment becomes a native picture reference only when its id belongs to one of
     the provided source chunks; a model-invented id raises, so admission falls back to the
@@ -149,7 +167,7 @@ def aligned_native_item(
     if unresolved:
         raise ValueError(f"unresolved source pictures: {', '.join(unresolved)}")
     known_assets = {image.asset_id for chunk in chunk_list for image in chunk.images}
-    formatting = item_source_formatting(produced, chunk_list)
+    formatting = item_source_formatting(produced, chunk_list, foreign_chunks=foreign_chunks)
     choices = tuple(
         NativeChoice(choice_id=f"choice_{index:03d}", body=produced_entry_body(choice.text))
         for index, choice in enumerate(produced.choices, start=1)
@@ -192,7 +210,7 @@ def aligned_native_item(
                 segments.append(NativeGapSegment(gap_id=gap_id))
             elif segment.text:
                 segments.append(NativeTextSegment(text=segment.text, marks=()))
-        if segments:
+        if segments and not is_printed_answer_line(segments):
             body.append(NativeParagraph(heading_level=None, segments=tuple(segments)))
     body_source = formatting.body
     answers = {gap.gap_id: gap.accepted_values for gap in gaps}
@@ -272,6 +290,8 @@ def aligned_native_item(
             for ordinal, (start, end) in enumerate(surface.source.entry_spans, start=1)
         ),
     )
+    if produced.kind is NativeExamItemKind.GAP_FILL:
+        formatted_body = gap_paragraphs_from_source(body_source, formatted_body)
     if formatting_observer is not None:
         paths = {source.path for source in sources}
         formatting_observer(
@@ -288,6 +308,9 @@ def aligned_native_item(
         points=points,
         points_estimated=points_estimated,
         tick_points=tick_points,
+        writing_lines=(
+            DEFAULT_WRITING_LINES if produced.kind is NativeExamItemKind.FREE_TEXT else None
+        ),
         choices=choices,
         gaps=tuple(gaps),
         match_left=match_left,
@@ -332,7 +355,7 @@ def _ordered_items(
             aligned_source_item(review_chunk_item(chunk, review_reasons[chunk.anchor]), (chunk,)),
         )
         for chunk in chunks
-        if chunk.anchor in review_reasons
+        if chunk.anchor in review_reasons and not is_answer_line_chunk(chunk)
     )
     ordered.sort(key=lambda entry: entry[0])
     return place_section_instructions(
@@ -427,7 +450,13 @@ def assemble_build_result(
             parts,
         )
     scored = apply_printed_points(placed.items, placed.parents, printed, by_anchor)
-    items, parents = scored.items, scored.parents
+    # The one W10 gate on the final document: no printed answer line reaches any item
+    # body, parent instruction or document instruction, whichever path rebuilt it.
+    items = tuple(gated_item(item, by_anchor) for item in scored.items)
+    parents = tuple(
+        parent.model_copy(update={"instruction": without_printed_answer_lines(parent.instruction)})
+        for parent in scored.parents
+    )
     events = (*events, *scored.events)
     document_instructions = global_instructions(
         chunks,
@@ -435,6 +464,7 @@ def assemble_build_result(
         exam_instructions,
         by_anchor,
     )
+    document_instructions = without_printed_answer_lines(document_instructions)
     shared_bodies = (
         *(parent.instruction for parent in parents),
         document_instructions,

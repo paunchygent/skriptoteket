@@ -6,7 +6,7 @@ from xml.etree import ElementTree as ET
 from zipfile import ZipFile
 
 import httpx
-from dishka import Provider, Scope, from_context, make_async_container
+from dishka import make_async_container
 from fastapi import FastAPI
 from starlette_dishka import setup_dishka
 
@@ -35,6 +35,7 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_qti_wr
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.protocols.exam_conversion import ExamNetPdfRendererProtocol
 from skriptoteket.protocols.exam_workspace import (
+    ExamPrintRendererProtocol,
     ExamWorkspaceDocxWriterProtocol,
     ExportExamWorkspaceDocumentHandlerProtocol,
     GetExamWorkspaceDocumentHandlerProtocol,
@@ -58,16 +59,8 @@ from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders imp
 from tests.unit.domain.curated_apps.exam_workspace.recorded_native_exam_support import (
     recorded_items,
 )
+from tests.unit.web.parent_skeleton_test_support import SkeletonProvider
 from tests.unit.web.test_apps_exam_workspace_answer_key_suggestions_api import FakeRegistry
-
-
-class SkeletonProvider(Provider):
-    registry = from_context(provides=CuratedAppRegistryProtocol, scope=Scope.APP)
-    reader = from_context(provides=GetExamWorkspaceDocumentHandlerProtocol, scope=Scope.APP)
-    writer = from_context(provides=SaveExamWorkspaceDocumentHandlerProtocol, scope=Scope.APP)
-    parents = from_context(provides=ExamWorkspaceParentsHandlerProtocol, scope=Scope.APP)
-    undo_steps = from_context(provides=StoreExamWorkspaceUndoStepHandlerProtocol, scope=Scope.APP)
-    exporter = from_context(provides=ExportExamWorkspaceDocumentHandlerProtocol, scope=Scope.APP)
 
 
 async def build_parent_skeleton_package() -> tuple[bytes, NativeExamDocument]:
@@ -86,6 +79,7 @@ async def build_parent_skeleton_package() -> tuple[bytes, NativeExamDocument]:
         qti_writer=ExamNetQtiPackageWriter(),
         pdf_renderer=Mock(spec=ExamNetPdfRendererProtocol),
         docx_writer=Mock(spec=ExamWorkspaceDocxWriterProtocol),
+        print_renderer=Mock(spec=ExamPrintRendererProtocol),
     )
     container = make_async_container(
         SkeletonProvider(),

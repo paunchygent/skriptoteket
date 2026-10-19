@@ -4,6 +4,9 @@ from __future__ import annotations
 
 from uuid import UUID
 
+from skriptoteket.domain.curated_apps.exam_conversion.exam_print_house_template import (
+    DEFAULT_WRITING_LINES,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeParagraph,
     NativeTextSegment,
@@ -47,6 +50,7 @@ def placeholder(anchor: str, text: str) -> NativeExamItem:
         sequence=1,
         kind=NativeExamItemKind.FREE_TEXT,
         body=body(text),
+        writing_lines=DEFAULT_WRITING_LINES,
         answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
         review=NativeItemReview(
             state=NativeItemReviewState.REVIEW_REQUIRED,
@@ -103,19 +107,24 @@ def conversion_update(
         items.append(item.model_copy(update={"item_id": item_id, "sequence": len(items) + 1}))
         extra_ids.append(item_id)
     by_source = {question_id: ids for question_id, ids in item_ids.items()}
+    item_position = {item.item_id: index for index, item in enumerate(items)}
+    parents_with_place = []
+    for index, (_, questions) in enumerate(parents, start=1):
+        child_ids = tuple(i for q in questions for i in by_source[q])
+        parents_with_place.append(
+            NativeExamParent(
+                parent_id=f"parent_{index:03d}",
+                place=item_position[child_ids[0]],
+                instruction=body("Välj rätt svar."),
+                item_ids=child_ids,
+            )
+        )
     document = NativeExamDocument(
         document_id=document_id,
         revision=1,
         title=title,
         items=tuple(items),
-        parents=tuple(
-            NativeExamParent(
-                parent_id=f"parent_{index:03d}",
-                instruction=body("Välj rätt svar."),
-                item_ids=tuple(i for q in questions for i in by_source[q]),
-            )
-            for index, (_, questions) in enumerate(parents, start=1)
-        ),
+        parents=tuple(parents_with_place),
         origin=NativeExamDocumentOrigin(
             kind="docx_import", source_filename="prov.docx", source_sha256="a" * 64
         ),

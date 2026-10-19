@@ -10,8 +10,9 @@
  *     hoisted per file) and passes its mocks to the arrange helpers.
  */
 
+import { createTestingPinia } from "@pinia/testing";
 import { flushPromises } from "@vue/test-utils";
-import type { Mock } from "vitest";
+import { vi, type Mock } from "vitest";
 
 import type {
   ExamWorkspaceConversionStatus,
@@ -19,7 +20,8 @@ import type {
   NativeExamDocument,
 } from "../../api/examWorkspace";
 import { buildFreeTextItem } from "../../test/examWorkspaceFixtures";
-import { mountWithContext } from "../../test/utils";
+import { createTestRouter, mountWithContext } from "../../test/utils";
+import { adminUser } from "./ExamWorkspaceSlice.specSupport";
 import ExamWorkspaceView from "./ExamWorkspaceView.vue";
 import { buildSavedExamSummary } from "./exam-workspace/useExamWorkspaceDocument.specSupport";
 
@@ -42,7 +44,7 @@ export function buildDocument(): NativeExamDocument {
     parents: [],
     revision: 1,
     header: { tags: [] },
-    schema_version: "native_exam_document_v6",
+    schema_version: "native_exam_document_v8",
     title: "NO-prov HT25",
   };
 }
@@ -75,7 +77,16 @@ export type ViewWrapper = ReturnType<typeof mountWithContext>;
 export const mounted: ViewWrapper[] = [];
 
 export async function mountView() {
-  const wrapper = mountWithContext(ExamWorkspaceView);
+  const pinia = createTestingPinia({
+    createSpy: vi.fn,
+    initialState: { auth: { user: adminUser } },
+    // `hasAtLeastRole` is a setup-store function, so `createTestingPinia`
+    // registers it as an action and would stub it to a no-op, refusing AI.
+    stubActions: (name) => name !== "hasAtLeastRole",
+  });
+  const wrapper = mountWithContext(ExamWorkspaceView, {
+    global: { plugins: [pinia, createTestRouter()] },
+  });
   mounted.push(wrapper);
   await flushPromises();
   return wrapper;

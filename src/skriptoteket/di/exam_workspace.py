@@ -1,8 +1,10 @@
 """DI bindings for the native exam workspace (ST-SKRIPT-39-04).
 
-A focused provider: the DOCX chunker and container codec are stateless
-app-scoped adapters; the document store and handlers are request-scoped so
-they share the request session, UoW, and vault repositories.
+A focused provider: the DOCX chunker and container codec are app-scoped
+adapters; the document store and the remaining handlers are request-scoped
+so they share the request session, UoW, and vault repositories. Import lanes
+(DOCX, DigiExam, QTI) live in ``exam_workspace_imports``; the editing/export
+group also serves the server-side student print preview.
 """
 
 from __future__ import annotations
@@ -27,17 +29,12 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_pr
 from skriptoteket.application.curated_apps.handlers.exam_workspace_courses import (
     GetExamCourseCatalogHandler,
 )
-from skriptoteket.application.curated_apps.handlers.exam_workspace_digiexam_jobs import (
-    ProcessExamWorkspaceDigiExamJobHandler,
-)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_document_store import (
     ExamWorkspaceDocumentStore,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
     GetExamWorkspaceConversionStatusHandler,
     GetExamWorkspaceDocumentHandler,
-    ImportExamWorkspaceDigiExamDocumentHandler,
-    ImportExamWorkspaceDocumentHandler,
     SaveExamWorkspaceDocumentHandler,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_rounds import (
@@ -64,11 +61,17 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_misspellings 
 from skriptoteket.application.curated_apps.handlers.exam_workspace_parents import (
     ExamWorkspaceParentsHandler,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_print_preview import (
+    PreviewExamWorkspacePrintHandler,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_undo_steps import (
     StoreExamWorkspaceUndoStepHandler,
 )
 from skriptoteket.config import Settings
 from skriptoteket.di.docx_conversion import build_docx_conversion_pipeline
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_print_renderer import (
+    WeasyPrintExamPrintRenderer,
+)
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_container import (
     ExamWorkspaceContainerCodec,
 )
@@ -105,12 +108,13 @@ from skriptoteket.protocols.exam_workspace import (
     ExamWorkspaceContainerCodecProtocol,
     ExportExamWorkspaceDocumentHandlerProtocol,
     GenerateExamWorkspaceMisspellingsHandlerProtocol,
+    GetExamContentSuggestionsHandlerProtocol,
     GetExamCourseCatalogHandlerProtocol,
     GetExamWorkspaceAssetHandlerProtocol,
     GetExamWorkspaceConversionStatusHandlerProtocol,
     GetExamWorkspaceDocumentHandlerProtocol,
-    ImportExamWorkspaceDigiExamDocumentHandlerProtocol,
-    ImportExamWorkspaceDocumentHandlerProtocol,
+    PreviewExamWorkspacePrintHandlerProtocol,
+    RequestExamContentSuggestionsHandlerProtocol,
     RetryExamWorkspaceItemHandlerProtocol,
     SaveExamWorkspaceDocumentHandlerProtocol,
 )
@@ -164,7 +168,7 @@ class ExamWorkspaceProvider(Provider):
         uow: UnitOfWorkProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
-    ) -> RequestExamContentSuggestionsHandler:
+    ) -> RequestExamContentSuggestionsHandlerProtocol:
         return RequestExamContentSuggestionsHandler(
             reader=reader, jobs=jobs, uow=uow, clock=clock, id_generator=id_generator
         )
@@ -173,7 +177,7 @@ class ExamWorkspaceProvider(Provider):
     def get_content_suggestions(
         self,
         jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
-    ) -> GetExamContentSuggestionsHandler:
+    ) -> GetExamContentSuggestionsHandlerProtocol:
         return GetExamContentSuggestionsHandler(jobs=jobs)
 
     @provide(scope=Scope.REQUEST)
@@ -350,58 +354,6 @@ class ExamWorkspaceProvider(Provider):
         )
 
     @provide(scope=Scope.REQUEST)
-    def process_digiexam_job(
-        self,
-        jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
-        store: ExamWorkspaceDocumentStore,
-        users: UserRepositoryProtocol,
-        uow: UnitOfWorkProtocol,
-        clock: ClockProtocol,
-        id_generator: IdGeneratorProtocol,
-        codec: ExamWorkspaceContainerCodecProtocol,
-    ) -> ProcessExamWorkspaceDigiExamJobHandler:
-        return ProcessExamWorkspaceDigiExamJobHandler(
-            jobs=jobs,
-            store=store,
-            users=users,
-            uow=uow,
-            clock=clock,
-            id_generator=id_generator,
-            codec=codec,
-        )
-
-    @provide(scope=Scope.REQUEST)
-    def import_digiexam_handler(
-        self,
-        jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
-        uow: UnitOfWorkProtocol,
-        clock: ClockProtocol,
-        settings: Settings,
-        id_generator: IdGeneratorProtocol,
-    ) -> ImportExamWorkspaceDigiExamDocumentHandlerProtocol:
-        return ImportExamWorkspaceDigiExamDocumentHandler(
-            jobs=jobs,
-            uow=uow,
-            clock=clock,
-            settings=settings,
-            id_generator=id_generator,
-        )
-
-    @provide(scope=Scope.REQUEST)
-    def import_handler(
-        self,
-        jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
-        uow: UnitOfWorkProtocol,
-        clock: ClockProtocol,
-        settings: Settings,
-        id_generator: IdGeneratorProtocol,
-    ) -> ImportExamWorkspaceDocumentHandlerProtocol:
-        """Provide the DOCX import handler."""
-        return ImportExamWorkspaceDocumentHandler(
-            jobs=jobs, uow=uow, clock=clock, settings=settings, id_generator=id_generator
-        )
-
-    @provide(scope=Scope.REQUEST)
     def get_handler(
         self,
         vault_files: VaultFileRepositoryProtocol,
@@ -440,7 +392,7 @@ class ExamWorkspaceProvider(Provider):
         codec: ExamWorkspaceContainerCodecProtocol,
         store: ExamWorkspaceDocumentStore,
     ) -> ExportExamWorkspaceDocumentHandlerProtocol:
-        """Provide the on-demand export handler (QTI/PDF/DOCX)."""
+        """Provide the on-demand export handler (QTI/print PDF/DOCX/Exam.net PDF)."""
         return ExportExamWorkspaceDocumentHandler(
             vault_files=vault_files,
             codec=codec,
@@ -448,6 +400,22 @@ class ExamWorkspaceProvider(Provider):
             qti_writer=ExamNetQtiPackageWriter(),
             pdf_renderer=WeasyPrintExamNetPdfRenderer(),
             docx_writer=ExamWorkspaceDocxWriter(),
+            print_renderer=WeasyPrintExamPrintRenderer(),
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def print_preview_handler(
+        self,
+        vault_files: VaultFileRepositoryProtocol,
+        codec: ExamWorkspaceContainerCodecProtocol,
+        store: ExamWorkspaceDocumentStore,
+    ) -> PreviewExamWorkspacePrintHandlerProtocol:
+        """Provide the server-side student print preview (W5)."""
+        return PreviewExamWorkspacePrintHandler(
+            vault_files=vault_files,
+            codec=codec,
+            store=store,
+            print_renderer=WeasyPrintExamPrintRenderer(),
         )
 
     @provide(scope=Scope.REQUEST)
