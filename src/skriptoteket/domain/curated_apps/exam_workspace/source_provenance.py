@@ -23,7 +23,7 @@ class ChunkProvenance:
     def __init__(self) -> None:
         self._starts: list[int] = []
         self._anchors: list[str] = []
-        self._pictures: dict[str, list[int]] = {}
+        self._pictures: list[tuple[int, str]] = []
         self._picture_cursors: dict[str, int] = {}
 
     def add(self, offset: int, chunk: DocxChunk) -> None:
@@ -31,13 +31,29 @@ class ChunkProvenance:
         self._starts.append(offset)
         self._anchors.append(chunk.anchor)
         for image in chunk.images:
-            self._pictures.setdefault(image.asset_id, []).append(offset + image.offset)
+            self._pictures.append((offset + image.offset, image.asset_id))
 
     def chunk_at(self, offset: int) -> str | None:
         """The anchor of the chunk holding source ``offset``; None for -1, no source place."""
         if offset < 0:
             return None
         return self._anchors[bisect_right(self._starts, offset) - 1]
+
+    def pictures_in(self, start: int, end: int) -> list[tuple[int, str]]:
+        """Every (source place, asset id) with ``start <= place <= end``, in place order.
+
+        The end is inclusive because a picture after a paragraph's final character has
+        offset equal to that paragraph's end. Pictures at equal places keep their source
+        occurrence order: the sort is stable on place alone, never on asset id.
+        """
+        return sorted(
+            [(place, asset_id) for place, asset_id in self._pictures if start <= place <= end],
+            key=lambda occurrence: occurrence[0],
+        )
+
+    def _picture_places(self, asset_id: str) -> list[int]:
+        """Every source place of ``asset_id``, in occurrence order."""
+        return [place for place, kept in self._pictures if kept == asset_id]
 
     def pieces(
         self, output: NativeParagraph, text_origin: int
@@ -52,11 +68,12 @@ class ChunkProvenance:
         pieces: list[tuple[int, list[NativeSegment]]] = []
         for segment in output.segments:
             origin = text_origin
-            if segment.kind == "asset" and segment.asset_id in self._pictures:
-                places = self._pictures[segment.asset_id]
-                ordinal = self._picture_cursors.get(segment.asset_id, 0)
-                origin = places[min(ordinal, len(places) - 1)]
-                self._picture_cursors[segment.asset_id] = ordinal + 1
+            if segment.kind == "asset":
+                places = self._picture_places(segment.asset_id)
+                if places:
+                    ordinal = self._picture_cursors.get(segment.asset_id, 0)
+                    origin = places[min(ordinal, len(places) - 1)]
+                    self._picture_cursors[segment.asset_id] = ordinal + 1
             if pieces and self.chunk_at(pieces[-1][0]) == self.chunk_at(origin):
                 kept, segments = pieces[-1]
                 pieces[-1] = (min(kept, origin) if origin >= 0 else kept, [*segments, segment])

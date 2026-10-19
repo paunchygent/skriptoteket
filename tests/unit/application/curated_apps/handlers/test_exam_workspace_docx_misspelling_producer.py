@@ -116,7 +116,9 @@ def test_every_keyed_gap_reaches_the_producer_with_the_language_and_its_other_go
 ) -> None:
     calls = _record_producer(monkeypatch)
 
-    item = aligned_native_item(_gap_item((("katt", "katten"), ("hund",))), language="en").item
+    item = aligned_native_item(
+        _gap_item((("katt", "katten"), ("hund",))), language="en", foreign_chunks=()
+    ).item
 
     assert calls == [
         {
@@ -138,7 +140,7 @@ def test_an_invented_key_gets_producer_misspellings_bounded_by_the_native_contra
 ) -> None:
     _record_producer(monkeypatch, returns=("KATT", "kat", "kattx", "hund", "katt"))
 
-    item = aligned_native_item(_gap_item((("katt",),)), language="sv").item
+    item = aligned_native_item(_gap_item((("katt",),)), language="sv", foreign_chunks=()).item
 
     assert item.answer_key.origin is NativeAnswerKeyOrigin.MACHINE_PROPOSED
     assert item.gaps[0].accepted_values == ("katt",)

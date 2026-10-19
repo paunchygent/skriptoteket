@@ -37,6 +37,7 @@ import {
   importExamWorkspaceDigiExam,
   importExamWorkspaceDocument,
   importExamWorkspaceGuestDraft,
+  importExamWorkspaceQti,
   listExamWorkspaceDocuments,
   requestExamWorkspaceAnswerKeySuggestions,
   requestExamWorkspaceAnswerMisspellings,
@@ -89,6 +90,7 @@ export type ExamWorkspaceTeacherServices = {
   importExamWorkspaceDocument: typeof importExamWorkspaceDocument;
   getExamWorkspaceConversionStatus: typeof getExamWorkspaceConversionStatus;
   importExamWorkspaceDigiExam: typeof importExamWorkspaceDigiExam;
+  importExamWorkspaceQti: typeof importExamWorkspaceQti;
   copyExamWorkspaceDocument: typeof copyExamWorkspaceDocument;
   saveExamWorkspaceExport: typeof saveExamWorkspaceExport;
   retryExamWorkspaceItem: typeof retryExamWorkspaceItem;
@@ -143,6 +145,7 @@ export const serverExamWorkspaceStore: ExamWorkspaceStore = {
     importExamWorkspaceDocument: (...args) => importExamWorkspaceDocument(...args),
     getExamWorkspaceConversionStatus: (...args) => getExamWorkspaceConversionStatus(...args),
     importExamWorkspaceDigiExam: (...args) => importExamWorkspaceDigiExam(...args),
+    importExamWorkspaceQti: (...args) => importExamWorkspaceQti(...args),
     copyExamWorkspaceDocument: (...args) => copyExamWorkspaceDocument(...args),
     saveExamWorkspaceExport: (...args) => saveExamWorkspaceExport(...args),
     retryExamWorkspaceItem: (...args) => retryExamWorkspaceItem(...args),

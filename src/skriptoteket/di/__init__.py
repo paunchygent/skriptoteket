@@ -32,6 +32,7 @@ from skriptoteket.di.exam_converter import ExamConverterProvider
 from skriptoteket.di.exam_workspace import ExamWorkspaceProvider
 from skriptoteket.di.exam_workspace_change_type import ExamWorkspaceChangeTypeProvider
 from skriptoteket.di.exam_workspace_guest_drafts import ExamWorkspaceGuestDraftsProvider
+from skriptoteket.di.exam_workspace_imports import ExamWorkspaceImportProvider
 from skriptoteket.di.exam_workspace_index import ExamWorkspaceIndexProvider
 from skriptoteket.di.exam_workspace_public import ExamWorkspacePublicProvider
 from skriptoteket.di.favorites import FavoritesProvider
@@ -69,6 +70,7 @@ __all__ = [
     "ReagentPrepChefProvider",
     "EditorProvider",
     "ExamWorkspaceProvider",
+    "ExamWorkspaceImportProvider",
     "ExamWorkspaceChangeTypeProvider",
     "ExamWorkspaceGuestDraftsProvider",
     "ExamWorkspaceIndexProvider",
@@ -120,6 +122,7 @@ def build_providers(settings: Settings) -> tuple[Provider, ...]:
         FavoritesProvider(),
         EditorProvider(),
         ExamWorkspaceProvider(),
+        ExamWorkspaceImportProvider(),
         ExamWorkspaceChangeTypeProvider(),
         ExamWorkspaceGuestDraftsProvider(),
         ExamWorkspaceIndexProvider(),

@@ -48,7 +48,7 @@ def source_paragraph(chunk: DocxChunk) -> NativeParagraph | None:
     and where, and a picture-only chunk still becomes a non-empty paragraph. A text-less
     chunk without pictures becomes nothing.
     """
-    source = SourceFormatting((chunk,))
+    source = SourceFormatting((chunk,), foreign=())
     placements: list[tuple[int, NativeSegment]] = [
         (image.offset, NativeAssetSegment(asset_id=image.asset_id)) for image in chunk.images
     ]
@@ -91,7 +91,7 @@ def source_paragraphs(chunks: Iterable[DocxChunk]) -> tuple[NativeParagraph, ...
                 result.append(paragraph)
             continue
         # Multi-paragraph chunks (for example table cells) retain their block levels.
-        source = SourceFormatting((chunk,))
+        source = SourceFormatting((chunk,), foreign=())
         placements: list[tuple[int, NativeSegment]] = [
             (image.offset, NativeAssetSegment(asset_id=image.asset_id)) for image in chunk.images
         ]

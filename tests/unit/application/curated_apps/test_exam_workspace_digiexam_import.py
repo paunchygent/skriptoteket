@@ -6,10 +6,12 @@ from uuid import uuid4
 
 import pytest
 
-from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
-    GetExamWorkspaceConversionStatusHandler,
+from skriptoteket.application.curated_apps.handlers.exam_workspace_document_imports import (
     ImportExamWorkspaceDigiExamDocumentHandler,
     ImportExamWorkspaceDocumentHandler,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
+    GetExamWorkspaceConversionStatusHandler,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.protocols.exam_index import ExamIndexRepositoryProtocol

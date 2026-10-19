@@ -47,13 +47,13 @@ Stop and report if the shared editor cannot run on a browser store without forki
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term                                                                                           |
-| --- | --------------------------------------------------------------------------------------------------------------- |
-| G1  | ST-SKRIPT-41-02 P1-P5 apply as written.                                                                         |
-| G2  | The guest and signed-in workspace are one editor behind one document store interface; no forked workspace.      |
-| G3  | Limit numbers are settings. User decision 2026-10-19 (relayed by the Mac parent): keep import 10/200, export 30/300, edit 600/6000 per caller/pool per hour. |
-| G4  | Sign-in prompts read "Logga in för att importera från DigiExam eller Word." and "Logga in för att få AI-hjälp." |
-| G5  | User decision 2026-10-19 (relayed by the Mac parent): a handed-off draft whose title already exists in Mina filer gets a numbered title, "Titel (2)", then (3) and so on, chosen server-side in the handoff transaction so concurrent handoffs never pick the same number. |
+| ID  | Decided contract term                                                                                                                                                                                                                                                                                                   |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| G1  | ST-SKRIPT-41-02 P1-P5 apply as written.                                                                                                                                                                                                                                                                                 |
+| G2  | The guest and signed-in workspace are one editor behind one document store interface; no forked workspace.                                                                                                                                                                                                              |
+| G3  | Limit numbers are settings. User decision 2026-10-19 (relayed by the Mac parent): keep import 10/200, export 30/300, edit 600/6000 per caller/pool per hour.                                                                                                                                                            |
+| G4  | Sign-in prompts read "Logga in för att importera från DigiExam eller Word." and "Logga in för att få AI-hjälp."                                                                                                                                                                                                         |
+| G5  | User decision 2026-10-19 (relayed by the Mac parent): a handed-off draft whose title already exists in Mina filer gets a numbered title, "Titel (2)", then (3) and so on, chosen server-side in the handoff transaction so concurrent handoffs never pick the same number.                                              |
 | G6  | User decision 2026-10-19 (relayed by the Mac parent): nginx-proxy gets a fixed `ipv4_address` on hule-network and `TRUSTED_PROXY_CIDRS` trusts only that /32, never the 172.18.0.0/16 subnet. The Mac parent approved the proposal on 2026-10-19 as one step of this task's production deploy, after the merge to main. |
 
 ## Resume Here (lead 2, 2026-10-19)

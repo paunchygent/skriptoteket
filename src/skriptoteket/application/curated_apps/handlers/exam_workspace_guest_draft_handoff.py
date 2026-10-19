@@ -28,7 +28,7 @@ from skriptoteket.application.curated_apps.exam_workspace import ExamWorkspaceDo
 from skriptoteket.application.curated_apps.handlers.exam_workspace_document_store import (
     ExamWorkspaceDocumentStore,
 )
-from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import _summary
+from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import document_summary
 from skriptoteket.application.curated_apps.handlers.public_exam_workspace_exports import (
     PublicExamWorkspaceExportHandler,
 )
@@ -150,7 +150,7 @@ class ImportGuestExamDraftHandler:
         return ExamWorkspaceDocumentResponse(
             document=copied,
             saved_document=copied,
-            summary=_summary(vault_file, copied),
+            summary=document_summary(vault_file, copied),
             history_cursor=lineage_id,
             notes=(),
             conversion=None,

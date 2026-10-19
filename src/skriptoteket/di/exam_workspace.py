@@ -1,10 +1,12 @@
 """DI bindings for the native exam workspace (ST-SKRIPT-39-04).
 
 A focused provider: the DOCX chunker and container codec are stateless
-app-scoped adapters; the document store and handlers are request-scoped so
-they share the request session, UoW, and vault repositories. The public
-stateless surface (catalog, misspellings, shared renderer, guest export and
-command handlers) lives in ``di.exam_workspace_public``.
+app-scoped adapters; the document store and the remaining handlers are
+request-scoped so they share the request session, UoW, and vault
+repositories. Import lanes (DOCX, DigiExam, QTI) live in
+``exam_workspace_imports``. The public stateless surface (catalog,
+misspellings, shared renderer, guest export and command handlers) lives in
+``di.exam_workspace_public``.
 """
 
 from __future__ import annotations
@@ -26,17 +28,12 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_content_tags 
 from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_progress import (
     ExamWorkspaceConversionProgress,
 )
-from skriptoteket.application.curated_apps.handlers.exam_workspace_digiexam_jobs import (
-    ProcessExamWorkspaceDigiExamJobHandler,
-)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_document_store import (
     ExamWorkspaceDocumentStore,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
     GetExamWorkspaceConversionStatusHandler,
     GetExamWorkspaceDocumentHandler,
-    ImportExamWorkspaceDigiExamDocumentHandler,
-    ImportExamWorkspaceDocumentHandler,
     SaveExamWorkspaceDocumentHandler,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_rounds import (
@@ -98,8 +95,6 @@ from skriptoteket.protocols.exam_workspace import (
     GetExamWorkspaceAssetHandlerProtocol,
     GetExamWorkspaceConversionStatusHandlerProtocol,
     GetExamWorkspaceDocumentHandlerProtocol,
-    ImportExamWorkspaceDigiExamDocumentHandlerProtocol,
-    ImportExamWorkspaceDocumentHandlerProtocol,
     RequestExamContentSuggestionsHandlerProtocol,
     RetryExamWorkspaceItemHandlerProtocol,
     SaveExamWorkspaceDocumentHandlerProtocol,
@@ -327,58 +322,6 @@ class ExamWorkspaceProvider(Provider):
             settings=settings,
             index=index,
             codec=codec,
-        )
-
-    @provide(scope=Scope.REQUEST)
-    def process_digiexam_job(
-        self,
-        jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
-        store: ExamWorkspaceDocumentStore,
-        users: UserRepositoryProtocol,
-        uow: UnitOfWorkProtocol,
-        clock: ClockProtocol,
-        id_generator: IdGeneratorProtocol,
-        codec: ExamWorkspaceContainerCodecProtocol,
-    ) -> ProcessExamWorkspaceDigiExamJobHandler:
-        return ProcessExamWorkspaceDigiExamJobHandler(
-            jobs=jobs,
-            store=store,
-            users=users,
-            uow=uow,
-            clock=clock,
-            id_generator=id_generator,
-            codec=codec,
-        )
-
-    @provide(scope=Scope.REQUEST)
-    def import_digiexam_handler(
-        self,
-        jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
-        uow: UnitOfWorkProtocol,
-        clock: ClockProtocol,
-        settings: Settings,
-        id_generator: IdGeneratorProtocol,
-    ) -> ImportExamWorkspaceDigiExamDocumentHandlerProtocol:
-        return ImportExamWorkspaceDigiExamDocumentHandler(
-            jobs=jobs,
-            uow=uow,
-            clock=clock,
-            settings=settings,
-            id_generator=id_generator,
-        )
-
-    @provide(scope=Scope.REQUEST)
-    def import_handler(
-        self,
-        jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
-        uow: UnitOfWorkProtocol,
-        clock: ClockProtocol,
-        settings: Settings,
-        id_generator: IdGeneratorProtocol,
-    ) -> ImportExamWorkspaceDocumentHandlerProtocol:
-        """Provide the DOCX import handler."""
-        return ImportExamWorkspaceDocumentHandler(
-            jobs=jobs, uow=uow, clock=clock, settings=settings, id_generator=id_generator
         )
 
     @provide(scope=Scope.REQUEST)

@@ -86,6 +86,7 @@ def test_question_label_omission_never_deletes_continuation_content(continuation
         chunks=chunks,
         language="en",
         formatting_observer=paths.append,
+        foreign_chunks=(),
     ).item
     assert body_plain_text(result.body) == "Read the values.\n" + continuation
     assert _as_text(result.body[1].segments[0]).marks == ("bold",)
@@ -98,7 +99,7 @@ def test_question_label_span_handles_named_and_letter_labels(label):
         _chunk("body:0001", label + ". Identify the important concept.", marks=("bold",)),
         _chunk("body:0002", label + ". Repeat this content.", marks=("italic",)),
     )
-    source = SourceFormatting(chunks, ignored=(label,))
+    source = SourceFormatting(chunks, ignored=(label,), foreign=())
     result = source.rebuild_body({})
     assert (
         body_plain_text(result)
@@ -108,7 +109,7 @@ def test_question_label_span_handles_named_and_letter_labels(label):
 
 def test_question_label_span_does_not_consume_body_punctuation_after_its_separator():
     chunks = (_chunk("body:0001", "1. .NET is the important concept.", marks=("bold",)),)
-    source = SourceFormatting(chunks, ignored=("1",))
+    source = SourceFormatting(chunks, ignored=("1",), foreign=())
     result = formatted_text("NET is the important concept.", source)
     result = complete_source_formatting(
         chunks, (source,), source, result, printed_label="1", answers={}, can_rebuild_body=True
@@ -118,7 +119,7 @@ def test_question_label_span_does_not_consume_body_punctuation_after_its_separat
 
 def test_question_label_coverage_does_not_exempt_a_numeric_prefix():
     chunks = (_chunk("body:0001", "100 degrees", marks=("bold",)),)
-    source = SourceFormatting(chunks, ignored=("1",))
+    source = SourceFormatting(chunks, ignored=("1",), foreign=())
     body = formatted_text("00 degrees", source)
     result = complete_source_formatting(
         chunks, (source,), source, body, printed_label="1", answers={}, can_rebuild_body=True
@@ -145,6 +146,7 @@ def test_omitted_size_heading_merges_into_body_without_copying_choices(heading_a
         chunks=chunks,
         language="en",
         formatting_observer=paths.append,
+        foreign_chunks=(),
     ).item
     expected = [wording, "Read this section carefully."]
     if not heading_at_end:
@@ -182,7 +184,7 @@ def test_heading_recovery_retains_picture_and_gap_atoms_in_their_native_paragrap
             }
         ],
     )
-    result = aligned_native_item(produced, chunks=chunks, language="en").item
+    result = aligned_native_item(produced, chunks=chunks, language="en", foreign_chunks=()).item
     assert result.body[0].heading_level == 3
     assert body_plain_text(result.body).startswith("Complete this section.\n")
     assert [s.kind for s in result.body[1].segments] == ["asset", "text", "gap", "text"]
@@ -221,7 +223,7 @@ def test_heading_merge_orders_standalone_pictures_around_the_recovered_heading(
             ],
         }
     )
-    result = aligned_native_item(produced, chunks=chunks, language="en").item
+    result = aligned_native_item(produced, chunks=chunks, language="en", foreign_chunks=()).item
     assert result.body[0].segments[0].kind == "asset"
     assert result.body[1].heading_level == 2
     if repeat_after_heading:

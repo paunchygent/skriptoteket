@@ -54,7 +54,7 @@ def test_produced_pairs_that_use_one_right_entry_twice_are_a_valid_grid():
     first, second, third = gold.pairs
     twice = ((first.left, first.right), (second.left, first.right), (third.left, third.right))
 
-    item = aligned_native_item(produced_item(pairs=twice), language="sv").item
+    item = aligned_native_item(produced_item(pairs=twice), language="sv", foreign_chunks=()).item
 
     right_id = item.answer_key.match_pairs[0].right_id
     assert [p.left_id for p in item.answer_key.match_pairs if p.right_id == right_id] == [
@@ -81,7 +81,7 @@ def test_native_item_maps_each_produced_pair_to_the_ids_of_its_entries():
 
 
 def test_native_item_without_a_facit_leaves_the_matching_item_unkeyed_and_blocks_export():
-    item = aligned_native_item(produced_item(pairs=()), language="sv").item
+    item = aligned_native_item(produced_item(pairs=()), language="sv", foreign_chunks=()).item
 
     assert item.answer_key.origin is NativeAnswerKeyOrigin.ABSENT
     assert item.answer_key.match_pairs == ()
@@ -155,7 +155,9 @@ def test_qti_export_of_the_valid_item_is_an_automatic_matching_interaction_with_
 
 def test_qti_export_of_an_unkeyed_matching_item_carries_no_pairs():
     (qti,) = native_exam_to_examnet_qti_items(
-        single_item_document(aligned_native_item(produced_item(pairs=()), language="sv").item)
+        single_item_document(
+            aligned_native_item(produced_item(pairs=()), language="sv", foreign_chunks=()).item
+        )
     )
 
     assert qti.interaction_type is ExamNetQtiInteractionType.MATCHING

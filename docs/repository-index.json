@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "3f80f48658cdb5873655b2176d73347edfc9db39c409d741af821e10deda72fa",
+  "source_set_digest": "80f2a22fbe7d37c3507c71eaaa541212a8064b249539d2b9dee1b347d12c793a",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5129,6 +5129,52 @@
       }
     },
     {
+      "id": "TASK-SKRIPT-39-04-15",
+      "type": "task",
+      "title": "A body paragraph aligned to another item's source is rebuilt from the item's own source; listed own chunks are checked for left-out text",
+      "path": "docs/backlog/tasks/task-skript-39-04-15-left-out-check-covers-the-own-chunks-an-item-lists-by-source-alignment-never-by-wording.md",
+      "status": "done",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-19",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer 898d311f (Hemma retained session 01a14f3e-12df-7020-8c18-18ad39a131cf, evidence/reviews/898d311f-da73-489f-9b10-76a36892ff88.md and -rereview.md): changes_requested with F1 and F2 high, F3 and F4 medium; F1 and F2 cleared on re-review at e5b17901 (approved). F3, F4 and the low F5 admitted by the parent on focused proof; the fold onto the 39-04-16 source_paragraph() (merge b0904608, ff8c1ebb) admitted on focused proof and identical replays. 166 focused tests, lint, typecheck, docs-validate pass; domain suite 4798 passed, 59 skipped; ten replays differ from main only in q8 (the contracted fix). Merged to main at ff8c1ebb on 2026-10-19."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-04-16",
+      "type": "task",
+      "title": "Gap paragraphs are built from their source paragraph, so no cue or lead clause beside a gap is lost",
+      "path": "docs/backlog/tasks/task-skript-39-04-16-gap-paragraphs-are-built-from-their-source-paragraph-so-no-cue-or-lead-clause-beside-a-gap-is-lost.md",
+      "status": "done",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-19",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer 5805cf6e reviewed the implementation (Hemma retained session 01a14f3e-11d5-7745-90e8-6323496fbf74): changes_requested with three medium findings (picture at paragraph end counted as a mismatch; D3 blank class per table cell instead of per row; adjacent pictures reordered). Repaired in 2fdaeb8f and 389b1aee, each with a test that failed before the fix, and admitted by the parent on focused proof without rereview: 102 focused tests, lint, typecheck and docs-validate pass; replays byte-identical to d6c2f9af with no gap_count_mismatch; domain suite 4131 passed, 59 skipped. Merged to main at d80a7131 on 2026-10-19."
+      }
+    },
+    {
       "id": "TASK-SKRIPT-39-05-01",
       "type": "task",
       "title": "Walking skeleton for AI-first DOCX conversion as a background job",
@@ -6511,6 +6557,25 @@
       }
     },
     {
+      "id": "TASK-SKRIPT-40-04-08",
+      "type": "task",
+      "title": "Short-answer and gap-text questions look different, teachers create gaps by clicking a word, and the gap popover shows its whole answer list",
+      "path": "docs/backlog/tasks/task-skript-40-04-08-short-answer-and-gap-text-questions-look-different-teachers-create-gaps-by-clicking-a-word-and-the-gap-popover-shows-its-whole-answer-list.md",
+      "status": "proposed",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
       "id": "TASK-SKRIPT-41-01-02",
       "type": "task",
       "title": "The script editor's AI runs on Sol 6.1 low through the Sol pool",
@@ -6572,7 +6637,7 @@
       "type": "task",
       "title": "Teachers and guests import a QTI package into the exam workspace",
       "path": "docs/backlog/tasks/task-skript-41-02-01-teachers-and-guests-import-a-qti-package-into-the-exam-workspace.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-41-02",
       "owners": [
@@ -6583,7 +6648,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-19",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer 596c1654 (Hemma retained session 01a14f56-3344-77cc-a009-f435f5884ea7, evidence/reviews): changes_requested twice; high findings F2 (manifest-only duplicate refs) and F4 (removed sibling score passed to a gap child) cleared in rereview2, approved at a677e12a with no findings left. The merge of origin/main was checked by the same reviewer; its medium M1 (pdm.lock against the repository-governance pin) admitted on focused proof. Domain suite at 693d970f: unit 4901, integration 19 passed; at 5925b2d8 lint, typecheck, docs-validate and 277 QTI tests pass. Fixture: an Exam.net-accepted Skriptoteket QTI package with provenance (023a58fc), since Exam.net offers no QTI export. Merged to main at 5925b2d8 on 2026-10-19."
       }
     },
     {

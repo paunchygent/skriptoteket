@@ -1,8 +1,8 @@
 """Exam workspace API routes (ST-SKRIPT-39-04 walking skeleton).
 
 Purpose:
-  Expose DOCX import, listing, reopen, save, history, copy and exports for the native editable
-  exam workspace under the Conversion Hub curated app.
+  Expose DOCX and QTI package import, listing, reopen, save, history, copy and exports for the
+  native editable exam workspace under the Conversion Hub curated app.
 
 Relationships:
   - Shares Conversion Hub app access with `apps_conversion_hub`.
@@ -20,6 +20,7 @@ from skriptoteket.application.curated_apps.exam_workspace import (
     ExamWorkspaceConversionStatus,
     ExamWorkspaceDocumentListResponse,
     ExamWorkspaceDocumentResponse,
+    ExamWorkspaceDocumentSummary,
     ExamWorkspaceExportChecklistResponse,
     ExamWorkspaceExportTarget,
     ExamWorkspaceItemRetryResponse,
@@ -67,6 +68,7 @@ from skriptoteket.protocols.exam_workspace import (
     GetExamWorkspaceDocumentHandlerProtocol,
     ImportExamWorkspaceDigiExamDocumentHandlerProtocol,
     ImportExamWorkspaceDocumentHandlerProtocol,
+    ImportExamWorkspaceQtiDocumentHandlerProtocol,
     ListExamWorkspaceDocumentsHandlerProtocol,
     RequestExamContentSuggestionsHandlerProtocol,
     RetryExamWorkspaceItemHandlerProtocol,
@@ -192,6 +194,27 @@ async def import_exam_workspace_digiexam_document(
     return await handler.handle(
         actor=user,
         filename=file.filename or "prov.dxe",
+        content=await file.read(),
+        course_key=course_key or None,
+    )
+
+
+@router.post(
+    "/exam-workspace/import-qti",
+    response_model=ExamWorkspaceDocumentSummary,
+    status_code=201,
+)
+async def import_exam_workspace_qti_document(
+    registry: FromDishka[CuratedAppRegistryProtocol],
+    handler: FromDishka[ImportExamWorkspaceQtiDocumentHandlerProtocol],
+    file: UploadFile = File(...),
+    course_key: str | None = Form(None, max_length=64),
+    user: User = Depends(require_app_user_api),
+) -> ExamWorkspaceDocumentSummary:
+    require_conversion_hub_access(registry=registry, user=user)
+    return await handler.handle(
+        actor=user,
+        filename=file.filename or "prov.zip",
         content=await file.read(),
         course_key=course_key or None,
     )
