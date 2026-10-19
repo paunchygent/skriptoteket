@@ -115,4 +115,10 @@ Stop and report to the parent in either case:
 - Retained root:
   `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a14e6d-3ab6-7b8f-a363-3295c0f7fda6`
   (work orders in `evidence/lead-715cef23/orders/`).
-- No children are running. User gates: none open.
+- 2026-10-19, lead e12a2a36 (orders in `evidence/lead-e12a2a36/orders/`): the
+  v8 seam and v8 bump landed (`1551b238`); mypy is at zero (`5b6d6625`, weasyprint
+  stub `Page.width/height`, guard for `Length | None`); the DOCX ordering test now
+  reads the drawn number box that R1 part 2 introduced (U3). Lint, typecheck,
+  frontend type-check, ESLint and build pass. Next: the one exam-workspace
+  domain suite after the orchestrator's go, then R1–R4 go back to reviewer
+  09d50acc. User gates: none open.
