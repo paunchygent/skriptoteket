@@ -34,10 +34,18 @@ export type ExamWorkspaceDocumentReplacingBinding = {
 
 export function useExamWorkspaceDocumentReplacing(binding: ExamWorkspaceDocumentReplacingBinding) {
   const { workspaceDocument, selectedItemId, replacing, arrivals, keying } = binding;
-  /** The arrival marks a replacing read was started at; null while none runs. */
+  /** A replacing read's arrival marks; null while no live scope holds the lock. */
   let held: { arrivals: number; keying: number } | null = null;
-  /** How many replacing reads hold the lock; only the outermost sets and clears it. */
-  let depth = 0;
+  /**
+   * Live replacing scopes sharing one lock epoch. Independent scopes (a
+   * conflict recovery with a slow read, then an acquisition recovery) overlap:
+   * each exit only decrements, and the lock and holds release when the last
+   * live scope exits, in either completion order. Awaited nested scopes share
+   * the outer epoch the same way.
+   */
+  let live = 0;
+  let openedArrivals = false;
+  let openedKeying = false;
 
   function keepSelection(document: NativeExamDocument): void {
     if (!document.items.some((item) => item.item_id === selectedItemId.value)) {
@@ -51,32 +59,30 @@ export function useExamWorkspaceDocumentReplacing(binding: ExamWorkspaceDocument
    * during its read run again on the document it installs, so a delivered
    * result is never overwritten. Replies whose question or gap the document
    * no longer holds do not apply, as everywhere else. A replacing read that
-   * starts inside another one (a conflict recovery inside a server command)
-   * shares the outer lock: the inner exit must not clear it.
+   * starts inside another one (a conflict recovery inside a server command,
+   * or an independent acquisition recovery during a slow conflict recovery)
+   * shares the live epoch: an exit never clears the lock or releases the
+   * holds while another scope is still live.
    */
   async function replaceCopy<T>(run: () => Promise<T>): Promise<T> {
-    if (depth > 0) {
-      depth += 1;
-      try {
-        return await run();
-      } finally {
-        depth -= 1;
-      }
+    if (live === 0) {
+      replacing.value = true;
+      const marks = { arrivals: arrivals.payloadMark(), keying: keying.payloadMark() };
+      openedArrivals = arrivals.beginHold();
+      openedKeying = keying.beginHold();
+      held = marks;
     }
-    replacing.value = true;
-    const marks = { arrivals: arrivals.payloadMark(), keying: keying.payloadMark() };
-    const openedArrivals = arrivals.beginHold();
-    const openedKeying = keying.beginHold();
-    held = marks;
-    depth = 1;
+    live += 1;
     try {
       return await run();
     } finally {
-      depth = 0;
-      held = null;
-      arrivals.endHold(openedArrivals);
-      keying.endHold(openedKeying);
-      replacing.value = false;
+      live -= 1;
+      if (live === 0) {
+        held = null;
+        arrivals.endHold(openedArrivals);
+        keying.endHold(openedKeying);
+        replacing.value = false;
+      }
     }
   }
 

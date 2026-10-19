@@ -123,29 +123,46 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
   }
 
   /**
-   * Merge a kept refused edit onto the newest server document and store it
-   * through the normal save path (TASK-SKRIPT-40-04-14, USER decision
-   * 2026-10-19 "Ta över keeps the edit"): the kept base and edited snapshot
-   * stay until a merged store succeeds, and recovery existence comes from
-   * that kept state, not from `history.pending` after a reload has replaced
-   * the copy. The whole reload, history resync and merge runs under the
-   * replacing lock (shared with a server command's own read when nested), so
-   * no edit is accepted into a copy the merge is about to replace and, while
-   * `recovering` holds, no history write starts on the fresh document with
-   * the still-old position. A failed reload keeps the recovery set and the
-   * edit visible and pending; a failed or obsolete resync puts the refused
-   * working copy back in front of the teacher and stands the step document
-   * on its base, so the next acquisition or save recovers it. Disposal or a
-   * lineage change stops the routine without installing or storing. A refused
-   * save or a failed store keeps the existing status and toasts.
+   * Serialize kept-edit recoveries: a recovery requested while one runs waits
+   * for it, then runs on the result (or finds nothing left to recover). The
+   * history's own store queue never waits on this chain and this chain never
+   * waits on a history store, so the two cannot deadlock; the merged store
+   * itself runs outside the chain through the normal save path.
    */
-  async function recoverKeptEdit(startLineage: string, awaitStore: boolean): Promise<void> {
-    if (disposed || lineageId() !== startLineage) {
-      return;
+  let recoveryTail: Promise<void> = Promise.resolve();
+
+  function enqueueKeptRecovery(startLineage: string | null): Promise<boolean> {
+    const run = recoveryTail.then(() => recoverKeptEditPhase(startLineage));
+    recoveryTail = run.then(
+      () => undefined,
+      () => undefined,
+    );
+    return run;
+  }
+
+  /**
+   * Merge a kept refused edit onto the newest server document: the kept base
+   * and edited snapshot stay until a merged store succeeds, and recovery
+   * existence comes from that kept state, not from `history.pending` after a
+   * reload has replaced the copy. The whole reload, history resync and merge
+   * runs under the replacing lock (shared with a server command's own read
+   * when nested), so no edit is accepted into a copy the merge is about to
+   * replace and, while `recovering` holds, no history write starts on the
+   * fresh document with the still-old position. Only one phase runs at a
+   * time, so the flag is correct for overlapping requests. A failed reload
+   * keeps the recovery set and the edit visible and pending; a failed or
+   * obsolete resync puts the refused working copy back in front of the
+   * teacher and stands the step document on its base, so the next
+   * acquisition or save recovers it. Disposal or a lineage change stops the
+   * routine without installing or storing.
+   */
+  async function recoverKeptEditPhase(startLineage: string | null): Promise<boolean> {
+    if (disposed || startLineage === null || lineageId() !== startLineage) {
+      return false;
     }
     const previous = keptEdit.get();
     if (previous === null) {
-      return;
+      return false;
     }
     // Refresh the edited snapshot while the refused edit is still pending, so
     // a later conflict merges what the teacher sees now, not an older capture.
@@ -157,7 +174,7 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
     }
     const kept = keptEdit.get();
     if (kept === null) {
-      return;
+      return false;
     }
     const startServer = document.serverDocument.value;
     let mergedInstalled = false;
@@ -204,6 +221,22 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
       recovering = false;
     }
     if (disposed || lineageId() !== startLineage || !mergedInstalled) {
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * Run a kept-edit recovery, then store the merged copy through the normal
+   * save path (TASK-SKRIPT-40-04-14, USER decision 2026-10-19 "Ta över keeps
+   * the edit"). A refused save or a failed store keeps the existing status
+   * and toasts; the kept edit clears only after a merged store succeeds.
+   */
+  async function recoverKeptEdit(startLineage: string, awaitStore: boolean): Promise<void> {
+    if (!(await enqueueKeptRecovery(startLineage))) {
+      return;
+    }
+    if (disposed || lineageId() !== startLineage) {
       return;
     }
     if (awaitStore) {
@@ -278,6 +311,12 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
     // and this flag holds normal history writes, so no edit or store starts on
     // the fresh document with the still-old history position.
     isBlocked: () => document.isOperationBusy.value || recovering,
+    // A refused edit still waits for its recovery: an ordinary store never
+    // writes the refused snapshot directly, but reloads, resyncs and merges
+    // it onto the newest copy first through the serialized recovery.
+    hasKeptEdit: () => keptEdit.get() !== null,
+    recoverKeptEdit: (lineage) => enqueueKeptRecovery(lineage),
+    noteKeptStored: () => keptEdit.clear(),
     lineageId,
     noteExportBlockers: document.noteExportBlockers,
     noteLeaseLost: () => leaseHolder.session?.noteLostLease(),

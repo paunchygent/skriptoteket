@@ -58,6 +58,7 @@ import type { ExamWorkspaceSharedStore } from "./examWorkspaceStore";
 import { isEditLeaseHeldError } from "./useExamWorkspaceEditLease";
 import { useExamWorkspaceHistoryDeparture } from "./useExamWorkspaceHistoryDeparture";
 import { useExamWorkspaceHistoryNavigation } from "./useExamWorkspaceHistoryNavigation";
+import { createHistoryLoader } from "./useExamWorkspaceHistoryLoader";
 import {
   AUTOSAVE_FAILURE_COPY,
   refusalReason,
@@ -77,6 +78,12 @@ export type ExamWorkspaceHistoryDeps = {
   savedRevision: () => number | null;
   /** The tab id the edit lease holds; every store and move carries it. */
   tabId: () => string;
+  /** A refused edit still waits for its recovery; an ordinary store merges it first. */
+  hasKeptEdit?: () => boolean;
+  /** Reload, resync and merge the kept edit onto the newest copy; true when the merged copy stands. */
+  recoverKeptEdit?: (lineageId: string | null) => Promise<boolean>;
+  /** The merged copy was stored; the kept edit is recovered. */
+  noteKeptStored?: () => void;
   /** True while another tab holds the edit lease: writes wait and undo stops. */
   isReadOnly: () => boolean;
   /** A write met `EDIT_LEASE_HELD`: turn read-only and keep the pending edit. */
@@ -129,7 +136,6 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
    * anything newer is stored, so a failed store never merges them.
    */
   let owed: NativeExamDocument[] = [];
-  let loadToken = 0;
   /** True once the history's scope is disposed: a pending departure must not leave. */
   let disposed = false;
 
@@ -172,34 +178,16 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
     stepDocument.value = null;
   }
 
-  /** After a failed resync, stand the step document back on the refused base
-   * so the reinstalled copy reads pending again; the next store reloads first. */
+  /** After a failed resync, stand the step document back on the refused base. */
   function restoreKeptBase(base: NativeExamDocument): void {
     stepDocument.value = base;
   }
 
-  /** Reload the step list; true when it matches the fresh server copy, false
-   * when the lineage moved on, a newer load started, or the read failed. */
-  async function load(lineageId: string): Promise<boolean> {
-    const token = ++loadToken;
-    const base = deps.serverDocument.value;
-    try {
-      const history = await deps.shared.getExamWorkspaceHistory(lineageId);
-      if (token !== loadToken || deps.lineageId() !== lineageId) {
-        return false;
-      }
-      baselineId.value = history.baseline_step_id;
-      stepIds.value = [...history.step_ids];
-      position.value = history.position_step_id;
-      stepDocument.value = base;
-      return stepDocument.value === deps.serverDocument.value;
-    } catch {
-      if (token === loadToken) {
-        reset();
-      }
-      return false;
-    }
-  }
+  const { load } = createHistoryLoader(
+    deps,
+    { baselineId, position, stepDocument, stepIds },
+    reset,
+  );
 
   watch(
     [() => deps.lineageId(), deps.historyCursor],
@@ -249,10 +237,20 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
       return "failed";
     }
     const lineageId = deps.lineageId();
-    const cursor = deps.historyCursor.value;
+    let cursor = deps.historyCursor.value;
     if (lineageId && cursor && position.value === null) {
       // The step list failed to load earlier; without it no step can be stored.
       await load(lineageId);
+    }
+    if (snapshot === null && (deps.hasKeptEdit?.() ?? false)) {
+      // Merge a still-waiting kept edit onto the newest copy first; it clears
+      // only after the merged store succeeds.
+      if (!(await deps.recoverKeptEdit?.(lineageId))) {
+        schedule();
+        return "failed";
+      }
+      // The recovery reloaded the copy: the cursor captured above is stale.
+      cursor = deps.historyCursor.value;
     }
     const document = snapshot ?? deps.workspaceDocument.value;
     const after = position.value;
@@ -261,6 +259,7 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
     }
     const undone = after !== newestId.value;
     if (sameContent(document, stepDocument.value) && !(settle && undone)) {
+      deps.noteKeptStored?.();
       return "stored";
     }
     const refusal = examWorkspaceSaveRefusalCopy(document);
@@ -292,6 +291,7 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
       position.value = response.history.position_step_id;
       stepDocument.value = response.document;
       status.confirmed(response.document);
+      deps.noteKeptStored?.();
       if (!sameContent(deps.workspaceDocument.value, response.document)) {
         // Keystrokes typed while the store was in flight stay in the copy;
         // the newer copy is stored next, so the status reads `Sparar …`.

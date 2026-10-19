@@ -202,7 +202,14 @@ describe("a failed history resync during the takeover", () => {
       response(JSON.parse(JSON.stringify(newest)), server.state.cursor),
     );
     api.storeExamWorkspaceUndoStep.mockRejectedValueOnce(conflict());
+    // Later recoveries reread the newest server copy with a fresh object each
+    // time, as the transport does (the reload-failure check is by identity).
+    api.getExamWorkspaceDocument.mockImplementation(async () =>
+      response(JSON.parse(JSON.stringify(newest)), server.state.cursor),
+    );
     await editing.save();
+    await flushPromises();
+    await flushPromises();
     await flushPromises();
     await flushPromises();
     await flushPromises();
@@ -231,6 +238,11 @@ describe("an edit while the history resync is waiting", () => {
     server.state.position = "step-B";
     const gate = deferred<ExamWorkspaceHistory>();
     api.getExamWorkspaceDocument.mockResolvedValueOnce(response(other, "step-B"));
+    // The recovery's follow-up store runs the serialized phase again: reread
+    // with a fresh object each time, as the transport does.
+    api.getExamWorkspaceDocument.mockImplementation(async () =>
+      response(JSON.parse(JSON.stringify(other)), "step-B"),
+    );
     api.getExamWorkspaceHistory.mockImplementation(() => gate.promise);
 
     holder.current = "tab-A";
@@ -257,5 +269,62 @@ describe("an edit while the history resync is waiting", () => {
 
     editing.updateItemPoints("item_002", 4);
     expect(workspacePoints(editing, "item_002")).toBe(4);
+  });
+});
+
+describe("a natural save after a failed history resync", () => {
+  it("merges the kept edit onto the newest copy without a new 409", async () => {
+    const { editing, holder, server } = await refuseEdit();
+    const saved = server.documents.get(server.state.cursor);
+    if (saved === undefined) {
+      throw new Error("expected tab A's stored step");
+    }
+    const other: NativeExamDocument = {
+      ...saved,
+      items: saved.items.map((item) =>
+        item.item_id === "item_002" ? { ...item, points: 9 } : item,
+      ),
+    };
+    server.documents.set("step-B", other);
+    server.state.steps = [...server.state.steps, "step-B"];
+    server.state.cursor = "step-B";
+    server.state.position = "step-B";
+
+    api.getExamWorkspaceDocument.mockImplementation(async () =>
+      response(JSON.parse(JSON.stringify(other)), "step-B"),
+    );
+    api.getExamWorkspaceHistory.mockRejectedValue(new Error("history unavailable"));
+    holder.current = "tab-A";
+    await editing.requestTakeover();
+    await flushPromises();
+    await flushPromises();
+    expect(workspacePoints(editing, "item_001")).toBe(7);
+    expect(editing.history.pending.value).toBe(true);
+
+    api.getExamWorkspaceHistory.mockImplementation(async () => ({
+      baseline_step_id: "step-0",
+      cursor: server.state.cursor,
+      position_step_id: server.state.position,
+      step_ids: [...server.state.steps],
+    }));
+    await editing.save();
+    await flushPromises();
+    await flushPromises();
+    await flushPromises();
+    expect(editing.workspaceDocument.value?.items.map((item) => item.points)).toEqual([7, 9]);
+    const stored = server.documents.get(server.state.cursor);
+    if (stored === undefined) {
+      throw new Error("expected the merged step");
+    }
+    expect(stored.items.map((item) => item.points)).toEqual([7, 9]);
+    expect(editing.history.pending.value).toBe(false);
+
+    api.getExamWorkspaceDocument.mockClear();
+    editing.updateItemPoints("item_001", 8);
+    await editing.save();
+    await flushPromises();
+    await flushPromises();
+    expect(api.getExamWorkspaceDocument).not.toHaveBeenCalled();
+    expect(editing.workspaceDocument.value?.items.map((item) => item.points)).toEqual([8, 9]);
   });
 });

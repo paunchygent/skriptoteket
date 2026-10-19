@@ -78,6 +78,25 @@ function leaseResponse(holder: string): ExamWorkspaceEditLeaseResponse {
   };
 }
 
+function leaseDouble(getHolder: () => string) {
+  return {
+    claim: async () => {
+      if (getHolder() !== "tab-A") {
+        throw leaseHeld();
+      }
+      return leaseResponse("tab-A");
+    },
+    release: async () => leaseResponse(getHolder()),
+    renew: async () => {
+      if (getHolder() !== "tab-A") {
+        throw leaseHeld();
+      }
+      return leaseResponse("tab-A");
+    },
+    requestTakeover: async () => leaseResponse("tab-B"),
+  };
+}
+
 function pointsOf(document: NativeExamDocument, itemId: string): number | null {
   const found = document.items.find((item) => item.item_id === itemId);
   if (found === undefined) {
@@ -102,22 +121,7 @@ describe("a refused edit across the takeover", () => {
     let holder = "tab-A";
     const editing = inScope(() =>
       useExamWorkspaceEditing(serverExamWorkspaceStore, {
-        server: {
-          claim: async () => {
-            if (holder !== "tab-A") {
-              throw leaseHeld();
-            }
-            return leaseResponse("tab-A");
-          },
-          release: async () => leaseResponse(holder),
-          renew: async () => {
-            if (holder !== "tab-A") {
-              throw leaseHeld();
-            }
-            return leaseResponse("tab-A");
-          },
-          requestTakeover: async () => leaseResponse("tab-B"),
-        },
+        server: leaseDouble(() => holder),
         tabId: "tab-A",
       }),
     );
@@ -153,7 +157,16 @@ describe("a refused edit across the takeover", () => {
     server.state.steps = [...server.state.steps, "step-B"];
     server.state.cursor = "step-B";
     server.state.position = "step-B";
-    api.getExamWorkspaceDocument.mockResolvedValueOnce(response(storedB, "step-B"));
+    // The recovery's follow-up store runs the serialized phase again: serve
+    // the live server cursor with a fresh object each time, as the transport
+    // does (the reload-failure check is by identity).
+    api.getExamWorkspaceDocument.mockImplementation(async () => {
+      const newest = server.documents.get(server.state.cursor);
+      if (newest === undefined) {
+        throw new Error("expected the newest server document");
+      }
+      return response(JSON.parse(JSON.stringify(newest)), server.state.cursor);
+    });
 
     // Tab A takes over: the kept edit merges onto the newest document.
     holder = "tab-A";
@@ -179,22 +192,7 @@ describe("a refused edit across the takeover", () => {
     let holder = "tab-A";
     const editing = inScope(() =>
       useExamWorkspaceEditing(serverExamWorkspaceStore, {
-        server: {
-          claim: async () => {
-            if (holder !== "tab-A") {
-              throw leaseHeld();
-            }
-            return leaseResponse("tab-A");
-          },
-          release: async () => leaseResponse(holder),
-          renew: async () => {
-            if (holder !== "tab-A") {
-              throw leaseHeld();
-            }
-            return leaseResponse("tab-A");
-          },
-          requestTakeover: async () => leaseResponse("tab-B"),
-        },
+        server: leaseDouble(() => holder),
         tabId: "tab-A",
       }),
     );
@@ -231,22 +229,7 @@ describe("a refused edit across the takeover", () => {
     let holder = "tab-A";
     const editing = inScope(() =>
       useExamWorkspaceEditing(serverExamWorkspaceStore, {
-        server: {
-          claim: async () => {
-            if (holder !== "tab-A") {
-              throw leaseHeld();
-            }
-            return leaseResponse("tab-A");
-          },
-          release: async () => leaseResponse(holder),
-          renew: async () => {
-            if (holder !== "tab-A") {
-              throw leaseHeld();
-            }
-            return leaseResponse("tab-A");
-          },
-          requestTakeover: async () => leaseResponse("tab-B"),
-        },
+        server: leaseDouble(() => holder),
         tabId: "tab-A",
       }),
     );
@@ -305,22 +288,7 @@ describe("a refused edit across the takeover", () => {
     let holder = "tab-A";
     const editing = inScope(() =>
       useExamWorkspaceEditing(serverExamWorkspaceStore, {
-        server: {
-          claim: async () => {
-            if (holder !== "tab-A") {
-              throw leaseHeld();
-            }
-            return leaseResponse("tab-A");
-          },
-          release: async () => leaseResponse(holder),
-          renew: async () => {
-            if (holder !== "tab-A") {
-              throw leaseHeld();
-            }
-            return leaseResponse("tab-A");
-          },
-          requestTakeover: async () => leaseResponse("tab-B"),
-        },
+        server: leaseDouble(() => holder),
         tabId: "tab-A",
       }),
     );
@@ -334,12 +302,15 @@ describe("a refused edit across the takeover", () => {
     expect(await editing.save()).toBe(false);
     expect(editing.history.pending.value).toBe(true);
     // The other tab made no document edit: the takeover GET returns the same
-    // cursor and content, but in a fresh response object.
-    const storedA = server.documents.get(server.state.cursor);
-    if (storedA === undefined) {
-      throw new Error("expected tab A's stored step");
-    }
-    api.getExamWorkspaceDocument.mockResolvedValueOnce(response({ ...storedA }, server.state.cursor));
+    // cursor and content, but in a fresh response object every time, as the
+    // transport does (the reload-failure check is by identity).
+    api.getExamWorkspaceDocument.mockImplementation(async () => {
+      const newest = server.documents.get(server.state.cursor);
+      if (newest === undefined) {
+        throw new Error("expected the newest server document");
+      }
+      return response(JSON.parse(JSON.stringify(newest)), server.state.cursor);
+    });
     holder = "tab-A";
     const outcome = await Promise.race([
       editing.requestTakeover().then(() => "settled"),
@@ -362,22 +333,7 @@ describe("a refused edit across the takeover", () => {
     let holder = "tab-A";
     const editing = inScope(() =>
       useExamWorkspaceEditing(serverExamWorkspaceStore, {
-        server: {
-          claim: async () => {
-            if (holder !== "tab-A") {
-              throw leaseHeld();
-            }
-            return leaseResponse("tab-A");
-          },
-          release: async () => leaseResponse(holder),
-          renew: async () => {
-            if (holder !== "tab-A") {
-              throw leaseHeld();
-            }
-            return leaseResponse("tab-A");
-          },
-          requestTakeover: async () => leaseResponse("tab-B"),
-        },
+        server: leaseDouble(() => holder),
         tabId: "tab-A",
       }),
     );
@@ -416,8 +372,12 @@ describe("a refused edit across the takeover", () => {
     expect(editing.history.pending.value).toBe(true);
     // The later save meets the stale cursor, conflicts, and recovers: the
     // conflict GET returns the newest copy, which the kept edit merges onto.
+    // Follow-up recoveries reread it with a fresh object each time.
     api.storeExamWorkspaceUndoStep.mockRejectedValueOnce(conflict());
     api.getExamWorkspaceDocument.mockResolvedValueOnce(response(storedB, "step-B"));
+    api.getExamWorkspaceDocument.mockImplementation(async () =>
+      response(JSON.parse(JSON.stringify(storedB)), "step-B"),
+    );
     await editing.save();
     await flushPromises();
     const workspace = editing.workspaceDocument.value;
@@ -437,22 +397,7 @@ describe("a refused edit across the takeover", () => {
     let holder = "tab-A";
     const editing = inScope(() =>
       useExamWorkspaceEditing(serverExamWorkspaceStore, {
-        server: {
-          claim: async () => {
-            if (holder !== "tab-A") {
-              throw leaseHeld();
-            }
-            return leaseResponse("tab-A");
-          },
-          release: async () => leaseResponse(holder),
-          renew: async () => {
-            if (holder !== "tab-A") {
-              throw leaseHeld();
-            }
-            return leaseResponse("tab-A");
-          },
-          requestTakeover: async () => leaseResponse("tab-B"),
-        },
+        server: leaseDouble(() => holder),
         tabId: "tab-A",
       }),
     );
