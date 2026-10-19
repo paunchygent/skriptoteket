@@ -6,6 +6,8 @@ points leaves the body, the points and every source record stay, and no item
 records a leftover candidate.
 """
 
+import re
+
 import pytest
 
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
@@ -23,6 +25,11 @@ _ENGLISH = "bf26_english_1_unit_test_kap_1_2_med_facit"
 _METODPROV = "metodprov_vetenskaplig_metod_med_facit"
 _OMPROV_1 = "svenska_2_grammatik_omprov_variant_1_med_facit"
 _OMPROV_2 = "svenska_2_grammatik_omprov_variant_2_med_facit"
+
+_TRAILING_POINTS_LABEL = re.compile(
+    r"\(\s*(\d+(?:[.,]\d+)?)\s*(?:poäng|points?|pts?|p)\.?\s*\)\s*$",
+    re.IGNORECASE,
+)
 
 _converted: dict[str, NativeExamDocument] = {}
 
@@ -48,6 +55,37 @@ def _first_paragraph_text(item) -> str:
     return "".join(run)
 
 
+def _last_paragraph_text(item) -> str:
+    from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+        NativeTextSegment,
+    )
+
+    run: list[str] = []
+    for segment in reversed(item.body[-1].segments):
+        if not isinstance(segment, NativeTextSegment):
+            break
+        run.append(segment.text)
+    run.reverse()
+    return "".join(run)
+
+
+def _ends_in_own_points_label(text: str, points) -> bool:
+    if points is None:
+        return False
+    found = _TRAILING_POINTS_LABEL.search(text)
+    return found is not None and float(found.group(1).replace(",", ".")) == points
+
+
+def _retry_source_holds_own_label(item) -> bool:
+    if item.retry_source is None or item.points is None:
+        return False
+    for chunk in item.retry_source.chunks:
+        found = _TRAILING_POINTS_LABEL.search(chunk.text)
+        if found is not None and float(found.group(1).replace(",", ".")) == item.points:
+            return True
+    return False
+
+
 async def test_forced_provider_failure_strips_first_paragraph_labels() -> None:
     """Every batch fails, so items are built by source fallback with heading stems.
 
@@ -59,11 +97,6 @@ async def test_forced_provider_failure_strips_first_paragraph_labels() -> None:
         StructuredLLMBackendFailureCode,
         StructuredLLMProviderError,
     )
-    from skriptoteket.domain.curated_apps.exam_workspace.points_wording import (
-        body_without_trailing_points,
-        trailing_points,
-        with_settled_points_wording,
-    )
 
     error = StructuredLLMProviderError(
         failure_code=StructuredLLMBackendFailureCode.PROVIDER_HTTP_ERROR,
@@ -71,6 +104,7 @@ async def test_forced_provider_failure_strips_first_paragraph_labels() -> None:
         provider_id="replay-probe",
         status_code=400,
     )
+    held_by_exam: dict[str, int] = {}
     for exam in (_METODPROV, _ENGLISH):
         probe = build_replay(exam)
         await probe.pipeline.convert(job=probe.job())
@@ -80,22 +114,31 @@ async def test_forced_provider_failure_strips_first_paragraph_labels() -> None:
         outcome = await replay.pipeline.convert(job=replay.job())
         document = outcome.result.document
         assert document.items
+        held = 0
         for item in document.items:
             assert item.retry_source is not None
             assert item.import_record is not None
-            assert body_without_trailing_points(item.body, item.points) == item.body
-            assert with_settled_points_wording(item) == item
-            if len(item.body) >= 2:
-                found = trailing_points(_first_paragraph_text(item))
-                assert not (
-                    found is not None and not found.whole_line and found.value == item.points
-                ), (exam, item.source_anchor, _first_paragraph_text(item)[-60:])
+            assert not _ends_in_own_points_label(_first_paragraph_text(item), item.points), (
+                exam,
+                item.source_anchor,
+                _first_paragraph_text(item)[-60:],
+            )
+            assert not _ends_in_own_points_label(_last_paragraph_text(item), item.points), (
+                exam,
+                item.source_anchor,
+                _last_paragraph_text(item)[-60:],
+            )
+            if _retry_source_holds_own_label(item):
+                held += 1
+        held_by_exam[exam] = held
         leftovers = [
             (item.item_id, item.source_anchor)
             for item in document.items
             if item.leftover_points_text is not None
         ]
         assert leftovers == []
+    assert held_by_exam[_METODPROV] == 16
+    assert held_by_exam[_ENGLISH] == 53
 
 
 async def test_forced_provider_failure_keeps_two_concrete_first_paragraphs() -> None:
