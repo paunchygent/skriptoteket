@@ -81,8 +81,20 @@ describe("ExamWorkspaceBodyEditor gap popover and chips", () => {
     const rects = new Map<Element, Partial<DOMRect>>();
     const spy = vi
       .spyOn(HTMLElement.prototype, "getBoundingClientRect")
-      .mockImplementation(function (this: HTMLElement) {
-        return { left: 0, right: 0, top: 0, bottom: 0, width: 0, height: 0, ...rects.get(this) } as DOMRect;
+      .mockImplementation(function (this: HTMLElement): DOMRect {
+        const stored = rects.get(this);
+        return {
+          left: 0,
+          right: 0,
+          top: 0,
+          bottom: 0,
+          width: 0,
+          height: 0,
+          x: 0,
+          y: 0,
+          ...stored,
+          toJSON: () => ({}),
+        };
       });
     try {
       const wrapper = await mountEditor();

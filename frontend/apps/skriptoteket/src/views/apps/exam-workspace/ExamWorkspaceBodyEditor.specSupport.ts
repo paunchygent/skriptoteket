@@ -10,7 +10,7 @@
  */
 
 import { DOMWrapper, mount } from "@vue/test-utils";
-import type { Editor } from "@tiptap/core";
+import { Editor } from "@tiptap/core";
 import { nextTick } from "vue";
 
 import type { NativeExamItem } from "../../../api/examWorkspace";
@@ -106,16 +106,24 @@ export type MountedBodyEditor = Awaited<ReturnType<typeof mountEditor>>;
 
 /** The question text's editing surface (the ProseMirror DOM). */
 export function surface(wrapper: MountedBodyEditor): HTMLElement {
-  return wrapper.get('[data-test="exam-workspace-body-editor-surface"]').element as HTMLElement;
+  const surface = wrapper.get('[data-test="exam-workspace-body-editor-surface"]').element;
+  if (!(surface instanceof HTMLElement)) {
+    throw new Error("the question text editor surface is not an element");
+  }
+  return surface;
 }
 
 /** The TipTap editor behind the surface, to set selections jsdom cannot place by pointer. */
 export function tiptap(wrapper: MountedBodyEditor): Editor {
-  const { editor } = surface(wrapper) as HTMLElement & { editor?: Editor };
-  if (!editor) {
+  const element = surface(wrapper);
+  if (!("editor" in element)) {
     throw new Error("the question text editor did not mount");
   }
-  return editor;
+  const candidate = element.editor;
+  if (!(candidate instanceof Editor)) {
+    throw new Error("the question text editor did not mount");
+  }
+  return candidate;
 }
 
 /** Position `offset` characters into the first text node that contains `needle`. */
@@ -175,7 +183,11 @@ export function clickGap(wrapper: MountedBodyEditor, gapId: string): void {
 
 /** The drawn element of one gap. */
 export function gapElement(wrapper: MountedBodyEditor, gapId: string): HTMLElement {
-  return wrapper.get(`[data-gap-id="${gapId}"]`).element as HTMLElement;
+  const element = wrapper.get(`[data-gap-id="${gapId}"]`).element;
+  if (!(element instanceof HTMLElement)) {
+    throw new Error(`the gap ${gapId} is not an element`);
+  }
+  return element;
 }
 
 /**

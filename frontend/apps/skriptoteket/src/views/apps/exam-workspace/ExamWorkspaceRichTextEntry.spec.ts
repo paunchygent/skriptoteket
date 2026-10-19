@@ -54,8 +54,8 @@ async function mountEntry(
   return mounted;
 }
 
-function bodies(wrapper: VueWrapper): Body[] {
-  return (wrapper.emitted("updateBody") ?? []).map((args) => args[0] as Body);
+function bodies(wrapper: VueWrapper): unknown[] {
+  return (wrapper.emitted("updateBody") ?? []).map((args) => args[0]);
 }
 
 afterEach(() => {
@@ -103,8 +103,8 @@ describe("ExamWorkspaceRichTextEntry", () => {
     editor.commands.setTextSelection({ from: posIn(editor, "Syregas", 0), to: posIn(editor, "Syregas", 7) });
     registry!.active.value!.toggleMark("bold");
 
-    const emitted = (mounted.emitted("updateBody") ?? []) as Array<[Body, boolean]>;
-    expect(emitted.map(([, structural]) => structural)).toEqual([false, true]);
+    const emitted = mounted.emitted("updateBody") ?? [];
+    expect(emitted.map((args) => args[1])).toEqual([false, true]);
     expect(emitted.at(-1)?.[0]).toEqual([paragraph(text("Syregas", ["bold"]))]);
   });
 

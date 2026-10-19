@@ -12,7 +12,7 @@
  */
 
 import { mount } from "@vue/test-utils";
-import type { Editor } from "@tiptap/core";
+import { Editor } from "@tiptap/core";
 import { describe, expect, it } from "vitest";
 import { nextTick } from "vue";
 
@@ -76,16 +76,24 @@ async function mountField(
 }
 
 function questionSurface(wrapper: FieldWrapper): HTMLElement {
-  return wrapper.get('[data-test="exam-workspace-short-answer-question"]')
-    .element as HTMLElement;
+  const surface = wrapper.get('[data-test="exam-workspace-short-answer-question"]')
+    .element;
+  if (!(surface instanceof HTMLElement)) {
+    throw new Error("the Frågetext surface is not an element");
+  }
+  return surface;
 }
 
 function questionEditor(wrapper: FieldWrapper): Editor {
-  const { editor } = questionSurface(wrapper) as HTMLElement & { editor?: Editor };
-  if (!editor) {
+  const surface = questionSurface(wrapper);
+  if (!("editor" in surface)) {
     throw new Error("the Frågetext editor did not mount");
   }
-  return editor;
+  const candidate = surface.editor;
+  if (!(candidate instanceof Editor)) {
+    throw new Error("the Frågetext editor did not mount");
+  }
+  return candidate;
 }
 
 function svarInputs(wrapper: FieldWrapper): HTMLInputElement[] {
@@ -100,7 +108,14 @@ function svarInputs(wrapper: FieldWrapper): HTMLInputElement[] {
   return rows;
 }
 
-type UpdateBodyEvent = [string, NativeExamBodyParagraph[], boolean];
+/** The `updateBody` body from one recorded emission, narrowed at run time. */
+function emittedBody(emission: unknown[] | undefined): NativeExamBodyParagraph[] {
+  const body = emission?.[1];
+  if (!Array.isArray(body)) {
+    throw new Error("expected an updateBody emission carrying a body");
+  }
+  return body;
+}
 
 describe("ExamWorkspaceShortAnswerField", () => {
   it("labels the fields Frågetext and Godkända svar", async () => {
@@ -138,7 +153,7 @@ describe("ExamWorkspaceShortAnswerField", () => {
     editor.commands.insertContentAt(posIn(editor, "huvudstad", 9), "!");
     await nextTick();
 
-    const updates = wrapper.emitted("updateBody") as UpdateBodyEvent[] | undefined;
+    const updates = wrapper.emitted("updateBody");
     expect(updates?.length).toBeGreaterThan(0);
     const last = updates?.at(-1);
     expect(last?.[0]).toBe(ITEM_ID);
@@ -146,7 +161,7 @@ describe("ExamWorkspaceShortAnswerField", () => {
       ...plainBody("Vad heter Sveriges huvudstad!?"),
       { heading_level: null, segments: [{ kind: "gap", gap_id: GAP_ID }] },
     ]);
-    const updated = withBody(item, last?.[1] ?? []);
+    const updated = withBody(item, emittedBody(last));
     expect(updated.gaps).toEqual(item.gaps);
     wrapper.unmount();
   });
@@ -212,8 +227,8 @@ describe("ExamWorkspaceShortAnswerField", () => {
 
     editor.commands.insertContentAt(posIn(editor, "huvudstad", 9), "!");
     await nextTick();
-    const updates = wrapper.emitted("updateBody") as UpdateBodyEvent[] | undefined;
-    const written = updates?.at(-1)?.[1] ?? [];
+    const updates = wrapper.emitted("updateBody");
+    const written = emittedBody(updates?.at(-1));
     const emittedCount = updates?.length ?? 0;
 
     await wrapper.setProps({ item: { ...item, body: written } });
@@ -221,7 +236,7 @@ describe("ExamWorkspaceShortAnswerField", () => {
     await nextTick();
 
     expect(questionEditor(wrapper).getText()).toContain("huvudstad!?");
-    expect((wrapper.emitted("updateBody") as UpdateBodyEvent[] | undefined)?.length).toBe(
+    expect(wrapper.emitted("updateBody")?.length).toBe(
       emittedCount,
     );
     wrapper.unmount();

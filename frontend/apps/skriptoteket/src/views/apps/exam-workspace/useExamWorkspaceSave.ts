@@ -59,12 +59,15 @@ type SaveState = {
 };
 
 function nameInUse(error: unknown): boolean {
+  if (!isApiError(error) || error.status !== 422) {
+    return false;
+  }
+  const details = error.details;
   return (
-    isApiError(error) &&
-    error.status === 422 &&
-    typeof error.details === "object" &&
-    error.details !== null &&
-    (error.details as { code?: unknown }).code === "vault_name_in_use"
+    typeof details === "object" &&
+    details !== null &&
+    "code" in details &&
+    details.code === "vault_name_in_use"
   );
 }
 

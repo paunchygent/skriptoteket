@@ -16,7 +16,7 @@
 
 import { flushPromises, mount } from "@vue/test-utils";
 import type { VueWrapper } from "@vue/test-utils";
-import type { Editor } from "@tiptap/core";
+import { Editor } from "@tiptap/core";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { defineComponent, h, nextTick, ref } from "vue";
 
@@ -34,7 +34,8 @@ import {
   posIn,
 } from "./ExamWorkspaceBodyEditor.specSupport";
 import { buildGap } from "./examWorkspaceKeyedItems.specSupport";
-import { nextGapId, withBody, withNewGap } from "./examWorkspaceItemEdits";
+import { withBody } from "./examWorkspaceItemEdits";
+import { nextGapId, withNewGap } from "./examWorkspaceGapEdits";
 import { plainBody } from "./examWorkspaceRichText";
 import { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
 import {
@@ -51,8 +52,6 @@ const GAP_AT_CAP = "Högst 999 luckor";
 const toast = vi.hoisted(() => ({ failure: vi.fn(), warning: vi.fn() }));
 
 vi.mock("../../../composables/useToast", () => ({ useToast: () => toast }));
-
-type Creation = [string, NativeExamBodyParagraph[], string, string];
 
 /** Mount the body editor inside a small owner that applies each edit like the real store. */
 function mountHarness(item: NativeExamItem, disabled = false): VueWrapper {
@@ -91,10 +90,8 @@ function bodyEditorOf(host: VueWrapper) {
   return host.findComponent(ExamWorkspaceBodyEditor);
 }
 
-function creationsOf(host: VueWrapper): Creation[] {
-  return ((bodyEditorOf(host).emitted("createGap") ?? []) as Creation[]).map(
-    ([itemId, body, gapId, seed]) => [itemId, body, gapId, seed],
-  );
+function creationsOf(host: VueWrapper): unknown[][] {
+  return bodyEditorOf(host).emitted("createGap") ?? [];
 }
 
 function updatesOf(host: VueWrapper): unknown[][] {
@@ -106,17 +103,23 @@ function itemOf(host: VueWrapper): NativeExamItem {
 }
 
 function innerEditor(host: VueWrapper): Editor {
-  const surface = host.get('[data-test="exam-workspace-body-editor-surface"]')
-    .element as HTMLElement & { editor?: Editor };
-  if (!surface.editor) {
+  const surface = host.get('[data-test="exam-workspace-body-editor-surface"]').element;
+  if (!(surface instanceof HTMLElement) || !("editor" in surface)) {
     throw new Error("the question text editor did not mount");
   }
-  return surface.editor;
+  const candidate = surface.editor;
+  if (!(candidate instanceof Editor)) {
+    throw new Error("the question text editor did not mount");
+  }
+  return candidate;
 }
 
 function surfaceOf(host: VueWrapper): HTMLElement {
-  return host.get('[data-test="exam-workspace-body-editor-surface"]')
-    .element as HTMLElement;
+  const surface = host.get('[data-test="exam-workspace-body-editor-surface"]').element;
+  if (!(surface instanceof HTMLElement)) {
+    throw new Error("the question text editor surface is not an element");
+  }
+  return surface;
 }
 
 /** A primary click at `pos` that leaves the caret behind, as a mousedown would. */

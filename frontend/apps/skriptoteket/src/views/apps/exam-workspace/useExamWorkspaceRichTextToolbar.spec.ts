@@ -10,6 +10,7 @@
  */
 
 import { mount } from "@vue/test-utils";
+import type { VueWrapper } from "@vue/test-utils";
 import { describe, expect, it, vi } from "vitest";
 import { defineComponent, h, ref } from "vue";
 
@@ -51,24 +52,14 @@ const Host = defineComponent({
   },
 });
 
-type HostVm = {
-  registry: RichTextTargetRegistry;
-  $refs: {
-    toolbar: {
-      activeMarks: BodyMark[];
-      activeHeading: RichTextHeadingLevel | null;
-      toggleMark: (mark: BodyMark) => void;
-      toggleHeading: (level: RichTextHeadingLevel) => void;
-    };
-  };
-};
+type HostWrapper = VueWrapper<InstanceType<typeof Host>>;
 
-function toolbarOf(wrapper: { vm: unknown }): HostVm["$refs"]["toolbar"] {
-  return (wrapper.vm as unknown as HostVm).$refs.toolbar;
+function toolbarOf(wrapper: HostWrapper) {
+  return wrapper.findComponent(Child).vm;
 }
 
-function registryOf(wrapper: { vm: unknown }): RichTextTargetRegistry {
-  return (wrapper.vm as unknown as HostVm).registry;
+function registryOf(wrapper: HostWrapper): RichTextTargetRegistry {
+  return wrapper.vm.registry;
 }
 
 describe("useExamWorkspaceRichTextToolbar", () => {

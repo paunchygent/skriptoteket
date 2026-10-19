@@ -163,7 +163,11 @@ const keyLine = computed(() => {
 });
 
 function handlePointsInput(event: Event): void {
-  const raw = (event.target as HTMLInputElement).value.trim().replace(",", ".");
+  const target = event.target;
+  if (!(target instanceof HTMLInputElement)) {
+    return;
+  }
+  const raw = target.value.trim().replace(",", ".");
   if (raw.length === 0) {
     emit("updatePoints", props.item.item_id, null);
     return;
@@ -174,7 +178,11 @@ function handlePointsInput(event: Event): void {
 
 /** Keep the last valid tick value in the document; mark the field while the typed value is invalid. */
 function handleTickPointsInput(event: Event): void {
-  const raw = (event.target as HTMLInputElement).value.trim().replace(",", ".");
+  const target = event.target;
+  if (!(target instanceof HTMLInputElement)) {
+    return;
+  }
+  const raw = target.value.trim().replace(",", ".");
   const valid = TICK_POINTS_PATTERN.test(raw);
   tickInvalid.value = !valid;
   if (valid) {

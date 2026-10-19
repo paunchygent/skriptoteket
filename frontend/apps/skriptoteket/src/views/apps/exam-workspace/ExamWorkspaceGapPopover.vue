@@ -134,7 +134,10 @@ watch(
 
 function handleFocusOut(event: FocusEvent): void {
   const next = event.relatedTarget;
-  const popover = event.currentTarget as HTMLElement;
+  const popover = event.currentTarget;
+  if (!(popover instanceof HTMLElement)) {
+    return;
+  }
   if (next instanceof Node && popover.contains(next)) {
     return;
   }

@@ -53,7 +53,7 @@ function answerRows(): HTMLInputElement[] {
 
 /** Type into the answers field without committing: only the input event fires. */
 async function typePendingAnswers(value: string): Promise<void> {
-  (answersInput().element as HTMLInputElement).value = value;
+  answersInput().element.value = value;
   await answersInput().trigger("input");
 }
 
@@ -132,7 +132,7 @@ describe("ExamWorkspaceGapPopover Visa som text", () => {
 
   it("does not write answers back after the gap becomes text", async () => {
     const wrapper = mountPopover(buildGap({ accepted_values: ["100"] }));
-    const input = answersInput().element as HTMLInputElement;
+    const input = answersInput().element;
     input.value = "hundra";
     input.dispatchEvent(new Event("input", { bubbles: true }));
 

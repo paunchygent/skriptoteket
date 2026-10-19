@@ -33,7 +33,11 @@ describe("ExamWorkspaceMarkToolbar gap button", () => {
       props: { showGap: true, gapDisabledReason: "Högst 999 luckor" },
     });
     const button = wrapper.get("[data-test='exam-workspace-toolbar-make-gap']");
-    expect((button.element as HTMLButtonElement).disabled).toBe(true);
+    const element = button.element;
+    if (!(element instanceof HTMLButtonElement)) {
+      throw new Error("the Lucka button is not a button");
+    }
+    expect(element.disabled).toBe(true);
     expect(button.attributes("title")).toBe("Högst 999 luckor");
   });
 
