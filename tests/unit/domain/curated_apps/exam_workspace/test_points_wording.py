@@ -382,6 +382,53 @@ def test_first_paragraph_in_sentence_label_is_untouched() -> None:
     assert with_settled_points_wording(_item(body, 2)) == _item(body, 2)
 
 
+def test_first_paragraph_one_word_head_parenthesised_label_leaves_only_the_label() -> None:
+    # D12: the label leaves, never the line; its number must equal the points (D3).
+    body = (
+        _paragraph(_text("Tidningsartiklar (2 poäng)")),
+        _paragraph(_text("Svara utförligt.")),
+    )
+    result = with_settled_points_wording(_item(body, 2))
+    assert result.body == (
+        _paragraph(_text("Tidningsartiklar")),
+        _paragraph(_text("Svara utförligt.")),
+    )
+    assert result.leftover_points_text is None
+
+
+def test_first_paragraph_one_word_head_label_with_other_points_stays() -> None:
+    body = (
+        _paragraph(_text("Tidningsartiklar (2 poäng)")),
+        _paragraph(_text("Svara utförligt.")),
+    )
+    result = with_settled_points_wording(_item(body, 3))
+    assert result.body == body
+    assert result.leftover_points_text is None
+
+
+def test_first_paragraph_bare_label_paragraph_is_dropped_when_other_text_remains() -> None:
+    # D12, D6: a first paragraph emptied by the cut is dropped while the body keeps other text.
+    body = (_paragraph(_text("(2 p)")), _paragraph(_text("Svara utförligt.")))
+    result = with_settled_points_wording(_item(body, 2))
+    assert result.body == (_paragraph(_text("Svara utförligt.")),)
+    assert result.leftover_points_text is None
+
+
+def test_first_paragraph_bare_label_paragraph_with_other_points_stays() -> None:
+    body = (_paragraph(_text("(2 p)")), _paragraph(_text("Svara utförligt.")))
+    result = with_settled_points_wording(_item(body, 3))
+    assert result.body == body
+    assert result.leftover_points_text is None
+
+
+def test_first_paragraph_non_parenthesised_points_line_stays() -> None:
+    # D12 names parenthesised labels only: a bare label stays even at equal points.
+    body = (_paragraph(_text("Poäng: 2 poäng")), _paragraph(_text("Svara.")))
+    result = with_settled_points_wording(_item(body, 2))
+    assert result.body == body
+    assert result.leftover_points_text is None
+
+
 def test_first_paragraph_points_line_is_not_this_rules_case() -> None:
     body = (
         _paragraph(_text("Poäng: 2 poäng")),
@@ -504,5 +551,74 @@ def test_whole_text_one_word_head_line_with_other_points_stays_and_records_nothi
 def test_whole_text_bare_label_line_stays() -> None:
     body = (_paragraph(_text("(2 p)")),)
     result = with_settled_points_wording(_item(body, 2))
+    assert result.body == body
+    assert result.leftover_points_text is None
+
+
+def _uppgift_4_1_body() -> tuple[NativeParagraph, ...]:
+    return (
+        _paragraph(_text("Läs texterna.")),
+        _paragraph(_text("Text A")),
+        _paragraph(_text('"Igår kom jag."')),
+        _paragraph(_text("Text B")),
+        _paragraph(_text('"Ett haveri."')),
+        _heading("Jämför texterna (15 p)"),
+        _paragraph(_text("Beskriv minst fyra skillnader.")),
+    )
+
+
+def test_mid_body_heading_label_with_equal_points_leaves_only_the_label() -> None:
+    # D12 extension (decision A): an equal parenthesised label ending any
+    # heading paragraph leaves, with the blank space before it.
+    body = _uppgift_4_1_body()
+    result = with_settled_points_wording(_item(body, 15))
+    assert result.body == (
+        _paragraph(_text("Läs texterna.")),
+        _paragraph(_text("Text A")),
+        _paragraph(_text('"Igår kom jag."')),
+        _paragraph(_text("Text B")),
+        _paragraph(_text('"Ett haveri."')),
+        _heading("Jämför texterna"),
+        _paragraph(_text("Beskriv minst fyra skillnader.")),
+    )
+    assert result.body[5].heading_level == 3
+    assert result.leftover_points_text is None
+
+
+def test_mid_body_heading_label_with_other_points_stays() -> None:
+    body = _uppgift_4_1_body()
+    result = with_settled_points_wording(_item(body, 12))
+    assert result.body == body
+    assert result.leftover_points_text is None
+
+
+def test_mid_body_non_heading_paragraph_is_never_touched() -> None:
+    body = (
+        _paragraph(_text("Läs texterna.")),
+        _paragraph(_text("Text A")),
+        _paragraph(_text('"Igår kom jag."')),
+        _paragraph(_text("Text B")),
+        _paragraph(_text('"Ett haveri."')),
+        _paragraph(_text("Jämför texterna (15 p)")),
+        _paragraph(_text("Beskriv minst fyra skillnader.")),
+    )
+    result = with_settled_points_wording(_item(body, 15))
+    assert result.body == body
+    assert result.leftover_points_text is None
+
+
+def test_mid_body_heading_plus_end_label_abstains() -> None:
+    # D3: two labels abstain; nothing is removed and nothing is recorded.
+    body = (
+        _paragraph(_text("Läs texterna.")),
+        _paragraph(_text("Text A")),
+        _paragraph(_text('"Igår kom jag."')),
+        _paragraph(_text("Text B")),
+        _paragraph(_text('"Ett haveri."')),
+        _heading("Jämför texterna (15 p)"),
+        _paragraph(_text("Beskriv minst fyra skillnader.")),
+        _paragraph(_text("Svara. (15 p)")),
+    )
+    result = with_settled_points_wording(_item(body, 15))
     assert result.body == body
     assert result.leftover_points_text is None
