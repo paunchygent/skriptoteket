@@ -8,9 +8,17 @@
  *   trailing hyphen does not. Anything else resolves to nothing.
  */
 
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 
-import { wordRangeAt } from "./examWorkspaceGapWord";
+import {
+  gap,
+  mountEditor,
+  paragraph,
+  posIn,
+  releaseEditor,
+  text,
+} from "./ExamWorkspaceRichTextEditor.specSupport";
+import { wordRangeAt, wordRangeAtDocPosition } from "./examWorkspaceGapWord";
 
 describe("wordRangeAt", () => {
   it("resolves a caret inside a word to the whole word", () => {
@@ -52,5 +60,52 @@ describe("wordRangeAt", () => {
   it("resolves a caret next to punctuation at end-of-word offset to the word", () => {
     expect(wordRangeAt("Paris.", 5)).toEqual({ from: 0, to: 5 });
     expect(wordRangeAt("Paris.", 6)).toBeNull();
+  });
+});
+
+describe("wordRangeAtDocPosition", () => {
+  afterEach(() => {
+    releaseEditor();
+  });
+
+  it("resolves a word split across a bold mark to document positions", async () => {
+    const opened = await mountEditor({
+      body: [paragraph(text("Huvudstaden är Stock"), text("holm", ["bold"]), text("."))],
+    });
+    const caret = posIn(opened.editor, "holm", 2);
+    const start = posIn(opened.editor, "Stock", 0);
+    expect(wordRangeAtDocPosition(opened.editor.state.doc, caret)).toEqual({
+      from: start,
+      to: start + "Stockholm".length,
+    });
+  });
+
+  it("resolves only the word after a gap atom", async () => {
+    const opened = await mountEditor({
+      body: [paragraph(text("Solen är "), gap("gap_001"), text("varm idag"))],
+    });
+    const caret = posIn(opened.editor, "varm", 1);
+    const start = posIn(opened.editor, "varm", 0);
+    expect(wordRangeAtDocPosition(opened.editor.state.doc, caret)).toEqual({ from: start, to: start + 4 });
+  });
+
+  it("stops at a gap atom on either side of the caret", async () => {
+    const opened = await mountEditor({ body: [paragraph(text("ab"), gap("gap_001"), text("cd"))] });
+    const beforeGap = posIn(opened.editor, "ab", 2);
+    const abStart = posIn(opened.editor, "ab", 0);
+    expect(wordRangeAtDocPosition(opened.editor.state.doc, beforeGap)).toEqual({
+      from: abStart,
+      to: abStart + 2,
+    });
+    const afterGap = posIn(opened.editor, "cd", 0);
+    expect(wordRangeAtDocPosition(opened.editor.state.doc, afterGap)).toEqual({
+      from: afterGap,
+      to: afterGap + 2,
+    });
+  });
+
+  it("returns null for a caret between two spaces", async () => {
+    const opened = await mountEditor({ body: [paragraph(text("a  b"))] });
+    expect(wordRangeAtDocPosition(opened.editor.state.doc, posIn(opened.editor, "a  b", 2))).toBeNull();
   });
 });
