@@ -22,6 +22,7 @@ import type {
   NativeExamMatchPair,
 } from "../../../api/examWorkspace";
 import { criteriaPointsTotal } from "./examWorkspaceItemSaveRules";
+import { plainBody } from "./examWorkspaceRichText";
 import { placedGapIds } from "./examWorkspaceRichTextDocument";
 
 function teacherKeyOrigin(hasKeyData: boolean): NativeExamAnswerKeyOrigin {
@@ -360,6 +361,102 @@ export function withGapAsText(item: NativeExamItem, gapId: string): NativeExamIt
       ),
     })),
   };
+}
+
+const GAP_ID_PATTERN = /^gap_([0-9]{3})$/;
+const MAX_GAP_NUMBER = 999;
+
+/**
+ * The next free gap id above the item's highest declared or placed gap, as
+ * `gap_NNN`; `gap_001` when there are none, null when the next number would
+ * exceed 999. Ids outside the `gap_NNN` shape never count.
+ */
+export function nextGapId(item: NativeExamItem): string | null {
+  let highest = 0;
+  const candidates = [...item.gaps.map((gap) => gap.gap_id), ...placedGapIds(item.body)];
+  for (const candidate of candidates) {
+    const match = GAP_ID_PATTERN.exec(candidate);
+    if (match) {
+      highest = Math.max(highest, Number(match[1]));
+    }
+  }
+  if (highest >= MAX_GAP_NUMBER) {
+    return null;
+  }
+  return `gap_${String(highest + 1).padStart(3, "0")}`;
+}
+
+/**
+ * The gap record one creation seeds: a Lucktext gap carries the converted
+ * text as its accepted value, a dropdown gap carries it as its one correct
+ * option, and an empty insertion carries a blank gap of the item's kind.
+ */
+function newGapRecord(kind: NativeExamItemKind, gapId: string, seed: string): NativeExamGap {
+  const text = seed.trim();
+  if (kind === "inline_choice") {
+    const options: NativeExamChoice[] =
+      text.length > 0
+        ? [{ body: plainBody(text), choice_id: "choice_001" }]
+        : [
+            { body: [], choice_id: "choice_001" },
+            { body: [], choice_id: "choice_002" },
+          ];
+    return {
+      accepted_values: [],
+      automatic_values: [],
+      correct_option_id: "choice_001",
+      excluded_automatic_values: [],
+      gap_id: gapId,
+      options,
+    };
+  }
+  return {
+    accepted_values: text.length > 0 ? [text] : [],
+    automatic_values: [],
+    correct_option_id: null,
+    excluded_automatic_values: [],
+    gap_id: gapId,
+    options: [],
+  };
+}
+
+/**
+ * Create one gap as one atomic structural item edit: the passed body plus the
+ * new gap record together, mirroring `withGapAsText`. Kept records follow the
+ * new body's placement order, so the gap's number follows the text; records
+ * the new body no longer places leave with it. Anything but exactly one
+ * placement of a new gap on a Lucktext or dropdown question returns the same
+ * item. The written body is the passed body, so the editor's echo guard sees
+ * JSON-equal content.
+ */
+export function withNewGap(
+  item: NativeExamItem,
+  body: NativeExamBodyParagraph[],
+  gapId: string,
+  seed: string,
+): NativeExamItem {
+  if (item.kind !== "gap_fill" && item.kind !== "inline_choice") {
+    return item;
+  }
+  if (item.gaps.some((gap) => gap.gap_id === gapId)) {
+    return item;
+  }
+  const placed = placedGapIds(body);
+  if (placed.filter((placedId) => placedId === gapId).length !== 1) {
+    return item;
+  }
+  const order = new Map(placed.map((placedId, index) => [placedId, index]));
+  const position = order.get(gapId) ?? placed.length;
+  const kept = item.gaps.filter((gap) => order.has(gap.gap_id));
+  const record = newGapRecord(item.kind, gapId, seed);
+  const insertAt = kept.findIndex((gap) => (order.get(gap.gap_id) ?? placed.length) > position);
+  const gaps = [...kept];
+  if (insertAt < 0) {
+    gaps.push(record);
+  } else {
+    gaps.splice(insertAt, 0, record);
+  }
+  return { ...item, body, gaps };
 }
 
 export function reviewed(item: NativeExamItem): NativeExamItem {
