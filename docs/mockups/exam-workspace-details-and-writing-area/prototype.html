@@ -1,0 +1,641 @@
+<!doctype html>
+<!--
+Domain purpose:
+    Desktop design mockup for two exam-workspace repairs seen on staging (main 54e9c5db):
+    a visible "Uppgifter" header command for Provets uppgifter, and the free-text
+    question's Skrivyta and Bedömningskriterier controls. Static data; no backend.
+    Tokens: the first style block is huleedu-integrated src/css/huleedu-design-tokens.css, inlined.
+    Glyphs: inline Lucide 1.47.0 markup for the shared catalogue meanings named in data-g.
+-->
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Uppgifter och skrivyta</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@600&display=swap" rel="stylesheet">
+<style>
+/* huleedu-integrated src/css/huleedu-design-tokens.css, inlined */
+/**
+ * HuleEdu Design Tokens
+ * =====================
+ * Standalone CSS custom properties for harmonizing external projects
+ * with the HuleEdu design system.
+ *
+ * Usage:
+ *   1. Import this file: @import url('huleedu-design-tokens.css');
+ *   2. Or link directly: <link rel="stylesheet" href="huleedu-design-tokens.css">
+ *   3. Add Google Fonts in your HTML head:
+ *      <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700;800&family=IBM+Plex+Serif:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+ */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DESIGN TOKENS (CSS Custom Properties)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ─────────────────────────────────────────────────────────────────────────
+     COLORS - Core Brand Palette
+     ───────────────────────────────────────────────────────────────────────── */
+  --huleedu-paper: #FEFEFC;         /* Subtle warm canvas background */
+  --huleedu-canvas: var(--huleedu-paper);
+  --huleedu-modal: var(--huleedu-canvas); /* Opaque canvas-toned modal/dialog shell */
+  --huleedu-panel: rgba(254, 254, 252, 0.64); /* Canvas-toned panel shell that lets the grid breathe */
+  --huleedu-panel-muted: rgba(254, 254, 252, 0.38);
+  --huleedu-navy: #082B4C;          /* Deep Navy: structure + long-form text */
+  --huleedu-terracotta: #C94F32;    /* Warm Terracotta: brand accent only */
+  --huleedu-action: #3F7F78;        /* Verdigris Teal: functional action/selection */
+  --huleedu-critical: #4D1521;      /* Burgundy family: destructive/critical decisions */
+  --huleedu-burgundy: var(--huleedu-critical); /* Deprecated compatibility alias */
+
+  /* HuleEdu semantic aliases shared by brand surfaces and app primitives. */
+  --brand-wordmark-primary: var(--huleedu-navy);
+  --brand-wordmark-accent: var(--huleedu-terracotta);
+  --brand-symbol-primary: var(--huleedu-terracotta);
+  --brand-symbol-secondary: var(--huleedu-navy);
+  --text-primary: var(--huleedu-navy);
+  --border-primary: var(--huleedu-navy);
+  --accent-brand: var(--huleedu-terracotta);
+  --accent-action: var(--huleedu-action);
+  --button-primary-bg: var(--huleedu-action);
+  --button-primary-text: #FFFFFF;
+  --button-secondary-border: var(--huleedu-navy);
+  --button-secondary-text: var(--huleedu-navy);
+  --surface-paper: var(--huleedu-paper);
+  --surface-modal: var(--huleedu-modal);
+  --surface-panel: var(--huleedu-panel);
+  --surface-panel-muted: var(--huleedu-panel-muted);
+
+  /* Color with opacity variants (pre-computed for compatibility) */
+  --huleedu-navy-02: rgba(8, 43, 76, 0.02);
+  --huleedu-navy-05: rgba(8, 43, 76, 0.05);
+  --huleedu-navy-10: rgba(8, 43, 76, 0.1);
+  --huleedu-navy-15: rgba(8, 43, 76, 0.15);
+  --huleedu-navy-20: rgba(8, 43, 76, 0.2);
+  --huleedu-navy-30: rgba(8, 43, 76, 0.3);
+  --huleedu-navy-40: rgba(8, 43, 76, 0.4);
+  --huleedu-navy-50: rgba(8, 43, 76, 0.5);
+  --huleedu-navy-60: rgba(8, 43, 76, 0.6);
+  --huleedu-navy-70: rgba(8, 43, 76, 0.7);
+  --huleedu-navy-80: rgba(8, 43, 76, 0.8);
+
+  --huleedu-terracotta-05: rgba(201, 79, 50, 0.05);
+  --huleedu-terracotta-10: rgba(201, 79, 50, 0.1);
+  --huleedu-terracotta-20: rgba(201, 79, 50, 0.2);
+  --huleedu-terracotta-30: rgba(201, 79, 50, 0.3);
+  --huleedu-terracotta-40: rgba(201, 79, 50, 0.4);
+
+  --huleedu-action-05: rgba(63, 127, 120, 0.05);
+  --huleedu-action-10: rgba(63, 127, 120, 0.1);
+  --huleedu-action-20: rgba(63, 127, 120, 0.2);
+  --huleedu-action-30: rgba(63, 127, 120, 0.3);
+  --huleedu-action-40: rgba(63, 127, 120, 0.4);
+
+  --huleedu-critical-05: rgba(77, 21, 33, 0.05);
+  --huleedu-critical-10: rgba(77, 21, 33, 0.1);
+  --huleedu-critical-20: rgba(77, 21, 33, 0.2);
+  --huleedu-critical-30: rgba(77, 21, 33, 0.3);
+  --huleedu-critical-40: rgba(77, 21, 33, 0.4);
+  --huleedu-burgundy-05: var(--huleedu-critical-05);
+  --huleedu-burgundy-10: var(--huleedu-critical-10);
+  --huleedu-burgundy-20: var(--huleedu-critical-20);
+  --huleedu-burgundy-30: var(--huleedu-critical-30);
+  --huleedu-burgundy-40: var(--huleedu-critical-40);
+
+  --huleedu-canvas-15: rgba(254, 254, 252, 0.15);
+  --huleedu-canvas-30: rgba(254, 254, 252, 0.3);
+  --huleedu-canvas-50: rgba(254, 254, 252, 0.5);
+  --huleedu-canvas-80: rgba(254, 254, 252, 0.8);
+
+  /* Semantic colors */
+  --huleedu-success: #059669;       /* emerald-600 */
+  --huleedu-warning: #D97706;       /* amber-600 */
+  --huleedu-error: #DC2626;         /* red-600 */
+
+  --huleedu-success-10: rgba(5, 150, 105, 0.1);
+  --huleedu-success-15: rgba(5, 150, 105, 0.15);
+  --huleedu-success-45: rgba(5, 150, 105, 0.45);
+  --huleedu-success-50: rgba(5, 150, 105, 0.5);
+  --huleedu-warning-15: rgba(217, 119, 6, 0.15);
+  --huleedu-warning-20: rgba(217, 119, 6, 0.2);
+  --huleedu-warning-50: rgba(217, 119, 6, 0.5);
+  --huleedu-warning-60: rgba(217, 119, 6, 0.6);
+  --huleedu-error-10: rgba(220, 38, 38, 0.1);
+  --huleedu-error-15: rgba(220, 38, 38, 0.15);
+  --huleedu-error-40: rgba(220, 38, 38, 0.4);
+  --huleedu-error-45: rgba(220, 38, 38, 0.45);
+
+  /* Strong solid shades: status glyphs on translucent (frosted) surfaces only.
+     Each keeps its base OKLCH hue at lightness ~0.39 (chroma reduced only to stay
+     in sRGB), so it reaches 3:1 against the darkest frosted surface (128,151,181)
+     and against the lightest one over white. Text keeps the base colour roles. */
+  --huleedu-success-strong: #025137; /* 3.14:1 darkest frosted, 9.40:1 white */
+  --huleedu-warning-strong: #6D3800; /* 3.16:1 darkest frosted, 9.48:1 white */
+  --huleedu-action-strong: #02504A;  /* 3.12:1 darkest frosted, 9.34:1 white */
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     TYPOGRAPHY
+     ───────────────────────────────────────────────────────────────────────── */
+  --huleedu-font-sans: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --huleedu-font-serif: "IBM Plex Serif", Georgia, "Times New Roman", serif;
+  --huleedu-font-mono: "IBM Plex Mono", ui-monospace, "Courier New", monospace;
+
+  /* Font sizes */
+  --huleedu-text-xs: 0.75rem;       /* 12px - labels, meta */
+  --huleedu-text-sm: 0.875rem;      /* 14px - body small, buttons */
+  --huleedu-text-base: 1rem;        /* 16px - body default */
+  --huleedu-text-lg: 1.125rem;      /* 18px - body large */
+  --huleedu-text-xl: 1.25rem;       /* 20px - section titles */
+  --huleedu-text-2xl: 1.5rem;       /* 24px - headings */
+  --huleedu-text-3xl: 1.875rem;     /* 30px - headings */
+  --huleedu-text-4xl: 2.25rem;      /* 36px - hero mobile */
+  --huleedu-text-5xl: 3rem;         /* 48px - hero tablet */
+  --huleedu-text-6xl: 3.75rem;      /* 60px - hero desktop */
+
+  /* Font weights */
+  --huleedu-font-normal: 400;
+  --huleedu-font-medium: 500;
+  --huleedu-font-semibold: 600;
+  --huleedu-font-bold: 700;
+  --huleedu-font-extrabold: 800;
+
+  /* Letter spacing */
+  --huleedu-tracking-tightest: -0.02em;  /* Hero headings */
+  --huleedu-tracking-tight: -0.01em;     /* Subheadings */
+  --huleedu-tracking-normal: 0;
+  --huleedu-tracking-label: 0.08em;      /* Uppercase labels */
+  --huleedu-tracking-wide: 0.1em;
+
+  /* Line heights */
+  --huleedu-leading-none: 1;
+  --huleedu-leading-tight: 1.05;         /* Hero headings */
+  --huleedu-leading-snug: 1.25;
+  --huleedu-leading-normal: 1.5;
+  --huleedu-leading-relaxed: 1.625;      /* Body text */
+  --huleedu-leading-loose: 2;            /* Essay/content */
+
+  /* Type roles for interface workspaces. Screen CSS consumes a role's size
+     and weight together instead of combining raw scale values.
+     page-title: page or mode title.
+     section-title: panel section title.
+     nested-title: nested section or document level-1 heading.
+     field-label: form field label.
+     control-value: selected option and entered field text.
+     supporting: supporting body text or summary value.
+     helper: helper text or metadata.
+     title-leading / body-leading: line height for title and body roles. */
+  --huleedu-type-page-title-size: var(--huleedu-text-xl);
+  --huleedu-type-page-title-weight: var(--huleedu-font-semibold);
+  --huleedu-type-section-title-size: var(--huleedu-text-lg);
+  --huleedu-type-section-title-weight: var(--huleedu-font-semibold);
+  --huleedu-type-nested-title-size: var(--huleedu-text-base);
+  --huleedu-type-nested-title-weight: var(--huleedu-font-medium);
+  --huleedu-type-field-label-size: var(--huleedu-text-sm);
+  --huleedu-type-field-label-weight: var(--huleedu-font-medium);
+  --huleedu-type-control-value-size: 0.8125rem; /* 13px */
+  --huleedu-type-control-value-weight: var(--huleedu-font-normal);
+  --huleedu-type-supporting-size: var(--huleedu-text-sm);
+  --huleedu-type-supporting-weight: var(--huleedu-font-normal);
+  --huleedu-type-helper-size: var(--huleedu-text-xs);
+  --huleedu-type-helper-weight: var(--huleedu-font-normal);
+  --huleedu-type-title-leading: var(--huleedu-leading-snug);
+  --huleedu-type-body-leading: var(--huleedu-leading-normal);
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     SPACING (4px base scale)
+     ───────────────────────────────────────────────────────────────────────── */
+  --huleedu-space-0: 0;
+  --huleedu-space-0-5: 0.125rem;    /* 2px */
+  --huleedu-space-1: 0.25rem;       /* 4px */
+  --huleedu-space-1-5: 0.375rem;    /* 6px */
+  --huleedu-space-2: 0.5rem;        /* 8px */
+  --huleedu-space-2-5: 0.625rem;    /* 10px */
+  --huleedu-space-3: 0.75rem;       /* 12px */
+  --huleedu-space-4: 1rem;          /* 16px */
+  --huleedu-space-5: 1.25rem;       /* 20px */
+  --huleedu-space-6: 1.5rem;        /* 24px */
+  --huleedu-space-8: 2rem;          /* 32px */
+  --huleedu-space-10: 2.5rem;       /* 40px */
+  --huleedu-space-12: 3rem;         /* 48px */
+  --huleedu-space-16: 4rem;         /* 64px */
+  --huleedu-space-20: 5rem;         /* 80px */
+
+  /* Shared action-control geometry: keep the touch/default target intact. */
+  --huleedu-action-control-height: 2.75rem; /* 44px */
+
+  /* Compact workbench roles. Opt in by surface; do not shrink touch controls. */
+  --huleedu-workbench-control-height: 1.75rem; /* 28px */
+  --huleedu-workbench-control-text: var(--huleedu-text-xs);
+  --huleedu-workbench-control-weight: var(--huleedu-font-medium);
+  --huleedu-workbench-control-padding-inline: var(--huleedu-space-2-5);
+  --huleedu-workbench-control-gap: var(--huleedu-space-2);
+  --huleedu-workbench-control-radius: 0.3125rem; /* 5px */
+  --huleedu-workbench-control-border: var(--huleedu-navy-20);
+  --huleedu-workbench-icon-size: var(--huleedu-space-4);
+  /* Workspace header commands; on a coarse pointer consumers use --huleedu-action-control-height. */
+  --huleedu-header-command-height: 2rem; /* 32px */
+  /* Toolbar grouping: tools in one group sit close; a separator divides groups. */
+  --huleedu-toolbar-tool-gap: var(--huleedu-space-0-5); /* 2px between tools in one group */
+  --huleedu-toolbar-separator-width: 1px;
+  --huleedu-toolbar-separator-height: 1.125rem; /* 18px */
+  --huleedu-toolbar-separator-color: var(--huleedu-navy-20);
+  --huleedu-toolbar-separator-margin: var(--huleedu-space-1); /* 4px either side */
+  --huleedu-navigation-icon-size: var(--huleedu-space-5);
+  --huleedu-font-page-title: var(--huleedu-font-serif);
+  --huleedu-font-interface: var(--huleedu-font-sans);
+  --huleedu-product-identity-text: var(--huleedu-text-sm);
+  --huleedu-product-identity-weight: var(--huleedu-font-medium);
+  --huleedu-product-identity-color: var(--huleedu-navy-70);
+  --huleedu-surface-content: #FFFFFF;
+  --huleedu-surface-divider: var(--huleedu-navy-10);
+  --huleedu-panel-border: var(--huleedu-navy-15);
+  --huleedu-panel-radius: var(--huleedu-radius-lg);
+  --huleedu-link-color: var(--huleedu-action);
+  --huleedu-link-weight: var(--huleedu-font-medium);
+  --huleedu-link-underline-offset: var(--huleedu-space-0-5);
+  --huleedu-scrollbar-thumb: var(--huleedu-action-30);
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     BORDERS & RADIUS
+     ───────────────────────────────────────────────────────────────────────── */
+  --huleedu-border-width: 1px;
+  --huleedu-border-width-2: 2px;
+  --huleedu-border-color: var(--huleedu-navy);
+  --huleedu-border-color-subtle: var(--huleedu-navy-30);
+
+  --huleedu-radius-none: 0;
+  --huleedu-radius-sm: 2px;         /* Buttons, inputs */
+  --huleedu-radius-md: 4px;
+  --huleedu-radius-lg: 8px;
+  --huleedu-radius-xl: 12px;
+  --huleedu-radius-full: 9999px;    /* Pills, dots */
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     SHADOWS (soft; floating layers only)
+     ───────────────────────────────────────────────────────────────────────── */
+  --huleedu-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --huleedu-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     TRANSITIONS
+     ───────────────────────────────────────────────────────────────────────── */
+  --huleedu-duration-fast: 100ms;
+  --huleedu-duration-default: 150ms;
+  --huleedu-duration-slow: 300ms;
+  --huleedu-ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --huleedu-ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --huleedu-ease-out: cubic-bezier(0, 0, 0.2, 1);
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     Z-INDEX SCALE
+     ───────────────────────────────────────────────────────────────────────── */
+  --huleedu-z-dropdown: 10;
+  --huleedu-z-sticky: 20;
+  --huleedu-z-overlay: 30;
+  --huleedu-z-modal: 40;
+  --huleedu-z-popover: 50;
+  --huleedu-z-tooltip: 60;
+
+  /* ─────────────────────────────────────────────────────────────────────────
+     LAYOUT
+     ───────────────────────────────────────────────────────────────────────── */
+  --huleedu-header-height: 4rem;    /* 64px */
+  --huleedu-sidebar-width: 240px;
+  --huleedu-max-width-sm: 24rem;    /* 384px */
+  --huleedu-max-width-md: 28rem;    /* 448px */
+  --huleedu-max-width-lg: 32rem;    /* 512px */
+  --huleedu-max-width-xl: 36rem;    /* 576px */
+  --huleedu-max-width-2xl: 42rem;   /* 672px */
+  --huleedu-max-width-6xl: 72rem;   /* 1152px */
+
+  /* Grid background pattern size */
+  --huleedu-grid-size: 24px;
+}
+
+/* Intentionally tokens-only (CSS Custom Properties). */
+
+</style>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #eef0f2; color: var(--huleedu-navy); font-family: var(--huleedu-font-sans); }
+  .sheet { max-width: 1480px; margin: 0 auto; padding: 32px 20px 64px; }
+  .sheet > h1 { font-family: var(--huleedu-font-serif, "IBM Plex Serif", serif); font-size: var(--huleedu-text-2xl); margin: 0 0 4px; }
+  .sheet > p.lead { margin: 0 0 32px; font-size: var(--huleedu-text-sm); color: var(--huleedu-navy-70); max-width: 70em; }
+  .frame-caption { display: flex; gap: 12px; align-items: baseline; margin: 40px 0 10px; }
+  .frame-caption b { font-size: var(--huleedu-text-base); }
+  .frame-caption span { font-size: var(--huleedu-text-sm); color: var(--huleedu-navy-70); }
+  .notes { margin: 12px 0 0; padding: 0 0 0 20px; font-size: var(--huleedu-text-sm); color: var(--huleedu-navy-80); line-height: 1.55; max-width: 80em; }
+
+  /* App frame at 1440 px */
+  .app { width: 1440px; height: 760px; background: var(--huleedu-canvas); border: 1px solid var(--huleedu-panel-border); display: grid; grid-template-rows: 56px 60px 1fr; grid-template-columns: 64px 1fr; overflow: hidden; position: relative; }
+  .topbar { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; padding: 0 24px; border-bottom: 1px solid var(--huleedu-surface-divider); }
+  .wordmark { font-family: "IBM Plex Serif", serif; font-weight: 600; font-size: 26px; }
+  .identity { font-size: var(--huleedu-product-identity-text); color: var(--huleedu-terracotta); font-weight: 600; align-self: flex-start; margin-top: 10px; }
+  .topbar .spacer { flex: 1; }
+  .topbar .tlink { font-size: var(--huleedu-text-sm); display: inline-flex; gap: 6px; align-items: center; margin-left: 22px; }
+  .rail { grid-row: 2 / -1; border-right: 1px solid var(--huleedu-surface-divider); display: flex; flex-direction: column; align-items: center; gap: 18px; padding-top: 16px; color: var(--huleedu-navy-70); }
+  .rail i { width: 20px; height: 20px; display: block; }
+
+  /* Workspace header (ExamWorkspaceHeader) */
+  .ws-head { display: flex; align-items: center; gap: 16px; padding: 0 24px; border-bottom: 1px solid var(--huleedu-surface-divider); }
+  .ws-title { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+  .ws-title__row { display: flex; align-items: center; gap: 4px; min-width: 0; }
+  .ws-title__text { font-size: var(--huleedu-text-base); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ws-meta { font-size: var(--huleedu-text-xs); color: var(--huleedu-navy-70); }
+  .ws-tools { display: flex; align-items: center; gap: 8px; flex: none; }
+  .xw-cmd { all: unset; box-sizing: border-box; display: inline-flex; align-items: center; gap: 6px; height: var(--huleedu-header-command-height); padding: 0 8px; border-radius: var(--huleedu-radius-md); font-size: var(--huleedu-type-control-value-size); font-weight: 500; white-space: nowrap; cursor: pointer; }
+  .xw-cmd i { width: 20px; height: 20px; }
+  .xw-cmd[aria-expanded="true"], .xw-cmd[aria-pressed="true"] { background: var(--huleedu-action-10); color: var(--huleedu-action); }
+  .xw-cmd.is-off { color: var(--huleedu-navy-30); }
+  .xw-toolsep { width: 1px; height: 18px; background: var(--huleedu-toolbar-separator-color); margin: 0 4px; flex: none; }
+  .ws-status { width: 8.5rem; display: inline-flex; align-items: center; gap: 6px; font-size: var(--huleedu-type-control-value-size); color: var(--huleedu-navy-70); margin-left: 8px; }
+  .ws-status i { width: 20px; height: 20px; }
+
+  /* Tools (28 px, boxless at rest) */
+  .xw-tool { all: unset; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 28px; height: 28px; border: 1px solid transparent; border-radius: var(--huleedu-workbench-control-radius); color: var(--huleedu-navy-70); cursor: pointer; flex: none; }
+  .xw-tool i { width: 16px; height: 16px; }
+  .xw-tool--word { padding: 0 10px; font-size: var(--huleedu-type-control-value-size); font-weight: 500; color: var(--huleedu-navy); }
+  .xw-tool--word i { color: var(--huleedu-navy-70); }
+  .xw-tool[aria-expanded="true"] { background: var(--huleedu-action-10); border-color: var(--huleedu-action); color: var(--huleedu-action); }
+  .xw-tool[aria-expanded="true"] i { color: var(--huleedu-action); }
+  .xw-tool.is-hover { background: var(--huleedu-surface-content); border-color: var(--huleedu-workbench-control-border); }
+  .xw-tool.is-off { opacity: .4; cursor: not-allowed; }
+  .xw-tool--danger { color: var(--huleedu-critical); }
+
+  /* Body columns */
+  .body { display: grid; grid-template-columns: 260px 1fr; min-height: 0; }
+  .body.with-drawer { grid-template-columns: 260px 1fr 320px; }
+  .list { border-right: 1px solid var(--huleedu-surface-divider); display: flex; flex-direction: column; min-height: 0; }
+  .list-head { height: 40px; display: flex; align-items: center; gap: 2px; padding: 0 8px 0 16px; border-bottom: 1px solid var(--huleedu-surface-divider); font-size: var(--huleedu-text-sm); font-weight: 600; }
+  .list-head .grow { flex: 1; }
+  .q { display: grid; grid-template-columns: 34px 1fr 20px; align-items: center; gap: 8px; padding: 10px 16px; border-bottom: 1px solid var(--huleedu-surface-divider); }
+  .q.sub { padding-left: 40px; }
+  .q .n { font-size: var(--huleedu-text-sm); color: var(--huleedu-navy-70); }
+  .q .t { font-size: var(--huleedu-text-sm); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .q .m { font-size: var(--huleedu-text-xs); color: var(--huleedu-navy-60); font-weight: 400; display: block; }
+  .q i { width: 18px; height: 18px; color: var(--huleedu-success); }
+  .q.is-sel { background: var(--huleedu-action-10); box-shadow: inset 3px 0 0 var(--huleedu-action); }
+
+  .editor { overflow: hidden; padding: 20px 32px 32px; min-width: 0; }
+  .qhead { display: flex; align-items: center; gap: 12px; }
+  .qhead h2 { margin: 0; font-size: var(--huleedu-text-lg); font-weight: 600; }
+  .qhead .type { font-size: var(--huleedu-text-sm); color: var(--huleedu-navy-70); display: inline-flex; align-items: center; gap: 4px; }
+  .qhead .type i { width: 14px; height: 14px; }
+  .qhead .grow { flex: 1; }
+  .instr { margin-top: 14px; display: flex; align-items: center; gap: 8px; padding: 9px 12px; border: 1px solid var(--huleedu-panel-border); border-radius: var(--huleedu-radius-lg); font-size: var(--huleedu-text-sm); }
+  .instr i { width: 16px; height: 16px; }
+  .instr .muted { color: var(--huleedu-navy-60); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
+  .label { margin: 18px 0 6px; font-size: var(--huleedu-type-field-label-size); font-weight: var(--huleedu-type-field-label-weight); }
+  .rich { border: 1px solid var(--huleedu-panel-border); border-radius: var(--huleedu-radius-lg); background: var(--huleedu-surface-content); }
+  .rich .bar { display: flex; align-items: center; gap: 2px; padding: 4px 8px; border-bottom: 1px solid var(--huleedu-surface-divider); }
+  .rich .text { padding: 12px 16px; font-size: var(--huleedu-text-base); line-height: 1.6; }
+  .rich .text b { font-weight: 600; }
+
+  /* NEW: one answer-settings block with a label column */
+  .answer { margin-top: 24px; border: 1px solid var(--huleedu-panel-border); border-radius: var(--huleedu-radius-lg); background: var(--huleedu-surface-content); }
+  .answer-row { display: grid; grid-template-columns: 11rem minmax(0, 1fr); column-gap: 16px; padding: 12px 16px; align-items: start; }
+  .answer-row + .answer-row { border-top: 1px solid var(--huleedu-surface-divider); }
+  .answer-row > .k { font-size: var(--huleedu-type-field-label-size); font-weight: var(--huleedu-type-field-label-weight); line-height: 28px; }
+  .answer-row > .k small { display: block; font-size: var(--huleedu-text-xs); font-weight: 400; color: var(--huleedu-navy-60); line-height: 1.3; }
+  .lines { display: flex; align-items: center; gap: 2px; position: relative; }
+  .lines .value { width: 5.5rem; text-align: center; font-size: var(--huleedu-text-sm); font-variant-numeric: tabular-nums; }
+  .crit { display: grid; gap: 6px; }
+  .crit-row { display: grid; grid-template-columns: minmax(0, 1fr) 5.5rem 28px; gap: 8px; align-items: center; }
+  .field { min-height: 32px; padding-block: 6px; line-height: 1.35; border: 1px solid var(--huleedu-navy-30); border-radius: var(--huleedu-radius-md); background: var(--huleedu-surface-content); padding: 0 10px; display: flex; align-items: center; font-size: var(--huleedu-text-sm); }
+  .field.pts { justify-content: space-between; font-variant-numeric: tabular-nums; }
+  .field.pts span { color: var(--huleedu-navy-60); }
+  .crit-foot { display: grid; grid-template-columns: minmax(0, 1fr) 5.5rem 28px; gap: 8px; align-items: center; margin-top: 2px; }
+  .crit-foot .sum { font-size: var(--huleedu-text-xs); color: var(--huleedu-navy-70); text-align: right; padding-right: 10px; font-variant-numeric: tabular-nums; }
+  .crit-foot .start { margin-left: -10px; }
+
+  /* Popover */
+  .pop { position: absolute; z-index: 5; width: 340px; background: var(--huleedu-modal); border: 1px solid var(--huleedu-panel-border); border-radius: var(--huleedu-radius-lg); box-shadow: var(--huleedu-shadow-md), 0 0 0 1px rgba(0,0,0,.02); padding: 14px 16px; }
+  .pop h3 { margin: 0 0 6px; font-size: var(--huleedu-text-sm); font-weight: 600; }
+  .pop p { margin: 0; font-size: var(--huleedu-text-sm); line-height: 1.45; color: var(--huleedu-navy-80); }
+  .pop p + p { margin-top: 4px; color: var(--huleedu-navy-60); font-size: var(--huleedu-text-xs); }
+  .pop .ok { display: flex; gap: 8px; align-items: flex-start; }
+  .pop .ok i { width: 18px; height: 18px; color: var(--huleedu-success); flex: none; margin-top: 1px; }
+  .pop .acts { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+  .btn { all: unset; box-sizing: border-box; height: 32px; padding: 0 12px; display: inline-flex; align-items: center; border-radius: var(--huleedu-radius-md); font-size: var(--huleedu-type-control-value-size); font-weight: 600; cursor: pointer; }
+  .btn--quiet { color: var(--huleedu-navy); }
+  .btn--primary { background: var(--huleedu-action); color: #fff; }
+
+  .matched-demo { margin-top: 16px; }
+
+  /* Drawer */
+  .drawer { border-left: 1px solid var(--huleedu-surface-divider); display: flex; flex-direction: column; min-height: 0; background: var(--huleedu-canvas); }
+  .drawer-head { height: 52px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px 0 20px; border-bottom: 1px solid var(--huleedu-surface-divider); font-weight: 600; }
+  .drawer-body { padding: 16px 20px; display: grid; gap: 4px; }
+  .drawer-body .label { margin: 12px 0 6px; }
+  .drawer-body .label:first-child { margin-top: 0; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { font-size: var(--huleedu-text-xs); border: 1px solid var(--huleedu-panel-border); border-radius: 999px; padding: 3px 9px; }
+  .chip.on { border-color: var(--huleedu-action); background: var(--huleedu-action-10); color: var(--huleedu-action-strong); }
+
+  /* Before strip */
+  .before { width: 1440px; border: 1px dashed var(--huleedu-navy-30); background: var(--huleedu-canvas); padding: 16px 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+  .before h4 { margin: 0 0 8px; font-size: var(--huleedu-text-xs); text-transform: uppercase; letter-spacing: .04em; color: var(--huleedu-navy-60); }
+  .old-btn { display: inline-flex; width: 40px; height: 40px; align-items: center; justify-content: center; border: 1px solid var(--huleedu-navy-30); font-weight: 600; font-size: 18px; margin-right: 6px; }
+  .old-wide { display: inline-flex; height: 40px; align-items: center; padding: 0 12px; border: 1px solid var(--huleedu-navy-30); font-size: 14px; font-weight: 600; opacity: .5; }
+  .old-label { font-size: 12px; font-weight: 600; color: var(--huleedu-navy-80); margin: 8px 0; }
+
+  i[data-g] svg { width: 100%; height: 100%; display: block; }
+  i[data-g] { display: inline-block; flex: none; }
+</style>
+</head>
+<body>
+<main class="sheet">
+  <h1>Provets uppgifter och fritextfrågans skrivyta</h1>
+  <p class="lead">Skrivbordsbredd 1440 px. Rubriken får kommandot <b>Uppgifter</b>, och fritextfrågans skrivyta och bedömningskriterier samlas i ett block med en etikettkolumn. Gemensamma tokens och glyfer från huleedu-integrated.</p>
+
+  <!-- FRAME A -->
+  <div class="frame-caption"><b>A · Fritextfråga, ingen låda öppen</b><span>Uppgifter leder rubrikens verktyg; Skrivyta och Bedömningskriterier i ett block.</span></div>
+  <section class="app" id="frameA"></section>
+  <ul class="notes">
+    <li><b>Uppgifter</b> (glyf <code>info</code> + ordet) öppnar Provets uppgifter; raden "Svenska 2 · 67 p" under titeln öppnar samma låda, som tidigare.</li>
+    <li>Skrivyta: − och + är 28 px glyfverktyg utan ram; värdet står i en fast bred plats (bredast "40 rader"), så inget flyttar när talet ändras.</li>
+    <li>"Alla fritextfrågor" är ett verktyg med ord som öppnar en liten panel; det är aldrig grått, eftersom panelen själv säger om alla redan har samma skrivyta.</li>
+    <li>Bedömningskriterier står i etikettkolumnen med egen rad; inget kolliderar med raden ovanför. "+ Kriterium" är ett ramlöst ordverktyg i linje med fälten; summan står under poängkolumnen.</li>
+  </ul>
+
+  <!-- FRAME B -->
+  <div class="frame-caption"><b>B · Uppgifter öppen</b><span>Kommandot visar expanderat läge; lådan öppnas till höger, som Öppna.</span></div>
+  <section class="app" id="frameB"></section>
+
+  <!-- FRAME C -->
+  <div class="frame-caption"><b>C · Samma skrivyta för alla fritextfrågor</b><span>Panelen säger vad som ändras och bekräftar med ett namngivet val.</span></div>
+  <section class="app" id="frameC"></section>
+  <div class="matched-demo">
+    <div class="pop" role="dialog" aria-label="Samma skrivyta, redan klart" style="position:static">
+      <div class="ok"><i data-g="circle-check"></i><div><h3>Samma skrivyta för alla fritextfrågor</h3><p>Alla 6 fritextfrågor har redan 8 rader.</p></div></div>
+      <div class="acts"><button class="btn btn--quiet">Stäng</button></div>
+    </div>
+  </div>
+  <ul class="notes">
+    <li>När alla redan har samma skrivyta öppnar samma verktyg panelen nedan: en bock och "Alla 6 fritextfrågor har redan 8 rader", med bara Stäng.</li>
+    <li>Escape eller klick utanför stänger panelen utan ändring. Ångra i verktygsraden tar tillbaka en tillämpning.</li>
+  </ul>
+
+  <div class="frame-caption"><b>Före (staging 54e9c5db)</b><span>För jämförelse.</span></div>
+  <section class="before">
+    <div>
+      <h4>Skrivyta</h4>
+      <div class="old-label">Skrivyta: 8 rader</div>
+      <span class="old-btn">−</span><span class="old-btn">+</span><span class="old-wide">Använd för alla fritextfrågor</span>
+    </div>
+    <div>
+      <h4>Kriterier</h4>
+      <div class="old-label">Bedömningskriterier</div>
+      <span class="old-wide" style="opacity:1">+ Kriterium</span>
+    </div>
+  </section>
+</main>
+
+<script>
+const GLYPHS = {
+ "info": "<circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M12 16v-4\"/><path d=\"M12 8h.01\"/>",
+ "minus": "<path d=\"M5 12h14\"/>",
+ "plus": "<path d=\"M5 12h14\"/><path d=\"M12 5v14\"/>",
+ "copy": "<rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\"/><path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\"/>",
+ "trash": "<path d=\"M10 11v6\"/><path d=\"M14 11v6\"/><path d=\"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6\"/><path d=\"M3 6h18\"/><path d=\"M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2\"/>",
+ "pencil": "<path d=\"M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z\"/><path d=\"m15 5 4 4\"/>",
+ "folder-open": "<path d=\"m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2\"/>",
+ "file-input": "<path d=\"M4 11V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.706.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-1\"/><path d=\"M14 2v5a1 1 0 0 0 1 1h5\"/><path d=\"M2 15h10\"/><path d=\"m9 18 3-3-3-3\"/>",
+ "eye": "<path d=\"M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/>",
+ "sparkles": "<path d=\"M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z\"/><path d=\"M20 2v4\"/><path d=\"M22 4h-4\"/><circle cx=\"4\" cy=\"20\" r=\"2\"/>",
+ "cloud-check": "<path d=\"m17 15-5.5 5.5L9 18\"/><path d=\"M5.516 16.07A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 3.501 7.327\"/>",
+ "download": "<path d=\"M12 15V3\"/><path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"/><path d=\"m7 10 5 5 5-5\"/>",
+ "chevron-down": "<path d=\"m6 9 6 6 6-6\"/>",
+ "x": "<path d=\"M18 6 6 18\"/><path d=\"m6 6 12 12\"/>",
+ "undo-2": "<path d=\"M9 14 4 9l5-5\"/><path d=\"M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11\"/>",
+ "redo-2": "<path d=\"m15 14 5-5-5-5\"/><path d=\"M20 9H9.5A5.5 5.5 0 0 0 4 14.5A5.5 5.5 0 0 0 9.5 20H13\"/>",
+ "bold": "<path d=\"M6 12h9a4 4 0 0 1 0 8H7a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h7a4 4 0 0 1 0 8\"/>",
+ "italic": "<line x1=\"19\" x2=\"10\" y1=\"4\" y2=\"4\"/><line x1=\"14\" x2=\"5\" y1=\"20\" y2=\"20\"/><line x1=\"15\" x2=\"9\" y1=\"4\" y2=\"20\"/>",
+ "underline": "<path d=\"M6 4v6a6 6 0 0 0 12 0V4\"/><line x1=\"4\" x2=\"20\" y1=\"20\" y2=\"20\"/>",
+ "superscript": "<path d=\"m4 19 8-8\"/><path d=\"m12 19-8-8\"/><path d=\"M20 12h-4c0-1.5.442-2 1.5-2.5S20 8.334 20 7.002c0-.472-.17-.93-.484-1.29a2.105 2.105 0 0 0-2.617-.436c-.42.239-.738.614-.899 1.06\"/>",
+ "subscript": "<path d=\"m4 5 8 8\"/><path d=\"m12 5-8 8\"/><path d=\"M20 19h-4c0-1.5.44-2 1.5-2.5S20 15.33 20 14c0-.47-.17-.93-.48-1.29a2.11 2.11 0 0 0-2.62-.44c-.42.24-.74.62-.9 1.07\"/>",
+ "square-dashed-text": "<path d=\"M14 21h1\"/><path d=\"M14 3h1\"/><path d=\"M19 3a2 2 0 0 1 2 2\"/><path d=\"M21 14v1\"/><path d=\"M21 19a2 2 0 0 1-2 2\"/><path d=\"M21 9v1\"/><path d=\"M3 14v1\"/><path d=\"M3 9v1\"/><path d=\"M5 21a2 2 0 0 1-2-2\"/><path d=\"M5 3a2 2 0 0 0-2 2\"/><path d=\"M7 12h10\"/><path d=\"M7 16h6\"/><path d=\"M7 8h8\"/><path d=\"M9 21h1\"/><path d=\"M9 3h1\"/>",
+ "square-dashed": "<path d=\"M5 3a2 2 0 0 0-2 2\"/><path d=\"M19 3a2 2 0 0 1 2 2\"/><path d=\"M21 19a2 2 0 0 1-2 2\"/><path d=\"M5 21a2 2 0 0 1-2-2\"/><path d=\"M9 3h1\"/><path d=\"M9 21h1\"/><path d=\"M14 3h1\"/><path d=\"M14 21h1\"/><path d=\"M3 9v1\"/><path d=\"M21 9v1\"/><path d=\"M3 14v1\"/><path d=\"M21 14v1\"/>",
+ "heading-1": "<path d=\"M4 12h8\"/><path d=\"M4 18V6\"/><path d=\"M12 18V6\"/><path d=\"m17 12 3-2v8\"/>",
+ "heading-2": "<path d=\"M4 12h8\"/><path d=\"M4 18V6\"/><path d=\"M12 18V6\"/><path d=\"M21 18h-4c0-4 4-3 4-6 0-1.5-2-2.5-4-1\"/>",
+ "heading-3": "<path d=\"M4 12h8\"/><path d=\"M4 18V6\"/><path d=\"M12 18V6\"/><path d=\"M17.5 10.5c1.7-1 3.5 0 3.5 1.5a2 2 0 0 1-2 2\"/><path d=\"M17 17.5c2 1.5 4 .3 4-1.5a2 2 0 0 0-2-2\"/>",
+ "check": "<path d=\"M20 6 9 17l-5-5\"/>",
+ "circle-check": "<circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"m16 9-5.5 5.5L8 12\"/>",
+ "book-open": "<path d=\"M12 5v16\"/><path d=\"M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z\"/>",
+ "ellipsis-vertical": "<circle cx=\"12\" cy=\"12\" r=\"1\"/><circle cx=\"12\" cy=\"5\" r=\"1\"/><circle cx=\"12\" cy=\"19\" r=\"1\"/>",
+ "panel-left": "<rect width=\"18\" height=\"18\" x=\"3\" y=\"3\" rx=\"2\"/><path d=\"M9 3v18\"/>",
+ "list-checks": "<path d=\"M13 5h8\"/><path d=\"M13 12h8\"/><path d=\"M13 19h8\"/><path d=\"m3 17 2 2 4-4\"/><path d=\"m3 7 2 2 4-4\"/>",
+ "file-text": "<path d=\"M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z\"/><path d=\"M14 2v5a1 1 0 0 0 1 1h5\"/><path d=\"M10 9H8\"/><path d=\"M16 13H8\"/><path d=\"M16 17H8\"/>"
+};
+
+
+const header = (open) => `
+  <div class="topbar"><span class="wordmark">Skriptoteket</span><span class="identity">Provredigering</span><span class="spacer"></span>
+    <span class="tlink">Fokusläge</span><span class="tlink">Hjälp</span><span class="tlink">Logga ut</span></div>
+  <nav class="rail"><i data-g="panel-left"></i><i data-g="book-open"></i><i data-g="folder-open"></i><i data-g="file-text"></i><i data-g="list-checks"></i></nav>
+  <header class="ws-head">
+    <div class="ws-title">
+      <div class="ws-title__row"><span class="ws-title__text">OMPROV: GRAMMATIK OCH SPRÅKSTRUKTURER</span><button class="xw-tool" aria-label="Byt namn på provet"><i data-g="pencil"></i></button></div>
+      <span class="ws-meta">Svenska 2 · 67 p</span>
+    </div>
+    <div class="ws-tools">
+      <button class="xw-cmd" aria-expanded="${open}" title="Provets uppgifter: titel, kurs och centralt innehåll"><i data-g="info"></i><span>Uppgifter</span></button>
+      <span class="xw-toolsep"></span>
+      <button class="xw-cmd"><i data-g="folder-open"></i><span>Öppna</span></button>
+      <button class="xw-cmd"><i data-g="copy"></i><span>Spara som</span></button>
+      <button class="xw-cmd"><i data-g="download"></i><span>Exportera</span><i data-g="chevron-down" style="width:14px;height:14px"></i></button>
+      <button class="xw-cmd"><i data-g="file-input"></i><span>Importera</span></button>
+      <span class="xw-toolsep"></span>
+      <button class="xw-cmd"><i data-g="eye"></i><span>PDF</span></button>
+      <button class="xw-cmd" aria-label="Föreslå facit"><i data-g="sparkles"></i></button>
+      <span class="ws-status"><i data-g="cloud-check"></i>Sparat 23:24</span>
+    </div>
+  </header>`;
+
+const list = `
+  <aside class="list">
+    <div class="list-head"><span class="grow">Frågor (9)</span><button class="xw-tool"><i data-g="chevron-down"></i></button><button class="xw-tool"><i data-g="plus"></i></button><button class="xw-tool"><i data-g="list-checks"></i></button></div>
+    <div class="q sub"><span class="n">1c</span><span class="t">Identifiera huvudord<span class="m">Fritext · 4 p</span></span><i data-g="circle-check"></i></div>
+    <div class="q sub"><span class="n">1d</span><span class="t">Analysera nominalfraser<span class="m">Fritext · 4 p</span></span><i data-g="circle-check"></i></div>
+    <div class="q"><span class="n">2</span><span class="t">DEL 2: SATSLÖSNING<span class="m">Instruktion · 2 frågor · 20 p</span></span><span></span></div>
+    <div class="q sub is-sel"><span class="n">2a</span><span class="t">Enkel satslösning<span class="m">Fritext · 10 p</span></span><i data-g="circle-check"></i></div>
+    <div class="q sub"><span class="n">2b</span><span class="t">Komplex satslösning<span class="m">Fritext · 10 p</span></span><i data-g="circle-check"></i></div>
+    <div class="q"><span class="n">3</span><span class="t">DEL 3: BISATSER<span class="m">Instruktion · 3 frågor · 17 p</span></span><span></span></div>
+    <div class="q sub"><span class="n">3a</span><span class="t">Bisatsens funktion<span class="m">Fritext · 6 p</span></span><i data-g="circle-check"></i></div>
+  </aside>`;
+
+const editor = (applyOpen) => `
+  <div class="editor">
+    <div class="qhead"><h2>Fråga 2a</h2><span class="type">Fritext <i data-g="chevron-down"></i></span><span class="grow"></span>
+      <button class="xw-tool xw-tool--word"><i data-g="file-input"></i>Import</button><button class="xw-tool" aria-label="Granskad" style="color:var(--huleedu-success)"><i data-g="check"></i></button><button class="xw-tool"><i data-g="ellipsis-vertical"></i></button></div>
+    <div class="instr"><i data-g="book-open"></i><b>Instruktion till fråga 2</b><span class="muted">DEL 2: SATSLÖSNING Använd förkortningarna: S = subjekt, P = predikat (finit verb) …</span><i data-g="chevron-down"></i></div>
+    <div class="label">Frågetext</div>
+    <div class="rich">
+      <div class="bar">
+        <button class="xw-tool"><i data-g="undo-2"></i></button><button class="xw-tool is-off"><i data-g="redo-2"></i></button><span class="xw-toolsep"></span>
+        <button class="xw-tool"><i data-g="bold"></i></button><button class="xw-tool"><i data-g="italic"></i></button><button class="xw-tool"><i data-g="underline"></i></button><button class="xw-tool"><i data-g="superscript"></i></button><button class="xw-tool"><i data-g="subscript"></i></button><span class="xw-toolsep"></span>
+        <button class="xw-tool"><i data-g="square-dashed-text"></i></button><button class="xw-tool"><i data-g="square-dashed"></i></button><span class="xw-toolsep"></span>
+        <button class="xw-tool"><i data-g="heading-1"></i></button><button class="xw-tool"><i data-g="heading-2"></i></button><button class="xw-tool"><i data-g="heading-3"></i></button>
+      </div>
+      <div class="text"><b>Enkel satslösning</b><br>Gör fullständig satsdelsanalys av följande meningar.<br><b>1.</b> Eleverna studerar ofta på biblioteket. <b>2.</b> Min mamma köpte mig en tröja.</div>
+    </div>
+
+    <section class="answer" aria-label="Svar och bedömning">
+      <div class="answer-row">
+        <div class="k">Skrivyta</div>
+        <div class="lines">
+          <button class="xw-tool" aria-label="Färre rader"><i data-g="minus"></i></button>
+          <span class="value">8 rader</span>
+          <button class="xw-tool" aria-label="Fler rader"><i data-g="plus"></i></button>
+          <span class="xw-toolsep"></span>
+          <button class="xw-tool xw-tool--word" aria-expanded="${applyOpen}" aria-haspopup="dialog" title="Samma skrivyta för alla fritextfrågor"><i data-g="copy"></i>Alla fritextfrågor</button>
+          ${applyOpen ? `
+          <div class="pop" role="dialog" aria-label="Samma skrivyta för alla fritextfrågor" style="top:36px;left:163px">
+            <h3>Samma skrivyta för alla fritextfrågor</h3>
+            <p>Alla 6 fritextfrågor får 8 rader.</p>
+            <p>1a, 1b och 3a har i dag en annan skrivyta.</p>
+            <div class="acts"><button class="btn btn--quiet">Avbryt</button><button class="btn btn--primary">Använd 8 rader</button></div>
+          </div>
+` : ""}
+        </div>
+      </div>
+      <div class="answer-row">
+        <div class="k">Bedömningskriterier</div>
+        <div>
+          <div class="crit">
+            <div class="crit-row"><div class="field">Korrekt subjekt och predikat i alla meningar</div><div class="field pts">4<span>p</span></div><button class="xw-tool xw-tool--danger" aria-label="Ta bort kriterium 1"><i data-g="trash"></i></button></div>
+            <div class="crit-row"><div class="field">Objekt och adverbial rätt identifierade</div><div class="field pts">4<span>p</span></div><button class="xw-tool xw-tool--danger" aria-label="Ta bort kriterium 2"><i data-g="trash"></i></button></div>
+            <div class="crit-row"><div class="field">Förkortningarna används konsekvent</div><div class="field pts">2<span>p</span></div><button class="xw-tool xw-tool--danger" aria-label="Ta bort kriterium 3"><i data-g="trash"></i></button></div>
+          </div>
+          <div class="crit-foot"><div><button class="xw-tool xw-tool--word start" aria-label="Lägg till kriterium"><i data-g="plus"></i>Kriterium</button></div><div class="sum">10 av 10 p</div><span></span></div>
+        </div>
+      </div>
+    </section>
+  </div>`;
+
+const drawer = `
+  <aside class="drawer" aria-label="Provets uppgifter">
+    <div class="drawer-head">Provets uppgifter<button class="xw-tool" aria-label="Stäng"><i data-g="x"></i></button></div>
+    <div class="drawer-body">
+      <div class="label">Titel</div><div class="field">OMPROV: GRAMMATIK OCH SPRÅKSTRUKTURER</div>
+      <div class="label">Filnamn i Mina filer</div><div class="field">omprov_grammatik_sve2</div>
+      <div class="label">Kurs</div><div class="field" style="justify-content:space-between">Svenska 2 · SVESVE02<i data-g="chevron-down" style="width:14px;height:14px"></i></div>
+      <div class="label">Centralt innehåll</div>
+      <div class="chips"><span class="chip on">Språkets struktur</span><span class="chip on">Ordklasser och satsdelar</span><span class="chip">Textanalys</span><span class="chip">Språkriktighet</span><span class="chip">Retorik</span></div>
+    </div>
+  </aside>`;
+
+function render(id, { detailsOpen = false, applyOpen = false } = {}) {
+  const el = document.getElementById(id);
+  el.innerHTML = header(detailsOpen) + `<div class="body${detailsOpen ? " with-drawer" : ""}">${list}${editor(applyOpen)}${detailsOpen ? drawer : ""}</div>`;
+}
+render("frameA");
+render("frameB", { detailsOpen: true });
+render("frameC", { applyOpen: true });
+for (const i of document.querySelectorAll("i[data-g]")) {
+  const g = GLYPHS[i.dataset.g];
+  if (g) i.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${g}</svg>`;
+}
+</script>
+</body>
+</html>
