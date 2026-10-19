@@ -3,9 +3,9 @@
  *
  * Domain purpose:
  *   A DOCX import converts in batches. A DigiExam import follows the same
- *   conversion. A QTI .zip import is read at once into a saved document and
- *   opens like one from the Öppna list, with no conversion to follow. The
- *   server saves a revision when the
+ *   conversion. A QTI .zip import is read at once: signed-in into a saved
+ *   document, as a guest into the browser draft. Either way it opens like
+ *   one from the Öppna list, with no conversion to follow. The server saves a revision when the
  *   first batch is ready, with placeholders for the questions still
  *   converting, and a new revision for each later batch. Every document
  *   response names the import that created its lineage, read under the same
@@ -21,20 +21,13 @@
  *   - Used by `useExamWorkspaceDocument`, which hands over its document refs
  *     through `ExamWorkspaceConversionBinding`.
  *   - Merges with `mergeConversionRevision` (client twin of the server merge).
- *   - Delegates transport to `api/examWorkspace.ts`.
+ *   - Delegates transport to the exam workspace store.
  */
 
 import { computed, onScopeDispose, ref } from "vue";
 import type { Ref } from "vue";
 
 import { isApiError } from "../../../api/client";
-import {
-  getExamWorkspaceConversionStatus,
-  getExamWorkspaceDocument,
-  importExamWorkspaceDigiExam,
-  importExamWorkspaceDocument as requestImportExamWorkspaceDocument,
-  importExamWorkspaceQti,
-} from "../../../api/examWorkspace";
 import type {
   ExamWorkspaceConversionStatus,
   ExamWorkspaceConversionUnit,
@@ -45,6 +38,7 @@ import type {
 import { useAiAccess } from "../../../composables/useAiAccess";
 import { useToast } from "../../../composables/useToast";
 import { mergeConversionRevision } from "./examWorkspaceConversionMerge";
+import type { ExamWorkspaceStore } from "./examWorkspaceStore";
 
 export const EXAM_WORKSPACE_CONVERSION_POLL_MS = 3000;
 const CONVERSION_MAX_POLL_MS = 30_000;
@@ -76,6 +70,8 @@ export type ExamWorkspaceConversionBinding = {
   beforeFirstRevision: () => void;
   /** A save is in flight; its response replaces the copy, so merging waits. */
   isSaving: () => boolean;
+  /** The store the document reads and the import lifecycle run through. */
+  store: ExamWorkspaceStore;
 };
 
 /** What a save conflict turned out to be, once the conversion revision was checked. */
@@ -245,7 +241,7 @@ export function useExamWorkspaceConversion(
     const first = binding.summary.value?.lineage_id !== status.lineage_id;
     const shown = shownUnits.value ?? [];
     const reconcile = binding.beginDocumentRead();
-    const response = reconcile(await getExamWorkspaceDocument(status.lineage_id));
+    const response = reconcile(await binding.store.shared.getExamWorkspaceDocument(status.lineage_id));
     if (pollGeneration !== generation) return false;
     const conversion = response.conversion;
     if (conversion === null) {
@@ -295,10 +291,12 @@ export function useExamWorkspaceConversion(
     status: ExamWorkspaceConversionStatus,
     pollGeneration: number,
   ): Promise<void> {
+    const teacher = binding.store.teacher;
+    if (!teacher) return;
     try {
       const next = isFinished(status)
         ? status
-        : await getExamWorkspaceConversionStatus(status.job_id);
+        : await teacher.getExamWorkspaceConversionStatus(status.job_id);
       await applyConversionStatus(next, pollGeneration);
       if (pollGeneration === generation) {
         pollFailures = 0;
@@ -338,6 +336,8 @@ export function useExamWorkspaceConversion(
    * the next poll merges it. Outside conversion it returns "unrelated".
    */
   async function syncAfterConflict(expectedRevision: number): Promise<ConflictSync> {
+    const teacher = binding.store.teacher;
+    if (!teacher) return "unrelated";
     const pollGeneration = generation;
     while (statusRequest) await statusRequest;
     const status = conversionStatus.value;
@@ -346,7 +346,7 @@ export function useExamWorkspaceConversion(
     }
     let conversionRevision = 0;
     const request = (async () => {
-      const next = await getExamWorkspaceConversionStatus(status.job_id);
+      const next = await teacher.getExamWorkspaceConversionStatus(status.job_id);
       if (pollGeneration !== generation) return;
       conversionStatus.value = next;
       conversionRevision = next.document_revision ?? 0;
@@ -378,6 +378,24 @@ export function useExamWorkspaceConversion(
       : null;
   }
 
+  /**
+   * Read one QTI package at once: through the signed-in importer when a
+   * teacher side is present, through the guest store's browser draft
+   * otherwise. Returns the opened lineage, or null when neither side can
+   * import. This is one intake with two store halves; there is no second
+   * intake composable.
+   */
+  async function importQtiPackage(file: File, courseKey: string | null): Promise<string | null> {
+    const teacher = binding.store.teacher;
+    if (teacher) {
+      const summary = await teacher.importExamWorkspaceQti(file, courseKey);
+      return summary.lineage_id;
+    }
+    const guest = binding.store.guest;
+    if (!guest) return null;
+    return await guest.startFromQti(file, courseKey);
+  }
+
   async function importDocument(file: File, courseKey: string | null): Promise<void> {
     if (importBlocked.value || isConverting.value) return;
     // A Word import is a paid AI conversion and stays admin-only until the spend cap ships;
@@ -390,21 +408,24 @@ export function useExamWorkspaceConversion(
     shownUnits.value = null;
     pollFailures = 0;
     try {
-      // A QTI package (.zip) is read at once into a saved document: no
-      // conversion follows, and the saved exam opens through the same
-      // `openDocument` path the Öppna list's open command uses.
+      // A QTI package (.zip) is read at once: signed-in it becomes a saved
+      // document, as a guest it becomes the browser draft. Either way the
+      // exam opens through the same `openDocument` path the Öppna list's
+      // open command uses, and no conversion follows.
       if (isQtiPackageFile(file)) {
-        const summary = await importExamWorkspaceQti(file, courseKey);
-        if (pollGeneration !== generation) return;
+        const lineageId = await importQtiPackage(file, courseKey);
+        if (pollGeneration !== generation || lineageId === null) return;
         // `openImported` refuses while this import still counts as busy.
         isImporting.value = false;
-        await openImported(summary.lineage_id);
+        await openImported(lineageId);
         return;
       }
+      const teacher = binding.store.teacher;
+      if (!teacher) return;
       // A DigiExam export (.dxe) is read by its own importer; both follow the same conversion.
       const request = isDigiExamFile(file)
-        ? importExamWorkspaceDigiExam
-        : requestImportExamWorkspaceDocument;
+        ? teacher.importExamWorkspaceDigiExam
+        : teacher.importExamWorkspaceDocument;
       const status = await request(file, courseKey);
       if (pollGeneration !== generation) return;
       isConverting.value = true;

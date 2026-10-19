@@ -9,7 +9,7 @@ from dataclasses import replace
 
 import pytest
 
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import aligned_native_item
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_item import aligned_native_item
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_plain_text
 from tests.unit.domain.curated_apps.exam_workspace.native_entry_formatting_test_support import (
     _as_text,

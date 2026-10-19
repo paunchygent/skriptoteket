@@ -1,0 +1,14 @@
+| **Instruktioner**<br>Provet består av fyra delar. Läs varje uppgift noggrant. Skriv tydligt. |
+| --- |
+# **DEL 1: MORFEM OCH FRASER**
+### **Uppgift 1.1: Morfemanalys (4 p)**
+Dela upp följande ord i morfem. Ange typ: **R** = rotmorfem, **A** = avledningsmorfem, **B** = böjningsmorfem.
+**1.** otrolig
+_______________________________________________________________________________
+**2.** läsarens
+________________________________________________________________________________
+**3.** oförutsägbarhet
+________________________________________________________________________________
+**4.** överenskommelsen
+________________________________________________________________________________
+<i>Kontrollera dina svar innan du lämnar in.</i>

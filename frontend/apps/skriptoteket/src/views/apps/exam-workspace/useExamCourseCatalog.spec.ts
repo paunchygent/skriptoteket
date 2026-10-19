@@ -3,6 +3,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { getExamCourseCatalog, type ExamCourse } from "../../../api/examWorkspace";
 
+import { serverExamWorkspaceStore } from "./examWorkspaceStore";
+
 vi.mock("../../../api/examWorkspace", () => ({ getExamCourseCatalog: vi.fn() }));
 
 const COURSES: ExamCourse[] = [
@@ -67,14 +69,14 @@ describe("useExamCourseCatalog", () => {
     let finish!: (value: Awaited<ReturnType<typeof getExamCourseCatalog>>) => void;
     vi.mocked(getExamCourseCatalog).mockReturnValue(new Promise((resolve) => { finish = resolve; }));
     const { useExamCourseCatalog } = await import("./useExamCourseCatalog");
-    const first = useExamCourseCatalog();
-    const second = useExamCourseCatalog();
+    const first = useExamCourseCatalog(serverExamWorkspaceStore.shared);
+    const second = useExamCourseCatalog(serverExamWorkspaceStore.shared);
     expect(first.isLoading.value).toBe(true);
     expect(second.isLoading.value).toBe(true);
     expect(getExamCourseCatalog).toHaveBeenCalledTimes(1);
     finish({ courses: COURSES, registered_course_keys: [], generated_at: "2026-10-16T17:00:00Z" });
     await flushPromises();
-    for (const consumer of [first, second, useExamCourseCatalog()]) {
+    for (const consumer of [first, second, useExamCourseCatalog(serverExamWorkspaceStore.shared)]) {
       expect(consumer.isLoading.value).toBe(false);
       expect(consumer.error.value).toBeFalsy();
       expect(consumer.courses.value).toEqual(COURSES);
@@ -87,8 +89,8 @@ describe("useExamCourseCatalog", () => {
   it("settles loading and exposes a failed request to every consumer without an unhandled rejection", async () => {
     vi.mocked(getExamCourseCatalog).mockRejectedValue(new Error("Catalog unavailable"));
     const { useExamCourseCatalog } = await import("./useExamCourseCatalog");
-    const first = useExamCourseCatalog();
-    const second = useExamCourseCatalog();
+    const first = useExamCourseCatalog(serverExamWorkspaceStore.shared);
+    const second = useExamCourseCatalog(serverExamWorkspaceStore.shared);
     await flushPromises();
     for (const consumer of [first, second]) {
       expect(consumer.isLoading.value).toBe(false);

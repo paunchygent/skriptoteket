@@ -18,10 +18,6 @@ from __future__ import annotations
 from collections.abc import Mapping
 from types import MappingProxyType
 
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import (
-    missing_picture_reasons,
-    review_source_item,
-)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_batches import QuestionFamily
 from skriptoteket.domain.curated_apps.exam_workspace.docx_build_assets import asset_manifest
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
@@ -30,6 +26,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxMissingImage,
     DocxSourceParagraph,
     DocxSourceRun,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.docx_source_review import (
+    missing_picture_reasons,
+    review_source_item,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamAsset,

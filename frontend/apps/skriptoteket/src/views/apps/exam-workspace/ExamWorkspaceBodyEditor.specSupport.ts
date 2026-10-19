@@ -9,8 +9,8 @@
  *   calls the view's click handler; every key is a real `keydown`.
  */
 
-import { mount } from "@vue/test-utils";
-import type { Editor } from "@tiptap/core";
+import { DOMWrapper, mount } from "@vue/test-utils";
+import { Editor } from "@tiptap/core";
 import { nextTick } from "vue";
 
 import type { NativeExamItem } from "../../../api/examWorkspace";
@@ -107,16 +107,24 @@ export type MountedBodyEditor = Awaited<ReturnType<typeof mountEditor>>;
 
 /** The question text's editing surface (the ProseMirror DOM). */
 export function surface(wrapper: MountedBodyEditor): HTMLElement {
-  return wrapper.get('[data-test="exam-workspace-body-editor-surface"]').element as HTMLElement;
+  const surface = wrapper.get('[data-test="exam-workspace-body-editor-surface"]').element;
+  if (!(surface instanceof HTMLElement)) {
+    throw new Error("the question text editor surface is not an element");
+  }
+  return surface;
 }
 
 /** The TipTap editor behind the surface, to set selections jsdom cannot place by pointer. */
 export function tiptap(wrapper: MountedBodyEditor): Editor {
-  const { editor } = surface(wrapper) as HTMLElement & { editor?: Editor };
-  if (!editor) {
+  const element = surface(wrapper);
+  if (!("editor" in element)) {
     throw new Error("the question text editor did not mount");
   }
-  return editor;
+  const candidate = element.editor;
+  if (!(candidate instanceof Editor)) {
+    throw new Error("the question text editor did not mount");
+  }
+  return candidate;
 }
 
 /** Position `offset` characters into the first text node that contains `needle`. */
@@ -176,5 +184,42 @@ export function clickGap(wrapper: MountedBodyEditor, gapId: string): void {
 
 /** The drawn element of one gap. */
 export function gapElement(wrapper: MountedBodyEditor, gapId: string): HTMLElement {
-  return wrapper.get(`[data-gap-id="${gapId}"]`).element as HTMLElement;
+  const element = wrapper.get(`[data-gap-id="${gapId}"]`).element;
+  if (!(element instanceof HTMLElement)) {
+    throw new Error(`the gap ${gapId} is not an element`);
+  }
+  return element;
+}
+
+/**
+ * The gap popover is teleported to `document.body`, outside the mounted
+ * wrapper, so specs find it through document queries. Every finder below
+ * throws when the popover (or the requested part) is absent.
+ */
+export function popoverRoot(): HTMLElement {
+  const root = document.querySelector<HTMLElement>('[data-test="exam-workspace-gap-popover"]');
+  if (!root) {
+    throw new Error("the gap popover is not open");
+  }
+  return root;
+}
+
+export function popoverExists(): boolean {
+  return document.querySelector('[data-test="exam-workspace-gap-popover"]') !== null;
+}
+
+/** Any element in the document (teleported popover content included). */
+export function documentControl<T extends HTMLElement>(selector: string): DOMWrapper<T> {
+  const element = document.querySelector<T>(selector);
+  if (!element) {
+    throw new Error(`no element "${selector}"`);
+  }
+  return new DOMWrapper(element);
+}
+
+/** The first accepted-answers row input of one gap inside the open popover. */
+export function popoverInput(gapId: string): DOMWrapper<HTMLInputElement> {
+  return documentControl<HTMLInputElement>(
+    `[data-test="exam-workspace-gap-values-${gapId}-input"]`,
+  );
 }

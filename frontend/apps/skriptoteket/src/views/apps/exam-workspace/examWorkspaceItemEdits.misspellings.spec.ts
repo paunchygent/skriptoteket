@@ -18,7 +18,7 @@ import {
   withAutomaticValues,
   withGapValues,
   withoutAutomaticValue,
-} from "./examWorkspaceItemEdits";
+} from "./examWorkspaceGapEdits";
 import { gapItem } from "./examWorkspaceKeyedItems.specSupport";
 
 function keyedItem() {

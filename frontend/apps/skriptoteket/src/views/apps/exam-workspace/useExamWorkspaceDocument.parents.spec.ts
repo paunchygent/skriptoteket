@@ -16,6 +16,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ExamWorkspaceDocumentResponse, NativeExamDocument } from "../../../api/examWorkspace";
 import { buildParentDocument } from "./examWorkspaceParentDocument.specSupport";
+import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceDocument } from "./useExamWorkspaceDocument";
 import { buildSavedExamSummary } from "./useExamWorkspaceDocument.specSupport";
 
@@ -52,7 +53,9 @@ function buildResponse(document: NativeExamDocument): ExamWorkspaceDocumentRespo
 
 async function openParentDocument() {
   apiMocks.getExamWorkspaceDocument.mockResolvedValue(buildResponse(buildParentDocument()));
-  const state = effectScope().run(() => useExamWorkspaceDocument());
+  const state = effectScope().run(() =>
+    useExamWorkspaceDocument({ store: serverExamWorkspaceStore }),
+  );
   if (!state) {
     throw new Error("expected the document state to be created");
   }
@@ -123,7 +126,9 @@ describe("parents in useExamWorkspaceDocument", () => {
     const estimated = buildParentDocument();
     estimated.items = estimated.items.map((item) => ({ ...item, points_estimated: true }));
     apiMocks.getExamWorkspaceDocument.mockResolvedValue(buildResponse(estimated));
-    const state = effectScope().run(() => useExamWorkspaceDocument())!;
+    const state = effectScope().run(() =>
+      useExamWorkspaceDocument({ store: serverExamWorkspaceStore }),
+    )!;
     await state.openDocument("lineage-1");
     await flushPromises();
 

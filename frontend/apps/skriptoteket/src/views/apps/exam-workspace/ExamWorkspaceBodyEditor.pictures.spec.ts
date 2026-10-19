@@ -15,6 +15,7 @@ import { describe, expect, it } from "vitest";
 import { buildGapItem, mountEditor, surface } from "./ExamWorkspaceBodyEditor.specSupport";
 import type { MountedBodyEditor } from "./ExamWorkspaceBodyEditor.specSupport";
 import ExamWorkspaceQuestionEditor from "./ExamWorkspaceQuestionEditor.vue";
+import { examWorkspaceProvidersPlugin } from "./examWorkspaceProviders.specSupport";
 
 const ASSET_ID = "asset_001";
 const ASSET_URL =
@@ -72,6 +73,7 @@ describe("ExamWorkspaceBodyEditor picture rendering", () => {
 
   it("passes the asset URL map through the question editor to the body editor", async () => {
     const wrapper = mount(ExamWorkspaceQuestionEditor, {
+      global: { plugins: [examWorkspaceProvidersPlugin()] },
       props: {
         assetUrls: { [ASSET_ID]: ASSET_URL },
         item: buildGapItem(),

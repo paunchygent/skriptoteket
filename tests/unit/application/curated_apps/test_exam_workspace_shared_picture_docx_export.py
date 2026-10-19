@@ -15,6 +15,9 @@ from docx import Document
 from skriptoteket.application.curated_apps.exam_workspace import (
     ExamWorkspaceExportTarget,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_export_renderer import (
+    ExamWorkspaceExportRenderer,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_exports import (
     ExportExamWorkspaceDocumentHandler,
 )
@@ -50,6 +53,9 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_qti_wr
 from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents import (
     _actor,
     _Env,
+)
+from tests.unit.domain.curated_apps.exam_workspace.exam_print_document_test_support import (
+    entry_blocks,
 )
 from tests.unit.infrastructure.curated_apps.exam_workspace_docx_picture_support import (
     build_shared_picture_document,
@@ -94,10 +100,12 @@ async def test_docx_export_embeds_shared_instruction_pictures_from_stored_payloa
         vault_files=env.vault_files,
         codec=env.codec,
         store=env.store,
-        qti_writer=ExamNetQtiPackageWriter(),
-        pdf_renderer=WeasyPrintExamNetPdfRenderer(),
-        docx_writer=ExamWorkspaceDocxWriter(),
-        print_renderer=WeasyPrintExamPrintRenderer(),
+        renderer=ExamWorkspaceExportRenderer(
+            qti_writer=ExamNetQtiPackageWriter(),
+            pdf_renderer=WeasyPrintExamNetPdfRenderer(),
+            docx_writer=ExamWorkspaceDocxWriter(),
+            print_renderer=WeasyPrintExamPrintRenderer(),
+        ),
     )
 
     result = await handler.handle(
@@ -132,7 +140,7 @@ async def test_docx_export_embeds_shared_instruction_pictures_from_stored_payloa
     key_lines = [
         line
         for entry in facit.entries
-        for block in entry.blocks
+        for block in entry_blocks(entry)
         if isinstance(block, PrintAnswerKey)
         for line in block.lines
     ]

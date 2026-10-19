@@ -14,6 +14,7 @@ import type { NativeExamItem } from "../../../api/examWorkspace";
 import { buildFreeTextItem } from "../../../test/examWorkspaceFixtures";
 import ExamWorkspaceQuestionEditor from "./ExamWorkspaceQuestionEditor.vue";
 import { choiceItem } from "./examWorkspaceKeyedItems.specSupport";
+import { examWorkspaceProvidersPlugin } from "./examWorkspaceProviders.specSupport";
 
 const FIELD = '[data-test="exam-workspace-writing-lines"]';
 const PLUS = '[data-test="exam-workspace-writing-lines-plus"]';
@@ -31,6 +32,9 @@ function mountEditor(item: NativeExamItem) {
       disabled: false,
       notice: null,
       importOpen: false,
+    },
+    global: {
+      plugins: [examWorkspaceProvidersPlugin()],
     },
   });
 }

@@ -14,7 +14,6 @@ Relationships:
 import structlog
 from fastapi import Request
 
-from skriptoteket.config import Settings
 from skriptoteket.domain.errors import DomainError, ErrorCode, validation_error
 from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
@@ -65,14 +64,13 @@ def enforce_public_helper_rate_limit(
     max_requests: int,
     window_seconds: int,
     registry: CuratedAppRegistryProtocol,
-    settings: Settings,
     clock: ClockProtocol,
     throttle: PublicHelperThrottleProtocol,
 ) -> tuple[str | None, str | None, str | None]:
     """Apply the shared anonymous helper throttle and return redacted metadata."""
 
     app = require_public_curated_app(app_id=APP_ID, registry=registry)
-    client_ip = get_client_ip(request, settings=settings)
+    client_ip = get_client_ip(request)
     user_agent = get_user_agent(request)
     correlation_id_uuid = get_correlation_id(request)
     correlation_id = str(correlation_id_uuid) if correlation_id_uuid is not None else None

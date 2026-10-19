@@ -11,7 +11,19 @@
  *   toggle marks from the keyboard. Activating a gap chip opens a small
  *   popover where the teacher edits that gap's accepted answers, removes an
  *   automatic answer the conversion added, or replaces the whole gap with its
- *   first accepted answer as plain text ("Visa som text").
+ *   first accepted answer as plain text ("Visa som text"). A Lucktext or
+ *   dropdown-Lucktext question grows its gaps from here: the toolbar's Lucka
+ *   button turns the selection, or the word at the caret, into a gap (or
+ *   inserts an empty gap), and a click inside a word shows a small floating
+ *   "Lucka" button ("Gör till lucka" tooltip and accessible name) that
+ *   converts that word. The toolbar's Luckverktyg toggle (Ctrl+Alt+G,
+ *   Cmd+Option+G on macOS) switches one gap tool per question on: while it
+ *   is on, a word click or a drag inside one paragraph becomes a gap at
+ *   once with no popover and no floating button. The tool ends by its
+ *   toggle, its shortcut, Escape with no popover open, a move to another
+ *   question, or the gap_999 cap. The editor emits the
+ *   change as one `createGap`, the owner adds the gap record as one
+ *   structural edit, and the new gap's popover opens at once.
  *
  *   A selection that covers a gap or a picture deletes it like any other
  *   character, without confirmation: the body edit drops the gap's record and
@@ -27,28 +39,26 @@
  *   - `ExamWorkspaceRichTextEditor` owns the text, marks and atoms,
  *     `ExamWorkspaceMarkToolbar` the glyph buttons, and
  *     `ExamWorkspaceGapPopover` edits one gap's accepted answers.
+ *   - `examWorkspaceItemEdits` names the next free gap id (`nextGapId`); the
+ *     owner applies the emitted `createGap` through `createItemGap`.
  *   - `examWorkspaceRichTextTarget` is the shared active target the toolbar
  *     reads and calls, so a glyph action always edits the surface that owns
  *     the selection, never a stale one.
  */
 
-import { computed, ref, useId, watch } from "vue";
+import { computed, nextTick, ref, useId, watch } from "vue";
 
 import type { NativeExamBodyParagraph, NativeExamChoice, NativeExamItem } from "../../../api/examWorkspace";
 import {
   isPartiallyKeyedGapItem,
   PARTIAL_GAP_KEY_GUIDANCE,
 } from "./examWorkspaceAnswerKeyRules";
-import type { BodyMark } from "./examWorkspaceBodyMarks";
 import { examGapStates, gapNumberIn } from "./examWorkspaceGapLabels";
+import { nextGapId } from "./examWorkspaceGapEdits";
 import ExamWorkspaceGapPopover from "./ExamWorkspaceGapPopover.vue";
 import ExamWorkspaceMarkToolbar from "./ExamWorkspaceMarkToolbar.vue";
 import ExamWorkspaceRichTextEditor from "./ExamWorkspaceRichTextEditor.vue";
-import { useRichTextTargetRegistry } from "./examWorkspaceRichTextTarget";
-
-type HeadingLevel = 1 | 2 | 3;
-
-const POPOVER_WIDTH_PX = 448;
+import { useExamWorkspaceRichTextToolbar } from "./useExamWorkspaceRichTextToolbar";
 
 const props = defineProps<{
   item: NativeExamItem;
@@ -59,6 +69,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   updateBody: [itemId: string, body: NativeExamBodyParagraph[], structural: boolean];
+  createGap: [itemId: string, body: NativeExamBodyParagraph[], gapId: string, seed: string];
   updateGapValues: [itemId: string, gapId: string, acceptedValues: string[]];
   updateGapOptions: [itemId: string, gapId: string, options: NativeExamChoice[], correctOptionId: string | null];
   removeAutomaticValue: [itemId: string, gapId: string, value: string];
@@ -68,16 +79,15 @@ const emit = defineEmits<{
 type OpenGap = {
   itemId: string;
   gapId: string;
-  top: number;
-  left: number;
+  anchor: HTMLElement;
 };
 
 const labelId = useId();
-const editorRoot = ref<HTMLElement | null>(null);
 const editor = ref<InstanceType<typeof ExamWorkspaceRichTextEditor> | null>(null);
+const root = ref<HTMLElement | null>(null);
 const openGap = ref<OpenGap | null>(null);
-const richTextTargets = useRichTextTargetRegistry();
-const activeRichTextTarget = richTextTargets.active;
+const { activeRichTextTarget, activeMarks, activeHeading, toggleMark, toggleHeading } =
+  useExamWorkspaceRichTextToolbar();
 let openChip: HTMLElement | null = null;
 
 const hasPartialGapKey = computed(() => isPartiallyKeyedGapItem(props.item));
@@ -89,41 +99,79 @@ const openGapModel = computed(() =>
 const openGapNumber = computed(() =>
   openGap.value === null ? 0 : gapNumberIn(props.item.gaps, openGap.value.gapId),
 );
-const activeMarks = computed(() => activeRichTextTarget.value?.marks.value ?? []);
-const activeHeading = computed<HeadingLevel | null>(
-  () => activeRichTextTarget.value?.headingLevel() ?? null,
-);
+/** Whether this question kind grows gaps: Lucktext and dropdown-Lucktext. */
+const gapKind = computed(() => props.item.kind === "gap_fill" || props.item.kind === "inline_choice");
+/** The id the next created gap takes, or null at the gap_999 cap. */
+const newGapId = computed(() => (gapKind.value ? nextGapId(props.item) : null));
+
+/** The gap tool: while on, word clicks become gaps at once with no popover. */
+const gapToolOn = ref(false);
+
+/** Switch the tool on only while this question can still grow gaps. */
+function toggleGapTool(): void {
+  if (gapToolOn.value) {
+    gapToolOn.value = false;
+    return;
+  }
+  if (props.disabled || !gapKind.value || newGapId.value === null) {
+    return;
+  }
+  gapToolOn.value = true;
+}
+
+/** Escape closes an open gap popover first and the tool second. */
+function handleSurfaceEscape(): void {
+  if (openGap.value !== null) {
+    closePopover(true);
+    return;
+  }
+  if (gapToolOn.value) {
+    gapToolOn.value = false;
+  }
+}
 
 /** How each gap of the item reads in the text: its accepted answers, or "Lucka N" while it has none. */
 const gapStates = computed(() => examGapStates(props.item.gaps));
 
-function handleToggleMark(mark: BodyMark): void {
-  activeRichTextTarget.value?.toggleMark(mark);
-}
-
-function handleToggleHeading(level: HeadingLevel): void {
-  activeRichTextTarget.value?.toggleHeading(level);
+/** Turn the selection, or the word at the caret, into the next free gap. */
+function handleMakeGap(): void {
+  const gapId = newGapId.value;
+  if (props.disabled || gapId === null) {
+    return;
+  }
+  const target = activeRichTextTarget.value;
+  if (target !== null) {
+    target.makeGap(gapId);
+    return;
+  }
+  // No surface is active yet: the caret lands at the end of the question
+  // text, while the focus — and with it the registration as the active
+  // target — lands on the next animation frame (TipTap defers `focus()`),
+  // so the gap command runs once this surface owns the toolbar.
+  editor.value?.focus();
+  requestAnimationFrame(() => {
+    if (props.disabled || newGapId.value !== gapId) {
+      return;
+    }
+    if (root.value?.contains(document.activeElement) !== true) {
+      return;
+    }
+    activeRichTextTarget.value?.makeGap(gapId);
+  });
 }
 
 function openPopover(gapId: string, chip: HTMLElement): void {
   if (props.disabled) {
     return;
   }
-  const root = editorRoot.value;
-  if (!root) {
-    return;
-  }
   openChip?.setAttribute("aria-expanded", "false");
-  const chipRect = chip.getBoundingClientRect();
-  const rootRect = root.getBoundingClientRect();
   openChip = chip;
   chip.setAttribute("aria-expanded", "true");
+  // The popover anchors itself to the chip from its viewport rect.
   openGap.value = {
     itemId: props.item.item_id,
     gapId,
-    top: chipRect.bottom - rootRect.top + 4,
-    // Keep the popover inside the editor when the chip sits near the right edge.
-    left: Math.max(0, Math.min(chipRect.left - rootRect.left, rootRect.width - POPOVER_WIDTH_PX)),
+    anchor: chip,
   };
 }
 
@@ -177,18 +225,53 @@ function handleGapAsText(itemId: string, gapId: string): void {
   editor.value?.focus();
 }
 
+/** Forward one gap creation; the new gap's popover opens only while the tool is off. */
+function handleCreateGap(body: NativeExamBodyParagraph[], gapId: string, seed: string): void {
+  if (props.disabled) {
+    return;
+  }
+  emit("createGap", props.item.item_id, body, gapId, seed);
+  if (gapToolOn.value) {
+    return;
+  }
+  void nextTick(() => {
+    // The owner writes the emitted body back, so the editor keeps its
+    // content and the new chip is already in this surface.
+    const chip = root.value?.querySelector<HTMLElement>(`[data-gap-id="${gapId}"]`);
+    if (chip) {
+      openPopover(gapId, chip);
+    }
+  });
+}
+
 watch(
   () => props.disabled,
   (disabled) => {
     if (disabled) {
+      gapToolOn.value = false;
       closePopover(false);
     }
   },
 );
+
+watch(
+  () => props.item.item_id,
+  () => {
+    gapToolOn.value = false;
+    closePopover(false);
+  },
+);
+
+watch(newGapId, (gapId) => {
+  if (gapId === null) {
+    gapToolOn.value = false;
+  }
+});
 </script>
 
 <template>
   <div
+    ref="root"
     class="mb-4 grid gap-1.5"
     role="group"
     :aria-labelledby="labelId"
@@ -207,13 +290,16 @@ watch(
         :active-heading="activeHeading"
         :disabled="disabled"
         show-headings
-        @toggle-mark="handleToggleMark"
-        @toggle-heading="handleToggleHeading"
+        :show-gap="gapKind"
+        :gap-disabled-reason="gapKind && newGapId === null ? 'Högst 999 luckor' : null"
+        :gap-tool-disabled-reason="gapKind && newGapId === null ? 'Luckverktyg – högst 999 luckor' : null"
+        :gap-tool-on="gapToolOn"
+        @toggle-mark="toggleMark"
+        @toggle-heading="toggleHeading"
+        @make-gap="handleMakeGap"
+        @toggle-gap-tool="toggleGapTool"
       />
-      <div
-        ref="editorRoot"
-        class="xw-rich__body relative grid gap-2"
-      >
+      <div class="xw-rich__body grid gap-2">
         <ExamWorkspaceRichTextEditor
           :key="item.item_id"
           ref="editor"
@@ -225,7 +311,12 @@ watch(
           :gap-states="gapStates"
           :asset-urls="assetUrls"
           gaps-interactive
+          :next-gap-id="gapKind ? newGapId : undefined"
+          :gap-tool="gapToolOn"
           @activate-gap="openPopover"
+          @create-gap="handleCreateGap"
+          @toggle-gap-tool="toggleGapTool"
+          @escape="handleSurfaceEscape"
           @update="(body, structural) => emit('updateBody', item.item_id, body, structural)"
         />
 
@@ -237,8 +328,7 @@ watch(
           :gap-number="openGapNumber"
           :gap="openGapModel"
           :dropdown="item.kind === 'inline_choice'"
-          :top="openGap.top"
-          :left="openGap.left"
+          :anchor="openGap.anchor"
           @commit="handleGapCommit"
           @update-options="handleGapOptions"
           @remove-automatic-value="handleGapAutomaticValueRemoval"

@@ -16,6 +16,10 @@
  *   Only the workspace history restores gap and picture records together
  *   with the text (TASK-SKRIPT-40-04-06 D2).
  *
+ *   Ctrl+Alt+G (Cmd+Option+G on macOS) reaches the gap tool toggle through
+ *   the options, in either letter case so Caps Lock keeps working, and is
+ *   left alone when this editor has no gap tool.
+ *
  *   Neither atom parses from HTML, so a paste or a drop never carries a gap
  *   or a picture, even one cut from the same editor: a gap id must stay
  *   placed once and its record leaves the item with the cut, and only the
@@ -64,6 +68,8 @@ export type ExamRichTextOptions = {
   onUndo: () => void;
   /** Ctrl/Cmd+Shift+Z or Ctrl+Y: the workspace's Gör om. */
   onRedo: () => void;
+  /** Ctrl+Alt+G, Cmd+Option+G on macOS: turn the gap tool on or off; false when this editor has no gap tool, so the key is left alone. */
+  onToggleGapTool: () => boolean;
 };
 
 /** Visible label of a picture whose protected URL is not loaded. */
@@ -231,6 +237,17 @@ function workspaceHistoryKeys(options: ExamRichTextOptions) {
   });
 }
 
+/** Ctrl+Alt+G (Cmd+Option+G on macOS) toggles the gap tool, and is left alone without one. */
+function gapToolKeys(options: ExamRichTextOptions) {
+  return Extension.create({
+    name: "examWorkspaceGapToolKeys",
+
+    addKeyboardShortcuts() {
+      return { "Mod-Alt-g": () => options.onToggleGapTool(), "Mod-Alt-G": () => options.onToggleGapTool() };
+    },
+  });
+}
+
 /** One glyph cannot sit both above and below the baseline, so the two marks exclude each other. */
 const ExamSuperscript = Superscript.extend({ excludes: "subscript" });
 const ExamSubscript = Subscript.extend({ excludes: "superscript" });
@@ -252,5 +269,6 @@ export function examRichTextExtensions(options: ExamRichTextOptions) {
     examPictureNode(options),
     atomState(options),
     workspaceHistoryKeys(options),
+    gapToolKeys(options),
   ];
 }

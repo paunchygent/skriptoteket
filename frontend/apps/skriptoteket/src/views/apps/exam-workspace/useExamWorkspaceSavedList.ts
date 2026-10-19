@@ -7,7 +7,7 @@
  *   and report its ordering.
  *
  * Relationships:
- *   - Transport through `listExamWorkspaceDocuments` in `api/examWorkspace.ts`.
+ *   - Transport through the shared store half (`listExamWorkspaceDocuments`).
  *   - Reads reconcile summaries against completed renames through the
  *     provider `useExamWorkspaceDocument` passes in (`useExamWorkspaceRename`).
  *   - `useExamWorkspaceDocument` records each installed summary here;
@@ -16,10 +16,10 @@
 
 import { ref } from "vue";
 
-import { listExamWorkspaceDocuments } from "../../../api/examWorkspace";
 import type { ExamListOrdering, ExamWorkspaceDocumentSummary } from "../../../api/examWorkspace";
 import { useToast } from "../../../composables/useToast";
 import { mergeSavedDocuments } from "./examWorkspaceSavedDocuments";
+import type { ExamWorkspaceTeacherServices } from "./examWorkspaceStore";
 
 const LIST_FAILURE_COPY = "Det gick inte att hämta dina sparade prov.";
 
@@ -28,6 +28,8 @@ type SummaryReconcile = (summary: ExamWorkspaceDocumentSummary) => ExamWorkspace
 type SavedListState = {
   /** Captures rename ordering before a read; the result reconciles that read's summaries. */
   beginSummaryRead: () => SummaryReconcile;
+  /** The teacher services the saved list loads through; null in guest mode. */
+  teacher: ExamWorkspaceTeacherServices | null;
 };
 
 export function useExamWorkspaceSavedList(state: SavedListState) {
@@ -43,9 +45,11 @@ export function useExamWorkspaceSavedList(state: SavedListState) {
   }
 
   async function loadSavedDocuments(): Promise<void> {
+    const teacher = state.teacher;
+    if (!teacher) return;
     const reconcile = state.beginSummaryRead();
     try {
-      const response = await listExamWorkspaceDocuments();
+      const response = await teacher.listExamWorkspaceDocuments();
       savedDocuments.value = mergeSavedDocuments(savedDocuments.value, response.documents.map(reconcile));
       listOrdering.value = response.ordering;
     } catch {

@@ -1,5 +1,8 @@
+---
 # Production deployment for home server (hemma.hule.education)
-# Usage: docker compose -f compose.prod.yaml build && docker compose -f compose.prod.yaml up -d
+# Usage:
+#   docker compose -f compose.prod.yaml build
+#   docker compose -f compose.prod.yaml up -d
 #
 # Prerequisites:
 # - External network: docker network create hule-network
@@ -26,10 +29,13 @@ services:
       COOKIE_SECURE: "true"
       ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1,::1,skriptoteket.hule.education}
       PUBLIC_APP_BASE_URL: ${PUBLIC_APP_BASE_URL:-https://skriptoteket.hule.education}
-      TRUST_PROXY_HEADERS: "true"
-      # Fail closed until nginx-proxy's exact bridge IP/CIDR is configured in the deployment env.
-      TRUSTED_PROXY_CIDRS: ${TRUSTED_PROXY_CIDRS:-}
-      # HuleEdu Gateway signed internal identity verification for protected app APIs.
+      # Uvicorn owns the single trusted-proxy chain: it resolves the client from
+      # X-Forwarded-For against FORWARDED_ALLOW_IPS and the app uses that peer
+      # directly. Never pass a wildcard; without the exact nginx-proxy CIDR only
+      # loopback is trusted, so every caller collapses to the proxy address.
+      FORWARDED_ALLOW_IPS: ${TRUSTED_PROXY_CIDRS:-127.0.0.1}
+      # HuleEdu Gateway signed internal identity verification for
+      # protected app APIs.
       HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY_PATH: ${HULEEDU_INTERNAL_IDENTITY_PUBLIC_KEY_PATH:-/run/huleedu/internal-identity/gateway-internal-identity-public-key.pem}
       HULEEDU_INTERNAL_IDENTITY_SIGNING_KEY_ID: ${HULEEDU_INTERNAL_IDENTITY_SIGNING_KEY_ID:-gateway-identity-rs256-v1}
       HULEEDU_INTERNAL_IDENTITY_ISSUER: ${HULEEDU_INTERNAL_IDENTITY_ISSUER:-api_gateway_service}
@@ -95,7 +101,8 @@ services:
       LLM_CHAT_OPS_TIMEOUT_SECONDS: ${LLM_CHAT_OPS_TIMEOUT_SECONDS:-60}
       LLM_CHAT_OPS_CONTEXT_WINDOW_TOKENS: ${LLM_CHAT_OPS_CONTEXT_WINDOW_TOKENS:-16384}
       LLM_CHAT_OPS_CONTEXT_SAFETY_MARGIN_TOKENS: ${LLM_CHAT_OPS_CONTEXT_SAFETY_MARGIN_TOKENS:-256}
-      # Set explicitly (avoid server .env drift) - required for editor_chat_ops_v1 under tokenizer-backed budgeting.
+      # Set explicitly (avoid server .env drift) - required for
+      # editor_chat_ops_v1 under tokenizer-backed budgeting.
       LLM_CHAT_OPS_SYSTEM_PROMPT_MAX_TOKENS: "4096"
       LLM_CHAT_OPS_PROMPT_CACHE_RETENTION: ${LLM_CHAT_OPS_PROMPT_CACHE_RETENTION:-}
       LLM_CHAT_OPS_PROMPT_CACHE_KEY: ${LLM_CHAT_OPS_PROMPT_CACHE_KEY:-}
@@ -129,7 +136,11 @@ services:
     networks:
       - hule-network
     healthcheck:
-      test: ["CMD", "/bin/sh", "/app/src/skriptoteket/cli/commands/healthcheck_web.sh", "http://localhost:8000/healthz/live"]
+      test:
+        - CMD
+        - /bin/sh
+        - /app/src/skriptoteket/cli/commands/healthcheck_web.sh
+        - http://localhost:8000/healthz/live
       interval: 30s
       timeout: 10s
       retries: 3
@@ -157,13 +168,22 @@ services:
       LLM_ANSWER_KEY_ENABLED: ${LLM_ANSWER_KEY_ENABLED:-false}
       OPENAI_LLM_ANSWER_KEY_API_KEY: ${OPENAI_LLM_ANSWER_KEY_API_KEY:-}
       OPENROUTER_LLM_ANSWER_KEY_API_KEY: ${OPENROUTER_LLM_ANSWER_KEY_API_KEY:-}
-      # Keep worker runtime on the same canonical Sir Convert v2 env contract as web
+      # Keep worker runtime on the same canonical Sir Convert v2 env
+      # contract as web
       # so queue/CLI flows never depend on stale aliases or partial recreates.
       SIR_CONVERT_A_LOT_V2_BASE_URL: ${SIR_CONVERT_A_LOT_V2_BASE_URL:-http://sir_convert_a_lot_prod:8085}
       SIR_CONVERT_A_LOT_V2_API_KEY: ${SIR_CONVERT_A_LOT_V2_API_KEY:-}
       SIR_CONVERT_A_LOT_V2_CALLBACK_BASE_URL: ${SIR_CONVERT_A_LOT_V2_CALLBACK_BASE_URL:-https://skriptoteket.hule.education}
       SIR_CONVERT_A_LOT_V2_TIMEOUT_SECONDS: ${SIR_CONVERT_A_LOT_V2_TIMEOUT_SECONDS:-60}
-    command: ["pdm", "run", "python", "-m", "skriptoteket.cli", "run-execution-worker", "--queue", "default"]
+    command:
+      - pdm
+      - run
+      - python
+      - -m
+      - skriptoteket.cli
+      - run-execution-worker
+      - --queue
+      - default
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - artifacts_data:/app/.artifacts

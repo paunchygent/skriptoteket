@@ -27,10 +27,9 @@
  *     phone list and the Import box.
  */
 
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, provide, ref } from "vue";
 
 import type { ExamListOrdering } from "../../api/examWorkspace";
-import { updateExamListOrdering } from "../../api/examWorkspace";
 import type { ExamWorkspaceExportTarget } from "../../api/examWorkspaceExports";
 import { useToast } from "../../composables/useToast";
 import ExamWorkspaceDrawers from "./exam-workspace/ExamWorkspaceDrawers.vue";
@@ -42,6 +41,7 @@ import ExamWorkspacePrintPreviewPanel from "./exam-workspace/ExamWorkspacePrintP
 import ExamWorkspaceQuestionList from "./exam-workspace/ExamWorkspaceQuestionList.vue";
 import ExamWorkspaceQuestionTools from "./exam-workspace/ExamWorkspaceQuestionTools.vue";
 import ExamWorkspaceSaveAsDialog from "./exam-workspace/ExamWorkspaceSaveAsDialog.vue";
+import ExamWorkspaceSignInBar from "./exam-workspace/ExamWorkspaceSignInBar.vue";
 import "./exam-workspace/examWorkspace.css";
 import { examWorkspaceBlockerEntries, examWorkspaceTitleBlockerEntries } from "./exam-workspace/examWorkspaceBlockers";
 import { examWorkspaceSavedAt } from "./exam-workspace/examWorkspaceFormat";
@@ -52,23 +52,28 @@ import { examWorkspaceDocumentLabel } from "./exam-workspace/examWorkspaceRows";
 import { bodyText } from "./exam-workspace/examWorkspaceRichText";
 import { isEmptyBody } from "./exam-workspace/examWorkspaceRichTextDocument";
 import { examWorkspaceExamPrintedDifference } from "./exam-workspace/examWorkspaceTotals";
+import { EXAM_WORKSPACE_STORE_KEY } from "./exam-workspace/examWorkspaceStore";
+import type { ExamWorkspaceStore } from "./exam-workspace/examWorkspaceStore";
 import { useExamWorkspaceAddress } from "./exam-workspace/useExamWorkspaceAddress";
 import { useExamWorkspaceContentSuggestions } from "./exam-workspace/useExamWorkspaceContentSuggestions";
 import { useExamWorkspaceEditing } from "./exam-workspace/useExamWorkspaceEditing";
 import { useExamWorkspaceEnrichment } from "./exam-workspace/useExamWorkspaceEnrichment";
 import { useExamWorkspaceExports } from "./exam-workspace/useExamWorkspaceExports";
+import { useExamWorkspaceGuestSignIn } from "./exam-workspace/useExamWorkspaceGuestSignIn";
 import { useExamWorkspaceKeyboard } from "./exam-workspace/useExamWorkspaceKeyboard";
 import { useExamWorkspaceLayout } from "./exam-workspace/useExamWorkspaceLayout";
-import { useExamWorkspacePrintPreview } from "./exam-workspace/useExamWorkspacePrintPreview";
 import { useExamWorkspaceSaveFlow } from "./exam-workspace/useExamWorkspaceSaveFlow";
 import { useExamWorkspaceSelection } from "./exam-workspace/useExamWorkspaceSelection";
+import { useExamWorkspaceSideColumns } from "./exam-workspace/useExamWorkspaceSideColumns";
 import { useExamWorkspaceSourceFile } from "./exam-workspace/useExamWorkspaceSourceFile";
 
-type DrawerName = "open" | "export" | "details";
+const props = defineProps<{ store: ExamWorkspaceStore }>();
+
+provide(EXAM_WORKSPACE_STORE_KEY, props.store);
 
 const layout = useExamWorkspaceLayout();
 const toast = useToast();
-const editing = useExamWorkspaceEditing();
+const editing = useExamWorkspaceEditing(props.store);
 const {
   history,
   structure,
@@ -91,49 +96,50 @@ const {
   workspaceDocument,
 } = editing;
 
-const isPhone = computed(() => layout.value === "phone");
-const frame = ref<HTMLElement | null>(null);
-const drawer = ref<DrawerName | null>(null);
-const listOpen = ref(false);
-const importOpen = ref(false);
+const { depart, dismissSignInPrompt, signInPrompt } = useExamWorkspaceGuestSignIn({
+  history,
+  store: props.store,
+  workspaceDocument,
+});
 
-// Förhandsgranska (W5): the persisted working state's print pages beside the editor, refreshed after each saved edit or save.
-const previewOpen = ref(false);
-const printPreview = useExamWorkspacePrintPreview({
-  lineageId: computed(() => summary.value?.lineage_id ?? null),
-  open: previewOpen,
-  savedRevision,
+defineExpose({ depart });
+
+const frame = ref<HTMLElement | null>(null);
+const { showDocument } = useExamWorkspaceAddress({ isDirty, openDocument, summary });
+const {
+  drawer,
+  importOpen,
+  isPhone,
+  listOpen,
+  previewBlocked,
+  previewLoading,
+  previewMessage,
+  previewOpen,
+  previewPages,
+  previewQuestionPages,
+  toggleDrawer,
+  togglePreview,
+} = useExamWorkspaceSideColumns({
   historyCursor,
   historyPosition: history.position,
+  layout,
+  lineageId: computed(() => summary.value?.lineage_id ?? null),
+  savedRevision,
   selectedItemId: editing.selectedItemId,
-});
-const {
-  blocked: previewBlocked,
-  loading: previewLoading,
-  message: previewMessage,
-  pages: previewPages,
-  questionPages: previewQuestionPages,
-} = printPreview;
-
-function togglePreview(): void {
-  previewOpen.value = !previewOpen.value;
-}
-
-// One side column at a time: the preview and a drawer never share the body.
-watch(previewOpen, (open) => {
-  if (open) drawer.value = null;
-});
-watch(drawer, (name) => {
-  if (name !== null) previewOpen.value = false;
+  store: props.store,
+  onLineage: (lineageId) => {
+    showDocument(lineageId);
+    dismissSignInPrompt();
+  },
 });
 
-const { showDocument } = useExamWorkspaceAddress({ isDirty, openDocument, summary });
 const sourceFile = useExamWorkspaceSourceFile(importDocument, importBlocked);
 // Spara before an export is the save flow's, which is built after the exports it feeds.
 const exports = useExamWorkspaceExports(summary, workspaceDocument, {
   noteBlockers: editing.noteExportBlockers,
   readLatest: editing.reloadDocument,
   saveFirst: () => saveFlow.saveBeforeExport(),
+  store: props.store,
 });
 const enrichment = useExamWorkspaceEnrichment({
   applySuggestions: applyArrivingSuggestions,
@@ -141,6 +147,7 @@ const enrichment = useExamWorkspaceEnrichment({
   isOpen,
   openExam,
   savedRevision,
+  teacher: props.store.teacher,
 });
 const content = useExamWorkspaceContentSuggestions({
   document: () => workspaceDocument.value,
@@ -148,6 +155,7 @@ const content = useExamWorkspaceContentSuggestions({
   openExam: () => openExam.value,
   savedRevision: () => savedRevision.value,
   setTags,
+  teacher: props.store.teacher,
 });
 
 const selection = useExamWorkspaceSelection({
@@ -205,31 +213,13 @@ const formattedSavedExports = computed(() =>
 const zeroPoints = computed(() => items.value.some((item) => item.points === 0));
 const enrichmentBusy = computed(() => enrichment.isRequesting.value || enrichment.isEnrichmentPending.value);
 
-function toggleDrawer(name: DrawerName): void {
-  drawer.value = drawer.value === name ? null : name;
-}
-
-watch(
-  () => summary.value?.lineage_id ?? null,
-  (lineageId, previous) => {
-    showDocument(lineageId);
-    if (lineageId === null) {
-      drawer.value = "open";
-    } else if (lineageId !== previous && !(layout.value === "desktop" && drawer.value === "open")) {
-      drawer.value = null;
-    }
-  },
-);
-
-watch(isPhone, (phone) => {
-  if (!phone) listOpen.value = false;
-});
-
 async function setOrdering(ordering: ExamListOrdering): Promise<void> {
+  const teacher = props.store.teacher;
+  if (!teacher) return;
   const previous = listOrdering.value;
   listOrdering.value = ordering;
   try {
-    await updateExamListOrdering(ordering);
+    await teacher.updateExamListOrdering(ordering);
   } catch {
     listOrdering.value = previous;
     toast.failure("Ordningen kunde inte sparas. Försök igen.");
@@ -331,6 +321,12 @@ onMounted(() => {
     >
       {{ conflictNotice }}
     </p>
+    <ExamWorkspaceSignInBar
+      v-if="signInPrompt"
+      :message="signInPrompt"
+      :depart="depart"
+      @dismiss="dismissSignInPrompt"
+    />
     <div
       v-if="enrichment.enrichmentMessage.value || enrichment.enrichmentLookupError.value"
       class="xw-notice xw-notice--info ws__bar"
@@ -432,7 +428,7 @@ onMounted(() => {
       />
 
       <ExamWorkspacePrintPreviewPanel
-        v-if="previewOpen && workspaceDocument && !isPhone"
+        v-if="previewOpen && workspaceDocument && !isPhone && props.store.teacher !== null"
         :pages="previewPages"
         :question-pages="previewQuestionPages"
         :loading="previewLoading"
@@ -475,7 +471,6 @@ onMounted(() => {
     />
   </main>
 </template>
-
 
 <style scoped>
 .ws {

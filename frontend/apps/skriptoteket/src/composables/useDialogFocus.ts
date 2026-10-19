@@ -19,7 +19,7 @@
 import { onBeforeUnmount, watch } from "vue";
 import type { Ref } from "vue";
 
-const FOCUSABLE_SELECTOR = [
+export const FOCUSABLE_SELECTOR = [
   "a[href]",
   "button:not([disabled])",
   "input:not([disabled])",

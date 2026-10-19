@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "c95453f31954a07cc3c741ba1a94223bb0a96d953a2616b1789a6644432a782e",
+  "source_set_digest": "906dfb15bcf69146a196dcffa5ce238d8a2e4562b905e9aa43c5275b5aed960a",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5198,6 +5198,71 @@
       }
     },
     {
+      "id": "TASK-SKRIPT-39-04-18",
+      "type": "task",
+      "title": "An inline answer key cut from a review question is carried into its facit exactly as printed and marked as taken from the source",
+      "path": "docs/backlog/tasks/task-skript-39-04-18-an-inline-answer-key-cut-from-a-review-question-is-carried-into-its-facit-exactly-as-printed-and-marked-as-taken-from-the-source.md",
+      "status": "done",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-19",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer 9f931df3 (Hemma): high F1 (label-prefix ordinal runaway on plain \"text Svar: x\") repaired; rereview approved at 2b419ec0 with no new findings. Domain suite at 2b419ec0: 4630 passed. origin/main 92373773 merged at 79858153; the U2 editor spec gained main's providers plugin at cf69469d with no assertion change (57 passed). Ten replays differ only in the two svenska_2 omprov item_001, where the carried facit appears exactly. Merged to main from cf69469d on 2026-10-19."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-04-19",
+      "type": "task",
+      "title": "A listed own chunk that section placement restores is not reported as missing; the left-out mark is decided on the placed item by source identity",
+      "path": "docs/backlog/tasks/task-skript-39-04-19-a-listed-own-chunk-that-section-placement-restores-is-not-reported-as-missing-the-left-out-mark-is-decided-on-the-placed-item-by-source-identity.md",
+      "status": "done",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-19",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer c54c4ae4 (Hemma): no functional defects; medium M1 and M2 (file splits) repaired at 33ee7ad2 and admitted on focused proof (544 passed, lint and typecheck clean). Domain suite 5480 passed; its 15 test_spa_fallback failures match main (no built SPA in the worktree). Ten replays equal the base; the Del A probe ends review_complete with no reasons. origin/main 06985163 merged at 915be481; merged to main 2026-10-19. Validation names no staging walk."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-04-20",
+      "type": "task",
+      "title": "A paragraph that holds only a score field is consumed whole as the points source and leaves no slash in the question",
+      "path": "docs/backlog/tasks/task-skript-39-04-20-a-paragraph-that-holds-only-a-score-field-is-consumed-whole-as-the-points-source-and-leaves-no-slash-in-the-question.md",
+      "status": "in_progress",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
       "id": "TASK-SKRIPT-39-05-01",
       "type": "task",
       "title": "Walking skeleton for AI-first DOCX conversion as a background job",
@@ -6588,7 +6653,26 @@
       "type": "task",
       "title": "Short-answer and gap-text questions look different, teachers create gaps by clicking a word, and the gap popover shows its whole answer list",
       "path": "docs/backlog/tasks/task-skript-40-04-08-short-answer-and-gap-text-questions-look-different-teachers-create-gaps-by-clicking-a-word-and-the-gap-popover-shows-its-whole-answer-list.md",
-      "status": "proposed",
+      "status": "in_progress",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-09",
+      "type": "task",
+      "title": "Teachers switch on a gap tool and click words to make gaps, and the toolbar names every keyboard shortcut",
+      "path": "docs/backlog/tasks/task-skript-40-04-09-teachers-switch-on-a-gap-tool-and-click-words-to-make-gaps-and-the-toolbar-names-every-keyboard-shortcut.md",
+      "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -6607,6 +6691,25 @@
       "type": "task",
       "title": "Teachers see which questions and parts cause a printed-total difference and can dismiss it",
       "path": "docs/backlog/tasks/task-skript-40-04-10-teachers-see-which-questions-and-parts-cause-a-printed-total-difference-and-can-dismiss-it.md",
+      "status": "in_progress",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-12",
+      "type": "task",
+      "title": "Printed PDF exams keep each question's text and its alternatives on one page",
+      "path": "docs/backlog/tasks/task-skript-40-04-12-printed-pdf-exams-keep-each-question-s-text-and-its-alternatives-on-one-page.md",
       "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
@@ -6706,7 +6809,7 @@
       "type": "task",
       "title": "Guests open, edit and export exams in the workspace without login",
       "path": "docs/backlog/tasks/task-skript-41-02-02-guests-open-edit-and-export-exams-in-the-workspace-without-login.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-41-02",
       "owners": [
@@ -7806,6 +7909,28 @@
         "decided_at": "2026-10-18",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "Independent ruthless-reviewer review of the delivery (root 01a14f23 evidence/reviews/10b693b6-1db4-4125-a880-ac5f7273bde7.md); its only finding F1 (medium) repaired at cbd290bd (capture-time request key sidecar per label_b recording, refused without one) and admitted on focused proof; user-approved re-recording of exactly 14 labeler calls (16,286 in, 1,315 out tokens); integration file 11/11, domain suite 3586 passed on Hemma; merged into main."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0046",
+      "type": "task",
+      "title": "Unit DOCX replay serves label_b recordings only by their capture-time request key",
+      "path": "docs/backlog/tasks/task-skript-rep-0046-unit-docx-replay-serves-label-b-recordings-only-by-their-capture-time-request-key.md",
+      "status": "done",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-19",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer 511155e5 (Hemma): one medium finding, F1 (user-exam capture provenance), repaired at 278ff319 and admitted on focused proof with no rereview. User decision 2026-10-19 \"Re-record now\": exactly 8 live omprov label_b calls (10,080 tokens), labels unchanged, sidecars byte-identical; 22 + 63 unit and 11 integration tests pass. Merged to main from 15a38c98 on 2026-10-19."
       }
     },
     {
