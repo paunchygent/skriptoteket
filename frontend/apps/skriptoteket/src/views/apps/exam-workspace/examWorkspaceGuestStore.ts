@@ -356,12 +356,30 @@ export function createGuestExamWorkspaceStore(
     },
   };
 
-  async function startBlank(): Promise<string> {
-    const response = await api.createPublicExamWorkspaceBlank();
-    const draft = newGuestDraft(response.document, deps.ids, []);
+  /**
+   * Replace the whole browser slot with the draft `produce` builds. The slot
+   * cursor is captured before awaiting `produce`, so a concurrent tab that
+   * commits while the public route is in flight owns the slot afterwards and
+   * this write reports the established 409 instead of overwriting its draft.
+   */
+  async function replaceSlotWith(produce: () => Promise<StoredGuestDraft>): Promise<string> {
     const current = await deps.storage.load();
-    await persist(current?.draft.cursor ?? null, { assets: {}, draft });
-    return draft.lineage_id;
+    const expectedCursor = current?.draft.cursor ?? null;
+    const next = await produce();
+    await persist(expectedCursor, next);
+    return next.draft.lineage_id;
+  }
+
+  /**
+   * Start a fresh blank exam through the public route and store it. A
+   * concurrent tab's newer draft is kept and reported as the conflict.
+   */
+  async function startBlank(): Promise<string> {
+    return await replaceSlotWith(async () => {
+      const response = await api.createPublicExamWorkspaceBlank();
+      const draft = newGuestDraft(response.document, deps.ids, []);
+      return { assets: {}, draft };
+    });
   }
 
   /**
@@ -371,11 +389,11 @@ export function createGuestExamWorkspaceStore(
    * blank start, and a limit hit reports through `onLimit`.
    */
   async function startFromQti(file: File, courseKey: string | null): Promise<string> {
-    const response = await api.importPublicExamWorkspaceQti(file, courseKey);
-    const draft = newGuestDraft(response.document, deps.ids, response.notes);
-    const current = await deps.storage.load();
-    await persist(current?.draft.cursor ?? null, { assets: response.assets, draft });
-    return draft.lineage_id;
+    return await replaceSlotWith(async () => {
+      const response = await api.importPublicExamWorkspaceQti(file, courseKey);
+      const draft = newGuestDraft(response.document, deps.ids, response.notes);
+      return { assets: response.assets, draft };
+    });
   }
 
   return {

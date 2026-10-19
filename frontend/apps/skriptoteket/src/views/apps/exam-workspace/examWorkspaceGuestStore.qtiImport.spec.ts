@@ -15,6 +15,7 @@ import { ApiError } from "../../../api/client";
 import { publicApiPost } from "../../../api/client";
 import { importPublicExamWorkspaceQti } from "../../../api/publicExamWorkspace";
 import { createGuestExamWorkspaceStore } from "./examWorkspaceGuestStore";
+import { newGuestDraft } from "./examWorkspaceGuestDraft";
 import type { ExamWorkspaceGuestDraftStoragePort } from "./examWorkspaceGuestDraftStorage";
 import {
   exam,
@@ -183,6 +184,46 @@ describe("examWorkspaceGuestStore QTI start", () => {
     expect(error).toMatchObject({ code: "CONFLICT", status: 409 });
     expect(losing.replaceIf).toHaveBeenCalledTimes(1);
     expect(await context.storage.load()).toBeNull();
+  });
+
+  it("reports the conflict and keeps the newer draft when another tab writes during the import", async () => {
+    const context = setupGuestStore();
+    const old = newGuestDraft(
+      { ...exam("Draft A"), document_id: "11111111-1111-4111-8111-111111111111" },
+      context.ids,
+      ["note A"],
+    );
+    expect(await context.storage.replaceIf(null, { assets: {}, draft: old })).toBe(true);
+    let releaseImport!: (value: { assets: Record<string, Blob>; document: ReturnType<typeof exam>; notes: string[] }) => void;
+    const pending = new Promise<{ assets: Record<string, Blob>; document: ReturnType<typeof exam>; notes: string[] }>(
+      (resolve) => {
+        releaseImport = resolve;
+      },
+    );
+    context.mocks.importQti.mockReturnValueOnce(pending);
+    const importing = context.store.startFromQti(zipFile(), null);
+    await vi.waitFor(() => expect(context.mocks.importQti).toHaveBeenCalledOnce());
+
+    // Another tab replaces the slot while the public parse is in flight.
+    const newer = newGuestDraft(
+      { ...exam("Newer other-tab draft"), document_id: "22222222-2222-4222-8222-222222222222" },
+      context.ids,
+      ["newer note"],
+    );
+    expect(await context.storage.replaceIf(old.cursor, { assets: {}, draft: newer })).toBe(true);
+    releaseImport({
+      assets: {},
+      document: { ...exam("Stale import completion"), document_id: "33333333-3333-4333-8333-333333333333" },
+      notes: [],
+    });
+    const error = await importing.catch((caught: unknown) => caught);
+
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error).toMatchObject({ code: "CONFLICT", status: 409 });
+    const stored = await context.storage.load();
+    expect(stored?.draft.cursor).toBe(newer.cursor);
+    expect(stored?.draft.saved_document.title).toBe("Newer other-tab draft");
+    expect(stored?.draft.notes).toEqual(["newer note"]);
   });
 
   it("reports the limit once and stores nothing when the public route refuses", async () => {

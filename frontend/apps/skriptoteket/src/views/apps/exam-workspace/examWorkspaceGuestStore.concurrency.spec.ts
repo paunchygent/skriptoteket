@@ -15,6 +15,7 @@ import { ApiError } from "../../../api/client";
 import type { NativeExamDocument } from "../../../api/examWorkspace";
 import { newTeacherItem } from "./examWorkspaceItemEdits";
 import { createGuestExamWorkspaceStore } from "./examWorkspaceGuestStore";
+import { newGuestDraft } from "./examWorkspaceGuestDraft";
 import type { ExamWorkspaceGuestDraftStoragePort } from "./examWorkspaceGuestDraftStorage";
 import {
   DOCUMENT_ID,
@@ -123,6 +124,45 @@ describe("examWorkspaceGuestStore concurrent writes", () => {
     expect(error).toBeInstanceOf(ApiError);
     expect(error).toMatchObject({ code: "CONFLICT", status: 409 });
     expect(losing.replaceIf).toHaveBeenCalledTimes(1);
+  });
+
+  it("reports the conflict and keeps the newer draft when another tab writes during a blank start", async () => {
+    const context = setupGuestStore();
+    const old = newGuestDraft(
+      { ...exam("Draft A"), document_id: "11111111-1111-4111-8111-111111111111" },
+      context.ids,
+      ["note A"],
+    );
+    expect(await context.storage.replaceIf(null, { assets: {}, draft: old })).toBe(true);
+    let releaseBlank!: (value: { document: NativeExamDocument; export_blockers: never[] }) => void;
+    const pending = new Promise<{ document: NativeExamDocument; export_blockers: never[] }>(
+      (resolve) => {
+        releaseBlank = resolve;
+      },
+    );
+    context.mocks.createBlank.mockReturnValueOnce(pending);
+    const starting = context.store.startBlank();
+    await vi.waitFor(() => expect(context.mocks.createBlank).toHaveBeenCalledOnce());
+
+    // Another tab replaces the slot while the public blank route is in flight.
+    const newer = newGuestDraft(
+      { ...exam("Newer other-tab draft"), document_id: "22222222-2222-4222-8222-222222222222" },
+      context.ids,
+      ["newer note"],
+    );
+    expect(await context.storage.replaceIf(old.cursor, { assets: {}, draft: newer })).toBe(true);
+    releaseBlank({
+      document: { ...exam("Stale blank completion"), document_id: "33333333-3333-4333-8333-333333333333" },
+      export_blockers: [],
+    });
+    const error = await starting.catch((caught: unknown) => caught);
+
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error).toMatchObject({ code: "CONFLICT", status: 409 });
+    const stored = await context.storage.load();
+    expect(stored?.draft.cursor).toBe(newer.cursor);
+    expect(stored?.draft.saved_document.title).toBe("Newer other-tab draft");
+    expect(stored?.draft.notes).toEqual(["newer note"]);
   });
 
   it("reports the conflict when clearing loses the browser slot", async () => {
