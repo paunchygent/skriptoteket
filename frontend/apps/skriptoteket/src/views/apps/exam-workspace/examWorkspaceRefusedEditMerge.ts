@@ -258,9 +258,40 @@ export function mergeRefusedEdit(
       assigned.add(owner);
     }
   }
-  const blocks: NativeExamParent[] = [];
+  // The kept edit wins where it changed the block outline (order or
+  // placement); otherwise the newest outline wins. Base-first map order is
+  // never the outline order: the blocks below enter in the selected
+  // document's order, and the stable place sort only breaks ties.
+  const blockOutline = (
+    document: NativeExamDocument,
+  ): Array<{ parent_id: string; place: number }> =>
+    document.parents.map((parent) => ({ parent_id: parent.parent_id, place: parent.place }));
+  const editMovedBlocks = !sameValue(blockOutline(edited), blockOutline(base));
+  const outlineSource = keptWhole || editMovedBlocks ? edited : newest;
+  const outlineFallback = outlineSource === edited ? newest : edited;
+  const blockIds = new Set<string>();
   for (const parent of activeInstructionParents.values()) {
     if (!assigned.has(parent.parent_id)) {
+      blockIds.add(parent.parent_id);
+    }
+  }
+  const orderedBlockIds: string[] = [];
+  for (const parents of [outlineSource.parents, outlineFallback.parents]) {
+    for (const parent of parents) {
+      if (blockIds.has(parent.parent_id) && !orderedBlockIds.includes(parent.parent_id)) {
+        orderedBlockIds.push(parent.parent_id);
+      }
+    }
+  }
+  for (const parent of activeInstructionParents.values()) {
+    if (blockIds.has(parent.parent_id) && !orderedBlockIds.includes(parent.parent_id)) {
+      orderedBlockIds.push(parent.parent_id);
+    }
+  }
+  const blocks: NativeExamParent[] = [];
+  for (const parentId of orderedBlockIds) {
+    const parent = activeInstructionParents.get(parentId);
+    if (parent !== undefined) {
       blocks.push(parent);
     }
   }
