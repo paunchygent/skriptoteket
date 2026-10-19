@@ -16,7 +16,12 @@
  *   button turns the selection, or the word at the caret, into a gap (or
  *   inserts an empty gap), and a click inside a word shows a small floating
  *   "Lucka" button ("Gör till lucka" tooltip and accessible name) that
- *   converts that word. The editor emits the
+ *   converts that word. The toolbar's Luckverktyg toggle (Ctrl+Alt+G,
+ *   Cmd+Option+G on macOS) switches one gap tool per question on: while it
+ *   is on, a word click or a drag inside one paragraph becomes a gap at
+ *   once with no popover and no floating button. The tool ends by its
+ *   toggle, its shortcut, Escape with no popover open, a move to another
+ *   question, or the gap_999 cap. The editor emits the
  *   change as one `createGap`, the owner adds the gap record as one
  *   structural edit, and the new gap's popover opens at once.
  *
@@ -98,6 +103,32 @@ const openGapNumber = computed(() =>
 const gapKind = computed(() => props.item.kind === "gap_fill" || props.item.kind === "inline_choice");
 /** The id the next created gap takes, or null at the gap_999 cap. */
 const newGapId = computed(() => (gapKind.value ? nextGapId(props.item) : null));
+
+/** The gap tool: while on, word clicks become gaps at once with no popover. */
+const gapToolOn = ref(false);
+
+/** Switch the tool on only while this question can still grow gaps. */
+function toggleGapTool(): void {
+  if (gapToolOn.value) {
+    gapToolOn.value = false;
+    return;
+  }
+  if (props.disabled || !gapKind.value || newGapId.value === null) {
+    return;
+  }
+  gapToolOn.value = true;
+}
+
+/** Escape closes an open gap popover first and the tool second. */
+function handleSurfaceEscape(): void {
+  if (openGap.value !== null) {
+    closePopover(true);
+    return;
+  }
+  if (gapToolOn.value) {
+    gapToolOn.value = false;
+  }
+}
 
 /** How each gap of the item reads in the text: its accepted answers, or "Lucka N" while it has none. */
 const gapStates = computed(() => examGapStates(props.item.gaps));
@@ -194,12 +225,15 @@ function handleGapAsText(itemId: string, gapId: string): void {
   editor.value?.focus();
 }
 
-/** Forward one gap creation and open the new gap's popover at its chip. */
+/** Forward one gap creation; the new gap's popover opens only while the tool is off. */
 function handleCreateGap(body: NativeExamBodyParagraph[], gapId: string, seed: string): void {
   if (props.disabled) {
     return;
   }
   emit("createGap", props.item.item_id, body, gapId, seed);
+  if (gapToolOn.value) {
+    return;
+  }
   void nextTick(() => {
     // The owner writes the emitted body back, so the editor keeps its
     // content and the new chip is already in this surface.
@@ -214,10 +248,25 @@ watch(
   () => props.disabled,
   (disabled) => {
     if (disabled) {
+      gapToolOn.value = false;
       closePopover(false);
     }
   },
 );
+
+watch(
+  () => props.item.item_id,
+  () => {
+    gapToolOn.value = false;
+    closePopover(false);
+  },
+);
+
+watch(newGapId, (gapId) => {
+  if (gapId === null) {
+    gapToolOn.value = false;
+  }
+});
 </script>
 
 <template>
@@ -243,9 +292,12 @@ watch(
         show-headings
         :show-gap="gapKind"
         :gap-disabled-reason="gapKind && newGapId === null ? 'Högst 999 luckor' : null"
+        :gap-tool-disabled-reason="gapKind && newGapId === null ? 'Luckverktyg – högst 999 luckor' : null"
+        :gap-tool-on="gapToolOn"
         @toggle-mark="toggleMark"
         @toggle-heading="toggleHeading"
         @make-gap="handleMakeGap"
+        @toggle-gap-tool="toggleGapTool"
       />
       <div class="xw-rich__body grid gap-2">
         <ExamWorkspaceRichTextEditor
@@ -260,8 +312,11 @@ watch(
           :asset-urls="assetUrls"
           gaps-interactive
           :next-gap-id="gapKind ? newGapId : undefined"
+          :gap-tool="gapToolOn"
           @activate-gap="openPopover"
           @create-gap="handleCreateGap"
+          @toggle-gap-tool="toggleGapTool"
+          @escape="handleSurfaceEscape"
           @update="(body, structural) => emit('updateBody', item.item_id, body, structural)"
         />
 

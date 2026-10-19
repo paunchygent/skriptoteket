@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "1368542584508c1e24f6a9e5aa40b136d12214f7b2a7feeec9d92c15f1a00448",
+  "source_set_digest": "d9ef765934aa5a024daf37a54c7360fab17477f20e616048bee406664037d9a5",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6635,6 +6635,25 @@
       "title": "Short-answer and gap-text questions look different, teachers create gaps by clicking a word, and the gap popover shows its whole answer list",
       "path": "docs/backlog/tasks/task-skript-40-04-08-short-answer-and-gap-text-questions-look-different-teachers-create-gaps-by-clicking-a-word-and-the-gap-popover-shows-its-whole-answer-list.md",
       "status": "in_progress",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-09",
+      "type": "task",
+      "title": "Teachers switch on a gap tool and click words to make gaps, and the toolbar names every keyboard shortcut",
+      "path": "docs/backlog/tasks/task-skript-40-04-09-teachers-switch-on-a-gap-tool-and-click-words-to-make-gaps-and-the-toolbar-names-every-keyboard-shortcut.md",
+      "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
