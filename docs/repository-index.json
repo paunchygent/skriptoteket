@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "68a0817eb5424675dba09f6474a2200460456398f14d2c90030efd05db2c9501",
+  "source_set_digest": "7273efff3a7e79d9be351a244a781a35e75100191137cdbd5362eba60b8b2c25",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6771,7 +6771,7 @@
       "type": "task",
       "title": "Each export format downloads or saves to Mina filer from one split button at the right of its menu row",
       "path": "docs/backlog/tasks/task-skript-40-04-16-each-export-format-downloads-or-saves-to-mina-filer-from-one-split-button-at-the-right-of-its-menu-row.md",
-      "status": "proposed",
+      "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [

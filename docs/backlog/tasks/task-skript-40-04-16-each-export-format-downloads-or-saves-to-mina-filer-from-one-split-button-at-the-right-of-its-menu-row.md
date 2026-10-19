@@ -8,7 +8,7 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-19'
-status: proposed
+status: ready
 closeout_review:
   record: inline
   status: not_started
@@ -40,7 +40,7 @@ Non-goals: no export, API or file-format change; the Exportera trigger and the s
 
 ### Resume here
 
-Planning by a fresh 40-04-16 lead on 2026-10-19 on `codex/task-skript-40-04-export-split-button-remote` from origin/main 26f84883; origin/main ffab920a (41-02-04) merged at 0a22ac06. Ledger closed and validated with `--require-closed`: F1-F9, L1-L10, user answers Q1-Q4, acceptance A1, alignment X1-X2 (2026-10-19). HELD 2026-10-19 (orchestrator 944b5a5a): the user moved the export split button into the toolbar redesign, which runs in its own Mac session and owns the contract. Status stays `proposed`; no junior has launched and no code is written. The recorded answers (Q1-Q4, A1, X1-X2), the map, the mock and the units are handed over as input to that contract. Next action: the toolbar redesign owner decides whether this task is absorbed, superseded or resumed. The mock omits the saved-date line and the zero-points note, which stay under the name (L8).
+Planning by a fresh 40-04-16 lead on 2026-10-19 on `codex/task-skript-40-04-export-split-button-remote` from origin/main 26f84883; origin/main ffab920a (41-02-04) merged at 0a22ac06. Ledger closed and validated with `--require-closed`: F1-F9, L1-L10, user answers Q1-Q4, acceptance A1, alignment X1-X2 (2026-10-19). Held 2026-10-19 for the toolbar redesign, then released the same day: the user chose "Build behaviour now" (B1). Status `ready`. origin/main be979cd7 merged at f388921e. Next action: wave 1 (V1 menu keyboard, V2 running destination) with fresh juniors and fail-first tests, then V3 and V4; the look follows TASK-SKRIPT-40-04-17 and adopts its tokens when they land. The mock omits the saved-date line and the zero-points note, which stay under the name (L8).
 
 ### Map
 
@@ -54,13 +54,13 @@ Paths under `frontend/apps/skriptoteket/src/views/apps/exam-workspace/` unless s
 
 ### Units
 
-Each unit goes to a fresh `junior-implementation-specialist` with disjoint files. Wave 1 (V1, V2) runs concurrently; wave 2 (V3) starts after wave 1 is integrated and after TASK-SKRIPT-40-04-11's control-system classes are merged from main (X2); wave 3 (V4) repairs the view-level specs after V3. Each work order tells the junior to map existing code (this repository, related repositories, shared libraries) before writing new code and reuse it, to fetch Vue and Vitest docs through `ctx7`, and to prefix every `agent-harness` command, including its own Explorer launches, with `PATH=$HOME/.local/agent-bin:$HOME/.local/bin:$PATH`.
+Each unit goes to a fresh `junior-implementation-specialist` with disjoint files. Wave 1 (V1, V2) runs concurrently; wave 2 (V3) starts after wave 1 is integrated (B1); wave 3 (V4) repairs the view-level specs after V3. Each work order tells the junior to map existing code (this repository, related repositories, shared libraries) before writing new code and reuse it, to fetch Vue and Vitest docs through `ctx7`, and to prefix every `agent-harness` command, including its own Explorer launches, with `PATH=$HOME/.local/agent-bin:$HOME/.local/bin:$PATH`.
 
 | Unit | Wave | Files | Behaviour | Focused tests |
 | --- | --- | --- | --- | --- |
 | V1 menu keyboard | 1 | `ExamWorkspaceMenu.vue` | L5 | new `ExamWorkspaceMenu.keyboard.spec.ts`: Down and Up keep the column across group rows and land on the first part of a standalone item; Right and Left move inside a group and stop at its ends; Home and End; a disabled part is skipped; Tab still closes; Escape returns focus to the anchor |
 | V2 running destination | 1 | `useExamWorkspaceExports.ts` | L3 (one `exporting` ref of target and destination; `exportingTarget` computed from it; `exportingDestination` exposed) | `useExamWorkspaceExports.spec.ts` extended: download and save each report their destination while running and clear it after success and failure |
-| V3 split rows | 2 | `ExamWorkspaceExportMenu.vue` (parts use `.xw-tool` inside the owner's outlined split container; one-line name inside `.xw-mi__stack`; `.xw-mi__mini` use removed), `examWorkspaceExportFormats.ts` and its spec (Q3), `ExamWorkspaceView.vue` (destination prop), `ExamWorkspaceExportMenu.ordering.spec.ts` | L1-L4, L6-L9, Q1-Q4, X1 | new `ExamWorkspaceExportMenu.rows.spec.ts`: per format the download part emits `download` and the save part emits `saveToFiles`; guest has no save part; aria-labels and titles per part including the replace-date title; busy glyph and `aria-busy` on the running part only and every part `aria-disabled` while it runs or while blockers exist, with focus kept on the running part; the saved-date line and the zero-points note render under the one-line name; nothing rendered before the name; the name element carries the one-line class; plus `ExamWorkspaceExportMenu.ordering.spec.ts` updated and green |
+| V3 split rows | 2 | `ExamWorkspaceExportMenu.vue` (two outlined `.xw-btn.xw-btn--compact.xw-btn--icon` parts in today's `.xw-split`; the name line truncates with the `truncate` utility inside `.xw-mi__stack`), `examWorkspace.css` (delete the dead `.xw-mi__mini` rules only), `examWorkspaceExportFormats.ts` and its spec (Q3), `ExamWorkspaceView.vue` (destination prop), `ExamWorkspaceExportMenu.ordering.spec.ts` | L1-L4, L6-L9, Q1-Q4, B1 | new `ExamWorkspaceExportMenu.rows.spec.ts`: per format the download part emits `download` and the save part emits `saveToFiles`; guest has no save part; aria-labels and titles per part including the replace-date title; busy glyph and `aria-busy` on the running part only and every part `aria-disabled` while it runs or while blockers exist, with focus kept on the running part; the saved-date line and the zero-points note render under the one-line name; nothing rendered before the name; the name element carries the one-line class; plus `ExamWorkspaceExportMenu.ordering.spec.ts` updated and green |
 | V4 view-spec repairs | 3 | the F9 view-level specs: `ExamWorkspaceGuestMode.saveControls.spec.ts`, `ExamWorkspaceExportsSlice.blockers.spec.ts` (save part asserts `aria-disabled`, not `disabled`), `ExamWorkspaceExportsSlice.download.spec.ts`, `ExamWorkspaceExportsSlice.checklist.spec.ts`, `ExamWorkspaceExportBlockerSuggestAllSlice.spec.ts`, `ExamWorkspaceTotalsSlice.spec.ts`, `exam-workspace/ExamWorkspaceTitleBlocker.spec.ts` | L9 against the new rows; no product code | each listed spec green against V3, with assertions moved from the row to the part they mean |
 
 ## Validation
@@ -73,7 +73,7 @@ Each unit goes to a fresh `junior-implementation-specialist` with disjoint files
 
 ## Stop Conditions
 
-Stop and ask the user if a row cannot keep its name on one line at 300px with the answered suffix, if the outlined split cannot be drawn from TASK-SKRIPT-40-04-11's shared classes, or if any unit needs an export, API or drawer change.
+Stop and ask the user if a row cannot keep its name on one line at 300px with the answered suffix, if the outlined split cannot be drawn from today's `.xw-split` and `.xw-btn` classes, or if any unit needs an export, API or drawer change.
 
 ## Decided Contract Terms
 
@@ -106,3 +106,4 @@ Stop and ask the user if a row cannot keep its name on one line at 300px with th
 | A1  | The plan with units V1-V4 and L1-L10 is accepted (user 2026-10-19, `agent-planning:user-closure-gate`) |
 | X1  | Amends L1 and L2: the parts use TASK-SKRIPT-40-04-11's T1 tool look (`.xw-tool`, 28px box, 16px glyph, 44px on a coarse pointer, its hover and focus) inside one outlined container with a hairline divider; the Spara split, which TASK-SKRIPT-40-04-14 removes, is not copied; save to Mina filer writes that export format as a file |
 | X2  | TASK-SKRIPT-40-04-11 owns the shared classes and tokens in `examWorkspace.css`, including the split container and the 32px menu rows; this task owns `ExamWorkspaceExportMenu.vue`, `ExamWorkspaceExportBlockers.vue` and `ExamWorkspaceExportDrawer.vue`; V3 starts after the shared classes are on main; shared files merge 41-02-04, then 40-04-08, then the rest |
+| B1  | Build behaviour now (user 2026-10-19): the decided behaviour is built with today's styles (two outlined compact icon `.xw-btn` parts in `.xw-split`, `truncate` on the name, 28px parts on every pointer for now); the look follows TASK-SKRIPT-40-04-17 and adopts its shared tokens when they land; no new tokens or shared CSS; V3 does not wait; amends X1 and X2 |
