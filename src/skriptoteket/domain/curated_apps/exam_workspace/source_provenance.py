@@ -39,10 +39,6 @@ class ChunkProvenance:
             return None
         return self._anchors[bisect_right(self._starts, offset) - 1]
 
-    def has_picture_in(self, start: int, end: int) -> bool:
-        """Whether an indexed picture sits in the source interval ``[start, end)``."""
-        return any(start <= place < end for place, _ in self._pictures)
-
     def pictures_in(self, start: int, end: int) -> list[tuple[int, str]]:
         """Every (source place, asset id) with ``start <= place <= end``, in place order.
 

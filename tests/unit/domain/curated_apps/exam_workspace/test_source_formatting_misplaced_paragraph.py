@@ -314,3 +314,18 @@ def test_a_second_shared_paragraph_after_the_cursor_is_still_owned():
 
     assert body_plain_text(body) == "Give a reason.\nGive a reason."
     assert source.path != "rebuilt"
+
+
+def test_a_rebuild_skips_an_already_shown_paragraph_before_the_cursor():
+    first = "Alpha first question."
+    second = "Beta second question."
+    source = SourceFormatting(
+        (_chunk("own1", (first, ())), _chunk("own2", (second, ()))),
+        foreign=(_Q7,),
+    )
+    source.projected.add(source.paragraphs[0].start)
+
+    body = source.body((_paragraph(_text(_REPLY)),))
+
+    assert body_plain_text(body) == second
+    assert source.path == "rebuilt"

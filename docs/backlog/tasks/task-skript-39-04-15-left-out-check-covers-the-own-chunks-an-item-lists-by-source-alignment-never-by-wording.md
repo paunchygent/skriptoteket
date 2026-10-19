@@ -156,12 +156,22 @@ Evidence: retained root `01a14f3e-12df-7020-8c18-18ad39a131cf` (`evidence/probes
 - Proof at `7dc51124`: focused files 119 passed; lint and typecheck clean. The ten replays
   (Hemma `~/logs/replays-39-04-listed/f4`) differ from base exactly as at `6249a2e8`: q8 is
   the only difference.
-- Next: the domain suite (after the parent's go); then F1 and F2 go back to reviewer
-  898d311f through the parent. F3 and F4 are admitted on focused proof.
-- Gates: merge `origin/main` only when the parent says TASK-SKRIPT-39-04-16 has landed,
-  then fold `_source_paragraph` (now in `source_misplaced_paragraph.py`) onto its
-  `source_paragraph()` and rerun the replays. Reported, not fixed: metodprov 1 (REP-0049)
-  and svenska_2 Fråga 1 (TASK-SKRIPT-39-04-17).
+- Domain suite at `e5b17901`: 4643 passed, 59 skipped.
+- Merged `origin/main` (TASK-SKRIPT-39-04-16 at `7bcc7f5b`) in `b0904608`; conflicts in
+  `source_formatting.py`, `source_provenance.py` and `docs/repository-index.json` resolved
+  explicitly; 39-04-16's new tests pass the required `foreign=()` / `foreign_chunks=()`.
+- Fold (fresh junior): `_source_paragraph` builds through 39-04-16's `source_paragraph()`,
+  which now owns the D5 join rule (an excluded interval never leaves two spaces);
+  `source_gap_paragraphs.py` imports `SourceFormatting` only for typing and takes
+  `SourceIndex`; one picture query (`pictures_in`); every `FormattingTransferError` import
+  comes from `source_format_errors`. Review 898d311f LOW: the shown-paragraph guard
+  compares `fragment.start`, with a test that failed before the fix.
+- Proof after the fold: focused files 166 passed; lint, typecheck, docs-validate clean. The
+  ten replays (Hemma `~/logs/replays-39-04-listed/fold`) against an `origin/main` base
+  (`main7bcc`) differ only in q8, the same as the merged tree before the fold.
+- Next: the domain suite on the merged head (after the parent's go). F1 and F2 rereview
+  (reviewer 898d311f) and the fold diff are routed by the parent.
+- Reported, not fixed: metodprov 1 (REP-0049) and svenska_2 Fråga 1 (TASK-SKRIPT-39-04-17).
 
 ## Stop Conditions
 

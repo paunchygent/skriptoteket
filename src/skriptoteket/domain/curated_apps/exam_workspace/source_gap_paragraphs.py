@@ -15,6 +15,7 @@ import re
 from collections import Counter
 from collections.abc import Sequence
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeAssetSegment,
@@ -26,16 +27,23 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
 from skriptoteket.domain.curated_apps.exam_workspace.source_format_alignment import (
     ANSWER_LABEL,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.source_format_errors import (
+    FormattingTransferError,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.source_format_index import (
+    SourceIndex,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.source_format_scope import (
     visible_intervals,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import (
-    FormattingTransferError,
-    SourceFormatting,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.source_paragraph_match import (
     SourceParagraph,
 )
+
+if TYPE_CHECKING:
+    from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import (
+        SourceFormatting,
+    )
 
 _UNDERSCORE_RUN = re.compile(r"_{2,}")
 _DOT_RUN = re.compile(r"[.…]+")
@@ -190,7 +198,7 @@ def _trim_light_edges(segments: list[NativeSegment]) -> list[NativeSegment]:
 
 
 def source_paragraph(
-    source: SourceFormatting,
+    source: SourceIndex,
     start: int,
     end: int,
     heading: int | None,
@@ -206,7 +214,8 @@ def source_paragraph(
     text stretch splits the text there. A picture at a blank run's start stands before the
     gap. A source line break stays inside its text segment, as ``sourced_fragments`` renders
     it, so the span's source paragraph stays one paragraph. With no runs, no gaps and no
-    pictures the plain source paragraph text is returned.
+    pictures the plain source paragraph text is returned. An excluded interval removed
+    inside the span never leaves two spaces at its join (TASK-SKRIPT-39-04-15 D5).
     """
     segments: list[NativeSegment] = []
     cursor = start
@@ -216,7 +225,17 @@ def source_paragraph(
     def text_until(target: int) -> None:
         nonlocal cursor
         if target > cursor:
-            segments.extend(source.visible_text_segments(cursor, target))
+            for segment in source.visible_text_segments(cursor, target):
+                if (
+                    segments
+                    and isinstance(segments[-1], NativeTextSegment)
+                    and segments[-1].text[-1:].isspace()
+                    and segment.text[:1].isspace()
+                ):
+                    segments[-1] = segments[-1].model_copy(
+                        update={"text": segments[-1].text.rstrip()}
+                    )
+                segments.append(segment)
             cursor = target
 
     for (run_start, run_end), gap in zip(runs, gaps, strict=True):
