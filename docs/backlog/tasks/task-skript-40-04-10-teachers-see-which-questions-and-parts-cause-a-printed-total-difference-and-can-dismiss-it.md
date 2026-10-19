@@ -1,6 +1,6 @@
 ---
 type: task
-id: TASK-SKRIPT-40-04-09
+id: TASK-SKRIPT-40-04-10
 title: Teachers see which questions and parts cause a printed-total difference and
   can dismiss it
 repository: skriptoteket
@@ -81,6 +81,6 @@ Stop and report to the parent when the staging reproduction shows a defect outsi
 ## Resume here (2026-10-19, planning)
 
 - Branch `codex/task-skript-40-04-points-mismatch-remote`, worktree `/home/paunchygent/apps/skriptoteket-task-skript-40-04-points-mismatch-remote`, from `06985163`.
-- Status proposed; no code has been written. The open decisions (Q1 display, Q2 dismissal, Q3 removal of the Använd buttons) and the F5 staging reproduction are in the retained plan `evidence/planning/TASK-SKRIPT-40-04-09/plan.md`, with recommendations and the drafted junior units.
+- Status proposed; no code has been written. The open decisions (Q1 display, Q2 dismissal, Q3 removal of the Använd buttons) and the F5 staging reproduction are in the retained plan `evidence/planning/TASK-SKRIPT-40-04-10/plan.md`, with recommendations and the drafted junior units.
 - Retained root `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a15330-34cd-7103-bb71-cc8ef9b8a56f` (explorer discovery under `discovery/explorer/`).
 - Next: on the user's answers, close the plan rows, run the staging reproduction, derive the accepted terms into this table, then launch the units.

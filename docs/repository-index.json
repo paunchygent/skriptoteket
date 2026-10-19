@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "93151743e5cccaef84095cb5745e7bc2d0fbcec76448be834b3541fbe0b938ce",
+  "source_set_digest": "947649a6759d8c6c7249b079265ab5177ad50651985dc32eb79a9a18568e4516",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6603,10 +6603,10 @@
       }
     },
     {
-      "id": "TASK-SKRIPT-40-04-09",
+      "id": "TASK-SKRIPT-40-04-10",
       "type": "task",
       "title": "Teachers see which questions and parts cause a printed-total difference and can dismiss it",
-      "path": "docs/backlog/tasks/task-skript-40-04-09-teachers-see-which-questions-and-parts-cause-a-printed-total-difference-and-can-dismiss-it.md",
+      "path": "docs/backlog/tasks/task-skript-40-04-10-teachers-see-which-questions-and-parts-cause-a-printed-total-difference-and-can-dismiss-it.md",
       "status": "proposed",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
