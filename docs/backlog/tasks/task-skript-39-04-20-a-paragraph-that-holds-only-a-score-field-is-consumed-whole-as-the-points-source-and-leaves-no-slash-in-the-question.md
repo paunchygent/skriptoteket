@@ -104,8 +104,19 @@ changes. The user accepted these consequences (Q3 = A, 2026-10-19); D7 records t
   no frontend code.
 - Domain suite at `9ff7dc5a` (orchestrator go 2026-10-19): 4614 passed, 59 skipped
   (`~/logs/suite-39-04-20.log`).
+- Review `22a3fefe` (Pi, at `035fd09a`): changes_requested, two medium findings, both
+  admitted on focused proof without rereview (orchestrator 2026-10-19). F1 (the widening
+  could cross a line break through `POINT_LABEL`'s whitespace) is repaired by U2
+  `ff06a2ea`: the line is taken from the match start, and the widening applies only when
+  the whole match lies on that line. Fail-first 6 failed, 11 passed; after the fix the four
+  focused files pass, 130 tests (retained `evidence/proof/u2-*.log`). Lint passes and the
+  backend typecheck is clean. The ten replays at `ff06a2ea` are byte-identical to those at
+  `3ed39f80` (`~/logs/replays-39-04-score-field/u2`). F2 (`docx_ai_build.py` over 500
+  lines) is cleared by merging `origin/main` once TASK-SKRIPT-39-04-19, which splits that
+  module, lands there; the orchestrator signals it.
 - Q3 answered A by the user 2026-10-19 (D7 amended); Q1 and Q2 are follow-up proposals (D10).
-- Waiting on: the independent Pi review of `035fd09a`, routed by the orchestrator.
+- Waiting on: the orchestrator's signal that 39-04-19 is on `origin/main` (F2), and the
+  user's confirmation of the corrected Q3 counts.
 - Branch `codex/task-skript-39-04-score-field-remote`, worktree
   `/home/paunchygent/apps/skriptoteket-task-skript-39-04-score-field-remote`; never pushed.
 - Retained root:
