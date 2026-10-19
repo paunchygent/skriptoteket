@@ -52,7 +52,7 @@ Non-goals: no change to the document format, the stepper bounds (1-40), the crit
 
 ### Resume here
 
-2026-10-20: `in_progress` (user start 2026-10-20) on `codex/task-skript-40-04-18` (worktree `Skriptoteket-task-skript-40-04-18`, from main 25b7352e), retained root `01a15680-e9d9-7d82-83b6-4797464fa46e`. Units 1 and 2 dispatched to juniors in parallel; unit 3 follows unit 2.
+2026-10-20: `in_progress` (user start 2026-10-20) on `codex/task-skript-40-04-18` (worktree `Skriptoteket-task-skript-40-04-18`, from main 25b7352e), retained root `01a15680-e9d9-7d82-83b6-4797464fa46e`. Units 1-2 integrated at 08c3023c and unit 3 at 0f3eaa4e, with a lead fix: a single free-text question reads "Det här är provets enda fritextfråga." Proof: vitest over `src/views/apps/exam-workspace` and `src/views/apps/ExamWorkspace*`, 244 files passed; fe-type-check and fe-lint clean. Next: independent ruthless-reviewer db7cc9e8 (Pi) on 25b7352e..0f3eaa4e, then the staging walk.
 
 ### Map
 
