@@ -149,6 +149,14 @@ def build_native_exam_from_qti(
         if isinstance(source, ExamNetQtiUnsupportedItem):
             notes.append(_unsupported_note(source))
             continue
+        if source.interaction_type is ExamNetQtiInteractionType.INFORMATION:
+            _append_information_parent(
+                source,
+                native_items=native_items,
+                parents=parents,
+                assets=assets,
+            )
+            continue
         if source.children:
             _append_parent(
                 source,
@@ -196,6 +204,31 @@ def build_native_exam_from_qti(
             if asset_id in referenced
         },
         notes=tuple(notes),
+    )
+
+
+def _append_information_parent(
+    source: ExamNetQtiItem,
+    *,
+    native_items: list[NativeExamItem],
+    parents: list[NativeExamParent],
+    assets: _AssetRegistry,
+) -> None:
+    """Map an information block to a childless part at the current item count."""
+
+    image_ids = tuple(assets.register(resource) for resource in source.image_resources)
+    instruction = _paragraphs(
+        source.prompt_paragraphs,
+        image_ids=image_ids,
+        plain_lines=source.instruction_lines or source.prompt_lines,
+    )
+    parents.append(
+        NativeExamParent(
+            parent_id=f"parent_{len(parents) + 1:03d}",
+            place=len(native_items),
+            instruction=instruction,
+            item_ids=(),
+        )
     )
 
 

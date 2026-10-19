@@ -177,11 +177,24 @@ def _read_item(
     if body is None:
         raise _UnsupportedInteraction
 
+    declarations = _response_declarations(root)
+    max_score = _max_score(root)
+
+    information = _read_information_if_present(
+        root,
+        body=body,
+        declarations=declarations,
+        max_score=max_score,
+        item_path=item_path,
+        files=files,
+        sequence=sequence,
+    )
+    if information is not None:
+        return (information,)
+
     body_children = list(body)
     blocks = [element for element in body_children if element.tag in _BLOCK_INTERACTIONS]
     starts = [element for element in body_children if _is_child_start(element)]
-    declarations = _response_declarations(root)
-    max_score = _max_score(root)
 
     if len(blocks) == 1 and len(starts) == 1:
         return (
@@ -217,6 +230,43 @@ def _read_item(
         files=files,
         sequence=sequence,
     )
+
+
+def _read_information_if_present(
+    root: ElementTree.Element,
+    *,
+    body: ElementTree.Element,
+    declarations: Mapping[str, _ResponseDeclaration],
+    max_score: int | float | None,
+    item_path: str,
+    files: Mapping[str, bytes],
+    sequence: int,
+) -> ExamNetQtiItem | None:
+    """Return the information block when the body holds only prompt content.
+
+    Structural decision only: no response declaration and no interaction element
+    anywhere in the body. An empty body keeps the caller's unsupported path.
+    """
+
+    if declarations:
+        return None
+    for element in body.iter():
+        tag = element.tag
+        if isinstance(tag, str) and tag.rsplit("}", 1)[-1].endswith("-interaction"):
+            return None
+    read_body = read_rich_content(list(body), leading_text=body.text)
+    if not read_body.paragraphs:
+        return None
+    image_resources = _image_resources(read_body.image_elements, item_path=item_path, files=files)
+    item = _item(
+        root,
+        sequence=sequence,
+        interaction_type=ExamNetQtiInteractionType.INFORMATION,
+        prompt_paragraphs=read_body.paragraphs,
+        image_resources=image_resources,
+        max_score=max_score,
+    )
+    return replace(item, instruction_lines=item.prompt_lines)
 
 
 def _read_parent_layout(

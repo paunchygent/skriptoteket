@@ -25,6 +25,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.container import (
     ExamWorkspaceContainerContent,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+    NativeAssetSegment,
     NativeParagraph,
     NativeTextSegment,
 )
@@ -32,6 +33,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_criteria import
     NativeExamCriterion,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeExamAsset,
     NativeExamDocument,
     NativeExamDocumentOrigin,
 )
@@ -89,6 +91,7 @@ def _document(
     *,
     instructions: tuple[NativeParagraph, ...] = (),
     parents: tuple[NativeExamParent, ...] = (),
+    assets: tuple[NativeExamAsset, ...] = (),
 ) -> NativeExamDocument:
     return NativeExamDocument(
         document_id=uuid4(),
@@ -97,12 +100,16 @@ def _document(
         instructions=instructions,
         items=items,
         parents=parents,
+        assets=assets,
         origin=NativeExamDocumentOrigin(kind="created"),
     )
 
 
 def _round_trip(
-    document: NativeExamDocument, *, filename: str = "paket.zip"
+    document: NativeExamDocument,
+    *,
+    filename: str = "paket.zip",
+    assets_by_id: dict[str, bytes] | None = None,
 ) -> tuple[bytes, ExamWorkspaceContainerContent]:
     """Export through the workspace's own package builder, import through the handler."""
 
@@ -110,6 +117,7 @@ def _round_trip(
         document,
         package_name=export_file_base_name(document),
         qti_writer=ExamNetQtiPackageWriter(),
+        assets_by_id=assets_by_id or {},
     )
     container = _parse_handler().handle(filename=filename, content=package, course_key=None)
     return package, container
@@ -254,3 +262,123 @@ def test_reference_package_imports_with_seven_scored_items_and_no_notes() -> Non
 
     assert [item.points for item in container.document.items] == [5, 2, 2, 2, 4, 6, 3]
     assert container.notes == ()
+
+
+_PNG_MIDDLE = b"\x89PNG\r\n\x1a\ninformation in the middle"
+_PNG_END = b"\x89PNG\r\n\x1a\ninformation at the end"
+_ASSET_MIDDLE = "asset_aaaaaaaaaaaaaaaa"
+_ASSET_END = "asset_bbbbbbbbbbbbbbbb"
+
+
+def _information_part(parent_id: str, place: int, text: str, asset_id: str) -> NativeExamParent:
+    return NativeExamParent(
+        parent_id=parent_id,
+        place=place,
+        instruction=(
+            NativeParagraph(
+                heading_level=None,
+                segments=(NativeTextSegment(text=text, marks=()),),
+            ),
+            NativeParagraph(
+                heading_level=None,
+                segments=(NativeAssetSegment(asset_id=asset_id),),
+            ),
+        ),
+        item_ids=(),
+    )
+
+
+def _pictured_information_document() -> tuple[NativeExamDocument, dict[str, bytes]]:
+    assets = (
+        NativeExamAsset(
+            asset_id=_ASSET_MIDDLE,
+            sha256=hashlib.sha256(_PNG_MIDDLE).hexdigest(),
+            media_type="image/png",
+            byte_length=len(_PNG_MIDDLE),
+        ),
+        NativeExamAsset(
+            asset_id=_ASSET_END,
+            sha256=hashlib.sha256(_PNG_END).hexdigest(),
+            media_type="image/png",
+            byte_length=len(_PNG_END),
+        ),
+    )
+    document = _document(
+        (
+            make_free_text_item(),
+            make_single_choice_item(sequence=2, item_id="item_002"),
+        ),
+        parents=(
+            _information_part("parent_001", 1, "Läs texten i mitten.", _ASSET_MIDDLE),
+            _information_part("parent_002", 2, "Läs texten i slutet.", _ASSET_END),
+        ),
+        assets=assets,
+    )
+    return document, {
+        _ASSET_MIDDLE: _PNG_MIDDLE,
+        _ASSET_END: _PNG_END,
+    }
+
+
+def test_childless_parts_between_and_after_questions_round_trip() -> None:
+    document, payloads = _pictured_information_document()
+
+    _package, container = _round_trip(document, assets_by_id=payloads)
+
+    imported = container.document
+    assert container.notes == ()
+    assert [parent.place for parent in imported.parents] == [1, 2]
+    assert all(parent.item_ids == () for parent in imported.parents)
+    sha_by_asset_id = {asset.asset_id: asset.sha256 for asset in imported.assets}
+    middle = _body_projection(imported.parents[0].instruction, sha_by_asset_id)
+    end = _body_projection(imported.parents[1].instruction, sha_by_asset_id)
+    assert middle[0] == (None, (("text", ("Läs texten i mitten.", ())),))
+    assert middle[1] == (
+        None,
+        (("asset", hashlib.sha256(_PNG_MIDDLE).hexdigest()),),
+    )
+    assert end[0] == (None, (("text", ("Läs texten i slutet.", ())),))
+    assert end[1] == (
+        None,
+        (("asset", hashlib.sha256(_PNG_END).hexdigest()),),
+    )
+    assert _document_projection(imported) == _document_projection(document)
+
+
+def test_document_instructions_are_folded_into_an_information_part() -> None:
+    instructions = (
+        NativeParagraph(
+            heading_level=None,
+            segments=(NativeTextSegment(text="Läs instruktionerna noggrant.", marks=()),),
+        ),
+    )
+    bare = _document(
+        (make_single_choice_item(),),
+        parents=(_information_part("parent_001", 1, "Läs texten först.", _ASSET_MIDDLE),),
+        assets=(
+            NativeExamAsset(
+                asset_id=_ASSET_MIDDLE,
+                sha256=hashlib.sha256(_PNG_MIDDLE).hexdigest(),
+                media_type="image/png",
+                byte_length=len(_PNG_MIDDLE),
+            ),
+        ),
+    )
+    document = bare.model_copy(update={"instructions": instructions})
+
+    _package, container = _round_trip(document, assets_by_id={_ASSET_MIDDLE: _PNG_MIDDLE})
+
+    imported = container.document
+    assert container.notes == ()
+    assert imported.instructions == ()
+    (information_parent,) = imported.parents
+    assert information_parent.place == 1
+    assert information_parent.item_ids == ()
+    instruction_projection = _body_projection(instructions, {})
+    sha_by_asset_id = {asset.asset_id: asset.sha256 for asset in imported.assets}
+    parent_projection = _body_projection(information_parent.instruction, sha_by_asset_id)
+    assert parent_projection[: len(instruction_projection)] == instruction_projection
+    assert parent_projection[len(instruction_projection) :] == _body_projection(
+        bare.parents[0].instruction,
+        {_ASSET_MIDDLE: hashlib.sha256(_PNG_MIDDLE).hexdigest()},
+    )

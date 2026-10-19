@@ -56,8 +56,11 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_criteria import
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamAsset,
+    NativeExamDocument,
+    NativeExamDocumentOrigin,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import NativeExamItem
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import NativeExamParent
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
     NativeAnswerKey,
     NativeChoice,
@@ -719,3 +722,90 @@ def test_the_reference_package_reads_every_item_in_test_order() -> None:
         ExamNetQtiInteractionType.GAP_FILL,
     ]
     assert [item.max_score for item in supported] == [5, 2, 2, 2, 4, 6, 3]
+
+
+def _information_document() -> tuple[NativeExamDocument, dict[str, bytes]]:
+    from uuid import uuid4
+
+    instruction = (
+        *plain_body("Läs igenom texten först."),
+        NativeParagraph(
+            heading_level=None,
+            segments=(NativeAssetSegment(asset_id=_ASSET_PNG),),
+        ),
+    )
+    document = NativeExamDocument(
+        document_id=uuid4(),
+        revision=1,
+        title="Prov på svenska",
+        items=(make_free_text_item(),),
+        parents=(
+            NativeExamParent(
+                parent_id="parent_001",
+                place=1,
+                instruction=instruction,
+                item_ids=(),
+            ),
+        ),
+        assets=(_asset(_ASSET_PNG, _PNG, "image/png"),),
+        origin=NativeExamDocumentOrigin(kind="created"),
+    )
+    return document, {_ASSET_PNG: _PNG}
+
+
+def test_the_exact_information_xml_reads_as_information_with_text_and_picture() -> None:
+    document, payloads = _information_document()
+    (free_text, information) = native_exam_to_examnet_qti_items(document, assets_by_id=payloads)
+    assert information.interaction_type is ExamNetQtiInteractionType.INFORMATION
+
+    image_paths = ("images/information.png",)
+    xml = serialize_qti_assessment_item(information, image_paths=image_paths)
+
+    (read,) = read_examnet_qti_item(
+        xml=xml,
+        item_path=_ITEM_PATH,
+        files={"items/images/information.png": _PNG},
+        sequence=information.sequence,
+    )
+
+    assert isinstance(read, ExamNetQtiItem)
+    assert read.interaction_type is ExamNetQtiInteractionType.INFORMATION
+    assert read.sequence == information.sequence
+    assert read.item_id == information.item_id
+    assert read.max_score is None
+    assert read.prompt_paragraphs == information.prompt_paragraphs
+    assert "Läs igenom texten först." in "".join(
+        segment.text
+        for paragraph in read.prompt_paragraphs
+        for segment in paragraph.segments
+        if hasattr(segment, "text")
+    )
+    assert [image.payload for image in read.image_resources] == [_PNG]
+    assert [image.media_type for image in read.image_resources] == ["image/png"]
+    assert free_text.interaction_type is not ExamNetQtiInteractionType.INFORMATION
+
+
+def test_a_text_paragraph_with_an_extended_text_interaction_is_not_information() -> None:
+    root = _root()
+    _declaration(root)
+    _max_score(root)
+    body = _body(root)
+    paragraph = ElementTree.SubElement(body, f"{_QTI}p")
+    paragraph.text = "Resonera om texten."
+    ElementTree.SubElement(
+        body, f"{_QTI}qti-extended-text-interaction", {"response-identifier": "RESPONSE"}
+    )
+
+    (read,) = _read_root(root)
+
+    assert isinstance(read, ExamNetQtiItem)
+    assert read.interaction_type is ExamNetQtiInteractionType.FREE_TEXT
+
+
+def test_an_empty_body_without_interaction_stays_unsupported() -> None:
+    root = _root()
+    _body(root)
+
+    unsupported = _unsupported(root)
+
+    assert unsupported.opening_text == ""
