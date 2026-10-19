@@ -26,7 +26,7 @@ backlog_document_profile: contract-derived
 
 ## Implementation Contract
 
-The user reviewed the exam workspace header and toolbars on 2026-10-19 (twelve annotated points), iterated on an interactive mock built on a static copy of the staging workspace, and accepted the layout with the settings autosave, 32 px header commands, words beside the glyphs, no group names and the gap switch plus Tom lucka. This task builds that layout. The user closed the remaining questions (tokens, glyphs, ownership, narrowest width) the same day through AskUserQuestion in the planning session. The user approved readiness and the start of units 1, 2 and 4 on 2026-10-19; units 3 and 5 wait for 40-04-13 and 40-04-14 on main.
+The user reviewed the exam workspace header and toolbars on 2026-10-19 (twelve annotated points), iterated on an interactive mock built on a static copy of the staging workspace, and accepted the layout with the settings autosave, 32 px header commands, words beside the glyphs, no group names and the gap switch plus Tom lucka. This task builds that layout. The user closed the remaining questions (tokens, glyphs, ownership, narrowest width) the same day through AskUserQuestion in the planning session. The user approved readiness and the start of units 1, 2 and 4 on 2026-10-19; on the same day the user decided to start units 3 and 5 at once on the gap branch's merge with main (codex/task-skript-40-04-gap-toggle-back-remote, which carries 40-04-13 and 40-04-14) instead of waiting for main.
 
 Scope (T15): the look and placement of the workspace header (`ExamWorkspaceHeader.vue`), the question list head (`ExamWorkspaceQuestionList.vue`), the question head (`ExamWorkspaceQuestionHead.vue`, `ExamWorkspaceQuestionTools.vue`) and the question editor toolbar (`ExamWorkspaceMarkToolbar.vue`), with the shared faces in `examWorkspace.css`. TASK-SKRIPT-40-04-11 is folded into this task and superseded; its decided terms for the writing-line stepper, the one-off offers and the menu rows carry over unchanged from its retained plan. Behaviour stays with its owners: the gap switch with 40-04-13, undo, redo and autosave with 40-04-14, the export menu with 40-04-16. This task supersedes 40-04-01 ledger row T25 (T16).
 
@@ -58,7 +58,7 @@ The core vertical is one Lucktext editing pass at a 1040 px workspace on a fine 
 
 ## Stop Conditions
 
-- 40-04-14's autosave state or 40-04-13's gap-switch behaviour is not on main when unit 3 or 5 starts: stop that unit and report; do not build an interim Spara button or Lucka button.
+- 40-04-14's autosave state or 40-04-13's gap-switch behaviour is not in this task branch's base when unit 3 or 5 starts (user decision 2026-10-19: the base may be the gap branch's merge with main instead of main): stop that unit and report; do not build an interim Spara button or Lucka button.
 - The skill-repository change for unit 1 is refused or not merged: stop before unit 2.
 - The header cannot fit with words at a 1040 px workspace: stop and report the measured widths.
 
