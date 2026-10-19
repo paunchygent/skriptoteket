@@ -5,99 +5,27 @@ from decimal import Decimal
 import pytest
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import review_chunk_item
-from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
-from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import printed_points_plan
-from skriptoteket.domain.curated_apps.exam_workspace.docx_section_points import (
-    ScoredItems,
-    apply_printed_points,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
-    NativeParagraph,
-    NativeTextSegment,
-)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_criteria import (
     NativeExamCriterion,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import NativeExamItem
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import NativeExamParent
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeItemReviewState,
+)
+from tests.unit.domain.curated_apps.exam_workspace.docx_section_points_support import (
+    _DEL_1,
+    _exam,
+    _items,
+    _marked,
+    _parent,
+    _points,
+    _score,
 )
 from tests.unit.domain.curated_apps.exam_workspace.matching_recording_support import (
     recorded_matching_items,
 )
 
 pytestmark = pytest.mark.unit
-
-
-def _exam(*lines: str) -> tuple[tuple[DocxChunk, ...], tuple[tuple[str, ...], ...]]:
-    """Chunks from source lines: "# " marks a heading and "Q " a question's opening line."""
-    chunks: list[DocxChunk] = []
-    questions: list[tuple[str, ...]] = []
-    for number, line in enumerate(lines):
-        anchor = f"body:{number:04d}"
-        kind = "heading" if line.startswith("# ") else "paragraph"
-        text = line.removeprefix("# ").removeprefix("Q ")
-        chunks.append(DocxChunk(anchor, kind, text, text))
-        if line.startswith("Q "):
-            questions.append((anchor,))
-    return tuple(chunks), tuple(questions)
-
-
-def _items(
-    chunks: tuple[DocxChunk, ...],
-    questions: tuple[tuple[str, ...], ...],
-    points: tuple[int | float | None, ...],
-) -> tuple[NativeExamItem, ...]:
-    by_anchor = {chunk.anchor: chunk for chunk in chunks}
-    return tuple(
-        review_chunk_item(by_anchor[own[0]], "test").model_copy(
-            update={"item_id": f"item_{n:03d}", "sequence": n, "points": p}
-        )
-        for n, (own, p) in enumerate(zip(questions, points, strict=True), 1)
-    )
-
-
-def _score(
-    chunks: tuple[DocxChunk, ...],
-    questions: tuple[tuple[str, ...], ...],
-    items: tuple[NativeExamItem, ...],
-    parents: tuple[NativeExamParent, ...] = (),
-) -> ScoredItems:
-    return apply_printed_points(
-        items,
-        parents,
-        printed_points_plan(chunks, questions),
-        {chunk.anchor: chunk for chunk in chunks},
-    )
-
-
-def _points(scored: ScoredItems) -> list[int | float | None]:
-    return [item.points for item in scored.items]
-
-
-def _marked(scored: ScoredItems) -> list[bool]:
-    return [item.points_estimated for item in scored.items]
-
-
-def _source_points(scored: ScoredItems) -> list[int | float | None]:
-    return [item.source_points for item in scored.items]
-
-
-def _parent(parent_id: str, *item_ids: str) -> NativeExamParent:
-    return NativeExamParent(
-        parent_id=parent_id,
-        place=int(item_ids[0].removeprefix("item_")) - 1,
-        instruction=(
-            NativeParagraph(
-                segments=(NativeTextSegment(kind="text", text="Del", marks=()),), heading_level=None
-            ),
-        ),
-        item_ids=item_ids,
-    )
-
-
-_DEL_1 = ("# Del 1: litteraturhistoria, 15 poäng", *(f"Q {n}. Fråga {n}" for n in range(1, 16)))
 
 
 def test_a_part_total_is_shared_equally_over_its_unprinted_questions_and_marked():
@@ -420,102 +348,3 @@ def test_a_part_heading_review_item_never_takes_its_questions_total():
     scored = _score(chunks, questions, (heading, noun))
 
     assert _points(scored) == [None, 2]
-
-
-def test_a_printed_question_value_is_recorded_as_source_points():
-    chunks, questions = _exam("Q Fråga 1 om satsdelar och ordföljd (2 p)")
-
-    scored = _score(chunks, questions, _items(chunks, questions, (9,)))
-
-    assert _points(scored) == [2]
-    assert _marked(scored) == [False]
-    assert _source_points(scored) == [2]
-
-
-def test_a_share_of_a_part_total_records_no_source_points():
-    chunks, questions = _exam("# Del 1: 10 poäng", "Q 1.", "Q 2.")
-
-    scored = _score(chunks, questions, _items(chunks, questions, (None, None)))
-
-    assert _points(scored) == [5, 5]
-    assert _marked(scored) == [True, True]
-    assert _source_points(scored) == [None, None]
-
-
-def test_single_unprinted_remainder_stores_null_source_points():
-    chunks, questions = _exam(
-        "# Del 1: 10 poäng", "Q 1.", "Poäng: 3 poäng", "Q 2.", "Poäng: 3 poäng", "Q 3."
-    )
-
-    scored = _score(chunks, questions, _items(chunks, questions, (3, 3, 9)))
-
-    assert _points(scored) == [3, 3, 4]
-    assert _marked(scored) == [False] * 3
-    assert _source_points(scored) == [3, 3, None]
-
-
-def test_multi_question_unprinted_share_stores_null_source_points():
-    chunks, questions = _exam("# Del 1: 10 poäng", "Q 1.", "Q 2.", "Q 3.")
-
-    scored = _score(chunks, questions, _items(chunks, questions, (None, None, None)))
-
-    assert _points(scored) == [4, 3, 3]
-    assert _marked(scored) == [True] * 3
-    assert _source_points(scored) == [None, None, None]
-
-
-def test_printed_value_survives_a_refused_rubric_change():
-    chunks, questions = _exam("Q Fråga om satsdelar och ordföljd (1 p)")
-    (item,) = _items(chunks, questions, (2,))
-    rubric = item.model_copy(
-        update={
-            "source_points": 2,
-            "criteria": (
-                NativeExamCriterion(text="Ordklass.", points=1),
-                NativeExamCriterion(text="Ordföljd.", points=1),
-            ),
-        }
-    )
-
-    scored = _score(chunks, questions, (rubric,))
-
-    updated = scored.items[0]
-    assert updated.points == 2
-    assert updated.points_estimated is False
-    assert updated.source_points == 1
-    assert updated.review.state is NativeItemReviewState.REVIEW_REQUIRED
-
-
-def test_fully_printed_questions_keep_their_printed_source_points():
-    chunks, questions = _exam(
-        "# Del 3: kortsvar, 5 poäng",
-        "Q Fråga 21",
-        "Poäng: 1 poäng",
-        "Q Fråga 22",
-        "Poäng: 2 poäng",
-        "Q Fråga 23",
-        "Poäng: 1 poäng",
-        "Q Fråga 24",
-        "Poäng: 1 poäng",
-    )
-
-    scored = _score(chunks, questions, _items(chunks, questions, (1, 2, 7, 1)))
-
-    assert _points(scored) == [1, 2, 1, 1]
-    assert _marked(scored) == [False] * 4
-    assert _source_points(scored) == [1, 2, 1, 1]
-
-
-def test_a_printed_matching_total_with_inexact_ticks_keeps_the_printed_source_points():
-    chunks, questions = _exam("Q Matcha orden med deras definitioner nedan (10 p)")
-    matching = recorded_matching_items(keyed=True)[0]
-    assert len(matching.answer_key.match_pairs) == 3
-    grid = matching.model_copy(update={"item_id": "item_001", "source_anchor": questions[0][0]})
-
-    scored = _score(chunks, questions, (grid,))
-
-    updated = scored.items[0]
-    assert updated.points == 9.99
-    assert updated.tick_points == Decimal("3.33")
-    assert updated.points_estimated is True
-    assert updated.source_points == 10
