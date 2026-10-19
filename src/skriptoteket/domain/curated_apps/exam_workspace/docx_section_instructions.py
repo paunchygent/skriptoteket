@@ -42,6 +42,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_item_alignment import 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import (
     ExamManifest,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions import (
+    with_placed_left_out_mark,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import (
     NO_PART_LINES,
     PartLines,
@@ -357,7 +360,9 @@ def place_section_instructions(
     Every other instruction, and every instruction whose reach cannot be a parent, is copied
     into the items it reaches. An instruction an item prints inside its own chunks is placed
     at that position in the item's body, and a chunk the item already shows, by the source
-    alignment of its body paragraphs, is never repeated.
+    alignment of its body paragraphs, is never repeated. Each placed item renders the
+    left-out check mark for the own chunks it leaves out that neither its body nor its
+    parent shows (TASK-SKRIPT-39-04-19).
     """
     positions = {c.anchor: i for i, c in enumerate(chunks)}
     item_sources = [
@@ -400,6 +405,11 @@ def place_section_instructions(
         for k in targets:
             carried.setdefault(k, []).extend(run.sources)
     items: list[NativeExamItem] = []
+    parent_shown: dict[int, frozenset[str]] = {}
+    for group in groups:
+        shown = frozenset(chunk.anchor for run in group for chunk in run.sources)
+        for k in group[0].reach:
+            parent_shown[k] = parent_shown.get(k, frozenset()) | shown
     for k, (first, _, aligned) in enumerate(ordered):
         item = aligned.item
         for run in reached:
@@ -419,6 +429,7 @@ def place_section_instructions(
         )
         aligned = _with_joined(aligned, joined.get(k, []), positions, first)
         aligned = _inserted(aligned, 0, _unshown(aligned, carried.get(k, [])))
+        aligned = with_placed_left_out_mark(aligned, chunks, parent_shown.get(k, frozenset()))
         items.append(aligned.item.model_copy(update={"item_id": _item_id(k), "sequence": k + 1}))
     parents = tuple(
         NativeExamParent(

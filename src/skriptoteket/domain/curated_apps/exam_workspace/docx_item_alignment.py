@@ -24,12 +24,15 @@ class AlignedItem:
     ``chunks[n]`` is None when body paragraph ``n`` kept the reply's wording without a
     unique source paragraph. Every change to the body states its paragraphs' chunks, so the
     two always have the same length. ``entry_chunks`` holds the chunks the item's choices
-    and matching entries are aligned to (TASK-SKRIPT-39-04-14).
+    and matching entries are aligned to (TASK-SKRIPT-39-04-14). ``left_out`` holds the
+    anchors of the own chunks the item leaves out; placement decides which of them it
+    still does not show (TASK-SKRIPT-39-04-19).
     """
 
     item: NativeExamItem
     chunks: tuple[str | None, ...]
     entry_chunks: frozenset[str]
+    left_out: frozenset[str] = frozenset()
 
     def __post_init__(self) -> None:
         if len(self.chunks) != len(self.item.body):
