@@ -6,19 +6,109 @@ the previous draft shape, and can be downgraded and upgraded again without
 leaving the database in a partial state.
 """
 
-import json
 import os
-import threading
-from pathlib import Path
-from uuid import uuid4
 
 import pytest
 from alembic import command
-from alembic.config import Config
-from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
-from tests.fixtures.database_fixtures import PooledDatabase
+from tests.fixtures.database_fixtures import PooledDatabase, alembic_config_for
+from tests.integration.database.classroom_planner_migration_support import (
+    get_backfilled_group_rows,
+    get_columns,
+    get_group_assignment_ids,
+    get_index_names,
+    get_owner_draft_statuses,
+    get_tables,
+    insert_active_grouping_draft,
+    insert_second_roster_with_active_drafts,
+    run_alembic_cmd,
+    seed_pre_slice_two_draft,
+)
+
+
+async def _assert_schema_at_target_revision(engine: AsyncEngine) -> None:
+    tables = await get_tables(engine)
+    assert {
+        "classroom_planner_rosters",
+        "classroom_planner_room_templates",
+        "classroom_planner_plan_drafts",
+        "classroom_planner_share_artifacts",
+        "classroom_planner_group_assignments",
+        "classroom_planner_seat_assignments",
+        "classroom_planner_draft_groups",
+    }.issubset(tables)
+    assert "classroom_planner_student_planning_meta" not in tables
+    assert "classroom_planner_pair_constraints" not in tables
+    assert "classroom_planner_planning_profiles" not in tables
+    assert "classroom_planner_arrangement_snapshots" not in tables
+
+    assert "fixtures" in await get_columns(engine, "classroom_planner_room_templates")
+    assert "status" in await get_columns(engine, "classroom_planner_plan_drafts")
+    assert "draft_kind" in await get_columns(engine, "classroom_planner_plan_drafts")
+    assert "last_opened_at" in await get_columns(engine, "classroom_planner_plan_drafts")
+    assert "task_entry_classroom_selection_mode" in await get_columns(
+        engine, "classroom_planner_plan_drafts"
+    )
+    assert "guest_import_identity" in await get_columns(engine, "classroom_planner_plan_drafts")
+    share_columns = await get_columns(engine, "classroom_planner_share_artifacts")
+    assert {
+        "token_hash",
+        "source",
+        "draft_kind",
+        "source_revision",
+        "public_path",
+        "renderer_version",
+        "presentation_schema_version",
+        "presentation_hash",
+        "content_hash",
+        "presentation_payload",
+        "rendered_html",
+        "rendered_css",
+        "revoked_at",
+        "expires_at",
+    }.issubset(share_columns)
+    share_indexes = await get_index_names(engine, "classroom_planner_share_artifacts")
+    assert "ix_classroom_planner_share_artifacts_token_hash" in share_indexes
+    assert "ix_cp_share_artifacts_owner_draft_kind_created" in share_indexes
+    assert "lesson_mode_id" not in await get_columns(engine, "classroom_planner_plan_drafts")
+    assert "engine_metadata" not in await get_columns(engine, "classroom_planner_plan_drafts")
+    assert "group_count" not in await get_columns(engine, "classroom_planner_plan_drafts")
+    assert "uq_cp_active_draft_roster_kind" in await get_index_names(
+        engine, "classroom_planner_plan_drafts"
+    )
+    assert "uq_cp_guest_import_identity" in await get_index_names(
+        engine, "classroom_planner_plan_drafts"
+    )
+    assert "uq_cp_active_draft_owner" not in await get_index_names(
+        engine, "classroom_planner_plan_drafts"
+    )
+
+
+async def _assert_schema_after_downgrade(engine: AsyncEngine) -> None:
+    tables_after_downgrade = await get_tables(engine)
+    assert "classroom_planner_rosters" not in tables_after_downgrade
+    assert "classroom_planner_room_templates" not in tables_after_downgrade
+    assert "classroom_planner_plan_drafts" not in tables_after_downgrade
+    assert "classroom_planner_arrangement_snapshots" not in tables_after_downgrade
+
+
+async def _assert_schema_after_reupgrade(engine: AsyncEngine) -> None:
+    tables_after_reupgrade = await get_tables(engine)
+    assert "classroom_planner_draft_groups" in tables_after_reupgrade
+    assert "classroom_planner_share_artifacts" in tables_after_reupgrade
+    assert "classroom_planner_student_planning_meta" not in tables_after_reupgrade
+    assert "classroom_planner_arrangement_snapshots" not in tables_after_reupgrade
+    assert "classroom_planner_pair_constraints" not in tables_after_reupgrade
+    assert "classroom_planner_planning_profiles" not in tables_after_reupgrade
+    assert "fixtures" in await get_columns(engine, "classroom_planner_room_templates")
+    assert "draft_kind" in await get_columns(engine, "classroom_planner_plan_drafts")
+    assert "task_entry_classroom_selection_mode" in await get_columns(
+        engine, "classroom_planner_plan_drafts"
+    )
+    assert "guest_import_identity" in await get_columns(engine, "classroom_planner_plan_drafts")
+    assert "lesson_mode_id" not in await get_columns(engine, "classroom_planner_plan_drafts")
+    assert "engine_metadata" not in await get_columns(engine, "classroom_planner_plan_drafts")
 
 
 @pytest.mark.integration
@@ -29,489 +119,55 @@ async def test_classroom_planner_migration_idempotency(empty_module_database: Po
     database_url = empty_module_database.url
     os.environ["DATABASE_URL"] = database_url
 
-    alembic_cfg = Config(str(Path("alembic.ini")))
-    alembic_cfg.set_main_option("sqlalchemy.url", database_url)
+    alembic_cfg = alembic_config_for(database_url=database_url)
 
     target_revision = "f8a2c6d4e9b1"
     pre_slice_two_revision = "4f5605f8be18"
     base_revision = "0032_user_file_vault"
 
-    def run_alembic_cmd(cmd_func, *args) -> None:
-        errors: list[BaseException] = []
-
-        def run_command() -> None:
-            try:
-                cmd_func(alembic_cfg, *args)
-            except BaseException as exc:  # noqa: BLE001 - thread boundary re-raises below.
-                errors.append(exc)
-
-        thread = threading.Thread(target=run_command)
-        thread.start()
-        thread.join()
-        if errors:
-            raise errors[0]
-
     engine = create_async_engine(database_url)
 
-    async def get_tables() -> set[str]:
-        async with engine.connect() as conn:
-            result = await conn.execute(
-                text("SELECT tablename FROM pg_tables WHERE schemaname = 'public'")
-            )
-            return {row[0] for row in result.fetchall()}
-
-    async def get_columns(table_name: str) -> set[str]:
-        async with engine.connect() as conn:
-            result = await conn.execute(
-                text(
-                    """
-                    SELECT column_name
-                    FROM information_schema.columns
-                    WHERE table_schema = 'public' AND table_name = :table_name
-                    """
-                ),
-                {"table_name": table_name},
-            )
-            return {row[0] for row in result.fetchall()}
-
-    async def seed_pre_slice_two_draft(
-        async_engine: AsyncEngine,
-    ) -> tuple[str, str, str, str, str]:
-        owner_id = str(uuid4())
-        roster_id = str(uuid4())
-        template_id = str(uuid4())
-        draft_id = str(uuid4())
-        second_draft_id = str(uuid4())
-
-        async with async_engine.begin() as conn:
-            await conn.execute(
-                text(
-                    """
-                    INSERT INTO users (
-                        id,
-                        email,
-                        role,
-                        auth_provider,
-                        password_hash,
-                        is_active,
-                        email_verified,
-                        failed_login_attempts
-                    )
-                    VALUES (
-                        :id,
-                        :email,
-                        'superuser',
-                        'local',
-                        'hash',
-                        true,
-                        true,
-                        0
-                    )
-                    """
-                ),
-                {
-                    "id": owner_id,
-                    "email": f"{owner_id}@example.test",
-                },
-            )
-            await conn.execute(
-                text(
-                    """
-                    INSERT INTO classroom_planner_rosters (id, owner_user_id, name, students)
-                    VALUES (:id, :owner_user_id, 'Klass 7A', CAST(:students AS jsonb))
-                    """
-                ),
-                {
-                    "id": roster_id,
-                    "owner_user_id": owner_id,
-                    "students": json.dumps(
-                        [
-                            {"id": "s1", "display_name": "Ada"},
-                            {"id": "s2", "display_name": "Bo"},
-                        ]
-                    ),
-                },
-            )
-            await conn.execute(
-                text(
-                    """
-                    INSERT INTO classroom_planner_room_templates (id, owner_user_id, name, seats)
-                    VALUES (:id, :owner_user_id, 'Sal 101', CAST(:seats AS jsonb))
-                    """
-                ),
-                {
-                    "id": template_id,
-                    "owner_user_id": owner_id,
-                    "seats": json.dumps(
-                        [
-                            {"id": "seat-1", "x": 1, "y": 1},
-                            {"id": "seat-2", "x": 2, "y": 1},
-                        ]
-                    ),
-                },
-            )
-            await conn.execute(
-                text(
-                    """
-                    INSERT INTO classroom_planner_plan_drafts (
-                        id,
-                        owner_user_id,
-                        roster_id,
-                        template_id,
-                        lesson_mode_id,
-                        revision,
-                        group_count
-                    )
-                    VALUES (
-                        :id,
-                        :owner_user_id,
-                        :roster_id,
-                        :template_id,
-                        'group_work',
-                        0,
-                        2
-                    )
-                    """
-                ),
-                {
-                    "id": draft_id,
-                    "owner_user_id": owner_id,
-                    "roster_id": roster_id,
-                    "template_id": template_id,
-                },
-            )
-            await conn.execute(
-                text(
-                    """
-                    INSERT INTO classroom_planner_plan_drafts (
-                        id,
-                        owner_user_id,
-                        roster_id,
-                        template_id,
-                        lesson_mode_id,
-                        revision,
-                        group_count
-                    )
-                    VALUES (
-                        :id,
-                        :owner_user_id,
-                        :roster_id,
-                        :template_id,
-                        'group_work',
-                        0,
-                        1
-                    )
-                    """
-                ),
-                {
-                    "id": second_draft_id,
-                    "owner_user_id": owner_id,
-                    "roster_id": roster_id,
-                    "template_id": template_id,
-                },
-            )
-            await conn.execute(
-                text(
-                    """
-                    UPDATE classroom_planner_plan_drafts
-                    SET updated_at = now() + interval '1 minute'
-                    WHERE id = :draft_id
-                    """
-                ),
-                {"draft_id": second_draft_id},
-            )
-            await conn.execute(
-                text(
-                    """
-                    INSERT INTO classroom_planner_group_assignments (draft_id, student_id, group_id)
-                    VALUES (:draft_id, 's1', 'group-1'), (:draft_id, 's2', 'group-2')
-                    """
-                ),
-                {"draft_id": draft_id},
-            )
-
-        return draft_id, second_draft_id, owner_id, roster_id, template_id
-
-    async def get_backfilled_group_rows(draft_id: str) -> list[tuple[str, str, int]]:
-        async with engine.connect() as conn:
-            result = await conn.execute(
-                text(
-                    """
-                    SELECT group_id, name, sort_order
-                    FROM classroom_planner_draft_groups
-                    WHERE draft_id = :draft_id
-                    ORDER BY sort_order
-                    """
-                ),
-                {"draft_id": draft_id},
-            )
-            return [(row[0], row[1], row[2]) for row in result.fetchall()]
-
-    async def get_group_assignment_ids(draft_id: str) -> list[str]:
-        async with engine.connect() as conn:
-            result = await conn.execute(
-                text(
-                    """
-                    SELECT group_id
-                    FROM classroom_planner_group_assignments
-                    WHERE draft_id = :draft_id
-                    ORDER BY student_id
-                    """
-                ),
-                {"draft_id": draft_id},
-            )
-            return [row[0] for row in result.fetchall()]
-
-    async def get_owner_draft_statuses(owner_id: str) -> list[str]:
-        async with engine.connect() as conn:
-            result = await conn.execute(
-                text(
-                    """
-                    SELECT status
-                    FROM classroom_planner_plan_drafts
-                    WHERE owner_user_id = :owner_user_id
-                    ORDER BY updated_at DESC, created_at DESC
-                    """
-                ),
-                {"owner_user_id": owner_id},
-            )
-            return [row[0] for row in result.fetchall()]
-
-    async def get_index_names(table_name: str) -> set[str]:
-        async with engine.connect() as conn:
-            result = await conn.execute(
-                text(
-                    """
-                    SELECT indexname
-                    FROM pg_indexes
-                    WHERE schemaname = 'public' AND tablename = :table_name
-                    """
-                ),
-                {"table_name": table_name},
-            )
-            return {row[0] for row in result.fetchall()}
-
     try:
-        run_alembic_cmd(command.upgrade, pre_slice_two_revision)
-        (
-            draft_id,
-            second_draft_id,
-            owner_id,
-            roster_id,
-            template_id,
-        ) = await seed_pre_slice_two_draft(engine)
+        run_alembic_cmd(alembic_cfg, command.upgrade, pre_slice_two_revision)
+        seeded = await seed_pre_slice_two_draft(engine)
+        draft_id = seeded.draft_id
+        second_draft_id = seeded.second_draft_id
+        owner_id = seeded.owner_id
+        roster_id = seeded.roster_id
 
-        run_alembic_cmd(command.upgrade, target_revision)
+        run_alembic_cmd(alembic_cfg, command.upgrade, target_revision)
 
-        tables = await get_tables()
-        assert {
-            "classroom_planner_rosters",
-            "classroom_planner_room_templates",
-            "classroom_planner_plan_drafts",
-            "classroom_planner_share_artifacts",
-            "classroom_planner_group_assignments",
-            "classroom_planner_seat_assignments",
-            "classroom_planner_draft_groups",
-        }.issubset(tables)
-        assert "classroom_planner_student_planning_meta" not in tables
-        assert "classroom_planner_pair_constraints" not in tables
-        assert "classroom_planner_planning_profiles" not in tables
-        assert "classroom_planner_arrangement_snapshots" not in tables
+        await _assert_schema_at_target_revision(engine)
 
-        assert "fixtures" in await get_columns("classroom_planner_room_templates")
-        assert "status" in await get_columns("classroom_planner_plan_drafts")
-        assert "draft_kind" in await get_columns("classroom_planner_plan_drafts")
-        assert "last_opened_at" in await get_columns("classroom_planner_plan_drafts")
-        assert "task_entry_classroom_selection_mode" in await get_columns(
-            "classroom_planner_plan_drafts"
-        )
-        assert "guest_import_identity" in await get_columns("classroom_planner_plan_drafts")
-        share_columns = await get_columns("classroom_planner_share_artifacts")
-        assert {
-            "token_hash",
-            "source",
-            "draft_kind",
-            "source_revision",
-            "public_path",
-            "renderer_version",
-            "presentation_schema_version",
-            "presentation_hash",
-            "content_hash",
-            "presentation_payload",
-            "rendered_html",
-            "rendered_css",
-            "revoked_at",
-            "expires_at",
-        }.issubset(share_columns)
-        share_indexes = await get_index_names("classroom_planner_share_artifacts")
-        assert "ix_classroom_planner_share_artifacts_token_hash" in share_indexes
-        assert "ix_cp_share_artifacts_owner_draft_kind_created" in share_indexes
-        assert "lesson_mode_id" not in await get_columns("classroom_planner_plan_drafts")
-        assert "engine_metadata" not in await get_columns("classroom_planner_plan_drafts")
-        assert "group_count" not in await get_columns("classroom_planner_plan_drafts")
-        assert "uq_cp_active_draft_roster_kind" in await get_index_names(
-            "classroom_planner_plan_drafts"
-        )
-        assert "uq_cp_guest_import_identity" in await get_index_names(
-            "classroom_planner_plan_drafts"
-        )
-        assert "uq_cp_active_draft_owner" not in await get_index_names(
-            "classroom_planner_plan_drafts"
-        )
-
-        backfilled_groups = await get_backfilled_group_rows(draft_id)
+        backfilled_groups = await get_backfilled_group_rows(engine, draft_id)
         assert backfilled_groups == [
             (f"group-1-{draft_id.replace('-', '')[:8]}", "Grupp 1", 0),
             (f"group-2-{draft_id.replace('-', '')[:8]}", "Grupp 2", 1),
         ]
-        assert await get_group_assignment_ids(draft_id) == [
+        assert await get_group_assignment_ids(engine, draft_id) == [
             f"group-1-{draft_id.replace('-', '')[:8]}",
             f"group-2-{draft_id.replace('-', '')[:8]}",
         ]
-        assert await get_backfilled_group_rows(second_draft_id) == [
+        assert await get_backfilled_group_rows(engine, second_draft_id) == [
             (f"group-1-{second_draft_id.replace('-', '')[:8]}", "Grupp 1", 0),
         ]
-        owner_statuses = await get_owner_draft_statuses(owner_id)
+        owner_statuses = await get_owner_draft_statuses(engine, owner_id)
         assert owner_statuses.count("active") == 1
         assert "superseded" in owner_statuses
 
-        second_roster_id = str(uuid4())
-        async with engine.begin() as conn:
-            await conn.execute(
-                text(
-                    """
-                    INSERT INTO classroom_planner_rosters (id, owner_user_id, name, students)
-                    VALUES (:id, :owner_user_id, 'Klass 7B', CAST(:students AS jsonb))
-                    """
-                ),
-                {
-                    "id": second_roster_id,
-                    "owner_user_id": owner_id,
-                    "students": json.dumps([{"id": "s3", "display_name": "Cia"}]),
-                },
-            )
-            await conn.execute(
-                text(
-                    """
-                    INSERT INTO classroom_planner_plan_drafts (
-                        id,
-                        owner_user_id,
-                        roster_id,
-                        draft_kind,
-                        template_id,
-                        status,
-                        revision,
-                        last_opened_at
-                    )
-                    VALUES (
-                        :id,
-                        :owner_user_id,
-                        :roster_id,
-                        'seating',
-                        NULL,
-                        'active',
-                        0,
-                        now()
-                    )
-                    """
-                ),
-                {
-                    "id": str(uuid4()),
-                    "owner_user_id": owner_id,
-                    "roster_id": second_roster_id,
-                },
-            )
-            await conn.execute(
-                text(
-                    """
-                    INSERT INTO classroom_planner_plan_drafts (
-                        id,
-                        owner_user_id,
-                        roster_id,
-                        draft_kind,
-                        template_id,
-                        status,
-                        revision,
-                        last_opened_at
-                    )
-                    VALUES (
-                        :id,
-                        :owner_user_id,
-                        :roster_id,
-                        'grouping',
-                        NULL,
-                        'active',
-                        0,
-                        now()
-                    )
-                    """
-                ),
-                {
-                    "id": str(uuid4()),
-                    "owner_user_id": owner_id,
-                    "roster_id": roster_id,
-                },
-            )
-
-        with pytest.raises(Exception):
-            async with engine.begin() as conn:
-                await conn.execute(
-                    text(
-                        """
-                        INSERT INTO classroom_planner_plan_drafts (
-                            id,
-                            owner_user_id,
-                            roster_id,
-                            draft_kind,
-                            template_id,
-                            status,
-                            revision,
-                            last_opened_at
-                        )
-                        VALUES (
-                            :id,
-                            :owner_user_id,
-                            :roster_id,
-                            'grouping',
-                            NULL,
-                            'active',
-                            0,
-                            now()
-                        )
-                        """
-                    ),
-                    {
-                        "id": str(uuid4()),
-                        "owner_user_id": owner_id,
-                        "roster_id": roster_id,
-                    },
-                )
-
-        run_alembic_cmd(command.upgrade, "head")
-        assert backfilled_groups == await get_backfilled_group_rows(draft_id)
-
-        run_alembic_cmd(command.downgrade, base_revision)
-        tables_after_downgrade = await get_tables()
-        assert "classroom_planner_rosters" not in tables_after_downgrade
-        assert "classroom_planner_room_templates" not in tables_after_downgrade
-        assert "classroom_planner_plan_drafts" not in tables_after_downgrade
-        assert "classroom_planner_arrangement_snapshots" not in tables_after_downgrade
-
-        run_alembic_cmd(command.upgrade, target_revision)
-        tables_after_reupgrade = await get_tables()
-        assert "classroom_planner_draft_groups" in tables_after_reupgrade
-        assert "classroom_planner_share_artifacts" in tables_after_reupgrade
-        assert "classroom_planner_student_planning_meta" not in tables_after_reupgrade
-        assert "classroom_planner_arrangement_snapshots" not in tables_after_reupgrade
-        assert "classroom_planner_pair_constraints" not in tables_after_reupgrade
-        assert "classroom_planner_planning_profiles" not in tables_after_reupgrade
-        assert "fixtures" in await get_columns("classroom_planner_room_templates")
-        assert "draft_kind" in await get_columns("classroom_planner_plan_drafts")
-        assert "task_entry_classroom_selection_mode" in await get_columns(
-            "classroom_planner_plan_drafts"
+        await insert_second_roster_with_active_drafts(
+            engine, owner_id=owner_id, roster_id=roster_id
         )
-        assert "guest_import_identity" in await get_columns("classroom_planner_plan_drafts")
-        assert "lesson_mode_id" not in await get_columns("classroom_planner_plan_drafts")
-        assert "engine_metadata" not in await get_columns("classroom_planner_plan_drafts")
+        with pytest.raises(Exception):
+            await insert_active_grouping_draft(engine, owner_id=owner_id, roster_id=roster_id)
+
+        run_alembic_cmd(alembic_cfg, command.upgrade, "head")
+        assert backfilled_groups == await get_backfilled_group_rows(engine, draft_id)
+
+        run_alembic_cmd(alembic_cfg, command.downgrade, base_revision)
+        await _assert_schema_after_downgrade(engine)
+
+        run_alembic_cmd(alembic_cfg, command.upgrade, target_revision)
+        await _assert_schema_after_reupgrade(engine)
     finally:
         await engine.dispose()

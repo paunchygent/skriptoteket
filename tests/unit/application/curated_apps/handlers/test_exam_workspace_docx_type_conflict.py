@@ -30,6 +30,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeExamItemKind,
     NativeParseOrigin,
 )
+from tests.unit.application.curated_apps.handlers.docx_conversion_cache import independent_copy
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
     ReplayProvider,
     build_replay,
@@ -121,7 +122,7 @@ _CONVERTED: dict[tuple[str, ...], tuple[list[str], DocxConversionOutcome]] = {}
 
 
 async def _convert(gap_values: list[str] | None = None):
-    """Convert once per process and gap values; every test only reads the frozen outcome."""
+    """Convert once per process and gap values; every call returns its own deep copies."""
     values = ["its"] if gap_values is None else gap_values
     key = tuple(values)
     if key not in _CONVERTED:
@@ -129,7 +130,7 @@ async def _convert(gap_values: list[str] | None = None):
         outcome = await replay.pipeline.convert(job=replay.job())
         _CONVERTED[key] = (list(replay.provider.request_ids), outcome)
     request_ids, outcome = _CONVERTED[key]
-    return request_ids, outcome
+    return list(request_ids), independent_copy(outcome)
 
 
 def test_the_recorded_conflict_states_a_key_source_over_an_incomplete_key():

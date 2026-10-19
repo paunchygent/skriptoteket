@@ -45,13 +45,17 @@ application tests.
   `tests/conftest.py`: a run that selects fewer than 12 files runs
   in-process; a larger run gets one worker per 6 files, at least 2 and at most
   12 (`MAX_WORKERS`, user decision 2026-10-19). 10-15 agents run small focused runs on Hemma while a
-  full suite runs, so small runs stay off the worker pool.
+  full suite runs, so small runs stay off the worker pool. A `--pyargs`
+  package is sized by its files; a selection the hook cannot count gets the
+  cap.
+- An explicit `-n <count>` above 12 and a negative `-n` or `--maxprocesses`
+  stop with a usage error.
 - A test file whose tests together take minutes (a parametrized sweep)
   declares `# xdist-weight: <n>` on its first line and counts as `n` files, so
   a focused run of it still gets workers. Give it one weight unit per ~2 s of
   serial time.
 - `pdm run pytest <target>` is the focused command. Pass `-q` or `-v` only
-  when the run needs it; `-v` on 24 workers prints one line per test.
+  when the run needs it; `-v` on 12 workers prints one line per test.
 - A serial run (`-n 0`, `--pdb`, or overridden `addopts`) stops with a usage
   error unless it states why with `--serial-reason "<reason>"`. Valid reasons:
   stepping through a test with `--pdb`, or reading live log output of one

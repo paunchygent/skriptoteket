@@ -45,7 +45,7 @@ from tests.unit.application.curated_apps.handlers.labeler_source_memo import (
     memoise_labeler_source,
 )
 
-pytestmark = [pytest.mark.unit, pytest.mark.asyncio]
+pytestmark = pytest.mark.unit
 
 
 @pytest.fixture(autouse=True)
@@ -152,14 +152,135 @@ def _heading_total(chunk: DocxChunk) -> bool:
     return chunk.kind == "heading" and printed_points((chunk,)) is not None
 
 
+# Every anchor of a printed points line or a heading that prints a total, per recorded exam.
+# Recorded here so that collecting the sweep parses no DOCX; the drift test below compares it
+# with the parsed corpus when it runs.
+_LINES: dict[str, tuple[str, ...]] = {
+    "bf26_diagnostic_grammar_test_ht26_med_facit": ("body:0003",),
+    "bf26_english_1_unit_test_kap_1_2_med_facit": (
+        "body:0003",
+        "body:0005",
+        "body:0057",
+        "body:0073",
+        "body:0095",
+        "body:0127",
+    ),
+    "chapter_4_poetry_and_lyrics_quiz_med_facit": (
+        "body:0003",
+        "body:0032",
+        "body:0038",
+        "body:0044",
+        "body:0050",
+        "body:0056",
+        "body:0062",
+        "body:0068",
+        "body:0074",
+        "body:0080",
+        "body:0086",
+        "body:0092",
+        "body:0098",
+        "body:0104",
+        "body:0111",
+        "body:0117",
+        "body:0123",
+        "body:0129",
+        "body:0135",
+        "body:0141",
+        "body:0147",
+    ),
+    "metodprov_vetenskaplig_metod_med_facit": (
+        "body:0003",
+        "body:0005",
+        "body:0013",
+        "body:0021",
+        "body:0029",
+        "body:0037",
+        "body:0045",
+        "body:0053",
+        "body:0061",
+        "body:0069",
+        "body:0077",
+        "body:0085",
+        "body:0093",
+        "body:0101",
+        "body:0109",
+        "body:0117",
+        "body:0125",
+    ),
+    "sa24_solid_gold_3_unit_3_discuss_and_argue_med_facit": (
+        "body:0003",
+        "body:0106",
+        "body:0141",
+    ),
+    "svenska_2_grammatik_omprov_variant_1_med_facit": (
+        "body:0004",
+        "body:0006",
+        "body:0013",
+        "body:0022",
+        "body:0030",
+        "body:0034",
+        "body:0042",
+        "body:0049",
+        "body:0053",
+        "body:0063",
+        "body:0070",
+        "body:0074",
+        "body:0094",
+    ),
+    "svenska_2_grammatik_omprov_variant_2_med_facit": (
+        "body:0004",
+        "body:0006",
+        "body:0013",
+        "body:0022",
+        "body:0030",
+        "body:0034",
+        "body:0042",
+        "body:0049",
+        "body:0053",
+        "body:0063",
+        "body:0070",
+        "body:0074",
+        "body:0094",
+    ),
+    "svenska_2_kursavslutande_prov_med_facit": (
+        "body:0004",
+        "body:0006",
+        "body:0055",
+        "body:0059",
+        "body:0064",
+        "body:0070",
+        "body:0076",
+        "body:0082",
+        "body:0087",
+        "body:0091",
+        "body:0096",
+        "body:0102",
+        "body:0108",
+        "body:0114",
+    ),
+}
+
+
 def _cases() -> list[tuple[str, str, str]]:
     return [
-        (exam, chunk.anchor, placement)
-        for exam in recorded_exams()
-        for chunk in corpus_chunks(exam)
-        if line_points(chunk) is not None or _heading_total(chunk)
+        (exam, anchor, placement)
+        for exam, anchors in _LINES.items()
+        for anchor in anchors
         for placement in _PLACEMENTS
     ]
+
+
+def _counted_anchors(exam: str) -> tuple[str, ...]:
+    return tuple(
+        chunk.anchor
+        for chunk in corpus_chunks(exam)
+        if line_points(chunk) is not None or _heading_total(chunk)
+    )
+
+
+def test_the_recorded_points_lines_are_the_corpus_points_lines():
+    assert tuple(_LINES) == recorded_exams()
+    assert {exam: _counted_anchors(exam) for exam in _LINES} == _LINES
 
 
 Batches = Counter[tuple[frozenset[str], frozenset[str]]]

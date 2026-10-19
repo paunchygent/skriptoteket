@@ -5,6 +5,7 @@ key no longer ends the request, and a recording without its ``.request.txt`` sid
 be served (TASK-SKRIPT-REP-0046).
 """
 
+import copy
 from dataclasses import replace
 from pathlib import Path
 
@@ -54,7 +55,7 @@ async def _label_requests(
     """The recording served to each label request of one exam, and those requests.
 
     The exam's pipeline runs once per process; every caller gets its own copies of the
-    immutable result.
+    cached result: the request models carry mutable schemas, so each is deep-copied.
     """
     key = (exam, root, corpus)
     if key not in _CONVERTED:
@@ -65,7 +66,7 @@ async def _label_requests(
         )
         _CONVERTED[key] = (tuple(replay.provider.recording_ids.items()), labels)
     ids, labels = _CONVERTED[key]
-    return dict(ids), list(labels)
+    return dict(ids), copy.deepcopy(list(labels))
 
 
 def _copy(name: str, directory: Path, *, key: str | None = None) -> None:

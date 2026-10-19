@@ -2,13 +2,14 @@
 
 A sweep that converts one exam hundreds of times, changing only the grouping, repeats the same
 source-DOCX projection in every conversion. The projection is a pure function of the bytes and
-returns an immutable value, so each test process computes it once per document (production
-converts each document once, so the cache lives here). Nothing the pipeline decides from the
-grouping, the recordings or the model replies is cached.
+is computed once per test process and document (production converts each document once, so the
+cache lives here); every call returns its own copy of the mutable maps. Nothing the pipeline
+decides from the grouping, the recordings or the model replies is cached.
 """
 
 from __future__ import annotations
 
+from dataclasses import replace
 from functools import cache
 
 import pytest
@@ -27,13 +28,14 @@ def _projected(content: bytes) -> LabelerSource:
 
 
 def _memoised_source(_labeler: PythonDocxLabelerMarkdown, *, content: bytes) -> LabelerSource:
-    return _projected(content)
+    cached = _projected(content)
+    return replace(cached, images=dict(cached.images), unavailable=dict(cached.unavailable))
 
 
 def memoise_labeler_source(monkeypatch: pytest.MonkeyPatch) -> None:
     """Replace the labeler source projection by its cached twin.
 
-    ``LabelerSource`` is frozen and exposes its images and unavailable reasons as read-only
-    mappings; the pipeline only reads them.
+    The producer fills ``images`` and ``unavailable`` with plain dicts, so each call gets fresh
+    dict copies; the chunks are frozen and shared.
     """
     monkeypatch.setattr(PythonDocxLabelerMarkdown, "source", _memoised_source)

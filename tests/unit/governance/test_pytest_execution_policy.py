@@ -9,11 +9,12 @@ from pathlib import Path
 
 import pytest
 
-from tests.conftest import auto_worker_count, file_weight
+from tests.conftest import MAX_WORKERS, auto_worker_count, file_weight, selected_test_files
 
 ROOT = Path(__file__).resolve().parents[3]
 SMALL_TARGET = "tests/unit/domain/curated_apps/test_models.py"
 USAGE_ERROR = 4
+PYARGS_PACKAGE = "tests.unit.web.apps.classroom_planner"
 
 
 def _run_pytest(*args: str) -> subprocess.CompletedProcess[str]:
@@ -56,6 +57,64 @@ def test_serial_run_with_reason_runs_and_reports_the_reason() -> None:
 
     assert completed.returncode == 0, completed.stdout + completed.stderr
     assert "serial run: live log of one test" in completed.stdout
+
+
+@pytest.mark.parametrize(
+    "worker_args",
+    [("-n", "-1"), ("-n", "2", "--maxprocesses=-1")],
+    ids=["negative-n", "negative-maxprocesses"],
+)
+def test_a_negative_worker_setting_is_refused(worker_args: tuple[str, ...]) -> None:
+    completed = _run_pytest(*worker_args)
+
+    assert completed.returncode == USAGE_ERROR, completed.stdout + completed.stderr
+    assert "negative" in completed.stderr
+
+
+def test_an_explicit_worker_count_above_the_cap_is_refused() -> None:
+    completed = _run_pytest("-n", str(MAX_WORKERS + 1))
+
+    assert completed.returncode == USAGE_ERROR, completed.stdout + completed.stderr
+    assert f"at most {MAX_WORKERS} workers" in completed.stderr
+
+
+def test_a_dotted_package_is_sized_by_its_files() -> None:
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "pytest",
+            "-p",
+            "no:cacheprovider",
+            "--pyargs",
+            PYARGS_PACKAGE,
+        ],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stdout + completed.stderr
+    assert "created: 2/2 workers" in completed.stdout
+
+
+def test_a_missing_path_is_reported_instead_of_running_nothing_on_workers() -> None:
+    completed = subprocess.run(
+        [sys.executable, "-m", "pytest", "-p", "no:cacheprovider", "tests/unit/no_such_file.py"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert completed.returncode == USAGE_ERROR, completed.stdout + completed.stderr
+    assert "file or directory not found: tests/unit/no_such_file.py" in completed.stderr
+
+
+def test_a_selection_that_names_no_test_file_cannot_be_counted() -> None:
+    assert selected_test_files(["tests.unit.no_such_package"], base=ROOT, pyargs=True) is None
+    assert selected_test_files(["tests/unit/no_such_dir"], base=ROOT, pyargs=False) is None
 
 
 def test_blank_serial_reason_is_refused() -> None:

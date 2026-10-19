@@ -61,6 +61,8 @@ pdm run test-simulations
 - The worker count follows the selection: fewer than 12 files run
   in-process, a larger run gets one worker per 6 files, at most 12 workers
   (`MAX_WORKERS`). A sweep file that declares `# xdist-weight: <n>` counts as `n` files.
+  An explicit `-n` above 12, or a negative `-n` or `--maxprocesses`, stops
+  with a usage error.
 - `pdm run test-docker` runs the Docker integration lane. Each worker starts
   one Postgres container and migrates one template database; every module
   gets its own copy of it.

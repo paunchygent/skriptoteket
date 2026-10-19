@@ -12,11 +12,10 @@ from __future__ import annotations
 import io
 import os
 import pickle
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from types import MappingProxyType
-from typing import Any
 
 import pytest
 from filelock import FileLock
@@ -62,21 +61,38 @@ class ConvertedExam:
     progress: ProgressTrace
 
 
-def _read_only(data: dict[Any, Any]) -> MappingProxyType[Any, Any]:
+def _read_only[K, V](data: dict[K, V]) -> MappingProxyType[K, V]:
     return MappingProxyType(data)
 
 
-def _reduce_mapping_proxy(proxy: MappingProxyType[Any, Any]) -> tuple[Any, ...]:
+def _reduce_mapping_proxy[K, V](
+    proxy: MappingProxyType[K, V],
+) -> tuple[Callable[[dict[K, V]], MappingProxyType[K, V]], tuple[dict[K, V]]]:
+    """Pickle a read-only mapping view as the constructor call that rebuilds it.
+
+    Pickle refuses ``MappingProxyType`` itself (its class has no importable name), so the view
+    travels as a plain dict and is wrapped again on load.
+    """
     return (_read_only, (dict(proxy),))
 
 
-def _dump(converted: ConvertedExam) -> bytes:
-    """Pickle ``converted``; read-only mapping views, which pickle refuses, round-trip as such."""
+def _dump(value: object) -> bytes:
+    """Pickle ``value``; read-only mapping views round-trip as read-only views."""
     buffer = io.BytesIO()
     pickler = pickle.Pickler(buffer)
-    pickler.dispatch_table = {MappingProxyType: _reduce_mapping_proxy}  # type: ignore[attr-defined]
-    pickler.dump(converted)
+    pickler.dispatch_table = {MappingProxyType: _reduce_mapping_proxy}
+    pickler.dump(value)
     return buffer.getvalue()
+
+
+def independent_copy[T](value: T) -> T:
+    """A deep copy of ``value`` that shares nothing with it, read-only mapping views included.
+
+    ``copy.deepcopy`` refuses ``MappingProxyType``, which conversion outcomes contain; a pickle
+    round trip with the same reducer as the cache copies them without process-wide registration.
+    """
+    copied: T = pickle.loads(_dump(value))  # noqa: S301
+    return copied
 
 
 class ConversionCache:
