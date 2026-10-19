@@ -75,14 +75,35 @@ the document and event formats are unchanged.
   after the parent's go, `pdm run lint`, `pdm run typecheck`,
   `pdm run docs-validate`.
 
+### Replay outcome (2026-10-19)
+
+The ten recorded replays, dumped with documents and events (UUIDs masked) at
+the base `830f13bc` and at `14862085`, differ in exactly one item in two
+exams: `svenska_2_grammatik_omprov_variant_1_med_facit` and `variant_2`
+item_001 (Fråga 1). Each moves from `review_complete` with the reply's
+morpheme split (`a) snö + boll + ...[gap]x5`, `a) sol[gap] + ros[gap] ...`)
+to `review_required` / `source_fallback` with reason "Frågan följer inte
+provformatet: 5 luckor men 1 tom svarsrad." and its source text intact
+(`a) snöbollarnas Svar: ...`, `a) solrosornas Svar: ...`). Its formatting
+event `aligned` becomes the admission event `gap_count_mismatch` ("5 gaps for
+1 blank runs"). No other item, document field or event changes
+(`~/logs/replays-39-04-17/`, retained `evidence/read/replay.diff`).
+
 ### Resume here (2026-10-19)
 
-- State: root cause named; D4-D6 ruled by the orchestrator; G1 (review copy)
-  open with the user. Next: unit U1 (D4 rule and adversarial tests) by a junior.
+- State: U1 integrated (`14862085`, docstring repair `0a93eaee`). The focused
+  files pass (57 tests): `test_source_gap_paragraph_answer_labels.py` (five
+  of its seven cases fail before the fix; two guard unchanged behaviour),
+  `test_exam_workspace_docx_inline_answer_key_replay.py` (both variants fail
+  before the fix), plus the 39-04-16 gap test files. Lint, backend typecheck
+  and docs-validate pass. Frontend is not touched (`vue-tsc` is not installed
+  in this worktree).
+- Next: the domain suite after the orchestrator's go; then merge `origin/main`
+  once TASK-SKRIPT-39-04-15 lands (D6) and rerun the tests and replays.
+- Open: G1 (review copy) with the user.
 - Branch `codex/task-skript-39-04-17-remote`, worktree
-  `/home/paunchygent/apps/skriptoteket-task-skript-39-04-17-remote`; never pushed.
-- Module overlap with TASK-SKRIPT-39-04-15 (`source_gap_paragraphs.py`)
-  reported to the parent.
+  `/home/paunchygent/apps/skriptoteket-task-skript-39-04-17-remote`; never
+  pushed.
 - Retained root:
   `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a151da-eb66-7449-b7af-fb972ebb49f4`.
 
@@ -94,12 +115,12 @@ the document and event formats are unchanged.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| D1  | The rule applies to gap_fill body paragraphs aligned (`SourceFormatting.output_anchors`) to a source paragraph whose 39-04-16 build span holds no blank run and that carries an inline answer label (`ANSWER_LABEL`). Decided by the implementation lead from the root cause.                                                                                                                                                                                                                                     |
-| D2  | No wording comparison and no fallback: the reply's wording never replaces the source wording in such a paragraph (39-04-16 D8, ST-SKRIPT-39-04).                                                                                                                                                                                                                                                                                                                                                                  |
-| D3  | Owning story is ST-SKRIPT-39-04; the task builds on main at `7bcc7f5b7`. Replay identity outside the two svenska_2 item_001 is the regression bar.                                                                                                                                                                                                                                                                                                                                                                |
-| D4  | In a gap_fill item, a source paragraph with no blank run before an inline answer label (`ANSWER_LABEL`) has one blank run at the label's place. The paragraph is built from source up to the label (39-04-16 D2 span, with the gap after the trimmed text: `a) solrosornas [gap]`). A reply gap count other than 1 raises `GapCountMismatchError`, and admission sends the item to review (39-04-16 D5). Orchestrator ruling 2026-10-19 (option A; a merged gap would change gap ids, which 39-04-16 D4 forbids). |
-| D5  | Review with the source intact, instead of today's admitted item with the word lost, meets "never worse off than today". Orchestrator ruling 2026-10-19 on the TASK-SKRIPT-39-04-15 F2 re-review precedent (`898d311f`); no user gate.                                                                                                                                                                                                                                                                             |
-| D6  | The change stays local to `_gap_unit`, `_unit_blank_runs` and `_content_end` in `source_gap_paragraphs.py`; `source_paragraph`, which TASK-SKRIPT-39-04-15 folds its builder onto, is not touched. 39-04-15 lands first; this branch then merges `origin/main` and reruns its tests and the replays. Orchestrator ruling 2026-10-19.                                                                                                                                                                              |
-| G1  | Open user gate (copy), routed to the Mac parent 2026-10-19: the review reason for this mismatch. Until the user decides, the existing 39-04-16 D10 text built by `GapCountMismatchError.reason` is used, and the wording stays in that one place.                                                                                                                                                                                                                                                                 |
+| ID  | Decided contract term                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | The rule applies to gap_fill body paragraphs aligned (`SourceFormatting.output_anchors`) to a source paragraph whose 39-04-16 build span holds no blank run and that carries an inline answer label (`ANSWER_LABEL`). Decided by the implementation lead from the root cause.                                                                                                                                                                                                                              |
+| D2  | No wording comparison and no fallback: the reply's wording never replaces the source wording in such a paragraph (39-04-16 D8, ST-SKRIPT-39-04).                                                                                                                                                                                                                                                                                                                                                           |
+| D3  | Owning story is ST-SKRIPT-39-04; the task builds on main at `7bcc7f5b7`. Replay identity outside the two svenska_2 item_001 is the regression bar.                                                                                                                                                                                                                                                                                                                                                         |
+| D4  | In a gap_fill item, a source paragraph with no blank run before an inline answer label (`ANSWER_LABEL`) has one blank run at the label's place. The paragraph is built from source up to the label (39-04-16 D2 span, the gap at the label's place: `a) solrosornas [gap]`). A reply gap count other than 1 raises `GapCountMismatchError`, and admission sends the item to review (39-04-16 D5). Orchestrator ruling 2026-10-19 (option A; a merged gap would change gap ids, which 39-04-16 D4 forbids). |
+| D5  | Review with the source intact, instead of today's admitted item with the word lost, meets "never worse off than today". Orchestrator ruling 2026-10-19 on the TASK-SKRIPT-39-04-15 F2 re-review precedent (`898d311f`); no user gate.                                                                                                                                                                                                                                                                      |
+| D6  | The change stays local to `_gap_unit`, `_unit_blank_runs` and `_content_end` in `source_gap_paragraphs.py`; `source_paragraph`, which TASK-SKRIPT-39-04-15 folds its builder onto, is not touched. 39-04-15 lands first; this branch then merges `origin/main` and reruns its tests and the replays. Orchestrator ruling 2026-10-19.                                                                                                                                                                       |
+| G1  | Open user gate (copy), routed to the Mac parent 2026-10-19: the review reason for this mismatch. Until the user decides, the existing 39-04-16 D10 text built by `GapCountMismatchError.reason` is used, and the wording stays in that one place.                                                                                                                                                                                                                                                          |
