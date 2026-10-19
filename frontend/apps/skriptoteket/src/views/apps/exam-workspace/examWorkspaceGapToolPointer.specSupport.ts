@@ -29,6 +29,9 @@ export const GAP_POINTER_ORIGIN_PX = 50;
 /** Views already carrying the stubbed grid; the stub installs once per view. */
 const stubbedViews = new WeakSet<object>();
 
+/** Views already carrying the stubbed `posAtCoords`; the stub installs once per view. */
+const stubbedPositions = new WeakSet<object>();
+
 /**
  * jsdom has no layout: every document position gets a fixed 10px column, so
  * a clientX inside one column tells exactly which character the pointer hit.
@@ -87,4 +90,42 @@ export function dispatchGapToolClick(editor: Editor, pos: number, clientX: numbe
     return result;
   });
   return result;
+}
+
+/**
+ * jsdom has no layout, so ProseMirror's `posAtCoords` (which reads the DOM
+ * through `caretRangeFromPoint`) finds nothing: stub it with the inverse of
+ * the linear character grid, so a real DOM `mousedown` resolves to the same
+ * document position a real browser would report for that `clientX`. The
+ * floor keeps clicks inside a character on that character's start boundary,
+ * which the click path checks first. Installing twice on the same view
+ * keeps the first stub.
+ */
+export function stubLinearGapPointerPositions(editor: Editor): void {
+  if (stubbedPositions.has(editor.view)) {
+    return;
+  }
+  stubbedPositions.add(editor.view);
+  stubLinearGapPointerGeometry(editor);
+  vi.spyOn(editor.view, "posAtCoords").mockImplementation((coords: { left: number; top: number }) => {
+    const size = editor.view.state.doc.content.size;
+    const pos = Math.min(Math.max(Math.floor((coords.left - GAP_POINTER_ORIGIN_PX) / GAP_POINTER_CHAR_PX), 0), size);
+    return { pos, inside: pos };
+  });
+}
+
+/**
+ * A real DOM press pair through ProseMirror's own mouse handling (its
+ * single/double click classification included), as a real browser routes a
+ * click: `mousedown` with the press count, then `mouseup` with the same
+ * count. Returns after the pair dispatched; the caller settles the tool's
+ * deferred release check. Needs `stubLinearGapPointerPositions`.
+ */
+export function pressGapToolClick(editor: Editor, surface: HTMLElement, clientX: number, detail: number): void {
+  surface.dispatchEvent(
+    new MouseEvent("mousedown", { bubbles: true, cancelable: true, button: 0, clientX, detail }),
+  );
+  surface.dispatchEvent(
+    new MouseEvent("mouseup", { bubbles: true, cancelable: true, button: 0, clientX, detail }),
+  );
 }

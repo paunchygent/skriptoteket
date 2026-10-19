@@ -144,6 +144,44 @@ describe("useExamWorkspaceEditLease on the guest lease", () => {
     }
   });
 
+  it("takes the lease back on the next heartbeat after yielding it", async () => {
+    const context = setupGuestLeases();
+    const firstEvents: { acquired: string[]; flushed: string[] } = { acquired: [], flushed: [] };
+    const secondEvents: { acquired: string[]; flushed: string[] } = { acquired: [], flushed: [] };
+    const first = context.open("tab-a", firstEvents);
+    await flushPromises();
+    const second = context.open("tab-b", secondEvents);
+    try {
+      await flushPromises();
+      const taking = second.lease.requestTakeover();
+      await flushPromises();
+      expect(firstEvents.flushed).toEqual(["stored"]);
+      await vi.advanceTimersByTimeAsync(1_000);
+      await taking;
+      expect(first.lease.readOnly.value).toBe(true);
+      expect(second.lease.readOnly.value).toBe(false);
+
+      // The taking tab closes: its dispose release frees the lease.
+      second.stop();
+      for (let attempt = 0; attempt < 20; attempt += 1) {
+        const loaded = await context.storage.load();
+        if (loaded === null) {
+          break;
+        }
+        await Promise.resolve();
+      }
+      expect(await context.storage.load()).toBeNull();
+
+      await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_EDIT_LEASE_HEARTBEAT_MS);
+      expect(await context.storage.load()).toMatchObject({ tabId: "tab-a" });
+      expect(first.lease.readOnly.value).toBe(false);
+      expect(firstEvents.acquired).toEqual(["reloaded"]);
+    } finally {
+      first.stop();
+      second.stop();
+    }
+  });
+
   it("lets a waiting tab claim after 15 s without renewal", async () => {
     const context = setupGuestLeases();
     const firstEvents = { acquired: [] as string[], flushed: [] as string[] };

@@ -8,8 +8,10 @@
  *   holder renews the lease every 5 s, and a lease not renewed for 15 s is
  *   dead, so a crashed tab stops blocking after 15 s. Every write carries the
  *   tab id, and a write refused with `EDIT_LEASE_HELD` turns the holder
- *   read-only through `noteLostLease` while its pending edit stays visible.
- *   The holder sees a takeover request at its next renew: it stores its
+ *   read-only through `noteLostLease` while its pending edit stays visible;
+ *   a yielded or refused tab keeps retrying its claim at the heartbeat
+ *   cadence and takes the lease back as soon as it is free, with no
+ *   `Ta över`. The holder sees a takeover request at its next renew: it stores its
  *   pending edit, releases the lease and turns read-only. `Ta över` requests
  *   the lease and claims it once the holder has released or its lease has
  *   expired, then reads the newest state. A closed tab releases its lease on
@@ -129,8 +131,11 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
   }
 
   function noteLostLease(): void {
+    // A yielded or refused tab stays read-only but keeps the heartbeat: the
+    // next ticks retry the claim at the heartbeat cadence and take the lease
+    // back as soon as it is free, exactly like a tab that opened read-only.
+    // Only dispose, the lineage switch and `pagehide` stop the heartbeat.
     holding.value = false;
-    stopHeartbeat();
   }
 
   async function tryRelease(lineageId: string, keepalive = false): Promise<void> {

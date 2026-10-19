@@ -29,7 +29,10 @@
  *   Enter on a non-empty keyboard selection does the same:
  *   a click on a space or punctuation only places
  *   the caret, and a release converts only after a primary press started in
- *   this editor. The second click of a double click converts nothing. Still
+ *   this editor. The second click of a double click converts no new gap, but
+ *   a double-click press on a kept word still restores it, so a kept-word
+ *   click that lands fast on the reverted chip's spot restores at once.
+ *   Still
  *   with the tool on, a click on a gap emits `revertGap` instead of opening
  *   its popover, Enter or Space on a selected gap still opens its popover,
  *   a click on a kept word emits `restoreKeptGap` with the clicked block's
@@ -207,6 +210,14 @@ const editor = useEditor({
       }
       return handleMakeGapClick(view, pos, event);
     },
+    handleDoubleClick: (view, pos, event) => {
+      const kept = keptGapAtDoubleClick(view, pos, event);
+      if (kept !== null) {
+        emit("restoreKeptGap", kept.keptGapId, kept.blockIndex);
+        return true;
+      }
+      return false;
+    },
     handleDOMEvents: {
       mousedown: (_view, event) => {
         handleGapToolMouseDown(event);
@@ -287,6 +298,7 @@ const {
   handleGapToolMouseDown,
   handleGapToolMouseUp,
   keptGapAtPointer,
+  keptGapAtDoubleClick,
 } = useExamWorkspaceMakeGap({
   editor,
   canMakeGap,

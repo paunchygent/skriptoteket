@@ -107,6 +107,30 @@ describe("ExamWorkspaceGapPopover dropdown options", () => {
     filled.unmount();
   });
 
+  it("focuses the Lägg till alternativ button for a dropdown gap with no options", () => {
+    const wrapper = mountPopover(dropdownGap({ correct_option_id: null, options: [] }));
+    const add = document.querySelector('[data-test="exam-workspace-gap-option-add"]');
+    const active = document.activeElement;
+    wrapper.unmount();
+    expect(add instanceof HTMLButtonElement).toBe(true);
+    expect(active).toBe(add);
+  });
+
+  it("keeps option focus for a dropdown gap with options, not the add button", () => {
+    const empty = mountPopover(
+      dropdownGap({ options: [...options(), { body: plainBody(" "), choice_id: "choice_007" }] }),
+    );
+    const add = document.querySelector('[data-test="exam-workspace-gap-option-add"]');
+    expect(document.activeElement).toBe(text(empty, "choice_007").element);
+    expect(document.activeElement).not.toBe(add);
+    empty.unmount();
+    const filled = mountPopover(dropdownGap());
+    const filledAdd = document.querySelector('[data-test="exam-workspace-gap-option-add"]');
+    expect(document.activeElement).toBe(text(filled, "choice_003").element);
+    expect(document.activeElement).not.toBe(filledAdd);
+    filled.unmount();
+  });
+
   it("emits the new correct option from the radio as structural and stays open", async () => {
     const wrapper = mountPopover(dropdownGap());
     await documentControl(sel("correct", "choice_005")).setValue(true);
