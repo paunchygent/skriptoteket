@@ -28,7 +28,7 @@ class CapturingPreviewHandler:
 
     def __init__(self, response: ExamWorkspacePrintPreviewResponse) -> None:
         self.response = response
-        self.calls: list[tuple[UUID, UUID, int, UUID]] = []
+        self.calls: list[tuple[UUID, UUID, int, UUID, UUID]] = []
 
     async def handle(
         self,
@@ -37,8 +37,9 @@ class CapturingPreviewHandler:
         lineage_id: UUID,
         expected_revision: int,
         expected_cursor: UUID,
+        step_id: UUID,
     ) -> ExamWorkspacePrintPreviewResponse:
-        self.calls.append((actor.id, lineage_id, expected_revision, expected_cursor))
+        self.calls.append((actor.id, lineage_id, expected_revision, expected_cursor, step_id))
         return self.response
 
 
@@ -58,19 +59,30 @@ async def test_route_delegates_the_working_state_preview() -> None:
     handler = CapturingPreviewHandler(response)
     lineage_id = uuid4()
     cursor = uuid4()
+    step_id = uuid4()
     user = make_user()
 
     result = await api.preview_exam_workspace_document_print(
         lineage_id=lineage_id,
         expected_revision=2,
         expected_cursor=cursor,
+        step_id=step_id,
         registry=FakeRegistry(),
         handler=handler,
         user=user,
     )
 
     assert result is response
-    assert handler.calls == [(user.id, lineage_id, 2, cursor)]
+    assert handler.calls == [(user.id, lineage_id, 2, cursor, step_id)]
+
+
+@pytest.mark.asyncio
+async def test_route_requires_step_id() -> None:
+    """The editor names its retained step; without it FastAPI answers 422 (R3)."""
+    import inspect
+
+    parameters = inspect.signature(api.preview_exam_workspace_document_print).parameters
+    assert parameters["step_id"].default is inspect.Parameter.empty
 
 
 @pytest.mark.asyncio
@@ -81,6 +93,7 @@ async def test_route_json_carries_pages_question_pages_and_status() -> None:
         lineage_id=uuid4(),
         expected_revision=2,
         expected_cursor=uuid4(),
+        step_id=uuid4(),
         registry=FakeRegistry(),
         handler=handler,
         user=make_user(),
@@ -108,6 +121,7 @@ async def test_route_checks_app_access_before_the_preview() -> None:
             lineage_id=uuid4(),
             expected_revision=2,
             expected_cursor=uuid4(),
+            step_id=uuid4(),
             registry=MissingAppRegistry(),
             handler=handler,
             user=make_user(),

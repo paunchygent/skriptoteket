@@ -2,8 +2,8 @@
 
 The export handler and the print preview need the actor-owned head revision's
 parsed container under the same lineage lock and the same ``expected_revision``
-guard. The print preview instead renders the working snapshot the editor stands
-on, so it reads the head plus the history and is guarded by both the saved head
+guard. The print preview renders the retained history step the editor names, so
+it reads the head plus the history and is guarded by both the saved head
 revision and the history cursor. Each caller passes the conflict message a
 teacher sees; the shared loaders keep one transaction, lock, head read,
 not-found, parse, revision-conflict and cursor-conflict path.
@@ -83,14 +83,18 @@ async def read_exam_workspace_working_state(
     lineage_id: UUID,
     expected_revision: int,
     expected_cursor: UUID,
+    step_id: UUID,
     conflict_message: str,
 ) -> ExamWorkspaceContainerContent:
-    """Lock the lineage, render what the editor stands on, and refuse stale guards.
+    """Lock the lineage, render the requested retained history step, and refuse stale guards.
 
     The saved head revision is the file's concurrency guard; the history cursor
-    guards which working snapshot the editor stands on, so an edit autosaved as an
-    undo step renders without writing the teacher's saved file. The returned
-    container carries that snapshot's document with the saved head revision.
+    guards which working snapshot the editor saw, so an edit autosaved as an
+    undo step renders without writing the teacher's saved file. The rendered
+    step is named explicitly by ``step_id`` (baseline or stored step), because
+    undo navigation in the SPA only moves the editor's local position and never
+    the server's cursor. The returned container carries that step's document
+    with the saved head revision.
     """
     async with store.transaction(user_id=actor.id, lineage_id=lineage_id):
         await vault_files.lock_document_lineage(user_id=actor.id, document_lineage_id=lineage_id)
@@ -114,6 +118,20 @@ async def read_exam_workspace_working_state(
                     "current_cursor": str(history.cursor),
                 },
             )
-        current = codec.parse(content=history.current_step().content)
-    document = current.document.model_copy(update={"revision": head.document_version})
-    return current.model_copy(update={"document": document})
+        step = next(
+            (
+                candidate
+                for candidate in (history.baseline, *history.steps)
+                if candidate.step_id == step_id
+            ),
+            None,
+        )
+        if step is None:
+            raise DomainError(
+                code=ErrorCode.CONFLICT,
+                message=conflict_message,
+                details={"step_id": str(step_id)},
+            )
+        selected = codec.parse(content=step.content)
+    document = selected.document.model_copy(update={"revision": head.document_version})
+    return selected.model_copy(update={"document": document})

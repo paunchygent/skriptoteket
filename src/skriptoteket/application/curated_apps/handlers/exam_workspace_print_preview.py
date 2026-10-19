@@ -1,13 +1,13 @@
 """Server-side print preview for native exam workspace documents (W5).
 
-The working state the editor stands on is rendered into one PNG per printed page
-through the print renderer, so the Förhandsgranska panel can show the exam page by
-page and scroll to the selected question. The saved head revision and the history
-cursor both guard the render, and no handler here writes the teacher's saved file.
-The student copy prints drafts, so this never runs the S4 export blocker gate; a
-document the renderer cannot render at all (for example a declared picture without
-its stored payload) comes back as ``status="blocked"`` with a message instead of
-raising.
+The retained history step the editor names is rendered into one PNG per printed
+page through the print renderer, so the Förhandsgranska panel can show the exam
+page by page and scroll to the selected question. The saved head revision and
+the history cursor both guard the render, and no handler here writes the
+teacher's saved file. The student copy prints drafts, so this never runs the S4
+export blocker gate; a document the renderer cannot render at all (for example
+a declared picture without its stored payload) comes back as ``status="blocked"``
+with a message instead of raising.
 """
 
 from __future__ import annotations
@@ -46,7 +46,7 @@ _HEAD_CONFLICT_MESSAGE = "Det sparade provet har ändrats. Förhandsgranskningen
 
 
 class PreviewExamWorkspacePrintHandler:
-    """Render the working state the editor stands on into preview page images."""
+    """Render the requested retained history step into preview page images."""
 
     def __init__(
         self,
@@ -68,6 +68,7 @@ class PreviewExamWorkspacePrintHandler:
         lineage_id: UUID,
         expected_revision: int,
         expected_cursor: UUID,
+        step_id: UUID,
     ) -> ExamWorkspacePrintPreviewResponse:
         container = await read_exam_workspace_working_state(
             store=self._store,
@@ -77,6 +78,7 @@ class PreviewExamWorkspacePrintHandler:
             lineage_id=lineage_id,
             expected_revision=expected_revision,
             expected_cursor=expected_cursor,
+            step_id=step_id,
             conflict_message=_HEAD_CONFLICT_MESSAGE,
         )
         document = container.document

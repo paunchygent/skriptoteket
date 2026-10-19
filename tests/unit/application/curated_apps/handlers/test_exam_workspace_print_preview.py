@@ -169,6 +169,7 @@ async def test_ready_returns_page_data_urls_and_question_pages(env: _Env) -> Non
         lineage_id=imported.summary.lineage_id,
         expected_revision=1,
         expected_cursor=imported.history_cursor,
+        step_id=imported.history_cursor,
     )
 
     assert response.status == "ready"
@@ -193,6 +194,7 @@ async def test_a_blocked_export_state_still_renders_the_student_copy(env: _Env) 
         lineage_id=imported.summary.lineage_id,
         expected_revision=1,
         expected_cursor=imported.history_cursor,
+        step_id=imported.history_cursor,
     )
 
     assert response.status == "ready"
@@ -224,6 +226,7 @@ async def test_missing_picture_payload_returns_blocked_without_raising(env: _Env
         lineage_id=document.document_id,
         expected_revision=1,
         expected_cursor=document.document_id,
+        step_id=document.document_id,
     )
 
     assert response.status == "blocked"
@@ -248,14 +251,15 @@ async def test_stale_expected_revision_conflicts_with_the_preview_message(env: _
         ),
     )
 
+    history = await env.save_handler.history(actor=actor, lineage_id=imported.summary.lineage_id)
+
     with pytest.raises(DomainError) as exc_info:
         await _preview_handler(env).handle(
             actor=actor,
             lineage_id=imported.summary.lineage_id,
             expected_revision=1,
-            expected_cursor=(
-                await env.save_handler.history(actor=actor, lineage_id=imported.summary.lineage_id)
-            ).cursor,
+            expected_cursor=history.cursor,
+            step_id=history.position_step_id,
         )
 
     assert exc_info.value.code is ErrorCode.CONFLICT
@@ -273,6 +277,7 @@ async def test_unknown_lineage_is_not_found(env: _Env) -> None:
             lineage_id=UUID(int=0),
             expected_revision=1,
             expected_cursor=uuid4(),
+            step_id=uuid4(),
         )
 
     assert exc_info.value.code is ErrorCode.NOT_FOUND

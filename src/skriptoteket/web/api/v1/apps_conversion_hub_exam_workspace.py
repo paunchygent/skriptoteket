@@ -270,11 +270,12 @@ async def preview_exam_workspace_document_print(
     lineage_id: UUID,
     expected_revision: int,
     expected_cursor: UUID,
+    step_id: UUID,
     registry: FromDishka[CuratedAppRegistryProtocol],
     handler: FromDishka[PreviewExamWorkspacePrintHandlerProtocol],
     user: User = Depends(require_app_user_api),
 ) -> ExamWorkspacePrintPreviewResponse:
-    """Render the working state the editor stands on for the Förhandsgranska panel (W5)."""
+    """Render the retained history step the editor names for the Förhandsgranska panel (W5)."""
 
     require_conversion_hub_access(registry=registry, user=user)
     return await handler.handle(
@@ -282,6 +283,7 @@ async def preview_exam_workspace_document_print(
         lineage_id=lineage_id,
         expected_revision=expected_revision,
         expected_cursor=expected_cursor,
+        step_id=step_id,
     )
 
 

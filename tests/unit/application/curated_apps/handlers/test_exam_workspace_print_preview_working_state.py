@@ -9,7 +9,7 @@ HTML handed to a recording renderer, never on a simulation.
 
 from __future__ import annotations
 
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import pytest
 
@@ -67,6 +67,93 @@ async def _store_draft_step(
 
 
 @pytest.mark.asyncio
+async def test_preview_renders_the_requested_baseline_step_not_the_current_step() -> None:
+    """Undo navigation names the baseline; the preview must render those 8 lines (R3)."""
+    env = _Env()
+    actor = _actor()
+    imported = await env.seed_document(actor=actor, document=make_document(make_free_text_item()))
+    lineage = imported.summary.lineage_id
+    step = await _store_draft_step(
+        env,
+        lineage_id=lineage,
+        actor=actor,
+        cursor=imported.history_cursor,
+        document=_writing_lines(imported.document, 9),
+    )
+    assert step.history.position_step_id != imported.history_cursor
+    renderer = _FakePrintRenderer()
+
+    response = await _preview_handler(env, print_renderer=renderer).handle(
+        actor=actor,
+        lineage_id=lineage,
+        expected_revision=1,
+        expected_cursor=step.history.cursor,
+        step_id=imported.history_cursor,
+    )
+
+    assert response.status == "ready"
+    assert len(renderer.html_by_call) == 1
+    assert renderer.html_by_call[0].count(_WRITING_LINE) == _IMPORT_WRITING_LINES
+
+
+@pytest.mark.asyncio
+async def test_preview_renders_the_requested_stored_step() -> None:
+    env = _Env()
+    actor = _actor()
+    imported = await env.seed_document(actor=actor, document=make_document(make_free_text_item()))
+    lineage = imported.summary.lineage_id
+    step = await _store_draft_step(
+        env,
+        lineage_id=lineage,
+        actor=actor,
+        cursor=imported.history_cursor,
+        document=_writing_lines(imported.document, 9),
+    )
+    renderer = _FakePrintRenderer()
+
+    response = await _preview_handler(env, print_renderer=renderer).handle(
+        actor=actor,
+        lineage_id=lineage,
+        expected_revision=1,
+        expected_cursor=step.history.cursor,
+        step_id=step.history.position_step_id,
+    )
+
+    assert response.status == "ready"
+    assert renderer.html_by_call[0].count(_WRITING_LINE) == 9
+
+
+@pytest.mark.asyncio
+async def test_preview_with_an_unretained_step_id_conflicts() -> None:
+    env = _Env()
+    actor = _actor()
+    imported = await env.seed_document(actor=actor, document=make_document(make_free_text_item()))
+    lineage = imported.summary.lineage_id
+    step = await _store_draft_step(
+        env,
+        lineage_id=lineage,
+        actor=actor,
+        cursor=imported.history_cursor,
+        document=_writing_lines(imported.document, 9),
+    )
+    renderer = _FakePrintRenderer()
+    missing = uuid4()
+
+    with pytest.raises(DomainError) as error:
+        await _preview_handler(env, print_renderer=renderer).handle(
+            actor=actor,
+            lineage_id=lineage,
+            expected_revision=1,
+            expected_cursor=step.history.cursor,
+            step_id=missing,
+        )
+
+    assert error.value.code is ErrorCode.CONFLICT
+    assert error.value.details == {"step_id": str(missing)}
+    assert renderer.html_by_call == []
+
+
+@pytest.mark.asyncio
 async def test_preview_renders_the_persisted_draft_step_not_the_saved_head() -> None:
     env = _Env()
     actor = _actor()
@@ -88,6 +175,7 @@ async def test_preview_renders_the_persisted_draft_step_not_the_saved_head() -> 
         lineage_id=lineage,
         expected_revision=1,
         expected_cursor=step.history.cursor,
+        step_id=step.history.position_step_id,
     )
 
     assert response.status == "ready"
@@ -138,6 +226,7 @@ async def test_preview_follows_the_editor_after_undo_rotates_the_cursor() -> Non
         lineage_id=lineage,
         expected_revision=1,
         expected_cursor=restored.history.cursor,
+        step_id=restored.history.position_step_id,
     )
 
     assert response.status == "ready"
@@ -166,6 +255,7 @@ async def test_stale_expected_cursor_conflicts_and_never_renders() -> None:
             lineage_id=lineage,
             expected_revision=1,
             expected_cursor=stale_cursor,
+            step_id=imported.history_cursor,
         )
 
     assert error.value.code is ErrorCode.CONFLICT
@@ -197,6 +287,7 @@ async def test_stale_expected_revision_conflicts_with_a_fresh_cursor_and_never_r
             lineage_id=lineage,
             expected_revision=2,
             expected_cursor=step.history.cursor,
+            step_id=step.history.position_step_id,
         )
 
     assert error.value.code is ErrorCode.CONFLICT
@@ -237,6 +328,7 @@ async def test_a_picture_referenced_in_the_draft_step_renders_ready() -> None:
         lineage_id=lineage,
         expected_revision=1,
         expected_cursor=step.history.cursor,
+        step_id=step.history.position_step_id,
     )
 
     assert response.status == "ready"
@@ -266,6 +358,7 @@ async def test_a_preview_writes_neither_the_saved_file_nor_history() -> None:
         lineage_id=lineage,
         expected_revision=1,
         expected_cursor=step.history.cursor,
+        step_id=step.history.position_step_id,
     )
 
     assert response.status == "ready"
