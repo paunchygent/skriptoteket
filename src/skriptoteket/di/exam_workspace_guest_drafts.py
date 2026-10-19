@@ -29,7 +29,6 @@ from skriptoteket.protocols.exam_workspace_guest_drafts import (
     ImportGuestExamDraftHandlerProtocol,
 )
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
-from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
 
 class ExamWorkspaceGuestDraftsProvider(Provider):
@@ -48,7 +47,6 @@ class ExamWorkspaceGuestDraftsProvider(Provider):
         reader: GetExamWorkspaceDocumentHandlerProtocol,
         codec: ExamWorkspaceContainerCodecProtocol,
         store: ExamWorkspaceDocumentStore,
-        uow: UnitOfWorkProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
     ) -> ImportGuestExamDraftHandlerProtocol:
@@ -57,7 +55,6 @@ class ExamWorkspaceGuestDraftsProvider(Provider):
             reader=reader,
             codec=codec,
             store=store,
-            uow=uow,
             clock=clock,
             id_generator=id_generator,
         )

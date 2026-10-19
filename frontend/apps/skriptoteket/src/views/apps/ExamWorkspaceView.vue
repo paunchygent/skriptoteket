@@ -39,7 +39,7 @@ import ExamWorkspacePhoneStrip from "./exam-workspace/ExamWorkspacePhoneStrip.vu
 import ExamWorkspaceQuestionList from "./exam-workspace/ExamWorkspaceQuestionList.vue";
 import ExamWorkspaceQuestionTools from "./exam-workspace/ExamWorkspaceQuestionTools.vue";
 import ExamWorkspaceSaveAsDialog from "./exam-workspace/ExamWorkspaceSaveAsDialog.vue";
-import ExamWorkspaceSignInPrompt from "./exam-workspace/ExamWorkspaceSignInPrompt.vue";
+import ExamWorkspaceSignInBar from "./exam-workspace/ExamWorkspaceSignInBar.vue";
 import "./exam-workspace/examWorkspace.css";
 import { examWorkspaceBlockerEntries, examWorkspaceTitleBlockerEntries } from "./exam-workspace/examWorkspaceBlockers";
 import { examWorkspaceSavedAt } from "./exam-workspace/examWorkspaceFormat";
@@ -52,12 +52,12 @@ import { isEmptyBody } from "./exam-workspace/examWorkspaceRichTextDocument";
 import { examWorkspaceExamPrintedDifference } from "./exam-workspace/examWorkspaceTotals";
 import { EXAM_WORKSPACE_STORE_KEY } from "./exam-workspace/examWorkspaceStore";
 import type { ExamWorkspaceStore } from "./exam-workspace/examWorkspaceStore";
-import { EXAM_WORKSPACE_SIGN_IN_KEY } from "./exam-workspace/examWorkspaceSignIn";
 import { useExamWorkspaceAddress } from "./exam-workspace/useExamWorkspaceAddress";
 import { useExamWorkspaceContentSuggestions } from "./exam-workspace/useExamWorkspaceContentSuggestions";
 import { useExamWorkspaceEditing } from "./exam-workspace/useExamWorkspaceEditing";
 import { useExamWorkspaceEnrichment } from "./exam-workspace/useExamWorkspaceEnrichment";
 import { useExamWorkspaceExports } from "./exam-workspace/useExamWorkspaceExports";
+import { useExamWorkspaceGuestSignIn } from "./exam-workspace/useExamWorkspaceGuestSignIn";
 import { useExamWorkspaceKeyboard } from "./exam-workspace/useExamWorkspaceKeyboard";
 import { useExamWorkspaceLayout } from "./exam-workspace/useExamWorkspaceLayout";
 import { useExamWorkspaceSaveFlow } from "./exam-workspace/useExamWorkspaceSaveFlow";
@@ -69,15 +69,6 @@ type DrawerName = "open" | "export" | "details";
 const props = defineProps<{ store: ExamWorkspaceStore }>();
 
 provide(EXAM_WORKSPACE_STORE_KEY, props.store);
-
-/** The one guest sign-in prompt; components request it through the sign-in key. */
-const signInPrompt = ref<string | null>(null);
-
-function requestSignIn(message: string): void {
-  signInPrompt.value = message;
-}
-
-provide(EXAM_WORKSPACE_SIGN_IN_KEY, requestSignIn);
 
 const layout = useExamWorkspaceLayout();
 const toast = useToast();
@@ -102,6 +93,14 @@ const {
   titleWithoutText,
   workspaceDocument,
 } = editing;
+
+const { dismissSignInPrompt, settleForDeparture, signInPrompt } = useExamWorkspaceGuestSignIn({
+  history,
+  store: props.store,
+  workspaceDocument,
+});
+
+defineExpose({ settleForDeparture });
 
 const isPhone = computed(() => layout.value === "phone");
 const frame = ref<HTMLElement | null>(null);
@@ -199,7 +198,7 @@ watch(
   (lineageId, previous) => {
     showDocument(lineageId);
     // A newly opened or started exam replaces the prompt it interrupted.
-    signInPrompt.value = null;
+    dismissSignInPrompt();
     if (lineageId === null) {
       drawer.value = "open";
     } else if (lineageId !== previous && !(layout.value === "desktop" && drawer.value === "open")) {
@@ -318,20 +317,12 @@ onMounted(() => {
     >
       {{ conflictNotice }}
     </p>
-    <div
+    <ExamWorkspaceSignInBar
       v-if="signInPrompt"
-      class="ws__bar ws__signin"
-    >
-      <ExamWorkspaceSignInPrompt :message="signInPrompt" />
-      <button
-        type="button"
-        class="xw-btn xw-btn--compact"
-        data-test="exam-workspace-sign-in-prompt-dismiss"
-        @click="signInPrompt = null"
-      >
-        Stäng
-      </button>
-    </div>
+      :message="signInPrompt"
+      :depart="settleForDeparture"
+      @dismiss="dismissSignInPrompt"
+    />
     <div
       v-if="enrichment.enrichmentMessage.value || enrichment.enrichmentLookupError.value"
       class="xw-notice xw-notice--info ws__bar"

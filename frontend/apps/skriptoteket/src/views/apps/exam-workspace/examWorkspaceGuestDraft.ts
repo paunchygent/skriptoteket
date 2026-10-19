@@ -51,8 +51,6 @@ export type ExamWorkspaceGuestDraftStep = {
 };
 
 export type ExamWorkspaceGuestDraft = {
-  /** Stable for the draft's life; the sign-in handoff posts it to claim the exam once. */
-  draft_id: string;
   /** The exam document's identity; the same value a saved workspace file names. */
   lineage_id: string;
   saved_document: NativeExamDocument;
@@ -133,7 +131,6 @@ export function newGuestDraft(
     asset_ids: document.assets.map((asset) => asset.asset_id),
     baseline: { document, step_id: baselineStepId },
     cursor: baselineStepId,
-    draft_id: ids.uuid(),
     lineage_id: document.document_id,
     position_step_id: baselineStepId,
     saved_at: ids.now(),
@@ -171,7 +168,7 @@ export function guestDocumentResponse(
       name: saved.title,
       saved_at: draft.saved_at,
       title: saved.title,
-      vault_file_id: draft.draft_id,
+      vault_file_id: draft.lineage_id,
       version: saved.revision,
     },
   };

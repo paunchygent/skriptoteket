@@ -3,12 +3,14 @@
 from typing import Self
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, computed_field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from skriptoteket.application.curated_apps.exam_workspace_export_blockers import (
+    NativeDocumentWithExportBlockers,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import NativeExamDocument
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_export_rules import (
     NativeExportBlocker,
-    native_export_blockers,
 )
 
 
@@ -68,17 +70,21 @@ class ExamWorkspaceHistoryDocumentResponse(BaseModel):
     document: NativeExamDocument
 
 
-class ExamWorkspaceUndoStepResponse(BaseModel):
+class ExamWorkspaceUndoStepResponse(NativeDocumentWithExportBlockers):
     model_config = ConfigDict(frozen=True)
 
-    document: NativeExamDocument
     history: ExamWorkspaceHistoryResponse
 
-    @computed_field  # type: ignore[prop-decorator]
-    @property
-    def export_blockers(self) -> tuple[NativeExportBlocker, ...]:
-        """The export gate's verdict on the stored step, for the workspace's blocker rows."""
-        return native_export_blockers(self.document)
+    # Defaulted like the shared base (a ``mode="before"`` validator always fills
+    # it, so call sites never pass it), with the stored step's verdict
+    # description, so the serialization schema keeps the computed field's shape.
+    export_blockers: tuple[NativeExportBlocker, ...] = Field(
+        default=(),
+        description=(
+            "The export gate's verdict on the stored step, for the workspace's blocker rows."
+        ),
+        json_schema_extra={"readOnly": True},
+    )
 
 
 def history_response(history: ExamWorkspaceHistoryState) -> ExamWorkspaceHistoryResponse:

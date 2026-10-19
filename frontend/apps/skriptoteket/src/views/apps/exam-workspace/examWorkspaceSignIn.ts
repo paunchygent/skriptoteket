@@ -25,3 +25,7 @@ export function useExamWorkspaceSignIn(): (message: string) => void {
   }
   return request;
 }
+
+/** Inline copy shown when the pending edit cannot be settled before sign-in. */
+export const EXAM_WORKSPACE_DEPARTURE_FAILURE_COPY =
+  "Det gick inte att spara dina senaste ändringar i webbläsaren. Försök igen.";

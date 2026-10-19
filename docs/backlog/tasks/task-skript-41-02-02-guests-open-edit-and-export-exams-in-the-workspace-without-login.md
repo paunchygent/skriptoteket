@@ -64,11 +64,14 @@ Stop and report if the shared editor cannot run on a browser store without forki
   - F4 + R2 (c8e61d9e): `ExamWorkspaceTeacherHost.vue` hands a stored guest draft to Mina filer once on mount; an unreadable browser store hands off nothing and the workspace still renders.
   - F3b (9de1523d): blank start, G4 sign-in prompts on every AI control and the DigiExam/Word import, teacher-only controls hidden in guest mode.
 - R3: each guest control is gated once, in its component; the shared AI mode lives in `useExamWorkspaceAiMode`.
-- Open unit: the guest QTI start waits for TASK-SKRIPT-41-02-01 on main.
 - R4 (8781cfa5): the three public exam workspace route modules drop `from __future__ import annotations` (OpenAPI-safe typing).
 - R5 (aeaaa707): exam workspace component specs get the store and sign-in injections from one typed `examWorkspaceProvidersPlugin`.
 - Domain suite 2026-10-19 at bff9843c: backend 1 failed (fixed by R4), 3064 passed; frontend 51 failed in 9 specs (fixed by R5). Reruns of the failed and touched files pass (backend 82, frontend 320).
-- Next: one full Vitest run after the orchestrator's go, then the final checkpoint.
+- Independent review da90f12c at 87dbf8ee: changes_requested (`evidence/reviews/da90f12c-9823-4ac1-85e4-0c833b656ee6.md` in the retained root). Repaired as fresh junior units (lead 2, 2026-10-19), each with a test that failed before the fix: F1 one uvicorn trusted-proxy chain (no wildcard; `FORWARDED_ALLOW_IPS` from `TRUSTED_PROXY_CIDRS`; the app reads the resolved peer only); F2+F3 conditional `replaceIf`/`clearIf` browser writes and a snapshot-keyed handoff; F4 sign-in departure settles the autosave first; F7 the handoff runs inside the store's compensated transaction; F8 one typed export-blockers base model and no Any in the route tests; F9 files split under 500 lines. The repaired high findings go back to da90f12c for rereview.
+- Deploy note (F1): the Hemma deploy `.env` must set `TRUSTED_PROXY_CIDRS` to the exact nginx-proxy address (`docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' nginx-proxy`, as /32). Without it, uvicorn trusts only loopback and every guest shares the proxy address as one caller key.
+- Residual: `compose.prod.yaml` has 32 long single-token lines that fail the repo's default YAML line length (they failed at HEAD too). This is a lint-policy decision for the orchestrator.
+- Blocked: F5 (the guest QTI start) waits for TASK-SKRIPT-41-02-01 on main. F6 (a print PDF separate from the Exam.net fallback PDF) waits for TASK-SKRIPT-40-04-07, which owns the student print PDF. When each one lands, the lead merges main and integrates it here.
+- Next: one domain suite after the orchestrator's go (shared modules changed), then rereview.
 - Open findings:
   - B3 does not refuse a title that is already used in Mina filer, so a handoff can create a second exam with the same title. This is a product decision for the user.
   - The caller key is an unsalted sha256 of the client IP; rows are pruned after about 2 hours.

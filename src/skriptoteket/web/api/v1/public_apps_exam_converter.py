@@ -201,7 +201,7 @@ def _enforce_anonymous_rate_limit(
     max_requests: int,
 ) -> tuple[str | None, str]:
     _require_active_exam_converter(registry=registry)
-    client_ip = get_client_ip(request, settings=settings)
+    client_ip = get_client_ip(request)
     user_agent = get_user_agent(request)
     correlation_id_uuid = get_correlation_id(request)
     correlation_id = str(correlation_id_uuid) if correlation_id_uuid is not None else str(uuid4())

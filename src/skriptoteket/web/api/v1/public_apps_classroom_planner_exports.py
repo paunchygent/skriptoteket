@@ -95,7 +95,6 @@ async def export_public_grouping(
         max_requests=settings.PUBLIC_HELPER_SMART_RUN_MAX_REQUESTS,
         window_seconds=settings.PUBLIC_HELPER_SMART_RUN_WINDOW_SECONDS,
         registry=registry,
-        settings=settings,
         clock=clock,
         throttle=throttle,
     )
@@ -173,7 +172,6 @@ async def export_public_seating(
         max_requests=settings.PUBLIC_HELPER_SMART_RUN_MAX_REQUESTS,
         window_seconds=settings.PUBLIC_HELPER_SMART_RUN_WINDOW_SECONDS,
         registry=registry,
-        settings=settings,
         clock=clock,
         throttle=throttle,
     )

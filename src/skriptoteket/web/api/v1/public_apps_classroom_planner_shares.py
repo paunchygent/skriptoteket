@@ -179,7 +179,6 @@ async def _create_public_share(
         max_requests=settings.PUBLIC_HELPER_SHARE_MAX_REQUESTS,
         window_seconds=settings.PUBLIC_HELPER_SHARE_WINDOW_SECONDS,
         registry=registry,
-        settings=settings,
         clock=clock,
         throttle=throttle,
     )
@@ -253,7 +252,6 @@ async def _revoke_public_share(
         max_requests=settings.PUBLIC_HELPER_SHARE_MAX_REQUESTS,
         window_seconds=settings.PUBLIC_HELPER_SHARE_WINDOW_SECONDS,
         registry=registry,
-        settings=settings,
         clock=clock,
         throttle=throttle,
     )

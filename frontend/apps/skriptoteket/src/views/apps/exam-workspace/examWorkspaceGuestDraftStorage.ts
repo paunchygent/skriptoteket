@@ -34,8 +34,20 @@ export type StoredGuestDraft = {
 
 export type ExamWorkspaceGuestDraftStoragePort = {
   load(): Promise<StoredGuestDraft | null>;
-  save(stored: StoredGuestDraft): Promise<void>;
-  clear(): Promise<void>;
+  /**
+   * Store `next` only when the stored record's draft cursor equals
+   * `expectedCursor` (or when nothing is stored and `expectedCursor` is
+   * null). Reports whether the write happened; a false return means another
+   * tab or store instance committed first and the caller must surface the
+   * established conflict outcome instead of claiming a write it lost.
+   */
+  replaceIf(expectedCursor: string | null, next: StoredGuestDraft): Promise<boolean>;
+  /**
+   * Delete the stored record only when its draft cursor equals
+   * `expectedCursor`. Reports whether the delete happened; a false return
+   * means a newer draft or newer edits own the slot now and must be kept.
+   */
+  clearIf(expectedCursor: string): Promise<boolean>;
 };
 
 type ExamWorkspaceGuestDraftDb = DBSchema & {
@@ -75,18 +87,35 @@ async function createIndexedDbPort(): Promise<ExamWorkspaceGuestDraftStoragePort
         )) ?? null
       );
     },
-    async save(stored) {
-      await db.put(
-        EXAM_WORKSPACE_GUEST_DRAFT_STORE_NAME,
-        stored,
-        EXAM_WORKSPACE_GUEST_DRAFT_RECORD_KEY,
-      );
+    /**
+     * One readwrite transaction: read the stored cursor, compare, then put.
+     * IndexedDB serializes readwrite transactions on one store across tabs,
+     * so the compare-and-write is atomic across tabs. Only IndexedDB calls
+     * are awaited inside the transaction; anything else would auto-close it.
+     */
+    async replaceIf(expectedCursor, next) {
+      const tx = db.transaction(EXAM_WORKSPACE_GUEST_DRAFT_STORE_NAME, "readwrite");
+      const store = tx.store;
+      const current = await store.get(EXAM_WORKSPACE_GUEST_DRAFT_RECORD_KEY);
+      if ((current?.draft.cursor ?? null) !== expectedCursor) {
+        await tx.done;
+        return false;
+      }
+      await store.put(next, EXAM_WORKSPACE_GUEST_DRAFT_RECORD_KEY);
+      await tx.done;
+      return true;
     },
-    async clear() {
-      await db.delete(
-        EXAM_WORKSPACE_GUEST_DRAFT_STORE_NAME,
-        EXAM_WORKSPACE_GUEST_DRAFT_RECORD_KEY,
-      );
+    async clearIf(expectedCursor) {
+      const tx = db.transaction(EXAM_WORKSPACE_GUEST_DRAFT_STORE_NAME, "readwrite");
+      const store = tx.store;
+      const current = await store.get(EXAM_WORKSPACE_GUEST_DRAFT_RECORD_KEY);
+      if ((current?.draft.cursor ?? null) !== expectedCursor) {
+        await tx.done;
+        return false;
+      }
+      await store.delete(EXAM_WORKSPACE_GUEST_DRAFT_RECORD_KEY);
+      await tx.done;
+      return true;
     },
   };
 }
@@ -98,11 +127,19 @@ export function createInMemoryExamWorkspaceGuestDraftStorage(): ExamWorkspaceGue
     async load() {
       return stored;
     },
-    async save(next) {
+    async replaceIf(expectedCursor, next) {
+      if ((stored?.draft.cursor ?? null) !== expectedCursor) {
+        return false;
+      }
       stored = next;
+      return true;
     },
-    async clear() {
+    async clearIf(expectedCursor) {
+      if ((stored?.draft.cursor ?? null) !== expectedCursor) {
+        return false;
+      }
       stored = null;
+      return true;
     },
   };
 }
@@ -127,11 +164,11 @@ export function createExamWorkspaceGuestDraftStorage(deps?: {
     async load() {
       return (await port()).load();
     },
-    async save(stored) {
-      await (await port()).save(stored);
+    async replaceIf(expectedCursor, next) {
+      return await (await port()).replaceIf(expectedCursor, next);
     },
-    async clear() {
-      await (await port()).clear();
+    async clearIf(expectedCursor) {
+      return await (await port()).clearIf(expectedCursor);
     },
   };
 }

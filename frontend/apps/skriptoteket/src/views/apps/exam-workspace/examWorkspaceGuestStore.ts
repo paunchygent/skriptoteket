@@ -14,17 +14,15 @@
  * Relationships:
  *   - Built on `examWorkspaceGuestDraft.ts` (draft and history state machine)
  *     and `examWorkspaceGuestDraftStorage.ts` (its browser storage).
- *   - Calls the stateless public routes through `api/publicExamWorkspace.ts`;
- *     the API object is injected so specs supply a fake.
+ *   - The conditional-persistence and command commit machinery lives in
+ *     `examWorkspaceGuestStoreCommit.ts`, the server-shaped refusals in
+ *     `examWorkspaceGuestStoreErrors.ts`, and the limit-reporting API wrapper
+ *     in `examWorkspaceGuestLimitApi.ts`.
  *   - Provides `ExamWorkspaceStore` under the same seam as
  *     `serverExamWorkspaceStore`, so a guest view installs this one.
  */
 
-import { ApiError, isApiError } from "../../../api/client";
-import type {
-  ExamWorkspaceDocumentResponse,
-  NativeExamDocument,
-} from "../../../api/examWorkspace";
+import type { NativeExamDocument } from "../../../api/examWorkspace";
 import {
   guestDocumentResponse,
   guestHistory,
@@ -32,80 +30,28 @@ import {
   newGuestDraft,
   saveGuestDraft,
   storeGuestUndoStep,
-  type ExamWorkspaceGuestDraft,
   type ExamWorkspaceGuestDraftIdSource,
 } from "./examWorkspaceGuestDraft";
 import type {
   ExamWorkspaceGuestDraftStoragePort,
   StoredGuestDraft,
 } from "./examWorkspaceGuestDraftStorage";
+import {
+  commitGuestCommand,
+  loadGuestStored,
+  persistGuestStored,
+  retainDeclaredAssets,
+} from "./examWorkspaceGuestStoreCommit";
+import { conflictError, notFoundError, refusalError } from "./examWorkspaceGuestStoreErrors";
+import type { GuestPublicApi } from "./examWorkspaceGuestLimitApi";
+import { wrapGuestPublicApiForLimit } from "./examWorkspaceGuestLimitApi";
 import type { ExamWorkspaceSharedStore, ExamWorkspaceStore } from "./examWorkspaceStore";
 
-const CONFLICT_MESSAGE = "Dokumentet har ändrats sedan det öppnades.";
-const NOT_FOUND_MESSAGE = "Provdokumentet finns inte.";
-
-/** The server's cursor/revision conflict (`ExamWorkspaceParentsHandler._apply`). */
-function conflictError(): ApiError {
-  return new ApiError({ code: "CONFLICT", message: CONFLICT_MESSAGE, status: 409 });
-}
-
-/** The server's refusal of a document the save rules reject; carries the Swedish copy. */
-function refusalError(copy: string): ApiError {
-  return new ApiError({ code: "VALIDATION_ERROR", message: copy, status: 422 });
-}
-
-/** The server's document-not-found (`_document_not_found`), for an unknown guest lineage. */
-function notFoundError(lineageId: string): ApiError {
-  return new ApiError({
-    code: "NOT_FOUND",
-    message: NOT_FOUND_MESSAGE,
-    status: 404,
-    details: { lineage_id: lineageId },
-  });
-}
-
-/** The public routes' hourly guest limit arrives as a plain 429. */
-export function isGuestLimitError(error: unknown): boolean {
-  return isApiError(error) && error.status === 429;
-}
-
-/** The pictures a retained snapshot or the saved copy still declares. */
-function declaredAssetIds(draft: ExamWorkspaceGuestDraft): Set<string> {
-  const ids = new Set<string>();
-  for (const step of [draft.baseline, ...draft.steps]) {
-    for (const asset of step.document.assets) {
-      ids.add(asset.asset_id);
-    }
-  }
-  for (const asset of draft.saved_document.assets) {
-    ids.add(asset.asset_id);
-  }
-  return ids;
-}
-
-/** Keep only the stored picture bytes whose id a retained snapshot or the saved copy declares. */
-function retainDeclaredAssets(
-  stored: StoredGuestDraft,
-  draft: ExamWorkspaceGuestDraft,
-): Record<string, Blob> {
-  const declared = declaredAssetIds(draft);
-  const kept: Record<string, Blob> = {};
-  for (const [assetId, blob] of Object.entries(stored.assets)) {
-    if (declared.has(assetId)) {
-      kept[assetId] = blob;
-    }
-  }
-  return kept;
-}
-
-type PublicCommandResult = {
-  document: NativeExamDocument;
-  export_blockers: ExamWorkspaceDocumentResponse["export_blockers"];
-};
+export { isGuestLimitError } from "./examWorkspaceGuestStoreErrors";
 
 export type ExamWorkspaceGuestStoreDeps = {
   storage: ExamWorkspaceGuestDraftStoragePort;
-  api: typeof import("../../../api/publicExamWorkspace");
+  api: GuestPublicApi;
   ids: ExamWorkspaceGuestDraftIdSource;
   /** Called once per failing public call whose rejection is the guest limit. */
   onLimit: () => void;
@@ -124,67 +70,7 @@ export type ExamWorkspaceGuestStore = {
 export function createGuestExamWorkspaceStore(
   deps: ExamWorkspaceGuestStoreDeps,
 ): ExamWorkspaceGuestStore {
-  /**
-   * Every public call goes through this wrapper once so a 429 from the hourly
-   * guest limiter reports `onLimit` before the same error reaches the caller.
-   */
-  function guardLimit<TArgs extends unknown[], TResult>(
-    call: (...args: TArgs) => Promise<TResult>,
-  ): (...args: TArgs) => Promise<TResult> {
-    return async (...args: TArgs): Promise<TResult> => {
-      try {
-        return await call(...args);
-      } catch (error: unknown) {
-        if (isGuestLimitError(error)) {
-          deps.onLimit();
-        }
-        throw error;
-      }
-    };
-  }
-
-  const api: ExamWorkspaceGuestStoreDeps["api"] = {
-    createPublicExamWorkspaceBlank: guardLimit((...args) =>
-      deps.api.createPublicExamWorkspaceBlank(...args),
-    ),
-    createPublicExamWorkspaceParent: guardLimit((...args) =>
-      deps.api.createPublicExamWorkspaceParent(...args),
-    ),
-    addPublicExamWorkspaceChild: guardLimit((...args) =>
-      deps.api.addPublicExamWorkspaceChild(...args),
-    ),
-    deletePublicExamWorkspaceChild: guardLimit((...args) =>
-      deps.api.deletePublicExamWorkspaceChild(...args),
-    ),
-    reorderPublicExamWorkspaceChildren: guardLimit((...args) =>
-      deps.api.reorderPublicExamWorkspaceChildren(...args),
-    ),
-    deletePublicExamWorkspaceParent: guardLimit((...args) =>
-      deps.api.deletePublicExamWorkspaceParent(...args),
-    ),
-    groupPublicExamWorkspaceItems: guardLimit((...args) =>
-      deps.api.groupPublicExamWorkspaceItems(...args),
-    ),
-    createEmptyPublicExamWorkspacePart: guardLimit((...args) =>
-      deps.api.createEmptyPublicExamWorkspacePart(...args),
-    ),
-    movePublicExamWorkspaceItem: guardLimit((...args) =>
-      deps.api.movePublicExamWorkspaceItem(...args),
-    ),
-    changePublicExamWorkspaceItemType: guardLimit((...args) =>
-      deps.api.changePublicExamWorkspaceItemType(...args),
-    ),
-    requestPublicExamWorkspaceAnswerMisspellings: guardLimit((...args) =>
-      deps.api.requestPublicExamWorkspaceAnswerMisspellings(...args),
-    ),
-    getPublicExamCourseCatalog: guardLimit((...args) => deps.api.getPublicExamCourseCatalog(...args)),
-    downloadPublicExamWorkspaceExport: guardLimit((...args) =>
-      deps.api.downloadPublicExamWorkspaceExport(...args),
-    ),
-    getPublicExamWorkspaceExportChecklist: guardLimit((...args) =>
-      deps.api.getPublicExamWorkspaceExportChecklist(...args),
-    ),
-  };
+  const api = wrapGuestPublicApiForLimit(deps.api, deps.onLimit);
 
   /** The draft whose picture bytes currently have object URLs. */
   let openLineageId: string | null = null;
@@ -217,49 +103,12 @@ export function createGuestExamWorkspaceStore(
     openLineageId = stored.draft.lineage_id;
   }
 
+  async function persist(expectedCursor: string | null, stored: StoredGuestDraft): Promise<void> {
+    await persistGuestStored(deps.storage, expectedCursor, stored, mountAssets);
+  }
+
   async function loadStored(lineageId: string): Promise<StoredGuestDraft> {
-    const stored = await deps.storage.load();
-    if (!stored || stored.draft.lineage_id !== lineageId) {
-      throw notFoundError(lineageId);
-    }
-    return stored;
-  }
-
-  async function persist(stored: StoredGuestDraft): Promise<void> {
-    await deps.storage.save(stored);
-    mountAssets(stored);
-  }
-
-  /**
-   * Run one server command against the editor's document. The cursor (and, for
-   * a type change, the revision) is checked against the draft exactly as the
-   * server checks it, a mismatch is a 409, and the returned document becomes
-   * one new undo step after the current position, as the server's commands do.
-   */
-  async function commitCommand<Result extends PublicCommandResult>(
-    lineageId: string,
-    guard: (draft: ExamWorkspaceGuestDraft) => boolean,
-    run: (document: NativeExamDocument) => Promise<Result>,
-  ): Promise<{ result: Result; draft: ExamWorkspaceGuestDraft }> {
-    const stored = await loadStored(lineageId);
-    if (!guard(stored.draft)) {
-      throw conflictError();
-    }
-    const current = guestDocumentResponse(stored.draft).document;
-    const result = await run(current);
-    const outcome = storeGuestUndoStep(
-      stored.draft,
-      { afterStepId: null, document: result.document, expectedCursor: stored.draft.cursor },
-      deps.ids,
-    );
-    if (outcome.kind === "conflict") {
-      throw conflictError();
-    }
-    if (outcome.kind === "refused") {
-      throw refusalError(outcome.copy);
-    }
-    await persist({ assets: retainDeclaredAssets(stored, outcome.draft), draft: outcome.draft });
-    return { draft: outcome.draft, result };
+    return await loadGuestStored(deps.storage, lineageId);
   }
 
   const shared: ExamWorkspaceSharedStore = {
@@ -285,7 +134,10 @@ export function createGuestExamWorkspaceStore(
       if (outcome.kind === "refused") {
         throw refusalError(outcome.copy);
       }
-      await persist({ assets: retainDeclaredAssets(stored, outcome.draft), draft: outcome.draft });
+      await persist(stored.draft.cursor, {
+        assets: retainDeclaredAssets(stored, outcome.draft),
+        draft: outcome.draft,
+      });
       return outcome.response;
     },
     async storeExamWorkspaceUndoStep(lineageId, params) {
@@ -305,7 +157,10 @@ export function createGuestExamWorkspaceStore(
       if (outcome.kind === "refused") {
         throw refusalError(outcome.copy);
       }
-      await persist({ assets: retainDeclaredAssets(stored, outcome.draft), draft: outcome.draft });
+      await persist(stored.draft.cursor, {
+        assets: retainDeclaredAssets(stored, outcome.draft),
+        draft: outcome.draft,
+      });
       return outcome.step;
     },
     async getExamWorkspaceHistory(lineageId) {
@@ -321,38 +176,48 @@ export function createGuestExamWorkspaceStore(
       return outcome.step;
     },
     async createExamWorkspaceParent(lineageId, body) {
-      const { draft, result } = await commitCommand(
+      const { draft, result } = await commitGuestCommand({
+        guard: (current) => current.cursor === body.expected_cursor,
+        ids: deps.ids,
         lineageId,
-        (current) => current.cursor === body.expected_cursor,
-        (document) =>
+        onStored: mountAssets,
+        run: (document: NativeExamDocument) =>
           api.createPublicExamWorkspaceParent({
             child: body.child,
             document,
             instruction: body.instruction,
             position: body.position,
           }),
-      );
+        storage: deps.storage,
+      });
       return { ...guestDocumentResponse(draft), export_blockers: result.export_blockers };
     },
     async addExamWorkspaceChild(lineageId, parentId, body) {
-      const { draft, result } = await commitCommand(
+      const { draft, result } = await commitGuestCommand({
+        guard: (current) => current.cursor === body.expected_cursor,
+        ids: deps.ids,
         lineageId,
-        (current) => current.cursor === body.expected_cursor,
-        (document) =>
+        onStored: mountAssets,
+        run: (document: NativeExamDocument) =>
           api.addPublicExamWorkspaceChild(parentId, {
             child: body.child,
             document,
             position: body.position,
           }),
-      );
+        storage: deps.storage,
+      });
       return { ...guestDocumentResponse(draft), export_blockers: result.export_blockers };
     },
     async deleteExamWorkspaceChild(lineageId, parentId, itemId, expectedCursor) {
-      const { draft, result } = await commitCommand(
+      const { draft, result } = await commitGuestCommand({
+        guard: (current) => current.cursor === expectedCursor,
+        ids: deps.ids,
         lineageId,
-        (current) => current.cursor === expectedCursor,
-        (document) => api.deletePublicExamWorkspaceChild(parentId, itemId, { document }),
-      );
+        onStored: mountAssets,
+        run: (document: NativeExamDocument) =>
+          api.deletePublicExamWorkspaceChild(parentId, itemId, { document }),
+        storage: deps.storage,
+      });
       return {
         ...guestDocumentResponse(draft),
         export_blockers: result.export_blockers,
@@ -360,23 +225,30 @@ export function createGuestExamWorkspaceStore(
       };
     },
     async reorderExamWorkspaceChildren(lineageId, parentId, itemIds, expectedCursor) {
-      const { draft, result } = await commitCommand(
+      const { draft, result } = await commitGuestCommand({
+        guard: (current) => current.cursor === expectedCursor,
+        ids: deps.ids,
         lineageId,
-        (current) => current.cursor === expectedCursor,
-        (document) =>
+        onStored: mountAssets,
+        run: (document: NativeExamDocument) =>
           api.reorderPublicExamWorkspaceChildren(parentId, {
             document,
             item_ids: itemIds,
           }),
-      );
+        storage: deps.storage,
+      });
       return { ...guestDocumentResponse(draft), export_blockers: result.export_blockers };
     },
     async deleteExamWorkspaceParent(lineageId, parentId, mode, expectedCursor) {
-      const { draft, result } = await commitCommand(
+      const { draft, result } = await commitGuestCommand({
+        guard: (current) => current.cursor === expectedCursor,
+        ids: deps.ids,
         lineageId,
-        (current) => current.cursor === expectedCursor,
-        (document) => api.deletePublicExamWorkspaceParent(parentId, { document, mode }),
-      );
+        onStored: mountAssets,
+        run: (document: NativeExamDocument) =>
+          api.deletePublicExamWorkspaceParent(parentId, { document, mode }),
+        storage: deps.storage,
+      });
       return {
         ...guestDocumentResponse(draft),
         export_blockers: result.export_blockers,
@@ -384,11 +256,14 @@ export function createGuestExamWorkspaceStore(
       };
     },
     async groupExamWorkspaceItems(lineageId, itemIds, expectedCursor) {
-      const { draft, result } = await commitCommand(
+      const { draft, result } = await commitGuestCommand({
+        guard: (current) => current.cursor === expectedCursor,
+        ids: deps.ids,
         lineageId,
-        (current) => current.cursor === expectedCursor,
-        (document) => api.groupPublicExamWorkspaceItems(document, itemIds),
-      );
+        onStored: mountAssets,
+        run: (document: NativeExamDocument) => api.groupPublicExamWorkspaceItems(document, itemIds),
+        storage: deps.storage,
+      });
       return {
         ...guestDocumentResponse(draft),
         created_parent_id: result.created_parent_id,
@@ -396,11 +271,15 @@ export function createGuestExamWorkspaceStore(
       };
     },
     async createEmptyExamWorkspacePart(lineageId, position, expectedCursor) {
-      const { draft, result } = await commitCommand(
+      const { draft, result } = await commitGuestCommand({
+        guard: (current) => current.cursor === expectedCursor,
+        ids: deps.ids,
         lineageId,
-        (current) => current.cursor === expectedCursor,
-        (document) => api.createEmptyPublicExamWorkspacePart(document, position),
-      );
+        onStored: mountAssets,
+        run: (document: NativeExamDocument) =>
+          api.createEmptyPublicExamWorkspacePart(document, position),
+        storage: deps.storage,
+      });
       return {
         ...guestDocumentResponse(draft),
         created_parent_id: result.created_parent_id,
@@ -408,26 +287,33 @@ export function createGuestExamWorkspaceStore(
       };
     },
     async moveExamWorkspaceItem(lineageId, itemId, targetParentId, expectedCursor) {
-      const { draft, result } = await commitCommand(
+      const { draft, result } = await commitGuestCommand({
+        guard: (current) => current.cursor === expectedCursor,
+        ids: deps.ids,
         lineageId,
-        (current) => current.cursor === expectedCursor,
-        (document) => api.movePublicExamWorkspaceItem(document, itemId, targetParentId),
-      );
+        onStored: mountAssets,
+        run: (document: NativeExamDocument) =>
+          api.movePublicExamWorkspaceItem(document, itemId, targetParentId),
+        storage: deps.storage,
+      });
       return { ...guestDocumentResponse(draft), export_blockers: result.export_blockers };
     },
     async changeExamWorkspaceItemType(lineageId, body) {
-      const { draft, result } = await commitCommand(
-        lineageId,
-        (current) =>
+      const { draft, result } = await commitGuestCommand({
+        guard: (current) =>
           current.cursor === body.expected_cursor &&
           current.saved_document.revision === body.expected_revision,
-        (document) =>
+        ids: deps.ids,
+        lineageId,
+        onStored: mountAssets,
+        run: (document: NativeExamDocument) =>
           api.changePublicExamWorkspaceItemType({
             document,
             item_id: body.item_id,
             target_kind: body.target_kind,
           }),
-      );
+        storage: deps.storage,
+      });
       return {
         ...guestDocumentResponse(draft),
         dropped_content: result.dropped_content,
@@ -471,7 +357,8 @@ export function createGuestExamWorkspaceStore(
   async function startBlank(): Promise<string> {
     const response = await api.createPublicExamWorkspaceBlank();
     const draft = newGuestDraft(response.document, deps.ids);
-    await persist({ assets: {}, draft });
+    const current = await deps.storage.load();
+    await persist(current?.draft.cursor ?? null, { assets: {}, draft });
     return draft.lineage_id;
   }
 
@@ -482,8 +369,19 @@ export function createGuestExamWorkspaceStore(
       return stored?.draft.lineage_id ?? null;
     },
     startBlank,
+    /**
+     * Drop the browser draft. The write commits only when the loaded snapshot
+     * still owns the slot; a concurrent tab's newer draft reports the
+     * conflict instead of being deleted by this reset.
+     */
     async clear() {
-      await deps.storage.clear();
+      const current = await deps.storage.load();
+      if (current !== null) {
+        const cleared = await deps.storage.clearIf(current.draft.cursor);
+        if (!cleared) {
+          throw conflictError();
+        }
+      }
       openLineageId = null;
       revokeAssetUrls();
     },

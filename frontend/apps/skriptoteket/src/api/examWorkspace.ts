@@ -392,19 +392,22 @@ export async function updateExamListOrdering(ordering: ExamListOrdering): Promis
 }
 
 /**
- * Save the signed-out browser draft into Mina filer once per draft id.
+ * Save the signed-out browser draft into Mina filer once per handoff key.
  *
  * The multipart body carries the `draft_id` idempotency key, the `document`
  * JSON of the newest edits, and one `asset:<id>` file part per picture the
  * document declares; stored bytes the document no longer names are never sent.
+ * `handoffKey` identifies one browser snapshot: the caller passes the
+ * snapshot's cursor, so the server claims once per (user, key) and a later
+ * handoff of newer edits imports its own exam.
  */
 export async function importExamWorkspaceGuestDraft(
-  draftId: string,
+  handoffKey: string,
   document: NativeExamDocument,
   assets: Record<string, Blob>,
 ): Promise<ExamWorkspaceDocumentResponse> {
   const form = new FormData();
-  form.append("draft_id", draftId);
+  form.append("draft_id", handoffKey);
   form.append("document", JSON.stringify(document));
   for (const asset of document.assets) {
     const blob = assets[asset.asset_id];

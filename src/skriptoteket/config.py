@@ -80,8 +80,6 @@ class Settings(BaseSettings):
 
     ENABLE_DOCS: bool | None = None
     ALLOWED_HOSTS: str = "localhost,127.0.0.1,::1,skriptoteket.hule.education"
-    TRUST_PROXY_HEADERS: bool = False
-    TRUSTED_PROXY_CIDRS: str = "127.0.0.1/32,::1/128"
     PUBLIC_APP_BASE_URL: str = "https://skriptoteket.hule.education"
     CURATED_APPS_PRODUCTION_ALLOWLIST: str = (
         "chemistry.reagent_prep_chef,documents.conversion_hub,classroom.group-seating-studio"
@@ -403,10 +401,6 @@ class Settings(BaseSettings):
         if self.ENVIRONMENT != "production":
             allowed_hosts.update(_NON_PRODUCTION_ALLOWED_HOSTS)
         return frozenset(allowed_hosts)
-
-    @property
-    def trusted_proxy_cidrs(self) -> frozenset[str]:
-        return frozenset(_split_csv_values(self.TRUSTED_PROXY_CIDRS))
 
     @property
     def enable_docs(self) -> bool:

@@ -61,7 +61,6 @@ async def export_public_exam_workspace_document(
     await admit_guest_request(
         request=request,
         registry=registry,
-        settings=settings,
         admit_handler=admit_handler,
         bucket=PublicRequestBucket.GUEST_EXPORT,
     )
@@ -88,7 +87,6 @@ async def export_public_exam_workspace_document_checklist(
     await admit_guest_request(
         request=request,
         registry=registry,
-        settings=settings,
         admit_handler=admit_handler,
         bucket=PublicRequestBucket.GUEST_EXPORT,
     )

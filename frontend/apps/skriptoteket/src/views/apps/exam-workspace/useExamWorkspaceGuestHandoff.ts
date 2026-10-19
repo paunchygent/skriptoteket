@@ -5,9 +5,9 @@
  *   A guest's exam lives only in this browser until the guest signs in. The
  *   signed-in workspace host runs this once on mount: the stored draft is
  *   posted to Mina filer through the signed-in guest-drafts route, and only
- *   after that post succeeds is the browser copy cleared. The returned
- *   lineage id is the exam the view opens; null means there was nothing to
- *   hand off, or the handoff failed and the browser copy was kept.
+ *   after that post succeeds is the posted browser snapshot cleared. The
+ *   returned lineage id is the exam the view opens; null means there was
+ *   nothing to hand off, or the handoff failed and the browser copy was kept.
  *
  * Relationships:
  *   - Reads the draft through `examWorkspaceGuestDraftStorage` and hands the
@@ -15,9 +15,15 @@
  *     `importExamWorkspaceGuestDraft`, mirroring the guest export multipart
  *     shape (`draft_id`, `document`, one `asset:<id>` part per declared
  *     picture).
- *   - A failed post keeps the browser copy and shows one failure toast; a
- *     failed `clear()` after a successful post still hands the lineage back,
- *     because the server ledger makes the next attempt a no-op.
+ *   - The idempotency key is the snapshot cursor, not the draft: the server
+ *     claims once per (user, key), so a later handoff of newer edits posts a
+ *     new cursor and imports its own exam instead of returning the old
+ *     snapshot.
+ *   - After a successful post only the posted snapshot is cleared: a newer
+ *     draft or newer edits (a new cursor) are kept untouched. A failed post
+ *     keeps the browser copy and shows one failure toast; a failed clearIf
+ *     after a successful post still hands the lineage back, because the
+ *     server ledger makes a repeated post of the same snapshot a no-op.
  */
 
 import type {
@@ -71,11 +77,12 @@ export async function runGuestHandoff(deps: GuestHandoffDeps): Promise<string | 
   if (stored === null || deps.teacher === null) {
     return null;
   }
+  const snapshotCursor = stored.draft.cursor;
   const document = guestDocumentResponse(stored.draft).document;
   let response: ExamWorkspaceDocumentResponse;
   try {
     response = await deps.teacher.importExamWorkspaceGuestDraft(
-      stored.draft.draft_id,
+      snapshotCursor,
       document,
       declaredAssets(document, stored.assets),
     );
@@ -84,9 +91,11 @@ export async function runGuestHandoff(deps: GuestHandoffDeps): Promise<string | 
     return null;
   }
   try {
-    await deps.storage.clear();
+    await deps.storage.clearIf(snapshotCursor);
   } catch {
-    // The exam is already saved; the server ledger makes a repeated post a no-op.
+    // The exam is already saved; the server ledger makes a repeated post of
+    // the same snapshot a no-op. A newer draft (a new cursor) is kept by
+    // clearIf itself, so it is never deleted here.
   }
   return response.summary.lineage_id;
 }

@@ -45,8 +45,12 @@ const storageMocks = vi.hoisted(() => ({
 
 vi.mock("./exam-workspace/examWorkspaceGuestDraftStorage", () => ({
   createExamWorkspaceGuestDraftStorage: () => ({
-    async clear() {
+    async clearIf(expectedCursor: string) {
+      if (storageMocks.stored?.draft.cursor !== expectedCursor) {
+        return false;
+      }
       storageMocks.stored = null;
+      return true;
     },
     async load() {
       if (storageMocks.failLoad) {
@@ -54,8 +58,12 @@ vi.mock("./exam-workspace/examWorkspaceGuestDraftStorage", () => ({
       }
       return storageMocks.stored;
     },
-    async save(next: StoredGuestDraft) {
+    async replaceIf(expectedCursor: string | null, next: StoredGuestDraft) {
+      if ((storageMocks.stored?.draft.cursor ?? null) !== expectedCursor) {
+        return false;
+      }
       storageMocks.stored = next;
+      return true;
     },
   }),
 }));

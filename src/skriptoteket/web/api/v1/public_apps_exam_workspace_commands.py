@@ -98,7 +98,6 @@ async def blank_public_exam_workspace(
     await admit_guest_request(
         request=request,
         registry=registry,
-        settings=settings,
         admit_handler=admit_handler,
         bucket=PublicRequestBucket.GUEST_EDIT,
     )
@@ -116,7 +115,6 @@ async def create_public_exam_workspace_parent(
     await admit_guest_request(
         request=request,
         registry=registry,
-        settings=settings,
         admit_handler=admit_handler,
         bucket=PublicRequestBucket.GUEST_EDIT,
     )
@@ -140,7 +138,6 @@ async def group_public_exam_workspace_items(
     await admit_guest_request(
         request=request,
         registry=registry,
-        settings=settings,
         admit_handler=admit_handler,
         bucket=PublicRequestBucket.GUEST_EDIT,
     )
@@ -159,7 +156,6 @@ async def create_public_exam_workspace_empty_part(
     await admit_guest_request(
         request=request,
         registry=registry,
-        settings=settings,
         admit_handler=admit_handler,
         bucket=PublicRequestBucket.GUEST_EDIT,
     )
@@ -180,7 +176,6 @@ async def move_public_exam_workspace_item(
     await admit_guest_request(
         request=request,
         registry=registry,
-        settings=settings,
         admit_handler=admit_handler,
         bucket=PublicRequestBucket.GUEST_EDIT,
     )
@@ -205,7 +200,6 @@ async def add_public_exam_workspace_child(
     await admit_guest_request(
         request=request,
         registry=registry,
-        settings=settings,
         admit_handler=admit_handler,
         bucket=PublicRequestBucket.GUEST_EDIT,
     )
@@ -231,7 +225,6 @@ async def delete_public_exam_workspace_child(
     await admit_guest_request(
         request=request,
         registry=registry,
-        settings=settings,
         admit_handler=admit_handler,
         bucket=PublicRequestBucket.GUEST_EDIT,
     )
@@ -256,7 +249,6 @@ async def reorder_public_exam_workspace_children(
     await admit_guest_request(
         request=request,
         registry=registry,
-        settings=settings,
         admit_handler=admit_handler,
         bucket=PublicRequestBucket.GUEST_EDIT,
     )
@@ -283,7 +275,6 @@ async def delete_public_exam_workspace_parent(
     await admit_guest_request(
         request=request,
         registry=registry,
-        settings=settings,
         admit_handler=admit_handler,
         bucket=PublicRequestBucket.GUEST_EDIT,
     )
@@ -302,7 +293,6 @@ async def change_public_exam_workspace_item_type(
     await admit_guest_request(
         request=request,
         registry=registry,
-        settings=settings,
         admit_handler=admit_handler,
         bucket=PublicRequestBucket.GUEST_EDIT,
     )
@@ -328,7 +318,6 @@ async def answer_public_exam_workspace_misspellings(
     await admit_guest_request(
         request=request,
         registry=registry,
-        settings=settings,
         admit_handler=admit_handler,
         bucket=PublicRequestBucket.GUEST_EDIT,
     )
@@ -348,7 +337,6 @@ async def get_public_exam_course_catalog(
     await admit_guest_request(
         request=request,
         registry=registry,
-        settings=settings,
         admit_handler=admit_handler,
         bucket=PublicRequestBucket.GUEST_EDIT,
     )

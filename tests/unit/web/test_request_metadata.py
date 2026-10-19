@@ -1,25 +1,24 @@
 """Unit tests for request metadata extraction helpers.
 
 Purpose:
-    Verify login-event audit metadata only trusts forwarding headers when the
-    direct peer is an explicitly trusted proxy.
+    Verify the client IP is the direct peer uvicorn already resolved and that
+    caller-controlled forwarding headers can never change it.
 
 Relationships:
     - Exercises `skriptoteket.web.request_metadata`.
-    - Covers the security hardening lane for spoof-resistant client IP logging.
+    - Covers the proxy-identity hardening lane for spoof-resistant client IP logging.
 """
 
 from __future__ import annotations
 
 from starlette.requests import Request
 
-from skriptoteket.config import Settings
 from skriptoteket.web.request_metadata import get_client_ip
 
 
 def _make_request(
     *,
-    client_host: str,
+    client_host: str | None,
     headers: dict[str, str] | None = None,
 ) -> Request:
     encoded_headers = []
@@ -30,78 +29,45 @@ def _make_request(
         "method": "GET",
         "path": "/api/v1/profile/app-continuation",
         "headers": encoded_headers,
-        "client": (client_host, 12345),
+        "client": (client_host, 12345) if client_host is not None else None,
     }
     return Request(scope)
 
 
-def test_get_client_ip_ignores_forwarded_headers_when_proxy_trust_is_disabled() -> None:
+def test_get_client_ip_returns_direct_peer() -> None:
+    request = _make_request(client_host="172.18.0.10")
+
+    assert get_client_ip(request) == "172.18.0.10"
+
+
+def test_get_client_ip_ignores_forged_forwarded_headers() -> None:
     request = _make_request(
         client_host="172.18.0.10",
         headers={
-            "x-forwarded-for": "203.0.113.77",
-            "x-real-ip": "203.0.113.78",
+            "x-forwarded-for": "203.0.113.77, 198.51.100.24",
+            "x-real-ip": "198.51.100.24",
         },
     )
-    settings = Settings.model_construct(
-        TRUST_PROXY_HEADERS=False,
-        TRUSTED_PROXY_CIDRS="172.16.0.0/12",
-    )
 
-    assert get_client_ip(request, settings=settings) == "172.18.0.10"
-
-
-def test_get_client_ip_uses_first_forwarded_hop_from_trusted_proxy() -> None:
-    request = _make_request(
-        client_host="172.18.0.10",
-        headers={"x-forwarded-for": "203.0.113.77, 172.18.0.10"},
-    )
-    settings = Settings.model_construct(
-        TRUST_PROXY_HEADERS=True,
-        TRUSTED_PROXY_CIDRS="172.16.0.0/12",
-    )
-
-    assert get_client_ip(request, settings=settings) == "203.0.113.77"
-
-
-def test_get_client_ip_falls_back_to_x_real_ip_for_trusted_proxy() -> None:
-    request = _make_request(
-        client_host="172.18.0.10",
-        headers={"x-real-ip": "198.51.100.24"},
-    )
-    settings = Settings.model_construct(
-        TRUST_PROXY_HEADERS=True,
-        TRUSTED_PROXY_CIDRS="172.16.0.0/12",
-    )
-
-    assert get_client_ip(request, settings=settings) == "198.51.100.24"
-
-
-def test_get_client_ip_rejects_malformed_forwarded_values() -> None:
-    request = _make_request(
-        client_host="172.18.0.10",
-        headers={"x-forwarded-for": "not-an-ip"},
-    )
-    settings = Settings.model_construct(
-        TRUST_PROXY_HEADERS=True,
-        TRUSTED_PROXY_CIDRS="172.16.0.0/12",
-    )
-
-    assert get_client_ip(request, settings=settings) == "172.18.0.10"
+    assert get_client_ip(request) == "172.18.0.10"
 
 
 def test_get_client_ip_ignores_spoofed_forwarding_from_untrusted_direct_peer() -> None:
     request = _make_request(
-        client_host="172.18.0.10",
-        headers={
-            "x-forwarded-for": "203.0.113.77, 172.18.0.10",
-            "x-real-ip": "198.51.100.24",
-        },
-    )
-    settings = Settings.model_construct(
-        ENVIRONMENT="production",
-        TRUST_PROXY_HEADERS=True,
-        TRUSTED_PROXY_CIDRS="127.0.0.1/32,::1/128",
+        client_host="198.51.100.7",
+        headers={"x-forwarded-for": "6.6.6.6, 203.0.113.9"},
     )
 
-    assert get_client_ip(request, settings=settings) == "172.18.0.10"
+    assert get_client_ip(request) == "198.51.100.7"
+
+
+def test_get_client_ip_normalizes_ipv6_direct_peer() -> None:
+    request = _make_request(client_host="::ffff:127.0.0.1")
+
+    assert get_client_ip(request) == "::ffff:127.0.0.1"
+
+
+def test_get_client_ip_returns_none_without_direct_peer() -> None:
+    request = _make_request(client_host=None)
+
+    assert get_client_ip(request) is None

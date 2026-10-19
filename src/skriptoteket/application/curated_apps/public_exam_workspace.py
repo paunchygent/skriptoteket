@@ -13,16 +13,15 @@ Relationships:
 
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, computed_field
+from pydantic import BaseModel, ConfigDict, Field
 
+from skriptoteket.application.curated_apps.exam_workspace_export_blockers import (
+    NativeDocumentWithExportBlockers,
+)
 from skriptoteket.application.curated_apps.exam_workspace_parents import NewParentChild
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import NativeParagraph
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_export_rules import (
-    NativeExportBlocker,
-    native_export_blockers,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     ITEM_ID_PATTERN,
@@ -30,17 +29,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
 )
 
 
-class PublicExamDocumentCommandResponse(BaseModel):
+class PublicExamDocumentCommandResponse(NativeDocumentWithExportBlockers):
     """The transformed document plus the export gate's verdict on it."""
 
     model_config = ConfigDict(frozen=True)
-
-    document: NativeExamDocument
-
-    @computed_field  # type: ignore[prop-decorator]
-    @property
-    def export_blockers(self) -> tuple[NativeExportBlocker, ...]:
-        return native_export_blockers(self.document)
 
 
 class PublicExamBlankResponse(PublicExamDocumentCommandResponse):

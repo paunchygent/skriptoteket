@@ -2,11 +2,13 @@
 
 Purpose:
     Extract correlation, user-agent, and client IP metadata at the web
-    boundary without trusting caller-controlled forwarding headers by default.
+    boundary. The client IP is the direct peer uvicorn already resolved through
+    its single trusted-proxy chain (`--proxy-headers` with `FORWARDED_ALLOW_IPS`);
+    forwarding headers are never read here because uvicorn has consumed them.
 
 Relationships:
     - Used by auth routes when recording login events.
-    - Applies the proxy-trust policy defined in `skriptoteket.config.Settings`.
+    - Used by public routes as the rate-limiter caller identity.
 """
 
 from __future__ import annotations
@@ -15,8 +17,6 @@ import ipaddress
 from uuid import UUID
 
 from fastapi import Request
-
-from skriptoteket.config import Settings
 
 
 def _parse_ip_address(raw_value: str | None) -> str | None:
@@ -31,41 +31,15 @@ def _parse_ip_address(raw_value: str | None) -> str | None:
         return None
 
 
-def _is_trusted_proxy(request_host: str | None, settings: Settings) -> bool:
-    proxy_ip = _parse_ip_address(request_host)
-    if proxy_ip is None or not settings.TRUST_PROXY_HEADERS:
-        return False
+def get_client_ip(request: Request) -> str | None:
+    """Return the client IP for audit logging and rate limiting.
 
-    proxy_address = ipaddress.ip_address(proxy_ip)
-    for cidr in settings.trusted_proxy_cidrs:
-        try:
-            if proxy_address in ipaddress.ip_network(cidr, strict=False):
-                return True
-        except ValueError:
-            continue
-    return False
-
-
-def get_client_ip(request: Request, *, settings: Settings) -> str | None:
-    """Return the client IP for audit logging.
-
-    Forwarded headers are only considered when the direct peer is a trusted
-    proxy and forwarded-header trust is explicitly enabled.
+    Uvicorn's `ProxyHeadersMiddleware` already resolved `request.client` from
+    the verified proxy chain, so forwarding headers must not be consulted here:
+    the leftmost `X-Forwarded-For` entry is caller-controlled.
     """
 
     direct_client_host = request.client.host if request.client else None
-    if _is_trusted_proxy(direct_client_host, settings):
-        forwarded_for = request.headers.get("x-forwarded-for")
-        if forwarded_for:
-            first_hop = forwarded_for.split(",")[0]
-            parsed_forwarded_for = _parse_ip_address(first_hop)
-            if parsed_forwarded_for is not None:
-                return parsed_forwarded_for
-
-        parsed_real_ip = _parse_ip_address(request.headers.get("x-real-ip"))
-        if parsed_real_ip is not None:
-            return parsed_real_ip
-
     return _parse_ip_address(direct_client_host) or direct_client_host
 
 

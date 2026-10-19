@@ -11,7 +11,6 @@ Relationships:
 
 from fastapi import Request
 
-from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.models import CuratedAppPublicRuntimeStatus
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
@@ -48,14 +47,13 @@ async def admit_guest_request(
     *,
     request: Request,
     registry: CuratedAppRegistryProtocol,
-    settings: Settings,
     admit_handler: AdmitPublicRequestHandlerProtocol,
     bucket: PublicRequestBucket,
 ) -> None:
     """Admit one guest request through the shared hourly limiter or raise 429."""
 
     require_active_exam_converter(registry=registry)
-    client_ip = get_client_ip(request, settings=settings) or "unknown"
+    client_ip = get_client_ip(request) or "unknown"
     admission = await admit_handler.admit(bucket=bucket, client_ip=client_ip)
     if admission.admitted:
         return

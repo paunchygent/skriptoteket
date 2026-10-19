@@ -108,7 +108,7 @@ describe("examWorkspaceGuestDraft", () => {
 
     const draft = newGuestDraft(exam(), ids);
 
-    expect(draft.draft_id).toBe(issued[0]);
+    expect(issued).toEqual([]);
     expect(draft.lineage_id).toBe(DOCUMENT_ID);
     expect(draft.baseline.step_id).toBe(DOCUMENT_ID);
     expect(draft.baseline.document).toBe(draft.saved_document);
@@ -268,7 +268,7 @@ describe("examWorkspaceGuestDraft", () => {
     expect(outcome.response.document.revision).toBe(2);
     expect(outcome.response.saved_document.revision).toBe(2);
     expect(outcome.response.summary.version).toBe(2);
-    expect(outcome.response.summary.vault_file_id).toBe(outcome.draft.draft_id);
+    expect(outcome.response.summary.vault_file_id).toBe(outcome.draft.lineage_id);
     expect(outcome.response.history_cursor).toBe(outcome.draft.cursor);
     expect(outcome.response.document.title).toBe("Redigerad");
   });

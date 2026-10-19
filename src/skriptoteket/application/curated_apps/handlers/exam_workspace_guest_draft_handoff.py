@@ -13,9 +13,10 @@ Relationships:
       entry, baseline history and the Mina filer quota check.
     - Verifies the posted picture bytes through B2a's verifier in
       ``handlers.public_exam_workspace_exports`` before anything is claimed.
-    - The claim ledger lives in ``ExamGuestDraftHandoffModel``; one UoW
+    - The claim ledger lives in ``ExamGuestDraftHandoffModel``; one store
       transaction covers the claim and the creation, so a refused creation
-      leaves no ledger row.
+      leaves no ledger row and a failed outermost commit compensates the
+      written payload.
 """
 
 from __future__ import annotations
@@ -46,7 +47,6 @@ from skriptoteket.protocols.exam_workspace_guest_drafts import (
     ExamGuestDraftHandoffRepositoryProtocol,
 )
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
-from skriptoteket.protocols.uow import UnitOfWorkProtocol
 
 _COPY_EXTENSION = ".provdokument.zip"
 
@@ -61,7 +61,6 @@ class ImportGuestExamDraftHandler:
         reader: GetExamWorkspaceDocumentHandlerProtocol,
         codec: ExamWorkspaceContainerCodecProtocol,
         store: ExamWorkspaceDocumentStore,
-        uow: UnitOfWorkProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
     ) -> None:
@@ -69,7 +68,6 @@ class ImportGuestExamDraftHandler:
         self._reader = reader
         self._codec = codec
         self._store = store
-        self._uow = uow
         self._clock = clock
         self._id_generator = id_generator
 
@@ -86,7 +84,7 @@ class ImportGuestExamDraftHandler:
         )
         name = rename_vault_filename(stem=document.title, extension=_COPY_EXTENSION)
         lineage_id = self._id_generator.new_uuid()
-        async with self._uow:
+        async with self._store.transaction(user_id=actor.id, lineage_id=lineage_id):
             claimed = await self._handoffs.claim(
                 owner_user_id=actor.id,
                 draft_id=draft_id,

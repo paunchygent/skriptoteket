@@ -13,7 +13,6 @@ import hashlib
 from collections.abc import Mapping
 from datetime import datetime
 from io import BytesIO
-from typing import Any
 from uuid import UUID, uuid4
 
 import httpx
@@ -57,7 +56,6 @@ from skriptoteket.web.middleware.error_handler import error_handler_middleware
 from tests.fixtures.time_fixtures import FixedClock
 from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents import (
     _NOW,
-    FakeUow,
     _actor,
     _Env,
     _settings,
@@ -68,6 +66,12 @@ from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders imp
 from tests.unit.web.test_apps_exam_workspace_answer_key_suggestions_api import FakeRegistry
 
 _PATH = "/api/v1/apps/documents.conversion_hub/exam-workspace/guest-drafts"
+
+type MultipartFile = tuple[None, str] | tuple[str, bytes, str]
+"""One httpx file part: the document JSON text or one named asset payload."""
+
+type MultipartFiles = dict[str, MultipartFile]
+"""The httpx ``files`` mapping a guest-draft handoff carries."""
 
 
 class InMemoryGuestDraftHandoffRepository:
@@ -138,7 +142,6 @@ def _handoff_handler(
         reader=env.get_handler,
         codec=env.codec,
         store=env.store,
-        uow=FakeUow(),
         clock=FixedClock(_NOW),
         id_generator=env.ids,
     )
@@ -220,9 +223,9 @@ def _picture_document() -> tuple[NativeExamDocument, str, bytes]:
 
 def _multipart(
     document: NativeExamDocument, assets: Mapping[str, bytes] | None = None
-) -> dict[str, Any]:
+) -> MultipartFiles:
     text = native_exam_document_json_bytes(document).decode("utf-8")
-    files: dict[str, Any] = {"document": (None, text)}
+    files: MultipartFiles = {"document": (None, text)}
     for asset_id, payload in (assets or {}).items():
         files[f"asset:{asset_id}"] = (f"{asset_id}.png", payload, "image/png")
     return files
