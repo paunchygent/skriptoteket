@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "6ba475a7cc146ff551e9c55343d1069cda4b7f96c1ecd768f8acf922757518f6",
+  "source_set_digest": "38425b1e0c41be04e56bd472550d68e045ced5659853d4cc7eff15a82269fbe7",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6751,6 +6751,27 @@
       "closeout_review": {
         "record": "inline",
         "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-11",
+      "type": "task",
+      "title": "Exam workspace controls follow one compact three-tier control system",
+      "path": "docs/backlog/tasks/task-skript-40-04-11-exam-workspace-controls-follow-one-compact-three-tier-control-system.md",
+      "status": "canceled",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_required",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "The user decided on 2026-10-19 (AskUserQuestion, relayed by orchestrator 944b5a5a) to close this task as superseded by TASK-SKRIPT-40-04-17 (on main 35caaef3), which folds it. The repository-governance contract has no superseded status for tasks, so the task is canceled with TASK-SKRIPT-40-04-17 named as its successor. No product code was built under this task."
       }
     },
     {

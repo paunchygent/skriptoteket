@@ -122,6 +122,7 @@
 
 ## Recent
 
+- 2026-10-19 40-04-11 control system `canceled` as superseded by 40-04-17 (user decision; no product code). The docs-only branch `codex/task-skript-40-04-compact-tools-remote` holds the reuse list (task section "Superseded by TASK-SKRIPT-40-04-17"); the inventory and mocks are in root 01a15383.
 - 2026-10-19 `done` on main: 40-04-07 writing areas (staging walk at `003c874a`, Mac `.artifacts/staging-walk-40-04-07/evidence/walk-record.md`), 41-02-01 QTI import, 39-04-15, 39-04-16, 39-04-17, REP-0047, HULE-14-03-01, 39-04-19 Del A left-out repair, REP-0046 re-recorded omprov labeler calls, 39-04-18 facit carry-over. Pre-push hook SIGPIPE false skip fixed (`003c874a`).
 
 - Wave 2 closed 2026-10-17 at `agent-overseer:approved-review-closeout`:
