@@ -3,18 +3,20 @@
  * Exam workspace Exportera button and menu.
  *
  * Domain purpose:
- *   Export the saved exam in one step: each format row downloads the file
- *   and its folder button keeps it in Mina filer instead, replacing the
- *   exam's earlier file of that format. A format click saves the exam
- *   first and exports the version just saved; the menu stays open and the
- *   format shows the export running. What stops the export is listed first,
- *   with its fix, and disables the formats until the last one is fixed; the
- *   server's refusal stays the final check (user rule 2026-10-17). "Fler
- *   val …" opens the Exportera drawer.
+ *   Export the saved exam in one step: each format row is a labelled group
+ *   with one outlined split button at its right edge, download first and
+ *   save to Mina filer second (guests see the download part alone). A name
+ *   click downloads, the same as the download part. A format click saves the
+ *   exam first and exports the version just saved; the menu stays open and
+ *   the running part spins while every part stays focusable but silent. What
+ *   stops the export is listed first, with its fix, and disables the formats
+ *   until the last one is fixed; the server's refusal stays the final check
+ *   (user rule 2026-10-17). "Fler val …" opens the Exportera drawer.
  *
  * Relationships:
  *   - Rendered in the `export` slot of `ExamWorkspaceHeader`; the view runs
- *     the exports through `useExamWorkspaceExports`.
+ *     the exports through `useExamWorkspaceExports` and passes the running
+ *     destination down for the busy part.
  */
 
 import { computed, ref } from "vue";
@@ -24,8 +26,13 @@ import { UiGlyph } from "../../../components/ui";
 import ExamWorkspaceExportBlockers from "./ExamWorkspaceExportBlockers.vue";
 import ExamWorkspaceMenu from "./ExamWorkspaceMenu.vue";
 import type { ExamWorkspaceBlockerEntry } from "./examWorkspaceBlockers";
-import { EXAM_WORKSPACE_EXPORT_FORMATS, QTI_ZERO_POINTS_NOTE } from "./examWorkspaceExportFormats";
+import {
+  EXAM_WORKSPACE_EXPORT_FORMATS,
+  QTI_ZERO_POINTS_NOTE,
+  type ExamWorkspaceExportFormat,
+} from "./examWorkspaceExportFormats";
 import { useInjectedExamWorkspaceStore } from "./examWorkspaceStore";
+import type { ExportDestination } from "./useExamWorkspaceExports";
 
 const props = defineProps<{
   blockers: ExamWorkspaceBlockerEntry[];
@@ -34,6 +41,7 @@ const props = defineProps<{
   fixDisabled: boolean;
   suggestBusy: boolean;
   exportingTarget: ExamWorkspaceExportTarget | null;
+  exportingDestination: ExportDestination | null;
   savedExports: Partial<Record<ExamWorkspaceExportTarget, string>>;
   /** What the last export made, e.g. "QTI-paketet är skapat." */
   result: string | null;
@@ -58,6 +66,37 @@ const open = ref(false);
 const store = useInjectedExamWorkspaceStore();
 const isGuest = computed(() => store.teacher === null);
 const formatsDisabled = computed(() => props.blockers.length > 0 || props.exportingTarget !== null);
+
+function rowLabel(format: ExamWorkspaceExportFormat): string {
+  return format.use === null ? format.name : `${format.name} ${format.use}`;
+}
+
+function isDownloadRunning(target: ExamWorkspaceExportTarget): boolean {
+  return props.exportingTarget === target && props.exportingDestination === "download";
+}
+
+function isSaveRunning(target: ExamWorkspaceExportTarget): boolean {
+  return props.exportingTarget === target && props.exportingDestination === "files";
+}
+
+function saveTitle(format: ExamWorkspaceExportFormat): string {
+  const saved = props.savedExports[format.target];
+  return saved === undefined
+    ? `Spara ${format.name} i Mina filer`
+    : `Spara ${format.name} i Mina filer (ersätter filen från ${saved})`;
+}
+
+function onDownload(target: ExamWorkspaceExportTarget): void {
+  if (!formatsDisabled.value) {
+    emit("download", target);
+  }
+}
+
+function onSave(target: ExamWorkspaceExportTarget): void {
+  if (!formatsDisabled.value) {
+    emit("saveToFiles", target);
+  }
+}
 
 function choose(action: () => void): void {
   open.value = false;
@@ -110,27 +149,19 @@ function choose(action: () => void): void {
       v-for="format in EXAM_WORKSPACE_EXPORT_FORMATS"
       :key="format.target"
       class="xw-mi"
-      role="menuitem"
-      :tabindex="formatsDisabled ? -1 : 0"
-      :aria-disabled="formatsDisabled || undefined"
-      :title="`Ladda ner ${format.name}`"
-      :aria-busy="exportingTarget === format.target || undefined"
-      :data-test="`exam-workspace-export-${format.target}`"
-      @click="!formatsDisabled && emit('download', format.target)"
-      @keydown.enter.self.prevent="!formatsDisabled && emit('download', format.target)"
-      @keydown.space.self.prevent="!formatsDisabled && emit('download', format.target)"
+      role="group"
+      :aria-label="rowLabel(format)"
+      :title="rowLabel(format)"
+      :data-test="`exam-workspace-export-row-${format.target}`"
     >
-      <UiGlyph
-        :meaning="exportingTarget === format.target ? 'busy' : 'download'"
-        :size="20"
-        :class="{ 'xw-spin': exportingTarget === format.target }"
-      />
       <span class="xw-mi__stack">
-        <span class="xw-grow">{{ format.name }} <span class="xw-mi__sub">{{ format.use }}</span></span>
-        <small
-          v-if="exportingTarget === format.target"
-          data-test="exam-workspace-export-running"
-        >Exporterar …</small>
+        <span
+          class="xw-grow truncate"
+          @click="onDownload(format.target)"
+        >{{ format.name }} <span
+          v-if="format.use !== null"
+          class="xw-mi__sub"
+        >{{ format.use }}</span></span>
         <small v-if="savedExports[format.target]"><UiGlyph
           meaning="save-to-files"
           :size="14"
@@ -141,23 +172,43 @@ function choose(action: () => void): void {
           data-test="exam-workspace-export-zero-points"
         >{{ QTI_ZERO_POINTS_NOTE }}</small>
       </span>
-      <button
-        v-if="!isGuest"
-        type="button"
-        class="xw-mi__mini"
-        :disabled="formatsDisabled"
-        :title="savedExports[format.target]
-          ? `Spara ${format.name} i Mina filer (ersätter filen från ${savedExports[format.target]})`
-          : `Spara ${format.name} i Mina filer`"
-        :aria-label="`Spara ${format.name} i Mina filer`"
-        :data-test="`exam-workspace-export-save-${format.target}`"
-        @click.stop="emit('saveToFiles', format.target)"
-      >
-        <UiGlyph
-          meaning="save-to-files"
-          :size="20"
-        />
-      </button>
+      <span :class="{ 'xw-split': !isGuest }">
+        <button
+          type="button"
+          class="xw-btn xw-btn--compact xw-btn--icon"
+          role="menuitem"
+          :aria-disabled="formatsDisabled || undefined"
+          :aria-busy="isDownloadRunning(format.target) || undefined"
+          :aria-label="`Ladda ner ${format.name}`"
+          :title="`Ladda ner ${format.name}`"
+          :data-test="`exam-workspace-export-${format.target}`"
+          @click="onDownload(format.target)"
+        >
+          <UiGlyph
+            :meaning="isDownloadRunning(format.target) ? 'busy' : 'download'"
+            :size="16"
+            :class="{ 'xw-spin': isDownloadRunning(format.target) }"
+          />
+        </button>
+        <button
+          v-if="!isGuest"
+          type="button"
+          class="xw-btn xw-btn--compact xw-btn--icon"
+          role="menuitem"
+          :aria-disabled="formatsDisabled || undefined"
+          :aria-busy="isSaveRunning(format.target) || undefined"
+          :aria-label="`Spara ${format.name} i Mina filer`"
+          :title="saveTitle(format)"
+          :data-test="`exam-workspace-export-save-${format.target}`"
+          @click="onSave(format.target)"
+        >
+          <UiGlyph
+            :meaning="isSaveRunning(format.target) ? 'busy' : 'save-to-files'"
+            :size="16"
+            :class="{ 'xw-spin': isSaveRunning(format.target) }"
+          />
+        </button>
+      </span>
     </div>
     <div class="xw-mdiv" />
     <p
@@ -176,10 +227,7 @@ function choose(action: () => void): void {
       data-test="exam-workspace-export-checklist-open"
       @click="choose(() => emit('more'))"
     >
-      <UiGlyph
-        meaning="export-checklist"
-        :size="20"
-      /><span class="xw-grow">Det här tappar Exam.net ({{ checklistCount }})</span>
+      <span class="xw-grow">Det här tappar Exam.net ({{ checklistCount }})</span>
     </button>
     <button
       type="button"
@@ -188,7 +236,7 @@ function choose(action: () => void): void {
       data-test="exam-workspace-export-more"
       @click="choose(() => emit('more'))"
     >
-      <span class="xw-mi__pad" /><span class="xw-grow">Fler val …</span>
+      <span class="xw-grow">Fler val …</span>
     </button>
   </ExamWorkspaceMenu>
 </template>

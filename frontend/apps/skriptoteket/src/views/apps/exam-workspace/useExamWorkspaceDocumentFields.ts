@@ -4,7 +4,7 @@
  * Domain purpose:
  *   Own the teacher commands that edit one field of the whole exam (the exam
  *   instruction, a part's instruction, the Centralt innehåll ticks) and the
- *   printed-total accepts.
+ *   printed-total line's fix: clear one level's printed total.
  *
  * Relationships:
  *   - Every command is one `editDocument` call, the open document's single
@@ -14,7 +14,7 @@
  */
 
 import type { NativeExamDocument, NativeExamHeader, NativeExamParent } from "../../../api/examWorkspace";
-import { withoutExamPrintedTotal, withoutPartPrintedTotal, withoutPrintedTotals } from "./examWorkspaceTotals";
+import { withoutExamPrintedTotal, withoutPartPrintedTotal } from "./examWorkspaceTotals";
 import { withWritingLinesForAllFreeText } from "./examWorkspaceWritingLines";
 
 /** The open document's one edit path for the whole copy. */
@@ -57,19 +57,11 @@ export function useExamWorkspaceDocumentFields({
     editDocument((document) => ({ ...document, header: { ...document.header, tags } }));
   }
 
-  /** Use the questions' sum over the printed exam total; one undo step. */
-  function acceptExamPrintedTotal(): void {
-    editDocument(withoutExamPrintedTotal);
-  }
-
-  /** Use the questions' sum over one part's printed total; one undo step. */
-  function acceptPartPrintedTotal(parentId: string): void {
-    editDocument((document) => withoutPartPrintedTotal(document, parentId));
-  }
-
-  /** Use the questions' sums over the exam and every part's printed total; one undo step. */
-  function acceptAllPrintedTotals(): void {
-    editDocument(withoutPrintedTotals);
+  /** Clear one level's printed total (the exam's when `parentId` is null, else that part's); one undo step. */
+  function clearPrintedTotal(parentId: string | null): void {
+    editDocument((document) =>
+      parentId === null ? withoutExamPrintedTotal(document) : withoutPartPrintedTotal(document, parentId),
+    );
   }
 
   /** Copy one writing-line count to every free-text question; one undo step. */
@@ -78,10 +70,8 @@ export function useExamWorkspaceDocumentFields({
   }
 
   return {
-    acceptAllPrintedTotals,
-    acceptExamPrintedTotal,
-    acceptPartPrintedTotal,
     applyWritingLinesToAllFreeText,
+    clearPrintedTotal,
     setExamInstructions,
     setParentInstruction,
     setTags,

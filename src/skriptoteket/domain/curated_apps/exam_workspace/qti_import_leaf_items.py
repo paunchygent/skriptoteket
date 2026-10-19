@@ -223,6 +223,7 @@ def leaf_item(
             kind=kind,
             body=body,
             points=points,
+            source_points=source.max_score,
             tick_points=tick_points,
             writing_lines=writing_lines,
             choices=choices,

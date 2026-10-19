@@ -3,8 +3,7 @@
  *
  * Expected behavior:
  *   The instruction preview is the instruction text, or null for an
- *   instruction that prints nothing. The printed total is null without a
- *   document and the computed difference with one. The course label follows
+ *   instruction that prints nothing. The course label follows
  *   the document's course. Saved exports format through the shared timestamp
  *   helper per export target. The zero-points flag is true while any question
  *   is worth 0 points.
@@ -18,7 +17,6 @@ import type { ExamWorkspaceExportTarget } from "../../../api/examWorkspaceExport
 import { buildFreeTextItem } from "../../../test/examWorkspaceFixtures";
 import { buildDocument } from "../ExamWorkspaceSlice.specSupport";
 import { examWorkspaceSavedAt } from "./examWorkspaceFormat";
-import { examWorkspaceExamPrintedDifference } from "./examWorkspaceTotals";
 import { useExamWorkspaceViewLabels } from "./useExamWorkspaceViewLabels";
 
 function arrange(params: {
@@ -48,14 +46,6 @@ describe("useExamWorkspaceViewLabels", () => {
     const { labels } = arrange({ document: { ...buildDocument(), instructions: [] } });
 
     expect(labels.examInstructionsPreview.value).toBeNull();
-  });
-
-  it("reports no printed total without a document and the computed difference with one", () => {
-    expect(arrange().labels.examPrintedTotal.value).toBeNull();
-
-    const document = buildDocument();
-    const { labels } = arrange({ document });
-    expect(labels.examPrintedTotal.value).toBe(examWorkspaceExamPrintedDifference(document));
   });
 
   it("reports no course label for a document without a course", () => {

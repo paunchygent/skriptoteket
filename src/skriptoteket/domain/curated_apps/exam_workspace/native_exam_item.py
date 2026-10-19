@@ -74,6 +74,9 @@ class NativeExamItem(BaseModel):
     # Points no source stated per question: a printed section total split over its
     # questions (D6), or a prose marking guide's single-criterion estimate (R14).
     points_estimated: bool = False
+    # The points the source printed for this question; None when it printed none, for
+    # a share of a part total, and for teacher-created and split questions.
+    source_points: int | float | None = None
     # Trailing points wording whose number differs from points (D7)
     leftover_points_text: str | None = None
     choices: tuple[NativeChoice, ...] = ()

@@ -105,9 +105,9 @@ describe("ExamWorkspaceView export zero-points note", () => {
     const menuNotes = pageAll("exam-workspace-export-zero-points");
     expect(menuNotes).toHaveLength(1);
     expect(menuNotes[0]?.text()).toBe(ZERO_POINTS_NOTE);
-    expect(requirePage("exam-workspace-export-qti").text()).toContain(ZERO_POINTS_NOTE);
-    expect(requirePage("exam-workspace-export-pdf").text()).not.toContain("0 poäng");
-    expect(requirePage("exam-workspace-export-docx").text()).not.toContain("0 poäng");
+    expect(requirePage("exam-workspace-export-row-qti").text()).toContain(ZERO_POINTS_NOTE);
+    expect(requirePage("exam-workspace-export-row-pdf").text()).not.toContain("0 poäng");
+    expect(requirePage("exam-workspace-export-row-docx").text()).not.toContain("0 poäng");
     expect(menuFormatDisabled("qti")).toBeUndefined();
     await requirePage("exam-workspace-export-qti").trigger("click");
     await flushPromises();
@@ -138,7 +138,7 @@ describe("ExamWorkspaceView export zero-points note", () => {
 
     await openMenu(wrapper);
     expect(page("exam-workspace-export-zero-points")).toBeNull();
-    expect(requirePage("exam-workspace-export-qti").text()).not.toContain("0 poäng");
+    expect(requirePage("exam-workspace-export-row-qti").text()).not.toContain("0 poäng");
     await closeMenu(wrapper);
     await openExportDrawer(wrapper);
     await wrapper.get<HTMLInputElement>('[data-test="exam-workspace-export-format-qti"]').setValue(true);

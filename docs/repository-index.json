@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "b2819ea6b15db4cfa3e43d8f36425eca3427e5c64d34913d8b51b0d8bdfa7f13",
+  "source_set_digest": "3e6e6244dfaec9c69ebe2e6c9218a2f5d757db918514fc502bfd9e9ed0353ccb",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6672,7 +6672,30 @@
       "type": "task",
       "title": "Short-answer and gap-text questions look different, teachers create gaps by clicking a word, and the gap popover shows its whole answer list",
       "path": "docs/backlog/tasks/task-skript-40-04-08-short-answer-and-gap-text-questions-look-different-teachers-create-gaps-by-clicking-a-word-and-the-gap-popover-shows-its-whole-answer-list.md",
-      "status": "in_progress",
+      "status": "done",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-19",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Independent ruthless-reviewer 9633a403 (Pi) cleared F1 and F2 (high) on rereview at 3f498eda and approved the copy; F3-F6 medium admitted on focused proof. Merged to main as eee7c32f. The staging walk found six defects; walk-repair review cd5a1b4c at 5644f908 returned three medium findings, repaired and admitted on focused proof without rereview (retained 01a153be evidence/reviews/cd5a1b4c-d09a-4648-b53f-76f0124e21e7.md). Repair merged to main as be979cd7; the Hemma pre-push suite passed (505 files, 3565 tests); the Mac re-walk of findings 1-5 on staging at be979cd7 passed (Mac .artifacts/staging-walk-40-04-08-repair/walk-record.md). Finding 6 moved to TASK-SKRIPT-40-04-09."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-09",
+      "type": "task",
+      "title": "Teachers switch on a gap tool and click words to make gaps, and the toolbar names every keyboard shortcut",
+      "path": "docs/backlog/tasks/task-skript-40-04-09-teachers-switch-on-a-gap-tool-and-click-words-to-make-gaps-and-the-toolbar-names-every-keyboard-shortcut.md",
+      "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -6687,11 +6710,11 @@
       }
     },
     {
-      "id": "TASK-SKRIPT-40-04-09",
+      "id": "TASK-SKRIPT-40-04-10",
       "type": "task",
-      "title": "Teachers switch on a gap tool and click words to make gaps, and the toolbar names every keyboard shortcut",
-      "path": "docs/backlog/tasks/task-skript-40-04-09-teachers-switch-on-a-gap-tool-and-click-words-to-make-gaps-and-the-toolbar-names-every-keyboard-shortcut.md",
-      "status": "ready",
+      "title": "Teachers see a printed-total difference in one line and fix the exam text or the questions",
+      "path": "docs/backlog/tasks/task-skript-40-04-10-teachers-see-which-questions-and-parts-cause-a-printed-total-difference-and-can-dismiss-it.md",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -6786,11 +6809,30 @@
       }
     },
     {
+      "id": "TASK-SKRIPT-40-04-16",
+      "type": "task",
+      "title": "Each export format downloads or saves to Mina filer from one split button at the right of its menu row",
+      "path": "docs/backlog/tasks/task-skript-40-04-16-each-export-format-downloads-or-saves-to-mina-filer-from-one-split-button-at-the-right-of-its-menu-row.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
       "id": "TASK-SKRIPT-40-04-17",
       "type": "task",
       "title": "The exam workspace header and toolbars share one compact control system with autosave status, file commands and a gap switch",
       "path": "docs/backlog/tasks/task-skript-40-04-17-the-exam-workspace-header-and-toolbars-share-one-compact-control-system-with-autosave-status-file-commands-and-a-gap-switch.md",
-      "status": "proposed",
+      "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -8060,6 +8102,24 @@
         "decided_at": "2026-10-19",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "Pi ruthless-reviewer 7c83bec8 reviewed f7dd14d7 (Hemma retained session 01a14f6a-f57b-7b24-9672-320bf5884dbc, evidence/reviews/7c83bec8-d3ba-47cc-9881-6e50e14e2364.md): approved with no findings; three adversarial probes pass (new top-level and nested paid routes are still caught by the AI route-gate guard). Merged to main 2026-10-19."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0048",
+      "type": "task",
+      "title": "QTI item serializer indents block structure only and never mixed inline content",
+      "path": "docs/backlog/tasks/task-skript-rep-0048-qti-item-serializer-indents-block-structure-only-and-never-mixed-inline-content.md",
+      "status": "in_progress",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {

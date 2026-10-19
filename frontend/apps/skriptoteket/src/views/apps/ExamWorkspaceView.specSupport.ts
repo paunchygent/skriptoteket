@@ -45,7 +45,7 @@ export function buildDocument(): NativeExamDocument {
     parents: [],
     revision: 1,
     header: { tags: [] },
-    schema_version: "native_exam_document_v8",
+    schema_version: "native_exam_document_v9",
     title: "NO-prov HT25",
   };
 }

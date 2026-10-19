@@ -77,6 +77,7 @@ export function keylessItem(sequence: number, kind: "single_choice" | "multiple_
     review: { confidence: 0.9, parse_origin: "deterministic", reasons: [], state: "review_complete" },
     sequence,
     source_anchor: null,
+    source_points: null,
     suggested_kind: null,
     tick_points: null,
     writing_lines: null,
@@ -132,6 +133,7 @@ export function retryItem(): NativeExamItem {
     },
     sequence: 3,
     source_anchor: "body:0001",
+    source_points: null,
     suggested_kind: null,
     tick_points: null,
     writing_lines: 8,
@@ -149,7 +151,7 @@ export function blankDocument(): NativeExamDocument {
     origin: { kind: "docx_import" },
     parents: [],
     revision: 1,
-    schema_version: "native_exam_document_v8",
+    schema_version: "native_exam_document_v9",
     title: "Nytt prov",
   };
 }
