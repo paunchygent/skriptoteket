@@ -8,6 +8,12 @@ export interface VitestArgSplit {
   passthrough: string[];
 }
 
+export interface VitestTargetResolution {
+  patterns: string[];
+  specFiles: string[];
+  unnameable: string[];
+}
+
 export interface VitestRunPlan {
   args: string[];
   include: string[] | null;
@@ -19,7 +25,7 @@ export function isExplicitTest(arg: string): boolean;
 export function isGlob(arg: string): boolean;
 export function normalizeVitestPathArg(arg: string): string;
 export function listSpecFiles(patterns: string[]): string[];
-export function expandVitestTarget(target: string): string[];
+export function resolveVitestTarget(target: string): VitestTargetResolution;
 export function splitVitestArgs(rawArgs: string[]): Promise<VitestArgSplit>;
 export function planVitestRun(rawArgs: string[]): Promise<VitestRunPlan>;
 export function resolveVitestBin(): string;

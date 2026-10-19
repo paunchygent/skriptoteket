@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "f7736229d15ba22b4691262cc499eb7fe59f4da332c64ada1a0089125b613cb1",
+  "source_set_digest": "b9c40f7941057a70526af845442b975250491362e9d394069340d4d17fdfb5b3",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -776,6 +776,27 @@
       "type": "story",
       "title": "Migration idempotency harness supports merge revisions",
       "path": "docs/backlog/stories/st-skript-06-17-migration-idempotency-harness-supports-merge-revisions.md",
+      "status": "proposed",
+      "epic": "EPIC-SKRIPT-06",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "links": {
+        "decisions": []
+      },
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "ST-SKRIPT-06-18",
+      "type": "story",
+      "title": "The SPA Vitest wrapper runs exactly the spec files its targets name",
+      "path": "docs/backlog/stories/st-skript-06-18-the-spa-vitest-wrapper-runs-exactly-the-spec-files-its-targets-name.md",
       "status": "proposed",
       "epic": "EPIC-SKRIPT-06",
       "owners": [
@@ -2594,6 +2615,25 @@
       "status": "proposed",
       "task_kind": "story",
       "story": "ST-SKRIPT-06-17",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-06-18-01",
+      "type": "task",
+      "title": "Repair vitest-run target resolution, separator handling and the include transport type",
+      "path": "docs/backlog/tasks/task-skript-06-18-01-repair-vitest-run-target-resolution-separator-handling-and-the-include-transport-type.md",
+      "status": "proposed",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-06-18",
       "owners": [
         {
           "kind": "service",
