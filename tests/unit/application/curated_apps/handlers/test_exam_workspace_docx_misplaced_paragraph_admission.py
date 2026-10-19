@@ -280,3 +280,36 @@ def test_an_unrenderable_inline_answer_key_paragraph_goes_to_source_review():
     assert second.answer_key.origin is NativeAnswerKeyOrigin.NOT_APPLICABLE
     assert second.gaps == ()
     assert [event for event in state.events if event.code == "formatting_transfer_failed"] != []
+
+
+def test_a_consumed_shared_paragraph_is_not_rebuilt_from_the_next_own_paragraph():
+    shared = "Give a reason."
+    chunks = (
+        _chunk("body:0001", shared),
+        _chunk("body:0002", shared),
+        _chunk("body:0003", "Describe the rock cycle."),
+    )
+    state = DocxBuildState(
+        job_id=uuid4(),
+        document_id=uuid4(),
+        filename="prov.docx",
+        source_sha256="0" * 64,
+        chunks=chunks,
+        questions=(("body:0001",), ("body:0002", "body:0003")),
+    )
+
+    admit_batch(
+        {
+            "items": [
+                _item(("body:0001",), "1", shared),
+                _item(("body:0002", "body:0003"), "2", shared, shared),
+            ]
+        },
+        state,
+    )
+
+    first, second = (aligned.item for aligned, _ in state.accepted)
+    assert body_plain_text(first.body) == shared
+    assert body_plain_text(second.body) == "Give a reason.\nGive a reason."
+    assert body_plain_text(second.body) != "Give a reason.\nDescribe the rock cycle."
+    assert second.review.state is NativeItemReviewState.REVIEW_COMPLETE

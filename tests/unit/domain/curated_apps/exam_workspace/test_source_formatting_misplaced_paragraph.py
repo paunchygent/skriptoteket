@@ -299,3 +299,16 @@ def test_a_misplaced_paragraph_whose_own_source_holds_a_picture_raises():
 
     with pytest.raises(FormattingTransferError, match="picture"):
         source.body((_paragraph(_text(_REPLY)),))
+
+
+def test_a_second_shared_paragraph_after_the_cursor_is_still_owned():
+    shared = "Give a reason."
+    source = SourceFormatting(
+        (_chunk("own1", (shared, ())), _chunk("own2", ("Describe the rock cycle.", ()))),
+        foreign=(shared,),
+    )
+
+    body = source.body((_paragraph(_text(shared)), _paragraph(_text(shared))))
+
+    assert body_plain_text(body) == "Give a reason.\nGive a reason."
+    assert source.path != "rebuilt"

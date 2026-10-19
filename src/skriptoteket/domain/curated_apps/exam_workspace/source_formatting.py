@@ -292,12 +292,18 @@ class SourceFormatting:
     def _is_misplaced(self, paragraph: NativeParagraph) -> bool:
         """Whether a text-only reply paragraph is another question's source and so never this
         item's content (TASK-SKRIPT-39-04-15 D4): its whole text is one other chunk's source span,
-        never a match straddling the boundary between two chunks."""
+        never a match straddling the boundary between two chunks. Ownership is a property of
+        this item's whole own source, never of the rendering cursor: text occurring anywhere in
+        this item's own normalized source is owned even when the cursor has consumed its span."""
         if any(segment.kind != "text" for segment in paragraph.segments):
             return False
         text = "".join(segment.text for segment in paragraph.segments if segment.kind == "text")
         wanted, _ = normalized_source_index(text)
-        return bool(wanted) and any(wanted in chunk for chunk in self.foreign_normalized)
+        if not wanted:
+            return False
+        if wanted in self.normalized:
+            return False
+        return any(wanted in chunk for chunk in self.foreign_normalized)
 
     def _rebuild_misplaced(self) -> list[tuple[NativeParagraph, int]]:
         """Rebuild a misplaced paragraph from this item's next own source paragraph no output
