@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "203ac5743fbd4f50ecadaf540c001c0ed5978ee6c6e827d655b0170b8cb85fd1",
+  "source_set_digest": "6f38fa5d308304e890b54ad0e0796bbbf7acb00adc682da0d4e9794a5087dc03",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6569,7 +6569,7 @@
       "type": "task",
       "title": "Teachers edit a dropdown gap's options and mark the correct one in the gap popover",
       "path": "docs/backlog/tasks/task-skript-40-04-04-teachers-edit-a-dropdown-gap-s-options-and-mark-the-correct-one-in-the-gap-popover.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -6580,7 +6580,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-19",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Independent ruthless-reviewer e7dac097 (Pi) approved the review-1 repair F1-F5 at 471f2209 with no findings (retained 01a14c27 evidence/reviews/TASK-SKRIPT-40-04-04/review-2.md); merged to main as 36ca27c0. The D3 walk failure was repaired under TASK-SKRIPT-40-04-08 WR1 (4885c37d, review cd5a1b4c, merged be979cd7). The Mac staging walk at cf9547fa passed the owed Validation walk: blocker jump, fix, then QTI export 200 (Mac .artifacts/staging-walk-cf9547fa/walk-record.md)."
       }
     },
     {
@@ -6794,7 +6798,7 @@
       "type": "task",
       "title": "Each export format downloads or saves to Mina filer from one split button at the right of its menu row",
       "path": "docs/backlog/tasks/task-skript-40-04-16-each-export-format-downloads-or-saves-to-mina-filer-from-one-split-button-at-the-right-of-its-menu-row.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -6805,7 +6809,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-19",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Independent ruthless-reviewer 39d1f3fc (Pi) at eac9eba2 returned changes_requested with one medium, F1 (a duplicate export-format name table); repaired at e4fd8b51 (catalogue keyed by target, EXPORT_FORMAT_NAMES removed, close-twice menu spec) and admitted on focused proof without rereview (6 spec files, 54 passed; fe-type-check and fe-lint rc 0). Merged to main as cf9547fa; the Hemma pre-push suite passed. The Mac staging walk at cf9547fa passed every check (Mac .artifacts/staging-walk-cf9547fa/walk-record.md)."
       }
     },
     {
