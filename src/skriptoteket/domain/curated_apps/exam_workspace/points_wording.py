@@ -6,11 +6,15 @@ a text. When its number equals the item's points, ``body_without_trailing_points
 drops it from the last paragraph (keeping the word of a whole-text one-word
 line, D13), and ``body_without_first_paragraph_points``
 drops a parenthesised label ending the first paragraph or a first paragraph
-that is only a bare label; when the shape matches
+that is only points wording (a points-only line with an empty or colon head,
+or a bare label as its only words); a points-only line with a one-word head
+without a colon keeps its word and loses only the label (D12 fourth
+extension); when the shape matches
 but the number differs, the wording stays and ``leftover_points_wording``
 reports it for the points-note offer. ``body_without_heading_points`` drops
-any equal points label ending a heading paragraph anywhere in the body.
-``with_settled_points_wording`` settles
+any equal points label ending a heading paragraph anywhere in the body; a
+points-only line there with a one-word head without a colon keeps its word
+the same way. ``with_settled_points_wording`` settles
 each outcome on the final item. Only the label's position and its number
 decide; the stem itself is never read or rewritten.
 """
@@ -254,14 +258,45 @@ def _first_paragraph_parenthesised_label_start(run_text: str) -> int | None:
     return start
 
 
+def _points_only_word_head_label_start(run_text: str) -> int | None:
+    """The label start when a points-only last line keeps a one-word head.
+
+    D12 fourth extension: an empty head or one ending in a colon leaves whole,
+    so only a one-letter-word head without a colon ("Tempus", "Max") trims to
+    the word; a longer head never reaches here, since a points-only line holds
+    at most a two-word head ending in a colon.
+    """
+    stripped = run_text.rstrip()
+    line_start = stripped.rfind("\n") + 1
+    line = stripped[line_start:]
+    if not points_only_line(line):
+        return None
+    matches = list(POINT_LABEL.finditer(line))
+    if len(matches) != 1:
+        return None
+    match = matches[0]
+    head = line[: match.start()]
+    if not head.strip() or head.rstrip().endswith(":"):
+        return None
+    if re.fullmatch(r"[^\W\d_]+", head.strip()) is None:
+        return None
+    start = line_start + match.start()
+    while start > line_start and stripped[start - 1] in " \t":
+        start -= 1
+    return start
+
+
 def _first_paragraph_bare_only_value(run_text: str) -> int | float | None:
-    """The value when a first paragraph's only words are one bare label.
+    """The value when a first paragraph holds only points wording.
 
     D12 extension E: ``heading_level`` comes from the Word heading style, so a
     heading chunk without a style level reaches the final gate as a plain first
-    paragraph holding only its points wording ("1 point"). A paragraph with
-    other words ("Uppgift 3 – 4 poäng", "Beskriv fotosyntesen, 2 p"), a headed
-    points-only line ("Poäng: 2 poäng") and a parenthesised label (the
+    paragraph holding only its points wording. A points-only line with an empty
+    or colon head ("Poäng: 2 poäng", "Max poäng: 6 p") or a bare label as the
+    paragraph's only words ("1 point") counts; a one-word head without a colon
+    ("Tempus 3 poäng", "Max 36p") keeps its word through the label trim, a
+    paragraph with other words ("Uppgift 3 – 4 poäng",
+    "Beskriv fotosyntesen, 2 p") and a parenthesised label (the
     parenthesised rule's case) never count.
     """
     stripped = run_text.strip()
@@ -271,6 +306,10 @@ def _first_paragraph_bare_only_value(run_text: str) -> int | float | None:
     match = matches[0]
     if match.group().startswith("("):
         return None
+    if points_only_line(stripped):
+        if _points_only_word_head_label_start(stripped) is not None:
+            return None
+        return label_points(match.group())
     if stripped[: match.start()].strip():
         return None
     if stripped[match.end() :].strip(" \t.,;:!?"):
@@ -281,11 +320,12 @@ def _first_paragraph_bare_only_value(run_text: str) -> int | float | None:
 def _without_bare_only_first_paragraph(
     body: tuple[NativeParagraph, ...], points: int | float
 ) -> tuple[NativeParagraph, ...]:
-    """The body without a first paragraph that is only a bare points label.
+    """The body without a first paragraph that holds only points wording.
 
-    The paragraph is dropped when its label's number equals the points and the
-    body keeps other text, gap or picture; otherwise, and for a differing
-    number, the body stays and nothing is recorded.
+    The paragraph is dropped whole when its wording's number equals the points
+    and the body keeps other text, gap or picture; a one-word head without a
+    colon keeps its word through the label trim instead, and a differing
+    number leaves the body untouched while nothing is recorded.
     """
     paragraph = body[0]
     texts: list[str] = []
@@ -308,10 +348,14 @@ def body_without_first_paragraph_points(
     A parenthesised label ending the first paragraph's last line leaves with
     the blank space before it when its number equals the given points, heading
     or not; the paragraph keeps its heading level. Only the label leaves, never
-    the line, whether or not that line is also a points-only line (D12). A first
-    paragraph whose only words are one bare label ("1 point") is dropped when
-    its number equals the points and the body keeps other text (D12 E); a bare
-    label beside other words stays. A one-paragraph body is the
+    the line, whether or not that line is also a points-only line (D12). A
+    points-only last line with a one-word head without a colon ("Tempus
+    3 poäng", "Max 36p") keeps its word and loses only the label (D12 fourth
+    extension); a first paragraph that holds only points wording with an empty
+    or colon head (a points-only line such as "Poäng: 2 poäng", or one bare
+    label as its only words, "1 point") is dropped whole when its number
+    equals the points and the body keeps other text (D12 E); a label beside
+    other words stays. A one-paragraph body is the
     end-of-body rule's case, and a differing number records nothing. The cut
     keeps each segment's marks; a paragraph left with no segments is dropped
     when the body keeps other text, while a body of only that label stays (D6).
@@ -326,6 +370,8 @@ def body_without_first_paragraph_points(
         return body
     if found.whole_line:
         label_start = _first_paragraph_parenthesised_label_start(run_text)
+        if label_start is None:
+            label_start = _points_only_word_head_label_start(run_text)
         if label_start is None:
             return _without_bare_only_first_paragraph(body, points)
         start = label_start
@@ -408,7 +454,10 @@ def body_without_heading_points(
 
     Any single points label ending a heading paragraph's last line leaves when
     its number equals the given points: a parenthesised label (only it leaves),
-    a whole points-only line (it leaves), or a bare label ending its line
+    a whole points-only line with an empty or colon head (it leaves), a
+    points-only line with a one-word head without a colon (only the label
+    leaves and the word stays, D12 fourth extension), or a bare label ending
+    its line
     (D5; it leaves with the blank space before it, plus one trailing dash or
     colon with its blank space). The paragraph keeps its heading level, and a
     non-heading paragraph is never touched. A differing number records nothing.
@@ -444,6 +493,8 @@ def body_without_heading_points(
                 continue
             if found.whole_line:
                 label_start = _first_paragraph_parenthesised_label_start(run_text)
+                if label_start is None:
+                    label_start = _points_only_word_head_label_start(run_text)
                 if label_start is None:
                     start = _whole_line_start(run_text)
                 else:

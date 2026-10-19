@@ -421,17 +421,83 @@ def test_first_paragraph_bare_label_paragraph_with_other_points_stays() -> None:
     assert result.leftover_points_text is None
 
 
-def test_first_paragraph_non_parenthesised_points_line_stays() -> None:
-    # D12 names parenthesised labels only: a bare label stays even at equal points.
-    body = (_paragraph(_text("Poäng: 2 poäng")), _paragraph(_text("Svara.")))
+def test_first_paragraph_points_only_line_leaves_at_equal_points() -> None:
+    # D12 decision E: a first paragraph that is a points-only line leaves whole at equal points.
+    body = (_paragraph(_text("Poäng: 2 poäng")), _paragraph(_text("Svara utförligt.")))
+    result = with_settled_points_wording(_item(body, 2))
+    assert result.body == (_paragraph(_text("Svara utförligt.")),)
+    assert result.leftover_points_text is None
+
+
+def test_first_paragraph_points_only_line_with_other_points_stays() -> None:
+    # D12 decision E: a differing number stays and is not recorded.
+    body = (
+        _paragraph(_text("Poäng: 2 poäng")),
+        _paragraph(_text("Svara utförligt.")),
+    )
+    result = with_settled_points_wording(_item(body, 3))
+    assert result.body == body
+    assert result.leftover_points_text is None
+
+
+def test_first_paragraph_totalt_points_only_line_leaves_at_equal_points() -> None:
+    # D12 decision E: any head a points-only line accepts counts.
+    body = (_paragraph(_text("Totalt: 36 p")), _paragraph(_text("Svara utförligt.")))
+    result = with_settled_points_wording(_item(body, 36))
+    assert result.body == (_paragraph(_text("Svara utförligt.")),)
+    assert result.leftover_points_text is None
+
+
+def test_first_paragraph_max_points_only_line_leaves_at_equal_points() -> None:
+    # D12 fourth extension: a one-word head without a colon keeps its word;
+    # only the label leaves.
+    body = (_paragraph(_text("Max 36p")), _paragraph(_text("Svara utförligt.")))
+    result = with_settled_points_wording(_item(body, 36))
+    assert result.body == (
+        _paragraph(_text("Max")),
+        _paragraph(_text("Svara utförligt.")),
+    )
+    assert result.leftover_points_text is None
+
+
+def test_first_paragraph_topic_word_head_keeps_its_word() -> None:
+    # D12 fourth extension: a one-word head without a colon keeps its word;
+    # only the label leaves.
+    body = (
+        _paragraph(_text("Tempus 3 poäng")),
+        _paragraph(_text("Svara utförligt.")),
+    )
+    result = with_settled_points_wording(_item(body, 3))
+    assert result.body == (
+        _paragraph(_text("Tempus")),
+        _paragraph(_text("Svara utförligt.")),
+    )
+    assert result.leftover_points_text is None
+
+
+def test_first_paragraph_points_only_line_alone_stays() -> None:
+    # D12 decision E, D6: a body of only that paragraph stays.
+    body = (_paragraph(_text("Poäng: 2 poäng")),)
     result = with_settled_points_wording(_item(body, 2))
     assert result.body == body
     assert result.leftover_points_text is None
 
 
-def test_first_paragraph_points_line_is_not_this_rules_case() -> None:
+def test_first_paragraph_points_only_line_with_label_at_each_end_stays() -> None:
+    # D3: several labels leave everything untouched.
     body = (
         _paragraph(_text("Poäng: 2 poäng")),
+        _paragraph(_text("Svara. (2 p)")),
+    )
+    result = with_settled_points_wording(_item(body, 2))
+    assert result.body == body
+    assert result.leftover_points_text is None
+
+
+def test_first_paragraph_prose_after_label_stays() -> None:
+    # D12 decision E: prose after the label is never a points-only line.
+    body = (
+        _paragraph(_text("Poäng: 2 poäng är max")),
         _paragraph(_text("Svara utförligt.")),
     )
     result = with_settled_points_wording(_item(body, 2))
@@ -660,6 +726,40 @@ def test_heading_bare_label_ending_line_with_other_points_stays() -> None:
 def test_heading_headed_points_only_line_with_equal_points_is_dropped() -> None:
     body = (_heading("Poäng: 2 p"), _paragraph(_text("Svara utförligt.")))
     result = with_settled_points_wording(_item(body, 2))
+    assert result.body == (_paragraph(_text("Svara utförligt.")),)
+    assert result.leftover_points_text is None
+
+
+def test_heading_topic_word_head_keeps_its_word_and_level() -> None:
+    # D12 fourth extension: a one-word head without a colon keeps its word;
+    # only the label leaves, and the paragraph keeps its heading level.
+    body = (_heading("Tempus 3 poäng"), _paragraph(_text("Svara utförligt.")))
+    result = with_settled_points_wording(_item(body, 3))
+    assert result.body == (_heading("Tempus"), _paragraph(_text("Svara utförligt.")))
+    assert result.body[0].heading_level == 3
+    assert result.leftover_points_text is None
+
+
+def test_heading_topic_word_head_with_other_points_stays() -> None:
+    # D12 fourth extension stays gated on D3: a differing number stays.
+    body = (_heading("Tempus 3 poäng"), _paragraph(_text("Svara utförligt.")))
+    result = with_settled_points_wording(_item(body, 4))
+    assert result.body == body
+    assert result.leftover_points_text is None
+
+
+def test_heading_colon_head_points_only_line_leaves_whole() -> None:
+    # D12 fourth extension: an empty or colon head leaves whole.
+    body = (_heading("Poäng: 2 poäng"), _paragraph(_text("Svara utförligt.")))
+    result = with_settled_points_wording(_item(body, 2))
+    assert result.body == (_paragraph(_text("Svara utförligt.")),)
+    assert result.leftover_points_text is None
+
+
+def test_heading_totalt_points_only_line_leaves_whole() -> None:
+    # D12 fourth extension: an empty or colon head leaves whole.
+    body = (_heading("Totalt: 36 p"), _paragraph(_text("Svara utförligt.")))
+    result = with_settled_points_wording(_item(body, 36))
     assert result.body == (_paragraph(_text("Svara utförligt.")),)
     assert result.leftover_points_text is None
 
