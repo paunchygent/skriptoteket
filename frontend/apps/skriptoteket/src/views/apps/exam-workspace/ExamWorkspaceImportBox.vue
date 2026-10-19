@@ -87,7 +87,15 @@ const selectedKind = computed<NativeExamItemKind>(() => {
 });
 
 function chooseKind(event: Event): void {
-  retryKind.value = (event.target as HTMLSelectElement).value as NativeExamItemKind;
+  const target = event.target;
+  if (!(target instanceof HTMLSelectElement)) {
+    return;
+  }
+  const found = RETRY_KINDS.find((kind) => kind === target.value);
+  if (found === undefined) {
+    return;
+  }
+  retryKind.value = found;
 }
 </script>
 
