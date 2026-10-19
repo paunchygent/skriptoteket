@@ -101,10 +101,23 @@ chunks and its parent's source anchors.
   `/home/paunchygent/apps/skriptoteket-task-skript-39-04-left-out-remote`, from
   `origin/main` `ffbfa953`. Never pushed.
 - Retained root `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a15302-b287-7db2-91ec-8e9629121eb1`.
-- State: ready (D9); U1 in progress. Merge `origin/main` when the orchestrator reports
-  TASK-SKRIPT-40-04-07 there, then tighten its control test (Validation).
-- Units: U1 domain (D1-D3, D5; order `evidence/orders/u1-domain-left-out-mark.md`), then
-  U2 application and tests (D4, D7).
+- State: U1 and U2 done; waiting for the orchestrator's domain-suite slot, then
+  independent review (routed by the orchestrator).
+- U1 domain (junior `1e3a096f`, `5761395c`): `AlignedItem.left_out`,
+  `with_placed_left_out_mark`, the placement call and the D42 return; order
+  `evidence/orders/u1-domain-left-out-mark.md`.
+- Merged `origin/main` `14f643c9` (TASK-SKRIPT-40-04-07) in `f217923c`; only conflict
+  `docs/repository-index.json` (regenerated); `2a8996c1` adds `writing_lines` to the U1
+  test builder for 40-04-07's free_text rule.
+- U2 application (junior `bfbb5c87`, `0a33517b`; its run ended on a provider error after
+  the commit): admission records the anchors, retry renders the mark (D7), the admission
+  tests assert on `state.result()` (D4), the 40-04-07 Del A control test asserts the stale
+  reason is gone. Fail-first: a, c, d failed on the stale mark before U2.
+- Proof at `392cab8d`: 134 focused tests pass; lint clean; backend typecheck clean (the
+  frontend phase cannot run here: no `node_modules`, frontend untouched); docs-validate
+  clean. Ten replays (`~/logs/replays-39-04-19/`, base `14f643c9`) identical (D6). Del A
+  probe (`scratch/del_a_probe.py`): final body `Del A\nFörklara.`, `review_complete`, no
+  reasons, admission event `own_chunks_left_out` still recorded.
 
 ## Stop Conditions
 
