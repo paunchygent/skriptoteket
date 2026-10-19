@@ -169,19 +169,24 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
     }
   }
 
+  /** Turn read-only and restart the heartbeat after yielding to a takeover. */
+  function noteYielded(): void {
+    noteLostLease();
+    // Restart the heartbeat so the first retry claim happens one full
+    // heartbeat after the release, not on the old phase: otherwise this
+    // tab could reclaim the freed lease before the waiting tab's `Ta över`
+    // poll. A refused write keeps its phase through `noteLostLease`.
+    stopHeartbeat();
+    startHeartbeat();
+  }
+
   /** Store the pending edit, release and turn read-only for the waiting tab. */
   async function yieldLease(lineageId: string): Promise<void> {
     try {
       await deps.onTakeoverRequested();
     } finally {
       await tryRelease(lineageId);
-      noteLostLease();
-      // Restart the heartbeat so the first retry claim happens one full
-      // heartbeat after the release, not on the old phase: otherwise this
-      // tab could reclaim the freed lease before the waiting tab's `Ta över`
-      // poll. A refused write keeps its phase through `noteLostLease`.
-      stopHeartbeat();
-      startHeartbeat();
+      noteYielded();
     }
   }
 
@@ -198,6 +203,7 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
             deps.now,
             () => deps.onTakeoverRequested(),
             noteLostLease,
+            noteYielded,
           )
         : createServerDriver(deps.server ?? defaultServer, tabId, yieldLease);
     } catch {

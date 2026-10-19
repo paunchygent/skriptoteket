@@ -129,13 +129,23 @@ export function createGuestDriver(
   openChannel: () => GuestEditLeaseChannel,
   now: (() => number) | undefined,
   onTakeoverRequested: () => Promise<void> | void,
+  /** Keeps the heartbeat phase; a refused or expired lease retries on it. */
   noteLostLease: () => void,
+  /**
+   * Runs after this tab answers a takeover: the composable's yield restart
+   * (read-only plus a fresh heartbeat phase), so the first retry claim
+   * happens one full heartbeat after the release.
+   */
+  onYielded: () => void,
 ): ExamWorkspaceEditLeaseDriver {
   const controller = createGuestEditLeaseController({
     now,
     onTakeoverRequested: async () => {
       await onTakeoverRequested();
-      noteLostLease();
+      // The controller releases the lease immediately after this callback in
+      // the same microtask drain, so no heartbeat tick can interleave: this
+      // restart counts as after the release.
+      onYielded();
     },
     openChannel,
     storage: guestStorage,

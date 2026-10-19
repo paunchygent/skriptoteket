@@ -74,16 +74,24 @@ function setupGuestLeases() {
   const advance = (ms: number) => {
     nowMs += ms;
   };
-  const open = (tabId: string, events: { flushed: string[]; acquired: string[] }) => {
+  const open = (
+    tabId: string,
+    events: { flushed: string[]; acquired: string[] },
+    overrides?: {
+      guestStorage?: GuestEditLeaseStoragePort;
+      onTakeoverRequested?: () => Promise<void> | void;
+    },
+  ) => {
     const scope = effectScope();
     const lease = scope.run(() =>
       useExamWorkspaceEditLease({
-        guestStorage: storage,
+        guestStorage: overrides?.guestStorage ?? storage,
         isGuest: () => true,
         lineageId: () => LINEAGE,
         now,
         onAcquired: () => void events.acquired.push("reloaded"),
-        onTakeoverRequested: () => void events.flushed.push("stored"),
+        onTakeoverRequested:
+          overrides?.onTakeoverRequested ?? (() => void events.flushed.push("stored")),
         openGuestChannel: () => hub.createChannel(),
         tabId,
       }),
@@ -100,6 +108,23 @@ beforeEach(() => {
 afterEach(() => {
   vi.useRealTimers();
 });
+
+/** Count one tab's lease-slot reads and writes against the shared slot. */
+function wrapCountingLeaseStorage(
+  inner: GuestEditLeaseStoragePort,
+  counter: { loads: number; saves: number },
+): GuestEditLeaseStoragePort {
+  return {
+    load: async () => {
+      counter.loads += 1;
+      return inner.load();
+    },
+    save: async (record) => {
+      counter.saves += 1;
+      return inner.save(record);
+    },
+  };
+}
 
 describe("useExamWorkspaceEditLease on the guest lease", () => {
   it("opens the second tab read-only while the first holds the lease", async () => {
@@ -176,6 +201,111 @@ describe("useExamWorkspaceEditLease on the guest lease", () => {
       expect(await context.storage.load()).toMatchObject({ tabId: "tab-a" });
       expect(first.lease.readOnly.value).toBe(false);
       expect(firstEvents.acquired).toEqual(["reloaded"]);
+    } finally {
+      first.stop();
+      second.stop();
+    }
+  });
+
+  it("waits one full heartbeat after a yield before claiming again, letting the waiter take over", async () => {
+    const context = setupGuestLeases();
+    const firstEvents: { acquired: string[]; flushed: string[] } = { acquired: [], flushed: [] };
+    const secondEvents: { acquired: string[]; flushed: string[] } = { acquired: [], flushed: [] };
+    const firstCounter = { loads: 0, saves: 0 };
+    let delayTakeoverFlush = true;
+    let releaseStore: () => void = () => undefined;
+    const first = context.open("tab-a", firstEvents, {
+      guestStorage: wrapCountingLeaseStorage(context.storage, firstCounter),
+      onTakeoverRequested: () => {
+        if (delayTakeoverFlush) {
+          delayTakeoverFlush = false;
+          return new Promise<void>((resolve) => {
+            releaseStore = () => {
+              firstEvents.flushed.push("stored");
+              resolve();
+            };
+          });
+        }
+        firstEvents.flushed.push("stored");
+        return undefined;
+      },
+    });
+    await flushPromises();
+    const second = context.open("tab-b", secondEvents);
+    try {
+      await flushPromises();
+      expect(first.lease.readOnly.value).toBe(false);
+      expect(second.lease.readOnly.value).toBe(true);
+      const taking = second.lease.requestTakeover();
+      await flushPromises();
+
+      // The holder's answer resolves just before its old heartbeat phase
+      // would fire again; the release lands on a fresh phase.
+      await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_EDIT_LEASE_HEARTBEAT_MS - 100);
+      releaseStore();
+      await flushPromises();
+      expect(firstEvents.flushed).toEqual(["stored"]);
+      expect(first.lease.readOnly.value).toBe(true);
+      expect(await context.storage.load()).toBeNull();
+      const loadsAfterYield = firstCounter.loads;
+
+      // 200 ms later the old phase would already have fired: the yielded tab
+      // must still have sent no claim, while the waiter's poll takes the lease.
+      // (Assert before awaiting the takeover: on the old phase the yielded
+      // tab reclaims first and the waiter never resolves here.)
+      await vi.advanceTimersByTimeAsync(200);
+      expect(firstCounter.loads).toBe(loadsAfterYield);
+      await taking;
+      expect(await context.storage.load()).toMatchObject({ tabId: "tab-b" });
+      expect(second.lease.readOnly.value).toBe(false);
+      expect(secondEvents.acquired).toEqual(["reloaded"]);
+      expect(first.lease.readOnly.value).toBe(true);
+
+      // One full heartbeat after the release the yielded tab retries once and
+      // is refused, staying read-only without a reload.
+      await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_EDIT_LEASE_HEARTBEAT_MS);
+      expect(firstCounter.loads).toBe(loadsAfterYield + 1);
+      expect(await context.storage.load()).toMatchObject({ tabId: "tab-b" });
+      expect(first.lease.readOnly.value).toBe(true);
+      expect(firstEvents.acquired).toEqual([]);
+    } finally {
+      first.stop();
+      second.stop();
+    }
+  });
+
+  it("keeps the heartbeat phase after a refused write", async () => {
+    const context = setupGuestLeases();
+    const firstEvents = { acquired: [] as string[], flushed: [] as string[] };
+    const secondEvents = { acquired: [] as string[], flushed: [] as string[] };
+    const first = context.open("tab-a", firstEvents);
+    await flushPromises();
+    const second = context.open("tab-b", secondEvents);
+    try {
+      await flushPromises();
+      expect(second.lease.readOnly.value).toBe(true);
+
+      // A refused write turns the tab read-only but keeps the heartbeat
+      // phase: the next tick still fires on the old phase.
+      await vi.advanceTimersByTimeAsync(1_000);
+      second.lease.noteLostLease();
+      expect(second.lease.readOnly.value).toBe(true);
+
+      // The holder goes away: its dispose release frees the lease.
+      first.stop();
+      for (let attempt = 0; attempt < 20; attempt += 1) {
+        if ((await context.storage.load()) === null) {
+          break;
+        }
+        await Promise.resolve();
+      }
+      expect(await context.storage.load()).toBeNull();
+
+      // The next tick on the kept phase claims the freed lease at once.
+      await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_EDIT_LEASE_HEARTBEAT_MS - 1_000);
+      expect(await context.storage.load()).toMatchObject({ tabId: "tab-b" });
+      expect(second.lease.readOnly.value).toBe(false);
+      expect(secondEvents.acquired).toEqual(["reloaded"]);
     } finally {
       first.stop();
       second.stop();
