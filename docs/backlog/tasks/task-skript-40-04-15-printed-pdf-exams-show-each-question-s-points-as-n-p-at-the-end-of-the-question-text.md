@@ -1,12 +1,11 @@
 ---
 type: task
 id: TASK-SKRIPT-40-04-15
-title: Printed PDF exams show each question's points as (N p) at the end of the question
-  text
+title: Printed PDF exams show each question's points as (N p) at the end of the question text
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-19'
 status: ready
 closeout_review:
@@ -77,21 +76,21 @@ Focused tests only:
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term                                                                                                                                                                                                                                                       |
-| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| D1  | A question's points print as "(N p)" right after the question text, such as "… Vilket problem prövas? (1 p)" (user 2026-10-19).                                                                                                                                             |
-| D2  | The "PDF för Exam.net" export keeps its import-oriented points line; only the student PDF, the PDF med facit and the print preview change (user 2026-10-19).                                                                                                               |
-| P1  | The DOCX shows the same inline "(N p)" from the shared print model; there is no DOCX-only points path (user 2026-10-19, AskUserQuestion: "Yes, inline").                                                                                                                  |
-| P2  | A question with missing points prints no points text in the preview, the student PDF, the facit or the DOCX, and its heading is unchanged (user 2026-10-19, AskUserQuestion: "Nothing").                                                                                 |
-| P3  | The text is one space and "(N p)", plain (not bold), appended as the last run of the question's last text paragraph (body or gap line), after any blank or picture (orchestrator-accepted default 2026-10-19).                                                              |
-| P4  | When the body ends in an answer-line paragraph (ruled line), "(N p)" goes on the last text paragraph before it.                                                                                                                                                            |
-| P5  | When the question has no text paragraph, "(N p)" goes at the end of the question heading, such as "Fråga 3 (2 p)".                                                                                                                                                          |
-| P6  | Whole points print without decimals, 0 prints "(0 p)", and fractional points print with a decimal comma, such as "(1,5 p)".                                                                                                                                                |
-| P7  | The facit prints the points in the same place as the student copy; the facit criterion lines keep their own "(N p)".                                                                                                                                                         |
-| P8  | Deleted with no fallback or alias: `PrintParagraphStyle.POINTS`, `ExamExportLabels.points_line` and the label fields only it reads, `POINTS_BOLD` in the house template, the `p.print-points` CSS rule and the DOCX writer's points-bold branch.                           |
-| P9  | The 40-04-12 keep-together rules are unchanged; the points now sit inside the last text paragraph, which the text group already keeps together.                                                                                                                             |
-| P10 | TASK-SKRIPT-39-04-20 touches only import-side files and has no merge-order dependency on this task.                                                                                                                                                                       |
+| ID  | Decided contract term                                                                                                                                                                                                                            |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| D1  | A question's points print as "(N p)" right after the question text, such as "… Vilket problem prövas? (1 p)" (user 2026-10-19).                                                                                                                  |
+| D2  | The "PDF för Exam.net" export keeps its import-oriented points line; only the student PDF, the PDF med facit and the print preview change (user 2026-10-19).                                                                                     |
+| P1  | The DOCX shows the same inline "(N p)" from the shared print model; there is no DOCX-only points path (user 2026-10-19, AskUserQuestion: "Yes, inline").                                                                                         |
+| P2  | A question with missing points prints no points text in the preview, the student PDF, the facit or the DOCX, and its heading is unchanged (user 2026-10-19, AskUserQuestion: "Nothing").                                                         |
+| P3  | The text is one space and "(N p)", plain (not bold), appended as the last run of the question's last text paragraph (body or gap line), after any blank or picture (orchestrator-accepted default 2026-10-19).                                   |
+| P4  | When the body ends in an answer-line paragraph (ruled line), "(N p)" goes on the last text paragraph before it.                                                                                                                                  |
+| P5  | When the question has no text paragraph, "(N p)" goes at the end of the question heading, such as "Fråga 3 (2 p)".                                                                                                                               |
+| P6  | Whole points print without decimals, 0 prints "(0 p)", and fractional points print with a decimal comma, such as "(1,5 p)".                                                                                                                      |
+| P7  | The facit prints the points in the same place as the student copy; the facit criterion lines keep their own "(N p)".                                                                                                                             |
+| P8  | Deleted with no fallback or alias: `PrintParagraphStyle.POINTS`, `ExamExportLabels.points_line` and the label fields only it reads, `POINTS_BOLD` in the house template, the `p.print-points` CSS rule and the DOCX writer's points-bold branch. |
+| P9  | The 40-04-12 keep-together rules are unchanged; the points now sit inside the last text paragraph, which the text group already keeps together.                                                                                                  |
+| P10 | TASK-SKRIPT-39-04-20 touches only import-side files and has no merge-order dependency on this task.                                                                                                                                              |
 
 ## Resume here
 
-2026-10-19, lead `600fa5a8`: the ledger is closed (P1 and P2 answered by the user) and the status is ready. Next: unit 1, the fail-first tests.
+2026-10-19, lead `600fa5a8`: unit 1 `5c0edd33` (fail-first, 21 failing), unit 2 `1f7558d3` (implementation and test updates: 22 new and 524 focused tests pass). Repair R1 (replace a type-narrowing assert in `_append_inline_points`) is running. Next: lint, typecheck, the domain suite after the orchestrator's go, then the staging walk. Work orders are in the retained root's `work/`.
