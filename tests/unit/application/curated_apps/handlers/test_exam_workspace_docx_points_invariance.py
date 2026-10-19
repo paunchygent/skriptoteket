@@ -28,6 +28,11 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import line_points
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import printed_points
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import NativeExamDocument
+from tests.unit.application.curated_apps.handlers.docx_conversion_cache import (
+    ConversionCache,
+    conversion_cache_fixture,  # noqa: F401 - registers the `conversions` fixture
+)
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
     RECORDINGS,
     MissingRecording,
@@ -35,8 +40,17 @@ from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
     corpus_chunks,
     recorded_exams,
 )
+from tests.unit.application.curated_apps.handlers.docx_pure_stage_memo import (
+    memoise_pure_conversion_stages,
+)
 
 pytestmark = [pytest.mark.unit, pytest.mark.asyncio]
+
+
+@pytest.fixture(autouse=True)
+def _memoised_pure_stages(monkeypatch: pytest.MonkeyPatch) -> None:
+    memoise_pure_conversion_stages(monkeypatch)
+
 
 Grouping = dict
 Place = Callable[[Grouping, str, str | None, str | None], bool]
@@ -165,13 +179,8 @@ def _batches(requests: list[StructuredLLMRequest]) -> Batches:
     return shown
 
 
-async def _published(exam: str, root: Path) -> tuple[tuple, Batches]:
-    replay = build_replay(exam, root=root)
-    try:
-        document = (await replay.pipeline.convert(job=replay.job())).result.document
-    except MissingRecording:
-        return (), _batches(replay.provider.requests)
-    published = (
+def _points(document: NativeExamDocument) -> tuple:
+    return (
         tuple(
             (item.source_anchor, item.kind, item.points, item.points_estimated, item.tick_points)
             for item in sorted(document.items, key=lambda item: item.sequence)
@@ -179,7 +188,26 @@ async def _published(exam: str, root: Path) -> tuple[tuple, Batches]:
         tuple(parent.printed_total for parent in document.parents),
         document.header.printed_total,
     )
-    return published, _batches(replay.provider.requests)
+
+
+async def _published(exam: str, root: Path) -> tuple[tuple, Batches]:
+    replay = build_replay(exam, root=root)
+    try:
+        document = (await replay.pipeline.convert(job=replay.job())).result.document
+    except MissingRecording:
+        return (), _batches(replay.provider.requests)
+    return _points(document), _batches(replay.provider.requests)
+
+
+async def _baseline(conversions: ConversionCache, exam: str) -> tuple[tuple, Batches]:
+    """The unmodified recordings' published points; converted once per pytest run."""
+    if exam not in _BASELINES:
+        converted = await conversions.converted(exam)
+        _BASELINES[exam] = (
+            _points(converted.outcome.result.document),
+            _batches(list(converted.provider.requests)),
+        )
+    return _BASELINES[exam]
 
 
 def _without_anchors(published: tuple) -> tuple:
@@ -192,10 +220,8 @@ _BASELINES: dict[str, tuple[tuple, Batches]] = {}
 
 @pytest.mark.parametrize(("exam", "line", "placement"), _cases())
 async def test_a_points_lines_placement_never_changes_the_published_points(
-    tmp_path: Path, exam: str, line: str, placement: str
+    tmp_path: Path, conversions: ConversionCache, exam: str, line: str, placement: str
 ):
-    if exam not in _BASELINES:
-        _BASELINES[exam] = await _published(exam, RECORDINGS)
     grouping = _grouping(exam)
     _strip(grouping, line)
     before, after = _neighbours(exam, grouping, line)
@@ -204,8 +230,8 @@ async def test_a_points_lines_placement_never_changes_the_published_points(
     shutil.copytree(RECORDINGS / exam, tmp_path / exam)
     (tmp_path / exam / "docx_grouping_1.json").write_text(json.dumps(grouping))
 
+    baseline, baseline_batches = await _baseline(conversions, exam)
     published, batches = await _published(exam, tmp_path)
-    baseline, baseline_batches = _BASELINES[exam]
     heading = _heading_total(next(c for c in corpus_chunks(exam) if c.anchor == line))
     if heading and batches != baseline_batches:
         pytest.skip(f"{line} placed as {placement} changes a batch's content")
