@@ -25,6 +25,7 @@ import ExamWorkspaceExportBlockers from "./ExamWorkspaceExportBlockers.vue";
 import ExamWorkspaceMenu from "./ExamWorkspaceMenu.vue";
 import type { ExamWorkspaceBlockerEntry } from "./examWorkspaceBlockers";
 import { EXAM_WORKSPACE_EXPORT_FORMATS, QTI_ZERO_POINTS_NOTE } from "./examWorkspaceExportFormats";
+import { useInjectedExamWorkspaceStore } from "./examWorkspaceStore";
 
 const props = defineProps<{
   blockers: ExamWorkspaceBlockerEntry[];
@@ -54,6 +55,8 @@ const emit = defineEmits<{
 
 const trigger = ref<HTMLButtonElement | null>(null);
 const open = ref(false);
+const store = useInjectedExamWorkspaceStore();
+const isGuest = computed(() => store.teacher === null);
 const formatsDisabled = computed(() => props.blockers.length > 0 || props.exportingTarget !== null);
 
 function choose(action: () => void): void {
@@ -139,6 +142,7 @@ function choose(action: () => void): void {
         >{{ QTI_ZERO_POINTS_NOTE }}</small>
       </span>
       <button
+        v-if="!isGuest"
         type="button"
         class="xw-mi__mini"
         :disabled="formatsDisabled"

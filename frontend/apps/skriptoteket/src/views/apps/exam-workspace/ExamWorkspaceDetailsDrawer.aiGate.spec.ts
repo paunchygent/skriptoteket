@@ -24,6 +24,7 @@ import { AI_ADMIN_ONLY_NOTE } from "../../../composables/useAiAccess";
 import { useAuthStore } from "../../../stores/auth";
 import { buildDocument } from "../ExamWorkspaceSlice.specSupport";
 import ExamWorkspaceDetailsDrawer from "./ExamWorkspaceDetailsDrawer.vue";
+import { EXAM_WORKSPACE_SIGN_IN_KEY } from "./examWorkspaceSignIn";
 import { EXAM_WORKSPACE_STORE_KEY, serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { buildSavedExamSummary } from "./useExamWorkspaceDocument.specSupport";
 
@@ -87,7 +88,10 @@ function mountDrawer(pinia: Pinia) {
     },
     global: {
       plugins: [pinia],
-      provide: { [EXAM_WORKSPACE_STORE_KEY as symbol]: serverExamWorkspaceStore },
+      provide: {
+        [EXAM_WORKSPACE_SIGN_IN_KEY as symbol]: () => undefined,
+        [EXAM_WORKSPACE_STORE_KEY as symbol]: serverExamWorkspaceStore,
+      },
     },
   });
 }

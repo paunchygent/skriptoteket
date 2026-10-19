@@ -13,6 +13,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { adminUser } from "../ExamWorkspaceSlice.specSupport";
 import ExamWorkspaceExportMenu from "./ExamWorkspaceExportMenu.vue";
 import type { ExamWorkspaceBlockerEntry } from "./examWorkspaceBlockers";
+import { EXAM_WORKSPACE_SIGN_IN_KEY } from "./examWorkspaceSignIn";
+import { EXAM_WORKSPACE_STORE_KEY, serverExamWorkspaceStore } from "./examWorkspaceStore";
 
 const ORDERING_ROW: ExamWorkspaceBlockerEntry = {
   fix: null,
@@ -38,6 +40,10 @@ function mountMenu(blockers: ExamWorkspaceBlockerEntry[]) {
           stubActions: (name) => name !== "hasAtLeastRole",
         }),
       ],
+      provide: {
+        [EXAM_WORKSPACE_SIGN_IN_KEY as symbol]: () => undefined,
+        [EXAM_WORKSPACE_STORE_KEY as symbol]: serverExamWorkspaceStore,
+      },
     },
     props: {
       blockers,

@@ -16,10 +16,13 @@
  *     intent. Exportera comes in through the `export` slot.
  */
 
-import { ref, useId } from "vue";
+import { computed, ref, useId } from "vue";
 
 import { UiGlyph } from "../../../components/ui";
 import { AI_ADMIN_ONLY_NOTE, useAiAccess } from "../../../composables/useAiAccess";
+import { GUEST_AI_SIGN_IN } from "./examWorkspaceGuestCopy";
+import { useInjectedExamWorkspaceStore } from "./examWorkspaceStore";
+import { useExamWorkspaceSignIn } from "./examWorkspaceSignIn";
 import ExamWorkspaceMenu from "./ExamWorkspaceMenu.vue";
 import { examWorkspaceShortcut, isMacPlatform } from "./examWorkspaceFormat";
 
@@ -58,7 +61,22 @@ const saveKeys = mac ? "Meta+S" : "Control+S";
 const saveMenuTrigger = ref<HTMLButtonElement | null>(null);
 const saveMenuOpen = ref(false);
 const { canUseAi } = useAiAccess();
+const store = useInjectedExamWorkspaceStore();
+const requestSignIn = useExamWorkspaceSignIn();
 const aiNoteId = useId();
+/** Guest controls stay enabled and ask for sign-in; signed-in controls follow the admin gate. */
+const aiMode = computed(() =>
+  store.teacher === null ? "guest" : canUseAi.value ? "allowed" : "admin_only",
+);
+const isGuest = computed(() => store.teacher === null);
+
+function handleSuggestAll(): void {
+  if (isGuest.value) {
+    requestSignIn(GUEST_AI_SIGN_IN);
+    return;
+  }
+  emit("suggestAll");
+}
 
 function chooseSave(action: "save" | "saveAs"): void {
   saveMenuOpen.value = false;
@@ -167,6 +185,7 @@ const DIRTY_TITLE = "Ändringarna sparas automatiskt som utkast. Spara skriver �
         /><span class="xw-grow">Spara</span><kbd class="ws-kbd">{{ examWorkspaceShortcut("S", false, mac) }}</kbd>
       </button>
       <button
+        v-if="!isGuest"
         type="button"
         class="xw-mi"
         role="menuitem"
@@ -225,6 +244,7 @@ const DIRTY_TITLE = "Ändringarna sparas automatiskt som utkast. Spara skriver �
               />Spara
             </button>
             <button
+              v-if="!isGuest"
               ref="saveMenuTrigger"
               type="button"
               class="xw-btn xw-btn--primary xw-btn--icon"
@@ -249,12 +269,12 @@ const DIRTY_TITLE = "Ändringarna sparas automatiskt som utkast. Spara skriver �
       <button
         type="button"
         class="xw-btn xw-btn--icon"
-        :disabled="suggestDisabled || suggestBusy || !canUseAi"
-        :title="!canUseAi ? AI_ADMIN_ONLY_NOTE : suggestBusy ? 'Facitförslagen tas fram …' : 'Föreslå facit för frågor som saknar facit'"
+        :disabled="suggestDisabled || suggestBusy || aiMode === 'admin_only'"
+        :title="aiMode === 'admin_only' ? AI_ADMIN_ONLY_NOTE : suggestBusy ? 'Facitförslagen tas fram …' : 'Föreslå facit för frågor som saknar facit'"
         :aria-label="suggestBusy ? 'Facitförslagen tas fram …' : 'Föreslå facit för frågor som saknar facit'"
-        :aria-describedby="!canUseAi ? aiNoteId : undefined"
+        :aria-describedby="aiMode === 'admin_only' ? aiNoteId : undefined"
         data-test="exam-workspace-suggest-all"
-        @click="emit('suggestAll')"
+        @click="handleSuggestAll"
       >
         <UiGlyph
           :meaning="suggestBusy ? 'busy' : 'ai-assist'"
@@ -263,7 +283,7 @@ const DIRTY_TITLE = "Ändringarna sparas automatiskt som utkast. Spara skriver �
         />
       </button>
       <span
-        v-if="!canUseAi"
+        v-if="aiMode === 'admin_only'"
         :id="aiNoteId"
         class="xw-hint ws-tools__note"
       >{{ AI_ADMIN_ONLY_NOTE }}</span>

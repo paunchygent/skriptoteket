@@ -27,6 +27,7 @@ import ExamWorkspaceExportBlockers from "./ExamWorkspaceExportBlockers.vue";
 import type { ExamWorkspaceBlockerEntry } from "./examWorkspaceBlockers";
 import { EXAM_WORKSPACE_EXPORT_FORMATS, QTI_ZERO_POINTS_NOTE } from "./examWorkspaceExportFormats";
 import { examWorkspaceQuestionLabel } from "./examWorkspaceRows";
+import { useInjectedExamWorkspaceStore } from "./examWorkspaceStore";
 
 type Destination = "download" | "files";
 
@@ -54,6 +55,8 @@ const emit = defineEmits<{
 
 const target = ref<ExamWorkspaceExportTarget>("qti");
 const destination = ref<Destination>("download");
+const store = useInjectedExamWorkspaceStore();
+const isGuest = computed(() => store.teacher === null);
 
 const format = computed(() => EXAM_WORKSPACE_EXPORT_FORMATS.find((entry) => entry.target === target.value)!);
 const replaced = computed(() => props.savedExports[target.value] ?? null);
@@ -117,7 +120,10 @@ const disabled = computed(() => props.blockers.length > 0 || props.busy || props
       >
       <span>Ladda ner</span>
     </label>
-    <label class="choice">
+    <label
+      v-if="!isGuest"
+      class="choice"
+    >
       <input
         v-model="destination"
         type="radio"

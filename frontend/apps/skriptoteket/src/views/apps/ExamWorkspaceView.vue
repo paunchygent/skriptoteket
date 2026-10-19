@@ -39,8 +39,10 @@ import ExamWorkspacePhoneStrip from "./exam-workspace/ExamWorkspacePhoneStrip.vu
 import ExamWorkspaceQuestionList from "./exam-workspace/ExamWorkspaceQuestionList.vue";
 import ExamWorkspaceQuestionTools from "./exam-workspace/ExamWorkspaceQuestionTools.vue";
 import ExamWorkspaceSaveAsDialog from "./exam-workspace/ExamWorkspaceSaveAsDialog.vue";
+import ExamWorkspaceSignInPrompt from "./exam-workspace/ExamWorkspaceSignInPrompt.vue";
 import "./exam-workspace/examWorkspace.css";
 import { examWorkspaceBlockerEntries, examWorkspaceTitleBlockerEntries } from "./exam-workspace/examWorkspaceBlockers";
+import type { ExamWorkspaceBlockerEntry } from "./exam-workspace/examWorkspaceBlockers";
 import { examWorkspaceSavedAt } from "./exam-workspace/examWorkspaceFormat";
 import { provideExamWorkspaceHistoryKeys } from "./exam-workspace/examWorkspaceHistoryKeys";
 import { isTeacherReviewed } from "./exam-workspace/examWorkspaceItemEdits";
@@ -51,6 +53,8 @@ import { isEmptyBody } from "./exam-workspace/examWorkspaceRichTextDocument";
 import { examWorkspaceExamPrintedDifference } from "./exam-workspace/examWorkspaceTotals";
 import { EXAM_WORKSPACE_STORE_KEY } from "./exam-workspace/examWorkspaceStore";
 import type { ExamWorkspaceStore } from "./exam-workspace/examWorkspaceStore";
+import { EXAM_WORKSPACE_SIGN_IN_KEY } from "./exam-workspace/examWorkspaceSignIn";
+import { GUEST_AI_SIGN_IN, GUEST_IMPORT_SIGN_IN } from "./exam-workspace/examWorkspaceGuestCopy";
 import { useExamWorkspaceAddress } from "./exam-workspace/useExamWorkspaceAddress";
 import { useExamWorkspaceContentSuggestions } from "./exam-workspace/useExamWorkspaceContentSuggestions";
 import { useExamWorkspaceEditing } from "./exam-workspace/useExamWorkspaceEditing";
@@ -67,6 +71,17 @@ type DrawerName = "open" | "export" | "details";
 const props = defineProps<{ store: ExamWorkspaceStore }>();
 
 provide(EXAM_WORKSPACE_STORE_KEY, props.store);
+
+/** Guest mode is structural: the teacher half is null, the guest half is present. */
+const isGuest = computed(() => props.store.teacher === null);
+/** The one guest sign-in prompt; components request it through the sign-in key. */
+const signInPrompt = ref<string | null>(null);
+
+function requestSignIn(message: string): void {
+  signInPrompt.value = message;
+}
+
+provide(EXAM_WORKSPACE_SIGN_IN_KEY, requestSignIn);
 
 const layout = useExamWorkspaceLayout();
 const toast = useToast();
@@ -152,6 +167,58 @@ const saveFlow = useExamWorkspaceSaveFlow({
 });
 const { canSave, fixBlocker, gotoBlocker, handleSave, handleSaveAs, openSaveAs, runExport, saveAsOpen, saveAsTaken, saveState } =
   saveFlow;
+
+/** Guest AI gating at the view-level handler: a guest's AI click shows the sign-in prompt and makes no call. */
+function guestSuggestAll(): void {
+  if (isGuest.value) {
+    requestSignIn(GUEST_AI_SIGN_IN);
+    return;
+  }
+  void enrichment.requestSuggestionsForAll();
+}
+
+function guestFix(blocker: ExamWorkspaceBlockerEntry): void {
+  if (isGuest.value && blocker.fix === "suggest_key") {
+    requestSignIn(GUEST_AI_SIGN_IN);
+    return;
+  }
+  fixBlocker(blocker);
+}
+
+/** Guest import gating at the view-level handler: a guest's file never reaches the import. */
+function guestSelectFile(file: File, courseKey: string | null): void {
+  if (isGuest.value) {
+    requestSignIn(GUEST_IMPORT_SIGN_IN);
+    return;
+  }
+  sourceFile.handleSelectedFile(file, courseKey);
+}
+
+function guestDropFiles(files: File[], courseKey: string | null): void {
+  if (isGuest.value) {
+    requestSignIn(GUEST_IMPORT_SIGN_IN);
+    return;
+  }
+  sourceFile.handleDroppedFiles(files, courseKey);
+}
+
+/** Spara som and save-to-Mina-filer stay teacher-only; Spara itself saves to the browser store. */
+function guestOpenSaveAs(): void {
+  if (isGuest.value) return;
+  openSaveAs();
+}
+
+function guestRunExport(target: ExamWorkspaceExportTarget, destination: "download" | "files"): void {
+  if (isGuest.value && destination === "files") return;
+  runExport(target, destination);
+}
+
+/** The drawers' file intake runs through the guest import gate. */
+const drawersSourceFile = {
+  handleDroppedFiles: guestDropFiles,
+  handleSelectedFile: guestSelectFile,
+  sourceFileError: sourceFile.sourceFileError,
+};
 useExamWorkspaceKeyboard({ save: handleSave, undo: history.undo, redo: history.redo, step, listOpen });
 // Ctrl/Cmd+Z inside an exam text editor is the same Ångra / Gör om the buttons run.
 provideExamWorkspaceHistoryKeys({
@@ -187,6 +254,8 @@ watch(
   () => summary.value?.lineage_id ?? null,
   (lineageId, previous) => {
     showDocument(lineageId);
+    // A newly opened or started exam replaces the prompt it interrupted.
+    signInPrompt.value = null;
     if (lineageId === null) {
       drawer.value = "open";
     } else if (lineageId !== previous && !(layout.value === "desktop" && drawer.value === "open")) {
@@ -263,15 +332,15 @@ onMounted(() => {
       :can-undo="history.canUndo.value && !disabled"
       :can-redo="history.canRedo.value && !disabled"
       :can-save="canSave"
-      :can-save-as="workspaceDocument !== null && !disabled"
+      :can-save-as="!isGuest && workspaceDocument !== null && !disabled"
       :suggest-busy="enrichmentBusy"
       :suggest-disabled="workspaceDocument === null || disabled"
       :is-phone="isPhone"
       @toggle-details="toggleDrawer('details')"
       @toggle-open="toggleDrawer('open')"
       @save="handleSave"
-      @save-as="openSaveAs"
-      @suggest-all="enrichment.requestSuggestionsForAll"
+      @save-as="guestOpenSaveAs"
+      @suggest-all="guestSuggestAll"
       @undo="history.undo"
       @redo="history.redo"
     >
@@ -287,12 +356,12 @@ onMounted(() => {
           :checklist-count="exports.exportChecklist.value.length"
           :zero-points="zeroPoints"
           :is-phone="isPhone"
-          @download="(target) => runExport(target, 'download')"
-          @save-to-files="(target) => runExport(target, 'files')"
+          @download="(target) => guestRunExport(target, 'download')"
+          @save-to-files="(target) => guestRunExport(target, 'files')"
           @more="drawer = 'export'"
           @goto="gotoBlocker"
-          @fix="fixBlocker"
-          @suggest-all="enrichment.requestSuggestionsForAll"
+          @fix="guestFix"
+          @suggest-all="guestSuggestAll"
         />
       </template>
     </ExamWorkspaceHeader>
@@ -305,6 +374,20 @@ onMounted(() => {
     >
       {{ conflictNotice }}
     </p>
+    <div
+      v-if="signInPrompt"
+      class="ws__bar ws__signin"
+    >
+      <ExamWorkspaceSignInPrompt :message="signInPrompt" />
+      <button
+        type="button"
+        class="xw-btn xw-btn--compact"
+        data-test="exam-workspace-sign-in-prompt-dismiss"
+        @click="signInPrompt = null"
+      >
+        Stäng
+      </button>
+    </div>
     <div
       v-if="enrichment.enrichmentMessage.value || enrichment.enrichmentLookupError.value"
       class="xw-notice xw-notice--info ws__bar"
@@ -413,7 +496,7 @@ onMounted(() => {
         :exports="exports"
         :enrichment="enrichment"
         :content="content"
-        :source-file="sourceFile"
+        :source-file="drawersSourceFile"
         :blockers="blockers"
         :disabled="disabled"
         :enrichment-busy="enrichmentBusy"
@@ -421,9 +504,9 @@ onMounted(() => {
         :formatted-saved-exports="formattedSavedExports"
         :question-label="questionLabel"
         @close="drawer = null"
-        @run="runExport"
+        @run="guestRunExport"
         @goto="gotoBlocker"
-        @fix="fixBlocker"
+        @fix="guestFix"
         @set-ordering="setOrdering"
       />
     </div>
