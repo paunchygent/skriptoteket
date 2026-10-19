@@ -111,8 +111,8 @@
   `skriptoteket-backend-test-parallel`, not pushed). Pytest runs parallel and
   quiet by default, workers sized to the selection, serial runs need
   `--serial-reason`, pooled Postgres per worker; full `tests/unit` about 100 s
-  under load (was 3m50s). Next: user picks the worker cap (12 recommended),
-  then Hemma orchestrator routes review and merge.
+  under load (was 3m50s). Worker cap 12 (user 2026-10-19).
+  Next: Hemma orchestrator routes review and merge.
 
 - Completed REP/ST-38 outcomes and evidence are in the 2026-09-05 archive above.
 

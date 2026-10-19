@@ -28,6 +28,9 @@ def selected_test_files(args: Iterable[str]) -> frozenset[Path]:
     return frozenset(files)
 
 
+# User decision 2026-10-19: 12 workers serve a full suite as fast as 24 under real load and
+# leave room for the agents' concurrent small runs (TASK-SKRIPT-REP-0050 load table).
+MAX_WORKERS = 12
 SERIAL_BELOW_FILES = 12
 FILES_PER_WORKER = 6
 _WEIGHT_COMMENT = re.compile(r"^# xdist-weight: (\d+)\b", re.MULTILINE)
@@ -63,10 +66,10 @@ def auto_worker_count(file_count: int, max_workers: int) -> int:
 
 
 def pytest_xdist_auto_num_workers(config: pytest.Config) -> int:
-    """Size `-n logical` (the addopts default) to the selection; hardware threads cap it."""
+    """Size `-n logical` (the addopts default) to the selection, capped at MAX_WORKERS."""
 
     weight = sum(file_weight(path) for path in selected_test_files(config.args))
-    workers = auto_worker_count(weight, os.cpu_count() or 1)
+    workers = auto_worker_count(weight, min(MAX_WORKERS, os.cpu_count() or 1))
     if workers == 0:
         config.stash[_SIZED_SERIAL_KEY] = True
     return workers
@@ -90,13 +93,13 @@ def pytest_configure(config: pytest.Config) -> None:
         return
     if config.getoption("numprocesses", default=None):
         return
-    if config.stash.get(_SIZED_SERIAL_KEY, False):  # one selected file: serial by design
+    if config.stash.get(_SIZED_SERIAL_KEY, False):  # small selection: serial by design
         return
     reason = (config.getoption(SERIAL_REASON_OPTION) or "").strip()
     if not reason:
         raise pytest.UsageError(
             "This pytest run is serial (-n 0, --pdb, or addopts overridden). "
-            "Backend tests run in parallel by default (a run that selects one file runs "
+            "Backend tests run in parallel by default (a small selection runs "
             "in-process on its own); drop the serial flag, or state why "
             f'it must be serial with {SERIAL_REASON_OPTION} "<reason>" '
             '(for example: pdm run test-serial --serial-reason "pdb on <test>" <test>).'

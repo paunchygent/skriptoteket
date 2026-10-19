@@ -43,8 +43,8 @@ application tests.
   failing tests, and the ten slowest tests are listed.
 - `-n logical` is sized by `pytest_xdist_auto_num_workers` in
   `tests/conftest.py`: a run that selects fewer than 12 files runs
-  in-process; a larger run gets one worker per 6 files, at least 2, capped by
-  the hardware threads. 10-15 agents run small focused runs on Hemma while a
+  in-process; a larger run gets one worker per 6 files, at least 2 and at most
+  12 (`MAX_WORKERS`, user decision 2026-10-19). 10-15 agents run small focused runs on Hemma while a
   full suite runs, so small runs stay off the worker pool.
 - A test file whose tests together take minutes (a parametrized sweep)
   declares `# xdist-weight: <n>` on its first line and counts as `n` files, so
