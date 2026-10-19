@@ -41,7 +41,7 @@ The user walked the redesigned exam workspace editor on 2026-10-19 and found thr
 
 ### Resume here
 
-Implementation by a fresh 40-04-08 lead from 2026-10-19 (retained root `01a152b4-0314-7471-91ad-340323c3f2c1`, plan `evidence/planning/TASK-SKRIPT-40-04-08/plan.md`, ledger L1-L13 closed; the user decided L2 option A on 2026-10-19). Status: `in_progress`; wave 1 (J1-J4) starting. Next action: brief fresh juniors for J1-J4, integrate, then wave 2 (J5-J7) and wave 3 (J8).
+Implementation by a fresh 40-04-08 lead from 2026-10-19 (retained root `01a152b4-0314-7471-91ad-340323c3f2c1`, plan `evidence/planning/TASK-SKRIPT-40-04-08/plan.md`, ledger L1-L13 closed; the user decided L2 option A on 2026-10-19; work orders and proof logs under `evidence/implementation/TASK-SKRIPT-40-04-08/`). Status: `in_progress`. Wave 1 integrated: J1 popover anchoring (15264da8, a4e8a727), J2 answer rows (97484861), J3 new-gap edit (66ba2fbb). J4 (editor gap command) is uncommitted and under repair unit J4r: its root wrapper moved consumer layout classes off the layout box and its floating button hid on every transaction. Wave 2 running: J4r, J5 popover rows, J6 gap wiring, J7 Kort svar model. Next action: integrate wave 2, then J8 Kort svar view, ui-copy-reviewer for L12, and the domain suite on the orchestrator's go.
 
 ### Root causes (ledger L1)
 
