@@ -240,4 +240,49 @@ describe("ExamWorkspaceView column resize wiring", () => {
     expect(frame.style.getPropertyValue("--xw-drawer-size")).toBe("");
     expect(frame.dataset["list"]).toBe("open");
   });
+
+  it("keeps the list handle outside the list scroll frame on desktop", async () => {
+    const wrapper = await mountImported("desktop");
+
+    const listRoot = wrapper.get('[data-test="exam-workspace-question-list"]').element as HTMLElement;
+    const listHandle = wrapper.get('[data-test="exam-workspace-column-handle-list"]').element as HTMLElement;
+    const listFrame = listRoot.querySelector(".list__frame");
+
+    expect(listFrame).not.toBeNull();
+    expect(listHandle.parentElement).toBe(listRoot);
+    expect(listFrame?.contains(listHandle)).toBe(false);
+  });
+
+  it("keeps the drawer handle outside the drawer scroll frame on desktop", async () => {
+    const wrapper = await mountImported("desktop");
+
+    const drawerRoot = wrapper.get('[data-test="exam-workspace-drawer-open"]').element as HTMLElement;
+    const drawerHandle = drawerRoot.querySelector(
+      '[data-test="exam-workspace-column-handle-side"]',
+    ) as HTMLElement | null;
+    const drawerFrame = drawerRoot.querySelector(".drawer__frame");
+
+    expect(drawerHandle).not.toBeNull();
+    expect(drawerFrame).not.toBeNull();
+    expect(drawerHandle?.parentElement).toBe(drawerRoot);
+    expect(drawerFrame?.contains(drawerHandle)).toBe(false);
+  });
+
+  it("keeps the preview handle outside the preview scroll frame on desktop", async () => {
+    const wrapper = await mountImported("desktop");
+
+    await wrapper.get('[data-test="exam-workspace-print-preview-toggle"]').trigger("click");
+    await flushPromises();
+
+    const previewRoot = wrapper.get('[data-test="exam-workspace-print-preview"]').element as HTMLElement;
+    const previewHandle = previewRoot.querySelector(
+      '[data-test="exam-workspace-column-handle-side"]',
+    ) as HTMLElement | null;
+    const previewFrame = previewRoot.querySelector(".pp__frame");
+
+    expect(previewHandle).not.toBeNull();
+    expect(previewFrame).not.toBeNull();
+    expect(previewHandle?.parentElement).toBe(previewRoot);
+    expect(previewFrame?.contains(previewHandle)).toBe(false);
+  });
 });

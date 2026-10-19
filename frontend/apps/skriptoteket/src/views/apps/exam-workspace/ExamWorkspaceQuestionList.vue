@@ -188,175 +188,177 @@ watch(
       />
     </template>
     <template v-else>
-      <div class="list__head">
-        <button
-          v-if="overlay"
-          type="button"
-          class="xw-btn"
-          data-test="exam-workspace-list-back"
-          @click="emit('close')"
-        >
-          <UiGlyph
-            meaning="back"
-            :size="20"
-          />Tillbaka
-        </button>
-        <h2
-          id="exam-workspace-list-title"
-          class="list__title"
-        >
-          Frågor ({{ questionCount }})
-        </h2>
-        <div class="list__head-actions">
+      <div class="list__frame">
+        <div class="list__head">
           <button
-            v-if="handle"
+            v-if="overlay"
             type="button"
-            class="xw-btn xw-btn--icon xw-btn--ghost"
-            aria-label="Dölj frågelistan"
-            title="Dölj frågelistan"
-            data-test="exam-workspace-list-collapse"
-            @click="emit('toggle-collapse')"
+            class="xw-btn"
+            data-test="exam-workspace-list-back"
+            @click="emit('close')"
           >
             <UiGlyph
-              meaning="minimize-panel"
+              meaning="back"
               :size="20"
-            />
+            />Tillbaka
+          </button>
+          <h2
+            id="exam-workspace-list-title"
+            class="list__title"
+          >
+            Frågor ({{ questionCount }})
+          </h2>
+          <div class="list__head-actions">
+            <button
+              v-if="handle"
+              type="button"
+              class="xw-btn xw-btn--icon xw-btn--ghost"
+              aria-label="Dölj frågelistan"
+              title="Dölj frågelistan"
+              data-test="exam-workspace-list-collapse"
+              @click="emit('toggle-collapse')"
+            >
+              <UiGlyph
+                meaning="minimize-panel"
+                :size="20"
+              />
+            </button>
+            <button
+              ref="newTrigger"
+              type="button"
+              class="xw-btn xw-btn--compact"
+              :disabled="!canAdd"
+              aria-haspopup="menu"
+              :aria-expanded="newMenuOpen"
+              data-test="exam-workspace-new"
+              @click="newMenuOpen = !newMenuOpen"
+            >
+              <UiGlyph
+                meaning="add"
+                :size="16"
+              />Ny uppgift
+            </button>
+          </div>
+        </div>
+        <div
+          class="list__markbar"
+          data-test="exam-workspace-marking-bar"
+        >
+          <button
+            type="button"
+            class="xw-btn xw-btn--compact xw-btn--primary list__markbar-group"
+            :class="{ 'list__markbar-group--idle': !marking }"
+            :disabled="disabled || markedIds.length === 0"
+            data-test="exam-workspace-group-marked"
+            @click="groupMarked"
+          >
+            Skapa del av markerade ({{ markedIds.length }})
           </button>
           <button
-            ref="newTrigger"
             type="button"
-            class="xw-btn xw-btn--compact"
-            :disabled="!canAdd"
-            aria-haspopup="menu"
-            :aria-expanded="newMenuOpen"
-            data-test="exam-workspace-new"
-            @click="newMenuOpen = !newMenuOpen"
+            class="xw-btn xw-btn--compact list__markbar-toggle"
+            :disabled="disabled"
+            :data-test="marking ? 'exam-workspace-marking-cancel' : 'exam-workspace-marking-start'"
+            @click="marking ? cancelMarking() : startMarking()"
           >
             <UiGlyph
-              meaning="add"
+              v-if="!marking"
+              meaning="checkbox-off"
               :size="16"
-            />Ny uppgift
+            />{{ marking ? "Avbryt" : "Markera" }}
           </button>
         </div>
-      </div>
-      <div
-        class="list__markbar"
-        data-test="exam-workspace-marking-bar"
-      >
-        <button
-          type="button"
-          class="xw-btn xw-btn--compact xw-btn--primary list__markbar-group"
-          :class="{ 'list__markbar-group--idle': !marking }"
-          :disabled="disabled || markedIds.length === 0"
-          data-test="exam-workspace-group-marked"
-          @click="groupMarked"
-        >
-          Skapa del av markerade ({{ markedIds.length }})
-        </button>
-        <button
-          type="button"
-          class="xw-btn xw-btn--compact list__markbar-toggle"
-          :disabled="disabled"
-          :data-test="marking ? 'exam-workspace-marking-cancel' : 'exam-workspace-marking-start'"
-          @click="marking ? cancelMarking() : startMarking()"
-        >
-          <UiGlyph
-            v-if="!marking"
-            meaning="checkbox-off"
-            :size="16"
-          />{{ marking ? "Avbryt" : "Markera" }}
-        </button>
-      </div>
-      <div class="list__scroll">
-        <div
-          class="list__intro"
-          :class="{ 'list__intro--selected': examInstructionsSelected }"
-        >
-          <button
-            v-if="examInstructionsPreview !== null"
-            type="button"
-            class="list__instructions"
-            :aria-current="examInstructionsSelected ? 'true' : undefined"
-            data-test="exam-workspace-exam-instructions-entry"
-            @click="emit('select', EXAM_INSTRUCTIONS_ENTRY_ID)"
+        <div class="list__scroll">
+          <div
+            class="list__intro"
+            :class="{ 'list__intro--selected': examInstructionsSelected }"
           >
-            <span class="list__instructions-title">Instruktioner</span>
-            <span class="list__instructions-preview">{{ examInstructionsPreview }}</span>
-          </button>
-          <button
-            v-else
-            type="button"
-            class="xw-btn xw-btn--compact xw-btn--ghost list__add"
-            :aria-current="examInstructionsSelected ? 'true' : undefined"
-            data-test="exam-workspace-exam-instructions-add"
-            @click="emit('select', EXAM_INSTRUCTIONS_ENTRY_ID)"
+            <button
+              v-if="examInstructionsPreview !== null"
+              type="button"
+              class="list__instructions"
+              :aria-current="examInstructionsSelected ? 'true' : undefined"
+              data-test="exam-workspace-exam-instructions-entry"
+              @click="emit('select', EXAM_INSTRUCTIONS_ENTRY_ID)"
+            >
+              <span class="list__instructions-title">Instruktioner</span>
+              <span class="list__instructions-preview">{{ examInstructionsPreview }}</span>
+            </button>
+            <button
+              v-else
+              type="button"
+              class="xw-btn xw-btn--compact xw-btn--ghost list__add"
+              :aria-current="examInstructionsSelected ? 'true' : undefined"
+              data-test="exam-workspace-exam-instructions-add"
+              @click="emit('select', EXAM_INSTRUCTIONS_ENTRY_ID)"
+            >
+              Lägg till instruktioner
+            </button>
+          </div>
+          <div
+            ref="rows"
+            class="list__rows"
+            role="grid"
+            aria-labelledby="exam-workspace-list-title"
+            aria-keyshortcuts="ArrowUp ArrowDown"
           >
-            Lägg till instruktioner
-          </button>
+            <ExamWorkspaceQuestionRow
+              v-for="entry in entries"
+              :key="entry.id"
+              :entry="entry"
+              :selected="entry.id === selectedId"
+              :disabled="disabled"
+              :marking="marking"
+              :marked="marked.has(entry.id)"
+              @select="emit('select', $event)"
+              @accept-total="emit('acceptPartTotal', $event)"
+              @toggle-mark="toggleMark"
+            />
+          </div>
         </div>
-        <div
-          ref="rows"
-          class="list__rows"
-          role="grid"
-          aria-labelledby="exam-workspace-list-title"
-          aria-keyshortcuts="ArrowUp ArrowDown"
-        >
-          <ExamWorkspaceQuestionRow
-            v-for="entry in entries"
-            :key="entry.id"
-            :entry="entry"
-            :selected="entry.id === selectedId"
-            :disabled="disabled"
-            :marking="marking"
-            :marked="marked.has(entry.id)"
-            @select="emit('select', $event)"
-            @accept-total="emit('acceptPartTotal', $event)"
-            @toggle-mark="toggleMark"
-          />
-        </div>
-      </div>
-      <div class="list__foot">
-        <span
-          class="list__total"
-          :title="totalTitle"
-          data-test="exam-workspace-exam-points"
-        >Totalt <strong class="list__sum">{{ totalParts.sum }}</strong><span
-          v-if="totalParts.printedNote"
-          class="list__printed"
-        > · {{ totalParts.printedNote }}</span></span>
-        <div
-          class="list__actions"
-          data-test="exam-workspace-footer-actions"
-        >
-          <button
-            type="button"
-            class="xw-btn xw-btn--compact xw-btn--ghost list__action"
-            :class="{ 'list__action--idle': printedTotal === null }"
-            :disabled="disabled"
-            data-test="exam-workspace-accept-exam-total"
-            @click="emit('acceptExamTotal')"
+        <div class="list__foot">
+          <span
+            class="list__total"
+            :title="totalTitle"
+            data-test="exam-workspace-exam-points"
+          >Totalt <strong class="list__sum">{{ totalParts.sum }}</strong><span
+            v-if="totalParts.printedNote"
+            class="list__printed"
+          > · {{ totalParts.printedNote }}</span></span>
+          <div
+            class="list__actions"
+            data-test="exam-workspace-footer-actions"
           >
-            Använd {{ examWorkspaceFormatPoints(total) }} p
-          </button>
-          <button
-            type="button"
-            class="xw-btn xw-btn--compact xw-btn--ghost list__action"
-            :class="{ 'list__action--idle': !anyPrintedDifference }"
-            :disabled="disabled"
-            data-test="exam-workspace-accept-all-totals"
-            @click="emit('acceptAllTotals')"
-          >
-            Använd beräknade summor
-          </button>
+            <button
+              type="button"
+              class="xw-btn xw-btn--compact xw-btn--ghost list__action"
+              :class="{ 'list__action--idle': printedTotal === null }"
+              :disabled="disabled"
+              data-test="exam-workspace-accept-exam-total"
+              @click="emit('acceptExamTotal')"
+            >
+              Använd {{ examWorkspaceFormatPoints(total) }} p
+            </button>
+            <button
+              type="button"
+              class="xw-btn xw-btn--compact xw-btn--ghost list__action"
+              :class="{ 'list__action--idle': !anyPrintedDifference }"
+              :disabled="disabled"
+              data-test="exam-workspace-accept-all-totals"
+              @click="emit('acceptAllTotals')"
+            >
+              Använd beräknade summor
+            </button>
+          </div>
         </div>
+        <ExamWorkspaceNewItemMenu
+          :open="newMenuOpen"
+          :anchor="newTrigger"
+          :child="false"
+          @choose="emit('add', $event)"
+          @close="newMenuOpen = false"
+        />
       </div>
-      <ExamWorkspaceNewItemMenu
-        :open="newMenuOpen"
-        :anchor="newTrigger"
-        :child="false"
-        @choose="emit('add', $event)"
-        @close="newMenuOpen = false"
-      />
       <ExamWorkspaceColumnHandle
         v-if="handle"
         edge="list"
@@ -374,15 +376,16 @@ watch(
 
 <style scoped>
 .list { display: flex; flex-direction: column; min-height: 0; position: relative; border-right: 1px solid var(--huleedu-surface-divider); }
+.list__frame { display: flex; flex-direction: column; flex: 1; min-height: 0; min-width: 0; }
 /* The collapsed desktop list is a 44px rail with one expand glyph and the draggable edge. */
 .list__rail { display: flex; justify-content: center; padding: var(--huleedu-space-2) 0; }
 @media (min-width: 1280px) {
   /* Below its minimum the list keeps its minimum layout and scrolls inside itself. */
-  .list { overflow-x: auto; }
-  .list:not(.list--collapsed) .list__head,
-  .list:not(.list--collapsed) .list__markbar,
-  .list:not(.list--collapsed) .list__scroll,
-  .list:not(.list--collapsed) .list__foot { min-width: var(--xw-list-min); }
+  .list__frame { overflow-x: auto; }
+  .list:not(.list--collapsed) .list__frame > .list__head,
+  .list:not(.list--collapsed) .list__frame > .list__markbar,
+  .list:not(.list--collapsed) .list__frame > .list__scroll,
+  .list:not(.list--collapsed) .list__frame > .list__foot { min-width: var(--xw-list-min); }
 }
 .list__head {
   display: flex; align-items: center; justify-content: space-between; gap: var(--huleedu-space-3); flex: none;

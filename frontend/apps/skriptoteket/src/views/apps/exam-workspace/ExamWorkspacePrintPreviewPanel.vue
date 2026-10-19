@@ -85,51 +85,53 @@ watch(
     aria-label="Förhandsgranska"
     data-test="exam-workspace-print-preview"
   >
-    <div class="pp__head">
-      <h2 class="pp__title">
-        Förhandsgranska
-      </h2>
-      <button
-        type="button"
-        class="xw-btn xw-btn--icon xw-btn--ghost"
-        aria-label="Stäng förhandsgranskningen"
-        title="Stäng"
-        data-test="exam-workspace-print-preview-close"
-        @click="emit('close')"
+    <div class="pp__frame">
+      <div class="pp__head">
+        <h2 class="pp__title">
+          Förhandsgranska
+        </h2>
+        <button
+          type="button"
+          class="xw-btn xw-btn--icon xw-btn--ghost"
+          aria-label="Stäng förhandsgranskningen"
+          title="Stäng"
+          data-test="exam-workspace-print-preview-close"
+          @click="emit('close')"
+        >
+          <UiGlyph
+            meaning="close"
+            :size="20"
+          />
+        </button>
+      </div>
+      <div
+        ref="scrollArea"
+        class="pp__body"
       >
-        <UiGlyph
-          meaning="close"
-          :size="20"
-        />
-      </button>
-    </div>
-    <div
-      ref="scrollArea"
-      class="pp__body"
-    >
-      <p
-        v-if="status"
-        class="pp__status"
-        role="status"
-        data-test="exam-workspace-print-preview-status"
-      >
-        {{ status }}
-      </p>
-      <p
-        v-if="message"
-        class="pp__detail"
-        data-test="exam-workspace-print-preview-message"
-      >
-        {{ message }}
-      </p>
-      <img
-        v-for="(page, index) in pages"
-        :key="index"
-        class="pp__page"
-        :src="page"
-        :alt="`Sida ${index + 1}`"
-        :data-page-index="index"
-      >
+        <p
+          v-if="status"
+          class="pp__status"
+          role="status"
+          data-test="exam-workspace-print-preview-status"
+        >
+          {{ status }}
+        </p>
+        <p
+          v-if="message"
+          class="pp__detail"
+          data-test="exam-workspace-print-preview-message"
+        >
+          {{ message }}
+        </p>
+        <img
+          v-for="(page, index) in pages"
+          :key="index"
+          class="pp__page"
+          :src="page"
+          :alt="`Sida ${index + 1}`"
+          :data-page-index="index"
+        >
+      </div>
     </div>
     <ExamWorkspaceColumnHandle
       v-if="handle"
@@ -154,6 +156,7 @@ watch(
   padding: 0 var(--huleedu-space-3) 0 var(--huleedu-space-5); border-bottom: 1px solid var(--huleedu-surface-divider);
 }
 .pp__title { flex: 1; margin: 0; font-size: var(--huleedu-text-base); font-weight: var(--huleedu-font-semibold); }
+.pp__frame { display: flex; flex-direction: column; flex: 1; min-height: 0; min-width: 0; }
 .pp__body {
   display: grid; align-content: start; gap: var(--huleedu-space-4); flex: 1; min-height: 0; overflow-y: auto;
   padding: var(--huleedu-space-5);
@@ -175,7 +178,7 @@ watch(
 }
 @media (min-width: 1280px) {
   /* Below its minimum the panel keeps its minimum layout and scrolls inside itself. */
-  .pp { overflow-x: auto; }
+  .pp__frame { overflow-x: auto; }
   .pp__body { min-width: var(--xw-preview-min); }
 }
 </style>
