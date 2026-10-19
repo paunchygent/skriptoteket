@@ -11,7 +11,13 @@
  *   toggle marks from the keyboard. Activating a gap chip opens a small
  *   popover where the teacher edits that gap's accepted answers, removes an
  *   automatic answer the conversion added, or replaces the whole gap with its
- *   first accepted answer as plain text ("Visa som text").
+ *   first accepted answer as plain text ("Visa som text"). A Lucktext or
+ *   dropdown-Lucktext question grows its gaps from here: the toolbar's Lucka
+ *   button turns the selection, or the word at the caret, into a gap (or
+ *   inserts an empty gap), and a click inside a word shows a small floating
+ *   "Gör till lucka" button that converts that word. The editor emits the
+ *   change as one `createGap`, the owner adds the gap record as one
+ *   structural edit, and the new gap's popover opens at once.
  *
  *   A selection that covers a gap or a picture deletes it like any other
  *   character, without confirmation: the body edit drops the gap's record and
@@ -27,12 +33,14 @@
  *   - `ExamWorkspaceRichTextEditor` owns the text, marks and atoms,
  *     `ExamWorkspaceMarkToolbar` the glyph buttons, and
  *     `ExamWorkspaceGapPopover` edits one gap's accepted answers.
+ *   - `examWorkspaceItemEdits` names the next free gap id (`nextGapId`); the
+ *     owner applies the emitted `createGap` through `createItemGap`.
  *   - `examWorkspaceRichTextTarget` is the shared active target the toolbar
  *     reads and calls, so a glyph action always edits the surface that owns
  *     the selection, never a stale one.
  */
 
-import { computed, ref, useId, watch } from "vue";
+import { computed, nextTick, ref, useId, watch } from "vue";
 
 import type { NativeExamBodyParagraph, NativeExamChoice, NativeExamItem } from "../../../api/examWorkspace";
 import {
@@ -41,6 +49,7 @@ import {
 } from "./examWorkspaceAnswerKeyRules";
 import type { BodyMark } from "./examWorkspaceBodyMarks";
 import { examGapStates, gapNumberIn } from "./examWorkspaceGapLabels";
+import { nextGapId } from "./examWorkspaceItemEdits";
 import ExamWorkspaceGapPopover from "./ExamWorkspaceGapPopover.vue";
 import ExamWorkspaceMarkToolbar from "./ExamWorkspaceMarkToolbar.vue";
 import ExamWorkspaceRichTextEditor from "./ExamWorkspaceRichTextEditor.vue";
@@ -57,6 +66,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   updateBody: [itemId: string, body: NativeExamBodyParagraph[], structural: boolean];
+  createGap: [itemId: string, body: NativeExamBodyParagraph[], gapId: string, seed: string];
   updateGapValues: [itemId: string, gapId: string, acceptedValues: string[]];
   updateGapOptions: [itemId: string, gapId: string, options: NativeExamChoice[], correctOptionId: string | null];
   removeAutomaticValue: [itemId: string, gapId: string, value: string];
@@ -71,6 +81,7 @@ type OpenGap = {
 
 const labelId = useId();
 const editor = ref<InstanceType<typeof ExamWorkspaceRichTextEditor> | null>(null);
+const root = ref<HTMLElement | null>(null);
 const openGap = ref<OpenGap | null>(null);
 const richTextTargets = useRichTextTargetRegistry();
 const activeRichTextTarget = richTextTargets.active;
@@ -90,6 +101,11 @@ const activeHeading = computed<HeadingLevel | null>(
   () => activeRichTextTarget.value?.headingLevel() ?? null,
 );
 
+/** Whether this question kind grows gaps: Lucktext and dropdown-Lucktext. */
+const gapKind = computed(() => props.item.kind === "gap_fill" || props.item.kind === "inline_choice");
+/** The id the next created gap takes, or null at the gap_999 cap. */
+const newGapId = computed(() => (gapKind.value ? nextGapId(props.item) : null));
+
 /** How each gap of the item reads in the text: its accepted answers, or "Lucka N" while it has none. */
 const gapStates = computed(() => examGapStates(props.item.gaps));
 
@@ -99,6 +115,33 @@ function handleToggleMark(mark: BodyMark): void {
 
 function handleToggleHeading(level: HeadingLevel): void {
   activeRichTextTarget.value?.toggleHeading(level);
+}
+
+/** Turn the selection, or the word at the caret, into the next free gap. */
+function handleMakeGap(): void {
+  const gapId = newGapId.value;
+  if (props.disabled || gapId === null) {
+    return;
+  }
+  const target = activeRichTextTarget.value;
+  if (target !== null) {
+    target.makeGap(gapId);
+    return;
+  }
+  // No surface is active yet: the caret lands at the end of the question
+  // text, while the focus — and with it the registration as the active
+  // target — lands on the next animation frame (TipTap defers `focus()`),
+  // so the gap command runs once this surface owns the toolbar.
+  editor.value?.focus();
+  requestAnimationFrame(() => {
+    if (props.disabled || newGapId.value !== gapId) {
+      return;
+    }
+    if (root.value?.contains(document.activeElement) !== true) {
+      return;
+    }
+    activeRichTextTarget.value?.makeGap(gapId);
+  });
 }
 
 function openPopover(gapId: string, chip: HTMLElement): void {
@@ -166,6 +209,22 @@ function handleGapAsText(itemId: string, gapId: string): void {
   editor.value?.focus();
 }
 
+/** Forward one gap creation and open the new gap's popover at its chip. */
+function handleCreateGap(body: NativeExamBodyParagraph[], gapId: string, seed: string): void {
+  if (props.disabled) {
+    return;
+  }
+  emit("createGap", props.item.item_id, body, gapId, seed);
+  void nextTick(() => {
+    // The owner writes the emitted body back, so the editor keeps its
+    // content and the new chip is already in this surface.
+    const chip = root.value?.querySelector<HTMLElement>(`[data-gap-id="${gapId}"]`);
+    if (chip) {
+      openPopover(gapId, chip);
+    }
+  });
+}
+
 watch(
   () => props.disabled,
   (disabled) => {
@@ -178,6 +237,7 @@ watch(
 
 <template>
   <div
+    ref="root"
     class="mb-4 grid gap-1.5"
     role="group"
     :aria-labelledby="labelId"
@@ -196,8 +256,11 @@ watch(
         :active-heading="activeHeading"
         :disabled="disabled"
         show-headings
+        :show-gap="gapKind"
+        :gap-disabled-reason="gapKind && newGapId === null ? 'Kan inte lägga till fler luckor' : null"
         @toggle-mark="handleToggleMark"
         @toggle-heading="handleToggleHeading"
+        @make-gap="handleMakeGap"
       />
       <div class="xw-rich__body grid gap-2">
         <ExamWorkspaceRichTextEditor
@@ -211,7 +274,9 @@ watch(
           :gap-states="gapStates"
           :asset-urls="assetUrls"
           gaps-interactive
+          :next-gap-id="gapKind ? newGapId : undefined"
           @activate-gap="openPopover"
+          @create-gap="handleCreateGap"
           @update="(body, structural) => emit('updateBody', item.item_id, body, structural)"
         />
 

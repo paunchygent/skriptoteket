@@ -91,6 +91,7 @@ const emit = defineEmits<{
   dismissNotice: [];
   undoInterpretation: [itemId: string];
   removeAutomaticValue: [itemId: string, gapId: string, value: string];
+  createGap: [itemId: string, body: NativeExamBodyParagraph[], gapId: string, seed: string];
   showGapAsText: [itemId: string, gapId: string];
   addOrderingStep: [itemId: string];
   moveOrderingStep: [itemId: string, choiceId: string, delta: -1 | 1];
@@ -289,6 +290,7 @@ function handleTickPointsInput(event: Event): void {
       @update-gap-values="(itemId, gapId, values) => emit('updateGapValues', itemId, gapId, values)"
       @update-gap-options="(itemId, gapId, options, correctOptionId) => emit('updateGapOptions', itemId, gapId, options, correctOptionId)"
       @remove-automatic-value="(itemId, gapId, value) => emit('removeAutomaticValue', itemId, gapId, value)"
+      @create-gap="(itemId, body, gapId, seed) => emit('createGap', itemId, body, gapId, seed)"
       @show-gap-as-text="(itemId, gapId) => emit('showGapAsText', itemId, gapId)"
       @update-body="(itemId, body, structural) => emit('updateBody', itemId, body, structural)"
     />
