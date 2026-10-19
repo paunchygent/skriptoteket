@@ -221,9 +221,9 @@ describe("ExamWorkspaceView reopen slice", () => {
 
     const entry = wrapper.find('[data-test="exam-workspace-open-lineage-2"]');
     expect(entry.attributes("aria-disabled")).toBe("true");
-    expect(entry.attributes("title")).toBe("Spara det öppna provet innan du öppnar ett annat.");
+    expect(entry.attributes("title")).toBe("Vänta tills ändringarna har sparats.");
     expect(wrapper.find('[data-test="exam-workspace-open-dirty-hint"]').text()).toContain(
-      "Spara det öppna provet innan du importerar eller öppnar ett annat.",
+      "Vänta tills ändringarna har sparats.",
     );
     expect(wrapper.find('[data-test="exam-workspace-pick-file"]').attributes("disabled")).toBeDefined();
 
