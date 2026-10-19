@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "3fdc9632893a6c04c9022eb178b05f9ea8f02edd81cdadd4fcf71af09e942df9",
+  "source_set_digest": "3149d0c04852fd13dbf43cc1b99334d926f4d9fd438d24f8d90c66d32b662986",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6748,7 +6748,7 @@
       "type": "task",
       "title": "Printed PDF exams show each question's points as (N p) at the end of the question text",
       "path": "docs/backlog/tasks/task-skript-40-04-15-printed-pdf-exams-show-each-question-s-points-as-n-p-at-the-end-of-the-question-text.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -6759,7 +6759,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-19",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Independent ruthless-reviewer 9aa64d69 (Pi) approved dbbb5f8d with one low finding, fixed in R3 fae44edb and admitted on focused proof (retained 01a1542c evidence/results/9aa64d69-fc20-41eb-8993-eded036ef865.json). Merged to main as df87d633; the Mac staging walk at df87d633 passed (Mac .artifacts/staging-walk-40-04-15/walk-record.md)."
       }
     },
     {
