@@ -12,6 +12,7 @@
  */
 
 import type { NativeExamItem, NativeExamItemKind } from "../../../api/examWorkspace";
+import { isShortAnswer } from "./examWorkspaceShortAnswer";
 
 const REVIEW_REASON_LABELS: Record<string, string> = {
   machine_proposed_answer_key:
@@ -46,6 +47,11 @@ export const EXAM_WORKSPACE_TYPE_LABELS: Record<NativeExamItemKind, string> = {
 
 export function examWorkspaceTypeLabel(kind: NativeExamItemKind): string {
   return EXAM_WORKSPACE_TYPE_LABELS[kind];
+}
+
+/** The teacher-facing type label: a Kort svar shape reads as "Kort svar". */
+export function examWorkspaceItemTypeLabel(item: NativeExamItem): string {
+  return isShortAnswer(item) ? "Kort svar" : examWorkspaceTypeLabel(item.kind);
 }
 
 export function examWorkspacePromptExcerpt(item: NativeExamItem): string {

@@ -19,7 +19,7 @@
 
 import type { NativeExamDocument, NativeExamItem } from "../../../api/examWorkspace";
 import type { ExamWorkspaceReadinessReason } from "./examWorkspaceItemReadiness";
-import { examWorkspacePromptExcerpt, examWorkspaceTypeLabel } from "./examWorkspaceRows";
+import { examWorkspacePromptExcerpt, examWorkspaceItemTypeLabel } from "./examWorkspaceRows";
 import { examWorkspaceUnits } from "./examWorkspaceStructure";
 import { bodyText } from "./examWorkspaceRichText";
 import { examWorkspacePrintedDifference } from "./examWorkspaceTotals";
@@ -114,7 +114,7 @@ function itemEntry(
         ? "ok"
         : "warn",
     text: examWorkspacePromptExcerpt(item),
-    typeLabel: readiness.includes("unbuilt_question") ? "Ej konverterad" : examWorkspaceTypeLabel(item.kind),
+    typeLabel: readiness.includes("unbuilt_question") ? "Ej konverterad" : examWorkspaceItemTypeLabel(item),
   };
 }
 

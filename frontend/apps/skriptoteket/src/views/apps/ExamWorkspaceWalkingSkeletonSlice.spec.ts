@@ -212,7 +212,7 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
     expect(wrapper.find('[data-test="exam-workspace-save-state"]').text()).toBe("Osparat");
   });
 
-  it("adds a short answer as a Lucktext with one unkeyed gap after the question text", async () => {
+  it("adds a short answer as a Kort svar with one unkeyed gap after the question text", async () => {
     apiMocks.saveExamWorkspaceDocument.mockResolvedValue(buildResponse({ version: 2 }));
     const { wrapper } = await mountExamWorkspace();
     await importFixtureDocument(wrapper);
@@ -220,7 +220,7 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
     await addQuestion(wrapper, "short_answer");
 
     const newRow = wrapper.find('[data-test="exam-workspace-row-item_009"]');
-    expect(newRow.text()).toContain("Lucktext");
+    expect(newRow.text()).toContain("Kort svar");
     await saveDocument(wrapper);
 
     const [, params] = apiMocks.saveExamWorkspaceDocument.mock.calls[0] as [

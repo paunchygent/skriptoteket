@@ -397,10 +397,7 @@ function newGapRecord(kind: NativeExamItemKind, gapId: string, seed: string): Na
     const options: NativeExamChoice[] =
       text.length > 0
         ? [{ body: plainBody(text), choice_id: "choice_001" }]
-        : [
-            { body: [], choice_id: "choice_001" },
-            { body: [], choice_id: "choice_002" },
-          ];
+        : blankChoices();
     return {
       accepted_values: [],
       automatic_values: [],
@@ -507,10 +504,12 @@ function blankGap(inlineChoice: boolean): NativeExamGap {
 /**
  * The question a teacher adds: no question text, and the kind's empty
  * structure, the same structure the server gives a question it retypes
- * (TASK-SKRIPT-39-06-05). Choice kinds get two empty choices, gap kinds one
- * paragraph holding only the gap (Kort svar is a Lucktext with one gap, Q14),
- * a rullista one gap whose first empty option is the key, and Kategorisera one row, two categories and
- * a zero tick value. Empty texts block export until the teacher fills them in.
+ * (TASK-SKRIPT-39-06-05). Choice kinds get two empty choices, a rullista one
+ * gap whose first empty option is the key, and Kategorisera one row, two
+ * categories and a zero tick value. Empty texts block export until the teacher
+ * fills them in. A Kort svar is a Lucktext whose only gap stands alone in its
+ * last paragraph (L2, user 2026-10-19); a new Lucktext starts with no text
+ * and no gap, while a new Kort svar keeps its one-gap body.
  */
 export function newTeacherItem(
   itemId: string,
@@ -518,7 +517,7 @@ export function newTeacherItem(
   teacherKind: TeacherItemKind,
 ): NativeExamItem {
   const kind: NativeExamItemKind = teacherKind === "short_answer" ? "gap_fill" : teacherKind;
-  const gapped = kind === "gap_fill" || kind === "inline_choice";
+  const gapped = kind === "inline_choice" || (kind === "gap_fill" && teacherKind === "short_answer");
   const choice = kind === "single_choice" || kind === "multiple_response";
   const matching = kind === "matching";
   const ordering = kind === "ordering";
