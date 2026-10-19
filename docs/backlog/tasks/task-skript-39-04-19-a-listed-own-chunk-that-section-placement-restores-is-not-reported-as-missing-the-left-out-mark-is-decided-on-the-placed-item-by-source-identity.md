@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-19'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-19'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Pi ruthless-reviewer c54c4ae4 (Hemma): no functional defects; medium M1 and M2 (file splits) repaired at 33ee7ad2 and admitted on focused proof (544 passed, lint and typecheck clean). Domain suite 5480 passed; its 15 test_spa_fallback failures match main (no built SPA in the worktree). Ten replays equal the base; the Del A probe ends review_complete with no reasons. origin/main 06985163 merged at 915be481; merged to main 2026-10-19. Validation names no staging walk.'
 task_kind: story
 acceptance_criteria:
   - A converted item whose listed own chunk section placement restores into its body or its parent shows no missing-text reason for that chunk; genuinely missing chunks and every unrelated review reason stay; the ten replays are identical
