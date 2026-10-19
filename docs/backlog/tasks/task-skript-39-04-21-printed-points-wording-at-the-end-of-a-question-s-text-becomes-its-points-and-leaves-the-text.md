@@ -81,19 +81,34 @@ Behaviour (D5-D8):
   label ending the last line ("... lunch menu. (1 point)"); the label and the blank space
   before it leave. The other is a last line that is only a points line ("Poäng: 6 poäng",
   "Totalt: 6 p", "6 p"); the whole line leaves, and an emptied paragraph is dropped.
-- The wording leaves only when its number equals the item's points. When the numbers differ,
-  the wording and the points stay and the item goes to review with "Poängen i frågetexten
-  skiljer sig från frågans poäng. Kontrollera poängen.". When the wording is the whole
-  question text, it stays.
+- The wording leaves only when its number equals the item's points. When the wording is the
+  whole question text, it stays.
+- When the shape matches but the number differs, the wording and the points stay. The item
+  records the exact wording in `leftover_points_text` (for example "(3 poäng)"). With no
+  settled points, or when the wording is the whole question text, nothing is recorded.
 - Word (every path: review, reply, rebuild, retry), QTI and DigiExam apply the same rule. A
-  sentence that mentions points ("Väljer eleven det får den 2 poäng.") never matches.
+  sentence that mentions points ("Väljer eleven det får den 2 poäng.", "Använd mellan 3
+  poäng och 5 poäng.") never matches: it is neither removed nor offered.
+- The exam workspace points note (TASK-SKRIPT-40-04-10) shows one offer for all candidates:
+  "{n} frågor har kvar poängtext, t.ex. ‘(3 poäng)’. Ta bort?". It has three glyphs, named
+  only in the tooltip and aria-label:
+  - A check removes each item's stored text from its body (an emptied paragraph is dropped)
+    and clears the field on every item, as one undo step.
+  - An X clears the field on every item, as one undoable edit, and keeps the text.
+  - An arrow jumps to the first candidate.
+  The count n covers only items whose body still ends in their stored text. The example is
+  the first candidate's stored text.
 
 ## Contract Inputs
 
 - User decision 2026-10-19 "Import strips it" and the user answers of 2026-10-19 (Q1 "End of
-  text only", Q2 "Keep + flag", Q4/Q5 "All importers", Q6 "Yes, stop it"), relayed by the
-  orchestrator `944b5a5a`; Q3 decided A by the orchestrator. Gate:
-  `agent-planning:user-closure-gate`.
+  text only", Q4/Q5 "All importers", Q6 "Yes, stop it"), relayed by the orchestrator
+  `944b5a5a`; Q3 decided A by the orchestrator.
+- User direction 2026-10-19, which replaces Q2 "Keep + flag": the least editing for the
+  teacher; wording the rule leaves becomes one offer, chosen through AskUserQuestion as "One
+  offer for all". User correction 2026-10-19: candidates use the same shapes as the strip, and
+  the volt question must stay unchanged. N1-N3 were decided A by the orchestrator under the
+  user's rules. Gate: `agent-planning:user-closure-gate`.
 - Retained root `01a1546f-8119-7bd4-884f-9cbb125b8e0c`: plan
   `evidence/planning/TASK-SKRIPT-39-04-21/plan.md` (ledger closed); explorer discovery
   `e01`-`e21`; probes `evidence/probes/dump_replays.py`, `scan_points_wording.py` and
@@ -107,19 +122,25 @@ Behaviour (D5-D8):
 
 ## Core Vertical And Performance
 
-One structural match over the last line of each imported question's body, with no new
-stored data and unchanged document, event and export formats.
+One structural match over the last line of each imported question's body. The only new
+stored data is one optional item field, `leftover_points_text`. Event and export formats are
+unchanged.
 
 Units, each for one fresh junior:
 
 - U1: the label grammar and the shared rule. `POINT_LABEL` (and `SCORE_FIELD`,
   `_LABEL_RUN`) in `docx_source_rules.py`; new `points_wording.py` with the text rule, the
   native-body removal and `with_settled_points_wording`.
-- U2 (after U1): Word wiring. The final gate in `docx_ai_build.py` and
-  `exam_workspace_docx_retry.py`; `with_printed_points` reads points only; a recovered
-  points line in `native_carrier_spans` leaves whole.
-- U3 (after U1, beside U2): QTI and DigiExam wiring in `qti_import_leaf_items.py` and
-  `digiexam_import.py`.
+- U2 (after U1): Word wiring and the field.
+  - `NativeExamItem.leftover_points_text`, and the regenerated openapi types.
+  - `with_settled_points_wording` sets the field.
+  - The final gate in `docx_ai_build.py` and `exam_workspace_docx_retry.py`.
+  - `with_printed_points` reads points only.
+  - A recovered points line in `native_carrier_spans` leaves whole.
+- U3 (after U2's field, beside the rest of U2): QTI and DigiExam wiring in
+  `qti_import_leaf_items.py` and `digiexam_import.py`.
+- U4 (after TASK-SKRIPT-40-04-10 merges and `origin/main` is merged): the offer line in the
+  40-04-10 points note, with the check, X and arrow, and its Vitest specs.
 
 ## Validation
 
@@ -128,8 +149,11 @@ Units, each for one fresh junior:
   - Both shapes leave whole and keep the number.
   - Look-alike text stays: "Give 3 points of view.", "Väljer eleven det får den 2 poäng.",
     "The train leaves at 3 p.m.", a mid-text "(2 p)".
-  - Differing numbers keep the text and add the review reason once.
+  - Differing numbers keep the text and leave the review unchanged.
   - A stem that is only points wording stays.
+  - The volt question ("Pelle gör en fin volt, Sara gör en ful. Sätt poäng på Sara och
+    Pelles volter. Använd mellan 3 poäng och 5 poäng.") is unchanged, for every importer
+    (U1-U3), and records no candidate.
   - Marks and gap or picture segments around the cut are kept.
 - U2, fail-first: a fixture test that the three observed items lose their wording and keep
   their points, `original_wording` and `retry_source`, and that no other item of those exams
@@ -143,10 +167,21 @@ Units, each for one fresh junior:
   - A trailing "(2 p)" with max_score 2 leaves and the item keeps 2 points; the exported
     MAXSCORE equals the points.
   - The fixture prompts ending "får den 2 poäng." are unchanged.
-  - A differing number is flagged.
-  - A stem that is only "(2 p)" stays.
+  - A differing number keeps the text and records it as the candidate.
+  - With no max_score, nothing is recorded.
+  - A stem that is only "(2 p)" stays and records nothing.
+- U2 and U3 candidate cases: the field holds the exact stored wording, and is None for the
+  volt question, a mid-text label, no settled points and a whole-stem wording.
+- U4, Vitest:
+  - The line shows the count and the example text.
+  - The check removes only bodies that still end in their stored text, as one undo step, and
+    clears every field.
+  - The X keeps the text and the offer does not return.
+  - The arrow selects the first candidate.
+  - With no candidate there is no line.
 - Replay bar (D4): the ten recorded replays at `f3c71530` and at the task head differ only
-  in the three observed bodies.
+  in the three observed bodies. The new field adds `leftover_points_text: null` to every
+  item; any item with a non-null value is listed to the parent.
 - Focused test files only, per unit; `pdm run lint`, `pdm run typecheck`,
   `pdm run docs-validate`; the domain suite on the orchestrator's go.
 
@@ -167,15 +202,18 @@ Units, each for one fresh junior:
 | D4  | Regression bar: in the ten recorded replays, only the three observed bodies change. bf26 q43 loses " (1 point)", and "Fråga 1" of omprov variants 1 and 2 loses its "Poäng: 6 poäng" paragraph. Points, facit, events and every other item stay byte-identical; any other difference goes to the parent before merge. |
 | D5  | A printed points label is a parenthesised label or a label followed on its line only by blank space and at most one punctuation mark. A bare label followed by more words is text and supplies no points (Q6 A, user 2026-10-19 "Yes, stop it"). The probe replays are byte-identical under this grammar. |
 | D6  | Points wording is one of two shapes at the end of a question's text: a parenthesised label ending its last line, which leaves with the blank space before it, or a last line that is only a points line (`points_line`, one label), which leaves whole, an emptied paragraph being dropped (Q1 A, user "End of text only"). When it is the whole question text, it stays (Q3 A, orchestrator). |
-| D7  | When the wording's number differs from the item's points, the wording and points stay and the item goes to review with "Poängen i frågetexten skiljer sig från frågans poäng. Kontrollera poängen.", appended once to its existing reasons (Q2 B, user "Keep + flag"). |
+| D7  | When the shape matches (D6) but the number differs from the item's points, the wording and the points stay and no review reason is added. The item records the exact wording in `NativeExamItem.leftover_points_text: str \| None`. Nothing is recorded with no settled points (N2 A) or when the wording is the whole question text (N3 A). A bare label inside a sentence is never recorded (user correction 2026-10-19; the volt question). Replaces Q2 "Keep + flag" (user direction 2026-10-19). |
 | D8  | Every importer applies D5-D7. Word applies them on the review, reply, rebuild and retry paths: `with_printed_points` reads points only, and `native_carrier_spans` drops a recovered points line whole. QTI and DigiExam apply them to the final leaf item, gated by `max_score` (Q4/Q5 A, user "All importers"). |
 | D9  | No backward compatibility, fallback or wording comparison (repository invariant, ST-SKRIPT-39-04). Status `ready` through `agent-planning:user-closure-gate` on the user answers of 2026-10-19, relayed by the orchestrator `944b5a5a`. |
+| D10 | One offer for all candidates, in the 40-04-10 points note: "{n} frågor har kvar poängtext, t.ex. ‘(3 poäng)’. Ta bort?". It has three glyphs, named only in the tooltip and aria-label. The check removes each item's stored text from the end of its body and clears every field, as one structural `editDocument`, which is one undo step. The X clears every field in one undoable edit and keeps the text, so the offer does not return; undo brings it back (N1 A). The arrow selects the first candidate. The count n covers only bodies that still end in their stored text. The line is added to the 40-04-10 note after that task merges; the note is not forked. User "One offer for all" 2026-10-19 and the orchestrator 944b5a5a. |
+| D11 | After conversion, only Skriptoteket's converted structure counts: candidates are decided from the stored item body and its settled `points`, never from the source exam's structure or numbering. Any item the offer or the arrow names is named by its list number in the workspace. User rule 2026-10-19, relayed by the orchestrator 944b5a5a. |
 
 ### Resume here (2026-10-19)
 
-- State: contract accepted, status ready; no code written. Lead `d19390d2`
+- State: contract accepted, status ready. U1 is running (fresh junior `90d2414d`), steered
+  to add no review reason (D7). Lead `d19390d2`
   (implementation-specialist), branch `codex/task-skript-39-04-strip-points-wording-remote`,
   worktree `/home/paunchygent/apps/skriptoteket-task-skript-39-04-strip-points-wording-remote`;
   never pushed.
-- Next: U1 through a fresh junior; then U2 and U3 in parallel; then the replay bar and the
-  domain suite on the orchestrator's go.
+- Next: when U1 returns, U2 (the field first), then U3; the replay bar; the domain suite on
+  the orchestrator's go. U4 waits for TASK-SKRIPT-40-04-10 to merge into `origin/main`.
