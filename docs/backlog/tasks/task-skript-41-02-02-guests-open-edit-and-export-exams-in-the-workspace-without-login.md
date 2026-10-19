@@ -4,8 +4,8 @@ id: TASK-SKRIPT-41-02-02
 title: Guests open, edit and export exams in the workspace without login
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-18'
 status: ready
 closeout_review:
@@ -13,9 +13,9 @@ closeout_review:
   status: not_started
 task_kind: story
 acceptance_criteria:
-- At the guest converter's URL a guest starts from QTI or blank, edits, and exports QTI, print PDF, DOCX and the fallback Exam.net PDF without login, with the exam kept in the browser
-- Guest imports and exports pass per-caller and pooled hourly limits in the database
-- After sign-in the draft is saved to Mina filer and opens there
+  - At the guest converter's URL a guest starts from QTI or blank, edits, and exports QTI, print PDF, DOCX and the fallback Exam.net PDF without login, with the exam kept in the browser
+  - Guest imports and exports pass per-caller and pooled hourly limits in the database
+  - After sign-in the draft is saved to Mina filer and opens there
 story: ST-SKRIPT-41-02
 backlog_document_profile: contract-derived
 ---
@@ -47,11 +47,11 @@ Stop and report if the shared editor cannot run on a browser store without forki
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| G1  | ST-SKRIPT-41-02 P1-P5 apply as written. |
-| G2  | The guest and signed-in workspace are one editor behind one document store interface; no forked workspace. |
-| G3  | Limit numbers are settings; the lead proposes defaults and the user confirms them before merge. |
+| ID  | Decided contract term                                                                                           |
+| --- | --------------------------------------------------------------------------------------------------------------- |
+| G1  | ST-SKRIPT-41-02 P1-P5 apply as written.                                                                         |
+| G2  | The guest and signed-in workspace are one editor behind one document store interface; no forked workspace.      |
+| G3  | Limit numbers are settings; the lead proposes defaults and the user confirms them before merge.                 |
 | G4  | Sign-in prompts read "Logga in för att importera från DigiExam eller Word." and "Logga in för att få AI-hjälp." |
 
 ## Resume Here (lead 2, 2026-10-19)
