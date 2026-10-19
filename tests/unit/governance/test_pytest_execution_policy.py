@@ -9,6 +9,8 @@ from pathlib import Path
 
 import pytest
 
+from tests.conftest import auto_worker_count
+
 ROOT = Path(__file__).resolve().parents[3]
 SMALL_TARGET = "tests/unit/domain/curated_apps/test_models.py"
 USAGE_ERROR = 4
@@ -60,3 +62,30 @@ def test_blank_serial_reason_is_refused() -> None:
     completed = _run_pytest("-n", "0", "--serial-reason", "  ")
 
     assert completed.returncode == USAGE_ERROR
+
+
+@pytest.mark.parametrize(
+    ("file_count", "max_workers", "expected"),
+    [
+        (0, 24, 0),
+        (1, 24, 0),
+        (11, 24, 0),
+        (12, 24, 2),
+        (45, 24, 7),
+        (133, 24, 22),
+        (686, 24, 24),
+        (686, 12, 12),
+        (12, 1, 2),
+    ],
+)
+def test_worker_count_follows_the_selection(
+    file_count: int, max_workers: int, expected: int
+) -> None:
+    assert auto_worker_count(file_count, max_workers) == expected
+
+
+def test_a_small_selection_runs_in_process_without_a_serial_reason() -> None:
+    completed = _run_pytest()
+
+    assert completed.returncode == 0, completed.stdout + completed.stderr
+    assert "created:" not in completed.stdout

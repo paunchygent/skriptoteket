@@ -27,20 +27,26 @@ def selected_test_files(args: Iterable[str]) -> frozenset[Path]:
     return frozenset(files)
 
 
-def auto_worker_count(file_count: int, logical_cpus: int) -> int:
-    """One worker per selected file up to one per hardware thread; one file runs in-process.
+SERIAL_BELOW_FILES = 12
+FILES_PER_WORKER = 6
 
-    Starting a worker costs about a second of CPU, and a single file's tests rarely outweigh
-    24 of them, so a one-file run is serial and a many-file run uses every hardware thread.
+
+def auto_worker_count(file_count: int, max_workers: int) -> int:
+    """Workers for a run that selects ``file_count`` test files.
+
+    Starting a worker costs about a second of CPU and every worker collects every selected
+    module, while 10-15 agents run small focused runs on the same host. A run of fewer than
+    SERIAL_BELOW_FILES files runs in-process; a larger run gets one worker per
+    FILES_PER_WORKER files, at least two and at most ``max_workers``.
     """
 
-    if file_count <= 1:
+    if file_count < SERIAL_BELOW_FILES:
         return 0
-    return min(file_count, logical_cpus)
+    return max(2, min(max_workers, file_count // FILES_PER_WORKER))
 
 
 def pytest_xdist_auto_num_workers(config: pytest.Config) -> int:
-    """Size `-n logical` (the addopts default) to the selection."""
+    """Size `-n logical` (the addopts default) to the selection; hardware threads cap it."""
 
     workers = auto_worker_count(len(selected_test_files(config.args)), os.cpu_count() or 1)
     if workers == 0:
