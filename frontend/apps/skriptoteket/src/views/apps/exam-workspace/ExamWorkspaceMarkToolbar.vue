@@ -149,20 +149,6 @@ const isMac = isMacPlatform();
       <div class="xw-tools">
         <button
           type="button"
-          class="xw-tool"
-          aria-label="Tom lucka"
-          :title="emptyGapDisabledReason ?? 'Tom lucka'"
-          :disabled="disabled || emptyGapDisabledReason !== null"
-          data-test="exam-workspace-toolbar-empty-gap"
-          @click="emit('insertEmptyGap')"
-        >
-          <UiGlyph
-            meaning="empty-gap"
-            :size="16"
-          />
-        </button>
-        <button
-          type="button"
           class="xw-tool xw-tool--switch"
           :aria-pressed="gapToolOn ? 'true' : 'false'"
           :aria-keyshortcuts="ariaKeyshortcuts('gapTool', isMac)"
@@ -174,6 +160,20 @@ const isMac = isMacPlatform();
         >
           <UiGlyph
             meaning="gap-tool"
+            :size="16"
+          />
+        </button>
+        <button
+          type="button"
+          class="xw-tool"
+          aria-label="Tom lucka"
+          :title="emptyGapDisabledReason ?? 'Tom lucka'"
+          :disabled="disabled || emptyGapDisabledReason !== null"
+          data-test="exam-workspace-toolbar-empty-gap"
+          @click="emit('insertEmptyGap')"
+        >
+          <UiGlyph
+            meaning="empty-gap"
             :size="16"
           />
         </button>
