@@ -34,6 +34,8 @@ Relationships:
   --xw-list-size: var(--xw-list-default);
   --xw-drawer-size: var(--xw-drawer-default);
   --xw-preview-size: var(--xw-preview-default);
+  --xw-note-line: 28px;
+  --xw-list-foot: calc(20px + 2 * var(--huleedu-space-2));
 }
 
 /* Buttons */

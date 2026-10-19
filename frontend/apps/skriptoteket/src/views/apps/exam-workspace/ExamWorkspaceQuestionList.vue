@@ -6,9 +6,15 @@
  *   Every question of the open exam in order under "Frågor (N)", with "Ny
  *   uppgift" adding a question or an instruction with deluppgifter after the
  *   selected one. The footer holds the exam total ("Totalt N p", cut with an
- *   ellipsis, the full text in a tooltip) with one neutral line below it per
- *   printed total that differs from its questions' sum: the exam line first,
- *   then one line per differing part in document order. Each line is
+ *   ellipsis, the full text in a tooltip) at a fixed height. One neutral
+ *   line per printed total that differs from its questions' sum floats over
+ *   the bottom edge of the scrolling list directly above the footer: the
+ *   exam line first, then one line per differing part in document order.
+ *   The lines are absolutely positioned, so adding or removing a line never
+ *   changes the size of the scrolling list or the footer. The scroll content
+ *   always ends with a fixed one-row end room of one line's height, on every
+ *   exam, so the scroll height never changes when a line appears, goes or
+ *   returns on undo. Each line is
  *   followed by two compact glyph-only buttons: confirm ("Godta frågornas
  *   summa, {sum} p", clears that line's own stored printed total) and
  *   continue ("Visa frågorna", selects the line's target, hidden when the
@@ -371,6 +377,26 @@ async function expandFromGlyph(): Promise<void> {
               @toggle-mark="toggleMark"
             />
           </div>
+          <div
+            class="list__end-room"
+            aria-hidden="true"
+            data-test="exam-workspace-list-end-room"
+          />
+        </div>
+        <div
+          v-if="lines.length > 0"
+          class="list__printed-lines"
+          data-test="exam-workspace-printed-total-lines"
+        >
+          <ExamWorkspaceNoteLine
+            v-for="line in lines"
+            :key="line.key"
+            data-test="exam-workspace-printed-total-line"
+            :text="line.text"
+            :actions="actionsFor(line)"
+            :disabled="disabled"
+            @action="handleNoteAction(line, $event)"
+          />
         </div>
         <div class="list__foot">
           <span
@@ -378,21 +404,6 @@ async function expandFromGlyph(): Promise<void> {
             :title="totalTitle"
             data-test="exam-workspace-exam-points"
           >Totalt <strong class="list__sum">{{ formattedTotal }}</strong></span>
-          <div
-            v-if="lines.length > 0"
-            class="list__printed-lines"
-            data-test="exam-workspace-printed-total-lines"
-          >
-            <ExamWorkspaceNoteLine
-              v-for="line in lines"
-              :key="line.key"
-              data-test="exam-workspace-printed-total-line"
-              :text="line.text"
-              :actions="actionsFor(line)"
-              :disabled="disabled"
-              @action="handleNoteAction(line, $event)"
-            />
-          </div>
         </div>
         <ExamWorkspaceNewItemMenu
           :open="newMenuOpen"
@@ -420,7 +431,7 @@ async function expandFromGlyph(): Promise<void> {
 
 <style scoped>
 .list { display: flex; flex-direction: column; min-height: 0; position: relative; border-right: 1px solid var(--huleedu-surface-divider); }
-.list__frame { display: flex; flex-direction: column; flex: 1; min-height: 0; min-width: 0; }
+.list__frame { display: flex; flex-direction: column; flex: 1; min-height: 0; min-width: 0; position: relative; }
 /* The collapsed desktop list is a 44px rail with one expand glyph and the draggable edge. */
 .list__rail { display: flex; justify-content: center; padding: var(--huleedu-space-2) 0; }
 @media (min-width: 1280px) {
@@ -429,6 +440,7 @@ async function expandFromGlyph(): Promise<void> {
   .list:not(.list--collapsed) .list__frame > .list__head,
   .list:not(.list--collapsed) .list__frame > .list__markbar,
   .list:not(.list--collapsed) .list__frame > .list__scroll,
+  .list:not(.list--collapsed) .list__frame > .list__printed-lines,
   .list:not(.list--collapsed) .list__frame > .list__foot { min-width: var(--xw-list-min); }
 }
 .list__head {
@@ -448,6 +460,10 @@ async function expandFromGlyph(): Promise<void> {
 /* One slot for Markera/Avbryt: a fixed width so swapping the label moves nothing. */
 .list__markbar-toggle { min-width: 100px; }
 .list__scroll { flex: 1; min-height: 0; overflow-y: auto; }
+/* The fixed one-row end room: one note line's height at the end of the scroll
+   content on every exam, so the scroll height never changes when a floating
+   line appears, goes or returns on undo. */
+.list__end-room { flex: none; height: var(--xw-note-line); }
 .list__intro {
   padding: var(--huleedu-space-1-5) var(--huleedu-space-4) var(--huleedu-space-1-5) var(--huleedu-space-6);
   border-bottom: 1px solid var(--huleedu-surface-divider);
@@ -464,10 +480,10 @@ async function expandFromGlyph(): Promise<void> {
   font-size: var(--huleedu-text-xs); color: var(--huleedu-navy-60);
 }
 .list__foot {
-  display: flex; flex-direction: column; gap: var(--huleedu-space-1); flex: none;
-  padding: var(--huleedu-space-2) var(--huleedu-space-6); border-top: 1px solid var(--huleedu-surface-divider);
+  display: flex; flex-direction: column; justify-content: center; flex: none;
+  height: var(--xw-list-foot);
+  padding: 0 var(--huleedu-space-6); border-top: 1px solid var(--huleedu-surface-divider);
   font-size: var(--huleedu-text-sm); color: var(--huleedu-navy);
-  max-height: min(320px, 40vh);
 }
 /* The total line keeps its height whether the mismatch lines show or not. */
 .list__total {
@@ -475,12 +491,22 @@ async function expandFromGlyph(): Promise<void> {
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .list__sum { font-weight: var(--huleedu-font-semibold); }
-/* The mismatch lines: neutral text under the total, scrolling inside the footer when long. */
-.list__printed-lines { overflow-y: auto; min-height: 0; display: flex; flex-direction: column; gap: var(--huleedu-space-1); }
+/* The floating mismatch lines: absolutely positioned over the bottom edge of
+   the scrolling list directly above the footer, so adding or removing a line
+   never changes the size of the scroll viewport or the footer. With two or
+   more lines the extra lines stack upward over the list and may cover the
+   last rows at the very end. The opaque list surface keeps the rows under
+   them from showing through. */
+.list__printed-lines {
+  position: absolute; left: 0; right: 0; bottom: var(--xw-list-foot); z-index: 2;
+  display: flex; flex-direction: column; gap: var(--huleedu-space-1);
+  padding: 0 var(--huleedu-space-6); background: var(--huleedu-canvas);
+}
 @media (max-width: 1279px) {
   .list__head { padding: 0 var(--huleedu-space-3) 0 var(--huleedu-space-4); }
   .list__markbar { padding: 0 var(--huleedu-space-3) 0 var(--huleedu-space-4); }
-  .list__foot { padding: var(--huleedu-space-2) var(--huleedu-space-4); }
+  .list__foot { padding: 0 var(--huleedu-space-4); }
+  .list__printed-lines { padding: 0 var(--huleedu-space-4); }
   .list__intro { padding-left: var(--huleedu-space-4); padding-right: var(--huleedu-space-3); }
 }
 @media (max-width: 767px) {

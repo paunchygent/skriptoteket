@@ -270,4 +270,28 @@ describe("ExamWorkspaceQuestionList printed-total lines", () => {
     expect(wrapper.find('[data-test="exam-workspace-points-keep"]').exists()).toBe(false);
     expect(wrapper.find('[data-test="exam-workspace-points-use-computed"]').exists()).toBe(false);
   });
+
+  it("floats the lines over the list, outside the fixed-height footer", () => {
+    const wrapper = mountList(mockupDocument());
+
+    const lines = wrapper.get('[data-test="exam-workspace-printed-total-lines"]');
+    expect(lines.element.closest(".list__foot")).toBeNull();
+    expect(wrapper.get(".list__foot").find('[data-test="exam-workspace-printed-total-lines"]').exists()).toBe(false);
+  });
+
+  it("always ends the scroll content with the one-row end room, with or without a line", () => {
+    const withLine = mountList(mockupDocument());
+    const endRoom = withLine.get('[data-test="exam-workspace-list-end-room"]');
+    expect(endRoom.element.closest(".list__scroll")).not.toBeNull();
+
+    const agreed: NativeExamDocument = {
+      ...mockupDocument(),
+      header: { printed_total: null, tags: [] },
+      parents: [],
+    };
+    const withoutLine = mountList(agreed, { mismatches: [] });
+    expect(withoutLine.findAll(LINE)).toHaveLength(0);
+    const bareRoom = withoutLine.get('[data-test="exam-workspace-list-end-room"]');
+    expect(bareRoom.element.closest(".list__scroll")).not.toBeNull();
+  });
 });

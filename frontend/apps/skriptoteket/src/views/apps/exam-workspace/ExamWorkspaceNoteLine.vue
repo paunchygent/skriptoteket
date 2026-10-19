@@ -3,7 +3,9 @@
  * Exam workspace footer note line.
  *
  * Domain purpose:
- *   One neutral footer line: the line's text, then one glyph-only icon
+ *   One neutral footer line: the line's text on one row, cut with an
+ *   ellipsis at narrow widths (the full sentence is the line group's
+ *   aria-label and the text's tooltip), then one glyph-only icon
  *   button per action. Each action names itself only in tooltip and
  *   aria-label; a button carries no visible text. The line knows nothing
  *   about totals: the parent maps its line kinds to actions.
@@ -42,7 +44,10 @@ defineEmits<{
     role="group"
     :aria-label="text"
   >
-    <span class="note-line__text">{{ text }}</span>
+    <span
+      class="note-line__text"
+      :title="text"
+    >{{ text }}</span>
     <button
       v-for="item in actions"
       :key="item.key"
@@ -63,8 +68,9 @@ defineEmits<{
 </template>
 
 <style scoped>
-.note-line { display: flex; align-items: center; gap: var(--huleedu-space-1-5); }
-.note-line__text { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.note-line { display: flex; align-items: center; gap: var(--huleedu-space-1-5); height: var(--xw-note-line); }
+/* One row always: the text is cut with an ellipsis at narrow widths while the glyph buttons never shrink. */
+.note-line__text { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .note-line__button {
   flex: none; display: inline-flex; align-items: center; justify-content: center;
   width: 28px; height: 28px; padding: 0; border: 0; border-radius: 50%;

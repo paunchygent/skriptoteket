@@ -26,6 +26,7 @@ describe("ExamWorkspaceNoteLine", () => {
     expect(line.attributes("role")).toBe("group");
     expect(line.attributes("aria-label")).toBe("Provtexten säger 70 p, frågorna ger 67 p.");
     expect(line.get(".note-line__text").text()).toBe("Provtexten säger 70 p, frågorna ger 67 p.");
+    expect(line.get(".note-line__text").attributes("title")).toBe("Provtexten säger 70 p, frågorna ger 67 p.");
 
     const buttons = wrapper.findAll("button");
     expect(buttons).toHaveLength(2);
