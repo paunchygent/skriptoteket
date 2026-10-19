@@ -15,16 +15,16 @@ import { fileURLToPath } from "node:url";
 import vue from "@vitejs/plugin-vue";
 import { defineConfig } from "vitest/config";
 
+import { decodeVitestInclude, VITEST_INCLUDE_ENV } from "./scripts/vitest-include.mjs";
+
 export default defineConfig({
   plugins: [vue()],
   test: {
     globals: true,
     environment: "jsdom",
-    // `scripts/vitest-run.mjs` passes named targets as a JSON array so glob
-    // braces such as `{a,b}` survive intact.
-    include: process.env.VITEST_INCLUDE
-      ? (JSON.parse(process.env.VITEST_INCLUDE) as string[])
-      : ["src/**/*.spec.ts"],
+    // The wrapper passes named targets through `scripts/vitest-include.mjs`,
+    // which owns the format, so glob braces such as `{a,b}` survive intact.
+    include: decodeVitestInclude(process.env[VITEST_INCLUDE_ENV]) ?? ["src/**/*.spec.ts"],
     exclude: ["node_modules", "dist"],
     setupFiles: ["./src/test/setup.ts"],
     coverage: {

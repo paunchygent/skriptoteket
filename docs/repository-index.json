@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "428ea7b7847ff3d7c66a0b917c668a8e6d260918a07e96388a0ae15896674fb7",
+  "source_set_digest": "3bf9e383d0ba8bbec631c31154db866045f6217f7cf093898e2f93c3eff57c2c",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -776,6 +776,27 @@
       "type": "story",
       "title": "Migration idempotency harness supports merge revisions",
       "path": "docs/backlog/stories/st-skript-06-17-migration-idempotency-harness-supports-merge-revisions.md",
+      "status": "proposed",
+      "epic": "EPIC-SKRIPT-06",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "links": {
+        "decisions": []
+      },
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "ST-SKRIPT-06-18",
+      "type": "story",
+      "title": "The SPA Vitest wrapper runs exactly the spec files its targets name",
+      "path": "docs/backlog/stories/st-skript-06-18-the-spa-vitest-wrapper-runs-exactly-the-spec-files-its-targets-name.md",
       "status": "proposed",
       "epic": "EPIC-SKRIPT-06",
       "owners": [
@@ -2594,6 +2615,25 @@
       "status": "proposed",
       "task_kind": "story",
       "story": "ST-SKRIPT-06-17",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-06-18-01",
+      "type": "task",
+      "title": "Repair vitest-run target resolution, separator handling and the include transport type",
+      "path": "docs/backlog/tasks/task-skript-06-18-01-repair-vitest-run-target-resolution-separator-handling-and-the-include-transport-type.md",
+      "status": "proposed",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-06-18",
       "owners": [
         {
           "kind": "service",
@@ -6569,7 +6609,7 @@
       "type": "task",
       "title": "Teachers edit a dropdown gap's options and mark the correct one in the gap popover",
       "path": "docs/backlog/tasks/task-skript-40-04-04-teachers-edit-a-dropdown-gap-s-options-and-mark-the-correct-one-in-the-gap-popover.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -6580,7 +6620,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-19",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Independent ruthless-reviewer e7dac097 (Pi) approved the review-1 repair F1-F5 at 471f2209 with no findings (retained 01a14c27 evidence/reviews/TASK-SKRIPT-40-04-04/review-2.md); merged to main as 36ca27c0. The D3 walk failure was repaired under TASK-SKRIPT-40-04-08 WR1 (4885c37d, review cd5a1b4c, merged be979cd7). The Mac staging walk at cf9547fa passed the owed Validation walk: blocker jump, fix, then QTI export 200 (Mac .artifacts/staging-walk-cf9547fa/walk-record.md)."
       }
     },
     {
@@ -6794,7 +6838,7 @@
       "type": "task",
       "title": "Each export format downloads or saves to Mina filer from one split button at the right of its menu row",
       "path": "docs/backlog/tasks/task-skript-40-04-16-each-export-format-downloads-or-saves-to-mina-filer-from-one-split-button-at-the-right-of-its-menu-row.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -6805,7 +6849,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-19",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Independent ruthless-reviewer 39d1f3fc (Pi) at eac9eba2 returned changes_requested with one medium, F1 (a duplicate export-format name table); repaired at e4fd8b51 (catalogue keyed by target, EXPORT_FORMAT_NAMES removed, close-twice menu spec) and admitted on focused proof without rereview (6 spec files, 54 passed; fe-type-check and fe-lint rc 0). Merged to main as cf9547fa; the Hemma pre-push suite passed. The Mac staging walk at cf9547fa passed every check (Mac .artifacts/staging-walk-cf9547fa/walk-record.md)."
       }
     },
     {
