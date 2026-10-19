@@ -175,6 +175,24 @@ Relationships:
   font-size: var(--huleedu-type-field-label-size); font-weight: var(--huleedu-type-field-label-weight); line-height: 28px;
 }
 .xw-answer-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 2px; min-width: 0; }
+/* Skrivyta row: the controls keep their own width and the popover floats over the answer block, so nothing in the row
+   moves when it opens or the count changes. */
+.xw-lines { display: inline-flex; justify-self: start; max-width: 100%; position: relative; }
+.xw-lines__value {
+  width: 5.5rem; text-align: center; font-size: var(--huleedu-text-sm); font-variant-numeric: tabular-nums;
+}
+.xw-lines__apply { position: relative; display: inline-flex; }
+.xw-pop {
+  position: absolute; top: calc(100% + 6px); left: 0; z-index: 5; width: 340px; max-width: calc(100vw - 32px);
+  background: var(--huleedu-modal); border: 1px solid var(--huleedu-panel-border); border-radius: var(--huleedu-radius-lg);
+  box-shadow: var(--huleedu-shadow-md), 0 0 0 1px rgba(0, 0, 0, 0.02); padding: 14px 16px; white-space: normal;
+}
+.xw-pop h3 { margin: 0 0 6px; font-size: var(--huleedu-text-sm); font-weight: 600; }
+.xw-pop p { margin: 0; font-size: var(--huleedu-text-sm); line-height: 1.45; color: var(--huleedu-navy-80); }
+.xw-pop p + p { margin-top: 4px; color: var(--huleedu-navy-60); font-size: var(--huleedu-text-xs); }
+.xw-pop__ok { display: flex; gap: 8px; align-items: flex-start; }
+.xw-pop__ok svg { width: 18px; height: 18px; color: var(--huleedu-success); flex: none; margin-top: 1px; }
+.xw-pop__acts { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
 .xw-answer-criteria { display: grid; gap: 6px; min-width: 0; }
 .xw-answer-criterion {
   display: grid; grid-template-columns: minmax(0, 1fr) 5.5rem 28px; gap: 8px; align-items: center;
@@ -191,6 +209,8 @@ Relationships:
 .xw-answer-points .xw-input::-webkit-inner-spin-button, .xw-answer-points .xw-input::-webkit-outer-spin-button { appearance: none; margin: 0; }
 @media (max-width: 767px) {
   .xw-answer-row { grid-template-columns: minmax(0, 1fr); row-gap: 4px; }
+  /* On a narrow screen the popover anchors to the whole control row so it stays inside the viewport. */
+  .xw-lines__apply { position: static; }
 }
 /* One bordered rich-text box: the formatting toolbar is its top strip and the text flows below it. */
 .xw-rich {

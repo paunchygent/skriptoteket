@@ -9,6 +9,8 @@
  * stepper agree with the printed DOCX and PDF.
  *
  * Relationships:
+ *   - `freeTextWritingLines` summarises the free-text questions for the Skrivyta
+ *     field's apply-to-all popover.
  *   - The constants feed `newTeacherItem` in `examWorkspaceItemEdits`.
  *   - The transitions are applied by `useExamWorkspaceItemEdits`
  *     (`updateItemWritingLines`) and `useExamWorkspaceDocumentFields`
@@ -53,4 +55,33 @@ export function withWritingLinesForAllFreeText(
     return { ...item, writing_lines: value };
   });
   return changed ? { ...document, items } : document;
+}
+
+/** One free-text question's display label and writing-line count (null when it carries none). */
+export interface FreeTextWritingLines {
+  itemId: string;
+  label: string;
+  lines: number | null;
+}
+
+/**
+ * The document's free-text questions in document order with their display
+ * labels (for example "1a") and writing-line counts.
+ */
+export function freeTextWritingLines(
+  document: NativeExamDocument,
+  labels: ReadonlyMap<string, string>,
+): FreeTextWritingLines[] {
+  return document.items
+    .filter((item) => item.kind === "free_text")
+    .map((item) => ({
+      itemId: item.item_id,
+      label: labels.get(item.item_id) ?? item.item_id,
+      lines: item.writing_lines,
+    }));
+}
+
+/** The labels of the free-text questions whose count differs from `lines`; a question with no count differs. */
+export function labelsWithOtherWritingLines(freeText: readonly FreeTextWritingLines[], lines: number): string[] {
+  return freeText.filter((entry) => entry.lines !== lines).map((entry) => entry.label);
 }

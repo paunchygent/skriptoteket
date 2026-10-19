@@ -16,7 +16,9 @@ import { computed } from "vue";
 
 import type { NativeExamDocument } from "../../../api/examWorkspace";
 import type { TeacherItemKind } from "./examWorkspaceItemEdits";
+import { examWorkspaceQuestionLabels } from "./examWorkspaceListEntries";
 import type { ExamWorkspaceItemEntry, ExamWorkspaceListEntry, ExamWorkspaceParentEntry } from "./examWorkspaceListEntries";
+import { freeTextWritingLines, type FreeTextWritingLines } from "./examWorkspaceWritingLines";
 import ExamWorkspaceExamInstructionEditor from "./ExamWorkspaceExamInstructionEditor.vue";
 import ExamWorkspaceInstructionEditor from "./ExamWorkspaceInstructionEditor.vue";
 import ExamWorkspaceQuestionEditor from "./ExamWorkspaceQuestionEditor.vue";
@@ -60,20 +62,12 @@ const { structure, assetUrls } = props.editing;
 const store = useInjectedExamWorkspaceStore();
 const isGuest = computed(() => store.teacher === null);
 
-/** The writing-line count every free-text question shares, or null when they differ. */
-const allFreeTextWritingLines = computed<number | null>(() => {
-  const counts = (props.workspaceDocument?.items ?? [])
-    .filter((item) => item.kind === "free_text")
-    .map((item) => item.writing_lines);
-  if (counts.length === 0) {
-    return null;
-  }
-  const first = counts[0]!;
-  if (first === null || counts.some((count) => count !== first)) {
-    return null;
-  }
-  return first;
-});
+/** Every free-text question with its display label and writing-line count, for the Skrivyta popover. */
+const freeTextWritingLinesSummary = computed<FreeTextWritingLines[]>(() =>
+  props.workspaceDocument
+    ? freeTextWritingLines(props.workspaceDocument, examWorkspaceQuestionLabels(props.workspaceDocument))
+    : [],
+);
 
 /** The display label of one part in the Flytta till list. */
 function moveTargetLabel(entry: ExamWorkspaceParentEntry): string {
@@ -159,7 +153,7 @@ const currentParentId = computed(() => props.itemEntry?.parentId ?? null);
         :move-targets="moveTargets"
         :current-parent-id="currentParentId"
         :asset-urls="assetUrls"
-        :all-free-text-writing-lines="allFreeTextWritingLines"
+        :free-text-writing-lines="freeTextWritingLinesSummary"
         @change-type="(kind) => structure.changeType(selectedItem!.item_id, kind)"
         @change-shape="(shape) => editing.changeItemShape(selectedItem!.item_id, shape)"
         @move="(delta) => $emit('move-selected', delta)"

@@ -55,6 +55,7 @@ import { examWorkspaceItemTypeLabel } from "./examWorkspaceRows";
 import { canBecomeShortAnswer, isShortAnswer } from "./examWorkspaceShortAnswer";
 import type { ExamWorkspaceItemShape } from "./examWorkspaceShortAnswer";
 import { provideRichTextTargetRegistry } from "./examWorkspaceRichTextTarget";
+import type { FreeTextWritingLines } from "./examWorkspaceWritingLines";
 import type { ExamWorkspaceNotice } from "./useExamWorkspaceStructure";
 
 /** A type the labeler read with less confidence than this is marked for checking. */
@@ -79,10 +80,10 @@ const props = withDefaults(
     /** The part the question sits in; null when it is standalone. */
     currentParentId?: string | null;
     assetUrls?: Record<string, string>;
-    /** The writing-line count every free-text question shares, or null when they differ. */
-    allFreeTextWritingLines?: number | null;
+    /** Every free-text question with its display label and writing-line count, for the Skrivyta apply-to-all popover. */
+    freeTextWritingLines?: FreeTextWritingLines[];
   }>(),
-  { allFreeTextWritingLines: null, assetUrls: undefined, currentParentId: null, moveTargets: () => [] },
+  { assetUrls: undefined, currentParentId: null, freeTextWritingLines: () => [], moveTargets: () => [] },
 );
 
 provideRichTextTargetRegistry();
@@ -148,10 +149,6 @@ const typeUncertain = computed(
 );
 const isGrid = computed(() => props.item.kind === "matching");
 const showFields = computed(() => !props.converting && !unbuilt.value);
-/** True when this free-text question already carries the shared writing-line count. */
-const allFreeTextWritingLinesMatch = computed(
-  () => props.allFreeTextWritingLines === props.item.writing_lines,
-);
 
 /** Where the answer key came from, with the key text the file printed. */
 const keyLine = computed(() => {
@@ -311,7 +308,7 @@ const keyLine = computed(() => {
           v-if="item.writing_lines !== null"
           :lines="item.writing_lines"
           :disabled="locked"
-          :all-free-text-match="allFreeTextWritingLinesMatch"
+          :free-text="freeTextWritingLines"
           :locked-reason-id="converting ? convertingNoticeId : null"
           @update="(lines) => emit('updateWritingLines', item.item_id, lines)"
           @apply-to-all="(lines) => emit('applyWritingLinesToAll', lines)"
