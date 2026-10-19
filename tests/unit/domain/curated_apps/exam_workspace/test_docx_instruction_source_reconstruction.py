@@ -110,6 +110,7 @@ def _converted(anchor: str, text: str) -> AlignedItem:
             choices=(),
         ),
         language="en",
+        foreign_chunks=(),
     )
 
 

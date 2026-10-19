@@ -64,6 +64,7 @@ def test_stated_criteria_keep_their_points_and_the_item_points_are_their_sum() -
             ),
         ),
         language="sv",
+        foreign_chunks=(),
     ).item
 
     assert item.criteria == (
@@ -84,6 +85,7 @@ def test_stated_criteria_without_printed_points_take_their_sum() -> None:
             ),
         ),
         language="sv",
+        foreign_chunks=(),
     ).item
 
     assert item.points == 3
@@ -92,7 +94,9 @@ def test_stated_criteria_without_printed_points_take_their_sum() -> None:
 
 def test_guide_without_breakdown_becomes_one_estimated_criterion_at_the_item_points() -> None:
     item = aligned_native_item(
-        _produced(points=4, criteria=(ProducedCriterion(text="Bedöm helheten."),)), language="sv"
+        _produced(points=4, criteria=(ProducedCriterion(text="Bedöm helheten."),)),
+        language="sv",
+        foreign_chunks=(),
     ).item
 
     assert item.criteria == (NativeExamCriterion(text="Bedöm helheten.", points=4),)
@@ -102,7 +106,9 @@ def test_guide_without_breakdown_becomes_one_estimated_criterion_at_the_item_poi
 
 def test_guide_without_breakdown_or_points_becomes_one_estimated_point() -> None:
     item = aligned_native_item(
-        _produced(points=None, criteria=(ProducedCriterion(text="Bedöm helheten."),)), language="sv"
+        _produced(points=None, criteria=(ProducedCriterion(text="Bedöm helheten."),)),
+        language="sv",
+        foreign_chunks=(),
     ).item
 
     assert item.criteria == (NativeExamCriterion(text="Bedöm helheten.", points=1),)
@@ -111,7 +117,7 @@ def test_guide_without_breakdown_or_points_becomes_one_estimated_point() -> None
 
 
 def test_free_text_without_criteria_keeps_its_printed_points() -> None:
-    item = aligned_native_item(_produced(points=8), language="sv").item
+    item = aligned_native_item(_produced(points=8), language="sv", foreign_chunks=()).item
 
     assert item.criteria == ()
     assert item.points == 8
@@ -123,6 +129,7 @@ def test_fractional_item_points_route_to_review() -> None:
         aligned_native_item(
             _produced(points=2.5, criteria=(ProducedCriterion(text="Bedöm helheten."),)),
             language="sv",
+            foreign_chunks=(),
         ).item
 
     with pytest.raises(ValueError, match="criteria sum does not match"):
@@ -135,12 +142,13 @@ def test_fractional_item_points_route_to_review() -> None:
                 ),
             ),
             language="sv",
+            foreign_chunks=(),
         ).item
 
 
 def test_fractional_free_text_points_without_criteria_route_to_review() -> None:
     with pytest.raises(ValueError, match="points are not whole"):
-        aligned_native_item(_produced(points=2.5), language="sv").item
+        aligned_native_item(_produced(points=2.5), language="sv", foreign_chunks=()).item
 
 
 def test_fractional_criterion_points_route_to_review() -> None:
@@ -154,6 +162,7 @@ def test_fractional_criterion_points_route_to_review() -> None:
                 ),
             ),
             language="sv",
+            foreign_chunks=(),
         ).item
 
 
@@ -168,6 +177,7 @@ def test_a_criteria_sum_that_differs_from_the_printed_points_routes_to_review() 
                 ),
             ),
             language="sv",
+            foreign_chunks=(),
         ).item
 
 
@@ -176,6 +186,7 @@ def test_criteria_below_one_point_route_to_review() -> None:
         aligned_native_item(
             _produced(points=1, criteria=(ProducedCriterion(text="Ett exempel.", points=0),)),
             language="sv",
+            foreign_chunks=(),
         ).item
 
 

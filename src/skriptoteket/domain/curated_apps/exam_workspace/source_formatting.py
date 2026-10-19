@@ -24,29 +24,29 @@ from skriptoteket.domain.curated_apps.exam_workspace.source_format_alignment imp
     ANSWER_LABEL,
     align_paragraph,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.source_format_errors import (
+    FormattingTransferError,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.source_format_gap_alignment import gap_spans
+from skriptoteket.domain.curated_apps.exam_workspace.source_format_index import SourceIndex
 from skriptoteket.domain.curated_apps.exam_workspace.source_format_scope import (
-    entry_unit_intervals,
     normalized_source_index,
     overlaps,
-    paragraph_intervals,
-    question_label_span,
     visible_intervals,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.source_misplaced_paragraph import (
+    is_misplaced,
+    rebuild_misplaced,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.source_paragraph_match import (
     SourceParagraph,
     overlap_scores,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.source_provenance import ChunkProvenance
 
 FORMATTING_REASON = "Formateringen kunde inte föras över"
 
 
-class FormattingTransferError(ValueError):
-    """No source-backed rendering can preserve the model's response structure."""
-
-
-class SourceFormatting:
+class SourceFormatting(SourceIndex):
     """One question's indexed source; cursors are local to each visible surface."""
 
     def __init__(
@@ -55,57 +55,13 @@ class SourceFormatting:
         *,
         ignored: tuple[str, ...] = (),
         excluded: tuple[tuple[int, int], ...] = (),
+        foreign: tuple[str, ...],
     ) -> None:
-        parts: list[str] = []
-        marks: list[tuple[str, ...]] = []
-        paragraphs: list[SourceParagraph] = []
-        self.provenance = ChunkProvenance()
-        offset = 0
-        for chunk in chunks:
-            if parts:
-                parts.append("\n")
-                marks.append(())
-                offset += 1
-            self.provenance.add(offset, chunk)
-            parts.append(chunk.text)
-            chunk_marks: list[tuple[str, ...]] = [()] * len(chunk.text)
-            for run in chunk.runs:
-                chunk_marks[run.offset : run.offset + len(run.text)] = [run.marks] * len(run.text)
-            marks.extend(chunk_marks)
-            if chunk.paragraphs:
-                paragraphs.extend(
-                    SourceParagraph(
-                        offset + p.offset, offset + p.offset + len(p.text), p.heading_level
-                    )
-                    for p in chunk.paragraphs
-                )
-            elif chunk.text:
-                paragraphs.append(SourceParagraph(offset, offset + len(chunk.text), None))
-            offset += len(chunk.text)
-        self.text = "".join(parts)
-        self.marks = marks
-        self.paragraphs = paragraphs
-        self.entry_units = [
-            SourceParagraph(*unit)
-            for unit in entry_unit_intervals(
-                self.text, ((p.start, p.end, p.heading) for p in paragraphs)
-            )
-        ]
-        self._entry_unit_ends = [unit.end for unit in self.entry_units]
-        self.excluded = excluded
-        self.available_paragraphs = [
-            SourceParagraph(start, end, heading)
-            for start, end, heading in paragraph_intervals(
-                ((p.start, p.end, p.heading) for p in paragraphs), excluded, len(self.text)
-            )
-        ]
-        self._paragraph_ends = [p.end for p in paragraphs]
-        self.normalized, self.positions = normalized_source_index(self.text)
-        self.cursor = 0
-        self.ignored = ignored
-        self.label_span = question_label_span(
-            self.text, ((p.start, p.end) for p in self.available_paragraphs), ignored
+        super().__init__(chunks, ignored=ignored, excluded=excluded)
+        self.foreign_normalized = tuple(
+            normalized_source_index(chunk_text)[0] for chunk_text in foreign
         )
+        self.cursor = 0
         self.path = "exact"
         self.covered: set[int] = set()
         # Paragraph starts this projection consumed, and the source paragraph start of
@@ -115,29 +71,6 @@ class SourceFormatting:
         self.entry_spans: list[tuple[int, int]] = []
         self.output_anchors: list[int] = []
         self._entry_span: tuple[int, int] = (-1, -1)
-
-    def entry_unit_at(self, offset: int) -> SourceParagraph | None:
-        """Locate an indexed paragraph/line/table-cell envelope in logarithmic time."""
-        index = bisect_right(self._entry_unit_ends, offset)
-        if index >= len(self.entry_units):
-            return None
-        unit = self.entry_units[index]
-        return unit if unit.start <= offset < unit.end else None
-
-    def paragraphs_in(self, start: int, end: int) -> Iterable[SourceParagraph]:
-        """Visit only overlapping paragraphs, without copying the remaining index."""
-        index = bisect_right(self._paragraph_ends, start)
-        while index < len(self.paragraphs) and self.paragraphs[index].start < end:
-            yield self.paragraphs[index]
-            index += 1
-
-    def paragraph_at(self, offset: int) -> SourceParagraph | None:
-        """The source paragraph holding ``offset``, or None inside a separator."""
-        index = bisect_right(self._paragraph_ends, offset)
-        if index >= len(self.paragraphs):
-            return None
-        paragraph = self.paragraphs[index]
-        return paragraph if paragraph.start <= offset < paragraph.end else None
 
     def span(self, text: str) -> tuple[int, int]:
         wanted, _ = normalized_source_index(text)
@@ -164,18 +97,6 @@ class SourceFormatting:
         else:
             self._entry_span = (self._entry_span[0], end)
         return start, end
-
-    def text_segments(self, start: int, end: int) -> tuple[NativeTextSegment, ...]:
-        """Split only at source mark changes; no model-selected style enters storage."""
-        result: list[NativeTextSegment] = []
-        at = start
-        while at < end:
-            finish = at + 1
-            while finish < end and self.marks[finish] == self.marks[at]:
-                finish += 1
-            result.append(NativeTextSegment(text=self.text[at:finish], marks=self.marks[at]))
-            at = finish
-        return tuple(result)
 
     def fragments(self, start: int, end: int) -> list[NativeParagraph]:
         return [fragment for fragment, _ in self.sourced_fragments(start, end)]
@@ -232,6 +153,8 @@ class SourceFormatting:
         *,
         answers: dict[str, tuple[str, ...]] | None = None,
     ) -> tuple[NativeParagraph, ...]:
+        """Project the reply's body; a paragraph whose text is another question's source is
+        not this item's content, so it is rebuilt from this item's own source (D4)."""
         result: list[NativeParagraph] = []
         for paragraph in body:
             checkpoint = self.cursor
@@ -247,15 +170,18 @@ class SourceFormatting:
                 self.cursor = checkpoint
                 self.covered = coverage_before
                 self.projected = projected_before
-                aligned = self._aligned(paragraph, answers or {})
-                if aligned is not None:
-                    if self.path == "exact":
-                        self.path = "aligned"
-                    produced = [(aligned, self._entry_span[0])]
+                if is_misplaced(self, paragraph):
+                    produced = rebuild_misplaced(self)
                 else:
-                    self.path = "rebuilt"
-                    rebuilt = self._rebuild(paragraph, answers or {})
-                    produced = [(output, self._entry_span[0]) for output in rebuilt]
+                    aligned = self._aligned(paragraph, answers or {})
+                    if aligned is not None:
+                        if self.path == "exact":
+                            self.path = "aligned"
+                        produced = [(aligned, self._entry_span[0])]
+                    else:
+                        self.path = "rebuilt"
+                        rebuilt = self._rebuild(paragraph, answers or {})
+                        produced = [(output, self._entry_span[0]) for output in rebuilt]
             self.entry_spans.append(self._entry_span)
             for output, text_origin in produced:
                 for origin, piece in self.provenance.pieces(output, text_origin):
@@ -409,19 +335,6 @@ class SourceFormatting:
         while self.cursor < len(self.positions) and self.positions[self.cursor] < source.end:
             self.cursor += 1
         return [NativeParagraph(heading_level=source.heading, segments=tuple(segments))]
-
-    def visible_text_segments(self, start: int, end: int) -> tuple[NativeTextSegment, ...]:
-        return tuple(
-            segment
-            for left, right in visible_intervals(start, end, self.excluded)
-            for segment in self.text_segments(left, right)
-        )
-
-    def content_start(self, paragraph: SourceParagraph) -> int:
-        """Skip the printed label a native field already carries, as rebuild_body does."""
-        if self.label_span is not None and paragraph.start == self.label_span[0]:
-            return self.label_span[1]
-        return paragraph.start
 
     def rebuild_body(self, answers: dict[str, tuple[str, ...]]) -> tuple[NativeParagraph, ...]:
         """Recover omitted marked material only when the whole body is source-safe."""

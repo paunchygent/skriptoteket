@@ -13,7 +13,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeAssetSegment,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_plain_text
-from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import (
+from skriptoteket.domain.curated_apps.exam_workspace.source_format_errors import (
     FormattingTransferError,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.source_provenance import (
@@ -60,7 +60,7 @@ def test_a_source_picture_before_the_label_stands_first_in_the_built_paragraph()
         printed_label="1",
     )
 
-    result = aligned_native_item(produced, chunks=chunks, language="en").item
+    result = aligned_native_item(produced, chunks=chunks, language="en", foreign_chunks=()).item
 
     segments = result.body[0].segments
     assert [segment.kind for segment in segments] == ["asset", "text", "gap", "text"]
@@ -87,7 +87,7 @@ def test_a_mid_text_source_picture_splits_the_text_at_its_source_place():
         printed_label="1",
     )
 
-    result = aligned_native_item(produced, chunks=chunks, language="en").item
+    result = aligned_native_item(produced, chunks=chunks, language="en", foreign_chunks=()).item
 
     segments = result.body[0].segments
     assert [segment.kind for segment in segments] == ["text", "asset", "text", "gap", "text"]
@@ -106,7 +106,7 @@ def test_a_reply_that_drops_the_source_picture_raises():
     )
 
     with pytest.raises(FormattingTransferError) as raised:
-        aligned_native_item(produced, chunks=chunks, language="en")
+        aligned_native_item(produced, chunks=chunks, language="en", foreign_chunks=())
 
     assert str(raised.value) == "cannot rebuild picture placement"
 
@@ -144,7 +144,7 @@ def test_a_reply_that_adds_a_picture_the_source_paragraph_lacks_raises():
     )
 
     with pytest.raises(FormattingTransferError) as raised:
-        aligned_native_item(produced, chunks=chunks, language="en")
+        aligned_native_item(produced, chunks=chunks, language="en", foreign_chunks=())
 
     assert str(raised.value) == "cannot rebuild picture placement"
 
@@ -168,7 +168,7 @@ def test_a_trailing_picture_after_the_final_character_belongs_to_the_paragraph()
         printed_label="2",
     )
 
-    result = aligned_native_item(produced, chunks=chunks, language="en").item
+    result = aligned_native_item(produced, chunks=chunks, language="en", foreign_chunks=()).item
 
     segments = result.body[0].segments
     assert [segment.kind for segment in segments] == ["text", "gap", "text", "asset"]
@@ -188,7 +188,7 @@ def test_a_reply_that_drops_the_trailing_picture_raises():
     )
 
     with pytest.raises(FormattingTransferError) as raised:
-        aligned_native_item(produced, chunks=chunks, language="en")
+        aligned_native_item(produced, chunks=chunks, language="en", foreign_chunks=())
 
     assert str(raised.value) == "cannot rebuild picture placement"
 
@@ -244,7 +244,7 @@ def test_three_pictures_at_one_offset_keep_source_occurrence_order():
         printed_label="1",
     )
 
-    result = aligned_native_item(produced, chunks=chunks, language="en").item
+    result = aligned_native_item(produced, chunks=chunks, language="en", foreign_chunks=()).item
 
     assert _built_asset_ids(result.body[0]) == [
         first_a.asset_id,
@@ -279,7 +279,7 @@ def test_reply_picture_order_does_not_change_the_built_source_order():
         printed_label="1",
     )
 
-    result = aligned_native_item(produced, chunks=chunks, language="en").item
+    result = aligned_native_item(produced, chunks=chunks, language="en", foreign_chunks=()).item
 
     assert _built_asset_ids(result.body[0]) == [
         first_a.asset_id,

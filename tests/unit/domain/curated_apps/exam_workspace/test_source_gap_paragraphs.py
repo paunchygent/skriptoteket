@@ -20,8 +20,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeTextSegment,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_plain_text
-from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import (
+from skriptoteket.domain.curated_apps.exam_workspace.source_format_errors import (
     FormattingTransferError,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import (
     SourceFormatting,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.source_gap_paragraphs import (
@@ -72,7 +74,7 @@ def test_blank_runs_follow_character_class_only(text, expected):
 
 def test_source_paragraph_without_runs_is_the_trimmed_plain_source_text():
     chunks = (_chunk("body:0001", "  The important idea.  ", marks=("italic",)),)
-    source = SourceFormatting(chunks)
+    source = SourceFormatting(chunks, foreign=())
     paragraph = source_paragraph(
         source,
         source.paragraphs[0].start,
@@ -94,7 +96,7 @@ def test_a_dropped_cue_beside_the_gap_comes_back_from_the_source():
         printed_label="72",
         points=1,
     )
-    result = aligned_native_item(produced, chunks=chunks, language="sv").item
+    result = aligned_native_item(produced, chunks=chunks, language="sv", foreign_chunks=()).item
     assert body_plain_text(result.body) == "We live in [___] (ett eget hus)."
 
 
@@ -106,7 +108,7 @@ def test_a_dropped_lead_clause_before_the_gap_comes_back_from_the_source():
         [{"segments": [_text(" "), _gap(), _text(" (emellertid), it kept me warm.")]}],
         printed_label="19",
     )
-    result = aligned_native_item(produced, chunks=chunks, language="en").item
+    result = aligned_native_item(produced, chunks=chunks, language="en", foreign_chunks=()).item
     assert body_plain_text(result.body).startswith("The jacket looked thin. ")
     assert "19." not in body_plain_text(result.body)
 
@@ -119,7 +121,7 @@ def test_a_cue_after_a_gap_that_starts_the_paragraph_keeps_its_space():
         [{"segments": [_text(" "), _gap(), _text("(Det här är) the only seats")]}],
         printed_label="8",
     )
-    result = aligned_native_item(produced, chunks=chunks, language="sv").item
+    result = aligned_native_item(produced, chunks=chunks, language="sv", foreign_chunks=()).item
     assert body_plain_text(result.body) == "[___] (Det här är) the only seats"
 
 
@@ -131,7 +133,7 @@ def test_a_gap_that_ends_the_paragraph_keeps_the_space_before_it():
         [{"segments": [_text("The answer is "), _gap()]}],
         printed_label="1",
     )
-    result = aligned_native_item(produced, chunks=chunks, language="en").item
+    result = aligned_native_item(produced, chunks=chunks, language="en", foreign_chunks=()).item
     assert body_plain_text(result.body) == "The answer is [___]"
 
 
@@ -143,7 +145,7 @@ def test_too_few_gaps_for_the_blank_runs_raises_a_count_mismatch():
         [{"segments": [_text("The answer is "), _gap(), _text(".")]}],
     )
     with pytest.raises(GapCountMismatchError) as raised:
-        aligned_native_item(produced, chunks=chunks, language="en")
+        aligned_native_item(produced, chunks=chunks, language="en", foreign_chunks=())
     assert not isinstance(raised.value, FormattingTransferError)
 
 
@@ -170,7 +172,7 @@ def test_too_many_gaps_for_the_blank_runs_raises_a_count_mismatch():
         [{"segments": [_text("The answer is "), _gap(), _gap(), _text(".")]}],
     )
     with pytest.raises(GapCountMismatchError) as raised:
-        aligned_native_item(produced, chunks=chunks, language="en")
+        aligned_native_item(produced, chunks=chunks, language="en", foreign_chunks=())
     assert not isinstance(raised.value, FormattingTransferError)
 
 
@@ -182,7 +184,7 @@ def test_a_letter_hint_ellipsis_is_not_a_blank_run():
         [{"segments": [_text(" "), _gap(), _text(" (s…t) – A drug ...")]}],
         printed_label="11",
     )
-    result = aligned_native_item(produced, chunks=chunks, language="sv").item
+    result = aligned_native_item(produced, chunks=chunks, language="sv", foreign_chunks=()).item
     assert "(s…t)" in body_plain_text(result.body)
     assert body_plain_text(result.body).count("[___]") == 1
 
@@ -194,7 +196,7 @@ def test_a_dot_run_without_underscores_is_the_blank_run():
         chunks,
         [{"segments": [_text("She "), _gap(), _text(" to school (gå).")]}],
     )
-    result = aligned_native_item(produced, chunks=chunks, language="sv").item
+    result = aligned_native_item(produced, chunks=chunks, language="sv", foreign_chunks=()).item
     assert body_plain_text(result.body) == "She [___] to school (gå)."
 
 
@@ -216,7 +218,7 @@ def test_two_reply_paragraphs_aligned_to_one_source_paragraph_become_one():
             },
         ],
     )
-    aligned = aligned_native_item(produced, chunks=chunks, language="en")
+    aligned = aligned_native_item(produced, chunks=chunks, language="en", foreign_chunks=())
     assert body_plain_text(aligned.item.body) == "alpha [___] beta [___] gamma"
     assert len(aligned.item.body) == 1
     assert len(aligned.chunks) == len(aligned.item.body)
@@ -246,7 +248,7 @@ def test_a_two_line_source_paragraph_builds_one_paragraph_keeping_the_line_break
             },
         ],
     )
-    aligned = aligned_native_item(produced, chunks=chunks, language="en")
+    aligned = aligned_native_item(produced, chunks=chunks, language="en", foreign_chunks=())
     assert body_plain_text(aligned.item.body) == (
         "Write most or the most.\nOf these three questions, this is [___] difficult one."
     )
@@ -267,7 +269,7 @@ def test_source_text_from_an_inline_answer_label_onward_stays_out():
         chunks,
         [{"segments": [_text("Fill in: I "), _gap(), _text(" (vara) happy.")]}],
     )
-    result = aligned_native_item(produced, chunks=chunks, language="sv").item
+    result = aligned_native_item(produced, chunks=chunks, language="sv", foreign_chunks=()).item
     assert body_plain_text(result.body) == "Fill in: I [___] (vara) happy."
     assert "Svar:" not in body_plain_text(result.body)
 
@@ -291,7 +293,7 @@ def test_an_italic_source_run_in_the_gap_paragraph_keeps_its_mark():
         chunks,
         [{"segments": [_text("The important word is "), _gap(), _text(".")]}],
     )
-    result = aligned_native_item(produced, chunks=chunks, language="en").item
+    result = aligned_native_item(produced, chunks=chunks, language="en", foreign_chunks=()).item
     assert body_plain_text(result.body) == "The important word is [___]."
     marks = {
         segment.text: segment.marks
@@ -321,7 +323,7 @@ def test_a_free_text_item_keeps_its_reply_projection_beside_an_answer_line():
             "body": [{"segments": [_text("Explain the process.")]}],
         }
     )
-    result = aligned_native_item(produced, chunks=chunks, language="en").item
+    result = aligned_native_item(produced, chunks=chunks, language="en", foreign_chunks=()).item
     reply = (
         NativeParagraph(
             heading_level=None,
@@ -338,7 +340,7 @@ def test_a_paragraph_without_blank_runs_keeps_the_reply_projection():
         chunks,
         [{"segments": [_text("Give an "), _gap(), _text(".")]}],
     )
-    result = aligned_native_item(produced, chunks=chunks, language="en").item
+    result = aligned_native_item(produced, chunks=chunks, language="en", foreign_chunks=()).item
     reply = (
         NativeParagraph(
             heading_level=None,
@@ -376,7 +378,7 @@ def test_a_mixed_class_table_row_builds_one_underscore_blank():
         chunks,
         [{"segments": [_text("Wait ... | The answer is "), _gap(), _text(".")]}],
     )
-    result = aligned_native_item(produced, chunks=chunks, language="en").item
+    result = aligned_native_item(produced, chunks=chunks, language="en", foreign_chunks=()).item
     assert body_plain_text(result.body) == "Wait ... | The answer is [___]."
 
 
@@ -397,7 +399,7 @@ def test_a_mixed_class_table_row_with_two_gaps_raises_a_count_mismatch():
         ],
     )
     with pytest.raises(GapCountMismatchError) as raised:
-        aligned_native_item(produced, chunks=chunks, language="en")
+        aligned_native_item(produced, chunks=chunks, language="en", foreign_chunks=())
     assert (raised.value.gaps, raised.value.blanks) == (2, 1)
 
 
@@ -434,12 +436,12 @@ def test_a_dot_only_table_row_keeps_two_blank_runs():
             }
         ],
     )
-    result = aligned_native_item(produced, chunks=chunks, language="en").item
+    result = aligned_native_item(produced, chunks=chunks, language="en", foreign_chunks=()).item
     assert body_plain_text(result.body) == "Wait [___] | Then [___] ."
     short = _item(
         chunks,
         [{"segments": [_text("Wait ... | Then "), _gap(), _text(" .")]}],
     )
     with pytest.raises(GapCountMismatchError) as raised:
-        aligned_native_item(short, chunks=chunks, language="en")
+        aligned_native_item(short, chunks=chunks, language="en", foreign_chunks=())
     assert (raised.value.gaps, raised.value.blanks) == (1, 2)

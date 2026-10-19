@@ -12,7 +12,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import So
 
 def projected_chunk(chunk: DocxChunk, text: str, origins: tuple[int, ...]) -> DocxChunk:
     """Each displayed character names its original offset, including collapsed spaces."""
-    source = SourceFormatting((chunk,))
+    source = SourceFormatting((chunk,), foreign=())
     runs: list[DocxSourceRun] = []
     start = 0
     while start < len(text):

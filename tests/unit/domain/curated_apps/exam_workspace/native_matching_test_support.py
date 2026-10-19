@@ -118,7 +118,7 @@ def produced_item(
 
 
 def valid_item() -> NativeExamItem:
-    return aligned_native_item(produced_item(), language="sv").item
+    return aligned_native_item(produced_item(), language="sv", foreign_chunks=()).item
 
 
 def with_update(item: NativeExamItem, **update: object) -> NativeExamItem:
