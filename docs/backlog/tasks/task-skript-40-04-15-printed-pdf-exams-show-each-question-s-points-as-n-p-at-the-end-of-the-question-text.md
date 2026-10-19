@@ -100,12 +100,14 @@ Focused tests only:
 2026-10-19: done. Lead `600fa5a8` built it (units `5c0edd33`, `1f7558d3`, R1 `b3fa0683`, R2 `bba2cf09`, R3 `fae44edb`); review 9aa64d69 approved; merged to main as `df87d633`.
 
 Staging walk at `df87d633` (the Mac, `.artifacts/staging-walk-40-04-15/walk-record.md`): PASS.
+
 - Student PDF, PDF med facit and DOCX: no "Poäng:" lines and 24 inline markers, one per question; "(1,5 p)" uses a decimal comma and "(0 p)" prints; the total reads "Totalt: 35,5 poäng".
 - Förhandsgranska shows the same inline markers (visual check, the preview is page images).
 - PDF för Exam.net is unchanged: 24 "Poäng" lines, no inline markers.
 - TASK-SKRIPT-40-04-12 keep-together still holds; page counts 8 and 9 match the revision-1 export.
 
 Walk observations outside this task:
+
 - A question with blank points cannot be exported (422 `missing_points`), so the no-points case was walked with 0 p.
 - One first save showed "Sparat" but did not persist after a reload; not reproduced, and later saves at revisions 2-4 persisted.
 - Page 8 of the student PDF holds only the last two writing lines of Fråga 24; the export did this before, and 40-04-12 does not cover writing lines.

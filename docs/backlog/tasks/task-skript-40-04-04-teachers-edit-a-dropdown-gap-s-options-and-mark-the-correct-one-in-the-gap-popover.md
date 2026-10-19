@@ -63,10 +63,10 @@ Stop and report to the parent when a needed decision is absent, or when the popo
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term                                                                                                                             |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| D1  | A dropdown gap's options are edited in the gap popover: one row per option, a radio for the correct one, add, edit, remove and reorder.           |
-| D2  | Changing a Lucktext question to dropdown turns each gap's accepted values into its options, first marked correct; imports never detect dropdowns. |
-| D3  | Fewer than two options, an empty option or no correct option is a red export blocker with a one-click jump to that gap's popover.                 |
-| D4  | Students see options in the teacher's order in print and Exam.net; no shuffling.                                                                  |
+| ID  | Decided contract term                                                                                                                                             |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | A dropdown gap's options are edited in the gap popover: one row per option, a radio for the correct one, add, edit, remove and reorder.                           |
+| D2  | Changing a Lucktext question to dropdown turns each gap's accepted values into its options, first marked correct; imports never detect dropdowns.                 |
+| D3  | Fewer than two options, an empty option or no correct option is a red export blocker with a one-click jump to that gap's popover.                                 |
+| D4  | Students see options in the teacher's order in print and Exam.net; no shuffling.                                                                                  |
 | D3r | The D3 jump opens the gap's popover through a bubbling DOM event on the chip and focuses its first option input (walk repair 2026-10-19, TASK-SKRIPT-40-04-08 R1) |
