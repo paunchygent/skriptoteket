@@ -127,3 +127,13 @@ def test_settled_item_still_exports_its_points() -> None:
     assert exported[0].max_score == 2
     assert _body_text(container.document.items[0]) == "Beskriv processen."
     assert container.document.items[0].points == 2
+
+
+def test_first_paragraph_label_leaves_against_max_score() -> None:
+    item = _imported(("Inled med bakgrund. (2 p)", "Fortsätt här."), 2)
+
+    assert _body_text(item) == "Inled med bakgrund.\nFortsätt här."
+    assert item.points == 2
+    assert item.leftover_points_text is None
+    assert item.import_record is not None
+    assert "(2 p)" in item.import_record.original_wording.question_text

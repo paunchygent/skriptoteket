@@ -32,6 +32,10 @@ def _paragraph(*segments: NativeSegment) -> NativeParagraph:
     return NativeParagraph(heading_level=None, segments=tuple(segments))
 
 
+def _heading(text: str, level: int = 3) -> NativeParagraph:
+    return NativeParagraph(heading_level=level, segments=(_text(text),))
+
+
 def _item(body: tuple[NativeParagraph, ...], points: int | float | None) -> NativeExamItem:
     return make_free_text_item().model_copy(update={"body": body, "points": points})
 
@@ -304,3 +308,107 @@ def test_one_line_stem_with_other_points_records_the_label() -> None:
     item = with_settled_points_wording(_item(body, 3))
     assert item.body == body
     assert item.leftover_points_text == "(2 p)"
+
+
+def test_first_paragraph_heading_label_leaves_and_keeps_its_level() -> None:
+    body = (
+        _heading("5. Resor till skolan (1 poäng)"),
+        _paragraph(_text("En grupp skriver om hur elever tar sig till skolan.")),
+    )
+    result = with_settled_points_wording(_item(body, 1))
+    assert result.body[0].heading_level == 3
+    assert result.body[0] == _heading("5. Resor till skolan")
+    assert result.body[1:] == body[1:]
+    assert result.points == 1
+    assert result.leftover_points_text is None
+
+
+def test_first_paragraph_non_heading_label_leaves() -> None:
+    body = (
+        _paragraph(_text("1. Select the word or phrase for each definition. (3 points)")),
+        _paragraph(_text("Write the letter of the matching option.")),
+        _paragraph(_text("1. absence from school | ____ | A. truancy")),
+    )
+    result = with_settled_points_wording(_item(body, 3))
+    assert result.body[0] == _paragraph(_text("1. Select the word or phrase for each definition."))
+    assert result.body[1:] == body[1:]
+    assert result.leftover_points_text is None
+
+
+def test_first_paragraph_multiline_label_leaves_the_text_before_it() -> None:
+    first = (
+        "1. Milan tends to boast when he meets new teammates.\n\n"
+        "What does boast mean here? (1 point)"
+    )
+    body = (_paragraph(_text(first)), _paragraph(_text("A. skryta")))
+    result = with_settled_points_wording(_item(body, 1))
+    assert result.body[0] == _paragraph(
+        _text("1. Milan tends to boast when he meets new teammates.\n\nWhat does boast mean here?")
+    )
+    assert result.body[1:] == body[1:]
+
+
+def test_first_paragraph_differing_number_stays_and_records_nothing() -> None:
+    body = (
+        _paragraph(_text("2. Tidningsartiklar (2 poäng)")),
+        _paragraph(_text("Svara utförligt.")),
+    )
+    result = with_settled_points_wording(_item(body, 3))
+    assert result.body == body
+    assert result.points == 3
+    assert result.leftover_points_text is None
+
+
+def test_first_paragraph_label_without_points_is_untouched() -> None:
+    body = (
+        _paragraph(_text("2. Tidningsartiklar (2 poäng)")),
+        _paragraph(_text("Svara utförligt.")),
+    )
+    assert with_settled_points_wording(_item(body, None)) == _item(body, None)
+
+
+def test_first_paragraph_in_sentence_label_is_untouched() -> None:
+    body = (
+        _paragraph(_text("Svara (2 p) och motivera.")),
+        _paragraph(_text("Fortsätt här.")),
+    )
+    assert with_settled_points_wording(_item(body, 2)) == _item(body, 2)
+
+
+def test_first_paragraph_points_line_is_not_this_rules_case() -> None:
+    body = (
+        _paragraph(_text("Poäng: 2 poäng")),
+        _paragraph(_text("Svara utförligt.")),
+    )
+    result = with_settled_points_wording(_item(body, 2))
+    assert result.body == body
+    assert result.leftover_points_text is None
+
+
+def test_first_paragraph_ending_in_a_gap_is_untouched() -> None:
+    body = (
+        _paragraph(_text("Svara (2 p)"), NativeGapSegment(gap_id="gap_001")),
+        _paragraph(_text("Fortsätt här.")),
+    )
+    assert with_settled_points_wording(_item(body, 2)) == _item(body, 2)
+
+
+def test_first_paragraph_volt_question_is_untouched() -> None:
+    body = (_paragraph(_text(_VOLT)), _paragraph(_text("Fortsätt här.")))
+    result = with_settled_points_wording(_item(body, 5))
+    assert result.body == body
+    assert result.leftover_points_text is None
+
+
+def test_matching_labels_at_both_ends_leave_and_settling_is_idempotent() -> None:
+    body = (
+        _paragraph(_text("Frågan inleds här. (2 p)")),
+        _paragraph(_text("Frågan avslutas här. (2 p)")),
+    )
+    once = with_settled_points_wording(_item(body, 2))
+    assert once.body == (
+        _paragraph(_text("Frågan inleds här.")),
+        _paragraph(_text("Frågan avslutas här.")),
+    )
+    assert once.leftover_points_text is None
+    assert with_settled_points_wording(once) == once

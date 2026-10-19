@@ -3,11 +3,12 @@
 Printed points wording ("(1 point)", "Poäng: 6 poäng") states the item's
 points, never its text: ``trailing_points`` finds such wording at the end of
 a text. When its number equals the item's points, ``body_without_trailing_points``
-drops it from the last paragraph; when the shape matches but the number differs,
-the wording stays and ``leftover_points_wording`` reports it for the points-note
-offer. ``with_settled_points_wording`` settles both outcomes on the final item.
-Only the label's position and its number decide; the stem itself is never read
-or rewritten.
+drops it from the last paragraph, and ``body_without_first_paragraph_points``
+drops a parenthesised label ending the first paragraph; when the shape matches
+but the number differs, the wording stays and ``leftover_points_wording``
+reports it for the points-note offer. ``with_settled_points_wording`` settles
+each outcome on the final item. Only the label's position and its number
+decide; the stem itself is never read or rewritten.
 """
 
 from __future__ import annotations
@@ -163,6 +164,52 @@ def body_without_trailing_points(
     return body
 
 
+def body_without_first_paragraph_points(
+    body: tuple[NativeParagraph, ...], points: int | float | None
+) -> tuple[NativeParagraph, ...]:
+    """The body without points wording ending its first paragraph.
+
+    A parenthesised label ending the first paragraph's last line leaves with
+    the blank space before it when its number equals the given points, heading
+    or not; the paragraph keeps its heading level. A one-paragraph body is the
+    end-of-body rule's case, a whole points line is not this rule's case, and
+    a differing number records nothing. The cut keeps each segment's marks; a
+    paragraph left with no segments is dropped.
+    """
+    if points is None or len(body) < 2:
+        return body
+    located = _trailing_run_wording(body[:1])
+    if located is None:
+        return body
+    run, run_text, found = located
+    if found.whole_line or found.value != points:
+        return body
+    paragraph = body[0]
+    kept_text = run_text[: found.start].rstrip()
+    kept: list[NativeTextSegment] = []
+    remaining = len(kept_text)
+    for segment in run:
+        if remaining <= 0:
+            break
+        if len(segment.text) <= remaining:
+            kept.append(segment)
+            remaining -= len(segment.text)
+        else:
+            kept.append(segment.model_copy(update={"text": segment.text[:remaining]}))
+            remaining = 0
+    head = paragraph.segments[: len(paragraph.segments) - len(run)]
+    settled_paragraph = paragraph.model_copy(update={"segments": (*head, *kept)})
+    settled = (settled_paragraph, *body[1:]) if settled_paragraph.segments else body[1:]
+    for kept_paragraph in settled:
+        for placed in kept_paragraph.segments:
+            if isinstance(placed, NativeTextSegment):
+                if placed.text.strip():
+                    return settled
+            elif isinstance(placed, (NativeGapSegment, NativeAssetSegment)):
+                return settled
+    return body
+
+
 def leftover_points_wording(
     body: tuple[NativeParagraph, ...], points: int | float | None
 ) -> str | None:
@@ -209,16 +256,22 @@ def leftover_points_wording(
 def with_settled_points_wording(item: NativeExamItem) -> NativeExamItem:
     """The item with its trailing points wording settled against its points.
 
-    An equal number leaves the wording from the body; a differing number keeps
-    the wording and records it in ``leftover_points_text`` for the points-note
-    offer. Only the body and the leftover field change; points, review and every
-    source record stay as they are. A missing number, a stem of only wording or
-    a body the rule never matches returns the item untouched.
+    An equal number leaves the wording from the body's end and then from its
+    first paragraph; a differing number at the end keeps the wording and records
+    it in ``leftover_points_text`` for the points-note offer, while a differing
+    first-paragraph number records nothing. Only the body and the leftover field
+    change; points, review and every source record stay as they are. A missing
+    number, a stem of only wording or a body the rule never matches returns the
+    item untouched.
     """
     settled = body_without_trailing_points(item.body, item.points)
+    if settled == item.body:
+        leftover = leftover_points_wording(item.body, item.points)
+        if leftover is not None:
+            return item.model_copy(update={"leftover_points_text": leftover})
+        settled = body_without_first_paragraph_points(item.body, item.points)
+    else:
+        settled = body_without_first_paragraph_points(settled, item.points)
     if settled != item.body:
         return item.model_copy(update={"body": settled})
-    leftover = leftover_points_wording(item.body, item.points)
-    if leftover is not None:
-        return item.model_copy(update={"leftover_points_text": leftover})
     return item

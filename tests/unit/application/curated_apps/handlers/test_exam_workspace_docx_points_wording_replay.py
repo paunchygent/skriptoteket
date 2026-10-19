@@ -20,6 +20,7 @@ from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import bu
 pytestmark = [pytest.mark.unit, pytest.mark.asyncio]
 
 _ENGLISH = "bf26_english_1_unit_test_kap_1_2_med_facit"
+_METODPROV = "metodprov_vetenskaplig_metod_med_facit"
 _OMPROV_1 = "svenska_2_grammatik_omprov_variant_1_med_facit"
 _OMPROV_2 = "svenska_2_grammatik_omprov_variant_2_med_facit"
 
@@ -31,6 +32,103 @@ async def _document(exam: str) -> NativeExamDocument:
         replay = build_replay(exam)
         _converted[exam] = (await replay.pipeline.convert(job=replay.job())).result.document
     return _converted[exam]
+
+
+def _first_paragraph_text(item) -> str:
+    from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+        NativeTextSegment,
+    )
+
+    run: list[str] = []
+    for segment in reversed(item.body[0].segments):
+        if not isinstance(segment, NativeTextSegment):
+            break
+        run.append(segment.text)
+    run.reverse()
+    return "".join(run)
+
+
+async def test_forced_provider_failure_strips_first_paragraph_labels() -> None:
+    """Every batch fails, so items are built by source fallback with heading stems.
+
+    A parenthesised label ending the first paragraph and equalling the item's
+    points leaves (Q8, Q9); points, retry_source and import_record stay, and no
+    item records a leftover candidate.
+    """
+    from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
+        StructuredLLMBackendFailureCode,
+        StructuredLLMProviderError,
+    )
+    from skriptoteket.domain.curated_apps.exam_workspace.points_wording import (
+        body_without_trailing_points,
+        trailing_points,
+        with_settled_points_wording,
+    )
+
+    error = StructuredLLMProviderError(
+        failure_code=StructuredLLMBackendFailureCode.PROVIDER_HTTP_ERROR,
+        message="boom",
+        provider_id="replay-probe",
+        status_code=400,
+    )
+    for exam in (_METODPROV, _ENGLISH):
+        probe = build_replay(exam)
+        await probe.pipeline.convert(job=probe.job())
+        batches = {r.item_id for r in probe.provider.requests if r.item_id.startswith("docx_w")}
+        assert batches
+        replay = build_replay(exam, failures={batch: error for batch in batches})
+        outcome = await replay.pipeline.convert(job=replay.job())
+        document = outcome.result.document
+        assert document.items
+        for item in document.items:
+            assert item.retry_source is not None
+            assert item.import_record is not None
+            assert body_without_trailing_points(item.body, item.points) == item.body
+            assert with_settled_points_wording(item) == item
+            if len(item.body) >= 2:
+                found = trailing_points(_first_paragraph_text(item))
+                assert not (
+                    found is not None and not found.whole_line and found.value == item.points
+                ), (exam, item.source_anchor, _first_paragraph_text(item)[-60:])
+        leftovers = [
+            (item.item_id, item.source_anchor)
+            for item in document.items
+            if item.leftover_points_text is not None
+        ]
+        assert leftovers == []
+
+
+async def test_forced_provider_failure_keeps_two_concrete_first_paragraphs() -> None:
+    from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
+        StructuredLLMBackendFailureCode,
+        StructuredLLMProviderError,
+    )
+
+    error = StructuredLLMProviderError(
+        failure_code=StructuredLLMBackendFailureCode.PROVIDER_HTTP_ERROR,
+        message="boom",
+        provider_id="replay-probe",
+        status_code=400,
+    )
+    for exam, anchor, points, stripped in (
+        (_METODPROV, "body:0037", 1, "5. Resor till skolan"),
+        (
+            _ENGLISH,
+            "body:0059",
+            3,
+            "1. Select the word or phrase for each definition.",
+        ),
+    ):
+        probe = build_replay(exam)
+        await probe.pipeline.convert(job=probe.job())
+        batches = {r.item_id for r in probe.provider.requests if r.item_id.startswith("docx_w")}
+        replay = build_replay(exam, failures={batch: error for batch in batches})
+        outcome = await replay.pipeline.convert(job=replay.job())
+        item = next(i for i in outcome.result.document.items if i.source_anchor == anchor)
+        assert item.points == points
+        assert _first_paragraph_text(item) == stripped
+        assert item.retry_source is not None
+        assert item.import_record is not None
 
 
 def _retry_text(item) -> str:
