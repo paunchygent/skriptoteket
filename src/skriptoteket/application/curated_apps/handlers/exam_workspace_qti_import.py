@@ -20,12 +20,14 @@ from __future__ import annotations
 import hashlib
 
 from skriptoteket.application.curated_apps.exam_workspace import ExamWorkspaceDocumentSummary
+from skriptoteket.application.curated_apps.handlers.exam_workspace_document_imports import (
+    validated_exam_course,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_document_store import (
     ExamWorkspaceDocumentStore,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
     document_summary,
-    validated_exam_course,
 )
 from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_item_reader import (

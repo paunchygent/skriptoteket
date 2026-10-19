@@ -14,9 +14,11 @@ from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
 from skriptoteket.application.curated_apps.exam_workspace_exports import (
     build_native_examnet_qti_package,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_document_imports import (
+    ImportExamWorkspaceDocumentHandler,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
     GetExamWorkspaceConversionStatusHandler,
-    ImportExamWorkspaceDocumentHandler,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_jobs import (
     ProcessExamWorkspaceDocxJobHandler,

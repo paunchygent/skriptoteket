@@ -1,9 +1,9 @@
 """DI bindings for the native exam workspace (ST-SKRIPT-39-04).
 
-A focused provider: the DOCX chunker, container codec, QTI package reader and
-the stateless QTI parse handler are app-scoped adapters; the document store and
-the remaining handlers are request-scoped so they share the request session,
-UoW, and vault repositories.
+A focused provider: the DOCX chunker and container codec are app-scoped
+adapters; the document store and the remaining handlers are request-scoped
+so they share the request session, UoW, and vault repositories. Import lanes
+(DOCX, DigiExam, QTI) live in ``exam_workspace_imports``.
 """
 
 from __future__ import annotations
@@ -28,17 +28,12 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_pr
 from skriptoteket.application.curated_apps.handlers.exam_workspace_courses import (
     GetExamCourseCatalogHandler,
 )
-from skriptoteket.application.curated_apps.handlers.exam_workspace_digiexam_jobs import (
-    ProcessExamWorkspaceDigiExamJobHandler,
-)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_document_store import (
     ExamWorkspaceDocumentStore,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
     GetExamWorkspaceConversionStatusHandler,
     GetExamWorkspaceDocumentHandler,
-    ImportExamWorkspaceDigiExamDocumentHandler,
-    ImportExamWorkspaceDocumentHandler,
     SaveExamWorkspaceDocumentHandler,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_rounds import (
@@ -65,10 +60,6 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_misspellings 
 from skriptoteket.application.curated_apps.handlers.exam_workspace_parents import (
     ExamWorkspaceParentsHandler,
 )
-from skriptoteket.application.curated_apps.handlers.exam_workspace_qti_import import (
-    ImportExamWorkspaceQtiDocumentHandler,
-    ParseExamWorkspaceQtiPackageHandler,
-)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_undo_steps import (
     StoreExamWorkspaceUndoStepHandler,
 )
@@ -85,9 +76,6 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace
 )
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_pdf_renderer import (
     WeasyPrintExamNetPdfRenderer,
-)
-from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_qti_package_reader import (  # noqa: E501
-    ExamNetQtiPackageReader,
 )
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_qti_writer import (
     ExamNetQtiPackageWriter,
@@ -110,7 +98,6 @@ from skriptoteket.protocols.exam_answer_key import (
 from skriptoteket.protocols.exam_index import ExamIndexRepositoryProtocol
 from skriptoteket.protocols.exam_workspace import (
     DocxExamChunkerProtocol,
-    ExamNetQtiPackageReaderProtocol,
     ExamWorkspaceContainerCodecProtocol,
     ExportExamWorkspaceDocumentHandlerProtocol,
     GenerateExamWorkspaceMisspellingsHandlerProtocol,
@@ -118,10 +105,6 @@ from skriptoteket.protocols.exam_workspace import (
     GetExamWorkspaceAssetHandlerProtocol,
     GetExamWorkspaceConversionStatusHandlerProtocol,
     GetExamWorkspaceDocumentHandlerProtocol,
-    ImportExamWorkspaceDigiExamDocumentHandlerProtocol,
-    ImportExamWorkspaceDocumentHandlerProtocol,
-    ImportExamWorkspaceQtiDocumentHandlerProtocol,
-    ParseExamWorkspaceQtiPackageHandlerProtocol,
     RetryExamWorkspaceItemHandlerProtocol,
     SaveExamWorkspaceDocumentHandlerProtocol,
 )
@@ -358,88 +341,6 @@ class ExamWorkspaceProvider(Provider):
             settings=settings,
             index=index,
             codec=codec,
-        )
-
-    @provide(scope=Scope.REQUEST)
-    def process_digiexam_job(
-        self,
-        jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
-        store: ExamWorkspaceDocumentStore,
-        users: UserRepositoryProtocol,
-        uow: UnitOfWorkProtocol,
-        clock: ClockProtocol,
-        id_generator: IdGeneratorProtocol,
-        codec: ExamWorkspaceContainerCodecProtocol,
-    ) -> ProcessExamWorkspaceDigiExamJobHandler:
-        return ProcessExamWorkspaceDigiExamJobHandler(
-            jobs=jobs,
-            store=store,
-            users=users,
-            uow=uow,
-            clock=clock,
-            id_generator=id_generator,
-            codec=codec,
-        )
-
-    @provide(scope=Scope.REQUEST)
-    def import_digiexam_handler(
-        self,
-        jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
-        uow: UnitOfWorkProtocol,
-        clock: ClockProtocol,
-        settings: Settings,
-        id_generator: IdGeneratorProtocol,
-    ) -> ImportExamWorkspaceDigiExamDocumentHandlerProtocol:
-        return ImportExamWorkspaceDigiExamDocumentHandler(
-            jobs=jobs,
-            uow=uow,
-            clock=clock,
-            settings=settings,
-            id_generator=id_generator,
-        )
-
-    @provide(scope=Scope.REQUEST)
-    def import_handler(
-        self,
-        jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
-        uow: UnitOfWorkProtocol,
-        clock: ClockProtocol,
-        settings: Settings,
-        id_generator: IdGeneratorProtocol,
-    ) -> ImportExamWorkspaceDocumentHandlerProtocol:
-        """Provide the DOCX import handler."""
-        return ImportExamWorkspaceDocumentHandler(
-            jobs=jobs, uow=uow, clock=clock, settings=settings, id_generator=id_generator
-        )
-
-    @provide(scope=Scope.APP)
-    def qti_package_reader(self) -> ExamNetQtiPackageReaderProtocol:
-        """Provide the safe untrusted QTI package reader."""
-        return ExamNetQtiPackageReader()
-
-    @provide(scope=Scope.APP)
-    def parse_qti_handler(
-        self,
-        reader: ExamNetQtiPackageReaderProtocol,
-        settings: Settings,
-        id_generator: IdGeneratorProtocol,
-    ) -> ParseExamWorkspaceQtiPackageHandlerProtocol:
-        """Provide the stateless QTI parse handler; it holds no request state."""
-        return ParseExamWorkspaceQtiPackageHandler(
-            reader=reader, settings=settings, id_generator=id_generator
-        )
-
-    @provide(scope=Scope.REQUEST)
-    def import_qti_handler(
-        self,
-        parse: ParseExamWorkspaceQtiPackageHandlerProtocol,
-        store: ExamWorkspaceDocumentStore,
-        codec: ExamWorkspaceContainerCodecProtocol,
-        id_generator: IdGeneratorProtocol,
-    ) -> ImportExamWorkspaceQtiDocumentHandlerProtocol:
-        """Provide the signed-in QTI import handler."""
-        return ImportExamWorkspaceQtiDocumentHandler(
-            parse=parse, store=store, codec=codec, id_generator=id_generator
         )
 
     @provide(scope=Scope.REQUEST)

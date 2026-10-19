@@ -33,9 +33,11 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_me
     ConversionProgress,
     ConversionUnitState,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_document_imports import (
+    ImportExamWorkspaceDocumentHandler,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
     GetExamWorkspaceDocumentHandler,
-    ImportExamWorkspaceDocumentHandler,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_assembly import (
     PLACEHOLDER_REASON,
