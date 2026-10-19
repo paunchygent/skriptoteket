@@ -70,6 +70,38 @@ function pictureDocument(): NativeExamDocument {
 
 const OK_COMMAND = { document: document(), export_blockers: [] };
 
+/**
+ * Encode bytes the way the producer does: `PublicExamWorkspaceQtiImportResponse`
+ * declares `ser_json_bytes="base64"`, which Pydantic emits in the URL-safe
+ * alphabet (`-`/`_`, padded). Callers pass bytes whose encoding actually
+ * contains those characters so the decoder proves it reads the producer's
+ * alphabet rather than the `btoa` one.
+ */
+function toProducerBase64(bytes: Uint8Array): string {
+  const binary = Array.from(bytes, (byte) => String.fromCharCode(byte)).join("");
+  return btoa(binary).replaceAll("+", "-").replaceAll("/", "_");
+}
+
+/**
+ * jsdom's Blob has no `arrayBuffer` and its Response cannot consume a Blob;
+ * read the restored bytes through FileReader like the production fallback.
+ */
+async function blobBytes(blob: Blob): Promise<Uint8Array> {
+  return await new Promise<Uint8Array>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (reader.result instanceof ArrayBuffer) {
+        resolve(new Uint8Array(reader.result));
+        return;
+      }
+      reject(new Error("The FileReader did not return an ArrayBuffer."));
+    };
+    reader.onerror = () =>
+      reject(reader.error ?? new Error("Could not read the blob bytes."));
+    reader.readAsArrayBuffer(blob);
+  });
+}
+
 describe("publicExamWorkspace transport", () => {
   it("starts a blank exam on the public blank route", async () => {
     publicApiPostMock.mockResolvedValueOnce(OK_COMMAND);
@@ -261,12 +293,13 @@ describe("publicExamWorkspace transport", () => {
     expect(publicApiFetchBlobResponseMock).not.toHaveBeenCalled();
   });
 
-  it("parses a guest QTI .zip into the document and decodes each base64 picture to its blob", async () => {
+  it("parses a guest QTI .zip into the document and decodes each URL-safe base64 picture to its blob", async () => {
     const exam = pictureDocument();
-    const pngBytes = new Uint8Array([137, 80, 78, 71, 1, 2, 3, 4]);
-    const binary = Array.from(pngBytes, (byte) => String.fromCharCode(byte)).join("");
+    const pngBytes = new Uint8Array([137, 80, 78, 71, 0xfb, 0xff, 0x00, 0x01]);
+    const encoded = toProducerBase64(pngBytes);
+    expect(encoded).toMatch(/[-_]/);
     publicApiPostMock.mockResolvedValueOnce({
-      assets_by_id: { asset_001: btoa(binary) },
+      assets_by_id: { asset_001: encoded },
       document: exam,
       notes: ["Fråga 3 hoppades över."],
     });
@@ -294,6 +327,7 @@ describe("publicExamWorkspace transport", () => {
     expect(blob).toBeInstanceOf(Blob);
     expect(blob.type).toBe("image/png");
     expect(blob.size).toBe(pngBytes.length);
+    expect(await blobBytes(blob)).toEqual(pngBytes);
   });
 
   it("omits the course key for a guest QTI .zip without a course", async () => {

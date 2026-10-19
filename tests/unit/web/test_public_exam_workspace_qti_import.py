@@ -32,6 +32,9 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_qti_import im
 from skriptoteket.application.curated_apps.handlers.public_exam_workspace_commands import (
     PublicExamWorkspaceCommandHandler,
 )
+from skriptoteket.application.curated_apps.public_exam_workspace import (
+    PublicExamWorkspaceQtiImportResponse,
+)
 from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.exam_workspace.container import (
     ExamWorkspaceContainerContent,
@@ -279,6 +282,27 @@ async def test_picture_assets_return_as_base64_decoding_to_source_bytes(
             "filename": "prov.zip",
         }
     ]
+
+
+def test_qti_import_response_serializes_picture_bytes_in_url_safe_alphabet() -> None:
+    """The producer contract: bytes with 0xfb/0xff serialize URL-safe.
+
+    `PublicExamWorkspaceQtiImportResponse` declares `ser_json_bytes="base64"`,
+    which Pydantic emits in the URL-safe alphabet (`-`/`_`, padded). The
+    browser decoder reads exactly this alphabet, so this pins the producer
+    side: the encoded value must contain a URL-safe character, never a
+    standard-alphabet one, and must round-trip to the source bytes.
+    """
+    raw = bytes([0x89, 0x50, 0x4E, 0x47, 0xFB, 0xFF, 0x00, 0x01])
+    response = PublicExamWorkspaceQtiImportResponse(
+        document=_picture_document(), assets_by_id={"asset_raw": raw}, notes=()
+    )
+
+    encoded = response.model_dump(mode="json")["assets_by_id"]["asset_raw"]
+
+    assert "-" in encoded or "_" in encoded
+    assert "+" not in encoded and "/" not in encoded
+    assert base64.urlsafe_b64decode(encoded) == raw
 
 
 @pytest.mark.parametrize(

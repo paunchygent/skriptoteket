@@ -12,6 +12,8 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { ApiError } from "../../../api/client";
+import { publicApiPost } from "../../../api/client";
+import { importPublicExamWorkspaceQti } from "../../../api/publicExamWorkspace";
 import { createGuestExamWorkspaceStore } from "./examWorkspaceGuestStore";
 import type { ExamWorkspaceGuestDraftStoragePort } from "./examWorkspaceGuestDraftStorage";
 import {
@@ -23,6 +25,43 @@ import {
 } from "./examWorkspaceGuestStore.specSupport";
 
 installGuestStoreObjectUrls();
+
+vi.mock("../../../api/client", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../../api/client")>()),
+  publicApiPost: vi.fn(),
+}));
+
+const publicApiPostMock = vi.mocked(publicApiPost);
+
+/**
+ * Encode bytes the way the producer does: `PublicExamWorkspaceQtiImportResponse`
+ * declares `ser_json_bytes="base64"`, which Pydantic emits in the URL-safe
+ * alphabet (`-`/`_`, padded).
+ */
+function toProducerBase64(bytes: Uint8Array): string {
+  const binary = Array.from(bytes, (byte) => String.fromCharCode(byte)).join("");
+  return btoa(binary).replaceAll("+", "-").replaceAll("/", "_");
+}
+
+/**
+ * jsdom's Blob has no `arrayBuffer` and its Response cannot consume a Blob;
+ * read the restored bytes through FileReader like the production fallback.
+ */
+async function blobBytes(blob: Blob): Promise<Uint8Array> {
+  return await new Promise<Uint8Array>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (reader.result instanceof ArrayBuffer) {
+        resolve(new Uint8Array(reader.result));
+        return;
+      }
+      reject(new Error("The FileReader did not return an ArrayBuffer."));
+    };
+    reader.onerror = () =>
+      reject(reader.error ?? new Error("Could not read the blob bytes."));
+    reader.readAsArrayBuffer(blob);
+  });
+}
 
 function zipFile(): File {
   return new File(["qti"], "Prov_HT25.zip", { type: "application/zip" });
@@ -56,6 +95,31 @@ describe("examWorkspaceGuestStore QTI start", () => {
     );
     const opened = await context.store.store.shared.getExamWorkspaceDocument(lineageId);
     expect(opened.document.title).toBe("QTI-prov");
+  });
+
+  it("creates the draft with the exact picture bytes from a URL-safe producer response", async () => {
+    const context = setupGuestStore();
+    const document = pictureExam("QTI-bild");
+    const original = new Uint8Array([137, 80, 78, 71, 0xfb, 0xff, 0x00, 0x01]);
+    const encoded = toProducerBase64(original);
+    expect(encoded).toMatch(/[-_]/);
+    publicApiPostMock.mockResolvedValueOnce({
+      assets_by_id: { asset_001: encoded },
+      document,
+      notes: [],
+    });
+    context.mocks.importQti.mockImplementation((file, courseKey) =>
+      importPublicExamWorkspaceQti(file, courseKey),
+    );
+
+    const lineageId = await context.store.startFromQti(zipFile(), null);
+
+    expect(lineageId).toBe(document.document_id);
+    const stored = await context.storage.load();
+    const blob = stored?.assets["asset_001"];
+    expect(blob).toBeInstanceOf(Blob);
+    expect(blob?.type).toBe("image/png");
+    expect(await blobBytes(blob!)).toEqual(original);
   });
 
   it("passes the chosen course key to the public route", async () => {

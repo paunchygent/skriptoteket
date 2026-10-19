@@ -114,7 +114,7 @@ export type PublicExamWorkspaceQtiImportResult = {
   notes: string[];
 };
 
-/** The public QTI parse response: asset bytes travel as base64 JSON strings. */
+/** The public QTI parse response: asset bytes travel as URL-safe base64 JSON strings. */
 type PublicExamWorkspaceQtiImportResponse = {
   document: NativeExamDocument;
   assets_by_id: Record<string, string>;
@@ -145,9 +145,19 @@ export async function createPublicExamWorkspaceBlank(): Promise<PublicExamWorksp
   return await publicApiPost<PublicExamWorkspaceCommandResult>(`${PUBLIC_WORKSPACE_ROOT}/blank`);
 }
 
-/** Decode one base64 JSON string back to its bytes. */
+/**
+ * Decode one URL-safe base64 JSON string back to its bytes.
+ *
+ * The producer is `PublicExamWorkspaceQtiImportResponse`, which declares
+ * `ser_json_bytes="base64"`: Pydantic emits those bytes in the URL-safe
+ * alphabet (`-`/`_`, padded), so map them back to the standard alphabet and
+ * pad to a multiple of 4 before `atob`. There is no standard-alphabet input:
+ * this decoder reads exactly the producer's encoding.
+ */
 function base64ToBytes(encoded: string): Uint8Array<ArrayBuffer> {
-  const binary = atob(encoded);
+  const standard = encoded.replaceAll("-", "+").replaceAll("_", "/");
+  const padded = standard.padEnd(Math.ceil(standard.length / 4) * 4, "=");
+  const binary = atob(padded);
   const bytes = new Uint8Array(new ArrayBuffer(binary.length));
   for (let index = 0; index < binary.length; index += 1) {
     bytes[index] = binary.charCodeAt(index);
@@ -157,7 +167,7 @@ function base64ToBytes(encoded: string): Uint8Array<ArrayBuffer> {
 
 /**
  * Parse a guest QTI .zip server-side and keep the result in the browser: the
- * document becomes the guest draft, each base64 asset value becomes the
+ * document becomes the guest draft, each URL-safe base64 asset value becomes the
  * picture blob the guest store keeps beside it, and the parser's import notes
  * travel with the draft like the container's. Nothing is stored server-side.
  */
