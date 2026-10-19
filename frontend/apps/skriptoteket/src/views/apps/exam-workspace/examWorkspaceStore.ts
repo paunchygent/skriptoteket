@@ -36,6 +36,7 @@ import {
   getExamWorkspaceHistoryStep,
   importExamWorkspaceDigiExam,
   importExamWorkspaceDocument,
+  importExamWorkspaceGuestDraft,
   listExamWorkspaceDocuments,
   requestExamWorkspaceAnswerKeySuggestions,
   requestExamWorkspaceAnswerMisspellings,
@@ -99,6 +100,7 @@ export type ExamWorkspaceTeacherServices = {
   getExamCourseContent: typeof getExamCourseContent;
   updateExamListOrdering: typeof updateExamListOrdering;
   renameVaultFile: typeof renameVaultFile;
+  importExamWorkspaceGuestDraft: typeof importExamWorkspaceGuestDraft;
 };
 
 /** The guest-only actions on the shared exam workspace; null in signed-in mode. */
@@ -156,6 +158,7 @@ export const serverExamWorkspaceStore: ExamWorkspaceStore = {
     getExamCourseContent: (...args) => getExamCourseContent(...args),
     updateExamListOrdering: (...args) => updateExamListOrdering(...args),
     renameVaultFile: (...args) => renameVaultFile(...args),
+    importExamWorkspaceGuestDraft: (...args) => importExamWorkspaceGuestDraft(...args),
   },
   guest: null,
 };

@@ -20,6 +20,7 @@ import {
   getExamWorkspaceExportChecklist,
   getExamWorkspaceAnswerKeySuggestions,
   importExamWorkspaceDocument,
+  importExamWorkspaceGuestDraft,
   listExamWorkspaceDocuments,
   requestExamWorkspaceAnswerKeySuggestions,
   requestExamWorkspaceAnswerMisspellings,
@@ -247,6 +248,54 @@ describe("examWorkspace transport", () => {
 
     expect(apiPostMock).toHaveBeenCalledTimes(1);
     expect(apiPostMock).toHaveBeenCalledWith(ANSWER_MISSPELLINGS_PATH, request);
+    expect(result).toBe(response);
+  });
+
+  it("imports the guest draft as multipart with the draft id, the document and only declared assets", async () => {
+    const response = buildResponse(1);
+    apiPostMock.mockResolvedValueOnce(response);
+    const document = {
+      ...buildDocument(1),
+      assets: [
+        {
+          asset_id: "asset-a",
+          byte_length: 1,
+          height: 1,
+          media_type: "image/png" as const,
+          sha256: "a".repeat(64),
+          width: 1,
+        },
+        {
+          asset_id: "asset-b",
+          byte_length: 1,
+          height: 1,
+          media_type: "image/png" as const,
+          sha256: "b".repeat(64),
+          width: 1,
+        },
+      ],
+    };
+    const blobA = new Blob(["aa"]);
+    const blobB = new Blob(["b"]);
+
+    const result = await importExamWorkspaceGuestDraft("draft-1", document, {
+      "asset-a": blobA,
+      "asset-b": blobB,
+      "asset-extra": new Blob(["extra"]),
+    });
+
+    expect(apiPostMock).toHaveBeenCalledTimes(1);
+    const [path, body] = apiPostMock.mock.calls[0];
+    expect(path).toBe("/api/v1/apps/documents.conversion_hub/exam-workspace/guest-drafts");
+    expect(body).toBeInstanceOf(FormData);
+    const form = body as FormData;
+    expect(form.get("draft_id")).toBe("draft-1");
+    expect(JSON.parse(form.get("document") as string)).toEqual(document);
+    expect(form.get("asset:asset-a")).toBeInstanceOf(Blob);
+    expect((form.get("asset:asset-a") as Blob).size).toBe(2);
+    expect(form.get("asset:asset-b")).toBeInstanceOf(Blob);
+    expect((form.get("asset:asset-b") as Blob).size).toBe(1);
+    expect(form.get("asset:asset-extra")).toBeNull();
     expect(result).toBe(response);
   });
 });
