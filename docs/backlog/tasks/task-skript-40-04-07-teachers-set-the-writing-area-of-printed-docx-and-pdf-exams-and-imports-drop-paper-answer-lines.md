@@ -119,6 +119,9 @@ Stop and report to the parent in either case:
   v8 seam and v8 bump landed (`1551b238`); mypy is at zero (`5b6d6625`, weasyprint
   stub `Page.width/height`, guard for `Length | None`); the DOCX ordering test now
   reads the drawn number box that R1 part 2 introduced (U3). Lint, typecheck,
-  frontend type-check, ESLint and build pass. Next: the one exam-workspace
-  domain suite after the orchestrator's go, then R1–R4 go back to reviewer
-  09d50acc. User gates: none open.
+  frontend type-check, ESLint and build pass. Exam-workspace domain suite
+  (2026-10-19, `evidence/lead-e12a2a36/suite/`): vitest 942/942; pytest 17
+  failed, 4308 passed, all from the merge. Main's free-text fixtures lacked
+  `writing_lines` (fixed `7de1486b`), and one test called a fixture directly
+  (fixed `b035ea13`). Those three files rerun green (25). Next: R1–R4 go back
+  to reviewer 09d50acc. User gates: none open.
