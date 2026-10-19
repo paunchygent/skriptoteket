@@ -7,9 +7,17 @@ topic word (R2), and the colon head decides the cut for every label (R3).
 
 import pytest
 
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import NativeParagraph
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+    NativeAssetSegment,
+    NativeGapSegment,
+    NativeParagraph,
+    NativeSegment,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.points_wording import (
     with_settled_points_wording,
+)
+from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders import (
+    make_gap_fill_item,
 )
 from tests.unit.domain.curated_apps.exam_workspace.points_wording_test_support import (
     _VOLT,
@@ -293,3 +301,96 @@ def test_terminal_heading_differing_number_records_removable_shape(
     result = with_settled_points_wording(_item(body, points))
     assert result.body == body
     assert result.leftover_points_text == expected_leftover
+
+
+def _gap_heading_body(*segments: NativeSegment) -> tuple[NativeParagraph, ...]:
+    return (NativeParagraph(heading_level=2, segments=tuple(segments)),)
+
+
+def test_terminal_heading_gap_prefix_newline_label_leaves_at_equal_points() -> None:
+    # Rereview R5: the gap before the run survives the cut at equal points.
+    body = _gap_heading_body(
+        _text("Skriv rätt ord "), NativeGapSegment(gap_id="gap_001"), _text("\n(2 p)")
+    )
+    result = with_settled_points_wording(
+        make_gap_fill_item().model_copy(update={"body": body, "points": 2})
+    )
+    assert result.body == _gap_heading_body(
+        _text("Skriv rätt ord "), NativeGapSegment(gap_id="gap_001")
+    )
+    assert result.body[0].heading_level == 2
+    assert result.leftover_points_text is None
+
+
+def test_terminal_heading_gap_prefix_newline_label_records_at_other_points() -> None:
+    # Rereview R5: the surviving gap keeps the body, so the wording is recorded.
+    body = _gap_heading_body(
+        _text("Skriv rätt ord "), NativeGapSegment(gap_id="gap_001"), _text("\n(2 p)")
+    )
+    result = with_settled_points_wording(
+        make_gap_fill_item().model_copy(update={"body": body, "points": 3})
+    )
+    assert result.body == body
+    assert result.leftover_points_text == "(2 p)"
+
+
+def test_terminal_heading_picture_prefix_newline_label_leaves_at_equal_points() -> None:
+    # Rereview R5: the picture before the run survives the cut at equal points.
+    body = _gap_heading_body(
+        NativeAssetSegment(asset_id="asset_0123456789abcdef"), _text("\n(2 p)")
+    )
+    result = with_settled_points_wording(_item(body, 2))
+    assert result.body == _gap_heading_body(NativeAssetSegment(asset_id="asset_0123456789abcdef"))
+    assert result.body[0].heading_level == 2
+    assert result.leftover_points_text is None
+
+
+def test_terminal_heading_picture_prefix_newline_label_records_at_other_points() -> None:
+    # Rereview R5: the surviving picture keeps the body, so the wording is recorded.
+    body = _gap_heading_body(
+        NativeAssetSegment(asset_id="asset_0123456789abcdef"), _text("\n(2 p)")
+    )
+    result = with_settled_points_wording(_item(body, 3))
+    assert result.body == body
+    assert result.leftover_points_text == "(2 p)"
+
+
+def test_terminal_heading_gap_prefix_bare_label_leaves_at_equal_points() -> None:
+    # Rereview R5: the separator and label leave; the text and gap survive.
+    body = _gap_heading_body(
+        _text("Skriv rätt ord "), NativeGapSegment(gap_id="gap_001"), _text(" – 2 poäng")
+    )
+    result = with_settled_points_wording(
+        make_gap_fill_item().model_copy(update={"body": body, "points": 2})
+    )
+    assert result.body == _gap_heading_body(
+        _text("Skriv rätt ord "), NativeGapSegment(gap_id="gap_001")
+    )
+    assert result.body[0].heading_level == 2
+    assert result.leftover_points_text is None
+
+
+def test_terminal_heading_gap_prefix_bare_label_records_at_other_points() -> None:
+    # Rereview R5: the surviving gap keeps the body, so the bare label is recorded.
+    body = _gap_heading_body(
+        _text("Skriv rätt ord "), NativeGapSegment(gap_id="gap_001"), _text(" – 2 poäng")
+    )
+    result = with_settled_points_wording(
+        make_gap_fill_item().model_copy(update={"body": body, "points": 3})
+    )
+    assert result.body == body
+    assert result.leftover_points_text == "2 poäng"
+
+
+@pytest.mark.parametrize("points", [2, 3])
+def test_terminal_heading_gap_prefix_inline_label_stays_at_both_numbers(points: int) -> None:
+    # The run-boundary guard: a parenthesised label alone in the run with a
+    # segment before it is neither removed nor recorded.
+    body = _gap_heading_body(
+        _text("Skriv rätt ord "), NativeGapSegment(gap_id="gap_001"), _text(" (2 p)")
+    )
+    result = with_settled_points_wording(
+        make_gap_fill_item().model_copy(update={"body": body, "points": points})
+    )
+    assert result.body == body
+    assert result.leftover_points_text is None

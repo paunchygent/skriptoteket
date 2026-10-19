@@ -39,7 +39,10 @@ def _heading_last_leftover(body: tuple[NativeParagraph, ...], points: int | floa
     One shape decision serves the cut and the recording: the shared run
     wording decides parenthesised and whole-line shapes, the latter cut by
     the head shape, while the bare-label cut decides separator-preceded bare
-    labels; any other bare ending stays and records nothing.
+    labels; any other bare ending stays and records nothing. Survival is the
+    removal's own rule: the kept run text plus the paragraph's earlier
+    segments, so a question, gap or picture in the same paragraph keeps the
+    body and the wording is recorded.
     """
     paragraph = body[-1]
     located = trailing_run_wording((paragraph,))
@@ -48,17 +51,30 @@ def _heading_last_leftover(body: tuple[NativeParagraph, ...], points: int | floa
         if found.value == points:
             return None
         start = points_only_line_start(run_text) if found.whole_line else found.start
-        if run_text[:start].rstrip().strip() or body_keeps_text(body[:-1]):
-            return run_text[start:].strip()
-        return None
-    bare = heading_bare_label_cut(paragraph)
-    if bare is None:
-        return None
-    run, run_text, start, value = bare
-    if value == points:
-        return None
-    kept_text = HEADING_TRAILING_SEPARATOR.sub("", run_text[:start].rstrip())
-    if kept_text.strip() or body_keeps_text(body[:-1]):
+        kept_text = run_text[:start].rstrip()
+    else:
+        bare = heading_bare_label_cut(paragraph)
+        if bare is None:
+            return None
+        run, run_text, start, value = bare
+        if value == points:
+            return None
+        kept_text = HEADING_TRAILING_SEPARATOR.sub("", run_text[:start].rstrip())
+    kept: list[NativeTextSegment] = []
+    remaining = len(kept_text)
+    for segment in run:
+        if remaining <= 0:
+            break
+        if len(segment.text) <= remaining:
+            kept.append(segment)
+            remaining -= len(segment.text)
+        else:
+            kept.append(segment.model_copy(update={"text": segment.text[:remaining]}))
+            remaining = 0
+    head = paragraph.segments[: len(paragraph.segments) - len(run)]
+    settled_paragraph = paragraph.model_copy(update={"segments": (*head, *kept)})
+    settled = (*body[:-1], settled_paragraph) if settled_paragraph.segments else body[:-1]
+    if body_keeps_text(settled):
         return run_text[start:].strip()
     return None
 
