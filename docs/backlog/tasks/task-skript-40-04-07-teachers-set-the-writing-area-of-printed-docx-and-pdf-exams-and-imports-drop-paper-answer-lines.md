@@ -163,5 +163,12 @@ Stop and report to the parent in either case:
   misplaced source-paragraph builds for answer lines. Merge suite
   (`evidence/lead-e12a2a36/suite6/`): pytest 4452 passed. Open for main's
   owner: a listed heading left out at admission is marked missing, then
-  restored into the body. Next: 09d50acc checks the merge. User gates: none
-  open.
+  restored into the body.
+- 2026-10-19: origin/main `0cb1df1a` (41-02-01 QTI import) merged
+  (`57f82aba`). The DI follows main's split (`exam_workspace_imports`), with
+  print preview kept in `exam_workspace.py`. The QTI reader reads free-text
+  `expected-lines` into writing lines, for standalone and parent-child items
+  (absent = the W4 default; malformed = unsupported). Suite
+  (`evidence/lead-e12a2a36/suite7/`): pytest 4646 passed. The QTI integration
+  test, run with docker: 1 passed. Next: 09d50acc checks both merges. User
+  gates: none open.
