@@ -42,6 +42,8 @@ import {
 } from "./ExamWorkspaceRichTextEditor.gapTool.specSupport";
 import {
   gapPointerMiddle,
+  gapPointerMiddleDecreasing,
+  stubDecreasingGapPointerGeometry,
   stubLinearGapPointerGeometry,
 } from "./examWorkspaceGapToolPointer.specSupport";
 
@@ -117,6 +119,52 @@ describe("ExamWorkspaceRichTextEditor gap tool", () => {
     expect(opened.creations).toHaveLength(0);
     expect(opened.updates).toHaveLength(0);
     expect(opened.editor.getText()).toBe("Solen är");
+    expect(gapButton()).toBeNull();
+  });
+
+  it("turns a clicked Hebrew word into a gap when columns decrease left", async () => {
+    const opened = await openEditor({
+      body: [paragraph(text("שלום עולם"))],
+      gapsInteractive: true,
+      nextGapId: "gap_002",
+      gapTool: true,
+    });
+    stubDecreasingGapPointerGeometry(opened.editor);
+    const caret = posIn(opened.editor, "שלום עולם", 1);
+    opened.editor.commands.setTextSelection(caret);
+    pressMouse(opened, "mouseup", 0);
+    const handled = clickAt(opened, caret, gapPointerMiddleDecreasing(caret));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await nextTick();
+
+    expect(handled).toBe(true);
+    expect(opened.creations).toHaveLength(1);
+    expect(opened.updates).toHaveLength(0);
+    const [body, gapId, seed] = opened.creations[0]!;
+    expect(gapId).toBe("gap_002");
+    expect(seed).toBe("שלום");
+    expect(body).toEqual([paragraph(gap("gap_002"), text(" עולם"))]);
+    expect(gapButton()).toBeNull();
+  });
+
+  it("makes no gap on a click on the space between two Hebrew words", async () => {
+    const opened = await openEditor({
+      body: [paragraph(text("שלום עולם"))],
+      gapsInteractive: true,
+      nextGapId: "gap_002",
+      gapTool: true,
+    });
+    stubDecreasingGapPointerGeometry(opened.editor);
+    const space = posIn(opened.editor, "שלום עולם", 4);
+    opened.editor.commands.setTextSelection(space);
+
+    expect(clickAt(opened, space, gapPointerMiddleDecreasing(space))).toBeFalsy();
+    expect(clickAt(opened, space + 1, gapPointerMiddleDecreasing(space))).toBeFalsy();
+    await nextTick();
+
+    expect(opened.creations).toHaveLength(0);
+    expect(opened.updates).toHaveLength(0);
+    expect(opened.editor.getText()).toBe("שלום עולם");
     expect(gapButton()).toBeNull();
   });
 

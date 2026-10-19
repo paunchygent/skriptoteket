@@ -265,10 +265,11 @@ export function useExamWorkspaceMakeGap(options: {
    * pointer is on a separator or its character cannot be told apart. The
    * click position is a caret between two characters; the pointer is on one
    * of those two neighbours exactly when `clientX` lies between that
-   * character's left edge (`coordsAtPos` at its start) and its right edge
-   * (`coordsAtPos` past its end). A separator hit, an unreadable position
-   * and a zero-width character all resolve to nothing, so ProseMirror places
-   * the caret instead.
+   * character's two caret edges (`coordsAtPos` at its start and past its
+   * end). Either edge may sit left on screen: in a right-to-left run the
+   * start caret is right of the end caret. A separator hit, an unreadable
+   * position and a zero-width character all resolve to nothing, so
+   * ProseMirror places the caret instead.
    */
   function gapToolWordAtPointer(
     view: EditorView,
@@ -284,18 +285,20 @@ export function useExamWorkspaceMakeGap(options: {
       if (charPos < 0 || charPos + 1 > size) {
         continue;
       }
-      let left: number;
-      let right: number;
+      let firstEdge: number;
+      let secondEdge: number;
       try {
-        left = view.coordsAtPos(charPos, 1).left;
-        right = view.coordsAtPos(charPos + 1, -1).left;
+        firstEdge = view.coordsAtPos(charPos, 1).left;
+        secondEdge = view.coordsAtPos(charPos + 1, -1).left;
       } catch {
         continue;
       }
-      if (!Number.isFinite(left) || !Number.isFinite(right) || right <= left) {
+      if (!Number.isFinite(firstEdge) || !Number.isFinite(secondEdge) || firstEdge === secondEdge) {
         continue;
       }
-      if (clientX >= left && clientX < right) {
+      const hitStart = Math.min(firstEdge, secondEdge);
+      const hitEnd = Math.max(firstEdge, secondEdge);
+      if (clientX >= hitStart && clientX < hitEnd) {
         return wordRangeAtDocCharacter(view.state.doc, charPos);
       }
     }

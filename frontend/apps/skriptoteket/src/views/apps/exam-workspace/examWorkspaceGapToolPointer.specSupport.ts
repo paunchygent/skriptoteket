@@ -5,10 +5,12 @@
  *   jsdom has no layout, so the gap tool click path (which resolves the word
  *   under the pointer through `view.coordsAtPos` and `event.clientX`) needs
  *   a stubbed character grid plus a click dispatcher that carries a clientX
- *   inside the clicked word. Every gap tool click spec shares this fixed
- *   10px column grid so a pointer click lands on the same word the caret
+ *   inside the clicked word. Every gap tool click spec shares a fixed 10px
+ *   column grid so a pointer click lands on the same word the caret
  *   selection names, and a click with the pointer on a separator still only
- *   places the caret.
+ *   places the caret. The linear grid grows right per document position; the
+ *   decreasing grid grows left, modelling a right-to-left run where a
+ *   character's start caret sits right of its end caret.
  *
  * Relationships:
  *   - Used by the gap tool click specs in this directory and by the
@@ -46,6 +48,28 @@ export function stubLinearGapPointerGeometry(editor: Editor): void {
 /** The horizontal middle of the character starting at `charPos`. */
 export function gapPointerMiddle(charPos: number): number {
   return GAP_POINTER_ORIGIN_PX + charPos * GAP_POINTER_CHAR_PX + GAP_POINTER_CHAR_PX / 2;
+}
+
+/**
+ * jsdom has no layout: a right-to-left character grid where every next
+ * document position sits one 10px column further left, so the start caret of
+ * a character is right of its end caret on screen. Installing twice on the
+ * same view keeps the first stub.
+ */
+export function stubDecreasingGapPointerGeometry(editor: Editor): void {
+  if (stubbedViews.has(editor.view)) {
+    return;
+  }
+  stubbedViews.add(editor.view);
+  vi.spyOn(editor.view, "coordsAtPos").mockImplementation((pos: number) => {
+    const left = GAP_POINTER_ORIGIN_PX - pos * GAP_POINTER_CHAR_PX;
+    return { left, right: left, top: 60, bottom: 74 };
+  });
+}
+
+/** The horizontal middle of the character starting at `charPos` in the decreasing grid. */
+export function gapPointerMiddleDecreasing(charPos: number): number {
+  return GAP_POINTER_ORIGIN_PX - charPos * GAP_POINTER_CHAR_PX - GAP_POINTER_CHAR_PX / 2;
 }
 
 /**
