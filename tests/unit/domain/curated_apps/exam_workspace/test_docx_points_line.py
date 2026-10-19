@@ -136,7 +136,17 @@ def test_a_second_mention_means_no_source_points_from_either_reader(
 
 @pytest.mark.parametrize(
     "text",
-    ["Poäng: 6 poäng", "Totalt: 6 p", "6 p", "(2 p)", "Max poäng: 6 p"],
+    [
+        "Poäng: 6 poäng",
+        "Totalt: 6 p",
+        "Totalt: 36 p",
+        "6 p",
+        "(2 p)",
+        "Max poäng: 6 p",
+        # D8 and review F5: a one-word head without a colon is still a head.
+        "Max 36p",
+        "Show (2 p)",
+    ],
 )
 def test_short_label_lines_are_points_only_lines(text: str) -> None:
     assert points_only_line(text)
@@ -150,9 +160,10 @@ def test_short_label_lines_are_points_only_lines(text: str) -> None:
         "Beskriv processen. (2 p)",
         "Beskriv processen (2 p)",
         "Give 3 points of view.",
-        "Max 36p",
         "Show (2 p) Svar:",
-        "Show (2 p)",
+        # D8: two words without a colon are a stem, never a head.
+        "Max poäng 6 p",
+        "Svara kort (2 p)",
     ],
 )
 def test_stem_and_answer_lines_are_not_points_only_lines(text: str) -> None:

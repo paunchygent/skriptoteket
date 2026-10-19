@@ -459,3 +459,50 @@ def test_matching_labels_at_both_ends_leave_and_settling_is_idempotent() -> None
     assert once.body == body
     assert once.leftover_points_text is None
     assert with_settled_points_wording(once) == once
+
+
+def test_matching_one_word_head_line_leaves_whole_when_other_text_remains() -> None:
+    # D8 and review F5: "Max 36p" is a points-only line, so it leaves whole.
+    body = (_paragraph(_text("Fråga.")), _paragraph(_text("Max 36p")))
+    result = with_settled_points_wording(_item(body, 36))
+    assert result.body == (_paragraph(_text("Fråga.")),)
+    assert result.leftover_points_text is None
+
+
+def test_differing_number_keeps_a_one_word_head_line_and_records_it() -> None:
+    body = (_paragraph(_text("Fråga.")), _paragraph(_text("Max 36p")))
+    result = with_settled_points_wording(_item(body, 30))
+    assert result.body == body
+    assert result.leftover_points_text == "Max 36p"
+
+
+def test_whole_text_one_word_head_line_keeps_its_word() -> None:
+    # D13: the word stays and only the label leaves, with the blank space.
+    assert with_settled_points_wording(_item((_paragraph(_text("Show (2 p)")),), 2)).body == (
+        _paragraph(_text("Show")),
+    )
+    assert with_settled_points_wording(_item((_paragraph(_text("Max 36p")),), 36)).body == (
+        _paragraph(_text("Max")),
+    )
+
+
+def test_one_word_head_line_among_other_text_leaves_whole() -> None:
+    body = (_paragraph(_text("Beskriv.")), _paragraph(_text("Show (2 p)")))
+    result = with_settled_points_wording(_item(body, 2))
+    assert result.body == (_paragraph(_text("Beskriv.")),)
+    assert result.leftover_points_text is None
+
+
+def test_whole_text_one_word_head_line_with_other_points_stays_and_records_nothing() -> None:
+    # D13 stays gated on D3; a whole-text line never records (D7, N3 A).
+    body = (_paragraph(_text("Show (2 p)")),)
+    result = with_settled_points_wording(_item(body, 3))
+    assert result.body == body
+    assert result.leftover_points_text is None
+
+
+def test_whole_text_bare_label_line_stays() -> None:
+    body = (_paragraph(_text("(2 p)")),)
+    result = with_settled_points_wording(_item(body, 2))
+    assert result.body == body
+    assert result.leftover_points_text is None

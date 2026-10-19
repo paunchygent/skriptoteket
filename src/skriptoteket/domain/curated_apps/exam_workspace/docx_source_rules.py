@@ -239,20 +239,20 @@ def points_line(text: str) -> bool:
     return rest != text and len(_WORD.findall(rest)) < 3
 
 
-_POINTS_ONLY_HEAD = re.compile(r"[ \t]*(?:[^\W\d_]+[ \t]+)?[^\W\d_]+:[ \t]*")
+_POINTS_ONLY_HEAD = re.compile(r"[ \t]*(?:[^\W\d_]+:?|[^\W\d_]+[ \t]+[^\W\d_]+:)[ \t]*")
 _POINTS_ONLY_TAIL = re.compile(r"[ \t]*[.,;:!?]?[ \t]*")
 
 
 def points_only_line(text: str) -> bool:
     """A points line holding nothing but an optional short label, such as "Poäng: 6 poäng".
 
-    Exactly one points label, no answer line, an empty head or one or two
-    letter-only words ending in a colon ("Poäng:", "Totalt:", "Max poäng:"),
-    and after the label only blank space and at most one punctuation mark. A
-    head without a colon ("Max 36p", "Show (2 p)"), a stem ("Beskriv
-    processen. (2 p)"), an answer blank ("Answer: ____________ (1 point)")
-    and any digit, underscore or further word beside the label is prose,
-    never a points-only line.
+    Exactly one points label, no answer line, an empty head, one letter-only
+    word with or without a colon ("Max", "Poäng:") or two letter-only words
+    ending in a colon ("Max poäng:"), and after the label only blank space and
+    at most one punctuation mark. A two-word head without a colon ("Max poäng
+    6 p", "Svara kort (2 p)"), a stem ("Beskriv processen. (2 p)"), an answer
+    blank ("Answer: ____________ (1 point)") and any digit, underscore or
+    further word beside the label is prose, never a points-only line.
     """
     matches = list(POINT_LABEL.finditer(text))
     if len(matches) != 1 or not points_line(text) or answer_line(text):

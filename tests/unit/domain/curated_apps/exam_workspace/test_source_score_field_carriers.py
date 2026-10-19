@@ -250,6 +250,15 @@ def test_a_points_line_for_other_points_keeps_its_line(line):
     assert item.points == 5
 
 
+def test_a_recovered_one_word_head_points_line_leaves_no_word():
+    # D8 and review F5: "Max 36p" is a points-only line, so the rebuild
+    # path drops it whole instead of leaving a "Max" residue.
+    item = _convert(QUESTION, "Max 36p", points=36)
+
+    assert list(body_text_lines(item.body)) == [QUESTION]
+    assert item.points == 36
+
+
 def test_a_recovered_label_on_an_answer_line_leaves_the_answer_visible():
     line = "Answer: ____________ (1 point)"
     text = f"{QUESTION}\n{line}"

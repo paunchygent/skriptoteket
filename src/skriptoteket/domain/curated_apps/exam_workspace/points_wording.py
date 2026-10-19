@@ -3,7 +3,8 @@
 Printed points wording ("(1 point)", "Poäng: 6 poäng") states the item's
 points, never its text: ``trailing_points`` finds such wording at the end of
 a text. When its number equals the item's points, ``body_without_trailing_points``
-drops it from the last paragraph, and ``body_without_first_paragraph_points``
+drops it from the last paragraph (keeping the word of a whole-text one-word
+line, D13), and ``body_without_first_paragraph_points``
 drops a parenthesised label ending the first paragraph; when the shape matches
 but the number differs, the wording stays and ``leftover_points_wording``
 reports it for the points-note offer. ``with_settled_points_wording`` settles
@@ -13,6 +14,7 @@ decide; the stem itself is never read or rewritten.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
@@ -122,27 +124,16 @@ def _trailing_run_wording(
     return (run, run_text, found)
 
 
-def body_without_trailing_points(
-    body: tuple[NativeParagraph, ...], points: int | float | None
+def _cut_run_text(
+    body: tuple[NativeParagraph, ...], run: list[NativeTextSegment], run_text: str, start: int
 ) -> tuple[NativeParagraph, ...]:
-    """The body without trailing points wording that equals the given points.
+    """The body with the run's text from ``start`` removed, keeping each segment's marks.
 
-    Only the last paragraph is examined, through its trailing run of text
-    segments; a paragraph ending in a gap or a picture is never touched. A
-    whole points line leaves only when its line starts inside the run. Each
-    segment keeps its marks; a paragraph left with no segments is dropped. A
-    body left with no text, gap or picture keeps its original paragraphs.
+    The same cut serves the whole-line removal and the D13 whole-text word
+    keep; only the start differs. A paragraph left with no segments is dropped.
     """
-    if points is None:
-        return body
-    located = _trailing_run_wording(body)
-    if located is None:
-        return body
-    run, run_text, found = located
-    if found.value != points:
-        return body
     paragraph = body[-1]
-    kept_text = run_text[: found.start].rstrip()
+    kept_text = run_text[:start].rstrip()
     kept: list[NativeTextSegment] = []
     remaining = len(kept_text)
     for segment in run:
@@ -156,14 +147,75 @@ def body_without_trailing_points(
             remaining = 0
     head = paragraph.segments[: len(paragraph.segments) - len(run)]
     settled_paragraph = paragraph.model_copy(update={"segments": (*head, *kept)})
-    settled = (*body[:-1], settled_paragraph) if settled_paragraph.segments else body[:-1]
-    for kept_paragraph in settled:
-        for placed in kept_paragraph.segments:
+    return (*body[:-1], settled_paragraph) if settled_paragraph.segments else body[:-1]
+
+
+def _body_keeps_text(body: tuple[NativeParagraph, ...]) -> bool:
+    """Whether any paragraph keeps text, a gap or a picture."""
+    for paragraph in body:
+        for placed in paragraph.segments:
             if isinstance(placed, NativeTextSegment):
                 if placed.text.strip():
-                    return settled
+                    return True
             elif isinstance(placed, (NativeGapSegment, NativeAssetSegment)):
-                return settled
+                return True
+    return False
+
+
+def _one_word_head_label_start(run_text: str) -> int | None:
+    """The label start when a whole points-only line is the whole question text (D13).
+
+    A last line of one letter-only word and a points label ("Max 36p",
+    "Show (2 p)") leaves whole only when the question keeps other text; when
+    that line is the whole question text, the word stays and only the label
+    leaves, with the blank space before it. A bare label ("(2 p)"), a head
+    with a colon ("Poäng:") and longer heads never count: the line stays.
+    """
+    stripped = run_text.rstrip()
+    line_start = stripped.rfind("\n") + 1
+    line = stripped[line_start:]
+    matches = list(POINT_LABEL.finditer(line))
+    if len(matches) != 1:
+        return None
+    match = matches[0]
+    if re.fullmatch(r"[^\W\d_]+", line[: match.start()].strip()) is None:
+        return None
+    start = line_start + match.start()
+    while start > line_start and stripped[start - 1] in " \t":
+        start -= 1
+    return start
+
+
+def body_without_trailing_points(
+    body: tuple[NativeParagraph, ...], points: int | float | None
+) -> tuple[NativeParagraph, ...]:
+    """The body without trailing points wording that equals the given points.
+
+    Only the last paragraph is examined, through its trailing run of text
+    segments; a paragraph ending in a gap or a picture is never touched. A
+    whole points line leaves only when its line starts inside the run. Each
+    segment keeps its marks; a paragraph left with no segments is dropped. A
+    body left with no text, gap or picture keeps its original paragraphs,
+    except for a whole-text line of one letter-only word and a label (D13):
+    the word stays and only the label leaves.
+    """
+    if points is None:
+        return body
+    located = _trailing_run_wording(body)
+    if located is None:
+        return body
+    run, run_text, found = located
+    if found.value != points:
+        return body
+    settled = _cut_run_text(body, run, run_text, found.start)
+    if _body_keeps_text(settled):
+        return settled
+    if found.whole_line:
+        label_start = _one_word_head_label_start(run_text)
+        if label_start is not None:
+            narrowed = _cut_run_text(body, run, run_text, label_start)
+            if _body_keeps_text(narrowed):
+                return narrowed
     return body
 
 
