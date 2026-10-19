@@ -8,6 +8,7 @@ profile are used whatever language the exam is written in.
 import hashlib
 import re
 from dataclasses import dataclass
+from functools import cache
 
 import pytest
 
@@ -54,33 +55,38 @@ def _gold_label_word(stem: str) -> str:
     return match.group(1)
 
 
-def _exported() -> tuple[list[_Exported], int]:
-    exported: list[_Exported] = []
-    skipped = 0
-    for stem in RECORDED_STEMS:
-        document, _ = replayed(stem)
-        if document.assets:
-            skipped += 1
-            continue
-        result = native_exam_to_pdf_document(document)
-        if result.status is not DigiExamExamNetPdfStatus.SUCCESS:
-            skipped += 1
-            continue
-        language = {"Fråga": "sv", "Question": "en"}.get(_gold_label_word(stem), "")
-        exported.append(_Exported(stem, language, document, result.html))
-    return exported, skipped
+@cache
+def _export(stem: str) -> _Exported | None:
+    """The exam's export, or None when it has assets or does not print.
+
+    Replaying an exam is expensive, so it runs inside the tests, once per process, and never
+    while pytest collects: every xdist worker collects every module.
+    """
+    document, _ = replayed(stem)
+    if document.assets:
+        return None
+    result = native_exam_to_pdf_document(document)
+    if result.status is not DigiExamExamNetPdfStatus.SUCCESS:
+        return None
+    language = {"Fråga": "sv", "Question": "en"}.get(_gold_label_word(stem), "")
+    return _Exported(stem, language, document, result.html)
 
 
-_EXPORTED, _SKIPPED = _exported()
+def _exported() -> list[_Exported]:
+    return [exam for stem in RECORDED_STEMS if (exam := _export(stem)) is not None]
 
 
 def test_corpus_exports_both_languages() -> None:
-    languages = {exam.language for exam in _EXPORTED}
-    assert {"sv", "en"} <= languages, (languages, _SKIPPED)
+    exported = _exported()
+    languages = {exam.language for exam in exported}
+    assert {"sv", "en"} <= languages, (languages, len(RECORDED_STEMS) - len(exported))
 
 
-@pytest.mark.parametrize("exam", _EXPORTED, ids=lambda e: e.stem)
-def test_every_exam_prints_only_swedish_markers(exam: _Exported) -> None:
+@pytest.mark.parametrize("stem", RECORDED_STEMS)
+def test_every_exam_prints_only_swedish_markers(stem: str) -> None:
+    exam = _export(stem)
+    if exam is None:
+        pytest.skip(f"{stem} has assets or does not print")
     allowed_types = {
         "Typ: Fritext",
         "Typ: Lucktext",
@@ -98,7 +104,7 @@ def test_every_exam_prints_only_swedish_markers(exam: _Exported) -> None:
 def test_swedish_choice_item_prints_documented_markers() -> None:
     choice_exams = [
         exam
-        for exam in _EXPORTED
+        for exam in _exported()
         if exam.language == "sv"
         and any(item.kind is NativeExamItemKind.SINGLE_CHOICE for item in exam.document.items)
     ]
@@ -112,7 +118,7 @@ def test_swedish_matching_item_prints_documented_markers() -> None:
     # The current Swedish corpus has no matching item. Exercise the exporter
     # deliberately: retain a real recorded matching key in a Swedish document,
     # with an explicitly synthetic Swedish instruction, rather than skipping.
-    swedish = next(exam for exam in _EXPORTED if exam.language == "sv")
+    swedish = next(exam for exam in _exported() if exam.language == "sv")
     recorded = recorded_matching_items(keyed=True)[0]
     matching = recorded.model_copy(
         update={
@@ -165,7 +171,7 @@ def _with_image(document: NativeExamDocument) -> NativeExamDocument:
 
 @pytest.mark.parametrize("language", ["sv", "en"])
 def test_image_alt_is_swedish_for_every_exam_language(language: str) -> None:
-    exam = next(e for e in _EXPORTED if e.language == language)
+    exam = next(e for e in _exported() if e.language == language)
     result = native_exam_to_pdf_document(_with_image(exam.document), assets_by_id={_ASSET_ID: _PNG})
     assert result.status is DigiExamExamNetPdfStatus.SUCCESS
     assert f'alt="Bild {_ASSET_ID}"' in result.html

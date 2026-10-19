@@ -1,6 +1,7 @@
 """A10 spelling policy shared by offline evaluation and answer-key enrichment."""
 
 from collections.abc import Collection
+from functools import lru_cache
 
 # A 1-3 character answer is a code, number or abbreviation: one changed letter makes a
 # different answer, so it gets no extra spellings (user decision 2026-10-15).
@@ -14,8 +15,13 @@ def normalize_answer(text: str) -> str:
     return " ".join(text.split()).casefold()
 
 
+@lru_cache(maxsize=8192)
 def _damerau_levenshtein(left: str, right: str) -> int:
-    """Unrestricted distance, including overlapping adjacent transpositions."""
+    """Unrestricted distance, including overlapping adjacent transpositions.
+
+    One exam conversion compares the same answer pairs thousands of times, and this pure-Python
+    distance was more than half of a conversion's CPU time, so results are cached per process.
+    """
     sentinel = len(left) + len(right)
     matrix = [[0] * (len(right) + 2) for _ in range(len(left) + 2)]
     matrix[0][0] = sentinel

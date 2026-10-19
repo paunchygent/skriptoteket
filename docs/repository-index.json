@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "f5e09364f5f68f0c11f618d335c4e0e67fd364a9cd74a1ab1419f90dae4256f9",
+  "source_set_digest": "6ba475a7cc146ff551e9c55343d1069cda4b7f96c1ecd768f8acf922757518f6",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -8157,6 +8157,24 @@
       "title": "A converted item never drops a sentence from its own source paragraph",
       "path": "docs/backlog/tasks/task-skript-rep-0049-a-converted-item-never-drops-a-sentence-from-its-own-source-paragraph.md",
       "status": "proposed",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0050",
+      "type": "task",
+      "title": "Backend pytest runs parallel and quiet by default and serial runs need a stated reason",
+      "path": "docs/backlog/tasks/task-skript-rep-0050-backend-pytest-runs-parallel-and-quiet-by-default-and-serial-runs-need-a-stated-reason.md",
+      "status": "in_progress",
       "task_kind": "repository",
       "owners": [
         {

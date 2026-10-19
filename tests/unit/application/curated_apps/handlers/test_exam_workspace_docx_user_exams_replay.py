@@ -40,9 +40,15 @@ BOX = "Provet består av fyra delar. Läs varje uppgift noggrant. Skriv tydligt.
 REMINDER = "Kontrollera dina svar innan du lämnar in."
 
 
+_DOCUMENTS: dict[str, NativeExamDocument] = {}
+
+
 async def _document(exam: str) -> NativeExamDocument:
-    replay = build_replay(exam, root=USER_EXAMS / "recordings", corpus=USER_EXAMS)
-    return (await replay.pipeline.convert(job=replay.job())).result.document
+    """The exam's converted document, replayed once per process; the document is frozen."""
+    if exam not in _DOCUMENTS:
+        replay = build_replay(exam, root=USER_EXAMS / "recordings", corpus=USER_EXAMS)
+        _DOCUMENTS[exam] = (await replay.pipeline.convert(job=replay.job())).result.document
+    return _DOCUMENTS[exam]
 
 
 def _exam_text(document: NativeExamDocument) -> list[str]:

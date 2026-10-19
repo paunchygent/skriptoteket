@@ -22,10 +22,9 @@ from alembic import command
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import create_async_engine
-from testcontainers.postgres import PostgresContainer
 
-from tests.fixtures.database_fixtures import _to_async_database_url
-from tests.integration.migration_idempotency_support import _alembic_config, _reset_public_schema
+from tests.fixtures.database_fixtures import PooledDatabase, alembic_config_for
+from tests.integration.migration_idempotency_support import _reset_public_schema
 
 _REVISION_ID = "a3e7c9d1f4b6"
 _PARENT_REVISION = "f5c2a8d3e7b4"
@@ -90,12 +89,12 @@ async def _workspace_indexes(database_url: str) -> dict[str, str]:
 
 @pytest.mark.docker
 def test_migration_allows_several_jobs_per_saved_version_and_keeps_rows(
-    postgres_container: PostgresContainer,
+    empty_module_database: PooledDatabase,
 ) -> None:
-    database_url = _to_async_database_url(postgres_container.get_connection_url())
+    database_url = empty_module_database.url
     previous_database_url = os.environ.get("DATABASE_URL")
     os.environ["DATABASE_URL"] = database_url
-    config = _alembic_config(database_url=database_url)
+    config = alembic_config_for(database_url=database_url)
     try:
         asyncio.run(_reset_public_schema(database_url=database_url))
         command.upgrade(config, _PARENT_REVISION)

@@ -10,8 +10,8 @@ from alembic import command
 from alembic.config import Config
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
-from testcontainers.postgres import PostgresContainer
 
+from tests.fixtures.database_fixtures import PooledDatabase
 from tests.integration.migration_idempotency_support import assert_revision_is_idempotent
 
 pytestmark = [pytest.mark.integration, pytest.mark.docker]
@@ -45,9 +45,9 @@ async def _assert_docx_queue_schema(engine: AsyncEngine) -> None:
         assert "source_kind" in imported and "'docx_import'" in imported
 
 
-def test_migration_e6a9c2f4b8d1_is_idempotent(postgres_container: PostgresContainer) -> None:
+def test_migration_e6a9c2f4b8d1_is_idempotent(empty_module_database: PooledDatabase) -> None:
     assert_revision_is_idempotent(
-        postgres_container=postgres_container,
+        empty_module_database=empty_module_database,
         revision_id="e6a9c2f4b8d1",
         schema_assertion=_assert_docx_queue_schema,
     )

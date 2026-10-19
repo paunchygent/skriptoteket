@@ -46,22 +46,18 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_token_
     AnswerKeyTokenLeaseDayUsage,
     AnswerKeyTokenLeaseState,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.identity.models import User
-from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (  # noqa: E501
-    PythonDocxExamChunker,
-)
 from skriptoteket.protocols.docx_conversion_progress import (
     ConversionOutline,
     ConversionUpdate,
     DocxConversionProgressProtocol,
 )
 from skriptoteket.protocols.exam_answer_key import AnswerKeyTokenLeaseRepositoryProtocol
+from tests.fixtures.docx_corpus import corpus_chunks, corpus_docx
 from tests.fixtures.label_b_request_keys import label_b_request_keys, matching_label_b
 from tests.fixtures.time_fixtures import FixedClock
 
 FIXTURES = Path("tests/fixtures/exam_conversion")
-CORPUS = FIXTURES / "docx_corpus"
 RECORDINGS = FIXTURES / "docx_key_provenance_v14"
 WORKER = "replay-worker"
 # The live run behind RECORDINGS packed 16 families per batch; batch request ids follow it.
@@ -72,14 +68,6 @@ _NOW = datetime(2026, 10, 11, 12, 0, tzinfo=UTC)
 def recorded_exams() -> tuple[str, ...]:
     """Every exam that has live recordings, which is every corpus exam."""
     return tuple(sorted(path.name for path in RECORDINGS.iterdir() if path.is_dir()))
-
-
-def corpus_docx(exam: str, corpus: Path | None = None) -> bytes:
-    return ((corpus or CORPUS) / f"{exam}.docx").read_bytes()
-
-
-def corpus_chunks(exam: str) -> tuple[DocxChunk, ...]:
-    return PythonDocxExamChunker().chunk(content=corpus_docx(exam))
 
 
 def recording(exam: str, name: str, root: Path = RECORDINGS) -> dict[str, JsonValue]:
@@ -320,7 +308,7 @@ class Replay:
             filename=f"{self.exam}.docx",
             source_sha256=hashlib.sha256(content).hexdigest(),
             source_docx=content,
-            chunks=PythonDocxExamChunker().chunk(content=content),
+            chunks=corpus_chunks(self.exam, self.corpus),
             course_key=None,
         )
 

@@ -49,6 +49,30 @@ pdm run check
 
 ```bash
 pdm run test
+pdm run pytest tests/unit/domain/curated_apps
+pdm run test-docker
+pdm run test-simulations
+```
+
+- `pdm run test` runs the changed-component route; `pdm run pytest <target>`
+  runs a focused target. Both run in parallel (`-n logical --dist worksteal` in
+  `addopts`) and quietly: no live log streaming, and captured INFO logs and
+  stdout are printed only for failing tests.
+- The worker count follows the selection: fewer than 12 files run
+  in-process, a larger run gets one worker per 6 files, at most 12 workers
+  (`MAX_WORKERS`). A sweep file that declares `# xdist-weight: <n>` counts as `n` files.
+  An explicit `-n` above 12, or a negative `-n` or `--maxprocesses`, stops
+  with a usage error.
+- `pdm run test-docker` runs the Docker integration lane. Each worker starts
+  one Postgres container and migrates one template database; every module
+  gets its own copy of it.
+- A serial run must state why. `-n 0`, `--pdb` or an overridden `addopts`
+  stops with a usage error unless `--serial-reason "<reason>"` is given. Use
+  the named serial route only to step through a test with `--pdb` or to read
+  live log output of one failing test:
+
+```bash
+pdm run test-serial --serial-reason "live log of the curated-app model test" tests/unit/domain/curated_apps/test_models.py
 ```
 
 ### Notes
@@ -58,8 +82,8 @@ pdm run test
 
 ### Local PDF renderer checks
 
-- Use the canonical `pdm run test` surface for WeasyPrint-backed PDF renderer
-  tests. On macOS, that wrapper starts pytest with Homebrew/MacPorts native
+- Use the canonical `pdm run test` or `pdm run pytest` surface for
+  WeasyPrint-backed PDF renderer tests. On macOS, that wrapper starts pytest with Homebrew/MacPorts native
   library directories available to the child process before WeasyPrint imports
   Pango, Harfbuzz, Fontconfig, and GObject.
 - If native libraries live outside `/opt/homebrew/lib`, `/usr/local/lib`, or

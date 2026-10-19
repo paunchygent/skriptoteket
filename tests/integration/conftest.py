@@ -3,8 +3,11 @@ from tests.fixtures.database_fixtures import (
     async_engine,
     database_url,
     db_session,
+    empty_module_database,
+    fresh_database,
     migrated_db,
-    postgres_container,
+    migrated_template,
+    postgres_server,
     session_factory,
 )
 
@@ -13,7 +16,10 @@ __all__ = [
     "async_engine",
     "database_url",
     "db_session",
+    "fresh_database",
     "migrated_db",
-    "postgres_container",
+    "migrated_template",
+    "empty_module_database",
+    "postgres_server",
     "session_factory",
 ]

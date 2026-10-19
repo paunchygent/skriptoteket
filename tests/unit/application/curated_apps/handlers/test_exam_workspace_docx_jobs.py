@@ -37,13 +37,14 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_qti_writer import (
     ExamNetQtiPackageWriter,
 )
+from tests.fixtures.docx_corpus import CORPUS
 from tests.fixtures.time_fixtures import FixedClock
 from tests.unit.application.curated_apps.handlers.answer_key_enrichment_test_support import (
     InMemoryEnrichmentJobRepository,
     InMemoryLeaseRepository,
     replayed_docx_job_handler,
 )
-from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import CORPUS, Replay
+from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import Replay
 from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents import (
     _NOW,
     _actor,

@@ -6,8 +6,8 @@ import pytest
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncEngine
-from testcontainers.postgres import PostgresContainer
 
+from tests.fixtures.database_fixtures import PooledDatabase
 from tests.integration.migration_idempotency_support import assert_revision_is_idempotent
 
 pytestmark = [pytest.mark.integration, pytest.mark.docker]
@@ -70,10 +70,10 @@ async def _assert_digiexam_lineage_fence(engine: AsyncEngine) -> None:
 
 
 def test_migration_d71e4a6c9b20_is_idempotent_and_fences_only_digiexam_lineages(
-    postgres_container: PostgresContainer,
+    empty_module_database: PooledDatabase,
 ) -> None:
     assert_revision_is_idempotent(
-        postgres_container=postgres_container,
+        empty_module_database=empty_module_database,
         revision_id="d71e4a6c9b20",
         schema_assertion=_assert_digiexam_lineage_fence,
     )

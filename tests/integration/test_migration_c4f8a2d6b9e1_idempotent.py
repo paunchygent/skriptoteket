@@ -10,8 +10,8 @@ from alembic import command
 from alembic.config import Config
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
-from testcontainers.postgres import PostgresContainer
 
+from tests.fixtures.database_fixtures import PooledDatabase
 from tests.integration.migration_idempotency_support import assert_revision_is_idempotent
 
 pytestmark = [pytest.mark.integration, pytest.mark.docker]
@@ -32,9 +32,9 @@ async def _assert_progress_schema(engine: AsyncEngine) -> None:
         assert tuple(column.one()) == ("jsonb", "YES", None)
 
 
-def test_migration_c4f8a2d6b9e1_is_idempotent(postgres_container: PostgresContainer) -> None:
+def test_migration_c4f8a2d6b9e1_is_idempotent(empty_module_database: PooledDatabase) -> None:
     assert_revision_is_idempotent(
-        postgres_container=postgres_container,
+        empty_module_database=empty_module_database,
         revision_id="c4f8a2d6b9e1",
         schema_assertion=_assert_progress_schema,
     )

@@ -1,16 +1,21 @@
 """Shared Postgres test fixtures for integration repositories and CLI tests.
 
-This module provides a testcontainers-backed Postgres lifecycle and SQLAlchemy session fixtures
-used by integration tests under ``tests/integration``. It also applies migrations from this
-repository and exposes per-test cleanup to preserve isolation across integration modules.
+Each pytest worker process starts at most one Postgres server, and only when a test asks for a
+database. The server hosts a migrated template database (``alembic upgrade head`` runs once per
+worker). Every module that needs a migrated database receives its own copy of that template, and
+every test or module that needs an empty database receives a fresh one. Databases are dropped at
+fixture teardown, so no test shares mutable database state with another.
 """
 
 from __future__ import annotations
 
+import asyncio
 import os
 import threading
-from collections.abc import AsyncIterator, Iterator
+from collections.abc import AsyncIterator, Awaitable, Callable, Iterator
+from dataclasses import dataclass
 from pathlib import Path
+from uuid import uuid4
 
 import pytest
 from alembic import command
@@ -18,6 +23,7 @@ from alembic.config import Config
 from docker import DockerClient
 from docker.errors import DockerException
 from sqlalchemy import text
+from sqlalchemy.engine import make_url
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
@@ -29,6 +35,17 @@ from testcontainers.postgres import PostgresContainer
 from tests.fixtures.orm_models import load_all_models
 
 load_all_models()
+
+_ADMIN_DATABASE = "postgres"
+_TEMPLATE_DATABASE = "skriptoteket_migrated_template"
+
+
+@dataclass(frozen=True)
+class PooledDatabase:
+    """One database on the worker's shared Postgres server."""
+
+    name: str
+    url: str
 
 
 def _ensure_docker_daemon_available() -> None:
@@ -49,38 +66,127 @@ def _ensure_docker_daemon_available() -> None:
             client.close()
 
 
-def _to_async_database_url(url: str) -> str:
-    if url.startswith("postgresql+asyncpg://"):
-        return url
-    if url.startswith("postgresql+"):
-        prefix, rest = url.split("://", 1)
-        base = prefix.split("+", 1)[0]
-        return f"{base}+asyncpg://{rest}"
-    if url.startswith("postgresql://"):
-        return url.replace("postgresql://", "postgresql+asyncpg://", 1)
-    if url.startswith("postgres://"):
-        return url.replace("postgres://", "postgresql+asyncpg://", 1)
-    raise ValueError(f"Unsupported database url scheme: {url}")
+def alembic_config_for(*, database_url: str) -> Config:
+    """Return the repository Alembic config pointed at ``database_url``."""
+    config = Config(str(Path("alembic.ini")))
+    config.set_main_option("sqlalchemy.url", database_url)
+    return config
 
 
-@pytest.fixture(scope="module")
-def postgres_container() -> Iterator[PostgresContainer]:
-    """Starts a Postgres container for the test module."""
+def _run_in_thread[T](make_coroutine: Callable[[], Awaitable[T]]) -> T:
+    """Run a coroutine to completion in its own thread, so a running loop never conflicts."""
+    results: list[T] = []
+    failures: list[BaseException] = []
+
+    async def run() -> T:
+        return await make_coroutine()
+
+    def target() -> None:
+        try:
+            results.append(asyncio.run(run()))
+        except BaseException as exc:  # noqa: BLE001 - re-raised in the calling thread
+            failures.append(exc)
+
+    thread = threading.Thread(target=target)
+    thread.start()
+    thread.join()
+    if failures:
+        raise failures[0]
+    return results[0]
+
+
+class PostgresServer:
+    """The worker's Postgres container plus the admin operations on its databases."""
+
+    def __init__(self, container: PostgresContainer) -> None:
+        self._container = container
+        base = make_url(container.get_connection_url(driver="asyncpg"))
+        self._base = base
+        self._admin_url = base.set(database=_ADMIN_DATABASE).render_as_string(hide_password=False)
+
+    def database(self, name: str) -> PooledDatabase:
+        url = self._base.set(database=name).render_as_string(hide_password=False)
+        return PooledDatabase(name=name, url=url)
+
+    def create_database(self, *, template: str | None = None) -> PooledDatabase:
+        """Create an empty database, or a copy of ``template`` (which must have no sessions)."""
+        name = f"t_{uuid4().hex}"
+        statement = f'CREATE DATABASE "{name}"'
+        if template is not None:
+            statement += f' TEMPLATE "{template}"'
+        self._execute_admin(statement)
+        return self.database(name)
+
+    def create_named_database(self, name: str) -> PooledDatabase:
+        self._execute_admin(f'CREATE DATABASE "{name}"')
+        return self.database(name)
+
+    def drop_database(self, database: PooledDatabase) -> None:
+        self._execute_admin(f'DROP DATABASE IF EXISTS "{database.name}" WITH (FORCE)')
+
+    def _execute_admin(self, statement: str) -> None:
+        async def run() -> None:
+            engine = create_async_engine(self._admin_url, isolation_level="AUTOCOMMIT")
+            try:
+                async with engine.connect() as connection:
+                    await connection.execute(text(statement))
+            finally:
+                await engine.dispose()
+
+        _run_in_thread(run)
+
+
+@pytest.fixture(scope="session")
+def postgres_server() -> Iterator[PostgresServer]:
+    """Start one Postgres server for this worker, the first time a test needs a database."""
     _ensure_docker_daemon_available()
-    with PostgresContainer("postgres:16") as postgres:
-        yield postgres
+    with PostgresContainer("postgres:16") as container:
+        yield PostgresServer(container)
+
+
+@pytest.fixture(scope="session")
+def migrated_template(postgres_server: PostgresServer) -> PooledDatabase:
+    """Migrate one database to head for this worker; later databases copy it.
+
+    Alembic runs with a null pool and closes its connections, so the template has no open sessions
+    when ``CREATE DATABASE ... TEMPLATE`` copies it.
+    """
+    template = postgres_server.create_named_database(_TEMPLATE_DATABASE)
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setenv("DATABASE_URL", template.url)
+        migrate_to_head(alembic_config_for(database_url=template.url), template.url)
+    return template
 
 
 @pytest.fixture(scope="module")
-def database_url(postgres_container: PostgresContainer) -> str:
-    return _to_async_database_url(postgres_container.get_connection_url())
+def empty_module_database(postgres_server: PostgresServer) -> Iterator[PooledDatabase]:
+    """Yield a fresh, empty database for the test module."""
+    database = postgres_server.create_database()
+    yield database
+    postgres_server.drop_database(database)
+
+
+@pytest.fixture
+def fresh_database(postgres_server: PostgresServer) -> Iterator[PooledDatabase]:
+    """Yield a fresh, empty database for one test."""
+    database = postgres_server.create_database()
+    yield database
+    postgres_server.drop_database(database)
+
+
+@pytest.fixture(scope="module")
+def database_url(
+    postgres_server: PostgresServer, migrated_template: PooledDatabase
+) -> Iterator[str]:
+    """Yield the URL of this module's own migrated copy of the template database."""
+    database = postgres_server.create_database(template=migrated_template.name)
+    yield database.url
+    postgres_server.drop_database(database)
 
 
 @pytest.fixture(scope="module")
 def alembic_config(database_url: str) -> Config:
-    config = Config(str(Path("alembic.ini")))
-    config.set_main_option("sqlalchemy.url", database_url)
-    return config
+    return alembic_config_for(database_url=database_url)
 
 
 def _run_alembic_upgrade_in_thread(alembic_config: Config) -> None:
@@ -113,9 +219,11 @@ def migrate_to_head(alembic_config: Config, database_url: str) -> str:
 
 
 @pytest.fixture(scope="module")
-def migrated_db(alembic_config: Config, database_url: str) -> str:
-    """Runs alembic upgrade head once for the module."""
-    return migrate_to_head(alembic_config, database_url)
+def migrated_db(database_url: str) -> Iterator[str]:
+    """Yield the module's migrated database URL, with ``DATABASE_URL`` pointing at it."""
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setenv("DATABASE_URL", database_url)
+        yield database_url
 
 
 @pytest.fixture(scope="module")

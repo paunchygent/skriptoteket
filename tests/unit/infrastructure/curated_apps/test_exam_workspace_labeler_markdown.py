@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from functools import cache
 from pathlib import Path
 from xml.etree import ElementTree as ET
 from zipfile import ZipFile
@@ -11,6 +12,7 @@ import pytest
 
 from scripts.item_type_labeler_live.__main__ import corpus_items
 from scripts.item_type_labeler_live.records import SavedGrouping
+from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (  # noqa: E501
     PythonDocxExamChunker,
 )
@@ -18,6 +20,7 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace
     PythonDocxLabelerMarkdown,
 )
 from skriptoteket.infrastructure.llm.openai.decisions_item_labeler import render_items
+from tests.fixtures.docx_corpus import corpus_chunks, corpus_docx
 
 pytestmark = pytest.mark.unit
 FIXTURES = Path("tests/fixtures/exam_conversion")
@@ -30,6 +33,13 @@ MARKUP = ("<i>", "</i>", "**")
 # Structure the renderer may put before a paragraph's own text: indentation, a Word
 # bullet and a heading level. Everything after it must be the source text itself.
 PREFIX = re.compile(r" *(?:- )?(?:#{1,6} )?")
+
+
+@cache
+def _projected(path: Path) -> tuple[DocxChunk, ...]:
+    """The labeler's chunks for one document, projected once per process (frozen chunks)."""
+    content = corpus_docx(path.stem, path.parent)
+    return PythonDocxLabelerMarkdown().source(content=content).chunks
 
 
 def _source(path: Path) -> tuple[dict[str, ET.Element], ET.Element]:
@@ -81,9 +91,9 @@ def _check_block(markdown: str, element: ET.Element) -> None:
 def test_every_block_is_its_xml_text_plus_structure_and_converter_input_is_unchanged(
     path: Path,
 ) -> None:
-    content = path.read_bytes()
-    before = PythonDocxExamChunker().chunk(content=content)
-    projected = PythonDocxLabelerMarkdown().source(content=content).chunks
+    content = corpus_docx(path.stem, path.parent)
+    before = corpus_chunks(path.stem, path.parent)
+    projected = _projected(path)
     blocks, _ = _source(path)
 
     assert [(c.anchor, c.kind, c.text) for c in projected] == [
@@ -96,9 +106,8 @@ def test_every_block_is_its_xml_text_plus_structure_and_converter_input_is_uncha
 
 @pytest.mark.parametrize("path", DOCUMENTS, ids=lambda p: p.stem)
 def test_italic_runs_reach_the_labeler_as_the_converter_marks_them(path: Path) -> None:
-    content = path.read_bytes()
-    converter = {c.anchor: c.marked_text for c in PythonDocxExamChunker().chunk(content=content)}
-    for chunk in PythonDocxLabelerMarkdown().source(content=content).chunks:
+    converter = {c.anchor: c.marked_text for c in corpus_chunks(path.stem, path.parent)}
+    for chunk in _projected(path):
         for italic in re.findall(r"<i>(.*?)</i>", converter[chunk.anchor], flags=re.S):
             assert f"<i>{italic}</i>" in chunk.marked_text.replace("**", ""), chunk.anchor
 
@@ -107,9 +116,7 @@ def test_italic_runs_reach_the_labeler_as_the_converter_marks_them(path: Path) -
 def test_word_bullets_keep_marker_and_indentation_from_numbering_xml(stem: str) -> None:
     path = CORPUS / f"{stem}.docx"
     blocks, numbering = _source(path)
-    chunks = {
-        c.anchor: c for c in PythonDocxLabelerMarkdown().source(content=path.read_bytes()).chunks
-    }
+    chunks = {c.anchor: c for c in _projected(path)}
     listed = []
     for anchor, block in blocks.items():
         properties = block.find("w:pPr/w:numPr", NS)

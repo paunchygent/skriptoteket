@@ -50,6 +50,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_text_lines
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.protocols.docx_conversion_progress import ConversionUpdate
+from tests.unit.application.curated_apps.handlers.docx_conversion_cache import (
+    ConversionCache,
+    conversion_cache_fixture,  # noqa: F401 - registers the `conversions` fixture
+)
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
     RecordingProgress,
     ReplayProvider,
@@ -207,8 +211,8 @@ def _assert_batch_reviewed(
 
 
 @pytest.fixture
-async def baseline() -> DocxConversionOutcome:
-    return await _convert()
+async def baseline(conversions: ConversionCache) -> DocxConversionOutcome:
+    return (await conversions.converted(_EXAM)).outcome
 
 
 async def test_a_review_reply_with_an_empty_body_reviews_only_its_question(baseline):

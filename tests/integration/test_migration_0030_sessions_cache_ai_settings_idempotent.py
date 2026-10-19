@@ -1,35 +1,14 @@
 from __future__ import annotations
 
 import asyncio
-from pathlib import Path
 from uuid import UUID, uuid4
 
 import pytest
 from alembic import command
-from alembic.config import Config
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
-from testcontainers.postgres import PostgresContainer
 
-
-def _to_async_database_url(url: str) -> str:
-    if url.startswith("postgresql+asyncpg://"):
-        return url
-    if url.startswith("postgresql+"):
-        prefix, rest = url.split("://", 1)
-        base = prefix.split("+", 1)[0]
-        return f"{base}+asyncpg://{rest}"
-    if url.startswith("postgresql://"):
-        return url.replace("postgresql://", "postgresql+asyncpg://", 1)
-    if url.startswith("postgres://"):
-        return url.replace("postgres://", "postgresql+asyncpg://", 1)
-    raise ValueError(f"Unsupported database url scheme: {url}")
-
-
-def _alembic_config(*, database_url: str) -> Config:
-    config = Config(str(Path("alembic.ini")))
-    config.set_main_option("sqlalchemy.url", database_url)
-    return config
+from tests.fixtures.database_fixtures import PooledDatabase, alembic_config_for
 
 
 async def _seed_user_profile_and_session(*, engine: AsyncEngine) -> tuple[UUID, UUID]:
@@ -138,27 +117,25 @@ async def _seed_user_profile_and_session_from_url(*, database_url: str) -> tuple
 @pytest.mark.docker
 def test_migration_0030_sessions_cache_ai_settings_is_idempotent(
     monkeypatch: pytest.MonkeyPatch,
+    fresh_database: PooledDatabase,
 ) -> None:
-    with PostgresContainer("postgres:16") as postgres:
-        database_url = _to_async_database_url(postgres.get_connection_url())
-        monkeypatch.setenv("DATABASE_URL", database_url)
+    database_url = fresh_database.url
+    monkeypatch.setenv("DATABASE_URL", database_url)
 
-        alembic_cfg = _alembic_config(database_url=database_url)
+    alembic_cfg = alembic_config_for(database_url=database_url)
 
-        command.upgrade(alembic_cfg, "0029_profile_inline_completion_provider")
-        user_id, _ = asyncio.run(_seed_user_profile_and_session_from_url(database_url=database_url))
+    command.upgrade(alembic_cfg, "0029_profile_inline_completion_provider")
+    user_id, _ = asyncio.run(_seed_user_profile_and_session_from_url(database_url=database_url))
 
-        command.upgrade(alembic_cfg, "head")
-        command.upgrade(alembic_cfg, "head")
+    command.upgrade(alembic_cfg, "head")
+    command.upgrade(alembic_cfg, "head")
 
-        asyncio.run(_assert_migration_0030_effects(database_url=database_url, user_id=user_id))
+    asyncio.run(_assert_migration_0030_effects(database_url=database_url, user_id=user_id))
 
-        command.downgrade(alembic_cfg, "base")
+    command.downgrade(alembic_cfg, "base")
 
-        command.upgrade(alembic_cfg, "0029_profile_inline_completion_provider")
-        user_id_2, _ = asyncio.run(
-            _seed_user_profile_and_session_from_url(database_url=database_url)
-        )
-        command.upgrade(alembic_cfg, "head")
+    command.upgrade(alembic_cfg, "0029_profile_inline_completion_provider")
+    user_id_2, _ = asyncio.run(_seed_user_profile_and_session_from_url(database_url=database_url))
+    command.upgrade(alembic_cfg, "head")
 
-        asyncio.run(_assert_migration_0030_effects(database_url=database_url, user_id=user_id_2))
+    asyncio.run(_assert_migration_0030_effects(database_url=database_url, user_id=user_id_2))
