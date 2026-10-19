@@ -1,12 +1,11 @@
 ---
 type: task
 id: TASK-SKRIPT-39-04-19
-title: A listed own chunk that section placement restores is not reported as missing;
-  the left-out mark is decided on the placed item by source identity
+title: A listed own chunk that section placement restores is not reported as missing; the left-out mark is decided on the placed item by source identity
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-19'
 status: ready
 closeout_review:
@@ -14,9 +13,7 @@ closeout_review:
   status: not_started
 task_kind: story
 acceptance_criteria:
-- A converted item whose listed own chunk section placement restores into its body
-  or its parent shows no missing-text reason for that chunk; genuinely missing chunks
-  and every unrelated review reason stay; the ten replays are identical
+  - A converted item whose listed own chunk section placement restores into its body or its parent shows no missing-text reason for that chunk; genuinely missing chunks and every unrelated review reason stay; the ten replays are identical
 story: ST-SKRIPT-39-04
 backlog_document_profile: contract-derived
 ---
@@ -39,8 +36,7 @@ Root cause (R1). The two steps never share the chunk's identity:
   cannot know that placement will restore it.
 - `with_left_out_mark` (`docx_own_instructions.py`) writes the mark as rendered Swedish
   reason text on `item.review` and sets `review_required`. No anchor survives the mark.
-- `place_section_instructions` (`docx_section_instructions.py`, the `_inserted(...
-  _unshown(...))` call near line 421) inserts the carried heading with its anchor into
+- `place_section_instructions` (`docx_section_instructions.py`, the `_inserted(... _unshown(...))` call near line 421) inserts the carried heading with its anchor into
   the aligned item (`aligned.shows("body:0001")` is then true). It never reads the
   review reasons, and it cannot tie the mark's text to the anchor it just placed.
 
@@ -120,14 +116,14 @@ chunks and its parent's source anchors.
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| D1  | `AlignedItem` carries `left_out: frozenset[str]`, the anchors of the own chunks the item leaves out (default empty). `with_left_out` keeps its examined set, its `left_out_chunks` call and its `own_chunks_left_out` admission event, and adds the missing anchors to `left_out`; it no longer calls `with_left_out_mark`. `return_misplaced_own_chunks` adds its missing anchors to `left_out` the same way and records its event as today. |
-| D2  | A left-out anchor is shown when the placed item's body paragraph or entry is aligned to it (`left_out_chunks`), or when it is a source anchor of the instruction of a parent that holds the item (D42). Nothing else counts: no wording, no chunk kind, no other item. |
+| ID  | Decided contract term                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| D1  | `AlignedItem` carries `left_out: frozenset[str]`, the anchors of the own chunks the item leaves out (default empty). `with_left_out` keeps its examined set, its `left_out_chunks` call and its `own_chunks_left_out` admission event, and adds the missing anchors to `left_out`; it no longer calls `with_left_out_mark`. `return_misplaced_own_chunks` adds its missing anchors to `left_out` the same way and records its event as today.                                                          |
+| D2  | A left-out anchor is shown when the placed item's body paragraph or entry is aligned to it (`left_out_chunks`), or when it is a source anchor of the instruction of a parent that holds the item (D42). Nothing else counts: no wording, no chunk kind, no other item.                                                                                                                                                                                                                                 |
 | D3  | One domain function in `docx_own_instructions.py` renders the mark: from the item's `left_out` anchors, in source order, minus the shown ones (D2), it calls `with_left_out_mark` when any remain and returns the item unchanged otherwise. `place_section_instructions` calls it once per item at the end of its item loop, with that item's parent source anchors. The mark is computed from the anchor set on every pass and never written back into `accepted`, so the D42 loop cannot mark twice. |
-| D4  | Tests that assert `LEFT_OUT_REASON` on `state.accepted` items assert it on `state.result()` items, plus the admission event; the admission-time item carries `left_out` and no left-out reason. |
-| D5  | `review_required` and its reasons change only through D3. Every other review reason, and every reason order outside the left-out reason, is unchanged. |
-| D6  | The ten replays at the head equal the base `ffbfa953` dump: no replay item carries the left-out mark today. |
-| D7  | The retry path renders the mark on its single admitted item with no parent anchors (D3), before `_with_owned_contexts` and `_review_reason` read it, because retry has no section placement. |
-| D8  | Owning story ST-SKRIPT-39-04; review 09d50acc M2 is the defect authority; 39-04-15 D1 and D2 stand as written, and this task implements D2's "an instruction that section placement places" at placement. |
-| D9  | User answer 2026-10-19 (given in the Hemma session, relayed by the orchestrator `944b5a5a`): a listed chunk that placement restores keeps no review reason for the recovery. The stale "Källtext som saknas" mark disappears, the `own_chunks_left_out` admission event stays as the record, and unrelated reasons stay. No recovery note, so no new wording. The user accepted this design with that answer; status `ready` under `agent-planning:user-closure-gate`. |
+| D4  | Tests that assert `LEFT_OUT_REASON` on `state.accepted` items assert it on `state.result()` items, plus the admission event; the admission-time item carries `left_out` and no left-out reason.                                                                                                                                                                                                                                                                                                        |
+| D5  | `review_required` and its reasons change only through D3. Every other review reason, and every reason order outside the left-out reason, is unchanged.                                                                                                                                                                                                                                                                                                                                                 |
+| D6  | The ten replays at the head equal the base `ffbfa953` dump: no replay item carries the left-out mark today.                                                                                                                                                                                                                                                                                                                                                                                            |
+| D7  | The retry path renders the mark on its single admitted item with no parent anchors (D3), before `_with_owned_contexts` and `_review_reason` read it, because retry has no section placement.                                                                                                                                                                                                                                                                                                           |
+| D8  | Owning story ST-SKRIPT-39-04; review 09d50acc M2 is the defect authority; 39-04-15 D1 and D2 stand as written, and this task implements D2's "an instruction that section placement places" at placement.                                                                                                                                                                                                                                                                                              |
+| D9  | User answer 2026-10-19 (given in the Hemma session, relayed by the orchestrator `944b5a5a`): a listed chunk that placement restores keeps no review reason for the recovery. The stale "Källtext som saknas" mark disappears, the `own_chunks_left_out` admission event stays as the record, and unrelated reasons stay. No recovery note, so no new wording. The user accepted this design with that answer; status `ready` under `agent-planning:user-closure-gate`.                                 |
