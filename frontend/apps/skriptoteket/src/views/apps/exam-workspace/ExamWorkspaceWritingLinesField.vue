@@ -14,10 +14,14 @@
  *   opens a confirmation with only "Stäng". The tool is disabled only while the
  *   whole field is locked, never because the counts already match.
  *
- *   Escape, "Avbryt", "Stäng" and a pointer press outside the tool and popover
- *   close the popover and return focus to the tool. Opening moves focus to the
- *   primary action. The popover is absolutely positioned under the tool, so
- *   opening it and changing the count never move or resize anything in the row.
+ *   While the popover is open: Escape anywhere in the document, "Avbryt",
+ *   "Stäng" and a pointer press on a non-focusable surface outside the tool and
+ *   popover close it and return focus to the tool. A pointer press on a
+ *   focusable outside control closes it and that control keeps the focus, and
+ *   Tab to a control outside closes it without moving focus. Opening moves focus
+ *   to the primary action. The popover is absolutely positioned under the
+ *   controls container and sized by the answer block's container, so opening it
+ *   and changing the count never move or resize anything in the row.
  *
  * Relationships:
  *   - Rendered by `ExamWorkspaceQuestionEditor` for a free-text item that
@@ -90,12 +94,55 @@ function step(delta: -1 | 1): void {
   emit("update", props.lines + delta);
 }
 
+/** Controls that take focus on a press; a press on one of these leaves the focus with it. */
+const FOCUSABLE_SELECTOR = 'input, textarea, select, button, a[href], [tabindex], [contenteditable="true"]';
+
+let refocusTimer: number | undefined;
+
+function insideTool(target: EventTarget | null): boolean {
+  return target instanceof Node && applyWrap.value?.contains(target) === true;
+}
+
 function onPointerDown(event: Event): void {
   const target = event.target;
-  if (target instanceof Node && applyWrap.value?.contains(target)) {
+  if (insideTool(target)) {
+    return;
+  }
+  const keepsFocus = target instanceof Element && target.closest(FOCUSABLE_SELECTOR) !== null;
+  close(false);
+  if (!keepsFocus) {
+    // The browser moves focus to the body when the press finishes, after this handler, so return it afterwards.
+    refocusTimer = window.setTimeout(() => tool.value?.focus(), 0);
+  }
+}
+
+function onFocusOut(event: FocusEvent): void {
+  const next = event.relatedTarget;
+  if (next === null || insideTool(next)) {
     return;
   }
   close(false);
+}
+
+function onDocumentKeydown(event: KeyboardEvent): void {
+  if (event.key !== "Escape" || event.isComposing || !open.value) {
+    return;
+  }
+  event.preventDefault();
+  event.stopPropagation();
+  close(true);
+}
+
+function addOpenListeners(): void {
+  document.addEventListener("pointerdown", onPointerDown, true);
+  document.addEventListener("keydown", onDocumentKeydown, true);
+  document.addEventListener("focusout", onFocusOut, true);
+}
+
+function removeOpenListeners(): void {
+  document.removeEventListener("pointerdown", onPointerDown, true);
+  document.removeEventListener("keydown", onDocumentKeydown, true);
+  document.removeEventListener("focusout", onFocusOut, true);
 }
 
 function close(returnFocus: boolean): void {
@@ -118,21 +165,12 @@ function confirm(): void {
   close(true);
 }
 
-function onKeydown(event: KeyboardEvent): void {
-  if (event.key !== "Escape" || !open.value || event.isComposing) {
-    return;
-  }
-  event.preventDefault();
-  event.stopPropagation();
-  close(true);
-}
-
 watch(open, async (isOpen) => {
   if (!isOpen) {
-    document.removeEventListener("pointerdown", onPointerDown, true);
+    removeOpenListeners();
     return;
   }
-  document.addEventListener("pointerdown", onPointerDown, true);
+  addOpenListeners();
   await nextTick();
   primary.value?.focus();
 });
@@ -148,7 +186,8 @@ watch(
 );
 
 onBeforeUnmount(() => {
-  document.removeEventListener("pointerdown", onPointerDown, true);
+  removeOpenListeners();
+  window.clearTimeout(refocusTimer);
 });
 </script>
 
@@ -166,129 +205,132 @@ onBeforeUnmount(() => {
       Skrivyta
     </div>
     <div class="xw-answer-controls xw-lines">
-      <button
-        type="button"
-        class="xw-tool"
-        :disabled="disabled || atMin"
-        :title="minReason"
-        :aria-describedby="lockReasonId"
-        aria-label="Färre rader"
-        data-test="exam-workspace-writing-lines-minus"
-        @click="step(-1)"
-      >
-        <UiGlyph
-          meaning="decrement"
-          :size="16"
-        />
-      </button>
-      <span
-        class="xw-lines__value"
-        data-test="exam-workspace-writing-lines-count"
-      >{{ label }}</span>
-      <button
-        type="button"
-        class="xw-tool"
-        :disabled="disabled || atMax"
-        :title="maxReason"
-        :aria-describedby="lockReasonId"
-        aria-label="Fler rader"
-        data-test="exam-workspace-writing-lines-plus"
-        @click="step(1)"
-      >
-        <UiGlyph
-          meaning="add"
-          :size="16"
-        />
-      </button>
-      <span
-        class="xw-toolsep"
-        aria-hidden="true"
-      />
-      <span
-        ref="applyWrap"
-        class="xw-lines__apply"
-        @keydown="onKeydown"
-      >
+      <span class="xw-lines__stepper">
         <button
-          ref="tool"
           type="button"
-          class="xw-tool xw-tool--word"
-          :disabled="disabled"
-          aria-haspopup="dialog"
-          :aria-expanded="open"
-          :aria-controls="open ? popoverId : undefined"
+          class="xw-tool"
+          :disabled="disabled || atMin"
+          :title="minReason"
           :aria-describedby="lockReasonId"
-          title="Samma skrivyta för alla fritextfrågor"
-          data-test="exam-workspace-writing-lines-apply-all"
-          @click="toggle"
+          aria-label="Färre rader"
+          data-test="exam-workspace-writing-lines-minus"
+          @click="step(-1)"
         >
           <UiGlyph
-            meaning="copy"
+            meaning="decrement"
             :size="16"
           />
-          Alla fritextfrågor
         </button>
-        <div
-          v-if="open"
-          :id="popoverId"
-          class="xw-pop"
-          role="dialog"
-          aria-label="Samma skrivyta för alla fritextfrågor"
-          data-test="exam-workspace-writing-lines-popover"
+        <span
+          class="xw-lines__value"
+          data-test="exam-workspace-writing-lines-count"
+        >{{ label }}</span>
+        <button
+          type="button"
+          class="xw-tool"
+          :disabled="disabled || atMax"
+          :title="maxReason"
+          :aria-describedby="lockReasonId"
+          aria-label="Fler rader"
+          data-test="exam-workspace-writing-lines-plus"
+          @click="step(1)"
         >
-          <template v-if="matched">
-            <div class="xw-pop__ok">
-              <UiGlyph
-                meaning="completed"
-                :size="18"
-              />
-              <div>
-                <h3>Samma skrivyta för alla fritextfrågor</h3>
-                <p v-if="freeText.length === 1">
-                  Det här är provets enda fritextfråga.
-                </p>
-                <p v-else>
-                  Alla {{ freeText.length }} fritextfrågor har redan {{ rowsLabel(lines) }}.
-                </p>
+          <UiGlyph
+            meaning="add"
+            :size="16"
+          />
+        </button>
+      </span>
+      <span class="xw-lines__tail">
+        <span
+          class="xw-toolsep"
+          aria-hidden="true"
+        />
+        <span
+          ref="applyWrap"
+          class="xw-lines__apply"
+        >
+          <button
+            ref="tool"
+            type="button"
+            class="xw-tool xw-tool--word"
+            :disabled="disabled"
+            aria-haspopup="dialog"
+            :aria-expanded="open"
+            :aria-controls="open ? popoverId : undefined"
+            :aria-describedby="lockReasonId"
+            title="Samma skrivyta för alla fritextfrågor"
+            data-test="exam-workspace-writing-lines-apply-all"
+            @click="toggle"
+          >
+            <UiGlyph
+              meaning="copy"
+              :size="16"
+            />
+            Alla fritextfrågor
+          </button>
+          <div
+            v-if="open"
+            :id="popoverId"
+            class="xw-pop"
+            role="dialog"
+            aria-label="Samma skrivyta för alla fritextfrågor"
+            data-test="exam-workspace-writing-lines-popover"
+          >
+            <template v-if="matched">
+              <div class="xw-pop__ok">
+                <UiGlyph
+                  meaning="completed"
+                  :size="18"
+                />
+                <div>
+                  <h3>Samma skrivyta för alla fritextfrågor</h3>
+                  <p v-if="freeText.length === 1">
+                    Det här är provets enda fritextfråga.
+                  </p>
+                  <p v-else>
+                    Alla {{ freeText.length }} fritextfrågor har redan {{ rowsLabel(lines) }}.
+                  </p>
+                </div>
               </div>
-            </div>
-            <div class="xw-pop__acts">
-              <button
-                ref="primary"
-                type="button"
-                class="xw-btn xw-btn--ghost"
-                data-test="exam-workspace-writing-lines-close"
-                @click="close(true)"
-              >
-                Stäng
-              </button>
-            </div>
-          </template>
-          <template v-else>
-            <h3>Samma skrivyta för alla fritextfrågor</h3>
-            <p>Alla {{ freeText.length }} fritextfrågor får {{ rowsLabel(lines) }}.</p>
-            <p>{{ swedishList(otherLabels) }} har i dag en annan skrivyta.</p>
-            <div class="xw-pop__acts">
-              <button
-                type="button"
-                class="xw-btn xw-btn--ghost"
-                data-test="exam-workspace-writing-lines-cancel"
-                @click="close(true)"
-              >
-                Avbryt
-              </button>
-              <button
-                ref="primary"
-                type="button"
-                class="xw-btn xw-btn--primary"
-                data-test="exam-workspace-writing-lines-apply-confirm"
-                @click="confirm"
-              >
-                Använd {{ rowsLabel(lines) }}
-              </button>
-            </div>
-          </template>
-        </div>
+              <div class="xw-pop__acts">
+                <button
+                  ref="primary"
+                  type="button"
+                  class="xw-btn xw-btn--ghost"
+                  data-test="exam-workspace-writing-lines-close"
+                  @click="close(true)"
+                >
+                  Stäng
+                </button>
+              </div>
+            </template>
+            <template v-else>
+              <h3>Samma skrivyta för alla fritextfrågor</h3>
+              <p>Alla {{ freeText.length }} fritextfrågor får {{ rowsLabel(lines) }}.</p>
+              <p>{{ swedishList(otherLabels) }} har i dag en annan skrivyta.</p>
+              <div class="xw-pop__acts">
+                <button
+                  type="button"
+                  class="xw-btn xw-btn--ghost"
+                  data-test="exam-workspace-writing-lines-cancel"
+                  @click="close(true)"
+                >
+                  Avbryt
+                </button>
+                <button
+                  ref="primary"
+                  type="button"
+                  class="xw-btn xw-btn--primary"
+                  data-test="exam-workspace-writing-lines-apply-confirm"
+                  @click="confirm"
+                >
+                  Använd {{ rowsLabel(lines) }}
+                </button>
+              </div>
+            </template>
+          </div>
+        </span>
       </span>
     </div>
   </div>

@@ -52,7 +52,7 @@ Non-goals: no change to the document format, the stepper bounds (1-40), the crit
 
 ### Resume here
 
-2026-10-20: `in_progress` (user start 2026-10-20) on `codex/task-skript-40-04-18` (worktree `Skriptoteket-task-skript-40-04-18`, from main 25b7352e), retained root `01a15680-e9d9-7d82-83b6-4797464fa46e`. Units 1-2 integrated at 08c3023c and unit 3 at 0f3eaa4e, with a lead fix: a single free-text question reads "Det här är provets enda fritextfråga." Proof: vitest over `src/views/apps/exam-workspace` and `src/views/apps/ExamWorkspace*`, 244 files passed; fe-type-check and fe-lint clean. Next: independent ruthless-reviewer db7cc9e8 (Pi) on 25b7352e..0f3eaa4e, then the staging walk.
+2026-10-20: `in_progress` (user start 2026-10-20) on `codex/task-skript-40-04-18` (worktree `Skriptoteket-task-skript-40-04-18`, from main 25b7352e), retained root `01a15680-e9d9-7d82-83b6-4797464fa46e`. Units 1-2 integrated at 08c3023c and unit 3 at 0f3eaa4e, with a lead fix: a single free-text question reads "Det här är provets enda fritextfråga." Proof: vitest over `src/views/apps/exam-workspace` and `src/views/apps/ExamWorkspace*`, 244 files passed; fe-type-check and fe-lint clean. Review db7cc9e8 (Pi) on 25b7352e..0f3eaa4e: `changes_requested`, three medium findings (F1 narrow editor grid, F2 popover bounds, F3 close paths and focus), all admitted for repair on focused proof (record: root `evidence/reviews/task-skript-40-04-18-review-0f3eaa4e.md`). Repaired by R1-R3 (junior): a container query on the answer block stacks the rows below 36rem, the popover is bounded by that container, and the close paths follow L2; admitted on focused proof without rereview (exam-workspace vitest 244 files passed, fe-type-check, fe-lint and fe-build rc 0). Next: merge to main, then the staging walk, including a 400 px editor.
 
 ### Map
 
@@ -84,3 +84,4 @@ Paths under `frontend/apps/skriptoteket/src/views/apps/exam-workspace/`.
 | Q3  | Skrivyta and Bedömningskriterier sit in one bordered answer block with a label column, as in the mockup (user 2026-10-20). |
 | Q4  | The approved mockup becomes this implementation task (user 2026-10-20). |
 | L1  | Lead decision 2026-10-20: the criteria row has no "X av Y p" line, because the question's points field already shows the criteria sum (the points always match), and the design system asks for the least text. |
+| L2  | Lead decision 2026-10-20 (review F3): Escape anywhere closes the popover and returns focus to the tool; Tab out of it closes it and leaves focus where the teacher moved; an outside click returns focus to the tool unless it lands on another control, which keeps the focus. |

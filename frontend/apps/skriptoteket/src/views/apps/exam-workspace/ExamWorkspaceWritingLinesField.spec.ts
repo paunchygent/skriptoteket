@@ -9,13 +9,17 @@
  *   count and which differ, and confirming emits the current count and closes.
  *   When all already match, it confirms that with only "Stäng". The tool stays
  *   enabled when the counts match and is inert only while the field is
- *   disabled. Escape, Avbryt, Stäng and a pointer press outside close the
- *   popover and return focus to the tool. A control that cannot act states
- *   why: the stepped bound or the lock notice it points at.
+ *   disabled. Escape anywhere in the document, Avbryt, Stäng and a pointer
+ *   press on a non-focusable outside surface close the popover and return
+ *   focus to the tool; a pointer press on a focusable outside control closes
+ *   it and that control keeps the focus; Tab to a control outside closes it
+ *   without moving focus. A control that cannot act states why: the stepped
+ *   bound or the lock notice it points at.
  */
 
 import { mount, type VueWrapper } from "@vue/test-utils";
 import { afterEach, describe, expect, it } from "vitest";
+import { nextTick } from "vue";
 
 import ExamWorkspaceWritingLinesField from "./ExamWorkspaceWritingLinesField.vue";
 import {
@@ -120,6 +124,7 @@ describe("ExamWorkspaceWritingLinesField", () => {
     expect(count.element.previousElementSibling).toBe(wrapper.get(MINUS).element);
     expect(count.element.nextElementSibling).toBe(wrapper.get(PLUS).element);
     expect(wrapper.get(MINUS).classes()).toContain("xw-tool");
+    expect(count.element.parentElement?.classList.contains("xw-lines__stepper")).toBe(true);
     expect(wrapper.get(APPLY_ALL).classes()).toEqual(["xw-tool", "xw-tool--word"]);
     expect(wrapper.get(APPLY_ALL).text()).toBe("Alla fritextfrågor");
     expect(wrapper.find(".xw-toolsep").exists()).toBe(true);
@@ -210,18 +215,143 @@ describe("ExamWorkspaceWritingLinesField", () => {
     expect(document.activeElement).toBe(wrapper.get(APPLY_ALL).element);
   });
 
-  it("closes on a pointer press outside and leaves focus where the press put it", async () => {
+  it("closes on Escape pressed outside the popover and returns focus to the tool", async () => {
+    const outside = document.createElement("div");
+    document.body.append(outside);
+    try {
+      const wrapper = mountField(8);
+      await wrapper.get(APPLY_ALL).trigger("click");
+      await nextTick();
+      // Focus left the popover without landing on another control (relatedTarget null), so the popover stays open.
+      (wrapper.get(CONFIRM).element as HTMLButtonElement).blur();
+      await nextTick();
+      expect(wrapper.find(POPOVER).exists()).toBe(true);
+      outside.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+      await nextTick();
+
+      expect(wrapper.find(POPOVER).exists()).toBe(false);
+      expect(wrapper.emitted("applyToAll")).toBeUndefined();
+      expect(document.activeElement).toBe(wrapper.get(APPLY_ALL).element);
+    } finally {
+      outside.remove();
+    }
+  });
+
+  it("ignores other keys and Escape during composition while open", async () => {
+    const wrapper = mountField(8);
+    await wrapper.get(APPLY_ALL).trigger("click");
+    await nextTick();
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, isComposing: true }));
+    await nextTick();
+
+    expect(wrapper.find(POPOVER).exists()).toBe(true);
+  });
+
+  it("closes without moving focus when Tab leaves the popover for a field outside", async () => {
+    const outside = document.createElement("input");
+    document.body.append(outside);
+    try {
+      const wrapper = mountField(8);
+      await wrapper.get(APPLY_ALL).trigger("click");
+      await nextTick();
+      const confirmButton = wrapper.get(CONFIRM).element as HTMLButtonElement;
+      expect(document.activeElement).toBe(confirmButton);
+      outside.focus();
+      await nextTick();
+
+      expect(wrapper.find(POPOVER).exists()).toBe(false);
+      expect(wrapper.emitted("applyToAll")).toBeUndefined();
+      expect(document.activeElement).toBe(outside);
+    } finally {
+      outside.remove();
+    }
+  });
+
+  it("stays open when focus moves between the tool and the popover", async () => {
+    const wrapper = mountField(8);
+    await wrapper.get(APPLY_ALL).trigger("click");
+    await nextTick();
+    (wrapper.get(APPLY_ALL).element as HTMLButtonElement).focus();
+    (wrapper.get(CANCEL).element as HTMLButtonElement).focus();
+    await nextTick();
+
+    expect(wrapper.find(POPOVER).exists()).toBe(true);
+  });
+
+  it("closes on a pointer press on a non-focusable outside surface and returns focus to the tool", async () => {
+    const surface = document.createElement("div");
+    document.body.append(surface);
+    try {
+      const wrapper = mountField(8);
+      await wrapper.get(APPLY_ALL).trigger("click");
+      await nextTick();
+      surface.dispatchEvent(new Event("pointerdown", { bubbles: true }));
+      await nextTick();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(wrapper.find(POPOVER).exists()).toBe(false);
+      expect(wrapper.emitted("applyToAll")).toBeUndefined();
+      expect(document.activeElement).toBe(wrapper.get(APPLY_ALL).element);
+    } finally {
+      surface.remove();
+    }
+  });
+
+  it("closes on a pointer press on a focusable outside control and leaves focus there", async () => {
+    const outside = document.createElement("input");
+    document.body.append(outside);
+    try {
+      const wrapper = mountField(8);
+      await wrapper.get(APPLY_ALL).trigger("click");
+      await nextTick();
+      outside.dispatchEvent(new Event("pointerdown", { bubbles: true }));
+      outside.focus();
+      await nextTick();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(wrapper.find(POPOVER).exists()).toBe(false);
+      expect(wrapper.emitted("applyToAll")).toBeUndefined();
+      expect(document.activeElement).toBe(outside);
+    } finally {
+      outside.remove();
+    }
+  });
+
+  it("removes its open-lifetime listeners on unmount", async () => {
     const outside = document.createElement("button");
     document.body.append(outside);
     try {
       const wrapper = mountField(8);
       await wrapper.get(APPLY_ALL).trigger("click");
-      outside.focus();
-      outside.dispatchEvent(new Event("pointerdown", { bubbles: true }));
-      await wrapper.vm.$nextTick();
+      await nextTick();
+      wrapper.unmount();
+      mounted.splice(mounted.indexOf(wrapper), 1);
 
-      expect(wrapper.find(POPOVER).exists()).toBe(false);
-      expect(wrapper.emitted("applyToAll")).toBeUndefined();
+      outside.focus();
+      document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+      outside.dispatchEvent(new Event("pointerdown", { bubbles: true }));
+      await nextTick();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      expect(document.activeElement).toBe(outside);
+    } finally {
+      outside.remove();
+    }
+  });
+
+  it("removes its open-lifetime listeners on close", async () => {
+    const outside = document.createElement("button");
+    document.body.append(outside);
+    try {
+      const wrapper = mountField(8);
+      await wrapper.get(APPLY_ALL).trigger("click");
+      await wrapper.get(CANCEL).trigger("click");
+      await nextTick();
+      outside.focus();
+      document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+      await nextTick();
+
       expect(document.activeElement).toBe(outside);
     } finally {
       outside.remove();
