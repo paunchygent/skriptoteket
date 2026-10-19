@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "50f8851b593feac32b6ae4a049c2ffdde8b4ca93ef3570a5b43e4cb82f0f741f",
+  "source_set_digest": "a6ab84a597a4a9a76d7ea7e313758c61ef8f2e370c7af3adc4646b32a72ddb5d",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5195,6 +5195,29 @@
         "decided_at": "2026-10-19",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "Pi ruthless-reviewer 7ac4ca2f reviewed 5d70a359: no high findings, one medium (two test guards skipped every fallback item, so a review_complete item with a leaked label passed). Repaired at a8cd8181 (guards skip only review_required fallback-imported items, D9 amended, a test built on the reviewer probe failed before the fix) and admitted by the parent on focused proof without rereview: 120 focused tests, lint, typecheck and docs-validate pass; domain suite 4262 passed at 48852ace; replays change only svenska_2 item_001 in both variants, as decided in G1/G2 (user 2026-10-19). Merged to main at a8cd8181 on 2026-10-19."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-04-19",
+      "type": "task",
+      "title": "A listed own chunk that section placement restores is not reported as missing; the left-out mark is decided on the placed item by source identity",
+      "path": "docs/backlog/tasks/task-skript-39-04-19-a-listed-own-chunk-that-section-placement-restores-is-not-reported-as-missing-the-left-out-mark-is-decided-on-the-placed-item-by-source-identity.md",
+      "status": "done",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-19",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer c54c4ae4 (Hemma): no functional defects; medium M1 and M2 (file splits) repaired at 33ee7ad2 and admitted on focused proof (544 passed, lint and typecheck clean). Domain suite 5480 passed; its 15 test_spa_fallback failures match main (no built SPA in the worktree). Ten replays equal the base; the Del A probe ends review_complete with no reasons. origin/main 06985163 merged at 915be481; merged to main 2026-10-19. Validation names no staging walk."
       }
     },
     {

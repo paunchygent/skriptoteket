@@ -25,6 +25,7 @@ import { ref } from "vue";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { NativeExamDocument } from "../../../api/examWorkspace";
+import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceHistory } from "./useExamWorkspaceHistory";
 import {
   conflict,
@@ -122,6 +123,7 @@ describe("undo history across Spara (F1)", () => {
         onConflict: vi.fn(async () => undefined),
         savedRevision: () => saved.revision,
         serverDocument: ref(saved),
+        shared: serverExamWorkspaceStore.shared,
         workspaceDocument,
       }),
     );
@@ -167,6 +169,7 @@ describe("undo history across Spara (F1)", () => {
         onConflict: vi.fn(async () => undefined),
         savedRevision: () => saved.revision,
         serverDocument: ref(saved),
+        shared: serverExamWorkspaceStore.shared,
         workspaceDocument,
       }),
     );

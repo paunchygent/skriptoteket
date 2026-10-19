@@ -31,3 +31,13 @@ class GetExamCourseCatalogHandler:
             courses=courses,
             registered_course_keys=registered,
         )
+
+
+def exam_course_catalog_without_profile() -> ExamCourseCatalogResponse:
+    """The committed catalog in its default order; a guest has no registered courses."""
+    catalog = load_exam_course_catalog()
+    return ExamCourseCatalogResponse(
+        generated_at=catalog.generated_at,
+        courses=catalog.courses,
+        registered_course_keys=(),
+    )

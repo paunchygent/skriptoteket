@@ -1,0 +1,248 @@
+/**
+ * Guest exam workspace store: QTI start.
+ *
+ * Expected behavior:
+ *   `startFromQti` parses through the public route and stores the document
+ *   as the draft with the response's picture bytes beside it, opening the
+ *   same workspace editor as a blank start. A concurrent tab's newer draft
+ *   is kept like a lost blank start, and a limit hit reports through
+ *   `onLimit` while the error still reaches the caller.
+ */
+
+import { describe, expect, it, vi } from "vitest";
+
+import { ApiError } from "../../../api/client";
+import { publicApiPost } from "../../../api/client";
+import { importPublicExamWorkspaceQti } from "../../../api/publicExamWorkspace";
+import { createGuestExamWorkspaceStore } from "./examWorkspaceGuestStore";
+import { newGuestDraft } from "./examWorkspaceGuestDraft";
+import type { ExamWorkspaceGuestDraftStoragePort } from "./examWorkspaceGuestDraftStorage";
+import {
+  exam,
+  installGuestStoreObjectUrls,
+  pictureExam,
+  setupGuestStore,
+  startBlank,
+} from "./examWorkspaceGuestStore.specSupport";
+
+installGuestStoreObjectUrls();
+
+vi.mock("../../../api/client", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../../api/client")>()),
+  publicApiPost: vi.fn(),
+}));
+
+const publicApiPostMock = vi.mocked(publicApiPost);
+
+/**
+ * Encode bytes the way the producer does: `PublicExamWorkspaceQtiImportResponse`
+ * declares `ser_json_bytes="base64"`, which Pydantic emits in the URL-safe
+ * alphabet (`-`/`_`, padded).
+ */
+function toProducerBase64(bytes: Uint8Array): string {
+  const binary = Array.from(bytes, (byte) => String.fromCharCode(byte)).join("");
+  return btoa(binary).replaceAll("+", "-").replaceAll("/", "_");
+}
+
+/**
+ * jsdom's Blob has no `arrayBuffer` and its Response cannot consume a Blob;
+ * read the restored bytes through FileReader like the production fallback.
+ */
+async function blobBytes(blob: Blob): Promise<Uint8Array> {
+  return await new Promise<Uint8Array>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (reader.result instanceof ArrayBuffer) {
+        resolve(new Uint8Array(reader.result));
+        return;
+      }
+      reject(new Error("The FileReader did not return an ArrayBuffer."));
+    };
+    reader.onerror = () =>
+      reject(reader.error ?? new Error("Could not read the blob bytes."));
+    reader.readAsArrayBuffer(blob);
+  });
+}
+
+function zipFile(): File {
+  return new File(["qti"], "Prov_HT25.zip", { type: "application/zip" });
+}
+
+function pngBlob(): Blob {
+  return new Blob(["png-bytes"], { type: "image/png" });
+}
+
+describe("examWorkspaceGuestStore QTI start", () => {
+  it("stores the parsed document as the draft with the response's picture bytes", async () => {
+    const context = setupGuestStore();
+    const document = pictureExam("QTI-prov");
+    const png = pngBlob();
+    context.mocks.importQti.mockResolvedValue({ assets: { asset_001: png }, document, notes: [] });
+
+    const lineageId = await context.store.startFromQti(zipFile(), null);
+
+    expect(context.mocks.importQti).toHaveBeenCalledTimes(1);
+    const [file, courseKey] = context.mocks.importQti.mock.calls[0]!;
+    expect(file.name).toBe("Prov_HT25.zip");
+    expect(courseKey).toBeNull();
+    expect(lineageId).toBe(document.document_id);
+    const stored = await context.storage.load();
+    expect(stored?.draft.saved_document).toEqual(document);
+    expect(stored?.assets["asset_001"]).toBe(png);
+    expect(stored?.assets["asset_001"]?.size).toBe(png.size);
+    expect(stored?.assets["asset_001"]?.type).toBe("image/png");
+    expect(context.store.store.shared.examWorkspaceAssetUrl(lineageId, "asset_001")).toBe(
+      "blob:picture",
+    );
+    const opened = await context.store.store.shared.getExamWorkspaceDocument(lineageId);
+    expect(opened.document.title).toBe("QTI-prov");
+  });
+
+  it("creates the draft with the exact picture bytes from a URL-safe producer response", async () => {
+    const context = setupGuestStore();
+    const document = pictureExam("QTI-bild");
+    const original = new Uint8Array([137, 80, 78, 71, 0xfb, 0xff, 0x00, 0x01]);
+    const encoded = toProducerBase64(original);
+    expect(encoded).toMatch(/[-_]/);
+    publicApiPostMock.mockResolvedValueOnce({
+      assets_by_id: { asset_001: encoded },
+      document,
+      notes: [],
+    });
+    context.mocks.importQti.mockImplementation((file, courseKey) =>
+      importPublicExamWorkspaceQti(file, courseKey),
+    );
+
+    const lineageId = await context.store.startFromQti(zipFile(), null);
+
+    expect(lineageId).toBe(document.document_id);
+    const stored = await context.storage.load();
+    const blob = stored?.assets["asset_001"];
+    expect(blob).toBeInstanceOf(Blob);
+    expect(blob?.type).toBe("image/png");
+    expect(await blobBytes(blob!)).toEqual(original);
+  });
+
+  it("passes the chosen course key to the public route", async () => {
+    const context = setupGuestStore();
+    const document = exam("QTI-prov");
+    context.mocks.importQti.mockResolvedValue({ assets: {}, document, notes: [] });
+
+    await context.store.startFromQti(zipFile(), "SVESVE02");
+
+    expect(context.mocks.importQti).toHaveBeenCalledWith(expect.any(File), "SVESVE02");
+  });
+
+  it("keeps the QTI import notes on the draft and returns them on open", async () => {
+    const context = setupGuestStore();
+    const document = exam("QTI-prov");
+    context.mocks.importQti.mockResolvedValue({
+      assets: {},
+      document,
+      notes: ["Fråga 3 hoppades över."],
+    });
+
+    const lineageId = await context.store.startFromQti(zipFile(), null);
+
+    const stored = await context.storage.load();
+    expect(stored?.draft.notes).toEqual(["Fråga 3 hoppades över."]);
+    const opened = await context.store.store.shared.getExamWorkspaceDocument(lineageId);
+    expect(opened.notes).toEqual(["Fråga 3 hoppades över."]);
+  });
+
+  it("opens a blank start without notes", async () => {
+    const context = setupGuestStore();
+
+    const lineageId = await startBlank(context);
+
+    const opened = await context.store.store.shared.getExamWorkspaceDocument(lineageId);
+    expect(opened.notes).toEqual([]);
+  });
+
+  it("reports the conflict and keeps the newer draft when a concurrent tab wins the slot", async () => {
+    const context = setupGuestStore();
+    context.mocks.importQti.mockResolvedValue({
+      assets: {},
+      document: exam("Förlorare"),
+      notes: [],
+    });
+    const losing: ExamWorkspaceGuestDraftStoragePort = {
+      clearIf: (expected) => context.storage.clearIf(expected),
+      load: () => context.storage.load(),
+      replaceIf: vi.fn(async () => false),
+    };
+    const loser = createGuestExamWorkspaceStore({
+      api: context.api,
+      ids: context.ids,
+      onLimit: context.onLimit,
+      storage: losing,
+    });
+
+    const error = await loser.startFromQti(zipFile(), null).catch((caught: unknown) => caught);
+
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error).toMatchObject({ code: "CONFLICT", status: 409 });
+    expect(losing.replaceIf).toHaveBeenCalledTimes(1);
+    expect(await context.storage.load()).toBeNull();
+  });
+
+  it("reports the conflict and keeps the newer draft when another tab writes during the import", async () => {
+    const context = setupGuestStore();
+    const old = newGuestDraft(
+      { ...exam("Draft A"), document_id: "11111111-1111-4111-8111-111111111111" },
+      context.ids,
+      ["note A"],
+    );
+    expect(await context.storage.replaceIf(null, { assets: {}, draft: old })).toBe(true);
+    let releaseImport!: (value: { assets: Record<string, Blob>; document: ReturnType<typeof exam>; notes: string[] }) => void;
+    const pending = new Promise<{ assets: Record<string, Blob>; document: ReturnType<typeof exam>; notes: string[] }>(
+      (resolve) => {
+        releaseImport = resolve;
+      },
+    );
+    context.mocks.importQti.mockReturnValueOnce(pending);
+    const importing = context.store.startFromQti(zipFile(), null);
+    await vi.waitFor(() => expect(context.mocks.importQti).toHaveBeenCalledOnce());
+
+    // Another tab replaces the slot while the public parse is in flight.
+    const newer = newGuestDraft(
+      { ...exam("Newer other-tab draft"), document_id: "22222222-2222-4222-8222-222222222222" },
+      context.ids,
+      ["newer note"],
+    );
+    expect(await context.storage.replaceIf(old.cursor, { assets: {}, draft: newer })).toBe(true);
+    releaseImport({
+      assets: {},
+      document: { ...exam("Stale import completion"), document_id: "33333333-3333-4333-8333-333333333333" },
+      notes: [],
+    });
+    const error = await importing.catch((caught: unknown) => caught);
+
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error).toMatchObject({ code: "CONFLICT", status: 409 });
+    const stored = await context.storage.load();
+    expect(stored?.draft.cursor).toBe(newer.cursor);
+    expect(stored?.draft.saved_document.title).toBe("Newer other-tab draft");
+    expect(stored?.draft.notes).toEqual(["newer note"]);
+  });
+
+  it("reports the limit once and stores nothing when the public route refuses", async () => {
+    const context = setupGuestStore();
+    context.mocks.importQti.mockRejectedValue(
+      new ApiError({
+        code: "TOO_MANY_REQUESTS",
+        message: "Gränsen för gäster är nådd. Logga in för att fortsätta.",
+        status: 429,
+      }),
+    );
+
+    const error = await context.store
+      .startFromQti(zipFile(), null)
+      .catch((caught: unknown) => caught);
+
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error).toMatchObject({ status: 429 });
+    expect(context.onLimit).toHaveBeenCalledTimes(1);
+    expect(await context.storage.load()).toBeNull();
+  });
+});

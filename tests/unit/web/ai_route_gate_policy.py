@@ -46,6 +46,9 @@ from skriptoteket.protocols.exam_workspace import (
 from skriptoteket.protocols.exam_workspace_change_type import (
     ChangeExamWorkspaceItemTypeHandlerProtocol,
 )
+from skriptoteket.protocols.exam_workspace_guest_drafts import (
+    ImportGuestExamDraftHandlerProtocol,
+)
 from skriptoteket.protocols.exam_workspace_history import (
     StoreExamWorkspaceUndoStepHandlerProtocol,
 )
@@ -119,6 +122,9 @@ NON_AI_JOB_REPOSITORY_USERS: dict[type, str] = {
     GetExamWorkspaceDocumentHandlerProtocol: "reopens the saved document; no LLM call",
     ImportExamWorkspaceDigiExamDocumentHandlerProtocol: (
         "enqueues DIGIEXAM_IMPORT, whose lane makes no LLM call"
+    ),
+    ImportGuestExamDraftHandlerProtocol: (
+        "creates the exam from the posted guest draft; no LLM call"
     ),
     SaveExamWorkspaceDocumentHandlerProtocol: (
         "saves, copies and reads document history; no LLM call"

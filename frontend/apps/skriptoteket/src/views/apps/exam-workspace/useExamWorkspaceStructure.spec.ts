@@ -26,6 +26,7 @@ import { useToastStore } from "../../../stores/toast";
 import { newTeacherItem } from "./examWorkspaceItemEdits";
 import { examWorkspaceItemReadiness } from "./examWorkspaceItemReadiness";
 import { buildParentDocument } from "./examWorkspaceParentDocument.specSupport";
+import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { buildSavedExamSummary } from "./useExamWorkspaceDocument.specSupport";
 import { useExamWorkspaceStructure } from "./useExamWorkspaceStructure";
 
@@ -108,6 +109,7 @@ function setup(selected: string | null = null) {
       selectParent,
       selectedItemId,
       selectedParentId,
+      shared: serverExamWorkspaceStore.shared,
       workspaceDocument,
     }),
   )!;

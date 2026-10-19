@@ -8,7 +8,7 @@
  *   recover from a stale-save conflict by reloading the newest revision.
  *
  * Relationships:
- *   - Transport through `api/examWorkspace.ts`.
+ *   - Transport through the exam workspace store.
  *   - Installs each response through the document's `applyResponse`; reads go
  *     through its `beginDocumentRead` so renames stay reconciled.
  *   - Conversion merges come from `useExamWorkspaceConversion` (`syncAfterConflict`);
@@ -21,11 +21,6 @@ import type { ComputedRef, Ref } from "vue";
 
 import { isApiError } from "../../../api/client";
 import type { ApiError } from "../../../api/client";
-import {
-  copyExamWorkspaceDocument,
-  getExamWorkspaceDocument,
-  saveExamWorkspaceDocument as requestSaveExamWorkspaceDocument,
-} from "../../../api/examWorkspace";
 import type {
   ExamWorkspaceDocumentResponse,
   ExamWorkspaceDocumentSummary,
@@ -33,6 +28,7 @@ import type {
 } from "../../../api/examWorkspace";
 import { useToast } from "../../../composables/useToast";
 import { examWorkspaceSaveRefusalCopy } from "./examWorkspaceItemSaveRules";
+import type { ExamWorkspaceStore } from "./examWorkspaceStore";
 import type { useExamWorkspaceConversion } from "./useExamWorkspaceConversion";
 import type { useExamWorkspaceGapKeying } from "./useExamWorkspaceGapKeying";
 import type { useExamWorkspaceSaveArrivals } from "./useExamWorkspaceSaveArrivals";
@@ -56,6 +52,8 @@ type SaveState = {
   syncAfterConflict: ReturnType<typeof useExamWorkspaceConversion>["syncAfterConflict"];
   arrivals: ReturnType<typeof useExamWorkspaceSaveArrivals>;
   keying: ReturnType<typeof useExamWorkspaceGapKeying>;
+  /** The store the save reads and writes run through. */
+  store: ExamWorkspaceStore;
 };
 
 function nameInUse(error: unknown): boolean {
@@ -91,7 +89,7 @@ export function useExamWorkspaceSave(state: SaveState) {
   async function reloadAfterConflict(lineageId: string): Promise<boolean> {
     try {
       const reconcile = state.beginDocumentRead();
-      const response = reconcile(await getExamWorkspaceDocument(lineageId));
+      const response = reconcile(await state.store.shared.getExamWorkspaceDocument(lineageId));
       state.applyResponse(response);
       keying.invalidateCopy();
       return true;
@@ -129,7 +127,7 @@ export function useExamWorkspaceSave(state: SaveState) {
     const openedKeying = keying.beginHold();
     operationBusy.value = true;
     try {
-      const response = await requestSaveExamWorkspaceDocument(currentSummary.lineage_id, {
+      const response = await state.store.shared.saveExamWorkspaceDocument(currentSummary.lineage_id, {
         document: payload,
         expectedRevision,
         positionStepId,
@@ -182,12 +180,13 @@ export function useExamWorkspaceSave(state: SaveState) {
   async function saveDocumentAs(name: string): Promise<ExamWorkspaceSaveAsOutcome> {
     const current = workspaceDocument.value;
     const currentSummary = summary.value;
-    if (!current || !currentSummary || state.isBusy.value) {
+    const teacher = state.store.teacher;
+    if (!current || !currentSummary || !teacher || state.isBusy.value) {
       return "failed";
     }
     operationBusy.value = true;
     try {
-      const response = await copyExamWorkspaceDocument(currentSummary.lineage_id, name, current);
+      const response = await teacher.copyExamWorkspaceDocument(currentSummary.lineage_id, name, current);
       state.applyResponse(response);
       keying.invalidateCopy();
       conflictNotice.value = null;

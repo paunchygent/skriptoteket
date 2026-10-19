@@ -7,7 +7,9 @@ section, goes back to its question's item. A converted item no body paragraph of
 to the chunk holds it under the check mark that shows left-out chunks as printed (D41, D4); a
 review item already prints every own chunk of its question. The rest of the instruction keeps the
 source text of its other chunks. A chunk the grouping marks as governing belongs to its
-section parent (D40) and is never sent back.
+section parent (D40) and is never sent back. The check mark itself is decided later, on
+the placed item, for the recorded anchors neither its body nor its parent shows
+(TASK-SKRIPT-39-04-19).
 """
 
 from collections.abc import Iterable, Mapping, Sequence
@@ -77,6 +79,30 @@ def with_left_out_mark(item: NativeExamItem, chunks: Sequence[DocxChunk]) -> Nat
     return item.model_copy(update={"review": review})
 
 
+def with_placed_left_out_mark(
+    aligned: AlignedItem, chunks: Sequence[DocxChunk], placed: frozenset[str]
+) -> AlignedItem:
+    """The item under the check mark for the own chunks it leaves out and still misses.
+
+    Only the anchors of ``aligned.left_out`` that no placed parent carries still count, in
+    source order; the alignment, never the reply's wording, says what the item shows. A
+    source item keeps its review as it stands (TASK-SKRIPT-39-04-19 D2).
+    """
+    if aligned.item.review.parse_origin is not NativeParseOrigin.LLM_PARSED:
+        return aligned
+    missing = left_out_chunks(
+        aligned,
+        [
+            chunk
+            for chunk in chunks
+            if chunk.anchor in aligned.left_out and chunk.anchor not in placed
+        ],
+    )
+    if not missing:
+        return aligned
+    return replace(aligned, item=with_left_out_mark(aligned.item, missing))
+
+
 def _owner(accepted: Accepted, own: frozenset[str]) -> int | None:
     """The converted item holding the question's own chunks, else any item holding them."""
     holding = [k for k, (_, anchors) in enumerate(accepted) if own.intersection(anchors)]
@@ -135,8 +161,10 @@ def return_misplaced_own_chunks(
         if item.review.parse_origin is NativeParseOrigin.LLM_PARSED and (
             missing := left_out_chunks(aligned, [by_anchor[a] for a in ordered])
         ):
-            item = with_left_out_mark(item, missing)
-        updated[k] = (replace(aligned, item=item), (*held, *ordered))
+            aligned = replace(
+                aligned, left_out=aligned.left_out | {chunk.anchor for chunk in missing}
+            )
+        updated[k] = (aligned, (*held, *ordered))
         events.append(
             DocxBuildEvent(
                 stage="assembly",

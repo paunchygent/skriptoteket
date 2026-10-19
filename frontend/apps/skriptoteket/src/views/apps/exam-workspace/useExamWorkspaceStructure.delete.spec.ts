@@ -21,6 +21,7 @@ import type {
 } from "../../../api/examWorkspace";
 import { useToastStore } from "../../../stores/toast";
 import { newTeacherItem } from "./examWorkspaceItemEdits";
+import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceStructure } from "./useExamWorkspaceStructure";
 import { buildSavedExamSummary } from "./useExamWorkspaceDocument.specSupport";
 
@@ -143,6 +144,7 @@ function setup(initial: NativeExamDocument) {
       selectParent: vi.fn(),
       selectedItemId,
       selectedParentId,
+      shared: serverExamWorkspaceStore.shared,
       workspaceDocument,
     }),
   )!;

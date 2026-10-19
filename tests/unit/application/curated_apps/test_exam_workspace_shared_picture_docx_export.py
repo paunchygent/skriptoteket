@@ -15,6 +15,9 @@ from docx import Document
 from skriptoteket.application.curated_apps.exam_workspace import (
     ExamWorkspaceExportTarget,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_export_renderer import (
+    ExamWorkspaceExportRenderer,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_exports import (
     ExportExamWorkspaceDocumentHandler,
 )
@@ -94,10 +97,12 @@ async def test_docx_export_embeds_shared_instruction_pictures_from_stored_payloa
         vault_files=env.vault_files,
         codec=env.codec,
         store=env.store,
-        qti_writer=ExamNetQtiPackageWriter(),
-        pdf_renderer=WeasyPrintExamNetPdfRenderer(),
-        docx_writer=ExamWorkspaceDocxWriter(),
-        print_renderer=WeasyPrintExamPrintRenderer(),
+        renderer=ExamWorkspaceExportRenderer(
+            qti_writer=ExamNetQtiPackageWriter(),
+            pdf_renderer=WeasyPrintExamNetPdfRenderer(),
+            docx_writer=ExamWorkspaceDocxWriter(),
+            print_renderer=WeasyPrintExamPrintRenderer(),
+        ),
     )
 
     result = await handler.handle(

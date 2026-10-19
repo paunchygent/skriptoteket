@@ -24,9 +24,12 @@ import { UiGlyph } from "../../../components/ui";
 import { AI_ADMIN_ONLY_NOTE, useAiAccess } from "../../../composables/useAiAccess";
 import ExamCourseCombobox from "./ExamCourseCombobox.vue";
 import { examWorkspaceOpenGroups } from "./examWorkspaceOpenGroups";
+import { GUEST_IMPORT_SIGN_IN } from "./examWorkspaceGuestCopy";
+import { useExamWorkspaceSignIn } from "./examWorkspaceSignIn";
 import { examWorkspaceDocumentLabel, examWorkspaceSavedAtLabel } from "./examWorkspaceRows";
 import { examWorkspaceSameNameCounts } from "./examWorkspaceSavedDocuments";
 import { useExamCourseCatalog } from "./useExamCourseCatalog";
+import { useInjectedExamWorkspaceStore } from "./examWorkspaceStore";
 
 const props = defineProps<{
   documents: ExamWorkspaceDocumentSummary[];
@@ -54,9 +57,14 @@ const emit = defineEmits<{
   retryConversion: [];
 }>();
 
-const { courses, courseByKey, registeredCourseKeys, error: courseCatalogError } = useExamCourseCatalog();
+const store = useInjectedExamWorkspaceStore();
+const requestSignIn = useExamWorkspaceSignIn();
+const { courses, courseByKey, registeredCourseKeys, error: courseCatalogError } = useExamCourseCatalog(store.shared);
 const { canUseAi } = useAiAccess();
 const aiAdminOnlyNote = AI_ADMIN_ONLY_NOTE;
+/** Guest import stays visible and asks for sign-in; signed-in Word import follows the admin gate. */
+const isGuest = computed(() => store.teacher === null);
+const showWordImport = computed(() => isGuest.value || canUseAi.value);
 const courseKey = ref<string | null>(null);
 const dragOver = ref(false);
 const fileInput = ref<HTMLInputElement | null>(null);
@@ -68,22 +76,53 @@ const groups = computed(() =>
     registeredCourseKeys.value,
     (key) => courseByKey(key)?.name ?? null,
   ),
-);
-const sameName = computed(() => examWorkspaceSameNameCounts(props.documents));
+);const sameName = computed(() => examWorkspaceSameNameCounts(props.documents));
 const openBlocked = computed(() => props.isBusy || props.isDirty);
+
+/** A guest may start from a QTI .zip only; DigiExam (.dxe) and Word (.docx) stay signed-in. */
+function isGuestImportFile(file: File): boolean {
+  return file.name.toLowerCase().endsWith(".zip");
+}
+
+function handlePickFile(): void {
+  fileInput.value?.click();
+}
 
 function handleFileInput(event: Event): void {
   const input = event.target as HTMLInputElement;
   const [file] = Array.from(input.files ?? []);
   if (file) {
-    emit("selectFile", file, courseKey.value);
+    if (isGuest.value && !isGuestImportFile(file)) {
+      requestSignIn(GUEST_IMPORT_SIGN_IN);
+    } else {
+      emit("selectFile", file, courseKey.value);
+    }
   }
   input.value = "";
 }
 
 function handleDrop(event: DragEvent): void {
   dragOver.value = false;
-  emit("dropFiles", Array.from(event.dataTransfer?.files ?? []), courseKey.value);
+  const files = Array.from(event.dataTransfer?.files ?? []);
+  if (isGuest.value) {
+    if (files.length === 0) {
+      return;
+    }
+    if (files.every(isGuestImportFile)) {
+      emit("dropFiles", files, courseKey.value);
+    } else {
+      requestSignIn(GUEST_IMPORT_SIGN_IN);
+    }
+    return;
+  }
+  emit("dropFiles", files, courseKey.value);
+}
+
+async function startBlankExam(): Promise<void> {
+  const guest = store.guest;
+  if (!guest) return;
+  const lineageId = await guest.startBlank();
+  emit("open", lineageId);
 }
 
 function openEntry(entry: ExamWorkspaceDocumentSummary): void {
@@ -99,16 +138,27 @@ function openEntry(entry: ExamWorkspaceDocumentSummary): void {
     data-test="exam-workspace-files-source"
   >
     <h3>Importera prov</h3>
-    <label
-      class="xw-label sect__first"
-      for="exam-workspace-import-course"
-    >Kurs (valfritt)</label>
-    <ExamCourseCombobox
-      v-model="courseKey"
-      input-id="exam-workspace-import-course"
-      :courses="courses"
-      :disabled="importBlocked"
-    />
+    <button
+      v-if="isGuest"
+      type="button"
+      class="xw-btn"
+      data-test="exam-workspace-guest-blank"
+      @click="startBlankExam"
+    >
+      Tomt prov
+    </button>
+    <template v-if="!isGuest">
+      <label
+        class="xw-label sect__first"
+        for="exam-workspace-import-course"
+      >Kurs (valfritt)</label>
+      <ExamCourseCombobox
+        v-model="courseKey"
+        input-id="exam-workspace-import-course"
+        :courses="courses"
+        :disabled="importBlocked"
+      />
+    </template>
     <p
       v-if="courseCatalogError"
       class="xw-errline"
@@ -181,7 +231,7 @@ function openEntry(entry: ExamWorkspaceDocumentSummary): void {
       <b class="drop__title">Provfil</b>
       <span class="drop__formats">
         <span
-          v-if="canUseAi"
+          v-if="showWordImport"
           class="xw-chip"
         >Word .docx</span>
         <span class="xw-chip">DigiExam .dxe</span>
@@ -191,7 +241,7 @@ function openEntry(entry: ExamWorkspaceDocumentSummary): void {
         ref="fileInput"
         class="drop__input"
         type="file"
-        :accept="canUseAi ? '.docx,.dxe,.zip' : '.dxe,.zip'"
+        :accept="showWordImport ? '.docx,.dxe,.zip' : '.dxe,.zip'"
         :disabled="importBlocked"
         tabindex="-1"
         aria-hidden="true"
@@ -203,7 +253,7 @@ function openEntry(entry: ExamWorkspaceDocumentSummary): void {
         class="xw-btn"
         :disabled="importBlocked"
         data-test="exam-workspace-pick-file"
-        @click="fileInput?.click()"
+        @click="handlePickFile"
       >
         <UiGlyph
           meaning="upload"
@@ -212,7 +262,7 @@ function openEntry(entry: ExamWorkspaceDocumentSummary): void {
       </button>
       <small>eller dra hit filen</small>
       <small
-        v-if="!canUseAi"
+        v-if="!showWordImport"
         class="xw-muted"
       >{{ aiAdminOnlyNote }}</small>
     </div>
@@ -239,6 +289,7 @@ function openEntry(entry: ExamWorkspaceDocumentSummary): void {
   </section>
 
   <section
+    v-if="!isGuest"
     class="sect"
     data-test="exam-workspace-saved-documents"
   >

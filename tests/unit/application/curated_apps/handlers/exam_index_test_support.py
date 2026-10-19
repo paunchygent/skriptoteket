@@ -12,6 +12,7 @@ class InMemoryExamIndexRepository:
     def __init__(self, vault_files: InMemoryVaultFileRepository) -> None:
         self.entries: dict[tuple[UUID, UUID], ExamIndexEntry] = {}
         self.vault_files = vault_files
+        self.locks: list[UUID] = []
 
     async def upsert(self, *, entry: ExamIndexEntry) -> None:
         self.entries[entry.owner_user_id, entry.lineage_id] = entry
@@ -37,3 +38,14 @@ class InMemoryExamIndexRepository:
             ),
             None,
         )
+
+    async def lock_owner_titles(self, *, owner_user_id: UUID) -> None:
+        self.locks.append(owner_user_id)
+
+    async def titles_like(self, *, owner_user_id: UUID, base: str) -> set[str]:
+        return {
+            entry.title
+            for entry in self.entries.values()
+            if entry.owner_user_id == owner_user_id
+            and (entry.title == base or entry.title.startswith(f"{base} ("))
+        }

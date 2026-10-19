@@ -3,7 +3,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import Select, select
+from sqlalchemy import Select, or_, select, text
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -68,3 +68,22 @@ class PostgreSQLExamIndexRepository(ExamIndexRepositoryProtocol):
         )
         row = result.mappings().one_or_none()
         return None if row is None else SavedExam.model_validate(row)
+
+    async def lock_owner_titles(self, *, owner_user_id: UUID) -> None:
+        await self._session.execute(
+            text("SELECT pg_advisory_xact_lock(hashtextextended(:lock_key, 0))"),
+            {"lock_key": f"exam-index-titles:{owner_user_id}"},
+        )
+
+    async def titles_like(self, *, owner_user_id: UUID, base: str) -> set[str]:
+        escaped = base.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+        rows = await self._session.execute(
+            select(ExamIndexModel.title).where(
+                ExamIndexModel.owner_user_id == owner_user_id,
+                or_(
+                    ExamIndexModel.title == base,
+                    ExamIndexModel.title.like(f"{escaped} (%", escape="\\"),
+                ),
+            )
+        )
+        return set(rows.scalars().all())

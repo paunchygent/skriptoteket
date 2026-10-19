@@ -143,12 +143,6 @@ def test_answer_key_completion_accepts_configured_provider_credentials() -> None
     assert settings.LLM_ANSWER_KEY_ENABLED is True
 
 
-def test_trusted_proxy_cidrs_parse_as_unique_csv_values() -> None:
-    settings = Settings.model_construct(TRUSTED_PROXY_CIDRS="127.0.0.1/32, 10.0.0.0/8,127.0.0.1/32")
-
-    assert settings.trusted_proxy_cidrs == frozenset({"127.0.0.1/32", "10.0.0.0/8"})
-
-
 def test_docx_conversion_defaults_to_sixteen_families_per_batch_at_low_effort() -> None:
     settings = Settings(_env_file=None)
 

@@ -23,6 +23,7 @@ import { useAuthStore } from "../../stores/auth";
 import { useToastStore } from "../../stores/toast";
 import { createTestRouter, mountWithContext } from "../../test/utils";
 import ExamWorkspaceView from "./ExamWorkspaceView.vue";
+import { serverExamWorkspaceStore } from "./exam-workspace/examWorkspaceStore";
 import { buildSavedExamSummary } from "./exam-workspace/useExamWorkspaceDocument.specSupport";
 import {
   arrangeViewApis,
@@ -99,6 +100,7 @@ async function mountView(role: FrameRole = "admin") {
     auth_provider: "local",
   };
   const wrapper = mountWithContext(ExamWorkspaceView, {
+    props: { store: serverExamWorkspaceStore },
     global: { plugins: [pinia, createTestRouter()] },
   });
   mounted.push(wrapper);

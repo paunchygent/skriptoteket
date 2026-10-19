@@ -20,6 +20,9 @@ from starlette_dishka import setup_dishka
 from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
     GetExamWorkspaceDocumentHandler,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_export_renderer import (
+    ExamWorkspaceExportRenderer,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_exports import (
     ExportExamWorkspaceDocumentHandler,
 )
@@ -93,10 +96,12 @@ async def _client(world: ConversionWorld, actor: User) -> AsyncIterator[httpx.As
                 vault_files=world.vault_files,
                 codec=world.codec,
                 store=world.store,
-                qti_writer=ExamNetQtiPackageWriter(),
-                pdf_renderer=Mock(spec=ExamNetPdfRendererProtocol),
-                docx_writer=Mock(spec=ExamWorkspaceDocxWriterProtocol),
-                print_renderer=Mock(spec=ExamPrintRendererProtocol),
+                renderer=ExamWorkspaceExportRenderer(
+                    qti_writer=ExamNetQtiPackageWriter(),
+                    pdf_renderer=Mock(spec=ExamNetPdfRendererProtocol),
+                    docx_writer=Mock(spec=ExamWorkspaceDocxWriterProtocol),
+                    print_renderer=Mock(spec=ExamPrintRendererProtocol),
+                ),
             ),
         },
     )

@@ -5,15 +5,13 @@ from uuid import uuid4
 import pytest
 from pydantic import JsonValue
 
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import (
-    aligned_native_item,
-    assemble_build_result,
-)
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import assemble_build_result
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedItem,
     ProducedParagraph,
     ProducedSegment,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_item import aligned_native_item
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_schema import docx_build_output_spec
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxChunk,

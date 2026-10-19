@@ -13,6 +13,7 @@ import { afterEach, describe, expect, it } from "vitest";
 
 import type { NativeExamItem, NativeExamItemKind } from "../../../api/examWorkspace";
 import ExamWorkspaceQuestionEditor from "./ExamWorkspaceQuestionEditor.vue";
+import { examWorkspaceProvidersPlugin } from "./examWorkspaceProviders.specSupport";
 import { buildMatchingItem } from "./examWorkspaceMatchingItem.specSupport";
 
 const SUGGESTED = '[data-test="exam-workspace-suggested-type"]';
@@ -33,6 +34,7 @@ const mounted: Array<{ unmount: () => void }> = [];
 function mountEditor(item: NativeExamItem) {
   const wrapper = mount(ExamWorkspaceQuestionEditor, {
     attachTo: document.body,
+    global: { plugins: [examWorkspaceProvidersPlugin()] },
     props: {
       item,
       label: "11",

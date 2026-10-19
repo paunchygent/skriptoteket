@@ -60,6 +60,9 @@ from skriptoteket.infrastructure.db.models.exam_answer_key_enrichment_job import
 from skriptoteket.infrastructure.db.models.exam_answer_key_token_lease import (
     ExamAnswerKeyTokenLeaseModel,
 )
+from skriptoteket.infrastructure.db.models.exam_guest_draft_handoff import (
+    ExamGuestDraftHandoffModel,
+)
 from skriptoteket.infrastructure.db.models.exam_index import ExamIndexModel
 from skriptoteket.infrastructure.db.models.identity_projection import (
     IdentityProjectionEventModel,
@@ -68,6 +71,9 @@ from skriptoteket.infrastructure.db.models.identity_projection import (
 from skriptoteket.infrastructure.db.models.password_reset_token import PasswordResetTokenModel
 from skriptoteket.infrastructure.db.models.public_exam_converter_job import (
     PublicExamConverterJobModel,
+)
+from skriptoteket.infrastructure.db.models.public_request_window import (
+    PublicRequestWindowModel,
 )
 from skriptoteket.infrastructure.db.models.user_favorite import (
     UserFavoriteAppModel,
@@ -88,6 +94,7 @@ __all__ = [
     "ConversionHubTranscriptSpeakerOverlayModel",
     "ExamAnswerKeyEnrichmentJobModel",
     "ExamAnswerKeyTokenLeaseModel",
+    "ExamGuestDraftHandoffModel",
     "GroupingExportCheckpointModel",
     "GroupingExportJobModel",
     "GroupAssignmentModel",
@@ -96,6 +103,7 @@ __all__ = [
     "PlanDraftModel",
     "PasswordResetTokenModel",
     "PublicExamConverterJobModel",
+    "PublicRequestWindowModel",
     "RosterFixedSeatRuleModel",
     "RosterRelationshipRuleModel",
     "RoomTemplateModel",

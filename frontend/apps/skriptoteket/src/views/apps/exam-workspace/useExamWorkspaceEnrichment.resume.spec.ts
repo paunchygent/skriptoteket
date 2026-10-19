@@ -31,6 +31,7 @@ import type {
 import { useAuthStore } from "../../../stores/auth";
 import { useToastStore } from "../../../stores/toast";
 import { buildMatchingItem } from "./examWorkspaceMatchingItem.specSupport";
+import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { buildResponse, currentItem, deferred } from "./useExamWorkspaceDocument.specSupport";
 import { useExamWorkspaceDocument } from "./useExamWorkspaceDocument";
 import {
@@ -123,13 +124,14 @@ afterEach(() => {
 function composeWorkspace() {
   const scope = effectScope();
   const composed = scope.run(() => {
-    const document = useExamWorkspaceDocument();
+    const document = useExamWorkspaceDocument({ store: serverExamWorkspaceStore });
     const enrichment = useExamWorkspaceEnrichment({
       applySuggestions: document.applyArrivingSuggestions,
       document: document.workspaceDocument,
       isOpen: document.isOpen,
       openExam: document.openExam,
       savedRevision: document.savedRevision,
+      teacher: serverExamWorkspaceStore.teacher,
     });
     return { document, enrichment };
   });

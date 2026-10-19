@@ -1,0 +1,166 @@
+/**
+ * Exam workspace guest draft browser storage.
+ *
+ * Expected behavior:
+ *   One current draft round-trips through the port with its picture blobs.
+ *   `replaceIf` stores only when the stored cursor still equals the expected
+ *   one (or when nothing is stored and the expectation is null), so a second
+ *   tab's write reports false instead of silently overwriting the winner.
+ *   `clearIf` deletes only the snapshot it names, so a newer draft survives.
+ *   The factory uses an injected port instead of opening IndexedDB.
+ */
+
+import { describe, expect, it, vi } from "vitest";
+
+import type { NativeExamDocument } from "../../../api/examWorkspace";
+import {
+  newGuestDraft,
+  storeGuestUndoStep,
+  type ExamWorkspaceGuestDraftIdSource,
+} from "./examWorkspaceGuestDraft";
+import { buildParentDocument } from "./examWorkspaceParentDocument.specSupport";
+import {
+  createExamWorkspaceGuestDraftStorage,
+  createInMemoryExamWorkspaceGuestDraftStorage,
+  EXAM_WORKSPACE_GUEST_DRAFT_DB_NAME,
+  EXAM_WORKSPACE_GUEST_DRAFT_DB_VERSION,
+  EXAM_WORKSPACE_GUEST_DRAFT_RECORD_KEY,
+  EXAM_WORKSPACE_GUEST_DRAFT_STORE_NAME,
+  type ExamWorkspaceGuestDraftStoragePort,
+  type StoredGuestDraft,
+} from "./examWorkspaceGuestDraftStorage";
+
+const NOW = "2026-10-18T10:00:00.000Z";
+
+/** Any current-schema document; scenarios override only the title. */
+function exam(title = "Original"): NativeExamDocument {
+  return { ...buildParentDocument(), title };
+}
+
+function createIds(): ExamWorkspaceGuestDraftIdSource {
+  let counter = 0;
+  return {
+    now: () => NOW,
+    uuid: () => {
+      counter += 1;
+      return `10000000-0000-4000-8000-${String(counter).padStart(12, "0")}`;
+    },
+  };
+}
+
+function storedDraft(title = "Original"): StoredGuestDraft {
+  const png = new Blob(["png-bytes"], { type: "image/png" });
+  return {
+    assets: { asset_001: png },
+    draft: newGuestDraft(exam(title), createIds(), []),
+  };
+}
+
+describe("examWorkspaceGuestDraftStorage", () => {
+  it("names its own database, store and single record key", () => {
+    expect(EXAM_WORKSPACE_GUEST_DRAFT_DB_NAME).toBe("skriptoteket_exam_workspace_guest");
+    expect(EXAM_WORKSPACE_GUEST_DRAFT_DB_VERSION).toBe(1);
+    expect(EXAM_WORKSPACE_GUEST_DRAFT_STORE_NAME).toBe("drafts");
+    expect(EXAM_WORKSPACE_GUEST_DRAFT_RECORD_KEY).toBe("current");
+    expect(EXAM_WORKSPACE_GUEST_DRAFT_DB_NAME).not.toBe("skriptoteket_curated_apps");
+  });
+
+  it("round-trips the draft and its picture blobs through replaceIf on an empty slot", async () => {
+    const storage = createInMemoryExamWorkspaceGuestDraftStorage();
+    const stored = storedDraft();
+
+    expect(await storage.replaceIf(null, stored)).toBe(true);
+    const loaded = await storage.load();
+
+    expect(loaded).toEqual(stored);
+    expect(loaded?.draft.cursor).toBe(stored.draft.cursor);
+    expect(loaded?.assets["asset_001"]).toBe(stored.assets["asset_001"]);
+    expect(loaded?.assets["asset_001"]?.size).toBe(9);
+    expect(loaded?.assets["asset_001"]?.type).toBe("image/png");
+  });
+
+  it("refuses a replaceIf whose expected cursor no longer owns the slot", async () => {
+    const storage = createInMemoryExamWorkspaceGuestDraftStorage();
+    const first = storedDraft("Första");
+    const second = storedDraft("Andra");
+    expect(await storage.replaceIf(null, first)).toBe(true);
+
+    expect(await storage.replaceIf(null, second)).toBe(false);
+    expect(await storage.replaceIf("99999999-9999-4999-8999-999999999999", second)).toBe(false);
+
+    expect((await storage.load())?.draft.saved_document.title).toBe("Första");
+  });
+
+  it("replaces the stored draft only for the winning expected cursor", async () => {
+    const storage = createInMemoryExamWorkspaceGuestDraftStorage();
+    const first = storedDraft("Första");
+    expect(await storage.replaceIf(null, first)).toBe(true);
+
+    const ids = createIds();
+    const outcome = storeGuestUndoStep(
+      first.draft,
+      { afterStepId: null, document: exam("Andra"), expectedCursor: first.draft.cursor },
+      ids,
+    );
+    if (outcome.kind !== "ok") {
+      throw new Error(`expected a stored step, got ${outcome.kind}`);
+    }
+    const second: StoredGuestDraft = { assets: {}, draft: outcome.draft };
+
+    expect(await storage.replaceIf(first.draft.cursor, second)).toBe(true);
+    expect((await storage.load())?.draft.saved_document.title).toBe("Första");
+    expect((await storage.load())?.draft.cursor).toBe(outcome.draft.cursor);
+  });
+
+  it("clears only the snapshot clearIf names and keeps a newer draft", async () => {
+    const storage = createInMemoryExamWorkspaceGuestDraftStorage();
+    const stored = storedDraft();
+    expect(await storage.replaceIf(null, stored)).toBe(true);
+
+    expect(await storage.clearIf("99999999-9999-4999-8999-999999999999")).toBe(false);
+    expect(await storage.load()).toEqual(stored);
+
+    expect(await storage.clearIf(stored.draft.cursor)).toBe(true);
+    expect(await storage.load()).toBeNull();
+  });
+
+  it("keeps a newer draft when clearIf still names the old snapshot", async () => {
+    const storage = createInMemoryExamWorkspaceGuestDraftStorage();
+    const old = storedDraft("Gammal");
+    expect(await storage.replaceIf(null, old)).toBe(true);
+
+    const ids = createIds();
+    const outcome = storeGuestUndoStep(
+      old.draft,
+      { afterStepId: null, document: exam("Ny"), expectedCursor: old.draft.cursor },
+      ids,
+    );
+    if (outcome.kind !== "ok") {
+      throw new Error(`expected a stored step, got ${outcome.kind}`);
+    }
+    expect(await storage.replaceIf(old.draft.cursor, { assets: {}, draft: outcome.draft })).toBe(
+      true,
+    );
+
+    expect(await storage.clearIf(old.draft.cursor)).toBe(false);
+    expect((await storage.load())?.draft.cursor).toBe(outcome.draft.cursor);
+  });
+
+  it("uses the injected port instead of opening IndexedDB", async () => {
+    const port: ExamWorkspaceGuestDraftStoragePort = {
+      clearIf: vi.fn(async () => true),
+      load: vi.fn(async () => null),
+      replaceIf: vi.fn(async () => true),
+    };
+    const storage = createExamWorkspaceGuestDraftStorage({ port });
+    const stored = storedDraft();
+
+    expect(await storage.replaceIf(null, stored)).toBe(true);
+    expect(port.replaceIf).toHaveBeenCalledWith(null, stored);
+    expect(await storage.load()).toBeNull();
+    expect(await storage.clearIf(stored.draft.cursor)).toBe(true);
+
+    expect(storage).toBe(port);
+    expect(port.clearIf).toHaveBeenCalledTimes(1);
+  });
+});

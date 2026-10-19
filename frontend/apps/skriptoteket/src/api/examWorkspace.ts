@@ -324,3 +324,36 @@ export async function updateExamListOrdering(ordering: ExamListOrdering): Promis
   const body: Schemas["UpdateExamListOrderingRequest"] = { ordering };
   await apiPatch<unknown>("/api/v1/profile/exam-list-ordering", body);
 }
+
+/**
+ * Save the signed-out browser draft into Mina filer once per handoff key.
+ *
+ * The multipart body carries the `draft_id` idempotency key, the `document`
+ * JSON of the newest edits, the `notes` JSON of the parser's import notes,
+ * and one `asset:<id>` file part per picture the document declares; stored
+ * bytes the document no longer names are never sent. `handoffKey` identifies
+ * one browser snapshot: the caller passes the snapshot's cursor, so the
+ * server claims once per (user, key) and a later handoff of newer edits
+ * imports its own exam.
+ */
+export async function importExamWorkspaceGuestDraft(
+  handoffKey: string,
+  document: NativeExamDocument,
+  assets: Record<string, Blob>,
+  notes: ExamWorkspaceDocumentResponse["notes"],
+): Promise<ExamWorkspaceDocumentResponse> {
+  const form = new FormData();
+  form.append("draft_id", handoffKey);
+  form.append("document", JSON.stringify(document));
+  form.append("notes", JSON.stringify(notes));
+  for (const asset of document.assets) {
+    const blob = assets[asset.asset_id];
+    if (!blob) {
+      throw new Error(
+        `The import request is missing the picture bytes for asset ${asset.asset_id}.`,
+      );
+    }
+    form.append(`asset:${asset.asset_id}`, blob);
+  }
+  return await apiPost<ExamWorkspaceDocumentResponse>(`${ROOT}/guest-drafts`, form);
+}

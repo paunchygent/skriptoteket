@@ -18,6 +18,7 @@ import { afterEach, describe, expect, it } from "vitest";
 
 import type { NativeExamBodyParagraph, NativeExamItem } from "../../../api/examWorkspace";
 import ExamWorkspaceQuestionEditor from "./ExamWorkspaceQuestionEditor.vue";
+import { examWorkspaceProvidersPlugin } from "./examWorkspaceProviders.specSupport";
 import {
   editorBehind,
   selectText,
@@ -39,6 +40,7 @@ afterEach(() => {
 async function mountEditor(item: NativeExamItem, disabled = false): Promise<VueWrapper> {
   mounted = mount(ExamWorkspaceQuestionEditor, {
     attachTo: document.body,
+    global: { plugins: [examWorkspaceProvidersPlugin()] },
     props: {
       item,
       label: "1",

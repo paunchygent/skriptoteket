@@ -96,12 +96,11 @@ def _enforce_rate_limit(
     max_requests: int,
     window_seconds: int,
     registry: CuratedAppRegistryProtocol,
-    settings: Settings,
     clock: ClockProtocol,
     throttle: PublicHelperThrottleProtocol,
 ) -> tuple[str | None, str | None, str | None]:
     app = require_public_curated_app(app_id=APP_ID, registry=registry)
-    client_ip = get_client_ip(request, settings=settings)
+    client_ip = get_client_ip(request)
     user_agent = get_user_agent(request)
     correlation_id_uuid = get_correlation_id(request)
     correlation_id = str(correlation_id_uuid) if correlation_id_uuid is not None else None
@@ -169,7 +168,6 @@ async def run_public_smart_grouping(
         max_requests=settings.PUBLIC_HELPER_SMART_RUN_MAX_REQUESTS,
         window_seconds=settings.PUBLIC_HELPER_SMART_RUN_WINDOW_SECONDS,
         registry=registry,
-        settings=settings,
         clock=clock,
         throttle=throttle,
     )
@@ -243,7 +241,6 @@ async def run_public_smart_seating(
         max_requests=settings.PUBLIC_HELPER_SMART_RUN_MAX_REQUESTS,
         window_seconds=settings.PUBLIC_HELPER_SMART_RUN_WINDOW_SECONDS,
         registry=registry,
-        settings=settings,
         clock=clock,
         throttle=throttle,
     )
