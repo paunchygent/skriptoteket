@@ -3,13 +3,11 @@
  *
  * Domain purpose:
  *   How a gap reads to the teacher: its accepted answers, or "Lucka N" by its
- *   declared position while it has none, and the comma-separated input the
- *   gap popover turns into accepted answers.
+ *   declared position while it has none.
  *
  * Relationships:
  *   - `ExamWorkspaceBodyEditor` draws gaps in the question text from
  *     `gapNumberIn` and `examGapStates`.
- *   - `ExamWorkspaceGapPopover` reads typed answers through `parseAcceptedValues`.
  */
 
 import type { NativeExamGap } from "../../../api/examWorkspace";
@@ -40,12 +38,4 @@ export function examGapStates(gaps: readonly NativeExamGap[]): Record<string, Ex
       return [gap.gap_id, { label, accessibleLabel, empty }];
     }),
   );
-}
-
-/** Comma-separated input → accepted values: split, trim, drop empty. */
-export function parseAcceptedValues(raw: string): string[] {
-  return raw
-    .split(",")
-    .map((value) => value.trim())
-    .filter((value) => value.length > 0);
 }

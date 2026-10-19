@@ -37,6 +37,7 @@ function mountHead(kind: NativeExamItemKind, currentParentId: string | null): Vu
       label: "3",
       moveTargets: TARGETS,
       suggestedKind: null,
+      typeLabel: "Fritext",
       unbuilt: false,
     },
   });
@@ -46,10 +47,10 @@ function mountHead(kind: NativeExamItemKind, currentParentId: string | null): Vu
 
 function clickTest(id: string): void {
   const element = document.querySelector(`[data-test="${id}"]`);
-  if (!element) {
+  if (!(element instanceof HTMLElement)) {
     throw new Error(`missing ${id}`);
   }
-  (element as HTMLElement).click();
+  element.click();
 }
 
 function moveEntries(): HTMLElement[] {

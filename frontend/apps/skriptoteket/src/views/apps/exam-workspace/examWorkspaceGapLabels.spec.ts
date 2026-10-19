@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { examGapStates, gapChipLabel, gapNumberIn, parseAcceptedValues } from "./examWorkspaceGapLabels";
+import { examGapStates, gapChipLabel, gapNumberIn } from "./examWorkspaceGapLabels";
 import { buildGap } from "./examWorkspaceKeyedItems.specSupport";
 
 describe("gapChipLabel", () => {
@@ -26,11 +26,5 @@ describe("examGapStates", () => {
       empty: false,
     });
     expect(gapNumberIn([buildGap("gap_007")], "gap_009")).toBe(0);
-  });
-});
-
-describe("parseAcceptedValues", () => {
-  it("splits on commas, trims and drops empty values", () => {
-    expect(parseAcceptedValues(" a , b,, ")).toEqual(["a", "b"]);
   });
 });

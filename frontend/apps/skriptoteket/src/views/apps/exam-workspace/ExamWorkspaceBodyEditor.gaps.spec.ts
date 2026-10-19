@@ -2,12 +2,13 @@
  * Exam workspace question-text editor, gap popover and chips.
  *
  * Expected behavior:
- *   Activating a gap chip opens an input that commits accepted answers once
- *   on Enter, `change` or leaving the popover, and discards them on Escape.
- *   The popover opens from a click on a gap and from Enter on a selected gap,
- *   anchored below that gap. Chip labels follow the gap's accepted answers in
- *   place and live in a `data-label` attribute, so they are never part of the
- *   text. While
+ *   Activating a gap chip opens one row per accepted answer that commits
+ *   the full list once on `change` or when focus leaves the popover, and
+ *   discards edits on Escape. Enter in a row adds a row below it and never
+ *   closes the popover. The popover opens from a click on a gap and from
+ *   Enter on a selected gap, anchored below that gap. Chip labels follow
+ *   the gap's accepted answers in place and live in a `data-label`
+ *   attribute, so they are never part of the text. While
  *   disabled, nothing is editable and an open popover closes uncommitted. A
  *   partially keyed gap item shows the key hint; a free-text item shows its
  *   note.
@@ -25,6 +26,9 @@ import {
   clickGap,
   gapElement,
   mountEditor,
+  popoverExists,
+  popoverInput,
+  popoverRoot,
   press,
   surface,
   tiptap,
@@ -35,58 +39,79 @@ import {
 async function openGap(wrapper: MountedBodyEditor, gapId: string): Promise<void> {
   clickGap(wrapper, gapId);
   await nextTick();
+  await nextTick();
 }
 
-function valuesInput(wrapper: MountedBodyEditor, gapId: string): HTMLInputElement {
-  return wrapper.get(`[data-test="exam-workspace-gap-values-${gapId}"]`).element as HTMLInputElement;
+function valuesInput(gapId: string) {
+  return popoverInput(gapId);
+}
+
+function valuesInputs(gapId: string): HTMLInputElement[] {
+  return Array.from(
+    document.querySelectorAll<HTMLInputElement>(
+      `[data-test="exam-workspace-gap-values-${gapId}-input"]`,
+    ),
+  );
 }
 
 describe("ExamWorkspaceBodyEditor gap popover and chips", () => {
   it("opens the gap popover from the chip and commits accepted answers on change", async () => {
     const wrapper = await mountEditor();
-    expect(wrapper.find('[data-test="exam-workspace-gap-values-gap_001"]').exists()).toBe(false);
+    expect(popoverExists()).toBe(false);
 
     await openGap(wrapper, "gap_001");
 
-    expect(wrapper.find('[data-test="exam-workspace-gap-popover"]').exists()).toBe(true);
-    const input = wrapper.get('[data-test="exam-workspace-gap-values-gap_001"]');
-    expect((input.element as HTMLInputElement).value).toBe("100");
+    expect(popoverExists()).toBe(true);
+    const input = popoverInput("gap_001");
+    expect(input.element.value).toBe("100");
     expect(document.activeElement).toBe(input.element);
     expect(gapElement(wrapper, "gap_001").getAttribute("aria-expanded")).toBe("true");
 
-    await input.setValue(" 100 , hundra,, ");
-    expect(wrapper.emitted("updateGapValues")).toEqual([["item_001", "gap_001", ["100", "hundra"]]]);
+    await input.setValue("hundra");
+    expect(wrapper.emitted("updateGapValues")).toEqual([["item_001", "gap_001", ["hundra"]]]);
 
     await input.trigger("keydown", { key: "Escape" });
-    expect(wrapper.find('[data-test="exam-workspace-gap-popover"]').exists()).toBe(false);
+    expect(popoverExists()).toBe(false);
     expect(document.activeElement).toBe(surface(wrapper));
     expect(gapElement(wrapper, "gap_001").getAttribute("aria-expanded")).toBe("false");
     wrapper.unmount();
   });
 
-  it("anchors the popover under the gap and keeps it inside the editor at the right edge", async () => {
+  it("teleports the popover to the body and anchors it under the gap", async () => {
     const rects = new Map<Element, Partial<DOMRect>>();
     const spy = vi
       .spyOn(HTMLElement.prototype, "getBoundingClientRect")
-      .mockImplementation(function (this: HTMLElement) {
-        return { left: 0, right: 0, top: 0, bottom: 0, width: 0, height: 0, ...rects.get(this) } as DOMRect;
+      .mockImplementation(function (this: HTMLElement): DOMRect {
+        const stored = rects.get(this);
+        return {
+          left: 0,
+          right: 0,
+          top: 0,
+          bottom: 0,
+          width: 0,
+          height: 0,
+          x: 0,
+          y: 0,
+          ...stored,
+          toJSON: () => ({}),
+        };
       });
     try {
       const wrapper = await mountEditor();
-      rects.set(wrapper.get(".xw-rich__body").element, { left: 100, top: 200, width: 600 });
-      rects.set(gapElement(wrapper, "gap_001"), { left: 180, bottom: 260 });
-      rects.set(gapElement(wrapper, "gap_002"), { left: 650, bottom: 300 });
+      rects.set(gapElement(wrapper, "gap_001"), { left: 180, top: 240, bottom: 260 });
+      rects.set(gapElement(wrapper, "gap_002"), { left: 650, top: 280, bottom: 300 });
 
       await openGap(wrapper, "gap_001");
-      expect(wrapper.get('[data-test="exam-workspace-gap-popover"]').attributes("style")).toContain(
-        "top: 64px; left: 80px;",
-      );
+      // Teleported out of the clipping editor box, held by fixed positioning.
+      expect(popoverRoot().parentElement).toBe(document.body);
+      expect(popoverRoot().closest(".xw-rich")).toBeNull();
+      expect(popoverRoot().classList).toContain("fixed");
+      expect(popoverRoot().classList).toContain("z-30");
+      // jsdom has no layout, so the panel measures 0 px and sits right under the chip.
+      expect(popoverRoot().getAttribute("style")).toContain("top: 264px; left: 180px;");
 
       await openGap(wrapper, "gap_002");
-      // 448 px wide popover: the 550 px offset is clamped to 600 - 448.
-      expect(wrapper.get('[data-test="exam-workspace-gap-popover"]').attributes("style")).toContain(
-        "top: 104px; left: 152px;",
-      );
+      expect(popoverRoot().getAttribute("style")).toContain("top: 304px; left: 650px;");
       expect(gapElement(wrapper, "gap_001").getAttribute("aria-expanded")).toBe("false");
       expect(gapElement(wrapper, "gap_002").getAttribute("aria-expanded")).toBe("true");
       wrapper.unmount();
@@ -95,90 +120,96 @@ describe("ExamWorkspaceBodyEditor gap popover and chips", () => {
     }
   });
 
-  it("commits once on Enter even when the browser fires change as focus returns", async () => {
+  it("adds a row on Enter without closing and commits the full list once on change", async () => {
     const wrapper = await mountEditor();
     await openGap(wrapper, "gap_002");
-    const input = valuesInput(wrapper, "gap_002");
+    const input = valuesInput("gap_002");
 
-    input.value = "0, noll";
-    // Chrome order: Enter closes and focuses the text, which fires `change`
-    // synchronously on the still-attached input before Vue re-renders.
-    input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
-    input.dispatchEvent(new Event("change", { bubbles: true }));
-    input.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+    input.element.value = "noll";
+    await input.trigger("input");
+    // Enter belongs to the row list: a row is added, nothing commits or closes.
+    await input.trigger("keydown", { key: "Enter" });
     await nextTick();
+    expect(valuesInputs("gap_002")).toHaveLength(2);
+    expect(wrapper.emitted("updateGapValues")).toBeUndefined();
+    expect(popoverExists()).toBe(true);
 
-    expect(wrapper.emitted("updateGapValues")).toEqual([["item_001", "gap_002", ["0", "noll"]]]);
-    expect(wrapper.find('[data-test="exam-workspace-gap-popover"]').exists()).toBe(false);
-    expect(document.activeElement).toBe(surface(wrapper));
+    await input.trigger("change");
+    await input.trigger("change");
+    expect(wrapper.emitted("updateGapValues")).toEqual([["item_001", "gap_002", ["noll"]]]);
+    expect(popoverExists()).toBe(true);
     wrapper.unmount();
   });
 
   it("ignores Enter while an IME composition is active", async () => {
     const wrapper = await mountEditor();
     await openGap(wrapper, "gap_001");
-    const input = valuesInput(wrapper, "gap_001");
-    input.value = "hund";
+    const input = valuesInput("gap_001");
+    input.element.value = "hund";
 
-    input.dispatchEvent(
+    input.element.dispatchEvent(
       new KeyboardEvent("keydown", { key: "Enter", bubbles: true, isComposing: true }),
     );
-    input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, keyCode: 229 }));
+    input.element.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, keyCode: 229 }));
     await nextTick();
     expect(wrapper.emitted("updateGapValues")).toBeUndefined();
-    expect(wrapper.find('[data-test="exam-workspace-gap-popover"]').exists()).toBe(true);
+    expect(popoverExists()).toBe(true);
+    expect(valuesInputs("gap_001")).toHaveLength(1);
 
-    input.value = "hundra";
-    input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    input.element.value = "hundra";
+    input.element.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
     await nextTick();
-    expect(wrapper.emitted("updateGapValues")).toEqual([["item_001", "gap_001", ["hundra"]]]);
+    // A real Enter adds a row instead of committing and keeps the popover open.
+    expect(valuesInputs("gap_001")).toHaveLength(2);
+    expect(wrapper.emitted("updateGapValues")).toBeUndefined();
+    expect(popoverExists()).toBe(true);
     wrapper.unmount();
   });
 
   it("gives the popover room for long answers", async () => {
     const wrapper = await mountEditor();
     await openGap(wrapper, "gap_001");
-    const popover = wrapper.get('[data-test="exam-workspace-gap-popover"]');
-    expect(popover.classes()).toContain("w-[min(28rem,100%)]");
-    expect(wrapper.get('[data-test="exam-workspace-gap-values-gap_001"]').classes()).toContain(
-      "w-full",
-    );
+    expect(popoverRoot().classList).toContain("w-[min(28rem,calc(100vw-16px))]");
+    expect(popoverInput("gap_001").classes()).toContain("flex-1");
     wrapper.unmount();
   });
 
   it("commits when focus leaves the popover and discards on Escape", async () => {
     const wrapper = await mountEditor();
     await openGap(wrapper, "gap_001");
-    const input = valuesInput(wrapper, "gap_001");
-    input.value = "hundra";
-    input.dispatchEvent(new FocusEvent("focusout", { bubbles: true, relatedTarget: null }));
+    const input = valuesInput("gap_001");
+    input.element.value = "hundra";
+    await input.trigger("input");
+    input.element.dispatchEvent(new FocusEvent("focusout", { bubbles: true, relatedTarget: null }));
     await nextTick();
     expect(wrapper.emitted("updateGapValues")).toEqual([["item_001", "gap_001", ["hundra"]]]);
-    expect(wrapper.find('[data-test="exam-workspace-gap-popover"]').exists()).toBe(false);
+    expect(popoverExists()).toBe(false);
 
     await openGap(wrapper, "gap_001");
-    const reopened = valuesInput(wrapper, "gap_001");
-    reopened.value = "kasta";
-    reopened.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
-    reopened.dispatchEvent(new Event("change", { bubbles: true }));
-    reopened.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+    const reopened = valuesInput("gap_001");
+    reopened.element.value = "kasta";
+    await reopened.trigger("input");
+    reopened.element.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    reopened.element.dispatchEvent(new Event("change", { bubbles: true }));
+    reopened.element.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
     await nextTick();
     expect(wrapper.emitted("updateGapValues")).toHaveLength(1);
-    expect(wrapper.find('[data-test="exam-workspace-gap-popover"]').exists()).toBe(false);
+    expect(popoverExists()).toBe(false);
     wrapper.unmount();
   });
 
   it("closes an open popover without committing when the editor becomes disabled", async () => {
     const wrapper = await mountEditor();
     await openGap(wrapper, "gap_001");
-    const input = valuesInput(wrapper, "gap_001");
-    input.value = "ändrat";
+    const input = valuesInput("gap_001");
+    input.element.value = "ändrat";
+    await input.trigger("input");
 
     await wrapper.setProps({ disabled: true });
-    input.dispatchEvent(new Event("change", { bubbles: true }));
-    input.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+    input.element.dispatchEvent(new Event("change", { bubbles: true }));
+    input.element.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
 
-    expect(wrapper.find('[data-test="exam-workspace-gap-popover"]').exists()).toBe(false);
+    expect(popoverExists()).toBe(false);
     expect(wrapper.emitted("updateGapValues")).toBeUndefined();
     expect(surface(wrapper).getAttribute("contenteditable")).toBe("false");
     wrapper.unmount();
@@ -194,17 +225,17 @@ describe("ExamWorkspaceBodyEditor gap popover and chips", () => {
     await nextTick();
 
     expect(event.defaultPrevented).toBe(true);
-    expect(wrapper.find('[data-test="exam-workspace-gap-values-gap_002"]').exists()).toBe(true);
+    expect(popoverExists()).toBe(true);
     // Enter opened the popover; it did not split the paragraph.
     expect(surface(wrapper).querySelectorAll("p")).toHaveLength(2);
 
     await wrapper.setProps({ disabled: true });
-    expect(wrapper.find('[data-test="exam-workspace-gap-popover"]').exists()).toBe(false);
+    expect(popoverExists()).toBe(false);
     await openGap(wrapper, "gap_001");
     editor.commands.setNodeSelection(atomPos(editor, "examGap", "gap_001"));
     press(surface(wrapper), "Enter");
     await nextTick();
-    expect(wrapper.find('[data-test="exam-workspace-gap-popover"]').exists()).toBe(false);
+    expect(popoverExists()).toBe(false);
     wrapper.unmount();
   });
 
