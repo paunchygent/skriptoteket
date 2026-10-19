@@ -104,7 +104,18 @@ changes (`~/logs/replays-39-04-17-final/`, retained
   found the guard and review-body gaps that D7-D9 settle.
 - Domain suite at `48852ace`: 4262 passed, 59 skipped
   (`~/logs/suite-39-04-17-final.log`).
-- Next: independent review, routed by the orchestrator.
+- Review `7ac4ca2f` (retained root `evidence/reviews/`): changes_requested,
+  one medium finding F1 (the D9 exemption also skipped `review_complete`
+  source-origin items). Repaired by U5 `dc94a988` (a test that fails before the
+  fix, built on the reviewer's injection) and U6 `d561e701` (the shared helper
+  moved into `recorded_build_events_support.py`); D9 amended at `ec123834`.
+  Admitted on focused proof without rereview (orchestrator 2026-10-19).
+- `origin/main` `0cb1df1a` merged at `561cd071` (only the generated index
+  conflicted, regenerated). It adds the `defusedxml` dependency, so this
+  worktree's environment was synced with `pdm sync`. The 120 focused tests,
+  lint, backend typecheck and docs-validate pass. The replay difference
+  (`0cb1df1a` against `561cd071`) is byte-identical to the reviewed one.
+- Next: the orchestrator's integration into main.
 - Branch `codex/task-skript-39-04-17-remote`, worktree
   `/home/paunchygent/apps/skriptoteket-task-skript-39-04-17-remote`; never
   pushed.
