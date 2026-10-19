@@ -38,6 +38,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeItemReviewState,
     NativeParseOrigin,
 )
+from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders import (
+    DEFAULT_WRITING_LINES,
+)
 
 _GOVERNING = "body:0002"
 _STEM = "body:0003"
@@ -69,6 +72,7 @@ def _aligned(*paragraphs: tuple[str, str | None]) -> AlignedItem:
         sequence=1,
         kind=NativeExamItemKind.FREE_TEXT,
         body=_body(*(text for text, _ in paragraphs)),
+        writing_lines=DEFAULT_WRITING_LINES,
         answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
         review=NativeItemReview(
             state=NativeItemReviewState.REVIEW_COMPLETE,
@@ -265,6 +269,7 @@ def _with_choice(aligned: AlignedItem, entries: frozenset[str]) -> AlignedItem:
         {
             **aligned.item.model_dump(),
             "kind": NativeExamItemKind.SINGLE_CHOICE,
+            "writing_lines": None,
             "choices": (
                 NativeChoice(choice_id="choice_001", body=_body("Motivera ditt svar.")),
                 NativeChoice(choice_id="choice_002", body=_body("Svara med ett årtal.")),
