@@ -304,7 +304,8 @@ class SourceFormatting:
         has shown, or return nothing to drop it; the entry span stays unaligned.
 
         The candidate is a whole source paragraph (TASK-SKRIPT-39-04-15 D4/D5): an
-        excluded interval inside it is removed text, never a paragraph boundary."""
+        excluded interval inside it is removed text, never a paragraph boundary.
+        An own paragraph that cannot be rendered raises instead of being silently dropped."""
         start = self.positions[self.cursor] if self.cursor < len(self.positions) else len(self.text)
         paragraph = next(
             (
@@ -339,15 +340,21 @@ class SourceFormatting:
         paragraph whose text is another question's source is not this item's content (D4).
 
         The whole paragraph is rendered with every excluded interval inside it removed
-        (D5); removing one must not leave two spaces at the join it creates."""
+        (D5); removing one must not leave two spaces at the join it creates.
+        A paragraph with a source picture or an inline answer key cannot be rebuilt and
+        raises; only a paragraph with no visible text returns None."""
         paragraph = next((p for p in self.paragraphs if p.start <= origin < p.end), None)
         if paragraph is None:
             return None
         start = self._content_start(paragraph)
         if ANSWER_LABEL.search(self.text[start : paragraph.end]):
-            return None
+            raise FormattingTransferError(
+                "misplaced paragraph's own source cannot be rebuilt: inline answer key"
+            )
         if self.provenance.has_picture_in(paragraph.start, paragraph.end):
-            return None
+            raise FormattingTransferError(
+                "misplaced paragraph's own source cannot be rebuilt: picture"
+            )
         joined: list[NativeTextSegment] = []
         for segment in self._rebuilt_text_segments(start, paragraph.end):
             if joined and joined[-1].text[-1:].isspace() and segment.text[:1].isspace():

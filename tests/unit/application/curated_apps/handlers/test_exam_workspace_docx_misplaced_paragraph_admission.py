@@ -1,6 +1,7 @@
 """An item whose reply paragraph repeats another question's source shows its own stem instead
 and carries no left-out mark; the other item is unchanged (TASK-SKRIPT-39-04-15 D4)."""
 
+from base64 import b64decode
 from uuid import uuid4
 
 import pytest
@@ -14,12 +15,16 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_st
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxChunk,
+    DocxImage,
     DocxSourceParagraph,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeAnswerKeyOrigin,
     NativeItemReviewState,
+    NativeParseOrigin,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_plain_text
+from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import FORMATTING_REASON
 
 pytestmark = pytest.mark.unit
 
@@ -187,3 +192,91 @@ def test_points_right_after_the_label_leaves_the_whole_stem_rebuilt():
     assert body_plain_text(second.body) == "Describe the rock cycle.\nUse a diagram."
     assert second.review.state is NativeItemReviewState.REVIEW_COMPLETE
     assert [event for event in state.events if event.code == "own_chunks_left_out"] == []
+
+
+_PIXEL_PNG = b64decode(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Zl1sAAAAASUVORK5CYII="
+)
+
+
+def test_an_unrenderable_own_picture_paragraph_goes_to_source_review():
+    picture_text = "2. Explain the process in this diagram."
+    image = DocxImage(
+        payload=_PIXEL_PNG, media_type="image/png", offset=picture_text.index("process")
+    )
+    picture_chunk = DocxChunk("body:0002", "paragraph", picture_text, picture_text, images=(image,))
+    chunks = (_chunk("body:0001", _FOREIGN), picture_chunk)
+    state = DocxBuildState(
+        job_id=uuid4(),
+        document_id=uuid4(),
+        filename="prov.docx",
+        source_sha256="0" * 64,
+        chunks=chunks,
+        questions=(("body:0001",), ("body:0002",)),
+    )
+    reply = _item(("body:0002",), "2", _FOREIGN[3:])
+    reply["body"].append(
+        {
+            "segments": [
+                {
+                    "kind": "asset",
+                    "asset_id": image.asset_id,
+                    "text": None,
+                    "accepted_values": [],
+                }
+            ]
+        }
+    )
+
+    admit_batch(
+        {
+            "items": [
+                _item(("body:0001",), "1", _FOREIGN[3:]),
+                reply,
+            ]
+        },
+        state,
+    )
+
+    first, second = (aligned.item for aligned, _ in state.accepted)
+    assert body_plain_text(first.body) == _FOREIGN[3:]
+    assert first.review.state is NativeItemReviewState.REVIEW_COMPLETE
+    assert second.review.state is NativeItemReviewState.REVIEW_REQUIRED
+    assert second.review.parse_origin is NativeParseOrigin.SOURCE_FALLBACK
+    assert second.review.reasons == (FORMATTING_REASON,)
+    assert body_plain_text(second.body) == picture_text
+    assert second.body_asset_ids() == (image.asset_id,)
+    assert [event for event in state.events if event.code == "formatting_transfer_failed"] != []
+
+
+def test_an_unrenderable_inline_answer_key_paragraph_goes_to_source_review():
+    own = "2. What is the capital? Svar: Paris."
+    chunks = (_chunk("body:0001", _FOREIGN), _chunk("body:0002", own))
+    state = DocxBuildState(
+        job_id=uuid4(),
+        document_id=uuid4(),
+        filename="prov.docx",
+        source_sha256="0" * 64,
+        chunks=chunks,
+        questions=(("body:0001",), ("body:0002",)),
+    )
+
+    admit_batch(
+        {
+            "items": [
+                _item(("body:0001",), "1", _FOREIGN[3:]),
+                _item(("body:0002",), "2", _FOREIGN[3:]),
+            ]
+        },
+        state,
+    )
+
+    first, second = (aligned.item for aligned, _ in state.accepted)
+    assert body_plain_text(first.body) == _FOREIGN[3:]
+    assert second.review.state is NativeItemReviewState.REVIEW_REQUIRED
+    assert second.review.parse_origin is NativeParseOrigin.SOURCE_FALLBACK
+    assert second.review.reasons == (FORMATTING_REASON,)
+    assert body_plain_text(second.body) == own
+    assert second.answer_key.origin is NativeAnswerKeyOrigin.NOT_APPLICABLE
+    assert second.gaps == ()
+    assert [event for event in state.events if event.code == "formatting_transfer_failed"] != []

@@ -2,10 +2,13 @@
 source paragraph, or dropped when no own paragraph is left to show (TASK-SKRIPT-39-04-15 D4).
 Every other paragraph keeps the model's wording."""
 
+from base64 import b64decode
+
 import pytest
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxChunk,
+    DocxImage,
     DocxSourceParagraph,
     DocxSourceRun,
 )
@@ -16,7 +19,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeTextSegment,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_plain_text
-from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import SourceFormatting
+from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import (
+    FormattingTransferError,
+    SourceFormatting,
+)
 
 pytestmark = pytest.mark.unit
 
@@ -264,3 +270,32 @@ def test_a_rebuilt_paragraph_keeps_the_marks_around_an_excluded_points_interval(
     ]
     assert marks == [("The ", ()), ("red", ("bold",)), (" blue", ("bold",)), (" house.", ())]
     assert source.path == "rebuilt"
+
+
+_PIXEL_PNG = b64decode(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Zl1sAAAAASUVORK5CYII="
+)
+
+
+def _picture_chunk(anchor: str, text: str, offset: int) -> DocxChunk:
+    image = DocxImage(payload=_PIXEL_PNG, media_type="image/png", offset=offset)
+    return DocxChunk(
+        anchor,
+        "paragraph",
+        text,
+        text,
+        paragraphs=(DocxSourceParagraph(offset=0, text=text, heading_level=None),),
+        images=(image,),
+    )
+
+
+def test_a_misplaced_paragraph_whose_own_source_holds_a_picture_raises():
+    text = "2. Explain the process in this diagram."
+    source = SourceFormatting(
+        (_picture_chunk("own", text, text.index("process")),),
+        ignored=("2.",),
+        foreign=(_Q7,),
+    )
+
+    with pytest.raises(FormattingTransferError, match="picture"):
+        source.body((_paragraph(_text(_REPLY)),))
