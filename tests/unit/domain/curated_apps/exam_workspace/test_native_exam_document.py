@@ -10,7 +10,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_criteria import
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocumentOrigin,
-    NativeExamHeader,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document_json import (
     native_exam_document_json_bytes,
@@ -86,16 +85,16 @@ class TestSerializationRoundTrip:
 
         assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
 
-    def test_printed_total_dismissed_round_trips(self) -> None:
-        document = make_document(make_free_text_item()).model_copy(
-            update={"header": NativeExamHeader(printed_total=70, printed_total_dismissed=True)}
-        )
+    def test_v9_header_with_dismissed_mark_is_refused(self) -> None:
+        document = make_document(make_free_text_item())
+        payload = json.loads(native_exam_document_json_bytes(document))
+        assert isinstance(payload["header"], dict)
+        payload["header"]["printed_total_dismissed"] = True
 
-        parsed = parse_native_exam_document(native_exam_document_json_bytes(document))
+        with pytest.raises(DomainError) as exc_info:
+            parse_native_exam_document(json.dumps(payload).encode("utf-8"))
 
-        assert parsed == document
-        assert parsed.header.printed_total == 70
-        assert parsed.header.printed_total_dismissed is True
+        assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
 
     def test_source_points_round_trip(self) -> None:
         item = make_free_text_item().model_copy(update={"points": 2, "source_points": 3})

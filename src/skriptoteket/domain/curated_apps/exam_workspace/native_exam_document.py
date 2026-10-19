@@ -89,8 +89,6 @@ class NativeExamHeader(BaseModel):
     tags: tuple[NativeExamContentTag, ...] = ()
     course_hint: str | None = Field(default=None, min_length=1)
     printed_total: int | float | None = Field(default=None, gt=0)
-    # The teacher closed the printed-total note for this exam (TASK-SKRIPT-40-04-10 T7).
-    printed_total_dismissed: bool = False
 
     @model_validator(mode="after")
     def _clear_previous_course_tags(self) -> "NativeExamHeader":

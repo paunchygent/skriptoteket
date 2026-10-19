@@ -51,7 +51,7 @@ import type { TeacherItemKind } from "./exam-workspace/examWorkspaceItemEdits";
 import { examWorkspaceDocumentLabel } from "./exam-workspace/examWorkspaceRows";
 import { bodyText } from "./exam-workspace/examWorkspaceRichText";
 import { isEmptyBody } from "./exam-workspace/examWorkspaceRichTextDocument";
-import { examWorkspaceExamPrintedDifference, examWorkspacePrintedDifferences } from "./exam-workspace/examWorkspaceTotals";
+import { examWorkspacePrintedTotalMismatches } from "./exam-workspace/examWorkspaceTotals";
 import { EXAM_WORKSPACE_STORE_KEY } from "./exam-workspace/examWorkspaceStore";
 import type { ExamWorkspaceStore } from "./exam-workspace/examWorkspaceStore";
 import { useExamWorkspaceAddress } from "./exam-workspace/useExamWorkspaceAddress";
@@ -201,12 +201,8 @@ const examInstructionsPreview = computed(() => {
   const instructions = workspaceDocument.value?.instructions ?? [];
   return isEmptyBody(instructions) ? null : bodyText(instructions) || "Bild";
 });
-const printedAccount = computed(() =>
-  workspaceDocument.value ? examWorkspacePrintedDifferences(workspaceDocument.value) : null,
-);
-/** The exam total itself differs from the questions' sum (the note's exam heading and the grey footer line). */
-const examPrintedDiffers = computed(() =>
-  workspaceDocument.value ? examWorkspaceExamPrintedDifference(workspaceDocument.value) !== null : false,
+const printedMismatches = computed(() =>
+  workspaceDocument.value ? examWorkspacePrintedTotalMismatches(workspaceDocument.value) : [],
 );
 const courseLabel = computed(() => workspaceDocument.value?.header.course?.name ?? null);
 const formattedSavedExports = computed(() =>
@@ -392,16 +388,14 @@ onMounted(() => {
         :exam-instructions-preview="examInstructionsPreview"
         :question-count="itemEntries.length"
         :total="total"
-        :account="printedAccount"
-        :exam-differs="examPrintedDiffers"
+        :mismatches="printedMismatches"
         :can-add="!disabled"
         :disabled="disabled"
         :overlay="isPhone && listOpen"
         @select="selectEntry"
         @add="addEntry"
         @group="(itemIds) => structure.groupItems(itemIds)"
-        @dismiss-printed-total="editing.dismissPrintedTotal"
-        @use-computed-points="editing.useComputedPoints"
+        @clear-printed-total="editing.clearPrintedTotal"
         @close="listOpen = false"
       />
 

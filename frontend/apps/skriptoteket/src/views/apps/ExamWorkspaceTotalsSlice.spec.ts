@@ -1,11 +1,11 @@
 /**
- * The printed-total difference is information, never a save or export gate
- * (user ruling 2026-10-17): the footer reads "Totalt N p" with the amber
- * points note below it while the exam text prints another total. The note
- * names one row per differing part and question with its point difference,
- * jumps to each on a click, and is answered with two glyph-only buttons: no
- * keeps the printed numbers and dismisses the note, yes clears the printed
- * totals. Every Använd action is gone.
+ * The printed-total mismatch lines are information, never a save or export
+ * gate (user ruling 2026-10-17): the footer reads "Totalt N p" with one
+ * neutral line below it per printed total that differs from its questions'
+ * sum. Each line is followed by two glyph-only buttons: confirm ("Godta
+ * frågornas summa, {sum} p", clears that line's own level) and continue
+ * ("Visa frågorna", jumps to the first question carrying the difference).
+ * Every Använd action is gone.
  */
 import { flushPromises } from "@vue/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -53,10 +53,9 @@ const succeeded: ExamWorkspaceConversionStatus = {
 };
 const mounted: ViewWrapper[] = [];
 let history: ReturnType<typeof arrangeStepHistory>;
-const NOTE = '[data-test="exam-workspace-points-note"]';
-const NOTE_ROW = '[data-test="exam-workspace-points-note-row"]';
-const NOTE_KEEP = '[data-test="exam-workspace-points-keep"]';
-const NOTE_USE = '[data-test="exam-workspace-points-use-computed"]';
+const LINE = '[data-test="exam-workspace-printed-total-line"]';
+const CHANGE = '[data-test="exam-workspace-printed-total-change"]';
+const SHOW = '[data-test="exam-workspace-printed-total-show"]';
 const EXAM_POINTS = '[data-test="exam-workspace-exam-points"]';
 const PART_POINTS_LINE = '[data-test="exam-workspace-part-points-line"]';
 
@@ -71,27 +70,26 @@ function documentWithTotals(
 ): NativeExamDocument {
   return {
     ...buildDocument(),
-    header: { course_hint: "Svenska 2", printed_total: printed, printed_total_dismissed: false, tags: [] },
+    header: { course_hint: "Svenska 2", printed_total: printed, tags: [] },
     items: points.map((value, index) => itemWithTotals(index + 1, value, sources?.[index] ?? null)),
   };
 }
 
 /**
- * The mockup case (evidence/design/points-banner-v2-yes-no-glyphs.png):
- * the exam prints 70 p over questions summing to 67 p, with a differing
- * part (labels 3/3a/3b), a changed question (label 5) and a question
- * missing its points (label 8).
+ * The mockup case: the exam prints 70 p over questions summing to 66 p, with
+ * a differing part (list number 2, children 2a/2b), earlier and later changed
+ * questions (labels 1 and 5) and a question missing its points (label 8).
  */
 function mockupDocument(): NativeExamDocument {
   const document = documentWithTotals(
     70,
-    [10, 9, 10, 10, 8, 10, 5, 5, null],
-    [10, 9, 10, 10, 8, 12, 5, 5, 4],
+    [10, 9, 9, 10, 8, 10, 5, 5, null],
+    [12, 9, 10, 10, 8, 12, 5, 5, 4],
   );
   document.parents = [{
     parent_id: "parent_001",
     item_ids: ["item_003", "item_004"],
-    place: 2,
+    place: 1,
     printed_total: 22,
     instruction: [
       { heading_level: null, segments: [{ kind: "text", marks: [], text: "Del 2: Satslösning" }] },
@@ -123,15 +121,15 @@ function rowLine(parentId: string) {
   return `[data-test="exam-workspace-row-${parentId}"] ${PART_POINTS_LINE}`;
 }
 
-/** The element tags and classes of a row's lines, top to bottom: what must not change when the note is answered. */
+/** The element tags and classes of a row's lines, top to bottom: what must not change when a line is answered. */
 function rowShape(wrapper: ViewWrapper, id: string): string[] {
   const body = wrapper.get(`[data-test="exam-workspace-row-${id}"]`).element.querySelector(".row__body");
   return Array.from(body?.children ?? []).map((line) => `${line.tagName}.${line.className}`);
 }
 
-/** The note's row texts in order, whitespace-normalised. */
-function noteRows(wrapper: ViewWrapper): string[] {
-  return wrapper.findAll(NOTE_ROW).map((row) => row.text().replace(/\s+/g, " ").trim());
+/** The footer lines' aria-labels in order, whitespace-normalised: each names its difference. */
+function lineLabels(wrapper: ViewWrapper): string[] {
+  return wrapper.findAll(LINE).map((line) => (line.attributes("aria-label") ?? "").replace(/\s+/g, " ").trim());
 }
 
 async function undo(wrapper: ViewWrapper) {
@@ -153,43 +151,55 @@ afterEach(() => {
   globalThis.document.body.replaceChildren();
 });
 
-describe("workspace printed totals note", () => {
+describe("workspace printed-total lines", () => {
   it.each([
     { printed: null, points: [2, 3] },
     { printed: 5, points: [2, 3] },
     { printed: 7.5, points: [2.5, 5] },
     { printed: 0, points: [null, 0] },
-  ])("shows no note for an absent or matching total ($printed)", async ({ printed, points }) => {
+    { printed: 0.3, points: [0.1, 0.2] },
+  ])("shows no line for an absent or matching total ($printed)", async ({ printed, points }) => {
     const wrapper = await openDocument(documentWithTotals(printed, points));
-    expect(wrapper.find(NOTE).exists()).toBe(false);
+    expect(wrapper.find(LINE).exists()).toBe(false);
     expect(wrapper.get(EXAM_POINTS).text()).not.toContain("provtexten");
     expect(wrapper.find(".list__dismissed").exists()).toBe(false);
+    expect(wrapper.find(SHOW).exists()).toBe(false);
   });
 
-  it("states the mockup case: the heading, one jump row per difference in order, and no Använd anywhere", async () => {
+  it("states the exam difference with exact numbers and no note element", async () => {
     const wrapper = await openDocument(mockupDocument());
-    expect(wrapper.get(EXAM_POINTS).text()).toBe("Totalt 67 p");
-    expect(wrapper.get(NOTE).find(".list__note-head").text())
-      .toBe("Provtexten anger 70 p. Dessa skiljer sig:");
-    expect(noteRows(wrapper)).toEqual([
-      "Del 2: Satslösning — provtexten 22 p, nu 20 p",
-      "Fråga 5 — provtexten 12 p, nu 10 p",
-      "Fråga 8 — provtexten 4 p, saknar poäng",
-      "5 p fler än provtexten anger",
-    ]);
-    expect(wrapper.find('[data-test^="exam-workspace-accept-"]').exists()).toBe(false);
-    // The decide line is plain text; no button in the list offers an Använd action.
-    expect(wrapper.get(".list__note-question").text()).toBe("Använd beräknade poäng?");
-    const list = wrapper.get('[data-test="exam-workspace-question-list"]');
-    expect(list.findAll("button").filter((button) => button.text().startsWith("Använd"))).toHaveLength(0);
+    expect(wrapper.get(EXAM_POINTS).text()).toBe("Totalt 66 p");
+    expect(lineLabels(wrapper)[0]).toBe("Provtexten säger 70 p, frågorna ger 66 p.");
+    expect(wrapper.find('[data-test="exam-workspace-points-note"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="exam-workspace-points-keep"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="exam-workspace-points-use-computed"]').exists()).toBe(false);
   });
 
-  it("states the remainder for points no question explains", async () => {
-    const wrapper = await openDocument(documentWithTotals(70, [30, 37], [30, 37]));
-    expect(wrapper.get(EXAM_POINTS).text()).toBe("Totalt 67 p");
-    expect(wrapper.get(NOTE).find(".list__note-head").text())
-      .toBe("Provtexten anger 70 p. Dessa skiljer sig:");
-    expect(noteRows(wrapper)).toEqual(["Övriga 3 p finns inte i någon fråga"]);
+  it("lists the exam line first, then one line per differing part in document order", async () => {
+    const document = documentWithTotals(
+      70,
+      [10, 9, 9, 10, 8, 10, 5, 5, null],
+      [12, 9, 10, 10, 8, 12, 5, 5, 4],
+    );
+    document.parents = [
+      {
+        parent_id: "parent_001", item_ids: ["item_001", "item_002"], place: 0,
+        printed_total: 22, instruction: [],
+      },
+      {
+        parent_id: "parent_002", item_ids: ["item_003", "item_004"], place: 2,
+        printed_total: 12,
+        instruction: [
+          { heading_level: null, segments: [{ kind: "text", marks: [], text: "Del 2" }] },
+        ],
+      },
+    ];
+    const wrapper = await openDocument(document);
+    expect(lineLabels(wrapper)).toEqual([
+      "Provtexten säger 70 p, frågorna ger 66 p.",
+      "Del 1 i provtexten säger 22 p, frågorna ger 19 p.",
+      "Del 2 i provtexten säger 12 p, frågorna ger 19 p.",
+    ]);
   });
 
   it("names only the differing parts when the exam total is absent", async () => {
@@ -203,17 +213,19 @@ describe("workspace printed totals note", () => {
     }];
     const wrapper = await openDocument(document);
     expect(wrapper.get(EXAM_POINTS).text()).toBe("Totalt 5 p");
-    expect(wrapper.get(NOTE).find(".list__note-head").text())
-      .toBe("Dessa skiljer sig från provtexten:");
-    expect(noteRows(wrapper)).toEqual(["Del 1 — provtexten 8 p, nu 5 p"]);
+    expect(lineLabels(wrapper)).toEqual(["Del 1 i provtexten säger 8 p, frågorna ger 5 p."]);
   });
 
-  it("states both decimal totals in the note and still exports", async () => {
+  it("states a third-decimal difference instead of two equal numbers", async () => {
+    const wrapper = await openDocument(documentWithTotals(12.001, [12], [12.001]));
+    expect(lineLabels(wrapper)).toEqual(["Provtexten säger 12,001 p, frågorna ger 12 p."]);
+    expect(wrapper.find(CHANGE).attributes("aria-label")).toBe("Godta frågornas summa, 12 p");
+  });
+
+  it("states both decimal totals in the footer and still exports", async () => {
     const wrapper = await openDocument(documentWithTotals(7.5, [2.5, 4], [2.5, 4]));
     expect(wrapper.get(EXAM_POINTS).text()).toBe("Totalt 6,5 p");
-    expect(wrapper.get(NOTE).find(".list__note-head").text())
-      .toBe("Provtexten anger 7,5 p. Dessa skiljer sig:");
-    expect(noteRows(wrapper)).toEqual(["Övriga 1 p finns inte i någon fråga"]);
+    expect(lineLabels(wrapper)).toEqual(["Provtexten säger 7,5 p, frågorna ger 6,5 p."]);
     expect(wrapper.text()).not.toContain("Poängen stämmer inte");
     expect(wrapper.text()).not.toMatch(/Tryckt|TRYCKT/);
 
@@ -230,17 +242,17 @@ describe("workspace printed totals note", () => {
     expect(downloadMocks.triggerBrowserDownload).toHaveBeenCalledTimes(1);
   });
 
-  it("recomputes the note on a point edit without a save or reload", async () => {
+  it("recomputes the lines on a point edit without a save or reload", async () => {
     const wrapper = await openDocument(mockupDocument());
 
     await selectItemRow(wrapper, "item_006");
     await wrapper.get('[data-test="exam-workspace-item-points-input"]').setValue("9");
-    expect(wrapper.get(EXAM_POINTS).text()).toBe("Totalt 66 p");
-    expect(noteRows(wrapper)).toContain("Fråga 5 — provtexten 12 p, nu 9 p");
+    expect(wrapper.get(EXAM_POINTS).text()).toBe("Totalt 65 p");
+    expect(lineLabels(wrapper)).toContain("Provtexten säger 70 p, frågorna ger 65 p.");
 
     await wrapper.get('[data-test="exam-workspace-item-points-input"]').setValue("10");
-    expect(wrapper.get(EXAM_POINTS).text()).toBe("Totalt 67 p");
-    expect(noteRows(wrapper)).toContain("Fråga 5 — provtexten 12 p, nu 10 p");
+    expect(wrapper.get(EXAM_POINTS).text()).toBe("Totalt 66 p");
+    expect(wrapper.findAll(LINE)).toHaveLength(2);
     expect(apiMocks.getExamWorkspaceDocument).toHaveBeenCalledTimes(1);
     expect(apiMocks.saveExamWorkspaceDocument).not.toHaveBeenCalled();
   });
@@ -250,7 +262,7 @@ describe("workspace printed totals note", () => {
     await selectItemRow(wrapper, "item_001");
     await wrapper.get('[data-test="exam-workspace-item-points-input"]').setValue("4");
     expect(wrapper.get(EXAM_POINTS).text()).toBe("Totalt 7 p");
-    expect(wrapper.find(NOTE).exists()).toBe(true);
+    expect(wrapper.find(LINE).exists()).toBe(true);
     expect(wrapper.get('[data-test="exam-workspace-save"]').attributes("disabled")).toBeUndefined();
   });
 
@@ -268,16 +280,15 @@ describe("workspace printed totals note", () => {
     const editor = wrapper.get('[data-test="exam-workspace-instruction-editor"]');
     expect(editor.get('[data-test="exam-workspace-part-points"]').text()).toBe("5 p");
     expect(editor.findAll("button").filter((button) => button.text().startsWith("Använd"))).toHaveLength(0);
-    // The difference is said once, on the note's row.
-    expect(noteRows(wrapper)).toHaveLength(1);
-    expect(noteRows(wrapper)[0]).toContain("provtexten 8 p, nu 5 p");
+    // The difference is said once, on the line.
+    expect(wrapper.findAll(LINE)).toHaveLength(1);
+    expect(lineLabels(wrapper)[0]).toContain("provtexten säger 8 p, frågorna ger 5 p");
   });
 
-  it("says an exam total difference once, on the note, with a plain footer", async () => {
+  it("says an exam total difference once, on the line, with a plain footer", async () => {
     const wrapper = await openDocument(documentWithTotals(9, [2, 3]));
     expect(wrapper.get(EXAM_POINTS).text()).toBe("Totalt 5 p");
-    expect(wrapper.get(NOTE).find(".list__note-head").text())
-      .toBe("Provtexten anger 9 p. Dessa skiljer sig:");
+    expect(lineLabels(wrapper)).toEqual(["Provtexten säger 9 p, frågorna ger 5 p."]);
     expect(wrapper.get(EXAM_POINTS).text()).not.toContain("provtexten");
   });
 });
@@ -301,77 +312,84 @@ describe("total comparison edge cases", () => {
   });
 });
 
-describe("answering the points note", () => {
-  it("no keeps the printed numbers in one undo step, hides the note and greys the footer", async () => {
-    const wrapper = await openDocument(mockupDocument());
-    expect(wrapper.find(NOTE).exists()).toBe(true);
-
-    await wrapper.get(NOTE_KEEP).trigger("click");
-    await flushPromises();
-
-    expect(apiMocks.storeExamWorkspaceUndoStep).toHaveBeenCalledTimes(1);
-    const stored = apiMocks.storeExamWorkspaceUndoStep.mock.calls.at(-1)![1].document as NativeExamDocument;
-    expect(stored.header.printed_total_dismissed).toBe(true);
-    expect(stored.header.printed_total).toBe(70);
-    expect(stored.parents.map((parent) => parent.printed_total)).toEqual([22]);
-    expect(stored.items.map((item) => item.points))
-      .toEqual([10, 9, 10, 10, 8, 10, 5, 5, null]);
-
-    expect(wrapper.find(NOTE).exists()).toBe(false);
-    expect(wrapper.get(EXAM_POINTS).text()).toBe("Totalt 67 p · provtexten anger 70 p");
-    expect(wrapper.get(EXAM_POINTS).get(".list__dismissed").text()).toBe("· provtexten anger 70 p");
-
-    await undo(wrapper);
-    expect(wrapper.find(NOTE).exists()).toBe(true);
-    expect(wrapper.get(EXAM_POINTS).text()).toBe("Totalt 67 p");
-    expect(noteRows(wrapper)).toHaveLength(4);
-  });
-
-  it("yes clears the exam and part printed totals in one undo step", async () => {
+describe("answering a mismatch line", () => {
+  it("change on the exam line clears only the header in one undo step, and undo restores the line", async () => {
     const wrapper = await openDocument(mockupDocument());
 
-    await wrapper.get(NOTE_USE).trigger("click");
+    await wrapper.findAll(CHANGE).at(0)!.trigger("click");
     await flushPromises();
 
     expect(apiMocks.storeExamWorkspaceUndoStep).toHaveBeenCalledTimes(1);
     const stored = apiMocks.storeExamWorkspaceUndoStep.mock.calls.at(-1)![1].document as NativeExamDocument;
     expect(stored.header.printed_total).toBeNull();
-    expect(stored.parents.map((parent) => parent.printed_total)).toEqual([null]);
-    expect(stored.header.printed_total_dismissed).toBe(false);
+    expect(stored.parents.map((parent) => parent.printed_total)).toEqual([22]);
+    expect(stored.items.map((item) => item.points)).toEqual([10, 9, 9, 10, 8, 10, 5, 5, null]);
 
-    expect(wrapper.find(NOTE).exists()).toBe(false);
-    expect(wrapper.get(EXAM_POINTS).text()).toBe("Totalt 67 p");
+    expect(lineLabels(wrapper)).toEqual(["Del 2 i provtexten säger 22 p, frågorna ger 19 p."]);
 
     await undo(wrapper);
-    expect(wrapper.find(NOTE).exists()).toBe(true);
-    expect(noteRows(wrapper)).toHaveLength(4);
+    expect(lineLabels(wrapper)).toHaveLength(2);
+    expect(wrapper.get(EXAM_POINTS).text()).toBe("Totalt 66 p");
   });
 
-  it("names the answers in the tooltip and aria-label only, with no visible text", async () => {
+  it("change on a part line clears only that part, and the exam line stays", async () => {
     const wrapper = await openDocument(mockupDocument());
-    const keep = wrapper.get(NOTE_KEEP);
-    const use = wrapper.get(NOTE_USE);
 
-    expect(keep.text()).toBe("");
-    expect(keep.attributes("aria-label")).toBe("Nej, behåll provtextens poäng");
-    expect(keep.attributes("title")).toBe("Nej, behåll provtextens poäng");
-    expect(use.text()).toBe("");
-    expect(use.attributes("aria-label")).toBe("Ja, använd beräknade poäng");
-    expect(use.attributes("title")).toBe("Ja, använd beräknade poäng");
+    await wrapper.findAll(CHANGE).at(1)!.trigger("click");
+    await flushPromises();
+
+    expect(apiMocks.storeExamWorkspaceUndoStep).toHaveBeenCalledTimes(1);
+    const stored = apiMocks.storeExamWorkspaceUndoStep.mock.calls.at(-1)![1].document as NativeExamDocument;
+    expect(stored.header.printed_total).toBe(70);
+    expect(stored.parents.map((parent) => parent.printed_total)).toEqual([null]);
+
+    expect(lineLabels(wrapper)).toEqual(["Provtexten säger 70 p, frågorna ger 66 p."]);
+
+    await undo(wrapper);
+    expect(lineLabels(wrapper)).toHaveLength(2);
   });
 
-  it("selects the part or question when its note row is clicked", async () => {
+  it("names the change in the tooltip and aria-label only, with no visible text", async () => {
+    const wrapper = await openDocument(mockupDocument());
+    const change = wrapper.findAll(CHANGE).at(0)!;
+
+    expect(change.text()).toBe("");
+    expect(change.attributes("aria-label")).toBe("Godta frågornas summa, 66 p");
+    expect(change.attributes("title")).toBe("Godta frågornas summa, 66 p");
+  });
+
+  it("show selects the first differing question of the line's scope", async () => {
     const wrapper = await openDocument(mockupDocument());
 
-    await wrapper.findAll(NOTE_ROW).at(0)!.trigger("click");
+    await wrapper.findAll(SHOW).at(0)!.trigger("click");
+    expect(wrapper.get('[data-test="exam-workspace-row-item_001"]').attributes("aria-selected")).toBe("true");
+
+    await wrapper.findAll(SHOW).at(1)!.trigger("click");
+    expect(wrapper.get('[data-test="exam-workspace-row-item_003"]').attributes("aria-selected")).toBe("true");
+  });
+
+  it("falls back to the first differing part for the exam line, and hides show with no target", async () => {
+    const fallback = documentWithTotals(70, [30, 37], [30, 37]);
+    fallback.parents = [{
+      parent_id: "parent_001", item_ids: ["item_001"], place: 0,
+      printed_total: 31, instruction: [],
+    }];
+    const wrapper = await openDocument(fallback);
+    expect(lineLabels(wrapper)).toEqual([
+      "Provtexten säger 70 p, frågorna ger 67 p.",
+      "Del 1 i provtexten säger 31 p, frågorna ger 30 p.",
+    ]);
+
+    await wrapper.findAll(SHOW).at(0)!.trigger("click");
     expect(wrapper.get('[data-test="exam-workspace-row-parent_001"]').attributes("aria-selected")).toBe("true");
-    expect(wrapper.find('[data-test="exam-workspace-instruction-editor"]').exists()).toBe(true);
 
-    await wrapper.findAll(NOTE_ROW).at(1)!.trigger("click");
-    expect(wrapper.get('[data-test="exam-workspace-row-item_006"]').attributes("aria-selected")).toBe("true");
+    const targetless = await openDocument(documentWithTotals(70, [30, 37], [30, 37]));
+    expect(targetless.findAll(LINE)).toHaveLength(1);
+    expect(targetless.findAll(SHOW)).toHaveLength(0);
+    expect(targetless.findAll(CHANGE)).toHaveLength(1);
   });
 
-  it("disables the note's buttons and jump rows while the workspace is busy", async () => {
+  it("disables the lines' buttons while the workspace is busy", async () => {
     const document = documentWithTotals(10, [2, 3]);
     document.parents = [{
       parent_id: "parent_001",
@@ -385,7 +403,7 @@ describe("answering the points note", () => {
     const wrapper = await openDocument(document);
     await selectItemRow(wrapper, "item_001");
     await wrapper.get('[data-test="exam-workspace-item-points-input"]').setValue("4");
-    expect(wrapper.find(NOTE).exists()).toBe(true);
+    expect(wrapper.find(LINE).exists()).toBe(true);
 
     let releaseSave!: (response: unknown) => void;
     apiMocks.saveExamWorkspaceDocument.mockReturnValueOnce(
@@ -394,9 +412,8 @@ describe("answering the points note", () => {
     await wrapper.get('[data-test="exam-workspace-save"]').trigger("click");
     await flushPromises();
 
-    expect(wrapper.get(NOTE_KEEP).attributes("disabled")).toBeDefined();
-    expect(wrapper.get(NOTE_USE).attributes("disabled")).toBeDefined();
-    expect(wrapper.findAll(NOTE_ROW).at(0)!.attributes("disabled")).toBeDefined();
+    expect(wrapper.findAll(CHANGE).at(0)!.attributes("disabled")).toBeDefined();
+    expect(wrapper.findAll(SHOW).at(0)!.attributes("disabled")).toBeDefined();
 
     releaseSave(buildResponse({ conversion: succeeded, version: 2 }));
     await flushPromises();
@@ -404,36 +421,37 @@ describe("answering the points note", () => {
   });
 });
 
-describe("the note never moves a list row", () => {
-  function noteShape(wrapper: ViewWrapper) {
+describe("the lines never move a list row", () => {
+  function linesShape(wrapper: ViewWrapper) {
     return {
       foot: Array.from(wrapper.get(".list__foot").element.children).map((child) => `${child.tagName}.${child.classList[0]}`),
-      rows: wrapper.findAll(NOTE_ROW).map((row) => row.attributes("data-test")),
+      lines: wrapper.findAll(LINE).map((line) => line.attributes("data-test")),
     };
   }
 
-  it("keeps every row's lines when no dismisses the note", async () => {
-    const wrapper = await openDocument(mockupDocument());
-    const before = ["parent_001", "item_006"].map((id) => rowShape(wrapper, id));
+  it("keeps every row's lines when change clears the last line", async () => {
+    const wrapper = await openDocument(documentWithTotals(9, [2, 3]));
+    const before = ["item_001", "item_002"].map((id) => rowShape(wrapper, id));
     const total = wrapper.get(EXAM_POINTS).element;
 
-    await wrapper.get(NOTE_KEEP).trigger("click");
+    await wrapper.find(CHANGE).trigger("click");
     await flushPromises();
 
-    expect(["parent_001", "item_006"].map((id) => rowShape(wrapper, id))).toEqual(before);
+    expect(["item_001", "item_002"].map((id) => rowShape(wrapper, id))).toEqual(before);
     expect(wrapper.get(EXAM_POINTS).element).toBe(total);
-    expect(noteShape(wrapper).foot).toEqual(["SPAN.list__total"]);
+    expect(linesShape(wrapper).foot).toEqual(["SPAN.list__total"]);
+    expect(wrapper.get(EXAM_POINTS).text()).toBe("Totalt 5 p");
   });
 
-  it("keeps every row's lines when yes clears the printed totals", async () => {
+  it("keeps every row's lines when change clears a part line", async () => {
     const wrapper = await openDocument(mockupDocument());
-    const before = ["parent_001", "item_006"].map((id) => rowShape(wrapper, id));
+    const before = ["parent_001", "item_003"].map((id) => rowShape(wrapper, id));
 
-    await wrapper.get(NOTE_USE).trigger("click");
+    await wrapper.findAll(CHANGE).at(1)!.trigger("click");
     await flushPromises();
 
-    expect(["parent_001", "item_006"].map((id) => rowShape(wrapper, id))).toEqual(before);
-    expect(wrapper.get(EXAM_POINTS).text()).toBe("Totalt 67 p");
+    expect(["parent_001", "item_003"].map((id) => rowShape(wrapper, id))).toEqual(before);
+    expect(wrapper.get(EXAM_POINTS).text()).toBe("Totalt 66 p");
   });
 
   it("keeps the parent row's three lines for a part that never printed a total", async () => {

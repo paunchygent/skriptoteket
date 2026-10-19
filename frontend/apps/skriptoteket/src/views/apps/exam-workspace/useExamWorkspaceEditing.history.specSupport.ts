@@ -28,7 +28,7 @@ export function exam(title = "Original", itemCount = 2): NativeExamDocument {
   return {
     assets: [],
     document_id: LINEAGE,
-    header: { printed_total_dismissed: false, tags: [] },
+    header: { tags: [] },
     instructions: [],
     items: Array.from({ length: itemCount }, (_, index) => ({
       ...newTeacherItem(`item_00${index + 1}`, index + 1, "free_text"),

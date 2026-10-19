@@ -58,7 +58,7 @@ export function buildResponse(
     },
     parents: [],
     revision: 1,
-    header: { printed_total_dismissed: false, tags: [] },
+    header: { tags: [] },
     schema_version: "native_exam_document_v9",
     title: "English 1",
   };

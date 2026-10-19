@@ -78,7 +78,7 @@ function buildDocument(
     origin: { kind: "docx_import" },
     parents: [],
     revision,
-    header: { printed_total_dismissed: false, tags: [] },
+    header: { tags: [] },
     schema_version: "native_exam_document_v9",
     title: "Prov",
     ...overrides,

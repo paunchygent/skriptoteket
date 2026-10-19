@@ -6,12 +6,13 @@
  *   Every question of the open exam in order under "Frågor (N)", with "Ny
  *   uppgift" adding a question or an instruction with deluppgifter after the
  *   selected one. The footer holds the exam total ("Totalt N p", cut with an
- *   ellipsis, the full text in a tooltip) with the amber points note below
- *   it while the exam text prints another total: one jump row per
- *   difference, then "Använd beräknade poäng?" with the no and yes
- *   glyph-only answers. Dismissed, the footer greys the printed part
- *   ("Totalt N p · provtexten anger M p") and the note stays hidden.
- *   Above the rows the exam
+ *   ellipsis, the full text in a tooltip) with one neutral line below it per
+ *   printed total that differs from its questions' sum: the exam line first,
+ *   then one line per differing part in document order. Each line is
+ *   followed by two compact glyph-only buttons: edit ("Ändra provtexten
+ *   till {sum} p", clears that line's own level) and continue ("Visa
+ *   frågorna", selects the line's target, hidden when the line has none).
+ *   A line goes as soon as its level agrees. Above the rows the exam
  *   instruction is one entry: "Instruktioner" with a short preview when the
  *   exam has one, otherwise a quiet "Lägg till instruktioner"; both open it in
  *   the editor. On a phone the list
@@ -22,10 +23,9 @@
  *   part (G2, G11); a part and a question inside a part carry no checkbox.
  *
  * Relationships:
- *   - Rendered by `ExamWorkspaceView`; rows are `ExamWorkspaceQuestionRow`,
- *     each told only whether it is selected. The points note renders the
- *     `PrintedTotalAccount` from `examWorkspaceTotals` with the list's
- *     entry labels; it never recomputes the difference.
+ *   - Rendered by `ExamWorkspaceView`; the lines render the `mismatches`
+ *     from `examWorkspaceTotals` with the list's entry labels; the list
+ *     never recomputes the difference.
  */
 
 import { computed, nextTick, ref, watch } from "vue";
@@ -36,7 +36,7 @@ import ExamWorkspaceQuestionRow from "./ExamWorkspaceQuestionRow.vue";
 import type { TeacherItemKind } from "./examWorkspaceItemEdits";
 import type { ExamWorkspaceListEntry } from "./examWorkspaceListEntries";
 import { examWorkspaceFormatExactPoints, examWorkspaceFormatPoints } from "./examWorkspaceTotals";
-import type { PrintedTotalAccount } from "./examWorkspaceTotals";
+import type { PrintedTotalMismatch } from "./examWorkspaceTotals";
 import { EXAM_INSTRUCTIONS_ENTRY_ID } from "./useExamWorkspaceSelection";
 
 const props = defineProps<{
@@ -46,115 +46,69 @@ const props = defineProps<{
   examInstructionsPreview: string | null;
   questionCount: number;
   total: number;
-  /** The printed-total account behind the points note, or `null` while nothing differs. */
-  account: PrintedTotalAccount | null;
-  /** The exam total itself differs from the questions' sum (the note's exam heading and the grey footer line). */
-  examDiffers: boolean;
+  /** One entry per printed total that differs from its questions' sum: the exam first, then parts in order. */
+  mismatches: PrintedTotalMismatch[];
   canAdd: boolean;
-  /** The workspace is busy: the note's answers and jump rows wait like the other list actions. */
+  /** The workspace is busy: the lines' buttons wait like the list's other actions. */
   disabled: boolean;
   /** The phone shows the list as a full-screen layer. */
   overlay: boolean;
 }>();
 
 const examInstructionsSelected = computed(() => props.selectedId === EXAM_INSTRUCTIONS_ENTRY_ID);
-/** The exam total line in full, for the tooltip when a long dismissed note is cut by the ellipsis. */
-const totalTitle = computed(() =>
-  dismissedNote.value === null ? undefined : `Totalt ${formattedTotal.value} · ${dismissedNote.value}`,
-);
+/** The exam total line in full, for the tooltip when a long total is cut by the ellipsis. */
+const totalTitle = computed(() => `Totalt ${formattedTotal.value}`);
 
 const emit = defineEmits<{
   select: [id: string];
   add: [kind: TeacherItemKind | "instruction" | "part"];
   group: [itemIds: string[]];
-  dismissPrintedTotal: [];
-  useComputedPoints: [];
+  clearPrintedTotal: [parentId: string | null];
   close: [];
 }>();
 
-/** One rendered line of the points note: the text with its jump target, or `null` for the remainder. */
-type PointsNoteRow = { key: string; text: string; target: string | null };
+/** One rendered mismatch line: the text with its jump target and the level it clears. */
+type PrintedTotalLine = {
+  key: string;
+  text: string;
+  parentId: string | null;
+  target: string | null;
+  changeTitle: string;
+};
 
 const entryById = computed(() => new Map(props.entries.map((entry) => [entry.id, entry])));
 
-/** The note shows while the account names a difference that is not dismissed. */
-const showNote = computed(() => props.account !== null && !props.account.dismissed);
-
-/** Dismissed with an exam-level difference: the footer keeps the printed total in neutral grey. */
-const showDismissedPrinted = computed(
-  () => props.account !== null && props.account.dismissed && props.examDiffers && props.account.printed !== null,
-);
+/** The footer lines in order, named with the list's part numbers; a part the list never names is skipped. */
+const lines = computed<PrintedTotalLine[]>(() => {
+  const rendered: PrintedTotalLine[] = [];
+  for (const mismatch of props.mismatches) {
+    const sum = `Godta frågornas summa, ${examWorkspaceFormatExactPoints(mismatch.sum)} p`;
+    if (mismatch.level === "exam") {
+      rendered.push({
+        changeTitle: sum,
+        key: "exam",
+        parentId: null,
+        target: mismatch.target,
+        text: `Provtexten säger ${examWorkspaceFormatExactPoints(mismatch.printed)} p, frågorna ger ${examWorkspaceFormatExactPoints(mismatch.sum)} p.`,
+      });
+      continue;
+    }
+    const entry = entryById.value.get(mismatch.parentId);
+    if (!entry || entry.kind !== "parent") {
+      continue;
+    }
+    rendered.push({
+      changeTitle: sum,
+      key: `part-${mismatch.parentId}`,
+      parentId: mismatch.parentId,
+      target: mismatch.target,
+      text: `Del ${entry.label} i provtexten säger ${examWorkspaceFormatExactPoints(mismatch.printed)} p, frågorna ger ${examWorkspaceFormatExactPoints(mismatch.sum)} p.`,
+    });
+  }
+  return rendered;
+});
 
 const formattedTotal = computed(() => `${examWorkspaceFormatPoints(props.total)} p`);
-
-const dismissedNote = computed(() => {
-  const printed = props.account?.printed;
-  return showDismissedPrinted.value && printed !== null && printed !== undefined
-    ? `provtexten anger ${examWorkspaceFormatExactPoints(printed)} p`
-    : null;
-});
-
-const noteHeading = computed(() => {
-  const printed = props.account?.printed;
-  return props.examDiffers && printed !== null && printed !== undefined
-    ? `Provtexten anger ${examWorkspaceFormatExactPoints(printed)} p. Dessa skiljer sig:`
-    : "Dessa skiljer sig från provtexten:";
-});
-
-/** The account's rows named with the list's labels, in document order. */
-const noteRows = computed<PointsNoteRow[]>(() => {
-  const account = props.account;
-  if (account === null) {
-    return [];
-  }
-  return account.rows.flatMap((row, index): PointsNoteRow[] => {
-    if (row.kind === "part") {
-      const entry = entryById.value.get(row.parentId);
-      if (!entry || entry.kind !== "parent") {
-        return [];
-      }
-      return [{
-        key: `part-${row.parentId}`,
-        target: row.parentId,
-        text: `${entry.text} — provtexten ${examWorkspaceFormatExactPoints(row.printed)} p, nu ${examWorkspaceFormatExactPoints(row.now)} p`,
-      }];
-    }
-    if (row.kind === "question") {
-      const entry = entryById.value.get(row.itemId);
-      if (!entry || entry.kind !== "item") {
-        return [];
-      }
-      const label = `Fråga ${entry.label}`;
-      if (row.source === null) {
-        return [{
-          key: `question-${row.itemId}`,
-          target: row.itemId,
-          text: `${label} — saknar poäng`,
-        }];
-      }
-      if (row.now === null) {
-        return [{
-          key: `question-${row.itemId}`,
-          target: row.itemId,
-          text: `${label} — provtexten ${examWorkspaceFormatExactPoints(row.source)} p, saknar poäng`,
-        }];
-      }
-      return [{
-        key: `question-${row.itemId}`,
-        target: row.itemId,
-        text: `${label} — provtexten ${examWorkspaceFormatExactPoints(row.source)} p, nu ${examWorkspaceFormatExactPoints(row.now)} p`,
-      }];
-    }
-    return [{
-      key: `remainder-${index}`,
-      target: null,
-      text:
-        row.points > 0
-          ? `Övriga ${examWorkspaceFormatPoints(row.points)} p finns inte i någon fråga`
-          : `${examWorkspaceFormatPoints(Math.abs(row.points))} p fler än provtexten anger`,
-    }];
-  });
-});
 
 const rows = ref<HTMLElement | null>(null);
 const newTrigger = ref<HTMLButtonElement | null>(null);
@@ -347,79 +301,52 @@ watch(
         class="list__total"
         :title="totalTitle"
         data-test="exam-workspace-exam-points"
-      >Totalt <strong class="list__sum">{{ formattedTotal }}</strong><span
-        v-if="dismissedNote"
-        class="list__dismissed"
-      > · {{ dismissedNote }}</span></span>
-      <aside
-        v-if="showNote"
-        class="list__note"
-        data-test="exam-workspace-points-note"
+      >Totalt <strong class="list__sum">{{ formattedTotal }}</strong></span>
+      <div
+        v-if="lines.length > 0"
+        class="list__printed-lines"
+        data-test="exam-workspace-printed-total-lines"
       >
-        <p class="list__note-head">{{ noteHeading }}</p>
-        <ul class="list__note-rows">
-          <li
-            v-for="row in noteRows"
-            :key="row.key"
-            class="list__note-item"
-          >
-            <button
-              v-if="row.target !== null"
-              type="button"
-              class="list__note-row"
-              :disabled="disabled"
-              data-test="exam-workspace-points-note-row"
-              @click="emit('select', row.target)"
-            >
-              <UiGlyph
-                meaning="continue"
-                :size="16"
-              /><span class="list__note-text">{{ row.text }}</span>
-            </button>
-            <span
-              v-else
-              class="list__note-row list__note-row--static"
-              data-test="exam-workspace-points-note-row"
-            >
-              <UiGlyph
-                meaning="continue"
-                :size="16"
-              /><span class="list__note-text">{{ row.text }}</span>
-            </span>
-          </li>
-        </ul>
-        <p class="list__note-decide">
-          <span class="list__note-question">Använd beräknade poäng?</span>
+        <div
+          v-for="line in lines"
+          :key="line.key"
+          class="list__printed-line"
+          role="group"
+          :aria-label="line.text"
+          data-test="exam-workspace-printed-total-line"
+        >
+          <span class="list__printed-text">{{ line.text }}</span>
           <button
             type="button"
-            class="list__note-no"
+            class="list__printed-change"
             :disabled="disabled"
-            aria-label="Nej, behåll provtextens poäng"
-            title="Nej, behåll provtextens poäng"
-            data-test="exam-workspace-points-keep"
-            @click="emit('dismissPrintedTotal')"
-          >
-            <UiGlyph
-              meaning="close"
-              :size="20"
-            />
-          </button>
-          <button
-            type="button"
-            class="list__note-yes"
-            :disabled="disabled"
-            aria-label="Ja, använd beräknade poäng"
-            title="Ja, använd beräknade poäng"
-            data-test="exam-workspace-points-use-computed"
-            @click="emit('useComputedPoints')"
+            :aria-label="line.changeTitle"
+            :title="line.changeTitle"
+            data-test="exam-workspace-printed-total-change"
+            @click="emit('clearPrintedTotal', line.parentId)"
           >
             <UiGlyph
               meaning="confirm"
-              :size="18"
+              :size="16"
             />
           </button>
-        </p>
-      </aside>
+          <button
+            v-if="line.target !== null"
+            type="button"
+            class="list__printed-show"
+            :disabled="disabled"
+            aria-label="Visa frågorna"
+            title="Visa frågorna"
+            data-test="exam-workspace-printed-total-show"
+            @click="emit('select', line.target)"
+          >
+            <UiGlyph
+              meaning="continue"
+              :size="16"
+            />
+          </button>
+        </div>
+      </div>
     </div>
     <ExamWorkspaceNewItemMenu
       :open="newMenuOpen"
@@ -462,57 +389,38 @@ watch(
 .list__instructions:focus-visible { outline: 2px solid var(--huleedu-action-40); outline-offset: 2px; }
 .list__instructions-title { font-size: var(--huleedu-text-sm); font-weight: var(--huleedu-font-medium); }
 .list__instructions-preview {
-  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
+  display: -webkit-box; -webkit-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
   font-size: var(--huleedu-text-xs); color: var(--huleedu-navy-60);
 }
 .list__foot {
   display: flex; flex-direction: column; gap: var(--huleedu-space-1); flex: none;
   padding: var(--huleedu-space-2) var(--huleedu-space-6); border-top: 1px solid var(--huleedu-surface-divider);
-  font-size: var(--huleedu-text-sm);
+  font-size: var(--huleedu-text-sm); color: var(--huleedu-navy);
+  max-height: min(320px, 40vh);
 }
-/* The total line keeps its height whether the note or the dismissed printed part shows. */
+/* The total line keeps its height whether the mismatch lines show or not. */
 .list__total {
   flex: none; height: 20px; line-height: 20px; min-width: 0;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .list__sum { font-weight: var(--huleedu-font-semibold); }
-.list__dismissed { color: var(--huleedu-navy-60); }
-/* The points note: amber information below the total, scrolling inside the footer when long. */
-.list__note {
-  background: var(--huleedu-warning-15); border: 1px solid var(--huleedu-warning-50);
-  border-radius: var(--huleedu-radius-md); padding: var(--huleedu-space-2-5) var(--huleedu-space-3);
-  color: var(--huleedu-warning-strong); max-height: min(320px, 40vh); overflow-y: auto; min-height: 0;
-}
-.list__note-head { margin: 0 0 var(--huleedu-space-1); font-weight: var(--huleedu-font-semibold); font-size: var(--huleedu-text-sm); }
-.list__note-rows { margin: 0; padding: 0; list-style: none; }
-.list__note-item + .list__note-item { border-top: 1px solid var(--huleedu-warning-50); }
-.list__note-row {
-  all: unset; box-sizing: border-box; display: flex; align-items: center; gap: var(--huleedu-space-2);
-  width: 100%; padding: var(--huleedu-space-1-5) 0; font-size: var(--huleedu-text-sm); cursor: pointer;
-}
-.list__note-row--static { cursor: default; }
-.list__note-row:disabled { cursor: default; color: var(--huleedu-navy-40); }
-.list__note-text { min-width: 0; overflow-wrap: anywhere; }
-.list__note-decide {
-  display: flex; align-items: center; gap: var(--huleedu-space-2-5);
-  margin: var(--huleedu-space-2) 0 0; padding-top: var(--huleedu-space-2); border-top: 1px solid var(--huleedu-warning-50);
-}
-.list__note-question { flex: 1; min-width: 0; font-size: var(--huleedu-text-sm); color: var(--huleedu-navy); }
-.list__note-no, .list__note-yes {
+/* The mismatch lines: neutral text under the total, scrolling inside the footer when long. */
+.list__printed-lines { overflow-y: auto; min-height: 0; display: flex; flex-direction: column; gap: var(--huleedu-space-1); }
+.list__printed-line { display: flex; align-items: center; gap: var(--huleedu-space-1-5); }
+.list__printed-text { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.list__printed-change, .list__printed-show {
   flex: none; display: inline-flex; align-items: center; justify-content: center;
-  border-radius: 50%; padding: 0; cursor: pointer;
+  width: 28px; height: 28px; padding: 0; border: 0; border-radius: 50%;
+  background: transparent; color: var(--huleedu-navy); cursor: pointer;
 }
-/* No is the visually primary default: a large filled navy circle, placed first. */
-.list__note-no { width: 44px; height: 44px; border: 0; background: var(--huleedu-navy); color: #fff; }
-/* Yes is the smaller outlined circle. */
-.list__note-yes { width: 36px; height: 36px; border: 1px solid var(--huleedu-navy); background: transparent; color: var(--huleedu-navy); }
-.list__note-no:disabled, .list__note-yes:disabled { cursor: not-allowed; opacity: 0.5; }
-.list__note-no:focus-visible, .list__note-yes:focus-visible, .list__note-row:focus-visible {
+.list__printed-change:disabled, .list__printed-show:disabled { cursor: not-allowed; opacity: 0.5; }
+.list__printed-change:focus-visible, .list__printed-show:focus-visible {
   outline: 2px solid var(--huleedu-action-40); outline-offset: 2px;
 }
 @media (hover: hover) {
-  .list__note-no:not(:disabled):hover { opacity: 0.85; }
-  .list__note-yes:not(:disabled):hover { background: var(--huleedu-action-05); }
+  .list__printed-change:not(:disabled):hover, .list__printed-show:not(:disabled):hover {
+    background: var(--huleedu-action-05);
+  }
 }
 @media (max-width: 1279px) {
   .list__head { padding: 0 var(--huleedu-space-3) 0 var(--huleedu-space-4); }

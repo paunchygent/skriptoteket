@@ -143,7 +143,7 @@ export function blankDocument(): NativeExamDocument {
   return {
     assets: [],
     document_id: "00000000-0000-4000-8000-000000000001",
-    header: { printed_total_dismissed: false, tags: [] },
+    header: { tags: [] },
     instructions: [],
     items: [keylessItem(1, "single_choice"), keylessItem(2, "multiple_response"), retryItem()],
     origin: { kind: "docx_import" },

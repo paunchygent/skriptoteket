@@ -73,11 +73,10 @@ const mounted: Array<VueWrapper> = [];
 function mountList(entries: ExamWorkspaceListEntry[] = ENTRIES, disabled = false): VueWrapper {
   const wrapper = mount(ExamWorkspaceQuestionList, {
     props: {
-      account: null,
+      mismatches: [],
       canAdd: true,
       disabled,
       entries,
-      examDiffers: false,
       examInstructionsPreview: null,
       overlay: false,
       questionCount: entries.filter((entry) => entry.kind === "item").length,

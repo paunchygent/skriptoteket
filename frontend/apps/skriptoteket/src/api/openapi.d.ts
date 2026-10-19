@@ -7100,7 +7100,6 @@ export interface components {
             document_id: string;
             /**
              * @default {
-             *       "printed_total_dismissed": false,
              *       "tags": []
              *     }
              */
@@ -7143,7 +7142,6 @@ export interface components {
             document_id: string;
             /**
              * @default {
-             *       "printed_total_dismissed": false,
              *       "tags": []
              *     }
              */
@@ -7200,11 +7198,6 @@ export interface components {
             course_hint?: string | null;
             /** Printed Total */
             printed_total?: (number) | null;
-            /**
-             * Printed Total Dismissed
-             * @default false
-             */
-            printed_total_dismissed: boolean;
             /**
              * Tags
              * @default []

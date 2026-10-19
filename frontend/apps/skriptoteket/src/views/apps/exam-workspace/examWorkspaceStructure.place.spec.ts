@@ -34,7 +34,7 @@ function documentOf(items: NativeExamItem[], parents: NativeExamParent[]): Nativ
   return {
     assets: [],
     document_id: "00000000-0000-4000-8000-000000000001",
-    header: { printed_total_dismissed: false, tags: [] },
+    header: { tags: [] },
     instructions: [],
     items,
     origin: { kind: "created" },
