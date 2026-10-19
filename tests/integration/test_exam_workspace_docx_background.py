@@ -81,6 +81,7 @@ from skriptoteket.infrastructure.repositories.user_vault_file_repository import 
 )
 from skriptoteket.infrastructure.time.asyncio_sleeper import AsyncioSleeper
 from skriptoteket.infrastructure.vault.local_vault_storage import LocalVaultStorage
+from tests.fixtures.docx_corpus import CORPUS
 from tests.fixtures.time_fixtures import FixedClock
 from tests.integration.exam_workspace_docx_background_support import (
     API_KEY,
@@ -93,7 +94,6 @@ from tests.integration.infrastructure.repositories.exam_workspace_test_support i
     create_owner,
 )
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
-    CORPUS,
     RECORDED_FAMILIES_PER_BATCH,
     RECORDINGS,
     GrantingLeases,
