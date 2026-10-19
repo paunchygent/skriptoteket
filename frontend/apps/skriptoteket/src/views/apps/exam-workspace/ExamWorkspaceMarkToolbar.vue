@@ -18,7 +18,7 @@
  */
 
 import {
-  Bold, Heading1, Heading2, Heading3, Italic, Subscript, Superscript, Underline,
+  Bold, Heading1, Heading2, Heading3, Italic, Subscript, Superscript, TextCursorInput, Underline,
 } from "lucide-vue-next";
 
 import { BODY_MARKS, MARK_LABELS } from "./examWorkspaceBodyMarks";
@@ -32,13 +32,18 @@ withDefaults(
     activeHeading?: HeadingLevel | null;
     disabled?: boolean;
     showHeadings?: boolean;
+    /** Show the "Lucka" gap button after the marks. */
+    showGap?: boolean;
+    /** Why no more gaps can be added; disables the gap button while set. */
+    gapDisabledReason?: string | null;
   }>(),
-  { activeMarks: () => [], activeHeading: null, disabled: false, showHeadings: false },
+  { activeMarks: () => [], activeHeading: null, disabled: false, showHeadings: false, showGap: false, gapDisabledReason: null },
 );
 
 const emit = defineEmits<{
   toggleMark: [mark: BodyMark];
   toggleHeading: [level: HeadingLevel];
+  makeGap: [];
 }>();
 
 const MARK_ICONS = {
@@ -91,6 +96,28 @@ const MARK_SHORTCUTS: Partial<Record<BodyMark, string>> = {
         aria-hidden="true"
       />
     </button>
+    <template v-if="showGap">
+      <button
+        type="button"
+        class="inline-flex h-8 items-center justify-center gap-1 border px-2 text-navy disabled:opacity-40"
+        :class="
+          gapDisabledReason === null && !disabled
+            ? 'border-transparent hover:bg-canvas'
+            : 'border-transparent'
+        "
+        aria-label="Gör till lucka"
+        :title="gapDisabledReason ?? 'Gör till lucka'"
+        :disabled="disabled || gapDisabledReason !== null"
+        data-test="exam-workspace-toolbar-make-gap"
+        @click="emit('makeGap')"
+      >
+        <TextCursorInput
+          :size="16"
+          aria-hidden="true"
+        />
+        Lucka
+      </button>
+    </template>
     <template v-if="showHeadings">
       <span
         class="mx-1.5 h-5 w-px bg-navy/40"
