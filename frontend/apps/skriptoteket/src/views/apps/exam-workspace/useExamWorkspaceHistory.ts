@@ -9,8 +9,8 @@
  *   Spara. Undo and redo move between stored steps and install the step's
  *   document; a new edit after an undo branches after the current step,
  *   which drops the redo steps. Undo first stores any pending edit, so the
- *   pending edit itself can be redone; if that store fails, undo stops and
- *   the pending edit stays in front of the teacher.
+ *   pending edit itself can be redone; the three outcomes when that flush
+ *   meets a failure are spelled out below.
  *
  *   The history cursor is only a concurrency token: it rotates on every
  *   write, Spara included, and need not name a step. The step the editor
@@ -21,9 +21,14 @@
  *   no edit is typed into a copy the read is about to replace, and AI
  *   arrivals that land meanwhile run again on the step. Departure runs through
  *   `useExamWorkspaceHistoryDeparture`, which owns the held lock lifecycle.
- *   A pending edit the save rules refuse is discarded
- *   by undo instead: undo reinstalls the standing step, and the refused edit
- *   can never be redone.
+ *   Undo's flush of a pending edit has three outcomes: a network or server
+ *   failure (anything but 409 and 422) stops undo and keeps the pending edit
+ *   in front of the teacher; a 422 refusal discards it, so undo reinstalls
+ *   the standing step and the refused edit can never be redone; a 409
+ *   conflict reloads the server copy through `onConflict`, which replaces
+ *   the pending edit, and undo stops. The 409 reload is the kept policy
+ *   until TASK-SKRIPT-40-04-14 designs a cross-tab policy that loses no
+ *   typing silently.
  *
  *   No `beforeunload` handler is mounted on the exam-workspace routes (see the
  *   departure module for the `pageshow` release and the disposal rule).
@@ -193,9 +198,12 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
   /**
    * Stores `snapshot`, or the working copy: "stored" when the server's newest
    * step now holds it (or nothing needed storing), "refused" when the save
-   * rules reject it, so it can never be a step, and "failed" otherwise.
-   * The typing timer belongs to the working copy: storing it makes the pause
-   * moot, while storing an owed snapshot leaves typing's pause running.
+   * rules reject it with a 422, so it can never be a step, and "failed"
+   * otherwise: a network or server failure keeps the pending edit, while a
+   * 409 conflict reloads the server copy through `onConflict`, which
+   * replaces it. The typing timer belongs to the working copy: storing it
+   * makes the pause moot, while storing an owed snapshot leaves typing's
+   * pause running.
    */
   async function store(settle = false, snapshot: NativeExamDocument | null = null): Promise<StoreOutcome> {
     if (snapshot === null) {

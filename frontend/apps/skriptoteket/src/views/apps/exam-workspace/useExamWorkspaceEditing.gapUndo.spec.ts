@@ -8,7 +8,9 @@
  *   422, so Ångra once discards the refused working copy to the last stored
  *   step with nothing pending, and Ångra again removes the word-made gap. A
  *   transient store failure instead keeps the pending edit in front of the
- *   teacher.
+ *   teacher. A 409 conflict when undo flushes a pending word-made gap
+ *   reloads the server copy through `onConflict`, which replaces the pending
+ *   edit (the gap is gone), and undo stops.
  *
  * Transport is the named double of the server's step store; the composables
  * are the production ones. The 900 ms pause is advanced explicitly, never
@@ -31,6 +33,7 @@ import {
   exam,
   openEditing,
   refuseSaveRefusedDrafts,
+  response,
   stopScopes,
 } from "./useExamWorkspaceEditing.history.specSupport";
 
@@ -189,6 +192,25 @@ describe("a gap the save rules refuse", () => {
 
     expect(gapIdsOf(editing.workspaceDocument.value!)).toEqual(["gap_001"]);
     expect(editing.workspaceDocument.value!.items[0]!.body).toEqual(bodyWith(["gap_001"]));
+  });
+});
+
+describe("a 409 conflict during undo's flush", () => {
+  it("reloads the server copy, dropping the pending word-made gap", async () => {
+    const { editing, server } = await openGapExam();
+    editing.createItemGap("item_001", bodyWith(["gap_001", "gap_002"]), "gap_002", "ord");
+    // Another tab moves the history cursor before the gap is stored.
+    server.state.cursor = "other-tab";
+    api.getExamWorkspaceDocument.mockResolvedValueOnce(response(exam("Från en annan flik"), "other-tab"));
+
+    await editing.history.undo();
+    await flushPromises();
+
+    expect(api.getExamWorkspaceDocument).toHaveBeenCalledOnce();
+    expect(api.getExamWorkspaceHistoryStep).not.toHaveBeenCalled();
+    expect(editing.workspaceDocument.value!.title).toBe("Från en annan flik");
+    expect(gapIdsOf(editing.workspaceDocument.value!)).toEqual([]);
+    expect(editing.history.pending.value).toBe(false);
   });
 });
 
