@@ -305,19 +305,21 @@ describe("autosaved undo steps", () => {
   });
 });
 
-describe("departure settle under the editing lock", () => {
+describe("departure under the held editing lock", () => {
   it("resolves false without storing while another undo holds the copy", async () => {
     const { edit, history } = setup(false, { isReplacing: () => true });
     await flushPromises();
     edit("one");
     apiMocks.storeExamWorkspaceUndoStep.mockClear();
+    const leave = vi.fn(async () => true);
 
-    await expect(history.settleForDeparture()).resolves.toBe(false);
+    await expect(history.depart(leave)).resolves.toBe(false);
 
     expect(apiMocks.storeExamWorkspaceUndoStep).not.toHaveBeenCalled();
+    expect(leave).not.toHaveBeenCalled();
   });
 
-  it("runs the settle flush inside the replacing lock", async () => {
+  it("runs the settle flush inside the replacing lock and holds it past the leave", async () => {
     const events: string[] = [];
     const { edit, history } = setup(false, {
       replaceCopy: async <T>(run: () => Promise<T>): Promise<T> => {
@@ -340,8 +342,13 @@ describe("departure settle under the editing lock", () => {
       return inner(...args);
     });
 
-    await expect(history.settleForDeparture()).resolves.toBe(true);
+    await expect(
+      history.depart(async () => true),
+    ).resolves.toBe(true);
+    expect(events).toEqual(["lock", "store"]);
 
+    window.dispatchEvent(new Event("pageshow"));
+    await flushPromises();
     expect(events).toEqual(["lock", "store", "unlock"]);
   });
 
@@ -350,7 +357,50 @@ describe("departure settle under the editing lock", () => {
     await flushPromises();
     edit("one");
     apiMocks.storeExamWorkspaceUndoStep.mockRejectedValueOnce(new Error("offline"));
+    const leave = vi.fn(async () => true);
 
-    await expect(history.settleForDeparture()).resolves.toBe(false);
+    await expect(history.depart(leave)).resolves.toBe(false);
+
+    expect(leave).not.toHaveBeenCalled();
+  });
+
+  it("resolves false and releases the lock when the leave returns false", async () => {
+    const events: string[] = [];
+    const { edit, history } = setup(false, {
+      replaceCopy: async <T>(run: () => Promise<T>): Promise<T> => {
+        events.push("lock");
+        try {
+          return await run();
+        } finally {
+          events.push("unlock");
+        }
+      },
+    });
+    await flushPromises();
+    edit("one");
+    const inner = apiMocks.storeExamWorkspaceUndoStep.getMockImplementation();
+    if (!inner) {
+      throw new Error("expected the step store double");
+    }
+    apiMocks.storeExamWorkspaceUndoStep.mockImplementation(async (...args) => {
+      events.push("store");
+      return inner(...args);
+    });
+
+    await expect(history.depart(async () => false)).resolves.toBe(false);
+
+    expect(events).toEqual(["lock", "store", "unlock"]);
+  });
+
+  it("resolves false and releases the lock when the leave throws", async () => {
+    const { edit, history } = setup();
+    await flushPromises();
+    edit("one");
+
+    await expect(
+      history.depart(async () => {
+        throw new Error("navigation unavailable");
+      }),
+    ).resolves.toBe(false);
   });
 });

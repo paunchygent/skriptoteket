@@ -94,13 +94,13 @@ const {
   workspaceDocument,
 } = editing;
 
-const { dismissSignInPrompt, settleForDeparture, signInPrompt } = useExamWorkspaceGuestSignIn({
+const { depart, dismissSignInPrompt, signInPrompt } = useExamWorkspaceGuestSignIn({
   history,
   store: props.store,
   workspaceDocument,
 });
 
-defineExpose({ settleForDeparture });
+defineExpose({ depart });
 
 const isPhone = computed(() => layout.value === "phone");
 const frame = ref<HTMLElement | null>(null);
@@ -320,7 +320,7 @@ onMounted(() => {
     <ExamWorkspaceSignInBar
       v-if="signInPrompt"
       :message="signInPrompt"
-      :depart="settleForDeparture"
+      :depart="depart"
       @dismiss="dismissSignInPrompt"
     />
     <div

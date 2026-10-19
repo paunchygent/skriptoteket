@@ -8,9 +8,9 @@
  *   browser, a stored draft reopens through the view's `?document=` address,
  *   and a hit guest limit surfaces the sign-in prompt. A signed-in visitor
  *   is sent to the signed-in workspace, which hands the draft off there.
- *   Every sign-in exit first settles the pending edit into browser storage
- *   through the guest view, so signing in never abandons the working copy
- *   before its autosave; a failed settle keeps the guest view mounted with
+ *   Every sign-in exit first departs through the guest view under its held
+ *   editing lock, so signing in never abandons the working copy
+ *   before its autosave; a failed departure keeps the guest view mounted with
  *   the inline failure copy.
  *
  * Relationships:
@@ -44,7 +44,9 @@ const limitReached = ref(false);
 const leaving = ref(false);
 /** The pending edit could not be settled, so the guest view stays mounted. */
 const departureFailed = ref(false);
-const viewRef = ref<{ settleForDeparture: () => Promise<boolean> } | null>(null);
+const viewRef = ref<{
+  depart: (leave: () => boolean | Promise<boolean>) => Promise<boolean>;
+} | null>(null);
 
 const guestStore = createGuestExamWorkspaceStore({
   api: publicExamWorkspaceApi,
@@ -63,26 +65,33 @@ function sendSignedInVisitorToWorkspace(): void {
 }
 
 /**
- * Settle the pending edit into browser storage through the guest view, so an
- * in-place sign-in never abandons the working copy before its autosave.
- * True when there is no mounted view to settle.
+ * Depart through the guest view under its held editing lock, so an in-place
+ * sign-in never abandons the working copy before its autosave. With no
+ * mounted view `leave` runs directly.
  */
-async function settleView(): Promise<boolean> {
+async function departThroughView(
+  leave: () => boolean | Promise<boolean>,
+): Promise<boolean> {
   const view = viewRef.value;
   if (!view) {
-    return true;
+    try {
+      return await leave();
+    } catch {
+      return false;
+    }
   }
-  return view.settleForDeparture();
+  return view.depart(leave);
 }
 
 /** Leave for the signed-in workspace only after the working copy is stored. */
 async function leaveForWorkspace(): Promise<void> {
-  const settled = await settleView();
-  if (settled) {
+  const left = await departThroughView(() => {
     departureFailed.value = false;
     leaving.value = true;
     sendSignedInVisitorToWorkspace();
-  } else {
+    return true;
+  });
+  if (!left) {
     departureFailed.value = true;
   }
 }
@@ -119,7 +128,7 @@ onMounted(async () => {
     </div>
     <ExamWorkspaceSignInPrompt
       v-if="limitReached"
-      :depart="settleView"
+      :depart="departThroughView"
       :message="GUEST_LIMIT_SIGN_IN"
     />
     <p

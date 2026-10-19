@@ -4,9 +4,8 @@
  * Expected behavior:
  *   Guest mode is the store without the teacher half. A component that
  *   injects the sign-in key sets the one prompt slot, and dismissing clears
- *   it. Settling for departure with no open document resolves true without
- *   settling; with an open document it runs the history's departure settle
- *   and resolves its result.
+ *   it. Departing with no open document runs the leave directly; with an
+ *   open document it runs the history's departure and resolves its result.
  */
 
 import { mount } from "@vue/test-utils";
@@ -60,7 +59,7 @@ type SignInApi = ReturnType<typeof useExamWorkspaceGuestSignIn>;
 function mountSignIn(options: {
   store: ExamWorkspaceStore;
   document: NativeExamDocument | null;
-  settleForDeparture: () => Promise<boolean>;
+  depart: (leave: () => boolean | Promise<boolean>) => Promise<boolean>;
 }): { api: SignInApi; requestThroughKey: (message: string) => void } {
   let api: SignInApi | null = null;
   let requestThroughKey: ((message: string) => void) | null = null;
@@ -75,7 +74,7 @@ function mountSignIn(options: {
   const probe = defineComponent({
     setup() {
       api = useExamWorkspaceGuestSignIn({
-        history: { settleForDeparture: options.settleForDeparture },
+        history: { depart: options.depart },
         store: options.store,
         workspaceDocument: ref(options.document),
       });
@@ -97,15 +96,15 @@ function mountSignIn(options: {
 describe("useExamWorkspaceGuestSignIn", () => {
   it("reports guest mode only for the store without the teacher half", () => {
     const guest = mountSignIn({
+      depart: async () => true,
       document: null,
-      settleForDeparture: async () => true,
       store: setupGuestStore(),
     });
     expect(guest.api.isGuest.value).toBe(true);
 
     const teacher = mountSignIn({
+      depart: async () => true,
       document: null,
-      settleForDeparture: async () => true,
       store: serverExamWorkspaceStore,
     });
     expect(teacher.api.isGuest.value).toBe(false);
@@ -113,8 +112,8 @@ describe("useExamWorkspaceGuestSignIn", () => {
 
   it("sets the prompt through the injected key and clears it on dismiss", () => {
     const { api, requestThroughKey } = mountSignIn({
+      depart: async () => true,
       document: null,
-      settleForDeparture: async () => true,
       store: setupGuestStore(),
     });
 
@@ -125,23 +124,27 @@ describe("useExamWorkspaceGuestSignIn", () => {
     expect(api.signInPrompt.value).toBeNull();
   });
 
-  it("settles departure without settling when no document is open", async () => {
-    const settleForDeparture = vi.fn(async () => true);
-    const { api } = mountSignIn({ document: null, settleForDeparture, store: setupGuestStore() });
+  it("runs the leave directly when no document is open", async () => {
+    const depart = vi.fn(async () => true);
+    const { api } = mountSignIn({ depart, document: null, store: setupGuestStore() });
+    const leave = vi.fn(async () => true);
 
-    await expect(api.settleForDeparture()).resolves.toBe(true);
-    expect(settleForDeparture).not.toHaveBeenCalled();
+    await expect(api.depart(leave)).resolves.toBe(true);
+    expect(depart).not.toHaveBeenCalled();
+    expect(leave).toHaveBeenCalledTimes(1);
   });
 
-  it("runs the history's departure settle with an open document and resolves its result", async () => {
-    const settleForDeparture = vi.fn(async () => false);
+  it("runs the history's departure with an open document and resolves its result", async () => {
+    const depart = vi.fn(async () => false);
     const { api } = mountSignIn({
+      depart,
       document: buildParentDocument(),
-      settleForDeparture,
       store: setupGuestStore(),
     });
+    const leave = vi.fn(async () => true);
 
-    await expect(api.settleForDeparture()).resolves.toBe(false);
-    expect(settleForDeparture).toHaveBeenCalledTimes(1);
+    await expect(api.depart(leave)).resolves.toBe(false);
+    expect(depart).toHaveBeenCalledTimes(1);
+    expect(depart).toHaveBeenCalledWith(leave);
   });
 });

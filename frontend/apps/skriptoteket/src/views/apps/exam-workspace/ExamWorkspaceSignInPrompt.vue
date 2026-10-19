@@ -6,9 +6,10 @@
  *   The inline notice a guest sees where a signed-in teacher's action needs
  *   an account: the sentence plus a "Logga in" link into the shared auth
  *   ceremony, returning to the signed-in exam workspace. Inline only, never
- *   a toast. Following the link first settles the pending edit into browser
- *   storage through the `depart` prop, so signing in never abandons the
- *   working copy before its autosave; a failed settle stays and shows the
+ *   a toast. Following the link departs through the `depart` prop, which
+ *   stores the pending edit and keeps the editing lock held across the
+ *   redirect, so signing in never abandons the working copy before its
+ *   autosave; a failed departure stays and shows the
  *   inline failure copy instead of navigating.
  *
  * Relationships:
@@ -26,8 +27,8 @@ import { UiGlyph } from "../../../components/ui";
 import { EXAM_WORKSPACE_DEPARTURE_FAILURE_COPY } from "./examWorkspaceSignIn";
 
 const props = defineProps<{
-  /** Settle the pending edit into browser storage; true when it is safe to leave. */
-  depart: () => Promise<boolean>;
+  /** Depart under the held editing lock; true when it is safe to leave. */
+  depart: (leave: () => boolean | Promise<boolean>) => Promise<boolean>;
   message: string;
 }>();
 
@@ -44,10 +45,11 @@ const settleFailed = ref(false);
 async function followLogin(event: Event): Promise<void> {
   event.preventDefault();
   settleFailed.value = false;
-  const settled = await props.depart();
-  if (settled) {
+  const settled = await props.depart(() => {
     redirectToSharedAuthCeremony(loginUrl.value);
-  } else {
+    return true;
+  });
+  if (!settled) {
     settleFailed.value = true;
   }
 }

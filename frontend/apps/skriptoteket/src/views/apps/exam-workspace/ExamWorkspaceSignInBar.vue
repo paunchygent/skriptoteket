@@ -15,8 +15,8 @@
 import ExamWorkspaceSignInPrompt from "./ExamWorkspaceSignInPrompt.vue";
 
 const props = defineProps<{
-  /** Settle the pending edit into browser storage; true when it is safe to leave. */
-  depart: () => Promise<boolean>;
+  /** Depart under the held editing lock; true when it is safe to leave. */
+  depart: (leave: () => boolean | Promise<boolean>) => Promise<boolean>;
   /** The guest sign-in message the prompt renders. */
   message: string;
 }>();

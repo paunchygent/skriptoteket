@@ -8,9 +8,10 @@
  *   never abandons the working copy before its autosave.
  *
  * Relationships:
- *   - Used by `ExamWorkspaceView`, which keeps `defineExpose({ settleForDeparture })`
+ *   - Used by `ExamWorkspaceView`, which keeps `defineExpose({ depart })`
  *     and clears the prompt from its open-document watcher. The history the
- *     departure settles through holds the editing lock while it stores.
+ *   departure runs through holds the editing lock past the redirect, so no
+ *   edit typed while leaving is accepted and lost on unload.
  *   - Provides `EXAM_WORKSPACE_SIGN_IN_KEY` for the exam-workspace
  *     components that own an AI or import button.
  *   - Rendered through `ExamWorkspaceSignInBar`.
@@ -24,8 +25,8 @@ import { EXAM_WORKSPACE_SIGN_IN_KEY } from "./examWorkspaceSignIn";
 import type { ExamWorkspaceStore } from "./examWorkspaceStore";
 
 export type ExamWorkspaceGuestSignInParams = {
-  /** The undo history whose departure settle stores the pending edit under the editing lock. */
-  history: { settleForDeparture: () => Promise<boolean> };
+  /** The undo history whose departure stores the pending edit under the held editing lock. */
+  history: { depart: (leave: () => boolean | Promise<boolean>) => Promise<boolean> };
   /** The workspace store; a missing teacher half means guest mode. */
   store: ExamWorkspaceStore;
   /** The exam in front of the guest; null while none is open. */
@@ -49,20 +50,24 @@ export function useExamWorkspaceGuestSignIn(params: ExamWorkspaceGuestSignInPara
   provide(EXAM_WORKSPACE_SIGN_IN_KEY, requestSignIn);
 
   /**
-   * Safe departure for every sign-in exit: store the pending edit as an undo
-   * step first, through the history's departure settle, which holds the
-   * editing lock while it stores like undo does, so signing in never
-   * abandons the working copy before its autosave and never loses an edit
-   * typed while the departure write runs. With no open document there is
-   * nothing to settle. Resolves the settle result: false keeps the working
-   * copy mounted instead of leaving.
+   * Safe departure for every sign-in exit: run `leave` through the history's
+   * departure, which stores the pending edit as an undo step under the editing
+   * lock and keeps the lock held while `leave` navigates away, so signing in
+   * never abandons the working copy before its autosave and never loses an
+   * edit typed after the redirect starts. With no open document there is
+   * nothing to settle, so `leave` runs directly. Resolves the departure
+   * result: false keeps the working copy mounted instead of leaving.
    */
-  async function settleForDeparture(): Promise<boolean> {
+  async function depart(leave: () => boolean | Promise<boolean>): Promise<boolean> {
     if (params.workspaceDocument.value === null) {
-      return true;
+      try {
+        return await leave();
+      } catch {
+        return false;
+      }
     }
-    return params.history.settleForDeparture();
+    return params.history.depart(leave);
   }
 
-  return { dismissSignInPrompt, isGuest, settleForDeparture, signInPrompt };
+  return { depart, dismissSignInPrompt, isGuest, signInPrompt };
 }

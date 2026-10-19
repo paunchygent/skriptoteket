@@ -165,7 +165,7 @@ describe("ExamWorkspaceSignInPrompt", () => {
 
   it("settles the pending edit before navigating to the login ceremony", async () => {
     const redirect = takeRedirect();
-      const depart = vi.fn(async () => true);
+      const depart = vi.fn(async (leave: () => boolean | Promise<boolean>) => leave());
       const wrapper = mount(ExamWorkspaceSignInPrompt, {
         props: { depart, message: GUEST_LIMIT_SIGN_IN },
       });
@@ -176,6 +176,7 @@ describe("ExamWorkspaceSignInPrompt", () => {
       await flushPromises();
 
       expect(depart).toHaveBeenCalledTimes(1);
+      expect(depart.mock.calls[0]?.[0]).toEqual(expect.any(Function));
       expect(redirect).toHaveBeenCalledTimes(1);
       expect(redirect).toHaveBeenCalledWith(href);
       expect(

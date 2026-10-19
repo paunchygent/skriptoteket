@@ -81,7 +81,7 @@ vi.mock("../../api/publicExamWorkspace", () => ({
 }));
 
 const viewMocks = vi.hoisted(() => ({
-  settleForDeparture: vi.fn(async () => true),
+  depart: vi.fn(async (leave: () => boolean | Promise<boolean>) => leave()),
 }));
 
 vi.mock("./ExamWorkspaceView.vue", () => ({
@@ -89,8 +89,8 @@ vi.mock("./ExamWorkspaceView.vue", () => ({
     name: "ExamWorkspaceViewStub",
     props: { store: { type: Object, required: true } },
     methods: {
-      settleForDeparture() {
-        return viewMocks.settleForDeparture();
+      depart(leave: () => boolean | Promise<boolean>) {
+        return viewMocks.depart(leave);
       },
     },
     template: "<div data-test='exam-workspace-view-stub' />",
@@ -148,8 +148,8 @@ describe("ExamWorkspaceGuestHost", () => {
     routeMocks.query = {};
     routeMocks.replace.mockReset();
     apiMocks.createBlank.mockReset();
-    viewMocks.settleForDeparture.mockReset();
-    viewMocks.settleForDeparture.mockResolvedValue(true);
+    viewMocks.depart.mockReset();
+    viewMocks.depart.mockImplementation(async (leave: () => boolean | Promise<boolean>) => leave());
   });
 
   it("renders the browser-only notice and the shared workspace on the guest store", async () => {
@@ -312,10 +312,10 @@ describe("ExamWorkspaceGuestHost", () => {
       await login.trigger("click");
       await flushPromises();
 
-      expect(viewMocks.settleForDeparture).toHaveBeenCalledTimes(1);
+      expect(viewMocks.depart).toHaveBeenCalledTimes(1);
       expect(redirect).toHaveBeenCalledTimes(1);
       expect(redirect).toHaveBeenCalledWith(href);
-      expect(viewMocks.settleForDeparture.mock.invocationCallOrder[0]).toBeLessThan(
+      expect(viewMocks.depart.mock.invocationCallOrder[0]).toBeLessThan(
         redirect.mock.invocationCallOrder[0],
       );
 
@@ -324,7 +324,7 @@ describe("ExamWorkspaceGuestHost", () => {
 
   it("stays and shows the failure when the login settle fails", async () => {
     const redirect = takeRedirect();
-      viewMocks.settleForDeparture.mockResolvedValueOnce(false);
+      viewMocks.depart.mockResolvedValueOnce(false);
       const wrapper = mount(ExamWorkspaceGuestHost, {
         global: { plugins: [createPinia()] },
       });
@@ -372,9 +372,9 @@ describe("ExamWorkspaceGuestHost", () => {
     };
     await flushPromises();
 
-    expect(viewMocks.settleForDeparture).toHaveBeenCalledTimes(1);
+    expect(viewMocks.depart).toHaveBeenCalledTimes(1);
     expect(routeMocks.replace).toHaveBeenCalledWith({ name: "exam-workspace" });
-    expect(viewMocks.settleForDeparture.mock.invocationCallOrder[0]).toBeLessThan(
+    expect(viewMocks.depart.mock.invocationCallOrder[0]).toBeLessThan(
       routeMocks.replace.mock.invocationCallOrder[0],
     );
     expect(wrapper.find("[data-test='exam-workspace-view-stub']").exists()).toBe(false);
@@ -386,7 +386,7 @@ describe("ExamWorkspaceGuestHost", () => {
     const pinia = createPinia();
     setActivePinia(pinia);
     const authStore = useAuthStore();
-    viewMocks.settleForDeparture.mockResolvedValueOnce(false);
+    viewMocks.depart.mockResolvedValueOnce(false);
     const wrapper = mount(ExamWorkspaceGuestHost, {
       global: { plugins: [pinia] },
     });

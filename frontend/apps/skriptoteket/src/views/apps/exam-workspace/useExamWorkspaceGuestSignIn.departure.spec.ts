@@ -2,9 +2,9 @@
  * Exam workspace guest sign-in departure under the editing lock.
  *
  * Expected behavior (TASK-SKRIPT-41-02-02 repair R9, finding F4):
- *   A sign-in exit settles the pending edit through the history's departure
- *   settle, which holds the document owner's replacing lock while it stores,
- *   so no edit typed while the departure write runs is stored past it and
+ *   A sign-in exit departs through the history's `depart(leave)`, which holds
+ *   the document owner's replacing lock while it stores, so no edit typed
+ *   while the departure write runs is stored past it and
  *   lost. Typing during a paused departure write is refused like any edit
  *   during an undo read: the visible copy and the stored draft stay at the
  *   departure snapshot, nothing is pending, and departure resolves true. A
@@ -101,7 +101,7 @@ describe("guest sign-in departure under the editing lock", () => {
       await flushPromises();
       editing.setTitle("snapshot A");
 
-      const departure = signIn.settleForDeparture();
+      const departure = signIn.depart(async () => true);
       await writeEntered;
       editing.setTitle("newer visible B");
       expect(editing.workspaceDocument.value?.title).toBe("snapshot A");
@@ -153,7 +153,7 @@ describe("guest sign-in departure under the editing lock", () => {
       try {
         const moving = editing.history.undo();
         await readEntered;
-        await expect(signIn.settleForDeparture()).resolves.toBe(false);
+        await expect(signIn.depart(async () => true)).resolves.toBe(false);
         const during: StoredGuestDraft | null = await backing.load();
         expect(during?.draft.steps).toHaveLength(before.draft.steps.length);
         releaseRead();
@@ -184,7 +184,7 @@ describe("guest sign-in departure under the editing lock", () => {
       await flushPromises();
       editing.setTitle("unsaved A");
 
-      await expect(signIn.settleForDeparture()).resolves.toBe(false);
+      await expect(signIn.depart(async () => true)).resolves.toBe(false);
     } finally {
       wrapper.unmount();
     }
@@ -208,7 +208,7 @@ describe("guest sign-in departure under the editing lock", () => {
       await flushPromises();
       editing.setTitle("unsaved A");
 
-      await expect(signIn.settleForDeparture()).resolves.toBe(false);
+      await expect(signIn.depart(async () => true)).resolves.toBe(false);
       const stored: StoredGuestDraft | null = await backing.load();
       expect(stored?.draft.cursor).toBe(original.cursor);
     } finally {
