@@ -89,7 +89,11 @@ Stop and report if the shared editor cannot run on a browser store without forki
 - Suite slot 2026-10-19:
   - At 5c762235: backend 116 unit and 12 integration tests passed. Vitest had 3 failures in main's `ExamWorkspaceImportBox.origin.spec.ts`, which mounted without the workspace providers; R11 fixed the spec.
   - At abb01b7a: Vitest 444 files, 3064 passed.
-- Next: F4 (R10), U8, F5 and F5b go to review da90f12c.
+- Rereview 3 (da90f12c at 20f5b11e) cleared F4 and approved U8. It found no loss in the merge or R11 and raised three new findings, each repaired by a fresh junior with a test that failed before the fix:
+  - F10 (ad01ffeb): the browser decodes QTI picture bytes in Pydantic's URL-safe base64, the producer's declared encoding.
+  - F11 (ccfe1d7f): `startBlank` and `startFromQti` capture the slot cursor before awaiting the public route, through one helper.
+  - F12: a departure pending when the history scope is disposed neither leaves nor holds the lock.
+- Next: full Vitest after the orchestrator assigns a slot; then F10 and F11 go back to da90f12c, and F12 is admitted on focused proof.
 - Open findings:
   - The caller key is an unsalted sha256 of the client IP; rows are pruned after about 2 hours.
   - `ExamConverterPublicView.vue` stays until 41-02-03.
