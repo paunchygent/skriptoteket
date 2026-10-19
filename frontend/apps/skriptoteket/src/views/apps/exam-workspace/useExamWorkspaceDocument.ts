@@ -30,7 +30,6 @@ import { isApiError } from "../../../api/client";
 import type {
   ExamWorkspaceDocumentResponse,
   ExamWorkspaceDocumentSummary,
-  ExamCourseChoice,
   NativeExamDocument,
   NativeExamItem,
   NativeExamItemKind,
@@ -267,13 +266,6 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     noteEdit(false, current);
   }
 
-  function setCourse(course: ExamCourseChoice | null): void {
-    const current = workspaceDocument.value;
-    if (!current || isBusy.value || isReadOnly()) return;
-    workspaceDocument.value = { ...current, header: { ...current.header, course } };
-    noteEdit(true, current);
-  }
-
   const { beginSummaryRead, renameFailure, renameFile } = useExamWorkspaceRename({
     isBusy: () => isBusy.value,
     operationBusy,
@@ -388,7 +380,10 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
   }
 
   // The whole-document field commands, each one `editDocument` call.
-  const fieldCommands = useExamWorkspaceDocumentFields({ editDocument });
+  const fieldCommands = useExamWorkspaceDocumentFields({
+    courseKey: () => workspaceDocument.value?.header.course?.key ?? null,
+    editDocument,
+  });
 
   /**
    * A store or a position move confirmed this document; the exam file holds
@@ -453,7 +448,6 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     serverDocument,
     selectItem,
     setTitle,
-    setCourse,
     selectedItem,
     selectedItemId,
     summary,

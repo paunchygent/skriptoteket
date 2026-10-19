@@ -3,8 +3,9 @@
  *
  * Domain purpose:
  *   Own the teacher commands that edit one field of the whole exam (the exam
- *   instruction, a part's instruction, the Centralt innehåll ticks) and the
- *   printed-total line's fix: clear one level's printed total.
+ *   instruction, a part's instruction, the course choice and its Centralt
+ *   innehåll ticks) and the printed-total line's fix: clear one level's
+ *   printed total.
  *
  * Relationships:
  *   - Every command is one `editDocument` call, the open document's single
@@ -13,7 +14,13 @@
  *   - Totals arithmetic lives in `examWorkspaceTotals`.
  */
 
-import type { NativeExamDocument, NativeExamHeader, NativeExamParent } from "../../../api/examWorkspace";
+import type {
+  ExamCourseChoice,
+  NativeExamDocument,
+  NativeExamHeader,
+  NativeExamParent,
+} from "../../../api/examWorkspace";
+import { applyCourseChange } from "./examWorkspaceCourseTags";
 import { withoutExamPrintedTotal, withoutPartPrintedTotal } from "./examWorkspaceTotals";
 import { withWritingLinesForAllFreeText } from "./examWorkspaceWritingLines";
 
@@ -26,8 +33,11 @@ export type EditExamWorkspaceDocument = (
 
 export function useExamWorkspaceDocumentFields({
   editDocument,
+  courseKey,
 }: {
   editDocument: EditExamWorkspaceDocument;
+  /** The working copy's course key; choosing it again makes no edit. */
+  courseKey: () => string | null;
 }) {
   /** The instruction text above an instruction's deluppgifter, typed like a question's text. */
   function setParentInstruction(
@@ -57,6 +67,18 @@ export function useExamWorkspaceDocumentFields({
     editDocument((document) => ({ ...document, header: { ...document.header, tags } }));
   }
 
+  /**
+   * The exam's course. Choosing it drops the ticks the new course does not
+   * own (all of them when cleared), so the stored copy needs no normalising;
+   * choosing the course already set makes no edit.
+   */
+  function setCourse(course: ExamCourseChoice | null): void {
+    if ((course?.key ?? null) === courseKey()) {
+      return;
+    }
+    editDocument((document) => applyCourseChange(document, course));
+  }
+
   /** Clear one level's printed total (the exam's when `parentId` is null, else that part's); one undo step. */
   function clearPrintedTotal(parentId: string | null): void {
     editDocument((document) =>
@@ -72,6 +94,7 @@ export function useExamWorkspaceDocumentFields({
   return {
     applyWritingLinesToAllFreeText,
     clearPrintedTotal,
+    setCourse,
     setExamInstructions,
     setParentInstruction,
     setTags,

@@ -13,8 +13,7 @@
  *   (`EDIT_LEASE_HELD`) instead turns the tab read-only and keeps the pending
  *   edit visible: no reload, no retry while read-only. Every write runs
  *   through the sync gate's single queue, so outside `editing` a write
- *   resolves `failed` at once with no read and no wait. Undo and redo stop
- *   while read-only.
+ *   resolves `failed` at once with no read and no wait.
  *
  *   The history cursor is only a concurrency token: it rotates on every
  *   write and need not name a step. The step the editor stands on is the
@@ -24,13 +23,9 @@
  *   land meanwhile run again on the step. Departure runs through
  *   `useExamWorkspaceHistoryDeparture`, which owns the held lock lifecycle.
  *   Undo's flush of a pending edit has three outcomes: a network or server
- *   failure stops undo and keeps the pending edit in front of the teacher,
- *   and the store is retried every 5 s and on the next edit; a 422 refusal
- *   discards it, so undo reinstalls the standing step and the refused edit
- *   can never be redone.
- *
- *   No `beforeunload` handler is mounted on the exam-workspace routes (see
- *   the departure module for the `pageshow` release and the disposal rule).
+ *   failure stops undo and keeps the pending edit, retried every 5 s and on
+ *   the next edit; a 422 refusal discards it, so undo reinstalls the
+ *   standing step and the refused edit can never be redone.
  *
  * Relationships:
  *   - Reads the working copy and the cursor the document composable installs;
@@ -234,12 +229,12 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
    * network failure keeps the pending edit; a stale-cursor 409 is reported
    * through `onConflict` to the gate, while an `EDIT_LEASE_HELD` 409 turns
    * the tab read-only and keeps the edit visible with no reload, toast or
-   * retry; the status reads `Inte sparat` with the lease reason. Refusals are
-   * decided from the snapshot, with the server's 422 as the backstop. Storing
-   * the working copy ends its pause; storing an owed snapshot leaves typing's
-   * pause running. A response never replaces later typing: the step document
-   * becomes the confirmed snapshot, so a store of the newer copy follows
-   * through the same queue slot, never through a nested queue entry.
+   * retry. Refusals are decided from the snapshot, with the server's 422 as
+   * the backstop. Storing the working copy ends its pause; storing an owed
+   * snapshot leaves typing's pause running. A response never replaces later
+   * typing: when the working copy still equals the sent snapshot, the
+   * server's stored copy is installed instead, so nothing re-stores; when it
+   * differs, a store of the newer copy follows through the same queue slot.
    */
   async function store(settle = false, snapshot: NativeExamDocument | null = null): Promise<StoreOutcome> {
     if (snapshot === null) {
@@ -287,10 +282,14 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
       stepDocument.value = response.document;
       status.confirmed(response.document);
       deps.noteGateStored();
-      if (!sameContent(deps.workspaceDocument.value, response.document)) {
+      if (!sameContent(deps.workspaceDocument.value, document)) {
         // Keystrokes typed while the store was in flight stay in the copy;
         // the newer copy is stored next, so the status reads `Sparar …`.
         void flush();
+      } else {
+        // The server normalised the stored copy: install it, so the copies
+        // agree and nothing re-stores.
+        deps.workspaceDocument.value = response.document;
       }
       return "stored";
     } catch (error) {
@@ -309,6 +308,8 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
         toast.failure(error.code === "VALIDATION_ERROR" ? AUTOSAVE_FAILURE_COPY : error.message);
         return "refused";
       } else {
+        // The next store sends the newest working copy, not old snapshots.
+        owed = [];
         status.noteFailed();
       }
       return "failed";
@@ -344,8 +345,7 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
    * whether the server's newest step holds the editor's document. Owed
    * structural snapshots are stored first; when one fails, the working copy
    * is not stored and flush resolves false. `settle` also stores an undone
-   * step as the newest one, because the server's commands (parents, Byt
-   * frågetyp) apply to its newest step.
+   * step as the newest one, which the server's commands apply to.
    */
   function flush(settle = false): Promise<boolean> {
     return flushOutcome(settle).then((outcome) => outcome === "stored");
@@ -356,8 +356,8 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
    * an owed snapshot is a draft the save rules refuse, "failed" when a write
    * could not be stored. Undo tells them apart; every other caller only needs
    * whether the server's newest step holds the editor's document. A failed
-   * flush rearms the 5 s retry unless the tab may not write, in which case
-   * the pending edit waits for a fresh load instead; a concluded flush clears it.
+   * flush rearms the 5 s retry unless the tab may not write; a concluded
+   * flush clears it.
    */
   function flushOutcome(settle = false): Promise<StoreOutcome> {
     return deps.enqueueWrite(() => flushOutcomeInner(settle), "failed");
@@ -408,15 +408,19 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
    * step now, holding the document as it was right after that edit, so two
    * quick structural edits stay two steps. Typing still waiting for its pause
    * is stored first as its own step, from `before`, the copy just before the
-   * structural edit; undo then takes back only the structural edit. A store
-   * of `before` that matches the step already stored writes nothing. Both
-   * snapshots stay owed until stored, so a failed store of `before` is
-   * retried before the edit by the next flush, undo or Spara som. When the
-   * last store failed, the next edit stores at once instead of waiting out
-   * the pause.
+   * structural edit; undo then takes back only the structural edit. Both
+   * snapshots stay owed until stored; a store of `before` that already
+   * matches writes nothing. Once a store failed, the backlog is
+   * dropped and the next edit flushes the newest working copy at once instead
+   * of waiting out the pause; undo steps made during an outage then collapse
+   * into one step, which is accepted.
    */
   function noteEdit(structural = false, before: NativeExamDocument | null = null): void {
-    if (structural) {
+    if (status.hasFailed()) {
+      // A failed store drops the backlog: the next store sends the newest copy.
+      owed = [];
+      void flush();
+    } else if (structural) {
       const after = deps.workspaceDocument.value;
       if (before !== null) {
         owed.push(before);
@@ -425,8 +429,6 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
         owed.push(after);
       }
       void deps.enqueueWrite(() => storeOwed(), false);
-    } else if (status.hasFailed()) {
-      void flush();
     } else {
       schedule();
     }
