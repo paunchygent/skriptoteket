@@ -36,6 +36,7 @@ function throughEditor(body: NativeExamBodyParagraph[]): NativeExamBodyParagraph
       pictureUrl: () => undefined,
       onUndo: () => undefined,
       onRedo: () => undefined,
+      onToggleGapTool: () => false,
     }),
     content: editorContentFrom(body),
   });
