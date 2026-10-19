@@ -30,17 +30,6 @@ import { computed, ref } from "vue";
 import type { Ref } from "vue";
 
 import { isApiError } from "../../../api/client";
-import {
-  addExamWorkspaceChild,
-  changeExamWorkspaceItemType,
-  createEmptyExamWorkspacePart,
-  createExamWorkspaceParent,
-  deleteExamWorkspaceChild,
-  deleteExamWorkspaceParent,
-  groupExamWorkspaceItems,
-  moveExamWorkspaceItem,
-  reorderExamWorkspaceChildren,
-} from "../../../api/examWorkspaceStructureCommands";
 import type { ExamParentDeleteMode } from "../../../api/examWorkspaceStructureCommands";
 import type {
   ExamWorkspaceDocumentResponse,
@@ -51,6 +40,7 @@ import { useToast } from "../../../composables/useToast";
 import { nextItemId } from "./examWorkspaceConversionMerge";
 import { newTeacherItem } from "./examWorkspaceItemEdits";
 import type { TeacherItemKind } from "./examWorkspaceItemEdits";
+import type { ExamWorkspaceSharedStore } from "./examWorkspaceStore";
 import {
   examWorkspaceChangeTypeNotice,
   examWorkspaceIsOnlyQuestion,
@@ -73,6 +63,8 @@ export type ExamWorkspaceStructureDeps = {
   lineageId: () => string | null;
   savedRevision: () => number | null;
   isBusy: () => boolean;
+  /** The shared store half the structure commands run through. */
+  shared: ExamWorkspaceSharedStore;
   editDocument: (
     edit: (document: NativeExamDocument) => NativeExamDocument,
     selectId?: string | null,
@@ -209,7 +201,7 @@ export function useExamWorkspaceStructure(deps: ExamWorkspaceStructureDeps) {
     if (parent) {
       const next = examWorkspaceNeighbourId(document, itemId);
       void runCommand((lineageId, cursor) =>
-        deleteExamWorkspaceChild(lineageId, parent.parent_id, itemId, cursor),
+        deps.shared.deleteExamWorkspaceChild(lineageId, parent.parent_id, itemId, cursor),
       ).then((response) => {
         if (!response) {
           return;
@@ -244,7 +236,7 @@ export function useExamWorkspaceStructure(deps: ExamWorkspaceStructureDeps) {
     const next =
       mode === "keep_questions" ? firstChild : lastChild && examWorkspaceNeighbourId(document, lastChild);
     const response = await runCommand((lineageId, cursor) =>
-      deleteExamWorkspaceParent(lineageId, parentId, mode, cursor),
+      deps.shared.deleteExamWorkspaceParent(lineageId, parentId, mode, cursor),
     );
     if (response && next && response.document.items.some((item) => item.item_id === next)) {
       deps.selectItem(next);
@@ -263,7 +255,7 @@ export function useExamWorkspaceStructure(deps: ExamWorkspaceStructureDeps) {
     const after = selectedUnitIndex(document);
     const position = after < 0 ? examWorkspaceUnits(document).length : after + 1;
     await runCommand((lineageId, cursor) =>
-      createExamWorkspaceParent(lineageId, {
+      deps.shared.createExamWorkspaceParent(lineageId, {
         child: newChildContent("free_text"),
         expected_cursor: cursor,
         instruction: [
@@ -280,7 +272,7 @@ export function useExamWorkspaceStructure(deps: ExamWorkspaceStructureDeps) {
       return;
     }
     await runCommand((lineageId, cursor) =>
-      addExamWorkspaceChild(lineageId, parentId, {
+      deps.shared.addExamWorkspaceChild(lineageId, parentId, {
         child: newChildContent(kind),
         expected_cursor: cursor,
         position: parent.item_ids.length,
@@ -291,7 +283,7 @@ export function useExamWorkspaceStructure(deps: ExamWorkspaceStructureDeps) {
   /** Group marked standalone questions into one new part and open its instruction (G4, G10). */
   async function groupItems(itemIds: string[]): Promise<boolean> {
     const response = await runCommand((lineageId, cursor) =>
-      groupExamWorkspaceItems(lineageId, itemIds, cursor),
+      deps.shared.groupExamWorkspaceItems(lineageId, itemIds, cursor),
     );
     if (!response) {
       return false;
@@ -309,7 +301,7 @@ export function useExamWorkspaceStructure(deps: ExamWorkspaceStructureDeps) {
     const after = selectedUnitIndex(document);
     const position = after < 0 ? examWorkspaceUnits(document).length : after + 1;
     const response = await runCommand((lineageId, cursor) =>
-      createEmptyExamWorkspacePart(lineageId, position, cursor),
+      deps.shared.createEmptyExamWorkspacePart(lineageId, position, cursor),
     );
     if (response) {
       deps.selectParent(response.created_parent_id);
@@ -319,7 +311,7 @@ export function useExamWorkspaceStructure(deps: ExamWorkspaceStructureDeps) {
   /** Move one question into a part, out to standalone, or between parts (G3, R3, R4). */
   async function moveItem(itemId: string, targetParentId: string | null): Promise<void> {
     const response = await runCommand((lineageId, cursor) =>
-      moveExamWorkspaceItem(lineageId, itemId, targetParentId, cursor),
+      deps.shared.moveExamWorkspaceItem(lineageId, itemId, targetParentId, cursor),
     );
     if (response) {
       deps.selectItem(itemId);
@@ -337,7 +329,7 @@ export function useExamWorkspaceStructure(deps: ExamWorkspaceStructureDeps) {
     itemIds.splice(from, 1);
     itemIds.splice(to, 0, itemId);
     await runCommand((lineageId, cursor) =>
-      reorderExamWorkspaceChildren(lineageId, parentId, itemIds, cursor),
+      deps.shared.reorderExamWorkspaceChildren(lineageId, parentId, itemIds, cursor),
     );
   }
 
@@ -349,7 +341,7 @@ export function useExamWorkspaceStructure(deps: ExamWorkspaceStructureDeps) {
     let dropped: string[] = [];
     const response = await runCommand(async (lineageId, cursor) => {
       const revision = deps.savedRevision();
-      const changed = await changeExamWorkspaceItemType(lineageId, {
+      const changed = await deps.shared.changeExamWorkspaceItemType(lineageId, {
         expected_cursor: cursor,
         expected_revision: revision ?? 0,
         item_id: itemId,

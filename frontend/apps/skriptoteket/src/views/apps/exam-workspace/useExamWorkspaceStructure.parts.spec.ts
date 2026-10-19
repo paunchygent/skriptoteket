@@ -21,6 +21,7 @@ import type { ExamWorkspaceDocumentResponse, NativeExamDocument } from "../../..
 import { useToastStore } from "../../../stores/toast";
 import { buildParentDocument } from "./examWorkspaceParentDocument.specSupport";
 import { buildSavedExamSummary } from "./useExamWorkspaceDocument.specSupport";
+import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceStructure } from "./useExamWorkspaceStructure";
 
 const apiMocks = vi.hoisted(() => ({
@@ -108,6 +109,7 @@ function setup(selected: string | null = null) {
       replaceCopy: (run) => run(),
       savedRevision: () => 7,
       selectItem,
+      shared: serverExamWorkspaceStore.shared,
       selectParent,
       selectedItemId,
       selectedParentId,

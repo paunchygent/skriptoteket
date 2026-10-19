@@ -18,6 +18,7 @@ import { afterEach, describe, expect, it } from "vitest";
 
 import type { NativeExamItem } from "../../../api/examWorkspace";
 import ExamWorkspaceQuestionEditor from "./ExamWorkspaceQuestionEditor.vue";
+import { examWorkspaceProvidersPlugin } from "./examWorkspaceProviders.specSupport";
 import { editorBehind, press, settleEditors, surfaceOf } from "./ExamWorkspaceRichTextEntry.specSupport";
 import { INCOMPLETE_MATCH_KEY_GUIDANCE } from "./examWorkspaceAnswerKeyRules";
 import { plainBody } from "./examWorkspaceRichText";
@@ -38,6 +39,7 @@ afterEach(() => {
 async function mountEditor(item: NativeExamItem) {
   mounted = mount(ExamWorkspaceQuestionEditor, {
     attachTo: document.body,
+    global: { plugins: [examWorkspaceProvidersPlugin()] },
     props: {
       item,
       label: "1",

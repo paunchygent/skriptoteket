@@ -13,6 +13,7 @@ import { describe, expect, it } from "vitest";
 
 import type { NativeExamItem } from "../../../api/examWorkspace";
 import ExamWorkspaceQuestionEditor from "./ExamWorkspaceQuestionEditor.vue";
+import { examWorkspaceProvidersPlugin } from "./examWorkspaceProviders.specSupport";
 import { buildMatchingItem } from "./examWorkspaceMatchingItem.specSupport";
 
 const TYPE_MARK = '[data-test="exam-workspace-type-uncertain"]';
@@ -30,6 +31,7 @@ function buildFreeTextItem(overrides: Partial<NativeExamItem> = {}): NativeExamI
 
 function mountEditor(item: NativeExamItem) {
   return mount(ExamWorkspaceQuestionEditor, {
+    global: { plugins: [examWorkspaceProvidersPlugin()] },
     props: {
       item,
       label: "1",

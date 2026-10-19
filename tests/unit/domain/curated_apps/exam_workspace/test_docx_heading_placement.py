@@ -9,10 +9,7 @@ instruction, also when no instruction line follows it.
 from types import MappingProxyType
 from uuid import uuid4
 
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import (
-    assemble_build_result,
-    review_source_item,
-)
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import assemble_build_result
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedMetadata
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxChunk,
@@ -24,6 +21,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_section_instructions i
     SectionInstructions,
     place_section_instructions,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_source_review import review_source_item
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeParagraph,
     NativeTextSegment,

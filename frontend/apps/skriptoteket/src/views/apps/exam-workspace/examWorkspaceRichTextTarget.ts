@@ -33,6 +33,12 @@ export type RichTextTarget = {
   headingLevel(): RichTextHeadingLevel | null;
   toggleMark(mark: BodyMark): void;
   toggleHeading(level: RichTextHeadingLevel): void;
+  /**
+   * Turn the selection, or the word at the caret, into a new gap with
+   * `gapId`, or insert an empty gap at the caret. The editor emits the
+   * change as one `createGap` event, never as an `update`.
+   */
+  makeGap(gapId: string): void;
   /** Drop the target's saved selection; the registry calls it when another surface takes over. */
   release(): void;
 };

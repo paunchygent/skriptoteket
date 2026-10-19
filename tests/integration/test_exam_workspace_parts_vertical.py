@@ -10,7 +10,6 @@ from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 from io import BytesIO
 from pathlib import Path
-from unittest.mock import Mock
 from xml.etree import ElementTree
 from zipfile import ZipFile
 
@@ -33,6 +32,9 @@ from skriptoteket.application.curated_apps.exam_workspace_parents import (
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
     GetExamWorkspaceDocumentHandler,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_export_renderer import (
+    ExamWorkspaceExportRenderer,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_exports import (
     ExportExamWorkspaceDocumentHandler,
@@ -63,6 +65,9 @@ from skriptoteket.domain.identity.models import User
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub import (
     exam_workspace_docx_writer,
 )
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_print_renderer import (
+    WeasyPrintExamPrintRenderer,
+)
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_pdf_renderer import (
     WeasyPrintExamNetPdfRenderer,
 )
@@ -72,7 +77,6 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_qti_wr
 from skriptoteket.infrastructure.vault.local_vault_storage import LocalVaultStorage
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.protocols.exam_workspace import (
-    ExamPrintRendererProtocol,
     ExportExamWorkspaceDocumentHandlerProtocol,
     GetExamWorkspaceDocumentHandlerProtocol,
     SaveExamWorkspaceDocumentHandlerProtocol,
@@ -148,10 +152,12 @@ async def _client(world: ConversionWorld, actor: User) -> AsyncIterator[httpx.As
                 vault_files=world.vault_files,
                 codec=world.codec,
                 store=world.store,
-                qti_writer=ExamNetQtiPackageWriter(),
-                pdf_renderer=WeasyPrintExamNetPdfRenderer(),
-                print_renderer=Mock(spec=ExamPrintRendererProtocol),
-                docx_writer=exam_workspace_docx_writer.ExamWorkspaceDocxWriter(),
+                renderer=ExamWorkspaceExportRenderer(
+                    qti_writer=ExamNetQtiPackageWriter(),
+                    pdf_renderer=WeasyPrintExamNetPdfRenderer(),
+                    docx_writer=exam_workspace_docx_writer.ExamWorkspaceDocxWriter(),
+                    print_renderer=WeasyPrintExamPrintRenderer(),
+                ),
             ),
         },
     )

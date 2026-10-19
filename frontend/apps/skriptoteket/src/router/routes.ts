@@ -26,7 +26,7 @@ const CANONICAL_CONVERSION_APP_ROUTES: RouteRecordRaw[] = [
   {
     path: "/apps/exam-workspace",
     name: "exam-workspace",
-    component: () => import("../views/apps/ExamWorkspaceView.vue"),
+    component: () => import("../views/apps/ExamWorkspaceTeacherHost.vue"),
     meta: { requiresAuth: true },
   },
 ];

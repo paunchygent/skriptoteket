@@ -15,7 +15,9 @@
  *   neither triggers a server render nor a failure toast.
  *
  * Relationships:
- *   - Transport to `api/examWorkspaceExports.ts`.
+ *   - Transport is the injected store's teacher half
+ *     (`store.teacher.fetchExamWorkspacePrintPreview`); a guest store has no
+ *     teacher half, so the panel never renders for guests.
  *   - Consumed by `ExamWorkspaceView` and rendered by
  *     `ExamWorkspacePrintPreviewPanel`.
  */
@@ -24,9 +26,9 @@ import { onScopeDispose, ref, watch } from "vue";
 import type { Ref } from "vue";
 
 import { isApiError } from "../../../api/client";
-import { fetchExamWorkspacePrintPreview } from "../../../api/examWorkspaceExports";
 import type { ExamWorkspacePrintPreview } from "../../../api/examWorkspaceExports";
 import { useToast } from "../../../composables/useToast";
+import type { ExamWorkspaceStore } from "./examWorkspaceStore";
 
 /** Wait after the last saved-revision, history-cursor or retained-step change before rendering, so a burst of edits renders once. */
 export const PREVIEW_DEBOUNCE_MS = 1200;
@@ -44,6 +46,8 @@ export interface ExamWorkspacePrintPreviewDeps {
   open: Ref<boolean>;
   /** The question the panel scrolls to; the panel owns that scroll. */
   selectedItemId: Ref<string | null>;
+  /** The workspace store; the preview renders through its teacher half. */
+  store: ExamWorkspaceStore;
 }
 
 export function useExamWorkspacePrintPreview({
@@ -52,6 +56,7 @@ export function useExamWorkspacePrintPreview({
   lineageId,
   savedRevision,
   open,
+  store,
 }: ExamWorkspacePrintPreviewDeps) {
   const toast = useToast();
 
@@ -93,8 +98,14 @@ export function useExamWorkspacePrintPreview({
     expectedCursor: string,
     stepId: string,
   ): Promise<void> {
+    const teacher = store.teacher;
+    if (teacher === null) {
+      if (requestId !== requestSeq) return;
+      loading.value = false;
+      return;
+    }
     try {
-      const response = await fetchExamWorkspacePrintPreview(lineage, expectedRevision, expectedCursor, stepId);
+      const response = await teacher.fetchExamWorkspacePrintPreview(lineage, expectedRevision, expectedCursor, stepId);
       if (requestId !== requestSeq) return;
       apply(response);
       loading.value = false;
@@ -115,8 +126,8 @@ export function useExamWorkspacePrintPreview({
       const revision = savedRevision.value;
       const cursor = historyCursor.value;
       const stepId = historyPosition.value;
-      if (!open.value || lineage === null || typeof revision !== "number" || cursor === null || stepId === null) {
-        // A closed panel or an unsaved exam drops every in-flight response.
+      if (!open.value || store.teacher === null || lineage === null || typeof revision !== "number" || cursor === null || stepId === null) {
+        // A closed panel, a guest workspace, or an unsaved exam drops every in-flight response.
         requestSeq += 1;
         loading.value = false;
         return;

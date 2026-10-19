@@ -4,7 +4,7 @@ from dataclasses import replace
 
 import pytest
 
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import aligned_native_item
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_item import aligned_native_item
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxChunk,
     DocxSourceParagraph,

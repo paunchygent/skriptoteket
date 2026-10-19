@@ -68,15 +68,11 @@
   40-04-07 ruling (user 2026-10-18): print PDF renders the DOCX house template; Exam.net import PDF is a fallback only; QTI is the Exam.net route.
   RESUMED 2026-10-19 after the 2026-10-18 account switch: Mac parent session 0d4e482f integrates and pushes; Hemma orchestrator is desktop SSH session local_42174b78 (cwd ~/apps/skriptoteket), briefed to resume every lane below with fresh leads. Roster is identical on Mac and Hemma (routes.toml byte-identical, skill-repository 1a22d64e): juniors OpenCode Spark 1.3 high (`junior-route` default `spark`), task-monitor/researcher OpenCode deepseek-v4.1-flash-free, explorers Haiku, leads Opus 5.5 (no code, never reused across tasks), reviews Pi Sol 6.1. Exam.net has no QTI export (UI + help center checked 2026-10-19): 41-02-01 uses a Skriptoteket package Exam.net accepted as its fixture. Lanes (Hemma branch @ head: next):
 
-  - 40-04-07 `codex/task-skript-40-04-07-remote` @2e64e240f: R1-R6, L1-L2 done, origin/main merged; next v8 seam (port \_print_walk to document_outline), checks, R1-R4 re-review 09d50acc; then re-import staging fixture, walk 39-06-10 + 40-04-07.
-  - 40-04-09 (gap tool, Ctrl+Alt+G, shortcut tooltips; width dropped after Exam.net probe) `ready` (plan accepted 2026-10-19) on `codex/task-skript-40-04-gap-tool-remote`, root 01a1531a; wave 1 launches after 40-04-08 is on main and merged in.
-  - 39-04-16 `codex/task-skript-39-04-gap-source` @235846dc8: Swedish gap copy 6e6c19d6 (user); review 5805cf6e 3 medium; next medium repair + focused proof, merge (no re-review).
-  - 39-04-15 `codex/task-skript-39-04-listed-chunks` @757b07ef8: review 898d311f changes_requested; F1 fixed a2ec34d0; next F2, F3, F4, replays, suite, F1+F2 re-review; merges after 39-04-16 onto source_paragraph(). Then 39-04-17 and REP-0049 (metodprov 1, proposed).
-  - REP-0046 `codex/task-skript-rep-0046-remote` @60773359b: F1 medium; USER GATE re-record 8 stale omprov_grammatik_sve2 labeler calls (REP-0045 route), keys at 4717a9d3.
-  - REP-0047 @f7dd14d79 and REP-0048 @26a450538 (`codex/task-skript-rep-004{7,8}-remote`): implemented; next review; REP-0048 then 6 Exam.net walk checks.
-  - 41-02-01 `codex/task-skript-41-02-01-remote` @4852c9fd2: U1-U7 done; next own fixture (Exam.net-accepted Skriptoteket QTI), merge main, indentation test after REP-0048, review. 41-02-03 unstarted.
-  - 41-02-02 `codex/task-skript-41-02-02-remote` @76d7cc1d6: next f3a/f3b/f4, review; USER GATE G3 limits (import 10/200, export 30/300, edit 600/6000 per caller/pool per hour) and duplicate-title handoff decision.
-  - HuleEdu TASK-HULE-14-03-01 `codex/task-hule-14-03-01-remote` @bef82487c: U0-U4b, U2a done; next U2b, U5 load proof on huleedu-dev (mock mode), review. Then 41-01-03, 41-01-02, 41-01-04; HuleEdu http_runtime workers repair.
+  - 40-04-08 (gap/short-answer editor, click-a-word gaps, popover): lead on Hemma; its Mac staging walk also covers the owed 40-04-04 walk, then close 40-04-04.
+  - 39-04-20 score field (lone "/" from "/4 p"): in review; user accepted the whitespace side effect (corrected counts to confirm). 40-04-09 gap tool: `ready` (plan accepted 2026-10-19), wave 1 running on `codex/task-skript-40-04-gap-tool-remote`, root 01a1531a. 40-04-10 points banner: user chose list A and grey-number dismiss as the prominent primary action; dismiss label open. 40-04-11 glyph-only tools: four user questions open (mockups shown).
+  - 41-02-02: merged to main (review approved, b9b3e6a9); next Mac guest staging walk (ST-SKRIPT-41-02), then close. Production deploy with nginx-proxy fixed IP 172.18.255.10 and `TRUSTED_PROXY_CIDRS=172.18.255.10/32` is a USER GATE (restarts shared nginx-proxy).
+  - REP-0048: 6 Exam.net walk checks (Mac walk).
+  - HuleEdu after HULE-14-03-01: 41-01-03, 41-01-02, 41-01-04; http_runtime workers repair.
     Hemma Opus lead `3b164d53`: 40-03-01..09 and 08-36-02 `done`; 40-02-01 tranche 1 on
     main 761b1b59, tranche 2 a67afa90 (`in_progress`: shared `play` meaning in
     session add-a-shared-play-glyph, exam-held wrappers and lucide removal open).
@@ -112,6 +108,8 @@
 - Completed REP/ST-38 outcomes and evidence are in the 2026-09-05 archive above.
 
 ## Recent
+
+- 2026-10-19 `done` on main: 40-04-07 writing areas (staging walk at `003c874a`, Mac `.artifacts/staging-walk-40-04-07/evidence/walk-record.md`), 41-02-01 QTI import, 39-04-15, 39-04-16, 39-04-17, REP-0047, HULE-14-03-01, 39-04-19 Del A left-out repair, REP-0046 re-recorded omprov labeler calls, 39-04-18 facit carry-over. Pre-push hook SIGPIPE false skip fixed (`003c874a`).
 
 - Wave 2 closed 2026-10-17 at `agent-overseer:approved-review-closeout`:
   39-04-06, 39-04-08, 39-04-10, 39-06-03, 39-06-04, 39-06-05, 39-06-07, 39-07-01,

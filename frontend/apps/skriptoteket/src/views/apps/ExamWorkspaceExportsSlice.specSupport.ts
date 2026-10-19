@@ -15,7 +15,10 @@ import { DOMWrapper, flushPromises } from "@vue/test-utils";
 import { expect, type Mock } from "vitest";
 
 import type { ExamWorkspaceConversionStatus } from "../../api/examWorkspace";
-import type { ExamWorkspaceExportChecklistResponse } from "../../api/examWorkspaceExports";
+import type {
+  ExamWorkspaceExportChecklistResponse,
+  ExamWorkspaceExportTarget,
+} from "../../api/examWorkspaceExports";
 import {
   buildFreeTextItem,
   buildResponse,
@@ -167,7 +170,7 @@ export async function openMenu(wrapper: ViewWrapper): Promise<void> {
 }
 
 /** Download `target` through the header menu. */
-export async function exportFromMenu(wrapper: ViewWrapper, target: "qti" | "pdf" | "docx"): Promise<void> {
+export async function exportFromMenu(wrapper: ViewWrapper, target: ExamWorkspaceExportTarget): Promise<void> {
   await openMenu(wrapper);
   await requirePage(`exam-workspace-export-${target}`).trigger("click");
   await flushPromises();

@@ -24,6 +24,7 @@ import { AI_ADMIN_ONLY_NOTE } from "../../../composables/useAiAccess";
 import { useAuthStore } from "../../../stores/auth";
 import { buildDocument } from "../ExamWorkspaceSlice.specSupport";
 import ExamWorkspaceDetailsDrawer from "./ExamWorkspaceDetailsDrawer.vue";
+import { examWorkspaceProvidersPlugin } from "./examWorkspaceProviders.specSupport";
 import { buildSavedExamSummary } from "./useExamWorkspaceDocument.specSupport";
 
 const apiMocks = vi.hoisted(() => ({
@@ -84,7 +85,9 @@ function mountDrawer(pinia: Pinia) {
       contentMessage: null,
       questionLabel: () => null,
     },
-    global: { plugins: [pinia] },
+    global: {
+      plugins: [pinia, examWorkspaceProvidersPlugin()],
+    },
   });
 }
 

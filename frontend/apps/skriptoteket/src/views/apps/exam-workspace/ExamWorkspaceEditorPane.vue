@@ -20,6 +20,7 @@ import type { ExamWorkspaceItemEntry, ExamWorkspaceListEntry, ExamWorkspaceParen
 import ExamWorkspaceExamInstructionEditor from "./ExamWorkspaceExamInstructionEditor.vue";
 import ExamWorkspaceInstructionEditor from "./ExamWorkspaceInstructionEditor.vue";
 import ExamWorkspaceQuestionEditor from "./ExamWorkspaceQuestionEditor.vue";
+import { useInjectedExamWorkspaceStore } from "./examWorkspaceStore";
 import type { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
 import type { ExamWorkspaceNotice } from "./useExamWorkspaceStructure";
 
@@ -56,6 +57,8 @@ defineEmits<{
 }>();
 
 const { structure, assetUrls } = props.editing;
+const store = useInjectedExamWorkspaceStore();
+const isGuest = computed(() => store.teacher === null);
 
 /** The writing-line count every free-text question shares, or null when they differ. */
 const allFreeTextWritingLines = computed<number | null>(() => {
@@ -103,7 +106,7 @@ const currentParentId = computed(() => props.itemEntry?.parentId ?? null);
       data-test="exam-workspace-empty"
     >
       <h2>Inget prov öppet</h2>
-      <p>Importera ett prov från Word eller DigiExam, eller öppna ett sparat prov.</p>
+      <p>{{ isGuest ? "Börja med ett tomt prov." : "Importera ett prov från Word eller DigiExam, eller öppna ett sparat prov." }}</p>
       <button
         v-if="!openDrawerShown"
         type="button"
@@ -170,6 +173,7 @@ const currentParentId = computed(() => props.itemEntry?.parentId ?? null);
         @dismiss-notice="$emit('dismiss-item-notice')"
         @undo-interpretation="editing.undoItemInterpretation"
         @remove-automatic-value="editing.removeItemAutomaticValue"
+        @create-gap="editing.createItemGap"
         @show-gap-as-text="editing.showItemGapAsText"
         @add-ordering-step="editing.addItemOrderingStep"
         @move-ordering-step="editing.moveItemOrderingStep"

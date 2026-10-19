@@ -1,8 +1,9 @@
 /** Shared immutable catalog, actor-bound preferences and browser-only search. */
 import { effectScope, ref, watch, type EffectScope } from "vue";
 
-import { getExamCourseCatalog, type ExamCourse } from "../../../api/examWorkspace";
+import type { ExamCourse } from "../../../api/examWorkspace";
 import { useAuthStore } from "../../../stores/auth";
+import type { ExamWorkspaceSharedStore } from "./examWorkspaceStore";
 
 const courses = ref<ExamCourse[]>([]);
 const registeredCourseKeys = ref<string[]>([]);
@@ -12,7 +13,7 @@ let preferenceRevision = 0;
 let observedAuth: ReturnType<typeof useAuthStore> | null = null;
 let identityScope: EffectScope | null = null;
 
-function bindActor(auth: ReturnType<typeof useAuthStore>): void {
+function bindActor(auth: ReturnType<typeof useAuthStore>, shared: ExamWorkspaceSharedStore): void {
   if (observedAuth === auth) return;
   identityScope?.stop();
   observedAuth = auth;
@@ -28,7 +29,7 @@ function bindActor(auth: ReturnType<typeof useAuthStore>): void {
     isLoading.value = true;
     const requestSession = auth.captureSession();
     const requestPreferenceRevision = preferenceRevision;
-    void getExamCourseCatalog().then((response) => {
+    void shared.getExamCourseCatalog().then((response) => {
       if (!auth.isCurrentSession(requestSession)) return;
       courses.value = response.courses;
       if (preferenceRevision === requestPreferenceRevision) {
@@ -74,9 +75,9 @@ export function searchCourses(
     .map((entry) => entry.course);
 }
 
-export function useExamCourseCatalog() {
+export function useExamCourseCatalog(shared: ExamWorkspaceSharedStore) {
   const auth = useAuthStore();
-  bindActor(auth);
+  bindActor(auth, shared);
   const consumerSession = auth.captureSession();
 
   function courseByKey(key: string | null): ExamCourse | null {

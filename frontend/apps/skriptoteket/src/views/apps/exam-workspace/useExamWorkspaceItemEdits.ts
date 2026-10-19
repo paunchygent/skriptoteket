@@ -29,14 +29,13 @@ import {
   withChoiceBody,
   withCorrectChoices,
   withCriteria,
-  withGapAsText,
-  withGapOptions,
   withoutInterpretedKey,
   withMatchEntryBody,
   withMatchPairs,
   withPoints,
   withTickPoints,
 } from "./examWorkspaceItemEdits";
+import { withGapAsText, withGapOptions, withNewGap } from "./examWorkspaceGapEdits";
 import { withShuffledSteps, withStepAdded, withStepMoved, withStepRemoved } from "./examWorkspaceOrdering";
 import { withoutEmptyOptions, withoutOptionHeadings } from "./examWorkspaceBlockers";
 import { withWritingLines } from "./examWorkspaceWritingLines";
@@ -132,6 +131,16 @@ export function useExamWorkspaceItemEdits(patchItem: ExamWorkspaceItemPatch) {
     patchItem(itemId, (item) => withGapAsText(item, gapId), true);
   }
 
+  /** One gap creation is one atomic structural item edit: body plus gap record together. */
+  function createItemGap(
+    itemId: string,
+    body: NativeExamBodyParagraph[],
+    gapId: string,
+    seed: string,
+  ): void {
+    patchItem(itemId, (item) => withNewGap(item, body, gapId, seed), true);
+  }
+
   function markItemReviewed(itemId: string): void {
     patchItem(itemId, reviewed, true);
   }
@@ -150,6 +159,7 @@ export function useExamWorkspaceItemEdits(patchItem: ExamWorkspaceItemPatch) {
 
   return {
     addItemOrderingStep,
+    createItemGap,
     markItemReviewed,
     moveItemOrderingStep,
     removeItemOrderingStep,

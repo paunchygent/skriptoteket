@@ -13,6 +13,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { effectScope, ref } from "vue";
 
 import type { ExamWorkspaceDocumentSummary, NativeExamDocument } from "../../../api/examWorkspace";
+import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { buildSavedExamSummary } from "./useExamWorkspaceDocument.specSupport";
 import * as exportsModule from "./useExamWorkspaceExports";
 
@@ -36,6 +37,7 @@ function mountExports(title: string) {
       noteBlockers: vi.fn(),
       readLatest: async () => undefined,
       saveFirst: async () => true,
+      store: serverExamWorkspaceStore,
     }),
   );
   if (!exports) throw new Error("exports composable did not mount");
