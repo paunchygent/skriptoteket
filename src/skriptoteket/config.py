@@ -80,8 +80,6 @@ class Settings(BaseSettings):
 
     ENABLE_DOCS: bool | None = None
     ALLOWED_HOSTS: str = "localhost,127.0.0.1,::1,skriptoteket.hule.education"
-    TRUST_PROXY_HEADERS: bool = False
-    TRUSTED_PROXY_CIDRS: str = "127.0.0.1/32,::1/128"
     PUBLIC_APP_BASE_URL: str = "https://skriptoteket.hule.education"
     CURATED_APPS_PRODUCTION_ALLOWLIST: str = (
         "chemistry.reagent_prep_chef,documents.conversion_hub,classroom.group-seating-studio"
@@ -217,6 +215,14 @@ class Settings(BaseSettings):
     PUBLIC_EXAM_CONVERTER_REQUEST_TIME_BUDGET_SECONDS: int = 120
     PUBLIC_EXAM_CONVERTER_CONCURRENCY_LIMIT: int = 1
     PUBLIC_EXAM_CONVERTER_ARTIFACT_TTL_SECONDS: int = 3600
+    # Public guest request limits (ST-SKRIPT-41-02 P4/G3); per caller and pooled per UTC hour.
+    PUBLIC_GUEST_IMPORT_CALLER_PER_HOUR: int = 10
+    PUBLIC_GUEST_IMPORT_POOL_PER_HOUR: int = 200
+    PUBLIC_GUEST_EXPORT_CALLER_PER_HOUR: int = 30
+    PUBLIC_GUEST_EXPORT_POOL_PER_HOUR: int = 300
+    PUBLIC_GUEST_EDIT_CALLER_PER_HOUR: int = 600
+    PUBLIC_GUEST_EDIT_POOL_PER_HOUR: int = 6000
+    PUBLIC_GUEST_EXAM_MAX_REQUEST_BYTES: int = 25_000_000
     CLASSROOM_SHARE_PREVIEW_MAX_CONCURRENCY: int = 2
     CLASSROOM_SHARE_PREVIEW_TIMEOUT_SECONDS: float = 8.0
 
@@ -395,10 +401,6 @@ class Settings(BaseSettings):
         if self.ENVIRONMENT != "production":
             allowed_hosts.update(_NON_PRODUCTION_ALLOWED_HOSTS)
         return frozenset(allowed_hosts)
-
-    @property
-    def trusted_proxy_cidrs(self) -> frozenset[str]:
-        return frozenset(_split_csv_values(self.TRUSTED_PROXY_CIDRS))
 
     @property
     def enable_docs(self) -> bool:

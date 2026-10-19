@@ -1,12 +1,11 @@
 ---
 type: task
 id: TASK-SKRIPT-40-04-08
-title: Short-answer and gap-text questions look different, teachers create gaps by
-  clicking a word, and the gap popover shows its whole answer list
+title: Short-answer and gap-text questions look different, teachers create gaps by clicking a word, and the gap popover shows its whole answer list
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-19'
 status: proposed
 closeout_review:
@@ -14,10 +13,7 @@ closeout_review:
   status: not_started
 task_kind: story
 acceptance_criteria:
-- A teacher tells a short-answer question from a gap-text question at a glance, creates
-  any number of gaps by clicking a word in existing text or inserting a gap, and edits
-  one to a hundred accepted answers in a gap popover that is fully visible above the
-  surrounding editor
+  - A teacher tells a short-answer question from a gap-text question at a glance, creates any number of gaps by clicking a word in existing text or inserting a gap, and edits one to a hundred accepted answers in a gap popover that is fully visible above the surrounding editor
 story: ST-SKRIPT-40-04
 backlog_document_profile: contract-derived
 ---
@@ -51,8 +47,8 @@ Stop and ask the user if the planned design changes the native exam document for
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| U1  | Short-answer and gap-text questions are visibly different; short answer is a question field plus an answer-key field (user 2026-10-19) |
+| ID  | Decided contract term                                                                                                                        |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| U1  | Short-answer and gap-text questions are visibly different; short answer is a question field plus an answer-key field (user 2026-10-19)       |
 | U2  | Gaps are created by inserting a gap or by clicking a word in existing text and confirming; any number of gaps per question (user 2026-10-19) |
-| U3  | The gap popover is fully visible above the editor and holds one to a hundred accepted answers, one row each (user 2026-10-19) |
+| U3  | The gap popover is fully visible above the editor and holds one to a hundred accepted answers, one row each (user 2026-10-19)                |

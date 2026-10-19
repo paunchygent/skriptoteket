@@ -15,6 +15,9 @@ from skriptoteket.application.curated_apps.exam_workspace import (
     ExamWorkspaceExportTarget,
     SaveExamWorkspaceDocumentRequest,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_export_renderer import (
+    ExamWorkspaceExportRenderer,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_exports import (
     ExportExamWorkspaceDocumentHandler,
 )
@@ -105,10 +108,14 @@ def _export_handler(
         vault_files=env.vault_files,
         codec=env.codec,
         store=env.store,
-        qti_writer=ExamNetQtiPackageWriter(),
-        pdf_renderer=pdf_renderer if pdf_renderer is not None else WeasyPrintExamNetPdfRenderer(),
-        docx_writer=ExamWorkspaceDocxWriter(),
-        print_renderer=(print_renderer if print_renderer is not None else _FakePrintRenderer()),
+        renderer=ExamWorkspaceExportRenderer(
+            qti_writer=ExamNetQtiPackageWriter(),
+            pdf_renderer=pdf_renderer
+            if pdf_renderer is not None
+            else WeasyPrintExamNetPdfRenderer(),
+            docx_writer=ExamWorkspaceDocxWriter(),
+            print_renderer=(print_renderer if print_renderer is not None else _FakePrintRenderer()),
+        ),
     )
 
 

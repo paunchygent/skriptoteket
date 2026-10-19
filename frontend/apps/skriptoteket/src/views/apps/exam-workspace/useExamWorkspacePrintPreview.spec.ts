@@ -17,6 +17,8 @@ import { effectScope, nextTick, ref } from "vue";
 import { ApiError } from "../../../api/client";
 import { useToastStore } from "../../../stores/toast";
 import { PREVIEW_DEBOUNCE_MS, useExamWorkspacePrintPreview } from "./useExamWorkspacePrintPreview";
+import { serverExamWorkspaceStore } from "./examWorkspaceStore";
+import type { ExamWorkspaceStore } from "./examWorkspaceStore";
 
 const apiMocks = vi.hoisted(() => ({ fetchExamWorkspacePrintPreview: vi.fn() }));
 vi.mock("../../../api/examWorkspaceExports", () => apiMocks);
@@ -39,7 +41,7 @@ function deferred<T>() {
   return { promise, reject, resolve };
 }
 
-function mountPreview() {
+function mountPreview(store: ExamWorkspaceStore = serverExamWorkspaceStore) {
   const lineageId = ref<string | null>("lineage-1");
   const savedRevision = ref<number | null>(1);
   const historyCursor = ref<string | null>("cursor-1");
@@ -48,7 +50,7 @@ function mountPreview() {
   const selectedItemId = ref<string | null>(null);
   const scope = effectScope();
   const preview = scope.run(() =>
-    useExamWorkspacePrintPreview({ historyCursor, historyPosition, lineageId, open, savedRevision, selectedItemId }),
+    useExamWorkspacePrintPreview({ historyCursor, historyPosition, lineageId, open, savedRevision, selectedItemId, store }),
   );
   if (!preview) throw new Error("preview composable did not mount");
   return { historyCursor, historyPosition, lineageId, open, preview, savedRevision, scope, selectedItemId };

@@ -10,6 +10,7 @@ Relationships:
     - Mounts the shared application router and observability endpoints.
 """
 
+import ipaddress
 import os
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
@@ -52,6 +53,54 @@ class OptionalDirectoryStaticFiles(StaticFiles):
         await super().check_config()
 
 
+def _forwarded_allow_ips_is_loopback_only(raw_value: str | None) -> bool:
+    """Return True when uvicorn's trusted-proxy set holds only loopback addresses.
+
+    Uvicorn reads the set from the `FORWARDED_ALLOW_IPS` environment variable
+    (default `127.0.0.1`); there is no `Settings` field for this
+    environment-derived runtime fact, so the lifespan reads `os.environ`
+    directly here.
+    """
+
+    if raw_value is None or not raw_value.strip():
+        return True
+    entries = [entry.strip() for entry in raw_value.split(",")]
+    entries = [entry for entry in entries if entry]
+    if not entries:
+        return True
+    for entry in entries:
+        try:
+            network = ipaddress.ip_network(entry, strict=False)
+        except ValueError:
+            return False
+        if not network.is_loopback:
+            return False
+    return True
+
+
+def warn_when_proxy_trust_is_loopback_only(*, settings: Settings) -> None:
+    """Log one startup warning when production proxy trust is loopback-only.
+
+    With only loopback trusted, uvicorn never trusts the nginx-proxy hop, so
+    the guest limiter shares one caller key across all guests. No IP addresses
+    or header values are logged.
+    """
+
+    if settings.ENVIRONMENT != "production":
+        return
+    if not _forwarded_allow_ips_is_loopback_only(os.environ.get("FORWARDED_ALLOW_IPS")):
+        return
+    logger.warning(
+        "public_guest_limiter_proxy_trust_loopback_only",
+        reason_code="public_guest_limiter_proxy_trust_loopback_only",
+        detail=(
+            "FORWARDED_ALLOW_IPS holds only loopback addresses; set "
+            "TRUSTED_PROXY_CIDRS to the exact nginx-proxy address so the guest "
+            "limiter sees real client addresses."
+        ),
+    )
+
+
 def _build_lifespan(*, settings: Settings):
     """Create a FastAPI lifespan context using supported startup semantics."""
 
@@ -68,6 +117,8 @@ def _build_lifespan(*, settings: Settings):
                 smtp_host=settings.EMAIL_SMTP_HOST,
                 smtp_port=settings.EMAIL_SMTP_PORT,
             )
+
+        warn_when_proxy_trust_is_loopback_only(settings=settings)
 
         yield
 

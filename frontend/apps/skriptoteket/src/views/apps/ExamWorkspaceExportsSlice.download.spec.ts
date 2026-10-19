@@ -12,6 +12,7 @@ import { flushPromises } from "@vue/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ApiError } from "../../api/client";
+import type { ExamWorkspaceExportTarget } from "../../api/examWorkspaceExports";
 import { useToastStore } from "../../stores/toast";
 import {
   arrangeExportApis,
@@ -27,6 +28,7 @@ import {
   unmountWrappers,
 } from "./ExamWorkspaceExportsSlice.specSupport";
 import { selectItemRow } from "./ExamWorkspaceSlice.specSupport";
+import { EXAM_WORKSPACE_EXPORT_FORMATS } from "./exam-workspace/examWorkspaceExportFormats";
 
 import { arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
 
@@ -56,6 +58,15 @@ const downloadMocks = vi.hoisted(() => ({ triggerBrowserDownload: vi.fn() }));
 
 vi.mock("../../utils/browserDownload", () => downloadMocks);
 
+/** The server filename and the inline created copy per offered format. */
+const DOWNLOAD_CASES: Record<ExamWorkspaceExportTarget, { created: string; filename: string }> = {
+  qti: { created: "QTI-paketet är skapat.", filename: "NO-prov-qti.zip" },
+  pdf: { created: "PDF-filen är skapad.", filename: "NO-prov-examnet.pdf" },
+  pdf_facit: { created: "PDF-filen med facit är skapad.", filename: "NO-prov-facit.pdf" },
+  docx: { created: "Word-filen är skapad.", filename: "NO-prov.docx" },
+  examnet_pdf: { created: "PDF-filen för Exam.net är skapad.", filename: "NO-prov-Exam.net.pdf" },
+};
+
 
 beforeEach(() => {
   arrangeExportApis({ api: apiMocks, exportApi: exportApiMocks, download: downloadMocks });
@@ -65,13 +76,10 @@ beforeEach(() => {
 afterEach(unmountWrappers);
 
 describe("ExamWorkspaceView export download", () => {
-  it.each([
-    ["qti", "NO-prov-qti.zip", "QTI-paketet är skapat."],
-    ["pdf", "NO-prov-examnet.pdf", "PDF-filen är skapad."],
-    ["docx", "NO-prov.docx", "Word-filen är skapad."],
-  ] as const)(
+  it.each(EXAM_WORKSPACE_EXPORT_FORMATS.map((format) => format.target))(
     "downloads the %s export from the saved version with the server filename and reports it inline",
-    async (target, filename, created) => {
+    async (target: ExamWorkspaceExportTarget) => {
+      const { created, filename } = DOWNLOAD_CASES[target];
       const blob = new Blob(["export"]);
       exportApiMocks.downloadExamWorkspaceExport.mockResolvedValue({
         blob,

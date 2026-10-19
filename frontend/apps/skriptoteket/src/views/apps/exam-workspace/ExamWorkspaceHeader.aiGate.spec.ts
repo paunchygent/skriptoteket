@@ -18,6 +18,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { AI_ADMIN_ONLY_NOTE } from "../../../composables/useAiAccess";
 import { useAuthStore } from "../../../stores/auth";
 import ExamWorkspaceHeader from "./ExamWorkspaceHeader.vue";
+import { examWorkspaceProvidersPlugin } from "./examWorkspaceProviders.specSupport";
 
 const SUGGEST_TITLE = "Föreslå facit för frågor som saknar facit";
 
@@ -45,7 +46,12 @@ function props(overrides: Partial<HeaderProps> = {}): HeaderProps {
 }
 
 function mountHeader(pinia: Pinia, overrides: Partial<HeaderProps> = {}) {
-  return mount(ExamWorkspaceHeader, { props: props(overrides), global: { plugins: [pinia] } });
+  return mount(ExamWorkspaceHeader, {
+    props: props(overrides),
+    global: {
+      plugins: [pinia, examWorkspaceProvidersPlugin()],
+    },
+  });
 }
 
 /** Elements carrying the exact note as their visible text, found without test hooks. */

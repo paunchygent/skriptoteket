@@ -3,8 +3,8 @@ import { computed, shallowRef, type Ref } from "vue";
 
 import { isApiError } from "../../../api/client";
 import type { ExamWorkspaceDocumentSummary } from "../../../api/examWorkspace";
-import { renameVaultFile } from "../../../api/vault";
 import { useToast } from "../../../composables/useToast";
+import type { ExamWorkspaceTeacherServices } from "./examWorkspaceStore";
 
 export type ExamWorkspaceRenameFailure = { stem: string; message: string };
 
@@ -13,6 +13,8 @@ type RenameState = {
   operationBusy: Ref<boolean>;
   summary: Ref<ExamWorkspaceDocumentSummary | null>;
   savedDocuments: Ref<ExamWorkspaceDocumentSummary[]>;
+  /** The teacher services the rename runs through; null in guest mode. */
+  teacher: ExamWorkspaceTeacherServices | null;
 };
 
 export function useExamWorkspaceRename(state: RenameState) {
@@ -40,7 +42,8 @@ export function useExamWorkspaceRename(state: RenameState) {
 
   /** Null means the owner reported failure; the drawer keeps the attempted stem for retry. */
   async function renameFile(fileId: string, stem: string): Promise<string | null> {
-    if (state.isBusy()) return null;
+    const teacher = state.teacher;
+    if (state.isBusy() || !teacher) return null;
     // A conversion read already in flight may replace this head while rename awaits its reply.
     const lineageId = state.summary.value?.vault_file_id === fileId
       ? state.summary.value.lineage_id
@@ -49,7 +52,7 @@ export function useExamWorkspaceRename(state: RenameState) {
     state.operationBusy.value = true;
     failure.value = null;
     try {
-      const result = await renameVaultFile(fileId, stem);
+      const result = await teacher.renameVaultFile(fileId, stem);
       const name = result.file.name;
       completedNames.set(lineageId, { name, sequence: ++completionSequence });
       state.savedDocuments.value = state.savedDocuments.value.map((entry) =>

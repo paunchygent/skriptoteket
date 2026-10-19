@@ -22,6 +22,7 @@ import { ApiError } from "../../../api/client";
 import type { NativeExamDocument } from "../../../api/examWorkspace";
 import { useToastStore } from "../../../stores/toast";
 import { buildParentDocument } from "./examWorkspaceParentDocument.specSupport";
+import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { EXAM_WORKSPACE_TYPING_PAUSE_MS, useExamWorkspaceHistory } from "./useExamWorkspaceHistory";
 
 const apiMocks = vi.hoisted(() => ({
@@ -83,7 +84,13 @@ function titled(document: NativeExamDocument, title: string): NativeExamDocument
   return { ...document, title };
 }
 
-function setup(failFirstLoad = false) {
+function setup(
+  failFirstLoad = false,
+  hooks: {
+    isReplacing?: () => boolean;
+    replaceCopy?: <T>(run: () => Promise<T>) => Promise<T>;
+  } = {},
+) {
   const baseline = buildParentDocument();
   const server = fakeServer(baseline);
   if (failFirstLoad) {
@@ -100,13 +107,14 @@ function setup(failFirstLoad = false) {
         workspaceDocument.value = document;
       },
       isBlocked: () => false,
-      isReplacing: () => false,
-      replaceCopy: (run) => run(),
+      isReplacing: hooks.isReplacing ?? (() => false),
+      replaceCopy: hooks.replaceCopy ?? ((run) => run()),
       lineageId: () => "lineage-1",
       noteExportBlockers: vi.fn(),
       onConflict,
       savedRevision: () => baseline.revision,
       serverDocument,
+      shared: serverExamWorkspaceStore.shared,
       workspaceDocument,
     }),
   )!;
@@ -294,5 +302,160 @@ describe("autosaved undo steps", () => {
     expect(useToastStore().toasts.map((toast) => toast.message)).toEqual([
       "Ändringen kunde inte sparas som utkast. Försök igen.",
     ]);
+  });
+});
+
+describe("departure under the held editing lock", () => {
+  it("resolves false without storing while another undo holds the copy", async () => {
+    const { edit, history } = setup(false, { isReplacing: () => true });
+    await flushPromises();
+    edit("one");
+    apiMocks.storeExamWorkspaceUndoStep.mockClear();
+    const leave = vi.fn(async () => true);
+
+    await expect(history.depart(leave)).resolves.toBe(false);
+
+    expect(apiMocks.storeExamWorkspaceUndoStep).not.toHaveBeenCalled();
+    expect(leave).not.toHaveBeenCalled();
+  });
+
+  it("runs the settle flush inside the replacing lock and holds it past the leave", async () => {
+    const events: string[] = [];
+    const { edit, history } = setup(false, {
+      replaceCopy: async <T>(run: () => Promise<T>): Promise<T> => {
+        events.push("lock");
+        try {
+          return await run();
+        } finally {
+          events.push("unlock");
+        }
+      },
+    });
+    await flushPromises();
+    edit("one");
+    const inner = apiMocks.storeExamWorkspaceUndoStep.getMockImplementation();
+    if (!inner) {
+      throw new Error("expected the step store double");
+    }
+    apiMocks.storeExamWorkspaceUndoStep.mockImplementation(async (...args) => {
+      events.push("store");
+      return inner(...args);
+    });
+
+    await expect(
+      history.depart(async () => true),
+    ).resolves.toBe(true);
+    expect(events).toEqual(["lock", "store"]);
+
+    window.dispatchEvent(new Event("pageshow"));
+    await flushPromises();
+    expect(events).toEqual(["lock", "store", "unlock"]);
+  });
+
+  it("resolves false when the departure store fails", async () => {
+    const { edit, history } = setup();
+    await flushPromises();
+    edit("one");
+    apiMocks.storeExamWorkspaceUndoStep.mockRejectedValueOnce(new Error("offline"));
+    const leave = vi.fn(async () => true);
+
+    await expect(history.depart(leave)).resolves.toBe(false);
+
+    expect(leave).not.toHaveBeenCalled();
+  });
+
+  it("resolves false and releases the lock when the leave returns false", async () => {
+    const events: string[] = [];
+    const { edit, history } = setup(false, {
+      replaceCopy: async <T>(run: () => Promise<T>): Promise<T> => {
+        events.push("lock");
+        try {
+          return await run();
+        } finally {
+          events.push("unlock");
+        }
+      },
+    });
+    await flushPromises();
+    edit("one");
+    const inner = apiMocks.storeExamWorkspaceUndoStep.getMockImplementation();
+    if (!inner) {
+      throw new Error("expected the step store double");
+    }
+    apiMocks.storeExamWorkspaceUndoStep.mockImplementation(async (...args) => {
+      events.push("store");
+      return inner(...args);
+    });
+
+    await expect(history.depart(async () => false)).resolves.toBe(false);
+
+    expect(events).toEqual(["lock", "store", "unlock"]);
+  });
+
+  it("resolves false and releases the lock when the leave throws", async () => {
+    const { edit, history } = setup();
+    await flushPromises();
+    edit("one");
+
+    await expect(
+      history.depart(async () => {
+        throw new Error("navigation unavailable");
+      }),
+    ).resolves.toBe(false);
+  });
+
+  it("resolves false without holding when the scope is disposed inside leave", async () => {
+    const baseline = buildParentDocument();
+    fakeServer(baseline);
+    const workspaceDocument = ref<NativeExamDocument | null>(baseline);
+    const serverDocument = ref<NativeExamDocument | null>(baseline);
+    const historyCursor = ref<string | null>("step-0");
+    const events: string[] = [];
+    const addSpy = vi.spyOn(window, "addEventListener");
+    try {
+      const scope = effectScope();
+      const history = scope.run(() =>
+        useExamWorkspaceHistory({
+          historyCursor,
+          install: (document) => {
+            workspaceDocument.value = document;
+          },
+          isBlocked: () => false,
+          isReplacing: () => false,
+          replaceCopy: async <T>(run: () => Promise<T>): Promise<T> => {
+            events.push("lock");
+            try {
+              return await run();
+            } finally {
+              events.push("unlock");
+            }
+          },
+          lineageId: () => "lineage-1",
+          noteExportBlockers: vi.fn(),
+          onConflict: async () => undefined,
+          savedRevision: () => baseline.revision,
+          serverDocument,
+          shared: serverExamWorkspaceStore.shared,
+          workspaceDocument,
+        }),
+      )!;
+      await flushPromises();
+      workspaceDocument.value = titled(workspaceDocument.value!, "one");
+
+      addSpy.mockClear();
+      await expect(
+        history.depart(async () => {
+          scope.stop();
+          return true;
+        }),
+      ).resolves.toBe(false);
+
+      expect(addSpy.mock.calls.some(([name]) => name === "pageshow")).toBe(false);
+      expect(events).toEqual(["lock", "unlock"]);
+    } finally {
+      addSpy.mockRestore();
+      window.dispatchEvent(new Event("pageshow"));
+      await flushPromises();
+    }
   });
 });
