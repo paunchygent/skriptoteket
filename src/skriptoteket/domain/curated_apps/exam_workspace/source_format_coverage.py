@@ -192,8 +192,10 @@ def leading_entry_label_end(text: str) -> int | None:
         return None
     candidates: list[tuple[str, int]] = []
     if token.isdigit():
-        candidates.append(("decimal", int(token)))
-    elif token.isalpha():
+        if token[0] != "0":
+            return end
+        return None
+    if token.isalpha():
         if token.isupper():
             candidates.append(("upper", _alpha_value(token)))
         if token.islower():

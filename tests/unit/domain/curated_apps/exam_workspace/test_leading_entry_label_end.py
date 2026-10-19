@@ -112,3 +112,19 @@ def test_labelled_long_tokens_only_build_candidate_family_tokens(
 
     assert leading_entry_label_end(text) == expected_end
     assert calls, f"expected candidate round trips for {token!r}"
+
+
+def test_a_long_decimal_label_needs_no_int_conversion():
+    assert leading_entry_label_end("1" * 5000 + ". Svar: x") == 5002
+
+
+def test_a_zero_decimal_token_is_no_label():
+    assert leading_entry_label_end("0. x") is None
+
+
+def test_a_zero_padded_decimal_token_is_no_label():
+    assert leading_entry_label_end("01. x") is None
+
+
+def test_a_parenthesized_decimal_label_ends_after_its_closer_and_space():
+    assert leading_entry_label_end("10) x") == 4

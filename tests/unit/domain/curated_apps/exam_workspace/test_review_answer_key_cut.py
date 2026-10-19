@@ -363,3 +363,12 @@ def test_an_unlabelled_word_carries_the_key_without_a_prefix(body: str, kept: st
 
     assert result.item.facit_text == "Svar: x"
     assert body_plain_text(result.item.body) == kept
+
+
+def test_a_long_decimal_label_carries_the_key_with_its_prefix():
+    body = "1" * 5000 + ". ord Svar: x"
+    aligned = _aligned(NativeParagraph(heading_level=None, segments=(_text(body),)))
+
+    result = without_inline_answer_keys(aligned)
+
+    assert result.item.facit_text == "1" * 5000 + ". Svar: x"
