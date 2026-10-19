@@ -20,6 +20,7 @@
  *   - Spara som and stale-save recovery (`useExamWorkspaceSave`), the
  *     saved-exams list (`useExamWorkspaceSavedList`), AI suggestion arrivals,
  *     conversion merges and one-question retries through their own composables.
+ *   - Reads that replace the copy in `useExamWorkspaceDocumentReplacing`, which holds arrivals and keying.
  *   - Dirty state: the copy differs from the saved exam file (`sameDocument`).
  */
 
@@ -43,6 +44,7 @@ import { withRestoredSuggestion } from "./examWorkspaceSuggestionEdits";
 import type { ExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceConversion } from "./useExamWorkspaceConversion";
 import { useExamWorkspaceDocumentFields } from "./useExamWorkspaceDocumentFields";
+import { useExamWorkspaceDocumentReplacing } from "./useExamWorkspaceDocumentReplacing";
 import { useExamWorkspaceGapKeying } from "./useExamWorkspaceGapKeying";
 import { useExamWorkspaceItemRetry } from "./useExamWorkspaceItemRetry";
 import { useExamWorkspaceSaveArrivals } from "./useExamWorkspaceSaveArrivals";
@@ -143,8 +145,6 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
   );
   /** An undo, redo or server command is reading the document that replaces the copy. */
   const replacing = ref(false);
-  /** The arrival marks a replacing read was started at; null while none runs. */
-  let held: { arrivals: number; keying: number } | null = null;
   /** No edit, save or reload may start: an operation runs or the copy is about to be replaced. */
   const isBusy = computed(() => isOperationBusy.value || replacing.value);
 
@@ -248,10 +248,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
       const response = reconcile(await store.shared.getExamWorkspaceDocument(currentSummary.lineage_id));
       applyResponse(response);
       keying.invalidateCopy();
-      if (held) {
-        // A conflict inside a replacing read: its suggestions run again on the reloaded exam.
-        arrivals.replayAfterResponse(held.arrivals);
-      }
+      replacingScope.replayArrivalsAfterReload();
     } catch {
       toast.failure(RELOAD_FAILURE_COPY);
     } finally {
@@ -340,6 +337,15 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
   // Every gap keying edit and its asynchronous misspelling reply.
   const keying = useExamWorkspaceGapKeying({ openExam, patchItem, workspaceDocument, shared: store.shared });
 
+  // Reads that replace the open copy (undo, redo, server commands).
+  const replacingScope = useExamWorkspaceDocumentReplacing({
+    workspaceDocument,
+    selectedItemId,
+    replacing,
+    arrivals,
+    keying,
+  });
+
   const { saveDocumentAs } = useExamWorkspaceSave({
     applyResponse,
     arrivals,
@@ -384,49 +390,6 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
   // The whole-document field commands, each one `editDocument` call.
   const fieldCommands = useExamWorkspaceDocumentFields({ editDocument });
 
-  function keepSelection(document: NativeExamDocument): void {
-    if (!document.items.some((item) => item.item_id === selectedItemId.value)) {
-      selectedItemId.value = document.items[0]?.item_id ?? null;
-    }
-  }
-
-  /**
-   * Run an undo, redo or server command that replaces the copy. Editing is
-   * locked meanwhile, and AI suggestions and spelling replies that arrive
-   * during its read run again on the document it installs, so a delivered
-   * result is never overwritten. Replies whose question or gap the document
-   * no longer holds do not apply, as everywhere else.
-   */
-  async function replaceCopy<T>(run: () => Promise<T>): Promise<T> {
-    replacing.value = true;
-    const marks = { arrivals: arrivals.payloadMark(), keying: keying.payloadMark() };
-    const openedArrivals = arrivals.beginHold();
-    const openedKeying = keying.beginHold();
-    held = marks;
-    try {
-      return await run();
-    } finally {
-      held = null;
-      arrivals.endHold(openedArrivals);
-      keying.endHold(openedKeying);
-      replacing.value = false;
-    }
-  }
-
-  function replayHeld(): void {
-    if (held) {
-      arrivals.replayAfterResponse(held.arrivals);
-      keying.replayAfterResponse(held.keying);
-    }
-  }
-
-  /** Put an undo step's document in front of the teacher; not an edit. */
-  function installDocument(document: NativeExamDocument): void {
-    workspaceDocument.value = document;
-    keepSelection(document);
-    replayHeld();
-  }
-
   /**
    * A store or a position move confirmed this document; the exam file holds
    * it now. The saved baseline becomes the confirmed snapshot, and the open
@@ -445,7 +408,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
   /** A server command (parent, change type) stored a new step; show its document. */
   function applyCommandResponse(response: ExamWorkspaceDocumentResponse): void {
     applyResponse(response);
-    replayHeld();
+    replacingScope.replayHeld();
   }
 
   return {
@@ -454,7 +417,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     applyCommandResponse,
     editDocument,
     historyCursor,
-    installDocument,
+    installDocument: replacingScope.installDocument,
     listOrdering,
     applyArrivingSuggestions,
     assetUrls,
@@ -471,7 +434,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     isDirty,
     isOperationBusy,
     isReplacing: computed(() => replacing.value),
-    replaceCopy,
+    replaceCopy: replacingScope.replaceCopy,
     isOpen,
     loadSavedDocuments,
     noteExportBlockers,
