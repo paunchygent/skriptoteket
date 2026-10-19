@@ -132,19 +132,19 @@ describe("withNewGap", () => {
     });
   });
 
-  it("seeds an inline_choice record with two blank options from a blank seed", () => {
+  it("seeds an empty inline_choice record with no options and no correct option", () => {
     const item = buildGapItem({ body: gapBody("gap_001"), gaps: [buildGap("gap_001")], kind: "inline_choice" });
 
     const result = withNewGap(item, gapBody("gap_001", "gap_002"), "gap_002", "   ");
 
-    expect(result.gaps[1].gap_id).toBe("gap_002");
-    expect(result.gaps[1].accepted_values).toEqual([]);
-    expect(result.gaps[1].correct_option_id).toBe("choice_001");
-    expect(result.gaps[1].options.map((option) => option.choice_id)).toEqual([
-      "choice_001",
-      "choice_002",
-    ]);
-    expect(result.gaps[1].options.every((option) => option.body.length === 0)).toBe(true);
+    expect(result.gaps[1]).toEqual({
+      accepted_values: [],
+      automatic_values: [],
+      correct_option_id: null,
+      excluded_automatic_values: [],
+      gap_id: "gap_002",
+      options: [],
+    });
   });
 
   it("orders the new record by body placement, so its number follows the text", () => {
@@ -244,6 +244,26 @@ describe("withNewGap", () => {
 
       expect(created.answer_key.origin).toBe("absent");
       expect(created.gaps[0].accepted_values).toEqual([]);
+    });
+
+    it("keeps the teacher-authored key when an empty dropdown insertion adds no key data", () => {
+      const item = buildGapItem({
+        body: gapBody("gap_001"),
+        gaps: [
+          buildGap("gap_001", [], {
+            correct_option_id: "choice_001",
+            options: [{ body: plainBody("ja"), choice_id: "choice_001" }],
+          }),
+        ],
+        kind: "inline_choice",
+      });
+
+      const created = withNewGap(item, gapBody("gap_001", "gap_002"), "gap_002", "");
+
+      expect(created.gaps[1].correct_option_id).toBeNull();
+      expect(created.gaps[1].options).toEqual([]);
+      expect(created.answer_key.origin).toBe("teacher_authored");
+      expect(hasInvalidAnswerKey(created)).toBe(false);
     });
 
     it("marks a seeded gap teacher authored when the key was ai_interpreted", () => {

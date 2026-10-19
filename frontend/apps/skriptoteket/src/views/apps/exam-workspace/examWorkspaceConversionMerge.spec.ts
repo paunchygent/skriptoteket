@@ -40,6 +40,7 @@ function buildItem(itemId: string, text: string): NativeExamItem {
     body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text }] }],
     choices: [],
     gaps: [],
+    kept_gaps: [],
     item_id: itemId,
     kind: "free_text",
     match_left: [],

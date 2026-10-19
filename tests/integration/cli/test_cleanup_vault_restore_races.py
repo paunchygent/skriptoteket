@@ -21,6 +21,9 @@ import pytest
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from skriptoteket.application.curated_apps.exam_workspace_history import (
+    ExamWorkspaceHistoryCursor,
+)
 from skriptoteket.application.scripting.handlers.restore_vault_file import RestoreVaultFileHandler
 from skriptoteket.application.scripting.vault import RestoreVaultFileCommand
 from skriptoteket.cli.commands.cleanup_vault_files import (
@@ -101,8 +104,12 @@ async def _seed(
                     user_id=owner, file_id=row.id, content=f"original:{row.id}".encode()
                 )
             if kind != "plain":
-                await repo.put_history(
-                    user_id=owner, document_lineage_id=lineage, content=b"undo history"
+                await repo.upsert_history_head(
+                    user_id=owner,
+                    document_lineage_id=lineage,
+                    head=ExamWorkspaceHistoryCursor(
+                        cursor=lineage, current_step_id=lineage, baseline_step_id=lineage
+                    ),
                 )
             await PostgreSQLUserVaultUsageRepository(session).upsert(
                 usage=VaultUsage(user_id=owner, bytes_total=0, updated_at=_TRASHED_AT)
@@ -143,9 +150,8 @@ async def _assert_state(
                 assert not await storage.exists_file(user_id=owner, file_id=row.id)
         lineage = rows[0].document_lineage_id
         if lineage is not None:
-            assert await repo.get_history(user_id=owner, document_lineage_id=lineage) == (
-                b"undo history" if restored else None
-            )
+            head = await repo.get_history_head(user_id=owner, document_lineage_id=lineage)
+            assert (head is not None) == restored
         usage = await PostgreSQLUserVaultUsageRepository(session).get(user_id=owner)
         assert usage is not None
         assert usage.bytes_total == (sum(row.bytes for row in rows) if restored else 0)
@@ -294,6 +300,6 @@ async def test_expiring_an_independently_trashed_export_preserves_live_exam_and_
         )
         assert await repo.get_by_id(file_id=sibling.id) == sibling
         assert await storage.read_file(user_id=owner, file_id=sibling.id) == b"sibling PDF"
-        assert await repo.get_history(user_id=owner, document_lineage_id=lineage) == b"undo history"
+        assert await repo.get_history_head(user_id=owner, document_lineage_id=lineage) is not None
         usage = await PostgreSQLUserVaultUsageRepository(session).get(user_id=owner)
         assert usage is not None and usage.bytes_total == exam.bytes + sibling.bytes

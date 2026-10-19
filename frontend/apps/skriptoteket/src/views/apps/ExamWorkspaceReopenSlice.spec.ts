@@ -28,15 +28,20 @@ import {
   importFixtureDocument,
   mountExamWorkspace,
   selectItemRow,
+  unmountExamWorkspace,
 } from "./ExamWorkspaceSlice.specSupport";
+import { arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
 
 const apiMocks = vi.hoisted(() => ({
+  getExamWorkspaceHistory: vi.fn(),
+  getExamWorkspaceHistoryStep: vi.fn(),
+  moveExamWorkspaceHistoryPosition: vi.fn(),
+  storeExamWorkspaceUndoStep: vi.fn(),
   findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
-  saveExamWorkspaceDocument: vi.fn(),
 }));
 const exportApiMocks = vi.hoisted(() => ({
   downloadExamWorkspaceExport: vi.fn(),
@@ -76,6 +81,7 @@ beforeEach(() => {
   for (const mock of [...Object.values(apiMocks), ...Object.values(exportApiMocks)]) {
     mock.mockReset();
   }
+  arrangeStepHistory(apiMocks);
   apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue(succeededConversion);
   apiMocks.importExamWorkspaceDocument.mockImplementation(async () => {
     apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(
@@ -85,6 +91,10 @@ beforeEach(() => {
       document_revision: null, questions_total: 0, questions_done: 0, units: [] };
   });
   apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [OTHER_EXAM], ordering: "course" });
+});
+
+afterEach(() => {
+  unmountExamWorkspace();
 });
 
 describe("ExamWorkspaceView reopen slice", () => {
@@ -99,7 +109,7 @@ describe("ExamWorkspaceView reopen slice", () => {
     expect(wrapper.find('[data-test="exam-workspace-title"]').text()).toBe(
       "Sparat prov",
     );
-    expect(wrapper.find('[data-test="exam-workspace-save-state"]').text()).toMatch(/^Sparat /);
+    expect(wrapper.find('[data-test="exam-workspace-save-state"]').text()).toBe("Sparat");
     expect(wrapper.findAll('[data-test^="exam-workspace-row-"]')).toHaveLength(8);
   });
 
@@ -164,7 +174,7 @@ describe("ExamWorkspaceView reopen slice", () => {
     expect(wrapper.find('[data-test="exam-workspace-title"]').text()).toBe(
       "NO-prov HT25",
     );
-    expect(wrapper.find('[data-test="exam-workspace-save-state"]').text()).toBe("Osparat");
+    expect(wrapper.find('[data-test="exam-workspace-save-state"]').text()).toBe("Sparar …");
   });
 
   it("restores the address to the open exam when the named exam fails to open", async () => {

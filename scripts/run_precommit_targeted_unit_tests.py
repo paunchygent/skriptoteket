@@ -17,7 +17,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 TESTS_ROOT = ROOT / "tests" / "unit"
-PYTEST_COMMAND = ["pdm", "run", "test-parallel", "-q"]
+PYTEST_COMMAND = ["pdm", "run", "pytest", "-q"]
 EXCLUDED_COMMIT_TIME_MARKERS = frozenset({"docker", "financial", "simulation", "slow"})
 
 
@@ -147,6 +147,7 @@ def _excluded_module_markers(path: Path) -> tuple[str, ...]:
         return ()
 
     for statement in tree.body:
+        value: ast.expr | None
         if isinstance(statement, ast.Assign):
             targets = statement.targets
             value = statement.value

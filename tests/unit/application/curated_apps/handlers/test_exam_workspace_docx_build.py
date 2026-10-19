@@ -24,6 +24,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeParseOrigin,
 )
+from tests.unit.application.curated_apps.handlers.docx_conversion_cache import (
+    ConversionCache,
+    conversion_cache_fixture,  # noqa: F401 - registers the `conversions` fixture
+)
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
     RECORDINGS,
     MissingRecording,
@@ -58,13 +62,20 @@ async def _convert(exam: str, **options):
     return replay, await replay.pipeline.convert(job=replay.job())
 
 
+async def _default(conversions: ConversionCache, exam: str):
+    converted = await conversions.converted(exam)
+    return converted, converted.outcome
+
+
 def _manifest(exam: str):
     return manifest_from_output(recording(exam, "docx_grouping_1"), corpus_chunks(exam))
 
 
 @pytest.mark.parametrize("exam", recorded_exams())
-async def test_every_grouped_question_maps_to_items_once_and_in_source_order(exam: str):
-    replay, outcome = await _convert(exam)
+async def test_every_grouped_question_maps_to_items_once_and_in_source_order(
+    exam: str, conversions: ConversionCache
+):
+    replay, outcome = await _default(conversions, exam)
     update = outcome.update
     document = update.document
     grouped = [q.question_id for q in _manifest(exam).questions]
@@ -94,7 +105,9 @@ async def test_every_grouped_question_maps_to_items_once_and_in_source_order(exa
 
 
 @pytest.mark.parametrize("wave", ["docx_w1-", "docx_w2-"])
-async def test_replay_batches_require_visible_anchors_and_an_unused_recording(wave: str, tmp_path):
+async def test_replay_batches_require_visible_anchors_and_an_unused_recording(
+    wave: str, tmp_path, conversions: ConversionCache
+):
     """Isolate one unmodified reply to challenge both converter waves' replay boundary."""
     from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
         StructuredLLMEndpointKind,
@@ -102,7 +115,7 @@ async def test_replay_batches_require_visible_anchors_and_an_unused_recording(wa
     )
 
     exam = "bf26_english_1_unit_test_kap_1_2_med_facit"
-    replay, _ = await _convert(exam)
+    replay, _ = await _default(conversions, exam)
     request = next(r for r in replay.provider.requests if r.item_id.startswith(wave))
     name = replay.provider.recording_ids[request.item_id]
     directory = tmp_path / exam
@@ -162,8 +175,10 @@ async def test_replay_batches_require_visible_anchors_and_an_unused_recording(wa
 
 
 @pytest.mark.parametrize("exam", recorded_exams())
-async def test_admitted_keys_keep_the_recorded_provenance_and_facit(exam: str):
-    replay, outcome = await _convert(exam)
+async def test_admitted_keys_keep_the_recorded_provenance_and_facit(
+    exam: str, conversions: ConversionCache
+):
+    replay, outcome = await _default(conversions, exam)
     from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedItem
 
     origins = {
@@ -204,9 +219,11 @@ async def test_admitted_keys_keep_the_recorded_provenance_and_facit(exam: str):
         assert "<i>" not in (item.facit_text or "")
 
 
-async def test_recorded_typed_resend_retains_an_incomplete_key_for_teacher_review():
+async def test_recorded_typed_resend_retains_an_incomplete_key_for_teacher_review(
+    conversions: ConversionCache,
+):
     exam = "bf26_english_1_unit_test_kap_1_2_med_facit"
-    replay, outcome = await _convert(exam)
+    replay, outcome = await _default(conversions, exam)
 
     assert replay.provider.recording_ids["docx_w2-10-01"] == "docx_w2-11-01"
     assert replay.provider.recording_ids["docx_w2-10-01c01"] == "docx_w2-11-01c01"
@@ -227,14 +244,16 @@ async def test_recorded_typed_resend_retains_an_incomplete_key_for_teacher_revie
 
 
 @pytest.mark.parametrize("exam", recorded_exams())
-async def test_automatic_spellings_obey_distance_disjointness_and_quota(exam: str):
+async def test_automatic_spellings_obey_distance_disjointness_and_quota(
+    exam: str, conversions: ConversionCache
+):
     from skriptoteket.domain.curated_apps.exam_workspace.answer_spelling import (
         filter_answer_spelling_candidates,
         is_allowed_answer_spelling_variant,
         normalize_answer,
     )
 
-    _, outcome = await _convert(exam)
+    _, outcome = await _default(conversions, exam)
     gaps = [gap for item in outcome.result.document.items for gap in item.gaps]
     for gap in gaps:
         assert set(map(normalize_answer, gap.accepted_values)).isdisjoint(
@@ -254,8 +273,10 @@ async def test_automatic_spellings_obey_distance_disjointness_and_quota(exam: st
 
 
 @pytest.mark.parametrize("exam", recorded_exams())
-async def test_grouping_title_anchors_name_source_text_without_the_facit_label(exam: str):
-    _, outcome = await _convert(exam)
+async def test_grouping_title_anchors_name_source_text_without_the_facit_label(
+    exam: str, conversions: ConversionCache
+):
+    _, outcome = await _default(conversions, exam)
     manifest = _manifest(exam)
     text = {chunk.anchor: chunk.text for chunk in corpus_chunks(exam)}
     assert manifest.title_anchors
@@ -298,9 +319,9 @@ async def test_an_unplaced_points_line_belongs_to_the_question_before_it(exam: s
 
 @pytest.mark.parametrize("exam", recorded_exams())
 async def test_each_batch_schema_names_only_its_own_anchors_and_kinds_without_ref_siblings(
-    exam: str,
+    exam: str, conversions: ConversionCache
 ):
-    replay, _ = await _convert(exam)
+    replay, _ = await _default(conversions, exam)
     batches = [r for r in replay.provider.requests if r.item_id.startswith("docx_w")]
     assert batches
     for request in batches:
@@ -410,8 +431,10 @@ async def test_a_provider_failure_turns_only_that_batchs_chunks_into_review_item
 
 
 @pytest.mark.parametrize("exam", recorded_exams())
-async def test_questions_one_context_governs_share_one_parent_whatever_their_kinds(exam: str):
-    _, outcome = await _convert(exam)
+async def test_questions_one_context_governs_share_one_parent_whatever_their_kinds(
+    exam: str, conversions: ConversionCache
+):
+    _, outcome = await _default(conversions, exam)
     update = outcome.update
     assert not [e for e in outcome.result.events if e.code == "parent_differs_from_grouping"]
     for context in _manifest(exam).contexts:

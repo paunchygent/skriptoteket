@@ -20,16 +20,20 @@ import {
   SUCCEEDED,
 } from "./ExamWorkspaceEnrichmentSlice.specSupport";
 import { importFixtureDocument, mountExamWorkspace } from "./ExamWorkspaceSlice.specSupport";
+import { arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
 
 const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceAnswerKeySuggestions: vi.fn(),
   findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
+  getExamWorkspaceHistory: vi.fn(),
+  getExamWorkspaceHistoryStep: vi.fn(),
+  moveExamWorkspaceHistoryPosition: vi.fn(),
+  storeExamWorkspaceUndoStep: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
   requestExamWorkspaceAnswerKeySuggestions: vi.fn(),
-  saveExamWorkspaceDocument: vi.fn(),
 }));
 const exportApiMocks = vi.hoisted(() => ({
   downloadExamWorkspaceExport: vi.fn(),
@@ -47,6 +51,7 @@ const LOOKUP_RETRY = '[data-test="exam-workspace-enrichment-lookup-retry"]';
 beforeEach(() => {
   vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
   resetEnrichmentApiMocks(apiMocks);
+  arrangeStepHistory(apiMocks);
 });
 
 afterEach(() => {
@@ -75,7 +80,7 @@ describe("ExamWorkspaceView failed lost-job lookup", () => {
     expect(wrapper.find('[data-test="exam-workspace-enrichment-message"]').text()).toBe(
       "1 facitförslag har lagts in på frågorna.",
     );
-    expect(wrapper.get('[data-test="exam-workspace-save-state"]').text()).toContain("Osparat");
+    expect(wrapper.get('[data-test="exam-workspace-save-state"]').text()).toContain("Sparar …");
     expect(wrapper.find(LOOKUP_ERROR).exists()).toBe(false);
     expect(wrapper.find(LOOKUP_RETRY).exists()).toBe(false);
   });

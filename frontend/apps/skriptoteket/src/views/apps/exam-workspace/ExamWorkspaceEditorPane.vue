@@ -174,6 +174,8 @@ const currentParentId = computed(() => props.itemEntry?.parentId ?? null);
         @remove-automatic-value="editing.removeItemAutomaticValue"
         @create-gap="editing.createItemGap"
         @show-gap-as-text="editing.showItemGapAsText"
+        @revert-gap="editing.revertItemGap"
+        @restore-kept-gap="editing.restoreItemKeptGap"
         @add-ordering-step="editing.addItemOrderingStep"
         @move-ordering-step="editing.moveItemOrderingStep"
         @remove-ordering-step="editing.removeItemOrderingStep"

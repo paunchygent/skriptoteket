@@ -37,7 +37,7 @@ import type {
 } from "../../../api/examWorkspace";
 import { useAiAccess } from "../../../composables/useAiAccess";
 import { useToast } from "../../../composables/useToast";
-import { mergeConversionRevision } from "./examWorkspaceConversionMerge";
+import { mergeConversionRevision, sameDocument } from "./examWorkspaceConversionMerge";
 import type { ExamWorkspaceStore } from "./examWorkspaceStore";
 
 export const EXAM_WORKSPACE_CONVERSION_POLL_MS = 3000;
@@ -253,7 +253,10 @@ export function useExamWorkspaceConversion(
     if (first) {
       binding.beforeFirstRevision();
       binding.applyResponse(response);
-    } else if (!binding.isDirty.value || !local || !base) {
+    } else if (!local || !base || sameDocument(local, base)) {
+      // Nothing edited since the base: take the head as is. An autosave
+      // stores the copy without fetching, so the saved baseline can stand
+      // ahead of this base; the merge still runs while the copy differs.
       binding.applyResponse(response);
     } else {
       const merged = mergeConversionRevision({

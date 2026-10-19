@@ -16,6 +16,7 @@ export function buildChoiceItem(overrides: Partial<NativeExamItem> = {}): Native
       { choice_id: "choice_002", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Järn" }] }] },
     ],
     gaps: [],
+    kept_gaps: [],
     item_id: "item_001",
     kind: "single_choice",
     match_left: [],

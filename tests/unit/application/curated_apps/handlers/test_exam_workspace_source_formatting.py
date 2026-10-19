@@ -20,8 +20,11 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
 )
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_plain_text
 from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import FORMATTING_REASON
+from tests.unit.application.curated_apps.handlers.docx_conversion_cache import (
+    ConversionCache,
+    conversion_cache_fixture,  # noqa: F401 - registers the `conversions` fixture
+)
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
-    build_replay,
     corpus_chunks,
     recorded_exams,
     recording,
@@ -31,9 +34,10 @@ pytestmark = [pytest.mark.unit, pytest.mark.asyncio]
 
 
 @pytest.mark.parametrize("exam", recorded_exams())
-async def test_recorded_corpus_has_no_unrecoverable_formatting_transfer(exam):
-    replay = build_replay(exam)
-    outcome = await replay.pipeline.convert(job=replay.job())
+async def test_recorded_corpus_has_no_unrecoverable_formatting_transfer(
+    exam, conversions: ConversionCache
+):
+    outcome = (await conversions.converted(exam)).outcome
     document = outcome.update.document
     failures = [
         (item.printed_label, item.review.reasons)
@@ -44,9 +48,10 @@ async def test_recorded_corpus_has_no_unrecoverable_formatting_transfer(exam):
     assert parse_native_exam_document(native_exam_document_json_bytes(document)) == document
 
 
-async def test_svenska_2_question_17_keeps_the_three_analysed_phrases_in_italics():
-    replay = build_replay("svenska_2_kursavslutande_prov_med_facit")
-    outcome = await replay.pipeline.convert(job=replay.job())
+async def test_svenska_2_question_17_keeps_the_three_analysed_phrases_in_italics(
+    conversions: ConversionCache,
+):
+    outcome = (await conversions.converted("svenska_2_kursavslutande_prov_med_facit")).outcome
     item = next(item for item in outcome.update.document.items if item.printed_label == "Fråga 17")
     italic = " ".join(
         segment.text
@@ -110,9 +115,12 @@ async def test_failed_reconstruction_uses_the_exact_swedish_review_reason():
     )
 
 
-async def test_unmarked_morpheme_alignment_goes_to_review_with_the_word_and_never_leaks_facit():
-    replay = build_replay("svenska_2_grammatik_omprov_variant_1_med_facit")
-    outcome = await replay.pipeline.convert(job=replay.job())
+async def test_unmarked_morpheme_alignment_goes_to_review_with_the_word_and_never_leaks_facit(
+    conversions: ConversionCache,
+):
+    outcome = (
+        await conversions.converted("svenska_2_grammatik_omprov_variant_1_med_facit")
+    ).outcome
     item = next(item for item in outcome.update.document.items if item.printed_label == "Fråga 1")
     assert FORMATTING_REASON not in item.review.reasons
     assert item.review.state is NativeItemReviewState.REVIEW_REQUIRED

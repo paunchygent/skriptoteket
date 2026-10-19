@@ -39,7 +39,7 @@ const DRAWER_TITLES: Record<DrawerName, string> = {
   open: "Öppna",
 };
 const DRAWER_OPENERS: Record<DrawerName, string> = {
-  details: '[data-test="exam-workspace-title"]',
+  details: '[data-test="exam-workspace-details"]',
   export: '[data-test="exam-workspace-export"]',
   open: '[data-test="exam-workspace-open"]',
 };
@@ -61,12 +61,15 @@ const props = withDefaults(
     questionLabel: (itemId: string) => string | null;
     /** The desktop resize handle is wanted; only ever set on desktop. */
     handle?: boolean;
+    /** Importera in the header asked for the file picker; the Öppna drawer acts on it and reports back. */
+    importPickPending?: boolean;
   }>(),
-  { handle: false },
+  { handle: false, importPickPending: false },
 );
 
 defineEmits<{
   close: [];
+  "import-pick-consumed": [];
   run: [target: ExamWorkspaceExportTarget, destination: "download" | "files"];
   goto: [blocker: ExamWorkspaceBlockerEntry];
   fix: [blocker: ExamWorkspaceBlockerEntry];
@@ -137,11 +140,13 @@ const currentExports = computed(() =>
       :is-converting="isConverting"
       :notes="notes"
       :current-exports="currentExports"
+      :import-pick-pending="importPickPending"
       @select-file="handleSelectedFile"
       @drop-files="handleDroppedFiles"
       @open="openDocument"
       @set-ordering="$emit('set-ordering', $event)"
       @retry-conversion="retryConversionStatus"
+      @import-pick-consumed="$emit('import-pick-consumed')"
     />
     <ExamWorkspaceExportDrawer
       v-else-if="drawer === 'export' && workspaceDocument"
@@ -154,6 +159,7 @@ const currentExports = computed(() =>
       :notice="exports.exportNotice.value"
       :result="exports.exportResult.value"
       :zero-points="zeroPoints"
+      :question-label="questionLabel"
       @run="(target, destination) => $emit('run', target, destination)"
       @goto="$emit('goto', $event)"
       @fix="$emit('fix', $event)"

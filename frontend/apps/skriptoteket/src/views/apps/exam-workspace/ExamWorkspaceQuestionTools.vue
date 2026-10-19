@@ -30,8 +30,7 @@ const emit = defineEmits<{ toggleImport: []; toggleReviewed: [] }>();
   <button
     v-if="hasImport"
     type="button"
-    class="xw-btn tools__import"
-    :class="{ 'xw-btn--pressed': importOpen }"
+    class="xw-tool xw-tool--word tools__import"
     :aria-expanded="importOpen"
     aria-label="Import"
     title="Visa frågan som den står i provfilen"
@@ -39,15 +38,14 @@ const emit = defineEmits<{ toggleImport: []; toggleReviewed: [] }>();
     @click="emit('toggleImport')"
   >
     <UiGlyph
-      meaning="document"
-      :size="20"
+      meaning="file-import"
+      :size="16"
     /><span class="tools__word">Import</span>
   </button>
   <button
     v-if="reviewed !== null"
     type="button"
-    class="xw-btn xw-btn--icon"
-    :class="{ 'xw-btn--checked': reviewed }"
+    class="xw-tool"
     :disabled="disabled"
     :aria-pressed="reviewed"
     :aria-label="reviewed ? 'Ångra granskad' : 'Markera som granskad'"
@@ -57,20 +55,15 @@ const emit = defineEmits<{ toggleImport: []; toggleReviewed: [] }>();
   >
     <UiGlyph
       meaning="confirm"
-      :size="20"
+      :size="16"
     />
   </button>
 </template>
 
 <style scoped>
+/* Below 1280 px Import is glyph-only: the face's square tool size governs it. */
 @media (max-width: 1279px) {
   .tools__word { display: none; }
-  .tools__import { width: var(--xw-ctl-fine, 36px); padding: 0; }
-}
-@media (max-width: 1279px) and (pointer: coarse) {
-  .tools__import { width: var(--xw-ctl, 44px); }
-}
-@media (max-width: 767px) {
-  .tools__import { width: var(--xw-ctl, 44px); }
+  .tools__import { padding: 0; }
 }
 </style>

@@ -36,6 +36,7 @@ import {
   withTickPoints,
 } from "./examWorkspaceItemEdits";
 import { withGapAsText, withGapOptions, withNewGap } from "./examWorkspaceGapEdits";
+import { withGapReverted, withKeptGapRestored } from "./examWorkspaceKeptGapEdits";
 import { withShortAnswerShape, type ExamWorkspaceItemShape, withGapTextShape } from "./examWorkspaceShortAnswer";
 import { withShuffledSteps, withStepAdded, withStepMoved, withStepRemoved } from "./examWorkspaceOrdering";
 import { withoutEmptyOptions, withoutOptionHeadings } from "./examWorkspaceBlockers";
@@ -50,8 +51,16 @@ export type ExamWorkspaceItemPatch = (
 ) => boolean;
 
 export function useExamWorkspaceItemEdits(patchItem: ExamWorkspaceItemPatch) {
-  function updateItemCriteria(itemId: string, criteria: NativeExamCriterion[]): void {
-    patchItem(itemId, (item) => withCriteria(item, criteria));
+  /**
+   * Replace one item's criteria. Adding a row is a structural edit (one step
+   * at once); typing a text or a valid points value waits for the pause.
+   */
+  function updateItemCriteria(
+    itemId: string,
+    criteria: NativeExamCriterion[],
+    structural: boolean,
+  ): void {
+    patchItem(itemId, (item) => withCriteria(item, criteria), structural);
   }
 
   function updateItemPoints(itemId: string, points: number | null): void {
@@ -63,13 +72,19 @@ export function useExamWorkspaceItemEdits(patchItem: ExamWorkspaceItemPatch) {
     patchItem(itemId, (item) => withBody(item, body), structural);
   }
 
+  /**
+   * Replace one dropdown gap's options. Radio, add, remove and move are
+   * structural edits (one step at once); typed option text waits for the
+   * pause, and rides along with the next structural edit.
+   */
   function updateItemGapOptions(
     itemId: string,
     gapId: string,
     options: NativeExamChoice[],
     correctOptionId: string | null,
+    structural: boolean,
   ): void {
-    patchItem(itemId, (item) => withGapOptions(item, gapId, options, correctOptionId), true);
+    patchItem(itemId, (item) => withGapOptions(item, gapId, options, correctOptionId), structural);
   }
 
   function updateItemChoiceBody(
@@ -132,6 +147,16 @@ export function useExamWorkspaceItemEdits(patchItem: ExamWorkspaceItemPatch) {
     patchItem(itemId, (item) => withGapAsText(item, gapId), true);
   }
 
+  /** A gap-tool revert is one structural undo step, so H4 can call it from a gap click. */
+  function revertItemGap(itemId: string, gapId: string): void {
+    patchItem(itemId, (item) => withGapReverted(item, gapId), true);
+  }
+
+  /** A kept-word restore is one structural undo step, so H4 can call it from a word click. */
+  function restoreItemKeptGap(itemId: string, keptGapId: string, atBlock: number): void {
+    patchItem(itemId, (item) => withKeptGapRestored(item, keptGapId, atBlock), true);
+  }
+
   /** One gap creation is one atomic structural item edit: body plus gap record together. */
   function createItemGap(
     itemId: string,
@@ -177,6 +202,8 @@ export function useExamWorkspaceItemEdits(patchItem: ExamWorkspaceItemPatch) {
     shuffleItemOrderingSteps,
     removeItemEmptyOptions,
     removeItemOptionHeadings,
+    restoreItemKeptGap,
+    revertItemGap,
     unmarkItemReviewed,
     showItemGapAsText,
     undoItemInterpretation,

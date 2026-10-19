@@ -136,6 +136,7 @@ function choiceItem(
       { choice_id: "choice_003", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "skolan" }] }] },
     ],
     gaps: [],
+    kept_gaps: [],
     item_id: "item_001",
     kind,
     match_left: [],

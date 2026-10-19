@@ -2,8 +2,9 @@
  * Guest mode inside the shared exam workspace: guest save controls.
  *
  * Expected behavior:
- *   With a guest store Spara som, save-to-Mina-filer and rename are absent
- *   while Spara keeps saving to the browser store.
+ *   A guest has no Spara button and no save menu (Spara som stays a
+ *   signed-in control): a stored step is the save, and the header shows
+ *   the guest status text (`Sparat i webbläsaren HH:MM`) after a store.
  */
 
 import { flushPromises } from "@vue/test-utils";
@@ -81,14 +82,14 @@ installGuestModeObjectUrls();
 resetGuestModeTestState(teacherMocks);
 
 describe("ExamWorkspaceView guest mode save controls", () => {
-  it("hides Spara som, save-to-Mina-filer and rename while Spara saves to the browser store", async () => {
+  it("has no Spara button and no save menu while a stored step saves to the browser store", async () => {
     const { guest, storage } = setupGuest();
     const wrapper = await mountGuestView(guest.store);
     await wrapper.get('[data-test="exam-workspace-guest-blank"]').trigger("click");
     await flushPromises();
 
-    expect(wrapper.find('[data-test="exam-workspace-save-menu"]').exists()).toBe(false);
-    expect(wrapper.find('[data-test="exam-workspace-save"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="exam-workspace-save-as-command"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="exam-workspace-save"]').exists()).toBe(false);
 
     await wrapper.get('[data-test="exam-workspace-export"]').trigger("click");
     await flushPromises();
@@ -96,16 +97,23 @@ describe("ExamWorkspaceView guest mode save controls", () => {
       document.querySelectorAll('[data-test^="exam-workspace-export-save-"]').length,
     ).toBe(0);
 
-    await wrapper.get('[data-test="exam-workspace-title"]').trigger("click");
+    await wrapper.get('[data-test="exam-workspace-details"]').trigger("click");
     await flushPromises();
     expect(wrapper.find('[data-test="exam-workspace-metadata-name"]').exists()).toBe(false);
     expect(wrapper.find('[data-test="exam-workspace-metadata-rename"]').exists()).toBe(false);
 
     await wrapper.get('[data-test="exam-workspace-row-item_001"]').trigger("click");
     await wrapper.get('[data-test="exam-workspace-item-points-input"]').setValue("5");
-    await wrapper.get('[data-test="exam-workspace-save"]').trigger("click");
+    expect(wrapper.get('[data-test="exam-workspace-save-state"]').text()).toBe("Sparar …");
+
+    window.dispatchEvent(
+      new KeyboardEvent("keydown", { bubbles: true, cancelable: true, key: "s", ctrlKey: true }),
+    );
     await flushPromises();
 
+    expect(wrapper.get('[data-test="exam-workspace-save-state"]').text()).toMatch(
+      /^Sparat i webbläsaren \d{2}:\d{2}$/,
+    );
     const stored = await storage.load();
     const saved = stored?.draft.saved_document.items.find((item) => item.item_id === "item_001");
     expect(saved?.points).toBe(5);

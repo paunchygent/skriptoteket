@@ -27,6 +27,15 @@ export function conflictError(): ApiError {
   });
 }
 
+/** The server's refusal of a write from a tab that does not hold the live edit lease. */
+export function editLeaseHeldError(): ApiError {
+  return new ApiError({
+    code: "EDIT_LEASE_HELD",
+    message: "Provet redigeras i en annan flik.",
+    status: 409,
+  });
+}
+
 /** The server's refusal of a document the save rules reject; carries the Swedish copy. */
 export function refusalError(copy: string): ApiError {
   return new ApiError({ code: "VALIDATION_ERROR", message: copy, status: 422 });

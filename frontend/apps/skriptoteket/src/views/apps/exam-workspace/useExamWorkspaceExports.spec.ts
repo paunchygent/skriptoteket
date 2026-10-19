@@ -35,9 +35,11 @@ function mountExports(title: string, saveFirst: () => Promise<boolean> = async (
   const scope = effectScope();
   const exports = scope.run(() =>
     exportsModule.useExamWorkspaceExports(summary, workspaceDocument, {
+      historyPosition: ref(null),
       noteBlockers: vi.fn(),
       readLatest: async () => undefined,
       saveFirst,
+      savedVersion: () => 1,
       store: serverExamWorkspaceStore,
     }),
   );

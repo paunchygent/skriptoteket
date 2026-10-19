@@ -9,7 +9,9 @@ from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
 )
 from skriptoteket.application.curated_apps.exam_workspace import (
     RetryExamWorkspaceItemRequest,
-    SaveExamWorkspaceDocumentRequest,
+)
+from skriptoteket.application.curated_apps.exam_workspace_history import (
+    StoreExamWorkspaceUndoStepRequest,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_rounds import (
     DocxBuildRoundFailure,
@@ -42,10 +44,16 @@ from tests.unit.application.curated_apps.handlers.exam_workspace_docx_retry_fixt
     retry_reply,
     source,
 )
-from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents import _Env
+from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents import (
+    _Env,
+    _leased_tab,
+)
 from tests.unit.application.curated_apps.handlers.test_exam_workspace_docx_jobs import (
     claim,
     environment,
+)
+from tests.unit.application.curated_apps.handlers.test_exam_workspace_history_contract import (
+    _undo_handler,
 )
 from tests.unit.domain.curated_apps.exam_workspace.test_exam_workspace_import_record import (
     import_record,
@@ -116,7 +124,7 @@ async def test_two_retries_keep_original_wording_and_append_in_order_after_reope
         lineage_id=original.document_id,
         version=2,
         expected_revision=1,
-        editor_step_id=original.document_id,
+        preserve_editor_position=True,
     )
     second = await env.retry(after_first)
     assert second.item.import_record is not None
@@ -225,17 +233,21 @@ async def test_unsaved_retries_keep_all_attempts_through_reload_save_and_reopen(
     final_draft = NativeExamDocument.model_validate_json(draft.model_dump_json()).model_copy(
         update={"revision": original.revision + 1}
     )
-    saved = await env.save_handler.handle(
+    stored = await _undo_handler(env).handle(
         actor=actor,
         lineage_id=original.document_id,
-        request=SaveExamWorkspaceDocumentRequest(
-            expected_revision=original.revision,
+        request=StoreExamWorkspaceUndoStepRequest(
+            tab_id=await _leased_tab(env, actor, original.document_id),
+            expected_cursor=(
+                await env.save_handler.history(actor=actor, lineage_id=original.document_id)
+            ).cursor,
             document=final_draft,
-            position_step_id=original.document_id,
         ),
     )
     reopened = await env.get_handler.handle(actor=actor, lineage_id=original.document_id)
-    for response in (saved, reopened):
+    assert stored.document.items[0].body == final_draft.items[0].body
+    assert stored.document.items[0].import_record == expected_record
+    for response in (reopened,):
         assert response.document.items[0].body == final_draft.items[0].body
         assert response.document.items[0].import_record == expected_record
         assert response.saved_document.items[0].import_record == expected_record
@@ -337,13 +349,15 @@ async def test_retry_after_undo_past_save_keeps_each_new_branch_attempt(
             ),
         )
         draft = draft.model_copy(update={"items": (retried.item,)})
-    await env.save_handler.handle(
+    await _undo_handler(env).handle(
         actor=actor,
         lineage_id=lineage,
-        request=SaveExamWorkspaceDocumentRequest(
-            expected_revision=1,
+        request=StoreExamWorkspaceUndoStepRequest(
+            tab_id=await _leased_tab(env, actor, lineage),
+            expected_cursor=(
+                await env.save_handler.history(actor=actor, lineage_id=lineage)
+            ).cursor,
             document=draft.model_copy(update={"revision": 2}),
-            position_step_id=history.position_step_id,
         ),
     )
     head = await env.vault_files.get_document_head(user_id=actor.id, document_lineage_id=lineage)
@@ -388,17 +402,17 @@ async def test_retry_after_undo_past_save_keeps_each_new_branch_attempt(
         for step in expected.steps
     )
     history = await env.save_handler.history(actor=actor, lineage_id=lineage)
-    saved = await env.save_handler.handle(
+    stored = await _undo_handler(env).handle(
         actor=actor,
         lineage_id=lineage,
-        request=SaveExamWorkspaceDocumentRequest(
-            expected_revision=2,
+        request=StoreExamWorkspaceUndoStepRequest(
+            tab_id=await _leased_tab(env, actor, lineage),
+            expected_cursor=history.cursor,
             document=draft.model_copy(update={"revision": 3}),
-            position_step_id=history.position_step_id,
         ),
     )
     reopened = await env.get_handler.handle(actor=actor, lineage_id=lineage)
-    assert saved.document.items[0].import_record == expected
+    assert stored.document.items[0].import_record == expected
     assert reopened.saved_document.items[0].import_record == expected
 
 
@@ -480,15 +494,19 @@ async def test_put_and_get_return_import_record_even_after_teacher_changes_facit
         }
     )
     edited = original.model_copy(update={"revision": 2, "items": (edited_item,)})
-    saved = await env.save_handler.handle(
+    stored = await _undo_handler(env).handle(
         actor=actor,
         lineage_id=original.document_id,
-        request=SaveExamWorkspaceDocumentRequest(
-            expected_revision=1, document=edited, position_step_id=original.document_id
+        request=StoreExamWorkspaceUndoStepRequest(
+            tab_id=await _leased_tab(env, actor, original.document_id),
+            expected_cursor=(
+                await env.save_handler.history(actor=actor, lineage_id=original.document_id)
+            ).cursor,
+            document=edited,
         ),
     )
     reopened = await env.get_handler.handle(actor=actor, lineage_id=original.document_id)
-    for response in (saved, reopened):
+    for response in (stored, reopened):
         assert response.document.items[0].facit_text == "Lärarens nya facit."
         record = response.document.items[0].import_record
         assert (

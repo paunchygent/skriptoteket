@@ -20,6 +20,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeAssetSegment,
     NativeGapSegment,
     NativeParagraph,
+    NativeTextSegment,
     is_empty_body,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
@@ -147,6 +148,8 @@ class NativeExamDocument(BaseModel):
                 for segment in paragraph.segments:
                     if isinstance(segment, NativeGapSegment):
                         raise ValueError("shared instructions cannot contain response gaps")
+                    if isinstance(segment, NativeTextSegment) and segment.kept_gap_id is not None:
+                        raise ValueError("shared instructions cannot carry a kept gap link")
                     if isinstance(segment, NativeAssetSegment):
                         if segment.asset_id not in known_assets:
                             raise ValueError("shared instructions reference unknown asset")

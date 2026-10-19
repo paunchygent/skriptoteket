@@ -87,6 +87,46 @@ function childLetter(index: number): string {
   return index < LETTERS.length ? LETTERS[index]! : `${LETTERS[Math.floor(index / LETTERS.length) - 1]}${LETTERS[index % LETTERS.length]}`;
 }
 
+/**
+ * The display numbers in document order: each standalone item and each
+ * parent with children takes the next number once; a parent's children
+ * follow as `<number><letter>` and take no number of their own. The one
+ * source for the list rows, the editor headings and the save refusal copy.
+ */
+function examWorkspaceUnitLabels(document: NativeExamDocument): {
+  itemLabels: Map<string, string>;
+  parentLabels: Map<string, string>;
+} {
+  const present = new Set(document.items.map((item) => item.item_id));
+  const itemLabels = new Map<string, string>();
+  const parentLabels = new Map<string, string>();
+  let number = 0;
+  examWorkspaceUnits(document).forEach((unit) => {
+    if (unit.kind === "item") {
+      if (present.has(unit.itemId)) {
+        number += 1;
+        itemLabels.set(unit.itemId, String(number));
+      }
+      return;
+    }
+    const children = unit.itemIds.filter((itemId) => present.has(itemId));
+    if (children.length === 0) {
+      return;
+    }
+    number += 1;
+    parentLabels.set(unit.parentId, String(number));
+    children.forEach((itemId, childIndex) => {
+      itemLabels.set(itemId, `${number}${childLetter(childIndex)}`);
+    });
+  });
+  return { itemLabels, parentLabels };
+}
+
+/** The question list's label per item id: a standalone "3", a child "3b". */
+export function examWorkspaceQuestionLabels(document: NativeExamDocument): Map<string, string> {
+  return examWorkspaceUnitLabels(document).itemLabels;
+}
+
 function itemEntry(
   item: NativeExamItem,
   label: string,
@@ -122,13 +162,12 @@ export function examWorkspaceListEntries(
 ): ExamWorkspaceListEntry[] {
   const items = new Map(document.items.map((item) => [item.item_id, item]));
   const parents = new Map(document.parents.map((parent) => [parent.parent_id, parent]));
+  const { itemLabels, parentLabels } = examWorkspaceUnitLabels(document);
   const entries: ExamWorkspaceListEntry[] = [];
-  let number = 0;
   examWorkspaceUnits(document).forEach((unit) => {
     if (unit.kind === "item") {
-      number += 1;
       const item = items.get(unit.itemId)!;
-      entries.push(itemEntry(item, String(number), null, readinessByItemId[item.item_id] ?? [], convertingItemIds.has(item.item_id)));
+      entries.push(itemEntry(item, itemLabels.get(unit.itemId) ?? "", null, readinessByItemId[item.item_id] ?? [], convertingItemIds.has(item.item_id)));
       return;
     }
     const parent = parents.get(unit.parentId)!;
@@ -145,8 +184,7 @@ export function examWorkspaceListEntries(
       });
       return;
     }
-    number += 1;
-    const partNumber = String(number);
+    const partNumber = parentLabels.get(unit.parentId) ?? "";
     entries.push({
       childIds: [...unit.itemIds],
       id: parent.parent_id,
@@ -155,11 +193,11 @@ export function examWorkspaceListEntries(
       points: children.reduce((sum, child) => sum + (child.points ?? 0), 0),
       text,
     });
-    children.forEach((child, childIndex) => {
+    children.forEach((child) => {
       entries.push(
         itemEntry(
           child,
-          `${partNumber}${childLetter(childIndex)}`,
+          itemLabels.get(child.item_id) ?? "",
           parent.parent_id,
           readinessByItemId[child.item_id] ?? [],
           convertingItemIds.has(child.item_id),

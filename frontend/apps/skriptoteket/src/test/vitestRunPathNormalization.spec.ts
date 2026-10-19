@@ -5,25 +5,43 @@
  * the caller named, and a target without spec files fails before Vitest starts.
  */
 
-import { describe, expect, it } from "vitest";
+import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { afterAll, describe, expect, it } from "vitest";
 
 import {
   appRoot,
-  expandVitestTarget,
   listSpecFiles,
   normalizeVitestPathArg,
   planVitestRun,
   resolveVitestBin,
+  resolveVitestTarget,
   splitVitestArgs,
 } from "../../scripts/vitest-run.mjs";
 
 const examFolder = "src/views/apps/exam-workspace";
 const examSpec = `${examFolder}/ExamCourseCombobox.spec.ts`;
+const wrapperSpec = "src/test/vitestRunPathNormalization.spec.ts";
 
-// Vite's own glob is the independent oracle for the folder's spec files.
+// Vite's own glob is the independent oracle for the spec files each target must collect.
 const examFolderSpecs = Object.keys(import.meta.glob("/src/views/apps/exam-workspace/**/*.spec.ts"))
   .map((key) => key.slice(1))
   .sort();
+const homeFolderSpecs = Object.keys(import.meta.glob("/src/composables/home/**/*.spec.ts"))
+  .map((key) => key.slice(1))
+  .sort();
+const testFolderSpecs = Object.keys(import.meta.glob("/src/test/*.spec.ts"))
+  .map((key) => key.slice(1))
+  .sort();
+const appsFolderSpecs = Object.keys(import.meta.glob("/src/views/apps/**/*.spec.ts"))
+  .map((key) => key.slice(1))
+  .sort();
+
+const scratchDirs: string[] = [];
+afterAll(() => {
+  for (const dir of scratchDirs) rmSync(dir, { recursive: true, force: true });
+});
 
 function collectedFiles(include: string[]): string[] {
   return [...new Set(listSpecFiles(include))].sort();
@@ -49,25 +67,57 @@ describe("normalizeVitestPathArg", () => {
   });
 });
 
-describe("expandVitestTarget", () => {
-  it("keeps an explicit spec file as its own include pattern", () => {
-    expect(expandVitestTarget(examSpec)).toEqual([examSpec]);
+describe("resolveVitestTarget", () => {
+  it("resolves a mixed file-and-folder brace glob to both branches", () => {
+    const expected = [...homeFolderSpecs, wrapperSpec].sort();
+    const resolution = resolveVitestTarget(
+      "src/{test/vitestRunPathNormalization.spec.ts,composables/home}",
+    );
+    expect(resolution.unnameable).toEqual([]);
+    expect(resolution.specFiles).toEqual(expected);
+    expect(collectedFiles(resolution.patterns)).toEqual(expected);
   });
 
-  it("expands a folder with or without a trailing slash to its spec files", () => {
-    expect(expandVitestTarget(examFolder)).toEqual([`${examFolder}/**/*.spec.ts`]);
-    expect(expandVitestTarget(`${examFolder}/`)).toEqual([`${examFolder}/**/*.spec.ts`]);
+  it("resolves file-glob families to the spec files they match", () => {
+    // import.meta.glob leaves the importing file itself out of its own
+    // results (probed), so the oracle gains this file back explicitly.
+    const expected = [...testFolderSpecs, wrapperSpec].sort();
+    for (const target of ["src/test/*.{spec,test}.ts", "src/test/*.ts"]) {
+      const resolution = resolveVitestTarget(target);
+      expect(resolution.unnameable).toEqual([]);
+      expect(resolution.specFiles).toEqual(expected);
+      expect(collectedFiles(resolution.patterns)).toEqual(expected);
+    }
   });
 
-  it("expands a trailing name wildcard to matching spec files and folders", () => {
-    expect(expandVitestTarget(`${examFolder}/*`)).toEqual([
-      `${examFolder}/*.spec.ts`,
-      `${examFolder}/*/**/*.spec.ts`,
-    ]);
+  it("resolves extglob targets through the matcher instead of the target spelling", () => {
+    const single = resolveVitestTarget("src/test/@(vitestRunPathNormalization).spec.ts");
+    expect(single.unnameable).toEqual([]);
+    expect(single.specFiles).toEqual([wrapperSpec]);
+    expect(collectedFiles(single.patterns)).toEqual([wrapperSpec]);
+
+    const expected = [...testFolderSpecs, wrapperSpec].sort();
+    for (const target of [
+      "src/test/@(vitestRunPathNormalization|vitestInclude).spec.ts",
+      "src/test/+(vitestRunPathNormalization|vitestInclude).spec.ts",
+    ]) {
+      const resolution = resolveVitestTarget(target);
+      expect(resolution.unnameable).toEqual([]);
+      expect(resolution.specFiles).toEqual(expected);
+      expect(collectedFiles(resolution.patterns)).toEqual(expected);
+    }
   });
 
-  it("expands a folder glob to the spec files beneath it", () => {
-    expect(expandVitestTarget("src/views/apps/**")).toEqual(["src/views/apps/**/*.spec.ts"]);
+  it("resolves a folder glob to the spec files beneath it", () => {
+    const resolution = resolveVitestTarget("src/views/apps/**");
+    expect(resolution.unnameable).toEqual([]);
+    expect(resolution.specFiles).toEqual(appsFolderSpecs);
+    expect(collectedFiles(resolution.patterns)).toEqual(appsFolderSpecs);
+  });
+
+  it("resolves a literal folder and a trailing wildcard to the same specs", () => {
+    expect(resolveVitestTarget(examFolder).specFiles).toEqual(examFolderSpecs);
+    expect(resolveVitestTarget(`${examFolder}/*`).specFiles).toEqual(examFolderSpecs);
   });
 });
 
@@ -84,6 +134,31 @@ describe("splitVitestArgs", () => {
   it("drops a leading package-manager -- separator instead of hiding targets behind it", async () => {
     await expect(splitVitestArgs(["run", "--", examFolder])).resolves.toEqual({
       targets: [examFolder],
+      passthrough: ["run"],
+    });
+  });
+
+  it("treats every token after a second -- as a target instead of forwarding it", async () => {
+    await expect(splitVitestArgs(["run", "--", "--", "src/no-such-folder"])).resolves.toEqual({
+      targets: ["src/no-such-folder"],
+      passthrough: ["run"],
+    });
+  });
+
+  it("keeps flag values in the head while targets after the second -- stay targets", async () => {
+    await expect(
+      splitVitestArgs(["list", "--filesOnly", "--", "--reporter", "dot", examFolder, "--", examSpec]),
+    ).resolves.toEqual({
+      targets: [examFolder, examSpec],
+      passthrough: ["list", "--filesOnly", "--reporter", "dot"],
+    });
+  });
+
+  it("treats a flag-looking token after the second -- as a target", async () => {
+    await expect(
+      splitVitestArgs(["run", "--", examFolder, "--", "--coverage"]),
+    ).resolves.toEqual({
+      targets: [examFolder, "--coverage"],
       passthrough: ["run"],
     });
   });
@@ -119,6 +194,15 @@ describe("planVitestRun", () => {
     expect(collectedFiles(plan.include ?? [])).toEqual(examFolderSpecs);
   });
 
+  it("collects both branches of a mixed file-and-folder brace glob", async () => {
+    const expected = [...homeFolderSpecs, wrapperSpec].sort();
+    const plan = await planVitestRun([
+      "run",
+      "src/{test/vitestRunPathNormalization.spec.ts,composables/home}",
+    ]);
+    expect(collectedFiles(plan.include ?? [])).toEqual(expected);
+  });
+
   it("collects a glob target", async () => {
     const plan = await planVitestRun(["run", `${examFolder}/ExamCourse*.spec.ts`]);
     expect(collectedFiles(plan.include ?? [])).toEqual([examSpec]);
@@ -140,6 +224,48 @@ describe("planVitestRun", () => {
       args: ["run", `${examSpec}:12`],
       include: [examSpec],
     });
+  });
+
+  it("collects extglob targets", async () => {
+    const single = await planVitestRun(["run", "src/test/@(vitestRunPathNormalization).spec.ts"]);
+    expect(collectedFiles(single.include ?? [])).toEqual([wrapperSpec]);
+
+    const expected = [...testFolderSpecs, wrapperSpec].sort();
+    for (const target of [
+      "src/test/@(vitestRunPathNormalization|vitestInclude).spec.ts",
+      "src/test/+(vitestRunPathNormalization|vitestInclude).spec.ts",
+    ]) {
+      const plan = await planVitestRun(["run", target]);
+      expect(collectedFiles(plan.include ?? [])).toEqual(expected);
+    }
+  });
+
+  it("rejects a line selector on an extglob target", async () => {
+    await expect(
+      planVitestRun(["run", "src/test/@(vitestRunPathNormalization).spec.ts:12"]),
+    ).rejects.toThrow(/line selector/);
+  });
+
+  it("fails loudly when a match cannot be read", async () => {
+    const dir = mkdtempSync(`${tmpdir()}/vitest-unreadable-`);
+    scratchDirs.push(dir);
+    symlinkSync(join(dir, "nowhere"), join(dir, "broken.spec.ts"));
+    await expect(planVitestRun(["run", `${dir}/*`])).rejects.toThrow(
+      /vitest-run: .*cannot read .*broken\.spec\.ts/,
+    );
+  });
+
+  it("rejects a line selector on a glob target", async () => {
+    await expect(
+      planVitestRun(["run", `${examFolder}/ExamCourse*.spec.ts:12`]),
+    ).rejects.toThrow(/line selector/);
+  });
+
+  it("rejects a line selector on a folder that holds one spec file", async () => {
+    expect(resolveVitestTarget("src/composables/home").specFiles).toHaveLength(1);
+    await expect(planVitestRun(["run", "src/composables/home:12"])).rejects.toThrow(
+      /line selector/,
+    );
   });
 
   it("rejects a line selector mixed with other targets, which Vitest would narrow away", async () => {
@@ -168,10 +294,24 @@ describe("planVitestRun", () => {
       ]),
     ).rejects.toThrow(/compilePinballTable\.spec-support\.ts/);
   });
+
+  it("rejects a target hidden behind a second -- instead of running the default suite", async () => {
+    await expect(planVitestRun(["run", "--", "--", "src/no-such-folder"])).rejects.toThrow(
+      /src\/no-such-folder/,
+    );
+  });
+
+  it("rejects a glob matching a path Vitest cannot include exactly", async () => {
+    const scratch = mkdtempSync(`${tmpdir()}/vitest-unnameable-`);
+    scratchDirs.push(scratch);
+    mkdirSync(`${scratch}/a[1]`, { recursive: true });
+    writeFileSync(`${scratch}/a[1]/x.spec.ts`, "export const x = 1;\n");
+    await expect(planVitestRun(["run", `${scratch}/*`])).rejects.toThrow(/a\[1\]/);
+  });
 });
 
 describe("resolveVitestBin", () => {
-  it("resolves the Vitest entry from the app's own dependencies", () => {
+  it("resolves the Vitest CLI entry from the app's own dependencies", () => {
     const bin = resolveVitestBin();
     expect(bin).toMatch(/\/node_modules\/(\.pnpm\/vitest@[^/]+\/node_modules\/)?vitest\/vitest\.mjs$/);
   });

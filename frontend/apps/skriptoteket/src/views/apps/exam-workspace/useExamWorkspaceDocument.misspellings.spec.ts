@@ -19,7 +19,6 @@ import { createPinia, setActivePinia } from "pinia";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type {
-  ExamWorkspaceDocumentResponse,
   ExamWorkspaceMisspellingsRequest,
   ExamWorkspaceMisspellingsResponse,
   NativeExamDocument,
@@ -47,7 +46,7 @@ const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceDocument: vi.fn(),
   requestExamWorkspaceAnswerMisspellings: vi.fn(),
   retryExamWorkspaceItem: vi.fn(),
-  saveExamWorkspaceDocument: vi.fn(),
+  copyExamWorkspaceDocument: vi.fn(),
 }));
 
 vi.mock("../../../api/examWorkspace", async () => ({
@@ -186,12 +185,11 @@ describe("keyed gap misspellings in useExamWorkspaceDocument", () => {
     const state = await openKeyedDocument(item);
     state.removeItemAutomaticValue("item_001", "gap_001", "Stockhom");
     const copy = currentDocument(state);
-    apiMocks.saveExamWorkspaceDocument.mockResolvedValue(savedResponse({ ...copy, revision: 2 }));
+    apiMocks.copyExamWorkspaceDocument.mockResolvedValue(savedResponse({ ...copy, revision: 2 }));
 
-    expect(await state.saveDocument("position-1")).toBe(true);
+    expect(await state.saveDocumentAs("Kopia")).toBe("saved");
 
-    const payload = apiMocks.saveExamWorkspaceDocument.mock.calls[0]![1]
-      .document as NativeExamDocument;
+    const payload = apiMocks.copyExamWorkspaceDocument.mock.calls[0]![2] as NativeExamDocument;
     expect(payload.items[0]!.gaps[0]!.excluded_automatic_values).toEqual(["Stockhom"]);
 
     apiMocks.getExamWorkspaceDocument.mockResolvedValue(buildResponse(payload.items[0]!));
@@ -307,28 +305,6 @@ describe("keyed gap misspellings in useExamWorkspaceDocument", () => {
     expect(gapOf(state).automatic_values).toEqual([]);
   });
 
-  it("re-applies a reply merged during a save when the response replaces the copy", async () => {
-    const pending = pendingReply();
-    apiMocks.requestExamWorkspaceAnswerMisspellings.mockReturnValue(pending.promise);
-    const state = await openKeyedDocument();
-    state.updateItemGapValues("item_001", "gap_001", ["Stockholm", "Göteborg"]);
-
-    const savePending = deferred<ExamWorkspaceDocumentResponse>();
-    apiMocks.saveExamWorkspaceDocument.mockReturnValue(savePending.promise);
-    const saving = state.saveDocument("position-1");
-
-    pending.resolve({ automatic_values: ["Götebprg"] });
-    await flushPromises();
-    expect(gapOf(state).automatic_values).toEqual(["Götebprg"]);
-
-    const payload = apiMocks.saveExamWorkspaceDocument.mock.calls[0]![1]
-      .document as NativeExamDocument;
-    savePending.resolve(savedResponse(payload));
-    await saving;
-
-    expect(gapOf(state).automatic_values).toEqual(["Götebprg"]);
-    expect(state.isDirty.value).toBe(true);
-  });
 
   it("reports a failed request that still stands and keeps the keyed edit", async () => {
     apiMocks.requestExamWorkspaceAnswerMisspellings.mockRejectedValue(new Error("boom"));

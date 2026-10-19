@@ -1,9 +1,9 @@
-"""Exam workspace document handlers: conversion status, reopen, and save.
+"""Exam workspace document handlers: conversion status, reopen, history, and copy.
 
-Reopen shows the current editor document (the latest autosave or Spara);
-save overwrites the file guarded by ``expected_revision``. Converting
-placeholders retain their content and position until conversion completes.
-Persistence and storage accounting live in ``exam_workspace_document_store``.
+Reopen shows the current editor document (the latest stored undo step); every edit
+stores an undo step, which also overwrites the file. Converting placeholders retain
+their content and position until conversion completes. Persistence and storage
+accounting live in ``exam_workspace_document_store``.
 """
 
 from __future__ import annotations
@@ -20,7 +20,6 @@ from skriptoteket.application.curated_apps.exam_workspace import (
     ExamWorkspaceConversionUnit,
     ExamWorkspaceDocumentResponse,
     ExamWorkspaceDocumentSummary,
-    SaveExamWorkspaceDocumentRequest,
 )
 from skriptoteket.application.curated_apps.exam_workspace_history import (
     ExamWorkspaceHistoryDocumentResponse,
@@ -37,7 +36,6 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_document_stor
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_editor_content import (
     prepare_editor_content,
-    refuse_placeholder_changes,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
@@ -212,7 +210,7 @@ class GetExamWorkspaceDocumentHandler:
 
 
 class SaveExamWorkspaceDocumentHandler:
-    """Save, autosave and copy an editor document without creating vault revisions."""
+    """Read history and copy an editor document; every edit stores an undo step instead."""
 
     def __init__(
         self,
@@ -228,91 +226,6 @@ class SaveExamWorkspaceDocumentHandler:
         self._store = store
         self._id_generator = id_generator
         self._jobs = jobs
-
-    async def handle(
-        self,
-        *,
-        actor: User,
-        lineage_id: UUID,
-        request: SaveExamWorkspaceDocumentRequest,
-    ) -> ExamWorkspaceDocumentResponse:
-        async with self._store.transaction(user_id=actor.id, lineage_id=lineage_id):
-            await self._jobs.lock_conversion_view_by_lineage(
-                owner_user_id=actor.id, workspace_lineage_id=lineage_id
-            )
-            await self._vault_files.lock_document_lineage(
-                user_id=actor.id, document_lineage_id=lineage_id
-            )
-            return await self._save(actor=actor, lineage_id=lineage_id, request=request)
-
-    async def _save(
-        self,
-        *,
-        actor: User,
-        lineage_id: UUID,
-        request: SaveExamWorkspaceDocumentRequest,
-    ) -> ExamWorkspaceDocumentResponse:
-        head = await self._vault_files.get_document_head(
-            user_id=actor.id, document_lineage_id=lineage_id
-        )
-        if head is None:
-            raise document_not_found(lineage_id)
-        if head.document_version != request.expected_revision:
-            raise DomainError(
-                code=ErrorCode.CONFLICT,
-                message="Dokumentet har ändrats sedan det öppnades.",
-                details={
-                    "expected_revision": request.expected_revision,
-                    "current_revision": head.document_version,
-                },
-            )
-        document = request.document
-        if document.document_id != lineage_id:
-            raise validation_error(
-                "Dokumentets identitet matchar inte adressen.",
-                details={"lineage_id": str(lineage_id)},
-            )
-        if document.revision != request.expected_revision + 1:
-            raise validation_error(
-                "Dokumentversionen måste öka med exakt ett vid sparande.",
-                details={
-                    "expected_revision": request.expected_revision,
-                    "document_revision": document.revision,
-                },
-            )
-
-        head, head_container, container_bytes = await prepare_editor_content(
-            actor=actor,
-            lineage_id=lineage_id,
-            document=document,
-            vault_files=self._vault_files,
-            codec=self._codec,
-            store=self._store,
-        )
-        job = await self._jobs.lock_conversion_view_by_lineage(
-            owner_user_id=actor.id, workspace_lineage_id=lineage_id
-        )
-        refuse_placeholder_changes(job=job, base=head_container.document, saved=document)
-        vault_file = await self._store.save(
-            actor=actor,
-            file_id=self._id_generator.new_uuid(),
-            name=head.name,
-            content=container_bytes,
-            lineage_id=lineage_id,
-            version=document.revision,
-            expected_revision=request.expected_revision,
-            editor_step_id=request.position_step_id,
-        )
-        history = await self._store.get_history(actor=actor, lineage_id=lineage_id)
-        assert history is not None
-        return ExamWorkspaceDocumentResponse(
-            document=document,
-            saved_document=document,
-            history_cursor=history.cursor,
-            summary=document_summary(vault_file, document),
-            notes=head_container.notes,
-            conversion=None if job is None else conversion_status(job),
-        )
 
     async def _history(self, *, actor: User, lineage_id: UUID) -> ExamWorkspaceHistoryState:
         head = await self._vault_files.get_document_head(

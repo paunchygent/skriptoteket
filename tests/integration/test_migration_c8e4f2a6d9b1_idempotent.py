@@ -8,8 +8,8 @@ import pytest
 from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncEngine
-from testcontainers.postgres import PostgresContainer
 
+from tests.fixtures.database_fixtures import PooledDatabase
 from tests.integration.migration_idempotency_support import assert_revision_is_idempotent
 
 _REVISION_ID = "c8e4f2a6d9b1"
@@ -158,10 +158,10 @@ async def _assert_native_idempotency_schema(engine: AsyncEngine) -> None:
 
 @pytest.mark.docker
 def test_migration_c8e4f2a6d9b1_is_idempotent(
-    postgres_container: PostgresContainer,
+    empty_module_database: PooledDatabase,
 ) -> None:
     assert_revision_is_idempotent(
-        postgres_container=postgres_container,
+        empty_module_database=empty_module_database,
         revision_id=_REVISION_ID,
         schema_assertion=_assert_native_idempotency_schema,
     )

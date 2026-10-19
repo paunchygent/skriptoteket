@@ -7,6 +7,12 @@ from types import TracebackType
 from typing import Iterable
 from uuid import UUID
 
+from skriptoteket.application.curated_apps.exam_workspace_history import (
+    ExamWorkspaceEditLease,
+    ExamWorkspaceHistoryCursor,
+    ExamWorkspaceHistoryStepRef,
+    ExamWorkspaceHistoryStoredStep,
+)
 from skriptoteket.domain.catalog.models import Tool
 from skriptoteket.domain.curated_apps.models import CuratedAppDefinition
 from skriptoteket.domain.scripting.artifacts import (
@@ -211,7 +217,6 @@ class FakeCuratedApps(CuratedAppRegistryProtocol):
 class FakeVaultFileRepo(VaultFileRepositoryProtocol):
     def __init__(self) -> None:
         self._files: dict[UUID, VaultFile] = {}
-        self._histories: dict[tuple[UUID, UUID], bytes] = {}
 
     async def get_by_id(self, *, file_id: UUID) -> VaultFile | None:
         return self._files.get(file_id)
@@ -333,13 +338,72 @@ class FakeVaultFileRepo(VaultFileRepositoryProtocol):
             ),
         )
 
-    async def get_history(self, *, user_id: UUID, document_lineage_id: UUID) -> bytes | None:
-        return self._histories.get((user_id, document_lineage_id))
+    async def get_history_head(
+        self, *, user_id: UUID, document_lineage_id: UUID
+    ) -> ExamWorkspaceHistoryCursor | None:
+        raise NotImplementedError
 
-    async def put_history(
-        self, *, user_id: UUID, document_lineage_id: UUID, content: bytes
+    async def upsert_history_head(
+        self,
+        *,
+        user_id: UUID,
+        document_lineage_id: UUID,
+        head: ExamWorkspaceHistoryCursor,
     ) -> None:
-        self._histories[(user_id, document_lineage_id)] = content
+        raise NotImplementedError
+
+    async def get_history_lease(
+        self, *, user_id: UUID, document_lineage_id: UUID
+    ) -> ExamWorkspaceEditLease | None:
+        raise NotImplementedError
+
+    async def upsert_history_lease(
+        self, *, user_id: UUID, document_lineage_id: UUID, lease: ExamWorkspaceEditLease
+    ) -> None:
+        raise NotImplementedError
+
+    async def get_history_step(
+        self, *, user_id: UUID, document_lineage_id: UUID, step_id: UUID
+    ) -> ExamWorkspaceHistoryStoredStep | None:
+        raise NotImplementedError
+
+    async def list_history_step_refs(
+        self, *, user_id: UUID, document_lineage_id: UUID
+    ) -> list[ExamWorkspaceHistoryStepRef]:
+        raise NotImplementedError
+
+    async def list_history_steps(
+        self, *, user_id: UUID, document_lineage_id: UUID
+    ) -> list[ExamWorkspaceHistoryStoredStep]:
+        raise NotImplementedError
+
+    async def get_history_assets(
+        self, *, user_id: UUID, document_lineage_id: UUID, asset_ids: tuple[str, ...]
+    ) -> dict[str, bytes]:
+        raise NotImplementedError
+
+    async def insert_history_step(
+        self,
+        *,
+        user_id: UUID,
+        document_lineage_id: UUID,
+        step: ExamWorkspaceHistoryStoredStep,
+        assets_by_id: dict[str, bytes],
+    ) -> None:
+        raise NotImplementedError
+
+    async def delete_history_steps(
+        self, *, user_id: UUID, document_lineage_id: UUID, step_ids: list[UUID]
+    ) -> None:
+        raise NotImplementedError
+
+    async def delete_orphan_history_assets(
+        self, *, user_id: UUID, document_lineage_id: UUID, keep_asset_ids: frozenset[str]
+    ) -> None:
+        raise NotImplementedError
+
+    async def delete_history(self, *, user_id: UUID, document_lineage_id: UUID) -> None:
+        raise NotImplementedError
 
     async def name_in_use(
         self,
@@ -446,8 +510,6 @@ class FakeVaultFileRepo(VaultFileRepositoryProtocol):
         file = self._files.pop(file_id, None)
         if file is None:
             return
-        if file.document_lineage_id is not None and file.export_format is None:
-            self._histories.pop((file.user_id, file.document_lineage_id), None)
 
 
 class FakeVaultUsageRepo(VaultUsageRepositoryProtocol):

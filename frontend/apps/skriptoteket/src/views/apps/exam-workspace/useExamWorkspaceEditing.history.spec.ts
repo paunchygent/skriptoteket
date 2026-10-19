@@ -1,19 +1,14 @@
 /**
- * Exam workspace editing session: undo history across Spara, failed
- * prerequisite stores, and edits while a replacing read runs.
+ * Exam workspace editing session: undo history across failed prerequisite
+ * stores and edits while a replacing read runs.
  *
- * Expected behavior (TASK-SKRIPT-40-04-03 review 1, F1-F4; review 2, R2-F1, R2-F2):
- *   - After Spara the cursor names no step, yet undo and redo still move
- *     between the retained steps, because the editor stands on the server's
- *     `position_step_id`, not on the cursor.
+ * Expected behavior:
  *   - When the pending edit cannot be stored, a replacing command (Byt
  *     frågetyp) and undo do not run, and the pending edit stays.
- *   - While undo reads a step, editing and structure commands are refused,
- *     so nothing typed meanwhile is lost when the step arrives.
- *   - Spara sends the step the editor stands on. The server keeps the saved
- *     copy there, or appends it as the next step when no step holds it (a
- *     failed autosave), so undo, redo and reopening work at once, and equal
- *     steps keep their own undo and redo neighbors.
+ *   - While undo moves the position, editing and structure commands are
+ *     refused, so nothing typed meanwhile is lost when the step arrives.
+ *   - Storing a pending edit is the save: Ctrl/Cmd+S and exports flush the
+ *     history, and the confirmed snapshot is the saved baseline.
  *   - The exam's only question cannot be deleted; the refusal is inline.
  *
  * Transport is a named double of the server's step store; the composables
@@ -21,16 +16,12 @@
  */
 
 import { flushPromises } from "@vue/test-utils";
-import { ref } from "vue";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { NativeExamDocument } from "../../../api/examWorkspace";
-import { serverExamWorkspaceStore } from "./examWorkspaceStore";
-import { useExamWorkspaceHistory } from "./useExamWorkspaceHistory";
+import { ApiError } from "../../../api/client";
 import {
   conflict,
   exam,
-  inScope,
   LINEAGE,
   openEditing,
   response,
@@ -42,7 +33,7 @@ const api = vi.hoisted(() => ({
   getExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceHistory: vi.fn(),
   getExamWorkspaceHistoryStep: vi.fn(),
-  saveExamWorkspaceDocument: vi.fn(),
+  moveExamWorkspaceHistoryPosition: vi.fn(),
   storeExamWorkspaceUndoStep: vi.fn(),
 }));
 const toast = vi.hoisted(() => ({ failure: vi.fn(), warning: vi.fn() }));
@@ -62,149 +53,6 @@ beforeEach(() => {
 });
 
 afterEach(stopScopes);
-
-describe("undo history across Spara (F1)", () => {
-  it("keeps undo and redo after Spara rotates the cursor to an id that is no step", async () => {
-    const { editing, server } = await openEditing(api);
-    editing.setCourse(null);
-    editing.setTitle("Lärarens rubrik");
-    expect(await editing.save()).toBe(true);
-    await flushPromises();
-
-    expect(server.state.steps).not.toContain(server.state.cursor);
-    expect(editing.history.canUndo.value).toBe(true);
-    await editing.history.undo();
-    expect(editing.workspaceDocument.value!.title).toBe("Original");
-    expect(editing.history.canRedo.value).toBe(true);
-    await editing.history.redo();
-    expect(editing.workspaceDocument.value!.title).toBe("Lärarens rubrik");
-  });
-
-  it("keeps undo and redo after an undo followed by Spara", async () => {
-    const { editing } = await openEditing(api);
-    editing.setTitle("Ett");
-    await editing.history.flush();
-    editing.setTitle("Två");
-    await editing.history.flush();
-    await editing.history.undo();
-    expect(editing.workspaceDocument.value!.title).toBe("Ett");
-
-    expect(await editing.save()).toBe(true);
-    await flushPromises();
-
-    expect(editing.history.canUndo.value).toBe(true);
-    expect(editing.history.canRedo.value).toBe(true);
-    await editing.history.redo();
-    expect(editing.workspaceDocument.value!.title).toBe("Två");
-    await editing.history.undo();
-    await editing.history.undo();
-    expect(editing.workspaceDocument.value!.title).toBe("Original");
-  });
-
-  it("reopened after Spara, the editor stands on the saved step and can undo", async () => {
-    const first = await openEditing(api);
-    first.editing.setTitle("Sparad rubrik");
-    await first.editing.save();
-    await flushPromises();
-    const saved = first.editing.workspaceDocument.value!;
-
-    const workspaceDocument = ref<NativeExamDocument | null>(saved);
-    const history = inScope(() =>
-      useExamWorkspaceHistory({
-        historyCursor: ref(first.server.state.cursor),
-        install: (document) => {
-          workspaceDocument.value = document;
-        },
-        isBlocked: () => false,
-        isReplacing: () => false,
-        replaceCopy: (run) => run(),
-        lineageId: () => LINEAGE,
-        noteExportBlockers: vi.fn(),
-        onConflict: vi.fn(async () => undefined),
-        savedRevision: () => saved.revision,
-        serverDocument: ref(saved),
-        shared: serverExamWorkspaceStore.shared,
-        workspaceDocument,
-      }),
-    );
-    await flushPromises();
-    expect(history.canUndo.value).toBe(true);
-    await history.undo();
-    expect(workspaceDocument.value!.title).toBe("Original");
-  });
-
-  it("R2-F1: a Spara whose autosave failed is navigable at once, as the redo state and after reopening", async () => {
-    const { editing, server } = await openEditing(api);
-    editing.setTitle("Autosparad");
-    await editing.history.flush();
-    // The autosave of this title fails, so Spara writes a copy no step holds.
-    api.storeExamWorkspaceUndoStep.mockRejectedValueOnce(new Error("offline"));
-    editing.setTitle("Bara sparad");
-    expect(await editing.save()).toBe(true);
-    await flushPromises();
-
-    expect(server.state.steps).toHaveLength(2);
-    expect(server.state.position).toBe(server.state.steps[1]);
-    expect(editing.history.canUndo.value).toBe(true);
-    await editing.history.undo();
-    expect(editing.workspaceDocument.value!.title).toBe("Autosparad");
-    expect(editing.history.canRedo.value).toBe(true);
-    await editing.history.redo();
-    expect(editing.workspaceDocument.value!.title).toBe("Bara sparad");
-
-    // Reopened, the editor stands on the saved copy and undo still reaches the autosave.
-    const saved = editing.workspaceDocument.value!;
-    const workspaceDocument = ref<NativeExamDocument | null>(saved);
-    const reopened = inScope(() =>
-      useExamWorkspaceHistory({
-        historyCursor: ref(server.state.cursor),
-        install: (document) => {
-          workspaceDocument.value = document;
-        },
-        isBlocked: () => false,
-        isReplacing: () => false,
-        replaceCopy: (run) => run(),
-        lineageId: () => LINEAGE,
-        noteExportBlockers: vi.fn(),
-        onConflict: vi.fn(async () => undefined),
-        savedRevision: () => saved.revision,
-        serverDocument: ref(saved),
-        shared: serverExamWorkspaceStore.shared,
-        workspaceDocument,
-      }),
-    );
-    await flushPromises();
-    expect(reopened.canUndo.value).toBe(true);
-    await reopened.undo();
-    expect(workspaceDocument.value!.title).toBe("Autosparad");
-  });
-});
-
-describe("Spara among equal steps (R2-F2)", () => {
-  it("keeps the step the teacher stands on, so redo after A -> B -> A -> C and Spara at the first A shows B", async () => {
-    const { editing, server } = await openEditing(api);
-    for (const title of ["A", "B", "A", "C"]) {
-      editing.setTitle(title);
-      await editing.history.flush();
-    }
-    const firstA = server.state.steps[0];
-    await editing.history.undo();
-    await editing.history.undo();
-    await editing.history.undo();
-    expect(editing.workspaceDocument.value!.title).toBe("A");
-
-    expect(await editing.save()).toBe(true);
-    await flushPromises();
-
-    expect(api.saveExamWorkspaceDocument.mock.lastCall![1].positionStepId).toBe(firstA);
-    expect(server.state.position).toBe(firstA);
-    await editing.history.redo();
-    expect(editing.workspaceDocument.value!.title).toBe("B");
-    await editing.history.undo();
-    await editing.history.undo();
-    expect(editing.workspaceDocument.value!.title).toBe("Original");
-  });
-});
 
 describe("a failed prerequisite store (F2)", () => {
   it("does not run Byt frågetyp and keeps the pending edit", async () => {
@@ -229,7 +77,7 @@ describe("a failed prerequisite store (F2)", () => {
 
     await editing.history.undo();
 
-    expect(api.getExamWorkspaceHistoryStep).not.toHaveBeenCalled();
+    expect(api.moveExamWorkspaceHistoryPosition).not.toHaveBeenCalled();
     expect(editing.workspaceDocument.value!.title).toBe("Lärarens osparade text");
   });
 });
@@ -258,34 +106,113 @@ describe("conflict recovery under the replacing lock", () => {
     await flushPromises();
 
     expect(api.getExamWorkspaceDocument).toHaveBeenCalledOnce();
-    expect(api.getExamWorkspaceHistoryStep).not.toHaveBeenCalled();
+    expect(api.moveExamWorkspaceHistoryPosition).not.toHaveBeenCalled();
     expect(editing.workspaceDocument.value!.title).toBe("Från en annan flik");
     // The decided 409 policy: the reload replaces the pending edit.
     expect(editing.history.pending.value).toBe(false);
 
-    // The reloaded history still navigates: the next undo reads its earlier step.
+    // The reloaded history still navigates: the next undo moves to its earlier step.
     await editing.history.undo();
-    expect(api.getExamWorkspaceHistoryStep).toHaveBeenCalledTimes(1);
+    expect(api.moveExamWorkspaceHistoryPosition).toHaveBeenCalledTimes(1);
     expect(editing.workspaceDocument.value!.title).toBe("Original");
   });
 });
 
-describe("editing while undo reads a step (F4)", () => {
+describe("the edit lease on a 409 (K8)", () => {
+  function leaseHeld(): ApiError {
+    return new ApiError({
+      code: "EDIT_LEASE_HELD",
+      message: "Provet redigeras i en annan flik.",
+      status: 409,
+    });
+  }
+
+  it("turns read-only on a lease-held undo store and keeps the pending edit", async () => {
+    const { editing, server } = await openEditing(api);
+    editing.setTitle("Ett");
+    await editing.history.flush();
+    server.state.cursor = "other-tab";
+    editing.setTitle("Osparad");
+    api.storeExamWorkspaceUndoStep.mockRejectedValueOnce(leaseHeld());
+
+    await editing.history.undo();
+    await flushPromises();
+
+    expect(api.moveExamWorkspaceHistoryPosition).not.toHaveBeenCalled();
+    expect(api.getExamWorkspaceDocument).not.toHaveBeenCalled();
+    expect(editing.workspaceDocument.value!.title).toBe("Osparad");
+    expect(editing.history.pending.value).toBe(true);
+    expect(editing.readOnly.value).toBe(true);
+    expect(toast.failure).not.toHaveBeenCalled();
+  });
+
+  it("turns read-only on a lease-held server command without discarding the edit", async () => {
+    const { editing } = await openEditing(api);
+    editing.setTitle("Lärarens osparade text");
+    await editing.history.flush();
+    api.changeExamWorkspaceItemType.mockRejectedValueOnce(leaseHeld());
+
+    await editing.structure.changeType("item_001", "single_choice");
+
+    expect(api.getExamWorkspaceDocument).not.toHaveBeenCalled();
+    expect(editing.workspaceDocument.value!.title).toBe("Lärarens osparade text");
+    expect(editing.readOnly.value).toBe(true);
+  });
+
+  it("waits for a running operation on a busy-time 409 instead of skipping the reload", async () => {
+    const { editing } = await openEditing(api);
+    let releaseOpen!: (value: unknown) => void;
+    api.getExamWorkspaceDocument.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          releaseOpen = resolve;
+        }),
+    );
+    const opening = editing.openDocument(LINEAGE);
+    await flushPromises();
+    expect(api.getExamWorkspaceDocument).toHaveBeenCalledTimes(1);
+
+    api.getExamWorkspaceDocument.mockImplementationOnce(async () =>
+      response(exam("Från en annan flik"), "other-tab"),
+    );
+    const reloading = editing.reloadDocument();
+    await flushPromises();
+    expect(api.getExamWorkspaceDocument).toHaveBeenCalledTimes(1);
+
+    releaseOpen(response(exam("Opened"), "cursor-open"));
+    await opening;
+    await reloading;
+    expect(api.getExamWorkspaceDocument).toHaveBeenCalledTimes(2);
+    expect(editing.workspaceDocument.value!.title).toBe("Från en annan flik");
+  });
+});
+
+describe("editing while undo moves the position (F4)", () => {
   it("refuses edits and commands until the replacing step has arrived", async () => {
     const { editing, server } = await openEditing(api);
     editing.setTitle("Steg ett");
     await editing.history.flush();
     let release!: () => void;
-    api.getExamWorkspaceHistoryStep.mockImplementationOnce(
-      (_l: string, stepId: string) =>
+    api.moveExamWorkspaceHistoryPosition.mockImplementationOnce(
+      (_l: string, request: { expectedCursor: string; stepId: string }) =>
         new Promise((resolve) => {
-          release = () => resolve({ document: server.documents.get(stepId)!, step_id: stepId });
+          release = () =>
+            resolve({
+              document: server.documents.get(request.stepId)!,
+              export_blockers: [],
+              history: {
+                baseline_step_id: "step-0",
+                cursor: server.state.cursor,
+                position_step_id: request.stepId,
+                step_ids: [...server.state.steps],
+              },
+            });
         }),
     );
 
     const moving = editing.history.undo();
     await flushPromises();
-    expect(api.getExamWorkspaceHistoryStep).toHaveBeenCalledOnce();
+    expect(api.moveExamWorkspaceHistoryPosition).toHaveBeenCalledOnce();
     expect(editing.isBusy.value).toBe(true);
     editing.setTitle("Skrivet medan ångra laddade");
     await editing.structure.changeType("item_001", "single_choice");

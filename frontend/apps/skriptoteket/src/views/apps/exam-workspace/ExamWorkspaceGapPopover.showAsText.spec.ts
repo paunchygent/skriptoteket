@@ -58,15 +58,18 @@ async function typePendingAnswers(value: string): Promise<void> {
 }
 
 describe("ExamWorkspaceGapPopover Visa som text", () => {
-  it("keeps an uncommitted draft when accepted answers arrive from outside the popover", async () => {
+  it("replaces committed typing when accepted answers arrive from outside the popover", async () => {
     const wrapper = mountPopover(buildGap());
     const input = answersInput();
     input.element.value = "hundra";
     await input.trigger("input");
-    await wrapper.setProps({ gap: buildGap({ accepted_values: ["101"] }) });
-    expect(input.element.value).toBe("hundra");
-    await documentControl('[data-test="exam-workspace-gap-as-text"]').trigger("click");
+    // The input already committed, so nothing is pending: the outside
+    // answers replace the rows instead of being held back.
     expect(wrapper.emitted("commit")).toEqual([["item_001", "gap_001", ["hundra"]]]);
+    await wrapper.setProps({ gap: buildGap({ accepted_values: ["101"] }) });
+    expect(answerRows().map((row) => row.value)).toEqual(["101"]);
+    await documentControl('[data-test="exam-workspace-gap-as-text"]').trigger("click");
+    expect(wrapper.emitted("showGapAsText")).toEqual([["item_001", "gap_001"]]);
     wrapper.unmount();
   });
   it("emits showGapAsText for the item and gap when a first accepted answer exists", async () => {
@@ -80,7 +83,7 @@ describe("ExamWorkspaceGapPopover Visa som text", () => {
     wrapper.unmount();
   });
 
-  it("commits pending answer edits before it emits showGapAsText", async () => {
+  it("commits typed answers while typing, once more before it emits showGapAsText", async () => {
     const wrapper = mountPopover(buildGap({ accepted_values: ["100"] }));
     const first = answersInput();
     first.element.value = "hundra";
@@ -95,9 +98,13 @@ describe("ExamWorkspaceGapPopover Visa som text", () => {
 
     await documentControl('[data-test="exam-workspace-gap-as-text"]').trigger("click");
 
-    expect(wrapper.emitted("commit")).toEqual([["item_001", "gap_001", ["hundra", "100"]]]);
+    // One commit per typed row; the click itself sends nothing more.
+    expect(wrapper.emitted("commit")).toEqual([
+      ["item_001", "gap_001", ["hundra"]],
+      ["item_001", "gap_001", ["hundra", "100"]],
+    ]);
     expect(wrapper.emitted("showGapAsText")).toEqual([["item_001", "gap_001"]]);
-    // The commit must land first, so the first current value is the one shown.
+    // The first commit lands before showGapAsText, so the first current value is the one shown.
     const recorded = Object.keys(wrapper.emitted());
     expect(recorded.indexOf("commit")).toBeLessThan(recorded.indexOf("showGapAsText"));
     wrapper.unmount();

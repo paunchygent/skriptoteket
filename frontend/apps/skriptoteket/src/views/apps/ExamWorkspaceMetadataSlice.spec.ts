@@ -20,9 +20,9 @@ const api = vi.hoisted(() => ({
   importExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
-  saveExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceHistory: vi.fn(),
   getExamWorkspaceHistoryStep: vi.fn(),
+  moveExamWorkspaceHistoryPosition: vi.fn(),
   storeExamWorkspaceUndoStep: vi.fn(),
 }));
 const exportApiMocks = vi.hoisted(() => ({
@@ -48,7 +48,7 @@ async function openWorkspace() {
 /** Open Provets uppgifter through the header title; the title button toggles the drawer. */
 async function openMetadata(wrapper: ViewWrapper) {
   if (!wrapper.find('[data-test="exam-workspace-drawer-details"]').exists()) {
-    await wrapper.get('[data-test="exam-workspace-title"]').trigger("click");
+    await wrapper.get('[data-test="exam-workspace-details"]').trigger("click");
   }
   expect(wrapper.find('[data-test="exam-workspace-drawer-details"]').exists()).toBe(true);
 }
@@ -63,7 +63,7 @@ async function showSavedDocuments(wrapper: ViewWrapper) {
   }
   expect(wrapper.find('[data-test="exam-workspace-saved-documents"]').exists()).toBe(true);
 }
-/** The header's save state: "Osparat" while the draft differs, otherwise "Sparat …". */
+/** The header's save state: "Sparar …" while an edit is pending, otherwise "Sparat …". */
 function saveState(wrapper: ViewWrapper): string {
   return wrapper.get('[data-test="exam-workspace-save-state"]').text();
 }
@@ -82,38 +82,35 @@ afterEach(() => {
 });
 
 describe("ExamWorkspaceView metadata", () => {
-  it("edits the title without renaming and saves it with the document revision", async () => {
+  it("edits the title without renaming and stores it as a step", async () => {
     const wrapper = await openWorkspace();
-    expect(saveState(wrapper)).not.toContain("Osparat");
+    expect(saveState(wrapper)).toBe("Sparat");
     await openMetadata(wrapper);
     await wrapper.get('[data-test="exam-workspace-metadata-title"]').setValue("Vattnets kretslopp – slutprov");
-    expect(saveState(wrapper)).toContain("Osparat");
-    expect(api.saveExamWorkspaceDocument).not.toHaveBeenCalled();
+    expect(saveState(wrapper)).toBe("Sparar …");
+    expect(api.storeExamWorkspaceUndoStep).not.toHaveBeenCalled();
     expect(rename).not.toHaveBeenCalled();
-    api.saveExamWorkspaceDocument.mockResolvedValue(buildResponse({ version: 2, title: "Vattnets kretslopp – slutprov" }));
     await saveDocument(wrapper);
-    expect(api.saveExamWorkspaceDocument).toHaveBeenCalledWith("lineage-1", expect.objectContaining({
-      expectedRevision: 1,
-      document: expect.objectContaining({ title: "Vattnets kretslopp – slutprov", revision: 2 }),
-    }));
-    expect(saveState(wrapper)).not.toContain("Osparat");
+    const stores = api.storeExamWorkspaceUndoStep.mock.calls;
+    expect(stores).toHaveLength(1);
+    expect(stores[0]![1].document.title).toBe("Vattnets kretslopp – slutprov");
+    expect(saveState(wrapper)).toMatch(/^Sparat /);
   });
 
-  it("sends a blank title with Spara, keeps the guidance line, and recovers after correction", async () => {
+  it("stores a blank title, keeps the guidance line, and recovers after correction", async () => {
     const wrapper = await openWorkspace();
     await openMetadata(wrapper);
     const title = wrapper.get<HTMLInputElement>('[data-test="exam-workspace-metadata-title"]');
     await title.setValue("");
     expect(title.element.value).toBe("");
     expect(title.attributes("aria-invalid")).toBe("true");
-    api.saveExamWorkspaceDocument.mockResolvedValue(buildResponse({ version: 2, title: "" }));
     await saveDocument(wrapper);
-    expect(api.saveExamWorkspaceDocument).toHaveBeenCalledTimes(1);
-    expect(api.saveExamWorkspaceDocument.mock.calls[0]?.[1].document.title).toBe("");
+    expect(api.storeExamWorkspaceUndoStep).toHaveBeenCalledTimes(1);
+    expect(api.storeExamWorkspaceUndoStep.mock.calls[0]?.[1].document.title).toBe("");
     await title.setValue("Korrigerad titel");
-    api.saveExamWorkspaceDocument.mockResolvedValue(buildResponse({ version: 3, title: "Korrigerad titel" }));
     await saveDocument(wrapper);
-    expect(api.saveExamWorkspaceDocument).toHaveBeenCalledTimes(2);
+    expect(api.storeExamWorkspaceUndoStep).toHaveBeenCalledTimes(2);
+    expect(api.storeExamWorkspaceUndoStep.mock.calls[1]?.[1].document.title).toBe("Korrigerad titel");
     expect(title.attributes("aria-invalid")).toBeUndefined();
   });
 
@@ -140,9 +137,9 @@ describe("ExamWorkspaceView metadata", () => {
     await wrapper.get('[data-test="exam-workspace-metadata-rename"]').trigger("click");
     await wrapper.get('[data-test="exam-workspace-drawer-close"]').trigger("click");
     expect(wrapper.find('[data-test="exam-workspace-drawer-details"]').exists()).toBe(false);
-    expect(wrapper.get('[data-test="exam-workspace-save"]').attributes("disabled")).toBeDefined();
+    expect(wrapper.get('[data-test="exam-workspace-save-as-command"]').attributes("disabled")).toBeDefined();
     await saveDocument(wrapper);
-    expect(api.saveExamWorkspaceDocument).not.toHaveBeenCalled();
+    expect(api.storeExamWorkspaceUndoStep).not.toHaveBeenCalled();
     finish({ file: { name: "Efter stängning.provdokument.zip" }, renamed_file_ids: ["vault-head-7"] });
     await flushPromises();
     await openMetadata(wrapper);
@@ -150,7 +147,7 @@ describe("ExamWorkspaceView metadata", () => {
       .toBe("Efter stängning");
     expect(wrapper.get<HTMLInputElement>('[data-test="exam-workspace-metadata-title"]').element.value)
       .toBe("Osparad titel");
-    expect(wrapper.get('[data-test="exam-workspace-save"]').attributes("disabled")).toBeUndefined();
+    expect(wrapper.get('[data-test="exam-workspace-save-as-command"]').attributes("disabled")).toBeUndefined();
   });
 
   it("retains a rejected rename after close, notifies the teacher and retries the rejected stem", async () => {
@@ -221,17 +218,14 @@ describe("ExamWorkspaceView metadata", () => {
     await openMetadata(wrapper);
     expect(wrapper.get<HTMLInputElement>('[data-test="exam-workspace-metadata-name"]').element.value)
       .toBe("Nytt namn");
-    // The newer head is kept: the next save is written against revision 2.
+    // The newer head is kept: the next store sends the revision-2 copy with the new title.
     await wrapper.get('[data-test="exam-workspace-metadata-title"]').setValue("Titel på ny version");
-    const saved = buildResponse({ version: 3, title: "Titel på ny version" });
-    saved.summary.name = "Nytt namn.provdokument.zip";
-    saved.summary.vault_file_id = "head-2";
-    api.saveExamWorkspaceDocument.mockResolvedValueOnce(saved);
     await saveDocument(wrapper);
     await closeMetadata(wrapper);
-    expect(api.saveExamWorkspaceDocument).toHaveBeenCalledWith("lineage-1", expect.objectContaining({
-      expectedRevision: 2,
-    }));
+    const stores = api.storeExamWorkspaceUndoStep.mock.calls;
+    const saved = stores[stores.length - 1]![1].document;
+    expect(saved.revision).toBe(2);
+    expect(saved.title).toBe("Titel på ny version");
     await openMetadata(wrapper);
     await wrapper.get('[data-test="exam-workspace-drawer-close"]').trigger("click");
     await showSavedDocuments(wrapper);
@@ -280,8 +274,8 @@ describe("ExamWorkspaceView metadata", () => {
     expect(toasts.info).not.toHaveBeenCalled();
     expect(toasts.failure).not.toHaveBeenCalled();
     expect(wrapper.get('[data-test="exam-workspace-title"]').text()).toBe("NO-prov HT25");
-    expect(saveState(wrapper)).not.toContain("Osparat");
-    expect(api.saveExamWorkspaceDocument).not.toHaveBeenCalled();
+    expect(saveState(wrapper)).toBe("Sparat");
+    expect(api.storeExamWorkspaceUndoStep).not.toHaveBeenCalled();
     await wrapper.get('[data-test="exam-workspace-drawer-close"]').trigger("click");
     await showSavedDocuments(wrapper);
     api.getExamWorkspaceDocument.mockResolvedValueOnce(other);

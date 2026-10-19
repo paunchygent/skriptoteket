@@ -1,17 +1,13 @@
 /**
- * Exam workspace mark toolbar: the "Lucka" gap button, the gap tool toggle
- * and the per-platform shortcut tooltips.
+ * Exam workspace mark toolbar: the gap tool toggle and the per-platform
+ * shortcut tooltips.
  *
- * Expected behavior (TASK-SKRIPT-40-04-08 J4, TASK-SKRIPT-40-04-09 G3):
- *   The toolbar shows no gap button unless asked. With `showGap` it renders
- *   one more button after the marks, labelled "Lucka", which emits `makeGap`.
- *   A `gapDisabledReason` disables the button and becomes its tooltip.
- *   Mousedown on the button is prevented so the caret stays in the paragraph.
- *   Right after the Lucka button sits a glyph-only gap tool toggle: no visible
- *   text, its shortcut in the tooltip and `aria-keyshortcuts`, pressed while
- *   the tool is on, emitting `toggleGapTool`, and disabled with its own cap
- *   reason (`gapToolDisabledReason`) or `disabled`, while the Lucka button
- *   keeps its own `gapDisabledReason`. Every mark and heading tooltip names its shortcut for the
+ * Expected behavior (TASK-SKRIPT-40-04-13 Behaviour 8):
+ *   The gap tool switch is the only gap control. The toolbar renders no
+ *   "Lucka" button: with `showGap` it renders one gap control only, the
+ *   glyph-only gap tool toggle, which emits `toggleGapTool` and never
+ *   `makeGap`. Mousedown on the toggle is prevented so the caret stays in
+ *   the paragraph. Every mark and heading tooltip names its shortcut for the
  *   viewer's platform.
  */
 
@@ -24,44 +20,43 @@ import ExamWorkspaceMarkToolbar from "./ExamWorkspaceMarkToolbar.vue";
 const MAKE_GAP = "[data-test='exam-workspace-toolbar-make-gap']";
 const GAP_TOOL = "[data-test='exam-workspace-toolbar-gap-tool']";
 
-describe("ExamWorkspaceMarkToolbar gap button", () => {
-  it("renders no gap button without showGap", () => {
+describe("ExamWorkspaceMarkToolbar gap control", () => {
+  it("renders no Lucka button without showGap", () => {
     const wrapper = mount(ExamWorkspaceMarkToolbar, { props: {} });
     expect(wrapper.find(MAKE_GAP).exists()).toBe(false);
   });
 
-  it("shows the Lucka button with showGap and emits makeGap on click", async () => {
+  it("renders no Lucka button with showGap: the toggle is the only gap control", () => {
     const wrapper = mount(ExamWorkspaceMarkToolbar, { props: { showGap: true } });
-    const button = wrapper.get(MAKE_GAP);
-    expect(button.text()).toContain("Lucka");
-    expect(button.attributes("aria-label")).toBe("Gör till lucka");
-    await button.trigger("click");
-    expect(wrapper.emitted("makeGap")).toHaveLength(1);
+    expect(wrapper.find(MAKE_GAP).exists()).toBe(false);
+    const toggle = wrapper.get(GAP_TOOL);
+    expect(toggle.text()).toBe("");
+    expect(toggle.attributes("aria-label")).toBe("Luckverktyg");
   });
 
-  it("disables the button with the reason as its tooltip", () => {
-    const wrapper = mount(ExamWorkspaceMarkToolbar, {
-      props: { showGap: true, gapDisabledReason: "Högst 999 luckor" },
-    });
-    const button = wrapper.get(MAKE_GAP);
-    const element = button.element;
-    if (!(element instanceof HTMLButtonElement)) {
-      throw new Error("the Lucka button is not a button");
-    }
-    expect(element.disabled).toBe(true);
-    expect(button.attributes("title")).toBe("Högst 999 luckor");
-  });
-
-  it("prevents mousedown on the button so the caret stays", async () => {
+  it("prevents mousedown on the toggle so the caret stays", async () => {
     const wrapper = mount(ExamWorkspaceMarkToolbar, { props: { showGap: true } });
-    const button = wrapper.get(MAKE_GAP);
+    const toggle = wrapper.get(GAP_TOOL);
     const event = new MouseEvent("mousedown", { bubbles: true, cancelable: true });
     let prevented = false;
     event.preventDefault = () => {
       prevented = true;
     };
-    button.element.dispatchEvent(event);
+    toggle.element.dispatchEvent(event);
     expect(prevented).toBe(true);
+  });
+
+  it("never emits makeGap: the toggle emits toggleGapTool once", async () => {
+    const wrapper = mount(ExamWorkspaceMarkToolbar, { props: { showGap: true } });
+    await wrapper.get(GAP_TOOL).trigger("click");
+    expect(wrapper.emitted("toggleGapTool")).toHaveLength(1);
+    expect(wrapper.emitted("makeGap")).toBeUndefined();
+  });
+
+  it("declares the Tom lucka insertEmptyGap emit", async () => {
+    const wrapper = mount(ExamWorkspaceMarkToolbar, { props: { showGap: true } });
+    wrapper.vm.$emit("insertEmptyGap");
+    expect(wrapper.emitted("insertEmptyGap")).toHaveLength(1);
   });
 });
 
@@ -71,18 +66,6 @@ describe("ExamWorkspaceMarkToolbar gap tool toggle", () => {
     expect(wrapper.find(GAP_TOOL).exists()).toBe(false);
   });
 
-  it("sits right after the Lucka button with no visible text", () => {
-    const wrapper = mount(ExamWorkspaceMarkToolbar, { props: { showGap: true } });
-    const toggle = wrapper.get(GAP_TOOL);
-    expect(toggle.text()).toBe("");
-    expect(toggle.attributes("aria-label")).toBe("Luckverktyg");
-    const previous = toggle.element.previousElementSibling;
-    if (!(previous instanceof HTMLButtonElement)) {
-      throw new Error("the toggle does not sit right after a button");
-    }
-    expect(previous.getAttribute("data-test")).toBe("exam-workspace-toolbar-make-gap");
-  });
-
   it("reads unpressed by default and pressed with gapToolOn", () => {
     const off = mount(ExamWorkspaceMarkToolbar, { props: { showGap: true } });
     expect(off.get(GAP_TOOL).attributes("aria-pressed")).toBe("false");
@@ -90,30 +73,12 @@ describe("ExamWorkspaceMarkToolbar gap tool toggle", () => {
     const on = mount(ExamWorkspaceMarkToolbar, { props: { showGap: true, gapToolOn: true } });
     const toggle = on.get(GAP_TOOL);
     expect(toggle.attributes("aria-pressed")).toBe("true");
-    expect(toggle.classes()).toContain("bg-panel-muted");
+    expect(toggle.classes()).toContain("xw-tool--switch");
   });
 
-  it("emits toggleGapTool once on click and never makeGap", async () => {
-    const wrapper = mount(ExamWorkspaceMarkToolbar, { props: { showGap: true } });
-    await wrapper.get(GAP_TOOL).trigger("click");
-    expect(wrapper.emitted("toggleGapTool")).toHaveLength(1);
-    expect(wrapper.emitted("makeGap")).toBeUndefined();
-  });
-
-  it("keeps the Lucka button emitting makeGap beside the toggle", async () => {
-    const wrapper = mount(ExamWorkspaceMarkToolbar, { props: { showGap: true, gapToolOn: true } });
-    await wrapper.get(MAKE_GAP).trigger("click");
-    expect(wrapper.emitted("makeGap")).toHaveLength(1);
-    expect(wrapper.emitted("toggleGapTool")).toBeUndefined();
-  });
-
-  it("disables the toggle with its own cap reason while the Lucka button keeps its reason", () => {
+  it("disables the toggle with its own cap reason", () => {
     const wrapper = mount(ExamWorkspaceMarkToolbar, {
-      props: {
-        showGap: true,
-        gapDisabledReason: "Högst 999 luckor",
-        gapToolDisabledReason: "Luckverktyg – högst 999 luckor",
-      },
+      props: { showGap: true, gapToolDisabledReason: "Luckverktyg – högst 999 luckor" },
     });
     const toggle = wrapper.get(GAP_TOOL);
     const element = toggle.element;
@@ -122,7 +87,6 @@ describe("ExamWorkspaceMarkToolbar gap tool toggle", () => {
     }
     expect(element.disabled).toBe(true);
     expect(toggle.attributes("title")).toBe("Luckverktyg – högst 999 luckor");
-    expect(wrapper.get(MAKE_GAP).attributes("title")).toBe("Högst 999 luckor");
   });
 
   it("disables the toggle with disabled", () => {

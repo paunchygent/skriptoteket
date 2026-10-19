@@ -48,7 +48,6 @@ const apiMocks = vi.hoisted(() => ({
   importExamWorkspaceDocument: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
   requestExamWorkspaceAnswerKeySuggestions: vi.fn(),
-  saveExamWorkspaceDocument: vi.fn(),
 }));
 const exportApiMocks = vi.hoisted(() => ({
   downloadExamWorkspaceExport: vi.fn(),
@@ -378,8 +377,7 @@ describe("a failed lookup affects only the opening that asked", () => {
 describe("the answer is admitted only when it lands on the opening that asked", () => {
   it("C8: the copy was saved to a newer version while the lookup was in flight", async () => {
     const { document, enrichment, lookup } = await openAWithLookupHeld();
-    apiMocks.saveExamWorkspaceDocument.mockResolvedValueOnce(examResponse("lineage-a", 2));
-    await document.saveDocument("position-1");
+    document.noteStored({ ...document.workspaceDocument.value!, revision: 2 });
     expect(document.savedRevision.value).toBe(2);
 
     lookup.resolve(jobStatus("succeeded", { withSuggestion: true }));
@@ -482,8 +480,7 @@ describe("which openings ask", () => {
     const { document, lookup } = await openAWithLookupHeld();
     lookup.resolve(jobStatus("running"));
     await flushPromises();
-    apiMocks.saveExamWorkspaceDocument.mockResolvedValueOnce(examResponse("lineage-a", 2));
-    await document.saveDocument("position-1");
+    document.noteStored({ ...document.workspaceDocument.value!, revision: 2 });
 
     apiMocks.getExamWorkspaceAnswerKeySuggestions.mockResolvedValueOnce(
       jobStatus("succeeded", { withSuggestion: true }),

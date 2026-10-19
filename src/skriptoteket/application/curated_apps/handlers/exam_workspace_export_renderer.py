@@ -60,6 +60,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_export_rules im
     INLINE_CHOICE_MIN_OPTIONS,
     native_export_blockers,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_list_labels import (
+    native_exam_question_labels,
+)
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.protocols.exam_conversion import (
     ExamNetPdfRendererProtocol,
@@ -197,10 +200,29 @@ class ExamWorkspaceExportRenderer:
                 for blocker in blockers
                 if blocker.reason == "inline_choice_option_heading"
             }
+            partial_gap_items = {
+                blocker.item_id for blocker in blockers if blocker.reason == "partial_gap_key"
+            }
+            empty_dropdown_items = {
+                blocker.item_id
+                for blocker in blockers
+                if blocker.reason == "gap_without_correct_option"
+            }
+            labels = native_exam_question_labels(document)
             heading_messages = [
-                f"Fråga {item.sequence}: Rubrikformat är inte tillåtet i rullistealternativ."
+                f"Fråga {labels[item.item_id]}: Rubrikformat är inte tillåtet i rullistealternativ."
                 for item in document.items
                 if item.item_id in heading_items
+            ]
+            empty_gap_messages = [
+                f"Fråga {labels[item.item_id]} saknar godkända svar i vissa luckor."
+                for item in document.items
+                if item.item_id in partial_gap_items
+            ]
+            empty_dropdown_messages = [
+                f"Fråga {labels[item.item_id]} saknar rätt alternativ i vissa rullistor."
+                for item in document.items
+                if item.item_id in empty_dropdown_items
             ]
             title_messages = [
                 "Ge provet en titel med bokstäver eller siffror."
@@ -217,6 +239,8 @@ class ExamWorkspaceExportRenderer:
                     ),
                     *title_messages,
                     *heading_messages,
+                    *empty_gap_messages,
+                    *empty_dropdown_messages,
                 ]
             )
             raise DomainError(
@@ -232,7 +256,7 @@ def _checklist_entry(entry: ExamNetExportChecklistEntry) -> ExamWorkspaceExportC
     if isinstance(entry, ExamNetExportChecklistFreeTextCriteria):
         return ExamWorkspaceExportChecklistFreeTextCriteria(
             kind="free_text_criteria",
-            question_number=entry.question_number,
+            item_id=entry.item_id,
             question_text=entry.question_text,
             points=entry.points,
             criteria=tuple(
@@ -243,14 +267,14 @@ def _checklist_entry(entry: ExamNetExportChecklistEntry) -> ExamWorkspaceExportC
     if isinstance(entry, ExamNetExportChecklistAllOrNothing):
         return ExamWorkspaceExportChecklistAllOrNothing(
             kind="all_or_nothing",
-            question_number=entry.question_number,
+            item_id=entry.item_id,
             question_text=entry.question_text,
             points=entry.points,
         )
     if isinstance(entry, ExamNetExportChecklistRoundedGaps):
         return ExamWorkspaceExportChecklistRoundedGaps(
             kind="rounded_gaps",
-            question_number=entry.question_number,
+            item_id=entry.item_id,
             question_text=entry.question_text,
             points=entry.points,
             gap_points=entry.gap_points,

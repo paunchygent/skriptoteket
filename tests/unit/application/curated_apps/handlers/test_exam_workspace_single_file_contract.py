@@ -6,24 +6,31 @@ from uuid import UUID, uuid4
 
 import pytest
 
-from skriptoteket.application.curated_apps.exam_workspace import SaveExamWorkspaceDocumentRequest
+from skriptoteket.application.curated_apps.exam_workspace_history import (
+    StoreExamWorkspaceUndoStepRequest,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_document_store import (
     ExamWorkspaceDocumentStore,
 )
-from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
-    SaveExamWorkspaceDocumentHandler,
+from skriptoteket.application.curated_apps.handlers.exam_workspace_undo_steps import (
+    StoreExamWorkspaceUndoStepHandler,
 )
 from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.exam_workspace.container import ExamWorkspaceContainerContent
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import NativeExamDocument
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from tests.fixtures.time_fixtures import FixedClock
+from tests.unit.application.curated_apps.handlers.test_conversion_hub_jobs import (
+    SequenceIdGenerator,
+)
 from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents import (
     _NOW,
     FakeUow,
     _actor,
     _Env,
+    _leased_tab,
     _settings,
+    _test_clock,
 )
 
 
@@ -74,25 +81,27 @@ async def test_overwrite_reports_new_save_time_without_changing_row_creation_tim
         clock=FixedClock(later),
         settings=_settings(),
     )
-    saved = await SaveExamWorkspaceDocumentHandler(
+    await StoreExamWorkspaceUndoStepHandler(
+        clock=_test_clock(),
         vault_files=env.vault_files,
         codec=env.codec,
         store=later_store,
-        id_generator=env.ids,
+        id_generator=SequenceIdGenerator([uuid4()]),
         jobs=env.enrichment_jobs,
     ).handle(
         actor=actor,
         lineage_id=imported.summary.lineage_id,
-        request=SaveExamWorkspaceDocumentRequest(
-            expected_revision=1,
-            document=imported.document.model_copy(update={"revision": 2}),
-            position_step_id=imported.summary.lineage_id,
+        request=StoreExamWorkspaceUndoStepRequest(
+            tab_id=await _leased_tab(env, actor, imported.summary.lineage_id),
+            expected_cursor=(
+                await env.save_handler.history(actor=actor, lineage_id=imported.summary.lineage_id)
+            ).cursor,
+            document=imported.document.model_copy(update={"title": "Later title"}),
         ),
     )
     reopened = await env.get_handler.handle(actor=actor, lineage_id=imported.summary.lineage_id)
-    assert saved.summary.saved_at == later
     assert reopened.summary.saved_at == later
-    assert saved.summary.vault_file_id == original.id
+    assert reopened.summary.vault_file_id == original.id
     assert env.vault_files.files[original.id].created_at == original.created_at == _NOW
 
 
@@ -116,7 +125,7 @@ async def test_overwrites_charge_only_size_delta_and_keep_one_file_at_quota() ->
             lineage_id=lineage,
             version=revision,
             expected_revision=None if revision == 1 else revision - 1,
-            editor_step_id=None if revision == 1 else lineage,
+            preserve_editor_position=revision != 1,
         )
         assert saved.id == original_id
         assert saved.bytes == len(content)
@@ -149,7 +158,7 @@ async def test_stale_save_does_not_replace_payload_or_accounting() -> None:
             lineage_id=lineage,
             version=2,
             expected_revision=1,
-            editor_step_id=lineage,
+            preserve_editor_position=True,
         )
     assert error.value.code is ErrorCode.CONFLICT
     assert await store.load(actor=actor, vault_file=saved) == current
@@ -180,7 +189,7 @@ async def test_failed_accounting_does_not_destroy_previous_file_bytes() -> None:
             lineage_id=lineage,
             version=2,
             expected_revision=1,
-            editor_step_id=lineage,
+            preserve_editor_position=True,
         )
     assert await store.load(actor=actor, vault_file=saved) == current
     assert (actor.id, saved.id) not in env.vault_storage.deleted
@@ -224,7 +233,7 @@ async def test_outer_transaction_failure_restores_the_last_successful_file() -> 
                 lineage_id=lineage,
                 version=2,
                 expected_revision=1,
-                editor_step_id=lineage,
+                preserve_editor_position=True,
             )
     assert await store.load(actor=actor, vault_file=saved) == current
 
@@ -253,7 +262,7 @@ async def test_growth_past_quota_keeps_the_previous_durable_file() -> None:
             lineage_id=lineage,
             version=2,
             expected_revision=1,
-            editor_step_id=lineage,
+            preserve_editor_position=True,
         )
     assert error.value.code is ErrorCode.VALIDATION_ERROR
     assert await store.load(actor=actor, vault_file=saved) == current

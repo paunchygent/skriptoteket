@@ -15,8 +15,8 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from skriptoteket.application.curated_apps.exam_workspace_history import (
-    ExamWorkspaceHistoryState,
-    ExamWorkspaceHistoryStep,
+    ExamWorkspaceHistoryCursor,
+    stored_step,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_document_store import (
     ExamWorkspaceDocumentStore,
@@ -66,7 +66,7 @@ pytestmark = [
 
 
 def _seed_container(lineage: UUID) -> bytes:
-    """The imported exam the baseline holds; Spara compares the saved copy with it."""
+    """The imported exam the baseline holds."""
     return ExamWorkspaceContainerCodec().build(
         content=ExamWorkspaceContainerContent(
             document=NativeExamDocument(
@@ -102,18 +102,25 @@ async def _seed(
             await PostgreSQLUserVaultFileRepository(session).create(file=file)
         if lineage is not None:
             # An exam file carries its undo history; an overwrite asserts it exists.
-            await PostgreSQLUserVaultFileRepository(session).put_history(
+            container = ExamWorkspaceContainerCodec().parse(content=_seed_container(lineage))
+            history_repo = PostgreSQLUserVaultFileRepository(session)
+            await history_repo.upsert_history_head(
                 user_id=owner,
                 document_lineage_id=lineage,
-                content=ExamWorkspaceHistoryState(
-                    cursor=lineage,
-                    current_step_id=lineage,
-                    baseline=ExamWorkspaceHistoryStep(
-                        step_id=lineage, content=_seed_container(lineage)
-                    ),
-                )
-                .model_dump_json()
-                .encode(),
+                head=ExamWorkspaceHistoryCursor(
+                    cursor=lineage, current_step_id=lineage, baseline_step_id=lineage
+                ),
+            )
+            await history_repo.insert_history_step(
+                user_id=owner,
+                document_lineage_id=lineage,
+                step=stored_step(
+                    step_id=lineage,
+                    position=0,
+                    document=container.document,
+                    notes=container.notes,
+                ),
+                assets_by_id=dict(container.assets_by_id),
             )
         await session.commit()
         return owner, files
@@ -360,7 +367,7 @@ async def test_overwrite_saved_during_lineage_rename_keeps_the_authoritative_nam
                 lineage_id=lineage,
                 version=2,
                 expected_revision=1,
-                editor_step_id=lineage,
+                preserve_editor_position=True,
             )
 
         async def rename_document() -> None:

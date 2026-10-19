@@ -9,10 +9,11 @@
  *   non-negative and finite (`_nonnegative_finite_points`). A free-text item's criteria must have
  *   non-empty text and whole points of at least 1, only free-text items
  *   carry them, and a non-empty list's points are exactly the item's points.
- *   A partial gap key or an incomplete matching key
- *   (`_answer_key_invariants`) comes from `examWorkspaceAnswerKeyRules`.
- *   An empty choice or matching entry saves (TASK-SKRIPT-40-04-06 D3); it is
- *   only flagged at the field here and blocks export through readiness.
+ *   An incomplete matching key (`_answer_key_invariants`) comes from
+ *   `examWorkspaceAnswerKeyRules`. An empty gap saves as a draft
+ *   (TASK-SKRIPT-40-04-13 U4, L2) and blocks export through readiness
+ *   instead; an empty choice or matching entry saves (TASK-SKRIPT-40-04-06
+ *   D3) and is likewise export-only.
  *
  * Relationships:
  *   - Mirrors `domain/curated_apps/exam_workspace/native_exam_document.py`.
@@ -21,17 +22,15 @@
  *     `ExamWorkspaceQuestionEditor` (inline field hints).
  */
 
-import type { NativeExamCriterion, NativeExamItem } from "../../../api/examWorkspace";
+import type { NativeExamCriterion, NativeExamDocument, NativeExamItem } from "../../../api/examWorkspace";
 import {
   incompleteMatchKeyCopy,
   isIncompleteMatchingItem,
-  isPartiallyKeyedGapItem,
-  partialGapKeyCopy,
   questionSubject,
 } from "./examWorkspaceAnswerKeyRules";
 import { isEmptyBody } from "./examWorkspaceRichTextDocument";
 
-export const NEGATIVE_POINTS_GUIDANCE = "Poängen kan inte vara negativ.";
+export const NEGATIVE_POINTS_GUIDANCE = "Ange 0 poäng eller mer.";
 export const EMPTY_CHOICE_TEXT_GUIDANCE = "Ett svarsalternativ saknar text.";
 export const EMPTY_MATCH_TEXT_GUIDANCE = "En rad eller en kategori saknar text.";
 export const EMPTY_CRITERION_TEXT_GUIDANCE = "Ett kriterium saknar text.";
@@ -85,51 +84,51 @@ export function hasCriteriaOnWrongKind(item: NativeExamItem): boolean {
 }
 
 function refusal(
-  items: NativeExamItem[],
+  document: NativeExamDocument,
   isRefused: (item: NativeExamItem) => boolean,
-  copy: (refused: NativeExamItem[]) => string,
+  copy: (document: NativeExamDocument, refused: NativeExamItem[]) => string,
 ): string | null {
-  const refused = items.filter(isRefused);
-  return refused.length > 0 ? copy(refused) : null;
+  const refused = document.items.filter(isRefused);
+  return refused.length > 0 ? copy(document, refused) : null;
 }
 
 /**
  * Swedish copy for every rule the items break, one sentence group per rule,
- * or `null` when the server would accept them.
+ * or `null` when the server would accept them. Questions are named by the
+ * question list's labels.
  */
-export function examWorkspaceSaveRefusalCopy(items: NativeExamItem[]): string | null {
+export function examWorkspaceSaveRefusalCopy(document: NativeExamDocument): string | null {
   const refusals = [
-    refusal(items, isPartiallyKeyedGapItem, partialGapKeyCopy),
-    refusal(items, isIncompleteMatchingItem, incompleteMatchKeyCopy),
+    refusal(document, isIncompleteMatchingItem, incompleteMatchKeyCopy),
     refusal(
-      items,
+      document,
       hasNegativePoints,
-      (refused) =>
-        `${questionSubject(refused)} har negativa poäng. ${NEGATIVE_POINTS_GUIDANCE}`,
+      (named, refused) =>
+        `${questionSubject(named, refused)} har negativa poäng. ${NEGATIVE_POINTS_GUIDANCE}`,
     ),
     refusal(
-      items,
+      document,
       hasEmptyCriterionText,
-      (refused) =>
-        `${questionSubject(refused)} har ett kriterium utan text. Skriv text i varje kriterium.`,
+      (named, refused) =>
+        `${questionSubject(named, refused)} har ett kriterium utan text. Skriv text i varje kriterium.`,
     ),
     refusal(
-      items,
+      document,
       hasInvalidCriterionPoints,
-      (refused) =>
-        `${questionSubject(refused)} har ett kriterium med ogiltiga poäng. ${INVALID_CRITERION_POINTS_GUIDANCE}`,
+      (named, refused) =>
+        `${questionSubject(named, refused)} har ett kriterium med ogiltiga poäng. ${INVALID_CRITERION_POINTS_GUIDANCE}`,
     ),
     refusal(
-      items,
+      document,
       hasCriteriaPointsMismatch,
-      (refused) =>
-        `${questionSubject(refused)} har kriterier vars poängsumma inte stämmer med frågans poäng. ${CRITERIA_POINTS_MISMATCH_GUIDANCE}`,
+      (named, refused) =>
+        `${questionSubject(named, refused)} har kriterier vars poängsumma inte stämmer med frågans poäng. ${CRITERIA_POINTS_MISMATCH_GUIDANCE}`,
     ),
     refusal(
-      items,
+      document,
       hasCriteriaOnWrongKind,
-      (refused) =>
-        `${questionSubject(refused)} har kriterier men är inte en fritextfråga. ${CRITERIA_ON_WRONG_KIND_GUIDANCE}`,
+      (named, refused) =>
+        `${questionSubject(named, refused)} har kriterier men är inte en fritextfråga. ${CRITERIA_ON_WRONG_KIND_GUIDANCE}`,
     ),
   ].filter((copy): copy is string => copy !== null);
   return refusals.length > 0 ? refusals.join(" ") : null;

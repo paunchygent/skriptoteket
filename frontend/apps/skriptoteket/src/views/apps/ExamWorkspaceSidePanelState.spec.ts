@@ -37,7 +37,6 @@ const apiMocks = vi.hoisted(() => ({
   importExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
-  saveExamWorkspaceDocument: vi.fn(),
 }));
 const exportApiMocks = vi.hoisted(() => ({
   downloadExamWorkspaceExport: vi.fn(),
@@ -70,7 +69,7 @@ async function mountImported(layout: ExamWorkspaceLayout) {
 
 /** The title button lives in the shell's top bar on a phone, outside the wrapper. */
 async function clickTitle(): Promise<void> {
-  document.querySelector<HTMLElement>('[data-test="exam-workspace-title"]')?.click();
+  document.querySelector<HTMLElement>('[data-test="exam-workspace-details"]')?.click();
   await flushPromises();
 }
 

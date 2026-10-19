@@ -31,6 +31,7 @@ class ErrorCode(StrEnum):
     # Conflict (409)
     CONFLICT = "CONFLICT"
     DUPLICATE_ENTRY = "DUPLICATE_ENTRY"
+    EDIT_LEASE_HELD = "EDIT_LEASE_HELD"
 
     # Request throttling (429)
     TOO_MANY_REQUESTS = "TOO_MANY_REQUESTS"
@@ -44,6 +45,12 @@ class ErrorCode(StrEnum):
 
     # Validation (400)
     VALIDATION_ERROR = "VALIDATION_ERROR"
+
+    # Conversion guard (422)
+    CONVERSION_IN_PROGRESS = "CONVERSION_IN_PROGRESS"
+
+    # Document schema (422)
+    DOCUMENT_SCHEMA_OUTDATED = "DOCUMENT_SCHEMA_OUTDATED"
 
     # Server Errors (500)
     INTERNAL_ERROR = "INTERNAL_ERROR"

@@ -12,7 +12,6 @@ fresh recordings hold and asserts no false positive.
 from __future__ import annotations
 
 import copy
-from functools import cache
 from uuid import uuid4
 
 import pytest
@@ -29,7 +28,6 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
     StructuredLLMRequest,
     StructuredLLMResponse,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.docx_gap_material import (
     GAPPED_MATERIAL_REASON,
 )
@@ -51,11 +49,6 @@ pytestmark = [pytest.mark.unit, pytest.mark.asyncio]
 _EXAM = "svenska_2_kursavslutande_prov_med_facit"
 _QUESTION = "body:0085"
 _MATERIAL = "De väntar inte."
-
-
-@cache
-def _chunks(exam: str) -> tuple[DocxChunk, ...]:
-    return corpus_chunks(exam)
 
 
 def _anchors(entry: dict[str, JsonValue]) -> list[JsonValue]:
@@ -149,7 +142,7 @@ async def test_no_fresh_recorded_gap_fill_item_is_sent_to_review_for_gapped_mate
             document_id=uuid4(),
             filename=f"{exam}.docx",
             source_sha256="0" * 64,
-            chunks=_chunks(exam),
+            chunks=corpus_chunks(exam),
             claimable=frozenset(question),
             questions=(question,),
         )

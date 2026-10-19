@@ -3,42 +3,43 @@
  * Exam workspace header.
  *
  * Domain purpose:
- *   The exam's title and state above every question: the title opens
- *   Provets uppgifter; the meta line shows the save state (Sparar …,
- *   Osparat, Sparat <time>), the course and the total points. The toolbar
- *   holds Öppna, Spara with Spara som, Exportera, AI facit for every
- *   question without one, and Ångra and Gör om with their shortcuts.
- *   On a phone the title block and Spara move into the shell's top bar
- *   (`#app-topbar-page-slot`), whose remaining row keeps the other tools.
+ *   One row above every question: the title block (title, pencil, and the
+ *   course and points line that opens Provets uppgifter), the file commands
+ *   (Öppna, Spara som …, Exportera, Importera), PDF, the AI glyph and the
+ *   fixed-width autosave status slot (Sparat, Sparar …, Inte sparat). Clicking
+ *   the title or the pencil renames the exam in place: Enter or blur commits,
+ *   Escape restores. On a phone the title block moves into the shell's top bar
+ *   (`#app-topbar-page-slot`).
  *
  * Relationships:
  *   - Rendered by `ExamWorkspaceView`; holds no exam state and emits every
  *     intent. Exportera comes in through the `export` slot.
+ *   - Undo and redo live in the editor toolbar; their shortcuts are owned by
+ *     TASK-SKRIPT-40-04-14.
  */
 
-import { computed, ref, useId } from "vue";
+import { computed, nextTick, ref } from "vue";
 
 import { UiGlyph } from "../../../components/ui";
 import { AI_ADMIN_ONLY_NOTE } from "../../../composables/useAiAccess";
 import { GUEST_AI_SIGN_IN } from "./examWorkspaceGuestCopy";
 import { useExamWorkspaceSignIn } from "./examWorkspaceSignIn";
-import ExamWorkspaceMenu from "./ExamWorkspaceMenu.vue";
-import { examWorkspaceShortcut, isMacPlatform } from "./examWorkspaceFormat";
 import { useExamWorkspaceAiMode } from "./useExamWorkspaceAiMode";
 
-export type ExamWorkspaceSaveState = "saving" | "dirty" | "saved";
+export type ExamWorkspaceSaveState = "saving" | "saved" | "unsaved";
 
-defineProps<{
+const props = defineProps<{
   title: string | null;
   saveState: ExamWorkspaceSaveState;
-  savedAt: string | null;
+  saveText: string;
+  /** The status tooltip: the `Inte sparat` reason, or the saved confirmation. */
+  saveTitle: string | null;
   courseLabel: string | null;
   total: number;
   detailsOpen: boolean;
   openDrawerOpen: boolean;
-  canUndo: boolean;
-  canRedo: boolean;
-  canSave: boolean;
+  /** The exam is open and editable, so its title can be renamed. */
+  canRename: boolean;
   /** An exam is open and nothing runs, so it can be copied or read again. */
   canSaveAs: boolean;
   suggestBusy: boolean;
@@ -51,23 +52,42 @@ defineProps<{
 const emit = defineEmits<{
   toggleDetails: [];
   toggleOpen: [];
-  save: [];
   saveAs: [];
+  importFile: [];
   suggestAll: [];
-  undo: [];
-  redo: [];
   togglePreview: [];
+  renameTitle: [title: string];
 }>();
 
-const mac = isMacPlatform();
-const saveKeys = mac ? "Meta+S" : "Control+S";
-const saveMenuTrigger = ref<HTMLButtonElement | null>(null);
-const saveMenuOpen = ref(false);
 const requestSignIn = useExamWorkspaceSignIn();
-const aiNoteId = useId();
 /** Guest controls stay enabled and ask for sign-in; signed-in controls follow the admin gate. */
 const aiMode = useExamWorkspaceAiMode();
 const isGuest = computed(() => aiMode.value === "guest");
+
+const editingTitle = ref(false);
+const draft = ref("");
+const titleInput = ref<HTMLInputElement | null>(null);
+
+async function startRename(): Promise<void> {
+  if (!props.canRename || props.title === null || editingTitle.value) return;
+  draft.value = props.title;
+  editingTitle.value = true;
+  await nextTick();
+  titleInput.value?.focus();
+  titleInput.value?.select();
+}
+
+/** Enter and blur both commit; the flag keeps the blur after Enter or Escape from committing twice. */
+function commitRename(): void {
+  if (!editingTitle.value) return;
+  editingTitle.value = false;
+  const next = draft.value.replace(/\s+/g, " ").trim();
+  if (next !== "" && next !== props.title) emit("renameTitle", next);
+}
+
+function cancelRename(): void {
+  editingTitle.value = false;
+}
 
 function handleSuggestAll(): void {
   if (isGuest.value) {
@@ -76,18 +96,6 @@ function handleSuggestAll(): void {
   }
   emit("suggestAll");
 }
-
-function chooseSave(action: "save" | "saveAs"): void {
-  saveMenuOpen.value = false;
-  if (action === "saveAs") {
-    emit("saveAs");
-  } else {
-    emit("save");
-  }
-}
-
-const SAVED_TITLE = "Provet i Mina filer har alla ändringar";
-const DIRTY_TITLE = "Ändringarna sparas automatiskt som utkast. Spara skriver över provet i Mina filer.";
 </script>
 
 <template>
@@ -101,192 +109,134 @@ const DIRTY_TITLE = "Ändringarna sparas automatiskt som utkast. Spara skriver �
       :disabled="!isPhone"
     >
       <div class="ws-title">
+        <div class="ws-title__row">
+          <input
+            v-if="editingTitle"
+            ref="titleInput"
+            v-model="draft"
+            type="text"
+            class="ws-title__input"
+            aria-label="Provets namn"
+            data-test="exam-workspace-title-input"
+            @keydown.enter.prevent="commitRename"
+            @keydown.esc.prevent="cancelRename"
+            @blur="commitRename"
+          >
+          <template v-else>
+            <button
+              type="button"
+              class="ws-title__button"
+              :disabled="title === null || !canRename"
+              :title="title ?? undefined"
+              data-test="exam-workspace-title"
+              @click="startRename"
+            >
+              <span class="ws-title__text">{{ title ?? "Inget prov öppet" }}</span>
+            </button>
+            <button
+              v-if="title !== null"
+              type="button"
+              class="xw-tool"
+              :disabled="!canRename"
+              title="Byt namn på provet"
+              aria-label="Byt namn på provet"
+              data-test="exam-workspace-rename"
+              @click="startRename"
+            >
+              <UiGlyph
+                meaning="edit"
+                :size="16"
+              />
+            </button>
+          </template>
+        </div>
         <button
+          v-if="title !== null"
           type="button"
-          class="ws-title__button"
-          :disabled="title === null"
+          class="ws-meta"
           :aria-expanded="detailsOpen"
           aria-haspopup="dialog"
-          title="Provets uppgifter"
-          data-test="exam-workspace-title"
+          title="Provets detaljer"
+          data-test="exam-workspace-details"
           @click="emit('toggleDetails')"
         >
-          <span class="ws-title__text">{{ title ?? "Inget prov öppet" }}</span>
-          <UiGlyph
-            v-if="title !== null"
-            meaning="open-list"
-            :size="16"
-          />
+          {{ courseLabel ?? "Utan kurs" }} · {{ total }} p
         </button>
-        <div
-          v-if="title !== null"
-          class="ws-meta"
-        >
-          <span
-            v-if="saveState === 'saving'"
-            class="ws-meta__state"
-            data-test="exam-workspace-save-state"
-          >
-            <UiGlyph
-              meaning="busy"
-              :size="16"
-              class="xw-spin"
-            />Sparar …
-          </span>
-          <span
-            v-else-if="saveState === 'dirty'"
-            class="ws-meta__state ws-meta__state--dirty"
-            :title="DIRTY_TITLE"
-            data-test="exam-workspace-save-state"
-          >
-            <UiGlyph
-              meaning="status-modified"
-              :size="16"
-            />Osparat
-          </span>
-          <span
-            v-else
-            class="ws-meta__state"
-            :title="SAVED_TITLE"
-            data-test="exam-workspace-save-state"
-          >
-            <UiGlyph
-              meaning="completed"
-              :size="16"
-            />Sparat{{ savedAt ? ` ${savedAt}` : "" }}
-          </span>
-          <span class="ws-meta__dot" />
-          <span class="ws-meta__text">{{ courseLabel ?? "Utan kurs" }}</span>
-          <span class="ws-meta__dot" />
-          <span class="ws-meta__text">{{ total }} p</span>
-        </div>
       </div>
     </Teleport>
-
-    <ExamWorkspaceMenu
-      :open="saveMenuOpen"
-      :anchor="saveMenuTrigger"
-      label="Spara"
-      test-id="exam-workspace-save-options"
-      @close="saveMenuOpen = false"
-    >
-      <button
-        type="button"
-        class="xw-mi"
-        role="menuitem"
-        :aria-disabled="!canSave || undefined"
-        data-test="exam-workspace-save-option"
-        @click="canSave && chooseSave('save')"
-      >
-        <UiGlyph
-          meaning="save"
-          :size="20"
-        /><span class="xw-grow">Spara</span><kbd class="ws-kbd">{{ examWorkspaceShortcut("S", false, mac) }}</kbd>
-      </button>
-      <button
-        v-if="!isGuest"
-        type="button"
-        class="xw-mi"
-        role="menuitem"
-        data-test="exam-workspace-save-as-option"
-        @click="chooseSave('saveAs')"
-      >
-        <UiGlyph
-          meaning="copy"
-          :size="20"
-        /><span class="xw-grow">Spara som …</span>
-      </button>
-    </ExamWorkspaceMenu>
 
     <div
       class="ws-tools"
       role="toolbar"
       aria-label="Provet"
     >
-      <div
-        class="ws-tools__group"
-        role="group"
-        aria-label="Fil"
+      <button
+        type="button"
+        class="xw-cmd"
+        :aria-expanded="openDrawerOpen"
+        aria-label="Öppna"
+        title="Öppna eller importera ett prov"
+        data-test="exam-workspace-open"
+        @click="emit('toggleOpen')"
       >
+        <UiGlyph
+          meaning="open-files"
+          :size="20"
+        /><span class="ws-word">Öppna</span>
+      </button>
+      <button
+        v-if="!isGuest"
+        type="button"
+        class="xw-cmd"
+        :disabled="!canSaveAs"
+        aria-label="Spara som …"
+        title="Spara som …"
+        data-test="exam-workspace-save-as-command"
+        @click="emit('saveAs')"
+      >
+        <UiGlyph
+          meaning="copy"
+          :size="20"
+        /><span class="ws-word">Spara som</span>
+      </button>
+      <slot name="export" />
+      <button
+        type="button"
+        class="xw-cmd"
+        aria-label="Importera prov"
+        title="Importera prov"
+        data-test="exam-workspace-import"
+        @click="emit('importFile')"
+      >
+        <UiGlyph
+          meaning="file-import"
+          :size="20"
+        /><span class="ws-word">Importera</span>
+      </button>
+      <template v-if="!isPhone && !isGuest">
+        <span class="xw-toolsep" />
         <button
           type="button"
-          class="xw-btn ws-tools__open"
-          :aria-expanded="openDrawerOpen"
-          aria-label="Öppna"
-          title="Öppna eller importera ett prov"
-          data-test="exam-workspace-open"
-          @click="emit('toggleOpen')"
-        >
-          <UiGlyph
-            meaning="open-files"
-            :size="20"
-          /><span class="ws-tools__word">Öppna</span>
-        </button>
-        <Teleport
-          to="#app-topbar-page-slot"
-          defer
-          :disabled="!isPhone"
-        >
-          <div class="xw-split ws-save">
-            <button
-              type="button"
-              class="xw-btn xw-btn--primary"
-              :disabled="!canSave"
-              :title="`Spara (${examWorkspaceShortcut('S', false, mac)})`"
-              :aria-keyshortcuts="saveKeys"
-              data-test="exam-workspace-save"
-              @click="emit('save')"
-            >
-              <UiGlyph
-                meaning="save"
-                :size="20"
-              />Spara
-            </button>
-            <button
-              v-if="!isGuest"
-              ref="saveMenuTrigger"
-              type="button"
-              class="xw-btn xw-btn--primary xw-btn--icon"
-              :disabled="!canSaveAs"
-              aria-haspopup="menu"
-              :aria-expanded="saveMenuOpen"
-              aria-label="Fler sätt att spara"
-              title="Fler sätt att spara"
-              data-test="exam-workspace-save-menu"
-              @click="saveMenuOpen = !saveMenuOpen"
-            >
-              <UiGlyph
-                meaning="open-list"
-                :size="16"
-              />
-            </button>
-          </div>
-        </Teleport>
-        <slot name="export" />
-        <button
-          v-if="!isPhone && !isGuest"
-          type="button"
-          class="xw-btn ws-tools__preview"
+          class="xw-cmd"
           :aria-pressed="previewOpen"
-          aria-label="Förhandsgranska"
-          title="Förhandsgranska"
+          aria-label="Förhandsgranska PDF"
+          title="Förhandsgranska PDF"
           data-test="exam-workspace-print-preview-toggle"
           @click="emit('togglePreview')"
         >
           <UiGlyph
             meaning="preview"
             :size="20"
-          /><span class="ws-tools__word">Förhandsgranska</span>
+          /><span class="ws-word">PDF</span>
         </button>
-      </div>
-      <span class="xw-sep" />
+      </template>
       <button
         type="button"
-        class="xw-btn xw-btn--icon"
+        class="xw-cmd"
         :disabled="suggestDisabled || suggestBusy || aiMode === 'admin_only'"
         :title="aiMode === 'admin_only' ? AI_ADMIN_ONLY_NOTE : suggestBusy ? 'Facitförslagen tas fram …' : 'Föreslå facit för frågor som saknar facit'"
         :aria-label="suggestBusy ? 'Facitförslagen tas fram …' : 'Föreslå facit för frågor som saknar facit'"
-        :aria-describedby="aiMode === 'admin_only' ? aiNoteId : undefined"
+        :aria-description="aiMode === 'admin_only' ? AI_ADMIN_ONLY_NOTE : undefined"
         data-test="exam-workspace-suggest-all"
         @click="handleSuggestAll"
       >
@@ -296,48 +246,21 @@ const DIRTY_TITLE = "Ändringarna sparas automatiskt som utkast. Spara skriver �
           :class="{ 'xw-spin': suggestBusy }"
         />
       </button>
-      <span
-        v-if="aiMode === 'admin_only'"
-        :id="aiNoteId"
-        class="xw-hint ws-tools__note"
-      >{{ AI_ADMIN_ONLY_NOTE }}</span>
-      <span class="xw-sep ws-tools__spacer" />
-      <div
-        class="ws-tools__group"
-        role="group"
-        aria-label="Historik"
-      >
-        <button
-          type="button"
-          class="xw-btn xw-btn--icon"
-          :disabled="!canUndo"
-          :title="canUndo ? `Ångra (${examWorkspaceShortcut('Z', false, mac)})` : 'Inget att ångra'"
-          aria-label="Ångra"
-          aria-keyshortcuts="Control+Z Meta+Z"
-          data-test="exam-workspace-undo"
-          @click="emit('undo')"
+      <span class="ws-status-slot">
+        <span
+          v-if="title !== null"
+          class="ws-status"
+          role="status"
+          :title="saveTitle ?? undefined"
+          data-test="exam-workspace-save-state"
         >
           <UiGlyph
-            meaning="undo"
+            :meaning="saveState === 'saving' ? 'autosave-saving' : saveState === 'unsaved' ? 'blocker' : 'autosave-saved'"
             :size="20"
-          />
-        </button>
-        <button
-          type="button"
-          class="xw-btn xw-btn--icon"
-          :disabled="!canRedo"
-          :title="canRedo ? `Gör om (${examWorkspaceShortcut('Z', true, mac)})` : 'Inget att göra om'"
-          aria-label="Gör om"
-          aria-keyshortcuts="Control+Shift+Z Meta+Shift+Z"
-          data-test="exam-workspace-redo"
-          @click="emit('redo')"
-        >
-          <UiGlyph
-            meaning="redo"
-            :size="20"
-          />
-        </button>
-      </div>
+            :class="{ 'xw-spin': saveState === 'saving' }"
+          /><span class="ws-status__text">{{ saveText }}</span>
+        </span>
+      </span>
     </div>
   </div>
 </template>
@@ -347,50 +270,48 @@ const DIRTY_TITLE = "Ändringarna sparas automatiskt som utkast. Spara skriver �
   display: flex; align-items: center; gap: var(--huleedu-space-4); flex: none;
   height: 60px; padding: 0 var(--huleedu-space-6); border-bottom: 1px solid var(--huleedu-surface-divider);
 }
-.ws-title { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.ws-title { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 1px; }
+.ws-title__row { display: flex; align-items: center; gap: var(--huleedu-space-1); max-width: 100%; min-width: 0; }
 .ws-title__button {
-  all: unset; box-sizing: border-box; display: inline-flex; align-items: center; gap: var(--huleedu-space-1-5);
-  max-width: 100%; padding: 1px var(--huleedu-space-1-5); margin-left: calc(-1 * var(--huleedu-space-1-5));
-  border-radius: var(--huleedu-radius-md); cursor: pointer;
-  font-size: var(--huleedu-text-lg); font-weight: var(--huleedu-font-semibold); color: var(--huleedu-navy);
+  all: unset; box-sizing: border-box; min-width: 0; cursor: pointer; border-radius: var(--huleedu-radius-md);
+  font-size: var(--huleedu-text-base); font-weight: var(--huleedu-font-semibold); color: var(--huleedu-navy);
 }
 .ws-title__button:disabled { cursor: default; color: var(--huleedu-navy-60); }
-.ws-title__button svg { color: var(--huleedu-navy-60); flex: none; }
-.ws-title__text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ws-title__text { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ws-title__button:focus-visible { outline: 2px solid var(--huleedu-action-40); }
-.ws-title__button[aria-expanded="true"] { background: var(--huleedu-action-10); color: var(--huleedu-action); }
-@media (hover: hover) { .ws-title__button:not(:disabled):hover { background: var(--huleedu-action-05); } }
-.ws-meta {
-  display: flex; align-items: center; gap: var(--huleedu-space-2); min-width: 0; overflow: hidden; white-space: nowrap;
-  font-size: var(--huleedu-text-xs); color: var(--huleedu-navy-60);
+.ws-title__input {
+  box-sizing: border-box; width: min(28em, 100%); font: inherit; font-size: var(--huleedu-text-base);
+  font-weight: var(--huleedu-font-semibold); color: var(--huleedu-navy); padding: 0 var(--huleedu-space-1-5);
+  border: 1px solid var(--huleedu-action); border-radius: var(--huleedu-radius-md); background: var(--huleedu-surface-content);
 }
-/* Sized for "Sparat 17 okt 14:05", so Osparat leaves the course in place. */
-.ws-meta__state { display: inline-flex; align-items: center; gap: var(--huleedu-space-1); flex: none; min-width: 11em; }
-.ws-meta__state--dirty { color: var(--huleedu-warning); font-weight: var(--huleedu-font-medium); }
-.ws-meta__dot { width: 3px; height: 3px; flex: none; border-radius: 50%; background: var(--huleedu-navy-40); }
-.ws-meta__text { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-.ws-tools { display: flex; align-items: center; gap: var(--huleedu-space-3); flex: none; }
-.ws-tools__group { display: flex; align-items: center; gap: var(--huleedu-space-2); }
-.ws-tools__note { flex: 0 1 auto; min-width: 0; margin: 0; max-width: 26em; line-height: 1.35; }
-.ws-kbd { font-family: var(--huleedu-font-mono); font-size: var(--huleedu-text-xs); color: var(--huleedu-navy-60); }
+.ws-title__input:focus-visible { outline: 2px solid var(--huleedu-action-40); outline-offset: 0; }
+.ws-meta {
+  all: unset; box-sizing: border-box; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  cursor: pointer; border-radius: var(--huleedu-radius-md);
+  font-size: var(--huleedu-text-xs); color: var(--huleedu-navy-70);
+}
+.ws-meta:focus-visible { outline: 2px solid var(--huleedu-action-40); }
+.ws-meta[aria-expanded="true"] { color: var(--huleedu-action); }
+@media (hover: hover) { .ws-meta:hover { text-decoration: underline; } }
+.ws-tools { display: flex; align-items: center; gap: var(--huleedu-space-2); flex: none; }
+/* Sized for its widest state ("Sparat 14:05"), so no state moves a neighbouring control. */
+.ws-status-slot { display: flex; align-items: center; flex: none; width: 8.5rem; margin-left: var(--huleedu-space-2); }
+.ws-status {
+  display: inline-flex; align-items: center; gap: var(--huleedu-space-1-5); min-width: 0; font-size: var(--huleedu-type-control-value-size); color: var(--huleedu-navy-70);
+  white-space: nowrap;
+}
+.ws-status svg { flex: none; }
+.ws-status__text { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 
 @media (max-width: 1279px) {
   .ws-head { padding: 0 var(--huleedu-space-4); gap: var(--huleedu-space-3); }
-  .ws-tools { gap: var(--huleedu-space-2); }
-  .ws-tools__word { display: none; }
-  .ws-tools__open { width: var(--xw-ctl-fine, 36px); padding: 0; }
-}
-@media (max-width: 1279px) and (pointer: coarse) {
-  .ws-tools__open { width: var(--xw-ctl, 44px); }
+  .ws-word { display: none; }
 }
 @media (max-width: 767px) {
   .ws-head { height: 52px; }
-  .ws-tools { flex: 1; }
-  .ws-tools__spacer { flex: 1; background: none; }
-  .ws-tools__open { width: var(--xw-ctl, 44px); }
-  /* In the top bar: the save state only; course and total stay in Provets uppgifter. */
-  .ws-title__button { font-size: var(--huleedu-text-base); }
-  .ws-meta > :not(.ws-meta__state) { display: none; }
-  .ws-meta__state { min-width: 0; }
+  .ws-tools { flex: 1; justify-content: flex-end; }
+  /* Glyph only on a phone; the text stays for assistive technology and the tooltip. */
+  .ws-status-slot { width: auto; margin-left: 0; }
+  .ws-status__text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 }
 </style>

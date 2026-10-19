@@ -118,6 +118,31 @@ describe("examWorkspaceBlockerEntries", () => {
     ]);
   });
 
+  it("leads an empty gap to its gap chip with no one-click fix", () => {
+    const item: NativeExamItem = {
+      ...choice("item_001", 1),
+      choices: [],
+      body: [{ heading_level: null, segments: [
+        { kind: "text", marks: [], text: "Vatten kokar vid " },
+        { gap_id: "gap_001", kind: "gap" },
+        { kind: "text", marks: [], text: " grader." },
+      ] }],
+      gaps: [buildGap("gap_001", [])],
+      kind: "gap_fill" as const,
+    };
+
+    expect(rows([item])).toEqual([
+      {
+        fix: null,
+        focus: '[data-gap-id="gap_001"]',
+        itemId: "item_001",
+        label: "1",
+        problem: "lucka utan svar",
+        reason: "partial_gap_key",
+      },
+    ]);
+  });
+
   it("offers Godkänn for an unapproved AI key and Föreslå facit for a missing key", () => {
     const proposed = withId(choiceItem("single_choice", "machine_proposed", ["choice_002"], null), "item_001", 1);
     const absent = withId(reviewed(choiceItem("multiple_response", "absent", [], null)), "item_002", 2);

@@ -18,6 +18,8 @@ import { describe, expect, it } from "vitest";
 import { nextTick } from "vue";
 
 import { buildGapItem, buildMergeItem, mountEditor, posIn, press, surface, tiptap } from "./ExamWorkspaceBodyEditor.specSupport";
+import { buildGap } from "./examWorkspaceKeyedItems.specSupport";
+import { plainBody } from "./examWorkspaceRichText";
 
 type UpdateEvent = [string, Array<{ heading_level: number | null; segments: unknown[] }>, boolean];
 
@@ -47,6 +49,31 @@ describe("ExamWorkspaceBodyEditor text editing", () => {
     wrapper.unmount();
   });
 
+  it("labels a dropdown gap chip with its options state", async () => {
+    const wrapper = await mountEditor(
+      buildGapItem({
+        kind: "inline_choice",
+        body: [{ heading_level: null, segments: [{ gap_id: "gap_001", kind: "gap" }] }],
+        gaps: [
+          buildGap("gap_001", [], {
+            correct_option_id: "choice_002",
+            options: [
+              { body: plainBody("R"), choice_id: "choice_001" },
+              { body: plainBody("A"), choice_id: "choice_002" },
+              { body: plainBody("B"), choice_id: "choice_003" },
+            ],
+          }),
+        ],
+      }),
+    );
+
+    const chip = wrapper.get('[data-gap-id="gap_001"]');
+    expect(chip.attributes("data-label")).toBe("A");
+    expect(chip.attributes("aria-label")).toBe("Lucka 1, rullista med alternativen R, A, B, rätt alternativ: A");
+    expect(chip.attributes("data-empty")).toBeUndefined();
+    wrapper.unmount();
+  });
+
   it("emits the whole body as a coalescing edit when text is typed", async () => {
     const wrapper = await mountEditor();
     const editor = tiptap(wrapper);
@@ -56,9 +83,9 @@ describe("ExamWorkspaceBodyEditor text editing", () => {
     const [event] = wrapper.emitted("updateBody") as UpdateEvent[];
     expect(event![0]).toBe("item_001");
     expect(event![1]).toHaveLength(2);
-    expect(event![1][0]!.segments[0]).toEqual({ kind: "text", marks: [], text: "Vatten x kokar vid " });
+    expect(event![1][0]!.segments[0]).toEqual({ kind: "text", marks: [], text: "Vatten x kokar vid ", kept_gap_id: null });
     expect(event![1][1]!.segments).toEqual([
-      { kind: "text", marks: [], text: "Se " },
+      { kind: "text", marks: [], text: "Se ", kept_gap_id: null },
       { kind: "asset", asset_id: "asset_001" },
     ]);
     expect(event![2]).toBe(false);
@@ -87,9 +114,9 @@ describe("ExamWorkspaceBodyEditor text editing", () => {
       {
         heading_level: null,
         segments: [
-          { kind: "text", marks: [], text: "A " },
+          { kind: "text", marks: [], text: "A ", kept_gap_id: null },
           { kind: "gap", gap_id: "gap_001" },
-          { kind: "text", marks: [], text: " B D" },
+          { kind: "text", marks: [], text: " B D", kept_gap_id: null },
         ],
       },
     ]);
@@ -114,7 +141,7 @@ describe("ExamWorkspaceBodyEditor text editing", () => {
 
     const [event] = wrapper.emitted("updateBody") as UpdateEvent[];
     expect(event![1]).toEqual([
-      { heading_level: null, segments: [{ kind: "text", marks: [], text: "EttTvå" }] },
+      { heading_level: null, segments: [{ kind: "text", marks: [], text: "EttTvå", kept_gap_id: null }] },
     ]);
     wrapper.unmount();
   });
@@ -173,7 +200,7 @@ describe("ExamWorkspaceBodyEditor text editing", () => {
     second.commands.insertContent("?");
 
     expect(wrapper.emitted("updateBody")).toEqual([
-      ["item_002", [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Annan fråga?" }] }], false],
+      ["item_002", [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Annan fråga?", kept_gap_id: null }] }], false],
     ]);
     wrapper.unmount();
   });

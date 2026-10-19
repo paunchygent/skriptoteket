@@ -2,17 +2,18 @@
  * Exam workspace keyboard shortcut behavior.
  *
  * Expected behavior:
- *   Ctrl/Cmd+S never reaches the browser's save page and saves only a changed
- *   exam; Ctrl/Cmd+Z steps back outside text fields and leaves plain input
- *   fields alone. Inside the question text (an exam rich-text editor) it runs
- *   the workspace's Ångra once and never the browser's own undo.
+ *   Ctrl/Cmd+S never reaches the browser's save page and stores a pending
+ *   edit at once through the autosave history, and nothing when unchanged;
+ *   Ctrl/Cmd+Z steps back outside text fields through the position move and
+ *   leaves plain input fields alone. Inside the question text (an exam
+ *   rich-text editor) it runs the workspace's Ångra once and never the
+ *   browser's own undo.
  */
 
 import { flushPromises } from "@vue/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { NativeExamDocument } from "../../api/examWorkspace";
-import { buildSavedExamSummary } from "./exam-workspace/useExamWorkspaceDocument.specSupport";
 import {
   arrangeViewApis,
   buildDocument,
@@ -33,11 +34,11 @@ const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceHistory: vi.fn(),
   getExamWorkspaceHistoryStep: vi.fn(),
+  moveExamWorkspaceHistoryPosition: vi.fn(),
   importExamWorkspaceDigiExam: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
-  saveExamWorkspaceDocument: vi.fn(),
   storeExamWorkspaceUndoStep: vi.fn(),
 }));
 const exportApiMocks = vi.hoisted(() => ({
@@ -61,7 +62,7 @@ describe("ExamWorkspaceView keyboard shortcuts", () => {
   it.each([
     ["Ctrl+S", { ctrlKey: true }],
     ["Meta+S", { metaKey: true }],
-  ])("%s never opens the browser's save page, with or without an exam, and saves nothing unchanged", async (_name, modifier) => {
+  ])("%s never opens the browser's save page, with or without an exam, and stores nothing unchanged", async (_name, modifier) => {
     importsTheFixture(apiMocks);
     const wrapper = await mountView();
 
@@ -72,49 +73,57 @@ describe("ExamWorkspaceView keyboard shortcuts", () => {
     expect(pressKey({ key: "s", ...modifier }).defaultPrevented).toBe(true);
     expect(pressKey({ key: "S", ...modifier }).defaultPrevented).toBe(true);
     await flushPromises();
-    expect(apiMocks.saveExamWorkspaceDocument).not.toHaveBeenCalled();
+    expect(apiMocks.storeExamWorkspaceUndoStep).not.toHaveBeenCalled();
     expect(pressKey({ key: "s" }).defaultPrevented).toBe(false);
   });
 
   it.each([
     ["Ctrl+S", { ctrlKey: true }],
     ["Meta+S", { metaKey: true }],
-  ])("%s saves the changed exam once, with the previous revision expected", async (_name, modifier) => {
+  ])("%s stores the changed exam as a step at once, then stores nothing unchanged", async (_name, modifier) => {
     importsTheFixture(apiMocks);
-    apiMocks.saveExamWorkspaceDocument.mockResolvedValue({ ...buildResponse(), summary: buildSavedExamSummary({ title: "NO-prov HT25", version: 2 }) });
     const wrapper = await mountView();
     await importFixture(wrapper);
     await editPoints(wrapper, "7");
-    expect(wrapper.find('[data-test="exam-workspace-save-state"]').text()).toBe("Osparat");
+    expect(wrapper.find('[data-test="exam-workspace-save-state"]').text()).toBe("Sparar …");
 
     expect(pressKey({ key: "s", ...modifier }).defaultPrevented).toBe(true);
     await flushPromises();
 
-    expect(apiMocks.saveExamWorkspaceDocument).toHaveBeenCalledTimes(1);
-    const [lineageId, params] = apiMocks.saveExamWorkspaceDocument.mock.calls[0] as [
+    expect(apiMocks.storeExamWorkspaceUndoStep).toHaveBeenCalledTimes(1);
+    const [lineageId, params] = apiMocks.storeExamWorkspaceUndoStep.mock.calls[0] as [
       string,
-      { document: NativeExamDocument; expectedRevision: number },
+      { document: NativeExamDocument },
     ];
     expect(lineageId).toBe("lineage-1");
-    expect(params.expectedRevision).toBe(1);
     expect(params.document.items[0]?.points).toBe(7);
-    expect(wrapper.find('[data-test="exam-workspace-save-state"]').text()).toMatch(/^Sparat/);
+    expect(wrapper.find('[data-test="exam-workspace-save-state"]').text()).toMatch(/^Sparat /);
 
     pressKey({ key: "s", ...modifier });
     await flushPromises();
-    expect(apiMocks.saveExamWorkspaceDocument).toHaveBeenCalledTimes(1);
+    expect(apiMocks.storeExamWorkspaceUndoStep).toHaveBeenCalledTimes(1);
   });
 
-  it("Ctrl+Z outside a text field steps back through the stored history", async () => {
+  it("Ctrl+Z outside a text field moves the position back through the stored history", async () => {
     importsTheFixture(apiMocks);
     const baselineId = "step-baseline";
+    const cursorStep = buildResponse().history_cursor;
     apiMocks.getExamWorkspaceHistory.mockResolvedValue({
       baseline_step_id: baselineId,
-      cursor: buildResponse().history_cursor,
-      position_step_id: buildResponse().history_cursor,
-      step_ids: [buildResponse().history_cursor],
+      cursor: cursorStep,
+      position_step_id: cursorStep,
+      step_ids: [cursorStep],
     });
-    apiMocks.getExamWorkspaceHistoryStep.mockResolvedValue({ document: buildDocument(), step_id: baselineId });
+    apiMocks.moveExamWorkspaceHistoryPosition.mockResolvedValueOnce({
+      document: buildDocument(),
+      export_blockers: [],
+      history: {
+        baseline_step_id: baselineId,
+        cursor: "cursor-2",
+        position_step_id: baselineId,
+        step_ids: [cursorStep],
+      },
+    });
     const wrapper = await mountView();
     await importFixture(wrapper);
 
@@ -122,19 +131,33 @@ describe("ExamWorkspaceView keyboard shortcuts", () => {
     await flushPromises();
 
     expect(event.defaultPrevented).toBe(true);
-    expect(apiMocks.getExamWorkspaceHistoryStep).toHaveBeenCalledExactlyOnceWith("lineage-1", baselineId);
+    expect(apiMocks.moveExamWorkspaceHistoryPosition).toHaveBeenCalledExactlyOnceWith("lineage-1", {
+      expectedCursor: cursorStep,
+      stepId: baselineId,
+      tabId: expect.any(String),
+    });
   });
 
   it("Ctrl+Z inside the question text runs the workspace Ångra once, as the button does", async () => {
     importsTheFixture(apiMocks);
     const baselineId = "step-baseline";
+    const cursorStep = buildResponse().history_cursor;
     apiMocks.getExamWorkspaceHistory.mockResolvedValue({
       baseline_step_id: baselineId,
-      cursor: buildResponse().history_cursor,
-      position_step_id: buildResponse().history_cursor,
-      step_ids: [buildResponse().history_cursor],
+      cursor: cursorStep,
+      position_step_id: cursorStep,
+      step_ids: [cursorStep],
     });
-    apiMocks.getExamWorkspaceHistoryStep.mockResolvedValue({ document: buildDocument(), step_id: baselineId });
+    apiMocks.moveExamWorkspaceHistoryPosition.mockResolvedValueOnce({
+      document: buildDocument(),
+      export_blockers: [],
+      history: {
+        baseline_step_id: baselineId,
+        cursor: "cursor-2",
+        position_step_id: baselineId,
+        step_ids: [cursorStep],
+      },
+    });
     const wrapper = await mountView();
     await importFixture(wrapper);
     await wrapper.find('[data-test="exam-workspace-row-item_001"]').trigger("click");
@@ -148,7 +171,11 @@ describe("ExamWorkspaceView keyboard shortcuts", () => {
     await flushPromises();
 
     expect(event.defaultPrevented).toBe(true);
-    expect(apiMocks.getExamWorkspaceHistoryStep).toHaveBeenCalledExactlyOnceWith("lineage-1", baselineId);
+    expect(apiMocks.moveExamWorkspaceHistoryPosition).toHaveBeenCalledExactlyOnceWith("lineage-1", {
+      expectedCursor: cursorStep,
+      stepId: baselineId,
+      tabId: expect.any(String),
+    });
   });
 
   it("Ctrl+Z inside a text field is left to the field and does not undo the exam", async () => {
@@ -159,7 +186,6 @@ describe("ExamWorkspaceView keyboard shortcuts", () => {
       position_step_id: buildResponse().history_cursor,
       step_ids: [buildResponse().history_cursor],
     });
-    apiMocks.getExamWorkspaceHistoryStep.mockResolvedValue({ document: buildDocument(), step_id: "step-baseline" });
     const wrapper = await mountView();
     await importFixture(wrapper);
     const field = document.createElement("input");
@@ -172,6 +198,6 @@ describe("ExamWorkspaceView keyboard shortcuts", () => {
 
     expect(event.defaultPrevented).toBe(false);
     expect(shifted.defaultPrevented).toBe(false);
-    expect(apiMocks.getExamWorkspaceHistoryStep).not.toHaveBeenCalled();
+    expect(apiMocks.moveExamWorkspaceHistoryPosition).not.toHaveBeenCalled();
   });
 });

@@ -8,6 +8,7 @@ directly and tests native-document invariants; pipeline admission is exercised e
 """
 
 import json
+from functools import cache
 from pathlib import Path
 from uuid import uuid4
 
@@ -43,6 +44,7 @@ def recorded_exam_language(exam: str) -> Language:
     return "sv"
 
 
+@cache
 def recorded_converted_items(exam: str) -> tuple[ProducedItem, ...]:
     """Every converted item the exam's envelopes returned, in source order.
 
@@ -62,6 +64,7 @@ def recorded_converted_items(exam: str) -> tuple[ProducedItem, ...]:
     return tuple(ordered)
 
 
+@cache
 def recorded_items(exam: str = ENGLISH_EXAM) -> tuple[NativeExamItem, ...]:
     """Every converted item of the exam, numbered in source order."""
     language = recorded_exam_language(exam)

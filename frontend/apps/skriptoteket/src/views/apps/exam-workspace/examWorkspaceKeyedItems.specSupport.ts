@@ -87,9 +87,10 @@ export function choiceItem(
     print_order: [],
     retry_source: null,
     answer_key: { correct_choice_ids: key, match_pairs: [], origin },
-    body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Vilka är verb?" }] }],
+    body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Vilka är verb?", kept_gap_id: null }] }],
     choices: choiceIds.map((choice_id) => ({ choice_id, body: plainBody(choice_id) })),
     gaps: [],
+    kept_gaps: [],
     item_id: "item_001",
     kind,
     suggested_kind: null,
@@ -112,9 +113,9 @@ export function gapItem(
   key: GapValues,
   previous: NativeAnswerKeySuggestion | null,
 ): NativeExamItem {
-  const segments: NativeExamBodySegment[] = [{ kind: "text", marks: [], text: "Hon heter " }];
+  const segments: NativeExamBodySegment[] = [{ kind: "text", marks: [], text: "Hon heter ", kept_gap_id: null }];
   for (const [gap_id] of key) {
-    segments.push({ gap_id, kind: "gap" }, { kind: "text", marks: [], text: " och " });
+    segments.push({ gap_id, kind: "gap" }, { kind: "text", marks: [], text: " och ", kept_gap_id: null });
   }
   return {
     ai_suggestion: previous,
@@ -128,6 +129,7 @@ export function gapItem(
     body: [{ heading_level: null, segments }],
     choices: [],
     gaps: key.map(([gap_id, accepted_values]) => buildGap(gap_id, accepted_values)),
+    kept_gaps: [],
     item_id: "item_001",
     kind: "gap_fill",
     suggested_kind: null,

@@ -36,7 +36,7 @@ const api = vi.hoisted(() => ({
   getExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceHistory: vi.fn(),
   getExamWorkspaceHistoryStep: vi.fn(),
-  saveExamWorkspaceDocument: vi.fn(),
+  moveExamWorkspaceHistoryPosition: vi.fn(),
   storeExamWorkspaceUndoStep: vi.fn(),
 }));
 const toast = vi.hoisted(() => ({ failure: vi.fn(), warning: vi.fn() }));
@@ -134,7 +134,8 @@ function onlyGapItem(item: NativeExamItem): NativeExamItem {
 }
 
 function sentDocument(): NativeExamDocument {
-  return api.saveExamWorkspaceDocument.mock.calls[0]![1].document;
+  const calls = api.storeExamWorkspaceUndoStep.mock.calls;
+  return calls[calls.length - 1]![1].document;
 }
 
 const mounted: VueWrapper[] = [];
@@ -153,6 +154,8 @@ async function mountQuestionText(editing: Awaited<ReturnType<typeof openEditing>
       provideExamWorkspaceHistoryKeys({
         undo: () => void editing.history.undo(),
         redo: () => void editing.history.redo(),
+        canUndo: editing.history.canUndo,
+        canRedo: editing.history.canRedo,
       });
       const item = computed(() => editing.workspaceDocument.value!.items[0]!);
       return () =>
@@ -189,9 +192,9 @@ const AFTER_CROSS_PARAGRAPH_DELETE: NativeExamItem["body"] = [
   {
     heading_level: null,
     segments: [
-      { kind: "text", marks: [], text: "A " },
+      { kind: "text", marks: [], text: "A ", kept_gap_id: null },
       { kind: "gap", gap_id: "gap_001" },
-      { kind: "text", marks: [], text: " B D" },
+      { kind: "text", marks: [], text: " B D", kept_gap_id: null },
     ],
   },
 ];
@@ -213,7 +216,7 @@ describe("question text edits keep gap and picture records consistent", () => {
     expect(edited.assets).toEqual([asset(OTHER_PICTURE)]);
     expect(surface(wrapper).querySelector("[data-asset-id]")).toBeNull();
 
-    // The save payload carries the same outcome.
+    // The stored step carries the same outcome.
     expect(await editing.save()).toBe(true);
     expect(sentDocument().items[0]!.body).toEqual(AFTER_CROSS_PARAGRAPH_DELETE);
     expect(sentDocument().items[0]!.gaps).toEqual([buildGap("gap_001", ["100"])]);
@@ -289,10 +292,10 @@ describe("question text edits keep gap and picture records consistent", () => {
 
     const edited = editing.workspaceDocument.value!.items[0]!;
     expect(edited.gaps).toEqual([]);
-    expect(edited.body[0]!.segments).toEqual([{ kind: "text", marks: [], text: "Svar: " }]);
+    expect(edited.body[0]!.segments).toEqual([{ kind: "text", marks: [], text: "Svar: ", kept_gap_id: null }]);
     expect(await editing.save()).toBe(true);
     expect(sentDocument().items[0]!.gaps).toEqual([]);
-    expect(sentDocument().items[0]!.body[0]!.segments).toEqual([{ kind: "text", marks: [], text: "Svar: " }]);
+    expect(sentDocument().items[0]!.body[0]!.segments).toEqual([{ kind: "text", marks: [], text: "Svar: ", kept_gap_id: null }]);
     expect(sentDocument().assets).toEqual([]);
     unmountEditors();
   });

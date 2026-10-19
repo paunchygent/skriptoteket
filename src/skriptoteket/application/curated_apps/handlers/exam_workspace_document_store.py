@@ -7,8 +7,12 @@ from contextlib import AsyncExitStack, asynccontextmanager
 from uuid import UUID, uuid4
 
 from skriptoteket.application.curated_apps.exam_workspace_history import (
+    ExamWorkspaceHistoryCursor,
+    ExamWorkspaceHistoryResponse,
     ExamWorkspaceHistoryState,
-    ExamWorkspaceHistoryStep,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_history_rows import (
+    ExamWorkspaceHistoryRowStore,
 )
 from skriptoteket.config import Settings
 from skriptoteket.domain.curated_apps.exam_workspace.exam_course_catalog import (
@@ -55,6 +59,9 @@ class ExamWorkspaceDocumentStore:
         self._settings = settings
         self._index = index
         self._codec = codec
+        self._rows = ExamWorkspaceHistoryRowStore(
+            vault_files=vault_files, vault_storage=vault_storage, codec=codec
+        )
         self._rollback_frames: list[list[tuple[UUID, UUID, bytes | None]]] = []
         self._payload_guards: set[tuple[UUID, UUID]] = set()
         self._guard_stack = AsyncExitStack()
@@ -112,10 +119,8 @@ class ExamWorkspaceDocumentStore:
         expected_revision: int | None = None,
         export_format: str | None = None,
         preserve_editor_position: bool = False,
-        editor_step_id: UUID | None = None,
     ) -> VaultFile:
-        """Write the exam file. Spara of an existing exam passes ``editor_step_id``, the
-        snapshot the editor stands on; conversion delivery preserves the position instead."""
+        """Write the exam file; a first save also creates the baseline history step."""
         self.validate_size(content)
         document = (
             None if export_format is not None else self._codec.parse(content=content).document
@@ -158,32 +163,21 @@ class ExamWorkspaceDocumentStore:
                         "current_revision": current_revision,
                     },
                 )
-            usage = await self._vault_usage.get_for_update(user_id=actor.id, now=now)
-            counted_bytes = head.bytes if head is not None and head.deleted_at is None else 0
-            total = usage.bytes_total + actual_bytes - counted_bytes
-            if total > self._settings.VAULT_MAX_TOTAL_BYTES:
-                raise validation_error("Mina filer är fullt; ta bort filer och försök igen.")
             if head is not None:
-                file_id = head.id
-                if await self._vault_storage.exists_file(user_id=actor.id, file_id=file_id):
-                    previous_content = await self.load(actor=actor, vault_file=head)
-                if head.deleted_at is not None:
-                    head = await self._vault_files.update(
-                        file=head.model_copy(
-                            update={"deleted_at": None, "trashed_with_exam": False}
-                        )
-                    )
-                vault_file = await self._vault_files.overwrite(
-                    file=head.model_copy(
-                        update={
-                            "bytes": actual_bytes,
-                            "document_version": version,
-                            "document_saved_at": now,
-                            "name": head.name if export_format is None else name,
-                        }
-                    )
+                vault_file = await self._overwrite_head_file(
+                    actor=actor,
+                    lineage_id=lineage_id,
+                    head=head,
+                    name=head.name if export_format is None else name,
+                    content=content,
+                    document=document,
+                    version=version,
                 )
             else:
+                usage = await self._vault_usage.get_for_update(user_id=actor.id, now=now)
+                total = usage.bytes_total + actual_bytes
+                if total > self._settings.VAULT_MAX_TOTAL_BYTES:
+                    raise validation_error("Mina filer är fullt; ta bort filer och försök igen.")
                 vault_file = await self._vault_files.create(
                     file=VaultFile(
                         id=file_id,
@@ -200,96 +194,199 @@ class ExamWorkspaceDocumentStore:
                         created_at=now,
                     )
                 )
-            if document is not None:
-                await self._index.upsert(
-                    entry=ExamIndexEntry(
-                        owner_user_id=actor.id,
-                        lineage_id=lineage_id,
-                        course_key=None
-                        if document.header.course is None
-                        else document.header.course.key,
-                        title=document.title,
-                        saved_at=now,
-                        head_vault_file_id=vault_file.id,
+                if document is not None:
+                    await self._index.upsert(
+                        entry=ExamIndexEntry(
+                            owner_user_id=actor.id,
+                            lineage_id=lineage_id,
+                            course_key=None
+                            if document.header.course is None
+                            else document.header.course.key,
+                            title=document.title,
+                            saved_at=now,
+                            head_vault_file_id=vault_file.id,
+                        )
                     )
+                self._rollback_frames[-1].append((actor.id, file_id, previous_content))
+                await self._vault_storage.store_file(
+                    user_id=actor.id, file_id=file_id, content=content
+                )
+                await self._vault_usage.upsert(
+                    usage=VaultUsage(user_id=actor.id, bytes_total=total, updated_at=now)
                 )
             if export_format is None and head is None:
-                await self.put_history(
-                    actor=actor,
-                    lineage_id=lineage_id,
-                    history=ExamWorkspaceHistoryState(
-                        cursor=lineage_id,
-                        current_step_id=lineage_id,
-                        baseline=ExamWorkspaceHistoryStep(step_id=lineage_id, content=content),
-                    ),
-                )
+                await self._rows.init_history(actor=actor, lineage_id=lineage_id, content=content)
+            elif export_format is None and not preserve_editor_position:
+                raise ValueError("A save of an existing exam preserves the editor's position.")
             elif export_format is None:
-                history = await self.get_history(actor=actor, lineage_id=lineage_id)
-                assert document is not None
-                if not preserve_editor_position:
-                    if editor_step_id is None:
-                        raise ValueError("Spara of an existing exam needs the editor's position.")
-                    history = self._retain_saved(history, document, content, editor_step_id)
-                await self.put_history(
-                    actor=actor,
-                    lineage_id=lineage_id,
-                    history=history.model_copy(update={"cursor": uuid4()}),
+                head_row = await self.ensure_history_head(actor=actor, lineage_id=lineage_id)
+                await self._vault_files.upsert_history_head(
+                    user_id=actor.id,
+                    document_lineage_id=lineage_id,
+                    head=head_row.model_copy(update={"cursor": uuid4()}),
                 )
-            self._rollback_frames[-1].append((actor.id, file_id, previous_content))
-            await self._vault_storage.store_file(user_id=actor.id, file_id=file_id, content=content)
-            await self._vault_usage.upsert(
-                usage=VaultUsage(user_id=actor.id, bytes_total=total, updated_at=now)
-            )
         return vault_file
 
-    def _retain_saved(
+    async def _overwrite_head_file(
         self,
-        history: ExamWorkspaceHistoryState,
-        document: NativeExamDocument,
+        *,
+        actor: User,
+        lineage_id: UUID,
+        head: VaultFile,
+        name: str,
         content: bytes,
-        editor_step_id: UUID,
-    ) -> ExamWorkspaceHistoryState:
-        """Keep the editor where it stands when that snapshot holds the saved copy.
-        Otherwise the saved copy (an edit whose autosave never landed) becomes the next
-        step after it, like any edit, so undo reaches the earlier steps at once.
+        document: NativeExamDocument | None,
+        version: int,
+    ) -> VaultFile:
+        """Overwrite one existing exam file row, its index entry, blob and usage.
 
-        A position another tab's writes already pruned leaves the copy after the newest
-        snapshot: the Spara itself passed its revision check and must not be lost.
+        The caller holds ``transaction`` and the lineage lock, so the head cannot move
+        under the write. Usage, quota and rollback accounting match ``save``.
         """
-        snapshots = (history.baseline, *history.steps)
-        ids = [snapshot.step_id for snapshot in snapshots]
-        at = ids.index(editor_step_id) if editor_step_id in ids else len(ids) - 1
-        retained = self._codec.parse(content=snapshots[at].content).document
-        if retained.model_copy(update={"revision": document.revision}) == document:
-            return history.model_copy(update={"current_step_id": ids[at]})
-        step = ExamWorkspaceHistoryStep(step_id=uuid4(), content=content)
-        return history.model_copy(
-            update={
-                "current_step_id": step.step_id,
-                "steps": (*history.steps[:at], step)[-10:],
-            }
+        now = self._clock.now()
+        usage = await self._vault_usage.get_for_update(user_id=actor.id, now=now)
+        counted_bytes = head.bytes if head.deleted_at is None else 0
+        total = usage.bytes_total + len(content) - counted_bytes
+        if total > self._settings.VAULT_MAX_TOTAL_BYTES:
+            raise validation_error("Mina filer är fullt; ta bort filer och försök igen.")
+        file_id = head.id
+        previous_content: bytes | None = None
+        if await self._vault_storage.exists_file(user_id=actor.id, file_id=file_id):
+            previous_content = await self.load(actor=actor, vault_file=head)
+        if head.deleted_at is not None:
+            head = await self._vault_files.update(
+                file=head.model_copy(update={"deleted_at": None, "trashed_with_exam": False})
+            )
+        vault_file = await self._vault_files.overwrite(
+            file=head.model_copy(
+                update={
+                    "bytes": len(content),
+                    "document_version": version,
+                    "document_saved_at": now,
+                    "name": name,
+                }
+            )
+        )
+        if document is not None:
+            await self._index.upsert(
+                entry=ExamIndexEntry(
+                    owner_user_id=actor.id,
+                    lineage_id=lineage_id,
+                    course_key=None
+                    if document.header.course is None
+                    else document.header.course.key,
+                    title=document.title,
+                    saved_at=now,
+                    head_vault_file_id=vault_file.id,
+                )
+            )
+        self._rollback_frames[-1].append((actor.id, file_id, previous_content))
+        await self._vault_storage.store_file(user_id=actor.id, file_id=file_id, content=content)
+        await self._vault_usage.upsert(
+            usage=VaultUsage(user_id=actor.id, bytes_total=total, updated_at=now)
+        )
+        return vault_file
+
+    async def write_step_file(
+        self,
+        *,
+        actor: User,
+        lineage_id: UUID,
+        content: bytes,
+        document: NativeExamDocument,
+        version: int,
+    ) -> VaultFile:
+        """Overwrite the exam file for one stored undo step or one position move.
+
+        The caller holds ``transaction`` and the lineage lock and passes the head version
+        plus one; the cursor stays the only guard while the server assigns the revision.
+        """
+        if document.document_id != lineage_id or document.revision != version:
+            raise validation_error("Dokumentets identitet eller version matchar inte filen.")
+        if document.header.course is not None and document.header.course.key not in {
+            course.key for course in load_exam_course_catalog().courses
+        }:
+            raise validation_error("Välj en kurs ur kurslistan.", details={"field": "course_key"})
+        head = await self._vault_files.get_document_head(
+            user_id=actor.id, document_lineage_id=lineage_id
+        )
+        assert head is not None
+        return await self._overwrite_head_file(
+            actor=actor,
+            lineage_id=lineage_id,
+            head=head,
+            name=head.name,
+            content=content,
+            document=document,
+            version=version,
         )
 
     def validate_size(self, content: bytes) -> None:
         if not content or len(content) > self._settings.VAULT_MAX_FILE_BYTES:
             raise validation_error("Dokumentets storlek är inte tillåten.")
 
+    async def ensure_history_head(
+        self, *, actor: User, lineage_id: UUID
+    ) -> ExamWorkspaceHistoryCursor:
+        """Read the exam's history row, recreating the baseline from the file when missing."""
+        return await self._rows.ensure_head(actor=actor, lineage_id=lineage_id)
+
     async def get_history(self, *, actor: User, lineage_id: UUID) -> ExamWorkspaceHistoryState:
-        content = await self._vault_files.get_history(
-            user_id=actor.id, document_lineage_id=lineage_id
-        )
-        if content is None:
-            raise validation_error("Den sparade redigeringshistoriken saknas.")
-        return ExamWorkspaceHistoryState.model_validate_json(content)
+        """Rebuild the retained snapshots from their step rows and the picture store."""
+        return await self._rows.get_state(actor=actor, lineage_id=lineage_id)
 
     async def put_history(
         self, *, actor: User, lineage_id: UUID, history: ExamWorkspaceHistoryState
     ) -> None:
-        await self._vault_files.put_history(
-            user_id=actor.id,
-            document_lineage_id=lineage_id,
-            content=history.model_dump_json().encode(),
+        """Replace every step row, used when conversion delivery rewrites all snapshots."""
+        await self._rows.replace_state(actor=actor, lineage_id=lineage_id, history=history)
+
+    async def append_history_step(
+        self,
+        *,
+        actor: User,
+        lineage_id: UUID,
+        head: ExamWorkspaceHistoryCursor,
+        step_id: UUID,
+        document: NativeExamDocument,
+        assets_by_id: dict[str, bytes],
+        notes: tuple[str, ...],
+        after_step_id: UUID,
+    ) -> ExamWorkspaceHistoryResponse:
+        """Insert one step row and move the head row; other step rows stay untouched."""
+        return await self._rows.append_step(
+            actor=actor,
+            lineage_id=lineage_id,
+            head=head,
+            step_id=step_id,
+            document=document,
+            assets_by_id=assets_by_id,
+            notes=notes,
+            after_step_id=after_step_id,
         )
+
+    async def move_history_position(
+        self,
+        *,
+        actor: User,
+        lineage_id: UUID,
+        head: ExamWorkspaceHistoryCursor,
+        step_id: UUID,
+        new_cursor: UUID,
+    ) -> ExamWorkspaceHistoryResponse:
+        """Move the editor's position; the only write is the history head row."""
+        return await self._rows.move_position(
+            actor=actor,
+            lineage_id=lineage_id,
+            head=head,
+            step_id=step_id,
+            new_cursor=new_cursor,
+        )
+
+    async def get_history_step_document(
+        self, *, actor: User, lineage_id: UUID, step_id: UUID
+    ) -> NativeExamDocument:
+        return await self._rows.step_document(actor=actor, lineage_id=lineage_id, step_id=step_id)
 
     async def load(self, *, actor: User, vault_file: VaultFile) -> bytes:
         return await self._vault_storage.read_file(user_id=actor.id, file_id=vault_file.id)

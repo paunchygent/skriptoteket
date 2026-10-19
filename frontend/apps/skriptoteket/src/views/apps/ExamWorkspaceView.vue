@@ -9,12 +9,13 @@
  *   uppgifter. Desktop (>= 1280 px) docks the drawer as a third column,
  *   tablet floats it over the editor, phone covers the screen with it; on a
  *   phone the list is a layer opened from the question strip and the
- *   header's title and Spara sit in the shell's top bar.
+ *   header's title sits in the shell's top bar.
  *
- *   Ctrl/Cmd+S saves (and never the browser's save page), Ctrl/Cmd+Z and
- *   Ctrl/Cmd+Shift+Z step through the autosave history outside text fields,
- *   ↑ and ↓ move between questions outside text fields, and Escape closes
- *   the phone list. Toasts report failures only (user rule 2026-10-17).
+ *   Ctrl/Cmd+S stores a pending edit at once (and never the browser's save
+ *   page), Ctrl/Cmd+Z and Ctrl/Cmd+Shift+Z step through the autosave history
+ *   outside text fields, ↑ and ↓ move between questions outside text fields,
+ *   and Escape closes the phone list. Toasts report failures only (user rule
+ *   2026-10-17).
  *
  * Relationships:
  *   - Every exam state comes from `useExamWorkspaceEditing` (document,
@@ -31,6 +32,7 @@ import { computed, onMounted, provide, ref } from "vue";
 
 import { useToast } from "../../composables/useToast";
 import ExamWorkspaceDrawers from "./exam-workspace/ExamWorkspaceDrawers.vue";
+import ExamWorkspaceEditLeaseNotice from "./exam-workspace/ExamWorkspaceEditLeaseNotice.vue";
 import ExamWorkspaceEditorPane from "./exam-workspace/ExamWorkspaceEditorPane.vue";
 import ExamWorkspaceExportMenu from "./exam-workspace/ExamWorkspaceExportMenu.vue";
 import ExamWorkspaceHeader from "./exam-workspace/ExamWorkspaceHeader.vue";
@@ -42,7 +44,6 @@ import ExamWorkspaceSaveAsDialog from "./exam-workspace/ExamWorkspaceSaveAsDialo
 import ExamWorkspaceSignInBar from "./exam-workspace/ExamWorkspaceSignInBar.vue";
 import "./exam-workspace/examWorkspace.css";
 import { examWorkspaceBlockerEntries, examWorkspaceTitleBlockerEntries } from "./exam-workspace/examWorkspaceBlockers";
-import { examWorkspaceSavedAt } from "./exam-workspace/examWorkspaceFormat";
 import { provideExamWorkspaceHistoryKeys } from "./exam-workspace/examWorkspaceHistoryKeys";
 import { isTeacherReviewed } from "./exam-workspace/examWorkspaceItemEdits";
 import { examWorkspaceDocumentLabel } from "./exam-workspace/examWorkspaceRows";
@@ -52,6 +53,7 @@ import type { ExamWorkspaceStore } from "./exam-workspace/examWorkspaceStore";
 import { useExamWorkspaceAddress } from "./exam-workspace/useExamWorkspaceAddress";
 import { useExamWorkspaceColumnLayout } from "./exam-workspace/useExamWorkspaceColumnLayout";
 import { useExamWorkspaceContentSuggestions } from "./exam-workspace/useExamWorkspaceContentSuggestions";
+import { useExamWorkspaceDrawerState } from "./exam-workspace/useExamWorkspaceDrawerState";
 import { useExamWorkspaceListActions } from "./exam-workspace/useExamWorkspaceListActions";
 import { useExamWorkspaceViewLabels } from "./exam-workspace/useExamWorkspaceViewLabels";
 import { useExamWorkspaceEditing } from "./exam-workspace/useExamWorkspaceEditing";
@@ -75,7 +77,6 @@ const {
   history,
   structure,
   applyArrivingSuggestions,
-  conflictNotice,
   historyCursor,
   isBusy,
   isDirty,
@@ -85,9 +86,12 @@ const {
   openExam,
   importDocument,
   importBlocked,
+  readOnly,
+  requestTakeover,
   savedRevision,
   setTags,
   summary,
+  takeoverWaiting,
   titleWithoutText,
   workspaceDocument,
 } = editing;
@@ -102,8 +106,9 @@ defineExpose({ depart });
 
 const frame = ref<HTMLElement | null>(null);
 const { showDocument } = useExamWorkspaceAddress({ isDirty, openDocument, summary });
+const { closeAfterGoto, consumeImportPick, drawer, importPickPending, requestImportPick, toggleDrawer } =
+  useExamWorkspaceDrawerState({ isExamOpen: () => Boolean(summary.value), layout });
 const {
-  drawer,
   importOpen,
   isPhone,
   listOpen,
@@ -113,9 +118,9 @@ const {
   previewOpen,
   previewPages,
   previewQuestionPages,
-  toggleDrawer,
   togglePreview,
 } = useExamWorkspaceSideColumns({
+  drawer,
   historyCursor,
   historyPosition: history.position,
   layout,
@@ -132,9 +137,11 @@ const {
 const sourceFile = useExamWorkspaceSourceFile(importDocument, importBlocked);
 // Spara before an export is the save flow's, which is built after the exports it feeds.
 const exports = useExamWorkspaceExports(summary, workspaceDocument, {
+  historyPosition: editing.history.position,
   noteBlockers: editing.noteExportBlockers,
   readLatest: editing.reloadDocument,
   saveFirst: () => saveFlow.saveBeforeExport(),
+  savedVersion: () => editing.savedRevision.value,
   store: props.store,
 });
 const enrichment = useExamWorkspaceEnrichment({
@@ -158,10 +165,7 @@ const selection = useExamWorkspaceSelection({
   editing,
   importOpen,
   listOpen,
-  afterGoto: () => {
-    if (!isPhone.value && drawer.value === "export") return;
-    drawer.value = null;
-  },
+  afterGoto: closeAfterGoto,
 });
 const {
   canStep, converting, dismissItemNotice, entries, examInstructionsSelected, gotoItem, itemChild, itemEntries,
@@ -171,7 +175,7 @@ const {
 } = selection;
 editing.registerSelectParent(selectEntry);
 
-const disabled = computed(() => isBusy.value || structure.running.value);
+const disabled = computed(() => isBusy.value || structure.running.value || readOnly.value);
 const blockers = computed(() => [
   ...examWorkspaceTitleBlockerEntries(titleWithoutText.value),
   ...examWorkspaceBlockerEntries(entries.value, items.value, readiness.value, exports.exportBlockersByItemId.value),
@@ -202,15 +206,18 @@ const {
 });
 const saveFlow = useExamWorkspaceSaveFlow({
   editing, enrichment, exports, blockers, disabled, frame, gotoItem,
+  isGuest: props.store.guest !== null,
   openDetails: () => { drawer.value = "details"; },
 });
-const { canSave, fixBlocker, gotoBlocker, handleSave, handleSaveAs, openSaveAs, runExport, saveAsOpen, saveAsTaken, saveState } =
+const { fixBlocker, gotoBlocker, handleSave, handleSaveAs, openSaveAs, runExport, saveAsOpen, saveAsTaken, saveState, saveText, saveTitle } =
   saveFlow;
 useExamWorkspaceKeyboard({ save: handleSave, undo: history.undo, redo: history.redo, step, listOpen });
 // Ctrl/Cmd+Z inside an exam text editor is the same Ångra / Gör om the buttons run.
 provideExamWorkspaceHistoryKeys({
   undo: () => void history.undo(),
   redo: () => void history.redo(),
+  canUndo: history.canUndo,
+  canRedo: history.canRedo,
 });
 
 /**
@@ -246,10 +253,7 @@ const { addChild, addEntry, setOrdering, toggleReviewed } = useExamWorkspaceList
   toast: useToast(),
 });
 
-onMounted(() => {
-  void loadSavedDocuments();
-  if (!summary.value) drawer.value = "open";
-});
+onMounted(() => void loadSavedDocuments());
 </script>
 
 <template>
@@ -266,14 +270,13 @@ onMounted(() => {
     <ExamWorkspaceHeader
       :title="workspaceDocument ? workspaceDocument.title || (summary ? examWorkspaceDocumentLabel(summary.name) : '') : null"
       :save-state="saveState"
-      :saved-at="summary ? examWorkspaceSavedAt(summary.saved_at) : null"
+      :save-text="saveText"
+      :save-title="saveTitle"
       :course-label="courseLabel"
       :total="total"
       :details-open="drawer === 'details'"
       :open-drawer-open="drawer === 'open'"
-      :can-undo="history.canUndo.value && !disabled"
-      :can-redo="history.canRedo.value && !disabled"
-      :can-save="canSave"
+      :can-rename="workspaceDocument !== null && !disabled"
       :can-save-as="workspaceDocument !== null && !disabled"
       :suggest-busy="enrichmentBusy"
       :suggest-disabled="workspaceDocument === null || disabled"
@@ -281,11 +284,10 @@ onMounted(() => {
       :preview-open="previewOpen"
       @toggle-details="toggleDrawer('details')"
       @toggle-open="toggleDrawer('open')"
-      @save="handleSave"
       @save-as="openSaveAs"
+      @import-file="requestImportPick"
+      @rename-title="editing.setTitle"
       @suggest-all="enrichment.requestSuggestionsForAll"
-      @undo="history.undo"
-      @redo="history.redo"
       @toggle-preview="togglePreview"
     >
       <template #export>
@@ -311,19 +313,16 @@ onMounted(() => {
       </template>
     </ExamWorkspaceHeader>
 
-    <p
-      v-if="conflictNotice"
-      class="xw-notice xw-notice--error ws__bar"
-      role="status"
-      data-test="exam-workspace-conflict-notice"
-    >
-      {{ conflictNotice }}
-    </p>
     <ExamWorkspaceSignInBar
       v-if="signInPrompt"
       :message="signInPrompt"
       :depart="depart"
       @dismiss="dismissSignInPrompt"
+    />
+    <ExamWorkspaceEditLeaseNotice
+      v-if="readOnly && workspaceDocument"
+      :waiting="takeoverWaiting"
+      @takeover="requestTakeover"
     />
     <div
       v-if="enrichment.enrichmentMessage.value || enrichment.enrichmentLookupError.value"
@@ -462,7 +461,9 @@ onMounted(() => {
         :formatted-saved-exports="formattedSavedExports"
         :question-label="questionLabel"
         :handle="isDesktop"
+        :import-pick-pending="importPickPending"
         @close="drawer = null"
+        @import-pick-consumed="consumeImportPick"
         @run="runExport"
         @goto="gotoBlocker"
         @fix="fixBlocker"

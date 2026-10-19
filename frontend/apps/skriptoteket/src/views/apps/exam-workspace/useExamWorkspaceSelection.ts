@@ -5,7 +5,9 @@
  *   Know which list entry (a question, an instruction the teacher
  *   selected, or the exam instruction) the editor shows, derive the list entries, readiness, totals
  *   and the selected unit's context (its instruction, position and notice),
- *   and move between entries by selection, step, jump and reorder.
+ *   and move between entries by selection, step, jump and reorder. Leaving a
+ *   question removes its empty gaps silently as one structural edit with no
+ *   toast, through the ordinary item edit path.
  *
  * Relationships:
  *   - Reads the document, the selected question and the structure notices
@@ -18,7 +20,7 @@
  *     composables through the view.
  */
 
-import { computed, ref, watch } from "vue";
+import { computed, onScopeDispose, ref, watch } from "vue";
 import type { Ref } from "vue";
 
 import { examWorkspaceItemReadiness } from "./examWorkspaceItemReadiness";
@@ -27,6 +29,7 @@ import { examWorkspaceListEntries, examWorkspaceListTotal } from "./examWorkspac
 import type { ExamWorkspaceItemEntry, ExamWorkspaceParentEntry } from "./examWorkspaceListEntries";
 import { bodyText } from "./examWorkspaceRichText";
 import { isEmptyBody } from "./examWorkspaceRichTextDocument";
+import { bodyWithoutEmptyGaps } from "./useExamWorkspaceMakeGap";
 import type { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
 import type { ExamWorkspaceNotice } from "./useExamWorkspaceStructure";
 
@@ -123,7 +126,41 @@ export function useExamWorkspaceSelection({ editing, importOpen, listOpen, after
     return itemEntries.value.find((entry) => entry.id === itemId)?.label ?? null;
   }
 
+  /**
+   * The empty-gap cleanup for leaving a question (TASK-SKRIPT-40-04-13 U4
+   * rule 3): every empty gap in `itemId` is removed silently as one
+   * structural edit with no toast, through the ordinary item edit path so it
+   * autosaves like every step. A question without an answer key, any other
+   * kind, or a question with no empty gaps emits nothing.
+   */
+  function removeEmptyGaps(itemId: string | null): void {
+    if (itemId === null) {
+      return;
+    }
+    const item = items.value.find((candidate) => candidate.item_id === itemId);
+    if (!item) {
+      return;
+    }
+    const cleaned = bodyWithoutEmptyGaps(item);
+    if (cleaned === null) {
+      return;
+    }
+    editing.updateItemBody(itemId, cleaned, true);
+  }
+
+  /** The open question, if the teacher is looking at one rather than an instruction. */
+  function openQuestionId(): string | null {
+    if (examInstructionsSelected.value || selectedParentId.value !== null) {
+      return null;
+    }
+    return selectedItemId.value;
+  }
+
   function selectEntry(id: string): void {
+    const leaving = openQuestionId();
+    if (leaving !== null && leaving !== id) {
+      removeEmptyGaps(leaving);
+    }
     structure.dismissDeleteNotice();
     importOpen.value = false;
     examInstructionsSelected.value = id === EXAM_INSTRUCTIONS_ENTRY_ID;
@@ -184,10 +221,21 @@ export function useExamWorkspaceSelection({ editing, importOpen, listOpen, after
   );
 
   // A command that selects a question (add, delete, a new exam) leaves the instruction.
-  watch(selectedItemId, () => {
+  // Any question change from outside `selectEntry` (structure commands, whole-document
+  // edits) leaves the previous question the same way; a repeat cleanup is a no-op.
+  watch(selectedItemId, (next, previous) => {
     selectedParentId.value = null;
     examInstructionsSelected.value = false;
     importOpen.value = false;
+    if (previous !== null && previous !== next) {
+      removeEmptyGaps(previous);
+    }
+  });
+
+  // Leaving the workspace route unmounts this scope: the open question's
+  // empty gaps are removed the same way. This never runs on page unload.
+  onScopeDispose(() => {
+    removeEmptyGaps(openQuestionId());
   });
 
   // Another exam has its own instruction.

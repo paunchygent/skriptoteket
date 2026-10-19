@@ -84,6 +84,11 @@ class NativeExamItem(BaseModel):
     # is the answer key (TASK-SKRIPT-39-06-08 D1, D5).
     print_order: tuple[str, ...] = ()
     gaps: tuple[NativeGap, ...] = ()
+    # A reverted gap's hidden answers, riding on the word's kept link until the
+    # teacher restores the gap (TASK-SKRIPT-40-04-13 H1). Kept gaps never count as
+    # gaps of the question: the answer-key invariants, ``body_gaps`` and every gap
+    # count read ``gaps`` and placed chips alone.
+    kept_gaps: tuple[NativeGap, ...] = ()
     match_left: tuple[NativeMatchLeft, ...] = ()
     match_right: tuple[NativeMatchRight, ...] = ()
     answer_key: NativeAnswerKey
@@ -146,6 +151,7 @@ class NativeExamItem(BaseModel):
         right_ids = [entry.right_id for entry in self.match_right]
         if len(set(left_ids)) != len(left_ids) or len(set(right_ids)) != len(right_ids):
             raise ValueError("match entry ids must be unique")
+        self._kept_gap_invariants(set(gap_ids))
         if self.kind is not NativeExamItemKind.MATCHING and (self.match_left or self.match_right):
             raise ValueError("only matching items carry match lists")
         if self.kind is not NativeExamItemKind.ORDERING and self.print_order:
@@ -177,7 +183,7 @@ class NativeExamItem(BaseModel):
         else:
             if self.choices or self.gaps:
                 raise ValueError("free_text items carry no choices or gaps")
-        self._gap_options_invariants()
+        self._gap_options_invariants(self.gaps, allow_empty=True)
         self._criteria_invariants()
 
         self._answer_key_invariants(frozenset(choice_ids))
@@ -231,16 +237,68 @@ class NativeExamItem(BaseModel):
                 key.match_pairs, self.match_left, self.match_right, key.correct_choice_ids
             )
         else:
+            # A keyed gap_fill item may hold gaps with no accepted values: an
+            # empty gap is a valid draft that the export gate refuses (U4, L2).
             if key.correct_choice_ids:
                 raise ValueError("gap_fill items key gaps, not choices")
-            for gap in self.gaps:
-                if self.kind is NativeExamItemKind.INLINE_CHOICE:
-                    continue
-                if not gap.accepted_values:
-                    raise ValueError(f"gap {gap.gap_id} needs accepted values for a keyed item")
 
-    def _gap_options_invariants(self) -> None:
-        for gap in self.gaps:
+    def _kept_gap_invariants(self, live_gap_ids: set[str]) -> None:
+        """A kept gap's hidden answers and the word link that carries them (H1).
+
+        Every kept gap id appears as ``kept_gap_id`` on at least one text run of
+        the item's body, and every such run names one kept gap. Kept gap ids are
+        unique and distinct from the item's live gaps and placed chips, and only
+        gap_fill and inline_choice items carry them. Each kept gap follows its
+        kind's gap shape rules; the answer-key invariants never see kept gaps.
+        """
+        kept_ids = [gap.gap_id for gap in self.kept_gaps]
+        if len(set(kept_ids)) != len(kept_ids):
+            raise ValueError("kept gap ids must be unique")
+        if self.kept_gaps and self.kind not in (
+            NativeExamItemKind.GAP_FILL,
+            NativeExamItemKind.INLINE_CHOICE,
+        ):
+            raise ValueError("only gap_fill and inline_choice items carry kept gaps")
+        overlap = set(kept_ids) & live_gap_ids
+        if overlap:
+            raise ValueError(
+                f"kept gap ids must be distinct from the item's gaps: {sorted(overlap)}"
+            )
+        placed = {
+            segment.gap_id
+            for paragraph in self.body
+            for segment in paragraph.segments
+            if isinstance(segment, NativeGapSegment)
+        }
+        chip_overlap = set(kept_ids) & placed
+        if chip_overlap:
+            raise ValueError(
+                f"kept gap ids must be distinct from the item's chips: {sorted(chip_overlap)}"
+            )
+        self._gap_options_invariants(self.kept_gaps)
+        linked = [
+            segment.kept_gap_id
+            for paragraph in self.body
+            for segment in paragraph.segments
+            if isinstance(segment, NativeTextSegment) and segment.kept_gap_id is not None
+        ]
+        unknown = set(linked) - set(kept_ids)
+        if unknown:
+            raise ValueError(f"kept_gap_id names no kept gap: {sorted(unknown)}")
+        for gap_id in sorted(set(kept_ids) - set(linked)):
+            raise ValueError(f"kept gap {gap_id} has no text run")
+
+    def _gap_options_invariants(
+        self, gaps: tuple[NativeGap, ...], *, allow_empty: bool = False
+    ) -> None:
+        """Dropdown option lists and their key, shared by live and kept gaps.
+
+        A live empty dropdown gap (no correct option, possibly no options at
+        all) is a valid draft the export gate refuses
+        (TASK-SKRIPT-40-04-13 U4, L2); kept gaps keep the old strict rule
+        because a revert never keeps an answerless gap.
+        """
+        for gap in gaps:
             if self.kind is not NativeExamItemKind.INLINE_CHOICE:
                 if gap.options or gap.correct_option_id is not None:
                     raise ValueError("only inline_choice gaps carry options and an option key")
@@ -248,11 +306,17 @@ class NativeExamItem(BaseModel):
             if gap.accepted_values or gap.automatic_values or gap.excluded_automatic_values:
                 raise ValueError("inline_choice gaps must not carry typed accepted values")
             option_ids = [option.choice_id for option in gap.options]
-            if not option_ids:
+            if not allow_empty and not option_ids:
                 raise ValueError("inline_choice gaps need an option list")
             if len(set(option_ids)) != len(option_ids):
                 raise ValueError("gap option ids must be unique within the gap")
-            if gap.correct_option_id is None or gap.correct_option_id not in option_ids:
+            if gap.correct_option_id is None:
+                if not allow_empty:
+                    raise ValueError(
+                        "inline_choice gaps need exactly one correct option in their list"
+                    )
+                continue
+            if gap.correct_option_id not in option_ids:
                 raise ValueError("inline_choice gaps need exactly one correct option in their list")
 
     def _tick_points_invariants(self) -> None:

@@ -14,6 +14,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeGapSegment,
     NativeParagraph,
+    NativeTextSegment,
 )
 
 if TYPE_CHECKING:
@@ -55,6 +56,8 @@ class NativeExamParent(BaseModel):
             for segment in paragraph.segments:
                 if isinstance(segment, NativeGapSegment):
                     raise ValueError("a parent instruction cannot place a gap")
+                if isinstance(segment, NativeTextSegment) and segment.kept_gap_id is not None:
+                    raise ValueError("a parent instruction cannot carry a kept gap link")
         return self
 
 

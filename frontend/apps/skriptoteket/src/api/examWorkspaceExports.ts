@@ -30,6 +30,8 @@ export type ExamWorkspaceItemExportBlockerReason =
   | "machine_proposed_key_unreviewed"
   | "missing_points"
   | "missing_answer_key"
+  | "partial_gap_key"
+  | "gap_without_correct_option"
   | "inline_choice_option_heading"
   | "empty_choice"
   | "empty_gap_option"

@@ -13,7 +13,9 @@ from skriptoteket.application.curated_apps.exam_workspace import (
     ExamWorkspaceExportChecklistFreeTextCriteria,
     ExamWorkspaceExportChecklistRoundedGaps,
     ExamWorkspaceExportTarget,
-    SaveExamWorkspaceDocumentRequest,
+)
+from skriptoteket.application.curated_apps.exam_workspace_history import (
+    StoreExamWorkspaceUndoStepRequest,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_export_renderer import (
     ExamWorkspaceExportRenderer,
@@ -27,6 +29,9 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_examnet_pdf_contr
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_criteria import (
     NativeExamCriterion,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeExamDocument,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_export_rules import (
     INLINE_CHOICE_MIN_OPTIONS,
@@ -56,6 +61,10 @@ from skriptoteket.protocols.exam_workspace import (
 from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents import (
     _actor,
     _Env,
+    _leased_tab,
+)
+from tests.unit.application.curated_apps.handlers.test_exam_workspace_history_contract import (
+    _undo_handler,
 )
 from tests.unit.application.curated_apps.test_exam_workspace_exports import (
     _reviewed,
@@ -129,17 +138,26 @@ def fixture_bytes() -> bytes:
     return _FIXTURE.read_bytes()
 
 
+async def _store_step(
+    env: _Env, actor: User, lineage_id: UUID, document: NativeExamDocument
+) -> None:
+    history = await env.save_handler.history(actor=actor, lineage_id=lineage_id)
+    await _undo_handler(env).handle(
+        actor=actor,
+        lineage_id=lineage_id,
+        request=StoreExamWorkspaceUndoStepRequest(
+            tab_id=await _leased_tab(env, actor, lineage_id),
+            expected_cursor=history.cursor,
+            document=document,
+        ),
+    )
+
+
 async def _imported_and_reviewed(env: _Env, fixture_bytes: bytes):
     actor = _actor()
     imported = await env.seed_document(actor=actor)
     reviewed = with_next_revision(_reviewed(imported.document))
-    await env.save_handler.handle(
-        actor=actor,
-        lineage_id=imported.summary.lineage_id,
-        request=SaveExamWorkspaceDocumentRequest(
-            expected_revision=1, document=reviewed, position_step_id=imported.summary.lineage_id
-        ),
-    )
+    await _store_step(env, actor, imported.summary.lineage_id, reviewed)
     return actor, imported.summary.lineage_id
 
 
@@ -167,13 +185,7 @@ async def _imported_and_reviewed_with_losses(env: _Env) -> tuple[User, UUID]:
     document = with_next_revision(
         reviewed.model_copy(update={"items": tuple(_loss_item(item) for item in reviewed.items)})
     )
-    await env.save_handler.handle(
-        actor=actor,
-        lineage_id=imported.summary.lineage_id,
-        request=SaveExamWorkspaceDocumentRequest(
-            expected_revision=1, document=document, position_step_id=imported.summary.lineage_id
-        ),
-    )
+    await _store_step(env, actor, imported.summary.lineage_id, document)
     return actor, imported.summary.lineage_id
 
 
@@ -196,7 +208,7 @@ async def test_source_fallback_blocks_every_target(env: _Env) -> None:
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("operation", ["export", "checklist"])
-async def test_heading_dropdown_refuses_export_and_checklist_with_question_number(
+async def test_heading_dropdown_refuses_export_and_checklist_naming_the_question(
     env: _Env, operation: str
 ) -> None:
     actor = _actor()
@@ -207,13 +219,7 @@ async def test_heading_dropdown_refuses_export_and_checklist_with_question_numbe
     document = with_next_revision(
         imported.document.model_copy(update={"items": (inline_choice_item(points=2), item)})
     )
-    await env.save_handler.handle(
-        actor=actor,
-        lineage_id=imported.summary.lineage_id,
-        request=SaveExamWorkspaceDocumentRequest(
-            expected_revision=1, document=document, position_step_id=imported.summary.lineage_id
-        ),
-    )
+    await _store_step(env, actor, imported.summary.lineage_id, document)
     handler = _export_handler(env)
     with pytest.raises(DomainError) as exc_info:
         if operation == "export":
@@ -370,17 +376,7 @@ async def test_intervening_save_refuses_checklist_for_the_downloaded_revision(en
             }
         )
     )
-    await env.save_handler.handle(
-        actor=actor,
-        lineage_id=lineage_id,
-        request=SaveExamWorkspaceDocumentRequest(
-            expected_revision=2,
-            document=changed,
-            position_step_id=(
-                await env.save_handler.history(actor=actor, lineage_id=lineage_id)
-            ).position_step_id,
-        ),
-    )
+    await _store_step(env, actor, lineage_id, changed)
     with ZipFile(BytesIO(downloaded.content)) as package:
         roots = [
             ElementTree.fromstring(package.read(name))
@@ -423,12 +419,12 @@ async def test_checklist_lists_the_saved_heads_losses(env: _Env) -> None:
     assert len(entries) == 2
     rounded, criteria = entries
     assert isinstance(rounded, ExamWorkspaceExportChecklistRoundedGaps)
-    assert rounded.question_number == "1"
+    assert rounded.item_id == "item_001"
     assert rounded.points == 5
     assert rounded.gap_points == 1.66
     assert rounded.question_text
     assert isinstance(criteria, ExamWorkspaceExportChecklistFreeTextCriteria)
-    assert criteria.question_number == "8"
+    assert criteria.item_id == "item_008"
     assert criteria.points == 8
     assert criteria.criteria == (
         ExamWorkspaceExportChecklistCriterion(text="Ett korrekt resonemang.", points=8),

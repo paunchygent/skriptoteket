@@ -13,5 +13,6 @@
     "types": ["vite/client", "vitest/globals"],
     "skipLibCheck": true
   },
-  "include": ["src/**/*.ts", "src/**/*.vue", "src/**/*.d.ts", "src/env.d.ts"]
+  "include": ["src/**/*.ts", "src/**/*.vue", "src/**/*.d.ts", "src/env.d.ts"],
+  "exclude": ["src/test/vitestRunPathNormalization.spec.ts", "src/test/vitestInclude.spec.ts"]
 }

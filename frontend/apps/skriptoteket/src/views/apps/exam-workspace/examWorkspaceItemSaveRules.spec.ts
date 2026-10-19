@@ -11,7 +11,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import type { NativeExamItem } from "../../../api/examWorkspace";
+import type { NativeExamDocument, NativeExamItem, NativeExamParent } from "../../../api/examWorkspace";
 import {
   CRITERIA_ON_WRONG_KIND_GUIDANCE,
   CRITERIA_POINTS_MISMATCH_GUIDANCE,
@@ -45,6 +45,7 @@ function buildChoiceItem(
       { choice_id: "choice_002", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Järn" }] }] },
     ],
     gaps: [],
+    kept_gaps: [],
     item_id: `item_00${sequence}`,
     kind: "single_choice",
     match_left: [],
@@ -73,27 +74,108 @@ const EMPTY_CHOICES = [
   { choice_id: "choice_002", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "" }] }] },
 ] satisfies NativeExamItem["choices"];
 
+function buildGapFillItem(sequence: number, overrides: Partial<NativeExamItem> = {}): NativeExamItem {
+  return {
+    ai_suggestion: null,
+    facit_text: null,
+    import_record: null,
+    criteria: [],
+    printed_label: null,
+    print_order: [],
+    retry_source: null,
+    answer_key: { correct_choice_ids: [], match_pairs: [], origin: "teacher_authored" },
+    body: [
+      {
+        heading_level: null,
+        segments: [
+          { kind: "text", marks: [], text: "Vatten kokar vid " },
+          { gap_id: "gap_001", kind: "gap" },
+          { kind: "text", marks: [], text: " grader och fryser vid " },
+          { gap_id: "gap_002", kind: "gap" },
+          { kind: "text", marks: [], text: " grader." },
+        ],
+      },
+    ],
+    choices: [],
+    gaps: [
+      {
+        accepted_values: ["100"],
+        automatic_values: [],
+        correct_option_id: null,
+        excluded_automatic_values: [],
+        gap_id: "gap_001",
+        options: [],
+      },
+      {
+        accepted_values: [],
+        automatic_values: [],
+        correct_option_id: null,
+        excluded_automatic_values: [],
+        gap_id: "gap_002",
+        options: [],
+      },
+    ],
+    kept_gaps: [],
+    item_id: `item_00${sequence}`,
+    kind: "gap_fill",
+    match_left: [],
+    match_right: [],
+    points: 1,
+    points_estimated: false,
+    review: {
+      confidence: 0.95,
+      parse_origin: "deterministic",
+      reasons: [],
+      state: "review_complete",
+    },
+    sequence,
+    source_anchor: null,
+    source_points: null,
+    suggested_kind: null,
+    tick_points: null,
+    writing_lines: null,
+    leftover_points_text: null,
+    ...overrides,
+  };
+}
+
+/** A standalone document; the items' list labels are their 1-based positions. */
+function examDocument(items: NativeExamItem[], parents: NativeExamParent[] = []): NativeExamDocument {
+  return {
+    assets: [],
+    document_id: "00000000-0000-4000-8000-000000000001",
+    header: { tags: [] },
+    instructions: [],
+    items,
+    origin: { kind: "created" },
+    parents,
+    revision: 1,
+    schema_version: "native_exam_document_v9",
+    title: "Prov",
+  };
+}
+
 describe("examWorkspaceSaveRefusalCopy", () => {
   it("is null when every item can be saved, including missing points", () => {
     expect(
-      examWorkspaceSaveRefusalCopy([buildChoiceItem(1), buildChoiceItem(2, { points: null })]),
+      examWorkspaceSaveRefusalCopy(examDocument([buildChoiceItem(1), buildChoiceItem(2, { points: null })])),
     ).toBeNull();
   });
 
   it("accepts zero points", () => {
-    expect(examWorkspaceSaveRefusalCopy([buildChoiceItem(1, { points: 0 })])).toBeNull();
+    expect(examWorkspaceSaveRefusalCopy(examDocument([buildChoiceItem(1, { points: 0 })]))).toBeNull();
   });
 
   it.each([-1, Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY])(
     "refuses invalid points %s",
     (points) => {
-      expect(examWorkspaceSaveRefusalCopy([buildChoiceItem(1, { points })])).not.toBeNull();
+      expect(examWorkspaceSaveRefusalCopy(examDocument([buildChoiceItem(1, { points })]))).not.toBeNull();
     },
   );
 
   it("names one question with negative points", () => {
-    expect(examWorkspaceSaveRefusalCopy([buildChoiceItem(1, { points: -1 })])).toBe(
-      "Fråga 1 har negativa poäng. Poängen kan inte vara negativ.",
+    expect(examWorkspaceSaveRefusalCopy(examDocument([buildChoiceItem(1, { points: -1 })]))).toBe(
+      "Fråga 1 har negativa poäng. Ange 0 poäng eller mer.",
     );
   });
 
@@ -105,39 +187,62 @@ describe("examWorkspaceSaveRefusalCopy", () => {
     ];
 
     // An empty choice saves (TASK-SKRIPT-40-04-06 D3); only the negative points refuse.
-    expect(examWorkspaceSaveRefusalCopy(items)).toBe(
-      "Frågorna 1 och 3 har negativa poäng. Poängen kan inte vara negativ.",
+    expect(examWorkspaceSaveRefusalCopy(examDocument(items))).toBe(
+      "Frågorna 1 och 3 har negativa poäng. Ange 0 poäng eller mer.",
+    );
+  });
+
+  it("names a question after a part by its list label, not its sequence", () => {
+    const refused = buildChoiceItem(4, { item_id: "item_004", points: -1 });
+    const document = examDocument(
+      [buildChoiceItem(1), buildChoiceItem(2), buildChoiceItem(3), refused],
+      [
+        {
+          instruction: [],
+          item_ids: ["item_001", "item_002", "item_003"],
+          parent_id: "parent_001",
+          place: 0,
+        },
+      ],
+    );
+
+    expect(examWorkspaceSaveRefusalCopy(document)).toBe(
+      "Fråga 2 har negativa poäng. Ange 0 poäng eller mer.",
     );
   });
 });
 
 describe("examWorkspaceSaveRefusalCopy for matching items", () => {
   it("is null for a fully keyed matching item", () => {
-    expect(examWorkspaceSaveRefusalCopy([buildMatchingItem()])).toBeNull();
+    expect(examWorkspaceSaveRefusalCopy(examDocument([buildMatchingItem()]))).toBeNull();
   });
 
   it("is null for a keyed matching item with an unpaired right entry", () => {
-    expect(examWorkspaceSaveRefusalCopy([buildMatchingItemWithDistractor()])).toBeNull();
+    expect(examWorkspaceSaveRefusalCopy(examDocument([buildMatchingItemWithDistractor()]))).toBeNull();
   });
 
   it("is null once every pair is cleared and the key becomes absent", () => {
     const item = buildMatchingItemWithPairs([]);
 
     expect(
-      examWorkspaceSaveRefusalCopy([
-        { ...item, points: 0, answer_key: { ...item.answer_key, origin: "absent" } },
-      ]),
+      examWorkspaceSaveRefusalCopy(
+        examDocument([
+          { ...item, points: 0, answer_key: { ...item.answer_key, origin: "absent" } },
+        ]),
+      ),
     ).toBeNull();
   });
 
   it("refuses a keyed item missing one pair with the matching guidance", () => {
     expect(
-      examWorkspaceSaveRefusalCopy([
-        buildMatchingItemWithPairs([
-          [1, 2],
-          [2, 1],
+      examWorkspaceSaveRefusalCopy(
+        examDocument([
+          buildMatchingItemWithPairs([
+            [1, 2],
+            [2, 1],
+          ]),
         ]),
-      ]),
+      ),
     ).toBe(
       `Fråga 1 har en kategorisering där facit inte är komplett. ${INCOMPLETE_MATCH_KEY_GUIDANCE}`,
     );
@@ -145,14 +250,16 @@ describe("examWorkspaceSaveRefusalCopy for matching items", () => {
 
   it("refuses a keyed item with a repeated tick", () => {
     expect(
-      examWorkspaceSaveRefusalCopy([
-        buildMatchingItemWithPairs([
-          [1, 2],
-          [1, 2],
-          [2, 1],
-          [3, 3],
+      examWorkspaceSaveRefusalCopy(
+        examDocument([
+          buildMatchingItemWithPairs([
+            [1, 2],
+            [1, 2],
+            [2, 1],
+            [3, 3],
+          ]),
         ]),
-      ]),
+      ),
     ).toBe(
       `Fråga 1 har en kategorisering där facit inte är komplett. ${INCOMPLETE_MATCH_KEY_GUIDANCE}`,
     );
@@ -167,8 +274,39 @@ describe("examWorkspaceSaveRefusalCopy for matching items", () => {
       ),
     };
 
-    expect(examWorkspaceSaveRefusalCopy([emptyLeft])).toBeNull();
-    expect(examWorkspaceSaveRefusalCopy([{ ...emptyLeft, match_left: emptyLeft.match_left.map((entry) => ({ ...entry, body: [] })) }])).toBeNull();
+    expect(examWorkspaceSaveRefusalCopy(examDocument([emptyLeft]))).toBeNull();
+    expect(examWorkspaceSaveRefusalCopy(examDocument([{ ...emptyLeft, match_left: emptyLeft.match_left.map((entry) => ({ ...entry, body: [] })) }]))).toBeNull();
+  });
+});
+
+describe("examWorkspaceSaveRefusalCopy for gap items", () => {
+  it("saves a keyed gap_fill item with an empty gap as a draft", () => {
+    expect(examWorkspaceSaveRefusalCopy(examDocument([buildGapFillItem(1)]))).toBeNull();
+  });
+
+  it("saves a keyed gap_fill item whose every gap is empty", () => {
+    const item = buildGapFillItem(1, {
+      gaps: [
+        {
+          accepted_values: [],
+          automatic_values: [],
+          correct_option_id: null,
+          excluded_automatic_values: [],
+          gap_id: "gap_001",
+          options: [],
+        },
+      ],
+      body: [
+        {
+          heading_level: null,
+          segments: [
+            { kind: "text", marks: [], text: "Vatten kokar vid " },
+            { gap_id: "gap_001", kind: "gap" },
+          ],
+        },
+      ],
+    });
+    expect(examWorkspaceSaveRefusalCopy(examDocument([item]))).toBeNull();
   });
 });
 
@@ -190,11 +328,11 @@ function buildCriteriaItem(overrides: Partial<NativeExamItem> = {}): NativeExamI
 
 describe("examWorkspaceSaveRefusalCopy for free-text criteria", () => {
   it("is null when a non-empty criteria list sums to the item's points", () => {
-    expect(examWorkspaceSaveRefusalCopy([buildCriteriaItem()])).toBeNull();
+    expect(examWorkspaceSaveRefusalCopy(examDocument([buildCriteriaItem()]))).toBeNull();
   });
 
   it("is null for a free-text item without criteria", () => {
-    expect(examWorkspaceSaveRefusalCopy([buildCriteriaItem({ criteria: [] })])).toBeNull();
+    expect(examWorkspaceSaveRefusalCopy(examDocument([buildCriteriaItem({ criteria: [] })]))).toBeNull();
   });
 
   it("refuses a criterion whose text is empty or whitespace only", () => {
@@ -213,7 +351,7 @@ describe("examWorkspaceSaveRefusalCopy for free-text criteria", () => {
       sequence: 2,
     });
 
-    expect(examWorkspaceSaveRefusalCopy([empty, blank])).toBe(
+    expect(examWorkspaceSaveRefusalCopy(examDocument([empty, blank]))).toBe(
       "Frågorna 1 och 2 har ett kriterium utan text. Skriv text i varje kriterium.",
     );
   });
@@ -226,13 +364,13 @@ describe("examWorkspaceSaveRefusalCopy for free-text criteria", () => {
       ],
     });
 
-    expect(examWorkspaceSaveRefusalCopy([item])).toBe(
+    expect(examWorkspaceSaveRefusalCopy(examDocument([item]))).toBe(
       `Fråga 1 har ett kriterium med ogiltiga poäng. ${INVALID_CRITERION_POINTS_GUIDANCE}`,
     );
   });
 
   it("refuses a criteria sum that is not the item's points", () => {
-    expect(examWorkspaceSaveRefusalCopy([buildCriteriaItem({ points: 2 })])).toBe(
+    expect(examWorkspaceSaveRefusalCopy(examDocument([buildCriteriaItem({ points: 2 })]))).toBe(
       `Fråga 1 har kriterier vars poängsumma inte stämmer med frågans poäng. ${CRITERIA_POINTS_MISMATCH_GUIDANCE}`,
     );
   });
@@ -240,8 +378,8 @@ describe("examWorkspaceSaveRefusalCopy for free-text criteria", () => {
   it("refuses criteria on a question that is not free text", () => {
     const item = buildChoiceItem(2, { criteria: [{ points: 1, text: "Definition" }] });
 
-    expect(examWorkspaceSaveRefusalCopy([item])).toBe(
-      `Fråga 2 har kriterier men är inte en fritextfråga. ${CRITERIA_ON_WRONG_KIND_GUIDANCE}`,
+    expect(examWorkspaceSaveRefusalCopy(examDocument([item]))).toBe(
+      `Fråga 1 har kriterier men är inte en fritextfråga. ${CRITERIA_ON_WRONG_KIND_GUIDANCE}`,
     );
   });
 });

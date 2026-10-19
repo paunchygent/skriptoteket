@@ -10,11 +10,9 @@ import pytest
 from alembic import command
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
-from testcontainers.postgres import PostgresContainer
 
-from tests.fixtures.database_fixtures import _to_async_database_url
+from tests.fixtures.database_fixtures import PooledDatabase, alembic_config_for
 from tests.integration.migration_idempotency_support import (
-    _alembic_config,
     _reset_public_schema,
     assert_revision_is_idempotent,
 )
@@ -125,10 +123,10 @@ async def _assert_prior_schema(engine: AsyncEngine) -> None:
 
 
 def test_migration_e8a3c5f1b7d2_is_idempotent_and_drops_old_converter_schema(
-    postgres_container: PostgresContainer,
+    empty_module_database: PooledDatabase,
 ) -> None:
     assert_revision_is_idempotent(
-        postgres_container=postgres_container,
+        empty_module_database=empty_module_database,
         revision_id=_REVISION,
         schema_assertion=_assert_retired_schema,
     )
@@ -193,14 +191,14 @@ async def _with_engine(database_url: str, action: Callable[[AsyncEngine], Awaita
 
 
 def test_migration_e8a3c5f1b7d2_deletes_dxe_rows_keeps_workspace_rows_and_round_trips(
-    postgres_container: PostgresContainer,
+    empty_module_database: PooledDatabase,
 ) -> None:
-    database_url = _to_async_database_url(postgres_container.get_connection_url())
+    database_url = empty_module_database.url
     previous = os.environ.get("DATABASE_URL")
     os.environ["DATABASE_URL"] = database_url
     try:
         asyncio.run(_reset_public_schema(database_url=database_url))
-        config = _alembic_config(database_url=database_url)
+        config = alembic_config_for(database_url=database_url)
         command.upgrade(config, _PARENT)
         dxe_id, workspace_id = asyncio.run(_with_engine(database_url, _seed_parent_rows))
         assert dxe_id != workspace_id

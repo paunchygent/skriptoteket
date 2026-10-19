@@ -1,66 +1,113 @@
 /**
- * Exam workspace make-gap command and floating gap button.
+ * Exam workspace make-gap command, the Tom lucka command and the empty gap's
+ * definition.
  *
  * Domain purpose:
- *   The one place that turns a word into a gap: the shared toolbar's Lucka
- *   command (the selection, or the word at the caret) and the small
- *   glyph-only floating button ("Gör till lucka" tooltip and accessible
- *   name only) in the line gap under the clicked word's end. Both paths
- *   resolve the word with the same whole-textblock
- *   resolver in document positions, replace it with one gap atom in one
- *   transaction, and seed the gap from the replaced document text. While the
- *   gap tool is on, a word click converts at once through the same
- *   replacement and a drag selection converts on mouseup; the button never
- *   shows. A tool click converts only the word the pointer actually hit (a
- *   click on a space or punctuation only places the caret), and a release
- *   converts only after a primary press started in this editor, so a
- *   right-click over a selection never makes a gap. The button
- *   teleports to the document body and sits fixed at viewport coordinates, so
- *   the editor's clipping never cuts it; later transactions keep it while the
- *   document is unchanged and the caret stays inside the word.
+ *   The one place that turns written text into a gap: the word at the
+ *   caret, or the selected range, becomes one gap atom in one transaction,
+ *   seeded from the replaced document text. The caret ends collapsed
+ *   directly after the new chip, so typing continues after the gap and never
+ *   replaces it. A caret outside a word creates
+ *   nothing. Tom lucka is the only empty-gap path: one empty gap at the
+ *   caret, or at a selection's end without deleting text. While the gap tool is on, a
+ *   word click converts at once through the same replacement and a drag
+ *   selection converts on mouseup. A tool click converts only the word the
+ *   pointer actually hit (a click on a space or punctuation only places the
+ *   caret), and a release converts only after a primary press started in
+ *   this editor, so a right-click over a selection never makes a gap. A tool
+ *   click on a word that keeps hidden answers reports its kept link through
+ *   `keptGapAtPointer` instead of making a gap, and the second click of a
+ *   double click converts nothing. The
+ *   gap tool switch is the only gap control for existing text.
  *
  * Relationships:
- *   - Wired in by `ExamWorkspaceRichTextEditor`, which owns the editor, the
- *     button template and the `createGap` emit boundary; the editor forwards
- *     its Tab key and blur, and the template forwards the button's own keys
- *     and focusout, to this composable.
+ *   - Wired in by `ExamWorkspaceRichTextEditor`, which owns the editor and
+ *     the `createGap` emit boundary.
  *   - Resolves words with `examWorkspaceGapWord`.
- *   - Places the button with the shared anchored constants; the next
- *     focusable after the editor is the shared dialog focusable selector.
+ *   - The selection layer consumes `bodyWithoutEmptyGaps` for the silent
+ *     empty-gap cleanup when the teacher leaves the question.
  */
 
 import type { Editor } from "@tiptap/core";
-import { NodeSelection, TextSelection } from "@tiptap/pm/state";
-import type { Transaction } from "@tiptap/pm/state";
+import type { Mark } from "@tiptap/pm/model";
+import { TextSelection } from "@tiptap/pm/state";
 import type { EditorView } from "@tiptap/pm/view";
-import { nextTick, ref } from "vue";
 import type { Ref } from "vue";
 
-import { EXAM_GAP_NODE, EXAM_PICTURE_NODE } from "./examWorkspaceRichTextSchema";
+import type {
+  NativeExamBodyParagraph,
+  NativeExamItem,
+  NativeExamItemKind,
+} from "../../../api/examWorkspace";
+import { bodyWithoutGap, gapHasAnswer } from "./examWorkspaceGapEdits";
+import { hasKeyedOrigin } from "./examWorkspaceAnswerKeyRules";
+import { EXAM_GAP_NODE, EXAM_KEPT_GAP_MARK, EXAM_PICTURE_NODE } from "./examWorkspaceRichTextSchema";
 import { wordRangeAtDocCharacter, wordRangeAtDocPosition } from "./examWorkspaceGapWord";
-import { ANCHORED_EDGE_PX } from "./useExamWorkspaceAnchoredPosition";
-import { FOCUSABLE_SELECTOR } from "../../../composables/useDialogFocus";
 
-/** The floating "Lucka" button: the stored word it converts and where it sits. */
-export type MakeGapButton = {
-  gapId: string;
-  from: number;
-  to: number;
-  seed: string;
-  left: number;
-  top: number;
-  width: number;
-  height: number;
-};
+/** A kept link the pointer hit: its kept id and the clicked block's index. */
+export type KeptGapHit = { keptGapId: string; blockIndex: number };
+
+/** Why Tom lucka is unavailable for a question that is not a gap question. */
+export const EMPTY_GAP_NOT_GAP_KIND_REASON = "Tom lucka – endast luckfrågor";
+/** Why Tom lucka is unavailable when there is no next gap id. */
+export const EMPTY_GAP_AT_CAP_REASON = "Tom lucka – högst 999 luckor";
 
 /**
- * Width of the floating button box: wide enough to take with a pointer, but
- * the box sits in the letter-free line gap, never over text.
+ * Why the Tom lucka command is unavailable: the question is not a gap
+ * question, or there is no next gap id. Null while the command can run.
  */
-export const MAKE_GAP_BUTTON_WIDTH = 24;
+export function gapDisabledReason(
+  kind: NativeExamItemKind,
+  nextGapId: string | null | undefined,
+): string | null {
+  if (kind !== "gap_fill" && kind !== "inline_choice") {
+    return EMPTY_GAP_NOT_GAP_KIND_REASON;
+  }
+  if (typeof nextGapId !== "string") {
+    return EMPTY_GAP_AT_CAP_REASON;
+  }
+  return null;
+}
 
-/** Largest glyph drawn inside the floating button box. */
-export const MAKE_GAP_BUTTON_GLYPH = 14;
+/**
+ * The item's empty gaps in gap order (TASK-SKRIPT-40-04-13 Q9): a Lucktext
+ * gap with no accepted answer in a question that has an answer key, or a
+ * dropdown gap with no correct option. The answer half reuses `gapHasAnswer`;
+ * a question without an answer key, or any other kind, has none. The
+ * key-presence check is the canonical `hasKeyedOrigin` from
+ * `examWorkspaceAnswerKeyRules`.
+ */
+export function emptyGapIds(item: NativeExamItem): string[] {
+  if (item.kind !== "gap_fill" && item.kind !== "inline_choice") {
+    return [];
+  }
+  if (!hasKeyedOrigin(item)) {
+    return [];
+  }
+  return item.gaps
+    .filter((gap) => !gapHasAnswer(gap, item.kind))
+    .map((gap) => gap.gap_id);
+}
+
+/**
+ * The body with every empty gap's placement removed, for the silent cleanup
+ * when the teacher leaves the question. Null when there is nothing to
+ * remove, so the cleanup emits no edit. The owner drops each removed gap's
+ * record through `withBody`, so one structural edit removes them in one undo
+ * step.
+ */
+export function bodyWithoutEmptyGaps(
+  item: NativeExamItem,
+): NativeExamBodyParagraph[] | null {
+  const ids = emptyGapIds(item);
+  if (ids.length === 0) {
+    return null;
+  }
+  return ids.reduce<NativeExamBodyParagraph[]>(
+    (body, gapId) => bodyWithoutGap(body, gapId),
+    [...item.body],
+  );
+}
 
 export function useExamWorkspaceMakeGap(options: {
   editor: Ref<Editor | undefined>;
@@ -69,32 +116,15 @@ export function useExamWorkspaceMakeGap(options: {
   /** While true, a word click or a drag selection becomes a gap at once. */
   gapTool: () => boolean;
 }): {
-  makeGapButton: Ref<MakeGapButton | null>;
-  makeGapButtonElement: Ref<HTMLButtonElement | null>;
   pendingGapCreation: () => { gapId: string; seed: string } | null;
   makeGap: (gapId: string) => void;
-  confirmMakeGap: () => void;
+  /** Tom lucka: insert one empty gap at the caret or at the selection's end. */
+  insertEmptyGapAtCursor: (gapId: string) => void;
   handleMakeGapClick: (view: EditorView, pos: number, event: MouseEvent) => boolean;
   handleGapToolMouseDown: (event: MouseEvent) => void;
   handleGapToolMouseUp: (event: MouseEvent) => void;
-  maybeHideMakeGapButton: (transaction: Transaction) => void;
-  hideMakeGap: () => void;
-  removeMakeGapListeners: () => void;
-  /** Focus the floating button while it is rendered. */
-  focusMakeGapButton: () => void;
-  /**
-   * The floating button's own keys. Enter and Space stay native so the click
-   * handler converts the stored word; the roving hand-off is Tab (on to the
-   * next focusable past the editor), Shift+Tab (back to the editor, kept
-   * shown) and Escape (hidden, caret restored in the editor).
-   */
-  handleMakeGapButtonKeyDown: (event: KeyboardEvent) => void;
-  /** A focusout back into the editor keeps the button; any other hides it. */
-  handleMakeGapButtonFocusOut: (event: FocusEvent) => void;
+  keptGapAtPointer: (view: EditorView, pos: number, event: MouseEvent) => KeptGapHit | null;
 } {
-  const makeGapButton: Ref<MakeGapButton | null> = ref(null);
-  const makeGapButtonElement: Ref<HTMLButtonElement | null> = ref(null);
-
   /** Set while a gap replacement dispatches, so its one change emits `createGap`. */
   let gapCreation: { gapId: string; seed: string } | null = null;
 
@@ -102,116 +132,12 @@ export function useExamWorkspaceMakeGap(options: {
     return gapCreation;
   }
 
-  /** Hide the floating button on any viewport move while it is shown. */
-  function onMakeGapViewportChange(): void {
-    hideMakeGap();
-  }
-
-  let makeGapListenersActive = false;
-
-  /** Watch viewport moves only while the button is shown. */
-  function addMakeGapListeners(): void {
-    if (makeGapListenersActive) {
-      return;
-    }
-    makeGapListenersActive = true;
-    window.addEventListener("scroll", onMakeGapViewportChange, { capture: true, passive: true });
-    window.addEventListener("resize", onMakeGapViewportChange);
-  }
-
-  function removeMakeGapListeners(): void {
-    if (!makeGapListenersActive) {
-      return;
-    }
-    makeGapListenersActive = false;
-    window.removeEventListener("scroll", onMakeGapViewportChange, true);
-    window.removeEventListener("resize", onMakeGapViewportChange);
-  }
-
-  function hideMakeGap(): void {
-    makeGapButton.value = null;
-    removeMakeGapListeners();
-  }
-
-  /**
-   * Hide the floating button when a transaction leaves its stored word: any
-   * document change, a non-empty selection, or a caret outside the word. The
-   * click's own caret placement and meta-only redraws keep it.
-   */
-  function maybeHideMakeGapButton(transaction: Transaction): void {
-    const current = makeGapButton.value;
-    if (current === null) {
-      return;
-    }
-    if (transaction.docChanged) {
-      hideMakeGap();
-      return;
-    }
-    const { selection } = transaction;
-    if (!selection.empty || selection.head < current.from || selection.head > current.to) {
-      hideMakeGap();
-    }
-  }
-
-  /**
-   * Place the floating button in the letter-free band between the word's
-   * line box and the line below, centred horizontally on the word's end x,
-   * so it covers no letters and takes no clicks meant for text. The band is
-   * the surface line height minus its font size, centred on the boundary
-   * between the two line boxes: with 16px text at line height 2 the band is
-   * 16px (8px below the word's letters, 8px above the next line's). The box
-   * is MAKE_GAP_BUTTON_WIDTH wide and one band tall; its left edge is
-   * clamped to the viewport as before. When the surface metrics cannot be
-   * read, the word box height stands in for the font size at line height 2
-   * rather than placing the button over text.
-   */
-  function placeMakeGapButton(): void {
-    const current = makeGapButton.value;
-    const view = options.editor.value?.view;
-    if (current === null || !view) {
-      return;
-    }
-    let coords: { left: number; top: number; right: number; bottom: number };
-    try {
-      // The -1 bias keeps the caret on the line where the word ends, so a
-      // word ending a line never moves the button past the wrap.
-      coords = view.coordsAtPos(current.to, -1);
-    } catch {
-      hideMakeGap();
-      return;
-    }
-    const style = getComputedStyle(view.dom);
-    const boxHeight = coords.bottom - coords.top;
-    const parsedFont = Number.parseFloat(style.fontSize);
-    const parsedLine = Number.parseFloat(style.lineHeight);
-    const font = Number.isFinite(parsedFont) && parsedFont > 0 ? parsedFont : boxHeight;
-    const line = Number.isFinite(parsedLine) && parsedLine > 0 ? parsedLine : font * 2;
-    const band = Math.max(line - font, 0);
-    const boundary = (coords.top + coords.bottom) / 2 + line / 2;
-    const width = MAKE_GAP_BUTTON_WIDTH;
-    const height = band;
-    const top = boundary - band / 2;
-    const maxLeft = window.innerWidth - width - ANCHORED_EDGE_PX;
-    const left =
-      maxLeft < ANCHORED_EDGE_PX
-        ? ANCHORED_EDGE_PX
-        : Math.min(Math.max(coords.right - width / 2, ANCHORED_EDGE_PX), maxLeft);
-    if (makeGapButton.value !== current) {
-      return;
-    }
-    makeGapButton.value = { ...current, left, top, width, height };
-  }
-
-  function showMakeGapButton(gapId: string, from: number, to: number, seed: string): void {
-    makeGapButton.value = { gapId, from, to, seed, left: 0, top: 0, width: MAKE_GAP_BUTTON_WIDTH, height: 0 };
-    addMakeGapListeners();
-    void nextTick(placeMakeGapButton);
-  }
-
   /**
    * Replace `from`..`to` with one new gap and report one pending creation,
-   * never an `update`. The caller owns the range: the selection for the
-   * toolbar command, the stored click word for the floating button.
+   * never an `update`. The caller owns the range: the selection, or the
+   * word the gap tool hit. The caret ends collapsed directly after the new
+   * chip, so typing continues after the gap and never replaces it; a
+   * tool-made gap opens no popover.
    */
   function replaceRangeWithGap(gapId: string, from: number, to: number, seed: string): void {
     const current = options.editor.value;
@@ -223,11 +149,10 @@ export function useExamWorkspaceMakeGap(options: {
       return;
     }
     const replaced = current.state.tr.replaceWith(from, to, gapType.create({ gapId }));
-    const withGapSelected = replaced.setSelection(NodeSelection.create(replaced.doc, from));
-    hideMakeGap();
+    const withCaretAfter = replaced.setSelection(TextSelection.create(replaced.doc, from + 1));
     gapCreation = { gapId, seed };
     try {
-      current.view.dispatch(withGapSelected);
+      current.view.dispatch(withCaretAfter);
     } finally {
       gapCreation = null;
     }
@@ -235,8 +160,9 @@ export function useExamWorkspaceMakeGap(options: {
 
   /**
    * Turn the selection, or the word at the caret, into one new gap with
-   * `gapId`, or insert an empty gap at the caret. The replacement dispatches
-   * as one transaction and reports one pending creation, never an `update`.
+   * `gapId`. A caret outside a word creates nothing (Tom lucka owns the one
+   * empty-gap path). The replacement dispatches as one transaction and reports
+   * one pending creation, never an `update`.
    */
   function makeGap(gapId: string): void {
     const current = options.editor.value;
@@ -270,24 +196,43 @@ export function useExamWorkspaceMakeGap(options: {
       const word = wordRangeAtDocPosition(state.doc, selection.from);
       if (word !== null) {
         replaceRangeWithGap(gapId, word.from, word.to, state.doc.textBetween(word.from, word.to, "\n", " "));
-      } else {
-        replaceRangeWithGap(gapId, selection.from, selection.from, "");
       }
     }
   }
 
-  /** Convert the stored click word; the caret may have moved inside it since. */
-  function confirmMakeGap(): void {
-    const stored = makeGapButton.value;
-    hideMakeGap();
-    if (stored === null) {
+  /**
+   * Tom lucka: insert one empty gap at the caret, or at a selection's end
+   * without deleting text, with `gapId`. The insertion dispatches as one
+   * transaction and reports one pending creation with an empty seed, never an
+   * `update`, so the owner adds the empty record through `withNewGap` and the
+   * new gap's popover opens at once. It works with the gap tool on or off; a
+   * selection across two paragraphs inserts nothing.
+   */
+  function insertEmptyGapAtCursor(gapId: string): void {
+    const current = options.editor.value;
+    if (!current || !options.canMakeGap()) {
       return;
     }
-    replaceRangeWithGap(stored.gapId, stored.from, stored.to, stored.seed);
+    const { selection } = current.state;
+    if (!(selection instanceof TextSelection)) {
+      return;
+    }
+    if (selection.empty) {
+      replaceRangeWithGap(gapId, selection.from, selection.from, "");
+      return;
+    }
+    const { $from, $to } = selection;
+    if (!$from.sameParent($to) || !$to.parent.isTextblock) {
+      return;
+    }
+    replaceRangeWithGap(gapId, $to.pos, $to.pos, "");
   }
 
+  /** A tool-off click only places the caret: the tool is the only gap control. */
   function handleMakeGapClick(view: EditorView, pos: number, event: MouseEvent): boolean {
-    hideMakeGap();
+    if (event instanceof MouseEvent && event.detail > 1) {
+      return false;
+    }
     const gapId = options.nextGapId();
     if (!options.canMakeGap() || typeof gapId !== "string") {
       return false;
@@ -303,31 +248,21 @@ export function useExamWorkspaceMakeGap(options: {
       replaceRangeWithGap(gapId, word.from, word.to, view.state.doc.textBetween(word.from, word.to, "\n", " "));
       return true;
     }
-    const word = wordRangeAtDocPosition(view.state.doc, pos);
-    if (word === null) {
-      return false;
-    }
-    const seed = view.state.doc.textBetween(word.from, word.to, "\n", " ");
-    showMakeGapButton(gapId, word.from, word.to, seed);
     return false;
   }
 
   /**
-   * The word the pointer hit while the gap tool is on, or null when the
-   * pointer is on a separator or its character cannot be told apart. The
-   * click position is a caret between two characters; the pointer is on one
-   * of those two neighbours exactly when `clientX` lies between that
-   * character's two caret edges (`coordsAtPos` at its start and past its
+   * The pointer-hit document character while the gap tool is on, or null
+   * when the pointer is on a separator or its character cannot be told
+   * apart. The click position is a caret between two characters; the pointer
+   * is on one of those two neighbours exactly when `clientX` lies between
+   * that character's two caret edges (`coordsAtPos` at its start and past its
    * end). Either edge may sit left on screen: in a right-to-left run the
    * start caret is right of the end caret. A separator hit, an unreadable
    * position and a zero-width character all resolve to nothing, so
    * ProseMirror places the caret instead.
    */
-  function gapToolWordAtPointer(
-    view: EditorView,
-    pos: number,
-    event: MouseEvent,
-  ): { from: number; to: number } | null {
+  function pointerHitChar(view: EditorView, pos: number, event: MouseEvent): number | null {
     const clientX = event.clientX;
     if (!Number.isFinite(clientX)) {
       return null;
@@ -351,10 +286,110 @@ export function useExamWorkspaceMakeGap(options: {
       const hitStart = Math.min(firstEdge, secondEdge);
       const hitEnd = Math.max(firstEdge, secondEdge);
       if (clientX >= hitStart && clientX < hitEnd) {
-        return wordRangeAtDocCharacter(view.state.doc, charPos);
+        return charPos;
       }
     }
     return null;
+  }
+
+  /**
+   * The word the pointer hit while the gap tool is on, or null when the
+   * pointer hit no word character. The pointer check is `pointerHitChar`;
+   * the word around it comes from `examWorkspaceGapWord`.
+   */
+  function gapToolWordAtPointer(
+    view: EditorView,
+    pos: number,
+    event: MouseEvent,
+  ): { from: number; to: number } | null {
+    const charPos = pointerHitChar(view, pos, event);
+    if (charPos === null) {
+      return null;
+    }
+    return wordRangeAtDocCharacter(view.state.doc, charPos);
+  }
+
+  /** Whether a ProseMirror node's marks carry the kept link `keptGapId`. */
+  function carriesKeptLink(node: { marks: readonly Mark[] }, keptGapId: string): boolean {
+    return node.marks.some(
+      (mark) => mark.type.name === EXAM_KEPT_GAP_MARK && mark.attrs.keptGapId === keptGapId,
+    );
+  }
+
+  /**
+   * The kept link the pointer hit while the gap tool is on: its kept id and
+   * the clicked block's index among that id's contiguous kept blocks in
+   * document order, matching the block order `withKeptGapRestored` restores
+   * from. Null while the tool is off, on a non-primary button, when the
+   * pointer hit no kept character, or on the second click of a double click.
+   */
+  function keptGapAtPointer(view: EditorView, pos: number, event: MouseEvent): KeptGapHit | null {
+    if (!options.gapTool()) {
+      return null;
+    }
+    if (event instanceof MouseEvent && (event.button !== 0 || event.detail > 1)) {
+      return null;
+    }
+    const charPos = pointerHitChar(view, pos, event);
+    if (charPos === null) {
+      return null;
+    }
+    let hit: string | null = null;
+    view.state.doc.nodesBetween(charPos, charPos + 1, (node) => {
+      if (!node.isText) {
+        return true;
+      }
+      for (const mark of node.marks) {
+        if (mark.type.name === EXAM_KEPT_GAP_MARK && typeof mark.attrs.keptGapId === "string") {
+          hit = mark.attrs.keptGapId;
+          return false;
+        }
+      }
+      return false;
+    });
+    if (hit === null) {
+      return null;
+    }
+    const keptGapId: string = hit;
+    let current = -1;
+    let clicked = -1;
+    let inBlock = false;
+    view.state.doc.descendants((node, nodePos) => {
+      if (node.isTextblock) {
+        inBlock = false;
+        return true;
+      }
+      if (node.type.name === "hardBreak") {
+        if (!carriesKeptLink(node, keptGapId)) {
+          inBlock = false;
+        }
+        return false;
+      }
+      if (node.isText) {
+        if (carriesKeptLink(node, keptGapId)) {
+          if (!inBlock) {
+            current += 1;
+            inBlock = true;
+          }
+          const length = node.text?.length ?? 0;
+          if (nodePos <= charPos && charPos < nodePos + length) {
+            clicked = current;
+          }
+        } else {
+          inBlock = false;
+        }
+        return false;
+      }
+      if (node.isAtom) {
+        inBlock = false;
+        return false;
+      }
+      return true;
+    });
+    if (clicked < 0) {
+      return null;
+    }
+    return { keptGapId, blockIndex: clicked };
   }
 
   /** True after a primary press started in this editor; cleared on every release. */
@@ -398,87 +433,13 @@ export function useExamWorkspaceMakeGap(options: {
     }, 0);
   }
 
-  /** Focus the floating button while it is rendered. */
-  function focusMakeGapButton(): void {
-    makeGapButtonElement.value?.focus();
-  }
-
-  /** The editable surface, or null before the editor mounted. */
-  function editorRoot(): HTMLElement | null {
-    const dom = options.editor.value?.view.dom;
-    return dom instanceof HTMLElement ? dom : null;
-  }
-
-  function focusEditorKeepingCaret(): void {
-    // No position: TipTap keeps the previous cursor and selection.
-    options.editor.value?.commands.focus();
-  }
-
-  /**
-   * The first focusable element after the editor's root in document order,
-   * skipping the teleported floating button and everything inside the editor
-   * (the surface itself matches the focusable selector). The shared dialog
-   * selector owns which elements count as focusable.
-   */
-  function nextFocusableAfterEditor(): HTMLElement | null {
-    const root = editorRoot();
-    if (root === null) {
-      return null;
-    }
-    const candidates = Array.from(document.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
-    for (const candidate of candidates) {
-      if (candidate === makeGapButtonElement.value || candidate === root || root.contains(candidate)) {
-        continue;
-      }
-      if ((root.compareDocumentPosition(candidate) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0) {
-        return candidate;
-      }
-    }
-    return null;
-  }
-
-  function handleMakeGapButtonKeyDown(event: KeyboardEvent): void {
-    if (event.key === "Escape") {
-      event.preventDefault();
-      hideMakeGap();
-      focusEditorKeepingCaret();
-      return;
-    }
-    if (event.key === "Tab") {
-      event.preventDefault();
-      if (event.shiftKey) {
-        focusEditorKeepingCaret();
-        return;
-      }
-      const next = nextFocusableAfterEditor();
-      hideMakeGap();
-      next?.focus();
-    }
-  }
-
-  function handleMakeGapButtonFocusOut(event: FocusEvent): void {
-    const root = editorRoot();
-    const target = event.relatedTarget;
-    if (root !== null && target instanceof Node && (target === root || root.contains(target))) {
-      return;
-    }
-    hideMakeGap();
-  }
-
   return {
-    makeGapButton,
-    makeGapButtonElement,
     pendingGapCreation,
     makeGap,
-    confirmMakeGap,
+    insertEmptyGapAtCursor,
     handleMakeGapClick,
     handleGapToolMouseDown,
     handleGapToolMouseUp,
-    maybeHideMakeGapButton,
-    hideMakeGap,
-    removeMakeGapListeners,
-    focusMakeGapButton,
-    handleMakeGapButtonKeyDown,
-    handleMakeGapButtonFocusOut,
+    keptGapAtPointer,
   };
 }

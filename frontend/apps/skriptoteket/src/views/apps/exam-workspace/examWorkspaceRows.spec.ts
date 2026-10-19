@@ -30,6 +30,7 @@ function buildItem(overrides: Partial<NativeExamItem> = {}): NativeExamItem {
     body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Beskriv fotosyntesen." }] }],
     choices: [],
     gaps: [],
+    kept_gaps: [],
     item_id: "item_001",
     kind: "free_text",
     match_left: [],

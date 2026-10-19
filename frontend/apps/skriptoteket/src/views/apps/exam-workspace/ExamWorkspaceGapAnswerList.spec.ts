@@ -5,7 +5,10 @@
  *   The list edits one list of accepted answers as one text input per
  *   answer with a remove glyph per row and a glyph-only add button
  *   ("Lägg till svar" accessible name and tooltip) under the rows. Typing
- *   never emits; an input's `change`, removing a row and the
+ *   commits while it happens (each input emits the normalized list, except
+ *   typing that normalizes to an empty list: the save rules refuse an empty
+ *   accepted value, so only `change`, remove and `commit()` can emit it);
+ *   an input's `change`, removing a row and the
  *   exposed `commit()` emit the normalized list (trimmed, empties dropped,
  *   exact duplicates collapsed, commas kept) exactly once per change.
  *   Every row input, add, Enter-add and remove also emits the normalized
@@ -13,8 +16,8 @@
  *   Enter in a row inserts an empty row below it and focuses it without
  *   dropping it on commit. Removing the only row leaves one empty row.
  *   The list caps at 100 rows, ignores Enter during IME composition,
- *   follows external `values` only while nothing is pending, and emits
- *   nothing while disabled.
+ *   follows external `values` once nothing is pending (committed typing is
+ *   no longer pending), and emits nothing while disabled.
  */
 
 import { mount } from "@vue/test-utils";
@@ -117,7 +120,8 @@ describe("ExamWorkspaceGapAnswerList", () => {
     const row = inputs(wrapper)[0];
     row.element.value = "b";
     await row.trigger("input");
-    expect(wrapper.emitted("commit")).toBeUndefined();
+    // Typing already committed; the change sends nothing more.
+    expect(commits(wrapper)).toEqual([["b"]]);
     await row.trigger("change");
     expect(commits(wrapper)).toEqual([["b"]]);
     await row.trigger("change");
@@ -212,7 +216,7 @@ describe("ExamWorkspaceGapAnswerList", () => {
     wrapper.unmount();
   });
 
-  it("replaces rows on external values change only while nothing is pending", async () => {
+  it("replaces rows on external values change once typing is committed", async () => {
     const clean = mountList({ values: ["a"] });
     await clean.setProps({ values: ["x", "y"] });
     expect(inputs(clean).map((row) => row.element.value)).toEqual(["x", "y"]);
@@ -222,9 +226,11 @@ describe("ExamWorkspaceGapAnswerList", () => {
     const row = inputs(typing)[0];
     row.element.value = "pågående";
     await row.trigger("input");
+    // The input already committed, so nothing is pending: an external change
+    // replaces the rows instead of being held back.
+    expect(commits(typing)).toEqual([["pågående"]]);
     await typing.setProps({ values: ["x"] });
-    expect(inputs(typing)[0].element.value).toBe("pågående");
-    expect(typing.emitted("commit")).toBeUndefined();
+    expect(inputs(typing)[0].element.value).toBe("x");
     typing.unmount();
   });
 
@@ -335,13 +341,26 @@ describe("ExamWorkspaceGapAnswerList draft", () => {
     return (wrapper.emitted<[string[]]>("draft") ?? []).map((event) => event[0]);
   }
 
-  it("emits the normalized list on every row input without committing", async () => {
+  it("emits the normalized list on every row input as both draft and commit", async () => {
     const wrapper = mountList({ values: ["a"] });
     const row = inputs(wrapper)[0];
     row.element.value = "ab";
     await row.trigger("input");
     expect(drafts(wrapper)).toEqual([["ab"]]);
+    expect(commits(wrapper)).toEqual([["ab"]]);
+    wrapper.unmount();
+  });
+
+  it("commits nothing while typing normalizes to an empty list, but drafts it", async () => {
+    const wrapper = mountList({ values: ["a"] });
+    const row = inputs(wrapper)[0];
+    row.element.value = "   ";
+    await row.trigger("input");
+    expect(drafts(wrapper)).toEqual([[]]);
     expect(wrapper.emitted("commit")).toBeUndefined();
+    // Leaving the emptied row still commits the empty list.
+    await row.trigger("change");
+    expect(commits(wrapper)).toEqual([[]]);
     wrapper.unmount();
   });
 

@@ -12,10 +12,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type {
   ExamWorkspaceConversionStatus,
-  ExamWorkspaceDocumentResponse,
   NativeExamDocument,
   NativeExamItem,
-  saveExamWorkspaceDocument,
   storeExamWorkspaceUndoStep,
 } from "../../api/examWorkspace";
 import {
@@ -36,11 +34,11 @@ const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceHistory: vi.fn(),
   getExamWorkspaceHistoryStep: vi.fn(),
+  moveExamWorkspaceHistoryPosition: vi.fn(),
   storeExamWorkspaceUndoStep: vi.fn<typeof storeExamWorkspaceUndoStep>(),
   importExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
-  saveExamWorkspaceDocument: vi.fn<typeof saveExamWorkspaceDocument>(),
 }));
 const exportApiMocks = vi.hoisted(() => ({
   downloadExamWorkspaceExport: vi.fn(),
@@ -260,16 +258,16 @@ describe("workspace printed-total lines", () => {
     expect(wrapper.get(EXAM_POINTS).text()).toBe("Totalt 66 p");
     expect(wrapper.findAll(LINE)).toHaveLength(2);
     expect(apiMocks.getExamWorkspaceDocument).toHaveBeenCalledTimes(1);
-    expect(apiMocks.saveExamWorkspaceDocument).not.toHaveBeenCalled();
+    expect(apiMocks.storeExamWorkspaceUndoStep).not.toHaveBeenCalled();
   });
 
-  it("never disables Spara for a mismatch", async () => {
+  it("never disables Spara som for a mismatch", async () => {
     const wrapper = await openDocument(documentWithTotals(10, [2, 3]));
     await selectItemRow(wrapper, "item_001");
     await wrapper.get('[data-test="exam-workspace-item-points-input"]').setValue("4");
     expect(wrapper.get(EXAM_POINTS).text()).toBe("Totalt 7 p");
     expect(wrapper.find(LINE).exists()).toBe(true);
-    expect(wrapper.get('[data-test="exam-workspace-save"]').attributes("disabled")).toBeUndefined();
+    expect(wrapper.get('[data-test="exam-workspace-save-as-command"]').attributes("disabled")).toBeUndefined();
   });
 
   it("shows plain points on a differing part's row and in its instruction editor", async () => {
@@ -411,19 +409,30 @@ describe("answering a mismatch line", () => {
     await wrapper.get('[data-test="exam-workspace-item-points-input"]').setValue("4");
     expect(wrapper.find(LINE).exists()).toBe(true);
 
-    let releaseSave!: (response: ExamWorkspaceDocumentResponse) => void;
-    apiMocks.saveExamWorkspaceDocument.mockReturnValueOnce(
-      new Promise<ExamWorkspaceDocumentResponse>((resolve) => { releaseSave = resolve; }),
+    window.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, cancelable: true, ctrlKey: true, key: "s" }));
+    await flushPromises();
+
+    const inner = apiMocks.moveExamWorkspaceHistoryPosition.getMockImplementation();
+    if (!inner) {
+      throw new Error("expected the history move double");
+    }
+    let releaseMove!: () => void;
+    apiMocks.moveExamWorkspaceHistoryPosition.mockImplementationOnce(
+      (...args: unknown[]) =>
+        new Promise((resolve) => {
+          releaseMove = () => resolve((inner as (...innerArgs: unknown[]) => unknown)(...args));
+        }),
     );
-    await wrapper.get('[data-test="exam-workspace-save"]').trigger("click");
+    await wrapper.get('[data-test="exam-workspace-undo"]').trigger("click");
     await flushPromises();
 
     expect(wrapper.findAll(CHANGE).at(0)!.attributes("disabled")).toBeDefined();
     expect(wrapper.findAll(SHOW).at(0)!.attributes("disabled")).toBeDefined();
 
-    releaseSave(buildResponse({ conversion: succeeded, version: 2 }));
+    releaseMove();
     await flushPromises();
-    expect(wrapper.get('[data-test="exam-workspace-save"]').attributes("disabled")).toBeUndefined();
+    expect(wrapper.findAll(CHANGE).at(0)!.attributes("disabled")).toBeUndefined();
+    expect(wrapper.get('[data-test="exam-workspace-save-as-command"]').attributes("disabled")).toBeUndefined();
   });
 });
 
