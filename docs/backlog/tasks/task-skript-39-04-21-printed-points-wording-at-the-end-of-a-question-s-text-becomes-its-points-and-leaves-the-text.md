@@ -223,12 +223,12 @@ Units, each for one fresh junior:
   and the bare-only first paragraph), F4 `9d1ad80f` (schema v10), F6 `253039fb`. At `f6093560`:
   61 files plus the heading sweep 2124 passed, 58 skipped; typecheck passes; replay bar against
   u14 empty (`evidence/proof/u17c-after.log`). Never pushed.
-- Resolved by D12's fourth extension (orchestrator 944b5a5a, 2026-10-19): D12 decision E and the second extension drop
-  a whole points-only line, and D8 makes "Tempus 3 poäng" one (one-word head). A heading
-  "Tempus 3 poäng" at points 3 then loses its topic word: at `f6093560` for a styled heading
-  (`evidence/proof/u17d-tempus-probe.txt`), and with U17d's literal E for an unstyled one
-  (`test_exam_workspace_docx_header_headings.py:150`, two cases). U17d stopped uncommitted;
-  its patch is `evidence/proof/u17d-stopped.patch`.
-- Next: U17e (`evidence/work-orders/u17e-points-only-colon-head.md`) repairs the heading and first-paragraph rules, then
-  the lead CHECKPOINTs the head for the 82849a3b rereview. U4 (the offer line, D10) is parked
+- Resolved by D12's fourth extension (orchestrator 944b5a5a, 2026-10-19): a points-only line
+  with a one-word head and no colon keeps its word in a heading or first paragraph ("Tempus 3
+  poäng" gives "Tempus"); U17e `6195dee5`, which also lands decision E for colon heads
+  ("Poäng: 2 poäng" first paragraph leaves). At `6195dee5`: 61 files plus the sweeps 2229
+  passed, 58 skipped (all `test_exam_workspace_docx_points_invariance.py` "has no question on
+  that side"); lint and typecheck pass; replay bar against u17c empty
+  (`evidence/proof/u17e-after.log`). Never pushed.
+- Next: rereview of `6195dee5` by 82849a3b (routed by the orchestrator). U4 (the offer line, D10) is parked
   for a later batch; its work order is `evidence/work-orders/u4-offer-line.md`.
