@@ -65,7 +65,7 @@ beforeEach(() => {
   arrangeStepHistory(api);
   rename.mockReset();
   original = buildResponse({ version: 1 });
-  original.document.header = { course: null, course_hint: "Lokalt temaprov", printed_total: 36, tags: [] };
+  original.document.header = { course: null, course_hint: "Lokalt temaprov", printed_total: 36, printed_total_dismissed: false, tags: [] };
   original.saved_document = original.document;
   api.getExamWorkspaceDocument.mockResolvedValue(original);
   api.getExamCourseCatalog.mockResolvedValue({ courses, registered_course_keys: [], generated_at: "2026-10-17T17:00:00Z" });
@@ -96,7 +96,7 @@ describe("ExamWorkspaceMetadataDrawer course save workflow", () => {
       expectedRevision: 1,
       document: expect.objectContaining({
         revision: 2,
-        header: { course: { key: "SVESVE02", name: "Svenska 2" }, course_hint: "Lokalt temaprov", printed_total: 36, tags: [] },
+        header: { course: { key: "SVESVE02", name: "Svenska 2" }, course_hint: "Lokalt temaprov", printed_total: 36, printed_total_dismissed: false, tags: [] },
       }),
     }));
     expect(saveState(wrapper)).not.toContain("Osparat");
@@ -115,7 +115,7 @@ describe("ExamWorkspaceMetadataDrawer course save workflow", () => {
     expect(saveState(wrapper)).toContain("Osparat");
     await saveDocument(wrapper);
     expect(api.saveExamWorkspaceDocument).toHaveBeenCalledWith("lineage-1", expect.objectContaining({
-      document: expect.objectContaining({ header: { course: null, course_hint: "Lokalt temaprov", printed_total: 36, tags: [] } }),
+      document: expect.objectContaining({ header: { course: null, course_hint: "Lokalt temaprov", printed_total: 36, printed_total_dismissed: false, tags: [] } }),
     }));
   });
 

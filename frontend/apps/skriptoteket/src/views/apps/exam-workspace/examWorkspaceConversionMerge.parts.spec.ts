@@ -52,6 +52,7 @@ function item(itemId: string, text: string, sequence = 0): NativeExamItem {
     },
     sequence,
     source_anchor: null,
+    source_points: null,
     suggested_kind: null,
     tick_points: null,
   };
@@ -73,13 +74,13 @@ function document(
   return {
     assets: [],
     document_id: "00000000-0000-4000-8000-000000000001",
-    header: { tags: [] },
+    header: { printed_total_dismissed: false, tags: [] },
     instructions: [],
     items: items.map((entry, index) => ({ ...entry, sequence: index + 1 })),
     origin: { kind: "docx_import" },
     parents,
     revision,
-    schema_version: "native_exam_document_v8",
+    schema_version: "native_exam_document_v9",
     title: "Prov",
   };
 }

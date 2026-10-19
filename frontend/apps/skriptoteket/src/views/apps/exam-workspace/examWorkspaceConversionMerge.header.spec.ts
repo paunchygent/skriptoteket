@@ -7,7 +7,7 @@ import { buildParentDocument } from "./examWorkspaceParentDocument.specSupport";
 function baseDocument() {
   return {
     ...buildParentDocument(),
-    header: { course_hint: null, printed_total: null, tags: [] },
+    header: { course_hint: null, printed_total: null, printed_total_dismissed: false, tags: [] },
   };
 }
 
@@ -22,7 +22,7 @@ describe("conversion merge header metadata", () => {
     const head = {
       ...base,
       revision: 2,
-      header: { course_hint: "Svenska 2", printed_total: 36, tags: [] },
+      header: { course_hint: "Svenska 2", printed_total: 36, printed_total_dismissed: false, tags: [] },
       // Deliberately not in document order: the merge pairs each total with its
       // own part and puts the parts back into order by place.
       parents: [
@@ -33,7 +33,7 @@ describe("conversion merge header metadata", () => {
 
     const merged = mergeConversionRevision({ base, local: base, head, baseUnits: [], headUnits: [] });
 
-    expect(merged.header).toEqual({ course_hint: "Svenska 2", printed_total: 36, tags: [] });
+    expect(merged.header).toEqual({ course_hint: "Svenska 2", printed_total: 36, printed_total_dismissed: false, tags: [] });
     expect(merged.parents.map((parent) => [parent.parent_id, parent.printed_total])).toEqual([
       ["parent_001", 21],
       ["parent_002", 15],
@@ -45,8 +45,8 @@ describe("conversion merge header metadata", () => {
 
   it("preserves a local header change through a newer head and its re-delivery", () => {
     const base = baseDocument();
-    const local = { ...base, header: { course_hint: "Lärarens kursrad", printed_total: 7.5, tags: [] } };
-    const head = { ...base, revision: 2, header: { course_hint: "Konverterad kursrad", printed_total: 20, tags: [] } };
+    const local = { ...base, header: { course_hint: "Lärarens kursrad", printed_total: 7.5, printed_total_dismissed: false, tags: [] } };
+    const head = { ...base, revision: 2, header: { course_hint: "Konverterad kursrad", printed_total: 20, printed_total_dismissed: false, tags: [] } };
     const merged = mergeConversionRevision({ base, local, head, baseUnits: [], headUnits: [] });
     const redelivered = mergeConversionRevision({
       base: head,

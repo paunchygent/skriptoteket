@@ -58,7 +58,7 @@ const PART_POINTS_LINE = '[data-test="exam-workspace-part-points-line"]';
 function documentWithTotals(printed: number | null, points: (number | null)[]): NativeExamDocument {
   return {
     ...buildDocument(),
-    header: { course_hint: "Svenska 2", printed_total: printed, tags: [] },
+    header: { course_hint: "Svenska 2", printed_total: printed, printed_total_dismissed: false, tags: [] },
     items: points.map((value, index) => ({ ...buildFreeTextItem(index + 1), points: value })),
   };
 }

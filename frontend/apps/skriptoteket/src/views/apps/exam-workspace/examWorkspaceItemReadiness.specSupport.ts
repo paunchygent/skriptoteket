@@ -30,6 +30,7 @@ export function buildChoiceItem(overrides: Partial<NativeExamItem> = {}): Native
     },
     sequence: 1,
     source_anchor: null,
+    source_points: null,
     suggested_kind: null,
     tick_points: null,
     writing_lines: null,

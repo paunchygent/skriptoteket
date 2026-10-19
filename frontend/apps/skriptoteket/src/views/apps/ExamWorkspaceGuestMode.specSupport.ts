@@ -77,6 +77,7 @@ export function keylessItem(sequence: number, kind: "single_choice" | "multiple_
     review: { confidence: 0.9, parse_origin: "deterministic", reasons: [], state: "review_complete" },
     sequence,
     source_anchor: null,
+    source_points: null,
     suggested_kind: null,
     tick_points: null,
     writing_lines: null,
@@ -131,6 +132,7 @@ export function retryItem(): NativeExamItem {
     },
     sequence: 3,
     source_anchor: "body:0001",
+    source_points: null,
     suggested_kind: null,
     tick_points: null,
     writing_lines: 8,
@@ -141,13 +143,13 @@ export function blankDocument(): NativeExamDocument {
   return {
     assets: [],
     document_id: "00000000-0000-4000-8000-000000000001",
-    header: { tags: [] },
+    header: { printed_total_dismissed: false, tags: [] },
     instructions: [],
     items: [keylessItem(1, "single_choice"), keylessItem(2, "multiple_response"), retryItem()],
     origin: { kind: "docx_import" },
     parents: [],
     revision: 1,
-    schema_version: "native_exam_document_v8",
+    schema_version: "native_exam_document_v9",
     title: "Nytt prov",
   };
 }

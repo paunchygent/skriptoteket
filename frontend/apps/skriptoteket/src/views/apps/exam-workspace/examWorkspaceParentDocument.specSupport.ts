@@ -80,6 +80,7 @@ function toNativeItem(recorded: RecordedItem, sequence: number): NativeExamItem 
     },
     sequence,
     source_anchor: null,
+    source_points: null,
   };
 }
 
@@ -118,8 +119,8 @@ export function buildParentDocument(): NativeExamDocument {
     origin: { kind: "docx_import" },
     parents: [buildRecordedParent()],
     revision: 1,
-    header: { tags: [] },
-    schema_version: "native_exam_document_v8",
+    header: { printed_total_dismissed: false, tags: [] },
+    schema_version: "native_exam_document_v9",
     title: "English 1",
   };
 }

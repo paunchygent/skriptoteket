@@ -100,6 +100,7 @@ export function choiceItem(
     review: UNREVIEWED,
     sequence: 1,
     source_anchor: null,
+    source_points: null,
     tick_points: null,
     writing_lines: null,
   };
@@ -136,6 +137,7 @@ export function gapItem(
     review: UNREVIEWED,
     sequence: 1,
     source_anchor: null,
+    source_points: null,
     tick_points: null,
     writing_lines: null,
   };

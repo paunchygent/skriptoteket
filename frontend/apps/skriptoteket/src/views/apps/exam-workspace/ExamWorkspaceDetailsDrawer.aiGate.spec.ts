@@ -64,7 +64,7 @@ const CONTENT = {
 } as unknown as ExamCourseContent;
 
 function courseDocument(): NativeExamDocument {
-  return { ...buildDocument(), header: { tags: [], course: { key: "eng5", name: "Engelska 5" } } };
+  return { ...buildDocument(), header: { printed_total_dismissed: false, tags: [], course: { key: "eng5", name: "Engelska 5" } } };
 }
 
 function signIn(pinia: Pinia, role: Role): void {

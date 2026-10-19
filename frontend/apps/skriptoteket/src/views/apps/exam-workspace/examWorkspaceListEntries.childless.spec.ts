@@ -24,7 +24,7 @@ function question(sequence: number): NativeExamItem {
 const document: NativeExamDocument = {
   assets: [],
   document_id: "00000000-0000-4000-8000-000000000001",
-  header: { tags: [] },
+  header: { printed_total_dismissed: false, tags: [] },
   instructions: [],
   items: [question(1), question(2), question(3), question(4)],
   origin: { kind: "created" },
@@ -33,7 +33,7 @@ const document: NativeExamDocument = {
     { instruction: [], item_ids: ["item_003", "item_004"], parent_id: "parent_002", place: 2 },
   ] satisfies NativeExamParent[],
   revision: 1,
-  schema_version: "native_exam_document_v8",
+  schema_version: "native_exam_document_v9",
   title: "Prov",
 };
 

@@ -54,6 +54,7 @@ function buildItem(itemId: string, text: string): NativeExamItem {
     },
     sequence: 0,
     source_anchor: null,
+    source_points: null,
     suggested_kind: null,
     tick_points: null,
     writing_lines: 8,
@@ -77,8 +78,8 @@ function buildDocument(
     origin: { kind: "docx_import" },
     parents: [],
     revision,
-    header: { tags: [] },
-    schema_version: "native_exam_document_v8",
+    header: { printed_total_dismissed: false, tags: [] },
+    schema_version: "native_exam_document_v9",
     title: "Prov",
     ...overrides,
   };

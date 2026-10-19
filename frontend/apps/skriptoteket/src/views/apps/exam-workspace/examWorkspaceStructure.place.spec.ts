@@ -34,13 +34,13 @@ function documentOf(items: NativeExamItem[], parents: NativeExamParent[]): Nativ
   return {
     assets: [],
     document_id: "00000000-0000-4000-8000-000000000001",
-    header: { tags: [] },
+    header: { printed_total_dismissed: false, tags: [] },
     instructions: [],
     items,
     origin: { kind: "created" },
     parents,
     revision: 1,
-    schema_version: "native_exam_document_v8",
+    schema_version: "native_exam_document_v9",
     title: "Prov",
   };
 }

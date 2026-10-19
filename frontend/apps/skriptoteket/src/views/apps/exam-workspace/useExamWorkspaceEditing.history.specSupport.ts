@@ -28,7 +28,7 @@ export function exam(title = "Original", itemCount = 2): NativeExamDocument {
   return {
     assets: [],
     document_id: LINEAGE,
-    header: { tags: [] },
+    header: { printed_total_dismissed: false, tags: [] },
     instructions: [],
     items: Array.from({ length: itemCount }, (_, index) => ({
       ...newTeacherItem(`item_00${index + 1}`, index + 1, "free_text"),
@@ -37,7 +37,7 @@ export function exam(title = "Original", itemCount = 2): NativeExamDocument {
     origin: { kind: "created" },
     parents: [],
     revision: 1,
-    schema_version: "native_exam_document_v8",
+    schema_version: "native_exam_document_v9",
     title,
   } as NativeExamDocument;
 }
