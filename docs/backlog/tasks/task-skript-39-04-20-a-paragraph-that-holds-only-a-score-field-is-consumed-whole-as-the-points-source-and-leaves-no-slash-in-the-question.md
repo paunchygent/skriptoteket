@@ -115,8 +115,14 @@ changes. The user accepted these consequences (Q3 = A, 2026-10-19); D7 records t
   lines) is cleared by merging `origin/main` once TASK-SKRIPT-39-04-19, which splits that
   module, lands there; the orchestrator signals it.
 - Q3 answered A by the user 2026-10-19 (D7 amended); Q1 and Q2 are follow-up proposals (D10).
-- Waiting on: the orchestrator's signal that 39-04-19 is on `origin/main` (F2), and the
-  user's confirmation of the corrected Q3 counts.
+- F2 cleared: `origin/main` `92373773` (TASK-SKRIPT-39-04-19, which splits
+  `docx_ai_build.py` into it and `docx_ai_item.py`) merged at `5943986c`; only the
+  generated index conflicted, regenerated. `da701044` points the new test's import at
+  `docx_ai_item`. The four focused files pass, 130 tests; lint passes; backend typecheck
+  is clean. The ten replays at `92373773` and at the merged head differ exactly as the
+  accepted Q3 diff (`~/logs/replays-39-04-score-field/{main-92373773,merged}`).
+- Waiting on: the domain-suite slot (main moved 58 commits) and the user's confirmation
+  of the corrected Q3 counts.
 - Branch `codex/task-skript-39-04-score-field-remote`, worktree
   `/home/paunchygent/apps/skriptoteket-task-skript-39-04-score-field-remote`; never pushed.
 - Retained root:
