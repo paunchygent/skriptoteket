@@ -56,6 +56,7 @@ Stop and report if the shared editor cannot run on a browser store without forki
 | G5  | User decision 2026-10-19 (relayed by the Mac parent): a handed-off draft whose title already exists in Mina filer gets a numbered title, "Titel (2)", then (3) and so on, chosen server-side in the handoff transaction so concurrent handoffs never pick the same number.                                              |
 | G6  | User decision 2026-10-19 (relayed by the Mac parent): nginx-proxy gets a fixed `ipv4_address` on hule-network and `TRUSTED_PROXY_CIDRS` trusts only that /32, never the 172.18.0.0/16 subnet. The Mac parent approved the proposal on 2026-10-19 as one step of this task's production deploy, after the merge to main. |
 | G7  | User decision 2026-10-19, given directly in the Hemma orchestrator session: guests also get "PDF med facit" ("Yes, it is still the default PDF version"). Guests and teachers share one export format list.                                                                                                             |
+| G8  | User decision 2026-10-19, answered on the Mac and relayed by the Mac parent: the print preview stays hidden for guests ("Keep hidden"). There is no public preview route.                                                                                                                                               |
 
 ## Resume Here (lead 2, 2026-10-19)
 
@@ -102,9 +103,9 @@ Stop and report if the shared editor cannot run on a browser store without forki
 - Commit a73533ec holds both F6 and R12:
   - F6: the merge delivered the guest print PDF separately from the Exam.net fallback, and new backend and frontend tests prove all four contracted guest exports. The backend test fails to import on pre-merge 670b46fc.
   - R12: the print preview goes through `store.teacher` and is hidden for guests. Before the fix 5 tests failed; after it 136 pass.
-- Open product questions for the user:
-  - A guest print preview would need a new stateless public preview route.
-- Next: one slot for full Vitest plus the backend files the merge and F6 touch; then F6, R12 and the merge go to review da90f12c.
+- Slot at 07b5229c: Vitest 456 files, 3136 passed; backend 97 unit and 5 integration tests passed.
+- Rereview 5 (da90f12c) cleared F6 and found R12 and the real-renderer test repair valid. It raised one medium finding: a double cast of the public API mock in the guest view specs. R13 repairs it; its proof is focused, with no slot and no rereview.
+- Next: commit R13, check the merge tree against origin/main, then the orchestrator reports the branch review-approved. The F1 deploy runs with the production deploy on the user's go.
 - Open findings:
   - The caller key is an unsalted sha256 of the client IP; rows are pruned after about 2 hours.
   - `ExamConverterPublicView.vue` stays until 41-02-03.

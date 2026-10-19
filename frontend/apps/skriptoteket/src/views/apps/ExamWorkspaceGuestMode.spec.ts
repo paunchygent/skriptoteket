@@ -18,7 +18,6 @@ import { ref } from "vue";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { NativeExamDocument, NativeExamItem } from "../../api/examWorkspace";
-import type { PublicExamWorkspaceQtiImportResult } from "../../api/publicExamWorkspace";
 import { AI_ADMIN_ONLY_NOTE } from "../../composables/useAiAccess";
 import { createTestRouter, mountWithContext } from "../../test/utils";
 import ExamWorkspaceView from "./ExamWorkspaceView.vue";
@@ -28,6 +27,7 @@ import {
 } from "./exam-workspace/examWorkspaceGuestCopy";
 import { createGuestExamWorkspaceStore } from "./exam-workspace/examWorkspaceGuestStore";
 import type { ExamWorkspaceGuestStoreDeps } from "./exam-workspace/examWorkspaceGuestStore";
+import { createGuestPublicApiMocks } from "./exam-workspace/examWorkspaceGuestStore.specSupport";
 import { createInMemoryExamWorkspaceGuestDraftStorage } from "./exam-workspace/examWorkspaceGuestDraftStorage";
 import {
   EXAM_WORKSPACE_LAYOUT_KEY,
@@ -209,32 +209,12 @@ type PublicApi = ExamWorkspaceGuestStoreDeps["api"];
 
 function setupGuest() {
   const storage = createInMemoryExamWorkspaceGuestDraftStorage();
-  const publicMocks = {
-    addPublicExamWorkspaceChild: vi.fn(),
-    changePublicExamWorkspaceItemType: vi.fn(),
-    createEmptyPublicExamWorkspacePart: vi.fn(),
-    createPublicExamWorkspaceBlank: vi.fn(),
-    createPublicExamWorkspaceParent: vi.fn(),
-    deletePublicExamWorkspaceChild: vi.fn(),
-    deletePublicExamWorkspaceParent: vi.fn(),
-    downloadPublicExamWorkspaceExport: vi.fn(),
-    getPublicExamCourseCatalog: vi.fn(),
-    getPublicExamWorkspaceExportChecklist: vi.fn(),
-    groupPublicExamWorkspaceItems: vi.fn(),
-    importPublicExamWorkspaceQti: vi.fn(
-      async (
-        _file: File,
-        _courseKey: string | null,
-      ): Promise<PublicExamWorkspaceQtiImportResult> => ({
-        assets: {},
-        document: blankDocument(),
-        notes: [],
-      }),
-    ),
-    movePublicExamWorkspaceItem: vi.fn(),
-    reorderPublicExamWorkspaceChildren: vi.fn(),
-    requestPublicExamWorkspaceAnswerMisspellings: vi.fn(),
-  };
+  const publicMocks = createGuestPublicApiMocks();
+  publicMocks.importPublicExamWorkspaceQti.mockResolvedValue({
+    assets: {},
+    document: blankDocument(),
+    notes: [],
+  });
   publicMocks.createPublicExamWorkspaceBlank.mockResolvedValue({
     document: blankDocument(),
     export_blockers: [],
@@ -244,7 +224,7 @@ function setupGuest() {
     generated_at: "2026-10-18T00:00:00Z",
     registered_course_keys: [],
   });
-  const api = publicMocks as unknown as PublicApi;
+  const api: PublicApi = publicMocks;
   let counter = 0;
   const guest = createGuestExamWorkspaceStore({
     api,

@@ -24,6 +24,7 @@ import { createGuestExamWorkspaceStore } from "./exam-workspace/examWorkspaceGue
 import { createInMemoryExamWorkspaceGuestDraftStorage } from "./exam-workspace/examWorkspaceGuestDraftStorage";
 import {
   DOCUMENT_ID,
+  createGuestPublicApiMocks,
   exam,
   setupGuestStore,
   startBlank as startBlankStore,
@@ -115,23 +116,7 @@ const CONTRACTED_TARGETS = ["qti", "pdf", "pdf_facit", "docx", "examnet_pdf"] as
 
 function setupGuest() {
   const storage = createInMemoryExamWorkspaceGuestDraftStorage();
-  const publicMocks = {
-    addPublicExamWorkspaceChild: vi.fn(),
-    changePublicExamWorkspaceItemType: vi.fn(),
-    createEmptyPublicExamWorkspacePart: vi.fn(),
-    createPublicExamWorkspaceBlank: vi.fn(),
-    createPublicExamWorkspaceParent: vi.fn(),
-    deletePublicExamWorkspaceChild: vi.fn(),
-    deletePublicExamWorkspaceParent: vi.fn(),
-    downloadPublicExamWorkspaceExport: vi.fn(),
-    getPublicExamCourseCatalog: vi.fn(),
-    getPublicExamWorkspaceExportChecklist: vi.fn(),
-    groupPublicExamWorkspaceItems: vi.fn(),
-    importPublicExamWorkspaceQti: vi.fn(),
-    movePublicExamWorkspaceItem: vi.fn(),
-    reorderPublicExamWorkspaceChildren: vi.fn(),
-    requestPublicExamWorkspaceAnswerMisspellings: vi.fn(),
-  };
+  const publicMocks = createGuestPublicApiMocks();
   const document: NativeExamDocument = exam("Original");
   publicMocks.createPublicExamWorkspaceBlank.mockResolvedValue({
     document,
@@ -146,7 +131,7 @@ function setupGuest() {
     entries: [],
     inline_choice_min_options: 2,
   });
-  const api = publicMocks as unknown as PublicApi;
+  const api: PublicApi = publicMocks;
   let counter = 0;
   const guest = createGuestExamWorkspaceStore({
     api,
