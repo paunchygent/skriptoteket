@@ -11,8 +11,10 @@ from dataclasses import dataclass
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import NativeParagraph
-from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import (
+from skriptoteket.domain.curated_apps.exam_workspace.source_format_errors import (
     FormattingTransferError,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import (
     SourceFormatting,
 )
 

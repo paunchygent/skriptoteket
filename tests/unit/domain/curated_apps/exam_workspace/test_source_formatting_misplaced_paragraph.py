@@ -19,8 +19,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeTextSegment,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_plain_text
-from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import (
+from skriptoteket.domain.curated_apps.exam_workspace.source_format_errors import (
     FormattingTransferError,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import (
     SourceFormatting,
 )
 

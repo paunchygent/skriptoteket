@@ -32,8 +32,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.source_entry_alignment impo
 )
 from skriptoteket.domain.curated_apps.exam_workspace.source_entry_labels import label_options
 from skriptoteket.domain.curated_apps.exam_workspace.source_entry_tokens import source_tokens
-from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import (
+from skriptoteket.domain.curated_apps.exam_workspace.source_format_errors import (
     FormattingTransferError,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import (
     SourceFormatting,
 )
 

@@ -15,8 +15,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.shared_body import (
 from skriptoteket.domain.curated_apps.exam_workspace.source_format_coverage import (
     complete_source_formatting,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import (
+from skriptoteket.domain.curated_apps.exam_workspace.source_format_errors import (
     FormattingTransferError,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import (
     SourceFormatting,
     formatted_text,
 )
