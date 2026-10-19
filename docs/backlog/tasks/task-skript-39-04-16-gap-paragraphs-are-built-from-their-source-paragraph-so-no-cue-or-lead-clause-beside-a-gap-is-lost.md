@@ -136,26 +136,24 @@ source line breaks changed 10 correct items.
   skipped; `~/logs/suite-39-04-16-final.log`); lint, typecheck and
   `docs-validate` pass.
 
-### Resume here (2026-10-18)
+### Resume here (2026-10-19)
 
-- State: implementation complete; independent review not launched (user stop
-  2026-10-18: break before review).
+- State: review repair. Independent review `5805cf6e` (retained root
+  `evidence/reviews/`) returned changes_requested with three medium findings:
+  F1 a trailing paragraph picture counted as a mismatch (`pictures_in` end
+  exclusive), F2 the D3 class chosen per table cell instead of per D2 unit,
+  F3 equal-place pictures ordered by asset id. Medium: admitted on focused
+  proof, no re-review.
 - Branch `codex/task-skript-39-04-gap-source`, worktree
-  `/home/paunchygent/apps/skriptoteket-task-skript-39-04-gap-source`; head
-  `6e6c19d6` plus this note; production code last at `6e6c19d6` (the D10
-  copy fix; replays and the full suite ran at `d6c2f9af`); never pushed.
-- Done units: A (rule and wiring), A2 (pictures), A3 and A4 (edge whitespace,
-  one paragraph with source line breaks), B (admission review), C and C2
-  (label test retarget). Replays, the Hemma suite, lint, typecheck and
-  `docs-validate` pass (see above).
-- Running children: none.
-- Next: the parent routes independent review; then act on the verdict; then the parent merges Task 1 before
-  TASK-SKRIPT-39-04-15 (Task 2), which reuses `source_paragraph`.
-- Open findings: none. The `gap_count_mismatch` review text follows the
-  user decision 2026-10-18 (D10), landed after review routing; not re-reviewed.
+  `/home/paunchygent/apps/skriptoteket-task-skript-39-04-gap-source`; never
+  pushed.
+- Units: F1 running (work order `evidence/work-orders/repair-f1-end-picture.md`);
+  F2 and F3 start after F1, in parallel on disjoint files.
+- Next: replays dumped to `~/logs/replays-39-04-gap-source/head2` and
+  classified against `head`; any non-fix difference goes to the parent; then
+  lint, typecheck, `docs-validate` and, on the parent's go, the domain suite.
 - Retained root:
-  `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a14f3e-11d5-7745-90e8-6323496fbf74`
-  (work orders, probes and `evidence/proof/`).
+  `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a14f3e-11d5-7745-90e8-6323496fbf74`.
 
 ## Stop Conditions
 

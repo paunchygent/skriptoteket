@@ -40,12 +40,16 @@ class ChunkProvenance:
         return self._anchors[bisect_right(self._starts, offset) - 1]
 
     def pictures_in(self, start: int, end: int) -> list[tuple[int, str]]:
-        """Every (source place, asset id) with ``start <= place < end``, sorted by place."""
+        """Every (source place, asset id) with ``start <= place <= end``, sorted by place.
+
+        The end is inclusive because a picture after a paragraph's final character has
+        offset equal to that paragraph's end.
+        """
         return sorted(
             (place, asset_id)
             for asset_id, places in self._pictures.items()
             for place in places
-            if start <= place < end
+            if start <= place <= end
         )
 
     def pieces(

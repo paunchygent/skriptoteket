@@ -11,12 +11,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import aligne
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedItem
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxChunk,
-    DocxImage,
     DocxSourceParagraph,
     DocxSourceRun,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
-    NativeAssetSegment,
     NativeGapSegment,
     NativeParagraph,
     NativeTextSegment,
@@ -31,56 +29,23 @@ from skriptoteket.domain.curated_apps.exam_workspace.source_gap_paragraphs impor
     blank_runs,
     source_paragraph,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.source_provenance import (
-    ChunkProvenance,
+from tests.unit.domain.curated_apps.exam_workspace.gap_paragraph_test_support import (
+    chunk as _chunk,
+)
+from tests.unit.domain.curated_apps.exam_workspace.gap_paragraph_test_support import (
+    gap as _gap,
+)
+from tests.unit.domain.curated_apps.exam_workspace.gap_paragraph_test_support import (
+    item as _item,
+)
+from tests.unit.domain.curated_apps.exam_workspace.gap_paragraph_test_support import (
+    projected as _projected,
+)
+from tests.unit.domain.curated_apps.exam_workspace.gap_paragraph_test_support import (
+    text as _text,
 )
 
 pytestmark = pytest.mark.unit
-
-
-def _chunk(anchor, text, *, heading=None, marks=(), images=()):
-    return DocxChunk(
-        anchor,
-        "paragraph",
-        text,
-        text,
-        images=images,
-        runs=(DocxSourceRun(0, text, marks),),
-        paragraphs=(DocxSourceParagraph(0, text, heading),),
-    )
-
-
-def _picture(asset_id):
-    return {"kind": "asset", "text": None, "accepted_values": [], "asset_id": asset_id}
-
-
-def _text(text):
-    return {"kind": "text", "text": text, "accepted_values": [], "asset_id": None}
-
-
-def _gap(*accepted):
-    return {"kind": "gap", "text": None, "accepted_values": list(accepted), "asset_id": None}
-
-
-def _item(chunks, body, *, printed_label=None, points=None, key_source=None, facit_text=None):
-    return ProducedItem.model_validate(
-        {
-            "source_anchors": [chunk.anchor for chunk in chunks],
-            "outcome": "converted",
-            "review_reason": None,
-            "kind": "gap_fill",
-            "printed_label": printed_label,
-            "points": points,
-            "key_source": key_source,
-            "facit_text": facit_text,
-            "choices": [],
-            "body": body,
-        }
-    )
-
-
-def _projected(chunks, paragraphs):
-    return SourceFormatting(chunks).body(paragraphs)
 
 
 @pytest.mark.parametrize(
@@ -386,121 +351,3 @@ def test_a_paragraph_without_blank_runs_keeps_the_reply_projection():
     )
     assert result.body == _projected(chunks, reply)
     assert body_plain_text(result.body) == "Give an [___]."
-
-
-def test_pictures_in_returns_each_place_and_asset_id_in_source_order():
-    first = DocxImage(payload=b"first", media_type="image/png", offset=3, marked_offset=3)
-    second = DocxImage(payload=b"second", media_type="image/png", offset=0, marked_offset=0)
-    provenance = ChunkProvenance()
-    provenance.add(10, _chunk("body:0001", "abc def", images=(first, second)))
-
-    assert provenance.pictures_in(10, 17) == [(10, second.asset_id), (13, first.asset_id)]
-    assert provenance.pictures_in(11, 13) == []
-    assert provenance.pictures_in(13, 14) == [(13, first.asset_id)]
-
-
-def test_a_source_picture_before_the_label_stands_first_in_the_built_paragraph():
-    image = DocxImage(payload=b"figure", media_type="image/png", offset=0, marked_offset=0)
-    chunks = (_chunk("body:0001", "1. The answer is ___.", images=(image,)),)
-    produced = _item(
-        chunks,
-        [
-            {
-                "segments": [
-                    _text("The answer is "),
-                    _gap(),
-                    _text("."),
-                    _picture(image.asset_id),
-                ]
-            }
-        ],
-        printed_label="1",
-    )
-
-    result = aligned_native_item(produced, chunks=chunks, language="en").item
-
-    segments = result.body[0].segments
-    assert [segment.kind for segment in segments] == ["asset", "text", "gap", "text"]
-    assert isinstance(segments[0], NativeAssetSegment)
-    assert segments[0].asset_id == image.asset_id
-    assert body_plain_text(result.body) == "The answer is [___]."
-
-
-def test_a_mid_text_source_picture_splits_the_text_at_its_source_place():
-    image = DocxImage(payload=b"figure", media_type="image/png", offset=10, marked_offset=10)
-    chunks = (_chunk("body:0001", "1. Alpha beta ___ gamma.", images=(image,)),)
-    produced = _item(
-        chunks,
-        [
-            {
-                "segments": [
-                    _text("Alpha beta "),
-                    _gap(),
-                    _text(" gamma."),
-                    _picture(image.asset_id),
-                ]
-            }
-        ],
-        printed_label="1",
-    )
-
-    result = aligned_native_item(produced, chunks=chunks, language="en").item
-
-    segments = result.body[0].segments
-    assert [segment.kind for segment in segments] == ["text", "asset", "text", "gap", "text"]
-    assert isinstance(segments[1], NativeAssetSegment)
-    assert segments[1].asset_id == image.asset_id
-    assert body_plain_text(result.body) == "Alpha beta [___] gamma."
-
-
-def test_a_reply_that_drops_the_source_picture_raises():
-    image = DocxImage(payload=b"figure", media_type="image/png", offset=0, marked_offset=0)
-    chunks = (_chunk("body:0001", "1. The answer is ___.", images=(image,)),)
-    produced = _item(
-        chunks,
-        [{"segments": [_text("The answer is "), _gap(), _text(".")]}],
-        printed_label="1",
-    )
-
-    with pytest.raises(FormattingTransferError) as raised:
-        aligned_native_item(produced, chunks=chunks, language="en")
-
-    assert str(raised.value) == "cannot rebuild picture placement"
-
-
-def test_a_reply_that_adds_a_picture_the_source_paragraph_lacks_raises():
-    # The picture stands in a later paragraph of the same source chunk: its provenance
-    # keeps it in the gap paragraph's group but outside the unit's own span.
-    image = DocxImage(payload=b"elsewhere", media_type="image/png", offset=19, marked_offset=19)
-    text = "The answer is ___.\nSee the figure."
-    chunk = DocxChunk(
-        "body:0001",
-        "paragraph",
-        text,
-        text,
-        images=(image,),
-        runs=(DocxSourceRun(0, text, ()),),
-        paragraphs=(
-            DocxSourceParagraph(0, "The answer is ___."),
-            DocxSourceParagraph(19, "See the figure."),
-        ),
-    )
-    chunks = (chunk,)
-    produced = _item(
-        chunks,
-        [
-            {
-                "segments": [
-                    _text("The answer is "),
-                    _gap(),
-                    _text("."),
-                    _picture(image.asset_id),
-                ]
-            }
-        ],
-    )
-
-    with pytest.raises(FormattingTransferError) as raised:
-        aligned_native_item(produced, chunks=chunks, language="en")
-
-    assert str(raised.value) == "cannot rebuild picture placement"
