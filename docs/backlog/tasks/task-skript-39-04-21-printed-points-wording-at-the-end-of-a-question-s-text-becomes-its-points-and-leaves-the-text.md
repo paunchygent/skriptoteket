@@ -212,7 +212,11 @@ Units, each for one fresh junior:
   `b9af0fbd`, merge of `origin/main` `10b257f5`, U7 `13ac8ccb` (D12 test corrections,
   classification `evidence/proof/u7-classification.md`). Second domain suite at `10b257f5`:
   fe-test 505 files pass; backend 9 D12 failures, corrected in U7 and rerun in 33 related files
-  (1301 passed). Replay bar against `origin/main`: only the D4 bodies change. Never pushed.
-- Next: the orchestrator merges to `main` for a staging walk (user decision 2026-10-19), then a
-  Pi code review. U4 (the offer line, D10) waits for TASK-SKRIPT-40-04-10 to merge into
-  `origin/main`.
+  (1301 passed). Merges of `origin/main`: `bb073df8` (`b03a20f3`, with 40-04-10's
+  `source_points`; both fields kept) and `c4482c94` (`00f62f1a`; one main-side fixture gained
+  `leftover_points_text: null`). At `c4482c94`: 55 backend files 1690 passed, 156 spec files
+  1369 passed, lint code phases and typecheck pass; replay bar against `00f62f1a` shows only the
+  four D4 bodies (`evidence/proof/u9-bar-vs-main.txt`). Never pushed.
+- Next: the orchestrator merges `c4482c94` and later to `main` in one batch with the others
+  (user decision 2026-10-19), then a Pi code review on that head. U4 (the offer line, D10) is
+  parked for a later batch; its work order is `evidence/work-orders/u4-offer-line.md`.
