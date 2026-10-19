@@ -28,10 +28,12 @@ backlog_document_profile: contract-derived
 
 - 2026-10-19, lead 489a15c8 (retained root `01a1567f-d4fd-7c19-bd60-8c62b95f38ae`), branch
   `codex/task-skript-41-02-guest-handover-rejection-remote` from `2338b1af`.
-- Done: U0 (server `vault_full` marker) and U1 (pure classifier), focused proof green.
-- Running: U2a (handoff outcome and rejection record). Next: U2b (host controller: backoff,
-  toasts, download, remove, retry), U3 (notice component and host wiring), component-rendered
-  screenshots and string inventory for copy review, then the domain suite slot.
+- Done: U0 server `vault_full` marker and U1 pure classifier (`99bf9df4`); U2a handoff outcome
+  and rejection record (`5ea99521`); U2b host controller (`4cd29ddc`). 56 focused tests green.
+- Fail-first: a disposable probe on the pre-fix commit `2338b1af` failed 11 of 11 cases
+  (`evidence/fail-first/` in the retained root).
+- Running: U3 (notice component and host wiring). Next: U4 component-rendered screenshots and
+  string inventory for copy review, `fe-build`, then the domain suite slot.
 - Work orders: `work/orders/` in the retained root. Explorer maps: `discovery/explorer/`.
 
 ## Implementation Contract
