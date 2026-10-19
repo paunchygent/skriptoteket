@@ -2,10 +2,11 @@
  * Exam workspace header structure (TASK-SKRIPT-40-04-17, T2, T5, T6).
  *
  * Expected behavior:
- *   The header reads title block, Öppna, Spara som …, Exportera, Importera,
- *   a separator, PDF, the AI glyph and the status slot. Spara som … and
- *   Importera emit their intents directly, PDF is a pressed toggle, the
- *   course and points line opens Provets detaljer, and neither Ångra nor Gör
+ *   The header reads title block, Uppgifter, a separator, Öppna, Spara som …,
+ *   Exportera, Importera, a separator, PDF, the AI glyph and the status slot.
+ *   Uppgifter opens Provets uppgifter and is the only way in from the header;
+ *   the course and points line is plain text. Spara som … and Importera emit
+ *   their intents directly, PDF is a pressed toggle, and neither Ångra nor Gör
  *   om is in the header.
  */
 
@@ -14,10 +15,10 @@ import { describe, expect, it } from "vitest";
 import { mountHeader } from "./ExamWorkspaceHeader.specSupport";
 
 describe("ExamWorkspaceHeader layout", () => {
-  it("keeps the order title, meta, Öppna, Spara som, Exportera, Importera, PDF, AI, status", () => {
+  it("keeps the order title, meta, Uppgifter, Öppna, Spara som, Exportera, Importera, PDF, AI, status", () => {
     const wrapper = mountHeader();
     const order = [
-      "exam-workspace-title", "exam-workspace-rename", "exam-workspace-details",
+      "exam-workspace-title", "exam-workspace-rename", "exam-workspace-meta", "exam-workspace-details",
       "exam-workspace-open", "exam-workspace-save-as-command", "exam-workspace-export",
       "exam-workspace-import", "exam-workspace-print-preview-toggle", "exam-workspace-suggest-all",
       "exam-workspace-save-state",
@@ -38,7 +39,9 @@ describe("ExamWorkspaceHeader layout", () => {
 
   it("puts a separator between the file commands and PDF", () => {
     const wrapper = mountHeader();
-    const separator = wrapper.get(".xw-toolsep").element;
+    const separators = wrapper.findAll(".xw-toolsep");
+    expect(separators).toHaveLength(2);
+    const separator = separators[1].element;
     const pdf = wrapper.get('[data-test="exam-workspace-print-preview-toggle"]').element;
     const importButton = wrapper.get('[data-test="exam-workspace-import"]').element;
     expect(importButton.compareDocumentPosition(separator) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
@@ -94,23 +97,44 @@ describe("ExamWorkspaceHeader layout", () => {
     open.unmount();
   });
 
-  it("opens the details from the course and points line, not from the title", async () => {
-    const wrapper = mountHeader({ courseLabel: "Svenska 1", total: 24 });
-    const meta = wrapper.get('[data-test="exam-workspace-details"]');
+  it("opens Provets uppgifter from the first toolbar command, not from the title or the meta line", async () => {
+    const closed = mountHeader({ courseLabel: "Svenska 1", total: 24, detailsOpen: false });
+    const command = closed.get('[data-test="exam-workspace-details"]');
+    expect(closed.get('[role="toolbar"]').find("button").element).toBe(command.element);
+    expect(command.element.nextElementSibling?.classList.contains("xw-toolsep")).toBe(true);
+    expect(command.element.nextElementSibling?.nextElementSibling).toBe(closed.get('[data-test="exam-workspace-open"]').element);
+    expect(command.text()).toBe("Uppgifter");
+    expect(command.attributes("title")).toBe("Provets uppgifter");
+    expect(command.attributes("aria-label")).toBe("Provets uppgifter");
+    expect(command.attributes("aria-haspopup")).toBe("dialog");
+    expect(command.attributes("aria-expanded")).toBe("false");
+
+    const meta = closed.get('[data-test="exam-workspace-meta"]');
+    expect(meta.element.tagName).not.toBe("BUTTON");
     expect(meta.text()).toBe("Svenska 1 · 24 p");
-    expect(meta.attributes("title")).toBe("Provets detaljer");
-
-    await wrapper.get('[data-test="exam-workspace-title"]').trigger("click");
-    expect(wrapper.emitted("toggleDetails")).toBeUndefined();
-
     await meta.trigger("click");
-    expect(wrapper.emitted("toggleDetails")).toHaveLength(1);
+    await closed.get('[data-test="exam-workspace-title"]').trigger("click");
+    expect(closed.emitted("toggleDetails")).toBeUndefined();
+
+    await command.trigger("click");
+    expect(closed.emitted("toggleDetails")).toHaveLength(1);
+    closed.unmount();
+
+    const open = mountHeader({ detailsOpen: true });
+    expect(open.get('[data-test="exam-workspace-details"]').attributes("aria-expanded")).toBe("true");
+    open.unmount();
+  });
+
+  it("shows no Uppgifter command or meta line while no exam is open", () => {
+    const wrapper = mountHeader({ title: null });
+    expect(wrapper.find('[data-test="exam-workspace-details"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="exam-workspace-meta"]').exists()).toBe(false);
     wrapper.unmount();
   });
 
   it("shows Utan kurs when the exam has no course", () => {
     const wrapper = mountHeader({ courseLabel: null, total: 0 });
-    expect(wrapper.get('[data-test="exam-workspace-details"]').text()).toBe("Utan kurs · 0 p");
+    expect(wrapper.get('[data-test="exam-workspace-meta"]').text()).toBe("Utan kurs · 0 p");
     wrapper.unmount();
   });
 });

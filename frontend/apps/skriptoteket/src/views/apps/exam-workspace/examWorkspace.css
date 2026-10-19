@@ -162,6 +162,36 @@ Relationships:
   font-size: var(--huleedu-type-field-label-size); font-weight: var(--huleedu-type-field-label-weight);
 }
 .xw-grow { flex: 1; min-width: 0; }
+/* One bordered answer block: each setting is a row with an 11rem label column (TASK-SKRIPT-40-04-18). */
+.xw-answer {
+  margin-top: 24px; border: 1px solid var(--huleedu-panel-border); border-radius: var(--huleedu-radius-lg);
+  background: var(--huleedu-surface-content);
+}
+.xw-answer-row {
+  display: grid; grid-template-columns: 11rem minmax(0, 1fr); column-gap: 16px; align-items: start; padding: 12px 16px;
+}
+.xw-answer-row + .xw-answer-row { border-top: 1px solid var(--huleedu-surface-divider); }
+.xw-answer-label {
+  font-size: var(--huleedu-type-field-label-size); font-weight: var(--huleedu-type-field-label-weight); line-height: 28px;
+}
+.xw-answer-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 2px; min-width: 0; }
+.xw-answer-criteria { display: grid; gap: 6px; min-width: 0; }
+.xw-answer-criterion {
+  display: grid; grid-template-columns: minmax(0, 1fr) 5.5rem 28px; gap: 8px; align-items: center;
+}
+.xw-answer-points { position: relative; display: block; }
+.xw-answer-points .xw-input { padding-right: 1.75rem; font-variant-numeric: tabular-nums; }
+.xw-answer-points__unit {
+  position: absolute; top: 0; right: var(--huleedu-space-3); bottom: 0; display: flex; align-items: center;
+  color: var(--huleedu-navy-60); pointer-events: none;
+}
+.xw-tool--danger { color: var(--huleedu-error); }
+.xw-input.xw-input--warning { border-color: var(--huleedu-warning); box-shadow: 0 0 0 1px var(--huleedu-warning); }
+.xw-answer-points .xw-input { appearance: textfield; }
+.xw-answer-points .xw-input::-webkit-inner-spin-button, .xw-answer-points .xw-input::-webkit-outer-spin-button { appearance: none; margin: 0; }
+@media (max-width: 767px) {
+  .xw-answer-row { grid-template-columns: minmax(0, 1fr); row-gap: 4px; }
+}
 /* One bordered rich-text box: the formatting toolbar is its top strip and the text flows below it. */
 .xw-rich {
   border: 1px solid var(--huleedu-panel-border); border-radius: var(--huleedu-radius-lg);

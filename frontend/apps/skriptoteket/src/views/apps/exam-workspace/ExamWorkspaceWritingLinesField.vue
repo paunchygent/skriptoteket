@@ -20,7 +20,7 @@
  *   - Reads the house bounds from `examWorkspaceWritingLines`.
  */
 
-import { computed } from "vue";
+import { computed, useId } from "vue";
 
 import { MAX_WRITING_LINES, MIN_WRITING_LINES } from "./examWorkspaceWritingLines";
 
@@ -44,6 +44,7 @@ const emit = defineEmits<{
 }>();
 
 /** The question's writing lines, passed in by the editor. */
+const labelId = useId();
 const label = computed(() => (props.lines === 1 ? "1 rad" : `${props.lines} rader`));
 const atMin = computed(() => props.lines <= MIN_WRITING_LINES);
 const atMax = computed(() => props.lines >= MAX_WRITING_LINES);
@@ -67,14 +68,19 @@ function applyToAll(): void {
 </script>
 
 <template>
-  <fieldset
-    class="grid gap-2"
+  <div
+    class="xw-answer-row"
+    role="group"
+    :aria-labelledby="labelId"
     data-test="exam-workspace-writing-lines"
   >
-    <legend class="mb-2 text-xs font-semibold text-navy/80">
-      Skrivyta: {{ label }}
-    </legend>
-    <div class="flex items-center gap-2">
+    <div
+      :id="labelId"
+      class="xw-answer-label"
+    >
+      Skrivyta
+    </div>
+    <div class="xw-answer-controls">
       <button
         type="button"
         class="inline-flex h-10 w-10 items-center justify-center border border-navy/35 bg-panel text-lg font-semibold text-navy hover:bg-canvas disabled:opacity-50"
@@ -87,6 +93,7 @@ function applyToAll(): void {
       >
         −
       </button>
+      <span data-test="exam-workspace-writing-lines-count">{{ label }}</span>
       <button
         type="button"
         class="inline-flex h-10 w-10 items-center justify-center border border-navy/35 bg-panel text-lg font-semibold text-navy hover:bg-canvas disabled:opacity-50"
@@ -111,5 +118,5 @@ function applyToAll(): void {
         Använd för alla fritextfrågor
       </button>
     </div>
-  </fieldset>
+  </div>
 </template>

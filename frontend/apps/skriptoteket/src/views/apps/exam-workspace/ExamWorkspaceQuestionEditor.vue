@@ -301,21 +301,27 @@ const keyLine = computed(() => {
     />
 
     <template v-if="showFields">
-      <ExamWorkspaceWritingLinesField
-        v-if="item.kind === 'free_text' && item.writing_lines !== null"
-        :lines="item.writing_lines"
-        :disabled="locked"
-        :all-free-text-match="allFreeTextWritingLinesMatch"
-        :locked-reason-id="converting ? convertingNoticeId : null"
-        @update="(lines) => emit('updateWritingLines', item.item_id, lines)"
-        @apply-to-all="(lines) => emit('applyWritingLinesToAll', lines)"
-      />
-      <ExamWorkspaceCriteriaField
+      <section
         v-if="item.kind === 'free_text'"
-        :disabled="locked"
-        :item="item"
-        @update="(criteria, structural) => emit('updateCriteria', item.item_id, criteria, structural)"
-      />
+        class="xw-answer"
+        aria-label="Svar och bedömning"
+        data-test="exam-workspace-answer-block"
+      >
+        <ExamWorkspaceWritingLinesField
+          v-if="item.writing_lines !== null"
+          :lines="item.writing_lines"
+          :disabled="locked"
+          :all-free-text-match="allFreeTextWritingLinesMatch"
+          :locked-reason-id="converting ? convertingNoticeId : null"
+          @update="(lines) => emit('updateWritingLines', item.item_id, lines)"
+          @apply-to-all="(lines) => emit('applyWritingLinesToAll', lines)"
+        />
+        <ExamWorkspaceCriteriaField
+          :disabled="locked"
+          :item="item"
+          @update="(criteria, structural) => emit('updateCriteria', item.item_id, criteria, structural)"
+        />
+      </section>
       <ExamWorkspaceChoiceField
         :disabled="locked"
         :item="item"

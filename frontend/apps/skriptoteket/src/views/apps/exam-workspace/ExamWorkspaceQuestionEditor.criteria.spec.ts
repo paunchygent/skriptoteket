@@ -167,9 +167,48 @@ describe("ExamWorkspaceQuestionEditor Fritext criteria", () => {
     );
   });
 
-  it("shows no criteria on a matching item", () => {
+  it("wraps Skrivyta and the criteria as two labelled rows of one answer block", () => {
+    const wrapper = mountEditor(buildFreeTextItem({ criteria: TWO_CRITERIA, points: 3, writing_lines: 8 }));
+    const block = wrapper.get('[data-test="exam-workspace-answer-block"]');
+    const rows = block.findAll(".xw-answer-row");
+
+    expect(block.classes()).toContain("xw-answer");
+    expect(rows).toHaveLength(2);
+    expect(rows.map((row) => row.attributes("role"))).toEqual(["group", "group"]);
+    expect(rows.map((row) => row.get(`[id="${row.attributes("aria-labelledby")}"]`).text())).toEqual([
+      "Skrivyta",
+      "Bedömningskriterier",
+    ]);
+    expect(rows[1].attributes("data-test")).toBe("exam-workspace-criteria");
+  });
+
+  it("holds the criteria row alone when the item has no writing lines", () => {
+    const wrapper = mountEditor(buildFreeTextItem({ writing_lines: null }));
+    const rows = wrapper.get('[data-test="exam-workspace-answer-block"]').findAll(".xw-answer-row");
+
+    expect(rows).toHaveLength(1);
+    expect(rows[0].attributes("data-test")).toBe("exam-workspace-criteria");
+  });
+
+  it("gives the trash and add tools no box and a p suffix to the points", () => {
+    const wrapper = mountEditor(buildFreeTextItem({ criteria: TWO_CRITERIA, points: 3 }));
+    const remove = wrapper.get('[data-test="exam-workspace-criterion-remove-0"]');
+    const add = wrapper.get(ADD);
+
+    expect(remove.classes()).toEqual(expect.arrayContaining(["xw-tool", "xw-tool--danger"]));
+    expect(add.classes()).toEqual(expect.arrayContaining(["xw-tool", "xw-tool--word"]));
+    for (const tool of [remove, add]) {
+      expect(tool.classes().filter((name) => /^(border|bg-)/.test(name))).toEqual([]);
+    }
+    const unit = wrapper.get(".xw-answer-points__unit");
+    expect(unit.text()).toBe("p");
+    expect(unit.attributes("aria-hidden")).toBe("true");
+  });
+
+  it("shows no answer block or criteria on a matching item", () => {
     const wrapper = mountEditor(buildMatchingItem());
 
     expect(wrapper.find(CRITERIA).exists()).toBe(false);
+    expect(wrapper.find('[data-test="exam-workspace-answer-block"]').exists()).toBe(false);
   });
 });

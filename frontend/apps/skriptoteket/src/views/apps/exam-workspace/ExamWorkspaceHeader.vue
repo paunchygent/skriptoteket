@@ -3,10 +3,10 @@
  * Exam workspace header.
  *
  * Domain purpose:
- *   One row above every question: the title block (title, pencil, and the
- *   course and points line that opens Provets uppgifter), the file commands
- *   (Öppna, Spara som …, Exportera, Importera), PDF, the AI glyph and the
- *   fixed-width autosave status slot (Sparat, Sparar …, Inte sparat). Clicking
+ *   One row above every question: the title block (title, pencil and the
+ *   plain course and points line), the Uppgifter command that opens Provets
+ *   uppgifter, the file commands (Öppna, Spara som …, Exportera, Importera),
+ *   PDF, the AI glyph and the fixed-width autosave status slot (Sparat, Sparar …, Inte sparat). Clicking
  *   the title or the pencil renames the exam in place: Enter or blur commits,
  *   Escape restores. On a phone the title block moves into the shell's top bar
  *   (`#app-topbar-page-slot`).
@@ -150,18 +150,13 @@ function handleSuggestAll(): void {
             </button>
           </template>
         </div>
-        <button
+        <p
           v-if="title !== null"
-          type="button"
           class="ws-meta"
-          :aria-expanded="detailsOpen"
-          aria-haspopup="dialog"
-          title="Provets detaljer"
-          data-test="exam-workspace-details"
-          @click="emit('toggleDetails')"
+          data-test="exam-workspace-meta"
         >
           {{ courseLabel ?? "Utan kurs" }} · {{ total }} p
-        </button>
+        </p>
       </div>
     </Teleport>
 
@@ -170,6 +165,24 @@ function handleSuggestAll(): void {
       role="toolbar"
       aria-label="Provet"
     >
+      <template v-if="title !== null">
+        <button
+          type="button"
+          class="xw-cmd"
+          :aria-expanded="detailsOpen"
+          aria-haspopup="dialog"
+          aria-label="Provets uppgifter"
+          title="Provets uppgifter"
+          data-test="exam-workspace-details"
+          @click="emit('toggleDetails')"
+        >
+          <UiGlyph
+            meaning="info"
+            :size="20"
+          /><span class="ws-word">Uppgifter</span>
+        </button>
+        <span class="xw-toolsep" />
+      </template>
       <button
         type="button"
         class="xw-cmd"
@@ -286,13 +299,9 @@ function handleSuggestAll(): void {
 }
 .ws-title__input:focus-visible { outline: 2px solid var(--huleedu-action-40); outline-offset: 0; }
 .ws-meta {
-  all: unset; box-sizing: border-box; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  cursor: pointer; border-radius: var(--huleedu-radius-md);
+  margin: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   font-size: var(--huleedu-text-xs); color: var(--huleedu-navy-70);
 }
-.ws-meta:focus-visible { outline: 2px solid var(--huleedu-action-40); }
-.ws-meta[aria-expanded="true"] { color: var(--huleedu-action); }
-@media (hover: hover) { .ws-meta:hover { text-decoration: underline; } }
 .ws-tools { display: flex; align-items: center; gap: var(--huleedu-space-2); flex: none; }
 /* Sized for its widest state ("Sparat 14:05"), so no state moves a neighbouring control. */
 .ws-status-slot { display: flex; align-items: center; flex: none; width: 8.5rem; margin-left: var(--huleedu-space-2); }

@@ -44,11 +44,24 @@ function mountField(
 
 describe("ExamWorkspaceWritingLinesField", () => {
   it("names the writing area in rows", () => {
-    expect(mountField(8).get(FIELD).text()).toContain("Skrivyta: 8 rader");
+    const field = mountField(8).get(FIELD);
+
+    expect(field.text()).toContain("Skrivyta");
+    expect(field.text()).toContain("8 rader");
   });
 
   it("uses the singular for one row", () => {
-    expect(mountField(1).get(FIELD).text()).toContain("Skrivyta: 1 rad");
+    expect(mountField(1).get(FIELD).text()).toContain("1 rad");
+  });
+
+  it("is one row group named by its Skrivyta label", () => {
+    const field = mountField(8).get(FIELD);
+    const labelId = field.attributes("aria-labelledby");
+
+    expect(field.attributes("role")).toBe("group");
+    expect(field.classes()).toContain("xw-answer-row");
+    expect(labelId).toBeDefined();
+    expect(field.get(`[id="${labelId}"]`).text()).toBe("Skrivyta");
   });
 
   it("emits the next count from the stepper", async () => {

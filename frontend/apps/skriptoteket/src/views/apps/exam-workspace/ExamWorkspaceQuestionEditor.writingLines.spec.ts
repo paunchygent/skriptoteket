@@ -43,7 +43,8 @@ describe("ExamWorkspaceQuestionEditor Skrivyta", () => {
   it("shows the writing-area field on a free-text question", () => {
     const wrapper = mountEditor(buildFreeTextItem(1, { writing_lines: 8 }));
 
-    expect(wrapper.get(FIELD).text()).toContain("Skrivyta: 8 rader");
+    expect(wrapper.get(FIELD).text()).toContain("Skrivyta");
+    expect(wrapper.get(FIELD).text()).toContain("8 rader");
   });
 
   it("emits the count from one question and for every free-text question", async () => {
