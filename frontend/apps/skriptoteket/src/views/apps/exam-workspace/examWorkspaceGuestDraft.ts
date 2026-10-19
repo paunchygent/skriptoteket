@@ -62,6 +62,8 @@ export type ExamWorkspaceGuestDraft = {
   /** The retained snapshot the editor stands on. */
   position_step_id: string;
   asset_ids: string[];
+  /** The parser's import notes; the workspace shows them exactly like a teacher's. */
+  notes: ExamWorkspaceDocumentResponse["notes"];
 };
 
 export type ExamWorkspaceGuestUndoStepOutcome =
@@ -120,11 +122,13 @@ export function guestHistory(draft: ExamWorkspaceGuestDraft): ExamWorkspaceHisto
  * A fresh guest draft: the imported document is both the saved copy and the
  * baseline snapshot, exactly as the server creates a new exam's history with
  * the lineage id as its baseline step (`exam_workspace_document_store.py`
- * lines 216-225). The document's declared pictures are the stored asset ids.
+ * lines 216-225). The document's declared pictures are the stored asset ids,
+ * and the parser's import notes travel with the exam like the container's.
  */
 export function newGuestDraft(
   document: NativeExamDocument,
   ids: ExamWorkspaceGuestDraftIdSource,
+  notes: ExamWorkspaceDocumentResponse["notes"],
 ): ExamWorkspaceGuestDraft {
   const baselineStepId = document.document_id;
   return {
@@ -132,6 +136,7 @@ export function newGuestDraft(
     baseline: { document, step_id: baselineStepId },
     cursor: baselineStepId,
     lineage_id: document.document_id,
+    notes,
     position_step_id: baselineStepId,
     saved_at: ids.now(),
     saved_document: document,
@@ -142,10 +147,10 @@ export function newGuestDraft(
 /**
  * The response the server returns when the exam is opened
  * (`GetExamWorkspaceDocumentHandler`): the position snapshot's document with
- * the saved revision, the durable saved copy, the summary, the cursor and
- * the conversion/notes fields a guest never has. A guest's title verdict is
- * computed by the viewer from public command responses and export refusals
- * only, so no export blockers are invented here.
+ * the saved revision, the durable saved copy, the summary, the cursor, no
+ * conversion (a guest never has one), and the draft's import notes. A guest's
+ * title verdict is computed by the viewer from public command responses and
+ * export refusals only, so no export blockers are invented here.
  */
 export function guestDocumentResponse(
   draft: ExamWorkspaceGuestDraft,
@@ -160,7 +165,7 @@ export function guestDocumentResponse(
     document: withRevision(position.document, saved.revision),
     export_blockers: [],
     history_cursor: draft.cursor,
-    notes: [],
+    notes: draft.notes,
     saved_document: saved,
     summary: {
       course_key: saved.header.course?.key ?? null,

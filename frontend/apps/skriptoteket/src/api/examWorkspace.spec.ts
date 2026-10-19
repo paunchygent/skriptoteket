@@ -321,7 +321,7 @@ describe("examWorkspace transport", () => {
       "asset-a": blobA,
       "asset-b": blobB,
       "asset-extra": new Blob(["extra"]),
-    });
+    }, ["Fråga 3 hoppades över."]);
 
     expect(apiPostMock).toHaveBeenCalledTimes(1);
     const [path, body] = apiPostMock.mock.calls[0];
@@ -330,6 +330,7 @@ describe("examWorkspace transport", () => {
     const form = body as FormData;
     expect(form.get("draft_id")).toBe("draft-1");
     expect(JSON.parse(form.get("document") as string)).toEqual(document);
+    expect(JSON.parse(form.get("notes") as string)).toEqual(["Fråga 3 hoppades över."]);
     expect(form.get("asset:asset-a")).toBeInstanceOf(Blob);
     expect((form.get("asset:asset-a") as Blob).size).toBe(2);
     expect(form.get("asset:asset-b")).toBeInstanceOf(Blob);

@@ -59,7 +59,7 @@ function guestIds() {
 
 async function opened() {
   const backing = createInMemoryExamWorkspaceGuestDraftStorage();
-  const original = newGuestDraft(buildParentDocument(), guestIds());
+  const original = newGuestDraft(buildParentDocument(), guestIds(), []);
   await backing.replaceIf(null, { assets: {}, draft: original });
   const guest = createGuestExamWorkspaceStore({
     api: publicApi,

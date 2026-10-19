@@ -74,7 +74,7 @@ function pictureDocument(): NativeExamDocument {
 /** The draft stands on a newer edit than the saved baseline. */
 function editedDraft(): { draft: ExamWorkspaceGuestDraft; position: NativeExamDocument } {
   const ids = createIds();
-  const draft = newGuestDraft(pictureDocument(), ids);
+  const draft = newGuestDraft(pictureDocument(), ids, []);
   const outcome = storeGuestUndoStep(
     draft,
     { afterStepId: null, document: { ...pictureDocument(), title: "Redigerad" }, expectedCursor: draft.cursor },
@@ -158,9 +158,31 @@ describe("runGuestHandoff", () => {
     expect(teacher.importExamWorkspaceGuestDraft).toHaveBeenCalledWith(draft.cursor, position, {
       asset_a: blobA,
       asset_b: blobB,
-    });
+    }, []);
     await expect(storage.load()).resolves.toBeNull();
     expect(failureToasts()).toEqual([]);
+  });
+
+  it("hands the draft's import notes over with the newest document", async () => {
+    const storage = createInMemoryExamWorkspaceGuestDraftStorage();
+    const ids = createIds();
+    const draft = newGuestDraft(pictureDocument(), ids, ["Fråga 3 hoppades över."]);
+    const blobA = new Blob(["a"]);
+    const blobB = new Blob(["b"]);
+    await seed(storage, { assets: { asset_a: blobA, asset_b: blobB }, draft });
+    const teacher = teacherMock();
+    teacher.importExamWorkspaceGuestDraft.mockResolvedValue(handoffResponse("lineage-new"));
+
+    await expect(runGuestHandoff({ storage, teacher })).resolves.toBe("lineage-new");
+
+    expect(teacher.importExamWorkspaceGuestDraft).toHaveBeenCalledTimes(1);
+    expect(teacher.importExamWorkspaceGuestDraft).toHaveBeenCalledWith(
+      draft.cursor,
+      guestDocumentResponse(draft).document,
+      { asset_a: blobA, asset_b: blobB },
+      ["Fråga 3 hoppades över."],
+    );
+    await expect(storage.load()).resolves.toBeNull();
   });
 
   it("keeps the browser copy, toasts once and returns null when the post fails", async () => {
@@ -229,7 +251,7 @@ describe("runGuestHandoff", () => {
 
   it("keeps a newer draft stored while the old snapshot posts and clears nothing of it", async () => {
     const storage = createInMemoryExamWorkspaceGuestDraftStorage();
-    const old = newGuestDraft(buildParentDocument(), createIds());
+    const old = newGuestDraft(buildParentDocument(), createIds(), []);
     await seed(storage, { assets: {}, draft: old });
     let resolvePost!: (response: ExamWorkspaceDocumentResponse) => void;
     const post = new Promise<ExamWorkspaceDocumentResponse>((resolve) => {
@@ -244,11 +266,13 @@ describe("runGuestHandoff", () => {
       old.cursor,
       expect.anything(),
       expect.anything(),
+      expect.anything(),
     );
 
     const newer = newGuestDraft(
       { ...buildParentDocument(), document_id: "11111111-1111-4111-8111-111111111111" },
       createIds(),
+      [],
     );
     expect(await storage.replaceIf(old.cursor, { assets: {}, draft: newer })).toBe(true);
 
@@ -306,6 +330,7 @@ describe("runGuestHandoff", () => {
       edited.draft.cursor,
       expect.anything(),
       expect.anything(),
+      [],
     );
     expect(teacher.importExamWorkspaceGuestDraft.mock.calls[1]?.[0]).not.toBe(
       teacher.importExamWorkspaceGuestDraft.mock.calls[0]?.[0],

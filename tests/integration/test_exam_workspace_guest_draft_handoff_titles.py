@@ -118,6 +118,7 @@ async def _handoff(
             draft_id=draft_id,
             document=blank_native_exam_document().model_copy(update={"title": title}),
             assets_by_id={},
+            notes=(),
         )
         return created.document
 
@@ -161,6 +162,7 @@ async def test_handoff_takes_the_title_lock_inside_its_transaction(
             draft_id=uuid4(),
             document=blank_native_exam_document().model_copy(update={"title": "Prov"}),
             assets_by_id={},
+            notes=(),
         )
 
     assert created.document.title == "Prov (2)"

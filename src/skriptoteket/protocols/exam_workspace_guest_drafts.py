@@ -39,4 +39,5 @@ class ImportGuestExamDraftHandlerProtocol(Protocol):
         draft_id: UUID,
         document: NativeExamDocument,
         assets_by_id: Mapping[str, bytes],
+        notes: tuple[str, ...],
     ) -> ExamWorkspaceDocumentResponse: ...

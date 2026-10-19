@@ -19,6 +19,7 @@ import {
   installGuestStoreObjectUrls,
   pictureExam,
   setupGuestStore,
+  startBlank,
 } from "./examWorkspaceGuestStore.specSupport";
 
 installGuestStoreObjectUrls();
@@ -36,7 +37,7 @@ describe("examWorkspaceGuestStore QTI start", () => {
     const context = setupGuestStore();
     const document = pictureExam("QTI-prov");
     const png = pngBlob();
-    context.mocks.importQti.mockResolvedValue({ assets: { asset_001: png }, document });
+    context.mocks.importQti.mockResolvedValue({ assets: { asset_001: png }, document, notes: [] });
 
     const lineageId = await context.store.startFromQti(zipFile(), null);
 
@@ -60,11 +61,37 @@ describe("examWorkspaceGuestStore QTI start", () => {
   it("passes the chosen course key to the public route", async () => {
     const context = setupGuestStore();
     const document = exam("QTI-prov");
-    context.mocks.importQti.mockResolvedValue({ assets: {}, document });
+    context.mocks.importQti.mockResolvedValue({ assets: {}, document, notes: [] });
 
     await context.store.startFromQti(zipFile(), "SVESVE02");
 
     expect(context.mocks.importQti).toHaveBeenCalledWith(expect.any(File), "SVESVE02");
+  });
+
+  it("keeps the QTI import notes on the draft and returns them on open", async () => {
+    const context = setupGuestStore();
+    const document = exam("QTI-prov");
+    context.mocks.importQti.mockResolvedValue({
+      assets: {},
+      document,
+      notes: ["Fråga 3 hoppades över."],
+    });
+
+    const lineageId = await context.store.startFromQti(zipFile(), null);
+
+    const stored = await context.storage.load();
+    expect(stored?.draft.notes).toEqual(["Fråga 3 hoppades över."]);
+    const opened = await context.store.store.shared.getExamWorkspaceDocument(lineageId);
+    expect(opened.notes).toEqual(["Fråga 3 hoppades över."]);
+  });
+
+  it("opens a blank start without notes", async () => {
+    const context = setupGuestStore();
+
+    const lineageId = await startBlank(context);
+
+    const opened = await context.store.store.shared.getExamWorkspaceDocument(lineageId);
+    expect(opened.notes).toEqual([]);
   });
 
   it("reports the conflict and keeps the newer draft when a concurrent tab wins the slot", async () => {
@@ -72,6 +99,7 @@ describe("examWorkspaceGuestStore QTI start", () => {
     context.mocks.importQti.mockResolvedValue({
       assets: {},
       document: exam("Förlorare"),
+      notes: [],
     });
     const losing: ExamWorkspaceGuestDraftStoragePort = {
       clearIf: (expected) => context.storage.clearIf(expected),

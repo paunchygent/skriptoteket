@@ -120,7 +120,9 @@ async def test_handoff_outer_commit_failure_compensates_the_written_payload() ->
     document = _guest_document("Omprov: grammatik")
 
     try:
-        await handler.handle(actor=actor, draft_id=uuid4(), document=document, assets_by_id={})
+        await handler.handle(
+            actor=actor, draft_id=uuid4(), document=document, assets_by_id={}, notes=()
+        )
     except RuntimeError as exc:
         assert str(exc) == "simulated outermost COMMIT failure"
     else:
@@ -143,12 +145,17 @@ async def test_handoff_writes_once_and_repeat_claim_returns_the_first_lineage() 
         draft_id=draft_id,
         document=_guest_document("Omprov: grammatik"),
         assets_by_id={},
+        notes=(),
     )
     assert first.summary.version == 1
     assert first.document.title == "Omprov: grammatik"
 
     again = await handler.handle(
-        actor=actor, draft_id=draft_id, document=_guest_document("Annat"), assets_by_id={}
+        actor=actor,
+        draft_id=draft_id,
+        document=_guest_document("Annat"),
+        assets_by_id={},
+        notes=(),
     )
 
     assert again.summary.lineage_id == first.summary.lineage_id
@@ -170,7 +177,7 @@ async def test_handoff_numbers_a_taken_title_and_derives_the_vault_name() -> Non
     handler = _handler(env, FakeUow())
 
     created = await handler.handle(
-        actor=actor, draft_id=uuid4(), document=_guest_document("Prov"), assets_by_id={}
+        actor=actor, draft_id=uuid4(), document=_guest_document("Prov"), assets_by_id={}, notes=()
     )
 
     assert created.document.title == "Prov (2)"
@@ -189,7 +196,11 @@ async def test_handoff_numbers_from_a_draft_title_that_already_ends_in_a_suffix(
     handler = _handler(env, FakeUow())
 
     created = await handler.handle(
-        actor=actor, draft_id=uuid4(), document=_guest_document("Prov (2)"), assets_by_id={}
+        actor=actor,
+        draft_id=uuid4(),
+        document=_guest_document("Prov (2)"),
+        assets_by_id={},
+        notes=(),
     )
 
     assert created.document.title == "Prov (3)"
@@ -204,14 +215,33 @@ async def test_handoff_replay_keeps_the_original_exam_despite_a_taken_title() ->
     draft_id = uuid4()
 
     first = await handler.handle(
-        actor=actor, draft_id=draft_id, document=_guest_document("Prov"), assets_by_id={}
+        actor=actor, draft_id=draft_id, document=_guest_document("Prov"), assets_by_id={}, notes=()
     )
     assert first.document.title == "Prov (2)"
 
     again = await handler.handle(
-        actor=actor, draft_id=draft_id, document=_guest_document("Prov"), assets_by_id={}
+        actor=actor, draft_id=draft_id, document=_guest_document("Prov"), assets_by_id={}, notes=()
     )
 
     assert again.summary.lineage_id == first.summary.lineage_id
     assert again.document == first.document
     assert again.document.title == "Prov (2)"
+
+
+async def test_handoff_stores_the_posted_notes_in_the_created_container() -> None:
+    env = _Env()
+    actor = _actor()
+    handler = _handler(env, FakeUow())
+
+    created = await handler.handle(
+        actor=actor,
+        draft_id=uuid4(),
+        document=_guest_document("Prov"),
+        assets_by_id={},
+        notes=("Fråga 3 hoppades över.",),
+    )
+
+    assert created.notes == ("Fråga 3 hoppades över.",)
+    vault_file = next(iter(env.vault_files.files.values()))
+    container = env.codec.parse(content=await env.store.load(actor=actor, vault_file=vault_file))
+    assert container.notes == ("Fråga 3 hoppades över.",)

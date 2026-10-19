@@ -85,6 +85,7 @@ class ImportGuestExamDraftHandler:
         draft_id: UUID,
         document: NativeExamDocument,
         assets_by_id: Mapping[str, bytes],
+        notes: tuple[str, ...],
     ) -> ExamWorkspaceDocumentResponse:
         PublicExamWorkspaceExportHandler._require_declared_assets(
             document=document, assets_by_id=assets_by_id
@@ -110,6 +111,7 @@ class ImportGuestExamDraftHandler:
                 name=rename_vault_filename(stem=numbered.title, extension=_COPY_EXTENSION),
                 document=numbered,
                 assets_by_id=assets_by_id,
+                notes=notes,
             )
 
     async def _with_unique_title(
@@ -130,13 +132,14 @@ class ImportGuestExamDraftHandler:
         name: str,
         document: NativeExamDocument,
         assets_by_id: Mapping[str, bytes],
+        notes: tuple[str, ...],
     ) -> ExamWorkspaceDocumentResponse:
         copied = document.model_copy(update={"document_id": lineage_id, "revision": 1})
         content = self._codec.build(
             content=ExamWorkspaceContainerContent(
                 document=copied,
                 assets_by_id=dict(assets_by_id),
-                notes=(),
+                notes=notes,
             )
         )
         vault_file = await self._store.save(
@@ -152,6 +155,6 @@ class ImportGuestExamDraftHandler:
             saved_document=copied,
             summary=document_summary(vault_file, copied),
             history_cursor=lineage_id,
-            notes=(),
+            notes=notes,
             conversion=None,
         )

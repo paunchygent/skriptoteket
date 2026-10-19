@@ -226,6 +226,7 @@ function setupGuest() {
       ): Promise<PublicExamWorkspaceQtiImportResult> => ({
         assets: {},
         document: blankDocument(),
+        notes: [],
       }),
     ),
     movePublicExamWorkspaceItem: vi.fn(),
@@ -371,6 +372,7 @@ describe("ExamWorkspaceView guest mode", () => {
     publicMocks.importPublicExamWorkspaceQti.mockResolvedValue({
       assets: {},
       document: blankDocument(),
+      notes: [],
     });
     const wrapper = await mountGuestView(guest.store);
 
@@ -393,6 +395,7 @@ describe("ExamWorkspaceView guest mode", () => {
     publicMocks.importPublicExamWorkspaceQti.mockResolvedValue({
       assets: {},
       document: blankDocument(),
+      notes: [],
     });
     const wrapper = await mountGuestView(guest.store);
 

@@ -293,7 +293,9 @@ async def test_handoff_outer_commit_failure_compensates_the_written_payload(
         )
         document = blank_native_exam_document().model_copy(update={"title": "Gästprov"})
         with pytest.raises(DBAPIError, match="u4r injected COMMIT refusal"):
-            await handler.handle(actor=actor, draft_id=draft_id, document=document, assets_by_id={})
+            await handler.handle(
+                actor=actor, draft_id=draft_id, document=document, assets_by_id={}, notes=()
+            )
         await failed_session.rollback()
 
     assert storage.stored_ids != []

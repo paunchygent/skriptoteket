@@ -83,7 +83,7 @@ const GUEST_IDS = {
 };
 
 function seatStoredDraft(): StoredGuestDraft {
-  const draft = newGuestDraft(buildParentDocument(), GUEST_IDS);
+  const draft = newGuestDraft(buildParentDocument(), GUEST_IDS, []);
   storageMocks.stored = { assets: {}, draft };
   return storageMocks.stored;
 }

@@ -52,7 +52,7 @@ function storedDraft(title = "Original"): StoredGuestDraft {
   const png = new Blob(["png-bytes"], { type: "image/png" });
   return {
     assets: { asset_001: png },
-    draft: newGuestDraft(exam(title), createIds()),
+    draft: newGuestDraft(exam(title), createIds(), []),
   };
 }
 

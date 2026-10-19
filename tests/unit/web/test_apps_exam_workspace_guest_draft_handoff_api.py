@@ -10,6 +10,7 @@ integration test.
 from __future__ import annotations
 
 import hashlib
+import json
 from collections.abc import Mapping
 from datetime import datetime
 from io import BytesIO
@@ -238,10 +239,11 @@ async def _post_draft(
     *,
     draft_id: UUID,
     assets: Mapping[str, bytes] | None = None,
+    notes: tuple[str, ...] = (),
 ) -> httpx.Response:
     return await client.post(
         _PATH,
-        data={"draft_id": str(draft_id)},
+        data={"draft_id": str(draft_id), "notes": json.dumps(list(notes))},
         files=_multipart(document, assets),
     )
 
@@ -383,6 +385,83 @@ async def test_unauthenticated_post_is_rejected() -> None:
             )
 
         assert response.status_code == 401, response.text
+        assert env.vault_files.files == {}
+        assert handoffs.rows == {}
+    finally:
+        await _close_app(app)
+
+
+async def test_posted_notes_are_stored_in_the_created_container() -> None:
+    env = _Env()
+    actor = _actor()
+    handoffs = InMemoryGuestDraftHandoffRepository()
+    document, asset_id, payload = _picture_document()
+    app = _app(env, actor, handoffs)
+    try:
+        async with httpx.AsyncClient(
+            transport=httpx.ASGITransport(app=app), base_url="http://test"
+        ) as client:
+            response = await _post_draft(
+                client,
+                document,
+                draft_id=uuid4(),
+                assets={asset_id: payload},
+                notes=("Fråga 3 hoppades över.",),
+            )
+
+        assert response.status_code == 200, response.text
+        created = response.json()
+        assert created["notes"] == ["Fråga 3 hoppades över."]
+
+        vault_file = next(iter(env.vault_files.files.values()))
+        container = env.codec.parse(
+            content=await env.store.load(actor=actor, vault_file=vault_file)
+        )
+        assert container.notes == ("Fråga 3 hoppades över.",)
+    finally:
+        await _close_app(app)
+
+
+async def test_post_without_notes_is_refused() -> None:
+    env = _Env()
+    actor = _actor()
+    handoffs = InMemoryGuestDraftHandoffRepository()
+    document, asset_id, payload = _picture_document()
+    app = _app(env, actor, handoffs)
+    try:
+        async with httpx.AsyncClient(
+            transport=httpx.ASGITransport(app=app), base_url="http://test"
+        ) as client:
+            response = await client.post(
+                _PATH,
+                data={"draft_id": str(uuid4())},
+                files=_multipart(document, {asset_id: payload}),
+            )
+
+        assert response.status_code == 422, response.text
+        assert env.vault_files.files == {}
+        assert handoffs.rows == {}
+    finally:
+        await _close_app(app)
+
+
+async def test_post_with_invalid_notes_is_refused() -> None:
+    env = _Env()
+    actor = _actor()
+    handoffs = InMemoryGuestDraftHandoffRepository()
+    document, asset_id, payload = _picture_document()
+    app = _app(env, actor, handoffs)
+    try:
+        async with httpx.AsyncClient(
+            transport=httpx.ASGITransport(app=app), base_url="http://test"
+        ) as client:
+            response = await client.post(
+                _PATH,
+                data={"draft_id": str(uuid4()), "notes": json.dumps([42])},
+                files=_multipart(document, {asset_id: payload}),
+            )
+
+        assert response.status_code == 422, response.text
         assert env.vault_files.files == {}
         assert handoffs.rows == {}
     finally:

@@ -100,13 +100,13 @@ describe("examWorkspaceGuestDraft", () => {
   it("derives the stored asset ids from the document's declared pictures", () => {
     const { ids } = createIds();
 
-    expect(newGuestDraft(pictureExam(), ids).asset_ids).toEqual(["asset_001"]);
+    expect(newGuestDraft(pictureExam(), ids, []).asset_ids).toEqual(["asset_001"]);
   });
 
   it("creates a fresh draft on the document's baseline with ids from the injected source", () => {
     const { ids, issued } = createIds();
 
-    const draft = newGuestDraft(exam(), ids);
+    const draft = newGuestDraft(exam(), ids, []);
 
     expect(issued).toEqual([]);
     expect(draft.lineage_id).toBe(DOCUMENT_ID);
@@ -126,7 +126,7 @@ describe("examWorkspaceGuestDraft", () => {
 
   it("keeps only the newest ten steps after the baseline, dropping the oldest", () => {
     const { ids, issued } = createIds();
-    let draft = newGuestDraft(exam(), ids);
+    let draft = newGuestDraft(exam(), ids, []);
     const storedStepIds: string[] = [];
 
     for (let index = 1; index <= 11; index += 1) {
@@ -152,7 +152,7 @@ describe("examWorkspaceGuestDraft", () => {
 
   it("drops every redo step when a new step branches after an earlier snapshot", () => {
     const { ids } = createIds();
-    let draft = newGuestDraft(exam(), ids);
+    let draft = newGuestDraft(exam(), ids, []);
     const first = store(draft, exam("A"), ids);
     draft = first.draft;
     const firstStepId = first.step.history.position_step_id;
@@ -178,7 +178,7 @@ describe("examWorkspaceGuestDraft", () => {
 
   it("refuses a stale cursor without changing the draft or consuming an id", () => {
     const { ids, issued } = createIds();
-    const draft = newGuestDraft(exam(), ids);
+    const draft = newGuestDraft(exam(), ids, []);
     const before = structuredClone(draft);
     const issuedBefore = issued.length;
 
@@ -199,7 +199,7 @@ describe("examWorkspaceGuestDraft", () => {
 
   it("refuses a document the save rules reject without changing the draft", () => {
     const { ids, issued } = createIds();
-    const draft = newGuestDraft(exam(), ids);
+    const draft = newGuestDraft(exam(), ids, []);
     const before = structuredClone(draft);
     const issuedBefore = issued.length;
     const refused = refusedExam();
@@ -219,7 +219,7 @@ describe("examWorkspaceGuestDraft", () => {
 
   it("refuses Spara with a stale revision without changing the draft", () => {
     const { ids } = createIds();
-    const draft = newGuestDraft(exam(), ids);
+    const draft = newGuestDraft(exam(), ids, []);
     const before = structuredClone(draft);
 
     const outcome = saveGuestDraft(
@@ -238,7 +238,7 @@ describe("examWorkspaceGuestDraft", () => {
 
   it("increments the saved revision once and rotates the cursor on Spara", () => {
     const { ids, issued } = createIds();
-    let draft = newGuestDraft(exam(), ids);
+    let draft = newGuestDraft(exam(), ids, []);
     const stored = store(draft, titled(exam(), "Redigerad"), ids);
     draft = stored.draft;
     const stepId = stored.step.history.position_step_id;
@@ -275,7 +275,7 @@ describe("examWorkspaceGuestDraft", () => {
 
   it("appends the saved copy after the position when no snapshot holds it", () => {
     const { ids } = createIds();
-    let draft = newGuestDraft(exam(), ids);
+    let draft = newGuestDraft(exam(), ids, []);
     const first = store(draft, exam("A"), ids);
     draft = first.draft;
     const firstStepId = first.step.history.position_step_id;
@@ -304,7 +304,7 @@ describe("examWorkspaceGuestDraft", () => {
 
   it("returns a read step's document without moving the stored position", () => {
     const { ids } = createIds();
-    let draft = newGuestDraft(exam(), ids);
+    let draft = newGuestDraft(exam(), ids, []);
     const first = store(draft, exam("A"), ids);
     draft = first.draft;
     const firstStepId = first.step.history.position_step_id;
@@ -327,7 +327,7 @@ describe("examWorkspaceGuestDraft", () => {
 
   it("opens the newest branched step after a write follows an earlier snapshot", () => {
     const { ids } = createIds();
-    let draft = newGuestDraft(exam(), ids);
+    let draft = newGuestDraft(exam(), ids, []);
     const first = store(draft, exam("A"), ids);
     draft = first.draft;
     const firstStepId = first.step.history.position_step_id;
@@ -354,10 +354,53 @@ describe("examWorkspaceGuestDraft", () => {
 
   it("reports an unknown history step as not found", () => {
     const { ids } = createIds();
-    const draft = newGuestDraft(exam(), ids);
+    const draft = newGuestDraft(exam(), ids, []);
 
     expect(guestHistoryStep(draft, "99999999-9999-4999-8999-999999999999")).toEqual({
       kind: "not_found",
     });
+  });
+
+  it("keeps the QTI import notes on the draft and returns them on open", () => {
+    const { ids } = createIds();
+
+    const draft = newGuestDraft(exam(), ids, ["Fråga 3 hoppades över."]);
+
+    expect(draft.notes).toEqual(["Fråga 3 hoppades över."]);
+    expect(guestDocumentResponse(draft).notes).toEqual(["Fråga 3 hoppades över."]);
+  });
+
+  it("starts a blank exam without notes", () => {
+    const { ids } = createIds();
+
+    const draft = newGuestDraft(exam(), ids, []);
+
+    expect(draft.notes).toEqual([]);
+    expect(guestDocumentResponse(draft).notes).toEqual([]);
+  });
+
+  it("keeps the notes across an undo step and Spara", () => {
+    const { ids } = createIds();
+    let draft = newGuestDraft(exam(), ids, ["Fråga 3 hoppades över."]);
+    const stored = store(draft, titled(exam(), "Redigerad"), ids);
+    draft = stored.draft;
+
+    expect(guestDocumentResponse(draft).notes).toEqual(["Fråga 3 hoppades över."]);
+
+    const saved = saveGuestDraft(
+      draft,
+      {
+        document: titled(exam(), "Redigerad"),
+        expectedRevision: 1,
+        positionStepId: draft.position_step_id,
+      },
+      ids,
+    );
+    if (saved.kind !== "ok") {
+      throw new Error(`expected a saved draft, got ${saved.kind}`);
+    }
+
+    expect(saved.draft.notes).toEqual(["Fråga 3 hoppades över."]);
+    expect(saved.response.notes).toEqual(["Fråga 3 hoppades över."]);
   });
 });

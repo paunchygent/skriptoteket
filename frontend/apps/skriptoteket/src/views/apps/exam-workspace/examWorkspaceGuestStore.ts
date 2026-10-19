@@ -358,7 +358,7 @@ export function createGuestExamWorkspaceStore(
 
   async function startBlank(): Promise<string> {
     const response = await api.createPublicExamWorkspaceBlank();
-    const draft = newGuestDraft(response.document, deps.ids);
+    const draft = newGuestDraft(response.document, deps.ids, []);
     const current = await deps.storage.load();
     await persist(current?.draft.cursor ?? null, { assets: {}, draft });
     return draft.lineage_id;
@@ -372,7 +372,7 @@ export function createGuestExamWorkspaceStore(
    */
   async function startFromQti(file: File, courseKey: string | null): Promise<string> {
     const response = await api.importPublicExamWorkspaceQti(file, courseKey);
-    const draft = newGuestDraft(response.document, deps.ids);
+    const draft = newGuestDraft(response.document, deps.ids, response.notes);
     const current = await deps.storage.load();
     await persist(current?.draft.cursor ?? null, { assets: response.assets, draft });
     return draft.lineage_id;

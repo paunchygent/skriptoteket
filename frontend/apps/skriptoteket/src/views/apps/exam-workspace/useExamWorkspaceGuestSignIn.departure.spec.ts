@@ -75,7 +75,7 @@ function mountWorkspace(guest: Guest) {
 describe("guest sign-in departure under the editing lock", () => {
   it("refuses typing during a paused departure write and stores the departure snapshot", async () => {
     const backing = createInMemoryExamWorkspaceGuestDraftStorage();
-    const original = newGuestDraft(buildParentDocument(), ids());
+    const original = newGuestDraft(buildParentDocument(), ids(), []);
     expect(await backing.replaceIf(null, { assets: {}, draft: original })).toBe(true);
     let releaseWrite!: () => void;
     let enteredResolve!: () => void;
@@ -122,7 +122,7 @@ describe("guest sign-in departure under the editing lock", () => {
 
   it("resolves false and stores nothing new while an undo holds the copy", async () => {
     const backing = createInMemoryExamWorkspaceGuestDraftStorage();
-    const original = newGuestDraft(buildParentDocument(), ids());
+    const original = newGuestDraft(buildParentDocument(), ids(), []);
     expect(await backing.replaceIf(null, { assets: {}, draft: original })).toBe(true);
     const guest = createGuest(backing);
     const { editing, signIn, wrapper } = mountWorkspace(guest);
@@ -168,7 +168,7 @@ describe("guest sign-in departure under the editing lock", () => {
 
   it("resolves false when the departure store rejects", async () => {
     const backing = createInMemoryExamWorkspaceGuestDraftStorage();
-    const original = newGuestDraft(buildParentDocument(), ids());
+    const original = newGuestDraft(buildParentDocument(), ids(), []);
     expect(await backing.replaceIf(null, { assets: {}, draft: original })).toBe(true);
     const port: ExamWorkspaceGuestDraftStoragePort = {
       clearIf: (cursor) => backing.clearIf(cursor),
@@ -192,7 +192,7 @@ describe("guest sign-in departure under the editing lock", () => {
 
   it("resolves false when the departure store reports a lost write", async () => {
     const backing = createInMemoryExamWorkspaceGuestDraftStorage();
-    const original = newGuestDraft(buildParentDocument(), ids());
+    const original = newGuestDraft(buildParentDocument(), ids(), []);
     expect(await backing.replaceIf(null, { assets: {}, draft: original })).toBe(true);
     const port: ExamWorkspaceGuestDraftStoragePort = {
       clearIf: (cursor) => backing.clearIf(cursor),

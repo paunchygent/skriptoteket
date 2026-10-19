@@ -268,7 +268,7 @@ describe("publicExamWorkspace transport", () => {
     publicApiPostMock.mockResolvedValueOnce({
       assets_by_id: { asset_001: btoa(binary) },
       document: exam,
-      notes: [],
+      notes: ["Fråga 3 hoppades över."],
     });
     const file = new File(["qti"], "Prov_HT25.zip", { type: "application/zip" });
 
@@ -289,6 +289,7 @@ describe("publicExamWorkspace transport", () => {
     expect(uploaded.name).toBe("Prov_HT25.zip");
     expect(body.get("course_key")).toBe("SVESVE02");
     expect(result.document).toEqual(exam);
+    expect(result.notes).toEqual(["Fråga 3 hoppades över."]);
     const blob = result.assets["asset_001"];
     expect(blob).toBeInstanceOf(Blob);
     expect(blob.type).toBe("image/png");

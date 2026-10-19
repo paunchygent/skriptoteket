@@ -11,10 +11,10 @@
  *
  * Relationships:
  *   - Reads the draft through `examWorkspaceGuestDraftStorage` and hands the
- *     newest (position) document over through the teacher store's
- *     `importExamWorkspaceGuestDraft`, mirroring the guest export multipart
- *     shape (`draft_id`, `document`, one `asset:<id>` part per declared
- *     picture).
+ *     newest (position) document with its import notes over through the
+ *     teacher store's `importExamWorkspaceGuestDraft`, mirroring the guest
+ *     export multipart shape (`draft_id`, `document`, `notes`, one
+ *     `asset:<id>` part per declared picture).
  *   - The idempotency key is the snapshot cursor, not the draft: the server
  *     claims once per (user, key), so a later handoff of newer edits posts a
  *     new cursor and imports its own exam instead of returning the old
@@ -85,6 +85,7 @@ export async function runGuestHandoff(deps: GuestHandoffDeps): Promise<string | 
       snapshotCursor,
       document,
       declaredAssets(document, stored.assets),
+      stored.draft.notes,
     );
   } catch {
     useToast().failure(GUEST_HANDOFF_FAILURE_COPY);

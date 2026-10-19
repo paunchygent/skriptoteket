@@ -65,7 +65,7 @@ describe("examWorkspaceGuestStore exports and limits", () => {
     const png = new Blob(["png-bytes"], { type: "image/png" });
     const unused = new Blob(["unused"], { type: "image/png" });
     const saved = pictureExam("Sparad");
-    const seeded = newGuestDraft(saved, createIds());
+    const seeded = newGuestDraft(saved, createIds(), []);
     expect(await context.storage.replaceIf(null, { assets: { asset_001: png, unused }, draft: seeded })).toBe(
       true,
     );
@@ -155,7 +155,7 @@ describe("examWorkspaceGuestStore exports and limits", () => {
   it("maps the open draft's stored pictures to object URLs and clears them", async () => {
     const context = setupGuestStore();
     const png = new Blob(["png-bytes"], { type: "image/png" });
-    const draft = newGuestDraft(pictureExam(), createIds());
+    const draft = newGuestDraft(pictureExam(), createIds(), []);
     expect(await context.storage.replaceIf(null, { assets: { asset_001: png }, draft })).toBe(true);
 
     await context.store.store.shared.getExamWorkspaceDocument(DOCUMENT_ID);

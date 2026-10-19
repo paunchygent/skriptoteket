@@ -107,10 +107,11 @@ export type PublicExamWorkspaceExportRequest = {
   assets: Record<string, Blob>;
 };
 
-/** A parsed guest QTI package: the document and its picture bytes as blobs. */
+/** A parsed guest QTI package: the document, its picture bytes and its import notes. */
 export type PublicExamWorkspaceQtiImportResult = {
   document: NativeExamDocument;
   assets: Record<string, Blob>;
+  notes: string[];
 };
 
 /** The public QTI parse response: asset bytes travel as base64 JSON strings. */
@@ -156,8 +157,9 @@ function base64ToBytes(encoded: string): Uint8Array<ArrayBuffer> {
 
 /**
  * Parse a guest QTI .zip server-side and keep the result in the browser: the
- * document becomes the guest draft and each base64 asset value becomes the
- * picture blob the guest store keeps beside it. Nothing is stored server-side.
+ * document becomes the guest draft, each base64 asset value becomes the
+ * picture blob the guest store keeps beside it, and the parser's import notes
+ * travel with the draft like the container's. Nothing is stored server-side.
  */
 export async function importPublicExamWorkspaceQti(
   file: File,
@@ -181,7 +183,7 @@ export async function importPublicExamWorkspaceQti(
       type: mediaTypeByAssetId.get(assetId) ?? "application/octet-stream",
     });
   }
-  return { assets, document: response.document };
+  return { assets, document: response.document, notes: response.notes };
 }
 
 export async function createPublicExamWorkspaceParent(
