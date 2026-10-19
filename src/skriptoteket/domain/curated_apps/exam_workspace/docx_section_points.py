@@ -137,12 +137,12 @@ def apply_printed_points(
             for parent in parents
         )
     # The reader's number for each item's heading (D12 read-label correction):
-    # a heading part opener's total, or the question's printed points when a
-    # points line the question owns is a heading. The number goes only to the
-    # one item holding the read heading chunk: the member whose question owns
-    # the opener, or the item starting at the opener (``opened``); every other
-    # member gets None. Two differing numbers give None, so the gate compares
-    # with the settled points as before.
+    # a heading part opener's total, or a question's printed points when one of
+    # its consumed line anchors is a heading chunk. The number goes only to the
+    # one item holding that heading: the member whose question owns the opener,
+    # or the item starting at the opener (``opened``); every other member gets
+    # None. Two differing numbers give None, so the gate compares with the
+    # settled points as before.
     read: dict[str, set[int | float]] = {item.item_id: set() for item in scored}
     for part in inner_first:
         opener = by_anchor.get(part.opener)
@@ -162,12 +162,10 @@ def apply_printed_points(
     for number, question in enumerate(printed.questions):
         if question.points is None or (item := member(number)) is None:
             continue
-        owned = [anchor for anchor, owner in printed.owners.items() if owner == number]
-        headed = any(
+        if any(
             by_anchor.get(anchor) is not None and by_anchor[anchor].kind == "heading"
-            for anchor in owned
-        )
-        if headed:
+            for anchor in question.lines
+        ):
             read[item.item_id].add(question.points)
     reads: list[int | float | None] = []
     for item in scored:

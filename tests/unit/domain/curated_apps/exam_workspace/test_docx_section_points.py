@@ -370,3 +370,23 @@ def test_a_plain_paragraph_part_opener_gives_no_read_number():
 
     assert _points(scored) == [3, 3]
     assert list(scored.read_heading_points) == [None, None]
+
+
+def test_a_question_owned_heading_line_carries_the_reader_s_number():
+    # R8: the reader consumed the question-owned heading "Poäng: (3 p)", so
+    # its item gets the read number; a plain paragraph line carries none.
+    chunks, questions = _exam("# Poäng: (3 p)", "Q Förklara tempus.")
+
+    scored = _score(chunks, questions, _items(chunks, questions, (None,)))
+
+    assert list(scored.read_heading_points) == [3]
+
+
+def test_a_question_owned_plain_line_carries_no_read_number():
+    # The same points line as a plain paragraph is no read heading.
+    chunks, questions = _exam("Poäng: 3 poäng", "Q Förklara tempus.")
+
+    scored = _score(chunks, questions, _items(chunks, questions, (None,)))
+
+    assert _points(scored) == [3]
+    assert list(scored.read_heading_points) == [None]
