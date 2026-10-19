@@ -24,6 +24,7 @@ import { nextTick } from "vue";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ExamWorkspaceConversionStatus, NativeExamDocument } from "../../api/examWorkspace";
+import { UiGlyph } from "../../components/ui/shared";
 import type { ExamWorkspaceLayout } from "./exam-workspace/useExamWorkspaceLayout";
 import { EXAM_WORKSPACE_COLUMN_SIZES_STORAGE_KEY } from "./exam-workspace/examWorkspaceColumnSizesStorage";
 import {
@@ -202,6 +203,20 @@ describe("ExamWorkspaceView column resize wiring", () => {
 
     expect(frameOf(wrapper).dataset["list"]).toBe("open");
     expect(wrapper.find('[data-test="exam-workspace-list-collapse"]').exists()).toBe(true);
+  });
+
+  it("renders the expand glyph on the rail and the toggle-sidebar glyph on the collapse control", async () => {
+    const wrapper = await mountImported("desktop");
+
+    expect(
+      wrapper.get('[data-test="exam-workspace-list-collapse"]').getComponent(UiGlyph).props("meaning"),
+    ).toBe("toggle-sidebar");
+
+    await wrapper.get('[data-test="exam-workspace-list-collapse"]').trigger("click");
+
+    expect(
+      wrapper.get('[data-test="exam-workspace-list-expand"]').getComponent(UiGlyph).props("meaning"),
+    ).toBe("expand");
   });
 
   it("toggles collapse with Enter on the list handle", async () => {

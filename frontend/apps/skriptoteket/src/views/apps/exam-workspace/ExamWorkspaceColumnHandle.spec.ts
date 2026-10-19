@@ -9,8 +9,10 @@
  *   missing minimum gives null bounds. Bounds are read and applied on mount
  *   (after nextTick), on focus, after every emitted key/double-click set,
  *   reset and toggle-collapse (nextTick, then read again), and when the
- *   collapsed prop changes. Nothing is measured at rest: no ResizeObserver
- *   and no window or document listeners. Pointer drag emits set with the
+ *   collapsed prop changes. A ResizeObserver on the closest .ws__body and
+ *   each of its element children re-reads the bounds on every track change;
+ *   the callback only updates the separator values and never emits.
+ *   Pointer drag emits set with the
  *   clamped rounded width (the list widens with +dx, the side panel with -dx);
  *   the drag holds its pointerdown bounds. Double-click emits reset; the
  *   keyboard follows the separator key mapping (arrows step, Home/End jump,
@@ -42,6 +44,51 @@ const DEFAULT_MINIMUMS: Record<MinimumName, string> = {
 
 const containers: HTMLElement[] = [];
 const mountedWrappers: VueWrapper[] = [];
+
+/**
+ * A typed ResizeObserver double: jsdom has no ResizeObserver, so the spec
+ * installs this class and fires the callback by hand. It records every
+ * observed target, mirroring the sharedSegmentedToggle.spec.ts pattern.
+ */
+class HandleResizeObserver implements ResizeObserver {
+  static instances: HandleResizeObserver[] = [];
+  readonly targets = new Set<Element>();
+  readonly disconnect = vi.fn((): void => {
+    this.targets.clear();
+  });
+
+  constructor(private readonly callback: ResizeObserverCallback) {
+    HandleResizeObserver.instances.push(this);
+  }
+
+  observe(target: Element): void {
+    this.targets.add(target);
+  }
+
+  unobserve(target: Element): void {
+    this.targets.delete(target);
+  }
+
+  fire(): void {
+    this.callback([], this);
+  }
+}
+
+function latestObserver(): HandleResizeObserver {
+  const observer = HandleResizeObserver.instances.at(-1);
+  if (observer === undefined) {
+    throw new Error("expected a ResizeObserver instance");
+  }
+  return observer;
+}
+
+function bodyOf(wrapper: VueWrapper): HTMLElement {
+  const candidate = wrapper.element.closest(".ws__body");
+  if (!(candidate instanceof HTMLElement)) {
+    throw new Error("expected the handle to sit inside a .ws__body");
+  }
+  return candidate;
+}
 
 /**
  * A typed computed-style mock: a real CSSStyleDeclaration carrying the grid
@@ -108,6 +155,8 @@ async function pointer(
 beforeEach(() => {
   HTMLElement.prototype.setPointerCapture = vi.fn();
   HTMLElement.prototype.releasePointerCapture = vi.fn();
+  HandleResizeObserver.instances = [];
+  vi.stubGlobal("ResizeObserver", HandleResizeObserver);
   stubComputedStyle(GRID);
 });
 
@@ -119,6 +168,7 @@ afterEach(() => {
     container.remove();
   }
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
 });
 
 describe("ExamWorkspaceColumnHandle", () => {
@@ -221,6 +271,90 @@ describe("ExamWorkspaceColumnHandle", () => {
     expect(handle.attributes("aria-valuenow")).toBe("260");
   });
 
+  it("observes the body and each body child on mount", async () => {
+    const wrapper = mountHandle({ edge: "list", column: "list" });
+    await nextTick();
+    await nextTick();
+
+    const observer = latestObserver();
+    const body = bodyOf(wrapper);
+    expect(body.classList.contains("ws__body")).toBe(true);
+    expect(observer.targets.has(body)).toBe(true);
+    for (const child of Array.from(body.children)) {
+      expect(observer.targets.has(child)).toBe(true);
+    }
+  });
+
+  it("follows new tracks when the observer fires, without emitting", async () => {
+    const list = mountHandle({ edge: "list", column: "list" });
+    const side = mountHandle({ edge: "side", column: "drawer" });
+    await nextTick();
+    await nextTick();
+
+    stubComputedStyle("300px 500px 200px");
+    for (const observer of HandleResizeObserver.instances) {
+      observer.fire();
+    }
+    await nextTick();
+
+    const listHandle = handleOf(list);
+    expect(listHandle.attributes("aria-valuenow")).toBe("300");
+    expect(listHandle.attributes("aria-valuemax")).toBe(String(300 + 500 - 400));
+    const sideHandle = handleOf(side);
+    expect(sideHandle.attributes("aria-valuenow")).toBe("200");
+    expect(sideHandle.attributes("aria-valuemax")).toBe(String(200 + 500 - 400));
+    expect(list.emitted("set")).toBeUndefined();
+    expect(list.emitted("reset")).toBeUndefined();
+    expect(side.emitted("set")).toBeUndefined();
+    expect(side.emitted("reset")).toBeUndefined();
+  });
+
+  it("picks up body children added after mount and disconnects on unmount", async () => {
+    const wrapper = mountHandle({ edge: "list", column: "list" });
+    await nextTick();
+    await nextTick();
+
+    const observer = latestObserver();
+    const body = bodyOf(wrapper);
+    const late = document.createElement("section");
+    body.appendChild(late);
+    expect(observer.targets.has(late)).toBe(false);
+
+    observer.fire();
+    expect(observer.targets.has(late)).toBe(true);
+
+    body.removeChild(late);
+    observer.fire();
+    expect(observer.targets.has(late)).toBe(false);
+
+    mountedWrappers.splice(mountedWrappers.indexOf(wrapper), 1);
+    wrapper.unmount();
+    expect(observer.disconnect).toHaveBeenCalledOnce();
+  });
+
+  it("narrows the list with ArrowLeft", async () => {
+    stubComputedStyle("500px 700px 320px");
+    const wrapper = mountHandle({ edge: "list", column: "list" });
+    await handleOf(wrapper).trigger("keydown", { key: "ArrowLeft", shiftKey: false });
+    expect(wrapper.emitted("set")).toEqual([[484]]);
+  });
+
+  it("mirrors ArrowRight to narrow the side panel", async () => {
+    const wrapper = mountHandle({ edge: "side", column: "drawer" });
+    await handleOf(wrapper).trigger("keydown", { key: "ArrowRight", shiftKey: false });
+    expect(wrapper.emitted("set")).toEqual([[304]]);
+  });
+
+  it("steps 64 px with Shift held in both directions", async () => {
+    const list = mountHandle({ edge: "list", column: "list" });
+    await handleOf(list).trigger("keydown", { key: "ArrowLeft", shiftKey: true });
+    expect(list.emitted("set")).toEqual([[260]]);
+
+    const side = mountHandle({ edge: "side", column: "drawer" });
+    await handleOf(side).trigger("keydown", { key: "ArrowLeft", shiftKey: true });
+    expect(side.emitted("set")).toEqual([[384]]);
+  });
+
   it("widens the list with ArrowRight and the side panel with ArrowLeft", async () => {
     const list = mountHandle({ edge: "list", column: "list" });
     await handleOf(list).trigger("keydown", { key: "ArrowRight", shiftKey: false });
@@ -229,6 +363,24 @@ describe("ExamWorkspaceColumnHandle", () => {
     const side = mountHandle({ edge: "side", column: "drawer" });
     await handleOf(side).trigger("keydown", { key: "ArrowLeft", shiftKey: false });
     expect(side.emitted("set")).toEqual([[336]]);
+  });
+
+  it("jumps the side panel to max on End and to min on Home", async () => {
+    const wrapper = mountHandle({ edge: "side", column: "drawer" });
+    const handle = handleOf(wrapper);
+
+    await handle.trigger("keydown", { key: "End", shiftKey: false });
+    await handle.trigger("keydown", { key: "Home", shiftKey: false });
+
+    expect(wrapper.emitted("set")).toEqual([[SIDE_MAX], [300]]);
+  });
+
+  it("emits toggle-collapse on Enter for the side handle", async () => {
+    const wrapper = mountHandle({ edge: "side", column: "drawer" });
+
+    await handleOf(wrapper).trigger("keydown", { key: "Enter", shiftKey: false });
+
+    expect(wrapper.emitted("toggle-collapse")).toEqual([[]]);
   });
 
   it("steps 64 px with Shift held", async () => {

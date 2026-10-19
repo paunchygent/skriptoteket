@@ -109,6 +109,65 @@ describe("LandingLayout", () => {
     help.close({ restoreFocus: false });
   });
 
+  it("holds the window height on the public exam workspace capability route", () => {
+    layoutMocks.route.name = "public-app-capability-detail";
+    layoutMocks.route.params = {
+      appId: "documents.conversion_hub",
+      publicCapabilitySlug: "exam-converter",
+    };
+
+    const wrapper = mount(LandingLayout, {
+      slots: {
+        default: "<div>Innehåll</div>",
+      },
+    });
+
+    expect(wrapper.get(".landing-shell").classes()).toContain("landing-shell--workspace");
+  });
+
+  it("holds the window height on the public exam workspace app route", () => {
+    layoutMocks.route.name = "public-app-detail";
+    layoutMocks.route.params = {
+      appId: "documents.conversion_hub",
+    };
+
+    const wrapper = mount(LandingLayout, {
+      slots: {
+        default: "<div>Innehåll</div>",
+      },
+    });
+
+    expect(wrapper.get(".landing-shell").classes()).toContain("landing-shell--workspace");
+  });
+
+  it("lets other public routes grow with their content", () => {
+    layoutMocks.route.name = "public-app-detail";
+    layoutMocks.route.params = {
+      appId: "classroom.group-seating-studio",
+    };
+
+    const grownWrapper = mount(LandingLayout, {
+      slots: {
+        default: "<div>Innehåll</div>",
+      },
+    });
+
+    expect(grownWrapper.get(".landing-shell").classes()).not.toContain(
+      "landing-shell--workspace",
+    );
+
+    layoutMocks.route.name = "home";
+    layoutMocks.route.params = {};
+
+    const homeWrapper = mount(LandingLayout, {
+      slots: {
+        default: "<div>Innehåll</div>",
+      },
+    });
+
+    expect(homeWrapper.get(".landing-shell").classes()).not.toContain("landing-shell--workspace");
+  });
+
   it("fills the frame on the public exam workspace capability route", () => {
     layoutMocks.route.name = "public-app-capability-detail";
     layoutMocks.route.params = {

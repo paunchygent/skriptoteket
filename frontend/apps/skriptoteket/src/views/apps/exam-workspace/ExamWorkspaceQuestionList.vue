@@ -190,7 +190,7 @@ async function expandFromGlyph(): Promise<void> {
           @click="expandFromGlyph"
         >
           <UiGlyph
-            meaning="restore-panel"
+            meaning="expand"
             :size="20"
           />
         </button>
@@ -229,7 +229,7 @@ async function expandFromGlyph(): Promise<void> {
               @click="collapseFromGlyph"
             >
               <UiGlyph
-                meaning="minimize-panel"
+                meaning="toggle-sidebar"
                 :size="20"
               />
             </button>
