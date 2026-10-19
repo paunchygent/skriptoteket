@@ -182,6 +182,7 @@ def _item(
         printed_label=source.title,
         body=body,
         points=source.max_score,
+        source_points=source.max_score,
         writing_lines=DEFAULT_WRITING_LINES if kind is NativeExamItemKind.FREE_TEXT else None,
         choices=tuple(
             NativeChoice(

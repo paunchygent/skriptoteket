@@ -80,6 +80,10 @@ def _marked(scored: ScoredItems) -> list[bool]:
     return [item.points_estimated for item in scored.items]
 
 
+def _source_points(scored: ScoredItems) -> list[int | float | None]:
+    return [item.source_points for item in scored.items]
+
+
 def _parent(parent_id: str, *item_ids: str) -> NativeExamParent:
     return NativeExamParent(
         parent_id=parent_id,
@@ -416,3 +420,38 @@ def test_a_part_heading_review_item_never_takes_its_questions_total():
     scored = _score(chunks, questions, (heading, noun))
 
     assert _points(scored) == [None, 2]
+
+
+def test_a_printed_question_value_is_recorded_as_source_points():
+    chunks, questions = _exam("Q Fråga 1 om satsdelar och ordföljd (2 p)")
+
+    scored = _score(chunks, questions, _items(chunks, questions, (9,)))
+
+    assert _points(scored) == [2]
+    assert _marked(scored) == [False]
+    assert _source_points(scored) == [2]
+
+
+def test_a_share_of_a_part_total_records_no_source_points():
+    chunks, questions = _exam("# Del 1: 10 poäng", "Q 1.", "Q 2.")
+
+    scored = _score(chunks, questions, _items(chunks, questions, (None, None)))
+
+    assert _points(scored) == [5, 5]
+    assert _marked(scored) == [True, True]
+    assert _source_points(scored) == [None, None]
+
+
+def test_a_printed_matching_total_with_inexact_ticks_keeps_the_printed_source_points():
+    chunks, questions = _exam("Q Matcha orden med deras definitioner nedan (10 p)")
+    matching = recorded_matching_items(keyed=True)[0]
+    assert len(matching.answer_key.match_pairs) == 3
+    grid = matching.model_copy(update={"item_id": "item_001", "source_anchor": questions[0][0]})
+
+    scored = _score(chunks, questions, (grid,))
+
+    updated = scored.items[0]
+    assert updated.points == 9.99
+    assert updated.tick_points == Decimal("3.33")
+    assert updated.points_estimated is True
+    assert updated.source_points == 10

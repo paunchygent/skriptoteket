@@ -155,7 +155,11 @@ def with_question_points(
     tick value follows the total, so no total is changed alone. Points the rubric or ticks
     cannot carry send the item to teacher review.
     """
-    updates: dict[str, object] = {"points": points, "points_estimated": estimated}
+    updates: dict[str, object] = {
+        "points": points,
+        "points_estimated": estimated,
+        "source_points": points if not estimated else None,
+    }
     try:
         if points <= 0:
             raise ValueError("the printed total gives the question no points")
@@ -180,6 +184,7 @@ def with_question_points(
             update={
                 "points": points,
                 "points_estimated": estimated,
+                "source_points": points if not estimated else None,
                 "item_id": item.item_id,
                 "sequence": item.sequence,
                 "printed_label": item.printed_label,

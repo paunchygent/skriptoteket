@@ -36,7 +36,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 
-NATIVE_EXAM_DOCUMENT_SCHEMA_VERSION: Literal["native_exam_document_v8"] = "native_exam_document_v8"
+NATIVE_EXAM_DOCUMENT_SCHEMA_VERSION: Literal["native_exam_document_v9"] = "native_exam_document_v9"
 
 
 class NativeExamAsset(BaseModel):
@@ -89,6 +89,8 @@ class NativeExamHeader(BaseModel):
     tags: tuple[NativeExamContentTag, ...] = ()
     course_hint: str | None = Field(default=None, min_length=1)
     printed_total: int | float | None = Field(default=None, gt=0)
+    # The teacher closed the printed-total note for this exam (TASK-SKRIPT-40-04-10 T7).
+    printed_total_dismissed: bool = False
 
     @model_validator(mode="after")
     def _clear_previous_course_tags(self) -> "NativeExamHeader":
@@ -103,7 +105,7 @@ class NativeExamHeader(BaseModel):
 class NativeExamDocument(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    schema_version: Literal["native_exam_document_v8"] = NATIVE_EXAM_DOCUMENT_SCHEMA_VERSION
+    schema_version: Literal["native_exam_document_v9"] = NATIVE_EXAM_DOCUMENT_SCHEMA_VERSION
     document_id: UUID
     revision: int = Field(ge=1)
     title: str

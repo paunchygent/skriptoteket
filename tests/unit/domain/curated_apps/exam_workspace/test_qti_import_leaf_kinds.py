@@ -115,6 +115,7 @@ def test_gap_fill_points_come_from_the_package_max_score(points: int | float | N
 
     imported = container.document.items[0]
     assert imported.points == points
+    assert imported.source_points == points
     assert imported.answer_key.origin is NativeAnswerKeyOrigin.SOURCE_PROVIDED
 
 
@@ -310,6 +311,7 @@ def test_matching_points_that_do_not_split_evenly_are_rounded_down_and_flagged()
 
     imported = container.document.items[0]
     assert imported.points == 9.99
+    assert imported.source_points == 10
     assert imported.tick_points == Decimal("3.33")
     assert imported.answer_key.origin is NativeAnswerKeyOrigin.SOURCE_PROVIDED
     assert len(imported.answer_key.match_pairs) == 3
@@ -349,3 +351,22 @@ def test_import_records_snapshot_the_package_wording_and_key_per_kind() -> None:
 
     ordering = imported(make_ordering_item())
     assert ordering.original_wording.answer_key_text == ("Tes\nArgument\nMotargument\nAvslutning")
+
+
+def test_every_leaf_kind_records_the_package_max_score_as_source_points() -> None:
+    document = _document(
+        (
+            _at(make_free_text_item(), 1),
+            _at(make_single_choice_item(), 2),
+            _at(make_gap_fill_item(), 3),
+            _at(inline_choice_item(sequence=4), 4),
+            _at(matching_item(sequence=5), 5),
+            _at(make_ordering_item(sequence=6), 6),
+        )
+    )
+
+    _, container = _round_trip(document)
+
+    assert [item.source_points for item in container.document.items] == [
+        item.points for item in document.items
+    ]
