@@ -168,7 +168,10 @@ describe("examWorkspaceGuestStore history and save", () => {
 
     expect(error).toBeInstanceOf(ApiError);
     expect(error).toMatchObject({ code: "VALIDATION_ERROR", status: 422 });
-    expect((error as ApiError).message).not.toBe("");
+    if (!(error instanceof ApiError)) {
+      throw new Error("expected an ApiError");
+    }
+    expect(error.message).not.toBe("");
     expect(await context.storage.load()).toEqual(persisted);
   });
 });

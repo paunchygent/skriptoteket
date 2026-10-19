@@ -35,15 +35,23 @@ vi.mock("../../../api/examWorkspace", () => apiMocks);
 
 const MAX_STEPS = 10;
 
+/** The fake server's stored step state: baseline plus at most 10 undo steps. */
+type FakeServerState = {
+  baseline: string;
+  steps: string[];
+  cursor: string;
+  position: string | null;
+};
+
 /** The server's step store: same truncation and pruning rules as exam_workspace_undo_steps.py. */
 function fakeServer(baseline: NativeExamDocument) {
   let counter = 0;
   const documents = new Map<string, NativeExamDocument>([["step-0", baseline]]);
-  const state = {
+  const state: FakeServerState = {
     baseline: "step-0",
-    steps: [] as string[],
+    steps: [],
     cursor: "step-0",
-    position: "step-0" as string | null,
+    position: "step-0",
   };
   const history = () => ({
     baseline_step_id: state.baseline,
