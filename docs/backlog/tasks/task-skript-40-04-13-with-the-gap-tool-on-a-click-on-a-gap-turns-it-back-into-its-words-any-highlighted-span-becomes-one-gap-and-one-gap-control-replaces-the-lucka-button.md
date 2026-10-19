@@ -8,69 +8,96 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-19'
-status: proposed
+status: ready
 closeout_review:
   record: inline
   status: not_started
 task_kind: story
 acceptance_criteria:
-- With the gap tool on, clicking a gap turns it back into the text it came from in
-  one undo step; any highlighted span inside one paragraph becomes one gap with that
-  span as its first answer; the toolbar has one gap control
+- With the gap tool on, clicking a gap turns it back into its first answer in one undo
+  step and keeps its other answers hidden on that word; a tool click on the word makes
+  the whole gap again; any highlighted span inside one paragraph becomes one gap; the
+  gap tool switch is the only gap control
 story: ST-SKRIPT-40-04
 backlog_document_profile: contract-derived
 ---
 
 ## Implementation Contract
 
-The user tested the gap tool (TASK-SKRIPT-40-04-09) on staging on 2026-10-19 and asked for three things (U1-U3). The main point: with the gap tool on, a click on a gap must turn it back into the word it came from. The two gap controls confuse; making a gap from text the teacher has already written is the primary action, any highlighted span (one word, several words, a sentence) becomes one gap, and an empty gap that is filled later stays a secondary option.
+The user tested the gap tool (TASK-SKRIPT-40-04-09) on staging on 2026-10-19 and asked for three things (U1-U3). The user answered the lead's questions Q1-Q8 on 2026-10-19 and accepted the plan. Status `ready` by `agent-planning:user-closure-gate` (user answers 2026-10-19, relayed by orchestrator 944b5a5a).
 
-Status `proposed`: the user questions Q1-Q8 in the retained plan are open. The planned behaviour, if the user accepts the lead's recommendations:
+Behaviour:
 
-1. With the gap tool on, a click on a gap turns it back into text in one undo step: a Lucktext gap becomes its first accepted answer as plain text (reusing `withGapAsText`), a dropdown gap becomes its correct option's text, and a gap without an answer is removed. Its other answers and options go with it; Ångra restores the gap whole.
-2. The Luckverktyg toggle is the one gap control. The toolbar Lucka button and the floating Gör till lucka glyph are removed, which reverses the user's earlier 40-04-09 Q5, Q12 and Q13; with the tool off the editor is plain text, and a gap click opens its popover. With the tool on, a word click or any highlighted span in one paragraph makes one gap; Enter on a keyboard selection makes one; Enter or Space on a selected gap opens its popover; the second click of a double click does nothing.
-3. A secondary glyph, Tom lucka, inserts an empty gap at the caret and opens its popover with the answer field focused; closing the popover of any gap that has no answer (new, or emptied by the teacher) removes that gap in one undo step, so a keyed question never holds an unanswered gap.
+1. With the gap tool on, a click on a gap reverts it in one undo step. A Lucktext gap becomes its first accepted answer as plain text; a dropdown gap becomes its correct option's text (Q1).
+2. The reverted word keeps the rest of the gap hidden: its other accepted answers, automatic values and excluded values, or its other dropdown options. The link is attached to the word's text, so it moves with the word when the text around it changes, and deleting the whole word deletes it (Q2 i). Copy and paste never copies the link.
+3. With the tool on, a click on a word that has kept answers makes the whole gap again in one undo step. The word's current text becomes the first answer (Lucktext) or the correct option's text (dropdown), and the kept answers and options come back, so an unedited word restores the gap exactly (Q2 ii).
+4. With the tool on, a word with kept answers shows a faint dotted underline and the tooltip `Har sparade svar för en lucka` (copy to `ui-copy-reviewer`). With the tool off it looks like plain text (Q2 iii).
+5. Kept answers live only in the workspace document. Print, PDF, QTI and every other export show the word as plain text (Q2 iv).
+6. With the tool on, Enter or Space on a selected gap opens its popover. With the tool off, a gap click opens its popover (Q3).
+7. The second click of a double click does nothing, so a double click never makes a gap and then reverts it (Q4).
+8. The gap tool switch is the only gap control. The toolbar Lucka button and the floating Gör till lucka glyph are removed. With the tool on, Enter on a non-empty keyboard selection makes it a gap, so making a gap stays possible from the keyboard. This reverses the user's 40-04-09 Q5, Q12 and Q13 (Q5).
+9. No control inserts an empty gap. Every gap is made from text that is already written (Q6).
+10. Closing the popover of a gap that has no answer removes the gap in one undo step (Q7). Its word is already gone, because the teacher deleted the answer that held it. This is the teacher's own deletion, not the vanished word reported in the Part A staging test. Ångra brings the gap back.
 
-Non-goals: native-format, API, export or print changes; the toolbar Ångra and Gör om and autosave (TASK-SKRIPT-40-04-14).
+Scope split (orchestrator 2026-10-19): a separate Mac toolbar session owns the toolbar layout and the glyphs' look. That session also owns the switch glyph (Q8 text-select, look per TASK-SKRIPT-40-04-11). This task keeps the switch's current glyph, and removes Lucka and the floating glyph as behaviour.
+
+### Document format (new; no reader for the old form)
+
+- `NativeTextSegment` (`native_exam_body.py`) gains `kept_gap_id: str | None`, matching `GAP_ID_PATTERN`, null on ordinary text. It is not a mark: `marks` keeps the five formatting names, so the print, QTI and DigiExam code that reads `marks` is unchanged. Two neighbouring runs merge only when their marks and `kept_gap_id` are equal.
+- `NativeExamItem` (`native_exam_item.py`) gains `kept_gaps: tuple[NativeGap, ...]` with the same `NativeGap` shape. Invariants: every kept gap id appears as `kept_gap_id` on at least one text run of the item's body, and every `kept_gap_id` in the body names one kept gap. Kept gap ids are unique, and differ from the item's `gaps` and chips. Only gap_fill and inline_choice items carry kept gaps, and each kept gap follows its kind's gap shape rules. Kept gaps are left out of the answer-key invariants and `body_gaps`, so they never count as gaps of the question.
+- The SPA carries the same fields through the regenerated OpenAPI types. The TipTap editor maps `kept_gap_id` to a mark `examKeptGap` with a `gapId` attribute; the mark is not inclusive, so typing at the word's edges does not join the link. Removing the last run that carries an id drops its kept record, the same way `withBody` drops the record of a removed chip.
+- A tool click on any part of a marked word restores the whole contiguous run that carries that id. If editing has split the id across separate runs, the clicked run is restored and the other runs lose the mark.
+
+Non-goals: the toolbar layout and glyph look (the Mac toolbar session); toolbar Ångra, Gör om and autosave (TASK-SKRIPT-40-04-14); printing kept answers anywhere.
 
 ## Contract Inputs
 
-- The user's feedback 2026-10-19 (U1-U3), relayed by the Mac parent through the Hemma orchestrator 944b5a5a.
-- TASK-SKRIPT-40-04-09 and its repairs R9-R10 (main 26f84883; repair 2af07df2 on `codex/task-skript-40-04-gap-toggle-back-remote`).
-- The verbatim transcripts: `evidence/planning/user-feedback-2026-10-19.md` in retained root `01a1541f-38b9-7a10-a94e-9fd8a0bd1bcc`.
-- TASK-SKRIPT-40-04-11 (proposed, branch `codex/task-skript-40-04-compact-tools-remote`): boxless glyph tools (T1, T2); the toolbar glyphs here take its look.
-- Retained root `01a1541f-38b9-7a10-a94e-9fd8a0bd1bcc`: plan `evidence/planning/TASK-SKRIPT-40-04-13/plan.md`, Explorer discovery under `discovery/explorer/`, toolbar mock `evidence/planning/mock/toolbar-mock.png`.
-- `huleedu-ui-design` (glyph-only tools, names in tooltip and aria-label only); `integrated-frontend-stack`; TipTap 3.31.3 docs through `ctx7`.
+- The user's feedback 2026-10-19 (U1-U3) and answers Q1-Q8 (2026-10-19), relayed through the Hemma orchestrator 944b5a5a.
+- TASK-SKRIPT-40-04-09 and its repairs R9-R10 and review aeb140ef F1-F5 (branch `codex/task-skript-40-04-gap-toggle-back-remote`, origin/main merged at 72df15cf with TASK-SKRIPT-40-04-08).
+- Retained root `01a1541f-38b9-7a10-a94e-9fd8a0bd1bcc`:
+  - the plan `evidence/planning/TASK-SKRIPT-40-04-13/plan.md`;
+  - the verbatim transcripts `evidence/planning/user-feedback-2026-10-19.md`;
+  - Explorer discovery under `discovery/explorer/`: `body-schema` and `export-marks` for the format and renderers.
+- TASK-SKRIPT-40-04-11 and the Mac toolbar session (look); `huleedu-ui-design`; `integrated-frontend-stack`; `skriptoteket-backend-dev`; TipTap 3.31.3 docs through `ctx7`.
 
 ## Core Vertical And Performance
 
 ### Resume here
 
-Planned 2026-10-19 by lead 73032e62 (retained root `01a1541f-38b9-7a10-a94e-9fd8a0bd1bcc`). Facts F1-F5 and sources U1-U3 closed; user questions Q1-Q8 open, sent to the orchestrator with recommendations and the mock. Next action: record the user's answers in the plan ledger, derive the final units, validate with `--require-closed`, and ask for `ready`.
+Ready 2026-10-19 (lead 73032e62, retained root `01a1541f-38b9-7a10-a94e-9fd8a0bd1bcc`). The ledger is closed. origin/main is merged at 72df15cf. Next action: build wave 1 (H1, H2, H5) with fresh juniors and fail-first tests.
 
-### Planned units (if the recommendations are accepted)
+### Units
 
-Paths are under `frontend/apps/skriptoteket/src/views/apps/exam-workspace/`; each unit goes to a fresh junior with disjoint files.
+Paths are under `frontend/apps/skriptoteket/src/views/apps/exam-workspace/` unless they start with `src/skriptoteket/`. Each unit goes to a fresh junior with disjoint files. Waves: H1, H2 and H5 together; then H3 and H6; then H4.
 
 | Unit | Files | Behaviour | Focused tests |
 | --- | --- | --- | --- |
-| H1 revert edit | `examWorkspaceGapEdits.ts` (`withGapAsText` for dropdown gaps and for gaps with no answer), `useExamWorkspaceItemEdits.ts` | Q1, Q2 | `examWorkspaceItemEdits.interpretation.spec.ts` (extended), new `examWorkspaceGapRevert.spec.ts` |
-| H2 tool click | `useExamWorkspaceMakeGap.ts`, `ExamWorkspaceRichTextEditor.vue` (`handleClickOn` with the tool on emits a revert; second click of a double click ignored; Enter on a selection converts) | Q3, Q4, Q5 | `ExamWorkspaceRichTextEditor.gapTool.spec.ts`, `ExamWorkspaceRichTextEditor.gapToolSelection.spec.ts` |
-| H3 one control | `ExamWorkspaceMarkToolbar.vue` (remove Lucka, add Tom lucka, toggle glyph), removal of the floating button from `useExamWorkspaceMakeGap.ts` and its specs | Q5, Q6, Q8 | `ExamWorkspaceMarkToolbar.gap.spec.ts`; removed `makeGapButton` specs |
-| H4 wiring | `ExamWorkspaceBodyEditor.vue` (revert emit to the owner; empty gap opens its popover; empty gap removed on close) | Q6, Q7 | `ExamWorkspaceBodyEditor.gapTool.spec.ts`, `ExamWorkspaceWalkingSkeletonSlice.spec.ts` |
+| H1 backend format | `src/skriptoteket/domain/curated_apps/exam_workspace/native_exam_body.py`, `native_exam_item.py`, the OpenAPI export and `pdm run fe-gen-api-types` | Format: `kept_gap_id`, `kept_gaps` and their invariants. Print and QTI output show the word as plain text | Backend domain tests for the new invariants; the print-document and QTI emitter tests extended with a kept run |
+| H2 editor format | `examWorkspaceRichTextSchema.ts` (`examKeptGap` mark), `examWorkspaceRichTextDocument.ts` (mapping), `examWorkspaceGapEdits.ts` `withBody` (drop orphaned kept records), paste handling | Items 2 and 5 (format), paste never copies the link | `examWorkspaceRichTextDocument.spec.ts`, a new `examWorkspaceKeptGap.spec.ts` |
+| H3 revert and restore edits | `examWorkspaceGapEdits.ts` (`withGapReverted`, `withKeptGapRestored`; reuse `withGapAsText`), `useExamWorkspaceItemEdits.ts` | Items 1-3; each is one structural step | A new `examWorkspaceGapRevert.spec.ts`, `examWorkspaceItemEdits.interpretation.spec.ts` |
+| H4 tool clicks | `ExamWorkspaceRichTextEditor.vue` (`handleClickOn`, Enter and Space), `useExamWorkspaceMakeGap.ts`, `ExamWorkspaceBodyEditor.vue` (revert and restore emits to the owner), the kept-word decoration and tooltip | Items 3, 4, 6, 7 and the keyboard route of item 8 | `ExamWorkspaceRichTextEditor.gapTool*.spec.ts`, `ExamWorkspaceBodyEditor.gapTool.spec.ts`, `useExamWorkspaceEditing.gapUndo.spec.ts` (revert and restore undo) |
+| H5 one control | `ExamWorkspaceMarkToolbar.vue` (remove Lucka), `useExamWorkspaceMakeGap.ts` (remove the floating glyph and the empty-gap insert), their specs | Items 8 and 9 | `ExamWorkspaceMarkToolbar*.spec.ts`; the specs of the removed paths go |
+| H6 unanswered gap on close | `ExamWorkspaceBodyEditor.vue` popover close handler, `ExamWorkspaceGapPopover.vue` only if the close event needs the answer state | Item 10 | `ExamWorkspaceBodyEditor.gapToolEscape.spec.ts`, `ExamWorkspaceGapPopover*.spec.ts` |
 
-H2 and H3 both touch `useExamWorkspaceMakeGap.ts` and run in separate waves. Performance is not material.
+H4 and H6 both touch `ExamWorkspaceBodyEditor.vue`, and H4 and H5 both touch `useExamWorkspaceMakeGap.ts`, so they run in different waves. Performance: one extra field per text run, and a scan of the body for orphaned kept ids on each body edit. Both are small.
 
 ## Validation
 
-- Per unit: its focused spec files, run as `pdm run fe-test -- <spec path>`.
-- At the end: `pdm run fe-type-check`, `pdm run fe-lint`, `pdm run fe-build`, and one exam-workspace frontend domain suite on the orchestrator's go.
-- Copy for the toggle, Tom lucka and the tooltips goes to `ui-copy-reviewer`.
-- Staging walk on Hemma in a real browser: tool on, click a word, then click the gap and see the word back; Ångra brings the gap back; highlight three words and see one gap; highlight a sentence and see one gap; Tom lucka, close with no answer, see no gap.
+- Per unit: its focused spec files, run as `pdm run fe-test -- <spec path>` or `pdm run pytest <test file>`. For H1 also `pdm run lint` and `pdm run typecheck`.
+- At the end: `pdm run fe-type-check`, `pdm run fe-lint`, `pdm run fe-build`, and on the orchestrator's go one domain suite per touched domain (the exam-workspace frontend, and the exam-workspace backend for H1).
+- Copy (the kept-word tooltip) goes to `ui-copy-reviewer`.
+- Staging walk on Hemma in a real browser:
+  1. Tool on, click a word, then click the gap: the word is back.
+  2. Click the word again: the gap is back with its answers.
+  3. Edit a reverted word and click it: the new word is the first answer, and the other answers are back.
+  4. Ångra undoes each step.
+  5. Highlight three words: one gap. Highlight a sentence: one gap.
+  6. Print preview shows reverted words as plain text.
+  7. Neither Lucka nor the floating glyph appears.
 
 ## Stop Conditions
 
-Stop and ask the user if a revert needs the gap's original text that its answers do not hold, if any unit needs a native-format, API, export or print change, or if removing the toolbar Lucka leaves a keyboard-only teacher without a way to make a gap.
+Stop and ask the user if a revert or restore cannot keep the answers attached through ordinary editing as stated, if a unit needs a toolbar layout decision (send it to the orchestrator for the toolbar session), or if removing Lucka leaves a keyboard-only teacher without a way to make a gap.
 
 ## Decided Contract Terms
 
@@ -84,3 +111,13 @@ Stop and ask the user if a revert needs the gap's original text that its answers
 | F3  | Removing a gap chip drops its record; other gap ids are never renumbered |
 | F4  | The only empty-gap path is the toolbar Lucka at a caret outside a word; an unanswered gap in a keyed Lucktext question makes every draft refused until it has an answer (40-04-09 R9) |
 | F5  | With the tool on, a drag over several words, a sentence with punctuation, or across a bold mark makes one gap with that text; a selection across two paragraphs makes none; a keyboard selection converts only through Lucka; a double click makes one gap |
+| Q1  | A reverted Lucktext gap becomes its first accepted answer as plain text; a dropdown gap becomes its correct option's text (user 2026-10-19) |
+| Q2  | Kept hidden: reverting keeps the gap's other answers and options attached to the word, out of sight. The link moves with the word and is deleted with it; a tool click on the word restores the whole gap, with the word's current text as the first answer; with the tool on a kept word shows a faint dotted underline and a tooltip, and with the tool off it looks like plain text; exports print the word as plain text (user 2026-10-19, changed from the lead's recommendation, because items tied to a word must stay connected as the text around it shifts) |
+| Q3  | Tool on: a gap click reverts, and Enter or Space on a selected gap opens its popover. Tool off: a gap click opens the popover (user 2026-10-19) |
+| Q4  | The second click of a double click does nothing (user 2026-10-19) |
+| Q5  | The gap tool switch is the only gap control; the toolbar Lucka button and the floating Gör till lucka glyph are removed; reverses 40-04-09 Q5, Q12 and Q13 (user 2026-10-19) |
+| Q6  | No empty-gap control at all and no Tom lucka (user 2026-10-19) |
+| Q7  | Closing the popover of a gap with no answer removes the gap in one undo step (user 2026-10-19) |
+| Q8  | The switch uses the text-select glyph, with the look from TASK-SKRIPT-40-04-11. The Mac toolbar session owns and builds it; this task keeps the switch's current glyph (user 2026-10-19; scope split by the orchestrator 2026-10-19) |
+| L1  | Kept answers are stored as `kept_gap_id` on text runs and `kept_gaps` on the item, not as a sixth mark name, so the renderers that read `marks` (QTI raises on an unknown mark) are unchanged; no reader for the old form (lead design 2026-10-19 from Q2 and the `body-schema` and `export-marks` discovery) |
+| S1  | Scope split: the Mac toolbar session owns toolbar layout, glyph placement and look; this task builds the behaviour (orchestrator 2026-10-19) |

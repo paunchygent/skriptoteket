@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "456d992a1f8df0665b6ae040fd980382cb4caa28974983b95764f314bbe11733",
+  "source_set_digest": "ef1e6bbe969d4fbf6ef9bf03ab8f8d1e42e9f9f714293d262b5f7f6700479892",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6710,7 +6710,7 @@
       "type": "task",
       "title": "With the gap tool on, a click on a gap turns it back into its words, any highlighted span becomes one gap, and one gap control replaces the Lucka button",
       "path": "docs/backlog/tasks/task-skript-40-04-13-with-the-gap-tool-on-a-click-on-a-gap-turns-it-back-into-its-words-any-highlighted-span-becomes-one-gap-and-one-gap-control-replaces-the-lucka-button.md",
-      "status": "proposed",
+      "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -6729,7 +6729,7 @@
       "type": "task",
       "title": "The question editor toolbar has its own Ångra and Gör om, and every question edit autosaves after a short pause",
       "path": "docs/backlog/tasks/task-skript-40-04-14-the-question-editor-toolbar-has-its-own-ångra-and-gör-om-and-every-question-edit-autosaves-after-a-short-pause.md",
-      "status": "proposed",
+      "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
