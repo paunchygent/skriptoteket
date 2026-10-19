@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "fd7b0de47274126a23582617c65904058e391d1ee309d6f7aec3718c356b6cc5",
+  "source_set_digest": "a6e34b7e786943c34b9c3a5f59e9289ddc14f1de85cc4dcc4af4671d85327177",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6634,6 +6634,25 @@
       "type": "task",
       "title": "Short-answer and gap-text questions look different, teachers create gaps by clicking a word, and the gap popover shows its whole answer list",
       "path": "docs/backlog/tasks/task-skript-40-04-08-short-answer-and-gap-text-questions-look-different-teachers-create-gaps-by-clicking-a-word-and-the-gap-popover-shows-its-whole-answer-list.md",
+      "status": "proposed",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-12",
+      "type": "task",
+      "title": "Printed PDF exams keep each question's text and its alternatives on one page",
+      "path": "docs/backlog/tasks/task-skript-40-04-12-printed-pdf-exams-keep-each-question-s-text-and-its-alternatives-on-one-page.md",
       "status": "proposed",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
