@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "8a7ebea9dfca2aa5f9052207192e4209f0a351ea8a9530e3bf3c33e93523f634",
+  "source_set_digest": "c09694906ede188e70e308d65ca314a7d10116ff7e87da6c8989d486229394d4",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5202,7 +5202,7 @@
       "type": "task",
       "title": "An inline answer key cut from a review question is carried into its facit exactly as printed and marked as taken from the source",
       "path": "docs/backlog/tasks/task-skript-39-04-18-an-inline-answer-key-cut-from-a-review-question-is-carried-into-its-facit-exactly-as-printed-and-marked-as-taken-from-the-source.md",
-      "status": "proposed",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-04",
       "owners": [
