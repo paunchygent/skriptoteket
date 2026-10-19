@@ -12,8 +12,10 @@ import tomllib
 from pathlib import Path
 from uuid import UUID
 
+import pytest
 import yaml
 from starlette.requests import Request
+from structlog.testing import capture_logs
 from uvicorn._types import (
     ASGI3Application,
     ASGIReceiveCallable,
@@ -40,6 +42,7 @@ from skriptoteket.protocols.public_request_limits import (
     PublicRequestAdmission,
     PublicRequestBucket,
 )
+from skriptoteket.web.api.v1 import public_apps_exam_workspace_support as support
 from skriptoteket.web.api.v1.public_apps_exam_workspace_support import admit_guest_request
 
 _REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -257,3 +260,48 @@ def test_no_compose_file_reintroduces_app_level_proxy_trust() -> None:
         assert "TRUST_PROXY_HEADERS" not in content
         for line in content.splitlines():
             assert not line.strip().startswith("TRUSTED_PROXY_CIDRS:")
+
+
+_PROXY_UNTRUSTED_EVENT = "public_guest_limiter_proxy_untrusted"
+
+
+@pytest.fixture
+def reset_proxy_warning():
+    support._PROXY_UNTRUSTED_WARNING_EMITTED = False
+    yield
+    support._PROXY_UNTRUSTED_WARNING_EMITTED = False
+
+
+async def test_trusted_proxy_peer_emits_no_proxy_warning(reset_proxy_warning) -> None:
+    """A trusted proxy hop resolves the client from the chain, so nothing warns."""
+    with capture_logs() as logs:
+        seen = await _admitted_ip(
+            peer=_PROXY_PEER,
+            headers=_xff(f"{_FORGED_CLIENT}, {_REAL_CLIENT}"),
+            trusted_hosts=[_PROXY_CIDR],
+        )
+
+    assert seen == _REAL_CLIENT
+    assert [entry for entry in logs if entry.get("event") == _PROXY_UNTRUSTED_EVENT] == []
+
+
+async def test_untrusted_proxy_peer_warns_exactly_once_across_requests(
+    reset_proxy_warning,
+) -> None:
+    """An untrusted proxy hop keeps every guest on the proxy address: one warning."""
+    with capture_logs() as logs:
+        for _ in range(3):
+            seen = await _admitted_ip(
+                peer=_UNTRUSTED_PEER,
+                headers=_xff(f"{_FORGED_CLIENT}, {_REAL_CLIENT}"),
+                trusted_hosts=[_PROXY_CIDR],
+            )
+
+    assert seen == _UNTRUSTED_PEER
+    warnings = [entry for entry in logs if entry.get("event") == _PROXY_UNTRUSTED_EVENT]
+    assert len(warnings) == 1
+    record = repr(warnings[0])
+    assert _UNTRUSTED_PEER not in record
+    assert _REAL_CLIENT not in record
+    assert _FORGED_CLIENT not in record
+    assert _PROXY_PEER not in record

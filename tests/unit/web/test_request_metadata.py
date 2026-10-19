@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from starlette.requests import Request
 
-from skriptoteket.web.request_metadata import get_client_ip
+from skriptoteket.web.request_metadata import forwarded_chain_untrusted, get_client_ip
 
 
 def _make_request(
@@ -71,3 +71,36 @@ def test_get_client_ip_returns_none_without_direct_peer() -> None:
     request = _make_request(client_host=None)
 
     assert get_client_ip(request) is None
+
+
+def test_forwarded_chain_untrusted_is_false_without_forwarded_header() -> None:
+    request = _make_request(client_host="172.18.0.5")
+
+    assert forwarded_chain_untrusted(request) is False
+
+
+def test_forwarded_chain_untrusted_is_false_when_client_is_among_chain_hosts() -> None:
+    request = _make_request(
+        client_host="203.0.113.9",
+        headers={"x-forwarded-for": "6.6.6.6, 203.0.113.9"},
+    )
+
+    assert forwarded_chain_untrusted(request) is False
+
+
+def test_forwarded_chain_untrusted_is_true_when_client_is_absent_from_chain() -> None:
+    request = _make_request(
+        client_host="172.18.0.5",
+        headers={"x-forwarded-for": "6.6.6.6, 203.0.113.9"},
+    )
+
+    assert forwarded_chain_untrusted(request) is True
+
+
+def test_forwarded_chain_untrusted_ignores_malformed_chain_entries() -> None:
+    request = _make_request(
+        client_host="203.0.113.9",
+        headers={"x-forwarded-for": "not-an-address, 203.0.113.9"},
+    )
+
+    assert forwarded_chain_untrusted(request) is False

@@ -68,10 +68,15 @@ Stop and report if the shared editor cannot run on a browser store without forki
 - R5 (aeaaa707): exam workspace component specs get the store and sign-in injections from one typed `examWorkspaceProvidersPlugin`.
 - Domain suite 2026-10-19 at bff9843c: backend 1 failed (fixed by R4), 3064 passed; frontend 51 failed in 9 specs (fixed by R5). Reruns of the failed and touched files pass (backend 82, frontend 320).
 - Independent review da90f12c at 87dbf8ee: changes_requested (`evidence/reviews/da90f12c-9823-4ac1-85e4-0c833b656ee6.md` in the retained root). Repaired as fresh junior units (lead 2, 2026-10-19), each with a test that failed before the fix: F1 one uvicorn trusted-proxy chain (no wildcard; `FORWARDED_ALLOW_IPS` from `TRUSTED_PROXY_CIDRS`; the app reads the resolved peer only); F2+F3 conditional `replaceIf`/`clearIf` browser writes and a snapshot-keyed handoff; F4 sign-in departure settles the autosave first; F7 the handoff runs inside the store's compensated transaction; F8 one typed export-blockers base model and no Any in the route tests; F9 files split under 500 lines. The repaired high findings go back to da90f12c for rereview.
-- Deploy note (F1): the Hemma deploy `.env` must set `TRUSTED_PROXY_CIDRS` to the exact nginx-proxy address (`docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' nginx-proxy`, as /32). Without it, uvicorn trusts only loopback and every guest shares the proxy address as one caller key.
-- Residual: `compose.prod.yaml` has 32 long single-token lines that fail the repo's default YAML line length (they failed at HEAD too). This is a lint-policy decision for the orchestrator.
+- Deploy steps (F1) for Hemma:
+  1. Read the nginx-proxy address: `docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' nginx-proxy`.
+  2. Set `TRUSTED_PROXY_CIDRS=<nginx-proxy IP>/32` in the deployment `.env`. Compose passes it to uvicorn as `FORWARDED_ALLOW_IPS`.
+  3. Rebuild and restart the web service. Without step 2, uvicorn trusts only loopback, every guest shares the proxy address as one caller key, and the app logs the proxy-trust warning.
+- Lint: `pdm run lint` fails only on `compose.prod.yaml`, whose YAML line-length errors predate this task: 39 on origin/main dcad0217 and 32 at this branch head after the semantic-free fixes. The orchestrator routes that debt as a separate repair; this task adds no yamllint config.
 - Blocked: F5 (the guest QTI start) waits for TASK-SKRIPT-41-02-01 on main. F6 (a print PDF separate from the Exam.net fallback PDF) waits for TASK-SKRIPT-40-04-07, which owns the student print PDF. When each one lands, the lead merges main and integrates it here.
-- Next: one domain suite after the orchestrator's go (shared modules changed), then rereview.
+- Domain suite 2026-10-19 at f0bc8d14: backend 3092 passed, 0 failed; frontend 439 files, 3016 passed.
+- U7: the app logs `public_guest_limiter_proxy_untrusted` once per process at guest admission when uvicorn did not trust the proxy hop, and `public_guest_limiter_proxy_trust_loopback_only` at production startup when FORWARDED_ALLOW_IPS is loopback-only. Neither log line contains an IP.
+- Next: rereview of the high findings by da90f12c, routed by the orchestrator.
 - Open findings:
   - B3 does not refuse a title that is already used in Mina filer, so a handoff can create a second exam with the same title. This is a product decision for the user.
   - The caller key is an unsalted sha256 of the client IP; rows are pruned after about 2 hours.
