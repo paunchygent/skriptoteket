@@ -76,16 +76,15 @@ def trailing_run_wording(
     return (run, run_text, found)
 
 
-def _cut_run_text(
-    body: tuple[NativeParagraph, ...], run: list[NativeTextSegment], run_text: str, start: int
-) -> tuple[NativeParagraph, ...]:
-    """The body with the run's text from ``start`` removed, keeping each segment's marks.
+def paragraph_keeping_run_text(
+    paragraph: NativeParagraph, run: list[NativeTextSegment], kept_text: str
+) -> NativeParagraph | None:
+    """The paragraph with its trailing run cut to ``kept_text``'s length.
 
-    The same cut serves the whole-line removal and the D13 whole-text word
-    keep; only the start differs. A paragraph left with no segments is dropped.
+    Each kept segment keeps its marks; the last kept segment is truncated to
+    the kept length. None when no segment is left; the caller decides what an
+    emptied paragraph means for its body.
     """
-    paragraph = body[-1]
-    kept_text = run_text[:start].rstrip()
     kept: list[NativeTextSegment] = []
     remaining = len(kept_text)
     for segment in run:
@@ -99,7 +98,21 @@ def _cut_run_text(
             remaining = 0
     head = paragraph.segments[: len(paragraph.segments) - len(run)]
     settled_paragraph = paragraph.model_copy(update={"segments": (*head, *kept)})
-    return (*body[:-1], settled_paragraph) if settled_paragraph.segments else body[:-1]
+    return settled_paragraph if settled_paragraph.segments else None
+
+
+def _cut_run_text(
+    body: tuple[NativeParagraph, ...], run: list[NativeTextSegment], run_text: str, start: int
+) -> tuple[NativeParagraph, ...]:
+    """The body with the run's text from ``start`` removed, keeping each segment's marks.
+
+    The same cut serves the whole-line removal and the D13 whole-text word
+    keep; only the start differs. A paragraph left with no segments is dropped.
+    """
+    paragraph = body[-1]
+    kept_text = run_text[:start].rstrip()
+    settled_paragraph = paragraph_keeping_run_text(paragraph, run, kept_text)
+    return (*body[:-1], settled_paragraph) if settled_paragraph is not None else body[:-1]
 
 
 def body_keeps_text(body: tuple[NativeParagraph, ...]) -> bool:
@@ -208,20 +221,8 @@ def body_without_first_paragraph_points(
         start = found.start
     paragraph = body[0]
     kept_text = run_text[:start].rstrip()
-    kept: list[NativeTextSegment] = []
-    remaining = len(kept_text)
-    for segment in run:
-        if remaining <= 0:
-            break
-        if len(segment.text) <= remaining:
-            kept.append(segment)
-            remaining -= len(segment.text)
-        else:
-            kept.append(segment.model_copy(update={"text": segment.text[:remaining]}))
-            remaining = 0
-    head = paragraph.segments[: len(paragraph.segments) - len(run)]
-    settled_paragraph = paragraph.model_copy(update={"segments": (*head, *kept)})
-    settled = (settled_paragraph, *body[1:]) if settled_paragraph.segments else body[1:]
+    settled_paragraph = paragraph_keeping_run_text(paragraph, run, kept_text)
+    settled = (settled_paragraph, *body[1:]) if settled_paragraph is not None else body[1:]
     for kept_paragraph in settled:
         for placed in kept_paragraph.segments:
             if isinstance(placed, NativeTextSegment):
@@ -320,20 +321,8 @@ def body_without_heading_points(
         kept_text = run_text[:start].rstrip()
         if bare_trim:
             kept_text = HEADING_TRAILING_SEPARATOR.sub("", kept_text)
-        kept: list[NativeTextSegment] = []
-        remaining = len(kept_text)
-        for segment in run:
-            if remaining <= 0:
-                break
-            if len(segment.text) <= remaining:
-                kept.append(segment)
-                remaining -= len(segment.text)
-            else:
-                kept.append(segment.model_copy(update={"text": segment.text[:remaining]}))
-                remaining = 0
-        head = paragraph.segments[: len(paragraph.segments) - len(run)]
-        settled_paragraph = paragraph.model_copy(update={"segments": (*head, *kept)})
-        if settled_paragraph.segments:
+        settled_paragraph = paragraph_keeping_run_text(paragraph, run, kept_text)
+        if settled_paragraph is not None:
             settled[index] = settled_paragraph
             index += 1
         elif body_keeps_text(tuple((*settled[:index], *settled[index + 1 :]))):

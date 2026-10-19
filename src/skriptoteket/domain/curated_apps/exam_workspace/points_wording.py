@@ -25,6 +25,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.points_wording_cuts import 
     body_without_heading_points,
     body_without_trailing_points,
     heading_bare_label_cut,
+    paragraph_keeping_run_text,
     trailing_run_wording,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.points_wording_shapes import (
@@ -60,20 +61,8 @@ def _heading_last_leftover(body: tuple[NativeParagraph, ...], points: int | floa
         if value == points:
             return None
         kept_text = HEADING_TRAILING_SEPARATOR.sub("", run_text[:start].rstrip())
-    kept: list[NativeTextSegment] = []
-    remaining = len(kept_text)
-    for segment in run:
-        if remaining <= 0:
-            break
-        if len(segment.text) <= remaining:
-            kept.append(segment)
-            remaining -= len(segment.text)
-        else:
-            kept.append(segment.model_copy(update={"text": segment.text[:remaining]}))
-            remaining = 0
-    head = paragraph.segments[: len(paragraph.segments) - len(run)]
-    settled_paragraph = paragraph.model_copy(update={"segments": (*head, *kept)})
-    settled = (*body[:-1], settled_paragraph) if settled_paragraph.segments else body[:-1]
+    settled_paragraph = paragraph_keeping_run_text(paragraph, run, kept_text)
+    settled = (*body[:-1], settled_paragraph) if settled_paragraph is not None else body[:-1]
     if body_keeps_text(settled):
         return run_text[start:].strip()
     return None
@@ -102,20 +91,8 @@ def leftover_points_wording(
         return None
     paragraph = body[-1]
     kept_text = run_text[: found.start].rstrip()
-    kept: list[NativeTextSegment] = []
-    remaining = len(kept_text)
-    for segment in run:
-        if remaining <= 0:
-            break
-        if len(segment.text) <= remaining:
-            kept.append(segment)
-            remaining -= len(segment.text)
-        else:
-            kept.append(segment.model_copy(update={"text": segment.text[:remaining]}))
-            remaining = 0
-    head = paragraph.segments[: len(paragraph.segments) - len(run)]
-    settled_paragraph = paragraph.model_copy(update={"segments": (*head, *kept)})
-    settled = (*body[:-1], settled_paragraph) if settled_paragraph.segments else body[:-1]
+    settled_paragraph = paragraph_keeping_run_text(paragraph, run, kept_text)
+    settled = (*body[:-1], settled_paragraph) if settled_paragraph is not None else body[:-1]
     for kept_paragraph in settled:
         for placed in kept_paragraph.segments:
             if isinstance(placed, NativeTextSegment):
