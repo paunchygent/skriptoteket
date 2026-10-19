@@ -12,8 +12,6 @@ Relationships:
       come from ``handlers.public_exam_workspace_exports``.
 """
 
-from __future__ import annotations
-
 import json
 from uuid import UUID
 
