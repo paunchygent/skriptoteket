@@ -29,6 +29,7 @@ import type {
   StoredGuestDraft,
 } from "./examWorkspaceGuestDraftStorage";
 import { createInMemoryExamWorkspaceGuestDraftStorage } from "./examWorkspaceGuestDraftStorage";
+import { createExamWorkspaceGuestDraftStorage } from "./examWorkspaceGuestDraftStorage";
 import type { createGuestExamWorkspaceStore } from "./examWorkspaceGuestStore";
 import { createGuestExamWorkspaceStore as createStore } from "./examWorkspaceGuestStore";
 import { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
@@ -94,7 +95,7 @@ describe("guest sign-in departure under the editing lock", () => {
         return backing.replaceIf(expectedCursor, next);
       },
     };
-    const guest = createGuest(port);
+    const guest = createGuest(createExamWorkspaceGuestDraftStorage({ port }));
     const { editing, signIn, wrapper } = mountWorkspace(guest);
     try {
       expect(await editing.openDocument(original.lineage_id)).toBe(true);
@@ -124,7 +125,7 @@ describe("guest sign-in departure under the editing lock", () => {
     const backing = createInMemoryExamWorkspaceGuestDraftStorage();
     const original = newGuestDraft(buildParentDocument(), ids(), []);
     expect(await backing.replaceIf(null, { assets: {}, draft: original })).toBe(true);
-    const guest = createGuest(backing);
+    const guest = createGuest(createExamWorkspaceGuestDraftStorage({ port: backing }));
     const { editing, signIn, wrapper } = mountWorkspace(guest);
     try {
       expect(await editing.openDocument(original.lineage_id)).toBe(true);

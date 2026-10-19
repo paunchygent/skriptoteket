@@ -28,6 +28,7 @@ import {
 import { createGuestExamWorkspaceStore } from "./exam-workspace/examWorkspaceGuestStore";
 import type { ExamWorkspaceGuestStoreDeps } from "./exam-workspace/examWorkspaceGuestStore";
 import { createGuestPublicApiMocks } from "./exam-workspace/examWorkspaceGuestStore.specSupport";
+import { createExamWorkspaceGuestDraftStorage } from "./exam-workspace/examWorkspaceGuestDraftStorage";
 import { createInMemoryExamWorkspaceGuestDraftStorage } from "./exam-workspace/examWorkspaceGuestDraftStorage";
 import {
   EXAM_WORKSPACE_LAYOUT_KEY,
@@ -208,7 +209,9 @@ function blankDocument(): NativeExamDocument {
 type PublicApi = ExamWorkspaceGuestStoreDeps["api"];
 
 function setupGuest() {
-  const storage = createInMemoryExamWorkspaceGuestDraftStorage();
+  const storage = createExamWorkspaceGuestDraftStorage({
+    port: createInMemoryExamWorkspaceGuestDraftStorage(),
+  });
   const publicMocks = createGuestPublicApiMocks();
   publicMocks.importPublicExamWorkspaceQti.mockResolvedValue({
     assets: {},

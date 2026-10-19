@@ -228,13 +228,24 @@ def test_doctype_in_manifest_is_refused() -> None:
 
 
 def test_entity_like_text_in_a_comment_is_not_unsafe() -> None:
-    manifest = b'<?xml version="1.0"?><!-- <!ENTITY x "y"> --><manifest />'
+    manifest = (
+        f'<?xml version="1.0"?><!-- <!ENTITY x "y"> --><manifest xmlns="{IMSCP_NAMESPACE}" />'
+    ).encode("utf-8")
 
     with pytest.raises(DomainError) as refusal:
         _READER.read(content=_zip_bytes([("imsmanifest.xml", manifest)]))
 
     assert refusal.value.message != _UNSAFE_XML
     assert refusal.value.message == _NO_ITEMS
+
+
+def test_manifest_without_namespace_is_refused_with_version_message() -> None:
+    manifest = b'<?xml version="1.0"?><manifest />'
+
+    with pytest.raises(DomainError) as refusal:
+        _READER.read(content=_zip_bytes([("imsmanifest.xml", manifest)]))
+
+    assert refusal.value.message == _UNSUPPORTED_VERSION
 
 
 def test_malformed_manifest_xml_is_refused() -> None:
@@ -308,6 +319,27 @@ def test_qti_2_1_manifest_is_refused() -> None:
             ("items/item_001.xml", _item_xml("item_001")),
         ]
     )
+
+    with pytest.raises(DomainError) as refusal:
+        _READER.read(content=content)
+
+    assert refusal.value.message == _UNSUPPORTED_VERSION
+
+
+def test_qti_2_1_package_namespace_is_refused_with_version_message() -> None:
+    manifest = (
+        '<?xml version="1.0" encoding="UTF-8"?>'
+        '<manifest xmlns="http://www.imsglobal.org/xsd/imscp_v1p1" identifier="m1">'
+        '<resources><resource identifier="i1" type="imsqti_item_xmlv2p1"'
+        ' href="item1.xml"><file href="item1.xml" /></resource></resources>'
+        "</manifest>"
+    ).encode("utf-8")
+    item = (
+        '<?xml version="1.0" encoding="UTF-8"?>'
+        '<assessmentItem xmlns="http://www.imsglobal.org/xsd/imsqti_v2p1"'
+        ' identifier="i1" title="Fråga" adaptive="false" timeDependent="false" />'
+    ).encode("utf-8")
+    content = _zip_bytes([("imsmanifest.xml", manifest), ("item1.xml", item)])
 
     with pytest.raises(DomainError) as refusal:
         _READER.read(content=content)

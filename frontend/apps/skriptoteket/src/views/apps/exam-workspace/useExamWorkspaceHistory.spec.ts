@@ -22,7 +22,7 @@ import { ApiError } from "../../../api/client";
 import type { NativeExamDocument } from "../../../api/examWorkspace";
 import { useToastStore } from "../../../stores/toast";
 import { buildParentDocument } from "./examWorkspaceParentDocument.specSupport";
-import { serverExamWorkspaceStore } from "./examWorkspaceStore";
+import { serverExamWorkspaceStore, type ExamWorkspaceSharedStore } from "./examWorkspaceStore";
 import { EXAM_WORKSPACE_TYPING_PAUSE_MS, useExamWorkspaceHistory } from "./useExamWorkspaceHistory";
 
 const apiMocks = vi.hoisted(() => ({
@@ -89,6 +89,7 @@ function setup(
   hooks: {
     isReplacing?: () => boolean;
     replaceCopy?: <T>(run: () => Promise<T>) => Promise<T>;
+    shared?: ExamWorkspaceSharedStore;
   } = {},
 ) {
   const baseline = buildParentDocument();
@@ -114,7 +115,7 @@ function setup(
       onConflict,
       savedRevision: () => baseline.revision,
       serverDocument,
-      shared: serverExamWorkspaceStore.shared,
+      shared: hooks.shared ?? serverExamWorkspaceStore.shared,
       workspaceDocument,
     }),
   )!;
@@ -302,6 +303,34 @@ describe("autosaved undo steps", () => {
     expect(useToastStore().toasts.map((toast) => toast.message)).toEqual([
       "Ändringen kunde inte sparas som utkast. Försök igen.",
     ]);
+  });
+
+  it("reports a DataCloneError autosave failure as a toast and keeps the edit owed", async () => {
+    const shared: ExamWorkspaceSharedStore = {
+      ...serverExamWorkspaceStore.shared,
+      storeExamWorkspaceUndoStep: vi.fn<ExamWorkspaceSharedStore["storeExamWorkspaceUndoStep"]>(),
+    };
+    vi.mocked(shared.storeExamWorkspaceUndoStep).mockRejectedValueOnce(
+      new DOMException("#<Object> could not be cloned.", "DataCloneError"),
+    );
+    vi.mocked(shared.storeExamWorkspaceUndoStep).mockImplementation((...args) =>
+      serverExamWorkspaceStore.shared.storeExamWorkspaceUndoStep(...args),
+    );
+    const { edit, history } = setup(false, { shared });
+    await flushPromises();
+    apiMocks.storeExamWorkspaceUndoStep.mockClear();
+
+    edit("one", true);
+    await flushPromises();
+
+    expect(useToastStore().toasts.map((toast) => toast.message)).toEqual([
+      "Ändringen kunde inte sparas som utkast. Försök igen.",
+    ]);
+
+    await expect(history.flush(false)).resolves.toBe(true);
+    expect(apiMocks.storeExamWorkspaceUndoStep.mock.calls.at(-1)?.[1].document.title).toBe(
+      "one",
+    );
   });
 });
 

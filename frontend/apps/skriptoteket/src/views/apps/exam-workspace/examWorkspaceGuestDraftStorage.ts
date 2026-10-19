@@ -120,18 +120,28 @@ async function createIndexedDbPort(): Promise<ExamWorkspaceGuestDraftStoragePort
   };
 }
 
-/** A single-slot in-memory store for specs and for a test double the factory accepts. */
+/**
+ * A single-slot in-memory store for specs and for a test double the factory accepts.
+ *
+ * Like IndexedDB, it structured-clones the draft on write and on read, so a
+ * spec that hands it a Vue reactive value fails the way the browser does.
+ * Picture bytes stay by reference: jsdom Blobs do not survive a structured
+ * clone, and the draft itself never holds bytes.
+ */
 export function createInMemoryExamWorkspaceGuestDraftStorage(): ExamWorkspaceGuestDraftStoragePort {
   let stored: StoredGuestDraft | null = null;
   return {
     async load() {
-      return stored;
+      if (stored === null) {
+        return null;
+      }
+      return { assets: { ...stored.assets }, draft: structuredClone(stored.draft) };
     },
     async replaceIf(expectedCursor, next) {
       if ((stored?.draft.cursor ?? null) !== expectedCursor) {
         return false;
       }
-      stored = next;
+      stored = { assets: { ...next.assets }, draft: structuredClone(next.draft) };
       return true;
     },
     async clearIf(expectedCursor) {
@@ -145,18 +155,30 @@ export function createInMemoryExamWorkspaceGuestDraftStorage(): ExamWorkspaceGue
 }
 
 /**
- * The guest storage: the injected port when a caller supplies one (specs and
- * embedders), otherwise the IndexedDB adapter opened lazily on first use so
- * importing this module never touches a database.
+ * Copy `next` into a plain serialisable snapshot: the draft as plain JSON
+ * data, the asset Blobs unchanged by reference. The draft is JSON data from
+ * the public routes, so the round-trip keeps it whole while dropping every
+ * Vue reactive Proxy a call site may have handed over.
+ */
+function snapshotStoredGuestDraft(next: StoredGuestDraft): StoredGuestDraft {
+  const draft: ExamWorkspaceGuestDraft = JSON.parse(JSON.stringify(next.draft));
+  return { assets: { ...next.assets }, draft };
+}
+
+/**
+ * The guest storage: every port it returns, the IndexedDB adapter and an
+ * injected port alike, receives a plain snapshot on `replaceIf`, so a stored
+ * draft is always serialisable. Importing this module never touches a
+ * database: the IndexedDB adapter opens lazily on first use.
  */
 export function createExamWorkspaceGuestDraftStorage(deps?: {
   port?: ExamWorkspaceGuestDraftStoragePort;
 }): ExamWorkspaceGuestDraftStoragePort {
-  if (deps?.port) {
-    return deps.port;
-  }
   let portPromise: Promise<ExamWorkspaceGuestDraftStoragePort> | null = null;
   const port = (): Promise<ExamWorkspaceGuestDraftStoragePort> => {
+    if (deps?.port) {
+      return Promise.resolve(deps.port);
+    }
     portPromise ??= createIndexedDbPort();
     return portPromise;
   };
@@ -165,7 +187,7 @@ export function createExamWorkspaceGuestDraftStorage(deps?: {
       return (await port()).load();
     },
     async replaceIf(expectedCursor, next) {
-      return await (await port()).replaceIf(expectedCursor, next);
+      return await (await port()).replaceIf(expectedCursor, snapshotStoredGuestDraft(next));
     },
     async clearIf(expectedCursor) {
       return await (await port()).clearIf(expectedCursor);

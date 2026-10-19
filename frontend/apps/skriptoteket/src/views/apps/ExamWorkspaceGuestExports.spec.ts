@@ -21,6 +21,7 @@ import {
   type ExamWorkspaceGuestStoreDeps,
 } from "./exam-workspace/examWorkspaceGuestStore";
 import { createGuestExamWorkspaceStore } from "./exam-workspace/examWorkspaceGuestStore";
+import { createExamWorkspaceGuestDraftStorage } from "./exam-workspace/examWorkspaceGuestDraftStorage";
 import { createInMemoryExamWorkspaceGuestDraftStorage } from "./exam-workspace/examWorkspaceGuestDraftStorage";
 import {
   DOCUMENT_ID,
@@ -115,7 +116,9 @@ type PublicApi = ExamWorkspaceGuestStoreDeps["api"];
 const CONTRACTED_TARGETS = ["qti", "pdf", "pdf_facit", "docx", "examnet_pdf"] as const;
 
 function setupGuest() {
-  const storage = createInMemoryExamWorkspaceGuestDraftStorage();
+  const storage = createExamWorkspaceGuestDraftStorage({
+    port: createInMemoryExamWorkspaceGuestDraftStorage(),
+  });
   const publicMocks = createGuestPublicApiMocks();
   const document: NativeExamDocument = exam("Original");
   publicMocks.createPublicExamWorkspaceBlank.mockResolvedValue({
@@ -212,6 +215,41 @@ describe("ExamWorkspaceView guest exports", () => {
       document.body.replaceChildren();
     },
   );
+
+  it("sends the export request after an edit in the guest workspace", async () => {
+    const { guest, publicMocks } = setupGuest();
+    const wrapper = await mountGuestView(guest.store);
+    await wrapper.get('[data-test="exam-workspace-guest-blank"]').trigger("click");
+    await flushPromises();
+
+    await wrapper.get('[data-test="exam-workspace-row-item_001"]').trigger("click");
+    await wrapper.get('[data-test="exam-workspace-item-points-input"]').setValue("5");
+    await flushPromises();
+
+    await wrapper.get('[data-test="exam-workspace-export"]').trigger("click");
+    await flushPromises();
+
+    publicMocks.downloadPublicExamWorkspaceExport.mockResolvedValue({
+      blob: new Blob(["export"]),
+      contentType: "application/octet-stream",
+      filename: "prov.pdf",
+    });
+    const row = menuRow("pdf");
+    expect(row).not.toBeNull();
+    row!.click();
+    await flushPromises();
+
+    expect(publicMocks.downloadPublicExamWorkspaceExport).toHaveBeenCalledTimes(1);
+    const [calledTarget, request] =
+      publicMocks.downloadPublicExamWorkspaceExport.mock.calls[0]!;
+    expect(calledTarget).toBe("pdf");
+    expect(request.document.items.find((item) => item.item_id === "item_001")?.points).toBe(
+      5,
+    );
+    expect(downloadMocks.triggerBrowserDownload).toHaveBeenCalledTimes(1);
+    wrapper.unmount();
+    document.body.replaceChildren();
+  });
 
   it("hides the teacher-only Förhandsgranska toggle in guest mode without calling its render", async () => {
     const { guest } = setupGuest();

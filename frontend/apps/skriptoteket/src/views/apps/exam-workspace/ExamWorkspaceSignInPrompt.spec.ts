@@ -18,6 +18,7 @@ import { createTestRouter, mountWithContext } from "../../../test/utils";
 import ExamWorkspaceView from "../ExamWorkspaceView.vue";
 import { GUEST_LIMIT_SIGN_IN } from "./examWorkspaceGuestCopy";
 import { createGuestExamWorkspaceStore } from "./examWorkspaceGuestStore";
+import { createExamWorkspaceGuestDraftStorage } from "./examWorkspaceGuestDraftStorage";
 import { createInMemoryExamWorkspaceGuestDraftStorage } from "./examWorkspaceGuestDraftStorage";
 import { buildParentDocument } from "./examWorkspaceParentDocument.specSupport";
 import ExamWorkspaceSignInPrompt from "./ExamWorkspaceSignInPrompt.vue";
@@ -94,7 +95,9 @@ beforeAll(() => {
 });
 
 function setupGuest() {
-  const storage = createInMemoryExamWorkspaceGuestDraftStorage();
+  const storage = createExamWorkspaceGuestDraftStorage({
+    port: createInMemoryExamWorkspaceGuestDraftStorage(),
+  });
   const publicMocks = {
     addPublicExamWorkspaceChild: vi.fn(),
     changePublicExamWorkspaceItemType: vi.fn(),
