@@ -12,28 +12,37 @@
  *
  *   The drag is the documented layout-geometry exception: JS handles the
  *   drag and reports the requested width, while CSS owns the clamping of
- *   the tracks. The only measurement is transient: bounds are read from
- *   the closest .ws__body ancestor's computed gridTemplateColumns on focus
- *   and on pointerdown, with no ResizeObserver and no listeners at rest.
- *   The staging walk proves the rendered drag.
+ *   the tracks and is the one minimum authority (`--xw-<column>-min` and
+ *   `--xw-editor-min` on the closest `.xw-root` ancestor, parsed as px; any
+ *   missing minimum gives null bounds). The only measurement is transient:
+ *   bounds are read from the closest `.ws__body` ancestor's computed
+ *   gridTemplateColumns on mount (after nextTick), on focus, after every
+ *   emitted key/double-click set, reset and toggle-collapse (nextTick, then
+ *   read again), and when the `collapsed` prop changes. A pointer drag holds
+ *   its pointerdown bounds until pointerup, so the live drag value is never
+ *   clobbered by a re-read. There is no ResizeObserver and no window or
+ *   document listeners. The staging walk proves the rendered drag.
+ *
+ *   With `collapsed` (the list rail) the separator announces the rail:
+ *   aria-valuenow/min are the rail track width, aria-valuemax is the normal
+ *   max, and aria-valuetext is "Dold". Drag and key behaviour stay as now:
+ *   the first step clamps to the list minimum, which expands the list.
  *
  * Relationships:
- *   - Geometry comes from `examWorkspaceHandleBounds`; the per-column
- *     minimum from `EXAM_WORKSPACE_COLUMN_MIN`; keyboard mapping from
+ *   - Geometry comes from `examWorkspaceHandleBounds` (tracks plus
+ *     `parsePx` for the CSS minimums); keyboard mapping from
  *     `examWorkspaceSeparatorKeyAction` (arrows mirrored for the side edge,
  *     so ArrowLeft widens a right-edge panel). Emits feed
  *     `useExamWorkspaceColumnSizes` in the later wiring unit.
  */
 
-import { ref } from "vue";
+import { computed, nextTick, onMounted, ref, watch } from "vue";
 
-import {
-  EXAM_WORKSPACE_COLUMN_MIN,
-  type ExamWorkspaceColumn,
-} from "./useExamWorkspaceColumnSizes";
+import type { ExamWorkspaceColumn } from "./useExamWorkspaceColumnSizes";
 import {
   examWorkspaceHandleBounds,
   parseGridTracks,
+  parsePx,
   type ExamWorkspaceHandleBounds,
   type ExamWorkspaceHandleEdge,
 } from "./examWorkspaceHandleBounds";
@@ -46,8 +55,9 @@ const props = withDefaults(
     controls: string;
     label: string;
     collapsible?: boolean;
+    collapsed?: boolean;
   }>(),
-  { collapsible: true },
+  { collapsible: true, collapsed: false },
 );
 
 const emit = defineEmits<{
@@ -60,6 +70,16 @@ const handle = ref<HTMLElement | null>(null);
 const current = ref<number | null>(null);
 const lower = ref<number | null>(null);
 const upper = ref<number | null>(null);
+
+const valueText = computed<string | undefined>(() => {
+  if (props.collapsed) {
+    return "Dold";
+  }
+  if (current.value === null) {
+    return undefined;
+  }
+  return `${current.value} px`;
+});
 
 type DragState = {
   startX: number;
@@ -76,21 +96,47 @@ function clampWidth(value: number, min: number, max: number): number {
 
 function readBounds(): ExamWorkspaceHandleBounds | null {
   const body = handle.value?.closest(".ws__body");
-  if (!(body instanceof HTMLElement)) {
+  const root = handle.value?.closest(".xw-root");
+  if (!(body instanceof HTMLElement) || !(root instanceof HTMLElement)) {
     return null;
   }
   const tracks = parseGridTracks(window.getComputedStyle(body).gridTemplateColumns);
   if (tracks === null) {
     return null;
   }
-  return examWorkspaceHandleBounds(tracks, props.edge, EXAM_WORKSPACE_COLUMN_MIN[props.column]);
+  const rootStyle = window.getComputedStyle(root);
+  const own = parsePx(rootStyle.getPropertyValue(`--xw-${props.column}-min`));
+  const editor = parsePx(rootStyle.getPropertyValue("--xw-editor-min"));
+  if (own === null || editor === null) {
+    return null;
+  }
+  return examWorkspaceHandleBounds(tracks, props.edge, { own, editor });
 }
 
 function applyBounds(bounds: ExamWorkspaceHandleBounds): void {
   current.value = bounds.value;
-  lower.value = bounds.min;
+  lower.value = props.collapsed ? bounds.value : bounds.min;
   upper.value = bounds.max;
 }
+
+async function refreshBounds(): Promise<void> {
+  await nextTick();
+  const bounds = readBounds();
+  if (bounds !== null) {
+    applyBounds(bounds);
+  }
+}
+
+onMounted(() => {
+  void refreshBounds();
+});
+
+watch(
+  () => props.collapsed,
+  () => {
+    void refreshBounds();
+  },
+);
 
 function onFocus(): void {
   const bounds = readBounds();
@@ -131,7 +177,7 @@ function stopDrag(event: PointerEvent): void {
   handle.value?.releasePointerCapture(event.pointerId);
 }
 
-function onKeydown(event: KeyboardEvent): void {
+async function onKeydown(event: KeyboardEvent): Promise<void> {
   const bounds = readBounds();
   if (bounds === null) {
     return;
@@ -157,13 +203,23 @@ function onKeydown(event: KeyboardEvent): void {
   } else {
     emit("toggle-collapse");
   }
+  await nextTick();
+  const fresh = readBounds();
+  if (fresh !== null) {
+    applyBounds(fresh);
+  }
 }
 
-function onDblclick(): void {
+async function onDblclick(): Promise<void> {
   if (readBounds() === null) {
     return;
   }
   emit("reset");
+  await nextTick();
+  const fresh = readBounds();
+  if (fresh !== null) {
+    applyBounds(fresh);
+  }
 }
 </script>
 
@@ -178,7 +234,7 @@ function onDblclick(): void {
     :aria-valuenow="current ?? undefined"
     :aria-valuemin="lower ?? undefined"
     :aria-valuemax="upper ?? undefined"
-    :aria-valuetext="current === null ? undefined : `${current} px`"
+    :aria-valuetext="valueText"
     :data-test="`exam-workspace-column-handle-${edge}`"
     :class="[
       'xw-column-handle',

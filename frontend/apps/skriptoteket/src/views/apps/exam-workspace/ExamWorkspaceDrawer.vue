@@ -144,7 +144,7 @@ useDialogFocus(frame, {
 @media (min-width: 1280px) {
   /* Below its minimum the drawer keeps its minimum layout and scrolls inside itself. */
   .drawer__frame { overflow-x: auto; }
-  .drawer__body { min-width: var(--xw-drawer-min); }
+  .drawer__frame > * { min-width: var(--xw-drawer-min); }
 }
 .drawer--phone { position: fixed; inset: 0; z-index: 26; border: 0; background: var(--huleedu-canvas); }
 .drawer--phone .drawer__head { height: 56px; padding: 0 var(--huleedu-space-4); }

@@ -24,6 +24,7 @@ import ExamWorkspaceDrawer from "./ExamWorkspaceDrawer.vue";
 import ExamWorkspaceExportDrawer from "./ExamWorkspaceExportDrawer.vue";
 import ExamWorkspaceOpenDrawer from "./ExamWorkspaceOpenDrawer.vue";
 import { EXPORT_FORMAT_NAMES } from "./useExamWorkspaceExports";
+import { EXAM_WORKSPACE_EXPORT_FORMATS } from "./examWorkspaceExportFormats";
 import type { useExamWorkspaceContentSuggestions } from "./useExamWorkspaceContentSuggestions";
 import type { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
 import type { useExamWorkspaceEnrichment } from "./useExamWorkspaceEnrichment";
@@ -103,9 +104,9 @@ const {
 const { handleDroppedFiles, handleSelectedFile, sourceFileError } = props.sourceFile;
 
 const currentExports = computed(() =>
-  (Object.keys(props.exports.savedExports.value) as ExamWorkspaceExportTarget[]).map(
-    (target) => EXPORT_FORMAT_NAMES[target],
-  ),
+  EXAM_WORKSPACE_EXPORT_FORMATS.filter(
+    (format) => props.exports.savedExports.value[format.target] !== undefined,
+  ).map((format) => EXPORT_FORMAT_NAMES[format.target]),
 );
 </script>
 

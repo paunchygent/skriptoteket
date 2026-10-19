@@ -12,15 +12,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useHelp } from "../help/useHelp";
 import LandingLayout from "./LandingLayout.vue";
 
-const layoutMocks = vi.hoisted(() => ({
-  route: {
+const layoutMocks = vi.hoisted(() => {
+  const route: { name: string; params: Record<string, unknown> } = {
     name: "home",
     params: {},
-  } as {
-    name: string;
-    params: Record<string, unknown>;
-  },
-}));
+  };
+  return { route };
+});
 
 vi.mock("vue-router", () => ({
   RouterLink: {

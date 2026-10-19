@@ -159,12 +159,16 @@ const loginUrl = computed(() => {
   }
 }
 
-.landing-main.landing-main--workspace {
-  padding: 0;
-}
+/* The guest workspace fills the frame on desktop only (TASK-SKRIPT-41-02-04):
+   tablet and phone keep the existing centred guest frame. */
+@media (min-width: 1280px) {
+  .landing-main.landing-main--workspace {
+    padding: 0;
+  }
 
-.landing-frame.landing-frame--workspace {
-  max-width: none;
-  margin: 0;
+  .landing-frame.landing-frame--workspace {
+    max-width: none;
+    margin: 0;
+  }
 }
 </style>

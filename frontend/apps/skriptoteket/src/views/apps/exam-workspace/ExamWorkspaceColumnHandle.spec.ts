@@ -3,13 +3,22 @@
  *
  * Expected behavior:
  *   A focusable role=separator handle on one desktop panel border. Bounds
- *   come only from a transient read of the closest .ws__body ancestor's
- *   computed gridTemplateColumns on focus and on pointerdown; nothing is
- *   measured at rest. Pointer drag emits set with the clamped rounded width
- *   (the list widens with +dx, the side panel with -dx); double-click emits
- *   reset; the keyboard follows the separator key mapping (arrows step,
- *   Home/End jump, Enter collapses, Shift+Enter resets), mirrored for the
- *   side edge. Null bounds make every input a no-op.
+ *   come only from transient reads: the resolved gridTemplateColumns of the
+ *   closest .ws__body ancestor, and the CSS-owned minimums (--xw-<column>-min
+ *   and --xw-editor-min) of the closest .xw-root ancestor, parsed as px. Any
+ *   missing minimum gives null bounds. Bounds are read and applied on mount
+ *   (after nextTick), on focus, after every emitted key/double-click set,
+ *   reset and toggle-collapse (nextTick, then read again), and when the
+ *   collapsed prop changes. Nothing is measured at rest: no ResizeObserver
+ *   and no window or document listeners. Pointer drag emits set with the
+ *   clamped rounded width (the list widens with +dx, the side panel with -dx);
+ *   the drag holds its pointerdown bounds. Double-click emits reset; the
+ *   keyboard follows the separator key mapping (arrows step, Home/End jump,
+ *   Enter collapses, Shift+Enter resets), mirrored for the side edge. Null
+ *   bounds make every input a no-op. The side edge reads the last track, so a
+ *   two-track [editor, side] grid works. With collapsed the separator reports
+ *   the rail: aria-valuenow/min are the rail track width, aria-valuemax is the
+ *   normal max, and aria-valuetext is "Dold".
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -22,22 +31,44 @@ const GRID = "260px 700px 320px";
 const LIST_MAX = 260 + 700 - 400;
 const SIDE_MAX = 320 + 700 - 400;
 
+type MinimumName = "--xw-list-min" | "--xw-drawer-min" | "--xw-preview-min" | "--xw-editor-min";
+
+const DEFAULT_MINIMUMS: Record<MinimumName, string> = {
+  "--xw-list-min": "260px",
+  "--xw-drawer-min": "300px",
+  "--xw-preview-min": "300px",
+  "--xw-editor-min": "400px",
+};
+
 const containers: HTMLElement[] = [];
 const mountedWrappers: VueWrapper[] = [];
 
-function stubGridTemplateColumns(value: string): void {
-  vi.spyOn(window, "getComputedStyle").mockReturnValue({
-    gridTemplateColumns: value,
-  } as CSSStyleDeclaration);
+/**
+ * A typed computed-style mock: a real CSSStyleDeclaration carrying the grid
+ * tracks and the CSS-owned minimums, so no type assertion is needed.
+ */
+function stubComputedStyle(grid: string, overrides: Partial<Record<MinimumName, string>> = {}): void {
+  const style = document.createElement("div").style;
+  style.gridTemplateColumns = grid;
+  const merged: Record<MinimumName, string> = { ...DEFAULT_MINIMUMS, ...overrides };
+  for (const [name, value] of Object.entries(merged)) {
+    if (value === "") {
+      style.removeProperty(name);
+    } else {
+      style.setProperty(name, value);
+    }
+  }
+  vi.spyOn(window, "getComputedStyle").mockReturnValue(style);
 }
 
 function mountHandle(props: {
   edge: "list" | "side";
   column: "list" | "drawer" | "preview";
   collapsible?: boolean;
+  collapsed?: boolean;
 }): VueWrapper {
   const container = document.createElement("div");
-  container.className = "ws__body";
+  container.className = "xw-root ws__body";
   document.body.appendChild(container);
   containers.push(container);
   const wrapper = mount(ExamWorkspaceColumnHandle, {
@@ -46,6 +77,7 @@ function mountHandle(props: {
       controls: "exam-panel",
       label: "Ändra bredd på frågelistan",
       collapsible: true,
+      collapsed: false,
       ...props,
     },
   });
@@ -59,8 +91,8 @@ function handleOf(wrapper: VueWrapper): DOMWrapper<Element> {
 
 /**
  * Dispatch a pointer lifecycle event with position details. Vue Test Utils
- * builds pointer triggers on MouseEvent, whose button is getter-only, so
- * the drag tests dispatch the event directly instead.
+ * builds pointer triggers on MouseEvent, whose button is getter-only, so the
+ * drag tests dispatch the event directly instead.
  */
 async function pointer(
   handle: DOMWrapper<Element>,
@@ -76,7 +108,7 @@ async function pointer(
 beforeEach(() => {
   HTMLElement.prototype.setPointerCapture = vi.fn();
   HTMLElement.prototype.releasePointerCapture = vi.fn();
-  stubGridTemplateColumns(GRID);
+  stubComputedStyle(GRID);
 });
 
 afterEach(() => {
@@ -90,6 +122,18 @@ afterEach(() => {
 });
 
 describe("ExamWorkspaceColumnHandle", () => {
+  it("announces separator bounds after mount without waiting for focus", async () => {
+    const wrapper = mountHandle({ edge: "list", column: "list" });
+    await nextTick();
+    await nextTick();
+
+    const handle = handleOf(wrapper);
+    expect(handle.attributes("aria-valuenow")).toBe("260");
+    expect(handle.attributes("aria-valuemin")).toBe("260");
+    expect(handle.attributes("aria-valuemax")).toBe(String(LIST_MAX));
+    expect(handle.attributes("aria-valuetext")).toBe("260 px");
+  });
+
   it("exposes separator semantics and bounds after focus on the list edge", async () => {
     const wrapper = mountHandle({ edge: "list", column: "list" });
     const handle = handleOf(wrapper);
@@ -119,6 +163,62 @@ describe("ExamWorkspaceColumnHandle", () => {
     expect(handle.attributes("aria-valuenow")).toBe("320");
     expect(handle.attributes("aria-valuemin")).toBe("300");
     expect(handle.attributes("aria-valuemax")).toBe(String(SIDE_MAX));
+  });
+
+  it("announces the rail when collapsed", async () => {
+    stubComputedStyle("44px 700px 320px");
+    const wrapper = mountHandle({ edge: "list", column: "list", collapsed: true });
+    await nextTick();
+    await nextTick();
+
+    const handle = handleOf(wrapper);
+    expect(handle.attributes("aria-valuenow")).toBe("44");
+    expect(handle.attributes("aria-valuemin")).toBe("44");
+    expect(handle.attributes("aria-valuemax")).toBe(String(44 + 700 - 400));
+    expect(handle.attributes("aria-valuetext")).toBe("Dold");
+  });
+
+  it("drives the side handle over a two-track editor/side grid", async () => {
+    stubComputedStyle("700px 320px");
+    const wrapper = mountHandle({ edge: "side", column: "drawer" });
+    const handle = handleOf(wrapper);
+
+    await handle.trigger("focus");
+    expect(handle.attributes("aria-valuenow")).toBe("320");
+
+    await handle.trigger("keydown", { key: "ArrowLeft", shiftKey: false });
+    expect(wrapper.emitted("set")).toEqual([[336]]);
+
+    await pointer(handle, "pointerdown", { button: 0, clientX: 300 });
+    await pointer(handle, "pointermove", { clientX: 200 });
+    expect(wrapper.emitted("set")).toEqual([[336], [420]]);
+  });
+
+  it("clamps a drag at the CSS-owned list minimum", async () => {
+    stubComputedStyle(GRID, { "--xw-list-min": "280px" });
+    const wrapper = mountHandle({ edge: "list", column: "list" });
+    const handle = handleOf(wrapper);
+
+    await pointer(handle, "pointerdown", { button: 0, clientX: 100 });
+    await pointer(handle, "pointermove", { clientX: 0 });
+
+    expect(wrapper.emitted("set")).toEqual([[280]]);
+  });
+
+  it("re-reads the grid after Shift+Enter reset", async () => {
+    stubComputedStyle("500px 700px 320px");
+    const wrapper = mountHandle({ edge: "list", column: "list" });
+    const handle = handleOf(wrapper);
+
+    await handle.trigger("focus");
+    expect(handle.attributes("aria-valuenow")).toBe("500");
+
+    stubComputedStyle(GRID);
+    await handle.trigger("keydown", { key: "Enter", shiftKey: true });
+    await nextTick();
+
+    expect(wrapper.emitted("reset")).toEqual([[]]);
+    expect(handle.attributes("aria-valuenow")).toBe("260");
   });
 
   it("widens the list with ArrowRight and the side panel with ArrowLeft", async () => {
@@ -220,8 +320,8 @@ describe("ExamWorkspaceColumnHandle", () => {
     expect(wrapper.emitted("set")).toBeUndefined();
   });
 
-  it("makes every input a no-op when bounds are null", async () => {
-    stubGridTemplateColumns("260px 1fr 320px");
+  it("makes every input a no-op when the grid is unparsed", async () => {
+    stubComputedStyle("260px 1fr 320px");
     const wrapper = mountHandle({ edge: "list", column: "list" });
     const handle = handleOf(wrapper);
 
@@ -236,5 +336,19 @@ describe("ExamWorkspaceColumnHandle", () => {
     expect(wrapper.emitted("set")).toBeUndefined();
     expect(wrapper.emitted("reset")).toBeUndefined();
     expect(wrapper.emitted("toggle-collapse")).toBeUndefined();
+  });
+
+  it("makes every input a no-op when a CSS minimum is missing", async () => {
+    stubComputedStyle(GRID, { "--xw-editor-min": "" });
+    const wrapper = mountHandle({ edge: "list", column: "list" });
+    const handle = handleOf(wrapper);
+
+    await handle.trigger("focus");
+    await handle.trigger("keydown", { key: "ArrowRight", shiftKey: false });
+    await pointer(handle, "pointerdown", { button: 0, clientX: 100 });
+    await pointer(handle, "pointermove", { clientX: 200 });
+
+    expect(handle.attributes("aria-valuenow")).toBeUndefined();
+    expect(wrapper.emitted("set")).toBeUndefined();
   });
 });

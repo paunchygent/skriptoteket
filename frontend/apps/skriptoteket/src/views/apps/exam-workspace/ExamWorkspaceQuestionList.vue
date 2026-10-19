@@ -88,6 +88,8 @@ const emit = defineEmits<{
 const rows = ref<HTMLElement | null>(null);
 const newTrigger = ref<HTMLButtonElement | null>(null);
 const newMenuOpen = ref(false);
+const collapseGlyph = ref<HTMLButtonElement | null>(null);
+const expandGlyph = ref<HTMLButtonElement | null>(null);
 
 /** The Markera mode: the list shows a checkbox per standalone question and a group bar. */
 const marking = ref(false);
@@ -150,6 +152,23 @@ watch(
     row?.scrollIntoView?.({ block: "nearest" });
   },
 );
+
+/**
+ * The collapse and expand glyphs replace each other across branches, so a
+ * glyph click moves focus to its replacement on the next tick. Handle-driven
+ * toggles keep focus on the one handle, which stays mounted in both states.
+ */
+async function collapseFromGlyph(): Promise<void> {
+  emit("toggle-collapse");
+  await nextTick();
+  expandGlyph.value?.focus();
+}
+
+async function expandFromGlyph(): Promise<void> {
+  emit("toggle-collapse");
+  await nextTick();
+  collapseGlyph.value?.focus();
+}
 </script>
 
 <template>
@@ -162,12 +181,13 @@ watch(
     <template v-if="collapsed">
       <div class="list__rail">
         <button
+          ref="expandGlyph"
           type="button"
           class="xw-btn xw-btn--icon xw-btn--ghost"
           aria-label="Visa frågelistan"
           title="Visa frågelistan"
           data-test="exam-workspace-list-expand"
-          @click="emit('toggle-collapse')"
+          @click="expandFromGlyph"
         >
           <UiGlyph
             meaning="restore-panel"
@@ -175,17 +195,6 @@ watch(
           />
         </button>
       </div>
-      <ExamWorkspaceColumnHandle
-        v-if="handle"
-        edge="list"
-        column="list"
-        controls="exam-workspace-question-list"
-        label="Ändra bredd på frågelistan"
-        collapsible
-        @set="emit('set', $event)"
-        @reset="emit('reset')"
-        @toggle-collapse="emit('toggle-collapse')"
-      />
     </template>
     <template v-else>
       <div class="list__frame">
@@ -211,12 +220,13 @@ watch(
           <div class="list__head-actions">
             <button
               v-if="handle"
+              ref="collapseGlyph"
               type="button"
               class="xw-btn xw-btn--icon xw-btn--ghost"
               aria-label="Dölj frågelistan"
               title="Dölj frågelistan"
               data-test="exam-workspace-list-collapse"
-              @click="emit('toggle-collapse')"
+              @click="collapseFromGlyph"
             >
               <UiGlyph
                 meaning="minimize-panel"
@@ -359,18 +369,19 @@ watch(
           @close="newMenuOpen = false"
         />
       </div>
-      <ExamWorkspaceColumnHandle
-        v-if="handle"
-        edge="list"
-        column="list"
-        controls="exam-workspace-question-list"
-        label="Ändra bredd på frågelistan"
-        collapsible
-        @set="emit('set', $event)"
-        @reset="emit('reset')"
-        @toggle-collapse="emit('toggle-collapse')"
-      />
     </template>
+    <ExamWorkspaceColumnHandle
+      v-if="handle"
+      edge="list"
+      column="list"
+      controls="exam-workspace-question-list"
+      label="Ändra bredd på frågelistan"
+      collapsible
+      :collapsed="collapsed"
+      @set="emit('set', $event)"
+      @reset="emit('reset')"
+      @toggle-collapse="emit('toggle-collapse')"
+    />
   </section>
 </template>
 

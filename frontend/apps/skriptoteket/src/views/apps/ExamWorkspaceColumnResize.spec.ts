@@ -20,6 +20,7 @@
  */
 
 import { flushPromises } from "@vue/test-utils";
+import { nextTick } from "vue";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { ExamWorkspaceConversionStatus, NativeExamDocument } from "../../api/examWorkspace";
@@ -62,9 +63,25 @@ const mounted: Array<{ unmount: () => void }> = [];
 const GRID = "260px 700px 320px";
 
 function stubGridTracks(): void {
-  vi.spyOn(window, "getComputedStyle").mockReturnValue({
-    gridTemplateColumns: GRID,
-  } as CSSStyleDeclaration);
+  const style = globalThis.document.createElement("div").style;
+  style.gridTemplateColumns = GRID;
+  style.setProperty("--xw-list-min", "260px");
+  style.setProperty("--xw-drawer-min", "300px");
+  style.setProperty("--xw-preview-min", "300px");
+  style.setProperty("--xw-editor-min", "400px");
+  vi.spyOn(window, "getComputedStyle").mockReturnValue(style);
+}
+
+function stubPointerCapture(): void {
+  HTMLElement.prototype.setPointerCapture = vi.fn();
+  HTMLElement.prototype.releasePointerCapture = vi.fn();
+}
+
+function requireHtmlElement(value: Element | null, description: string): HTMLElement {
+  if (!(value instanceof HTMLElement)) {
+    throw new Error(`${description} is not an HTMLElement`);
+  }
+  return value;
 }
 
 async function mountImported(layout: ExamWorkspaceLayout): Promise<ViewWrapper> {
@@ -80,7 +97,10 @@ async function mountImported(layout: ExamWorkspaceLayout): Promise<ViewWrapper> 
 }
 
 function frameOf(wrapper: ViewWrapper): HTMLElement {
-  return wrapper.get('[data-test="exam-workspace-frame"]').element as HTMLElement;
+  return requireHtmlElement(
+    wrapper.get('[data-test="exam-workspace-frame"]').element,
+    "exam-workspace-frame",
+  );
 }
 
 /** The finished import: its poll status, and the conversion its fetched document carries. */
@@ -241,31 +261,112 @@ describe("ExamWorkspaceView column resize wiring", () => {
     expect(frame.dataset["list"]).toBe("open");
   });
 
+  it("keeps the same list handle element with focus across keyboard collapse and restore", async () => {
+    stubGridTracks();
+    const wrapper = await mountImported("desktop");
+    const listHandleSelector = '[data-test="exam-workspace-column-handle-list"]';
+    const openHandle = requireHtmlElement(wrapper.get(listHandleSelector).element, "open list handle");
+    openHandle.focus();
+
+    await wrapper.get(listHandleSelector).trigger("keydown", { key: "Enter" });
+    expect(frameOf(wrapper).dataset["list"]).toBe("collapsed");
+
+    const collapsedHandle = requireHtmlElement(wrapper.get(listHandleSelector).element, "collapsed rail handle");
+    expect(collapsedHandle).toBe(openHandle);
+    expect(openHandle.isConnected).toBe(true);
+    expect(globalThis.document.activeElement).toBe(openHandle);
+
+    const focused = globalThis.document.activeElement;
+    if (focused === null) {
+      throw new Error("no focused element after the keyboard collapse");
+    }
+    focused.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    await nextTick();
+    expect(frameOf(wrapper).dataset["list"]).toBe("open");
+  });
+
+  it("keeps the same list handle element across a rail drag that expands the list", async () => {
+    stubGridTracks();
+    stubPointerCapture();
+    const wrapper = await mountImported("desktop");
+
+    await wrapper.get('[data-test="exam-workspace-list-collapse"]').trigger("click");
+    expect(frameOf(wrapper).dataset["list"]).toBe("collapsed");
+
+    const listHandleSelector = '[data-test="exam-workspace-column-handle-list"]';
+    const railHandle = requireHtmlElement(wrapper.get(listHandleSelector).element, "collapsed rail handle");
+    railHandle.dispatchEvent(
+      new MouseEvent("pointerdown", { bubbles: true, cancelable: true, button: 0, clientX: 100 }),
+    );
+    await nextTick();
+    railHandle.dispatchEvent(
+      new MouseEvent("pointermove", { bubbles: true, cancelable: true, clientX: 200 }),
+    );
+    await nextTick();
+
+    expect(frameOf(wrapper).dataset["list"]).toBe("open");
+    const expandedHandle = requireHtmlElement(wrapper.get(listHandleSelector).element, "expanded list handle");
+    expect(expandedHandle).toBe(railHandle);
+    expect(railHandle.isConnected).toBe(true);
+  });
+
+  it("moves focus between the collapse and expand glyphs on glyph click", async () => {
+    const wrapper = await mountImported("desktop");
+
+    await wrapper.get('[data-test="exam-workspace-list-collapse"]').trigger("click");
+    await flushPromises();
+    const expandGlyph = requireHtmlElement(
+      globalThis.document.querySelector('[data-test="exam-workspace-list-expand"]'),
+      "exam-workspace-list-expand",
+    );
+    expect(globalThis.document.activeElement).toBe(expandGlyph);
+
+    await wrapper.get('[data-test="exam-workspace-list-expand"]').trigger("click");
+    await flushPromises();
+    const collapseGlyph = requireHtmlElement(
+      globalThis.document.querySelector('[data-test="exam-workspace-list-collapse"]'),
+      "exam-workspace-list-collapse",
+    );
+    expect(globalThis.document.activeElement).toBe(collapseGlyph);
+  });
+
   it("keeps the list handle outside the list scroll frame on desktop", async () => {
     const wrapper = await mountImported("desktop");
 
-    const listRoot = wrapper.get('[data-test="exam-workspace-question-list"]').element as HTMLElement;
-    const listHandle = wrapper.get('[data-test="exam-workspace-column-handle-list"]').element as HTMLElement;
+    const listRoot = requireHtmlElement(
+      wrapper.get('[data-test="exam-workspace-question-list"]').element,
+      "exam-workspace-question-list",
+    );
+    const listHandle = requireHtmlElement(
+      wrapper.get('[data-test="exam-workspace-column-handle-list"]').element,
+      "exam-workspace-column-handle-list",
+    );
     const listFrame = listRoot.querySelector(".list__frame");
+    if (listFrame === null) {
+      throw new Error("list scroll frame is missing");
+    }
 
-    expect(listFrame).not.toBeNull();
     expect(listHandle.parentElement).toBe(listRoot);
-    expect(listFrame?.contains(listHandle)).toBe(false);
+    expect(listFrame.contains(listHandle)).toBe(false);
   });
 
   it("keeps the drawer handle outside the drawer scroll frame on desktop", async () => {
     const wrapper = await mountImported("desktop");
 
-    const drawerRoot = wrapper.get('[data-test="exam-workspace-drawer-open"]').element as HTMLElement;
-    const drawerHandle = drawerRoot.querySelector(
+    const drawerRoot = requireHtmlElement(
+      wrapper.get('[data-test="exam-workspace-drawer-open"]').element,
+      "exam-workspace-drawer-open",
+    );
+    const drawerHandle = drawerRoot.querySelector<HTMLElement>(
       '[data-test="exam-workspace-column-handle-side"]',
-    ) as HTMLElement | null;
+    );
     const drawerFrame = drawerRoot.querySelector(".drawer__frame");
+    if (drawerHandle === null || drawerFrame === null) {
+      throw new Error("drawer handle or scroll frame is missing");
+    }
 
-    expect(drawerHandle).not.toBeNull();
-    expect(drawerFrame).not.toBeNull();
-    expect(drawerHandle?.parentElement).toBe(drawerRoot);
-    expect(drawerFrame?.contains(drawerHandle)).toBe(false);
+    expect(drawerHandle.parentElement).toBe(drawerRoot);
+    expect(drawerFrame.contains(drawerHandle)).toBe(false);
   });
 
   it("keeps the preview handle outside the preview scroll frame on desktop", async () => {
@@ -274,15 +375,19 @@ describe("ExamWorkspaceView column resize wiring", () => {
     await wrapper.get('[data-test="exam-workspace-print-preview-toggle"]').trigger("click");
     await flushPromises();
 
-    const previewRoot = wrapper.get('[data-test="exam-workspace-print-preview"]').element as HTMLElement;
-    const previewHandle = previewRoot.querySelector(
+    const previewRoot = requireHtmlElement(
+      wrapper.get('[data-test="exam-workspace-print-preview"]').element,
+      "exam-workspace-print-preview",
+    );
+    const previewHandle = previewRoot.querySelector<HTMLElement>(
       '[data-test="exam-workspace-column-handle-side"]',
-    ) as HTMLElement | null;
+    );
     const previewFrame = previewRoot.querySelector(".pp__frame");
+    if (previewHandle === null || previewFrame === null) {
+      throw new Error("preview handle or scroll frame is missing");
+    }
 
-    expect(previewHandle).not.toBeNull();
-    expect(previewFrame).not.toBeNull();
-    expect(previewHandle?.parentElement).toBe(previewRoot);
-    expect(previewFrame?.contains(previewHandle)).toBe(false);
+    expect(previewHandle.parentElement).toBe(previewRoot);
+    expect(previewFrame.contains(previewHandle)).toBe(false);
   });
 });

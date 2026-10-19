@@ -142,8 +142,15 @@ listener is added. No performance concern.
   panel root never scrolls and its edge handle stays in view below the minimum.
 - origin/main `26f84883` merged at `cf8aced2`. `pdm run fe-test` passes (491 files, 3450 tests,
   2 todos that predate this task); fe-type-check passes after the merge.
-- Next: the staging walk at 1280/1440/1920 (2560 by DevTools emulation) checks the rendered
-  widths, the drag, the collapse rail, and a squeezed panel's handle.
+- Review ea60b045 (changes_requested, nine medium findings, all admitted, no rereview) is repaired
+  by three juniors: F1 side bounds on two tracks; F2 one persistent list handle and glyph focus;
+  F3 grid formulas keep every track at its minimum (side, then list, then editor); F4 panel headers
+  keep the minimum; F5 truthful separator values; F6 guest full frame on desktop only; F7 minimums
+  read from the CSS tokens; F8 grid CSS in `examWorkspaceGrid.css` plus column-layout, list-action
+  and label composables (view 494 lines, slice spec 433); F9 no type assertions in changed files.
+- Next: the domain suite slot from the orchestrator, then the staging walk at 1280/1440/1920 (2560 by
+  DevTools emulation) for widths, the drag, the collapse rail, remembered widths in a smaller
+  window, and below-minimum panels (F3, F4, F6 are CSS that jsdom cannot evaluate).
 
 ## Stop Conditions
 

@@ -179,6 +179,6 @@ watch(
 @media (min-width: 1280px) {
   /* Below its minimum the panel keeps its minimum layout and scrolls inside itself. */
   .pp__frame { overflow-x: auto; }
-  .pp__body { min-width: var(--xw-preview-min); }
+  .pp__frame > * { min-width: var(--xw-preview-min); }
 }
 </style>

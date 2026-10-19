@@ -6,16 +6,15 @@
  *   resolved computed gridTemplateColumns of the workspace body into pixel
  *   tracks, and derive the draggable bounds for one panel edge. The panel
  *   width is taken from the editor track only, down to its minimum, so a
- *   drag never squeezes a neighbour.
+ *   drag never squeezes a neighbour. Minimums come from the `.xw-root`
+ *   custom properties (`--xw-<column>-min`, `--xw-editor-min`), which the
+ *   handle parses with `parsePx`; this module owns no minimum catalogue.
  *
  * Relationships:
  *   - Read by `ExamWorkspaceColumnHandle`, which measures the tracks
- *     transiently on focus and on pointerdown; no listener at rest.
- *   - Reuses `EXAM_WORKSPACE_EDITOR_MIN` from `useExamWorkspaceColumnSizes`;
- *     the per-column minimum comes from the caller.
+ *     transiently on focus and on pointerdown and the minimums from the
+ *     closest `.xw-root` ancestor; no listener at rest.
  */
-
-import { EXAM_WORKSPACE_EDITOR_MIN } from "./useExamWorkspaceColumnSizes";
 
 export type ExamWorkspaceHandleEdge = "list" | "side";
 
@@ -23,6 +22,11 @@ export type ExamWorkspaceHandleBounds = {
   value: number;
   min: number;
   max: number;
+};
+
+export type ExamWorkspaceHandleMinimums = {
+  own: number;
+  editor: number;
 };
 
 /**
@@ -50,27 +54,42 @@ export function parseGridTracks(gridTemplateColumns: string): number[] | null {
 }
 
 /**
- * Derive the draggable bounds for one panel edge from pixel tracks
- * ([list, editor] or [list, editor, side]) and the panel's own minimum.
- * A max below min is floored at min. A missing needed track gives null.
+ * Parse a trimmed "<number>px" custom property value into a number. Anything
+ * else (empty, unitless, another unit, auto, clamp(), ...) gives null.
+ */
+export function parsePx(value: string): number | null {
+  const match = /^(\d+(?:\.\d+)?)px$/.exec(value.trim());
+  if (match === null) {
+    return null;
+  }
+  const parsed = Number(match[1]);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+/**
+ * Derive the draggable bounds for one panel edge from pixel tracks and the
+ * CSS-owned minimums. The list edge reads tracks[0] (list) and tracks[1]
+ * (editor); the side edge reads the LAST track as the side panel and the
+ * track before it as the editor, so [editor, side] (empty body with a drawer)
+ * and [list, editor, side] both work. Both edges need at least two tracks,
+ * else null. A max below min is floored at min.
  */
 export function examWorkspaceHandleBounds(
   tracks: number[],
   edge: ExamWorkspaceHandleEdge,
-  min: number,
+  mins: ExamWorkspaceHandleMinimums,
 ): ExamWorkspaceHandleBounds | null {
-  if (edge === "list") {
-    if (tracks.length < 2) {
-      return null;
-    }
-    const value = tracks[0];
-    const max = Math.max(min, tracks[0] + tracks[1] - EXAM_WORKSPACE_EDITOR_MIN);
-    return { value, min, max };
-  }
-  if (tracks.length < 3) {
+  if (tracks.length < 2) {
     return null;
   }
-  const value = tracks[2];
-  const max = Math.max(min, tracks[2] + tracks[1] - EXAM_WORKSPACE_EDITOR_MIN);
-  return { value, min, max };
+  if (edge === "list") {
+    const value = tracks[0];
+    const editor = tracks[1];
+    const max = Math.max(mins.own, value + editor - mins.editor);
+    return { value, min: mins.own, max };
+  }
+  const value = tracks[tracks.length - 1];
+  const editor = tracks[tracks.length - 2];
+  const max = Math.max(mins.own, value + editor - mins.editor);
+  return { value, min: mins.own, max };
 }

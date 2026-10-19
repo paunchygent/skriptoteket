@@ -23,14 +23,6 @@ import {
 
 export type ExamWorkspaceColumn = "list" | "drawer" | "preview";
 
-export const EXAM_WORKSPACE_COLUMN_MIN: Record<ExamWorkspaceColumn, number> = {
-  list: 260,
-  drawer: 300,
-  preview: 300,
-};
-
-export const EXAM_WORKSPACE_EDITOR_MIN = 400;
-
 const COLUMN_SIZE_PROPERTY: Record<ExamWorkspaceColumn, string> = {
   list: "--xw-list-size",
   drawer: "--xw-drawer-size",
