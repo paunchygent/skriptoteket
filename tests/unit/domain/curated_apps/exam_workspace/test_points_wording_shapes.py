@@ -16,10 +16,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.points_wording_shapes impor
     without_trailing_points,
 )
 from tests.unit.domain.curated_apps.exam_workspace.points_wording_test_support import (
-    _VOLT,
-    _item,
-    _paragraph,
-    _text,
+    VOLT,
+    item,
+    paragraph,
+    text_segment,
 )
 
 
@@ -98,10 +98,10 @@ def test_kept_wording_stays_whole(text: str, points: int | float | None) -> None
 
 @pytest.mark.parametrize("points", [4, 5])
 def test_volt_question_is_unchanged_and_records_nothing(points: int) -> None:
-    body = (_paragraph(_text(_VOLT)),)
-    assert trailing_points(_VOLT) is None
+    body = (paragraph(text_segment(VOLT)),)
+    assert trailing_points(VOLT) is None
     assert leftover_points_wording(body, points) is None
-    assert with_settled_points_wording(_item(body, points)) == _item(body, points)
+    assert with_settled_points_wording(item(body, points)) == item(body, points)
 
 
 def test_label_on_an_answer_line_is_shape_b_and_leaves_only_the_label() -> None:

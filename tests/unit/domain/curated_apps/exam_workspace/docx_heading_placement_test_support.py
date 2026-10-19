@@ -33,11 +33,11 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
 _NOTHING_GOVERNED: MappingProxyType[str, frozenset[str]] = MappingProxyType({})
 
 
-def _chunk(anchor: str, kind: str, text: str) -> DocxChunk:
+def chunk(anchor: str, kind: str, text: str) -> DocxChunk:
     return DocxChunk(anchor=anchor, kind=kind, text=text, marked_text=text)
 
 
-def _item(text: str) -> NativeExamItem:
+def item(text: str) -> NativeExamItem:
     return NativeExamItem(
         item_id="item_001",
         sequence=1,
@@ -54,12 +54,12 @@ def _item(text: str) -> NativeExamItem:
     )
 
 
-def _aligned(item: NativeExamItem, *chunks: str | None) -> AlignedItem:
+def aligned(item: NativeExamItem, *chunks: str | None) -> AlignedItem:
     """The item with the source chunk each body paragraph shows."""
     return AlignedItem(item, chunks, frozenset())
 
 
-def _place(
+def place(
     chunks: tuple[DocxChunk, ...],
     placed: list[Placed],
     instructions: tuple[ProducedMetadata, ...] = (),
@@ -75,9 +75,9 @@ def _place(
     )
 
 
-def _ordered(chunks: tuple[DocxChunk, ...], *anchors: str) -> list[Placed]:
+def ordered(chunks: tuple[DocxChunk, ...], *anchors: str) -> list[Placed]:
     positions = {chunk.anchor: index for index, chunk in enumerate(chunks)}
     return [
-        (positions[anchor], (anchor,), _aligned(_item(f"Frågetext {anchor}"), anchor))
+        (positions[anchor], (anchor,), aligned(item(f"Frågetext {anchor}"), anchor))
         for anchor in anchors
     ]

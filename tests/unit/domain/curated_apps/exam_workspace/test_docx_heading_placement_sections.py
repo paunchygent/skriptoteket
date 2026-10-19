@@ -17,11 +17,11 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
 from skriptoteket.domain.curated_apps.exam_workspace.docx_section_instructions import Placed
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_text_lines
 from tests.unit.domain.curated_apps.exam_workspace.docx_heading_placement_test_support import (
-    _aligned,
-    _chunk,
-    _item,
-    _ordered,
-    _place,
+    aligned,
+    chunk,
+    item,
+    ordered,
+    place,
 )
 
 
@@ -39,25 +39,25 @@ def test_section_heading_before_owned_question_headings_forms_the_parent() -> No
     # A question's own heading is no section boundary: the section heading above two
     # numbered question headings still introduces their parent (review F1).
     chunks = (
-        _chunk("body:0001", "heading", "Provets titel"),
-        _chunk("body:0002", "heading", "Cellens delar"),
-        _chunk("body:0003", "heading", "Fråga 1. Beskriv kärnan."),
-        _chunk("body:0004", "paragraph", "Förklara kärnans funktion."),
-        _chunk("body:0005", "heading", "Fråga 2. Beskriv membranet."),
-        _chunk("body:0006", "paragraph", "Förklara membranets funktion."),
+        chunk("body:0001", "heading", "Provets titel"),
+        chunk("body:0002", "heading", "Cellens delar"),
+        chunk("body:0003", "heading", "Fråga 1. Beskriv kärnan."),
+        chunk("body:0004", "paragraph", "Förklara kärnans funktion."),
+        chunk("body:0005", "heading", "Fråga 2. Beskriv membranet."),
+        chunk("body:0006", "paragraph", "Förklara membranets funktion."),
     )
-    first = _item("Beskriv kärnan.\nFörklara kärnans funktion.").model_copy(
+    first = item("Beskriv kärnan.\nFörklara kärnans funktion.").model_copy(
         update={"printed_label": "Fråga 1"}
     )
-    second = _item("Beskriv membranet.\nFörklara membranets funktion.").model_copy(
+    second = item("Beskriv membranet.\nFörklara membranets funktion.").model_copy(
         update={"printed_label": "Fråga 2"}
     )
     ordered: list[Placed] = [
-        (2, ("body:0003", "body:0004"), _aligned(first, "body:0003")),
-        (4, ("body:0005", "body:0006"), _aligned(second, "body:0005")),
+        (2, ("body:0003", "body:0004"), aligned(first, "body:0003")),
+        (4, ("body:0005", "body:0006"), aligned(second, "body:0005")),
     ]
     instruction = ProducedMetadata(text="Cellens delar", source_anchors=("body:0002",))
-    placed = _place(
+    placed = place(
         chunks, ordered, instructions=(instruction,), title_anchors=frozenset({"body:0001"})
     )
 
@@ -74,11 +74,11 @@ def test_governing_heading_opens_the_parent_ahead_of_an_earlier_governing_line()
     # A heading the grouping marks as governing is the parent's first line even when
     # another governing line is printed before it; that line is preserved (review F3).
     chunks = (
-        _chunk("body:0001", "heading", "Provets titel"),
-        _chunk("body:0002", "paragraph", "Namn: ____"),
-        _chunk("body:0003", "heading", "Cellens delar"),
-        _chunk("body:0004", "paragraph", "Fråga ett?"),
-        _chunk("body:0005", "paragraph", "Fråga två?"),
+        chunk("body:0001", "heading", "Provets titel"),
+        chunk("body:0002", "paragraph", "Namn: ____"),
+        chunk("body:0003", "heading", "Cellens delar"),
+        chunk("body:0004", "paragraph", "Fråga ett?"),
+        chunk("body:0005", "paragraph", "Fråga två?"),
     )
     instructions = (
         ProducedMetadata(text="Namn: ____", source_anchors=("body:0002",)),
@@ -90,9 +90,9 @@ def test_governing_heading_opens_the_parent_ahead_of_an_earlier_governing_line()
             "body:0003": frozenset({"body:0004", "body:0005"}),
         }
     )
-    placed = _place(
+    placed = place(
         chunks,
-        _ordered(chunks, "body:0004", "body:0005"),
+        ordered(chunks, "body:0004", "body:0005"),
         instructions=instructions,
         title_anchors=frozenset({"body:0001"}),
         governed=governed,
@@ -107,23 +107,23 @@ def test_line_before_a_section_heading_stays_document_level() -> None:
     # instruction lines on both sides of it; it lands on no item and stays
     # document-level instead of opening the section parent (biology Name line).
     chunks = (
-        _chunk("body:0001", "heading", "Provets titel"),
-        _chunk("body:0002", "paragraph", "Name: ___ Date: ___"),
-        _chunk("body:0003", "heading", "A. Multiple choice"),
-        _chunk("body:0004", "paragraph", "Choose the best answer."),
-        _chunk("body:0005", "paragraph", "Fråga ett?"),
-        _chunk("body:0006", "paragraph", "Fråga två?"),
-        _chunk("body:0007", "heading", "B. Open questions"),
-        _chunk("body:0008", "paragraph", "Fråga tre?"),
+        chunk("body:0001", "heading", "Provets titel"),
+        chunk("body:0002", "paragraph", "Name: ___ Date: ___"),
+        chunk("body:0003", "heading", "A. Multiple choice"),
+        chunk("body:0004", "paragraph", "Choose the best answer."),
+        chunk("body:0005", "paragraph", "Fråga ett?"),
+        chunk("body:0006", "paragraph", "Fråga två?"),
+        chunk("body:0007", "heading", "B. Open questions"),
+        chunk("body:0008", "paragraph", "Fråga tre?"),
     )
     instructions = (
         ProducedMetadata(text="Name: ___ Date: ___", source_anchors=("body:0002",)),
         ProducedMetadata(text="A. Multiple choice", source_anchors=("body:0003",)),
         ProducedMetadata(text="Choose the best answer.", source_anchors=("body:0004",)),
     )
-    placed = _place(
+    placed = place(
         chunks,
-        _ordered(chunks, "body:0005", "body:0006", "body:0008"),
+        ordered(chunks, "body:0005", "body:0006", "body:0008"),
         instructions=instructions,
         title_anchors=frozenset({"body:0001"}),
     )
@@ -142,17 +142,17 @@ def test_governing_heading_subset_of_wider_parent_opens_every_governed_questions
     # parent (D40 exact scope, review F5): parents are flat, so it opens the body
     # of every question it governs. Through the production assembly.
     chunks = (
-        _chunk("body:0001", "heading", "Prov"),
-        _chunk("body:0002", "paragraph", "Besvara alla frågor."),
-        _chunk("body:0003", "paragraph", "Första frågan?"),
-        _chunk("body:0004", "heading", "Använd följande ord för fråga två och tre"),
-        _chunk("body:0005", "paragraph", "Andra frågan?"),
-        _chunk("body:0006", "paragraph", "Tredje frågan?"),
+        chunk("body:0001", "heading", "Prov"),
+        chunk("body:0002", "paragraph", "Besvara alla frågor."),
+        chunk("body:0003", "paragraph", "Första frågan?"),
+        chunk("body:0004", "heading", "Använd följande ord för fråga två och tre"),
+        chunk("body:0005", "paragraph", "Andra frågan?"),
+        chunk("body:0006", "paragraph", "Tredje frågan?"),
     )
     accepted = (
-        (_aligned(_item("Första frågan?"), "body:0003"), ("body:0003",)),
-        (_aligned(_item("Andra frågan?"), "body:0005"), ("body:0005",)),
-        (_aligned(_item("Tredje frågan?"), "body:0006"), ("body:0006",)),
+        (aligned(item("Första frågan?"), "body:0003"), ("body:0003",)),
+        (aligned(item("Andra frågan?"), "body:0005"), ("body:0005",)),
+        (aligned(item("Tredje frågan?"), "body:0006"), ("body:0006",)),
     )
     instructions = (
         ProducedMetadata(text="Besvara alla frågor.", source_anchors=("body:0002",)),
@@ -195,20 +195,20 @@ def test_section_title_above_subsections_opens_its_own_questions_once() -> None:
         _titled("body:0001", "Formateringsprov", 1),
         _titled("body:0002", "Del A: Grundbegrepp", 1),
         _titled("body:0003", "Flervalsfrågor", 2),
-        _chunk("body:0004", "paragraph", "1. Fråga ett?"),
-        _chunk("body:0005", "paragraph", "2. Fråga två?"),
+        chunk("body:0004", "paragraph", "1. Fråga ett?"),
+        chunk("body:0005", "paragraph", "2. Fråga två?"),
         _titled("body:0006", "Del B: Resonemang", 1),
         _titled("body:0007", "Fritextfrågor", 2),
         _titled("body:0008", "Energi", 3),
-        _chunk("body:0009", "paragraph", "3. Fråga tre?"),
+        chunk("body:0009", "paragraph", "3. Fråga tre?"),
     )
     instructions = (
         ProducedMetadata(text="Del A: Grundbegrepp", source_anchors=("body:0002",)),
         ProducedMetadata(text="Del B: Resonemang", source_anchors=("body:0006",)),
     )
-    placed = _place(
+    placed = place(
         chunks,
-        _ordered(chunks, "body:0004", "body:0005", "body:0009"),
+        ordered(chunks, "body:0004", "body:0005", "body:0009"),
         instructions=instructions,
         title_anchors=frozenset({"body:0001"}),
     )
@@ -235,15 +235,15 @@ def test_section_title_over_two_subsection_parents_opens_the_first_parent_only()
         _titled("body:0001", "Provets titel", 1),
         _titled("body:0002", "Del A", 1),
         _titled("body:0003", "Flerval", 2),
-        _chunk("body:0004", "paragraph", "1. Fråga ett?"),
-        _chunk("body:0005", "paragraph", "2. Fråga två?"),
+        chunk("body:0004", "paragraph", "1. Fråga ett?"),
+        chunk("body:0005", "paragraph", "2. Fråga två?"),
         _titled("body:0006", "Fritext", 2),
-        _chunk("body:0007", "paragraph", "3. Fråga tre?"),
-        _chunk("body:0008", "paragraph", "4. Fråga fyra?"),
+        chunk("body:0007", "paragraph", "3. Fråga tre?"),
+        chunk("body:0008", "paragraph", "4. Fråga fyra?"),
     )
-    placed = _place(
+    placed = place(
         chunks,
-        _ordered(chunks, "body:0004", "body:0005", "body:0007", "body:0008"),
+        ordered(chunks, "body:0004", "body:0005", "body:0007", "body:0008"),
         title_anchors=frozenset({"body:0001"}),
     )
 
@@ -263,17 +263,17 @@ def test_points_labelled_section_heading_opens_its_own_questions() -> None:
     # plain "Total: 59 points" paragraph is no heading at all.
     chunks = (
         _titled("body:0001", "Unit test", 1),
-        _chunk("body:0002", "paragraph", "Total: 59 points"),
+        chunk("body:0002", "paragraph", "Total: 59 points"),
         _titled("body:0003", "Vocabulary Matching (9 points)", 2),
-        _chunk("body:0004", "paragraph", "1. Fråga ett?"),
-        _chunk("body:0005", "paragraph", "2. Fråga två?"),
+        chunk("body:0004", "paragraph", "1. Fråga ett?"),
+        chunk("body:0005", "paragraph", "2. Fråga två?"),
         _titled("body:0006", "Language Choice (6 points)", 2),
-        _chunk("body:0007", "paragraph", "3. Fråga tre?"),
-        _chunk("body:0008", "paragraph", "4. Fråga fyra?"),
+        chunk("body:0007", "paragraph", "3. Fråga tre?"),
+        chunk("body:0008", "paragraph", "4. Fråga fyra?"),
     )
-    placed = _place(
+    placed = place(
         chunks,
-        _ordered(chunks, "body:0004", "body:0005", "body:0007", "body:0008"),
+        ordered(chunks, "body:0004", "body:0005", "body:0007", "body:0008"),
         title_anchors=frozenset({"body:0001"}),
     )
 
