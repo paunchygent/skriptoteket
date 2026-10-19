@@ -6,11 +6,11 @@ is aligned to. Each case pairs wording that would mislead a text match with the 
 that decides.
 """
 
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import aligned_native_item
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedItem,
     ProducedMetadata,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_item import aligned_native_item
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.docx_governing_chunks import (
     ReleasedChunks,

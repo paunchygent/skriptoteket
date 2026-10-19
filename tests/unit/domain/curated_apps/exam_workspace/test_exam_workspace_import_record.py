@@ -5,11 +5,11 @@ from uuid import uuid4
 import pytest
 from pydantic import ValidationError
 
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import aligned_native_item
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     DocxBuildEvent,
     ProducedItem,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_item import aligned_native_item
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.docx_import_records import (
     with_docx_import_records,

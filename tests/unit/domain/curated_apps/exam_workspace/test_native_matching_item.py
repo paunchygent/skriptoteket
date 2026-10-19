@@ -14,7 +14,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts impo
     ExamNetQtiEvaluationMode,
     ExamNetQtiInteractionType,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import aligned_native_item
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_item import aligned_native_item
 from skriptoteket.domain.curated_apps.exam_workspace.exam_language_labels import (
     SWEDISH_EXAM_LABELS,
 )
