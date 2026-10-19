@@ -154,5 +154,6 @@ Stop and report to the parent in either case:
   to be the only consumer of accepted items that bypasses assembly. R5.1:
   `RetryExamWorkspaceItemHandler.handle` returns every item, including the
   source review items, through `gated_item` at one exit, against the saved
-  source chunks. Tests go through the real handler. Next: the orchestrator's
-  suite slot, then R2 goes back to 09d50acc. User gates: none open.
+  source chunks (`f14ba5f0`). Tests go through the real handler. Round-5
+  domain suite at `f14ba5f0` (2026-10-19, `evidence/lead-e12a2a36/suite5/`):
+  pytest 4357 passed. Next: R2 goes back to 09d50acc. User gates: none open.
