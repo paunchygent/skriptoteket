@@ -70,7 +70,7 @@ Planned junior units, each with its own focused spec; their final list depends o
 
 | ID  | Decided contract term |
 | --- | --------------------- |
-| T1  | Every tool in scope uses the workspace's boxless glyph button, `xw-btn xw-btn--compact xw-btn--icon xw-btn--ghost`; a remove or delete tool uses `xw-rm`. No per-component border classes and no new button component. |
+| T1  | Every tool in scope uses the workspace's boxless glyph button, `xw-btn xw-btn--icon xw-btn--ghost`, at its surface's existing size: compact (`xw-btn--compact`) in editor fields and lists, regular in the header; a remove or delete tool uses `xw-rm`. No per-component border classes and no new button component. |
 | T2  | A glyph-only tool shows no text. Its action phrase is both its aria-label and its native title; while disabled by a bound or a no-op its title gives the reason. The glyph is decorative to assistive technology. |
 | T3  | The Skrivyta controls and the Bedömningskriterier label do not overlap at 390, 1024 and 1440 px. The fix follows the cause measured in a real browser. |
 | T4  | Work starts from main after TASK-SKRIPT-40-04-08 merges; the lead merges current main into this branch before a unit touches a file that TASK-SKRIPT-40-04-09 or TASK-SKRIPT-40-04-10 also changes. |
@@ -81,7 +81,7 @@ Planned junior units, each with its own focused spec; their final list depends o
 Status stays proposed. Four user questions are open in the retained plan's ledger (D3-D6); each has options and a recommendation:
 
 - Scope: (A) the Fritextfråga item only; (B) every off-system box (Skrivyta, criteria, gap popover, gap answer list); (C) every tool in the workspace while commands keep their form. Recommended: C.
-- Apply-to-all: a new shared glyph meaning `apply-to-all` with Lucide Layers (alternatives CopyCheck, CheckCheck; `copy` already means "Spara som …"); tooltip "Använd {n} rader för alla fritextfrågor"; disabled "Alla fritextfrågor har redan {n} rader"; no confirmation, since Ångra reverts it. The new meaning is a skill-repository change.
+- Apply-to-all: a new shared glyph meaning `apply-to-all` with Lucide Layers (alternatives CopyCheck, CheckCheck; none is in the catalogue yet, and the names are not yet checked against @lucide/vue 1.47.0; `copy` already means "Spara som …"); tooltip "Använd {n} rader för alla fritextfrågor"; disabled "Alla fritextfrågor har redan {n} rader"; no confirmation, since Ångra reverts it. The new meaning is a skill-repository change.
 - Stepper: the count "{n} rader" between − and + in a slot sized for "40 rader"; the label reads "Skrivyta". Recommended.
 - Look: the workspace's existing hover tint, focus ring and pressed tint without a border, plus a 44 px hit area on coarse pointers. Recommended.
 
