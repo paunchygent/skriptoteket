@@ -28,11 +28,23 @@ Non-goals: AI repair of imported items; QTI versions other than the one the expo
 ## Contract Inputs
 
 - ST-SKRIPT-41-02 P1; User grilling 2026-10-18 in the Mac orchestration session (retained root 01a14ee0-903e-7423-b969-30e3661e9006); explorer maps of the DigiExam lines and paid AI call sites the same day.
+
 - `domain/curated_apps/exam_workspace/digiexam_import.py` (mapper pattern), `examnet_qti_export.py`, `docs/reference/ref-skript-research-exam-net-qti-import-routes-per-question-type-*.md`.
+
 - Mac parent rulings 2026-10-18, relayed by the orchestrator to the implementation lead:
+
   - Ordering items import, with answer-key origin `teacher_authored`, because the QTI key is the order the teacher wrote. They are not skipped under 39-06-08 D3.
   - These Q2 round-trip losses are accepted because the export cannot carry them. Tests assert each one by name: free-text rubric criterion text (never written), document instructions folded into every item prompt, automatic gap values merged into accepted values, and a parent with one non-gap child flattened to a standalone item.
   - Mac parent ruling 2026-10-19 (relaying the user, "create one on your own"): Exam.net has no exam-content export. The import fixture is the Skriptoteket QTI 3.0 package that Exam.net accepted on import as exam 5345261 (`39-06-svenska2-rev11-qti.zip`, the Svenska 2 rev11 workspace exam exported from main 1f9e4367; proof in retained root `01a149c9-5bc7-7713-ba64-12dee0470bdd` at `evidence/staging-proof-1f9e4367/proof.md` steps 8-9). It is committed with a provenance note and its import is proven before review, each accepted loss named in a test.
+
+- Parent ruling 2026-10-19 (review 596c1654 repair): scores are never guessed
+  and never silently dropped. A present zero is zero. A gap or inline-choice
+  child inside a part gets a score only from exact evidence (the part total
+  minus the other children's stated scores, consistent with its per-gap
+  share); otherwise its points stay absent and the item goes to review with a
+  visible reason. Untrusted package XML is parsed through one hardened entry
+  point (defusedxml, DTD and entities refused), nesting and numbers are
+  bounded, and a package that references one item file twice is refused.
 
 ## Core Vertical And Performance
 
@@ -66,14 +78,14 @@ Stop and report if the Exam.net-accepted fixture shows a round-trip loss that is
   Öppna QTI `.zip` entry, omprov round trip with named losses). Merge of
   `origin/main` (REP-0044, 39-06-10) is commit 368f6bb4; a QTI `.zip` stays
   open to every role past the REP-0044 Word gate.
-- Done after the merge: U8 parent `place` (820b6056), U10 frontend repair and
-  non-AI `.zip` import tests (4cebc401), U12 test typing (e1350ce0), U11
-  Exam.net-accepted Svenska 2 rev11 fixture with named losses (023a58fc), U9
-  QTI information item imports as a part with no questions (217751b8) and its
-  fallback removal. Lint, typecheck, frontend build/ESLint and docs-validate
-  pass.
-- Next: one domain suite after the parent's go, then the final checkpoint for
-  review routing by the parent.
+- Done after the merge: U8-U12, U9 (commits 820b6056..4b254bae); review
+  596c1654 at 4b254bae returned changes_requested (F1-F5 high, F6-F7 medium).
+- Repair in progress: 8e78331a splits the reader, mapper, DI provider and
+  import handlers by responsibility (F7 production files). Running: R-xml (F1,
+  F6, F2: defusedxml entry point, depth bound, repeated references refused)
+  and R-scores (F3, F4, F5: bounded numbers, no guessed scores, zero kept).
+  Then the over-long test files are split, focused proof, a suite slot from
+  the parent (shared DI and handler modules moved), and rereview of F1-F5.
 - Open finding: the plain space between two marked runs is lost to
   `ElementTree.indent` in the writer. After TASK-SKRIPT-REP-0048 lands on main,
   merge it and flip
