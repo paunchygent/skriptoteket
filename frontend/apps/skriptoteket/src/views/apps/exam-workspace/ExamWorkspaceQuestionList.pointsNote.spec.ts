@@ -257,7 +257,7 @@ describe("ExamWorkspaceQuestionList printed-total lines", () => {
 
     expect(wrapper.get(CHANGE).attributes("disabled")).toBeDefined();
     expect(wrapper.get(SHOW).attributes("disabled")).toBeDefined();
-    expect(wrapper.get('[data-test="exam-workspace-marking-start"]').attributes("disabled")).toBeDefined();
+    expect(wrapper.get('[data-test="exam-workspace-marking-toggle"]').attributes("disabled")).toBeDefined();
   });
 
   it("keeps both buttons free of visible text and removes every note element", () => {

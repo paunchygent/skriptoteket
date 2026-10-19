@@ -241,26 +241,28 @@ function chooseMore(action: "up" | "down" | "remove"): void {
           :size="16"
         />Gör om till {{ EXAM_WORKSPACE_TYPE_LABELS[offeredKind] }}
       </button>
-      <span class="qhead__desk-tools">
-        <slot name="tools" />
+      <span class="xw-tools">
+        <span class="qhead__desk-tools">
+          <slot name="tools" />
+        </span>
+        <button
+          ref="moreTrigger"
+          type="button"
+          class="xw-tool"
+          :disabled="disabled"
+          aria-haspopup="menu"
+          :aria-expanded="moreOpen"
+          aria-label="Fler åtgärder"
+          title="Fler åtgärder"
+          data-test="exam-workspace-more"
+          @click="moreOpen = !moreOpen"
+        >
+          <UiGlyph
+            meaning="more-actions"
+            :size="16"
+          />
+        </button>
       </span>
-      <button
-        ref="moreTrigger"
-        type="button"
-        class="xw-btn xw-btn--icon xw-btn--ghost"
-        :disabled="disabled"
-        aria-haspopup="menu"
-        :aria-expanded="moreOpen"
-        aria-label="Fler åtgärder"
-        title="Fler åtgärder"
-        data-test="exam-workspace-more"
-        @click="moreOpen = !moreOpen"
-      >
-        <UiGlyph
-          meaning="more-actions"
-          :size="20"
-        />
-      </button>
     </div>
 
     <ExamWorkspaceMenu

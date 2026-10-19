@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "d7ea48edfb217a02c3342aaf07a73f54926b7396bf265e093b4d3d6b0e0077c9",
+  "source_set_digest": "f5e09364f5f68f0c11f618d335c4e0e67fd364a9cd74a1ab1419f90dae4256f9",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6861,7 +6861,7 @@
       "type": "task",
       "title": "The exam workspace header and toolbars share one compact control system with autosave status, file commands and a gap switch",
       "path": "docs/backlog/tasks/task-skript-40-04-17-the-exam-workspace-header-and-toolbars-share-one-compact-control-system-with-autosave-status-file-commands-and-a-gap-switch.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [

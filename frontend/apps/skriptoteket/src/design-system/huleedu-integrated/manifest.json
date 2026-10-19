@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "package": "huleedu-integrated-frontend-design-system",
-  "version": "0.1.32",
+  "version": "0.1.33",
   "compatibility": {
     "tailwind": ">=4.0.0",
     "vue": ">=3.5.0",
@@ -16,7 +16,7 @@
       "id": "tokens",
       "kind": "css.tokens",
       "path": "src/css/huleedu-design-tokens.css",
-      "sha256": "bb80898fcd507c86067b6fff503ba1b7e308b0436da292483a55cab8d89ad4af"
+      "sha256": "b9a9a72de7c9c258cb997345d7302b2581ae908231cb21bddd677b81d9795c68"
     },
     {
       "id": "tailwind-theme",
@@ -58,7 +58,7 @@
       "id": "ui-glyphs",
       "kind": "typescript.primitive",
       "path": "src/vue/uiGlyphs.ts",
-      "sha256": "f98a4532346b6b2a3c4dca82a6808a2eb4b314d5ff059e2effe8c1f894392b10"
+      "sha256": "0be07b6783ef08303df2f337b6dc9d4e9cef8ef2e3668ab5c1bae3a2387fb26d"
     },
     {
       "id": "ui-dense-action-button",
