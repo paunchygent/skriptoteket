@@ -11,7 +11,7 @@
  */
 
 import { createPinia, setActivePinia } from "pinia";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 import { effectScope, ref } from "vue";
 import type { Ref } from "vue";
 
@@ -21,7 +21,7 @@ import type {
   NativeExamDocument,
 } from "../../../api/examWorkspace";
 import { useToastStore } from "../../../stores/toast";
-import { serverExamWorkspaceStore } from "./examWorkspaceStore";
+import { serverExamWorkspaceStore, type ExamWorkspaceStore } from "./examWorkspaceStore";
 import type { ExamWorkspaceConversionBinding } from "./useExamWorkspaceConversion";
 import { useExamWorkspaceConversion } from "./useExamWorkspaceConversion";
 
@@ -155,5 +155,86 @@ describe("QTI .zip import dispatch", () => {
     expect(conversion.isConverting.value).toBe(false);
     expect(conversion.conversionProgress.value).toBeNull();
     expect(conversion.conversionMessage.value).toBeNull();
+  });
+});
+
+describe("guest-mode QTI .zip import dispatch", () => {
+  function guestSetup() {
+    setActivePinia(createPinia());
+    const scope = effectScope();
+    const busyWhileOpening: { isImporting: boolean | null } = { isImporting: null };
+    const startFromQti: Mock<(file: File, courseKey: string | null) => Promise<string>> = vi.fn(
+      async (_file: File, _courseKey: string | null) => "lineage-guest",
+    );
+    const store: ExamWorkspaceStore = {
+      guest: { startBlank: vi.fn(async () => "lineage-blank"), startFromQti },
+      shared: serverExamWorkspaceStore.shared,
+      teacher: null,
+    };
+    const openImported = vi.fn(async () => {
+      busyWhileOpening.isImporting = conversion?.isImporting.value ?? null;
+      return true;
+    });
+    let conversion: ReturnType<typeof useExamWorkspaceConversion> | null = null;
+    conversion = scope.run(() =>
+      useExamWorkspaceConversion(() => false, { ...binding(), store }, openImported)
+    ) ?? null;
+    if (!conversion) throw new Error("expected the composable");
+    return { busyWhileOpening, conversion, openImported, scope, startFromQti };
+  }
+
+  it("routes a .zip to guest.startFromQti and opens the lineage, never touching teacher APIs", async () => {
+    const { conversion, openImported, startFromQti } = guestSetup();
+
+    await conversion.importDocument(zipFile(), null);
+
+    expect(startFromQti).toHaveBeenCalledTimes(1);
+    const [file, courseKey] = startFromQti.mock.calls[0]!;
+    expect(file.name).toBe("Prov_HT25.zip");
+    expect(courseKey).toBeNull();
+    expect(openImported).toHaveBeenCalledWith("lineage-guest");
+    expect(apiMocks.importExamWorkspaceQti).not.toHaveBeenCalled();
+    expect(apiMocks.importExamWorkspaceDocument).not.toHaveBeenCalled();
+    expect(apiMocks.importExamWorkspaceDigiExam).not.toHaveBeenCalled();
+    expect(apiMocks.getExamWorkspaceConversionStatus).not.toHaveBeenCalled();
+  });
+
+  it("passes the course key to the guest store and opens only once the import is idle", async () => {
+    const { busyWhileOpening, conversion, startFromQti } = guestSetup();
+
+    await conversion.importDocument(zipFile(), "gy11:SVESVE01");
+
+    expect(startFromQti).toHaveBeenCalledWith(expect.any(File), "gy11:SVESVE01");
+    expect(busyWhileOpening.isImporting).toBe(false);
+    expect(conversion.isConverting.value).toBe(false);
+  });
+
+  it("shows the server's refusal and opens nothing when the guest parse fails", async () => {
+    const { conversion, openImported, startFromQti } = guestSetup();
+    startFromQti.mockRejectedValue(
+      new ApiError({
+        code: "QTI_PACKAGE_UNREADABLE",
+        message: "Det gick inte att läsa QTI-paketet.",
+        status: 422,
+      }),
+    );
+
+    await conversion.importDocument(zipFile(), null);
+
+    expect(conversion.conversionError.value).toBe("Det gick inte att läsa QTI-paketet.");
+    expect(toastMessages()).toEqual(["Det gick inte att läsa QTI-paketet."]);
+    expect(openImported).not.toHaveBeenCalled();
+    expect(apiMocks.getExamWorkspaceConversionStatus).not.toHaveBeenCalled();
+  });
+
+  it("imports no DigiExam file in guest mode without a teacher side", async () => {
+    const { conversion, openImported, startFromQti } = guestSetup();
+
+    await conversion.importDocument(new File(["dxe"], "Prov_HT25.dxe"), null);
+
+    expect(startFromQti).not.toHaveBeenCalled();
+    expect(apiMocks.importExamWorkspaceDigiExam).not.toHaveBeenCalled();
+    expect(openImported).not.toHaveBeenCalled();
+    expect(conversion.isImporting.value).toBe(false);
   });
 });

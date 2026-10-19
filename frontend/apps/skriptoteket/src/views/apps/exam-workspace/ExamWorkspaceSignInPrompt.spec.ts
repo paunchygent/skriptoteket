@@ -114,6 +114,7 @@ function setupGuest() {
     })),
     getPublicExamWorkspaceExportChecklist: vi.fn(),
     groupPublicExamWorkspaceItems: vi.fn(),
+    importPublicExamWorkspaceQti: vi.fn(),
     movePublicExamWorkspaceItem: vi.fn(),
     reorderPublicExamWorkspaceChildren: vi.fn(),
     requestPublicExamWorkspaceAnswerMisspellings: vi.fn(),

@@ -39,6 +39,22 @@ class PublicExamBlankResponse(PublicExamDocumentCommandResponse):
     """The fresh blank exam a guest starts from."""
 
 
+class PublicExamWorkspaceQtiImportResponse(BaseModel):
+    """One parsed QTI package for a guest: the document plus its picture bytes.
+
+    Asset bytes travel as base64 JSON strings, the typed response-side
+    counterpart to the ``asset:<id>`` multipart parts the guest export routes
+    read: the browser decodes each value back to bytes and keeps them beside
+    its draft. Nothing is stored server-side.
+    """
+
+    model_config = ConfigDict(frozen=True, ser_json_bytes="base64", val_json_bytes="base64")
+
+    document: NativeExamDocument
+    assets_by_id: dict[str, bytes] = {}
+    notes: tuple[str, ...] = ()
+
+
 class PublicExamDocumentDeleteResponse(PublicExamDocumentCommandResponse):
     """One guest deletion; names a removed instruction for an inline notice."""
 

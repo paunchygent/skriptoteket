@@ -3,9 +3,9 @@
  *
  * Domain purpose:
  *   A DOCX import converts in batches. A DigiExam import follows the same
- *   conversion. A QTI .zip import is read at once into a saved document and
- *   opens like one from the Öppna list, with no conversion to follow. The
- *   server saves a revision when the
+ *   conversion. A QTI .zip import is read at once: signed-in into a saved
+ *   document, as a guest into the browser draft. Either way it opens like
+ *   one from the Öppna list, with no conversion to follow. The server saves a revision when the
  *   first batch is ready, with placeholders for the questions still
  *   converting, and a new revision for each later batch. Every document
  *   response names the import that created its lineage, read under the same
@@ -378,9 +378,26 @@ export function useExamWorkspaceConversion(
       : null;
   }
 
-  async function importDocument(file: File, courseKey: string | null): Promise<void> {
+  /**
+   * Read one QTI package at once: through the signed-in importer when a
+   * teacher side is present, through the guest store's browser draft
+   * otherwise. Returns the opened lineage, or null when neither side can
+   * import. This is one intake with two store halves; there is no second
+   * intake composable.
+   */
+  async function importQtiPackage(file: File, courseKey: string | null): Promise<string | null> {
     const teacher = binding.store.teacher;
-    if (importBlocked.value || isConverting.value || !teacher) return;
+    if (teacher) {
+      const summary = await teacher.importExamWorkspaceQti(file, courseKey);
+      return summary.lineage_id;
+    }
+    const guest = binding.store.guest;
+    if (!guest) return null;
+    return await guest.startFromQti(file, courseKey);
+  }
+
+  async function importDocument(file: File, courseKey: string | null): Promise<void> {
+    if (importBlocked.value || isConverting.value) return;
     // A Word import is a paid AI conversion and stays admin-only until the spend cap ships;
     // the Öppna drawer already shows the L3 note for the refused file.
     if (!isDigiExamFile(file) && !isQtiPackageFile(file) && !canUseAi.value) return;
@@ -391,17 +408,20 @@ export function useExamWorkspaceConversion(
     shownUnits.value = null;
     pollFailures = 0;
     try {
-      // A QTI package (.zip) is read at once into a saved document: no
-      // conversion follows, and the saved exam opens through the same
-      // `openDocument` path the Öppna list's open command uses.
+      // A QTI package (.zip) is read at once: signed-in it becomes a saved
+      // document, as a guest it becomes the browser draft. Either way the
+      // exam opens through the same `openDocument` path the Öppna list's
+      // open command uses, and no conversion follows.
       if (isQtiPackageFile(file)) {
-        const summary = await teacher.importExamWorkspaceQti(file, courseKey);
-        if (pollGeneration !== generation) return;
+        const lineageId = await importQtiPackage(file, courseKey);
+        if (pollGeneration !== generation || lineageId === null) return;
         // `openImported` refuses while this import still counts as busy.
         isImporting.value = false;
-        await openImported(summary.lineage_id);
+        await openImported(lineageId);
         return;
       }
+      const teacher = binding.store.teacher;
+      if (!teacher) return;
       // A DigiExam export (.dxe) is read by its own importer; both follow the same conversion.
       const request = isDigiExamFile(file)
         ? teacher.importExamWorkspaceDigiExam

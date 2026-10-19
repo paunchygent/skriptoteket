@@ -76,15 +76,15 @@ const groups = computed(() =>
     registeredCourseKeys.value,
     (key) => courseByKey(key)?.name ?? null,
   ),
-);
-const sameName = computed(() => examWorkspaceSameNameCounts(props.documents));
+);const sameName = computed(() => examWorkspaceSameNameCounts(props.documents));
 const openBlocked = computed(() => props.isBusy || props.isDirty);
 
+/** A guest may start from a QTI .zip only; DigiExam (.dxe) and Word (.docx) stay signed-in. */
+function isGuestImportFile(file: File): boolean {
+  return file.name.toLowerCase().endsWith(".zip");
+}
+
 function handlePickFile(): void {
-  if (isGuest.value) {
-    requestSignIn(GUEST_IMPORT_SIGN_IN);
-    return;
-  }
   fileInput.value?.click();
 }
 
@@ -92,20 +92,30 @@ function handleFileInput(event: Event): void {
   const input = event.target as HTMLInputElement;
   const [file] = Array.from(input.files ?? []);
   if (file) {
-    emit("selectFile", file, courseKey.value);
+    if (isGuest.value && !isGuestImportFile(file)) {
+      requestSignIn(GUEST_IMPORT_SIGN_IN);
+    } else {
+      emit("selectFile", file, courseKey.value);
+    }
   }
   input.value = "";
 }
 
 function handleDrop(event: DragEvent): void {
   dragOver.value = false;
+  const files = Array.from(event.dataTransfer?.files ?? []);
   if (isGuest.value) {
-    if (Array.from(event.dataTransfer?.files ?? []).length > 0) {
+    if (files.length === 0) {
+      return;
+    }
+    if (files.every(isGuestImportFile)) {
+      emit("dropFiles", files, courseKey.value);
+    } else {
       requestSignIn(GUEST_IMPORT_SIGN_IN);
     }
     return;
   }
-  emit("dropFiles", Array.from(event.dataTransfer?.files ?? []), courseKey.value);
+  emit("dropFiles", files, courseKey.value);
 }
 
 async function startBlankExam(): Promise<void> {

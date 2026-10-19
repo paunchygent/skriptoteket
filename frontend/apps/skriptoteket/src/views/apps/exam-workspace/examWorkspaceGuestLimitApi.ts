@@ -82,5 +82,8 @@ export function wrapGuestPublicApiForLimit(
     getPublicExamWorkspaceExportChecklist: guardLimit((...args) =>
       raw.getPublicExamWorkspaceExportChecklist(...args),
     ),
+    importPublicExamWorkspaceQti: guardLimit((...args) =>
+      raw.importPublicExamWorkspaceQti(...args),
+    ),
   };
 }

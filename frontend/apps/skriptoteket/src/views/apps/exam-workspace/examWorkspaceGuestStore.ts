@@ -63,6 +63,8 @@ export type ExamWorkspaceGuestStore = {
   currentLineageId(): Promise<string | null>;
   /** Start a fresh blank exam through the public route and store it. */
   startBlank(): Promise<string>;
+  /** Start a guest exam from a QTI .zip through the public parse route. */
+  startFromQti(file: File, courseKey: string | null): Promise<string>;
   /** Drop the browser draft and every picture byte it kept. */
   clear(): Promise<void>;
 };
@@ -362,13 +364,28 @@ export function createGuestExamWorkspaceStore(
     return draft.lineage_id;
   }
 
+  /**
+   * Start a guest exam from a QTI .zip through the public parse route: the
+   * returned document becomes the draft and its picture bytes stay beside
+   * it in the browser. A concurrent tab's newer draft is kept, like a lost
+   * blank start, and a limit hit reports through `onLimit`.
+   */
+  async function startFromQti(file: File, courseKey: string | null): Promise<string> {
+    const response = await api.importPublicExamWorkspaceQti(file, courseKey);
+    const draft = newGuestDraft(response.document, deps.ids);
+    const current = await deps.storage.load();
+    await persist(current?.draft.cursor ?? null, { assets: response.assets, draft });
+    return draft.lineage_id;
+  }
+
   return {
-    store: { shared, teacher: null, guest: { startBlank } },
+    store: { shared, teacher: null, guest: { startBlank, startFromQti } },
     async currentLineageId() {
       const stored = await deps.storage.load();
       return stored?.draft.lineage_id ?? null;
     },
     startBlank,
+    startFromQti,
     /**
      * Drop the browser draft. The write commits only when the loaded snapshot
      * still owns the slot; a concurrent tab's newer draft reports the

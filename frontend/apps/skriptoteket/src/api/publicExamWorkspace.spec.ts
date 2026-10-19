@@ -27,6 +27,7 @@ import {
   getPublicExamCourseCatalog,
   getPublicExamWorkspaceExportChecklist,
   groupPublicExamWorkspaceItems,
+  importPublicExamWorkspaceQti,
   movePublicExamWorkspaceItem,
   reorderPublicExamWorkspaceChildren,
   requestPublicExamWorkspaceAnswerMisspellings,
@@ -258,5 +259,56 @@ describe("publicExamWorkspace transport", () => {
       downloadPublicExamWorkspaceExport("qti", { assets: {}, document: pictureDocument() }),
     ).rejects.toThrow("asset_001");
     expect(publicApiFetchBlobResponseMock).not.toHaveBeenCalled();
+  });
+
+  it("parses a guest QTI .zip into the document and decodes each base64 picture to its blob", async () => {
+    const exam = pictureDocument();
+    const pngBytes = new Uint8Array([137, 80, 78, 71, 1, 2, 3, 4]);
+    const binary = Array.from(pngBytes, (byte) => String.fromCharCode(byte)).join("");
+    publicApiPostMock.mockResolvedValueOnce({
+      assets_by_id: { asset_001: btoa(binary) },
+      document: exam,
+      notes: [],
+    });
+    const file = new File(["qti"], "Prov_HT25.zip", { type: "application/zip" });
+
+    const result = await importPublicExamWorkspaceQti(file, "SVESVE02");
+
+    expect(publicApiPostMock).toHaveBeenCalledTimes(1);
+    const [path, body] = publicApiPostMock.mock.calls[0]!;
+    expect(path).toBe(`${WORKSPACE_ROOT}/imports/qti`);
+    expect(body).toBeInstanceOf(FormData);
+    if (!(body instanceof FormData)) {
+      throw new Error("expected the QTI import to send a multipart body");
+    }
+    const uploaded = body.get("file");
+    expect(uploaded).toBeInstanceOf(File);
+    if (!(uploaded instanceof File)) {
+      throw new Error("expected the QTI import to upload the package as a file");
+    }
+    expect(uploaded.name).toBe("Prov_HT25.zip");
+    expect(body.get("course_key")).toBe("SVESVE02");
+    expect(result.document).toEqual(exam);
+    const blob = result.assets["asset_001"];
+    expect(blob).toBeInstanceOf(Blob);
+    expect(blob.type).toBe("image/png");
+    expect(blob.size).toBe(pngBytes.length);
+  });
+
+  it("omits the course key for a guest QTI .zip without a course", async () => {
+    const exam = document();
+    publicApiPostMock.mockResolvedValueOnce({ assets_by_id: {}, document: exam, notes: [] });
+
+    await importPublicExamWorkspaceQti(
+      new File(["qti"], "Prov_HT25.zip", { type: "application/zip" }),
+      null,
+    );
+
+    const [, body] = publicApiPostMock.mock.calls[0]!;
+    expect(body).toBeInstanceOf(FormData);
+    if (!(body instanceof FormData)) {
+      throw new Error("expected the QTI import to send a multipart body");
+    }
+    expect(body.get("course_key")).toBeNull();
   });
 });

@@ -108,6 +108,7 @@ export type ExamWorkspaceTeacherServices = {
 /** The guest-only actions on the shared exam workspace; null in signed-in mode. */
 export type ExamWorkspaceGuestServices = {
   startBlank(): Promise<string>;
+  startFromQti(file: File, courseKey: string | null): Promise<string>;
 };
 
 export type ExamWorkspaceStore = {

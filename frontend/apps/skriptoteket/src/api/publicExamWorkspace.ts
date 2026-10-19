@@ -107,6 +107,19 @@ export type PublicExamWorkspaceExportRequest = {
   assets: Record<string, Blob>;
 };
 
+/** A parsed guest QTI package: the document and its picture bytes as blobs. */
+export type PublicExamWorkspaceQtiImportResult = {
+  document: NativeExamDocument;
+  assets: Record<string, Blob>;
+};
+
+/** The public QTI parse response: asset bytes travel as base64 JSON strings. */
+type PublicExamWorkspaceQtiImportResponse = {
+  document: NativeExamDocument;
+  assets_by_id: Record<string, string>;
+  notes: string[];
+};
+
 function parentsPath(parentId: string): string {
   return `${PUBLIC_WORKSPACE_ROOT}/parents/${encodeURIComponent(parentId)}`;
 }
@@ -129,6 +142,46 @@ function buildExportFormData(request: PublicExamWorkspaceExportRequest): FormDat
 
 export async function createPublicExamWorkspaceBlank(): Promise<PublicExamWorkspaceCommandResult> {
   return await publicApiPost<PublicExamWorkspaceCommandResult>(`${PUBLIC_WORKSPACE_ROOT}/blank`);
+}
+
+/** Decode one base64 JSON string back to its bytes. */
+function base64ToBytes(encoded: string): Uint8Array<ArrayBuffer> {
+  const binary = atob(encoded);
+  const bytes = new Uint8Array(new ArrayBuffer(binary.length));
+  for (let index = 0; index < binary.length; index += 1) {
+    bytes[index] = binary.charCodeAt(index);
+  }
+  return bytes;
+}
+
+/**
+ * Parse a guest QTI .zip server-side and keep the result in the browser: the
+ * document becomes the guest draft and each base64 asset value becomes the
+ * picture blob the guest store keeps beside it. Nothing is stored server-side.
+ */
+export async function importPublicExamWorkspaceQti(
+  file: File,
+  courseKey: string | null,
+): Promise<PublicExamWorkspaceQtiImportResult> {
+  const form = new FormData();
+  form.append("file", file, file.name);
+  if (courseKey) {
+    form.append("course_key", courseKey);
+  }
+  const response = await publicApiPost<PublicExamWorkspaceQtiImportResponse>(
+    `${PUBLIC_WORKSPACE_ROOT}/imports/qti`,
+    form,
+  );
+  const mediaTypeByAssetId = new Map(
+    response.document.assets.map((asset) => [asset.asset_id, asset.media_type]),
+  );
+  const assets: Record<string, Blob> = {};
+  for (const [assetId, encoded] of Object.entries(response.assets_by_id)) {
+    assets[assetId] = new Blob([base64ToBytes(encoded)], {
+      type: mediaTypeByAssetId.get(assetId) ?? "application/octet-stream",
+    });
+  }
+  return { assets, document: response.document };
 }
 
 export async function createPublicExamWorkspaceParent(

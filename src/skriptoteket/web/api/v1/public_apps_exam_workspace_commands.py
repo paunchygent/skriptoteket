@@ -16,6 +16,7 @@ from typing import TypeVar
 
 from fastapi import APIRouter, Request
 from pydantic import BaseModel, ValidationError
+from starlette.datastructures import UploadFile
 
 from skriptoteket.application.curated_apps.exam_workspace import ExamCourseCatalogResponse
 from skriptoteket.application.curated_apps.exam_workspace_misspellings import (
@@ -40,6 +41,7 @@ from skriptoteket.application.curated_apps.public_exam_workspace import (
     PublicExamDocumentCommandResponse,
     PublicExamDocumentDeleteResponse,
     PublicExamWorkspaceDocumentRequest,
+    PublicExamWorkspaceQtiImportResponse,
     PublicGroupExamItemsRequest,
     PublicMoveExamItemRequest,
     PublicReorderExamChildrenRequest,
@@ -49,6 +51,7 @@ from skriptoteket.domain.errors import DomainError, ErrorCode, validation_error
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.protocols.exam_workspace import (
     GenerateExamWorkspaceMisspellingsHandlerProtocol,
+    ParseExamWorkspaceQtiPackageHandlerProtocol,
 )
 from skriptoteket.protocols.public_request_limits import (
     AdmitPublicRequestHandlerProtocol,
@@ -87,6 +90,57 @@ async def _json_body(*, request: Request, settings: Settings, model: type[ModelT
         ) from error
 
 
+async def _read_guest_qti_upload(
+    *, request: Request, settings: Settings
+) -> tuple[str, bytes, str | None]:
+    """Read the one ``file`` upload and the optional ``course_key`` under the size cap."""
+
+    form = await request.form()
+    file_parts: list[tuple[str, bytes]] = []
+    course_values: list[str] = []
+    unknown_fields: list[str] = []
+    total_bytes = 0
+
+    for field_name, value in form.multi_items():
+        if isinstance(value, UploadFile):
+            content = await value.read()
+            total_bytes += len(content)
+            if field_name == "file":
+                file_parts.append((value.filename or "prov.zip", content))
+            else:
+                unknown_fields.append(field_name)
+            continue
+        encoded = value.encode("utf-8")
+        total_bytes += len(encoded)
+        if field_name == "course_key":
+            course_values.append(value)
+        else:
+            unknown_fields.append(field_name)
+
+    if total_bytes > settings.PUBLIC_GUEST_EXAM_MAX_REQUEST_BYTES:
+        raise DomainError(
+            code=ErrorCode.PAYLOAD_TOO_LARGE,
+            message="Förfrågan är för stor.",
+            details={
+                "reason": "payload_too_large",
+                "max_bytes": settings.PUBLIC_GUEST_EXAM_MAX_REQUEST_BYTES,
+            },
+        )
+    if unknown_fields:
+        raise validation_error(
+            "Förfrågan innehåller ett okänt fält.",
+            details={"reason": "unknown_field", "field": unknown_fields[0]},
+        )
+    if len(file_parts) != 1:
+        raise validation_error(
+            "Förfrågan måste innehålla exakt en QTI-fil.",
+            details={"reason": "missing_file"},
+        )
+    filename, content = file_parts[0]
+    course_key = course_values[0] if course_values else None
+    return filename, content, course_key or None
+
+
 @router.post("/workspace/blank", response_model=PublicExamBlankResponse)
 async def blank_public_exam_workspace(
     request: Request,
@@ -102,6 +156,29 @@ async def blank_public_exam_workspace(
         bucket=PublicRequestBucket.GUEST_EDIT,
     )
     return handler.blank()
+
+
+@router.post("/workspace/imports/qti", response_model=PublicExamWorkspaceQtiImportResponse)
+async def import_public_exam_workspace_qti_package(
+    request: Request,
+    registry: FromDishka[CuratedAppRegistryProtocol],
+    settings: FromDishka[Settings],
+    admit_handler: FromDishka[AdmitPublicRequestHandlerProtocol],
+    handler: FromDishka[ParseExamWorkspaceQtiPackageHandlerProtocol],
+) -> PublicExamWorkspaceQtiImportResponse:
+    await admit_guest_request(
+        request=request,
+        registry=registry,
+        admit_handler=admit_handler,
+        bucket=PublicRequestBucket.GUEST_IMPORT,
+    )
+    filename, content, course_key = await _read_guest_qti_upload(request=request, settings=settings)
+    container = handler.handle(filename=filename, content=content, course_key=course_key)
+    return PublicExamWorkspaceQtiImportResponse(
+        document=container.document,
+        assets_by_id=container.assets_by_id,
+        notes=container.notes,
+    )
 
 
 @router.post("/workspace/parents", response_model=PublicExamDocumentCommandResponse)

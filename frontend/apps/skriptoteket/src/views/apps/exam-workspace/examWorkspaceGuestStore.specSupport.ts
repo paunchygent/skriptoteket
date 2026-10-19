@@ -86,6 +86,7 @@ export type GuestStoreSetup = {
     exportChecklist: Mock<PublicApi["getPublicExamWorkspaceExportChecklist"]>;
     exportDownload: Mock<PublicApi["downloadPublicExamWorkspaceExport"]>;
     groupItems: Mock<PublicApi["groupPublicExamWorkspaceItems"]>;
+    importQti: Mock<PublicApi["importPublicExamWorkspaceQti"]>;
     misspellings: Mock<PublicApi["requestPublicExamWorkspaceAnswerMisspellings"]>;
     moveItem: Mock<PublicApi["movePublicExamWorkspaceItem"]>;
     reorderChildren: Mock<PublicApi["reorderPublicExamWorkspaceChildren"]>;
@@ -110,6 +111,7 @@ export function setupGuestStore(): GuestStoreSetup {
     exportChecklist: vi.fn(),
     exportDownload: vi.fn(),
     groupItems: vi.fn(),
+    importQti: vi.fn(),
     misspellings: vi.fn(),
     moveItem: vi.fn(),
     reorderChildren: vi.fn(),
@@ -126,6 +128,7 @@ export function setupGuestStore(): GuestStoreSetup {
     getPublicExamCourseCatalog: mocks.catalog,
     getPublicExamWorkspaceExportChecklist: mocks.exportChecklist,
     groupPublicExamWorkspaceItems: mocks.groupItems,
+    importPublicExamWorkspaceQti: mocks.importQti,
     movePublicExamWorkspaceItem: mocks.moveItem,
     reorderPublicExamWorkspaceChildren: mocks.reorderChildren,
     requestPublicExamWorkspaceAnswerMisspellings: mocks.misspellings,

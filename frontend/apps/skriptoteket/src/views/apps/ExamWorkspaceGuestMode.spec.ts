@@ -3,12 +3,13 @@
  *
  * Expected behavior:
  *   With a guest store (teacher null, guest startBlank present) the same view
- *   starts a blank exam through "Tomt prov"; every AI control and the
- *   DigiExam/Word import show the sign-in prompt instead of calling; Spara
- *   som, save-to-Mina-filer, rename and the saved-exams list are absent while
- *   Spara keeps saving to the browser store. AI controls stay enabled and show
- *   no admin-only note. With the server store nothing changes (covered by the
- *   frame, saveAs, exports, enrichment, retry and conversion slices).
+ *   starts a blank exam through "Tomt prov" and a QTI .zip through the file
+ *   picker or a drop; every AI control and the DigiExam/Word import show the
+ *   sign-in prompt instead of calling; Spara som, save-to-Mina-filer, rename
+ *   and the saved-exams list are absent while Spara keeps saving to the
+ *   browser store. AI controls stay enabled and show no admin-only note.
+ *   With the server store nothing changes (covered by the frame, saveAs,
+ *   exports, enrichment, retry and conversion slices).
  */
 
 import { createPinia } from "pinia";
@@ -17,6 +18,7 @@ import { ref } from "vue";
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { NativeExamDocument, NativeExamItem } from "../../api/examWorkspace";
+import type { PublicExamWorkspaceQtiImportResult } from "../../api/publicExamWorkspace";
 import { AI_ADMIN_ONLY_NOTE } from "../../composables/useAiAccess";
 import { createTestRouter, mountWithContext } from "../../test/utils";
 import ExamWorkspaceView from "./ExamWorkspaceView.vue";
@@ -217,6 +219,15 @@ function setupGuest() {
     getPublicExamCourseCatalog: vi.fn(),
     getPublicExamWorkspaceExportChecklist: vi.fn(),
     groupPublicExamWorkspaceItems: vi.fn(),
+    importPublicExamWorkspaceQti: vi.fn(
+      async (
+        _file: File,
+        _courseKey: string | null,
+      ): Promise<PublicExamWorkspaceQtiImportResult> => ({
+        assets: {},
+        document: blankDocument(),
+      }),
+    ),
     movePublicExamWorkspaceItem: vi.fn(),
     reorderPublicExamWorkspaceChildren: vi.fn(),
     requestPublicExamWorkspaceAnswerMisspellings: vi.fn(),
@@ -267,6 +278,18 @@ function promptText(wrapper: GuestWrapper): string | null {
   return prompt.exists() ? prompt.text() : null;
 }
 
+async function chooseGuestFile(wrapper: GuestWrapper, file: File): Promise<void> {
+  const input = wrapper.find<HTMLInputElement>(
+    '[data-test="exam-workspace-source-file-input"]',
+  );
+  Object.defineProperty(input.element, "files", {
+    configurable: true,
+    value: [file],
+  });
+  await input.trigger("change");
+  await flushPromises();
+}
+
 function expectNoServerCalls(): void {
   for (const mock of Object.values(apiMocks)) {
     expect(mock).not.toHaveBeenCalled();
@@ -306,11 +329,11 @@ describe("ExamWorkspaceView guest mode", () => {
     wrapper.unmount();
   });
 
-  it("shows the import sign-in prompt for Välj provfil and a dropped .docx without importing", async () => {
-    const { guest } = setupGuest();
+  it("shows the import sign-in prompt for a chosen or dropped .docx without importing", async () => {
+    const { guest, publicMocks } = setupGuest();
     const wrapper = await mountGuestView(guest.store);
 
-    await wrapper.get('[data-test="exam-workspace-pick-file"]').trigger("click");
+    await chooseGuestFile(wrapper, new File(["prov"], "NO_Prov_HT25.docx"));
     await flushPromises();
 
     expect(promptText(wrapper)).toContain(GUEST_IMPORT_SIGN_IN);
@@ -322,6 +345,65 @@ describe("ExamWorkspaceView guest mode", () => {
 
     expect(promptText(wrapper)).toContain(GUEST_IMPORT_SIGN_IN);
     expect(wrapper.find('[data-test="exam-workspace-empty"]').exists()).toBe(true);
+    expect(publicMocks.importPublicExamWorkspaceQti).not.toHaveBeenCalled();
+    expectNoServerCalls();
+    wrapper.unmount();
+  });
+
+  it("shows the import sign-in prompt for a dropped .dxe without importing", async () => {
+    const { guest, publicMocks } = setupGuest();
+    const wrapper = await mountGuestView(guest.store);
+
+    await wrapper.get('[data-test="exam-workspace-drop-zone"]').trigger("drop", {
+      dataTransfer: { files: [new File(["dxe"], "Prov_HT25.dxe")] },
+    });
+    await flushPromises();
+
+    expect(promptText(wrapper)).toContain(GUEST_IMPORT_SIGN_IN);
+    expect(wrapper.find('[data-test="exam-workspace-empty"]').exists()).toBe(true);
+    expect(publicMocks.importPublicExamWorkspaceQti).not.toHaveBeenCalled();
+    expectNoServerCalls();
+    wrapper.unmount();
+  });
+
+  it("accepts a guest .zip chosen in the picker and opens the parsed exam", async () => {
+    const { guest, publicMocks } = setupGuest();
+    publicMocks.importPublicExamWorkspaceQti.mockResolvedValue({
+      assets: {},
+      document: blankDocument(),
+    });
+    const wrapper = await mountGuestView(guest.store);
+
+    await chooseGuestFile(wrapper, new File(["qti"], "Prov_HT25.zip", { type: "application/zip" }));
+    await flushPromises();
+
+    expect(publicMocks.importPublicExamWorkspaceQti).toHaveBeenCalledTimes(1);
+    const [file, courseKey] = publicMocks.importPublicExamWorkspaceQti.mock.calls[0]!;
+    expect(file.name).toBe("Prov_HT25.zip");
+    expect(courseKey).toBeNull();
+    expect(wrapper.find('[data-test="exam-workspace-empty"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="exam-workspace-title"]').text()).toBe("Nytt prov");
+    expect(wrapper.find('[data-test="exam-workspace-row-item_001"]').exists()).toBe(true);
+    expectNoServerCalls();
+    wrapper.unmount();
+  });
+
+  it("accepts a dropped guest .zip and opens the parsed exam", async () => {
+    const { guest, publicMocks } = setupGuest();
+    publicMocks.importPublicExamWorkspaceQti.mockResolvedValue({
+      assets: {},
+      document: blankDocument(),
+    });
+    const wrapper = await mountGuestView(guest.store);
+
+    await wrapper.get('[data-test="exam-workspace-drop-zone"]').trigger("drop", {
+      dataTransfer: { files: [new File(["qti"], "Prov_HT25.zip", { type: "application/zip" })] },
+    });
+    await flushPromises();
+
+    expect(publicMocks.importPublicExamWorkspaceQti).toHaveBeenCalledTimes(1);
+    expect(wrapper.find('[data-test="exam-workspace-empty"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="exam-workspace-title"]').text()).toBe("Nytt prov");
     expectNoServerCalls();
     wrapper.unmount();
   });
