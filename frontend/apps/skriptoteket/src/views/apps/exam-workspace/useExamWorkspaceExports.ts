@@ -37,6 +37,7 @@ import type {
 import { useToast } from "../../../composables/useToast";
 import { triggerBrowserDownload } from "../../../utils/browserDownload";
 import { examWorkspaceSavedAt } from "./examWorkspaceFormat";
+import { EXAM_WORKSPACE_EXPORT_FORMAT_BY_TARGET } from "./examWorkspaceExportFormats";
 import type { ExamWorkspaceStore } from "./examWorkspaceStore";
 import type { ExamWorkspaceTitleVerdict } from "./useExamWorkspaceTitleVerdict";
 
@@ -90,15 +91,6 @@ const EXPORT_CREATED_MESSAGES: Record<ExamWorkspaceExportTarget, string> = {
   qti: "QTI-paketet är skapat.",
   pdf_facit: "PDF-filen med facit är skapad.",
   examnet_pdf: "PDF-filen för Exam.net är skapad.",
-};
-
-/** The format's name in the Mina filer messages. */
-export const EXPORT_FORMAT_NAMES: Record<ExamWorkspaceExportTarget, string> = {
-  docx: "DOCX",
-  pdf: "PDF",
-  qti: "QTI",
-  pdf_facit: "PDF med facit",
-  examnet_pdf: "PDF för Exam.net",
 };
 
 export type ExportDestination = "download" | "files";
@@ -302,8 +294,8 @@ export function useExamWorkspaceExports(
         }
         clearExportFeedback();
         exportResult.value = replaced
-          ? `${EXPORT_FORMAT_NAMES[target]} sparad i Mina filer och ersatte filen från ${examWorkspaceSavedAt(replaced)}.`
-          : `${EXPORT_FORMAT_NAMES[target]} sparad i Mina filer.`;
+          ? `${EXAM_WORKSPACE_EXPORT_FORMAT_BY_TARGET[target].name} sparad i Mina filer och ersatte filen från ${examWorkspaceSavedAt(replaced)}.`
+          : `${EXAM_WORKSPACE_EXPORT_FORMAT_BY_TARGET[target].name} sparad i Mina filer.`;
       } else {
         const response = await steps.store.shared.downloadExamWorkspaceExport(savedSummary.lineage_id, target, savedSummary.version);
         triggerBrowserDownload(response.blob, response.filename);

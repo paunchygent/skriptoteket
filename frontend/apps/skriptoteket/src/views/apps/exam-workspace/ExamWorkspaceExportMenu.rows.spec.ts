@@ -15,10 +15,12 @@
 import { createTestingPinia } from "@pinia/testing";
 import { mount, type VueWrapper } from "@vue/test-utils";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { nextTick } from "vue";
 
 import type { ExamWorkspaceExportTarget } from "../../../api/examWorkspaceExports";
 import { adminUser } from "../ExamWorkspaceSlice.specSupport";
 import ExamWorkspaceExportMenu from "./ExamWorkspaceExportMenu.vue";
+import ExamWorkspaceMenu from "./ExamWorkspaceMenu.vue";
 import type { ExamWorkspaceBlockerEntry } from "./examWorkspaceBlockers";
 import { EXAM_WORKSPACE_EXPORT_FORMATS, QTI_ZERO_POINTS_NOTE } from "./examWorkspaceExportFormats";
 import { examWorkspaceProvidersPlugin } from "./examWorkspaceProviders.specSupport";
@@ -111,6 +113,10 @@ function nameLine(target: ExamWorkspaceExportTarget): HTMLElement {
     throw new Error(`name line ${target} did not mount`);
   }
   return line;
+}
+
+function menuSurface(): HTMLElement | null {
+  return document.body.querySelector('[data-test="exam-workspace-export-menu"]');
 }
 
 afterEach(() => document.body.replaceChildren());
@@ -325,6 +331,21 @@ describe("ExamWorkspaceExportMenu split rows", () => {
       expect(candidate.firstElementChild?.classList.contains("xw-grow")).toBe(true);
     }
     expect(document.body.textContent).toContain("Det här tappar Exam.net (2)");
+    wrapper.unmount();
+  });
+
+  it("dismisses the menu on close and stays closed on a second close", async () => {
+    const wrapper = mountMenu();
+    await openMenu(wrapper);
+    expect(menuSurface()).not.toBeNull();
+
+    wrapper.findComponent(ExamWorkspaceMenu).vm.$emit("close", false);
+    await nextTick();
+    expect(menuSurface()).toBeNull();
+
+    wrapper.findComponent(ExamWorkspaceMenu).vm.$emit("close", false);
+    await nextTick();
+    expect(menuSurface()).toBeNull();
     wrapper.unmount();
   });
 });
