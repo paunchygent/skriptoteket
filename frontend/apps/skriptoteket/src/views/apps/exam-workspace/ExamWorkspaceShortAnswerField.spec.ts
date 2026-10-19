@@ -18,7 +18,7 @@ import { nextTick } from "vue";
 
 import type { NativeExamBodyParagraph, NativeExamItem } from "../../../api/examWorkspace";
 import ExamWorkspaceShortAnswerField from "./ExamWorkspaceShortAnswerField.vue";
-import { withBody } from "./examWorkspaceItemEdits";
+import { newTeacherItem, withBody } from "./examWorkspaceItemEdits";
 import { buildGap } from "./examWorkspaceKeyedItems.specSupport";
 import { plainBody } from "./examWorkspaceRichText";
 import { posIn } from "./ExamWorkspaceBodyEditor.specSupport";
@@ -32,31 +32,12 @@ function shortAnswerItem(
   automatic: string[] = [],
 ): NativeExamItem {
   return {
-    ai_suggestion: null,
-    facit_text: null,
-    import_record: null,
-    criteria: [],
-    printed_label: null,
-    print_order: [],
-    retry_source: null,
-    answer_key: { correct_choice_ids: [], match_pairs: [], origin: "absent" },
+    ...newTeacherItem(ITEM_ID, 1, "gap_fill"),
     body: [
       ...plainBody(QUESTION),
       { heading_level: null, segments: [{ kind: "gap", gap_id: GAP_ID }] },
     ],
-    choices: [],
     gaps: [buildGap(GAP_ID, accepted, { automatic_values: automatic })],
-    item_id: ITEM_ID,
-    kind: "gap_fill",
-    match_left: [],
-    match_right: [],
-    points: null,
-    points_estimated: false,
-    review: { confidence: null, parse_origin: "teacher_created", reasons: [], state: "review_complete" },
-    sequence: 1,
-    source_anchor: null,
-    suggested_kind: null,
-    tick_points: null,
   };
 }
 

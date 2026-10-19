@@ -28,28 +28,11 @@ function gapFillItem(
   kind: NativeExamItem["kind"] = "gap_fill",
 ): NativeExamItem {
   return {
-    ai_suggestion: null,
-    facit_text: null,
-    import_record: null,
-    criteria: [],
-    printed_label: null,
-    print_order: [],
-    retry_source: null,
+    ...newTeacherItem("item_001", 1, "gap_fill"),
     answer_key: { correct_choice_ids: [], match_pairs: [], origin: "absent" },
     body,
-    choices: [],
     gaps,
-    item_id: "item_001",
     kind,
-    match_left: [],
-    match_right: [],
-    points: null,
-    points_estimated: false,
-    review: { confidence: null, parse_origin: "teacher_created", reasons: [], state: "review_complete" },
-    sequence: 1,
-    source_anchor: null,
-    suggested_kind: null,
-    tick_points: null,
   };
 }
 
