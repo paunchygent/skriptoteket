@@ -27,6 +27,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_blank import (
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
 )
+from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from tests.fixtures.time_fixtures import FixedClock
 from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents import (
@@ -104,6 +105,7 @@ def _handler(env: _Env, uow: UnitOfWorkProtocol) -> ImportGuestExamDraftHandler:
         store=store,
         clock=FixedClock(_NOW),
         id_generator=env.ids,
+        index=env.index,
     )
 
 
@@ -152,3 +154,64 @@ async def test_handoff_writes_once_and_repeat_claim_returns_the_first_lineage() 
     assert again.summary.lineage_id == first.summary.lineage_id
     assert again.document == first.document
     assert len(env.vault_files.files) == 1
+
+
+async def _seed_titled_exam(env: _Env, *, actor: User, title: str) -> None:
+    await env.seed_document(
+        actor=actor,
+        document=_guest_document(title).model_copy(update={"document_id": uuid4()}),
+    )
+
+
+async def test_handoff_numbers_a_taken_title_and_derives_the_vault_name() -> None:
+    env = _Env()
+    actor = _actor()
+    await _seed_titled_exam(env, actor=actor, title="Prov")
+    handler = _handler(env, FakeUow())
+
+    created = await handler.handle(
+        actor=actor, draft_id=uuid4(), document=_guest_document("Prov"), assets_by_id={}
+    )
+
+    assert created.document.title == "Prov (2)"
+    assert created.saved_document.title == "Prov (2)"
+    assert created.summary.name == "Prov (2).provdokument.zip"
+    assert env.index.locks == [actor.id]
+    reopened = await env.get_handler.handle(actor=actor, lineage_id=created.summary.lineage_id)
+    assert reopened.document.title == "Prov (2)"
+
+
+async def test_handoff_numbers_from_a_draft_title_that_already_ends_in_a_suffix() -> None:
+    env = _Env()
+    actor = _actor()
+    await _seed_titled_exam(env, actor=actor, title="Prov")
+    await _seed_titled_exam(env, actor=actor, title="Prov (2)")
+    handler = _handler(env, FakeUow())
+
+    created = await handler.handle(
+        actor=actor, draft_id=uuid4(), document=_guest_document("Prov (2)"), assets_by_id={}
+    )
+
+    assert created.document.title == "Prov (3)"
+    assert created.summary.name == "Prov (3).provdokument.zip"
+
+
+async def test_handoff_replay_keeps_the_original_exam_despite_a_taken_title() -> None:
+    env = _Env()
+    actor = _actor()
+    await _seed_titled_exam(env, actor=actor, title="Prov")
+    handler = _handler(env, FakeUow())
+    draft_id = uuid4()
+
+    first = await handler.handle(
+        actor=actor, draft_id=draft_id, document=_guest_document("Prov"), assets_by_id={}
+    )
+    assert first.document.title == "Prov (2)"
+
+    again = await handler.handle(
+        actor=actor, draft_id=draft_id, document=_guest_document("Prov"), assets_by_id={}
+    )
+
+    assert again.summary.lineage_id == first.summary.lineage_id
+    assert again.document == first.document
+    assert again.document.title == "Prov (2)"

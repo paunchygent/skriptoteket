@@ -35,10 +35,15 @@ from skriptoteket.application.curated_apps.handlers.public_exam_workspace_export
 from skriptoteket.domain.curated_apps.exam_workspace.container import (
     ExamWorkspaceContainerContent,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.exam_title_numbering import (
+    exam_title_base,
+    numbered_exam_title,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import NativeExamDocument
 from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.scripting.vault_names import rename_vault_filename
 from skriptoteket.protocols.clock import ClockProtocol
+from skriptoteket.protocols.exam_index import ExamIndexRepositoryProtocol
 from skriptoteket.protocols.exam_workspace import (
     ExamWorkspaceContainerCodecProtocol,
     GetExamWorkspaceDocumentHandlerProtocol,
@@ -63,6 +68,7 @@ class ImportGuestExamDraftHandler:
         store: ExamWorkspaceDocumentStore,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
+        index: ExamIndexRepositoryProtocol,
     ) -> None:
         self._handoffs = handoffs
         self._reader = reader
@@ -70,6 +76,7 @@ class ImportGuestExamDraftHandler:
         self._store = store
         self._clock = clock
         self._id_generator = id_generator
+        self._index = index
 
     async def handle(
         self,
@@ -82,7 +89,6 @@ class ImportGuestExamDraftHandler:
         PublicExamWorkspaceExportHandler._require_declared_assets(
             document=document, assets_by_id=assets_by_id
         )
-        name = rename_vault_filename(stem=document.title, extension=_COPY_EXTENSION)
         lineage_id = self._id_generator.new_uuid()
         async with self._store.transaction(user_id=actor.id, lineage_id=lineage_id):
             claimed = await self._handoffs.claim(
@@ -97,13 +103,24 @@ class ImportGuestExamDraftHandler:
                 )
                 assert existing is not None  # a lost claim means the winner committed
                 return await self._reader.handle(actor=actor, lineage_id=existing)
+            numbered = await self._with_unique_title(actor=actor, document=document)
             return await self._create(
                 actor=actor,
                 lineage_id=lineage_id,
-                name=name,
-                document=document,
+                name=rename_vault_filename(stem=numbered.title, extension=_COPY_EXTENSION),
+                document=numbered,
                 assets_by_id=assets_by_id,
             )
+
+    async def _with_unique_title(
+        self, *, actor: User, document: NativeExamDocument
+    ) -> NativeExamDocument:
+        """Number the draft title against the owner's taken titles under the lock."""
+        await self._index.lock_owner_titles(owner_user_id=actor.id)
+        taken = await self._index.titles_like(
+            owner_user_id=actor.id, base=exam_title_base(document.title)
+        )
+        return document.model_copy(update={"title": numbered_exam_title(document.title, taken)})
 
     async def _create(
         self,

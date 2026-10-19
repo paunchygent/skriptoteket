@@ -20,6 +20,7 @@ from skriptoteket.infrastructure.repositories.exam_guest_draft_handoffs import (
     PostgreSQLExamGuestDraftHandoffRepository,
 )
 from skriptoteket.protocols.clock import ClockProtocol
+from skriptoteket.protocols.exam_index import ExamIndexRepositoryProtocol
 from skriptoteket.protocols.exam_workspace import (
     ExamWorkspaceContainerCodecProtocol,
     GetExamWorkspaceDocumentHandlerProtocol,
@@ -49,6 +50,7 @@ class ExamWorkspaceGuestDraftsProvider(Provider):
         store: ExamWorkspaceDocumentStore,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
+        index: ExamIndexRepositoryProtocol,
     ) -> ImportGuestExamDraftHandlerProtocol:
         return ImportGuestExamDraftHandler(
             handoffs=handoffs,
@@ -57,4 +59,5 @@ class ExamWorkspaceGuestDraftsProvider(Provider):
             store=store,
             clock=clock,
             id_generator=id_generator,
+            index=index,
         )

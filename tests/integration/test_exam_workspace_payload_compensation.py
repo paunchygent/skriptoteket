@@ -253,6 +253,7 @@ def handoff_handler(
         store=world.store,
         clock=clock,
         id_generator=Ids(),
+        index=world.index,
     )
 
 

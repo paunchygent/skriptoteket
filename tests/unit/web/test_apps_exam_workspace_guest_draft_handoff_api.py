@@ -144,6 +144,7 @@ def _handoff_handler(
         store=env.store,
         clock=FixedClock(_NOW),
         id_generator=env.ids,
+        index=env.index,
     )
 
 
