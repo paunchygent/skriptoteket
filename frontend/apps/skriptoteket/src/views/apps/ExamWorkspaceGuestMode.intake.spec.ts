@@ -98,8 +98,13 @@ describe("ExamWorkspaceView guest mode intake", () => {
     expect(wrapper.find('[data-test="exam-workspace-empty"]').text()).toContain("Börja med ett tomt prov.");
     expect(wrapper.find('[data-test="exam-workspace-sign-in-prompt"]').exists()).toBe(false);
     expect(wrapper.find('[data-test="exam-workspace-guest-blank"]').exists()).toBe(true);
-    expect(wrapper.text()).toContain("Word .docx");
-    expect(wrapper.text()).toContain("DigiExam .dxe");
+    expect(wrapper.text()).toContain("Word (.docx)");
+    expect(wrapper.text()).toContain("DigiExam (.dxe)");
+    expect(wrapper.text()).toContain("QTI (.zip)");
+    expect(wrapper.get(".drop__formats").findAll(".xw-chip")).toHaveLength(0);
+    expect(
+      wrapper.get(".drop__formats").findAll(".drop__format").map((node) => node.text()),
+    ).toEqual(["Word (.docx)", "DigiExam (.dxe)", "QTI (.zip)"]);
     expect(wrapper.find('[data-test="exam-workspace-saved-documents"]').exists()).toBe(false);
     expect(document.querySelector("#exam-workspace-import-course")).toBeNull();
 
