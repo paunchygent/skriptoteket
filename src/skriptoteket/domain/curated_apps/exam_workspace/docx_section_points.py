@@ -86,6 +86,7 @@ def apply_printed_points(
             points,
             source_chunks=tuple(by_anchor[a] for a in question.anchors if a in by_anchor),
             estimated=estimated,
+            source_points=question.points if question.prints else None,
         )
         events.extend(result.events)
         scored = [result.item if i.item_id == item.item_id else i for i in scored]

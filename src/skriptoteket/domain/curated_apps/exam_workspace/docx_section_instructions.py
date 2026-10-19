@@ -147,18 +147,21 @@ def with_question_points(
     *,
     source_chunks: tuple[DocxChunk, ...],
     estimated: bool = False,
+    source_points: int | float | None,
 ) -> QuestionPoints:
     """The question's one item owns its printed points, rubric and tick value included.
 
     ``points`` is what the question prints, or its share of a part's total, marked
-    ``estimated`` (D6). The item's rubric is reshared in whole points and a matching item's
+    ``estimated`` (D6). ``source_points`` is what the question itself prints, or None
+    when it prints none: an unprinted remainder or share never invents provenance from
+    its exactness. The item's rubric is reshared in whole points and a matching item's
     tick value follows the total, so no total is changed alone. Points the rubric or ticks
-    cannot carry send the item to teacher review.
+    cannot carry send the item to teacher review, keeping the printed value as provenance.
     """
     updates: dict[str, object] = {
         "points": points,
         "points_estimated": estimated,
-        "source_points": points if not estimated else None,
+        "source_points": source_points,
     }
     try:
         if points <= 0:
@@ -184,7 +187,7 @@ def with_question_points(
             update={
                 "points": points,
                 "points_estimated": estimated,
-                "source_points": points if not estimated else None,
+                "source_points": source_points,
                 "item_id": item.item_id,
                 "sequence": item.sequence,
                 "printed_label": item.printed_label,
@@ -220,7 +223,9 @@ def with_question_points(
                 "reasons": tuple(dict.fromkeys((*item.review.reasons, reason))),
             }
         )
-        return QuestionPoints(item.model_copy(update={"review": review}))
+        return QuestionPoints(
+            item.model_copy(update={"review": review, "source_points": source_points})
+        )
     return QuestionPoints(item.model_copy(update=updates))
 
 
