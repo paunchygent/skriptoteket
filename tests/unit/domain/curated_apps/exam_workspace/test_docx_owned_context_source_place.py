@@ -155,8 +155,14 @@ def test_context_printed_after_the_first_own_chunk_follows_that_chunk_content(pa
     item = _q2(path)
 
     assert item.review.parse_origin is NativeParseOrigin.LLM_PARSED
-    assert item.plain_text_lines() == (_STEM, _PASSAGE, _SUB)
+    assert item.plain_text_lines() == (
+        "2. Läs texten och svara på frågorna.",
+        "Igår kom en ny elev till klassen. Han var blyg.",
+        "a) Vem är huvudpersonen?",
+    )
     assert item.source_anchor == "body:0002"
+    # D12: the first-paragraph label leaves only because it equals the settled points.
+    assert item.points == 6
 
 
 # A reply paragraph no source chunk aligns to: no word of it appears in the source, and two
@@ -188,9 +194,34 @@ def _q2_with_body(path: str, body: tuple[str, ...]) -> NativeExamItem:
     ("body", "expected"),
     [
         # An unaligned paragraph keeps the place of the aligned paragraph before it.
-        ((_STEM, _SUB, _UNALIGNED), (_STEM, _PASSAGE, _SUB, _UNALIGNED)),
+        (
+            (
+                "2. Läs texten och svara på frågorna. (6 p)",
+                "a) Vem är huvudpersonen?",
+                "Motivera.",
+            ),
+            (
+                "2. Läs texten och svara på frågorna.",
+                "Igår kom en ny elev till klassen. Han var blyg.",
+                "a) Vem är huvudpersonen?",
+                "Motivera.",
+            ),
+        ),
         # With no aligned paragraph before it, it keeps the place of the first one after it.
-        ((_UNALIGNED, _STEM, _SUB), (_UNALIGNED, _STEM, _PASSAGE, _SUB)),
+        # The mid-body label is not a first paragraph, so it stays.
+        (
+            (
+                "Motivera.",
+                "2. Läs texten och svara på frågorna. (6 p)",
+                "a) Vem är huvudpersonen?",
+            ),
+            (
+                "Motivera.",
+                "2. Läs texten och svara på frågorna. (6 p)",
+                "Igår kom en ny elev till klassen. Han var blyg.",
+                "a) Vem är huvudpersonen?",
+            ),
+        ),
     ],
     ids=["trailing", "leading"],
 )
@@ -199,3 +230,5 @@ def test_unaligned_reply_paragraph_keeps_the_place_of_its_aligned_neighbour(path
 
     assert item.review.parse_origin is NativeParseOrigin.LLM_PARSED
     assert item.plain_text_lines() == expected
+    # D12: the first-paragraph label leaves only because it equals the settled points.
+    assert item.points == 6

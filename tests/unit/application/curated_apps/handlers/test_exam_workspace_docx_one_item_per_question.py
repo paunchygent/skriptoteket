@@ -235,9 +235,16 @@ def test_a_question_the_reply_omits_becomes_one_source_review_item():
     converted, omitted = document.items
     assert converted.review.parse_origin is NativeParseOrigin.LLM_PARSED
     assert _is_source_review(omitted, NO_ITEM_REASON)
-    assert _texts(omitted) == [text for _, text in _QUESTION]
+    assert _texts(omitted) == [
+        "Uppgift 1.1: Subjekt",
+        "Stryk under subjektet i varje mening.",
+        "1. Hunden skäller på brevbäraren.",
+        "2. I morgon reser min syster till Malmö.",
+    ]
     assert omitted.points == 4
     assert omitted.source_anchor == "body:0002"
+    # D12/D1: the labelled source text stays in the chunks; only the body label left.
+    assert state.chunk_by_anchor["body:0002"].text == "Uppgift 1.1: Subjekt (4 p)"
 
 
 _NOUN = (("paragraph", "Förklara vad som kännetecknar ett substantiv. (4 p)"),)
@@ -482,8 +489,18 @@ def test_a_question_the_reply_lists_as_metadata_becomes_one_source_review_item(
     assert len(document.items) == (1 if alone else 2)
     omitted = document.items[-1]
     assert _is_source_review(omitted, NO_ITEM_REASON)
-    assert _texts(omitted) == [text for _, text in _VERB]
+    assert _texts(omitted) == [
+        "Uppgift 2: Förklara vad som kännetecknar ett verb.",
+        "Ge två exempel på verb.",
+    ]
     assert omitted.source_anchor == own[0]
+    # D12/D1: the labelled source text stays in the chunks; only the body label left.
+    first_anchor = own[0]
+    assert isinstance(first_anchor, str)
+    assert (
+        state.chunk_by_anchor[first_anchor].text
+        == "Uppgift 2: Förklara vad som kännetecknar ett verb. (2 p)"
+    )
     placed = _paragraph_texts(document.instructions) + [
         text for parent in document.parents for text in _paragraph_texts(parent.instruction)
     ]
