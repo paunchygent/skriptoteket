@@ -28,15 +28,12 @@
 import { computed, useId } from "vue";
 
 import type { NativeExamBodyParagraph, NativeExamItem } from "../../../api/examWorkspace";
-import type { BodyMark } from "./examWorkspaceBodyMarks";
 import ExamWorkspaceGapAnswerList from "./ExamWorkspaceGapAnswerList.vue";
 import ExamWorkspaceGapAutomaticValues from "./ExamWorkspaceGapAutomaticValues.vue";
 import ExamWorkspaceMarkToolbar from "./ExamWorkspaceMarkToolbar.vue";
 import ExamWorkspaceRichTextEditor from "./ExamWorkspaceRichTextEditor.vue";
 import { shortAnswerParts, withShortAnswerQuestion } from "./examWorkspaceShortAnswer";
-import { useRichTextTargetRegistry } from "./examWorkspaceRichTextTarget";
-
-type HeadingLevel = 1 | 2 | 3;
+import { useExamWorkspaceRichTextToolbar } from "./useExamWorkspaceRichTextToolbar";
 
 const props = defineProps<{
   item: NativeExamItem;
@@ -54,20 +51,7 @@ const emit = defineEmits<{
 const questionLabelId = useId();
 const answerLabelId = useId();
 const parts = computed(() => shortAnswerParts(props.item));
-const richTextTargets = useRichTextTargetRegistry();
-const activeRichTextTarget = richTextTargets.active;
-const activeMarks = computed(() => activeRichTextTarget.value?.marks.value ?? []);
-const activeHeading = computed<HeadingLevel | null>(
-  () => activeRichTextTarget.value?.headingLevel() ?? null,
-);
-
-function handleToggleMark(mark: BodyMark): void {
-  activeRichTextTarget.value?.toggleMark(mark);
-}
-
-function handleToggleHeading(level: HeadingLevel): void {
-  activeRichTextTarget.value?.toggleHeading(level);
-}
+const { activeMarks, activeHeading, toggleMark, toggleHeading } = useExamWorkspaceRichTextToolbar();
 
 function handleQuestionUpdate(body: NativeExamBodyParagraph[], structural: boolean): void {
   if (props.disabled) {
@@ -127,8 +111,8 @@ function handleAutomaticValueRemoval(value: string): void {
           :active-heading="activeHeading"
           :disabled="disabled"
           show-headings
-          @toggle-mark="handleToggleMark"
-          @toggle-heading="handleToggleHeading"
+          @toggle-mark="toggleMark"
+          @toggle-heading="toggleHeading"
         />
         <div class="xw-rich__body grid gap-2">
           <ExamWorkspaceRichTextEditor

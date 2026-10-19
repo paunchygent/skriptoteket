@@ -49,8 +49,11 @@ export function examWorkspaceTypeLabel(kind: NativeExamItemKind): string {
   return EXAM_WORKSPACE_TYPE_LABELS[kind];
 }
 
-/** The teacher-facing type label: a Kort svar shape reads as "Kort svar". */
-export function examWorkspaceItemTypeLabel(item: NativeExamItem): string {
+/** The teacher-facing type label: "Ej konverterad" while unbuilt, "Kort svar" for that shape, else the kind label. */
+export function examWorkspaceItemTypeLabel(item: NativeExamItem, unbuilt: boolean): string {
+  if (unbuilt) {
+    return "Ej konverterad";
+  }
   return isShortAnswer(item) ? "Kort svar" : examWorkspaceTypeLabel(item.kind);
 }
 

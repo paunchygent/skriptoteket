@@ -192,7 +192,7 @@ function handleTickPointsInput(event: Event): void {
     <ExamWorkspaceQuestionHead
       :label="label"
       :kind="item.kind"
-      :type-label="unbuilt ? 'Ej konverterad' : examWorkspaceItemTypeLabel(item)"
+      :type-label="examWorkspaceItemTypeLabel(item, unbuilt)"
       :unbuilt="unbuilt"
       :converting="converting"
       :child="child"

@@ -47,15 +47,12 @@ import {
   isPartiallyKeyedGapItem,
   PARTIAL_GAP_KEY_GUIDANCE,
 } from "./examWorkspaceAnswerKeyRules";
-import type { BodyMark } from "./examWorkspaceBodyMarks";
 import { examGapStates, gapNumberIn } from "./examWorkspaceGapLabels";
 import { nextGapId } from "./examWorkspaceItemEdits";
 import ExamWorkspaceGapPopover from "./ExamWorkspaceGapPopover.vue";
 import ExamWorkspaceMarkToolbar from "./ExamWorkspaceMarkToolbar.vue";
 import ExamWorkspaceRichTextEditor from "./ExamWorkspaceRichTextEditor.vue";
-import { useRichTextTargetRegistry } from "./examWorkspaceRichTextTarget";
-
-type HeadingLevel = 1 | 2 | 3;
+import { useExamWorkspaceRichTextToolbar } from "./useExamWorkspaceRichTextToolbar";
 
 const props = defineProps<{
   item: NativeExamItem;
@@ -83,8 +80,8 @@ const labelId = useId();
 const editor = ref<InstanceType<typeof ExamWorkspaceRichTextEditor> | null>(null);
 const root = ref<HTMLElement | null>(null);
 const openGap = ref<OpenGap | null>(null);
-const richTextTargets = useRichTextTargetRegistry();
-const activeRichTextTarget = richTextTargets.active;
+const { activeRichTextTarget, activeMarks, activeHeading, toggleMark, toggleHeading } =
+  useExamWorkspaceRichTextToolbar();
 let openChip: HTMLElement | null = null;
 
 const hasPartialGapKey = computed(() => isPartiallyKeyedGapItem(props.item));
@@ -96,11 +93,6 @@ const openGapModel = computed(() =>
 const openGapNumber = computed(() =>
   openGap.value === null ? 0 : gapNumberIn(props.item.gaps, openGap.value.gapId),
 );
-const activeMarks = computed(() => activeRichTextTarget.value?.marks.value ?? []);
-const activeHeading = computed<HeadingLevel | null>(
-  () => activeRichTextTarget.value?.headingLevel() ?? null,
-);
-
 /** Whether this question kind grows gaps: Lucktext and dropdown-Lucktext. */
 const gapKind = computed(() => props.item.kind === "gap_fill" || props.item.kind === "inline_choice");
 /** The id the next created gap takes, or null at the gap_999 cap. */
@@ -108,14 +100,6 @@ const newGapId = computed(() => (gapKind.value ? nextGapId(props.item) : null));
 
 /** How each gap of the item reads in the text: its accepted answers, or "Lucka N" while it has none. */
 const gapStates = computed(() => examGapStates(props.item.gaps));
-
-function handleToggleMark(mark: BodyMark): void {
-  activeRichTextTarget.value?.toggleMark(mark);
-}
-
-function handleToggleHeading(level: HeadingLevel): void {
-  activeRichTextTarget.value?.toggleHeading(level);
-}
 
 /** Turn the selection, or the word at the caret, into the next free gap. */
 function handleMakeGap(): void {
@@ -258,8 +242,8 @@ watch(
         show-headings
         :show-gap="gapKind"
         :gap-disabled-reason="gapKind && newGapId === null ? 'Kan inte lägga till fler luckor' : null"
-        @toggle-mark="handleToggleMark"
-        @toggle-heading="handleToggleHeading"
+        @toggle-mark="toggleMark"
+        @toggle-heading="toggleHeading"
         @make-gap="handleMakeGap"
       />
       <div class="xw-rich__body grid gap-2">

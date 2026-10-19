@@ -114,7 +114,7 @@ function itemEntry(
         ? "ok"
         : "warn",
     text: examWorkspacePromptExcerpt(item),
-    typeLabel: readiness.includes("unbuilt_question") ? "Ej konverterad" : examWorkspaceItemTypeLabel(item),
+    typeLabel: examWorkspaceItemTypeLabel(item, readiness.includes("unbuilt_question")),
   };
 }
 

@@ -214,7 +214,7 @@ describe("withShortAnswerQuestion", () => {
 describe("examWorkspaceItemTypeLabel", () => {
   it("labels a Kort svar item Kort svar, a text-beside-gap Lucktext Lucktext, and a dropdown Lucktext med rullista", () => {
     const shortAnswer = newTeacherItem("item_001", 1, "short_answer");
-    expect(examWorkspaceItemTypeLabel(shortAnswer)).toBe("Kort svar");
+    expect(examWorkspaceItemTypeLabel(shortAnswer, false)).toBe("Kort svar");
 
     const lucktextWithTextBesideGap = gapFillItem(
       [{ heading_level: null, segments: [
@@ -223,7 +223,7 @@ describe("examWorkspaceItemTypeLabel", () => {
       ] }],
       [buildGap("gap_001")],
     );
-    expect(examWorkspaceItemTypeLabel(lucktextWithTextBesideGap)).toBe("Lucktext");
+    expect(examWorkspaceItemTypeLabel(lucktextWithTextBesideGap, false)).toBe("Lucktext");
 
     const dropdown = gapFillItem(
       [gapParagraph("gap_001")],
@@ -234,6 +234,12 @@ describe("examWorkspaceItemTypeLabel", () => {
         ] }],
       "inline_choice",
     );
-    expect(examWorkspaceItemTypeLabel(dropdown)).toBe("Lucktext med rullista");
+    expect(examWorkspaceItemTypeLabel(dropdown, false)).toBe("Lucktext med rullista");
+  });
+
+  it("labels an unbuilt item Ej konverterad even for a Kort svar shape", () => {
+    const shortAnswer = newTeacherItem("item_001", 1, "short_answer");
+    expect(isShortAnswer(shortAnswer)).toBe(true);
+    expect(examWorkspaceItemTypeLabel(shortAnswer, true)).toBe("Ej konverterad");
   });
 });
