@@ -53,7 +53,7 @@ class TestSerializationRoundTrip:
         assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
 
     def test_document_declares_the_current_schema(self) -> None:
-        assert make_document(make_free_text_item()).schema_version == "native_exam_document_v9"
+        assert make_document(make_free_text_item()).schema_version == "native_exam_document_v10"
 
     def test_saved_v1_payload_reports_an_outdated_schema(self) -> None:
         document = make_document(make_free_text_item())
@@ -85,6 +85,38 @@ class TestSerializationRoundTrip:
 
         assert exc_info.value.code is ErrorCode.DOCUMENT_SCHEMA_OUTDATED
 
+    def test_saved_v9_payload_without_leftover_points_text_reports_an_outdated_schema(
+        self,
+    ) -> None:
+        document = make_document(
+            make_free_text_item(sequence=1, item_id="item_001"),
+            make_free_text_item(sequence=2, item_id="item_002"),
+        )
+        payload = json.loads(native_exam_document_json_bytes(document))
+        payload["schema_version"] = "native_exam_document_v9"
+        for item in payload["items"]:
+            del item["leftover_points_text"]
+
+        with pytest.raises(DomainError) as exc_info:
+            parse_native_exam_document(json.dumps(payload).encode("utf-8"))
+
+        assert exc_info.value.code is ErrorCode.DOCUMENT_SCHEMA_OUTDATED
+        assert exc_info.value.details == {"schema_version": "native_exam_document_v9"}
+
+    def test_leftover_points_text_round_trips(self) -> None:
+        document = make_document(
+            make_free_text_item(sequence=1, item_id="item_001").model_copy(
+                update={"leftover_points_text": "(3 poäng)"}
+            ),
+            make_free_text_item(sequence=2, item_id="item_002"),
+        )
+
+        parsed = parse_native_exam_document(native_exam_document_json_bytes(document))
+
+        assert parsed == document
+        assert parsed.items[0].leftover_points_text == "(3 poäng)"
+        assert parsed.items[1].leftover_points_text is None
+
     def test_missing_schema_version_stays_a_validation_error(self) -> None:
         document = make_document(make_free_text_item())
         payload = json.loads(native_exam_document_json_bytes(document))
@@ -95,7 +127,7 @@ class TestSerializationRoundTrip:
 
         assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
 
-    def test_v9_header_with_dismissed_mark_is_refused(self) -> None:
+    def test_v10_header_with_dismissed_mark_is_refused(self) -> None:
         document = make_document(make_free_text_item())
         payload = json.loads(native_exam_document_json_bytes(document))
         assert isinstance(payload["header"], dict)

@@ -122,7 +122,7 @@ export function buildParentDocument(): NativeExamDocument {
     parents: [buildRecordedParent()],
     revision: 1,
     header: { tags: [] },
-    schema_version: "native_exam_document_v9",
+    schema_version: "native_exam_document_v10",
     title: "English 1",
   };
 }

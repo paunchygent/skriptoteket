@@ -153,7 +153,7 @@ export function blankDocument(): NativeExamDocument {
     origin: { kind: "docx_import" },
     parents: [],
     revision: 1,
-    schema_version: "native_exam_document_v9",
+    schema_version: "native_exam_document_v10",
     title: "Nytt prov",
   };
 }

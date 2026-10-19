@@ -107,7 +107,7 @@ describe("buildExamWorkspaceNoteLines", () => {
         },
       ],
       revision: 1,
-      schema_version: "native_exam_document_v9",
+      schema_version: "native_exam_document_v10",
       title: "Prov",
     };
 
