@@ -30,20 +30,34 @@ function mountList(values: string[]) {
 
 type Wrapper = ReturnType<typeof mountList>;
 
+function requireInput(element: Element): HTMLInputElement {
+  if (!(element instanceof HTMLInputElement)) {
+    throw new Error("expected an input element");
+  }
+  return element;
+}
+
+function requireButton(element: Element): HTMLButtonElement {
+  if (!(element instanceof HTMLButtonElement)) {
+    throw new Error("expected a button element");
+  }
+  return element;
+}
+
 function rowInputs(wrapper: Wrapper): HTMLInputElement[] {
   return wrapper
     .findAll(`[data-test="${TEST_ID}-input"]`)
-    .map((row) => row.element as HTMLInputElement);
+    .map((row) => requireInput(row.element));
 }
 
 function removeButtons(wrapper: Wrapper): HTMLButtonElement[] {
   return wrapper
     .findAll(`[data-test="${TEST_ID}-remove"]`)
-    .map((row) => row.element as HTMLButtonElement);
+    .map((row) => requireButton(row.element));
 }
 
 function addButton(wrapper: Wrapper): HTMLButtonElement {
-  return wrapper.get(`[data-test="${TEST_ID}-add"]`).element as HTMLButtonElement;
+  return requireButton(wrapper.get(`[data-test="${TEST_ID}-add"]`).element);
 }
 
 function commits(wrapper: Wrapper): string[][] {
@@ -131,8 +145,13 @@ describe("ExamWorkspaceGapAnswerList removal focus", () => {
     });
     const host = mount(Host, { attachTo: document.body });
     const removes = host.findAll(`[data-test="${TEST_ID}-remove"]`);
-    (removes[1].element as HTMLButtonElement).focus();
-    (removes[1].element as HTMLButtonElement).click();
+    const remove = removes[1];
+    if (remove === undefined) {
+      throw new Error("missing second remove button");
+    }
+    const removeButton = requireButton(remove.element);
+    removeButton.focus();
+    removeButton.click();
     await nextTick();
     expect(seen.length).toBeGreaterThan(0);
     expect(seen.every((target) => target !== null)).toBe(true);

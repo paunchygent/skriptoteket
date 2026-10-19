@@ -128,7 +128,10 @@ describe("ExamWorkspaceQuestionHead Kort svar entry", () => {
     document.body.replaceChildren();
 
     mountHead({ kind: "gap_fill", shortAnswer: false, shortAnswerOffered: false, typeLabel: "Lucktext" });
-    const twoGap = mounted[0]!;
+    const twoGap = mounted[0];
+    if (twoGap === undefined) {
+      throw new Error("missing mounted wrapper");
+    }
     await openTypeMenu(twoGap);
     expect(document.querySelector('[data-test="exam-workspace-type-short_answer"]')).toBeNull();
   });
@@ -151,8 +154,10 @@ describe("ExamWorkspaceQuestionHead Kort svar entry", () => {
 
     const entries = typeEntries();
     expect(entries.length).toBeGreaterThan(2);
-    expect(entries[0]!.getAttribute("data-test")).toBe("exam-workspace-type-free_text");
-    expect(entries[1]!.getAttribute("data-test")).toBe("exam-workspace-type-short_answer");
-    expect(entries[2]!.getAttribute("data-test")).toBe("exam-workspace-type-single_choice");
+    expect(entries.slice(0, 3).map((entry) => entry.getAttribute("data-test"))).toEqual([
+      "exam-workspace-type-free_text",
+      "exam-workspace-type-short_answer",
+      "exam-workspace-type-single_choice",
+    ]);
   });
 });
