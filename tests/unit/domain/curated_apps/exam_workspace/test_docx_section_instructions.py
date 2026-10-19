@@ -50,6 +50,9 @@ from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
     corpus_chunks,
     recording,
 )
+from tests.unit.domain.curated_apps.exam_workspace.recorded_build_events_support import (
+    unexpected_build_events,
+)
 from tests.unit.domain.curated_apps.exam_workspace.source_rules_test_support import (
     recorded_produced_items,
 )
@@ -89,7 +92,7 @@ async def _build(exam: str) -> _Build:
         outcome = await replay.pipeline.convert(job=replay.job())
         # These exams' recordings convert without a producer fault; a fault here would
         # mean the test's instruction-placement claim rests on a broken run.
-        assert not [event for event in outcome.result.events if event.stage != "formatting"], exam
+        assert not unexpected_build_events(exam, outcome.result.events), exam
         _BUILDS[exam] = _Build(
             outcome.result.document, {chunk.anchor: chunk for chunk in corpus_chunks(exam)}
         )

@@ -15,6 +15,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document_json i
     native_exam_document_json_bytes,
     parse_native_exam_document,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeItemReviewState,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_plain_text
 from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import FORMATTING_REASON
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
@@ -107,15 +110,15 @@ async def test_failed_reconstruction_uses_the_exact_swedish_review_reason():
     )
 
 
-async def test_unmarked_morpheme_alignment_keeps_model_wording_and_never_leaks_facit():
+async def test_unmarked_morpheme_alignment_goes_to_review_with_the_word_and_never_leaks_facit():
     replay = build_replay("svenska_2_grammatik_omprov_variant_1_med_facit")
     outcome = await replay.pipeline.convert(job=replay.job())
     item = next(item for item in outcome.update.document.items if item.printed_label == "Fråga 1")
     assert FORMATTING_REASON not in item.review.reasons
-    assert len(item.gaps) == 15
+    assert item.review.state is NativeItemReviewState.REVIEW_REQUIRED
+    assert item.gaps == ()
     text = body_plain_text(item.body)
-    assert "snöbollarnas" not in text
-    assert "a) snö + boll + ar + na + s" in text
+    assert "snöbollarnas" in text
+    assert "a) snö + boll + ar + na + s" not in text
     assert "Svar:" not in text
-    assert text.count("[___]") == 15
     assert "(R)" not in text and "(A)" not in text and "(B)" not in text

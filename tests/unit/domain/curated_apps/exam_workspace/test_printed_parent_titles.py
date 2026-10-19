@@ -37,6 +37,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import (
     NativeExamParent,
 )
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import build_replay
+from tests.unit.domain.curated_apps.exam_workspace.recorded_build_events_support import (
+    unexpected_build_events,
+)
 
 _GRAMMAR_1 = "svenska_2_grammatik_omprov_variant_1_med_facit"
 _GRAMMAR_2 = "svenska_2_grammatik_omprov_variant_2_med_facit"
@@ -66,7 +69,7 @@ async def _build(exam: str) -> _Build:
     if exam not in _BUILDS:
         replay = build_replay(exam)
         outcome = await replay.pipeline.convert(job=replay.job())
-        assert not [event for event in outcome.result.events if event.stage != "formatting"], exam
+        assert not unexpected_build_events(exam, outcome.result.events), exam
         _BUILDS[exam] = _Build(outcome.result.document)
     return _BUILDS[exam]
 
