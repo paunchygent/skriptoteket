@@ -124,7 +124,7 @@ def test_one_gap_for_a_two_blank_source_paragraph_goes_to_review_with_the_mismat
     assert admitted.review.parse_origin is NativeParseOrigin.SOURCE_FALLBACK
     assert _TWO_BLANKS[3:] in " ".join(_texts(admitted)), "the review item lost its source text"
     assert admitted.review.reasons == (
-        "Frågan följer inte provformatet: 1 lucka men 2 tomma svarsrader.",
+        "Frågan följer inte provformatet: 1 lucka men 2 svarsplatser.",
     )
 
 
@@ -158,3 +158,44 @@ def test_a_reply_that_drops_the_cue_but_keeps_the_gap_count_is_admitted_with_the
     assert admitted.review.parse_origin is NativeParseOrigin.LLM_PARSED
     assert admitted.review.reasons == ()
     assert "(spelar)" in " ".join(_texts(admitted)), "the dropped cue was not restored"
+
+
+def test_an_underscore_mismatch_with_an_inline_answer_key_goes_to_review_without_the_key():
+    source = "1. The bands ____ (spelar) at the festival. Svar: play"
+    state = _state(source)
+
+    admit_batch(
+        {
+            "items": [
+                _item(
+                    ["body:0001"],
+                    body=[
+                        {
+                            "segments": [
+                                _text("The bands "),
+                                _gap("play"),
+                                _gap("play"),
+                                _text(" at the festival."),
+                            ]
+                        }
+                    ],
+                )
+            ]
+        },
+        state,
+    )
+
+    events = [event for event in state.events if event.stage != "formatting"]
+    assert [(event.code, event.detail) for event in events] == [
+        ("gap_count_mismatch", "2 gaps for 1 blank runs")
+    ]
+    ((admitted, anchors),) = [(accepted.item, held) for accepted, held in state.accepted]
+    assert anchors == ("body:0001",)
+    assert admitted.review.state is NativeItemReviewState.REVIEW_REQUIRED
+    assert admitted.review.parse_origin is NativeParseOrigin.SOURCE_FALLBACK
+    assert admitted.review.reasons == (
+        "Frågan följer inte provformatet: 2 luckor men 1 svarsplats.",
+    )
+    text = " ".join(_texts(admitted))
+    assert "The bands" in text
+    assert "Svar:" not in text

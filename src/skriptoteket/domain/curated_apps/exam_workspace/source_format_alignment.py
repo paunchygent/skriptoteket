@@ -20,6 +20,21 @@ from skriptoteket.domain.curated_apps.exam_workspace.source_format_gap_alignment
 ANSWER_LABEL = re.compile(r"\b(?:svar|facit|answer key|correct answers?)\s*:", re.IGNORECASE)
 
 
+def answer_label_cut(text: str, start: int, end: int) -> int | None:
+    """Cut the span at the first inline answer label, with any wrapper ``(``.
+
+    Returns the label's start, or the wrapper "(" before it when only whitespace
+    lies between them. Returns None when no answer label stands in the span.
+    """
+    label = ANSWER_LABEL.search(text, start, end)
+    if label is None:
+        return None
+    opening = text.rfind("(", start, label.start())
+    if opening >= start and not text[opening + 1 : label.start()].strip():
+        return opening
+    return label.start()
+
+
 def align_paragraph(
     paragraph: NativeParagraph,
     source_text: str,

@@ -37,6 +37,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import (
     NativeExamParent,
 )
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import build_replay
+from tests.unit.domain.curated_apps.exam_workspace.recorded_build_events_support import (
+    is_pending_source_review,
+    unexpected_build_events,
+)
 
 _GRAMMAR_1 = "svenska_2_grammatik_omprov_variant_1_med_facit"
 _GRAMMAR_2 = "svenska_2_grammatik_omprov_variant_2_med_facit"
@@ -66,7 +70,7 @@ async def _build(exam: str) -> _Build:
     if exam not in _BUILDS:
         replay = build_replay(exam)
         outcome = await replay.pipeline.convert(job=replay.job())
-        assert not [event for event in outcome.result.events if event.stage != "formatting"], exam
+        assert not unexpected_build_events(exam, outcome.result.events), exam
         _BUILDS[exam] = _Build(outcome.result.document)
     return _BUILDS[exam]
 
@@ -111,7 +115,12 @@ async def test_a_part_whose_numbering_restarts_titles_the_printed_span_not_the_r
 async def test_printed_labels_never_enter_student_visible_text(stem: str):
     build = await _build(stem)
     document = build.document
-    numbered = [item for item in document.items if re.search(r"\d", item.printed_label or "")]
+    # D9 of TASK-SKRIPT-39-04-17: a pending source-review item shows the question as printed.
+    numbered = [
+        item
+        for item in document.items
+        if re.search(r"\d", item.printed_label or "") and not is_pending_source_review(item)
+    ]
     assert numbered
     for item in numbered:
         label = re.compile(rf"^\s*{re.escape(item.printed_label or '')}\b")
