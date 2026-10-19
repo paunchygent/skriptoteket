@@ -28,12 +28,14 @@
  */
 
 import type {
-  ExamWorkspaceExportChecklistResponse,
-  ExamWorkspaceItemExportBlockerReason,
   NativeExamGap,
   NativeExamItem,
   NativeExamItemKind,
 } from "../../../api/examWorkspace";
+import type {
+  ExamWorkspaceExportChecklistResponse,
+  ExamWorkspaceItemExportBlockerReason,
+} from "../../../api/examWorkspaceExports";
 import {
   dropdownGapsWithoutCorrectOption,
   GAP_WITHOUT_CORRECT_OPTION_GUIDANCE,

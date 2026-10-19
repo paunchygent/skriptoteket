@@ -212,6 +212,7 @@ def _parent_qti_item(
         prompt_lines=body_text_lines(stem),
         prompt_paragraphs=body_prompt_paragraphs(stem),
         max_score=sum(scored) if scored else None,
+        expected_lines=children[0].writing_lines,
         evaluation_mode=(
             ExamNetQtiEvaluationMode.MANUAL_UNKEYED
             if manual

@@ -18,15 +18,25 @@ from skriptoteket.application.curated_apps.exam_workspace import (
 from skriptoteket.application.curated_apps.handlers.exam_workspace_exports import (
     ExportExamWorkspaceDocumentHandler,
 )
+from skriptoteket.domain.curated_apps.exam_conversion.exam_print_house_template import (
+    ExamPrintVariant,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.container import (
     ExamWorkspaceContainerContent,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.exam_language_labels import (
     SWEDISH_EXAM_LABELS,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.exam_print_document import (
+    PrintAnswerKey,
+    build_print_document,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeParagraph,
     NativeTextSegment,
+)
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_print_renderer import (
+    WeasyPrintExamPrintRenderer,
 )
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_writer import (  # noqa: E501
     ExamWorkspaceDocxWriter,
@@ -41,10 +51,12 @@ from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents 
     _actor,
     _Env,
 )
-from tests.unit.infrastructure.curated_apps.test_exam_workspace_docx_writer import (
-    _drawing_payload,
-    _only_paragraph,
-    shared_picture_document,
+from tests.unit.infrastructure.curated_apps.exam_workspace_docx_picture_support import (
+    build_shared_picture_document,
+)
+from tests.unit.infrastructure.curated_apps.exam_workspace_docx_writer_test_support import (
+    drawing_payload,
+    only_paragraph,
 )
 
 
@@ -59,7 +71,7 @@ def _instruction_text(body: tuple[NativeParagraph, ...]) -> str:
 
 @pytest.mark.asyncio
 async def test_docx_export_embeds_shared_instruction_pictures_from_stored_payloads() -> None:
-    fixture = shared_picture_document()
+    fixture = build_shared_picture_document()
     env = _Env()
     actor = _actor()
     stored = await env.store.save(
@@ -85,6 +97,7 @@ async def test_docx_export_embeds_shared_instruction_pictures_from_stored_payloa
         qti_writer=ExamNetQtiPackageWriter(),
         pdf_renderer=WeasyPrintExamNetPdfRenderer(),
         docx_writer=ExamWorkspaceDocxWriter(),
+        print_renderer=WeasyPrintExamPrintRenderer(),
     )
 
     result = await handler.handle(
@@ -102,24 +115,33 @@ async def test_docx_export_embeds_shared_instruction_pictures_from_stored_payloa
 
     global_text = _instruction_text(fixture.document.instructions)
     assert (
-        _drawing_payload(parsed, _only_paragraph(paragraphs, global_text))
+        drawing_payload(parsed, only_paragraph(paragraphs, global_text))
         == fixture.assets_by_id[fixture.global_asset_id]
     )
 
     parent_text = _instruction_text(fixture.document.parents[0].instruction)
     assert (
-        _drawing_payload(parsed, _only_paragraph(paragraphs, parent_text))
+        drawing_payload(parsed, only_paragraph(paragraphs, parent_text))
         == fixture.assets_by_id[fixture.parent_asset_id]
     )
     assert texts.count(parent_text) == 1
 
     labels = SWEDISH_EXAM_LABELS
     criterion = next(criterion for item in fixture.document.items for criterion in item.criteria)
-    label_text = f"{labels.marking_guide}:"
-    assert label_text in texts
-    assert texts[texts.index(label_text) + 1] == f"• {criterion.text} ({criterion.points} p)"
-    assert labels.answer_key in [
-        paragraph.text
-        for paragraph in paragraphs
-        if paragraph.style is not None and paragraph.style.name == "Heading 2"
+    facit = build_print_document(fixture.document, variant=ExamPrintVariant.FACIT)
+    key_lines = [
+        line
+        for entry in facit.entries
+        for block in entry.blocks
+        if isinstance(block, PrintAnswerKey)
+        for line in block.lines
     ]
+    label_text = f"{labels.marking_guide}:"
+    assert label_text in key_lines
+    assert f"• {criterion.text} ({criterion.points} p)" in key_lines
+
+    # The student copy is the DOCX under test and never carries the facit wording.
+    text = "\n".join(texts)
+    assert label_text not in text
+    assert criterion.text not in text
+    assert labels.answer_key not in text

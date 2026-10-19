@@ -3,7 +3,8 @@
 A focused provider: the DOCX chunker and container codec are app-scoped
 adapters; the document store and the remaining handlers are request-scoped
 so they share the request session, UoW, and vault repositories. Import lanes
-(DOCX, DigiExam, QTI) live in ``exam_workspace_imports``.
+(DOCX, DigiExam, QTI) live in ``exam_workspace_imports``; the editing/export
+group also serves the server-side student print preview.
 """
 
 from __future__ import annotations
@@ -60,11 +61,17 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_misspellings 
 from skriptoteket.application.curated_apps.handlers.exam_workspace_parents import (
     ExamWorkspaceParentsHandler,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_print_preview import (
+    PreviewExamWorkspacePrintHandler,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_undo_steps import (
     StoreExamWorkspaceUndoStepHandler,
 )
 from skriptoteket.config import Settings
 from skriptoteket.di.docx_conversion import build_docx_conversion_pipeline
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_print_renderer import (
+    WeasyPrintExamPrintRenderer,
+)
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_container import (
     ExamWorkspaceContainerCodec,
 )
@@ -106,6 +113,7 @@ from skriptoteket.protocols.exam_workspace import (
     GetExamWorkspaceAssetHandlerProtocol,
     GetExamWorkspaceConversionStatusHandlerProtocol,
     GetExamWorkspaceDocumentHandlerProtocol,
+    PreviewExamWorkspacePrintHandlerProtocol,
     RequestExamContentSuggestionsHandlerProtocol,
     RetryExamWorkspaceItemHandlerProtocol,
     SaveExamWorkspaceDocumentHandlerProtocol,
@@ -384,7 +392,7 @@ class ExamWorkspaceProvider(Provider):
         codec: ExamWorkspaceContainerCodecProtocol,
         store: ExamWorkspaceDocumentStore,
     ) -> ExportExamWorkspaceDocumentHandlerProtocol:
-        """Provide the on-demand export handler (QTI/PDF/DOCX)."""
+        """Provide the on-demand export handler (QTI/print PDF/DOCX/Exam.net PDF)."""
         return ExportExamWorkspaceDocumentHandler(
             vault_files=vault_files,
             codec=codec,
@@ -392,6 +400,22 @@ class ExamWorkspaceProvider(Provider):
             qti_writer=ExamNetQtiPackageWriter(),
             pdf_renderer=WeasyPrintExamNetPdfRenderer(),
             docx_writer=ExamWorkspaceDocxWriter(),
+            print_renderer=WeasyPrintExamPrintRenderer(),
+        )
+
+    @provide(scope=Scope.REQUEST)
+    def print_preview_handler(
+        self,
+        vault_files: VaultFileRepositoryProtocol,
+        codec: ExamWorkspaceContainerCodecProtocol,
+        store: ExamWorkspaceDocumentStore,
+    ) -> PreviewExamWorkspacePrintHandlerProtocol:
+        """Provide the server-side student print preview (W5)."""
+        return PreviewExamWorkspacePrintHandler(
+            vault_files=vault_files,
+            codec=codec,
+            store=store,
+            print_renderer=WeasyPrintExamPrintRenderer(),
         )
 
     @provide(scope=Scope.REQUEST)

@@ -57,6 +57,21 @@ defineEmits<{
 
 const { structure, assetUrls } = props.editing;
 
+/** The writing-line count every free-text question shares, or null when they differ. */
+const allFreeTextWritingLines = computed<number | null>(() => {
+  const counts = (props.workspaceDocument?.items ?? [])
+    .filter((item) => item.kind === "free_text")
+    .map((item) => item.writing_lines);
+  if (counts.length === 0) {
+    return null;
+  }
+  const first = counts[0]!;
+  if (first === null || counts.some((count) => count !== first)) {
+    return null;
+  }
+  return first;
+});
+
 /** The display label of one part in the Flytta till list. */
 function moveTargetLabel(entry: ExamWorkspaceParentEntry): string {
   const excerpt = entry.text || "Tom instruktion";
@@ -143,6 +158,7 @@ const currentParentId = computed(() => props.itemEntry?.parentId ?? null);
         :move-targets="moveTargets"
         :current-parent-id="currentParentId"
         :asset-urls="assetUrls"
+        :all-free-text-writing-lines="allFreeTextWritingLines"
         @change-type="(kind) => structure.changeType(selectedItem!.item_id, kind)"
         @move="(delta) => $emit('move-selected', delta)"
         @remove="structure.deleteItem(selectedItem!.item_id)"
@@ -170,6 +186,8 @@ const currentParentId = computed(() => props.itemEntry?.parentId ?? null);
         @update-body="editing.updateItemBody"
         @update-points="editing.updateItemPoints"
         @update-tick-points="editing.updateItemTickPoints"
+        @update-writing-lines="editing.updateItemWritingLines"
+        @apply-writing-lines-to-all="editing.applyWritingLinesToAllFreeText"
       />
       <p
         v-else

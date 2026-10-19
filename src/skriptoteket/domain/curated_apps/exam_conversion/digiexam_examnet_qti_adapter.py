@@ -29,6 +29,9 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_prompt_repair imp
     PROMPT_IMAGE_PLACEHOLDER_LINE,
     unresolved_prompt_image_position_count,
 )
+from skriptoteket.domain.curated_apps.exam_conversion.exam_print_house_template import (
+    DEFAULT_WRITING_LINES,
+)
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts import (
     ExamNetQtiChoice,
     ExamNetQtiEvaluationMode,
@@ -136,6 +139,11 @@ def _base_qti_item(
         interaction_type=interaction_type,
         prompt_lines=_prompt_lines_with_placeholder(item),
         max_score=item.max_score,
+        expected_lines=(
+            DEFAULT_WRITING_LINES
+            if interaction_type is ExamNetQtiInteractionType.FREE_TEXT
+            else None
+        ),
         source_item_type=item.item_type.value,
         image_resources=tuple(
             _image_resource(item, index, asset)

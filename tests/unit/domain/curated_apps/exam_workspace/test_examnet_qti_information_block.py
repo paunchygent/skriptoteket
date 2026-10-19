@@ -66,6 +66,7 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_qti_wr
     ExamNetQtiPackageWriter,
 )
 from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders import (
+    DEFAULT_WRITING_LINES,
     make_review,
     plain_body,
 )
@@ -118,6 +119,7 @@ def _free_text(
         kind=NativeExamItemKind.FREE_TEXT,
         body=plain_body("Resonera om texten."),
         points=points,
+        writing_lines=DEFAULT_WRITING_LINES,
         criteria=criteria,
         answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
         review=make_review(),

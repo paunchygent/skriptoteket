@@ -4,20 +4,17 @@
  * Expected behavior:
  *   The thin typed client calls the exam workspace document endpoints with
  *   the exact paths and payload shapes the backend contract defines: multipart
- *   import with the `file` field, head-version listing, lineage readback, blob
- *   export downloads per target, answer-key suggestion request/status, and
- *   the three instruction deletes with the cursor in the body.
+ *   import with the `file` field, head-version listing, lineage readback,
+ *   answer-key suggestion request/status, and misspellings.
  */
 
 import { describe, expect, it, vi } from "vitest";
 
 import { buildFreeTextItem } from "../test/examWorkspaceFixtures";
-import { apiFetch, apiFetchBlobResponse, apiGet, apiPost } from "./client";
+import { apiGet, apiPost } from "./client";
 import {
-  downloadExamWorkspaceExport,
   getExamWorkspaceConversionStatus,
   getExamWorkspaceDocument,
-  getExamWorkspaceExportChecklist,
   getExamWorkspaceAnswerKeySuggestions,
   importExamWorkspaceDocument,
   importExamWorkspaceQti,
@@ -25,10 +22,6 @@ import {
   requestExamWorkspaceAnswerKeySuggestions,
   requestExamWorkspaceAnswerMisspellings,
 } from "./examWorkspace";
-import {
-  deleteExamWorkspaceChild,
-  deleteExamWorkspaceParent,
-} from "./examWorkspaceStructureCommands";
 import type { ExamWorkspaceDocumentResponse, NativeExamDocument } from "./examWorkspace";
 
 vi.mock("./client", () => ({
@@ -41,8 +34,6 @@ vi.mock("./client", () => ({
 
 const apiGetMock = vi.mocked(apiGet);
 const apiPostMock = vi.mocked(apiPost);
-const apiFetchBlobResponseMock = vi.mocked(apiFetchBlobResponse);
-const apiFetchMock = vi.mocked(apiFetch);
 
 const DOCUMENTS_ROOT = "/api/v1/apps/documents.conversion_hub/exam-workspace/documents";
 const QTI_IMPORT_PATH = "/api/v1/apps/documents.conversion_hub/exam-workspace/import-qti";
@@ -70,7 +61,7 @@ function buildDocument(revision: number): NativeExamDocument {
     parents: [],
     revision,
     header: { tags: [] },
-    schema_version: "native_exam_document_v7",
+    schema_version: "native_exam_document_v8",
     title: "NO-prov HT25",
   };
 }
@@ -96,21 +87,6 @@ function buildResponse(revision: number): ExamWorkspaceDocumentResponse {
 }
 
 describe("examWorkspace transport", () => {
-  it("deletes an instruction, with or without its questions, and one deluppgift", async () => {
-    apiFetchMock.mockResolvedValue({});
-    const body = { body: { expected_cursor: "cursor-1" }, method: "DELETE" };
-
-    await deleteExamWorkspaceParent("lineage/1", "parent 1", "keep_questions", "cursor-1");
-    await deleteExamWorkspaceParent("lineage/1", "parent 1", "with_questions", "cursor-1");
-    await deleteExamWorkspaceChild("lineage/1", "parent 1", "item_002", "cursor-1");
-
-    expect(apiFetchMock.mock.calls).toEqual([
-      [`${DOCUMENTS_ROOT}/lineage%2F1/parents/parent%201`, body],
-      [`${DOCUMENTS_ROOT}/lineage%2F1/parents/parent%201/with-children`, body],
-      [`${DOCUMENTS_ROOT}/lineage%2F1/parents/parent%201/children/item_002`, body],
-    ]);
-  });
-
   it("imports a .docx as multipart form data with the `file` field", async () => {
     const response = { job_id: "job-1", lineage_id: "lineage-1", state: "queued", error_message: null };
     apiPostMock.mockResolvedValueOnce(response);
@@ -201,46 +177,6 @@ describe("examWorkspace transport", () => {
 
     expect(apiGetMock).toHaveBeenCalledWith(DOCUMENTS_ROOT);
     expect(result).toEqual({ documents: [] });
-  });
-
-  it("downloads each export target as a blob from the export path", async () => {
-    const blobResponse = {
-      blob: new Blob(["zip"]),
-      contentType: "application/zip",
-      filename: "prov-qti.zip",
-    };
-    apiFetchBlobResponseMock.mockResolvedValueOnce(blobResponse);
-
-    const result = await downloadExamWorkspaceExport("lineage-1", "qti", 2);
-
-    expect(apiFetchBlobResponseMock).toHaveBeenCalledWith(
-      `${DOCUMENTS_ROOT}/lineage-1/exports/qti?expected_revision=2`,
-    );
-    expect(result).toEqual(blobResponse);
-  });
-
-  it("treats an export response without a Content-Disposition file name as a fault", async () => {
-    apiFetchBlobResponseMock.mockResolvedValueOnce({
-      blob: new Blob(["zip"]),
-      contentType: "application/zip",
-      filename: null,
-    });
-
-    await expect(downloadExamWorkspaceExport("lineage-1", "qti", 2)).rejects.toThrow(
-      "Content-Disposition",
-    );
-  });
-
-  it("requests only the checklist for the exported revision", async () => {
-    const response = { entries: [] };
-    apiGetMock.mockResolvedValueOnce(response);
-
-    const result = await getExamWorkspaceExportChecklist("lineage-1", 2);
-
-    expect(apiGetMock).toHaveBeenCalledWith(
-      `${DOCUMENTS_ROOT}/lineage-1/export-checklist?expected_revision=2`,
-    );
-    expect(result).toBe(response);
   });
 
   it("requests suggestions with the editor document and reads status per job", async () => {

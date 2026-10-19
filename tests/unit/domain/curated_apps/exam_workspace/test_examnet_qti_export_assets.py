@@ -41,6 +41,7 @@ class TestAssetMapping:
             item_id="item_001",
             sequence=1,
             kind=NativeExamItemKind.FREE_TEXT,
+            writing_lines=8,
             body=(
                 NativeParagraph(
                     heading_level=None,

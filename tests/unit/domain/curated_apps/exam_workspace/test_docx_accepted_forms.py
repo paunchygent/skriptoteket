@@ -18,7 +18,13 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     definition_context,
     with_accepted_forms,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeExamItemKind,
+)
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import build_replay
+from tests.unit.domain.curated_apps.exam_workspace.recorded_build_events_support import (
+    unexpected_build_events,
+)
 from tests.unit.domain.curated_apps.exam_workspace.source_rules_test_support import (
     chunks_by_anchor,
     recorded_produced_items,
@@ -207,13 +213,17 @@ def test_a_sentence_facit_is_accepted_with_and_without_its_closing_stop():
 async def test_admitted_gaps_accept_both_halves_of_the_definition_in_their_context(exam: str):
     replay = build_replay(exam)
     outcome = await replay.pipeline.convert(job=replay.job())
-    assert not [event for event in outcome.result.events if event.stage != "formatting"], exam
+    assert not unexpected_build_events(exam, outcome.result.events), exam
 
     document = outcome.result.document
     for anchor in (_DEFINED_ITEM, _ABBREVIATED_ITEM):
         definitions = _definitions(_context(exam, _recorded(exam, anchor)))
         assert definitions
         item = next(item for item in document.items if item.source_anchor == anchor)
+        if item.kind is not NativeExamItemKind.GAP_FILL:
+            # TASK-SKRIPT-39-04-17 D9: Fråga 1 (body:0008) goes to review as a
+            # non-gap item, so its gaps no longer take part in this check.
+            continue
         for gap in item.gaps:
             values = set(gap.accepted_values)
             for value in values:

@@ -3,10 +3,11 @@
 A gap_fill body paragraph aligned to a source paragraph with blank runs is rebuilt from
 that source paragraph: its visible source text, starting after the printed question label
 and ending before an inline answer label, with the reply's gaps filling the blank runs in
-source order. The reply supplies only its gaps and their accepted values; its wording is
-discarded, never compared. A gap count that differs from the blank-run count raises
-``GapCountMismatchError``, which is not a ``FormattingTransferError``, so the whole-body
-rebuild never runs for a count mismatch.
+source order. A paragraph with no blank run before its inline answer label has one blank
+run at the label's place (TASK-SKRIPT-39-04-17). The reply supplies only its gaps and
+their accepted values; its wording is discarded, never compared. A gap count that differs
+from the blank-run count raises ``GapCountMismatchError``, which is not a
+``FormattingTransferError``, so the whole-body rebuild never runs for a count mismatch.
 """
 
 from __future__ import annotations
@@ -25,7 +26,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeTextSegment,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.source_format_alignment import (
-    ANSWER_LABEL,
+    answer_label_cut,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.source_format_errors import (
     FormattingTransferError,
@@ -59,9 +60,9 @@ class GapCountMismatchError(ValueError):
 
     @property
     def reason(self) -> str:
-        """The teacher's review reason, inflected by count (user decision 2026-10-18)."""
+        """The teacher's review reason, inflected by count (user decision 2026-10-19)."""
         gaps = f"{self.gaps} {'lucka' if self.gaps == 1 else 'luckor'}"
-        blanks = f"{self.blanks} {'tom svarsrad' if self.blanks == 1 else 'tomma svarsrader'}"
+        blanks = f"{self.blanks} {'svarsplats' if self.blanks == 1 else 'svarsplatser'}"
         return f"Frågan följer inte provformatet: {gaps} men {blanks}."
 
 
@@ -123,17 +124,6 @@ def _source_unit(source: SourceFormatting, anchor: int) -> tuple[SourceParagraph
     return tuple(source.paragraphs[first : last + 1])
 
 
-def _content_end(source: SourceFormatting, start: int, end: int) -> int:
-    """Cut the build span at the first inline answer label, with any wrapper ``(``."""
-    label = ANSWER_LABEL.search(source.text, start, end)
-    if label is None:
-        return end
-    opening = source.text.rfind("(", start, label.start())
-    if opening >= start and not source.text[opening + 1 : label.start()].strip():
-        return opening
-    return label.start()
-
-
 def _unit_blank_runs(
     source: SourceFormatting,
     unit: tuple[SourceParagraph, ...],
@@ -162,16 +152,26 @@ def _unit_blank_runs(
 
 
 def _gap_unit(source: SourceFormatting, anchor: int) -> _GapUnit | None:
+    """One source paragraph's build span with its blank runs, if it has any to fill.
+
+    A span with no blank run before its inline answer label still has one blank run:
+    a zero-width run at the label's place, so the paragraph is built from its source
+    text up to the label. A span with neither a blank run nor an answer label has no
+    unit, and the reply's rendering is kept.
+    """
     if anchor < 0:
         return None
     unit = _source_unit(source, anchor)
     if unit is None:
         return None
     start = source.content_start(unit[0])
-    end = _content_end(source, start, unit[-1].end)
+    cut = answer_label_cut(source.text, start, unit[-1].end)
+    end = unit[-1].end if cut is None else cut
     runs = _unit_blank_runs(source, unit, start, end)
     if not runs:
-        return None
+        if cut is None:
+            return None
+        runs = [(cut, cut)]
     return _GapUnit(unit[0].start, start, end, unit[-1].end, unit[0].heading, tuple(runs))
 
 

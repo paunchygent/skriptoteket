@@ -14,7 +14,6 @@ import {
 import { arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
 
 const api = vi.hoisted(() => ({
-  downloadExamWorkspaceExport: vi.fn(),
   findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
   getExamCourseCatalog: vi.fn(),
@@ -26,7 +25,11 @@ const api = vi.hoisted(() => ({
   getExamWorkspaceHistoryStep: vi.fn(),
   storeExamWorkspaceUndoStep: vi.fn(),
 }));
+const exportApiMocks = vi.hoisted(() => ({
+  downloadExamWorkspaceExport: vi.fn(),
+}));
 const rename = vi.hoisted(() => vi.fn());
+vi.mock("../../api/examWorkspaceExports", () => exportApiMocks);
 vi.mock("../../api/examWorkspace", () => ({ ...api }));
 vi.mock("../../api/vault", () => ({ renameVaultFile: rename }));
 const wrappers: ViewWrapper[] = [];
@@ -66,7 +69,7 @@ function saveState(wrapper: ViewWrapper): string {
 }
 
 beforeEach(() => {
-  for (const mock of Object.values(api)) mock.mockReset();
+  for (const mock of [...Object.values(api), ...Object.values(exportApiMocks)]) mock.mockReset();
   rename.mockReset();
   arrangeStepHistory(api);
   api.getExamCourseCatalog.mockResolvedValue({ courses: [] });

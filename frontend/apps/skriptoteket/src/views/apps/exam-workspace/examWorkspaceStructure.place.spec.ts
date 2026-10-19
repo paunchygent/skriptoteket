@@ -40,7 +40,7 @@ function documentOf(items: NativeExamItem[], parents: NativeExamParent[]): Nativ
     origin: { kind: "created" },
     parents,
     revision: 1,
-    schema_version: "native_exam_document_v7",
+    schema_version: "native_exam_document_v8",
     title: "Prov",
   };
 }

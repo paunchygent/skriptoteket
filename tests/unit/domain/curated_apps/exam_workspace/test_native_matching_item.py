@@ -7,6 +7,9 @@ import pytest
 from docx import Document as DocxDocument
 from pydantic import ValidationError
 
+from skriptoteket.domain.curated_apps.exam_conversion.exam_print_house_template import (
+    ExamPrintVariant,
+)
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts import (
     ExamNetQtiEvaluationMode,
     ExamNetQtiInteractionType,
@@ -14,6 +17,10 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts impo
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import aligned_native_item
 from skriptoteket.domain.curated_apps.exam_workspace.exam_language_labels import (
     SWEDISH_EXAM_LABELS,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.exam_print_document import (
+    PrintAnswerKey,
+    build_print_document,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.examnet_qti_export import (
     native_exam_to_examnet_qti_items,
@@ -122,16 +129,26 @@ def test_produced_pair_must_copy_its_entries_exactly(entry: str, alter):
 
 def test_distractors_are_listed_by_the_docx_writer_and_stay_out_of_its_pairs():
     item = with_distractor(valid_item())
+    document = single_item_document(item)
 
-    content = exam_workspace_docx_writer.ExamWorkspaceDocxWriter().build_docx_bytes(
-        single_item_document(item)
-    )
+    content = exam_workspace_docx_writer.ExamWorkspaceDocxWriter().build_docx_bytes(document)
+    parsed = DocxDocument(io.BytesIO(content))
+    grid_cells = [cell.text for table in parsed.tables for row in table.rows for cell in row.cells]
+    assert DISTRACTOR_TEXT in grid_cells
 
-    texts = [paragraph.text for paragraph in DocxDocument(io.BytesIO(content)).paragraphs]
+    facit = build_print_document(document, variant=ExamPrintVariant.FACIT)
     pair = f"{SWEDISH_EXAM_LABELS.pair}:"
-    assert f"D) {DISTRACTOR_TEXT}" in texts
-    assert not [t for t in texts if t.startswith(pair) and DISTRACTOR_TEXT in t]
-    assert len([t for t in texts if t.startswith(pair)]) == len(item.answer_key.match_pairs)
+    key_lines = [
+        line
+        for entry in facit.entries
+        for block in entry.blocks
+        if isinstance(block, PrintAnswerKey)
+        for line in block.lines
+        if line.startswith(pair)
+    ]
+    assert len(key_lines) == len(item.answer_key.match_pairs)
+    assert not any(DISTRACTOR_TEXT in line for line in key_lines)
+    assert pair not in "\n".join(paragraph.text for paragraph in parsed.paragraphs)
 
 
 def test_qti_export_of_the_valid_item_is_an_automatic_matching_interaction_with_gold_pairs():

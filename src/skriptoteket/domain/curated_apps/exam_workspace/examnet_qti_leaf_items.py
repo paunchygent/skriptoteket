@@ -65,6 +65,7 @@ def leaf_qti_item(
         prompt_lines=item.plain_text_lines(),
         prompt_paragraphs=_prompt_paragraphs(item),
         max_score=item.points,
+        expected_lines=item.writing_lines,
         source_item_type=item.kind.value,
         image_resources=_image_resources(
             item=item,
