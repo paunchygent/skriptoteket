@@ -23,7 +23,7 @@ backlog_document_profile: contract-derived
 
 ## Implementation Contract
 
-The user reported on 2026-10-19 that the printed-total actions in the exam workspace do not work. This task replaces those actions with a printed-total difference that informs the teacher, names what the data can attribute it to, and can be dismissed. It is proposed until the part-level buttons (T8) are decided and the plan is accepted.
+The user reported on 2026-10-19 that the printed-total actions in the exam workspace do not work. This task replaces those actions with a printed-total difference that informs the teacher, names what the data can attribute it to, and can be dismissed. It is proposed until the part-level buttons (T8) and the dismiss label (T10) are decided and the plan is accepted.
 
 Root cause, from the code at `06985163`:
 
@@ -62,13 +62,13 @@ Units, each a fresh `junior-implementation-specialist` with disjoint files, in t
 
 1. Backend v9: `source_points` on `NativeExamItem` (required, nullable; null when the source printed none and for teacher-created and split questions; kept by a points edit and a type change), set by the DOCX (`printed_points(own)`, before any estimate), DigiExam and QTI (`max_score`) importers; the dismissed mark on `NativeExamHeader` (required boolean); `native_exam_document_v9` everywhere; regenerated `openapi.d.ts` and fixtures. Focused pytest per importer and for the model.
 2. Frontend account: `examWorkspacePrintedDifferences` in `examWorkspaceTotals.ts`, with adversarial unit tests (decimals, float noise, null points, null `source_points`, a source-internal remainder, questions inside parts).
-3. Frontend display: the note, the list, Använd beräknade poäng (reusing `withoutPrintedTotals`) and dismiss in the footer of `ExamWorkspaceQuestionList.vue`; `acceptExamPrintedTotal` and the Använd 67 p button deleted; the part-level buttons as T8 decides. Fail-first component tests rewrite the accept blocks of `ExamWorkspaceTotalsSlice.spec.ts` and every spec that names `exam-workspace-accept-`.
+3. Frontend display: the note, the list, dismiss as the primary button (T9, label T10) and Använd beräknade poäng as the secondary one (reusing `withoutPrintedTotals`) in the footer of `ExamWorkspaceQuestionList.vue`; `acceptExamPrintedTotal` and the Använd 67 p button deleted; the part-level buttons as T8 decides. Fail-first component tests rewrite the accept blocks of `ExamWorkspaceTotalsSlice.spec.ts` and every spec that names `exam-workspace-accept-`.
 
 ## Validation
 
 - Before any code: reproduce the user's click on staging at the current main on an exam whose printed total differs, and record which state the two actions were in and what each click did.
 - Focused pytest for unit 1: each importer stores the printed per-question points, an estimated or unprinted question stores null, a points edit keeps `source_points`, and a v8 document is refused.
-- Fail-first Vitest for the account function and for the display: the note reads as information; the footer offers exactly Använd beräknade poäng and the dismiss action; each list entry reads "Fråga N: provtexten X p, nu Y p" and selects its question on a click; the remainder is stated when no question explains the difference; Använd beräknade poäng leaves only the sums on the footer and part lines in one undo step; dismiss closes the note and list, keeps a neutral grey "provtexten anger N p" and holds after a reload; Ångra undoes each; no row moves when the note appears or goes (the 40-04-07 layout-slot rule).
+- Fail-first Vitest for the account function and for the display: the note reads as information; the footer offers exactly the dismiss action as the primary button and Använd beräknade poäng as the secondary one; each list entry reads "Fråga N: provtexten X p, nu Y p" and selects its question on a click; the remainder is stated when no question explains the difference; Använd beräknade poäng leaves only the sums on the footer and part lines in one undo step; dismiss closes the note and list, keeps a neutral grey "provtexten anger N p" and holds after a reload; Ångra undoes each; no row moves when the note appears or goes (the 40-04-07 layout-slot rule).
 - `pdm run lint`, `pdm run typecheck`, frontend typecheck, ESLint and build; one exam-workspace domain suite at the end after the orchestrator's go.
 - A staging walk of the exam converter on a re-imported exam whose printed total differs: open the list, click an entry and land on that question, use Använd beräknade poäng and undo it, dismiss and reload and confirm the grey number holds, and undo the dismissal. Also walk it while a conversion is still running.
 
@@ -88,11 +88,14 @@ Stop and report to the parent when the staging reproduction shows a defect outsi
 | T6  | Använd beräknade poäng clears the printed exam and part totals in one undo step. Dismiss keeps the printed numbers and stores a per-exam dismissed mark: the note and its list close and the footer keeps a neutral grey "provtexten anger N p". Both persist per exam and Ångra undoes each (user 2026-10-19 via the Mac parent). |
 | T7  | `source_points` and the dismissed mark ship in one `native_exam_document_v9` change with no v8 reader; open exams are imported again (user 2026-10-19 via the Mac parent). |
 | T8  | Open: whether the part rows' and the part instruction editor's own Använd N p buttons go (plan row Q5; recommended: removed). |
+| T9  | Dismiss is the primary action of the points note: a clearly labelled, easy-to-hit button, never a small x the teacher has to look for; Använd beräknade poäng is the secondary action; dismiss behaves as T6 (user 2026-10-19 via the Mac parent: "a dismiss all is the default action for most users, so it should be easy to click and not find it"). |
+| T10 | Open: the dismiss button's label (plan row Q7; recommended: Ignorera skillnaden); the final wording goes through `ui-copy-reviewer`. |
 
 ## Resume here (2026-10-19, planning)
 
 - Branch `codex/task-skript-40-04-points-mismatch-remote`, worktree `/home/paunchygent/apps/skriptoteket-task-skript-40-04-points-mismatch-remote`, from `06985163`.
 - Status proposed; no code has been written. User decisions 2026-10-19 (answered on the Mac, relayed by the Mac parent) are closed in the retained plan `evidence/planning/TASK-SKRIPT-40-04-10/plan.md` (Q1-Q4) and derived as T3-T7.
-- Open: Q5 (T8), the part-level Använd N p buttons. No junior launches before Q5 is answered and the plan is accepted.
+- T9 (dismiss is the primary action) recorded 2026-10-19 as plan row Q6.
+- Open: Q5 (T8), the part-level Använd N p buttons, and Q7 (T10), the dismiss label. No junior launches before both are answered and the plan is accepted.
 - Retained root `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a15330-34cd-7103-bb71-cc8ef9b8a56f` (explorer discovery under `discovery/explorer/`).
-- Next: on the Q5 answer, close T8, run the staging reproduction, then launch unit 1.
+- Next: on the Q5 and Q7 answers, close T8 and T10, run the staging reproduction, then launch unit 1.
