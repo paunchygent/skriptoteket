@@ -78,8 +78,19 @@ def _class_list(box: Box) -> list[str]:
     return classes.split()
 
 
+def _walk_outside_answer_key(box: Box) -> Iterator[Box]:
+    """Every box except the facit answer key's, whose lines repeat steps and rows."""
+    if "print-answer-key" in _class_list(box):
+        return
+    yield box
+    for child in box.children:
+        yield from _walk_outside_answer_key(child)
+
+
 def _page_texts(page: Page) -> str:
-    return "".join(box.text for box in _walk(page._page_box) if isinstance(box, TextBox))
+    return "".join(
+        box.text for box in _walk_outside_answer_key(page._page_box) if isinstance(box, TextBox)
+    )
 
 
 def _render(document: NativeExamDocument, variant: ExamPrintVariant) -> Document:

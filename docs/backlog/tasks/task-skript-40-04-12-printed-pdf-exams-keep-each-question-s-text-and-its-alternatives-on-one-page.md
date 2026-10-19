@@ -4,8 +4,8 @@ id: TASK-SKRIPT-40-04-12
 title: Printed PDF exams keep each question's text and its alternatives on one page
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-19'
 status: proposed
 closeout_review:
@@ -13,10 +13,7 @@ closeout_review:
   status: not_started
 task_kind: story
 acceptance_criteria:
-- In the print preview and the exported student and facit PDF, no page break falls
-  inside a question's text block (heading, instruction and problem body) or inside
-  its choice alternatives, writing lines may split, and a block taller than one page
-  still splits
+  - In the print preview and the exported student and facit PDF, no page break falls inside a question's text block (heading, instruction and problem body) or inside its choice alternatives, writing lines may split, and a block taller than one page still splits
 story: ST-SKRIPT-40-04
 backlog_document_profile: contract-derived
 ---
@@ -75,24 +72,24 @@ Focused tests only:
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| K1  | A question's text never splits across a page break: its heading, instruction text and problem body move to the next page together. |
-| K2  | Writing lines may split across pages; a single writing line never splits. |
-| K3  | For choice questions the question text may end one page and the alternatives start the next, to keep page gaps small. |
-| K4  | A question's alternatives stay together on one page; no break falls between two alternatives and no alternative splits. |
-| K5  | A block taller than one page still splits. |
+| ID  | Decided contract term                                                                                                                                                                                                                                                                      |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| K1  | A question's text never splits across a page break: its heading, instruction text and problem body move to the next page together.                                                                                                                                                         |
+| K2  | Writing lines may split across pages; a single writing line never splits.                                                                                                                                                                                                                  |
+| K3  | For choice questions the question text may end one page and the alternatives start the next, to keep page gaps small.                                                                                                                                                                      |
+| K4  | A question's alternatives stay together on one page; no break falls between two alternatives and no alternative splits.                                                                                                                                                                    |
+| K5  | A block taller than one page still splits.                                                                                                                                                                                                                                                 |
 | K6  | The rule applies only to the PDF: the print preview, the student PDF and the PDF med facit. The DOCX gets no page breaks and no keep-with-next or keep-lines settings, because the teacher sets the layout of the editable DOCX; DOCX output stays unchanged (user correction 2026-10-19). |
-| K7  | The stray "/" line under the last item before "Poäng" belongs to TASK-SKRIPT-39-04-20; this task only checks it is gone once 39-04-20 is on main. |
-| K8  | `PrintQuestion` carries two explicit groups, the question text and the answer form; the DOCX writer iterates both in order and the HTML renderer wraps each; no group is inferred from paragraph styles. |
-| K9  | The HTML wraps the question text and a question's alternatives each in a `div` with `break-inside: avoid`; single paragraphs and alternatives get `break-inside: avoid`; groups are `div` elements of `p`, not lists. |
-| K10 | Fail-first WeasyPrint tests lay out the production HTML for STUDENT and FACIT over a range of preceding heights and assert each rule on every render. |
-| K11 | A staging walk of the preview, the student PDF and the PDF med facit with the omprov exam closes the task. |
-| K12 | A part's instruction stays on the same page as its first question's text (user 2026-10-19). |
-| K13 | "Poäng: N poäng" belongs to the question text group (user 2026-10-19). |
-| K14 | A block taller than one page splits only between paragraphs, items or alternatives, never inside one, unless one paragraph is itself taller than a page (user 2026-10-19). |
-| K15 | Ordering steps and the matching grid stay together on one page, like the alternatives (user 2026-10-19). |
+| K7  | The stray "/" line under the last item before "Poäng" belongs to TASK-SKRIPT-39-04-20; this task only checks it is gone once 39-04-20 is on main.                                                                                                                                          |
+| K8  | `PrintQuestion` carries two explicit groups, the question text and the answer form; the DOCX writer iterates both in order and the HTML renderer wraps each; no group is inferred from paragraph styles.                                                                                   |
+| K9  | The HTML wraps the question text and a question's alternatives each in a `div` with `break-inside: avoid`; single paragraphs and alternatives get `break-inside: avoid`; groups are `div` elements of `p`, not lists.                                                                      |
+| K10 | Fail-first WeasyPrint tests lay out the production HTML for STUDENT and FACIT over a range of preceding heights and assert each rule on every render.                                                                                                                                      |
+| K11 | A staging walk of the preview, the student PDF and the PDF med facit with the omprov exam closes the task.                                                                                                                                                                                 |
+| K12 | A part's instruction stays on the same page as its first question's text (user 2026-10-19).                                                                                                                                                                                                |
+| K13 | "Poäng: N poäng" belongs to the question text group (user 2026-10-19).                                                                                                                                                                                                                     |
+| K14 | A block taller than one page splits only between paragraphs, items or alternatives, never inside one, unless one paragraph is itself taller than a page (user 2026-10-19).                                                                                                                 |
+| K15 | Ordering steps and the matching grid stay together on one page, like the alternatives (user 2026-10-19).                                                                                                                                                                                   |
 
 ## Resume here
 
-2026-10-19, lead `c30dba85`: the user answered Q1-Q4 with A (K12-K15); the plan validates with `--require-closed`. Units 1 and 2 launched in parallel (work orders under the retained root `evidence/work-orders/`); unit 3 follows unit 2. The domain suite waits for the orchestrator's slot.
+2026-10-19, lead `c30dba85`: units 1-3 are committed. The focused proof passes (349 tests across the page-break, print HTML, print document, geometry, renderer and preview files), and lint and typecheck pass. The FACIT K15 failures came from the page-break test counting the facit answer key, which repeats step and row text; the test now skips the key. Next: the domain suite once the orchestrator gives the slot, then the staging walk (K11) and the TASK-SKRIPT-39-04-20 "/" check once that task is on main.
