@@ -11,6 +11,10 @@
   repair them, change 'Luckverktyg – högst 999 luckor' to '… inga fler luckor kan
   läggas till i frågan', finish capture RC1, copy rereview by `4c9e2855` (root
   `01a155a3`), full suites, then the Mac merges and walks.
+- Gap lead hit its usage limit: committed `94318cce` (+CR3 cap text); review
+  `23bc9c5a` (8 high) repair units LA/KE/MG/GA/DS are UNCOMMITTED in the gap
+  worktree. Next lead: review each diff vs root `01a1541f` part-b/*.txt, focused
+  specs, commit by path, F11 (move capture scripts to evidence), suites, rereviews.
 - TASK-SKRIPT-39-04-21 (points wording): branch
   `codex/task-skript-39-04-strip-points-wording-remote`, root `01a1546f`. Review
   `82849a3b` changes_requested (F1-F6). Done: F2, F3, F5 + D13 (`9730c695`).
