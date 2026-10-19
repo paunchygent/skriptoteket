@@ -92,4 +92,4 @@ Focused tests only:
 
 ## Resume here
 
-2026-10-19, lead `c30dba85`: units 1-3 are committed. The focused proof passes (349 tests across the page-break, print HTML, print document, geometry, renderer and preview files), and lint and typecheck pass. The FACIT K15 failures came from the page-break test counting the facit answer key, which repeats step and row text; the test now skips the key. Next: the domain suite once the orchestrator gives the slot, then the staging walk (K11) and the TASK-SKRIPT-39-04-20 "/" check once that task is on main.
+2026-10-19, lead `c30dba85`: the domain suite passed (5253 passed, 59 skipped). Review `9441eecb` found F1 (medium): gap-fill paragraphs could split inside a question taller than a page. A fail-first case and the repair landed at `ee021468` and `16c26169`: the house `p` rule now carries `break-inside: avoid` for every paragraph class. origin/main `eba9d0f2` is merged at `0dd5e509`, and the focused print tests pass (389). Next: the staging walk (K11), then the TASK-SKRIPT-39-04-20 "/" check once that task is on main.
