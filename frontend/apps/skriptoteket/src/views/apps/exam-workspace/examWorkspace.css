@@ -5,6 +5,12 @@ Domain purpose:
     regular buttons at 44 px for touch and 36 px for a fine pointer, 28 px
     compact buttons, inputs, menus, chips, segmented toggles, notices and the
     choice marks. Every value comes from the huleedu-integrated tokens.
+
+    It also defines the two shared control faces (TASK-SKRIPT-40-04-17):
+    `.xw-cmd`, the 32 px header command with a glyph and a word (T3), and
+    `.xw-tool`, the 28 px in-content tool with a glyph or a glyph and a word
+    (T4), grouped by `.xw-tools` and divided by `.xw-toolsep`. Both grow to
+    44 px on a coarse pointer.
     Phone < 768 px, tablet 768-1279 px, desktop >= 1280 px.
 
     This file is the one width owner for the desktop column and side-panel
@@ -19,8 +25,6 @@ Relationships:
 */
 
 .xw-root {
-  --xw-ctl: 44px;
-  --xw-ctl-fine: 36px;
   --xw-ctl-compact: var(--huleedu-workbench-control-height);
   --xw-list-default: clamp(260px, 18%, 340px);
   --xw-list-min: 260px;
@@ -41,14 +45,14 @@ Relationships:
 /* Buttons */
 .xw-btn {
   display: inline-flex; align-items: center; justify-content: center; gap: var(--huleedu-space-2);
-  height: var(--xw-ctl, 44px); padding: 0 var(--huleedu-space-4); flex: none; position: relative;
+  height: var(--huleedu-action-control-height); padding: 0 var(--huleedu-space-4); flex: none; position: relative;
   border: 1px solid var(--huleedu-panel-border); border-radius: var(--huleedu-radius-md);
   background: var(--huleedu-surface-content); color: var(--huleedu-navy);
   font: inherit; font-size: var(--huleedu-text-sm); font-weight: var(--huleedu-font-medium);
   white-space: nowrap; cursor: pointer;
   transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
 }
-.xw-btn--icon { width: var(--xw-ctl, 44px); padding: 0; }
+.xw-btn--icon { width: var(--huleedu-action-control-height); padding: 0; }
 .xw-btn--ghost { border-color: transparent; background: transparent; }
 .xw-btn--primary { background: var(--huleedu-action); border-color: var(--huleedu-action); color: #fff; }
 .xw-btn--pressed,
@@ -72,8 +76,8 @@ Relationships:
   .xw-btn--primary:not(:disabled):hover, .xw-btn--checked:hover { background: var(--huleedu-action); opacity: 0.9; }
 }
 @media (pointer: fine) {
-  .xw-btn { height: var(--xw-ctl-fine, 36px); }
-  .xw-btn--icon { width: var(--xw-ctl-fine, 36px); }
+  .xw-btn { height: calc(var(--huleedu-action-control-height) - var(--huleedu-space-2)); }
+  .xw-btn--icon { width: calc(var(--huleedu-action-control-height) - var(--huleedu-space-2)); }
   .xw-btn--compact { height: var(--xw-ctl-compact, 28px); }
   .xw-btn--compact.xw-btn--icon { width: var(--xw-ctl-compact, 28px); }
 }
@@ -101,6 +105,56 @@ Relationships:
 }
 .xw-linkbtn:focus-visible { outline: 2px solid var(--huleedu-action-40); }
 
+/* Header commands and in-content tools (TASK-SKRIPT-40-04-17) */
+.xw-cmd {
+  all: unset; box-sizing: border-box; display: inline-flex; align-items: center; gap: var(--huleedu-space-1-5); flex: none;
+  height: var(--huleedu-header-command-height); padding: 0 var(--huleedu-space-2);
+  border-radius: var(--huleedu-radius-md); color: var(--huleedu-navy); cursor: pointer;
+  font-size: var(--huleedu-type-control-value-size); font-weight: var(--huleedu-font-medium); white-space: nowrap;
+}
+.xw-cmd svg { width: var(--huleedu-navigation-icon-size); height: var(--huleedu-navigation-icon-size); flex: none; }
+.xw-cmd[aria-pressed="true"], .xw-cmd[aria-expanded="true"] { background: var(--huleedu-action-10); color: var(--huleedu-action); }
+.xw-cmd:focus-visible { outline: 2px solid var(--huleedu-action-40); outline-offset: 0; }
+.xw-cmd:disabled, .xw-cmd[aria-disabled="true"] { color: var(--huleedu-navy-30); cursor: not-allowed; }
+.xw-tool {
+  all: unset; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; flex: none;
+  min-width: var(--huleedu-workbench-control-height); height: var(--huleedu-workbench-control-height);
+  border: 1px solid transparent; border-radius: var(--huleedu-workbench-control-radius);
+  color: var(--huleedu-navy-70); cursor: pointer;
+}
+.xw-tool svg { width: var(--huleedu-workbench-icon-size); height: var(--huleedu-workbench-icon-size); flex: none; }
+.xw-tool--word {
+  gap: var(--huleedu-space-1-5); padding: 0 var(--huleedu-workbench-control-padding-inline);
+  font-size: var(--huleedu-type-control-value-size); font-weight: var(--huleedu-font-medium); white-space: nowrap;
+}
+.xw-tool[aria-pressed="true"], .xw-tool[aria-expanded="true"] {
+  background: var(--huleedu-action-10); border-color: var(--huleedu-action); color: var(--huleedu-action);
+}
+.xw-tool--switch[aria-pressed="true"] { box-shadow: inset 0 -2px 0 var(--huleedu-action); }
+.xw-tool:focus-visible { outline: 2px solid var(--huleedu-action-40); outline-offset: 0; }
+.xw-tool:disabled, .xw-tool[aria-disabled="true"] { opacity: 0.4; cursor: not-allowed; }
+@media (hover: hover) {
+  .xw-cmd:not(:disabled, [aria-disabled="true"], [aria-pressed="true"], [aria-expanded="true"]):hover { background: var(--huleedu-action-05); }
+  .xw-tool:not(:disabled, [aria-disabled="true"], [aria-pressed="true"], [aria-expanded="true"]):hover {
+    background: var(--huleedu-surface-content); border-color: var(--huleedu-workbench-control-border);
+  }
+}
+@media (pointer: coarse) {
+  .xw-cmd { height: var(--huleedu-action-control-height); }
+  .xw-tool { min-width: var(--huleedu-action-control-height); height: var(--huleedu-action-control-height); }
+}
+/* The toolbar scrolls sideways when the editor is narrower than its tools; groups and tools never shrink, wrap or drop.
+   The bar's block padding gives the 2px focus ring room inside the vertical clip. */
+.xw-toolbar {
+  display: flex; flex-wrap: nowrap; align-items: center; min-width: 0; max-width: 100%;
+  overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; scrollbar-width: thin;
+}
+.xw-tools { display: inline-flex; align-items: center; gap: var(--huleedu-toolbar-tool-gap); flex: none; }
+.xw-toolsep {
+  flex: none; width: var(--huleedu-toolbar-separator-width); height: var(--huleedu-toolbar-separator-height);
+  margin: 0 var(--huleedu-toolbar-separator-margin); background: var(--huleedu-toolbar-separator-color);
+}
+
 /* Text, inputs and labels */
 .xw-label {
   display: flex; align-items: center; gap: var(--huleedu-space-2); min-height: 28px;
@@ -120,7 +174,7 @@ Relationships:
 }
 .xw-rich__body { padding: var(--huleedu-space-3) var(--huleedu-space-4); }
 .xw-input {
-  width: 100%; min-width: 0; height: var(--xw-ctl, 44px); padding: 0 var(--huleedu-space-3);
+  width: 100%; min-width: 0; height: var(--huleedu-action-control-height); padding: 0 var(--huleedu-space-3);
   border: 1px solid var(--huleedu-panel-border); border-radius: var(--huleedu-radius-md);
   background: var(--huleedu-surface-content); color: var(--huleedu-navy); font: inherit;
 }
@@ -128,7 +182,7 @@ Relationships:
 .xw-input[aria-invalid="true"] { border-color: var(--huleedu-error); box-shadow: 0 0 0 1px var(--huleedu-error); }
 .xw-input[readonly] { background: var(--huleedu-navy-02); color: var(--huleedu-navy-70); }
 .xw-input:disabled { background: var(--huleedu-navy-02); color: var(--huleedu-navy-40); }
-@media (pointer: fine) { .xw-input { height: var(--xw-ctl-fine, 36px); } }
+@media (pointer: fine) { .xw-input { height: calc(var(--huleedu-action-control-height) - var(--huleedu-space-2)); } }
 .xw-hint {
   display: flex; align-items: center; gap: var(--huleedu-space-1-5); margin: var(--huleedu-space-1-5) 0 0;
   font-size: var(--huleedu-text-xs); color: var(--huleedu-navy-60);

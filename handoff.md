@@ -68,13 +68,13 @@
   40-04-07 ruling (user 2026-10-18): print PDF renders the DOCX house template; Exam.net import PDF is a fallback only; QTI is the Exam.net route.
   RESUMED 2026-10-19 after the 2026-10-18 account switch: Mac parent session 0d4e482f integrates and pushes; Hemma orchestrator is desktop SSH session local_42174b78 (cwd ~/apps/skriptoteket), briefed to resume every lane below with fresh leads. Roster is identical on Mac and Hemma (routes.toml byte-identical, skill-repository 1a22d64e): juniors OpenCode Spark 1.3 high (`junior-route` default `spark`), task-monitor/researcher OpenCode deepseek-v4.1-flash-free, explorers Haiku, leads Opus 5.5 (no code, never reused across tasks), reviews Pi Sol 6.1. Exam.net has no QTI export (UI + help center checked 2026-10-19): 41-02-01 uses a Skriptoteket package Exam.net accepted as its fixture. Lanes (Hemma branch @ head: next):
 
-  - 40-04-08 `done`: walk repair on main be979cd7, Mac re-walk PASS 2026-10-19. 40-04-04 closes once the Mac confirms its owed walk was covered.
-  - 39-04-20 on main f7eeada5 (2026-10-19). 40-04-09 gap tool on main 26f84883; its Part A repair (R9-R10, review aeb140ef approved at 003472fe; Mac walk next) merged to main 2026-10-19 from `codex/task-skript-40-04-gap-toggle-back-remote`. The follow-ups 40-04-13 (gap revert with kept answers, one control) and 40-04-14 (autosave as Spara, 100 steps (user 2026-10-19), cross-tab policy) are `ready` (user-accepted 2026-10-19); Hemma lead 73032e62 built them on that branch (main merged at 03e49462). Next: to main for the Mac staging walk (user 2026-10-19), with no independent code review yet; the walker caveats are in the 40-04-14 Resume here. The toolbar placement and look are held for the Mac toolbar redesign session. 40-04-10 points note: merged to main from 34c2e843 2026-10-19; Mac walk next.
-  - Toolbar redesign: TASK-SKRIPT-40-04-17 (proposed, on main dfeb41a4) owns the look of the header, list head, question head and editor toolbar from the mock the user accepted 2026-10-19; it folds and supersedes 40-04-11 and 40-04-01 T25, and 40-04-13/14/16 keep behaviour. Next: commit and readiness by the parent, then unit 1 (shared tokens and glyphs in skill-repository). Evidence: `.orchestration/context/sessions/01a15437-a20c-72f4-b0b8-397637488146/evidence/planning/toolbar-redesign/`.
+  - 40-04-08 `done`: walk repair on main be979cd7, Mac re-walk PASS 2026-10-19. 40-04-04 `done`: Mac walk PASS at cf9547fa (jump, fix, QTI 200). 40-04-16 `done`: Mac walk PASS at cf9547fa.
+  - 39-04-20 on main f7eeada5 (2026-10-19). 40-04-09 gap tool on main 26f84883; its Part A repair (R9-R10, review aeb140ef approved at 003472fe; Mac walk next) merged to main 2026-10-19 from `codex/task-skript-40-04-gap-toggle-back-remote`. The follow-ups 40-04-13 (gap revert with kept answers, one control) and 40-04-14 (autosave as Spara, 100 steps (user 2026-10-19), cross-tab policy) are `ready` (user-accepted 2026-10-19); Hemma lead 73032e62 built them on that branch (main merged at 03e49462). Merged to main 2026-10-19 (9cec90f5 plus picture-spec fix d8d674cf); next: push, then Mac staging walk, with no independent code review yet; the walker caveats are in the 40-04-14 Resume here. The toolbar placement and look are held for the Mac toolbar redesign session. 40-04-10 points note: merged to main from 34c2e843 2026-10-19; Mac walk next.
+  - Toolbar redesign: TASK-SKRIPT-40-04-17 `in_progress` (Mac session 0b6afee3, branch `codex/task-skript-40-04-17`): units 1-5 built; skill-repository huleedu-integrated 0.1.33 synced; review f87c2d44 changes_requested F1-F3 medium plus N1 admitted and repaired at 7073e58e; origin/main 6f1c5195 merged at 139af509 (235 exam-workspace spec files green). Next: integrate to main, then the Mac staging walk (toolbar scroll at the 400 px editor and on a 375 px coarse pointer, real Importera click, 1440 px, 1040 px workspace, 260 px list head). Held: Tom lucka waits for the gap lane's insertEmptyGap (A). Evidence: root 01a15437 `evidence/implementation/TASK-SKRIPT-40-04-17/`, `evidence/reviews/TASK-SKRIPT-40-04-17/`.
   - 40-04-12 PDF keep-together on main 8d51a6ba; the K7 "/" check is for the Mac walk. 40-04-15 inline "(N p)" points `done`: main df87d633, Mac walk PASS 2026-10-19 (walk observations in its task doc).
   - 41-02-02 `done`: deployed to production at f7eeada5 on 2026-10-19 with the nginx-proxy /32 trust (task doc "Production Deploy").
   - 40-04-10 points banner (`in_progress`, lead 4ebb41f3, branch `codex/task-skript-40-04-points-mismatch-remote`, root 01a15330): one-line footer; review 6f95a153 findings F1-F6 repaired and admitted (F1 rereview cleared), F3 floating lines over a one-row end room (6d08aae9); origin/main 043163cb merged; domain suite green at 6d08aae9. Merged to main 2026-10-19 (0d928d3a); next: Mac staging walk with F5 and the bottom-scrolled step.
-  - 40-04-16 export split button (branch codex/task-skript-40-04-export-split-button-remote, root 01a15432): ready; V1-V4 integrated, review 39d1f3fc F1 repaired (R1); merged to main 2026-10-19; next Mac staging walk.
+  - 40-04-16 export split button `done`: main cf9547fa, Mac walk PASS 2026-10-19 (Mac `.artifacts/staging-walk-cf9547fa/walk-record.md`).
   - REP-0048: 6 Exam.net walk checks (Mac walk).
   - 41-02-04 workspace width `done` 2026-10-19 (merged ffab920a, walk repair 67861ab3, both staging walks passed; task doc "Outcome"). W1 and W2 are handed to 40-04-17.
   - HuleEdu after HULE-14-03-01: 41-01-03, 41-01-02, 41-01-04; http_runtime workers repair.
@@ -110,10 +110,19 @@
   stay approved; ADR-0091 (`proposed`) narrows the authoring-UI non-decision.
   Active story/task pointers above hold the current DOCX and QTI state.
 
+- [TASK-SKRIPT-REP-0050](docs/backlog/tasks/task-skript-rep-0050-backend-pytest-runs-parallel-and-quiet-by-default-and-serial-runs-need-a-stated-reason.md)
+  `in_progress` on `codex/backend-test-parallel` (worktree
+  `skriptoteket-backend-test-parallel`, not pushed). Pytest runs parallel and
+  quiet by default, workers sized to the selection, serial runs need
+  `--serial-reason`, pooled Postgres per worker; full `tests/unit` about 100 s
+  under load (was 3m50s). Worker cap 12 (user 2026-10-19).
+  Next: Hemma orchestrator routes review and merge.
+
 - Completed REP/ST-38 outcomes and evidence are in the 2026-09-05 archive above.
 
 ## Recent
 
+- 2026-10-19 40-04-11 control system `canceled` as superseded by 40-04-17 (user decision; no product code). The docs-only branch `codex/task-skript-40-04-compact-tools-remote` holds the reuse list (task section "Superseded by TASK-SKRIPT-40-04-17"); the inventory and mocks are in root 01a15383.
 - 2026-10-19 `done` on main: 40-04-07 writing areas (staging walk at `003c874a`, Mac `.artifacts/staging-walk-40-04-07/evidence/walk-record.md`), 41-02-01 QTI import, 39-04-15, 39-04-16, 39-04-17, REP-0047, HULE-14-03-01, 39-04-19 Del A left-out repair, REP-0046 re-recorded omprov labeler calls, 39-04-18 facit carry-over. Pre-push hook SIGPIPE false skip fixed (`003c874a`).
 
 - Wave 2 closed 2026-10-17 at `agent-overseer:approved-review-closeout`:
@@ -174,7 +183,7 @@
 
 - Session Date: 2026-10-15
 - Last Refreshed: 2026-10-19
-- Pushing `main` runs the full `pdm run typecheck` and `pdm run test` on Hemma first (`scripts/hemma_pre_push_check.sh`, pre-push hook, ~10 min; install with `pre-commit install --hook-type pre-push`). Run the push in the background; a failure blocks it, unreachable Hemma warns, Markdown-only commits reuse the last pass.
+- Pushing `main` runs the full `pdm run typecheck` and `pdm run test` on Hemma first (`scripts/hemma_pre_push_check.sh`, pre-push hook; install with `pre-commit install --hook-type pre-push`). Run the push in the background; a failure blocks it, unreachable Hemma warns, Markdown-only commits reuse the last pass.
 - Current docs validate with `pdm run docs-validate`.
 - Historical terminal docs audit separately with `pdm run python -m scripts.historical_docs.validate_historical_docs`.
 - Full typecheck passed 2026-10-15: backend (1,588 source files) and SPA;

@@ -53,7 +53,7 @@ describe("ExamWorkspaceMarkToolbar gap control", () => {
     expect(wrapper.emitted("makeGap")).toBeUndefined();
   });
 
-  it("declares the Tom lucka emit for the glyph TASK-SKRIPT-40-04-17 wires later", async () => {
+  it("declares the Tom lucka insertEmptyGap emit", async () => {
     const wrapper = mount(ExamWorkspaceMarkToolbar, { props: { showGap: true } });
     wrapper.vm.$emit("insertEmptyGap");
     expect(wrapper.emitted("insertEmptyGap")).toHaveLength(1);
@@ -73,7 +73,7 @@ describe("ExamWorkspaceMarkToolbar gap tool toggle", () => {
     const on = mount(ExamWorkspaceMarkToolbar, { props: { showGap: true, gapToolOn: true } });
     const toggle = on.get(GAP_TOOL);
     expect(toggle.attributes("aria-pressed")).toBe("true");
-    expect(toggle.classes()).toContain("bg-panel-muted");
+    expect(toggle.classes()).toContain("xw-tool--switch");
   });
 
   it("disables the toggle with its own cap reason", () => {

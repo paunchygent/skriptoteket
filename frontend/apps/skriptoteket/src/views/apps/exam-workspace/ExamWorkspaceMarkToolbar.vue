@@ -3,12 +3,13 @@
  * Exam workspace formatting toolbar.
  *
  * Domain purpose:
- *   The compact glyph toolbar for the five kept marks, the three heading
- *   levels and the gap tool. Lucide glyphs follow the app's established icon
- *   imports (the shared catalogue is not adopted here). Every button keeps its
- *   exact size in every state. It declares the Tom lucka `insertEmptyGap`
- *   emit; no button is wired to it yet
- *   (TASK-SKRIPT-40-04-17 wires a glyph later). A pressed glyph shows
+ *   The compact glyph toolbar in four groups: Ångra and Gör om, the five kept
+ *   marks, the gap tool switch and Tom lucka, and the three heading levels.
+ *   Glyphs come from the shared catalogue through `UiGlyph` meanings, and
+ *   the faces from the `.xw-tool` classes in `examWorkspace.css`. Every
+ *   button keeps its exact size in every state. The toolbar emits
+ *   `insertEmptyGap` for Tom lucka, which the body editor inserts as one
+ *   empty gap at the caret. A pressed glyph shows
  *   what the selection already carries, the native tooltip and accessible
  *   name carry the action name, and a heading glyph toggles its level off
  *   when pressed again. Every tooltip and `aria-keyshortcuts` names its
@@ -18,16 +19,17 @@
  *
  * Relationships:
  *   - Rendered by `ExamWorkspaceBodyEditor` above the question paragraphs.
+ *   - Injects the workspace's Ångra and Gör om from `examWorkspaceHistoryKeys`;
+ *     without a provider the first group and its separator are omitted.
  *   - Reads the glyph labels from `examWorkspaceBodyMarks` and the shortcut
  *     text from `examWorkspaceShortcutLabels`.
  */
 
-import {
-  Bold, Heading1, Heading2, Heading3, Italic, MousePointerClick, Subscript, Superscript, Underline,
-} from "lucide-vue-next";
-
+import { UiGlyph } from "../../../components/ui";
 import { BODY_MARKS, MARK_LABELS } from "./examWorkspaceBodyMarks";
 import type { BodyMark } from "./examWorkspaceBodyMarks";
+import { examWorkspaceShortcut } from "./examWorkspaceFormat";
+import { useExamWorkspaceHistoryKeys } from "./examWorkspaceHistoryKeys";
 import { ariaKeyshortcuts, isMacPlatform, shortcutLabel } from "./examWorkspaceShortcutLabels";
 import type { EditorShortcut } from "./examWorkspaceShortcutLabels";
 
@@ -43,30 +45,26 @@ withDefaults(
     showGap?: boolean;
     /** Why the gap tool toggle is off at the cap; disables the toggle while set. */
     gapToolDisabledReason?: string | null;
+    /** Why Tom lucka is off; disables its button with the reason as tooltip while set. */
+    emptyGapDisabledReason?: string | null;
     /** Whether the gap tool toggle reads pressed. */
     gapToolOn?: boolean;
   }>(),
-  { activeMarks: () => [], activeHeading: null, disabled: false, showHeadings: false, showGap: false, gapToolDisabledReason: null, gapToolOn: false },
+  { activeMarks: () => [], activeHeading: null, disabled: false, showHeadings: false, showGap: false, gapToolDisabledReason: null, emptyGapDisabledReason: null, gapToolOn: false },
 );
 
 const emit = defineEmits<{
   toggleMark: [mark: BodyMark];
   toggleHeading: [level: HeadingLevel];
   toggleGapTool: [];
-  /** Tom lucka: the body editor inserts one empty gap at the caret. No button yet: TASK-SKRIPT-40-04-17 wires a glyph to this emit later. */
+  /** Tom lucka: the body editor inserts one empty gap at the caret. */
   insertEmptyGap: [];
 }>();
 
-const MARK_ICONS = {
-  bold: Bold,
-  italic: Italic,
-  underline: Underline,
-  superscript: Superscript,
-  subscript: Subscript,
-} as const;
-const HEADING_ICONS = { 1: Heading1, 2: Heading2, 3: Heading3 } as const;
+const history = useExamWorkspaceHistoryKeys();
 
 const HEADING_LEVELS: HeadingLevel[] = [1, 2, 3];
+const HEADING_MEANINGS = { 1: "heading-1", 2: "heading-2", 3: "heading-3" } as const;
 
 const HEADING_SHORTCUTS: Record<HeadingLevel, EditorShortcut> = {
   1: "heading1",
@@ -82,84 +80,130 @@ const isMac = isMacPlatform();
   <div
     role="toolbar"
     aria-label="Formatering"
-    class="flex items-center gap-0.5"
+    class="xw-toolbar"
     @mousedown.prevent
   >
-    <button
-      v-for="mark in BODY_MARKS"
-      :key="mark"
-      type="button"
-      class="inline-flex h-8 w-8 items-center justify-center border text-navy disabled:opacity-40"
-      :class="
-        activeMarks.includes(mark)
-          ? 'border-navy/60 bg-panel-muted'
-          : 'border-transparent hover:bg-canvas'
-      "
-      :aria-pressed="activeMarks.includes(mark) ? 'true' : 'false'"
-      :aria-keyshortcuts="ariaKeyshortcuts(mark, isMac)"
-      :aria-label="MARK_LABELS[mark]"
-      :title="`${MARK_LABELS[mark]} (${shortcutLabel(mark, isMac)})`"
-      :disabled="disabled"
-      :data-test="`exam-workspace-body-mark-${mark}`"
-      @click="emit('toggleMark', mark)"
-    >
-      <component
-        :is="MARK_ICONS[mark]"
-        :size="16"
-        aria-hidden="true"
-      />
-    </button>
-    <button
-      v-if="showGap"
-      type="button"
-      class="inline-flex h-8 w-8 items-center justify-center border text-navy disabled:opacity-40"
-      :class="
-        gapToolOn
-          ? 'border-navy/60 bg-panel-muted'
-          : 'border-transparent hover:bg-canvas'
-      "
-      :aria-pressed="gapToolOn ? 'true' : 'false'"
-      :aria-keyshortcuts="ariaKeyshortcuts('gapTool', isMac)"
-      aria-label="Luckverktyg"
-      :title="gapToolDisabledReason ?? `Luckverktyg (${shortcutLabel('gapTool', isMac)})`"
-      :disabled="disabled || gapToolDisabledReason !== null"
-      data-test="exam-workspace-toolbar-gap-tool"
-      @click="emit('toggleGapTool')"
-    >
-      <MousePointerClick
-        :size="16"
-        aria-hidden="true"
-      />
-    </button>
-    <template v-if="showHeadings">
+    <template v-if="history">
+      <div class="xw-tools">
+        <button
+          type="button"
+          class="xw-tool"
+          :disabled="!history.canUndo.value"
+          :title="history.canUndo.value ? `Ångra (${examWorkspaceShortcut('Z', false, isMac)})` : 'Inget att ångra'"
+          aria-label="Ångra"
+          aria-keyshortcuts="Control+Z Meta+Z"
+          data-test="exam-workspace-undo"
+          @click="history.undo()"
+        >
+          <UiGlyph
+            meaning="undo"
+            :size="16"
+          />
+        </button>
+        <button
+          type="button"
+          class="xw-tool"
+          :disabled="!history.canRedo.value"
+          :title="history.canRedo.value ? `Gör om (${examWorkspaceShortcut('Z', true, isMac)})` : 'Inget att göra om'"
+          aria-label="Gör om"
+          aria-keyshortcuts="Control+Shift+Z Meta+Shift+Z"
+          data-test="exam-workspace-redo"
+          @click="history.redo()"
+        >
+          <UiGlyph
+            meaning="redo"
+            :size="16"
+          />
+        </button>
+      </div>
       <span
-        class="mx-1.5 h-5 w-px bg-navy/40"
+        class="xw-toolsep"
         aria-hidden="true"
       />
+    </template>
+    <div class="xw-tools">
       <button
-        v-for="level in HEADING_LEVELS"
-        :key="level"
+        v-for="mark in BODY_MARKS"
+        :key="mark"
         type="button"
-        class="inline-flex h-8 w-8 items-center justify-center border text-navy disabled:opacity-40"
-        :class="
-          activeHeading === level
-            ? 'border-navy/60 bg-panel-muted'
-            : 'border-transparent hover:bg-canvas'
-        "
-        :aria-pressed="activeHeading === level ? 'true' : 'false'"
-        :aria-keyshortcuts="ariaKeyshortcuts(HEADING_SHORTCUTS[level], isMac)"
-        :aria-label="`Rubrik ${level}`"
-        :title="`Rubrik ${level} (${shortcutLabel(HEADING_SHORTCUTS[level], isMac)})`"
+        class="xw-tool"
+        :aria-pressed="activeMarks.includes(mark) ? 'true' : 'false'"
+        :aria-keyshortcuts="ariaKeyshortcuts(mark, isMac)"
+        :aria-label="MARK_LABELS[mark]"
+        :title="`${MARK_LABELS[mark]} (${shortcutLabel(mark, isMac)})`"
         :disabled="disabled"
-        :data-test="`exam-workspace-body-heading-${level}`"
-        @click="emit('toggleHeading', level)"
+        :data-test="`exam-workspace-body-mark-${mark}`"
+        @click="emit('toggleMark', mark)"
       >
-        <component
-          :is="HEADING_ICONS[level]"
+        <UiGlyph
+          :meaning="mark"
           :size="16"
-          aria-hidden="true"
         />
       </button>
+    </div>
+    <template v-if="showGap">
+      <span
+        class="xw-toolsep"
+        aria-hidden="true"
+      />
+      <div class="xw-tools">
+        <button
+          type="button"
+          class="xw-tool"
+          aria-label="Tom lucka"
+          :title="emptyGapDisabledReason ?? 'Tom lucka'"
+          :disabled="disabled || emptyGapDisabledReason !== null"
+          data-test="exam-workspace-toolbar-empty-gap"
+          @click="emit('insertEmptyGap')"
+        >
+          <UiGlyph
+            meaning="empty-gap"
+            :size="16"
+          />
+        </button>
+        <button
+          type="button"
+          class="xw-tool xw-tool--switch"
+          :aria-pressed="gapToolOn ? 'true' : 'false'"
+          :aria-keyshortcuts="ariaKeyshortcuts('gapTool', isMac)"
+          aria-label="Luckverktyg"
+          :title="gapToolDisabledReason ?? `Luckverktyg (${shortcutLabel('gapTool', isMac)})`"
+          :disabled="disabled || gapToolDisabledReason !== null"
+          data-test="exam-workspace-toolbar-gap-tool"
+          @click="emit('toggleGapTool')"
+        >
+          <UiGlyph
+            meaning="gap-tool"
+            :size="16"
+          />
+        </button>
+      </div>
+    </template>
+    <template v-if="showHeadings">
+      <span
+        class="xw-toolsep"
+        aria-hidden="true"
+      />
+      <div class="xw-tools">
+        <button
+          v-for="level in HEADING_LEVELS"
+          :key="level"
+          type="button"
+          class="xw-tool"
+          :aria-pressed="activeHeading === level ? 'true' : 'false'"
+          :aria-keyshortcuts="ariaKeyshortcuts(HEADING_SHORTCUTS[level], isMac)"
+          :aria-label="`Rubrik ${level}`"
+          :title="`Rubrik ${level} (${shortcutLabel(HEADING_SHORTCUTS[level], isMac)})`"
+          :disabled="disabled"
+          :data-test="`exam-workspace-body-heading-${level}`"
+          @click="emit('toggleHeading', level)"
+        >
+          <UiGlyph
+            :meaning="HEADING_MEANINGS[level]"
+            :size="16"
+          />
+        </button>
+      </div>
     </template>
   </div>
 </template>

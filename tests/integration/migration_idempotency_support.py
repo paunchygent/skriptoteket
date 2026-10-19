@@ -18,17 +18,10 @@ from alembic.config import Config
 from alembic.script import ScriptDirectory
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
-from testcontainers.postgres import PostgresContainer
 
-from tests.fixtures.database_fixtures import _to_async_database_url
+from tests.fixtures.database_fixtures import PooledDatabase, alembic_config_for
 
 SchemaAssertion = Callable[[AsyncEngine], Awaitable[None]]
-
-
-def _alembic_config(*, database_url: str) -> Config:
-    config = Config(str(Path("alembic.ini")))
-    config.set_main_option("sqlalchemy.url", database_url)
-    return config
 
 
 def _parent_revision(revision_id: str) -> str:
@@ -75,12 +68,12 @@ async def _assert_revision_state(
 
 def assert_revision_is_idempotent(
     *,
-    postgres_container: PostgresContainer,
+    empty_module_database: PooledDatabase,
     revision_id: str,
     schema_assertion: SchemaAssertion,
 ) -> None:
     """Verify a revision upgrade, no-op rerun, downgrade, and re-upgrade cycle."""
-    database_url = _to_async_database_url(postgres_container.get_connection_url())
+    database_url = empty_module_database.url
     previous_revision = _parent_revision(revision_id)
     previous_database_url = os.environ.get("DATABASE_URL")
     os.environ["DATABASE_URL"] = database_url
@@ -88,7 +81,7 @@ def assert_revision_is_idempotent(
     try:
         asyncio.run(_reset_public_schema(database_url=database_url))
 
-        alembic_cfg = _alembic_config(database_url=database_url)
+        alembic_cfg = alembic_config_for(database_url=database_url)
         if previous_revision != "base":
             command.upgrade(alembic_cfg, previous_revision)
 

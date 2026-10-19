@@ -53,6 +53,7 @@ import type { ExamWorkspaceStore } from "./exam-workspace/examWorkspaceStore";
 import { useExamWorkspaceAddress } from "./exam-workspace/useExamWorkspaceAddress";
 import { useExamWorkspaceColumnLayout } from "./exam-workspace/useExamWorkspaceColumnLayout";
 import { useExamWorkspaceContentSuggestions } from "./exam-workspace/useExamWorkspaceContentSuggestions";
+import { useExamWorkspaceDrawerState } from "./exam-workspace/useExamWorkspaceDrawerState";
 import { useExamWorkspaceListActions } from "./exam-workspace/useExamWorkspaceListActions";
 import { useExamWorkspaceViewLabels } from "./exam-workspace/useExamWorkspaceViewLabels";
 import { useExamWorkspaceEditing } from "./exam-workspace/useExamWorkspaceEditing";
@@ -105,8 +106,9 @@ defineExpose({ depart });
 
 const frame = ref<HTMLElement | null>(null);
 const { showDocument } = useExamWorkspaceAddress({ isDirty, openDocument, summary });
+const { closeAfterGoto, consumeImportPick, drawer, importPickPending, requestImportPick, toggleDrawer } =
+  useExamWorkspaceDrawerState({ isExamOpen: () => Boolean(summary.value), layout });
 const {
-  drawer,
   importOpen,
   isPhone,
   listOpen,
@@ -116,9 +118,9 @@ const {
   previewOpen,
   previewPages,
   previewQuestionPages,
-  toggleDrawer,
   togglePreview,
 } = useExamWorkspaceSideColumns({
+  drawer,
   historyCursor,
   historyPosition: history.position,
   layout,
@@ -163,10 +165,7 @@ const selection = useExamWorkspaceSelection({
   editing,
   importOpen,
   listOpen,
-  afterGoto: () => {
-    if (!isPhone.value && drawer.value === "export") return;
-    drawer.value = null;
-  },
+  afterGoto: closeAfterGoto,
 });
 const {
   canStep, converting, dismissItemNotice, entries, examInstructionsSelected, gotoItem, itemChild, itemEntries,
@@ -254,10 +253,7 @@ const { addChild, addEntry, setOrdering, toggleReviewed } = useExamWorkspaceList
   toast: useToast(),
 });
 
-onMounted(() => {
-  void loadSavedDocuments();
-  if (!summary.value) drawer.value = "open";
-});
+onMounted(() => void loadSavedDocuments());
 </script>
 
 <template>
@@ -280,8 +276,7 @@ onMounted(() => {
       :total="total"
       :details-open="drawer === 'details'"
       :open-drawer-open="drawer === 'open'"
-      :can-undo="history.canUndo.value && !disabled"
-      :can-redo="history.canRedo.value && !disabled"
+      :can-rename="workspaceDocument !== null && !disabled"
       :can-save-as="workspaceDocument !== null && !disabled"
       :suggest-busy="enrichmentBusy"
       :suggest-disabled="workspaceDocument === null || disabled"
@@ -290,9 +285,9 @@ onMounted(() => {
       @toggle-details="toggleDrawer('details')"
       @toggle-open="toggleDrawer('open')"
       @save-as="openSaveAs"
+      @import-file="requestImportPick"
+      @rename-title="editing.setTitle"
       @suggest-all="enrichment.requestSuggestionsForAll"
-      @undo="history.undo"
-      @redo="history.redo"
       @toggle-preview="togglePreview"
     >
       <template #export>
@@ -466,7 +461,9 @@ onMounted(() => {
         :formatted-saved-exports="formattedSavedExports"
         :question-label="questionLabel"
         :handle="isDesktop"
+        :import-pick-pending="importPickPending"
         @close="drawer = null"
+        @import-pick-consumed="consumeImportPick"
         @run="runExport"
         @goto="gotoBlocker"
         @fix="fixBlocker"

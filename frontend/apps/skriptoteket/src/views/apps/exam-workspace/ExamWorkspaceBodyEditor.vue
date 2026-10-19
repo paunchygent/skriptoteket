@@ -340,6 +340,7 @@ watch(newGapId, (gapId) => {
         show-headings
         :show-gap="gapKind"
         :gap-tool-disabled-reason="gapKind && newGapId === null ? 'Luckverktyg – högst 999 luckor' : null"
+        :empty-gap-disabled-reason="gapDisabledReason(item.kind, newGapId)"
         :gap-tool-on="gapToolOn"
         @toggle-mark="toggleMark"
         @toggle-heading="toggleHeading"

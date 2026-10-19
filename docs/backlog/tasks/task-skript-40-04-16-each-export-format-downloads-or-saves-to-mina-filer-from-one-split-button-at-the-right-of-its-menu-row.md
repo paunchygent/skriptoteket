@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-19'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-19'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Independent ruthless-reviewer 39d1f3fc (Pi) at eac9eba2 returned changes_requested with one medium, F1 (a duplicate export-format name table); repaired at e4fd8b51 (catalogue keyed by target, EXPORT_FORMAT_NAMES removed, close-twice menu spec) and admitted on focused proof without rereview (6 spec files, 54 passed; fe-type-check and fe-lint rc 0). Merged to main as cf9547fa; the Hemma pre-push suite passed. The Mac staging walk at cf9547fa passed every check (Mac .artifacts/staging-walk-cf9547fa/walk-record.md).'
 task_kind: story
 acceptance_criteria:
   - Each format row in the exam workspace Exportera menu shows its name on one line and one split button at its right edge; the first part downloads the format and the second saves it to Mina filer (guests see the download part only); nothing sits on the left
@@ -38,6 +42,10 @@ Non-goals: no export, API or file-format change; the Exportera trigger and the s
 ## Core Vertical And Performance
 
 ### Resume here
+
+2026-10-19: done. Merged to main as `cf9547fa`. The Mac staging walk at `cf9547fa` passed every check: menu width, one-line names, both parts on each row, hover and focus with no movement, arrow keys, Enter on the save part (spinner, the other buttons disabled, POST 200, the file in Mina filer), a mouse download (POST 200), the 452 px width, and the guest view with download parts only (record: Mac `.artifacts/staging-walk-cf9547fa/walk-record.md`).
+
+The history below is kept for its evidence pointers.
 
 Planning by a fresh 40-04-16 lead on 2026-10-19 on `codex/task-skript-40-04-export-split-button-remote` from origin/main 26f84883; origin/main ffab920a (41-02-04) merged at 0a22ac06. Ledger closed and validated with `--require-closed`: F1-F9, L1-L10, user answers Q1-Q4, acceptance A1, alignment X1-X2 (2026-10-19). Held 2026-10-19 for the toolbar redesign, then released the same day: the user chose "Build behaviour now" (B1). Status `ready`. origin/main be979cd7 merged at f388921e. Wave 1 integrated at 3f0efe36: V1 menu rows (junior b6bb3112; lead fixes: a shorter row lands on its first part, Element-keyed group map for vue-tsc) and V2 running destination (junior 0eba3259); 4 focused spec files 35 passed, fe-type-check and fe-lint rc 0. Work orders under the root's `evidence/implementation/TASK-SKRIPT-40-04-16/`. V3 integrated at 6d2e5031 (junior 940e863e; lead fixes: the menu's close event sets open to false again after V3 made it a toggle, which no spec catches; one download button with a conditional `xw-split` wrapper instead of a guest copy; no casts in the ordering spec); 4 spec files 33 passed. V4 integrated at c3a514b8 (junior a7d491c8): 7 view-level spec files 76 passed; fe-type-check, fe-lint and fe-build rc 0. origin/main eb35dc2c merged at d868c02c. Full frontend suite at d868c02c (plain `pdm run fe-test`, 2026-10-19): 507 files, 3597 passed, 2 todo, rc 0 (log in the root's `evidence/commands/fe-test-d868c02c.log`). Review 39d1f3fc (Pi) changes_requested with one medium F1 (duplicated format names), admitted on focused proof without rereview (`evidence/reviews/39d1f3fc-4e6c-4b7d-8c48-5f6199d0cd79.md`); repaired by R1 (junior cf864452): the catalogue is a Record keyed by target, `EXPORT_FORMAT_NAMES` is gone, and a rows spec now fails if the close event stops dismissing the menu (checked against the toggle); 6 focused spec files 54 passed, fe-type-check and fe-lint rc 0. Next action: the staging walk on the Mac; the look follows TASK-SKRIPT-40-04-17 and adopts its tokens when they land. The mock omits the saved-date line and the zero-points note, which stay under the name (L8).
 

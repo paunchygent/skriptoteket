@@ -11,6 +11,8 @@ Relationships:
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
@@ -30,9 +32,29 @@ PUBLIC_APP_DESCRIPTION = (
 )
 PUBLIC_APP_PATH = "/public/apps/classroom.group-seating-studio"
 
+# Mirrors the head and body structure of frontend/apps/skriptoteket/index.html, the
+# source of the Vite build artifact, so the test does not depend on `pdm run fe-build`.
+SPA_INDEX_HTML = """<!doctype html>
+<html lang="sv">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Skriptoteket</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  </head>
+  <body class="font-sans bg-canvas text-navy">
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
+"""
+
 
 @pytest.fixture
-def client() -> TestClient:
+def client(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> TestClient:
+    index_path = tmp_path / "index.html"
+    index_path.write_text(SPA_INDEX_HTML, encoding="utf-8")
+    monkeypatch.setattr(spa_fallback, "_SPA_INDEX_PATH", index_path)
     app = FastAPI()
     app.state.public_app_base_url = "https://skriptoteket.hule.education"
     app.include_router(spa_fallback.router)

@@ -41,7 +41,7 @@ useDialogFocus(frame, {
   modal: () => true,
   takesFocus: () => true,
   initialFocus: () => input.value,
-  fallbackFocus: () => document.querySelector<HTMLElement>('[data-test="exam-workspace-save-menu"]'),
+  fallbackFocus: () => document.querySelector<HTMLElement>('[data-test="exam-workspace-save-as-command"]'),
   onClose: () => emit("close"),
 });
 

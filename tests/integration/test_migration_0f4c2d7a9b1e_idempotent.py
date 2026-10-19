@@ -17,8 +17,8 @@ from __future__ import annotations
 import pytest
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine
-from testcontainers.postgres import PostgresContainer
 
+from tests.fixtures.database_fixtures import PooledDatabase
 from tests.integration.migration_idempotency_support import assert_revision_is_idempotent
 
 _REVISION_ID = "0f4c2d7a9b1e"
@@ -64,10 +64,10 @@ async def _assert_guest_upgrade_consumption_schema(engine: AsyncEngine) -> None:
 
 @pytest.mark.docker
 def test_migration_0f4c2d7a9b1e_is_idempotent(
-    postgres_container: PostgresContainer,
+    empty_module_database: PooledDatabase,
 ) -> None:
     assert_revision_is_idempotent(
-        postgres_container=postgres_container,
+        empty_module_database=empty_module_database,
         revision_id=_REVISION_ID,
         schema_assertion=_assert_guest_upgrade_consumption_schema,
     )

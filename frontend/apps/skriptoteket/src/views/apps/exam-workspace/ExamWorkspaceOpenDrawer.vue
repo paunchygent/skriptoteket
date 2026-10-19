@@ -17,7 +17,7 @@
  *     validates files and runs every emitted intent.
  */
 
-import { computed, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 
 import type { ExamListOrdering, ExamWorkspaceDocumentSummary } from "../../../api/examWorkspace";
 import { UiGlyph } from "../../../components/ui";
@@ -48,6 +48,8 @@ const props = defineProps<{
   notes: string[];
   /** The formats the open exam saved in Mina filer this session, e.g. "QTI". */
   currentExports: string[];
+  /** Importera in the header asked for the file picker; acted on once, then reported as consumed. */
+  importPickPending?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -56,6 +58,7 @@ const emit = defineEmits<{
   open: [lineageId: string];
   setOrdering: [ordering: ExamListOrdering];
   retryConversion: [];
+  importPickConsumed: [];
 }>();
 
 const store = useInjectedExamWorkspaceStore();
@@ -91,6 +94,18 @@ function isGuestImportFile(file: File): boolean {
 function handlePickFile(): void {
   fileInput.value?.click();
 }
+
+/** The header's Importera request: open the picker unless importing is blocked, then report it handled. */
+function answerImportPick(): void {
+  if (!props.importPickPending) return;
+  if (!props.importBlocked) handlePickFile();
+  emit("importPickConsumed");
+}
+
+// Mounted: the drawer was opened by the request, so the file input exists only now.
+// Post flush: the drawer was already open, so the request arrives after its render.
+onMounted(answerImportPick);
+watch(() => props.importPickPending, answerImportPick, { flush: "post" });
 
 function handleFileInput(event: Event): void {
   const input = event.target as HTMLInputElement;

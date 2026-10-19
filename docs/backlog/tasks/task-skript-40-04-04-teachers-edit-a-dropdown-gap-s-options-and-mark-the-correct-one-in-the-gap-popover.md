@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: "2026-10-18"
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-19'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Independent ruthless-reviewer e7dac097 (Pi) approved the review-1 repair F1-F5 at 471f2209 with no findings (retained 01a14c27 evidence/reviews/TASK-SKRIPT-40-04-04/review-2.md); merged to main as 36ca27c0. The D3 walk failure was repaired under TASK-SKRIPT-40-04-08 WR1 (4885c37d, review cd5a1b4c, merged be979cd7). The Mac staging walk at cf9547fa passed the owed Validation walk: blocker jump, fix, then QTI export 200 (Mac .artifacts/staging-walk-cf9547fa/walk-record.md).'
 task_kind: story
 acceptance_criteria:
   - A teacher opens a dropdown gap's popover, adds, edits, removes and reorders options, marks the correct one, and export blocks in red with a one-click jump while a gap has fewer than two options, an empty option or none marked correct
@@ -47,6 +51,8 @@ Core vertical, in this order:
 Performance is not material. The bounded junior units are the popover editor, the change-type seed, and blockers plus mirror. The lead integrates.
 
 ## Walk Repair
+
+2026-10-19: done. The Mac staging walk at `cf9547fa` passed this task's Validation walk as the proof user, on a fresh import of the Svenska 2 rev11 QTI package (doc `807d5e7b`). Lucka 1 reduced to one option showed the blocker "Fråga 2: rullista med färre än två alternativ" and disabled every export. The jump focused Fråga 2, adding an option cleared the blocker, and the QTI export returned 200 (record: Mac `.artifacts/staging-walk-cf9547fa/walk-record.md`).
 
 The staging walk on 2026-10-19 (main eba9d0f2) failed D3: the jump for "rullista med färre än två alternativ" left every gap closed and focus on the page. Root cause: `useExamWorkspaceSaveFlow.ts` opened the gap with `chip.click()`, which never reaches ProseMirror's `handleClickOn`. The repair runs under TASK-SKRIPT-40-04-08 Walk repair unit WR1 (term R1 there): the jump dispatches a bubbling DOM event on the chip, the body editor opens that gap's popover, and the popover focuses its first option input. Proof: a fail-first Vitest spec through the real jump path, then the Mac re-walk. The task stays `in_progress` until review and the re-walk pass.
 

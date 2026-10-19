@@ -65,7 +65,7 @@ async function mountImported(layout: ExamWorkspaceLayout) {
 
 /** The title button lives in the shell's top bar on a phone, outside the wrapper. */
 async function clickTitle(): Promise<void> {
-  document.querySelector<HTMLElement>('[data-test="exam-workspace-title"]')?.click();
+  document.querySelector<HTMLElement>('[data-test="exam-workspace-details"]')?.click();
   await flushPromises();
 }
 
@@ -131,7 +131,7 @@ describe("ExamWorkspaceView frame layout", () => {
     expect(wrapper.find('[data-test="exam-workspace-question-list"]').exists()).toBe(false);
     expect(wrapper.find('[data-test="exam-workspace-item-editor"]').exists()).toBe(false);
     expect(wrapper.get('[data-test="exam-workspace-title"]').attributes("disabled")).toBeDefined();
-    expect(wrapper.get('[data-test="exam-workspace-save-menu"]').attributes("disabled")).toBeDefined();
+    expect(wrapper.get('[data-test="exam-workspace-save-as-command"]').attributes("disabled")).toBeDefined();
   });
 
   it("opens an imported exam with its list and editor and keeps the Öppna drawer docked on desktop", async () => {
@@ -145,7 +145,7 @@ describe("ExamWorkspaceView frame layout", () => {
       "NO-prov HT25",
     );
     expect(wrapper.get('[data-test="exam-workspace-save-state"]').text()).toContain("Sparat");
-    expect(wrapper.find('[data-test="exam-workspace-save-menu"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="exam-workspace-save-as-command"]').exists()).toBe(true);
   });
 
   it("closes the Öppna drawer after an import on tablet", async () => {
@@ -223,11 +223,11 @@ describe("ExamWorkspaceView frame layout", () => {
     expect(wrapper.find('[data-test="exam-workspace-list-back"]').exists()).toBe(false);
   });
 
-  it("orders the desktop toolbar Öppna, Spara som, Exportera, AI facit, Ångra and Gör om", async () => {
+  it("orders the desktop toolbar Öppna, Spara som, Exportera, Importera, PDF and AI facit", async () => {
     const wrapper = await mountImported("desktop");
     const order = [
-      "exam-workspace-open", "exam-workspace-save-menu", "exam-workspace-export",
-      "exam-workspace-suggest-all", "exam-workspace-undo", "exam-workspace-redo",
+      "exam-workspace-open", "exam-workspace-save-as-command", "exam-workspace-export",
+      "exam-workspace-import", "exam-workspace-print-preview-toggle", "exam-workspace-suggest-all",
     ];
     const found = wrapper.get('[data-test="exam-workspace-header"]').findAll("[data-test]")
       .map((element) => element.attributes("data-test"))
@@ -341,7 +341,7 @@ describe("ExamWorkspaceView frame layout", () => {
   it("docks the desktop drawer without taking focus", async () => {
     const { wrapper } = await mountExamWorkspace({}, "desktop", document.body);
     await importFixtureDocument(wrapper);
-    const title = wrapper.get('[data-test="exam-workspace-title"]').element as HTMLButtonElement;
+    const title = wrapper.get('[data-test="exam-workspace-details"]').element as HTMLButtonElement;
     title.focus();
 
     await clickTitle();
@@ -353,10 +353,10 @@ describe("ExamWorkspaceView frame layout", () => {
     wrapper.unmount();
   });
 
-  it("returns focus to the title button when Escape closes the tablet drawer", async () => {
+  it("returns focus to the details button when Escape closes the tablet drawer", async () => {
     const { wrapper } = await mountExamWorkspace({}, "tablet", document.body);
     await importFixtureDocument(wrapper);
-    const title = wrapper.get('[data-test="exam-workspace-title"]').element as HTMLButtonElement;
+    const title = wrapper.get('[data-test="exam-workspace-details"]').element as HTMLButtonElement;
 
     // A click that does not focus its button (Safari) leaves focus on the page.
     (document.activeElement as HTMLElement | null)?.blur();
@@ -375,7 +375,7 @@ describe("ExamWorkspaceView frame layout", () => {
   it("applies the floating focus contract when a desktop drawer is resized to tablet", async () => {
     const { layout, wrapper } = await mountExamWorkspace({}, "desktop", document.body);
     await importFixtureDocument(wrapper);
-    const title = wrapper.get('[data-test="exam-workspace-title"]').element as HTMLButtonElement;
+    const title = wrapper.get('[data-test="exam-workspace-details"]').element as HTMLButtonElement;
     title.focus();
     await clickTitle();
     const drawer = wrapper.get('[data-test="exam-workspace-drawer-details"]').element;

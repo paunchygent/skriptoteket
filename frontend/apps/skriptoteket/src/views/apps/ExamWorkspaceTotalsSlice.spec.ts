@@ -267,7 +267,7 @@ describe("workspace printed-total lines", () => {
     await wrapper.get('[data-test="exam-workspace-item-points-input"]').setValue("4");
     expect(wrapper.get(EXAM_POINTS).text()).toBe("Totalt 7 p");
     expect(wrapper.find(LINE).exists()).toBe(true);
-    expect(wrapper.get('[data-test="exam-workspace-save-menu"]').attributes("disabled")).toBeUndefined();
+    expect(wrapper.get('[data-test="exam-workspace-save-as-command"]').attributes("disabled")).toBeUndefined();
   });
 
   it("shows plain points on a differing part's row and in its instruction editor", async () => {
@@ -432,7 +432,7 @@ describe("answering a mismatch line", () => {
     releaseMove();
     await flushPromises();
     expect(wrapper.findAll(CHANGE).at(0)!.attributes("disabled")).toBeUndefined();
-    expect(wrapper.get('[data-test="exam-workspace-save-menu"]').attributes("disabled")).toBeUndefined();
+    expect(wrapper.get('[data-test="exam-workspace-save-as-command"]').attributes("disabled")).toBeUndefined();
   });
 });
 

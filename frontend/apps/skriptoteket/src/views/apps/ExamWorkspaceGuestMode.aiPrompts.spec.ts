@@ -137,7 +137,7 @@ describe("ExamWorkspaceView guest mode AI sign-in prompts", () => {
     await wrapper.get('[data-test="exam-workspace-guest-blank"]').trigger("click");
     await flushPromises();
 
-    await wrapper.get('[data-test="exam-workspace-title"]').trigger("click");
+    await wrapper.get('[data-test="exam-workspace-details"]').trigger("click");
     await flushPromises();
 
     const suggest = wrapper.get('[data-test="exam-workspace-content-suggest"]');
@@ -185,7 +185,7 @@ describe("ExamWorkspaceView guest mode AI sign-in prompts", () => {
     await flushPromises();
     expect(document.body.textContent ?? "").not.toContain(AI_ADMIN_ONLY_NOTE);
 
-    await wrapper.get('[data-test="exam-workspace-title"]').trigger("click");
+    await wrapper.get('[data-test="exam-workspace-details"]').trigger("click");
     await flushPromises();
     expect(wrapper.get('[data-test="exam-workspace-content-suggest"]').attributes("disabled")).toBeUndefined();
 

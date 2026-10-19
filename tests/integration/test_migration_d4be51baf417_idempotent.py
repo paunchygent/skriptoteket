@@ -5,8 +5,8 @@ from __future__ import annotations
 import pytest
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine
-from testcontainers.postgres import PostgresContainer
 
+from tests.fixtures.database_fixtures import PooledDatabase
 from tests.integration.migration_idempotency_support import assert_revision_is_idempotent
 
 pytestmark = [pytest.mark.integration, pytest.mark.docker]
@@ -24,9 +24,9 @@ async def _assert_bundle_files_schema(engine: AsyncEngine) -> None:
         assert tuple(column.one()) == ("jsonb", "NO", "'{}'::jsonb")
 
 
-def test_migration_d4be51baf417_is_idempotent(postgres_container: PostgresContainer) -> None:
+def test_migration_d4be51baf417_is_idempotent(empty_module_database: PooledDatabase) -> None:
     assert_revision_is_idempotent(
-        postgres_container=postgres_container,
+        empty_module_database=empty_module_database,
         revision_id="d4be51baf417",
         schema_assertion=_assert_bundle_files_schema,
     )

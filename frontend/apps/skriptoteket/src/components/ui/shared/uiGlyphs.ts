@@ -18,6 +18,7 @@ import {
   Bookmark,
   BookOpen,
   Check,
+  CloudCheck,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -38,6 +39,7 @@ import {
   EyeOff,
   FileArchive,
   FileHeadphone,
+  FileInput,
   FileMinus,
   FileSpreadsheet,
   FileText,
@@ -84,6 +86,8 @@ import {
   Sparkles,
   Square,
   SquareCheck,
+  SquareDashed,
+  SquareDashedText,
   Subscript,
   Superscript,
   TextAlignCenter,
@@ -164,7 +168,8 @@ export type UiGlyphActionMeaning =
   | "open-files"
   | "convert-type"
   | "export-checklist"
-  | "send";
+  | "send"
+  | "file-import";
 
 export type UiGlyphUtilityMeaning =
   | "info"
@@ -200,7 +205,9 @@ export type UiGlyphUtilityMeaning =
   | "checkbox-on"
   | "checkbox-off"
   | "focus-mode"
-  | "overview";
+  | "overview"
+  | "autosave-saved"
+  | "autosave-saving";
 
 export type UiGlyphEditorToolbarMeaning =
   | "bold"
@@ -215,7 +222,9 @@ export type UiGlyphEditorToolbarMeaning =
   | "superscript"
   | "heading-1"
   | "heading-2"
-  | "heading-3";
+  | "heading-3"
+  | "gap-tool"
+  | "empty-gap";
 
 export type UiGlyphMeaning =
   | UiGlyphNavigationMeaning
@@ -310,6 +319,7 @@ const actionGlyphs: Record<UiGlyphActionMeaning, UiGlyphSource> = {
   "convert-type": lucide(Replace),
   "export-checklist": lucide(ListChecks),
   send: lucide(SendHorizontal),
+  "file-import": lucide(FileInput),
 };
 
 const utilityGlyphs: Record<UiGlyphUtilityMeaning, UiGlyphSource> = {
@@ -347,6 +357,8 @@ const utilityGlyphs: Record<UiGlyphUtilityMeaning, UiGlyphSource> = {
   "checkbox-off": lucide(Square),
   "focus-mode": lucide(Maximize2),
   overview: lucide(LayoutDashboard),
+  "autosave-saved": lucide(CloudCheck),
+  "autosave-saving": lucide(LoaderCircle),
 };
 
 const editorToolbarGlyphs: Record<UiGlyphEditorToolbarMeaning, UiGlyphSource> = {
@@ -366,6 +378,8 @@ const editorToolbarGlyphs: Record<UiGlyphEditorToolbarMeaning, UiGlyphSource> = 
   "heading-1": lucide(Heading1),
   "heading-2": lucide(Heading2),
   "heading-3": lucide(Heading3),
+  "gap-tool": lucide(SquareDashedText),
+  "empty-gap": lucide(SquareDashed),
 };
 
 export const UI_GLYPHS: Readonly<Record<UiGlyphMeaning, UiGlyphSource>> = {

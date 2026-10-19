@@ -52,8 +52,7 @@ beforeEach(() => {
 
 describe("ExamWorkspaceView Spara som", () => {
   async function openSaveAs(wrapper: ViewWrapper) {
-    await wrapper.find('[data-test="exam-workspace-save-menu"]').trigger("click");
-    document.querySelector<HTMLElement>('[data-test="exam-workspace-save-as-option"]')!.click();
+    await wrapper.find('[data-test="exam-workspace-save-as-command"]').trigger("click");
     await flushPromises();
   }
 

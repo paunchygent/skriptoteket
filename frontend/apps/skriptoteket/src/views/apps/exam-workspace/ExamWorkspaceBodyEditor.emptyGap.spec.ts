@@ -222,6 +222,23 @@ describe("ExamWorkspaceBodyEditor Tom lucka emit", () => {
     host.host.unmount();
   });
 
+  it("inserts an empty gap when the Tom lucka toolbar button is clicked", async () => {
+    const host = mountHarness(plainGapItem());
+    await settle();
+
+    const editor = innerEditor(host);
+    editor.commands.setTextSelection(posIn(editor, "stjärna", 1));
+    await host.host.get('[data-test="exam-workspace-toolbar-empty-gap"]').trigger("click");
+    await settle();
+
+    const creations = creationsOf(host);
+    expect(creations).toHaveLength(1);
+    expect(creations[0]?.[2]).toBe("gap_001");
+    expect(creations[0]?.[3]).toBe("");
+    expect(popoverExists()).toBe(true);
+    host.host.unmount();
+  });
+
   it("opens the new gap's popover with the gap tool on", async () => {
     const host = mountHarness(plainGapItem());
     await settle();

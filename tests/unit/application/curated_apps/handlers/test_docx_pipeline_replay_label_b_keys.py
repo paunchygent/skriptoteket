@@ -5,6 +5,7 @@ key no longer ends the request, and a recording without its ``.request.txt`` sid
 be served (TASK-SKRIPT-REP-0046).
 """
 
+import copy
 from dataclasses import replace
 from pathlib import Path
 
@@ -42,13 +43,30 @@ _LABELED_EXAMS = [
 ]
 
 
+_CONVERTED: dict[
+    tuple[str, Path, Path | None],
+    tuple[tuple[tuple[str, str], ...], tuple[StructuredLLMRequest, ...]],
+] = {}
+
+
 async def _label_requests(
     exam: str, root: Path = RECORDINGS, corpus: Path | None = None
-) -> tuple[ReplayProvider, list[StructuredLLMRequest]]:
-    replay = build_replay(exam, root=root, corpus=corpus)
-    await replay.pipeline.convert(job=replay.job())
-    labels = [r for r in replay.provider.requests if r.output_spec.schema_name == "item_type_label"]
-    return replay.provider, labels
+) -> tuple[dict[str, str], list[StructuredLLMRequest]]:
+    """The recording served to each label request of one exam, and those requests.
+
+    The exam's pipeline runs once per process; every caller gets its own copies of the
+    cached result: the request models carry mutable schemas, so each is deep-copied.
+    """
+    key = (exam, root, corpus)
+    if key not in _CONVERTED:
+        replay = build_replay(exam, root=root, corpus=corpus)
+        await replay.pipeline.convert(job=replay.job())
+        labels = tuple(
+            r for r in replay.provider.requests if r.output_spec.schema_name == "item_type_label"
+        )
+        _CONVERTED[key] = (tuple(replay.provider.recording_ids.items()), labels)
+    ids, labels = _CONVERTED[key]
+    return dict(ids), copy.deepcopy(list(labels))
 
 
 def _copy(name: str, directory: Path, *, key: str | None = None) -> None:
@@ -62,11 +80,11 @@ def _copy(name: str, directory: Path, *, key: str | None = None) -> None:
 async def test_every_label_request_is_served_its_own_recording_once(
     exam: str, root: Path, corpus: Path | None
 ):
-    provider, labels = await _label_requests(exam, root, corpus)
+    recording_ids, labels = await _label_requests(exam, root, corpus)
     recorded = sorted(p.stem for p in (root / exam).glob("label_b_*.json"))
     assert sorted(r.item_id.replace(":", "_") for r in labels) == recorded
     for request in labels:
-        assert provider.recording_ids[request.item_id] == request.item_id.replace(":", "_")
+        assert recording_ids[request.item_id] == request.item_id.replace(":", "_")
 
 
 async def test_a_changed_label_request_is_unmatched_and_the_original_is_served_once():

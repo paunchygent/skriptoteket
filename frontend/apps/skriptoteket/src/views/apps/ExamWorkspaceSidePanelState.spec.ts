@@ -69,7 +69,7 @@ async function mountImported(layout: ExamWorkspaceLayout) {
 
 /** The title button lives in the shell's top bar on a phone, outside the wrapper. */
 async function clickTitle(): Promise<void> {
-  document.querySelector<HTMLElement>('[data-test="exam-workspace-title"]')?.click();
+  document.querySelector<HTMLElement>('[data-test="exam-workspace-details"]')?.click();
   await flushPromises();
 }
 

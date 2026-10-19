@@ -327,16 +327,18 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
   });
 
 
-  it("offers only Spara som in the save menu, and no reload of the saved version", async () => {
+  it("offers Spara som as one command that opens the name dialog, with no save menu", async () => {
     const { wrapper } = await mountExamWorkspace();
     await importFixtureDocument(wrapper);
 
-    await wrapper.find('[data-test="exam-workspace-save-menu"]').trigger("click");
+    const command = wrapper.get('[data-test="exam-workspace-save-as-command"]');
+    expect(command.attributes("aria-label")).toBe("Spara som …");
+    expect(command.attributes("aria-haspopup")).toBeUndefined();
+    await command.trigger("click");
+    await flushPromises();
 
-    const menu = document.body.querySelector<HTMLElement>('[role="menu"]')!;
-    expect(Array.from(menu.querySelectorAll('[role="menuitem"]')).map((entry) => entry.textContent?.trim()))
-      .toEqual(["Spara som …"]);
-    expect(menu.textContent).not.toContain("Läs in på nytt");
+    expect(document.body.querySelector('[role="menu"]')).toBeNull();
+    expect(wrapper.find('[data-test="exam-workspace-save-as"]').exists()).toBe(true);
   });
 
   it("makes two gaps with the gap tool and no popover, then turns it off with Escape", async () => {
