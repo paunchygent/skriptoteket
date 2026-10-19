@@ -23,13 +23,11 @@ backlog_document_profile: contract-derived
 
 ## Implementation Contract
 
-The user ruled on 2026-10-19 (given on the Mac, relayed by the Mac parent) that the printed PDF keeps each question's text together across page breaks. Their example of a wrong split: omprov Fråga 3 "Identifiera huvudord / Stryk under huvudordet i varje nominalfras." ends one page, and its items 1-4 and "Poäng: 4 poäng" start the next. This task makes the print preview, the student PDF and the PDF med facit follow K1-K5. It is proposed until the user answers the open questions and accepts the plan.
+The user ruled on 2026-10-19 (given on the Mac, relayed by the Mac parent) that the printed PDF keeps each question's text together across page breaks. Their example of a wrong split: omprov Fråga 3 "Identifiera huvudord / Stryk under huvudordet i varje nominalfras." ends one page, and its items 1-4 and "Poäng: 4 poäng" start the next. This task makes the print preview, the student PDF and the PDF med facit follow K1-K5. The user answered the open questions on 2026-10-19 (K12-K15).
 
 Root cause, from the code at `61e460f6`: a question prints as one flat `<section class="print-question">` of sibling blocks (`exam_print_html.py:197-221`, built by `exam_print_document._question_blocks`, lines 272-330): an `h3`, one `p.print-body` per body paragraph (the items are paragraphs, not a list), `p.print-points`, then the answer form (`div.writing-area`, one `p.print-option` per alternative, or `table.print-grid`). The section and its paragraphs carry no fragmentation rule, so WeasyPrint may break between any two siblings; `h3 { break-after: avoid }` only binds the heading to the first paragraph (`exam_print_html.py:65-73`). The only other rules are `break-inside: avoid` on `.print-instruction`, `.writing-line` and `.print-answer-key`.
 
 The change: the print document model gives each question two explicit groups, the question text and the answer form (K8). The HTML wraps the text group and the alternatives in their own keep-together `div` and stops the split inside single paragraphs and alternatives (K9). The DOCX writer reads the same groups in the same order and its output stays unchanged (K6).
-
-Open before ready (retained plan rows Q1-Q4, each with a recommendation): whether a part's instruction keeps with its first question; whether "Poäng: N poäng" keeps with the question text or with the answer form; where a block taller than one page splits; whether ordering steps and the matching grid follow the alternatives rule.
 
 Non-goals: DOCX page layout (K6); the Exam.net import PDF; the stray "/" line under the last item before "Poäng", which TASK-SKRIPT-39-04-20 fixes (K7); facit answer-key placement, which keeps its current `break-inside: avoid`.
 
@@ -49,8 +47,8 @@ The core vertical is the question's two groups in the print document model, wrap
 Units, one fresh junior each, after the user accepts the plan:
 
 1. Fail-first page-break tests. Add `tests/unit/infrastructure/curated_apps/test_exam_print_page_breaks.py`: lay out the production HTML (`build_print_document` -> `render_print_html` -> `weasyprint.HTML(string=...).render()`) for STUDENT and FACIT, reusing the box-tree walk of `test_exam_print_pdf_docx_geometry.py`. Parametrise the content before the question over a range of heights and assert the invariant on every render. Cases are listed under Validation. The K1 and K4 cases fail on `61e460f6`.
-2. Model groups. `exam_print_document.py`: `PrintQuestion` carries the question text group and the answer form group (K8, Q2); `exam_workspace_docx_writer.py` iterates both in order. Update `test_exam_print_document.py` and `test_exam_print_document_answer_forms.py`. Done when the existing DOCX writer and `test_exam_print_pdf_docx_geometry.py` tests pass unchanged.
-3. HTML and CSS, after unit 2. `exam_print_html.py`: wrap the text group and the alternatives or ordering steps in `div` groups with `break-inside: avoid`, add `break-inside: avoid` to `p.print-body`, `p.print-option` and `table.print-grid`, and apply the Q1 decision to `div.print-instruction` (K9, Q1, Q3, Q4). Update `test_exam_print_html.py`. Done when unit 1's tests pass.
+2. Model groups. `exam_print_document.py`: `PrintQuestion` carries the question text group and the answer form group (K8, K13); `exam_workspace_docx_writer.py` iterates both in order. Update `test_exam_print_document.py` and `test_exam_print_document_answer_forms.py`. Done when the existing DOCX writer and `test_exam_print_pdf_docx_geometry.py` tests pass unchanged.
+3. HTML and CSS, after unit 2. `exam_print_html.py`: wrap the text group and the alternatives or ordering steps in `div` groups with `break-inside: avoid`, add `break-inside: avoid` to `p.print-body`, `p.print-option` and `table.print-grid`, and give `div.print-instruction` `break-after: avoid` so a part's instruction stays with its first question's text (K9, K12, K14, K15). Update `test_exam_print_html.py`. Done when unit 1's tests pass.
 
 ## Validation
 
@@ -59,7 +57,9 @@ Focused tests only:
 - `tests/unit/infrastructure/curated_apps/test_exam_print_page_breaks.py` (new, fail-first), STUDENT and FACIT:
   - the omprov Fråga 3 fixture (heading, "Identifiera huvudord", "Stryk under huvudordet i varje nominalfras.", items 1-4, "Poäng: 4 poäng") placed near a page end: the heading and item 4 lay out on the same page at every tested height (K1);
   - a choice question near a page end: all alternatives lay out on one page; where the text fits and the alternatives do not, the text stays on the earlier page and the alternatives start the next (K3, K4);
-  - a question whose text is taller than one page: it splits, and the split falls as Q3 decides (K5);
+  - a question whose text is taller than one page: it splits, and the split falls between paragraphs, never inside one (K5, K14);
+  - a part instruction followed by a question near a page end: the instruction and the question's text lay out on the same page (K12);
+  - an ordering question and a matching question near a page end: all steps, and the whole grid, lay out on one page (K15);
   - a free-text question whose writing lines cross a page end: the lines continue on the next page and the text stays whole (K2).
 - `tests/unit/domain/curated_apps/exam_workspace/test_exam_print_html.py`, `test_exam_print_document.py`, `test_exam_print_document_answer_forms.py`.
 - DOCX unchanged: the existing DOCX writer tests and `tests/unit/infrastructure/curated_apps/test_exam_print_pdf_docx_geometry.py`.
@@ -88,7 +88,11 @@ Focused tests only:
 | K9  | The HTML wraps the question text and a question's alternatives each in a `div` with `break-inside: avoid`; single paragraphs and alternatives get `break-inside: avoid`; groups are `div` elements of `p`, not lists. |
 | K10 | Fail-first WeasyPrint tests lay out the production HTML for STUDENT and FACIT over a range of preceding heights and assert each rule on every render. |
 | K11 | A staging walk of the preview, the student PDF and the PDF med facit with the omprov exam closes the task. |
+| K12 | A part's instruction stays on the same page as its first question's text (user 2026-10-19). |
+| K13 | "Poäng: N poäng" belongs to the question text group (user 2026-10-19). |
+| K14 | A block taller than one page splits only between paragraphs, items or alternatives, never inside one, unless one paragraph is itself taller than a page (user 2026-10-19). |
+| K15 | Ordering steps and the matching grid stay together on one page, like the alternatives (user 2026-10-19). |
 
 ## Resume here
 
-2026-10-19, lead `c30dba85` (implementation-specialist): plan written, status proposed. Next: the user answers Q1-Q4 in the retained plan; the lead closes those rows, adds their terms here, validates the plan with `--require-closed`, and launches unit 1 and unit 2 in parallel, then unit 3.
+2026-10-19, lead `c30dba85`: the user answered Q1-Q4 with A (K12-K15); the plan validates with `--require-closed`. Units 1 and 2 launched in parallel (work orders under the retained root `evidence/work-orders/`); unit 3 follows unit 2. The domain suite waits for the orchestrator's slot.
