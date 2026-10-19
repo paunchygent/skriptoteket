@@ -1,12 +1,11 @@
 ---
 type: task
 id: TASK-SKRIPT-41-02-05
-title: A guest draft that Mina filer rejects for good stops retrying and is offered
-  for download or removal
+title: A guest draft that Mina filer rejects for good stops retrying and is offered for download or removal
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-19'
 status: in_progress
 closeout_review:
@@ -14,12 +13,12 @@ closeout_review:
   status: not_started
 task_kind: story
 acceptance_criteria:
-- A guest draft the server rejects for good (any 4xx except 401, 408 and 429, a declared picture without bytes, or a draft without its position snapshot) is posted at most once per draft cursor; later page loads make no POST and show one notice
-- The notice says the exam could not be moved to Mina filer and offers two glyph actions, download as a file and remove from the browser, with names only in tooltip and aria-label
-- A full Mina filer gets its own notice with a retry glyph beside download and remove, and is never retried automatically
-- Transient failures (network, 5xx, 408, 429) render the workspace, show one honest toast and retry up to three times with doubling delay; a late success shows a toast and keeps the open exam
-- A 401 or superseded sign-in records nothing and shows nothing; the next signed-in load tries again
-- A draft whose position snapshot is missing no longer stops the signed-in workspace from rendering
+  - A guest draft the server rejects for good (any 4xx except 401, 408 and 429, a declared picture without bytes, or a draft without its position snapshot) is posted at most once per draft cursor; later page loads make no POST and show one notice
+  - The notice says the exam could not be moved to Mina filer and offers two glyph actions, download as a file and remove from the browser, with names only in tooltip and aria-label
+  - A full Mina filer gets its own notice with a retry glyph beside download and remove, and is never retried automatically
+  - Transient failures (network, 5xx, 408, 429) render the workspace, show one honest toast and retry up to three times with doubling delay; a late success shows a toast and keeps the open exam
+  - A 401 or superseded sign-in records nothing and shows nothing; the next signed-in load tries again
+  - A draft whose position snapshot is missing no longer stops the signed-in workspace from rendering
 story: ST-SKRIPT-41-02
 backlog_document_profile: contract-derived
 ---
@@ -111,20 +110,20 @@ Stop and report in any of these cases:
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| D1  | Root cause: `useExamWorkspaceGuestHandoff.ts:90-93` discards the failure and retries on every mount; `:81` can reject before the view renders. The v8 cause is a hypothesis until the walk. |
+| ID  | Decided contract term                                                                                                                                                                                                                                                                                         |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Root cause: `useExamWorkspaceGuestHandoff.ts:90-93` discards the failure and retries on every mount; `:81` can reject before the view renders. The v8 cause is a hypothesis until the walk.                                                                                                                   |
 | D2  | One pure function classifies: 401 and a superseded sign-in are `deferred`; 408, 429, 5xx, other statuses and non-API throws are `transient`; a 422 whose `details.reason` is `vault_full` is `vault_full`; every other 4xx (400, 403, 404, 409, 413, 422) is `permanent`. No message or code text is matched. |
-| D3  | A declared picture without bytes and a draft without its position snapshot are `permanent` and decided before any POST. |
-| D4  | A `permanent` or `vault_full` rejection is recorded as `{cursor, reason}` in the zod-checked localStorage key `skriptoteket.exam-workspace.guest-handoff-rejection`, every access guarded; a record for another cursor is cleared; no versioned reader. `examWorkspaceGuestDraftStorage.ts` is unchanged. |
-| D5  | `runGuestHandoff` shows no toast; the host controller owns every user message. |
-| D6  | The first attempt gates the view. A transient failure renders the view, shows one toast and retries at most three times with doubling delay, cancelled on unmount. After the last retry fails one more toast says the next opening tries again. |
-| D7  | A late success (background or manual retry) shows a toast and keeps the open exam (Q1). |
-| D8  | 403 is permanent (Q2). |
-| D9  | Download is client-side: the stored draft record as JSON through `triggerBrowserDownload`, named `<saved title>.json` (Q4). The server exports would reject an outdated draft too. |
-| D10 | Known limit (Q3): the download holds the draft JSON without picture bytes. Follow-up: decide whether pictures travel with the file before release. |
-| D11 | Remove is one click with no confirm (Q4): `clearIf(cursor)`, then the record is cleared and the notice closes. |
-| D12 | A full Mina filer is never retried automatically; its notice adds a retry glyph that posts once, ignoring the record. |
-| D13 | The server marks a full Mina filer with `details: {"reason": "vault_full"}` on the existing 422 `VALIDATION_ERROR`, following the `asset_mismatch` precedent; no new error code. |
-| D14 | The notice is rendered by `ExamWorkspaceTeacherHost.vue` above the view, like the guest host's notices; `ExamWorkspaceView.vue` is unchanged. Actions are glyphs from `uiGlyphs` (`download`, `delete`, `retry`) with names in tooltip and aria-label only. |
-| D15 | Copy C1-C8 is provisional until ui-copy review approves it. |
+| D3  | A declared picture without bytes and a draft without its position snapshot are `permanent` and decided before any POST.                                                                                                                                                                                       |
+| D4  | A `permanent` or `vault_full` rejection is recorded as `{cursor, reason}` in the zod-checked localStorage key `skriptoteket.exam-workspace.guest-handoff-rejection`, every access guarded; a record for another cursor is cleared; no versioned reader. `examWorkspaceGuestDraftStorage.ts` is unchanged.     |
+| D5  | `runGuestHandoff` shows no toast; the host controller owns every user message.                                                                                                                                                                                                                                |
+| D6  | The first attempt gates the view. A transient failure renders the view, shows one toast and retries at most three times with doubling delay, cancelled on unmount. After the last retry fails one more toast says the next opening tries again.                                                               |
+| D7  | A late success (background or manual retry) shows a toast and keeps the open exam (Q1).                                                                                                                                                                                                                       |
+| D8  | 403 is permanent (Q2).                                                                                                                                                                                                                                                                                        |
+| D9  | Download is client-side: the stored draft record as JSON through `triggerBrowserDownload`, named `<saved title>.json` (Q4). The server exports would reject an outdated draft too.                                                                                                                            |
+| D10 | Known limit (Q3): the download holds the draft JSON without picture bytes. Follow-up: decide whether pictures travel with the file before release.                                                                                                                                                            |
+| D11 | Remove is one click with no confirm (Q4): `clearIf(cursor)`, then the record is cleared and the notice closes.                                                                                                                                                                                                |
+| D12 | A full Mina filer is never retried automatically; its notice adds a retry glyph that posts once, ignoring the record.                                                                                                                                                                                         |
+| D13 | The server marks a full Mina filer with `details: {"reason": "vault_full"}` on the existing 422 `VALIDATION_ERROR`, following the `asset_mismatch` precedent; no new error code.                                                                                                                              |
+| D14 | The notice is rendered by `ExamWorkspaceTeacherHost.vue` above the view, like the guest host's notices; `ExamWorkspaceView.vue` is unchanged. Actions are glyphs from `uiGlyphs` (`download`, `delete`, `retry`) with names in tooltip and aria-label only.                                                   |
+| D15 | Copy C1-C8 is provisional until ui-copy review approves it.                                                                                                                                                                                                                                                   |
