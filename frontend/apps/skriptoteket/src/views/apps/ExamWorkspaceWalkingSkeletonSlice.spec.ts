@@ -33,6 +33,7 @@ import {
   addQuestion,
   buildTwoGapResponse,
   clickGap,
+  clickWord,
   commitGapRow,
   firstSaveRequest,
   gapRowInputs,
@@ -356,5 +357,41 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
     expect(Array.from(menu.querySelectorAll('[role="menuitem"]')).map((entry) => entry.textContent?.trim()))
       .toEqual([expect.stringContaining("Spara"), "Spara som …"]);
     expect(menu.textContent).not.toContain("Läs in på nytt");
+  });
+
+  it("makes two gaps with the gap tool and no popover, then turns it off with Escape", async () => {
+    apiMocks.saveExamWorkspaceDocument.mockResolvedValue(buildResponse({ version: 2 }));
+    const { wrapper } = await mountExamWorkspace();
+    await importFixtureDocument(wrapper);
+
+    await selectItemRow(wrapper, "item_004");
+    await wrapper.find('[data-test="exam-workspace-toolbar-gap-tool"]').trigger("click");
+    expect(
+      wrapper.find('[data-test="exam-workspace-toolbar-gap-tool"]').attributes("aria-pressed"),
+    ).toBe("true");
+
+    await clickWord(wrapper, "kokar");
+    await clickWord(wrapper, "grader");
+    await flushPromises();
+
+    expect(document.querySelector('[data-test="exam-workspace-gap-popover"]')).toBeNull();
+
+    wrapper.get('[data-test="exam-workspace-body-editor-surface"]').element.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }),
+    );
+    await flushPromises();
+    expect(
+      wrapper.find('[data-test="exam-workspace-toolbar-gap-tool"]').attributes("aria-pressed"),
+    ).toBe("false");
+
+    await saveDocument(wrapper);
+
+    const gapItem = lastSavedDocument(apiMocks.saveExamWorkspaceDocument).items.find(
+      (item) => item.item_id === "item_004",
+    );
+    // `withNewGap` keeps the gap records in body order: the clicked words sit
+    // around the imported gap_001.
+    expect(gapItem?.gaps.map((gap) => gap.gap_id)).toEqual(["gap_002", "gap_001", "gap_003"]);
+    expect(gapItem?.gaps.map((gap) => gap.accepted_values)).toEqual([["kokar"], ["100"], ["grader"]]);
   });
 });

@@ -18,7 +18,7 @@ import {
   releaseEditor,
   text,
 } from "./ExamWorkspaceRichTextEditor.specSupport";
-import { wordRangeAt, wordRangeAtDocPosition } from "./examWorkspaceGapWord";
+import { wordRangeAt, wordRangeAtCharacter, wordRangeAtDocCharacter, wordRangeAtDocPosition } from "./examWorkspaceGapWord";
 
 describe("wordRangeAt", () => {
   it("resolves a caret inside a word to the whole word", () => {
@@ -60,6 +60,39 @@ describe("wordRangeAt", () => {
   it("resolves a caret next to punctuation at end-of-word offset to the word", () => {
     expect(wordRangeAt("Paris.", 5)).toEqual({ from: 0, to: 5 });
     expect(wordRangeAt("Paris.", 6)).toBeNull();
+  });
+});
+
+describe("wordRangeAtCharacter", () => {
+  it("returns null for a space between two words", () => {
+    expect(wordRangeAtCharacter("Solen är", 5)).toBeNull();
+  });
+
+  it("resolves a letter to its whole word on either side of the space", () => {
+    expect(wordRangeAtCharacter("Solen är", 4)).toEqual({ from: 0, to: 5 });
+    expect(wordRangeAtCharacter("Solen är", 6)).toEqual({ from: 6, to: 8 });
+  });
+
+  it("returns null for a period after a word", () => {
+    expect(wordRangeAtCharacter("Paris.", 5)).toBeNull();
+  });
+
+  it("resolves the letter before the period to the whole word", () => {
+    expect(wordRangeAtCharacter("Paris.", 4)).toEqual({ from: 0, to: 5 });
+  });
+
+  it("resolves Swedish letters to the whole word", () => {
+    expect(wordRangeAtCharacter("åäö", 1)).toEqual({ from: 0, to: 3 });
+  });
+
+  it("keeps an inner hyphen inside one word but rejects a trailing hyphen", () => {
+    expect(wordRangeAtCharacter("Stockholms-läns", 11)).toEqual({ from: 0, to: 15 });
+    expect(wordRangeAtCharacter("ord- ", 3)).toBeNull();
+  });
+
+  it("returns null outside the text", () => {
+    expect(wordRangeAtCharacter("Paris", -1)).toBeNull();
+    expect(wordRangeAtCharacter("Paris", 5)).toBeNull();
   });
 });
 
@@ -107,5 +140,34 @@ describe("wordRangeAtDocPosition", () => {
   it("returns null for a caret between two spaces", async () => {
     const opened = await mountEditor({ body: [paragraph(text("a  b"))] });
     expect(wordRangeAtDocPosition(opened.editor.state.doc, posIn(opened.editor, "a  b", 2))).toBeNull();
+  });
+});
+
+describe("wordRangeAtDocCharacter", () => {
+  afterEach(() => {
+    releaseEditor();
+  });
+
+  it("resolves a word split across a bold mark to document positions", async () => {
+    const opened = await mountEditor({
+      body: [paragraph(text("Huvudstaden är Stock"), text("holm", ["bold"]), text("."))],
+    });
+    const start = posIn(opened.editor, "Stock", 0);
+    expect(wordRangeAtDocCharacter(opened.editor.state.doc, start + 2)).toEqual({
+      from: start,
+      to: start + "Stockholm".length,
+    });
+  });
+
+  it("returns null for a space character between two words", async () => {
+    const opened = await mountEditor({ body: [paragraph(text("Solen är"))] });
+    const space = posIn(opened.editor, "Solen är", 5);
+    expect(wordRangeAtDocCharacter(opened.editor.state.doc, space)).toBeNull();
+  });
+
+  it("returns null for a period character after a word", async () => {
+    const opened = await mountEditor({ body: [paragraph(text("Paris."))] });
+    const period = posIn(opened.editor, "Paris.", 5);
+    expect(wordRangeAtDocCharacter(opened.editor.state.doc, period)).toBeNull();
   });
 });

@@ -23,12 +23,24 @@
  *   it makes it the surface the shared formatting toolbar acts on. The target
  *   also carries `makeGap`: the selection, or the word at the caret, becomes
  *   one new gap in one `createGap` event, never an `update`. A click inside a
- *   word shows a small floating "Lucka" button above that word ("Gör till
- *   lucka" tooltip and accessible name) while a next gap id is available;
- *   one click on it converts the word. The button
+ *   word shows a small glyph-only floating button ("Gör till lucka" tooltip
+ *   and accessible name only) in the line gap under that word's end, covering
+ *   no letters; Tab in the surface moves focus to it while it stays shown,
+ *   Enter or Space converts the word, Escape hides it and returns focus to
+ *   the surface with the caret where it was, Shift+Tab returns focus to the
+ *   surface and keeps it shown, and Tab from it moves focus past the editor
+ *   and hides it. While the optional `gapTool` prop is
+ *   true, a click on the pointer-hit word or a primary drag selection inside
+ *   one paragraph becomes a gap at once through the same replacement, and
+ *   the button never shows: a click on a space or punctuation only places
+ *   the caret, and a release converts only after a primary press started in
+ *   this editor. Escape in the surface reaches the owner as `escape` (after the
+ *   button takes its own Escape), so the owner closes a popover first and
+ *   the tool second. The button
  *   teleports to the document body and sits fixed at viewport coordinates, so
  *   the editor's clipping never cuts it; later transactions keep it while the
- *   document is unchanged and the caret stays inside the word.
+ *   document is unchanged and the caret stays inside the word. A blur whose
+ *   focus moves into the button keeps it; any other blur hides it.
  *
  * Relationships:
  *   - `examWorkspaceRichTextSchema` builds the editor's extensions;
@@ -37,7 +49,8 @@
  *   - `examWorkspaceRichTextTarget` registers the surface for the toolbar.
  *   - `useExamWorkspaceMakeGap` owns the Lucka command and the floating
  *     button; it resolves words with `examWorkspaceGapWord`.
- *   - `examWorkspaceHistoryKeys` receives the undo and redo shortcuts.
+ *   - `examWorkspaceHistoryKeys` receives the undo and redo shortcuts; the
+ *     gap tool shortcut reaches the owner as `toggleGapTool`.
  *   - Atom and heading styles are global in `examWorkspace.css`.
  */
 
@@ -64,7 +77,7 @@ import {
   examRichTextExtensions,
 } from "./examWorkspaceRichTextSchema";
 import type { ExamGapState } from "./examWorkspaceRichTextSchema";
-import { useExamWorkspaceMakeGap } from "./useExamWorkspaceMakeGap";
+import { MAKE_GAP_BUTTON_GLYPH, useExamWorkspaceMakeGap } from "./useExamWorkspaceMakeGap";
 import { useRichTextTargetRegistry } from "./examWorkspaceRichTextTarget";
 import type { RichTextHeadingLevel, RichTextTarget } from "./examWorkspaceRichTextTarget";
 
@@ -92,6 +105,8 @@ const props = withDefaults(
     gapsInteractive?: boolean;
     /** The id the next created gap takes; the floating gap button needs a string. */
     nextGapId?: string | null;
+    /** While true, a word click or a drag selection becomes a gap at once. */
+    gapTool?: boolean;
   }>(),
   {
     disabled: false,
@@ -103,6 +118,7 @@ const props = withDefaults(
     assetUrls: undefined,
     gapsInteractive: false,
     nextGapId: undefined,
+    gapTool: false,
   },
 );
 
@@ -111,6 +127,13 @@ const emit = defineEmits<{
   /** One new gap replaced text at the caret: the owner adds the gap record. */
   createGap: [body: NativeExamBodyParagraph[], gapId: string, seed: string];
   activateGap: [gapId: string, element: HTMLElement];
+  /** Ctrl+Alt+G (Cmd+Option+G on macOS) in an editor whose gaps are interactive. */
+  toggleGapTool: [];
+  /**
+   * Escape in the surface, after the floating button takes its own Escape.
+   * The owner closes an open gap popover first and the gap tool second.
+   */
+  escape: [];
   focus: [];
 }>();
 
@@ -144,6 +167,13 @@ const editor = useEditor({
     pictureUrl: (assetId) => props.assetUrls?.[assetId],
     onUndo: () => historyKeys?.undo(),
     onRedo: () => historyKeys?.redo(),
+    onToggleGapTool: () => {
+      if (!canMakeGap()) {
+        return false;
+      }
+      emit("toggleGapTool");
+      return true;
+    },
   }),
   editorProps: {
     attributes: surfaceAttributes(),
@@ -161,9 +191,30 @@ const editor = useEditor({
     handleClick: (view, pos, event) => {
       return handleMakeGapClick(view, pos, event);
     },
+    handleDOMEvents: {
+      mousedown: (_view, event) => {
+        handleGapToolMouseDown(event);
+        return false;
+      },
+      mouseup: (_view, event) => {
+        handleGapToolMouseUp(event);
+        return false;
+      },
+    },
     handleKeyDown: (view, event) => {
+      if (event.key === "Tab" && !event.shiftKey && makeGapButton.value !== null) {
+        event.preventDefault();
+        // A roving hand-off: Tab in the surface reaches the floating action
+        // without moving the caret, and the action stays shown for it.
+        focusMakeGapButton();
+        return true;
+      }
       if (event.key === "Escape" && makeGapButton.value !== null) {
         hideMakeGap();
+        return false;
+      }
+      if (event.key === "Escape") {
+        emit("escape");
         return false;
       }
       const { selection } = view.state;
@@ -209,7 +260,11 @@ const editor = useEditor({
     registry.activate(target);
     emit("focus");
   },
-  onBlur: () => {
+  onBlur: ({ event }) => {
+    const target = event.relatedTarget;
+    if (target instanceof HTMLElement && target === makeGapButtonElement.value) {
+      return;
+    }
     hideMakeGap();
   },
 });
@@ -221,13 +276,19 @@ const {
   makeGap,
   confirmMakeGap,
   handleMakeGapClick,
+  handleGapToolMouseDown,
+  handleGapToolMouseUp,
   maybeHideMakeGapButton,
   hideMakeGap,
   removeMakeGapListeners,
+  focusMakeGapButton,
+  handleMakeGapButtonKeyDown,
+  handleMakeGapButtonFocusOut,
 } = useExamWorkspaceMakeGap({
   editor,
   canMakeGap,
   nextGapId: () => props.nextGapId,
+  gapTool: () => props.gapTool,
 });
 
 function surfaceAttributes(): Record<string, string> {
@@ -325,6 +386,15 @@ watch(
   },
 );
 
+watch(
+  () => props.gapTool,
+  (gapTool) => {
+    if (gapTool) {
+      hideMakeGap();
+    }
+  },
+);
+
 /** Redraw gap labels and pictures in place, without a document change. */
 function redrawAtoms(): void {
   const view = editor.value?.view;
@@ -380,19 +450,20 @@ defineExpose({
         v-if="makeGapButton !== null"
         ref="makeGapButtonElement"
         type="button"
-        class="fixed z-30 inline-flex items-center gap-1 border border-navy/60 bg-panel px-2 py-1 text-xs text-navy shadow"
-        :style="{ left: `${makeGapButton.left}px`, top: `${makeGapButton.top}px` }"
+        class="fixed z-30 inline-flex items-center justify-center text-navy focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action/40"
+        :style="{ left: `${makeGapButton.left}px`, top: `${makeGapButton.top}px`, width: `${makeGapButton.width}px`, height: `${makeGapButton.height}px` }"
         aria-label="Gör till lucka"
         title="Gör till lucka"
         data-test="exam-workspace-make-gap"
         @mousedown.prevent
         @click="confirmMakeGap"
+        @keydown="handleMakeGapButtonKeyDown"
+        @focusout="handleMakeGapButtonFocusOut"
       >
         <TextCursorInput
-          :size="14"
+          :size="makeGapButton.height < MAKE_GAP_BUTTON_GLYPH ? makeGapButton.height : MAKE_GAP_BUTTON_GLYPH"
           aria-hidden="true"
         />
-        Lucka
       </button>
     </Teleport>
   </div>
