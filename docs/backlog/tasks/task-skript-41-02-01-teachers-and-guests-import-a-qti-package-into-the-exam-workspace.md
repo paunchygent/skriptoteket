@@ -80,12 +80,15 @@ Stop and report if the Exam.net-accepted fixture shows a round-trip loss that is
   open to every role past the REP-0044 Word gate.
 - Done after the merge: U8-U12, U9 (commits 820b6056..4b254bae); review
   596c1654 at 4b254bae returned changes_requested (F1-F5 high, F6-F7 medium).
-- Repair in progress: 8e78331a splits the reader, mapper, DI provider and
-  import handlers by responsibility (F7 production files). Running: R-xml (F1,
-  F6, F2: defusedxml entry point, depth bound, repeated references refused)
-  and R-scores (F3, F4, F5: bounded numbers, no guessed scores, zero kept).
-  Then the over-long test files are split, focused proof, a suite slot from
-  the parent (shared DI and handler modules moved), and rereview of F1-F5.
+- Repair done: 8e78331a production splits (F7); 94b22c51 hardened XML entry
+  point and refused repeated references (F1, F6, F2); 2afe9833 and 91b914a3
+  bounded, exact scores and kept zeros (F3, F4, F5); d4a3991a test splits (F7).
+  Lint, typecheck and 407 focused tests plus the PostgreSQL QTI API test pass.
+- Next: one domain suite on the parent's go (shared DI and handler modules
+  moved), then rereview of F1-F5 by 596c1654 through the parent.
+- Product consequence of F4: a part with two or more gap children imports
+  those children with points absent and review required, because the export
+  states only rounded-down per-gap shares.
 - Open finding: the plain space between two marked runs is lost to
   `ElementTree.indent` in the writer. After TASK-SKRIPT-REP-0048 lands on main,
   merge it and flip
