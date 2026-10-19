@@ -15,7 +15,7 @@ import { describe, expect, it } from "vitest";
 
 import type { NativeExamChoice, NativeExamGap } from "../../../api/examWorkspace";
 import ExamWorkspaceGapPopover from "./ExamWorkspaceGapPopover.vue";
-import { buildGapItem, clickGap, mountEditor } from "./ExamWorkspaceBodyEditor.specSupport";
+import { buildGapItem, clickGap, documentControl, mountEditor, popoverExists, popoverRoot } from "./ExamWorkspaceBodyEditor.specSupport";
 import { buildGap } from "./examWorkspaceKeyedItems.specSupport";
 import { plainBody } from "./examWorkspaceRichText";
 
@@ -38,7 +38,7 @@ function dropdownGap(overrides: Partial<NativeExamGap> = {}): NativeExamGap {
 function mountPopover(gap: NativeExamGap, dropdown = true) {
   return mount(ExamWorkspaceGapPopover, {
     attachTo: document.body,
-    props: { dropdown, gap, gapId: "gap_001", gapNumber: 1, itemId: "item_001", left: 0, top: 0 },
+    props: { anchor: document.body, dropdown, gap, gapId: "gap_001", gapNumber: 1, itemId: "item_001" },
   });
 }
 
@@ -49,7 +49,7 @@ function sel(part: string, id: string): string {
 }
 
 function text(wrapper: Wrapper, id: string) {
-  return wrapper.get<HTMLInputElement>(sel("text", id));
+  return documentControl<HTMLInputElement>(sel("text", id));
 }
 
 type UpdateOptionsEvent = [string, string, NativeExamChoice[], string | null];
@@ -65,32 +65,34 @@ function ids(options: NativeExamChoice[]): string[] {
 describe("ExamWorkspaceGapPopover dropdown options", () => {
   it("renders rows in stored order with the correct radio checked", () => {
     const wrapper = mountPopover(dropdownGap());
-    const rows = wrapper.findAll('[data-test^="exam-workspace-gap-option-choice_"]');
-    expect(rows.map((row) => row.attributes("data-test"))).toEqual([
+    const rows = Array.from(
+      document.querySelectorAll('[data-test^="exam-workspace-gap-option-choice_"]'),
+    );
+    expect(rows.map((row) => row.getAttribute("data-test"))).toEqual([
       "exam-workspace-gap-option-choice_003",
       "exam-workspace-gap-option-choice_001",
       "exam-workspace-gap-option-choice_005",
     ]);
-    expect(wrapper.get<HTMLInputElement>(sel("correct", "choice_001")).element.checked).toBe(true);
-    expect(wrapper.get<HTMLInputElement>(sel("correct", "choice_003")).element.checked).toBe(false);
-    expect(wrapper.get(sel("correct", "choice_003")).attributes("aria-label")).toBe("Rätt svar: zebra");
-    expect(wrapper.get('[role="dialog"]').attributes("aria-label")).toBe("Alternativ för lucka 1");
+    expect(documentControl<HTMLInputElement>(sel("correct", "choice_001")).element.checked).toBe(true);
+    expect(documentControl<HTMLInputElement>(sel("correct", "choice_003")).element.checked).toBe(false);
+    expect(documentControl(sel("correct", "choice_003")).attributes("aria-label")).toBe("Rätt svar: zebra");
+    expect(popoverRoot().getAttribute("aria-label")).toBe("Alternativ för lucka 1");
     wrapper.unmount();
   });
 
   it("hides the accepted answers, automatic answers and Visa som text", () => {
     const wrapper = mountPopover(dropdownGap({ automatic_values: ["x"] }));
-    expect(wrapper.find('[data-test="exam-workspace-gap-values-gap_001"]').exists()).toBe(false);
-    expect(wrapper.find('[data-test="exam-workspace-gap-automatic-values"]').exists()).toBe(false);
-    expect(wrapper.find('[data-test="exam-workspace-gap-as-text"]').exists()).toBe(false);
+    expect(document.querySelector('[data-test="exam-workspace-gap-values-gap_001"]')).toBeNull();
+    expect(document.querySelector('[data-test="exam-workspace-gap-automatic-values"]')).toBeNull();
+    expect(document.querySelector('[data-test="exam-workspace-gap-as-text"]')).toBeNull();
     wrapper.unmount();
   });
 
   it("keeps the accepted answers field and no option editor for a Lucktext gap", () => {
     const wrapper = mountPopover(buildGap("gap_001", ["100"]), false);
-    expect(wrapper.find('[data-test="exam-workspace-gap-values-gap_001"]').exists()).toBe(true);
-    expect(wrapper.find('[data-test="exam-workspace-gap-options"]').exists()).toBe(false);
-    expect(wrapper.find('[data-test="exam-workspace-gap-as-text"]').exists()).toBe(true);
+    expect(document.querySelector('[data-test="exam-workspace-gap-values-gap_001"]')).not.toBeNull();
+    expect(document.querySelector('[data-test="exam-workspace-gap-options"]')).toBeNull();
+    expect(document.querySelector('[data-test="exam-workspace-gap-as-text"]')).not.toBeNull();
     wrapper.unmount();
   });
 
@@ -107,7 +109,7 @@ describe("ExamWorkspaceGapPopover dropdown options", () => {
 
   it("emits the new correct option from the radio and stays open", async () => {
     const wrapper = mountPopover(dropdownGap());
-    await wrapper.get(sel("correct", "choice_005")).setValue(true);
+    await documentControl(sel("correct", "choice_005")).setValue(true);
     const [event] = updates(wrapper);
     expect(event[0]).toBe("item_001");
     expect(event[1]).toBe("gap_001");
@@ -126,7 +128,7 @@ describe("ExamWorkspaceGapPopover dropdown options", () => {
         ],
       }),
     );
-    await wrapper.get('[data-test="exam-workspace-gap-option-add"]').trigger("click");
+    await documentControl('[data-test="exam-workspace-gap-option-add"]').trigger("click");
     const [event] = updates(wrapper);
     expect(ids(event[2])).toEqual(["choice_001", "choice_003", "choice_002"]);
     expect(event[2][2].body).toEqual(plainBody(" "));
@@ -137,13 +139,13 @@ describe("ExamWorkspaceGapPopover dropdown options", () => {
 
   it("disables remove on the correct option with a hint and removes others", async () => {
     const wrapper = mountPopover(dropdownGap());
-    const correctRemove = wrapper.get<HTMLButtonElement>(sel("remove", "choice_001"));
-    const hint = wrapper.get('[data-test="exam-workspace-gap-option-remove-hint"]');
+    const correctRemove = documentControl<HTMLButtonElement>(sel("remove", "choice_001"));
+    const hint = documentControl('[data-test="exam-workspace-gap-option-remove-hint"]');
     expect(correctRemove.element.disabled).toBe(true);
     expect(correctRemove.attributes("aria-describedby")).toBe(hint.attributes("id"));
     expect(hint.text()).toBe("Markera ett annat alternativ som rätt först");
 
-    const otherRemove = wrapper.get<HTMLButtonElement>(sel("remove", "choice_003"));
+    const otherRemove = documentControl<HTMLButtonElement>(sel("remove", "choice_003"));
     expect(otherRemove.element.disabled).toBe(false);
     await otherRemove.trigger("click");
     const [event] = updates(wrapper);
@@ -155,11 +157,11 @@ describe("ExamWorkspaceGapPopover dropdown options", () => {
 
   it("moves options up and down, disabled at the ends", async () => {
     const wrapper = mountPopover(dropdownGap());
-    expect(wrapper.get<HTMLButtonElement>(sel("up", "choice_003")).element.disabled).toBe(true);
-    expect(wrapper.get<HTMLButtonElement>(sel("down", "choice_005")).element.disabled).toBe(true);
+    expect(documentControl<HTMLButtonElement>(sel("up", "choice_003")).element.disabled).toBe(true);
+    expect(documentControl<HTMLButtonElement>(sel("down", "choice_005")).element.disabled).toBe(true);
 
-    await wrapper.get(sel("up", "choice_001")).trigger("click");
-    await wrapper.get(sel("down", "choice_001")).trigger("click");
+    await documentControl(sel("up", "choice_001")).trigger("click");
+    await documentControl(sel("down", "choice_001")).trigger("click");
     const events = updates(wrapper);
     expect(ids(events[0][2])).toEqual(["choice_001", "choice_003", "choice_005"]);
     expect(ids(events[1][2])).toEqual(["choice_003", "choice_005", "choice_001"]);
@@ -234,7 +236,7 @@ describe("ExamWorkspaceGapPopover dropdown options", () => {
     const input = text(wrapper, "choice_003");
     input.element.value = "zeta";
     await input.trigger("input");
-    await wrapper.get(sel("down", "choice_003")).trigger("click");
+    await documentControl(sel("down", "choice_003")).trigger("click");
     const events = updates(wrapper);
     expect(events).toHaveLength(1);
     expect((events[0][2])[1]).toEqual({
@@ -252,27 +254,27 @@ describe("ExamWorkspaceGapPopover dropdown options", () => {
     it("checks no radio and removes nothing from the hint-free remove buttons", () => {
       const wrapper = noCorrect();
       for (const id of ["choice_003", "choice_001", "choice_005"]) {
-        expect(wrapper.get<HTMLInputElement>(sel("correct", id)).element.checked).toBe(false);
-        const remove = wrapper.get<HTMLButtonElement>(sel("remove", id));
+        expect(documentControl<HTMLInputElement>(sel("correct", id)).element.checked).toBe(false);
+        const remove = documentControl<HTMLButtonElement>(sel("remove", id));
         expect(remove.element.disabled).toBe(false);
         expect(remove.attributes("aria-describedby")).toBeUndefined();
       }
-      expect(wrapper.find('[data-test="exam-workspace-gap-option-remove-hint"]').exists()).toBe(false);
+      expect(document.querySelector('[data-test="exam-workspace-gap-option-remove-hint"]')).toBeNull();
       wrapper.unmount();
     });
 
     it("emits the chosen radio id", async () => {
       const wrapper = noCorrect();
-      await wrapper.get(sel("correct", "choice_003")).setValue(true);
+      await documentControl(sel("correct", "choice_003")).setValue(true);
       expect(updates(wrapper)[0][3]).toBe("choice_003");
       wrapper.unmount();
     });
 
     it("keeps null through add, move, remove and text edits", async () => {
       const wrapper = noCorrect();
-      await wrapper.get('[data-test="exam-workspace-gap-option-add"]').trigger("click");
-      await wrapper.get(sel("down", "choice_003")).trigger("click");
-      await wrapper.get(sel("remove", "choice_001")).trigger("click");
+      await documentControl('[data-test="exam-workspace-gap-option-add"]').trigger("click");
+      await documentControl(sel("down", "choice_003")).trigger("click");
+      await documentControl(sel("remove", "choice_001")).trigger("click");
       const input = text(wrapper, "choice_005");
       input.element.value = "gorilla";
       await input.trigger("input");
@@ -294,8 +296,10 @@ describe("ExamWorkspaceBodyEditor dropdown gap options", () => {
     const wrapper = await mountEditor(item);
     clickGap(wrapper, "gap_001");
     await wrapper.vm.$nextTick();
-    expect(wrapper.find('[data-test="exam-workspace-gap-options"]').exists()).toBe(true);
-    await wrapper.get(sel("correct", "choice_005")).setValue(true);
+    await wrapper.vm.$nextTick();
+    expect(popoverExists()).toBe(true);
+    expect(document.querySelector('[data-test="exam-workspace-gap-options"]')).not.toBeNull();
+    await documentControl(sel("correct", "choice_005")).setValue(true);
     const [event] = wrapper.emitted("updateGapOptions") ?? [];
     expect(event[0]).toBe("item_001");
     expect(event[1]).toBe("gap_001");
@@ -307,8 +311,9 @@ describe("ExamWorkspaceBodyEditor dropdown gap options", () => {
     const wrapper = await mountEditor();
     clickGap(wrapper, "gap_001");
     await wrapper.vm.$nextTick();
-    expect(wrapper.find('[data-test="exam-workspace-gap-values-gap_001"]').exists()).toBe(true);
-    expect(wrapper.find('[data-test="exam-workspace-gap-options"]').exists()).toBe(false);
+    await wrapper.vm.$nextTick();
+    expect(document.querySelector('[data-test="exam-workspace-gap-values-gap_001"]')).not.toBeNull();
+    expect(document.querySelector('[data-test="exam-workspace-gap-options"]')).toBeNull();
     wrapper.unmount();
   });
 });
