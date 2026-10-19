@@ -24,14 +24,16 @@ import type { Ref } from "vue";
 import { isApiError } from "../../../api/client";
 import type {
   ExamWorkspaceDocumentSummary,
+  NativeExamDocument,
+  NativeExamItem,
+} from "../../../api/examWorkspace";
+import type {
   ExamWorkspaceExportBlocker,
   ExamWorkspaceExportBlockerReason,
   ExamWorkspaceExportChecklistEntry,
   ExamWorkspaceExportTarget,
   ExamWorkspaceItemExportBlockerReason,
-  NativeExamDocument,
-  NativeExamItem,
-} from "../../../api/examWorkspace";
+} from "../../../api/examWorkspaceExports";
 import { useToast } from "../../../composables/useToast";
 import { triggerBrowserDownload } from "../../../utils/browserDownload";
 import { examWorkspaceSavedAt } from "./examWorkspaceFormat";
@@ -78,12 +80,16 @@ const EXPORT_TARGET_LABELS: Record<ExamWorkspaceExportTarget, string> = {
   docx: "Word-filen",
   pdf: "PDF-filen",
   qti: "QTI-paketet",
+  pdf_facit: "PDF-filen med facit",
+  examnet_pdf: "PDF-filen för Exam.net",
 };
 
 const EXPORT_CREATED_MESSAGES: Record<ExamWorkspaceExportTarget, string> = {
   docx: "Word-filen är skapad.",
   pdf: "PDF-filen är skapad.",
   qti: "QTI-paketet är skapat.",
+  pdf_facit: "PDF-filen med facit är skapad.",
+  examnet_pdf: "PDF-filen för Exam.net är skapad.",
 };
 
 /** The format's name in the Mina filer messages. */
@@ -91,6 +97,8 @@ export const EXPORT_FORMAT_NAMES: Record<ExamWorkspaceExportTarget, string> = {
   docx: "DOCX",
   pdf: "PDF",
   qti: "QTI",
+  pdf_facit: "PDF med facit",
+  examnet_pdf: "PDF för Exam.net",
 };
 
 type ExportDestination = "download" | "files";

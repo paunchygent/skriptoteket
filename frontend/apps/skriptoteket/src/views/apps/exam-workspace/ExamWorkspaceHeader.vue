@@ -44,6 +44,8 @@ defineProps<{
   suggestBusy: boolean;
   suggestDisabled: boolean;
   isPhone: boolean;
+  /** The Förhandsgranska panel is open beside the editor. */
+  previewOpen: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -54,6 +56,7 @@ const emit = defineEmits<{
   suggestAll: [];
   undo: [];
   redo: [];
+  togglePreview: [];
 }>();
 
 const mac = isMacPlatform();
@@ -260,6 +263,21 @@ const DIRTY_TITLE = "Ändringarna sparas automatiskt som utkast. Spara skriver �
           </div>
         </Teleport>
         <slot name="export" />
+        <button
+          v-if="!isPhone"
+          type="button"
+          class="xw-btn ws-tools__preview"
+          :aria-pressed="previewOpen"
+          aria-label="Förhandsgranska"
+          title="Förhandsgranska"
+          data-test="exam-workspace-print-preview-toggle"
+          @click="emit('togglePreview')"
+        >
+          <UiGlyph
+            meaning="preview"
+            :size="20"
+          /><span class="ws-tools__word">Förhandsgranska</span>
+        </button>
       </div>
       <span class="xw-sep" />
       <button

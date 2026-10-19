@@ -47,6 +47,7 @@ from skriptoteket.infrastructure.vault.local_vault_storage import LocalVaultStor
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.protocols.exam_conversion import ExamNetPdfRendererProtocol
 from skriptoteket.protocols.exam_workspace import (
+    ExamPrintRendererProtocol,
     ExamWorkspaceDocxWriterProtocol,
     ExportExamWorkspaceDocumentHandlerProtocol,
     GetExamWorkspaceDocumentHandlerProtocol,
@@ -99,6 +100,7 @@ async def _client(world: ConversionWorld, actor: User) -> AsyncIterator[httpx.As
                     qti_writer=ExamNetQtiPackageWriter(),
                     pdf_renderer=Mock(spec=ExamNetPdfRendererProtocol),
                     docx_writer=Mock(spec=ExamWorkspaceDocxWriterProtocol),
+                    print_renderer=Mock(spec=ExamPrintRendererProtocol),
                 ),
             ),
         },

@@ -21,6 +21,10 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_export_render
 from skriptoteket.application.curated_apps.handlers.exam_workspace_exports import (
     ExportExamWorkspaceDocumentHandler,
 )
+from skriptoteket.domain.curated_apps.exam_conversion.digiexam_examnet_pdf_contracts import (
+    DigiExamExamNetPdfDocument,
+    DigiExamExamNetPdfStatus,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_criteria import (
     NativeExamCriterion,
 )
@@ -44,6 +48,11 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_pdf_re
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_qti_writer import (
     ExamNetQtiPackageWriter,
 )
+from skriptoteket.protocols.exam_conversion import ExamNetPdfRendererProtocol
+from skriptoteket.protocols.exam_workspace import (
+    ExamPrintPreviewPages,
+    ExamPrintRendererProtocol,
+)
 from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents import (
     _actor,
     _Env,
@@ -64,15 +73,48 @@ _FIXTURE = Path(
 )
 
 
-def _export_handler(env: _Env) -> ExportExamWorkspaceDocumentHandler:
+class _FakePrintRenderer:
+    """Record the print HTML the handler built and return a marker PDF."""
+
+    def __init__(self) -> None:
+        self.html_by_call: list[str] = []
+
+    def render_pdf(self, *, html: str) -> bytes:
+        self.html_by_call.append(html)
+        return b"%PDF-print"
+
+    async def render_preview(self, *, html: str) -> ExamPrintPreviewPages:
+        raise AssertionError("the export handler never renders previews")
+
+
+class _FakeExamNetPdfRenderer:
+    """Record the import-plan documents the Exam.net PDF branch renders."""
+
+    def __init__(self) -> None:
+        self.documents: list[DigiExamExamNetPdfDocument] = []
+
+    def render_pdf(self, *, document: DigiExamExamNetPdfDocument) -> bytes:
+        self.documents.append(document)
+        return b"%PDF-examnet"
+
+
+def _export_handler(
+    env: _Env,
+    *,
+    print_renderer: ExamPrintRendererProtocol | None = None,
+    pdf_renderer: ExamNetPdfRendererProtocol | None = None,
+) -> ExportExamWorkspaceDocumentHandler:
     return ExportExamWorkspaceDocumentHandler(
         vault_files=env.vault_files,
         codec=env.codec,
         store=env.store,
         renderer=ExamWorkspaceExportRenderer(
             qti_writer=ExamNetQtiPackageWriter(),
-            pdf_renderer=WeasyPrintExamNetPdfRenderer(),
+            pdf_renderer=pdf_renderer
+            if pdf_renderer is not None
+            else WeasyPrintExamNetPdfRenderer(),
             docx_writer=ExamWorkspaceDocxWriter(),
+            print_renderer=(print_renderer if print_renderer is not None else _FakePrintRenderer()),
         ),
     )
 
@@ -207,16 +249,66 @@ async def test_qti_export_returns_zip_package(env: _Env, fixture_bytes: bytes) -
 
 
 @pytest.mark.asyncio
-async def test_pdf_export_returns_pdf(env: _Env, fixture_bytes: bytes) -> None:
+async def test_student_pdf_export_renders_the_student_print_html(
+    env: _Env, fixture_bytes: bytes
+) -> None:
     actor, lineage_id = await _imported_and_reviewed(env, fixture_bytes)
-    result = await _export_handler(env).handle(
+    print_renderer = _FakePrintRenderer()
+    result = await _export_handler(env, print_renderer=print_renderer).handle(
         actor=actor,
         lineage_id=lineage_id,
         target=ExamWorkspaceExportTarget.PDF,
         expected_revision=2,
     )
     assert result.filename == "Omprov grammatik och språkstrukturer.pdf"
-    assert result.content.startswith(b"%PDF")
+    assert result.media_type == "application/pdf"
+    assert result.content == b"%PDF-print"
+    assert len(print_renderer.html_by_call) == 1
+    assert "– Elevexemplar</title>" in print_renderer.html_by_call[0]
+    assert "– Facit</title>" not in print_renderer.html_by_call[0]
+
+
+@pytest.mark.asyncio
+async def test_facit_pdf_export_renders_the_facit_print_html(
+    env: _Env, fixture_bytes: bytes
+) -> None:
+    actor, lineage_id = await _imported_and_reviewed(env, fixture_bytes)
+    print_renderer = _FakePrintRenderer()
+    result = await _export_handler(env, print_renderer=print_renderer).handle(
+        actor=actor,
+        lineage_id=lineage_id,
+        target=ExamWorkspaceExportTarget.PDF_FACIT,
+        expected_revision=2,
+    )
+    assert result.filename == "Omprov grammatik och språkstrukturer facit.pdf"
+    assert result.media_type == "application/pdf"
+    assert result.content == b"%PDF-print"
+    assert len(print_renderer.html_by_call) == 1
+    assert "– Facit</title>" in print_renderer.html_by_call[0]
+    assert "– Elevexemplar</title>" not in print_renderer.html_by_call[0]
+
+
+@pytest.mark.asyncio
+async def test_examnet_pdf_export_renders_the_import_plan_document(
+    env: _Env, fixture_bytes: bytes
+) -> None:
+    actor, lineage_id = await _imported_and_reviewed(env, fixture_bytes)
+    pdf_renderer = _FakeExamNetPdfRenderer()
+    print_renderer = _FakePrintRenderer()
+    result = await _export_handler(
+        env, pdf_renderer=pdf_renderer, print_renderer=print_renderer
+    ).handle(
+        actor=actor,
+        lineage_id=lineage_id,
+        target=ExamWorkspaceExportTarget.EXAMNET_PDF,
+        expected_revision=2,
+    )
+    assert result.filename == "Omprov grammatik och språkstrukturer Exam.net.pdf"
+    assert result.media_type == "application/pdf"
+    assert result.content == b"%PDF-examnet"
+    assert len(pdf_renderer.documents) == 1
+    assert pdf_renderer.documents[0].status is DigiExamExamNetPdfStatus.SUCCESS
+    assert print_renderer.html_by_call == []
 
 
 @pytest.mark.asyncio

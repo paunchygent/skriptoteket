@@ -23,18 +23,21 @@ import { editorBehind, press, settleEditors, surfaceOf } from "./exam-workspace/
 import type { ExamWorkspaceLayout } from "./exam-workspace/useExamWorkspaceLayout";
 
 const apiMocks = vi.hoisted(() => ({
-  downloadExamWorkspaceExport: vi.fn(),
   findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceHistory: vi.fn(),
   getExamWorkspaceHistoryStep: vi.fn(),
   storeExamWorkspaceUndoStep: vi.fn(),
-  getExamWorkspaceExportChecklist: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
   saveExamWorkspaceDocument: vi.fn(),
 }));
+const exportApiMocks = vi.hoisted(() => ({
+  downloadExamWorkspaceExport: vi.fn(),
+  getExamWorkspaceExportChecklist: vi.fn(),
+}));
+vi.mock("../../api/examWorkspaceExports", () => exportApiMocks);
 vi.mock("../../api/examWorkspace", async (original) => ({
   ...(await original<typeof import("../../api/examWorkspace")>()),
   ...apiMocks,
@@ -91,11 +94,11 @@ async function clearInstruction(wrapper: ViewWrapper) {
 }
 
 beforeEach(() => {
-  for (const mock of Object.values(apiMocks)) mock.mockReset();
+  for (const mock of [...Object.values(apiMocks), ...Object.values(exportApiMocks)]) mock.mockReset();
   apiMocks.listExamWorkspaceDocuments.mockResolvedValue({ documents: [], ordering: "course" });
   apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue(succeeded);
   apiMocks.importExamWorkspaceDocument.mockResolvedValue({ ...succeeded, state: "queued", document_revision: null });
-  apiMocks.getExamWorkspaceExportChecklist.mockResolvedValue({ entries: [] });
+  exportApiMocks.getExamWorkspaceExportChecklist.mockResolvedValue({ entries: [] });
 });
 afterEach(() => {
   for (const wrapper of mounted.splice(0)) wrapper.unmount();

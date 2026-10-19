@@ -38,6 +38,12 @@ class ExamWorkspaceHistoryState(BaseModel):
             raise ValueError("The current editor step must be retained in history.")
         return self
 
+    def current_step(self) -> ExamWorkspaceHistoryStep:
+        """The retained snapshot (baseline or step) the editor stands on."""
+        return next(
+            step for step in (self.baseline, *self.steps) if step.step_id == self.current_step_id
+        )
+
 
 class StoreExamWorkspaceUndoStepRequest(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")

@@ -22,7 +22,6 @@ import { inject, type InjectionKey } from "vue";
 
 import {
   copyExamWorkspaceDocument,
-  downloadExamWorkspaceExport,
   examWorkspaceAssetUrl,
   findExamWorkspaceAnswerKeySuggestions,
   getExamCourseCatalog,
@@ -31,7 +30,6 @@ import {
   getExamWorkspaceContentSuggestions,
   getExamWorkspaceConversionStatus,
   getExamWorkspaceDocument,
-  getExamWorkspaceExportChecklist,
   getExamWorkspaceHistory,
   getExamWorkspaceHistoryStep,
   importExamWorkspaceDigiExam,
@@ -44,10 +42,14 @@ import {
   requestExamWorkspaceContentSuggestions,
   retryExamWorkspaceItem,
   saveExamWorkspaceDocument,
-  saveExamWorkspaceExport,
   storeExamWorkspaceUndoStep,
   updateExamListOrdering,
 } from "../../../api/examWorkspace";
+import {
+  downloadExamWorkspaceExport,
+  getExamWorkspaceExportChecklist,
+  saveExamWorkspaceExport,
+} from "../../../api/examWorkspaceExports";
 import {
   addExamWorkspaceChild,
   changeExamWorkspaceItemType,

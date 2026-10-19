@@ -2,17 +2,18 @@
  * Exam workspace export formats.
  *
  * Domain purpose:
- *   The three export formats in the order and words the workspace offers
- *   them: QTI for Exam.net, PDF for printing, DOCX for editing in Word.
- *   Exam.net imports a question worth 0 points as worth 1, so the QTI
- *   choice says so while the exam holds one (user ruling 2026-10-17); the
- *   export itself still sends 0.
+ *   The export formats in the order and words the workspace offers them: QTI
+ *   for Exam.net, the student print PDF and its facit twin, DOCX for editing
+ *   in Word, and last the Exam.net import PDF that stays a fallback for when
+ *   the QTI import fails (W1, W11). Exam.net imports a question worth 0 points
+ *   as worth 1, so the QTI choice says so while the exam holds one (user ruling
+ *   2026-10-17); the export itself still sends 0.
  *
  * Relationships:
  *   - Read by the Exportera menu and drawer.
  */
 
-import type { ExamWorkspaceExportTarget } from "../../../api/examWorkspace";
+import type { ExamWorkspaceExportTarget } from "../../../api/examWorkspaceExports";
 
 export type ExamWorkspaceExportFormat = {
   target: ExamWorkspaceExportTarget;
@@ -25,8 +26,10 @@ export type ExamWorkspaceExportFormat = {
 
 export const EXAM_WORKSPACE_EXPORT_FORMATS: ExamWorkspaceExportFormat[] = [
   { hint: "För import i Exam.net", name: "QTI", target: "qti", use: "Exam.net" },
-  { hint: "För utskrift", name: "PDF", target: "pdf", use: "utskrift" },
+  { hint: "Elevexemplar för utskrift", name: "PDF", target: "pdf", use: "utskrift" },
+  { hint: "Samma sidor med facit och bedömning", name: "PDF med facit", target: "pdf_facit", use: "utskrift med facit" },
   { hint: "För redigering i Word", name: "DOCX", target: "docx", use: "Word" },
+  { hint: "Reserv om QTI-importen inte fungerar. Inte för utskrift.", name: "PDF för Exam.net", target: "examnet_pdf", use: "reserv" },
 ];
 
 export const QTI_ZERO_POINTS_NOTE =

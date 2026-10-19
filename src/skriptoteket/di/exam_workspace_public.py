@@ -28,6 +28,9 @@ from skriptoteket.application.curated_apps.handlers.public_exam_workspace_comman
 from skriptoteket.application.curated_apps.handlers.public_exam_workspace_exports import (
     PublicExamWorkspaceExportHandler,
 )
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_print_renderer import (
+    WeasyPrintExamPrintRenderer,
+)
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_writer import (  # noqa: E501
     ExamWorkspaceDocxWriter,
 )
@@ -60,11 +63,12 @@ class ExamWorkspacePublicProvider(Provider):
 
     @provide(scope=Scope.REQUEST)
     def export_renderer(self) -> ExamWorkspaceExportRenderer:
-        """Provide the shared QTI/PDF/DOCX renderer and checklist builder."""
+        """Provide the shared QTI/PDF/DOCX/print renderer and checklist builder."""
         return ExamWorkspaceExportRenderer(
             qti_writer=ExamNetQtiPackageWriter(),
             pdf_renderer=WeasyPrintExamNetPdfRenderer(),
             docx_writer=ExamWorkspaceDocxWriter(),
+            print_renderer=WeasyPrintExamPrintRenderer(),
         )
 
     @provide(scope=Scope.REQUEST)

@@ -65,6 +65,9 @@ from skriptoteket.domain.identity.models import User
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub import (
     exam_workspace_docx_writer,
 )
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_print_renderer import (
+    WeasyPrintExamPrintRenderer,
+)
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_pdf_renderer import (
     WeasyPrintExamNetPdfRenderer,
 )
@@ -153,6 +156,7 @@ async def _client(world: ConversionWorld, actor: User) -> AsyncIterator[httpx.As
                     qti_writer=ExamNetQtiPackageWriter(),
                     pdf_renderer=WeasyPrintExamNetPdfRenderer(),
                     docx_writer=exam_workspace_docx_writer.ExamWorkspaceDocxWriter(),
+                    print_renderer=WeasyPrintExamPrintRenderer(),
                 ),
             ),
         },

@@ -8,7 +8,9 @@ Purpose:
 Relationships:
   - Called by ``ExportExamWorkspaceDocumentHandler`` after it loads the saved head.
   - Called by ``PublicExamWorkspaceExportHandler`` with guest-supplied bytes.
-  - Delegates to the fail-closed QTI, Exam.net PDF, and validated DOCX writers.
+  - Delegates to the fail-closed QTI, Exam.net PDF, house-template DOCX and
+    print writers; the student and facit print PDFs render the
+    house-template print HTML (W1) through the print renderer.
 """
 
 from __future__ import annotations
@@ -32,6 +34,15 @@ from skriptoteket.application.curated_apps.exam_workspace_exports import (
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_examnet_pdf_contracts import (
     DigiExamExamNetPdfStatus,
 )
+from skriptoteket.domain.curated_apps.exam_conversion.exam_print_house_template import (
+    ExamPrintVariant,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.exam_print_document import (
+    build_print_document,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.exam_print_html import (
+    render_print_html,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.examnet_export_checklist import (
     ExamNetExportChecklistAllOrNothing,
     ExamNetExportChecklistEntry,
@@ -54,7 +65,10 @@ from skriptoteket.protocols.exam_conversion import (
     ExamNetPdfRendererProtocol,
     ExamNetQtiPackageWriterProtocol,
 )
-from skriptoteket.protocols.exam_workspace import ExamWorkspaceDocxWriterProtocol
+from skriptoteket.protocols.exam_workspace import (
+    ExamPrintRendererProtocol,
+    ExamWorkspaceDocxWriterProtocol,
+)
 
 _DOCX_MEDIA_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 
@@ -68,10 +82,12 @@ class ExamWorkspaceExportRenderer:
         qti_writer: ExamNetQtiPackageWriterProtocol,
         pdf_renderer: ExamNetPdfRendererProtocol,
         docx_writer: ExamWorkspaceDocxWriterProtocol,
+        print_renderer: ExamPrintRendererProtocol,
     ) -> None:
         self._qti_writer = qti_writer
         self._pdf_renderer = pdf_renderer
         self._docx_writer = docx_writer
+        self._print_renderer = print_renderer
 
     def render(
         self,
@@ -96,6 +112,20 @@ class ExamWorkspaceExportRenderer:
                 content=package_bytes,
             )
         if target is ExamWorkspaceExportTarget.PDF:
+            return self._print_pdf(
+                document=document,
+                assets_by_id=assets_by_id,
+                variant=ExamPrintVariant.STUDENT,
+                filename=f"{base}.pdf",
+            )
+        if target is ExamWorkspaceExportTarget.PDF_FACIT:
+            return self._print_pdf(
+                document=document,
+                assets_by_id=assets_by_id,
+                variant=ExamPrintVariant.FACIT,
+                filename=f"{base} facit.pdf",
+            )
+        if target is ExamWorkspaceExportTarget.EXAMNET_PDF:
             pdf_document = native_exam_to_pdf_document(document, assets_by_id=assets_by_id)
             if pdf_document.status is not DigiExamExamNetPdfStatus.SUCCESS:
                 raise DomainError(
@@ -113,7 +143,7 @@ class ExamWorkspaceExportRenderer:
                     },
                 )
             return ExamWorkspaceExportFile(
-                filename=f"{base}.pdf",
+                filename=f"{base} Exam.net.pdf",
                 media_type="application/pdf",
                 content=self._pdf_renderer.render_pdf(document=pdf_document),
             )
@@ -124,6 +154,26 @@ class ExamWorkspaceExportRenderer:
             filename=f"{base}.docx",
             media_type=_DOCX_MEDIA_TYPE,
             content=content,
+        )
+
+    def _print_pdf(
+        self,
+        *,
+        document: NativeExamDocument,
+        assets_by_id: Mapping[str, bytes],
+        variant: ExamPrintVariant,
+        filename: str,
+    ) -> ExamWorkspaceExportFile:
+        """Render one print-PDF variant from the house-template HTML (W1)."""
+        html = render_print_html(
+            build_print_document(document, variant=variant),
+            assets=document.assets,
+            assets_by_id=assets_by_id,
+        )
+        return ExamWorkspaceExportFile(
+            filename=filename,
+            media_type="application/pdf",
+            content=self._print_renderer.render_pdf(html=html),
         )
 
     def checklist(

@@ -23,10 +23,12 @@ from tests.unit.domain.curated_apps.exam_workspace.native_exam_document_test_sup
     with_next_revision,
 )
 
-_EXTENSIONS = {
-    ExamWorkspaceExportTarget.QTI: "zip",
-    ExamWorkspaceExportTarget.PDF: "pdf",
-    ExamWorkspaceExportTarget.DOCX: "docx",
+_SUFFIXES = {
+    ExamWorkspaceExportTarget.QTI: ".zip",
+    ExamWorkspaceExportTarget.PDF: ".pdf",
+    ExamWorkspaceExportTarget.PDF_FACIT: " facit.pdf",
+    ExamWorkspaceExportTarget.DOCX: ".docx",
+    ExamWorkspaceExportTarget.EXAMNET_PDF: " Exam.net.pdf",
 }
 
 
@@ -94,7 +96,7 @@ async def test_three_formats_share_one_title_base_and_save_to_mina_filer_under_i
     ]
 
     expected = [
-        f"Prov Rörelse kraft åk 8.{_EXTENSIONS[target]}" for target in ExamWorkspaceExportTarget
+        f"Prov Rörelse kraft åk 8{_SUFFIXES[target]}" for target in ExamWorkspaceExportTarget
     ]
     assert [download.filename for download in downloads] == expected
     assert [file.name for file in saved] == expected

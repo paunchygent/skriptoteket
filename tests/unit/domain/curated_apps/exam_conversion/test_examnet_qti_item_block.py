@@ -13,6 +13,9 @@ from __future__ import annotations
 
 import pytest
 
+from skriptoteket.domain.curated_apps.exam_conversion.exam_print_house_template import (
+    DEFAULT_WRITING_LINES,
+)
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts import (
     ExamNetQtiEvaluationMode,
     ExamNetQtiInteractionType,
@@ -96,6 +99,7 @@ def test_free_text_reads_a_three_row_mapping_as_its_first_row() -> None:
         kind=NativeExamItemKind.FREE_TEXT,
         body=plain_body("Bedöm svaret."),
         points=3,
+        writing_lines=DEFAULT_WRITING_LINES,
         criteria=(
             NativeExamCriterion(text="Ett korrekt exempel.", points=1),
             NativeExamCriterion(text="En korrekt förklaring.", points=1),
@@ -145,6 +149,7 @@ def test_png_and_jpeg_prompt_images_round_trip_in_placement_order() -> None:
             ),
         ),
         points=2,
+        writing_lines=DEFAULT_WRITING_LINES,
         answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
         review=review_complete(),
     )

@@ -21,7 +21,7 @@ import { computed, ref } from "vue";
 import type {
   ExamWorkspaceExportChecklistEntry,
   ExamWorkspaceExportTarget,
-} from "../../../api/examWorkspace";
+} from "../../../api/examWorkspaceExports";
 import { UiGlyph } from "../../../components/ui";
 import ExamWorkspaceExportBlockers from "./ExamWorkspaceExportBlockers.vue";
 import type { ExamWorkspaceBlockerEntry } from "./examWorkspaceBlockers";

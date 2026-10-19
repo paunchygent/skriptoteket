@@ -31,6 +31,9 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_guest_draft_h
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_blank import (
     blank_native_exam_document,
 )
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_print_renderer import (
+    WeasyPrintExamPrintRenderer,
+)
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_writer import (  # noqa: E501
     ExamWorkspaceDocxWriter,
 )
@@ -88,6 +91,7 @@ def exporter(world: ConversionWorld) -> ExportExamWorkspaceDocumentHandler:
             qti_writer=ExamNetQtiPackageWriter(),
             pdf_renderer=WeasyPrintExamNetPdfRenderer(),
             docx_writer=ExamWorkspaceDocxWriter(),
+            print_renderer=WeasyPrintExamPrintRenderer(),
         ),
     )
 

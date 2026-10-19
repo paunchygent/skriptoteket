@@ -7,7 +7,6 @@ import { EXAM_WORKSPACE_CONVERSION_POLL_MS } from "./exam-workspace/useExamWorks
 import { buildResponse, importFixtureDocument, mountExamWorkspace } from "./ExamWorkspaceSlice.specSupport";
 
 const apiMocks = vi.hoisted(() => ({
-  downloadExamWorkspaceExport: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
   findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
@@ -15,6 +14,10 @@ const apiMocks = vi.hoisted(() => ({
   listExamWorkspaceDocuments: vi.fn(),
   saveExamWorkspaceDocument: vi.fn(),
 }));
+const exportApiMocks = vi.hoisted(() => ({
+  downloadExamWorkspaceExport: vi.fn(),
+}));
+vi.mock("../../api/examWorkspaceExports", () => exportApiMocks);
 vi.mock("../../api/examWorkspace", async () => ({
   ...apiMocks,
   getExamCourseCatalog: (await import("../../test/examCourseCatalog")).getExamCourseCatalog,
@@ -31,7 +34,7 @@ let wrapper: Awaited<ReturnType<typeof mountExamWorkspace>>["wrapper"] | undefin
 
 beforeEach(() => {
   vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
-  for (const mock of Object.values(apiMocks)) mock.mockReset();
+  for (const mock of [...Object.values(apiMocks), ...Object.values(exportApiMocks)]) mock.mockReset();
   apiMocks.importExamWorkspaceDocument.mockResolvedValue(status("queued"));
   apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue(status("queued"));
   apiMocks.getExamWorkspaceDocument.mockResolvedValue(

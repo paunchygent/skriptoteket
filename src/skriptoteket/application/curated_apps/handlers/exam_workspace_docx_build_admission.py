@@ -100,6 +100,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.review_answer_key_cut import (
+    without_inline_answer_keys,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.source_format_errors import (
     FormattingTransferError,
 )
@@ -165,7 +168,8 @@ def _built(
         state.record(
             "admission", "gap_count_mismatch", item=index, anchors=anchors, detail=str(error)
         )
-        return state.printed(anchors, error.reason, seen)
+        aligned, held = state.printed(anchors, error.reason, seen)
+        return without_inline_answer_keys(aligned), held
     except Exception as error:
         # Model output that breaks an assumption of the item builder affects only its question.
         return _source_review(index, anchors, state, seen, "item_unbuildable", type(error).__name__)

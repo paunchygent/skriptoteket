@@ -46,6 +46,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document_json import (
     native_exam_document_json_bytes,
 )
+from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_print_renderer import (
+    WeasyPrintExamPrintRenderer,
+)
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_writer import (  # noqa: E501
     ExamWorkspaceDocxWriter,
 )
@@ -89,6 +92,7 @@ class RecordingRenderer(ExamWorkspaceExportRenderer):
             qti_writer=ExamNetQtiPackageWriter(),
             pdf_renderer=WeasyPrintExamNetPdfRenderer(),
             docx_writer=ExamWorkspaceDocxWriter(),
+            print_renderer=WeasyPrintExamPrintRenderer(),
         )
         self.render_calls: list[ExamWorkspaceExportTarget] = []
         self.checklist_calls = 0

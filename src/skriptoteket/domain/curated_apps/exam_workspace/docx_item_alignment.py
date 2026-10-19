@@ -13,7 +13,9 @@ from dataclasses import dataclass, replace
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import NativeParagraph
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import NativeExamItem
-from skriptoteket.domain.curated_apps.exam_workspace.shared_body import source_paragraphs
+from skriptoteket.domain.curated_apps.exam_workspace.shared_body import (
+    review_source_paragraphs,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import SourceFormatting
 
 
@@ -65,8 +67,12 @@ def entry_chunks(source: SourceFormatting, spans: Iterable[tuple[int, int]]) -> 
 
 
 def source_chunks(chunks: Sequence[DocxChunk]) -> tuple[str, ...]:
-    """The chunk anchor of each paragraph ``source_paragraphs(chunks)`` renders, in order."""
-    return tuple(chunk.anchor for chunk in chunks for _ in source_paragraphs((chunk,)))
+    """The chunk anchor of each paragraph of the review body, in order.
+
+    Printed answer lines are not paragraphs of the review body (W10), so they take no
+    anchor: the body ``review_source_item`` builds and this alignment always agree.
+    """
+    return tuple(anchor for anchor, _ in review_source_paragraphs(chunks))
 
 
 def aligned_source_item(item: NativeExamItem, chunks: Sequence[DocxChunk]) -> AlignedItem:

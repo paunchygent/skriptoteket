@@ -25,7 +25,7 @@ const apiMocks = vi.hoisted(() => ({
 
 const downloadMock = vi.hoisted(() => ({ triggerBrowserDownload: vi.fn() }));
 
-vi.mock("../../../api/examWorkspace", () => apiMocks);
+vi.mock("../../../api/examWorkspaceExports", () => apiMocks);
 vi.mock("../../../utils/browserDownload", () => downloadMock);
 
 function mountExports(title: string) {

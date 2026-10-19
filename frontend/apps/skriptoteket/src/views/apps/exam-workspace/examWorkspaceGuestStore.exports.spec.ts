@@ -12,7 +12,7 @@
 import { describe, expect, it } from "vitest";
 
 import { ApiError } from "../../../api/client";
-import type { ExamWorkspaceExportChecklistResponse } from "../../../api/examWorkspace";
+import type { ExamWorkspaceExportChecklistResponse } from "../../../api/examWorkspaceExports";
 import { isGuestLimitError } from "./examWorkspaceGuestStore";
 import { newGuestDraft } from "./examWorkspaceGuestDraft";
 import { newTeacherItem } from "./examWorkspaceItemEdits";

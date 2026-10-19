@@ -138,6 +138,7 @@ def _manual_matching_preservation_sample() -> ExamNetQtiSamplePackage:
             max_score=2,
             evaluation_mode=ExamNetQtiEvaluationMode.MANUAL_UNKEYED,
             manual_representation=ExamNetQtiManualRepresentation.FREE_TEXT_PRESERVATION,
+            expected_lines=8,
             source_item_type="matching",
         ),
     )
@@ -202,6 +203,7 @@ def _free_text_sample() -> ExamNetQtiSamplePackage:
             ),
             max_score=9,
             free_text_criterion_points=9,
+            expected_lines=8,
         ),
     )
 
@@ -230,6 +232,7 @@ def _image_free_text_sample() -> ExamNetQtiSamplePackage:
             prompt_lines=("Beskriv vad bilden visar och motivera din tolkning.",),
             max_score=6,
             free_text_criterion_points=6,
+            expected_lines=8,
             image_resources=(_image("image_001", "Exempelbild för fritextfråga"),),
         ),
     )
@@ -283,6 +286,7 @@ def _unsupported_resource_omission_sample() -> ExamNetQtiSamplePackage:
             prompt_lines=("Lyssna på lärarens ljudfil och sammanfatta huvudpoängen.",),
             max_score=5,
             free_text_criterion_points=5,
+            expected_lines=8,
             unsupported_resources=(
                 ExamNetQtiUnsupportedResource(
                     resource_id="audio_001",

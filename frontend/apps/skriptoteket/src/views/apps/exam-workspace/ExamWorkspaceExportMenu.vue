@@ -19,7 +19,7 @@
 
 import { computed, ref } from "vue";
 
-import type { ExamWorkspaceExportTarget } from "../../../api/examWorkspace";
+import type { ExamWorkspaceExportTarget } from "../../../api/examWorkspaceExports";
 import { UiGlyph } from "../../../components/ui";
 import ExamWorkspaceExportBlockers from "./ExamWorkspaceExportBlockers.vue";
 import ExamWorkspaceMenu from "./ExamWorkspaceMenu.vue";

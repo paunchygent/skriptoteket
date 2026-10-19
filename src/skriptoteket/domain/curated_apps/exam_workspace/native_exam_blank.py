@@ -12,6 +12,9 @@ Relationships:
 
 from uuid import uuid4
 
+from skriptoteket.domain.curated_apps.exam_conversion.exam_print_house_template import (
+    DEFAULT_WRITING_LINES,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
     NativeExamDocumentOrigin,
@@ -41,6 +44,7 @@ def blank_native_exam_item(*, sequence: int = 1) -> NativeExamItem:
         kind=NativeExamItemKind.FREE_TEXT,
         body=(),
         points=BLANK_EXAM_POINTS,
+        writing_lines=DEFAULT_WRITING_LINES,
         answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
         review=NativeItemReview(
             state=NativeItemReviewState.REVIEW_COMPLETE,

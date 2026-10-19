@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "397cbbd0f3a8e18b2fe4a83ad3b6485669e3fbfc283cf518e00ac8ad0327f485",
+  "source_set_digest": "8241e2947b6999c0bd1a644336e732a63b622acab84da36cd229622d85459ca3",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5175,6 +5175,29 @@
       }
     },
     {
+      "id": "TASK-SKRIPT-39-04-17",
+      "type": "task",
+      "title": "Gap paragraphs with an inline answer key are built from their source paragraph or go to review, so the question word is never lost",
+      "path": "docs/backlog/tasks/task-skript-39-04-17-gap-paragraphs-with-an-inline-answer-key-are-built-from-their-source-paragraph-or-go-to-review.md",
+      "status": "done",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-19",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer 7ac4ca2f reviewed 5d70a359: no high findings, one medium (two test guards skipped every fallback item, so a review_complete item with a leaked label passed). Repaired at a8cd8181 (guards skip only review_required fallback-imported items, D9 amended, a test built on the reviewer probe failed before the fix) and admitted by the parent on focused proof without rereview: 120 focused tests, lint, typecheck and docs-validate pass; domain suite 4262 passed at 48852ace; replays change only svenska_2 item_001 in both variants, as decided in G1/G2 (user 2026-10-19). Merged to main at a8cd8181 on 2026-10-19."
+      }
+    },
+    {
       "id": "TASK-SKRIPT-39-05-01",
       "type": "task",
       "title": "Walking skeleton for AI-first DOCX conversion as a background job",
@@ -6542,7 +6565,7 @@
       "type": "task",
       "title": "Teachers set the writing area of printed DOCX and PDF exams and imports drop paper answer lines",
       "path": "docs/backlog/tasks/task-skript-40-04-07-teachers-set-the-writing-area-of-printed-docx-and-pdf-exams-and-imports-drop-paper-answer-lines.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [

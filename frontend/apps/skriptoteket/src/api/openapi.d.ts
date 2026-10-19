@@ -1793,6 +1793,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/print-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Preview Exam Workspace Document Print
+         * @description Render the retained history step the editor names for the Förhandsgranska panel (W5).
+         */
+        get: operations["preview_exam_workspace_document_print_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__print_preview_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/apps/documents.conversion_hub/exam-workspace/import-digiexam": {
         parameters: {
             query?: never;
@@ -5659,7 +5679,7 @@ export interface components {
          * ExamWorkspaceExportTarget
          * @enum {string}
          */
-        ExamWorkspaceExportTarget: "qti" | "pdf" | "docx";
+        ExamWorkspaceExportTarget: "qti" | "pdf" | "pdf_facit" | "docx" | "examnet_pdf";
         /** ExamWorkspaceHistoryDocumentResponse */
         ExamWorkspaceHistoryDocumentResponse: {
             document: components["schemas"]["NativeExamDocument-Output"];
@@ -5714,6 +5734,34 @@ export interface components {
         ExamWorkspaceMisspellingsResponse: {
             /** Automatic Values */
             automatic_values: string[];
+        };
+        /**
+         * ExamWorkspacePrintPreviewResponse
+         * @description The saved student print copy as preview page images, or why it cannot be rendered (W5).
+         *
+         *     ``pages`` holds one PNG data URL per printed page, in print order, so the
+         *     Förhandsgranska panel can show the exam page by page. ``question_pages`` maps each
+         *     question's item id to the 0-based index of the page it first appears on, so the
+         *     panel can scroll to the selected question. ``status`` is ``blocked`` when the
+         *     document cannot be rendered at all (for example a declared picture without stored
+         *     payload); the student copy prints drafts, so the export blocker gate never runs here.
+         */
+        ExamWorkspacePrintPreviewResponse: {
+            /** Message */
+            message: string | null;
+            /** Pages */
+            pages: string[];
+            /** Question Pages */
+            question_pages: {
+                [key: string]: number;
+            };
+            /** Revision */
+            revision: number;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ready" | "blocked";
         };
         /** ExamWorkspaceUndoStepResponse */
         ExamWorkspaceUndoStepResponse: {
@@ -6785,10 +6833,10 @@ export interface components {
             revision: number;
             /**
              * Schema Version
-             * @default native_exam_document_v7
+             * @default native_exam_document_v8
              * @constant
              */
-            schema_version: "native_exam_document_v7";
+            schema_version: "native_exam_document_v8";
             /** Title */
             title: string;
         };
@@ -6827,10 +6875,10 @@ export interface components {
             revision: number;
             /**
              * Schema Version
-             * @default native_exam_document_v7
+             * @default native_exam_document_v8
              * @constant
              */
-            schema_version: "native_exam_document_v7";
+            schema_version: "native_exam_document_v8";
             /** Title */
             title: string;
         };
@@ -6946,6 +6994,8 @@ export interface components {
             suggested_kind?: components["schemas"]["NativeExamItemKind"] | null;
             /** Tick Points */
             tick_points?: number | string | null;
+            /** Writing Lines */
+            writing_lines?: number | null;
         };
         /** NativeExamItem */
         "NativeExamItem-Output": {
@@ -7007,6 +7057,8 @@ export interface components {
             suggested_kind: components["schemas"]["NativeExamItemKind"] | null;
             /** Tick Points */
             tick_points: string | null;
+            /** Writing Lines */
+            writing_lines: number | null;
         };
         /**
          * NativeExamItemKind
@@ -7521,6 +7573,8 @@ export interface components {
             suggested_kind?: components["schemas"]["NativeExamItemKind"] | null;
             /** Tick Points */
             tick_points?: number | string | null;
+            /** Writing Lines */
+            writing_lines?: number | null;
         };
         /**
          * OutputFileSummary
@@ -14125,6 +14179,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ExamWorkspaceDeleteResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    preview_exam_workspace_document_print_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__print_preview_get: {
+        parameters: {
+            query: {
+                expected_revision: number;
+                expected_cursor: string;
+                step_id: string;
+            };
+            header?: never;
+            path: {
+                lineage_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamWorkspacePrintPreviewResponse"];
                 };
             };
             /** @description Validation Error */

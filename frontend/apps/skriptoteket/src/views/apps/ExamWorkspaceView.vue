@@ -27,15 +27,17 @@
  *     phone list and the Import box.
  */
 
-import { computed, onMounted, provide, ref, watch } from "vue";
+import { computed, onMounted, provide, ref } from "vue";
 
-import type { ExamWorkspaceExportTarget, ExamListOrdering } from "../../api/examWorkspace";
+import type { ExamListOrdering } from "../../api/examWorkspace";
+import type { ExamWorkspaceExportTarget } from "../../api/examWorkspaceExports";
 import { useToast } from "../../composables/useToast";
 import ExamWorkspaceDrawers from "./exam-workspace/ExamWorkspaceDrawers.vue";
 import ExamWorkspaceEditorPane from "./exam-workspace/ExamWorkspaceEditorPane.vue";
 import ExamWorkspaceExportMenu from "./exam-workspace/ExamWorkspaceExportMenu.vue";
 import ExamWorkspaceHeader from "./exam-workspace/ExamWorkspaceHeader.vue";
 import ExamWorkspacePhoneStrip from "./exam-workspace/ExamWorkspacePhoneStrip.vue";
+import ExamWorkspacePrintPreviewPanel from "./exam-workspace/ExamWorkspacePrintPreviewPanel.vue";
 import ExamWorkspaceQuestionList from "./exam-workspace/ExamWorkspaceQuestionList.vue";
 import ExamWorkspaceQuestionTools from "./exam-workspace/ExamWorkspaceQuestionTools.vue";
 import ExamWorkspaceSaveAsDialog from "./exam-workspace/ExamWorkspaceSaveAsDialog.vue";
@@ -62,9 +64,8 @@ import { useExamWorkspaceKeyboard } from "./exam-workspace/useExamWorkspaceKeybo
 import { useExamWorkspaceLayout } from "./exam-workspace/useExamWorkspaceLayout";
 import { useExamWorkspaceSaveFlow } from "./exam-workspace/useExamWorkspaceSaveFlow";
 import { useExamWorkspaceSelection } from "./exam-workspace/useExamWorkspaceSelection";
+import { useExamWorkspaceSideColumns } from "./exam-workspace/useExamWorkspaceSideColumns";
 import { useExamWorkspaceSourceFile } from "./exam-workspace/useExamWorkspaceSourceFile";
-
-type DrawerName = "open" | "export" | "details";
 
 const props = defineProps<{ store: ExamWorkspaceStore }>();
 
@@ -78,6 +79,7 @@ const {
   structure,
   applyArrivingSuggestions,
   conflictNotice,
+  historyCursor,
   isBusy,
   isDirty,
   isOpen,
@@ -102,13 +104,34 @@ const { depart, dismissSignInPrompt, signInPrompt } = useExamWorkspaceGuestSignI
 
 defineExpose({ depart });
 
-const isPhone = computed(() => layout.value === "phone");
 const frame = ref<HTMLElement | null>(null);
-const drawer = ref<DrawerName | null>(null);
-const listOpen = ref(false);
-const importOpen = ref(false);
-
 const { showDocument } = useExamWorkspaceAddress({ isDirty, openDocument, summary });
+const {
+  drawer,
+  importOpen,
+  isPhone,
+  listOpen,
+  previewBlocked,
+  previewLoading,
+  previewMessage,
+  previewOpen,
+  previewPages,
+  previewQuestionPages,
+  toggleDrawer,
+  togglePreview,
+} = useExamWorkspaceSideColumns({
+  historyCursor,
+  historyPosition: history.position,
+  layout,
+  lineageId: computed(() => summary.value?.lineage_id ?? null),
+  savedRevision,
+  selectedItemId: editing.selectedItemId,
+  onLineage: (lineageId) => {
+    showDocument(lineageId);
+    dismissSignInPrompt();
+  },
+});
+
 const sourceFile = useExamWorkspaceSourceFile(importDocument, importBlocked);
 // Spara before an export is the save flow's, which is built after the exports it feeds.
 const exports = useExamWorkspaceExports(summary, workspaceDocument, {
@@ -189,28 +212,6 @@ const formattedSavedExports = computed(() =>
 const zeroPoints = computed(() => items.value.some((item) => item.points === 0));
 const enrichmentBusy = computed(() => enrichment.isRequesting.value || enrichment.isEnrichmentPending.value);
 
-function toggleDrawer(name: DrawerName): void {
-  drawer.value = drawer.value === name ? null : name;
-}
-
-watch(
-  () => summary.value?.lineage_id ?? null,
-  (lineageId, previous) => {
-    showDocument(lineageId);
-    // A newly opened or started exam replaces the prompt it interrupted.
-    dismissSignInPrompt();
-    if (lineageId === null) {
-      drawer.value = "open";
-    } else if (lineageId !== previous && !(layout.value === "desktop" && drawer.value === "open")) {
-      drawer.value = null;
-    }
-  },
-);
-
-watch(isPhone, (phone) => {
-  if (!phone) listOpen.value = false;
-});
-
 async function setOrdering(ordering: ExamListOrdering): Promise<void> {
   const teacher = props.store.teacher;
   if (!teacher) return;
@@ -259,7 +260,7 @@ onMounted(() => {
   <main
     ref="frame"
     class="xw-root ws"
-    :class="{ 'ws--drawer': drawer !== null }"
+    :class="{ 'ws--drawer': drawer !== null, 'ws--preview': previewOpen }"
     aria-label="Provredigering"
     :data-layout="layout"
     data-test="exam-workspace-frame"
@@ -279,6 +280,7 @@ onMounted(() => {
       :suggest-busy="enrichmentBusy"
       :suggest-disabled="workspaceDocument === null || disabled"
       :is-phone="isPhone"
+      :preview-open="previewOpen"
       @toggle-details="toggleDrawer('details')"
       @toggle-open="toggleDrawer('open')"
       @save="handleSave"
@@ -286,6 +288,7 @@ onMounted(() => {
       @suggest-all="enrichment.requestSuggestionsForAll"
       @undo="history.undo"
       @redo="history.redo"
+      @toggle-preview="togglePreview"
     >
       <template #export>
         <ExamWorkspaceExportMenu
@@ -423,6 +426,17 @@ onMounted(() => {
         @dismiss-item-notice="dismissItemNotice"
       />
 
+      <ExamWorkspacePrintPreviewPanel
+        v-if="previewOpen && workspaceDocument && !isPhone"
+        :pages="previewPages"
+        :question-pages="previewQuestionPages"
+        :loading="previewLoading"
+        :blocked="previewBlocked"
+        :message="previewMessage"
+        :selected-item-id="selectedItem?.item_id ?? null"
+        @close="previewOpen = false"
+      />
+
       <ExamWorkspaceDrawers
         v-if="drawer"
         :drawer="drawer"
@@ -471,6 +485,9 @@ onMounted(() => {
 .ws--drawer .ws__body { grid-template-columns: var(--xw-list) minmax(0, 1fr) var(--xw-drawer); }
 .ws__body--empty, .ws--drawer .ws__body--empty { grid-template-columns: minmax(0, 1fr); }
 .ws--drawer .ws__body--empty { grid-template-columns: minmax(0, 1fr) var(--xw-drawer); }
+@media (min-width: 1280px) {
+  .ws--preview .ws__body { grid-template-columns: var(--xw-list) minmax(0, 1fr) minmax(320px, 0.8fr); }
+}
 @media (max-width: 1279px) {
   .ws__body, .ws--drawer .ws__body { grid-template-columns: 280px minmax(0, 1fr); }
   .ws__body--empty, .ws--drawer .ws__body--empty { grid-template-columns: minmax(0, 1fr); }

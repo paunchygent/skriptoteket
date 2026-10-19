@@ -56,7 +56,7 @@ from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from skriptoteket.protocols.vault import VaultFileRepositoryProtocol
 
 
-def _document_not_found(lineage_id: UUID) -> DomainError:
+def document_not_found(lineage_id: UUID) -> DomainError:
     return DomainError(
         code=ErrorCode.NOT_FOUND,
         message="Provdokumentet finns inte.",
@@ -185,7 +185,7 @@ class GetExamWorkspaceDocumentHandler:
                 user_id=actor.id, document_lineage_id=lineage_id
             )
             if head is None:
-                raise _document_not_found(lineage_id)
+                raise document_not_found(lineage_id)
             content = await self._store.load(actor=actor, vault_file=head)
             history = await self._store.get_history(actor=actor, lineage_id=lineage_id)
             assert history is not None
@@ -198,11 +198,7 @@ class GetExamWorkspaceDocumentHandler:
                 "Den sparade dokumentversionen är skadad.",
                 details={"lineage_id": str(lineage_id)},
             )
-        current = next(
-            step
-            for step in (history.baseline, *history.steps)
-            if step.step_id == history.current_step_id
-        )
+        current = history.current_step()
         latest = self._codec.parse(content=current.content)
         document = latest.document.model_copy(update={"revision": head.document_version})
         return ExamWorkspaceDocumentResponse(
@@ -260,7 +256,7 @@ class SaveExamWorkspaceDocumentHandler:
             user_id=actor.id, document_lineage_id=lineage_id
         )
         if head is None:
-            raise _document_not_found(lineage_id)
+            raise document_not_found(lineage_id)
         if head.document_version != request.expected_revision:
             raise DomainError(
                 code=ErrorCode.CONFLICT,
@@ -323,7 +319,7 @@ class SaveExamWorkspaceDocumentHandler:
             user_id=actor.id, document_lineage_id=lineage_id
         )
         if head is None:
-            raise _document_not_found(lineage_id)
+            raise document_not_found(lineage_id)
         history = await self._store.get_history(actor=actor, lineage_id=lineage_id)
         assert history is not None
         return history
@@ -348,7 +344,7 @@ class SaveExamWorkspaceDocumentHandler:
             user_id=actor.id, document_lineage_id=lineage_id
         )
         if head is None:
-            raise _document_not_found(lineage_id)
+            raise document_not_found(lineage_id)
         document = self._codec.parse(content=step.content).document.model_copy(
             update={"revision": head.document_version}
         )

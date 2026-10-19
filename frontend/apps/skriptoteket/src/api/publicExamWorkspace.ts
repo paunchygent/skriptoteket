@@ -28,17 +28,24 @@ import {
 import type {
   ExamCourseCatalogResponse,
   ExamWorkspaceDocumentResponse,
-  ExamWorkspaceExportChecklistResponse,
-  ExamWorkspaceExportDownload,
-  ExamWorkspaceExportTarget,
   ExamWorkspaceMisspellingsRequest,
   ExamWorkspaceMisspellingsResponse,
   NativeExamBodyParagraph,
   NativeExamDocument,
   NativeExamItemKind,
-  NewParentChild,
 } from "./examWorkspace";
+import type {
+  ExamWorkspaceExportChecklistResponse,
+  ExamWorkspaceExportDownload,
+  ExamWorkspaceExportTarget,
+} from "./examWorkspaceExports";
 import type { ExamParentDeleteMode } from "./examWorkspaceStructureCommands";
+import type { components } from "./openapi";
+
+type Schemas = components["schemas"];
+
+/** Item content; identity and order are assigned by the server. */
+export type NewParentChild = Schemas["NewParentChild"];
 
 /** `/api/v1/public/apps/documents.conversion_hub/exam-converter/workspace`. */
 const PUBLIC_WORKSPACE_ROOT =
