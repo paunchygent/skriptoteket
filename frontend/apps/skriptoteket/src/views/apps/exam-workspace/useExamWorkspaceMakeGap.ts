@@ -7,7 +7,10 @@
  *   "Lucka" button ("Gör till lucka" tooltip and accessible name) above a
  *   clicked word. Both paths resolve the word with the same whole-textblock
  *   resolver in document positions, replace it with one gap atom in one
- *   transaction, and seed the gap from the replaced document text. The button
+ *   transaction, and seed the gap from the replaced document text. While the
+ *   gap tool is on, a word click converts at once through the same
+ *   replacement and a drag selection converts on mouseup; the button never
+ *   shows. The button
  *   teleports to the document body and sits fixed at viewport coordinates, so
  *   the editor's clipping never cuts it; later transactions keep it while the
  *   document is unchanged and the caret stays inside the word.
@@ -37,6 +40,8 @@ export function useExamWorkspaceMakeGap(options: {
   editor: Ref<Editor | undefined>;
   canMakeGap: () => boolean;
   nextGapId: () => string | null | undefined;
+  /** While true, a word click or a drag selection becomes a gap at once. */
+  gapTool: () => boolean;
 }): {
   makeGapButton: Ref<MakeGapButton | null>;
   makeGapButtonElement: Ref<HTMLButtonElement | null>;
@@ -44,6 +49,7 @@ export function useExamWorkspaceMakeGap(options: {
   makeGap: (gapId: string) => void;
   confirmMakeGap: () => void;
   handleMakeGapClick: (view: EditorView, pos: number, event: MouseEvent) => boolean;
+  handleGapToolMouseUp: () => void;
   maybeHideMakeGapButton: (transaction: Transaction) => void;
   hideMakeGap: () => void;
   removeMakeGapListeners: () => void;
@@ -237,8 +243,41 @@ export function useExamWorkspaceMakeGap(options: {
     if (word === null) {
       return false;
     }
-    showMakeGapButton(gapId, word.from, word.to, view.state.doc.textBetween(word.from, word.to, "\n", " "));
+    const seed = view.state.doc.textBetween(word.from, word.to, "\n", " ");
+    if (options.gapTool()) {
+      replaceRangeWithGap(gapId, word.from, word.to, seed);
+      return true;
+    }
+    showMakeGapButton(gapId, word.from, word.to, seed);
     return false;
+  }
+
+  /**
+   * Convert a drag selection into one gap on release while the gap tool is
+   * on. The browser finishes the selection after mouseup, so the selection
+   * is read on the next tick; `makeGap` keeps its guards (one textblock, no
+   * atom, non-blank). A plain click leaves an empty selection behind, so it
+   * converts nothing here; the click handler owns that path.
+   */
+  function handleGapToolMouseUp(): void {
+    if (!options.gapTool()) {
+      return;
+    }
+    setTimeout(() => {
+      const current = options.editor.value;
+      if (!current) {
+        return;
+      }
+      const { selection } = current.state;
+      if (!(selection instanceof TextSelection) || selection.empty) {
+        return;
+      }
+      const gapId = options.nextGapId();
+      if (typeof gapId !== "string") {
+        return;
+      }
+      makeGap(gapId);
+    }, 0);
   }
 
   return {
@@ -248,6 +287,7 @@ export function useExamWorkspaceMakeGap(options: {
     makeGap,
     confirmMakeGap,
     handleMakeGapClick,
+    handleGapToolMouseUp,
     maybeHideMakeGapButton,
     hideMakeGap,
     removeMakeGapListeners,

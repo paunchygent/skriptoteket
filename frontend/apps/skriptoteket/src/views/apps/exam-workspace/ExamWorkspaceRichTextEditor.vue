@@ -25,7 +25,10 @@
  *   one new gap in one `createGap` event, never an `update`. A click inside a
  *   word shows a small floating "Lucka" button above that word ("Gör till
  *   lucka" tooltip and accessible name) while a next gap id is available;
- *   one click on it converts the word. The button
+ *   one click on it converts the word. While the optional `gapTool` prop is
+ *   true, a click inside a word or a drag selection inside one paragraph
+ *   becomes a gap at once through the same replacement, and the button never
+ *   shows. The button
  *   teleports to the document body and sits fixed at viewport coordinates, so
  *   the editor's clipping never cuts it; later transactions keep it while the
  *   document is unchanged and the caret stays inside the word.
@@ -37,7 +40,8 @@
  *   - `examWorkspaceRichTextTarget` registers the surface for the toolbar.
  *   - `useExamWorkspaceMakeGap` owns the Lucka command and the floating
  *     button; it resolves words with `examWorkspaceGapWord`.
- *   - `examWorkspaceHistoryKeys` receives the undo and redo shortcuts.
+ *   - `examWorkspaceHistoryKeys` receives the undo and redo shortcuts; the
+ *     gap tool shortcut reaches the owner as `toggleGapTool`.
  *   - Atom and heading styles are global in `examWorkspace.css`.
  */
 
@@ -92,6 +96,8 @@ const props = withDefaults(
     gapsInteractive?: boolean;
     /** The id the next created gap takes; the floating gap button needs a string. */
     nextGapId?: string | null;
+    /** While true, a word click or a drag selection becomes a gap at once. */
+    gapTool?: boolean;
   }>(),
   {
     disabled: false,
@@ -103,6 +109,7 @@ const props = withDefaults(
     assetUrls: undefined,
     gapsInteractive: false,
     nextGapId: undefined,
+    gapTool: false,
   },
 );
 
@@ -111,6 +118,8 @@ const emit = defineEmits<{
   /** One new gap replaced text at the caret: the owner adds the gap record. */
   createGap: [body: NativeExamBodyParagraph[], gapId: string, seed: string];
   activateGap: [gapId: string, element: HTMLElement];
+  /** Ctrl+Alt+G (Cmd+Option+G on macOS) in an editor whose gaps are interactive. */
+  toggleGapTool: [];
   focus: [];
 }>();
 
@@ -144,6 +153,13 @@ const editor = useEditor({
     pictureUrl: (assetId) => props.assetUrls?.[assetId],
     onUndo: () => historyKeys?.undo(),
     onRedo: () => historyKeys?.redo(),
+    onToggleGapTool: () => {
+      if (!canMakeGap()) {
+        return false;
+      }
+      emit("toggleGapTool");
+      return true;
+    },
   }),
   editorProps: {
     attributes: surfaceAttributes(),
@@ -160,6 +176,12 @@ const editor = useEditor({
     },
     handleClick: (view, pos, event) => {
       return handleMakeGapClick(view, pos, event);
+    },
+    handleDOMEvents: {
+      mouseup: () => {
+        handleGapToolMouseUp();
+        return false;
+      },
     },
     handleKeyDown: (view, event) => {
       if (event.key === "Escape" && makeGapButton.value !== null) {
@@ -221,6 +243,7 @@ const {
   makeGap,
   confirmMakeGap,
   handleMakeGapClick,
+  handleGapToolMouseUp,
   maybeHideMakeGapButton,
   hideMakeGap,
   removeMakeGapListeners,
@@ -228,6 +251,7 @@ const {
   editor,
   canMakeGap,
   nextGapId: () => props.nextGapId,
+  gapTool: () => props.gapTool,
 });
 
 function surfaceAttributes(): Record<string, string> {
@@ -320,6 +344,15 @@ watch(
   () => props.nextGapId,
   (nextGapId) => {
     if (typeof nextGapId !== "string") {
+      hideMakeGap();
+    }
+  },
+);
+
+watch(
+  () => props.gapTool,
+  (gapTool) => {
+    if (gapTool) {
       hideMakeGap();
     }
   },
