@@ -5,7 +5,8 @@
  *   The one place that turns a word into a gap: the shared toolbar's Lucka
  *   command (the selection, or the word at the caret) and the small
  *   glyph-only floating button ("Gör till lucka" tooltip and accessible
- *   name only) right after a clicked word, on that word's own line. Both paths resolve the word with the same whole-textblock
+ *   name only) in the line gap under the clicked word's end. Both paths
+ *   resolve the word with the same whole-textblock
  *   resolver in document positions, replace it with one gap atom in one
  *   transaction, and seed the gap from the replaced document text. While the
  *   gap tool is on, a word click converts at once through the same
@@ -20,9 +21,12 @@
  *
  * Relationships:
  *   - Wired in by `ExamWorkspaceRichTextEditor`, which owns the editor, the
- *     button template and the `createGap` emit boundary.
+ *     button template and the `createGap` emit boundary; the editor forwards
+ *     its Tab key and blur, and the template forwards the button's own keys
+ *     and focusout, to this composable.
  *   - Resolves words with `examWorkspaceGapWord`.
- *   - Places the button with the shared anchored constants.
+ *   - Places the button with the shared anchored constants; the next
+ *     focusable after the editor is the shared dialog focusable selector.
  */
 
 import type { Editor } from "@tiptap/core";
@@ -34,10 +38,29 @@ import type { Ref } from "vue";
 
 import { EXAM_GAP_NODE, EXAM_PICTURE_NODE } from "./examWorkspaceRichTextSchema";
 import { wordRangeAtDocCharacter, wordRangeAtDocPosition } from "./examWorkspaceGapWord";
-import { ANCHORED_EDGE_PX, ANCHORED_GAP_PX } from "./useExamWorkspaceAnchoredPosition";
+import { ANCHORED_EDGE_PX } from "./useExamWorkspaceAnchoredPosition";
+import { FOCUSABLE_SELECTOR } from "../../../composables/useDialogFocus";
 
 /** The floating "Lucka" button: the stored word it converts and where it sits. */
-export type MakeGapButton = { gapId: string; from: number; to: number; seed: string; left: number; top: number };
+export type MakeGapButton = {
+  gapId: string;
+  from: number;
+  to: number;
+  seed: string;
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+};
+
+/**
+ * Width of the floating button box: wide enough to take with a pointer, but
+ * the box sits in the letter-free line gap, never over text.
+ */
+export const MAKE_GAP_BUTTON_WIDTH = 24;
+
+/** Largest glyph drawn inside the floating button box. */
+export const MAKE_GAP_BUTTON_GLYPH = 14;
 
 export function useExamWorkspaceMakeGap(options: {
   editor: Ref<Editor | undefined>;
@@ -57,6 +80,17 @@ export function useExamWorkspaceMakeGap(options: {
   maybeHideMakeGapButton: (transaction: Transaction) => void;
   hideMakeGap: () => void;
   removeMakeGapListeners: () => void;
+  /** Focus the floating button while it is rendered. */
+  focusMakeGapButton: () => void;
+  /**
+   * The floating button's own keys. Enter and Space stay native so the click
+   * handler converts the stored word; the roving hand-off is Tab (on to the
+   * next focusable past the editor), Shift+Tab (back to the editor, kept
+   * shown) and Escape (hidden, caret restored in the editor).
+   */
+  handleMakeGapButtonKeyDown: (event: KeyboardEvent) => void;
+  /** A focusout back into the editor keeps the button; any other hides it. */
+  handleMakeGapButtonFocusOut: (event: FocusEvent) => void;
 } {
   const makeGapButton: Ref<MakeGapButton | null> = ref(null);
   const makeGapButtonElement: Ref<HTMLButtonElement | null> = ref(null);
@@ -119,7 +153,18 @@ export function useExamWorkspaceMakeGap(options: {
     }
   }
 
-  /** Place the floating button right after its word, on that word's own line. */
+  /**
+   * Place the floating button in the letter-free band between the word's
+   * line box and the line below, centred horizontally on the word's end x,
+   * so it covers no letters and takes no clicks meant for text. The band is
+   * the surface line height minus its font size, centred on the boundary
+   * between the two line boxes: with 16px text at line height 2 the band is
+   * 16px (8px below the word's letters, 8px above the next line's). The box
+   * is MAKE_GAP_BUTTON_WIDTH wide and one band tall; its left edge is
+   * clamped to the viewport as before. When the surface metrics cannot be
+   * read, the word box height stands in for the font size at line height 2
+   * rather than placing the button over text.
+   */
   function placeMakeGapButton(): void {
     const current = makeGapButton.value;
     const view = options.editor.value?.view;
@@ -129,29 +174,36 @@ export function useExamWorkspaceMakeGap(options: {
     let coords: { left: number; top: number; right: number; bottom: number };
     try {
       // The -1 bias keeps the caret on the line where the word ends, so a
-      // word ending a line never moves the button to the next line.
+      // word ending a line never moves the button past the wrap.
       coords = view.coordsAtPos(current.to, -1);
     } catch {
       hideMakeGap();
       return;
     }
-    const height = makeGapButtonElement.value?.offsetHeight ?? 0;
-    const width = makeGapButtonElement.value?.offsetWidth ?? 0;
-    const lineHeight = coords.bottom - coords.top;
-    const top = coords.top + (lineHeight - height) / 2;
+    const style = getComputedStyle(view.dom);
+    const boxHeight = coords.bottom - coords.top;
+    const parsedFont = Number.parseFloat(style.fontSize);
+    const parsedLine = Number.parseFloat(style.lineHeight);
+    const font = Number.isFinite(parsedFont) && parsedFont > 0 ? parsedFont : boxHeight;
+    const line = Number.isFinite(parsedLine) && parsedLine > 0 ? parsedLine : font * 2;
+    const band = Math.max(line - font, 0);
+    const boundary = (coords.top + coords.bottom) / 2 + line / 2;
+    const width = MAKE_GAP_BUTTON_WIDTH;
+    const height = band;
+    const top = boundary - band / 2;
     const maxLeft = window.innerWidth - width - ANCHORED_EDGE_PX;
     const left =
       maxLeft < ANCHORED_EDGE_PX
         ? ANCHORED_EDGE_PX
-        : Math.min(Math.max(coords.right + ANCHORED_GAP_PX, ANCHORED_EDGE_PX), maxLeft);
+        : Math.min(Math.max(coords.right - width / 2, ANCHORED_EDGE_PX), maxLeft);
     if (makeGapButton.value !== current) {
       return;
     }
-    makeGapButton.value = { ...current, left, top };
+    makeGapButton.value = { ...current, left, top, width, height };
   }
 
   function showMakeGapButton(gapId: string, from: number, to: number, seed: string): void {
-    makeGapButton.value = { gapId, from, to, seed, left: 0, top: 0 };
+    makeGapButton.value = { gapId, from, to, seed, left: 0, top: 0, width: MAKE_GAP_BUTTON_WIDTH, height: 0 };
     addMakeGapListeners();
     void nextTick(placeMakeGapButton);
   }
@@ -346,6 +398,73 @@ export function useExamWorkspaceMakeGap(options: {
     }, 0);
   }
 
+  /** Focus the floating button while it is rendered. */
+  function focusMakeGapButton(): void {
+    makeGapButtonElement.value?.focus();
+  }
+
+  /** The editable surface, or null before the editor mounted. */
+  function editorRoot(): HTMLElement | null {
+    const dom = options.editor.value?.view.dom;
+    return dom instanceof HTMLElement ? dom : null;
+  }
+
+  function focusEditorKeepingCaret(): void {
+    // No position: TipTap keeps the previous cursor and selection.
+    options.editor.value?.commands.focus();
+  }
+
+  /**
+   * The first focusable element after the editor's root in document order,
+   * skipping the teleported floating button and everything inside the editor
+   * (the surface itself matches the focusable selector). The shared dialog
+   * selector owns which elements count as focusable.
+   */
+  function nextFocusableAfterEditor(): HTMLElement | null {
+    const root = editorRoot();
+    if (root === null) {
+      return null;
+    }
+    const candidates = Array.from(document.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
+    for (const candidate of candidates) {
+      if (candidate === makeGapButtonElement.value || candidate === root || root.contains(candidate)) {
+        continue;
+      }
+      if ((root.compareDocumentPosition(candidate) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0) {
+        return candidate;
+      }
+    }
+    return null;
+  }
+
+  function handleMakeGapButtonKeyDown(event: KeyboardEvent): void {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      hideMakeGap();
+      focusEditorKeepingCaret();
+      return;
+    }
+    if (event.key === "Tab") {
+      event.preventDefault();
+      if (event.shiftKey) {
+        focusEditorKeepingCaret();
+        return;
+      }
+      const next = nextFocusableAfterEditor();
+      hideMakeGap();
+      next?.focus();
+    }
+  }
+
+  function handleMakeGapButtonFocusOut(event: FocusEvent): void {
+    const root = editorRoot();
+    const target = event.relatedTarget;
+    if (root !== null && target instanceof Node && (target === root || root.contains(target))) {
+      return;
+    }
+    hideMakeGap();
+  }
+
   return {
     makeGapButton,
     makeGapButtonElement,
@@ -358,5 +477,8 @@ export function useExamWorkspaceMakeGap(options: {
     maybeHideMakeGapButton,
     hideMakeGap,
     removeMakeGapListeners,
+    focusMakeGapButton,
+    handleMakeGapButtonKeyDown,
+    handleMakeGapButtonFocusOut,
   };
 }

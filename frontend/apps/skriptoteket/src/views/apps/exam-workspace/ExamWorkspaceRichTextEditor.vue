@@ -23,10 +23,13 @@
  *   it makes it the surface the shared formatting toolbar acts on. The target
  *   also carries `makeGap`: the selection, or the word at the caret, becomes
  *   one new gap in one `createGap` event, never an `update`. A click inside a
- *   word shows a small glyph-only floating button right after that word,
- *   on the word's own line ("Gör till lucka" tooltip and accessible name
- *   only) while a next gap id is available;
- *   one click on it converts the word. While the optional `gapTool` prop is
+ *   word shows a small glyph-only floating button ("Gör till lucka" tooltip
+ *   and accessible name only) in the line gap under that word's end, covering
+ *   no letters; Tab in the surface moves focus to it while it stays shown,
+ *   Enter or Space converts the word, Escape hides it and returns focus to
+ *   the surface with the caret where it was, Shift+Tab returns focus to the
+ *   surface and keeps it shown, and Tab from it moves focus past the editor
+ *   and hides it. While the optional `gapTool` prop is
  *   true, a click on the pointer-hit word or a primary drag selection inside
  *   one paragraph becomes a gap at once through the same replacement, and
  *   the button never shows: a click on a space or punctuation only places
@@ -36,7 +39,8 @@
  *   the tool second. The button
  *   teleports to the document body and sits fixed at viewport coordinates, so
  *   the editor's clipping never cuts it; later transactions keep it while the
- *   document is unchanged and the caret stays inside the word.
+ *   document is unchanged and the caret stays inside the word. A blur whose
+ *   focus moves into the button keeps it; any other blur hides it.
  *
  * Relationships:
  *   - `examWorkspaceRichTextSchema` builds the editor's extensions;
@@ -73,7 +77,7 @@ import {
   examRichTextExtensions,
 } from "./examWorkspaceRichTextSchema";
 import type { ExamGapState } from "./examWorkspaceRichTextSchema";
-import { useExamWorkspaceMakeGap } from "./useExamWorkspaceMakeGap";
+import { MAKE_GAP_BUTTON_GLYPH, useExamWorkspaceMakeGap } from "./useExamWorkspaceMakeGap";
 import { useRichTextTargetRegistry } from "./examWorkspaceRichTextTarget";
 import type { RichTextHeadingLevel, RichTextTarget } from "./examWorkspaceRichTextTarget";
 
@@ -198,6 +202,13 @@ const editor = useEditor({
       },
     },
     handleKeyDown: (view, event) => {
+      if (event.key === "Tab" && !event.shiftKey && makeGapButton.value !== null) {
+        event.preventDefault();
+        // A roving hand-off: Tab in the surface reaches the floating action
+        // without moving the caret, and the action stays shown for it.
+        focusMakeGapButton();
+        return true;
+      }
       if (event.key === "Escape" && makeGapButton.value !== null) {
         hideMakeGap();
         return false;
@@ -249,7 +260,11 @@ const editor = useEditor({
     registry.activate(target);
     emit("focus");
   },
-  onBlur: () => {
+  onBlur: ({ event }) => {
+    const target = event.relatedTarget;
+    if (target instanceof HTMLElement && target === makeGapButtonElement.value) {
+      return;
+    }
     hideMakeGap();
   },
 });
@@ -266,6 +281,9 @@ const {
   maybeHideMakeGapButton,
   hideMakeGap,
   removeMakeGapListeners,
+  focusMakeGapButton,
+  handleMakeGapButtonKeyDown,
+  handleMakeGapButtonFocusOut,
 } = useExamWorkspaceMakeGap({
   editor,
   canMakeGap,
@@ -432,16 +450,18 @@ defineExpose({
         v-if="makeGapButton !== null"
         ref="makeGapButtonElement"
         type="button"
-        class="fixed z-30 inline-flex h-6 w-6 items-center justify-center text-navy focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action/40"
-        :style="{ left: `${makeGapButton.left}px`, top: `${makeGapButton.top}px` }"
+        class="fixed z-30 inline-flex items-center justify-center text-navy focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action/40"
+        :style="{ left: `${makeGapButton.left}px`, top: `${makeGapButton.top}px`, width: `${makeGapButton.width}px`, height: `${makeGapButton.height}px` }"
         aria-label="Gör till lucka"
         title="Gör till lucka"
         data-test="exam-workspace-make-gap"
         @mousedown.prevent
         @click="confirmMakeGap"
+        @keydown="handleMakeGapButtonKeyDown"
+        @focusout="handleMakeGapButtonFocusOut"
       >
         <TextCursorInput
-          :size="14"
+          :size="makeGapButton.height < MAKE_GAP_BUTTON_GLYPH ? makeGapButton.height : MAKE_GAP_BUTTON_GLYPH"
           aria-hidden="true"
         />
       </button>
