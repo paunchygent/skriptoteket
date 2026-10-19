@@ -38,7 +38,7 @@ from scripts._transcript_parity_evidence import utc_now, write_json
 PROOF_KIND = "audio_transcription_retryable_reattempt_public"
 ARTIFACT_ROOT = Path(".artifacts/audio-transcription-retryable-reattempt-public-proof")
 DEFAULT_AUDIO_FILE = Path(
-    "/Users/olofs_mba/Documents/Repos/sir-convert-a-lot/"
+    "/Users/olofs_mba/Repos/sir-convert-a-lot/"
     "build/verification/stt-sidecar-live-fixtures/source-media/"
     "swedish-monologue-one-speaker.m4a"
 )

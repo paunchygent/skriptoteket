@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "79c326fd42d1acc4bbb0374af9376c1ce32aa6c8106407ea0b6dfc2f2bebeed3",
+  "source_set_digest": "000b34b0452eaebb4c61913bcb8dbaa4414d64adeea12267632b296760beb8f2",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -7691,6 +7691,46 @@
         "decided_at": "2026-10-18",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "Independent ruthless-reviewer review of the delivery (root 01a14f23 evidence/reviews/10b693b6-1db4-4125-a880-ac5f7273bde7.md); its only finding F1 (medium) repaired at cbd290bd (capture-time request key sidecar per label_b recording, refused without one) and admitted on focused proof; user-approved re-recording of exactly 14 labeler calls (16,286 in, 1,315 out tokens); integration file 11/11, domain suite 3586 passed on Hemma; merged into main."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0047",
+      "type": "task",
+      "title": "Exam content-suggestion handlers are typed and provided through protocols",
+      "path": "docs/backlog/tasks/task-skript-rep-0047-exam-content-suggestion-handlers-are-typed-and-provided-through-protocols.md",
+      "status": "done",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-19",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer 7c83bec8 reviewed f7dd14d7 (Hemma retained session 01a14f6a-f57b-7b24-9672-320bf5884dbc, evidence/reviews/7c83bec8-d3ba-47cc-9881-6e50e14e2364.md): approved with no findings; three adversarial probes pass (new top-level and nested paid routes are still caught by the AI route-gate guard). Merged to main 2026-10-19."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0049",
+      "type": "task",
+      "title": "A converted item never drops a sentence from its own source paragraph",
+      "path": "docs/backlog/tasks/task-skript-rep-0049-a-converted-item-never-drops-a-sentence-from-its-own-source-paragraph.md",
+      "status": "proposed",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {

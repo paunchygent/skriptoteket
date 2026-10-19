@@ -22,9 +22,7 @@ from skriptoteket.application.curated_apps.handlers.exam_answer_key_enrichment_j
     ProcessExamAnswerKeyEnrichmentJobHandler,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_content_tags import (
-    GetExamContentSuggestionsHandler,
     ProcessExamContentSuggestionsHandler,
-    RequestExamContentSuggestionsHandler,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_digiexam_jobs import (
     ProcessExamWorkspaceDigiExamJobHandler,
@@ -35,11 +33,13 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_jobs imp
 from skriptoteket.protocols import llm as llm_protocols
 from skriptoteket.protocols.exam_answer_key import AnswerKeyStructuredProviderProtocol
 from skriptoteket.protocols.exam_workspace import (
+    GetExamContentSuggestionsHandlerProtocol,
     GetExamWorkspaceAnswerKeySuggestionsStatusHandlerProtocol,
     GetExamWorkspaceConversionStatusHandlerProtocol,
     GetExamWorkspaceDocumentHandlerProtocol,
     ImportExamWorkspaceDigiExamDocumentHandlerProtocol,
     ImportExamWorkspaceDocumentHandlerProtocol,
+    RequestExamContentSuggestionsHandlerProtocol,
     RequestExamWorkspaceAnswerKeySuggestionsHandlerProtocol,
     SaveExamWorkspaceDocumentHandlerProtocol,
 )
@@ -93,7 +93,7 @@ PAID_LLM_PROTOCOLS: frozenset[type] = frozenset(
 # own call path stops at enqueue, so the lane below decides whether the job
 # spends money.
 JOB_ENQUEUERS: dict[type, ExamAnswerKeySourceKind] = {
-    RequestExamContentSuggestionsHandler: ExamAnswerKeySourceKind.CONTENT_TAGS,
+    RequestExamContentSuggestionsHandlerProtocol: ExamAnswerKeySourceKind.CONTENT_TAGS,
     ImportExamWorkspaceDocumentHandlerProtocol: ExamAnswerKeySourceKind.DOCX_IMPORT,
     RequestExamWorkspaceAnswerKeySuggestionsHandlerProtocol: ExamAnswerKeySourceKind.WORKSPACE,
 }
@@ -112,7 +112,9 @@ JOB_LANES: dict[ExamAnswerKeySourceKind, type] = {
 NON_AI_JOB_REPOSITORY_USERS: dict[type, str] = {
     ChangeExamWorkspaceItemTypeHandlerProtocol: "re-types one already-parsed item; no LLM call",
     ExamWorkspaceParentsHandlerProtocol: "reads the saved document and undo steps; no LLM call",
-    GetExamContentSuggestionsHandler: ("reads an enqueued content-tag job's status; no LLM call"),
+    GetExamContentSuggestionsHandlerProtocol: (
+        "reads an enqueued content-tag job's status; no LLM call"
+    ),
     GetExamWorkspaceAnswerKeySuggestionsStatusHandlerProtocol: (
         "reads an enqueued suggestion job's status; no LLM call"
     ),
