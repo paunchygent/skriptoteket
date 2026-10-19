@@ -130,8 +130,8 @@ class TestPictures:
         parsed = Document(io.BytesIO(content))
         # The global instruction, item_001's body and the parent instruction each embed one.
         assert len(parsed.inline_shapes) == 3
-        body_paragraph = only_paragraph(list(parsed.paragraphs), "Fråga 1.")
-        assert run_shape(body_paragraph) == ["Fråga 1.", "image"]
+        body_paragraph = only_paragraph(list(parsed.paragraphs), "Fråga 1. (1 p)")
+        assert run_shape(body_paragraph) == ["Fråga 1.", "image", " (1 p)"]
         assert (
             drawing_payload(parsed, body_paragraph) == fixture.assets_by_id[fixture.global_asset_id]
         )
@@ -178,7 +178,7 @@ class TestPictures:
             fixture.document, assets_by_id=fixture.assets_by_id
         )
         parsed = Document(io.BytesIO(content))
-        body_paragraph = only_paragraph(list(parsed.paragraphs), "Fråga 1.")
+        body_paragraph = only_paragraph(list(parsed.paragraphs), "Fråga 1. (1 p)")
         spacing = body_paragraph.paragraph_format
 
         assert spacing.space_before.mm == pytest.approx(IMAGE_SPACING.space_before_mm, abs=0.02)

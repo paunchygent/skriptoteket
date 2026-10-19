@@ -42,9 +42,9 @@ describe("ExamWorkspaceRichTextEditor gap tool wiring", () => {
     return event;
   }
 
-  function pressEscape(wired: Opened): void {
+  function pressEscape(wired: Opened, init: KeyboardEventInit = {}): void {
     wired.surface.dispatchEvent(
-      new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }),
+      new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true, ...init }),
     );
   }
 
@@ -101,5 +101,21 @@ describe("ExamWorkspaceRichTextEditor gap tool wiring", () => {
     await nextTick();
     expect(wired.escapes).toHaveLength(1);
     expect(wired.toggles).toHaveLength(0);
+  });
+
+  it("emits no escape on a repeated Escape keydown, while a fresh one emits one", async () => {
+    const wired = await openEditor({
+      body: [paragraph(text("hello world"))],
+      gapsInteractive: true,
+      nextGapId: "gap_002",
+    });
+
+    pressEscape(wired, { repeat: true });
+    await nextTick();
+    expect(wired.escapes).toHaveLength(0);
+
+    pressEscape(wired);
+    await nextTick();
+    expect(wired.escapes).toHaveLength(1);
   });
 });

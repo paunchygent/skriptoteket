@@ -59,6 +59,12 @@ _STEP_BOX = "☐"
 _MUTATED_EXAM = "bf26_english_1_unit_test_kap_1_2_med_facit"
 _MUTATED_BATCH = "docx_w2-10-01"
 _MUTATED_ANCHOR = "body:0059"
+# The printed inline points of each recorded review item.
+_REVIEW_INLINE_POINTS = {
+    ("bf26_english_1_unit_test_kap_1_2_med_facit", "item_043"): "(1 p)",
+    ("svenska_2_grammatik_omprov_variant_1_med_facit", "item_001"): "(6 p)",
+    ("svenska_2_grammatik_omprov_variant_2_med_facit", "item_001"): "(6 p)",
+}
 _converted: dict[str, NativeExamDocument] = {}
 Corruption = Callable[[dict[str, JsonValue]], None]
 
@@ -236,6 +242,7 @@ async def test_the_docx_export_adds_one_letter_per_choice_and_never_doubles_it(e
 
 async def test_a_review_item_shows_its_source_text_as_printed_in_both_exports():
     kept = 0
+    visited: set[tuple[str, str]] = set()
     for exam in recorded_exams():
         document = await _document(exam)
         paragraphs = _docx_paragraphs(document)
@@ -244,10 +251,17 @@ async def test_a_review_item_shows_its_source_text_as_printed_in_both_exports():
             if item.review.state is not NativeItemReviewState.REVIEW_REQUIRED:
                 continue
             kept += 1
-            for line in item.plain_text_lines():
-                assert line in paragraphs, f"{item.item_id}: DOCX export lost {line[:20]!r}"
+            visited.add((exam, item.item_id))
+            lines = item.plain_text_lines()
+            points = item.points
+            for index, line in enumerate(lines):
+                expected = line
+                if index == len(lines) - 1 and points is not None:
+                    expected = line + " " + _REVIEW_INLINE_POINTS[(exam, item.item_id)]
+                assert expected in paragraphs, f"{item.item_id}: DOCX export lost {expected[:24]!r}"
                 assert _leading(line) in _qti_text(qti[item.item_id]), (
                     f"{item.item_id}: QTI export lost {line[:20]!r}"
                 )
 
     assert kept, "no recorded exam holds a source review item"
+    assert visited == set(_REVIEW_INLINE_POINTS), f"review items changed: visited {sorted(visited)}"

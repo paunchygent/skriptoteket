@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "9caf19d2bc432347932095389c7d34e98a83e55e923f90ce3dc4f383be2e9b99",
+  "source_set_digest": "32d3d567c99f3fc018dc870c17a1027275b5c73c70e6796edaf20073e8346964",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6725,6 +6725,86 @@
       }
     },
     {
+      "id": "TASK-SKRIPT-40-04-13",
+      "type": "task",
+      "title": "With the gap tool on, a click on a gap turns it back into its words, any highlighted span becomes one gap, and one gap control replaces the Lucka button",
+      "path": "docs/backlog/tasks/task-skript-40-04-13-with-the-gap-tool-on-a-click-on-a-gap-turns-it-back-into-its-words-any-highlighted-span-becomes-one-gap-and-one-gap-control-replaces-the-lucka-button.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-14",
+      "type": "task",
+      "title": "The question editor toolbar has its own Ångra and Gör om, and every question edit autosaves after a short pause",
+      "path": "docs/backlog/tasks/task-skript-40-04-14-the-question-editor-toolbar-has-its-own-ångra-and-gör-om-and-every-question-edit-autosaves-after-a-short-pause.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-15",
+      "type": "task",
+      "title": "Printed PDF exams show each question's points as (N p) at the end of the question text",
+      "path": "docs/backlog/tasks/task-skript-40-04-15-printed-pdf-exams-show-each-question-s-points-as-n-p-at-the-end-of-the-question-text.md",
+      "status": "done",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-19",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Independent ruthless-reviewer 9aa64d69 (Pi) approved dbbb5f8d with one low finding, fixed in R3 fae44edb and admitted on focused proof (retained 01a1542c evidence/results/9aa64d69-fc20-41eb-8993-eded036ef865.json). Merged to main as df87d633; the Mac staging walk at df87d633 passed (Mac .artifacts/staging-walk-40-04-15/walk-record.md)."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-17",
+      "type": "task",
+      "title": "The exam workspace header and toolbars share one compact control system with autosave status, file commands and a gap switch",
+      "path": "docs/backlog/tasks/task-skript-40-04-17-the-exam-workspace-header-and-toolbars-share-one-compact-control-system-with-autosave-status-file-commands-and-a-gap-switch.md",
+      "status": "proposed",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
       "id": "TASK-SKRIPT-41-01-02",
       "type": "task",
       "title": "The script editor's AI runs on Sol 6.1 low through the Sol pool",
@@ -6851,7 +6931,7 @@
       "type": "task",
       "title": "The exam workspace fills the desktop window and the editor column is the widest",
       "path": "docs/backlog/tasks/task-skript-41-02-04-the-exam-workspace-fills-the-desktop-window-and-the-editor-column-is-the-widest.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-41-02",
       "owners": [
@@ -6862,7 +6942,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-19",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Independent ruthless-reviewer ea60b045 returned nine medium findings at 4b526ce1, repaired by fresh juniors and admitted on focused proof without rereview (retained 01a153bf evidence/reviews/ea60b045-1ef0-4a1d-950c-df04bf72027c.md). Merged to main as ffab920a; the first staging walk (Mac, Edge, guest and signed in) passed F3, F4 and F6, the default widths, clamping, remembered widths and the rail, and found G1, G2, W1, W2, W3 and W4. Review f31c37a1 of the walk repair returned one medium finding (the column handle spec over 500 lines), repaired and admitted on focused proof (evidence/reviews/f31c37a1-2b2e-45c9-bba4-d3eabe9dd6ca.md). The repair merged to main as 67861ab3 and the second staging walk passed G1, G2 (IBM Plex Sans confirmed), W3 and W4 (Mac record .artifacts/staging-walk-41-02-04-repair/walk-record.md). W1 and W2 are handed to the toolbar session (TASK-SKRIPT-40-04-17)."
       }
     },
     {

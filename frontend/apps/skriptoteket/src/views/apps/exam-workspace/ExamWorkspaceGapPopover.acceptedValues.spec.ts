@@ -6,8 +6,8 @@
  *   heading drops the old comma wording, commas stay ordinary characters in a
  *   value, editing a row then leaving the popover commits the full list
  *   exactly once, Enter in a row adds a row without closing, Escape after
- *   typing closes discarded with no commit even when a `change` fires late,
- *   and "Visa som text" follows unsaved typing and commits before it emits.
+ *   typing commits like leaving the popover and closes, exactly once even
+ *   when a `change` fires late, and "Visa som text" follows unsaved typing and commits before it emits.
  */
 
 import { mount } from "@vue/test-utils";
@@ -128,18 +128,19 @@ describe("ExamWorkspaceGapPopover accepted answers", () => {
     wrapper.unmount();
   });
 
-  it("discards on Escape with no commit even when a change fires late", async () => {
+  it("commits on Escape and closes, exactly once even when a change fires late", async () => {
     const wrapper = mountPopover(buildGap(GAP_ID, ["ett"]));
     const row = firstRow();
-    row.element.value = "kasta";
+    row.element.value = "behållen";
     await row.trigger("input");
     await row.trigger("keydown", { key: "Escape" });
 
+    expect(commits(wrapper)).toEqual([[ITEM_ID, GAP_ID, ["behållen"]]]);
     expect(wrapper.emitted("close")).toEqual([[true]]);
 
     row.element.dispatchEvent(new Event("change", { bubbles: true }));
     await wrapper.vm.$nextTick();
-    expect(wrapper.emitted("commit")).toBeUndefined();
+    expect(commits(wrapper)).toHaveLength(1);
     wrapper.unmount();
   });
 
