@@ -22,9 +22,10 @@
  *   never an editor-local undo. The component is a `RichTextTarget`: focusing
  *   it makes it the surface the shared formatting toolbar acts on. The target
  *   also carries `makeGap`: the selection, or the word at the caret, becomes
-   *   one new gap in one `createGap` event, never an `update`. A click inside a
- *   word shows a small floating "Gör till lucka" button above that word while
- *   a next gap id is available; one click on it converts the word. The button
+ *   one new gap in one `createGap` event, never an `update`. A click inside a
+ *   word shows a small floating "Lucka" button above that word ("Gör till
+ *   lucka" tooltip and accessible name) while a next gap id is available;
+ *   one click on it converts the word. The button
  *   teleports to the document body and sits fixed at viewport coordinates, so
  *   the editor's clipping never cuts it; later transactions keep it while the
  *   document is unchanged and the caret stays inside the word.
@@ -134,7 +135,7 @@ let gapCreation: { gapId: string; seed: string } | null = null;
 
 const marks: Ref<BodyMark[]> = ref([]);
 
-/** The floating "Gör till lucka" button: the stored word it converts and where it sits. */
+/** The floating "Lucka" button ("Gör till lucka" tooltip and accessible name): the stored word it converts and where it sits. */
 type MakeGapButton = { gapId: string; from: number; to: number; seed: string; left: number; top: number };
 const makeGapButton: Ref<MakeGapButton | null> = ref(null);
 const makeGapButtonElement: Ref<HTMLButtonElement | null> = ref(null);
@@ -626,7 +627,7 @@ defineExpose({
           :size="14"
           aria-hidden="true"
         />
-        Gör till lucka
+        Lucka
       </button>
     </Teleport>
   </div>

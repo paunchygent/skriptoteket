@@ -2,8 +2,8 @@
  * Exam workspace gap popover: automatic answers.
  *
  * Expected behavior:
- *   Each answer the conversion wrote for the gap shows as a chip marked
- *   "automatisk" with a remove control and no AI glyph. Removing one emits
+ *   Each answer the conversion wrote for the gap shows as a chip with a
+ *   remove control, no per-chip status tag and no AI glyph. Removing one emits
  *   the item, gap and value and leaves the popover open with focus back in
  *   the answers input. A gap without automatic answers shows no section.
  */
@@ -42,14 +42,15 @@ function automaticChips(): HTMLElement[] {
 }
 
 describe("ExamWorkspaceGapPopover automatic answers", () => {
-  it("shows a chip per automatic answer, marked automatisk and without an AI glyph", () => {
+  it("shows a chip per automatic answer with no per-chip automatisk tag and without an AI glyph", () => {
     const wrapper = mountPopover(gapWithAutomaticValues());
     const chips = automaticChips();
 
     expect(chips).toHaveLength(2);
     expect(chips[0]!.textContent).toContain("hundraa");
-    expect(chips[0]!.textContent).toContain("automatisk");
+    expect(chips[0]!.textContent).not.toContain("automatisk");
     expect(chips[1]!.textContent).toContain("hundar");
+    expect(chips[1]!.textContent).not.toContain("automatisk");
     expect(popoverRoot().innerHTML).not.toContain("lucide-sparkles");
     wrapper.unmount();
   });

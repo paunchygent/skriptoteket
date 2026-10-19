@@ -4,8 +4,9 @@
  *
  * Domain purpose:
  *   Show the answers the conversion wrote for a gap as removable chips
- *   marked "automatisk" with no AI glyph. Removing one emits the value;
- *   the owner removes the record.
+ *   with no AI glyph and no per-chip status tag (the "Automatiska svar"
+ *   heading names the status). Removing one emits the value; the owner
+ *   removes the record.
  *
  * Relationships:
  *   - Rendered by `ExamWorkspaceGapPopover` for a text gap and by the Kort
@@ -48,7 +49,6 @@ function handleRemove(value: string): void {
         :data-value="value"
       >
         <span class="font-semibold">{{ value }}</span>
-        <span class="text-[11px] leading-none text-navy/65">automatisk</span>
         <button
           type="button"
           class="inline-flex h-11 w-11 shrink-0 items-center justify-center border border-navy/35 bg-panel text-navy hover:bg-canvas focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action/40 sm:h-7 sm:w-7"

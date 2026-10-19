@@ -5,22 +5,24 @@
  * Domain purpose:
  *   Let the teacher edit one gap's accepted answers as one row per answer
  *   right next to the gap chip through `ExamWorkspaceGapAnswerList`: a text
- *   input and a remove glyph per row with an add glyph button "Lägg till
- *   svar" under the rows. Leaving the popover commits the answers; Escape
+ *   input and a remove glyph per row with a glyph-only add button ("Lägg
+ *   till svar" accessible name and tooltip) under the rows. Leaving the
+ *   popover commits the answers; Escape
  *   discards them. Each commit is emitted once, even when the browser also
  *   fires `change` while focus returns to the chip. Enter inside an answer
  *   row adds a row below it and never closes the popover. Enter and Escape
  *   pressed while an IME composition is active belong to the composition and
  *   are ignored. Answers the conversion wrote for the
- *   gap (automatic misspellings) show as removable chips marked
- *   "automatisk" with no AI glyph. "Visa som text" replaces the gap with
+ *   gap (automatic misspellings) show as removable chips with no AI glyph
+ *   and no per-chip status tag. "Visa som text" replaces the gap with
  *   its first accepted answer as plain text; it is disabled with a visible
  *   explanation while the answers field (including unsaved typing) holds no
  *   accepted answer.
  *
  *   A dropdown gap (`dropdown`) edits its options instead: one row per
  *   option with a radio for the correct one, an editable text, move up/down
- *   and remove, plus "Lägg till alternativ". Radio, add, remove and move emit
+ *   and remove, plus a glyph-only add button ("Lägg till alternativ"
+ *   accessible name and tooltip). Radio, add, remove and move emit
  *   the whole option state at once (one patch each); typed option text
  *   commits on `change`, Enter and leaving the popover, and rides along with
  *   the next such emit. Escape discards typed text. The correct option
@@ -408,10 +410,15 @@ onMounted(() => {
         <button
           type="button"
           class="btn-ghost justify-center shadow-none"
+          aria-label="Lägg till alternativ"
+          title="Lägg till alternativ"
           data-test="exam-workspace-gap-option-add"
           @click="handleAddOption"
         >
-          Lägg till alternativ
+          <UiGlyph
+            meaning="add"
+            :size="16"
+          />
         </button>
       </div>
 

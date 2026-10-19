@@ -2,8 +2,9 @@
  * Exam workspace gap automatic answers.
  *
  * Expected behavior:
- *   Each answer the conversion wrote for the gap shows as a chip marked
- *   "automatisk" with a remove control. Removing one emits the value;
+ *   Each answer the conversion wrote for the gap shows as a chip with a
+ *   remove control and no per-chip status tag (the "Automatiska svar"
+ *   heading names the status). Removing one emits the value;
  *   while disabled every remove control is disabled and nothing emits.
  *   A gap without automatic answers shows no section (the owner keeps the
  *   v-if, so the component is never mounted empty).
@@ -22,14 +23,18 @@ function mountValues(values: string[], disabled = false) {
 }
 
 describe("ExamWorkspaceGapAutomaticValues", () => {
-  it("renders a chip per value, marked automatisk and without an AI glyph", () => {
+  it("renders a chip per value with no per-chip automatisk tag and without an AI glyph", () => {
     const wrapper = mountValues(["hundraa", "hundar"]);
 
     const chips = wrapper.findAll('[data-test="exam-workspace-gap-automatic-values"] li');
     expect(chips).toHaveLength(2);
     expect(chips[0]?.text()).toContain("hundraa");
-    expect(chips[0]?.text()).toContain("automatisk");
+    expect(chips[0]?.text()).not.toContain("automatisk");
     expect(chips[1]?.text()).toContain("hundar");
+    expect(chips[1]?.text()).not.toContain("automatisk");
+    expect(chips[0]?.find("button").attributes("aria-label")).toBe(
+      "Ta bort automatisk stavning: hundraa",
+    );
     expect(wrapper.html()).not.toContain("lucide-sparkles");
     wrapper.unmount();
   });

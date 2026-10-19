@@ -30,11 +30,11 @@ describe("ExamWorkspaceMarkToolbar gap button", () => {
 
   it("disables the button with the reason as its tooltip", () => {
     const wrapper = mount(ExamWorkspaceMarkToolbar, {
-      props: { showGap: true, gapDisabledReason: "Kan inte lägga till fler luckor" },
+      props: { showGap: true, gapDisabledReason: "Högst 999 luckor" },
     });
     const button = wrapper.get("[data-test='exam-workspace-toolbar-make-gap']");
     expect((button.element as HTMLButtonElement).disabled).toBe(true);
-    expect(button.attributes("title")).toBe("Kan inte lägga till fler luckor");
+    expect(button.attributes("title")).toBe("Högst 999 luckor");
   });
 
   it("prevents mousedown on the button so the caret stays", async () => {

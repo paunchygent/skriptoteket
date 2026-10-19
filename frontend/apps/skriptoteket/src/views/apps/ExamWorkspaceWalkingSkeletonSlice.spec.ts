@@ -265,7 +265,7 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
     expect(added.points).toBeNull();
   });
 
-  it("a Kort svar shows only Fråga and Svar and saves a one-gap Lucktext", async () => {
+  it("a Kort svar shows only Frågetext and Godkända svar and saves a one-gap Lucktext", async () => {
     apiMocks.saveExamWorkspaceDocument.mockResolvedValue(buildResponse({ version: 2 }));
     const { wrapper } = await mountExamWorkspace();
     await importFixtureDocument(wrapper);

@@ -3,10 +3,10 @@
  *
  * Expected behavior (TASK-SKRIPT-40-04-08 J6, ledger L4-L6):
  *   In a Lucktext or dropdown-Lucktext question the toolbar "Lucka" button
- *   and the floating "Gör till lucka" button create a gap end to end: the
- *   editor's one `createGap` reaches `editing.createItemGap` as one undoable
- *   structural edit, and the new gap's popover opens at once. At `gap_999`
- *   the Lucka button is disabled with "Kan inte lägga till fler luckor".
+ *   and the floating "Lucka" button ("Gör till lucka" tooltip) create a gap
+ *   end to end: the editor's one `createGap` reaches `editing.createItemGap`
+ *   as one undoable structural edit, and the new gap's popover opens at once.
+ *   At `gap_999` the Lucka button is disabled with "Högst 999 luckor".
  *
  * jsdom has no layout, so selections are set through TipTap commands, the
  * click that shows the floating button reaches the view through its own
@@ -46,7 +46,7 @@ import type { ExamWorkspaceItemEntry } from "./examWorkspaceListEntries";
 
 const TOOLBAR_GAP = '[data-test="exam-workspace-toolbar-make-gap"]';
 const FLOATING_GAP = '[data-test="exam-workspace-make-gap"]';
-const GAP_AT_CAP = "Kan inte lägga till fler luckor";
+const GAP_AT_CAP = "Högst 999 luckor";
 
 const toast = vi.hoisted(() => ({ failure: vi.fn(), warning: vi.fn() }));
 

@@ -2,12 +2,13 @@
  * Exam workspace Kort svar field.
  *
  * Expected behavior:
- *   A Kort svar question shows exactly two fields: "Fråga" (the rich-text
- *   question without its answer paragraph, with the mark toolbar and no gap
- *   button) and "Svar" (one row per accepted answer, with the automatic
- *   answers under it). No gap chip, no popover, no "Visa som text".
- *   Typing in Fråga re-attaches the gap paragraph, so the gap record never
- *   drops; the store's write-back never resets the Fråga content.
+ *   A Kort svar question shows exactly two fields: "Frågetext" (the
+ *   rich-text question without its answer paragraph, with the mark toolbar
+ *   and no gap button) and "Godkända svar" (one row per accepted answer,
+ *   with the automatic answers under it). No gap chip, no popover, no
+ *   "Visa som text". Typing in Frågetext re-attaches the gap paragraph,
+ *   so the gap record never drops; the store's write-back never resets the
+ *   Frågetext content.
  */
 
 import { mount } from "@vue/test-utils";
@@ -82,7 +83,7 @@ function questionSurface(wrapper: FieldWrapper): HTMLElement {
 function questionEditor(wrapper: FieldWrapper): Editor {
   const { editor } = questionSurface(wrapper) as HTMLElement & { editor?: Editor };
   if (!editor) {
-    throw new Error("the Fråga editor did not mount");
+    throw new Error("the Frågetext editor did not mount");
   }
   return editor;
 }
@@ -102,7 +103,22 @@ function svarInputs(wrapper: FieldWrapper): HTMLInputElement[] {
 type UpdateBodyEvent = [string, NativeExamBodyParagraph[], boolean];
 
 describe("ExamWorkspaceShortAnswerField", () => {
-  it("shows only the question text in Fråga, with no gap chip and no gap button", async () => {
+  it("labels the fields Frågetext and Godkända svar", async () => {
+    const wrapper = await mountField();
+
+    const labels: Array<string | null | undefined> = [];
+    wrapper.element.querySelectorAll(".xw-label").forEach((element: Element) => {
+      labels.push(element.textContent?.trim());
+    });
+    expect(labels).toEqual(["Frågetext", "Godkända svar"]);
+    expect(questionSurface(wrapper).getAttribute("aria-label")).toBe("Frågetext");
+    expect(
+      wrapper.get('[data-test="exam-workspace-short-answer-values"]').attributes("aria-label"),
+    ).toBe("Godkända svar");
+    wrapper.unmount();
+  });
+
+  it("shows only the question text in Frågetext, with no gap chip and no gap button", async () => {
     const wrapper = await mountField();
 
     expect(wrapper.find('[data-test="exam-workspace-short-answer"]').exists()).toBe(true);
@@ -189,7 +205,7 @@ describe("ExamWorkspaceShortAnswerField", () => {
     wrapper.unmount();
   });
 
-  it("keeps the Fråga content when the store writes the emitted body back", async () => {
+  it("keeps the Frågetext content when the store writes the emitted body back", async () => {
     const item = shortAnswerItem();
     const wrapper = await mountField(item);
     const editor = questionEditor(wrapper);

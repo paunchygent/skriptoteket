@@ -5,8 +5,9 @@
  *   `target.makeGap(gapId)` turns the selection, or the word at the caret,
  *   into a new gap, or inserts an empty gap, as one change that emits a
  *   single `createGap(body, gapId, seed)` event and never `update`. A click
- *   inside a word shows a small floating "Gör till lucka" button above that
- *   word; one click on it converts the word. The button stays while later
+ *   inside a word shows a small floating "Lucka" button above that word
+ *   ("Gör till lucka" tooltip and accessible name); one click on it converts
+ *   the word. The button stays while later
  *   transactions leave the document and the caret inside the word, and hides
  *   on any document change, on a caret move out of the word, on scroll or
  *   resize, on Escape, and when the editor is disabled or has no next gap id.
@@ -272,8 +273,10 @@ describe("ExamWorkspaceRichTextEditor makeGap", () => {
 
       const button = gapButton();
       expect(button).not.toBeNull();
-      expect(button?.textContent).toContain("Gör till lucka");
+      expect(button?.textContent).toContain("Lucka");
+      expect(button?.textContent).not.toContain("Gör till lucka");
       expect(button?.getAttribute("aria-label")).toBe("Gör till lucka");
+      expect(button?.getAttribute("title")).toBe("Gör till lucka");
       expect(button?.style.left).toBe("50px");
       expect(button?.style.top).toBe("56px");
 

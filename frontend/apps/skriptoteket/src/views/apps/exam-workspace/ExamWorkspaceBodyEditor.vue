@@ -15,7 +15,8 @@
  *   dropdown-Lucktext question grows its gaps from here: the toolbar's Lucka
  *   button turns the selection, or the word at the caret, into a gap (or
  *   inserts an empty gap), and a click inside a word shows a small floating
- *   "Gör till lucka" button that converts that word. The editor emits the
+ *   "Lucka" button ("Gör till lucka" tooltip and accessible name) that
+ *   converts that word. The editor emits the
  *   change as one `createGap`, the owner adds the gap record as one
  *   structural edit, and the new gap's popover opens at once.
  *
@@ -241,7 +242,7 @@ watch(
         :disabled="disabled"
         show-headings
         :show-gap="gapKind"
-        :gap-disabled-reason="gapKind && newGapId === null ? 'Kan inte lägga till fler luckor' : null"
+        :gap-disabled-reason="gapKind && newGapId === null ? 'Högst 999 luckor' : null"
         @toggle-mark="toggleMark"
         @toggle-heading="toggleHeading"
         @make-gap="handleMakeGap"

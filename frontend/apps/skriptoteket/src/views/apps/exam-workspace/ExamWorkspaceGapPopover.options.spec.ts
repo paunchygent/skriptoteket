@@ -128,7 +128,11 @@ describe("ExamWorkspaceGapPopover dropdown options", () => {
         ],
       }),
     );
-    await documentControl('[data-test="exam-workspace-gap-option-add"]').trigger("click");
+    const add = documentControl<HTMLButtonElement>('[data-test="exam-workspace-gap-option-add"]');
+    expect(add.element.textContent).not.toContain("Lägg till alternativ");
+    expect(add.attributes("aria-label")).toBe("Lägg till alternativ");
+    expect(add.attributes("title")).toBe("Lägg till alternativ");
+    await add.trigger("click");
     const [event] = updates(wrapper);
     expect(ids(event[2])).toEqual(["choice_001", "choice_003", "choice_002"]);
     expect(event[2][2].body).toEqual(plainBody(" "));

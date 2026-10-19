@@ -3,8 +3,9 @@
  *
  * Expected behavior:
  *   The list edits one list of accepted answers as one text input per
- *   answer with a remove glyph per row and an add glyph button under the
- *   rows. Typing never emits; an input's `change`, removing a row and the
+ *   answer with a remove glyph per row and a glyph-only add button
+ *   ("Lägg till svar" accessible name and tooltip) under the rows. Typing
+ *   never emits; an input's `change`, removing a row and the
  *   exposed `commit()` emit the normalized list (trimmed, empties dropped,
  *   exact duplicates collapsed, commas kept) exactly once per change.
  *   Every row input, add, Enter-add and remove also emits the normalized
@@ -81,7 +82,9 @@ describe("ExamWorkspaceGapAnswerList", () => {
     const rows = inputs(wrapper);
     expect(rows).toHaveLength(1);
     expect(rows[0].element.value).toBe("");
-    expect(addButton(wrapper).text()).toContain("Lägg till svar");
+    expect(addButton(wrapper).text()).not.toContain("Lägg till svar");
+    expect(addButton(wrapper).attributes("aria-label")).toBe("Lägg till svar");
+    expect(addButton(wrapper).attributes("title")).toBe("Lägg till svar");
     wrapper.unmount();
   });
 

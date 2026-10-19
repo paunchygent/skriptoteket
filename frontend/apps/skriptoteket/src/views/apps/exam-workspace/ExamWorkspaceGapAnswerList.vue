@@ -4,8 +4,9 @@
  *
  * Domain purpose:
  *   Edit one list of accepted answers as one row per answer: a text input
- *   and a remove glyph per row, with an add glyph button "Lägg till svar"
- *   under the rows. Typing alone never emits; an input's `change`, removing
+ *   and a remove glyph per row, with a glyph-only add button ("Lägg till
+ *   svar" accessible name and tooltip) under the rows. Typing alone never
+ *   emits; an input's `change`, removing
  *   a row and the exposed `commit()` emit the normalized list (trimmed,
  *   empty rows dropped, exact duplicates after trim collapsed, commas kept
  *   as ordinary characters) exactly once per change. Every row input, add,
@@ -257,7 +258,8 @@ defineExpose({ commit, focusFirst });
       type="button"
       class="btn-ghost justify-center shadow-none"
       :disabled="disabled || rows.length >= MAX_ROWS"
-      :title="rows.length >= MAX_ROWS ? ADD_CAP_TITLE : undefined"
+      :aria-label="ADD_LABEL"
+      :title="rows.length >= MAX_ROWS ? ADD_CAP_TITLE : ADD_LABEL"
       :data-test="`${testId}-add`"
       @click="handleAdd"
     >
@@ -265,7 +267,6 @@ defineExpose({ commit, focusFirst });
         meaning="add"
         :size="16"
       />
-      {{ ADD_LABEL }}
     </button>
   </div>
 </template>

@@ -3,11 +3,12 @@
  * Exam workspace Kort svar field.
  *
  * Domain purpose:
- *   Show a Kort svar question as exactly two fields: "Fråga" (the rich-text
- *   question without its answer paragraph, with the mark toolbar and no gap
- *   button) and "Svar" (one row per accepted answer, with the automatic
- *   answers under it). No gap chip, no popover, no "Visa som text". Every
- *   Fråga edit re-attaches the answer paragraph before it is emitted, so the
+ *   Show a Kort svar question as exactly two fields: "Frågetext" (the
+ *   rich-text question without its answer paragraph, with the mark toolbar
+ *   and no gap button) and "Godkända svar" (one row per accepted answer,
+ *   with the automatic answers under it). No gap chip, no popover, no
+ *   "Visa som text". Every Frågetext edit re-attaches the answer paragraph
+ *   before it is emitted, so the
  *   gap record never drops. While `disabled` is set, nothing can be edited
  *   and no change is forwarded.
  *
@@ -16,9 +17,9 @@
  *     `ExamWorkspaceBodyEditor` when the item is a Kort svar.
  *   - Emits the BodyEditor update names the question editor forwards:
  *     `updateBody`, `updateGapValues`, `removeAutomaticValue`.
- *   - `ExamWorkspaceRichTextEditor` owns the Fråga text,
+ *   - `ExamWorkspaceRichTextEditor` owns the Frågetext text,
  *     `ExamWorkspaceMarkToolbar` its glyph buttons,
- *     `ExamWorkspaceGapAnswerList` the Svar rows, and
+ *     `ExamWorkspaceGapAnswerList` the Godkända svar rows, and
  *     `ExamWorkspaceGapAutomaticValues` the automatic answers.
  *   - `examWorkspaceShortAnswer` splits the body and re-attaches the answer
  *     paragraph; `examWorkspaceRichTextTarget` is the shared active target
@@ -102,7 +103,7 @@ function handleAutomaticValueRemoval(value: string): void {
         :id="questionLabelId"
         class="xw-label"
       >
-        Fråga
+        Frågetext
       </div>
       <div class="xw-rich">
         <ExamWorkspaceMarkToolbar
@@ -118,7 +119,7 @@ function handleAutomaticValueRemoval(value: string): void {
           <ExamWorkspaceRichTextEditor
             :key="item.item_id"
             :body="parts.question"
-            label="Fråga"
+            label="Frågetext"
             test-id="exam-workspace-short-answer-question"
             variant="field"
             :disabled="disabled"
@@ -138,11 +139,11 @@ function handleAutomaticValueRemoval(value: string): void {
         :id="answerLabelId"
         class="xw-label"
       >
-        Svar
+        Godkända svar
       </div>
       <ExamWorkspaceGapAnswerList
         :values="parts.gap.accepted_values"
-        label="Svar"
+        label="Godkända svar"
         test-id="exam-workspace-short-answer-values"
         :disabled="disabled"
         @commit="handleAnswersCommit"
