@@ -15,7 +15,10 @@ verified_file="$(git rev-parse --git-common-dir)/hemma-verified-sha"
 verified="$(cat "$verified_file" 2>/dev/null || true)"
 
 if [[ -n "$verified" ]] && git merge-base --is-ancestor "$verified" "$sha" 2>/dev/null; then
-  if ! git diff --name-only "$verified" "$sha" | grep -qvE '(\.md$|^docs/)'; then
+  # Capture the list first: under pipefail, grep -q closing the pipe early makes
+  # a long diff fail with SIGPIPE, which would read as "only docs changed".
+  changed="$(git diff --name-only "$verified" "$sha")"
+  if ! grep -qvE '(\.md$|^docs/)' <<<"$changed"; then
     echo "hemma-check: only docs changed since verified ${verified:0:9}; skipping."
     exit 0
   fi
