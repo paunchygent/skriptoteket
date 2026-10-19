@@ -40,9 +40,9 @@
  *   deadline only from the time its request was sent. Takeover and claim
  *   work is tied to an identity (the lineage plus an acquisition epoch
  *   bumped on every open, lineage switch, dispose and `pagehide`): the
- *   identity is rechecked after every await before holding changes, a late
- *   successful old-lineage claim is released, and cancelling wakes a
- *   sleeping takeover poll so `requestTakeover` always settles.
+ *   identity is rechecked after every await, a late success for an abandoned
+ *   lineage is released, a late success for the current lineage never revokes
+ *   the live lease, and cancelling wakes a sleeping poll.
  *
  * Relationships:
  *   - The server half runs on the edit-lease transport of
@@ -171,6 +171,14 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
     holding.value = false;
   }
 
+  /** A stale answer frees only an abandoned lineage, never the live lease. */
+  function isAbandonedLineage(lineageId: string): boolean {
+    if (disposed) {
+      return true;
+    }
+    return deps.lineageId() !== lineageId;
+  }
+
   async function tryRelease(lineageId: string, keepalive = false): Promise<void> {
     if (driver === null) {
       return;
@@ -269,7 +277,7 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
         return;
       }
       if (disposed || acquisitionEpoch !== tickEpoch || deps.lineageId() !== lineageId) {
-        if (outcome === "held") {
+        if (outcome === "held" && isAbandonedLineage(lineageId)) {
           await tryRelease(lineageId);
         }
         return;
@@ -349,7 +357,7 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
       outcome = "held";
     }
     if (disposed || acquisitionEpoch !== openEpoch || deps.lineageId() !== lineageId) {
-      if (outcome === "held") {
+      if (outcome === "held" && isAbandonedLineage(lineageId)) {
         await tryRelease(lineageId);
       }
       return;
@@ -364,10 +372,12 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
   }
 
   async function noteAcquired(lineageId: string, epoch: number): Promise<void> {
-    // Guarded before mutating shared state: a late success for an old
-    // identity is released and changes nothing.
+    // A late success for an old identity changes nothing; only an abandoned
+    // lineage is released, never the current live lease.
     if (disposed || acquisitionEpoch !== epoch || deps.lineageId() !== lineageId) {
-      await tryRelease(lineageId);
+      if (isAbandonedLineage(lineageId)) {
+        await tryRelease(lineageId);
+      }
       return;
     }
     lastLeaseSuccessAt = clock();
@@ -402,7 +412,12 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
           stopWaiting();
           startHeartbeat();
         },
-        release: (staleLineage: string) => tryRelease(staleLineage),
+        release: (staleLineage: string) => {
+          if (isAbandonedLineage(staleLineage)) {
+            return tryRelease(staleLineage);
+          }
+          return Promise.resolve();
+        },
         shouldWait: () => waiting.value && !holding.value,
       });
     } finally {
