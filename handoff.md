@@ -106,6 +106,14 @@
   stay approved; ADR-0091 (`proposed`) narrows the authoring-UI non-decision.
   Active story/task pointers above hold the current DOCX and QTI state.
 
+- [TASK-SKRIPT-REP-0050](docs/backlog/tasks/task-skript-rep-0050-backend-pytest-runs-parallel-and-quiet-by-default-and-serial-runs-need-a-stated-reason.md)
+  `in_progress` on `codex/backend-test-parallel` (worktree
+  `skriptoteket-backend-test-parallel`, not pushed). Pytest runs parallel and
+  quiet by default, workers sized to the selection, serial runs need
+  `--serial-reason`, pooled Postgres per worker; full `tests/unit` about 100 s
+  under load (was 3m50s). Next: user picks the worker cap (12 recommended),
+  then Hemma orchestrator routes review and merge.
+
 - Completed REP/ST-38 outcomes and evidence are in the 2026-09-05 archive above.
 
 ## Recent
@@ -170,7 +178,7 @@
 
 - Session Date: 2026-10-15
 - Last Refreshed: 2026-10-19
-- Pushing `main` runs the full `pdm run typecheck` and `pdm run test` on Hemma first (`scripts/hemma_pre_push_check.sh`, pre-push hook, ~10 min; install with `pre-commit install --hook-type pre-push`). Run the push in the background; a failure blocks it, unreachable Hemma warns, Markdown-only commits reuse the last pass.
+- Pushing `main` runs the full `pdm run typecheck` and `pdm run test` on Hemma first (`scripts/hemma_pre_push_check.sh`, pre-push hook; install with `pre-commit install --hook-type pre-push`). Run the push in the background; a failure blocks it, unreachable Hemma warns, Markdown-only commits reuse the last pass.
 - Current docs validate with `pdm run docs-validate`.
 - Historical terminal docs audit separately with `pdm run python -m scripts.historical_docs.validate_historical_docs`.
 - Full typecheck passed 2026-10-15: backend (1,588 source files) and SPA;

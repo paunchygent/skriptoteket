@@ -68,3 +68,23 @@ Stop and report to the parent if a test fails only in parallel and its cause can
 | D8  | Docker integration tests stay outside the default selection and run through `pdm run test-docker` (`-m docker tests/integration`) under the same sized default. Each worker starts one Postgres 16 server on first use and migrates one template database once; `migrated_db`/`database_url` give each module a `CREATE DATABASE ... TEMPLATE` copy, and `empty_module_database`/`fresh_database` give empty databases. No test starts its own container. |
 | D9  | `pytest_xdist_auto_num_workers` in `tests/conftest.py` sizes `-n logical` to the selection (user 2026-10-19: efficiency under real working load, where 10-15 agents run one to ten files while a full suite runs every 20-30 minutes): fewer than 12 selected files run in-process (the serial-reason check accepts it); a larger selection gets one worker per 6 files, at least 2, capped by the hardware threads. A sweep file declares `# xdist-weight: <n>` on its first line and counts as `n` files (`test_exam_workspace_docx_points_invariance.py`: 72, 26 s at 12 workers against about 140 s in-process). Measured 2026-10-19 (Hemma, wall/CPU): one 4-test file 0.9 s/0.9 s in-process against 4.0 s/33.5 s at 24 workers. |
 | D10 | Scope extension (user 2026-10-19): wasteful tests are optimized in this task by Sonnet junior units. Every case and assertion stays; shared results are immutable or copied per test. Rules: no expensive work at import or collection time (every worker collects every module), immutable corpus inputs parsed once per process (`tests/fixtures/docx_corpus.py`), default exam conversions shared per run across workers (`docx_conversion_cache.py`), unit tests never read build artifacts. The rules live in `.codex/skills/skriptoteket-testing/references/backend-pytest.md`. |
+
+## Measurements (Hemma, 2026-10-19)
+
+| Run | Before | After |
+| --- | --- | --- |
+| `tests/unit/application/curated_apps` + `tests/unit/infrastructure/curated_apps` | 20m38s serial, 76,000-line log | 2m15s at 12 workers, 61-line log (before the test optimizations) |
+| `tests/unit/domain/curated_apps` | 56 s serial | 28 s at 12 workers |
+| Full `tests/unit` | 3m50s at 12 workers (`auto`), 2.5 GB peak RSS | about 100 s at 12 or 24 workers, with 10 concurrent small-run loops (commit `50597ba0`) |
+| `test_exam_workspace_docx_points_invariance.py` | 1600 s summed worker time; 116 s wall | 26 s wall at 12 workers (weight 72) |
+| Docker lane containers | about 116 per full run (one per module or test) | one per worker |
+
+Load measurement at `50597ba0`: the full `tests/unit` suite with 10 concurrent loops of small focused runs (1-10 random files each, `pdm run pytest`).
+
+| Scenario | Suite wall | Small runs | Small p50 / p90 / max | Peak load |
+| --- | --- | --- | --- | --- |
+| Small runs alone, 4 min | - | 589 | 2.2 / 8.5 / 24.1 s | 13.8 |
+| Suite at 24 workers | 101.1 s | 101 | 6.1 / 22.6 / 47.6 s | 36.0 |
+| Suite at 12 workers | 98.6 s | 135 | 4.6 / 16.4 / 40.2 s | 42.0 |
+
+Known failures outside this task: nine Docker migration test files (`0011`, `0013`, `0017`, `0018`, `0019`, `0020`, `0021`, `0030`, `revision_coverage[6a1e9d3c4b7f]`) fail the same way on main (`users.external_id` missing; non-linear migration graph, TASK-SKRIPT-06-17-01).
