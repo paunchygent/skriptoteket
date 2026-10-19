@@ -58,6 +58,8 @@ export const EXAM_WORKSPACE_EXPORT_BLOCKER_COPY: Record<ExamWorkspaceExportBlock
     ordering_too_few_steps: "Ordningsfrågan behöver minst två steg.",
     empty_ordering_step: "Ett steg i ordningsfrågan saknar text.",
     inline_choice_option_heading: "Rubrikformat är inte tillåtet i rullistealternativ.",
+  partial_gap_key: "Fyll i godkända svar i varje lucka.",
+  gap_without_correct_option: "Markera rätt alternativ i varje rullista.",
     title_without_text: "Ge provet en titel med bokstäver eller siffror.",
     too_few_gap_options: "En rullista i en lucka har färre än två alternativ.",
     unbuilt_question:

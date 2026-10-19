@@ -4,10 +4,12 @@
  *
  * Domain purpose:
  *   The compact glyph toolbar in four groups: Ångra and Gör om, the five kept
- *   marks, the gap tool switch and the three heading levels. Glyphs come from
- *   the shared catalogue through `UiGlyph` meanings, and the faces from the
- *   `.xw-tool` classes in `examWorkspace.css`. Every button keeps its exact
- *   size in every state. A pressed glyph shows
+ *   marks, the gap tool switch and Tom lucka, and the three heading levels.
+ *   Glyphs come from the shared catalogue through `UiGlyph` meanings, and
+ *   the faces from the `.xw-tool` classes in `examWorkspace.css`. Every
+ *   button keeps its exact size in every state. The toolbar emits
+ *   `insertEmptyGap` for Tom lucka, which the body editor inserts as one
+ *   empty gap at the caret. A pressed glyph shows
  *   what the selection already carries, the native tooltip and accessible
  *   name carry the action name, and a heading glyph toggles its level off
  *   when pressed again. Every tooltip and `aria-keyshortcuts` names its
@@ -43,16 +45,20 @@ withDefaults(
     showGap?: boolean;
     /** Why the gap tool toggle is off at the cap; disables the toggle while set. */
     gapToolDisabledReason?: string | null;
+    /** Why Tom lucka is off; disables its button with the reason as tooltip while set. */
+    emptyGapDisabledReason?: string | null;
     /** Whether the gap tool toggle reads pressed. */
     gapToolOn?: boolean;
   }>(),
-  { activeMarks: () => [], activeHeading: null, disabled: false, showHeadings: false, showGap: false, gapToolDisabledReason: null, gapToolOn: false },
+  { activeMarks: () => [], activeHeading: null, disabled: false, showHeadings: false, showGap: false, gapToolDisabledReason: null, emptyGapDisabledReason: null, gapToolOn: false },
 );
 
 const emit = defineEmits<{
   toggleMark: [mark: BodyMark];
   toggleHeading: [level: HeadingLevel];
   toggleGapTool: [];
+  /** Tom lucka: the body editor inserts one empty gap at the caret. */
+  insertEmptyGap: [];
 }>();
 
 const history = useExamWorkspaceHistoryKeys();
@@ -141,7 +147,20 @@ const isMac = isMacPlatform();
         aria-hidden="true"
       />
       <div class="xw-tools">
-        <!-- Tom lucka (empty-gap insert) is pending TASK-SKRIPT-40-04-13's insert command. -->
+        <button
+          type="button"
+          class="xw-tool"
+          aria-label="Tom lucka"
+          :title="emptyGapDisabledReason ?? 'Tom lucka'"
+          :disabled="disabled || emptyGapDisabledReason !== null"
+          data-test="exam-workspace-toolbar-empty-gap"
+          @click="emit('insertEmptyGap')"
+        >
+          <UiGlyph
+            meaning="empty-gap"
+            :size="16"
+          />
+        </button>
         <button
           type="button"
           class="xw-tool xw-tool--switch"

@@ -1,16 +1,17 @@
 """Playwright copy proof: exam workspace one-editing-tab lease (TASK-SKRIPT-40-04 C3).
 
-Captures the `Öppet i en annan flik` notice with the `Ta över` action in
-context for `ui-copy-reviewer`: a signed-in tab that does not hold the lease,
-the same tab right after `Ta över` (now editing), the tab that lost the lease
-after the takeover, the waiting state (action disabled), and the guest notice.
-Serves this worktree's frontend on a free port (never 5173/5174) and drives it
-with Playwright route interception; no backend runs. The signed-in lease is a
-shared in-test fake behind the mocked `.../edit-lease/*` routes, shaped like
-the generated `ExamWorkspaceEditLeaseResponse` types; the guest lease is the
-real IndexedDB record shared by two pages in one browser context. Every
-screenshot is API-mocked, not observed against a server. Reuses the C1 route
-and launch helpers by import instead of copying them. Follows
+Captures the lease notice with the `Ta över` action in context for
+`ui-copy-reviewer`: a signed-in tab that does not hold the lease, the same tab
+right after `Ta över` (now editing), the tab that lost the lease after the
+takeover, the waiting state (action disabled), the tab that lost the lease
+while an unconfirmed edit was still showing, and the guest notice. Serves this
+worktree's frontend on a free port (never 5173/5174) and drives it with
+Playwright route interception; no backend runs. The signed-in lease is a shared
+in-test fake behind the mocked `.../edit-lease/*` routes, shaped like the
+generated `ExamWorkspaceEditLeaseResponse` types; the guest lease is the real
+IndexedDB record shared by two pages in one browser context. Every screenshot
+is API-mocked, not observed against a server. Reuses the C1 route and launch
+helpers by import instead of copying them. Follows
 `scripts/_playwright_browser.py` and the `python -m scripts.*` convention.
 """
 
@@ -32,6 +33,8 @@ from scripts.playwright_exam_workspace_save_status_copy import (
     install_guest_routes,
     install_signed_in_routes,
     launch,
+    step_response,
+    type_title,
 )
 
 NOTICE_SELECTOR = '[data-test="exam-workspace-edit-lease"]'
@@ -147,10 +150,12 @@ def scenario_signed_in(browser: Browser, base_url: str) -> None:
     second.locator(TAKEOVER_SELECTOR).click()
     waiting_path = EVIDENCE_DIR / "lease-takeover-waiting.png"
     second.screenshot(path=waiting_path)
-    _, waiting_action, waiting_disabled = read_notice(second)
+    waiting_text, waiting_action, waiting_disabled = read_notice(second)
+    if waiting_text != "Väntar på att kunna redigera här …":
+        raise RuntimeError(f"unexpected waiting notice: {waiting_text!r}")
     report(
         "lease-takeover-waiting",
-        f"action={waiting_action!r} disabled={waiting_disabled!r}",
+        f"notice={waiting_text!r} action={waiting_action!r} disabled={waiting_disabled!r}",
         waiting_path,
     )
     if waiting_disabled is None:
@@ -171,6 +176,68 @@ def scenario_signed_in(browser: Browser, base_url: str) -> None:
     report(
         "lease-loser",
         f"notice={text!r} action={action!r} disabled={disabled!r}",
+        path,
+    )
+    context.close()
+
+
+def scenario_lease_lost_pending_edit(browser: Browser, base_url: str) -> None:
+    """A tab that loses the lease while an unconfirmed edit still shows.
+
+    Types a title edit, then answers the next store with 409
+    `EDIT_LEASE_HELD`: the tab turns read-only and keeps the pending edit
+    visible. The header leaves `Sparar …` for `Inte sparat` with the lease
+    reason. Captures that status (with the tooltip hovered) and the lease
+    notice for that state.
+    """
+    lease: dict[str, Any] = {"holder": None, "waiting": None}
+    context = browser.new_context(viewport={"width": 1440, "height": 900})
+    page = context.new_page()
+    install_signed_in_routes(page, {"document": blank_document(), "mode": "ok"})
+    install_lease_routes(page, lease)
+    refused = {"done": False}
+
+    def handle_autosaves_once(route: Route) -> None:
+        if not refused["done"]:
+            refused["done"] = True
+            lease["holder"] = "other-tab"
+            lease_refused(route)
+            return
+        body = json.loads(route.request.post_data or "{}")
+        fulfilled(route, step_response(body.get("document", blank_document())))
+
+    workspace = "**/api/v1/apps/documents.conversion_hub/exam-workspace/**"
+    page.route(f"{workspace}/documents/{LINEAGE_ID}/autosaves", handle_autosaves_once)
+    page.goto(f"{base_url}/apps/exam-workspace?document={LINEAGE_ID}")
+    page.wait_for_selector(STATUS_SELECTOR, timeout=30000)
+    page.wait_for_selector(ITEM_EDITOR_SELECTOR, timeout=30000)
+    page.wait_for_timeout(2500)
+    if page.locator(NOTICE_SELECTOR).count() != 0:
+        raise RuntimeError("holder tab shows the lease notice before typing")
+    type_title(page, "förlorad")
+    notice = page.locator(NOTICE_SELECTOR)
+    notice.wait_for(timeout=30000)
+    text, action, disabled = read_notice(page)
+    expected_notice = "Provet kan bara redigeras i den andra fliken tills du tar över."
+    if text != expected_notice or action != "Ta över" or disabled is not None:
+        raise RuntimeError(f"unexpected lease notice: {text!r} {action!r} {disabled!r}")
+    page.locator(STATUS_SELECTOR).hover()
+    page.wait_for_timeout(400)
+    status = page.locator(STATUS_SELECTOR)
+    status_text = status.inner_text().strip()
+    status_title = status.get_attribute("title")
+    expected_status = "Inte sparat"
+    expected_title = "Ändringen sparades inte eftersom provet redigeras i den andra fliken."
+    if status_text != expected_status:
+        raise RuntimeError(f"unexpected save status after lease loss: {status_text!r}")
+    if status_title != expected_title:
+        raise RuntimeError(f"unexpected save tooltip after lease loss: {status_title!r}")
+    path = EVIDENCE_DIR / "lease-lost-pending-edit.png"
+    page.screenshot(path=path)
+    report(
+        "lease-lost-pending-edit",
+        f"notice={text!r} action={action!r} disabled={disabled!r} "
+        f"status={status_text!r} title={status_title!r}",
         path,
     )
     context.close()
@@ -210,8 +277,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--vite-port", type=int, default=5185)
     parser.add_argument(
         "--scenarios",
-        default="signed-in,guest",
-        help="Comma-separated subset of signed-in,guest",
+        default="signed-in,lost-edit,guest",
+        help="Comma-separated subset of signed-in,lost-edit,guest",
     )
     return parser.parse_args()
 
@@ -227,6 +294,8 @@ def main() -> None:
         try:
             if "signed-in" in selected:
                 scenario_signed_in(browser, base_url)
+            if "lost-edit" in selected:
+                scenario_lease_lost_pending_edit(browser, base_url)
             if "guest" in selected:
                 scenario_guest(browser, base_url)
         finally:

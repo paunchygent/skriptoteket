@@ -12,10 +12,12 @@
 import { describe, expect, it } from "vitest";
 
 import { ApiError } from "../../../api/client";
-import { AUTOSAVE_FAILURE_COPY, refusalReason } from "./useExamWorkspaceSaveStatus";
+import { AUTOSAVE_FAILURE_COPY, LEASE_LOST_COPY, refusalReason } from "./useExamWorkspaceSaveStatus";
 import { exam } from "./useExamWorkspaceEditing.history.specSupport";
 
 const GENERIC_COPY = "Ändringarna kunde inte sparas. Vi försöker igen automatiskt.";
+const LEASE_LOST_REASON =
+  "Ändringen sparades inte eftersom provet redigeras i den andra fliken.";
 const GUARD_COPY =
   "Provet kunde inte sparas. Vänta tills frågorna har konverterats " +
   "innan du ändrar, flyttar eller tar bort dem.";
@@ -56,5 +58,11 @@ describe("save status failure copy", () => {
     });
 
     expect(refusalReason(exam(), error)).toBe(GENERIC_COPY);
+  });
+
+  it("states the lease reason without promising a retry", () => {
+    expect(LEASE_LOST_COPY).toBe(LEASE_LOST_REASON);
+    expect(LEASE_LOST_COPY).not.toContain("försöker igen");
+    expect(LEASE_LOST_COPY).not.toBe(GENERIC_COPY);
   });
 });

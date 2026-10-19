@@ -64,6 +64,8 @@ class NativeExportBlocker(BaseModel):
         "machine_proposed_key_unreviewed",
         "missing_points",
         "missing_answer_key",
+        "partial_gap_key",
+        "gap_without_correct_option",
         "inline_choice_option_heading",
         "empty_choice",
         "empty_gap_option",
@@ -94,6 +96,12 @@ def native_export_blockers(document: NativeExamDocument) -> tuple[NativeExportBl
     always teacher-authored, so it never lacks one (TASK-SKRIPT-39-06-08).
     A question needs a text, and a gap_fill or inline_choice question needs a gap
     (TASK-SKRIPT-40-04-06 D3, D4); both save while empty.
+    A keyed question with an empty Lucktext gap blocks too: a gap with no
+    accepted answer is a valid draft the export must refuse (TASK-SKRIPT-40-04-13
+    U4, Q9, L2). A keyed dropdown question with a gap that has no correct
+    option blocks the same way (`gap_without_correct_option`, the client's
+    reason of the same name). One blocker per question per gap kind, even
+    when several gaps are empty. A question without an answer key has no empty gaps.
     """
     blockers: list[NativeExportBlocker] = []
     if not title_has_text(document.title):
@@ -134,6 +142,12 @@ def native_export_blockers(document: NativeExamDocument) -> tuple[NativeExportBl
             )
         if item.kind in _KEYED_KINDS and item.answer_key.origin is NativeAnswerKeyOrigin.ABSENT:
             blockers.append(NativeExportBlocker(item_id=item.item_id, reason="missing_answer_key"))
+        if _has_empty_gap_fill(item):
+            blockers.append(NativeExportBlocker(item_id=item.item_id, reason="partial_gap_key"))
+        if _has_empty_dropdown_gap(item):
+            blockers.append(
+                NativeExportBlocker(item_id=item.item_id, reason="gap_without_correct_option")
+            )
         if item.kind is NativeExamItemKind.INLINE_CHOICE and any(
             paragraph.heading_level is not None
             for gap in item.gaps
@@ -150,6 +164,32 @@ def native_export_blockers(document: NativeExamDocument) -> tuple[NativeExportBl
         if item.points is None:
             blockers.append(NativeExportBlocker(item_id=item.item_id, reason="missing_points"))
     return tuple(blockers)
+
+
+def _has_keyed_origin(item: NativeExamItem) -> bool:
+    """Whether the question carries an answer key; a question without one has no empty gaps (Q9)."""
+    return item.answer_key.origin not in (
+        NativeAnswerKeyOrigin.ABSENT,
+        NativeAnswerKeyOrigin.NOT_APPLICABLE,
+    )
+
+
+def _has_empty_gap_fill(item: NativeExamItem) -> bool:
+    """A keyed Lucktext question with a gap that holds no accepted answer (Q9)."""
+    return (
+        item.kind is NativeExamItemKind.GAP_FILL
+        and _has_keyed_origin(item)
+        and any(not gap.accepted_values for gap in item.gaps)
+    )
+
+
+def _has_empty_dropdown_gap(item: NativeExamItem) -> bool:
+    """A keyed dropdown question with a gap that names no correct option (Q9)."""
+    return (
+        item.kind is NativeExamItemKind.INLINE_CHOICE
+        and _has_keyed_origin(item)
+        and any(gap.correct_option_id is None for gap in item.gaps)
+    )
 
 
 def is_unbuilt_question(item: NativeExamItem) -> bool:

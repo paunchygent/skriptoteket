@@ -2,8 +2,8 @@
  * Exam workspace mark toolbar: group order, history pair and glyph source.
  *
  * Expected behavior (TASK-SKRIPT-40-04-17 T4, T11, T14, T16):
- *   The toolbar holds Ångra and Gör om, the marks, the gap switch and the
- *   headings in that order, one `.xw-tools` group each with an `.xw-toolsep`
+ *   The toolbar holds Ångra and Gör om, the marks, Tom lucka and the gap
+ *   switch, and the headings in that order, one `.xw-tools` group each with an `.xw-toolsep`
  *   between groups. Ångra and Gör om disable on the injected availability and
  *   call the injected undo and redo; without injected keys that group and its
  *   separator are absent. Every glyph renders through `UiGlyph`.
@@ -70,7 +70,7 @@ describe("ExamWorkspaceMarkToolbar group order", () => {
         "exam-workspace-body-mark-superscript",
         "exam-workspace-body-mark-subscript",
       ],
-      ["exam-workspace-toolbar-gap-tool"],
+      ["exam-workspace-toolbar-empty-gap", "exam-workspace-toolbar-gap-tool"],
       [
         "exam-workspace-body-heading-1",
         "exam-workspace-body-heading-2",
@@ -79,7 +79,7 @@ describe("ExamWorkspaceMarkToolbar group order", () => {
     ]);
   });
 
-  it("renders all eleven tools in order inside the single scrolling toolbar root", () => {
+  it("renders all twelve tools in order inside the single scrolling toolbar root", () => {
     const { wrapper } = mountWithHistory(
       { showGap: true, showHeadings: true },
       { canUndo: true, canRedo: true },
@@ -98,6 +98,7 @@ describe("ExamWorkspaceMarkToolbar group order", () => {
       "exam-workspace-body-mark-underline",
       "exam-workspace-body-mark-superscript",
       "exam-workspace-body-mark-subscript",
+      "exam-workspace-toolbar-empty-gap",
       "exam-workspace-toolbar-gap-tool",
       "exam-workspace-body-heading-1",
       "exam-workspace-body-heading-2",
@@ -182,6 +183,7 @@ describe("ExamWorkspaceMarkToolbar faces", () => {
       "underline",
       "superscript",
       "subscript",
+      "empty-gap",
       "gap-tool",
       "heading-1",
       "heading-2",

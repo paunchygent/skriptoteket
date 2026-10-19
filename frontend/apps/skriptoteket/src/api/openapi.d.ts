@@ -7814,7 +7814,7 @@ export interface components {
              * Reason
              * @enum {string}
              */
-            reason: "title_without_text" | "unbuilt_question" | "machine_proposed_key_unreviewed" | "missing_points" | "missing_answer_key" | "inline_choice_option_heading" | "empty_choice" | "empty_gap_option" | "empty_match_entry" | "ordering_too_few_steps" | "empty_ordering_step" | "too_few_gap_options" | "empty_question_text" | "no_gaps";
+            reason: "title_without_text" | "unbuilt_question" | "machine_proposed_key_unreviewed" | "missing_points" | "missing_answer_key" | "partial_gap_key" | "gap_without_correct_option" | "inline_choice_option_heading" | "empty_choice" | "empty_gap_option" | "empty_match_entry" | "ordering_too_few_steps" | "empty_ordering_step" | "too_few_gap_options" | "empty_question_text" | "no_gaps";
         };
         /** NativeGap */
         "NativeGap-Input": {

@@ -73,6 +73,70 @@ const EMPTY_CHOICES = [
   { choice_id: "choice_002", body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "" }] }] },
 ] satisfies NativeExamItem["choices"];
 
+function buildGapFillItem(sequence: number, overrides: Partial<NativeExamItem> = {}): NativeExamItem {
+  return {
+    ai_suggestion: null,
+    facit_text: null,
+    import_record: null,
+    criteria: [],
+    printed_label: null,
+    print_order: [],
+    retry_source: null,
+    answer_key: { correct_choice_ids: [], match_pairs: [], origin: "teacher_authored" },
+    body: [
+      {
+        heading_level: null,
+        segments: [
+          { kind: "text", marks: [], text: "Vatten kokar vid " },
+          { gap_id: "gap_001", kind: "gap" },
+          { kind: "text", marks: [], text: " grader och fryser vid " },
+          { gap_id: "gap_002", kind: "gap" },
+          { kind: "text", marks: [], text: " grader." },
+        ],
+      },
+    ],
+    choices: [],
+    gaps: [
+      {
+        accepted_values: ["100"],
+        automatic_values: [],
+        correct_option_id: null,
+        excluded_automatic_values: [],
+        gap_id: "gap_001",
+        options: [],
+      },
+      {
+        accepted_values: [],
+        automatic_values: [],
+        correct_option_id: null,
+        excluded_automatic_values: [],
+        gap_id: "gap_002",
+        options: [],
+      },
+    ],
+    kept_gaps: [],
+    item_id: `item_00${sequence}`,
+    kind: "gap_fill",
+    match_left: [],
+    match_right: [],
+    points: 1,
+    points_estimated: false,
+    review: {
+      confidence: 0.95,
+      parse_origin: "deterministic",
+      reasons: [],
+      state: "review_complete",
+    },
+    sequence,
+    source_anchor: null,
+    source_points: null,
+    suggested_kind: null,
+    tick_points: null,
+    writing_lines: null,
+    ...overrides,
+  };
+}
+
 /** A standalone document; the items' list labels are their 1-based positions. */
 function examDocument(items: NativeExamItem[], parents: NativeExamParent[] = []): NativeExamDocument {
   return {
@@ -210,6 +274,37 @@ describe("examWorkspaceSaveRefusalCopy for matching items", () => {
 
     expect(examWorkspaceSaveRefusalCopy(examDocument([emptyLeft]))).toBeNull();
     expect(examWorkspaceSaveRefusalCopy(examDocument([{ ...emptyLeft, match_left: emptyLeft.match_left.map((entry) => ({ ...entry, body: [] })) }]))).toBeNull();
+  });
+});
+
+describe("examWorkspaceSaveRefusalCopy for gap items", () => {
+  it("saves a keyed gap_fill item with an empty gap as a draft", () => {
+    expect(examWorkspaceSaveRefusalCopy(examDocument([buildGapFillItem(1)]))).toBeNull();
+  });
+
+  it("saves a keyed gap_fill item whose every gap is empty", () => {
+    const item = buildGapFillItem(1, {
+      gaps: [
+        {
+          accepted_values: [],
+          automatic_values: [],
+          correct_option_id: null,
+          excluded_automatic_values: [],
+          gap_id: "gap_001",
+          options: [],
+        },
+      ],
+      body: [
+        {
+          heading_level: null,
+          segments: [
+            { kind: "text", marks: [], text: "Vatten kokar vid " },
+            { gap_id: "gap_001", kind: "gap" },
+          ],
+        },
+      ],
+    });
+    expect(examWorkspaceSaveRefusalCopy(examDocument([item]))).toBeNull();
   });
 });
 

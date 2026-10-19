@@ -92,3 +92,78 @@ def test_blocker_after_part_names_the_list_label_not_the_sequence():
 
     assert "Fråga 2: Rubrikformat är inte tillåtet i rullistealternativ." in exc_info.value.message
     assert "Fråga 4" not in exc_info.value.message
+
+
+def test_empty_gap_names_the_list_label_not_the_sequence():
+    from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+        NativeAnswerKeyOrigin,
+    )
+    from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders import (
+        make_gap_fill_item,
+    )
+
+    blocked = make_gap_fill_item(
+        sequence=4,
+        item_id="item_004",
+        origin=NativeAnswerKeyOrigin.TEACHER_AUTHORED,
+        accepted=(),
+    )
+    document = NativeExamDocument(
+        document_id=uuid4(),
+        revision=1,
+        title="Prov",
+        items=(
+            make_free_text_item(sequence=1, item_id="item_001"),
+            make_free_text_item(sequence=2, item_id="item_002"),
+            make_free_text_item(sequence=3, item_id="item_003"),
+            blocked,
+        ),
+        parents=(
+            NativeExamParent(
+                parent_id="parent_001",
+                place=0,
+                instruction=_parent_instruction(),
+                item_ids=("item_001", "item_002", "item_003"),
+            ),
+        ),
+        origin=NativeExamDocumentOrigin(kind="created"),
+    )
+
+    with pytest.raises(DomainError) as exc_info:
+        _renderer()._raise_for_blockers(document)
+
+    assert "Fråga 2 saknar godkända svar i vissa luckor." in exc_info.value.message
+    assert "Fråga 4" not in exc_info.value.message
+
+
+def test_empty_dropdown_names_the_list_label_not_the_sequence():
+    blocker_payload = inline_choice_item(sequence=4, points=2).model_dump(mode="json")
+    blocker_payload["gaps"][0]["correct_option_id"] = None
+    blocker = NativeExamItem.model_validate(blocker_payload)
+    assert blocker.gaps[0].correct_option_id is None
+    document = NativeExamDocument(
+        document_id=uuid4(),
+        revision=1,
+        title="Prov",
+        items=(
+            make_free_text_item(sequence=1, item_id="item_001"),
+            make_free_text_item(sequence=2, item_id="item_002"),
+            make_free_text_item(sequence=3, item_id="item_003"),
+            blocker,
+        ),
+        parents=(
+            NativeExamParent(
+                parent_id="parent_001",
+                place=0,
+                instruction=_parent_instruction(),
+                item_ids=("item_001", "item_002", "item_003"),
+            ),
+        ),
+        origin=NativeExamDocumentOrigin(kind="created"),
+    )
+
+    with pytest.raises(DomainError) as exc_info:
+        _renderer()._raise_for_blockers(document)
+
+    assert "Fråga 2 saknar rätt alternativ i vissa rullistor." in exc_info.value.message
+    assert "Fråga 4" not in exc_info.value.message

@@ -8,6 +8,7 @@ from pydantic import ValidationError
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeGapSegment,
     NativeParagraph,
+    NativeTextSegment,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_criteria import (
     NativeExamCriterion,
@@ -61,9 +62,12 @@ class TestItemInvariants:
         with pytest.raises(ValidationError, match="must not carry key data"):
             make_gap_fill_item(origin=NativeAnswerKeyOrigin.ABSENT, accepted=("NF",))
 
-    def test_keyed_gap_fill_requires_accepted_values_per_gap(self) -> None:
-        with pytest.raises(ValidationError, match="needs accepted values"):
-            make_gap_fill_item(origin=NativeAnswerKeyOrigin.TEACHER_AUTHORED, accepted=())
+    def test_keyed_gap_fill_accepts_gaps_without_accepted_values(self) -> None:
+        # An empty gap is a valid draft the export gate refuses (TASK-SKRIPT-40-04-13 U4, L2):
+        # this replaces the 40-04-09 R9 save refusal the undo fix needed removed.
+        item = make_gap_fill_item(origin=NativeAnswerKeyOrigin.TEACHER_AUTHORED, accepted=())
+
+        assert item.gaps[0].accepted_values == ()
 
     def test_free_text_requires_not_applicable_origin(self) -> None:
         with pytest.raises(ValidationError, match="not_applicable"):
@@ -261,3 +265,93 @@ class TestWritingLines:
     def test_only_free_text_carries_writing_lines(self, item: NativeExamItem) -> None:
         with pytest.raises(ValidationError, match="only free_text items carry writing_lines"):
             NativeExamItem.model_validate({**item.model_dump(), "writing_lines": 8})
+
+
+class TestEmptyGapDraft:
+    """A keyed gap item may hold empty gaps: gap_fill gaps with no accepted
+    values, dropdown gaps with no correct option or no options
+    (TASK-SKRIPT-40-04-13 U4)."""
+
+    def test_keyed_gap_fill_with_one_empty_gap_among_answered_gaps_is_a_valid_draft(
+        self,
+    ) -> None:
+        item = NativeExamItem(
+            item_id="item_001",
+            sequence=1,
+            kind=NativeExamItemKind.GAP_FILL,
+            body=(
+                NativeParagraph(
+                    heading_level=None,
+                    segments=(
+                        NativeTextSegment(text="Vatten kokar vid ", marks=()),
+                        NativeGapSegment(gap_id="gap_001"),
+                        NativeTextSegment(text=" grader och fryser vid ", marks=()),
+                        NativeGapSegment(gap_id="gap_002"),
+                        NativeTextSegment(text=" grader.", marks=()),
+                    ),
+                ),
+            ),
+            points=1,
+            gaps=(
+                NativeGap(gap_id="gap_001", accepted_values=("100",)),
+                NativeGap(gap_id="gap_002"),
+            ),
+            answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.TEACHER_AUTHORED),
+            review=make_review(),
+        )
+
+        assert [gap.accepted_values for gap in item.gaps] == [("100",), ()]
+
+    def test_keyed_dropdown_with_a_gap_without_correct_option_is_a_valid_draft(self) -> None:
+        item = NativeExamItem(
+            item_id="item_001",
+            sequence=1,
+            kind=NativeExamItemKind.INLINE_CHOICE,
+            body=(
+                NativeParagraph(
+                    heading_level=None,
+                    segments=(
+                        NativeTextSegment(text="Välj ", marks=()),
+                        NativeGapSegment(gap_id="gap_001"),
+                    ),
+                ),
+            ),
+            points=1,
+            gaps=(
+                NativeGap(
+                    gap_id="gap_001",
+                    options=(
+                        NativeChoice(choice_id="choice_001", body=plain_body("ja")),
+                        NativeChoice(choice_id="choice_002", body=plain_body("nej")),
+                    ),
+                    correct_option_id=None,
+                ),
+            ),
+            answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.TEACHER_AUTHORED),
+            review=make_review(),
+        )
+
+        assert item.gaps[0].correct_option_id is None
+
+    def test_keyed_dropdown_with_no_options_is_a_valid_draft(self) -> None:
+        item = NativeExamItem(
+            item_id="item_001",
+            sequence=1,
+            kind=NativeExamItemKind.INLINE_CHOICE,
+            body=(
+                NativeParagraph(
+                    heading_level=None,
+                    segments=(
+                        NativeTextSegment(text="Välj ", marks=()),
+                        NativeGapSegment(gap_id="gap_001"),
+                    ),
+                ),
+            ),
+            points=1,
+            gaps=(NativeGap(gap_id="gap_001"),),
+            answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.TEACHER_AUTHORED),
+            review=make_review(),
+        )
+
+        assert item.gaps[0].options == ()
+        assert item.gaps[0].correct_option_id is None

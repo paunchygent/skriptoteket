@@ -36,6 +36,37 @@ describe("examWorkspaceItemReadiness key and points states", () => {
     expect(examWorkspaceItemReadiness(item)).toEqual(["partial_gap_key"]);
   });
 
+  it("still blocks export for a keyed gap item with an empty gap", () => {
+    const draft = buildChoiceItem({
+      choices: [],
+      gaps: [
+        buildGap("gap_001", ["100"]),
+        buildGap("gap_002"),
+      ],
+      kind: "gap_fill",
+      match_left: [],
+      match_right: [],
+    });
+
+    expect(examWorkspaceItemReadiness(draft)).toEqual(["partial_gap_key"]);
+  });
+
+  it("reports no empty gap for a question without an answer key", () => {
+    const unkeyed = buildChoiceItem({
+      answer_key: { correct_choice_ids: [], match_pairs: [], origin: "absent" },
+      choices: [],
+      gaps: [
+        buildGap("gap_001", ["100"]),
+        buildGap("gap_002"),
+      ],
+      kind: "gap_fill",
+      match_left: [],
+      match_right: [],
+    });
+
+    expect(examWorkspaceItemReadiness(unkeyed)).toEqual(["missing_answer_key"]);
+  });
+
   it("accepts zero points and positive fractions, but reports negative points", () => {
     expect(examWorkspaceItemReadiness(buildChoiceItem({ points: 0 }))).toEqual([]);
     expect(examWorkspaceItemReadiness(buildChoiceItem({ points: -2 }))).toEqual([

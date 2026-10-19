@@ -52,6 +52,12 @@ describe("ExamWorkspaceMarkToolbar gap control", () => {
     expect(wrapper.emitted("toggleGapTool")).toHaveLength(1);
     expect(wrapper.emitted("makeGap")).toBeUndefined();
   });
+
+  it("declares the Tom lucka insertEmptyGap emit", async () => {
+    const wrapper = mount(ExamWorkspaceMarkToolbar, { props: { showGap: true } });
+    wrapper.vm.$emit("insertEmptyGap");
+    expect(wrapper.emitted("insertEmptyGap")).toHaveLength(1);
+  });
 });
 
 describe("ExamWorkspaceMarkToolbar gap tool toggle", () => {

@@ -1,16 +1,15 @@
 /**
- * Exam workspace editing session: undo across tool-made gaps and a refused save.
+ * Exam workspace editing session: undo across tool-made gaps and an empty-gap draft.
  *
- * Expected behavior (TASK-SKRIPT-40-04-09 repair A1):
+ * Expected behavior (TASK-SKRIPT-40-04-13 U4, L2):
  *   A word click or drag through `createItemGap` is one healthy undo step, and
- *   typing after it undoes step by step with redo returning. When a later gap
- *   leaves the key partial (`""` seed) the server refuses every store with a
- *   422, so Ångra once discards the refused working copy to the last stored
- *   step with nothing pending, and Ångra again removes the word-made gap. A
- *   transient store failure instead keeps the pending edit in front of the
- *   teacher. A 409 conflict when undo flushes a pending word-made gap
- *   reloads the server copy through `onConflict`, which replaces the pending
- *   edit (the gap is gone), and undo stops.
+ *   typing after it undoes step by step with redo returning. A later gap
+ *   with no answer yet (`""` seed) stores as a draft, so every step stays on
+ *   the server and Ångra walks back through typing, the empty gap and the
+ *   word-made gap. A transient store failure instead keeps the pending edit
+ *   in front of the teacher. A 409 conflict when undo flushes a pending
+ *   word-made gap reloads the server copy through `onConflict`, which
+ *   replaces the pending edit (the gap is gone), and undo stops.
  *
  * Transport is the named double of the server's step store; the composables
  * are the production ones. The 900 ms pause is advanced explicitly, never
@@ -167,8 +166,8 @@ describe("tool-made gaps keep a healthy undo history", () => {
   });
 });
 
-describe("a gap the save rules refuse", () => {
-  it("is discarded by the first undo, and the next undo removes the word-made gap", async () => {
+describe("a gap with no answer yet", () => {
+  it("is stored as a draft, and undo removes it step by step", async () => {
     const { editing } = await openGapExam();
     refuseSaveRefusedDrafts(api);
     editing.createItemGap("item_001", bodyWith(["gap_001", "gap_002"]), "gap_002", "ord");
@@ -182,16 +181,15 @@ describe("a gap the save rules refuse", () => {
 
     await editing.history.undo();
 
-    expect(gapIdsOf(editing.workspaceDocument.value!)).toEqual(["gap_001", "gap_002"]);
+    expect(gapIdsOf(editing.workspaceDocument.value!)).toEqual(["gap_001", "gap_002", "gap_003"]);
     expect(leadOf(editing.workspaceDocument.value!)).toBe("Start ");
     expect(editing.history.pending.value).toBe(false);
-    expect(editing.history.canRedo.value).toBe(false);
     expect(toast.failure).not.toHaveBeenCalled();
 
     await editing.history.undo();
 
-    expect(gapIdsOf(editing.workspaceDocument.value!)).toEqual(["gap_001"]);
-    expect(editing.workspaceDocument.value!.items[0]!.body).toEqual(bodyWith(["gap_001"]));
+    expect(gapIdsOf(editing.workspaceDocument.value!)).toEqual(["gap_001", "gap_002"]);
+    expect(editing.workspaceDocument.value!.items[0]!.body).toEqual(bodyWith(["gap_001", "gap_002"]));
   });
 });
 

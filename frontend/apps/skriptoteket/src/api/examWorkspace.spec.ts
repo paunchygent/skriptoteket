@@ -11,7 +11,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { buildFreeTextItem } from "../test/examWorkspaceFixtures";
-import { apiGet, apiPost } from "./client";
+import { apiFetch, apiGet, apiPost } from "./client";
 import {
   getExamWorkspaceConversionStatus,
   getExamWorkspaceDocument,
@@ -20,6 +20,7 @@ import {
   importExamWorkspaceGuestDraft,
   importExamWorkspaceQti,
   listExamWorkspaceDocuments,
+  releaseExamWorkspaceEditLease,
   requestExamWorkspaceAnswerKeySuggestions,
   requestExamWorkspaceAnswerMisspellings,
 } from "./examWorkspace";
@@ -35,6 +36,7 @@ vi.mock("./client", () => ({
 
 const apiGetMock = vi.mocked(apiGet);
 const apiPostMock = vi.mocked(apiPost);
+const apiFetchMock = vi.mocked(apiFetch);
 
 const DOCUMENTS_ROOT = "/api/v1/apps/documents.conversion_hub/exam-workspace/documents";
 const QTI_IMPORT_PATH = "/api/v1/apps/documents.conversion_hub/exam-workspace/import-qti";
@@ -272,6 +274,33 @@ describe("examWorkspace transport", () => {
     expect(form.get("asset:asset-b")).toBeInstanceOf(Blob);
     expect((form.get("asset:asset-b") as Blob).size).toBe(1);
     expect(form.get("asset:asset-extra")).toBeNull();
+    expect(result).toBe(response);
+  });
+
+  it("releases the edit lease with a plain POST by default", async () => {
+    const response = { holder_tab_id: null, renewed_at: null, takeover_requested: false, takeover_requested_by: null };
+    apiPostMock.mockResolvedValueOnce(response);
+
+    const result = await releaseExamWorkspaceEditLease("lineage-1", "tab-a");
+
+    expect(apiPostMock).toHaveBeenCalledWith(`${DOCUMENTS_ROOT}/lineage-1/edit-lease/release`, {
+      tab_id: "tab-a",
+    });
+    expect(apiFetchMock).not.toHaveBeenCalled();
+    expect(result).toBe(response);
+  });
+
+  it("releases the edit lease with keepalive so a pagehide release survives the unload", async () => {
+    const response = { holder_tab_id: null, renewed_at: null, takeover_requested: false, takeover_requested_by: null };
+    apiFetchMock.mockResolvedValueOnce(response);
+
+    const result = await releaseExamWorkspaceEditLease("lineage-1", "tab-a", { keepalive: true });
+
+    expect(apiFetchMock).toHaveBeenCalledWith(`${DOCUMENTS_ROOT}/lineage-1/edit-lease/release`, {
+      body: { tab_id: "tab-a" },
+      keepalive: true,
+      method: "POST",
+    });
     expect(result).toBe(response);
   });
 });

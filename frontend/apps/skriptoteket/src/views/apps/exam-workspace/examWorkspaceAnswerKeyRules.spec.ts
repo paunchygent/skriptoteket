@@ -17,6 +17,7 @@ import { describe, expect, it } from "vitest";
 import type { NativeExamDocument, NativeExamItem, NativeExamParent } from "../../../api/examWorkspace";
 import {
   INCOMPLETE_MATCH_KEY_GUIDANCE,
+  hasInvalidAnswerKey,
   incompleteMatchKeyCopy,
   isIncompleteMatchingItem,
   isPartiallyKeyedGapItem,
@@ -126,6 +127,41 @@ describe("isPartiallyKeyedGapItem", () => {
 
   it("ignores items that are not gap items", () => {
     expect(isPartiallyKeyedGapItem(buildGapItem({ kind: "free_text" }))).toBe(false);
+  });
+});
+
+describe("hasInvalidAnswerKey for empty gaps", () => {
+  it("accepts a keyed gap_fill item with an empty gap as a valid draft", () => {
+    expect(hasInvalidAnswerKey(buildGapItem())).toBe(false);
+  });
+
+  it("accepts a keyed dropdown item with a gap that has no correct option", () => {
+    const item = buildGapItem({
+      gaps: [buildGap("gap_001")],
+      kind: "inline_choice",
+    });
+
+    expect(hasInvalidAnswerKey(item)).toBe(false);
+  });
+
+  it("still flags a keyed dropdown gap whose correct option names no declared option", () => {
+    const item = buildGapItem({
+      gaps: [buildGap("gap_001", [], { correct_option_id: "choice_009" })],
+      kind: "inline_choice",
+    });
+
+    expect(hasInvalidAnswerKey(item)).toBe(true);
+  });
+
+  it("still flags a keyed gap_fill item that keys top-level choices", () => {
+    const item = buildGapItem({
+      answer_key: { correct_choice_ids: ["choice_001"], match_pairs: [], origin: "teacher_authored" },
+      choices: [
+        { body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Syre" }] }], choice_id: "choice_001" },
+        { body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text: "Järn" }] }], choice_id: "choice_002" },
+      ],
+    });
+    expect(hasInvalidAnswerKey(item)).toBe(true);
   });
 });
 

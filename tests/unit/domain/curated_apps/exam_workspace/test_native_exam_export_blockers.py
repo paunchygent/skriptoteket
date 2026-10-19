@@ -228,3 +228,57 @@ class TestTooFewGapOptions:
             "empty_gap_option",
             "too_few_gap_options",
         ]
+
+
+class TestEmptyGapExportBlock:
+    """An empty gap in a keyed question blocks every export (TASK-SKRIPT-40-04-13 U4, Q9)."""
+
+    def test_keyed_gap_fill_with_an_empty_gap_blocks_export(self) -> None:
+        item = make_gap_fill_item(origin=NativeAnswerKeyOrigin.TEACHER_AUTHORED, accepted=())
+
+        assert [blocker.reason for blocker in native_export_blockers(make_document(item))] == [
+            "partial_gap_key"
+        ]
+
+    def test_keyed_gap_fill_with_all_gaps_answered_exports(self) -> None:
+        assert native_export_blockers(make_document(make_gap_fill_item())) == ()
+
+    def test_absent_key_with_empty_gaps_blocks_only_for_the_missing_key(self) -> None:
+        item = make_gap_fill_item(origin=NativeAnswerKeyOrigin.ABSENT, accepted=())
+
+        assert [blocker.reason for blocker in native_export_blockers(make_document(item))] == [
+            "missing_answer_key"
+        ]
+
+    def test_keyed_dropdown_with_a_gap_without_correct_option_blocks_export(self) -> None:
+        gap = NativeGap(
+            gap_id="gap_001",
+            options=(
+                NativeChoice(choice_id="choice_001", body=plain_body("ja")),
+                NativeChoice(choice_id="choice_002", body=plain_body("nej")),
+            ),
+            correct_option_id=None,
+        )
+
+        assert _reasons(_dropdown_item(gap)) == ["gap_without_correct_option"]
+
+    def test_keyed_dropdown_with_no_options_blocks_export(self) -> None:
+        assert _reasons(_dropdown_item(NativeGap(gap_id="gap_001"))) == [
+            "gap_without_correct_option",
+            "too_few_gap_options",
+        ]
+
+    def test_absent_key_dropdown_with_empty_gap_blocks_only_for_the_missing_key(self) -> None:
+        gap = NativeGap(
+            gap_id="gap_001",
+            options=(
+                NativeChoice(choice_id="choice_001", body=plain_body("ja")),
+                NativeChoice(choice_id="choice_002", body=plain_body("nej")),
+            ),
+            correct_option_id=None,
+        )
+        item = _dropdown_item(gap).model_copy(
+            update={"answer_key": NativeAnswerKey(origin=NativeAnswerKeyOrigin.ABSENT)}
+        )
+
+        assert _reasons(item) == ["missing_answer_key"]

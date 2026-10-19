@@ -48,10 +48,6 @@ def test_json_save_reopen_keeps_gap_local_options_and_keys(parented: bool) -> No
 @pytest.mark.parametrize(
     "defect",
     [
-        "missing_options",
-        "empty_options",
-        "missing_key",
-        "null_key",
         "foreign_key",
         "multiple_keys",
         "duplicate_option_ids",
@@ -72,15 +68,7 @@ def test_malformed_dropdown_cannot_be_saved(defect: str) -> None:
     payload = inline_choice_payload()
     gap = payload["gaps"][0]
     segments = payload["body"][0]["segments"]
-    if defect == "missing_options":
-        del gap["options"]
-    elif defect == "empty_options":
-        gap["options"] = []
-    elif defect == "missing_key":
-        del gap["correct_option_id"]
-    elif defect == "null_key":
-        gap["correct_option_id"] = None
-    elif defect == "foreign_key":
+    if defect == "foreign_key":
         gap["correct_option_id"] = "choice_099"
     elif defect == "multiple_keys":
         gap["correct_option_id"] = ["choice_001", "choice_002"]
@@ -112,6 +100,29 @@ def test_malformed_dropdown_cannot_be_saved(defect: str) -> None:
         raise AssertionError(defect)
     with pytest.raises(ValidationError):
         NativeExamItem.model_validate(payload)
+
+
+@pytest.mark.parametrize("defect", ["missing_options", "empty_options", "missing_key", "null_key"])
+def test_empty_dropdown_gap_is_a_valid_draft(defect: str) -> None:
+    """A keyed dropdown gap with no correct option, or no options, saves (U4, L2)."""
+    payload = inline_choice_payload()
+    gap = payload["gaps"][0]
+    if defect == "missing_options":
+        del gap["options"]
+        del gap["correct_option_id"]
+    elif defect == "empty_options":
+        gap["options"] = []
+        gap["correct_option_id"] = None
+    elif defect == "missing_key":
+        del gap["correct_option_id"]
+    elif defect == "null_key":
+        gap["correct_option_id"] = None
+    else:
+        raise AssertionError(defect)
+
+    item = NativeExamItem.model_validate(payload)
+
+    assert item.gaps[0].correct_option_id is None
 
 
 def test_switching_dropdown_to_typed_gap_does_not_silently_drop_its_options() -> None:

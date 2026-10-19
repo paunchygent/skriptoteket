@@ -213,4 +213,33 @@ describe("useExamWorkspaceEditLease on the guest lease", () => {
       second.stop();
     }
   });
+
+  it("retries a refused claim and takes the freed lease without Ta över", async () => {
+    const context = setupGuestLeases();
+    const firstEvents = { acquired: [] as string[], flushed: [] as string[] };
+    const secondEvents = { acquired: [] as string[], flushed: [] as string[] };
+    const first = context.open("tab-a", firstEvents);
+    await flushPromises();
+    const second = context.open("tab-b", secondEvents);
+    try {
+      await flushPromises();
+      expect(second.lease.readOnly.value).toBe(true);
+      // The only tab reloads: its pagehide release frees the lease, and the
+      // reloaded tab reclaims it on its next retry, not on Ta över.
+      window.dispatchEvent(new Event("pagehide"));
+      for (let attempt = 0; attempt < 20; attempt += 1) {
+        if ((await context.storage.load()) === null) {
+          break;
+        }
+        await Promise.resolve();
+      }
+      await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_EDIT_LEASE_HEARTBEAT_MS);
+      expect(await context.storage.load()).toMatchObject({ tabId: "tab-b" });
+      expect(second.lease.readOnly.value).toBe(false);
+      expect(secondEvents.acquired).toEqual(["reloaded"]);
+    } finally {
+      first.stop();
+      second.stop();
+    }
+  });
 });

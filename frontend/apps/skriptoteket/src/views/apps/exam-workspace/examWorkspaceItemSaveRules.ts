@@ -9,10 +9,11 @@
  *   non-negative and finite (`_nonnegative_finite_points`). A free-text item's criteria must have
  *   non-empty text and whole points of at least 1, only free-text items
  *   carry them, and a non-empty list's points are exactly the item's points.
- *   A partial gap key or an incomplete matching key
- *   (`_answer_key_invariants`) comes from `examWorkspaceAnswerKeyRules`.
- *   An empty choice or matching entry saves (TASK-SKRIPT-40-04-06 D3); it is
- *   only flagged at the field here and blocks export through readiness.
+ *   An incomplete matching key (`_answer_key_invariants`) comes from
+ *   `examWorkspaceAnswerKeyRules`. An empty gap saves as a draft
+ *   (TASK-SKRIPT-40-04-13 U4, L2) and blocks export through readiness
+ *   instead; an empty choice or matching entry saves (TASK-SKRIPT-40-04-06
+ *   D3) and is likewise export-only.
  *
  * Relationships:
  *   - Mirrors `domain/curated_apps/exam_workspace/native_exam_document.py`.
@@ -25,8 +26,6 @@ import type { NativeExamCriterion, NativeExamDocument, NativeExamItem } from "..
 import {
   incompleteMatchKeyCopy,
   isIncompleteMatchingItem,
-  isPartiallyKeyedGapItem,
-  partialGapKeyCopy,
   questionSubject,
 } from "./examWorkspaceAnswerKeyRules";
 import { isEmptyBody } from "./examWorkspaceRichTextDocument";
@@ -100,7 +99,6 @@ function refusal(
  */
 export function examWorkspaceSaveRefusalCopy(document: NativeExamDocument): string | null {
   const refusals = [
-    refusal(document, isPartiallyKeyedGapItem, partialGapKeyCopy),
     refusal(document, isIncompleteMatchingItem, incompleteMatchKeyCopy),
     refusal(
       document,
