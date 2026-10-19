@@ -61,7 +61,7 @@ Frontend paths are under `frontend/apps/skriptoteket/src/views/apps/exam-workspa
 | K1 toolbar undo | `examWorkspaceHistoryKeys.ts` (provide `canUndo` and `canRedo` with the pair), `ExamWorkspaceView.vue`, `ExamWorkspaceMarkToolbar.vue`, `examWorkspaceShortcutLabels.ts` | Q1, Q5 | `ExamWorkspaceMarkToolbar.undo.spec.ts` (new), `examWorkspaceShortcutLabels.spec.ts` |
 | K2 field cadence | `ExamWorkspaceGapAnswerList.vue`, `ExamWorkspaceGapPopover.vue` (store after the typing pause), `ExamWorkspaceCriteriaField.vue` and `useExamWorkspaceItemEdits.ts` (criterion add is structural) | Q2 | `ExamWorkspaceGapAnswerList.spec.ts`, `ExamWorkspaceGapPopover.options.spec.ts`, the criteria field spec |
 | K3 draft state | `useExamWorkspaceHistory.ts` (last stored time), `useExamWorkspaceSaveFlow.ts`, `ExamWorkspaceHeader.vue` | Q3, Q4 | `useExamWorkspaceHistory.spec.ts`, the header save-state spec |
-| K4 step limit | the server's undo-step retention (backend handler or repository; location found by an Explorer first) | Q6 | the backend history tests for retention |
+| K4 step limit | `src/skriptoteket/application/curated_apps/handlers/exam_workspace_undo_steps.py:93` and `exam_workspace_document_store.py:269` (two literal `[-10:]` slices become one named limit; no migration, the history is one JSON blob per lineage), the frontend history header comment and spec fake | Q6 | the backend undo-step and save-retention handler tests |
 
 Performance: K2 adds one timer per open popover; K4 grows stored steps per lineage fivefold, and stored documents are small JSON.
 
@@ -74,7 +74,7 @@ Performance: K2 adds one timer per open popover; K4 grows stored steps per linea
 
 ## Stop Conditions
 
-Stop and ask the user if a per-question history turns out to be needed (Q1 option b), if the step limit change needs a data migration, or if a visible draft state cannot share the save-state slot without moving its neighbours.
+Stop and ask the user if a per-question history turns out to be needed (Q1 option b), or if a visible draft state cannot share the save-state slot without moving its neighbours.
 
 ## Decided Contract Terms
 
