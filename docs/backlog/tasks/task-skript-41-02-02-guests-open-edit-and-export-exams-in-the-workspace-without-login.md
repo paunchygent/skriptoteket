@@ -55,6 +55,7 @@ Stop and report if the shared editor cannot run on a browser store without forki
 | G4  | Sign-in prompts read "Logga in för att importera från DigiExam eller Word." and "Logga in för att få AI-hjälp."                                                                                                                                                                                                         |
 | G5  | User decision 2026-10-19 (relayed by the Mac parent): a handed-off draft whose title already exists in Mina filer gets a numbered title, "Titel (2)", then (3) and so on, chosen server-side in the handoff transaction so concurrent handoffs never pick the same number.                                              |
 | G6  | User decision 2026-10-19 (relayed by the Mac parent): nginx-proxy gets a fixed `ipv4_address` on hule-network and `TRUSTED_PROXY_CIDRS` trusts only that /32, never the 172.18.0.0/16 subnet. The Mac parent approved the proposal on 2026-10-19 as one step of this task's production deploy, after the merge to main. |
+| G7  | User decision 2026-10-19, given directly in the Hemma orchestrator session: guests also get "PDF med facit" ("Yes, it is still the default PDF version"). Guests and teachers share one export format list.                                                                                                             |
 
 ## Resume Here (lead 2, 2026-10-19)
 
@@ -102,7 +103,6 @@ Stop and report if the shared editor cannot run on a browser store without forki
   - F6: the merge delivered the guest print PDF separately from the Exam.net fallback, and new backend and frontend tests prove all four contracted guest exports. The backend test fails to import on pre-merge 670b46fc.
   - R12: the print preview goes through `store.teacher` and is hidden for guests. Before the fix 5 tests failed; after it 136 pass.
 - Open product questions for the user:
-  - Guests also get "PDF med facit" from the shared format list.
   - A guest print preview would need a new stateless public preview route.
 - Next: one slot for full Vitest plus the backend files the merge and F6 touch; then F6, R12 and the merge go to review da90f12c.
 - Open findings:
