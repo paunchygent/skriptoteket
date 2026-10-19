@@ -65,7 +65,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeExamItemKind,
     NativeItemReviewState,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.shared_body import source_paragraphs
+from skriptoteket.domain.curated_apps.exam_workspace.shared_body import (
+    is_printed_answer_line,
+    source_paragraphs,
+)
 
 # A body paragraph and the anchor of the source chunk it shows.
 _Shown = tuple[NativeParagraph, str]
@@ -227,6 +230,7 @@ def _unshown(aligned: AlignedItem, sources: Sequence[DocxChunk]) -> tuple[_Shown
         for chunk in sources
         if not aligned.shows(chunk.anchor)
         for paragraph in source_paragraphs((chunk,))
+        if not is_printed_answer_line(paragraph.segments)
     )
 
 
