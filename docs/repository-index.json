@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "ba7639c24173b4fb5981e0c5c5bcda96f975becc6e6af0c416477d17bc4f6352",
+  "source_set_digest": "e2ac975ed871c09b983acff44be6ade06d24db24ac4fb7bb1c72eb36857e59fa",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6692,6 +6692,25 @@
       "title": "Printed PDF exams keep each question's text and its alternatives on one page",
       "path": "docs/backlog/tasks/task-skript-40-04-12-printed-pdf-exams-keep-each-question-s-text-and-its-alternatives-on-one-page.md",
       "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-17",
+      "type": "task",
+      "title": "The exam workspace header and toolbars share one compact control system with autosave status, file commands and a gap switch",
+      "path": "docs/backlog/tasks/task-skript-40-04-17-the-exam-workspace-header-and-toolbars-share-one-compact-control-system-with-autosave-status-file-commands-and-a-gap-switch.md",
+      "status": "proposed",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
