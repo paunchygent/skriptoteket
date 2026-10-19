@@ -9,10 +9,9 @@ import pytest
 from alembic import command
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine
-from testcontainers.postgres import PostgresContainer
 
-from tests.fixtures.database_fixtures import _to_async_database_url
-from tests.integration.migration_idempotency_support import _alembic_config, _reset_public_schema
+from tests.fixtures.database_fixtures import PooledDatabase, alembic_config_for
+from tests.integration.migration_idempotency_support import _reset_public_schema
 
 pytestmark = [pytest.mark.integration, pytest.mark.docker]
 _REVISION = "d7e4b9a12c80"
@@ -147,14 +146,14 @@ async def _enrich(database_url: str, owner: UUID, lineage: UUID) -> None:
 
 
 def test_migration_d7e4b9a12c80_seeds_heads_without_containers_and_is_idempotent(
-    postgres_container: PostgresContainer,
+    empty_module_database: PooledDatabase,
 ) -> None:
-    database_url = _to_async_database_url(postgres_container.get_connection_url())
+    database_url = empty_module_database.url
     previous = os.environ.get("DATABASE_URL")
     os.environ["DATABASE_URL"] = database_url
     try:
         asyncio.run(_reset_public_schema(database_url=database_url))
-        config = _alembic_config(database_url=database_url)
+        config = alembic_config_for(database_url=database_url)
         command.upgrade(config, _PARENT)
         owner, lineage, head = asyncio.run(_seed(database_url))
         command.upgrade(config, _REVISION)

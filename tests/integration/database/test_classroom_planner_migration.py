@@ -18,15 +18,15 @@ from alembic.config import Config
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
-from tests.fixtures.database_fixtures import _to_async_database_url
+from tests.fixtures.database_fixtures import PooledDatabase
 
 
 @pytest.mark.integration
 @pytest.mark.docker
 @pytest.mark.asyncio
-async def test_classroom_planner_migration_idempotency(postgres_container):
+async def test_classroom_planner_migration_idempotency(empty_module_database: PooledDatabase):
     """Verify planner migrations reach the current head cleanly and stay re-runnable."""
-    database_url = _to_async_database_url(postgres_container.get_connection_url())
+    database_url = empty_module_database.url
     os.environ["DATABASE_URL"] = database_url
 
     alembic_cfg = Config(str(Path("alembic.ini")))
@@ -51,7 +51,7 @@ async def test_classroom_planner_migration_idempotency(postgres_container):
         if errors:
             raise errors[0]
 
-    engine = create_async_engine(_to_async_database_url(database_url))
+    engine = create_async_engine(database_url)
 
     async def get_tables() -> set[str]:
         async with engine.connect() as conn:

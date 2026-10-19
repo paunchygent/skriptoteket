@@ -16,16 +16,13 @@ import os
 from collections.abc import Mapping
 from contextlib import contextmanager
 from datetime import datetime, timezone
-from pathlib import Path
 from typing import Iterator
 from uuid import UUID, uuid4
 
 import pytest
 from alembic import command
-from alembic.config import Config
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
-from testcontainers.postgres import PostgresContainer
 
 from skriptoteket.application.identity.huleedu_app_projection import HuleEduAppProjectionResolver
 from skriptoteket.domain.identity.internal_identity_context import InternalIdentityContextV1
@@ -39,16 +36,10 @@ from skriptoteket.infrastructure.repositories.identity_projection_repository imp
 from skriptoteket.infrastructure.repositories.profile_repository import PostgreSQLProfileRepository
 from skriptoteket.infrastructure.repositories.user_repository import PostgreSQLUserRepository
 from skriptoteket.observability.auth_outcomes import NoopAuthOutcomeRecorder
-from tests.fixtures.database_fixtures import _to_async_database_url
+from tests.fixtures.database_fixtures import PooledDatabase, alembic_config_for
 
 _REVISION = "e7b3a9c4d1f2"
 _PARENT_REVISION = "c1d2e3f4a5b6"
-
-
-def _alembic_config(*, database_url: str) -> Config:
-    config = Config(str(Path("alembic.ini")))
-    config.set_main_option("sqlalchemy.url", database_url)
-    return config
 
 
 @contextmanager
@@ -197,44 +188,45 @@ async def _assert_resolver_uses_backfilled_projection(
 
 
 @pytest.mark.docker
-def test_migration_e7b3a9c4d1f2_backfills_and_removes_external_id() -> None:
-    with PostgresContainer("postgres:16") as postgres:
-        database_url = _to_async_database_url(postgres.get_connection_url())
-        with _database_url_env(database_url):
-            alembic_cfg = _alembic_config(database_url=database_url)
-            command.upgrade(alembic_cfg, _PARENT_REVISION)
+def test_migration_e7b3a9c4d1f2_backfills_and_removes_external_id(
+    fresh_database: PooledDatabase,
+) -> None:
+    database_url = fresh_database.url
+    with _database_url_env(database_url):
+        alembic_cfg = alembic_config_for(database_url=database_url)
+        command.upgrade(alembic_cfg, _PARENT_REVISION)
 
-            user_id = uuid4()
-            subject = "legacy-huleedu-subject"
-            now = datetime.now(timezone.utc)
-            asyncio.run(
-                _insert_user(
-                    database_url,
-                    {
-                        "id": user_id,
-                        "email": "migration-teacher@example.test",
-                        "role": "contributor",
-                        "auth_provider": "huleedu",
-                        "external_id": subject,
-                        "created_at": now,
-                        "updated_at": now,
-                    },
-                )
+        user_id = uuid4()
+        subject = "legacy-huleedu-subject"
+        now = datetime.now(timezone.utc)
+        asyncio.run(
+            _insert_user(
+                database_url,
+                {
+                    "id": user_id,
+                    "email": "migration-teacher@example.test",
+                    "role": "contributor",
+                    "auth_provider": "huleedu",
+                    "external_id": subject,
+                    "created_at": now,
+                    "updated_at": now,
+                },
             )
+        )
 
-            command.upgrade(alembic_cfg, _REVISION)
-            asyncio.run(_assert_backfill(database_url, user_id=user_id, subject=subject))
-            asyncio.run(
-                _assert_resolver_uses_backfilled_projection(
-                    database_url,
-                    user_id=user_id,
-                    subject=subject,
-                )
+        command.upgrade(alembic_cfg, _REVISION)
+        asyncio.run(_assert_backfill(database_url, user_id=user_id, subject=subject))
+        asyncio.run(
+            _assert_resolver_uses_backfilled_projection(
+                database_url,
+                user_id=user_id,
+                subject=subject,
             )
+        )
 
-            command.downgrade(alembic_cfg, _PARENT_REVISION)
-            command.upgrade(alembic_cfg, _REVISION)
-            asyncio.run(_assert_backfill(database_url, user_id=user_id, subject=subject))
+        command.downgrade(alembic_cfg, _PARENT_REVISION)
+        command.upgrade(alembic_cfg, _REVISION)
+        asyncio.run(_assert_backfill(database_url, user_id=user_id, subject=subject))
 
 
 @pytest.mark.docker
@@ -292,28 +284,28 @@ def test_migration_e7b3a9c4d1f2_fails_ambiguous_legacy_subjects(
     name: str,
     rows: list[dict[str, object]],
     drop_unique: bool,
+    fresh_database: PooledDatabase,
 ) -> None:
-    with PostgresContainer("postgres:16") as postgres:
-        database_url = _to_async_database_url(postgres.get_connection_url())
-        with _database_url_env(database_url):
-            alembic_cfg = _alembic_config(database_url=database_url)
-            command.upgrade(alembic_cfg, _PARENT_REVISION)
-            if drop_unique:
-                asyncio.run(_drop_legacy_unique(database_url))
+    database_url = fresh_database.url
+    with _database_url_env(database_url):
+        alembic_cfg = alembic_config_for(database_url=database_url)
+        command.upgrade(alembic_cfg, _PARENT_REVISION)
+        if drop_unique:
+            asyncio.run(_drop_legacy_unique(database_url))
 
-            now = datetime.now(timezone.utc)
-            for row in rows:
-                asyncio.run(
-                    _insert_user(
-                        database_url,
-                        {
-                            "id": uuid4(),
-                            "created_at": now,
-                            "updated_at": now,
-                            **row,
-                        },
-                    )
+        now = datetime.now(timezone.utc)
+        for row in rows:
+            asyncio.run(
+                _insert_user(
+                    database_url,
+                    {
+                        "id": uuid4(),
+                        "created_at": now,
+                        "updated_at": now,
+                        **row,
+                    },
                 )
+            )
 
-            with pytest.raises(RuntimeError, match="Cannot migrate"):
-                command.upgrade(alembic_cfg, _REVISION)
+        with pytest.raises(RuntimeError, match="Cannot migrate"):
+            command.upgrade(alembic_cfg, _REVISION)

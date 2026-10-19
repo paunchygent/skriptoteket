@@ -21,8 +21,8 @@ from alembic import command
 from alembic.config import Config
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
-from testcontainers.postgres import PostgresContainer
 
+from tests.fixtures.database_fixtures import PooledDatabase
 from tests.integration.migration_idempotency_support import assert_revision_is_idempotent
 from tests.integration.migration_schema_helpers import (
     column_map,
@@ -113,10 +113,10 @@ async def _with_engine(database_url: str, assertion: _SchemaAssertion) -> None:
 
 
 def test_migration_c8e4f2a6d9b3_is_idempotent(
-    postgres_container: PostgresContainer,
+    empty_module_database: PooledDatabase,
 ) -> None:
     assert_revision_is_idempotent(
-        postgres_container=postgres_container,
+        empty_module_database=empty_module_database,
         revision_id=_REVISION,
         schema_assertion=_assert_exam_guest_draft_handoffs_schema,
     )

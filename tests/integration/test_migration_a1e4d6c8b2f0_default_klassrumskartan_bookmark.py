@@ -15,26 +15,18 @@ from __future__ import annotations
 
 import asyncio
 import os
-from pathlib import Path
 from uuid import uuid4
 
 import pytest
 from alembic import command
-from alembic.config import Config
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine
 
-from tests.fixtures.database_fixtures import _to_async_database_url
+from tests.fixtures.database_fixtures import PooledDatabase, alembic_config_for
 
 _TARGET_REVISION = "a1e4d6c8b2f0"
 _PARENT_REVISION = "8f3d2c1b4a6e"
 _DEFAULT_APP_ID = "classroom.group-seating-studio"
-
-
-def _alembic_config(*, database_url: str) -> Config:
-    config = Config(str(Path("alembic.ini")))
-    config.set_main_option("sqlalchemy.url", database_url)
-    return config
 
 
 async def _seed_existing_users(*, database_url: str) -> tuple[str, str]:
@@ -128,13 +120,13 @@ async def _count_user_default_rows(*, database_url: str, user_id: str) -> int:
 @pytest.mark.integration
 @pytest.mark.docker
 def test_default_klassrumskartan_bookmark_migration_backfills_existing_users(
-    postgres_container,
+    empty_module_database: PooledDatabase,
 ) -> None:
-    database_url = _to_async_database_url(postgres_container.get_connection_url())
+    database_url = empty_module_database.url
     previous_database_url = os.environ.get("DATABASE_URL")
     os.environ["DATABASE_URL"] = database_url
 
-    alembic_cfg = _alembic_config(database_url=database_url)
+    alembic_cfg = alembic_config_for(database_url=database_url)
     try:
         command.upgrade(alembic_cfg, _PARENT_REVISION)
         first_user_id, second_user_id = asyncio.run(_seed_existing_users(database_url=database_url))
