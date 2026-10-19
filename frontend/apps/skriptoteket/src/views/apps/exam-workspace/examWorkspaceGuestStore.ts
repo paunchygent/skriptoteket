@@ -107,6 +107,8 @@ export type ExamWorkspaceGuestStoreDeps = {
   storage: ExamWorkspaceGuestDraftStoragePort;
   api: typeof import("../../../api/publicExamWorkspace");
   ids: ExamWorkspaceGuestDraftIdSource;
+  /** Called once per failing public call whose rejection is the guest limit. */
+  onLimit: () => void;
 };
 
 export type ExamWorkspaceGuestStore = {
@@ -122,6 +124,68 @@ export type ExamWorkspaceGuestStore = {
 export function createGuestExamWorkspaceStore(
   deps: ExamWorkspaceGuestStoreDeps,
 ): ExamWorkspaceGuestStore {
+  /**
+   * Every public call goes through this wrapper once so a 429 from the hourly
+   * guest limiter reports `onLimit` before the same error reaches the caller.
+   */
+  function guardLimit<TArgs extends unknown[], TResult>(
+    call: (...args: TArgs) => Promise<TResult>,
+  ): (...args: TArgs) => Promise<TResult> {
+    return async (...args: TArgs): Promise<TResult> => {
+      try {
+        return await call(...args);
+      } catch (error: unknown) {
+        if (isGuestLimitError(error)) {
+          deps.onLimit();
+        }
+        throw error;
+      }
+    };
+  }
+
+  const api: ExamWorkspaceGuestStoreDeps["api"] = {
+    createPublicExamWorkspaceBlank: guardLimit((...args) =>
+      deps.api.createPublicExamWorkspaceBlank(...args),
+    ),
+    createPublicExamWorkspaceParent: guardLimit((...args) =>
+      deps.api.createPublicExamWorkspaceParent(...args),
+    ),
+    addPublicExamWorkspaceChild: guardLimit((...args) =>
+      deps.api.addPublicExamWorkspaceChild(...args),
+    ),
+    deletePublicExamWorkspaceChild: guardLimit((...args) =>
+      deps.api.deletePublicExamWorkspaceChild(...args),
+    ),
+    reorderPublicExamWorkspaceChildren: guardLimit((...args) =>
+      deps.api.reorderPublicExamWorkspaceChildren(...args),
+    ),
+    deletePublicExamWorkspaceParent: guardLimit((...args) =>
+      deps.api.deletePublicExamWorkspaceParent(...args),
+    ),
+    groupPublicExamWorkspaceItems: guardLimit((...args) =>
+      deps.api.groupPublicExamWorkspaceItems(...args),
+    ),
+    createEmptyPublicExamWorkspacePart: guardLimit((...args) =>
+      deps.api.createEmptyPublicExamWorkspacePart(...args),
+    ),
+    movePublicExamWorkspaceItem: guardLimit((...args) =>
+      deps.api.movePublicExamWorkspaceItem(...args),
+    ),
+    changePublicExamWorkspaceItemType: guardLimit((...args) =>
+      deps.api.changePublicExamWorkspaceItemType(...args),
+    ),
+    requestPublicExamWorkspaceAnswerMisspellings: guardLimit((...args) =>
+      deps.api.requestPublicExamWorkspaceAnswerMisspellings(...args),
+    ),
+    getPublicExamCourseCatalog: guardLimit((...args) => deps.api.getPublicExamCourseCatalog(...args)),
+    downloadPublicExamWorkspaceExport: guardLimit((...args) =>
+      deps.api.downloadPublicExamWorkspaceExport(...args),
+    ),
+    getPublicExamWorkspaceExportChecklist: guardLimit((...args) =>
+      deps.api.getPublicExamWorkspaceExportChecklist(...args),
+    ),
+  };
+
   /** The draft whose picture bytes currently have object URLs. */
   let openLineageId: string | null = null;
   const assetUrls = new Map<string, string>();
@@ -261,7 +325,7 @@ export function createGuestExamWorkspaceStore(
         lineageId,
         (current) => current.cursor === body.expected_cursor,
         (document) =>
-          deps.api.createPublicExamWorkspaceParent({
+          api.createPublicExamWorkspaceParent({
             child: body.child,
             document,
             instruction: body.instruction,
@@ -275,7 +339,7 @@ export function createGuestExamWorkspaceStore(
         lineageId,
         (current) => current.cursor === body.expected_cursor,
         (document) =>
-          deps.api.addPublicExamWorkspaceChild(parentId, {
+          api.addPublicExamWorkspaceChild(parentId, {
             child: body.child,
             document,
             position: body.position,
@@ -287,7 +351,7 @@ export function createGuestExamWorkspaceStore(
       const { draft, result } = await commitCommand(
         lineageId,
         (current) => current.cursor === expectedCursor,
-        (document) => deps.api.deletePublicExamWorkspaceChild(parentId, itemId, { document }),
+        (document) => api.deletePublicExamWorkspaceChild(parentId, itemId, { document }),
       );
       return {
         ...guestDocumentResponse(draft),
@@ -300,7 +364,7 @@ export function createGuestExamWorkspaceStore(
         lineageId,
         (current) => current.cursor === expectedCursor,
         (document) =>
-          deps.api.reorderPublicExamWorkspaceChildren(parentId, {
+          api.reorderPublicExamWorkspaceChildren(parentId, {
             document,
             item_ids: itemIds,
           }),
@@ -311,7 +375,7 @@ export function createGuestExamWorkspaceStore(
       const { draft, result } = await commitCommand(
         lineageId,
         (current) => current.cursor === expectedCursor,
-        (document) => deps.api.deletePublicExamWorkspaceParent(parentId, { document, mode }),
+        (document) => api.deletePublicExamWorkspaceParent(parentId, { document, mode }),
       );
       return {
         ...guestDocumentResponse(draft),
@@ -323,7 +387,7 @@ export function createGuestExamWorkspaceStore(
       const { draft, result } = await commitCommand(
         lineageId,
         (current) => current.cursor === expectedCursor,
-        (document) => deps.api.groupPublicExamWorkspaceItems(document, itemIds),
+        (document) => api.groupPublicExamWorkspaceItems(document, itemIds),
       );
       return {
         ...guestDocumentResponse(draft),
@@ -335,7 +399,7 @@ export function createGuestExamWorkspaceStore(
       const { draft, result } = await commitCommand(
         lineageId,
         (current) => current.cursor === expectedCursor,
-        (document) => deps.api.createEmptyPublicExamWorkspacePart(document, position),
+        (document) => api.createEmptyPublicExamWorkspacePart(document, position),
       );
       return {
         ...guestDocumentResponse(draft),
@@ -347,7 +411,7 @@ export function createGuestExamWorkspaceStore(
       const { draft, result } = await commitCommand(
         lineageId,
         (current) => current.cursor === expectedCursor,
-        (document) => deps.api.movePublicExamWorkspaceItem(document, itemId, targetParentId),
+        (document) => api.movePublicExamWorkspaceItem(document, itemId, targetParentId),
       );
       return { ...guestDocumentResponse(draft), export_blockers: result.export_blockers };
     },
@@ -358,7 +422,7 @@ export function createGuestExamWorkspaceStore(
           current.cursor === body.expected_cursor &&
           current.saved_document.revision === body.expected_revision,
         (document) =>
-          deps.api.changePublicExamWorkspaceItemType({
+          api.changePublicExamWorkspaceItemType({
             document,
             item_id: body.item_id,
             target_kind: body.target_kind,
@@ -375,7 +439,7 @@ export function createGuestExamWorkspaceStore(
       if (stored.draft.saved_document.revision !== expectedRevision) {
         throw conflictError();
       }
-      return await deps.api.downloadPublicExamWorkspaceExport(target, {
+      return await api.downloadPublicExamWorkspaceExport(target, {
         assets: stored.assets,
         document: stored.draft.saved_document,
       });
@@ -385,16 +449,16 @@ export function createGuestExamWorkspaceStore(
       if (stored.draft.saved_document.revision !== expectedRevision) {
         throw conflictError();
       }
-      return await deps.api.getPublicExamWorkspaceExportChecklist({
+      return await api.getPublicExamWorkspaceExportChecklist({
         assets: stored.assets,
         document: stored.draft.saved_document,
       });
     },
     async requestExamWorkspaceAnswerMisspellings(request) {
-      return await deps.api.requestPublicExamWorkspaceAnswerMisspellings(request);
+      return await api.requestPublicExamWorkspaceAnswerMisspellings(request);
     },
     async getExamCourseCatalog() {
-      return await deps.api.getPublicExamCourseCatalog();
+      return await api.getPublicExamCourseCatalog();
     },
     examWorkspaceAssetUrl(lineageId, assetId) {
       if (openLineageId !== lineageId) {
@@ -404,18 +468,20 @@ export function createGuestExamWorkspaceStore(
     },
   };
 
+  async function startBlank(): Promise<string> {
+    const response = await api.createPublicExamWorkspaceBlank();
+    const draft = newGuestDraft(response.document, deps.ids);
+    await persist({ assets: {}, draft });
+    return draft.lineage_id;
+  }
+
   return {
-    store: { shared, teacher: null },
+    store: { shared, teacher: null, guest: { startBlank } },
     async currentLineageId() {
       const stored = await deps.storage.load();
       return stored?.draft.lineage_id ?? null;
     },
-    async startBlank() {
-      const response = await deps.api.createPublicExamWorkspaceBlank();
-      const draft = newGuestDraft(response.document, deps.ids);
-      await persist({ assets: {}, draft });
-      return draft.lineage_id;
-    },
+    startBlank,
     async clear() {
       await deps.storage.clear();
       openLineageId = null;

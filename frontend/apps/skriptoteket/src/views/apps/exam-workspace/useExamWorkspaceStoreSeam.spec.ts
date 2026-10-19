@@ -29,10 +29,11 @@ const apiMocks = vi.hoisted(() => ({
 
 vi.mock("../../../api/examWorkspace", () => apiMocks);
 
-/** The guest store: shared services only, no teacher half. */
+/** The guest store: shared services only, no teacher or guest half. */
 const guestStore: ExamWorkspaceStore = {
   shared: serverExamWorkspaceStore.shared,
   teacher: null,
+  guest: null,
 };
 
 beforeEach(() => {

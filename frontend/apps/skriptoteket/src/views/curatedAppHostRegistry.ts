@@ -49,7 +49,7 @@ const curatedAppHostRegistry: Record<string, CuratedAppHostRegistration> = {
       loader: () => import("./apps/ExamWorkspaceTeacherHost.vue"),
     },
     public: {
-      loader: () => import("./apps/ExamConverterPublicView.vue"),
+      loader: () => import("./apps/ExamWorkspaceGuestHost.vue"),
     },
   },
   "games.flunk_out_frenzy": {

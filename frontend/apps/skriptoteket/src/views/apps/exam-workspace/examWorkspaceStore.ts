@@ -101,9 +101,15 @@ export type ExamWorkspaceTeacherServices = {
   renameVaultFile: typeof renameVaultFile;
 };
 
+/** The guest-only actions on the shared exam workspace; null in signed-in mode. */
+export type ExamWorkspaceGuestServices = {
+  startBlank(): Promise<string>;
+};
+
 export type ExamWorkspaceStore = {
   shared: ExamWorkspaceSharedStore;
   teacher: ExamWorkspaceTeacherServices | null;
+  guest: ExamWorkspaceGuestServices | null;
 };
 
 /** The signed-in workspace's store: a thin delegation to the transport modules. */
@@ -151,6 +157,7 @@ export const serverExamWorkspaceStore: ExamWorkspaceStore = {
     updateExamListOrdering: (...args) => updateExamListOrdering(...args),
     renameVaultFile: (...args) => renameVaultFile(...args),
   },
+  guest: null,
 };
 
 export const EXAM_WORKSPACE_STORE_KEY: InjectionKey<ExamWorkspaceStore> =

@@ -4,14 +4,14 @@ import type { Component } from "vue";
 import { resolveCuratedAppHostView } from "./curatedAppHostRegistry";
 
 const examWorkspaceTeacherHost = vi.hoisted(() => ({ name: "ExamWorkspaceTeacherHostStub" }));
-const examConverterPublicView = vi.hoisted(() => ({ name: "ExamConverterPublicViewStub" }));
+const examWorkspaceGuestHost = vi.hoisted(() => ({ name: "ExamWorkspaceGuestHostStub" }));
 
 vi.mock("vue", async (importOriginal) => ({
   ...(await importOriginal<typeof import("vue")>()),
   defineAsyncComponent: (loader: () => Promise<{ default: Component }>) => ({ loader }),
 }));
 vi.mock("./apps/ExamWorkspaceTeacherHost.vue", () => ({ default: examWorkspaceTeacherHost }));
-vi.mock("./apps/ExamConverterPublicView.vue", () => ({ default: examConverterPublicView }));
+vi.mock("./apps/ExamWorkspaceGuestHost.vue", () => ({ default: examWorkspaceGuestHost }));
 
 async function loadedHost(appId: string, hostMode: "authenticated" | "public") {
   const resolution = resolveCuratedAppHostView(appId, hostMode);
@@ -27,7 +27,7 @@ describe("curated app host registry", () => {
     );
   });
 
-  it("keeps the public guest exam converter on its public host", async () => {
-    expect(await loadedHost("documents.conversion_hub", "public")).toBe(examConverterPublicView);
+  it("opens the shared exam workspace on the browser guest store from the public entry", async () => {
+    expect(await loadedHost("documents.conversion_hub", "public")).toBe(examWorkspaceGuestHost);
   });
 });

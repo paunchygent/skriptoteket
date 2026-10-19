@@ -114,8 +114,9 @@ function setup() {
     reorderPublicExamWorkspaceChildren: mocks.reorderChildren,
     requestPublicExamWorkspaceAnswerMisspellings: mocks.misspellings,
   };
-  const store = createGuestExamWorkspaceStore({ api, ids, storage });
-  return { api, ids, mocks, storage, store };
+  const onLimit = vi.fn();
+  const store = createGuestExamWorkspaceStore({ api, ids, onLimit, storage });
+  return { api, ids, mocks, onLimit, storage, store };
 }
 
 async function startBlank(setupResult: ReturnType<typeof setup>, title = "Original"): Promise<string> {
@@ -134,6 +135,7 @@ describe("examWorkspaceGuestStore", () => {
     const lineageId = await startBlank(context, "Nytt prov");
 
     expect(context.store.store.teacher).toBeNull();
+    expect(typeof context.store.store.guest?.startBlank).toBe("function");
     expect(lineageId).toBe(DOCUMENT_ID);
     expect(await context.store.currentLineageId()).toBe(DOCUMENT_ID);
     const opened = await context.store.store.shared.getExamWorkspaceDocument(lineageId);
@@ -202,6 +204,7 @@ describe("examWorkspaceGuestStore", () => {
     const reloaded = createGuestExamWorkspaceStore({
       api: context.api,
       ids: context.ids,
+      onLimit: context.onLimit,
       storage: context.storage,
     });
     const secondOpen = await reloaded.store.shared.getExamWorkspaceDocument(lineageId);
@@ -419,6 +422,31 @@ describe("examWorkspaceGuestStore", () => {
     expect(limited).toBe(limit);
     expect(isGuestLimitError(limited)).toBe(true);
     expect(await context.storage.load()).toBe(persisted);
+  });
+
+  it("calls onLimit exactly once per failing call and still rejects with the same 429", async () => {
+    const context = setup();
+    const lineageId = await startBlank(context);
+    const opened = await context.store.store.shared.getExamWorkspaceDocument(lineageId);
+    const limit = new ApiError({
+      code: "TOO_MANY_REQUESTS",
+      details: { bucket: "guest_edit", reason: "caller_limit" },
+      message: "Gränsen för gäster är nådd. Logga in för att fortsätta.",
+      status: 429,
+    });
+    context.mocks.createParent.mockRejectedValueOnce(limit);
+
+    const error = await context.store.store.shared
+      .createExamWorkspaceParent(lineageId, {
+        child: newTeacherItem("item_002", 2, "free_text"),
+        expected_cursor: opened.history_cursor,
+        instruction: [],
+        position: 0,
+      })
+      .catch((caught: unknown) => caught);
+
+    expect(error).toBe(limit);
+    expect(context.onLimit).toHaveBeenCalledTimes(1);
   });
 
   it("exports the saved copy and exactly its declared picture bytes", async () => {
