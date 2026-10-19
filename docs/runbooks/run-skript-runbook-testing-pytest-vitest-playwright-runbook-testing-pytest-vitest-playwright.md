@@ -50,6 +50,7 @@ pdm run check
 ```bash
 pdm run test
 pdm run pytest tests/unit/domain/curated_apps
+pdm run test-docker
 pdm run test-simulations
 ```
 
@@ -57,6 +58,11 @@ pdm run test-simulations
   runs a focused target. Both run in parallel (`-n logical --dist worksteal` in
   `addopts`) and quietly: no live log streaming, and captured INFO logs and
   stdout are printed only for failing tests.
+- The worker count follows the selection: one file runs in-process, N files
+  use `min(N, hardware threads)` workers (24 on Hemma).
+- `pdm run test-docker` runs the Docker integration lane. Each worker starts
+  one Postgres container and migrates one template database; every module
+  gets its own copy of it.
 - A serial run must state why. `-n 0`, `--pdb` or an overridden `addopts`
   stops with a usage error unless `--serial-reason "<reason>"` is given. Use
   the named serial route only to step through a test with `--pdb` or to read
