@@ -219,6 +219,8 @@ POINT_LABEL = re.compile(
     r"\.?(?=$|[^\w.])(?:\s*\))?",
     re.IGNORECASE,
 )
+# A line that holds only a score field, such as "/4 p" or "____ /8 p".
+SCORE_FIELD = re.compile(r"[ \t_]*/[ \t]*(?:" + POINT_LABEL.pattern + r")[ \t]*", re.IGNORECASE)
 _WORD = re.compile(r"\w+")
 
 
