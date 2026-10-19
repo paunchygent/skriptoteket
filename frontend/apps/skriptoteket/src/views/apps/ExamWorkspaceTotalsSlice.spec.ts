@@ -10,7 +10,14 @@
 import { flushPromises } from "@vue/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { ExamWorkspaceConversionStatus, NativeExamDocument, NativeExamItem } from "../../api/examWorkspace";
+import type {
+  ExamWorkspaceConversionStatus,
+  ExamWorkspaceDocumentResponse,
+  NativeExamDocument,
+  NativeExamItem,
+  saveExamWorkspaceDocument,
+  storeExamWorkspaceUndoStep,
+} from "../../api/examWorkspace";
 import {
   buildDocument,
   buildFreeTextItem,
@@ -29,11 +36,11 @@ const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceHistory: vi.fn(),
   getExamWorkspaceHistoryStep: vi.fn(),
-  storeExamWorkspaceUndoStep: vi.fn(),
+  storeExamWorkspaceUndoStep: vi.fn<typeof storeExamWorkspaceUndoStep>(),
   importExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
-  saveExamWorkspaceDocument: vi.fn(),
+  saveExamWorkspaceDocument: vi.fn<typeof saveExamWorkspaceDocument>(),
 }));
 const exportApiMocks = vi.hoisted(() => ({
   downloadExamWorkspaceExport: vi.fn(),
@@ -77,7 +84,7 @@ function documentWithTotals(
 
 /**
  * The mockup case: the exam prints 70 p over questions summing to 66 p, with
- * a differing part (list number 2, children 2a/2b), earlier and later changed
+ * a differing part (list number 3, children 3a/3b), earlier and later changed
  * questions (labels 1 and 5) and a question missing its points (label 8).
  */
 function mockupDocument(): NativeExamDocument {
@@ -89,10 +96,10 @@ function mockupDocument(): NativeExamDocument {
   document.parents = [{
     parent_id: "parent_001",
     item_ids: ["item_003", "item_004"],
-    place: 1,
+    place: 2,
     printed_total: 22,
     instruction: [
-      { heading_level: null, segments: [{ kind: "text", marks: [], text: "Del 2: Satslösning" }] },
+      { heading_level: null, segments: [{ kind: "text", marks: [], text: "Del 3: Satslösning" }] },
     ],
   }];
   return document;
@@ -319,12 +326,12 @@ describe("answering a mismatch line", () => {
     await flushPromises();
 
     expect(apiMocks.storeExamWorkspaceUndoStep).toHaveBeenCalledTimes(1);
-    const stored = apiMocks.storeExamWorkspaceUndoStep.mock.calls.at(-1)![1].document as NativeExamDocument;
+    const stored = apiMocks.storeExamWorkspaceUndoStep.mock.calls.at(-1)![1].document;
     expect(stored.header.printed_total).toBeNull();
     expect(stored.parents.map((parent) => parent.printed_total)).toEqual([22]);
     expect(stored.items.map((item) => item.points)).toEqual([10, 9, 9, 10, 8, 10, 5, 5, null]);
 
-    expect(lineLabels(wrapper)).toEqual(["Del 2 i provtexten säger 22 p, frågorna ger 19 p."]);
+    expect(lineLabels(wrapper)).toEqual(["Del 3 i provtexten säger 22 p, frågorna ger 19 p."]);
 
     await undo(wrapper);
     expect(lineLabels(wrapper)).toHaveLength(2);
@@ -338,7 +345,7 @@ describe("answering a mismatch line", () => {
     await flushPromises();
 
     expect(apiMocks.storeExamWorkspaceUndoStep).toHaveBeenCalledTimes(1);
-    const stored = apiMocks.storeExamWorkspaceUndoStep.mock.calls.at(-1)![1].document as NativeExamDocument;
+    const stored = apiMocks.storeExamWorkspaceUndoStep.mock.calls.at(-1)![1].document;
     expect(stored.header.printed_total).toBe(70);
     expect(stored.parents.map((parent) => parent.printed_total)).toEqual([null]);
 
@@ -404,9 +411,9 @@ describe("answering a mismatch line", () => {
     await wrapper.get('[data-test="exam-workspace-item-points-input"]').setValue("4");
     expect(wrapper.find(LINE).exists()).toBe(true);
 
-    let releaseSave!: (response: unknown) => void;
+    let releaseSave!: (response: ExamWorkspaceDocumentResponse) => void;
     apiMocks.saveExamWorkspaceDocument.mockReturnValueOnce(
-      new Promise((resolve) => { releaseSave = resolve as (response: unknown) => void; }),
+      new Promise<ExamWorkspaceDocumentResponse>((resolve) => { releaseSave = resolve; }),
     );
     await wrapper.get('[data-test="exam-workspace-save"]').trigger("click");
     await flushPromises();

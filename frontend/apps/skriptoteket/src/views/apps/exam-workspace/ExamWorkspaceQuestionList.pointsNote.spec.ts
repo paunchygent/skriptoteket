@@ -59,9 +59,9 @@ function mockupDocument(): NativeExamDocument {
     parents: [{
       parent_id: "parent_001",
       item_ids: ["item_003", "item_004"],
-      place: 1,
+      place: 2,
       printed_total: 22,
-      instruction: [paragraph("Del 2: Satslösning")],
+      instruction: [paragraph("Del 3: Satslösning")],
     }],
     revision: 1,
     schema_version: "native_exam_document_v9",
