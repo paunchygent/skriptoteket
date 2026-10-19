@@ -255,11 +255,7 @@ describe("a tab that loses the lease with a pending edit", () => {
     installGuestStoreObjectUrls();
     const context = setupGuestStore();
     const lineageId = await startBlank(context, "Original");
-    await context.leaseStorage.save({
-      renewedAt: Date.now(),
-      tabId: "tab-holder",
-      takeoverRequestedBy: null,
-    });
+    await context.leaseStorage.claim("tab-holder", Date.now());
     const shared = context.store.store.shared;
     const opened = await shared.getExamWorkspaceDocument(lineageId);
     const workspaceDocument = ref<NativeExamDocument | null>(opened.document);

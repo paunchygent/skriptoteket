@@ -187,4 +187,105 @@ describe("examWorkspaceGuestEditLease", () => {
       second.dispose();
     }
   });
+
+  it("lets exactly one tab edit when two tabs claim the free slot at the same time", async () => {
+    const context = setup();
+    const first = context.holder();
+    const second = context.holder();
+    try {
+      const outcomes = await Promise.all([first.claim(), second.claim()]);
+
+      expect(outcomes.filter((outcome) => outcome === "held")).toHaveLength(1);
+      const stored = await context.storage.load();
+      expect(stored === null ? null : stored.tabId).toBe(
+        outcomes[0] === "held" ? first.tabId : second.tabId,
+      );
+    } finally {
+      first.dispose();
+      second.dispose();
+    }
+  });
+
+  it("does not let a stale renew or release overwrite the tab that took the lease", async () => {
+    const context = setup();
+    const first = context.holder();
+    const second = context.holder();
+    try {
+      expect(await first.claim()).toBe("held");
+
+      // The second tab takes over fully and claims the freed lease.
+      expect(await second.requestTakeover()).toBe("requested");
+      for (let attempt = 0; attempt < 20; attempt += 1) {
+        if ((await context.storage.load()) === null) {
+          break;
+        }
+        await Promise.resolve();
+      }
+      expect(await second.claim()).toBe("held");
+
+      // The first tab lost the lease: its renewal and release report false
+      // and leave the new owner's record alone.
+      expect(await first.renew()).toBe(false);
+      expect(await context.storage.load()).toMatchObject({ tabId: second.tabId });
+      expect(await first.release()).toBe(false);
+      expect(await context.storage.load()).toMatchObject({ tabId: second.tabId });
+    } finally {
+      first.dispose();
+      second.dispose();
+    }
+  });
+
+  it("decides each lease step atomically on one shared slot", async () => {
+    const storage = createInMemoryGuestEditLeaseStorage();
+    const at = 1_000_000;
+
+    const free = await storage.claim("tab-a", at);
+    expect(free).toEqual({
+      held: true,
+      record: { renewedAt: at, tabId: "tab-a", takeoverRequestedBy: null },
+    });
+
+    const refused = await storage.claim("tab-b", at + 1_000);
+    expect(refused.held).toBe(false);
+    expect(refused.record).toMatchObject({ tabId: "tab-a" });
+
+    const renewed = await storage.renew("tab-a", at + 2_000);
+    expect(renewed).toEqual({
+      held: true,
+      record: { renewedAt: at + 2_000, tabId: "tab-a", takeoverRequestedBy: null },
+    });
+    expect(await storage.renew("tab-b", at + 2_000)).toEqual({
+      held: false,
+      record: { renewedAt: at + 2_000, tabId: "tab-a", takeoverRequestedBy: null },
+    });
+
+    const asked = await storage.requestTakeover("tab-b", at + 3_000);
+    expect(asked.outcome).toBe("requested");
+    expect(asked.record).toMatchObject({ tabId: "tab-a", takeoverRequestedBy: "tab-b" });
+
+    // A renewal paused by a waiting ask does not move the renewal forward.
+    expect(await storage.renew("tab-a", at + 4_000)).toEqual({
+      held: false,
+      record: { renewedAt: at + 2_000, tabId: "tab-a", takeoverRequestedBy: "tab-b" },
+    });
+
+    expect(await storage.requestTakeover("tab-a", at + 4_000)).toEqual({
+      outcome: "own",
+      record: { renewedAt: at + 2_000, tabId: "tab-a", takeoverRequestedBy: "tab-b" },
+    });
+    expect(await storage.release("tab-b")).toBe(false);
+    expect(await storage.release("tab-a")).toBe(true);
+    expect(await storage.load()).toBeNull();
+
+    // An expired lease is taken at once, clearing the old ask.
+    const expiredAt = at + GUEST_EDIT_LEASE_TTL_MS + 1;
+    expect(await storage.claim("tab-a", at)).toBeDefined();
+    const taken = await storage.requestTakeover("tab-b", expiredAt);
+    expect(taken.outcome).toBe("claimed");
+    expect(taken.record).toEqual({
+      renewedAt: expiredAt,
+      tabId: "tab-b",
+      takeoverRequestedBy: null,
+    });
+  });
 });

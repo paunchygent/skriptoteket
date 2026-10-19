@@ -109,20 +109,20 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-/** Count one tab's lease-slot reads and writes against the shared slot. */
+/** Count one tab's atomic lease decisions against the shared slot. */
 function wrapCountingLeaseStorage(
   inner: GuestEditLeaseStoragePort,
-  counter: { loads: number; saves: number },
+  counter: { claims: number },
 ): GuestEditLeaseStoragePort {
   return {
-    load: async () => {
-      counter.loads += 1;
-      return inner.load();
+    claim: async (...args) => {
+      counter.claims += 1;
+      return inner.claim(...args);
     },
-    save: async (record) => {
-      counter.saves += 1;
-      return inner.save(record);
-    },
+    load: (...args) => inner.load(...args),
+    release: (...args) => inner.release(...args),
+    renew: (...args) => inner.renew(...args),
+    requestTakeover: (...args) => inner.requestTakeover(...args),
   };
 }
 
@@ -211,7 +211,7 @@ describe("useExamWorkspaceEditLease on the guest lease", () => {
     const context = setupGuestLeases();
     const firstEvents: { acquired: string[]; flushed: string[] } = { acquired: [], flushed: [] };
     const secondEvents: { acquired: string[]; flushed: string[] } = { acquired: [], flushed: [] };
-    const firstCounter = { loads: 0, saves: 0 };
+    const firstCounter = { claims: 0 };
     let delayTakeoverFlush = true;
     let releaseStore: () => void = () => undefined;
     const first = context.open("tab-a", firstEvents, {
@@ -247,14 +247,14 @@ describe("useExamWorkspaceEditLease on the guest lease", () => {
       expect(firstEvents.flushed).toEqual(["stored"]);
       expect(first.lease.readOnly.value).toBe(true);
       expect(await context.storage.load()).toBeNull();
-      const loadsAfterYield = firstCounter.loads;
+      const claimsAfterYield = firstCounter.claims;
 
       // 200 ms later the old phase would already have fired: the yielded tab
       // must still have sent no claim, while the waiter's poll takes the lease.
       // (Assert before awaiting the takeover: on the old phase the yielded
       // tab reclaims first and the waiter never resolves here.)
       await vi.advanceTimersByTimeAsync(200);
-      expect(firstCounter.loads).toBe(loadsAfterYield);
+      expect(firstCounter.claims).toBe(claimsAfterYield);
       await taking;
       expect(await context.storage.load()).toMatchObject({ tabId: "tab-b" });
       expect(second.lease.readOnly.value).toBe(false);
@@ -264,7 +264,7 @@ describe("useExamWorkspaceEditLease on the guest lease", () => {
       // One full heartbeat after the release the yielded tab retries once and
       // is refused, staying read-only without a reload.
       await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_EDIT_LEASE_HEARTBEAT_MS);
-      expect(firstCounter.loads).toBe(loadsAfterYield + 1);
+      expect(firstCounter.claims).toBe(claimsAfterYield + 1);
       expect(await context.storage.load()).toMatchObject({ tabId: "tab-b" });
       expect(first.lease.readOnly.value).toBe(true);
       expect(firstEvents.acquired).toEqual([]);
