@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "0d782391d35350112d39c81af2312861096e1b2f99ef203ebaf41c1def68b7f7",
+  "source_set_digest": "743b5ab854c98c12d21d883ba01c08b211b3c0ed7fc09bf73be0389d807de400",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6787,6 +6787,25 @@
         "decided_at": "2026-10-19",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "Independent ruthless-reviewer 9aa64d69 (Pi) approved dbbb5f8d with one low finding, fixed in R3 fae44edb and admitted on focused proof (retained 01a1542c evidence/results/9aa64d69-fc20-41eb-8993-eded036ef865.json). Merged to main as df87d633; the Mac staging walk at df87d633 passed (Mac .artifacts/staging-walk-40-04-15/walk-record.md)."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-16",
+      "type": "task",
+      "title": "Each export format downloads or saves to Mina filer from one split button at the right of its menu row",
+      "path": "docs/backlog/tasks/task-skript-40-04-16-each-export-format-downloads-or-saves-to-mina-filer-from-one-split-button-at-the-right-of-its-menu-row.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {

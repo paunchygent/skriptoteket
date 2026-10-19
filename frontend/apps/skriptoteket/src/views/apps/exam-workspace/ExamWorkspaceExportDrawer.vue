@@ -25,7 +25,7 @@ import type {
 import { UiGlyph } from "../../../components/ui";
 import ExamWorkspaceExportBlockers from "./ExamWorkspaceExportBlockers.vue";
 import type { ExamWorkspaceBlockerEntry } from "./examWorkspaceBlockers";
-import { EXAM_WORKSPACE_EXPORT_FORMATS, QTI_ZERO_POINTS_NOTE } from "./examWorkspaceExportFormats";
+import { EXAM_WORKSPACE_EXPORT_FORMATS, EXAM_WORKSPACE_EXPORT_FORMAT_BY_TARGET, QTI_ZERO_POINTS_NOTE } from "./examWorkspaceExportFormats";
 import { examWorkspaceQuestionLabel } from "./examWorkspaceRows";
 import { useInjectedExamWorkspaceStore } from "./examWorkspaceStore";
 
@@ -58,7 +58,7 @@ const destination = ref<Destination>("download");
 const store = useInjectedExamWorkspaceStore();
 const isGuest = computed(() => store.teacher === null);
 
-const format = computed(() => EXAM_WORKSPACE_EXPORT_FORMATS.find((entry) => entry.target === target.value)!);
+const format = computed(() => EXAM_WORKSPACE_EXPORT_FORMAT_BY_TARGET[target.value]);
 const replaced = computed(() => props.savedExports[target.value] ?? null);
 const disabled = computed(() => props.blockers.length > 0 || props.busy || props.exportingTarget !== null);
 </script>

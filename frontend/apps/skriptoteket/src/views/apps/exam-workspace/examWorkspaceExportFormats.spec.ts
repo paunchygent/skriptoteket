@@ -37,4 +37,14 @@ describe("exam workspace export formats", () => {
     expect(fallback).toMatchObject({ target: "examnet_pdf", use: "reserv" });
     expect(fallback?.hint).toContain("Inte för utskrift");
   });
+
+  it("keeps no suffix on PDF med facit and the purpose suffix on the others", () => {
+    expect(EXAM_WORKSPACE_EXPORT_FORMATS.map((format) => format.use)).toEqual([
+      "Exam.net",
+      "utskrift",
+      null,
+      "Word",
+      "reserv",
+    ]);
+  });
 });
