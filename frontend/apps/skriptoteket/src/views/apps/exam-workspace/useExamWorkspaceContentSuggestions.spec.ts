@@ -20,6 +20,7 @@ import type {
 } from "../../../api/examWorkspace";
 import { useAuthStore } from "../../../stores/auth";
 import { useToastStore } from "../../../stores/toast";
+import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import type { ExamWorkspaceOpening } from "./useExamWorkspaceDocument";
 import {
   EXAM_WORKSPACE_CONTENT_POLL_MS,
@@ -83,6 +84,7 @@ function setup() {
       openExam: () => state.opening,
       savedRevision: () => state.revision,
       setTags,
+      teacher: serverExamWorkspaceStore.teacher,
     }),
   );
   if (!content) throw new Error("expected the composable");

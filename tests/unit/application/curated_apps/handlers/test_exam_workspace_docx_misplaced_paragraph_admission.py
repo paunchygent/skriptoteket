@@ -98,6 +98,13 @@ def test_an_item_repeating_another_questions_stem_shows_its_own_stem_without_a_l
     assert second.review.state is NativeItemReviewState.REVIEW_COMPLETE
     assert [event for event in state.events if event.code == "own_chunks_left_out"] == []
 
+    first_final, second_final = state.result().document.items
+    assert body_plain_text(first_final.body) == _Q1[3:]
+    assert body_plain_text(second_final.body) == _Q2[3:]
+    assert first_final.review.state is NativeItemReviewState.REVIEW_COMPLETE
+    assert second_final.review.state is NativeItemReviewState.REVIEW_COMPLETE
+    assert second_final.review.reasons == ()
+
 
 def test_points_in_the_middle_of_a_stem_leaves_the_whole_stem_rebuilt():
     chunks = (
@@ -130,6 +137,12 @@ def test_points_in_the_middle_of_a_stem_leaves_the_whole_stem_rebuilt():
     assert second.review.state is NativeItemReviewState.REVIEW_COMPLETE
     assert [event for event in state.events if event.code == "own_chunks_left_out"] == []
 
+    first_final, second_final = state.result().document.items
+    assert body_plain_text(first_final.body) == _FOREIGN[3:]
+    assert body_plain_text(second_final.body) == "Describe the rock cycle.\nUse a diagram."
+    assert second_final.review.state is NativeItemReviewState.REVIEW_COMPLETE
+    assert second_final.review.reasons == ()
+
 
 def test_points_in_a_table_cell_leaves_the_whole_cell_rebuilt():
     chunks = (
@@ -160,6 +173,12 @@ def test_points_in_a_table_cell_leaves_the_whole_cell_rebuilt():
     assert body_plain_text(second.body) == "Describe the rock cycle.\nUse a diagram."
     assert second.review.state is NativeItemReviewState.REVIEW_COMPLETE
     assert [event for event in state.events if event.code == "own_chunks_left_out"] == []
+
+    first_final, second_final = state.result().document.items
+    assert body_plain_text(first_final.body) == _FOREIGN[3:]
+    assert body_plain_text(second_final.body) == "Describe the rock cycle.\nUse a diagram."
+    assert second_final.review.state is NativeItemReviewState.REVIEW_COMPLETE
+    assert second_final.review.reasons == ()
 
 
 def test_points_right_after_the_label_leaves_the_whole_stem_rebuilt():
@@ -192,6 +211,12 @@ def test_points_right_after_the_label_leaves_the_whole_stem_rebuilt():
     assert body_plain_text(second.body) == "Describe the rock cycle.\nUse a diagram."
     assert second.review.state is NativeItemReviewState.REVIEW_COMPLETE
     assert [event for event in state.events if event.code == "own_chunks_left_out"] == []
+
+    first_final, second_final = state.result().document.items
+    assert body_plain_text(first_final.body) == _FOREIGN[3:]
+    assert body_plain_text(second_final.body) == "Describe the rock cycle.\nUse a diagram."
+    assert second_final.review.state is NativeItemReviewState.REVIEW_COMPLETE
+    assert second_final.review.reasons == ()
 
 
 _PIXEL_PNG = b64decode(
@@ -250,6 +275,13 @@ def test_an_unrenderable_own_picture_paragraph_goes_to_source_review():
     assert second.body_asset_ids() == (image.asset_id,)
     assert [event for event in state.events if event.code == "formatting_transfer_failed"] != []
 
+    first_final, second_final = state.result().document.items
+    assert body_plain_text(first_final.body) == _FOREIGN[3:]
+    assert first_final.review.state is NativeItemReviewState.REVIEW_COMPLETE
+    assert second_final.review.state is NativeItemReviewState.REVIEW_REQUIRED
+    assert second_final.review.reasons == (FORMATTING_REASON,)
+    assert body_plain_text(second_final.body) == picture_text
+
 
 def test_an_unrenderable_inline_answer_key_paragraph_goes_to_source_review():
     own = "2. What is the capital? Svar: Paris."
@@ -283,6 +315,13 @@ def test_an_unrenderable_inline_answer_key_paragraph_goes_to_source_review():
     assert second.gaps == ()
     assert [event for event in state.events if event.code == "formatting_transfer_failed"] != []
 
+    first_final, second_final = state.result().document.items
+    assert body_plain_text(first_final.body) == _FOREIGN[3:]
+    assert first_final.review.state is NativeItemReviewState.REVIEW_COMPLETE
+    assert second_final.review.state is NativeItemReviewState.REVIEW_REQUIRED
+    assert second_final.review.reasons == (FORMATTING_REASON,)
+    assert body_plain_text(second_final.body) == own
+
 
 def test_a_consumed_shared_paragraph_is_not_rebuilt_from_the_next_own_paragraph():
     shared = "Give a reason."
@@ -315,3 +354,9 @@ def test_a_consumed_shared_paragraph_is_not_rebuilt_from_the_next_own_paragraph(
     assert body_plain_text(second.body) == "Give a reason.\nGive a reason."
     assert body_plain_text(second.body) != "Give a reason.\nDescribe the rock cycle."
     assert second.review.state is NativeItemReviewState.REVIEW_COMPLETE
+
+    first_final, second_final = state.result().document.items
+    assert body_plain_text(first_final.body) == shared
+    assert body_plain_text(second_final.body) == "Give a reason.\nGive a reason."
+    assert second_final.review.state is NativeItemReviewState.REVIEW_COMPLETE
+    assert second_final.review.reasons == ()

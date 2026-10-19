@@ -13,6 +13,12 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_st
     DocxBuildState,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+    NativeTextSegment,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
+    NativeExamItem,
+)
 
 _STEM = "1. Beskriv kort hur en intervju planeras."
 
@@ -36,6 +42,15 @@ def _state(*texts: str, grouped_keys: frozenset[str] = frozenset()) -> DocxBuild
 
 def _text(text: str) -> dict[str, JsonValue]:
     return {"kind": "text", "text": text, "accepted_values": []}
+
+
+def _stem_texts(item: NativeExamItem) -> list[str]:
+    return [
+        segment.text
+        for paragraph in item.body
+        for segment in paragraph.segments
+        if isinstance(segment, NativeTextSegment)
+    ]
 
 
 def _item(anchors: list[str], **fields: JsonValue) -> dict[str, JsonValue]:

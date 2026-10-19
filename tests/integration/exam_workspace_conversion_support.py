@@ -80,11 +80,12 @@ class ConversionWorld:
         self.jobs = PostgreSQLExamAnswerKeyEnrichmentJobRepository(session)
         self.vault_files = PostgreSQLUserVaultFileRepository(session)
         self.codec = ExamWorkspaceContainerCodec()
+        self.index = PostgreSQLExamIndexRepository(session)
         self.store = ExamWorkspaceDocumentStore(
             vault_files=self.vault_files,
             vault_usage=PostgreSQLUserVaultUsageRepository(session),
             vault_storage=storage,
-            index=PostgreSQLExamIndexRepository(session),
+            index=self.index,
             codec=self.codec,
             uow=self.uow,
             clock=clock,

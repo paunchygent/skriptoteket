@@ -10,7 +10,7 @@ from xml.etree import ElementTree
 import pytest
 from PIL import Image
 
-from skriptoteket.application.curated_apps.handlers.exam_workspace_exports import (
+from skriptoteket.application.curated_apps.exam_workspace_exports import (
     build_native_examnet_qti_package,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (

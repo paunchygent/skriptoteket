@@ -17,11 +17,12 @@
 import { ref } from "vue";
 
 import type { NativeExamDocument } from "../../../api/examWorkspace";
+import type { ExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceDocument } from "./useExamWorkspaceDocument";
 import { useExamWorkspaceHistory } from "./useExamWorkspaceHistory";
 import { useExamWorkspaceStructure } from "./useExamWorkspaceStructure";
 
-export function useExamWorkspaceEditing() {
+export function useExamWorkspaceEditing(store: ExamWorkspaceStore) {
   let noteEdit: (structural: boolean, before: NativeExamDocument | null) => void = () => undefined;
   // The selection composable is built by the view after this session; it registers
   // its part-entry selection here so a new part's instruction opens in the editor.
@@ -29,7 +30,10 @@ export function useExamWorkspaceEditing() {
   // The part entry the teacher selected, shared with the selection composable
   // and the structure commands so Ny del and Ny instruktion land after it.
   const selectedParentId = ref<string | null>(null);
-  const document = useExamWorkspaceDocument({ onEdit: (structural, before) => noteEdit(structural, before) });
+  const document = useExamWorkspaceDocument({
+    onEdit: (structural, before) => noteEdit(structural, before),
+    store,
+  });
   const lineageId = () => document.summary.value?.lineage_id ?? null;
   const reload = () => document.reloadDocument();
 
@@ -45,6 +49,7 @@ export function useExamWorkspaceEditing() {
     replaceCopy: document.replaceCopy,
     savedRevision: () => document.savedRevision.value,
     serverDocument: document.serverDocument,
+    shared: store.shared,
     workspaceDocument: document.workspaceDocument,
   });
   noteEdit = history.noteEdit;
@@ -63,6 +68,7 @@ export function useExamWorkspaceEditing() {
     selectParent: (parentId) => selectParent(parentId),
     selectedItemId: document.selectedItemId,
     selectedParentId,
+    shared: store.shared,
     workspaceDocument: document.workspaceDocument,
   });
 

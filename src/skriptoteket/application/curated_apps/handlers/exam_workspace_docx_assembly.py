@@ -25,10 +25,7 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_st
     NO_ITEM_REASON,
     DocxBuildState,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import (
-    assemble_build_result,
-    review_source_item,
-)
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import assemble_build_result
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     DocxBuildEvent,
     DocxBuildResult,
@@ -43,6 +40,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_manifest import (
     SharedContext,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import printed_points_plan
+from skriptoteket.domain.curated_apps.exam_workspace.docx_source_review import review_source_item
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
 )

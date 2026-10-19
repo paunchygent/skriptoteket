@@ -18,6 +18,7 @@ import { nextTick } from "vue";
 
 import type { NativeExamItem } from "../../../api/examWorkspace";
 import ExamWorkspaceQuestionEditor from "./ExamWorkspaceQuestionEditor.vue";
+import { examWorkspaceProvidersPlugin } from "./examWorkspaceProviders.specSupport";
 import { EMPTY_CRITERION_TEXT_GUIDANCE } from "./examWorkspaceItemSaveRules";
 import { buildMatchingItem } from "./examWorkspaceMatchingItem.specSupport";
 
@@ -41,6 +42,7 @@ function buildFreeTextItem(overrides: Partial<NativeExamItem> = {}): NativeExamI
 function mountEditor(item: NativeExamItem, options: { attachTo?: HTMLElement } = {}) {
   return mount(ExamWorkspaceQuestionEditor, {
     ...options,
+    global: { plugins: [examWorkspaceProvidersPlugin()] },
     props: {
       item,
       label: "1",

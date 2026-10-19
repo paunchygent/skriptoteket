@@ -9,7 +9,7 @@ up to the label, and a reply gap count other than one raises
 
 import pytest
 
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import aligned_native_item
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_item import aligned_native_item
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_plain_text
 from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import (
     FormattingTransferError,

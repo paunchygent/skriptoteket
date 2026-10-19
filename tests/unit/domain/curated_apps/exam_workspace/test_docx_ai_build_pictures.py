@@ -5,18 +5,18 @@ from uuid import uuid4
 
 import pytest
 
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import (
-    aligned_native_item,
-    missing_picture_reasons,
-    review_source_item,
-)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedItem
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_item import aligned_native_item
 from skriptoteket.domain.curated_apps.exam_workspace.docx_build_assets import asset_manifest
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxChunk,
     DocxImage,
     DocxMissingImage,
     asset_id_for,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.docx_source_review import (
+    missing_picture_reasons,
+    review_source_item,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.examnet_qti_export import (
     native_exam_to_examnet_qti_items,

@@ -49,10 +49,14 @@ def test_a_listed_own_chunk_no_paragraph_shows_is_flagged():
 
     admit_batch({"items": [_item(["body:0001", "body:0002"])]}, state)
 
-    ((admitted, _),) = [(a.item, h) for a, h in state.accepted]
-    assert admitted.review.state is NativeItemReviewState.REVIEW_REQUIRED
-    assert admitted.review.reasons == (LEFT_OUT_REASON, _WORD_BANK)
+    ((aligned, _),) = [(a, h) for a, h in state.accepted]
+    assert aligned.left_out == frozenset({"body:0002"})
+    assert LEFT_OUT_REASON not in aligned.item.review.reasons
     assert _left_out_events(state) == [(0, ("body:0002",))]
+
+    (final,) = state.result().document.items
+    assert final.review.state is NativeItemReviewState.REVIEW_REQUIRED
+    assert final.review.reasons == (LEFT_OUT_REASON, _WORD_BANK)
 
 
 def test_a_listed_own_chunk_a_body_paragraph_shows_is_not_flagged_even_reworded():
@@ -66,6 +70,10 @@ def test_a_listed_own_chunk_a_body_paragraph_shows_is_not_flagged_even_reworded(
     assert admitted.review.reasons == ()
     assert _left_out_events(state) == []
 
+    (final,) = state.result().document.items
+    assert final.review.state is NativeItemReviewState.REVIEW_COMPLETE
+    assert final.review.reasons == ()
+
 
 def test_a_listed_facit_line_no_paragraph_shows_is_not_flagged():
     facit = "Correct answer: A. rhyme scheme"
@@ -78,6 +86,10 @@ def test_a_listed_facit_line_no_paragraph_shows_is_not_flagged():
     assert admitted.review.reasons == ()
     assert _left_out_events(state) == []
 
+    (final,) = state.result().document.items
+    assert final.review.state is NativeItemReviewState.REVIEW_COMPLETE
+    assert final.review.reasons == ()
+
 
 def test_a_listed_points_line_no_paragraph_shows_is_not_flagged():
     state = _state(_STEM, "(1 p)")
@@ -87,6 +99,10 @@ def test_a_listed_points_line_no_paragraph_shows_is_not_flagged():
     ((admitted, _),) = [(a.item, h) for a, h in state.accepted]
     assert admitted.review.reasons == ()
     assert _left_out_events(state) == []
+
+    (final,) = state.result().document.items
+    assert final.review.state is NativeItemReviewState.REVIEW_COMPLETE
+    assert final.review.reasons == ()
 
 
 def test_a_listed_governing_chunk_no_paragraph_shows_is_not_flagged():
@@ -98,6 +114,10 @@ def test_a_listed_governing_chunk_no_paragraph_shows_is_not_flagged():
     ((admitted, _),) = [(a.item, h) for a, h in state.accepted]
     assert admitted.review.reasons == ()
     assert _left_out_events(state) == []
+
+    (final,) = state.result().document.items
+    assert final.review.state is NativeItemReviewState.REVIEW_COMPLETE
+    assert final.review.reasons == ()
 
 
 def test_a_listed_chunk_a_section_instruction_lists_is_not_flagged():
@@ -119,10 +139,14 @@ def test_an_unlisted_and_a_listed_left_out_chunk_are_one_event_in_source_order()
 
     admit_batch({"items": [_item(["body:0002", "body:0003"])]}, state)
 
-    ((admitted, _),) = [(a.item, h) for a, h in state.accepted]
-    assert admitted.review.state is NativeItemReviewState.REVIEW_REQUIRED
-    assert admitted.review.reasons == (LEFT_OUT_REASON, lead, _WORD_BANK)
+    ((aligned, _),) = [(a, h) for a, h in state.accepted]
+    assert aligned.left_out == frozenset({"body:0001", "body:0003"})
+    assert LEFT_OUT_REASON not in aligned.item.review.reasons
     assert _left_out_events(state) == [(0, ("body:0001", "body:0003"))]
+
+    (final,) = state.result().document.items
+    assert final.review.state is NativeItemReviewState.REVIEW_REQUIRED
+    assert final.review.reasons == (LEFT_OUT_REASON, lead, _WORD_BANK)
 
 
 def test_a_listed_blank_answer_line_no_paragraph_shows_is_not_flagged():
@@ -137,6 +161,10 @@ def test_a_listed_blank_answer_line_no_paragraph_shows_is_not_flagged():
     assert admitted.review.reasons == ()
     assert _left_out_events(state) == []
 
+    (final,) = state.result().document.items
+    assert final.review.state is NativeItemReviewState.REVIEW_COMPLETE
+    assert final.review.reasons == ()
+
 
 def test_an_unlisted_blank_answer_line_no_paragraph_shows_is_not_flagged():
     state = _state(_STEM, "________________")
@@ -149,13 +177,21 @@ def test_an_unlisted_blank_answer_line_no_paragraph_shows_is_not_flagged():
     assert admitted.review.reasons == ()
     assert _left_out_events(state) == []
 
+    (final,) = state.result().document.items
+    assert final.review.state is NativeItemReviewState.REVIEW_COMPLETE
+    assert final.review.reasons == ()
+
 
 def test_a_listed_word_bank_next_to_a_listed_blank_line_marks_only_the_word_bank():
     state = _state(_STEM, _WORD_BANK, "________________")
 
     admit_batch({"items": [_item(["body:0001", "body:0002", "body:0003"])]}, state)
 
-    ((admitted, _),) = [(a.item, h) for a, h in state.accepted]
-    assert admitted.review.state is NativeItemReviewState.REVIEW_REQUIRED
-    assert admitted.review.reasons == (LEFT_OUT_REASON, _WORD_BANK)
+    ((aligned, _),) = [(a, h) for a, h in state.accepted]
+    assert aligned.left_out == frozenset({"body:0002"})
+    assert LEFT_OUT_REASON not in aligned.item.review.reasons
     assert _left_out_events(state) == [(0, ("body:0002",))]
+
+    (final,) = state.result().document.items
+    assert final.review.state is NativeItemReviewState.REVIEW_REQUIRED
+    assert final.review.reasons == (LEFT_OUT_REASON, _WORD_BANK)

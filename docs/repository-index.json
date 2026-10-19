@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "89e578b3684ff3efcaeddc8c92ea984c15ca3fbd905b989e48c2ff464547d1a0",
+  "source_set_digest": "16ecee38694ea62d97645197151cca894c9cd82c2f6cf42be70ae928637b1694",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5217,6 +5217,29 @@
       }
     },
     {
+      "id": "TASK-SKRIPT-39-04-19",
+      "type": "task",
+      "title": "A listed own chunk that section placement restores is not reported as missing; the left-out mark is decided on the placed item by source identity",
+      "path": "docs/backlog/tasks/task-skript-39-04-19-a-listed-own-chunk-that-section-placement-restores-is-not-reported-as-missing-the-left-out-mark-is-decided-on-the-placed-item-by-source-identity.md",
+      "status": "done",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-19",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer c54c4ae4 (Hemma): no functional defects; medium M1 and M2 (file splits) repaired at 33ee7ad2 and admitted on focused proof (544 passed, lint and typecheck clean). Domain suite 5480 passed; its 15 test_spa_fallback failures match main (no built SPA in the worktree). Ten replays equal the base; the Del A probe ends review_complete with no reasons. origin/main 06985163 merged at 915be481; merged to main 2026-10-19. Validation names no staging walk."
+      }
+    },
+    {
       "id": "TASK-SKRIPT-39-05-01",
       "type": "task",
       "title": "Walking skeleton for AI-first DOCX conversion as a background job",
@@ -6584,7 +6607,7 @@
       "type": "task",
       "title": "Teachers set the writing area of printed DOCX and PDF exams and imports drop paper answer lines",
       "path": "docs/backlog/tasks/task-skript-40-04-07-teachers-set-the-writing-area-of-printed-docx-and-pdf-exams-and-imports-drop-paper-answer-lines.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -6595,7 +6618,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-19",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer 09d50acc (Hemma retained evidence/reviews): approved at f14ba5f0 in rereview5; its merge check cleared the merges, W10 and R2 with two medium findings admitted (M1 fixed at a6147d0b, M2 moved to a separate ST-SKRIPT-39-04 left-out accounting repair). Merged to main at 14f643c9; the pre-push Hemma typecheck and suite passed at 003c874a. Staging walk 2026-10-19 at 003c874a (Mac .artifacts/staging-walk-40-04-07/evidence/walk-record.md): omprov import, stepper and apply-to-all, live preview, menu order, student PDF, PDF med facit with a criterion, and DOCX all observed; W6-W8 not exercised by this all-free-text exam."
       }
     },
     {

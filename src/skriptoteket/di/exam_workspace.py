@@ -1,10 +1,13 @@
 """DI bindings for the native exam workspace (ST-SKRIPT-39-04).
 
-A focused provider: the DOCX chunker and container codec are app-scoped
-adapters; the document store and the remaining handlers are request-scoped
-so they share the request session, UoW, and vault repositories. Import lanes
-(DOCX, DigiExam, QTI) live in ``exam_workspace_imports``; the editing/export
-group also serves the server-side student print preview.
+A focused provider: the DOCX chunker and container codec are stateless
+app-scoped adapters; the document store and the remaining handlers are
+request-scoped so they share the request session, UoW, and vault
+repositories. Import lanes (DOCX, DigiExam, QTI) live in
+``exam_workspace_imports``; the editing/export group also serves the
+server-side student print preview. The public stateless surface (catalog,
+misspellings, shared renderer, guest export and command handlers) lives in
+``di.exam_workspace_public``.
 """
 
 from __future__ import annotations
@@ -25,9 +28,6 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_content_tags 
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_progress import (
     ExamWorkspaceConversionProgress,
-)
-from skriptoteket.application.curated_apps.handlers.exam_workspace_courses import (
-    GetExamCourseCatalogHandler,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_document_store import (
     ExamWorkspaceDocumentStore,
@@ -52,11 +52,11 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_retry im
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_serial_uow import (
     SerializedUnitOfWork,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_export_renderer import (
+    ExamWorkspaceExportRenderer,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_exports import (
     ExportExamWorkspaceDocumentHandler,
-)
-from skriptoteket.application.curated_apps.handlers.exam_workspace_misspellings import (
-    GenerateExamWorkspaceMisspellingsHandler,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_parents import (
     ExamWorkspaceParentsHandler,
@@ -78,15 +78,6 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_chunker import (  # noqa: E501
     PythonDocxExamChunker,
 )
-from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_writer import (  # noqa: E501
-    ExamWorkspaceDocxWriter,
-)
-from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_pdf_renderer import (
-    WeasyPrintExamNetPdfRenderer,
-)
-from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_qti_writer import (
-    ExamNetQtiPackageWriter,
-)
 from skriptoteket.infrastructure.llm.openai.answer_key_structured_provider import (
     OpenAIAnswerKeyStructuredProvider,
 )
@@ -107,9 +98,7 @@ from skriptoteket.protocols.exam_workspace import (
     DocxExamChunkerProtocol,
     ExamWorkspaceContainerCodecProtocol,
     ExportExamWorkspaceDocumentHandlerProtocol,
-    GenerateExamWorkspaceMisspellingsHandlerProtocol,
     GetExamContentSuggestionsHandlerProtocol,
-    GetExamCourseCatalogHandlerProtocol,
     GetExamWorkspaceAssetHandlerProtocol,
     GetExamWorkspaceConversionStatusHandlerProtocol,
     GetExamWorkspaceDocumentHandlerProtocol,
@@ -123,7 +112,7 @@ from skriptoteket.protocols.exam_workspace_history import (
 )
 from skriptoteket.protocols.exam_workspace_parents import ExamWorkspaceParentsHandlerProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
-from skriptoteket.protocols.identity import ProfileRepositoryProtocol, UserRepositoryProtocol
+from skriptoteket.protocols.identity import UserRepositoryProtocol
 from skriptoteket.protocols.sleeper import SleeperProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from skriptoteket.protocols.vault import (
@@ -191,16 +180,6 @@ class ExamWorkspaceProvider(Provider):
         return ProcessExamContentSuggestionsHandler(
             classifier=classifier, jobs=jobs, uow=uow, clock=clock
         )
-
-    @provide(scope=Scope.REQUEST)
-    def course_catalog(
-        self, profiles: ProfileRepositoryProtocol, uow: UnitOfWorkProtocol
-    ) -> GetExamCourseCatalogHandlerProtocol:
-        return GetExamCourseCatalogHandler(profiles=profiles, uow=uow)
-
-    @provide(scope=Scope.APP)
-    def misspellings(self) -> GenerateExamWorkspaceMisspellingsHandlerProtocol:
-        return GenerateExamWorkspaceMisspellingsHandler()
 
     @provide(scope=Scope.APP)
     def docx_chunker(self) -> DocxExamChunkerProtocol:
@@ -391,16 +370,14 @@ class ExamWorkspaceProvider(Provider):
         vault_files: VaultFileRepositoryProtocol,
         codec: ExamWorkspaceContainerCodecProtocol,
         store: ExamWorkspaceDocumentStore,
+        renderer: ExamWorkspaceExportRenderer,
     ) -> ExportExamWorkspaceDocumentHandlerProtocol:
         """Provide the on-demand export handler (QTI/print PDF/DOCX/Exam.net PDF)."""
         return ExportExamWorkspaceDocumentHandler(
             vault_files=vault_files,
             codec=codec,
             store=store,
-            qti_writer=ExamNetQtiPackageWriter(),
-            pdf_renderer=WeasyPrintExamNetPdfRenderer(),
-            docx_writer=ExamWorkspaceDocxWriter(),
-            print_renderer=WeasyPrintExamPrintRenderer(),
+            renderer=renderer,
         )
 
     @provide(scope=Scope.REQUEST)

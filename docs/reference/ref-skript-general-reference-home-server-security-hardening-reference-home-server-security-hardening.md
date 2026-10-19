@@ -4,13 +4,13 @@ id: REF-SKRIPT-GENERAL-reference-home-server-security-hardening
 title: 'Reference: Home Server Security Hardening'
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-07-31'
 status: active
 reference_kind: general
 retired_ids:
-- REF-home-server-security-hardening
+  - REF-home-server-security-hardening
 summary: 'Reference: Home Server Security Hardening'
 ---
 
@@ -37,15 +37,25 @@ Current production policy for `skriptoteket.hule.education`:
 - public `/metrics` is blocked at nginx; internal metrics remain available to Prometheus on `hule-network`
 - the retired browser-session metric `skriptoteket_active_sessions` is absent
 - `skriptoteket_users_by_role` stays disabled in production metrics
-- forwarded headers are trusted only from the exact current `nginx-proxy` CIDR
+- uvicorn trusts forwarding headers only from the exact current `nginx-proxy`
+  CIDR (`FORWARDED_ALLOW_IPS`); the app reads only the peer uvicorn resolved
 - reserved HuleEdu hosts are HuleEdu-owned runtime surfaces and must never fall
   through to Skriptoteket or the nginx-proxy default host
 
 Required app env baseline on Hemma:
 
+One chain, owned by uvicorn: `serve` keeps `--proxy-headers` without a
+`--forwarded-allow-ips` flag, so uvicorn reads the trusted proxy set from
+`FORWARDED_ALLOW_IPS` (default `127.0.0.1`). `compose.prod.yaml` sets
+`FORWARDED_ALLOW_IPS: ${TRUSTED_PROXY_CIDRS:-127.0.0.1}`, so the deploy `.env`
+keeps naming the exact nginx-proxy CIDR as `TRUSTED_PROXY_CIDRS`; without it
+only loopback is trusted and every caller collapses to the proxy address
+(fail closed). Never use `'*'`: uvicorn then takes the caller-controlled
+leftmost `X-Forwarded-For` entry as the client. The app reads only the direct
+peer uvicorn resolved and never consults forwarding headers.
+
 ```dotenv
 ALLOWED_HOSTS=localhost,127.0.0.1,::1,skriptoteket.hule.education
-TRUST_PROXY_HEADERS=true
 TRUSTED_PROXY_CIDRS=<exact-nginx-proxy-cidr>
 HEALTHZ_DETAILED_RESPONSE=false
 METRICS_IDENTITY_GAUGES_ENABLED=false

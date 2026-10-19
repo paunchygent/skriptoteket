@@ -255,8 +255,7 @@ containers.
 - `SIR_CONVERT_A_LOT_V2_CALLBACK_BASE_URL`
 - `BOOTSTRAP_SUPERUSER_EMAIL`
 - `ALLOWED_HOSTS`
-- `TRUST_PROXY_HEADERS`
-- `TRUSTED_PROXY_CIDRS`
+- `TRUSTED_PROXY_CIDRS` (exact nginx-proxy CIDR; feeds `FORWARDED_ALLOW_IPS` in `compose.prod.yaml`)
 - `HEALTHZ_DETAILED_RESPONSE`
 - `METRICS_IDENTITY_GAUGES_ENABLED`
 
@@ -291,13 +290,13 @@ service DNS; API keys must remain secret:
 ssh hemma "sudo docker exec skriptoteket-web printenv SIR_CONVERT_A_LOT_V2_BASE_URL SIR_CONVERT_A_LOT_V2_CALLBACK_BASE_URL"
 ssh hemma "sudo docker exec skriptoteket-worker printenv SIR_CONVERT_A_LOT_V2_BASE_URL SIR_CONVERT_A_LOT_V2_CALLBACK_BASE_URL"
 ssh hemma "sudo docker exec skriptoteket-web getent hosts sir_convert_a_lot_prod"
-ssh hemma "sudo docker exec skriptoteket-web env | grep -E '^(ALLOWED_HOSTS|TRUST_PROXY_HEADERS|TRUSTED_PROXY_CIDRS|HEALTHZ_DETAILED_RESPONSE|METRICS_IDENTITY_GAUGES_ENABLED)='"
+ssh hemma "sudo docker exec skriptoteket-web env | grep -E '^(ALLOWED_HOSTS|FORWARDED_ALLOW_IPS|HEALTHZ_DETAILED_RESPONSE|METRICS_IDENTITY_GAUGES_ENABLED)='"
 ssh hemma "sudo docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' nginx-proxy"
 ```
 
 Security-specific notes:
 
-- `TRUSTED_PROXY_CIDRS` must be the exact current `nginx-proxy` IP/CIDR on `hule-network`, not a broad private-range fallback.
+- `FORWARDED_ALLOW_IPS` (from `TRUSTED_PROXY_CIDRS` in the deploy env) must be the exact current `nginx-proxy` IP/CIDR on `hule-network`, not a broad private-range fallback and never `'*'`. Without it only loopback is trusted, so every caller collapses to the proxy address (fail closed).
 - Keep `skriptoteket_web` out of production `ALLOWED_HOSTS`; that host is for containerized dev only.
 - Reserved HuleEdu hosts (`hule.education`, `api.hule.education`, `ws.hule.education`) are HuleEdu-owned runtime surfaces and must never fall through to Skriptoteket or the nginx-proxy default host.
 

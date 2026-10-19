@@ -137,7 +137,7 @@ async def create_public_import_preview(
     handler: FromDishka[CreateClassListImportPreviewHandler],
 ) -> ClassListImportPreview:
     app = require_public_curated_app(app_id=APP_ID, registry=registry)
-    client_ip = get_client_ip(request, settings=settings)
+    client_ip = get_client_ip(request)
     user_agent = get_user_agent(request)
     now = clock.now()
     correlation_id_uuid = get_correlation_id(request)

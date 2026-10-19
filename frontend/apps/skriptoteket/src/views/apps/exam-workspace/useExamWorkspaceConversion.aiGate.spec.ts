@@ -15,6 +15,7 @@ import type {
   NativeExamDocument,
 } from "../../../api/examWorkspace";
 import { useAuthStore } from "../../../stores/auth";
+import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import {
   useExamWorkspaceConversion,
   type ExamWorkspaceConversionBinding,
@@ -64,6 +65,7 @@ function binding(): ExamWorkspaceConversionBinding {
     applyResponse: vi.fn(),
     beforeFirstRevision: vi.fn(),
     isSaving: () => false,
+    store: serverExamWorkspaceStore,
   };
 }
 

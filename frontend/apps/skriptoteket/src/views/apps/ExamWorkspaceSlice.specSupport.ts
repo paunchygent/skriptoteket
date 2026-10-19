@@ -27,6 +27,7 @@ import type {
 import type { AuthUser } from "../../api/sharedAuth";
 import { buildFreeTextItem } from "../../test/examWorkspaceFixtures";
 import ExamWorkspaceView from "./ExamWorkspaceView.vue";
+import { serverExamWorkspaceStore } from "./exam-workspace/examWorkspaceStore";
 
 export { buildFreeTextItem } from "../../test/examWorkspaceFixtures";
 import { buildSavedExamSummary } from "./exam-workspace/useExamWorkspaceDocument.specSupport";
@@ -189,9 +190,10 @@ export async function mountExamWorkspace(
   const layoutRef = ref<ExamWorkspaceLayout>(layout);
   const wrapper = mount(ExamWorkspaceView, {
     attachTo,
+    props: { store: serverExamWorkspaceStore },
     global: {
       plugins: [pinia, router],
-      provide: { [EXAM_WORKSPACE_LAYOUT_KEY as symbol]: layoutRef },
+      provide: { [EXAM_WORKSPACE_LAYOUT_KEY]: layoutRef },
     },
   });
   await flushPromises();

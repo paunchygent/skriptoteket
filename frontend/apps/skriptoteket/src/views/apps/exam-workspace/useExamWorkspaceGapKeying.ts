@@ -28,12 +28,11 @@
  *   - Applies `withGapValues`, `withAutomaticValues` and
  *     `withoutAutomaticValue` from `examWorkspaceItemEdits`.
  *   - Reads the document's text through `examWorkspaceDocumentText`.
- *   - Delegates transport to `api/examWorkspace.ts`.
+ *   - Delegates transport to the shared store half.
  */
 
 import type { Ref, ShallowRef } from "vue";
 
-import { requestExamWorkspaceAnswerMisspellings } from "../../../api/examWorkspace";
 import type {
   ExamWorkspaceMisspellingsRequest,
   NativeExamDocument,
@@ -41,6 +40,7 @@ import type {
 } from "../../../api/examWorkspace";
 import { useToast } from "../../../composables/useToast";
 import { examWorkspaceDocumentText } from "./examWorkspaceDocumentText";
+import type { ExamWorkspaceSharedStore } from "./examWorkspaceStore";
 import {
   itemAcceptedAnswers,
   withAutomaticValues,
@@ -59,6 +59,8 @@ export type ExamWorkspaceGapKeyingBinding = {
   openExam: Readonly<ShallowRef<ExamWorkspaceOpening | null>>;
   /** The document owner's one item patch path; false when it refused the edit. */
   patchItem: (itemId: string, patch: (item: NativeExamItem) => NativeExamItem) => boolean;
+  /** The shared store half the misspelling request runs through. */
+  shared: ExamWorkspaceSharedStore;
 };
 
 /** One keying request, identified so a reply that lost its place can be refused. */
@@ -151,7 +153,7 @@ export function useExamWorkspaceGapKeying(binding: ExamWorkspaceGapKeyingBinding
     body: ExamWorkspaceMisspellingsRequest,
   ): Promise<void> {
     try {
-      const response = await requestExamWorkspaceAnswerMisspellings(body);
+      const response = await binding.shared.requestExamWorkspaceAnswerMisspellings(body);
       mergeReply(request, response.automatic_values);
     } catch {
       if (requestIsLive(request)) {
