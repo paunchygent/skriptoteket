@@ -39,7 +39,7 @@ def test_a_word_before_an_inline_answer_label_is_kept_with_one_gap():
         chunks,
         [{"segments": [_text("a) sol"), _gap()]}],
     )
-    result = aligned_native_item(produced, chunks=chunks, language="sv").item
+    result = aligned_native_item(produced, chunks=chunks, language="sv", foreign_chunks=()).item
     assert body_plain_text(result.body) == "a) solrosornas [___]"
     assert "Svar" not in body_plain_text(result.body)
     assert "sol (R)" not in body_plain_text(result.body)
@@ -52,7 +52,7 @@ def test_two_gaps_for_an_inline_answer_label_paragraph_raise_a_count_mismatch():
         [{"segments": [_text("a) sol"), _gap(), _text(" + ros"), _gap()]}],
     )
     with pytest.raises(GapCountMismatchError) as raised:
-        aligned_native_item(produced, chunks=chunks, language="sv")
+        aligned_native_item(produced, chunks=chunks, language="sv", foreign_chunks=())
     assert not isinstance(raised.value, FormattingTransferError)
     assert (raised.value.gaps, raised.value.blanks) == (2, 1)
 
@@ -64,7 +64,7 @@ def test_appended_gaps_for_an_inline_answer_label_paragraph_raise_a_count_mismat
         [{"segments": [_text("a) snö + boll"), _gap(), _gap()]}],
     )
     with pytest.raises(GapCountMismatchError) as raised:
-        aligned_native_item(produced, chunks=chunks, language="sv")
+        aligned_native_item(produced, chunks=chunks, language="sv", foreign_chunks=())
     assert not isinstance(raised.value, FormattingTransferError)
     assert (raised.value.gaps, raised.value.blanks) == (2, 1)
 
@@ -75,7 +75,7 @@ def test_a_wrapped_answer_label_cuts_the_build_span_at_the_wrapper():
         chunks,
         [{"segments": [_text("a) sol"), _gap()]}],
     )
-    result = aligned_native_item(produced, chunks=chunks, language="sv").item
+    result = aligned_native_item(produced, chunks=chunks, language="sv", foreign_chunks=()).item
     assert body_plain_text(result.body) == "a) solrosornas [___]"
 
 
@@ -85,7 +85,7 @@ def test_an_underscore_run_before_an_inline_answer_label_is_the_only_run():
         chunks,
         [{"segments": [_text("I "), _gap(), _text(" (vara) happy.")]}],
     )
-    result = aligned_native_item(produced, chunks=chunks, language="sv").item
+    result = aligned_native_item(produced, chunks=chunks, language="sv", foreign_chunks=()).item
     assert body_plain_text(result.body) == "I [___] (vara) happy."
     assert body_plain_text(result.body).count("[___]") == 1
 
@@ -96,7 +96,7 @@ def test_a_lone_answer_line_with_a_blank_run_builds_just_the_gap():
         chunks,
         [{"segments": [_text("Svar: "), _gap()]}],
     )
-    result = aligned_native_item(produced, chunks=chunks, language="sv").item
+    result = aligned_native_item(produced, chunks=chunks, language="sv", foreign_chunks=()).item
     assert body_plain_text(result.body) == "[___]"
 
 
@@ -106,5 +106,5 @@ def test_a_paragraph_with_neither_a_label_nor_a_blank_run_keeps_the_reply():
         chunks,
         [{"segments": [_text("Name a "), _gap(), _text(".")]}],
     )
-    result = aligned_native_item(produced, chunks=chunks, language="sv").item
+    result = aligned_native_item(produced, chunks=chunks, language="sv", foreign_chunks=()).item
     assert body_plain_text(result.body) == "Name a [___]."
