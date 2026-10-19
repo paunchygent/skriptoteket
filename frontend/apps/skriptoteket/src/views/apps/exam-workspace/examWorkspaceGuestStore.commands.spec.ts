@@ -152,7 +152,7 @@ describe("examWorkspaceGuestStore structural commands", () => {
     expect(context.mocks.groupItems).not.toHaveBeenCalled();
     expect(context.mocks.createEmptyPart).not.toHaveBeenCalled();
     expect(context.mocks.moveItem).not.toHaveBeenCalled();
-    expect(await context.storage.load()).toBe(persisted);
+    expect(await context.storage.load()).toEqual(persisted);
   });
 
   it("keeps the draft on a 422 from a part route and reports a 429 as the guest limit", async () => {
@@ -171,7 +171,7 @@ describe("examWorkspaceGuestStore structural commands", () => {
       .moveExamWorkspaceItem(lineageId, "item_004", null, opened.history_cursor)
       .catch((caught: unknown) => caught);
     expect(refused).toBe(refusal);
-    expect(await context.storage.load()).toBe(persisted);
+    expect(await context.storage.load()).toEqual(persisted);
 
     const limit = new ApiError({
       code: "TOO_MANY_REQUESTS",
@@ -185,6 +185,6 @@ describe("examWorkspaceGuestStore structural commands", () => {
       .catch((caught: unknown) => caught);
     expect(limited).toBe(limit);
     expect(isGuestLimitError(limited)).toBe(true);
-    expect(await context.storage.load()).toBe(persisted);
+    expect(await context.storage.load()).toEqual(persisted);
   });
 });

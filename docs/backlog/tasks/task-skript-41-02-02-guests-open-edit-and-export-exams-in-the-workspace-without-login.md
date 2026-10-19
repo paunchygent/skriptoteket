@@ -58,7 +58,49 @@ Stop and report if the shared editor cannot run on a browser store without forki
 | G7  | User decision 2026-10-19, given directly in the Hemma orchestrator session: guests also get "PDF med facit" ("Yes, it is still the default PDF version"). Guests and teachers share one export format list.                                                                                                             |
 | G8  | User decision 2026-10-19, answered on the Mac and relayed by the Mac parent: the print preview stays hidden for guests ("Keep hidden"). There is no public preview route.                                                                                                                                               |
 
-## Resume Here (lead 2, 2026-10-19)
+## Repair After The Guest Staging Walk (lead 3, 2026-10-19)
+
+### Resume Here (lead 3, 2026-10-19)
+
+- Branch `codex/task-skript-41-02-02-guest-save-repair-remote`, repair commit b32c45d0, review repairs on top. Next: the orchestrator integrates; then the Mac re-walk.
+- Open: the walk saw no autosave failure report, but the code and a mock-level test show the toast. The re-walk types one edit, waits past the typing pause without Spara, and watches for the toast.
+
+The guest staging walk at main eba9d0f2 failed on 2026-10-19 (Mac parent, Edge). The task stays in_progress and the production deploy stays gated. Branch `codex/task-skript-41-02-02-guest-save-repair-remote`; retained root `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a153b4-2cc7-787b-820e-330f2c1510ee`. The guest layout complaint is routed separately and is out of scope here.
+
+### Defects
+
+- D1 (high): a guest edit is never stored. Every autosave and every Spara write to IndexedDB `skriptoteket_exam_workspace_guest` / `drafts` / `current` throws `DataCloneError`. Root cause, confirmed from the code and a Node probe: the editor hands the guest store Vue reactive values. The autosave passes `workspaceDocument.value` (a reactive Proxy) to `storeExamWorkspaceUndoStep`; Spara passes `{ ...current, revision }`, whose nested arrays are reactive Proxies. `saveGuestDraft` and `storeGuestUndoStep` put that document into the draft, and `replaceIf` puts the draft into IndexedDB, whose structured clone rejects a Proxy (`#<Object> could not be cloned`, `[object Array] could not be cloned`). The import path stores a plain network object and works. The specs passed because the in-memory port stores references and never clones. Export after an edit fails because its save fails first.
+- D1 scope: the signed-in workspace does not share the failing write. Its store sends the document over HTTP, where JSON serialisation reads through the Proxy. The signed-in host only reads the guest draft for the handoff.
+- D2 (small, Boy Scout): a QTI 2.1 package imports with "QTI-paketet innehåller inga frågor." instead of "QTI-paketet använder en QTI-version som inte stöds. Endast QTI 3.0 kan importeras." Root cause: `examnet_qti_package_reader.py` looks for `<resource>` only in the QTI 3.0 IMS CP namespace, so a plain IMS CP v1p1 manifest yields zero resources and never reaches the version check.
+
+### Decided Repair Terms
+
+| ID  | Decided repair term                                                                                                                                                                                                                                                                                                                                  |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| RP1 | The guest storage factory `createExamWorkspaceGuestDraftStorage` is the one boundary that turns the stored value into a plain serialisable snapshot: every port it returns, the IndexedDB adapter and an injected port alike, receives a draft copied as plain JSON data and the asset Blobs unchanged. No call site copies or unwraps the document. |
+| RP2 | The in-memory port structured-clones the draft on write and on read, as IndexedDB does, so a spec that hands it a reactive value fails as the browser does. Asset Blobs are kept by reference in the fake.                                                                                                                                           |
+| RP3 | A failed autosave keeps the existing report: the toast "Ändringen kunde inte sparas som utkast. Försök igen." from `useExamWorkspaceHistory`, and the edit stays owed. A test proves a non-API storage failure (a `DataCloneError`) reaches that toast.                                                                                              |
+| RP4 | The QTI reader checks the manifest root's namespace first and rejects any manifest outside the QTI 3.0 IMS CP namespace with the version message, before any resource lookup. The fixture is a minimal QTI 2.1 manifest zip built in the test.                                                                                                       |
+
+### Repair Validation
+
+- Fail-first Vitest: a reactive edited document saved and autosaved through the guest store with the cloning in-memory port; an edit followed by an export sends the export request; a `DataCloneError` from storage reaches the autosave failure toast.
+- Fail-first pytest: a QTI 2.1 manifest package raises the version message.
+- `pdm run lint`, `pdm run typecheck`, the frontend type check and build, then the domain suite on the orchestrator's slot.
+- Re-walk on the Mac after review: save, reload, Spara, export after edits, the limit message and the sign-in handoff to Mina filer.
+
+### Repair Status (lead 3, 2026-10-19)
+
+- U1 (RP1-RP3): `createExamWorkspaceGuestDraftStorage` snapshots every write; the in-memory port structured-clones the draft; guest view and store specs go through the factory. Before the fix 8 tests failed: DataCloneError on the autosave and Spara paths, the export after an edit sent nothing, and three reference-identity assertions. The autosave failure toast test (RP3) passed before the fix: `useExamWorkspaceHistory` already shows "Ändringen kunde inte sparas som utkast. Försök igen." for any non-409 failure, a `DataCloneError` included. After the fix 17 focused spec files (132 tests) pass. Evidence: `evidence/u1-fail-first.log` and `evidence/u1-pass.log` in the retained root.
+- U2 (RP4): the reader rejects a manifest outside the QTI 3.0 IMS CP namespace with the version message. The QTI 2.1 package test failed first with "inga frågor"; the namespace-less comment-safety test now uses the QTI 3.0 namespace, and a new test covers a namespace-less manifest. 30 reader tests pass.
+- `pdm run lint`, `pdm run typecheck`, `fe-lint`, `fe-type-check` and `fe-build` pass. Domain suite at 13209269 (orchestrator slot, 2026-10-19): Vitest exam-workspace domain, 172 files and 1474 tests passed (2 todo); backend `tests/unit/infrastructure/curated_apps`, 324 passed.
+- Review b141ae75 at 13209269: changes_requested, two medium structural findings; RP1-RP4 functionally supported (`evidence/reviews/b141ae75-a891-4b35-85c0-78040454e990.md`). Repaired as fresh juniors and admitted on focused proof without rereview:
+  - F1: `ExamWorkspaceGuestMode.spec.ts` split into intake, AI prompt and save-control specs with a typed support module (11 tests before and after). The QTI reader tests are split into package semantics and archive safety with a support module (30 tests before and after).
+  - F2: the cast in the guest history spec, the fake server state in `useExamWorkspaceHistory.spec.ts` and the three `event.target` casts in `ExamWorkspaceCriteriaField.vue` became `instanceof` narrowing or declared types.
+  - Focused proof: Vitest 9 files and 58 tests, the conversion_hub pytest directory 44 tests; lint, typecheck and fe-lint pass.
+- Lead 2's history below is kept for its evidence pointers.
+
+## Lead 2 History (2026-10-19)
 
 - Branch `codex/task-skript-41-02-02-remote`. origin/main d4d267cc (REP-0047) merged at d7f99dee; G1 and the AI route-gate guard pass after the merge. No independent review yet.
 - Retained root: `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a14f56-345b-7f38-ab9e-a441663b90d8`. Design: `evidence/planning/synthesis-41-02-02.md`. Lead-2 work orders: `evidence/planning/work-orders-lead2/`. Child results: `evidence/results/<id>.json`.

@@ -81,12 +81,18 @@ function replaceAt(index: number, criterion: NativeExamCriterion): NativeExamCri
 }
 
 function handleText(index: number, event: Event): void {
-  const text = (event.target as HTMLInputElement).value;
+  if (!(event.target instanceof HTMLInputElement)) {
+    return;
+  }
+  const text = event.target.value;
   emit("update", replaceAt(index, { ...props.item.criteria[index], text }));
 }
 
 function handlePoints(index: number, event: Event): void {
-  const raw = (event.target as HTMLInputElement).value.trim();
+  if (!(event.target instanceof HTMLInputElement)) {
+    return;
+  }
+  const raw = event.target.value.trim();
   const next = new Set(invalidPoints.value);
   if (!isWholePoints(raw)) {
     next.add(index);
@@ -103,7 +109,10 @@ function handlePointsBlur(index: number, event: FocusEvent): void {
   if (!invalidPoints.value.has(index)) {
     return;
   }
-  (event.target as HTMLInputElement).value = String(props.item.criteria[index].points);
+  if (!(event.target instanceof HTMLInputElement)) {
+    return;
+  }
+  event.target.value = String(props.item.criteria[index].points);
   const next = new Set(invalidPoints.value);
   next.delete(index);
   invalidPoints.value = next;

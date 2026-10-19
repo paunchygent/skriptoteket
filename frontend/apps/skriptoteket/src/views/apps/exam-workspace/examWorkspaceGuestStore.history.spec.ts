@@ -137,7 +137,7 @@ describe("examWorkspaceGuestStore history and save", () => {
 
     expect(autosaveError).toBeInstanceOf(ApiError);
     expect(autosaveError).toMatchObject({ code: "CONFLICT", status: 409 });
-    expect(await context.storage.load()).toBe(persisted);
+    expect(await context.storage.load()).toEqual(persisted);
 
     const parentError = await context.store.store.shared
       .createExamWorkspaceParent(lineageId, {
@@ -151,7 +151,7 @@ describe("examWorkspaceGuestStore history and save", () => {
     expect(parentError).toBeInstanceOf(ApiError);
     expect(parentError).toMatchObject({ code: "CONFLICT", status: 409 });
     expect(context.mocks.createParent).not.toHaveBeenCalled();
-    expect(await context.storage.load()).toBe(persisted);
+    expect(await context.storage.load()).toEqual(persisted);
   });
 
   it("rejects Spara with the server's 422 for a document the save rules refuse", async () => {
@@ -168,7 +168,10 @@ describe("examWorkspaceGuestStore history and save", () => {
 
     expect(error).toBeInstanceOf(ApiError);
     expect(error).toMatchObject({ code: "VALIDATION_ERROR", status: 422 });
-    expect((error as ApiError).message).not.toBe("");
-    expect(await context.storage.load()).toBe(persisted);
+    if (!(error instanceof ApiError)) {
+      throw new Error("expected an ApiError");
+    }
+    expect(error.message).not.toBe("");
+    expect(await context.storage.load()).toEqual(persisted);
   });
 });
