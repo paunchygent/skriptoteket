@@ -11,15 +11,14 @@
 
 import { flushPromises } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
-import { effectScope, ref } from "vue";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { NativeExamDocument } from "../../../api/examWorkspace";
 import { buildParentDocument } from "./examWorkspaceParentDocument.specSupport";
-import { serverExamWorkspaceStore } from "./examWorkspaceStore";
-import { useExamWorkspaceHistory } from "./useExamWorkspaceHistory";
+import { openGateHistory } from "./useExamWorkspaceEditing.history.specSupport";
 
 const apiMocks = vi.hoisted(() => ({
+  getExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceHistory: vi.fn(),
   getExamWorkspaceHistoryStep: vi.fn(),
   moveExamWorkspaceHistoryPosition: vi.fn(),
@@ -87,7 +86,7 @@ function titled(document: NativeExamDocument, title: string): NativeExamDocument
   return { ...document, title };
 }
 
-function setup(
+async function setup(
   hooks: {
     isReplacing?: () => boolean;
     replaceCopy?: <T>(run: () => Promise<T>) => Promise<T>;
@@ -95,38 +94,21 @@ function setup(
 ) {
   const baseline = buildParentDocument();
   fakeServer(baseline);
-  const workspaceDocument = ref<NativeExamDocument | null>(baseline);
-  const historyCursor = ref<string | null>("step-0");
-  const history = effectScope().run(() =>
-    useExamWorkspaceHistory({
-      historyCursor,
-      install: (document) => {
-        workspaceDocument.value = document;
-      },
-      isBlocked: () => false,
-      enqueueWrite: <T>(run: () => Promise<T>): Promise<T> => run(),
-      noteGateStored: () => undefined,
-      noteInstalledCursor: () => false,
-      isGuest: () => false,
-      isReadOnly: () => false,
-      isReplacing: hooks.isReplacing ?? (() => false),
-      replaceCopy: hooks.replaceCopy ?? ((run) => run()),
-      lineageId: () => "lineage-1",
-      noteExportBlockers: vi.fn(),
-      noteLeaseLost: vi.fn(),
-      noteStored: vi.fn(),
-      onConflict: async () => undefined,
-      savedRevision: () => baseline.revision,
-      shared: serverExamWorkspaceStore.shared,
-      tabId: () => "tab-1",
-      workspaceDocument,
-    }),
-  )!;
+  const fixture = await openGateHistory({
+    api: apiMocks,
+    baseline,
+    isReplacing: hooks.isReplacing,
+    replaceCopy: hooks.replaceCopy,
+  });
   function edit(title: string, structural = false): void {
-    workspaceDocument.value = titled(workspaceDocument.value!, title);
-    history.noteEdit(structural);
+    const current = fixture.workspaceDocument.value;
+    if (current === null) {
+      throw new Error("expected an open exam");
+    }
+    fixture.workspaceDocument.value = titled(current, title);
+    fixture.history.noteEdit(structural);
   }
-  return { edit, history };
+  return { edit, history: fixture.history, stop: fixture.stop };
 }
 
 beforeEach(() => {
@@ -140,7 +122,7 @@ afterEach(() => {
 
 describe("departure under the held editing lock", () => {
   it("resolves false without storing while another undo holds the copy", async () => {
-    const { edit, history } = setup({ isReplacing: () => true });
+    const { edit, history } = await setup({ isReplacing: () => true });
     await flushPromises();
     edit("one");
     apiMocks.storeExamWorkspaceUndoStep.mockClear();
@@ -154,7 +136,7 @@ describe("departure under the held editing lock", () => {
 
   it("runs the settle flush inside the replacing lock and holds it past the leave", async () => {
     const events: string[] = [];
-    const { edit, history } = setup({
+    const { edit, history } = await setup({
       replaceCopy: async <T>(run: () => Promise<T>): Promise<T> => {
         events.push("lock");
         try {
@@ -164,6 +146,9 @@ describe("departure under the held editing lock", () => {
         }
       },
     });
+    // The gate's opening fresh load already used the lock once; what follows
+    // asserts only the departure's own lock usage.
+    events.length = 0;
     await flushPromises();
     edit("one");
     const inner = apiMocks.storeExamWorkspaceUndoStep.getMockImplementation();
@@ -186,7 +171,7 @@ describe("departure under the held editing lock", () => {
   });
 
   it("resolves false when the departure store fails", async () => {
-    const { edit, history } = setup();
+    const { edit, history } = await setup();
     await flushPromises();
     edit("one");
     apiMocks.storeExamWorkspaceUndoStep.mockRejectedValueOnce(new Error("offline"));
@@ -199,7 +184,7 @@ describe("departure under the held editing lock", () => {
 
   it("resolves false and releases the lock when the leave returns false", async () => {
     const events: string[] = [];
-    const { edit, history } = setup({
+    const { edit, history } = await setup({
       replaceCopy: async <T>(run: () => Promise<T>): Promise<T> => {
         events.push("lock");
         try {
@@ -209,6 +194,9 @@ describe("departure under the held editing lock", () => {
         }
       },
     });
+    // The gate's opening fresh load already used the lock once; what follows
+    // asserts only the departure's own lock usage.
+    events.length = 0;
     await flushPromises();
     edit("one");
     const inner = apiMocks.storeExamWorkspaceUndoStep.getMockImplementation();
@@ -226,7 +214,7 @@ describe("departure under the held editing lock", () => {
   });
 
   it("resolves false and releases the lock when the leave throws", async () => {
-    const { edit, history } = setup();
+    const { edit, history } = await setup();
     await flushPromises();
     edit("one");
 
@@ -240,51 +228,35 @@ describe("departure under the held editing lock", () => {
   it("resolves false without holding when the scope is disposed inside leave", async () => {
     const baseline = buildParentDocument();
     fakeServer(baseline);
-    const workspaceDocument = ref<NativeExamDocument | null>(baseline);
-    const historyCursor = ref<string | null>("step-0");
     const events: string[] = [];
+    const fixture = await openGateHistory({
+      api: apiMocks,
+      baseline,
+      replaceCopy: async <T>(run: () => Promise<T>): Promise<T> => {
+        events.push("lock");
+        try {
+          return await run();
+        } finally {
+          events.push("unlock");
+        }
+      },
+    });
+    // The gate's opening fresh load already used the lock once; what follows
+    // asserts only the departure's own lock usage.
+    events.length = 0;
+    await flushPromises();
+    const current = fixture.workspaceDocument.value;
+    if (current === null) {
+      throw new Error("expected an open exam");
+    }
+    fixture.workspaceDocument.value = titled(current, "one");
+
     const addSpy = vi.spyOn(window, "addEventListener");
     try {
-      const scope = effectScope();
-      const history = scope.run(() =>
-        useExamWorkspaceHistory({
-          historyCursor,
-          install: (document) => {
-            workspaceDocument.value = document;
-          },
-          isBlocked: () => false,
-          enqueueWrite: <T>(run: () => Promise<T>): Promise<T> => run(),
-          noteGateStored: () => undefined,
-          noteInstalledCursor: () => false,
-          isGuest: () => false,
-          isReadOnly: () => false,
-          isReplacing: () => false,
-          replaceCopy: async <T>(run: () => Promise<T>): Promise<T> => {
-            events.push("lock");
-            try {
-              return await run();
-            } finally {
-              events.push("unlock");
-            }
-          },
-          lineageId: () => "lineage-1",
-          noteExportBlockers: vi.fn(),
-          noteLeaseLost: vi.fn(),
-          noteStored: vi.fn(),
-          onConflict: async () => undefined,
-          savedRevision: () => baseline.revision,
-          shared: serverExamWorkspaceStore.shared,
-          tabId: () => "tab-1",
-          workspaceDocument,
-        }),
-      )!;
-      await flushPromises();
-      workspaceDocument.value = titled(workspaceDocument.value!, "one");
-
       addSpy.mockClear();
       await expect(
-        history.depart(async () => {
-          scope.stop();
+        fixture.history.depart(async () => {
+          fixture.stop();
           return true;
         }),
       ).resolves.toBe(false);

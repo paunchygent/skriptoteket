@@ -1,15 +1,16 @@
 /**
- * Exam workspace editing session: kept-edit recovery across the history resync
- * (TASK-SKRIPT-40-04-14, rereview R1/R2 of KE at 04ef7bee).
+ * Exam workspace editing session: a kept edit across a failed takeover load
+ * (TASK-SKRIPT-40-04-14, G2 port of the kept-edit recovery specs to the sync
+ * gate).
  *
  * Expected behavior:
- *   - R1: the document GET succeeds but the explicit history resync fails. The
- *     refused working copy stays visible and pending, and the next save
- *     recovers it: the kept base and edited snapshot merge onto the newest
- *     server document and store through the normal save path.
- *   - R2: while the history resync is still waiting, a normal edit is refused
- *     by the replacing lock. After settling, the merged refused edit stands
- *     and later edits are accepted again.
+ *   - When the takeover's fresh load fails, the refused working copy stays
+ *     visible and pending, and no store is sent. The gate retries the load;
+ *     when it succeeds, the kept edit merges onto the newest server document
+ *     at the merge point and stores through the normal save path.
+ *   - While the takeover load is still waiting, the session is locked: a
+ *     normal edit is refused and the kept edit survives, then merges as above.
+ *   - After the merge, the next natural save sends no new read.
  *
  * Transport is a named double of the server's step store plus a lease double
  * whose holder the test moves between the tabs; the composables are the
@@ -28,7 +29,6 @@ import type {
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
 import {
-  conflict,
   exam,
   fakeServer,
   inScope,
@@ -60,7 +60,10 @@ beforeEach(() => {
   for (const fn of [...Object.values(api), ...Object.values(toast)]) fn.mockReset();
 });
 
-afterEach(stopScopes);
+afterEach(() => {
+  stopScopes();
+  vi.useRealTimers();
+});
 
 function leaseHeld(): ApiError {
   return new ApiError({
@@ -170,23 +173,39 @@ async function refuseEdit(): Promise<{
   return { editing, holder, server };
 }
 
-describe("a failed history resync during the takeover", () => {
-  it("keeps the refused working copy visible and recovers it on the next save", async () => {
+describe("a failed history read during the takeover", () => {
+  it("keeps the refused working copy visible and merges it when the retry succeeds", async () => {
+    vi.useFakeTimers();
     const { editing, holder, server } = await refuseEdit();
     const saved = server.documents.get(server.state.cursor);
     if (saved === undefined) {
       throw new Error("expected tab A's stored step");
     }
-    api.getExamWorkspaceDocument.mockResolvedValueOnce(
+    const storesBefore = api.storeExamWorkspaceUndoStep.mock.calls.length;
+    api.getExamWorkspaceDocument.mockImplementation(async () =>
       response(JSON.parse(JSON.stringify(saved)), server.state.cursor),
     );
     api.getExamWorkspaceHistory.mockRejectedValue(new Error("history unavailable"));
     holder.current = "tab-A";
-    await editing.requestTakeover();
+    const taking = editing.requestTakeover();
+    let taken = false;
+    void taking.then(() => {
+      taken = true;
+    });
+    for (let attempt = 0; attempt < 20 && !taken; attempt += 1) {
+      await vi.advanceTimersByTimeAsync(1000);
+      await flushPromises();
+    }
+    await taking;
     await flushPromises();
-    await flushPromises();
+    // The load failed: the kept edit stays visible and locked, and nothing
+    // was stored past the refusal. The gate (not the history's pending flag,
+    // which the failed read cleared with the step list) carries the kept
+    // edit across the failure: the retry below merges it.
+    expect(editing.editingLocked.value).toBe(true);
     expect(workspacePoints(editing, "item_001")).toBe(7);
-    expect(editing.history.pending.value).toBe(true);
+    expect(api.getExamWorkspaceDocument).toHaveBeenCalled();
+    expect(api.storeExamWorkspaceUndoStep.mock.calls.length).toBe(storesBefore);
 
     api.getExamWorkspaceHistory.mockImplementation(async () => ({
       baseline_step_id: "step-0",
@@ -194,32 +213,30 @@ describe("a failed history resync during the takeover", () => {
       position_step_id: server.state.position,
       step_ids: [...server.state.steps],
     }));
-    const newest = server.documents.get(server.state.cursor);
-    if (newest === undefined) {
-      throw new Error("expected the newest server document");
+    // The retry's fresh load merges the kept edit at the merge point and
+    // stores it, with no save needed.
+    for (
+      let attempt = 0;
+      attempt < 20 && api.storeExamWorkspaceUndoStep.mock.calls.length === storesBefore;
+      attempt += 1
+    ) {
+      await vi.advanceTimersByTimeAsync(1000);
+      await flushPromises();
     }
-    api.getExamWorkspaceDocument.mockResolvedValueOnce(
-      response(JSON.parse(JSON.stringify(newest)), server.state.cursor),
-    );
-    api.storeExamWorkspaceUndoStep.mockRejectedValueOnce(conflict());
-    // Later recoveries reread the newest server copy with a fresh object each
-    // time, as the transport does (the reload-failure check is by identity).
-    api.getExamWorkspaceDocument.mockImplementation(async () =>
-      response(JSON.parse(JSON.stringify(newest)), server.state.cursor),
-    );
-    await editing.save();
     await flushPromises();
-    await flushPromises();
-    await flushPromises();
-    await flushPromises();
-    await flushPromises();
-    expect(workspacePoints(editing, "item_001")).toBe(7);
     expect(pointsOf(lastStoredDocument(), "item_001")).toBe(7);
     expect(editing.history.pending.value).toBe(false);
+    // The merged store's own step-list refresh settles back to editing.
+    for (let attempt = 0; attempt < 20 && editing.editingLocked.value; attempt += 1) {
+      await vi.advanceTimersByTimeAsync(1000);
+      await flushPromises();
+    }
+    expect(workspacePoints(editing, "item_001")).toBe(7);
+    expect(editing.editingLocked.value).toBe(false);
   });
 });
 
-describe("an edit while the history resync is waiting", () => {
+describe("an edit while the takeover load is waiting", () => {
   it("is refused and the merged refused edit survives", async () => {
     const { editing, holder, server } = await refuseEdit();
     const saved = server.documents.get(server.state.cursor);
@@ -237,9 +254,6 @@ describe("an edit while the history resync is waiting", () => {
     server.state.cursor = "step-B";
     server.state.position = "step-B";
     const gate = deferred<ExamWorkspaceHistory>();
-    api.getExamWorkspaceDocument.mockResolvedValueOnce(response(other, "step-B"));
-    // The recovery's follow-up store runs the serialized phase again: reread
-    // with a fresh object each time, as the transport does.
     api.getExamWorkspaceDocument.mockImplementation(async () =>
       response(JSON.parse(JSON.stringify(other)), "step-B"),
     );
@@ -249,9 +263,13 @@ describe("an edit while the history resync is waiting", () => {
     const taking = editing.requestTakeover();
     await flushPromises();
     await flushPromises();
+    // The session is locked while the takeover load runs: the typing is
+    // refused and the kept edit stays in front of the teacher.
+    expect(editing.editingLocked.value).toBe(true);
     editing.updateItemPoints("item_001", 8);
     await flushPromises();
-    expect(workspacePoints(editing, "item_001")).toBe(5);
+    expect(workspacePoints(editing, "item_001")).toBe(7);
+    expect(editing.history.pending.value).toBe(true);
 
     gate.resolve({
       baseline_step_id: "step-0",
@@ -272,8 +290,9 @@ describe("an edit while the history resync is waiting", () => {
   });
 });
 
-describe("a natural save after a failed history resync", () => {
+describe("a natural save after a failed takeover load", () => {
   it("merges the kept edit onto the newest copy without a new 409", async () => {
+    vi.useFakeTimers();
     const { editing, holder, server } = await refuseEdit();
     const saved = server.documents.get(server.state.cursor);
     if (saved === undefined) {
@@ -295,11 +314,20 @@ describe("a natural save after a failed history resync", () => {
     );
     api.getExamWorkspaceHistory.mockRejectedValue(new Error("history unavailable"));
     holder.current = "tab-A";
-    await editing.requestTakeover();
+    const taking = editing.requestTakeover();
+    let taken = false;
+    void taking.then(() => {
+      taken = true;
+    });
+    for (let attempt = 0; attempt < 20 && !taken; attempt += 1) {
+      await vi.advanceTimersByTimeAsync(1000);
+      await flushPromises();
+    }
+    await taking;
     await flushPromises();
-    await flushPromises();
+    // The load failed, so the kept edit waits in the gate for the retry.
     expect(workspacePoints(editing, "item_001")).toBe(7);
-    expect(editing.history.pending.value).toBe(true);
+    expect(editing.editingLocked.value).toBe(true);
 
     api.getExamWorkspaceHistory.mockImplementation(async () => ({
       baseline_step_id: "step-0",
@@ -307,10 +335,22 @@ describe("a natural save after a failed history resync", () => {
       position_step_id: server.state.position,
       step_ids: [...server.state.steps],
     }));
-    await editing.save();
+    // The retry's fresh load merges the kept edit at the merge point and
+    // stores it; the next natural save then sends no new read.
+    const storesBeforeMerge = api.storeExamWorkspaceUndoStep.mock.calls.length;
+    for (
+      let attempt = 0;
+      attempt < 20 && api.storeExamWorkspaceUndoStep.mock.calls.length === storesBeforeMerge;
+      attempt += 1
+    ) {
+      await vi.advanceTimersByTimeAsync(1000);
+      await flushPromises();
+    }
     await flushPromises();
-    await flushPromises();
-    await flushPromises();
+    for (let attempt = 0; attempt < 20 && editing.editingLocked.value; attempt += 1) {
+      await vi.advanceTimersByTimeAsync(1000);
+      await flushPromises();
+    }
     expect(editing.workspaceDocument.value?.items.map((item) => item.points)).toEqual([7, 9]);
     const stored = server.documents.get(server.state.cursor);
     if (stored === undefined) {

@@ -8,14 +8,13 @@
  */
 import { flushPromises } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
-import { effectScope, ref } from "vue";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { NativeExamDocument } from "../../../api/examWorkspace";
 import { buildParentDocument } from "./examWorkspaceParentDocument.specSupport";
-import { serverExamWorkspaceStore } from "./examWorkspaceStore";
-import { useExamWorkspaceHistory } from "./useExamWorkspaceHistory";
+import { openGateHistory } from "./useExamWorkspaceEditing.history.specSupport";
 
 const apiMocks = vi.hoisted(() => ({
+  getExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceHistory: vi.fn(),
   getExamWorkspaceHistoryStep: vi.fn(),
   moveExamWorkspaceHistoryPosition: vi.fn(),
@@ -28,39 +27,13 @@ function documents(): { one: NativeExamDocument; two: NativeExamDocument } {
   return { one: { ...baseline, title: "one" }, two: { ...baseline, title: "two" } };
 }
 
-function mountFromHistory(
+async function mountFromHistory(
   history: { baseline_step_id: string; cursor: string; position_step_id: string; step_ids: string[] },
   document: NativeExamDocument,
 ) {
   apiMocks.getExamWorkspaceHistory.mockResolvedValue(history);
-  const workspaceDocument = ref<NativeExamDocument | null>(document);
-  const historyCursor = ref<string | null>(history.cursor);
-  const historyState = effectScope().run(() =>
-    useExamWorkspaceHistory({
-      historyCursor,
-      install: (next) => {
-        workspaceDocument.value = next;
-      },
-      isBlocked: () => false,
-      enqueueWrite: <T>(run: () => Promise<T>): Promise<T> => run(),
-      noteGateStored: () => undefined,
-      noteInstalledCursor: () => false,
-      isGuest: () => false,
-      isReadOnly: () => false,
-      isReplacing: () => false,
-      replaceCopy: (run) => run(),
-      lineageId: () => "lineage-1",
-      noteExportBlockers: vi.fn(),
-      noteLeaseLost: vi.fn(),
-      noteStored: vi.fn(),
-      onConflict: vi.fn(async () => undefined),
-      savedRevision: () => 1,
-      shared: serverExamWorkspaceStore.shared,
-      tabId: () => "tab-1",
-      workspaceDocument,
-    }),
-  )!;
-  return { historyState, workspaceDocument };
+  const fixture = await openGateHistory({ api: apiMocks, baseline: document });
+  return { historyState: fixture.history, workspaceDocument: fixture.workspaceDocument };
 }
 
 beforeEach(() => {
@@ -75,7 +48,7 @@ afterEach(() => {
 describe("R2 redo across a reload", () => {
   it("mounts behind the newest step with Gör om enabled", async () => {
     const { one } = documents();
-    const { historyState } = mountFromHistory(
+    const { historyState } = await mountFromHistory(
       { baseline_step_id: "step-0", cursor: "move-1", position_step_id: "step-1", step_ids: ["step-1", "step-2"] },
       one,
     );
@@ -93,7 +66,7 @@ describe("R2 redo across a reload", () => {
       export_blockers: [],
       history: { baseline_step_id: "step-0", cursor: "move-2", position_step_id: "step-2", step_ids: ["step-1", "step-2"] },
     });
-    const { historyState, workspaceDocument } = mountFromHistory(
+    const { historyState, workspaceDocument } = await mountFromHistory(
       { baseline_step_id: "step-0", cursor: "move-1", position_step_id: "step-1", step_ids: ["step-1", "step-2"] },
       one,
     );
@@ -113,7 +86,7 @@ describe("R2 redo across a reload", () => {
       export_blockers: [],
       history: { baseline_step_id: "step-0", cursor: "move-2", position_step_id: "step-2", step_ids: ["step-1", "step-2"] },
     });
-    const first = mountFromHistory(
+    const first = await mountFromHistory(
       { baseline_step_id: "step-0", cursor: "move-1", position_step_id: "step-1", step_ids: ["step-1", "step-2"] },
       one,
     );
@@ -126,7 +99,7 @@ describe("R2 redo across a reload", () => {
       position_step_id: "step-2",
       step_ids: ["step-1", "step-2"],
     };
-    const second = mountFromHistory(reloadedHistory, two);
+    const second = await mountFromHistory(reloadedHistory, two);
     await flushPromises();
     await flushPromises();
     expect(second.historyState.position.value).toBe("step-2");

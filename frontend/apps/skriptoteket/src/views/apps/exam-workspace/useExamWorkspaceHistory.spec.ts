@@ -18,7 +18,6 @@
 
 import { flushPromises } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
-import { effectScope, ref } from "vue";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ApiError } from "../../../api/client";
@@ -26,9 +25,11 @@ import type { NativeExamDocument } from "../../../api/examWorkspace";
 import { useToastStore } from "../../../stores/toast";
 import { buildParentDocument } from "./examWorkspaceParentDocument.specSupport";
 import { serverExamWorkspaceStore, type ExamWorkspaceSharedStore } from "./examWorkspaceStore";
-import { EXAM_WORKSPACE_TYPING_PAUSE_MS, useExamWorkspaceHistory } from "./useExamWorkspaceHistory";
+import { EXAM_WORKSPACE_TYPING_PAUSE_MS } from "./useExamWorkspaceHistory";
+import { openGateHistory } from "./useExamWorkspaceEditing.history.specSupport";
 
 const apiMocks = vi.hoisted(() => ({
+  getExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceHistory: vi.fn(),
   getExamWorkspaceHistoryStep: vi.fn(),
   moveExamWorkspaceHistoryPosition: vi.fn(),
@@ -116,59 +117,45 @@ function titled(document: NativeExamDocument, title: string): NativeExamDocument
   return { ...document, title };
 }
 
-function setup(
+async function setup(
   failFirstLoad = false,
   hooks: {
-    isReadOnly?: () => boolean;
-    isReplacing?: () => boolean;
+    leaseHeld?: boolean;
     onLeaseLost?: () => void;
-    replaceCopy?: <T>(run: () => Promise<T>) => Promise<T>;
     shared?: ExamWorkspaceSharedStore;
   } = {},
 ) {
   const baseline = buildParentDocument();
   const server = fakeServer(baseline);
-  if (failFirstLoad) {
-    apiMocks.getExamWorkspaceHistory.mockRejectedValueOnce(new Error("offline"));
-  }
-  const workspaceDocument = ref<NativeExamDocument | null>(baseline);
-  const historyCursor = ref<string | null>("step-0");
-  const onConflict = vi.fn(async () => undefined);
   const noteStored = vi.fn();
   const noteLeaseLost = vi.fn();
-  const history = effectScope().run(() =>
-    useExamWorkspaceHistory({
-      historyCursor,
-      install: (document) => {
-        workspaceDocument.value = document;
-      },
-      isBlocked: () => false,
-      enqueueWrite: <T>(run: () => Promise<T>): Promise<T> => run(),
-      noteGateStored: () => undefined,
-      noteInstalledCursor: () => false,
-      isGuest: () => false,
-      isReadOnly: hooks.isReadOnly ?? (() => false),
-      isReplacing: hooks.isReplacing ?? (() => false),
-      replaceCopy: hooks.replaceCopy ?? ((run) => run()),
-      lineageId: () => "lineage-1",
-      noteExportBlockers: vi.fn(),
-      noteLeaseLost: () => {
-        noteLeaseLost();
-        hooks.onLeaseLost?.();
-      },
-      noteStored,
-      onConflict,
-      savedRevision: () => baseline.revision,
-      shared: hooks.shared ?? serverExamWorkspaceStore.shared,
-      tabId: () => "tab-1",
-      workspaceDocument,
-    }),
-  )!;
+  const noteConflict = vi.fn();
+  const fixture = await openGateHistory({
+    api: apiMocks,
+    baseline,
+    failFirstHistoryLoad: failFirstLoad,
+    leaseHeld: hooks.leaseHeld,
+    noteConflict: () => {
+      noteConflict();
+    },
+    noteLeaseLost: () => {
+      noteLeaseLost();
+      hooks.onLeaseLost?.();
+    },
+    noteStored: (document) => {
+      noteStored(document);
+    },
+    shared: hooks.shared,
+  });
   function edit(title: string, structural = false): void {
-    workspaceDocument.value = titled(workspaceDocument.value!, title);
-    history.noteEdit(structural);
+    const current = fixture.workspaceDocument.value;
+    if (current === null) {
+      throw new Error("expected an open exam");
+    }
+    fixture.workspaceDocument.value = titled(current, title);
+    fixture.history.noteEdit(structural);
   }
-  return { edit, history, historyCursor, noteLeaseLost, noteStored, onConflict, server, workspaceDocument };
+  return { ...fixture, edit, noteConflict, noteLeaseLost, noteStored, server };
 }
 
 beforeEach(() => {
@@ -183,7 +170,7 @@ afterEach(() => {
 describe("autosaved undo steps", () => {
   it("stores typing once, after the pause", async () => {
     vi.useFakeTimers();
-    const { edit } = setup();
+    const { edit } = await setup();
     await flushPromises();
 
     edit("A");
@@ -199,7 +186,7 @@ describe("autosaved undo steps", () => {
   });
 
   it("stores the pending edit before undo, so the edit itself can be redone", async () => {
-    const { edit, history, workspaceDocument } = setup();
+    const { edit, history, workspaceDocument } = await setup();
     await flushPromises();
     edit("first", true);
     await flushPromises();
@@ -214,7 +201,7 @@ describe("autosaved undo steps", () => {
   });
 
   it("branches after an undo: the next edit drops the redo steps", async () => {
-    const { edit, history, server, workspaceDocument } = setup();
+    const { edit, history, server, workspaceDocument } = await setup();
     await flushPromises();
     edit("one", true);
     edit("two", true);
@@ -234,7 +221,7 @@ describe("autosaved undo steps", () => {
   });
 
   it("keeps ten steps after the baseline and cannot undo past the oldest kept step", async () => {
-    const { edit, history, workspaceDocument } = setup();
+    const { edit, history, workspaceDocument } = await setup();
     await flushPromises();
     for (let index = 1; index <= 12; index += 1) {
       edit(`edit ${index}`, true);
@@ -253,7 +240,7 @@ describe("autosaved undo steps", () => {
   });
 
   it("settles an undone step as the newest one before a server command", async () => {
-    const { edit, history, historyCursor, server, workspaceDocument } = setup();
+    const { edit, history, historyCursor, server, workspaceDocument } = await setup();
     await flushPromises();
     edit("one", true);
     edit("two", true);
@@ -270,7 +257,7 @@ describe("autosaved undo steps", () => {
   });
 
   it("ignores a read that echoes an older cursor and keeps writing", async () => {
-    const { edit, history, historyCursor, onConflict } = setup();
+    const { edit, history, historyCursor, noteConflict } = await setup();
     await flushPromises();
     edit("one", true);
     await history.flush(false);
@@ -278,18 +265,26 @@ describe("autosaved undo steps", () => {
 
     historyCursor.value = "step-0";
     await flushPromises();
+    // The echo guard restores this tab's own cursor before the next write.
+    expect(historyCursor.value).toBe("step-1");
     edit("two", true);
     await history.flush(false);
 
-    expect(apiMocks.getExamWorkspaceHistory).not.toHaveBeenCalled();
-    expect(onConflict).not.toHaveBeenCalled();
+    // The gate refreshes the step list for the foreign cursor, but the echo
+    // changes nothing else: no conflict, and both edits are stored.
+    expect(apiMocks.getExamWorkspaceHistory).toHaveBeenCalled();
+    expect(noteConflict).not.toHaveBeenCalled();
     expect(apiMocks.storeExamWorkspaceUndoStep).toHaveBeenCalledTimes(2);
   });
 
   it("loads the step list again when it failed before the first write", async () => {
-    const { edit, history } = setup(true);
+    const { edit, fireGateRetry, history } = await setup(true);
     await flushPromises();
     expect(history.canUndo.value).toBe(false);
+
+    // The gate's retry reruns the failed fresh load; the next write then runs.
+    fireGateRetry();
+    await flushPromises();
 
     edit("one", true);
     await history.flush(false);
@@ -300,7 +295,7 @@ describe("autosaved undo steps", () => {
   });
 
   it("shows a toast only when an undo move fails", async () => {
-    const { edit, history } = setup();
+    const { edit, history } = await setup();
     await flushPromises();
     edit("one", true);
     await history.flush(false);
@@ -322,7 +317,7 @@ describe("autosaved undo steps", () => {
   }
 
   it("shows no toast when the server rejects a draft the editor already explains inline", async () => {
-    const { history, workspaceDocument } = setup();
+    const { history, workspaceDocument } = await setup();
     await flushPromises();
     const document = workspaceDocument.value!;
     workspaceDocument.value = {
@@ -338,7 +333,7 @@ describe("autosaved undo steps", () => {
   });
 
   it("states a rejected autosave in Swedish, never the server's English shape error", async () => {
-    const { edit, history } = setup();
+    const { edit, history } = await setup();
     await flushPromises();
     apiMocks.storeExamWorkspaceUndoStep.mockRejectedValueOnce(validationError());
 
@@ -361,7 +356,7 @@ describe("autosaved undo steps", () => {
     vi.mocked(shared.storeExamWorkspaceUndoStep).mockImplementation((...args) =>
       serverExamWorkspaceStore.shared.storeExamWorkspaceUndoStep(...args),
     );
-    const { edit, history } = setup(false, { shared });
+    const { edit, history } = await setup(false, { shared });
     await flushPromises();
     apiMocks.storeExamWorkspaceUndoStep.mockClear();
 
@@ -381,7 +376,7 @@ describe("autosaved undo steps", () => {
 
 describe("undo and redo through the position move", () => {
   it("sends the move with the cursor and the step id and never reads the step", async () => {
-    const { edit, history, historyCursor, workspaceDocument } = setup();
+    const { edit, history, historyCursor, workspaceDocument } = await setup();
     await flushPromises();
     edit("one", true);
     edit("two", true);
@@ -402,7 +397,7 @@ describe("undo and redo through the position move", () => {
   });
 
   it("moves redo forward to the step after the standing one", async () => {
-    const { edit, history, workspaceDocument } = setup();
+    const { edit, history, workspaceDocument } = await setup();
     await flushPromises();
     edit("one", true);
     edit("two", true);
@@ -418,7 +413,7 @@ describe("undo and redo through the position move", () => {
   });
 
   it("reports the confirmed step as stored, so its document is the saved baseline", async () => {
-    const { edit, history, noteStored } = setup();
+    const { edit, history, noteStored } = await setup();
     await flushPromises();
     edit("one", true);
     await history.flush(false);
@@ -431,7 +426,7 @@ describe("undo and redo through the position move", () => {
   });
 
   it("reloads the exam when a move meets a newer cursor, without a toast", async () => {
-    const { edit, history, onConflict, server } = setup();
+    const { edit, history, noteConflict, server } = await setup();
     await flushPromises();
     edit("one", true);
     await history.flush(false);
@@ -439,13 +434,13 @@ describe("undo and redo through the position move", () => {
 
     await history.undo();
 
-    expect(onConflict).toHaveBeenCalledOnce();
+    expect(noteConflict).toHaveBeenCalledOnce();
     expect(useToastStore().toasts).toEqual([]);
     expect(apiMocks.getExamWorkspaceHistoryStep).not.toHaveBeenCalled();
   });
 
   it("stops redo on a failed move and keeps the standing step", async () => {
-    const { edit, history, workspaceDocument } = setup();
+    const { edit, history, workspaceDocument } = await setup();
     await flushPromises();
     edit("one", true);
     await history.flush(false);
@@ -471,7 +466,7 @@ describe("the edit lease on writes", () => {
   }
 
   it("sends the tab id on every store", async () => {
-    const { edit, history } = setup();
+    const { edit, history } = await setup();
     await flushPromises();
     edit("one", true);
     await history.flush(false);
@@ -481,13 +476,7 @@ describe("the edit lease on writes", () => {
   });
 
   it("turns read-only on a lease-held store and keeps the pending edit, without a reload", async () => {
-    const isReadOnly = ref(false);
-    const { edit, history, noteLeaseLost, onConflict, workspaceDocument } = setup(false, {
-      isReadOnly: () => isReadOnly.value,
-      onLeaseLost: () => {
-        isReadOnly.value = true;
-      },
-    });
+    const { edit, gate, history, noteConflict, noteLeaseLost, workspaceDocument } = await setup();
     await flushPromises();
     apiMocks.storeExamWorkspaceUndoStep.mockRejectedValueOnce(leaseHeldError());
     edit("one", true);
@@ -495,20 +484,15 @@ describe("the edit lease on writes", () => {
     await history.flush(false);
 
     expect(noteLeaseLost).toHaveBeenCalledOnce();
-    expect(onConflict).not.toHaveBeenCalled();
+    expect(gate.phase.value).toBe("readonly");
+    expect(noteConflict).not.toHaveBeenCalled();
     expect(workspaceDocument.value!.title).toBe("one");
     expect(history.pending.value).toBe(true);
     expect(useToastStore().toasts).toEqual([]);
   });
 
   it("turns read-only on a lease-held move and never reads the step", async () => {
-    const isReadOnly = ref(false);
-    const { edit, history, noteLeaseLost, onConflict } = setup(false, {
-      isReadOnly: () => isReadOnly.value,
-      onLeaseLost: () => {
-        isReadOnly.value = true;
-      },
-    });
+    const { edit, history, noteConflict, noteLeaseLost } = await setup();
     await flushPromises();
     edit("one", true);
     await history.flush(false);
@@ -517,14 +501,13 @@ describe("the edit lease on writes", () => {
     await history.undo();
 
     expect(noteLeaseLost).toHaveBeenCalledOnce();
-    expect(onConflict).not.toHaveBeenCalled();
+    expect(noteConflict).not.toHaveBeenCalled();
     expect(apiMocks.getExamWorkspaceHistoryStep).not.toHaveBeenCalled();
     expect(useToastStore().toasts).toEqual([]);
   });
 
   it("stops undo and redo while read-only and stores nothing", async () => {
-    const isReadOnly = ref(true);
-    const { edit, history, workspaceDocument } = setup(false, { isReadOnly: () => isReadOnly.value });
+    const { edit, history, workspaceDocument } = await setup(false, { leaseHeld: false });
     await flushPromises();
     edit("one", true);
     await history.flush(false);
@@ -536,6 +519,5 @@ describe("the edit lease on writes", () => {
     await history.undo();
     expect(apiMocks.moveExamWorkspaceHistoryPosition).not.toHaveBeenCalled();
     expect(workspaceDocument.value!.title).toBe("one");
-    isReadOnly.value = false;
   });
 });

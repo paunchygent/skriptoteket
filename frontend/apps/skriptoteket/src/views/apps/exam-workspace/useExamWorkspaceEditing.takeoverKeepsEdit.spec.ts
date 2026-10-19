@@ -27,7 +27,6 @@ import type {
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
 import {
-  conflict,
   exam,
   fakeServer,
   inScope,
@@ -59,7 +58,10 @@ beforeEach(() => {
   for (const fn of [...Object.values(api), ...Object.values(toast)]) fn.mockReset();
 });
 
-afterEach(stopScopes);
+afterEach(() => {
+  stopScopes();
+  vi.useRealTimers();
+});
 
 function leaseHeld(): ApiError {
   return new ApiError({
@@ -327,7 +329,8 @@ describe("a refused edit across the takeover", () => {
     expect(pointsOf(lastStoredDocument(), "item_001")).toBe(7);
   });
 
-  it("merges the kept edit on the next save after a failed takeover reload", { timeout: 8000 }, async () => {
+  it("merges the kept edit at the retry's fresh load after a failed takeover reload", { timeout: 8000 }, async () => {
+    vi.useFakeTimers();
     const baseline = exam();
     const server = fakeServer(api, baseline);
     let holder = "tab-A";
@@ -360,26 +363,51 @@ describe("a refused edit across the takeover", () => {
     server.state.steps = [...server.state.steps, "step-B"];
     server.state.cursor = "step-B";
     server.state.position = "step-B";
+    // The takeover load fails once, then serves the newest copy with a fresh
+    // object each time, as the transport does.
     api.getExamWorkspaceDocument.mockRejectedValueOnce(new Error("reload failed"));
+    api.getExamWorkspaceDocument.mockImplementation(async () =>
+      response(JSON.parse(JSON.stringify(storedB)), "step-B"),
+    );
     holder = "tab-A";
-    await editing.requestTakeover();
+    const taking = editing.requestTakeover();
+    let taken = false;
+    void taking.then(() => {
+      taken = true;
+    });
+    for (let attempt = 0; attempt < 20 && !taken; attempt += 1) {
+      await vi.advanceTimersByTimeAsync(1000);
+      await flushPromises();
+    }
+    await taking;
     await flushPromises();
+    // The kept edit waits in the gate for the retry: visible and locked.
     const kept = editing.workspaceDocument.value;
     if (kept === null) {
       throw new Error("expected an open document");
     }
     expect(pointsOf(kept, "item_001")).toBe(7);
-    expect(editing.history.pending.value).toBe(true);
-    // The later save meets the stale cursor, conflicts, and recovers: the
-    // conflict GET returns the newest copy, which the kept edit merges onto.
-    // Follow-up recoveries reread it with a fresh object each time.
-    api.storeExamWorkspaceUndoStep.mockRejectedValueOnce(conflict());
-    api.getExamWorkspaceDocument.mockResolvedValueOnce(response(storedB, "step-B"));
-    api.getExamWorkspaceDocument.mockImplementation(async () =>
-      response(JSON.parse(JSON.stringify(storedB)), "step-B"),
-    );
-    await editing.save();
+    expect(editing.editingLocked.value).toBe(true);
+    const storesBefore = api.storeExamWorkspaceUndoStep.mock.calls.length;
+    // A save while loading settles at once: no store, no conflict recovery,
+    // and the kept edit stays intact.
+    await expect(editing.save()).resolves.toBe(false);
+    expect(api.storeExamWorkspaceUndoStep.mock.calls.length).toBe(storesBefore);
+    // The retry's fresh load merges the kept edit at the merge point and
+    // stores it.
+    for (
+      let attempt = 0;
+      attempt < 20 && api.storeExamWorkspaceUndoStep.mock.calls.length === storesBefore;
+      attempt += 1
+    ) {
+      await vi.advanceTimersByTimeAsync(1000);
+      await flushPromises();
+    }
     await flushPromises();
+    for (let attempt = 0; attempt < 20 && editing.editingLocked.value; attempt += 1) {
+      await vi.advanceTimersByTimeAsync(1000);
+      await flushPromises();
+    }
     const workspace = editing.workspaceDocument.value;
     if (workspace === null) {
       throw new Error("expected an open document");
@@ -389,6 +417,7 @@ describe("a refused edit across the takeover", () => {
     const newest = lastStoredDocument();
     expect(pointsOf(newest, "item_001")).toBe(7);
     expect(pointsOf(newest, "item_002")).toBe(9);
+    expect(editing.history.pending.value).toBe(false);
   });
 
   it("settles without storing past disposal while the acquisition GET is in flight", { timeout: 8000 }, async () => {

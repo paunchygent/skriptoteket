@@ -11,17 +11,16 @@
 
 import { flushPromises } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
-import { effectScope, ref } from "vue";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ApiError } from "../../../api/client";
 import type { NativeExamDocument } from "../../../api/examWorkspace";
 import { useToastStore } from "../../../stores/toast";
 import { buildParentDocument } from "./examWorkspaceParentDocument.specSupport";
-import { serverExamWorkspaceStore } from "./examWorkspaceStore";
-import { useExamWorkspaceHistory } from "./useExamWorkspaceHistory";
+import { openGateHistory } from "./useExamWorkspaceEditing.history.specSupport";
 
 const apiMocks = vi.hoisted(() => ({
+  getExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceHistory: vi.fn(),
   getExamWorkspaceHistoryStep: vi.fn(),
   moveExamWorkspaceHistoryPosition: vi.fn(),
@@ -94,42 +93,20 @@ function titled(document: NativeExamDocument, title: string): NativeExamDocument
   return { ...document, title };
 }
 
-function setup() {
+async function setup() {
   const baseline = buildParentDocument();
   fakeServer(baseline);
-  const workspaceDocument = ref<NativeExamDocument | null>(baseline);
-  const historyCursor = ref<string | null>("step-0");
-  const onConflict = vi.fn(async () => undefined);
-  const history = effectScope().run(() =>
-    useExamWorkspaceHistory({
-      historyCursor,
-      install: (document) => {
-        workspaceDocument.value = document;
-      },
-      isBlocked: () => false,
-      enqueueWrite: <T>(run: () => Promise<T>): Promise<T> => run(),
-      noteGateStored: () => undefined,
-      noteInstalledCursor: () => false,
-      isGuest: () => false,
-      isReadOnly: () => false,
-      isReplacing: () => false,
-      replaceCopy: (run) => run(),
-      lineageId: () => "lineage-1",
-      noteExportBlockers: vi.fn(),
-      noteLeaseLost: vi.fn(),
-      noteStored: vi.fn(),
-      onConflict,
-      savedRevision: () => baseline.revision,
-      shared: serverExamWorkspaceStore.shared,
-      tabId: () => "tab-1",
-      workspaceDocument,
-    }),
-  )!;
+  const noteConflict = vi.fn();
+  const fixture = await openGateHistory({ api: apiMocks, baseline, noteConflict });
   function edit(title: string, structural = false): void {
-    workspaceDocument.value = titled(workspaceDocument.value!, title);
-    history.noteEdit(structural);
+    const current = fixture.workspaceDocument.value;
+    if (current === null) {
+      throw new Error("expected an open exam");
+    }
+    fixture.workspaceDocument.value = titled(current, title);
+    fixture.history.noteEdit(structural);
   }
-  return { edit, history, workspaceDocument };
+  return { edit, history: fixture.history, workspaceDocument: fixture.workspaceDocument };
 }
 
 function validationError(): ApiError {
@@ -157,7 +134,7 @@ afterEach(() => {
 
 describe("a pending edit the save rules refuse", () => {
   it("is discarded by undo, which reinstalls the standing step with nothing pending", async () => {
-    const { edit, history, workspaceDocument } = setup();
+    const { edit, history, workspaceDocument } = await setup();
     await flushPromises();
     edit("one", true);
     await history.flush(false);
@@ -174,7 +151,7 @@ describe("a pending edit the save rules refuse", () => {
   });
 
   it("is gone after the discard, so the next undo moves to the step before", async () => {
-    const { edit, history, workspaceDocument } = setup();
+    const { edit, history, workspaceDocument } = await setup();
     await flushPromises();
     edit("one", true);
     await history.flush(false);

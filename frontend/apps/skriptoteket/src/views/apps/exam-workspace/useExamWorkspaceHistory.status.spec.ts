@@ -17,7 +17,6 @@
 
 import { flushPromises } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
-import { effectScope, ref } from "vue";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ApiError } from "../../../api/client";
@@ -25,14 +24,12 @@ import type { NativeExamDocument } from "../../../api/examWorkspace";
 import { useToastStore } from "../../../stores/toast";
 import { buildParentDocument } from "./examWorkspaceParentDocument.specSupport";
 import { examWorkspaceSaveRefusalCopy } from "./examWorkspaceItemSaveRules";
-import { serverExamWorkspaceStore } from "./examWorkspaceStore";
-import {
-  EXAM_WORKSPACE_TYPING_PAUSE_MS,
-  useExamWorkspaceHistory,
-} from "./useExamWorkspaceHistory";
+import { EXAM_WORKSPACE_TYPING_PAUSE_MS } from "./useExamWorkspaceHistory";
+import { openGateHistory } from "./useExamWorkspaceEditing.history.specSupport";
 import { EXAM_WORKSPACE_SAVE_RETRY_MS } from "./useExamWorkspaceSaveStatus";
 
 const apiMocks = vi.hoisted(() => ({
+  getExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceHistory: vi.fn(),
   getExamWorkspaceHistoryStep: vi.fn(),
   moveExamWorkspaceHistoryPosition: vi.fn(),
@@ -100,41 +97,19 @@ function titled(document: NativeExamDocument, title: string): NativeExamDocument
   return { ...document, title };
 }
 
-function setup(isGuest = false) {
+async function setup(isGuest = false) {
   const baseline = buildParentDocument();
   fakeServer(baseline);
-  const workspaceDocument = ref<NativeExamDocument | null>(baseline);
-  const historyCursor = ref<string | null>("step-0");
-  const history = effectScope().run(() =>
-    useExamWorkspaceHistory({
-      historyCursor,
-      install: (document) => {
-        workspaceDocument.value = document;
-      },
-      isBlocked: () => false,
-      enqueueWrite: <T>(run: () => Promise<T>): Promise<T> => run(),
-      noteGateStored: () => undefined,
-      noteInstalledCursor: () => false,
-      isGuest: () => isGuest,
-      isReadOnly: () => false,
-      isReplacing: () => false,
-      replaceCopy: (run) => run(),
-      lineageId: () => "lineage-1",
-      noteExportBlockers: vi.fn(),
-      noteLeaseLost: vi.fn(),
-      noteStored: vi.fn(),
-      onConflict: async () => undefined,
-      savedRevision: () => baseline.revision,
-      shared: serverExamWorkspaceStore.shared,
-      tabId: () => "tab-1",
-      workspaceDocument,
-    }),
-  )!;
+  const fixture = await openGateHistory({ api: apiMocks, baseline, isGuest });
   function edit(title: string, structural = false): void {
-    workspaceDocument.value = titled(workspaceDocument.value!, title);
-    history.noteEdit(structural);
+    const current = fixture.workspaceDocument.value;
+    if (current === null) {
+      throw new Error("expected an open exam");
+    }
+    fixture.workspaceDocument.value = titled(current, title);
+    fixture.history.noteEdit(structural);
   }
-  return { edit, history, workspaceDocument };
+  return { edit, history: fixture.history, workspaceDocument: fixture.workspaceDocument };
 }
 
 beforeEach(() => {
@@ -148,7 +123,7 @@ afterEach(() => {
 
 describe("one computed save status", () => {
   it("reads Sparat without a time before the first store, Sparar while pending, Sparat HH:MM after", async () => {
-    const { edit, history } = setup();
+    const { edit, history } = await setup();
     await flushPromises();
 
     expect(history.saveStatus.value).toEqual({ state: "saved", detail: null, savedAt: null });
@@ -163,7 +138,7 @@ describe("one computed save status", () => {
 
   it("keeps a keystroke typed while a store is in flight, reads Sparar until the newer copy is stored", async () => {
     vi.useFakeTimers();
-    const { edit, history, workspaceDocument } = setup();
+    const { edit, history, workspaceDocument } = await setup();
     await flushPromises();
     const slowStore = apiMocks.storeExamWorkspaceUndoStep.getMockImplementation();
     if (!slowStore) {
@@ -200,7 +175,7 @@ describe("one computed save status", () => {
 
   it("shows Inte sparat after a failed store and retries after 5 s", async () => {
     vi.useFakeTimers();
-    const { edit, history } = setup();
+    const { edit, history } = await setup();
     await flushPromises();
     apiMocks.storeExamWorkspaceUndoStep.mockRejectedValueOnce(new Error("offline"));
 
@@ -226,7 +201,7 @@ describe("one computed save status", () => {
   });
 
   it("stores at once on the next edit after a failed store", async () => {
-    const { edit, history } = setup();
+    const { edit, history } = await setup();
     await flushPromises();
     apiMocks.storeExamWorkspaceUndoStep.mockRejectedValueOnce(new Error("offline"));
     edit("one");
@@ -242,9 +217,12 @@ describe("one computed save status", () => {
   });
 
   it("shows Inte sparat with the save rule's copy when the draft is refused", async () => {
-    const { history, workspaceDocument } = setup();
+    const { history, workspaceDocument } = await setup();
     await flushPromises();
-    const document = workspaceDocument.value!;
+    const document = workspaceDocument.value;
+    if (document === null) {
+      throw new Error("expected an open exam");
+    }
     const refused = {
       ...document,
       items: document.items.map((item, index) => (index === 0 ? { ...item, points: -1 } : item)),
@@ -273,7 +251,7 @@ describe("one computed save status", () => {
   it("shows Inte sparat with the guard's message when a placeholder step is refused", async () => {
     const message =
       "Provet kunde inte sparas. Vänta tills frågorna har konverterats innan du ändrar, flyttar eller tar bort dem.";
-    const { edit, history } = setup();
+    const { edit, history } = await setup();
     await flushPromises();
     apiMocks.storeExamWorkspaceUndoStep.mockRejectedValueOnce(
       new ApiError({
@@ -291,7 +269,7 @@ describe("one computed save status", () => {
   });
 
   it("reads Sparat i webbläsaren HH:MM for a guest exam and Sparat HH:MM otherwise", async () => {
-    const signedIn = setup(false);
+    const signedIn = await setup(false);
     await flushPromises();
 
     expect(signedIn.history.saveText.value).toBe("Sparat");
@@ -301,7 +279,7 @@ describe("one computed save status", () => {
 
     expect(signedIn.history.saveText.value).toMatch(/^Sparat \d{2}:\d{2}$/);
 
-    const guest = setup(true);
+    const guest = await setup(true);
     await flushPromises();
 
     expect(guest.history.saveText.value).toBe("Sparat i webbläsaren");

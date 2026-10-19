@@ -14,7 +14,6 @@
 
 import { flushPromises } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
-import { effectScope, ref } from "vue";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ApiError } from "../../../api/client";
@@ -28,10 +27,11 @@ import {
   setupGuestStore,
   startBlank,
 } from "./examWorkspaceGuestStore.specSupport";
-import { useExamWorkspaceHistory } from "./useExamWorkspaceHistory";
+import { openGateHistory } from "./useExamWorkspaceEditing.history.specSupport";
 import { EXAM_WORKSPACE_SAVE_RETRY_MS, LEASE_LOST_COPY } from "./useExamWorkspaceSaveStatus";
 
 const apiMocks = vi.hoisted(() => ({
+  getExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceHistory: vi.fn(),
   getExamWorkspaceHistoryStep: vi.fn(),
   moveExamWorkspaceHistoryPosition: vi.fn(),
@@ -113,49 +113,33 @@ describe("a tab that loses the lease with a pending edit", () => {
     });
   }
 
-  function setupLeaseLoss(shared: ExamWorkspaceSharedStore = serverExamWorkspaceStore.shared) {
+  async function setupLeaseLoss(
+    shared: ExamWorkspaceSharedStore = serverExamWorkspaceStore.shared,
+    leaseHeld = true,
+  ) {
     const baseline = buildParentDocument();
     fakeServer(baseline);
-    const isReadOnly = ref(false);
-    const workspaceDocument = ref<NativeExamDocument | null>(baseline);
-    const historyCursor = ref<string | null>("step-0");
-    const noteLeaseLost = vi.fn(() => {
-      isReadOnly.value = true;
+    const noteLeaseLost = vi.fn();
+    const fixture = await openGateHistory({
+      api: apiMocks,
+      baseline,
+      leaseHeld,
+      noteLeaseLost,
+      shared,
     });
-    const history = effectScope().run(() =>
-      useExamWorkspaceHistory({
-        historyCursor,
-        install: (document) => {
-          workspaceDocument.value = document;
-        },
-        isBlocked: () => false,
-        enqueueWrite: <T>(run: () => Promise<T>): Promise<T> => run(),
-        noteGateStored: () => undefined,
-        noteInstalledCursor: () => false,
-        isGuest: () => false,
-        isReadOnly: () => isReadOnly.value,
-        isReplacing: () => false,
-        replaceCopy: (run) => run(),
-        lineageId: () => "lineage-1",
-        noteExportBlockers: vi.fn(),
-        noteLeaseLost,
-        noteStored: vi.fn(),
-        onConflict: async () => undefined,
-        savedRevision: () => baseline.revision,
-        shared,
-        tabId: () => "tab-1",
-        workspaceDocument,
-      }),
-    )!;
     function edit(title: string): void {
-      workspaceDocument.value = titled(workspaceDocument.value!, title);
-      history.noteEdit(false);
+      const current = fixture.workspaceDocument.value;
+      if (current === null) {
+        throw new Error("expected an open exam");
+      }
+      fixture.workspaceDocument.value = titled(current, title);
+      fixture.history.noteEdit(false);
     }
-    return { baseline, edit, history, isReadOnly, noteLeaseLost, workspaceDocument };
+    return { ...fixture, baseline, edit, noteLeaseLost };
   }
 
-  async function loseLeaseWithPendingEdit(): Promise<ReturnType<typeof setupLeaseLoss>> {
-    const fixture = setupLeaseLoss();
+  async function loseLeaseWithPendingEdit(): Promise<Awaited<ReturnType<typeof setupLeaseLoss>>> {
+    const fixture = await setupLeaseLoss();
     await flushPromises();
     apiMocks.storeExamWorkspaceUndoStep.mockRejectedValueOnce(leaseHeldError());
     fixture.edit("one");
@@ -189,36 +173,7 @@ describe("a tab that loses the lease with a pending edit", () => {
   });
 
   it("keeps today's status on a read-only tab with no pending edit", async () => {
-    const isReadOnly = ref(true);
-    const baseline = buildParentDocument();
-    fakeServer(baseline);
-    const workspaceDocument = ref<NativeExamDocument | null>(baseline);
-    const historyCursor = ref<string | null>("step-0");
-    const history = effectScope().run(() =>
-      useExamWorkspaceHistory({
-        historyCursor,
-        install: (document) => {
-          workspaceDocument.value = document;
-        },
-        isBlocked: () => false,
-        enqueueWrite: <T>(run: () => Promise<T>): Promise<T> => run(),
-        noteGateStored: () => undefined,
-        noteInstalledCursor: () => false,
-        isGuest: () => false,
-        isReadOnly: () => isReadOnly.value,
-        isReplacing: () => false,
-        replaceCopy: (run) => run(),
-        lineageId: () => "lineage-1",
-        noteExportBlockers: vi.fn(),
-        noteLeaseLost: vi.fn(),
-        noteStored: vi.fn(),
-        onConflict: async () => undefined,
-        savedRevision: () => baseline.revision,
-        shared: serverExamWorkspaceStore.shared,
-        tabId: () => "tab-1",
-        workspaceDocument,
-      }),
-    )!;
+    const { history } = await setupLeaseLoss(serverExamWorkspaceStore.shared, false);
     await flushPromises();
 
     expect(history.saveStatus.value).toEqual({ state: "saved", detail: null, savedAt: null });
@@ -230,10 +185,13 @@ describe("a tab that loses the lease with a pending edit", () => {
   });
 
   it("follows the stored edit after the tab takes over again", async () => {
-    const { history, isReadOnly } = await loseLeaseWithPendingEdit();
+    const { gate, history, leaseHeld } = await loseLeaseWithPendingEdit();
     expect(history.saveStatus.value.state).toBe("unsaved");
 
-    isReadOnly.value = false;
+    // Ta över: the gate's fresh load runs, then the pending edit stores.
+    leaseHeld.value = true;
+    gate.leaseAcquired();
+    await flushPromises();
     await history.flush(false);
 
     expect(apiMocks.storeExamWorkspaceUndoStep).toHaveBeenCalledTimes(2);
@@ -260,44 +218,30 @@ describe("a tab that loses the lease with a pending edit", () => {
     await context.leaseStorage.claim("tab-holder", Date.now());
     const shared = context.store.store.shared;
     const opened = await shared.getExamWorkspaceDocument(lineageId);
-    const workspaceDocument = ref<NativeExamDocument | null>(opened.document);
-    const historyCursor = ref<string | null>(opened.history_cursor);
     const noteLeaseLost = vi.fn();
-    const history = effectScope().run(() =>
-      useExamWorkspaceHistory({
-        historyCursor,
-        install: (document) => {
-          workspaceDocument.value = document;
-        },
-        isBlocked: () => false,
-        enqueueWrite: <T>(run: () => Promise<T>): Promise<T> => run(),
-        noteGateStored: () => undefined,
-        noteInstalledCursor: () => false,
-        isGuest: () => true,
-        isReadOnly: () => false,
-        isReplacing: () => false,
-        replaceCopy: (run) => run(),
-        lineageId: () => lineageId,
-        noteExportBlockers: vi.fn(),
-        noteLeaseLost,
-        noteStored: vi.fn(),
-        onConflict: async () => undefined,
-        savedRevision: () => opened.document.revision,
-        shared,
-        tabId: () => "tab-loser",
-        workspaceDocument,
-      }),
-    )!;
+    const fixture = await openGateHistory({
+      api: apiMocks,
+      baseline: opened.document,
+      isGuest: true,
+      lineage: lineageId,
+      noteLeaseLost,
+      shared,
+      tabId: "tab-loser",
+    });
     await flushPromises();
 
-    workspaceDocument.value = titled(workspaceDocument.value!, "förlorad");
-    history.noteEdit(false);
-    await history.flush(false);
+    const current = fixture.workspaceDocument.value;
+    if (current === null) {
+      throw new Error("expected an open exam");
+    }
+    fixture.workspaceDocument.value = titled(current, "förlorad");
+    fixture.history.noteEdit(false);
+    await fixture.history.flush(false);
 
     expect(noteLeaseLost).toHaveBeenCalledOnce();
-    expect(history.pending.value).toBe(true);
-    expect(history.saveStatus.value).toEqual({ state: "unsaved", detail: LEASE_LOST_COPY });
-    expect(history.saveText.value).toBe("Inte sparat");
+    expect(fixture.history.pending.value).toBe(true);
+    expect(fixture.history.saveStatus.value).toEqual({ state: "unsaved", detail: LEASE_LOST_COPY });
+    expect(fixture.history.saveText.value).toBe("Inte sparat");
     expect(useToastStore().toasts).toEqual([]);
   });
 });

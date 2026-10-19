@@ -16,19 +16,18 @@
 
 import { flushPromises } from "@vue/test-utils";
 import { createPinia, setActivePinia } from "pinia";
-import { effectScope, ref } from "vue";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { NativeExamDocument } from "../../../api/examWorkspace";
 import { buildParentDocument } from "./examWorkspaceParentDocument.specSupport";
-import { serverExamWorkspaceStore } from "./examWorkspaceStore";
-import { useExamWorkspaceHistory } from "./useExamWorkspaceHistory";
+import { openGateHistory } from "./useExamWorkspaceEditing.history.specSupport";
 import {
   examWorkspacePrintedTotalMismatches,
   withoutExamPrintedTotal,
 } from "./examWorkspaceTotals";
 
 const apiMocks = vi.hoisted(() => ({
+  getExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceHistory: vi.fn(),
   getExamWorkspaceHistoryStep: vi.fn(),
   moveExamWorkspaceHistoryPosition: vi.fn(),
@@ -107,43 +106,28 @@ function printedBaseline(): NativeExamDocument {
   return { ...baseline, header: { ...baseline.header, printed_total: sum + 3 } };
 }
 
-function setup() {
+async function setup() {
   const baseline = printedBaseline();
   fakeServer(baseline);
-  const workspaceDocument = ref<NativeExamDocument | null>(baseline);
-  const historyCursor = ref<string | null>("step-0");
   const noteStored = vi.fn();
-  const history = effectScope().run(() =>
-    useExamWorkspaceHistory({
-      historyCursor,
-      install: (document) => {
-        workspaceDocument.value = document;
-      },
-      isBlocked: () => false,
-      enqueueWrite: <T>(run: () => Promise<T>): Promise<T> => run(),
-      noteGateStored: () => undefined,
-      noteInstalledCursor: () => false,
-      isGuest: () => false,
-      isReadOnly: () => false,
-      isReplacing: () => false,
-      replaceCopy: (run) => run(),
-      lineageId: () => "lineage-1",
-      noteExportBlockers: vi.fn(),
-      noteLeaseLost: vi.fn(),
-      noteStored,
-      onConflict: async () => undefined,
-      savedRevision: () => baseline.revision,
-      shared: serverExamWorkspaceStore.shared,
-      tabId: () => "tab-1",
-      workspaceDocument,
-    }),
-  )!;
+  const fixture = await openGateHistory({ api: apiMocks, baseline, noteStored });
   /** Godta on the printed-total line: clear the exam's stored total as one structural step. */
   function acceptPrintedTotal(): void {
-    workspaceDocument.value = withoutExamPrintedTotal(workspaceDocument.value!);
-    history.noteEdit(true);
+    const current = fixture.workspaceDocument.value;
+    if (current === null) {
+      throw new Error("expected an open exam");
+    }
+    fixture.workspaceDocument.value = withoutExamPrintedTotal(current);
+    fixture.history.noteEdit(true);
   }
-  return { acceptPrintedTotal, baseline, history, historyCursor, noteStored, workspaceDocument };
+  return {
+    acceptPrintedTotal,
+    baseline,
+    history: fixture.history,
+    historyCursor: fixture.historyCursor,
+    noteStored,
+    workspaceDocument: fixture.workspaceDocument,
+  };
 }
 
 beforeEach(() => {
@@ -157,7 +141,7 @@ afterEach(() => {
 
 describe("the printed-total line through Godta, Angra and Gor om", () => {
   it("stores Godta at once and the line goes with Sparat HH:MM", async () => {
-    const { acceptPrintedTotal, history, workspaceDocument } = setup();
+    const { acceptPrintedTotal, history, workspaceDocument } = await setup();
     await flushPromises();
     expect(examWorkspacePrintedTotalMismatches(workspaceDocument.value!)).toHaveLength(1);
 
@@ -171,7 +155,7 @@ describe("the printed-total line through Godta, Angra and Gor om", () => {
   });
 
   it("sends Angra as the position move, never a step read", async () => {
-    const { acceptPrintedTotal, history, historyCursor, workspaceDocument } = setup();
+    const { acceptPrintedTotal, history, historyCursor, workspaceDocument } = await setup();
     await flushPromises();
     acceptPrintedTotal();
     await history.flush(false);
@@ -192,7 +176,7 @@ describe("the printed-total line through Godta, Angra and Gor om", () => {
   });
 
   it("restores the working copy, the saved baseline and Sparat only when the move confirms", async () => {
-    const { acceptPrintedTotal, history, noteStored, workspaceDocument } = setup();
+    const { acceptPrintedTotal, history, noteStored, workspaceDocument } = await setup();
     await flushPromises();
     acceptPrintedTotal();
     await history.flush(false);
@@ -234,7 +218,7 @@ describe("the printed-total line through Godta, Angra and Gor om", () => {
   });
 
   it("reloads the confirmed move document with the line back, and Gor om clears it again", async () => {
-    const { acceptPrintedTotal, history, workspaceDocument } = setup();
+    const { acceptPrintedTotal, history, workspaceDocument } = await setup();
     await flushPromises();
     acceptPrintedTotal();
     await history.flush(false);
