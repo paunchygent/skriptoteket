@@ -30,6 +30,7 @@ from tests.unit.domain.curated_apps.exam_workspace.exam_print_document_test_supp
     inline_choice_item,
     lone_gap_item,
     question,
+    question_blocks,
     segments_paragraph,
 )
 from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders import (
@@ -49,7 +50,7 @@ class TestGapFill:
         student = build_print_document(document, variant=ExamPrintVariant.STUDENT)
         question_entry = question(student, "item_001")
 
-        assert question_entry.blocks[1] == PrintRuledLines(count=1)
+        assert question_blocks(question_entry)[1] == PrintRuledLines(count=1)
         assert not has_blank(student)
         assert "NF" not in all_texts(student)
 
@@ -58,7 +59,9 @@ class TestGapFill:
 
         facit = build_print_document(document, variant=ExamPrintVariant.FACIT)
 
-        assert question(facit, "item_001").blocks[-1] == PrintAnswerKey(lines=("Lucka 1: NF",))
+        assert question_blocks(question(facit, "item_001"))[-1] == PrintAnswerKey(
+            lines=("Lucka 1: NF",)
+        )
 
     def test_a_gap_in_a_sentence_is_a_blank_sized_for_the_longest_answer(self) -> None:
         item = gap_fill_item(
@@ -74,13 +77,10 @@ class TestGapFill:
         student = build_print_document(make_document(item), variant=ExamPrintVariant.STUDENT)
 
         assert blank_width_mm(10) == 48.0
-        assert (
-            PrintParagraph(
-                runs=(PrintText("Svar: "), PrintBlank(width_mm=48.0)),
-                style=PrintParagraphStyle.GAP_LINE,
-            )
-            in question(student, "item_001").blocks
-        )
+        assert PrintParagraph(
+            runs=(PrintText("Svar: "), PrintBlank(width_mm=48.0)),
+            style=PrintParagraphStyle.GAP_LINE,
+        ) in question_blocks(question(student, "item_001"))
         assert "fotosyntes" not in all_texts(student)
 
     def test_a_gap_in_a_sentence_facit_lists_the_accepted_values(self) -> None:
@@ -96,7 +96,7 @@ class TestGapFill:
 
         facit = build_print_document(make_document(item), variant=ExamPrintVariant.FACIT)
 
-        assert question(facit, "item_001").blocks[-1] == PrintAnswerKey(
+        assert question_blocks(question(facit, "item_001"))[-1] == PrintAnswerKey(
             lines=("Lucka 1: ab / fotosyntes",)
         )
 
@@ -107,23 +107,22 @@ class TestInlineChoice:
 
         student = build_print_document(document, variant=ExamPrintVariant.STUDENT)
 
-        assert (
-            PrintParagraph(
-                runs=(
-                    PrintText("Vattnets formel är "),
-                    PrintText("[H2O / CO2]"),
-                ),
-                style=PrintParagraphStyle.BODY,
-            )
-            in question(student, "item_001").blocks
-        )
+        assert PrintParagraph(
+            runs=(
+                PrintText("Vattnets formel är "),
+                PrintText("[H2O / CO2]"),
+            ),
+            style=PrintParagraphStyle.BODY,
+        ) in question_blocks(question(student, "item_001"))
 
     def test_an_inline_choice_facit_lists_the_correct_option(self) -> None:
         document = make_document(inline_choice_item())
 
         facit = build_print_document(document, variant=ExamPrintVariant.FACIT)
 
-        assert question(facit, "item_001").blocks[-1] == PrintAnswerKey(lines=("Lucka 1: H2O",))
+        assert question_blocks(question(facit, "item_001"))[-1] == PrintAnswerKey(
+            lines=("Lucka 1: H2O",)
+        )
 
 
 class TestChoice:
@@ -133,12 +132,16 @@ class TestChoice:
         student = build_print_document(document, variant=ExamPrintVariant.STUDENT)
         question_entry = question(student, "item_001")
 
-        assert PrintOption(box=PrintBox.TICK, label="A)", text="vägen") in question_entry.blocks
-        assert PrintOption(box=PrintBox.TICK, label="B)", text="eleverna") in question_entry.blocks
+        assert PrintOption(box=PrintBox.TICK, label="A)", text="vägen") in question_blocks(
+            question_entry
+        )
+        assert PrintOption(box=PrintBox.TICK, label="B)", text="eleverna") in question_blocks(
+            question_entry
+        )
         assert not has_answer_key(student)
 
         facit = build_print_document(document, variant=ExamPrintVariant.FACIT)
-        assert question(facit, "item_001").blocks[-1] == PrintAnswerKey(
+        assert question_blocks(question(facit, "item_001"))[-1] == PrintAnswerKey(
             lines=("Rätt svar: eleverna",)
         )
 
@@ -149,9 +152,8 @@ class TestChoice:
 
         student = build_print_document(document, variant=ExamPrintVariant.STUDENT)
 
-        assert (
-            PrintOption(box=PrintBox.TICK, label="A)", text="vägen")
-            in question(student, "item_001").blocks
+        assert PrintOption(box=PrintBox.TICK, label="A)", text="vägen") in question_blocks(
+            question(student, "item_001")
         )
 
 
@@ -163,7 +165,7 @@ class TestOrdering:
 
         options = [
             block
-            for block in question(student, "item_001").blocks
+            for block in question_blocks(question(student, "item_001"))
             if isinstance(block, PrintOption)
         ]
         assert options == [
@@ -178,7 +180,7 @@ class TestOrdering:
 
         facit = build_print_document(document, variant=ExamPrintVariant.FACIT)
 
-        assert question(facit, "item_001").blocks[-1] == PrintAnswerKey(
+        assert question_blocks(question(facit, "item_001"))[-1] == PrintAnswerKey(
             lines=("Rätt ordning: Avslutning 4; Motargument 3; Argument 2; Tes 1",)
         )
 
@@ -189,17 +191,16 @@ class TestMatching:
 
         student = build_print_document(document, variant=ExamPrintVariant.STUDENT)
 
-        assert (
-            PrintGrid(rows=("hund", "katt", "fågel"), columns=("däggdjur", "fåglar", "fiskar"))
-            in question(student, "item_001").blocks
-        )
+        assert PrintGrid(
+            rows=("hund", "katt", "fågel"), columns=("däggdjur", "fåglar", "fiskar")
+        ) in question_blocks(question(student, "item_001"))
 
     def test_matching_facit_lists_the_pairs(self) -> None:
         document = make_document(matching_item())
 
         facit = build_print_document(document, variant=ExamPrintVariant.FACIT)
 
-        assert question(facit, "item_001").blocks[-1] == PrintAnswerKey(
+        assert question_blocks(question(facit, "item_001"))[-1] == PrintAnswerKey(
             lines=(
                 "Par: hund – däggdjur",
                 "Par: katt – fåglar",

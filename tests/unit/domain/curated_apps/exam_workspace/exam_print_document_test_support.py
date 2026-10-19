@@ -7,6 +7,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.exam_print_document import 
     PrintDocument,
     PrintGrid,
     PrintHeading,
+    PrintInstruction,
     PrintOption,
     PrintParagraph,
     PrintQuestion,
@@ -125,8 +126,20 @@ def question(document: PrintDocument, item_id: str) -> PrintQuestion:
     )
 
 
+def question_blocks(question: PrintQuestion) -> tuple[PrintBlock, ...]:
+    """One question's blocks in print order: the text group then the answer group."""
+    return question.text + question.answer
+
+
+def entry_blocks(entry: PrintInstruction | PrintQuestion) -> tuple[PrintBlock, ...]:
+    """One entry's blocks in print order, for either entry kind."""
+    if isinstance(entry, PrintQuestion):
+        return question_blocks(entry)
+    return entry.blocks
+
+
 def all_blocks(document: PrintDocument) -> tuple[PrintBlock, ...]:
-    return tuple(block for entry in document.entries for block in entry.blocks)
+    return tuple(block for entry in document.entries for block in entry_blocks(entry))
 
 
 def all_texts(document: PrintDocument) -> tuple[str, ...]:

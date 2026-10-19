@@ -54,6 +54,9 @@ from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents 
     _actor,
     _Env,
 )
+from tests.unit.domain.curated_apps.exam_workspace.exam_print_document_test_support import (
+    entry_blocks,
+)
 from tests.unit.infrastructure.curated_apps.exam_workspace_docx_picture_support import (
     build_shared_picture_document,
 )
@@ -137,7 +140,7 @@ async def test_docx_export_embeds_shared_instruction_pictures_from_stored_payloa
     key_lines = [
         line
         for entry in facit.entries
-        for block in entry.blocks
+        for block in entry_blocks(entry)
         if isinstance(block, PrintAnswerKey)
         for line in block.lines
     ]
