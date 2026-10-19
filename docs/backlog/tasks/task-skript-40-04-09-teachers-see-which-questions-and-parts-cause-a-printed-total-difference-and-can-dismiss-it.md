@@ -23,7 +23,7 @@ backlog_document_profile: contract-derived
 
 ## Implementation Contract
 
-The user reported on 2026-10-19 that the printed-total actions in the exam workspace do not work. This task replaces those actions with a printed-total difference that informs the teacher, names what the data can attribute it to, and can be dismissed. It is proposed: the user chooses the display (Q1) and the dismissal (Q2) before any junior writes code.
+The user reported on 2026-10-19 that the printed-total actions in the exam workspace do not work. This task replaces those actions with a printed-total difference that informs the teacher, names what the data can attribute it to, and can be dismissed. It is proposed: the user chooses the display and the dismissal in the retained plan before any junior writes code; if the user chooses a note without a list, the task is retitled.
 
 Root cause, from the code at `06985163`:
 
@@ -58,20 +58,14 @@ Non-goals: editing a printed total to a new number; any change to how the conver
 
 The core vertical is one pure function that turns the open document into a printed-total account: the exam's printed and summed totals, each part that differs, each question that differs, and the remainder no question explains. The footer, the part rows and the part instruction editor render that account; a click on an entry selects that question or part through the list's existing `select`. The dismissal is one ordinary document edit with one undo step, so it saves, autosaves and undoes like every other edit. Performance is not material: the account is a linear pass over the items, recomputed live.
 
-Planned junior units, under the recommended mix (each a fresh `junior-implementation-specialist`, disjoint files):
-
-1. Backend (only if Q1 includes question-level differences): `source_points` on `NativeExamItem`, required and nullable, set by the DOCX, DigiExam and QTI importers from the value each already reads; a points edit keeps it; `native_exam_document_v9` everywhere with no v8 reader; regenerate `openapi.d.ts` and the fixtures. Focused pytest for each importer and the document model.
-2. Frontend account: `examWorkspacePrintedDifferences(document)` in `examWorkspaceTotals.ts`, with adversarial unit tests (decimal sums, a null-points question, a part inside the exam, a source-internal remainder, float noise).
-3. Frontend display: the footer note, the expandable list and the dismissal; the part row and editor pane follow the same design; the Använd actions and their handlers are deleted. Fail-first component tests rewrite the accept blocks of `ExamWorkspaceTotalsSlice.spec.ts`.
-
-Under option B alone, units 1 and 2 drop and unit 3 shows the note with its dismissal only.
+The junior units depend on the user's answers and are drafted in the retained plan (see Resume here).
 
 ## Validation
 
 - Before any code: reproduce the user's click on staging at the current main on an exam whose printed total differs, and record which state the two actions were in and what each click did.
-- Fail-first Vitest for the account function and for the display: the note reads as information and not as a warning to act on; no Använd action exists on the footer, a part row or the part instruction editor; each listed entry names its question or part and its point difference and selects it on a click; the remainder is stated when no question explains it; the dismissal clears the note in one undo step and Ångra brings it back; nothing moves the list rows when the note appears or goes (the 40-04-07 layout-slot rule).
+- Fail-first Vitest for the account function and for the display: the note reads as information and not as a warning to act on; no Använd action exists on the footer, a part row or the part instruction editor; each listed entry names its question or part and its point difference and selects it on a click; the remainder is stated when no question explains it; the dismissal clears the note in one undo step and Ångra brings it back (as the dismissal decision states); nothing moves the list rows when the note appears or goes (the 40-04-07 layout-slot rule).
 - Focused pytest for unit 1 when it runs; `pdm run lint`, `pdm run typecheck`, frontend typecheck, ESLint and build; one exam-workspace domain suite at the end after the orchestrator's go.
-- A staging walk of the exam converter on an exam whose printed total differs: open the list, click an entry and land on that question, dismiss the note, reload and confirm the dismissal holds as Q2 decides, and undo it. Also walk it while a conversion is still running.
+- A staging walk of the exam converter on an exam whose printed total differs: open the list, click an entry and land on that question, dismiss the note, reload and confirm the dismissal holds as decided, and undo it. Also walk it while a conversion is still running.
 
 ## Stop Conditions
 
@@ -81,30 +75,12 @@ Stop and report to the parent when the staging reproduction shows a defect outsi
 
 | ID  | Decided contract term |
 | --- | --------------------- |
-| P1  | Both Använd actions are removed: the footer's two and the part row's and the part instruction editor's one each, with their handlers (`acceptExamPrintedTotal`, `acceptPartPrintedTotal`, `acceptAllPrintedTotals`). They accept the same computed sums, offer no revert, and give the teacher nothing to judge by (root cause 1-4; user 2026-10-19). |
-| P2  | A printed-total difference is information, never a warning to act on and never a save or export gate (keeps the 2026-10-17 ruling). |
-| P3  | Reaching the printed number stays a points edit on the questions; no action sets points or a printed total to a chosen number (40-04-06 non-goal kept). |
-| P4  | Exam and part differences are computed exactly from `printed_total` and the question sums, as today. |
-| P5  | Display: open, user question Q1. Working assumption: the mix (Q1 option C). |
-| P6  | Dismissal persistence: open, user question Q2. Working assumption: per exam, in the document (Q2 option 1). |
-
-## Open Questions For The User
-
-Q1. What does the difference show?
-
-- A. An expandable list under the total: each part and question that diverges, with "provtexten X p, nu Y p", and a click that jumps to it. Exact for parts today; for questions it needs the backend unit (`source_points`, document v9, open exams re-imported).
-- B. An informational note the teacher can dismiss ("Provtexten anger 70 p, frågorna ger 67 p"), with no list. Frontend only.
-- C (recommended). B's note, always, plus A's list whenever the data attributes the difference: parts that differ, questions whose points differ from what the source printed, questions without points, and the remainder no question explains ("3 p anges inte av någon fråga"). This gives the teacher the evidence the user asked for and never a guess. It includes the backend unit.
-- C without the backend unit: the list names parts that differ and questions without points or with shared-out points, but no per-question difference.
-
-Q2. Does a dismissal persist?
-
-- 1 (recommended). Per exam, in the document: dismissing clears the exam's and every part's printed total as one undo step, so it saves with the exam, holds after a reload and Ångra brings it back. It reuses the existing edit path and stores no client state. The printed number is then gone from this copy until Ångra or a re-import.
-- 2. Only until the page reloads: the note returns on every open. No stored state.
+| P2  | A printed-total difference is information, never a warning to act on and never a save or export gate (user ruling 2026-10-17, kept). |
+| P3  | Reaching the printed number stays a points edit on the questions; no action sets points or a printed total to a chosen number (TASK-SKRIPT-40-04-06 non-goal, kept). |
 
 ## Resume here (2026-10-19, planning)
 
 - Branch `codex/task-skript-40-04-points-mismatch-remote`, worktree `/home/paunchygent/apps/skriptoteket-task-skript-40-04-points-mismatch-remote`, from `06985163`.
-- Status proposed; waiting for the user's answers to Q1 and Q2. No code has been written.
+- Status proposed; no code has been written. The open decisions (Q1 display, Q2 dismissal, Q3 removal of the Använd buttons) and the F5 staging reproduction are in the retained plan `evidence/planning/TASK-SKRIPT-40-04-09/plan.md`, with recommendations and the drafted junior units.
 - Retained root `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a15330-34cd-7103-bb71-cc8ef9b8a56f` (explorer discovery under `discovery/explorer/`).
-- Next: on the answers, close P5 and P6, run the staging reproduction, then launch the units above.
+- Next: on the user's answers, close the plan rows, run the staging reproduction, derive the accepted terms into this table, then launch the units.
