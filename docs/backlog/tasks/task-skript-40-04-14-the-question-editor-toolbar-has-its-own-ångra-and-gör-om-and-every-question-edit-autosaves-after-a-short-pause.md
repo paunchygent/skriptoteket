@@ -38,13 +38,20 @@ Behaviour:
    - `Sparat HH:MM` after a store;
    - `Inte sparat` when a store failed or was refused, with the reason in the tooltip. The refusal reason is the save rule's existing Swedish copy.
    After a network or server failure the pending edit stays and the store is retried every 5 s and on the next edit. Ctrl/Cmd+S stores a pending edit at once. An export first stores a pending edit, where it ran Spara before. Osparat is gone.
-7. Cross-tab conflicts (D4). When a store or a position move meets 409 because another tab moved the history, the workspace reads the newest server state and keeps the teacher's pending edit. It then stores that edit as a new step after the other tab's newest step, and shows a notice that the exam was changed in another tab, that the teacher's edits were saved on top, and that Ångra shows the other tab's version. With no pending edit, the workspace reloads and shows that the exam was changed in another tab. A 409 that arrives while an operation is busy waits for the operation to end and is then handled the same way; today such a 409 skips the reload. This replaces the 409 reload that 40-04-09 R9 kept (review aeb140ef F1).
-8. Guests (D5): a guest has no Mina filer. The guest draft replica (`examWorkspaceGuestDraft.ts`) follows the same model in IndexedDB: a stored step updates the saved draft, undo and redo move it, it keeps 50 steps, and the status reads `Sparat i webbläsaren HH:MM`. Copy goes to `ui-copy-reviewer`.
+7. One editing tab (D4, user 2026-10-19). One tab at a time edits an exam. Any other tab shows `Öppet i en annan flik`, stays read-only, and offers `Ta över`. Nothing is lost and nothing is overwritten.
+   - Claim: each page load has a random tab id. Opening an exam claims its edit lease on the server for that user and lineage. The claim succeeds when no live lease exists or the lease is the tab's own; otherwise the tab opens read-only.
+   - Heartbeat: the holder renews the lease every 5 s, and a lease not renewed for 15 s is dead. Every step store and position move carries the tab id, and the server refuses a write from a tab that does not hold the lease (409 with its own code). A refused holder turns read-only and keeps its pending edit visible.
+   - Takeover: `Ta över` asks the server for the lease. The holder sees the request at its next heartbeat. It stores its pending edit, releases the lease and turns read-only. The new tab then gets the lease and reads the newest state, so the takeover waits at most 5 s, and the other tab's edits are already stored.
+   - Closed or crashed tab: a closed tab releases its lease on `pagehide`. A crashed or sleeping tab stops renewing, so after 15 s a waiting takeover gets the lease. Any edit that tab had not stored was never on the server.
+   - A read-only tab does not follow live edits. It reads the newest state when it takes over.
+   - A busy-time 409 waits for the operation to end instead of skipping the reload.
+   - This replaces the 409 reload that 40-04-09 R9 kept (review aeb140ef F1).
+8. Guests (D5): a guest has no Mina filer. The guest draft replica (`examWorkspaceGuestDraft.ts`) follows the same model in IndexedDB: a stored step updates the saved draft, undo and redo move it, it keeps 50 steps, and the status reads `Sparat i webbläsaren HH:MM`. The edit lease for a guest is a lease record in the same IndexedDB store, with the same tab id, heartbeat, expiry and takeover rules. Tabs signal each other through a `BroadcastChannel`, so a takeover between a guest's tabs is immediate. Copy goes to `ui-copy-reviewer`.
 9. During a conversion of the open exam, a step that changes a placeholder still being converted is refused by the existing guard (`refuse_placeholder_changes`), which already applies to steps and Spara alike. The status shows `Inte sparat` with that reason.
 
 Scope split (orchestrator 2026-10-19): the Mac toolbar session owns where the toolbar Ångra and Gör om sit (Q5: first, before B I U) and how they look, and the look of the header status slot. This task builds the behaviour and exposes `canUndo`, `canRedo`, `undo`, `redo` and the save status for that session to place and style. It removes the Spara button, because removing it is behaviour.
 
-Non-goals: toolbar and header layout and look; a merge of two tabs' edits inside one document; changes to export or print output.
+Non-goals: toolbar and header layout and look; editing one exam in two tabs at once; changes to export or print output.
 
 ## Contract Inputs
 
@@ -66,8 +73,8 @@ Ready 2026-10-19 (lead 73032e62, retained root `01a1541f-38b9-7a10-a94e-9fd8a0bd
 
 Frontend paths are under `frontend/apps/skriptoteket/src/views/apps/exam-workspace/`, and backend paths start with `src/skriptoteket/`. Waves:
 1. K1, K2 and K3. K3 then regenerates the API types with `pdm run fe-gen-api-types`.
-2. K4 and K7.
-3. K5 and K6.
+2. K4, K6 and K7.
+3. K5 and K8.
 
 | Unit | Files | Behaviour | Focused tests |
 | --- | --- | --- | --- |
@@ -76,10 +83,11 @@ Frontend paths are under `frontend/apps/skriptoteket/src/views/apps/exam-workspa
 | K3 backend one save | `src/skriptoteket/application/curated_apps/handlers/`: `exam_workspace_undo_steps.py` (the step store also overwrites the file), `exam_workspace_document_store.py` (shared file write; the step limit), `exam_workspace_documents.py` (a position-move command; remove Spara `_save` and its route in `src/skriptoteket/web/api/v1/apps_conversion_hub_exam_workspace.py` once no caller is left) | Items 1, 3 and 4 on the server | The undo-step, history-step, save-retention and route tests; a new position-move test |
 | K4 frontend history | `useExamWorkspaceHistory.ts` (position move on undo and redo, save status, retry), `src/api/examWorkspace.ts` (the move call), `examWorkspaceStore.ts` | Items 3 and 6 | `useExamWorkspaceHistory.spec.ts`, `useExamWorkspaceEditing.history.spec.ts`, `useExamWorkspaceEditing.typingPause.spec.ts` |
 | K5 Spara removal | `useExamWorkspaceSave.ts` (Spara goes; Spara som stores first), `useExamWorkspaceSaveFlow.ts` (status from K4), `ExamWorkspaceHeader.vue` (no Spara button or item; shows the status text), `useExamWorkspaceKeyboard.ts` (Ctrl/Cmd+S stores), `useExamWorkspaceExports.ts` (store before export), the API `saveExamWorkspaceDocument` and its store entries | Items 1 and 6 | The save, save-flow, header, keyboard and export specs |
-| K6 cross-tab | `useExamWorkspaceHistory.ts` (409 keeps and re-stores the pending edit), `useExamWorkspaceDocument.ts` (`reloadDocument` never skips while busy; it waits) | Item 7 | `useExamWorkspaceEditing.history.spec.ts` (the 409 cases that 40-04-09 F1 pinned change to the new policy), `useExamWorkspaceEditing.gapUndo.spec.ts` |
-| K7 guest replica | `examWorkspaceGuestDraft.ts`, `examWorkspaceGuestStore.ts`, `examWorkspaceGuestStoreCommit.ts` | Item 8 | `examWorkspaceGuestDraft.spec.ts`, `examWorkspaceGuestStore.history.spec.ts` |
+| K6 backend edit lease | `src/skriptoteket/application/curated_apps/handlers/` (a new `exam_workspace_edit_lease.py`: claim, renew, request, release), the lease state next to the history row (one migration), the write guard in the step store and the position move, the routes | Item 7 on the server | New lease handler and route tests; the undo-step tests with a lease |
+| K7 guest replica | `examWorkspaceGuestDraft.ts`, `examWorkspaceGuestStore.ts`, `examWorkspaceGuestStoreCommit.ts`, a guest lease in the same IndexedDB store | Item 8 | `examWorkspaceGuestDraft.spec.ts`, `examWorkspaceGuestStore.history.spec.ts`, a new guest lease spec |
+| K8 frontend edit lease | A new `useExamWorkspaceEditLease.ts` (claim, heartbeat, takeover, `pagehide` release), `useExamWorkspaceDocument.ts` (read-only while not holding; `reloadDocument` waits while busy), `useExamWorkspaceHistory.ts` (the tab id on writes; a lost lease turns read-only and keeps the pending edit), `ExamWorkspaceView.vue` (the read-only state and `Ta över`) | Item 7 | A new `useExamWorkspaceEditLease.spec.ts`, `useExamWorkspaceEditing.history.spec.ts` (the 409 cases that 40-04-09 F1 pinned change) |
 
-K4 and K6 both touch `useExamWorkspaceHistory.ts`, so they run in different waves. Every unit that removes a path also deletes its tests; no dual path stays.
+K4 and K8 both touch `useExamWorkspaceHistory.ts`, and K3 and K6 both touch the step store handler, so they run in different waves. Every unit that removes a path also deletes its tests; no dual path stays.
 
 Performance (D1): the step store already parses the stored file and every retained step's asset set, and rebuilds the container on every stored step (`prepare_editor_content`, `conversion-editing` and `spara-write` discovery). Writing the file in the same transaction adds one blob write and one row update per step, at most one per 900 ms pause per teacher. The asset scan grows with the step limit, from 10 to 50 steps. K3 measures a step store with 50 retained steps on a fixture with pictures and reports the time. If it exceeds 300 ms, K3 stops and reports before the limit is raised.
 
@@ -87,12 +95,12 @@ Performance (D1): the step store already parses the stored file and every retain
 
 - Per unit: its focused spec files, run as `pdm run fe-test -- <spec path>` or `pdm run pytest <test file>`. For K3 also `pdm run lint` and `pdm run typecheck`.
 - At the end: `pdm run fe-type-check`, `pdm run fe-lint`, `pdm run fe-build`, and on the orchestrator's go one domain suite per touched domain (the exam-workspace frontend and backend).
-- Copy (the status texts, the guest status and the cross-tab notice) goes to `ui-copy-reviewer`.
+- Copy (the status texts, the guest status, `Öppet i en annan flik` and `Ta över`) goes to `ui-copy-reviewer`.
 - Staging walk on Hemma in a real browser:
   1. Type in a question and wait: the status shows Sparat. Reopen the exam from Mina filer: the text is there.
   2. Ångra, then reopen from Mina filer: the file holds the undone version.
   3. Edit a gap answer, wait, Ångra.
-  4. Two tabs: edit in one, then type in the other. The notice shows, and the second tab's typing is stored. Ångra shows the first tab's version.
+  4. Two tabs: the second shows Öppet i en annan flik and is read-only. Type in the first, then press Ta över in the second: the first tab's typing is in the second, and the first is read-only. Close a holder tab: a takeover in the other is immediate.
   5. Guest: type, wait, reload the page: the draft is there.
   6. No Spara button.
 
@@ -119,6 +127,6 @@ Stop and ask the user if a unit needs a toolbar or header layout decision (send 
 | D1  | Every stored step writes the file in the same transaction, because the step store already rebuilds the container, so the write adds one blob write; no separate file cadence (lead design 2026-10-19 from Q3 and `spara-write`, `conversion-editing` discovery) |
 | D2  | Undo and redo move the server position and write that step's document to the file without a new step, because the history-step read is read-only today and "Sparat" must be true after an undo (lead design 2026-10-19 from Q3, Q4 and `step-read-position` discovery) |
 | D3  | One computed save status: Sparar …, Sparat HH:MM, or Inte sparat with the reason; failures retry every 5 s and on the next edit; Ctrl/Cmd+S and exports store a pending edit first (lead design 2026-10-19 from Q3) |
-| D4  | On a cross-tab 409, read the newest server state, keep the pending edit and store it on top, with a notice that names the other tab and Ångra; a busy-time 409 waits instead of skipping the reload. The user may override this; the alternatives were a tab lease (the other tab read-only) and keep-and-ask (two actions) (lead design 2026-10-19 from Q3 and review aeb140ef F1) |
+| D4  | One editing tab at a time: a server edit lease per user and lineage, claimed on open, renewed every 5 s and dead after 15 s; writes carry the tab id; `Ta över` waits for the holder to store and release, or for its lease to expire; `pagehide` releases (user 2026-10-19 chose one editing tab; the lead's keep-mine-on-top proposal was rejected; lease mechanics are the lead's design) |
 | D5  | Guests follow the same model in the IndexedDB replica, with the status Sparat i webbläsaren HH:MM (lead design 2026-10-19 from Q3) |
 | D6  | Scope split: this task exposes `canUndo`, `canRedo`, `undo`, `redo` and the save status; the Mac toolbar session places and styles the toolbar pair and the status slot (orchestrator 2026-10-19) |
