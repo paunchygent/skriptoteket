@@ -155,36 +155,40 @@ Planned junior units, in order. Each unit has its own focused spec. The final li
 | T7  | New glyph meanings go into the shared skill-repository `uiGlyphs.ts` through that repository's change route, then reach this repository through `design-system sync` (user 2026-10-19). The mark toolbar uses the catalogue's existing `bold`, `italic`, `underline`, `superscript`, `subscript` and `heading-1..3` meanings. |
 | T8  | Validation is the focused specs, the guard spec, keyboard reach and focus ring, and the screenshots named above; no staging walk. |
 
-## Resume here (2026-10-19, planning)
+## Resume here (2026-10-19, held)
 
-Status stays proposed. The user has answered Q1-Q3 and the glyph authority (T4-T7). The mocks are in the retained root at `evidence/mockups/controls/`:
+Status stays proposed. HELD on the orchestrator's instruction (944b5a5a, 2026-10-19): the user moved the toolbar and button redesign (density, sizes, tiers, tokens, header layout) into its own Mac session, "Exam workspace toolbar redesign: inventory and mockups", which owns the contract now. No junior was launched and no code was written. The branch has current origin/main merged (41-02-04, 0b52aed4).
 
-- `before-1440.png`, `after-1440.png`, `before-1920.png` and `after-1920.png` show the nav rail, the header, the list head, the question head, the editor toolbar, a Fritextfråga item and a drawer head.
-- The after images add a states strip.
+Handover material (retained root `.orchestration/context/sessions/01a15383-370d-707d-876f-cf2953eb536b/` in the primary checkout):
 
-The open user questions are in the retained ledger:
+- `evidence/planning/TASK-SKRIPT-40-04-11/plan.md`: its Evidence section holds the 98-control inventory with file:line and the proposed tiers; its ledger holds the decisions D1-D17.
+- `evidence/mockups/controls/proposed-controls.css`, `before-1440.png`, `after-1440.png`, `before-1920.png`, `after-1920.png`, and `build.py`, which regenerates them.
+- `evidence/mockups/one-off-offers.png`.
 
-- D12 sizes: (A) a 28 px box with a 20 px glyph, the rail's glyph size; (B) 28 px with a 16 px glyph, as in VS Code; (C) 32 px with a 20 px glyph, which needs a new shared token. Recommended: A. With A, the bars are 36 px for tools and 52 px for heads, which takes the header from 60 to 52 px. Tools sit 4 px apart, with 8 px either side of a separator, and bars have 16 px side padding. Every option matches the rail's 20 px glyph, not its 40 px item height; the user says if they meant the item height.
-- D13 token owner: (A) a workspace alias block in `examWorkspace.css` over existing shared tokens; (B) new shared `--huleedu-workbench-*` roles in the skill repository. Recommended: A, since option A of D12 needs no new value.
-- D14 touch: (A) a coarse pointer switches `--xw-box` to 44 px, keeping the same boxless look; (B) desktop only, with 28 px on touch. Recommended: A.
-- D15 tier per control: the full table is in the retained plan. These choices are the user's:
-  - Öppna, Exportera and PDF as tier 2 eyebrows (recommended) or Öppna as tier 1;
-  - Gör till lucka as a tier 1 glyph with a tooltip (recommended), or tier 2, which would grow the editor toolbar from 36 to 52 px;
-  - Ny uppgift and Markera as eyebrows above the glyph (recommended, per the latest rule) or the word beside the glyph (the user's earlier note).
-- D16 header: the title with a pencil glyph and the "Provets uppgifter" tooltip; the metadata inline after it; Osparat directly left of Spara; Ångra and Gör om as the first tool group; the preview as an eye glyph with the eyebrow "PDF" and the tooltip "Förhandsgranska PDF"; the AI admin-only note as the AI glyph's tooltip. Recommended as mocked.
-- D6 states:
-  - hover: `--huleedu-action-05` with an action-coloured glyph, on fine pointers only;
-  - pressed or expanded: `--huleedu-action-10`;
-  - focus: a 2 px `--huleedu-action-40` ring at offset 0;
-  - disabled: `--huleedu-navy-30`;
-  - delete hover: `--huleedu-critical-05`.
+The user's answers of 2026-10-19 (AskUserQuestion, relayed by the orchestrator), recorded as given. The orchestrator reported that the user accepted the plan with them; the held status replaces that acceptance until the redesign session decides:
 
-  Recommended as mocked.
-- D11 (Q5): the three one-off offers are not built as the rule asks. On main 26f84883 each is a glyph-plus-text button:
-  - "Gör om till {typ}" (`ExamWorkspaceQuestionHead.vue:171-184`, `xw-btn xw-btn--compact`);
-  - "Ångra AI-tolkningen" (`ExamWorkspaceQuestionEditor.vue:349-362`, `xw-btn xw-btn--compact`);
-  - "Lägg till i mina kurser" (`ExamWorkspaceDetailsDrawer.vue:272-284`, `xw-linkbtn`).
+- D12 sizes: "28 box / 16 glyph". Tools are a 28 px box with a 16 px glyph; this is not the lead's recommendation of a 20 px glyph.
+- D14: 44 px on a coarse pointer.
+- D15: the eyebrows as mocked (Öppna, Exportera, PDF, Ny uppgift, Markera, Import). Gör till lucka stays T1.
+- D6 states: as mocked.
+- Q5 one-offs: text plus accept and dismiss glyphs. The course offer has no dismiss.
+- D13: A, a local `.xw-root` alias block over the existing shared tokens; no new shared values.
+- D16 header, changed by other decisions:
+  - the user chose autosave as Spara (TASK-SKRIPT-40-04-14, lead 73032e62), so the Spara button and Osparat go;
+  - the header ends in a fixed-width status slot: a cloud-check glyph plus "Sparat", which becomes "Sparar …" while a write runs, with no shift;
+  - "Spara som …" moves into the Öppna/Exportera group;
+  - the rest of D16 is as recommended.
+- Gap tool, decided in TASK-SKRIPT-40-04-13:
+  - the switch (text-select glyph) is the only gap control;
+  - the toolbar Lucka and the floating Gör till lucka glyph are removed, and there is no empty-gap control;
+  - Ångra and Gör om become the first two glyphs of the question toolbar (TASK-SKRIPT-40-04-14);
+  - so Gör till lucka and Lucka leave the inventory, and the switch and the toolbar undo pair are styled as T1.
+- Ownership: 73032e62 owns MarkToolbar's behaviour and this task owns the shared look (classes and tokens); the export lead (TASK-SKRIPT-40-04-16) owns ExportMenu. Merge order on shared files: 41-02-04, then 40-04-08, then the others.
 
-  The before and after mockup is `evidence/mockups/one-off-offers.png`. The orchestrator puts it back to the user.
+Lead notes for the new owner:
 
-Next: when the user answers, record each answer as a closed ledger row, add the accepted terms here, fill the acceptance criteria, and ask the parent for ready.
+- The type offer's dismiss can clear the item's `suggested_kind` through `editDocument`, which Ångra reverses; no new stored field is needed.
+- The AI-interpretation offer's accept ("Behåll AI-tolkningen") would need a stored mark that the interpretation was kept, because `canUndoInterpretation` (`examWorkspaceItemEdits.ts:169`) shows the offer for as long as `answer_key.origin` is `ai_interpreted`.
+- A new `apply-to-all` glyph meaning needs a governed skill-repository release (the precedent is TASK-SKILL-REP-0330, huleedu-integrated 0.1.32) in a parent-owned skill-repository worktree.
+
+Next: the redesign session's contract decides this task's future.
