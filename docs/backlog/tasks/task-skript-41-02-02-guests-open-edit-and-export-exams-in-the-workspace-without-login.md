@@ -86,7 +86,10 @@ Stop and report if the shared editor cannot run on a browser store without forki
 - Merge 6611b098: origin/main 0cb1df1a with TASK-SKRIPT-41-02-01. The signed-in QTI import goes through `store.teacher.importExamWorkspaceQti`, and the guest handoff uses main's `document_summary`.
 - F5 (guest QTI start): `POST .../exam-converter/workspace/imports/qti` admits under GUEST_IMPORT, parses with `ParseExamWorkspaceQtiPackageHandler` and returns the document and base64 assets, with no server write. `store.guest.startFromQti` stores them as the browser draft, and the one intake opens it. Guests can choose a `.zip`; `.dxe` and `.docx` keep the G4 prompt. Focused proof: backend 58, frontend 119. The backend route test failed before the fix (404); the frontend specs were written after the code. The new frontend specs fail against the pre-F5 source (12 failed; `evidence/f5-frontend-fail-first.log`).
 - F5b: the guest draft keeps the QTI import notes, shows them on open as a teacher's import does, and posts them with the handoff into the Mina filer container. Before the fix 9 frontend and 12 backend tests failed; after it 122 frontend and 14 backend tests pass.
-- Next: one suite slot covering full Vitest at the R10 head plus the backend files U8, the merge and F5 touch; then F4, U8 and F5 go to review da90f12c.
+- Suite slot 2026-10-19:
+  - At 5c762235: backend 116 unit and 12 integration tests passed. Vitest had 3 failures in main's `ExamWorkspaceImportBox.origin.spec.ts`, which mounted without the workspace providers; R11 fixed the spec.
+  - At abb01b7a: Vitest 444 files, 3064 passed.
+- Next: F4 (R10), U8, F5 and F5b go to review da90f12c.
 - Open findings:
   - The caller key is an unsalted sha256 of the client IP; rows are pruned after about 2 hours.
   - `ExamConverterPublicView.vue` stays until 41-02-03.
