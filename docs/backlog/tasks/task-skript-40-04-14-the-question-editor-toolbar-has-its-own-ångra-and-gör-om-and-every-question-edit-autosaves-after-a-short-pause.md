@@ -41,6 +41,8 @@ Non-goals: an editor-local undo stack; changes to Spara som, export or print; th
 
 - The user's feedback 2026-10-19 (U1, U2), relayed by the Mac parent through the Hemma orchestrator 944b5a5a.
 - TASK-SKRIPT-40-04-03 W5 and W8 and TASK-SKRIPT-39-04-08 (the server-stored undo history), TASK-SKRIPT-40-04-06 D2 (Ctrl/Cmd+Z in a text field runs the workspace history), TASK-SKRIPT-40-04-09 R9.
+- The verbatim transcripts: `evidence/planning/user-feedback-2026-10-19.md` in retained root `01a1541f-38b9-7a10-a94e-9fd8a0bd1bcc`.
+- TASK-SKRIPT-40-04-11 (proposed, branch `codex/task-skript-40-04-compact-tools-remote`): boxless glyph tools (T1, T2); the toolbar glyphs here take its look.
 - Retained root `01a1541f-38b9-7a10-a94e-9fd8a0bd1bcc`: plan `evidence/planning/TASK-SKRIPT-40-04-14/plan.md`, Explorer discovery under `discovery/explorer/`, toolbar mock `evidence/planning/mock/toolbar-mock.png`.
 - `huleedu-ui-design` (glyph-only tools; a status that changes sits in a slot sized for its widest state); `integrated-frontend-stack`.
 

@@ -28,8 +28,8 @@ The user tested the gap tool (TASK-SKRIPT-40-04-09) on staging on 2026-10-19 and
 Status `proposed`: the user questions Q1-Q8 in the retained plan are open. The planned behaviour, if the user accepts the lead's recommendations:
 
 1. With the gap tool on, a click on a gap turns it back into text in one undo step: a Lucktext gap becomes its first accepted answer as plain text (reusing `withGapAsText`), a dropdown gap becomes its correct option's text, and a gap without an answer is removed. Its other answers and options go with it; Ångra restores the gap whole.
-2. The Luckverktyg toggle is the one gap control. The toolbar Lucka button and the floating Gör till lucka glyph are removed; with the tool off the editor is plain text, and a gap click opens its popover. With the tool on, a word click or any highlighted span in one paragraph makes one gap; Enter on a keyboard selection makes one; Enter or Space on a selected gap opens its popover; the second click of a double click does nothing.
-3. A secondary glyph, Tom lucka, inserts an empty gap at the caret and opens its popover with the answer field focused; closing it with no answer removes the gap, so a keyed question never holds an unanswered gap.
+2. The Luckverktyg toggle is the one gap control. The toolbar Lucka button and the floating Gör till lucka glyph are removed, which reverses the user's earlier 40-04-09 Q5, Q12 and Q13; with the tool off the editor is plain text, and a gap click opens its popover. With the tool on, a word click or any highlighted span in one paragraph makes one gap; Enter on a keyboard selection makes one; Enter or Space on a selected gap opens its popover; the second click of a double click does nothing.
+3. A secondary glyph, Tom lucka, inserts an empty gap at the caret and opens its popover with the answer field focused; closing the popover of any gap that has no answer (new, or emptied by the teacher) removes that gap in one undo step, so a keyed question never holds an unanswered gap.
 
 Non-goals: native-format, API, export or print changes; the toolbar Ångra and Gör om and autosave (TASK-SKRIPT-40-04-14).
 
@@ -37,6 +37,8 @@ Non-goals: native-format, API, export or print changes; the toolbar Ångra and G
 
 - The user's feedback 2026-10-19 (U1-U3), relayed by the Mac parent through the Hemma orchestrator 944b5a5a.
 - TASK-SKRIPT-40-04-09 and its repairs R9-R10 (main 26f84883; repair 2af07df2 on `codex/task-skript-40-04-gap-toggle-back-remote`).
+- The verbatim transcripts: `evidence/planning/user-feedback-2026-10-19.md` in retained root `01a1541f-38b9-7a10-a94e-9fd8a0bd1bcc`.
+- TASK-SKRIPT-40-04-11 (proposed, branch `codex/task-skript-40-04-compact-tools-remote`): boxless glyph tools (T1, T2); the toolbar glyphs here take its look.
 - Retained root `01a1541f-38b9-7a10-a94e-9fd8a0bd1bcc`: plan `evidence/planning/TASK-SKRIPT-40-04-13/plan.md`, Explorer discovery under `discovery/explorer/`, toolbar mock `evidence/planning/mock/toolbar-mock.png`.
 - `huleedu-ui-design` (glyph-only tools, names in tooltip and aria-label only); `integrated-frontend-stack`; TipTap 3.31.3 docs through `ctx7`.
 
