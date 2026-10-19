@@ -45,6 +45,7 @@ def trailing_points(text: str) -> TrailingPoints | None:
     Two shapes count: a last line that is only a points line, which leaves
     with its newline, and a parenthesised label ending the last line, which
     leaves with the blank space before it. A label with no number is ignored.
+    When the line holds several labels, nothing counts.
     """
     stripped = text.rstrip()
     line_start = stripped.rfind("\n") + 1
@@ -52,7 +53,9 @@ def trailing_points(text: str) -> TrailingPoints | None:
     matches = list(POINT_LABEL.finditer(line))
     if not matches:
         return None
-    if len(matches) == 1 and points_only_line(line):
+    if len(matches) > 1:
+        return None
+    if points_only_line(line):
         value = label_points(matches[0].group())
         if value is None:
             return None
@@ -253,6 +256,17 @@ def leftover_points_wording(
     return None
 
 
+def _body_label_count(body: tuple[NativeParagraph, ...]) -> int:
+    """The points labels over the joined text of every paragraph's text segments."""
+    joined = "\n".join(
+        "".join(
+            segment.text for segment in paragraph.segments if isinstance(segment, NativeTextSegment)
+        )
+        for paragraph in body
+    )
+    return len(list(POINT_LABEL.finditer(joined)))
+
+
 def with_settled_points_wording(item: NativeExamItem) -> NativeExamItem:
     """The item with its trailing points wording settled against its points.
 
@@ -262,8 +276,11 @@ def with_settled_points_wording(item: NativeExamItem) -> NativeExamItem:
     first-paragraph number records nothing. Only the body and the leftover field
     change; points, review and every source record stay as they are. A missing
     number, a stem of only wording or a body the rule never matches returns the
-    item untouched.
+    item untouched. A body holding several labels is left untouched as well:
+    nothing is removed and nothing is recorded.
     """
+    if _body_label_count(item.body) > 1:
+        return item
     settled = body_without_trailing_points(item.body, item.points)
     if settled == item.body:
         leftover = leftover_points_wording(item.body, item.points)

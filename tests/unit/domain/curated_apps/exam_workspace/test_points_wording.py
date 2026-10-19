@@ -52,6 +52,11 @@ def test_points_line_is_found_with_the_newline() -> None:
     assert trailing_points(text) == TrailingPoints(start=text.index("\n"), value=6, whole_line=True)
 
 
+def test_several_labels_on_one_line_are_not_wording() -> None:
+    assert trailing_points("Räkna. (1 p) (2 p)") is None
+    assert trailing_points("Räkna. (2 p) (2 p)") is None
+
+
 @pytest.mark.parametrize(
     "text",
     [
@@ -100,6 +105,8 @@ def test_matching_wording_leaves_the_text(
         ("(2 p)", 2),
         ("Svara (2 p) och motivera.", 2),
         ("Give 3 points of view.", 3),
+        ("Räkna. (1 p) (2 p)", 2),
+        ("Räkna. (2 p) (2 p)", 2),
     ],
 )
 def test_kept_wording_stays_whole(text: str, points: int | float | None) -> None:
@@ -400,15 +407,55 @@ def test_first_paragraph_volt_question_is_untouched() -> None:
     assert result.leftover_points_text is None
 
 
+def test_settled_item_with_two_labels_on_one_line_keeps_everything() -> None:
+    for text in ("Räkna. (1 p) (2 p)", "Räkna. (2 p) (2 p)"):
+        body = (_paragraph(_text(text)),)
+        item = with_settled_points_wording(_item(body, 2))
+        assert item.body == body
+        assert item.leftover_points_text is None
+
+
+def test_settled_item_with_two_points_lines_keeps_everything_and_is_idempotent() -> None:
+    body = (
+        _paragraph(_text("Fråga.")),
+        _paragraph(_text("Poäng: 2 poäng")),
+        _paragraph(_text("Poäng: 2 poäng")),
+    )
+    once = with_settled_points_wording(_item(body, 2))
+    assert once.body == body
+    assert once.leftover_points_text is None
+    assert with_settled_points_wording(once) == once
+
+
+def test_settled_item_with_a_label_at_each_end_keeps_everything() -> None:
+    body = (
+        _paragraph(_text("Fråga. (2 p)")),
+        _paragraph(_text("Avslutning. (3 p)")),
+    )
+    item = with_settled_points_wording(_item(body, 2))
+    assert item.body == body
+    assert item.leftover_points_text is None
+
+
+def test_single_matching_labels_still_leave() -> None:
+    body = (_paragraph(_text("Vilket ord är ett verb? (2 p)")),)
+    assert with_settled_points_wording(_item(body, 2)).body == (
+        _paragraph(_text("Vilket ord är ett verb?")),
+    )
+    prose = (_paragraph(_text("Give 3 points of view. (2 p)")),)
+    assert with_settled_points_wording(_item(prose, 2)).body == (
+        _paragraph(_text("Give 3 points of view.")),
+    )
+
+
 def test_matching_labels_at_both_ends_leave_and_settling_is_idempotent() -> None:
+    # D3 (with several labels nothing is removed) and review F3: an item
+    # whose body holds more than one points label keeps both labels.
     body = (
         _paragraph(_text("Frågan inleds här. (2 p)")),
         _paragraph(_text("Frågan avslutas här. (2 p)")),
     )
     once = with_settled_points_wording(_item(body, 2))
-    assert once.body == (
-        _paragraph(_text("Frågan inleds här.")),
-        _paragraph(_text("Frågan avslutas här.")),
-    )
+    assert once.body == body
     assert once.leftover_points_text is None
     assert with_settled_points_wording(once) == once
