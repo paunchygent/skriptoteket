@@ -23,7 +23,7 @@ backlog_document_profile: contract-derived
 
 ## Implementation Contract
 
-The user reported on 2026-10-19 that the printed-total actions in the exam workspace do not work. This task replaces those actions with a printed-total difference that informs the teacher, names what the data can attribute it to, and can be dismissed. It is proposed: the user chooses the display and the dismissal in the retained plan before any junior writes code; if the user chooses a note without a list, the task is retitled.
+The user reported on 2026-10-19 that the printed-total actions in the exam workspace do not work. This task replaces those actions with a printed-total difference that informs the teacher, names what the data can attribute it to, and can be dismissed. It is proposed until the part-level buttons (T8) are decided and the plan is accepted.
 
 Root cause, from the code at `06985163`:
 
@@ -42,7 +42,7 @@ What the data supports:
 - Question level, with one backend addition: every importer already knows the per-question printed value at import (`printed_points(own)` in DOCX, `max_score` in DigiExam and QTI). Storing it on the item as `source_points` (the number the source printed for that question, `null` when it printed none) makes the exact per-question difference available. This is a stored-format change (`native_exam_document_v8` to `v9`, no v8 reader; open exams must be re-imported).
 - A difference the source itself contains (its questions print 67 p, its total line says 70 p) belongs to no question. The display states that remainder as such.
 
-So option A as the user phrased it is supported exactly for parts today, and for questions only after the `source_points` addition. Option B is supported today.
+So an exact per-question list needs the `source_points` addition, which the user chose on 2026-10-19 (T3, T7).
 
 Non-goals: editing a printed total to a new number; any change to how the converter reads points; export changes (no export reads `printed_total`).
 
@@ -56,32 +56,43 @@ Non-goals: editing a printed total to a new number; any change to how the conver
 
 ## Core Vertical And Performance
 
-The core vertical is one pure function that turns the open document into a printed-total account: the exam's printed and summed totals, each part that differs, each question that differs, and the remainder no question explains. The footer, the part rows and the part instruction editor render that account; a click on an entry selects that question or part through the list's existing `select`. The dismissal is one ordinary document edit with one undo step, so it saves, autosaves and undoes like every other edit. Performance is not material: the account is a linear pass over the items, recomputed live.
+The core vertical is one stored-format change and one pure function. `native_exam_document_v9` adds `source_points` to every item (the points the source printed for that question, set at import) and a per-exam dismissed mark to the header, with no v8 reader; open exams are imported again. `examWorkspacePrintedDifferences(document)` turns the open document into a printed-total account: the exam's printed and summed totals, each question whose points differ from `source_points` or have none, and the remainder no question explains. The footer renders the account as an amber note with an expandable list; a click on an entry selects that question through the list's existing `select`. Använd beräknade poäng and dismiss are ordinary document edits with one undo step each, so they save, autosave and undo like every other edit. Performance is not material: the account is a linear pass over the items, recomputed live.
 
-The junior units depend on the user's answers and are drafted in the retained plan (see Resume here).
+Units, each a fresh `junior-implementation-specialist` with disjoint files, in this order:
+
+1. Backend v9: `source_points` on `NativeExamItem` (required, nullable; null when the source printed none and for teacher-created and split questions; kept by a points edit and a type change), set by the DOCX (`printed_points(own)`, before any estimate), DigiExam and QTI (`max_score`) importers; the dismissed mark on `NativeExamHeader` (required boolean); `native_exam_document_v9` everywhere; regenerated `openapi.d.ts` and fixtures. Focused pytest per importer and for the model.
+2. Frontend account: `examWorkspacePrintedDifferences` in `examWorkspaceTotals.ts`, with adversarial unit tests (decimals, float noise, null points, null `source_points`, a source-internal remainder, questions inside parts).
+3. Frontend display: the note, the list, Använd beräknade poäng (reusing `withoutPrintedTotals`) and dismiss in the footer of `ExamWorkspaceQuestionList.vue`; `acceptExamPrintedTotal` and the Använd 67 p button deleted; the part-level buttons as T8 decides. Fail-first component tests rewrite the accept blocks of `ExamWorkspaceTotalsSlice.spec.ts` and every spec that names `exam-workspace-accept-`.
 
 ## Validation
 
 - Before any code: reproduce the user's click on staging at the current main on an exam whose printed total differs, and record which state the two actions were in and what each click did.
-- Fail-first Vitest for the account function and for the display: the note reads as information and not as a warning to act on; no Använd action exists on the footer, a part row or the part instruction editor; each listed entry names its question or part and its point difference and selects it on a click; the remainder is stated when no question explains it; the dismissal clears the note in one undo step and Ångra brings it back (as the dismissal decision states); nothing moves the list rows when the note appears or goes (the 40-04-07 layout-slot rule).
-- Focused pytest for unit 1 when it runs; `pdm run lint`, `pdm run typecheck`, frontend typecheck, ESLint and build; one exam-workspace domain suite at the end after the orchestrator's go.
-- A staging walk of the exam converter on an exam whose printed total differs: open the list, click an entry and land on that question, dismiss the note, reload and confirm the dismissal holds as decided, and undo it. Also walk it while a conversion is still running.
+- Focused pytest for unit 1: each importer stores the printed per-question points, an estimated or unprinted question stores null, a points edit keeps `source_points`, and a v8 document is refused.
+- Fail-first Vitest for the account function and for the display: the note reads as information; the footer offers exactly Använd beräknade poäng and the dismiss action; each list entry reads "Fråga N: provtexten X p, nu Y p" and selects its question on a click; the remainder is stated when no question explains the difference; Använd beräknade poäng leaves only the sums on the footer and part lines in one undo step; dismiss closes the note and list, keeps a neutral grey "provtexten anger N p" and holds after a reload; Ångra undoes each; no row moves when the note appears or goes (the 40-04-07 layout-slot rule).
+- `pdm run lint`, `pdm run typecheck`, frontend typecheck, ESLint and build; one exam-workspace domain suite at the end after the orchestrator's go.
+- A staging walk of the exam converter on a re-imported exam whose printed total differs: open the list, click an entry and land on that question, use Använd beräknade poäng and undo it, dismiss and reload and confirm the grey number holds, and undo the dismissal. Also walk it while a conversion is still running.
 
 ## Stop Conditions
 
-Stop and report to the parent when the staging reproduction shows a defect outside this contract (for example the buttons were disabled by a stuck busy state), when an importer cannot name a question's printed points without a converter change, or when the chosen dismissal needs client-stored state.
+Stop and report to the parent when the staging reproduction shows a defect outside this contract (for example the buttons were disabled by a stuck busy state), or when an importer cannot name a question's printed points without a converter change.
 
 ## Decided Contract Terms
 
 | ID  | Decided contract term |
 | --- | --------------------- |
-| P2  | A printed-total difference is information, never a warning to act on and never a save or export gate (user ruling 2026-10-17, kept). |
-| P3  | Reaching the printed number stays a points edit on the questions; no action sets points or a printed total to a chosen number (TASK-SKRIPT-40-04-06 non-goal, kept). |
+| T1  | A printed-total difference is information, never a warning to act on and never a save or export gate (user ruling 2026-10-17, kept). |
+| T2  | Reaching the printed number stays a points edit on the questions; no action sets points or a printed total to a chosen number (TASK-SKRIPT-40-04-06 non-goal, kept). |
+| T3  | Each item stores `source_points`, the points the source printed for that question, set at import; null when the source printed none (user 2026-10-19 via the Mac parent). |
+| T4  | Under the amber note an expandable list names each question whose points differ from `source_points` or are missing, as "Fråga N: provtexten X p, nu Y p", and a click jumps to that question; a difference no question explains is stated as a remainder (user 2026-10-19 via the Mac parent; remainder from plan F6). |
+| T5  | The footer offers one working action, Använd beräknade poäng (renamed from Använd beräknade summor), beside a dismiss action; Använd 67 p is removed (user 2026-10-19 via the Mac parent). |
+| T6  | Använd beräknade poäng clears the printed exam and part totals in one undo step. Dismiss keeps the printed numbers and stores a per-exam dismissed mark: the note and its list close and the footer keeps a neutral grey "provtexten anger N p". Both persist per exam and Ångra undoes each (user 2026-10-19 via the Mac parent). |
+| T7  | `source_points` and the dismissed mark ship in one `native_exam_document_v9` change with no v8 reader; open exams are imported again (user 2026-10-19 via the Mac parent). |
+| T8  | Open: whether the part rows' and the part instruction editor's own Använd N p buttons go (plan row Q5; recommended: removed). |
 
 ## Resume here (2026-10-19, planning)
 
 - Branch `codex/task-skript-40-04-points-mismatch-remote`, worktree `/home/paunchygent/apps/skriptoteket-task-skript-40-04-points-mismatch-remote`, from `06985163`.
-- Status proposed; no code has been written. User decisions 2026-10-19 (answered on the Mac, relayed by the Mac parent), recorded as closed rows Q2 and Q3 in the retained plan `evidence/planning/TASK-SKRIPT-40-04-10/plan.md`: one footer action, renamed Använd beräknade poäng, beside a dismiss action; Använd 67 p is removed; the dismissal persists per exam and Ångra undoes it.
-- Open in the plan: Q1 the per-question list with `source_points` (held: the Mac is making a mockup), Q4 what each of the two actions does so they visibly differ (needs a user ruling), Q5 the part-level Använd buttons, and the F5 staging reproduction. No junior launches before Q1 is answered and the plan is accepted.
+- Status proposed; no code has been written. User decisions 2026-10-19 (answered on the Mac, relayed by the Mac parent) are closed in the retained plan `evidence/planning/TASK-SKRIPT-40-04-10/plan.md` (Q1-Q4) and derived as T3-T7.
+- Open: Q5 (T8), the part-level Använd N p buttons. No junior launches before Q5 is answered and the plan is accepted.
 - Retained root `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a15330-34cd-7103-bb71-cc8ef9b8a56f` (explorer discovery under `discovery/explorer/`).
-- Next: on the user's answers, close the plan rows, run the staging reproduction, derive the accepted terms into this table, then launch the units.
+- Next: on the Q5 answer, close T8, run the staging reproduction, then launch unit 1.
