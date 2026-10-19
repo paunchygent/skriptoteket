@@ -138,6 +138,9 @@ their own tasks own.
    exams and imports drop paper answer lines.
 8. TASK-SKRIPT-40-04-16: each export format downloads or saves to Mina filer
    from one split button at the right of its menu row (ready).
+9. TASK-SKRIPT-40-04-17: the workspace header and toolbars share one compact
+   control system with an autosave status, file commands and a gap switch
+   (done 2026-10-19: main aac5bdfd and 32460f67, staging walks passed).
 
 Tasks 2 and 3 run in parallel.
 

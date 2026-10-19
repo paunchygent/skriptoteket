@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-19'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-19'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'User closure 2026-10-19 in Mac session 0b6afee3 ("Close TASK-SKRIPT-40-04-17 as done"). Independent ruthless-reviewer fd5c66c4 (Pi) at f87c2d44 returned changes_requested with F1-F3 medium and N1 low; all repaired at 7073e58e and admitted on focused proof without rereview. Merged to main as aac5bdfd and 32460f67. Hemma staging walks at 6a557b5d and 32460f67 passed every walked check; the 375 px coarse-pointer composition was not walked because Edge cannot emulate a coarse pointer or a window under 500 px.'
 task_kind: story
 acceptance_criteria:
   - The header is one row with the title block, the file group (Öppna, Spara som …, Exportera, Importera), PDF, the AI glyph and the autosave status slot, with no Spara button and no Ångra or Gör om, and every command keeps its word at a 1040 px workspace while only the title truncates
@@ -86,6 +90,6 @@ The core vertical is one Lucktext editing pass at a 1040 px workspace on a fine 
 | T17 | No walking skeleton: presentation inside the SPA, no system boundary crossed.                                                                                                                                                                                                                                                                                                                                                                                                     |
 | T18 | Proof is focused component specs plus a Hemma staging walk at 1440 px, at a 1040 px workspace and with the question list at its 260 px minimum.                                                                                                                                                                                                                                                                                                                                   |
 
-## Implementation Status
+## Outcome
 
-Units 1-4 and unit 5 except Tom lucka are built on `codex/task-skript-40-04-17`. Tom lucka stays held by the stop condition until 40-04-13's empty-gap insert lands. Independent code review at `f87c2d44` requested changes: F1 toolbar clipping, F2 two components over 500 lines, F3 an import relay through component refs (all medium), and N1 the title size (low). The parent admitted all four and repaired them at `7073e58e` on focused proof. Record: `.orchestration/context/sessions/01a15437-a20c-72f4-b0b8-397637488146/evidence/reviews/TASK-SKRIPT-40-04-17/` (`review-f87c2d44.md`, `admission-f87c2d44.md`). The staging walk has not run.
+Units 1-5 are on `main`. The task merged as `aac5bdfd`; Tom lucka joined after 40-04-13's empty-gap insert landed, and the T11 order fix (Luckverktyg, Tom lucka) merged as `32460f67`. Independent code review at `f87c2d44` requested changes: F1 toolbar clipping, F2 two components over 500 lines, F3 an import relay through component refs (all medium), and N1 the title size (low). The parent admitted all four and repaired them at `7073e58e` on focused proof. Record: `.orchestration/context/sessions/01a15437-a20c-72f4-b0b8-397637488146/evidence/reviews/TASK-SKRIPT-40-04-17/` (`review-f87c2d44.md`, `admission-f87c2d44.md`). The Hemma staging walks at `6a557b5d` and `32460f67` passed every walked check: header row at 1422 px and at the 1040 px workspace, inline rename, status slot, 260 px list head, mark bar, gap switch, toolbar scroll at the editor minimum, a real Importera click, the T11 order and the Tom lucka insert. Not walked: the 375 px coarse-pointer composition, because Edge cannot emulate a coarse pointer or a window under 500 px. Record: `evidence/staging-walk-6a557b5d/walk-record.md` in the same root. The user closed the task on 2026-10-19 (`agent-planning:user-closure-gate`).

@@ -200,6 +200,26 @@ function plainGapItem(): NativeExamItem {
   });
 }
 
+/** A dropdown question with plain text and no gaps yet. */
+function plainDropdownItem(): NativeExamItem {
+  return buildGapItem({
+    body: [
+      {
+        heading_level: null,
+        segments: [{ kind: "text", marks: [], text: "Solen är en stjärna." }],
+      },
+    ],
+    gaps: [],
+    kind: "inline_choice",
+  });
+}
+
+function focusInsidePopover(): boolean {
+  const popover = document.querySelector('[data-test="exam-workspace-gap-popover"]');
+  const active = document.activeElement;
+  return popover instanceof HTMLElement && active instanceof Node && popover.contains(active);
+}
+
 describe("ExamWorkspaceBodyEditor Tom lucka emit", () => {
   it("inserts an empty gap at the caret and opens its popover with the tool off", async () => {
     const host = mountHarness(plainGapItem());
@@ -315,6 +335,29 @@ describe("ExamWorkspaceBodyEditor Tom lucka emit", () => {
     expect(creationsOf(host)).toHaveLength(0);
     expect(popoverExists()).toBe(false);
     host.host.unmount();
+  });
+
+  it("keeps focus inside the popover for two Tom lucka inserts in a dropdown question", async () => {
+    const host = mountHarness(plainDropdownItem());
+    await settle();
+
+    const editor = innerEditor(host);
+    editor.commands.setTextSelection(posIn(editor, "stjärna", 1));
+    bodyEditorOf(host).findComponent(ExamWorkspaceMarkToolbar).vm.$emit("insertEmptyGap");
+    await settle();
+    const firstOpen = popoverExists();
+    const firstFocus = focusInsidePopover();
+
+    editor.commands.setTextSelection(posIn(editor, "Solen", 1));
+    bodyEditorOf(host).findComponent(ExamWorkspaceMarkToolbar).vm.$emit("insertEmptyGap");
+    await settle();
+    const secondOpen = popoverExists();
+    const secondFocus = focusInsidePopover();
+    host.host.unmount();
+    expect(firstOpen).toBe(true);
+    expect(firstFocus).toBe(true);
+    expect(secondOpen).toBe(true);
+    expect(secondFocus).toBe(true);
   });
 });
 

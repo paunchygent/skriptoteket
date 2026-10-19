@@ -219,6 +219,91 @@ describe("useExamWorkspaceEditLease on the server lease", () => {
     }
   });
 
+  it("takes the lease back on the next heartbeat after yielding it", async () => {
+    const fake = createFakeLeaseServer();
+    const claim = vi.spyOn(fake.server, "claim");
+    const first = setupLease(fake, { tabId: "tab-a" });
+    const second = setupLease(fake, { tabId: "tab-b" });
+    try {
+      await flushPromises();
+      const taking = second.lease.requestTakeover();
+      await flushPromises();
+      await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_EDIT_LEASE_HEARTBEAT_MS);
+      await taking;
+      expect(first.lease.readOnly.value).toBe(true);
+      expect(first.flushed).toEqual(["stored"]);
+      expect(fake.state().holder).toBe("tab-b");
+      const claimsAfterYield = claim.mock.calls.length;
+      expect(claimsAfterYield).toBeGreaterThan(0);
+
+      // The taking tab closes: its dispose release frees the lease.
+      second.stop();
+      await flushPromises();
+      expect(fake.state().holder).toBeNull();
+
+      await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_EDIT_LEASE_HEARTBEAT_MS);
+      expect(claim.mock.calls.length).toBeGreaterThan(claimsAfterYield);
+      expect(fake.state().holder).toBe("tab-a");
+      expect(first.lease.readOnly.value).toBe(false);
+      expect(first.acquired).toEqual(["reloaded"]);
+    } finally {
+      first.stop();
+      second.stop();
+    }
+  });
+
+  it("claims the freed lease on the next heartbeat after a refused write", async () => {
+    const fake = createFakeLeaseServer();
+    const claim = vi.spyOn(fake.server, "claim");
+    const first = setupLease(fake, { tabId: "tab-a" });
+    try {
+      await flushPromises();
+      expect(first.lease.readOnly.value).toBe(false);
+      // Another tab owns the lease now; the write guard reports the loss.
+      fake.advance(EXAM_WORKSPACE_EDIT_LEASE_TTL_MS + 1);
+      await fake.server.claim(LINEAGE, "tab-b");
+      first.lease.noteLostLease();
+      expect(first.lease.readOnly.value).toBe(true);
+      const claimsAfterLoss = claim.mock.calls.length;
+
+      await fake.server.release(LINEAGE, "tab-b");
+      await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_EDIT_LEASE_HEARTBEAT_MS);
+      expect(claim.mock.calls.length).toBeGreaterThan(claimsAfterLoss);
+      expect(first.lease.readOnly.value).toBe(false);
+      expect(first.acquired).toEqual(["reloaded"]);
+    } finally {
+      first.stop();
+    }
+  });
+
+  it("stays read-only while the new holder keeps a live lease after a yield", async () => {
+    const fake = createFakeLeaseServer();
+    const claim = vi.spyOn(fake.server, "claim");
+    const first = setupLease(fake, { tabId: "tab-a" });
+    const second = setupLease(fake, { tabId: "tab-b" });
+    try {
+      await flushPromises();
+      const taking = second.lease.requestTakeover();
+      await flushPromises();
+      await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_EDIT_LEASE_HEARTBEAT_MS);
+      await taking;
+      expect(first.lease.readOnly.value).toBe(true);
+      expect(fake.state().holder).toBe("tab-b");
+      const claimsAfterYield = claim.mock.calls.length;
+
+      // The holder stays live: retries are refused, no flip-flop.
+      await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_EDIT_LEASE_HEARTBEAT_MS);
+      await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_EDIT_LEASE_HEARTBEAT_MS);
+      expect(claim.mock.calls.length).toBeGreaterThan(claimsAfterYield);
+      expect(first.lease.readOnly.value).toBe(true);
+      expect(first.acquired).toEqual([]);
+      expect(fake.state().holder).toBe("tab-b");
+    } finally {
+      first.stop();
+      second.stop();
+    }
+  });
+
   it("turns read-only without a reload when renew finds the lease lost", async () => {
     const fake = createFakeLeaseServer();
     const first = setupLease(fake, { tabId: "tab-a" });

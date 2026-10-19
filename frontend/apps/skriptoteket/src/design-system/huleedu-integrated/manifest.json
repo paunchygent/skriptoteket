@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "package": "huleedu-integrated-frontend-design-system",
-  "version": "0.1.33",
+  "version": "0.1.34",
   "compatibility": {
     "tailwind": ">=4.0.0",
     "vue": ">=3.5.0",
@@ -88,7 +88,7 @@
       "id": "ui-segmented-toggle",
       "kind": "vue.component",
       "path": "src/vue/components/UiSegmentedToggle.vue",
-      "sha256": "a0fd9ea968b2bcb6d23f61e4706b02f268062db4f5ec40ac59bbe9a1bfe2f462"
+      "sha256": "8fc4b5223386949c4a671fbd58cadade0f24f1fa51ddcdf4e1e437e74ba1f95e"
     },
     {
       "id": "ui-glyph",

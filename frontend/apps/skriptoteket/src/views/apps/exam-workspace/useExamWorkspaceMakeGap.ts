@@ -16,8 +16,8 @@
  *   caret), and a release converts only after a primary press started in
  *   this editor, so a right-click over a selection never makes a gap. A tool
  *   click on a word that keeps hidden answers reports its kept link through
- *   `keptGapAtPointer` instead of making a gap, and the second click of a
- *   double click converts nothing. The
+ *   `keptGapAtPointer` instead of making a gap, and a double-click press on
+ *   a kept word restores through `keptGapAtDoubleClick` instead. The
  *   gap tool switch is the only gap control for existing text.
  *
  * Relationships:
@@ -124,6 +124,7 @@ export function useExamWorkspaceMakeGap(options: {
   handleGapToolMouseDown: (event: MouseEvent) => void;
   handleGapToolMouseUp: (event: MouseEvent) => void;
   keptGapAtPointer: (view: EditorView, pos: number, event: MouseEvent) => KeptGapHit | null;
+  keptGapAtDoubleClick: (view: EditorView, pos: number, event: MouseEvent) => KeptGapHit | null;
 } {
   /** Set while a gap replacement dispatches, so its one change emits `createGap`. */
   let gapCreation: { gapId: string; seed: string } | null = null;
@@ -321,7 +322,9 @@ export function useExamWorkspaceMakeGap(options: {
    * the clicked block's index among that id's contiguous kept blocks in
    * document order, matching the block order `withKeptGapRestored` restores
    * from. Null while the tool is off, on a non-primary button, when the
-   * pointer hit no kept character, or on the second click of a double click.
+   * pointer hit no kept character, or on the second press of a double click
+   * (that press carries click count 2 and reaches the editor through
+   * `handleDoubleClick` instead; see `keptGapAtDoubleClick`).
    */
   function keptGapAtPointer(view: EditorView, pos: number, event: MouseEvent): KeptGapHit | null {
     if (!options.gapTool()) {
@@ -330,6 +333,36 @@ export function useExamWorkspaceMakeGap(options: {
     if (event instanceof MouseEvent && (event.button !== 0 || event.detail > 1)) {
       return null;
     }
+    return keptGapHitAtClick(view, pos, event);
+  }
+
+  /**
+   * The kept link under a double-click press while the gap tool is on.
+   * ProseMirror classifies a press within 500 ms and 10 px of the previous
+   * one as a double click and routes it to `handleDoubleClick`, never to
+   * `handleClick`, so without this path a kept-word click that lands fast on
+   * the reverted chip's spot would only place the caret. The press carries
+   * click count 2, so the single-click detail guard must not apply; a press
+   * on anything but a kept word still resolves to nothing, so a real double
+   * click never makes a gap and then reverts it.
+   */
+  function keptGapAtDoubleClick(view: EditorView, pos: number, event: MouseEvent): KeptGapHit | null {
+    if (!options.gapTool()) {
+      return null;
+    }
+    if (event instanceof MouseEvent && event.button !== 0) {
+      return null;
+    }
+    return keptGapHitAtClick(view, pos, event);
+  }
+
+  /**
+   * The shared pointer-hit core behind `keptGapAtPointer` and
+   * `keptGapAtDoubleClick`: the kept link at the click's document position,
+   * resolved through the pointer's character column, with the clicked
+   * block's index in document order. Callers own the press-count guard.
+   */
+  function keptGapHitAtClick(view: EditorView, pos: number, event: MouseEvent): KeptGapHit | null {
     const charPos = pointerHitChar(view, pos, event);
     if (charPos === null) {
       return null;
@@ -441,5 +474,6 @@ export function useExamWorkspaceMakeGap(options: {
     handleGapToolMouseDown,
     handleGapToolMouseUp,
     keptGapAtPointer,
+    keptGapAtDoubleClick,
   };
 }
