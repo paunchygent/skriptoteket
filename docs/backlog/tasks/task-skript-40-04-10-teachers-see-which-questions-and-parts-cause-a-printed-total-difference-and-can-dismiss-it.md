@@ -8,7 +8,7 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-19'
-status: proposed
+status: ready
 closeout_review:
   record: inline
   status: not_started
@@ -23,7 +23,7 @@ backlog_document_profile: contract-derived
 
 ## Implementation Contract
 
-The user reported on 2026-10-19 that the printed-total actions in the exam workspace do not work. This task replaces those actions with a printed-total difference that informs the teacher, names what the data can attribute it to, and can be dismissed. It is proposed until the user accepts the plan.
+The user reported on 2026-10-19 that the printed-total actions in the exam workspace do not work. This task replaces those actions with a printed-total difference that informs the teacher, names what the data can attribute it to, and can be dismissed. The user accepted the plan on 2026-10-19.
 
 Root cause, from the code at `06985163`:
 
@@ -84,17 +84,17 @@ Stop and report to the parent when the staging reproduction shows a defect outsi
 | T2  | Reaching the printed number stays a points edit on the questions; no action sets points or a printed total to a chosen number (TASK-SKRIPT-40-04-06 non-goal, kept). |
 | T3  | Each item stores `source_points`, the points the source printed for that question, set at import; null when the source printed none (user 2026-10-19 via the Mac parent). |
 | T4  | The footer is built to the v2 mockup (`evidence/design/points-banner-v2-yes-no-glyphs.png`; user rulings 2026-10-19 in the Hemma orchestrator session ("no verbose buttons"; a question answered by binary yes/no glyphs) and the user's confirmation on the Mac ("Yes that works"), relayed by the Mac parent): "Totalt 67 p"; below it an amber note headed "Provtexten anger 70 p. Dessa skiljer sig:"; then one row per differing part or question, each with an arrow glyph and a jump to it: "Del 2: Satslösning — provtexten 22 p, nu 20 p", "Fråga 5 — provtexten 12 p, nu 10 p", "Fråga 8 — provtexten 4 p, saknar poäng". |
-| T5  | Open, a user confirmation (plan row C1): when the listed rows do not explain the whole difference (the source contradicts itself), one more row in the same style states the remainder. Not in the mockup. |
+| T5  | When the listed rows do not explain the whole difference (the source contradicts itself), one more row in the same style states the remainder for points no question accounts for (user answers 2026-10-19, AskUserQuestion in the Hemma orchestrator session; plan row C1). |
 | T6  | The note's last line is the text "Använd beräknade poäng?" followed by exactly two glyph-only answers and no text button: no is a large filled navy circle with the shared `close` glyph and is the default with the larger hit area; yes is a smaller outlined circle with the shared `confirm` glyph. Each answer's name is its tooltip and aria-label only; the tooltip wording goes through `ui-copy-reviewer` (user rulings 2026-10-19 in the Hemma orchestrator session ("no verbose buttons"; a question answered by binary yes/no glyphs) and the user's confirmation on the Mac ("Yes that works"), relayed by the Mac parent; supersedes the Stäng and Använd beräknade poäng text buttons of `bbf14efd`). |
 | T7  | Yes clears the printed exam and part totals in one undo step; the total line reads "Totalt 67 p". No keeps the printed numbers and stores a per-exam dismissed mark; the note closes and the total line reads "Totalt 67 p · provtexten anger 70 p" with the printed part in neutral grey. Both persist per exam and Ångra undoes each (user rulings 2026-10-19 in the Hemma orchestrator session ("no verbose buttons"; a question answered by binary yes/no glyphs) and the user's confirmation on the Mac ("Yes that works"), relayed by the Mac parent; user 2026-10-19 via the Mac parent). |
 | T8  | `source_points` and the dismissed mark ship in one `native_exam_document_v9` change with no v8 reader; open exams are imported again (user 2026-10-19 via the Mac parent). |
 | T9  | The footer's Använd 67 p and Använd beräknade summor, the part rows' and the part instruction editor's Använd N p offers are removed; they are one-off decisions and follow the yes/no rule (user rulings 2026-10-19 in the Hemma orchestrator session ("no verbose buttons"; a question answered by binary yes/no glyphs) and the user's confirmation on the Mac ("Yes that works"), relayed by the Mac parent). |
-| T10 | Open, a user confirmation (plan row C2): part differences appear only as rows of the note; the part row shows plain points as in the mockup, so its amber "provtexten anger" line also goes. |
+| T10 | Part differences appear only as rows of the note; the part row shows plain points as in the mockup, so its amber "provtexten anger" line also goes (user answers 2026-10-19, AskUserQuestion in the Hemma orchestrator session; plan row C2). |
 
 ## Resume here (2026-10-19, planning)
 
 - Branch `codex/task-skript-40-04-points-mismatch-remote`, worktree `/home/paunchygent/apps/skriptoteket-task-skript-40-04-points-mismatch-remote`, from `06985163`.
-- Design settled 2026-10-19 on the v2 yes/no glyph mockup (plan rows Q3, Q7 rewritten; the text-button version at `bbf14efd` superseded). Open as user confirmations only: C1 (T5 remainder row) and C2 (T10 part rows). Status proposed until the user accepts the plan. No code has been written.
+- Plan ACCEPTED 2026-10-19 (user answers 2026-10-19, AskUserQuestion in the Hemma orchestrator session); C1 and C2 confirmed; the retained plan validates with --require-closed. Design: the v2 yes/no glyph mockup. No code has been written.
 - Unit 1 (v9) waits until TASK-SKRIPT-39-04-20 and TASK-SKRIPT-40-04-08 have merged to main.
 - Retained root `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a15330-34cd-7103-bb71-cc8ef9b8a56f` (explorer discovery under `discovery/explorer/`).
-- Next: on plan acceptance, run the staging reproduction; launch unit 1 after the two merges.
+- Next: run the staging reproduction; launch unit 1 when the orchestrator reports TASK-SKRIPT-39-04-20 and TASK-SKRIPT-40-04-08 both on main.
