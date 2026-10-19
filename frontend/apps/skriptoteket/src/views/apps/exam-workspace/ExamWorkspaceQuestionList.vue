@@ -295,17 +295,19 @@ async function expandFromGlyph(): Promise<void> {
             <button
               ref="newTrigger"
               type="button"
-              class="xw-tool xw-tool--word"
+              class="xw-tool"
               :disabled="!canAdd"
               aria-haspopup="menu"
               :aria-expanded="newMenuOpen"
+              aria-label="Ny uppgift"
+              title="Ny uppgift"
               data-test="exam-workspace-new"
               @click="newMenuOpen = !newMenuOpen"
             >
               <UiGlyph
                 meaning="add"
                 :size="16"
-              />Ny uppgift
+              />
             </button>
             <button
               type="button"

@@ -113,8 +113,11 @@ describe("ExamWorkspaceQuestionList Markera mode", () => {
     const tools = head.get(".xw-tools").findAll("button").map((button) => button.attributes("data-test"));
     expect(tools).toEqual(["exam-workspace-list-collapse", "exam-workspace-new", "exam-workspace-marking-toggle"]);
     expect(head.get('[data-test="exam-workspace-list-collapse"]').classes()).toEqual(["xw-tool"]);
-    expect(head.get('[data-test="exam-workspace-new"]').classes()).toEqual(["xw-tool", "xw-tool--word"]);
-    expect(head.get('[data-test="exam-workspace-new"]').text()).toBe("Ny uppgift");
+    const add = head.get('[data-test="exam-workspace-new"]');
+    expect(add.classes()).toEqual(["xw-tool"]);
+    expect(add.text()).toBe("");
+    expect(add.attributes("aria-label")).toBe("Ny uppgift");
+    expect(add.attributes("title")).toBe("Ny uppgift");
   });
 
   it("leaves the collapse glyph out without the handle and keeps Ny uppgift before Markera", () => {
