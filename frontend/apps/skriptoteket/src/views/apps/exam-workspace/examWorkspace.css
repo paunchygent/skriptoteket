@@ -7,6 +7,11 @@ Domain purpose:
     choice marks. Every value comes from the huleedu-integrated tokens.
     Phone < 768 px, tablet 768-1279 px, desktop >= 1280 px.
 
+    This file is the one width owner for the desktop column and side-panel
+    widths (TASK-SKRIPT-41-02-04): .xw-root declares the default, minimum and
+    editor-measure tokens, and the size tokens a later unit overrides inline
+    on the workspace root while the user drags.
+
 Relationships:
     Imported once by `ExamWorkspaceView.vue`; every class is prefixed `xw-`
     so nothing reaches the rest of the app. Layout belongs to each
@@ -17,8 +22,18 @@ Relationships:
   --xw-ctl: 44px;
   --xw-ctl-fine: 36px;
   --xw-ctl-compact: var(--huleedu-workbench-control-height);
-  --xw-list: 320px;
-  --xw-drawer: 380px;
+  --xw-list-default: clamp(260px, 18%, 340px);
+  --xw-list-min: 260px;
+  --xw-drawer-default: 320px;
+  --xw-drawer-min: 300px;
+  --xw-preview-default: clamp(360px, 34%, 800px);
+  --xw-preview-min: 300px;
+  --xw-editor-min: 400px;
+  --xw-editor-measure: 1040px;
+  --xw-float: 380px;
+  --xw-list-size: var(--xw-list-default);
+  --xw-drawer-size: var(--xw-drawer-default);
+  --xw-preview-size: var(--xw-preview-default);
 }
 
 /* Buttons */
@@ -156,7 +171,6 @@ Relationships:
   padding: 0 var(--huleedu-space-2-5); border-right: 1px solid var(--huleedu-panel-border);
   background: var(--huleedu-surface-content); font-size: var(--huleedu-text-xs); font-weight: var(--huleedu-font-medium);
 }
-.xw-seg--large > button { height: var(--xw-ctl-fine, 36px); padding: 0 var(--huleedu-space-4); font-size: var(--huleedu-text-sm); }
 .xw-seg > button:last-child { border-right: 0; }
 .xw-seg > button[aria-pressed="true"] { background: var(--huleedu-action-10); color: var(--huleedu-action); }
 .xw-seg > button:focus-visible { outline: 2px solid var(--huleedu-action-40); outline-offset: -2px; }

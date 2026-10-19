@@ -5,7 +5,10 @@ from __future__ import annotations
 import re
 from difflib import SequenceMatcher
 
-from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import POINT_LABEL
+from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
+    POINT_LABEL,
+    SCORE_FIELD,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.source_carrier_context import quoted_mask
 from skriptoteket.domain.curated_apps.exam_workspace.source_entry_tokens import source_tokens
 from skriptoteket.domain.curated_apps.exam_workspace.source_format_alignment import ANSWER_LABEL
@@ -52,7 +55,8 @@ def native_carrier_spans(
 
     A recovered answer label owns the rest of its region, including subsequent
     lines and paragraphs. A recovered score belongs to the native points field
-    only when its numeric value agrees. Complete emitted labels and scores
+    only when its numeric value agrees. A recovered score whose line holds only
+    a score field, such as "/4 p", excludes the whole line. Complete emitted labels and scores
     stay visible; a recovered carrier is excluded atomically so coincidental
     provenance cannot leak its value into a source reconstruction. Projection
     retains authority over the model's visible wording. Answer values are
@@ -88,7 +92,15 @@ def native_carrier_spans(
                 or not _recovered(text, match.start(), match.end(), emitted)
             ):
                 continue
-            spans.append((match.start(), match.end()))
+            line_start = text.rfind("\n", 0, match.start()) + 1
+            line_end = text.find("\n", match.start())
+            if line_end < 0:
+                line_end = len(text)
+            # A score field widens only within the line that holds the match start.
+            if match.end() <= line_end and SCORE_FIELD.fullmatch(text, line_start, line_end):
+                spans.append((line_start, line_end))
+            else:
+                spans.append((match.start(), match.end()))
     # Labels and scores are atomic metadata units. A recovered label owns
     # its answer tail even if a word elsewhere in the model happens to match.
     return tuple(sorted(spans))

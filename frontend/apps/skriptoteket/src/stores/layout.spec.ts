@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
 import { useLayoutStore } from "./layout";
 
@@ -94,5 +94,37 @@ describe("useLayoutStore", () => {
     store.toggleSidebarCollapsed();
     expect(localStorage.getItem(railKey("null"))).toBeNull();
     expect(localStorage.length).toBe(3);
+  });
+
+  it("stays at the defaults when getItem throws", () => {
+    const store = useLayoutStore();
+    const getItem = vi.spyOn(localStorage, "getItem").mockImplementation(() => {
+      throw new Error("blocked");
+    });
+
+    try {
+      expect(() => store.hydrateForUser("user-9")).not.toThrow();
+      expect(store.focusMode).toBe(false);
+      expect(store.sidebarCollapsed).toBe(false);
+    } finally {
+      getItem.mockRestore();
+    }
+  });
+
+  it("does not throw when setItem throws", () => {
+    const store = useLayoutStore();
+    store.hydrateForUser("user-9");
+    const setItem = vi.spyOn(localStorage, "setItem").mockImplementation(() => {
+      throw new Error("full");
+    });
+
+    try {
+      expect(() => store.enable()).not.toThrow();
+      expect(() => store.toggleSidebarCollapsed()).not.toThrow();
+      expect(store.focusMode).toBe(true);
+      expect(store.sidebarCollapsed).toBe(true);
+    } finally {
+      setItem.mockRestore();
+    }
   });
 });
