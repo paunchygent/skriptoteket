@@ -46,18 +46,23 @@ This task changes four things:
    token.
 3. **Default widths.** The question list is `clamp(260px, 18%, 340px)` of the workspace width. The
    print preview is `clamp(360px, 34%, 800px)`, with the whole page scaled to fit. The editor
-   content cap rises from 860 to 1040 px. The drawer widths wait for ledger row Q1.
+   content cap rises from 860 to 1040 px. The three drawers share one width: 320 px by default, 300 px
+   minimum. Exportera's format choice becomes a vertical list so it fits.
 4. **Resizable panels (desktop).** A drag handle sits on each panel border, and every panel collapses
    and reopens. Each panel has a designed minimum; below it the panel keeps its minimum layout and
-   scrolls internally. Widths and collapse state are remembered per browser. The mechanism is in
-   L8-L10. The open choices are ledger rows Q6-Q10 in the retained plan.
+   scrolls internally: list 260, editor 400, drawer 300, preview 300 px. When space runs out, the
+   side panel squeezes first, then the list, and the editor last; nothing closes on its own. A drag
+   stops at the minimum. The list collapses to a 44 px rail with one expand glyph and a draggable
+   edge; a side panel closes with its × and reopens from its header button. Widths and collapse
+   state are remembered per browser. The mechanism is in L8-L10.
 
 ## Contract Inputs
 
 - User request 2026-10-19 in the Hemma orchestrator session (944b5a5a), relayed in assignment
   bd0f1693, with figures of about 1460 / 450 / 390 / 530 device px, which equal
   1040 / 320 / 380 CSS px at about 1.4x scaling. User answers the same day: Q2, Q3 and Q4 as
-  recommended, and Q5 yes, with direction on resizing, collapsing and internal scrolling.
+  recommended, and Q5 yes, with direction on resizing, collapsing and internal scrolling. Q1 and
+  Q6-Q10 answered as recommended the same day; the user saw a mock of the collapsed list rail.
 - Retained plan, evidence and ledger:
   `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a153bf-e25e-7acd-b6b4-551ee64c8708/evidence/planning/TASK-SKRIPT-41-02-04/plan.md`.
 - Code: `components/layout/LandingLayout.vue:52-56, 109-126`; `components/layout/AuthLayout.vue:53-78, 249-270, 345-351`;
@@ -118,10 +123,8 @@ listener is added. No performance concern.
   `eba9d0f2`. Never pushed.
 - Retained root `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a153bf-e25e-7acd-b6b4-551ee64c8708`.
   It holds the plan and the Explorer discoveries.
-- Status `proposed`. Closed by the user: Q2, Q3, Q4 and Q5. Open user rows: Q1 (one shared drawer
-  width), Q6 (narrow L5 to default widths; it blocks the splitter), Q7 (shrink order and internal
-  scroll), Q8 (collapse presentation), Q9 (stop at minimum), Q10 (minimum widths). No code is
-  written.
+- Status `proposed`. Every ledger row is closed (user answers 2026-10-19), and the plan passes
+  `validate --require-closed`. No code is written. No junior launches until the user accepts the plan.
 - Junior units after acceptance:
   - `ew-width-owner`: `examWorkspace.css`, `ExamWorkspaceView.vue`, `ExamWorkspaceEditorPane.vue`,
     `ExamWorkspaceDrawer.vue`, `ExamWorkspacePrintPreviewPanel.vue`, `ExamWorkspaceLayoutSlice.spec.ts`.
@@ -153,7 +156,7 @@ Stop and report in any of these cases:
 | L2  | The column and side-panel widths apply to the guest and signed-in workspaces; the full-width change touches the guest route only; the signed-in 240 px sidebar stays. |
 | L3  | LandingLayout fills the frame on the public `documents.conversion_hub` routes, selected by route name plus appId like AuthLayout; the top bar stays; other public pages keep 1040 px. |
 | L4  | One width owner: tokens on `.xw-root` and `data-side` on the workspace root; `.ws--drawer`, `.ws--preview` and `var(--xw-drawer, 380px)` fallbacks are deleted. |
-| L5  | The editor is the widest column with any side panel open at every desktop workspace width from 1040 px, with no horizontal page scroll (scope against dragged widths pending Q6). |
+| L5  | At the default widths the editor is the widest column with any side panel open at every desktop workspace width from 1040 px, with no horizontal page scroll; a user drag may override this down to the editor's minimum. |
 | L6  | Tablet and phone layouts are unchanged and get no resize handles; tablet floating panels read a named 380 px token. |
 | L7  | jsdom tests prove state and contract; rendered widths and resizing are proven by the staging walk. |
 | L8  | Desktop drag handles on each panel border, pointer-captured; JS writes only the requested width as an inline custom property; CSS clamps; panel content keeps its minimum layout and scrolls internally; the drag is the documented layout-geometry exception. |
@@ -163,3 +166,9 @@ Stop and report in any of these cases:
 | Q3  | The print preview is `clamp(360px, 34%, 800px)` of the workspace width, page scaled to fit; the editor stays widest at default widths. |
 | Q4  | The editor content cap is 1040 px, centred in the editor column. |
 | Q5  | Panels are resizable with a drag handle, collapsible, have designed minimums with internal scroll below them, and widths are remembered per browser. |
+| Q1  | Öppna, Exportera and Provets uppgifter share one drawer width, 320 px default and 300 px minimum; Exportera's format choice is a vertical list; the preview keeps its own width. |
+| Q6  | The editor-widest rule applies to the default layout only; a drag may make a side panel wider than the editor, down to the editor's minimum. |
+| Q7  | When space runs out the side panel squeezes first, then the list, the editor last; a squeezed panel keeps its minimum layout and scrolls inside itself; nothing closes on its own. |
+| Q8  | The list collapses to a 44 px rail with one expand glyph and a draggable edge; a side panel closes with its × and reopens from its header button. |
+| Q9  | A drag stops at the panel's minimum; collapse happens only through the glyph or Enter on the handle. |
+| Q10 | Minimum widths: question list 260 px, editor 400 px, drawer 300 px, print preview 300 px. |

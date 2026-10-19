@@ -72,7 +72,7 @@
   - 39-04-20 score field (lone "/" from "/4 p"): in review; user accepted the whitespace side effect (corrected counts to confirm). 40-04-09 gap tool: plan awaits user acceptance. 40-04-10 points banner: user chose list A and grey-number dismiss as the prominent primary action; dismiss label open. 40-04-11 glyph-only tools: four user questions open (mockups shown).
   - 41-02-02: merged to main (review approved, b9b3e6a9); next Mac guest staging walk (ST-SKRIPT-41-02), then close. Production deploy with nginx-proxy fixed IP 172.18.255.10 and `TRUSTED_PROXY_CIDRS=172.18.255.10/32` is a USER GATE (restarts shared nginx-proxy).
   - REP-0048: 6 Exam.net walk checks (Mac walk).
-  - 41-02-04 workspace width (proposed): lead bd0f1693 is planning it on branch `codex/task-skript-41-02-workspace-width-remote`. Root cause: LandingLayout's 1040 px frame. The user closed Q2-Q5 (resizable panels: yes). Open: Q1 shared drawer width and Q6-Q10 splitter choices; Q6 (narrow L5) blocks. Plan `01a153bf.../evidence/planning/TASK-SKRIPT-41-02-04/plan.md`.
+  - 41-02-04 workspace width (proposed): lead bd0f1693 planned it on branch `codex/task-skript-41-02-workspace-width-remote`. Every ledger row is closed (full width, shared 320 px drawer, resizable and collapsible panels). Next: the user accepts the plan, then five junior units. Plan `01a153bf.../evidence/planning/TASK-SKRIPT-41-02-04/plan.md`.
   - HuleEdu after HULE-14-03-01: 41-01-03, 41-01-02, 41-01-04; http_runtime workers repair.
     Hemma Opus lead `3b164d53`: 40-03-01..09 and 08-36-02 `done`; 40-02-01 tranche 1 on
     main 761b1b59, tranche 2 a67afa90 (`in_progress`: shared `play` meaning in
