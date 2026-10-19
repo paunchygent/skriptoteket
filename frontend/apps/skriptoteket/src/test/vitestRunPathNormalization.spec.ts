@@ -5,8 +5,9 @@
  * the caller named, and a target without spec files fails before Vitest starts.
  */
 
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { afterAll, describe, expect, it } from "vitest";
 
 import {
@@ -82,6 +83,24 @@ describe("resolveVitestTarget", () => {
     // results (probed), so the oracle gains this file back explicitly.
     const expected = [...testFolderSpecs, wrapperSpec].sort();
     for (const target of ["src/test/*.{spec,test}.ts", "src/test/*.ts"]) {
+      const resolution = resolveVitestTarget(target);
+      expect(resolution.unnameable).toEqual([]);
+      expect(resolution.specFiles).toEqual(expected);
+      expect(collectedFiles(resolution.patterns)).toEqual(expected);
+    }
+  });
+
+  it("resolves extglob targets through the matcher instead of the target spelling", () => {
+    const single = resolveVitestTarget("src/test/@(vitestRunPathNormalization).spec.ts");
+    expect(single.unnameable).toEqual([]);
+    expect(single.specFiles).toEqual([wrapperSpec]);
+    expect(collectedFiles(single.patterns)).toEqual([wrapperSpec]);
+
+    const expected = [...testFolderSpecs, wrapperSpec].sort();
+    for (const target of [
+      "src/test/@(vitestRunPathNormalization|vitestInclude).spec.ts",
+      "src/test/+(vitestRunPathNormalization|vitestInclude).spec.ts",
+    ]) {
       const resolution = resolveVitestTarget(target);
       expect(resolution.unnameable).toEqual([]);
       expect(resolution.specFiles).toEqual(expected);
@@ -205,6 +224,35 @@ describe("planVitestRun", () => {
       args: ["run", `${examSpec}:12`],
       include: [examSpec],
     });
+  });
+
+  it("collects extglob targets", async () => {
+    const single = await planVitestRun(["run", "src/test/@(vitestRunPathNormalization).spec.ts"]);
+    expect(collectedFiles(single.include ?? [])).toEqual([wrapperSpec]);
+
+    const expected = [...testFolderSpecs, wrapperSpec].sort();
+    for (const target of [
+      "src/test/@(vitestRunPathNormalization|vitestInclude).spec.ts",
+      "src/test/+(vitestRunPathNormalization|vitestInclude).spec.ts",
+    ]) {
+      const plan = await planVitestRun(["run", target]);
+      expect(collectedFiles(plan.include ?? [])).toEqual(expected);
+    }
+  });
+
+  it("rejects a line selector on an extglob target", async () => {
+    await expect(
+      planVitestRun(["run", "src/test/@(vitestRunPathNormalization).spec.ts:12"]),
+    ).rejects.toThrow(/line selector/);
+  });
+
+  it("fails loudly when a match cannot be read", async () => {
+    const dir = mkdtempSync(`${tmpdir()}/vitest-unreadable-`);
+    scratchDirs.push(dir);
+    symlinkSync(join(dir, "nowhere"), join(dir, "broken.spec.ts"));
+    await expect(planVitestRun(["run", `${dir}/*`])).rejects.toThrow(
+      /vitest-run: .*cannot read .*broken\.spec\.ts/,
+    );
   });
 
   it("rejects a line selector on a glob target", async () => {

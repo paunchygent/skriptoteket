@@ -22,7 +22,6 @@ const repoRoot = path.resolve(appRoot, "../../..");
 const appWorkspacePrefix = toPosix(path.relative(repoRoot, appRoot));
 const appRequire = createRequire(path.join(appRoot, "package.json"));
 const explicitTestPattern = /(^|[/\\])[^/\\]+\.(spec|test)\.[cm]?[jt]sx?(?::\d+(?:,\d+)?)?$/;
-const globPattern = /[*?[\]{}]/;
 const folderSpecPattern = "**/*.spec.ts";
 const globExclude = ["**/node_modules/**", "**/dist/**"];
 
@@ -43,8 +42,25 @@ export function isExplicitTest(arg) {
   return explicitTestPattern.test(arg);
 }
 
-export function isGlob(arg) {
-  return globPattern.test(arg);
+/** Maps one glob entry to the app-local POSIX form the include list names. */
+function mapGlobEntry(entry) {
+  const absolute = path.join(entry.parentPath, entry.name);
+  const relative = path.relative(appRoot, absolute);
+  if (relative === "") return ".";
+  if (!relative.startsWith("..") && !path.isAbsolute(relative)) {
+    return toPosix(relative);
+  }
+  return toPosix(absolute);
+}
+
+/**
+ * A match is nameable exactly when asking the matcher for the match itself
+ * returns just that match; anything else Vitest cannot include exactly.
+ */
+function namesItself(candidate) {
+  if (candidate === ".") return true;
+  const self = globSync(candidate, { cwd: appRoot, withFileTypes: true }).map(mapGlobEntry);
+  return self.length === 1 && self[0] === candidate;
 }
 
 /** Rewrites one path argument to app-local POSIX form, keeping a line selector. */
@@ -84,39 +100,30 @@ export function listSpecFiles(patterns) {
  * Resolves one app-local or absolute target without a line selector against
  * the files and directories that actually exist. A directory contributes the
  * spec files beneath it; an explicit spec file contributes itself; any other
- * file is ignored. A match whose own path still contains a glob character
- * cannot be named exactly by Vitest's include list, so it is reported as
- * unnameable instead of being silently dropped.
+ * file is ignored. `fs.globSync` is the only authority on what a target
+ * matches: every target but "." goes through it, and a match counts as
+ * nameable exactly when the matcher returns just that match for the match
+ * itself. A match `statSync` cannot read is reported as unreadable instead of
+ * being silently dropped.
  */
 export function resolveVitestTarget(target) {
   const stripped = target.replace(/\/+$/, "");
   const normalized = stripped === "" ? "." : stripped;
 
   let matches;
-  if (isGlob(normalized)) {
-    matches = globSync(normalized, { cwd: appRoot, exclude: globExclude, withFileTypes: true }).map(
-      (entry) => {
-        const absolute = path.join(entry.parentPath, entry.name);
-        const relative = path.relative(appRoot, absolute);
-        if (relative === "") return ".";
-        if (!relative.startsWith("..") && !path.isAbsolute(relative)) {
-          return toPosix(relative);
-        }
-        return toPosix(absolute);
-      },
-    );
-  } else if (normalized === ".") {
+  if (normalized === ".") {
     matches = ["."];
-  } else if (path.isAbsolute(normalized)) {
-    matches = existsSync(normalized) ? [toPosix(normalized)] : [];
   } else {
-    matches = existsSync(path.join(appRoot, normalized)) ? [normalized] : [];
+    matches = globSync(normalized, { cwd: appRoot, exclude: globExclude, withFileTypes: true }).map(
+      mapGlobEntry,
+    );
   }
 
   const patterns = [];
   const seenPatterns = new Set();
   const specFiles = new Set();
   const unnameable = [];
+  const unreadable = [];
   const pushPattern = (pattern) => {
     if (!seenPatterns.has(pattern)) {
       seenPatterns.add(pattern);
@@ -125,12 +132,18 @@ export function resolveVitestTarget(target) {
   };
 
   for (const match of [...new Set(matches)].sort()) {
-    if (isGlob(match)) {
+    if (!namesItself(match)) {
       unnameable.push(match);
       continue;
     }
     const absoluteMatch = path.isAbsolute(match) ? match : path.join(appRoot, match);
-    const entry = statSync(absoluteMatch);
+    let entry;
+    try {
+      entry = statSync(absoluteMatch);
+    } catch (error) {
+      unreadable.push(`${match} (${error.code ?? error.message})`);
+      continue;
+    }
     if (entry.isDirectory()) {
       const pattern = match === "." ? folderSpecPattern : `${match}/${folderSpecPattern}`;
       pushPattern(pattern);
@@ -141,7 +154,7 @@ export function resolveVitestTarget(target) {
     }
   }
 
-  return { patterns, specFiles: [...specFiles].sort(), unnameable };
+  return { patterns, specFiles: [...specFiles].sort(), unnameable, unreadable };
 }
 
 /** Separates the path targets Vitest would read as filters from flags and their values. */
@@ -181,13 +194,17 @@ export async function splitVitestArgs(rawArgs) {
 
 function describeTargetFailure(arg, target) {
   const absoluteTarget = path.isAbsolute(target) ? target : path.join(appRoot, target);
-  if (!isGlob(target) && !existsSync(absoluteTarget)) {
-    return `${arg}: no such file or folder under ${appWorkspacePrefix}`;
+  if (existsSync(absoluteTarget)) {
+    if (statSync(absoluteTarget).isFile()) {
+      return `${arg}: not a spec file (expected *.spec.ts or *.test.ts)`;
+    }
+    return `${arg}: matches no spec file (tried ${target})`;
   }
-  if (!isGlob(target) && statSync(absoluteTarget).isFile()) {
-    return `${arg}: not a spec file (expected *.spec.ts or *.test.ts)`;
+  const matched = globSync(target, { cwd: appRoot, exclude: globExclude, withFileTypes: true });
+  if (matched.length > 0) {
+    return `${arg}: matches no spec file (tried ${target})`;
   }
-  return `${arg}: matches no spec file (tried ${target})`;
+  return `${arg}: no such file, folder or glob match under ${appWorkspacePrefix}`;
 }
 
 /**
@@ -218,6 +235,10 @@ export async function planVitestRun(rawArgs) {
       );
       continue;
     }
+    if (resolution.unreadable.length > 0) {
+      failures.push(`${arg}: cannot read ${resolution.unreadable.join(", ")}`);
+      continue;
+    }
     if (resolution.specFiles.length === 0) {
       failures.push(describeTargetFailure(arg, target));
       continue;
@@ -229,9 +250,10 @@ export async function planVitestRun(rawArgs) {
       }
     }
     if (lineSelector) {
-      // A line selector is only meaningful on one literally named spec file;
-      // on a glob or a folder it would silently narrow every other target.
-      if (!isGlob(target) && resolution.specFiles.length === 1 && resolution.specFiles[0] === target) {
+      // A line selector is only meaningful when the target text is itself the
+      // one collected spec file; on a folder or a pattern it would silently
+      // narrow every other target.
+      if (resolution.specFiles.length === 1 && resolution.specFiles[0] === target) {
         lineFilters.push(normalized);
       } else {
         failures.push(`${arg}: line selector needs one literally named spec file without a glob`);

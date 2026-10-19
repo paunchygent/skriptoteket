@@ -12,6 +12,7 @@ export interface VitestTargetResolution {
   patterns: string[];
   specFiles: string[];
   unnameable: string[];
+  unreadable: string[];
 }
 
 export interface VitestRunPlan {
@@ -22,7 +23,6 @@ export interface VitestRunPlan {
 export const appRoot: string;
 
 export function isExplicitTest(arg: string): boolean;
-export function isGlob(arg: string): boolean;
 export function normalizeVitestPathArg(arg: string): string;
 export function listSpecFiles(patterns: string[]): string[];
 export function resolveVitestTarget(target: string): VitestTargetResolution;
