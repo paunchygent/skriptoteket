@@ -137,7 +137,7 @@ their own tasks own.
 7. TASK-SKRIPT-40-04-07: teachers set the writing area of printed DOCX and PDF
    exams and imports drop paper answer lines.
 8. TASK-SKRIPT-40-04-16: each export format downloads or saves to Mina filer
-   from one split button at the right of its menu row (proposed).
+   from one split button at the right of its menu row (proposed; held for the toolbar redesign).
 
 Tasks 2 and 3 run in parallel.
 
