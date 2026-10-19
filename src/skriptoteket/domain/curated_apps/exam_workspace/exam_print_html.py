@@ -197,7 +197,7 @@ class _PrintHtmlRenderer:
         item_id = escape(entry.item_id, quote=True)
         return (
             f'<section class="print-question" id="exam-item-{item_id}">\n'
-            f"{self._blocks(entry.blocks)}\n"
+            f"{self._blocks(entry.text + entry.answer)}\n"
             "</section>"
         )
 

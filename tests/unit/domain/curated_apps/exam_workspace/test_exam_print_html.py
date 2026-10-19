@@ -145,7 +145,8 @@ class TestEntries:
         instruction = PrintInstruction(blocks=(PrintHeading(level=1, text="Titel"),))
         question = PrintQuestion(
             item_id="item_001",
-            blocks=(PrintHeading(level=3, text="Fråga 1"),),
+            text=(PrintHeading(level=3, text="Fråga 1"),),
+            answer=(),
         )
 
         html = _render(_document(instruction, question))
@@ -158,7 +159,8 @@ class TestEntries:
     def test_the_section_id_is_escaped(self) -> None:
         question = PrintQuestion(
             item_id='item_001"><script>',
-            blocks=(PrintHeading(level=3, text="Fråga"),),
+            text=(PrintHeading(level=3, text="Fråga"),),
+            answer=(),
         )
 
         html = _render(_document(question))
@@ -169,7 +171,7 @@ class TestEntries:
 
 class TestBlocks:
     def test_five_ruled_lines_render_five_writing_lines(self) -> None:
-        question = PrintQuestion(item_id="item_001", blocks=(PrintRuledLines(count=5),))
+        question = PrintQuestion(item_id="item_001", text=(), answer=(PrintRuledLines(count=5),))
 
         html = _render(_document(question))
 
@@ -180,12 +182,13 @@ class TestBlocks:
         width = blank_width_mm(9)
         question = PrintQuestion(
             item_id="item_001",
-            blocks=(
+            text=(
                 PrintParagraph(
                     runs=(PrintText("Svar: "), PrintBlank(width_mm=width)),
                     style=PrintParagraphStyle.GAP_LINE,
                 ),
             ),
+            answer=(),
         )
 
         html = _render(_document(question))
@@ -197,12 +200,13 @@ class TestBlocks:
     def test_text_runs_are_escaped(self) -> None:
         question = PrintQuestion(
             item_id="item_001",
-            blocks=(
+            text=(
                 PrintParagraph(
                     runs=(PrintText('<b>& "x"'),),
                     style=PrintParagraphStyle.BODY,
                 ),
             ),
+            answer=(),
         )
 
         html = _render(_document(question))
@@ -213,7 +217,8 @@ class TestBlocks:
     def test_tick_options_render_the_glyph_and_number_options_render_the_box(self) -> None:
         question = PrintQuestion(
             item_id="item_001",
-            blocks=(
+            text=(),
+            answer=(
                 PrintOption(box=PrintBox.TICK, label="A)", text="vägen"),
                 PrintOption(box=PrintBox.NUMBER, label="", text="Tes"),
             ),
@@ -228,7 +233,8 @@ class TestBlocks:
     def test_a_grid_renders_a_header_and_one_glyph_cell_per_row_and_column(self) -> None:
         question = PrintQuestion(
             item_id="item_001",
-            blocks=(PrintGrid(rows=("hund", "katt"), columns=("däggdjur", "fåglar", "fiskar")),),
+            text=(),
+            answer=(PrintGrid(rows=("hund", "katt"), columns=("däggdjur", "fåglar", "fiskar")),),
         )
 
         html = _render(_document(question))
@@ -242,7 +248,8 @@ class TestBlocks:
     def test_an_answer_key_renders_one_paragraph_per_line(self) -> None:
         question = PrintQuestion(
             item_id="item_001",
-            blocks=(PrintAnswerKey(lines=("Rätt svar: eleverna", "Poäng: 1")),),
+            text=(),
+            answer=(PrintAnswerKey(lines=("Rätt svar: eleverna", "Poäng: 1")),),
         )
 
         html = _render(_document(question, variant=ExamPrintVariant.FACIT))
@@ -256,12 +263,13 @@ class TestPictures:
     def _image_question(self) -> PrintQuestion:
         return PrintQuestion(
             item_id="item_001",
-            blocks=(
+            text=(
                 PrintParagraph(
                     runs=(PrintText("Se "), PrintImage(asset_id=ASSET_ID)),
                     style=PrintParagraphStyle.BODY,
                 ),
             ),
+            answer=(),
         )
 
     def test_a_valid_payload_is_inlined_as_a_data_uri(self) -> None:

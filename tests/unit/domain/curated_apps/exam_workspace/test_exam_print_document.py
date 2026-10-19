@@ -8,7 +8,9 @@ from skriptoteket.domain.curated_apps.exam_conversion.exam_print_house_template 
 from skriptoteket.domain.curated_apps.exam_workspace.exam_print_document import (
     PrintAnswerKey,
     PrintBlock,
+    PrintBox,
     PrintDocument,
+    PrintGrid,
     PrintHeading,
     PrintImage,
     PrintInstruction,
@@ -36,10 +38,12 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import Nat
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import NativeExamParent
 from tests.unit.domain.curated_apps.exam_workspace.exam_print_document_test_support import (
     all_texts,
+    entry_blocks,
     free_text_item,
     has_answer_key,
     lone_gap_item,
     question,
+    question_blocks,
     segments_paragraph,
 )
 from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders import (
@@ -113,10 +117,10 @@ class TestFreeText:
         student = build_print_document(document, variant=ExamPrintVariant.STUDENT)
         question_entry = question(student, "item_001")
 
-        points_index = question_entry.blocks.index(
+        points_index = question_blocks(question_entry).index(
             PrintParagraph(runs=(PrintText("Poäng: 4 poäng"),), style=PrintParagraphStyle.POINTS)
         )
-        assert question_entry.blocks[points_index + 1] == PrintRuledLines(count=5)
+        assert question_blocks(question_entry)[points_index + 1] == PrintRuledLines(count=5)
         assert criterion.text not in all_texts(student)
         assert not has_answer_key(student)
 
@@ -126,7 +130,7 @@ class TestFreeText:
         )
         question_entry = question(student, "item_001")
 
-        assert not any(isinstance(block, PrintOption) for block in question_entry.blocks)
+        assert not any(isinstance(block, PrintOption) for block in question_blocks(question_entry))
 
     def test_facit_ends_the_question_with_the_marking_guide(self) -> None:
         criterion = NativeExamCriterion(text="Kriteriet nämner renässansen", points=4)
@@ -135,11 +139,11 @@ class TestFreeText:
         facit = build_print_document(document, variant=ExamPrintVariant.FACIT)
         question_entry = question(facit, "item_001")
 
-        key = question_entry.blocks[-1]
+        key = question_blocks(question_entry)[-1]
         assert isinstance(key, PrintAnswerKey)
         assert key.lines[0] == "Rättningsmall:"
         assert f"• {criterion.text} (4 p)" in key.lines
-        assert question_entry.blocks[-2] == PrintRuledLines(count=5)
+        assert question_blocks(question_entry)[-2] == PrintRuledLines(count=5)
 
 
 class TestPointsFormatting:
@@ -150,10 +154,9 @@ class TestPointsFormatting:
 
         student = build_print_document(document, variant=ExamPrintVariant.STUDENT)
 
-        assert (
-            PrintParagraph(runs=(PrintText("Poäng: 2,5 poäng"),), style=PrintParagraphStyle.POINTS)
-            in question(student, "item_001").blocks
-        )
+        assert PrintParagraph(
+            runs=(PrintText("Poäng: 2,5 poäng"),), style=PrintParagraphStyle.POINTS
+        ) in question_blocks(question(student, "item_001"))
 
 
 class TestParents:
@@ -210,7 +213,11 @@ class TestVariants:
             return tuple(
                 (
                     entry.item_id if isinstance(entry, PrintQuestion) else None,
-                    tuple(block for block in entry.blocks if not isinstance(block, PrintAnswerKey)),
+                    tuple(
+                        block
+                        for block in entry_blocks(entry)
+                        if not isinstance(block, PrintAnswerKey)
+                    ),
                 )
                 for entry in document.entries
             )
@@ -336,3 +343,94 @@ class TestOutlineWalk:
             ("question", "item_001"),
             ("question", "item_002"),
         )
+
+
+class TestQuestionGroups:
+    """PrintQuestion carries the text group and the answer-form group (K8, K13)."""
+
+    def test_free_text_text_holds_heading_body_and_points_and_answer_holds_writing_area(
+        self,
+    ) -> None:
+        student = build_print_document(
+            make_document(free_text_item(writing_lines=5)), variant=ExamPrintVariant.STUDENT
+        )
+        entry = question(student, "item_001")
+
+        assert entry.text[0] == PrintHeading(level=3, text="Fråga 1")
+        assert (
+            PrintParagraph(
+                runs=(PrintText("Resonera om renässansen."),),
+                style=PrintParagraphStyle.BODY,
+            )
+            in entry.text
+        )
+        assert entry.text[-1] == PrintParagraph(
+            runs=(PrintText("Poäng: 4 poäng"),), style=PrintParagraphStyle.POINTS
+        )
+        assert entry.answer == (PrintRuledLines(count=5),)
+        assert question_blocks(entry) == entry.text + entry.answer
+
+    def test_single_choice_text_holds_no_options_and_answer_holds_the_options(self) -> None:
+        student = build_print_document(
+            make_document(make_single_choice_item()), variant=ExamPrintVariant.STUDENT
+        )
+        entry = question(student, "item_001")
+
+        assert entry.text[0] == PrintHeading(level=3, text="Fråga 1")
+        assert entry.text[-1] == PrintParagraph(
+            runs=(PrintText("Poäng: 1 poäng"),), style=PrintParagraphStyle.POINTS
+        )
+        assert not any(isinstance(block, PrintOption) for block in entry.text)
+        assert entry.answer == (
+            PrintOption(box=PrintBox.TICK, label="A)", text="vägen"),
+            PrintOption(box=PrintBox.TICK, label="B)", text="eleverna"),
+        )
+
+    def test_ordering_answer_holds_the_steps_in_print_order(self) -> None:
+        student = build_print_document(
+            make_document(make_ordering_item()), variant=ExamPrintVariant.STUDENT
+        )
+        entry = question(student, "item_001")
+
+        assert entry.text[0] == PrintHeading(level=3, text="Fråga 1")
+        last_text = entry.text[-1]
+        assert (
+            isinstance(last_text, PrintParagraph) and last_text.style is PrintParagraphStyle.POINTS
+        )
+        assert entry.answer == (
+            PrintOption(box=PrintBox.NUMBER, label="", text="Avslutning"),
+            PrintOption(box=PrintBox.NUMBER, label="", text="Motargument"),
+            PrintOption(box=PrintBox.NUMBER, label="", text="Argument"),
+            PrintOption(box=PrintBox.NUMBER, label="", text="Tes"),
+        )
+
+    def test_matching_answer_holds_the_grid(self) -> None:
+        student = build_print_document(
+            make_document(matching_item()), variant=ExamPrintVariant.STUDENT
+        )
+        entry = question(student, "item_001")
+
+        assert entry.text[0] == PrintHeading(level=3, text="Fråga 1")
+        last_text = entry.text[-1]
+        assert (
+            isinstance(last_text, PrintParagraph) and last_text.style is PrintParagraphStyle.POINTS
+        )
+        assert entry.answer == (
+            PrintGrid(rows=("hund", "katt", "fågel"), columns=("däggdjur", "fåglar", "fiskar")),
+        )
+
+    def test_facit_answer_key_is_the_last_answer_block(self) -> None:
+        criterion = NativeExamCriterion(text="Kriteriet nämner renässansen", points=4)
+        document = make_document(free_text_item(writing_lines=5, criteria=(criterion,)))
+
+        facit = build_print_document(document, variant=ExamPrintVariant.FACIT)
+        entry = question(facit, "item_001")
+
+        assert entry.text[-1] == PrintParagraph(
+            runs=(PrintText("Poäng: 4 poäng"),), style=PrintParagraphStyle.POINTS
+        )
+        assert entry.answer[-1] == PrintAnswerKey(
+            lines=("Rättningsmall:", f"• {criterion.text} (4 p)")
+        )
+        assert entry.answer[-2] == PrintRuledLines(count=5)
+        assert not any(isinstance(block, PrintAnswerKey) for block in entry.text)
