@@ -6,6 +6,7 @@ single block interaction and its surrounding prompt.
 
 from __future__ import annotations
 
+import re
 from collections.abc import Mapping
 from dataclasses import replace
 from xml.etree import ElementTree
@@ -294,20 +295,23 @@ def free_text_item(
 def _expected_lines(block: ElementTree.Element) -> int:
     """Free-text answer box height in lines (W2) from the interaction element.
 
-    A present ``expected-lines`` attribute must be an integer inside the
-    writing-lines bounds; anything else makes the interaction unsupported.
-    An absent attribute takes DEFAULT_WRITING_LINES, the product default for
-    a free-text question with no set writing area (W4), not an old-data
+    A present ``expected-lines`` attribute must match the XML Schema integer
+    lexical form: after stripping only XML whitespace (space, tab, line feed,
+    carriage return) from both ends, an optional single '+' or '-' sign
+    followed by one or more ASCII digits 0-9, inside the writing-lines
+    bounds; anything else makes the interaction unsupported. An absent
+    attribute takes DEFAULT_WRITING_LINES, the product default for a
+    free-text question with no set writing area (W4), not an old-data
     fallback.
     """
 
     raw = block.get("expected-lines")
     if raw is None:
         return DEFAULT_WRITING_LINES
-    try:
-        lines = int(raw)
-    except ValueError:
-        raise UnsupportedInteraction from None
+    collapsed = raw.strip(" \t\n\r")
+    if re.fullmatch(r"[+-]?[0-9]+", collapsed, flags=re.ASCII) is None:
+        raise UnsupportedInteraction
+    lines = int(collapsed)
     if not MIN_WRITING_LINES <= lines <= MAX_WRITING_LINES:
         raise UnsupportedInteraction
     return lines

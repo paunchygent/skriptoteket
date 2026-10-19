@@ -192,3 +192,72 @@ def test_parent_free_text_child_keeps_its_expected_lines() -> None:
         NativeExamItemKind.FREE_TEXT,
     ]
     assert [item.writing_lines for item in container.document.items] == [4, 4]
+
+
+@pytest.mark.parametrize("expected_lines", ["1_0", "３", " 3", ""])
+def test_python_only_expected_lines_spelling_is_unsupported(expected_lines: str) -> None:
+    xml = serialize_qti_assessment_item(_exported_free_text(writing_lines=3))
+    root = ElementTree.fromstring(xml)
+    interaction = root.find(f".//{{{QTI_NAMESPACE}}}qti-extended-text-interaction")
+    assert interaction is not None
+    interaction.set("expected-lines", expected_lines)
+    broken = ElementTree.tostring(root, encoding="utf-8")
+
+    (unsupported,) = _read(broken, sequence=1)
+    assert isinstance(unsupported, ExamNetQtiUnsupportedItem)
+    assert unsupported.reason is ExamNetQtiUnsupportedReason.INTERACTION
+
+
+@pytest.mark.parametrize(
+    ("expected_lines", "writing_lines"),
+    [("03", 3), ("+3", 3), (" 3", 3)],
+)
+def test_xml_integer_spellings_import(expected_lines: str, writing_lines: int) -> None:
+    xml = serialize_qti_assessment_item(_exported_free_text(writing_lines=3))
+    root = ElementTree.fromstring(xml)
+    interaction = root.find(f".//{{{QTI_NAMESPACE}}}qti-extended-text-interaction")
+    assert interaction is not None
+    interaction.set("expected-lines", expected_lines)
+    shaped = ElementTree.tostring(root, encoding="utf-8")
+
+    (read,) = _read(shaped, sequence=1)
+    assert isinstance(read, ExamNetQtiItem)
+    assert read.expected_lines == writing_lines
+
+
+def test_parent_child_with_python_only_expected_lines_is_skipped() -> None:
+    first = make_free_text_item(sequence=1, item_id="item_001").model_copy(
+        update={"writing_lines": 4}
+    )
+    second = make_free_text_item(sequence=2, item_id="item_002").model_copy(
+        update={"writing_lines": 4}
+    )
+    parent = NativeExamParent(
+        parent_id="parent_001",
+        place=0,
+        instruction=(make_paragraph("Gör alla deluppgifter."),),
+        item_ids=("item_001", "item_002"),
+    )
+    document = NativeExamDocument(
+        document_id=uuid4(),
+        revision=1,
+        title="Prov",
+        items=(first, second),
+        parents=(parent,),
+        origin=NativeExamDocumentOrigin(kind="created"),
+    )
+    (exported,) = native_exam_to_examnet_qti_items(document)
+    xml = serialize_qti_assessment_item(exported)
+    root = ElementTree.fromstring(xml)
+    interactions = root.findall(f".//{{{QTI_NAMESPACE}}}qti-extended-text-interaction")
+    assert len(interactions) == 2
+    interactions[0].set("expected-lines", "1_0")
+    broken = ElementTree.tostring(root, encoding="utf-8")
+
+    read = _read(broken, sequence=1)
+    assert len(read) == 2
+    parent_item, unsupported = read
+    assert isinstance(parent_item, ExamNetQtiItem)
+    assert isinstance(unsupported, ExamNetQtiUnsupportedItem)
+    assert unsupported.reason is ExamNetQtiUnsupportedReason.INTERACTION
+    assert [child.expected_lines for child in parent_item.children] == [4]
