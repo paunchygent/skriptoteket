@@ -29,8 +29,6 @@
 
 import { computed, onMounted, provide, ref } from "vue";
 
-import type { ExamListOrdering } from "../../api/examWorkspace";
-import type { ExamWorkspaceExportTarget } from "../../api/examWorkspaceExports";
 import { useToast } from "../../composables/useToast";
 import ExamWorkspaceDrawers from "./exam-workspace/ExamWorkspaceDrawers.vue";
 import ExamWorkspaceEditorPane from "./exam-workspace/ExamWorkspaceEditorPane.vue";
@@ -47,15 +45,14 @@ import { examWorkspaceBlockerEntries, examWorkspaceTitleBlockerEntries } from ".
 import { examWorkspaceSavedAt } from "./exam-workspace/examWorkspaceFormat";
 import { provideExamWorkspaceHistoryKeys } from "./exam-workspace/examWorkspaceHistoryKeys";
 import { isTeacherReviewed } from "./exam-workspace/examWorkspaceItemEdits";
-import type { TeacherItemKind } from "./exam-workspace/examWorkspaceItemEdits";
 import { examWorkspaceDocumentLabel } from "./exam-workspace/examWorkspaceRows";
-import { bodyText } from "./exam-workspace/examWorkspaceRichText";
-import { isEmptyBody } from "./exam-workspace/examWorkspaceRichTextDocument";
-import { examWorkspaceExamPrintedDifference } from "./exam-workspace/examWorkspaceTotals";
 import { EXAM_WORKSPACE_STORE_KEY } from "./exam-workspace/examWorkspaceStore";
 import type { ExamWorkspaceStore } from "./exam-workspace/examWorkspaceStore";
 import { useExamWorkspaceAddress } from "./exam-workspace/useExamWorkspaceAddress";
+import { useExamWorkspaceColumnLayout } from "./exam-workspace/useExamWorkspaceColumnLayout";
 import { useExamWorkspaceContentSuggestions } from "./exam-workspace/useExamWorkspaceContentSuggestions";
+import { useExamWorkspaceListActions } from "./exam-workspace/useExamWorkspaceListActions";
+import { useExamWorkspaceViewLabels } from "./exam-workspace/useExamWorkspaceViewLabels";
 import { useExamWorkspaceEditing } from "./exam-workspace/useExamWorkspaceEditing";
 import { useExamWorkspaceEnrichment } from "./exam-workspace/useExamWorkspaceEnrichment";
 import { useExamWorkspaceExports } from "./exam-workspace/useExamWorkspaceExports";
@@ -72,7 +69,6 @@ const props = defineProps<{ store: ExamWorkspaceStore }>();
 provide(EXAM_WORKSPACE_STORE_KEY, props.store);
 
 const layout = useExamWorkspaceLayout();
-const toast = useToast();
 const editing = useExamWorkspaceEditing(props.store);
 const {
   history,
@@ -83,7 +79,6 @@ const {
   isBusy,
   isDirty,
   isOpen,
-  listOrdering,
   loadSavedDocuments,
   openDocument,
   openExam,
@@ -170,7 +165,7 @@ const selection = useExamWorkspaceSelection({
 const {
   canStep, converting, dismissItemNotice, entries, examInstructionsSelected, gotoItem, itemChild, itemEntries,
   itemEntry, itemNotice, itemParent, items, moveSelected, parentChildren, questionLabel, readiness, selectedEntry,
-  selectedEntryId, selectedItem, selectedParent, selectedParentEntry, selectedParentId, selectEntry, step, stripState,
+  selectedEntryId, selectedItem, selectedParent, selectedParentEntry, selectEntry, step, stripState,
   total,
 } = selection;
 editing.registerSelectParent(selectEntry);
@@ -180,6 +175,30 @@ const blockers = computed(() => [
   ...examWorkspaceTitleBlockerEntries(titleWithoutText.value),
   ...examWorkspaceBlockerEntries(entries.value, items.value, readiness.value, exports.exportBlockersByItemId.value),
 ]);
+
+/**
+ * The width owner's side state and the remembered column widths (TASK-SKRIPT-41-02-04),
+ * owned by `useExamWorkspaceColumnLayout`: on desktop the root carries the widths
+ * as inline custom properties and the list state as `data-list`; tablet and
+ * phone render without either.
+ */
+const {
+  isDesktop,
+  listRailCollapsed,
+  resetWidth,
+  rootColumnStyle,
+  rootListState,
+  setListWidth,
+  setWidth,
+  side,
+  toggleListCollapsed,
+} = useExamWorkspaceColumnLayout(layout, {
+  drawer,
+  isPhone,
+  previewOpen,
+  store: props.store,
+  workspaceDocument,
+});
 const saveFlow = useExamWorkspaceSaveFlow({
   editing, enrichment, exports, blockers, disabled, frame, gotoItem,
   openDetails: () => { drawer.value = "details"; },
@@ -194,62 +213,33 @@ provideExamWorkspaceHistoryKeys({
 });
 
 /**
- * The list's "Instruktioner" preview: the text, or "Bild" for an instruction
- * of pictures without visible text; `null` for an instruction that prints nothing.
+ * The derived labels (TASK-SKRIPT-41-02-04), owned by
+ * `useExamWorkspaceViewLabels`: the instruction preview, the printed total,
+ * the course label, the formatted saved exports, and the zero-points flag.
  */
-const examInstructionsPreview = computed(() => {
-  const instructions = workspaceDocument.value?.instructions ?? [];
-  return isEmptyBody(instructions) ? null : bodyText(instructions) || "Bild";
-});
-const examPrintedTotal = computed(() =>
-  workspaceDocument.value ? examWorkspaceExamPrintedDifference(workspaceDocument.value) : null,
-);
-const courseLabel = computed(() => workspaceDocument.value?.header.course?.name ?? null);
-const formattedSavedExports = computed(() =>
-  Object.fromEntries(
-    Object.entries(exports.savedExports.value).map(([target, iso]) => [target, examWorkspaceSavedAt(iso)]),
-  ) as Partial<Record<ExamWorkspaceExportTarget, string>>,
-);
-const zeroPoints = computed(() => items.value.some((item) => item.points === 0));
+const { courseLabel, examInstructionsPreview, examPrintedTotal, formattedSavedExports, zeroPoints } =
+  useExamWorkspaceViewLabels({
+    items,
+    savedExports: exports.savedExports,
+    workspaceDocument,
+  });
 const enrichmentBusy = computed(() => enrichment.isRequesting.value || enrichment.isEnrichmentPending.value);
 
-async function setOrdering(ordering: ExamListOrdering): Promise<void> {
-  const teacher = props.store.teacher;
-  if (!teacher) return;
-  const previous = listOrdering.value;
-  listOrdering.value = ordering;
-  try {
-    await teacher.updateExamListOrdering(ordering);
-  } catch {
-    listOrdering.value = previous;
-    toast.failure("Ordningen kunde inte sparas. Försök igen.");
-  }
-}
-
-function toggleReviewed(): void {
-  const item = selectedItem.value;
-  if (!item) return;
-  if (isTeacherReviewed(item)) {
-    editing.unmarkItemReviewed(item.item_id);
-  } else {
-    editing.markItemReviewed(item.item_id);
-  }
-}
-
-function addEntry(kind: TeacherItemKind | "instruction" | "part"): void {
-  listOpen.value = false;
-  if (kind === "instruction") {
-    void structure.addInstruction();
-  } else if (kind === "part") {
-    void structure.addEmptyPart();
-  } else {
-    structure.addItem(kind);
-  }
-}
-
-function addChild(kind: TeacherItemKind): void {
-  if (selectedParentId.value) void structure.addChild(selectedParentId.value, kind);
-}
+/**
+ * The question-list commands (TASK-SKRIPT-41-02-04), owned by
+ * `useExamWorkspaceListActions`: saving the list ordering, marking questions
+ * reviewed, and adding entries and children.
+ */
+const { addChild, addEntry, setOrdering, toggleReviewed } = useExamWorkspaceListActions({
+  editing,
+  listOpen,
+  listOrdering: editing.listOrdering,
+  selectedItem,
+  selectedParentId: selection.selectedParentId,
+  store: props.store,
+  structure,
+  toast: useToast(),
+});
 
 onMounted(() => {
   void loadSavedDocuments();
@@ -261,7 +251,9 @@ onMounted(() => {
   <main
     ref="frame"
     class="xw-root ws"
-    :class="{ 'ws--drawer': drawer !== null, 'ws--preview': previewOpen }"
+    :data-side="side"
+    :data-list="rootListState"
+    :style="rootColumnStyle"
     aria-label="Provredigering"
     :data-layout="layout"
     data-test="exam-workspace-frame"
@@ -383,6 +375,7 @@ onMounted(() => {
     >
       <ExamWorkspaceQuestionList
         v-if="workspaceDocument"
+        id="exam-workspace-question-list"
         :entries="entries"
         :selected-id="selectedEntryId"
         :exam-instructions-preview="examInstructionsPreview"
@@ -392,6 +385,8 @@ onMounted(() => {
         :can-add="!disabled"
         :disabled="disabled"
         :overlay="isPhone && listOpen"
+        :collapsed="listRailCollapsed"
+        :handle="isDesktop"
         @select="selectEntry"
         @add="addEntry"
         @group="(itemIds) => structure.groupItems(itemIds)"
@@ -399,6 +394,9 @@ onMounted(() => {
         @accept-part-total="editing.acceptPartPrintedTotal"
         @accept-all-totals="editing.acceptAllPrintedTotals"
         @close="listOpen = false"
+        @set="setListWidth"
+        @reset="resetWidth('list')"
+        @toggle-collapse="toggleListCollapsed()"
       />
 
       <ExamWorkspaceEditorPane
@@ -429,17 +427,23 @@ onMounted(() => {
 
       <ExamWorkspacePrintPreviewPanel
         v-if="previewOpen && workspaceDocument && !isPhone && props.store.teacher !== null"
+        id="exam-workspace-side-panel"
         :pages="previewPages"
         :question-pages="previewQuestionPages"
         :loading="previewLoading"
         :blocked="previewBlocked"
         :message="previewMessage"
         :selected-item-id="selectedItem?.item_id ?? null"
+        :handle="isDesktop"
         @close="previewOpen = false"
+        @set="(px) => setWidth('preview', px)"
+        @reset="resetWidth('preview')"
+        @toggle-collapse="previewOpen = false"
       />
 
       <ExamWorkspaceDrawers
         v-if="drawer"
+        id="exam-workspace-side-panel"
         :drawer="drawer"
         :layout="layout"
         :editing="editing"
@@ -453,11 +457,15 @@ onMounted(() => {
         :zero-points="zeroPoints"
         :formatted-saved-exports="formattedSavedExports"
         :question-label="questionLabel"
+        :handle="isDesktop"
         @close="drawer = null"
         @run="runExport"
         @goto="gotoBlocker"
         @fix="fixBlocker"
         @set-ordering="setOrdering"
+        @set="(px) => setWidth('drawer', px)"
+        @reset="resetWidth('drawer')"
+        @toggle-collapse="drawer = null"
       />
     </div>
 
@@ -478,22 +486,9 @@ onMounted(() => {
   background: var(--huleedu-canvas); color: var(--huleedu-navy);
 }
 .ws__bar { margin: var(--huleedu-space-2) var(--huleedu-space-6) 0; }
-.ws__body {
-  position: relative; flex: 1; min-height: 0; display: grid;
-  grid-template-columns: var(--xw-list) minmax(0, 1fr);
-}
-.ws--drawer .ws__body { grid-template-columns: var(--xw-list) minmax(0, 1fr) var(--xw-drawer); }
-.ws__body--empty, .ws--drawer .ws__body--empty { grid-template-columns: minmax(0, 1fr); }
-.ws--drawer .ws__body--empty { grid-template-columns: minmax(0, 1fr) var(--xw-drawer); }
-@media (min-width: 1280px) {
-  .ws--preview .ws__body { grid-template-columns: var(--xw-list) minmax(0, 1fr) minmax(320px, 0.8fr); }
-}
 @media (max-width: 1279px) {
-  .ws__body, .ws--drawer .ws__body { grid-template-columns: 280px minmax(0, 1fr); }
-  .ws__body--empty, .ws--drawer .ws__body--empty { grid-template-columns: minmax(0, 1fr); }
   .ws__bar { margin: var(--huleedu-space-2) var(--huleedu-space-4) 0; }
 }
-@media (max-width: 767px) {
-  .ws__body, .ws--drawer .ws__body { grid-template-columns: minmax(0, 1fr); }
-}
 </style>
+
+<style scoped src="./exam-workspace/examWorkspaceGrid.css"></style>

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "29c342ebc903d9edb92cd33efbba5b7536690263e915c774979e201f9b39c49d",
+  "source_set_digest": "456d992a1f8df0665b6ae040fd980382cb4caa28974983b95764f314bbe11733",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5244,6 +5244,25 @@
       }
     },
     {
+      "id": "TASK-SKRIPT-39-04-20",
+      "type": "task",
+      "title": "A paragraph that holds only a score field is consumed whole as the points source and leaves no slash in the question",
+      "path": "docs/backlog/tasks/task-skript-39-04-20-a-paragraph-that-holds-only-a-score-field-is-consumed-whole-as-the-points-source-and-leaves-no-slash-in-the-question.md",
+      "status": "in_progress",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
       "id": "TASK-SKRIPT-39-05-01",
       "type": "task",
       "title": "Walking skeleton for AI-first DOCX conversion as a background job",
@@ -6809,7 +6828,30 @@
       "type": "task",
       "title": "Guests open, edit and export exams in the workspace without login",
       "path": "docs/backlog/tasks/task-skript-41-02-02-guests-open-edit-and-export-exams-in-the-workspace-without-login.md",
-      "status": "in_progress",
+      "status": "done",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-41-02",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-19",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Independent ruthless-reviewer da90f12c (Pi) cleared every finding of the first build over five rereviews; the last medium (R13) was admitted on focused proof. After the guest staging walk failed, repair review b141ae75 at 13209269 returned two medium structural findings, repaired by fresh juniors and admitted on focused proof without rereview under the review gates (retained 01a153b4 evidence/reviews/b141ae75-a891-4b35-85c0-78040454e990.md). Merged to main as ba4fe22ab; the Mac re-walk on staging passed; deployed to production at f7eeada5 on 2026-10-19 with the F1/G6 proxy change, see Production Deploy below."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-41-02-03",
+      "type": "task",
+      "title": "The public guest DigiExam converter line is removed",
+      "path": "docs/backlog/tasks/task-skript-41-02-03-the-public-guest-digiexam-converter-line-is-removed.md",
+      "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-41-02",
       "owners": [
@@ -6824,10 +6866,10 @@
       }
     },
     {
-      "id": "TASK-SKRIPT-41-02-03",
+      "id": "TASK-SKRIPT-41-02-04",
       "type": "task",
-      "title": "The public guest DigiExam converter line is removed",
-      "path": "docs/backlog/tasks/task-skript-41-02-03-the-public-guest-digiexam-converter-line-is-removed.md",
+      "title": "The exam workspace fills the desktop window and the editor column is the widest",
+      "path": "docs/backlog/tasks/task-skript-41-02-04-the-exam-workspace-fills-the-desktop-window-and-the-editor-column-is-the-widest.md",
       "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-41-02",

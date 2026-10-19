@@ -76,23 +76,24 @@ const disabled = computed(() => props.blockers.length > 0 || props.busy || props
   />
 
   <section class="sect">
-    <h3>Format</h3>
-    <div
-      class="xw-seg xw-seg--large"
-      role="group"
-      aria-label="Format"
-    >
-      <button
+    <fieldset class="format-list">
+      <legend>Format</legend>
+      <label
         v-for="entry in EXAM_WORKSPACE_EXPORT_FORMATS"
         :key="entry.target"
-        type="button"
-        :aria-pressed="target === entry.target"
-        :data-test="`exam-workspace-export-format-${entry.target}`"
-        @click="target = entry.target"
+        class="choice"
       >
-        {{ entry.name }}
-      </button>
-    </div>
+        <input
+          type="radio"
+          name="exam-workspace-export-format"
+          class="xw-radio"
+          :checked="target === entry.target"
+          :data-test="`exam-workspace-export-format-${entry.target}`"
+          @change="target = entry.target"
+        >
+        <span>{{ entry.name }}</span>
+      </label>
+    </fieldset>
     <p class="xw-hint">
       {{ format.hint }}
     </p>
@@ -205,10 +206,11 @@ const disabled = computed(() => props.blockers.length > 0 || props.busy || props
 </template>
 
 <style scoped>
-.sect h3 {
+.sect h3, .sect legend {
   display: flex; align-items: center; gap: var(--huleedu-space-2); min-height: 28px; margin: 0 0 var(--huleedu-space-2-5);
   font-size: var(--huleedu-text-sm); font-weight: var(--huleedu-font-semibold);
 }
+.sect fieldset { border: 0; margin: 0; padding: 0; }
 .choice { display: flex; align-items: flex-start; gap: var(--huleedu-space-3); padding: var(--huleedu-space-1-5) 0; font-size: var(--huleedu-text-sm); cursor: pointer; }
 .choice small { display: block; color: var(--huleedu-navy-60); font-size: var(--huleedu-text-xs); }
 .choice input { flex: none; width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--huleedu-action); }
