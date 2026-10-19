@@ -124,8 +124,14 @@ document or event format change, no migration.
 - Retained root:
   `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a152e0-e3d9-79cd-b575-f90bfb3109f7`
   (plan `evidence/planning/TASK-SKRIPT-39-04-18/plan.md`).
-- Next: the touched-domain suite after the orchestrator's go, then
-  independent review routed by the orchestrator.
+- Domain suite at `96930417`: 4620 passed, 59 skipped. Review `9f931df3`
+  (changes_requested, F1 high): an unlabelled leading word such as
+  "question text" became a huge Roman-numeral ordinal. Repaired in
+  `8affda4b` (delimiter first, grammar shared through
+  `_delimited_label_end`) and `7fbc6bc9` (decimal label checked without
+  `int()`, which refused tokens over 4300 digits). Replays at `7fbc6bc9` are
+  identical to `cfe1f25c`.
+- Next: rereview of F1 by `9f931df3`, routed by the orchestrator.
 
 ## Stop Conditions
 
