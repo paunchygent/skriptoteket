@@ -37,7 +37,6 @@ import type { Ref } from "vue";
 import type {
   NativeExamBodyParagraph,
   NativeExamItem,
-  NativeExamItemKind,
 } from "../../../api/examWorkspace";
 import { bodyWithoutGap, gapHasAnswer } from "./examWorkspaceGapEdits";
 import { hasKeyedOrigin } from "./examWorkspaceAnswerKeyRules";
@@ -47,22 +46,16 @@ import { wordRangeAtDocCharacter, wordRangeAtDocPosition } from "./examWorkspace
 /** A kept link the pointer hit: its kept id and the clicked block's index. */
 export type KeptGapHit = { keptGapId: string; blockIndex: number };
 
-/** Why Tom lucka is unavailable for a question that is not a gap question. */
-export const EMPTY_GAP_NOT_GAP_KIND_REASON = "Tom lucka – endast luckfrågor";
 /** Why Tom lucka is unavailable when there is no next gap id. */
-export const EMPTY_GAP_AT_CAP_REASON = "Tom lucka – högst 999 luckor";
+export const EMPTY_GAP_AT_CAP_REASON = "Tom lucka – inga fler luckor kan läggas till i frågan";
 
 /**
- * Why the Tom lucka command is unavailable: the question is not a gap
- * question, or there is no next gap id. Null while the command can run.
+ * Why the Tom lucka command is unavailable: there is no next gap id. Null
+ * while the command can run. A question that is not a gap question never
+ * reaches this reason: its button does not render, and the body editor
+ * refuses the command with its own kind guard and no copy.
  */
-export function gapDisabledReason(
-  kind: NativeExamItemKind,
-  nextGapId: string | null | undefined,
-): string | null {
-  if (kind !== "gap_fill" && kind !== "inline_choice") {
-    return EMPTY_GAP_NOT_GAP_KIND_REASON;
-  }
+export function gapDisabledReason(nextGapId: string | null | undefined): string | null {
   if (typeof nextGapId !== "string") {
     return EMPTY_GAP_AT_CAP_REASON;
   }

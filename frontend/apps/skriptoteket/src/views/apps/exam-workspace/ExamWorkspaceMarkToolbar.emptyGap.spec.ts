@@ -18,7 +18,6 @@ import { UiGlyph } from "../../../components/ui";
 import ExamWorkspaceMarkToolbar from "./ExamWorkspaceMarkToolbar.vue";
 import {
   EMPTY_GAP_AT_CAP_REASON,
-  EMPTY_GAP_NOT_GAP_KIND_REASON,
 } from "./useExamWorkspaceMakeGap";
 
 const EMPTY_GAP = "[data-test='exam-workspace-toolbar-empty-gap']";
@@ -48,20 +47,6 @@ describe("ExamWorkspaceMarkToolbar Tom lucka", () => {
     expect(wrapper.emitted("insertEmptyGap")).toHaveLength(1);
     expect(wrapper.emitted("toggleGapTool")).toBeUndefined();
     expect(wrapper.emitted("makeGap")).toBeUndefined();
-  });
-
-  it("disables with the not-a-gap-question reason as its tooltip", () => {
-    const wrapper = mount(ExamWorkspaceMarkToolbar, {
-      props: { showGap: true, emptyGapDisabledReason: EMPTY_GAP_NOT_GAP_KIND_REASON },
-    });
-    const button = wrapper.get(EMPTY_GAP);
-    const element = button.element;
-    if (!(element instanceof HTMLButtonElement)) {
-      throw new Error("the Tom lucka button is not a button");
-    }
-    expect(element.disabled).toBe(true);
-    expect(button.attributes("title")).toBe(EMPTY_GAP_NOT_GAP_KIND_REASON);
-    expect(button.attributes("aria-label")).toBe("Tom lucka");
   });
 
   it("disables with the gap cap reason as its tooltip", () => {

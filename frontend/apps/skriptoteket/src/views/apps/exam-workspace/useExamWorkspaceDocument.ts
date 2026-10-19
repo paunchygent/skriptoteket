@@ -56,7 +56,7 @@ export { EXAM_WORKSPACE_CONVERSION_POLL_MS } from "./useExamWorkspaceConversion"
 export type { ExamWorkspaceSaveAsOutcome } from "./useExamWorkspaceSave";
 
 const OPEN_FAILURE_COPY = "Det gick inte att öppna provet. Försök igen.";
-const OPEN_OUTDATED_COPY = "Provet är sparat i ett äldre format och kan inte öppnas.";
+const OPEN_OUTDATED_COPY = "Provet är sparat i ett äldre format och kan inte öppnas. Importera originalfilen på nytt.";
 
 /**
  * One opening of an exam: created when a document of another lineage is
