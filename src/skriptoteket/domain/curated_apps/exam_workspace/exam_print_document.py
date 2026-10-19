@@ -292,15 +292,16 @@ def _question_blocks(item: NativeExamItem, *, variant: ExamPrintVariant) -> Ques
     labels = SWEDISH_EXAM_LABELS
     layout = item_print_layout(item)
     gaps_by_id = {gap.gap_id: gap for gap in item.gaps}
-    text: list[PrintBlock] = [PrintHeading(level=3, text=labels.item_title(item))]
+    heading = PrintHeading(level=3, text=labels.item_title(item))
+    body: list[PrintBlock] = []
     answer: list[PrintBlock] = []
 
     for paragraph in item.body:
         role = paragraph_print_role(item, paragraph)
         if role is ParagraphPrintRole.ANSWER_LINE:
-            text.append(PrintRuledLines(count=1))
+            body.append(PrintRuledLines(count=1))
         elif role is ParagraphPrintRole.GAP_LINE:
-            text.append(
+            body.append(
                 PrintParagraph(
                     runs=_gap_line_runs(paragraph, layout),
                     style=PrintParagraphStyle.GAP_LINE,
@@ -309,9 +310,7 @@ def _question_blocks(item: NativeExamItem, *, variant: ExamPrintVariant) -> Ques
         else:
             runs = _text_paragraph_runs(paragraph, gaps_by_id)
             if runs:
-                text.append(PrintParagraph(runs=runs, style=PrintParagraphStyle.BODY))
-
-    _append_inline_points(text, item, labels)
+                body.append(PrintParagraph(runs=runs, style=PrintParagraphStyle.BODY))
 
     if item.kind is NativeExamItemKind.FREE_TEXT:
         answer.append(PrintRuledLines(count=layout.writing_lines))
@@ -341,7 +340,9 @@ def _question_blocks(item: NativeExamItem, *, variant: ExamPrintVariant) -> Ques
         key_lines = _facit_lines(item, labels)
         if key_lines:
             answer.append(PrintAnswerKey(lines=key_lines))
-    return QuestionBlockGroups(text=tuple(text), answer=tuple(answer))
+    return QuestionBlockGroups(
+        text=_with_inline_points(heading, body, item, labels), answer=tuple(answer)
+    )
 
 
 def _text_paragraph_runs(
@@ -378,10 +379,10 @@ def _gap_line_runs(paragraph: NativeParagraph, layout: ItemPrintLayout) -> tuple
     return tuple(runs)
 
 
-def _append_inline_points(
-    text: list[PrintBlock], item: NativeExamItem, labels: ExamExportLabels
-) -> None:
-    """Append the question's points as " (N p)" to its last text paragraph.
+def _with_inline_points(
+    heading: PrintHeading, body: list[PrintBlock], item: NativeExamItem, labels: ExamExportLabels
+) -> tuple[PrintBlock, ...]:
+    """Return the question text group with points as " (N p)" on its last text paragraph.
 
     The inline run extends the last ``BODY`` or ``GAP_LINE`` paragraph, searching
     backward so a trailing ruled answer line is skipped. When the question has no
@@ -389,19 +390,17 @@ def _append_inline_points(
     points prints no points text at all.
     """
     if item.points is None:
-        return
+        return (heading, *body)
     inline = PrintText(" " + labels.points_inline(_format_points(item.points)))
-    for index in range(len(text) - 1, -1, -1):
-        block = text[index]
+    for index in range(len(body) - 1, -1, -1):
+        block = body[index]
         if isinstance(block, PrintParagraph) and block.style in (
             PrintParagraphStyle.BODY,
             PrintParagraphStyle.GAP_LINE,
         ):
-            text[index] = replace(block, runs=block.runs + (inline,))
-            return
-    heading = text[0]
-    assert isinstance(heading, PrintHeading)
-    text[0] = replace(heading, text=heading.text + inline.text)
+            updated = replace(block, runs=block.runs + (inline,))
+            return (heading, *body[:index], updated, *body[index + 1 :])
+    return (replace(heading, text=heading.text + inline.text), *body)
 
 
 def _format_points(points: int | float) -> str:
