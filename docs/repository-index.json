@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "81f56de368112de9ad390eae8d3eab1f910295f44ee908f2cde28bedc4be7110",
+  "source_set_digest": "8a7ebea9dfca2aa5f9052207192e4209f0a351ea8a9530e3bf3c33e93523f634",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5195,6 +5195,25 @@
         "decided_at": "2026-10-19",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "Pi ruthless-reviewer 7ac4ca2f reviewed 5d70a359: no high findings, one medium (two test guards skipped every fallback item, so a review_complete item with a leaked label passed). Repaired at a8cd8181 (guards skip only review_required fallback-imported items, D9 amended, a test built on the reviewer probe failed before the fix) and admitted by the parent on focused proof without rereview: 120 focused tests, lint, typecheck and docs-validate pass; domain suite 4262 passed at 48852ace; replays change only svenska_2 item_001 in both variants, as decided in G1/G2 (user 2026-10-19). Merged to main at a8cd8181 on 2026-10-19."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-04-18",
+      "type": "task",
+      "title": "An inline answer key cut from a review question is carried into its facit exactly as printed and marked as taken from the source",
+      "path": "docs/backlog/tasks/task-skript-39-04-18-an-inline-answer-key-cut-from-a-review-question-is-carried-into-its-facit-exactly-as-printed-and-marked-as-taken-from-the-source.md",
+      "status": "proposed",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {
