@@ -78,38 +78,31 @@ the document and event formats are unchanged.
 ### Replay outcome (2026-10-19)
 
 The ten recorded replays, dumped with documents and events (UUIDs masked) at
-the base `830f13bc` and at `14862085`, differ in exactly one item in two
-exams: `svenska_2_grammatik_omprov_variant_1_med_facit` and `variant_2`
-item_001 (Fråga 1). Each moves from `review_complete` with the reply's
-morpheme split (`a) snö + boll + ...[gap]x5`, `a) sol[gap] + ros[gap] ...`)
-to `review_required` / `source_fallback` with reason "Frågan följer inte
-provformatet: 5 luckor men 1 tom svarsrad." and its source text intact
-(`a) snöbollarnas Svar: ...`, `a) solrosornas Svar: ...`). Its formatting
-event `aligned` becomes the admission event `gap_count_mismatch` ("5 gaps for
-1 blank runs"). No other item, document field or event changes
-(`~/logs/replays-39-04-17/`, retained `evidence/read/replay.diff`).
+`a8195345` (main with TASK-SKRIPT-39-04-15) and at `4179f50c`, differ in
+exactly one item in two exams: `svenska_2_grammatik_omprov_variant_1_med_facit`
+and `variant_2` item_001 (Fråga 1). Each moves from `review_complete` with the
+reply's morpheme split to `review_required` / `source_fallback` with reason
+"Frågan följer inte provformatet: 5 luckor men 1 svarsplats." Its review body
+shows the question as printed with each inline answer key cut (D7):
+"a) snöbollarnas / b) skrivbarheten / c) fotbollsspelarnas" (variant 2:
+"a) solrosornas / b) läsbarheten / c) handbollsspelarnas"), and no "Svar:"
+and no "(R)", "(A)" or "(B)". Its formatting event `aligned` becomes the
+admission event `gap_count_mismatch`. No other item, document field or event
+changes (`~/logs/replays-39-04-17-final/`, retained
+`evidence/read/replay-final.diff`).
 
 ### Resume here (2026-10-19)
 
-- State: U1 integrated (`14862085`, docstring repair `0a93eaee`); `origin/main`
-  at `a8195345` (TASK-SKRIPT-39-04-15) merged at `30e2c846` (only the
-  generated `docs/repository-index.json` conflicted, taken from main and
-  regenerated); the new test file now passes `foreign_chunks=()` (`c2d80fa3`).
-- After the merge: the focused files pass (57 tests); lint, backend typecheck
-  and docs-validate pass. Frontend is not touched (`vue-tsc` is not installed
-  in this worktree). Replays at `a8195345` against `c2d80fa3`
-  (`~/logs/replays-39-04-17-merged/`, retained
-  `evidence/read/replay-merged.diff`) repeat the replay outcome above: only
-  the two svenska_2 item_001 and their formatting event change.
-- Domain suite at `2def276f`: 19 failed, 4230 passed, 59 skipped
-  (`~/logs/suite-39-04-17.log`). The five failing files pass at `a8195345`.
-  Eighteen are replay guards asserting no `gap_count_mismatch` or 15 gaps for
-  this item. One, `test_unmarked_morpheme_alignment_keeps_model_wording_and_never_leaks_facit`
-  (`a864a085`, 2026-10-15), pins the old body and that "Svar:" and the key
-  never show in the body; the D4 review body is the whole source and shows the
-  key.
-- G1 and G2 decided by the user (D7, D8). Next: U2 (review-body cut and
-  reason wording) and U3 (replay guards, D9) by fresh juniors.
+- State: all units integrated. U1 `14862085` (D4), merge of `origin/main`
+  `a8195345` at `30e2c846`, U2 `6c69fb20` (D7 review-body cut, D8 reason), U3
+  `86a92fa4` (D9 replay guards; the 2026-10-15 morpheme test keeps its
+  never-leaks assertions), U4 `4179f50c` (D9 source-review exemption).
+- Focused proof: 117 tests across the twelve touched test files pass; lint,
+  backend typecheck and docs-validate pass. Frontend is not touched (`vue-tsc`
+  is not installed in this worktree).
+- The first domain suite at `2def276f` (19 failed, 4230 passed, 59 skipped)
+  found the guard and review-body gaps that D7-D9 settle.
+- Next: the domain suite in the orchestrator's slot, then independent review.
 - Branch `codex/task-skript-39-04-17-remote`, worktree
   `/home/paunchygent/apps/skriptoteket-task-skript-39-04-17-remote`; never
   pushed.
