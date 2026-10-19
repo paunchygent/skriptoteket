@@ -31,7 +31,7 @@ from skriptoteket.di.exam_answer_key import ExamAnswerKeyProvider
 from skriptoteket.di.exam_converter import ExamConverterProvider
 from skriptoteket.di.exam_workspace import ExamWorkspaceProvider
 from skriptoteket.di.exam_workspace_change_type import ExamWorkspaceChangeTypeProvider
-from skriptoteket.di.exam_workspace_conversion import ExamWorkspaceConversionProvider
+from skriptoteket.di.exam_workspace_imports import ExamWorkspaceImportProvider
 from skriptoteket.di.exam_workspace_index import ExamWorkspaceIndexProvider
 from skriptoteket.di.favorites import FavoritesProvider
 from skriptoteket.di.flunk_out_frenzy import FlunkOutFrenzyProvider
@@ -67,8 +67,8 @@ __all__ = [
     "ReagentPrepChefProvider",
     "EditorProvider",
     "ExamWorkspaceProvider",
+    "ExamWorkspaceImportProvider",
     "ExamWorkspaceChangeTypeProvider",
-    "ExamWorkspaceConversionProvider",
     "ExamWorkspaceIndexProvider",
     "FavoritesProvider",
     "IdentityProvider",
@@ -116,8 +116,8 @@ def build_providers(settings: Settings) -> tuple[Provider, ...]:
         FavoritesProvider(),
         EditorProvider(),
         ExamWorkspaceProvider(),
+        ExamWorkspaceImportProvider(),
         ExamWorkspaceChangeTypeProvider(),
-        ExamWorkspaceConversionProvider(),
         ExamWorkspaceIndexProvider(),
         LlmProvider(),
         ScriptingProvider(),

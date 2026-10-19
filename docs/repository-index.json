@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "a801f98f0be96427d8d22df6d90e83368d5898248d2576d32bd2d56a372f578b",
+  "source_set_digest": "55bc13f1111ed89c422bab46972f77a0d7c15103cd613eda80016727f9efb4a4",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6557,6 +6557,25 @@
       }
     },
     {
+      "id": "TASK-SKRIPT-40-04-08",
+      "type": "task",
+      "title": "Short-answer and gap-text questions look different, teachers create gaps by clicking a word, and the gap popover shows its whole answer list",
+      "path": "docs/backlog/tasks/task-skript-40-04-08-short-answer-and-gap-text-questions-look-different-teachers-create-gaps-by-clicking-a-word-and-the-gap-popover-shows-its-whole-answer-list.md",
+      "status": "proposed",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
       "id": "TASK-SKRIPT-41-01-02",
       "type": "task",
       "title": "The script editor's AI runs on Sol 6.1 low through the Sol pool",
@@ -6618,7 +6637,7 @@
       "type": "task",
       "title": "Teachers and guests import a QTI package into the exam workspace",
       "path": "docs/backlog/tasks/task-skript-41-02-01-teachers-and-guests-import-a-qti-package-into-the-exam-workspace.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-41-02",
       "owners": [
@@ -6629,7 +6648,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-19",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer 596c1654 (Hemma retained session 01a14f56-3344-77cc-a009-f435f5884ea7, evidence/reviews): changes_requested twice; high findings F2 (manifest-only duplicate refs) and F4 (removed sibling score passed to a gap child) cleared in rereview2, approved at a677e12a with no findings left. The merge of origin/main was checked by the same reviewer; its medium M1 (pdm.lock against the repository-governance pin) admitted on focused proof. Domain suite at 693d970f: unit 4901, integration 19 passed; at 5925b2d8 lint, typecheck, docs-validate and 277 QTI tests pass. Fixture: an Exam.net-accepted Skriptoteket QTI package with provenance (023a58fc), since Exam.net offers no QTI export. Merged to main at 5925b2d8 on 2026-10-19."
       }
     },
     {

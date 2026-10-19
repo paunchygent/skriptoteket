@@ -17,6 +17,7 @@ import {
   getExamWorkspaceDocument,
   getExamWorkspaceAnswerKeySuggestions,
   importExamWorkspaceDocument,
+  importExamWorkspaceQti,
   listExamWorkspaceDocuments,
   requestExamWorkspaceAnswerKeySuggestions,
   requestExamWorkspaceAnswerMisspellings,
@@ -35,6 +36,7 @@ const apiGetMock = vi.mocked(apiGet);
 const apiPostMock = vi.mocked(apiPost);
 
 const DOCUMENTS_ROOT = "/api/v1/apps/documents.conversion_hub/exam-workspace/documents";
+const QTI_IMPORT_PATH = "/api/v1/apps/documents.conversion_hub/exam-workspace/import-qti";
 const ANSWER_MISSPELLINGS_PATH =
   "/api/v1/apps/documents.conversion_hub/exam-workspace/answer-misspellings";
 
@@ -102,6 +104,43 @@ describe("examWorkspace transport", () => {
     expect(sentFile).toBeInstanceOf(File);
     expect((sentFile as File).name).toBe("NO_Prov_HT25.docx");
     expect(result).toBe(response);
+  });
+
+  it("imports a QTI package to the import-qti path with the `file` and `course_key` multipart fields", async () => {
+    const summary = {
+      course_key: "gy11:SVESVE01",
+      lineage_id: "lineage-1",
+      name: "NO-prov HT25.zip",
+      saved_at: "2026-10-18T09:00:00Z",
+      title: "NO-prov HT25",
+      vault_file_id: "file-1",
+      version: 1,
+    };
+    apiPostMock.mockResolvedValueOnce(summary);
+    const file = new File(["qti"], "NO_Prov_HT25.zip", { type: "application/zip" });
+
+    const result = await importExamWorkspaceQti(file, "gy11:SVESVE01");
+
+    expect(apiPostMock).toHaveBeenCalledTimes(1);
+    const [path, body] = apiPostMock.mock.calls[0];
+    expect(path).toBe(QTI_IMPORT_PATH);
+    expect(body).toBeInstanceOf(FormData);
+    const form = body as FormData;
+    const sentFile = form.get("file");
+    expect(sentFile).toBeInstanceOf(File);
+    expect((sentFile as File).name).toBe("NO_Prov_HT25.zip");
+    expect(form.get("course_key")).toBe("gy11:SVESVE01");
+    expect(result).toBe(summary);
+  });
+
+  it("omits the course_key field from a QTI package import without a course", async () => {
+    apiPostMock.mockResolvedValueOnce({});
+    const file = new File(["qti"], "NO_Prov_HT25.zip", { type: "application/zip" });
+
+    await importExamWorkspaceQti(file, null);
+
+    const form = apiPostMock.mock.calls[0][1] as FormData;
+    expect(form.get("course_key")).toBeNull();
   });
 
   it("reads conversion status using an encoded job id", async () => {

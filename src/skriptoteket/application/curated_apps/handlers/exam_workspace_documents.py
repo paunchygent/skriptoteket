@@ -1,9 +1,7 @@
-"""Exam workspace document handlers: DOCX import, conversion status, reopen, and save.
+"""Exam workspace document handlers: conversion status, reopen, and save.
 
-Import queues one teacher DOCX as a background conversion. Each exam has one
-saved vault file and a separate bounded editor history. Reopen shows the current
-editor document (the latest autosave or Spara); save overwrites the file guarded
-by ``expected_revision``. Converting
+Reopen shows the current editor document (the latest autosave or Spara);
+save overwrites the file guarded by ``expected_revision``. Converting
 placeholders retain their content and position until conversion completes.
 Persistence and storage accounting live in ``exam_workspace_document_store``.
 """
@@ -13,7 +11,6 @@ from __future__ import annotations
 from uuid import UUID
 
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
-    ExamAnswerKeyEnrichmentJob,
     ExamAnswerKeyEnrichmentJobStatus,
     ExamAnswerKeySourceKind,
     ExamWorkspaceConversionJobView,
@@ -42,17 +39,13 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_editor_conten
     prepare_editor_content,
     refuse_placeholder_changes,
 )
-from skriptoteket.config import Settings
-from skriptoteket.domain.curated_apps.exam_workspace.exam_course_catalog import (
-    load_exam_course_catalog,
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
+    NativeExamDocument,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import NativeExamDocument
 from skriptoteket.domain.errors import DomainError, ErrorCode, validation_error
 from skriptoteket.domain.identity.models import User
-from skriptoteket.domain.scripting.input_files import sanitize_input_filename
 from skriptoteket.domain.scripting.vault import VaultFile
 from skriptoteket.domain.scripting.vault_names import rename_vault_filename
-from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.exam_answer_key import ExamAnswerKeyEnrichmentJobRepositoryProtocol
 from skriptoteket.protocols.exam_index import ExamIndexRepositoryProtocol
 from skriptoteket.protocols.exam_workspace import (
@@ -71,7 +64,9 @@ def document_not_found(lineage_id: UUID) -> DomainError:
     )
 
 
-def _summary(vault_file: VaultFile, document: NativeExamDocument) -> ExamWorkspaceDocumentSummary:
+def document_summary(
+    vault_file: VaultFile, document: NativeExamDocument
+) -> ExamWorkspaceDocumentSummary:
     assert vault_file.document_lineage_id is not None
     assert vault_file.document_version is not None
     assert vault_file.document_saved_at is not None
@@ -84,89 +79,6 @@ def _summary(vault_file: VaultFile, document: NativeExamDocument) -> ExamWorkspa
         title=document.title,
         course_key=None if document.header.course is None else document.header.course.key,
     )
-
-
-class ImportExamWorkspaceDocumentHandler:
-    """Import one teacher DOCX into a new exam workspace document."""
-
-    extension = ".docx"
-    source_kind = ExamAnswerKeySourceKind.DOCX_IMPORT
-
-    def __init__(
-        self,
-        *,
-        jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
-        uow: UnitOfWorkProtocol,
-        clock: ClockProtocol,
-        settings: Settings,
-        id_generator: IdGeneratorProtocol,
-    ) -> None:
-        self._jobs = jobs
-        self._uow = uow
-        self._clock = clock
-        self._settings = settings
-        self._id_generator = id_generator
-
-    async def handle(
-        self, *, actor: User, filename: str, content: bytes, course_key: str | None
-    ) -> ExamWorkspaceConversionStatus:
-        safe_name = sanitize_input_filename(input_filename=filename)
-        if not safe_name.lower().endswith(self.extension):
-            raise validation_error(
-                f"Välj en {self.extension}-fil.", details={"filename": safe_name}
-            )
-        if not content:
-            raise validation_error("Filen saknar innehåll.")
-        if len(content) > self._settings.VAULT_MAX_FILE_BYTES:
-            raise validation_error("Filen är större än maxstorleken för Mina filer.")
-
-        selected_course_key = (course_key or "").strip() or None
-        if selected_course_key is not None:
-            if len(selected_course_key) > 64:
-                raise validation_error(
-                    "Kurskoden får vara högst 64 tecken.", details={"field": "course_key"}
-                )
-            if not any(
-                course.key == selected_course_key for course in load_exam_course_catalog().courses
-            ):
-                raise validation_error(
-                    "Välj en kurs ur kurslistan.", details={"field": "course_key"}
-                )
-
-        document_id = self._id_generator.new_uuid()
-        now = self._clock.now()
-        async with self._uow:
-            job = await self._jobs.create(
-                job=ExamAnswerKeyEnrichmentJob(
-                    id=self._id_generator.new_uuid(),
-                    source_kind=self.source_kind,
-                    owner_user_id=actor.id,
-                    status=ExamAnswerKeyEnrichmentJobStatus.QUEUED,
-                    input_filename=safe_name,
-                    source_docx=content
-                    if self.source_kind is ExamAnswerKeySourceKind.DOCX_IMPORT
-                    else None,
-                    source_dxe=content
-                    if self.source_kind is ExamAnswerKeySourceKind.DIGIEXAM_IMPORT
-                    else None,
-                    workspace_lineage_id=document_id,
-                    workspace_document_revision=1,
-                    workspace_course_key=selected_course_key,
-                    available_at=now,
-                    created_at=now,
-                    updated_at=now,
-                )
-            )
-        return conversion_status(
-            ExamWorkspaceConversionJobView.model_validate(job, from_attributes=True)
-        )
-
-
-class ImportExamWorkspaceDigiExamDocumentHandler(ImportExamWorkspaceDocumentHandler):
-    """Queue a bare DigiExam export without invoking answer-key enrichment."""
-
-    extension = ".dxe"
-    source_kind = ExamAnswerKeySourceKind.DIGIEXAM_IMPORT
 
 
 def conversion_status(
@@ -292,7 +204,7 @@ class GetExamWorkspaceDocumentHandler:
         return ExamWorkspaceDocumentResponse(
             document=document,
             saved_document=container.document,
-            summary=_summary(head, container.document),
+            summary=document_summary(head, container.document),
             history_cursor=history.cursor,
             notes=container.notes,
             conversion=None if job is None else conversion_status(job),
@@ -397,7 +309,7 @@ class SaveExamWorkspaceDocumentHandler:
             document=document,
             saved_document=document,
             history_cursor=history.cursor,
-            summary=_summary(vault_file, document),
+            summary=document_summary(vault_file, document),
             notes=head_container.notes,
             conversion=None if job is None else conversion_status(job),
         )
@@ -481,7 +393,7 @@ class SaveExamWorkspaceDocumentHandler:
             return ExamWorkspaceDocumentResponse(
                 document=copied,
                 saved_document=copied,
-                summary=_summary(vault_file, copied),
+                summary=document_summary(vault_file, copied),
                 history_cursor=copy_id,
                 notes=saved.notes,
                 conversion=None,

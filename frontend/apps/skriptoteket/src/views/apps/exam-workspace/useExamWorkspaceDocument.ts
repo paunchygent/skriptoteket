@@ -106,19 +106,23 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
     isImporting,
     retryConversionStatus,
     syncAfterConflict,
-  } = useExamWorkspaceConversion(() => isBusy.value, {
-    applyResponse,
-    beginDocumentRead,
-    beforeFirstRevision: () => {
-      selectedItemId.value = null;
-      conflictNotice.value = null;
+  } = useExamWorkspaceConversion(
+    () => isBusy.value,
+    {
+      applyResponse,
+      beginDocumentRead,
+      beforeFirstRevision: () => {
+        selectedItemId.value = null;
+        conflictNotice.value = null;
+      },
+      isDirty,
+      isSaving: () => operationBusy.value,
+      serverDocument,
+      summary,
+      workspaceDocument,
     },
-    isDirty,
-    isSaving: () => operationBusy.value,
-    serverDocument,
-    summary,
-    workspaceDocument,
-  });
+    (lineageId) => openDocument(lineageId),
+  );
   const arrivals = useExamWorkspaceSaveArrivals({ convertingItemIds, isOpen, workspaceDocument });
   const { applyArrivingSuggestions } = arrivals;
   // While its batches convert, the imported exam is already editable.

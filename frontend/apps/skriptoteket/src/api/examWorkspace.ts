@@ -3,10 +3,10 @@
  *
  * Domain purpose:
  *   Thin typed client for the teacher exam workspace document lifecycle:
- *   import a .docx exam, list and reopen saved documents, save versioned
- *   revisions, download on-demand exports, list what Exam.net loses on
- *   import, and request AI answer-key suggestions for the questions exactly
- *   as the editor shows them.
+ *   import a .docx exam, a DigiExam .dxe or a QTI .zip package, list and
+ *   reopen saved documents, save versioned revisions, download on-demand
+ *   exports, list what Exam.net loses on import, and request AI answer-key
+ *   suggestions for the questions exactly as the editor shows them.
  *
  * Relationships:
  *   - Uses `api/client.ts` helpers for protected API calls.
@@ -264,6 +264,23 @@ export async function copyExamWorkspaceDocument(
 ): Promise<ExamWorkspaceDocumentResponse> {
   const body: Schemas["SaveAsExamWorkspaceDocumentRequest"] = { document, name };
   return await apiPost<ExamWorkspaceDocumentResponse>(`${documentPath(lineageId)}/copy`, body);
+}
+
+/**
+ * Import a QTI package (.zip). The package is read at once into a saved
+ * document; the response is its summary, which the caller opens like a
+ * document from the Öppna list.
+ */
+export async function importExamWorkspaceQti(
+  file: File,
+  courseKey: string | null = null,
+): Promise<ExamWorkspaceDocumentSummary> {
+  const form = new FormData();
+  form.append("file", file, file.name);
+  if (courseKey) {
+    form.append("course_key", courseKey);
+  }
+  return await apiPost<ExamWorkspaceDocumentSummary>(`${ROOT}/import-qti`, form);
 }
 
 /** Import a DigiExam export (.dxe); conversion runs in the background like a Word import. */
