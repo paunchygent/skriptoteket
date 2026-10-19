@@ -5,10 +5,13 @@
  * Domain purpose:
  *   Every question of the open exam in order under "Frågor (N)", with "Ny
  *   uppgift" adding a question or an instruction with deluppgifter after the
- *   selected one, and a footer of two fixed lines: the exam total, which says
- *   in amber when the exam text prints another total (cut with an ellipsis,
- *   the full text in a tooltip), and a slot holding both accept actions,
- *   hidden while there is nothing to accept so nothing moves. Above the rows the exam
+ *   selected one. The footer holds the exam total ("Totalt N p", cut with an
+ *   ellipsis, the full text in a tooltip) with the amber points note below
+ *   it while the exam text prints another total: one jump row per
+ *   difference, then "Använd beräknade poäng?" with the no and yes
+ *   glyph-only answers. Dismissed, the footer greys the printed part
+ *   ("Totalt N p · provtexten anger M p") and the note stays hidden.
+ *   Above the rows the exam
  *   instruction is one entry: "Instruktioner" with a short preview when the
  *   exam has one, otherwise a quiet "Lägg till instruktioner"; both open it in
  *   the editor. On a phone the list
@@ -20,7 +23,9 @@
  *
  * Relationships:
  *   - Rendered by `ExamWorkspaceView`; rows are `ExamWorkspaceQuestionRow`,
- *     each told only whether it is selected.
+ *     each told only whether it is selected. The points note renders the
+ *     `PrintedTotalAccount` from `examWorkspaceTotals` with the list's
+ *     entry labels; it never recomputes the difference.
  */
 
 import { computed, nextTick, ref, watch } from "vue";
@@ -30,7 +35,8 @@ import ExamWorkspaceNewItemMenu from "./ExamWorkspaceNewItemMenu.vue";
 import ExamWorkspaceQuestionRow from "./ExamWorkspaceQuestionRow.vue";
 import type { TeacherItemKind } from "./examWorkspaceItemEdits";
 import type { ExamWorkspaceListEntry } from "./examWorkspaceListEntries";
-import { examWorkspaceFormatPoints, examWorkspacePointsLine, examWorkspacePointsParts } from "./examWorkspaceTotals";
+import { examWorkspaceFormatPoints } from "./examWorkspaceTotals";
+import type { PrintedTotalAccount } from "./examWorkspaceTotals";
 import { EXAM_INSTRUCTIONS_ENTRY_ID } from "./useExamWorkspaceSelection";
 
 const props = defineProps<{
@@ -40,36 +46,118 @@ const props = defineProps<{
   examInstructionsPreview: string | null;
   questionCount: number;
   total: number;
-  /** The exam total the exam text prints, only when it differs from `total`. */
-  printedTotal: number | null;
+  /** The printed-total account behind the points note, or `null` while nothing differs. */
+  account: PrintedTotalAccount | null;
+  /** The exam total itself differs from the questions' sum (the note's exam heading and the grey footer line). */
+  examDiffers: boolean;
   canAdd: boolean;
-  /** The workspace is busy: the accept actions wait like the other list actions. */
+  /** The workspace is busy: the note's answers and jump rows wait like the other list actions. */
   disabled: boolean;
   /** The phone shows the list as a full-screen layer. */
   overlay: boolean;
 }>();
 
 const examInstructionsSelected = computed(() => props.selectedId === EXAM_INSTRUCTIONS_ENTRY_ID);
-const totalParts = computed(() => examWorkspacePointsParts(props.total, props.printedTotal));
-/** The footer line in full, for the tooltip when a long printed note is cut by the ellipsis. */
+/** The exam total line in full, for the tooltip when a long dismissed note is cut by the ellipsis. */
 const totalTitle = computed(() =>
-  props.printedTotal === null ? undefined : `Totalt ${examWorkspacePointsLine(props.total, props.printedTotal)}`,
-);
-const anyPrintedDifference = computed(
-  () =>
-    props.printedTotal !== null ||
-    props.entries.some((entry) => entry.kind === "parent" && entry.printedTotal !== null),
+  dismissedNote.value === null ? undefined : `Totalt ${formattedTotal.value} · ${dismissedNote.value}`,
 );
 
 const emit = defineEmits<{
   select: [id: string];
   add: [kind: TeacherItemKind | "instruction" | "part"];
   group: [itemIds: string[]];
-  acceptExamTotal: [];
-  acceptPartTotal: [parentId: string];
-  acceptAllTotals: [];
+  dismissPrintedTotal: [];
+  useComputedPoints: [];
   close: [];
 }>();
+
+/** One rendered line of the points note: the text with its jump target, or `null` for the remainder. */
+type PointsNoteRow = { key: string; text: string; target: string | null };
+
+const entryById = computed(() => new Map(props.entries.map((entry) => [entry.id, entry])));
+
+/** The note shows while the account names a difference that is not dismissed. */
+const showNote = computed(() => props.account !== null && !props.account.dismissed);
+
+/** Dismissed with an exam-level difference: the footer keeps the printed total in neutral grey. */
+const showDismissedPrinted = computed(
+  () => props.account !== null && props.account.dismissed && props.examDiffers && props.account.printed !== null,
+);
+
+const formattedTotal = computed(() => `${examWorkspaceFormatPoints(props.total)} p`);
+
+const dismissedNote = computed(() => {
+  const printed = props.account?.printed;
+  return showDismissedPrinted.value && printed !== null && printed !== undefined
+    ? `provtexten anger ${examWorkspaceFormatPoints(printed)} p`
+    : null;
+});
+
+const noteHeading = computed(() => {
+  const printed = props.account?.printed;
+  return props.examDiffers && printed !== null && printed !== undefined
+    ? `Provtexten anger ${examWorkspaceFormatPoints(printed)} p. Dessa skiljer sig:`
+    : "Dessa skiljer sig från provtexten:";
+});
+
+/** The account's rows named with the list's labels, in document order. */
+const noteRows = computed<PointsNoteRow[]>(() => {
+  const account = props.account;
+  if (account === null) {
+    return [];
+  }
+  return account.rows.flatMap((row, index): PointsNoteRow[] => {
+    if (row.kind === "part") {
+      const entry = entryById.value.get(row.parentId);
+      if (!entry || entry.kind !== "parent") {
+        return [];
+      }
+      return [{
+        key: `part-${row.parentId}`,
+        target: row.parentId,
+        text: `${entry.text} — provtexten ${examWorkspaceFormatPoints(row.printed)} p, nu ${examWorkspaceFormatPoints(row.now)} p`,
+      }];
+    }
+    if (row.kind === "question") {
+      const entry = entryById.value.get(row.itemId);
+      if (!entry || entry.kind !== "item") {
+        return [];
+      }
+      const label = `Fråga ${entry.label}`;
+      if (row.now === null) {
+        return [{
+          key: `question-${row.itemId}`,
+          target: row.itemId,
+          text:
+            row.source === null
+              ? `${label} — saknar poäng`
+              : `${label} — provtexten ${examWorkspaceFormatPoints(row.source)} p, saknar poäng`,
+        }];
+      }
+      if (row.source === null) {
+        return [{
+          key: `question-${row.itemId}`,
+          target: row.itemId,
+          text: `${label} — nu ${examWorkspaceFormatPoints(row.now)} p`,
+        }];
+      }
+      return [{
+        key: `question-${row.itemId}`,
+        target: row.itemId,
+        text: `${label} — provtexten ${examWorkspaceFormatPoints(row.source)} p, nu ${examWorkspaceFormatPoints(row.now)} p`,
+      }];
+    }
+    return [{
+      key: `remainder-${index}`,
+      target: null,
+      text:
+        row.points > 0
+          ? `Övriga ${examWorkspaceFormatPoints(row.points)} p finns inte i någon fråga`
+          : `${examWorkspaceFormatPoints(Math.abs(row.points))} p fler än provtexten anger`,
+    }];
+  });
+});
 
 const rows = ref<HTMLElement | null>(null);
 const newTrigger = ref<HTMLButtonElement | null>(null);
@@ -253,7 +341,6 @@ watch(
           :marking="marking"
           :marked="marked.has(entry.id)"
           @select="emit('select', $event)"
-          @accept-total="emit('acceptPartTotal', $event)"
           @toggle-mark="toggleMark"
         />
       </div>
@@ -263,35 +350,79 @@ watch(
         class="list__total"
         :title="totalTitle"
         data-test="exam-workspace-exam-points"
-      >Totalt <strong class="list__sum">{{ totalParts.sum }}</strong><span
-        v-if="totalParts.printedNote"
-        class="list__printed"
-      > · {{ totalParts.printedNote }}</span></span>
-      <div
-        class="list__actions"
-        data-test="exam-workspace-footer-actions"
+      >Totalt <strong class="list__sum">{{ formattedTotal }}</strong><span
+        v-if="dismissedNote"
+        class="list__dismissed"
+      > · {{ dismissedNote }}</span></span>
+      <aside
+        v-if="showNote"
+        class="list__note"
+        data-test="exam-workspace-points-note"
       >
-        <button
-          type="button"
-          class="xw-btn xw-btn--compact xw-btn--ghost list__action"
-          :class="{ 'list__action--idle': printedTotal === null }"
-          :disabled="disabled"
-          data-test="exam-workspace-accept-exam-total"
-          @click="emit('acceptExamTotal')"
-        >
-          Använd {{ examWorkspaceFormatPoints(total) }} p
-        </button>
-        <button
-          type="button"
-          class="xw-btn xw-btn--compact xw-btn--ghost list__action"
-          :class="{ 'list__action--idle': !anyPrintedDifference }"
-          :disabled="disabled"
-          data-test="exam-workspace-accept-all-totals"
-          @click="emit('acceptAllTotals')"
-        >
-          Använd beräknade summor
-        </button>
-      </div>
+        <p class="list__note-head">{{ noteHeading }}</p>
+        <ul class="list__note-rows">
+          <li
+            v-for="row in noteRows"
+            :key="row.key"
+            class="list__note-item"
+          >
+            <button
+              v-if="row.target !== null"
+              type="button"
+              class="list__note-row"
+              :disabled="disabled"
+              data-test="exam-workspace-points-note-row"
+              @click="emit('select', row.target)"
+            >
+              <UiGlyph
+                meaning="continue"
+                :size="16"
+              /><span class="list__note-text">{{ row.text }}</span>
+            </button>
+            <span
+              v-else
+              class="list__note-row list__note-row--static"
+              data-test="exam-workspace-points-note-row"
+            >
+              <UiGlyph
+                meaning="continue"
+                :size="16"
+              /><span class="list__note-text">{{ row.text }}</span>
+            </span>
+          </li>
+        </ul>
+        <p class="list__note-decide">
+          <span class="list__note-question">Använd beräknade poäng?</span>
+          <button
+            type="button"
+            class="list__note-no"
+            :disabled="disabled"
+            aria-label="Nej, behåll provtextens poäng"
+            title="Nej, behåll provtextens poäng"
+            data-test="exam-workspace-points-keep"
+            @click="emit('dismissPrintedTotal')"
+          >
+            <UiGlyph
+              meaning="close"
+              :size="20"
+            />
+          </button>
+          <button
+            type="button"
+            class="list__note-yes"
+            :disabled="disabled"
+            aria-label="Ja, använd beräknade poäng"
+            title="Ja, använd beräknade poäng"
+            data-test="exam-workspace-points-use-computed"
+            @click="emit('useComputedPoints')"
+          >
+            <UiGlyph
+              meaning="confirm"
+              :size="18"
+            />
+          </button>
+        </p>
+      </aside>
     </div>
     <ExamWorkspaceNewItemMenu
       :open="newMenuOpen"
@@ -342,19 +473,50 @@ watch(
   padding: var(--huleedu-space-2) var(--huleedu-space-6); border-top: 1px solid var(--huleedu-surface-divider);
   font-size: var(--huleedu-text-sm);
 }
-/* Two lines of fixed height: the sum with its note, then the action slot; accepting a total changes neither. */
+/* The total line keeps its height whether the note or the dismissed printed part shows. */
 .list__total {
   flex: none; height: 20px; line-height: 20px; min-width: 0;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .list__sum { font-weight: var(--huleedu-font-semibold); }
-.list__printed { color: var(--huleedu-warning); }
-/* The ghost buttons' own padding spaces them, so the slot reaches past the footer padding to hold both on one line. */
-.list__actions {
-  display: flex; flex-wrap: nowrap; align-items: center; flex: none;
-  height: var(--xw-ctl-compact, 28px); margin-inline: calc(-1 * var(--huleedu-workbench-control-padding-inline));
+.list__dismissed { color: var(--huleedu-navy-60); }
+/* The points note: amber information below the total, scrolling inside the footer when long. */
+.list__note {
+  background: var(--huleedu-warning-15); border: 1px solid var(--huleedu-warning-50);
+  border-radius: var(--huleedu-radius-md); padding: var(--huleedu-space-2-5) var(--huleedu-space-3);
+  color: var(--huleedu-warning-strong); max-height: 320px; max-height: 40%; overflow-y: auto; min-height: 0;
 }
-.list__action--idle { visibility: hidden; }
+.list__note-head { margin: 0 0 var(--huleedu-space-1); font-weight: var(--huleedu-font-semibold); font-size: var(--huleedu-text-sm); }
+.list__note-rows { margin: 0; padding: 0; list-style: none; }
+.list__note-item + .list__note-item { border-top: 1px solid var(--huleedu-warning-50); }
+.list__note-row {
+  all: unset; box-sizing: border-box; display: flex; align-items: center; gap: var(--huleedu-space-2);
+  width: 100%; padding: var(--huleedu-space-1-5) 0; font-size: var(--huleedu-text-sm); cursor: pointer;
+}
+.list__note-row--static { cursor: default; }
+.list__note-row:disabled { cursor: default; color: var(--huleedu-navy-40); }
+.list__note-text { min-width: 0; overflow-wrap: anywhere; }
+.list__note-decide {
+  display: flex; align-items: center; gap: var(--huleedu-space-2-5);
+  margin: var(--huleedu-space-2) 0 0; padding-top: var(--huleedu-space-2); border-top: 1px solid var(--huleedu-warning-50);
+}
+.list__note-question { flex: 1; min-width: 0; font-size: var(--huleedu-text-sm); color: var(--huleedu-navy); }
+.list__note-no, .list__note-yes {
+  flex: none; display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 50%; padding: 0; cursor: pointer;
+}
+/* No is the visually primary default: a large filled navy circle, placed first. */
+.list__note-no { width: 44px; height: 44px; border: 0; background: var(--huleedu-navy); color: #fff; }
+/* Yes is the smaller outlined circle. */
+.list__note-yes { width: 36px; height: 36px; border: 1px solid var(--huleedu-navy); background: transparent; color: var(--huleedu-navy); }
+.list__note-no:disabled, .list__note-yes:disabled { cursor: not-allowed; opacity: 0.5; }
+.list__note-no:focus-visible, .list__note-yes:focus-visible, .list__note-row:focus-visible {
+  outline: 2px solid var(--huleedu-action-40); outline-offset: 2px;
+}
+@media (hover: hover) {
+  .list__note-no:not(:disabled):hover { opacity: 0.85; }
+  .list__note-yes:not(:disabled):hover { background: var(--huleedu-action-05); }
+}
 @media (max-width: 1279px) {
   .list__head { padding: 0 var(--huleedu-space-3) 0 var(--huleedu-space-4); }
   .list__markbar { padding: 0 var(--huleedu-space-3) 0 var(--huleedu-space-4); }

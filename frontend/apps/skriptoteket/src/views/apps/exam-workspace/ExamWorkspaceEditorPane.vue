@@ -134,7 +134,6 @@ const currentParentId = computed(() => props.itemEntry?.parentId ?? null);
         :label="selectedParentEntry.label"
         :children="parentChildren"
         :subtotal="selectedParentEntry.points"
-        :printed-total="selectedParentEntry.printedTotal"
         :disabled="disabled"
         :notice="structure.deleteNotice.value"
         :asset-urls="assetUrls"
@@ -145,7 +144,6 @@ const currentParentId = computed(() => props.itemEntry?.parentId ?? null);
         @add-child="(kind) => $emit('add-child', kind)"
         @delete-parent="(mode) => structure.deleteParent(selectedParent!.parent_id, mode)"
         @dismiss-notice="structure.dismissDeleteNotice"
-        @accept-part-total="editing.acceptPartPrintedTotal(selectedParent!.parent_id)"
       />
       <ExamWorkspaceQuestionEditor
         v-else-if="selectedItem && itemEntry"

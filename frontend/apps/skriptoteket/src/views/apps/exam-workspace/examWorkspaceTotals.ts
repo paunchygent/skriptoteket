@@ -26,53 +26,17 @@ export function examWorkspaceExamPrintedDifference(document: NativeExamDocument)
   return examWorkspacePrintedDifference(document.header.printed_total, document.items);
 }
 
-/** The exam text prints no exam total any more; the questions' sum stands. */
-export function withoutExamPrintedTotal(document: NativeExamDocument): NativeExamDocument {
-  return { ...document, header: { ...document.header, printed_total: null } };
-}
-
-/** The exam text prints no total over this part any more. */
-export function withoutPartPrintedTotal(document: NativeExamDocument, parentId: string): NativeExamDocument {
-  return {
-    ...document,
-    parents: document.parents.map((parent) =>
-      parent.parent_id === parentId ? { ...parent, printed_total: null } : parent,
-    ),
-  };
-}
-
 /** Clears the exam total and every part total at once. */
 export function withoutPrintedTotals(document: NativeExamDocument): NativeExamDocument {
   return {
-    ...withoutExamPrintedTotal(document),
+    ...document,
+    header: { ...document.header, printed_total: null },
     parents: document.parents.map((parent) => ({ ...parent, printed_total: null })),
   };
 }
 
 export function examWorkspaceFormatPoints(points: number): string {
   return points.toLocaleString("sv-SE", { maximumFractionDigits: 2 });
-}
-
-/**
- * The sum ("14 p") and, when the exam text prints another total, the printed
- * note ("provtexten anger 15 p"). A difference shows every decimal, so it
- * never reads as two equal numbers.
- */
-export function examWorkspacePointsParts(
-  points: number,
-  printed: number | null,
-): { sum: string; printedNote: string | null } {
-  if (printed === null) {
-    return { sum: `${examWorkspaceFormatPoints(points)} p`, printedNote: null };
-  }
-  const exact = (value: number) => value.toLocaleString("sv-SE", { maximumSignificantDigits: 15 });
-  return { sum: `${exact(points)} p`, printedNote: `provtexten anger ${exact(printed)} p` };
-}
-
-/** "14 p", or "14 p · provtexten anger 15 p" when the exam text prints another total. */
-export function examWorkspacePointsLine(points: number, printed: number | null): string {
-  const { sum, printedNote } = examWorkspacePointsParts(points, printed);
-  return printedNote === null ? sum : `${sum} · ${printedNote}`;
 }
 
 /** One entry of the printed-total account: a differing part, question, or the unexplained rest. */

@@ -48,7 +48,6 @@ async function mountEditor(children: ExamWorkspaceItemEntry[]): Promise<VueWrapp
       label: "1",
       children,
       subtotal: children.length,
-      printedTotal: null,
       disabled: false,
       notice: null,
     },
