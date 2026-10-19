@@ -174,5 +174,12 @@ Stop and report to the parent in either case:
 - 2026-10-19: origin/main `ffbfa953` (39-04-17 answer-key cut) merged
   (`3840825f`). Main's cut fixture now states writing lines. A gap-count
   mismatch with an inline key and an answer line ends in review without
-  either; focused: 77 passed. Next: 09d50acc checks all three merges. User
+  either; focused: 77 passed.
+- 2026-10-19: merge check 09d50acc (`evidence/reviews/...-merge-check.md`):
+  merges and W10/R2 cleared, two medium findings. M1 fixed (`a6147d0b`):
+  `expected-lines` accepts only the XML Schema integer form ('1_0' and
+  fullwidth digits are unsupported). M2, the stale 'Källtext som saknas:
+  Del A' reason, belongs to a separate ST-SKRIPT-39-04 left-out accounting
+  repair; the Del A control test no longer pins it. Focused: 400 QTI and 32
+  answer-line tests passed. Next: orchestrator reports ready to merge. User
   gates: none open.
