@@ -237,5 +237,11 @@ Units, each for one fresh junior:
   skipped (all points-invariance "has no question on that side"); lint and typecheck pass;
   replay bar u17e->u18b->u19 empty; the reviewer's probe gives the accepted output on all 14
   records (`evidence/proof/lead-e2399615-focused.log`, `u18b-reviewer-probe.log`). Never pushed.
-- Next: second rereview by 82849a3b (routed by the orchestrator). U4 (the offer line, D10) is parked
+- Rereview 3 of `76ad4324` (82849a3b): R1-R4 fixed; R5 (medium) and R6 (low) admitted by the
+  orchestrator without a further rereview. R5 `8db2df0b` (terminal-heading recording sees the
+  whole retained body), R6 `95648d2c` (public test-support names), Boy Scout `a1a58c0a` (one
+  segment-preserving run trim). Merge of `origin/main` `54e9c5db` (repository-governance
+  0.11.148) at `f542828f`: 80 files 2262 passed, 58 skipped; lint and typecheck pass; replay
+  bar u19->u20->u21 empty (`evidence/proof/lead-f542828f-focused.log`). Never pushed.
+- Next: the orchestrator's full-suite slot and the Mac step. U4 (the offer line, D10) is parked
   for a later batch; its work order is `evidence/work-orders/u4-offer-line.md`.
