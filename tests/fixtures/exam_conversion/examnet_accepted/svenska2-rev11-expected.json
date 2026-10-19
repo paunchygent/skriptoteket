@@ -1,0 +1,654 @@
+{
+  "derived_from": "Staging API document 39-06-svenska2-rev11-document.json.json (schema native_exam_document_v6, revision 11, 24 items, 36 points), saved from the 1f9e4367 staging proof; the v6 document itself is not committed and is never loaded into the current NativeExamDocument model. Prompts render v6 bodies the same way body_plain_text does (gap segments as [___], lines stripped and joined with newlines). Document instructions are empty in the source, so no folding applies. Answers record source positions: correct choice positions, gap accepted and automatic values, inline dropdown options with the correct position, match pairs, print order, and free-text rubric criteria.",
+  "items": [
+    {
+      "sequence": 1,
+      "kind": "multiple_response",
+      "points": 1,
+      "prompt": "Gunnar väljer att stanna på Lidarände trots att beslutet kan kosta honom livet. Vilket begrepp passar bäst?",
+      "choices": [
+        "Hederskultur",
+        "Hövisk kärlek",
+        "Naturliga rättigheter",
+        "Nyttotänkande"
+      ],
+      "correct_positions": [
+        0
+      ],
+      "gaps_accepted": [],
+      "gaps_automatic": [],
+      "inline": [],
+      "match_pairs": [],
+      "print_order": [],
+      "criteria": []
+    },
+    {
+      "sequence": 2,
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Vilken stil beskriver bäst berättelser som visar handlingar och repliker, men sällan skriver ut personernas känslor?",
+      "choices": [
+        "Centrallyrik stil",
+        "Lakonisk stil",
+        "Realistisk stil",
+        "Satirisk stil"
+      ],
+      "correct_positions": [
+        1
+      ],
+      "gaps_accepted": [],
+      "gaps_automatic": [],
+      "inline": [],
+      "match_pairs": [],
+      "print_order": [],
+      "criteria": []
+    },
+    {
+      "sequence": 3,
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Dantes vandring genom helvetet, skärselden och paradiset handlar också om själens väg från synd till frälsning. Vilket begrepp passar bäst?",
+      "choices": [
+        "Satir",
+        "Allegori",
+        "Realism",
+        "Humanism"
+      ],
+      "correct_positions": [
+        1
+      ],
+      "gaps_accepted": [],
+      "gaps_automatic": [],
+      "inline": [],
+      "match_pairs": [],
+      "print_order": [],
+      "criteria": []
+    },
+    {
+      "sequence": 4,
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Don Quijote ser jättar där Sancho Panza ser väderkvarnar. Vilken motsättning blir tydligast?",
+      "choices": [
+        "Idealism och realism",
+        "Känsla och förnuft",
+        "Njutning och plikt",
+        "Kristen frälsning och synd"
+      ],
+      "correct_positions": [
+        0
+      ],
+      "gaps_accepted": [],
+      "gaps_automatic": [],
+      "inline": [],
+      "match_pairs": [],
+      "print_order": [],
+      "criteria": []
+    },
+    {
+      "sequence": 5,
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "I Fursten använder Machiavelli bilderna lejonet och räven. Vad står de för?",
+      "choices": [
+        "Plikt och kärlek",
+        "Kraft och list",
+        "Känsla och fantasi",
+        "Empiri och förnuft"
+      ],
+      "correct_positions": [
+        1
+      ],
+      "gaps_accepted": [],
+      "gaps_automatic": [],
+      "inline": [],
+      "match_pairs": [],
+      "print_order": [],
+      "criteria": []
+    },
+    {
+      "sequence": 6,
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Vad har Stiernhielms Hercules och Homeros Iliaden gemensamt?",
+      "choices": [
+        "Handlingen",
+        "Versmåttet",
+        "Huvudkaraktären",
+        "Budskapet"
+      ],
+      "correct_positions": [
+        1
+      ],
+      "gaps_accepted": [],
+      "gaps_automatic": [],
+      "inline": [],
+      "match_pairs": [],
+      "print_order": [],
+      "criteria": []
+    },
+    {
+      "sequence": 7,
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Robinson Crusoe löser problem genom att planera, bygga, räkna och lära av erfarenhet. Vad betonas hos honom?",
+      "choices": [
+        "Känsla och natur",
+        "Förnuft och nytta",
+        "Frihet och rättigheter",
+        "Sinnevärld och idévärld"
+      ],
+      "correct_positions": [
+        1
+      ],
+      "gaps_accepted": [],
+      "gaps_automatic": [],
+      "inline": [],
+      "match_pairs": [],
+      "print_order": [],
+      "criteria": []
+    },
+    {
+      "sequence": 8,
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "En text föreslår en brutal lösning med saklig röst för att avslöja nöd och maktmissbruk. Vilket begrepp passar bäst?",
+      "choices": [
+        "Satir",
+        "Allegori",
+        "Realism",
+        "Humanism"
+      ],
+      "correct_positions": [
+        0
+      ],
+      "gaps_accepted": [],
+      "gaps_automatic": [],
+      "inline": [],
+      "match_pairs": [],
+      "print_order": [],
+      "criteria": []
+    },
+    {
+      "sequence": 9,
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Den kritik som Olympe de Gouges och Mary Wollstonecraft riktar mot 1700-talets frihetstankar handlar främst om",
+      "choices": [
+        "Naturliga rättigheter",
+        "Upplysningens gränser",
+        "Rationalism och empirism",
+        "Romantikens natursyn"
+      ],
+      "correct_positions": [
+        1
+      ],
+      "gaps_accepted": [],
+      "gaps_automatic": [],
+      "inline": [],
+      "match_pairs": [],
+      "print_order": [],
+      "criteria": []
+    },
+    {
+      "sequence": 10,
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "I Älvkungen erkänner inte fadern sonens rädsla och förklarar att det han upplever som ett hot egentligen bara är dimma och vind. Det synliggör främst konflikten mellan",
+      "choices": [
+        "Pliktkänsla och kärlek",
+        "Empiri och förnuft",
+        "Förnuft och känsla",
+        "Rättssamhälle och hederskultur"
+      ],
+      "correct_positions": [
+        2
+      ],
+      "gaps_accepted": [],
+      "gaps_automatic": [],
+      "inline": [],
+      "match_pairs": [],
+      "print_order": [],
+      "criteria": []
+    },
+    {
+      "sequence": 11,
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "I Frankenstein skapar Victor liv men saknar moraliskt ansvar för det han har skapat. Vilket problem prövas?",
+      "choices": [
+        "Plikt och kärlek",
+        "Vetenskap och ansvar",
+        "Förnuft och empiri",
+        "Frihet och rättigheter"
+      ],
+      "correct_positions": [
+        1
+      ],
+      "gaps_accepted": [],
+      "gaps_automatic": [],
+      "inline": [],
+      "match_pairs": [],
+      "print_order": [],
+      "criteria": []
+    },
+    {
+      "sequence": 12,
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "En text värderar drömmar, aningar, konst och starka känslor högre än nytta och mätbar kunskap. Vilken epok passar bäst?",
+      "choices": [
+        "Upplysningen",
+        "Romantiken",
+        "Renässansen",
+        "Medeltiden"
+      ],
+      "correct_positions": [
+        1
+      ],
+      "gaps_accepted": [],
+      "gaps_automatic": [],
+      "inline": [],
+      "match_pairs": [],
+      "print_order": [],
+      "criteria": []
+    },
+    {
+      "sequence": 13,
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Vilken motsättning beskriver bäst skillnaden mellan medeltiden och renässansen?",
+      "choices": [
+        "Från förnuftets kritik till känslans sanning",
+        "Från Guds ordning till människans möjligheter",
+        "Från naturens nytta till naturens känslospegling",
+        "Från mäns rättigheter till kvinnors politiska krav"
+      ],
+      "correct_positions": [
+        1
+      ],
+      "gaps_accepted": [],
+      "gaps_automatic": [],
+      "inline": [],
+      "match_pairs": [],
+      "print_order": [],
+      "criteria": []
+    },
+    {
+      "sequence": 14,
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Vilken skillnad mellan Robinson Crusoe och Werther passar bäst?",
+      "choices": [
+        "Robinson söker kristen frälsning; Werther skriver samhällssatir.",
+        "Robinson flyr från förnuftet; Werther mäter naturen empiriskt.",
+        "Robinson använder naturen praktiskt; Werther speglar känslor i den.",
+        "Robinson styrs av heder och ära; Werther följer riddarens plikt."
+      ],
+      "correct_positions": [
+        2
+      ],
+      "gaps_accepted": [],
+      "gaps_automatic": [],
+      "inline": [],
+      "match_pairs": [],
+      "print_order": [],
+      "criteria": []
+    },
+    {
+      "sequence": 15,
+      "kind": "single_choice",
+      "points": 1,
+      "prompt": "Vilken skillnad beskriver bäst litteraturens roll i upplysningen och romantiken?",
+      "choices": [
+        "Den används främst för nytta och kritik, sedan för känsla och inre liv.",
+        "Den används främst för kyrklig vägledning, sedan för humanistisk bildning.",
+        "Den används främst för riddarideal, sedan för realism och parodi.",
+        "Den används främst för hederskultur, sedan för råd om furstemakt."
+      ],
+      "correct_positions": [
+        0
+      ],
+      "gaps_accepted": [],
+      "gaps_automatic": [],
+      "inline": [],
+      "match_pairs": [],
+      "print_order": [],
+      "criteria": []
+    },
+    {
+      "sequence": 16,
+      "kind": "inline_choice",
+      "points": 3,
+      "prompt": "Morfem\na) I ordet lekfullheten är lek[___]\nb) I ordet lekfullheten är -full och -het[___]\nc) I ordet lekfullheten är -en[___]",
+      "choices": [],
+      "correct_positions": [],
+      "gaps_accepted": [
+        [],
+        [],
+        []
+      ],
+      "gaps_automatic": [
+        [],
+        [],
+        []
+      ],
+      "inline": [
+        {
+          "options": [
+            "R",
+            "A",
+            "B"
+          ],
+          "correct_position": 0
+        },
+        {
+          "options": [
+            "R",
+            "A",
+            "B"
+          ],
+          "correct_position": 1
+        },
+        {
+          "options": [
+            "R",
+            "A",
+            "B"
+          ],
+          "correct_position": 2
+        }
+      ],
+      "match_pairs": [],
+      "print_order": [],
+      "criteria": []
+    },
+    {
+      "sequence": 17,
+      "kind": "gap_fill",
+      "points": 3,
+      "prompt": "Fraser\na) Frasen tre korta svar är en[___]\nb) Frasen på skolgården är en[___]\nc) Frasen kan vila är en[___]",
+      "choices": [],
+      "correct_positions": [],
+      "gaps_accepted": [
+        [
+          "NF"
+        ],
+        [
+          "PF"
+        ],
+        [
+          "VF"
+        ]
+      ],
+      "gaps_automatic": [
+        [],
+        [],
+        []
+      ],
+      "inline": [
+        {
+          "options": [],
+          "correct_position": null
+        },
+        {
+          "options": [],
+          "correct_position": null
+        },
+        {
+          "options": [],
+          "correct_position": null
+        }
+      ],
+      "match_pairs": [],
+      "print_order": [],
+      "criteria": []
+    },
+    {
+      "sequence": 18,
+      "kind": "gap_fill",
+      "points": 4,
+      "prompt": "Satsdelar\nNoah[___] skrev[___] brevet[___] tydligt[___].",
+      "choices": [],
+      "correct_positions": [],
+      "gaps_accepted": [
+        [
+          "S"
+        ],
+        [
+          "P"
+        ],
+        [
+          "DO"
+        ],
+        [
+          "Adv"
+        ]
+      ],
+      "gaps_automatic": [
+        [],
+        [],
+        [],
+        []
+      ],
+      "inline": [
+        {
+          "options": [],
+          "correct_position": null
+        },
+        {
+          "options": [],
+          "correct_position": null
+        },
+        {
+          "options": [],
+          "correct_position": null
+        },
+        {
+          "options": [],
+          "correct_position": null
+        }
+      ],
+      "match_pairs": [],
+      "print_order": [],
+      "criteria": []
+    },
+    {
+      "sequence": 19,
+      "kind": "gap_fill",
+      "points": 4,
+      "prompt": "Satsdelar\nAlva[___] är[___] inte[___] färdig[___].",
+      "choices": [],
+      "correct_positions": [],
+      "gaps_accepted": [
+        [
+          "S"
+        ],
+        [
+          "P"
+        ],
+        [
+          "SA"
+        ],
+        [
+          "Pf"
+        ]
+      ],
+      "gaps_automatic": [
+        [],
+        [],
+        [],
+        []
+      ],
+      "inline": [
+        {
+          "options": [],
+          "correct_position": null
+        },
+        {
+          "options": [],
+          "correct_position": null
+        },
+        {
+          "options": [],
+          "correct_position": null
+        },
+        {
+          "options": [],
+          "correct_position": null
+        }
+      ],
+      "match_pairs": [],
+      "print_order": [],
+      "criteria": []
+    },
+    {
+      "sequence": 20,
+      "kind": "gap_fill",
+      "points": 2,
+      "prompt": "Huvudsats, bisats och BIFF\na) De väntar inte. är en [___]\nb) I bisatsen att de inte väntar står satsadverbialet [___] det finita verbet.",
+      "choices": [],
+      "correct_positions": [],
+      "gaps_accepted": [
+        [
+          "huvudsats"
+        ],
+        [
+          "före"
+        ]
+      ],
+      "gaps_automatic": [
+        [
+          "huvudsads",
+          "huvutsats",
+          "buvudsats"
+        ],
+        [
+          "förä",
+          "cöre",
+          "döre"
+        ]
+      ],
+      "inline": [
+        {
+          "options": [],
+          "correct_position": null
+        },
+        {
+          "options": [],
+          "correct_position": null
+        }
+      ],
+      "match_pairs": [],
+      "print_order": [],
+      "criteria": []
+    },
+    {
+      "sequence": 21,
+      "kind": "free_text",
+      "points": 1,
+      "prompt": "Renässansen\nVad menas med en renässansmänniska?",
+      "choices": [],
+      "correct_positions": [],
+      "gaps_accepted": [],
+      "gaps_automatic": [],
+      "inline": [],
+      "match_pairs": [],
+      "print_order": [],
+      "criteria": [
+        {
+          "text": "En mångsidig och nyfiken person som utvecklar flera kunskapsområden, till exempel språk, konst och vetenskap.",
+          "points": 1
+        }
+      ]
+    },
+    {
+      "sequence": 22,
+      "kind": "free_text",
+      "points": 2,
+      "prompt": "Upplysningen och romantiken\nFörklara kort skillnaden mellan upplysningens och romantikens syn på kunskap eller människan.",
+      "choices": [],
+      "correct_positions": [],
+      "gaps_accepted": [],
+      "gaps_automatic": [],
+      "inline": [],
+      "match_pairs": [],
+      "print_order": [],
+      "criteria": [
+        {
+          "text": "Upplysningen betonar förnuft, nytta och erfarenhet, medan romantiken betonar känsla, fantasi, inre liv och det som inte kan mätas.",
+          "points": 2
+        }
+      ]
+    },
+    {
+      "sequence": 23,
+      "kind": "free_text",
+      "points": 1,
+      "prompt": "Språkstruktur\nVad är en nominalisering?",
+      "choices": [],
+      "correct_positions": [],
+      "gaps_accepted": [],
+      "gaps_automatic": [],
+      "inline": [],
+      "match_pairs": [],
+      "print_order": [],
+      "criteria": [
+        {
+          "text": "När en handling, egenskap eller process uttrycks som substantiv.",
+          "points": 1
+        }
+      ]
+    },
+    {
+      "sequence": 24,
+      "kind": "free_text",
+      "points": 1,
+      "prompt": "Satsstruktur\nFörklara BIFF-regeln med en mening.",
+      "choices": [],
+      "correct_positions": [],
+      "gaps_accepted": [],
+      "gaps_automatic": [],
+      "inline": [],
+      "match_pairs": [],
+      "print_order": [],
+      "criteria": [
+        {
+          "text": "I bisats står inte och andra satsadverbial före det finita verbet.",
+          "points": 1
+        }
+      ]
+    }
+  ],
+  "parents": [
+    {
+      "child_positions": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "instruction": "Del 1: litteraturhistoria\nFlervalsfrågor\nSkriv rätt bokstav."
+    },
+    {
+      "child_positions": [
+        21,
+        22,
+        23,
+        24
+      ],
+      "instruction": "Del 3: kortsvar"
+    }
+  ]
+}
