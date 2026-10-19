@@ -118,7 +118,7 @@ listener is added. No performance concern.
   - Evidence goes to the retained root.
 - `pdm run docs-validate`.
 
-### Resume here (2026-10-19, planning by lead bd0f1693)
+### Resume here (2026-10-19, implementation by lead bd0f1693)
 
 - Branch `codex/task-skript-41-02-workspace-width-remote`, worktree
   `/home/paunchygent/apps/skriptoteket-task-skript-41-02-workspace-width-remote`, from `origin/main`
@@ -128,19 +128,18 @@ listener is added. No performance concern.
 - Status `ready`: the user accepted the plan on 2026-10-19 (`agent-planning:user-closure-gate`).
   Every ledger row is closed. `origin/main` `708b2b57` is merged in at `b519dd31`. The junior units
   start now.
-- Junior units after acceptance:
-  - `ew-width-owner`: `examWorkspace.css`, `ExamWorkspaceView.vue`, `ExamWorkspaceEditorPane.vue`,
-    `ExamWorkspaceDrawer.vue`, `ExamWorkspacePrintPreviewPanel.vue`, `ExamWorkspaceLayoutSlice.spec.ts`.
-  - `guest-full-frame`: `LandingLayout.vue`, `LandingLayout.spec.ts`.
-  - `ew-column-sizes`: the new column-size composable and its zod-validated storage plus spec;
-    `stores/layout.ts` storage wrapping plus its spec.
-  - `ew-export-format-list`: `ExamWorkspaceExportDrawer.vue` format choice as a vertical list, plus
-    its spec.
-  - `ew-splitter-wiring`: the handle component, the list collapse rail and the glyph in
-    `ExamWorkspaceQuestionList.vue`, and the wiring into `ExamWorkspaceView.vue`. It runs after
-    `ew-width-owner` and `ew-column-sizes`.
-  - The first four run in parallel with disjoint files. Then the lead runs the focused checks, asks
-    for the domain suite, and requests the staging walk.
+- Units landed at `e52a5599` (focused specs 114 pass, fe-type-check and fe-lint clean):
+  `ew-width-owner` (width tokens, `data-side` grid), `guest-full-frame` (LandingLayout fills the
+  frame on the public conversion hub), `ew-column-sizes` (stored widths, separator keys,
+  `stores/layout.ts` storage wrapping), `ew-export-format-list` (Exportera format radio list),
+  `ew-column-handle` (`ExamWorkspaceColumnHandle.vue` plus `examWorkspaceHandleBounds.ts`).
+- `ew-splitter-wiring` landed after `e52a5599`: resize handles on the list and side panels, the
+  44 px list rail with collapse and expand glyphs, and stored widths on the root. The lead fixed
+  the collapsed-rail rules to skip the empty body and moved the handles inside the panel edge,
+  because each panel root scrolls horizontally. The exam-workspace specs pass (151 files,
+  1327 tests); fe-type-check, fe-lint and fe-build pass.
+- Next: the orchestrator assigns the domain suite slot, then the staging walk checks the rendered
+  widths, the drag, and that no handle stays clipped when a panel scrolls below its minimum.
 
 ## Stop Conditions
 

@@ -19,17 +19,31 @@ import { computed, ref, useId } from "vue";
 
 import { UiGlyph } from "../../../components/ui";
 import { useDialogFocus } from "../../../composables/useDialogFocus";
+import ExamWorkspaceColumnHandle from "./ExamWorkspaceColumnHandle.vue";
 import type { ExamWorkspaceLayout } from "./useExamWorkspaceLayout";
 
-const props = defineProps<{
-  title: string;
-  layout: ExamWorkspaceLayout;
-  /** The header button that opened the drawer, for focus on close. */
-  openerSelector: string;
-  testId: string;
-}>();
+const props = withDefaults(
+  defineProps<{
+    title: string;
+    layout: ExamWorkspaceLayout;
+    /** The header button that opened the drawer, for focus on close. */
+    openerSelector: string;
+    testId: string;
+    /** The desktop resize handle is wanted; only ever set on desktop. */
+    handle?: boolean;
+  }>(),
+  { handle: false },
+);
 
-const emit = defineEmits<{ close: [] }>();
+const emit = defineEmits<{
+  close: [];
+  /** The resize handle reports a dragged or stepped width in px. */
+  set: [px: number];
+  /** The resize handle resets to the default width on double-click. */
+  reset: [];
+  /** Enter on the resize handle; the view closes the drawer like its ×. */
+  "toggle-collapse": [];
+}>();
 
 const frame = ref<HTMLElement | null>(null);
 const titleId = useId();
@@ -91,12 +105,22 @@ useDialogFocus(frame, {
     <div class="drawer__body">
       <slot />
     </div>
+    <ExamWorkspaceColumnHandle
+      v-if="handle"
+      edge="side"
+      column="drawer"
+      controls="exam-workspace-side-panel"
+      label="Ändra bredd på panelen"
+      @set="emit('set', $event)"
+      @reset="emit('reset')"
+      @toggle-collapse="emit('toggle-collapse')"
+    />
   </aside>
 </template>
 
 <style scoped>
 .drawer {
-  display: flex; flex-direction: column; min-height: 0; outline: none;
+  display: flex; flex-direction: column; min-height: 0; outline: none; position: relative;
   border-left: 1px solid var(--huleedu-surface-divider); background: var(--huleedu-canvas);
 }
 .drawer__head {

@@ -55,6 +55,7 @@ import { examWorkspaceExamPrintedDifference } from "./exam-workspace/examWorkspa
 import { EXAM_WORKSPACE_STORE_KEY } from "./exam-workspace/examWorkspaceStore";
 import type { ExamWorkspaceStore } from "./exam-workspace/examWorkspaceStore";
 import { useExamWorkspaceAddress } from "./exam-workspace/useExamWorkspaceAddress";
+import { useExamWorkspaceColumnSizes } from "./exam-workspace/useExamWorkspaceColumnSizes";
 import { useExamWorkspaceContentSuggestions } from "./exam-workspace/useExamWorkspaceContentSuggestions";
 import { useExamWorkspaceEditing } from "./exam-workspace/useExamWorkspaceEditing";
 import { useExamWorkspaceEnrichment } from "./exam-workspace/useExamWorkspaceEnrichment";
@@ -193,6 +194,30 @@ const side = computed(() => {
   }
   return "none";
 });
+
+/**
+ * The remembered column widths and list-collapsed state (TASK-SKRIPT-41-02-04):
+ * on desktop the root carries them as inline custom properties and the list
+ * state as `data-list`; tablet and phone render without either. A first width
+ * set on the collapsed list's draggable edge widens and expands it.
+ */
+const columnSizes = useExamWorkspaceColumnSizes();
+const isDesktop = computed(() => layout.value === "desktop");
+const rootColumnStyle = computed<Record<string, string> | undefined>(() =>
+  isDesktop.value ? columnSizes.rootStyle.value : undefined,
+);
+const rootListState = computed<"collapsed" | "open" | undefined>(() => {
+  if (!isDesktop.value) return undefined;
+  return columnSizes.listCollapsed.value ? "collapsed" : "open";
+});
+const listRailCollapsed = computed(() => isDesktop.value && columnSizes.listCollapsed.value);
+
+function setListWidth(px: number): void {
+  columnSizes.setWidth("list", px);
+  if (columnSizes.listCollapsed.value) {
+    columnSizes.toggleListCollapsed();
+  }
+}
 const saveFlow = useExamWorkspaceSaveFlow({
   editing, enrichment, exports, blockers, disabled, frame, gotoItem,
   openDetails: () => { drawer.value = "details"; },
@@ -275,6 +300,8 @@ onMounted(() => {
     ref="frame"
     class="xw-root ws"
     :data-side="side"
+    :data-list="rootListState"
+    :style="rootColumnStyle"
     aria-label="Provredigering"
     :data-layout="layout"
     data-test="exam-workspace-frame"
@@ -396,6 +423,7 @@ onMounted(() => {
     >
       <ExamWorkspaceQuestionList
         v-if="workspaceDocument"
+        id="exam-workspace-question-list"
         :entries="entries"
         :selected-id="selectedEntryId"
         :exam-instructions-preview="examInstructionsPreview"
@@ -405,6 +433,8 @@ onMounted(() => {
         :can-add="!disabled"
         :disabled="disabled"
         :overlay="isPhone && listOpen"
+        :collapsed="listRailCollapsed"
+        :handle="isDesktop"
         @select="selectEntry"
         @add="addEntry"
         @group="(itemIds) => structure.groupItems(itemIds)"
@@ -412,6 +442,9 @@ onMounted(() => {
         @accept-part-total="editing.acceptPartPrintedTotal"
         @accept-all-totals="editing.acceptAllPrintedTotals"
         @close="listOpen = false"
+        @set="setListWidth"
+        @reset="columnSizes.resetWidth('list')"
+        @toggle-collapse="columnSizes.toggleListCollapsed()"
       />
 
       <ExamWorkspaceEditorPane
@@ -442,17 +475,23 @@ onMounted(() => {
 
       <ExamWorkspacePrintPreviewPanel
         v-if="previewOpen && workspaceDocument && !isPhone && props.store.teacher !== null"
+        id="exam-workspace-side-panel"
         :pages="previewPages"
         :question-pages="previewQuestionPages"
         :loading="previewLoading"
         :blocked="previewBlocked"
         :message="previewMessage"
         :selected-item-id="selectedItem?.item_id ?? null"
+        :handle="isDesktop"
         @close="previewOpen = false"
+        @set="(px) => columnSizes.setWidth('preview', px)"
+        @reset="columnSizes.resetWidth('preview')"
+        @toggle-collapse="previewOpen = false"
       />
 
       <ExamWorkspaceDrawers
         v-if="drawer"
+        id="exam-workspace-side-panel"
         :drawer="drawer"
         :layout="layout"
         :editing="editing"
@@ -466,11 +505,15 @@ onMounted(() => {
         :zero-points="zeroPoints"
         :formatted-saved-exports="formattedSavedExports"
         :question-label="questionLabel"
+        :handle="isDesktop"
         @close="drawer = null"
         @run="runExport"
         @goto="gotoBlocker"
         @fix="fixBlocker"
         @set-ordering="setOrdering"
+        @set="(px) => columnSizes.setWidth('drawer', px)"
+        @reset="columnSizes.resetWidth('drawer')"
+        @toggle-collapse="drawer = null"
       />
     </div>
 
@@ -501,6 +544,10 @@ onMounted(() => {
 .ws[data-side="export"],
 .ws[data-side="details"] { --xw-side-size: var(--xw-drawer-size); }
 .ws[data-side="preview"] { --xw-side-size: var(--xw-preview-size); }
+/* The collapsed list is a fixed 44px rail; the rail counts as the list's width. */
+.ws[data-list="collapsed"] .ws__body:not(.ws__body--empty) {
+  grid-template-columns: 44px minmax(0, 1fr);
+}
 @media (min-width: 1280px) {
   .ws[data-side="open"] .ws__body,
   .ws[data-side="export"] .ws__body,
@@ -510,6 +557,15 @@ onMounted(() => {
       min(var(--xw-list-size), max(0px, 100% - var(--xw-editor-min)))
       minmax(0, 1fr)
       min(var(--xw-side-size), max(0px, 100% - var(--xw-list-size) - var(--xw-editor-min)));
+  }
+  .ws[data-list="collapsed"][data-side="open"] .ws__body:not(.ws__body--empty),
+  .ws[data-list="collapsed"][data-side="export"] .ws__body:not(.ws__body--empty),
+  .ws[data-list="collapsed"][data-side="details"] .ws__body:not(.ws__body--empty),
+  .ws[data-list="collapsed"][data-side="preview"] .ws__body:not(.ws__body--empty) {
+    grid-template-columns:
+      44px
+      minmax(0, 1fr)
+      min(var(--xw-side-size), max(0px, 100% - 44px - var(--xw-editor-min)));
   }
   .ws[data-side="open"] .ws__body--empty,
   .ws[data-side="export"] .ws__body--empty,

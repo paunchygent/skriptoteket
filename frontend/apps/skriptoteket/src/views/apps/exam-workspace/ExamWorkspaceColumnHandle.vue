@@ -204,21 +204,28 @@ function onDblclick(): void {
   cursor: col-resize;
   touch-action: none;
 }
+/* Inside the panel edge: the panel root scrolls horizontally, so a handle
+   outside its box would be clipped and would add scrollable overflow. */
 .xw-column-handle--list {
-  right: -4px;
+  right: 0;
 }
 .xw-column-handle--side {
-  left: -4px;
+  left: 0;
 }
 .xw-column-handle::after {
   content: "";
   position: absolute;
   top: 0;
   bottom: 0;
-  left: 3px;
   width: 2px;
   background: var(--huleedu-action);
   opacity: 0;
+}
+.xw-column-handle--list::after {
+  right: 0;
+}
+.xw-column-handle--side::after {
+  left: 0;
 }
 .xw-column-handle:hover::after,
 .xw-column-handle:focus-visible::after {

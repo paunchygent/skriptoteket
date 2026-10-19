@@ -44,21 +44,26 @@ const DRAWER_OPENERS: Record<DrawerName, string> = {
   open: '[data-test="exam-workspace-open"]',
 };
 
-const props = defineProps<{
-  drawer: DrawerName;
-  layout: ExamWorkspaceLayout;
-  editing: ReturnType<typeof useExamWorkspaceEditing>;
-  exports: ReturnType<typeof useExamWorkspaceExports>;
-  enrichment: ReturnType<typeof useExamWorkspaceEnrichment>;
-  content: ReturnType<typeof useExamWorkspaceContentSuggestions>;
-  sourceFile: ReturnType<typeof useExamWorkspaceSourceFile>;
-  blockers: ExamWorkspaceBlockerEntry[];
-  disabled: boolean;
-  enrichmentBusy: boolean;
-  zeroPoints: boolean;
-  formattedSavedExports: Partial<Record<ExamWorkspaceExportTarget, string>>;
-  questionLabel: (itemId: string) => string | null;
-}>();
+const props = withDefaults(
+  defineProps<{
+    drawer: DrawerName;
+    layout: ExamWorkspaceLayout;
+    editing: ReturnType<typeof useExamWorkspaceEditing>;
+    exports: ReturnType<typeof useExamWorkspaceExports>;
+    enrichment: ReturnType<typeof useExamWorkspaceEnrichment>;
+    content: ReturnType<typeof useExamWorkspaceContentSuggestions>;
+    sourceFile: ReturnType<typeof useExamWorkspaceSourceFile>;
+    blockers: ExamWorkspaceBlockerEntry[];
+    disabled: boolean;
+    enrichmentBusy: boolean;
+    zeroPoints: boolean;
+    formattedSavedExports: Partial<Record<ExamWorkspaceExportTarget, string>>;
+    questionLabel: (itemId: string) => string | null;
+    /** The desktop resize handle is wanted; only ever set on desktop. */
+    handle?: boolean;
+  }>(),
+  { handle: false },
+);
 
 defineEmits<{
   close: [];
@@ -66,6 +71,12 @@ defineEmits<{
   goto: [blocker: ExamWorkspaceBlockerEntry];
   fix: [blocker: ExamWorkspaceBlockerEntry];
   "set-ordering": [ordering: ExamListOrdering];
+  /** The resize handle reports a dragged or stepped width in px. */
+  set: [px: number];
+  /** The resize handle resets to the default width on double-click. */
+  reset: [];
+  /** Enter on the resize handle; the view closes the drawer like its ×. */
+  "toggle-collapse": [];
 }>();
 
 const {
@@ -105,7 +116,11 @@ const currentExports = computed(() =>
     :layout="layout"
     :opener-selector="DRAWER_OPENERS[drawer]"
     :test-id="`exam-workspace-drawer-${drawer}`"
+    :handle="handle"
     @close="$emit('close')"
+    @set="$emit('set', $event)"
+    @reset="$emit('reset')"
+    @toggle-collapse="$emit('toggle-collapse')"
   >
     <ExamWorkspaceOpenDrawer
       v-if="drawer === 'open'"

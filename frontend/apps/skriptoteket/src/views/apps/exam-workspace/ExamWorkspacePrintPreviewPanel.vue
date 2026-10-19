@@ -17,18 +17,32 @@
 import { computed, nextTick, ref, watch } from "vue";
 
 import { UiGlyph } from "../../../components/ui";
+import ExamWorkspaceColumnHandle from "./ExamWorkspaceColumnHandle.vue";
 
-const props = defineProps<{
-  pages: string[];
-  /** Question item id -> 0-based page its first printed page sits on. */
-  questionPages: Record<string, number>;
-  loading: boolean;
-  blocked: boolean;
-  message: string | null;
-  selectedItemId: string | null;
+const props = withDefaults(
+  defineProps<{
+    pages: string[];
+    /** Question item id -> 0-based page its first printed page sits on. */
+    questionPages: Record<string, number>;
+    loading: boolean;
+    blocked: boolean;
+    message: string | null;
+    selectedItemId: string | null;
+    /** The desktop resize handle is wanted; only ever set on desktop. */
+    handle?: boolean;
+  }>(),
+  { handle: false },
+);
+
+const emit = defineEmits<{
+  close: [];
+  /** The resize handle reports a dragged or stepped width in px. */
+  set: [px: number];
+  /** The resize handle resets to the default width on double-click. */
+  reset: [];
+  /** Enter on the resize handle; the view closes the panel like its ×. */
+  "toggle-collapse": [];
 }>();
-
-const emit = defineEmits<{ close: [] }>();
 
 const scrollArea = ref<HTMLElement | null>(null);
 
@@ -117,12 +131,22 @@ watch(
         :data-page-index="index"
       >
     </div>
+    <ExamWorkspaceColumnHandle
+      v-if="handle"
+      edge="side"
+      column="preview"
+      controls="exam-workspace-side-panel"
+      label="Ändra bredd på panelen"
+      @set="emit('set', $event)"
+      @reset="emit('reset')"
+      @toggle-collapse="emit('toggle-collapse')"
+    />
   </aside>
 </template>
 
 <style scoped>
 .pp {
-  display: flex; flex-direction: column; min-height: 0;
+  display: flex; flex-direction: column; min-height: 0; position: relative;
   border-left: 1px solid var(--huleedu-surface-divider); background: var(--huleedu-canvas);
 }
 .pp__head {
