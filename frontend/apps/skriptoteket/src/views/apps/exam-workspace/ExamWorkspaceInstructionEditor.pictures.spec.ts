@@ -79,7 +79,7 @@ describe("ExamWorkspaceInstructionEditor pictures", () => {
         {
           heading_level: null,
           segments: [
-            { kind: "text", marks: [], text: "S" },
+            { kind: "text", marks: [], text: "S", kept_gap_id: null },
             { kind: "asset", asset_id: "asset_001" },
           ],
         },
@@ -121,8 +121,8 @@ describe("ExamWorkspaceInstructionEditor pictures", () => {
       {
         heading_level: null,
         segments: [
-          { kind: "text", marks: ["bold"], text: "Se" },
-          { kind: "text", marks: [], text: " " },
+          { kind: "text", marks: ["bold"], text: "Se", kept_gap_id: null },
+          { kind: "text", marks: [], text: " ", kept_gap_id: null },
           { kind: "asset", asset_id: "asset_001" },
         ],
       },
