@@ -42,6 +42,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import (
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
+    NativeParseOrigin,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_text_lines
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
@@ -214,8 +215,13 @@ async def test_points_lines_are_structure_and_never_reach_a_parent_or_an_item():
             for line in body_text_lines(parent.instruction)
             if points_line(line)
         ]
+        # D9 of TASK-SKRIPT-39-04-17: a source-review item shows the question as printed.
         assert not [
-            line for item in document.items for line in item.plain_text_lines() if points_line(line)
+            line
+            for item in document.items
+            if item.review.parse_origin is not NativeParseOrigin.SOURCE_FALLBACK
+            for line in item.plain_text_lines()
+            if points_line(line)
         ]
         # The exam total is header metadata, never instruction text (39-04-12 F3); the
         # per-question points lines are structure and reach neither a parent nor an item.
