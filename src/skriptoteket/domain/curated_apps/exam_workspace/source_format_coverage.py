@@ -14,8 +14,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import Nat
 from skriptoteket.domain.curated_apps.exam_workspace.source_answer_space import (
     is_answer_space_paragraph,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import (
+from skriptoteket.domain.curated_apps.exam_workspace.source_format_errors import (
     FormattingTransferError,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.source_formatting import (
     SourceFormatting,
 )
 

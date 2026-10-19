@@ -104,6 +104,7 @@ def _assemble(
             produced,
             chunks=[chunk for chunk in chunks if chunk.anchor in produced.source_anchors],
             language="sv",
+            foreign_chunks=(),
         )
         for produced in items
     )

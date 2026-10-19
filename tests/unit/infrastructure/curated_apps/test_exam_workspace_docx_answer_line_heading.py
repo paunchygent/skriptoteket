@@ -28,6 +28,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedSegment,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
+from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions import LEFT_OUT_REASON
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
     NativeItemReviewState,
@@ -80,7 +81,9 @@ def test_a_larger_font_answer_line_marked_as_heading_stays_out_of_the_body() -> 
 
     assert chunks[1].paragraphs[0].heading_level is not None
 
-    aligned = aligned_native_item(_produced("Förklara.", "_____"), chunks=chunks, language="sv")
+    aligned = aligned_native_item(
+        _produced("Förklara.", "_____"), chunks=chunks, language="sv", foreign_chunks=()
+    )
 
     assert body_plain_text(aligned.item.body) == "Förklara."
 
@@ -105,7 +108,9 @@ def test_a_larger_font_real_heading_is_still_restored() -> None:
 
     assert chunks[1].paragraphs[0].heading_level is not None
 
-    aligned = aligned_native_item(_produced("Förklara."), chunks=chunks, language="sv")
+    aligned = aligned_native_item(
+        _produced("Förklara."), chunks=chunks, language="sv", foreign_chunks=()
+    )
 
     assert body_plain_text(aligned.item.body) == "Förklara.\nDel A"
 
@@ -144,7 +149,7 @@ def _produced_owned(anchors: tuple[str, ...], *texts: str) -> ProducedItem:
 
 
 def _assembled(chunks: tuple[DocxChunk, ...], produced: ProducedItem) -> DocxBuildResult:
-    aligned = aligned_native_item(produced, chunks=chunks, language="sv")
+    aligned = aligned_native_item(produced, chunks=chunks, language="sv", foreign_chunks=())
     assert body_plain_text(aligned.item.body) == "Förklara."
     return assemble_build_result(
         document_id=uuid4(),
@@ -219,7 +224,9 @@ def test_a_real_heading_keeps_its_section_behaviour_through_application_admissio
     final = _admitted(chunks, produced)
 
     assert [body_plain_text(item.body) for item in final.document.items] == ["Del A\nFörklara."]
-    assert [item.review.state for item in final.document.items] == [
-        NativeItemReviewState.REVIEW_COMPLETE
+    # Admission marks the listed heading chunk the reply left out (TASK-SKRIPT-39-04-15);
+    # W10 never treats a real heading as answer space.
+    assert [(item.review.state, item.review.reasons) for item in final.document.items] == [
+        (NativeItemReviewState.REVIEW_REQUIRED, (LEFT_OUT_REASON, "Del A"))
     ]
     assert final.document.parents == ()

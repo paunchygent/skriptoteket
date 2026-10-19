@@ -80,11 +80,13 @@ from skriptoteket.protocols.exam_workspace import (
     DocxExamChunkerProtocol,
     ExamWorkspaceContainerCodecProtocol,
     GenerateExamWorkspaceMisspellingsHandlerProtocol,
+    GetExamContentSuggestionsHandlerProtocol,
     GetExamCourseCatalogHandlerProtocol,
     GetExamWorkspaceConversionStatusHandlerProtocol,
     GetExamWorkspaceDocumentHandlerProtocol,
     ImportExamWorkspaceDigiExamDocumentHandlerProtocol,
     ImportExamWorkspaceDocumentHandlerProtocol,
+    RequestExamContentSuggestionsHandlerProtocol,
     RetryExamWorkspaceItemHandlerProtocol,
 )
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
@@ -129,7 +131,7 @@ class ExamWorkspaceConversionProvider(Provider):
         uow: UnitOfWorkProtocol,
         clock: ClockProtocol,
         id_generator: IdGeneratorProtocol,
-    ) -> RequestExamContentSuggestionsHandler:
+    ) -> RequestExamContentSuggestionsHandlerProtocol:
         return RequestExamContentSuggestionsHandler(
             reader=reader, jobs=jobs, uow=uow, clock=clock, id_generator=id_generator
         )
@@ -138,7 +140,7 @@ class ExamWorkspaceConversionProvider(Provider):
     def get_content_suggestions(
         self,
         jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
-    ) -> GetExamContentSuggestionsHandler:
+    ) -> GetExamContentSuggestionsHandlerProtocol:
         return GetExamContentSuggestionsHandler(jobs=jobs)
 
     @provide(scope=Scope.REQUEST)

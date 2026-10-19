@@ -131,6 +131,7 @@ def test_underscore_answer_lines_never_reach_a_free_text_body() -> None:
     item = aligned_native_item(
         _item(_text_paragraph("Förklara."), _text_paragraph("_____"), _text_paragraph("  __ _  ")),
         language="sv",
+        foreign_chunks=(),
     ).item
 
     assert _body_text(item) == ["Förklara."]
@@ -152,6 +153,7 @@ def test_a_source_backed_marked_answer_line_never_reaches_a_free_text_body() -> 
         _item(_text_paragraph("Förklara."), _text_paragraph("_____")),
         chunks=chunks,
         language="sv",
+        foreign_chunks=(),
     ).item
 
     assert _body_text(item) == ["Förklara."]
@@ -161,6 +163,7 @@ def test_a_free_text_paragraph_of_only_a_model_gap_is_dropped() -> None:
     item = aligned_native_item(
         _item(_text_paragraph("Förklara."), _gap_paragraph()),
         language="sv",
+        foreign_chunks=(),
     ).item
 
     assert _body_text(item) == ["Förklara."]
@@ -177,6 +180,7 @@ def test_a_free_text_label_keeps_its_gap_blank() -> None:
             )
         ),
         language="sv",
+        foreign_chunks=(),
     ).item
 
     assert _body_text(item) == ["Svar: ____"]
@@ -186,6 +190,7 @@ def test_dash_and_dot_lines_are_kept() -> None:
     item = aligned_native_item(
         _item(_text_paragraph("-------"), _text_paragraph(".......")),
         language="sv",
+        foreign_chunks=(),
     ).item
 
     assert _body_text(item) == ["-------", "......."]
@@ -195,6 +200,7 @@ def test_a_gap_fill_paragraph_with_only_a_gap_is_kept() -> None:
     item = aligned_native_item(
         _item(_gap_paragraph("svar"), kind=NativeExamItemKind.GAP_FILL),
         language="sv",
+        foreign_chunks=(),
     ).item
 
     (paragraph,) = item.body

@@ -141,7 +141,7 @@ Local shared-auth bootstrap preflight:
 
 ```bash
 pdm run auth-edge-bootstrap-preflight \
-  --export-json /Users/olofs_mba/Documents/Repos/huleedu/.artifacts/skriptoteket-auth-bootstrap/local-shared-verify-export.json \
+  --export-json /Users/olofs_mba/Repos/huleedu/.artifacts/skriptoteket-auth-bootstrap/local-shared-verify-export.json \
   --output-json .artifacts/skriptoteket-auth-bootstrap/preflight.json
 ```
 

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "3e696c6c4e8cb2244991c7aa2e5a5b9ce6ed8f9785d4f343ed66b982f639369e",
+  "source_set_digest": "3b59389bc91c071ad2aacae67c2fb130bc827fd3d806ffb40d4daff07b176eef",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5129,6 +5129,52 @@
       }
     },
     {
+      "id": "TASK-SKRIPT-39-04-15",
+      "type": "task",
+      "title": "A body paragraph aligned to another item's source is rebuilt from the item's own source; listed own chunks are checked for left-out text",
+      "path": "docs/backlog/tasks/task-skript-39-04-15-left-out-check-covers-the-own-chunks-an-item-lists-by-source-alignment-never-by-wording.md",
+      "status": "done",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-19",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer 898d311f (Hemma retained session 01a14f3e-12df-7020-8c18-18ad39a131cf, evidence/reviews/898d311f-da73-489f-9b10-76a36892ff88.md and -rereview.md): changes_requested with F1 and F2 high, F3 and F4 medium; F1 and F2 cleared on re-review at e5b17901 (approved). F3, F4 and the low F5 admitted by the parent on focused proof; the fold onto the 39-04-16 source_paragraph() (merge b0904608, ff8c1ebb) admitted on focused proof and identical replays. 166 focused tests, lint, typecheck, docs-validate pass; domain suite 4798 passed, 59 skipped; ten replays differ from main only in q8 (the contracted fix). Merged to main at ff8c1ebb on 2026-10-19."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-04-16",
+      "type": "task",
+      "title": "Gap paragraphs are built from their source paragraph, so no cue or lead clause beside a gap is lost",
+      "path": "docs/backlog/tasks/task-skript-39-04-16-gap-paragraphs-are-built-from-their-source-paragraph-so-no-cue-or-lead-clause-beside-a-gap-is-lost.md",
+      "status": "done",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-19",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer 5805cf6e reviewed the implementation (Hemma retained session 01a14f3e-11d5-7745-90e8-6323496fbf74): changes_requested with three medium findings (picture at paragraph end counted as a mismatch; D3 blank class per table cell instead of per row; adjacent pictures reordered). Repaired in 2fdaeb8f and 389b1aee, each with a test that failed before the fix, and admitted by the parent on focused proof without rereview: 102 focused tests, lint, typecheck and docs-validate pass; replays byte-identical to d6c2f9af with no gap_count_mismatch; domain suite 4131 passed, 59 skipped. Merged to main at d80a7131 on 2026-10-19."
+      }
+    },
+    {
       "id": "TASK-SKRIPT-39-05-01",
       "type": "task",
       "title": "Walking skeleton for AI-first DOCX conversion as a background job",
@@ -7691,6 +7737,46 @@
         "decided_at": "2026-10-18",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "Independent ruthless-reviewer review of the delivery (root 01a14f23 evidence/reviews/10b693b6-1db4-4125-a880-ac5f7273bde7.md); its only finding F1 (medium) repaired at cbd290bd (capture-time request key sidecar per label_b recording, refused without one) and admitted on focused proof; user-approved re-recording of exactly 14 labeler calls (16,286 in, 1,315 out tokens); integration file 11/11, domain suite 3586 passed on Hemma; merged into main."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0047",
+      "type": "task",
+      "title": "Exam content-suggestion handlers are typed and provided through protocols",
+      "path": "docs/backlog/tasks/task-skript-rep-0047-exam-content-suggestion-handlers-are-typed-and-provided-through-protocols.md",
+      "status": "done",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-19",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer 7c83bec8 reviewed f7dd14d7 (Hemma retained session 01a14f6a-f57b-7b24-9672-320bf5884dbc, evidence/reviews/7c83bec8-d3ba-47cc-9881-6e50e14e2364.md): approved with no findings; three adversarial probes pass (new top-level and nested paid routes are still caught by the AI route-gate guard). Merged to main 2026-10-19."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0049",
+      "type": "task",
+      "title": "A converted item never drops a sentence from its own source paragraph",
+      "path": "docs/backlog/tasks/task-skript-rep-0049-a-converted-item-never-drops-a-sentence-from-its-own-source-paragraph.md",
+      "status": "proposed",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {

@@ -47,7 +47,7 @@ def convert(source, wordings, *, points=2, prompt="Choose.", source_prompt=None)
             "choices": [{"text": text, "correct": False} for text in wordings],
         }
     )
-    return aligned_native_item(produced, chunks=chunks, language="en").item
+    return aligned_native_item(produced, chunks=chunks, language="en", foreign_chunks=()).item
 
 
 @pytest.mark.parametrize(

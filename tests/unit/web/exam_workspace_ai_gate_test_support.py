@@ -32,9 +32,8 @@ from skriptoteket.application.curated_apps.exam_workspace import (
     RequestExamWorkspaceAnswerKeySuggestionsRequest,
     RetryExamWorkspaceItemRequest,
 )
-from skriptoteket.application.curated_apps.handlers.exam_workspace_content_tags import (
+from skriptoteket.application.curated_apps.exam_workspace_content_suggestions import (
     ContentSuggestionsResponse,
-    RequestExamContentSuggestionsHandler,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import NativeExamItem
 from skriptoteket.domain.identity.models import User
@@ -42,6 +41,7 @@ from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.protocols.exam_workspace import (
     ImportExamWorkspaceDigiExamDocumentHandlerProtocol,
     ImportExamWorkspaceDocumentHandlerProtocol,
+    RequestExamContentSuggestionsHandlerProtocol,
     RequestExamWorkspaceAnswerKeySuggestionsHandlerProtocol,
     RetryExamWorkspaceItemHandlerProtocol,
 )
@@ -54,8 +54,8 @@ class RecordingDouble:
         self.calls: list[tuple[object, ...]] = []
 
 
-class ContentSuggestionsDouble(RecordingDouble, RequestExamContentSuggestionsHandler):
-    """Recording double for the concrete content-suggestions handler."""
+class ContentSuggestionsDouble(RecordingDouble, RequestExamContentSuggestionsHandlerProtocol):
+    """Recording double for the content-suggestions protocol."""
 
     def __init__(self, *, result: ContentSuggestionsResponse) -> None:
         super().__init__()
@@ -145,7 +145,9 @@ class ExamWorkspaceAiGateProvider(Provider):
         return self._registry
 
     @provide(scope=Scope.REQUEST)
-    def request_exam_content_suggestions_handler(self) -> RequestExamContentSuggestionsHandler:
+    def request_exam_content_suggestions_handler(
+        self,
+    ) -> RequestExamContentSuggestionsHandlerProtocol:
         return self._handlers.content_suggestions
 
     @provide(scope=Scope.REQUEST)

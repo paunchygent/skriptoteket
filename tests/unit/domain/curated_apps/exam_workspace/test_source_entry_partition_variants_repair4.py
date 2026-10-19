@@ -85,7 +85,7 @@ def _convert_runs(runs, *, choices=(), left=(), right=()):
             "match_right": right,
         }
     )
-    result = aligned_native_item(item, chunks=chunks, language="en").item
+    result = aligned_native_item(item, chunks=chunks, language="en", foreign_chunks=()).item
     assert body_plain_text(result.body) == prompt
     assert result.facit_text is None
     assert all(isinstance(entry.body, tuple) for entry in result.choices)

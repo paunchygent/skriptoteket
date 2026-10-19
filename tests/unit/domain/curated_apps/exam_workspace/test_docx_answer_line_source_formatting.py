@@ -105,7 +105,7 @@ def test_a_marked_underscore_answer_line_never_reaches_the_body(marks) -> None:
     produced = _item(_paragraph(_text("Förklara.")), _paragraph(_text("_____")))
     chunks = (_chunk("body:0001", "Förklara."), _answer_line("body:0002", "_____", marks))
 
-    aligned = aligned_native_item(produced, chunks=chunks, language="sv")
+    aligned = aligned_native_item(produced, chunks=chunks, language="sv", foreign_chunks=())
 
     assert body_plain_text(aligned.item.body) == "Förklara."
     assert aligned.chunks == ("body:0001",)
@@ -120,7 +120,7 @@ def test_an_answer_line_between_real_paragraphs_keeps_their_own_anchors(marks) -
         _chunk("body:0003", "Och varför?"),
     )
 
-    aligned = aligned_native_item(produced, chunks=chunks, language="sv")
+    aligned = aligned_native_item(produced, chunks=chunks, language="sv", foreign_chunks=())
 
     assert body_plain_text(aligned.item.body) == "Förklara.\nOch varför?"
     assert aligned.chunks == ("body:0001", "body:0003")
@@ -132,7 +132,7 @@ def test_dash_and_dot_paragraphs_are_kept_marked_or_not(text: str, marks) -> Non
     produced = _item(_paragraph(_text(text)))
     chunks = (_answer_line("body:0001", text, marks),)
 
-    aligned = aligned_native_item(produced, chunks=chunks, language="sv")
+    aligned = aligned_native_item(produced, chunks=chunks, language="sv", foreign_chunks=())
 
     assert body_plain_text(aligned.item.body) == text
     assert aligned.chunks == ("body:0001",)
@@ -156,7 +156,7 @@ def test_an_underscore_paragraph_holding_a_picture_is_kept_in_place(marks) -> No
         ),
     )
 
-    aligned = aligned_native_item(produced, chunks=chunks, language="sv")
+    aligned = aligned_native_item(produced, chunks=chunks, language="sv", foreign_chunks=())
 
     (paragraph,) = aligned.item.body
     assert paragraph.segments == (
@@ -171,7 +171,7 @@ def test_a_standalone_underscore_gap_paragraph_keeps_its_gap(marks) -> None:
     produced = _item(_paragraph(_blank("svar")), kind=NativeExamItemKind.GAP_FILL)
     chunks = (_answer_line("body:0001", "_____", marks),)
 
-    aligned = aligned_native_item(produced, chunks=chunks, language="sv")
+    aligned = aligned_native_item(produced, chunks=chunks, language="sv", foreign_chunks=())
 
     (paragraph,) = aligned.item.body
     assert paragraph.segments == (NativeGapSegment(gap_id="gap_001"),)
@@ -199,7 +199,11 @@ def test_an_inline_gap_survives_a_trailing_marked_answer_line() -> None:
 
     observed: list[str] = []
     aligned = aligned_native_item(
-        produced, chunks=chunks, language="sv", formatting_observer=observed.append
+        produced,
+        chunks=chunks,
+        language="sv",
+        formatting_observer=observed.append,
+        foreign_chunks=(),
     )
 
     assert observed == ["rebuilt"]
@@ -217,7 +221,7 @@ def test_an_unresolved_source_picture_still_raises_before_formatting() -> None:
     chunks = (_chunk("body:0001", "Se bilden", missing=(missing,)),)
 
     with pytest.raises(ValueError, match="unresolved source pictures"):
-        aligned_native_item(produced, chunks=chunks, language="sv")
+        aligned_native_item(produced, chunks=chunks, language="sv", foreign_chunks=())
 
 
 def test_is_answer_line_text_needs_an_underscore() -> None:

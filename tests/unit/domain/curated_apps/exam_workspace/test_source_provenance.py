@@ -45,7 +45,7 @@ def _text(text: str) -> NativeTextSegment:
 
 
 def _project(chunks: tuple[DocxChunk, ...], *segments: NativeSegment) -> tuple[str | None, ...]:
-    source = SourceFormatting(chunks)
+    source = SourceFormatting(chunks, foreign=())
     source.body((NativeParagraph(heading_level=None, segments=segments),))
     return paragraph_chunks(source)
 

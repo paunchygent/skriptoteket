@@ -40,7 +40,7 @@ from scripts._transcript_parity_runtime_evidence import (
 DEFAULT_BASE_URL = "http://127.0.0.1:5173"
 DEFAULT_CONTAINER_TARGET_URL = "http://host.docker.internal:38085"
 DEFAULT_EXPECTED_SERVICE_PROFILE = "remote-proof"
-DEFAULT_HULEEDU_REPO = Path("/Users/olofs_mba/Documents/Repos/huleedu")
+DEFAULT_HULEEDU_REPO = Path("/Users/olofs_mba/Repos/huleedu")
 DEFAULT_PROOF_ARTIFACT_ROOT = Path(".artifacts/audio-transcription-parity-live")
 DEFAULT_LAUNCH_ARTIFACT_ROOT = Path(".artifacts/transcript-parity-proof-lane")
 COMMAND_OUTPUT_SNIPPET_CHARS = 800
