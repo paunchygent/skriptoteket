@@ -36,12 +36,12 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import (
     NativeExamParent,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
-    NativeParseOrigin,
-)
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import build_replay
 from tests.unit.domain.curated_apps.exam_workspace.recorded_build_events_support import (
     unexpected_build_events,
+)
+from tests.unit.domain.curated_apps.exam_workspace.test_replay_guard_pending_source_review import (
+    is_pending_source_review,
 )
 
 _GRAMMAR_1 = "svenska_2_grammatik_omprov_variant_1_med_facit"
@@ -117,12 +117,11 @@ async def test_a_part_whose_numbering_restarts_titles_the_printed_span_not_the_r
 async def test_printed_labels_never_enter_student_visible_text(stem: str):
     build = await _build(stem)
     document = build.document
-    # D9 of TASK-SKRIPT-39-04-17: a source-review item shows the question as printed.
+    # D9 of TASK-SKRIPT-39-04-17: a pending source-review item shows the question as printed.
     numbered = [
         item
         for item in document.items
-        if re.search(r"\d", item.printed_label or "")
-        and item.review.parse_origin is not NativeParseOrigin.SOURCE_FALLBACK
+        if re.search(r"\d", item.printed_label or "") and not is_pending_source_review(item)
     ]
     assert numbered
     for item in numbered:

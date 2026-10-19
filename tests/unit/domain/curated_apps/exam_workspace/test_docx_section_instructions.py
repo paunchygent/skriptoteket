@@ -42,7 +42,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import (
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
-    NativeParseOrigin,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_text_lines
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
@@ -56,6 +55,9 @@ from tests.unit.domain.curated_apps.exam_workspace.recorded_build_events_support
 )
 from tests.unit.domain.curated_apps.exam_workspace.source_rules_test_support import (
     recorded_produced_items,
+)
+from tests.unit.domain.curated_apps.exam_workspace.test_replay_guard_pending_source_review import (
+    is_pending_source_review,
 )
 
 _NUMBERED_LINE = re.compile(r"^\s*(?:[^\W\d_]+\s+)?\d{1,3}\s*[.)]\s+")
@@ -215,11 +217,11 @@ async def test_points_lines_are_structure_and_never_reach_a_parent_or_an_item():
             for line in body_text_lines(parent.instruction)
             if points_line(line)
         ]
-        # D9 of TASK-SKRIPT-39-04-17: a source-review item shows the question as printed.
+        # D9 of TASK-SKRIPT-39-04-17: a pending source-review item shows the question as printed.
         assert not [
             line
             for item in document.items
-            if item.review.parse_origin is not NativeParseOrigin.SOURCE_FALLBACK
+            if not is_pending_source_review(item)
             for line in item.plain_text_lines()
             if points_line(line)
         ]
