@@ -2,16 +2,18 @@
  * Exam workspace side columns (view seam).
  *
  * Domain purpose:
- *   Own the view's presentation-only columns: the drawer, the phone list,
+ *   Own the view's presentation-only columns: the phone list,
  *   the import box, and the Förhandsgranska preview beside the editor. One
  *   side column at a time: the preview and a drawer never share the body.
  *   The preview renders the persisted working state through
  *   `useExamWorkspacePrintPreview`, refreshed after each saved edit or save.
  *
  * Relationships:
- *   - Used by `ExamWorkspaceView`; the drawer, list, import and preview
- *     flags stay plain refs so the template and the selection, save-flow
- *     and keyboard wiring keep their assignments.
+ *   - Used by `ExamWorkspaceView`; the list, import and preview flags stay
+ *     plain refs so the template and the selection, save-flow and keyboard
+ *     wiring keep their assignments. The drawer ref is owned by
+ *     `useExamWorkspaceDrawerState` and passed in; this seam only keeps it
+ *     exclusive with the preview.
  *   - Calls back with the newly opened lineage so the view shows that
  *     document and dismisses the guest sign-in prompt it interrupted.
  */
@@ -26,6 +28,7 @@ import type { ExamWorkspaceStore } from "./examWorkspaceStore";
 export type ExamWorkspaceSideDrawer = "open" | "export" | "details";
 
 export function useExamWorkspaceSideColumns(deps: {
+  drawer: Ref<ExamWorkspaceSideDrawer | null>;
   historyCursor: Ref<string | null>;
   historyPosition: Ref<string | null>;
   layout: Ref<ExamWorkspaceLayout>;
@@ -36,7 +39,6 @@ export function useExamWorkspaceSideColumns(deps: {
   onLineage: (lineageId: string | null) => void;
 }) {
   const isPhone = computed(() => deps.layout.value === "phone");
-  const drawer = ref<ExamWorkspaceSideDrawer | null>(null);
   const listOpen = ref(false);
   const importOpen = ref(false);
 
@@ -65,15 +67,11 @@ export function useExamWorkspaceSideColumns(deps: {
     previewOpen.value = !previewOpen.value;
   }
 
-  function toggleDrawer(name: ExamWorkspaceSideDrawer): void {
-    drawer.value = drawer.value === name ? null : name;
-  }
-
   // One side column at a time: the preview and a drawer never share the body.
   watch(previewOpen, (open) => {
-    if (open) drawer.value = null;
+    if (open) deps.drawer.value = null;
   });
-  watch(drawer, (name) => {
+  watch(deps.drawer, (name) => {
     if (name !== null) previewOpen.value = false;
   });
 
@@ -82,9 +80,9 @@ export function useExamWorkspaceSideColumns(deps: {
     (lineageId, previous) => {
       deps.onLineage(lineageId);
       if (lineageId === null) {
-        drawer.value = "open";
-      } else if (lineageId !== previous && !(deps.layout.value === "desktop" && drawer.value === "open")) {
-        drawer.value = null;
+        deps.drawer.value = "open";
+      } else if (lineageId !== previous && !(deps.layout.value === "desktop" && deps.drawer.value === "open")) {
+        deps.drawer.value = null;
       }
     },
   );
@@ -94,7 +92,6 @@ export function useExamWorkspaceSideColumns(deps: {
   });
 
   return {
-    drawer,
     importOpen,
     isPhone,
     listOpen,
@@ -104,7 +101,6 @@ export function useExamWorkspaceSideColumns(deps: {
     previewOpen,
     previewPages,
     previewQuestionPages,
-    toggleDrawer,
     togglePreview,
   };
 }

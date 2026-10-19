@@ -26,13 +26,16 @@
  *   handle. On a phone the list
  *   opens full screen over the editor from the question strip and closes
  *   with Tillbaka or a choice. The head is one row: the title, then the
- *   collapse glyph, Ny uppgift and the Markera toggle. Pressing Markera turns
+ *   collapse glyph, Ny uppgift and the Markera toggle (`ExamWorkspaceQuestionListHead`).
+ *   Pressing Markera turns
  *   the list into Markera mode: a standalone question carries a checkbox (an
  *   ordering question's is disabled, G6) and a bar under the head groups the
  *   ticked questions into a new part (G2, G11); a part and a question inside
  *   a part carry no checkbox. Pressing Markera again leaves the mode.
  *
  * Relationships:
+ *   - The Markera state and its group rules live in
+ *     `useExamWorkspaceQuestionMarking`.
  *   - Rendered by `ExamWorkspaceView`; the lines come from
  *     `examWorkspaceNoteLines` (the `mismatches` from `examWorkspaceTotals`
  *     with the list's entry labels) and render through
@@ -43,9 +46,9 @@ import { computed, nextTick, ref, watch } from "vue";
 
 import { UiGlyph } from "../../../components/ui";
 import ExamWorkspaceColumnHandle from "./ExamWorkspaceColumnHandle.vue";
-import ExamWorkspaceNewItemMenu from "./ExamWorkspaceNewItemMenu.vue";
 import ExamWorkspaceNoteLine from "./ExamWorkspaceNoteLine.vue";
 import type { ExamWorkspaceNoteLineAction } from "./ExamWorkspaceNoteLine.vue";
+import ExamWorkspaceQuestionListHead from "./ExamWorkspaceQuestionListHead.vue";
 import ExamWorkspaceQuestionRow from "./ExamWorkspaceQuestionRow.vue";
 import type { TeacherItemKind } from "./examWorkspaceItemEdits";
 import type { ExamWorkspaceListEntry } from "./examWorkspaceListEntries";
@@ -53,6 +56,7 @@ import { buildExamWorkspaceNoteLines } from "./examWorkspaceNoteLines";
 import type { ExamWorkspaceNoteLine as NoteLine } from "./examWorkspaceNoteLines";
 import { examWorkspaceFormatExactPoints, examWorkspaceFormatPoints } from "./examWorkspaceTotals";
 import type { PrintedTotalMismatch } from "./examWorkspaceTotals";
+import { useExamWorkspaceQuestionMarking } from "./useExamWorkspaceQuestionMarking";
 import { EXAM_INSTRUCTIONS_ENTRY_ID } from "./useExamWorkspaceSelection";
 
 const props = withDefaults(
@@ -141,60 +145,13 @@ function handleNoteAction(line: NoteLine, key: string): void {
 const formattedTotal = computed(() => `${examWorkspaceFormatPoints(props.total)} p`);
 
 const rows = ref<HTMLElement | null>(null);
-const newTrigger = ref<HTMLButtonElement | null>(null);
-const newMenuOpen = ref(false);
-const collapseGlyph = ref<HTMLButtonElement | null>(null);
+const listHead = ref<InstanceType<typeof ExamWorkspaceQuestionListHead> | null>(null);
 const expandGlyph = ref<HTMLButtonElement | null>(null);
 
-/** The Markera mode: the list shows a checkbox per standalone question and a group bar. */
-const marking = ref(false);
-/** The ticked question ids, which only ever hold standalone questions (G11). */
-const marked = ref<Set<string>>(new Set());
-
-/** The ticks in document order, as the group command takes them (G10). */
-const markedIds = computed(() =>
-  props.entries
-    .filter((entry) => entry.kind === "item" && entry.parentId === null && marked.value.has(entry.id))
-    .map((entry) => entry.id),
-);
-
-function startMarking(): void {
-  marked.value = new Set();
-  marking.value = true;
-}
-
-function cancelMarking(): void {
-  marked.value = new Set();
-  marking.value = false;
-}
-
-function toggleMark(id: string): void {
-  if (props.disabled) {
-    return;
-  }
-  const next = new Set(marked.value);
-  if (next.has(id)) {
-    next.delete(id);
-  } else {
-    next.add(id);
-  }
-  marked.value = next;
-}
-
-function groupMarked(): void {
-  if (markedIds.value.length === 0) {
-    return;
-  }
-  emit("group", markedIds.value);
-}
-
-// A successful group turns the ticked questions into a part's children, so no
-// tick is a standalone question any more and the mode leaves with them; a
-// refused group changes nothing and keeps the ticks for a retry.
-watch(markedIds, (ids) => {
-  if (marking.value && marked.value.size > 0 && ids.length === 0) {
-    cancelMarking();
-  }
+const { marking, marked, markedIds, toggleMarking, toggleMark, groupMarked } = useExamWorkspaceQuestionMarking({
+  entries: () => props.entries,
+  disabled: () => props.disabled,
+  onGroup: (itemIds) => emit("group", itemIds),
 });
 
 watch(
@@ -222,7 +179,7 @@ async function collapseFromGlyph(): Promise<void> {
 async function expandFromGlyph(): Promise<void> {
   emit("toggle-collapse");
   await nextTick();
-  collapseGlyph.value?.focus();
+  listHead.value?.focusCollapse();
 }
 </script>
 
@@ -253,79 +210,19 @@ async function expandFromGlyph(): Promise<void> {
     </template>
     <template v-else>
       <div class="list__frame">
-        <div class="list__head">
-          <button
-            v-if="overlay"
-            type="button"
-            class="xw-btn"
-            data-test="exam-workspace-list-back"
-            @click="emit('close')"
-          >
-            <UiGlyph
-              meaning="back"
-              :size="20"
-            />Tillbaka
-          </button>
-          <h2
-            id="exam-workspace-list-title"
-            class="list__title"
-          >
-            Frågor ({{ questionCount }})
-          </h2>
-          <span
-            class="list__spacer"
-            aria-hidden="true"
-          />
-          <div class="xw-tools">
-            <button
-              v-if="handle"
-              ref="collapseGlyph"
-              type="button"
-              class="xw-tool"
-              aria-label="Dölj frågelistan"
-              title="Dölj frågelistan"
-              data-test="exam-workspace-list-collapse"
-              @click="collapseFromGlyph"
-            >
-              <UiGlyph
-                meaning="toggle-sidebar"
-                :size="16"
-              />
-            </button>
-            <button
-              ref="newTrigger"
-              type="button"
-              class="xw-tool"
-              :disabled="!canAdd"
-              aria-haspopup="menu"
-              :aria-expanded="newMenuOpen"
-              aria-label="Ny uppgift"
-              title="Ny uppgift"
-              data-test="exam-workspace-new"
-              @click="newMenuOpen = !newMenuOpen"
-            >
-              <UiGlyph
-                meaning="add"
-                :size="16"
-              />
-            </button>
-            <button
-              type="button"
-              class="xw-tool"
-              :aria-pressed="marking"
-              :disabled="disabled"
-              aria-label="Markera frågor"
-              title="Markera frågor"
-              data-test="exam-workspace-marking-toggle"
-              @click="marking ? cancelMarking() : startMarking()"
-            >
-              <UiGlyph
-                :meaning="marking ? 'checkbox-on' : 'checkbox-off'"
-                :size="16"
-              />
-            </button>
-          </div>
-        </div>
+        <ExamWorkspaceQuestionListHead
+          ref="listHead"
+          :question-count="questionCount"
+          :overlay="overlay"
+          :handle="handle"
+          :can-add="canAdd"
+          :marking="marking"
+          :disabled="disabled"
+          @close="emit('close')"
+          @add="emit('add', $event)"
+          @toggle-collapse="collapseFromGlyph"
+          @toggle-marking="toggleMarking"
+        />
         <div
           v-if="marking"
           class="list__markbar"
@@ -415,13 +312,6 @@ async function expandFromGlyph(): Promise<void> {
             data-test="exam-workspace-exam-points"
           >Totalt <strong class="list__sum">{{ formattedTotal }}</strong></span>
         </div>
-        <ExamWorkspaceNewItemMenu
-          :open="newMenuOpen"
-          :anchor="newTrigger"
-          :child="false"
-          @choose="emit('add', $event)"
-          @close="newMenuOpen = false"
-        />
       </div>
     </template>
     <ExamWorkspaceColumnHandle
@@ -452,22 +342,6 @@ async function expandFromGlyph(): Promise<void> {
   .list:not(.list--collapsed) .list__frame > .list__scroll,
   .list:not(.list--collapsed) .list__frame > .list__printed-lines,
   .list:not(.list--collapsed) .list__frame > .list__foot { min-width: var(--xw-list-min); }
-}
-/* One 40 px row: title, a spacer, then the in-content tools 2 px apart. */
-.list__head {
-  display: flex; align-items: center; gap: var(--huleedu-space-2); flex: none;
-  height: calc(var(--huleedu-workbench-control-height) + 2 * var(--huleedu-space-1-5));
-  padding: 0 var(--huleedu-space-2) 0 var(--huleedu-space-4); border-bottom: 1px solid var(--huleedu-surface-divider);
-}
-/* The title is never truncated. */
-.list__title {
-  flex: none; margin: 0; white-space: nowrap;
-  font-size: var(--huleedu-type-control-value-size); font-weight: var(--huleedu-font-semibold);
-}
-.list__spacer { flex: 1; min-width: 0; }
-/* On a coarse pointer the tools grow to 44 px, so the row keeps the same inset around them. */
-@media (pointer: coarse) {
-  .list__head { height: calc(var(--huleedu-action-control-height) + 2 * var(--huleedu-space-1-5)); }
 }
 .list__markbar {
   display: flex; align-items: center; gap: var(--huleedu-space-2); flex: none;
@@ -529,6 +403,5 @@ async function expandFromGlyph(): Promise<void> {
   .list--overlay {
     display: flex; position: fixed; inset: 0; z-index: 25; border: 0; background: var(--huleedu-canvas);
   }
-  .list__head { height: 56px; padding: 0 var(--huleedu-space-4); }
 }
 </style>

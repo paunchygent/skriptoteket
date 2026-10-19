@@ -74,7 +74,7 @@ const isMac = isMacPlatform();
   <div
     role="toolbar"
     aria-label="Formatering"
-    class="flex items-center"
+    class="xw-toolbar"
     @mousedown.prevent
   >
     <template v-if="history">

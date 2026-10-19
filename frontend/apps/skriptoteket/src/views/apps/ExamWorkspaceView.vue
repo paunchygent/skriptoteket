@@ -28,7 +28,7 @@
  *     phone list and the Import box.
  */
 
-import { computed, nextTick, onMounted, provide, ref } from "vue";
+import { computed, onMounted, provide, ref } from "vue";
 
 import { useToast } from "../../composables/useToast";
 import ExamWorkspaceDrawers from "./exam-workspace/ExamWorkspaceDrawers.vue";
@@ -53,6 +53,7 @@ import type { ExamWorkspaceStore } from "./exam-workspace/examWorkspaceStore";
 import { useExamWorkspaceAddress } from "./exam-workspace/useExamWorkspaceAddress";
 import { useExamWorkspaceColumnLayout } from "./exam-workspace/useExamWorkspaceColumnLayout";
 import { useExamWorkspaceContentSuggestions } from "./exam-workspace/useExamWorkspaceContentSuggestions";
+import { useExamWorkspaceDrawerState } from "./exam-workspace/useExamWorkspaceDrawerState";
 import { useExamWorkspaceListActions } from "./exam-workspace/useExamWorkspaceListActions";
 import { useExamWorkspaceViewLabels } from "./exam-workspace/useExamWorkspaceViewLabels";
 import { useExamWorkspaceEditing } from "./exam-workspace/useExamWorkspaceEditing";
@@ -104,10 +105,10 @@ const { depart, dismissSignInPrompt, signInPrompt } = useExamWorkspaceGuestSignI
 defineExpose({ depart });
 
 const frame = ref<HTMLElement | null>(null);
-const drawers = ref<InstanceType<typeof ExamWorkspaceDrawers> | null>(null);
 const { showDocument } = useExamWorkspaceAddress({ isDirty, openDocument, summary });
+const { closeAfterGoto, consumeImportPick, drawer, importPickPending, requestImportPick, toggleDrawer } =
+  useExamWorkspaceDrawerState({ isExamOpen: () => Boolean(summary.value), layout });
 const {
-  drawer,
   importOpen,
   isPhone,
   listOpen,
@@ -117,9 +118,9 @@ const {
   previewOpen,
   previewPages,
   previewQuestionPages,
-  toggleDrawer,
   togglePreview,
 } = useExamWorkspaceSideColumns({
+  drawer,
   historyCursor,
   historyPosition: history.position,
   layout,
@@ -164,10 +165,7 @@ const selection = useExamWorkspaceSelection({
   editing,
   importOpen,
   listOpen,
-  afterGoto: () => {
-    if (!isPhone.value && drawer.value === "export") return;
-    drawer.value = null;
-  },
+  afterGoto: closeAfterGoto,
 });
 const {
   canStep, converting, dismissItemNotice, entries, examInstructionsSelected, gotoItem, itemChild, itemEntries,
@@ -255,17 +253,7 @@ const { addChild, addEntry, setOrdering, toggleReviewed } = useExamWorkspaceList
   toast: useToast(),
 });
 
-/** Importera in the header: open Öppna, then its file picker; the course choice and import gates stay in the drawer. */
-async function openImportPicker(): Promise<void> {
-  drawer.value = "open";
-  await nextTick();
-  drawers.value?.pickFile();
-}
-
-onMounted(() => {
-  void loadSavedDocuments();
-  if (!summary.value) drawer.value = "open";
-});
+onMounted(() => void loadSavedDocuments());
 </script>
 
 <template>
@@ -297,7 +285,7 @@ onMounted(() => {
       @toggle-details="toggleDrawer('details')"
       @toggle-open="toggleDrawer('open')"
       @save-as="openSaveAs"
-      @import-file="openImportPicker"
+      @import-file="requestImportPick"
       @rename-title="editing.setTitle"
       @suggest-all="enrichment.requestSuggestionsForAll"
       @toggle-preview="togglePreview"
@@ -459,7 +447,6 @@ onMounted(() => {
       <ExamWorkspaceDrawers
         v-if="drawer"
         id="exam-workspace-side-panel"
-        ref="drawers"
         :drawer="drawer"
         :layout="layout"
         :editing="editing"
@@ -474,7 +461,9 @@ onMounted(() => {
         :formatted-saved-exports="formattedSavedExports"
         :question-label="questionLabel"
         :handle="isDesktop"
+        :import-pick-pending="importPickPending"
         @close="drawer = null"
+        @import-pick-consumed="consumeImportPick"
         @run="runExport"
         @goto="gotoBlocker"
         @fix="fixBlocker"

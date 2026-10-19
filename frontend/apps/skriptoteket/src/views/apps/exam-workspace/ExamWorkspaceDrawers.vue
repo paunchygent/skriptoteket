@@ -14,7 +14,7 @@
  *   - Rendered by `ExamWorkspaceView` while a drawer is open.
  */
 
-import { computed, ref } from "vue";
+import { computed } from "vue";
 
 import type { ExamListOrdering } from "../../../api/examWorkspace";
 import type { ExamWorkspaceExportTarget } from "../../../api/examWorkspaceExports";
@@ -61,12 +61,15 @@ const props = withDefaults(
     questionLabel: (itemId: string) => string | null;
     /** The desktop resize handle is wanted; only ever set on desktop. */
     handle?: boolean;
+    /** Importera in the header asked for the file picker; the Öppna drawer acts on it and reports back. */
+    importPickPending?: boolean;
   }>(),
-  { handle: false },
+  { handle: false, importPickPending: false },
 );
 
 defineEmits<{
   close: [];
+  "import-pick-consumed": [];
   run: [target: ExamWorkspaceExportTarget, destination: "download" | "files"];
   goto: [blocker: ExamWorkspaceBlockerEntry];
   fix: [blocker: ExamWorkspaceBlockerEntry];
@@ -102,10 +105,6 @@ const {
 } = props.editing;
 const { handleDroppedFiles, handleSelectedFile, sourceFileError } = props.sourceFile;
 
-const openDrawer = ref<InstanceType<typeof ExamWorkspaceOpenDrawer> | null>(null);
-/** Importera in the header opens Öppna and then the drawer's own file picker. */
-defineExpose({ pickFile: () => openDrawer.value?.handlePickFile() });
-
 const currentExports = computed(() =>
   EXAM_WORKSPACE_EXPORT_FORMATS.filter(
     (format) => props.exports.savedExports.value[format.target] !== undefined,
@@ -128,7 +127,6 @@ const currentExports = computed(() =>
   >
     <ExamWorkspaceOpenDrawer
       v-if="drawer === 'open'"
-      ref="openDrawer"
       :documents="savedDocuments"
       :current-lineage-id="summary?.lineage_id ?? null"
       :ordering="listOrdering"
@@ -142,11 +140,13 @@ const currentExports = computed(() =>
       :is-converting="isConverting"
       :notes="notes"
       :current-exports="currentExports"
+      :import-pick-pending="importPickPending"
       @select-file="handleSelectedFile"
       @drop-files="handleDroppedFiles"
       @open="openDocument"
       @set-ordering="$emit('set-ordering', $event)"
       @retry-conversion="retryConversionStatus"
+      @import-pick-consumed="$emit('import-pick-consumed')"
     />
     <ExamWorkspaceExportDrawer
       v-else-if="drawer === 'export' && workspaceDocument"

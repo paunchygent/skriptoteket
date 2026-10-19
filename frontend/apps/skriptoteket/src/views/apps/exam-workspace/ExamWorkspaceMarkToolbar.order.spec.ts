@@ -79,6 +79,32 @@ describe("ExamWorkspaceMarkToolbar group order", () => {
     ]);
   });
 
+  it("renders all eleven tools in order inside the single scrolling toolbar root", () => {
+    const { wrapper } = mountWithHistory(
+      { showGap: true, showHeadings: true },
+      { canUndo: true, canRedo: true },
+    );
+    const root = toolbarRoot(wrapper);
+    expect(root.classList.contains("xw-toolbar")).toBe(true);
+    expect(wrapper.findAll("[role='toolbar']")).toHaveLength(1);
+    const tools = Array.from(root.querySelectorAll("button")).map((button) =>
+      button.getAttribute("data-test"),
+    );
+    expect(tools).toEqual([
+      "exam-workspace-undo",
+      "exam-workspace-redo",
+      "exam-workspace-body-mark-bold",
+      "exam-workspace-body-mark-italic",
+      "exam-workspace-body-mark-underline",
+      "exam-workspace-body-mark-superscript",
+      "exam-workspace-body-mark-subscript",
+      "exam-workspace-toolbar-gap-tool",
+      "exam-workspace-body-heading-1",
+      "exam-workspace-body-heading-2",
+      "exam-workspace-body-heading-3",
+    ]);
+  });
+
   it("omits the gap and heading groups and their separators when not shown", () => {
     const { wrapper } = mountWithHistory({}, { canUndo: false, canRedo: false });
     expect(wrapper.findAll(".xw-tools")).toHaveLength(2);

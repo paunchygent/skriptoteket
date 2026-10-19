@@ -143,6 +143,12 @@ Relationships:
   .xw-cmd { height: var(--huleedu-action-control-height); }
   .xw-tool { min-width: var(--huleedu-action-control-height); height: var(--huleedu-action-control-height); }
 }
+/* The toolbar scrolls sideways when the editor is narrower than its tools; groups and tools never shrink, wrap or drop.
+   The bar's block padding gives the 2px focus ring room inside the vertical clip. */
+.xw-toolbar {
+  display: flex; flex-wrap: nowrap; align-items: center; min-width: 0; max-width: 100%;
+  overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; scrollbar-width: thin;
+}
 .xw-tools { display: inline-flex; align-items: center; gap: var(--huleedu-toolbar-tool-gap); flex: none; }
 .xw-toolsep {
   flex: none; width: var(--huleedu-toolbar-separator-width); height: var(--huleedu-toolbar-separator-height);

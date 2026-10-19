@@ -274,13 +274,13 @@ function handleSuggestAll(): void {
 .ws-title__row { display: flex; align-items: center; gap: var(--huleedu-space-1); max-width: 100%; min-width: 0; }
 .ws-title__button {
   all: unset; box-sizing: border-box; min-width: 0; cursor: pointer; border-radius: var(--huleedu-radius-md);
-  font-size: var(--huleedu-text-lg); font-weight: var(--huleedu-font-semibold); color: var(--huleedu-navy);
+  font-size: var(--huleedu-text-base); font-weight: var(--huleedu-font-semibold); color: var(--huleedu-navy);
 }
 .ws-title__button:disabled { cursor: default; color: var(--huleedu-navy-60); }
 .ws-title__text { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ws-title__button:focus-visible { outline: 2px solid var(--huleedu-action-40); }
 .ws-title__input {
-  box-sizing: border-box; width: min(28em, 100%); font: inherit; font-size: var(--huleedu-text-lg);
+  box-sizing: border-box; width: min(28em, 100%); font: inherit; font-size: var(--huleedu-text-base);
   font-weight: var(--huleedu-font-semibold); color: var(--huleedu-navy); padding: 0 var(--huleedu-space-1-5);
   border: 1px solid var(--huleedu-action); border-radius: var(--huleedu-radius-md); background: var(--huleedu-surface-content);
 }
@@ -310,7 +310,6 @@ function handleSuggestAll(): void {
 @media (max-width: 767px) {
   .ws-head { height: 52px; }
   .ws-tools { flex: 1; justify-content: flex-end; }
-  .ws-title__button { font-size: var(--huleedu-text-base); }
   /* Glyph only on a phone; the text stays for assistive technology and the tooltip. */
   .ws-status-slot { width: auto; margin-left: 0; }
   .ws-status__text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
