@@ -214,6 +214,14 @@
   --huleedu-workbench-control-radius: 0.3125rem; /* 5px */
   --huleedu-workbench-control-border: var(--huleedu-navy-20);
   --huleedu-workbench-icon-size: var(--huleedu-space-4);
+  /* Workspace header commands; on a coarse pointer consumers use --huleedu-action-control-height. */
+  --huleedu-header-command-height: 2rem; /* 32px */
+  /* Toolbar grouping: tools in one group sit close; a separator divides groups. */
+  --huleedu-toolbar-tool-gap: var(--huleedu-space-0-5); /* 2px between tools in one group */
+  --huleedu-toolbar-separator-width: 1px;
+  --huleedu-toolbar-separator-height: 1.125rem; /* 18px */
+  --huleedu-toolbar-separator-color: var(--huleedu-navy-20);
+  --huleedu-toolbar-separator-margin: var(--huleedu-space-1); /* 4px either side */
   --huleedu-navigation-icon-size: var(--huleedu-space-5);
   --huleedu-font-page-title: var(--huleedu-font-serif);
   --huleedu-font-interface: var(--huleedu-font-sans);
