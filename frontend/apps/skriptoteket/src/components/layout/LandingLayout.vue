@@ -42,7 +42,10 @@ const loginUrl = computed(() => {
 </script>
 
 <template>
-  <div class="landing-shell">
+  <div
+    class="landing-shell"
+    :class="{ 'landing-shell--workspace': isFullFrameWorkspaceRoute }"
+  >
     <header class="landing-topbar">
       <RouterLink
         to="/"
@@ -83,6 +86,26 @@ const loginUrl = computed(() => {
   grid-template-rows: 56px minmax(0, 1fr);
   min-height: 100vh;
   min-height: 100dvh;
+}
+
+/* The guest workspace is held to the window at every viewport width
+   (walk G1): the shell takes the window height and clips, so the panels
+   scroll inside instead of the page growing with its content. Other public
+   routes keep the growing min-height column. */
+.landing-shell--workspace {
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+/* The slotted route stage fills the held frame the way the signed-in shell
+   holds its route stage (AuthLayout .auth-main-content--exam-workspace). */
+.landing-shell--workspace :deep(.route-stage),
+.landing-shell--workspace :deep(.route-stage-item) {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .landing-topbar {

@@ -77,7 +77,6 @@ def _heading_rules() -> str:
 def _house_css() -> str:
     """The house template as CSS, read from the template module's current measures."""
     template = house_template
-    points_weight = "bold" if template.POINTS_BOLD else "normal"
     return f"""
 @page {{
   size: {template.PAGE_WIDTH_MM}mm {template.PAGE_HEIGHT_MM}mm;
@@ -102,7 +101,6 @@ p {{ margin: {_block_margin_css(template.PARAGRAPH_SPACING)}; break-inside: avoi
   break-after: avoid;
 }}
 p.print-gap_line {{ line-height: {template.WRITING_LINE_PITCH_MM}mm }}
-p.print-points {{ font-weight: {points_weight} }}
 .gap-blank {{
   display: inline-block;
   border-bottom: {template.RULE_WEIGHT_PT}pt solid #{template.RULE_COLOR_HEX};

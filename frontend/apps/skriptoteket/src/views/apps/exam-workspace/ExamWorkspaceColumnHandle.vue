@@ -18,9 +18,14 @@
  *   bounds are read from the closest `.ws__body` ancestor's computed
  *   gridTemplateColumns on mount (after nextTick), on focus, after every
  *   emitted key/double-click set, reset and toggle-collapse (nextTick, then
- *   read again), and when the `collapsed` prop changes. A pointer drag holds
+ *   read again), when the `collapsed` prop changes, and on every track
+ *   change: one ResizeObserver per handle observes the closest `.ws__body`
+ *   and each of its element children (the list, editor and side panels),
+ *   re-syncing the observed children on every callback because panels mount
+ *   and unmount. The observer callback only updates the separator values;
+ *   it never emits set/reset. A pointer drag holds
  *   its pointerdown bounds until pointerup, so the live drag value is never
- *   clobbered by a re-read. There is no ResizeObserver and no window or
+ *   clobbered by a re-read. There are no window or
  *   document listeners. The staging walk proves the rendered drag.
  *
  *   With `collapsed` (the list rail) the separator announces the rail:
@@ -36,7 +41,7 @@
  *     `useExamWorkspaceColumnSizes` in the later wiring unit.
  */
 
-import { computed, nextTick, onMounted, ref, watch } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
 
 import type { ExamWorkspaceColumn } from "./useExamWorkspaceColumnSizes";
 import {
@@ -127,8 +132,56 @@ async function refreshBounds(): Promise<void> {
   }
 }
 
+let trackObserver: ResizeObserver | null = null;
+const observedTargets = new Set<Element>();
+
+function trackTargets(): Element[] {
+  const body = handle.value?.closest(".ws__body");
+  if (!(body instanceof HTMLElement)) {
+    return [];
+  }
+  return [body, ...Array.from(body.children)];
+}
+
+function syncObservedTargets(): void {
+  if (trackObserver === null) {
+    return;
+  }
+  const wanted = new Set(trackTargets());
+  for (const target of wanted) {
+    if (!observedTargets.has(target)) {
+      observedTargets.add(target);
+      trackObserver.observe(target);
+    }
+  }
+  for (const target of Array.from(observedTargets)) {
+    if (!wanted.has(target)) {
+      observedTargets.delete(target);
+      trackObserver.unobserve(target);
+    }
+  }
+}
+
+function onTrackChange(): void {
+  const bounds = readBounds();
+  if (bounds !== null) {
+    applyBounds(bounds);
+  }
+  syncObservedTargets();
+}
+
 onMounted(() => {
+  if (typeof ResizeObserver !== "undefined") {
+    trackObserver = new ResizeObserver(onTrackChange);
+    syncObservedTargets();
+  }
   void refreshBounds();
+});
+
+onUnmounted(() => {
+  trackObserver?.disconnect();
+  trackObserver = null;
+  observedTargets.clear();
 });
 
 watch(

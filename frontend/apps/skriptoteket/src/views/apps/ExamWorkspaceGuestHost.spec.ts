@@ -170,6 +170,22 @@ describe("ExamWorkspaceGuestHost", () => {
     wrapper.unmount();
   });
 
+  it("keeps the guest host root in the flex height chain with the workspace as its child", async () => {
+    const wrapper = mount(ExamWorkspaceGuestHost, {
+      global: { plugins: [createPinia()] },
+    });
+    await flushPromises();
+
+    const host = wrapper.find("[data-test='exam-workspace-guest-host']");
+    expect(host.exists()).toBe(true);
+    expect(host.classes()).toContain("guest-host");
+    const stub = wrapper.findComponent({ name: "ExamWorkspaceViewStub" });
+    expect(stub.exists()).toBe(true);
+    expect(stub.element.parentElement).toBe(host.element);
+
+    wrapper.unmount();
+  });
+
   it("opens the stored draft through the view's document address", async () => {
     const lineageId = (await seedDraft()).draft.lineage_id;
     const wrapper = mount(ExamWorkspaceGuestHost, {

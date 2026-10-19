@@ -54,7 +54,6 @@ from skriptoteket.domain.curated_apps.exam_conversion.exam_print_house_template 
     PAGE_MARGIN_VERTICAL_MM,
     PAGE_WIDTH_MM,
     PARAGRAPH_SPACING,
-    POINTS_BOLD,
     QUESTION_SPACE_AFTER_MM,
     RULE_COLOR_HEX,
     RULE_WEIGHT_PT,
@@ -210,13 +209,10 @@ class _PrintDocxRenderer:
         paragraph = self._new_paragraph()
         if block.style is PrintParagraphStyle.GAP_LINE:
             _set_exact_line_spacing(paragraph, WRITING_LINE_PITCH_MM)
-        bold = block.style is PrintParagraphStyle.POINTS and POINTS_BOLD
         has_picture = False
         for run in block.runs:
             if isinstance(run, PrintText):
-                text_run = paragraph.add_run(run.text)
-                if bold:
-                    text_run.font.bold = True
+                paragraph.add_run(run.text)
             elif isinstance(run, PrintBlank):
                 _add_blank(paragraph, run.width_mm)
             elif isinstance(run, PrintImage):
