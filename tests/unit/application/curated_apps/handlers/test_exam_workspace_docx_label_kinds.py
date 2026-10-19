@@ -44,6 +44,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_pla
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_writer import (  # noqa: E501
     ExamWorkspaceDocxWriter,
 )
+from tests.unit.application.curated_apps.handlers.docx_conversion_cache import (
+    ConversionCache,
+    conversion_cache_fixture,  # noqa: F401 - registers the `conversions` fixture
+)
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
     ReplayProvider,
     build_replay,
@@ -59,15 +63,11 @@ _STEP_BOX = "☐"
 _MUTATED_EXAM = "bf26_english_1_unit_test_kap_1_2_med_facit"
 _MUTATED_BATCH = "docx_w2-10-01"
 _MUTATED_ANCHOR = "body:0059"
-_converted: dict[str, NativeExamDocument] = {}
 Corruption = Callable[[dict[str, JsonValue]], None]
 
 
-async def _document(exam: str) -> NativeExamDocument:
-    if exam not in _converted:
-        replay = build_replay(exam)
-        _converted[exam] = (await replay.pipeline.convert(job=replay.job())).update.document
-    return _converted[exam]
+async def _document(conversions: ConversionCache, exam: str) -> NativeExamDocument:
+    return (await conversions.converted(exam)).outcome.update.document
 
 
 def _squash(text: str) -> str:
@@ -205,8 +205,10 @@ async def test_part_labels_inside_a_body_reach_the_document_and_both_exports_as_
 
 
 @pytest.mark.parametrize("exam", recorded_exams())
-async def test_choices_carry_no_ordering_letter_in_the_document_or_the_qti_export(exam: str):
-    document = await _document(exam)
+async def test_choices_carry_no_ordering_letter_in_the_document_or_the_qti_export(
+    exam: str, conversions: ConversionCache
+):
+    document = await _document(conversions, exam)
     qti = _qti_items(document)
 
     for item in document.items:
@@ -222,8 +224,10 @@ async def test_choices_carry_no_ordering_letter_in_the_document_or_the_qti_expor
 
 
 @pytest.mark.parametrize("exam", recorded_exams())
-async def test_the_docx_export_adds_one_letter_per_choice_and_never_doubles_it(exam: str):
-    document = await _document(exam)
+async def test_the_docx_export_adds_one_letter_per_choice_and_never_doubles_it(
+    exam: str, conversions: ConversionCache
+):
+    document = await _document(conversions, exam)
     paragraphs = _docx_paragraphs(document)
 
     for item in document.items:
@@ -234,10 +238,12 @@ async def test_the_docx_export_adds_one_letter_per_choice_and_never_doubles_it(e
             assert f"{_STEP_BOX} {letter}) {body_plain_text(choice.body)}" in paragraphs
 
 
-async def test_a_review_item_shows_its_source_text_as_printed_in_both_exports():
+async def test_a_review_item_shows_its_source_text_as_printed_in_both_exports(
+    conversions: ConversionCache,
+):
     kept = 0
     for exam in recorded_exams():
-        document = await _document(exam)
+        document = await _document(conversions, exam)
         paragraphs = _docx_paragraphs(document)
         qti = _qti_items(document)
         for item in document.items:

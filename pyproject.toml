@@ -118,6 +118,7 @@ dev = [
     "beautifulsoup4",
     "rlPyCairo>=0.4.0",
     "cairocffi>=1.7.1",
+    "filelock>=3.25",
 ]
 
 analysis = [

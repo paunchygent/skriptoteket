@@ -17,6 +17,9 @@ from collections.abc import Mapping
 import pytest
 from pydantic import JsonValue
 
+from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_run import (
+    DocxConversionOutcome,
+)
 from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_contracts import (
     StructuredLLMProviderProfile,
     StructuredLLMRequest,
@@ -114,10 +117,19 @@ class _ConflictedReplies(ReplayProvider):
         return await super().complete_structured(request=request, profile=profile)
 
 
+_CONVERTED: dict[tuple[str, ...], tuple[list[str], DocxConversionOutcome]] = {}
+
+
 async def _convert(gap_values: list[str] | None = None):
-    provider = _ConflictedReplies(_EXAM, gap_values=["its"] if gap_values is None else gap_values)
-    replay = build_replay(_EXAM, provider=provider)
-    return replay, await replay.pipeline.convert(job=replay.job())
+    """Convert once per process and gap values; every test only reads the frozen outcome."""
+    values = ["its"] if gap_values is None else gap_values
+    key = tuple(values)
+    if key not in _CONVERTED:
+        replay = build_replay(_EXAM, provider=_ConflictedReplies(_EXAM, gap_values=values))
+        outcome = await replay.pipeline.convert(job=replay.job())
+        _CONVERTED[key] = (list(replay.provider.request_ids), outcome)
+    request_ids, outcome = _CONVERTED[key]
+    return request_ids, outcome
 
 
 def test_the_recorded_conflict_states_a_key_source_over_an_incomplete_key():
@@ -129,11 +141,11 @@ def test_the_recorded_conflict_states_a_key_source_over_an_incomplete_key():
 
 
 async def test_a_second_type_conflict_is_not_resent_again():
-    replay, outcome = await _convert()
+    request_ids, outcome = await _convert()
 
-    resends = [item_id for item_id in replay.provider.request_ids if item_id.endswith("c01")]
+    resends = [item_id for item_id in request_ids if item_id.endswith("c01")]
     assert len(resends) == 1
-    assert not [item_id for item_id in replay.provider.request_ids if item_id.endswith("c01c01")]
+    assert not [item_id for item_id in request_ids if item_id.endswith("c01c01")]
     assert outcome.update.pending == ()
 
 

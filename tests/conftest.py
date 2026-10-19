@@ -1,3 +1,7 @@
+import os
+from collections.abc import Iterable
+from pathlib import Path
+
 import pytest
 
 from tests.fixtures.identity_fixtures import now
@@ -6,6 +10,42 @@ __all__ = ["now"]
 
 SERIAL_REASON_OPTION = "--serial-reason"
 _SERIAL_REASON_KEY = pytest.StashKey[str]()
+_SIZED_SERIAL_KEY = pytest.StashKey[bool]()
+
+
+def selected_test_files(args: Iterable[str]) -> frozenset[Path]:
+    """The test files a run's path arguments select (a directory selects every file in it)."""
+
+    files: set[Path] = set()
+    for arg in args:
+        path = Path(arg.split("::", 1)[0])
+        if path.is_dir():
+            files.update(path.rglob("test_*.py"))
+            files.update(path.rglob("*_test.py"))
+        elif path.is_file():
+            files.add(path)
+    return frozenset(files)
+
+
+def auto_worker_count(file_count: int, logical_cpus: int) -> int:
+    """One worker per selected file up to one per hardware thread; one file runs in-process.
+
+    Starting a worker costs about a second of CPU, and a single file's tests rarely outweigh
+    24 of them, so a one-file run is serial and a many-file run uses every hardware thread.
+    """
+
+    if file_count <= 1:
+        return 0
+    return min(file_count, logical_cpus)
+
+
+def pytest_xdist_auto_num_workers(config: pytest.Config) -> int:
+    """Size `-n logical` (the addopts default) to the selection."""
+
+    workers = auto_worker_count(len(selected_test_files(config.args)), os.cpu_count() or 1)
+    if workers == 0:
+        config.stash[_SIZED_SERIAL_KEY] = True
+    return workers
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:
@@ -26,11 +66,14 @@ def pytest_configure(config: pytest.Config) -> None:
         return
     if config.getoption("numprocesses", default=None):
         return
+    if config.stash.get(_SIZED_SERIAL_KEY, False):  # one selected file: serial by design
+        return
     reason = (config.getoption(SERIAL_REASON_OPTION) or "").strip()
     if not reason:
         raise pytest.UsageError(
             "This pytest run is serial (-n 0, --pdb, or addopts overridden). "
-            "Backend tests run in parallel by default; drop the serial flag, or state why "
+            "Backend tests run in parallel by default (a run that selects one file runs "
+            "in-process on its own); drop the serial flag, or state why "
             f'it must be serial with {SERIAL_REASON_OPTION} "<reason>" '
             '(for example: pdm run test-serial --serial-reason "pdb on <test>" <test>).'
         )

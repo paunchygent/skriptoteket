@@ -27,6 +27,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import NativeExamItem
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
 )
@@ -44,15 +45,18 @@ _KEYED = (
 
 
 def _without_key(document: NativeExamDocument, item_id: str) -> NativeExamDocument:
-    data = document.model_dump(mode="json")
-    child = next(item for item in data["items"] if item["item_id"] == item_id)
-    child["answer_key"] = {"origin": "absent"}
-    if child["kind"] == "matching":
-        child["points"] = None
-        child["points_estimated"] = False
-    for gap in child["gaps"]:
+    """The document with one item's key cleared; only that item is re-validated."""
+    position = next(i for i, item in enumerate(document.items) if item.item_id == item_id)
+    data = document.items[position].model_dump(mode="json")
+    data["answer_key"] = {"origin": "absent"}
+    if data["kind"] == "matching":
+        data["points"] = None
+        data["points_estimated"] = False
+    for gap in data["gaps"]:
         gap["accepted_values"] = []
-    return NativeExamDocument.model_validate(data)
+    items = list(document.items)
+    items[position] = NativeExamItem.model_validate(data)
+    return document.model_copy(update={"items": tuple(items)})
 
 
 def _payload(view: AnswerKeyItemView) -> dict[str, JsonValue]:
