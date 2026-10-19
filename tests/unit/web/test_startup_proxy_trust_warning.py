@@ -9,6 +9,7 @@ key across all guests, so startup warns once with the operator hint.
 from __future__ import annotations
 
 import pytest
+import structlog
 from fastapi import FastAPI
 from structlog.testing import capture_logs
 
@@ -16,6 +17,18 @@ from skriptoteket.config import Settings
 from skriptoteket.web import app as web_app
 
 _WARNING_EVENT = "public_guest_limiter_proxy_trust_loopback_only"
+
+
+@pytest.fixture(autouse=True)
+def fresh_app_logger(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Give each test an unbound logger so `capture_logs` sees its events.
+
+    `configure_logging` caches a module logger on first use. `capture_logs` swaps
+    the processors of the current configuration in place, so a logger cached
+    before a later `configure_logging` call in the same worker keeps the older
+    processor list and `capture_logs` records nothing.
+    """
+    monkeypatch.setattr(web_app, "logger", structlog.get_logger(web_app.__name__))
 
 
 def test_production_without_forwarded_allow_ips_warns_once(
