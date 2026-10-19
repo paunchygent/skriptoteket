@@ -208,10 +208,12 @@ Units, each for one fresh junior:
 
 ### Resume here (2026-10-19)
 
-- State: U1 `04456045`, U2 `6898931d`, U3 `0707c408` committed; worktree clean, never pushed.
-  Replay bar at `0707c408` (`~/logs/replays-39-04-21/u3-bar.txt`): only the D4 bodies change,
-  every `leftover_points_text` is null. Lead `d19390d2` (implementation-specialist), branch
+- State: U1 `04456045`, U2 `6898931d`, U3 `0707c408`, U5 `7890cd30` (D12), U6 `1e70d769` (suite
+  repairs; classification `evidence/proof/u6-classification.md`), U6b `b9af0fbd` committed;
+  worktree clean, never pushed. Replay bar: only the D4 bodies change, every
+  `leftover_points_text` is null. Lead `d19390d2` (implementation-specialist), branch
   `codex/task-skript-39-04-strip-points-wording-remote`, worktree
   `/home/paunchygent/apps/skriptoteket-task-skript-39-04-strip-points-wording-remote`.
-- Next: the domain suite on the orchestrator's go. U4 (the offer line, D10) waits for
-  TASK-SKRIPT-40-04-10 to merge into `origin/main`; then merge `origin/main` and build it.
+- Next: the second domain suite run (backend curated_apps, then `pdm run fe-test`) on the
+  orchestrator's go. U4 (the offer line, D10) waits for TASK-SKRIPT-40-04-10 to merge into
+  `origin/main`; then merge `origin/main` and build it.
