@@ -1,12 +1,11 @@
 ---
 type: task
 id: TASK-SKRIPT-40-04-17
-title: The exam workspace header and toolbars share one compact control system with
-  autosave status, file commands and a gap switch
+title: The exam workspace header and toolbars share one compact control system with autosave status, file commands and a gap switch
 repository: skriptoteket
 owners:
-- kind: service
-  id: skriptoteket
+  - kind: service
+    id: skriptoteket
 created: '2026-10-19'
 status: proposed
 closeout_review:
@@ -65,23 +64,23 @@ The core vertical is one Lucktext editing pass at a 1040 px workspace on a fine 
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term |
-| --- | --------------------- |
-| T1  | Autosave is the only save: no Spara button and no Osparat. A fixed-width status slot at the header's right end shows cloud-check with "Sparat", or a spinning loader with "Sparar …" during a write. |
-| T2  | "Spara som …" is a header file command with the copy glyph, in the file group. |
-| T3  | Header command face: 32 px, boxless, 20 px glyph, 13 px weight-500 word beside it, 8 px inline padding, 6 px gap, 4 px radius; hover action 5 % on fine pointers only; pressed or open action 10 %; 2 px action-40 focus ring at offset 0; disabled navy-30; 44 px on coarse pointers. |
-| T4  | In-content tool face: 28 px box, 16 px glyph, boxless, glyph only with the name in title and aria-label; hover white with a navy-20 border; pressed action 10 % with an action border; disabled opacity 0.4; 2 px between tools; 1 x 18 px navy-20 separator with 4 px margin between groups; 44 px on coarse pointers. |
-| T5  | Words beside the glyph only where the glyph leaves the meaning open (Öppna, Spara som, Exportera, Importera, PDF, Ny uppgift, Import); Markera is glyph only (T9); no eyebrow words and no visible group names in this workspace. |
-| T6  | Header row: title block (title 16 px/600, pencil, meta "kurs · poäng" 12 px navy-70) · Öppna, Spara som …, Exportera ▾, Importera · PDF (eye, pressed toggle, tooltip "Förhandsgranska PDF") · AI · status slot; only the title truncates; no Ångra or Gör om in the header. |
-| T7  | Clicking the title or its pencil edits the title in place with the text selected; Enter or blur commits; Escape restores. |
-| T8  | AI is glyph only; while limited to administrators it is disabled with the admin note as its tooltip and description, and no note text shows. |
+| ID  | Decided contract term                                                                                                                                                                                                                                                                                                                                                    |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| T1  | Autosave is the only save: no Spara button and no Osparat. A fixed-width status slot at the header's right end shows cloud-check with "Sparat", or a spinning loader with "Sparar …" during a write.                                                                                                                                                                     |
+| T2  | "Spara som …" is a header file command with the copy glyph, in the file group.                                                                                                                                                                                                                                                                                           |
+| T3  | Header command face: 32 px, boxless, 20 px glyph, 13 px weight-500 word beside it, 8 px inline padding, 6 px gap, 4 px radius; hover action 5 % on fine pointers only; pressed or open action 10 %; 2 px action-40 focus ring at offset 0; disabled navy-30; 44 px on coarse pointers.                                                                                   |
+| T4  | In-content tool face: 28 px box, 16 px glyph, boxless, glyph only with the name in title and aria-label; hover white with a navy-20 border; pressed action 10 % with an action border; disabled opacity 0.4; 2 px between tools; 1 x 18 px navy-20 separator with 4 px margin between groups; 44 px on coarse pointers.                                                  |
+| T5  | Words beside the glyph only where the glyph leaves the meaning open (Öppna, Spara som, Exportera, Importera, PDF, Ny uppgift, Import); Markera is glyph only (T9); no eyebrow words and no visible group names in this workspace.                                                                                                                                        |
+| T6  | Header row: title block (title 16 px/600, pencil, meta "kurs · poäng" 12 px navy-70) · Öppna, Spara som …, Exportera ▾, Importera · PDF (eye, pressed toggle, tooltip "Förhandsgranska PDF") · AI · status slot; only the title truncates; no Ångra or Gör om in the header.                                                                                             |
+| T7  | Clicking the title or its pencil edits the title in place with the text selected; Enter or blur commits; Escape restores.                                                                                                                                                                                                                                                |
+| T8  | AI is glyph only; while limited to administrators it is disabled with the admin note as its tooltip and description, and no note text shows.                                                                                                                                                                                                                             |
 | T9  | List head is one 40 px row that fits at the 260 px minimum list width without wrapping or clipping: "Frågor (n)" (never truncated), Ny uppgift (plus glyph and word, 28 px, 16 px glyph) and Markera as a glyph-only toggle (square, square-check when pressed, tooltip "Markera frågor") at every width; the "Skapa del av markerade (n)" row shows only while marking. |
-| T10 | Question head shows Import (glyph and word), Granskad (check toggle, tooltips "Markera som granskad" / "Ångra granskad") and Fler åtgärder in the tool face, 2 px apart. |
-| T11 | Editor toolbar: Ångra, Gör om \| B, I, U, upphöjd, nedsänkt \| Luckverktyg (⌥⌘G), Tom lucka \| H1, H2, H3; tooltips "Ångra (⌘Z)" and "Gör om (⇧⌘Z)"; no Lucka text button and no floating gap glyph; the pressed switch shows a 2 px action underline in its box. |
-| T12 | At a 1040 px workspace every header command keeps its word on one row and only the title truncates; no desktop width collapses the words. |
-| T13 | The header command height, toolbar separator and tool group gap become shared tokens in the skill-repository design package, synced to the mirror; `examWorkspace.css` consumes them and deletes `--xw-ctl` and `--xw-ctl-fine`. |
-| T14 | `gap-tool`, `empty-gap`, `autosave-saved`, `autosave-saving` and `file-import` become shared `uiGlyphs.ts` meanings; the editor toolbar imports no Lucide icon directly. |
-| T15 | This task owns the look and placement of the header, list head, question head and editor toolbar; 40-04-11 is folded in and superseded with its other terms carried over; 40-04-13, 40-04-14 and 40-04-16 keep their behaviour and use these faces. |
-| T16 | Supersedes 40-04-01 ledger row T25; Ångra and Gör om live in the editor toolbar. |
-| T17 | No walking skeleton: presentation inside the SPA, no system boundary crossed. |
-| T18 | Proof is focused component specs plus a Hemma staging walk at 1440 px, at a 1040 px workspace and with the question list at its 260 px minimum. |
+| T10 | Question head shows Import (glyph and word), Granskad (check toggle, tooltips "Markera som granskad" / "Ångra granskad") and Fler åtgärder in the tool face, 2 px apart.                                                                                                                                                                                                 |
+| T11 | Editor toolbar: Ångra, Gör om \| B, I, U, upphöjd, nedsänkt \| Luckverktyg (⌥⌘G), Tom lucka \| H1, H2, H3; tooltips "Ångra (⌘Z)" and "Gör om (⇧⌘Z)"; no Lucka text button and no floating gap glyph; the pressed switch shows a 2 px action underline in its box.                                                                                                        |
+| T12 | At a 1040 px workspace every header command keeps its word on one row and only the title truncates; no desktop width collapses the words.                                                                                                                                                                                                                                |
+| T13 | The header command height, toolbar separator and tool group gap become shared tokens in the skill-repository design package, synced to the mirror; `examWorkspace.css` consumes them and deletes `--xw-ctl` and `--xw-ctl-fine`.                                                                                                                                         |
+| T14 | `gap-tool`, `empty-gap`, `autosave-saved`, `autosave-saving` and `file-import` become shared `uiGlyphs.ts` meanings; the editor toolbar imports no Lucide icon directly.                                                                                                                                                                                                 |
+| T15 | This task owns the look and placement of the header, list head, question head and editor toolbar; 40-04-11 is folded in and superseded with its other terms carried over; 40-04-13, 40-04-14 and 40-04-16 keep their behaviour and use these faces.                                                                                                                      |
+| T16 | Supersedes 40-04-01 ledger row T25; Ångra and Gör om live in the editor toolbar.                                                                                                                                                                                                                                                                                         |
+| T17 | No walking skeleton: presentation inside the SPA, no system boundary crossed.                                                                                                                                                                                                                                                                                            |
+| T18 | Proof is focused component specs plus a Hemma staging walk at 1440 px, at a 1040 px workspace and with the question list at its 260 px minimum.                                                                                                                                                                                                                          |
