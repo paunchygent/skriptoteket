@@ -5,8 +5,8 @@
  *   A dropdown gap lists its options in stored order with a radio for the
  *   correct one. Radio, add, remove and move each emit the whole option
  *   state once and keep the popover open. Typed text commits on `change`,
- *   never on input, rides along as plain text, and is discarded by Escape.
- *   The correct option cannot be removed. A Lucktext gap keeps the accepted
+ *   never on input, rides along as plain text, and is kept by Escape like
+ *   leaving the popover. The correct option cannot be removed. A Lucktext gap keeps the accepted
  *   answers field and shows no option editor.
  */
 
@@ -223,15 +223,20 @@ describe("ExamWorkspaceGapPopover dropdown options", () => {
     wrapper.unmount();
   });
 
-  it("discards typed text on Escape", async () => {
+  it("commits typed text on Escape and closes, exactly once", async () => {
     const wrapper = mountPopover(dropdownGap());
     const input = text(wrapper, "choice_003");
-    input.element.value = "borta";
+    input.element.value = "behållen";
     await input.trigger("input");
     await input.trigger("keydown", { key: "Escape" });
-    await input.trigger("change");
-    expect(wrapper.emitted("updateOptions")).toBeUndefined();
+    const events = updates(wrapper);
+    expect(events).toHaveLength(1);
+    expect(events[0][2].find((option) => option.choice_id === "choice_003")?.body).toEqual(
+      plainBody("behållen"),
+    );
     expect(wrapper.emitted("close")).toEqual([[true]]);
+    await input.trigger("change");
+    expect(updates(wrapper)).toHaveLength(1);
     wrapper.unmount();
   });
 

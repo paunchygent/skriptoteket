@@ -7,10 +7,10 @@
  *   right next to the gap chip through `ExamWorkspaceGapAnswerList`: a text
  *   input and a remove glyph per row with a glyph-only add button ("Lägg
  *   till svar" accessible name and tooltip) under the rows. Leaving the
- *   popover commits the answers; Escape
- *   discards them. Each commit is emitted once, even when the browser also
- *   fires `change` while focus returns to the chip. Enter inside an answer
- *   row adds a row below it and never closes the popover. Enter and Escape
+ *   popover commits the answers; Escape keeps what was typed, the same
+ *   as leaving the popover. Each commit is emitted once, even when the
+ *   browser also fires `change` while focus returns to the chip. Enter
+ *   inside an answer row adds a row below it and never closes the popover. Enter and Escape
  *   pressed while an IME composition is active belong to the composition and
  *   are ignored. Answers the conversion wrote for the
  *   gap (automatic misspellings) show as removable chips with no AI glyph
@@ -25,8 +25,10 @@
  *   accessible name and tooltip). Radio, add, remove and move emit
  *   the whole option state at once (one patch each); typed option text
  *   commits on `change`, Enter and leaving the popover, and rides along with
- *   the next such emit. Escape discards typed text. The correct option
- *   cannot be removed; a gap with no correct option shows no radio checked,
+ *   the next such emit. Escape keeps typed text like leaving the
+ *   popover. Removing a row keeps the popover open and moves focus to the
+ *   previous row's text input, else the next row's, else the add control.
+ *   The correct option cannot be removed; a gap with no correct option shows no radio checked,
  *   keeps that state through add, move, remove and text edits, and lets every
  *   option be removed. The accepted answers, automatic answers and "Visa som
  *   text" do not apply to a dropdown gap and are hidden.
@@ -233,10 +235,10 @@ function handleRootKeydown(event: KeyboardEvent): void {
     return;
   }
   event.preventDefault();
-  discarded = true;
-  for (const key of Object.keys(optionDrafts)) {
-    delete optionDrafts[key];
-  }
+  // Keep what was typed, the same as leaving the popover. Both commits are
+  // idempotent, so a focusout that follows emits nothing twice.
+  answerList.value?.commit();
+  commitOptionDrafts();
   emit("close", true);
 }
 
@@ -270,12 +272,20 @@ function handleRemoveOption(choiceId: string): void {
   if (choiceId === correctOptionId.value) {
     return;
   }
+  // The row and its button disappear with the re-render; move focus first,
+  // synchronously, or the browser fires focusout with no relatedTarget and
+  // the popover closes.
+  const index = options.value.findIndex((option) => option.choice_id === choiceId);
+  const neighbour = options.value[index - 1] ?? options.value[index + 1];
+  if (neighbour) {
+    optionInput(neighbour.choice_id)?.focus();
+  } else {
+    root.value?.querySelector<HTMLElement>('[data-test="exam-workspace-gap-option-add"]')?.focus();
+  }
   emitOptions(
     optionsWithDrafts().filter((option) => option.choice_id !== choiceId),
     correctOptionId.value,
   );
-  // The row and its button disappear; keep keyboard focus in the popover.
-  void nextTick(() => root.value?.querySelector<HTMLElement>('[data-test="exam-workspace-gap-option-add"]')?.focus());
 }
 
 function handleMoveOption(index: number, step: -1 | 1): void {
