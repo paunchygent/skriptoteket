@@ -21,9 +21,7 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_ad
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_state import (
     DocxBuildState,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import (
-    assemble_build_result,
-)
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import assemble_build_result
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     DocxBuildResult,
     ProducedItem,

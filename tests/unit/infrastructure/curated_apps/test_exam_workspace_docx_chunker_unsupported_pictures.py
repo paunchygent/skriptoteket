@@ -12,12 +12,12 @@ from docx.opc.part import Part
 from docx.oxml.ns import qn
 from PIL import Image
 
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import review_source_item
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import (
     DocxImage,
     DocxMissingImage,
     asset_id_for,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_source_review import review_source_item
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeTextSegment,
 )

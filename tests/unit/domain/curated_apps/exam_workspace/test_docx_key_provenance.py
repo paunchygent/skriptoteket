@@ -6,13 +6,13 @@ from pydantic import ValidationError
 from skriptoteket.domain.curated_apps.exam_workspace.answer_spelling import (
     filter_answer_spelling_candidates,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import aligned_native_item
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedCriterion,
     ProducedItem,
     ProducedParagraph,
     ProducedSegment,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_item import aligned_native_item
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_schema import docx_build_output_spec
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_criteria import (
     NativeExamCriterion,

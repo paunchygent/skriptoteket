@@ -19,8 +19,8 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_st
     DocxBuildState,
 )
 from skriptoteket.domain.curated_apps.exam_workspace import docx_ai_gap_values
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import aligned_native_item
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedItem
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_item import aligned_native_item
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.exam_document_language import Language
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
