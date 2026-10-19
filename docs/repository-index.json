@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "d9ef765934aa5a024daf37a54c7360fab17477f20e616048bee406664037d9a5",
+  "source_set_digest": "b8ca7a33ffe86c0d75b1d3283b4f95c02f847af6b2d02237c8fe6fc7f165c401",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6673,6 +6673,25 @@
       "title": "Printed PDF exams keep each question's text and its alternatives on one page",
       "path": "docs/backlog/tasks/task-skript-40-04-12-printed-pdf-exams-keep-each-question-s-text-and-its-alternatives-on-one-page.md",
       "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-16",
+      "type": "task",
+      "title": "Each export format downloads or saves to Mina filer from one split button at the right of its menu row",
+      "path": "docs/backlog/tasks/task-skript-40-04-16-each-export-format-downloads-or-saves-to-mina-filer-from-one-split-button-at-the-right-of-its-menu-row.md",
+      "status": "proposed",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
