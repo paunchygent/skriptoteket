@@ -9,7 +9,7 @@
  *
  * Relationships:
  *   - Dispatched by `useExamWorkspaceSaveFlow` (`gotoBlocker`) through
- *     `requestOpenGap`; handled by `ExamWorkspaceBodyEditor`, which opens
+ *     `openBlockerField`; handled by `ExamWorkspaceBodyEditor`, which opens
  *     the popover through `openPopover`.
  */
 
@@ -19,4 +19,17 @@ export const EXAM_WORKSPACE_OPEN_GAP_EVENT = "exam-workspace-open-gap";
 /** Ask the body editor to open `chip`'s popover through its bubbling open-gap request. */
 export function requestOpenGap(chip: HTMLElement): void {
   chip.dispatchEvent(new CustomEvent(EXAM_WORKSPACE_OPEN_GAP_EVENT, { bubbles: true }));
+}
+
+/**
+ * The single open-or-focus step of the export-blocker jump: a gap chip opens
+ * its popover through `requestOpenGap`, any other field takes focus.
+ */
+export function openBlockerField(field: HTMLElement): void {
+  field.scrollIntoView?.({ block: "center" });
+  if (field.hasAttribute("data-gap-id")) {
+    requestOpenGap(field);
+  } else {
+    field.focus();
+  }
 }

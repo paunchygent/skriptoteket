@@ -21,7 +21,7 @@ import {
 } from "./ExamWorkspaceBodyEditor.specSupport";
 import { buildGap } from "./examWorkspaceKeyedItems.specSupport";
 import { plainBody } from "./examWorkspaceRichText";
-import { EXAM_WORKSPACE_OPEN_GAP_EVENT, requestOpenGap } from "./examWorkspaceGapOpenRequest";
+import { EXAM_WORKSPACE_OPEN_GAP_EVENT, openBlockerField, requestOpenGap } from "./examWorkspaceGapOpenRequest";
 
 function dropdownItem(): NativeExamItem {
   const options = (text: string, choiceId: string): NativeExamChoice[] => [
@@ -44,16 +44,6 @@ async function resolveBlockerField(frame: Element, focus: string): Promise<HTMLE
     field = frame.querySelector<HTMLElement>(focus);
   }
   return field;
-}
-
-/** The same branch `gotoBlocker` takes once the field resolves. */
-function jumpToField(field: HTMLElement | null): void {
-  field?.scrollIntoView?.({ block: "center" });
-  if (field?.hasAttribute("data-gap-id")) {
-    requestOpenGap(field);
-  } else {
-    field?.focus();
-  }
 }
 
 function optionInput(choiceId: string): HTMLInputElement {
@@ -92,14 +82,28 @@ describe("ExamWorkspaceBodyEditor gap jump", () => {
   it("opens the blocker field's popover through the save-flow jump path", async () => {
     const wrapper = await mountEditor(dropdownItem());
     const field = await resolveBlockerField(wrapper.element, '[data-gap-id="gap_001"]');
-    expect(field).not.toBeNull();
-    jumpToField(field);
+    if (field === null) {
+      throw new Error("no blocker field");
+    }
+    openBlockerField(field);
     await nextTick();
     await nextTick();
 
-    expect(field?.getAttribute("aria-expanded")).toBe("true");
+    expect(field.getAttribute("aria-expanded")).toBe("true");
     expect(popoverExists()).toBe(true);
     expect(document.activeElement).toBe(optionInput("choice_001"));
+    wrapper.unmount();
+  });
+
+  it("focuses a non-gap blocker field without opening a popover", async () => {
+    const wrapper = await mountEditor(dropdownItem());
+    const plain = document.createElement("input");
+    wrapper.element.appendChild(plain);
+    openBlockerField(plain);
+    await nextTick();
+
+    expect(document.activeElement).toBe(plain);
+    expect(popoverExists()).toBe(false);
     wrapper.unmount();
   });
 
