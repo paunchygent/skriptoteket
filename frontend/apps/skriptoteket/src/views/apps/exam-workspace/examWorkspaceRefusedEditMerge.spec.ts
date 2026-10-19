@@ -360,6 +360,80 @@ describe("mergeRefusedEdit", () => {
     assertValidDocument(merged);
   });
 
+  it("lets the kept edit win whole when both tabs deleted a different question", () => {
+    const base = baseDocument();
+    const edited: NativeExamDocument = {
+      ...base,
+      items: [{ ...itemById(base, "item_002"), sequence: 1 }],
+    };
+    const newest: NativeExamDocument = {
+      ...base,
+      items: [{ ...itemById(base, "item_001"), sequence: 1 }],
+    };
+
+    const merged = requireMerged(mergeRefusedEdit(base, edited, newest));
+
+    expect(itemIds(merged)).toEqual(["item_002"]);
+    expect(itemById(merged, "item_002").points).toBe(
+      itemById(base, "item_002").points,
+    );
+    expect(merged.items.map((item) => item.sequence)).toEqual([1]);
+    expect(merged.revision).toBe(newest.revision);
+    expect(merged.document_id).toBe(newest.document_id);
+    assertValidDocument(merged);
+  });
+
+  it("keeps equal-place childless blocks in order on an unrelated title edit", () => {
+    const base = documentWith(
+      [
+        { ...newTeacherItem("item_001", 1, "free_text"), points: 2 },
+        { ...newTeacherItem("item_002", 2, "free_text"), points: 2 },
+      ],
+      {
+        parents: [
+          parentOf("parent_001", [], 2, "Del A: läs först."),
+          parentOf("parent_002", [], 2, "Del B: läs sedan."),
+        ],
+      },
+    );
+    const edited: NativeExamDocument = { ...base, title: "Kept title" };
+    const newest: NativeExamDocument = { ...base, title: "Remote title" };
+
+    const merged = requireMerged(mergeRefusedEdit(base, edited, newest));
+
+    expect(merged.parents.map((parent) => parent.parent_id)).toEqual([
+      "parent_001",
+      "parent_002",
+    ]);
+    assertValidDocument(merged);
+  });
+
+  it("places childless blocks at different question-relative positions", () => {
+    const base = documentWith(
+      [
+        { ...newTeacherItem("item_001", 1, "free_text"), points: 2 },
+        { ...newTeacherItem("item_002", 2, "free_text"), points: 2 },
+      ],
+      {
+        parents: [
+          parentOf("parent_001", [], 0, "Före"),
+          parentOf("parent_002", [], 2, "Efter"),
+        ],
+      },
+    );
+    const edited: NativeExamDocument = { ...base, title: "Kept title" };
+    const newest: NativeExamDocument = { ...base, title: "Remote title" };
+
+    const merged = requireMerged(mergeRefusedEdit(base, edited, newest));
+
+    expect(merged.parents.map((parent) => parent.parent_id)).toEqual([
+      "parent_001",
+      "parent_002",
+    ]);
+    expect(merged.parents.map((parent) => parent.place)).toEqual([0, 2]);
+    assertValidDocument(merged);
+  });
+
   it("filters header question tags to the surviving items", () => {
     const base = documentWith(
       [

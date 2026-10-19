@@ -208,8 +208,19 @@ export function mergeRefusedEdit(
     }
   }
 
+  // Complementary deletions on both sides can leave no question at all, which
+  // the server rejects. The kept edit wins whole then: the merged result is
+  // the kept edit's own document carried onto the newest identity fields,
+  // with positions and assets through the existing owners as for any merge.
+  const keptWhole = orderedItems.length === 0;
+  const activeItems = keptWhole ? [...edited.items] : orderedItems;
+  const activeTitle = keptWhole ? edited.title : mergedTitle;
+  const activeHeader = keptWhole ? edited.header : mergedHeader;
+  const activeInstructions = keptWhole ? edited.instructions : mergedInstructions;
+  const activeInstructionParents = keptWhole ? parentsById(edited.parents) : instructionParents;
+
   const mergedParentOf = new Map<string, string | null>();
-  for (const item of orderedItems) {
+  for (const item of activeItems) {
     const baseOwner = baseItems.has(item.item_id) ? parentIdIn(base, item.item_id) : undefined;
     const editedOwner = editedItems.has(item.item_id)
       ? parentIdIn(edited, item.item_id)
@@ -226,7 +237,7 @@ export function mergeRefusedEdit(
     if (owner === undefined) {
       owner = editedOwner ?? newestOwner ?? null;
     }
-    if (owner !== null && !instructionParents.has(owner)) {
+    if (owner !== null && !activeInstructionParents.has(owner)) {
       owner = null;
     }
     if (item.kind === "ordering") {
@@ -236,7 +247,7 @@ export function mergeRefusedEdit(
     mergedParentOf.set(item.item_id, owner ?? null);
   }
 
-  const members: ExamWorkspaceMember[] = orderedItems.map((item) => ({
+  const members: ExamWorkspaceMember[] = activeItems.map((item) => ({
     kind: "item",
     item,
     parentId: mergedParentOf.get(item.item_id) ?? null,
@@ -248,26 +259,41 @@ export function mergeRefusedEdit(
     }
   }
   const blocks: NativeExamParent[] = [];
-  for (const parent of instructionParents.values()) {
+  for (const parent of activeInstructionParents.values()) {
     if (!assigned.has(parent.parent_id)) {
       blocks.push(parent);
     }
   }
-  blocks.sort((a, b) => a.place - b.place);
+  // A part's place counts preceding questions, not members: previously
+  // inserted blocks already shift the member indices. Sort stably by place so
+  // equal-place blocks keep their selected order, then offset each insertion
+  // by the blocks already placed before it.
+  const blockOrder = new Map(blocks.map((block, index) => [block.parent_id, index]));
+  blocks.sort((a, b) => {
+    if (a.place !== b.place) {
+      return a.place - b.place;
+    }
+    const aIndex = blockOrder.get(a.parent_id);
+    const bIndex = blockOrder.get(b.parent_id);
+    return (aIndex ?? 0) - (bIndex ?? 0);
+  });
+  const questionCount = members.length;
+  let insertedBlocks = 0;
   for (const block of blocks) {
-    const at = Math.min(Math.max(block.place, 0), members.length);
+    const at = Math.min(Math.max(block.place, 0), questionCount) + insertedBlocks;
     members.splice(at, 0, { kind: "block", parentId: block.parent_id });
+    insertedBlocks += 1;
   }
 
-  const parentList = [...instructionParents.values()];
+  const parentList = [...activeInstructionParents.values()];
   const structured = withMembers(
     {
       ...newest,
       assets: [],
-      instructions: mergedInstructions,
-      items: orderedItems,
+      instructions: activeInstructions,
+      items: activeItems,
       parents: parentList,
-      title: mergedTitle,
+      title: activeTitle,
     },
     members,
     parentList,
@@ -299,8 +325,8 @@ export function mergeRefusedEdit(
 
   const surviving = new Set(keptAssets.items.map((item) => item.item_id));
   const filteredHeader = {
-    ...mergedHeader,
-    tags: mergedHeader.tags.map((tag) => ({
+    ...activeHeader,
+    tags: activeHeader.tags.map((tag) => ({
       ...tag,
       question_ids: tag.question_ids.filter((questionId) => surviving.has(questionId)),
     })),
