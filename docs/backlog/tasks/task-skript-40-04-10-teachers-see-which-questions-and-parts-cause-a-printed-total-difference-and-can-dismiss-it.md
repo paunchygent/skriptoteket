@@ -100,6 +100,7 @@ Stop and report to the parent when the staging reproduction shows a defect outsi
 - Plan accepted 2026-10-19 (user answers, AskUserQuestion in the Hemma orchestrator session); every plan row closed. Status in_progress.
 - 2026-10-19: origin/main f7eeada5 (TASK-SKRIPT-39-04-20) merged at c339584c, handoff conflict resolved explicitly; the orchestrator started unit 1 before 40-04-08 reached main.
 - Done: 1a backend v9 (79ce96e5), 2 printed-total account `examWorkspacePrintedDifferences` (f40acc17), 1b frontend v9 fixtures (04373f71); each with fail-first and focused proof under evidence/lead-4ebb41f3/.
-- Unit 3 (footer note, yes/no glyphs, every Använd button removed) launched with order evidence/lead-4ebb41f3/orders/u3-points-note.md. Tooltip, heading and remainder copy await ui-copy-reviewer.
+- Done: unit 3 footer note with glyph-only yes/no and every Använd button removed (a31ce0e4); lead-review repairs 3r (8620e563: exact printed numbers, note height cap, dead part printedTotal) and 3r2 (2f0bc6a1: rounded remainder).
+- Copy packet for ui-copy-reviewer (orchestrator-routed): evidence/lead-4ebb41f3/copy/string-inventory.md and copy/screenshots/ (part, question, remainder, accepted, dismissed, tooltip-no; footer-texts.json), made by copy/shoot_points_note.py against a local Vite with mocked bootstrap.
 - Retained root `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a15330-34cd-7103-bb71-cc8ef9b8a56f` (explorer discovery under `discovery/explorer/`).
-- Next: integrate unit 3, copy review, domain-suite gate. F5 is folded into the final Mac walk (Validation). When 40-04-08 lands on main, merge it and repair the v9 fixtures.
+- Next: copy review (orchestrator), then the domain suite when the slot frees (40-04-15 holds it), then code review; F5 in the Mac walk. F5 is folded into the final Mac walk (Validation). When 40-04-08 lands on main, merge it and repair the v9 fixtures.
