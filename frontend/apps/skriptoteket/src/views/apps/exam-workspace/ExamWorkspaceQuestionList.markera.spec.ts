@@ -2,23 +2,25 @@
  * Exam workspace question list, Markera mode.
  *
  * Expected behavior:
- *   Markera mode changes nothing but state: the bar under the header, its
- *   group action and its one toggle slot are always present, and every row
- *   keeps its mark cell. The toggle shows "Markera" (data-test
- *   exam-workspace-marking-start) when the mode is off and "Avbryt"
- *   (exam-workspace-marking-cancel) when it is on, in the same element; the
- *   group action "Skapa del av markerade (N)" keeps its box but is hidden
- *   while the mode is off. Only standalone questions carry a checkbox (a part
- *   and a question inside a part do not, G11); an ordering question's checkbox
- *   is disabled with its reason (G6). The group action is disabled at N = 0 and
- *   emits the ticks in document order (G10); Avbryt clears the ticks and leaves
- *   the mode; while the workspace is busy every control is disabled.
+ *   The list head is one row: the title "Frågor (N)", then one tool group with
+ *   the collapse glyph (when the desktop handle is wanted), Ny uppgift and the
+ *   glyph-only Markera toggle (data-test exam-workspace-marking-toggle,
+ *   "Markera frågor"). The toggle is pressed while marking and its glyph
+ *   switches from an empty to a ticked checkbox. The bar under the head with
+ *   "Skapa del av markerade (N)" exists only while marking. Every row keeps
+ *   its mark cell. Only standalone questions carry a checkbox (a part and a
+ *   question inside a part do not, G11); an ordering question's checkbox is
+ *   disabled with its reason (G6). The group action is disabled at N = 0 and
+ *   emits the ticks in document order (G10); pressing the toggle again clears
+ *   the ticks and leaves the mode; while the workspace is busy every control
+ *   is disabled.
  */
 
 import { mount } from "@vue/test-utils";
 import type { VueWrapper } from "@vue/test-utils";
 import { afterEach, describe, expect, it } from "vitest";
 
+import { UiGlyph } from "../../../components/ui";
 import ExamWorkspaceQuestionList from "./ExamWorkspaceQuestionList.vue";
 import type {
   ExamWorkspaceItemEntry,
@@ -61,18 +63,17 @@ const ENTRIES: ExamWorkspaceListEntry[] = [
 
 const BAR = '[data-test="exam-workspace-marking-bar"]';
 const GROUP = '[data-test="exam-workspace-group-marked"]';
-const START = '[data-test="exam-workspace-marking-start"]';
-const CANCEL = '[data-test="exam-workspace-marking-cancel"]';
+const TOGGLE = '[data-test="exam-workspace-marking-toggle"]';
 const ROW_MARK = ".row__mark";
-/** The class that hides the group action and a row's mark cell while not marking. */
-const IDLE_GROUP = "list__markbar-group--idle";
+/** The class that hides a row's mark cell while not marking. */
 const IDLE_CELL = "row__mark--idle";
 
 const mounted: Array<VueWrapper> = [];
 
-function mountList(entries: ExamWorkspaceListEntry[] = ENTRIES, disabled = false): VueWrapper {
+function mountList(entries: ExamWorkspaceListEntry[] = ENTRIES, disabled = false, handle = false): VueWrapper {
   const wrapper = mount(ExamWorkspaceQuestionList, {
     props: {
+      handle,
       mismatches: [],
       canAdd: true,
       disabled,
@@ -94,39 +95,67 @@ function markBoxes(wrapper: VueWrapper): string[] {
     .map((box) => box.attributes("data-test")!.replace("exam-workspace-mark-", ""));
 }
 
+function toggleGlyph(wrapper: VueWrapper): string {
+  return wrapper.get(TOGGLE).findComponent(UiGlyph).props("meaning") as string;
+}
+
 afterEach(() => {
   for (const wrapper of mounted.splice(0)) wrapper.unmount();
 });
 
 describe("ExamWorkspaceQuestionList Markera mode", () => {
-  it("keeps the bar, its controls and every row's mark cell in place across Markera and Avbryt", async () => {
+  it("puts the title first, then collapse, Ny uppgift and Markera in one tool group", () => {
+    const wrapper = mountList(ENTRIES, false, true);
+    const head = wrapper.get(".list__head");
+
+    expect(head.element.firstElementChild?.id).toBe("exam-workspace-list-title");
+    expect(head.get("h2").text()).toBe("Frågor (5)");
+    const tools = head.get(".xw-tools").findAll("button").map((button) => button.attributes("data-test"));
+    expect(tools).toEqual(["exam-workspace-list-collapse", "exam-workspace-new", "exam-workspace-marking-toggle"]);
+    expect(head.get('[data-test="exam-workspace-list-collapse"]').classes()).toEqual(["xw-tool"]);
+    expect(head.get('[data-test="exam-workspace-new"]').classes()).toEqual(["xw-tool", "xw-tool--word"]);
+    expect(head.get('[data-test="exam-workspace-new"]').text()).toBe("Ny uppgift");
+  });
+
+  it("leaves the collapse glyph out without the handle and keeps Ny uppgift before Markera", () => {
     const wrapper = mountList();
 
-    const bar = wrapper.get(BAR).element;
-    const group = wrapper.get(GROUP).element;
-    const toggle = wrapper.get(START).element;
+    const tools = wrapper.get(".list__head .xw-tools").findAll("button").map((button) => button.attributes("data-test"));
+    expect(tools).toEqual(["exam-workspace-new", "exam-workspace-marking-toggle"]);
+  });
 
-    // Not marking: same bar, group hidden in its box, one hidden mark cell per row.
-    expect(wrapper.get(GROUP).classes()).toContain(IDLE_GROUP);
+  it("presses the glyph-only Markera toggle, switches its glyph and shows the bar only while marking", async () => {
+    const wrapper = mountList();
+    const toggle = wrapper.get(TOGGLE);
+
+    expect(toggle.classes()).toEqual(["xw-tool"]);
+    expect(toggle.attributes("type")).toBe("button");
+    expect(toggle.text()).toBe("");
+    expect(toggle.attributes("title")).toBe("Markera frågor");
+    expect(toggle.attributes("aria-label")).toBe("Markera frågor");
+    expect(toggle.attributes("aria-pressed")).toBe("false");
+    expect(toggleGlyph(wrapper)).toBe("checkbox-off");
+    expect(wrapper.find(BAR).exists()).toBe(false);
+    expect(wrapper.find(GROUP).exists()).toBe(false);
     expect(wrapper.findAll(ROW_MARK)).toHaveLength(ENTRIES.length);
     expect(wrapper.findAll(`.${IDLE_CELL}`)).toHaveLength(ENTRIES.length);
 
-    await wrapper.get(START).trigger("click");
+    await toggle.trigger("click");
 
-    // Marking: same elements, the group action shown and the toggle now Avbryt.
-    expect(wrapper.get(BAR).element).toBe(bar);
-    expect(wrapper.get(GROUP).element).toBe(group);
-    expect(wrapper.get(CANCEL).element).toBe(toggle);
-    expect(wrapper.get(GROUP).classes()).not.toContain(IDLE_GROUP);
+    expect(wrapper.get(TOGGLE).element).toBe(toggle.element);
+    expect(wrapper.get(TOGGLE).attributes("aria-pressed")).toBe("true");
+    expect(toggleGlyph(wrapper)).toBe("checkbox-on");
+    expect(wrapper.get(BAR).findAll("button").map((button) => button.attributes("data-test"))).toEqual([
+      "exam-workspace-group-marked",
+    ]);
     expect(wrapper.findAll(ROW_MARK)).toHaveLength(ENTRIES.length);
     expect(wrapper.findAll(`.${IDLE_CELL}`)).toHaveLength(0);
 
-    await wrapper.get(CANCEL).trigger("click");
+    await wrapper.get(TOGGLE).trigger("click");
 
-    expect(wrapper.get(BAR).element).toBe(bar);
-    expect(wrapper.get(GROUP).element).toBe(group);
-    expect(wrapper.get(START).element).toBe(toggle);
-    expect(wrapper.get(GROUP).classes()).toContain(IDLE_GROUP);
+    expect(wrapper.get(TOGGLE).attributes("aria-pressed")).toBe("false");
+    expect(toggleGlyph(wrapper)).toBe("checkbox-off");
+    expect(wrapper.find(BAR).exists()).toBe(false);
     expect(wrapper.findAll(`.${IDLE_CELL}`)).toHaveLength(ENTRIES.length);
   });
 
@@ -135,14 +164,14 @@ describe("ExamWorkspaceQuestionList Markera mode", () => {
 
     expect(markBoxes(wrapper)).toEqual(["item_001", "item_003", "item_004", "item_005"]);
 
-    await wrapper.get(START).trigger("click");
+    await wrapper.get(TOGGLE).trigger("click");
 
     expect(markBoxes(wrapper)).toEqual(["item_001", "item_003", "item_004", "item_005"]);
   });
 
   it("disables an ordering question's checkbox with the reason", async () => {
     const wrapper = mountList();
-    await wrapper.get(START).trigger("click");
+    await wrapper.get(TOGGLE).trigger("click");
 
     const ordering = wrapper.get('[data-test="exam-workspace-mark-item_003"]');
     expect(ordering.attributes("disabled")).toBeDefined();
@@ -154,7 +183,7 @@ describe("ExamWorkspaceQuestionList Markera mode", () => {
 
   it("emits the ticks in document order and disables the action at zero", async () => {
     const wrapper = mountList();
-    await wrapper.get(START).trigger("click");
+    await wrapper.get(TOGGLE).trigger("click");
 
     const group = wrapper.get(GROUP);
     expect(group.text()).toBe("Skapa del av markerade (0)");
@@ -171,7 +200,7 @@ describe("ExamWorkspaceQuestionList Markera mode", () => {
 
   it("leaves the mode once the ticked questions become a part's children", async () => {
     const wrapper = mountList();
-    await wrapper.get(START).trigger("click");
+    await wrapper.get(TOGGLE).trigger("click");
     await wrapper.get('[data-test="exam-workspace-mark-item_001"]').setValue(true);
     await wrapper.get(GROUP).trigger("click");
 
@@ -183,34 +212,34 @@ describe("ExamWorkspaceQuestionList Markera mode", () => {
       ],
     });
 
-    expect(wrapper.find(START).exists()).toBe(true);
-    expect(wrapper.get(GROUP).classes()).toContain(IDLE_GROUP);
+    expect(wrapper.get(TOGGLE).attributes("aria-pressed")).toBe("false");
+    expect(wrapper.find(BAR).exists()).toBe(false);
     expect(markBoxes(wrapper)).toEqual([]);
   });
 
-  it("clears the ticks and leaves the mode on Avbryt", async () => {
+  it("clears the ticks and leaves the mode when the pressed toggle is pressed again", async () => {
     const wrapper = mountList();
-    await wrapper.get(START).trigger("click");
+    await wrapper.get(TOGGLE).trigger("click");
     await wrapper.get('[data-test="exam-workspace-mark-item_001"]').setValue(true);
 
-    await wrapper.get(CANCEL).trigger("click");
+    await wrapper.get(TOGGLE).trigger("click");
 
-    expect(wrapper.find(START).exists()).toBe(true);
-    expect(wrapper.get(GROUP).classes()).toContain(IDLE_GROUP);
+    expect(wrapper.get(TOGGLE).attributes("aria-pressed")).toBe("false");
+    expect(wrapper.find(BAR).exists()).toBe(false);
 
-    await wrapper.get(START).trigger("click");
+    await wrapper.get(TOGGLE).trigger("click");
     expect(wrapper.get(GROUP).text()).toBe("Skapa del av markerade (0)");
   });
 
   it("disables the checkboxes and the bar while the workspace is busy", async () => {
     const wrapper = mountList();
-    await wrapper.get(START).trigger("click");
+    await wrapper.get(TOGGLE).trigger("click");
     await wrapper.get('[data-test="exam-workspace-mark-item_001"]').setValue(true);
 
     await wrapper.setProps({ disabled: true });
 
     expect(wrapper.get('[data-test="exam-workspace-mark-item_001"]').attributes("disabled")).toBeDefined();
     expect(wrapper.get(GROUP).attributes("disabled")).toBeDefined();
-    expect(wrapper.get(CANCEL).attributes("disabled")).toBeDefined();
+    expect(wrapper.get(TOGGLE).attributes("disabled")).toBeDefined();
   });
 });

@@ -25,10 +25,12 @@
  *   the editor. On desktop the list collapses to a rail and resizes with a
  *   handle. On a phone the list
  *   opens full screen over the editor from the question strip and closes
- *   with Tillbaka or a choice. "Markera" turns the list into Markera mode: a
- *   standalone question carries a checkbox (an ordering question's is
- *   disabled, G6) and a bar at the top groups the ticked questions into a new
- *   part (G2, G11); a part and a question inside a part carry no checkbox.
+ *   with Tillbaka or a choice. The head is one row: the title, then the
+ *   collapse glyph, Ny uppgift and the Markera toggle. Pressing Markera turns
+ *   the list into Markera mode: a standalone question carries a checkbox (an
+ *   ordering question's is disabled, G6) and a bar under the head groups the
+ *   ticked questions into a new part (G2, G11); a part and a question inside
+ *   a part carry no checkbox. Pressing Markera again leaves the mode.
  *
  * Relationships:
  *   - Rendered by `ExamWorkspaceView`; the lines come from
@@ -270,12 +272,16 @@ async function expandFromGlyph(): Promise<void> {
           >
             Frågor ({{ questionCount }})
           </h2>
-          <div class="list__head-actions">
+          <span
+            class="list__spacer"
+            aria-hidden="true"
+          />
+          <div class="xw-tools">
             <button
               v-if="handle"
               ref="collapseGlyph"
               type="button"
-              class="xw-btn xw-btn--icon xw-btn--ghost"
+              class="xw-tool"
               aria-label="Dölj frågelistan"
               title="Dölj frågelistan"
               data-test="exam-workspace-list-collapse"
@@ -283,13 +289,13 @@ async function expandFromGlyph(): Promise<void> {
             >
               <UiGlyph
                 meaning="toggle-sidebar"
-                :size="20"
+                :size="16"
               />
             </button>
             <button
               ref="newTrigger"
               type="button"
-              class="xw-btn xw-btn--compact"
+              class="xw-tool xw-tool--word"
               :disabled="!canAdd"
               aria-haspopup="menu"
               :aria-expanded="newMenuOpen"
@@ -301,34 +307,36 @@ async function expandFromGlyph(): Promise<void> {
                 :size="16"
               />Ny uppgift
             </button>
+            <button
+              type="button"
+              class="xw-tool"
+              :aria-pressed="marking"
+              :disabled="disabled"
+              aria-label="Markera frågor"
+              title="Markera frågor"
+              data-test="exam-workspace-marking-toggle"
+              @click="marking ? cancelMarking() : startMarking()"
+            >
+              <UiGlyph
+                :meaning="marking ? 'checkbox-on' : 'checkbox-off'"
+                :size="16"
+              />
+            </button>
           </div>
         </div>
         <div
+          v-if="marking"
           class="list__markbar"
           data-test="exam-workspace-marking-bar"
         >
           <button
             type="button"
-            class="xw-btn xw-btn--compact xw-btn--primary list__markbar-group"
-            :class="{ 'list__markbar-group--idle': !marking }"
+            class="xw-btn xw-btn--compact xw-btn--primary"
             :disabled="disabled || markedIds.length === 0"
             data-test="exam-workspace-group-marked"
             @click="groupMarked"
           >
             Skapa del av markerade ({{ markedIds.length }})
-          </button>
-          <button
-            type="button"
-            class="xw-btn xw-btn--compact list__markbar-toggle"
-            :disabled="disabled"
-            :data-test="marking ? 'exam-workspace-marking-cancel' : 'exam-workspace-marking-start'"
-            @click="marking ? cancelMarking() : startMarking()"
-          >
-            <UiGlyph
-              v-if="!marking"
-              meaning="checkbox-off"
-              :size="16"
-            />{{ marking ? "Avbryt" : "Markera" }}
           </button>
         </div>
         <div class="list__scroll">
@@ -443,22 +451,28 @@ async function expandFromGlyph(): Promise<void> {
   .list:not(.list--collapsed) .list__frame > .list__printed-lines,
   .list:not(.list--collapsed) .list__frame > .list__foot { min-width: var(--xw-list-min); }
 }
+/* One 40 px row: title, a spacer, then the in-content tools 2 px apart. */
 .list__head {
-  display: flex; align-items: center; justify-content: space-between; gap: var(--huleedu-space-3); flex: none;
-  height: 52px; padding: 0 var(--huleedu-space-4) 0 var(--huleedu-space-6); border-bottom: 1px solid var(--huleedu-surface-divider);
+  display: flex; align-items: center; gap: var(--huleedu-space-2); flex: none;
+  height: calc(var(--huleedu-workbench-control-height) + 2 * var(--huleedu-space-1-5));
+  padding: 0 var(--huleedu-space-2) 0 var(--huleedu-space-4); border-bottom: 1px solid var(--huleedu-surface-divider);
 }
-.list__title { margin: 0; font-size: var(--huleedu-text-base); font-weight: var(--huleedu-font-semibold); }
-.list__head-actions { display: flex; align-items: center; gap: var(--huleedu-space-2); }
+/* The title is never truncated. */
+.list__title {
+  flex: none; margin: 0; white-space: nowrap;
+  font-size: var(--huleedu-type-control-value-size); font-weight: var(--huleedu-font-semibold);
+}
+.list__spacer { flex: 1; min-width: 0; }
+/* On a coarse pointer the tools grow to 44 px, so the row keeps the same inset around them. */
+@media (pointer: coarse) {
+  .list__head { height: calc(var(--huleedu-action-control-height) + 2 * var(--huleedu-space-1-5)); }
+}
 .list__markbar {
   display: flex; align-items: center; gap: var(--huleedu-space-2); flex: none;
   height: calc(var(--xw-ctl-compact, 28px) + 2 * var(--huleedu-space-2));
   padding: 0 var(--huleedu-space-4) 0 var(--huleedu-space-6);
   border-bottom: 1px solid var(--huleedu-surface-divider);
 }
-/* The group action keeps its box in both states; hidden when the list is not marking. */
-.list__markbar-group--idle { visibility: hidden; }
-/* One slot for Markera/Avbryt: a fixed width so swapping the label moves nothing. */
-.list__markbar-toggle { min-width: 100px; }
 .list__scroll { flex: 1; min-height: 0; overflow-y: auto; }
 /* The fixed one-row end room: one note line's height at the end of the scroll
    content on every exam, so the scroll height never changes when a floating
@@ -503,7 +517,6 @@ async function expandFromGlyph(): Promise<void> {
   padding: 0 var(--huleedu-space-6); background: var(--huleedu-canvas);
 }
 @media (max-width: 1279px) {
-  .list__head { padding: 0 var(--huleedu-space-3) 0 var(--huleedu-space-4); }
   .list__markbar { padding: 0 var(--huleedu-space-3) 0 var(--huleedu-space-4); }
   .list__foot { padding: 0 var(--huleedu-space-4); }
   .list__printed-lines { padding: 0 var(--huleedu-space-4); }
@@ -515,6 +528,5 @@ async function expandFromGlyph(): Promise<void> {
     display: flex; position: fixed; inset: 0; z-index: 25; border: 0; background: var(--huleedu-canvas);
   }
   .list__head { height: 56px; padding: 0 var(--huleedu-space-4); }
-  .list__title { flex: 1; }
 }
 </style>
