@@ -46,7 +46,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_points_labels import (
     points_label,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
-    POINT_LABEL,
+    POINTS_MENTION,
     points_line,
     printed_points,
 )
@@ -58,11 +58,14 @@ class PrintedQuestion:
 
     ``prints`` is true when its span prints points; ``points`` is their one distinct value,
     such as a heading's "(4 p)" with its "/4 p" line, and None when the lines differ.
+    ``lines`` holds the anchors of exactly those own lines (``lines[number]`` minus
+    ``closers``), heading lines included, that set ``prints`` and ``points``.
     """
 
     anchors: tuple[str, ...]
     prints: bool
     points: int | float | None
+    lines: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -134,12 +137,12 @@ def _summary_part(chunk: DocxChunk) -> bool:
     """A part-labelled line printing no total of its own, which a summary can give one.
 
     A summary naming its part is the structural evidence, so its Word kind does not matter.
-    A paragraph that is no points line qualifies only when it prints no points label at all.
+    A paragraph that is no points line qualifies only when it mentions no points at all.
     """
     return (
         points_label(chunk.text) == "part"
         and printed_points((chunk,)) is None
-        and (_stands_alone(chunk) or POINT_LABEL.search(chunk.text) is None)
+        and (_stands_alone(chunk) or POINTS_MENTION.search(chunk.text) is None)
     )
 
 
@@ -260,6 +263,7 @@ def printed_points_plan(
             anchors=own,
             prints=bool(own_lines := [i for i in lines.get(number, ()) if i not in closers]),
             points=_one_value(totals[i] for i in own_lines),
+            lines=tuple(chunks[i].anchor for i in own_lines),
         )
         for number, own in enumerate(questions)
     )

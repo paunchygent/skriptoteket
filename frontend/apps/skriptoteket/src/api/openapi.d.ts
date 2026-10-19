@@ -7296,10 +7296,10 @@ export interface components {
             revision: number;
             /**
              * Schema Version
-             * @default native_exam_document_v9
+             * @default native_exam_document_v10
              * @constant
              */
-            schema_version: "native_exam_document_v9";
+            schema_version: "native_exam_document_v10";
             /** Title */
             title: string;
         };
@@ -7338,10 +7338,10 @@ export interface components {
             revision: number;
             /**
              * Schema Version
-             * @default native_exam_document_v9
+             * @default native_exam_document_v10
              * @constant
              */
-            schema_version: "native_exam_document_v9";
+            schema_version: "native_exam_document_v10";
             /** Title */
             title: string;
         };
@@ -7429,6 +7429,8 @@ export interface components {
              */
             kept_gaps: components["schemas"]["NativeGap-Input"][];
             kind: components["schemas"]["NativeExamItemKind"];
+            /** Leftover Points Text */
+            leftover_points_text?: string | null;
             /**
              * Match Left
              * @default []
@@ -7499,6 +7501,8 @@ export interface components {
              */
             kept_gaps: components["schemas"]["NativeGap-Output"][];
             kind: components["schemas"]["NativeExamItemKind"];
+            /** Leftover Points Text */
+            leftover_points_text: string | null;
             /**
              * Match Left
              * @default []
@@ -8021,6 +8025,8 @@ export interface components {
              */
             kept_gaps: components["schemas"]["NativeGap-Input"][];
             kind: components["schemas"]["NativeExamItemKind"];
+            /** Leftover Points Text */
+            leftover_points_text?: string | null;
             /**
              * Match Left
              * @default []

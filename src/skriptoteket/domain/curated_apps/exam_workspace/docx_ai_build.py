@@ -61,6 +61,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.points_wording import (
+    with_settled_points_wording,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import (
     is_answer_line_chunk,
     without_printed_answer_lines,
@@ -190,7 +193,11 @@ def assemble_build_result(
     scored = apply_printed_points(placed.items, placed.parents, printed, by_anchor)
     # The one W10 gate on the final document: no printed answer line reaches any item
     # body, parent instruction or document instruction, whichever path rebuilt it.
-    items = tuple(gated_item(item, by_anchor) for item in scored.items)
+    # The settled points wording leaves beside it: points are settled by now (D2).
+    items = tuple(
+        with_settled_points_wording(gated_item(item, by_anchor), read_heading_points=read)
+        for item, read in zip(scored.items, scored.read_heading_points, strict=True)
+    )
     parents = tuple(
         parent.model_copy(update={"instruction": without_printed_answer_lines(parent.instruction)})
         for parent in scored.parents

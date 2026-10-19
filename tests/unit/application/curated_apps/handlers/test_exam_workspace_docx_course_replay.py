@@ -57,7 +57,7 @@ async def test_picked_course_reaches_every_published_header_and_saved_document(
     assert running.workspace_lineage_id is not None
     opened = await env.get_handler.handle(actor=env.actor, lineage_id=running.workspace_lineage_id)
     assert opened.document.header.course == expected
-    assert opened.document.schema_version == "native_exam_document_v9"
+    assert opened.document.schema_version == "native_exam_document_v10"
     if enabled:
         assert len(opened.document.items) == 28
         assert len(content_requests) == 1

@@ -410,7 +410,16 @@ async def test_a_provider_failure_turns_only_that_batchs_chunks_into_review_item
         assert item.review.reasons
     shown = _words(" ".join(line for i in lost_items for line in i.plain_text_lines()))
     for anchor, text in lost.items():
-        assert _words(chunk_text[anchor]) in shown, f"{anchor} lost its source text"
+        # Trailing points wording equal to the item's points leaves the body (D2, D6);
+        # every other lost chunk shows verbatim. Expected texts are literals.
+        expected = {
+            "body:0080": "Part 2B: stanza",
+            "body:0086": "Part 2B: tone",
+            "body:0092": "Part 2B: rhythm",
+            "body:0098": "Part 2B: theme",
+            "body:0104": "Part 2B: symbolism",
+        }.get(anchor, chunk_text[anchor])
+        assert _words(expected) in shown, f"{anchor} lost its source text"
     others = [i for i in document.items if i.source_anchor not in lost]
     assert others
     assert all(i.review.parse_origin is NativeParseOrigin.LLM_PARSED for i in others)

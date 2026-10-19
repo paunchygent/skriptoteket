@@ -15,7 +15,10 @@ import re
 from itertools import pairwise
 from typing import Literal
 
-from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import text_points
+from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
+    POINTS_MENTION,
+    text_points,
+)
 
 PointsLabel = Literal["part", "exam", "question"]
 
@@ -27,6 +30,8 @@ _EXAM = re.compile(
     re.IGNORECASE,
 )
 _QUESTION = re.compile(r"^\s*(?:poäng|points?)\s*:", re.IGNORECASE)
+# A summary segment's trailing separator run: blank space, separators and dashes.
+_SEGMENT_END = re.compile(r"[ \t•·|–—-]+$")
 
 
 def points_label(text: str) -> PointsLabel | None:
@@ -52,14 +57,17 @@ def part_totals(text: str) -> tuple[tuple[str, int | float], ...]:
     (20 p)", in line order.
 
     The line splits at every part label; a segment that prints exactly one points label
-    gives its part's total. A line with fewer than two such segments is no summary: ().
+    gives its part's total. Each segment first loses its trailing separator run, so a
+    label before the " • " separator still ends its segment. A segment that mentions
+    points twice, such as "Del 1: 4 p eller 6 p", prints no single total. A line with
+    fewer than two such segments is no summary: ().
     """
     starts = [match.start() for match in _PART_ANYWHERE.finditer(text)]
     totals: list[tuple[str, int | float]] = []
     for start, end in pairwise([*starts, len(text)]):
-        segment = text[start:end]
+        segment = _SEGMENT_END.sub("", text[start:end])
         identity = _PART_ANYWHERE.match(segment)
         total = text_points(segment)
-        if identity is not None and total is not None:
+        if identity is not None and total is not None and len(POINTS_MENTION.findall(segment)) == 1:
             totals.append((identity.group(1).lower(), total))
     return tuple(totals) if len(totals) >= 2 else ()

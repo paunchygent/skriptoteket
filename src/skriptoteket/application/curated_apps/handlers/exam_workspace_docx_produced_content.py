@@ -81,8 +81,8 @@ def with_heading_content(produced: ProducedItem, headings: tuple[DocxChunk, ...]
     """Put printed heading fields in metadata, leaving heading words in the body.
 
     The reply's text keeps every points label: a reply paragraph that copies the heading
-    aligns to the heading chunk, and the join shows that chunk without its label
-    (``exam_workspace_docx_context_join.joined_body``), the one owner of that removal.
+    aligns to the heading chunk, and the join shows that chunk with its points wording;
+    the final gate owns its removal (D12, review F1).
     """
     if not headings:
         return produced

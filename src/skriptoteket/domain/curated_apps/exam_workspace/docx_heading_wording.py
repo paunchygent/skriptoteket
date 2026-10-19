@@ -1,7 +1,9 @@
-"""A printed heading's shown wording: without its points label and question number.
+"""A printed heading's shown wording: without its question number.
 
-Deleting the label is deterministic and keeps each shown character's source index, so a
-picture in the heading stays at its place in the shown wording.
+An item heading keeps its points wording for the final gate; only an
+instruction heading loses its points label here. Deleting the label is
+deterministic and keeps each shown character's source index, so a picture in
+the heading stays at its place in the shown wording.
 """
 
 import re
@@ -17,11 +19,13 @@ from skriptoteket.domain.curated_apps.exam_workspace.source_format_projection im
 
 
 def heading_wording(chunk: DocxChunk, item: NativeExamItem | None) -> str:
-    """A printed heading's wording without its points label and question number.
+    """A printed heading's wording without its question number.
 
-    What remains is the heading as printed; a heading that is only a question number
-    and points leaves nothing. A numbered question line set in a heading style, such
-    as "Fråga 6. Ange …", leaves its stem, which the item already prints.
+    An item heading keeps its points wording; the final gate owns its removal
+    (D12, review F1). Only a heading with no item loses its points label here.
+    What remains is the heading as printed; a heading that is only a question
+    number and points leaves nothing. A numbered question line set in a heading
+    style, such as "Fråga 6. Ange …", leaves its stem, which the item already prints.
     """
     return _heading_content(chunk, item, QUESTION_HEADING_LABEL.match(chunk.text))[0]
 
@@ -31,14 +35,18 @@ def _heading_content(
 ) -> tuple[str, tuple[int, ...]]:
     """Normalize heading wording while retaining each shown character's source index.
 
-    Deleted labels consume no shown characters. A picture in deleted wording therefore
-    stays at that boundary; surviving words and collapsed whitespace keep their order.
+    An item heading keeps its points wording; the final gate owns its removal.
+    Only a heading with no item loses its points label here. Deleted labels
+    consume no shown characters. A picture in deleted wording therefore stays at
+    that boundary; surviving words and collapsed whitespace keep their order.
     """
     characters = list(chunk.text)
     origins = list(range(len(chunk.text)))
-    for match in reversed(list(POINT_LABEL.finditer(chunk.text))):
-        characters[match.start() : match.end()] = [" "]
-        origins[match.start() : match.end()] = [match.start()]
+    if item is None:
+        for match in reversed(list(POINT_LABEL.finditer(chunk.text))):
+            characters[match.start() : match.end()] = [" "]
+            origins[match.start() : match.end()] = [match.start()]
+    # An item heading keeps its points wording; the final gate owns it (D12, review F1).
     stripped = "".join(characters)
     words = list(re.finditer(r"\S+", stripped))
     normalized: list[int] = []
@@ -68,7 +76,11 @@ def _heading_content(
 def shown_heading(
     chunk: DocxChunk, item: NativeExamItem | None, question_label: re.Match[str] | None
 ) -> DocxChunk:
-    """Place every picture through the same deterministic deletion as heading text."""
+    """Place every picture through the same deterministic heading wording as heading text.
+
+    An item heading keeps its points wording; the final gate owns its removal
+    (D12, review F1). Only a heading with no item loses its points label here.
+    """
     text, origins = _heading_content(chunk, item, question_label)
     if text == chunk.text:
         return chunk

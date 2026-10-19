@@ -59,6 +59,7 @@ function buildItem(itemId: string, text: string): NativeExamItem {
     suggested_kind: null,
     tick_points: null,
     writing_lines: 8,
+    leftover_points_text: null,
   };
 }
 
@@ -80,7 +81,7 @@ function buildDocument(
     parents: [],
     revision,
     header: { tags: [] },
-    schema_version: "native_exam_document_v9",
+    schema_version: "native_exam_document_v10",
     title: "Prov",
     ...overrides,
   };

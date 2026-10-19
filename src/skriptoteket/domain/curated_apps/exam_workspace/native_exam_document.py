@@ -37,7 +37,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 
-NATIVE_EXAM_DOCUMENT_SCHEMA_VERSION: Literal["native_exam_document_v9"] = "native_exam_document_v9"
+NATIVE_EXAM_DOCUMENT_SCHEMA_VERSION: Literal["native_exam_document_v10"] = (
+    "native_exam_document_v10"
+)
 
 
 class NativeExamAsset(BaseModel):
@@ -104,7 +106,7 @@ class NativeExamHeader(BaseModel):
 class NativeExamDocument(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    schema_version: Literal["native_exam_document_v9"] = NATIVE_EXAM_DOCUMENT_SCHEMA_VERSION
+    schema_version: Literal["native_exam_document_v10"] = NATIVE_EXAM_DOCUMENT_SCHEMA_VERSION
     document_id: UUID
     revision: int = Field(ge=1)
     title: str

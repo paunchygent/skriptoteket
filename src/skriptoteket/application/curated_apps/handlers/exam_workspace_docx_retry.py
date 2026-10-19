@@ -90,6 +90,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeExamItemKind,
     NativeParseOrigin,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.points_wording import (
+    with_settled_points_wording,
+)
 from skriptoteket.domain.errors import DomainError, ErrorCode, validation_error
 from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.exam_workspace import ExamWorkspaceContainerCodecProtocol
@@ -247,7 +250,8 @@ class RetryExamWorkspaceItemHandler:
             )
         }
         return ExamWorkspaceItemRetryResponse(
-            lineage_id=lineage_id, item=gated_item(item, by_anchor)
+            lineage_id=lineage_id,
+            item=with_settled_points_wording(gated_item(item, by_anchor), read_heading_points=None),
         )
 
     async def _reconvert(
