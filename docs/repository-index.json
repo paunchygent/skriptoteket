@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "ec0541ec83d004c1944a14bb6cb189153b79c4f9964c074b9f65fbcfbe558ec9",
+  "source_set_digest": "08ec300e3189645306222ac75dd49f14e55f846e653ecfc5dd247dd96264bffc",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6689,7 +6689,7 @@
     {
       "id": "TASK-SKRIPT-40-04-10",
       "type": "task",
-      "title": "Teachers see which questions and parts cause a printed-total difference and can dismiss it",
+      "title": "Teachers see a printed-total difference in one line and fix the exam text or the questions",
       "path": "docs/backlog/tasks/task-skript-40-04-10-teachers-see-which-questions-and-parts-cause-a-printed-total-difference-and-can-dismiss-it.md",
       "status": "in_progress",
       "task_kind": "story",
