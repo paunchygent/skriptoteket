@@ -100,7 +100,10 @@ changes. Under D7 this goes to the parent before merge (question Q3).
   (`u1-after.log`). `pdm run lint` passes on the code; backend typecheck is clean. The
   frontend typecheck cannot run here (`vue-tsc` is not installed), and this task touches
   no frontend code.
-- Waiting on: Q3 (the replay consequences) and the orchestrator's domain-suite go.
+- Domain suite at `9ff7dc5a` (orchestrator go 2026-10-19): 4614 passed, 59 skipped
+  (`~/logs/suite-39-04-20.log`).
+- Waiting on: Q3 (the replay consequences, recommendation A), then independent review
+  routed by the orchestrator. Q1 and Q2 are open follow-up questions.
 - Branch `codex/task-skript-39-04-score-field-remote`, worktree
   `/home/paunchygent/apps/skriptoteket-task-skript-39-04-score-field-remote`; never pushed.
 - Retained root:
