@@ -7,7 +7,7 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-19'
-status: proposed
+status: ready
 closeout_review:
   record: inline
   status: not_started
@@ -20,7 +20,7 @@ backlog_document_profile: contract-derived
 
 ## Implementation Contract
 
-The user ruled on 2026-10-19 (given on the Mac, relayed by the Mac parent) that the printed PDF keeps each question's text together across page breaks. Their example of a wrong split: omprov Fråga 3 "Identifiera huvudord / Stryk under huvudordet i varje nominalfras." ends one page, and its items 1-4 and "Poäng: 4 poäng" start the next. This task makes the print preview, the student PDF and the PDF med facit follow K1-K5. The user answered the open questions on 2026-10-19 (K12-K15).
+The user ruled on 2026-10-19 (given on the Mac, relayed by the Mac parent) that the printed PDF keeps each question's text together across page breaks. Their example of a wrong split: omprov Fråga 3 "Identifiera huvudord / Stryk under huvudordet i varje nominalfras." ends one page, and its items 1-4 and "Poäng: 4 poäng" start the next. This task makes the print preview, the student PDF and the PDF med facit follow K1-K5. The user answered the open questions on 2026-10-19 (K12-K15). The user accepted the plan as built on 2026-10-19 (AskUserQuestion in the Hemma orchestrator session; agent-planning:user-closure-gate), and the task is ready.
 
 Root cause, from the code at `61e460f6`: a question prints as one flat `<section class="print-question">` of sibling blocks (`exam_print_html.py:197-221`, built by `exam_print_document._question_blocks`, lines 272-330): an `h3`, one `p.print-body` per body paragraph (the items are paragraphs, not a list), `p.print-points`, then the answer form (`div.writing-area`, one `p.print-option` per alternative, or `table.print-grid`). The section and its paragraphs carry no fragmentation rule, so WeasyPrint may break between any two siblings; `h3 { break-after: avoid }` only binds the heading to the first paragraph (`exam_print_html.py:65-73`). The only other rules are `break-inside: avoid` on `.print-instruction`, `.writing-line` and `.print-answer-key`.
 
@@ -92,4 +92,4 @@ Focused tests only:
 
 ## Resume here
 
-2026-10-19, lead `c30dba85`: the domain suite passed (5253 passed, 59 skipped). Review `9441eecb` found F1 (medium): gap-fill paragraphs could split inside a question taller than a page. A fail-first case and the repair landed at `ee021468` and `16c26169`: the house `p` rule now carries `break-inside: avoid` for every paragraph class. origin/main `eba9d0f2` is merged at `0dd5e509`, and the focused print tests pass (389). Next: the staging walk (K11), then the TASK-SKRIPT-39-04-20 "/" check once that task is on main.
+2026-10-19, lead `c30dba85`: the user accepted the plan as built, and the status is ready. The code, the F1 repair and the merge of origin/main `eba9d0f2` are committed, and the focused print tests pass (389). Next: the Mac parent merges and runs the staging walk (K11), then the TASK-SKRIPT-39-04-20 "/" check once that task is on main.

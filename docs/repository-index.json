@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "a430130e2dbed8cf39f0b0cb43cbba2cb5bde18074179dffaeecb94ed39c5a71",
+  "source_set_digest": "9b7216dda963198b3a8c2a2e4af09758caf565c2a3ac2f2af3ecbe5612a46d44",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6653,7 +6653,7 @@
       "type": "task",
       "title": "Printed PDF exams keep each question's text and its alternatives on one page",
       "path": "docs/backlog/tasks/task-skript-40-04-12-printed-pdf-exams-keep-each-question-s-text-and-its-alternatives-on-one-page.md",
-      "status": "proposed",
+      "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
