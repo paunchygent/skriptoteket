@@ -1,5 +1,5 @@
 /**
- * Exam workspace rich-text editor: the gap tool click path.
+ * Exam workspace rich-text editor: the gap tool pointer and selection conversion.
  *
  * Expected behavior (TASK-SKRIPT-40-04-09 G1):
  *   With the `gapTool` prop on, a primary click inside a word turns that word
@@ -17,151 +17,38 @@
  * real `mousedown` button 0 followed by `mouseup` button 0; any other button
  * or a release with no press in this editor converts nothing.
  * The button teleports to document.body, so it is found through `document`.
+ * Shared mount helpers live in `ExamWorkspaceRichTextEditor.gapTool.specSupport`;
+ * shortcut and Escape wiring live in `ExamWorkspaceRichTextEditor.gapToolWiring.spec`.
  */
 
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { mount } from "@vue/test-utils";
-import type { VueWrapper } from "@vue/test-utils";
-import { Editor } from "@tiptap/core";
-import { defineComponent, h, nextTick, reactive } from "vue";
+import { nextTick } from "vue";
 
-import type { NativeExamBodyParagraph } from "../../../api/examWorkspace";
-import ExamWorkspaceRichTextEditor from "./ExamWorkspaceRichTextEditor.vue";
 import {
   atomPos,
   gap,
   paragraph,
   posIn,
-  releaseEditor,
   text,
 } from "./ExamWorkspaceRichTextEditor.specSupport";
-import { provideExamWorkspaceHistoryKeys } from "./examWorkspaceHistoryKeys";
-import type { ExamWorkspaceHistoryKeys } from "./examWorkspaceHistoryKeys";
 import {
-  dispatchGapToolClick,
+  clickAt,
+  closeGapToolEditors,
+  gapButton,
+  openEditor,
+  pressMouse,
+  releaseMouse,
+  stubGeometry,
+} from "./ExamWorkspaceRichTextEditor.gapTool.specSupport";
+import {
   gapPointerMiddle,
   stubLinearGapPointerGeometry,
 } from "./examWorkspaceGapToolPointer.specSupport";
-import { provideRichTextTargetRegistry } from "./examWorkspaceRichTextTarget";
-
-type Body = NativeExamBodyParagraph[];
-type Creation = [Body, string, string];
-
-type Opened = {
-  wrapper: VueWrapper;
-  editor: Editor;
-  surface: HTMLElement;
-  updates: Array<[Body, boolean]>;
-  creations: Creation[];
-  activations: Array<[string, HTMLElement]>;
-  toggles: string[];
-  escapes: string[];
-  setProps: (props: Partial<EditorProps>) => Promise<void>;
-};
-
-type EditorProps = {
-  body: Body;
-  gapsInteractive?: boolean;
-  disabled?: boolean;
-  nextGapId?: string | null;
-  gapTool?: boolean;
-};
-
-const openedWrappers: VueWrapper[] = [];
-
-async function openEditor(initial: EditorProps): Promise<Opened> {
-  const updates: Array<[Body, boolean]> = [];
-  const creations: Creation[] = [];
-  const activations: Array<[string, HTMLElement]> = [];
-  const toggles: string[] = [];
-  const escapes: string[] = [];
-  const keys: ExamWorkspaceHistoryKeys = { undo: vi.fn(), redo: vi.fn() };
-  const live = reactive<EditorProps>({ ...initial });
-  const Host = defineComponent({
-    setup() {
-      provideRichTextTargetRegistry();
-      provideExamWorkspaceHistoryKeys(keys);
-      return () =>
-        h(ExamWorkspaceRichTextEditor, {
-          label: "Frågetext",
-          testId: "editor-under-test",
-          body: live.body,
-          gapsInteractive: live.gapsInteractive,
-          disabled: live.disabled,
-          nextGapId: live.nextGapId,
-          gapTool: live.gapTool,
-          onUpdate: (body: Body, structural: boolean) => updates.push([body, structural]),
-          onCreateGap: (body: Body, gapId: string, seed: string) => creations.push([body, gapId, seed]),
-          onActivateGap: (gapId: string, element: HTMLElement) => activations.push([gapId, element]),
-          onToggleGapTool: () => toggles.push("toggle"),
-          onEscape: () => escapes.push("escape"),
-        });
-    },
-  });
-  const wrapper = mount(Host, { attachTo: document.body });
-  await nextTick();
-  await nextTick();
-  const candidate = wrapper.get("[data-test='editor-under-test']").element;
-  if (!(candidate instanceof HTMLElement) || !("editor" in candidate)) {
-    throw new Error("the editor did not mount");
-  }
-  const attached = candidate.editor;
-  if (!(attached instanceof Editor)) {
-    throw new Error("the editor did not mount");
-  }
-  openedWrappers.push(wrapper);
-  return {
-    wrapper,
-    editor: attached,
-    surface: candidate,
-    updates,
-    creations,
-    activations,
-    toggles,
-    escapes,
-    setProps: async (props) => {
-      Object.assign(live, props);
-      await nextTick();
-    },
-  };
-}
-
-/** A primary click at `pos` with the pointer at `clientX`; returns whether a handler consumed it. */
-function clickAt(opened: Opened, pos: number, clientX = 0): unknown {
-  return dispatchGapToolClick(opened.editor, pos, clientX);
-}
-
-/** A real DOM press on the surface, as ProseMirror's `handleDOMEvents` sees it. */
-function pressMouse(opened: Opened, type: "mousedown" | "mouseup", button: number): void {
-  opened.surface.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true, button }));
-}
-
-/** A primary drag release: mousedown button 0, then a real mouseup, then the tool's next tick. */
-async function releaseMouse(opened: Opened): Promise<void> {
-  pressMouse(opened, "mousedown", 0);
-  pressMouse(opened, "mouseup", 0);
-  await new Promise((resolve) => setTimeout(resolve, 0));
-  await nextTick();
-}
-
-function stubGeometry(opened: Opened): void {
-  const rect = new DOMRect(50, 60, 40, 14);
-  vi.spyOn(opened.editor.view, "coordsAtPos").mockReturnValue(rect);
-}
-
-/** The floating button teleports to `document.body`, outside the wrapper. */
-function gapButton(): HTMLElement | null {
-  const candidate = document.body.querySelector("[data-test='exam-workspace-make-gap']");
-  return candidate instanceof HTMLElement ? candidate : null;
-}
 
 describe("ExamWorkspaceRichTextEditor gap tool", () => {
   afterEach(() => {
     vi.restoreAllMocks();
-    while (openedWrappers.length > 0) {
-      openedWrappers.pop()?.unmount();
-    }
-    releaseEditor();
+    closeGapToolEditors();
   });
 
   it("turns the clicked word into a gap at once, with no floating button", async () => {
@@ -465,81 +352,5 @@ describe("ExamWorkspaceRichTextEditor gap tool", () => {
     expect(opened.creations).toHaveLength(0);
     expect(opened.updates).toHaveLength(0);
     expect(gapButton()).toBeNull();
-  });
-});
-
-describe("ExamWorkspaceRichTextEditor gap tool wiring", () => {
-  /** Ctrl+Alt+G as ProseMirror's keymap reads it: the key code comes from `keyCode`, as browsers set it. */
-  function dispatchGapShortcut(
-    wired: Opened,
-    key: string,
-    modifiers: { altKey?: boolean; ctrlKey?: boolean; metaKey?: boolean; shiftKey?: boolean } = {},
-  ): KeyboardEvent {
-    const event = new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true, ...modifiers });
-    Object.defineProperty(event, "keyCode", { value: 71 });
-    Object.defineProperty(event, "which", { value: 71 });
-    wired.surface.dispatchEvent(event);
-    return event;
-  }
-
-  function pressEscape(wired: Opened): void {
-    wired.surface.dispatchEvent(
-      new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }),
-    );
-  }
-
-  it("emits toggleGapTool on Ctrl+Alt+G while gaps are interactive", async () => {
-    const wired = await openEditor({
-      body: [paragraph(text("hello world"))],
-      gapsInteractive: true,
-      nextGapId: "gap_002",
-    });
-
-    const event = dispatchGapShortcut(wired, "g", { ctrlKey: true, altKey: true });
-
-    expect(wired.toggles).toHaveLength(1);
-    expect(wired.escapes).toHaveLength(0);
-    expect(event.defaultPrevented).toBe(true);
-    expect(wired.editor.getText()).toBe("hello world");
-  });
-
-  it("does not emit toggleGapTool while gaps are not interactive or while disabled", async () => {
-    const wired = await openEditor({
-      body: [paragraph(text("hello world"))],
-      gapsInteractive: false,
-      nextGapId: "gap_002",
-    });
-
-    dispatchGapShortcut(wired, "g", { ctrlKey: true, altKey: true });
-    expect(wired.toggles).toHaveLength(0);
-
-    await wired.setProps({ gapsInteractive: true, disabled: true });
-    const event = dispatchGapShortcut(wired, "g", { ctrlKey: true, altKey: true });
-    expect(wired.toggles).toHaveLength(0);
-    expect(event.defaultPrevented).toBe(false);
-  });
-
-  it("emits escape on Escape, after the floating button takes its own Escape", async () => {
-    const wired = await openEditor({
-      body: [paragraph(text("hello world"))],
-      gapsInteractive: true,
-      nextGapId: "gap_002",
-    });
-    stubGeometry(wired);
-    wired.editor.commands.setTextSelection(posIn(wired.editor, "world", 1));
-    clickAt(wired, posIn(wired.editor, "world", 1));
-    await nextTick();
-    await nextTick();
-    expect(gapButton()).not.toBeNull();
-
-    pressEscape(wired);
-    await nextTick();
-    expect(gapButton()).toBeNull();
-    expect(wired.escapes).toHaveLength(0);
-
-    pressEscape(wired);
-    await nextTick();
-    expect(wired.escapes).toHaveLength(1);
-    expect(wired.toggles).toHaveLength(0);
   });
 });
