@@ -28,6 +28,7 @@ import * as publicApi from "../../../api/publicExamWorkspace";
 import type { NativeExamBodyParagraph } from "../../../api/examWorkspace";
 import { createGuestExamWorkspaceStore } from "./examWorkspaceGuestStore";
 import { createInMemoryExamWorkspaceGuestDraftStorage } from "./examWorkspaceGuestDraftStorage";
+import { createExamWorkspaceGuestDraftStorage } from "./examWorkspaceGuestDraftStorage";
 import { guestDocumentResponse, newGuestDraft } from "./examWorkspaceGuestDraft";
 import { buildParentDocument } from "./examWorkspaceParentDocument.specSupport";
 import { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
@@ -115,7 +116,10 @@ async function opened() {
   const backing = createInMemoryExamWorkspaceGuestDraftStorage();
   const original = newGuestDraft(buildParentDocument(), guestIds(), []);
   await backing.replaceIf(null, { assets: {}, draft: original });
-  const { editing, wrapper } = await openWith(backing, original);
+  const { editing, wrapper } = await openWith(
+    createExamWorkspaceGuestDraftStorage({ port: backing }),
+    original,
+  );
   return { backing, editing, wrapper };
 }
 
@@ -264,7 +268,10 @@ describe("guest departure across the sign-in redirect", () => {
         return backing.replaceIf(cursor, next);
       },
     };
-    const { editing, wrapper } = await openWith(port, original);
+    const { editing, wrapper } = await openWith(
+      createExamWorkspaceGuestDraftStorage({ port }),
+      original,
+    );
     const addSpy = vi.spyOn(window, "addEventListener");
     const removeSpy = vi.spyOn(window, "removeEventListener");
     try {

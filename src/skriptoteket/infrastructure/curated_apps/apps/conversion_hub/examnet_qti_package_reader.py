@@ -71,6 +71,8 @@ class ExamNetQtiPackageReader:
         if manifest_bytes is None:
             raise validation_error(_MISSING_MANIFEST)
         manifest = _parse_xml(manifest_bytes, path=_MANIFEST_NAME)
+        if _namespace_of(manifest.tag) != IMSCP_NAMESPACE:
+            raise validation_error(_UNSUPPORTED_VERSION)
 
         item_paths = _item_paths_in_test_order(manifest=manifest, files=files)
         if not item_paths:

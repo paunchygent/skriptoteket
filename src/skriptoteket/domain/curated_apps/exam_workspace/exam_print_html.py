@@ -19,6 +19,7 @@ import base64
 import hashlib
 from collections.abc import Mapping, Sequence
 from html import escape
+from itertools import groupby
 
 from skriptoteket.domain.curated_apps.exam_conversion import (
     exam_print_house_template as house_template,
@@ -91,11 +92,14 @@ body {{
   line-height: {template.HOUSE_LINE_HEIGHT};
 }}
 {_heading_rules()}
-p {{ margin: {_block_margin_css(template.PARAGRAPH_SPACING)} }}
+p {{ margin: {_block_margin_css(template.PARAGRAPH_SPACING)}; break-inside: avoid }}
 .print-question {{ margin: 0 0 {template.QUESTION_SPACE_AFTER_MM}mm }}
+.print-question-text {{ break-inside: avoid }}
+.print-options {{ break-inside: avoid }}
 .print-instruction {{
   margin: 0 0 {template.INSTRUCTION_SPACE_AFTER_MM}mm;
   break-inside: avoid;
+  break-after: avoid;
 }}
 p.print-gap_line {{ line-height: {template.WRITING_LINE_PITCH_MM}mm }}
 p.print-points {{ font-weight: {points_weight} }}
@@ -124,8 +128,10 @@ p.print-points {{ font-weight: {points_weight} }}
   border-collapse: collapse;
   width: 100%;
   table-layout: fixed;
+  break-inside: avoid;
   margin: {_block_margin_css(template.GRID_SPACING)};
 }}
+.print-grid tr {{ break-inside: avoid }}
 .print-grid th, .print-grid td {{
   border: {template.RULE_WEIGHT_PT}pt solid #{template.TEXT_COLOR_HEX};
   padding: {template.GRID_CELL_PADDING_MM}mm;
@@ -197,9 +203,20 @@ class _PrintHtmlRenderer:
         item_id = escape(entry.item_id, quote=True)
         return (
             f'<section class="print-question" id="exam-item-{item_id}">\n'
-            f"{self._blocks(entry.blocks)}\n"
+            f'<div class="print-question-text">\n{self._blocks(entry.text)}\n</div>\n'
+            f"{self._answer_blocks(entry.answer)}\n"
             "</section>"
         )
+
+    def _answer_blocks(self, blocks: tuple[PrintBlock, ...]) -> str:
+        """The answer form: each run of options wrapped in its own keep-together div."""
+        parts: list[str] = []
+        for is_option, run in groupby(blocks, key=lambda block: isinstance(block, PrintOption)):
+            rendered = self._blocks(tuple(run))
+            parts.append(
+                f'<div class="print-options">\n{rendered}\n</div>' if is_option else rendered
+            )
+        return "\n".join(parts)
 
     def _blocks(self, blocks: tuple[PrintBlock, ...]) -> str:
         return "\n".join(self._block(block) for block in blocks)

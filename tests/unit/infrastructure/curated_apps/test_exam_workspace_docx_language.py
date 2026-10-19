@@ -39,6 +39,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_docx_writer import (  # noqa: E501
     ExamWorkspaceDocxWriter,
 )
+from tests.unit.domain.curated_apps.exam_workspace.exam_print_document_test_support import (
+    entry_blocks,
+)
 from tests.unit.scripts.exam_conversion_corpus_support import RECORDED_STEMS, replayed
 
 _ENGLISH = {"Question", "Gap", "Points", "missing", "Answer key", "Correct answer", "Pair"}
@@ -77,7 +80,7 @@ def _facit_generated_lines(stem: str) -> tuple[list[str], bool]:
     print_document = build_print_document(document, variant=ExamPrintVariant.FACIT)
     lines: list[str] = []
     for entry in print_document.entries:
-        for block in entry.blocks:
+        for block in entry_blocks(entry):
             if isinstance(block, PrintAnswerKey):
                 lines.extend(block.lines)
             elif isinstance(block, PrintHeading):

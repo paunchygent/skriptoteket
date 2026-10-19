@@ -11,6 +11,7 @@
  */
 
 import { describe, expect, it, vi } from "vitest";
+import { ref } from "vue";
 
 import type { NativeExamDocument } from "../../../api/examWorkspace";
 import {
@@ -146,21 +147,42 @@ describe("examWorkspaceGuestDraftStorage", () => {
     expect((await storage.load())?.draft.cursor).toBe(outcome.draft.cursor);
   });
 
+  it("stores a reactive draft document through the factory and loads plain equal content", async () => {
+    const storage = createExamWorkspaceGuestDraftStorage({
+      port: createInMemoryExamWorkspaceGuestDraftStorage(),
+    });
+    const edited = ref(exam("Reaktiv"));
+    const draft = newGuestDraft(edited.value, createIds(), []);
+
+    expect(await storage.replaceIf(null, { assets: {}, draft })).toBe(true);
+
+    const loaded = await storage.load();
+    expect(loaded?.draft.saved_document).toEqual(exam("Reaktiv"));
+    expect(loaded?.draft.saved_document).not.toBe(edited.value);
+    expect(loaded?.draft.saved_document.items).not.toBe(edited.value.items);
+  });
+
   it("uses the injected port instead of opening IndexedDB", async () => {
     const port: ExamWorkspaceGuestDraftStoragePort = {
-      clearIf: vi.fn(async () => true),
-      load: vi.fn(async () => null),
-      replaceIf: vi.fn(async () => true),
+      clearIf: vi.fn<ExamWorkspaceGuestDraftStoragePort["clearIf"]>(async () => true),
+      load: vi.fn<ExamWorkspaceGuestDraftStoragePort["load"]>(async () => null),
+      replaceIf: vi.fn<ExamWorkspaceGuestDraftStoragePort["replaceIf"]>(async () => true),
     };
     const storage = createExamWorkspaceGuestDraftStorage({ port });
     const stored = storedDraft();
 
     expect(await storage.replaceIf(null, stored)).toBe(true);
-    expect(port.replaceIf).toHaveBeenCalledWith(null, stored);
+    expect(port.replaceIf).toHaveBeenCalledTimes(1);
+    const [cursor, sent] = vi.mocked(port.replaceIf).mock.calls[0]!;
+    expect(cursor).toBeNull();
+    expect(sent).toEqual(stored);
+    expect(sent).not.toBe(stored);
+    expect(sent.draft).not.toBe(stored.draft);
+    expect(sent.assets["asset_001"]).toBe(stored.assets["asset_001"]);
     expect(await storage.load()).toBeNull();
     expect(await storage.clearIf(stored.draft.cursor)).toBe(true);
 
-    expect(storage).toBe(port);
+    expect(storage).not.toBe(port);
     expect(port.clearIf).toHaveBeenCalledTimes(1);
   });
 });
