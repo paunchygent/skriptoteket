@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "43e9207328b2089812bf623a685527a2146f83023e26fd526827eedc419d8e07",
+  "source_set_digest": "d33089b10662fdf079f8ffa79e714b8d283f8465719d73500b77ee0771f24a3a",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5244,6 +5244,25 @@
       }
     },
     {
+      "id": "TASK-SKRIPT-39-04-20",
+      "type": "task",
+      "title": "A paragraph that holds only a score field is consumed whole as the points source and leaves no slash in the question",
+      "path": "docs/backlog/tasks/task-skript-39-04-20-a-paragraph-that-holds-only-a-score-field-is-consumed-whole-as-the-points-source-and-leaves-no-slash-in-the-question.md",
+      "status": "in_progress",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
       "id": "TASK-SKRIPT-39-05-01",
       "type": "task",
       "title": "Walking skeleton for AI-first DOCX conversion as a background job",
@@ -6809,6 +6828,25 @@
       "type": "task",
       "title": "The public guest DigiExam converter line is removed",
       "path": "docs/backlog/tasks/task-skript-41-02-03-the-public-guest-digiexam-converter-line-is-removed.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-41-02",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-41-02-04",
+      "type": "task",
+      "title": "The exam workspace fills the desktop window and the editor column is the widest",
+      "path": "docs/backlog/tasks/task-skript-41-02-04-the-exam-workspace-fills-the-desktop-window-and-the-editor-column-is-the-widest.md",
       "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-41-02",

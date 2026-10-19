@@ -12,15 +12,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useHelp } from "../help/useHelp";
 import LandingLayout from "./LandingLayout.vue";
 
-const layoutMocks = vi.hoisted(() => ({
-  route: {
+const layoutMocks = vi.hoisted(() => {
+  const route: { name: string; params: Record<string, unknown> } = {
     name: "home",
     params: {},
-  } as {
-    name: string;
-    params: Record<string, unknown>;
-  },
-}));
+  };
+  return { route };
+});
 
 vi.mock("vue-router", () => ({
   RouterLink: {
@@ -92,8 +90,7 @@ describe("LandingLayout", () => {
     );
   });
 
-  it("opens the shared help panel from the public Hjälp button and reflects it", async () => {
-    const help = useHelp();
+  it("opens the shared help panel from the public Hjälp button and reflects it", async () => {    const help = useHelp();
     help.close({ restoreFocus: false });
 
     const wrapper = mount(LandingLayout, {
@@ -110,5 +107,68 @@ describe("LandingLayout", () => {
     expect(helpButton.attributes("aria-expanded")).toBe("true");
 
     help.close({ restoreFocus: false });
+  });
+
+  it("fills the frame on the public exam workspace capability route", () => {
+    layoutMocks.route.name = "public-app-capability-detail";
+    layoutMocks.route.params = {
+      appId: "documents.conversion_hub",
+      publicCapabilitySlug: "exam-converter",
+    };
+
+    const wrapper = mount(LandingLayout, {
+      slots: {
+        default: "<div>Innehåll</div>",
+      },
+    });
+
+    expect(wrapper.get(".landing-main").classes()).toContain("landing-main--workspace");
+    expect(wrapper.get(".landing-frame").classes()).toContain("landing-frame--workspace");
+  });
+
+  it("fills the frame on the public exam workspace app route", () => {
+    layoutMocks.route.name = "public-app-detail";
+    layoutMocks.route.params = {
+      appId: "documents.conversion_hub",
+    };
+
+    const wrapper = mount(LandingLayout, {
+      slots: {
+        default: "<div>Innehåll</div>",
+      },
+    });
+
+    expect(wrapper.get(".landing-main").classes()).toContain("landing-main--workspace");
+    expect(wrapper.get(".landing-frame").classes()).toContain("landing-frame--workspace");
+  });
+
+  it("keeps the centred column on another public app route", () => {
+    layoutMocks.route.name = "public-app-detail";
+    layoutMocks.route.params = {
+      appId: "classroom.group-seating-studio",
+    };
+
+    const wrapper = mount(LandingLayout, {
+      slots: {
+        default: "<div>Innehåll</div>",
+      },
+    });
+
+    expect(wrapper.get(".landing-main").classes()).not.toContain("landing-main--workspace");
+    expect(wrapper.get(".landing-frame").classes()).not.toContain("landing-frame--workspace");
+  });
+
+  it("keeps the centred column on the landing home route", () => {
+    layoutMocks.route.name = "home";
+    layoutMocks.route.params = {};
+
+    const wrapper = mount(LandingLayout, {
+      slots: {
+        default: "<div>Innehåll</div>",
+      },
+    });
+
+    expect(wrapper.get(".landing-main").classes()).not.toContain("landing-main--workspace");
+    expect(wrapper.get(".landing-frame").classes()).not.toContain("landing-frame--workspace");
   });
 });

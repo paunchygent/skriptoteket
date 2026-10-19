@@ -17,18 +17,32 @@
 import { computed, nextTick, ref, watch } from "vue";
 
 import { UiGlyph } from "../../../components/ui";
+import ExamWorkspaceColumnHandle from "./ExamWorkspaceColumnHandle.vue";
 
-const props = defineProps<{
-  pages: string[];
-  /** Question item id -> 0-based page its first printed page sits on. */
-  questionPages: Record<string, number>;
-  loading: boolean;
-  blocked: boolean;
-  message: string | null;
-  selectedItemId: string | null;
+const props = withDefaults(
+  defineProps<{
+    pages: string[];
+    /** Question item id -> 0-based page its first printed page sits on. */
+    questionPages: Record<string, number>;
+    loading: boolean;
+    blocked: boolean;
+    message: string | null;
+    selectedItemId: string | null;
+    /** The desktop resize handle is wanted; only ever set on desktop. */
+    handle?: boolean;
+  }>(),
+  { handle: false },
+);
+
+const emit = defineEmits<{
+  close: [];
+  /** The resize handle reports a dragged or stepped width in px. */
+  set: [px: number];
+  /** The resize handle resets to the default width on double-click. */
+  reset: [];
+  /** Enter on the resize handle; the view closes the panel like its ×. */
+  "toggle-collapse": [];
 }>();
-
-const emit = defineEmits<{ close: [] }>();
 
 const scrollArea = ref<HTMLElement | null>(null);
 
@@ -71,58 +85,70 @@ watch(
     aria-label="Förhandsgranska"
     data-test="exam-workspace-print-preview"
   >
-    <div class="pp__head">
-      <h2 class="pp__title">
-        Förhandsgranska
-      </h2>
-      <button
-        type="button"
-        class="xw-btn xw-btn--icon xw-btn--ghost"
-        aria-label="Stäng förhandsgranskningen"
-        title="Stäng"
-        data-test="exam-workspace-print-preview-close"
-        @click="emit('close')"
+    <div class="pp__frame">
+      <div class="pp__head">
+        <h2 class="pp__title">
+          Förhandsgranska
+        </h2>
+        <button
+          type="button"
+          class="xw-btn xw-btn--icon xw-btn--ghost"
+          aria-label="Stäng förhandsgranskningen"
+          title="Stäng"
+          data-test="exam-workspace-print-preview-close"
+          @click="emit('close')"
+        >
+          <UiGlyph
+            meaning="close"
+            :size="20"
+          />
+        </button>
+      </div>
+      <div
+        ref="scrollArea"
+        class="pp__body"
       >
-        <UiGlyph
-          meaning="close"
-          :size="20"
-        />
-      </button>
+        <p
+          v-if="status"
+          class="pp__status"
+          role="status"
+          data-test="exam-workspace-print-preview-status"
+        >
+          {{ status }}
+        </p>
+        <p
+          v-if="message"
+          class="pp__detail"
+          data-test="exam-workspace-print-preview-message"
+        >
+          {{ message }}
+        </p>
+        <img
+          v-for="(page, index) in pages"
+          :key="index"
+          class="pp__page"
+          :src="page"
+          :alt="`Sida ${index + 1}`"
+          :data-page-index="index"
+        >
+      </div>
     </div>
-    <div
-      ref="scrollArea"
-      class="pp__body"
-    >
-      <p
-        v-if="status"
-        class="pp__status"
-        role="status"
-        data-test="exam-workspace-print-preview-status"
-      >
-        {{ status }}
-      </p>
-      <p
-        v-if="message"
-        class="pp__detail"
-        data-test="exam-workspace-print-preview-message"
-      >
-        {{ message }}
-      </p>
-      <img
-        v-for="(page, index) in pages"
-        :key="index"
-        class="pp__page"
-        :src="page"
-        :alt="`Sida ${index + 1}`"
-        :data-page-index="index"
-      >
-    </div>
+    <ExamWorkspaceColumnHandle
+      v-if="handle"
+      edge="side"
+      column="preview"
+      controls="exam-workspace-side-panel"
+      label="Ändra bredd på panelen"
+      @set="emit('set', $event)"
+      @reset="emit('reset')"
+      @toggle-collapse="emit('toggle-collapse')"
+    />
   </aside>
 </template>
 
 <style scoped>
 .pp {
-  display: flex; flex-direction: column; min-height: 0;
+  display: flex; flex-direction: column; min-height: 0; position: relative;
   border-left: 1px solid var(--huleedu-surface-divider); background: var(--huleedu-canvas);
 }
 .pp__head {
@@ -130,6 +156,7 @@ watch(
   padding: 0 var(--huleedu-space-3) 0 var(--huleedu-space-5); border-bottom: 1px solid var(--huleedu-surface-divider);
 }
 .pp__title { flex: 1; margin: 0; font-size: var(--huleedu-text-base); font-weight: var(--huleedu-font-semibold); }
+.pp__frame { display: flex; flex-direction: column; flex: 1; min-height: 0; min-width: 0; }
 .pp__body {
   display: grid; align-content: start; gap: var(--huleedu-space-4); flex: 1; min-height: 0; overflow-y: auto;
   padding: var(--huleedu-space-5);
@@ -144,9 +171,14 @@ watch(
 @media (max-width: 1279px) {
   .pp {
     position: absolute; top: 12px; right: 12px; bottom: 12px; z-index: 12; overflow: hidden;
-    width: min(var(--xw-drawer, 380px), calc(100% - 24px));
+    width: min(var(--xw-float), calc(100% - 24px));
     border: 1px solid var(--huleedu-panel-border); border-radius: var(--huleedu-radius-xl);
     background: var(--huleedu-modal); box-shadow: var(--huleedu-shadow-md);
   }
+}
+@media (min-width: 1280px) {
+  /* Below its minimum the panel keeps its minimum layout and scrolls inside itself. */
+  .pp__frame { overflow-x: auto; }
+  .pp__frame > * { min-width: var(--xw-preview-min); }
 }
 </style>
