@@ -56,13 +56,13 @@ class TestWritingArea:
         parsed = Document(io.BytesIO(ExamWorkspaceDocxWriter().build_docx_bytes(document)))
         paragraphs = list(parsed.paragraphs)
 
-        points_at = next(
+        stem_at = next(
             index
             for index, paragraph in enumerate(paragraphs)
-            if paragraph.text == "Poäng: 4 poäng"
+            if paragraph.text == "Resonera om renässansen. (4 p)"
         )
-        # A free-text question ends with its writing area, so the points line's tail is it.
-        ruled = paragraphs[points_at + 1 :]
+        # A free-text question ends with its writing area, so the stem's tail is it.
+        ruled = paragraphs[stem_at + 1 :]
         assert len(ruled) == count
         for paragraph in ruled:
             assert paragraph.text == ""
@@ -101,7 +101,9 @@ class TestGapRules:
         document = make_document(sentence_gap_item(accepted, origin=origin))
         parsed = Document(io.BytesIO(ExamWorkspaceDocxWriter().build_docx_bytes(document)))
 
-        paragraph = only_paragraph(list(parsed.paragraphs), "Svar: " + NBSP * expected_count)
+        paragraph = only_paragraph(
+            list(parsed.paragraphs), "Svar: " + NBSP * expected_count + " (2 p)"
+        )
         assert paragraph.runs[0].text == "Svar: "
         assert blank_run_count(paragraph) == expected_count
         assert paragraph.paragraph_format.line_spacing.mm == pytest.approx(10, abs=0.01)
