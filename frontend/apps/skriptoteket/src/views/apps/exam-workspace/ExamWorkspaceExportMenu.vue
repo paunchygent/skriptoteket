@@ -245,12 +245,12 @@ function choose(action: () => void): void {
 .xw-mi__stack .ex-note { display: block; white-space: normal; color: var(--huleedu-navy-70); }
 @media (max-width: 1279px) {
   .ex-word { display: none; }
-  .ex-trigger { width: var(--xw-ctl-fine, 36px); padding: 0; }
+  .ex-trigger { width: calc(var(--huleedu-action-control-height) - var(--huleedu-space-2)); padding: 0; }
 }
 @media (max-width: 1279px) and (pointer: coarse) {
-  .ex-trigger { width: var(--xw-ctl, 44px); }
+  .ex-trigger { width: var(--huleedu-action-control-height); }
 }
 @media (max-width: 767px) {
-  .ex-trigger { width: var(--xw-ctl, 44px); }
+  .ex-trigger { width: var(--huleedu-action-control-height); }
 }
 </style>
