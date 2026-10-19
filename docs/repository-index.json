@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "f39be66c052ab9d276d26f266185fdc2e03f8e91d1293566cabf544f38d63295",
+  "source_set_digest": "d2927b32abb734199ffccc238d1e96d59532e9c0a9fed5812121da3fd19b3b35",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6790,7 +6790,7 @@
       "type": "task",
       "title": "Guests open, edit and export exams in the workspace without login",
       "path": "docs/backlog/tasks/task-skript-41-02-02-guests-open-edit-and-export-exams-in-the-workspace-without-login.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-41-02",
       "owners": [
@@ -6801,7 +6801,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-19",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Independent ruthless-reviewer da90f12c (Pi) cleared every finding of the first build over five rereviews; the last medium (R13) was admitted on focused proof. After the guest staging walk failed, repair review b141ae75 at 13209269 returned two medium structural findings, repaired by fresh juniors and admitted on focused proof without rereview under the review gates (retained 01a153b4 evidence/reviews/b141ae75-a891-4b35-85c0-78040454e990.md). Merged to main as ba4fe22ab; the Mac re-walk on staging passed; deployed to production at f7eeada5 on 2026-10-19 with the F1/G6 proxy change, see Production Deploy below."
       }
     },
     {
