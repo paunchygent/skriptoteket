@@ -15,42 +15,51 @@
 
 import type {
   NativeExamBodyParagraph,
+  NativeExamGap,
   NativeExamItem,
 } from "../../../api/examWorkspace";
 import { placedGapIds } from "./examWorkspaceRichTextDocument";
 
-/** A Kort svar is a Lucktext whose only gap stands alone in its last paragraph. */
-export function isShortAnswer(item: NativeExamItem): boolean {
+/** A Kort svar split into its editable question and its answer paragraph. */
+export type ShortAnswerParts = {
+  question: NativeExamBodyParagraph[];
+  answer: NativeExamBodyParagraph;
+  gap: NativeExamGap;
+};
+
+/** The Kort svar parts of a Lucktext whose only gap stands alone in its last paragraph, else null. */
+export function shortAnswerParts(item: NativeExamItem): ShortAnswerParts | null {
   if (item.kind !== "gap_fill") {
-    return false;
+    return null;
   }
   if (item.gaps.length !== 1) {
-    return false;
+    return null;
   }
-  const gap = item.gaps[0]!;
+  const gap = item.gaps[0];
+  if (gap === undefined) {
+    return null;
+  }
   const placed = placedGapIds(item.body);
   if (placed.length !== 1 || placed[0] !== gap.gap_id) {
-    return false;
+    return null;
   }
   if (item.body.length === 0) {
-    return false;
+    return null;
   }
-  const last = item.body[item.body.length - 1]!;
-  if (last.segments.length !== 1) {
-    return false;
+  const last = item.body[item.body.length - 1];
+  if (last === undefined || last.segments.length !== 1) {
+    return null;
   }
-  const only = last.segments[0]!;
-  return only.kind === "gap" && only.gap_id === gap.gap_id;
+  const only = last.segments[0];
+  if (only === undefined || only.kind !== "gap" || only.gap_id !== gap.gap_id) {
+    return null;
+  }
+  return { question: item.body.slice(0, -1), answer: last, gap };
 }
 
-/** The question part of a Kort svar: its body without the last answer paragraph. */
-export function shortAnswerQuestion(item: NativeExamItem): NativeExamBodyParagraph[] {
-  return item.body.slice(0, -1);
-}
-
-/** The one gap a Kort svar answers. */
-export function shortAnswerGapId(item: NativeExamItem): string {
-  return item.gaps[0]!.gap_id;
+/** A Kort svar is a Lucktext whose only gap stands alone in its last paragraph. */
+export function isShortAnswer(item: NativeExamItem): boolean {
+  return shortAnswerParts(item) !== null;
 }
 
 /**
@@ -59,11 +68,11 @@ export function shortAnswerGapId(item: NativeExamItem): string {
  * a Fråga edit and leaves the body unchanged.
  */
 export function withShortAnswerQuestion(
-  item: NativeExamItem,
+  parts: ShortAnswerParts,
   question: NativeExamBodyParagraph[],
 ): NativeExamBodyParagraph[] {
   if (placedGapIds(question).length > 0) {
-    return item.body;
+    return [...parts.question, parts.answer];
   }
-  return [...question, item.body[item.body.length - 1]!];
+  return [...question, parts.answer];
 }

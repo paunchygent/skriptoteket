@@ -43,10 +43,10 @@
 import { computed, nextTick, onMounted, reactive, ref, useId, watch } from "vue";
 
 import type { NativeExamChoice, NativeExamGap } from "../../../api/examWorkspace";
-import { IconX } from "../../../components/icons";
 import { UiGlyph } from "../../../components/ui";
 import { useExamWorkspaceAnchoredPosition } from "./useExamWorkspaceAnchoredPosition";
 import ExamWorkspaceGapAnswerList from "./ExamWorkspaceGapAnswerList.vue";
+import ExamWorkspaceGapAutomaticValues from "./ExamWorkspaceGapAutomaticValues.vue";
 import { bodyText, plainBody } from "./examWorkspaceRichText";
 
 const MISSING_ANSWER_COPY = "Fyll i ett godkänt svar först.";
@@ -432,37 +432,11 @@ onMounted(() => {
         />
       </div>
 
-      <div
+      <ExamWorkspaceGapAutomaticValues
         v-if="!dropdown && automaticValues.length > 0"
-        class="grid min-w-0 gap-1.5"
-        data-test="exam-workspace-gap-automatic-values"
-      >
-        <p class="text-[11px] font-semibold leading-snug text-navy/80">
-          Automatiska svar
-        </p>
-        <ul class="flex flex-wrap gap-1.5">
-          <li
-            v-for="value in automaticValues"
-            :key="value"
-            class="inline-flex min-h-7 items-center gap-1.5 border border-navy/35 bg-panel-muted px-2 text-xs text-navy"
-            :data-test="`exam-workspace-gap-automatic-${value}`"
-            :data-value="value"
-          >
-            <span class="font-semibold">{{ value }}</span>
-            <span class="text-[11px] leading-none text-navy/65">automatisk</span>
-            <button
-              type="button"
-              class="inline-flex h-11 w-11 shrink-0 items-center justify-center border border-navy/35 bg-panel text-navy hover:bg-canvas focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action/40 sm:h-7 sm:w-7"
-              :aria-label="`Ta bort automatisk stavning: ${value}`"
-              :title="`Ta bort automatisk stavning: ${value}`"
-              :data-test="`exam-workspace-gap-automatic-remove-${value}`"
-              @click="handleRemoveAutomaticValue(value)"
-            >
-              <IconX :size="14" />
-            </button>
-          </li>
-        </ul>
-      </div>
+        :values="automaticValues"
+        @remove="handleRemoveAutomaticValue"
+      />
 
       <button
         v-if="!dropdown"

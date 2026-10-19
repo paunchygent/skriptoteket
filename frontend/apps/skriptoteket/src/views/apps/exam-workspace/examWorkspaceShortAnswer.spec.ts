@@ -17,8 +17,7 @@ import { buildGap } from "./examWorkspaceKeyedItems.specSupport";
 import { examWorkspaceItemTypeLabel } from "./examWorkspaceRows";
 import {
   isShortAnswer,
-  shortAnswerGapId,
-  shortAnswerQuestion,
+  shortAnswerParts,
   withShortAnswerQuestion,
 } from "./examWorkspaceShortAnswer";
 import { plainBody } from "./examWorkspaceRichText";
@@ -58,27 +57,35 @@ function gapParagraph(gapId: string): NativeExamBodyParagraph {
   return { heading_level: null, segments: [{ kind: "gap", gap_id: gapId }] };
 }
 
-describe("isShortAnswer shape rule", () => {
+describe("shortAnswerParts shape rule", () => {
   it("reads a new short answer as Kort svar and a new Lucktext as not", () => {
     const shortAnswer = newTeacherItem("item_001", 1, "short_answer");
+    const parts = shortAnswerParts(shortAnswer);
+    expect(parts).not.toBeNull();
     expect(isShortAnswer(shortAnswer)).toBe(true);
 
     const lucktext = newTeacherItem("item_002", 2, "gap_fill");
+    expect(shortAnswerParts(lucktext)).toBeNull();
     expect(isShortAnswer(lucktext)).toBe(false);
     expect(lucktext.body).toEqual([]);
     expect(lucktext.gaps).toEqual([]);
   });
 
   it("reads question paragraphs plus a lone gap paragraph as Kort svar", () => {
+    const question = plainBody("Vad heter huvudstaden?");
     const item = gapFillItem(
-      [...plainBody("Vad heter huvudstaden?"), gapParagraph("gap_001")],
+      [...question, gapParagraph("gap_001")],
       [buildGap("gap_001", ["Paris"])],
     );
 
+    const parts = shortAnswerParts(item);
+    expect(parts?.question).toEqual(question);
+    expect(parts?.answer).toEqual(gapParagraph("gap_001"));
+    expect(parts?.gap.gap_id).toBe("gap_001");
     expect(isShortAnswer(item)).toBe(true);
   });
 
-  it("rejects text beside the gap in the last paragraph", () => {
+  it("returns null for text beside the gap in the last paragraph", () => {
     const item = gapFillItem(
       [...plainBody("Vad heter huvudstaden?"),
         { heading_level: null, segments: [
@@ -88,10 +95,11 @@ describe("isShortAnswer shape rule", () => {
       [buildGap("gap_001", ["Paris"])],
     );
 
+    expect(shortAnswerParts(item)).toBeNull();
     expect(isShortAnswer(item)).toBe(false);
   });
 
-  it("rejects a gap in a middle paragraph with text after it", () => {
+  it("returns null for a gap in a middle paragraph with text after it", () => {
     const item = gapFillItem(
       [{ heading_level: null, segments: [
         { kind: "text", marks: [], text: "Fyll i " },
@@ -100,10 +108,11 @@ describe("isShortAnswer shape rule", () => {
       [buildGap("gap_001", ["Paris"])],
     );
 
+    expect(shortAnswerParts(item)).toBeNull();
     expect(isShortAnswer(item)).toBe(false);
   });
 
-  it("rejects two gaps", () => {
+  it("returns null for two gaps", () => {
     const item = gapFillItem(
       [...plainBody("Fyll i båda."), gapParagraph("gap_002")],
       [buildGap("gap_001", ["ett"]), buildGap("gap_002", ["två"])],
@@ -116,18 +125,21 @@ describe("isShortAnswer shape rule", () => {
       ] }],
     };
 
+    expect(shortAnswerParts(withBothPlaced)).toBeNull();
     expect(isShortAnswer(withBothPlaced)).toBe(false);
   });
 
-  it("rejects a placed gap without a record and a record without a placed gap", () => {
+  it("returns null for a placed gap without a record and a record without a placed gap", () => {
     const placedWithoutRecord = gapFillItem([gapParagraph("gap_001")], []);
+    expect(shortAnswerParts(placedWithoutRecord)).toBeNull();
     expect(isShortAnswer(placedWithoutRecord)).toBe(false);
 
     const recordWithoutPlaced = gapFillItem(plainBody("Vad heter huvudstaden?"), [buildGap("gap_001")]);
+    expect(shortAnswerParts(recordWithoutPlaced)).toBeNull();
     expect(isShortAnswer(recordWithoutPlaced)).toBe(false);
   });
 
-  it("rejects an inline_choice with the same shape and an empty body", () => {
+  it("returns null for an inline_choice with the same shape and an empty body", () => {
     const dropdown = gapFillItem(
       [gapParagraph("gap_001")],
       [{ ...buildGap("gap_001"), correct_option_id: "choice_001",
@@ -137,8 +149,10 @@ describe("isShortAnswer shape rule", () => {
         ] }],
       "inline_choice",
     );
+    expect(shortAnswerParts(dropdown)).toBeNull();
     expect(isShortAnswer(dropdown)).toBe(false);
 
+    expect(shortAnswerParts(gapFillItem([], []))).toBeNull();
     expect(isShortAnswer(gapFillItem([], []))).toBe(false);
   });
 });
@@ -149,9 +163,11 @@ describe("withShortAnswerQuestion", () => {
       [...plainBody("Gammal fråga?"), gapParagraph("gap_001")],
       [buildGap("gap_001", ["Paris"])],
     );
+    const parts = shortAnswerParts(item);
+    expect(parts).not.toBeNull();
     const question = plainBody("Vad heter huvudstaden i Frankrike?");
 
-    const next = withShortAnswerQuestion(item, question);
+    const next = withShortAnswerQuestion(parts!, question);
 
     expect(next).toEqual([...question, gapParagraph("gap_001")]);
     const updated = withBody(item, next);
@@ -159,14 +175,16 @@ describe("withShortAnswerQuestion", () => {
     expect(isShortAnswer(updated)).toBe(true);
   });
 
-  it("returns the item body unchanged when the question itself places a gap", () => {
+  it("returns the body unchanged when the question itself places a gap", () => {
     const item = gapFillItem(
       [...plainBody("Gammal fråga?"), gapParagraph("gap_001")],
       [buildGap("gap_001", ["Paris"])],
     );
+    const parts = shortAnswerParts(item);
+    expect(parts).not.toBeNull();
     const questionWithGap = [gapParagraph("gap_002")];
 
-    expect(withShortAnswerQuestion(item, questionWithGap)).toBe(item.body);
+    expect(withShortAnswerQuestion(parts!, questionWithGap)).toEqual(item.body);
   });
 
   it("keeps only the answer paragraph for an empty question and stays a Kort svar", () => {
@@ -174,8 +192,10 @@ describe("withShortAnswerQuestion", () => {
       [...plainBody("Gammal fråga?"), gapParagraph("gap_001")],
       [buildGap("gap_001", ["Paris"])],
     );
+    const parts = shortAnswerParts(item);
+    expect(parts).not.toBeNull();
 
-    const next = withShortAnswerQuestion(item, []);
+    const next = withShortAnswerQuestion(parts!, []);
 
     expect(next).toEqual([gapParagraph("gap_001")]);
     expect(isShortAnswer({ ...item, body: next })).toBe(true);
@@ -185,8 +205,9 @@ describe("withShortAnswerQuestion", () => {
     const question = plainBody("Vad heter huvudstaden?");
     const item = gapFillItem([...question, gapParagraph("gap_001")], [buildGap("gap_001")]);
 
-    expect(shortAnswerQuestion(item)).toEqual(question);
-    expect(shortAnswerGapId(item)).toBe("gap_001");
+    const parts = shortAnswerParts(item);
+    expect(parts?.question).toEqual(question);
+    expect(parts?.gap.gap_id).toBe("gap_001");
   });
 });
 
