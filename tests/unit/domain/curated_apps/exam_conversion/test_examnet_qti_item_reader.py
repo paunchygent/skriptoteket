@@ -14,24 +14,19 @@ Relationships:
 
 from __future__ import annotations
 
-import hashlib
 import zipfile
 from pathlib import Path
-from typing import Literal
 from xml.etree import ElementTree
 
 import pytest
 
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts import (
-    ExamNetQtiEvaluationMode,
     ExamNetQtiInteractionType,
     ExamNetQtiItem,
-    ExamNetQtiTextEntryGap,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_import_contracts import (
     ExamNetQtiPackageItemSource,
     ExamNetQtiPackageSource,
-    ExamNetQtiUnsupportedItem,
     ExamNetQtiUnsupportedReason,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_item_reader import (
@@ -47,33 +42,43 @@ from skriptoteket.domain.curated_apps.exam_workspace.examnet_qti_export import (
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeAssetSegment,
-    NativeGapSegment,
     NativeParagraph,
-    NativeTextSegment,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_criteria import (
-    NativeExamCriterion,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
-    NativeExamAsset,
     NativeExamDocument,
     NativeExamDocumentOrigin,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import NativeExamItem
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import NativeExamParent
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
-    NativeAnswerKey,
-    NativeChoice,
-    NativeGap,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
-    NativeAnswerKeyOrigin,
-    NativeExamItemKind,
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import (
+    NativeExamParent,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
-from tests.unit.domain.curated_apps.exam_workspace.examnet_qti_export_test_support import (
-    document_of,
-    review_complete,
+from tests.unit.domain.curated_apps.exam_conversion.examnet_qti_reader_test_support import (
+    item_read_root as _read_root,
+)
+from tests.unit.domain.curated_apps.exam_conversion.examnet_qti_reader_test_support import (
+    item_round_trip as _round_trip,
+)
+from tests.unit.domain.curated_apps.exam_conversion.examnet_qti_reader_test_support import (
+    item_unsupported as _unsupported,
+)
+from tests.unit.domain.curated_apps.exam_conversion.examnet_qti_reader_test_support import (
+    make_asset as _asset,
+)
+from tests.unit.domain.curated_apps.exam_conversion.examnet_qti_reader_test_support import (
+    multiple_response_item as _multiple_response_item,
+)
+from tests.unit.domain.curated_apps.exam_conversion.examnet_qti_reader_test_support import (
+    xml_body as _body,
+)
+from tests.unit.domain.curated_apps.exam_conversion.examnet_qti_reader_test_support import (
+    xml_declaration as _declaration,
+)
+from tests.unit.domain.curated_apps.exam_conversion.examnet_qti_reader_test_support import (
+    xml_max_score as _max_score,
+)
+from tests.unit.domain.curated_apps.exam_conversion.examnet_qti_reader_test_support import (
+    xml_root as _root,
 )
 from tests.unit.domain.curated_apps.exam_workspace.inline_choice_test_support import (
     inline_choice_item,
@@ -94,44 +99,8 @@ pytestmark = pytest.mark.unit
 _ITEM_PATH = "items/item_001.xml"
 _REFERENCE_PACKAGE = Path("tests/fixtures/exam_conversion/reference-qti-package.zip")
 _ASSET_PNG = "asset_1111111111111111"
-_ASSET_JPEG = "asset_2222222222222222"
 _PNG = b"\x89PNG\r\n\x1a\nfirst picture"
-_JPEG = b"\xff\xd8\xffsecond picture"
 _QTI = f"{{{QTI_NAMESPACE}}}"
-
-
-def _asset(
-    asset_id: str,
-    payload: bytes,
-    media_type: Literal["image/png", "image/jpeg"],
-) -> NativeExamAsset:
-    return NativeExamAsset(
-        asset_id=asset_id,
-        sha256=hashlib.sha256(payload).hexdigest(),
-        media_type=media_type,
-        byte_length=len(payload),
-    )
-
-
-def _round_trip(
-    item: NativeExamItem,
-    *,
-    image_paths: tuple[str, ...] = (),
-    files: dict[str, bytes] | None = None,
-    assets: tuple[NativeExamAsset, ...] = (),
-    payloads: dict[str, bytes] | None = None,
-) -> tuple[ExamNetQtiItem, ExamNetQtiItem]:
-    document = document_of((item,), assets=assets)
-    (exported,) = native_exam_to_examnet_qti_items(document, assets_by_id=payloads or {})
-    xml = serialize_qti_assessment_item(exported, image_paths=image_paths)
-    (read,) = read_examnet_qti_item(
-        xml=xml,
-        item_path=_ITEM_PATH,
-        files=files or {},
-        sequence=item.sequence,
-    )
-    assert isinstance(read, ExamNetQtiItem)
-    return exported, read
 
 
 def _projection(item: ExamNetQtiItem) -> tuple[object, ...]:
@@ -169,145 +138,6 @@ def _assert_round_trips(item: NativeExamItem) -> ExamNetQtiItem:
     return read
 
 
-def _root(
-    *,
-    identifier: str = "item_001",
-    title: str = "Fråga",
-    namespace: str = QTI_NAMESPACE,
-) -> ElementTree.Element:
-    return ElementTree.Element(
-        f"{{{namespace}}}qti-assessment-item",
-        {"identifier": identifier, "title": title},
-    )
-
-
-def _declaration(
-    root: ElementTree.Element,
-    *,
-    identifier: str = "RESPONSE",
-    cardinality: str = "single",
-    base_type: str = "string",
-    correct: tuple[str, ...] = (),
-    mapping_entries: tuple[tuple[str, str], ...] | None = None,
-) -> ElementTree.Element:
-    declaration = ElementTree.SubElement(
-        root,
-        f"{_QTI}qti-response-declaration",
-        {
-            "identifier": identifier,
-            "cardinality": cardinality,
-            "base-type": base_type,
-        },
-    )
-    if correct:
-        correct_response = ElementTree.SubElement(declaration, f"{_QTI}qti-correct-response")
-        for value in correct:
-            ElementTree.SubElement(correct_response, f"{_QTI}qti-value").text = value
-    if mapping_entries is not None:
-        mapping = ElementTree.SubElement(
-            declaration,
-            f"{_QTI}qti-mapping",
-            {"default-value": "0", "lower-bound": "0", "upper-bound": "1"},
-        )
-        for map_key, mapped_value in mapping_entries:
-            ElementTree.SubElement(
-                mapping,
-                f"{_QTI}qti-map-entry",
-                {"map-key": map_key, "mapped-value": mapped_value},
-            )
-    return declaration
-
-
-def _max_score(root: ElementTree.Element, value: str = "1") -> None:
-    outcome = ElementTree.SubElement(
-        root,
-        f"{_QTI}qti-outcome-declaration",
-        {"identifier": "MAXSCORE", "cardinality": "single", "base-type": "float"},
-    )
-    default_value = ElementTree.SubElement(outcome, f"{_QTI}qti-default-value")
-    ElementTree.SubElement(default_value, f"{_QTI}qti-value").text = value
-
-
-def _body(root: ElementTree.Element) -> ElementTree.Element:
-    return ElementTree.SubElement(root, f"{_QTI}qti-item-body")
-
-
-def _xml(root: ElementTree.Element) -> bytes:
-    ElementTree.indent(root, space="  ")
-    payload = ElementTree.tostring(root, encoding="utf-8")
-    assert isinstance(payload, bytes)
-    return payload
-
-
-def _read_root(
-    root: ElementTree.Element,
-    *,
-    sequence: int = 1,
-    files: dict[str, bytes] | None = None,
-) -> tuple[object, ...]:
-    return read_examnet_qti_item(
-        xml=_xml(root),
-        item_path=_ITEM_PATH,
-        files=files or {},
-        sequence=sequence,
-    )
-
-
-def _unsupported(
-    root: ElementTree.Element,
-    *,
-    reason: ExamNetQtiUnsupportedReason = ExamNetQtiUnsupportedReason.INTERACTION,
-    sequence: int = 1,
-    files: dict[str, bytes] | None = None,
-) -> ExamNetQtiUnsupportedItem:
-    (read,) = _read_root(root, sequence=sequence, files=files)
-    assert isinstance(read, ExamNetQtiUnsupportedItem)
-    assert read.reason is reason
-    assert read.sequence == sequence
-    return read
-
-
-def _multiple_response_item() -> NativeExamItem:
-    return NativeExamItem(
-        item_id="item_001",
-        sequence=1,
-        kind=NativeExamItemKind.MULTIPLE_RESPONSE,
-        body=plain_body("Markera alla rätt."),
-        points=3,
-        choices=(
-            NativeChoice(choice_id="choice_001", body=plain_body("Ett")),
-            NativeChoice(choice_id="choice_002", body=plain_body("Två")),
-            NativeChoice(choice_id="choice_003", body=plain_body("Tre")),
-        ),
-        answer_key=NativeAnswerKey(
-            origin=NativeAnswerKeyOrigin.SOURCE_PROVIDED,
-            correct_choice_ids=("choice_001", "choice_003"),
-        ),
-        review=review_complete(),
-    )
-
-
-def _gap_fill_item(*, points: int | float | None, accepted: tuple[str, ...]) -> NativeExamItem:
-    return NativeExamItem(
-        item_id="item_001",
-        sequence=1,
-        kind=NativeExamItemKind.GAP_FILL,
-        body=(
-            NativeParagraph(
-                heading_level=None,
-                segments=(
-                    NativeTextSegment(text="Frastyp: ", marks=()),
-                    NativeGapSegment(gap_id="gap_001"),
-                ),
-            ),
-        ),
-        points=points,
-        gaps=(NativeGap(gap_id="gap_001", accepted_values=accepted),),
-        answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.SOURCE_PROVIDED),
-        review=review_complete(),
-    )
-
-
 def test_every_supported_standalone_kind_round_trips() -> None:
     items = (
         make_free_text_item(),
@@ -323,149 +153,6 @@ def test_every_supported_standalone_kind_round_trips() -> None:
         read = _assert_round_trips(item)
         assert read.sequence == item.sequence
         assert read.item_id == item.item_id
-
-
-def test_multiple_response_uses_declaration_cardinality_not_max_choices() -> None:
-    item = _multiple_response_item()
-
-    exported, read = _round_trip(item)
-
-    assert exported.interaction_type is ExamNetQtiInteractionType.MULTIPLE_RESPONSE
-    assert read.interaction_type is ExamNetQtiInteractionType.MULTIPLE_RESPONSE
-    assert read.correct_choice_identifiers == ("choice_001", "choice_003")
-
-
-@pytest.mark.parametrize("points", [2, None])
-def test_gap_fill_reads_every_accepted_value_with_and_without_points(
-    points: int | float | None,
-) -> None:
-    item = _gap_fill_item(points=points, accepted=("NF", "nf"))
-
-    exported, read = _round_trip(item)
-
-    assert exported.max_score == points
-    # The writer coerces an inadmissible absent score to "0", which reads back
-    # as a stated zero (review 596c1654 F5); the real export route blocks such
-    # items with the missing_points blocker instead.
-    assert read.max_score == (0 if points is None else points)
-    assert read.text_entry_gaps == (
-        ExamNetQtiTextEntryGap(
-            response_identifier=exported.text_entry_gaps[0].response_identifier,
-            label="",
-            accepted_values=("NF", "nf"),
-        ),
-    )
-
-
-def test_a_zero_point_item_reads_max_score_none() -> None:
-    item = NativeExamItem.model_validate({**dict(make_single_choice_item()), "points": 0})
-
-    exported, read = _round_trip(item)
-
-    assert exported.max_score == 0
-    assert read.max_score == 0
-
-
-def test_free_text_reads_a_one_row_mapping_as_its_criterion_points() -> None:
-    item = make_free_text_item()
-
-    exported, read = _round_trip(item)
-
-    assert exported.free_text_criterion_points == 4
-    assert read.free_text_criterion_points == 4
-    assert read.evaluation_mode is ExamNetQtiEvaluationMode.AUTOMATIC
-    assert read.max_score == 4
-
-
-def test_free_text_reads_a_three_row_mapping_as_its_first_row() -> None:
-    item = NativeExamItem(
-        item_id="item_001",
-        sequence=1,
-        kind=NativeExamItemKind.FREE_TEXT,
-        body=plain_body("Bedöm svaret."),
-        points=3,
-        criteria=(
-            NativeExamCriterion(text="Ett korrekt exempel.", points=1),
-            NativeExamCriterion(text="En korrekt förklaring.", points=1),
-            NativeExamCriterion(text="En rimlig slutsats.", points=1),
-        ),
-        answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
-        review=review_complete(),
-    )
-
-    exported, read = _round_trip(item)
-
-    assert exported.free_text_criterion_points == 1
-    assert read.free_text_criterion_points == 1
-    assert read.max_score == 3
-    assert read.evaluation_mode is ExamNetQtiEvaluationMode.AUTOMATIC
-
-
-def test_free_text_without_points_stays_manual_unkeyed() -> None:
-    item = NativeExamItem.model_validate({**dict(make_free_text_item()), "points": None})
-
-    exported, read = _round_trip(item)
-
-    assert exported.evaluation_mode is ExamNetQtiEvaluationMode.MANUAL_UNKEYED
-    assert read.evaluation_mode is ExamNetQtiEvaluationMode.MANUAL_UNKEYED
-    assert read.free_text_criterion_points is None
-    # The writer coerces the inadmissible absent score to "0", which reads back
-    # as a stated zero (review 596c1654 F5); the real export route blocks such
-    # items with the missing_points blocker instead.
-    assert read.max_score == 0
-
-
-def test_png_and_jpeg_prompt_images_round_trip_in_placement_order() -> None:
-    item = NativeExamItem(
-        item_id="item_001",
-        sequence=1,
-        kind=NativeExamItemKind.FREE_TEXT,
-        body=(
-            NativeParagraph(
-                heading_level=None,
-                segments=(
-                    NativeTextSegment(text="Före ", marks=()),
-                    NativeAssetSegment(asset_id=_ASSET_PNG),
-                    NativeTextSegment(text=" mellan ", marks=()),
-                    NativeAssetSegment(asset_id=_ASSET_JPEG),
-                    NativeTextSegment(text=" efter.", marks=()),
-                ),
-            ),
-        ),
-        points=2,
-        answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
-        review=review_complete(),
-    )
-    image_paths = ("images/forsta.png", "images/andra.jpg")
-    files = {
-        f"items/{image_paths[0]}": _PNG,
-        f"items/{image_paths[1]}": _JPEG,
-    }
-
-    exported, read = _round_trip(
-        item,
-        image_paths=image_paths,
-        files=files,
-        assets=(
-            _asset(_ASSET_PNG, _PNG, "image/png"),
-            _asset(_ASSET_JPEG, _JPEG, "image/jpeg"),
-        ),
-        payloads={_ASSET_PNG: _PNG, _ASSET_JPEG: _JPEG},
-    )
-
-    assert read.prompt_paragraphs == exported.prompt_paragraphs
-    assert [image.media_type for image in read.image_resources] == [
-        "image/png",
-        "image/jpeg",
-    ]
-    assert [image.payload for image in read.image_resources] == [_PNG, _JPEG]
-    assert [image.alt_text for image in read.image_resources] == [
-        image.alt_text for image in exported.image_resources
-    ]
-    assert [image.filename for image in read.image_resources] == [
-        "forsta.png",
-        "andra.jpg",
-    ]
 
 
 def test_unsafe_doctype_refuses_the_whole_package() -> None:
@@ -529,25 +216,6 @@ def test_a_slider_interaction_is_unsupported() -> None:
     assert unsupported.opening_text == ""
 
 
-def test_mixed_text_entry_and_inline_choice_is_unsupported() -> None:
-    root = _root()
-    _declaration(root, identifier="TEXT")
-    _declaration(root, identifier="INLINE", base_type="identifier", correct=("choice_001",))
-    body = _body(root)
-    paragraph = ElementTree.SubElement(body, f"{_QTI}p")
-    ElementTree.SubElement(
-        paragraph, f"{_QTI}qti-text-entry-interaction", {"response-identifier": "TEXT"}
-    )
-    inline = ElementTree.SubElement(
-        paragraph,
-        f"{_QTI}qti-inline-choice-interaction",
-        {"response-identifier": "INLINE"},
-    )
-    ElementTree.SubElement(inline, f"{_QTI}qti-inline-choice", {"identifier": "choice_001"})
-
-    _unsupported(root)
-
-
 def test_a_missing_image_file_is_an_image_note() -> None:
     root = _root()
     _declaration(root)
@@ -590,52 +258,6 @@ def test_a_gif_payload_is_an_image_note() -> None:
         reason=ExamNetQtiUnsupportedReason.IMAGE,
         files={"items/images/animation.gif": b"GIF89a not supported"},
     )
-
-
-def test_inline_choice_without_a_correct_value_is_unsupported() -> None:
-    root = _root()
-    _declaration(root, identifier="INLINE", base_type="identifier")
-    _max_score(root)
-    body = _body(root)
-    paragraph = ElementTree.SubElement(body, f"{_QTI}p")
-    inline = ElementTree.SubElement(
-        paragraph,
-        f"{_QTI}qti-inline-choice-interaction",
-        {"response-identifier": "INLINE"},
-    )
-    ElementTree.SubElement(inline, f"{_QTI}qti-inline-choice", {"identifier": "choice_001"})
-
-    _unsupported(root)
-
-
-def test_inline_choice_with_a_correct_value_outside_its_options_is_unsupported() -> None:
-    root = _root()
-    _declaration(root, identifier="INLINE", base_type="identifier", correct=("choice_404",))
-    _max_score(root)
-    body = _body(root)
-    paragraph = ElementTree.SubElement(body, f"{_QTI}p")
-    inline = ElementTree.SubElement(
-        paragraph,
-        f"{_QTI}qti-inline-choice-interaction",
-        {"response-identifier": "INLINE"},
-    )
-    ElementTree.SubElement(inline, f"{_QTI}qti-inline-choice", {"identifier": "choice_001"})
-
-    _unsupported(root)
-
-
-def test_a_response_identifier_without_a_declaration_is_unsupported() -> None:
-    root = _root()
-    _max_score(root)
-    body = _body(root)
-    paragraph = ElementTree.SubElement(body, f"{_QTI}p")
-    ElementTree.SubElement(
-        paragraph,
-        f"{_QTI}qti-text-entry-interaction",
-        {"response-identifier": "MISSING"},
-    )
-
-    _unsupported(root)
 
 
 def test_two_choice_interactions_read_as_one_parent_with_two_children() -> None:

@@ -4,13 +4,13 @@ Purpose:
     Prove that `examnet_qti_body_reader` inverts the rich-content rendering of
     `examnet_qti_rich_text` and `examnet_qti_inline_prompt` from the parsed,
     indented XML the export writes: paragraphs, heading levels, nested marks,
-    line breaks, images and gaps at their source position, and that unsupported
-    content fails closed.
+    line breaks, images and gaps at their source position.
 
 Relationships:
     - Exercises `domain.examnet_qti_body_reader` with writer-built elements
-      serialized through `domain.examnet_qti_item_xml`, plus hand-written
-      fail-closed fixtures.
+      serialized through `domain.examnet_qti_item_xml`.
+    - Split from the oversized body-reader module; shared builders live in
+      `examnet_qti_reader_test_support` and are imported, never copied.
 """
 
 from __future__ import annotations
@@ -20,10 +20,7 @@ from xml.etree import ElementTree
 import pytest
 
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_body_reader import (
-    ExamNetQtiUnsupportedContent,
-    paragraphs_plain_text,
     read_rich_content,
-    read_text_paragraphs,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts import (
     ExamNetQtiChoice,
@@ -35,11 +32,6 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts impo
     ExamNetQtiPromptImage,
     ExamNetQtiPromptParagraph,
     ExamNetQtiPromptText,
-    ExamNetQtiTextEntryGap,
-)
-from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_inline_prompt import (
-    append_gap_fill_body,
-    append_interaction_prompt,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_item_xml import (
     serialize_qti_assessment_item,
@@ -49,32 +41,29 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_rich_text impo
     paragraph_element,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_terms import QTI_NAMESPACE
+from tests.unit.domain.curated_apps.exam_conversion.examnet_qti_reader_test_support import (
+    body_free_text as _free_text,
+)
+from tests.unit.domain.curated_apps.exam_conversion.examnet_qti_reader_test_support import (
+    body_gap as _gap,
+)
+from tests.unit.domain.curated_apps.exam_conversion.examnet_qti_reader_test_support import (
+    body_prompt as _prompt,
+)
+from tests.unit.domain.curated_apps.exam_conversion.examnet_qti_reader_test_support import (
+    body_roundtrip as _roundtrip,
+)
+from tests.unit.domain.curated_apps.exam_conversion.examnet_qti_reader_test_support import (
+    qti_tag as _tag,
+)
 
 pytestmark = pytest.mark.unit
 
 _IMAGE_PATHS = ("images/q1-image_001.png", "images/q1-image_002.png")
 
 
-def _tag(local_name: str) -> str:
-    return f"{{{QTI_NAMESPACE}}}{local_name}"
-
-
-def _roundtrip(root: ElementTree.Element) -> ElementTree.Element:
-    """Indent and serialize exactly as the export does, then parse back."""
-
-    ElementTree.indent(root, space="  ")
-    xml_bytes = ElementTree.tostring(root, encoding="utf-8")
-    return ElementTree.fromstring(xml_bytes)
-
-
 def _root(item: ExamNetQtiItem, image_paths: tuple[str, ...] = ()) -> ElementTree.Element:
     return ElementTree.fromstring(serialize_qti_assessment_item(item, image_paths=image_paths))
-
-
-def _prompt(root: ElementTree.Element) -> ElementTree.Element:
-    prompt = root.find(f".//{_tag('qti-prompt')}")
-    assert prompt is not None
-    return prompt
 
 
 def _item_body(root: ElementTree.Element) -> ElementTree.Element:
@@ -91,33 +80,6 @@ def _image(number: int, alt: str) -> ExamNetQtiImageResource:
         payload=b"png-bytes",
         alt_text=alt,
         source_reference=f"asset_{number}",
-    )
-
-
-def _gap(number: int, accepted_values: tuple[str, ...]) -> ExamNetQtiTextEntryGap:
-    return ExamNetQtiTextEntryGap(
-        response_identifier=f"RESPONSE_gap_{number:03d}",
-        label=f"Lucka {number}",
-        accepted_values=accepted_values,
-    )
-
-
-def _free_text(
-    paragraphs: tuple[ExamNetQtiPromptParagraph, ...],
-    *,
-    text_entry_gaps: tuple[ExamNetQtiTextEntryGap, ...] = (),
-    image_resources: tuple[ExamNetQtiImageResource, ...] = (),
-) -> ExamNetQtiItem:
-    return ExamNetQtiItem(
-        item_id="q1",
-        sequence=1,
-        title="Fråga 1",
-        interaction_type=ExamNetQtiInteractionType.FREE_TEXT,
-        prompt_lines=("Beskriv.",),
-        max_score=1,
-        prompt_paragraphs=paragraphs,
-        text_entry_gaps=text_entry_gaps,
-        image_resources=image_resources,
     )
 
 
@@ -402,168 +364,3 @@ def test_inline_choice_interaction_is_recorded_without_descending() -> None:
     assert interaction.tag == _tag("qti-inline-choice-interaction")
     options = interaction.findall(_tag("qti-inline-choice"))
     assert [option.attrib["identifier"] for option in options] == ["A", "B"]
-
-
-def test_read_text_paragraphs_reads_a_plain_choice() -> None:
-    choice = ElementTree.fromstring(
-        f'<qti-simple-choice xmlns="{QTI_NAMESPACE}" identifier="A">Alfa</qti-simple-choice>'
-    )
-
-    assert read_text_paragraphs(choice) == (
-        ExamNetQtiPromptParagraph(segments=(ExamNetQtiPromptText("Alfa"),)),
-    )
-
-
-def test_read_text_paragraphs_fails_closed_on_an_image() -> None:
-    choice = ElementTree.fromstring(
-        f'<qti-simple-choice xmlns="{QTI_NAMESPACE}" '
-        f'identifier="A">Alfa<img src="x.png"/></qti-simple-choice>'
-    )
-
-    with pytest.raises(ExamNetQtiUnsupportedContent, match="img"):
-        read_text_paragraphs(choice)
-
-
-def test_read_text_paragraphs_fails_closed_on_a_gap() -> None:
-    choice = ElementTree.fromstring(
-        f'<qti-simple-choice xmlns="{QTI_NAMESPACE}" identifier="A">'
-        f'Alfa<qti-text-entry-interaction response-identifier="R"/></qti-simple-choice>'
-    )
-
-    with pytest.raises(ExamNetQtiUnsupportedContent, match="qti-text-entry-interaction"):
-        read_text_paragraphs(choice)
-
-
-def test_whitespace_only_implicit_paragraph_is_dropped() -> None:
-    prompt = ElementTree.fromstring(
-        f'<qti-prompt xmlns="{QTI_NAMESPACE}">\n  <p>Brödtext</p>\n</qti-prompt>'
-    )
-
-    body = read_rich_content(list(prompt), leading_text=prompt.text)
-
-    assert body.paragraphs == (
-        ExamNetQtiPromptParagraph(segments=(ExamNetQtiPromptText("Brödtext"),)),
-    )
-
-
-def test_leading_inline_content_before_a_block_forms_an_implicit_paragraph() -> None:
-    prompt = ElementTree.fromstring(
-        f'<qti-prompt xmlns="{QTI_NAMESPACE}">Före <p>Block</p></qti-prompt>'
-    )
-
-    body = read_rich_content(list(prompt), leading_text=prompt.text)
-
-    assert body.paragraphs == (
-        ExamNetQtiPromptParagraph(segments=(ExamNetQtiPromptText("Före"),)),
-        ExamNetQtiPromptParagraph(segments=(ExamNetQtiPromptText("Block"),)),
-    )
-
-
-@pytest.mark.parametrize(
-    ("name", "xml"),
-    [
-        ("table", f'<qti-prompt xmlns="{QTI_NAMESPACE}">före<table/>efter</qti-prompt>'),
-        (
-            "a",
-            f'<qti-prompt xmlns="{QTI_NAMESPACE}">'
-            f'före<a href="https://example.test">länk</a>efter</qti-prompt>',
-        ),
-        (
-            "math",
-            f'<qti-prompt xmlns="{QTI_NAMESPACE}">före<math><mi>x</mi></math>efter</qti-prompt>',
-        ),
-        (
-            "widget",
-            f'<qti-prompt xmlns="{QTI_NAMESPACE}" xmlns:x="http://example.test/x">'
-            f"före<x:widget/>efter</qti-prompt>",
-        ),
-    ],
-)
-def test_unsupported_elements_fail_closed(name: str, xml: str) -> None:
-    prompt = ElementTree.fromstring(xml)
-
-    with pytest.raises(ExamNetQtiUnsupportedContent) as error:
-        read_rich_content(list(prompt), leading_text=prompt.text)
-
-    assert name in str(error.value)
-
-
-def test_paragraphs_plain_text_renders_gaps_and_drops_images() -> None:
-    paragraphs = (
-        ExamNetQtiPromptParagraph(
-            segments=(
-                ExamNetQtiPromptText("Före "),
-                ExamNetQtiPromptGap(0),
-                ExamNetQtiPromptImage(0),
-                ExamNetQtiPromptText(" efter."),
-            )
-        ),
-        ExamNetQtiPromptParagraph(segments=(ExamNetQtiPromptText("Andra\nraden"),)),
-    )
-
-    assert paragraphs_plain_text(paragraphs) == "Före [___] efter.\nAndra raden"
-
-
-def test_paragraphs_plain_text_returns_empty_for_no_paragraphs() -> None:
-    assert paragraphs_plain_text(()) == ""
-
-
-def test_public_interaction_prompt_writer_round_trips() -> None:
-    item = _free_text(
-        (
-            ExamNetQtiPromptParagraph(
-                segments=(
-                    ExamNetQtiPromptText("Före "),
-                    ExamNetQtiPromptGap(0),
-                    ExamNetQtiPromptText(" efter."),
-                )
-            ),
-        ),
-        text_entry_gaps=(_gap(1, ("alfa",)),),
-    )
-    body_element = ElementTree.Element(_tag("qti-item-body"))
-
-    append_interaction_prompt(body_element, item, ())
-
-    prompt = _prompt(_roundtrip(body_element))
-
-    body = read_rich_content(list(prompt), leading_text=prompt.text)
-
-    assert body.paragraphs == (
-        ExamNetQtiPromptParagraph(
-            segments=(
-                ExamNetQtiPromptText("Före "),
-                ExamNetQtiPromptGap(0),
-                ExamNetQtiPromptText(" efter."),
-            )
-        ),
-    )
-
-
-def test_append_gap_fill_body_paragraphs_are_readable() -> None:
-    item = ExamNetQtiItem(
-        item_id="q2",
-        sequence=2,
-        title="Lucktext",
-        interaction_type=ExamNetQtiInteractionType.GAP_FILL,
-        prompt_lines=(),
-        max_score=1,
-        text_entry_gaps=(_gap(1, ("alfa",)),),
-        prompt_paragraphs=(
-            ExamNetQtiPromptParagraph(
-                segments=(ExamNetQtiPromptText("Svara "), ExamNetQtiPromptGap(0))
-            ),
-        ),
-    )
-    body_element = ElementTree.Element(_tag("qti-item-body"))
-
-    append_gap_fill_body(body_element, item, ())
-
-    body_element = _roundtrip(body_element)
-    body = read_rich_content(list(body_element), leading_text=body_element.text)
-
-    assert body.paragraphs == (
-        ExamNetQtiPromptParagraph(
-            segments=(ExamNetQtiPromptText("Svara "), ExamNetQtiPromptGap(0))
-        ),
-    )
