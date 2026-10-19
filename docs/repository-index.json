@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "f7736229d15ba22b4691262cc499eb7fe59f4da332c64ada1a0089125b613cb1",
+  "source_set_digest": "62058b24455f29846e6aad3e06feaf251a4da4d7120dcb475a4ef320b25761b1",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6653,7 +6653,7 @@
       "type": "task",
       "title": "Short-answer and gap-text questions look different, teachers create gaps by clicking a word, and the gap popover shows its whole answer list",
       "path": "docs/backlog/tasks/task-skript-40-04-08-short-answer-and-gap-text-questions-look-different-teachers-create-gaps-by-clicking-a-word-and-the-gap-popover-shows-its-whole-answer-list.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -6664,7 +6664,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-19",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Independent ruthless-reviewer 9633a403 (Pi) cleared F1 and F2 (high) on rereview at 3f498eda and approved the copy; F3-F6 medium admitted on focused proof. Merged to main as eee7c32f. The staging walk found six defects; walk-repair review cd5a1b4c at 5644f908 returned three medium findings, repaired and admitted on focused proof without rereview (retained 01a153be evidence/reviews/cd5a1b4c-d09a-4648-b53f-76f0124e21e7.md). Repair merged to main as be979cd7; the Hemma pre-push suite passed (505 files, 3565 tests); the Mac re-walk of findings 1-5 on staging at be979cd7 passed (Mac .artifacts/staging-walk-40-04-08-repair/walk-record.md). Finding 6 moved to TASK-SKRIPT-40-04-09."
       }
     },
     {
