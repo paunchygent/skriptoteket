@@ -12,6 +12,8 @@ Purpose:
 Relationships:
     - Called by ``docx_ai_build.assemble_build_result`` for every item, after
       every rebuild path, next to the gate's caller rather than in the body leaf.
+    - Called by ``exam_workspace_docx_retry`` for every single-question retry item,
+      which never reaches ``assemble_build_result``.
     - Reads answer-line detection and body gating from ``shared_body``, which
       stays a body-only leaf; item review logic lives here, not there.
     - Appends its reason once to the existing reasons through ``model_copy``,

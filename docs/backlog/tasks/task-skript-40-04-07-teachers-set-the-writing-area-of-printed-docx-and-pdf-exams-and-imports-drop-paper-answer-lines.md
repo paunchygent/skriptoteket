@@ -148,4 +148,11 @@ Stop and report to the parent in either case:
   either the gate removed a line or its source chunk is only an answer line.
   Focused proof: 132 tests pass, ruff and full typecheck clean. Round-4
   domain suite at `a34a8de9` (2026-10-19, `evidence/lead-e12a2a36/suite4/`):
-  pytest 4350 passed. Next: R2 goes back to 09d50acc. User gates: none open.
+  pytest 4350 passed.
+- 2026-10-19, rereview4 at `a34a8de9`: R2 reopened for single-question retry,
+  which never reaches `assemble_build_result`. Explorer `54cfc2d4` found retry
+  to be the only consumer of accepted items that bypasses assembly. R5.1:
+  `RetryExamWorkspaceItemHandler.handle` returns every item, including the
+  source review items, through `gated_item` at one exit, against the saved
+  source chunks. Tests go through the real handler. Next: the orchestrator's
+  suite slot, then R2 goes back to 09d50acc. User gates: none open.
