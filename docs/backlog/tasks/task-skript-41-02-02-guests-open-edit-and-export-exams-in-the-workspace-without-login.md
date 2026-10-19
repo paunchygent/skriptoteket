@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-18'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-19'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Independent ruthless-reviewer da90f12c (Pi) cleared every finding of the first build over five rereviews; the last medium (R13) was admitted on focused proof. After the guest staging walk failed, repair review b141ae75 at 13209269 returned two medium structural findings, repaired by fresh juniors and admitted on focused proof without rereview under the review gates (retained 01a153b4 evidence/reviews/b141ae75-a891-4b35-85c0-78040454e990.md). Merged to main as ba4fe22ab; the Mac re-walk on staging passed; deployed to production at f7eeada5 on 2026-10-19 with the F1/G6 proxy change, see Production Deploy below.'
 task_kind: story
 acceptance_criteria:
   - At the guest converter's URL a guest starts from QTI or blank, edits, and exports QTI, print PDF, DOCX and the fallback Exam.net PDF without login, with the exam kept in the browser
@@ -58,14 +62,18 @@ Stop and report if the shared editor cannot run on a browser store without forki
 | G7  | User decision 2026-10-19, given directly in the Hemma orchestrator session: guests also get "PDF med facit" ("Yes, it is still the default PDF version"). Guests and teachers share one export format list.                                                                                                             |
 | G8  | User decision 2026-10-19, answered on the Mac and relayed by the Mac parent: the print preview stays hidden for guests ("Keep hidden"). There is no public preview route.                                                                                                                                               |
 
+## Production Deploy (2026-10-19)
+
+The user gave the go in the Hemma orchestrator session ("Go (Recommended)") and confirmed it to the Mac parent, including the F1 proxy change ("Yes, apply the F1 proxy change now"). The Mac parent deployed main f7eeada5 to production on 2026-10-19. Deploy log: `~/apps/skriptoteket/.artifacts/hemma-deploy-20261019-125204.log` on Hemma. Record: `.artifacts/prod-deploy-41-02-02/deploy-record.md` in the Mac checkout.
+
+- G6/F1 applied: nginx-proxy is pinned to 172.18.255.10 on hule-network (compose backup `~/infrastructure/docker-compose.yml.bak-20261019T130913Z`). The production `.env` sets `TRUSTED_PROXY_CIDRS=172.18.255.10/32`, and `TRUST_PROXY_HEADERS` is removed (backup `.env.bak-20261019T130927Z`). Web was recreated healthy with `FORWARDED_ALLOW_IPS=172.18.255.10/32`. The compose diff came from lead 2's retained root 01a14f56, not 01a153b4.
+- Check: `loopback_only` is 0. A guest QTI import from the Mac on the production guest route left `untrusted` at 0, and the access log shows the Mac's public address for `GET …/exam-converter` 200 and `POST …/workspace/imports/qti` 200. No rollback was needed.
+
 ## Repair After The Guest Staging Walk (lead 3, 2026-10-19)
 
-### Resume Here (lead 3, 2026-10-19)
+The repair merged to main as ba4fe22ab, the Mac re-walk passed, and the task deployed (see Production Deploy).
 
-- Branch `codex/task-skript-41-02-02-guest-save-repair-remote`, repair commit b32c45d0, review repairs on top. Next: the orchestrator integrates; then the Mac re-walk.
-- Open: the walk saw no autosave failure report, but the code and a mock-level test show the toast. The re-walk types one edit, waits past the typing pause without Spara, and watches for the toast.
-
-The guest staging walk at main eba9d0f2 failed on 2026-10-19 (Mac parent, Edge). The task stays in_progress and the production deploy stays gated. Branch `codex/task-skript-41-02-02-guest-save-repair-remote`; retained root `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a153b4-2cc7-787b-820e-330f2c1510ee`. The guest layout complaint is routed separately and is out of scope here.
+The guest staging walk at main eba9d0f2 failed on 2026-10-19 (Mac parent, Edge). Branch `codex/task-skript-41-02-02-guest-save-repair-remote`; retained root `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a153b4-2cc7-787b-820e-330f2c1510ee`. The guest layout complaint is routed separately and is out of scope here.
 
 ### Defects
 

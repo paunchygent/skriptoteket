@@ -66,8 +66,10 @@ class TestDocxContent:
         parsed = Document(io.BytesIO(docx_bytes))
         texts = [paragraph.text for paragraph in parsed.paragraphs]
 
-        assert "Poäng: 4 poäng" in texts
-        assert "Poäng: 2,5 poäng" in texts
+        assert "Resonera om bisatser. (4 p)" in texts
+        assert "Välj rätt alternativ. (1 p)" in texts
+        assert "Markera alla fraser. (2 p)" in texts
+        assert any(text.startswith("a) Frastyp: ") and text.endswith(" (2,5 p)") for text in texts)
         assert f"{STEP_BOX} A) Nominalfras" in texts
         assert f"{STEP_BOX} B) Verbfras" in texts
         assert "[___]" not in document_text(parsed)

@@ -75,8 +75,15 @@ function close(restoreFocus: boolean): void {
 }
 
 function onPointerDown(event: PointerEvent): void {
-  const target = event.target as Node | null;
-  if (!target || surface.value?.contains(target) || props.anchor?.contains(target)) {
+  const target = event.target;
+  if (target === null) {
+    return;
+  }
+  if (!(target instanceof Node)) {
+    close(false);
+    return;
+  }
+  if (surface.value?.contains(target) || props.anchor?.contains(target)) {
     return;
   }
   close(false);
@@ -101,7 +108,8 @@ function onKeydown(event: KeyboardEvent): void {
     return;
   }
   event.preventDefault();
-  const at = list.indexOf(document.activeElement as HTMLElement);
+  const active = document.activeElement;
+  const at = active instanceof HTMLElement ? list.indexOf(active) : -1;
   const last = list.length - 1;
   const next =
     event.key === "Home"

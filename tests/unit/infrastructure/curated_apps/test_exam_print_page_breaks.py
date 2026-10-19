@@ -216,7 +216,7 @@ def test_k1_question_text_stays_on_one_page(variant: ExamPrintVariant, filler_li
     heading = _pages_with(rendered, "Fråga 2")
     instruction = _pages_with(rendered, "K1INSTR")
     last_item = _pages_with(rendered, "K1SISTA")
-    points = _pages_with(rendered, "Poäng: 4 poäng")
+    points = _pages_with(rendered, "(4 p)")
     assert heading == instruction == last_item == points and len(heading) == 1, (
         f"N={filler_lines} {variant.value}: {len(rendered.pages)} pages, "
         f"heading={sorted(heading)} instruction={sorted(instruction)} "

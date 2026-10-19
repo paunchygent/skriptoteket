@@ -107,7 +107,8 @@ def test_docx_words_are_swedish_for_an_english_exam() -> None:
     content = ExamWorkspaceDocxWriter().build_docx_bytes(document)
     text = "\n".join(paragraph.text for paragraph in Document(io.BytesIO(content)).paragraphs)
     assert "Fråga 1" in text
-    assert "Poäng" in text
+    assert "poäng" in text
+    assert "(1 p)" in text
     # The ordering key moved to the facit; the student copy never prints it.
     assert "Rätt ordning" not in text
     _assert_no_english_label(text)

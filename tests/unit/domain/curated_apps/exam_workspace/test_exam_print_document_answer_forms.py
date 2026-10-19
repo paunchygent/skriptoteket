@@ -78,7 +78,7 @@ class TestGapFill:
 
         assert blank_width_mm(10) == 48.0
         assert PrintParagraph(
-            runs=(PrintText("Svar: "), PrintBlank(width_mm=48.0)),
+            runs=(PrintText("Svar: "), PrintBlank(width_mm=48.0), PrintText(" (2 p)")),
             style=PrintParagraphStyle.GAP_LINE,
         ) in question_blocks(question(student, "item_001"))
         assert "fotosyntes" not in all_texts(student)
@@ -111,6 +111,7 @@ class TestInlineChoice:
             runs=(
                 PrintText("Vattnets formel är "),
                 PrintText("[H2O / CO2]"),
+                PrintText(" (2 p)"),
             ),
             style=PrintParagraphStyle.BODY,
         ) in question_blocks(question(student, "item_001"))

@@ -123,9 +123,13 @@ describe("ExamWorkspaceView host frame", () => {
     expect(wrapper.find('[data-test="exam-workspace-empty"]').exists()).toBe(true);
     expect(wrapper.find('[data-test="exam-workspace-title"]').text()).toBe("Inget prov öppet");
     expect(wrapper.text()).toContain("Välj provfil");
-    expect(wrapper.text()).toContain("Word .docx");
-    expect(wrapper.text()).toContain("DigiExam .dxe");
-    expect(wrapper.text()).toContain("QTI .zip");
+    expect(wrapper.text()).toContain("Word (.docx)");
+    expect(wrapper.text()).toContain("DigiExam (.dxe)");
+    expect(wrapper.text()).toContain("QTI (.zip)");
+    expect(wrapper.get(".drop__formats").findAll(".xw-chip")).toHaveLength(0);
+    expect(
+      wrapper.get(".drop__formats").findAll(".drop__format").map((node) => node.text()),
+    ).toEqual(["Word (.docx)", "DigiExam (.dxe)", "QTI (.zip)"]);
     expect(
       wrapper.find<HTMLInputElement>('[data-test="exam-workspace-source-file-input"]').attributes(
         "accept",
@@ -331,8 +335,12 @@ describe("ExamWorkspaceView AI gate in the Öppna drawer", () => {
 
     expect(wrapper.get(ACCEPT).attributes("accept")).toBe(".dxe,.zip");
     expect(findNotes(wrapper).length).toBeGreaterThan(0);
-    expect(wrapper.text()).not.toContain("Word .docx");
+    expect(wrapper.text()).not.toContain("Word (.docx)");
     expect(wrapper.get(PICK).attributes("disabled")).toBeUndefined();
+    expect(wrapper.get(".drop__formats").findAll(".xw-chip")).toHaveLength(0);
+    expect(
+      wrapper.get(".drop__formats").findAll(".drop__format").map((node) => node.text()),
+    ).toEqual(["DigiExam (.dxe)", "QTI (.zip)"]);
 
     await chooseSourceFile(wrapper, new File(["dxe"], "NO_Prov_HT25.dxe"));
 
@@ -386,8 +394,8 @@ describe("ExamWorkspaceView AI gate in the Öppna drawer", () => {
     const wrapper = await mountView("user");
 
     expect(wrapper.get(ACCEPT).attributes("accept")).toBe(".dxe,.zip");
-    expect(wrapper.text()).toContain("QTI .zip");
-    expect(wrapper.text()).not.toContain("Word .docx");
+    expect(wrapper.text()).toContain("QTI (.zip)");
+    expect(wrapper.text()).not.toContain("Word (.docx)");
 
     await chooseSourceFile(wrapper, new File(["qti"], "Prov_HT25.zip", { type: "application/zip" }));
 
@@ -406,8 +414,8 @@ describe("ExamWorkspaceView AI gate in the Öppna drawer", () => {
     apiMocks.getExamWorkspaceDocument.mockResolvedValueOnce(buildResponse());
     const wrapper = await mountView("user");
 
-    expect(wrapper.text()).toContain("QTI .zip");
-    expect(wrapper.text()).not.toContain("Word .docx");
+    expect(wrapper.text()).toContain("QTI (.zip)");
+    expect(wrapper.text()).not.toContain("Word (.docx)");
 
     await wrapper.get(DROP).trigger("drop", {
       dataTransfer: { files: [new File(["qti"], "Prov_HT25.zip", { type: "application/zip" })] },
@@ -431,7 +439,7 @@ describe("ExamWorkspaceView AI gate in the Öppna drawer", () => {
 
     expect(wrapper.get(ACCEPT).attributes("accept")).toBe(".docx,.dxe,.zip");
     expect(findNotes(wrapper)).toHaveLength(0);
-    expect(wrapper.text()).toContain("Word .docx");
+    expect(wrapper.text()).toContain("Word (.docx)");
 
     await chooseSourceFile(wrapper, new File(["prov"], "NO_Prov_HT25.docx"));
 
