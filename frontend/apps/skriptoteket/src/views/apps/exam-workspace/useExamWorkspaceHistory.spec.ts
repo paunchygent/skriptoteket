@@ -403,4 +403,59 @@ describe("departure under the held editing lock", () => {
       }),
     ).resolves.toBe(false);
   });
+
+  it("resolves false without holding when the scope is disposed inside leave", async () => {
+    const baseline = buildParentDocument();
+    fakeServer(baseline);
+    const workspaceDocument = ref<NativeExamDocument | null>(baseline);
+    const serverDocument = ref<NativeExamDocument | null>(baseline);
+    const historyCursor = ref<string | null>("step-0");
+    const events: string[] = [];
+    const addSpy = vi.spyOn(window, "addEventListener");
+    try {
+      const scope = effectScope();
+      const history = scope.run(() =>
+        useExamWorkspaceHistory({
+          historyCursor,
+          install: (document) => {
+            workspaceDocument.value = document;
+          },
+          isBlocked: () => false,
+          isReplacing: () => false,
+          replaceCopy: async <T>(run: () => Promise<T>): Promise<T> => {
+            events.push("lock");
+            try {
+              return await run();
+            } finally {
+              events.push("unlock");
+            }
+          },
+          lineageId: () => "lineage-1",
+          noteExportBlockers: vi.fn(),
+          onConflict: async () => undefined,
+          savedRevision: () => baseline.revision,
+          serverDocument,
+          shared: serverExamWorkspaceStore.shared,
+          workspaceDocument,
+        }),
+      )!;
+      await flushPromises();
+      workspaceDocument.value = titled(workspaceDocument.value!, "one");
+
+      addSpy.mockClear();
+      await expect(
+        history.depart(async () => {
+          scope.stop();
+          return true;
+        }),
+      ).resolves.toBe(false);
+
+      expect(addSpy.mock.calls.some(([name]) => name === "pageshow")).toBe(false);
+      expect(events).toEqual(["lock", "unlock"]);
+    } finally {
+      addSpy.mockRestore();
+      window.dispatchEvent(new Event("pageshow"));
+      await flushPromises();
+    }
+  });
 });

@@ -119,6 +119,8 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
   let loadToken = 0;
   /** Release the held departing lock; set only while a departure navigation runs. */
   let releaseDeparted: (() => void) | null = null;
+  /** True once the history's scope is disposed: a pending departure must not leave. */
+  let disposed = false;
 
   const ids = computed(() => (baselineId.value ? [baselineId.value, ...stepIds.value] : []));
   const index = computed(() => (position.value ? ids.value.indexOf(position.value) : -1));
@@ -315,10 +317,14 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
    * pasted after the redirect starts is refused instead of being accepted and
    * abandoned on unload. The held lock is released when the page comes back
    * (`pageshow`) or when the history's scope is disposed on unmount; no
-   * `beforeunload` handler can cancel the navigation on these routes.
+   * `beforeunload` handler can cancel the navigation on these routes. A
+   * departure whose scope is disposed before the flush finishes never calls
+   * `leave`; one disposed while `leave` runs releases without installing the
+   * `pageshow` hold and resolves false, so navigation that already started is
+   * not overridden and the lock does not outlive the scope.
    */
   async function depart(leave: () => boolean | Promise<boolean>): Promise<boolean> {
-    if (deps.isReplacing() || navigating.value) {
+    if (disposed || deps.isReplacing() || navigating.value) {
       return false;
     }
     let releaseDeparting!: () => void;
@@ -330,7 +336,12 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
       resolveDeparted = resolve;
     });
     const run = deps.replaceCopy(async (): Promise<void> => {
-      if (!((await flush(true)) && !pending.value)) {
+      const settled = await flush(true);
+      if (disposed) {
+        resolveDeparted(false);
+        return;
+      }
+      if (!(settled && !pending.value)) {
         resolveDeparted(false);
         return;
       }
@@ -338,6 +349,10 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
       try {
         left = await leave();
       } catch {
+        resolveDeparted(false);
+        return;
+      }
+      if (disposed) {
         resolveDeparted(false);
         return;
       }
@@ -451,6 +466,7 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
   }
 
   onScopeDispose(() => {
+    disposed = true;
     clearTimer();
     releaseDeparted?.();
   });

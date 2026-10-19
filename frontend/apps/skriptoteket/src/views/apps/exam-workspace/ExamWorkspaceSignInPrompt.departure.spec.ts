@@ -57,15 +57,15 @@ function guestIds() {
   };
 }
 
-async function opened() {
-  const backing = createInMemoryExamWorkspaceGuestDraftStorage();
-  const original = newGuestDraft(buildParentDocument(), guestIds(), []);
-  await backing.replaceIf(null, { assets: {}, draft: original });
+async function openWith(
+  storage: Parameters<typeof createGuestExamWorkspaceStore>[0]["storage"],
+  original: ReturnType<typeof newGuestDraft>,
+) {
   const guest = createGuestExamWorkspaceStore({
     api: publicApi,
     ids: guestIds(),
     onLimit: () => undefined,
-    storage: backing,
+    storage,
   });
   let editing!: ReturnType<typeof useExamWorkspaceEditing>;
   let signIn!: ReturnType<typeof useExamWorkspaceGuestSignIn>;
@@ -108,6 +108,14 @@ async function opened() {
   const wrapper = mount(host, { attachTo: document.body, global: { plugins: [createPinia()] } });
   expect(await editing.openDocument(original.lineage_id)).toBe(true);
   await flushPromises();
+  return { editing, wrapper };
+}
+
+async function opened() {
+  const backing = createInMemoryExamWorkspaceGuestDraftStorage();
+  const original = newGuestDraft(buildParentDocument(), guestIds(), []);
+  await backing.replaceIf(null, { assets: {}, draft: original });
+  const { editing, wrapper } = await openWith(backing, original);
   return { backing, editing, wrapper };
 }
 
@@ -229,6 +237,64 @@ describe("guest departure across the sign-in redirect", () => {
     } finally {
       redirectMocks.redirectToSharedAuthCeremony.mockReset();
       probe.wrapper.unmount();
+    }
+  });
+
+  it("does not redirect or hold the lock when the owner unmounts during the departure write", async () => {
+    const backing = createInMemoryExamWorkspaceGuestDraftStorage();
+    const original = newGuestDraft(buildParentDocument(), guestIds(), []);
+    await backing.replaceIf(null, { assets: {}, draft: original });
+    let releaseWrite!: () => void;
+    let enteredResolve!: () => void;
+    const writeGate = new Promise<void>((resolve) => {
+      releaseWrite = resolve;
+    });
+    const writeEntered = new Promise<void>((resolve) => {
+      enteredResolve = resolve;
+    });
+    const port = {
+      clearIf: (cursor: string) => backing.clearIf(cursor),
+      load: () => backing.load(),
+      async replaceIf(
+        cursor: string | null,
+        next: NonNullable<Awaited<ReturnType<typeof backing.load>>>,
+      ) {
+        enteredResolve();
+        await writeGate;
+        return backing.replaceIf(cursor, next);
+      },
+    };
+    const { editing, wrapper } = await openWith(port, original);
+    const addSpy = vi.spyOn(window, "addEventListener");
+    const removeSpy = vi.spyOn(window, "removeEventListener");
+    try {
+      redirectMocks.redirectToSharedAuthCeremony.mockClear();
+      editing.setTitle("snapshot A");
+      const link = wrapper.findAll("a").find((candidate) => candidate.text() === "Logga in");
+      if (!link) {
+        throw new Error("missing sign-in action");
+      }
+      await link.trigger("click");
+      await writeEntered;
+      // The workspace navigates away through another SPA route while the write is pending.
+      wrapper.unmount();
+      expect(redirectMocks.redirectToSharedAuthCeremony).not.toHaveBeenCalled();
+      addSpy.mockClear();
+      removeSpy.mockClear();
+      releaseWrite();
+      await flushPromises();
+      await flushPromises();
+      expect(redirectMocks.redirectToSharedAuthCeremony).not.toHaveBeenCalled();
+      expect(addSpy.mock.calls.some(([name]) => name === "pageshow")).toBe(false);
+      expect(editing.isBusy.value).toBe(false);
+      expect(editing.history.pending.value).toBe(false);
+    } finally {
+      releaseWrite();
+      window.dispatchEvent(new Event("pageshow"));
+      await flushPromises();
+      addSpy.mockRestore();
+      removeSpy.mockRestore();
+      wrapper.unmount();
     }
   });
 });
