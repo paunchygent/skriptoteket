@@ -155,7 +155,9 @@ source line breaks changed 10 correct items.
 - Replays at `389b1aee` (`~/logs/replays-39-04-gap-source/head2`) are
   byte-identical to `head` (`d6c2f9af`): no difference, no
   `gap_count_mismatch`; the 2026-10-18 replay outcome stands.
-- Next: the domain suite on the parent's go; then the parent merges.
+- Domain suite at `e229fa99`: 4131 passed, 59 skipped
+  (`~/logs/suite-39-04-16-repair.log`).
+- Next: the parent merges; then TASK-SKRIPT-39-04-15 and 39-04-17.
 - Retained root:
   `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a14f3e-11d5-7745-90e8-6323496fbf74`.
 
