@@ -92,7 +92,10 @@ Stop and report if the Exam.net-accepted fixture shows a round-trip loss that is
   assigns no remainder when a sibling was skipped, so the skipped score is a
   named loss and the gap child goes to review (F4). Lint, typecheck, 277
   focused tests and the PostgreSQL QTI API test pass.
-- Next: rereview of F2, F4 and F6 by 596c1654 through the parent.
+- Review 596c1654 approved a677e12a with no findings. Merge of origin/main
+  23296baa is dc018b1d (DI imports, pdm.lock relocked with
+  `--update-reuse`, docs index regenerated).
+- Next: 596c1654 checks the merge resolution; the parent merges to main.
 - Product consequence of F4: a part with two or more gap children imports
   those children with points absent and review required, because the export
   states only rounded-down per-gap shares.
