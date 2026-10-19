@@ -29,15 +29,13 @@ import {
   withChoiceBody,
   withCorrectChoices,
   withCriteria,
-  withGapAsText,
-  withGapOptions,
-  withNewGap,
   withoutInterpretedKey,
   withMatchEntryBody,
   withMatchPairs,
   withPoints,
   withTickPoints,
 } from "./examWorkspaceItemEdits";
+import { withGapAsText, withGapOptions, withNewGap } from "./examWorkspaceGapEdits";
 import { withShuffledSteps, withStepAdded, withStepMoved, withStepRemoved } from "./examWorkspaceOrdering";
 import { withoutEmptyOptions, withoutOptionHeadings } from "./examWorkspaceBlockers";
 

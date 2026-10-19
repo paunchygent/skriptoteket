@@ -17,7 +17,9 @@ import type {
   NativeExamBodySegment,
   NativeExamItem,
 } from "../../../api/examWorkspace";
-import { nextGapId, withNewGap } from "./examWorkspaceItemEdits";
+import { hasInvalidAnswerKey } from "./examWorkspaceAnswerKeyRules";
+import { newTeacherItem } from "./examWorkspaceItemEdits";
+import { nextGapId, withNewGap } from "./examWorkspaceGapEdits";
 import { useExamWorkspaceItemEdits } from "./useExamWorkspaceItemEdits";
 import { buildGap } from "./examWorkspaceKeyedItems.specSupport";
 import { buildGapItem } from "./ExamWorkspaceBodyEditor.specSupport";
@@ -212,6 +214,78 @@ describe("withNewGap", () => {
       expect(withNewGap(item, body, "gap_001", "Paris")).toBe(item);
     },
   );
+
+  describe("key ownership", () => {
+    it("marks a seeded gap on a new Lucktext teacher authored with a valid key", () => {
+      const item = newTeacherItem("item_001", 1, "gap_fill");
+
+      const created = withNewGap(item, gapBody("gap_001"), "gap_001", "varm");
+
+      expect(created.answer_key.origin).toBe("teacher_authored");
+      expect(created.gaps[0].accepted_values).toEqual(["varm"]);
+      expect(hasInvalidAnswerKey(created)).toBe(false);
+    });
+
+    it("marks a seeded gap on a new dropdown Lucktext teacher authored", () => {
+      const item = newTeacherItem("item_001", 1, "inline_choice");
+
+      const created = withNewGap(item, gapBody("gap_001", "gap_002"), "gap_002", "röd");
+
+      expect(created.answer_key.origin).toBe("teacher_authored");
+      expect(created.gaps[1].correct_option_id).toBe("choice_001");
+      expect(created.gaps[1].options).toEqual([{ body: plainBody("röd"), choice_id: "choice_001" }]);
+    });
+
+    it("keeps the absent origin when an empty insertion adds no key data", () => {
+      const item = newTeacherItem("item_001", 1, "gap_fill");
+
+      const created = withNewGap(item, gapBody("gap_001"), "gap_001", "  ");
+
+      expect(created.answer_key.origin).toBe("absent");
+      expect(created.gaps[0].accepted_values).toEqual([]);
+    });
+
+    it("marks a seeded gap teacher authored when the key was ai_interpreted", () => {
+      const item = buildGapItem({
+        answer_key: { correct_choice_ids: [], match_pairs: [], origin: "ai_interpreted" },
+        body: gapBody("gap_001"),
+        gaps: [buildGap("gap_001", ["tolkad"])],
+        kind: "gap_fill",
+      });
+
+      const created = withNewGap(item, gapBody("gap_001", "gap_002"), "gap_002", "ny");
+
+      expect(created.answer_key.origin).toBe("teacher_authored");
+    });
+
+    it("keeps ai_interpreted when an empty insertion adds no key data", () => {
+      const item = buildGapItem({
+        answer_key: { correct_choice_ids: [], match_pairs: [], origin: "ai_interpreted" },
+        body: gapBody("gap_001"),
+        gaps: [buildGap("gap_001", ["tolkad"])],
+        kind: "gap_fill",
+      });
+
+      const created = withNewGap(item, gapBody("gap_001", "gap_002"), "gap_002", "  ");
+
+      expect(created.gaps[1].accepted_values).toEqual([]);
+      expect(created.answer_key.origin).toBe("ai_interpreted");
+    });
+
+    it("keeps machine_proposed when an empty insertion adds no key data", () => {
+      const item = buildGapItem({
+        answer_key: { correct_choice_ids: [], match_pairs: [], origin: "machine_proposed" },
+        body: gapBody("gap_001"),
+        gaps: [buildGap("gap_001", ["tolkad"])],
+        kind: "gap_fill",
+      });
+
+      const created = withNewGap(item, gapBody("gap_001", "gap_002"), "gap_002", "");
+
+      expect(created.gaps[1].accepted_values).toEqual([]);
+      expect(created.answer_key.origin).toBe("machine_proposed");
+    });
+  });
 });
 
 describe("createItemGap", () => {

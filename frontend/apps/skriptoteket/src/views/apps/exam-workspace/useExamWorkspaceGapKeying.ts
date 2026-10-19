@@ -46,7 +46,7 @@ import {
   withAutomaticValues,
   withGapValues,
   withoutAutomaticValue,
-} from "./examWorkspaceItemEdits";
+} from "./examWorkspaceGapEdits";
 import type { ExamWorkspaceOpening } from "./useExamWorkspaceDocument";
 
 const AUTOMATIC_VALUES_FAILURE_COPY =

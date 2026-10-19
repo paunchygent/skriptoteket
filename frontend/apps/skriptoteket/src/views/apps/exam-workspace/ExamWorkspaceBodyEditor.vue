@@ -49,7 +49,7 @@ import {
   PARTIAL_GAP_KEY_GUIDANCE,
 } from "./examWorkspaceAnswerKeyRules";
 import { examGapStates, gapNumberIn } from "./examWorkspaceGapLabels";
-import { nextGapId } from "./examWorkspaceItemEdits";
+import { nextGapId } from "./examWorkspaceGapEdits";
 import ExamWorkspaceGapPopover from "./ExamWorkspaceGapPopover.vue";
 import ExamWorkspaceMarkToolbar from "./ExamWorkspaceMarkToolbar.vue";
 import ExamWorkspaceRichTextEditor from "./ExamWorkspaceRichTextEditor.vue";

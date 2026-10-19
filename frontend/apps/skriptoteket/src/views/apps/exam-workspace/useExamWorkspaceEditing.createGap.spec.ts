@@ -18,8 +18,8 @@ import type {
   NativeExamBodySegment,
   NativeExamDocument,
 } from "../../../api/examWorkspace";
+import { withNewGap } from "./examWorkspaceGapEdits";
 import { newTeacherItem } from "./examWorkspaceItemEdits";
-import { buildGap } from "./examWorkspaceKeyedItems.specSupport";
 import { exam, openEditing, stopScopes } from "./useExamWorkspaceEditing.history.specSupport";
 
 const api = vi.hoisted(() => ({
@@ -50,14 +50,15 @@ afterEach(stopScopes);
 
 function gapExam(): NativeExamDocument {
   const baseline = exam("Original", 1);
-  baseline.items[0] = {
-    ...newTeacherItem("item_001", 1, "gap_fill"),
-    points: 2,
-    // A converted Lucktext already carrying its first gap; a new Lucktext
-    // starts empty (L2), so the fixture declares the starting gap itself.
-    body: bodyWith(["gap_001"]),
-    gaps: [buildGap("gap_001", ["ett"])],
-  };
+  // A converted Lucktext already carrying its first gap: a new Lucktext
+  // starts empty (L2), so the fixture grows the starting gap through the
+  // production creation, keeping a valid teacher-authored key.
+  baseline.items[0] = withNewGap(
+    { ...newTeacherItem("item_001", 1, "gap_fill"), points: 2 },
+    bodyWith(["gap_001"]),
+    "gap_001",
+    "ett",
+  );
   return baseline;
 }
 
