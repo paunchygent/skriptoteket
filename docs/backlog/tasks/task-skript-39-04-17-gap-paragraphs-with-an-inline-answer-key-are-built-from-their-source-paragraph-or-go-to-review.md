@@ -91,15 +91,17 @@ event `aligned` becomes the admission event `gap_count_mismatch` ("5 gaps for
 
 ### Resume here (2026-10-19)
 
-- State: U1 integrated (`14862085`, docstring repair `0a93eaee`). The focused
-  files pass (57 tests): `test_source_gap_paragraph_answer_labels.py` (five
-  of its seven cases fail before the fix; two guard unchanged behaviour),
-  `test_exam_workspace_docx_inline_answer_key_replay.py` (both variants fail
-  before the fix), plus the 39-04-16 gap test files. Lint, backend typecheck
+- State: U1 integrated (`14862085`, docstring repair `0a93eaee`); `origin/main`
+  at `a8195345` (TASK-SKRIPT-39-04-15) merged at `30e2c846` (only the
+  generated `docs/repository-index.json` conflicted, taken from main and
+  regenerated); the new test file now passes `foreign_chunks=()` (`c2d80fa3`).
+- After the merge: the focused files pass (57 tests); lint, backend typecheck
   and docs-validate pass. Frontend is not touched (`vue-tsc` is not installed
-  in this worktree).
-- Next: the domain suite after the orchestrator's go; then merge `origin/main`
-  once TASK-SKRIPT-39-04-15 lands (D6) and rerun the tests and replays.
+  in this worktree). Replays at `a8195345` against `c2d80fa3`
+  (`~/logs/replays-39-04-17-merged/`, retained
+  `evidence/read/replay-merged.diff`) repeat the replay outcome above: only
+  the two svenska_2 item_001 and their formatting event change.
+- Next: the domain suite in the orchestrator's slot, then independent review.
 - Open: G1 (review copy) with the user.
 - Branch `codex/task-skript-39-04-17-remote`, worktree
   `/home/paunchygent/apps/skriptoteket-task-skript-39-04-17-remote`; never
