@@ -17,7 +17,7 @@
  *     `useExamWorkspaceStructure`; consumed by `ExamWorkspaceView`.
  */
 
-import { ref, watch } from "vue";
+import { onScopeDispose, ref, watch } from "vue";
 
 import type { NativeExamDocument } from "../../../api/examWorkspace";
 import type { ExamWorkspaceStore } from "./examWorkspaceStore";
@@ -60,25 +60,56 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
   });
   const lineageId = () => document.summary.value?.lineage_id ?? null;
   const reload = () => document.reloadDocument();
+  // Waits started in async continuations have no active effect scope left for
+  // onScopeDispose, so disposal notifiers registered here settle them instead.
+  const disposeNotifiers = new Set<() => void>();
+  onScopeDispose(() => {
+    for (const notify of [...disposeNotifiers]) {
+      notify();
+    }
+    disposeNotifiers.clear();
+  });
 
   /**
    * After a reload the history loads the fresh step list; wait until its step
    * matches the reloaded server copy (or the load failed and cleared it), so
    * the merged edit's flush carries the fresh position instead of truncating
-   * the other tab's steps after a stale one.
+   * the other tab's steps after a stale one. The wait always settles: a
+   * lineage that moved on or a disposed scope resolves stale (false) so the
+   * merge is skipped instead of leaking the watch or merging onto the wrong
+   * exam.
    */
-  function waitForHistoryStep(): Promise<void> {
+  function waitForHistoryStep(startLineage: string | null): Promise<boolean> {
     const server = document.serverDocument.value;
     if (server === null || history.stepDocument.value === server || history.stepDocument.value === null) {
-      return Promise.resolve();
+      return Promise.resolve(lineageId() === startLineage);
     }
-    return new Promise<void>((resolve) => {
-      const stop = watch(history.stepDocument, (step) => {
+    return new Promise<boolean>((resolve) => {
+      let settled = false;
+      let stopStep: () => void = () => undefined;
+      let stopLineage: () => void = () => undefined;
+      const finish = (ready: boolean) => {
+        if (settled) {
+          return;
+        }
+        settled = true;
+        disposeNotifiers.delete(onDispose);
+        stopStep();
+        stopLineage();
+        resolve(ready);
+      };
+      stopStep = watch(history.stepDocument, (step) => {
         if (step === document.serverDocument.value || step === null) {
-          stop();
-          resolve();
+          finish(lineageId() === startLineage);
         }
       });
+      stopLineage = watch(lineageId, (next) => {
+        if (next !== startLineage) {
+          finish(false);
+        }
+      });
+      const onDispose = () => finish(false);
+      disposeNotifiers.add(onDispose);
     });
   }
 
@@ -92,11 +123,22 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
   async function acquireWithKeptEdit(): Promise<void> {
     const edited = history.pending.value ? document.workspaceDocument.value : null;
     const base = edited === null ? null : history.stepDocument.value;
+    const startServer = document.serverDocument.value;
+    const startLineage = lineageId();
     await reload();
     if (edited === null || base === null) {
       return;
     }
-    await waitForHistoryStep();
+    // reloadDocument catches its own failure and only toasts, so an unchanged
+    // server document means the reload failed: keep the refused edit pending
+    // without merging or storing.
+    if (document.serverDocument.value === startServer) {
+      return;
+    }
+    const ready = await waitForHistoryStep(startLineage);
+    if (!ready) {
+      return;
+    }
     const newest = document.workspaceDocument.value;
     if (newest === null) {
       return;

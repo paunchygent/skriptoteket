@@ -170,4 +170,128 @@ describe("a refused edit across the takeover", () => {
     expect(pointsOf(newest, "item_002")).toBe(9);
     expect(editing.history.saveText.value).toMatch(/^Sparat \d{2}:\d{2}$/);
   });
+
+  it("settles without merging when the takeover reload fails", { timeout: 5000 }, async () => {
+    const baseline = exam();
+    fakeServer(api, baseline);
+    let holder = "tab-A";
+    const editing = inScope(() =>
+      useExamWorkspaceEditing(serverExamWorkspaceStore, {
+        server: {
+          claim: async () => {
+            if (holder !== "tab-A") {
+              throw leaseHeld();
+            }
+            return leaseResponse("tab-A");
+          },
+          release: async () => leaseResponse(holder),
+          renew: async () => {
+            if (holder !== "tab-A") {
+              throw leaseHeld();
+            }
+            return leaseResponse("tab-A");
+          },
+          requestTakeover: async () => leaseResponse("tab-B"),
+        },
+        tabId: "tab-A",
+      }),
+    );
+    editing.applyCommandResponse(response(baseline, "step-0"));
+    await flushPromises();
+    editing.updateItemPoints("item_001", 5);
+    expect(await editing.save()).toBe(true);
+    holder = "tab-B";
+    api.storeExamWorkspaceUndoStep.mockRejectedValueOnce(leaseHeld());
+    editing.updateItemPoints("item_001", 7);
+    expect(await editing.save()).toBe(false);
+    expect(editing.history.pending.value).toBe(true);
+    const storesBefore = api.storeExamWorkspaceUndoStep.mock.calls.length;
+    api.getExamWorkspaceDocument.mockRejectedValueOnce(new Error("reload failed"));
+    holder = "tab-A";
+    const outcome = await Promise.race([
+      editing.requestTakeover().then(() => "settled"),
+      new Promise((resolve) => setTimeout(() => resolve("hung"), 1500)).then((value) => value),
+    ]);
+    expect(outcome).toBe("settled");
+    await flushPromises();
+    const workspace = editing.workspaceDocument.value;
+    if (workspace === null) {
+      throw new Error("expected an open document");
+    }
+    expect(pointsOf(workspace, "item_001")).toBe(7);
+    expect(editing.history.pending.value).toBe(true);
+    expect(api.storeExamWorkspaceUndoStep.mock.calls.length).toBe(storesBefore);
+  });
+
+  it("settles without a merged store when the lineage changes during the takeover wait", { timeout: 8000 }, async () => {
+    const baseline = exam();
+    const server = fakeServer(api, baseline);
+    let holder = "tab-A";
+    const editing = inScope(() =>
+      useExamWorkspaceEditing(serverExamWorkspaceStore, {
+        server: {
+          claim: async () => {
+            if (holder !== "tab-A") {
+              throw leaseHeld();
+            }
+            return leaseResponse("tab-A");
+          },
+          release: async () => leaseResponse(holder),
+          renew: async () => {
+            if (holder !== "tab-A") {
+              throw leaseHeld();
+            }
+            return leaseResponse("tab-A");
+          },
+          requestTakeover: async () => leaseResponse("tab-B"),
+        },
+        tabId: "tab-A",
+      }),
+    );
+    editing.applyCommandResponse(response(baseline, "step-0"));
+    await flushPromises();
+    editing.updateItemPoints("item_001", 5);
+    expect(await editing.save()).toBe(true);
+    holder = "tab-B";
+    api.storeExamWorkspaceUndoStep.mockRejectedValueOnce(leaseHeld());
+    editing.updateItemPoints("item_001", 7);
+    expect(await editing.save()).toBe(false);
+    expect(editing.history.pending.value).toBe(true);
+    const storedA = server.documents.get(server.state.cursor);
+    if (storedA === undefined) {
+      throw new Error("expected tab A's stored step");
+    }
+    const storedB: NativeExamDocument = {
+      ...storedA,
+      items: storedA.items.map((item) =>
+        item.item_id === "item_002" ? { ...item, points: 9 } : item,
+      ),
+    };
+    server.documents.set("step-B", storedB);
+    server.state.steps = [...server.state.steps, "step-B"];
+    server.state.cursor = "step-B";
+    server.state.position = "step-B";
+    api.getExamWorkspaceDocument.mockResolvedValueOnce(response(storedB, "step-B"));
+    api.getExamWorkspaceHistory.mockImplementationOnce(() => new Promise(() => undefined));
+    const storesBefore = api.storeExamWorkspaceUndoStep.mock.calls.length;
+    holder = "tab-A";
+    const takeover = editing.requestTakeover();
+    const settledRace = Promise.race([
+      takeover.then(() => "settled"),
+      new Promise((resolve) => setTimeout(() => resolve("hung"), 2000)).then((value) => value),
+    ]);
+    await flushPromises();
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    const otherLineage = "00000000-0000-4000-8000-000000000002";
+    const otherDocument: NativeExamDocument = { ...storedB, document_id: otherLineage };
+    editing.applyCommandResponse({
+      ...response(otherDocument, "other-cursor"),
+      summary: { ...response(otherDocument, "other-cursor").summary, lineage_id: otherLineage },
+    });
+    await flushPromises();
+    expect(await settledRace).toBe("settled");
+    await takeover;
+    await flushPromises();
+    expect(api.storeExamWorkspaceUndoStep.mock.calls.length).toBe(storesBefore);
+  });
 });
