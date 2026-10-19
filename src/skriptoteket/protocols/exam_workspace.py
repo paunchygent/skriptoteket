@@ -20,6 +20,9 @@ from skriptoteket.application.curated_apps.exam_workspace import (
     RetryExamWorkspaceItemRequest,
     SaveExamWorkspaceDocumentRequest,
 )
+from skriptoteket.application.curated_apps.exam_workspace_content_suggestions import (
+    ContentSuggestionsResponse,
+)
 from skriptoteket.application.curated_apps.exam_workspace_history import (
     ExamWorkspaceHistoryDocumentResponse,
     ExamWorkspaceHistoryResponse,
@@ -213,6 +216,16 @@ class FindExamWorkspaceAnswerKeySuggestionsHandlerProtocol(Protocol):
     async def handle(
         self, *, actor: User, lineage_id: UUID, document_revision: int
     ) -> ExamWorkspaceAnswerKeySuggestionsResponse | None: ...
+
+
+class RequestExamContentSuggestionsHandlerProtocol(Protocol):
+    async def handle(self, *, actor: User, lineage_id: UUID) -> ContentSuggestionsResponse: ...
+
+
+class GetExamContentSuggestionsHandlerProtocol(Protocol):
+    async def handle(
+        self, *, actor: User, lineage_id: UUID, job_id: UUID
+    ) -> ContentSuggestionsResponse: ...
 
 
 class RetryExamWorkspaceItemHandlerProtocol(Protocol):
