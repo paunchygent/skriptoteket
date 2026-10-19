@@ -9,7 +9,7 @@
  *   calls the view's click handler; every key is a real `keydown`.
  */
 
-import { mount } from "@vue/test-utils";
+import { DOMWrapper, mount } from "@vue/test-utils";
 import type { Editor } from "@tiptap/core";
 import { nextTick } from "vue";
 
@@ -176,4 +176,35 @@ export function clickGap(wrapper: MountedBodyEditor, gapId: string): void {
 /** The drawn element of one gap. */
 export function gapElement(wrapper: MountedBodyEditor, gapId: string): HTMLElement {
   return wrapper.get(`[data-gap-id="${gapId}"]`).element as HTMLElement;
+}
+
+/**
+ * The gap popover is teleported to `document.body`, outside the mounted
+ * wrapper, so specs find it through document queries. Every finder below
+ * throws when the popover (or the requested part) is absent.
+ */
+export function popoverRoot(): HTMLElement {
+  const root = document.querySelector<HTMLElement>('[data-test="exam-workspace-gap-popover"]');
+  if (!root) {
+    throw new Error("the gap popover is not open");
+  }
+  return root;
+}
+
+export function popoverExists(): boolean {
+  return document.querySelector('[data-test="exam-workspace-gap-popover"]') !== null;
+}
+
+/** Any element in the document (teleported popover content included). */
+export function documentControl<T extends HTMLElement>(selector: string): DOMWrapper<T> {
+  const element = document.querySelector<T>(selector);
+  if (!element) {
+    throw new Error(`no element "${selector}"`);
+  }
+  return new DOMWrapper(element);
+}
+
+/** The accepted-answers input of one gap inside the open popover. */
+export function popoverInput(gapId: string): DOMWrapper<HTMLInputElement> {
+  return documentControl<HTMLInputElement>(`[data-test="exam-workspace-gap-values-${gapId}"]`);
 }

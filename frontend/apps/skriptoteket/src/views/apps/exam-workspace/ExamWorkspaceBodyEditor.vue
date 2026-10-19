@@ -48,8 +48,6 @@ import { useRichTextTargetRegistry } from "./examWorkspaceRichTextTarget";
 
 type HeadingLevel = 1 | 2 | 3;
 
-const POPOVER_WIDTH_PX = 448;
-
 const props = defineProps<{
   item: NativeExamItem;
   disabled?: boolean;
@@ -68,12 +66,10 @@ const emit = defineEmits<{
 type OpenGap = {
   itemId: string;
   gapId: string;
-  top: number;
-  left: number;
+  anchor: HTMLElement;
 };
 
 const labelId = useId();
-const editorRoot = ref<HTMLElement | null>(null);
 const editor = ref<InstanceType<typeof ExamWorkspaceRichTextEditor> | null>(null);
 const openGap = ref<OpenGap | null>(null);
 const richTextTargets = useRichTextTargetRegistry();
@@ -109,21 +105,14 @@ function openPopover(gapId: string, chip: HTMLElement): void {
   if (props.disabled) {
     return;
   }
-  const root = editorRoot.value;
-  if (!root) {
-    return;
-  }
   openChip?.setAttribute("aria-expanded", "false");
-  const chipRect = chip.getBoundingClientRect();
-  const rootRect = root.getBoundingClientRect();
   openChip = chip;
   chip.setAttribute("aria-expanded", "true");
+  // The popover anchors itself to the chip from its viewport rect.
   openGap.value = {
     itemId: props.item.item_id,
     gapId,
-    top: chipRect.bottom - rootRect.top + 4,
-    // Keep the popover inside the editor when the chip sits near the right edge.
-    left: Math.max(0, Math.min(chipRect.left - rootRect.left, rootRect.width - POPOVER_WIDTH_PX)),
+    anchor: chip,
   };
 }
 
@@ -210,10 +199,7 @@ watch(
         @toggle-mark="handleToggleMark"
         @toggle-heading="handleToggleHeading"
       />
-      <div
-        ref="editorRoot"
-        class="xw-rich__body relative grid gap-2"
-      >
+      <div class="xw-rich__body grid gap-2">
         <ExamWorkspaceRichTextEditor
           :key="item.item_id"
           ref="editor"
@@ -237,8 +223,7 @@ watch(
           :gap-number="openGapNumber"
           :gap="openGapModel"
           :dropdown="item.kind === 'inline_choice'"
-          :top="openGap.top"
-          :left="openGap.left"
+          :anchor="openGap.anchor"
           @commit="handleGapCommit"
           @update-options="handleGapOptions"
           @remove-automatic-value="handleGapAutomaticValueRemoval"

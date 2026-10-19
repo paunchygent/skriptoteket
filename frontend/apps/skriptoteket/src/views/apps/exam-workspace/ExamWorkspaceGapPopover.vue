@@ -26,6 +26,10 @@
  *   option be removed. The accepted answers, automatic answers and "Visa som
  *   text" do not apply to a dropdown gap and are hidden.
  *
+ *   The panel is teleported to the body and anchored to the gap chip through
+ *   `useExamWorkspaceAnchoredPosition` (below the chip, or above it when the
+ *   space below is too small), so the editor's clipping never hides it.
+ *
  * Relationships:
  *   - Opened by `ExamWorkspaceBodyEditor`, which keys it by item and gap so
  *     the ids below never change while it is open.
@@ -37,6 +41,7 @@ import { computed, nextTick, onMounted, reactive, ref, useId, watch } from "vue"
 import type { NativeExamChoice, NativeExamGap } from "../../../api/examWorkspace";
 import { IconX } from "../../../components/icons";
 import { UiGlyph } from "../../../components/ui";
+import { useExamWorkspaceAnchoredPosition } from "./useExamWorkspaceAnchoredPosition";
 import { parseAcceptedValues } from "./examWorkspaceGapLabels";
 import { bodyText, plainBody } from "./examWorkspaceRichText";
 
@@ -49,8 +54,7 @@ const props = defineProps<{
   gapNumber: number;
   gap: NativeExamGap | null;
   dropdown?: boolean;
-  top: number;
-  left: number;
+  anchor: HTMLElement;
 }>();
 
 const emit = defineEmits<{
@@ -67,6 +71,9 @@ const gapId = props.gapId;
 
 const root = ref<HTMLElement | null>(null);
 const input = ref<HTMLInputElement | null>(null);
+// The chip the popover is keyed to; the anchored position follows its viewport rect.
+const anchorRef = ref<HTMLElement | null>(props.anchor);
+const { position, place } = useExamWorkspaceAnchoredPosition(anchorRef, root);
 const removeHintId = useId();
 const optionsLabelId = useId();
 const showAsTextExplanationId = useId();
@@ -102,6 +109,14 @@ watch(
       draft.value = values.join(", ");
       lastCommitted = values;
     }
+  },
+);
+
+// The answer and option rows change the panel height; re-anchor after render.
+watch(
+  () => props.gap,
+  () => {
+    void nextTick(() => place());
   },
 );
 
@@ -303,183 +318,185 @@ onMounted(() => {
 </script>
 
 <template>
-  <div
-    ref="root"
-    class="absolute z-10 grid w-[min(28rem,100%)] gap-2 border border-navy bg-modal p-3 shadow-[var(--huleedu-shadow-md)]"
-    :style="{ top: `${top}px`, left: `${left}px` }"
-    role="dialog"
-    :aria-label="dropdown ? `Alternativ för lucka ${gapNumber}` : `Godkända svar för lucka ${gapNumber}`"
-    data-test="exam-workspace-gap-popover"
-    @focusout="handleFocusOut"
-    @keydown="handleRootKeydown"
-  >
+  <Teleport to="body">
     <div
-      v-if="dropdown"
-      class="grid min-w-0 gap-1.5"
-      role="group"
-      :aria-labelledby="optionsLabelId"
-      data-test="exam-workspace-gap-options"
+      ref="root"
+      class="fixed z-30 grid w-[min(28rem,calc(100vw-16px))] gap-2 overflow-y-auto border border-navy bg-modal p-3 shadow-[var(--huleedu-shadow-md)]"
+      :style="{ top: `${position.top}px`, left: `${position.left}px`, maxHeight: `${position.maxHeight}px` }"
+      role="dialog"
+      :aria-label="dropdown ? `Alternativ för lucka ${gapNumber}` : `Godkända svar för lucka ${gapNumber}`"
+      data-test="exam-workspace-gap-popover"
+      @focusout="handleFocusOut"
+      @keydown="handleRootKeydown"
     >
-      <p
-        :id="optionsLabelId"
-        class="text-xs font-semibold text-navy/80"
-      >
-        Lucka {{ gapNumber }} – alternativ i rullistan
-      </p>
       <div
-        v-for="(option, index) in options"
-        :key="option.choice_id"
-        class="flex min-w-0 items-center gap-1"
-        :data-test="`exam-workspace-gap-option-${option.choice_id}`"
+        v-if="dropdown"
+        class="grid min-w-0 gap-1.5"
+        role="group"
+        :aria-labelledby="optionsLabelId"
+        data-test="exam-workspace-gap-options"
       >
-        <input
-          type="radio"
-          class="h-4 w-4 shrink-0"
-          :name="`gap-correct-${gapId}`"
-          :checked="option.choice_id === correctOptionId"
-          :aria-label="`Rätt svar: ${optionLabel(option, index)}`"
-          :data-test="`exam-workspace-gap-option-correct-${option.choice_id}`"
-          @change="handleSelectCorrect(option.choice_id)"
+        <p
+          :id="optionsLabelId"
+          class="text-xs font-semibold text-navy/80"
         >
-        <input
-          class="min-h-10 min-w-0 flex-1 border border-navy/35 bg-canvas px-3 text-sm font-normal text-navy"
-          type="text"
-          :value="optionText(option)"
-          :aria-label="`Alternativ ${index + 1}`"
-          :data-test="`exam-workspace-gap-option-text-${option.choice_id}`"
-          @input="handleOptionInput(option.choice_id, $event)"
-          @change="commitOptionDrafts"
-          @keydown="handleOptionEnter"
+          Lucka {{ gapNumber }} – alternativ i rullistan
+        </p>
+        <div
+          v-for="(option, index) in options"
+          :key="option.choice_id"
+          class="flex min-w-0 items-center gap-1"
+          :data-test="`exam-workspace-gap-option-${option.choice_id}`"
         >
-        <button
-          type="button"
-          class="xw-rm"
-          :disabled="index === 0"
-          aria-label="Flytta upp"
-          title="Flytta upp"
-          :data-test="`exam-workspace-gap-option-up-${option.choice_id}`"
-          @click="handleMoveOption(index, -1)"
-        >
-          <UiGlyph
-            meaning="move-up"
-            :size="16"
-          />
-        </button>
-        <button
-          type="button"
-          class="xw-rm"
-          :disabled="index === options.length - 1"
-          aria-label="Flytta ned"
-          title="Flytta ned"
-          :data-test="`exam-workspace-gap-option-down-${option.choice_id}`"
-          @click="handleMoveOption(index, 1)"
-        >
-          <UiGlyph
-            meaning="move-down"
-            :size="16"
-          />
-        </button>
-        <button
-          type="button"
-          class="xw-rm"
-          :disabled="option.choice_id === correctOptionId"
-          :aria-describedby="option.choice_id === correctOptionId ? removeHintId : undefined"
-          aria-label="Ta bort alternativet"
-          title="Ta bort alternativet"
-          :data-test="`exam-workspace-gap-option-remove-${option.choice_id}`"
-          @click="handleRemoveOption(option.choice_id)"
-        >
-          <UiGlyph
-            meaning="delete"
-            :size="16"
-          />
-        </button>
-      </div>
-      <p
-        v-if="hasCorrectOption"
-        :id="removeHintId"
-        class="text-[11px] leading-snug text-navy/65"
-        data-test="exam-workspace-gap-option-remove-hint"
-      >
-        {{ REMOVE_CORRECT_COPY }}
-      </p>
-      <button
-        type="button"
-        class="btn-ghost justify-center shadow-none"
-        data-test="exam-workspace-gap-option-add"
-        @click="handleAddOption"
-      >
-        Lägg till alternativ
-      </button>
-    </div>
-
-    <label
-      v-if="!dropdown"
-      class="grid min-w-0 gap-1 text-xs font-semibold text-navy/80"
-    >
-      Lucka {{ gapNumber }} – godkända svar (kommaseparerade)
-      <input
-        ref="input"
-        class="min-h-10 w-full border border-navy/35 bg-canvas px-3 text-sm font-normal text-navy"
-        type="text"
-        :value="draft"
-        :data-test="`exam-workspace-gap-values-${gapId}`"
-        @input="handleInput"
-        @change="commit"
-        @keydown="handleKeydown"
-      >
-    </label>
-
-    <div
-      v-if="!dropdown && automaticValues.length > 0"
-      class="grid min-w-0 gap-1.5"
-      data-test="exam-workspace-gap-automatic-values"
-    >
-      <p class="text-[11px] font-semibold leading-snug text-navy/80">
-        Automatiska svar
-      </p>
-      <ul class="flex flex-wrap gap-1.5">
-        <li
-          v-for="value in automaticValues"
-          :key="value"
-          class="inline-flex min-h-7 items-center gap-1.5 border border-navy/35 bg-panel-muted px-2 text-xs text-navy"
-          :data-test="`exam-workspace-gap-automatic-${value}`"
-          :data-value="value"
-        >
-          <span class="font-semibold">{{ value }}</span>
-          <span class="text-[11px] leading-none text-navy/65">automatisk</span>
+          <input
+            type="radio"
+            class="h-4 w-4 shrink-0"
+            :name="`gap-correct-${gapId}`"
+            :checked="option.choice_id === correctOptionId"
+            :aria-label="`Rätt svar: ${optionLabel(option, index)}`"
+            :data-test="`exam-workspace-gap-option-correct-${option.choice_id}`"
+            @change="handleSelectCorrect(option.choice_id)"
+          >
+          <input
+            class="min-h-10 min-w-0 flex-1 border border-navy/35 bg-canvas px-3 text-sm font-normal text-navy"
+            type="text"
+            :value="optionText(option)"
+            :aria-label="`Alternativ ${index + 1}`"
+            :data-test="`exam-workspace-gap-option-text-${option.choice_id}`"
+            @input="handleOptionInput(option.choice_id, $event)"
+            @change="commitOptionDrafts"
+            @keydown="handleOptionEnter"
+          >
           <button
             type="button"
-            class="inline-flex h-11 w-11 shrink-0 items-center justify-center border border-navy/35 bg-panel text-navy hover:bg-canvas focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action/40 sm:h-7 sm:w-7"
-            :aria-label="`Ta bort automatisk stavning: ${value}`"
-            :title="`Ta bort automatisk stavning: ${value}`"
-            :data-test="`exam-workspace-gap-automatic-remove-${value}`"
-            @click="handleRemoveAutomaticValue(value)"
+            class="xw-rm"
+            :disabled="index === 0"
+            aria-label="Flytta upp"
+            title="Flytta upp"
+            :data-test="`exam-workspace-gap-option-up-${option.choice_id}`"
+            @click="handleMoveOption(index, -1)"
           >
-            <IconX :size="14" />
+            <UiGlyph
+              meaning="move-up"
+              :size="16"
+            />
           </button>
-        </li>
-      </ul>
-    </div>
+          <button
+            type="button"
+            class="xw-rm"
+            :disabled="index === options.length - 1"
+            aria-label="Flytta ned"
+            title="Flytta ned"
+            :data-test="`exam-workspace-gap-option-down-${option.choice_id}`"
+            @click="handleMoveOption(index, 1)"
+          >
+            <UiGlyph
+              meaning="move-down"
+              :size="16"
+            />
+          </button>
+          <button
+            type="button"
+            class="xw-rm"
+            :disabled="option.choice_id === correctOptionId"
+            :aria-describedby="option.choice_id === correctOptionId ? removeHintId : undefined"
+            aria-label="Ta bort alternativet"
+            title="Ta bort alternativet"
+            :data-test="`exam-workspace-gap-option-remove-${option.choice_id}`"
+            @click="handleRemoveOption(option.choice_id)"
+          >
+            <UiGlyph
+              meaning="delete"
+              :size="16"
+            />
+          </button>
+        </div>
+        <p
+          v-if="hasCorrectOption"
+          :id="removeHintId"
+          class="text-[11px] leading-snug text-navy/65"
+          data-test="exam-workspace-gap-option-remove-hint"
+        >
+          {{ REMOVE_CORRECT_COPY }}
+        </p>
+        <button
+          type="button"
+          class="btn-ghost justify-center shadow-none"
+          data-test="exam-workspace-gap-option-add"
+          @click="handleAddOption"
+        >
+          Lägg till alternativ
+        </button>
+      </div>
 
-    <button
-      v-if="!dropdown"
-      type="button"
-      class="btn-ghost justify-center shadow-none"
-      :disabled="showAsTextDisabledReason !== null"
-      :aria-describedby="showAsTextDisabledReason !== null ? showAsTextExplanationId : undefined"
-      data-test="exam-workspace-gap-as-text"
-      @click="handleShowAsText"
-    >
-      Visa som text
-    </button>
-    <p
-      v-if="!dropdown && showAsTextDisabledReason"
-      :id="showAsTextExplanationId"
-      class="text-[11px] leading-snug text-navy/65"
-      data-test="exam-workspace-gap-as-text-disabled"
-    >
-      {{ showAsTextDisabledReason }}
-    </p>
-  </div>
+      <label
+        v-if="!dropdown"
+        class="grid min-w-0 gap-1 text-xs font-semibold text-navy/80"
+      >
+        Lucka {{ gapNumber }} – godkända svar (kommaseparerade)
+        <input
+          ref="input"
+          class="min-h-10 w-full border border-navy/35 bg-canvas px-3 text-sm font-normal text-navy"
+          type="text"
+          :value="draft"
+          :data-test="`exam-workspace-gap-values-${gapId}`"
+          @input="handleInput"
+          @change="commit"
+          @keydown="handleKeydown"
+        >
+      </label>
+
+      <div
+        v-if="!dropdown && automaticValues.length > 0"
+        class="grid min-w-0 gap-1.5"
+        data-test="exam-workspace-gap-automatic-values"
+      >
+        <p class="text-[11px] font-semibold leading-snug text-navy/80">
+          Automatiska svar
+        </p>
+        <ul class="flex flex-wrap gap-1.5">
+          <li
+            v-for="value in automaticValues"
+            :key="value"
+            class="inline-flex min-h-7 items-center gap-1.5 border border-navy/35 bg-panel-muted px-2 text-xs text-navy"
+            :data-test="`exam-workspace-gap-automatic-${value}`"
+            :data-value="value"
+          >
+            <span class="font-semibold">{{ value }}</span>
+            <span class="text-[11px] leading-none text-navy/65">automatisk</span>
+            <button
+              type="button"
+              class="inline-flex h-11 w-11 shrink-0 items-center justify-center border border-navy/35 bg-panel text-navy hover:bg-canvas focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-action/40 sm:h-7 sm:w-7"
+              :aria-label="`Ta bort automatisk stavning: ${value}`"
+              :title="`Ta bort automatisk stavning: ${value}`"
+              :data-test="`exam-workspace-gap-automatic-remove-${value}`"
+              @click="handleRemoveAutomaticValue(value)"
+            >
+              <IconX :size="14" />
+            </button>
+          </li>
+        </ul>
+      </div>
+
+      <button
+        v-if="!dropdown"
+        type="button"
+        class="btn-ghost justify-center shadow-none"
+        :disabled="showAsTextDisabledReason !== null"
+        :aria-describedby="showAsTextDisabledReason !== null ? showAsTextExplanationId : undefined"
+        data-test="exam-workspace-gap-as-text"
+        @click="handleShowAsText"
+      >
+        Visa som text
+      </button>
+      <p
+        v-if="!dropdown && showAsTextDisabledReason"
+        :id="showAsTextExplanationId"
+        class="text-[11px] leading-snug text-navy/65"
+        data-test="exam-workspace-gap-as-text-disabled"
+      >
+        {{ showAsTextDisabledReason }}
+      </p>
+    </div>
+  </Teleport>
 </template>
