@@ -1,5 +1,25 @@
 ## Current
 
+- ACCOUNT SWITCH 2026-10-19 (Hemma orchestrator 944b5a5a): every lead below is
+  STOPPED mid-work; resume each from its branch and retained root. Main `120c1cc9`
+  holds every release; staging is at it. Nothing is in production.
+- 40-04 gap lane (TASK-SKRIPT-40-04-13/-14): branch
+  `codex/task-skript-40-04-gap-toggle-back-remote`, root `01a1541f`. Head after
+  `813fd183` + CR2 `bf3a40f0`. Open: Pi code review `23bc9c5a` (root `01a155b5`,
+  worktree `skriptoteket-verify-40-04-c4k`) reproduced 10 failures in C4K "Ta över
+  keeps the edit" and lease paths; its findings file is due in that root. Next:
+  repair them, change 'Luckverktyg – högst 999 luckor' to '… inga fler luckor kan
+  läggas till i frågan', finish capture RC1, copy rereview by `4c9e2855` (root
+  `01a155a3`), full suites, then the Mac merges and walks.
+- TASK-SKRIPT-39-04-21 (points wording): branch
+  `codex/task-skript-39-04-strip-points-wording-remote`, root `01a1546f`. Review
+  `82849a3b` changes_requested (F1-F6). Done: F2, F3, F5 + D13 (`9730c695`).
+  Next: U13 F1 per option A (heading labels leave when equal, D12 extension, Q8),
+  U14 schema v10, U15 test split, rereview by `82849a3b`. U4 offer parked.
+- Open user-side: TASK-SKILL-REP-0351 (toggle cast, 0.1.34) and REP-0352
+  (agent-harness mailbox refusal) wait in skill-repository. Closeout docs owed:
+  TASK-SKRIPT-06-18-01 and REP-0050 (both on main).
+
 - [TASK-SKRIPT-REP-0038](docs/backlog/tasks/task-skript-rep-0038-retire-repository-rules-and-route-staging-walks-to-staging-walk.md)
   `ready`, owner delegated Codex lead on `codex/task-skript-rep-0038`.
   D1-D2 live routing edits pass focused gates (2026-10-11; retained session
@@ -147,32 +167,11 @@
   type-conflict resend; replays require a recording per build request; main
   `ef8cd6ea`, docker suite 9/9; review `01a148db.../evidence/review-rep0042.md`.
 
-- [ST-SKRIPT-39-05](docs/backlog/stories/st-skript-39-05-ai-first-docx-exam-conversion-with-a-gold-corpus-eval-loop.md)
-  and [TASK-SKRIPT-39-05-14](docs/backlog/tasks/task-skript-39-05-14-exam-header-lines-become-document-metadata-and-question-headings-stay-with-their-questions.md)
-  `done` 2026-10-17 (user closure): the five main test failures are repaired
-  (R1, R1F, R1G; D15 split-question review; rereview2 approved), main
-  `d92b828e`; staging walk and Exam.net 5344901 passed; retained
-  `01a144e3.../evidence/staging-walk-39-05-14c/`; worktree retired.
-
-- [TASK-SKRIPT-REP-0041](docs/backlog/tasks/task-skript-rep-0041-repair-ten-main-test-failures-in-worker-healthchecks-the-compose-contract-and-alignment-timing.md)
-  `done` 2026-10-17 (approved review): healthcheck tests use the real
-  `timeout`, compose contract tests track the native worker healthcheck, the
-  host-dependent repair6 timing test is deleted; main `23fc5cf0`; reviews in
-  `01a146ac.../evidence/`.
-
 - [ST-SKRIPT-39-08](docs/backlog/stories/st-skript-39-08-course-and-tag-metadata-for-saved-exams.md)
   `done` 2026-10-17 (user closure gate), tasks 1-5 `done`; epic summary
   updated. Story check: list grouping and sort preference on staging
   `d31e939a` (`01a14b79.../evidence/staging-list-check/CHECK.md`); tags from
   the wave-2 walk; task evidence in each task's closeout. Worktree retired.
-
-- [ST-SKRIPT-39-09](docs/backlog/stories/st-skript-39-09-qti-3-0-native-export-for-exam-net.md)
-  `done` 2026-10-16: QTI 3.0 for both lanes plus Exam.net routes, tasks 1-9;
-  last proofs Exam.net 5339805 (formatting) and 5339836 (section headings);
-  follow-up 26c56a03.
-
-- Historical docs selector reads `docs/_meta/historical-docs-contract.yaml`
-  (renamed in `1bcd4a38`); `test_historical_docs_validator.py` 3 passed.
 
 - 2026-10-10: sir-convert-a-lot `main` pushed (`3fb6f672`) with the
   EPIC-SIRCON-07/08 supersession notes; their terminal closure is blocked
