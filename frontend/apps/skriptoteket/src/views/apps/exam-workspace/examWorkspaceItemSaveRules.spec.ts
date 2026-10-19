@@ -62,6 +62,7 @@ function buildChoiceItem(
     suggested_kind: null,
     tick_points: null,
     writing_lines: null,
+    leftover_points_text: null,
     ...overrides,
   };
 }

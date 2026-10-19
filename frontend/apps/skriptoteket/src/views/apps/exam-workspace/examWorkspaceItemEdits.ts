@@ -290,5 +290,6 @@ export function newTeacherItem(
     suggested_kind: null,
     tick_points: matching ? "0" : null,
     writing_lines: kind === "free_text" ? DEFAULT_WRITING_LINES : null,
+    leftover_points_text: null,
   };
 }

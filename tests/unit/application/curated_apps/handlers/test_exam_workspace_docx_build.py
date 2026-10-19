@@ -24,6 +24,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeParseOrigin,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.points_wording import (
+    without_trailing_points,
+)
 from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
     RECORDINGS,
     MissingRecording,
@@ -388,8 +391,12 @@ async def test_a_provider_failure_turns_only_that_batchs_chunks_into_review_item
         assert item.review.parse_origin is not NativeParseOrigin.LLM_PARSED
         assert item.review.reasons
     shown = _words(" ".join(line for i in lost_items for line in i.plain_text_lines()))
+    by_anchor = {i.source_anchor: i.points for i in document.items}
     for anchor, text in lost.items():
-        assert _words(chunk_text[anchor]) in shown, f"{anchor} lost its source text"
+        # Trailing points wording equal to the item's points leaves the body (D2, D6).
+        assert (
+            _words(without_trailing_points(chunk_text[anchor], by_anchor.get(anchor))) in shown
+        ), f"{anchor} lost its source text"
     others = [i for i in document.items if i.source_anchor not in lost]
     assert others
     assert all(i.review.parse_origin is NativeParseOrigin.LLM_PARSED for i in others)

@@ -68,6 +68,7 @@ function toNativeItem(recorded: RecordedItem, sequence: number): NativeExamItem 
     item_id: itemId(sequence),
     kind: recorded.kind as NativeExamItem["kind"],
     writing_lines: recorded.kind === "free_text" ? 8 : null,
+    leftover_points_text: null,
     match_left: [],
     match_right: [],
     points: recorded.points,

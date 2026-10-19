@@ -14,6 +14,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import Nat
 from skriptoteket.domain.curated_apps.exam_workspace.points_wording import (
     TrailingPoints,
     body_without_trailing_points,
+    leftover_points_wording,
     trailing_points,
     with_settled_points_wording,
     without_trailing_points,
@@ -37,12 +38,14 @@ def _item(body: tuple[NativeParagraph, ...], points: int | float | None) -> Nati
 
 def test_parenthesised_label_ending_the_line_is_found() -> None:
     text = "The school changed ____________ lunch menu. (1 point)"
-    assert trailing_points(text) == TrailingPoints(start=text.index(" (1 point)"), value=1)
+    assert trailing_points(text) == TrailingPoints(
+        start=text.index(" (1 point)"), value=1, whole_line=False
+    )
 
 
 def test_points_line_is_found_with_the_newline() -> None:
     text = "Dela upp orden.\nPoäng: 6 poäng"
-    assert trailing_points(text) == TrailingPoints(start=text.index("\n"), value=6)
+    assert trailing_points(text) == TrailingPoints(start=text.index("\n"), value=6, whole_line=True)
 
 
 @pytest.mark.parametrize(
@@ -194,3 +197,83 @@ def test_differing_number_keeps_text_and_review_even_when_run_twice() -> None:
 def test_missing_points_keeps_text_and_review() -> None:
     item = _item((_paragraph(_text("Fråga. (3 p)")),), None)
     assert with_settled_points_wording(item) == item
+
+
+def test_differing_number_keeps_the_body_and_records_the_points_line() -> None:
+    body = (_paragraph(_text("Dela upp orden.\nPoäng: 4 poäng")),)
+    assert leftover_points_wording(body, 6) == "Poäng: 4 poäng"
+    item = with_settled_points_wording(_item(body, 6))
+    assert item.body == body
+    assert item.leftover_points_text == "Poäng: 4 poäng"
+
+
+def test_differing_number_keeps_the_body_and_records_the_parenthesised_label() -> None:
+    body = (_paragraph(_text("The school changed ____________ lunch menu. (2 points)")),)
+    assert leftover_points_wording(body, 1) == "(2 points)"
+    item = with_settled_points_wording(_item(body, 1))
+    assert item.body == body
+    assert item.leftover_points_text == "(2 points)"
+
+
+def test_equal_number_cuts_the_body_and_records_nothing() -> None:
+    body = (_paragraph(_text("Dela upp orden.\nPoäng: 6 poäng")),)
+    assert leftover_points_wording(body, 6) is None
+    item = with_settled_points_wording(_item(body, 6))
+    assert item.body == (_paragraph(_text("Dela upp orden.")),)
+    assert item.leftover_points_text is None
+
+
+def test_nothing_is_recorded_without_points() -> None:
+    body = (_paragraph(_text("Fråga. (3 p)")),)
+    assert leftover_points_wording(body, None) is None
+    assert with_settled_points_wording(_item(body, None)).leftover_points_text is None
+
+
+def test_whole_stem_wording_is_never_recorded() -> None:
+    body = (_paragraph(_text("(2 p)")),)
+    assert leftover_points_wording(body, 3) is None
+    assert with_settled_points_wording(_item(body, 3)).leftover_points_text is None
+
+
+def test_mid_text_label_is_never_recorded() -> None:
+    body = (_paragraph(_text("Svara (2 p) och motivera.")),)
+    assert leftover_points_wording(body, 3) is None
+    assert with_settled_points_wording(_item(body, 3)) == _item(body, 3)
+
+
+def test_gap_ending_paragraph_records_nothing() -> None:
+    body = (_paragraph(_text("Svara (2 p)"), NativeGapSegment(gap_id="gap_001")),)
+    assert leftover_points_wording(body, 3) is None
+    assert with_settled_points_wording(_item(body, 3)) == _item(body, 3)
+
+
+def test_picture_ending_paragraph_records_nothing() -> None:
+    body = (
+        _paragraph(_text("Svara (2 p)"), NativeAssetSegment(asset_id="asset_0123456789abcdef")),
+    )
+    assert leftover_points_wording(body, 3) is None
+    assert with_settled_points_wording(_item(body, 3)) == _item(body, 3)
+
+
+_VOLT = (
+    "Pelle gör en fin volt, Sara gör en ful. Sätt poäng på Sara och Pelles volter. "
+    "Använd mellan 3 poäng och 5 poäng."
+)
+
+
+@pytest.mark.parametrize("points", [4, 5])
+def test_volt_question_is_unchanged_and_records_nothing(points: int) -> None:
+    body = (_paragraph(_text(_VOLT)),)
+    assert trailing_points(_VOLT) is None
+    assert leftover_points_wording(body, points) is None
+    assert with_settled_points_wording(_item(body, points)) == _item(body, points)
+
+
+def test_settled_item_is_idempotent_and_keeps_points_and_review() -> None:
+    body = (_paragraph(_text("Svara utförligt och tydligt. (3 p)")),)
+    item = _item(body, 2)
+    once = with_settled_points_wording(item)
+    assert once.leftover_points_text == "(3 p)"
+    assert once.points == 2
+    assert once.review == item.review
+    assert with_settled_points_wording(once) == once

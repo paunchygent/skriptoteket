@@ -2,9 +2,12 @@
 
 Printed points wording ("(1 point)", "Poäng: 6 poäng") states the item's
 points, never its text: ``trailing_points`` finds such wording at the end of
-a text, and ``body_without_trailing_points`` drops it from the last paragraph
-when its number equals the item's points. Only the label's position and its
-number decide; the stem itself is never read or rewritten.
+a text. When its number equals the item's points, ``body_without_trailing_points``
+drops it from the last paragraph; when the shape matches but the number differs,
+the wording stays and ``leftover_points_wording`` reports it for the points-note
+offer. ``with_settled_points_wording`` settles both outcomes on the final item.
+Only the label's position and its number decide; the stem itself is never read
+or rewritten.
 """
 
 from __future__ import annotations
@@ -27,10 +30,12 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import Nat
 
 @dataclass(frozen=True)
 class TrailingPoints:
-    """Points wording at the end of a text: where it starts and its number."""
+    """Points wording at the end of a text: where it starts, its number, and shape."""
 
     start: int
     value: int | float
+    # True for the points-line shape: a last line that is only a points line.
+    whole_line: bool
 
 
 def trailing_points(text: str) -> TrailingPoints | None:
@@ -50,7 +55,9 @@ def trailing_points(text: str) -> TrailingPoints | None:
         value = label_points(matches[0].group())
         if value is None:
             return None
-        return TrailingPoints(start=line_start - 1 if line_start else 0, value=value)
+        return TrailingPoints(
+            start=line_start - 1 if line_start else 0, value=value, whole_line=True
+        )
     last = matches[-1]
     if not last.group().startswith("(") or line[last.end() :].strip(" \t"):
         return None
@@ -60,7 +67,7 @@ def trailing_points(text: str) -> TrailingPoints | None:
     start = line_start + last.start()
     while start > line_start and stripped[start - 1] in " \t":
         start -= 1
-    return TrailingPoints(start=start, value=value)
+    return TrailingPoints(start=start, value=value, whole_line=False)
 
 
 def without_trailing_points(text: str, points: int | float | None) -> str:
@@ -80,6 +87,37 @@ def without_trailing_points(text: str, points: int | float | None) -> str:
     return kept
 
 
+def _trailing_run_wording(
+    body: tuple[NativeParagraph, ...],
+) -> tuple[list[NativeTextSegment], str, TrailingPoints] | None:
+    """The last paragraph's trailing text run and its points wording, if any.
+
+    Every guard sits here once: the paragraph ends in text, the run's wording is
+    found, and a whole points line counts only when its line starts inside the
+    run (the run holds a newline before the line, or the run is the paragraph).
+    """
+    if not body:
+        return None
+    paragraph = body[-1]
+    if not paragraph.segments or not isinstance(paragraph.segments[-1], NativeTextSegment):
+        return None
+    run: list[NativeTextSegment] = []
+    for segment in reversed(paragraph.segments):
+        if not isinstance(segment, NativeTextSegment):
+            break
+        run.append(segment)
+    run.reverse()
+    run_text = "".join(segment.text for segment in run)
+    found = trailing_points(run_text)
+    if found is None:
+        return None
+    if found.whole_line:
+        line_start = run_text.rstrip().rfind("\n") + 1
+        if line_start == 0 and len(run) != len(paragraph.segments):
+            return None
+    return (run, run_text, found)
+
+
 def body_without_trailing_points(
     body: tuple[NativeParagraph, ...], points: int | float | None
 ) -> tuple[NativeParagraph, ...]:
@@ -91,28 +129,15 @@ def body_without_trailing_points(
     segment keeps its marks; a paragraph left with no segments is dropped. A
     body left with no text, gap or picture keeps its original paragraphs.
     """
-    if points is None or not body:
+    if points is None:
+        return body
+    located = _trailing_run_wording(body)
+    if located is None:
+        return body
+    run, run_text, found = located
+    if found.value != points:
         return body
     paragraph = body[-1]
-    if not paragraph.segments or not isinstance(paragraph.segments[-1], NativeTextSegment):
-        return body
-    run: list[NativeTextSegment] = []
-    for segment in reversed(paragraph.segments):
-        if not isinstance(segment, NativeTextSegment):
-            break
-        run.append(segment)
-    run.reverse()
-    run_text = "".join(segment.text for segment in run)
-    found = trailing_points(run_text)
-    if found is None or found.value != points:
-        return body
-    stripped = run_text.rstrip()
-    line_start = stripped.rfind("\n") + 1
-    line = stripped[line_start:]
-    matches = list(POINT_LABEL.finditer(line))
-    if len(matches) == 1 and points_line(line):
-        if line_start == 0 and len(run) != len(paragraph.segments):
-            return body
     kept_text = run_text[: found.start].rstrip()
     kept: list[NativeTextSegment] = []
     remaining = len(kept_text)
@@ -129,23 +154,71 @@ def body_without_trailing_points(
     settled_paragraph = paragraph.model_copy(update={"segments": (*head, *kept)})
     settled = (*body[:-1], settled_paragraph) if settled_paragraph.segments else body[:-1]
     for kept_paragraph in settled:
-        for segment in kept_paragraph.segments:
-            if isinstance(segment, NativeTextSegment):
-                if segment.text.strip():
+        for placed in kept_paragraph.segments:
+            if isinstance(placed, NativeTextSegment):
+                if placed.text.strip():
                     return settled
-            elif isinstance(segment, (NativeGapSegment, NativeAssetSegment)):
+            elif isinstance(placed, (NativeGapSegment, NativeAssetSegment)):
                 return settled
     return body
 
 
-def with_settled_points_wording(item: NativeExamItem) -> NativeExamItem:
-    """The item without trailing points wording that equals its points.
+def leftover_points_wording(
+    body: tuple[NativeParagraph, ...], points: int | float | None
+) -> str | None:
+    """The trailing points wording whose number differs from the given points.
 
-    Only the body changes; points, review and every source record stay as
-    they are. A differing number, missing points or a stem of only wording
-    returns the item untouched.
+    The same run and shape check as the removal decides: an equal number, no
+    settled points, and a wording that is the whole question text record nothing.
+    A bare label inside a sentence never matches, so it is never recorded.
+    """
+    if points is None:
+        return None
+    located = _trailing_run_wording(body)
+    if located is None:
+        return None
+    run, run_text, found = located
+    if found.value == points:
+        return None
+    paragraph = body[-1]
+    kept_text = run_text[: found.start].rstrip()
+    kept: list[NativeTextSegment] = []
+    remaining = len(kept_text)
+    for segment in run:
+        if remaining <= 0:
+            break
+        if len(segment.text) <= remaining:
+            kept.append(segment)
+            remaining -= len(segment.text)
+        else:
+            kept.append(segment.model_copy(update={"text": segment.text[:remaining]}))
+            remaining = 0
+    head = paragraph.segments[: len(paragraph.segments) - len(run)]
+    settled_paragraph = paragraph.model_copy(update={"segments": (*head, *kept)})
+    settled = (*body[:-1], settled_paragraph) if settled_paragraph.segments else body[:-1]
+    for kept_paragraph in settled:
+        for placed in kept_paragraph.segments:
+            if isinstance(placed, NativeTextSegment):
+                if placed.text.strip():
+                    return run_text[found.start :].strip()
+            elif isinstance(placed, (NativeGapSegment, NativeAssetSegment)):
+                return run_text[found.start :].strip()
+    return None
+
+
+def with_settled_points_wording(item: NativeExamItem) -> NativeExamItem:
+    """The item with its trailing points wording settled against its points.
+
+    An equal number leaves the wording from the body; a differing number keeps
+    the wording and records it in ``leftover_points_text`` for the points-note
+    offer. Only the body and the leftover field change; points, review and every
+    source record stay as they are. A missing number, a stem of only wording or
+    a body the rule never matches returns the item untouched.
     """
     settled = body_without_trailing_points(item.body, item.points)
-    if settled == item.body:
-        return item
-    return item.model_copy(update={"body": settled})
+    if settled != item.body:
+        return item.model_copy(update={"body": settled})
+    leftover = leftover_points_wording(item.body, item.points)
+    if leftover is not None:
+        return item.model_copy(update={"leftover_points_text": leftover})
+    return item

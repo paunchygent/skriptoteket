@@ -50,30 +50,30 @@ def test_sentence_or_heading_that_mentions_points_is_not_a_points_line(docx: str
 
 
 @pytest.mark.parametrize(
-    ("text", "points", "remaining"),
+    ("text", "points"),
     [
-        ("3 p", 3, ""),
-        ("3 p.", 3, ""),
-        ("(3 p)", 3, ""),
-        ("(3 pt.)", 3, ""),
-        ("36 pts", 36, ""),
-        ("3 point", 3, ""),
-        ("3 points", 3, ""),
-        ("3 poäng", 3, ""),
-        ("Totalt: 36 p", 36, "Totalt:"),
-        ("Max 36p", 36, "Max"),
-        ("Totalt: 7,5 p", 7.5, "Totalt:"),
-        ("Totalt: 7.5 p", 7.5, "Totalt:"),
-        ("The train leaves at 3 p.m. Translate the sentence.", None, None),
-        ("p. 3", None, None),
-        ("Read 3 pages.", None, None),
-        ("Give 3 points of view.", None, None),
-        ("Svara 2 p snabbt.", None, None),
-        ("The train leaves at 3 p.m. (2 p)", 2, "The train leaves at 3 p.m."),
+        ("3 p", 3),
+        ("3 p.", 3),
+        ("(3 p)", 3),
+        ("(3 pt.)", 3),
+        ("36 pts", 36),
+        ("3 point", 3),
+        ("3 points", 3),
+        ("3 poäng", 3),
+        ("Totalt: 36 p", 36),
+        ("Max 36p", 36),
+        ("Totalt: 7,5 p", 7.5),
+        ("Totalt: 7.5 p", 7.5),
+        ("The train leaves at 3 p.m. Translate the sentence.", None),
+        ("p. 3", None),
+        ("Read 3 pages.", None),
+        ("Give 3 points of view.", None),
+        ("Svara 2 p snabbt.", None),
+        ("The train leaves at 3 p.m. (2 p)", 2),
     ],
 )
-def test_only_complete_points_units_supply_points_and_leave_prose_intact(
-    text: str, points: int | float | None, remaining: str | None
+def test_only_complete_points_units_supply_points_and_leave_the_text(
+    text: str, points: int | float | None
 ) -> None:
     own = (DocxChunk(anchor="body:0001", kind="paragraph", text=text, marked_text=text),)
     item = ProducedItem(
@@ -100,8 +100,48 @@ def test_only_complete_points_units_supply_points_and_leave_prose_intact(
     assert printed_points(own) == points
     result = with_printed_points(item, own)
     assert result.points == points
-    assert result.body[0].segments[0].text == (text if remaining is None else remaining)
+    assert result.body[0].segments[0].text == text
 
 
 def test_bare_label_followed_by_words_is_not_a_points_line() -> None:
     assert not points_line("Give 3 points of view.")
+
+
+def test_a_reply_without_points_keeps_every_body_segment_text() -> None:
+    """D8: ``with_printed_points`` reads the points and leaves the text (D1).
+
+    Trailing wording is settled later on the final item, after every points
+    source has run, so the reply body reaches the gate untouched.
+    """
+    own = (DocxChunk(anchor="body:0001", kind="paragraph", text="(2 p)", marked_text="(2 p)"),)
+    item = ProducedItem(
+        source_anchors=("body:0001",),
+        outcome="converted",
+        review_reason=None,
+        kind=NativeExamItemKind.FREE_TEXT,
+        printed_label=None,
+        key_source=None,
+        facit_text=None,
+        body=(
+            ProducedParagraph(
+                segments=(
+                    ProducedSegment(kind="text", text="Svara utförligt. ", accepted_values=()),
+                    ProducedSegment(kind="text", text="(2 p)", accepted_values=()),
+                )
+            ),
+        ),
+        points=None,
+        choices=(),
+        match_left=(),
+        match_right=(),
+        match_pairs=(),
+        criteria=(),
+    )
+
+    result = with_printed_points(item, own)
+
+    assert result.points == 2
+    assert [segment.text for segment in result.body[0].segments] == [
+        "Svara utförligt. ",
+        "(2 p)",
+    ]

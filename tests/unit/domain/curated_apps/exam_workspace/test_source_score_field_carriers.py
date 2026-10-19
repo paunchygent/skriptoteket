@@ -149,7 +149,6 @@ def _convert_sources(*sources, points=4):
     "sources",
     [
         (QUESTION, "/4", "p"),
-        (QUESTION, "/4 p", ")"),
         (QUESTION, "/(4", "p)"),
     ],
 )
@@ -166,11 +165,30 @@ def test_a_cross_line_points_label_keeps_its_own_span(sources):
     assert all("/" not in text[start:end] for start, end in spans)
 
 
+def test_a_slash_points_line_leaves_whole_under_the_line_ending_grammar():
+    """D5: "4 p" is the label, so "/4 p" is a score-field line that leaves whole.
+
+    The old grammar matched "4 p\\n)" across the line break; under D5 only "4 p"
+    counts, the (line_start, line_end) span covers "/4 p" whole, and ")" stays.
+    """
+    sources = (QUESTION, "/4 p", ")")
+    text = "\n".join(sources)
+    spans = native_carrier_spans(
+        text,
+        points=4,
+        emitted=emitted_positions(text, sources[0]),
+        regions=((0, len(text)),),
+    )
+
+    line_start = len(QUESTION) + 1
+    line_end = line_start + len("/4 p")
+    assert spans == ((line_start, line_end),)
+
+
 @pytest.mark.parametrize(
     "sources",
     [
         (QUESTION, "/4", "p"),
-        (QUESTION, "/4 p", ")"),
         (QUESTION, "/(4", "p)"),
     ],
 )
@@ -179,3 +197,54 @@ def test_a_cross_line_points_label_leaves_the_slash_visible(sources):
 
     assert any("/" in line for line in body_text_lines(item.body))
     assert item.points == 4
+
+
+def test_a_slash_points_line_leaves_no_slash_and_keeps_the_paren_line():
+    """D5: "/4 p" leaves whole as a score-field line while ")" stays visible."""
+    item = _convert_sources(QUESTION, "/4 p", ")", points=4)
+
+    assert list(body_text_lines(item.body)) == [QUESTION, ")"]
+    assert item.points == 4
+
+
+@pytest.mark.parametrize("line", ["Poäng: 6 poäng", "Totalt: 6 p"])
+def test_a_recovered_points_line_leaves_whole(line):
+    """D8: a recovered points line is excluded whole, leaving no label head."""
+    text = f"{QUESTION}\n{line}"
+    spans = native_carrier_spans(
+        text,
+        points=6,
+        emitted=emitted_positions(text, QUESTION),
+        regions=((0, len(text)),),
+    )
+
+    assert spans == ((len(QUESTION) + 1, len(text)),)
+
+
+@pytest.mark.parametrize("line", ["Poäng: 6 poäng", "Totalt: 6 p"])
+def test_a_points_line_for_other_points_stays_visible(line):
+    text = f"{QUESTION}\n{line}"
+    spans = native_carrier_spans(
+        text,
+        points=5,
+        emitted=emitted_positions(text, QUESTION),
+        regions=((0, len(text)),),
+    )
+
+    assert spans == ()
+
+
+@pytest.mark.parametrize("line", ["Poäng: 6 poäng", "Totalt: 6 p"])
+def test_a_recovered_points_line_leaves_no_label_head(line):
+    item = _convert(QUESTION, line, points=6)
+
+    assert list(body_text_lines(item.body)) == [QUESTION]
+    assert item.points == 6
+
+
+@pytest.mark.parametrize("line", ["Poäng: 6 poäng", "Totalt: 6 p"])
+def test_a_points_line_for_other_points_keeps_its_line(line):
+    item = _convert(QUESTION, line, points=5)
+
+    assert list(body_text_lines(item.body)) == [QUESTION, line]
+    assert item.points == 5

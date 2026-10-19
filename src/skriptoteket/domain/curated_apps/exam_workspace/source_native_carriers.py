@@ -8,6 +8,7 @@ from difflib import SequenceMatcher
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     POINT_LABEL,
     SCORE_FIELD,
+    points_line,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.source_carrier_context import quoted_mask
 from skriptoteket.domain.curated_apps.exam_workspace.source_entry_tokens import source_tokens
@@ -56,7 +57,8 @@ def native_carrier_spans(
     A recovered answer label owns the rest of its region, including subsequent
     lines and paragraphs. A recovered score belongs to the native points field
     only when its numeric value agrees. A recovered score whose line holds only
-    a score field, such as "/4 p", excludes the whole line. Complete emitted labels and scores
+    a score field, such as "/4 p", or only a points line holding one label, such
+    as "Poäng: 6 poäng", excludes the whole line. Complete emitted labels and scores
     stay visible; a recovered carrier is excluded atomically so coincidental
     provenance cannot leak its value into a source reconstruction. Projection
     retains authority over the model's visible wording. Answer values are
@@ -97,7 +99,12 @@ def native_carrier_spans(
             if line_end < 0:
                 line_end = len(text)
             # A score field widens only within the line that holds the match start.
-            if match.end() <= line_end and SCORE_FIELD.fullmatch(text, line_start, line_end):
+            # A points line holding exactly one label leaves whole the same way.
+            line = text[line_start:line_end]
+            if match.end() <= line_end and (
+                SCORE_FIELD.fullmatch(text, line_start, line_end)
+                or (points_line(line) and len(list(POINT_LABEL.finditer(line))) == 1)
+            ):
                 spans.append((line_start, line_end))
             else:
                 spans.append((match.start(), match.end()))

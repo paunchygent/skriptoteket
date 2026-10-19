@@ -102,6 +102,7 @@ export function choiceItem(
     source_anchor: null,
     tick_points: null,
     writing_lines: null,
+    leftover_points_text: null,
   };
 }
 
@@ -138,5 +139,6 @@ export function gapItem(
     source_anchor: null,
     tick_points: null,
     writing_lines: null,
+    leftover_points_text: null,
   };
 }

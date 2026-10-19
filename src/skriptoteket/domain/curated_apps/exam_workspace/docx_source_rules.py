@@ -10,7 +10,6 @@ from collections.abc import Iterable
 
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedItem,
-    ProducedSegment,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.errors import validation_error
@@ -283,9 +282,6 @@ def uses_term(terms: Iterable[str], sources: Iterable[DocxChunk]) -> bool:
     return any(re.search(rf"(?<!\w){re.escape(term.casefold())}(?!\w)", text) for term in terms)
 
 
-_LABEL_RUN = re.compile(r"\s*(?:" + POINT_LABEL.pattern + ")", re.IGNORECASE | re.MULTILINE)
-
-
 def label_points(label: str) -> int | float | None:
     number = re.search(r"\d+(?:[.,]\d+)?", label)
     if number is None:
@@ -294,24 +290,6 @@ def label_points(label: str) -> int | float | None:
     if value <= 0:
         return None
     return int(value) if value.is_integer() else value
-
-
-def _without_label(text: str) -> str:
-    stripped = _LABEL_RUN.sub("", text)
-    return stripped.lstrip() if _LABEL_RUN.match(text) else stripped
-
-
-def _joined_text_runs(segments: Iterable[ProducedSegment]) -> list[ProducedSegment]:
-    """Adjacent text segments as one, so a label split across them leaves as a whole."""
-    joined: list[ProducedSegment] = []
-    for segment in segments:
-        last = joined[-1] if joined else None
-        if segment.kind == "text" and last is not None and last.kind == "text":
-            text = (last.text or "") + (segment.text or "")
-            joined[-1] = last.model_copy(update={"text": text})
-        else:
-            joined.append(segment)
-    return joined
 
 
 def printed_points(own: Iterable[DocxChunk]) -> int | float | None:
@@ -327,23 +305,14 @@ def text_points(text: str) -> int | float | None:
 
 
 def with_printed_points(item: ProducedItem, own: Iterable[DocxChunk]) -> ProducedItem:
-    """D3: a reply without points takes the one points label its own chunks print.
+    """D8: a reply without points takes the one points label its own chunks print.
 
-    The label, such as "(1 p)", leaves the item's stem text. With no label, or with
-    two or more, the item keeps the reply's reading.
+    The body is left as the reply gave it; trailing wording is settled later on
+    the final item, after every points source has run (D1, D2).
     """
     if item.points is not None:
         return item
     points = printed_points(own)
     if points is None:
         return item
-    body = []
-    for paragraph in item.body:
-        segments = tuple(
-            segment.model_copy(update={"text": _without_label(segment.text)})
-            if segment.kind == "text" and segment.text
-            else segment
-            for segment in _joined_text_runs(paragraph.segments)
-        )
-        body.append(paragraph.model_copy(update={"segments": segments}))
-    return item.model_copy(update={"points": points, "body": tuple(body)})
+    return item.model_copy(update={"points": points})

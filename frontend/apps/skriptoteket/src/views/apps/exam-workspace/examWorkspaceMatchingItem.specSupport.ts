@@ -56,6 +56,7 @@ export function buildMatchingItem(overrides: Partial<NativeExamItem> = {}): Nati
     suggested_kind: null,
     tick_points: "1",
     writing_lines: null,
+    leftover_points_text: null,
     ...overrides,
   };
 }

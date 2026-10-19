@@ -28,6 +28,7 @@ function item(itemId: string, text: string, sequence = 0): NativeExamItem {
   return {
     ai_suggestion: null,
     writing_lines: null,
+    leftover_points_text: null,
     answer_key: { correct_choice_ids: [], match_pairs: [], origin: "not_applicable" },
     body: [{ heading_level: null, segments: [{ kind: "text", marks: [], text }] }],
     choices: [],

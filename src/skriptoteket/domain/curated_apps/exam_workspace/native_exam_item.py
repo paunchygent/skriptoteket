@@ -74,6 +74,8 @@ class NativeExamItem(BaseModel):
     # Points no source stated per question: a printed section total split over its
     # questions (D6), or a prose marking guide's single-criterion estimate (R14).
     points_estimated: bool = False
+    # Trailing points wording whose number differs from points (D7)
+    leftover_points_text: str | None = None
     choices: tuple[NativeChoice, ...] = ()
     # An ordering question's steps in their saved printed order; its choices' list order
     # is the answer key (TASK-SKRIPT-39-06-08 D1, D5).
