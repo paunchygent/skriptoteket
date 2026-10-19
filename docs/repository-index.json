@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "647a0fda813bbc230773db79dcc7562cce5c958db45ef9e3474baf6f310a7a6d",
+  "source_set_digest": "0a4b0fccfd147c722b33ae86cbcf6471e50ed585daa955181cf40bde039664ad",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5126,6 +5126,29 @@
         "decided_at": "2026-10-18",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "Independent ruthless-reviewer approved 62e178088 after the changes_requested review b313b2b1 (F1, F2 repaired) (root 01a14ea8 evidence/reviews/5d0e4e46-60ae-4112-a287-42f6e5e093aa.md); Hemma suite 4569 passed at 62e178088; D5-D7 user-accepted 2026-10-18 after the measurement and interpretive drop audit (task doc Validation); merged into main with docs-only 263b72713."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-04-16",
+      "type": "task",
+      "title": "Gap paragraphs are built from their source paragraph, so no cue or lead clause beside a gap is lost",
+      "path": "docs/backlog/tasks/task-skript-39-04-16-gap-paragraphs-are-built-from-their-source-paragraph-so-no-cue-or-lead-clause-beside-a-gap-is-lost.md",
+      "status": "done",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-19",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer 5805cf6e reviewed the implementation (Hemma retained session 01a14f3e-11d5-7745-90e8-6323496fbf74): changes_requested with three medium findings (picture at paragraph end counted as a mismatch; D3 blank class per table cell instead of per row; adjacent pictures reordered). Repaired in 2fdaeb8f and 389b1aee, each with a test that failed before the fix, and admitted by the parent on focused proof without rereview: 102 focused tests, lint, typecheck and docs-validate pass; replays byte-identical to d6c2f9af with no gap_count_mismatch; domain suite 4131 passed, 59 skipped. Merged to main at d80a7131 on 2026-10-19."
       }
     },
     {
