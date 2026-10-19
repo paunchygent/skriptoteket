@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-19'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-19'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Independent ruthless-reviewer 9aa64d69 (Pi) approved dbbb5f8d with one low finding, fixed in R3 fae44edb and admitted on focused proof (retained 01a1542c evidence/results/9aa64d69-fc20-41eb-8993-eded036ef865.json). Merged to main as df87d633; the Mac staging walk at df87d633 passed (Mac .artifacts/staging-walk-40-04-15/walk-record.md).'
 task_kind: story
 acceptance_criteria:
   - 'In the print preview, the student PDF, the PDF med facit and the DOCX, each question''s points print as "(N p)" at the end of its last question-text paragraph, and no separate "Poäng: N poäng" line prints'
@@ -93,10 +97,16 @@ Focused tests only:
 
 ## Resume here
 
-2026-10-19, lead `600fa5a8`: built and committed through `bba2cf09`.
+2026-10-19: done. Lead `600fa5a8` built it (units `5c0edd33`, `1f7558d3`, R1 `b3fa0683`, R2 `bba2cf09`, R3 `fae44edb`); review 9aa64d69 approved; merged to main as `df87d633`.
 
-- Commits: unit 1 `5c0edd33` (fail-first), unit 2 `1f7558d3` (implementation), R1 `b3fa0683` (no type-narrowing assert), R2 `bba2cf09` (three tests the domain suite found still matching the stem without its points).
-- Domain suite at `b3fa0683` (curated_apps domain, application and infrastructure unit tests): 3 failed, 5354 passed. All three failures were exact-text tests, fixed in R2, and their files now pass (23). Log: retained root `evidence/suite/curated-apps-b3fa0683.log`.
-- Observed: imported stems that still hold source points wording print it next to the inline points. Two omprov review items print "Poäng: 6 poäng (6 p)", and an English exam prints "(1 point) (1 p)". This belongs to the import side.
-- Review 9aa64d69 approved at `dbbb5f8d` with one low finding, fixed in R3 `fae44edb` (literal expected points in the review-item test). origin/main `3810aec3` merged in `52bd0678`; 569 focused tests pass on the merged head.
-- Next: the Mac merges to main and runs the staging walk of the preview, the student PDF and the PDF med facit.
+Staging walk at `df87d633` (the Mac, `.artifacts/staging-walk-40-04-15/walk-record.md`): PASS.
+- Student PDF, PDF med facit and DOCX: no "Poäng:" lines and 24 inline markers, one per question; "(1,5 p)" uses a decimal comma and "(0 p)" prints; the total reads "Totalt: 35,5 poäng".
+- Förhandsgranska shows the same inline markers (visual check, the preview is page images).
+- PDF för Exam.net is unchanged: 24 "Poäng" lines, no inline markers.
+- TASK-SKRIPT-40-04-12 keep-together still holds; page counts 8 and 9 match the revision-1 export.
+
+Walk observations outside this task:
+- A question with blank points cannot be exported (422 `missing_points`), so the no-points case was walked with 0 p.
+- One first save showed "Sparat" but did not persist after a reload; not reproduced, and later saves at revisions 2-4 persisted.
+- Page 8 of the student PDF holds only the last two writing lines of Fråga 24; the export did this before, and 40-04-12 does not cover writing lines.
+- Source points wording left in imported stems ("(1 point) (1 p)") is TASK-SKRIPT-39-04-21's scope.

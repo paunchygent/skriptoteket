@@ -10,6 +10,7 @@
 
 import { mount } from "@vue/test-utils";
 import { describe, expect, it } from "vitest";
+import { nextTick } from "vue";
 
 import type { NativeExamGap } from "../../../api/examWorkspace";
 import ExamWorkspaceGapPopover from "./ExamWorkspaceGapPopover.vue";
@@ -47,10 +48,14 @@ describe("ExamWorkspaceGapPopover automatic answers", () => {
     const chips = automaticChips();
 
     expect(chips).toHaveLength(2);
-    expect(chips[0]!.textContent).toContain("hundraa");
-    expect(chips[0]!.textContent).not.toContain("automatisk");
-    expect(chips[1]!.textContent).toContain("hundar");
-    expect(chips[1]!.textContent).not.toContain("automatisk");
+    const texts = chips.map((chip) => chip.textContent ?? "");
+    expect(texts).toEqual([
+      expect.stringContaining("hundraa"),
+      expect.stringContaining("hundar"),
+    ]);
+    for (const text of texts) {
+      expect(text).not.toContain("automatisk");
+    }
     expect(popoverRoot().innerHTML).not.toContain("lucide-sparkles");
     wrapper.unmount();
   });
@@ -69,6 +74,40 @@ describe("ExamWorkspaceGapPopover automatic answers", () => {
       documentControl<HTMLInputElement>('[data-test="exam-workspace-gap-values-gap_001-input"]')
         .element,
     );
+    wrapper.unmount();
+  });
+
+  it("moves focus to the answer input synchronously before emitting the removal", async () => {
+    const wrapper = mountPopover(gapWithAutomaticValues());
+
+    const remove = documentControl('[data-test="exam-workspace-gap-automatic-remove-hundraa"]').element;
+    if (!(remove instanceof HTMLButtonElement)) {
+      throw new Error("the automatic remove control is not a button");
+    }
+    remove.focus();
+    remove.click();
+
+    const input = documentControl('[data-test="exam-workspace-gap-values-gap_001-input"]').element;
+    if (!(input instanceof HTMLInputElement)) {
+      throw new Error("the answer input is not an input");
+    }
+    expect(document.activeElement).toBe(input);
+
+    await wrapper.setProps({
+      gap: buildGap("gap_001", ["hundra"], { automatic_values: ["hundar"] }),
+    });
+    await nextTick();
+
+    expect(wrapper.emitted("removeAutomaticValue")).toEqual([
+      ["item_001", "gap_001", "hundraa"],
+    ]);
+    expect(popoverExists()).toBe(true);
+    expect(wrapper.emitted("close")).toBeUndefined();
+    const inputAfter = documentControl('[data-test="exam-workspace-gap-values-gap_001-input"]').element;
+    if (!(inputAfter instanceof HTMLInputElement)) {
+      throw new Error("the answer input is not an input");
+    }
+    expect(document.activeElement).toBe(inputAfter);
     wrapper.unmount();
   });
 

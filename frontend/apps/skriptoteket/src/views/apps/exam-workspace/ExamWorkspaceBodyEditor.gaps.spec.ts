@@ -174,7 +174,7 @@ describe("ExamWorkspaceBodyEditor gap popover and chips", () => {
     wrapper.unmount();
   });
 
-  it("commits when focus leaves the popover and discards on Escape", async () => {
+  it("commits when focus leaves the popover and keeps typed answers on Escape", async () => {
     const wrapper = await mountEditor();
     await openGap(wrapper, "gap_001");
     const input = valuesInput("gap_001");
@@ -190,10 +190,18 @@ describe("ExamWorkspaceBodyEditor gap popover and chips", () => {
     reopened.element.value = "kasta";
     await reopened.trigger("input");
     reopened.element.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    await nextTick();
+    expect(wrapper.emitted("updateGapValues")).toEqual([
+      ["item_001", "gap_001", ["hundra"]],
+      ["item_001", "gap_001", ["kasta"]],
+    ]);
+    expect(popoverExists()).toBe(false);
+
+    // Late change and focusout after the Escape close commit nothing twice.
     reopened.element.dispatchEvent(new Event("change", { bubbles: true }));
     reopened.element.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
     await nextTick();
-    expect(wrapper.emitted("updateGapValues")).toHaveLength(1);
+    expect(wrapper.emitted("updateGapValues")).toHaveLength(2);
     expect(popoverExists()).toBe(false);
     wrapper.unmount();
   });

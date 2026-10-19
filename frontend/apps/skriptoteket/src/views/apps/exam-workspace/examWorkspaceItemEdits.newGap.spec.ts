@@ -20,6 +20,7 @@ import type {
 import { hasInvalidAnswerKey } from "./examWorkspaceAnswerKeyRules";
 import { newTeacherItem } from "./examWorkspaceItemEdits";
 import { nextGapId, withNewGap } from "./examWorkspaceGapEdits";
+import { withGapTextShape, withShortAnswerShape } from "./examWorkspaceShortAnswer";
 import { useExamWorkspaceItemEdits } from "./useExamWorkspaceItemEdits";
 import { buildGap } from "./examWorkspaceKeyedItems.specSupport";
 import { buildGapItem } from "./ExamWorkspaceBodyEditor.specSupport";
@@ -309,5 +310,33 @@ describe("createItemGap", () => {
     expect(structural).toBe(true);
     expect(patch(item)).toEqual(withNewGap(item, body, "gap_002", "Paris"));
     expect(patch(item).body).toBe(body);
+  });
+});
+
+describe("changeItemShape", () => {
+  it("patches the item once as structural with the Kort svar or Lucktext transition", () => {
+    const patchItem = vi.fn(
+      (
+        _itemId: string,
+        _patch: (item: NativeExamItem) => NativeExamItem,
+        _structural?: boolean,
+      ): boolean => true,
+    );
+    const editing = useExamWorkspaceItemEdits(patchItem);
+    const item = gapFillItem([buildGap("gap_001", ["100"])], gapBody("gap_001"));
+
+    editing.changeItemShape("item_001", "short_answer");
+
+    expect(patchItem).toHaveBeenCalledTimes(1);
+    const [itemId, patch, structural] = patchItem.mock.calls[0];
+    expect(itemId).toBe("item_001");
+    expect(structural).toBe(true);
+    expect(patch(item)).toEqual(withShortAnswerShape(item));
+
+    patchItem.mockClear();
+    editing.changeItemShape("item_001", "gap_fill");
+    const [, gapPatch, gapStructural] = patchItem.mock.calls[0];
+    expect(gapStructural).toBe(true);
+    expect(gapPatch(item)).toEqual(withGapTextShape(item));
   });
 });
