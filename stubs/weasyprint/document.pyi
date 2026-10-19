@@ -4,6 +4,8 @@ from collections.abc import Callable
 
 class Page:
     anchors: dict[str, tuple[float, float]]
+    width: float
+    height: float
 
 class Document:
     pages: list[Page]

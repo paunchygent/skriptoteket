@@ -15,7 +15,7 @@ from docx import Document
 from docx.document import Document as DocxDocument
 from docx.enum.text import WD_LINE_SPACING
 from docx.oxml.ns import qn
-from docx.shared import Emu, Pt, RGBColor
+from docx.shared import Emu, Length, Pt, RGBColor
 from docx.styles.style import ParagraphStyle
 from docx.text.paragraph import Paragraph
 
@@ -61,6 +61,11 @@ def _assert_mm(actual_mm: float, expected_mm: float, tolerance_mm: float = _TOLE
     assert actual_mm == pytest.approx(expected_mm, abs=tolerance_mm)
 
 
+def _set(length: Length | None) -> Length:
+    assert length is not None, "the house template sets this measure"
+    return length
+
+
 def _rfonts(style: ParagraphStyle):
     rFonts = style.element.get_or_add_rPr().find(qn("w:rFonts"))
     assert rFonts is not None
@@ -85,22 +90,24 @@ class TestPageGeometry:
         assert len(parsed.sections) == 1
         section = parsed.sections[0]
 
-        _assert_mm(section.page_width.mm, house_template.PAGE_WIDTH_MM)
-        _assert_mm(section.page_height.mm, house_template.PAGE_HEIGHT_MM)
-        _assert_mm(section.left_margin.mm, house_template.PAGE_MARGIN_SIDE_MM)
-        _assert_mm(section.right_margin.mm, house_template.PAGE_MARGIN_SIDE_MM)
-        _assert_mm(section.top_margin.mm, house_template.PAGE_MARGIN_VERTICAL_MM)
-        _assert_mm(section.bottom_margin.mm, house_template.PAGE_MARGIN_VERTICAL_MM)
+        _assert_mm(_set(section.page_width).mm, house_template.PAGE_WIDTH_MM)
+        _assert_mm(_set(section.page_height).mm, house_template.PAGE_HEIGHT_MM)
+        _assert_mm(_set(section.left_margin).mm, house_template.PAGE_MARGIN_SIDE_MM)
+        _assert_mm(_set(section.right_margin).mm, house_template.PAGE_MARGIN_SIDE_MM)
+        _assert_mm(_set(section.top_margin).mm, house_template.PAGE_MARGIN_VERTICAL_MM)
+        _assert_mm(_set(section.bottom_margin).mm, house_template.PAGE_MARGIN_VERTICAL_MM)
 
-        text_width = Emu(section.page_width - section.left_margin - section.right_margin)
+        text_width = Emu(
+            _set(section.page_width) - _set(section.left_margin) - _set(section.right_margin)
+        )
         # Three independently rounded twip measures: allow the sum of their roundings.
         _assert_mm(text_width.mm, house_template.TEXT_WIDTH_MM, tolerance_mm=_TWIP_MM * 3)
 
     def test_the_page_is_not_word_s_letter_default(self, parsed: DocxDocument) -> None:
         section = parsed.sections[0]
 
-        assert round(section.page_width.mm, 1) != 215.9
-        assert round(section.page_height.mm, 1) != 279.4
+        assert round(_set(section.page_width).mm, 1) != 215.9
+        assert round(_set(section.page_height).mm, 1) != 279.4
 
 
 class TestTextStyles:
