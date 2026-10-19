@@ -28,6 +28,7 @@ import {
   type ExamWorkspaceEditLeaseDeps,
 } from "./useExamWorkspaceEditLease";
 import { useExamWorkspaceHistory } from "./useExamWorkspaceHistory";
+import { useExamWorkspaceKeptEdit } from "./useExamWorkspaceKeptEdit";
 import { useExamWorkspaceStructure } from "./useExamWorkspaceStructure";
 
 /** The lease seams specs override; production uses the transport and the browser slot. */
@@ -60,97 +61,167 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
   });
   const lineageId = () => document.summary.value?.lineage_id ?? null;
   const reload = () => document.reloadDocument();
-  // Waits started in async continuations have no active effect scope left for
-  // onScopeDispose, so disposal notifiers registered here settle them instead.
-  const disposeNotifiers = new Set<() => void>();
-  onScopeDispose(() => {
-    for (const notify of [...disposeNotifiers]) {
-      notify();
+  // The kept refused edit, whether this session may still install or store
+  // past an await, and the in-flight recoveries disposal or an exam change
+  // must settle: the routine rechecks disposal and lineage before and after
+  // every await and registers no watcher, so no watcher outlives the editor
+  // and every path settles.
+  const keptEdit = useExamWorkspaceKeptEdit();
+  let disposed = false;
+  const recoveryAborters = new Set<() => void>();
+  function settleRecoveryAborters(): void {
+    for (const abort of [...recoveryAborters]) {
+      abort();
     }
-    disposeNotifiers.clear();
+    recoveryAborters.clear();
+  }
+  onScopeDispose(() => {
+    disposed = true;
+    keptEdit.clear();
+    settleRecoveryAborters();
+  });
+  watch(lineageId, () => {
+    keptEdit.clear();
+    settleRecoveryAborters();
   });
 
   /**
-   * After a reload the history loads the fresh step list; wait until its step
-   * matches the reloaded server copy (or the load failed and cleared it), so
-   * the merged edit's flush carries the fresh position instead of truncating
-   * the other tab's steps after a stale one. The wait always settles: a
-   * lineage that moved on or a disposed scope resolves stale (false) so the
-   * merge is skipped instead of leaking the watch or merging onto the wrong
-   * exam.
+   * Await `work`, but let disposal or an exam change settle it as null
+   * instead of leaving the recovery parked: a history read that never
+   * answers must not outlive the exam it was read for. Never registers
+   * anything after disposal.
    */
-  function waitForHistoryStep(startLineage: string | null): Promise<boolean> {
-    const server = document.serverDocument.value;
-    if (server === null || history.stepDocument.value === server || history.stepDocument.value === null) {
-      return Promise.resolve(lineageId() === startLineage);
+  function abortable<T>(work: Promise<T>): Promise<T | null> {
+    if (disposed) {
+      return Promise.resolve(null);
     }
-    return new Promise<boolean>((resolve) => {
-      let settled = false;
-      let stopStep: () => void = () => undefined;
-      let stopLineage: () => void = () => undefined;
-      const finish = (ready: boolean) => {
-        if (settled) {
-          return;
-        }
-        settled = true;
-        disposeNotifiers.delete(onDispose);
-        stopStep();
-        stopLineage();
-        resolve(ready);
+    return new Promise<T | null>((resolve) => {
+      const abort = (): void => {
+        recoveryAborters.delete(abort);
+        resolve(null);
       };
-      stopStep = watch(history.stepDocument, (step) => {
-        if (step === document.serverDocument.value || step === null) {
-          finish(lineageId() === startLineage);
-        }
-      });
-      stopLineage = watch(lineageId, (next) => {
-        if (next !== startLineage) {
-          finish(false);
-        }
-      });
-      const onDispose = () => finish(false);
-      disposeNotifiers.add(onDispose);
+      recoveryAborters.add(abort);
+      work.then(
+        (value) => {
+          recoveryAborters.delete(abort);
+          resolve(value);
+        },
+        () => {
+          recoveryAborters.delete(abort);
+          resolve(null);
+        },
+      );
     });
   }
 
   /**
-   * A refused edit survives the takeover (TASK-SKRIPT-40-04-14, USER decision
-   * 2026-10-19 "Ta över keeps the edit"): capture the pending edit against
-   * its step before the reload replaces the working copy, then merge it onto
-   * the newest server document and store it through the normal save path. A
-   * refused save or a failed store keeps the existing status and toasts.
+   * Merge a kept refused edit onto the newest server document and store it
+   * through the normal save path (TASK-SKRIPT-40-04-14, USER decision
+   * 2026-10-19 "Ta över keeps the edit"): capture the pending working copy,
+   * reload, then await the history's own load for that lineage — which also
+   * synchronizes when the cursor is unchanged and the GET returned a fresh
+   * object — and merge with mergeRefusedEdit. A failed reload keeps the
+   * recovery set and the edit visible and pending; disposal or a lineage
+   * change stops the routine without installing or storing. A refused save
+   * or a failed store keeps the existing status and toasts.
    */
-  async function acquireWithKeptEdit(): Promise<void> {
+  async function recoverKeptEdit(startLineage: string, awaitStore: boolean): Promise<void> {
+    if (disposed || lineageId() !== startLineage) {
+      return;
+    }
     const edited = history.pending.value ? document.workspaceDocument.value : null;
-    const base = edited === null ? null : history.stepDocument.value;
-    const startServer = document.serverDocument.value;
-    const startLineage = lineageId();
-    await reload();
+    const base = keptEdit.get();
     if (edited === null || base === null) {
       return;
     }
+    const startServer = document.serverDocument.value;
+    await abortable(reload());
+    if (disposed || lineageId() !== startLineage) {
+      return;
+    }
     // reloadDocument catches its own failure and only toasts, so an unchanged
-    // server document means the reload failed: keep the refused edit pending
-    // without merging or storing.
+    // server document means the reload failed: keep the recovery set and the
+    // refused edit pending without merging or storing.
     if (document.serverDocument.value === startServer) {
       return;
     }
-    const ready = await waitForHistoryStep(startLineage);
-    if (!ready) {
+    const synced = await abortable(history.load(startLineage));
+    if (disposed || lineageId() !== startLineage || synced !== true) {
       return;
     }
     const newest = document.workspaceDocument.value;
-    if (newest === null) {
+    if (disposed || lineageId() !== startLineage || newest === null) {
       return;
     }
     const merged = mergeRefusedEdit(base, edited, newest);
     if (merged === null) {
+      keptEdit.clear();
       return;
     }
-    await document.replaceCopy(async () => {
-      document.installDocument(merged);
+    await abortable(
+      document.replaceCopy(async () => {
+        document.installDocument(merged);
+      }),
+    );
+    if (disposed || lineageId() !== startLineage) {
+      return;
+    }
+    if (awaitStore) {
+      if (await abortable(history.flush())) {
+        keptEdit.clear();
+      }
+      return;
+    }
+    // Inside the history's own 409 handling its flush queue is still running:
+    // queue the merged store without awaiting it, so the outer store cannot
+    // deadlock on the queue it already holds.
+    void history.flush().then((stored) => {
+      if (stored) {
+        keptEdit.clear();
+      }
     });
-    await history.flush();
+  }
+
+  /**
+   * A refused edit survives the takeover: keep its step document as the
+   * recovery base while a pending edit stands, then always read the newest
+   * server document: with a kept refused edit the recovery routine merges it
+   * onto the newest copy, without one the reload alone replaces the stale
+   * copy a read-only tab shows. Before KE the acquisition always reloaded,
+   * so a tab that gets the lease with nothing pending reads the newest
+   * state instead of keeping its stale copy.
+   */
+  async function acquireWithKeptEdit(): Promise<void> {
+    const startLineage = lineageId();
+    if (disposed || startLineage === null) {
+      return;
+    }
+    if (history.pending.value) {
+      const base = history.stepDocument.value;
+      if (base !== null) {
+        keptEdit.set(base);
+      }
+    }
+    if (keptEdit.get() !== null && history.pending.value) {
+      await recoverKeptEdit(startLineage, true);
+      return;
+    }
+    await reload();
+  }
+
+  /**
+   * The 409 conflict path while a refused edit is recovering: run the same
+   * recovery routine instead of reloading past the edit, so a later save
+   * after a failed reload merges the edit onto the newest copy. A reload
+   * failure keeps the recovery set and the edit visible and pending.
+   */
+  async function handleConflict(): Promise<void> {
+    const startLineage = lineageId();
+    if (!disposed && startLineage !== null && keptEdit.get() !== null && history.pending.value) {
+      await recoverKeptEdit(startLineage, false);
+      return;
+    }
+    await reload();
   }
 
   const history = useExamWorkspaceHistory({
@@ -165,7 +236,7 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
     noteLeaseLost: () => leaseHolder.session?.noteLostLease(),
     noteStored: document.noteStored,
     isGuest: () => store.guest !== null,
-    onConflict: reload,
+    onConflict: handleConflict,
     replaceCopy: document.replaceCopy,
     savedRevision: () => document.savedRevision.value,
     serverDocument: document.serverDocument,
@@ -184,7 +255,7 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
     isReadOnly: () => leaseHolder.session?.readOnly.value ?? true,
     lineageId,
     noteLeaseLost: () => leaseHolder.session?.noteLostLease(),
-    onConflict: reload,
+    onConflict: handleConflict,
     replaceCopy: document.replaceCopy,
     savedRevision: () => document.savedRevision.value,
     selectItem: document.selectItem,

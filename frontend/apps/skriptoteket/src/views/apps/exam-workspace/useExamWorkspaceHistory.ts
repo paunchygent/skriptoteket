@@ -172,22 +172,27 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
     stepDocument.value = null;
   }
 
-  async function load(lineageId: string): Promise<void> {
+  /** Reload the step list and stand on the fresh server copy; resolves true
+   * when the step list and step document match that fresh read, false when
+   * the lineage moved on, a newer load started, or the read failed. */
+  async function load(lineageId: string): Promise<boolean> {
     const token = ++loadToken;
     const base = deps.serverDocument.value;
     try {
       const history = await deps.shared.getExamWorkspaceHistory(lineageId);
       if (token !== loadToken || deps.lineageId() !== lineageId) {
-        return;
+        return false;
       }
       baselineId.value = history.baseline_step_id;
       stepIds.value = [...history.step_ids];
       position.value = history.position_step_id;
       stepDocument.value = base;
+      return stepDocument.value === deps.serverDocument.value;
     } catch {
       if (token === loadToken) {
         reset();
       }
+      return false;
     }
   }
 
@@ -478,6 +483,7 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
     canUndo,
     depart: departure.depart,
     flush,
+    load,
     navigating: computed(() => navigating.value),
     /** The snapshot the editor stands on; null until the step list is loaded. */
     position: computed(() => position.value),

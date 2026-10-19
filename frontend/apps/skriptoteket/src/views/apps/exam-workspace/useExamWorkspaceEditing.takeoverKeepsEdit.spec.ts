@@ -20,12 +20,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ApiError } from "../../../api/client";
 import type {
+  ExamWorkspaceDocumentResponse,
   ExamWorkspaceEditLeaseResponse,
   NativeExamDocument,
 } from "../../../api/examWorkspace";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
 import {
+  conflict,
   exam,
   fakeServer,
   inScope,
@@ -272,7 +274,9 @@ describe("a refused edit across the takeover", () => {
     server.state.cursor = "step-B";
     server.state.position = "step-B";
     api.getExamWorkspaceDocument.mockResolvedValueOnce(response(storedB, "step-B"));
-    api.getExamWorkspaceHistory.mockImplementationOnce(() => new Promise(() => undefined));
+    // The history read hangs: both the cursor-triggered load and the
+    // recovery's explicit resync wait for it while the lineage moves on.
+    api.getExamWorkspaceHistory.mockImplementation(() => new Promise(() => undefined));
     const storesBefore = api.storeExamWorkspaceUndoStep.mock.calls.length;
     holder = "tab-A";
     const takeover = editing.requestTakeover();
@@ -291,6 +295,197 @@ describe("a refused edit across the takeover", () => {
     await flushPromises();
     expect(await settledRace).toBe("settled");
     await takeover;
+    await flushPromises();
+    expect(api.storeExamWorkspaceUndoStep.mock.calls.length).toBe(storesBefore);
+  });
+
+  it("settles and keeps the edit when the takeover GET returns the unchanged cursor in a fresh object", { timeout: 8000 }, async () => {
+    const baseline = exam();
+    const server = fakeServer(api, baseline);
+    let holder = "tab-A";
+    const editing = inScope(() =>
+      useExamWorkspaceEditing(serverExamWorkspaceStore, {
+        server: {
+          claim: async () => {
+            if (holder !== "tab-A") {
+              throw leaseHeld();
+            }
+            return leaseResponse("tab-A");
+          },
+          release: async () => leaseResponse(holder),
+          renew: async () => {
+            if (holder !== "tab-A") {
+              throw leaseHeld();
+            }
+            return leaseResponse("tab-A");
+          },
+          requestTakeover: async () => leaseResponse("tab-B"),
+        },
+        tabId: "tab-A",
+      }),
+    );
+    editing.applyCommandResponse(response(baseline, "step-0"));
+    await flushPromises();
+    editing.updateItemPoints("item_001", 5);
+    expect(await editing.save()).toBe(true);
+    holder = "tab-B";
+    api.storeExamWorkspaceUndoStep.mockRejectedValueOnce(leaseHeld());
+    editing.updateItemPoints("item_001", 7);
+    expect(await editing.save()).toBe(false);
+    expect(editing.history.pending.value).toBe(true);
+    // The other tab made no document edit: the takeover GET returns the same
+    // cursor and content, but in a fresh response object.
+    const storedA = server.documents.get(server.state.cursor);
+    if (storedA === undefined) {
+      throw new Error("expected tab A's stored step");
+    }
+    api.getExamWorkspaceDocument.mockResolvedValueOnce(response({ ...storedA }, server.state.cursor));
+    holder = "tab-A";
+    const outcome = await Promise.race([
+      editing.requestTakeover().then(() => "settled"),
+      new Promise((resolve) => setTimeout(() => resolve("hung"), 2000)).then((value) => value),
+    ]);
+    expect(outcome).toBe("settled");
+    await flushPromises();
+    const workspace = editing.workspaceDocument.value;
+    if (workspace === null) {
+      throw new Error("expected an open document");
+    }
+    expect(pointsOf(workspace, "item_001")).toBe(7);
+    expect(editing.history.pending.value).toBe(false);
+    expect(pointsOf(lastStoredDocument(), "item_001")).toBe(7);
+  });
+
+  it("merges the kept edit on the next save after a failed takeover reload", { timeout: 8000 }, async () => {
+    const baseline = exam();
+    const server = fakeServer(api, baseline);
+    let holder = "tab-A";
+    const editing = inScope(() =>
+      useExamWorkspaceEditing(serverExamWorkspaceStore, {
+        server: {
+          claim: async () => {
+            if (holder !== "tab-A") {
+              throw leaseHeld();
+            }
+            return leaseResponse("tab-A");
+          },
+          release: async () => leaseResponse(holder),
+          renew: async () => {
+            if (holder !== "tab-A") {
+              throw leaseHeld();
+            }
+            return leaseResponse("tab-A");
+          },
+          requestTakeover: async () => leaseResponse("tab-B"),
+        },
+        tabId: "tab-A",
+      }),
+    );
+    editing.applyCommandResponse(response(baseline, "step-0"));
+    await flushPromises();
+    editing.updateItemPoints("item_001", 5);
+    expect(await editing.save()).toBe(true);
+    holder = "tab-B";
+    api.storeExamWorkspaceUndoStep.mockRejectedValueOnce(leaseHeld());
+    editing.updateItemPoints("item_001", 7);
+    expect(await editing.save()).toBe(false);
+    expect(editing.history.pending.value).toBe(true);
+    const storedA = server.documents.get(server.state.cursor);
+    if (storedA === undefined) {
+      throw new Error("expected tab A's stored step");
+    }
+    const storedB: NativeExamDocument = {
+      ...storedA,
+      items: storedA.items.map((item) =>
+        item.item_id === "item_002" ? { ...item, points: 9 } : item,
+      ),
+    };
+    server.documents.set("step-B", storedB);
+    server.state.steps = [...server.state.steps, "step-B"];
+    server.state.cursor = "step-B";
+    server.state.position = "step-B";
+    api.getExamWorkspaceDocument.mockRejectedValueOnce(new Error("reload failed"));
+    holder = "tab-A";
+    await editing.requestTakeover();
+    await flushPromises();
+    const kept = editing.workspaceDocument.value;
+    if (kept === null) {
+      throw new Error("expected an open document");
+    }
+    expect(pointsOf(kept, "item_001")).toBe(7);
+    expect(editing.history.pending.value).toBe(true);
+    // The later save meets the stale cursor, conflicts, and recovers: the
+    // conflict GET returns the newest copy, which the kept edit merges onto.
+    api.storeExamWorkspaceUndoStep.mockRejectedValueOnce(conflict());
+    api.getExamWorkspaceDocument.mockResolvedValueOnce(response(storedB, "step-B"));
+    await editing.save();
+    await flushPromises();
+    const workspace = editing.workspaceDocument.value;
+    if (workspace === null) {
+      throw new Error("expected an open document");
+    }
+    expect(pointsOf(workspace, "item_001")).toBe(7);
+    expect(pointsOf(workspace, "item_002")).toBe(9);
+    const newest = lastStoredDocument();
+    expect(pointsOf(newest, "item_001")).toBe(7);
+    expect(pointsOf(newest, "item_002")).toBe(9);
+  });
+
+  it("settles without storing past disposal while the acquisition GET is in flight", { timeout: 8000 }, async () => {
+    const baseline = exam();
+    fakeServer(api, baseline);
+    let holder = "tab-A";
+    const editing = inScope(() =>
+      useExamWorkspaceEditing(serverExamWorkspaceStore, {
+        server: {
+          claim: async () => {
+            if (holder !== "tab-A") {
+              throw leaseHeld();
+            }
+            return leaseResponse("tab-A");
+          },
+          release: async () => leaseResponse(holder),
+          renew: async () => {
+            if (holder !== "tab-A") {
+              throw leaseHeld();
+            }
+            return leaseResponse("tab-A");
+          },
+          requestTakeover: async () => leaseResponse("tab-B"),
+        },
+        tabId: "tab-A",
+      }),
+    );
+    editing.applyCommandResponse(response(baseline, "step-0"));
+    await flushPromises();
+    editing.updateItemPoints("item_001", 5);
+    expect(await editing.save()).toBe(true);
+    holder = "tab-B";
+    api.storeExamWorkspaceUndoStep.mockRejectedValueOnce(leaseHeld());
+    editing.updateItemPoints("item_001", 7);
+    expect(await editing.save()).toBe(false);
+    expect(editing.history.pending.value).toBe(true);
+    let resolveGet: ((payload: ExamWorkspaceDocumentResponse) => void) | undefined;
+    api.getExamWorkspaceDocument.mockImplementationOnce(
+      () =>
+        new Promise<ExamWorkspaceDocumentResponse>((resolve) => {
+          resolveGet = resolve;
+        }),
+    );
+    const storesBefore = api.storeExamWorkspaceUndoStep.mock.calls.length;
+    holder = "tab-A";
+    const takeover = editing.requestTakeover();
+    await flushPromises();
+    stopScopes();
+    if (resolveGet === undefined) {
+      throw new Error("expected the acquisition GET to start");
+    }
+    resolveGet(response({ ...baseline }, "step-0"));
+    const outcome = await Promise.race([
+      takeover.then(() => "settled"),
+      new Promise((resolve) => setTimeout(() => resolve("hung"), 2000)).then((value) => value),
+    ]);
+    expect(outcome).toBe("settled");
     await flushPromises();
     expect(api.storeExamWorkspaceUndoStep.mock.calls.length).toBe(storesBefore);
   });
