@@ -53,7 +53,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{ "update:modelValue": [value: string] }>();
 
-type FocusableButton = { focus: () => void };
+type FocusableButton = Element & { focus: () => void };
 const buttonRefs = ref<(FocusableButton | null)[]>([]);
 const descriptionId = useId();
 
@@ -157,8 +157,12 @@ watch(
 
 onBeforeUnmount(stopLabelObservation);
 
-function setButtonRef(index: number, element: FocusableButton | null): void {
-  buttonRefs.value[index] = element;
+function isFocusableButton(element: unknown): element is FocusableButton {
+  return element instanceof Element && "focus" in element && typeof element.focus === "function";
+}
+
+function setButtonRef(index: number, element: unknown): void {
+  buttonRefs.value[index] = isFocusableButton(element) ? element : null;
 }
 
 function enabledOptions(): UiSegmentedToggleOption[] {
@@ -219,7 +223,8 @@ function optionDescriptionId(index: number): string | undefined {
 }
 
 function onOptionKeydown(event: KeyboardEvent, index: number): void {
-  if (props.disabled || props.options[index]?.disabled || enabledOptions().length === 0) {
+  const option = props.options[index];
+  if (!option || props.disabled || option.disabled || enabledOptions().length === 0) {
     return;
   }
 
@@ -241,7 +246,7 @@ function onOptionKeydown(event: KeyboardEvent, index: number): void {
       break;
     case " ":
     case "Enter":
-      selectOption(props.options[index]!);
+      selectOption(option);
       return;
     default:
       return;
@@ -277,7 +282,7 @@ function selectOption(option: UiSegmentedToggleOption): void {
       :key="option.value"
     >
       <button
-        :ref="(element) => setButtonRef(index, element as FocusableButton | null)"
+        :ref="(element) => setButtonRef(index, element)"
         type="button"
         role="radio"
         :aria-checked="option.value === modelValue"
