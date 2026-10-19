@@ -8,7 +8,6 @@ embedded, an oversized picture is clamped and a missing payload fails closed.
 import hashlib
 import io
 import zipfile
-from dataclasses import dataclass
 from uuid import uuid4
 
 import pytest
@@ -22,31 +21,12 @@ from skriptoteket.domain.curated_apps.exam_conversion.exam_print_house_template 
 from skriptoteket.domain.curated_apps.exam_workspace.exam_language_labels import (
     SWEDISH_EXAM_LABELS,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
-    NativeAssetSegment,
-    NativeParagraph,
-    NativeTextSegment,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_criteria import (
-    NativeExamCriterion,
-)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
-    NativeExamAsset,
     NativeExamDocument,
     NativeExamDocumentOrigin,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import (
-    NativeExamParent,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
-    NativeAnswerKey,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
-    NativeAnswerKeyOrigin,
-    NativeExamItemKind,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub import (
@@ -55,13 +35,17 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub import (
 from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders import (
     make_free_text_item,
 )
+from tests.unit.infrastructure.curated_apps.exam_workspace_docx_picture_support import (
+    SharedPictureDocument,
+    build_shared_picture_document,
+    shared_asset,
+)
 from tests.unit.infrastructure.curated_apps.exam_workspace_docx_writer_test_support import (
     document_text,
     drawing_payload,
     heading_texts,
     only_paragraph,
     png,
-    review_complete,
     run_shape,
 )
 
@@ -73,110 +57,9 @@ _SHARED_PARENT_BEFORE = "Se figuren: "
 _SHARED_PARENT_AFTER = " och svara."
 
 
-@dataclass(frozen=True)
-class SharedPictureDocument:
-    """The accepted shared-picture document: two shared instructions and two free-text items."""
-
-    document: NativeExamDocument
-    global_asset_id: str
-    parent_asset_id: str
-    assets_by_id: dict[str, bytes]
-
-
-def _shared_asset(payload: bytes) -> tuple[str, NativeExamAsset]:
-    digest = hashlib.sha256(payload).hexdigest()
-    asset_id = f"asset_{digest[:16]}"
-    return asset_id, NativeExamAsset(
-        asset_id=asset_id,
-        media_type="image/png",
-        byte_length=len(payload),
-        sha256=digest,
-    )
-
-
 @pytest.fixture
 def shared_picture_document() -> SharedPictureDocument:
-    """Global and parent instruction each carry a real PNG between two text runs."""
-    global_payload = png((200, 20, 20, 255), (12, 6))
-    parent_payload = png((20, 20, 200, 255), (16, 8))
-    global_id, global_asset = _shared_asset(global_payload)
-    parent_id, parent_asset = _shared_asset(parent_payload)
-    items = (
-        NativeExamItem(
-            item_id="item_001",
-            sequence=1,
-            kind=NativeExamItemKind.FREE_TEXT,
-            writing_lines=8,
-            body=(
-                NativeParagraph(
-                    heading_level=None,
-                    segments=(
-                        NativeTextSegment(text="Fråga 1.", marks=()),
-                        NativeAssetSegment(asset_id=global_id),
-                    ),
-                ),
-            ),
-            points=1,
-            criteria=(NativeExamCriterion(text="Godtagbar förklaring.", points=1),),
-            answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
-            review=review_complete(),
-        ),
-        NativeExamItem(
-            item_id="item_002",
-            sequence=2,
-            kind=NativeExamItemKind.FREE_TEXT,
-            writing_lines=8,
-            body=(
-                NativeParagraph(
-                    heading_level=None, segments=(NativeTextSegment(text="Fråga 2.", marks=()),)
-                ),
-            ),
-            points=1,
-            answer_key=NativeAnswerKey(origin=NativeAnswerKeyOrigin.NOT_APPLICABLE),
-            review=review_complete(),
-        ),
-    )
-    document = NativeExamDocument(
-        document_id=uuid4(),
-        revision=1,
-        title="Diagramprov",
-        instructions=(
-            NativeParagraph(
-                heading_level=None,
-                segments=(
-                    NativeTextSegment(text=_SHARED_GLOBAL_BEFORE, marks=()),
-                    NativeAssetSegment(asset_id=global_id),
-                    NativeTextSegment(text=_SHARED_GLOBAL_AFTER, marks=()),
-                ),
-            ),
-        ),
-        items=items,
-        parents=(
-            NativeExamParent(
-                parent_id="parent_001",
-                place=0,
-                instruction=(
-                    NativeParagraph(
-                        heading_level=None,
-                        segments=(
-                            NativeTextSegment(text=_SHARED_PARENT_BEFORE, marks=()),
-                            NativeAssetSegment(asset_id=parent_id),
-                            NativeTextSegment(text=_SHARED_PARENT_AFTER, marks=()),
-                        ),
-                    ),
-                ),
-                item_ids=tuple(item.item_id for item in items),
-            ),
-        ),
-        assets=(global_asset, parent_asset),
-        origin=NativeExamDocumentOrigin(kind="created"),
-    )
-    return SharedPictureDocument(
-        document=document,
-        global_asset_id=global_id,
-        parent_asset_id=parent_id,
-        assets_by_id={global_id: global_payload, parent_id: parent_payload},
-    )
+    return build_shared_picture_document()
 
 
 class TestPictures:
@@ -255,7 +138,7 @@ class TestPictures:
 
     def test_picture_wider_than_the_text_column_is_clamped(self) -> None:
         payload = png((10, 90, 10, 255), (4000, 40))
-        asset_id, asset = _shared_asset(payload)
+        asset_id, asset = shared_asset(payload)
         item = make_free_text_item()
         item = NativeExamItem.model_validate(
             {

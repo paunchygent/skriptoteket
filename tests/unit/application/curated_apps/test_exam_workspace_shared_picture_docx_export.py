@@ -51,12 +51,12 @@ from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents 
     _actor,
     _Env,
 )
+from tests.unit.infrastructure.curated_apps.exam_workspace_docx_picture_support import (
+    build_shared_picture_document,
+)
 from tests.unit.infrastructure.curated_apps.exam_workspace_docx_writer_test_support import (
     drawing_payload,
     only_paragraph,
-)
-from tests.unit.infrastructure.curated_apps.test_exam_workspace_docx_writer_pictures import (
-    shared_picture_document,
 )
 
 
@@ -71,7 +71,7 @@ def _instruction_text(body: tuple[NativeParagraph, ...]) -> str:
 
 @pytest.mark.asyncio
 async def test_docx_export_embeds_shared_instruction_pictures_from_stored_payloads() -> None:
-    fixture = shared_picture_document()
+    fixture = build_shared_picture_document()
     env = _Env()
     actor = _actor()
     stored = await env.store.save(
