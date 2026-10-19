@@ -147,6 +147,7 @@ def _excluded_module_markers(path: Path) -> tuple[str, ...]:
         return ()
 
     for statement in tree.body:
+        value: ast.expr | None
         if isinstance(statement, ast.Assign):
             targets = statement.targets
             value = statement.value
