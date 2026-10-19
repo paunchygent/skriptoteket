@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "5385420ebbc2032668ceee392e5dcb582bb532da2f83247dd93f6d98c93171d5",
+  "source_set_digest": "80ba9a7207b93344571d1eda09ce17a9928f54b475846a5f754037094af87e83",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5198,11 +5198,11 @@
       }
     },
     {
-      "id": "TASK-SKRIPT-39-04-18",
+      "id": "TASK-SKRIPT-39-04-19",
       "type": "task",
       "title": "A listed own chunk that section placement restores is not reported as missing; the left-out mark is decided on the placed item by source identity",
-      "path": "docs/backlog/tasks/task-skript-39-04-18-a-listed-own-chunk-that-section-placement-restores-is-not-reported-as-missing-the-left-out-mark-is-decided-on-the-placed-item-by-source-identity.md",
-      "status": "proposed",
+      "path": "docs/backlog/tasks/task-skript-39-04-19-a-listed-own-chunk-that-section-placement-restores-is-not-reported-as-missing-the-left-out-mark-is-decided-on-the-placed-item-by-source-identity.md",
+      "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-04",
       "owners": [

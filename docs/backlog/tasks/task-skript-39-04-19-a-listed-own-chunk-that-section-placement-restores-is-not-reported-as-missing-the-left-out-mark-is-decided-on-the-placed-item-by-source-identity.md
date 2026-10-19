@@ -1,6 +1,6 @@
 ---
 type: task
-id: TASK-SKRIPT-39-04-18
+id: TASK-SKRIPT-39-04-19
 title: A listed own chunk that section placement restores is not reported as missing;
   the left-out mark is decided on the placed item by source identity
 repository: skriptoteket
@@ -8,7 +8,7 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-19'
-status: proposed
+status: ready
 closeout_review:
   record: inline
   status: not_started
@@ -89,6 +89,9 @@ chunks and its parent's source anchors.
     second placement pass: marked once, never twice;
   - the retry path (`exam_workspace_docx_retry`): a reconverted item that leaves out an
     own chunk is still marked.
+- After the merge of TASK-SKRIPT-40-04-07: its real-heading admission control test in
+  `test_exam_workspace_docx_answer_line_heading.py` (comment citing 09d50acc M2) asserts
+  that the final item carries no `LEFT_OUT_REASON`.
 - Existing admission tests that read `LEFT_OUT_REASON` from `state.accepted` read it from
   `state.result()` instead (D4).
 - The ten recorded replays (the `dump_replays_39-04-14.py` dump, base `ffbfa953` against
@@ -102,20 +105,15 @@ chunks and its parent's source anchors.
   `/home/paunchygent/apps/skriptoteket-task-skript-39-04-left-out-remote`, from
   `origin/main` `ffbfa953`. Never pushed.
 - Retained root `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a15302-b287-7db2-91ec-8e9629121eb1`.
-- State: planned; waiting for the orchestrator's go, for TASK-SKRIPT-40-04-07 on main,
-  and for the answers to Q1 and Q2 (Stop Conditions).
-- Units: U1 domain (D1-D3, D5), then U2 application and tests (D4, D7).
+- State: ready (D9); U1 in progress. Merge `origin/main` when the orchestrator reports
+  TASK-SKRIPT-40-04-07 there, then tighten its control test (Validation).
+- Units: U1 domain (D1-D3, D5; order `evidence/orders/u1-domain-left-out-mark.md`), then
+  U2 application and tests (D4, D7).
 
 ## Stop Conditions
 
-- Q1 (user question, open): does an item whose listed chunk placement restored keep any
-  review reason for the recovery? Lead recommendation: no. The restored text is the
-  source chunk itself, and D2 already exempts what section placement places; the
-  admission event stays as the record. Until answered, the design follows the
-  recommendation and the rendering stays in one function (D3) so a note can be added there.
-- Q2 (user question, open, only if Q1 is yes): the Swedish wording of the recovery note.
-- Implementation starts only after TASK-SKRIPT-40-04-07 is on main and this branch has
-  merged `origin/main`.
+- The domain suite runs only after this branch has merged `origin/main` with
+  TASK-SKRIPT-40-04-07 on it, and after the orchestrator's go.
 - Any replay difference goes to the orchestrator before merge.
 - No `kind == "heading"` exclusion at admission or in W10, no reset of `review_required`,
   and no comparison of reason or body wording.
@@ -132,3 +130,4 @@ chunks and its parent's source anchors.
 | D6  | The ten replays at the head equal the base `ffbfa953` dump: no replay item carries the left-out mark today. |
 | D7  | The retry path renders the mark on its single admitted item with no parent anchors (D3), before `_with_owned_contexts` and `_review_reason` read it, because retry has no section placement. |
 | D8  | Owning story ST-SKRIPT-39-04; review 09d50acc M2 is the defect authority; 39-04-15 D1 and D2 stand as written, and this task implements D2's "an instruction that section placement places" at placement. |
+| D9  | User answer 2026-10-19 (given in the Hemma session, relayed by the orchestrator `944b5a5a`): a listed chunk that placement restores keeps no review reason for the recovery. The stale "Källtext som saknas" mark disappears, the `own_chunks_left_out` admission event stays as the record, and unrelated reasons stay. No recovery note, so no new wording. The user accepted this design with that answer; status `ready` under `agent-planning:user-closure-gate`. |
