@@ -37,6 +37,7 @@ import {
 } from "./examWorkspaceItemEdits";
 import { withGapAsText, withGapOptions, withNewGap } from "./examWorkspaceGapEdits";
 import { withGapReverted, withKeptGapRestored } from "./examWorkspaceKeptGapEdits";
+import { withShortAnswerShape, type ExamWorkspaceItemShape, withGapTextShape } from "./examWorkspaceShortAnswer";
 import { withShuffledSteps, withStepAdded, withStepMoved, withStepRemoved } from "./examWorkspaceOrdering";
 import { withoutEmptyOptions, withoutOptionHeadings } from "./examWorkspaceBlockers";
 import { withWritingLines } from "./examWorkspaceWritingLines";
@@ -166,6 +167,15 @@ export function useExamWorkspaceItemEdits(patchItem: ExamWorkspaceItemPatch) {
     patchItem(itemId, (item) => withNewGap(item, body, gapId, seed), true);
   }
 
+  /** Byt frågetyp between Kort svar and Lucktext is one undoable structural edit. */
+  function changeItemShape(itemId: string, shape: ExamWorkspaceItemShape): void {
+    patchItem(
+      itemId,
+      (item) => (shape === "short_answer" ? withShortAnswerShape(item) : withGapTextShape(item)),
+      true,
+    );
+  }
+
   function markItemReviewed(itemId: string): void {
     patchItem(itemId, reviewed, true);
   }
@@ -184,6 +194,7 @@ export function useExamWorkspaceItemEdits(patchItem: ExamWorkspaceItemPatch) {
 
   return {
     addItemOrderingStep,
+    changeItemShape,
     createItemGap,
     markItemReviewed,
     moveItemOrderingStep,

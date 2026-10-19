@@ -220,13 +220,15 @@ describe("ExamWorkspaceGapPopover dropdown options", () => {
   it("keeps typed text on Escape with no further commit", async () => {
     const wrapper = mountPopover(dropdownGap());
     const input = text(wrapper, "choice_003");
-    input.element.value = "borta";
+    input.element.value = "behållen";
     await input.trigger("input");
     expect(wrapper.emitted("updateOptions")).toHaveLength(1);
     await input.trigger("keydown", { key: "Escape" });
     await input.trigger("change");
     expect(wrapper.emitted("updateOptions")).toHaveLength(1);
     expect(wrapper.emitted("close")).toEqual([[true]]);
+    await input.trigger("change");
+    expect(updates(wrapper)).toHaveLength(1);
     wrapper.unmount();
   });
 

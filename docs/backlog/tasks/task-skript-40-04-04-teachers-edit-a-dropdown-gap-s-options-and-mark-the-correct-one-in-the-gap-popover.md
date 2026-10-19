@@ -46,6 +46,10 @@ Core vertical, in this order:
 
 Performance is not material. The bounded junior units are the popover editor, the change-type seed, and blockers plus mirror. The lead integrates.
 
+## Walk Repair
+
+The staging walk on 2026-10-19 (main eba9d0f2) failed D3: the jump for "rullista med färre än två alternativ" left every gap closed and focus on the page. Root cause: `useExamWorkspaceSaveFlow.ts` opened the gap with `chip.click()`, which never reaches ProseMirror's `handleClickOn`. The repair runs under TASK-SKRIPT-40-04-08 Walk repair unit WR1 (term R1 there): the jump dispatches a bubbling DOM event on the chip, the body editor opens that gap's popover, and the popover focuses its first option input. Proof: a fail-first Vitest spec through the real jump path, then the Mac re-walk. The task stays `in_progress` until review and the re-walk pass.
+
 ## Validation
 
 - Focused backend tests for change type and the dropdown export blockers.
@@ -59,9 +63,10 @@ Stop and report to the parent when a needed decision is absent, or when the popo
 
 ## Decided Contract Terms
 
-| ID  | Decided contract term                                                                                                                             |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| D1  | A dropdown gap's options are edited in the gap popover: one row per option, a radio for the correct one, add, edit, remove and reorder.           |
-| D2  | Changing a Lucktext question to dropdown turns each gap's accepted values into its options, first marked correct; imports never detect dropdowns. |
-| D3  | Fewer than two options, an empty option or no correct option is a red export blocker with a one-click jump to that gap's popover.                 |
-| D4  | Students see options in the teacher's order in print and Exam.net; no shuffling.                                                                  |
+| ID  | Decided contract term                                                                                                                                             |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | A dropdown gap's options are edited in the gap popover: one row per option, a radio for the correct one, add, edit, remove and reorder.                           |
+| D2  | Changing a Lucktext question to dropdown turns each gap's accepted values into its options, first marked correct; imports never detect dropdowns.                 |
+| D3  | Fewer than two options, an empty option or no correct option is a red export blocker with a one-click jump to that gap's popover.                                 |
+| D4  | Students see options in the teacher's order in print and Exam.net; no shuffling.                                                                                  |
+| D3r | The D3 jump opens the gap's popover through a bubbling DOM event on the chip and focuses its first option input (walk repair 2026-10-19, TASK-SKRIPT-40-04-08 R1) |

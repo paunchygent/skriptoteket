@@ -16,6 +16,10 @@
  *   question still converts its type cannot change. Import and the review
  *   check come in through the `tools` slot (`ExamWorkspaceQuestionTools`);
  *   on a phone they move to the question strip.
+ *   Byt frågetyp lists Kort svar after Fritext when the question is a Kort
+ *   svar or may become one: a Kort svar ticks Kort svar and unticks
+ *   Lucktext, and choosing Lucktext there emits `changeShape`; an eligible
+ *   Lucktext ticks Lucktext and offers Kort svar unticked instead.
  *
  * Relationships:
  *   - Rendered by `ExamWorkspaceQuestionEditor`; emits every intent.
@@ -27,6 +31,7 @@ import type { NativeExamItemKind } from "../../../api/examWorkspace";
 import { UiGlyph } from "../../../components/ui";
 import ExamWorkspaceMenu from "./ExamWorkspaceMenu.vue";
 import { EXAM_WORKSPACE_TYPE_LABELS } from "./examWorkspaceRows";
+import type { ExamWorkspaceItemShape } from "./examWorkspaceShortAnswer";
 
 const PROTOTYPE_KIND_ORDER: NativeExamItemKind[] = [
   "free_text",
@@ -62,8 +67,12 @@ const props = withDefaults(
     currentParentId?: string | null;
     /** The visible type button text: "Kort svar" for that shape, else the kind label. */
     typeLabel: string;
+    /** True when the question is a Kort svar (a Lucktext whose only gap stands alone). */
+    shortAnswer?: boolean;
+    /** True when a Lucktext with at most one gap may become a Kort svar. */
+    shortAnswerOffered?: boolean;
   }>(),
-  { currentParentId: null, moveTargets: () => [] },
+  { currentParentId: null, moveTargets: () => [], shortAnswer: false, shortAnswerOffered: false },
 );
 
 /** Ordering questions are standalone only (ST-SKRIPT-39-06 P3), so a deluppgift cannot change to Ordna. */
@@ -71,8 +80,37 @@ const orderedKinds = computed<QuestionTypeOption[]>(() =>
   KINDS.filter((option) => !(props.child !== null && option.kind === "ordering")),
 );
 
+/** One Byt frågetyp entry: a native kind, or the Kort svar shape. */
+type TypeMenuEntry = { checked: boolean; kind: NativeExamItemKind | "short_answer"; label: string };
+
+/**
+ * Byt frågetyp lists Fritext, then Kort svar when the question is one or may
+ * become one, then the remaining kinds as today. A Kort svar ticks Kort svar
+ * and unticks Lucktext; a kind ticks when it matches and the question is
+ * neither unbuilt nor a Kort svar Lucktext.
+ */
+const menuEntries = computed<TypeMenuEntry[]>(() => {
+  const shortAnswerEntry: TypeMenuEntry = { checked: props.shortAnswer, kind: "short_answer", label: "Kort svar" };
+  const entries = orderedKinds.value.flatMap((option, index) => {
+    const entry: TypeMenuEntry = {
+      checked:
+        !props.unbuilt &&
+        option.kind === props.kind &&
+        !(props.shortAnswer && option.kind === "gap_fill"),
+      kind: option.kind,
+      label: option.label,
+    };
+    if (index === 0 && (props.shortAnswer || props.shortAnswerOffered)) {
+      return [entry, shortAnswerEntry];
+    }
+    return [entry];
+  });
+  return entries;
+});
+
 const emit = defineEmits<{
   changeType: [kind: NativeExamItemKind];
+  changeShape: [shape: ExamWorkspaceItemShape];
   move: [delta: -1 | 1];
   remove: [];
   moveTo: [targetParentId: string | null];
@@ -129,6 +167,27 @@ function chooseKind(kind: NativeExamItemKind): void {
   if (kind !== props.kind || props.unbuilt) {
     emit("changeType", kind);
   }
+}
+
+/**
+ * One Byt frågetyp choice: Kort svar switches shape without a server change
+ * type (choosing it on a Kort svar does nothing), and so does Lucktext on a
+ * Kort svar; everything else follows `chooseKind`.
+ */
+function chooseOption(kind: NativeExamItemKind | "short_answer"): void {
+  if (kind === "short_answer") {
+    typeOpen.value = false;
+    if (!props.shortAnswer) {
+      emit("changeShape", "short_answer");
+    }
+    return;
+  }
+  if (props.shortAnswer && kind === "gap_fill") {
+    typeOpen.value = false;
+    emit("changeShape", "gap_fill");
+    return;
+  }
+  chooseKind(kind);
 }
 
 function chooseMore(action: "up" | "down" | "remove"): void {
@@ -216,17 +275,17 @@ function chooseMore(action: "up" | "down" | "remove"): void {
         Byt frågetyp
       </div>
       <button
-        v-for="option in orderedKinds"
+        v-for="option in menuEntries"
         :key="option.kind"
         type="button"
         class="xw-mi"
         role="menuitemradio"
-        :aria-checked="!unbuilt && option.kind === kind"
+        :aria-checked="option.checked"
         :data-test="`exam-workspace-type-${option.kind}`"
-        @click="chooseKind(option.kind)"
+        @click="chooseOption(option.kind)"
       >
         <UiGlyph
-          v-if="!unbuilt && option.kind === kind"
+          v-if="option.checked"
           meaning="selected"
           :size="20"
         /><span

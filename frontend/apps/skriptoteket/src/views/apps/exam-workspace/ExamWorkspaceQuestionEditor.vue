@@ -52,7 +52,8 @@ import ExamWorkspaceWritingLinesField from "./ExamWorkspaceWritingLinesField.vue
 import { canUndoInterpretation, isTeacherReviewed } from "./examWorkspaceItemEdits";
 import { examWorkspaceItemReadiness } from "./examWorkspaceItemReadiness";
 import { examWorkspaceItemTypeLabel } from "./examWorkspaceRows";
-import { isShortAnswer } from "./examWorkspaceShortAnswer";
+import { canBecomeShortAnswer, isShortAnswer } from "./examWorkspaceShortAnswer";
+import type { ExamWorkspaceItemShape } from "./examWorkspaceShortAnswer";
 import { provideRichTextTargetRegistry } from "./examWorkspaceRichTextTarget";
 import type { ExamWorkspaceNotice } from "./useExamWorkspaceStructure";
 
@@ -88,6 +89,7 @@ provideRichTextTargetRegistry();
 
 const emit = defineEmits<{
   changeType: [kind: NativeExamItemKind];
+  changeShape: [shape: ExamWorkspaceItemShape];
   move: [delta: -1 | 1];
   remove: [];
   moveTo: [targetParentId: string | null];
@@ -179,7 +181,10 @@ const keyLine = computed(() => {
       :suggested-kind="item.suggested_kind"
       :move-targets="moveTargets"
       :current-parent-id="currentParentId"
+      :short-answer="!unbuilt && isShortAnswer(item)"
+      :short-answer-offered="!unbuilt && canBecomeShortAnswer(item)"
       @change-type="emit('changeType', $event)"
+      @change-shape="emit('changeShape', $event)"
       @move="emit('move', $event)"
       @remove="emit('remove')"
       @move-to="emit('moveTo', $event)"

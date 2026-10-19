@@ -24,6 +24,7 @@ import type { Ref } from "vue";
 
 import type { ExamWorkspaceExportTarget } from "../../../api/examWorkspaceExports";
 import type { ExamWorkspaceBlockerEntry } from "./examWorkspaceBlockers";
+import { openBlockerField } from "./examWorkspaceGapOpenRequest";
 import type { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
 import type { useExamWorkspaceEnrichment } from "./useExamWorkspaceEnrichment";
 import type { useExamWorkspaceExports } from "./useExamWorkspaceExports";
@@ -123,12 +124,7 @@ export function useExamWorkspaceSaveFlow({
       await nextTick();
       field = frame.value?.querySelector<HTMLElement>(blocker.focus);
     }
-    field?.scrollIntoView?.({ block: "center" });
-    if (field?.hasAttribute("data-gap-id")) {
-      field.click();
-    } else {
-      field?.focus();
-    }
+    if (field) openBlockerField(field);
   }
 
   function fixBlocker(blocker: ExamWorkspaceBlockerEntry): void {

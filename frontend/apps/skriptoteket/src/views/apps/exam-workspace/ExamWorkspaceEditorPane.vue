@@ -163,6 +163,7 @@ const currentParentId = computed(() => props.itemEntry?.parentId ?? null);
         :asset-urls="assetUrls"
         :all-free-text-writing-lines="allFreeTextWritingLines"
         @change-type="(kind) => structure.changeType(selectedItem!.item_id, kind)"
+        @change-shape="(shape) => editing.changeItemShape(selectedItem!.item_id, shape)"
         @move="(delta) => $emit('move-selected', delta)"
         @remove="structure.deleteItem(selectedItem!.item_id)"
         @move-to="(targetParentId) => structure.moveItem(selectedItem!.item_id, targetParentId)"

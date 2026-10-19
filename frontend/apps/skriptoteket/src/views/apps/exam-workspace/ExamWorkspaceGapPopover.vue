@@ -8,7 +8,8 @@
  *   input and a remove glyph per row with a glyph-only add button ("Lägg
  *   till svar" accessible name and tooltip) under the rows. Typing commits
  *   the answers while it happens, so the history stores them after its
- *   typing pause; Escape closes and keeps the text typed so far. Each commit
+ *   typing pause; leaving the popover commits any remainder, and Escape
+ *   closes and keeps the text typed so far. Each commit
  *   is emitted once, even when the browser also fires `change` while focus
  *   returns to the chip. Enter inside an answer
  *   row adds a row below it and never closes the popover. Enter and Escape
@@ -27,7 +28,9 @@
  *   the whole option state at once (one patch each); typed option text
  *   commits while typing and is stored after the typing pause, and rides
  *   along with the next such emit. Enter commits and closes; Escape closes
- *   and keeps the typed text. The correct option
+ *   and keeps the typed text. Removing a row keeps the popover open and
+ *   moves focus to the previous row's text input, else the next row's, else
+ *   the add control. The correct option
  *   cannot be removed; a gap with no correct option shows no radio checked,
  *   keeps that state through add, move, remove and text edits, and lets every
  *   option be removed. The accepted answers, automatic answers and "Visa som
@@ -95,12 +98,16 @@ const showAsTextDisabledReason = computed(() => {
   return null;
 });
 let lastCommitted = props.gap?.accepted_values ?? [];
+let discarded = false;
 
 function sameValues(left: string[], right: string[]): boolean {
   return left.length === right.length && left.every((value, index) => value === right[index]);
 }
 
 function handleAnswersCommit(values: string[]): void {
+  if (discarded) {
+    return;
+  }
   lastCommitted = values;
   emit("commit", itemId, gapId, values);
 }
@@ -145,9 +152,11 @@ function handleFocusOut(event: FocusEvent): void {
 }
 
 function handleRemoveAutomaticValue(value: string): void {
+  // The chip and its button disappear with the re-render; move focus first,
+  // synchronously, or the browser fires focusout with no relatedTarget and
+  // the popover closes.
+  answerList.value?.focusFirst();
   emit("removeAutomaticValue", itemId, gapId, value);
-  // The chip and its button disappear; keep keyboard focus in the popover.
-  void nextTick(() => answerList.value?.focusFirst());
 }
 
 function handleShowAsText(): void {
@@ -156,6 +165,9 @@ function handleShowAsText(): void {
   }
   // Persist pending edits first, so the first current accepted value is shown.
   answerList.value?.commit();
+  // The gap disappears with this conversion; later focusout/change events
+  // must not write the removed gap's answers back.
+  discarded = true;
   emit("showGapAsText", itemId, gapId);
 }
 
@@ -222,7 +234,7 @@ function emitTypingOptions(): void {
 }
 
 function commitOptionDrafts(): void {
-  if (Object.keys(optionDrafts).length === 0) {
+  if (discarded || Object.keys(optionDrafts).length === 0) {
     return;
   }
   emitTypingOptions();
@@ -255,8 +267,11 @@ function handleRootKeydown(event: KeyboardEvent): void {
     return;
   }
   event.preventDefault();
-  // Escape commits cleared answers first, so the owner reads the gap as it stands.
+  // Escape keeps the typed text: typing already committed it, so both
+  // commits only carry a remainder, and a focusout that follows emits
+  // nothing twice.
   answerList.value?.commit();
+  commitOptionDrafts();
   emit("close", true);
 }
 
@@ -294,13 +309,21 @@ function handleRemoveOption(choiceId: string): void {
   if (choiceId === correctOptionId.value) {
     return;
   }
+  // The row and its button disappear with the re-render; move focus first,
+  // synchronously, or the browser fires focusout with no relatedTarget and
+  // the popover closes.
+  const index = options.value.findIndex((option) => option.choice_id === choiceId);
+  const neighbour = options.value[index - 1] ?? options.value[index + 1];
+  if (neighbour) {
+    optionInput(neighbour.choice_id)?.focus();
+  } else {
+    root.value?.querySelector<HTMLElement>('[data-test="exam-workspace-gap-option-add"]')?.focus();
+  }
   emitOptions(
     optionsWithDrafts().filter((option) => option.choice_id !== choiceId),
     correctOptionId.value,
     true,
   );
-  // The row and its button disappear; keep keyboard focus in the popover.
-  void nextTick(() => root.value?.querySelector<HTMLElement>('[data-test="exam-workspace-gap-option-add"]')?.focus());
 }
 
 function handleMoveOption(index: number, step: -1 | 1): void {

@@ -190,6 +190,14 @@ describe("ExamWorkspaceBodyEditor gap popover and chips", () => {
     reopened.element.value = "kasta";
     await reopened.trigger("input");
     reopened.element.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    await nextTick();
+    expect(wrapper.emitted("updateGapValues")).toEqual([
+      ["item_001", "gap_001", ["hundra"]],
+      ["item_001", "gap_001", ["kasta"]],
+    ]);
+    expect(popoverExists()).toBe(false);
+
+    // Late change and focusout after the Escape close commit nothing twice.
     reopened.element.dispatchEvent(new Event("change", { bubbles: true }));
     reopened.element.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
     await nextTick();

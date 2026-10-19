@@ -14,7 +14,9 @@
  *   first accepted answer as plain text ("Visa som text"). Closing the
  *   popover of a gap with no answer removes the gap in one structural undo
  *   step, which Ångra brings back; a gap with an answer is untouched on
- *   close. A Lucktext or
+ *   close. The export-blocker
+ *   jump opens a gap the same way through a bubbling open-gap request on its
+ *   chip (see `examWorkspaceGapOpenRequest`). A Lucktext or
  *   dropdown-Lucktext question grows its gaps from here: the toolbar's
  *   Luckverktyg toggle (Ctrl+Alt+G,
  *   Cmd+Option+G on macOS) switches one gap tool per question on: while it
@@ -192,6 +194,27 @@ watch(openGapModel, (gap) => {
   }
 });
 
+/**
+ * Open the popover for the chip an open-gap request bubbled from (the event
+ * mirrors EXAM_WORKSPACE_OPEN_GAP_EVENT in `examWorkspaceGapOpenRequest`);
+ * anything without a gap id opens nothing.
+ */
+function handleOpenGapRequest(event: Event): void {
+  const target = event.target;
+  if (!(target instanceof HTMLElement)) {
+    return;
+  }
+  const chip = target.closest("[data-gap-id]");
+  if (!(chip instanceof HTMLElement) || root.value?.contains(chip) !== true) {
+    return;
+  }
+  const gapId = chip.getAttribute("data-gap-id");
+  if (gapId === null) {
+    return;
+  }
+  openPopover(gapId, chip);
+}
+
 function closePopover(returnFocus: boolean): void {
   const closing = openGap.value;
   if (closing === null) {
@@ -329,6 +352,7 @@ watch(newGapId, (gapId) => {
     role="group"
     :aria-labelledby="labelId"
     data-test="exam-workspace-body-editor"
+    @exam-workspace-open-gap="handleOpenGapRequest"
   >
     <div
       :id="labelId"
