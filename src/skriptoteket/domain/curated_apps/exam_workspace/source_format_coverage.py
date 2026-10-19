@@ -86,6 +86,31 @@ def _ordinal_token(family: str, ordinal: int) -> str | None:
     return "".join(token).lower() if family == "roman_lower" else "".join(token)
 
 
+def _delimited_label_end(text: str, token_end: int, opened: str) -> int | None:
+    """End of a label whose token ends at ``token_end``, with its delimiters.
+
+    The delimiter grammar is single-owned here: a matching closer when an
+    opener was seen, else one char from ``")]}"`` plus ``_LABEL_SEPARATORS``,
+    then further separators, then whitespace. None without a delimiter, so no
+    ordinal is ever inferred for unlabelled text.
+    """
+    end = token_end
+    if opened:
+        closing = {"(": ")", "[": "]", "{": "}"}[opened]
+        if end >= len(text) or text[end] != closing:
+            return None
+        end += 1
+    elif end < len(text) and text[end] in ")]}" + _LABEL_SEPARATORS:
+        end += 1
+    else:
+        return None
+    while end < len(text) and text[end] in _LABEL_SEPARATORS:
+        end += 1
+    while end < len(text) and text[end].isspace():
+        end += 1
+    return end
+
+
 def entry_label_end(text: str, ordinal: int) -> int | None:
     """End of this native ordinal's delimited prefix, never a prefix inside a word.
 
@@ -103,20 +128,9 @@ def entry_label_end(text: str, ordinal: int) -> int | None:
         token = _ordinal_token(family, ordinal)
         if token is None or not text.startswith(token, at):
             continue
-        end = at + len(token)
-        if opened:
-            closing = {"(": ")", "[": "]", "{": "}"}[opened]
-            if end >= len(text) or text[end] != closing:
-                continue
-            end += 1
-        elif end < len(text) and text[end] in ")]}" + _LABEL_SEPARATORS:
-            end += 1
-        else:
+        end = _delimited_label_end(text, at + len(token), opened)
+        if end is None:
             continue
-        while end < len(text) and text[end] in _LABEL_SEPARATORS:
-            end += 1
-        while end < len(text) and text[end].isspace():
-            end += 1
         return end
     return None
 
@@ -157,21 +171,25 @@ def _alpha_value(token: str) -> int:
 def leading_entry_label_end(text: str) -> int | None:
     """End of the paragraph's leading ordinal list label, or None without one.
 
-    The label is an ordinal token from any ordinal family with its delimiter at
-    the paragraph start, exactly as ``entry_label_end`` recognizes it: leading
-    whitespace and one optional opener are skipped, then the leading token
-    yields one candidate ordinal per family, kept only when the family's token
-    for it round-trips back to the token itself. Structural only, never wording.
+    The structure comes first: leading whitespace and one optional opener are
+    skipped, then the leading token must carry a delimiter exactly as
+    ``_delimited_label_end`` recognizes it. Only then is the token checked as
+    a valid ordinal of its own families by round trip. Structural only, never
+    wording; cost stays linear in the token length.
     """
     at = 0
     while at < len(text) and text[at].isspace():
         at += 1
-    if at < len(text) and text[at] in "([{":
+    opened = text[at] if at < len(text) and text[at] in "([{" else ""
+    if opened:
         at += 1
     match = _LEADING_TOKEN.match(text, at)
     if match is None:
         return None
     token = match.group()
+    end = _delimited_label_end(text, match.end(), opened)
+    if end is None:
+        return None
     candidates: list[tuple[str, int]] = []
     if token.isdigit():
         candidates.append(("decimal", int(token)))
@@ -187,10 +205,7 @@ def leading_entry_label_end(text: str) -> int | None:
             if token.islower():
                 candidates.append(("roman_lower", roman))
     for family, ordinal in candidates:
-        if _ordinal_token(family, ordinal) != token:
-            continue
-        end = entry_label_end(text, ordinal)
-        if end is not None:
+        if _ordinal_token(family, ordinal) == token:
             return end
     return None
 

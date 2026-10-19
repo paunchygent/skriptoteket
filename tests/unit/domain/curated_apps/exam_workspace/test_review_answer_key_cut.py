@@ -349,3 +349,17 @@ def test_every_carried_line_holds_a_real_key_after_its_label():
         label = ANSWER_LABEL.search(line)
         assert label is not None
         assert not is_answer_line_text(line[label.end() :])
+
+
+@pytest.mark.parametrize(
+    ("body", "kept"),
+    [("question text Svar: x", "question text"), ("QUESTION text Svar: x", "QUESTION text")],
+)
+def test_an_unlabelled_word_carries_the_key_without_a_prefix(body: str, kept: str):
+    """Unlabelled ordinary words carry the key line with no label prefix (F1)."""
+    aligned = _aligned(NativeParagraph(heading_level=None, segments=(_text(body),)))
+
+    result = without_inline_answer_keys(aligned)
+
+    assert result.item.facit_text == "Svar: x"
+    assert body_plain_text(result.item.body) == kept
