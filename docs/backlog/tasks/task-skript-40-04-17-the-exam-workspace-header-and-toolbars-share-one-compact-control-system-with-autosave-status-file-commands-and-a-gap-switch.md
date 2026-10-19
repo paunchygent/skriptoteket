@@ -7,7 +7,7 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-19'
-status: proposed
+status: ready
 closeout_review:
   record: inline
   status: not_started
@@ -26,7 +26,7 @@ backlog_document_profile: contract-derived
 
 ## Implementation Contract
 
-The user reviewed the exam workspace header and toolbars on 2026-10-19 (twelve annotated points), iterated on an interactive mock built on a static copy of the staging workspace, and accepted the layout with the settings autosave, 32 px header commands, words beside the glyphs, no group names and the gap switch plus Tom lucka. This task builds that layout. The user closed the remaining questions (tokens, glyphs, ownership, narrowest width) the same day through AskUserQuestion in the planning session. The task stays proposed until the parent applies readiness.
+The user reviewed the exam workspace header and toolbars on 2026-10-19 (twelve annotated points), iterated on an interactive mock built on a static copy of the staging workspace, and accepted the layout with the settings autosave, 32 px header commands, words beside the glyphs, no group names and the gap switch plus Tom lucka. This task builds that layout. The user closed the remaining questions (tokens, glyphs, ownership, narrowest width) the same day through AskUserQuestion in the planning session. The user approved readiness and the start of units 1, 2 and 4 on 2026-10-19; units 3 and 5 wait for 40-04-13 and 40-04-14 on main.
 
 Scope (T15): the look and placement of the workspace header (`ExamWorkspaceHeader.vue`), the question list head (`ExamWorkspaceQuestionList.vue`), the question head (`ExamWorkspaceQuestionHead.vue`, `ExamWorkspaceQuestionTools.vue`) and the question editor toolbar (`ExamWorkspaceMarkToolbar.vue`), with the shared faces in `examWorkspace.css`. TASK-SKRIPT-40-04-11 is folded into this task and superseded; its decided terms for the writing-line stepper, the one-off offers and the menu rows carry over unchanged from its retained plan. Behaviour stays with its owners: the gap switch with 40-04-13, undo, redo and autosave with 40-04-14, the export menu with 40-04-16. This task supersedes 40-04-01 ledger row T25 (T16).
 
