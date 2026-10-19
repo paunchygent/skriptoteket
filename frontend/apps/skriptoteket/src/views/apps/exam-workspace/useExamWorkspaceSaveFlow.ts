@@ -21,6 +21,7 @@ import type { Ref } from "vue";
 
 import type { ExamWorkspaceExportTarget } from "../../../api/examWorkspaceExports";
 import type { ExamWorkspaceBlockerEntry } from "./examWorkspaceBlockers";
+import { requestOpenGap } from "./examWorkspaceGapOpenRequest";
 import type { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
 import type { useExamWorkspaceEnrichment } from "./useExamWorkspaceEnrichment";
 import type { useExamWorkspaceExports } from "./useExamWorkspaceExports";
@@ -118,7 +119,7 @@ export function useExamWorkspaceSaveFlow({
     }
     field?.scrollIntoView?.({ block: "center" });
     if (field?.hasAttribute("data-gap-id")) {
-      field.click();
+      requestOpenGap(field);
     } else {
       field?.focus();
     }
