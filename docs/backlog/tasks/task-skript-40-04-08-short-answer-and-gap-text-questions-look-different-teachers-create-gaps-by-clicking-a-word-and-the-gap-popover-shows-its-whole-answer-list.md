@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-19'
-status: in_progress
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-19'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Independent ruthless-reviewer 9633a403 (Pi) cleared F1 and F2 (high) on rereview at 3f498eda and approved the copy; F3-F6 medium admitted on focused proof. Merged to main as eee7c32f. The staging walk found six defects; walk-repair review cd5a1b4c at 5644f908 returned three medium findings, repaired and admitted on focused proof without rereview (retained 01a153be evidence/reviews/cd5a1b4c-d09a-4648-b53f-76f0124e21e7.md). Repair merged to main as be979cd7; the Hemma pre-push suite passed (505 files, 3565 tests); the Mac re-walk of findings 1-5 on staging at be979cd7 passed (Mac .artifacts/staging-walk-40-04-08-repair/walk-record.md). Finding 6 moved to TASK-SKRIPT-40-04-09.'
 task_kind: story
 acceptance_criteria:
   - A teacher tells a short-answer question from a gap-text question at a glance, creates any number of gaps by clicking a word in existing text or inserting a gap, and edits one to a hundred accepted answers in a gap popover that is fully visible above the surrounding editor
@@ -36,6 +40,17 @@ The user walked the redesigned exam workspace editor on 2026-10-19 and found thr
 ## Core Vertical And Performance
 
 ### Resume here
+
+2026-10-19: done. The walk repair merged to main as `be979cd7`; the Hemma pre-push suite passed (505 files, 3565 tests). The Mac re-walked findings 1-5 in Edge with real clicks on staging at `be979cd7`; all five pass (record: Mac `.artifacts/staging-walk-40-04-08-repair/walk-record.md`):
+1. The blocker "Fråga 4: rullista med färre än två alternativ" jumps to Fråga 4, opens Lucka 1's popover and focuses its first option.
+2. Escape keeps a typed option.
+3. Removing an answer row or an option keeps the popover open and focuses the previous row.
+4. Kort svar → Byt frågetyp → Lucktext keeps the text and moves the gap, with its answer, to the end of the paragraph; one Ångra restores Kort svar.
+5. A Kort svar lists Kort svar after Fritext, ticked; a Lucktext with two gaps is not offered Kort svar.
+
+Walk observation outside this task: every dropdown gap chip in a "Lucktext med rullista" has the screen-reader label "Lucka N, saknar godkända svar", even with options. Routed to the TASK-SKRIPT-40-04-13 lead as a fail-first repair.
+
+The history below is kept for its evidence pointers.
 
 Walk repair from 2026-10-19 (lead 29a18219, retained root `01a153be-729d-7b32-8d25-6245f1e7915a`, worktree `skriptoteket-task-skript-40-04-08-walk-repair-remote` from main eba9d0f2): the Mac staging walk of eee7c32f found the six defects in Walk repair below. Committed: WR3 answer-row removal focus (3da5e5da), WR1 blocker jump through a bubbling open-gap request (4885c37d), WR2 Escape keeps typing and option removal focus (17fe5da8), WR1r jump spec on the real open-or-focus step and the Escape body-editor spec (948df14e). Focused proof: 14 gap, popover, answer-list, body-editor and blocker spec files, 137 passed; fe-type-check, fe-lint and fe-build rc 0. The user answered Q1-Q3 (R4-R6). WR4a Kort svar and Lucktext shape edits (ac65d61c), WR4b Byt frågetyp Kort svar entry (0e06f663). Finding 6 moved to TASK-SKRIPT-40-04-09. Focused proof at 0e06f663: 15 spec files, 155 passed; fe-type-check, fe-lint, fe-build rc 0. Frontend domain run at 51775f97 green 2026-10-19 (479 files, all spec files including the 144 exam-workspace files; 3321 passed, 2 todo; log `evidence/proof/fe-suite-51775f97.log`); origin/main eba9d0f2 is an ancestor. Review cd5a1b4c at 5644f908: changes_requested, three medium findings (report `evidence/reviews/cd5a1b4c-d09a-4648-b53f-76f0124e21e7.md`), admitted on focused proof without rereview: F1 trailing empty question paragraphs drop before the Lucktext switch (564875eb); F2 type assertions replaced by narrowing (ad00a56c, 9fa3d4ab); F3 automatic-answer removal focuses before the chip detaches (33eed8e9). Focused proof: 12 spec files, 104 passed; fe-type-check, fe-lint, fe-build rc 0. Next: the Mac re-walk of findings 1-5. The task stays `in_progress` until the repair passes review and a re-walk.
 
