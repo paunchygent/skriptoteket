@@ -622,3 +622,99 @@ def test_mid_body_heading_plus_end_label_abstains() -> None:
     result = with_settled_points_wording(_item(body, 15))
     assert result.body == body
     assert result.leftover_points_text is None
+
+
+def test_heading_bare_points_only_line_with_equal_points_is_dropped() -> None:
+    # D12 extension (decision A): any points label ending a heading paragraph
+    # leaves when its number equals the points.
+    body = (_heading("1 point"), _paragraph(_text("Svara utförligt.")))
+    result = with_settled_points_wording(_item(body, 1))
+    assert result.body == (_paragraph(_text("Svara utförligt.")),)
+    assert result.leftover_points_text is None
+
+
+def test_heading_bare_points_only_line_with_other_points_stays() -> None:
+    body = (_heading("1 point"), _paragraph(_text("Svara utförligt.")))
+    result = with_settled_points_wording(_item(body, 2))
+    assert result.body == body
+    assert result.leftover_points_text is None
+
+
+def test_heading_bare_label_ending_line_leaves_the_head_trimmed() -> None:
+    # The bare label leaves with the blank space before it, plus one trailing
+    # dash with its blank space.
+    body = (_heading("Uppgift 3 – 4 poäng"), _paragraph(_text("Svara utförligt.")))
+    result = with_settled_points_wording(_item(body, 4))
+    assert result.body == (_heading("Uppgift 3"), _paragraph(_text("Svara utförligt.")))
+    assert result.body[0].heading_level == 3
+    assert result.leftover_points_text is None
+
+
+def test_heading_bare_label_ending_line_with_other_points_stays() -> None:
+    body = (_heading("Uppgift 3 – 4 poäng"), _paragraph(_text("Svara utförligt.")))
+    result = with_settled_points_wording(_item(body, 5))
+    assert result.body == body
+    assert result.leftover_points_text is None
+
+
+def test_heading_headed_points_only_line_with_equal_points_is_dropped() -> None:
+    body = (_heading("Poäng: 2 p"), _paragraph(_text("Svara utförligt.")))
+    result = with_settled_points_wording(_item(body, 2))
+    assert result.body == (_paragraph(_text("Svara utförligt.")),)
+    assert result.leftover_points_text is None
+
+
+def test_mid_body_non_heading_bare_label_is_never_touched() -> None:
+    body = (
+        _paragraph(_text("Läs texterna.")),
+        _paragraph(_text("Uppgift 3 – 4 poäng")),
+        _paragraph(_text("Beskriv skillnaderna.")),
+    )
+    result = with_settled_points_wording(_item(body, 4))
+    assert result.body == body
+    assert result.leftover_points_text is None
+
+
+def test_heading_bare_label_plus_end_label_abstains() -> None:
+    # D3: two labels abstain; nothing is removed and nothing is recorded.
+    body = (
+        _heading("Uppgift 3 – 4 poäng"),
+        _paragraph(_text("Svara. (4 p)")),
+    )
+    result = with_settled_points_wording(_item(body, 4))
+    assert result.body == body
+    assert result.leftover_points_text is None
+
+
+def test_first_paragraph_bare_only_label_is_dropped_when_other_text_remains() -> None:
+    # D12 extension E: heading_level comes from the Word heading style, so a
+    # heading chunk without a style level reaches the final gate as a plain
+    # first paragraph that is only its points wording.
+    body = (_paragraph(_text("1 point")), _paragraph(_text("Svara utförligt.")))
+    result = with_settled_points_wording(_item(body, 1))
+    assert result.body == (_paragraph(_text("Svara utförligt.")),)
+    assert result.leftover_points_text is None
+
+
+def test_first_paragraph_bare_only_label_with_other_points_stays() -> None:
+    body = (_paragraph(_text("1 point")), _paragraph(_text("Svara utförligt.")))
+    result = with_settled_points_wording(_item(body, 2))
+    assert result.body == body
+    assert result.leftover_points_text is None
+
+
+def test_first_paragraph_bare_label_with_other_words_stays() -> None:
+    body = (_paragraph(_text("Uppgift 3 – 4 poäng")), _paragraph(_text("Svara utförligt.")))
+    result = with_settled_points_wording(_item(body, 4))
+    assert result.body == body
+    assert result.leftover_points_text is None
+
+
+def test_first_paragraph_trailing_bare_label_in_a_sentence_stays() -> None:
+    body = (
+        _paragraph(_text("Beskriv fotosyntesen, 2 p")),
+        _paragraph(_text("Svara utförligt.")),
+    )
+    result = with_settled_points_wording(_item(body, 2))
+    assert result.body == body
+    assert result.leftover_points_text is None

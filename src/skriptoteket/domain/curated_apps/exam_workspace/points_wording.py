@@ -5,10 +5,11 @@ points, never its text: ``trailing_points`` finds such wording at the end of
 a text. When its number equals the item's points, ``body_without_trailing_points``
 drops it from the last paragraph (keeping the word of a whole-text one-word
 line, D13), and ``body_without_first_paragraph_points``
-drops a parenthesised label ending the first paragraph; when the shape matches
+drops a parenthesised label ending the first paragraph or a first paragraph
+that is only a bare label; when the shape matches
 but the number differs, the wording stays and ``leftover_points_wording``
 reports it for the points-note offer. ``body_without_heading_points`` drops
-an equal parenthesised label ending any non-first heading paragraph.
+any equal points label ending a heading paragraph anywhere in the body.
 ``with_settled_points_wording`` settles
 each outcome on the final item. Only the label's position and its number
 decide; the stem itself is never read or rewritten.
@@ -95,6 +96,21 @@ def without_trailing_points(text: str, points: int | float | None) -> str:
     return kept
 
 
+def _trailing_text_run(
+    paragraph: NativeParagraph,
+) -> tuple[list[NativeTextSegment], str] | None:
+    """The paragraph's trailing run of text segments and its joined text."""
+    if not paragraph.segments or not isinstance(paragraph.segments[-1], NativeTextSegment):
+        return None
+    run: list[NativeTextSegment] = []
+    for segment in reversed(paragraph.segments):
+        if not isinstance(segment, NativeTextSegment):
+            break
+        run.append(segment)
+    run.reverse()
+    return (run, "".join(segment.text for segment in run))
+
+
 def _trailing_run_wording(
     body: tuple[NativeParagraph, ...],
 ) -> tuple[list[NativeTextSegment], str, TrailingPoints] | None:
@@ -107,15 +123,10 @@ def _trailing_run_wording(
     if not body:
         return None
     paragraph = body[-1]
-    if not paragraph.segments or not isinstance(paragraph.segments[-1], NativeTextSegment):
+    located = _trailing_text_run(paragraph)
+    if located is None:
         return None
-    run: list[NativeTextSegment] = []
-    for segment in reversed(paragraph.segments):
-        if not isinstance(segment, NativeTextSegment):
-            break
-        run.append(segment)
-    run.reverse()
-    run_text = "".join(segment.text for segment in run)
+    run, run_text = located
     found = trailing_points(run_text)
     if found is None:
         return None
@@ -243,6 +254,52 @@ def _first_paragraph_parenthesised_label_start(run_text: str) -> int | None:
     return start
 
 
+def _first_paragraph_bare_only_value(run_text: str) -> int | float | None:
+    """The value when a first paragraph's only words are one bare label.
+
+    D12 extension E: ``heading_level`` comes from the Word heading style, so a
+    heading chunk without a style level reaches the final gate as a plain first
+    paragraph holding only its points wording ("1 point"). A paragraph with
+    other words ("Uppgift 3 – 4 poäng", "Beskriv fotosyntesen, 2 p"), a headed
+    points-only line ("Poäng: 2 poäng") and a parenthesised label (the
+    parenthesised rule's case) never count.
+    """
+    stripped = run_text.strip()
+    matches = list(POINT_LABEL.finditer(stripped))
+    if len(matches) != 1:
+        return None
+    match = matches[0]
+    if match.group().startswith("("):
+        return None
+    if stripped[: match.start()].strip():
+        return None
+    if stripped[match.end() :].strip(" \t.,;:!?"):
+        return None
+    return label_points(match.group())
+
+
+def _without_bare_only_first_paragraph(
+    body: tuple[NativeParagraph, ...], points: int | float
+) -> tuple[NativeParagraph, ...]:
+    """The body without a first paragraph that is only a bare points label.
+
+    The paragraph is dropped when its label's number equals the points and the
+    body keeps other text, gap or picture; otherwise, and for a differing
+    number, the body stays and nothing is recorded.
+    """
+    paragraph = body[0]
+    texts: list[str] = []
+    for segment in paragraph.segments:
+        if not isinstance(segment, NativeTextSegment):
+            return body
+        texts.append(segment.text)
+    if _first_paragraph_bare_only_value("".join(texts)) != points:
+        return body
+    if _body_keeps_text(body[1:]):
+        return body[1:]
+    return body
+
+
 def body_without_first_paragraph_points(
     body: tuple[NativeParagraph, ...], points: int | float | None
 ) -> tuple[NativeParagraph, ...]:
@@ -251,8 +308,10 @@ def body_without_first_paragraph_points(
     A parenthesised label ending the first paragraph's last line leaves with
     the blank space before it when its number equals the given points, heading
     or not; the paragraph keeps its heading level. Only the label leaves, never
-    the line, whether or not that line is also a points-only line (D12); a bare,
-    non-parenthesised label there stays. A one-paragraph body is the
+    the line, whether or not that line is also a points-only line (D12). A first
+    paragraph whose only words are one bare label ("1 point") is dropped when
+    its number equals the points and the body keeps other text (D12 E); a bare
+    label beside other words stays. A one-paragraph body is the
     end-of-body rule's case, and a differing number records nothing. The cut
     keeps each segment's marks; a paragraph left with no segments is dropped
     when the body keeps other text, while a body of only that label stays (D6).
@@ -261,14 +320,14 @@ def body_without_first_paragraph_points(
         return body
     located = _trailing_run_wording(body[:1])
     if located is None:
-        return body
+        return _without_bare_only_first_paragraph(body, points)
     run, run_text, found = located
     if found.value != points:
         return body
     if found.whole_line:
         label_start = _first_paragraph_parenthesised_label_start(run_text)
         if label_start is None:
-            return body
+            return _without_bare_only_first_paragraph(body, points)
         start = label_start
     else:
         start = found.start
@@ -298,45 +357,102 @@ def body_without_first_paragraph_points(
     return body
 
 
+# One trailing dash or colon with the blank space before it, left by a
+# bare-label cut at the end of a heading paragraph ("Uppgift 3 –" gives
+# "Uppgift 3"; a colon without a blank space before it stays).
+_HEADING_TRAILING_SEPARATOR = re.compile(r"[ \t]+[–—\-:]$")
+
+
+def _whole_line_start(run_text: str) -> int:
+    """The cut start that drops the run's whole last line with its newline."""
+    stripped = run_text.rstrip()
+    line_start = stripped.rfind("\n") + 1
+    return line_start - 1 if line_start else 0
+
+
+def _heading_bare_label_cut(
+    paragraph: NativeParagraph,
+) -> tuple[list[NativeTextSegment], str, int, int | float] | None:
+    """The trailing run, cut start and value when a bare label ends the line.
+
+    D12 extension (D5): a single bare label ending a heading paragraph's last
+    line counts. A parenthesised label is the shared wording's case, several
+    labels never count, and a label with more words after it never matches.
+    """
+    located = _trailing_text_run(paragraph)
+    if located is None:
+        return None
+    run, run_text = located
+    stripped = run_text.rstrip()
+    line_start = stripped.rfind("\n") + 1
+    line = stripped[line_start:]
+    matches = list(POINT_LABEL.finditer(line))
+    if len(matches) != 1:
+        return None
+    match = matches[0]
+    if match.group().startswith("("):
+        return None
+    value = label_points(match.group())
+    if value is None:
+        return None
+    start = line_start + match.start()
+    while start > line_start and stripped[start - 1] in " \t":
+        start -= 1
+    return (run, run_text, start, value)
+
+
 def body_without_heading_points(
     body: tuple[NativeParagraph, ...], points: int | float | None
 ) -> tuple[NativeParagraph, ...]:
-    """The body without points wording ending any non-first heading paragraph.
+    """The body without points wording ending any heading paragraph.
 
-    A parenthesised label ending a heading paragraph's last line leaves with
-    the blank space before it when its number equals the given points; the
-    paragraph keeps its heading level. The first paragraph is the
-    first-paragraph rule's case, and a non-heading middle paragraph is never
-    touched. A differing number records nothing. The cut keeps each segment's
-    marks; a paragraph left with no segments is dropped when the body keeps
-    other text, while a body left with no text keeps its original paragraphs.
+    Any single points label ending a heading paragraph's last line leaves when
+    its number equals the given points: a parenthesised label (only it leaves),
+    a whole points-only line (it leaves), or a bare label ending its line
+    (D5; it leaves with the blank space before it, plus one trailing dash or
+    colon with its blank space). The paragraph keeps its heading level, and a
+    non-heading paragraph is never touched. A differing number records nothing.
+    The cut keeps each segment's marks; a paragraph left with no segments is
+    dropped when the body keeps other text, while a body left with no text
+    keeps its original paragraphs.
     """
     if points is None:
         return body
     settled = list(body)
-    index = 1
+    index = 0
     while index < len(settled):
         paragraph = settled[index]
         if paragraph.heading_level is None:
             index += 1
             continue
         located = _trailing_run_wording((paragraph,))
+        bare_trim = False
         if located is None:
-            index += 1
-            continue
-        run, run_text, found = located
-        if found.value != points:
-            index += 1
-            continue
-        if found.whole_line:
-            label_start = _first_paragraph_parenthesised_label_start(run_text)
-            if label_start is None:
+            bare = _heading_bare_label_cut(paragraph)
+            if bare is None:
                 index += 1
                 continue
-            start = label_start
+            run, run_text, start, value = bare
+            if value != points:
+                index += 1
+                continue
+            bare_trim = True
         else:
-            start = found.start
+            run, run_text, found = located
+            if found.value != points:
+                index += 1
+                continue
+            if found.whole_line:
+                label_start = _first_paragraph_parenthesised_label_start(run_text)
+                if label_start is None:
+                    start = _whole_line_start(run_text)
+                else:
+                    start = label_start
+            else:
+                start = found.start
         kept_text = run_text[:start].rstrip()
+        if bare_trim:
+            kept_text = _HEADING_TRAILING_SEPARATOR.sub("", kept_text)
         kept: list[NativeTextSegment] = []
         remaining = len(kept_text)
         for segment in run:
@@ -418,7 +534,7 @@ def with_settled_points_wording(item: NativeExamItem) -> NativeExamItem:
     """The item with its trailing points wording settled against its points.
 
     An equal number leaves the wording from the body's end, then from its
-    first paragraph, then from any non-first heading paragraph; a differing
+    first paragraph, then from any heading paragraph; a differing
     number at the end keeps the wording and records
     it in ``leftover_points_text`` for the points-note offer, while a differing
     first-paragraph or heading number records nothing. Only the body and the leftover field

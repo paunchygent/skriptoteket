@@ -39,6 +39,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeItemReviewState,
     NativeParseOrigin,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.points_wording import (
+    with_settled_points_wording,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_text_lines
 
 _NOTHING_GOVERNED: MappingProxyType[str, frozenset[str]] = MappingProxyType({})
@@ -223,7 +226,10 @@ def test_opening_heading_is_the_exam_title_and_never_a_question_heading() -> Non
     assert all("Celler och energi" not in item.plain_text_lines() for item in placed.items)
 
 
-def test_heading_that_is_only_a_question_number_and_points_leaves_nothing() -> None:
+def test_heading_of_only_a_question_number_and_points_keeps_the_label_until_the_final_gate() -> (
+    None
+):
+    # D12 extension (review F1): item headings keep points wording; the final gate removes it.
     chunks = (
         _chunk("body:0001", "heading", "Provets titel"),
         _chunk("body:0002", "heading", "Fråga 3 (2 p)"),
@@ -236,7 +242,13 @@ def test_heading_that_is_only_a_question_number_and_points_leaves_nothing() -> N
         title_anchors=frozenset({"body:0001"}),
     )
 
-    assert placed.items[0].plain_text_lines() == ("Frågetext",)
+    assert placed.items[0].plain_text_lines() == ("(2 p)", "Frågetext")
+    assert with_settled_points_wording(
+        placed.items[0].model_copy(update={"points": 2})
+    ).plain_text_lines() == ("Frågetext",)
+    assert with_settled_points_wording(
+        placed.items[0].model_copy(update={"points": 3})
+    ).plain_text_lines() == ("(2 p)", "Frågetext")
 
 
 def test_section_heading_before_owned_question_headings_forms_the_parent() -> None:
