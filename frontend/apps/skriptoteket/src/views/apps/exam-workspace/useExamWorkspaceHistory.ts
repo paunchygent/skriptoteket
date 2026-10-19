@@ -486,6 +486,8 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
     redo: navigation.redo,
     saveStatus: status.saveStatus,
     saveText: status.saveText,
+    /** The step's document; a working copy that differs from it is a pending edit. */
+    stepDocument: computed(() => stepDocument.value),
     storing: computed(() => storing.value),
     undo: navigation.undo,
   };

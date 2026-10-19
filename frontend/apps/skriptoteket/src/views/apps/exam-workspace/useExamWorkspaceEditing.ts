@@ -17,10 +17,11 @@
  *     `useExamWorkspaceStructure`; consumed by `ExamWorkspaceView`.
  */
 
-import { ref } from "vue";
+import { ref, watch } from "vue";
 
 import type { NativeExamDocument } from "../../../api/examWorkspace";
 import type { ExamWorkspaceStore } from "./examWorkspaceStore";
+import { mergeRefusedEdit } from "./examWorkspaceRefusedEditMerge";
 import { useExamWorkspaceDocument } from "./useExamWorkspaceDocument";
 import {
   useExamWorkspaceEditLease,
@@ -59,6 +60,56 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
   });
   const lineageId = () => document.summary.value?.lineage_id ?? null;
   const reload = () => document.reloadDocument();
+
+  /**
+   * After a reload the history loads the fresh step list; wait until its step
+   * matches the reloaded server copy (or the load failed and cleared it), so
+   * the merged edit's flush carries the fresh position instead of truncating
+   * the other tab's steps after a stale one.
+   */
+  function waitForHistoryStep(): Promise<void> {
+    const server = document.serverDocument.value;
+    if (server === null || history.stepDocument.value === server || history.stepDocument.value === null) {
+      return Promise.resolve();
+    }
+    return new Promise<void>((resolve) => {
+      const stop = watch(history.stepDocument, (step) => {
+        if (step === document.serverDocument.value || step === null) {
+          stop();
+          resolve();
+        }
+      });
+    });
+  }
+
+  /**
+   * A refused edit survives the takeover (TASK-SKRIPT-40-04-14, USER decision
+   * 2026-10-19 "Ta över keeps the edit"): capture the pending edit against
+   * its step before the reload replaces the working copy, then merge it onto
+   * the newest server document and store it through the normal save path. A
+   * refused save or a failed store keeps the existing status and toasts.
+   */
+  async function acquireWithKeptEdit(): Promise<void> {
+    const edited = history.pending.value ? document.workspaceDocument.value : null;
+    const base = edited === null ? null : history.stepDocument.value;
+    await reload();
+    if (edited === null || base === null) {
+      return;
+    }
+    await waitForHistoryStep();
+    const newest = document.workspaceDocument.value;
+    if (newest === null) {
+      return;
+    }
+    const merged = mergeRefusedEdit(base, edited, newest);
+    if (merged === null) {
+      return;
+    }
+    await document.replaceCopy(async () => {
+      document.installDocument(merged);
+    });
+    await history.flush();
+  }
 
   const history = useExamWorkspaceHistory({
     historyCursor: document.historyCursor,
@@ -108,7 +159,7 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
     isGuest: () => store.guest !== null,
     lineageId,
     now: lease?.now,
-    onAcquired: () => reload(),
+    onAcquired: () => acquireWithKeptEdit(),
     onTakeoverRequested: () => history.flush(true).then(() => undefined),
     openGuestChannel: lease?.openGuestChannel,
     server: lease?.server,
