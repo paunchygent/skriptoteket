@@ -3,12 +3,15 @@
  * Exam workspace gap-answer popover.
  *
  * Domain purpose:
- *   Let the teacher edit one gap's accepted answers as a comma-separated
- *   list right next to the gap chip. Enter and leaving the popover commit
- *   the answers; Escape discards them. Each commit is emitted once, even
- *   when the browser also fires `change` while focus returns to the chip.
- *   Enter and Escape pressed while an IME composition is active belong to
- *   the composition and are ignored. Answers the conversion wrote for the
+ *   Let the teacher edit one gap's accepted answers as one row per answer
+ *   right next to the gap chip through `ExamWorkspaceGapAnswerList`: a text
+ *   input and a remove glyph per row with an add glyph button "Lägg till
+ *   svar" under the rows. Leaving the popover commits the answers; Escape
+ *   discards them. Each commit is emitted once, even when the browser also
+ *   fires `change` while focus returns to the chip. Enter inside an answer
+ *   row adds a row below it and never closes the popover. Enter and Escape
+ *   pressed while an IME composition is active belong to the composition and
+ *   are ignored. Answers the conversion wrote for the
  *   gap (automatic misspellings) show as removable chips marked
  *   "automatisk" with no AI glyph. "Visa som text" replaces the gap with
  *   its first accepted answer as plain text; it is disabled with a visible
@@ -33,7 +36,8 @@
  * Relationships:
  *   - Opened by `ExamWorkspaceBodyEditor`, which keys it by item and gap so
  *     the ids below never change while it is open.
- *   - Uses `parseAcceptedValues` from `examWorkspaceGapLabels`.
+ *   - Reads the text-gap answers through `ExamWorkspaceGapAnswerList`,
+ *     which commits on close and reports unsaved typing as `draft`.
  */
 
 import { computed, nextTick, onMounted, reactive, ref, useId, watch } from "vue";
@@ -42,7 +46,7 @@ import type { NativeExamChoice, NativeExamGap } from "../../../api/examWorkspace
 import { IconX } from "../../../components/icons";
 import { UiGlyph } from "../../../components/ui";
 import { useExamWorkspaceAnchoredPosition } from "./useExamWorkspaceAnchoredPosition";
-import { parseAcceptedValues } from "./examWorkspaceGapLabels";
+import ExamWorkspaceGapAnswerList from "./ExamWorkspaceGapAnswerList.vue";
 import { bodyText, plainBody } from "./examWorkspaceRichText";
 
 const MISSING_ANSWER_COPY = "Fyll i ett godkänt svar först.";
@@ -70,7 +74,7 @@ const itemId = props.itemId;
 const gapId = props.gapId;
 
 const root = ref<HTMLElement | null>(null);
-const input = ref<HTMLInputElement | null>(null);
+const answerList = ref<InstanceType<typeof ExamWorkspaceGapAnswerList> | null>(null);
 // The chip the popover is keyed to; the anchored position follows its viewport rect.
 const anchorRef = ref<HTMLElement | null>(props.anchor);
 const { position, place } = useExamWorkspaceAnchoredPosition(anchorRef, root);
@@ -78,9 +82,8 @@ const removeHintId = useId();
 const optionsLabelId = useId();
 const showAsTextExplanationId = useId();
 const automaticValues = computed(() => props.gap?.automatic_values ?? []);
-// Pending answers as typed; the saved gap only changes when a commit lands.
-const draft = ref(props.gap?.accepted_values.join(", ") ?? "");
-const draftAcceptedValues = computed(() => parseAcceptedValues(draft.value));
+// Pending answers as last reported by the row list; the saved gap only changes on commit.
+const draftAcceptedValues = ref<string[]>([...(props.gap?.accepted_values ?? [])]);
 const showAsTextDisabledReason = computed(() => {
   if (!draftAcceptedValues.value[0]) {
     return MISSING_ANSWER_COPY;
@@ -94,11 +97,18 @@ function sameValues(left: string[], right: string[]): boolean {
   return left.length === right.length && left.every((value, index) => value === right[index]);
 }
 
-function handleInput(event: Event): void {
-  const target = event.target;
-  if (target instanceof HTMLInputElement) {
-    draft.value = target.value;
+function handleAnswersCommit(values: string[]): void {
+  if (discarded) {
+    return;
   }
+  lastCommitted = values;
+  emit("commit", itemId, gapId, values);
+}
+
+function handleAnswersDraft(values: string[]): void {
+  draftAcceptedValues.value = values;
+  // Rows changing the panel height re-anchor after render.
+  void nextTick(() => place());
 }
 
 // Follow an externally changed gap, but never clobber answers being typed.
@@ -106,8 +116,8 @@ watch(
   () => props.gap?.accepted_values ?? [],
   (values) => {
     if (sameValues(draftAcceptedValues.value, lastCommitted)) {
-      draft.value = values.join(", ");
-      lastCommitted = values;
+      draftAcceptedValues.value = [...values];
+      lastCommitted = [...values];
     }
   },
 );
@@ -120,16 +130,33 @@ watch(
   },
 );
 
-function commit(): void {
-  if (discarded || !input.value) {
+function handleFocusOut(event: FocusEvent): void {
+  const next = event.relatedTarget;
+  const popover = event.currentTarget as HTMLElement;
+  if (next instanceof Node && popover.contains(next)) {
     return;
   }
-  const values = parseAcceptedValues(input.value.value);
-  if (sameValues(values, lastCommitted)) {
+  answerList.value?.commit();
+  commitOptionDrafts();
+  emit("close", false);
+}
+
+function handleRemoveAutomaticValue(value: string): void {
+  emit("removeAutomaticValue", itemId, gapId, value);
+  // The chip and its button disappear; keep keyboard focus in the popover.
+  void nextTick(() => answerList.value?.focusFirst());
+}
+
+function handleShowAsText(): void {
+  if (showAsTextDisabledReason.value !== null) {
     return;
   }
-  lastCommitted = values;
-  emit("commit", itemId, gapId, values);
+  // Persist pending edits first, so the first current accepted value is shown.
+  answerList.value?.commit();
+  // The gap disappears with this conversion; later focusout/change events
+  // must not write the removed gap's answers back.
+  discarded = true;
+  emit("showGapAsText", itemId, gapId);
 }
 
 // Typed option text by option id, until a commit or a structural edit carries it.
@@ -197,7 +224,7 @@ function handleOptionEnter(event: KeyboardEvent): void {
 }
 
 function handleRootKeydown(event: KeyboardEvent): void {
-  if (!props.dropdown || event.isComposing || event.keyCode === 229 || event.key !== "Escape") {
+  if (event.isComposing || event.keyCode === 229 || event.key !== "Escape") {
     return;
   }
   event.preventDefault();
@@ -260,50 +287,6 @@ function handleMoveOption(index: number, step: -1 | 1): void {
   void nextTick(() => optionInput(moved.choice_id)?.focus());
 }
 
-function handleKeydown(event: KeyboardEvent): void {
-  if (event.isComposing || event.keyCode === 229) {
-    return;
-  }
-  if (event.key === "Escape") {
-    event.preventDefault();
-    discarded = true;
-    emit("close", true);
-  } else if (event.key === "Enter") {
-    event.preventDefault();
-    commit();
-    emit("close", true);
-  }
-}
-
-function handleFocusOut(event: FocusEvent): void {
-  const next = event.relatedTarget;
-  const popover = event.currentTarget as HTMLElement;
-  if (next instanceof Node && popover.contains(next)) {
-    return;
-  }
-  commit();
-  commitOptionDrafts();
-  emit("close", false);
-}
-
-function handleRemoveAutomaticValue(value: string): void {
-  emit("removeAutomaticValue", itemId, gapId, value);
-  // The chip and its button disappear; keep keyboard focus in the popover.
-  void nextTick(() => input.value?.focus());
-}
-
-function handleShowAsText(): void {
-  if (showAsTextDisabledReason.value !== null) {
-    return;
-  }
-  // Persist pending edits first, so the first current accepted value is shown.
-  commit();
-  // The gap disappears with this conversion; later focusout/change events
-  // must not write the removed gap's answers back.
-  discarded = true;
-  emit("showGapAsText", itemId, gapId);
-}
-
 onMounted(() => {
   if (props.dropdown) {
     const target = options.value.find((option) => bodyText(option.body) === "") ?? options.value[0];
@@ -312,8 +295,11 @@ onMounted(() => {
     }
     return;
   }
-  input.value?.focus();
-  input.value?.select();
+  answerList.value?.focusFirst();
+  const focused = document.activeElement;
+  if (focused instanceof HTMLInputElement) {
+    focused.select();
+  }
 });
 </script>
 
@@ -429,22 +415,22 @@ onMounted(() => {
         </button>
       </div>
 
-      <label
+      <div
         v-if="!dropdown"
-        class="grid min-w-0 gap-1 text-xs font-semibold text-navy/80"
+        class="grid min-w-0 gap-1.5"
       >
-        Lucka {{ gapNumber }} – godkända svar (kommaseparerade)
-        <input
-          ref="input"
-          class="min-h-10 w-full border border-navy/35 bg-canvas px-3 text-sm font-normal text-navy"
-          type="text"
-          :value="draft"
-          :data-test="`exam-workspace-gap-values-${gapId}`"
-          @input="handleInput"
-          @change="commit"
-          @keydown="handleKeydown"
-        >
-      </label>
+        <p class="text-xs font-semibold text-navy/80">
+          Lucka {{ gapNumber }} – godkända svar
+        </p>
+        <ExamWorkspaceGapAnswerList
+          ref="answerList"
+          :values="gap?.accepted_values ?? []"
+          :label="`Godkända svar för lucka ${gapNumber}`"
+          :test-id="`exam-workspace-gap-values-${gapId}`"
+          @commit="handleAnswersCommit"
+          @draft="handleAnswersDraft"
+        />
+      </div>
 
       <div
         v-if="!dropdown && automaticValues.length > 0"

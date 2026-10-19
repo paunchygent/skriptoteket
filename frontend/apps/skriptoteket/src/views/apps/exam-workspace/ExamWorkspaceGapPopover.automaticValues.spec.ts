@@ -65,7 +65,8 @@ describe("ExamWorkspaceGapPopover automatic answers", () => {
     ]);
     expect(popoverExists()).toBe(true);
     expect(document.activeElement).toBe(
-      documentControl<HTMLInputElement>('[data-test="exam-workspace-gap-values-gap_001"]').element,
+      documentControl<HTMLInputElement>('[data-test="exam-workspace-gap-values-gap_001-input"]')
+        .element,
     );
     wrapper.unmount();
   });

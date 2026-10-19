@@ -8,7 +8,9 @@
  *   under the rows. Typing alone never emits; an input's `change`, removing
  *   a row and the exposed `commit()` emit the normalized list (trimmed,
  *   empty rows dropped, exact duplicates after trim collapsed, commas kept
- *   as ordinary characters) exactly once per change. Enter in a row inserts
+ *   as ordinary characters) exactly once per change. Every row input, add,
+ *   Enter-add and remove also emits the normalized list as `draft`, so the
+ *   owner can follow unsaved typing without a commit. Enter in a row inserts
  *   an empty row directly below it and focuses it; the new row stays in
  *   local state until a commit normalizes, and a commit never removes the
  *   focused empty row from local state. At least one row is always shown;
@@ -44,6 +46,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   commit: [values: string[]];
+  draft: [values: string[]];
 }>();
 
 interface AnswerRow {
@@ -98,6 +101,14 @@ function commit(): void {
   emit("commit", values);
 }
 
+/** The current normalized list, so the owner can follow unsaved typing. */
+function emitDraft(): void {
+  if (props.disabled) {
+    return;
+  }
+  emit("draft", normalizedRows());
+}
+
 function rowInputs(): HTMLInputElement[] {
   return [...(root.value?.querySelectorAll<HTMLInputElement>(
     `[data-test="${props.testId}-input"]`,
@@ -118,6 +129,7 @@ function handleRowInput(key: number, event: Event): void {
     const row = rows.value.find((candidate) => candidate.key === key);
     if (row) {
       row.text = target.value;
+      emitDraft();
     }
   }
 }
@@ -139,6 +151,7 @@ function handleRowKeydown(index: number, event: KeyboardEvent): void {
     return;
   }
   rows.value.splice(index + 1, 0, makeRow(""));
+  emitDraft();
   void nextTick(() => focusRowInput(index + 1));
 }
 
@@ -150,6 +163,7 @@ function handleRemove(index: number): void {
   if (rows.value.length === 0) {
     rows.value.push(makeRow(""));
   }
+  emitDraft();
   commit();
   // The row and its button disappear; keep keyboard focus in the list.
   const focusIndex = index - 1;
@@ -167,6 +181,7 @@ function handleAdd(): void {
     return;
   }
   rows.value.push(makeRow(""));
+  emitDraft();
   void nextTick(() => focusRowInput(rows.value.length - 1));
 }
 

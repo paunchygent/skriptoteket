@@ -204,7 +204,9 @@ export function documentControl<T extends HTMLElement>(selector: string): DOMWra
   return new DOMWrapper(element);
 }
 
-/** The accepted-answers input of one gap inside the open popover. */
+/** The first accepted-answers row input of one gap inside the open popover. */
 export function popoverInput(gapId: string): DOMWrapper<HTMLInputElement> {
-  return documentControl<HTMLInputElement>(`[data-test="exam-workspace-gap-values-${gapId}"]`);
+  return documentControl<HTMLInputElement>(
+    `[data-test="exam-workspace-gap-values-${gapId}-input"]`,
+  );
 }

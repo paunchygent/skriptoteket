@@ -40,7 +40,15 @@ function popoverButton(): HTMLButtonElement {
 }
 
 function answersInput() {
-  return documentControl<HTMLInputElement>('[data-test="exam-workspace-gap-values-gap_001"]');
+  return documentControl<HTMLInputElement>('[data-test="exam-workspace-gap-values-gap_001-input"]');
+}
+
+function answerRows(): HTMLInputElement[] {
+  return Array.from(
+    document.querySelectorAll<HTMLInputElement>(
+      '[data-test="exam-workspace-gap-values-gap_001-input"]',
+    ),
+  );
 }
 
 /** Type into the answers field without committing: only the input event fires. */
@@ -74,7 +82,16 @@ describe("ExamWorkspaceGapPopover Visa som text", () => {
 
   it("commits pending answer edits before it emits showGapAsText", async () => {
     const wrapper = mountPopover(buildGap({ accepted_values: ["100"] }));
-    await typePendingAnswers("hundra, 100");
+    const first = answersInput();
+    first.element.value = "hundra";
+    await first.trigger("input");
+    await first.trigger("keydown", { key: "Enter" });
+    await wrapper.vm.$nextTick();
+    const rows = answerRows();
+    expect(rows).toHaveLength(2);
+    rows[1]!.value = "100";
+    rows[1]!.dispatchEvent(new Event("input", { bubbles: true }));
+    await wrapper.vm.$nextTick();
 
     await documentControl('[data-test="exam-workspace-gap-as-text"]').trigger("click");
 
@@ -117,6 +134,7 @@ describe("ExamWorkspaceGapPopover Visa som text", () => {
     const wrapper = mountPopover(buildGap({ accepted_values: ["100"] }));
     const input = answersInput().element as HTMLInputElement;
     input.value = "hundra";
+    input.dispatchEvent(new Event("input", { bubbles: true }));
 
     await documentControl('[data-test="exam-workspace-gap-as-text"]').trigger("click");
     input.dispatchEvent(new Event("change", { bubbles: true }));

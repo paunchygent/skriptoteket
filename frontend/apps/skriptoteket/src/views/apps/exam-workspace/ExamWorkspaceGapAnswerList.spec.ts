@@ -7,6 +7,8 @@
  *   rows. Typing never emits; an input's `change`, removing a row and the
  *   exposed `commit()` emit the normalized list (trimmed, empties dropped,
  *   exact duplicates collapsed, commas kept) exactly once per change.
+ *   Every row input, add, Enter-add and remove also emits the normalized
+ *   list as `draft` so the owner can follow unsaved typing.
  *   Enter in a row inserts an empty row below it and focuses it without
  *   dropping it on commit. Removing the only row leaves one empty row.
  *   The list caps at 100 rows, ignores Enter during IME composition,
@@ -250,6 +252,55 @@ describe("ExamWorkspaceGapAnswerList", () => {
     const remove = removes(wrapper)[0];
     expect(remove.attributes("aria-label")).toBe("Ta bort svaret");
     expect(remove.attributes("title")).toBe("Ta bort svaret");
+    wrapper.unmount();
+  });
+});
+
+describe("ExamWorkspaceGapAnswerList draft", () => {
+  function drafts(wrapper: Wrapper): string[][] {
+    return (wrapper.emitted<[string[]]>("draft") ?? []).map((event) => event[0]);
+  }
+
+  it("emits the normalized list on every row input without committing", async () => {
+    const wrapper = mountList({ values: ["a"] });
+    const row = inputs(wrapper)[0];
+    row.element.value = "ab";
+    await row.trigger("input");
+    expect(drafts(wrapper)).toEqual([["ab"]]);
+    expect(wrapper.emitted("commit")).toBeUndefined();
+    wrapper.unmount();
+  });
+
+  it("emits the unchanged list when the add button adds an empty row", async () => {
+    const wrapper = mountList({ values: ["a"] });
+    await addButton(wrapper).trigger("click");
+    expect(drafts(wrapper)).toEqual([["a"]]);
+    expect(inputs(wrapper)).toHaveLength(2);
+    wrapper.unmount();
+  });
+
+  it("emits the unchanged list when Enter adds a row", async () => {
+    const wrapper = mountList({ values: ["a"] });
+    await inputs(wrapper)[0].trigger("keydown", { key: "Enter" });
+    expect(drafts(wrapper)).toEqual([["a"]]);
+    expect(inputs(wrapper)).toHaveLength(2);
+    wrapper.unmount();
+  });
+
+  it("emits the list without the removed row on remove", async () => {
+    const wrapper = mountList({ values: ["a", "b"] });
+    await removes(wrapper)[0].trigger("click");
+    expect(drafts(wrapper)).toEqual([["b"]]);
+    expect(commits(wrapper)).toEqual([["b"]]);
+    wrapper.unmount();
+  });
+
+  it("emits nothing while disabled", async () => {
+    const wrapper = mountList({ values: ["a"], disabled: true });
+    const row = inputs(wrapper)[0];
+    row.element.value = "b";
+    await row.trigger("input");
+    expect(wrapper.emitted("draft")).toBeUndefined();
     wrapper.unmount();
   });
 });

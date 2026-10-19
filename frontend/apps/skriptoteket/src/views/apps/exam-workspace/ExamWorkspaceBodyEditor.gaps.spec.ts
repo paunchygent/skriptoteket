@@ -2,12 +2,13 @@
  * Exam workspace question-text editor, gap popover and chips.
  *
  * Expected behavior:
- *   Activating a gap chip opens an input that commits accepted answers once
- *   on Enter, `change` or leaving the popover, and discards them on Escape.
- *   The popover opens from a click on a gap and from Enter on a selected gap,
- *   anchored below that gap. Chip labels follow the gap's accepted answers in
- *   place and live in a `data-label` attribute, so they are never part of the
- *   text. While
+ *   Activating a gap chip opens one row per accepted answer that commits
+ *   the full list once on `change` or when focus leaves the popover, and
+ *   discards edits on Escape. Enter in a row adds a row below it and never
+ *   closes the popover. The popover opens from a click on a gap and from
+ *   Enter on a selected gap, anchored below that gap. Chip labels follow
+ *   the gap's accepted answers in place and live in a `data-label`
+ *   attribute, so they are never part of the text. While
  *   disabled, nothing is editable and an open popover closes uncommitted. A
  *   partially keyed gap item shows the key hint; a free-text item shows its
  *   note.
@@ -45,6 +46,14 @@ function valuesInput(gapId: string) {
   return popoverInput(gapId);
 }
 
+function valuesInputs(gapId: string): HTMLInputElement[] {
+  return Array.from(
+    document.querySelectorAll<HTMLInputElement>(
+      `[data-test="exam-workspace-gap-values-${gapId}-input"]`,
+    ),
+  );
+}
+
 describe("ExamWorkspaceBodyEditor gap popover and chips", () => {
   it("opens the gap popover from the chip and commits accepted answers on change", async () => {
     const wrapper = await mountEditor();
@@ -58,8 +67,8 @@ describe("ExamWorkspaceBodyEditor gap popover and chips", () => {
     expect(document.activeElement).toBe(input.element);
     expect(gapElement(wrapper, "gap_001").getAttribute("aria-expanded")).toBe("true");
 
-    await input.setValue(" 100 , hundra,, ");
-    expect(wrapper.emitted("updateGapValues")).toEqual([["item_001", "gap_001", ["100", "hundra"]]]);
+    await input.setValue("hundra");
+    expect(wrapper.emitted("updateGapValues")).toEqual([["item_001", "gap_001", ["hundra"]]]);
 
     await input.trigger("keydown", { key: "Escape" });
     expect(popoverExists()).toBe(false);
@@ -99,22 +108,24 @@ describe("ExamWorkspaceBodyEditor gap popover and chips", () => {
     }
   });
 
-  it("commits once on Enter even when the browser fires change as focus returns", async () => {
+  it("adds a row on Enter without closing and commits the full list once on change", async () => {
     const wrapper = await mountEditor();
     await openGap(wrapper, "gap_002");
     const input = valuesInput("gap_002");
 
-    input.element.value = "0, noll";
-    // Chrome order: Enter closes and focuses the text, which fires `change`
-    // synchronously on the still-attached input before Vue re-renders.
-    input.element.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
-    input.element.dispatchEvent(new Event("change", { bubbles: true }));
-    input.element.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+    input.element.value = "noll";
+    await input.trigger("input");
+    // Enter belongs to the row list: a row is added, nothing commits or closes.
+    await input.trigger("keydown", { key: "Enter" });
     await nextTick();
+    expect(valuesInputs("gap_002")).toHaveLength(2);
+    expect(wrapper.emitted("updateGapValues")).toBeUndefined();
+    expect(popoverExists()).toBe(true);
 
-    expect(wrapper.emitted("updateGapValues")).toEqual([["item_001", "gap_002", ["0", "noll"]]]);
-    expect(popoverExists()).toBe(false);
-    expect(document.activeElement).toBe(surface(wrapper));
+    await input.trigger("change");
+    await input.trigger("change");
+    expect(wrapper.emitted("updateGapValues")).toEqual([["item_001", "gap_002", ["noll"]]]);
+    expect(popoverExists()).toBe(true);
     wrapper.unmount();
   });
 
@@ -131,11 +142,15 @@ describe("ExamWorkspaceBodyEditor gap popover and chips", () => {
     await nextTick();
     expect(wrapper.emitted("updateGapValues")).toBeUndefined();
     expect(popoverExists()).toBe(true);
+    expect(valuesInputs("gap_001")).toHaveLength(1);
 
     input.element.value = "hundra";
     input.element.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
     await nextTick();
-    expect(wrapper.emitted("updateGapValues")).toEqual([["item_001", "gap_001", ["hundra"]]]);
+    // A real Enter adds a row instead of committing and keeps the popover open.
+    expect(valuesInputs("gap_001")).toHaveLength(2);
+    expect(wrapper.emitted("updateGapValues")).toBeUndefined();
+    expect(popoverExists()).toBe(true);
     wrapper.unmount();
   });
 
@@ -143,9 +158,7 @@ describe("ExamWorkspaceBodyEditor gap popover and chips", () => {
     const wrapper = await mountEditor();
     await openGap(wrapper, "gap_001");
     expect(popoverRoot().classList).toContain("w-[min(28rem,calc(100vw-16px))]");
-    expect(popoverInput("gap_001").classes()).toContain(
-      "w-full",
-    );
+    expect(popoverInput("gap_001").classes()).toContain("flex-1");
     wrapper.unmount();
   });
 
@@ -154,6 +167,7 @@ describe("ExamWorkspaceBodyEditor gap popover and chips", () => {
     await openGap(wrapper, "gap_001");
     const input = valuesInput("gap_001");
     input.element.value = "hundra";
+    await input.trigger("input");
     input.element.dispatchEvent(new FocusEvent("focusout", { bubbles: true, relatedTarget: null }));
     await nextTick();
     expect(wrapper.emitted("updateGapValues")).toEqual([["item_001", "gap_001", ["hundra"]]]);
@@ -162,6 +176,7 @@ describe("ExamWorkspaceBodyEditor gap popover and chips", () => {
     await openGap(wrapper, "gap_001");
     const reopened = valuesInput("gap_001");
     reopened.element.value = "kasta";
+    await reopened.trigger("input");
     reopened.element.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
     reopened.element.dispatchEvent(new Event("change", { bubbles: true }));
     reopened.element.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
@@ -176,6 +191,7 @@ describe("ExamWorkspaceBodyEditor gap popover and chips", () => {
     await openGap(wrapper, "gap_001");
     const input = valuesInput("gap_001");
     input.element.value = "ändrat";
+    await input.trigger("input");
 
     await wrapper.setProps({ disabled: true });
     input.element.dispatchEvent(new Event("change", { bubbles: true }));
