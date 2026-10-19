@@ -23,7 +23,7 @@
  *   - Dirty state: the copy differs from the saved exam file (`sameDocument`).
  */
 
-import { computed, ref, shallowRef } from "vue";
+import { computed, ref, shallowRef, watch } from "vue";
 
 import type {
   ExamWorkspaceDocumentResponse,
@@ -72,11 +72,14 @@ export type ExamWorkspaceDocumentOptions = {
   onEdit?: (structural: boolean, before: NativeExamDocument | null) => void;
   /** The store every server call the document owns runs through. */
   store: ExamWorkspaceStore;
+  /** True while another tab holds the edit lease: every edit entry refuses. */
+  isReadOnly?: () => boolean;
 };
 
 export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) {
   const toast = useToast();
   const noteEdit = options.onEdit ?? (() => undefined);
+  const isReadOnly = options.isReadOnly ?? (() => false);
   const store = options.store;
 
   const workspaceDocument = ref<NativeExamDocument | null>(null);
@@ -218,12 +221,20 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
 
   /**
    * Read the exam again. Also the conflict recovery of undo and the server
-   * commands, so only a running operation holds it back, not their own lock.
+   * commands. A 409 that arrives while an operation runs no longer skips the
+   * reload: it waits for the running operation to end instead.
    */
   async function reloadDocument(): Promise<void> {
     const currentSummary = summary.value;
-    if (!currentSummary || isOperationBusy.value) {
-      return;
+    if (!currentSummary) return;
+    if (isOperationBusy.value) {
+      // A busy-time 409 waits for the operation instead of skipping the
+      // reload; the watch resolves when the operation clears without a timer.
+      await new Promise<void>((resolve) => {
+        const stop = watch(isOperationBusy, (busy) => {
+          if (!busy) { stop(); resolve(); }
+        }, { immediate: true });
+      });
     }
     operationBusy.value = true;
     try {
@@ -248,14 +259,14 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
 
   function setTitle(title: string): void {
     const current = workspaceDocument.value;
-    if (!current || isBusy.value) return;
+    if (!current || isBusy.value || isReadOnly()) return;
     workspaceDocument.value = { ...current, title };
     noteEdit(false, current);
   }
 
   function setCourse(course: ExamCourseChoice | null): void {
     const current = workspaceDocument.value;
-    if (!current || isBusy.value) return;
+    if (!current || isBusy.value || isReadOnly()) return;
     workspaceDocument.value = { ...current, header: { ...current.header, course } };
     noteEdit(true, current);
   }
@@ -280,6 +291,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
 
   /** Retry one question, and drop in-flight keying replies for the item it replaced. */
   async function retryItem(itemId: string, kind: NativeExamItemKind): Promise<void> {
+    if (isReadOnly()) return;
     const prior = workspaceDocument.value;
     const before = prior?.items.find((item) => item.item_id === itemId);
     await requestItemRetry(itemId, kind);
@@ -300,7 +312,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     structural = false,
   ): boolean {
     const current = workspaceDocument.value;
-    if (!current || isBusy.value || convertingItemIds.value.has(itemId)) {
+    if (!current || isBusy.value || isReadOnly() || convertingItemIds.value.has(itemId)) {
       return false;
     }
     let changed = false;
@@ -352,7 +364,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
     structural = true,
   ): boolean {
     const current = workspaceDocument.value;
-    if (!current || isBusy.value) {
+    if (!current || isBusy.value || isReadOnly()) {
       return false;
     }
     workspaceDocument.value = withReferencedAssetsOnly(edit(current));

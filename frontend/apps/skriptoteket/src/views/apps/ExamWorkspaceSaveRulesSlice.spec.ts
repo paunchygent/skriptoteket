@@ -110,7 +110,7 @@ describe("ExamWorkspaceView save rules", () => {
 
     expect(points.attributes("aria-invalid")).toBe("true");
     const hint = wrapper.get('[data-test="exam-workspace-points-hint"]');
-    expect(hint.text()).toBe("Poängen kan inte vara negativ.");
+    expect(hint.text()).toBe("Ange 0 poäng eller mer.");
     expect(points.attributes("aria-describedby")).toBe(hint.attributes("id"));
     expect(wrapper.get('[data-test="exam-workspace-row-item_002"]').text()).toContain("negativa poäng");
 
@@ -123,7 +123,7 @@ describe("ExamWorkspaceView save rules", () => {
     expect(apiMocks.storeExamWorkspaceUndoStep).not.toHaveBeenCalled();
     expect(wrapper.get('[data-test="exam-workspace-save-state"]').text()).toBe("Inte sparat");
     expect(wrapper.get('[data-test="exam-workspace-save-state"]').attributes("title")).toBe(
-      "Fråga 2 har negativa poäng. Poängen kan inte vara negativ.",
+      "Fråga 2 har negativa poäng. Ange 0 poäng eller mer.",
     );
     expect(vi.mocked(useToastStore().failure)).not.toHaveBeenCalled();
   });

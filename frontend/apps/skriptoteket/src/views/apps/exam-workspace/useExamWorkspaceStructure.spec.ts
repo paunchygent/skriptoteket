@@ -83,6 +83,7 @@ function setup(selected: string | null = null) {
     return true;
   });
   const onConflict = vi.fn(async () => undefined);
+  const noteLeaseLost = vi.fn(async () => undefined);
   const applied: ExamWorkspaceDocumentResponse[] = [];
   const selectParent = vi.fn();
   const structure = effectScope().run(() =>
@@ -99,7 +100,9 @@ function setup(selected: string | null = null) {
       flush,
       historyCursor,
       isBusy: () => false,
+      isReadOnly: () => false,
       lineageId: () => "lineage-1",
+      noteLeaseLost,
       onConflict,
       replaceCopy: (run) => run(),
       savedRevision: () => 7,
@@ -110,10 +113,11 @@ function setup(selected: string | null = null) {
       selectedItemId,
       selectedParentId,
       shared: serverExamWorkspaceStore.shared,
+      tabId: () => "tab-1",
       workspaceDocument,
     }),
   )!;
-  return { applied, calls, flush, onConflict, selectParent, selectedItemId, selectedParentId, structure, workspaceDocument };
+  return { applied, calls, flush, noteLeaseLost, onConflict, selectParent, selectedItemId, selectedParentId, structure, workspaceDocument };
 }
 
 beforeEach(() => {
@@ -232,6 +236,7 @@ describe("server commands", () => {
       buildParentDocument().parents[0]!.parent_id,
       "item_002",
       "cursor-after-flush",
+      "tab-1",
     ]);
   });
 
@@ -285,6 +290,7 @@ describe("server commands", () => {
     expect(apiMocks.addExamWorkspaceChild.mock.calls[0]![2]).toMatchObject({
       expected_cursor: "cursor-after-flush",
       position: 3,
+      tab_id: "tab-1",
     });
     expect(selectedItemId.value).toBe("item_005");
   });
@@ -302,6 +308,7 @@ describe("server commands", () => {
       expected_cursor: "cursor-after-flush",
       expected_revision: 7,
       item_id: "item_004",
+      tab_id: "tab-1",
       target_kind: "free_text",
     });
     expect(structure.typeNotice.value).toEqual({
@@ -323,6 +330,25 @@ describe("server commands", () => {
     expect(applied).toEqual([]);
     expect(structure.typeNotice.value).toBeNull();
   });
+
+  it("turns read-only on a lease-held command instead of reloading", async () => {
+    const { structure, noteLeaseLost, onConflict, applied } = setup("item_004");
+    apiMocks.changeExamWorkspaceItemType.mockRejectedValue(
+      new ApiError({
+        code: "EDIT_LEASE_HELD",
+        message: "Provet redigeras i en annan flik.",
+        status: 409,
+      }),
+    );
+
+    await structure.changeType("item_004", "free_text");
+
+    expect(noteLeaseLost).toHaveBeenCalledOnce();
+    expect(onConflict).not.toHaveBeenCalled();
+    expect(applied).toEqual([]);
+    expect(structure.typeNotice.value).toBeNull();
+    expect(useToastStore().toasts).toEqual([]);
+  });
 });
 
 describe("deleting an instruction", () => {
@@ -337,6 +363,7 @@ describe("deleting an instruction", () => {
       "parent_001",
       "keep_questions",
       "cursor-after-flush",
+      "tab-1",
     ]);
     expect(workspaceDocument.value!.items).toHaveLength(4);
     expect(selectedItemId.value).toBe("item_001");

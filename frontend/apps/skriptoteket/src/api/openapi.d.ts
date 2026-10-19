@@ -1532,6 +1532,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/edit-lease/claim": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Claim Exam Workspace Edit Lease
+         * @description Take the exam's edit lease for one tab; a live foreign lease refuses with 409.
+         */
+        post: operations["claim_exam_workspace_edit_lease_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__edit_lease_claim_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/edit-lease/release": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Release Exam Workspace Edit Lease
+         * @description Clear the holder's lease; a waiting takeover claims it next.
+         */
+        post: operations["release_exam_workspace_edit_lease_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__edit_lease_release_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/edit-lease/renew": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Renew Exam Workspace Edit Lease
+         * @description Refresh the holder's lease; the response names a waiting takeover tab.
+         */
+        post: operations["renew_exam_workspace_edit_lease_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__edit_lease_renew_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/edit-lease/takeover": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Request Exam Workspace Edit Lease Takeover
+         * @description Ask for the lease; the holder sees the request at its next heartbeat.
+         */
+        post: operations["request_exam_workspace_edit_lease_takeover_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__edit_lease_takeover_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/export-checklist": {
         parameters: {
             query?: never;
@@ -3759,6 +3839,11 @@ export interface components {
              * @description Zero-based insertion index within the parent.
              */
             position: number;
+            /**
+             * Tab Id
+             * Format: uuid
+             */
+            tab_id: string;
         };
         /**
          * AdminToolItem
@@ -4094,6 +4179,11 @@ export interface components {
             expected_revision: number;
             /** Item Id */
             item_id: string;
+            /**
+             * Tab Id
+             * Format: uuid
+             */
+            tab_id: string;
             target_kind: components["schemas"]["NativeExamItemKind"];
         };
         /** ChangeExamWorkspaceItemTypeResponse */
@@ -4677,6 +4767,11 @@ export interface components {
              * @description Zero-based index among top-level questions and parts.
              */
             position: number;
+            /**
+             * Tab Id
+             * Format: uuid
+             */
+            tab_id: string;
         };
         /** CreateExamParentRequest */
         CreateExamParentRequest: {
@@ -4693,6 +4788,11 @@ export interface components {
              * @description Zero-based insertion index among standalone questions and whole parents.
              */
             position: number;
+            /**
+             * Tab Id
+             * Format: uuid
+             */
+            tab_id: string;
         };
         /**
          * CreateGroupingDraftRequest
@@ -5895,6 +5995,31 @@ export interface components {
             version: number;
         };
         /**
+         * ExamWorkspaceEditLeaseRequest
+         * @description One lease operation for the calling tab: claim, renew, takeover or release.
+         */
+        ExamWorkspaceEditLeaseRequest: {
+            /**
+             * Tab Id
+             * Format: uuid
+             */
+            tab_id: string;
+        };
+        /**
+         * ExamWorkspaceEditLeaseResponse
+         * @description The lease after one operation; the holder renews while a waiter is named.
+         */
+        ExamWorkspaceEditLeaseResponse: {
+            /** Holder Tab Id */
+            holder_tab_id: string | null;
+            /** Renewed At */
+            renewed_at: string | null;
+            /** Takeover Requested */
+            takeover_requested: boolean;
+            /** Takeover Requested By */
+            takeover_requested_by: string | null;
+        };
+        /**
          * ExamWorkspaceEnrichmentState
          * @description Teacher-facing state of one answer-key suggestion job.
          * @enum {string}
@@ -6252,6 +6377,11 @@ export interface components {
             expected_cursor: string;
             /** Item Ids */
             item_ids: string[];
+            /**
+             * Tab Id
+             * Format: uuid
+             */
+            tab_id: string;
         };
         /**
          * GroupingExportJobDto
@@ -6878,6 +7008,11 @@ export interface components {
             expected_cursor: string;
             /** Item Id */
             item_id: string;
+            /**
+             * Tab Id
+             * Format: uuid
+             */
+            tab_id: string;
             /** Target Parent Id */
             target_parent_id: string | null;
         };
@@ -6896,6 +7031,11 @@ export interface components {
              * Format: uuid
              */
             step_id: string;
+            /**
+             * Tab Id
+             * Format: uuid
+             */
+            tab_id: string;
         };
         /** MyRunItem */
         MyRunItem: {
@@ -7935,6 +8075,11 @@ export interface components {
              * Format: uuid
              */
             expected_cursor: string;
+            /**
+             * Tab Id
+             * Format: uuid
+             */
+            tab_id: string;
         };
         /** ParsedStudentRow */
         ParsedStudentRow: {
@@ -9247,6 +9392,11 @@ export interface components {
             expected_cursor: string;
             /** Item Ids */
             item_ids: string[];
+            /**
+             * Tab Id
+             * Format: uuid
+             */
+            tab_id: string;
         };
         /** RequestChangesRequest */
         RequestChangesRequest: {
@@ -9958,6 +10108,11 @@ export interface components {
              * Format: uuid
              */
             expected_cursor: string;
+            /**
+             * Tab Id
+             * Format: uuid
+             */
+            tab_id: string;
         };
         /**
          * Student
@@ -14043,6 +14198,146 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ExamWorkspaceDocumentResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    claim_exam_workspace_edit_lease_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__edit_lease_claim_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lineage_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExamWorkspaceEditLeaseRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamWorkspaceEditLeaseResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    release_exam_workspace_edit_lease_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__edit_lease_release_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lineage_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExamWorkspaceEditLeaseRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamWorkspaceEditLeaseResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    renew_exam_workspace_edit_lease_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__edit_lease_renew_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lineage_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExamWorkspaceEditLeaseRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamWorkspaceEditLeaseResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    request_exam_workspace_edit_lease_takeover_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__edit_lease_takeover_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lineage_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExamWorkspaceEditLeaseRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamWorkspaceEditLeaseResponse"];
                 };
             };
             /** @description Validation Error */

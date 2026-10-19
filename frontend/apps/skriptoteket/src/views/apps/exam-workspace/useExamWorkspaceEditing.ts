@@ -5,8 +5,10 @@
  *   Join the open exam, its server-stored undo history and the structure
  *   commands into one editing session: every teacher edit becomes an undo
  *   step through a 900 ms pause or at once, and the step store also writes
- *   the exam file (TASK-SKRIPT-40-04-14, one save model). A stale cursor
- *   reloads the exam. It
+ *   the exam file (TASK-SKRIPT-40-04-14, one save model). Only the tab that
+ *   holds the edit lease writes: a tab without it is read-only, every write
+ *   carries the tab id, and a write refused with `EDIT_LEASE_HELD` turns
+ *   read-only while the pending edit stays visible. It
  *   owns `selectedParentId` (the part entry the teacher selected) so structural
  *   inserts land after the selected part; the selection composable drives it.
  *
@@ -20,10 +22,22 @@ import { ref } from "vue";
 import type { NativeExamDocument } from "../../../api/examWorkspace";
 import type { ExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceDocument } from "./useExamWorkspaceDocument";
+import {
+  useExamWorkspaceEditLease,
+  type ExamWorkspaceEditLeaseDeps,
+} from "./useExamWorkspaceEditLease";
 import { useExamWorkspaceHistory } from "./useExamWorkspaceHistory";
 import { useExamWorkspaceStructure } from "./useExamWorkspaceStructure";
 
-export function useExamWorkspaceEditing(store: ExamWorkspaceStore) {
+/** The lease seams specs override; production uses the transport and the browser slot. */
+export type ExamWorkspaceEditingLeaseOverrides = Partial<
+  Pick<
+    ExamWorkspaceEditLeaseDeps,
+    "guestStorage" | "now" | "openGuestChannel" | "server" | "tabId"
+  >
+>;
+
+export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamWorkspaceEditingLeaseOverrides) {
   let noteEdit: (structural: boolean, before: NativeExamDocument | null) => void = () => undefined;
   // The selection composable is built by the view after this session; it registers
   // its part-entry selection here so a new part's instruction opens in the editor.
@@ -31,7 +45,15 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore) {
   // The part entry the teacher selected, shared with the selection composable
   // and the structure commands so Ny del and Ny instruktion land after it.
   const selectedParentId = ref<string | null>(null);
+  // The lease session, assigned after the document, history and structure it
+  // drives exist. The holder object stays stable so every closure above tracks
+  // the document's reactive state directly; each closure only runs once the
+  // session is in place.
+  const leaseHolder: { session: ReturnType<typeof useExamWorkspaceEditLease> | null } = {
+    session: null,
+  };
   const document = useExamWorkspaceDocument({
+    isReadOnly: () => leaseHolder.session?.readOnly.value ?? true,
     onEdit: (structural, before) => noteEdit(structural, before),
     store,
   });
@@ -41,11 +63,13 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore) {
   const history = useExamWorkspaceHistory({
     historyCursor: document.historyCursor,
     install: document.installDocument,
+    isReadOnly: () => leaseHolder.session?.readOnly.value ?? true,
     isReplacing: () => document.isReplacing.value,
     // Not `isBusy`: that includes the replacing lock the history's own reads hold.
     isBlocked: () => document.isOperationBusy.value,
     lineageId,
     noteExportBlockers: document.noteExportBlockers,
+    noteLeaseLost: () => leaseHolder.session?.noteLostLease(),
     noteStored: document.noteStored,
     isGuest: () => store.guest !== null,
     onConflict: reload,
@@ -53,6 +77,7 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore) {
     savedRevision: () => document.savedRevision.value,
     serverDocument: document.serverDocument,
     shared: store.shared,
+    tabId: () => leaseHolder.session?.tabId ?? "",
     workspaceDocument: document.workspaceDocument,
   });
   noteEdit = history.noteEdit;
@@ -63,7 +88,9 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore) {
     flush: history.flush,
     historyCursor: document.historyCursor,
     isBusy: () => document.isBusy.value || history.storing.value,
+    isReadOnly: () => leaseHolder.session?.readOnly.value ?? true,
     lineageId,
+    noteLeaseLost: () => leaseHolder.session?.noteLostLease(),
     onConflict: reload,
     replaceCopy: document.replaceCopy,
     savedRevision: () => document.savedRevision.value,
@@ -72,7 +99,20 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore) {
     selectedItemId: document.selectedItemId,
     selectedParentId,
     shared: store.shared,
+    tabId: () => leaseHolder.session?.tabId ?? "",
     workspaceDocument: document.workspaceDocument,
+  });
+
+  leaseHolder.session = useExamWorkspaceEditLease({
+    guestStorage: lease?.guestStorage,
+    isGuest: () => store.guest !== null,
+    lineageId,
+    now: lease?.now,
+    onAcquired: () => reload(),
+    onTakeoverRequested: () => history.flush(true).then(() => undefined),
+    openGuestChannel: lease?.openGuestChannel,
+    server: lease?.server,
+    tabId: lease?.tabId,
   });
 
   /**
@@ -97,6 +137,12 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore) {
     saveAs,
     selectedParentId,
     structure,
+    /** The edit lease: read-only while another tab holds the exam. */
+    readOnly: leaseHolder.session!.readOnly,
+    /** True while `Ta över` waits for the holder to release. */
+    takeoverWaiting: leaseHolder.session!.waiting,
+    /** Ask for the lease, claim it once free and read the newest state. */
+    requestTakeover: () => leaseHolder.session!.requestTakeover(),
     /** The view wires its part-entry selection once the selection composable exists. */
     registerSelectParent: (select: (parentId: string) => void) => {
       selectParent = select;

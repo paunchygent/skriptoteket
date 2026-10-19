@@ -142,8 +142,9 @@ function linkRevertedWord(
  * Restore one kept word to its gap: the kept block the teacher clicked
  * becomes one gap placement, and the kept record becomes the gap again under
  * the same id. `atBlock` names the contiguous kept block in body order
- * (0-based; out of range falls back to the first), so a click on the second
- * block of a split id restores that block instead of the first one. The
+ * (0-based; out of range throws naming the id and the block), so a click on
+ * the second block of a split id restores that block instead of the first
+ * one. The
  * word's current text becomes the first accepted answer (Lucktext) or the
  * correct option's text (dropdown), and the kept answers and options come
  * back, so an unedited word restores the gap exactly apart from the gap id,
@@ -185,7 +186,10 @@ export function withKeptGapRestored(
   if (blocks.length === 0) {
     return item;
   }
-  const picked = blocks[atBlock] ?? blocks[0]!;
+  const picked = blocks[atBlock];
+  if (!picked) {
+    throw new Error(`cannot restore kept gap ${keptGapId}: block ${atBlock} is out of range`);
+  }
   const blockParagraph = picked.paragraph;
   const blockStart = picked.start;
   const blockEnd = picked.end;

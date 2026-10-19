@@ -15,6 +15,7 @@ import {
   DOCUMENT_ID,
   exam,
   installGuestStoreObjectUrls,
+  LEASE_TAB_ID,
   setupGuestStore,
   startBlank,
 } from "./examWorkspaceGuestStore.specSupport";
@@ -31,6 +32,7 @@ describe("examWorkspaceGuestStore one save model", () => {
       afterStepId: null,
       document: exam("A"),
       expectedCursor: opened.history_cursor,
+      tabId: LEASE_TAB_ID,
     });
 
     expect(step.document.title).toBe("A");
@@ -52,15 +54,18 @@ describe("examWorkspaceGuestStore one save model", () => {
       afterStepId: null,
       document: exam("A"),
       expectedCursor: opened.history_cursor,
+      tabId: LEASE_TAB_ID,
     });
     const second = await context.store.store.shared.storeExamWorkspaceUndoStep(lineageId, {
       afterStepId: null,
       document: exam("B"),
       expectedCursor: first.history.cursor,
+      tabId: LEASE_TAB_ID,
     });
 
     const undone = await context.store.moveToHistoryStep(lineageId, {
       expectedCursor: second.history.cursor,
+      tabId: LEASE_TAB_ID,
       stepId: first.history.position_step_id,
     });
     expect(undone.history.step_ids).toHaveLength(2);
@@ -70,6 +75,7 @@ describe("examWorkspaceGuestStore one save model", () => {
 
     const redone = await context.store.moveToHistoryStep(lineageId, {
       expectedCursor: undone.history.cursor,
+      tabId: LEASE_TAB_ID,
       stepId: second.history.position_step_id,
     });
     expect(redone.history.position_step_id).toBe(second.history.position_step_id);
@@ -90,6 +96,7 @@ describe("examWorkspaceGuestStore one save model", () => {
       afterStepId: null,
       document: exam("A"),
       expectedCursor: opened.history_cursor,
+      tabId: LEASE_TAB_ID,
     });
 
     const reopened = await context.store.store.shared.getExamWorkspaceDocument(DOCUMENT_ID);

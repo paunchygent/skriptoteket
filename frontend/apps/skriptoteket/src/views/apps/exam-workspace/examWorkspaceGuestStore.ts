@@ -32,17 +32,27 @@ import {
   storeGuestUndoStep,
   type ExamWorkspaceGuestDraftIdSource,
 } from "./examWorkspaceGuestDraft";
-import type {
-  ExamWorkspaceGuestDraftStoragePort,
-  StoredGuestDraft,
+import {
+  GUEST_EDIT_LEASE_TTL_MS,
+  type GuestEditLeaseStoragePort,
+} from "./examWorkspaceGuestEditLease";
+import {
+  createIndexedDbGuestEditLeaseStorage,
+  type ExamWorkspaceGuestDraftStoragePort,
 } from "./examWorkspaceGuestDraftStorage";
+import type { StoredGuestDraft } from "./examWorkspaceGuestDraftStorage";
 import {
   commitGuestCommand,
   loadGuestStored,
   persistGuestStored,
   retainDeclaredAssets,
 } from "./examWorkspaceGuestStoreCommit";
-import { conflictError, notFoundError, refusalError } from "./examWorkspaceGuestStoreErrors";
+import {
+  conflictError,
+  editLeaseHeldError,
+  notFoundError,
+  refusalError,
+} from "./examWorkspaceGuestStoreErrors";
 import type { GuestPublicApi } from "./examWorkspaceGuestLimitApi";
 import { wrapGuestPublicApiForLimit } from "./examWorkspaceGuestLimitApi";
 import type { ExamWorkspaceSharedStore, ExamWorkspaceStore } from "./examWorkspaceStore";
@@ -55,6 +65,12 @@ export type ExamWorkspaceGuestStoreDeps = {
   ids: ExamWorkspaceGuestDraftIdSource;
   /** Called once per failing public call whose rejection is the guest limit. */
   onLimit: () => void;
+  /**
+   * The edit-lease slot in the same IndexedDB database as the draft. Writes
+   * from a tab without a live lease report the server's 409. Defaults to the
+   * IndexedDB binding; specs inject the in-memory port.
+   */
+  leaseStorage?: GuestEditLeaseStoragePort;
 };
 
 export type ExamWorkspaceGuestStore = {
@@ -73,7 +89,7 @@ export type ExamWorkspaceGuestStore = {
    */
   moveToHistoryStep(
     lineageId: string,
-    params: { expectedCursor: string; stepId: string },
+    params: { expectedCursor: string; stepId: string; tabId: string },
   ): Promise<ExamWorkspaceUndoStep>;
   /** Drop the browser draft and every picture byte it kept. */
   clear(): Promise<void>;
@@ -83,6 +99,30 @@ export function createGuestExamWorkspaceStore(
   deps: ExamWorkspaceGuestStoreDeps,
 ): ExamWorkspaceGuestStore {
   const api = wrapGuestPublicApiForLimit(deps.api, deps.onLimit);
+  const leaseStorage = deps.leaseStorage ?? createIndexedDbGuestEditLeaseStorage();
+
+  /**
+   * Refuse a write from a tab without a live lease, like the server's
+   * `require_edit_lease`: a stale cursor already reported the ordinary
+   * conflict first. A missing or expired lease, or one held by this tab,
+   * passes; an unreadable slot stays lenient, so a browser without IndexedDB
+   * still edits.
+   */
+  async function requireGuestEditLease(tabId: string): Promise<void> {
+    let record: Awaited<ReturnType<GuestEditLeaseStoragePort["load"]>>;
+    try {
+      record = await leaseStorage.load();
+    } catch {
+      return;
+    }
+    if (record === null || record.tabId === tabId) {
+      return;
+    }
+    if (Date.now() - record.renewedAt > GUEST_EDIT_LEASE_TTL_MS) {
+      return;
+    }
+    throw editLeaseHeldError();
+  }
 
   /** The draft whose picture bytes currently have object URLs. */
   let openLineageId: string | null = null;
@@ -146,6 +186,7 @@ export function createGuestExamWorkspaceStore(
       if (outcome.kind === "refused") {
         throw refusalError(outcome.copy);
       }
+      await requireGuestEditLease(params.tabId);
       await persist(stored.draft.cursor, {
         assets: retainDeclaredAssets(stored, outcome.draft),
         draft: outcome.draft,
@@ -172,7 +213,11 @@ export function createGuestExamWorkspaceStore(
      */
     async moveExamWorkspaceHistoryPosition(lineageId, params) {
       const stored = await loadStored(lineageId);
-      const outcome = moveGuestHistoryPosition(stored.draft, params, deps.ids);
+      const outcome = moveGuestHistoryPosition(
+        stored.draft,
+        { expectedCursor: params.expectedCursor, stepId: params.stepId },
+        deps.ids,
+      );
       if (outcome.kind === "conflict") {
         throw conflictError();
       }
@@ -182,6 +227,7 @@ export function createGuestExamWorkspaceStore(
       if (outcome.kind === "refused") {
         throw refusalError(outcome.copy);
       }
+      await requireGuestEditLease(params.tabId);
       await persist(stored.draft.cursor, {
         assets: retainDeclaredAssets(stored, outcome.draft),
         draft: outcome.draft,
@@ -190,6 +236,7 @@ export function createGuestExamWorkspaceStore(
     },
     async createExamWorkspaceParent(lineageId, body) {
       const { draft, result } = await commitGuestCommand({
+        checkLease: () => requireGuestEditLease(body.tab_id),
         guard: (current) => current.cursor === body.expected_cursor,
         ids: deps.ids,
         lineageId,
@@ -207,6 +254,7 @@ export function createGuestExamWorkspaceStore(
     },
     async addExamWorkspaceChild(lineageId, parentId, body) {
       const { draft, result } = await commitGuestCommand({
+        checkLease: () => requireGuestEditLease(body.tab_id),
         guard: (current) => current.cursor === body.expected_cursor,
         ids: deps.ids,
         lineageId,
@@ -221,8 +269,9 @@ export function createGuestExamWorkspaceStore(
       });
       return { ...guestDocumentResponse(draft), export_blockers: result.export_blockers };
     },
-    async deleteExamWorkspaceChild(lineageId, parentId, itemId, expectedCursor) {
+    async deleteExamWorkspaceChild(lineageId, parentId, itemId, expectedCursor, tabId) {
       const { draft, result } = await commitGuestCommand({
+        checkLease: () => requireGuestEditLease(tabId),
         guard: (current) => current.cursor === expectedCursor,
         ids: deps.ids,
         lineageId,
@@ -237,8 +286,9 @@ export function createGuestExamWorkspaceStore(
         removed_parent_id: result.removed_parent_id,
       };
     },
-    async reorderExamWorkspaceChildren(lineageId, parentId, itemIds, expectedCursor) {
+    async reorderExamWorkspaceChildren(lineageId, parentId, itemIds, expectedCursor, tabId) {
       const { draft, result } = await commitGuestCommand({
+        checkLease: () => requireGuestEditLease(tabId),
         guard: (current) => current.cursor === expectedCursor,
         ids: deps.ids,
         lineageId,
@@ -252,8 +302,9 @@ export function createGuestExamWorkspaceStore(
       });
       return { ...guestDocumentResponse(draft), export_blockers: result.export_blockers };
     },
-    async deleteExamWorkspaceParent(lineageId, parentId, mode, expectedCursor) {
+    async deleteExamWorkspaceParent(lineageId, parentId, mode, expectedCursor, tabId) {
       const { draft, result } = await commitGuestCommand({
+        checkLease: () => requireGuestEditLease(tabId),
         guard: (current) => current.cursor === expectedCursor,
         ids: deps.ids,
         lineageId,
@@ -268,8 +319,9 @@ export function createGuestExamWorkspaceStore(
         removed_parent_id: result.removed_parent_id,
       };
     },
-    async groupExamWorkspaceItems(lineageId, itemIds, expectedCursor) {
+    async groupExamWorkspaceItems(lineageId, itemIds, expectedCursor, tabId) {
       const { draft, result } = await commitGuestCommand({
+        checkLease: () => requireGuestEditLease(tabId),
         guard: (current) => current.cursor === expectedCursor,
         ids: deps.ids,
         lineageId,
@@ -283,8 +335,9 @@ export function createGuestExamWorkspaceStore(
         export_blockers: result.export_blockers,
       };
     },
-    async createEmptyExamWorkspacePart(lineageId, position, expectedCursor) {
+    async createEmptyExamWorkspacePart(lineageId, position, expectedCursor, tabId) {
       const { draft, result } = await commitGuestCommand({
+        checkLease: () => requireGuestEditLease(tabId),
         guard: (current) => current.cursor === expectedCursor,
         ids: deps.ids,
         lineageId,
@@ -299,8 +352,9 @@ export function createGuestExamWorkspaceStore(
         export_blockers: result.export_blockers,
       };
     },
-    async moveExamWorkspaceItem(lineageId, itemId, targetParentId, expectedCursor) {
+    async moveExamWorkspaceItem(lineageId, itemId, targetParentId, expectedCursor, tabId) {
       const { draft, result } = await commitGuestCommand({
+        checkLease: () => requireGuestEditLease(tabId),
         guard: (current) => current.cursor === expectedCursor,
         ids: deps.ids,
         lineageId,
@@ -313,6 +367,7 @@ export function createGuestExamWorkspaceStore(
     },
     async changeExamWorkspaceItemType(lineageId, body) {
       const { draft, result } = await commitGuestCommand({
+        checkLease: () => requireGuestEditLease(body.tab_id),
         guard: (current) =>
           current.cursor === body.expected_cursor &&
           current.saved_document.revision === body.expected_revision,

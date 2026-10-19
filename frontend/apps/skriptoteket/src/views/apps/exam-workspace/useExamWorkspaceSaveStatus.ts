@@ -27,7 +27,7 @@ import { useToast } from "../../../composables/useToast";
 import { examWorkspaceGuestSaveStatus } from "./examWorkspaceGuestDraft";
 import { examWorkspaceSaveRefusalCopy } from "./examWorkspaceItemSaveRules";
 
-export const AUTOSAVE_FAILURE_COPY = "Ändringen kunde inte sparas som utkast. Försök igen.";
+export const AUTOSAVE_FAILURE_COPY = "Ändringarna kunde inte sparas. Vi försöker igen automatiskt.";
 
 /** A failed store is retried this often until it succeeds. */
 export const EXAM_WORKSPACE_SAVE_RETRY_MS = 5000;
@@ -56,21 +56,22 @@ export type ExamWorkspaceSaveStatusDeps = {
  * The refusal reason for the status tooltip: the save rule's Swedish copy
  * when the draft itself is refused, the guard's own message when a step
  * changes a placeholder still being converted, else the generic failure copy.
+ * The guard is told apart by its dedicated `CONVERSION_IN_PROGRESS` code
+ * (`ErrorCode` on the server); a 422 carrying `item_ids` is the same refusal.
  */
 export function refusalReason(snapshot: NativeExamDocument, error: unknown): string {
   const copy = examWorkspaceSaveRefusalCopy(snapshot);
   if (copy !== null) {
     return copy;
   }
-  if (
-    isApiError(error) &&
-    typeof error.details === "object" &&
-    error.details !== null &&
-    "item_ids" in error.details
-  ) {
+  if (isApiError(error) && (error.code === "CONVERSION_IN_PROGRESS" || hasItemIds(error.details))) {
     return error.message;
   }
   return AUTOSAVE_FAILURE_COPY;
+}
+
+function hasItemIds(details: unknown): boolean {
+  return typeof details === "object" && details !== null && "item_ids" in details;
 }
 
 export function useExamWorkspaceSaveStatus(deps: ExamWorkspaceSaveStatusDeps) {

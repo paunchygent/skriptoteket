@@ -31,7 +31,7 @@ import {
 } from "./examWorkspaceAnswerKeyRules";
 import { isEmptyBody } from "./examWorkspaceRichTextDocument";
 
-export const NEGATIVE_POINTS_GUIDANCE = "Poängen kan inte vara negativ.";
+export const NEGATIVE_POINTS_GUIDANCE = "Ange 0 poäng eller mer.";
 export const EMPTY_CHOICE_TEXT_GUIDANCE = "Ett svarsalternativ saknar text.";
 export const EMPTY_MATCH_TEXT_GUIDANCE = "En rad eller en kategori saknar text.";
 export const EMPTY_CRITERION_TEXT_GUIDANCE = "Ett kriterium saknar text.";

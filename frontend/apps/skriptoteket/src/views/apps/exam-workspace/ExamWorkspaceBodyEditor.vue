@@ -155,8 +155,8 @@ function handleSurfaceEscape(): void {
   }
 }
 
-/** How each gap of the item reads in the text: its accepted answers, or "Lucka N" while it has none. */
-const gapStates = computed(() => examGapStates(props.item.gaps));
+/** How each gap of the item reads in the text: its answers, or "Lucka N" while it has none. */
+const gapStates = computed(() => examGapStates(props.item.gaps, props.item.kind));
 
 function openPopover(gapId: string, chip: HTMLElement): void {
   if (props.disabled) {

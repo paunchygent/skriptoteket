@@ -21,6 +21,7 @@ import {
   createIds,
   exam,
   installGuestStoreObjectUrls,
+  LEASE_TAB_ID,
   pictureExam,
   setupGuestStore,
   startBlank,
@@ -51,6 +52,7 @@ describe("examWorkspaceGuestStore exports and limits", () => {
       .createExamWorkspaceParent(DOCUMENT_ID, {
         child: newTeacherItem("item_002", 2, "free_text"),
         expected_cursor: opened.history_cursor,
+        tab_id: LEASE_TAB_ID,
         instruction: [],
         position: 0,
       })
@@ -75,6 +77,7 @@ describe("examWorkspaceGuestStore exports and limits", () => {
       afterStepId: null,
       document: exam("Utkast"),
       expectedCursor: seeded.cursor,
+      tabId: LEASE_TAB_ID,
     });
     expect(step.document.title).toBe("Utkast");
 

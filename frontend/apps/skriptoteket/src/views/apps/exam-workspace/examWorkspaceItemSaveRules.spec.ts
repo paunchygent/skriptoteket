@@ -108,7 +108,7 @@ describe("examWorkspaceSaveRefusalCopy", () => {
 
   it("names one question with negative points", () => {
     expect(examWorkspaceSaveRefusalCopy(examDocument([buildChoiceItem(1, { points: -1 })]))).toBe(
-      "Fråga 1 har negativa poäng. Poängen kan inte vara negativ.",
+      "Fråga 1 har negativa poäng. Ange 0 poäng eller mer.",
     );
   });
 
@@ -121,7 +121,7 @@ describe("examWorkspaceSaveRefusalCopy", () => {
 
     // An empty choice saves (TASK-SKRIPT-40-04-06 D3); only the negative points refuse.
     expect(examWorkspaceSaveRefusalCopy(examDocument(items))).toBe(
-      "Frågorna 1 och 3 har negativa poäng. Poängen kan inte vara negativ.",
+      "Frågorna 1 och 3 har negativa poäng. Ange 0 poäng eller mer.",
     );
   });
 
@@ -140,7 +140,7 @@ describe("examWorkspaceSaveRefusalCopy", () => {
     );
 
     expect(examWorkspaceSaveRefusalCopy(document)).toBe(
-      "Fråga 2 har negativa poäng. Poängen kan inte vara negativ.",
+      "Fråga 2 har negativa poäng. Ange 0 poäng eller mer.",
     );
   });
 });

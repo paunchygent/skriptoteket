@@ -29,6 +29,7 @@ import {
 } from "./ExamWorkspaceExportsSlice.specSupport";
 import { selectItemRow } from "./ExamWorkspaceSlice.specSupport";
 import { EXAM_WORKSPACE_EXPORT_FORMATS } from "./exam-workspace/examWorkspaceExportFormats";
+import { AUTOSAVE_FAILURE_COPY } from "./exam-workspace/useExamWorkspaceSaveStatus";
 
 import { arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
 
@@ -249,7 +250,7 @@ describe("ExamWorkspaceView export download", () => {
 
     expect(exportApiMocks.downloadExamWorkspaceExport).not.toHaveBeenCalled();
     expect(useToastStore().failure).toHaveBeenCalledTimes(1);
-    expect(useToastStore().failure).toHaveBeenCalledWith("Ändringen kunde inte sparas som utkast. Försök igen.");
+    expect(useToastStore().failure).toHaveBeenCalledWith(AUTOSAVE_FAILURE_COPY);
     expect(page("exam-workspace-export-running")).toBeNull();
     expect(menuFormatDisabled("qti")).toBeUndefined();
   });

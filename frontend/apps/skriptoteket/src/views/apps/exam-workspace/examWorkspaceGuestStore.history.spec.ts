@@ -19,6 +19,7 @@ import {
   DOCUMENT_ID,
   exam,
   installGuestStoreObjectUrls,
+  LEASE_TAB_ID,
   refusedExam,
   setupGuestStore,
   startBlank,
@@ -79,6 +80,7 @@ describe("examWorkspaceGuestStore history and save", () => {
       afterStepId: null,
       document: exam("A"),
       expectedCursor: opened.history_cursor,
+      tabId: LEASE_TAB_ID,
     });
     expect(autosaved.document.title).toBe("A");
 
@@ -93,6 +95,7 @@ describe("examWorkspaceGuestStore history and save", () => {
       afterStepId: history.baseline_step_id,
       document: exam("B"),
       expectedCursor: autosaved.history.cursor,
+      tabId: LEASE_TAB_ID,
     });
     // A branch after the baseline drops the redo step A.
     expect(branched.history.step_ids).toEqual([branched.history.position_step_id]);
@@ -101,6 +104,7 @@ describe("examWorkspaceGuestStore history and save", () => {
     // Ångra moves the position to the baseline and the saved draft follows.
     const undone = await context.store.moveToHistoryStep(lineageId, {
       expectedCursor: branched.history.cursor,
+      tabId: LEASE_TAB_ID,
       stepId: history.baseline_step_id,
     });
     expect(undone.history.step_ids).toEqual([branched.history.position_step_id]);
@@ -111,6 +115,7 @@ describe("examWorkspaceGuestStore history and save", () => {
     // Gör om moves back to the step without storing anything new.
     const redone = await context.store.moveToHistoryStep(lineageId, {
       expectedCursor: undone.history.cursor,
+      tabId: LEASE_TAB_ID,
       stepId: branched.history.position_step_id,
     });
     expect(redone.history.step_ids).toEqual([branched.history.position_step_id]);
@@ -145,6 +150,7 @@ describe("examWorkspaceGuestStore history and save", () => {
         afterStepId: null,
         document: exam("X"),
         expectedCursor: "99999999-9999-4999-8999-999999999999",
+        tabId: LEASE_TAB_ID,
       })
       .catch((caught: unknown) => caught);
 
@@ -156,6 +162,7 @@ describe("examWorkspaceGuestStore history and save", () => {
       .createExamWorkspaceParent(lineageId, {
         child: newTeacherItem("item_002", 2, "free_text"),
         expected_cursor: "99999999-9999-4999-8999-999999999999",
+        tab_id: LEASE_TAB_ID,
         instruction: [],
         position: 0,
       })
@@ -177,6 +184,7 @@ describe("examWorkspaceGuestStore history and save", () => {
         afterStepId: null,
         document: refusedExam(),
         expectedCursor: opened.history_cursor,
+      tabId: LEASE_TAB_ID,
       })
       .catch((caught: unknown) => caught);
 

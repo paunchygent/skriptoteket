@@ -113,6 +113,12 @@ export type CommitGuestCommandOptions<Result extends PublicCommandResult> = {
   guard: (draft: ExamWorkspaceGuestDraft) => boolean;
   run: (document: NativeExamDocument) => Promise<Result>;
   onStored: (stored: StoredGuestDraft) => void;
+  /**
+   * Refuse a write from a tab that does not hold a live lease, after the
+   * cursor guard: the server reports a stale cursor as its ordinary conflict
+   * first, and the lease only after.
+   */
+  checkLease: () => Promise<void>;
 };
 
 /**
@@ -126,6 +132,7 @@ export async function commitGuestCommand<Result extends PublicCommandResult>(
   if (!options.guard(stored.draft)) {
     throw conflictError();
   }
+  await options.checkLease();
   const expectedCursor = stored.draft.cursor;
   const current = guestDocumentResponse(stored.draft).document;
   const result = await options.run(current);

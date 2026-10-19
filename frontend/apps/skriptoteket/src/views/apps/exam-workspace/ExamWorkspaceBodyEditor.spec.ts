@@ -18,6 +18,8 @@ import { describe, expect, it } from "vitest";
 import { nextTick } from "vue";
 
 import { buildGapItem, buildMergeItem, mountEditor, posIn, press, surface, tiptap } from "./ExamWorkspaceBodyEditor.specSupport";
+import { buildGap } from "./examWorkspaceKeyedItems.specSupport";
+import { plainBody } from "./examWorkspaceRichText";
 
 type UpdateEvent = [string, Array<{ heading_level: number | null; segments: unknown[] }>, boolean];
 
@@ -44,6 +46,31 @@ describe("ExamWorkspaceBodyEditor text editing", () => {
 
     expect(wrapper.get('[data-asset-id="asset_001"]').attributes("role")).toBe("img");
     expect(root.textContent).toBe("Vatten kokar vid  grader och fryser vid  grader.Se ");
+    wrapper.unmount();
+  });
+
+  it("labels a dropdown gap chip with its options state", async () => {
+    const wrapper = await mountEditor(
+      buildGapItem({
+        kind: "inline_choice",
+        body: [{ heading_level: null, segments: [{ gap_id: "gap_001", kind: "gap" }] }],
+        gaps: [
+          buildGap("gap_001", [], {
+            correct_option_id: "choice_002",
+            options: [
+              { body: plainBody("R"), choice_id: "choice_001" },
+              { body: plainBody("A"), choice_id: "choice_002" },
+              { body: plainBody("B"), choice_id: "choice_003" },
+            ],
+          }),
+        ],
+      }),
+    );
+
+    const chip = wrapper.get('[data-gap-id="gap_001"]');
+    expect(chip.attributes("data-label")).toBe("A");
+    expect(chip.attributes("aria-label")).toBe("Lucka 1, rullista med alternativen R, A, B, rätt alternativ: A");
+    expect(chip.attributes("data-empty")).toBeUndefined();
     wrapper.unmount();
   });
 

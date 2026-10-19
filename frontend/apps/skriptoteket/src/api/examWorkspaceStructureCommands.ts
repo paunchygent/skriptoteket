@@ -43,10 +43,12 @@ export async function groupExamWorkspaceItems(
   lineageId: string,
   itemIds: string[],
   expectedCursor: string,
+  tabId: string,
 ): Promise<ExamWorkspaceCreatedPartResponse> {
   const body: Schemas["GroupExamItemsRequest"] = {
     expected_cursor: expectedCursor,
     item_ids: itemIds,
+    tab_id: tabId,
   };
   return await apiPost<ExamWorkspaceCreatedPartResponse>(`${parentsPath(lineageId)}/group`, body);
 }
@@ -56,10 +58,12 @@ export async function createEmptyExamWorkspacePart(
   lineageId: string,
   position: number,
   expectedCursor: string,
+  tabId: string,
 ): Promise<ExamWorkspaceCreatedPartResponse> {
   const body: Schemas["CreateEmptyExamPartRequest"] = {
     expected_cursor: expectedCursor,
     position,
+    tab_id: tabId,
   };
   return await apiPost<ExamWorkspaceCreatedPartResponse>(`${parentsPath(lineageId)}/empty`, body);
 }
@@ -70,10 +74,12 @@ export async function moveExamWorkspaceItem(
   itemId: string,
   targetParentId: string | null,
   expectedCursor: string,
+  tabId: string,
 ): Promise<ExamWorkspaceDocumentResponse> {
   const body: Schemas["MoveExamItemRequest"] = {
     expected_cursor: expectedCursor,
     item_id: itemId,
+    tab_id: tabId,
     target_parent_id: targetParentId,
   };
   return await apiPost<ExamWorkspaceDocumentResponse>(`${parentsPath(lineageId)}/move`, body);
@@ -96,8 +102,9 @@ export async function deleteExamWorkspaceChild(
   parentId: string,
   itemId: string,
   expectedCursor: string,
+  tabId: string,
 ): Promise<ExamWorkspaceDeleteResponse> {
-  const body: Schemas["ParentCommandRequest"] = { expected_cursor: expectedCursor };
+  const body: Schemas["ParentCommandRequest"] = { expected_cursor: expectedCursor, tab_id: tabId };
   return await apiFetch<ExamWorkspaceDeleteResponse>(
     `${parentsPath(lineageId)}/${encodeURIComponent(parentId)}/children/${encodeURIComponent(itemId)}`,
     { body, method: "DELETE" },
@@ -109,10 +116,12 @@ export async function reorderExamWorkspaceChildren(
   parentId: string,
   itemIds: string[],
   expectedCursor: string,
+  tabId: string,
 ): Promise<ExamWorkspaceDocumentResponse> {
   const body: Schemas["ReorderExamChildrenRequest"] = {
     expected_cursor: expectedCursor,
     item_ids: itemIds,
+    tab_id: tabId,
   };
   return await apiPut<ExamWorkspaceDocumentResponse>(
     `${parentsPath(lineageId)}/${encodeURIComponent(parentId)}/children/order`,
@@ -139,8 +148,9 @@ export async function deleteExamWorkspaceParent(
   parentId: string,
   mode: ExamParentDeleteMode,
   expectedCursor: string,
+  tabId: string,
 ): Promise<ExamWorkspaceDeleteResponse> {
-  const body: Schemas["ParentCommandRequest"] = { expected_cursor: expectedCursor };
+  const body: Schemas["ParentCommandRequest"] = { expected_cursor: expectedCursor, tab_id: tabId };
   return await apiFetch<ExamWorkspaceDeleteResponse>(
     `${parentsPath(lineageId)}/${encodeURIComponent(parentId)}${PARENT_DELETE_SUFFIX[mode]}`,
     { body, method: "DELETE" },

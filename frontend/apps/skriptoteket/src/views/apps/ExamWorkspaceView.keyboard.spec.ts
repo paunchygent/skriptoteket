@@ -134,6 +134,7 @@ describe("ExamWorkspaceView keyboard shortcuts", () => {
     expect(apiMocks.moveExamWorkspaceHistoryPosition).toHaveBeenCalledExactlyOnceWith("lineage-1", {
       expectedCursor: cursorStep,
       stepId: baselineId,
+      tabId: expect.any(String),
     });
   });
 
@@ -173,6 +174,7 @@ describe("ExamWorkspaceView keyboard shortcuts", () => {
     expect(apiMocks.moveExamWorkspaceHistoryPosition).toHaveBeenCalledExactlyOnceWith("lineage-1", {
       expectedCursor: cursorStep,
       stepId: baselineId,
+      tabId: expect.any(String),
     });
   });
 

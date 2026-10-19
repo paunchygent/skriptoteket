@@ -450,13 +450,14 @@ describe("withKeptGapRestored at a clicked block", () => {
     expectSaveable(result);
   });
 
-  it("falls back to the first block for an out-of-range block index", () => {
+  it("throws naming the id and the block for an out-of-range block index", () => {
     const { item, keptId } = splitKeptItem();
 
-    const result = withKeptGapRestored(item, keptId, 7);
-
-    expect(result.gaps[0]?.accepted_values[0]).toBe("ett");
-    expect(result.kept_gaps).toEqual([]);
-    expectSaveable(result);
+    expect(() => withKeptGapRestored(item, keptId, 7)).toThrow(
+      `cannot restore kept gap ${keptId}: block 7 is out of range`,
+    );
+    expect(() => withKeptGapRestored(item, keptId, -1)).toThrow(
+      `cannot restore kept gap ${keptId}: block -1 is out of range`,
+    );
   });
 });

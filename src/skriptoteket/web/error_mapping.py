@@ -4,6 +4,7 @@ from skriptoteket.domain.errors import ErrorCode
 
 ERROR_CODE_TO_STATUS: dict[ErrorCode, int] = {
     ErrorCode.VALIDATION_ERROR: 422,
+    ErrorCode.CONVERSION_IN_PROGRESS: 422,
     ErrorCode.UNAUTHORIZED: 401,
     ErrorCode.INVALID_CREDENTIALS: 401,
     ErrorCode.EMAIL_NOT_VERIFIED: 401,

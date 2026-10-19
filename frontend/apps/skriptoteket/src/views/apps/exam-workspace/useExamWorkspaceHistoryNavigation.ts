@@ -24,6 +24,7 @@ import type { ComputedRef, Ref } from "vue";
 import { isApiError } from "../../../api/client";
 import type { NativeExamDocument } from "../../../api/examWorkspace";
 import { useToast } from "../../../composables/useToast";
+import { isEditLeaseHeldError } from "./useExamWorkspaceEditLease";
 import { refusalReason, type StoreOutcome } from "./useExamWorkspaceSaveStatus";
 import type { ExamWorkspaceHistoryDeps } from "./useExamWorkspaceHistory";
 
@@ -55,13 +56,16 @@ export type ExamWorkspaceHistoryNavigationDeps = {
     | "historyCursor"
     | "install"
     | "isBlocked"
+    | "isReadOnly"
     | "isReplacing"
     | "lineageId"
     | "noteExportBlockers"
+    | "noteLeaseLost"
     | "onConflict"
     | "replaceCopy"
     | "savedRevision"
     | "shared"
+    | "tabId"
     | "workspaceDocument"
   >;
   /** The save status the navigation reports confirmed moves and refusals through. */
@@ -78,9 +82,11 @@ export function useExamWorkspaceHistoryNavigation(deps: ExamWorkspaceHistoryNavi
 
   /**
    * Move the server position to `stepId` and install that step's document,
-   * which the move also wrote to the exam file. A 409 keeps the 40-04-09 R9
-   * policy: reload the server copy and stop, without a toast. Any other
-   * failure toasts `failureCopy` and leaves the copy in place.
+   * which the move also wrote to the exam file. A stale-cursor 409 keeps the
+   * 40-04-09 R9 policy: reload the server copy and stop, without a toast. A
+   * 409 that names the edit lease instead turns the tab read-only and keeps
+   * the pending edit visible, with no reload. Any other failure toasts
+   * `failureCopy` and leaves the copy in place.
    */
   async function moveTo(stepId: string, failureCopy: string): Promise<boolean> {
     const lineageId = history.lineageId();
@@ -92,6 +98,7 @@ export function useExamWorkspaceHistoryNavigation(deps: ExamWorkspaceHistoryNavi
       const response = await history.shared.moveExamWorkspaceHistoryPosition(lineageId, {
         expectedCursor: cursor,
         stepId,
+        tabId: history.tabId(),
       });
       if (history.lineageId() !== lineageId) {
         return false;
@@ -107,7 +114,9 @@ export function useExamWorkspaceHistoryNavigation(deps: ExamWorkspaceHistoryNavi
       deps.status.confirmed(response.document);
       return true;
     } catch (error) {
-      if (isApiError(error) && error.status === 409) {
+      if (isEditLeaseHeldError(error)) {
+        history.noteLeaseLost();
+      } else if (isApiError(error) && error.status === 409) {
         await history.onConflict();
       } else if (isApiError(error) && error.status === 422) {
         // The step changes a placeholder still being converted: undo stops
@@ -126,7 +135,7 @@ export function useExamWorkspaceHistoryNavigation(deps: ExamWorkspaceHistoryNavi
   }
 
   async function undo(): Promise<void> {
-    if (!deps.canUndo.value || history.isBlocked() || history.isReplacing()) {
+    if (!deps.canUndo.value || history.isBlocked() || history.isReplacing() || history.isReadOnly()) {
       return;
     }
     // Locked from before the pending edit is stored, so nothing typed meanwhile is replaced.
@@ -164,7 +173,7 @@ export function useExamWorkspaceHistoryNavigation(deps: ExamWorkspaceHistoryNavi
   }
 
   async function redo(): Promise<void> {
-    if (!deps.canRedo.value || history.isBlocked() || history.isReplacing()) {
+    if (!deps.canRedo.value || history.isBlocked() || history.isReplacing() || history.isReadOnly()) {
       return;
     }
     const target = deps.ids.value[deps.index.value + 1];

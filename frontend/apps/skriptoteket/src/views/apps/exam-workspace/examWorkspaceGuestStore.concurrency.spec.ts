@@ -21,6 +21,7 @@ import {
   DOCUMENT_ID,
   exam,
   installGuestStoreObjectUrls,
+  LEASE_TAB_ID,
   openSecondTab,
   setupGuestStore,
   startBlank,
@@ -43,6 +44,7 @@ describe("examWorkspaceGuestStore concurrent writes", () => {
         afterStepId: null,
         document: exam(title),
         expectedCursor: opened.history_cursor,
+        tabId: LEASE_TAB_ID,
       });
 
     const outcomes = await Promise.allSettled([write(context.store, "Flik A"), write(second, "Flik B")]);
@@ -80,6 +82,7 @@ describe("examWorkspaceGuestStore concurrent writes", () => {
       expected_cursor: opened.history_cursor,
       instruction: [],
       position: 0,
+      tab_id: LEASE_TAB_ID,
     });
     await vi.waitFor(() => expect(context.mocks.createParent).toHaveBeenCalledOnce());
 
@@ -89,6 +92,7 @@ describe("examWorkspaceGuestStore concurrent writes", () => {
       afterStepId: null,
       document: exam("Nyare"),
       expectedCursor: opened.history_cursor,
+      tabId: LEASE_TAB_ID,
     });
 
     resolveCommand({ document: exam("Förlorare"), export_blockers: [] });
@@ -198,6 +202,7 @@ describe("examWorkspaceGuestStore concurrent writes", () => {
       afterStepId: null,
       document: exam("Nyare"),
       expectedCursor: opened.history_cursor,
+      tabId: LEASE_TAB_ID,
     });
 
     // This tab still stands on the old snapshot: its write loses the slot.
@@ -206,6 +211,7 @@ describe("examWorkspaceGuestStore concurrent writes", () => {
         afterStepId: null,
         document: exam("Äldre"),
         expectedCursor: opened.history_cursor,
+        tabId: LEASE_TAB_ID,
       })
       .catch((caught: unknown) => caught);
 

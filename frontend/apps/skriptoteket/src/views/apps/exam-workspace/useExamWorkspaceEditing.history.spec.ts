@@ -18,9 +18,11 @@
 import { flushPromises } from "@vue/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { ApiError } from "../../../api/client";
 import {
   conflict,
   exam,
+  LINEAGE,
   openEditing,
   response,
   stopScopes,
@@ -113,6 +115,75 @@ describe("conflict recovery under the replacing lock", () => {
     await editing.history.undo();
     expect(api.moveExamWorkspaceHistoryPosition).toHaveBeenCalledTimes(1);
     expect(editing.workspaceDocument.value!.title).toBe("Original");
+  });
+});
+
+describe("the edit lease on a 409 (K8)", () => {
+  function leaseHeld(): ApiError {
+    return new ApiError({
+      code: "EDIT_LEASE_HELD",
+      message: "Provet redigeras i en annan flik.",
+      status: 409,
+    });
+  }
+
+  it("turns read-only on a lease-held undo store and keeps the pending edit", async () => {
+    const { editing, server } = await openEditing(api);
+    editing.setTitle("Ett");
+    await editing.history.flush();
+    server.state.cursor = "other-tab";
+    editing.setTitle("Osparad");
+    api.storeExamWorkspaceUndoStep.mockRejectedValueOnce(leaseHeld());
+
+    await editing.history.undo();
+    await flushPromises();
+
+    expect(api.moveExamWorkspaceHistoryPosition).not.toHaveBeenCalled();
+    expect(api.getExamWorkspaceDocument).not.toHaveBeenCalled();
+    expect(editing.workspaceDocument.value!.title).toBe("Osparad");
+    expect(editing.history.pending.value).toBe(true);
+    expect(editing.readOnly.value).toBe(true);
+    expect(toast.failure).not.toHaveBeenCalled();
+  });
+
+  it("turns read-only on a lease-held server command without discarding the edit", async () => {
+    const { editing } = await openEditing(api);
+    editing.setTitle("Lärarens osparade text");
+    await editing.history.flush();
+    api.changeExamWorkspaceItemType.mockRejectedValueOnce(leaseHeld());
+
+    await editing.structure.changeType("item_001", "single_choice");
+
+    expect(api.getExamWorkspaceDocument).not.toHaveBeenCalled();
+    expect(editing.workspaceDocument.value!.title).toBe("Lärarens osparade text");
+    expect(editing.readOnly.value).toBe(true);
+  });
+
+  it("waits for a running operation on a busy-time 409 instead of skipping the reload", async () => {
+    const { editing } = await openEditing(api);
+    let releaseOpen!: (value: unknown) => void;
+    api.getExamWorkspaceDocument.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          releaseOpen = resolve;
+        }),
+    );
+    const opening = editing.openDocument(LINEAGE);
+    await flushPromises();
+    expect(api.getExamWorkspaceDocument).toHaveBeenCalledTimes(1);
+
+    api.getExamWorkspaceDocument.mockImplementationOnce(async () =>
+      response(exam("Från en annan flik"), "other-tab"),
+    );
+    const reloading = editing.reloadDocument();
+    await flushPromises();
+    expect(api.getExamWorkspaceDocument).toHaveBeenCalledTimes(1);
+
+    releaseOpen(response(exam("Opened"), "cursor-open"));
+    await opening;
+    await reloading;
+    expect(api.getExamWorkspaceDocument).toHaveBeenCalledTimes(2);
+    expect(editing.workspaceDocument.value!.title).toBe("Från en annan flik");
   });
 });
 

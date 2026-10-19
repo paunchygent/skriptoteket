@@ -119,7 +119,9 @@ function titled(document: NativeExamDocument, title: string): NativeExamDocument
 function setup(
   failFirstLoad = false,
   hooks: {
+    isReadOnly?: () => boolean;
     isReplacing?: () => boolean;
+    onLeaseLost?: () => void;
     replaceCopy?: <T>(run: () => Promise<T>) => Promise<T>;
     shared?: ExamWorkspaceSharedStore;
   } = {},
@@ -134,6 +136,7 @@ function setup(
   const historyCursor = ref<string | null>("step-0");
   const onConflict = vi.fn(async () => undefined);
   const noteStored = vi.fn();
+  const noteLeaseLost = vi.fn();
   const history = effectScope().run(() =>
     useExamWorkspaceHistory({
       historyCursor,
@@ -142,15 +145,21 @@ function setup(
       },
       isBlocked: () => false,
       isGuest: () => false,
+      isReadOnly: hooks.isReadOnly ?? (() => false),
       isReplacing: hooks.isReplacing ?? (() => false),
       replaceCopy: hooks.replaceCopy ?? ((run) => run()),
       lineageId: () => "lineage-1",
       noteExportBlockers: vi.fn(),
+      noteLeaseLost: () => {
+        noteLeaseLost();
+        hooks.onLeaseLost?.();
+      },
       noteStored,
       onConflict,
       savedRevision: () => baseline.revision,
       serverDocument,
       shared: hooks.shared ?? serverExamWorkspaceStore.shared,
+      tabId: () => "tab-1",
       workspaceDocument,
     }),
   )!;
@@ -158,7 +167,7 @@ function setup(
     workspaceDocument.value = titled(workspaceDocument.value!, title);
     history.noteEdit(structural);
   }
-  return { edit, history, historyCursor, noteStored, onConflict, server, workspaceDocument };
+  return { edit, history, historyCursor, noteLeaseLost, noteStored, onConflict, server, workspaceDocument };
 }
 
 beforeEach(() => {
@@ -336,7 +345,7 @@ describe("autosaved undo steps", () => {
     await history.flush(false);
 
     expect(useToastStore().toasts.map((toast) => toast.message)).toEqual([
-      "Ändringen kunde inte sparas som utkast. Försök igen.",
+      "Ändringarna kunde inte sparas. Vi försöker igen automatiskt.",
     ]);
   });
 
@@ -359,7 +368,7 @@ describe("autosaved undo steps", () => {
     await flushPromises();
 
     expect(useToastStore().toasts.map((toast) => toast.message)).toEqual([
-      "Ändringen kunde inte sparas som utkast. Försök igen.",
+      "Ändringarna kunde inte sparas. Vi försöker igen automatiskt.",
     ]);
 
     await expect(history.flush(false)).resolves.toBe(true);
@@ -386,7 +395,7 @@ describe("undo and redo through the position move", () => {
     expect(apiMocks.moveExamWorkspaceHistoryPosition).toHaveBeenCalledOnce();
     expect(apiMocks.moveExamWorkspaceHistoryPosition.mock.calls[0]).toEqual([
       "lineage-1",
-      { expectedCursor: cursor, stepId: "step-1" },
+      { expectedCursor: cursor, stepId: "step-1", tabId: "tab-1" },
     ]);
     expect(workspaceDocument.value!.title).toBe("one");
   });
@@ -448,5 +457,84 @@ describe("undo and redo through the position move", () => {
       "Det gick inte att göra om. Försök igen.",
     ]);
     expect(workspaceDocument.value!.title).toBe(buildParentDocument().title);
+  });
+});
+
+describe("the edit lease on writes", () => {
+  function leaseHeldError(): ApiError {
+    return new ApiError({
+      code: "EDIT_LEASE_HELD",
+      message: "Provet redigeras i en annan flik.",
+      status: 409,
+    });
+  }
+
+  it("sends the tab id on every store", async () => {
+    const { edit, history } = setup();
+    await flushPromises();
+    edit("one", true);
+    await history.flush(false);
+
+    expect(apiMocks.storeExamWorkspaceUndoStep).toHaveBeenCalledOnce();
+    expect(apiMocks.storeExamWorkspaceUndoStep.mock.calls[0]![1]).toMatchObject({ tabId: "tab-1" });
+  });
+
+  it("turns read-only on a lease-held store and keeps the pending edit, without a reload", async () => {
+    const isReadOnly = ref(false);
+    const { edit, history, noteLeaseLost, onConflict, workspaceDocument } = setup(false, {
+      isReadOnly: () => isReadOnly.value,
+      onLeaseLost: () => {
+        isReadOnly.value = true;
+      },
+    });
+    await flushPromises();
+    apiMocks.storeExamWorkspaceUndoStep.mockRejectedValueOnce(leaseHeldError());
+    edit("one", true);
+
+    await history.flush(false);
+
+    expect(noteLeaseLost).toHaveBeenCalledOnce();
+    expect(onConflict).not.toHaveBeenCalled();
+    expect(workspaceDocument.value!.title).toBe("one");
+    expect(history.pending.value).toBe(true);
+    expect(useToastStore().toasts).toEqual([]);
+  });
+
+  it("turns read-only on a lease-held move and never reads the step", async () => {
+    const isReadOnly = ref(false);
+    const { edit, history, noteLeaseLost, onConflict } = setup(false, {
+      isReadOnly: () => isReadOnly.value,
+      onLeaseLost: () => {
+        isReadOnly.value = true;
+      },
+    });
+    await flushPromises();
+    edit("one", true);
+    await history.flush(false);
+    apiMocks.moveExamWorkspaceHistoryPosition.mockRejectedValueOnce(leaseHeldError());
+
+    await history.undo();
+
+    expect(noteLeaseLost).toHaveBeenCalledOnce();
+    expect(onConflict).not.toHaveBeenCalled();
+    expect(apiMocks.getExamWorkspaceHistoryStep).not.toHaveBeenCalled();
+    expect(useToastStore().toasts).toEqual([]);
+  });
+
+  it("stops undo and redo while read-only and stores nothing", async () => {
+    const isReadOnly = ref(true);
+    const { edit, history, workspaceDocument } = setup(false, { isReadOnly: () => isReadOnly.value });
+    await flushPromises();
+    edit("one", true);
+    await history.flush(false);
+
+    expect(history.canUndo.value).toBe(false);
+    expect(history.canRedo.value).toBe(false);
+    expect(apiMocks.storeExamWorkspaceUndoStep).not.toHaveBeenCalled();
+
+    await history.undo();
+    expect(apiMocks.moveExamWorkspaceHistoryPosition).not.toHaveBeenCalled();
+    expect(workspaceDocument.value!.title).toBe("one");
+    isReadOnly.value = false;
   });
 });

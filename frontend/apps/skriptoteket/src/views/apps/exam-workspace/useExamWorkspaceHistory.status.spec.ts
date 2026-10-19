@@ -114,15 +114,18 @@ function setup(isGuest = false) {
       },
       isBlocked: () => false,
       isGuest: () => isGuest,
+      isReadOnly: () => false,
       isReplacing: () => false,
       replaceCopy: (run) => run(),
       lineageId: () => "lineage-1",
       noteExportBlockers: vi.fn(),
+      noteLeaseLost: vi.fn(),
       noteStored: vi.fn(),
       onConflict: async () => undefined,
       savedRevision: () => baseline.revision,
       serverDocument,
       shared: serverExamWorkspaceStore.shared,
+      tabId: () => "tab-1",
       workspaceDocument,
     }),
   )!;
@@ -205,7 +208,7 @@ describe("one computed save status", () => {
 
     expect(history.saveStatus.value).toEqual({
       state: "unsaved",
-      detail: "Ändringen kunde inte sparas som utkast. Försök igen.",
+      detail: "Ändringarna kunde inte sparas. Vi försöker igen automatiskt.",
     });
     expect(useToastStore().toasts).toHaveLength(1);
 
@@ -268,11 +271,16 @@ describe("one computed save status", () => {
 
   it("shows Inte sparat with the guard's message when a placeholder step is refused", async () => {
     const message =
-      "Provet sparades inte: frågor som fortfarande konverteras går inte att ändra, flytta eller ta bort förrän de är klara.";
+      "Provet kunde inte sparas. Vänta tills frågorna har konverterats innan du ändrar, flyttar eller tar bort dem.";
     const { edit, history } = setup();
     await flushPromises();
     apiMocks.storeExamWorkspaceUndoStep.mockRejectedValueOnce(
-      new ApiError({ code: "VALIDATION_ERROR", message, details: { item_ids: ["item_001"] }, status: 422 }),
+      new ApiError({
+        code: "CONVERSION_IN_PROGRESS",
+        message,
+        details: { item_ids: ["item_001"] },
+        status: 422,
+      }),
     );
 
     edit("one");

@@ -88,8 +88,9 @@ def refuse_placeholder_changes(
         )
     changed = changed_placeholders(progress=progress, base=base, saved=saved)
     if changed:
-        raise validation_error(
-            "Provet sparades inte: frågor som fortfarande konverteras går inte att ändra, "
-            "flytta eller ta bort förrän de är klara.",
+        raise DomainError(
+            code=ErrorCode.CONVERSION_IN_PROGRESS,
+            message="Provet kunde inte sparas. Vänta tills frågorna har konverterats "
+            "innan du ändrar, flyttar eller tar bort dem.",
             details={"item_ids": changed},
         )

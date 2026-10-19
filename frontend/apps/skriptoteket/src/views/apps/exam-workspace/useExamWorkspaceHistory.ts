@@ -7,11 +7,12 @@
  *   edit at once; each stored step also overwrites the exam file, so autosave
  *   is Spara. The server keeps at most 100 steps after the import baseline,
  *   so undo survives reload and reopening. Undo first stores any pending
- *   edit, so the pending edit itself can be redone; a 409 conflict (also
- *   from a move) reloads the server copy through `onConflict`, which
- *   replaces the pending edit, and undo stops. The 409 reload is the kept
- *   policy until TASK-SKRIPT-40-04-14 K8 designs a cross-tab policy that
- *   loses no typing silently.
+ *   edit, so the pending edit itself can be redone; a stale-cursor 409 reloads
+ *   the server copy through `onConflict`, which replaces the pending edit,
+ *   and undo stops. A 409 that names the edit lease (`EDIT_LEASE_HELD`)
+ *   instead turns the tab read-only and keeps the pending edit visible: no
+ *   reload, no retry while read-only. Only the tab that holds the lease
+ *   writes; undo and redo stop while read-only.
  *
  *   The history cursor is only a concurrency token: it rotates on every
  *   write and need not name a step. The step the editor stands on is the
@@ -54,6 +55,7 @@ import { useToast } from "../../../composables/useToast";
 import { sameDocument } from "./examWorkspaceConversionMerge";
 import { examWorkspaceSaveRefusalCopy } from "./examWorkspaceItemSaveRules";
 import type { ExamWorkspaceSharedStore } from "./examWorkspaceStore";
+import { isEditLeaseHeldError } from "./useExamWorkspaceEditLease";
 import { useExamWorkspaceHistoryDeparture } from "./useExamWorkspaceHistoryDeparture";
 import { useExamWorkspaceHistoryNavigation } from "./useExamWorkspaceHistoryNavigation";
 import {
@@ -73,6 +75,12 @@ export type ExamWorkspaceHistoryDeps = {
   historyCursor: Ref<string | null>;
   lineageId: () => string | null;
   savedRevision: () => number | null;
+  /** The tab id the edit lease holds; every store and move carries it. */
+  tabId: () => string;
+  /** True while another tab holds the edit lease: writes wait and undo stops. */
+  isReadOnly: () => boolean;
+  /** A write met `EDIT_LEASE_HELD`: turn read-only and keep the pending edit. */
+  noteLeaseLost: () => void;
   /** The shared store half the history reads and writes run through. */
   shared: ExamWorkspaceSharedStore;
   /** True while an import or a save may not be interleaved with a step write; excludes the replacing lock. */
@@ -134,7 +142,7 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
       !sameContent(deps.workspaceDocument.value, stepDocument.value),
   );
   const newestId = computed(() => ids.value[ids.value.length - 1] ?? null);
-  const ready = computed(() => position.value !== null && !navigating.value);
+  const ready = computed(() => position.value !== null && !navigating.value && !deps.isReadOnly());
   const canUndo = computed(() => ready.value && (pending.value || index.value > 0));
   const canRedo = computed(
     () => ready.value && !pending.value && index.value >= 0 && index.value < ids.value.length - 1,
@@ -212,8 +220,10 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
    * Stores `snapshot`, or the working copy: "stored" when the server's newest
    * step now holds it (or nothing needed storing), "refused" when the save
    * rules reject it, so it can never be a step, and "failed" otherwise: a
-   * network or server failure keeps the pending edit, while a 409 conflict
-   * reloads the server copy through `onConflict`, which replaces it. A draft
+   * network or server failure keeps the pending edit, while a stale-cursor
+   * 409 reloads the server copy through `onConflict`, which replaces it. A
+   * 409 that names the edit lease instead turns the tab read-only and keeps
+   *   the pending edit visible, with no reload and no toast. A draft
    * the save rules refuse never reaches the server: the refusal is decided
    * from the snapshot itself, with the server's 422 as the backstop for
    * refusals only it can see. The typing timer belongs to the working copy:
@@ -227,6 +237,11 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
   async function store(settle = false, snapshot: NativeExamDocument | null = null): Promise<StoreOutcome> {
     if (snapshot === null) {
       clearTimer();
+    }
+    if (deps.isReadOnly()) {
+      // A read-only tab keeps its pending edit visible but never writes: the
+      // write would only meet the lease it just lost.
+      return "failed";
     }
     const lineageId = deps.lineageId();
     const cursor = deps.historyCursor.value;
@@ -259,6 +274,7 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
         afterStepId: after,
         document,
         expectedCursor: cursor,
+        tabId: deps.tabId(),
       });
       if (deps.lineageId() !== lineageId) {
         return "failed";
@@ -278,7 +294,11 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
       }
       return "stored";
     } catch (error) {
-      if (isApiError(error) && error.status === 409) {
+      if (isEditLeaseHeldError(error)) {
+        // Another tab holds the lease: turn read-only and keep the pending
+        // edit visible, with no reload, no toast and no retry scheduled.
+        deps.noteLeaseLost();
+      } else if (isApiError(error) && error.status === 409) {
         await deps.onConflict();
       } else if (isApiError(error) && error.status === 422) {
         // Only the server sees this refusal, so it always toasts.
@@ -338,17 +358,22 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
    * an owed snapshot is a draft the save rules refuse, "failed" when a write
    * could not be stored. Undo tells them apart; every other caller only needs
    * whether the server's newest step holds the editor's document. A failed
-   * flush rearms the 5 s retry; a concluded flush clears it.
+   * flush rearms the 5 s retry unless the tab turned read-only, in which case
+   * the pending edit waits for a takeover instead; a concluded flush clears it.
    */
   function flushOutcome(settle = false): Promise<StoreOutcome> {
     return enqueue(async () => {
       if (!(await storeOwed())) {
-        status.scheduleRetry(() => void flush());
+        if (!deps.isReadOnly()) {
+          status.scheduleRetry(() => void flush());
+        }
         return "failed";
       }
       const outcome = await store(settle);
       if (outcome === "failed") {
-        status.scheduleRetry(() => void flush());
+        if (!deps.isReadOnly()) {
+          status.scheduleRetry(() => void flush());
+        }
       } else if (outcome === "stored") {
         status.clear();
       }
@@ -411,13 +436,16 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
       historyCursor: deps.historyCursor,
       install: deps.install,
       isBlocked: deps.isBlocked,
+      isReadOnly: deps.isReadOnly,
       isReplacing: deps.isReplacing,
       lineageId: deps.lineageId,
       noteExportBlockers: deps.noteExportBlockers,
+      noteLeaseLost: deps.noteLeaseLost,
       onConflict: deps.onConflict,
       replaceCopy: deps.replaceCopy,
       savedRevision: deps.savedRevision,
       shared: deps.shared,
+      tabId: deps.tabId,
       workspaceDocument: deps.workspaceDocument,
     },
     ids,

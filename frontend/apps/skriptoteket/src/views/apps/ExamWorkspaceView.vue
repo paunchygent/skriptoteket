@@ -32,6 +32,7 @@ import { computed, onMounted, provide, ref } from "vue";
 
 import { useToast } from "../../composables/useToast";
 import ExamWorkspaceDrawers from "./exam-workspace/ExamWorkspaceDrawers.vue";
+import ExamWorkspaceEditLeaseNotice from "./exam-workspace/ExamWorkspaceEditLeaseNotice.vue";
 import ExamWorkspaceEditorPane from "./exam-workspace/ExamWorkspaceEditorPane.vue";
 import ExamWorkspaceExportMenu from "./exam-workspace/ExamWorkspaceExportMenu.vue";
 import ExamWorkspaceHeader from "./exam-workspace/ExamWorkspaceHeader.vue";
@@ -83,9 +84,12 @@ const {
   openExam,
   importDocument,
   importBlocked,
+  readOnly,
+  requestTakeover,
   savedRevision,
   setTags,
   summary,
+  takeoverWaiting,
   titleWithoutText,
   workspaceDocument,
 } = editing;
@@ -171,7 +175,7 @@ const {
 } = selection;
 editing.registerSelectParent(selectEntry);
 
-const disabled = computed(() => isBusy.value || structure.running.value);
+const disabled = computed(() => isBusy.value || structure.running.value || readOnly.value);
 const blockers = computed(() => [
   ...examWorkspaceTitleBlockerEntries(titleWithoutText.value),
   ...examWorkspaceBlockerEntries(entries.value, items.value, readiness.value, exports.exportBlockersByItemId.value),
@@ -313,6 +317,11 @@ onMounted(() => {
       :message="signInPrompt"
       :depart="depart"
       @dismiss="dismissSignInPrompt"
+    />
+    <ExamWorkspaceEditLeaseNotice
+      v-if="readOnly && workspaceDocument"
+      :waiting="takeoverWaiting"
+      @takeover="requestTakeover"
     />
     <div
       v-if="enrichment.enrichmentMessage.value || enrichment.enrichmentLookupError.value"

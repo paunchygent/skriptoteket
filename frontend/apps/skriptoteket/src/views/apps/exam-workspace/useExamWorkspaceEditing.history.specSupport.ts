@@ -139,7 +139,41 @@ export function inScope<T>(run: () => T): T {
 
 export async function openEditing(api: EditingApiMocks, baseline = exam()) {
   const server = fakeServer(api, baseline);
-  const editing = inScope(() => useExamWorkspaceEditing(serverExamWorkspaceStore));
+  const editing = inScope(() =>
+    useExamWorkspaceEditing(serverExamWorkspaceStore, {
+      server: {
+        claim: () =>
+          Promise.resolve({
+            holder_tab_id: "tab-1",
+            renewed_at: "2026-10-19T12:00:00.000Z",
+            takeover_requested: false,
+            takeover_requested_by: null,
+          }),
+        release: () =>
+          Promise.resolve({
+            holder_tab_id: null,
+            renewed_at: null,
+            takeover_requested: false,
+            takeover_requested_by: null,
+          }),
+        renew: () =>
+          Promise.resolve({
+            holder_tab_id: "tab-1",
+            renewed_at: "2026-10-19T12:00:00.000Z",
+            takeover_requested: false,
+            takeover_requested_by: null,
+          }),
+        requestTakeover: () =>
+          Promise.resolve({
+            holder_tab_id: "tab-1",
+            renewed_at: "2026-10-19T12:00:00.000Z",
+            takeover_requested: false,
+            takeover_requested_by: null,
+          }),
+      },
+      tabId: "tab-1",
+    }),
+  );
   editing.applyCommandResponse(response(baseline, "step-0"));
   await flushPromises();
   return { editing, server };

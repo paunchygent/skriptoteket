@@ -25,6 +25,7 @@ import {
   createIds,
   exam,
   installGuestStoreObjectUrls,
+  LEASE_TAB_ID,
   type GuestStoreSetup,
 } from "./examWorkspaceGuestStore.specSupport";
 
@@ -88,6 +89,7 @@ describe("examWorkspaceGuestStore reactive snapshots", () => {
       afterStepId: null,
       document: edited.value,
       expectedCursor: opened.history_cursor,
+      tabId: LEASE_TAB_ID,
     });
 
     expect(step.document.title).toBe("Redigerad");
@@ -106,11 +108,13 @@ describe("examWorkspaceGuestStore reactive snapshots", () => {
       afterStepId: null,
       document: edited.value,
       expectedCursor: opened.history_cursor,
+      tabId: LEASE_TAB_ID,
     });
 
     expect(step.document.title).toBe("Sparad");
     const undone = await context.store.moveToHistoryStep(DOCUMENT_ID, {
       expectedCursor: step.history.cursor,
+      tabId: LEASE_TAB_ID,
       stepId: history.baseline_step_id,
     });
     expect(undone.history.position_step_id).toBe(history.baseline_step_id);
@@ -129,6 +133,7 @@ describe("examWorkspaceGuestStore reactive snapshots", () => {
       afterStepId: null,
       document: edited.value,
       expectedCursor: opened.history_cursor,
+      tabId: LEASE_TAB_ID,
     });
     edited.value.title = "Changed afterwards";
 

@@ -46,6 +46,9 @@ class ErrorCode(StrEnum):
     # Validation (400)
     VALIDATION_ERROR = "VALIDATION_ERROR"
 
+    # Conversion guard (422)
+    CONVERSION_IN_PROGRESS = "CONVERSION_IN_PROGRESS"
+
     # Server Errors (500)
     INTERNAL_ERROR = "INTERNAL_ERROR"
     DATABASE_ERROR = "DATABASE_ERROR"

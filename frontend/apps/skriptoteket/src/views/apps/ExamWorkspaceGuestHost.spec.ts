@@ -50,7 +50,8 @@ const storageMocks = vi.hoisted(() => ({
   stored: null as StoredGuestDraft | null,
 }));
 
-vi.mock("./exam-workspace/examWorkspaceGuestDraftStorage", () => ({
+vi.mock("./exam-workspace/examWorkspaceGuestDraftStorage", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("./exam-workspace/examWorkspaceGuestDraftStorage")>()),
   createExamWorkspaceGuestDraftStorage: () => ({
     async load() {
       return storageMocks.stored;
