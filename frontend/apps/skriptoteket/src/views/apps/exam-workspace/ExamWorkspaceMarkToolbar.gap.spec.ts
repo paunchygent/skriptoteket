@@ -67,7 +67,7 @@ describe("ExamWorkspaceMarkToolbar gap tool toggle", () => {
     const on = mount(ExamWorkspaceMarkToolbar, { props: { showGap: true, gapToolOn: true } });
     const toggle = on.get(GAP_TOOL);
     expect(toggle.attributes("aria-pressed")).toBe("true");
-    expect(toggle.classes()).toContain("bg-panel-muted");
+    expect(toggle.classes()).toContain("xw-tool--switch");
   });
 
   it("disables the toggle with its own cap reason", () => {
