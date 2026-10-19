@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "47c2bccb651cf1e30dae63680e98445a3f72dd6aa2e18371c518ac390c0da493",
+  "source_set_digest": "f6c4e2d82b33800f92f169bec5d24f97d035261597d5122f235e3b6a072e9c0e",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6901,7 +6901,7 @@
       "type": "task",
       "title": "The exam workspace header and toolbars share one compact control system with autosave status, file commands and a gap switch",
       "path": "docs/backlog/tasks/task-skript-40-04-17-the-exam-workspace-header-and-toolbars-share-one-compact-control-system-with-autosave-status-file-commands-and-a-gap-switch.md",
-      "status": "in_progress",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
@@ -6912,7 +6912,11 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-19",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User closure 2026-10-19 in Mac session 0b6afee3 (\"Close TASK-SKRIPT-40-04-17 as done\"). Independent ruthless-reviewer fd5c66c4 (Pi) at f87c2d44 returned changes_requested with F1-F3 medium and N1 low; all repaired at 7073e58e and admitted on focused proof without rereview. Merged to main as aac5bdfd and 32460f67. Hemma staging walks at 6a557b5d and 32460f67 passed every walked check; the 375 px coarse-pointer composition was not walked because Edge cannot emulate a coarse pointer or a window under 500 px."
       }
     },
     {
