@@ -188,4 +188,24 @@ describe("examWorkspacePrintedTotalMismatches", () => {
     const mismatches = examWorkspacePrintedTotalMismatches(document);
     expect(mismatches).toEqual([{ level: "exam", printed: 0, sum: 5, target: null }]);
   });
+
+  it("emits no part mismatch for a childless instruction block keeping its printed total", () => {
+    const document = documentOf(
+      [
+        question("item_001", 1, 10, 10),
+        question("item_002", 2, 5, 5),
+        question("item_003", 3, 5, 5),
+      ],
+      [
+        part("parent_001", 0, [], 8),
+        part("parent_002", 1, ["item_002", "item_003"], 12),
+      ],
+      30,
+    );
+
+    expect(examWorkspacePrintedTotalMismatches(document)).toEqual([
+      { level: "exam", printed: 30, sum: 20, target: "parent_002" },
+      { level: "part", parentId: "parent_002", printed: 12, sum: 10, target: null },
+    ]);
+  });
 });

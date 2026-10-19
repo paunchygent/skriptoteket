@@ -1,8 +1,12 @@
 import { describe, expect, it } from "vitest";
 
+import type { NativeExamDocument } from "../../../api/examWorkspace";
+import { newTeacherItem } from "./examWorkspaceItemEdits";
+import { examWorkspaceListEntries } from "./examWorkspaceListEntries";
 import { buildExamWorkspaceNoteLines } from "./examWorkspaceNoteLines";
 import type { ExamWorkspaceListEntry } from "./examWorkspaceListEntries";
 import type { PrintedTotalMismatch } from "./examWorkspaceTotals";
+import { examWorkspacePrintedTotalMismatches } from "./examWorkspaceTotals";
 
 function parentEntry(id: string, label: string): ExamWorkspaceListEntry {
   return { childIds: [], id, kind: "parent", label, points: 0, text: "" };
@@ -70,5 +74,52 @@ describe("buildExamWorkspaceNoteLines", () => {
       "part-parent_001",
       "part-parent_002",
     ]);
+  });
+
+  it("skips a childless instruction block with an empty list label", () => {
+    const mismatches: PrintedTotalMismatch[] = [
+      { level: "part", parentId: "parent_001", printed: 8, sum: 0, target: null },
+    ];
+    const entries = [parentEntry("parent_001", "")];
+    expect(buildExamWorkspaceNoteLines(mismatches, entries)).toEqual([]);
+  });
+
+  it("renders no line for a deleted last child while keeping a neighbouring part line", () => {
+    const document: NativeExamDocument = {
+      assets: [],
+      document_id: "00000000-0000-4000-8000-000000000001",
+      header: { printed_total: 30, tags: [] },
+      instructions: [],
+      items: [
+        { ...newTeacherItem("item_001", 1, "free_text"), points: 10, source_points: 10 },
+        { ...newTeacherItem("item_002", 2, "free_text"), points: 5, source_points: 5 },
+        { ...newTeacherItem("item_003", 3, "free_text"), points: 5, source_points: 5 },
+      ],
+      origin: { kind: "created" },
+      parents: [
+        { instruction: [], item_ids: [], parent_id: "parent_001", place: 0, printed_total: 8 },
+        {
+          instruction: [],
+          item_ids: ["item_002", "item_003"],
+          parent_id: "parent_002",
+          place: 1,
+          printed_total: 12,
+        },
+      ],
+      revision: 1,
+      schema_version: "native_exam_document_v9",
+      title: "Prov",
+    };
+
+    const mismatches = examWorkspacePrintedTotalMismatches(document);
+    const entries = examWorkspaceListEntries(document, {}, new Set());
+    const lines = buildExamWorkspaceNoteLines(mismatches, entries);
+
+    expect(mismatches.some((entry) => entry.level === "part" && entry.parentId === "parent_001")).toBe(
+      false,
+    );
+    expect(lines.map((line) => line.key)).toEqual(["exam", "part-parent_002"]);
+    expect(lines[0]!.target).toBe("parent_002");
+    expect(lines[1]!.text).toBe("Del 2 i provtexten säger 12 p, frågorna ger 10 p.");
   });
 });

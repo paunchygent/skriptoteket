@@ -33,7 +33,7 @@ export type ExamWorkspaceNoteLine = PrintedTotalNoteLine;
 
 /**
  * The footer lines in order, named with the list's part numbers; a part the
- * list never names is skipped.
+ * list never names, or names with no number, is skipped.
  */
 export function buildExamWorkspaceNoteLines(
   mismatches: PrintedTotalMismatch[],
@@ -54,7 +54,7 @@ export function buildExamWorkspaceNoteLines(
       continue;
     }
     const entry = entryById.get(mismatch.parentId);
-    if (!entry || entry.kind !== "parent") {
+    if (!entry || entry.kind !== "parent" || entry.label === "") {
       continue;
     }
     rendered.push({

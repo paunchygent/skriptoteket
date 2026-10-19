@@ -119,6 +119,9 @@ export function examWorkspacePrintedTotalMismatches(
       continue;
     }
     const children = childrenOf(parent.item_ids);
+    if (children.length === 0) {
+      continue;
+    }
     if (examWorkspacePrintedDifference(parent.printed_total, children) !== null) {
       differingParts.set(parentId, {
         printed: parent.printed_total,
