@@ -102,6 +102,7 @@ def _paragraph(text: str) -> NativeParagraph:
 def _parent(children: tuple[NativeExamItem, ...], *, instruction: str = "Gör alla deluppgifter."):
     return NativeExamParent(
         parent_id="parent_001",
+        place=min(child.sequence for child in children) - 1,
         instruction=(_paragraph(instruction),),
         item_ids=tuple(child.item_id for child in children),
     )
@@ -391,6 +392,7 @@ def test_instruction_and_child_pictures_keep_their_own_indexes() -> None:
     )
     instruction = NativeExamParent(
         parent_id="parent_001",
+        place=children[0].sequence - 1,
         instruction=(
             NativeParagraph(
                 heading_level=None,

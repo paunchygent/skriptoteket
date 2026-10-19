@@ -50,7 +50,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
     NativeExamDocumentOrigin,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import NativeExamItem
-from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import NativeExamParent
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import (
+    NativeExamParent,
+    validate_parent_structure,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
     NativeAnswerKey,
     NativeChoice,
@@ -410,6 +413,7 @@ def test_two_child_parent_keeps_the_stem_picture_and_each_childs_picture() -> No
     )
     parent = NativeExamParent(
         parent_id="parent_001",
+        place=pictured_child.sequence - 1,
         instruction=(
             NativeParagraph(
                 heading_level=2,
@@ -879,6 +883,7 @@ def test_an_ordering_child_in_a_parent_becomes_a_note_and_the_parent_keeps_its_o
     )
 
     assert [item.kind for item in container.document.items] == [NativeExamItemKind.FREE_TEXT]
+    assert container.document.parents[0].place == 0
     assert container.document.parents[0].item_ids == ("item_001",)
     assert container.notes == (
         "Fråga 1 – Sortera stegen: frågetypen stöds inte och importerades inte.",
@@ -904,3 +909,81 @@ def test_a_package_with_only_an_invalid_item_raises_the_swedish_validation_error
 
     assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
     assert exc_info.value.message == "QTI-paketet innehåller inga frågetyper som stöds."
+
+
+def test_two_parents_after_standalone_items_carry_their_own_places() -> None:
+    """Each imported parent stores the count of native items before its first child."""
+
+    def free_text(sequence: int, opening: str) -> ExamNetQtiItem:
+        return _qti_item(ExamNetQtiInteractionType.FREE_TEXT, sequence=sequence, opening=opening)
+
+    def parent(sequence: int, opening: str, first: int, second: int) -> ExamNetQtiItem:
+        return _qti_item(
+            ExamNetQtiInteractionType.SINGLE_CHOICE,
+            sequence=sequence,
+            opening=opening,
+            children=(
+                free_text(first, f"Deluppgift {first}"),
+                free_text(second, f"Deluppgift {second}"),
+            ),
+        )
+
+    container = build_native_exam_from_qti(
+        items=(
+            free_text(1, "Fristående först"),
+            parent(2, "Första delen", 1, 2),
+            free_text(3, "Fristående mellan"),
+            parent(4, "Andra delen", 3, 4),
+        ),
+        document_id=uuid4(),
+        source_filename="delar.zip",
+        source_sha256=_SOURCE_SHA,
+    )
+
+    document = container.document
+    assert [item.sequence for item in document.items] == [1, 2, 3, 4, 5, 6]
+    first_place = len(document.items[:1])
+    second_place = len(document.items[:4])
+    assert [parent.place for parent in document.parents] == [first_place, second_place]
+    assert document.parents[0].item_ids == ("item_002", "item_003")
+    assert document.parents[1].item_ids == ("item_005", "item_006")
+    validate_parent_structure(document.parents, document.items)
+
+
+def test_a_parent_with_a_skipped_first_child_counts_only_kept_items() -> None:
+    """A skipped first child never shifts the parent's place or its kept children."""
+
+    skipped = _qti_item(
+        ExamNetQtiInteractionType.SINGLE_CHOICE,
+        sequence=1,
+        opening="Bara ett alternativ",
+        choices=(ExamNetQtiChoice(identifier="c1", text="Ett"),),
+        correct_choice_identifiers=("c1",),
+    )
+    kept_first = _qti_item(ExamNetQtiInteractionType.FREE_TEXT, sequence=2, opening="Första kept")
+    kept_second = _qti_item(ExamNetQtiInteractionType.FREE_TEXT, sequence=3, opening="Andra kept")
+    stem = _qti_item(
+        ExamNetQtiInteractionType.SINGLE_CHOICE,
+        sequence=2,
+        opening="Deluppgifter",
+        children=(skipped, kept_first, kept_second),
+    )
+    leading = _qti_item(ExamNetQtiInteractionType.FREE_TEXT, sequence=1, opening="Fristående först")
+
+    container = build_native_exam_from_qti(
+        items=(leading, stem),
+        document_id=uuid4(),
+        source_filename="hoppad-forst.zip",
+        source_sha256=_SOURCE_SHA,
+    )
+
+    document = container.document
+    assert [item.sequence for item in document.items] == [1, 2, 3]
+    (imported_parent,) = document.parents
+    assert imported_parent.place == len(document.items[:1])
+    assert imported_parent.item_ids == ("item_002", "item_003")
+    assert document.items[1].sequence == imported_parent.place + 1
+    validate_parent_structure(document.parents, document.items)
+    assert container.notes == (
+        "Fråga 1 – Bara ett alternativ: frågetypen stöds inte och importerades inte.",
+    )

@@ -209,6 +209,7 @@ def _append_parent(
 ) -> None:
     """Map a stem and every child, keeping the children consecutive in item order."""
 
+    place = len(native_items)
     child_ids: list[str] = []
     for child in source.children:
         if _KINDS[child.interaction_type] is NativeExamItemKind.ORDERING:
@@ -237,6 +238,7 @@ def _append_parent(
     parents.append(
         NativeExamParent(
             parent_id=f"parent_{len(parents) + 1:03d}",
+            place=place,
             instruction=instruction,
             item_ids=tuple(child_ids),
         )
