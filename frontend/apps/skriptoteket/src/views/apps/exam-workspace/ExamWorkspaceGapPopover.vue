@@ -345,7 +345,12 @@ onMounted(() => {
     const target = options.value.find((option) => bodyText(option.body) === "") ?? options.value[0];
     if (target) {
       optionInput(target.choice_id)?.focus();
+      return;
     }
+    // An empty dropdown gap has no option row to focus; put focus on the
+    // add control, so Tom lucka always lands inside the popover and Enter
+    // or Space adds the first option.
+    root.value?.querySelector<HTMLElement>('[data-test="exam-workspace-gap-option-add"]')?.focus();
     return;
   }
   answerList.value?.focusFirst();
