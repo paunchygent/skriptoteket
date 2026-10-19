@@ -4,19 +4,12 @@ mark as printed; a source answer or facit line is never marked (D4, TASK-SKRIPT-
 reply without points takes the one points label the item's own chunks print, and the label
 leaves the stem (D3)."""
 
-from uuid import uuid4
-
 import pytest
 from pydantic import JsonValue
 
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_admission import (
     admit_batch,
 )
-from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_state import (
-    DocxBuildState,
-)
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedMetadata
-from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
 from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions import (
     LEFT_OUT_REASON,
 )
@@ -30,54 +23,16 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
     NativeItemReviewState,
     NativeParseOrigin,
 )
+from tests.unit.application.curated_apps.handlers.exam_workspace_docx_left_out_test_support import (
+    _STEM,
+    _item,
+    _state,
+    _text,
+)
 
 pytestmark = pytest.mark.unit
 
-_STEM = "1. Beskriv kort hur en intervju planeras."
 _FACIT = "Svar: syfte, urval och frågor bestäms i förväg."
-
-
-def _chunk(anchor: str, text: str) -> DocxChunk:
-    return DocxChunk(anchor, "paragraph", text, text)
-
-
-def _state(*texts: str, grouped_keys: frozenset[str] = frozenset()) -> DocxBuildState:
-    chunks = tuple(_chunk(f"body:{n:04d}", text) for n, text in enumerate(texts, start=1))
-    return DocxBuildState(
-        job_id=uuid4(),
-        document_id=uuid4(),
-        filename="prov.docx",
-        source_sha256="0" * 64,
-        chunks=chunks,
-        questions=(tuple(c.anchor for c in chunks),),
-        grouped_keys=grouped_keys,
-    )
-
-
-def _text(text: str) -> dict[str, JsonValue]:
-    return {"kind": "text", "text": text, "accepted_values": []}
-
-
-def _item(anchors: list[str], **fields: JsonValue) -> dict[str, JsonValue]:
-    item: dict[str, JsonValue] = {
-        "source_anchors": list(anchors),
-        "outcome": "converted",
-        "conflict_kind": None,
-        "review_reason": None,
-        "kind": "free_text",
-        "key_source": None,
-        "facit_text": None,
-        "printed_label": "1",
-        "body": [{"segments": [_text(_STEM[3:])]}],
-        "points": 2,
-        "choices": [],
-        "match_left": [],
-        "match_right": [],
-        "match_pairs": [],
-        "criteria": [],
-    }
-    item.update(fields)
-    return item
 
 
 def _stem_texts(item: NativeExamItem) -> list[str]:
@@ -478,131 +433,3 @@ def test_a_points_paragraph_the_reply_does_not_list_still_gives_its_question_the
     assert anchors[-1] == "body:0004"
     assert admitted.review.state is NativeItemReviewState.REVIEW_COMPLETE
     assert admitted.review.reasons == ()
-
-
-_WORD_BANK = "Använd orden: rim, meter, strof"
-
-
-def _left_out_events(state: DocxBuildState) -> list[tuple[int | None, tuple[str, ...]]]:
-    return [
-        (event.item, event.anchors) for event in state.events if event.code == "own_chunks_left_out"
-    ]
-
-
-def test_a_listed_own_chunk_no_paragraph_shows_is_flagged():
-    # The item lists the word bank, but its body shows only the stem: the listed chunk is no
-    # body paragraph's, no choice's and no matching entry's, so it is marked (D1, D2).
-    state = _state(_STEM, _WORD_BANK)
-
-    admit_batch({"items": [_item(["body:0001", "body:0002"])]}, state)
-
-    ((admitted, _),) = [(a.item, h) for a, h in state.accepted]
-    assert admitted.review.state is NativeItemReviewState.REVIEW_REQUIRED
-    assert admitted.review.reasons == (LEFT_OUT_REASON, _WORD_BANK)
-    assert _left_out_events(state) == [(0, ("body:0002",))]
-
-
-def test_a_listed_own_chunk_a_body_paragraph_shows_is_not_flagged_even_reworded():
-    # A listed chunk a body paragraph is aligned to is shown: no wording comparison (D7).
-    state = _state(_STEM)
-
-    body: JsonValue = [{"segments": [_text("Beskriv kort hur intervjun planeras.")]}]
-    admit_batch({"items": [_item(["body:0001"], body=body)]}, state)
-
-    ((admitted, _),) = [(a.item, h) for a, h in state.accepted]
-    assert admitted.review.reasons == ()
-    assert _left_out_events(state) == []
-
-
-def test_a_listed_facit_line_no_paragraph_shows_is_not_flagged():
-    facit = "Correct answer: A. rhyme scheme"
-    state = _state(_STEM, facit)
-
-    admit_batch({"items": [_item(["body:0001", "body:0002"])]}, state)
-
-    ((admitted, _),) = [(a.item, h) for a, h in state.accepted]
-    assert admitted.review.state is NativeItemReviewState.REVIEW_COMPLETE
-    assert admitted.review.reasons == ()
-    assert _left_out_events(state) == []
-
-
-def test_a_listed_points_line_no_paragraph_shows_is_not_flagged():
-    state = _state(_STEM, "(1 p)")
-
-    admit_batch({"items": [_item(["body:0001", "body:0002"])]}, state)
-
-    ((admitted, _),) = [(a.item, h) for a, h in state.accepted]
-    assert admitted.review.reasons == ()
-    assert _left_out_events(state) == []
-
-
-def test_a_listed_governing_chunk_no_paragraph_shows_is_not_flagged():
-    state = _state(_STEM, _WORD_BANK)
-    state.governing = frozenset({"body:0002"})
-
-    admit_batch({"items": [_item(["body:0001", "body:0002"])]}, state)
-
-    ((admitted, _),) = [(a.item, h) for a, h in state.accepted]
-    assert admitted.review.reasons == ()
-    assert _left_out_events(state) == []
-
-
-def test_a_listed_chunk_a_section_instruction_lists_is_not_flagged():
-    state = _state(_STEM, _WORD_BANK)
-    state.instructions = (ProducedMetadata(text=_WORD_BANK, source_anchors=("body:0002",)),)
-
-    admit_batch({"items": [_item(["body:0001", "body:0002"])]}, state)
-
-    ((admitted, _),) = [(a.item, h) for a, h in state.accepted]
-    assert admitted.review.reasons == ()
-    assert _left_out_events(state) == []
-
-
-def test_an_unlisted_and_a_listed_left_out_chunk_are_one_event_in_source_order():
-    # The lead is left out and unlisted; the word bank is listed but no paragraph shows it.
-    # One event names both in source order and the mark shows both (D1).
-    lead = "Läs dikten nedan."
-    state = _state(lead, _STEM, _WORD_BANK)
-
-    admit_batch({"items": [_item(["body:0002", "body:0003"])]}, state)
-
-    ((admitted, _),) = [(a.item, h) for a, h in state.accepted]
-    assert admitted.review.state is NativeItemReviewState.REVIEW_REQUIRED
-    assert admitted.review.reasons == (LEFT_OUT_REASON, lead, _WORD_BANK)
-    assert _left_out_events(state) == [(0, ("body:0001", "body:0003"))]
-
-
-def test_a_listed_blank_answer_line_no_paragraph_shows_is_not_flagged():
-    # A blank answer line is the response space the item's gap or answer field takes, so no
-    # paragraph shows it yet it is no left-out text (D2).
-    state = _state(_STEM, "________________")
-
-    admit_batch({"items": [_item(["body:0001", "body:0002"])]}, state)
-
-    ((admitted, _),) = [(a.item, h) for a, h in state.accepted]
-    assert admitted.review.state is NativeItemReviewState.REVIEW_COMPLETE
-    assert admitted.review.reasons == ()
-    assert _left_out_events(state) == []
-
-
-def test_an_unlisted_blank_answer_line_no_paragraph_shows_is_not_flagged():
-    state = _state(_STEM, "________________")
-
-    admit_batch({"items": [_item(["body:0001"])]}, state)
-
-    ((admitted, anchors),) = [(a.item, h) for a, h in state.accepted]
-    assert anchors == ("body:0001", "body:0002")
-    assert admitted.review.state is NativeItemReviewState.REVIEW_COMPLETE
-    assert admitted.review.reasons == ()
-    assert _left_out_events(state) == []
-
-
-def test_a_listed_word_bank_next_to_a_listed_blank_line_marks_only_the_word_bank():
-    state = _state(_STEM, _WORD_BANK, "________________")
-
-    admit_batch({"items": [_item(["body:0001", "body:0002", "body:0003"])]}, state)
-
-    ((admitted, _),) = [(a.item, h) for a, h in state.accepted]
-    assert admitted.review.state is NativeItemReviewState.REVIEW_REQUIRED
-    assert admitted.review.reasons == (LEFT_OUT_REASON, _WORD_BANK)
-    assert _left_out_events(state) == [(0, ("body:0002",))]
