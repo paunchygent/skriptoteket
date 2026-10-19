@@ -14,8 +14,9 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { mount } from "@vue/test-utils";
 
 import { useAuthStore } from "../../../stores/auth";
-import { EXAM_WORKSPACE_STORE_KEY, serverExamWorkspaceStore } from "./examWorkspaceStore";
+import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import type { ExamWorkspaceStore } from "./examWorkspaceStore";
+import { examWorkspaceProvidersPlugin } from "./examWorkspaceProviders.specSupport";
 import { useExamWorkspaceAiMode } from "./useExamWorkspaceAiMode";
 
 type Role = "user" | "contributor" | "admin" | "superuser";
@@ -32,8 +33,7 @@ function readMode(pinia: Pinia, store: ExamWorkspaceStore, role: Role): string {
   useAuthStore().user = { id: "u1", email: "u@example.test", role, auth_provider: "local" };
   const wrapper = mount(Probe, {
     global: {
-      plugins: [pinia],
-      provide: { [EXAM_WORKSPACE_STORE_KEY as symbol]: store },
+      plugins: [pinia, examWorkspaceProvidersPlugin({ store })],
     },
   });
   const mode = wrapper.get('[data-test="ai-mode"]').text();

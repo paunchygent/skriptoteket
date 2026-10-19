@@ -22,8 +22,7 @@ import { AI_ADMIN_ONLY_NOTE } from "../../../composables/useAiAccess";
 import { useAuthStore } from "../../../stores/auth";
 import ExamWorkspaceExportBlockers from "./ExamWorkspaceExportBlockers.vue";
 import type { ExamWorkspaceBlockerEntry } from "./examWorkspaceBlockers";
-import { EXAM_WORKSPACE_SIGN_IN_KEY } from "./examWorkspaceSignIn";
-import { EXAM_WORKSPACE_STORE_KEY, serverExamWorkspaceStore } from "./examWorkspaceStore";
+import { examWorkspaceProvidersPlugin } from "./examWorkspaceProviders.specSupport";
 
 type Role = "user" | "contributor" | "admin" | "superuser";
 
@@ -53,11 +52,7 @@ function mountBlockers(pinia: Pinia, blockers: ExamWorkspaceBlockerEntry[]) {
   return mount(ExamWorkspaceExportBlockers, {
     props: { blockers, fixDisabled: false, suggestBusy: false, testId: "exam-workspace-blockers" },
     global: {
-      plugins: [pinia],
-      provide: {
-        [EXAM_WORKSPACE_SIGN_IN_KEY as symbol]: () => undefined,
-        [EXAM_WORKSPACE_STORE_KEY as symbol]: serverExamWorkspaceStore,
-      },
+      plugins: [pinia, examWorkspaceProvidersPlugin()],
     },
   });
 }

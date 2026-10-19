@@ -18,8 +18,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { AI_ADMIN_ONLY_NOTE } from "../../../composables/useAiAccess";
 import { useAuthStore } from "../../../stores/auth";
 import ExamWorkspaceHeader from "./ExamWorkspaceHeader.vue";
-import { EXAM_WORKSPACE_SIGN_IN_KEY } from "./examWorkspaceSignIn";
-import { EXAM_WORKSPACE_STORE_KEY, serverExamWorkspaceStore } from "./examWorkspaceStore";
+import { examWorkspaceProvidersPlugin } from "./examWorkspaceProviders.specSupport";
 
 const SUGGEST_TITLE = "Föreslå facit för frågor som saknar facit";
 
@@ -49,11 +48,7 @@ function mountHeader(pinia: Pinia, overrides: Partial<HeaderProps> = {}) {
   return mount(ExamWorkspaceHeader, {
     props: props(overrides),
     global: {
-      plugins: [pinia],
-      provide: {
-        [EXAM_WORKSPACE_SIGN_IN_KEY as symbol]: () => undefined,
-        [EXAM_WORKSPACE_STORE_KEY as symbol]: serverExamWorkspaceStore,
-      },
+      plugins: [pinia, examWorkspaceProvidersPlugin()],
     },
   });
 }

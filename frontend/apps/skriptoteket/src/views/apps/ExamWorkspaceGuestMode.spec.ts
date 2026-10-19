@@ -255,7 +255,7 @@ async function mountGuestView(store: ReturnType<typeof createGuestExamWorkspaceS
     props: { store },
     global: {
       plugins: [createPinia(), createTestRouter()],
-      provide: { [EXAM_WORKSPACE_LAYOUT_KEY as symbol]: layout },
+      provide: { [EXAM_WORKSPACE_LAYOUT_KEY]: layout },
     },
   });
   await flushPromises();

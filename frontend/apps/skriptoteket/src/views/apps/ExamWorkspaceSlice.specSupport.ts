@@ -193,7 +193,7 @@ export async function mountExamWorkspace(
     props: { store: serverExamWorkspaceStore },
     global: {
       plugins: [pinia, router],
-      provide: { [EXAM_WORKSPACE_LAYOUT_KEY as symbol]: layoutRef },
+      provide: { [EXAM_WORKSPACE_LAYOUT_KEY]: layoutRef },
     },
   });
   await flushPromises();
