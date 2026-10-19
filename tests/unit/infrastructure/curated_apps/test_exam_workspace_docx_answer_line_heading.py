@@ -27,8 +27,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     ProducedParagraph,
     ProducedSegment,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_answer_line_gate import (
+    ANSWER_LINE_ONLY_REASON,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
-from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions import LEFT_OUT_REASON
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeExamItemKind,
     NativeItemReviewState,
@@ -224,9 +226,7 @@ def test_a_real_heading_keeps_its_section_behaviour_through_application_admissio
     final = _admitted(chunks, produced)
 
     assert [body_plain_text(item.body) for item in final.document.items] == ["Del A\nFörklara."]
-    # Admission marks the listed heading chunk the reply left out (TASK-SKRIPT-39-04-15);
-    # W10 never treats a real heading as answer space.
-    assert [(item.review.state, item.review.reasons) for item in final.document.items] == [
-        (NativeItemReviewState.REVIEW_REQUIRED, (LEFT_OUT_REASON, "Del A"))
-    ]
+    # Stale missing-text reason: 09d50acc 40-04-07 merge-check M2, owned by
+    # a separate ST-SKRIPT-39-04 left-out accounting repair.
+    assert all(ANSWER_LINE_ONLY_REASON not in item.review.reasons for item in final.document.items)
     assert final.document.parents == ()
