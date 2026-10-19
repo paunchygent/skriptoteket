@@ -102,7 +102,9 @@ changes (`~/logs/replays-39-04-17-final/`, retained
   is not installed in this worktree).
 - The first domain suite at `2def276f` (19 failed, 4230 passed, 59 skipped)
   found the guard and review-body gaps that D7-D9 settle.
-- Next: the domain suite in the orchestrator's slot, then independent review.
+- Domain suite at `48852ace`: 4262 passed, 59 skipped
+  (`~/logs/suite-39-04-17-final.log`).
+- Next: independent review, routed by the orchestrator.
 - Branch `codex/task-skript-39-04-17-remote`, worktree
   `/home/paunchygent/apps/skriptoteket-task-skript-39-04-17-remote`; never
   pushed.
