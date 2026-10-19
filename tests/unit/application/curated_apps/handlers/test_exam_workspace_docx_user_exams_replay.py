@@ -120,3 +120,31 @@ async def test_the_box_and_the_closing_reminder_are_the_instructions_once(exam: 
     text = _exam_text(document)
     assert text.count(BOX) == 1
     assert text.count(REMINDER) == 1
+
+
+@pytest.mark.parametrize("exam", EXAMS)
+async def test_no_item_body_holds_a_lone_score_field_slash(exam: str) -> None:
+    document = await _document(exam)
+
+    for item in document.items:
+        assert not [line for line in body_text_lines(item.body) if line.strip() == "/"], (
+            item.sequence
+        )
+
+
+async def test_omprov_items_keep_their_points_in_sequence_order() -> None:
+    document = await _document("omprov_grammatik_sve2")
+
+    items = sorted(document.items, key=lambda item: item.sequence)
+    assert [item.points for item in items] == [4, 8, 4, 4, 10, 10, 9, 6, 12]
+
+
+@pytest.mark.parametrize("exam", EXAMS)
+async def test_the_tips_line_keeps_its_slashes(exam: str) -> None:
+    document = await _document(exam)
+
+    assert any(
+        "verb/nominaliseringar" in line
+        for item in document.items
+        for line in body_text_lines(item.body)
+    )

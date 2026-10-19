@@ -8,6 +8,9 @@
  * - Logga in opens the HuleEdu ceremony directly with the route's continuation
  * - the page frame is centred at 1040 px with the signed-in frame's padding;
  *   route-level hero surfaces own the strongest next step
+ * - public documents.conversion_hub routes fill the frame
+ *   (landing-main--workspace / landing-frame--workspace); other routes keep
+ *   the 1040 px column
  */
 
 import { computed } from "vue";
@@ -19,6 +22,16 @@ import ShellBarButton from "./ShellBarButton.vue";
 import ShellHelpButton from "./ShellHelpButton.vue";
 
 const route = useRoute();
+const FULL_FRAME_PUBLIC_APP_IDS = new Set(["documents.conversion_hub"]);
+
+const isFullFrameWorkspaceRoute = computed(() => {
+  if (route.name !== "public-app-capability-detail" && route.name !== "public-app-detail") {
+    return false;
+  }
+
+  const appId = route.params.appId;
+  return typeof appId === "string" && FULL_FRAME_PUBLIC_APP_IDS.has(appId);
+});
 const loginUrl = computed(() => {
   const continuation = resolveLandingAuthContinuation(route);
   return sharedAuthCeremonyUrl({
@@ -50,8 +63,14 @@ const loginUrl = computed(() => {
       </div>
     </header>
 
-    <main class="landing-main">
-      <div class="landing-frame">
+    <main
+      class="landing-main"
+      :class="{ 'landing-main--workspace': isFullFrameWorkspaceRoute }"
+    >
+      <div
+        class="landing-frame"
+        :class="{ 'landing-frame--workspace': isFullFrameWorkspaceRoute }"
+      >
         <slot />
       </div>
     </main>
@@ -137,6 +156,19 @@ const loginUrl = computed(() => {
 
   .landing-main {
     padding: var(--huleedu-space-8);
+  }
+}
+
+/* The guest workspace fills the frame on desktop only (TASK-SKRIPT-41-02-04):
+   tablet and phone keep the existing centred guest frame. */
+@media (min-width: 1280px) {
+  .landing-main.landing-main--workspace {
+    padding: 0;
+  }
+
+  .landing-frame.landing-frame--workspace {
+    max-width: none;
+    margin: 0;
   }
 }
 </style>

@@ -16,6 +16,24 @@ function storageKey(prefix: string, userId: string): string {
   return `${prefix}:${userId}`;
 }
 
+/** Storage is a convenience; an unreadable value reads as the default. */
+function readFlag(prefix: string, userId: string): boolean {
+  try {
+    return localStorage.getItem(storageKey(prefix, userId)) === "1";
+  } catch {
+    return false;
+  }
+}
+
+/** Storage is a convenience; a failed write leaves the in-memory state. */
+function writeFlag(prefix: string, userId: string, value: boolean): void {
+  try {
+    localStorage.setItem(storageKey(prefix, userId), value ? "1" : "0");
+  } catch {
+    // Storage can be full or blocked; the in-memory state still holds this visit.
+  }
+}
+
 export const useLayoutStore = defineStore("layout", () => {
   const focusMode = ref(false);
   const sidebarCollapsed = ref(false);
@@ -29,16 +47,15 @@ export const useLayoutStore = defineStore("layout", () => {
       return;
     }
 
-    focusMode.value = localStorage.getItem(storageKey(FOCUS_MODE_STORAGE_PREFIX, userId)) === "1";
-    sidebarCollapsed.value =
-      localStorage.getItem(storageKey(SIDEBAR_COLLAPSED_STORAGE_PREFIX, userId)) === "1";
+    focusMode.value = readFlag(FOCUS_MODE_STORAGE_PREFIX, userId);
+    sidebarCollapsed.value = readFlag(SIDEBAR_COLLAPSED_STORAGE_PREFIX, userId);
   }
 
   function persist(prefix: string, value: boolean): void {
     if (!activeUserId.value) {
       return;
     }
-    localStorage.setItem(storageKey(prefix, activeUserId.value), value ? "1" : "0");
+    writeFlag(prefix, activeUserId.value, value);
   }
 
   function setPersisted(state: Ref<boolean>, prefix: string, value: boolean): void {

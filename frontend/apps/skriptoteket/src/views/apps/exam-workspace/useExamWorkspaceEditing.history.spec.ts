@@ -255,10 +255,18 @@ describe("conflict recovery under the replacing lock", () => {
     editing.setTitle("Osparad");
 
     await editing.history.undo();
+    await flushPromises();
 
     expect(api.getExamWorkspaceDocument).toHaveBeenCalledOnce();
     expect(api.getExamWorkspaceHistoryStep).not.toHaveBeenCalled();
     expect(editing.workspaceDocument.value!.title).toBe("Från en annan flik");
+    // The decided 409 policy: the reload replaces the pending edit.
+    expect(editing.history.pending.value).toBe(false);
+
+    // The reloaded history still navigates: the next undo reads its earlier step.
+    await editing.history.undo();
+    expect(api.getExamWorkspaceHistoryStep).toHaveBeenCalledTimes(1);
+    expect(editing.workspaceDocument.value!.title).toBe("Original");
   });
 });
 
