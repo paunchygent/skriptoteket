@@ -16,16 +16,11 @@
  *   marking a machine proposal as reviewed becomes `reviewed_advisory`.
  */
 
-import type { Editor } from "@tiptap/core";
 import { DOMWrapper, flushPromises } from "@vue/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ApiError } from "../../api/client";
-import type {
-  ExamWorkspaceConversionStatus,
-  ExamWorkspaceDocumentResponse,
-  NativeExamDocument,
-} from "../../api/examWorkspace";
+import type { saveExamWorkspaceDocument } from "../../api/examWorkspace";
 import { useToastStore } from "../../stores/toast";
 import {
   buildResponse,
@@ -33,36 +28,20 @@ import {
   mountExamWorkspace,
   saveDocument,
   selectItemRow,
-  type ViewWrapper,
 } from "./ExamWorkspaceSlice.specSupport";
+import {
+  addQuestion,
+  buildTwoGapResponse,
+  clickGap,
+  commitGapRow,
+  firstSaveRequest,
+  gapRowInputs,
+  lastSavedDocument,
+  rowStatus,
+  succeededConversion,
+} from "./ExamWorkspaceWalkingSkeletonSlice.specSupport";
 
 import { arrangeStepHistory } from "./ExamWorkspaceHistory.specSupport";
-
-/** Every input of one accepted-answer row list (a gap popover's or the Kort svar Svar field's). */
-function answerRowInputs(groupTestId: string): HTMLInputElement[] {
-  return Array.from(
-    document.querySelectorAll<HTMLInputElement>(`[data-test="${groupTestId}-input"]`),
-  );
-}
-
-/** The accepted-answer row inputs of one gap in the open popover (teleported to the body). */
-function gapRowInputs(gapId: string): HTMLInputElement[] {
-  return answerRowInputs(`exam-workspace-gap-values-${gapId}`);
-}
-
-/** Type a value into one accepted-answer row and commit the list, as leaving the row does. */
-async function commitAnswerRow(groupTestId: string, index: number, value: string): Promise<void> {
-  const row = new DOMWrapper(answerRowInputs(groupTestId)[index]!);
-  row.element.value = value;
-  await row.trigger("input");
-  row.element.dispatchEvent(new Event("change", { bubbles: true }));
-  await flushPromises();
-}
-
-/** Type a value into one gap popover row and commit, as leaving the row does. */
-async function commitGapRow(gapId: string, index: number, value: string): Promise<void> {
-  await commitAnswerRow(`exam-workspace-gap-values-${gapId}`, index, value);
-}
 
 const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceHistory: vi.fn(),
@@ -75,96 +54,13 @@ const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceConversionStatus: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
   requestExamWorkspaceAnswerMisspellings: vi.fn(),
-  saveExamWorkspaceDocument: vi.fn(),
+  saveExamWorkspaceDocument: vi.fn<typeof saveExamWorkspaceDocument>(),
 }));
 
 vi.mock("../../api/examWorkspace", async () => ({
   ...apiMocks,
   getExamCourseCatalog: (await import("../../test/examCourseCatalog")).getExamCourseCatalog,
 }));
-
-function lastSavedDocument(): NativeExamDocument {
-  const calls = apiMocks.saveExamWorkspaceDocument.mock.calls;
-  const [, params] = calls[calls.length - 1] as [
-    string,
-    { document: NativeExamDocument; expectedRevision: number },
-  ];
-  return params.document;
-}
-
-/** Choose a question type from the list's Ny fråga menu (teleported to the body). */
-/**
- * Click a gap in the question text as a user does. jsdom has no layout, so the
- * editor's own click handler is called with the gap as the clicked node.
- */
-async function clickGap(wrapper: ViewWrapper, gapId: string): Promise<void> {
-  const { editor } = wrapper.get('[data-test="exam-workspace-body-editor-surface"]')
-    .element as HTMLElement & { editor: Editor };
-  let pos = -1;
-  editor.state.doc.descendants((node, nodePos) => {
-    if (pos < 0 && node.type.name === "examGap" && node.attrs.gapId === gapId) pos = nodePos;
-    return pos < 0;
-  });
-  const node = editor.state.doc.nodeAt(pos)!;
-  editor.view.someProp("handleClickOn", (handler) =>
-    handler(editor.view, pos, node, pos, new MouseEvent("click"), true),
-  );
-  await flushPromises();
-}
-
-async function addQuestion(wrapper: ViewWrapper, kind: string) {
-  await wrapper.find('[data-test="exam-workspace-new"]').trigger("click");
-  document.body.querySelector<HTMLElement>(`[data-test="exam-workspace-new-${kind}"]`)!.click();
-  await flushPromises();
-}
-
-function rowStatus(wrapper: ViewWrapper, itemId: string): string | undefined {
-  return wrapper
-    .find(`[data-test="exam-workspace-row-${itemId}"] [role="img"][aria-label$="granskas"], [data-test="exam-workspace-row-${itemId}"] [role="img"][aria-label="Granskad"]`)
-    .attributes("aria-label");
-}
-
-/** The imported exam with the given items as gap items keyed in two gaps, so one gap can be cleared on its own. */
-function buildTwoGapResponse(
-  gapItemIds: string[] = ["item_004"],
-): ExamWorkspaceDocumentResponse {
-  const response = buildResponse({ conversion: succeededConversion, version: 1 });
-  return {
-    ...response,
-    document: {
-      ...response.document,
-      items: response.document.items.map((item) =>
-        gapItemIds.includes(item.item_id)
-          ? {
-              ...item,
-              answer_key: { correct_choice_ids: [], match_pairs: [], origin: "teacher_authored" },
-              kind: "gap_fill",
-              body: [
-                { heading_level: null, segments: [
-                    { kind: "text", marks: [], text: "Vatten kokar vid" },
-                    { gap_id: "gap_001", kind: "gap" },
-                    { kind: "text", marks: [], text: "grader och fryser vid" },
-                    { gap_id: "gap_002", kind: "gap" },
-                    { kind: "text", marks: [], text: "grader." },
-                  ],
-                },
-              ],
-              gaps: [
-                { accepted_values: ["100"], automatic_values: [], excluded_automatic_values: [], gap_id: "gap_001", options: [], correct_option_id: null },
-                { accepted_values: ["0"], automatic_values: [], excluded_automatic_values: [], gap_id: "gap_002", options: [], correct_option_id: null },
-              ],
-            }
-          : item,
-      ),
-    },
-  };
-}
-
-/** The finished import: its poll status, and the conversion its fetched document carries. */
-const succeededConversion: ExamWorkspaceConversionStatus = {
-  job_id: "job-1", lineage_id: "lineage-1", state: "succeeded", error_message: null, summary: null,
-  document_revision: 1, questions_total: 0, questions_done: 0, units: [],
-};
 
 beforeEach(() => {
   apiMocks.getExamWorkspaceConversionStatus.mockResolvedValue(succeededConversion);
@@ -238,89 +134,6 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
     expect(wrapper.find('[data-test="exam-workspace-save-state"]').text()).toBe("Osparat");
   });
 
-  it("adds a short answer as a Kort svar with one unkeyed gap after the question text", async () => {
-    apiMocks.saveExamWorkspaceDocument.mockResolvedValue(buildResponse({ version: 2 }));
-    const { wrapper } = await mountExamWorkspace();
-    await importFixtureDocument(wrapper);
-
-    await addQuestion(wrapper, "short_answer");
-
-    const newRow = wrapper.find('[data-test="exam-workspace-row-item_009"]');
-    expect(newRow.text()).toContain("Kort svar");
-    await saveDocument(wrapper);
-
-    const [, params] = apiMocks.saveExamWorkspaceDocument.mock.calls[0] as [
-      string,
-      { document: NativeExamDocument; expectedRevision: number },
-    ];
-    const added = params.document.items.find((item) => item.item_id === "item_009")!;
-    expect(added.kind).toBe("gap_fill");
-    expect(added.answer_key.origin).toBe("absent");
-    expect(added.body).toEqual([
-      { heading_level: null, segments: [{ kind: "gap", gap_id: "gap_001" }] },
-    ]);
-    expect(added.gaps).toEqual([
-      { gap_id: "gap_001", accepted_values: [], automatic_values: [], excluded_automatic_values: [], options: [], correct_option_id: null },
-    ]);
-    expect(added.points).toBeNull();
-  });
-
-  it("a Kort svar shows only Frågetext and Godkända svar and saves a one-gap Lucktext", async () => {
-    apiMocks.saveExamWorkspaceDocument.mockResolvedValue(buildResponse({ version: 2 }));
-    const { wrapper } = await mountExamWorkspace();
-    await importFixtureDocument(wrapper);
-
-    await addQuestion(wrapper, "short_answer");
-
-    expect(wrapper.find('[data-test="exam-workspace-row-item_009"]').text()).toContain("Kort svar");
-    expect(wrapper.find('[data-test="exam-workspace-type"]').text()).toContain("Kort svar");
-    expect(wrapper.find('[data-test="exam-workspace-short-answer"]').exists()).toBe(true);
-    expect(wrapper.find('[data-test="exam-workspace-body-editor"]').exists()).toBe(false);
-
-    const surface = wrapper.get('[data-test="exam-workspace-short-answer-question"]')
-      .element as HTMLElement & { editor: Editor };
-    surface.editor.commands.insertContent("Vad heter Sveriges huvudstad?");
-    await flushPromises();
-    const svarRow = wrapper.find<HTMLInputElement>(
-      '[data-test="exam-workspace-short-answer-values-input"]',
-    );
-    svarRow.element.value = "Stockholm";
-    await svarRow.trigger("input");
-    svarRow.element.dispatchEvent(new Event("change", { bubbles: true }));
-    await flushPromises();
-
-    await saveDocument(wrapper);
-
-    const added = lastSavedDocument().items.find((item) => item.item_id === "item_009")!;
-    expect(added.kind).toBe("gap_fill");
-    expect(added.body).toEqual([
-      { heading_level: null, segments: [{ kind: "text", marks: [], text: "Vad heter Sveriges huvudstad?" }] },
-      { heading_level: null, segments: [{ gap_id: "gap_001", kind: "gap" }] },
-    ]);
-    expect(added.gaps[0]?.accepted_values).toEqual(["Stockholm"]);
-  });
-
-  it("a new Lucktext saves empty and shows the Frågetext editor with the Lucka button", async () => {
-    apiMocks.saveExamWorkspaceDocument.mockResolvedValue(buildResponse({ version: 2 }));
-    const { wrapper } = await mountExamWorkspace();
-    await importFixtureDocument(wrapper);
-
-    await addQuestion(wrapper, "gap_fill");
-
-    expect(wrapper.find('[data-test="exam-workspace-row-item_009"]').text()).toContain("Lucktext");
-    expect(wrapper.find('[data-test="exam-workspace-short-answer"]').exists()).toBe(false);
-    expect(wrapper.find('[data-test="exam-workspace-body-editor"]').exists()).toBe(true);
-    expect(wrapper.find('[data-test="exam-workspace-body-editor"]').text()).toContain("Frågetext");
-    expect(wrapper.find('[data-test="exam-workspace-toolbar-make-gap"]').exists()).toBe(true);
-
-    await saveDocument(wrapper);
-
-    const added = lastSavedDocument().items.find((item) => item.item_id === "item_009")!;
-    expect(added.kind).toBe("gap_fill");
-    expect(added.body).toEqual([]);
-    expect(added.gaps).toEqual([]);
-  });
-
   it("saves with the bumped client-side revision and the previous expected revision", async () => {
     apiMocks.saveExamWorkspaceDocument.mockResolvedValue(buildResponse({ version: 2 }));
     const { wrapper } = await mountExamWorkspace();
@@ -333,10 +146,7 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
     await saveDocument(wrapper);
 
     expect(apiMocks.saveExamWorkspaceDocument).toHaveBeenCalledTimes(1);
-    const [lineageId, params] = apiMocks.saveExamWorkspaceDocument.mock.calls[0] as [
-      string,
-      { document: NativeExamDocument; expectedRevision: number },
-    ];
+    const { lineageId, params } = firstSaveRequest(apiMocks.saveExamWorkspaceDocument);
     expect(lineageId).toBe("lineage-1");
     expect(params.expectedRevision).toBe(1);
     expect(params.document.revision).toBe(2);
@@ -360,7 +170,7 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
 
     await saveDocument(wrapper);
 
-    const savedItem = lastSavedDocument().items.find(
+    const savedItem = lastSavedDocument(apiMocks.saveExamWorkspaceDocument).items.find(
       (item) => item.item_id === "item_003",
     );
     expect(savedItem?.review.state).toBe("review_complete");
@@ -393,7 +203,7 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
 
     await saveDocument(wrapper);
 
-    const savedDocument = lastSavedDocument();
+    const savedDocument = lastSavedDocument(apiMocks.saveExamWorkspaceDocument);
     const choiceItem = savedDocument.items.find((item) => item.item_id === "item_002");
     expect(choiceItem?.answer_key).toEqual({
       correct_choice_ids: ["choice_002"],
@@ -420,7 +230,7 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
 
     await saveDocument(wrapper);
 
-    const savedDocument = lastSavedDocument();
+    const savedDocument = lastSavedDocument(apiMocks.saveExamWorkspaceDocument);
     const choiceItem = savedDocument.items.find((item) => item.item_id === "item_003");
     expect(choiceItem?.answer_key).toEqual({ correct_choice_ids: [], match_pairs: [], origin: "absent" });
     const gapItem = savedDocument.items.find((item) => item.item_id === "item_004");
@@ -493,7 +303,7 @@ describe("ExamWorkspaceView walking skeleton slice", () => {
 
     await saveDocument(wrapper);
 
-    const savedDocument = lastSavedDocument();
+    const savedDocument = lastSavedDocument(apiMocks.saveExamWorkspaceDocument);
     const choiceItem = savedDocument.items.find((item) => item.item_id === "item_003");
     expect(choiceItem?.answer_key).toEqual({
       correct_choice_ids: ["choice_001"],
