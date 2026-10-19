@@ -42,7 +42,8 @@ def parse_untrusted_qti_xml(
 
     ``DefusedXmlException`` (DTD, entity or external constructs) becomes the
     shared unsafe-XML refusal. ``ParseError``, ``LookupError`` (undeclared or
-    unknown encoding) and ``UnicodeError`` become the caller's malformed-XML
+    unknown encoding), ``UnicodeError`` and the parser's ``ValueError`` for
+    unsupported multibyte encodings become the caller's malformed-XML
     refusal. Only those exception types are caught.
     """
 
@@ -50,7 +51,7 @@ def parse_untrusted_qti_xml(
         root = fromstring(payload, forbid_dtd=True, forbid_entities=True, forbid_external=True)
     except DefusedXmlException as error:
         raise validation_error(UNSAFE_XML_MESSAGE, {"path": path}) from error
-    except (ElementTree.ParseError, LookupError, UnicodeError) as error:
+    except (ElementTree.ParseError, LookupError, UnicodeError, ValueError) as error:
         raise validation_error(invalid_message, {"path": path}) from error
     _refuse_too_deep(root, path=path, invalid_message=invalid_message)
     return root

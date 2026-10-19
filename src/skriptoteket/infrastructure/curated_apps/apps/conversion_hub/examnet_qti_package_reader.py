@@ -76,6 +76,12 @@ class ExamNetQtiPackageReader:
         if not item_paths:
             raise validation_error(_NO_ITEMS)
 
+        seen: set[str] = set()
+        for path in item_paths:
+            if path in seen:
+                raise validation_error(_DUPLICATE_ITEM_REFERENCE, {"path": path})
+            seen.add(path)
+
         items: list[ExamNetQtiPackageItemSource] = []
         for path in item_paths:
             payload = files.get(path)
@@ -190,15 +196,6 @@ def _test_referenced_item_paths(
     paths: list[str] = []
     for ref in test_root.iter(f"{{{QTI_NAMESPACE}}}qti-assessment-item-ref"):
         paths.append(_resolve_path(base_dir=base_dir, href=_required_href(ref)))
-    # Distinct hrefs stay bounded by the archive's member count, and their
-    # bytes by its uncompressed limits; only a repeated href can multiply
-    # admitted work, so the exporter contract (one reference per item file)
-    # is enforced here before any item is parsed.
-    seen: set[str] = set()
-    for path in paths:
-        if path in seen:
-            raise validation_error(_DUPLICATE_ITEM_REFERENCE, {"path": path})
-        seen.add(path)
     return paths
 
 

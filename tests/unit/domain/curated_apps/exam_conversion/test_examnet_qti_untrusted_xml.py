@@ -230,3 +230,25 @@ def test_60_nested_spans_in_an_item_body_still_parse() -> None:
     )
 
     assert isinstance(read, ExamNetQtiItem)
+
+
+def test_utf7_encoded_manifest_is_a_typed_malformed_refusal() -> None:
+    payload = ('<?xml version="1.0" encoding="UTF-7"?><r/>').encode("utf-7")
+
+    with pytest.raises(DomainError) as refusal:
+        parse_untrusted_qti_xml(payload, path="manifest", invalid_message=_INVALID)
+
+    assert refusal.value.code is ErrorCode.VALIDATION_ERROR
+    assert refusal.value.message == _INVALID
+    assert refusal.value.details == {"path": "manifest"}
+
+
+def test_utf7_encoded_item_is_a_typed_malformed_refusal() -> None:
+    payload = ('<?xml version="1.0" encoding="UTF-7"?><r/>').encode("utf-7")
+
+    with pytest.raises(DomainError) as refusal:
+        parse_untrusted_qti_xml(payload, path=_ITEM_PATH, invalid_message=_INVALID_ITEM)
+
+    assert refusal.value.code is ErrorCode.VALIDATION_ERROR
+    assert refusal.value.message == _INVALID_ITEM
+    assert refusal.value.details == {"path": _ITEM_PATH}
