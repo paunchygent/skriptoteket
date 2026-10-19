@@ -132,7 +132,6 @@ function setup(
     apiMocks.getExamWorkspaceHistory.mockRejectedValueOnce(new Error("offline"));
   }
   const workspaceDocument = ref<NativeExamDocument | null>(baseline);
-  const serverDocument = ref<NativeExamDocument | null>(baseline);
   const historyCursor = ref<string | null>("step-0");
   const onConflict = vi.fn(async () => undefined);
   const noteStored = vi.fn();
@@ -144,9 +143,9 @@ function setup(
         workspaceDocument.value = document;
       },
       isBlocked: () => false,
-      hasKeptEdit: () => false,
-      noteKeptStored: () => undefined,
-      recoverKeptEdit: async () => false,
+      enqueueWrite: <T>(run: () => Promise<T>): Promise<T> => run(),
+      noteGateStored: () => undefined,
+      noteInstalledCursor: () => false,
       isGuest: () => false,
       isReadOnly: hooks.isReadOnly ?? (() => false),
       isReplacing: hooks.isReplacing ?? (() => false),
@@ -160,7 +159,6 @@ function setup(
       noteStored,
       onConflict,
       savedRevision: () => baseline.revision,
-      serverDocument,
       shared: hooks.shared ?? serverExamWorkspaceStore.shared,
       tabId: () => "tab-1",
       workspaceDocument,

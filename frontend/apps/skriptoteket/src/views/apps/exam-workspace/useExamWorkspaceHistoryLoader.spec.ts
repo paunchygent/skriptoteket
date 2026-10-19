@@ -66,7 +66,6 @@ function setup() {
   const loader = createHistoryLoader(
     {
       lineageId: () => holder.lineage,
-      serverDocument,
       shared: serverExamWorkspaceStore.shared,
     },
     { baselineId, position, stepDocument, stepIds },
@@ -86,12 +85,12 @@ beforeEach(() => {
 
 describe("overlapping loads for the same lineage and server document", () => {
   it("shares one history GET and both resolve true when started back to back", async () => {
-    const { loader } = setup();
+    const { loader, source } = setup();
     const gate = deferred<ExamWorkspaceHistory>();
     api.getExamWorkspaceHistory.mockImplementation(() => gate.promise);
 
-    const first = loader.load(LINEAGE);
-    const second = loader.load(LINEAGE);
+    const first = loader.load(LINEAGE, source);
+    const second = loader.load(LINEAGE, source);
     await flushPromises();
     expect(api.getExamWorkspaceHistory).toHaveBeenCalledTimes(1);
 
@@ -101,14 +100,14 @@ describe("overlapping loads for the same lineage and server document", () => {
   });
 
   it("shares one history GET when the second load starts a tick later", async () => {
-    const { loader } = setup();
+    const { loader, source } = setup();
     const gate = deferred<ExamWorkspaceHistory>();
     api.getExamWorkspaceHistory.mockImplementation(() => gate.promise);
 
-    const first = loader.load(LINEAGE);
+    const first = loader.load(LINEAGE, source);
     await flushPromises();
     expect(api.getExamWorkspaceHistory).toHaveBeenCalledTimes(1);
-    const second = loader.load(LINEAGE);
+    const second = loader.load(LINEAGE, source);
     await flushPromises();
     expect(api.getExamWorkspaceHistory).toHaveBeenCalledTimes(1);
 
@@ -127,9 +126,9 @@ describe("a load for a newer server document or a different lineage", () => {
       .mockImplementationOnce(() => firstGate.promise)
       .mockImplementationOnce(() => secondGate.promise);
 
-    const first = loader.load(LINEAGE);
+    const first = loader.load(LINEAGE, source);
     serverDocument.value = { ...source, title: "newer" };
-    const second = loader.load(LINEAGE);
+    const second = loader.load(LINEAGE, source);
     expect(api.getExamWorkspaceHistory).toHaveBeenCalledTimes(2);
 
     firstGate.resolve(historyPayload());
@@ -139,16 +138,16 @@ describe("a load for a newer server document or a different lineage", () => {
   });
 
   it("supersedes the older load on a lineage change", async () => {
-    const { holder, loader } = setup();
+    const { holder, loader, source } = setup();
     const firstGate = deferred<ExamWorkspaceHistory>();
     const secondGate = deferred<ExamWorkspaceHistory>();
     api.getExamWorkspaceHistory
       .mockImplementationOnce(() => firstGate.promise)
       .mockImplementationOnce(() => secondGate.promise);
 
-    const first = loader.load(LINEAGE);
+    const first = loader.load(LINEAGE, source);
     holder.lineage = "00000000-0000-4000-8000-000000000002";
-    const second = loader.load(holder.lineage);
+    const second = loader.load(holder.lineage, source);
     expect(api.getExamWorkspaceHistory).toHaveBeenCalledTimes(2);
 
     firstGate.resolve(historyPayload());

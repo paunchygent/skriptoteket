@@ -118,7 +118,6 @@ describe("a tab that loses the lease with a pending edit", () => {
     fakeServer(baseline);
     const isReadOnly = ref(false);
     const workspaceDocument = ref<NativeExamDocument | null>(baseline);
-    const serverDocument = ref<NativeExamDocument | null>(baseline);
     const historyCursor = ref<string | null>("step-0");
     const noteLeaseLost = vi.fn(() => {
       isReadOnly.value = true;
@@ -130,9 +129,9 @@ describe("a tab that loses the lease with a pending edit", () => {
           workspaceDocument.value = document;
         },
         isBlocked: () => false,
-        hasKeptEdit: () => false,
-        noteKeptStored: () => undefined,
-        recoverKeptEdit: async () => false,
+        enqueueWrite: <T>(run: () => Promise<T>): Promise<T> => run(),
+        noteGateStored: () => undefined,
+        noteInstalledCursor: () => false,
         isGuest: () => false,
         isReadOnly: () => isReadOnly.value,
         isReplacing: () => false,
@@ -143,7 +142,6 @@ describe("a tab that loses the lease with a pending edit", () => {
         noteStored: vi.fn(),
         onConflict: async () => undefined,
         savedRevision: () => baseline.revision,
-        serverDocument,
         shared,
         tabId: () => "tab-1",
         workspaceDocument,
@@ -195,7 +193,6 @@ describe("a tab that loses the lease with a pending edit", () => {
     const baseline = buildParentDocument();
     fakeServer(baseline);
     const workspaceDocument = ref<NativeExamDocument | null>(baseline);
-    const serverDocument = ref<NativeExamDocument | null>(baseline);
     const historyCursor = ref<string | null>("step-0");
     const history = effectScope().run(() =>
       useExamWorkspaceHistory({
@@ -204,9 +201,9 @@ describe("a tab that loses the lease with a pending edit", () => {
           workspaceDocument.value = document;
         },
         isBlocked: () => false,
-        hasKeptEdit: () => false,
-        noteKeptStored: () => undefined,
-        recoverKeptEdit: async () => false,
+        enqueueWrite: <T>(run: () => Promise<T>): Promise<T> => run(),
+        noteGateStored: () => undefined,
+        noteInstalledCursor: () => false,
         isGuest: () => false,
         isReadOnly: () => isReadOnly.value,
         isReplacing: () => false,
@@ -217,7 +214,6 @@ describe("a tab that loses the lease with a pending edit", () => {
         noteStored: vi.fn(),
         onConflict: async () => undefined,
         savedRevision: () => baseline.revision,
-        serverDocument,
         shared: serverExamWorkspaceStore.shared,
         tabId: () => "tab-1",
         workspaceDocument,
@@ -265,7 +261,6 @@ describe("a tab that loses the lease with a pending edit", () => {
     const shared = context.store.store.shared;
     const opened = await shared.getExamWorkspaceDocument(lineageId);
     const workspaceDocument = ref<NativeExamDocument | null>(opened.document);
-    const serverDocument = ref<NativeExamDocument | null>(opened.document);
     const historyCursor = ref<string | null>(opened.history_cursor);
     const noteLeaseLost = vi.fn();
     const history = effectScope().run(() =>
@@ -275,9 +270,9 @@ describe("a tab that loses the lease with a pending edit", () => {
           workspaceDocument.value = document;
         },
         isBlocked: () => false,
-        hasKeptEdit: () => false,
-        noteKeptStored: () => undefined,
-        recoverKeptEdit: async () => false,
+        enqueueWrite: <T>(run: () => Promise<T>): Promise<T> => run(),
+        noteGateStored: () => undefined,
+        noteInstalledCursor: () => false,
         isGuest: () => true,
         isReadOnly: () => false,
         isReplacing: () => false,
@@ -288,7 +283,6 @@ describe("a tab that loses the lease with a pending edit", () => {
         noteStored: vi.fn(),
         onConflict: async () => undefined,
         savedRevision: () => opened.document.revision,
-        serverDocument,
         shared,
         tabId: () => "tab-loser",
         workspaceDocument,

@@ -1,12 +1,12 @@
 /**
- * Exam workspace history step-list loader (TASK-SKRIPT-40-04-14).
+ * Exam workspace history step-list loader (TASK-SKRIPT-40-04-14, G1b).
  *
  * Domain purpose:
- *   Reload the server step list after the document owner replaced the copy:
- *   the step the editor stands on becomes the fresh server copy, so a working
- *   copy that differs from it is a pending edit. A lineage move, a newer load
- *   or a read failure resolves false; a read failure also resets the list, so
- *   no step can be stored until the list is read again.
+ *   Reload the server step list for the sync gate: the step the editor
+ *   stands on becomes `base`, the fresh server copy the gate read, so a
+ *   working copy that differs from it is a pending edit. The gate's
+ *   generation replaces any join or token logic: an older load never runs,
+ *   and a transport failure throws so the gate keeps `loading` and retries.
  */
 
 import type { Ref } from "vue";
@@ -22,58 +22,30 @@ export type ExamWorkspaceHistoryLoaderState = {
 };
 
 export function createHistoryLoader(
-  deps: Pick<ExamWorkspaceHistoryDeps, "lineageId" | "serverDocument" | "shared">,
+  deps: Pick<ExamWorkspaceHistoryDeps, "lineageId" | "shared">,
   state: ExamWorkspaceHistoryLoaderState,
   reset: () => void,
-): { load: (lineageId: string) => Promise<boolean> } {
-  let loadToken = 0;
-  /** The read in flight, if any, with the lineage and server document it captured. */
-  let inFlight: {
-    base: NativeExamDocument | null;
-    lineageId: string;
-    promise: Promise<boolean>;
-    token: number;
-  } | null = null;
-
-  /** Reload the step list; true when it matches the fresh server copy, false
-   * when the lineage moved on, a newer load started, or the read failed. A
-   * load for the same lineage and server document as the read in flight
-   * shares it instead of sending a second read. */
-  async function load(lineageId: string): Promise<boolean> {
-    const base = deps.serverDocument.value;
-    const running = inFlight;
-    if (running !== null && running.lineageId === lineageId && running.base === base) {
-      return running.promise;
-    }
-    const token = ++loadToken;
-    const pending = read(lineageId, base, token);
-    inFlight = { base, lineageId, promise: pending, token };
+): { load: (lineageId: string, base: NativeExamDocument | null) => Promise<void> } {
+  /**
+   * Reload the step list, standing the editor on `base`. A lineage move
+   * meanwhile applies nothing; a read failure resets the list and throws so
+   * the gate retries the whole fresh load.
+   */
+  async function load(lineageId: string, base: NativeExamDocument | null): Promise<void> {
+    let history: Awaited<ReturnType<typeof deps.shared.getExamWorkspaceHistory>>;
     try {
-      return await pending;
-    } finally {
-      if (inFlight !== null && inFlight.token === token) {
-        inFlight = null;
-      }
+      history = await deps.shared.getExamWorkspaceHistory(lineageId);
+    } catch (error) {
+      reset();
+      throw error;
     }
-  }
-
-  async function read(lineageId: string, base: NativeExamDocument | null, token: number): Promise<boolean> {
-    try {
-      const history = await deps.shared.getExamWorkspaceHistory(lineageId);
-      if (token !== loadToken || deps.lineageId() !== lineageId) {
-        return false;
-      }
-      state.baselineId.value = history.baseline_step_id;
-      state.stepIds.value = [...history.step_ids];
-      state.position.value = history.position_step_id;
-      state.stepDocument.value = base;
-      return state.stepDocument.value === deps.serverDocument.value;
-    } catch {
-      if (token === loadToken) {
-        reset();
-      }
-      return false;
+    if (deps.lineageId() !== lineageId) {
+      return;
     }
+    state.baselineId.value = history.baseline_step_id;
+    state.stepIds.value = [...history.step_ids];
+    state.position.value = history.position_step_id;
+    state.stepDocument.value = base;
   }
 
   return { load };

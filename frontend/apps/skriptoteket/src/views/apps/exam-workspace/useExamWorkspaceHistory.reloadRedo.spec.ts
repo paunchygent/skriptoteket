@@ -34,7 +34,6 @@ function mountFromHistory(
 ) {
   apiMocks.getExamWorkspaceHistory.mockResolvedValue(history);
   const workspaceDocument = ref<NativeExamDocument | null>(document);
-  const serverDocument = ref<NativeExamDocument | null>(document);
   const historyCursor = ref<string | null>(history.cursor);
   const historyState = effectScope().run(() =>
     useExamWorkspaceHistory({
@@ -43,9 +42,9 @@ function mountFromHistory(
         workspaceDocument.value = next;
       },
       isBlocked: () => false,
-      hasKeptEdit: () => false,
-      noteKeptStored: () => undefined,
-      recoverKeptEdit: async () => false,
+      enqueueWrite: <T>(run: () => Promise<T>): Promise<T> => run(),
+      noteGateStored: () => undefined,
+      noteInstalledCursor: () => false,
       isGuest: () => false,
       isReadOnly: () => false,
       isReplacing: () => false,
@@ -56,7 +55,6 @@ function mountFromHistory(
       noteStored: vi.fn(),
       onConflict: vi.fn(async () => undefined),
       savedRevision: () => 1,
-      serverDocument,
       shared: serverExamWorkspaceStore.shared,
       tabId: () => "tab-1",
       workspaceDocument,

@@ -7,12 +7,14 @@
  *   edit at once; each stored step also overwrites the exam file, so autosave
  *   is Spara. The server keeps at most 100 steps after the import baseline,
  *   so undo survives reload and reopening. Undo first stores any pending
- *   edit, so the pending edit itself can be redone; a stale-cursor 409 reloads
- *   the server copy through `onConflict`, which replaces the pending edit,
- *   and undo stops. A 409 that names the edit lease (`EDIT_LEASE_HELD`)
- *   instead turns the tab read-only and keeps the pending edit visible: no
- *   reload, no retry while read-only. Only the tab that holds the lease
- *   writes; undo and redo stop while read-only.
+ *   edit, so the pending edit itself can be redone; a stale-cursor 409 is
+ *   reported through `onConflict` to the sync gate, which reloads the server
+ *   copy, and undo stops. A 409 that names the edit lease
+ *   (`EDIT_LEASE_HELD`) instead turns the tab read-only and keeps the pending
+ *   edit visible: no reload, no retry while read-only. Every write runs
+ *   through the sync gate's single queue, so outside `editing` a write
+ *   resolves `failed` at once with no read and no wait. Undo and redo stop
+ *   while read-only.
  *
  *   The history cursor is only a concurrency token: it rotates on every
  *   write and need not name a step. The step the editor stands on is the
@@ -27,23 +29,25 @@
  *   discards it, so undo reinstalls the standing step and the refused edit
  *   can never be redone.
  *
- *   No `beforeunload` handler is mounted on the exam-workspace routes (see the
- *   departure module for the `pageshow` release and the disposal rule).
+ *   No `beforeunload` handler is mounted on the exam-workspace routes (see
+ *   the departure module for the `pageshow` release and the disposal rule).
  *
  * Relationships:
  *   - Reads the working copy and the cursor the document composable installs;
- *     every response that carries a cursor this composable did not write
- *     (open, reload, Spara som, parent and change-type commands) reloads the
- *     step list.
+ *     the step list is reloaded by the sync gate's fresh load, which stands
+ *     the editor on the fresh server copy. A cursor the gate installed
+ *     itself is consumed through `noteInstalledCursor`; any other installed
+ *     cursor (a conversion revision) makes the gate read the step list.
  *   - Structural commands call `flush` first, so the server's newest step is
  *     the editor's document; `flush` resolves false when that could not be
  *     established, and a replacing command must then not run.
  *   - The save status (`useExamWorkspaceSaveStatus`) is one computed value
  *     the header shows; undo and redo (`useExamWorkspaceHistoryNavigation`)
  *     move the position instead of storing.
- *   - Each confirmed store and each position move also reports its document
- *     through `noteStored`, so the document owner keeps the saved baseline
- *     (the exam file) on the confirmed snapshot.
+ *   - Each confirmed store also reports its document through `noteStored`,
+ *     so the document owner keeps the saved baseline (the exam file) on the
+ *     confirmed snapshot, and through `noteGateStored`, so the sync gate
+ *     clears a merged kept edit in the merge generation.
  */
 
 import { computed, onScopeDispose, ref, shallowRef, watch } from "vue";
@@ -71,20 +75,22 @@ export const EXAM_WORKSPACE_TYPING_PAUSE_MS = 900;
 
 export type ExamWorkspaceHistoryDeps = {
   workspaceDocument: Ref<NativeExamDocument | null>;
-  /** The server's working copy from the last response; the step the cursor names. */
-  serverDocument: Ref<NativeExamDocument | null>;
   historyCursor: Ref<string | null>;
   lineageId: () => string | null;
   savedRevision: () => number | null;
   /** The tab id the edit lease holds; every store and move carries it. */
   tabId: () => string;
-  /** A refused edit still waits for its recovery; an ordinary store merges it first. */
-  hasKeptEdit: () => boolean;
-  /** Reload, resync and merge the kept edit onto the newest copy; true when the merged copy stands. */
-  recoverKeptEdit: (lineageId: string | null) => Promise<boolean>;
-  /** The merged copy was stored; the kept edit is recovered. */
-  noteKeptStored: () => void;
-  /** True while another tab holds the edit lease: writes wait and undo stops. */
+  /** The merged working copy reached the server in the merge generation. */
+  noteGateStored: () => void;
+  /**
+   * A response installed this cursor. True when the sync gate installed it
+   * itself through a fresh load: the event is consumed and nothing changes.
+   * Otherwise the gate reads the step list for the foreign cursor.
+   */
+  noteInstalledCursor: (lineageId: string, cursor: string) => boolean;
+  /** The sync gate's single write queue; outside `editing` entries resolve refused at once. */
+  enqueueWrite: <T>(run: () => Promise<T>, refused: T) => Promise<T>;
+  /** True while the tab may not write: the gate refuses queued writes outside `editing`. */
   isReadOnly: () => boolean;
   /** A write met `EDIT_LEASE_HELD`: turn read-only and keep the pending edit. */
   noteLeaseLost: () => void;
@@ -104,7 +110,7 @@ export type ExamWorkspaceHistoryDeps = {
   noteStored: (document: NativeExamDocument) => void;
   /** The export gate's verdict on a stored step, for the title blocker. */
   noteExportBlockers: ExamWorkspaceTitleVerdict;
-  /** Another tab moved the history; reload the exam. */
+  /** Another undo, redo or server command replaced the copy; the gate reloads. */
   onConflict: () => Promise<void>;
 };
 
@@ -129,7 +135,6 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
   /** The cursor this tab last wrote; a read echoing an older cursor is ignored. */
   const ownCursor = ref<string | null>(null);
   let timer: ReturnType<typeof setTimeout> | null = null;
-  let chain: Promise<void> = Promise.resolve();
   /**
    * Structural-edit snapshots not stored yet, oldest first: the copy just
    * before the edit, then the copy right after it. Each must be a step before
@@ -178,9 +183,9 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
     stepDocument.value = null;
   }
 
-  /** After a failed resync, stand the step document back on the refused base. */
-  function restoreKeptBase(base: NativeExamDocument): void {
-    stepDocument.value = base;
+  /** Drop structural snapshots owed from a copy the lease loss retired. */
+  function dropOwedSnapshots(): void {
+    owed = [];
   }
 
   const { load } = createHistoryLoader(
@@ -194,22 +199,30 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
     ([lineageId, cursor], previous) => {
       const [previousLineage] = previous ?? [null, null];
       if (lineageId !== previousLineage) {
+        // Another exam: drop the old list. The editing session starts the
+        // gate's fresh load for the new lineage.
         reset();
+        return;
       }
       if (!lineageId || !cursor) {
         return;
       }
-      if (cursor === ownCursor.value && lineageId === previousLineage) {
+      if (cursor === ownCursor.value) {
         return;
       }
-      if (lineageId === previousLineage && ownCursor.value !== null && ids.value.includes(cursor)) {
+      if (deps.noteInstalledCursor(lineageId, cursor)) {
+        // The gate's own install: consume the event and change nothing. This
+        // runs before the echo guard below, because the step list the gate
+        // just read already contains the fresh cursor.
+        return;
+      }
+      if (ownCursor.value !== null && ids.value.includes(cursor)) {
         // A read that started before this tab's last step write echoes an older cursor.
         deps.historyCursor.value = ownCursor.value;
         return;
       }
       // The server replaced the copy, so snapshots owed from the old copy no longer apply.
       owed = [];
-      void load(lineageId);
     },
     { immediate: true },
   );
@@ -218,40 +231,22 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
    * Stores `snapshot`, or the working copy: "stored" when the server's newest
    * step now holds it (or nothing needed storing), "refused" when the save
    * rules reject it so it can never be a step, and "failed" otherwise. A
-   * network failure keeps the pending edit; a stale-cursor 409 reloads through
-   * `onConflict`, while an `EDIT_LEASE_HELD` 409 turns the tab read-only and
-   * keeps the edit visible with no reload, toast or retry; the status reads
-   * `Inte sparat` with the lease reason. Refusals are decided
-   * from the snapshot, with the server's 422 as the backstop. Storing the
-   * working copy ends its pause; storing an owed snapshot leaves typing's
+   * network failure keeps the pending edit; a stale-cursor 409 is reported
+   * through `onConflict` to the gate, while an `EDIT_LEASE_HELD` 409 turns
+   * the tab read-only and keeps the edit visible with no reload, toast or
+   * retry; the status reads `Inte sparat` with the lease reason. Refusals are
+   * decided from the snapshot, with the server's 422 as the backstop. Storing
+   * the working copy ends its pause; storing an owed snapshot leaves typing's
    * pause running. A response never replaces later typing: the step document
-   * becomes the confirmed snapshot, so a store of the newer copy follows.
+   * becomes the confirmed snapshot, so a store of the newer copy follows
+   * through the same queue slot, never through a nested queue entry.
    */
   async function store(settle = false, snapshot: NativeExamDocument | null = null): Promise<StoreOutcome> {
     if (snapshot === null) {
       clearTimer();
     }
-    if (deps.isReadOnly()) {
-      // A read-only tab keeps its pending edit visible but never writes: the
-      // write would only meet the lease it just lost.
-      return "failed";
-    }
     const lineageId = deps.lineageId();
-    let cursor = deps.historyCursor.value;
-    if (lineageId && cursor && position.value === null) {
-      // The step list failed to load earlier; without it no step can be stored.
-      await load(lineageId);
-    }
-    if (snapshot === null && deps.hasKeptEdit()) {
-      // Merge a still-waiting kept edit onto the newest copy first; it clears
-      // only after the merged store succeeds.
-      if (!(await deps.recoverKeptEdit(lineageId))) {
-        schedule();
-        return "failed";
-      }
-      // The recovery reloaded the copy: the cursor captured above is stale.
-      cursor = deps.historyCursor.value;
-    }
+    const cursor = deps.historyCursor.value;
     const document = snapshot ?? deps.workspaceDocument.value;
     const after = position.value;
     if (!lineageId || !cursor || !document || after === null) {
@@ -259,7 +254,7 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
     }
     const undone = after !== newestId.value;
     if (sameContent(document, stepDocument.value) && !(settle && undone)) {
-      deps.noteKeptStored();
+      deps.noteGateStored();
       return "stored";
     }
     const refusal = examWorkspaceSaveRefusalCopy(document);
@@ -291,7 +286,7 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
       position.value = response.history.position_step_id;
       stepDocument.value = response.document;
       status.confirmed(response.document);
-      deps.noteKeptStored();
+      deps.noteGateStored();
       if (!sameContent(deps.workspaceDocument.value, response.document)) {
         // Keystrokes typed while the store was in flight stay in the copy;
         // the newer copy is stored next, so the status reads `Sparar …`.
@@ -329,7 +324,11 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
    */
   async function storeOwed(): Promise<boolean> {
     while (owed.length > 0) {
-      const next = owed[0]!;
+      const next = owed[0];
+      if (next === undefined) {
+        owed.shift();
+        continue;
+      }
       if ((await store(false, next)) === "failed") {
         return false;
       }
@@ -338,15 +337,6 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
       }
     }
     return true;
-  }
-
-  function enqueue<T>(run: () => Promise<T>): Promise<T> {
-    const next = chain.then(run, run);
-    chain = next.then(
-      () => undefined,
-      () => undefined,
-    );
-    return next;
   }
 
   /**
@@ -366,27 +356,34 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
    * an owed snapshot is a draft the save rules refuse, "failed" when a write
    * could not be stored. Undo tells them apart; every other caller only needs
    * whether the server's newest step holds the editor's document. A failed
-   * flush rearms the 5 s retry unless the tab turned read-only, in which case
-   * the pending edit waits for a takeover instead; a concluded flush clears it.
+   * flush rearms the 5 s retry unless the tab may not write, in which case
+   * the pending edit waits for a fresh load instead; a concluded flush clears it.
    */
   function flushOutcome(settle = false): Promise<StoreOutcome> {
-    return enqueue(async () => {
-      if (!(await storeOwed())) {
-        if (!deps.isReadOnly()) {
-          status.scheduleRetry(() => void flush());
-        }
-        return "failed";
+    return deps.enqueueWrite(() => flushOutcomeInner(settle), "failed");
+  }
+
+  /**
+   * The raw flush body, run inside one queue slot. The newer-typing
+   * follow-up and undo call this directly: they already hold a queue slot,
+   * so queuing again would wait on itself.
+   */
+  async function flushOutcomeInner(settle = false): Promise<StoreOutcome> {
+    if (!(await storeOwed())) {
+      if (!deps.isReadOnly()) {
+        status.scheduleRetry(() => void flush());
       }
-      const outcome = await store(settle);
-      if (outcome === "failed") {
-        if (!deps.isReadOnly()) {
-          status.scheduleRetry(() => void flush());
-        }
-      } else if (outcome === "stored") {
-        status.clear();
+      return "failed";
+    }
+    const outcome = await store(settle);
+    if (outcome === "failed") {
+      if (!deps.isReadOnly()) {
+        status.scheduleRetry(() => void flush());
       }
-      return outcome;
-    });
+    } else if (outcome === "stored") {
+      status.clear();
+    }
+    return outcome;
   }
 
   function schedule(): void {
@@ -427,7 +424,7 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
       if (after !== null) {
         owed.push(after);
       }
-      void enqueue(storeOwed);
+      void deps.enqueueWrite(() => storeOwed(), false);
     } else if (status.hasFailed()) {
       void flush();
     } else {
@@ -439,7 +436,8 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
     baselineId,
     canRedo,
     canUndo,
-    flushOutcome,
+    enqueueWrite: deps.enqueueWrite,
+    flushOutcome: flushOutcomeInner,
     history: {
       historyCursor: deps.historyCursor,
       install: deps.install,
@@ -481,6 +479,7 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
     canRedo,
     canUndo,
     depart: departure.depart,
+    dropOwedSnapshots,
     flush,
     load,
     navigating: computed(() => navigating.value),
@@ -489,7 +488,6 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
     noteEdit,
     pending,
     redo: navigation.redo,
-    restoreKeptBase,
     saveStatus: status.saveStatus,
     saveText: status.saveText,
     /** The step's document; a working copy that differs from it is a pending edit. */

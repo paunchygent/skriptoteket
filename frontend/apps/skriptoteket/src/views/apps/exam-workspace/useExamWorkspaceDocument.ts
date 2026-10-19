@@ -202,7 +202,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
   }
 
   async function openDocument(lineageId: string): Promise<boolean> {
-    if (isBusy.value) {
+    if (isOperationBusy.value) {
       return false;
     }
     operationBusy.value = true;

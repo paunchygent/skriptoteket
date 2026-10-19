@@ -104,7 +104,6 @@ function setup(isGuest = false) {
   const baseline = buildParentDocument();
   fakeServer(baseline);
   const workspaceDocument = ref<NativeExamDocument | null>(baseline);
-  const serverDocument = ref<NativeExamDocument | null>(baseline);
   const historyCursor = ref<string | null>("step-0");
   const history = effectScope().run(() =>
     useExamWorkspaceHistory({
@@ -113,9 +112,9 @@ function setup(isGuest = false) {
         workspaceDocument.value = document;
       },
       isBlocked: () => false,
-      hasKeptEdit: () => false,
-      noteKeptStored: () => undefined,
-      recoverKeptEdit: async () => false,
+      enqueueWrite: <T>(run: () => Promise<T>): Promise<T> => run(),
+      noteGateStored: () => undefined,
+      noteInstalledCursor: () => false,
       isGuest: () => isGuest,
       isReadOnly: () => false,
       isReplacing: () => false,
@@ -126,7 +125,6 @@ function setup(isGuest = false) {
       noteStored: vi.fn(),
       onConflict: async () => undefined,
       savedRevision: () => baseline.revision,
-      serverDocument,
       shared: serverExamWorkspaceStore.shared,
       tabId: () => "tab-1",
       workspaceDocument,

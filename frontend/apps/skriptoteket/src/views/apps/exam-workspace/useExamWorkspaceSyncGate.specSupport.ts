@@ -1,19 +1,19 @@
 /**
  * Shared doubles for the exam workspace sync-gate specs: a transport double
- * with deferred document and step-list reads, a controllable merged store, a
- * merge spy, a manual retry timer, and mutable lease and pending-edit ports.
+ * with deferred document and step-list reads, a merge spy, a manual retry
+ * timer, and mutable lease and pending-edit ports.
  */
 
 import { flushPromises } from "@vue/test-utils";
 
-import type { NativeExamDocument } from "../../../api/examWorkspace";
-import {
-  useExamWorkspaceSyncGate,
-  type ExamWorkspaceSyncGateStoreOutcome,
-} from "./useExamWorkspaceSyncGate";
-import { exam, LINEAGE } from "./useExamWorkspaceEditing.history.specSupport";
+import type {
+  ExamWorkspaceDocumentResponse,
+  NativeExamDocument,
+} from "../../../api/examWorkspace";
+import { useExamWorkspaceSyncGate } from "./useExamWorkspaceSyncGate";
+import { exam, LINEAGE, response } from "./useExamWorkspaceEditing.history.specSupport";
 
-export { exam, LINEAGE };
+export { exam, LINEAGE, response };
 
 export type Deferred<T> = {
   promise: Promise<T>;
@@ -50,22 +50,22 @@ export type SyncGateFlags = {
   workingCopy: NativeExamDocument | null;
   /** The merge spy's result; undefined falls back to the fresh copy with 7 points. */
   mergeResult: NativeExamDocument | null | undefined;
-  storeBehavior: (merged: NativeExamDocument) => Promise<ExamWorkspaceSyncGateStoreOutcome>;
 };
 
 export type SyncGateCounts = {
   reloadFailures: number;
   replaceCalls: number;
   owedDropped: number;
+  storeRequests: number;
 };
 
 export type SyncGateHarness = {
   gate: ReturnType<typeof useExamWorkspaceSyncGate>;
-  documentReads: Deferred<NativeExamDocument>[];
-  stepReads: Deferred<void>[];
-  installed: NativeExamDocument[];
+  documentReads: Deferred<ExamWorkspaceDocumentResponse>[];
+  stepReads: Array<{ base: NativeExamDocument | null; read: Deferred<void> }>;
+  freshInstalled: ExamWorkspaceDocumentResponse[];
+  mergedInstalled: NativeExamDocument[];
   mergeCalls: Array<{ base: NativeExamDocument; edited: NativeExamDocument; newest: NativeExamDocument }>;
-  storeCalls: NativeExamDocument[];
   counts: SyncGateCounts;
   flags: SyncGateFlags;
   fireTimer: () => void;
@@ -91,19 +91,18 @@ export function pointsOf(document: NativeExamDocument, itemId: string): number |
 }
 
 export function createGate(): SyncGateHarness {
-  const documentReads: Deferred<NativeExamDocument>[] = [];
-  const stepReads: Deferred<void>[] = [];
-  const installed: NativeExamDocument[] = [];
+  const documentReads: Deferred<ExamWorkspaceDocumentResponse>[] = [];
+  const stepReads: SyncGateHarness["stepReads"] = [];
+  const freshInstalled: ExamWorkspaceDocumentResponse[] = [];
+  const mergedInstalled: NativeExamDocument[] = [];
   const mergeCalls: SyncGateHarness["mergeCalls"] = [];
-  const storeCalls: NativeExamDocument[] = [];
-  const counts: SyncGateCounts = { owedDropped: 0, reloadFailures: 0, replaceCalls: 0 };
+  const counts: SyncGateCounts = { owedDropped: 0, reloadFailures: 0, replaceCalls: 0, storeRequests: 0 };
   const timers: Array<() => void> = [];
   const flags: SyncGateFlags = {
     leaseHeld: true,
     mergeResult: undefined,
     pendingEdit: false,
     stepDocument: null,
-    storeBehavior: () => Promise.resolve("stored"),
     workingCopy: null,
   };
   const gate = useExamWorkspaceSyncGate({
@@ -113,8 +112,12 @@ export function createGate(): SyncGateHarness {
       counts.owedDropped += 1;
     },
     hasPendingEdit: () => flags.pendingEdit,
-    installDocument: (document: NativeExamDocument) => {
-      installed.push(document);
+    installFresh: (fresh: ExamWorkspaceDocumentResponse) => {
+      freshInstalled.push(fresh);
+    },
+    installMerged: (fresh: ExamWorkspaceDocumentResponse, merged: NativeExamDocument) => {
+      void fresh;
+      mergedInstalled.push(merged);
     },
     isLeaseHeld: () => flags.leaseHeld,
     mergeRefusedEdit: (base, edited, newest) => {
@@ -129,23 +132,22 @@ export function createGate(): SyncGateHarness {
     },
     readDocument: (lineageId: string) => {
       void lineageId;
-      const read = deferred<NativeExamDocument>();
+      const read = deferred<ExamWorkspaceDocumentResponse>();
       documentReads.push(read);
       return read.promise;
     },
-    readSteps: (lineageId: string) => {
+    readSteps: (lineageId: string, base: NativeExamDocument | null) => {
       void lineageId;
       const read = deferred<void>();
-      stepReads.push(read);
+      stepReads.push({ base, read });
       return read.promise;
     },
     replaceCopy: <T>(run: () => Promise<T>): Promise<T> => {
       counts.replaceCalls += 1;
       return run();
     },
-    storeMerged: (merged: NativeExamDocument) => {
-      storeCalls.push(merged);
-      return flags.storeBehavior(merged);
+    requestStore: () => {
+      counts.storeRequests += 1;
     },
     timer: {
       cancel: () => {
@@ -167,16 +169,25 @@ export function createGate(): SyncGateHarness {
       next();
     },
     flags,
+    freshInstalled,
     gate,
-    installed,
+    mergedInstalled,
     mergeCalls,
     pendingTimers: () => timers.length,
     settle: async (): Promise<void> => {
       await flushPromises();
     },
     stepReads,
-    storeCalls,
   };
+}
+
+function latestDocumentRead(harness: SyncGateHarness): Deferred<ExamWorkspaceDocumentResponse> | undefined {
+  return harness.documentReads[harness.documentReads.length - 1];
+}
+
+function latestStepRead(harness: SyncGateHarness): Deferred<void> | undefined {
+  const latest = harness.stepReads[harness.stepReads.length - 1];
+  return latest === undefined ? undefined : latest.read;
 }
 
 /** Resolve the latest document and step-list reads with fresh copies. */
@@ -184,12 +195,12 @@ export async function succeedLoad(
   harness: SyncGateHarness,
   fresh: NativeExamDocument,
 ): Promise<void> {
-  const documentRead = harness.documentReads[harness.documentReads.length - 1];
+  const documentRead = latestDocumentRead(harness);
   if (documentRead !== undefined) {
-    documentRead.resolve(fresh);
+    documentRead.resolve(response(fresh, "step-0"));
     await harness.settle();
   }
-  const stepRead = harness.stepReads[harness.stepReads.length - 1];
+  const stepRead = latestStepRead(harness);
   if (stepRead === undefined) {
     throw new Error("expected a step-list read");
   }

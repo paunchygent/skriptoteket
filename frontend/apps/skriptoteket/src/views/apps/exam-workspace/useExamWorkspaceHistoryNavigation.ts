@@ -48,8 +48,10 @@ export type ExamWorkspaceHistoryNavigationDeps = {
   /** The step ids with the baseline first, and the standing step's index in it. */
   ids: ComputedRef<string[]>;
   index: ComputedRef<number>;
-  /** Store the pending edit now, with its store outcome kept. */
+  /** Store the pending edit now, with its store outcome kept. Runs inside the undo or redo queue slot. */
   flushOutcome: (settle?: boolean) => Promise<StoreOutcome>;
+  /** The sync gate's single write queue; undo and redo run inside one slot each. */
+  enqueueWrite: <T>(run: () => Promise<T>, refused: T) => Promise<T>;
   /** The history's deps the navigation reads and writes run through. */
   history: Pick<
     ExamWorkspaceHistoryDeps,
@@ -138,6 +140,14 @@ export function useExamWorkspaceHistoryNavigation(deps: ExamWorkspaceHistoryNavi
     if (!deps.canUndo.value || history.isBlocked() || history.isReplacing() || history.isReadOnly()) {
       return;
     }
+    await deps.enqueueWrite(runUndo, undefined);
+  }
+
+  /**
+   * The raw undo body, run inside one queue slot: locked from before the
+   * pending edit is stored, so nothing typed meanwhile is replaced.
+   */
+  async function runUndo(): Promise<void> {
     // Locked from before the pending edit is stored, so nothing typed meanwhile is replaced.
     deps.navigating.value = true;
     try {
@@ -176,6 +186,11 @@ export function useExamWorkspaceHistoryNavigation(deps: ExamWorkspaceHistoryNavi
     if (!deps.canRedo.value || history.isBlocked() || history.isReplacing() || history.isReadOnly()) {
       return;
     }
+    await deps.enqueueWrite(runRedo, undefined);
+  }
+
+  /** The raw redo body, run inside one queue slot. */
+  async function runRedo(): Promise<void> {
     const target = deps.ids.value[deps.index.value + 1];
     if (!target) {
       return;

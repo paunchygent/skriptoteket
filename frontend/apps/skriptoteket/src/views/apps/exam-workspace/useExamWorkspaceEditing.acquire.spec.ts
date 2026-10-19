@@ -165,7 +165,7 @@ describe("acquiring the lease without a pending edit", () => {
     );
     editing.applyCommandResponse(response(baseline, "step-0"));
     await flushPromises();
-    expect(editing.readOnly.value).toBe(true);
+    expect(editing.leaseReadOnly.value).toBe(true);
 
     const other: NativeExamDocument = {
       ...baseline,
@@ -180,7 +180,7 @@ describe("acquiring the lease without a pending edit", () => {
     await editing.requestTakeover();
     await flushPromises();
 
-    expect(editing.readOnly.value).toBe(false);
+    expect(editing.leaseReadOnly.value).toBe(false);
     expect(api.getExamWorkspaceDocument).toHaveBeenCalledTimes(1);
     const workspace = editing.workspaceDocument.value;
     if (workspace === null) {
@@ -204,7 +204,7 @@ describe("a structural command's 409 after a kept-edit recovery", () => {
     );
     editing.applyCommandResponse(response(baseline, "step-0"));
     await flushPromises();
-    expect(editing.readOnly.value).toBe(false);
+    expect(editing.leaseReadOnly.value).toBe(false);
 
     editing.updateItemPoints("item_001", 5);
     expect(await editing.save()).toBe(true);
@@ -298,7 +298,7 @@ describe("a heartbeat reclaim during a kept-edit recovery", () => {
     );
     editing.applyCommandResponse(response(baseline, "step-0"));
     await flushPromises();
-    expect(editing.readOnly.value).toBe(false);
+    expect(editing.leaseReadOnly.value).toBe(false);
 
     editing.updateItemPoints("item_001", 5);
     expect(await editing.save()).toBe(true);

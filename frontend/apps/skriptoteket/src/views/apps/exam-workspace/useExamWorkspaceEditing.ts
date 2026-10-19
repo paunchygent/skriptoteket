@@ -5,22 +5,27 @@
  *   Join the open exam, its server-stored undo history and the structure
  *   commands into one editing session: every teacher edit becomes an undo
  *   step through a 900 ms pause or at once, and the step store also writes
- *   the exam file (TASK-SKRIPT-40-04-14, one save model). Only the tab that
- *   holds the edit lease writes: a tab without it is read-only, every write
- *   carries the tab id, and a write refused with `EDIT_LEASE_HELD` turns
- *   read-only while the pending edit stays visible. It
- *   owns `selectedParentId` (the part entry the teacher selected) so structural
- *   inserts land after the selected part; the selection composable drives it.
+ *   the exam file (TASK-SKRIPT-40-04-14, one save model). The sync gate owns
+ *   the phase, the kept refused edit and the single write queue: every lock
+ *   reads `gate.editingLocked`, every write runs through
+ *   `gate.enqueueWrite`, and every cursor the gate did not install is
+ *   reported back to it. An `EDIT_LEASE_HELD` refusal or a lost lease reaches
+ *   the gate as `leaseLost`, a stale-cursor 409 as `staleConflict`, and a
+ *   held lease as `leaseAcquired`. It owns `selectedParentId` (the part
+ *   entry the teacher selected) so structural inserts land after the
+ *   selected part; the selection composable drives it.
  *
  * Relationships:
- *   - Composes `useExamWorkspaceDocument`, `useExamWorkspaceHistory` and
- *     `useExamWorkspaceStructure`; consumed by `ExamWorkspaceView`.
+ *   - Composes `useExamWorkspaceDocument`, `useExamWorkspaceHistory`,
+ *     `useExamWorkspaceStructure` and `useExamWorkspaceSyncGate`; consumed
+ *     by `ExamWorkspaceView`.
  */
 
-import { onScopeDispose, ref, watch } from "vue";
+import { computed, onScopeDispose, ref, watch } from "vue";
 
-import type { NativeExamDocument } from "../../../api/examWorkspace";
+import type { ExamWorkspaceDocumentResponse, NativeExamDocument } from "../../../api/examWorkspace";
 import type { ExamWorkspaceStore } from "./examWorkspaceStore";
+import { useToast } from "../../../composables/useToast";
 import { mergeRefusedEdit } from "./examWorkspaceRefusedEditMerge";
 import { useExamWorkspaceDocument } from "./useExamWorkspaceDocument";
 import {
@@ -28,8 +33,9 @@ import {
   type ExamWorkspaceEditLeaseDeps,
 } from "./useExamWorkspaceEditLease";
 import { useExamWorkspaceHistory } from "./useExamWorkspaceHistory";
-import { useExamWorkspaceKeptEdit } from "./useExamWorkspaceKeptEdit";
+import { createSyncGateTimer, useExamWorkspaceSyncGate } from "./useExamWorkspaceSyncGate";
 import { useExamWorkspaceStructure } from "./useExamWorkspaceStructure";
+import { RELOAD_FAILURE_COPY } from "./useExamWorkspaceSave";
 
 /** The lease seams specs override; production uses the transport and the browser slot. */
 export type ExamWorkspaceEditingLeaseOverrides = Partial<
@@ -40,6 +46,7 @@ export type ExamWorkspaceEditingLeaseOverrides = Partial<
 >;
 
 export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamWorkspaceEditingLeaseOverrides) {
+  const toast = useToast();
   let noteEdit: (structural: boolean, before: NativeExamDocument | null) => void = () => undefined;
   // The selection composable is built by the view after this session; it registers
   // its part-entry selection here so a new part's instruction opens in the editor.
@@ -54,254 +61,48 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
   const leaseHolder: { session: ReturnType<typeof useExamWorkspaceEditLease> | null } = {
     session: null,
   };
+  // A cursor the gate's own install set: the history watcher must not report
+  // it back as foreign. Consumed on the first matching cursor event.
+  let gateCursor: { lineage: string; cursor: string } | null = null;
   const document = useExamWorkspaceDocument({
-    isReadOnly: () => leaseHolder.session?.readOnly.value ?? true,
+    isReadOnly: () => gate.editingLocked.value,
     onEdit: (structural, before) => noteEdit(structural, before),
     store,
   });
   const lineageId = () => document.summary.value?.lineage_id ?? null;
-  const reload = () => document.reloadDocument();
-  // The kept refused edit, whether this session may still install or store
-  // past an await, and the in-flight recoveries disposal or an exam change
-  // must settle: the routine rechecks disposal and lineage before and after
-  // every await and registers no watcher, so no watcher outlives the editor
-  // and every path settles.
-  const keptEdit = useExamWorkspaceKeptEdit();
-  /**
-   * True while a kept-edit recovery reloads, resyncs and merges: the history
-   * reads the flag through its `isBlocked` seam and waits instead of writing
-   * the fresh document against the still-old history position, while the
-   * replacing lock refuses normal edits for the same interval. The recovery
-   * clears it before its merged store, so that store still runs.
-   */
-  let recovering = false;
-  let disposed = false;
-  const recoveryAborters = new Set<() => void>();
-  function settleRecoveryAborters(): void {
-    for (const abort of [...recoveryAborters]) {
-      abort();
-    }
-    recoveryAborters.clear();
-  }
-  onScopeDispose(() => {
-    disposed = true;
-    keptEdit.clear();
-    settleRecoveryAborters();
-  });
-  watch(lineageId, () => {
-    keptEdit.clear();
-    settleRecoveryAborters();
-  });
-
-  /**
-   * Await `work`, but let disposal or an exam change settle it as null
-   * instead of leaving the recovery parked: a history read that never
-   * answers must not outlive the exam it was read for. Never registers
-   * anything after disposal.
-   */
-  function abortable<T>(work: Promise<T>): Promise<T | null> {
-    if (disposed) {
-      return Promise.resolve(null);
-    }
-    return new Promise<T | null>((resolve) => {
-      const abort = (): void => {
-        recoveryAborters.delete(abort);
-        resolve(null);
-      };
-      recoveryAborters.add(abort);
-      work.then(
-        (value) => {
-          recoveryAborters.delete(abort);
-          resolve(value);
-        },
-        () => {
-          recoveryAborters.delete(abort);
-          resolve(null);
-        },
-      );
-    });
-  }
-
-  /**
-   * Serialize kept-edit recoveries: a recovery requested while one runs waits
-   * for it, then runs on the result (or finds nothing left to recover). The
-   * history's own store queue never waits on this chain and this chain never
-   * waits on a history store, so the two cannot deadlock; the merged store
-   * itself runs outside the chain through the normal save path.
-   */
-  let recoveryTail: Promise<void> = Promise.resolve();
-
-  function enqueueKeptRecovery(startLineage: string | null): Promise<boolean> {
-    const run = recoveryTail.then(() => recoverKeptEditPhase(startLineage));
-    recoveryTail = run.then(
-      () => undefined,
-      () => undefined,
-    );
-    return run;
-  }
-
-  /**
-   * Merge a kept refused edit onto the newest server document: the kept base
-   * and edited snapshot stay until a merged store succeeds, and recovery
-   * existence comes from that kept state, not from `history.pending` after a
-   * reload has replaced the copy. The whole reload, history resync and merge
-   * runs under the replacing lock (shared with a server command's own read
-   * when nested), so no edit is accepted into a copy the merge is about to
-   * replace and, while `recovering` holds, no history write starts on the
-   * fresh document with the still-old position. Only one phase runs at a
-   * time, so the flag is correct for overlapping requests. A failed reload
-   * keeps the recovery set and the edit visible and pending; a failed or
-   * obsolete resync puts the refused working copy back in front of the
-   * teacher and stands the step document on its base, so the next
-   * acquisition or save recovers it. Disposal or a lineage change stops the
-   * routine without installing or storing.
-   */
-  async function recoverKeptEditPhase(startLineage: string | null): Promise<boolean> {
-    if (disposed || startLineage === null || lineageId() !== startLineage) {
-      return false;
-    }
-    const previous = keptEdit.get();
-    if (previous === null) {
-      return false;
-    }
-    // Refresh the edited snapshot while the refused edit is still pending, so
-    // a later conflict merges what the teacher sees now, not an older capture.
-    if (history.pending.value) {
-      const current = document.workspaceDocument.value;
-      if (current !== null) {
-        keptEdit.set(previous.base, current);
-      }
-    }
-    const kept = keptEdit.get();
-    if (kept === null) {
-      return false;
-    }
-    const startServer = document.serverDocument.value;
-    let mergedInstalled = false;
-    recovering = true;
-    try {
-      await document.replaceCopy(async () => {
-        await abortable(reload());
-        if (disposed || lineageId() !== startLineage) {
-          return;
-        }
-        // reloadDocument catches its own failure and only toasts, so an unchanged
-        // server document means the reload failed: the refused working copy is
-        // still in front of the teacher, so keep the recovery set without
-        // reinstalling.
-        if (document.serverDocument.value === startServer) {
-          return;
-        }
-        const synced = await abortable(history.load(startLineage));
-        if (disposed || lineageId() !== startLineage || synced === null) {
-          return;
-        }
-        if (synced === false) {
-          // The reload replaced the copy but the history resync failed or is
-          // obsolete: put the refused working copy back and stand the step
-          // document on its base, so the edit reads pending again and stays
-          // recoverable. The kept base and snapshot stay for the next attempt.
-          document.installDocument(kept.edited);
-          history.restoreKeptBase(kept.base);
-          return;
-        }
-        const newest = document.workspaceDocument.value;
-        if (disposed || lineageId() !== startLineage || newest === null) {
-          return;
-        }
-        const merged = mergeRefusedEdit(kept.base, kept.edited, newest);
-        if (merged === null) {
-          keptEdit.clear();
-          return;
-        }
-        document.installDocument(merged);
-        mergedInstalled = true;
-      });
-    } finally {
-      recovering = false;
-    }
-    if (disposed || lineageId() !== startLineage || !mergedInstalled) {
-      return false;
-    }
-    return true;
-  }
-
-  /**
-   * A refused edit survives the takeover: keep its step document as the
-   * recovery base while a pending edit stands, then always read the newest
-   * server document. With a kept refused edit the history store runs the
-   * recovery routine, which merges it onto the newest copy; without one the
-   * reload alone replaces the stale copy a read-only tab shows. Before KE
-   * the acquisition always reloaded, so a tab that gets the lease with
-   * nothing pending reads the newest state instead of keeping its stale
-   * copy. The store owns the single recovery phase, so the acquisition only
-   * requests the store and waits for it.
-   */
-  async function acquireWithKeptEdit(): Promise<void> {
-    const startLineage = lineageId();
-    if (disposed || startLineage === null) {
-      return;
-    }
-    if (history.pending.value) {
-      const base = history.stepDocument.value;
-      const edited = document.workspaceDocument.value;
-      if (base !== null && edited !== null) {
-        keptEdit.set(base, edited);
-      }
-    }
-    // Recovery existence comes from the kept state, not from history.pending:
-    // a reload already replaced the copy and reset the step document, but the
-    // refused base and edited snapshot are still kept for the next attempt.
-    if (keptEdit.get() !== null) {
-      await history.flush();
-      return;
-    }
-    await reload();
-  }
-
-  /**
-   * The 409 conflict path while a refused edit is recovering: queue the
-   * merged store through the history, whose store runs the recovery routine
-   * instead of reloading past the edit, so a later save after a failed
-   * reload merges the edit onto the newest copy. The queue is not awaited,
-   * so the running flush that met the 409 cannot deadlock on itself.
-   * A reload failure keeps the recovery set and the edit visible and
-   * pending.
-   */
-  async function handleConflict(): Promise<void> {
-    const startLineage = lineageId();
-    if (!disposed && startLineage !== null && keptEdit.get() !== null) {
-      void history.flush();
-      return;
-    }
-    await reload();
-  }
 
   const history = useExamWorkspaceHistory({
     historyCursor: document.historyCursor,
     install: document.installDocument,
-    isReadOnly: () => leaseHolder.session?.readOnly.value ?? true,
+    isReadOnly: () => gate.editingLocked.value,
     isReplacing: () => document.isReplacing.value,
     // Not `isBusy`: that includes the replacing lock the history's own reads hold.
-    // While a kept-edit recovery runs, its replacing lock refuses normal edits
-    // and this flag holds normal history writes, so no edit or store starts on
-    // the fresh document with the still-old history position.
-    isBlocked: () => document.isOperationBusy.value || recovering,
-    // A refused edit still waits for its recovery: an ordinary store never
-    // writes the refused snapshot directly, but reloads, resyncs and merges
-    // it onto the newest copy first through the serialized recovery.
-    hasKeptEdit: () => keptEdit.get() !== null,
-    recoverKeptEdit: (lineage) => enqueueKeptRecovery(lineage),
-    noteKeptStored: () => keptEdit.clear(),
+    isBlocked: () => document.isOperationBusy.value,
     lineageId,
     noteExportBlockers: document.noteExportBlockers,
+    noteInstalledCursor: (foreignLineageId, cursor) => {
+      if (
+        gateCursor !== null &&
+        gateCursor.lineage === foreignLineageId &&
+        gateCursor.cursor === cursor
+      ) {
+        gateCursor = null;
+        return true;
+      }
+      gate.foreignCursor(true);
+      return false;
+    },
+    noteGateStored: () => gate.noteStored(),
     noteLeaseLost: () => leaseHolder.session?.noteLostLease(),
     noteStored: document.noteStored,
     isGuest: () => store.guest !== null,
-    onConflict: handleConflict,
+    onConflict: () => {
+      gate.staleConflict();
+      return Promise.resolve();
+    },
     replaceCopy: document.replaceCopy,
     savedRevision: () => document.savedRevision.value,
-    serverDocument: document.serverDocument,
+    enqueueWrite: (run, refused) => gate.enqueueWrite(run, refused),
     shared: store.shared,
     tabId: () => leaseHolder.session?.tabId ?? "",
     workspaceDocument: document.workspaceDocument,
@@ -309,15 +110,18 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
   noteEdit = history.noteEdit;
 
   const structure = useExamWorkspaceStructure({
-    applyCommandResponse: document.applyCommandResponse,
+    applyCommandResponse: (response) => applyCommandResponse(response),
     editDocument: document.editDocument,
     flush: history.flush,
     historyCursor: document.historyCursor,
     isBusy: () => document.isBusy.value || history.storing.value,
-    isReadOnly: () => leaseHolder.session?.readOnly.value ?? true,
+    isReadOnly: () => gate.editingLocked.value,
     lineageId,
     noteLeaseLost: () => leaseHolder.session?.noteLostLease(),
-    onConflict: handleConflict,
+    onConflict: () => {
+      gate.staleConflict();
+      return Promise.resolve();
+    },
     replaceCopy: document.replaceCopy,
     savedRevision: () => document.savedRevision.value,
     selectItem: document.selectItem,
@@ -329,16 +133,86 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
     workspaceDocument: document.workspaceDocument,
   });
 
+  const gate = useExamWorkspaceSyncGate({
+    isLeaseHeld: () => leaseHolder.session !== null && !leaseHolder.session.readOnly.value,
+    hasPendingEdit: () => history.pending.value,
+    currentStepDocument: () => history.stepDocument.value,
+    currentWorkingCopy: () => document.workspaceDocument.value,
+    dropOwedSnapshots: () => history.dropOwedSnapshots(),
+    readDocument: (readLineageId) => store.shared.getExamWorkspaceDocument(readLineageId),
+    readSteps: (readLineageId, base) => history.load(readLineageId, base ?? document.serverDocument.value),
+    installFresh: (fresh) => {
+      gateCursor = { cursor: fresh.history_cursor, lineage: fresh.summary.lineage_id };
+      document.applyCommandResponse(fresh);
+    },
+    installMerged: (fresh, merged) => {
+      gateCursor = { cursor: fresh.history_cursor, lineage: fresh.summary.lineage_id };
+      document.applyCommandResponse(fresh);
+      document.installDocument(merged);
+    },
+    replaceCopy: document.replaceCopy,
+    requestStore: () => {
+      void history.flush();
+    },
+    mergeRefusedEdit,
+    notifyReloadFailed: () => toast.failure(RELOAD_FAILURE_COPY),
+    timer: createSyncGateTimer(),
+  });
+
+  /**
+   * A server command stored a new step: its response already installed the
+   * fresh document, so the gate reads only the step list. An initial open of
+   * another lineage leaves this to the lineage watcher, which opens the exam
+   * in the gate.
+   */
+  function applyCommandResponse(response: ExamWorkspaceDocumentResponse): void {
+    const changed = document.summary.value?.lineage_id !== response.summary.lineage_id;
+    if (!changed) {
+      gateCursor = { cursor: response.history_cursor, lineage: response.summary.lineage_id };
+    }
+    document.applyCommandResponse(response);
+    if (!changed) {
+      gate.foreignCursor(true);
+    }
+  }
+
   leaseHolder.session = useExamWorkspaceEditLease({
     guestStorage: lease?.guestStorage,
     isGuest: () => store.guest !== null,
     lineageId,
     now: lease?.now,
-    onAcquired: () => acquireWithKeptEdit(),
+    onAcquired: () => gate.leaseAcquired(),
     onTakeoverRequested: () => history.flush(true).then(() => undefined),
     openGuestChannel: lease?.openGuestChannel,
     server: lease?.server,
     tabId: lease?.tabId,
+  });
+
+  watch(lineageId, (next) => {
+    if (next === null) {
+      return;
+    }
+    // The open response already installed the document; the gate reads the step list.
+    gateCursor = null;
+    gate.openExam(next, true);
+  });
+
+  watch(
+    () => leaseHolder.session?.readOnly.value,
+    (readOnly) => {
+      if (readOnly === undefined) {
+        return;
+      }
+      if (readOnly) {
+        gate.leaseLost();
+      } else {
+        gate.leaseAcquired();
+      }
+    },
+  );
+
+  onScopeDispose(() => {
+    gate.dispose();
   });
 
   /**
@@ -356,15 +230,28 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
     return await document.saveDocumentAs(name);
   }
 
+  /**
+   * The drawer's busy state: a gate fresh load locks inputs through
+   * `editingLocked` but never blocks the Öppna drawer, so the replacing lock
+   * it holds does not count while the gate loads.
+   */
+  const isBusy = computed(
+    () => document.isOperationBusy.value || (document.isReplacing.value && gate.phase.value !== "loading"),
+  );
+
   return {
     ...document,
+    applyCommandResponse,
     history,
+    isBusy,
     save,
     saveAs,
     selectedParentId,
     structure,
-    /** The edit lease: read-only while another tab holds the exam. */
-    readOnly: leaseHolder.session!.readOnly,
+    /** The lease notice reads only this, so `loading` never shows the lease message. */
+    leaseReadOnly: gate.leaseReadOnly,
+    /** Every input locks while this holds, in `loading` and in `readonly`. */
+    editingLocked: gate.editingLocked,
     /** True while `Ta över` waits for the holder to release. */
     takeoverWaiting: leaseHolder.session!.waiting,
     /** Ask for the lease, claim it once free and read the newest state. */

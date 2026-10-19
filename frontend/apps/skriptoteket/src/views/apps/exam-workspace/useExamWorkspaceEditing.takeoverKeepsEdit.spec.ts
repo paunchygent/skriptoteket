@@ -127,7 +127,7 @@ describe("a refused edit across the takeover", () => {
     );
     editing.applyCommandResponse(response(baseline, "step-0"));
     await flushPromises();
-    expect(editing.readOnly.value).toBe(false);
+    expect(editing.leaseReadOnly.value).toBe(false);
 
     // Tab A types in question 1 and stores it.
     editing.updateItemPoints("item_001", 5);
@@ -138,7 +138,7 @@ describe("a refused edit across the takeover", () => {
     api.storeExamWorkspaceUndoStep.mockRejectedValueOnce(leaseHeld());
     editing.updateItemPoints("item_001", 7);
     expect(await editing.save()).toBe(false);
-    expect(editing.readOnly.value).toBe(true);
+    expect(editing.leaseReadOnly.value).toBe(true);
     expect(editing.history.pending.value).toBe(true);
     expect(editing.history.saveText.value).toBe("Inte sparat");
 
@@ -173,7 +173,7 @@ describe("a refused edit across the takeover", () => {
     await editing.requestTakeover();
     await flushPromises();
 
-    expect(editing.readOnly.value).toBe(false);
+    expect(editing.leaseReadOnly.value).toBe(false);
     const workspace = editing.workspaceDocument.value;
     if (workspace === null) {
       throw new Error("expected an open document");

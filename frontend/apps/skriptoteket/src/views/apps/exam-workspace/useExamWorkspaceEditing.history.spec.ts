@@ -142,7 +142,7 @@ describe("the edit lease on a 409 (K8)", () => {
     expect(api.getExamWorkspaceDocument).not.toHaveBeenCalled();
     expect(editing.workspaceDocument.value!.title).toBe("Osparad");
     expect(editing.history.pending.value).toBe(true);
-    expect(editing.readOnly.value).toBe(true);
+    expect(editing.leaseReadOnly.value).toBe(true);
     expect(toast.failure).not.toHaveBeenCalled();
   });
 
@@ -156,7 +156,7 @@ describe("the edit lease on a 409 (K8)", () => {
 
     expect(api.getExamWorkspaceDocument).not.toHaveBeenCalled();
     expect(editing.workspaceDocument.value!.title).toBe("Lärarens osparade text");
-    expect(editing.readOnly.value).toBe(true);
+    expect(editing.leaseReadOnly.value).toBe(true);
   });
 
   it("waits for a running operation on a busy-time 409 instead of skipping the reload", async () => {

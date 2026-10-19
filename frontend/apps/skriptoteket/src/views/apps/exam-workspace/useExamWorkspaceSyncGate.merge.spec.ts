@@ -1,7 +1,7 @@
 /**
  * Exam workspace sync gate: the single merge point (TASK-SKRIPT-40-04-14,
- * G1a). One merge call per successful fresh load; the kept edit clears only
- * after the merged store reports stored.
+ * G1b). One merge call per successful fresh load; the kept edit clears only
+ * when a store in the merge generation reports back through `noteStored`.
  */
 
 import { describe, expect, it } from "vitest";
@@ -9,17 +9,17 @@ import { describe, expect, it } from "vitest";
 import type { NativeExamDocument } from "../../../api/examWorkspace";
 import {
   createGate,
-  deferred,
   exam,
   LINEAGE,
   pointsOf,
+  response,
   succeedLoad,
   withPoints,
   type SyncGateHarness,
 } from "./useExamWorkspaceSyncGate.specSupport";
 
 async function openEditing(harness: SyncGateHarness): Promise<void> {
-  harness.gate.openExam(LINEAGE);
+  harness.gate.openExam(LINEAGE, false);
   await succeedLoad(harness, exam());
 }
 
@@ -32,26 +32,26 @@ async function takeKept(harness: SyncGateHarness): Promise<void> {
   await harness.settle();
 }
 
-function installedAt(harness: SyncGateHarness, index: number): NativeExamDocument {
-  const document = harness.installed[index];
+function mergedAt(harness: SyncGateHarness, index: number): NativeExamDocument {
+  const document = harness.mergedInstalled[index];
   if (document === undefined) {
-    throw new Error(`expected installed document ${index}`);
+    throw new Error(`expected installed merge ${index}`);
   }
   return document;
 }
 
 describe("the sync gate merge point", () => {
-  it("merges exactly once on a takeover load and stores the merge", async () => {
+  it("merges exactly once on a takeover load and queues one ordinary store", async () => {
     const harness = createGate();
     await takeKept(harness);
     harness.gate.leaseAcquired();
     await succeedLoad(harness, exam());
     expect(harness.mergeCalls.length).toBe(1);
-    // The clean open installed first; only the merge installs after it.
-    expect(harness.installed.length).toBe(2);
-    expect(pointsOf(installedAt(harness, 1), "item_001")).toBe(7);
-    expect(harness.storeCalls.length).toBe(1);
-    expect(harness.storeCalls[0]).toBe(installedAt(harness, 1));
+    // The clean open installed once; only the merge installs after it.
+    expect(harness.freshInstalled.length).toBe(1);
+    expect(harness.mergedInstalled.length).toBe(1);
+    expect(pointsOf(mergedAt(harness, 0), "item_001")).toBe(7);
+    expect(harness.counts.storeRequests).toBe(1);
     expect(harness.gate.phase.value).toBe("editing");
   });
 
@@ -63,19 +63,20 @@ describe("the sync gate merge point", () => {
     if (documentRead === undefined) {
       throw new Error("expected a document read");
     }
-    documentRead.resolve(exam());
+    const fresh = exam();
+    documentRead.resolve(response(fresh, "step-0"));
     await harness.settle();
-    // The clean open installed first; the held fresh copy adds nothing.
-    expect(harness.installed.length).toBe(1);
+    // The clean open installed once; the held fresh copy adds nothing.
+    expect(harness.freshInstalled.length).toBe(1);
     expect(harness.mergeCalls.length).toBe(0);
     const stepRead = harness.stepReads[harness.stepReads.length - 1];
     if (stepRead === undefined) {
       throw new Error("expected a step-list read");
     }
-    stepRead.resolve(undefined);
+    stepRead.read.resolve(undefined);
     await harness.settle();
     expect(harness.mergeCalls.length).toBe(1);
-    expect(harness.installed.length).toBe(2);
+    expect(harness.mergedInstalled.length).toBe(1);
   });
 
   it("merges exactly once when a reclaim restarts an in-flight load", async () => {
@@ -87,13 +88,13 @@ describe("the sync gate merge point", () => {
     if (abandonedDocument === undefined) {
       throw new Error("expected the abandoned document read");
     }
-    abandonedDocument.resolve(exam());
+    abandonedDocument.resolve(response(exam(), "step-0"));
     await harness.settle();
     // The abandoned load stops before its step-list read.
     expect(harness.stepReads.length).toBe(1);
     expect(harness.mergeCalls.length).toBe(0);
     // Only the clean open installed; the abandoned load adds nothing.
-    expect(harness.installed.length).toBe(1);
+    expect(harness.freshInstalled.length).toBe(1);
     await succeedLoad(harness, exam());
     expect(harness.mergeCalls.length).toBe(1);
     expect(harness.gate.phase.value).toBe("editing");
@@ -102,32 +103,27 @@ describe("the sync gate merge point", () => {
   it("merges exactly once per load when a 409 lands during the merged store", async () => {
     const harness = createGate();
     await takeKept(harness);
-    const store = deferred<"stored" | "failed" | "conflict">();
-    harness.flags.storeBehavior = () => store.promise;
     harness.gate.leaseAcquired();
     await succeedLoad(harness, exam());
     expect(harness.mergeCalls.length).toBe(1);
     harness.gate.staleConflict();
     expect(harness.gate.phase.value).toBe("loading");
-    store.resolve("stored");
+    harness.gate.noteStored();
     await harness.settle();
     await succeedLoad(harness, exam());
     expect(harness.mergeCalls.length).toBe(2);
     expect(harness.gate.phase.value).toBe("editing");
   });
 
-  it("keeps the kept edit until the merged store reports stored", async () => {
+  it("keeps the kept edit until a store in the merge generation reports back", async () => {
     const harness = createGate();
     await takeKept(harness);
-    const store = deferred<"stored" | "failed" | "conflict">();
-    harness.flags.storeBehavior = () => store.promise;
     harness.gate.leaseAcquired();
     await succeedLoad(harness, exam());
-    harness.flags.storeBehavior = () => Promise.resolve("stored");
     harness.gate.staleConflict();
     await succeedLoad(harness, exam());
     expect(harness.mergeCalls.length).toBe(2);
-    store.resolve("stored");
+    harness.gate.noteStored();
     await harness.settle();
     harness.gate.staleConflict();
     await succeedLoad(harness, exam());
@@ -135,38 +131,32 @@ describe("the sync gate merge point", () => {
     expect(harness.gate.phase.value).toBe("editing");
   });
 
-  it("keeps the kept edit and retries the merged store after a network failure", async () => {
+  it("clears the kept edit when the merged store reports back", async () => {
     const harness = createGate();
     await takeKept(harness);
-    harness.flags.storeBehavior = () => Promise.resolve("failed");
     harness.gate.leaseAcquired();
     await succeedLoad(harness, exam());
-    expect(harness.storeCalls.length).toBe(1);
-    expect(harness.pendingTimers()).toBe(1);
-    expect(harness.gate.phase.value).toBe("editing");
-    harness.flags.storeBehavior = () => Promise.resolve("stored");
-    harness.fireTimer();
+    expect(harness.counts.storeRequests).toBe(1);
+    harness.gate.noteStored();
     await harness.settle();
-    expect(harness.storeCalls.length).toBe(2);
     harness.gate.staleConflict();
     await succeedLoad(harness, exam());
     expect(harness.mergeCalls.length).toBe(1);
+    expect(harness.gate.phase.value).toBe("editing");
   });
 
-  it("returns to loading and merges again on a 409 from the merged store", async () => {
+  it("keeps the kept edit across a network failure: the history's retry stores it", async () => {
     const harness = createGate();
     await takeKept(harness);
-    harness.flags.storeBehavior = () => Promise.resolve("conflict");
     harness.gate.leaseAcquired();
     await succeedLoad(harness, exam());
-    expect(harness.mergeCalls.length).toBe(1);
-    await harness.settle();
-    expect(harness.gate.phase.value).toBe("loading");
-    expect(harness.documentReads.length).toBe(3);
-    harness.flags.storeBehavior = () => Promise.resolve("stored");
+    expect(harness.counts.storeRequests).toBe(1);
+    expect(harness.pendingTimers()).toBe(0);
+    expect(harness.gate.phase.value).toBe("editing");
+    // No store reported back yet, so the next conflict still merges again.
+    harness.gate.staleConflict();
     await succeedLoad(harness, exam());
     expect(harness.mergeCalls.length).toBe(2);
-    expect(harness.gate.phase.value).toBe("editing");
   });
 
   it("captures the original edit plus later typing on a second refusal", async () => {
@@ -174,7 +164,7 @@ describe("the sync gate merge point", () => {
     await takeKept(harness);
     harness.gate.leaseAcquired();
     await succeedLoad(harness, exam());
-    const merged = installedAt(harness, 1);
+    const merged = mergedAt(harness, 0);
     harness.flags.pendingEdit = true;
     harness.flags.stepDocument = merged;
     harness.flags.workingCopy = withPoints(merged, 8);
@@ -189,5 +179,17 @@ describe("the sync gate merge point", () => {
     }
     expect(second.base).toBe(merged);
     expect(pointsOf(second.edited, "item_001")).toBe(8);
+  });
+
+  it("runs no merged store when the merge leaves no question", async () => {
+    const harness = createGate();
+    await takeKept(harness);
+    harness.flags.mergeResult = null;
+    harness.gate.leaseAcquired();
+    await succeedLoad(harness, exam());
+    expect(harness.mergeCalls.length).toBe(1);
+    expect(harness.mergedInstalled.length).toBe(0);
+    expect(harness.counts.storeRequests).toBe(0);
+    expect(harness.gate.phase.value).toBe("editing");
   });
 });

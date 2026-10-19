@@ -80,10 +80,10 @@ describe("typing negative points", () => {
       }),
     );
     editing.applyCommandResponse(response(baseline, "step-0"));
-    for (let attempt = 0; attempt < 10 && editing.readOnly.value; attempt += 1) {
+    for (let attempt = 0; attempt < 10 && editing.leaseReadOnly.value; attempt += 1) {
       await flushPromises();
     }
-    expect(editing.readOnly.value).toBe(false);
+    expect(editing.leaseReadOnly.value).toBe(false);
 
     editing.updateItemPoints("item_001", -1);
     expect(editing.workspaceDocument.value!.items[0]!.points).toBe(-1);

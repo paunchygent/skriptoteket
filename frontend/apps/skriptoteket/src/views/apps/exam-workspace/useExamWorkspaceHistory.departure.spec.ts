@@ -96,7 +96,6 @@ function setup(
   const baseline = buildParentDocument();
   fakeServer(baseline);
   const workspaceDocument = ref<NativeExamDocument | null>(baseline);
-  const serverDocument = ref<NativeExamDocument | null>(baseline);
   const historyCursor = ref<string | null>("step-0");
   const history = effectScope().run(() =>
     useExamWorkspaceHistory({
@@ -105,9 +104,9 @@ function setup(
         workspaceDocument.value = document;
       },
       isBlocked: () => false,
-      hasKeptEdit: () => false,
-      noteKeptStored: () => undefined,
-      recoverKeptEdit: async () => false,
+      enqueueWrite: <T>(run: () => Promise<T>): Promise<T> => run(),
+      noteGateStored: () => undefined,
+      noteInstalledCursor: () => false,
       isGuest: () => false,
       isReadOnly: () => false,
       isReplacing: hooks.isReplacing ?? (() => false),
@@ -118,7 +117,6 @@ function setup(
       noteStored: vi.fn(),
       onConflict: async () => undefined,
       savedRevision: () => baseline.revision,
-      serverDocument,
       shared: serverExamWorkspaceStore.shared,
       tabId: () => "tab-1",
       workspaceDocument,
@@ -243,7 +241,6 @@ describe("departure under the held editing lock", () => {
     const baseline = buildParentDocument();
     fakeServer(baseline);
     const workspaceDocument = ref<NativeExamDocument | null>(baseline);
-    const serverDocument = ref<NativeExamDocument | null>(baseline);
     const historyCursor = ref<string | null>("step-0");
     const events: string[] = [];
     const addSpy = vi.spyOn(window, "addEventListener");
@@ -256,9 +253,9 @@ describe("departure under the held editing lock", () => {
             workspaceDocument.value = document;
           },
           isBlocked: () => false,
-          hasKeptEdit: () => false,
-          noteKeptStored: () => undefined,
-          recoverKeptEdit: async () => false,
+          enqueueWrite: <T>(run: () => Promise<T>): Promise<T> => run(),
+          noteGateStored: () => undefined,
+          noteInstalledCursor: () => false,
           isGuest: () => false,
           isReadOnly: () => false,
           isReplacing: () => false,
@@ -276,7 +273,6 @@ describe("departure under the held editing lock", () => {
           noteStored: vi.fn(),
           onConflict: async () => undefined,
           savedRevision: () => baseline.revision,
-          serverDocument,
           shared: serverExamWorkspaceStore.shared,
           tabId: () => "tab-1",
           workspaceDocument,
