@@ -26,7 +26,7 @@ from skriptoteket.application.curated_apps.handlers.exam_answer_key_provider_att
 from skriptoteket.application.curated_apps.handlers.exam_workspace_digiexam_jobs import (
     ProcessExamWorkspaceDigiExamJobHandler,
 )
-from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
+from skriptoteket.application.curated_apps.handlers.exam_workspace_document_imports import (
     ImportExamWorkspaceDigiExamDocumentHandler,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_enrichment import (

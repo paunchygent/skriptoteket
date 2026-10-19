@@ -13,10 +13,12 @@ from starlette_dishka import setup_dishka
 from skriptoteket.application.curated_apps.handlers.exam_workspace_digiexam_jobs import (
     ProcessExamWorkspaceDigiExamJobHandler,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_document_imports import (
+    ImportExamWorkspaceDigiExamDocumentHandler,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
     GetExamWorkspaceConversionStatusHandler,
     GetExamWorkspaceDocumentHandler,
-    ImportExamWorkspaceDigiExamDocumentHandler,
     SaveExamWorkspaceDocumentHandler,
 )
 from skriptoteket.config import Settings

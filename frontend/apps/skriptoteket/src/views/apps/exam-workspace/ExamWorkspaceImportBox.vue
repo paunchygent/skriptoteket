@@ -52,7 +52,14 @@ watch(
 );
 
 const record = computed(() => props.item.import_record);
-const sourceName = computed(() => (props.origin === "digiexam_import" ? "DigiExam" : "Word"));
+/** The import source each origin kind names in the box heading. */
+const ORIGIN_SOURCE_NAMES: Record<NativeExamDocument["origin"]["kind"], string> = {
+  created: "Word",
+  docx_import: "Word",
+  digiexam_import: "DigiExam",
+  qti_import: "QTI",
+};
+const sourceName = computed(() => ORIGIN_SOURCE_NAMES[props.origin]);
 const steps = computed(() => (record.value ? examWorkspaceImportSteps(record.value) : []));
 const issues = computed(() =>
   props.item.review.state === "review_required"

@@ -8,8 +8,10 @@ from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeyEnrichmentJob,
     ExamAnswerKeySourceKind,
 )
-from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
+from skriptoteket.application.curated_apps.handlers.exam_workspace_document_imports import (
     ImportExamWorkspaceDocumentHandler,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
     SaveExamWorkspaceDocumentHandler,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.container import ExamWorkspaceContainerContent

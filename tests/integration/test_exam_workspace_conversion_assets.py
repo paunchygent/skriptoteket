@@ -18,7 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from skriptoteket.application.curated_apps.exam_answer_key_enrichment import (
     ExamAnswerKeySourceKind,
 )
-from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
+from skriptoteket.application.curated_apps.handlers.exam_workspace_document_imports import (
     ImportExamWorkspaceDocumentHandler,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import asset_id_for

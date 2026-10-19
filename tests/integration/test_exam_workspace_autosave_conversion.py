@@ -10,8 +10,10 @@ from skriptoteket.application.curated_apps.exam_answer_key_enrichment import Exa
 from skriptoteket.application.curated_apps.exam_workspace_history import (
     StoreExamWorkspaceUndoStepRequest,
 )
-from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
+from skriptoteket.application.curated_apps.handlers.exam_workspace_document_imports import (
     ImportExamWorkspaceDocumentHandler,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
     SaveExamWorkspaceDocumentHandler,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_undo_steps import (
