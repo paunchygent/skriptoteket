@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 
-from tests.conftest import auto_worker_count
+from tests.conftest import auto_worker_count, file_weight
 
 ROOT = Path(__file__).resolve().parents[3]
 SMALL_TARGET = "tests/unit/domain/curated_apps/test_models.py"
@@ -89,3 +89,13 @@ def test_a_small_selection_runs_in_process_without_a_serial_reason() -> None:
 
     assert completed.returncode == 0, completed.stdout + completed.stderr
     assert "created:" not in completed.stdout
+
+
+def test_a_file_counts_as_its_declared_weight(tmp_path: Path) -> None:
+    heavy = tmp_path / "test_heavy.py"
+    heavy.write_text('# xdist-weight: 72 (a long sweep)\n"""Doc."""\n', encoding="utf-8")
+    ordinary = tmp_path / "test_ordinary.py"
+    ordinary.write_text('"""Doc."""\nVALUE = "# xdist-weight: 9"\n', encoding="utf-8")
+
+    assert file_weight(heavy) == 72
+    assert file_weight(ordinary) == 1

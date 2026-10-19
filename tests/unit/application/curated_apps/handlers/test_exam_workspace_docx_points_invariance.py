@@ -1,3 +1,4 @@
+# xdist-weight: 72 (1056 replay conversions, about 140 s serial): a focused run gets 12 workers.
 """Invariance: where the grouping places a total line never changes the published points.
 
 Every printed points line in each recorded conversion is moved to every placement the
@@ -40,16 +41,16 @@ from tests.unit.application.curated_apps.handlers.docx_pipeline_replay import (
     corpus_chunks,
     recorded_exams,
 )
-from tests.unit.application.curated_apps.handlers.docx_pure_stage_memo import (
-    memoise_pure_conversion_stages,
+from tests.unit.application.curated_apps.handlers.labeler_source_memo import (
+    memoise_labeler_source,
 )
 
 pytestmark = [pytest.mark.unit, pytest.mark.asyncio]
 
 
 @pytest.fixture(autouse=True)
-def _memoised_pure_stages(monkeypatch: pytest.MonkeyPatch) -> None:
-    memoise_pure_conversion_stages(monkeypatch)
+def _memoised_labeler_source(monkeypatch: pytest.MonkeyPatch) -> None:
+    memoise_labeler_source(monkeypatch)
 
 
 Grouping = dict

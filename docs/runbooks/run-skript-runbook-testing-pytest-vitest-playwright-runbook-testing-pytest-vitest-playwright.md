@@ -58,8 +58,9 @@ pdm run test-simulations
   runs a focused target. Both run in parallel (`-n logical --dist worksteal` in
   `addopts`) and quietly: no live log streaming, and captured INFO logs and
   stdout are printed only for failing tests.
-- The worker count follows the selection: one file runs in-process, N files
-  use `min(N, hardware threads)` workers (24 on Hemma).
+- The worker count follows the selection: fewer than 12 files run
+  in-process, a larger run gets one worker per 6 files, capped by the hardware
+  threads. A sweep file that declares `# xdist-weight: <n>` counts as `n` files.
 - `pdm run test-docker` runs the Docker integration lane. Each worker starts
   one Postgres container and migrates one template database; every module
   gets its own copy of it.

@@ -1,4 +1,5 @@
 import os
+import re
 from collections.abc import Iterable
 from pathlib import Path
 
@@ -29,6 +30,22 @@ def selected_test_files(args: Iterable[str]) -> frozenset[Path]:
 
 SERIAL_BELOW_FILES = 12
 FILES_PER_WORKER = 6
+_WEIGHT_COMMENT = re.compile(r"^# xdist-weight: (\d+)\b", re.MULTILINE)
+_WEIGHT_SCAN_BYTES = 4096
+
+
+def file_weight(path: Path) -> int:
+    """How many ordinary files one test file counts as when workers are sized.
+
+    A file whose tests together take minutes (a parametrized sweep) declares
+    ``# xdist-weight: <n>`` near its top; every other file counts as one. The comment is read
+    as text, so sizing never imports a module.
+    """
+
+    with path.open("rb") as handle:
+        head = handle.read(_WEIGHT_SCAN_BYTES).decode("utf-8", errors="replace")
+    match = _WEIGHT_COMMENT.search(head)
+    return int(match.group(1)) if match else 1
 
 
 def auto_worker_count(file_count: int, max_workers: int) -> int:
@@ -48,7 +65,8 @@ def auto_worker_count(file_count: int, max_workers: int) -> int:
 def pytest_xdist_auto_num_workers(config: pytest.Config) -> int:
     """Size `-n logical` (the addopts default) to the selection; hardware threads cap it."""
 
-    workers = auto_worker_count(len(selected_test_files(config.args)), os.cpu_count() or 1)
+    weight = sum(file_weight(path) for path in selected_test_files(config.args))
+    workers = auto_worker_count(weight, os.cpu_count() or 1)
     if workers == 0:
         config.stash[_SIZED_SERIAL_KEY] = True
     return workers
