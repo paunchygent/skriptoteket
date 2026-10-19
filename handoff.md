@@ -71,6 +71,7 @@
   - 40-04-08 (gap/short-answer editor, click-a-word gaps, popover): lead on Hemma; its Mac staging walk also covers the owed 40-04-04 walk, then close 40-04-04.
   - 39-04-20 score field (lone "/" from "/4 p"): in review; user accepted the whitespace side effect (corrected counts to confirm). 40-04-09 gap tool: `ready` (plan accepted 2026-10-19), G1-G4 and both review rounds' repairs (f98599ec, bcbf04a7; Q12, Q13, C1) integrated on `codex/task-skript-40-04-gap-tool-remote`; next Mac merge + staging walk, root 01a1531a. 40-04-10 points banner: user chose list A and grey-number dismiss as the prominent primary action; dismiss label open. 40-04-11 glyph-only tools: four user questions open (mockups shown).
   - 40-04-12 PDF keep-together (branch codex/task-skript-40-04-keep-together-remote): ready (user accepted 2026-10-19); built, F1 repaired, main merged; next Mac merge + staging walk (K11), then the 39-04-20 "/" check. DOCX out of scope.
+  - 40-04-15 inline "(N p)" points (branch codex/task-skript-40-04-inline-points-remote, lead 600fa5a8, root 01a1542c): ready (user D1-D2, P1-P2 2026-10-19); next fail-first tests, build, domain suite, staging walk.
   - 41-02-02: merged to main (review approved, b9b3e6a9); next Mac guest staging walk (ST-SKRIPT-41-02), then close. Production deploy with nginx-proxy fixed IP 172.18.255.10 and `TRUSTED_PROXY_CIDRS=172.18.255.10/32` is a USER GATE (restarts shared nginx-proxy).
   - REP-0048: 6 Exam.net walk checks (Mac walk).
   - HuleEdu after HULE-14-03-01: 41-01-03, 41-01-02, 41-01-04; http_runtime workers repair.

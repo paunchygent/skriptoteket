@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "d9ef765934aa5a024daf37a54c7360fab17477f20e616048bee406664037d9a5",
+  "source_set_digest": "79a204150c7ccd4dd22998337d425526f97c10bf4ddf77937790f1fc1e834a60",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6672,6 +6672,25 @@
       "type": "task",
       "title": "Printed PDF exams keep each question's text and its alternatives on one page",
       "path": "docs/backlog/tasks/task-skript-40-04-12-printed-pdf-exams-keep-each-question-s-text-and-its-alternatives-on-one-page.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-15",
+      "type": "task",
+      "title": "Printed PDF exams show each question's points as (N p) at the end of the question text",
+      "path": "docs/backlog/tasks/task-skript-40-04-15-printed-pdf-exams-show-each-question-s-points-as-n-p-at-the-end-of-the-question-text.md",
       "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
