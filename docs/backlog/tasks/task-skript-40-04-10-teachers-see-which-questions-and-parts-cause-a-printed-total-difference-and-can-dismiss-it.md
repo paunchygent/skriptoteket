@@ -66,7 +66,13 @@ Units, each a fresh `junior-implementation-specialist` with disjoint files, in t
 
 ## Validation
 
-- Before any code: reproduce the user's click on staging at the current main on an exam whose printed total differs, and record which state the two actions were in and what each click did.
+- Reproduction of the reported click (F5), run by the Mac on staging as the first part of the final walk, on a main that does not yet contain this task (staging belongs to the Mac; Hemma does not walk it; orchestrator 2026-10-19):
+  1. Import an exam whose printed total differs from its question sum (for example the user's exam that reads "Totalt 67 p · provtexten anger 70 p"), and wait until its conversion has finished.
+  2. Before clicking, record whether "Använd N p" and "Använd beräknade summor" are enabled: the `disabled` attribute on `[data-test="exam-workspace-accept-exam-total"]` and `[data-test="exam-workspace-accept-all-totals"]`, and their grey `.xw-btn:disabled` colour.
+  3. Click "Använd N p"; record the footer text and whether both buttons are now hidden. Press Ångra; confirm the amber note returns.
+  4. Click "Använd beräknade summor"; record the same. Compare the two results with each other.
+  5. Repeat steps 2 and 3 once while a conversion is still running.
+  6. Record each observation with a screenshot. If either button was disabled or a click had no effect, report it to the parent as a defect outside this contract (Stop Conditions).
 - Focused pytest for unit 1: each importer stores the printed per-question points, an estimated or unprinted question stores null, a points edit keeps `source_points`, and a v8 document is refused.
 - Fail-first Vitest for the account function and for the display: the footer reads "Totalt N p" with the amber note "Provtexten anger M p. Dessa skiljer sig:" below it; each row has the arrow glyph, reads "Del 2: Satslösning — provtexten 22 p, nu 20 p", "Fråga 5 — provtexten 12 p, nu 10 p" or "Fråga 8 — provtexten 4 p, saknar poäng", and selects its part or question on a click; the remainder row appears only when the entries do not explain the difference; the note's last line is the text "Använd beräknade poäng?"; the note contains no text button, and no Använd button exists in the footer, on a part row or in the part instruction editor; exactly two glyph-only answers follow, no (`close`) and yes (`confirm`), with no visible text and their names in the tooltip and aria-label only; the no answer's hit area is larger than the yes answer's; yes leaves "Totalt 67 p" alone and clears the printed totals in one undo step; no closes the note, the total line reads "Totalt 67 p · provtexten anger 70 p" with the printed part in neutral grey, and it holds after a reload; Ångra undoes each; no list row moves when the note appears or goes (the 40-04-07 layout-slot rule).
 - `pdm run lint`, `pdm run typecheck`, frontend typecheck, ESLint and build; one exam-workspace domain suite at the end after the orchestrator's go.
@@ -98,4 +104,4 @@ Stop and report to the parent when the staging reproduction shows a defect outsi
 - 2026-10-19: origin/main f7eeada5 (TASK-SKRIPT-39-04-20) merged at c339584c, handoff conflict resolved explicitly; the orchestrator started unit 1 before 40-04-08 reached main.
 - Unit 1 split: 1a backend v9 (source_points, printed_total_dismissed, importers, version, openapi regen), junior launched with order evidence/lead-4ebb41f3/orders/u1a-backend-v9.md; 1b frontend fixtures and v9 literals follows on the regenerated types.
 - Retained root `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a15330-34cd-7103-bb71-cc8ef9b8a56f` (explorer discovery under `discovery/explorer/`).
-- Next: integrate 1a, launch 1b, then units 2 and 3; staging reproduction (F5) still owed before the display unit.
+- Next: integrate 1a, launch 1b, then units 2 and 3. F5 is folded into the final Mac walk (Validation). When 40-04-08 lands on main, merge it and repair the v9 fixtures.
