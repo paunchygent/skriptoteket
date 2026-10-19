@@ -24,6 +24,7 @@ import ExamWorkspaceDrawer from "./ExamWorkspaceDrawer.vue";
 import ExamWorkspaceExportDrawer from "./ExamWorkspaceExportDrawer.vue";
 import ExamWorkspaceOpenDrawer from "./ExamWorkspaceOpenDrawer.vue";
 import { EXPORT_FORMAT_NAMES } from "./useExamWorkspaceExports";
+import { EXAM_WORKSPACE_EXPORT_FORMATS } from "./examWorkspaceExportFormats";
 import type { useExamWorkspaceContentSuggestions } from "./useExamWorkspaceContentSuggestions";
 import type { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
 import type { useExamWorkspaceEnrichment } from "./useExamWorkspaceEnrichment";
@@ -44,21 +45,26 @@ const DRAWER_OPENERS: Record<DrawerName, string> = {
   open: '[data-test="exam-workspace-open"]',
 };
 
-const props = defineProps<{
-  drawer: DrawerName;
-  layout: ExamWorkspaceLayout;
-  editing: ReturnType<typeof useExamWorkspaceEditing>;
-  exports: ReturnType<typeof useExamWorkspaceExports>;
-  enrichment: ReturnType<typeof useExamWorkspaceEnrichment>;
-  content: ReturnType<typeof useExamWorkspaceContentSuggestions>;
-  sourceFile: ReturnType<typeof useExamWorkspaceSourceFile>;
-  blockers: ExamWorkspaceBlockerEntry[];
-  disabled: boolean;
-  enrichmentBusy: boolean;
-  zeroPoints: boolean;
-  formattedSavedExports: Partial<Record<ExamWorkspaceExportTarget, string>>;
-  questionLabel: (itemId: string) => string | null;
-}>();
+const props = withDefaults(
+  defineProps<{
+    drawer: DrawerName;
+    layout: ExamWorkspaceLayout;
+    editing: ReturnType<typeof useExamWorkspaceEditing>;
+    exports: ReturnType<typeof useExamWorkspaceExports>;
+    enrichment: ReturnType<typeof useExamWorkspaceEnrichment>;
+    content: ReturnType<typeof useExamWorkspaceContentSuggestions>;
+    sourceFile: ReturnType<typeof useExamWorkspaceSourceFile>;
+    blockers: ExamWorkspaceBlockerEntry[];
+    disabled: boolean;
+    enrichmentBusy: boolean;
+    zeroPoints: boolean;
+    formattedSavedExports: Partial<Record<ExamWorkspaceExportTarget, string>>;
+    questionLabel: (itemId: string) => string | null;
+    /** The desktop resize handle is wanted; only ever set on desktop. */
+    handle?: boolean;
+  }>(),
+  { handle: false },
+);
 
 defineEmits<{
   close: [];
@@ -66,6 +72,12 @@ defineEmits<{
   goto: [blocker: ExamWorkspaceBlockerEntry];
   fix: [blocker: ExamWorkspaceBlockerEntry];
   "set-ordering": [ordering: ExamListOrdering];
+  /** The resize handle reports a dragged or stepped width in px. */
+  set: [px: number];
+  /** The resize handle resets to the default width on double-click. */
+  reset: [];
+  /** Enter on the resize handle; the view closes the drawer like its ×. */
+  "toggle-collapse": [];
 }>();
 
 const {
@@ -92,9 +104,9 @@ const {
 const { handleDroppedFiles, handleSelectedFile, sourceFileError } = props.sourceFile;
 
 const currentExports = computed(() =>
-  (Object.keys(props.exports.savedExports.value) as ExamWorkspaceExportTarget[]).map(
-    (target) => EXPORT_FORMAT_NAMES[target],
-  ),
+  EXAM_WORKSPACE_EXPORT_FORMATS.filter(
+    (format) => props.exports.savedExports.value[format.target] !== undefined,
+  ).map((format) => EXPORT_FORMAT_NAMES[format.target]),
 );
 </script>
 
@@ -105,7 +117,11 @@ const currentExports = computed(() =>
     :layout="layout"
     :opener-selector="DRAWER_OPENERS[drawer]"
     :test-id="`exam-workspace-drawer-${drawer}`"
+    :handle="handle"
     @close="$emit('close')"
+    @set="$emit('set', $event)"
+    @reset="$emit('reset')"
+    @toggle-collapse="$emit('toggle-collapse')"
   >
     <ExamWorkspaceOpenDrawer
       v-if="drawer === 'open'"

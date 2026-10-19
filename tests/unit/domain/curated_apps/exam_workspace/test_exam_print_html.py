@@ -266,12 +266,8 @@ class TestKeepTogetherGroups:
             text=(
                 PrintHeading(level=3, text="Fråga 1"),
                 PrintParagraph(
-                    runs=(PrintText("Brödtext."),),
+                    runs=(PrintText("Brödtext."), PrintText(" (2 p)")),
                     style=PrintParagraphStyle.BODY,
-                ),
-                PrintParagraph(
-                    runs=(PrintText("Poäng: 2 poäng"),),
-                    style=PrintParagraphStyle.POINTS,
                 ),
             ),
             answer=(
@@ -288,8 +284,7 @@ class TestKeepTogetherGroups:
         text_slice = html[text_start:options_start]
 
         assert "<h3>Fråga 1</h3>" in text_slice
-        assert "Brödtext." in text_slice
-        assert "Poäng: 2 poäng" in text_slice
+        assert "Brödtext. (2 p)" in text_slice
 
     def test_consecutive_options_share_one_wrapper(self) -> None:
         html = _render(_document(self._question()))

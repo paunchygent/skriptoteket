@@ -232,10 +232,10 @@ function openEntry(entry: ExamWorkspaceDocumentSummary): void {
       <span class="drop__formats">
         <span
           v-if="showWordImport"
-          class="xw-chip"
-        >Word .docx</span>
-        <span class="xw-chip">DigiExam .dxe</span>
-        <span class="xw-chip">QTI .zip</span>
+          class="drop__format"
+        >Word (.docx)</span>
+        <span class="drop__format">DigiExam (.dxe)</span>
+        <span class="drop__format">QTI (.zip)</span>
       </span>
       <input
         ref="fileInput"
@@ -404,7 +404,7 @@ function openEntry(entry: ExamWorkspaceDocumentSummary): void {
 .sect .sect__first { margin-top: 0; }
 .sect > * + .prog, .sect > * + .drop { margin-top: var(--huleedu-space-3); }
 .drop {
-  display: flex; flex-direction: column; align-items: center; gap: var(--huleedu-space-2); padding: var(--huleedu-space-5);
+  display: flex; flex-direction: column; align-items: center; gap: var(--huleedu-space-2); padding: var(--huleedu-space-5) var(--huleedu-space-3);
   border: 1px dashed var(--huleedu-navy-30); border-radius: var(--huleedu-radius-lg); background: var(--huleedu-surface-content);
   text-align: center;
 }
@@ -412,7 +412,8 @@ function openEntry(entry: ExamWorkspaceDocumentSummary): void {
 .drop--off { opacity: 0.55; }
 .drop__glyph { color: var(--huleedu-navy-40); }
 .drop__title { font-size: var(--huleedu-text-sm); font-weight: var(--huleedu-font-semibold); }
-.drop__formats { display: flex; gap: var(--huleedu-space-2); }
+.drop__formats { display: flex; flex-wrap: nowrap; gap: var(--huleedu-space-2); }
+.drop__format { font-size: var(--huleedu-text-xs); font-weight: var(--huleedu-font-normal); color: var(--huleedu-navy-70); white-space: nowrap; }
 .drop__input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .drop small { color: var(--huleedu-navy-60); font-size: var(--huleedu-text-xs); }
 .prog {

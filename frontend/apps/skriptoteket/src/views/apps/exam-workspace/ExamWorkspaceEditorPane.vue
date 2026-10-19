@@ -202,7 +202,7 @@ const currentParentId = computed(() => props.itemEntry?.parentId ?? null);
 
 <style scoped>
 .ws__editor { min-width: 0; min-height: 0; overflow-y: auto; }
-.ws__in { max-width: 860px; margin: 0 auto; padding: var(--huleedu-space-6) var(--huleedu-space-8) var(--huleedu-space-12); }
+.ws__in { max-width: var(--xw-editor-measure); margin: 0 auto; padding: var(--huleedu-space-6) var(--huleedu-space-8) var(--huleedu-space-12); }
 .ws__empty {
   height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--huleedu-space-2);
   padding: var(--huleedu-space-8); text-align: center; color: var(--huleedu-navy-70);
@@ -211,6 +211,11 @@ const currentParentId = computed(() => props.itemEntry?.parentId ?? null);
 .ws__empty p { max-width: 360px; margin: 0 0 var(--huleedu-space-4); font-size: var(--huleedu-text-sm); }
 @media (max-width: 1279px) {
   .ws__in { padding: var(--huleedu-space-4) var(--huleedu-space-5) var(--huleedu-space-12); }
+}
+@media (min-width: 1280px) {
+  /* Below its minimum the editor keeps its minimum layout and scrolls inside itself. */
+  .ws__editor { overflow-x: auto; }
+  .ws__in { min-width: var(--xw-editor-min); }
 }
 @media (max-width: 767px) {
   .ws__in { padding: var(--huleedu-space-3) var(--huleedu-space-4) var(--huleedu-space-12); }

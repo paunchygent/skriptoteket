@@ -232,6 +232,10 @@ function handleRootKeydown(event: KeyboardEvent): void {
   if (event.isComposing || event.keyCode === 229 || event.key !== "Escape") {
     return;
   }
+  if (event.repeat) {
+    // A held Escape is one press: repeats close nothing.
+    return;
+  }
   event.preventDefault();
   discarded = true;
   for (const key of Object.keys(optionDrafts)) {

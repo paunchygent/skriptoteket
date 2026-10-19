@@ -1,7 +1,7 @@
 """The Swedish words an export adds to an exam.
 
 Every export (QTI, PDF, DOCX) prints the words it adds, such as "Fråga", "Lucka", "Bild",
-"Poäng", "Rätt svar", "Facit", "Par", "Rätt ordning" and "Rättningsmall", in Swedish, whatever
+"Rätt svar", "Facit", "Par", "Rätt ordning" and "Rättningsmall", in Swedish, whatever
 language the exam itself is written in. Exactly one label set exists. The user decision of
 2026-10-18 supersedes TASK-SKRIPT-39-05-03 D18 and D21, which chose the labels by counting
 function words in the exam text and printed bare numbers when no language was recognised.
@@ -27,9 +27,7 @@ class ExamExportLabels:
     question: str
     gap: str
     image: str
-    points: str
-    points_unit: str
-    points_missing: str
+    points_abbreviation: str
     answer_key: str
     correct_answer: str
     pair: str
@@ -64,10 +62,9 @@ class ExamExportLabels:
         """Student-visible alt text: the image word and number, never a question's number."""
         return f"{self.image} {index}"
 
-    def points_line(self, points: str | None) -> str:
-        """Such as "Poäng: 2 poäng"."""
-        value = self.points_missing if points is None else f"{points} {self.points_unit}"
-        return f"{self.points}: {value}"
+    def points_inline(self, points: str) -> str:
+        """Such as "(2 p)"."""
+        return f"({points} {self.points_abbreviation})"
 
     def keyed(self, word: str, value: str) -> str:
         """A key line such as "Rätt svar: Beta"."""
@@ -78,9 +75,7 @@ SWEDISH_EXAM_LABELS = ExamExportLabels(
     question="Fråga",
     gap="Lucka",
     image="Bild",
-    points="Poäng",
-    points_unit="poäng",
-    points_missing="saknas",
+    points_abbreviation="p",
     answer_key="Facit",
     correct_answer="Rätt svar",
     pair="Par",

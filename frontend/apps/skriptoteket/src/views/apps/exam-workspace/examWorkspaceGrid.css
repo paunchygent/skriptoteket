@@ -1,0 +1,64 @@
+/*
+ * The exam workspace grid owner (TASK-SKRIPT-41-02-04).
+ *
+ * Domain purpose:
+ *   Every .ws__body grid rule: the base list/editor tracks, the empty body,
+ *   the data-side and data-list variants, and the desktop/tablet/phone grid
+ *   tracks. Shorthands: Lm/Em/Sm are var(--xw-list-min),
+ *   var(--xw-editor-min), var(--xw-side-min); L is
+ *   max(var(--xw-list-min), var(--xw-list-size)); S is
+ *   max(var(--xw-side-min), var(--xw-side-size)). While the workspace is at
+ *   least the sum of the minimums, every track keeps its minimum: the side
+ *   squeezes first, then the list, then the editor.
+ *
+ * Relationships:
+ *   - Loaded by `ExamWorkspaceView.vue` through a scoped src style block;
+ *     the width tokens live on .xw-root in `examWorkspace.css`.
+ */
+
+.ws__body {
+  position: relative; flex: 1; min-height: 0; display: grid;
+  grid-template-columns: min(max(var(--xw-list-min), var(--xw-list-size)), max(var(--xw-list-min), 100% - var(--xw-editor-min))) minmax(0, 1fr);
+}
+.ws__body--empty { grid-template-columns: minmax(0, 1fr); }
+/* The side track squeezes first, then the list, the editor last (TASK-SKRIPT-41-02-04). */
+.ws[data-side="open"],
+.ws[data-side="export"],
+.ws[data-side="details"] { --xw-side-size: var(--xw-drawer-size); --xw-side-min: var(--xw-drawer-min); }
+.ws[data-side="preview"] { --xw-side-size: var(--xw-preview-size); --xw-side-min: var(--xw-preview-min); }
+/* The collapsed list is a fixed 44px rail; the rail counts as the list's width. */
+.ws[data-list="collapsed"] .ws__body:not(.ws__body--empty) {
+  grid-template-columns: 44px minmax(0, 1fr);
+}
+@media (min-width: 1280px) {
+  .ws[data-side="open"] .ws__body,
+  .ws[data-side="export"] .ws__body,
+  .ws[data-side="details"] .ws__body,
+  .ws[data-side="preview"] .ws__body {
+    grid-template-columns:
+      min(max(var(--xw-list-min), var(--xw-list-size)), max(var(--xw-list-min), 100% - var(--xw-editor-min) - var(--xw-side-min)))
+      minmax(0, 1fr)
+      min(max(var(--xw-side-min), var(--xw-side-size)), max(var(--xw-side-min), 100% - var(--xw-editor-min) - min(max(var(--xw-list-min), var(--xw-list-size)), max(var(--xw-list-min), 100% - var(--xw-editor-min) - var(--xw-side-min)))));
+  }
+  .ws[data-list="collapsed"][data-side="open"] .ws__body:not(.ws__body--empty),
+  .ws[data-list="collapsed"][data-side="export"] .ws__body:not(.ws__body--empty),
+  .ws[data-list="collapsed"][data-side="details"] .ws__body:not(.ws__body--empty),
+  .ws[data-list="collapsed"][data-side="preview"] .ws__body:not(.ws__body--empty) {
+    grid-template-columns:
+      44px
+      minmax(0, 1fr)
+      min(max(var(--xw-side-min), var(--xw-side-size)), max(var(--xw-side-min), 100% - 44px - var(--xw-editor-min)));
+  }
+  .ws[data-side="open"] .ws__body--empty,
+  .ws[data-side="export"] .ws__body--empty,
+  .ws[data-side="details"] .ws__body--empty {
+    grid-template-columns: minmax(0, 1fr) min(max(var(--xw-side-min), var(--xw-side-size)), max(var(--xw-side-min), 100% - var(--xw-editor-min)));
+  }
+}
+@media (max-width: 1279px) {
+  .ws__body { grid-template-columns: 280px minmax(0, 1fr); }
+  .ws__body--empty { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 767px) {
+  .ws__body { grid-template-columns: minmax(0, 1fr); }
+}

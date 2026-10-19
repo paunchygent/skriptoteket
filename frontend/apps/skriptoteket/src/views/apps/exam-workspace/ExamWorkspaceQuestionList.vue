@@ -16,7 +16,8 @@
  *   A line goes as soon as its level agrees. Above the rows the exam
  *   instruction is one entry: "Instruktioner" with a short preview when the
  *   exam has one, otherwise a quiet "Lägg till instruktioner"; both open it in
- *   the editor. On a phone the list
+ *   the editor. On desktop the list collapses to a rail and resizes with a
+ *   handle. On a phone the list
  *   opens full screen over the editor from the question strip and closes
  *   with Tillbaka or a choice. "Markera" turns the list into Markera mode: a
  *   standalone question carries a checkbox (an ordering question's is
@@ -33,6 +34,7 @@
 import { computed, nextTick, ref, watch } from "vue";
 
 import { UiGlyph } from "../../../components/ui";
+import ExamWorkspaceColumnHandle from "./ExamWorkspaceColumnHandle.vue";
 import ExamWorkspaceNewItemMenu from "./ExamWorkspaceNewItemMenu.vue";
 import ExamWorkspaceNoteLine from "./ExamWorkspaceNoteLine.vue";
 import type { ExamWorkspaceNoteLineAction } from "./ExamWorkspaceNoteLine.vue";
@@ -45,21 +47,28 @@ import { examWorkspaceFormatExactPoints, examWorkspaceFormatPoints } from "./exa
 import type { PrintedTotalMismatch } from "./examWorkspaceTotals";
 import { EXAM_INSTRUCTIONS_ENTRY_ID } from "./useExamWorkspaceSelection";
 
-const props = defineProps<{
-  entries: ExamWorkspaceListEntry[];
-  selectedId: string | null;
-  /** The start of the exam instruction's text, or `null` when the exam has none. */
-  examInstructionsPreview: string | null;
-  questionCount: number;
-  total: number;
-  /** One entry per printed total that differs from its questions' sum: the exam first, then parts in order. */
-  mismatches: PrintedTotalMismatch[];
-  canAdd: boolean;
-  /** The workspace is busy: the lines' buttons wait like the list's other actions. */
-  disabled: boolean;
-  /** The phone shows the list as a full-screen layer. */
-  overlay: boolean;
-}>();
+const props = withDefaults(
+  defineProps<{
+    entries: ExamWorkspaceListEntry[];
+    selectedId: string | null;
+    /** The start of the exam instruction's text, or `null` when the exam has none. */
+    examInstructionsPreview: string | null;
+    questionCount: number;
+    total: number;
+    /** One entry per printed total that differs from its questions' sum: the exam first, then parts in order. */
+    mismatches: PrintedTotalMismatch[];
+    canAdd: boolean;
+    /** The workspace is busy: the lines' buttons wait like the list's other actions. */
+    disabled: boolean;
+    /** The phone shows the list as a full-screen layer. */
+    overlay: boolean;
+    /** The desktop list is collapsed to its rail; only ever set on desktop. */
+    collapsed?: boolean;
+    /** The desktop resize handle is wanted; only ever set on desktop. */
+    handle?: boolean;
+  }>(),
+  { collapsed: false, handle: false },
+);
 
 const examInstructionsSelected = computed(() => props.selectedId === EXAM_INSTRUCTIONS_ENTRY_ID);
 /** The exam total line in full, for the tooltip when a long total is cut by the ellipsis. */
@@ -71,6 +80,12 @@ const emit = defineEmits<{
   group: [itemIds: string[]];
   clearPrintedTotal: [parentId: string | null];
   close: [];
+  /** The resize handle reports a dragged or stepped width in px. */
+  set: [px: number];
+  /** The resize handle resets to the default width on double-click. */
+  reset: [];
+  /** The collapse glyph, the expand glyph or Enter on the handle. */
+  "toggle-collapse": [];
 }>();
 
 /** The footer note lines in order, named with the list's part numbers. */
@@ -120,6 +135,8 @@ const formattedTotal = computed(() => `${examWorkspaceFormatPoints(props.total)}
 const rows = ref<HTMLElement | null>(null);
 const newTrigger = ref<HTMLButtonElement | null>(null);
 const newMenuOpen = ref(false);
+const collapseGlyph = ref<HTMLButtonElement | null>(null);
+const expandGlyph = ref<HTMLButtonElement | null>(null);
 
 /** The Markera mode: the list shows a checkbox per standalone question and a group bar. */
 const marking = ref(false);
@@ -182,161 +199,238 @@ watch(
     row?.scrollIntoView?.({ block: "nearest" });
   },
 );
+
+/**
+ * The collapse and expand glyphs replace each other across branches, so a
+ * glyph click moves focus to its replacement on the next tick. Handle-driven
+ * toggles keep focus on the one handle, which stays mounted in both states.
+ */
+async function collapseFromGlyph(): Promise<void> {
+  emit("toggle-collapse");
+  await nextTick();
+  expandGlyph.value?.focus();
+}
+
+async function expandFromGlyph(): Promise<void> {
+  emit("toggle-collapse");
+  await nextTick();
+  collapseGlyph.value?.focus();
+}
 </script>
 
 <template>
   <section
     class="list"
-    :class="{ 'list--overlay': overlay }"
+    :class="{ 'list--overlay': overlay, 'list--collapsed': collapsed }"
     aria-labelledby="exam-workspace-list-title"
     data-test="exam-workspace-question-list"
   >
-    <div class="list__head">
-      <button
-        v-if="overlay"
-        type="button"
-        class="xw-btn"
-        data-test="exam-workspace-list-back"
-        @click="emit('close')"
-      >
-        <UiGlyph
-          meaning="back"
-          :size="20"
-        />Tillbaka
-      </button>
-      <h2
-        id="exam-workspace-list-title"
-        class="list__title"
-      >
-        Frågor ({{ questionCount }})
-      </h2>
-      <div class="list__head-actions">
+    <template v-if="collapsed">
+      <div class="list__rail">
         <button
-          ref="newTrigger"
+          ref="expandGlyph"
           type="button"
-          class="xw-btn xw-btn--compact"
-          :disabled="!canAdd"
-          aria-haspopup="menu"
-          :aria-expanded="newMenuOpen"
-          data-test="exam-workspace-new"
-          @click="newMenuOpen = !newMenuOpen"
+          class="xw-btn xw-btn--icon xw-btn--ghost"
+          aria-label="Visa frågelistan"
+          title="Visa frågelistan"
+          data-test="exam-workspace-list-expand"
+          @click="expandFromGlyph"
         >
           <UiGlyph
-            meaning="add"
-            :size="16"
-          />Ny uppgift
+            meaning="expand"
+            :size="20"
+          />
         </button>
       </div>
-    </div>
-    <div
-      class="list__markbar"
-      data-test="exam-workspace-marking-bar"
-    >
-      <button
-        type="button"
-        class="xw-btn xw-btn--compact xw-btn--primary list__markbar-group"
-        :class="{ 'list__markbar-group--idle': !marking }"
-        :disabled="disabled || markedIds.length === 0"
-        data-test="exam-workspace-group-marked"
-        @click="groupMarked"
-      >
-        Skapa del av markerade ({{ markedIds.length }})
-      </button>
-      <button
-        type="button"
-        class="xw-btn xw-btn--compact list__markbar-toggle"
-        :disabled="disabled"
-        :data-test="marking ? 'exam-workspace-marking-cancel' : 'exam-workspace-marking-start'"
-        @click="marking ? cancelMarking() : startMarking()"
-      >
-        <UiGlyph
-          v-if="!marking"
-          meaning="checkbox-off"
-          :size="16"
-        />{{ marking ? "Avbryt" : "Markera" }}
-      </button>
-    </div>
-    <div class="list__scroll">
-      <div
-        class="list__intro"
-        :class="{ 'list__intro--selected': examInstructionsSelected }"
-      >
-        <button
-          v-if="examInstructionsPreview !== null"
-          type="button"
-          class="list__instructions"
-          :aria-current="examInstructionsSelected ? 'true' : undefined"
-          data-test="exam-workspace-exam-instructions-entry"
-          @click="emit('select', EXAM_INSTRUCTIONS_ENTRY_ID)"
+    </template>
+    <template v-else>
+      <div class="list__frame">
+        <div class="list__head">
+          <button
+            v-if="overlay"
+            type="button"
+            class="xw-btn"
+            data-test="exam-workspace-list-back"
+            @click="emit('close')"
+          >
+            <UiGlyph
+              meaning="back"
+              :size="20"
+            />Tillbaka
+          </button>
+          <h2
+            id="exam-workspace-list-title"
+            class="list__title"
+          >
+            Frågor ({{ questionCount }})
+          </h2>
+          <div class="list__head-actions">
+            <button
+              v-if="handle"
+              ref="collapseGlyph"
+              type="button"
+              class="xw-btn xw-btn--icon xw-btn--ghost"
+              aria-label="Dölj frågelistan"
+              title="Dölj frågelistan"
+              data-test="exam-workspace-list-collapse"
+              @click="collapseFromGlyph"
+            >
+              <UiGlyph
+                meaning="toggle-sidebar"
+                :size="20"
+              />
+            </button>
+            <button
+              ref="newTrigger"
+              type="button"
+              class="xw-btn xw-btn--compact"
+              :disabled="!canAdd"
+              aria-haspopup="menu"
+              :aria-expanded="newMenuOpen"
+              data-test="exam-workspace-new"
+              @click="newMenuOpen = !newMenuOpen"
+            >
+              <UiGlyph
+                meaning="add"
+                :size="16"
+              />Ny uppgift
+            </button>
+          </div>
+        </div>
+        <div
+          class="list__markbar"
+          data-test="exam-workspace-marking-bar"
         >
-          <span class="list__instructions-title">Instruktioner</span>
-          <span class="list__instructions-preview">{{ examInstructionsPreview }}</span>
-        </button>
-        <button
-          v-else
-          type="button"
-          class="xw-btn xw-btn--compact xw-btn--ghost list__add"
-          :aria-current="examInstructionsSelected ? 'true' : undefined"
-          data-test="exam-workspace-exam-instructions-add"
-          @click="emit('select', EXAM_INSTRUCTIONS_ENTRY_ID)"
-        >
-          Lägg till instruktioner
-        </button>
-      </div>
-      <div
-        ref="rows"
-        class="list__rows"
-        role="grid"
-        aria-labelledby="exam-workspace-list-title"
-        aria-keyshortcuts="ArrowUp ArrowDown"
-      >
-        <ExamWorkspaceQuestionRow
-          v-for="entry in entries"
-          :key="entry.id"
-          :entry="entry"
-          :selected="entry.id === selectedId"
-          :disabled="disabled"
-          :marking="marking"
-          :marked="marked.has(entry.id)"
-          @select="emit('select', $event)"
-          @toggle-mark="toggleMark"
+          <button
+            type="button"
+            class="xw-btn xw-btn--compact xw-btn--primary list__markbar-group"
+            :class="{ 'list__markbar-group--idle': !marking }"
+            :disabled="disabled || markedIds.length === 0"
+            data-test="exam-workspace-group-marked"
+            @click="groupMarked"
+          >
+            Skapa del av markerade ({{ markedIds.length }})
+          </button>
+          <button
+            type="button"
+            class="xw-btn xw-btn--compact list__markbar-toggle"
+            :disabled="disabled"
+            :data-test="marking ? 'exam-workspace-marking-cancel' : 'exam-workspace-marking-start'"
+            @click="marking ? cancelMarking() : startMarking()"
+          >
+            <UiGlyph
+              v-if="!marking"
+              meaning="checkbox-off"
+              :size="16"
+            />{{ marking ? "Avbryt" : "Markera" }}
+          </button>
+        </div>
+        <div class="list__scroll">
+          <div
+            class="list__intro"
+            :class="{ 'list__intro--selected': examInstructionsSelected }"
+          >
+            <button
+              v-if="examInstructionsPreview !== null"
+              type="button"
+              class="list__instructions"
+              :aria-current="examInstructionsSelected ? 'true' : undefined"
+              data-test="exam-workspace-exam-instructions-entry"
+              @click="emit('select', EXAM_INSTRUCTIONS_ENTRY_ID)"
+            >
+              <span class="list__instructions-title">Instruktioner</span>
+              <span class="list__instructions-preview">{{ examInstructionsPreview }}</span>
+            </button>
+            <button
+              v-else
+              type="button"
+              class="xw-btn xw-btn--compact xw-btn--ghost list__add"
+              :aria-current="examInstructionsSelected ? 'true' : undefined"
+              data-test="exam-workspace-exam-instructions-add"
+              @click="emit('select', EXAM_INSTRUCTIONS_ENTRY_ID)"
+            >
+              Lägg till instruktioner
+            </button>
+          </div>
+          <div
+            ref="rows"
+            class="list__rows"
+            role="grid"
+            aria-labelledby="exam-workspace-list-title"
+            aria-keyshortcuts="ArrowUp ArrowDown"
+          >
+            <ExamWorkspaceQuestionRow
+              v-for="entry in entries"
+              :key="entry.id"
+              :entry="entry"
+              :selected="entry.id === selectedId"
+              :disabled="disabled"
+              :marking="marking"
+              :marked="marked.has(entry.id)"
+              @select="emit('select', $event)"
+              @toggle-mark="toggleMark"
+            />
+          </div>
+        </div>
+        <div class="list__foot">
+          <span
+            class="list__total"
+            :title="totalTitle"
+            data-test="exam-workspace-exam-points"
+          >Totalt <strong class="list__sum">{{ formattedTotal }}</strong></span>
+          <div
+            v-if="lines.length > 0"
+            class="list__printed-lines"
+            data-test="exam-workspace-printed-total-lines"
+          >
+            <ExamWorkspaceNoteLine
+              v-for="line in lines"
+              :key="line.key"
+              data-test="exam-workspace-printed-total-line"
+              :text="line.text"
+              :actions="actionsFor(line)"
+              :disabled="disabled"
+              @action="handleNoteAction(line, $event)"
+            />
+          </div>
+        </div>
+        <ExamWorkspaceNewItemMenu
+          :open="newMenuOpen"
+          :anchor="newTrigger"
+          :child="false"
+          @choose="emit('add', $event)"
+          @close="newMenuOpen = false"
         />
       </div>
-    </div>
-    <div class="list__foot">
-      <span
-        class="list__total"
-        :title="totalTitle"
-        data-test="exam-workspace-exam-points"
-      >Totalt <strong class="list__sum">{{ formattedTotal }}</strong></span>
-      <div
-        v-if="lines.length > 0"
-        class="list__printed-lines"
-        data-test="exam-workspace-printed-total-lines"
-      >
-        <ExamWorkspaceNoteLine
-          v-for="line in lines"
-          :key="line.key"
-          data-test="exam-workspace-printed-total-line"
-          :text="line.text"
-          :actions="actionsFor(line)"
-          :disabled="disabled"
-          @action="handleNoteAction(line, $event)"
-        />
-      </div>
-    </div>
-    <ExamWorkspaceNewItemMenu
-      :open="newMenuOpen"
-      :anchor="newTrigger"
-      :child="false"
-      @choose="emit('add', $event)"
-      @close="newMenuOpen = false"
+    </template>
+    <ExamWorkspaceColumnHandle
+      v-if="handle"
+      edge="list"
+      column="list"
+      controls="exam-workspace-question-list"
+      label="Ändra bredd på frågelistan"
+      collapsible
+      :collapsed="collapsed"
+      @set="emit('set', $event)"
+      @reset="emit('reset')"
+      @toggle-collapse="emit('toggle-collapse')"
     />
   </section>
 </template>
 
 <style scoped>
-.list { display: flex; flex-direction: column; min-height: 0; border-right: 1px solid var(--huleedu-surface-divider); }
+.list { display: flex; flex-direction: column; min-height: 0; position: relative; border-right: 1px solid var(--huleedu-surface-divider); }
+.list__frame { display: flex; flex-direction: column; flex: 1; min-height: 0; min-width: 0; }
+/* The collapsed desktop list is a 44px rail with one expand glyph and the draggable edge. */
+.list__rail { display: flex; justify-content: center; padding: var(--huleedu-space-2) 0; }
+@media (min-width: 1280px) {
+  /* Below its minimum the list keeps its minimum layout and scrolls inside itself. */
+  .list__frame { overflow-x: auto; }
+  .list:not(.list--collapsed) .list__frame > .list__head,
+  .list:not(.list--collapsed) .list__frame > .list__markbar,
+  .list:not(.list--collapsed) .list__frame > .list__scroll,
+  .list:not(.list--collapsed) .list__frame > .list__foot { min-width: var(--xw-list-min); }
+}
 .list__head {
   display: flex; align-items: center; justify-content: space-between; gap: var(--huleedu-space-3); flex: none;
   height: 52px; padding: 0 var(--huleedu-space-4) 0 var(--huleedu-space-6); border-bottom: 1px solid var(--huleedu-surface-divider);

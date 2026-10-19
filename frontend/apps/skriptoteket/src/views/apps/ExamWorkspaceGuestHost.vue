@@ -118,7 +118,10 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div data-test="exam-workspace-guest-host">
+  <div
+    class="guest-host"
+    data-test="exam-workspace-guest-host"
+  >
     <div
       class="xw-notice notice xw-notice--info"
       role="status"
@@ -148,5 +151,7 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+.guest-host { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.guest-host > .notice { flex: none; }
 .notice { margin-bottom: var(--huleedu-space-3); }
 </style>
