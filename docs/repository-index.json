@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "697bf05493143e00d58a0f40b68e4185d7df398ac423f7709cf74801f67c7144",
+  "source_set_digest": "12fa699ba3f6fce7bef1ae00bab6d45fd65ee77d76ab24c709fa476da045b3ab",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6543,6 +6543,25 @@
       "title": "Teachers set the writing area of printed DOCX and PDF exams and imports drop paper answer lines",
       "path": "docs/backlog/tasks/task-skript-40-04-07-teachers-set-the-writing-area-of-printed-docx-and-pdf-exams-and-imports-drop-paper-answer-lines.md",
       "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-08",
+      "type": "task",
+      "title": "Short-answer and gap-text questions look different, teachers create gaps by clicking a word, and the gap popover shows its whole answer list",
+      "path": "docs/backlog/tasks/task-skript-40-04-08-short-answer-and-gap-text-questions-look-different-teachers-create-gaps-by-clicking-a-word-and-the-gap-popover-shows-its-whole-answer-list.md",
+      "status": "proposed",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
