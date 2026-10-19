@@ -146,6 +146,6 @@ Stop and report to the parent in either case:
   (the commit after `adbefd72`): `docx_answer_line_gate.gated_item` sends an
   item to review with `ANSWER_LINE_ONLY_REASON` when its body ends empty and
   either the gate removed a line or its source chunk is only an answer line.
-  Focused proof: 132 tests pass, ruff and full typecheck clean. Next: the
-  orchestrator's suite slot, then R2 goes back to 09d50acc. User gates: none
-  open.
+  Focused proof: 132 tests pass, ruff and full typecheck clean. Round-4
+  domain suite at `a34a8de9` (2026-10-19, `evidence/lead-e12a2a36/suite4/`):
+  pytest 4350 passed. Next: R2 goes back to 09d50acc. User gates: none open.
