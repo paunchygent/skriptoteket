@@ -11,6 +11,7 @@ import type { Mock } from "vitest";
 
 import { ApiError } from "../../../api/client";
 import type { ExamWorkspaceDocumentResponse, NativeExamDocument } from "../../../api/examWorkspace";
+import { examWorkspaceSaveRefusalCopy } from "./examWorkspaceItemSaveRules";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { newTeacherItem } from "./examWorkspaceItemEdits";
 import { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
@@ -25,7 +26,7 @@ export type EditingApiMocks = {
 export const LINEAGE = "00000000-0000-4000-8000-000000000001";
 
 export function exam(title = "Original", itemCount = 2): NativeExamDocument {
-  return {
+  const document: NativeExamDocument = {
     assets: [],
     document_id: LINEAGE,
     header: { tags: [] },
@@ -39,11 +40,12 @@ export function exam(title = "Original", itemCount = 2): NativeExamDocument {
     revision: 1,
     schema_version: "native_exam_document_v8",
     title,
-  } as NativeExamDocument;
+  };
+  return document;
 }
 
 export function response(document: NativeExamDocument, cursor: string): ExamWorkspaceDocumentResponse {
-  return {
+  const payload: ExamWorkspaceDocumentResponse = {
     conversion: null,
     document,
     export_blockers: [],
@@ -59,7 +61,8 @@ export function response(document: NativeExamDocument, cursor: string): ExamWork
       vault_file_id: LINEAGE,
       version: document.revision,
     },
-  } as ExamWorkspaceDocumentResponse;
+  };
+  return payload;
 }
 
 export function conflict(): ApiError {
@@ -70,15 +73,22 @@ function withoutRevision(document: NativeExamDocument): string {
   return JSON.stringify({ ...document, revision: 0 });
 }
 
+/** The fake server's mutable history position; the step list holds step ids in order. */
+type FakeServerState = {
+  cursor: string;
+  position: string;
+  saved: NativeExamDocument;
+  steps: string[];
+};
 /** The server's history: the same position rules as exam_workspace_document_store.py and undo_steps. */
 export function fakeServer(api: EditingApiMocks, baseline: NativeExamDocument) {
   let counter = 0;
   const documents = new Map<string, NativeExamDocument>([["step-0", baseline]]);
-  const state = {
+  const state: FakeServerState = {
     cursor: "step-0",
     position: "step-0",
     saved: baseline,
-    steps: [] as string[],
+    steps: [],
   };
   const history = () => ({
     baseline_step_id: "step-0",
@@ -146,4 +156,34 @@ export async function openEditing(api: EditingApiMocks, baseline = exam()) {
   editing.applyCommandResponse(response(baseline, "step-0"));
   await flushPromises();
   return { editing, server };
+}
+
+/**
+ * Make the fake step store answer 422 for drafts the save rules refuse, as the
+ * server's `_answer_key_invariants` do: the wrapped store throws a
+ * VALIDATION_ERROR instead of storing, so a refused edit stays pending and
+ * undo must discard it.
+ */
+export function refuseSaveRefusedDrafts(api: EditingApiMocks): void {
+  const inner = api.storeExamWorkspaceUndoStep.getMockImplementation();
+  if (!inner) {
+    throw new Error("expected the step store double");
+  }
+  api.storeExamWorkspaceUndoStep.mockImplementation(
+    async (
+      lineage: string,
+      request: { afterStepId: string | null; document: NativeExamDocument; expectedCursor: string },
+    ) => {
+      if (examWorkspaceSaveRefusalCopy(request.document.items) !== null) {
+        throw new ApiError({
+          code: "VALIDATION_ERROR",
+          message: "Validation error",
+          details: [],
+          correlationId: null,
+          status: 422,
+        });
+      }
+      return inner(lineage, request);
+    },
+  );
 }

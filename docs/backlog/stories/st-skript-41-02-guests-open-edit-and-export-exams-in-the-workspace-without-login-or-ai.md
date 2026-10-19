@@ -39,6 +39,15 @@ The public guest converter today converts DigiExam files through its own jobs ta
 | TASK-SKRIPT-41-02-03 | Removal of the guest DigiExam line and closure of superseded docs | TASK-SKRIPT-41-02-02 |
 | TASK-SKRIPT-41-02-04 | The workspace fills the desktop window; the editor column is the widest; resizable, collapsible panels with one shared drawer width | TASK-SKRIPT-41-02-02 |
 
+## Progress
+
+- 2026-10-19: TASK-SKRIPT-41-02-01, 41-02-02 and 41-02-04 are `done`; TASK-SKRIPT-41-02-03 is `ready`.
+- TASK-SKRIPT-41-02-04 merged to main as `ffab920a` and its walk repair as `67861ab3`. Both
+  staging walks passed. The guest workspace fills the desktop window, is held to the window
+  height, and the editor is the widest column at default widths. Panels have drag handles, a
+  collapsible list rail and widths remembered per browser. W1 and W2 are handed to
+  TASK-SKRIPT-40-04-17.
+
 ## Verification
 
 Focused tests per task; a staging walk: a guest imports the omprov QTI export, edits, exports all four formats, hits the limit message, signs in and finds the exam in Mina filer.

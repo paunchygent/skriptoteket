@@ -7,12 +7,16 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-19'
-status: proposed
+status: canceled
 closeout_review:
   record: inline
-  status: not_started
+  status: not_required
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: The user decided on 2026-10-19 (AskUserQuestion, relayed by orchestrator 944b5a5a) to close this task as superseded by TASK-SKRIPT-40-04-17 (on main 35caaef3), which folds it. The repository-governance contract has no superseded status for tasks, so the task is canceled with TASK-SKRIPT-40-04-17 named as its successor. No product code was built under this task.
 task_kind: story
-acceptance_criteria: []
+acceptance_criteria:
+- The exam workspace controls follow one compact three-tier control system with
+  one shared owner; delivered under the successor TASK-SKRIPT-40-04-17
 story: ST-SKRIPT-40-04
 backlog_document_profile: contract-derived
 ---
@@ -155,7 +159,25 @@ Planned junior units, in order. Each unit has its own focused spec. The final li
 | T7  | New glyph meanings go into the shared skill-repository `uiGlyphs.ts` through that repository's change route, then reach this repository through `design-system sync` (user 2026-10-19). The mark toolbar uses the catalogue's existing `bold`, `italic`, `underline`, `superscript`, `subscript` and `heading-1..3` meanings. |
 | T8  | Validation is the focused specs, the guard spec, keyboard reach and focus ring, and the screenshots named above; no staging walk. |
 
-## Resume here (2026-10-19, held)
+## Superseded by TASK-SKRIPT-40-04-17 (2026-10-19)
+
+The user decided on 2026-10-19 to close this task as superseded by TASK-SKRIPT-40-04-17 (on main 35caaef3), which folds it in. TASK-SKRIPT-40-04-17's T15 keeps this task's decided terms for the writing-line stepper, the one-off offers and the menu rows. The status is `canceled` because the contract has no superseded status for tasks. No product code was built here.
+
+Every commit on `codex/task-skript-40-04-compact-tools-remote` before this one is docs-only, and every one changes only this task document. 40-04-17's build may reuse the document as it stands at 79f04ce6. The commits hold:
+
+- 48391a3f, d5530765: the first glyph-only plan, the off-system box inventory, and the overlap probe plan for Skrivyta and Bedömningskriterier.
+- f5469cb2, bfa5b04b, dd250126: the user's one-off decision rule and its refinement; the three one-off offers with their mockup; 40-04-10's points note as the rule's example.
+- 3ae95f0f: the re-plan as the three-tier control system. It holds the cause with file:line, the tier rule, the planned unit order, the validation and the parallel owners.
+- 7fd5a9ea: D12 states that the sizes match the rail's glyph, not its item height; the no-new-token clause is tied to D13.
+- 79f04ce6: the user's answers of 2026-10-19 as given (D12 28/16, D14, D15, D6, Q5, D13 A, the D16 autosave changes, the gap-tool decision, ownership and merge order), plus the lead notes on the type-offer dismiss, the AI-interpretation mark and the apply-to-all glyph release.
+
+The evidence is not in Git. It is in the retained root `.orchestration/context/sessions/01a15383-370d-707d-876f-cf2953eb536b/` of the primary checkout:
+
+- `evidence/planning/TASK-SKRIPT-40-04-11/plan.md`: the 98-control inventory with file:line and tiers, and the ledger D1-D17. The line numbers predate 41-02-04.
+- `evidence/mockups/controls/`: `proposed-controls.css` (still a 20 px glyph; the user chose 16 px), the before/after mockups at 1440 and 1920 px, and `build.py`.
+- `evidence/mockups/one-off-offers.png`.
+
+## Resume here (2026-10-19, held; superseded, see above)
 
 Status stays proposed. HELD on the orchestrator's instruction (944b5a5a, 2026-10-19): the user moved the toolbar and button redesign (density, sizes, tiers, tokens, header layout) into its own Mac session, "Exam workspace toolbar redesign: inventory and mockups", which owns the contract now. No junior was launched and no code was written. The branch has current origin/main merged (41-02-04, 0b52aed4).
 

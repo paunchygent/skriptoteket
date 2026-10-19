@@ -3,10 +3,10 @@
 Each corpus exam is converted from its recorded provider rounds. No exam is named, and
 English exams get the same Swedish words. Only lines the export generates are checked.
 
-The student DOCX (W2) prints headings and points lines and no answer key at all, so its
+The student DOCX (W2) prints headings and inline points and no answer key at all, so its
 generated lines and the absence of every answer-key heading and key row are checked. The
 facit print document (W1) adds the answer-key lines and criteria after each keyed question;
-those lines, with the facit headings and points lines, are checked in Swedish too. Exam text
+those lines, with the facit headings, are checked in Swedish too. Exam text
 copied from the source may contain any word.
 """
 
@@ -25,9 +25,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.exam_language_labels import
 from skriptoteket.domain.curated_apps.exam_workspace.exam_print_document import (
     PrintAnswerKey,
     PrintHeading,
-    PrintParagraph,
-    PrintParagraphStyle,
-    PrintText,
     build_print_document,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
@@ -47,6 +44,8 @@ from tests.unit.scripts.exam_conversion_corpus_support import RECORDED_STEMS, re
 _ENGLISH = {"Question", "Gap", "Points", "missing", "Answer key", "Correct answer", "Pair"}
 # A generated answer-key row begins with one of the Swedish key labels, never exam text.
 _KEY_ROW = re.compile(r"^(Rätt svar|Lucka \d+|Par): ")
+# A question-text paragraph carrying its points inline, such as "… prövas? (1 p)".
+_INLINE_POINTS = re.compile(r"\(\d[\d,]* p\)$")
 _CHOICE_KINDS = (
     NativeExamItemKind.SINGLE_CHOICE,
     NativeExamItemKind.MULTIPLE_RESPONSE,
@@ -54,26 +53,24 @@ _CHOICE_KINDS = (
 
 
 def _docx_generated_lines(stem: str) -> list[str]:
-    """Headings and points lines of the student DOCX export."""
+    """Headings and inline points of the student DOCX export."""
     document, _ = replayed(stem)
     parsed = Document(io.BytesIO(ExamWorkspaceDocxWriter().build_docx_bytes(document)))
     lines: list[str] = []
     for paragraph in parsed.paragraphs:
         style = paragraph.style.name if paragraph.style is not None else ""
         text = paragraph.text
-        if (
-            style in {"Heading 2", "Heading 3"}
-            or text.startswith("Poäng:")
-            or text.startswith("Points:")
-        ):
+        if style in {"Heading 2", "Heading 3"}:
             lines.append(text)
+        elif match := _INLINE_POINTS.search(text):
+            lines.append(match.group(0))
     return lines
 
 
 def _facit_generated_lines(stem: str) -> tuple[list[str], bool]:
     """The facit document's generated lines, and whether the exam has a keyed item.
 
-    Generated lines are every PrintAnswerKey line, the facit headings and its points lines.
+    Generated lines are every PrintAnswerKey line and the facit headings.
     A line the exam itself prints (a body line) is not generated export wording.
     """
     document, _ = replayed(stem)
@@ -85,8 +82,6 @@ def _facit_generated_lines(stem: str) -> tuple[list[str], bool]:
                 lines.extend(block.lines)
             elif isinstance(block, PrintHeading):
                 lines.append(block.text)
-            elif isinstance(block, PrintParagraph) and block.style is PrintParagraphStyle.POINTS:
-                lines.append("".join(run.text for run in block.runs if isinstance(run, PrintText)))
     printed = {line for item in document.items for line in item.plain_text_lines()}
     return [line for line in lines if line not in printed], _has_keyed_item(document)
 
@@ -131,16 +126,16 @@ def test_student_docx_generated_lines_hold_no_english_fixed_word(stem: str) -> N
 
 
 @pytest.mark.parametrize("stem", RECORDED_STEMS)
-def test_student_docx_owns_every_points_line_and_no_answer_key(stem: str) -> None:
+def test_student_docx_owns_every_inline_points_and_no_answer_key(stem: str) -> None:
     document, _ = replayed(stem)
-    labels = SWEDISH_EXAM_LABELS
     parsed = Document(io.BytesIO(ExamWorkspaceDocxWriter().build_docx_bytes(document)))
     texts = [paragraph.text for paragraph in parsed.paragraphs]
     for item in document.items:
-        points = None if item.points is None else str(int(item.points))
-        if item.points is not None and not float(item.points).is_integer():
+        if item.points is None or not float(item.points).is_integer():
             continue
-        assert labels.points_line(points) in texts
+        assert any(text.endswith(f" ({int(item.points)} p)") for text in texts), (
+            f"{stem}: no inline points for item {item.item_id}"
+        )
     key_headings = [
         paragraph.text
         for paragraph in parsed.paragraphs
