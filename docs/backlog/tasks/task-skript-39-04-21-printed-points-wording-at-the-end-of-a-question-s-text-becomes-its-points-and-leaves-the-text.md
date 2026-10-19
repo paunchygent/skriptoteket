@@ -230,5 +230,12 @@ Units, each for one fresh junior:
   passed, 58 skipped (all `test_exam_workspace_docx_points_invariance.py` "has no question on
   that side"); lint and typecheck pass; replay bar against u17c empty
   (`evidence/proof/u17e-after.log`). Never pushed.
-- Next: rereview of `6195dee5` by 82849a3b (routed by the orchestrator). U4 (the offer line, D10) is parked
+- Rereview of `0dcf3c3f` (82849a3b): F1-F6 fixed; R1-R4 admitted. R1-R3 (a heading never loses
+  its own words; the colon head decides the cut; D12 Correction at `0e6e6c69`, recording
+  clarification at `760cd017`) in U18/U18b `64f04d06`; R4 split by responsibility in U19
+  `e2399615` (pure move, 136 test ids identical). At `e2399615`: 79 files 2252 passed, 58
+  skipped (all points-invariance "has no question on that side"); lint and typecheck pass;
+  replay bar u17e->u18b->u19 empty; the reviewer's probe gives the accepted output on all 14
+  records (`evidence/proof/lead-e2399615-focused.log`, `u18b-reviewer-probe.log`). Never pushed.
+- Next: second rereview by 82849a3b (routed by the orchestrator). U4 (the offer line, D10) is parked
   for a later batch; its work order is `evidence/work-orders/u4-offer-line.md`.
