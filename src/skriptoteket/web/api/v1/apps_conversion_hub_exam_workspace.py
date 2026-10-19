@@ -25,6 +25,9 @@ from skriptoteket.application.curated_apps.exam_workspace import (
     RetryExamWorkspaceItemRequest,
     SaveExamWorkspaceDocumentRequest,
 )
+from skriptoteket.application.curated_apps.exam_workspace_content_suggestions import (
+    ContentSuggestionsResponse,
+)
 from skriptoteket.application.curated_apps.exam_workspace_history import (
     ExamWorkspaceHistoryDocumentResponse,
     ExamWorkspaceHistoryResponse,
@@ -37,10 +40,7 @@ from skriptoteket.application.curated_apps.exam_workspace_misspellings import (
     ExamWorkspaceMisspellingsResponse,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_content_tags import (
-    ContentSuggestionsResponse,
     ExamCourseContentResponse,
-    GetExamContentSuggestionsHandler,
-    RequestExamContentSuggestionsHandler,
     course_content,
 )
 from skriptoteket.domain.identity.models import User
@@ -49,12 +49,14 @@ from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.protocols.exam_workspace import (
     ExportExamWorkspaceDocumentHandlerProtocol,
     GenerateExamWorkspaceMisspellingsHandlerProtocol,
+    GetExamContentSuggestionsHandlerProtocol,
     GetExamCourseCatalogHandlerProtocol,
     GetExamWorkspaceConversionStatusHandlerProtocol,
     GetExamWorkspaceDocumentHandlerProtocol,
     ImportExamWorkspaceDigiExamDocumentHandlerProtocol,
     ImportExamWorkspaceDocumentHandlerProtocol,
     ListExamWorkspaceDocumentsHandlerProtocol,
+    RequestExamContentSuggestionsHandlerProtocol,
     RetryExamWorkspaceItemHandlerProtocol,
     SaveExamWorkspaceDocumentHandlerProtocol,
 )
@@ -63,7 +65,7 @@ from skriptoteket.web.api.v1.apps_conversion_hub_access import (
     APP_ID,
     require_conversion_hub_access,
 )
-from skriptoteket.web.auth.huleedu_app_projection import require_app_user_api
+from skriptoteket.web.auth.huleedu_app_projection import require_app_ai_api, require_app_user_api
 from skriptoteket.web.content_disposition import attachment_content_disposition
 from skriptoteket.web.dishka_dependencies import FromDishka
 
@@ -88,8 +90,8 @@ def get_exam_course_content(
 async def request_exam_content_suggestions(
     lineage_id: UUID,
     registry: FromDishka[CuratedAppRegistryProtocol],
-    handler: FromDishka[RequestExamContentSuggestionsHandler],
-    user: User = Depends(require_app_user_api),
+    handler: FromDishka[RequestExamContentSuggestionsHandlerProtocol],
+    user: User = Depends(require_app_ai_api),
 ) -> ContentSuggestionsResponse:
     require_conversion_hub_access(registry=registry, user=user)
     return await handler.handle(actor=user, lineage_id=lineage_id)
@@ -103,7 +105,7 @@ async def get_exam_content_suggestions(
     lineage_id: UUID,
     job_id: UUID,
     registry: FromDishka[CuratedAppRegistryProtocol],
-    handler: FromDishka[GetExamContentSuggestionsHandler],
+    handler: FromDishka[GetExamContentSuggestionsHandlerProtocol],
     user: User = Depends(require_app_user_api),
 ) -> ContentSuggestionsResponse:
     require_conversion_hub_access(registry=registry, user=user)
@@ -147,7 +149,7 @@ async def import_exam_workspace_document(
     handler: FromDishka[ImportExamWorkspaceDocumentHandlerProtocol],
     file: UploadFile = File(...),
     course_key: str | None = Form(None, max_length=64),
-    user: User = Depends(require_app_user_api),
+    user: User = Depends(require_app_ai_api),
 ) -> ExamWorkspaceConversionStatus:
     require_conversion_hub_access(registry=registry, user=user)
     content = await file.read()
@@ -355,7 +357,7 @@ async def retry_exam_workspace_item(
     request: RetryExamWorkspaceItemRequest,
     registry: FromDishka[CuratedAppRegistryProtocol],
     handler: FromDishka[RetryExamWorkspaceItemHandlerProtocol],
-    user: User = Depends(require_app_user_api),
+    user: User = Depends(require_app_ai_api),
 ) -> ExamWorkspaceItemRetryResponse:
     """Reconvert one question from its saved source with the chosen type."""
 

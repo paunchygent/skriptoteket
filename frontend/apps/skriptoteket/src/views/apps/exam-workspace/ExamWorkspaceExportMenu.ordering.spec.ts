@@ -6,9 +6,11 @@
  *   click, and an exam without blockers leaves them enabled.
  */
 
+import { createTestingPinia } from "@pinia/testing";
 import { mount } from "@vue/test-utils";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { adminUser } from "../ExamWorkspaceSlice.specSupport";
 import ExamWorkspaceExportMenu from "./ExamWorkspaceExportMenu.vue";
 import type { ExamWorkspaceBlockerEntry } from "./examWorkspaceBlockers";
 
@@ -24,6 +26,19 @@ const ORDERING_ROW: ExamWorkspaceBlockerEntry = {
 function mountMenu(blockers: ExamWorkspaceBlockerEntry[]) {
   return mount(ExamWorkspaceExportMenu, {
     attachTo: document.body,
+    global: {
+      // The export blockers read the admin-only AI gate through the auth
+      // store (TASK-SKRIPT-REP-0044 L3). `hasAtLeastRole` is a setup-store
+      // function, so `createTestingPinia` registers it as an action and must
+      // keep it real; the admin user is the "no change" role for these cases.
+      plugins: [
+        createTestingPinia({
+          createSpy: vi.fn,
+          initialState: { auth: { user: adminUser } },
+          stubActions: (name) => name !== "hasAtLeastRole",
+        }),
+      ],
+    },
     props: {
       blockers,
       checklistCount: 0,

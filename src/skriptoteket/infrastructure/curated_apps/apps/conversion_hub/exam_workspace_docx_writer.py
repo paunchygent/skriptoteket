@@ -31,12 +31,17 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeGapSegment,
     NativeParagraph,
     NativeTextSegment,
+    is_empty_body,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_outline import (
+    OutlineQuestion,
+    document_outline,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
     NativeChoice,
@@ -87,6 +92,23 @@ def _write_shared_body(
                 target.add_run(_GAP_MARKER)
 
 
+def _write_item(output: DocxDocument, item: NativeExamItem, labels: ExamExportLabels) -> None:
+    output.add_heading(labels.item_title(item), level=3)
+    for line in _item_text_lines(item):
+        output.add_paragraph(line)
+    output.add_paragraph(_points_line(item, labels))
+    if item.kind in _CHOICE_KINDS:
+        for index, choice in enumerate(item.choices):
+            output.add_paragraph(f"{_choice_letter(index)}) {body_plain_text(choice.body)}")
+    if item.kind is NativeExamItemKind.ORDERING:
+        for choice in _ordering_steps_in_print_order(item):
+            output.add_paragraph(f"{_STEP_BOX} {body_plain_text(choice.body)}")
+    for index, left in enumerate(item.match_left, start=1):
+        output.add_paragraph(f"{index}. {body_plain_text(left.body)}")
+    for index, right in enumerate(item.match_right):
+        output.add_paragraph(f"{_choice_letter(index)}) {body_plain_text(right.body)}")
+
+
 class ExamWorkspaceDocxWriter:
     """Deterministic DOCX export via python-docx."""
 
@@ -104,24 +126,14 @@ class ExamWorkspaceDocxWriter:
             output.add_paragraph(line)
         _write_shared_body(output, document.printed_instructions(), assets_by_id=assets_by_id)
 
-        for item in document.items:
-            parent = document.printed_parent_of(item.item_id)
-            if parent is not None and parent.item_ids[0] == item.item_id:
-                _write_shared_body(output, parent.instruction, assets_by_id=assets_by_id)
-            output.add_heading(labels.item_title(item), level=3)
-            for line in _item_text_lines(item):
-                output.add_paragraph(line)
-            output.add_paragraph(_points_line(item, labels))
-            if item.kind in _CHOICE_KINDS:
-                for index, choice in enumerate(item.choices):
-                    output.add_paragraph(f"{_choice_letter(index)}) {body_plain_text(choice.body)}")
-            if item.kind is NativeExamItemKind.ORDERING:
-                for choice in _ordering_steps_in_print_order(item):
-                    output.add_paragraph(f"{_STEP_BOX} {body_plain_text(choice.body)}")
-            for index, left in enumerate(item.match_left, start=1):
-                output.add_paragraph(f"{index}. {body_plain_text(left.body)}")
-            for index, right in enumerate(item.match_right):
-                output.add_paragraph(f"{_choice_letter(index)}) {body_plain_text(right.body)}")
+        for entry in document_outline(document):
+            if isinstance(entry, OutlineQuestion):
+                _write_item(output, entry.item, labels)
+                continue
+            if not is_empty_body(entry.part.instruction):
+                _write_shared_body(output, entry.part.instruction, assets_by_id=assets_by_id)
+            for child in entry.children:
+                _write_item(output, child, labels)
 
         keyed_items = tuple(item for item in document.items if _facit_lines(item, labels))
         if keyed_items:

@@ -112,6 +112,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.source_format_coverage impo
 from skriptoteket.domain.curated_apps.exam_workspace.source_format_errors import (
     FormattingTransferError,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.source_gap_paragraphs import (
+    gap_paragraphs_from_source,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.source_item_formatting import (
     item_source_formatting,
 )
@@ -276,6 +279,8 @@ def aligned_native_item(
             for ordinal, (start, end) in enumerate(surface.source.entry_spans, start=1)
         ),
     )
+    if produced.kind is NativeExamItemKind.GAP_FILL:
+        formatted_body = gap_paragraphs_from_source(body_source, formatted_body)
     if formatting_observer is not None:
         paths = {source.path for source in sources}
         formatting_observer(

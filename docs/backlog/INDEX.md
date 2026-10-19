@@ -4,8 +4,8 @@
 
 ## Counts
 
-- total | epic=40 | story=333 | task=0 | review=137
-- open | epic=19 | story=66 | task=0
+- total | epic=41 | story=335 | task=0 | review=137
+- open | epic=20 | story=68 | task=0
 
 ## Lookup
 
@@ -49,6 +49,7 @@
 - epic | EPIC-SKRIPT-38 | [Shared governed development system cutover](epics/epic-skript-38-shared-governed-development-system-cutover.md)
 - epic | EPIC-SKRIPT-39 | [Skriptoteket-owned exam conversion](epics/epic-skript-39-skriptoteket-owned-exam-conversion.md)
 - epic | EPIC-SKRIPT-40 | [Shared design-system convergence](epics/epic-skript-40-shared-design-system-convergence.md)
+- epic | EPIC-SKRIPT-41 | [Teachers try the exam workspace without login and AI spend stays inside a fixed daily budget](epics/epic-skript-41-teachers-try-the-exam-workspace-without-login-and-ai-spend-stays-inside-a-fixed-daily-budget.md)
 - story | ST-01-01 | [Profession → category navigation](stories/story-01-01-profession-category-navigation.md)
 - story | ST-02-01 | [User model and identity service (MVP, testable)](stories/story-02-01-user-model-and-identity-service.md)
 - story | ST-02-03 | [Self-registration](stories/story-02-03-self-registration.md)
@@ -382,6 +383,8 @@
 - story | ST-SKRIPT-40-02 | [Converge icons onto the shared glyph vocabulary](stories/st-skript-40-02-converge-icons-onto-the-shared-glyph-vocabulary.md)
 - story | ST-SKRIPT-40-03 | [Bring every Skriptoteket screen onto the shared visual direction](stories/st-skript-40-03-bring-every-skriptoteket-screen-onto-the-shared-visual-direction.md)
 - story | ST-SKRIPT-40-04 | [Redesign the app shell and the exam workspace from a fresh Opus prototype](stories/st-skript-40-04-redesign-the-app-shell-and-the-exam-workspace-from-a-fresh-opus-prototype.md)
+- story | ST-SKRIPT-41-01 | [Paid AI calls stop at a fixed daily token and cost budget](stories/st-skript-41-01-paid-ai-calls-stop-at-a-fixed-daily-token-and-cost-budget.md)
+- story | ST-SKRIPT-41-02 | [Guests open, edit and export exams in the workspace without login or AI](stories/st-skript-41-02-guests-open-edit-and-export-exams-in-the-workspace-without-login-or-ai.md)
 - review | REV-EPIC-02 | [Review: Local password reset via emailed token](reviews/review-epic-02-local-password-reset-via-emailed-token.md) | target=EPIC-02, [ST-02-07](stories/story-02-07-local-password-reset-via-emailed-token.md), ADR-0078
 - review | REV-EPIC-06 | [Review: Linter Architecture Refactor](reviews/review-epic-06-linter-architecture-refactor.md) | target=EPIC-06, [ST-06-10](stories/story-06-10-context-rule-architecture.md), [ST-06-11](stories/story-06-11-quick-fix-actions.md), [ST-06-12](stories/story-06-12-lint-panel-navigation.md), [ST-06-13](stories/story-06-13-gutter-filter-polish.md), [ST-06-14](stories/story-06-14-headless-test-harness.md)
 - review | REV-EPIC-07 | [Review: ASGI correlation middleware for access-log correlation](reviews/review-epic-07-correlation-middleware-asgi.md) | target=[EPIC-07](epics/epic-07-observability-and-operations.md), [ST-07-06](stories/story-07-06-asgi-correlation-middleware.md), ADR-0061
@@ -558,6 +561,7 @@
 
 ### ready
 
+- EPIC-SKRIPT-41 | [Teachers try the exam workspace without login and AI spend stays inside a fixed daily budget](epics/epic-skript-41-teachers-try-the-exam-workspace-without-login-and-ai-spend-stays-inside-a-fixed-daily-budget.md) | stories=ready=2 | tasks=none
 - ST-SKRIPT-02-02 | [Admin nomination and superuser approval](stories/st-skript-02-02-admin-nomination-and-superuser-approval.md) | epic=[EPIC-SKRIPT-02](epics/epic-skript-02-identity-and-access-control-rbac.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-02-06 | [Swedish school domain allowlist for registration](stories/st-skript-02-06-swedish-school-domain-allowlist-for-registration.md) | epic=[EPIC-SKRIPT-02](epics/epic-skript-02-identity-and-access-control-rbac.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-06-16 | [Backend SRP refactor of god modules](stories/st-skript-06-16-backend-srp-refactor-of-god-modules.md) | epic=[EPIC-SKRIPT-06](epics/epic-skript-06-quality-and-test-coverage.md) | tasks=none | depends_on=0 | dependents=0
@@ -609,6 +613,8 @@
 - ST-SKRIPT-40-02 | [Converge icons onto the shared glyph vocabulary](stories/st-skript-40-02-converge-icons-onto-the-shared-glyph-vocabulary.md) | epic=[EPIC-SKRIPT-40](epics/epic-skript-40-shared-design-system-convergence.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-40-03 | [Bring every Skriptoteket screen onto the shared visual direction](stories/st-skript-40-03-bring-every-skriptoteket-screen-onto-the-shared-visual-direction.md) | epic=[EPIC-SKRIPT-40](epics/epic-skript-40-shared-design-system-convergence.md) | tasks=none | depends_on=0 | dependents=0
 - ST-SKRIPT-40-04 | [Redesign the app shell and the exam workspace from a fresh Opus prototype](stories/st-skript-40-04-redesign-the-app-shell-and-the-exam-workspace-from-a-fresh-opus-prototype.md) | epic=[EPIC-SKRIPT-40](epics/epic-skript-40-shared-design-system-convergence.md) | tasks=none | depends_on=0 | dependents=0
+- ST-SKRIPT-41-01 | [Paid AI calls stop at a fixed daily token and cost budget](stories/st-skript-41-01-paid-ai-calls-stop-at-a-fixed-daily-token-and-cost-budget.md) | epic=[EPIC-SKRIPT-41](epics/epic-skript-41-teachers-try-the-exam-workspace-without-login-and-ai-spend-stays-inside-a-fixed-daily-budget.md) | tasks=none | depends_on=0 | dependents=0
+- ST-SKRIPT-41-02 | [Guests open, edit and export exams in the workspace without login or AI](stories/st-skript-41-02-guests-open-edit-and-export-exams-in-the-workspace-without-login-or-ai.md) | epic=[EPIC-SKRIPT-41](epics/epic-skript-41-teachers-try-the-exam-workspace-without-login-and-ai-spend-stays-inside-a-fixed-daily-budget.md) | tasks=none | depends_on=0 | dependents=0
 
 ### proposed
 

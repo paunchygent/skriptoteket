@@ -12,6 +12,7 @@ import {
   type BundleFiles,
 } from "../../composables/editor/bundleFiles";
 import { useSkriptoteketIntelligenceExtensions } from "../../composables/editor/useSkriptoteketIntelligenceExtensions";
+import { useAiAccess } from "../../composables/useAiAccess";
 import { useToast } from "../../composables/useToast";
 import { useAiStore } from "../../stores/ai";
 
@@ -34,9 +35,10 @@ const emit = defineEmits<{
 
 const toast = useToast();
 const ai = useAiStore();
+const { canUseAi } = useAiAccess();
 
 const entrypointName = computed(() => props.entrypoint);
-const ghostTextEnabled = computed(() => !props.isReadOnly);
+const ghostTextEnabled = computed(() => !props.isReadOnly && canUseAi.value);
 const ghostTextAutoTrigger = computed(() => true);
 const ghostTextDebounceMs = computed(() => 1500);
 

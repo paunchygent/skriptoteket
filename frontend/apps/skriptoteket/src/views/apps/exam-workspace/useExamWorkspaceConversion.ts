@@ -37,6 +37,7 @@ import type {
   ExamWorkspaceDocumentSummary,
   NativeExamDocument,
 } from "../../../api/examWorkspace";
+import { useAiAccess } from "../../../composables/useAiAccess";
 import { useToast } from "../../../composables/useToast";
 import { mergeConversionRevision } from "./examWorkspaceConversionMerge";
 
@@ -44,6 +45,11 @@ export const EXAM_WORKSPACE_CONVERSION_POLL_MS = 3000;
 const CONVERSION_MAX_POLL_MS = 30_000;
 const STATUS_FAILURE_COPY = "Det gick inte att hämta konverteringen eller öppna provet. Försöker igen …";
 const IMPORT_FAILURE_COPY = "Det gick inte att läsa in provet. Försök igen.";
+
+/** A DigiExam export (.dxe) is read by its own importer and stays open to every role. */
+function isDigiExamFile(file: File): boolean {
+  return file.name.toLowerCase().endsWith(".dxe");
+}
 
 /** The document owner's state that conversion revisions are applied to. */
 export type ExamWorkspaceConversionBinding = {
@@ -70,6 +76,7 @@ export function useExamWorkspaceConversion(
   binding: ExamWorkspaceConversionBinding,
 ) {
   const toast = useToast();
+  const { canUseAi } = useAiAccess();
   const isImporting = ref(false);
   const conversionStatus = ref<ExamWorkspaceConversionStatus | null>(null);
   const isConverting = ref(false);
@@ -350,6 +357,9 @@ export function useExamWorkspaceConversion(
 
   async function importDocument(file: File, courseKey: string | null): Promise<void> {
     if (importBlocked.value || isConverting.value) return;
+    // A Word import is a paid AI conversion and stays admin-only until the spend cap ships;
+    // the Öppna drawer already shows the L3 note for the refused file.
+    if (!isDigiExamFile(file) && !canUseAi.value) return;
     const pollGeneration = ++generation;
     isImporting.value = true;
     conversionError.value = null;
@@ -358,7 +368,7 @@ export function useExamWorkspaceConversion(
     pollFailures = 0;
     try {
       // A DigiExam export (.dxe) is read by its own importer; both follow the same conversion.
-      const request = file.name.toLowerCase().endsWith(".dxe")
+      const request = isDigiExamFile(file)
         ? importExamWorkspaceDigiExam
         : requestImportExamWorkspaceDocument;
       const status = await request(file, courseKey);

@@ -1,6 +1,13 @@
+import { createTestingPinia } from "@pinia/testing";
 import { mount } from "@vue/test-utils";
-import { describe, expect, it } from "vitest";
+import type { DOMWrapper, VueWrapper } from "@vue/test-utils";
+import { describe, expect, it, vi } from "vitest";
+import { nextTick } from "vue";
 
+import { AI_ADMIN_ONLY_NOTE } from "../../composables/useAiAccess";
+import { createTestRouter, mountWithContext } from "../../test/utils";
+import ChatDrawer from "./ChatDrawer.vue";
+import EditorWorkspaceDrawers from "./EditorWorkspaceDrawers.vue";
 import EditorWorkspacePanel from "./EditorWorkspacePanel.vue";
 import type { EditorWorkspacePanelProps } from "./EditorWorkspacePanel.types";
 
@@ -104,6 +111,7 @@ function buildProps(overrides: Partial<EditorWorkspacePanelProps> = {}): EditorW
     chatError: null,
     chatNoticeMessage: null,
     chatNoticeVariant: "info",
+    aiBlockedNote: null,
     remoteFallbackPrompt: null,
     editOpsRequestError: null,
     editOpsDisabledMessage: null,
@@ -113,6 +121,40 @@ function buildProps(overrides: Partial<EditorWorkspacePanelProps> = {}): EditorW
     isEditOpsSlow: false,
     ...overrides,
   };
+}
+
+function findNotes(wrapper: VueWrapper): DOMWrapper<Element>[] {
+  return wrapper
+    .findAll("p, small, span")
+    .filter((node) => node.text().trim() === AI_ADMIN_ONLY_NOTE);
+}
+
+function drawerStubs() {
+  return {
+    ScriptEditorHeaderPanel: true,
+    EditorWorkspaceToolbar: true,
+    WorkflowContextButtons: true,
+    EditorWorkspaceModeSelector: true,
+    EditorComparePanel: true,
+    MetadataDrawer: true,
+    InstructionsDrawer: true,
+    MaintainersDrawer: true,
+    EditorSandboxPanel: true,
+    EditorSourceCodePanel: true,
+    EditorInputSchemaPanel: true,
+    EditorSettingsSchemaPanel: true,
+    VersionHistoryDrawer: true,
+  };
+}
+
+function mountPanelWithChatDrawer(overrides: Partial<EditorWorkspacePanelProps> = {}) {
+  return mountWithContext(EditorWorkspacePanel, {
+    props: buildProps({ isChatDrawerOpen: true, ...overrides }),
+    global: {
+      plugins: [createTestingPinia({ createSpy: vi.fn }), createTestRouter()],
+      stubs: { ...drawerStubs(), EditorWorkspaceDrawers, ChatDrawer },
+    },
+  });
 }
 
 describe("EditorWorkspacePanel", () => {
@@ -144,5 +186,28 @@ describe("EditorWorkspacePanel", () => {
     await wrapper.setProps(buildProps({ activeMode: "metadata" }));
 
     expect(wrapper.find('[data-editor-mode="metadata"]').exists()).toBe(true);
+  });
+
+  it("renders the AI admin-only note and disables the composer textarea when aiBlockedNote is set", async () => {
+    const wrapper = mountPanelWithChatDrawer({ aiBlockedNote: AI_ADMIN_ONLY_NOTE });
+    await nextTick();
+
+    const notes = findNotes(wrapper);
+    expect(notes.length).toBeGreaterThan(0);
+    expect(notes.every((note) => note.text() === AI_ADMIN_ONLY_NOTE)).toBe(true);
+
+    const textarea = wrapper.get('textarea[aria-label="Meddelande till kodassistenten"]');
+    expect(textarea.attributes("disabled")).toBeDefined();
+    wrapper.unmount();
+  });
+
+  it("leaves the composer enabled and shows no AI note when aiBlockedNote is null", async () => {
+    const wrapper = mountPanelWithChatDrawer({ aiBlockedNote: null });
+    await nextTick();
+
+    expect(findNotes(wrapper)).toHaveLength(0);
+    const textarea = wrapper.get('textarea[aria-label="Meddelande till kodassistenten"]');
+    expect(textarea.attributes("disabled")).toBeUndefined();
+    wrapper.unmount();
   });
 });

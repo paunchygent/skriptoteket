@@ -1,10 +1,19 @@
+import type { DOMWrapper, VueWrapper } from "@vue/test-utils";
 import { describe, expect, it } from "vitest";
 import { nextTick } from "vue";
 
 import { mountWithContext } from "../../test/utils";
+import { AI_ADMIN_ONLY_NOTE } from "../../composables/useAiAccess";
 import { SystemMessage } from "../ui";
 import { UiGlyph } from "../ui/shared";
+import ChatComposer from "./ChatComposer.vue";
 import ChatDrawer from "./ChatDrawer.vue";
+
+function findNotes(wrapper: VueWrapper): DOMWrapper<Element>[] {
+  return wrapper
+    .findAll("p, small, span")
+    .filter((node) => node.text().trim() === AI_ADMIN_ONLY_NOTE);
+}
 
 describe("ChatDrawer", () => {
   it("keeps the assistant rail control named and its glyph decorative across collapse", async () => {
@@ -222,5 +231,28 @@ describe("ChatDrawer", () => {
     expect(dismissButton.exists()).toBe(true);
     await dismissButton.trigger("click");
     expect(wrapper.emitted("dismissRemoteFallbackPrompt")).toBeTruthy();
+  });
+
+  it("forwards the AI admin-only note through to the composer", () => {
+    const wrapper = mountWithContext(ChatDrawer, {
+      props: {
+        variant: "column",
+        isOpen: true,
+        isCollapsed: false,
+        messages: [],
+        isStreaming: false,
+        isEditOpsLoading: false,
+        disabledMessage: null,
+        error: null,
+        aiBlockedNote: AI_ADMIN_ONLY_NOTE,
+      },
+    });
+
+    const composer = wrapper.findComponent(ChatComposer);
+    expect(composer.props("aiBlockedNote")).toBe(AI_ADMIN_ONLY_NOTE);
+    const notes = findNotes(wrapper);
+    expect(notes).toHaveLength(1);
+    expect(notes[0]!.text()).toBe(AI_ADMIN_ONLY_NOTE);
+    wrapper.unmount();
   });
 });

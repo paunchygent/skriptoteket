@@ -8,9 +8,9 @@
  *   holds after storing the pending edit, never the cursor from before it.
  *   Byt frågetyp names what it removed in Swedish; a refused command leaves
  *   no notice behind. Deleting an instruction keeps its questions by default
- *   or takes them along; deleting its last question says inline that the
- *   heading went too; a delete that would empty the exam is refused inline,
- *   never in a toast (user ruling 2026-10-17).
+ *   or takes them along; deleting its last question keeps the part as an
+ *   instruction block (G8); a delete that would empty the exam is refused
+ *   inline, never in a toast (user ruling 2026-10-17).
  */
 
 import { createPinia, setActivePinia } from "pinia";
@@ -19,7 +19,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ApiError } from "../../../api/client";
 import type {
-  ExamWorkspaceDeleteResponse,
   ExamWorkspaceDocumentResponse,
   NativeExamDocument,
 } from "../../../api/examWorkspace";
@@ -39,7 +38,7 @@ const apiMocks = vi.hoisted(() => ({
   reorderExamWorkspaceChildren: vi.fn(),
 }));
 
-vi.mock("../../../api/examWorkspace", () => apiMocks);
+vi.mock("../../../api/examWorkspaceStructureCommands", () => apiMocks);
 
 function response(document: NativeExamDocument): ExamWorkspaceDocumentResponse {
   return {
@@ -51,10 +50,6 @@ function response(document: NativeExamDocument): ExamWorkspaceDocumentResponse {
     saved_document: document,
     summary: buildSavedExamSummary({ title: document.title }),
   };
-}
-
-function deleted(document: NativeExamDocument, removedParentId: string | null): ExamWorkspaceDeleteResponse {
-  return { ...response(document), removed_parent_id: removedParentId };
 }
 
 /** The fixture without its instruction; `keep` leaves the deluppgifter as standalone questions. */
@@ -78,6 +73,7 @@ const EMPTY_EXAM = new ApiError({
 function setup(selected: string | null = null) {
   const workspaceDocument = ref<NativeExamDocument | null>(buildParentDocument());
   const selectedItemId = ref<string | null>(selected);
+  const selectedParentId = ref<string | null>(null);
   const historyCursor = ref<string | null>("cursor-before-flush");
   const calls: string[] = [];
   const flush = vi.fn(async (settle: boolean) => {
@@ -87,6 +83,7 @@ function setup(selected: string | null = null) {
   });
   const onConflict = vi.fn(async () => undefined);
   const applied: ExamWorkspaceDocumentResponse[] = [];
+  const selectParent = vi.fn();
   const structure = effectScope().run(() =>
     useExamWorkspaceStructure({
       applyCommandResponse: (next) => {
@@ -108,11 +105,13 @@ function setup(selected: string | null = null) {
       selectItem: (itemId) => {
         selectedItemId.value = itemId;
       },
+      selectParent,
       selectedItemId,
+      selectedParentId,
       workspaceDocument,
     }),
   )!;
-  return { applied, calls, flush, onConflict, selectedItemId, structure, workspaceDocument };
+  return { applied, calls, flush, onConflict, selectParent, selectedItemId, selectedParentId, structure, workspaceDocument };
 }
 
 beforeEach(() => {
@@ -234,25 +233,28 @@ describe("server commands", () => {
     ]);
   });
 
-  it("deletes the last deluppgift on the server and says inline that the heading went too", async () => {
+  it("deletes the last deluppgift on the server and keeps the part as an instruction block (G8)", async () => {
     const { structure, workspaceDocument } = setup("item_001");
     const document = workspaceDocument.value!;
     workspaceDocument.value = {
       ...document,
       parents: document.parents.map((parent) => ({ ...parent, item_ids: ["item_001"] })),
     };
-    const after = { ...document, items: document.items.filter((item) => item.item_id !== "item_001"), parents: [] };
-    apiMocks.deleteExamWorkspaceChild.mockResolvedValue(deleted(after, "parent_001"));
+    const after = {
+      ...document,
+      items: document.items.filter((item) => item.item_id !== "item_001"),
+      parents: document.parents.map((parent) => ({ ...parent, item_ids: [] })),
+    };
+    apiMocks.deleteExamWorkspaceChild.mockResolvedValue(response(after));
 
     structure.deleteItem("item_001");
 
-    await vi.waitFor(() =>
-      expect(structure.deleteNotice.value).toEqual({
-        kind: "delete",
-        text: "Instruktionen hade inga frågor kvar och togs också bort.",
-      }),
+    await vi.waitFor(() => expect(apiMocks.deleteExamWorkspaceChild).toHaveBeenCalled());
+    await vi.waitFor(() => expect(structure.running.value).toBe(false));
+    expect(structure.deleteNotice.value).toBeNull();
+    expect(workspaceDocument.value.parents).toEqual(
+      document.parents.map((parent) => ({ ...parent, item_ids: [] })),
     );
-    expect(workspaceDocument.value.parents).toEqual([]);
     expect(useToastStore().toasts).toEqual([]);
   });
 
@@ -260,7 +262,7 @@ describe("server commands", () => {
     const { structure } = setup("item_002");
     const after = buildParentDocument();
     after.items = after.items.filter((item) => item.item_id !== "item_002");
-    apiMocks.deleteExamWorkspaceChild.mockResolvedValue(deleted(after, null));
+    apiMocks.deleteExamWorkspaceChild.mockResolvedValue(response(after));
 
     structure.deleteItem("item_002");
     await vi.waitFor(() => expect(apiMocks.deleteExamWorkspaceChild).toHaveBeenCalled());
@@ -324,7 +326,7 @@ describe("server commands", () => {
 describe("deleting an instruction", () => {
   it("keeps the questions by default and selects the first of them", async () => {
     const { structure, selectedItemId, workspaceDocument } = setup("item_004");
-    apiMocks.deleteExamWorkspaceParent.mockResolvedValue(deleted(withoutParent(true), "parent_001"));
+    apiMocks.deleteExamWorkspaceParent.mockResolvedValue(response(withoutParent(true)));
 
     await structure.deleteParent("parent_001", "keep_questions");
 
@@ -341,7 +343,7 @@ describe("deleting an instruction", () => {
 
   it("takes the questions along only when asked, and selects the next unit", async () => {
     const { structure, selectedItemId, workspaceDocument } = setup("item_002");
-    apiMocks.deleteExamWorkspaceParent.mockResolvedValue(deleted(withoutParent(false), "parent_001"));
+    apiMocks.deleteExamWorkspaceParent.mockResolvedValue(response(withoutParent(false)));
 
     await structure.deleteParent("parent_001", "with_questions");
 

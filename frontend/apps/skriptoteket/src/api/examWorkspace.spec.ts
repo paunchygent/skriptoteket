@@ -14,8 +14,6 @@ import { describe, expect, it, vi } from "vitest";
 import { buildFreeTextItem } from "../test/examWorkspaceFixtures";
 import { apiFetch, apiFetchBlobResponse, apiGet, apiPost } from "./client";
 import {
-  deleteExamWorkspaceChild,
-  deleteExamWorkspaceParent,
   downloadExamWorkspaceExport,
   getExamWorkspaceConversionStatus,
   getExamWorkspaceDocument,
@@ -26,6 +24,10 @@ import {
   requestExamWorkspaceAnswerKeySuggestions,
   requestExamWorkspaceAnswerMisspellings,
 } from "./examWorkspace";
+import {
+  deleteExamWorkspaceChild,
+  deleteExamWorkspaceParent,
+} from "./examWorkspaceStructureCommands";
 import type { ExamWorkspaceDocumentResponse, NativeExamDocument } from "./examWorkspace";
 
 vi.mock("./client", () => ({
@@ -66,7 +68,7 @@ function buildDocument(revision: number): NativeExamDocument {
     parents: [],
     revision,
     header: { tags: [] },
-    schema_version: "native_exam_document_v6",
+    schema_version: "native_exam_document_v7",
     title: "NO-prov HT25",
   };
 }

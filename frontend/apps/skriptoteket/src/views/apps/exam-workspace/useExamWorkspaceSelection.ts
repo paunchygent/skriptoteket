@@ -9,7 +9,9 @@
  *
  * Relationships:
  *   - Reads the document, the selected question and the structure notices
- *     from `useExamWorkspaceEditing`.
+ *     from `useExamWorkspaceEditing`; it drives that session's shared
+ *     `selectedParentId` so a structural insert lands after the part entry the
+ *     teacher selected.
  *   - Clears the Import box and the phone list through the refs the view
  *     owns; `afterGoto` lets the view settle its drawer after a jump.
  *   - Consumed by `ExamWorkspaceView` and the export, save and keyboard
@@ -40,10 +42,8 @@ export interface ExamWorkspaceSelectionDeps {
 }
 
 export function useExamWorkspaceSelection({ editing, importOpen, listOpen, afterGoto }: ExamWorkspaceSelectionDeps) {
-  const { structure, workspaceDocument, convertingItemIds, selectedItemId, selectItem } = editing;
+  const { structure, workspaceDocument, convertingItemIds, selectedItemId, selectedParentId, selectItem } = editing;
 
-  /** An instruction the teacher selected; its first question stays the document's selection. */
-  const selectedParentId = ref<string | null>(null);
   /** The exam instruction the teacher selected; the document's selected question stays behind it. */
   const examInstructionsSelected = ref(false);
 

@@ -136,6 +136,7 @@ def test_a_converted_picture_keeps_its_position_and_packaged_resource(
                 "parents": (
                     NativeExamParent(
                         parent_id="parent_001",
+                        place=document.items[0].sequence - 1,
                         instruction=(
                             NativeParagraph(
                                 heading_level=None,
