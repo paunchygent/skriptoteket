@@ -8,7 +8,7 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-19'
-status: proposed
+status: ready
 closeout_review:
   record: inline
   status: not_started
@@ -23,7 +23,7 @@ backlog_document_profile: contract-derived
 
 ## Implementation Contract
 
-The user asked for three things on 2026-10-19 in the Hemma orchestrator session; the user answered the planning questions the same day ("Accept all", width "Drop it"). This task is `proposed` until the user accepts the plan, and the build starts after TASK-SKRIPT-40-04-08 merges into main.
+The user asked for three things on 2026-10-19 in the Hemma orchestrator session; the user answered the planning questions the same day ("Accept all", width "Drop it"). The user accepted the plan on 2026-10-19 (A1); the build starts after TASK-SKRIPT-40-04-08 merges into main.
 
 1. A gap tool (U2). Each Lucktext and dropdown-Lucktext question gets a gap-tool toggle next to the Lucka button. While the tool is on, one click in a word makes that word a gap at once, with no popover; a drag selection inside one paragraph becomes one gap on release; a click on an existing gap opens its popover; typing works as usual.
 2. Keyboard shortcuts (U3). Ctrl+Alt+G (Cmd+Option+G on macOS) turns the gap tool on and off. The formatting shortcuts already work through TipTap (Ctrl/Cmd+B, I, U, Ctrl/Cmd+. superscript, Ctrl/Cmd+, subscript, Ctrl/Cmd+Alt+1-3 headings; F3); every mark, heading and tool button's tooltip and `aria-keyshortcuts` now name its shortcut. No unit re-implements a formatting keymap.
@@ -43,7 +43,7 @@ Non-goals: new formatting marks or shortcuts; any native-format, API-schema, exp
 
 ### Resume here
 
-Planning by a fresh 40-04-09 lead on 2026-10-19 (retained root `01a1531a-2b8b-7e27-b91b-e774fdfe5052`, plan `evidence/planning/TASK-SKRIPT-40-04-09/plan.md`, Explorer discovery under `discovery/explorer/`). Ledger closed and validated with `--require-closed`: F1-F4, L1-L8, user decisions Q1-Q6 and Q11 (2026-10-19); Q7-Q10 withdrawn after F4. Status `proposed`. Next action: the orchestrator relays the user's plan acceptance and applies `proposed -> ready`; after TASK-SKRIPT-40-04-08 merges into main, merge main into this branch and launch wave 1. No junior has been launched.
+Planning by a fresh 40-04-09 lead on 2026-10-19 (retained root `01a1531a-2b8b-7e27-b91b-e774fdfe5052`, plan `evidence/planning/TASK-SKRIPT-40-04-09/plan.md`, Explorer discovery under `discovery/explorer/`). Ledger closed and validated with `--require-closed`: F1-F4, L1-L8, user decisions Q1-Q6 and Q11 (2026-10-19); Q7-Q10 withdrawn after F4; plan accepted by the user 2026-10-19 (A1). Status `ready`. Next action: when the orchestrator reports TASK-SKRIPT-40-04-08 on main, merge main into this branch and launch wave 1 (G1-G3). No junior has been launched.
 
 ### TASK-SKRIPT-40-04-08 files this task depends on
 
@@ -111,4 +111,5 @@ Stop and ask the user if Ctrl+Alt+G or Cmd+Option+G turns out to be taken by the
 | Q4  | The tool ends by its button, its shortcut, Escape, or moving to another question; clicks elsewhere in the same question keep it on (user 2026-10-19) |
 | Q5  | A separate toggle button next to the Lucka button; Lucka keeps its 40-04-08 behaviour (user 2026-10-19) |
 | Q6  | With the tool on, a drag selection inside one paragraph becomes one gap on release (user 2026-10-19) |
+| A1  | The plan with frontend-only units G1-G4 is accepted (user 2026-10-19, AskUserQuestion in the Hemma orchestrator session) |
 | Q11 | Width is dropped: no native width field or control; export, print and preview keep sizing each gap from its longest answer (user 2026-10-19) |

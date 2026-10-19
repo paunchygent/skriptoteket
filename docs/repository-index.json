@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "1fc07015b828938f8c3e57330d0fb14bf97e6560f6c86eff84b11f66c6e1eea4",
+  "source_set_digest": "afab77a0eab6613aebda5bba7c5888a6990949ec247673e42a79866eb7146008",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6603,7 +6603,7 @@
       "type": "task",
       "title": "Teachers switch on a gap tool and click words to make gaps, and the toolbar names every keyboard shortcut",
       "path": "docs/backlog/tasks/task-skript-40-04-09-teachers-switch-on-a-gap-tool-and-click-words-to-make-gaps-and-the-toolbar-names-every-keyboard-shortcut.md",
-      "status": "proposed",
+      "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
       "owners": [
