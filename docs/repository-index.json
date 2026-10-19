@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "a1d17c72042c0713c7d364bc9070923e54a47f55701e1c5b675dccccb0e5af94",
+  "source_set_digest": "0d3692376b9b2fa1b7d09f001668cbe331acf9c3faa38119982372e186038bfa",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5202,7 +5202,7 @@
       "type": "task",
       "title": "A paragraph that holds only a score field is consumed whole as the points source and leaves no slash in the question",
       "path": "docs/backlog/tasks/task-skript-39-04-20-a-paragraph-that-holds-only-a-score-field-is-consumed-whole-as-the-points-source-and-leaves-no-slash-in-the-question.md",
-      "status": "ready",
+      "status": "in_progress",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-04",
       "owners": [
