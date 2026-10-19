@@ -2,11 +2,13 @@
  * Gap tool shortcut on a Windows Swedish layout.
  *
  * Domain purpose:
- *   Ctrl+Alt+G still toggles the gap tool, while a Swedish AltGr+2 keypress
- *   (key "@") never reaches the toggle even though it carries Ctrl+Alt:
- *   ProseMirror skips its key-code fallback for Ctrl+Alt on Windows, so the
- *   key is left alone and the paragraph is not turned into a heading. Keys
- *   are real `keydown` events dispatched on the editor DOM.
+ *   Ctrl+Alt+G still toggles the gap tool, including the Caps Lock
+ *   uppercase form (key "G" with no Shift), while a Swedish AltGr+2
+ *   keypress (key "@") and an AltGr+G layout character (key "ŋ") never
+ *   reach the toggle even though they carry Ctrl+Alt: ProseMirror skips
+ *   its key-code fallback for Ctrl+Alt on Windows, so the key is left
+ *   alone and the paragraph is not turned into a heading. Keys are real
+ *   `keydown` events dispatched on the editor DOM.
  *
  * Relationships:
  *   - `examWorkspaceRichTextSchema` owns the `gapToolKeys` extension under test.
@@ -72,10 +74,37 @@ describe("gap tool shortcut on Windows with a Swedish layout", () => {
     expect(event.defaultPrevented).toBe(true);
   });
 
+  it("calls onToggleGapTool once for Caps Lock Ctrl+Alt+G and swallows the key", () => {
+    const onToggleGapTool = vi.fn(() => true);
+    const editor = openEditor(onToggleGapTool);
+    const event = dispatchKey(editor, "G", { ctrlKey: true, altKey: true, shiftKey: false }, 71);
+    expect(onToggleGapTool).toHaveBeenCalledTimes(1);
+    expect(event.defaultPrevented).toBe(true);
+  });
+
+  it("calls onToggleGapTool once for Shift+Ctrl+Alt+G", () => {
+    const onToggleGapTool = vi.fn(() => true);
+    const editor = openEditor(onToggleGapTool);
+    const event = dispatchKey(editor, "G", { ctrlKey: true, altKey: true, shiftKey: true }, 71);
+    expect(onToggleGapTool).toHaveBeenCalledTimes(1);
+    expect(event.defaultPrevented).toBe(true);
+  });
+
   it("leaves a Swedish AltGr+2 alone: no toggle, no heading", () => {
     const onToggleGapTool = vi.fn(() => true);
     const editor = openEditor(onToggleGapTool);
     const event = dispatchKey(editor, "@", { ctrlKey: true, altKey: true }, 50);
+    expect(onToggleGapTool).not.toHaveBeenCalled();
+    expect(event.defaultPrevented).toBe(false);
+    expect(editor.isActive("heading")).toBe(false);
+    expect(editor.getJSON().content?.[0]?.type).toBe("paragraph");
+    expect(editor.getText()).toBe("hello");
+  });
+
+  it("leaves an AltGr+G layout character alone: no toggle, no heading", () => {
+    const onToggleGapTool = vi.fn(() => true);
+    const editor = openEditor(onToggleGapTool);
+    const event = dispatchKey(editor, "ŋ", { ctrlKey: true, altKey: true }, 71);
     expect(onToggleGapTool).not.toHaveBeenCalled();
     expect(event.defaultPrevented).toBe(false);
     expect(editor.isActive("heading")).toBe(false);

@@ -17,7 +17,8 @@
  *   with the text (TASK-SKRIPT-40-04-06 D2).
  *
  *   Ctrl+Alt+G (Cmd+Option+G on macOS) reaches the gap tool toggle through
- *   the options, and is left alone when this editor has no gap tool.
+ *   the options, in either letter case so Caps Lock keeps working, and is
+ *   left alone when this editor has no gap tool.
  *
  *   Neither atom parses from HTML, so a paste or a drop never carries a gap
  *   or a picture, even one cut from the same editor: a gap id must stay
@@ -242,7 +243,7 @@ function gapToolKeys(options: ExamRichTextOptions) {
     name: "examWorkspaceGapToolKeys",
 
     addKeyboardShortcuts() {
-      return { "Mod-Alt-g": () => options.onToggleGapTool() };
+      return { "Mod-Alt-g": () => options.onToggleGapTool(), "Mod-Alt-G": () => options.onToggleGapTool() };
     },
   });
 }
