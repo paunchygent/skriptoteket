@@ -268,10 +268,15 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
       } catch {
         return;
       }
-      if (disposed || acquisitionEpoch !== tickEpoch || deps.lineageId() !== lineageId || holding.value) {
+      if (disposed || acquisitionEpoch !== tickEpoch || deps.lineageId() !== lineageId) {
         if (outcome === "held") {
           await tryRelease(lineageId);
         }
+        return;
+      }
+      if (holding.value) {
+        // A duplicate success for the still-current owner: another in-flight
+        // claim already established holding. No-op, never release.
         return;
       }
       if (outcome === "held") {

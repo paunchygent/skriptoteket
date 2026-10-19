@@ -16,6 +16,7 @@ import { effectScope } from "vue";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ApiError } from "../../../api/client";
+import type { ExamWorkspaceEditLeaseResponse } from "../../../api/examWorkspace";
 import {
   createExamWorkspaceEditLeaseTabId,
   EXAM_WORKSPACE_EDIT_LEASE_HEARTBEAT_MS,
@@ -252,6 +253,109 @@ describe("useExamWorkspaceEditLease open claim", () => {
     } finally {
       first.stop();
       second.stop();
+    }
+  });
+
+  it("a late duplicate claim never releases the lease the newer heartbeat just acquired", async () => {
+    const leaseResponseFor = (holder: string | null): ExamWorkspaceEditLeaseResponse => ({
+      holder_tab_id: holder,
+      renewed_at: new Date(1_000_000).toISOString(),
+      takeover_requested: false,
+      takeover_requested_by: null,
+    });
+    const heldFailure = new ApiError({ code: "EDIT_LEASE_HELD", message: "held", status: 409 });
+    let holder: string | null = "tab-b";
+    let claimCalls = 0;
+    let resolveFirst: ((response: ExamWorkspaceEditLeaseResponse) => void) | null = null;
+    const releases: string[] = [];
+    const server: ExamWorkspaceEditLeaseServer = {
+      claim: (_lineage: string, tabId: string) => {
+        claimCalls += 1;
+        if (holder !== null && holder !== tabId) {
+          return Promise.reject(heldFailure);
+        }
+        holder = tabId;
+        if (claimCalls === 2) {
+          return new Promise<ExamWorkspaceEditLeaseResponse>((resolve) => {
+            resolveFirst = resolve;
+          });
+        }
+        return Promise.resolve(leaseResponseFor(tabId));
+      },
+      release: (_lineage: string, tabId: string) => {
+        releases.push(tabId);
+        if (holder === tabId) {
+          holder = null;
+        }
+        return Promise.resolve(leaseResponseFor(holder));
+      },
+      renew: (_lineage: string, tabId: string) => Promise.resolve(leaseResponseFor(holder ?? tabId)),
+      requestTakeover: (_lineage: string, _tabId: string) =>
+        Promise.resolve(leaseResponseFor(holder)),
+    };
+    const takeFirstResolver = (): ((response: ExamWorkspaceEditLeaseResponse) => void) | null => {
+      const current = resolveFirst;
+      resolveFirst = null;
+      return current;
+    };
+    const scopeA = effectScope();
+    let leaseA: ReturnType<typeof useExamWorkspaceEditLease> | undefined;
+    scopeA.run(() => {
+      leaseA = useExamWorkspaceEditLease({
+        isGuest: () => false,
+        lineageId: () => LINEAGE,
+        onAcquired: () => Promise.resolve(),
+        onTakeoverRequested: () => Promise.resolve(),
+        server,
+        tabId: "tab-a",
+      });
+    });
+    if (leaseA === undefined) {
+      throw new Error("lease A missing");
+    }
+    const currentA = leaseA;
+    try {
+      await flushPromises();
+      expect(currentA.readOnly.value).toBe(true);
+      holder = null;
+      await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_EDIT_LEASE_HEARTBEAT_MS * 2);
+      expect(holder).toBe("tab-a");
+      expect(currentA.readOnly.value).toBe(false);
+      const wake = takeFirstResolver();
+      if (wake === null) {
+        throw new Error("first heartbeat claim never started");
+      }
+      wake(leaseResponseFor("tab-a"));
+      await flushPromises();
+      const scopeB = effectScope();
+      let leaseB: ReturnType<typeof useExamWorkspaceEditLease> | undefined;
+      scopeB.run(() => {
+        leaseB = useExamWorkspaceEditLease({
+          isGuest: () => false,
+          lineageId: () => LINEAGE,
+          onAcquired: () => Promise.resolve(),
+          onTakeoverRequested: () => Promise.resolve(),
+          server,
+          tabId: "tab-b",
+        });
+      });
+      if (leaseB === undefined) {
+        throw new Error("lease B missing");
+      }
+      const currentB = leaseB;
+      try {
+        await flushPromises();
+        expect({
+          editableA: !currentA.readOnly.value,
+          editableB: !currentB.readOnly.value,
+          holder,
+          releases,
+        }).toEqual({ editableA: true, editableB: false, holder: "tab-a", releases: [] });
+      } finally {
+        scopeB.stop();
+      }
+    } finally {
+      scopeA.stop();
     }
   });
 });
