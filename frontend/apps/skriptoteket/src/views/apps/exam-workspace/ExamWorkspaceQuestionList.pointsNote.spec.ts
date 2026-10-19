@@ -149,6 +149,16 @@ describe("ExamWorkspaceQuestionList points note", () => {
     expect(rowTexts(mountList(under))).toEqual(["7 p fler än provtexten anger"]);
   });
 
+  it("keeps a third-decimal difference readable instead of two equal numbers", () => {
+    const document: NativeExamDocument = {
+      ...mockupDocument(),
+      header: { printed_total: 12.001, printed_total_dismissed: false, tags: [] },
+      items: [item(1, 12, 12.001)],
+      parents: [],
+    };
+    expect(rowTexts(mountList(document))).toEqual(["Fråga 1 — provtexten 12,001 p, nu 12 p"]);
+  });
+
   it("names a question that prints nothing with no source number", () => {
     const document: NativeExamDocument = {
       ...mockupDocument(),

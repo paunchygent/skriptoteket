@@ -54,7 +54,6 @@ describe("examWorkspaceListEntries with a childless part", () => {
       kind: "parent",
       label: "",
       points: 0,
-      printedTotal: null,
     });
   });
 

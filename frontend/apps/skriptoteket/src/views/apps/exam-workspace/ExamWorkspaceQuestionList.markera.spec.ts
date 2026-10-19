@@ -47,7 +47,7 @@ function question(
 }
 
 function part(id: string, label: string, childIds: string[]): ExamWorkspaceParentEntry {
-  return { childIds, id, kind: "parent", label, points: 2, printedTotal: null, text: "Delinstruktion" };
+  return { childIds, id, kind: "parent", label, points: 2, text: "Delinstruktion" };
 }
 
 const ENTRIES: ExamWorkspaceListEntry[] = [

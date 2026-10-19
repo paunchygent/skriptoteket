@@ -22,7 +22,6 @@ import type { ExamWorkspaceReadinessReason } from "./examWorkspaceItemReadiness"
 import { examWorkspacePromptExcerpt, examWorkspaceItemTypeLabel } from "./examWorkspaceRows";
 import { examWorkspaceUnits } from "./examWorkspaceStructure";
 import { bodyText } from "./examWorkspaceRichText";
-import { examWorkspacePrintedDifference } from "./examWorkspaceTotals";
 
 export type ExamWorkspaceItemStatus = "ok" | "warn" | "converting";
 
@@ -49,8 +48,6 @@ export type ExamWorkspaceParentEntry = {
   text: string;
   childIds: string[];
   points: number;
-  /** The part total the exam text prints, only when it differs from `points`. */
-  printedTotal: number | null;
 };
 
 export type ExamWorkspaceListEntry = ExamWorkspaceItemEntry | ExamWorkspaceParentEntry;
@@ -144,7 +141,6 @@ export function examWorkspaceListEntries(
         kind: "parent",
         label: "",
         points: 0,
-        printedTotal: null,
         text,
       });
       return;
@@ -157,7 +153,6 @@ export function examWorkspaceListEntries(
       kind: "parent",
       label: partNumber,
       points: children.reduce((sum, child) => sum + (child.points ?? 0), 0),
-      printedTotal: examWorkspacePrintedDifference(parent.printed_total, children),
       text,
     });
     children.forEach((child, childIndex) => {

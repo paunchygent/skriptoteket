@@ -19,7 +19,7 @@ import type {
 } from "../../../api/examWorkspace";
 import { newTeacherItem } from "./examWorkspaceItemEdits";
 import type { PrintedTotalAccount } from "./examWorkspaceTotals";
-import { examWorkspacePrintedDifferences } from "./examWorkspaceTotals";
+import { examWorkspaceFormatExactPoints, examWorkspacePrintedDifferences } from "./examWorkspaceTotals";
 
 function question(
   itemId: string,
@@ -69,6 +69,12 @@ function accountOf(
 }
 
 describe("examWorkspacePrintedDifferences", () => {
+  it("keeps every decimal instead of rounding to two", () => {
+    expect(examWorkspaceFormatExactPoints(12.001)).toBe("12,001");
+    expect(examWorkspaceFormatExactPoints(0.1 + 0.2)).toBe("0,3");
+    expect(examWorkspaceFormatExactPoints(67)).toBe("67");
+  });
+
   it("returns null when nothing differs", () => {
     const document = documentOf(
       [question("item_001", 1, 10, 10), question("item_002", 2, 10, 10)],

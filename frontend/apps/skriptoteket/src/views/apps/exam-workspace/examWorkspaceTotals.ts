@@ -39,6 +39,15 @@ export function examWorkspaceFormatPoints(points: number): string {
   return points.toLocaleString("sv-SE", { maximumFractionDigits: 2 });
 }
 
+/**
+ * Every decimal the value holds, for a printed number beside a computed one:
+ * the rounded `examWorkspaceFormatPoints` would read a third-decimal
+ * difference as two equal numbers.
+ */
+export function examWorkspaceFormatExactPoints(points: number): string {
+  return points.toLocaleString("sv-SE", { maximumSignificantDigits: 15 });
+}
+
 /** One entry of the printed-total account: a differing part, question, or the unexplained rest. */
 export type PrintedDifferenceRow =
   | { kind: "part"; parentId: string; printed: number; now: number }

@@ -35,7 +35,7 @@ import ExamWorkspaceNewItemMenu from "./ExamWorkspaceNewItemMenu.vue";
 import ExamWorkspaceQuestionRow from "./ExamWorkspaceQuestionRow.vue";
 import type { TeacherItemKind } from "./examWorkspaceItemEdits";
 import type { ExamWorkspaceListEntry } from "./examWorkspaceListEntries";
-import { examWorkspaceFormatPoints } from "./examWorkspaceTotals";
+import { examWorkspaceFormatExactPoints, examWorkspaceFormatPoints } from "./examWorkspaceTotals";
 import type { PrintedTotalAccount } from "./examWorkspaceTotals";
 import { EXAM_INSTRUCTIONS_ENTRY_ID } from "./useExamWorkspaceSelection";
 
@@ -90,14 +90,14 @@ const formattedTotal = computed(() => `${examWorkspaceFormatPoints(props.total)}
 const dismissedNote = computed(() => {
   const printed = props.account?.printed;
   return showDismissedPrinted.value && printed !== null && printed !== undefined
-    ? `provtexten anger ${examWorkspaceFormatPoints(printed)} p`
+    ? `provtexten anger ${examWorkspaceFormatExactPoints(printed)} p`
     : null;
 });
 
 const noteHeading = computed(() => {
   const printed = props.account?.printed;
   return props.examDiffers && printed !== null && printed !== undefined
-    ? `Provtexten anger ${examWorkspaceFormatPoints(printed)} p. Dessa skiljer sig:`
+    ? `Provtexten anger ${examWorkspaceFormatExactPoints(printed)} p. Dessa skiljer sig:`
     : "Dessa skiljer sig från provtexten:";
 });
 
@@ -116,7 +116,7 @@ const noteRows = computed<PointsNoteRow[]>(() => {
       return [{
         key: `part-${row.parentId}`,
         target: row.parentId,
-        text: `${entry.text} — provtexten ${examWorkspaceFormatPoints(row.printed)} p, nu ${examWorkspaceFormatPoints(row.now)} p`,
+        text: `${entry.text} — provtexten ${examWorkspaceFormatExactPoints(row.printed)} p, nu ${examWorkspaceFormatExactPoints(row.now)} p`,
       }];
     }
     if (row.kind === "question") {
@@ -125,27 +125,24 @@ const noteRows = computed<PointsNoteRow[]>(() => {
         return [];
       }
       const label = `Fråga ${entry.label}`;
-      if (row.now === null) {
-        return [{
-          key: `question-${row.itemId}`,
-          target: row.itemId,
-          text:
-            row.source === null
-              ? `${label} — saknar poäng`
-              : `${label} — provtexten ${examWorkspaceFormatPoints(row.source)} p, saknar poäng`,
-        }];
-      }
       if (row.source === null) {
         return [{
           key: `question-${row.itemId}`,
           target: row.itemId,
-          text: `${label} — nu ${examWorkspaceFormatPoints(row.now)} p`,
+          text: `${label} — saknar poäng`,
+        }];
+      }
+      if (row.now === null) {
+        return [{
+          key: `question-${row.itemId}`,
+          target: row.itemId,
+          text: `${label} — provtexten ${examWorkspaceFormatExactPoints(row.source)} p, saknar poäng`,
         }];
       }
       return [{
         key: `question-${row.itemId}`,
         target: row.itemId,
-        text: `${label} — provtexten ${examWorkspaceFormatPoints(row.source)} p, nu ${examWorkspaceFormatPoints(row.now)} p`,
+        text: `${label} — provtexten ${examWorkspaceFormatExactPoints(row.source)} p, nu ${examWorkspaceFormatExactPoints(row.now)} p`,
       }];
     }
     return [{
@@ -153,8 +150,8 @@ const noteRows = computed<PointsNoteRow[]>(() => {
       target: null,
       text:
         row.points > 0
-          ? `Övriga ${examWorkspaceFormatPoints(row.points)} p finns inte i någon fråga`
-          : `${examWorkspaceFormatPoints(Math.abs(row.points))} p fler än provtexten anger`,
+          ? `Övriga ${examWorkspaceFormatExactPoints(row.points)} p finns inte i någon fråga`
+          : `${examWorkspaceFormatExactPoints(Math.abs(row.points))} p fler än provtexten anger`,
     }];
   });
 });
@@ -484,7 +481,7 @@ watch(
 .list__note {
   background: var(--huleedu-warning-15); border: 1px solid var(--huleedu-warning-50);
   border-radius: var(--huleedu-radius-md); padding: var(--huleedu-space-2-5) var(--huleedu-space-3);
-  color: var(--huleedu-warning-strong); max-height: 320px; max-height: 40%; overflow-y: auto; min-height: 0;
+  color: var(--huleedu-warning-strong); max-height: min(320px, 40vh); overflow-y: auto; min-height: 0;
 }
 .list__note-head { margin: 0 0 var(--huleedu-space-1); font-weight: var(--huleedu-font-semibold); font-size: var(--huleedu-text-sm); }
 .list__note-rows { margin: 0; padding: 0; list-style: none; }
