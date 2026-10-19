@@ -70,13 +70,24 @@ Method: a detached throwaway worktree at `b7ca932c` replayed both exams through 
 The reviewer found that the recordings were captured at `4717a9d3`, not `b7ca932c`. The fixture README and the `b7ca932c` commit message both say so. The same no-live derivation was then run in a throwaway detached worktree at `4717a9d3`, with the two user DOCX files copied into that worktree's `docx_corpus/`. The script is `evidence/probes/capture_user_exam_label_b_keys_4717a9d3.py` and its keys are in `evidence/probes/keys-4717a9d3/`, both in the retained root. The throwaway worktree was removed.
 
 - `exempelprov_grammatik_sve2_v2_1` q1-q5, q7, q8: identical to the committed sidecars, so they are current, with `4717a9d3` as the capture revision.
-- `omprov_grammatik_sve2` q1-q8: all 8 differ. At `4717a9d3` each request began with its part heading line (`**DEL 1: MORFEM OCH FRASER**` for q1-q4, `**DEL 2: SATSLÖSNING**` for q5-q6, `**DEL 3: BISATSER**` for q7-q8), and today's requests lack it. These 8 recordings answered a different request and are stale. The committed `omprov` sidecars hold today's text, so they do not record the capture-time request; they stay unchanged until the user rules.
+- `omprov_grammatik_sve2` q1-q8: all 8 differ. At `4717a9d3` each request began with its part heading line (`**DEL 1: MORFEM OCH FRASER**` for q1-q4, `**DEL 2: SATSLÖSNING**` for q5-q6, `**DEL 3: BISATSER**` for q7-q8), and today's requests lack it. These 8 recordings answered a different request and are stale.
 
-## Resume Here (2026-10-18)
+### Re-recording (user decision 2026-10-19)
 
-- State: in independent review; reviewer pending. Branch `codex/task-skript-rep-0046-remote` in worktree `/home/paunchygent/apps/skriptoteket-task-skript-rep-0046-remote`; implementation head `bcc4047c`.
+The user decided "Re-record now" for exactly the 8 stale `omprov_grammatik_sve2` `label_b` calls (q1-q8), through the REP-0045 route.
+
+- Before recording, the branch merged origin/main `06985163`. The labeler requests were then checked in a throwaway detached worktree that also merged `codex/task-skript-39-04-score-field-remote` (TASK-SKRIPT-39-04-20). All 15 user-exam labeler requests were byte-identical with and without that branch, so it does not change these requests.
+- The recorder is REP-0045's `record_label_b.py`, adapted to the user-exam corpus: retained root `evidence/probes/record/record_omprov_label_b.py`. The 8 expected request texts come from today's pipeline (`dump_omprov_label_requests.py`, kept under `evidence/probes/record/requests-today/`). Dry mode handled 8 of 8 and sent nothing. Live mode forwarded each request body byte-identically to the provider exactly once, with `gpt-6-luna`.
+- Tokens: 9,139 input and 941 output, 10,080 in total. No other live call was made.
+- Every label is unchanged (q3 `unsupported`, the others `free_text`). The 8 request-key sidecars are byte-identical to the committed ones, which already held today's request text. They now record the request each new reply answered.
+- Proof after the merge and re-recording: `test_docx_pipeline_replay_label_b_keys.py` and `test_exam_workspace_docx_user_exams_replay.py` 22 passed; `test_exam_workspace_docx_build.py` and `test_exam_workspace_docx_second_wave.py` 63 passed; `tests/integration/test_exam_workspace_docx_background.py` 11 passed under Docker; ruff, format and mypy clean on the 4 touched Python files.
+
+## Resume Here (2026-10-19)
+
+- State: repaired and awaiting rereview. Branch `codex/task-skript-rep-0046-remote` in worktree `/home/paunchygent/apps/skriptoteket-task-skript-rep-0046-remote`; the head is the commit that adds this note.
 - Done: the shared key module, the unit replay key match, the 15 user-exam capture-time sidecars and the adversarial test file. Proof: new test file 12/12, user-exam replay 10/10, other replay importers 1150 passed, Docker integration 11/11, ruff, format and mypy clean.
-- Next: a user ruling on the 8 stale `omprov_grammatik_sve2` label_b recordings (see Capture-Revision Correction), for example re-recording them live and writing their sidecars from the captured requests. After that, the review continues.
-- Open findings: the reviewer's provenance finding. The 7 `exempelprov` keys are confirmed at `4717a9d3`; the 8 `omprov` recordings are stale. A note for the reviewer: the key does not cover the fixed classification instruction (same as in REP-0045).
+- Done since review 511155e5: origin/main `06985163` merged; the 8 stale `omprov` recordings re-recorded live (see Re-recording).
+- Next: rereview of review 511155e5, routed by the parent.
+- Open findings: none. The provenance finding is repaired: `exempelprov` is confirmed at `4717a9d3`, and `omprov` is re-recorded. A note for the reviewer: the key does not cover the fixed classification instruction (same as in REP-0045).
 - Retained root: `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a14f5e-1cc7-74d6-abf4-0d911114f415`.
-- Blockers and user gates: re-recording the 8 `omprov` replies needs the user. No children are running.
+- Blockers and user gates: none. No children are running.
