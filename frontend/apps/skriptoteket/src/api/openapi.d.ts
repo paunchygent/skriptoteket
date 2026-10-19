@@ -1810,6 +1810,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/import-qti": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Import Exam Workspace Qti Document */
+        post: operations["import_exam_workspace_qti_document_api_v1_apps_documents_conversion_hub_exam_workspace_import_qti_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/apps/documents.conversion_hub/jobs": {
         parameters: {
             query?: never;
@@ -3606,6 +3623,13 @@ export interface components {
         };
         /** Body_import_exam_workspace_document_api_v1_apps_documents_conversion_hub_exam_workspace_documents_post */
         Body_import_exam_workspace_document_api_v1_apps_documents_conversion_hub_exam_workspace_documents_post: {
+            /** Course Key */
+            course_key?: string | null;
+            /** File */
+            file: string;
+        };
+        /** Body_import_exam_workspace_qti_document_api_v1_apps_documents_conversion_hub_exam_workspace_import_qti_post */
+        Body_import_exam_workspace_qti_document_api_v1_apps_documents_conversion_hub_exam_workspace_import_qti_post: {
             /** Course Key */
             course_key?: string | null;
             /** File */
@@ -6818,7 +6842,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "docx_import" | "digiexam_import" | "created";
+            kind: "docx_import" | "digiexam_import" | "qti_import" | "created";
             /** Source Filename */
             source_filename?: string | null;
             /** Source Sha256 */
@@ -14134,6 +14158,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ExamWorkspaceConversionStatus"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    import_exam_workspace_qti_document_api_v1_apps_documents_conversion_hub_exam_workspace_import_qti_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_import_exam_workspace_qti_document_api_v1_apps_documents_conversion_hub_exam_workspace_import_qti_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamWorkspaceDocumentSummary"];
                 };
             };
             /** @description Validation Error */

@@ -4,7 +4,7 @@ from uuid import uuid4
 
 import pytest
 
-from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
+from skriptoteket.application.curated_apps.handlers.exam_workspace_document_imports import (
     ImportExamWorkspaceDocumentHandler,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
