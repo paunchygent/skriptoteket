@@ -29,6 +29,12 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts impo
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_item_xml import (
     serialize_qti_assessment_item,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.exam_language_labels import (
+    SWEDISH_EXAM_LABELS,
+)
+from skriptoteket.domain.curated_apps.exam_workspace.exam_print_document import (
+    _format_points,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.examnet_qti_export import (
     native_exam_to_examnet_qti_items,
 )
@@ -244,8 +250,15 @@ async def test_a_review_item_shows_its_source_text_as_printed_in_both_exports():
             if item.review.state is not NativeItemReviewState.REVIEW_REQUIRED:
                 continue
             kept += 1
-            for line in item.plain_text_lines():
-                assert line in paragraphs, f"{item.item_id}: DOCX export lost {line[:20]!r}"
+            lines = item.plain_text_lines()
+            points = item.points
+            for index, line in enumerate(lines):
+                expected = line
+                if index == len(lines) - 1 and points is not None:
+                    expected = (
+                        line + " " + SWEDISH_EXAM_LABELS.points_inline(_format_points(points))
+                    )
+                assert expected in paragraphs, f"{item.item_id}: DOCX export lost {expected[:24]!r}"
                 assert _leading(line) in _qti_text(qti[item.item_id]), (
                     f"{item.item_id}: QTI export lost {line[:20]!r}"
                 )
