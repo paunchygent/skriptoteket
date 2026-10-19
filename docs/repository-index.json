@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "9f52aed454bf0016c040534e4ad1083521c343a59d32ab6eec61960a576ee9ba",
+  "source_set_digest": "d07cc33a897075c582e92a3fc0345509c7bf635a77591c3f92c48fde1e7c49d4",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6809,6 +6809,25 @@
       "type": "task",
       "title": "The public guest DigiExam converter line is removed",
       "path": "docs/backlog/tasks/task-skript-41-02-03-the-public-guest-digiexam-converter-line-is-removed.md",
+      "status": "ready",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-41-02",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-41-02-04",
+      "type": "task",
+      "title": "The exam workspace fills the desktop window and the editor column is the widest",
+      "path": "docs/backlog/tasks/task-skript-41-02-04-the-exam-workspace-fills-the-desktop-window-and-the-editor-column-is-the-widest.md",
       "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-41-02",

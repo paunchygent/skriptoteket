@@ -101,6 +101,45 @@ describe("ExamWorkspaceView export download", () => {
     },
   );
 
+  it("offers the formats as a radio list and exports the chosen format", async () => {
+    exportApiMocks.downloadExamWorkspaceExport.mockResolvedValue({
+      blob: new Blob(["pdf"]),
+      contentType: "application/pdf",
+      filename: "NO-prov-examnet.pdf",
+    });
+    const wrapper = await mountImported();
+    await openExportDrawer(wrapper);
+
+    const drawer = wrapper.get('[data-test="exam-workspace-drawer-export"]');
+    const fieldset = drawer.get("fieldset");
+    expect(fieldset.get("legend").text()).toBe("Format");
+    const inputs = fieldset.findAll('input[type="radio"]');
+    expect(inputs.map((input) => input.attributes("data-test"))).toEqual(
+      EXAM_WORKSPACE_EXPORT_FORMATS.map((format) => `exam-workspace-export-format-${format.target}`),
+    );
+    expect(fieldset.findAll('input[type="radio"]:checked')).toHaveLength(1);
+    expect(
+      drawer.get<HTMLInputElement>('[data-test="exam-workspace-export-format-qti"]').element.checked,
+    ).toBe(true);
+
+    await drawer.get<HTMLInputElement>('[data-test="exam-workspace-export-format-pdf"]').setValue(true);
+    expect(
+      drawer.get<HTMLInputElement>('[data-test="exam-workspace-export-format-pdf"]').element.checked,
+    ).toBe(true);
+    expect(
+      drawer.get<HTMLInputElement>('[data-test="exam-workspace-export-format-qti"]').element.checked,
+    ).toBe(false);
+
+    await wrapper.get('[data-test="exam-workspace-export-run"]').trigger("click");
+    await flushPromises();
+
+    expect(exportApiMocks.downloadExamWorkspaceExport).toHaveBeenCalledTimes(1);
+    expect(exportApiMocks.downloadExamWorkspaceExport).toHaveBeenCalledWith("lineage-1", "pdf", 1);
+    expect(wrapper.get('[data-test="exam-workspace-export-result"]').text()).toBe(
+      "PDF-filen är skapad.",
+    );
+  });
+
   it("exports from the drawer with the chosen format and reports it inline", async () => {
     exportApiMocks.downloadExamWorkspaceExport.mockResolvedValue({
       blob: new Blob(["pdf"]),
@@ -110,7 +149,7 @@ describe("ExamWorkspaceView export download", () => {
     const wrapper = await mountImported();
     await openExportDrawer(wrapper);
 
-    await wrapper.get('[data-test="exam-workspace-export-format-pdf"]').trigger("click");
+    await wrapper.get<HTMLInputElement>('[data-test="exam-workspace-export-format-pdf"]').setValue(true);
     await wrapper.get('[data-test="exam-workspace-export-run"]').trigger("click");
     await flushPromises();
 
