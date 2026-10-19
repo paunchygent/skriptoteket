@@ -107,5 +107,6 @@ Stop and report to the parent when the staging reproduction shows a defect outsi
 - Domain suite green at 3b277e9f (pre-rebuild); copy packet refreshed: evidence/lead-4ebb41f3/copy/ (string-inventory.md, screenshots/ exam-line, exam-and-part, part-only, no-target, after-change, after-show).
 - Retained root `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a15330-34cd-7103-bb71-cc8ef9b8a56f` (explorer discovery under `discovery/explorer/`).
 - Review 6f95a153 (evidence/reviews/): F1 repaired (e7394eb0) and cleared on rereview; F2 ddd1c167, F4/F5 c1ab3e5c, F6 test split 8dbbda8e admitted on focused proof. origin/main 043163cb merged at 2eaa4f19.
-- F3 layout decided (T11, plan rows D2, D3; mockups evidence/lead-4ebb41f3/mock/f3/): floating lines over a fixed one-row end room; build in progress with a fresh junior and the headless geometry check.
-- Next: after F3, the domain suite (ask the orchestrator for the slot); then the final Mac walk with F5 and the bottom-scrolled check (Validation). When 40-04-08 lands on main, merge it and repair the v9 fixtures.
+- F3 built and admitted (6d08aae9; T11, plan rows D2, D3; mockups evidence/lead-4ebb41f3/mock/f3/): floating lines over a fixed one-row end room; headless geometry check fail-first then passing at 440 and 260 px (evidence/lead-4ebb41f3/r3/).
+- Domain suite green at 6d08aae9: backend curated_apps 2676 passed, fe-test 3566 passed (evidence/lead-4ebb41f3/suite3-\*.txt).
+- Next: the Mac merges the branch and runs the final staging walk with F5 and the bottom-scrolled check (Validation). When 40-04-08 lands on main, merge it and repair the v9 fixtures.
