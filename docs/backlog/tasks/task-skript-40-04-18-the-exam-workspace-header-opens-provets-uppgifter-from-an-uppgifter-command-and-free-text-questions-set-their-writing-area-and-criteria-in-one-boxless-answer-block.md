@@ -9,7 +9,7 @@ owners:
 - kind: service
   id: skriptoteket
 created: '2026-10-20'
-status: ready
+status: in_progress
 closeout_review:
   record: inline
   status: not_started
