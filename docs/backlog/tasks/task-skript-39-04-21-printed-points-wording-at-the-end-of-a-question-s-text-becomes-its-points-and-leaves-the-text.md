@@ -218,6 +218,17 @@ Units, each for one fresh junior:
   `leftover_points_text: null`). At `c4482c94`: 55 backend files 1690 passed, 156 spec files
   1369 passed, lint code phases and typecheck pass; replay bar against `00f62f1a` shows only the
   four D4 bodies (`evidence/proof/u9-bar-vs-main.txt`). Never pushed.
-- Next: the orchestrator merges `c4482c94` and later to `main` in one batch with the others
-  (user decision 2026-10-19), then a Pi code review on that head. U4 (the offer line, D10) is
-  parked for a later batch; its work order is `evidence/work-orders/u4-offer-line.md`.
+- Review repair (Pi review 82849a3b, CHANGES REQUESTED F1-F6): F3 `45833d8d`, F2 `cd4baf4d`,
+  F5 and D13 `9730c695`, F1 `b9bec1d2` plus `f6093560` (the D12 heading any-equal-label rule
+  and the bare-only first paragraph), F4 `9d1ad80f` (schema v10), F6 `253039fb`. At `f6093560`:
+  61 files plus the heading sweep 2124 passed, 58 skipped; typecheck passes; replay bar against
+  u14 empty (`evidence/proof/u17c-after.log`). Never pushed.
+- Blocked (decision needed from the orchestrator): D12 decision E and the second extension drop
+  a whole points-only line, and D8 makes "Tempus 3 poäng" one (one-word head). A heading
+  "Tempus 3 poäng" at points 3 then loses its topic word: at `f6093560` for a styled heading
+  (`evidence/proof/u17d-tempus-probe.txt`), and with U17d's literal E for an unstyled one
+  (`test_exam_workspace_docx_header_headings.py:150`, two cases). U17d stopped uncommitted;
+  its patch is `evidence/proof/u17d-stopped.patch`.
+- Next: on the decision, one fresh junior repairs the heading and first-paragraph rules, then
+  the lead CHECKPOINTs the head for the 82849a3b rereview. U4 (the offer line, D10) is parked
+  for a later batch; its work order is `evidence/work-orders/u4-offer-line.md`.
