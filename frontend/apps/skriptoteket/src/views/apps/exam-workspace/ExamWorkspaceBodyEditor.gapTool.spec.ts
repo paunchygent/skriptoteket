@@ -184,8 +184,8 @@ function pressEscape(target: HTMLElement): void {
   target.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
 }
 
-/** Activate a gap as a click on its chip does, through the view's own click handler. */
-function clickGapChip(harness: Harness, gapId: string): void {
+/** Select a gap chip as the keyboard does, so Enter or Space opens its popover. */
+function selectGap(harness: Harness, gapId: string): void {
   const editor = innerEditor(harness);
   let pos = -1;
   editor.state.doc.descendants((node, nodePos) => {
@@ -197,13 +197,11 @@ function clickGapChip(harness: Harness, gapId: string): void {
   if (pos < 0) {
     throw new Error(`no gap ${gapId}`);
   }
-  const node = editor.state.doc.nodeAt(pos);
-  if (!node) {
-    throw new Error(`no gap ${gapId}`);
-  }
-  editor.view.someProp("handleClickOn", (handler) =>
-    handler(editor.view, pos, node, pos, new MouseEvent("click"), true),
-  );
+  editor.commands.setNodeSelection(pos);
+}
+
+function pressEnter(target: HTMLElement): void {
+  target.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true }));
 }
 
 async function settle(): Promise<void> {
@@ -309,9 +307,11 @@ describe("ExamWorkspaceBodyEditor gap tool", () => {
 
     await toolToggle(harness).trigger("click");
     await settle();
-    clickGapChip(harness, "gap_001");
+    selectGap(harness, "gap_001");
+    pressEnter(surfaceOf(harness));
     await settle();
     expect(popoverExists()).toBe(true);
+    expect(creationsOf(harness)).toHaveLength(0);
 
     pressEscape(surfaceOf(harness));
     await settle();

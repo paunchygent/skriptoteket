@@ -5,9 +5,10 @@
  *   With the `gapTool` prop on, a primary click inside a word turns that word
  *   into a gap at once (one `createGap`, never `update`, no floating button),
  *   and a drag selection inside one paragraph turns into one gap on mouseup.
- *   A click on a space only places the caret, a click on a gap chip still
- *   opens it (`activateGap`), typing still emits `update`, and with the prop
- *   off a word click only places the caret and never shows a button.
+ *   A click on a space only places the caret, a click on a gap chip reverts
+ *   it (`revertGap`, never `activateGap`), typing still emits `update`, and
+ *   with the prop off a word click only places the caret and never shows a
+ *   button, while a gap click still opens it (`activateGap`).
  *
  * jsdom has no layout, so selections are set through TipTap commands, clicks
  * reach the view through `someProp("handleClick")`, a drag release is a real
@@ -254,7 +255,7 @@ describe("ExamWorkspaceRichTextEditor gap tool", () => {
     expect(gapButton()).toBeNull();
   });
 
-  it("opens a clicked gap chip instead of making a new gap", async () => {
+  it("with the tool on, a clicked gap chip reverts instead of opening", async () => {
     const opened = await openEditor({
       body: [paragraph(text("hello "), gap("gap_001"), text(" world"))],
       gapsInteractive: true,
@@ -268,8 +269,8 @@ describe("ExamWorkspaceRichTextEditor gap tool", () => {
     );
 
     expect(handled).toBe(true);
-    expect(opened.activations).toHaveLength(1);
-    expect(opened.activations[0]![0]).toBe("gap_001");
+    expect(opened.reverts).toEqual(["gap_001"]);
+    expect(opened.activations).toHaveLength(0);
     expect(opened.creations).toHaveLength(0);
     expect(opened.updates).toHaveLength(0);
   });

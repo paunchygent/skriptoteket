@@ -13,6 +13,8 @@ class ParentCommandRequest(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     expected_cursor: UUID
+    tab_id: UUID
+    """The editing tab's id; the server refuses a command from a tab without the lease."""
 
 
 class ExamWorkspaceDeleteResponse(ExamWorkspaceDocumentResponse):

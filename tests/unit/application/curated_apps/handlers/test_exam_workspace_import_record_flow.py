@@ -44,7 +44,10 @@ from tests.unit.application.curated_apps.handlers.exam_workspace_docx_retry_fixt
     retry_reply,
     source,
 )
-from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents import _Env
+from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents import (
+    _Env,
+    _leased_tab,
+)
 from tests.unit.application.curated_apps.handlers.test_exam_workspace_docx_jobs import (
     claim,
     environment,
@@ -234,6 +237,7 @@ async def test_unsaved_retries_keep_all_attempts_through_reload_save_and_reopen(
         actor=actor,
         lineage_id=original.document_id,
         request=StoreExamWorkspaceUndoStepRequest(
+            tab_id=await _leased_tab(env, actor, original.document_id),
             expected_cursor=(
                 await env.save_handler.history(actor=actor, lineage_id=original.document_id)
             ).cursor,
@@ -349,6 +353,7 @@ async def test_retry_after_undo_past_save_keeps_each_new_branch_attempt(
         actor=actor,
         lineage_id=lineage,
         request=StoreExamWorkspaceUndoStepRequest(
+            tab_id=await _leased_tab(env, actor, lineage),
             expected_cursor=(
                 await env.save_handler.history(actor=actor, lineage_id=lineage)
             ).cursor,
@@ -401,6 +406,7 @@ async def test_retry_after_undo_past_save_keeps_each_new_branch_attempt(
         actor=actor,
         lineage_id=lineage,
         request=StoreExamWorkspaceUndoStepRequest(
+            tab_id=await _leased_tab(env, actor, lineage),
             expected_cursor=history.cursor,
             document=draft.model_copy(update={"revision": 3}),
         ),
@@ -492,6 +498,7 @@ async def test_put_and_get_return_import_record_even_after_teacher_changes_facit
         actor=actor,
         lineage_id=original.document_id,
         request=StoreExamWorkspaceUndoStepRequest(
+            tab_id=await _leased_tab(env, actor, original.document_id),
             expected_cursor=(
                 await env.save_handler.history(actor=actor, lineage_id=original.document_id)
             ).cursor,

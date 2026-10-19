@@ -195,6 +195,48 @@ describe("a gap the save rules refuse", () => {
   });
 });
 
+describe("a gap revert and restore", () => {
+  it("reverts a gap in one undo step and Ångra brings the gap back", async () => {
+    const { editing } = await openGapExam();
+    editing.revertItemGap("item_001", "gap_001");
+    await editing.history.flush();
+
+    expect(gapIdsOf(editing.workspaceDocument.value!)).toEqual([]);
+    const keptId = editing.workspaceDocument.value!.items[0]!.kept_gaps[0]?.gap_id ?? "";
+    expect(keptId).toMatch(/^gap_\d{3}$/);
+
+    await editing.history.undo();
+    expect(gapIdsOf(editing.workspaceDocument.value!)).toEqual(["gap_001"]);
+    expect(editing.workspaceDocument.value!.items[0]!.gaps[0]!.accepted_values).toEqual(["ett"]);
+    expect(editing.workspaceDocument.value!.items[0]!.kept_gaps).toEqual([]);
+
+    await editing.history.redo();
+    expect(gapIdsOf(editing.workspaceDocument.value!)).toEqual([]);
+  });
+
+  it("restores a kept word in one undo step and Ångra brings the word back", async () => {
+    const { editing } = await openGapExam();
+    editing.revertItemGap("item_001", "gap_001");
+    await editing.history.flush();
+    const keptId = editing.workspaceDocument.value!.items[0]!.kept_gaps[0]?.gap_id ?? "";
+
+    editing.restoreItemKeptGap("item_001", keptId, 0);
+    await editing.history.flush();
+
+    expect(gapIdsOf(editing.workspaceDocument.value!)).toEqual([keptId]);
+    expect(editing.workspaceDocument.value!.items[0]!.kept_gaps).toEqual([]);
+
+    await editing.history.undo();
+    expect(gapIdsOf(editing.workspaceDocument.value!)).toEqual([]);
+    expect(editing.workspaceDocument.value!.items[0]!.kept_gaps.map((gap) => gap.gap_id)).toEqual([
+      keptId,
+    ]);
+
+    await editing.history.redo();
+    expect(gapIdsOf(editing.workspaceDocument.value!)).toEqual([keptId]);
+  });
+});
+
 describe("a 409 conflict during undo's flush", () => {
   it("reloads the server copy, dropping the pending word-made gap", async () => {
     const { editing, server } = await openGapExam();

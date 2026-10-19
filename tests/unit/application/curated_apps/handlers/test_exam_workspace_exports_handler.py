@@ -61,6 +61,7 @@ from skriptoteket.protocols.exam_workspace import (
 from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents import (
     _actor,
     _Env,
+    _leased_tab,
 )
 from tests.unit.application.curated_apps.handlers.test_exam_workspace_history_contract import (
     _undo_handler,
@@ -145,7 +146,9 @@ async def _store_step(
         actor=actor,
         lineage_id=lineage_id,
         request=StoreExamWorkspaceUndoStepRequest(
-            expected_cursor=history.cursor, document=document
+            tab_id=await _leased_tab(env, actor, lineage_id),
+            expected_cursor=history.cursor,
+            document=document,
         ),
     )
 

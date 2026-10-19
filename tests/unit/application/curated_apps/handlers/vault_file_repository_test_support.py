@@ -5,6 +5,7 @@ from datetime import datetime
 from uuid import UUID
 
 from skriptoteket.application.curated_apps.exam_workspace_history import (
+    ExamWorkspaceEditLease,
     ExamWorkspaceHistoryCursor,
     ExamWorkspaceHistoryStepRef,
     ExamWorkspaceHistoryStoredStep,
@@ -32,6 +33,7 @@ class InMemoryVaultFileRepository:
     def __init__(self) -> None:
         self.files: dict[UUID, VaultFile] = {}
         self.history_heads: dict[tuple[UUID, UUID], ExamWorkspaceHistoryCursor] = {}
+        self.history_leases: dict[tuple[UUID, UUID], ExamWorkspaceEditLease] = {}
         self.history_steps: dict[tuple[UUID, UUID, UUID], ExamWorkspaceHistoryStoredStep] = {}
         self.history_assets: dict[tuple[UUID, UUID, str], bytes] = {}
         self.calls: list[tuple[str, dict[str, object]]] = []
@@ -220,6 +222,28 @@ class InMemoryVaultFileRepository:
         )
         self.history_heads[(user_id, document_lineage_id)] = head
 
+    async def get_history_lease(
+        self, *, user_id: UUID, document_lineage_id: UUID
+    ) -> ExamWorkspaceEditLease | None:
+        self.calls.append(
+            (
+                "get_history_lease",
+                {"user_id": user_id, "document_lineage_id": document_lineage_id},
+            )
+        )
+        return self.history_leases.get((user_id, document_lineage_id))
+
+    async def upsert_history_lease(
+        self, *, user_id: UUID, document_lineage_id: UUID, lease: ExamWorkspaceEditLease
+    ) -> None:
+        self.calls.append(
+            (
+                "upsert_history_lease",
+                {"user_id": user_id, "document_lineage_id": document_lineage_id},
+            )
+        )
+        self.history_leases[(user_id, document_lineage_id)] = lease
+
     async def get_history_step(
         self, *, user_id: UUID, document_lineage_id: UUID, step_id: UUID
     ) -> ExamWorkspaceHistoryStoredStep | None:
@@ -346,6 +370,7 @@ class InMemoryVaultFileRepository:
             )
         )
         self.history_heads.pop((user_id, document_lineage_id), None)
+        self.history_leases.pop((user_id, document_lineage_id), None)
         for step_key in [
             step_key
             for step_key in self.history_steps
@@ -435,6 +460,7 @@ class InMemoryVaultFileRepository:
         file = self.files.pop(file_id, None)
         if file is not None and file.document_lineage_id is not None and file.export_format is None:
             self.history_heads.pop((file.user_id, file.document_lineage_id), None)
+            self.history_leases.pop((file.user_id, file.document_lineage_id), None)
             for step_key in [
                 step_key
                 for step_key in self.history_steps

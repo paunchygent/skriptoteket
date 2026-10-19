@@ -28,7 +28,9 @@ from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents 
     FakeUow,
     _actor,
     _Env,
+    _leased_tab,
     _settings,
+    _test_clock,
 )
 
 
@@ -80,6 +82,7 @@ async def test_overwrite_reports_new_save_time_without_changing_row_creation_tim
         settings=_settings(),
     )
     await StoreExamWorkspaceUndoStepHandler(
+        clock=_test_clock(),
         vault_files=env.vault_files,
         codec=env.codec,
         store=later_store,
@@ -89,6 +92,7 @@ async def test_overwrite_reports_new_save_time_without_changing_row_creation_tim
         actor=actor,
         lineage_id=imported.summary.lineage_id,
         request=StoreExamWorkspaceUndoStepRequest(
+            tab_id=await _leased_tab(env, actor, imported.summary.lineage_id),
             expected_cursor=(
                 await env.save_handler.history(actor=actor, lineage_id=imported.summary.lineage_id)
             ).cursor,

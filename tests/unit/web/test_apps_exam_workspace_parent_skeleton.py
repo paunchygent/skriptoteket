@@ -53,6 +53,7 @@ from skriptoteket.web.middleware.error_handler import error_handler_middleware
 from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents import (
     _actor,
     _Env,
+    _leased_tab,
 )
 from tests.unit.application.curated_apps.handlers.test_exam_workspace_history_contract import (
     _undo_handler,
@@ -73,6 +74,7 @@ async def build_parent_skeleton_package() -> tuple[bytes, NativeExamDocument]:
     imported = await env.seed_document(actor=actor)
     assert imported.document.origin.kind == "docx_import"
     lineage_id = imported.document.document_id
+    tab = str(await _leased_tab(env, actor, lineage_id))
     undo_steps = _undo_handler(env)
     handler = ExamWorkspaceParentsHandler(reader=env.get_handler, undo_steps=undo_steps)
     exporter = ExportExamWorkspaceDocumentHandler(
@@ -114,6 +116,7 @@ async def build_parent_skeleton_package() -> tuple[bytes, NativeExamDocument]:
                 path + "/autosaves",
                 json={
                     "expected_cursor": str(imported.history_cursor),
+                    "tab_id": tab,
                     "document": reviewed.model_dump(mode="json"),
                 },
             )
@@ -127,6 +130,7 @@ async def build_parent_skeleton_package() -> tuple[bytes, NativeExamDocument]:
                 path + "/autosaves",
                 json={
                     "expected_cursor": str(saved_initial.history.cursor),
+                    "tab_id": tab,
                     "document": draft.model_dump(mode="json"),
                 },
             )
@@ -155,6 +159,7 @@ async def build_parent_skeleton_package() -> tuple[bytes, NativeExamDocument]:
                 path + "/parents",
                 json={
                     "expected_cursor": str(cursor),
+                    "tab_id": tab,
                     "instruction": [
                         p.model_dump(mode="json") for p in plain_body("Fyll i rätt form av verbet")
                     ],
@@ -192,6 +197,7 @@ async def build_parent_skeleton_package() -> tuple[bytes, NativeExamDocument]:
                 path + f"/parents/{parent_id}/children",
                 json={
                     "expected_cursor": str(created.history_cursor),
+                    "tab_id": tab,
                     "child": child,
                     "position": 1,
                 },
@@ -215,6 +221,7 @@ async def build_parent_skeleton_package() -> tuple[bytes, NativeExamDocument]:
                 path + f"/parents/{parent_id}/children",
                 json={
                     "expected_cursor": str(created.history_cursor),
+                    "tab_id": tab,
                     "child": child,
                     "position": 0,
                 },
@@ -248,6 +255,7 @@ async def build_parent_skeleton_package() -> tuple[bytes, NativeExamDocument]:
                 path + f"/parents/{parent_id}/children",
                 json={
                     "expected_cursor": str(added.history_cursor),
+                    "tab_id": tab,
                     "child": third,
                     "position": 2,
                 },
@@ -259,6 +267,7 @@ async def build_parent_skeleton_package() -> tuple[bytes, NativeExamDocument]:
                 path + f"/parents/{parent_id}/children/order",
                 json={
                     "expected_cursor": str(extended.history_cursor),
+                    "tab_id": tab,
                     "item_ids": [first_id, third_id, second_id],
                 },
             )
@@ -269,7 +278,7 @@ async def build_parent_skeleton_package() -> tuple[bytes, NativeExamDocument]:
             response = await client.request(
                 "DELETE",
                 path + f"/parents/{parent_id}/children/{third_id}",
-                json={"expected_cursor": str(reordered.history_cursor)},
+                json={"expected_cursor": str(reordered.history_cursor), "tab_id": tab},
             )
             assert response.status_code == 200, response.text
             reduced = ExamWorkspaceDocumentResponse.model_validate(response.json())
@@ -298,6 +307,7 @@ async def build_parent_skeleton_package() -> tuple[bytes, NativeExamDocument]:
                 path + f"/parents/{parent_id}/children/order",
                 json={
                     "expected_cursor": str(reduced.history_cursor),
+                    "tab_id": tab,
                     "item_ids": [first_id, second_id],
                 },
             )

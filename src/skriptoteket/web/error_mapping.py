@@ -17,6 +17,7 @@ ERROR_CODE_TO_STATUS: dict[ErrorCode, int] = {
     ErrorCode.USER_NOT_FOUND: 404,
     ErrorCode.CONFLICT: 409,
     ErrorCode.DUPLICATE_ENTRY: 409,
+    ErrorCode.EDIT_LEASE_HELD: 409,
     ErrorCode.TOO_MANY_REQUESTS: 429,
     ErrorCode.PAYLOAD_TOO_LARGE: 413,
     ErrorCode.UNSUPPORTED_MEDIA_TYPE: 415,

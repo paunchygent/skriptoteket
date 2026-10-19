@@ -27,6 +27,9 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_documents imp
     GetExamWorkspaceConversionStatusHandler,
     GetExamWorkspaceDocumentHandler,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_edit_lease import (
+    ExamWorkspaceEditLeaseHandler,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_undo_steps import (
     StoreExamWorkspaceUndoStepHandler,
 )
@@ -80,6 +83,8 @@ class ConversionWorld:
     def __init__(
         self, session: AsyncSession, storage: LocalVaultStorage, clock: FixedClock
     ) -> None:
+        self.clock = clock
+        self.edit_tabs: dict[tuple[UUID, UUID], UUID] = {}
         self.uow = SQLAlchemyUnitOfWork(session)
         self.jobs = PostgreSQLExamAnswerKeyEnrichmentJobRepository(session)
         self.vault_files = PostgreSQLUserVaultFileRepository(session)
@@ -131,15 +136,30 @@ class ConversionWorld:
             store=self.store,
             jobs=self.jobs,
             id_generator=Ids(),
+            clock=self.clock,
         ).handle(
             actor=actor,
             lineage_id=document.document_id,
             request=StoreExamWorkspaceUndoStepRequest(
                 expected_cursor=history.cursor,
                 document=document,
+                tab_id=await lease_tab(self, actor, document.document_id),
             ),
         )
         return await self.opened(actor, document.document_id)
+
+
+async def lease_tab(world: ConversionWorld, actor: User, lineage: UUID) -> UUID:
+    """Claim the edit lease for one tab per exam, like the editor's heartbeat."""
+    key = (actor.id, lineage)
+    tab = world.edit_tabs.get(key)
+    if tab is None:
+        tab = uuid4()
+        await ExamWorkspaceEditLeaseHandler(
+            vault_files=world.vault_files, store=world.store, clock=world.clock
+        ).claim(actor=actor, lineage_id=lineage, tab_id=tab)
+        world.edit_tabs[key] = tab
+    return tab
 
 
 def batch(lineage_id: UUID, *, q2: str | None, q3: str | None) -> ConversionUpdate:

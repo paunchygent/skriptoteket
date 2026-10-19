@@ -29,7 +29,11 @@ from skriptoteket.protocols.exam_index import ExamIndexRepositoryProtocol
 from skriptoteket.protocols.identity import ProfileRepositoryProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
 from tests.unit.application.curated_apps.handlers.exam_workspace_conversion_support import choice
-from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents import _actor, _Env
+from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents import (
+    _actor,
+    _Env,
+    _leased_tab,
+)
 from tests.unit.application.curated_apps.handlers.test_exam_workspace_history_contract import (
     _undo_handler,
 )
@@ -198,7 +202,11 @@ async def test_first_save_and_changed_course_replace_one_index_row_with_current_
     await _undo_handler(env).handle(
         actor=actor,
         lineage_id=document.document_id,
-        request=StoreExamWorkspaceUndoStepRequest(expected_cursor=history.cursor, document=changed),
+        request=StoreExamWorkspaceUndoStepRequest(
+            expected_cursor=history.cursor,
+            document=changed,
+            tab_id=await _leased_tab(env, actor, document.document_id),
+        ),
     )
     response = await env.get_handler.handle(actor=actor, lineage_id=document.document_id)
     listed = await env.list_handler.handle(actor=actor)
@@ -216,7 +224,11 @@ async def test_first_save_and_changed_course_replace_one_index_row_with_current_
     await _undo_handler(env).handle(
         actor=actor,
         lineage_id=document.document_id,
-        request=StoreExamWorkspaceUndoStepRequest(expected_cursor=history.cursor, document=cleared),
+        request=StoreExamWorkspaceUndoStepRequest(
+            expected_cursor=history.cursor,
+            document=cleared,
+            tab_id=await _leased_tab(env, actor, document.document_id),
+        ),
     )
     response = await env.get_handler.handle(actor=actor, lineage_id=document.document_id)
     assert response.summary.course_key is None

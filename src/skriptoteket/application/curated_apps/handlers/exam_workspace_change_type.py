@@ -53,12 +53,15 @@ class ChangeExamWorkspaceItemTypeHandler:
             target_kind=request.target_kind,
             rng=self._rng,
         )
-        # The existing seam checks the cursor again atomically with the autosave.
+        # The existing seam checks the cursor and the editing tab's lease again
+        # atomically with the autosave.
         await self._undo_steps.handle(
             actor=actor,
             lineage_id=lineage_id,
             request=StoreExamWorkspaceUndoStepRequest(
-                expected_cursor=request.expected_cursor, document=result.document
+                expected_cursor=request.expected_cursor,
+                document=result.document,
+                tab_id=request.tab_id,
             ),
         )
         # The step also overwrote the exam file, so the pre-store read is stale: reopen.

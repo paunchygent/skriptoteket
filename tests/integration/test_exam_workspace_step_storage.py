@@ -28,7 +28,11 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
 from skriptoteket.domain.identity.models import User
 from skriptoteket.infrastructure.vault.local_vault_storage import LocalVaultStorage
 from tests.fixtures.time_fixtures import FixedClock
-from tests.integration.exam_workspace_conversion_support import ConversionWorld, Ids
+from tests.integration.exam_workspace_conversion_support import (
+    ConversionWorld,
+    Ids,
+    lease_tab,
+)
 from tests.integration.exam_workspace_repair_support import editor, seed_exam
 from tests.integration.infrastructure.repositories.exam_workspace_test_support import create_owner
 
@@ -76,6 +80,7 @@ def _pictured(document: NativeExamDocument, asset: NativeExamAsset) -> NativeExa
 
 def _steps(world: ConversionWorld) -> StoreExamWorkspaceUndoStepHandler:
     return StoreExamWorkspaceUndoStepHandler(
+        clock=world.clock,
         vault_files=world.vault_files,
         codec=world.codec,
         store=world.store,
@@ -89,7 +94,11 @@ async def _store(world: ConversionWorld, actor: User, lineage: UUID, document: N
     return await _steps(world).handle(
         actor=actor,
         lineage_id=lineage,
-        request=StoreExamWorkspaceUndoStepRequest(expected_cursor=cursor, document=document),
+        request=StoreExamWorkspaceUndoStepRequest(
+            expected_cursor=cursor,
+            document=document,
+            tab_id=await lease_tab(world, actor, lineage),
+        ),
     )
 
 
@@ -137,6 +146,7 @@ async def test_step_storage_keeps_100_steps_and_drops_oldest_on_real_database(
                 actor=actor,
                 lineage_id=lineage,
                 request=StoreExamWorkspaceUndoStepRequest(
+                    tab_id=await lease_tab(world, actor, lineage),
                     expected_cursor=cursor,
                     document=seeded.model_copy(update={"title": f"Redigering {index}"}),
                 ),
@@ -213,7 +223,9 @@ async def test_undo_across_picture_change_keeps_picture_on_real_database(
             actor=actor,
             lineage_id=lineage,
             request=MoveExamWorkspaceHistoryPositionRequest(
-                expected_cursor=history.cursor, step_id=lineage
+                tab_id=await lease_tab(world, actor, lineage),
+                expected_cursor=history.cursor,
+                step_id=lineage,
             ),
         )
         reopened = await world.opened(actor, lineage)
@@ -262,6 +274,7 @@ async def test_trim_removes_orphan_picture_but_keeps_baseline_picture_on_real_da
                 actor=actor,
                 lineage_id=lineage,
                 request=StoreExamWorkspaceUndoStepRequest(
+                    tab_id=await lease_tab(world, actor, lineage),
                     expected_cursor=cursor,
                     document=plain.model_copy(update={"title": f"Utan bild {index}"}),
                 ),

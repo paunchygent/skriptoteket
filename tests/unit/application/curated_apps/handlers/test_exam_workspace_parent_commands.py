@@ -35,7 +35,11 @@ from skriptoteket.domain.identity.models import User
 from skriptoteket.protocols.exam_workspace import GetExamWorkspaceDocumentHandlerProtocol
 from skriptoteket.protocols.exam_workspace_history import StoreExamWorkspaceUndoStepHandlerProtocol
 from tests.fixtures.identity_fixtures import make_user
-from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents import _actor, _Env
+from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents import (
+    _actor,
+    _Env,
+    _leased_tab,
+)
 from tests.unit.application.curated_apps.handlers.test_exam_workspace_history_contract import (
     _undo_handler,
 )
@@ -75,6 +79,7 @@ async def _invoke(
     actor: User,
     document: NativeExamDocument,
     expected_cursor: UUID,
+    tab_id: UUID,
 ) -> ExamWorkspaceDocumentResponse:
     child = NewParentChild.model_validate(document.items[0].model_dump())
     if command == "create":
@@ -86,6 +91,7 @@ async def _invoke(
                 instruction=plain_body("Teacher instruction"),
                 child=child,
                 position=0,
+                tab_id=tab_id,
             ),
         )
     if command == "add":
@@ -93,7 +99,9 @@ async def _invoke(
             actor=actor,
             lineage_id=document.document_id,
             parent_id="parent_001",
-            request=AddExamChildRequest(expected_cursor=expected_cursor, child=child, position=1),
+            request=AddExamChildRequest(
+                expected_cursor=expected_cursor, child=child, position=1, tab_id=tab_id
+            ),
         )
     if command in ("delete_parent", "cascade"):
         operation = (
@@ -105,7 +113,7 @@ async def _invoke(
             actor=actor,
             lineage_id=document.document_id,
             parent_id="parent_001",
-            request=ParentCommandRequest(expected_cursor=expected_cursor),
+            request=ParentCommandRequest(expected_cursor=expected_cursor, tab_id=tab_id),
         )
     if command == "delete":
         return await handler.delete_child(
@@ -113,14 +121,14 @@ async def _invoke(
             lineage_id=document.document_id,
             parent_id="parent_001",
             item_id="item_002",
-            request=ParentCommandRequest(expected_cursor=expected_cursor),
+            request=ParentCommandRequest(expected_cursor=expected_cursor, tab_id=tab_id),
         )
     if command == "group":
         return await handler.group_items(
             actor=actor,
             lineage_id=document.document_id,
             request=GroupExamItemsRequest(
-                expected_cursor=expected_cursor, item_ids=("item_001", "item_004")
+                expected_cursor=expected_cursor, item_ids=("item_001", "item_004"), tab_id=tab_id
             ),
         )
     if command == "move":
@@ -131,20 +139,23 @@ async def _invoke(
                 expected_cursor=expected_cursor,
                 item_id="item_001",
                 target_parent_id="parent_001",
+                tab_id=tab_id,
             ),
         )
     if command == "empty":
         return await handler.create_empty_part(
             actor=actor,
             lineage_id=document.document_id,
-            request=CreateEmptyExamPartRequest(expected_cursor=expected_cursor, position=0),
+            request=CreateEmptyExamPartRequest(
+                expected_cursor=expected_cursor, position=0, tab_id=tab_id
+            ),
         )
     return await handler.reorder_children(
         actor=actor,
         lineage_id=document.document_id,
         parent_id="parent_001",
         request=ReorderExamChildrenRequest(
-            expected_cursor=expected_cursor, item_ids=("item_003", "item_002")
+            expected_cursor=expected_cursor, item_ids=("item_003", "item_002"), tab_id=tab_id
         ),
     )
 
@@ -177,8 +188,9 @@ async def test_each_command_stores_one_step_and_reopens_the_written_file(
     reread = current.model_copy(update={"document": normalized, "history_cursor": next_cursor})
     reader.handle.side_effect = [current, reread]
     handler = ExamWorkspaceParentsHandler(reader=reader, undo_steps=undo_steps)
+    tab_id = uuid4()
 
-    response = await _invoke(handler, command, actor, document, current.history_cursor)
+    response = await _invoke(handler, command, actor, document, current.history_cursor, tab_id)
 
     assert response.document == normalized
     assert response.history_cursor == next_cursor
@@ -193,6 +205,7 @@ async def test_each_command_stores_one_step_and_reopens_the_written_file(
     assert call["lineage_id"] == document.document_id
     request = call["request"]
     assert request.expected_cursor == current.history_cursor
+    assert request.tab_id == tab_id
     # Commands always append to the newest undo step; the cursor is not a branch step ID.
     assert request.after_step_id is None
     assert request.document.document_id == document.document_id
@@ -220,7 +233,7 @@ async def test_each_command_refuses_stale_cursor_even_when_file_revision_matches
     stale_cursor = uuid4()
 
     with pytest.raises(DomainError) as error:
-        await _invoke(handler, command, actor, document, stale_cursor)
+        await _invoke(handler, command, actor, document, stale_cursor, uuid4())
 
     assert error.value.code is ErrorCode.CONFLICT
     assert error.value.details == {
@@ -246,7 +259,7 @@ async def test_atomic_seam_conflict_is_not_overwritten_or_retried(command: Comma
     handler = ExamWorkspaceParentsHandler(reader=reader, undo_steps=undo_steps)
 
     with pytest.raises(DomainError) as error:
-        await _invoke(handler, command, actor, document, current.history_cursor)
+        await _invoke(handler, command, actor, document, current.history_cursor, uuid4())
 
     assert error.value is conflict
     undo_steps.handle.assert_awaited_once()
@@ -260,8 +273,22 @@ async def test_undo_command_restores_pre_command_document_through_real_editor_se
     lineage_id = imported.summary.lineage_id
     undo_steps = _undo_handler(env)
     handler = ExamWorkspaceParentsHandler(reader=env.get_handler, undo_steps=undo_steps)
-    created = await _invoke(handler, "create", actor, imported.document, imported.history_cursor)
-    added = await _invoke(handler, "add", actor, created.document, created.history_cursor)
+    created = await _invoke(
+        handler,
+        "create",
+        actor,
+        imported.document,
+        imported.history_cursor,
+        await _leased_tab(env, actor, lineage_id),
+    )
+    added = await _invoke(
+        handler,
+        "add",
+        actor,
+        created.document,
+        created.history_cursor,
+        await _leased_tab(env, actor, lineage_id),
+    )
     assert len(added.document.parents[0].item_ids) == 2
     assert len(created.document.parents[0].item_ids) == 1
 
@@ -279,6 +306,7 @@ async def test_undo_command_restores_pre_command_document_through_real_editor_se
             document=previous.document,
             expected_cursor=added.history_cursor,
             after_step_id=previous.step_id,
+            tab_id=await _leased_tab(env, actor, lineage_id),
         ),
     )
     reopened = await env.get_handler.handle(actor=actor, lineage_id=lineage_id)
@@ -310,7 +338,9 @@ async def test_group_and_empty_name_the_created_part_and_are_each_one_undo_step(
         actor=actor,
         lineage_id=lineage_id,
         request=GroupExamItemsRequest(
-            expected_cursor=imported.history_cursor, item_ids=("item_001", "item_003")
+            expected_cursor=imported.history_cursor,
+            item_ids=("item_001", "item_003"),
+            tab_id=await _leased_tab(env, actor, lineage_id),
         ),
     )
     assert grouped.created_parent_id in {p.parent_id for p in grouped.document.parents}
@@ -319,7 +349,11 @@ async def test_group_and_empty_name_the_created_part_and_are_each_one_undo_step(
     emptied = await handler.create_empty_part(
         actor=actor,
         lineage_id=lineage_id,
-        request=CreateEmptyExamPartRequest(expected_cursor=grouped.history_cursor, position=0),
+        request=CreateEmptyExamPartRequest(
+            expected_cursor=grouped.history_cursor,
+            position=0,
+            tab_id=await _leased_tab(env, actor, lineage_id),
+        ),
     )
     assert emptied.created_parent_id != grouped.created_parent_id
     new_part = next(p for p in emptied.document.parents if p.parent_id == emptied.created_parent_id)
@@ -342,7 +376,9 @@ async def test_move_is_one_undo_step_restoring_the_exact_previous_document() -> 
         actor=actor,
         lineage_id=lineage_id,
         request=GroupExamItemsRequest(
-            expected_cursor=imported.history_cursor, item_ids=("item_001", "item_003")
+            expected_cursor=imported.history_cursor,
+            item_ids=("item_001", "item_003"),
+            tab_id=await _leased_tab(env, actor, lineage_id),
         ),
     )
     moved = await handler.move_item(
@@ -352,6 +388,7 @@ async def test_move_is_one_undo_step_restoring_the_exact_previous_document() -> 
             expected_cursor=grouped.history_cursor,
             item_id="item_005",
             target_parent_id=grouped.created_parent_id,
+            tab_id=await _leased_tab(env, actor, lineage_id),
         ),
     )
     assert moved.document.parent_of("item_005") is not None
@@ -370,6 +407,7 @@ async def test_move_is_one_undo_step_restoring_the_exact_previous_document() -> 
             document=previous.document,
             expected_cursor=moved.history_cursor,
             after_step_id=previous.step_id,
+            tab_id=await _leased_tab(env, actor, lineage_id),
         ),
     )
     reopened = await env.get_handler.handle(actor=actor, lineage_id=lineage_id)

@@ -18,6 +18,7 @@ from skriptoteket.domain.identity.models import User
 from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents import (
     _actor,
     _Env,
+    _leased_tab,
 )
 from tests.unit.application.curated_apps.handlers.test_exam_workspace_history_contract import (
     _handler,
@@ -33,7 +34,10 @@ async def _store_step(
         actor=actor,
         lineage_id=lineage,
         request=StoreExamWorkspaceUndoStepRequest(
-            expected_cursor=cursor, document=document, after_step_id=after
+            tab_id=await _leased_tab(env, actor, lineage),
+            expected_cursor=cursor,
+            document=document,
+            after_step_id=after,
         ),
     )
     return response.history.position_step_id
@@ -44,7 +48,11 @@ async def _move(env: _Env, actor: User, lineage: UUID, step: UUID) -> UUID:
     response = await _undo_handler(env).move_to_step(
         actor=actor,
         lineage_id=lineage,
-        request=MoveExamWorkspaceHistoryPositionRequest(expected_cursor=cursor, step_id=step),
+        request=MoveExamWorkspaceHistoryPositionRequest(
+            expected_cursor=cursor,
+            step_id=step,
+            tab_id=await _leased_tab(env, actor, lineage),
+        ),
     )
     return response.history.position_step_id
 
@@ -147,7 +155,9 @@ async def test_a_stale_move_is_a_conflict_and_keeps_the_file() -> None:
             actor=actor,
             lineage_id=lineage,
             request=MoveExamWorkspaceHistoryPositionRequest(
-                expected_cursor=opened.cursor, step_id=opened.step_ids[0]
+                tab_id=await _leased_tab(env, actor, lineage),
+                expected_cursor=opened.cursor,
+                step_id=opened.step_ids[0],
             ),
         )
 

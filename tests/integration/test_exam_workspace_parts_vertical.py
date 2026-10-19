@@ -90,7 +90,7 @@ from skriptoteket.web.api.v1 import apps_conversion_hub_exam_workspace_parents a
 from skriptoteket.web.auth.huleedu_app_projection import require_app_user_api
 from skriptoteket.web.middleware.error_handler import error_handler_middleware
 from tests.fixtures.time_fixtures import FixedClock
-from tests.integration.exam_workspace_conversion_support import ConversionWorld, Ids
+from tests.integration.exam_workspace_conversion_support import ConversionWorld, Ids, lease_tab
 from tests.integration.exam_workspace_repair_support import editor, seed_exam
 from tests.integration.infrastructure.repositories.exam_workspace_test_support import create_owner
 from tests.unit.domain.curated_apps.exam_workspace.examnet_qti_export_test_support import (
@@ -139,6 +139,7 @@ async def _client(world: ConversionWorld, actor: User) -> AsyncIterator[httpx.As
         store=world.store,
         jobs=world.jobs,
         id_generator=Ids(),
+        clock=world.clock,
     )
     container = make_async_container(
         PartsVerticalProvider(),
@@ -326,6 +327,7 @@ async def test_group_instruct_move_delete_then_export_all_targets(
             seeded.model_copy(update={"revision": 2, "items": items, "parents": ()}).model_dump()
         )
         path = _BASE + str(document.document_id)
+        tab = str(await lease_tab(world, actor, document.document_id))
         async with _client(world, actor) as client:
             history = ExamWorkspaceHistoryResponse.model_validate(
                 (await client.get(path + "/history")).json()
@@ -335,6 +337,7 @@ async def test_group_instruct_move_delete_then_export_all_targets(
                 json={
                     "expected_cursor": str(history.cursor),
                     "document": document.model_dump(mode="json"),
+                    "tab_id": tab,
                 },
             )
             assert response.status_code == 200, response.text
@@ -345,7 +348,11 @@ async def test_group_instruct_move_delete_then_export_all_targets(
             # Step 2: group the non-adjacent q2 and q4 into one part at q2's place.
             response = await client.post(
                 path + "/parents/group",
-                json={"expected_cursor": cursor, "item_ids": ["item_002", "item_004"]},
+                json={
+                    "expected_cursor": cursor,
+                    "item_ids": ["item_002", "item_004"],
+                    "tab_id": tab,
+                },
             )
             assert response.status_code == 200, response.text
             grouped = ExamWorkspaceCreatedPartResponse.model_validate(response.json())
@@ -381,6 +388,7 @@ async def test_group_instruct_move_delete_then_export_all_targets(
                 json={
                     "expected_cursor": str(history.cursor),
                     "document": edited.model_dump(mode="json"),
+                    "tab_id": tab,
                 },
             )
             assert response.status_code == 200, response.text
@@ -400,7 +408,12 @@ async def test_group_instruct_move_delete_then_export_all_targets(
             # Step 4: move q2 out to standalone directly after the part (R4).
             response = await client.post(
                 path + "/parents/move",
-                json={"expected_cursor": cursor, "item_id": "item_002", "target_parent_id": None},
+                json={
+                    "expected_cursor": cursor,
+                    "item_id": "item_002",
+                    "target_parent_id": None,
+                    "tab_id": tab,
+                },
             )
             assert response.status_code == 200, response.text
             moved_out = ExamWorkspaceDocumentResponse.model_validate(response.json())
@@ -420,7 +433,7 @@ async def test_group_instruct_move_delete_then_export_all_targets(
             response = await client.request(
                 "DELETE",
                 path + f"/parents/{part_id}/children/item_004",
-                json={"expected_cursor": cursor},
+                json={"expected_cursor": cursor, "tab_id": tab},
             )
             assert response.status_code == 200, response.text
             deleted = ExamWorkspaceDeleteResponse.model_validate(response.json())

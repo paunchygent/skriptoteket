@@ -32,7 +32,13 @@ from skriptoteket.infrastructure.repositories.user_vault_usage_repository import
 from skriptoteket.infrastructure.vault.local_vault_storage import LocalVaultStorage
 from skriptoteket.protocols.exam_workspace import DocxExamChunkerProtocol
 from tests.fixtures.time_fixtures import FixedClock
-from tests.integration.exam_workspace_conversion_support import WORKER, ConversionWorld, Ids, batch
+from tests.integration.exam_workspace_conversion_support import (
+    WORKER,
+    ConversionWorld,
+    Ids,
+    batch,
+    lease_tab,
+)
 from tests.integration.exam_workspace_repair_support import editor, running_exam, seed_exam
 from tests.integration.infrastructure.repositories.exam_workspace_test_support import create_owner
 
@@ -49,8 +55,10 @@ async def test_each_stored_edit_advances_the_file_and_keeps_steps_in_order(
         world = ConversionWorld(session, storage, clock)
         document = await seed_exam(world, actor)
         lineage = document.document_id
+        tab = await lease_tab(world, actor, lineage)
         opened = await world.opened(actor, lineage)
         undo = StoreExamWorkspaceUndoStepHandler(
+            clock=world.clock,
             vault_files=world.vault_files,
             codec=world.codec,
             store=world.store,
@@ -61,6 +69,7 @@ async def test_each_stored_edit_advances_the_file_and_keeps_steps_in_order(
             actor=actor,
             lineage_id=lineage,
             request=StoreExamWorkspaceUndoStepRequest(
+                tab_id=tab,
                 expected_cursor=opened.history_cursor,
                 document=document.model_copy(update={"title": "Earlier stored edit"}),
             ),
@@ -82,6 +91,7 @@ async def test_each_stored_edit_advances_the_file_and_keeps_steps_in_order(
                 actor=actor,
                 lineage_id=lineage,
                 request=StoreExamWorkspaceUndoStepRequest(
+                    tab_id=tab,
                     expected_cursor=before.cursor,
                     document=document.model_copy(update={"title": "Stale edit"}),
                 ),
@@ -89,6 +99,8 @@ async def test_each_stored_edit_advances_the_file_and_keeps_steps_in_order(
         assert stale.value.code is ErrorCode.CONFLICT
     async with session_factory() as session:
         world = ConversionWorld(session, storage, clock)
+        # Same browser tab, new server session: the tab keeps its id across reloads.
+        world.edit_tabs[(actor.id, lineage)] = tab
         reopened = await world.opened(actor, lineage)
         assert reopened.document.title == "Latest stored edit"
         assert reopened.document.revision == 3
@@ -100,6 +112,7 @@ async def test_each_stored_edit_advances_the_file_and_keeps_steps_in_order(
             :-1
         ] == before.steps
         await StoreExamWorkspaceUndoStepHandler(
+            clock=world.clock,
             vault_files=world.vault_files,
             codec=world.codec,
             store=world.store,
@@ -109,6 +122,7 @@ async def test_each_stored_edit_advances_the_file_and_keeps_steps_in_order(
             actor=actor,
             lineage_id=lineage,
             request=StoreExamWorkspaceUndoStepRequest(
+                tab_id=await lease_tab(world, actor, lineage),
                 expected_cursor=reopened.history_cursor,
                 document=reopened.document.model_copy(update={"title": "Later stored edit"}),
             ),

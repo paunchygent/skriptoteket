@@ -30,6 +30,7 @@ from tests.integration.exam_workspace_conversion_support import (
     ConversionWorld,
     Ids,
     batch,
+    lease_tab,
 )
 from tests.integration.infrastructure.repositories.exam_workspace_test_support import create_owner
 from tests.unit.application.curated_apps.handlers.exam_workspace_conversion_support import body
@@ -102,6 +103,7 @@ async def test_autosave_retains_teacher_edit_and_receives_later_converted_questi
         opened = await world.open(actor, lineage)
         changed_item = opened.items[0].model_copy(update={"body": body("Lärarens fråga ett")})
         await StoreExamWorkspaceUndoStepHandler(
+            clock=world.clock,
             vault_files=world.vault_files,
             codec=world.codec,
             store=world.store,
@@ -111,6 +113,7 @@ async def test_autosave_retains_teacher_edit_and_receives_later_converted_questi
             actor=actor,
             lineage_id=lineage,
             request=StoreExamWorkspaceUndoStepRequest(
+                tab_id=await lease_tab(world, actor, lineage),
                 expected_cursor=(
                     await _editor(world).history(actor=actor, lineage_id=lineage)
                 ).cursor,

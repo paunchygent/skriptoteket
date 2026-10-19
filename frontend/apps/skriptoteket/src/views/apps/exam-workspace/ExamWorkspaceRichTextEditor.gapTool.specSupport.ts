@@ -44,6 +44,8 @@ export type Opened = {
   updates: Array<[Body, boolean]>;
   creations: Creation[];
   activations: Array<[string, HTMLElement]>;
+  reverts: string[];
+  restores: Array<[string, number]>;
   toggles: string[];
   escapes: string[];
   setProps: (props: Partial<EditorProps>) => Promise<void>;
@@ -63,6 +65,8 @@ export async function openEditor(initial: EditorProps): Promise<Opened> {
   const updates: Array<[Body, boolean]> = [];
   const creations: Creation[] = [];
   const activations: Array<[string, HTMLElement]> = [];
+  const reverts: string[] = [];
+  const restores: Array<[string, number]> = [];
   const toggles: string[] = [];
   const escapes: string[] = [];
   const keys: ExamWorkspaceHistoryKeys = { undo: vi.fn(), redo: vi.fn(), canUndo: ref(false), canRedo: ref(false) };
@@ -84,6 +88,8 @@ export async function openEditor(initial: EditorProps): Promise<Opened> {
           onUpdate: (body: Body, structural: boolean) => updates.push([body, structural]),
           onCreateGap: (body: Body, gapId: string, seed: string) => creations.push([body, gapId, seed]),
           onActivateGap: (gapId: string, element: HTMLElement) => activations.push([gapId, element]),
+          onRevertGap: (gapId: string) => reverts.push(gapId),
+          onRestoreKeptGap: (keptGapId: string, blockIndex: number) => restores.push([keptGapId, blockIndex]),
           onToggleGapTool: () => toggles.push("toggle"),
           onEscape: () => escapes.push("escape"),
         });
@@ -109,6 +115,8 @@ export async function openEditor(initial: EditorProps): Promise<Opened> {
     updates,
     creations,
     activations,
+    reverts,
+    restores,
     toggles,
     escapes,
     setProps: async (props) => {

@@ -106,6 +106,13 @@ class ExamWorkspaceHistoryModel(Base):
     cursor: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), nullable=False)
     current_step_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), nullable=False)
     baseline_step_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), nullable=False)
+    lease_holder_tab_id: Mapped[UUID | None] = mapped_column(PGUUID(as_uuid=True), nullable=True)
+    lease_renewed_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    lease_takeover_requested_by: Mapped[UUID | None] = mapped_column(
+        PGUUID(as_uuid=True), nullable=True
+    )
 
 
 class ExamWorkspaceHistoryStepModel(Base):

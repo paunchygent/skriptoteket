@@ -36,7 +36,7 @@ from skriptoteket.web.api.v1 import apps_conversion_hub_exam_workspace_change_ty
 from skriptoteket.web.auth.huleedu_app_projection import require_app_user_api
 from skriptoteket.web.middleware.error_handler import error_handler_middleware
 from tests.fixtures.time_fixtures import FixedClock
-from tests.integration.exam_workspace_conversion_support import ConversionWorld, Ids
+from tests.integration.exam_workspace_conversion_support import ConversionWorld, Ids, lease_tab
 from tests.integration.exam_workspace_repair_support import editor, seed_exam
 from tests.integration.infrastructure.repositories.exam_workspace_test_support import create_owner
 from tests.unit.domain.curated_apps.exam_workspace.inline_choice_test_support import (
@@ -80,6 +80,7 @@ async def _client(world: ConversionWorld, actor: User) -> AsyncIterator[httpx.As
                 store=world.store,
                 id_generator=Ids(),
                 jobs=world.jobs,
+                clock=world.clock,
             ),
         },
     )
@@ -132,6 +133,7 @@ async def test_change_reopens_as_one_autosave_and_one_undo_restores_exact_questi
             }
         )
         path = _BASE + str(prepared.document_id)
+        tab = str(await lease_tab(world, actor, prepared.document_id))
         async with _client(world, actor) as client:
             cursor = (await client.get(path)).json()["history_cursor"]
             for index in range(prior_steps):
@@ -142,6 +144,7 @@ async def test_change_reopens_as_one_autosave_and_one_undo_restores_exact_questi
                         "document": seeded.model_copy(
                             update={"title": f"Earlier edit {index}"}
                         ).model_dump(mode="json"),
+                        "tab_id": tab,
                     },
                 )
                 assert response.status_code == 200, response.text
@@ -152,6 +155,7 @@ async def test_change_reopens_as_one_autosave_and_one_undo_restores_exact_questi
                 json={
                     "expected_cursor": retained_before_save["cursor"],
                     "document": prepared.model_dump(mode="json"),
+                    "tab_id": tab,
                 },
             )
             assert response.status_code == 200, response.text
@@ -171,6 +175,7 @@ async def test_change_reopens_as_one_autosave_and_one_undo_restores_exact_questi
                     json={
                         "expected_cursor": saved["history"]["cursor"],
                         "document": draft.model_dump(mode="json"),
+                        "tab_id": tab,
                     },
                 )
                 assert response.status_code == 200, response.text
@@ -181,6 +186,7 @@ async def test_change_reopens_as_one_autosave_and_one_undo_restores_exact_questi
                 "target_kind": "free_text",
                 "expected_revision": version,
                 "expected_cursor": before_history["cursor"],
+                "tab_id": tab,
             }
             response = await client.post(
                 path + "/change-type", json={**command, "expected_revision": version - 1}
@@ -250,6 +256,7 @@ async def test_change_reopens_as_one_autosave_and_one_undo_restores_exact_questi
                     "expected_cursor": history["cursor"],
                     "after_step_id": undo["step_id"],
                     "document": undo["document"],
+                    "tab_id": tab,
                 },
             )
             assert response.status_code == 200, response.text

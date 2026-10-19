@@ -12,7 +12,10 @@
  *   selection converts on mouseup. A tool click converts only the word the
  *   pointer actually hit (a click on a space or punctuation only places the
  *   caret), and a release converts only after a primary press started in
- *   this editor, so a right-click over a selection never makes a gap. The
+ *   this editor, so a right-click over a selection never makes a gap. A tool
+ *   click on a word that keeps hidden answers reports its kept link through
+ *   `keptGapAtPointer` instead of making a gap, and the second click of a
+ *   double click converts nothing. The
  *   gap tool switch is the only gap control.
  *
  * Relationships:
@@ -22,12 +25,16 @@
  */
 
 import type { Editor } from "@tiptap/core";
+import type { Mark } from "@tiptap/pm/model";
 import { TextSelection } from "@tiptap/pm/state";
 import type { EditorView } from "@tiptap/pm/view";
 import type { Ref } from "vue";
 
-import { EXAM_GAP_NODE, EXAM_PICTURE_NODE } from "./examWorkspaceRichTextSchema";
+import { EXAM_GAP_NODE, EXAM_KEPT_GAP_MARK, EXAM_PICTURE_NODE } from "./examWorkspaceRichTextSchema";
 import { wordRangeAtDocCharacter, wordRangeAtDocPosition } from "./examWorkspaceGapWord";
+
+/** A kept link the pointer hit: its kept id and the clicked block's index. */
+export type KeptGapHit = { keptGapId: string; blockIndex: number };
 
 export function useExamWorkspaceMakeGap(options: {
   editor: Ref<Editor | undefined>;
@@ -41,6 +48,7 @@ export function useExamWorkspaceMakeGap(options: {
   handleMakeGapClick: (view: EditorView, pos: number, event: MouseEvent) => boolean;
   handleGapToolMouseDown: (event: MouseEvent) => void;
   handleGapToolMouseUp: (event: MouseEvent) => void;
+  keptGapAtPointer: (view: EditorView, pos: number, event: MouseEvent) => KeptGapHit | null;
 } {
   /** Set while a gap replacement dispatches, so its one change emits `createGap`. */
   let gapCreation: { gapId: string; seed: string } | null = null;
@@ -119,6 +127,9 @@ export function useExamWorkspaceMakeGap(options: {
 
   /** A tool-off click only places the caret: the tool is the only gap control. */
   function handleMakeGapClick(view: EditorView, pos: number, event: MouseEvent): boolean {
+    if (event instanceof MouseEvent && event.detail > 1) {
+      return false;
+    }
     const gapId = options.nextGapId();
     if (!options.canMakeGap() || typeof gapId !== "string") {
       return false;
@@ -138,21 +149,17 @@ export function useExamWorkspaceMakeGap(options: {
   }
 
   /**
-   * The word the pointer hit while the gap tool is on, or null when the
-   * pointer is on a separator or its character cannot be told apart. The
-   * click position is a caret between two characters; the pointer is on one
-   * of those two neighbours exactly when `clientX` lies between that
-   * character's two caret edges (`coordsAtPos` at its start and past its
+   * The pointer-hit document character while the gap tool is on, or null
+   * when the pointer is on a separator or its character cannot be told
+   * apart. The click position is a caret between two characters; the pointer
+   * is on one of those two neighbours exactly when `clientX` lies between
+   * that character's two caret edges (`coordsAtPos` at its start and past its
    * end). Either edge may sit left on screen: in a right-to-left run the
    * start caret is right of the end caret. A separator hit, an unreadable
    * position and a zero-width character all resolve to nothing, so
    * ProseMirror places the caret instead.
    */
-  function gapToolWordAtPointer(
-    view: EditorView,
-    pos: number,
-    event: MouseEvent,
-  ): { from: number; to: number } | null {
+  function pointerHitChar(view: EditorView, pos: number, event: MouseEvent): number | null {
     const clientX = event.clientX;
     if (!Number.isFinite(clientX)) {
       return null;
@@ -176,10 +183,110 @@ export function useExamWorkspaceMakeGap(options: {
       const hitStart = Math.min(firstEdge, secondEdge);
       const hitEnd = Math.max(firstEdge, secondEdge);
       if (clientX >= hitStart && clientX < hitEnd) {
-        return wordRangeAtDocCharacter(view.state.doc, charPos);
+        return charPos;
       }
     }
     return null;
+  }
+
+  /**
+   * The word the pointer hit while the gap tool is on, or null when the
+   * pointer hit no word character. The pointer check is `pointerHitChar`;
+   * the word around it comes from `examWorkspaceGapWord`.
+   */
+  function gapToolWordAtPointer(
+    view: EditorView,
+    pos: number,
+    event: MouseEvent,
+  ): { from: number; to: number } | null {
+    const charPos = pointerHitChar(view, pos, event);
+    if (charPos === null) {
+      return null;
+    }
+    return wordRangeAtDocCharacter(view.state.doc, charPos);
+  }
+
+  /** Whether a ProseMirror node's marks carry the kept link `keptGapId`. */
+  function carriesKeptLink(node: { marks: readonly Mark[] }, keptGapId: string): boolean {
+    return node.marks.some(
+      (mark) => mark.type.name === EXAM_KEPT_GAP_MARK && mark.attrs.keptGapId === keptGapId,
+    );
+  }
+
+  /**
+   * The kept link the pointer hit while the gap tool is on: its kept id and
+   * the clicked block's index among that id's contiguous kept blocks in
+   * document order, matching the block order `withKeptGapRestored` restores
+   * from. Null while the tool is off, on a non-primary button, when the
+   * pointer hit no kept character, or on the second click of a double click.
+   */
+  function keptGapAtPointer(view: EditorView, pos: number, event: MouseEvent): KeptGapHit | null {
+    if (!options.gapTool()) {
+      return null;
+    }
+    if (event instanceof MouseEvent && (event.button !== 0 || event.detail > 1)) {
+      return null;
+    }
+    const charPos = pointerHitChar(view, pos, event);
+    if (charPos === null) {
+      return null;
+    }
+    let hit: string | null = null;
+    view.state.doc.nodesBetween(charPos, charPos + 1, (node) => {
+      if (!node.isText) {
+        return true;
+      }
+      for (const mark of node.marks) {
+        if (mark.type.name === EXAM_KEPT_GAP_MARK && typeof mark.attrs.keptGapId === "string") {
+          hit = mark.attrs.keptGapId;
+          return false;
+        }
+      }
+      return false;
+    });
+    if (hit === null) {
+      return null;
+    }
+    const keptGapId: string = hit;
+    let current = -1;
+    let clicked = -1;
+    let inBlock = false;
+    view.state.doc.descendants((node, nodePos) => {
+      if (node.isTextblock) {
+        inBlock = false;
+        return true;
+      }
+      if (node.type.name === "hardBreak") {
+        if (!carriesKeptLink(node, keptGapId)) {
+          inBlock = false;
+        }
+        return false;
+      }
+      if (node.isText) {
+        if (carriesKeptLink(node, keptGapId)) {
+          if (!inBlock) {
+            current += 1;
+            inBlock = true;
+          }
+          const length = node.text?.length ?? 0;
+          if (nodePos <= charPos && charPos < nodePos + length) {
+            clicked = current;
+          }
+        } else {
+          inBlock = false;
+        }
+        return false;
+      }
+      if (node.isAtom) {
+        inBlock = false;
+        return false;
+      }
+      return true;
+    });
+    if (clicked < 0) {
+      return null;
+    }
+    return { keptGapId, blockIndex: clicked };
   }
 
   /** True after a primary press started in this editor; cleared on every release. */
@@ -229,5 +336,6 @@ export function useExamWorkspaceMakeGap(options: {
     handleMakeGapClick,
     handleGapToolMouseDown,
     handleGapToolMouseUp,
+    keptGapAtPointer,
   };
 }

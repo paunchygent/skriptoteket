@@ -153,8 +153,8 @@ function clickWord(harness: Harness, word: string): void {
   dispatchGapToolClick(editor, pos, gapPointerMiddle(pos));
 }
 
-/** Activate a gap as a click on its chip does, through the view's own click handler. */
-function clickGapChip(harness: Harness, gapId: string): void {
+/** Select a gap chip as the keyboard does, so Enter opens its popover. */
+function selectGap(harness: Harness, gapId: string): void {
   const editor = innerEditor(harness);
   let pos = -1;
   editor.state.doc.descendants((node, nodePos) => {
@@ -166,13 +166,11 @@ function clickGapChip(harness: Harness, gapId: string): void {
   if (pos < 0) {
     throw new Error(`no gap ${gapId}`);
   }
-  const node = editor.state.doc.nodeAt(pos);
-  if (!node) {
-    throw new Error(`no gap ${gapId}`);
-  }
-  editor.view.someProp("handleClickOn", (handler) =>
-    handler(editor.view, pos, node, pos, new MouseEvent("click"), true),
-  );
+  editor.commands.setNodeSelection(pos);
+}
+
+function pressEnter(target: HTMLElement): void {
+  target.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true }));
 }
 
 function dispatchEscape(target: HTMLElement, init: KeyboardEventInit = {}): void {
@@ -227,7 +225,7 @@ function requireInput(element: Element | null, what: string): HTMLInputElement {
 
 /**
  * Switch the tool on, make one gap with a tool click, and open its popover
- * with a chip click. Returns the made gap's id.
+ * with Enter on the selected gap. Returns the made gap's id.
  */
 async function openToolMadePopover(harness: Harness): Promise<string> {
   await toolToggle(harness).trigger("click");
@@ -242,7 +240,8 @@ async function openToolMadePopover(harness: Harness): Promise<string> {
   expect(gapId).toBe("gap_001");
   expect(popoverExists()).toBe(false);
 
-  clickGapChip(harness, "gap_001");
+  selectGap(harness, "gap_001");
+  pressEnter(surfaceOf(harness));
   await settle();
   expect(popoverExists()).toBe(true);
   return "gap_001";
@@ -338,7 +337,8 @@ describe("ExamWorkspaceBodyEditor gap tool Escape", () => {
     await settle();
     expect(toolPressed(harness)).toBe("true");
 
-    clickGapChip(harness, "gap_001");
+    selectGap(harness, "gap_001");
+    pressEnter(surfaceOf(harness));
     await settle();
     expect(popoverExists()).toBe(true);
 
@@ -425,7 +425,8 @@ describe("ExamWorkspaceBodyEditor gap tool Escape", () => {
     await settle();
     expect(toolPressed(harness)).toBe("true");
 
-    clickGapChip(harness, "gap_002");
+    selectGap(harness, "gap_002");
+    pressEnter(surfaceOf(harness));
     await settle();
     expect(popoverExists()).toBe(true);
 

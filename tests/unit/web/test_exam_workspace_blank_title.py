@@ -15,7 +15,11 @@ from skriptoteket.application.curated_apps.exam_workspace_history import (
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_export_rules import (
     NativeExportBlocker,
 )
-from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents import _actor, _Env
+from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents import (
+    _actor,
+    _Env,
+    _leased_tab,
+)
 from tests.unit.application.curated_apps.handlers.test_exam_workspace_history_contract import (
     _undo_handler,
 )
@@ -30,6 +34,7 @@ async def test_autosave_stores_a_blank_title_and_returns_the_title_blocker(title
     actor = _actor()
     imported = await env.seed_document(actor=actor)
     app, container = _app(env, actor, _undo_handler(env))
+    tab = str(await _leased_tab(env, actor, imported.summary.lineage_id))
     path = (
         "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/"
         f"{imported.summary.lineage_id}"
@@ -43,6 +48,7 @@ async def test_autosave_stores_a_blank_title_and_returns_the_title_blocker(title
                 json={
                     "expected_cursor": str(imported.history_cursor),
                     "document": imported.document.model_dump(mode="json") | {"title": title},
+                    "tab_id": tab,
                 },
             )
             assert blank.status_code == 200, blank.text
@@ -63,6 +69,7 @@ async def test_autosave_stores_a_blank_title_and_returns_the_title_blocker(title
                 json={
                     "expected_cursor": str(stored.history.cursor),
                     "document": imported.document.model_dump(mode="json") | {"title": "Prov 1"},
+                    "tab_id": tab,
                 },
             )
             assert titled.status_code == 200, titled.text

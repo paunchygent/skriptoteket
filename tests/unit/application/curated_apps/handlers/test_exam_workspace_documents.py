@@ -22,6 +22,9 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_documents imp
     SaveExamWorkspaceDocumentHandler,
     document_summary,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_edit_lease import (
+    ExamWorkspaceEditLeaseHandler,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_saved_index import (
     ListExamWorkspaceDocumentsHandler,
 )
@@ -113,6 +116,11 @@ def _settings() -> Settings:
     )
 
 
+def _test_clock() -> FixedClock:
+    """Frozen test time shared by the lease claim and the step guard."""
+    return FixedClock(_NOW)
+
+
 class _Env:
     def __init__(self) -> None:
         self.vault_files = LineageVaultFileRepository()
@@ -128,6 +136,7 @@ class _Env:
         )
         self.ids = SequenceIdGenerator([uuid4() for _ in range(10)])
         self.enrichment_jobs = InMemoryEnrichmentJobRepository()
+        self.edit_tabs: dict[tuple[UUID, UUID], UUID] = {}
         self.store = ExamWorkspaceDocumentStore(
             vault_files=self.vault_files,
             vault_usage=self.vault_usage,
@@ -193,7 +202,21 @@ def _steps(env: _Env) -> StoreExamWorkspaceUndoStepHandler:
         store=env.store,
         id_generator=SequenceIdGenerator([uuid4() for _ in range(100)]),
         jobs=env.enrichment_jobs,
+        clock=FixedClock(_NOW),
     )
+
+
+async def _leased_tab(env: _Env, actor: User, lineage: UUID) -> UUID:
+    """Claim the edit lease for one tab per exam, like the editor's heartbeat."""
+    key = (actor.id, lineage)
+    tab = env.edit_tabs.get(key)
+    if tab is None:
+        tab = uuid4()
+        await ExamWorkspaceEditLeaseHandler(
+            vault_files=env.vault_files, store=env.store, clock=FixedClock(_NOW)
+        ).claim(actor=actor, lineage_id=lineage, tab_id=tab)
+        env.edit_tabs[key] = tab
+    return tab
 
 
 async def _store_step(env: _Env, actor: User, lineage: UUID, document: NativeExamDocument) -> None:
@@ -201,7 +224,11 @@ async def _store_step(env: _Env, actor: User, lineage: UUID, document: NativeExa
     await _steps(env).handle(
         actor=actor,
         lineage_id=lineage,
-        request=StoreExamWorkspaceUndoStepRequest(expected_cursor=cursor, document=document),
+        request=StoreExamWorkspaceUndoStepRequest(
+            expected_cursor=cursor,
+            document=document,
+            tab_id=await _leased_tab(env, actor, lineage),
+        ),
     )
 
 

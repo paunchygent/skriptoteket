@@ -27,6 +27,8 @@ from tests.unit.application.curated_apps.handlers.test_conversion_hub_jobs impor
 from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents import (
     _actor,
     _Env,
+    _leased_tab,
+    _test_clock,
 )
 from tests.unit.application.curated_apps.handlers.test_exam_workspace_history_contract import (
     _handler,
@@ -111,7 +113,11 @@ async def _store(env: _Env, actor: User, lineage: UUID, document: NativeExamDocu
     response = await _undo_handler(env).handle(
         actor=actor,
         lineage_id=lineage,
-        request=StoreExamWorkspaceUndoStepRequest(expected_cursor=cursor, document=document),
+        request=StoreExamWorkspaceUndoStepRequest(
+            expected_cursor=cursor,
+            document=document,
+            tab_id=await _leased_tab(env, actor, lineage),
+        ),
     )
     return response.history.position_step_id
 
@@ -221,7 +227,11 @@ async def test_position_move_updates_only_the_history_row() -> None:
     await _undo_handler(env).move_to_step(
         actor=actor,
         lineage_id=lineage,
-        request=MoveExamWorkspaceHistoryPositionRequest(expected_cursor=cursor, step_id=first),
+        request=MoveExamWorkspaceHistoryPositionRequest(
+            expected_cursor=cursor,
+            step_id=first,
+            tab_id=await _leased_tab(env, actor, lineage),
+        ),
     )
 
     assert _step_rows(env, actor, lineage) == before
@@ -239,6 +249,7 @@ async def test_undo_across_a_picture_change_keeps_the_picture() -> None:
 
     assert restored.document.assets == (asset,)
     served = await StoreExamWorkspaceUndoStepHandler(
+        clock=_test_clock(),
         vault_files=env.vault_files,
         codec=env.codec,
         store=env.store,
@@ -248,6 +259,7 @@ async def test_undo_across_a_picture_change_keeps_the_picture() -> None:
         actor=actor,
         lineage_id=lineage,
         request=MoveExamWorkspaceHistoryPositionRequest(
+            tab_id=await _leased_tab(env, actor, lineage),
             expected_cursor=(await _handler(env).history(actor=actor, lineage_id=lineage)).cursor,
             step_id=lineage,
         ),

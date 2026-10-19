@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import zlib
+from datetime import datetime
 from typing import Self
 from uuid import UUID
 
@@ -128,6 +129,8 @@ class StoreExamWorkspaceUndoStepRequest(BaseModel):
     expected_cursor: UUID
     document: NativeExamDocument
     after_step_id: UUID | None = None
+    tab_id: UUID
+    """The editing tab's id; the server refuses a store from a tab without the lease."""
 
 
 class MoveExamWorkspaceHistoryPositionRequest(BaseModel):
@@ -137,6 +140,38 @@ class MoveExamWorkspaceHistoryPositionRequest(BaseModel):
 
     expected_cursor: UUID
     step_id: UUID
+    tab_id: UUID
+    """The editing tab's id; the server refuses a move from a tab without the lease."""
+
+
+class ExamWorkspaceEditLease(BaseModel):
+    """One editing tab's server lease, stored next to the exam's history head."""
+
+    model_config = ConfigDict(frozen=True)
+
+    holder_tab_id: UUID | None = None
+    renewed_at: datetime | None = None
+    takeover_requested_by: UUID | None = None
+
+
+class ExamWorkspaceEditLeaseRequest(BaseModel):
+    """One lease operation for the calling tab: claim, renew, takeover or release."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    tab_id: UUID
+
+
+class ExamWorkspaceEditLeaseResponse(BaseModel):
+    """The lease after one operation; the holder renews while a waiter is named."""
+
+    model_config = ConfigDict(frozen=True)
+
+    holder_tab_id: UUID | None
+    renewed_at: datetime | None
+    takeover_requested_by: UUID | None
+    takeover_requested: bool
+    """Whether another tab waits for the lease; the holder stores and releases."""
 
 
 class SaveAsExamWorkspaceDocumentRequest(BaseModel):

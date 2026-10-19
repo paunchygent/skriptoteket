@@ -52,6 +52,9 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_retry im
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_serial_uow import (
     SerializedUnitOfWork,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_edit_lease import (
+    ExamWorkspaceEditLeaseHandler,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_export_renderer import (
     ExamWorkspaceExportRenderer,
 )
@@ -108,6 +111,7 @@ from skriptoteket.protocols.exam_workspace import (
     SaveExamWorkspaceDocumentHandlerProtocol,
 )
 from skriptoteket.protocols.exam_workspace_history import (
+    ExamWorkspaceEditLeaseHandlerProtocol,
     StoreExamWorkspaceUndoStepHandlerProtocol,
 )
 from skriptoteket.protocols.exam_workspace_parents import ExamWorkspaceParentsHandlerProtocol
@@ -403,6 +407,7 @@ class ExamWorkspaceProvider(Provider):
         store: ExamWorkspaceDocumentStore,
         id_generator: IdGeneratorProtocol,
         jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
+        clock: ClockProtocol,
     ) -> StoreExamWorkspaceUndoStepHandlerProtocol:
         return StoreExamWorkspaceUndoStepHandler(
             vault_files=vault_files,
@@ -410,7 +415,18 @@ class ExamWorkspaceProvider(Provider):
             store=store,
             id_generator=id_generator,
             jobs=jobs,
+            clock=clock,
         )
+
+    @provide(scope=Scope.REQUEST)
+    def edit_lease_handler(
+        self,
+        vault_files: VaultFileRepositoryProtocol,
+        store: ExamWorkspaceDocumentStore,
+        clock: ClockProtocol,
+    ) -> ExamWorkspaceEditLeaseHandlerProtocol:
+        """Provide one exam's edit lease: claim, heartbeat renew, takeover and release."""
+        return ExamWorkspaceEditLeaseHandler(vault_files=vault_files, store=store, clock=clock)
 
     @provide(scope=Scope.REQUEST)
     def save_handler(

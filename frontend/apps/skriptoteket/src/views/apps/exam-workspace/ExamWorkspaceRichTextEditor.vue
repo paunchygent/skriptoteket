@@ -25,10 +25,16 @@
  *   one new gap in one `createGap` event, never an `update`. While the
  *   optional `gapTool` prop is
  *   true, a click on the pointer-hit word or a primary drag selection inside
- *   one paragraph becomes a gap at once through the same replacement:
+ *   one paragraph becomes a gap at once through the same replacement, and
+ *   Enter on a non-empty keyboard selection does the same:
  *   a click on a space or punctuation only places
  *   the caret, and a release converts only after a primary press started in
- *   this editor. Escape in the surface reaches the owner as `escape`,
+ *   this editor. The second click of a double click converts nothing. Still
+ *   with the tool on, a click on a gap emits `revertGap` instead of opening
+ *   its popover, Enter or Space on a selected gap still opens its popover,
+ *   a click on a kept word emits `restoreKeptGap` with the clicked block's
+ *   index, and kept words show the kept underline and tooltip. Escape in the
+ *   surface reaches the owner as `escape`,
  *   so the owner closes a popover first and
  *   the tool second.
  *
@@ -45,7 +51,7 @@
  */
 
 import { EditorContent, useEditor } from "@tiptap/vue-3";
-import { NodeSelection } from "@tiptap/pm/state";
+import { NodeSelection, TextSelection } from "@tiptap/pm/state";
 import { computed, onBeforeUnmount, ref, watch } from "vue";
 import type { Ref } from "vue";
 
@@ -115,6 +121,10 @@ const emit = defineEmits<{
   update: [body: NativeExamBodyParagraph[], structural: boolean];
   /** One new gap replaced text at the caret: the owner adds the gap record. */
   createGap: [body: NativeExamBodyParagraph[], gapId: string, seed: string];
+  /** With the tool on, a click on a gap reverts it through the owner. */
+  revertGap: [gapId: string];
+  /** With the tool on, a click on a kept word restores its gap through the owner. */
+  restoreKeptGap: [keptGapId: string, blockIndex: number];
   activateGap: [gapId: string, element: HTMLElement];
   /** Ctrl+Alt+G (Cmd+Option+G on macOS) in an editor whose gaps are interactive. */
   toggleGapTool: [];
@@ -154,6 +164,7 @@ const editor = useEditor({
   extensions: examRichTextExtensions({
     gapState: (gapId) => props.gapStates?.[gapId] ?? UNKNOWN_GAP,
     pictureUrl: (assetId) => props.assetUrls?.[assetId],
+    keptGapToolOn: () => props.gapTool,
     onUndo: () => historyKeys?.undo(),
     onRedo: () => historyKeys?.redo(),
     onToggleGapTool: () => {
@@ -166,18 +177,33 @@ const editor = useEditor({
   }),
   editorProps: {
     attributes: surfaceAttributes(),
-    handleClickOn: (view, _pos, node, nodePos) => {
+    handleClickOn: (view, _pos, node, nodePos, event) => {
       if (node.type.name !== EXAM_GAP_NODE || !props.gapsInteractive || props.disabled) {
+        return false;
+      }
+      if (event instanceof MouseEvent && event.detail > 1) {
         return false;
       }
       const element = view.nodeDOM(nodePos);
       if (!(element instanceof HTMLElement)) {
         return false;
       }
+      if (props.gapTool) {
+        emit("revertGap", String(node.attrs.gapId));
+        return true;
+      }
       emit("activateGap", String(node.attrs.gapId), element);
       return true;
     },
     handleClick: (view, pos, event) => {
+      if (event instanceof MouseEvent && event.detail > 1) {
+        return false;
+      }
+      const kept = keptGapAtPointer(view, pos, event);
+      if (kept !== null) {
+        emit("restoreKeptGap", kept.keptGapId, kept.blockIndex);
+        return true;
+      }
       return handleMakeGapClick(view, pos, event);
     },
     handleDOMEvents: {
@@ -198,6 +224,16 @@ const editor = useEditor({
       if (event.key === "Escape") {
         emit("escape");
         return false;
+      }
+      if (event.key === "Enter" && props.gapTool && canMakeGap()) {
+        const { selection } = view.state;
+        if (selection instanceof TextSelection && !selection.empty) {
+          const gapId = props.nextGapId;
+          if (typeof gapId === "string") {
+            makeGap(gapId);
+            return true;
+          }
+        }
       }
       const { selection } = view.state;
       if (
@@ -248,6 +284,7 @@ const {
   handleMakeGapClick,
   handleGapToolMouseDown,
   handleGapToolMouseUp,
+  keptGapAtPointer,
 } = useExamWorkspaceMakeGap({
   editor,
   canMakeGap,
@@ -337,12 +374,12 @@ watch(
   },
 );
 
-/** Redraw gap labels and pictures in place, without a document change. */
+/** Redraw gap labels, pictures and the kept underline in place, without a document change. */
 function redrawAtoms(): void {
   const view = editor.value?.view;
   view?.dispatch(view.state.tr.setMeta(ATOM_STATE_KEY, true));
 }
-watch(() => [props.gapStates, props.assetUrls], redrawAtoms, { deep: true });
+watch(() => [props.gapStates, props.assetUrls, props.gapTool], redrawAtoms, { deep: true });
 
 function setSurfaceAttribute(name: string, value: string | undefined): void {
   const surface = editor.value?.view.dom;
@@ -389,3 +426,12 @@ defineExpose({
     />
   </div>
 </template>
+
+<style>
+/* A word that keeps hidden gap answers, while the gap tool is on: the gap
+   chip's navy tone as a faint dotted underline. */
+.xw-kept-gap {
+  text-decoration: underline dotted var(--huleedu-navy-30);
+  text-underline-offset: 2px;
+}
+</style>

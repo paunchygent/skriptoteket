@@ -1,5 +1,5 @@
 /** Contract D2/D6/D8: teacher transitions preserve source text and item points. */
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import type { NativeExamItem } from "../../../api/examWorkspace";
 import { hasInvalidAnswerKey } from "./examWorkspaceAnswerKeyRules";
@@ -17,7 +17,9 @@ import {
   withGapValues,
   withoutAutomaticValue,
 } from "./examWorkspaceGapEdits";
+import { withGapReverted, withKeptGapRestored } from "./examWorkspaceKeptGapEdits";
 import { plainBody } from "./examWorkspaceRichText";
+import { useExamWorkspaceItemEdits } from "./useExamWorkspaceItemEdits";
 import { placedGapIds } from "./examWorkspaceRichTextDocument";
 import { buildMatchingItem } from "./examWorkspaceMatchingItem.specSupport";
 
@@ -170,5 +172,51 @@ describe("undoing an interpreted dropdown key", () => {
   it("is offered for an interpreted gap_fill and not for a teacher-authored one", () => {
     expect(canUndoInterpretation(interpretedGap())).toBe(true);
     expect(canUndoInterpretation(gapItem("teacher_authored", [["gap_001", ["x"]]], null))).toBe(false);
+  });
+});
+
+describe("gap revert and restore commands", () => {
+  function commands() {
+    const patchItem = vi.fn(
+      (
+        _itemId: string,
+        _patch: (item: NativeExamItem) => NativeExamItem,
+        _structural?: boolean,
+      ): boolean => true,
+    );
+    return { patchItem, editing: useExamWorkspaceItemEdits(patchItem) };
+  }
+
+  it("reverts a gap through patchItem once as structural", () => {
+    const { patchItem, editing } = commands();
+    const item = gapItem("teacher_authored", [["gap_001", ["Stockholm"]]], null);
+
+    editing.revertItemGap("item_001", "gap_001");
+
+    expect(patchItem).toHaveBeenCalledTimes(1);
+    const [itemId, patch, structural] = patchItem.mock.calls[0];
+    expect(itemId).toBe("item_001");
+    expect(structural).toBe(true);
+    expect(patch(item)).toEqual(withGapReverted(item, "gap_001"));
+    expect(patch(item).kept_gaps).toHaveLength(1);
+  });
+
+  it("restores a kept word through patchItem once as structural", () => {
+    const { patchItem, editing } = commands();
+    const item = withGapReverted(
+      gapItem("teacher_authored", [["gap_001", ["Stockholm"]]], null),
+      "gap_001",
+    );
+    const keptId = item.kept_gaps[0]?.gap_id ?? "";
+
+    editing.restoreItemKeptGap("item_001", keptId, 0);
+
+    expect(patchItem).toHaveBeenCalledTimes(1);
+    const [itemId, patch, structural] = patchItem.mock.calls[0];
+    expect(itemId).toBe("item_001");
+    expect(structural).toBe(true);
+    expect(patch(item)).toEqual(withKeptGapRestored(item, keptId, 0));
+    expect(patch(item).gaps).toHaveLength(1);
+    expect(patch(item).kept_gaps).toEqual([]);
   });
 });

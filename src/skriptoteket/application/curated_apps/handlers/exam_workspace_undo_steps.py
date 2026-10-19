@@ -4,7 +4,7 @@ The undo-step store also writes the stored document to the exam file in Mina fil
 same transaction, so the file always holds what the teacher sees. A position move sets the
 editor's snapshot without storing a step and writes that snapshot the same way.
 Relationships: file, index and usage writes run through ``ExamWorkspaceDocumentStore``;
-the cursor stays the only guard while the server assigns each file revision.
+the cursor and the editing tab's lease guard each write while the server assigns each file revision.
 """
 
 from uuid import UUID
@@ -17,12 +17,16 @@ from skriptoteket.application.curated_apps.exam_workspace_history import (
 from skriptoteket.application.curated_apps.handlers.exam_workspace_document_store import (
     ExamWorkspaceDocumentStore,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_edit_lease import (
+    require_edit_lease,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_editor_content import (
     prepare_editor_content,
     refuse_placeholder_changes,
 )
 from skriptoteket.domain.errors import DomainError, ErrorCode
 from skriptoteket.domain.identity.models import User
+from skriptoteket.protocols.clock import ClockProtocol
 from skriptoteket.protocols.exam_answer_key import ExamAnswerKeyEnrichmentJobRepositoryProtocol
 from skriptoteket.protocols.exam_workspace import ExamWorkspaceContainerCodecProtocol
 from skriptoteket.protocols.id_generator import IdGeneratorProtocol
@@ -38,12 +42,14 @@ class StoreExamWorkspaceUndoStepHandler:
         store: ExamWorkspaceDocumentStore,
         jobs: ExamAnswerKeyEnrichmentJobRepositoryProtocol,
         id_generator: IdGeneratorProtocol,
+        clock: ClockProtocol,
     ) -> None:
         self._vault_files = vault_files
         self._codec = codec
         self._store = store
         self._jobs = jobs
         self._ids = id_generator
+        self._clock = clock
 
     async def handle(
         self,
@@ -65,6 +71,13 @@ class StoreExamWorkspaceUndoStepHandler:
             if head is None:
                 raise DomainError(code=ErrorCode.NOT_FOUND, message="Provdokumentet finns inte.")
             history_head = await self._store.ensure_history_head(actor=actor, lineage_id=lineage_id)
+            require_edit_lease(
+                lease=await self._vault_files.get_history_lease(
+                    user_id=actor.id, document_lineage_id=lineage_id
+                ),
+                tab_id=request.tab_id,
+                now=self._clock.now(),
+            )
             if history_head.cursor != request.expected_cursor:
                 raise DomainError(
                     code=ErrorCode.CONFLICT,
@@ -135,6 +148,13 @@ class StoreExamWorkspaceUndoStepHandler:
             if head is None:
                 raise DomainError(code=ErrorCode.NOT_FOUND, message="Provdokumentet finns inte.")
             history_head = await self._store.ensure_history_head(actor=actor, lineage_id=lineage_id)
+            require_edit_lease(
+                lease=await self._vault_files.get_history_lease(
+                    user_id=actor.id, document_lineage_id=lineage_id
+                ),
+                tab_id=request.tab_id,
+                now=self._clock.now(),
+            )
             if history_head.cursor != request.expected_cursor:
                 raise DomainError(
                     code=ErrorCode.CONFLICT,

@@ -11,6 +11,7 @@
  *     through their command paths.
  *   - Reads the teacher-key origin and the blank choices from
  *     `examWorkspaceItemEdits`, the one owner of both.
+ *   - Kept-answer revert and restore live in `examWorkspaceKeptGapEdits`.
  */
 
 import type {

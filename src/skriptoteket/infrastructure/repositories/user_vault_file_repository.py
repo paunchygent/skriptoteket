@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncConnection, AsyncSession, create_async_e
 from sqlalchemy.pool import NullPool
 
 from skriptoteket.application.curated_apps.exam_workspace_history import (
+    ExamWorkspaceEditLease,
     ExamWorkspaceHistoryCursor,
     ExamWorkspaceHistoryStepRef,
     ExamWorkspaceHistoryStoredStep,
@@ -265,6 +266,44 @@ class PostgreSQLUserVaultFileRepository(VaultFileRepositoryProtocol):
                     "current_step_id": head.current_step_id,
                     "baseline_step_id": head.baseline_step_id,
                 },
+            )
+        )
+
+    async def get_history_lease(
+        self, *, user_id: UUID, document_lineage_id: UUID
+    ) -> ExamWorkspaceEditLease | None:
+        result = await self._session.execute(
+            select(
+                ExamWorkspaceHistoryModel.lease_holder_tab_id,
+                ExamWorkspaceHistoryModel.lease_renewed_at,
+                ExamWorkspaceHistoryModel.lease_takeover_requested_by,
+            ).where(
+                ExamWorkspaceHistoryModel.user_id == user_id,
+                ExamWorkspaceHistoryModel.lineage_id == document_lineage_id,
+            )
+        )
+        row = result.one_or_none()
+        if row is None:
+            return None
+        return ExamWorkspaceEditLease(
+            holder_tab_id=row[0],
+            renewed_at=row[1],
+            takeover_requested_by=row[2],
+        )
+
+    async def upsert_history_lease(
+        self, *, user_id: UUID, document_lineage_id: UUID, lease: ExamWorkspaceEditLease
+    ) -> None:
+        await self._session.execute(
+            update(ExamWorkspaceHistoryModel)
+            .where(
+                ExamWorkspaceHistoryModel.user_id == user_id,
+                ExamWorkspaceHistoryModel.lineage_id == document_lineage_id,
+            )
+            .values(
+                lease_holder_tab_id=lease.holder_tab_id,
+                lease_renewed_at=lease.renewed_at,
+                lease_takeover_requested_by=lease.takeover_requested_by,
             )
         )
 

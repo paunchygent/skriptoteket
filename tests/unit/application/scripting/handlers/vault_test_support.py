@@ -8,6 +8,7 @@ from typing import Iterable
 from uuid import UUID
 
 from skriptoteket.application.curated_apps.exam_workspace_history import (
+    ExamWorkspaceEditLease,
     ExamWorkspaceHistoryCursor,
     ExamWorkspaceHistoryStepRef,
     ExamWorkspaceHistoryStoredStep,
@@ -348,6 +349,16 @@ class FakeVaultFileRepo(VaultFileRepositoryProtocol):
         user_id: UUID,
         document_lineage_id: UUID,
         head: ExamWorkspaceHistoryCursor,
+    ) -> None:
+        raise NotImplementedError
+
+    async def get_history_lease(
+        self, *, user_id: UUID, document_lineage_id: UUID
+    ) -> ExamWorkspaceEditLease | None:
+        raise NotImplementedError
+
+    async def upsert_history_lease(
+        self, *, user_id: UUID, document_lineage_id: UUID, lease: ExamWorkspaceEditLease
     ) -> None:
         raise NotImplementedError
 

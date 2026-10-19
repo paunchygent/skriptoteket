@@ -31,6 +31,7 @@ class ErrorCode(StrEnum):
     # Conflict (409)
     CONFLICT = "CONFLICT"
     DUPLICATE_ENTRY = "DUPLICATE_ENTRY"
+    EDIT_LEASE_HELD = "EDIT_LEASE_HELD"
 
     # Request throttling (429)
     TOO_MANY_REQUESTS = "TOO_MANY_REQUESTS"

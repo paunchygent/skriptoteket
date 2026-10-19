@@ -100,6 +100,8 @@ const emit = defineEmits<{
   removeAutomaticValue: [itemId: string, gapId: string, value: string];
   createGap: [itemId: string, body: NativeExamBodyParagraph[], gapId: string, seed: string];
   showGapAsText: [itemId: string, gapId: string];
+  revertGap: [itemId: string, gapId: string];
+  restoreKeptGap: [itemId: string, keptGapId: string, blockIndex: number];
   addOrderingStep: [itemId: string];
   moveOrderingStep: [itemId: string, choiceId: string, delta: -1 | 1];
   removeOrderingStep: [itemId: string, choiceId: string];
@@ -288,6 +290,8 @@ const keyLine = computed(() => {
       @remove-automatic-value="(itemId, gapId, value) => emit('removeAutomaticValue', itemId, gapId, value)"
       @create-gap="(itemId, body, gapId, seed) => emit('createGap', itemId, body, gapId, seed)"
       @show-gap-as-text="(itemId, gapId) => emit('showGapAsText', itemId, gapId)"
+      @revert-gap="(itemId, gapId) => emit('revertGap', itemId, gapId)"
+      @restore-kept-gap="(itemId, keptGapId, blockIndex) => emit('restoreKeptGap', itemId, keptGapId, blockIndex)"
       @update-body="(itemId, body, structural) => emit('updateBody', itemId, body, structural)"
     />
 

@@ -2,6 +2,7 @@
 
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from uuid import UUID, uuid4
 
 import httpx
 import pytest
@@ -20,6 +21,9 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_documents imp
     GetExamWorkspaceConversionStatusHandler,
     GetExamWorkspaceDocumentHandler,
     SaveExamWorkspaceDocumentHandler,
+)
+from skriptoteket.application.curated_apps.handlers.exam_workspace_edit_lease import (
+    ExamWorkspaceEditLeaseHandler,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_undo_steps import (
     StoreExamWorkspaceUndoStepHandler,
@@ -136,6 +140,7 @@ async def test_real_dxe_upload_job_and_saved_edits_roundtrip_http_and_postgres(
                     store=store,
                     jobs=jobs,
                     id_generator=ids,
+                    clock=clock,
                 ),
             },
         )
@@ -207,11 +212,16 @@ async def test_real_dxe_upload_job_and_saved_edits_roundtrip_http_and_postgres(
                 document["title"] = "Lärarens redigerade DigiExam-prov"
                 history = await client.get(path + "/history")
                 assert history.status_code == 200, history.text
+                tab_id = uuid4()
+                await ExamWorkspaceEditLeaseHandler(
+                    vault_files=vault, store=store, clock=clock
+                ).claim(actor=actor, lineage_id=UUID(queued["lineage_id"]), tab_id=tab_id)
                 response = await client.post(
                     path + "/autosaves",
                     json={
                         "expected_cursor": history.json()["cursor"],
                         "document": document,
+                        "tab_id": str(tab_id),
                     },
                 )
                 assert response.status_code == 200, response.text

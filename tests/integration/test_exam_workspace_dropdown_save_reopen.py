@@ -63,7 +63,7 @@ from skriptoteket.web.api.v1 import apps_conversion_hub_exam_workspace as docume
 from skriptoteket.web.auth.huleedu_app_projection import require_app_user_api
 from skriptoteket.web.middleware.error_handler import error_handler_middleware
 from tests.fixtures.time_fixtures import FixedClock
-from tests.integration.exam_workspace_conversion_support import ConversionWorld, Ids
+from tests.integration.exam_workspace_conversion_support import ConversionWorld, Ids, lease_tab
 from tests.integration.exam_workspace_repair_support import editor, seed_exam
 from tests.integration.infrastructure.repositories.exam_workspace_test_support import create_owner
 from tests.unit.domain.curated_apps.exam_workspace.examnet_qti_export_test_support import (
@@ -105,6 +105,7 @@ async def _client(world: ConversionWorld, actor: User) -> AsyncIterator[httpx.As
                 store=world.store,
                 jobs=world.jobs,
                 id_generator=Ids(),
+                clock=world.clock,
             ),
             ExportExamWorkspaceDocumentHandlerProtocol: ExportExamWorkspaceDocumentHandler(
                 vault_files=world.vault_files,
@@ -282,6 +283,7 @@ async def test_dropdown_save_reopen_and_qti_from_persisted_container(
         )
         path = _BASE + str(document.document_id)
         payload = document.model_dump(mode="json")
+        tab = str(await lease_tab(world, actor, document.document_id))
         async with _client(world, actor) as client:
             cursor = (await client.get(path + "/history")).json()["cursor"]
             for fault in ("wrong-key", "missing-options"):
@@ -293,7 +295,7 @@ async def test_dropdown_save_reopen_and_qti_from_persisted_container(
                     del gap["options"]
                 response = await client.post(
                     path + "/autosaves",
-                    json={"expected_cursor": cursor, "document": invalid},
+                    json={"expected_cursor": cursor, "document": invalid, "tab_id": tab},
                 )
                 assert response.status_code == 422, response.text
                 unchanged = await client.get(path)
@@ -301,7 +303,7 @@ async def test_dropdown_save_reopen_and_qti_from_persisted_container(
                 assert unchanged.json()["document"]["revision"] == 1
             response = await client.post(
                 path + "/autosaves",
-                json={"expected_cursor": cursor, "document": payload},
+                json={"expected_cursor": cursor, "document": payload, "tab_id": tab},
             )
             assert response.status_code == 200, response.text
             assert response.json()["document"]["items"] == payload["items"]

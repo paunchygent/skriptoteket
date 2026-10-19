@@ -36,6 +36,8 @@ from tests.unit.application.curated_apps.handlers.test_conversion_hub_jobs impor
 from tests.unit.application.curated_apps.handlers.test_exam_workspace_documents import (
     _actor,
     _Env,
+    _leased_tab,
+    _test_clock,
 )
 
 
@@ -52,6 +54,7 @@ def _handler(env: _Env) -> SaveExamWorkspaceDocumentHandler:
 
 def _undo_handler(env: _Env) -> StoreExamWorkspaceUndoStepHandler:
     return StoreExamWorkspaceUndoStepHandler(
+        clock=_test_clock(),
         vault_files=env.vault_files,
         codec=env.codec,
         store=env.store,
@@ -74,6 +77,7 @@ async def test_hundred_and_one_stores_keep_hundred_steps_and_overwrite_the_file(
             actor=actor,
             lineage_id=lineage,
             request=StoreExamWorkspaceUndoStepRequest(
+                tab_id=await _leased_tab(env, actor, lineage),
                 expected_cursor=(await handler.history(actor=actor, lineage_id=lineage)).cursor,
                 document=imported.document.model_copy(
                     update={"title": f"Lärarens redigering {index}"}
@@ -123,6 +127,7 @@ async def test_edit_after_undo_discards_redo_without_damaging_other_exam_history
             actor=actor,
             lineage_id=lineage,
             request=StoreExamWorkspaceUndoStepRequest(
+                tab_id=await _leased_tab(env, actor, lineage),
                 expected_cursor=(await handler.history(actor=actor, lineage_id=lineage)).cursor,
                 document=imported.document.model_copy(update={"revision": 2, "title": title}),
             ),
@@ -133,6 +138,7 @@ async def test_edit_after_undo_discards_redo_without_damaging_other_exam_history
         actor=actor,
         lineage_id=lineage,
         request=StoreExamWorkspaceUndoStepRequest(
+            tab_id=await _leased_tab(env, actor, lineage),
             expected_cursor=before.cursor,
             document=undone.document.model_copy(update={"title": "Ny gren"}),
             after_step_id=before.step_ids[0],
@@ -163,6 +169,7 @@ async def test_each_stored_step_advances_the_file_revision_by_one() -> None:
         actor=actor,
         lineage_id=lineage,
         request=StoreExamWorkspaceUndoStepRequest(
+            tab_id=await _leased_tab(env, actor, lineage),
             expected_cursor=imported.history_cursor,
             document=imported.document.model_copy(update={"title": "Aktuell redigering"}),
         ),
@@ -171,6 +178,7 @@ async def test_each_stored_step_advances_the_file_revision_by_one() -> None:
         actor=actor,
         lineage_id=lineage,
         request=StoreExamWorkspaceUndoStepRequest(
+            tab_id=await _leased_tab(env, actor, lineage),
             expected_cursor=edited.history.cursor,
             document=edited.document.model_copy(update={"title": "Nästa redigering"}),
         ),
@@ -193,6 +201,7 @@ async def test_undo_response_carries_the_gates_title_verdict_for_the_stored_step
         actor=actor,
         lineage_id=imported.summary.lineage_id,
         request=StoreExamWorkspaceUndoStepRequest(
+            tab_id=await _leased_tab(env, actor, imported.summary.lineage_id),
             expected_cursor=imported.history_cursor,
             document=imported.document.model_copy(update={"title": "?!..."}),
         ),
@@ -201,6 +210,7 @@ async def test_undo_response_carries_the_gates_title_verdict_for_the_stored_step
         actor=actor,
         lineage_id=imported.summary.lineage_id,
         request=StoreExamWorkspaceUndoStepRequest(
+            tab_id=await _leased_tab(env, actor, imported.summary.lineage_id),
             expected_cursor=blank.history.cursor,
             document=blank.document.model_copy(update={"title": "Prov 1"}),
         ),
@@ -223,7 +233,9 @@ async def test_stale_cursor_cannot_overwrite_an_intervening_stored_step() -> Non
         actor=actor,
         lineage_id=lineage,
         request=StoreExamWorkspaceUndoStepRequest(
-            expected_cursor=opened_history.cursor, document=winning_document
+            tab_id=await _leased_tab(env, actor, lineage),
+            expected_cursor=opened_history.cursor,
+            document=winning_document,
         ),
     )
     assert accepted.history.cursor != opened_history.cursor
@@ -233,6 +245,7 @@ async def test_stale_cursor_cannot_overwrite_an_intervening_stored_step() -> Non
             actor=actor,
             lineage_id=lineage,
             request=StoreExamWorkspaceUndoStepRequest(
+                tab_id=await _leased_tab(env, actor, lineage),
                 expected_cursor=opened_history.cursor,
                 document=imported.document.model_copy(update={"title": "Gammal flik"}),
             ),
@@ -302,6 +315,7 @@ async def test_history_picture_can_be_restored_after_a_step_removes_it() -> None
         actor=actor,
         lineage_id=lineage,
         request=StoreExamWorkspaceUndoStepRequest(
+            tab_id=await _leased_tab(env, actor, lineage),
             expected_cursor=(await handler.history(actor=actor, lineage_id=lineage)).cursor,
             document=pictured,
         ),
@@ -311,6 +325,7 @@ async def test_history_picture_can_be_restored_after_a_step_removes_it() -> None
         actor=actor,
         lineage_id=lineage,
         request=StoreExamWorkspaceUndoStepRequest(
+            tab_id=await _leased_tab(env, actor, lineage),
             expected_cursor=history.cursor,
             document=imported.document,
         ),
@@ -330,6 +345,7 @@ async def test_history_picture_can_be_restored_after_a_step_removes_it() -> None
         actor=actor,
         lineage_id=lineage,
         request=StoreExamWorkspaceUndoStepRequest(
+            tab_id=await _leased_tab(env, actor, lineage),
             expected_cursor=(await handler.history(actor=actor, lineage_id=lineage)).cursor,
             document=restored.document,
         ),
@@ -358,6 +374,7 @@ async def test_save_as_copies_editor_content_and_course_without_original_history
         actor=actor,
         lineage_id=imported.summary.lineage_id,
         request=StoreExamWorkspaceUndoStepRequest(
+            tab_id=await _leased_tab(env, actor, imported.summary.lineage_id),
             expected_cursor=(
                 await handler.history(actor=actor, lineage_id=imported.summary.lineage_id)
             ).cursor,

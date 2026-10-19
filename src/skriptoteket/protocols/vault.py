@@ -6,6 +6,7 @@ from typing import Protocol
 from uuid import UUID
 
 from skriptoteket.application.curated_apps.exam_workspace_history import (
+    ExamWorkspaceEditLease,
     ExamWorkspaceHistoryCursor,
     ExamWorkspaceHistoryStepRef,
     ExamWorkspaceHistoryStoredStep,
@@ -91,6 +92,14 @@ class VaultFileRepositoryProtocol(Protocol):
 
     async def upsert_history_head(
         self, *, user_id: UUID, document_lineage_id: UUID, head: ExamWorkspaceHistoryCursor
+    ) -> None: ...
+
+    async def get_history_lease(
+        self, *, user_id: UUID, document_lineage_id: UUID
+    ) -> ExamWorkspaceEditLease | None: ...
+
+    async def upsert_history_lease(
+        self, *, user_id: UUID, document_lineage_id: UUID, lease: ExamWorkspaceEditLease
     ) -> None: ...
 
     async def get_history_step(

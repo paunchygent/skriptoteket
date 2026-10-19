@@ -19,7 +19,8 @@
  *   Luckverktyg toggle (Ctrl+Alt+G,
  *   Cmd+Option+G on macOS) switches one gap tool per question on: while it
  *   is on, a word click or a drag inside one paragraph becomes a gap at
- *   once with no popover. The tool ends by its
+ *   once with no popover, a gap click reverts the gap instead of opening
+ *   its popover, and a kept-word click restores the gap. The tool ends by its
  *   toggle, its shortcut, Escape with no popover open, a move to another
  *   question, or the gap_999 cap. A disabled editor only suspends the tool:
  *   the tool stays on, tool clicks make no gap, and an open popover closes;
@@ -77,6 +78,10 @@ const emit = defineEmits<{
   updateGapOptions: [itemId: string, gapId: string, options: NativeExamChoice[], correctOptionId: string | null, structural: boolean];
   removeAutomaticValue: [itemId: string, gapId: string, value: string];
   showGapAsText: [itemId: string, gapId: string];
+  /** With the tool on, a gap click reverts it through the owner. */
+  revertGap: [itemId: string, gapId: string];
+  /** With the tool on, a kept-word click restores its gap through the owner. */
+  restoreKeptGap: [itemId: string, keptGapId: string, blockIndex: number];
 }>();
 
 type OpenGap = {
@@ -256,6 +261,23 @@ function handleGapAsText(itemId: string, gapId: string): void {
   editor.value?.focus();
 }
 
+/** With the tool on, a gap click reverts the gap as one structural edit. */
+function handleRevertGap(gapId: string): void {
+  if (props.disabled) {
+    return;
+  }
+  closePopover(false);
+  emit("revertGap", props.item.item_id, gapId);
+}
+
+/** With the tool on, a kept-word click restores the clicked kept block. */
+function handleRestoreKeptGap(keptGapId: string, blockIndex: number): void {
+  if (props.disabled) {
+    return;
+  }
+  emit("restoreKeptGap", props.item.item_id, keptGapId, blockIndex);
+}
+
 /** Forward one gap creation; the new gap's popover opens only while the tool is off. */
 function handleCreateGap(body: NativeExamBodyParagraph[], gapId: string, seed: string): void {
   if (props.disabled) {
@@ -344,6 +366,8 @@ watch(newGapId, (gapId) => {
           :gap-tool="gapToolOn"
           @activate-gap="openPopover"
           @create-gap="handleCreateGap"
+          @revert-gap="handleRevertGap"
+          @restore-kept-gap="handleRestoreKeptGap"
           @toggle-gap-tool="toggleGapTool"
           @escape="handleSurfaceEscape"
           @update="(body, structural) => emit('updateBody', item.item_id, body, structural)"

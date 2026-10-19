@@ -36,6 +36,7 @@ import {
   withTickPoints,
 } from "./examWorkspaceItemEdits";
 import { withGapAsText, withGapOptions, withNewGap } from "./examWorkspaceGapEdits";
+import { withGapReverted, withKeptGapRestored } from "./examWorkspaceKeptGapEdits";
 import { withShuffledSteps, withStepAdded, withStepMoved, withStepRemoved } from "./examWorkspaceOrdering";
 import { withoutEmptyOptions, withoutOptionHeadings } from "./examWorkspaceBlockers";
 import { withWritingLines } from "./examWorkspaceWritingLines";
@@ -145,6 +146,16 @@ export function useExamWorkspaceItemEdits(patchItem: ExamWorkspaceItemPatch) {
     patchItem(itemId, (item) => withGapAsText(item, gapId), true);
   }
 
+  /** A gap-tool revert is one structural undo step, so H4 can call it from a gap click. */
+  function revertItemGap(itemId: string, gapId: string): void {
+    patchItem(itemId, (item) => withGapReverted(item, gapId), true);
+  }
+
+  /** A kept-word restore is one structural undo step, so H4 can call it from a word click. */
+  function restoreItemKeptGap(itemId: string, keptGapId: string, atBlock: number): void {
+    patchItem(itemId, (item) => withKeptGapRestored(item, keptGapId, atBlock), true);
+  }
+
   /** One gap creation is one atomic structural item edit: body plus gap record together. */
   function createItemGap(
     itemId: string,
@@ -180,6 +191,8 @@ export function useExamWorkspaceItemEdits(patchItem: ExamWorkspaceItemPatch) {
     shuffleItemOrderingSteps,
     removeItemEmptyOptions,
     removeItemOptionHeadings,
+    restoreItemKeptGap,
+    revertItemGap,
     unmarkItemReviewed,
     showItemGapAsText,
     undoItemInterpretation,
