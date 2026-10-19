@@ -208,12 +208,11 @@ Units, each for one fresh junior:
 
 ### Resume here (2026-10-19)
 
-- State: U1 `04456045`, U2 `6898931d`, U3 `0707c408`, U5 `7890cd30` (D12), U6 `1e70d769` (suite
-  repairs; classification `evidence/proof/u6-classification.md`), U6b `b9af0fbd` committed;
-  worktree clean, never pushed. Replay bar: only the D4 bodies change, every
-  `leftover_points_text` is null. Lead `d19390d2` (implementation-specialist), branch
-  `codex/task-skript-39-04-strip-points-wording-remote`, worktree
-  `/home/paunchygent/apps/skriptoteket-task-skript-39-04-strip-points-wording-remote`.
-- Next: the second domain suite run (backend curated_apps, then `pdm run fe-test`) on the
-  orchestrator's go. U4 (the offer line, D10) waits for TASK-SKRIPT-40-04-10 to merge into
-  `origin/main`; then merge `origin/main` and build it.
+- State: U1 `04456045`, U2 `6898931d`, U3 `0707c408`, U5 `7890cd30` (D12), U6 `1e70d769`, U6b
+  `b9af0fbd`, merge of `origin/main` `10b257f5`, U7 `13ac8ccb` (D12 test corrections,
+  classification `evidence/proof/u7-classification.md`). Second domain suite at `10b257f5`:
+  fe-test 505 files pass; backend 9 D12 failures, corrected in U7 and rerun in 33 related files
+  (1301 passed). Replay bar against `origin/main`: only the D4 bodies change. Never pushed.
+- Next: the orchestrator merges to `main` for a staging walk (user decision 2026-10-19), then a
+  Pi code review. U4 (the offer line, D10) waits for TASK-SKRIPT-40-04-10 to merge into
+  `origin/main`.
