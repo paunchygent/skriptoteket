@@ -21,6 +21,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.examnet_pdf_export import (
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub import (
     exam_workspace_docx_writer,
 )
+from tests.unit.domain.curated_apps.exam_workspace.exam_print_document_test_support import (
+    entry_blocks,
+)
 from tests.unit.domain.curated_apps.exam_workspace.examnet_qti_export_test_support import (
     document_of,
 )
@@ -51,7 +54,7 @@ def test_docx_preserves_gap_local_lists_and_facit_keys_in_placed_order() -> None
     key_lines = [
         line
         for entry in facit.entries
-        for block in entry.blocks
+        for block in entry_blocks(entry)
         if isinstance(block, PrintAnswerKey)
         for line in block.lines
     ]

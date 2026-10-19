@@ -3,8 +3,8 @@
 import json
 from pathlib import Path
 
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import aligned_native_item
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import ProducedItem
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_item import aligned_native_item
 from tests.unit.domain.curated_apps.exam_workspace.recorded_native_exam_support import (
     recorded_exam_language,
 )

@@ -12,3 +12,6 @@ class Box:
     margin_top: float
     def content_box_x(self) -> float: ...
     def content_box_y(self) -> float: ...
+
+class TextBox(Box):
+    text: str

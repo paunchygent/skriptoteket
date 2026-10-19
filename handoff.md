@@ -69,11 +69,11 @@
   RESUMED 2026-10-19 after the 2026-10-18 account switch: Mac parent session 0d4e482f integrates and pushes; Hemma orchestrator is desktop SSH session local_42174b78 (cwd ~/apps/skriptoteket), briefed to resume every lane below with fresh leads. Roster is identical on Mac and Hemma (routes.toml byte-identical, skill-repository 1a22d64e): juniors OpenCode Spark 1.3 high (`junior-route` default `spark`), task-monitor/researcher OpenCode deepseek-v4.1-flash-free, explorers Haiku, leads Opus 5.5 (no code, never reused across tasks), reviews Pi Sol 6.1. Exam.net has no QTI export (UI + help center checked 2026-10-19): 41-02-01 uses a Skriptoteket package Exam.net accepted as its fixture. Lanes (Hemma branch @ head: next):
 
   - 40-04-08 (gap/short-answer editor, click-a-word gaps, popover): lead on Hemma; its Mac staging walk also covers the owed 40-04-04 walk, then close 40-04-04.
-  - 40-04-11 glyph-only workspace tools (user 2026-10-19): `proposed`, planned by Hemma lead 8ec79e16 on codex/task-skript-40-04-compact-tools-remote (root 01a15383). USER GATE: scope, apply-to-all glyph, stepper count, touch look (task Resume here). Starts after 40-04-08 merges.
-  - 39-04-18 facit carry-over and 39-04-19 Del A repair: in progress on Hemma; merge on review approval.
-  - 41-02-02: F5/F6 repair and F4 re-review; then production deploy with nginx-proxy fixed IP 172.18.255.10 and `TRUSTED_PROXY_CIDRS=172.18.255.10/32` (USER GATE: restarts shared nginx-proxy).
-  - REP-0046: USER GATE re-record 8 stale omprov_grammatik_sve2 labeler calls. REP-0048: 6 Exam.net walk checks (Mac walk).
-  - Converter repair (new, 2026-10-19 walk): a source score field "/4 p" leaves a lone "/" in each question text; sent to the Hemma orchestrator.
+  - 40-04-11 glyph-only workspace tools + header/toolbar density (user 2026-10-19, widened same day): `proposed`, planning by Hemma lead 8ec79e16 on codex/task-skript-40-04-compact-tools-remote (root 01a15383). USER GATE: Q1-Q5 and header questions (task Resume here). Starts after 40-04-08 merges.
+  - 39-04-20 score field (lone "/" from "/4 p"): in review; user accepted the whitespace side effect (corrected counts to confirm). 40-04-09 gap tool: `ready` (plan accepted 2026-10-19), G1-G4 and both review rounds' repairs (f98599ec, bcbf04a7; Q12, Q13, C1) integrated on `codex/task-skript-40-04-gap-tool-remote`; next Mac merge + staging walk, root 01a1531a. 40-04-10 points banner: user chose list A and grey-number dismiss as the prominent primary action; dismiss label open. 40-04-11 glyph-only tools: four user questions open (mockups shown).
+  - 40-04-12 PDF keep-together (branch codex/task-skript-40-04-keep-together-remote): ready (user accepted 2026-10-19); built, F1 repaired, main merged; next Mac merge + staging walk (K11), then the 39-04-20 "/" check. DOCX out of scope.
+  - 41-02-02: merged to main (review approved, b9b3e6a9); next Mac guest staging walk (ST-SKRIPT-41-02), then close. Production deploy with nginx-proxy fixed IP 172.18.255.10 and `TRUSTED_PROXY_CIDRS=172.18.255.10/32` is a USER GATE (restarts shared nginx-proxy).
+  - REP-0048: 6 Exam.net walk checks (Mac walk).
   - HuleEdu after HULE-14-03-01: 41-01-03, 41-01-02, 41-01-04; http_runtime workers repair.
     Hemma Opus lead `3b164d53`: 40-03-01..09 and 08-36-02 `done`; 40-02-01 tranche 1 on
     main 761b1b59, tranche 2 a67afa90 (`in_progress`: shared `play` meaning in
@@ -111,7 +111,7 @@
 
 ## Recent
 
-- 2026-10-19 `done` on main: 40-04-07 writing areas (staging walk at `003c874a`, Mac `.artifacts/staging-walk-40-04-07/evidence/walk-record.md`), 41-02-01 QTI import, 39-04-15, 39-04-16, 39-04-17, REP-0047, HULE-14-03-01. Pre-push hook SIGPIPE false skip fixed (`003c874a`).
+- 2026-10-19 `done` on main: 40-04-07 writing areas (staging walk at `003c874a`, Mac `.artifacts/staging-walk-40-04-07/evidence/walk-record.md`), 41-02-01 QTI import, 39-04-15, 39-04-16, 39-04-17, REP-0047, HULE-14-03-01, 39-04-19 Del A left-out repair, REP-0046 re-recorded omprov labeler calls, 39-04-18 facit carry-over. Pre-push hook SIGPIPE false skip fixed (`003c874a`).
 
 - Wave 2 closed 2026-10-17 at `agent-overseer:approved-review-closeout`:
   39-04-06, 39-04-08, 39-04-10, 39-06-03, 39-06-04, 39-06-05, 39-06-07, 39-07-01,

@@ -4,7 +4,8 @@ This module owns the left-out own-chunk check at admission (D41, TASK-SKRIPT-39-
 TASK-SKRIPT-39-04-15 D1-D2): chunks the reply lists or leaves unlisted that no body
 paragraph, choice or matching entry is aligned to are held under the item's check mark as
 printed, except source answers, facit lines, points lines, grouped keys, governing chunks,
-headers and section-placed instructions.
+headers and section-placed instructions. Admission records the anchors the item leaves
+out; the check mark itself is decided later, on the placed item (TASK-SKRIPT-39-04-19).
 """
 
 from dataclasses import replace
@@ -20,7 +21,6 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_item_alignment import 
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_own_instructions import (
     left_out_chunks,
-    with_left_out_mark,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeParseOrigin,
@@ -45,7 +45,9 @@ def with_left_out(
     the item shows, never the reply's wording.
 
     A left-out chunk is an own chunk of a question the item touches that no entry holds yet
-    and no item of the reply lists, except as a points line alone (D2).
+    and no item of the reply lists, except as a points line alone (D2). The anchors the
+    item leaves out are recorded on the item; the check mark is decided on the placed item
+    (TASK-SKRIPT-39-04-19).
     """
     aligned, anchors = admitted
     item = aligned.item
@@ -92,5 +94,5 @@ def with_left_out(
     if missing:
         moved = tuple(c.anchor for c in missing)
         state.record("admission", "own_chunks_left_out", item=index, anchors=moved)
-        item = with_left_out_mark(item, missing)
-    return replace(aligned, item=item), (*anchors, *left_out)
+        aligned = replace(aligned, left_out=aligned.left_out | {c.anchor for c in missing})
+    return aligned, (*anchors, *left_out)

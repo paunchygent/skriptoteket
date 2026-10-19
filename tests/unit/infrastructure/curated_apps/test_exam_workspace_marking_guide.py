@@ -52,6 +52,9 @@ from skriptoteket.infrastructure.curated_apps.apps.conversion_hub import (
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.exam_workspace_container import (
     ExamWorkspaceContainerCodec,
 )
+from tests.unit.domain.curated_apps.exam_workspace.exam_print_document_test_support import (
+    entry_blocks,
+)
 
 _SWEDISH_BODY = "Förklara vad som är en bisats och hur den används för att binda ihop en text."
 _ENGLISH_BODY = "Explain what the clause is and how it is used to connect the text."
@@ -112,7 +115,7 @@ def test_facit_print_document_prints_each_criterion_with_points(body: str, label
     lines = [
         line
         for entry in facit.entries
-        for block in entry.blocks
+        for block in entry_blocks(entry)
         if isinstance(block, PrintAnswerKey)
         for line in block.lines
     ]

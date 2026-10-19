@@ -13,6 +13,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { adminUser } from "../ExamWorkspaceSlice.specSupport";
 import ExamWorkspaceExportMenu from "./ExamWorkspaceExportMenu.vue";
 import type { ExamWorkspaceBlockerEntry } from "./examWorkspaceBlockers";
+import { EXAM_WORKSPACE_EXPORT_FORMATS } from "./examWorkspaceExportFormats";
+import { examWorkspaceProvidersPlugin } from "./examWorkspaceProviders.specSupport";
 
 const ORDERING_ROW: ExamWorkspaceBlockerEntry = {
   fix: null,
@@ -37,6 +39,7 @@ function mountMenu(blockers: ExamWorkspaceBlockerEntry[]) {
           initialState: { auth: { user: adminUser } },
           stubActions: (name) => name !== "hasAtLeastRole",
         }),
+        examWorkspaceProvidersPlugin(),
       ],
     },
     props: {
@@ -75,7 +78,7 @@ describe("ExamWorkspaceExportMenu ordering blocker", () => {
     await openMenu(wrapper);
 
     expect(document.body.textContent).toContain("för få steg");
-    for (const target of ["qti", "pdf", "docx"]) {
+    for (const { target } of EXAM_WORKSPACE_EXPORT_FORMATS) {
       expect(formatState(target)).toEqual({ ariaDisabled: "true", saveDisabled: true });
     }
     wrapper.unmount();
@@ -94,7 +97,7 @@ describe("ExamWorkspaceExportMenu ordering blocker", () => {
     const wrapper = mountMenu([]);
     await openMenu(wrapper);
 
-    for (const target of ["qti", "pdf", "docx"]) {
+    for (const { target } of EXAM_WORKSPACE_EXPORT_FORMATS) {
       expect(formatState(target)).toEqual({ ariaDisabled: null, saveDisabled: false });
     }
     wrapper.unmount();

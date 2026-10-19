@@ -20,7 +20,6 @@
 
 import { computed, ref, useId, watch } from "vue";
 
-import { getExamCourseContent } from "../../../api/examWorkspace";
 import type {
   ExamCourseChoice,
   ExamCourseContent,
@@ -29,11 +28,15 @@ import type {
   NativeExamHeader,
 } from "../../../api/examWorkspace";
 import { UiGlyph } from "../../../components/ui";
-import { AI_ADMIN_ONLY_NOTE, useAiAccess } from "../../../composables/useAiAccess";
+import { AI_ADMIN_ONLY_NOTE } from "../../../composables/useAiAccess";
 import ExamCourseCombobox from "./ExamCourseCombobox.vue";
+import { GUEST_AI_SIGN_IN } from "./examWorkspaceGuestCopy";
+import { useExamWorkspaceSignIn } from "./examWorkspaceSignIn";
 import { useExamCourseCatalog } from "./useExamCourseCatalog";
+import { useInjectedExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceMyCourses } from "./useExamWorkspaceMyCourses";
 import type { ExamWorkspaceRenameFailure } from "./useExamWorkspaceRename";
+import { useExamWorkspaceAiMode } from "./useExamWorkspaceAiMode";
 
 const EXTENSION = ".provdokument.zip";
 
@@ -60,9 +63,14 @@ const emit = defineEmits<{
 
 const id = useId();
 const contentAiNoteId = `${id}-ai-note`;
-const { canUseAi } = useAiAccess();
-const { courses, courseByKey, error: catalogError } = useExamCourseCatalog();
-const myCourses = useExamWorkspaceMyCourses();
+const store = useInjectedExamWorkspaceStore();
+const requestSignIn = useExamWorkspaceSignIn();
+/** Guest controls stay enabled and ask for sign-in; signed-in controls follow the admin gate. */
+const aiMode = useExamWorkspaceAiMode();
+const isGuest = computed(() => aiMode.value === "guest");
+const adminOnly = computed(() => aiMode.value === "admin_only");
+const { courses, courseByKey, error: catalogError } = useExamCourseCatalog(store.shared);
+const myCourses = useExamWorkspaceMyCourses(store.shared);
 
 const courseKey = computed(() => props.document.header.course?.key ?? null);
 const selectedCourse = computed(() => courseByKey(courseKey.value));
@@ -119,9 +127,10 @@ watch(
   async (key) => {
     content.value = null;
     contentError.value = false;
-    if (!key) return;
+    const teacher = store.teacher;
+    if (!key || !teacher) return;
     try {
-      const response = await getExamCourseContent(key);
+      const response = await teacher.getExamCourseContent(key);
       if (courseKey.value === key) content.value = response;
     } catch {
       if (courseKey.value === key) contentError.value = true;
@@ -143,6 +152,14 @@ function toggleTag(entryId: string, text: string): void {
       ? tags.filter((tag) => tag.id !== entryId)
       : [...tags, { id: entryId, origin: "teacher", question_ids: [], text }],
   );
+}
+
+function handleSuggestContent(): void {
+  if (isGuest.value) {
+    requestSignIn(GUEST_AI_SIGN_IN);
+    return;
+  }
+  emit("suggestContent");
 }
 
 function cites(entryId: string): string | null {
@@ -181,6 +198,7 @@ function cites(entryId: string): string | null {
   </section>
 
   <form
+    v-if="!isGuest"
     class="sect"
     @submit.prevent="rename"
   >
@@ -291,11 +309,11 @@ function cites(entryId: string): string | null {
       <button
         type="button"
         class="xw-btn xw-btn--compact"
-        :disabled="!content || contentBusy || suggestBlocked !== null || disabled || !canUseAi"
-        :title="!canUseAi ? AI_ADMIN_ONLY_NOTE : suggestBlocked ?? undefined"
-        :aria-describedby="!canUseAi ? contentAiNoteId : undefined"
+        :disabled="isGuest ? disabled : (!content || contentBusy || suggestBlocked !== null || disabled || adminOnly)"
+        :title="adminOnly ? AI_ADMIN_ONLY_NOTE : suggestBlocked ?? undefined"
+        :aria-describedby="adminOnly ? contentAiNoteId : undefined"
         data-test="exam-workspace-content-suggest"
-        @click="emit('suggestContent')"
+        @click="handleSuggestContent"
       >
         <UiGlyph
           :meaning="contentBusy ? 'busy' : 'ai-assist'"
@@ -305,7 +323,7 @@ function cites(entryId: string): string | null {
       </button>
     </h3>
     <p
-      v-if="!canUseAi"
+      v-if="adminOnly"
       :id="contentAiNoteId"
       class="xw-hint"
     >

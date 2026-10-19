@@ -84,7 +84,7 @@ llm = [
 [dependency-groups]
 # Repository tooling (lint/type/test/hooks + validation tooling)
 monorepo-tools = [
-    "repository-governance @ git+https://github.com/paunchygent/skill-repository.git@be1bef4ade7a757f62ae5fc553e456c98ef84c10#subdirectory=packages/repository_governance",
+    "repository-governance @ git+https://github.com/paunchygent/skill-repository.git@d8aab9d758fbcb0e043b015b50f628b4e6ecd188#subdirectory=packages/repository_governance",
     "ruff",
     "mypy",
     "pytest",
@@ -447,7 +447,7 @@ dev = "uvicorn --app-dir src skriptoteket.web.app:app --reload --host 127.0.0.1 
 dev-logs = "sh -c 'mkdir -p .artifacts && WATCHFILES_FORCE_POLLING=true WATCHFILES_POLL_DELAY_MS=300 pdm run dev 2>&1 | tee .artifacts/dev-backend.log'"
 dev-local = "sh -c 'pdm run dev-logs & pdm run fe-dev-logs & wait'"
 dev-docker = "uvicorn --app-dir src skriptoteket.web.app:app --reload --host 0.0.0.0 --port 8000"
-serve = "uvicorn --app-dir src skriptoteket.web.app:app --host 0.0.0.0 --port 8000 --proxy-headers --forwarded-allow-ips='*'"
+serve = "uvicorn --app-dir src skriptoteket.web.app:app --host 0.0.0.0 --port 8000 --proxy-headers"
 backfill-classroom-share-previews = "sh -c 'PYTHONPATH=src:$PYTHONPATH python -m skriptoteket.cli backfill-classroom-share-previews \"$@\"' --"
 ui-hmr-probe = "python -m scripts.playwright_hmr_probe"
 pr-0252-auth-return = "python -m scripts.playwright_pr_0252_auth_return_to_origin"

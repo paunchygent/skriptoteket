@@ -25,7 +25,7 @@ import { criteriaPointsTotal } from "./examWorkspaceItemSaveRules";
 import { placedGapIds } from "./examWorkspaceRichTextDocument";
 import { DEFAULT_WRITING_LINES } from "./examWorkspaceWritingLines";
 
-function teacherKeyOrigin(hasKeyData: boolean): NativeExamAnswerKeyOrigin {
+export function teacherKeyOrigin(hasKeyData: boolean): NativeExamAnswerKeyOrigin {
   return hasKeyData ? "teacher_authored" : "absent";
 }
 
@@ -162,124 +162,6 @@ export function withTickPoints(item: NativeExamItem, tickPoints: string): Native
   };
 }
 
-/** The key value under the server's spelling policy: collapsed whitespace and folded case. */
-function normalizedAnswer(value: string): string {
-  return value.trim().replace(/\s+/g, " ").toLocaleLowerCase("sv-SE");
-}
-
-/** Every accepted answer the question holds, in gap order and without duplicates. */
-export function itemAcceptedAnswers(item: NativeExamItem): string[] {
-  const seen = new Set<string>();
-  const answers: string[] = [];
-  for (const gap of item.gaps) {
-    for (const value of gap.accepted_values) {
-      if (!seen.has(value)) {
-        seen.add(value);
-        answers.push(value);
-      }
-    }
-  }
-  return answers;
-}
-
-/**
- * Append produced misspellings to one gap's automatic values, keeping the
- * existing ones: a value the question already accepts as a gold answer, one
- * the gap already carries, and one the teacher suppressed are all dropped
- * under the server's spelling policy (collapsed whitespace, folded case), and
- * the rest keep the producer's order and their display form.
- */
-export function withAutomaticValues(
-  item: NativeExamItem,
-  gapId: string,
-  values: string[],
-): NativeExamItem {
-  const gap = item.gaps.find((candidate) => candidate.gap_id === gapId);
-  if (!gap || values.length === 0) {
-    return item;
-  }
-  const known = new Set([
-    ...itemAcceptedAnswers(item).map(normalizedAnswer),
-    ...gap.automatic_values.map(normalizedAnswer),
-    ...gap.excluded_automatic_values.map(normalizedAnswer),
-  ]);
-  const added: string[] = [];
-  for (const value of values) {
-    const normalized = normalizedAnswer(value);
-    if (normalized.length > 0 && !known.has(normalized)) {
-      known.add(normalized);
-      added.push(value);
-    }
-  }
-  if (added.length === 0) {
-    return item;
-  }
-  return {
-    ...item,
-    gaps: item.gaps.map((candidate) =>
-      candidate.gap_id === gapId
-        ? { ...candidate, automatic_values: [...candidate.automatic_values, ...added] }
-        : candidate,
-    ),
-  };
-}
-
-export function withGapValues(
-  item: NativeExamItem,
-  gapId: string,
-  acceptedValues: string[],
-): NativeExamItem {
-  const current = item.gaps.find((gap) => gap.gap_id === gapId);
-  if (
-    !current ||
-    (current.accepted_values.length === acceptedValues.length &&
-      current.accepted_values.every((value, index) => value === acceptedValues[index]))
-  ) {
-    return item;
-  }
-  const gaps = item.gaps.map((gap) =>
-    gap.gap_id === gapId ? { ...gap, accepted_values: acceptedValues } : gap,
-  );
-  const hasKeyData = gaps.some((gap) => gap.accepted_values.length > 0);
-  return {
-    ...item,
-    answer_key: { ...item.answer_key, origin: teacherKeyOrigin(hasKeyData) },
-    gaps,
-  };
-}
-
-/** Replace one dropdown gap's options and its correct option; the same item when nothing changes. */
-export function withGapOptions(
-  item: NativeExamItem,
-  gapId: string,
-  options: NativeExamChoice[],
-  correctOptionId: string | null,
-): NativeExamItem {
-  const current = item.gaps.find((gap) => gap.gap_id === gapId);
-  if (
-    !current ||
-    (current.correct_option_id === correctOptionId &&
-      current.options.length === options.length &&
-      current.options.every((option, index) => option === options[index]))
-  ) {
-    return item;
-  }
-  const gaps = item.gaps.map((gap) =>
-    gap.gap_id === gapId ? { ...gap, options, correct_option_id: correctOptionId } : gap,
-  );
-  // Only a changed correct option is the teacher's decision; a text, add,
-  // remove or reorder edit leaves an AI or machine-proposed key unapproved.
-  if (current.correct_option_id === correctOptionId) {
-    return { ...item, gaps };
-  }
-  const hasKeyData = gaps.some((gap) => gap.correct_option_id !== null);
-  return {
-    ...item,
-    answer_key: { ...item.answer_key, origin: teacherKeyOrigin(hasKeyData) },
-    gaps,
-  };
-}
-
 /**
  * The AI interpretation can be undone for every kind except a dropdown, which
  * has no valid keyless state.
@@ -301,66 +183,6 @@ export function withoutInterpretedKey(item: NativeExamItem): NativeExamItem {
     answer_key: { ...item.answer_key, origin: "absent", correct_choice_ids: [], match_pairs: [] },
     gaps: item.gaps.map((gap) => ({ ...gap, accepted_values: [], automatic_values: [] })),
   });
-}
-
-/**
- * Remove only the selected automatic answer, preserving the key's
- * provenance, and suppress it so no later reply or regeneration adds it back.
- */
-export function withoutAutomaticValue(
-  item: NativeExamItem,
-  gapId: string,
-  value: string,
-): NativeExamItem {
-  const gap = item.gaps.find((candidate) => candidate.gap_id === gapId);
-  const normalized = normalizedAnswer(value);
-  if (
-    !gap ||
-    normalized.length === 0 ||
-    !gap.automatic_values.some((entry) => normalizedAnswer(entry) === normalized)
-  ) {
-    return item;
-  }
-  const suppressed = gap.excluded_automatic_values.some(
-    (entry) => normalizedAnswer(entry) === normalized,
-  );
-  return {
-    ...item,
-    gaps: item.gaps.map((candidate) =>
-      candidate.gap_id === gapId
-        ? {
-            ...candidate,
-            automatic_values: candidate.automatic_values.filter(
-              (entry) => normalizedAnswer(entry) !== normalized,
-            ),
-            excluded_automatic_values: suppressed
-              ? candidate.excluded_automatic_values
-              : [...candidate.excluded_automatic_values, value],
-          }
-        : candidate,
-    ),
-  };
-}
-
-/** Replace a gap with its first accepted answer as plain text; a gap without an answer stays. */
-export function withGapAsText(item: NativeExamItem, gapId: string): NativeExamItem {
-  const gap = item.gaps.find((candidate) => candidate.gap_id === gapId);
-  const text = gap?.accepted_values[0];
-  if (!text) {
-    return item;
-  }
-  return {
-    ...item,
-    gaps: item.gaps.filter((candidate) => candidate.gap_id !== gapId),
-    body: item.body.map((paragraph) => ({
-      ...paragraph,
-      segments: paragraph.segments.map((segment) =>
-        segment.kind === "gap" && segment.gap_id === gapId
-          ? { kind: "text" as const, text, marks: [] }
-          : segment,
-      ),
-    })),
-  };
 }
 
 export function reviewed(item: NativeExamItem): NativeExamItem {
@@ -393,7 +215,7 @@ function blankBody(): NativeExamBodyParagraph[] {
   return [];
 }
 
-function blankChoices(): NativeExamChoice[] {
+export function blankChoices(): NativeExamChoice[] {
   return ["choice_001", "choice_002"].map((choiceId) => ({ body: blankBody(), choice_id: choiceId }));
 }
 
@@ -411,10 +233,12 @@ function blankGap(inlineChoice: boolean): NativeExamGap {
 /**
  * The question a teacher adds: no question text, and the kind's empty
  * structure, the same structure the server gives a question it retypes
- * (TASK-SKRIPT-39-06-05). Choice kinds get two empty choices, gap kinds one
- * paragraph holding only the gap (Kort svar is a Lucktext with one gap, Q14),
- * a rullista one gap whose first empty option is the key, and Kategorisera one row, two categories and
- * a zero tick value. Empty texts block export until the teacher fills them in.
+ * (TASK-SKRIPT-39-06-05). Choice kinds get two empty choices, a rullista one
+ * gap whose first empty option is the key, and Kategorisera one row, two
+ * categories and a zero tick value. Empty texts block export until the teacher
+ * fills them in. A Kort svar is a Lucktext whose only gap stands alone in its
+ * last paragraph (L2, user 2026-10-19); a new Lucktext starts with no text
+ * and no gap, while a new Kort svar keeps its one-gap body.
  */
 export function newTeacherItem(
   itemId: string,
@@ -422,7 +246,7 @@ export function newTeacherItem(
   teacherKind: TeacherItemKind,
 ): NativeExamItem {
   const kind: NativeExamItemKind = teacherKind === "short_answer" ? "gap_fill" : teacherKind;
-  const gapped = kind === "gap_fill" || kind === "inline_choice";
+  const gapped = kind === "inline_choice" || (kind === "gap_fill" && teacherKind === "short_answer");
   const choice = kind === "single_choice" || kind === "multiple_response";
   const matching = kind === "matching";
   const ordering = kind === "ordering";

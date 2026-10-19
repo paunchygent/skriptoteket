@@ -18,13 +18,14 @@ import type { ExamCourse } from "../../../api/examWorkspace";
 import { useProfile } from "../../../composables/useProfile";
 import { useToast } from "../../../composables/useToast";
 import { useExamCourseCatalog } from "./useExamCourseCatalog";
+import type { ExamWorkspaceSharedStore } from "./examWorkspaceStore";
 
 const FAILURE_COPY = "Kursen kunde inte läggas till i dina kurser. Försök igen.";
 
-export function useExamWorkspaceMyCourses() {
+export function useExamWorkspaceMyCourses(shared: ExamWorkspaceSharedStore) {
   const profile = useProfile();
   const toast = useToast();
-  const { registeredCourseKeys, setRegisteredCourseKeys } = useExamCourseCatalog();
+  const { registeredCourseKeys, setRegisteredCourseKeys } = useExamCourseCatalog(shared);
   const adding = ref(false);
 
   function isMine(courseKey: string | null): boolean {

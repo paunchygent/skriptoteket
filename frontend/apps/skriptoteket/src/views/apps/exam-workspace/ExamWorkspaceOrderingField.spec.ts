@@ -17,6 +17,7 @@ import ExamWorkspaceNewItemMenu from "./ExamWorkspaceNewItemMenu.vue";
 import ExamWorkspaceOrderingField from "./ExamWorkspaceOrderingField.vue";
 import ExamWorkspaceQuestionHead from "./ExamWorkspaceQuestionHead.vue";
 import ExamWorkspaceQuestionEditor from "./ExamWorkspaceQuestionEditor.vue";
+import { examWorkspaceProvidersPlugin } from "./examWorkspaceProviders.specSupport";
 import { editorBehind, press, settleEditors, surfaceOf } from "./ExamWorkspaceRichTextEntry.specSupport";
 import { hasInvalidAnswerKey } from "./examWorkspaceAnswerKeyRules";
 import { newTeacherItem } from "./examWorkspaceItemEdits";
@@ -38,7 +39,11 @@ function stepped(texts: string[], printOrder: string[]): NativeExamItem {
 const mountedFields: Array<{ unmount(): void }> = [];
 
 async function mountField(item: NativeExamItem, disabled = false) {
-  const wrapper = mount(ExamWorkspaceOrderingField, { attachTo: document.body, props: { item, disabled } });
+  const wrapper = mount(ExamWorkspaceOrderingField, {
+    attachTo: document.body,
+    global: { plugins: [examWorkspaceProvidersPlugin()] },
+    props: { item, disabled },
+  });
   mountedFields.push(wrapper);
   await settleEditors();
   return wrapper;
@@ -139,6 +144,7 @@ describe("ExamWorkspaceOrderingField", () => {
 describe("ordering in the editor and menus", () => {
   it("shows the ordering field and no choice field for an ordering question", () => {
     const wrapper = mount(ExamWorkspaceQuestionEditor, {
+      global: { plugins: [examWorkspaceProvidersPlugin()] },
       props: {
         item: three(),
         label: "1",
@@ -175,7 +181,10 @@ describe("ordering in the editor and menus", () => {
     const open = (child: boolean) =>
       mount(ExamWorkspaceNewItemMenu, {
         props: { open: true, anchor: null, child },
-        global: { stubs: { ExamWorkspaceMenu: { template: "<div><slot /></div>" } } },
+        global: {
+          plugins: [examWorkspaceProvidersPlugin()],
+          stubs: { ExamWorkspaceMenu: { template: "<div><slot /></div>" } },
+        },
       });
 
     expect(open(false).find('[data-test="exam-workspace-new-ordering"]').text()).toBe("Ordna");
@@ -191,9 +200,11 @@ describe("Byt frågetyp", () => {
   async function openTypeMenu(child: { index: number; count: number } | null) {
     const wrapper = mount(ExamWorkspaceQuestionHead, {
       attachTo: document.body,
+      global: { plugins: [examWorkspaceProvidersPlugin()] },
       props: {
         label: "1",
         kind: "free_text",
+        typeLabel: "Fritext",
         unbuilt: false,
         converting: false,
         child,

@@ -12,7 +12,7 @@ Relationships:
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, File, Form, Response, UploadFile
+from fastapi import APIRouter, Depends, File, Form, Request, Response, UploadFile
 
 from skriptoteket.application.curated_apps.exam_workspace import (
     ExamCourseCatalogResponse,
@@ -45,6 +45,7 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_content_tags 
     ExamCourseContentResponse,
     course_content,
 )
+from skriptoteket.config import Settings
 from skriptoteket.domain.identity.models import User
 from skriptoteket.domain.scripting.vault import VaultFile
 from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
@@ -64,10 +65,16 @@ from skriptoteket.protocols.exam_workspace import (
     RetryExamWorkspaceItemHandlerProtocol,
     SaveExamWorkspaceDocumentHandlerProtocol,
 )
+from skriptoteket.protocols.exam_workspace_guest_drafts import (
+    ImportGuestExamDraftHandlerProtocol,
+)
 from skriptoteket.protocols.exam_workspace_history import StoreExamWorkspaceUndoStepHandlerProtocol
 from skriptoteket.web.api.v1.apps_conversion_hub_access import (
     APP_ID,
     require_conversion_hub_access,
+)
+from skriptoteket.web.api.v1.apps_conversion_hub_exam_workspace_guest_draft_request import (
+    read_guest_draft_request,
 )
 from skriptoteket.web.auth.huleedu_app_projection import require_app_ai_api, require_app_user_api
 from skriptoteket.web.content_disposition import attachment_content_disposition
@@ -413,3 +420,29 @@ async def retry_exam_workspace_item(
 
     require_conversion_hub_access(registry=registry, user=user)
     return await handler.handle(actor=user, lineage_id=lineage_id, request=request)
+
+
+@router.post(
+    "/exam-workspace/guest-drafts",
+    response_model=ExamWorkspaceDocumentResponse,
+)
+async def import_guest_exam_workspace_draft(
+    request: Request,
+    registry: FromDishka[CuratedAppRegistryProtocol],
+    settings: FromDishka[Settings],
+    handler: FromDishka[ImportGuestExamDraftHandlerProtocol],
+    user: User = Depends(require_app_user_api),
+) -> ExamWorkspaceDocumentResponse:
+    """Save a guest's browser draft into Mina filer once per (user, draft_id)."""
+
+    require_conversion_hub_access(registry=registry, user=user)
+    draft_id, document, assets_by_id, notes = await read_guest_draft_request(
+        request=request, settings=settings
+    )
+    return await handler.handle(
+        actor=user,
+        draft_id=draft_id,
+        document=document,
+        assets_by_id=assets_by_id,
+        notes=notes,
+    )

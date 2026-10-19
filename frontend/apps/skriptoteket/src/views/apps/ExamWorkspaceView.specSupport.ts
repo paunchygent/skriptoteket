@@ -24,6 +24,7 @@ import { createTestRouter, mountWithContext } from "../../test/utils";
 import { adminUser } from "./ExamWorkspaceSlice.specSupport";
 import ExamWorkspaceView from "./ExamWorkspaceView.vue";
 import { buildSavedExamSummary } from "./exam-workspace/useExamWorkspaceDocument.specSupport";
+import { serverExamWorkspaceStore } from "./exam-workspace/examWorkspaceStore";
 
 export function buildDocument(): NativeExamDocument {
   return {
@@ -85,6 +86,7 @@ export async function mountView() {
     stubActions: (name) => name !== "hasAtLeastRole",
   });
   const wrapper = mountWithContext(ExamWorkspaceView, {
+    props: { store: serverExamWorkspaceStore },
     global: { plugins: [pinia, createTestRouter()] },
   });
   mounted.push(wrapper);

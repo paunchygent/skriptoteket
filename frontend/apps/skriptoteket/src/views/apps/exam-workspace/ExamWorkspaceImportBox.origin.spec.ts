@@ -8,16 +8,27 @@
  */
 
 import { mount } from "@vue/test-utils";
-import { describe, expect, it } from "vitest";
+import { createPinia, setActivePinia } from "pinia";
+import type { Pinia } from "pinia";
+import { beforeEach, describe, expect, it } from "vitest";
 
 import type { NativeExamDocument, NativeExamImportRecord } from "../../../api/examWorkspace";
+import { useAuthStore } from "../../../stores/auth";
 import { buildFreeTextItem } from "../../../test/examWorkspaceFixtures";
 import ExamWorkspaceImportBox from "./ExamWorkspaceImportBox.vue";
+import { examWorkspaceProvidersPlugin } from "./examWorkspaceProviders.specSupport";
 
 const RECORD: NativeExamImportRecord = {
   original_wording: { answer_key_text: null, question_text: "Vad är fotosyntes?" },
   steps: [{ chosen_kind: "single_choice", kind: "chosen_type" }],
 };
+
+let pinia: Pinia;
+beforeEach(() => {
+  pinia = createPinia();
+  setActivePinia(pinia);
+  useAuthStore().user = { id: "u1", email: "u@example.test", role: "admin", auth_provider: "local" };
+});
 
 function mountBox(origin: NativeExamDocument["origin"]["kind"]) {
   return mount(ExamWorkspaceImportBox, {
@@ -26,6 +37,9 @@ function mountBox(origin: NativeExamDocument["origin"]["kind"]) {
       origin,
       open: true,
       disabled: false,
+    },
+    global: {
+      plugins: [pinia, examWorkspaceProvidersPlugin()],
     },
   });
 }

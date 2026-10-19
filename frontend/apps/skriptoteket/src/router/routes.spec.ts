@@ -106,7 +106,7 @@ describe("routes", () => {
     expect(resolved.meta.requiresAuth).toBe(true);
     expect(workspaceRouteIndex).toBeGreaterThanOrEqual(0);
     expect(workspaceRouteIndex).toBeLessThan(genericAppRouteIndex);
-    expect(String(routes[workspaceRouteIndex]?.component)).toContain("ExamWorkspaceView.vue");
+    expect(String(routes[workspaceRouteIndex]?.component)).toContain("ExamWorkspaceTeacherHost.vue");
   });
 
   it("lets every authenticated role open the suggestion form", () => {

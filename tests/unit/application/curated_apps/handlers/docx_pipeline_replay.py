@@ -6,7 +6,8 @@ the exam-conversion eval use. Only the network is replaced: the Decisions first 
 type batches) reads unmodified replies from
 ``tests/fixtures/exam_conversion/docx_key_provenance_v14/<exam>/``. All converter
 batches are matched once by their source/facit anchors within the request's
-visible chunks, as in the HTTP replay transport.
+visible chunks, and every second-pass labeler request once by its recording's capture-time
+request key, as in the HTTP replay transport.
 """
 
 from __future__ import annotations
@@ -56,6 +57,7 @@ from skriptoteket.protocols.docx_conversion_progress import (
     DocxConversionProgressProtocol,
 )
 from skriptoteket.protocols.exam_answer_key import AnswerKeyTokenLeaseRepositoryProtocol
+from tests.fixtures.label_b_request_keys import label_b_request_keys, matching_label_b
 from tests.fixtures.time_fixtures import FixedClock
 
 FIXTURES = Path("tests/fixtures/exam_conversion")
@@ -91,7 +93,7 @@ class MissingRecording(AssertionError):
 
 
 class ReplayProvider:
-    """Replay current replies; match every converter batch once by visible source anchors."""
+    """Replay current replies; match converter batches by anchors and labels by request key."""
 
     def __init__(
         self,
@@ -102,6 +104,7 @@ class ReplayProvider:
         self._exam = exam
         self._root = root
         self._failures = dict(failures or {})
+        self._label_keys = label_b_request_keys(root / exam)
         self.requests: list[StructuredLLMRequest] = []
         self.recording_ids: dict[str, str] = {}
         self.served: list[tuple[str, str]] = []
@@ -118,7 +121,15 @@ class ReplayProvider:
         if request.item_id in self._failures:
             raise self._failures[request.item_id]
         name = request.item_id.replace(":", "_")
-        if request.output_spec.schema_name == "docx_exam_build":
+        if request.output_spec.schema_name == "item_type_label":
+            label = matching_label_b(self._label_keys, request.user_payload, self._served)
+            if label is None:
+                raise MissingRecording(
+                    f"{self._exam}: no unused label_b recording whose request key matches "
+                    f"{request.item_id!r}"
+                )
+            name = label
+        elif request.output_spec.schema_name == "docx_exam_build":
             payload = json.loads(request.user_payload)
             pending = {chunk["anchor"] for chunk in payload["chunks"]}
             grouping = recording(self._exam, "docx_grouping_1", self._root)

@@ -14,7 +14,6 @@ from skriptoteket.domain.curated_apps.exam_conversion.digiexam_answer_key_llm_co
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import (
     NOTHING_GOVERNED,
     assemble_build_result,
-    review_source_item,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     DocxBuildEvent,
@@ -32,6 +31,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_points_lines import (
     part_openers,
     printed_points_plan,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_source_review import review_source_item
 from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
     POINT_LABEL,
     QUESTION_HEADING_LABEL,

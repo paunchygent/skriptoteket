@@ -31,8 +31,10 @@ from skriptoteket.di.exam_answer_key import ExamAnswerKeyProvider
 from skriptoteket.di.exam_converter import ExamConverterProvider
 from skriptoteket.di.exam_workspace import ExamWorkspaceProvider
 from skriptoteket.di.exam_workspace_change_type import ExamWorkspaceChangeTypeProvider
+from skriptoteket.di.exam_workspace_guest_drafts import ExamWorkspaceGuestDraftsProvider
 from skriptoteket.di.exam_workspace_imports import ExamWorkspaceImportProvider
 from skriptoteket.di.exam_workspace_index import ExamWorkspaceIndexProvider
+from skriptoteket.di.exam_workspace_public import ExamWorkspacePublicProvider
 from skriptoteket.di.favorites import FavoritesProvider
 from skriptoteket.di.flunk_out_frenzy import FlunkOutFrenzyProvider
 from skriptoteket.di.identity import IdentityProvider
@@ -46,6 +48,7 @@ from skriptoteket.di.infrastructure import (
     InfrastructureSessionFilesProvider,
 )
 from skriptoteket.di.llm import LlmProvider
+from skriptoteket.di.public_request_limits import PublicRequestLimitsProvider
 from skriptoteket.di.reagent_prep_chef import ReagentPrepChefProvider
 from skriptoteket.di.scripting import ScriptingProvider
 from skriptoteket.di.suggestions import SuggestionsProvider
@@ -69,7 +72,9 @@ __all__ = [
     "ExamWorkspaceProvider",
     "ExamWorkspaceImportProvider",
     "ExamWorkspaceChangeTypeProvider",
+    "ExamWorkspaceGuestDraftsProvider",
     "ExamWorkspaceIndexProvider",
+    "ExamWorkspacePublicProvider",
     "FavoritesProvider",
     "IdentityProvider",
     "InfrastructureCuratedAppsProvider",
@@ -80,6 +85,7 @@ __all__ = [
     "InfrastructureServicesProvider",
     "InfrastructureSessionFilesProvider",
     "LlmProvider",
+    "PublicRequestLimitsProvider",
     "ScriptingProvider",
     "SuggestionsProvider",
     "build_providers",
@@ -118,8 +124,11 @@ def build_providers(settings: Settings) -> tuple[Provider, ...]:
         ExamWorkspaceProvider(),
         ExamWorkspaceImportProvider(),
         ExamWorkspaceChangeTypeProvider(),
+        ExamWorkspaceGuestDraftsProvider(),
         ExamWorkspaceIndexProvider(),
+        ExamWorkspacePublicProvider(),
         LlmProvider(),
+        PublicRequestLimitsProvider(),
         ScriptingProvider(),
         SuggestionsProvider(),
     )

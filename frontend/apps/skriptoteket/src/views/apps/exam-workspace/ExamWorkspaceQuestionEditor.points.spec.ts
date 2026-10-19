@@ -13,6 +13,7 @@ import { describe, expect, it } from "vitest";
 
 import type { NativeExamItem } from "../../../api/examWorkspace";
 import ExamWorkspaceQuestionEditor from "./ExamWorkspaceQuestionEditor.vue";
+import { examWorkspaceProvidersPlugin } from "./examWorkspaceProviders.specSupport";
 import { withPoints } from "./examWorkspaceItemEdits";
 import { buildMatchingItem } from "./examWorkspaceMatchingItem.specSupport";
 
@@ -32,6 +33,7 @@ function buildItem(overrides: Partial<NativeExamItem>): NativeExamItem {
 
 function mountEditor(item: NativeExamItem) {
   return mount(ExamWorkspaceQuestionEditor, {
+    global: { plugins: [examWorkspaceProvidersPlugin()] },
     props: { item, label: "1", origin: "digiexam_import", parent: null, child: null, converting: false, disabled: false, notice: null, importOpen: false },
   });
 }

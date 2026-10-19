@@ -6,14 +6,15 @@
  *   editor's image atoms and the read-only instructions resolve them once.
  *
  * Relationships:
- *   - Uses `examWorkspaceAssetUrl` from `api/examWorkspace.ts`.
+ *   - Uses `examWorkspaceAssetUrl` through the shared store half.
  *   - Consumed by `useExamWorkspaceDocument`.
  */
 
-import { examWorkspaceAssetUrl } from "../../../api/examWorkspace";
 import type { NativeExamDocument } from "../../../api/examWorkspace";
+import type { ExamWorkspaceSharedStore } from "./examWorkspaceStore";
 
 export function examWorkspaceAssetUrls(
+  shared: ExamWorkspaceSharedStore,
   document: NativeExamDocument | null,
   lineageId: string | null,
 ): Record<string, string> {
@@ -23,7 +24,7 @@ export function examWorkspaceAssetUrls(
   return Object.fromEntries(
     document.assets.map((asset) => [
       asset.asset_id,
-      examWorkspaceAssetUrl(lineageId, asset.asset_id, document.revision),
+      shared.examWorkspaceAssetUrl(lineageId, asset.asset_id, document.revision),
     ]),
   );
 }

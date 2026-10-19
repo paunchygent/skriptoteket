@@ -14,7 +14,7 @@ from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts impo
     ExamNetQtiEvaluationMode,
     ExamNetQtiInteractionType,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import aligned_native_item
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_item import aligned_native_item
 from skriptoteket.domain.curated_apps.exam_workspace.exam_language_labels import (
     SWEDISH_EXAM_LABELS,
 )
@@ -34,6 +34,9 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary impo
 from skriptoteket.domain.curated_apps.exam_workspace.shared_body import body_plain_text
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub import (
     exam_workspace_docx_writer,
+)
+from tests.unit.domain.curated_apps.exam_workspace.exam_print_document_test_support import (
+    entry_blocks,
 )
 from tests.unit.domain.curated_apps.exam_workspace.native_matching_test_support import (
     DISTRACTOR_TEXT,
@@ -141,7 +144,7 @@ def test_distractors_are_listed_by_the_docx_writer_and_stay_out_of_its_pairs():
     key_lines = [
         line
         for entry in facit.entries
-        for block in entry.blocks
+        for block in entry_blocks(entry)
         if isinstance(block, PrintAnswerKey)
         for line in block.lines
         if line.startswith(pair)

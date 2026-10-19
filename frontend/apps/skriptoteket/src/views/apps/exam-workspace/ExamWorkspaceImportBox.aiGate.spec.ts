@@ -19,6 +19,7 @@ import type { NativeExamItem } from "../../../api/examWorkspace";
 import { AI_ADMIN_ONLY_NOTE } from "../../../composables/useAiAccess";
 import { useAuthStore } from "../../../stores/auth";
 import ExamWorkspaceImportBox from "./ExamWorkspaceImportBox.vue";
+import { examWorkspaceProvidersPlugin } from "./examWorkspaceProviders.specSupport";
 
 type Role = "user" | "contributor" | "admin" | "superuser";
 
@@ -67,7 +68,9 @@ function signIn(pinia: Pinia, role: Role): void {
 function mountBox(pinia: Pinia) {
   return mount(ExamWorkspaceImportBox, {
     props: { item: reviewItem(), origin: "docx_import", open: true, disabled: false },
-    global: { plugins: [pinia] },
+    global: {
+      plugins: [pinia, examWorkspaceProvidersPlugin()],
+    },
   });
 }
 
