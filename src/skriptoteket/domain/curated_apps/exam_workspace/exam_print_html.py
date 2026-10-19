@@ -83,6 +83,8 @@ def _house_css() -> str:
   margin: {template.PAGE_MARGIN_VERTICAL_MM}mm {template.PAGE_MARGIN_SIDE_MM}mm;
 }}
 body {{
+  margin: 0;
+  padding: 0;
   color: #{template.TEXT_COLOR_HEX};
   font-family: {_font_family_css()};
   font-size: {template.HOUSE_FONT_SIZE_PT}pt;
