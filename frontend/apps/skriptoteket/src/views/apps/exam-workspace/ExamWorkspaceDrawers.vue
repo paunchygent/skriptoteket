@@ -154,6 +154,7 @@ const currentExports = computed(() =>
       :notice="exports.exportNotice.value"
       :result="exports.exportResult.value"
       :zero-points="zeroPoints"
+      :question-label="questionLabel"
       @run="(target, destination) => $emit('run', target, destination)"
       @goto="$emit('goto', $event)"
       @fix="$emit('fix', $event)"

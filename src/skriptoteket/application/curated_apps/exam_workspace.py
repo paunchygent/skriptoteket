@@ -126,15 +126,6 @@ class ExamCourseCatalogResponse(BaseModel):
     registered_course_keys: tuple[str, ...] = ()
 
 
-class SaveExamWorkspaceDocumentRequest(BaseModel):
-    model_config = ConfigDict(frozen=True, extra="forbid")
-
-    expected_revision: int = Field(ge=1)
-    document: NativeExamDocument
-    position_step_id: UUID
-    """The retained history snapshot the editor stands on; the saved copy is kept at it."""
-
-
 class ExamWorkspaceEnrichmentState(StrEnum):
     """Teacher-facing state of one answer-key suggestion job."""
 
@@ -242,7 +233,7 @@ class ExamWorkspaceExportChecklistFreeTextCriteria(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     kind: Literal["free_text_criteria"]
-    question_number: str
+    item_id: str
     question_text: str
     points: int | float
     criteria: tuple[ExamWorkspaceExportChecklistCriterion, ...]
@@ -254,7 +245,7 @@ class ExamWorkspaceExportChecklistAllOrNothing(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     kind: Literal["all_or_nothing"]
-    question_number: str
+    item_id: str
     question_text: str
     points: int | float
 
@@ -265,7 +256,7 @@ class ExamWorkspaceExportChecklistRoundedGaps(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     kind: Literal["rounded_gaps"]
-    question_number: str
+    item_id: str
     question_text: str
     points: int | float
     gap_points: int | float

@@ -16,6 +16,7 @@ export function buildFreeTextItem(sequence: number, overrides: Partial<NativeExa
     ],
     choices: [],
     gaps: [],
+    kept_gaps: [],
     match_left: [],
     match_right: [],
     item_id: `item_${String(sequence).padStart(3, "0")}`,

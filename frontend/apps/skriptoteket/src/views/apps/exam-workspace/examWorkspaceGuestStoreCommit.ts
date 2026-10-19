@@ -5,7 +5,9 @@
  *   The conditional write behind every guest mutation: load the browser
  *   draft for a lineage, run one server command against the editor's
  *   document, and commit the returned document as one new undo step after
- *   the current position, exactly as the server's commands do. The snapshot
+ *   the current position, exactly as the server's commands do. The step also
+ *   updates the saved draft in the same write, as the server's step store
+ *   overwrites the exam file. The snapshot
  *   cursor is captured before the network call and the write commits only
  *   when that snapshot still owns the slot; a delayed command that lands
  *   after another tab's write reports the conflict and discards the network
@@ -19,7 +21,7 @@
  *     through the `examWorkspaceGuestDraftStorage.ts` port; the object-URL
  *     map stays in `examWorkspaceGuestStore.ts`, notified via `onStored`.
  *   - Consumed by `examWorkspaceGuestStore.ts` for the structural commands;
- *     the save and undo-step paths share `loadGuestStored`,
+ *     the undo-step and position-move paths share `loadGuestStored`,
  *     `persistGuestStored` and `retainDeclaredAssets` directly.
  */
 
@@ -111,6 +113,12 @@ export type CommitGuestCommandOptions<Result extends PublicCommandResult> = {
   guard: (draft: ExamWorkspaceGuestDraft) => boolean;
   run: (document: NativeExamDocument) => Promise<Result>;
   onStored: (stored: StoredGuestDraft) => void;
+  /**
+   * Refuse a write from a tab that does not hold a live lease, after the
+   * cursor guard: the server reports a stale cursor as its ordinary conflict
+   * first, and the lease only after.
+   */
+  checkLease: () => Promise<void>;
 };
 
 /**
@@ -124,6 +132,7 @@ export async function commitGuestCommand<Result extends PublicCommandResult>(
   if (!options.guard(stored.draft)) {
     throw conflictError();
   }
+  await options.checkLease();
   const expectedCursor = stored.draft.cursor;
   const current = guestDocumentResponse(stored.draft).document;
   const result = await options.run(current);

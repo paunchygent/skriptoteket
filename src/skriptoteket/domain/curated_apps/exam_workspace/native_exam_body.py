@@ -12,6 +12,9 @@ Formatting:
     The DOCX lane casts reader values to ``NativeTextMark`` and
     ``Literal[1, 2, 3] | None`` at this boundary; the models require both fields so a
     producer can never save an unformatted body by accident.
+    A reverted gap keeps its hidden answers on the word: the word's runs carry the
+    gap's id as ``kept_gap_id`` (TASK-SKRIPT-40-04-13). The link is not a mark, so
+    renderers that read ``marks`` see the word as plain text.
 
 Relationships:
     Imported by ``native_exam_document`` and, for shared instruction bodies, by
@@ -45,12 +48,16 @@ def validate_text_only_body(body: tuple[NativeParagraph, ...], *, surface: str) 
 
     A QTI simple choice or associable choice holds no nested interaction, and the
     native export has no resource pool for a picture inside one, so a gap or asset
-    segment there fails at the model boundary instead of at export time.
+    segment there fails at the model boundary instead of at export time. A kept
+    gap link belongs to an item body alone, so a text run carrying one fails here
+    too, wherever the body is used outside an item body.
     """
     for paragraph in body:
         for segment in paragraph.segments:
             if not isinstance(segment, NativeTextSegment):
                 raise ValueError(f"{surface} body carries text paragraphs only")
+            if segment.kept_gap_id is not None:
+                raise ValueError(f"{surface} body cannot carry a kept gap link")
 
 
 class NativeTextSegment(BaseModel):
@@ -59,6 +66,11 @@ class NativeTextSegment(BaseModel):
     kind: Literal["text"] = "text"
     text: str = Field(min_length=1)
     marks: tuple[NativeTextMark, ...]
+    # A reverted gap's hidden answers ride on the word (TASK-SKRIPT-40-04-13 H1):
+    # the word's runs carry the kept gap's id, null on ordinary text. The link is
+    # not a mark, so ``marks`` keeps its five formatting names. Neighbouring runs
+    # merge only when both their marks and their kept links are equal.
+    kept_gap_id: str | None = Field(default=None, pattern=GAP_ID_PATTERN)
 
     @field_validator("marks")
     @classmethod

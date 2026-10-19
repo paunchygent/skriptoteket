@@ -24,6 +24,7 @@ import { useExamWorkspaceHistory } from "./useExamWorkspaceHistory";
 const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceHistory: vi.fn(),
   getExamWorkspaceHistoryStep: vi.fn(),
+  moveExamWorkspaceHistoryPosition: vi.fn(),
   storeExamWorkspaceUndoStep: vi.fn(),
 }));
 
@@ -58,6 +59,13 @@ function fakeServer(baseline: NativeExamDocument) {
     document: documents.get(stepId)!,
     step_id: stepId,
   }));
+  apiMocks.moveExamWorkspaceHistoryPosition.mockImplementation(
+    async (_lineage: string, request: { expectedCursor: string; stepId: string }) => {
+      state.position = request.stepId;
+      state.cursor = `move-${++counter}`;
+      return { document: documents.get(request.stepId)!, export_blockers: [], history: history() };
+    },
+  );
   apiMocks.storeExamWorkspaceUndoStep.mockImplementation(
     async (
       _lineage: string,
@@ -100,14 +108,19 @@ function setup() {
         workspaceDocument.value = document;
       },
       isBlocked: () => false,
+      isGuest: () => false,
+      isReadOnly: () => false,
       isReplacing: () => false,
       replaceCopy: (run) => run(),
       lineageId: () => "lineage-1",
       noteExportBlockers: vi.fn(),
+      noteLeaseLost: vi.fn(),
+      noteStored: vi.fn(),
       onConflict,
       savedRevision: () => baseline.revision,
       serverDocument,
       shared: serverExamWorkspaceStore.shared,
+      tabId: () => "tab-1",
       workspaceDocument,
     }),
   )!;
@@ -155,6 +168,7 @@ describe("a pending edit the save rules refuse", () => {
 
     expect(workspaceDocument.value).toEqual(stored);
     expect(history.pending.value).toBe(false);
+    expect(history.saveStatus.value.state).toBe("saved");
     expect(useToastStore().toasts).toEqual([]);
   });
 

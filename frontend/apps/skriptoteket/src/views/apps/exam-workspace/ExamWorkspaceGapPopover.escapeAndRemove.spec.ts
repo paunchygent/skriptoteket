@@ -2,8 +2,8 @@
  * Exam workspace gap popover: Escape keeps typing and remove keeps focus.
  *
  * Expected behavior:
- *   Escape in the popover commits what was typed, the same as leaving the
- *   popover: typed dropdown option text is emitted through `updateOptions`,
+ *   Escape in the popover keeps what was typed (typing already committed it
+ *   on input): typed dropdown option text is emitted through `updateOptions`,
  *   typed text-gap answers through `commit`, exactly once even when a
  *   `focusout` or `change` fires late, and the popover closes returning
  *   focus. Escape during an IME composition belongs to the composition and
@@ -125,12 +125,15 @@ describe("ExamWorkspaceGapPopover Escape keeps typing", () => {
     input.dispatchEvent(new Event("input", { bubbles: true }));
     await wrapper.vm.$nextTick();
 
+    // Typing already committed on input; the ignored Escape adds nothing.
+    expect(updates(wrapper)).toHaveLength(1);
+
     const composing = new KeyboardEvent("keydown", { bubbles: true, key: "Escape" });
     Object.defineProperty(composing, "isComposing", { value: true });
     input.dispatchEvent(composing);
     await wrapper.vm.$nextTick();
 
-    expect(wrapper.emitted("updateOptions")).toBeUndefined();
+    expect(updates(wrapper)).toHaveLength(1);
     expect(wrapper.emitted("close")).toBeUndefined();
     wrapper.unmount();
   });

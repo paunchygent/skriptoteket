@@ -13,12 +13,11 @@ import { mount } from "@vue/test-utils";
 import type { VueWrapper } from "@vue/test-utils";
 import type { Editor } from "@tiptap/core";
 import { vi } from "vitest";
-import { defineComponent, h, nextTick } from "vue";
+import { defineComponent, h, nextTick, ref } from "vue";
 
 import type { NativeExamBodyParagraph, NativeExamBodySegment } from "../../../api/examWorkspace";
 import type { BodyMark } from "./examWorkspaceBodyMarks";
 import { provideExamWorkspaceHistoryKeys } from "./examWorkspaceHistoryKeys";
-import type { ExamWorkspaceHistoryKeys } from "./examWorkspaceHistoryKeys";
 import ExamWorkspaceRichTextEditor from "./ExamWorkspaceRichTextEditor.vue";
 import type { ExamGapState } from "./examWorkspaceRichTextSchema";
 import { provideRichTextTargetRegistry } from "./examWorkspaceRichTextTarget";
@@ -38,7 +37,7 @@ export type EditorProps = {
 };
 
 export function text(value: string, marks: BodyMark[] = []): NativeExamBodySegment {
-  return { kind: "text", text: value, marks };
+  return { kind: "text", text: value, marks, kept_gap_id: null };
 }
 export function gap(id: string): NativeExamBodySegment {
   return { kind: "gap", gap_id: id };
@@ -69,14 +68,14 @@ async function open(
 ): Promise<Opened> {
   const updates: Array<[Body, boolean]> = [];
   const activations: Array<[string, HTMLElement]> = [];
-  const keys = { undo: vi.fn(), redo: vi.fn() };
+  const keys = { undo: vi.fn(), redo: vi.fn(), canUndo: ref(false), canRedo: ref(false) };
   let registry!: RichTextTargetRegistry;
   const Host = defineComponent({
     props: { editorProps: { type: Object, required: true } },
     setup(hostProps) {
       registry = provideRichTextTargetRegistry();
       if (options.provideKeys !== false) {
-        provideExamWorkspaceHistoryKeys(keys as ExamWorkspaceHistoryKeys);
+        provideExamWorkspaceHistoryKeys(keys);
       }
       return () =>
         h(ExamWorkspaceRichTextEditor, {

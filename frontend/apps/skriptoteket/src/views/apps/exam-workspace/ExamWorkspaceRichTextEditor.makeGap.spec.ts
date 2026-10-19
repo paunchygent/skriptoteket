@@ -1,18 +1,20 @@
 /**
  * Exam workspace rich-text editor: the gap command.
  *
- * Expected behavior (TASK-SKRIPT-40-04-08 J4):
+ * Expected behavior (TASK-SKRIPT-40-04-13 Behaviours 8 and 9):
  *   `target.makeGap(gapId)` turns the selection, or the word at the caret,
- *   into a new gap, or inserts an empty gap, as one change that emits a
- *   single `createGap(body, gapId, seed)` event and never `update`.
+ *   into a new gap, as one change that emits a single
+ *   `createGap(body, gapId, seed)` event and never `update`. A caret outside
+ *   a word creates nothing: no control inserts an empty gap.
  *
  * jsdom has no layout, so selections are set through TipTap commands.
  */
 
-import { NodeSelection } from "@tiptap/pm/state";
+import { TextSelection } from "@tiptap/pm/state";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
+  atomPos,
   gap,
   paragraph,
   posIn,
@@ -43,7 +45,9 @@ describe("ExamWorkspaceRichTextEditor makeGap", () => {
     expect(gapId).toBe("gap_002");
     expect(seed).toBe("Paris");
     expect(body).toEqual([paragraph(text("Huvudstaden är "), gap("gap_002"), text("."))]);
-    expect(opened.editor.state.selection).toBeInstanceOf(NodeSelection);
+    expect(opened.editor.state.selection).toBeInstanceOf(TextSelection);
+    expect(opened.editor.state.selection.empty).toBe(true);
+    expect(opened.editor.state.selection.from).toBe(atomPos(opened.editor, "examGap") + 1);
   });
 
   it("turns the word at a caret inside a bold mark into the whole word across the mark", async () => {
@@ -62,7 +66,9 @@ describe("ExamWorkspaceRichTextEditor makeGap", () => {
     expect(gapId).toBe("gap_002");
     expect(seed).toBe("Stockholm");
     expect(body).toEqual([paragraph(text("Huvudstaden är "), gap("gap_002"), text("."))]);
-    expect(opened.editor.state.selection).toBeInstanceOf(NodeSelection);
+    expect(opened.editor.state.selection).toBeInstanceOf(TextSelection);
+    expect(opened.editor.state.selection.empty).toBe(true);
+    expect(opened.editor.state.selection.from).toBe(atomPos(opened.editor, "examGap") + 1);
     expect(dispatch).toHaveBeenCalledTimes(1);
   });
 
@@ -132,17 +138,14 @@ describe("ExamWorkspaceRichTextEditor makeGap", () => {
     expect(opened.editor.getText()).toBe("first\n\nsecond");
   });
 
-  it("inserts an empty gap at the caret with an empty seed when the caret is not in a word", async () => {
+  it("creates nothing at a caret outside a word, never an empty gap", async () => {
     const opened = await openEditor({ body: [paragraph(text("ab "))], gapsInteractive: true });
     opened.editor.commands.setTextSelection(posIn(opened.editor, "ab ", 3));
     targetOf(opened).makeGap("gap_002");
 
-    expect(opened.creations).toHaveLength(1);
+    expect(opened.creations).toHaveLength(0);
     expect(opened.updates).toHaveLength(0);
-    const [body, gapId, seed] = opened.creations[0]!;
-    expect(gapId).toBe("gap_002");
-    expect(seed).toBe("");
-    expect(body).toEqual([paragraph(text("ab "), gap("gap_002"))]);
+    expect(opened.editor.getText()).toBe("ab ");
   });
 
   it("does nothing while not interactive or while disabled", async () => {
@@ -168,7 +171,7 @@ describe("ExamWorkspaceRichTextEditor makeGap", () => {
     expect(disabled.editor.getText()).toBe("Huvudstaden är Paris.");
   });
 
-  it("keeps the gap selection when the owner echoes the emitted body", async () => {
+  it("keeps the caret after the gap when the owner echoes the emitted body", async () => {
     const opened = await openEditor({ body: [paragraph(text("Huvudstaden är Paris."))], gapsInteractive: true });
     opened.editor.commands.setTextSelection(posIn(opened.editor, "Paris", 1));
     targetOf(opened).makeGap("gap_002");
@@ -176,7 +179,9 @@ describe("ExamWorkspaceRichTextEditor makeGap", () => {
 
     await opened.setProps({ body: emitted });
 
-    expect(opened.editor.state.selection).toBeInstanceOf(NodeSelection);
+    expect(opened.editor.state.selection).toBeInstanceOf(TextSelection);
+    expect(opened.editor.state.selection.empty).toBe(true);
+    expect(opened.editor.state.selection.from).toBe(atomPos(opened.editor, "examGap") + 1);
     expect(opened.editor.getText()).toBe("Huvudstaden är .");
     expect(opened.creations).toHaveLength(1);
     expect(opened.updates).toHaveLength(0);

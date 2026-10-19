@@ -91,15 +91,18 @@ def _expected_losses(document: NativeExamDocument) -> dict[int, _Loss]:
     return losses
 
 
-def _actual_losses(document: NativeExamDocument) -> dict[int, _Loss]:
+def _actual_losses(
+    document: NativeExamDocument,
+) -> dict[int, _Loss]:
+    sequence_by_item_id = {item.item_id: item.sequence for item in document.items}
     losses: dict[int, _Loss] = {}
     for entry in native_exam_export_checklist(document):
         if isinstance(entry, ExamNetExportChecklistFreeTextCriteria):
-            losses[int(entry.question_number)] = ("free_text_criteria", None)
+            losses[sequence_by_item_id[entry.item_id]] = ("free_text_criteria", None)
         elif isinstance(entry, ExamNetExportChecklistRoundedGaps):
-            losses[int(entry.question_number)] = ("rounded_gaps", entry.gap_points)
+            losses[sequence_by_item_id[entry.item_id]] = ("rounded_gaps", entry.gap_points)
         else:
-            losses[int(entry.question_number)] = ("all_or_nothing", None)
+            losses[sequence_by_item_id[entry.item_id]] = ("all_or_nothing", None)
     return losses
 
 
@@ -137,8 +140,9 @@ def test_rounded_entries_re_read_the_serialized_gap_mappings(exam: str) -> None:
 
     if not entries:
         pytest.skip(f"{exam} has no rounded gap loss")
+    sequence_by_item_id = {item.item_id: item.sequence for item in document.items}
     for entry in entries:
-        leaf = leaves[int(entry.question_number)]
+        leaf = leaves[sequence_by_item_id[entry.item_id]]
         root = ElementTree.fromstring(serialize_qti_assessment_item(leaf))
         values = [
             element.attrib["mapped-value"]
@@ -171,8 +175,9 @@ def test_free_text_entries_re_read_the_serialized_criterion_rows(exam: str) -> N
         if isinstance(entry, ExamNetExportChecklistFreeTextCriteria)
     ]
 
+    sequence_by_item_id = {item.item_id: item.sequence for item in document.items}
     for entry in entries:
-        leaf = leaves[int(entry.question_number)]
+        leaf = leaves[sequence_by_item_id[entry.item_id]]
         root = ElementTree.fromstring(serialize_qti_assessment_item(leaf))
         mapping = root.find(f".//{{{QTI_NAMESPACE}}}qti-mapping")
         assert mapping is not None

@@ -5,9 +5,10 @@
  *   With the `gapTool` prop on, a primary click inside a word turns that word
  *   into a gap at once (one `createGap`, never `update`, no floating button),
  *   and a drag selection inside one paragraph turns into one gap on mouseup.
- *   A click on a space only places the caret, a click on a gap chip still
- *   opens it (`activateGap`), typing still emits `update`, and with the prop
- *   off a word click shows the floating button exactly as before.
+ *   A click on a space only places the caret, a click on a gap chip reverts
+ *   it (`revertGap`, never `activateGap`), typing still emits `update`, and
+ *   with the prop off a word click only places the caret and never shows a
+ *   button, while a gap click still opens it (`activateGap`).
  *
  * jsdom has no layout, so selections are set through TipTap commands, clicks
  * reach the view through `someProp("handleClick")`, a drag release is a real
@@ -37,8 +38,7 @@ import {
   gapButton,
   openEditor,
   pressMouse,
-  releaseMouse,
-  stubGeometry,
+  releaseMouse
 } from "./ExamWorkspaceRichTextEditor.gapTool.specSupport";
 import {
   gapPointerMiddle,
@@ -255,7 +255,7 @@ describe("ExamWorkspaceRichTextEditor gap tool", () => {
     expect(gapButton()).toBeNull();
   });
 
-  it("opens a clicked gap chip instead of making a new gap", async () => {
+  it("with the tool on, a clicked gap chip reverts instead of opening", async () => {
     const opened = await openEditor({
       body: [paragraph(text("hello "), gap("gap_001"), text(" world"))],
       gapsInteractive: true,
@@ -269,8 +269,8 @@ describe("ExamWorkspaceRichTextEditor gap tool", () => {
     );
 
     expect(handled).toBe(true);
-    expect(opened.activations).toHaveLength(1);
-    expect(opened.activations[0]![0]).toBe("gap_001");
+    expect(opened.reverts).toEqual(["gap_001"]);
+    expect(opened.activations).toHaveLength(0);
     expect(opened.creations).toHaveLength(0);
     expect(opened.updates).toHaveLength(0);
   });
@@ -349,13 +349,12 @@ describe("ExamWorkspaceRichTextEditor gap tool", () => {
     expect(opened.editor.getText()).toBe("hello worldx");
   });
 
-  it("shows the floating button, not a gap, on a word click with the tool off", async () => {
+  it("with the tool off, a word click creates no gap and shows no button", async () => {
     const opened = await openEditor({
       body: [paragraph(text("hello world"))],
       gapsInteractive: true,
       nextGapId: "gap_002",
     });
-    stubGeometry(opened);
     opened.editor.commands.setTextSelection(posIn(opened.editor, "world", 1));
     const handled = clickAt(opened, posIn(opened.editor, "world", 1));
     await nextTick();
@@ -363,21 +362,20 @@ describe("ExamWorkspaceRichTextEditor gap tool", () => {
 
     expect(handled).toBeFalsy();
     expect(opened.creations).toHaveLength(0);
-    expect(gapButton()).not.toBeNull();
+    expect(gapButton()).toBeNull();
   });
 
-  it("removes a shown floating button when the tool turns on", async () => {
+  it("with the tool off, turning the tool on still creates nothing by itself", async () => {
     const opened = await openEditor({
       body: [paragraph(text("hello world"))],
       gapsInteractive: true,
       nextGapId: "gap_002",
     });
-    stubGeometry(opened);
     opened.editor.commands.setTextSelection(posIn(opened.editor, "world", 1));
     clickAt(opened, posIn(opened.editor, "world", 1));
     await nextTick();
     await nextTick();
-    expect(gapButton()).not.toBeNull();
+    expect(gapButton()).toBeNull();
 
     await opened.setProps({ gapTool: true });
 

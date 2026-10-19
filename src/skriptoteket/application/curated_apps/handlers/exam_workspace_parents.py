@@ -1,4 +1,4 @@
-"""Apply one parent command to the newest editor step without saving the exam file."""
+"""Apply one parent command to the newest editor step; the step also overwrites the exam file."""
 
 from collections.abc import Callable
 from uuid import UUID
@@ -46,6 +46,7 @@ class ExamWorkspaceParentsHandler:
         actor: User,
         lineage_id: UUID,
         expected_cursor: UUID,
+        tab_id: UUID,
         operation: Callable[[NativeExamDocument], NativeExamDocument],
     ) -> ExamWorkspaceDocumentResponse:
         current = await self._reader.handle(actor=actor, lineage_id=lineage_id)
@@ -59,18 +60,18 @@ class ExamWorkspaceParentsHandler:
                 },
             )
         document = operation(current.document)
-        # The shared seam checks the cursor atomically, including changes after this read.
-        # Omit the branch position: commands always append to the newest undo step.
-        stored = await self._undo_steps.handle(
+        # The shared seam checks the cursor and the editing tab's lease atomically,
+        # including changes after this read. Omit the branch position: commands always
+        # append to the newest undo step.
+        await self._undo_steps.handle(
             actor=actor,
             lineage_id=lineage_id,
             request=StoreExamWorkspaceUndoStepRequest(
-                expected_cursor=expected_cursor, document=document
+                expected_cursor=expected_cursor, document=document, tab_id=tab_id
             ),
         )
-        return current.model_copy(
-            update={"document": stored.document, "history_cursor": stored.history.cursor}
-        )
+        # The step also overwrote the exam file, so the pre-store read is stale: reopen.
+        return await self._reader.handle(actor=actor, lineage_id=lineage_id)
 
     async def create_parent(
         self,
@@ -83,6 +84,7 @@ class ExamWorkspaceParentsHandler:
             actor=actor,
             lineage_id=lineage_id,
             expected_cursor=request.expected_cursor,
+            tab_id=request.tab_id,
             operation=lambda document: commands.create_parent(
                 document,
                 instruction=request.instruction,
@@ -103,6 +105,7 @@ class ExamWorkspaceParentsHandler:
             actor=actor,
             lineage_id=lineage_id,
             expected_cursor=request.expected_cursor,
+            tab_id=request.tab_id,
             operation=lambda document: commands.add_child(
                 document, parent_id=parent_id, child=request.child, position=request.position
             ),
@@ -126,6 +129,7 @@ class ExamWorkspaceParentsHandler:
             actor=actor,
             lineage_id=lineage_id,
             expected_cursor=request.expected_cursor,
+            tab_id=request.tab_id,
             operation=operation,
         )
         return ExamWorkspaceCreatedPartResponse(
@@ -143,6 +147,7 @@ class ExamWorkspaceParentsHandler:
             actor=actor,
             lineage_id=lineage_id,
             expected_cursor=request.expected_cursor,
+            tab_id=request.tab_id,
             operation=lambda document: commands.move_item(
                 document,
                 item_id=request.item_id,
@@ -170,6 +175,7 @@ class ExamWorkspaceParentsHandler:
             actor=actor,
             lineage_id=lineage_id,
             expected_cursor=request.expected_cursor,
+            tab_id=request.tab_id,
             operation=operation,
         )
         return ExamWorkspaceCreatedPartResponse(
@@ -189,6 +195,7 @@ class ExamWorkspaceParentsHandler:
             actor=actor,
             lineage_id=lineage_id,
             expected_cursor=request.expected_cursor,
+            tab_id=request.tab_id,
             operation=operation,
         )
         removed_parent_id = (
@@ -263,6 +270,7 @@ class ExamWorkspaceParentsHandler:
             actor=actor,
             lineage_id=lineage_id,
             expected_cursor=request.expected_cursor,
+            tab_id=request.tab_id,
             operation=lambda document: commands.reorder_children(
                 document, parent_id=parent_id, item_ids=request.item_ids
             ),

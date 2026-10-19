@@ -64,7 +64,7 @@ describe("withGapTextShape", () => {
       throw new Error("expected a last paragraph");
     }
     expect(last.segments).toEqual([
-      { kind: "text", marks: [], text: "Vad heter huvudstaden?" },
+      { kind: "text", marks: [], text: "Vad heter huvudstaden?", kept_gap_id: null },
       { kind: "text", marks: [], text: " " },
       { kind: "gap", gap_id: "gap_001" },
     ]);
@@ -88,7 +88,7 @@ describe("withGapTextShape", () => {
       throw new Error("expected a last paragraph");
     }
     expect(last.segments).toEqual([
-      { kind: "text", marks: [], text: "Vad heter huvudstaden? " },
+      { kind: "text", marks: [], text: "Vad heter huvudstaden? ", kept_gap_id: null },
       { kind: "gap", gap_id: "gap_001" },
     ]);
     expect(isShortAnswer(result)).toBe(false);
@@ -120,7 +120,7 @@ describe("withGapTextShape", () => {
       throw new Error("expected a last paragraph");
     }
     expect(last.segments).toEqual([
-      { kind: "text", marks: [], text: "Vad heter huvudstaden?" },
+      { kind: "text", marks: [], text: "Vad heter huvudstaden?", kept_gap_id: null },
       { kind: "text", marks: [], text: " " },
       { kind: "gap", gap_id: "gap_001" },
     ]);
@@ -163,7 +163,7 @@ describe("withGapTextShape", () => {
       throw new Error("expected a last paragraph");
     }
     expect(last.segments).toEqual([
-      { kind: "text", marks: [], text: "Vad heter huvudstaden?" },
+      { kind: "text", marks: [], text: "Vad heter huvudstaden?", kept_gap_id: null },
       { kind: "text", marks: [], text: " " },
       { kind: "gap", gap_id: "gap_001" },
     ]);

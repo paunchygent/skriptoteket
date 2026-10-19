@@ -45,6 +45,7 @@ const api = vi.hoisted(() => ({
   getExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceHistory: vi.fn(),
   getExamWorkspaceHistoryStep: vi.fn(),
+  moveExamWorkspaceHistoryPosition: vi.fn(),
   saveExamWorkspaceDocument: vi.fn(),
   storeExamWorkspaceUndoStep: vi.fn(),
 }));

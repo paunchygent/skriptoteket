@@ -1,17 +1,19 @@
 /**
  * Exam workspace question-text editor: gap creation through the component tree.
  *
- * Expected behavior (TASK-SKRIPT-40-04-08 J6, ledger L4-L6):
- *   In a Lucktext or dropdown-Lucktext question the toolbar "Lucka" button
- *   and the floating "Lucka" button ("Gör till lucka" tooltip) create a gap
- *   end to end: the editor's one `createGap` reaches `editing.createItemGap`
- *   as one undoable structural edit, and the new gap's popover opens at once.
- *   At `gap_999` the Lucka button is disabled with "Högst 999 luckor".
+ * Expected behavior (TASK-SKRIPT-40-04-13 Behaviours 8 and 9):
+ *   In a Lucktext or dropdown-Lucktext question the gap tool switch is the
+ *   only gap control: with the tool on, a word click creates a gap end to
+ *   end with no popover, and the editor's one `createGap` reaches
+ *   `editing.createItemGap` as one undoable structural edit. No control
+ *   inserts an empty gap, and with the tool off a word click only places
+ *   the caret. At `gap_999` the switch is disabled with
+ *   "Luckverktyg – högst 999 luckor".
  *
- * jsdom has no layout, so selections are set through TipTap commands, the
- * click that shows the floating button reaches the view through its own
- * click handler, and the popover is teleported to `document.body`, so specs
- * query the document for both buttons.
+ * jsdom has no layout, so selections are set through TipTap commands, word
+ * clicks reach the view through its own click handler with a stubbed
+ * pointer coordinate, and the popover is teleported to `document.body`, so
+ * specs query the document for the toggle and the absent floating button.
  */
 
 import { flushPromises, mount } from "@vue/test-utils";
@@ -34,6 +36,10 @@ import {
   posIn,
 } from "./ExamWorkspaceBodyEditor.specSupport";
 import { buildGap } from "./examWorkspaceKeyedItems.specSupport";
+import {
+  gapPointerMiddle,
+  stubLinearGapPointerGeometry,
+} from "./examWorkspaceGapToolPointer.specSupport";
 import { examWorkspaceProvidersPlugin } from "./examWorkspaceProviders.specSupport";
 import { withBody } from "./examWorkspaceItemEdits";
 import { nextGapId, withNewGap } from "./examWorkspaceGapEdits";
@@ -47,9 +53,9 @@ import {
 } from "./useExamWorkspaceEditing.history.specSupport";
 import type { ExamWorkspaceItemEntry } from "./examWorkspaceListEntries";
 
-const TOOLBAR_GAP = '[data-test="exam-workspace-toolbar-make-gap"]';
+const TOOLBAR_GAP_TOOL = '[data-test="exam-workspace-toolbar-gap-tool"]';
 const FLOATING_GAP = '[data-test="exam-workspace-make-gap"]';
-const GAP_AT_CAP = "Högst 999 luckor";
+const TOOL_AT_CAP = "Luckverktyg – högst 999 luckor";
 
 const toast = vi.hoisted(() => ({ failure: vi.fn(), warning: vi.fn() }));
 
@@ -124,11 +130,19 @@ function surfaceOf(host: VueWrapper): HTMLElement {
   return surface;
 }
 
-/** A primary click at `pos` that leaves the caret behind, as a mousedown would. */
-function clickAt(editor: Editor, pos: number): void {
+/** A primary click at `pos` with the pointer inside the clicked word. */
+function clickAt(editor: Editor, pos: number, clientX: number): void {
   editor.view.someProp("handleClick", (handler) =>
-    handler(editor.view, pos, new MouseEvent("click", { bubbles: true, cancelable: true })),
+    handler(editor.view, pos, new MouseEvent("click", { bubbles: true, cancelable: true, clientX })),
   );
+}
+
+/** Click `word` with the tool's pointer geometry, as a real pointer press would. */
+function clickWord(host: VueWrapper, editor: Editor, word: string): void {
+  stubLinearGapPointerGeometry(editor);
+  const pos = posIn(editor, word, 1);
+  editor.commands.setTextSelection(pos);
+  clickAt(editor, pos, gapPointerMiddle(pos));
 }
 
 async function settle(): Promise<void> {
@@ -137,17 +151,9 @@ async function settle(): Promise<void> {
   await flushPromises();
 }
 
-/** Place the caret inside `word`, show the floating button and click it. */
-async function convertWord(host: VueWrapper, word: string): Promise<void> {
-  const editor = innerEditor(host);
-  editor.commands.setTextSelection(posIn(editor, word, 1));
-  clickAt(editor, posIn(editor, word, 1));
-  await settle();
-  const button = document.querySelector<HTMLButtonElement>(FLOATING_GAP);
-  if (!button) {
-    throw new Error(`no floating gap button for "${word}"`);
-  }
-  button.click();
+/** Turn the tool on through its toggle, as the teacher does. */
+async function switchToolOn(host: VueWrapper): Promise<void> {
+  await host.get(TOOLBAR_GAP_TOOL).trigger("click");
   await settle();
 }
 
@@ -175,12 +181,14 @@ beforeEach(() => {
 });
 
 describe("ExamWorkspaceBodyEditor gap creation", () => {
-  it("creates three gaps by clicking words, opening each new gap's popover", async () => {
+  it("creates three gaps through the tool with no popover and no floating button", async () => {
     const host = mountHarness(plainGapItem());
     await settle();
+    await switchToolOn(host);
 
     for (const [index, word] of ["Solen", "stjärna", "satellit"].entries()) {
-      await convertWord(host, word);
+      clickWord(host, innerEditor(host), word);
+      await settle();
 
       const creations = creationsOf(host);
       expect(creations).toHaveLength(index + 1);
@@ -189,7 +197,8 @@ describe("ExamWorkspaceBodyEditor gap creation", () => {
       expect(itemId).toBe("item_001");
       expect(gapId).toBe(`gap_00${index + 1}`);
       expect(seed).toBe(word);
-      expect(popoverExists()).toBe(true);
+      expect(popoverExists()).toBe(false);
+      expect(document.querySelector(FLOATING_GAP)).toBeNull();
     }
 
     const item = itemOf(host);
@@ -202,43 +211,23 @@ describe("ExamWorkspaceBodyEditor gap creation", () => {
     host.unmount();
   });
 
-  it("creates an empty gap at the end from the toolbar when no rich target is active yet", async () => {
+  it("creates no gap and shows no button on a word click with the tool off", async () => {
     const host = mountHarness(plainGapItem());
     await settle();
 
-    // The caret sits inside a word but no surface has focus, so nothing is active yet.
     const editor = innerEditor(host);
     editor.commands.setTextSelection(posIn(editor, "stjärna", 1));
-
-    await host.get(TOOLBAR_GAP).trigger("click");
-    // The focus — and the registration as the active target — lands on the
-    // next animation frame, so the gap command runs one frame after the click.
-    await new Promise<void>((resolve) => {
-      requestAnimationFrame(() => resolve());
-    });
+    clickAt(editor, posIn(editor, "stjärna", 1), 0);
     await settle();
 
-    const creations = creationsOf(host);
-    expect(creations).toHaveLength(1);
+    expect(creationsOf(host)).toHaveLength(0);
     expect(updatesOf(host)).toHaveLength(0);
-    const [itemId, body, gapId, seed] = creations[0]!;
-    expect(itemId).toBe("item_001");
-    expect(gapId).toBe("gap_001");
-    expect(seed).toBe("");
-    expect(body).toEqual([
-      {
-        heading_level: null,
-        segments: [
-          { kind: "text", marks: [], text: "Solen är en stjärna och månen en satellit." },
-          { gap_id: "gap_001", kind: "gap" },
-        ],
-      },
-    ]);
-    expect(popoverExists()).toBe(true);
+    expect(document.querySelector(FLOATING_GAP)).toBeNull();
+    expect(popoverExists()).toBe(false);
     host.unmount();
   });
 
-  it("disables the Lucka button at gap_999 with its reason and emits nothing", async () => {
+  it("disables the gap tool toggle at gap_999 with its reason and emits nothing", async () => {
     const host = mountHarness(
       buildGapItem({
         body: [
@@ -255,33 +244,31 @@ describe("ExamWorkspaceBodyEditor gap creation", () => {
     );
     await settle();
 
-    const button = host.get(TOOLBAR_GAP);
+    const button = host.get(TOOLBAR_GAP_TOOL);
     expect(button.attributes("disabled")).toBeDefined();
-    expect(button.attributes("title")).toBe(GAP_AT_CAP);
+    expect(button.attributes("title")).toBe(TOOL_AT_CAP);
     await button.trigger("click");
     await settle();
     expect(creationsOf(host)).toHaveLength(0);
     expect(updatesOf(host)).toHaveLength(0);
 
-    const editor = innerEditor(host);
-    editor.commands.setTextSelection(posIn(editor, "Svar", 1));
-    clickAt(editor, posIn(editor, "Svar", 1));
+    clickWord(host, innerEditor(host), "Svar");
     await settle();
     expect(document.querySelector(FLOATING_GAP)).toBeNull();
     host.unmount();
   });
 
-  it("shows no Lucka button and no floating button for free text", async () => {
+  it("shows no gap toggle and no floating button for free text", async () => {
     const host = mountHarness(
       buildGapItem({ kind: "free_text", body: plainBody("Solen lyser."), gaps: [] }),
     );
     await settle();
 
-    expect(host.find(TOOLBAR_GAP).exists()).toBe(false);
+    expect(host.find(TOOLBAR_GAP_TOOL).exists()).toBe(false);
 
     const editor = innerEditor(host);
     editor.commands.setTextSelection(posIn(editor, "Solen", 1));
-    clickAt(editor, posIn(editor, "Solen", 1));
+    clickAt(editor, posIn(editor, "Solen", 1), 0);
     await settle();
     expect(document.querySelector(FLOATING_GAP)).toBeNull();
     expect(creationsOf(host)).toHaveLength(0);
@@ -293,13 +280,13 @@ describe("ExamWorkspaceBodyEditor gap creation", () => {
     const host = mountHarness(plainGapItem(), true);
     await settle();
 
-    expect(host.get(TOOLBAR_GAP).attributes("disabled")).toBeDefined();
-    await host.get(TOOLBAR_GAP).trigger("click");
+    expect(host.get(TOOLBAR_GAP_TOOL).attributes("disabled")).toBeDefined();
+    await host.get(TOOLBAR_GAP_TOOL).trigger("click");
     await settle();
 
     const editor = innerEditor(host);
     editor.commands.setTextSelection(posIn(editor, "stjärna", 1));
-    clickAt(editor, posIn(editor, "stjärna", 1));
+    clickAt(editor, posIn(editor, "stjärna", 1), 0);
     await settle();
     expect(document.querySelector(FLOATING_GAP)).toBeNull();
 
@@ -313,8 +300,7 @@ describe("ExamWorkspaceBodyEditor gap creation", () => {
     host.unmount();
   });
 
-  it("seeds one correct option with the word for a dropdown question", async () => {
-    const host = mountHarness(
+  it("seeds one correct option with the word for a dropdown question", async () => {    const host = mountHarness(
       buildGapItem({
         kind: "inline_choice",
         body: [
@@ -327,8 +313,10 @@ describe("ExamWorkspaceBodyEditor gap creation", () => {
       }),
     );
     await settle();
+    await switchToolOn(host);
 
-    await convertWord(host, "Paris");
+    clickWord(host, innerEditor(host), "Paris");
+    await settle();
 
     expect(creationsOf(host)).toHaveLength(1);
     const record = itemOf(host).gaps[0]!;

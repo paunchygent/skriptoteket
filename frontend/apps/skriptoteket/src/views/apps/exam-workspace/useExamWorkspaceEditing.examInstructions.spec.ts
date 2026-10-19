@@ -33,7 +33,7 @@ const api = vi.hoisted(() => ({
   getExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceHistory: vi.fn(),
   getExamWorkspaceHistoryStep: vi.fn(),
-  saveExamWorkspaceDocument: vi.fn(),
+  moveExamWorkspaceHistoryPosition: vi.fn(),
   storeExamWorkspaceUndoStep: vi.fn(),
 }));
 const toast = vi.hoisted(() => ({ failure: vi.fn(), warning: vi.fn() }));
@@ -60,7 +60,7 @@ afterEach(() => {
 });
 
 function paragraph(text: string): NativeExamBodyParagraph {
-  return { heading_level: null, segments: [{ kind: "text", marks: [], text }] };
+  return { heading_level: null, segments: [{ kind: "text", marks: [], text, kept_gap_id: null }] };
 }
 
 function asset(assetId: string): NativeExamDocument["assets"][number] {

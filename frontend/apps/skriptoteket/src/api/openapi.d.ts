@@ -1378,8 +1378,7 @@ export interface paths {
         };
         /** Get Exam Workspace Document */
         get: operations["get_exam_workspace_document_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__get"];
-        /** Save Exam Workspace Document */
-        put: operations["save_exam_workspace_document_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__put"];
+        put?: never;
         post?: never;
         delete?: never;
         options?: never;
@@ -1533,6 +1532,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/edit-lease/claim": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Claim Exam Workspace Edit Lease
+         * @description Take the exam's edit lease for one tab; a live foreign lease refuses with 409.
+         */
+        post: operations["claim_exam_workspace_edit_lease_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__edit_lease_claim_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/edit-lease/release": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Release Exam Workspace Edit Lease
+         * @description Clear the holder's lease; a waiting takeover claims it next.
+         */
+        post: operations["release_exam_workspace_edit_lease_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__edit_lease_release_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/edit-lease/renew": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Renew Exam Workspace Edit Lease
+         * @description Refresh the holder's lease; the response names a waiting takeover tab.
+         */
+        post: operations["renew_exam_workspace_edit_lease_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__edit_lease_renew_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/edit-lease/takeover": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Request Exam Workspace Edit Lease Takeover
+         * @description Ask for the lease; the holder sees the request at its next heartbeat.
+         */
+        post: operations["request_exam_workspace_edit_lease_takeover_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__edit_lease_takeover_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/export-checklist": {
         parameters: {
             query?: never;
@@ -1582,6 +1661,26 @@ export interface paths {
         get: operations["get_exam_workspace_history_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__history_get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/apps/documents.conversion_hub/exam-workspace/documents/{lineage_id}/history/position": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Move Exam Workspace History Position
+         * @description Ångra or Gör om: stand on a retained step and write it to the exam file, no new step.
+         */
+        post: operations["move_exam_workspace_history_position_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__history_position_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -3740,6 +3839,11 @@ export interface components {
              * @description Zero-based insertion index within the parent.
              */
             position: number;
+            /**
+             * Tab Id
+             * Format: uuid
+             */
+            tab_id: string;
         };
         /**
          * AdminToolItem
@@ -4075,6 +4179,11 @@ export interface components {
             expected_revision: number;
             /** Item Id */
             item_id: string;
+            /**
+             * Tab Id
+             * Format: uuid
+             */
+            tab_id: string;
             target_kind: components["schemas"]["NativeExamItemKind"];
         };
         /** ChangeExamWorkspaceItemTypeResponse */
@@ -4658,6 +4767,11 @@ export interface components {
              * @description Zero-based index among top-level questions and parts.
              */
             position: number;
+            /**
+             * Tab Id
+             * Format: uuid
+             */
+            tab_id: string;
         };
         /** CreateExamParentRequest */
         CreateExamParentRequest: {
@@ -4674,6 +4788,11 @@ export interface components {
              * @description Zero-based insertion index among standalone questions and whole parents.
              */
             position: number;
+            /**
+             * Tab Id
+             * Format: uuid
+             */
+            tab_id: string;
         };
         /**
          * CreateGroupingDraftRequest
@@ -5876,6 +5995,31 @@ export interface components {
             version: number;
         };
         /**
+         * ExamWorkspaceEditLeaseRequest
+         * @description One lease operation for the calling tab: claim, renew, takeover or release.
+         */
+        ExamWorkspaceEditLeaseRequest: {
+            /**
+             * Tab Id
+             * Format: uuid
+             */
+            tab_id: string;
+        };
+        /**
+         * ExamWorkspaceEditLeaseResponse
+         * @description The lease after one operation; the holder renews while a waiter is named.
+         */
+        ExamWorkspaceEditLeaseResponse: {
+            /** Holder Tab Id */
+            holder_tab_id: string | null;
+            /** Renewed At */
+            renewed_at: string | null;
+            /** Takeover Requested */
+            takeover_requested: boolean;
+            /** Takeover Requested By */
+            takeover_requested_by: string | null;
+        };
+        /**
          * ExamWorkspaceEnrichmentState
          * @description Teacher-facing state of one answer-key suggestion job.
          * @enum {string}
@@ -5886,6 +6030,8 @@ export interface components {
          * @description One shared-instruction subquestion Exam.net gives 1 point instead of its own (Q16).
          */
         ExamWorkspaceExportChecklistAllOrNothing: {
+            /** Item Id */
+            item_id: string;
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
@@ -5893,8 +6039,6 @@ export interface components {
             kind: "all_or_nothing";
             /** Points */
             points: number;
-            /** Question Number */
-            question_number: string;
             /** Question Text */
             question_text: string;
         };
@@ -5915,6 +6059,8 @@ export interface components {
         ExamWorkspaceExportChecklistFreeTextCriteria: {
             /** Criteria */
             criteria: components["schemas"]["ExamWorkspaceExportChecklistCriterion"][];
+            /** Item Id */
+            item_id: string;
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
@@ -5922,8 +6068,6 @@ export interface components {
             kind: "free_text_criteria";
             /** Points */
             points: number;
-            /** Question Number */
-            question_number: string;
             /** Question Text */
             question_text: string;
         };
@@ -5950,6 +6094,8 @@ export interface components {
         ExamWorkspaceExportChecklistRoundedGaps: {
             /** Gap Points */
             gap_points: number;
+            /** Item Id */
+            item_id: string;
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
@@ -5957,8 +6103,6 @@ export interface components {
             kind: "rounded_gaps";
             /** Points */
             points: number;
-            /** Question Number */
-            question_number: string;
             /** Question Text */
             question_text: string;
         };
@@ -6233,6 +6377,11 @@ export interface components {
             expected_cursor: string;
             /** Item Ids */
             item_ids: string[];
+            /**
+             * Tab Id
+             * Format: uuid
+             */
+            tab_id: string;
         };
         /**
          * GroupingExportJobDto
@@ -6859,8 +7008,34 @@ export interface components {
             expected_cursor: string;
             /** Item Id */
             item_id: string;
+            /**
+             * Tab Id
+             * Format: uuid
+             */
+            tab_id: string;
             /** Target Parent Id */
             target_parent_id: string | null;
+        };
+        /**
+         * MoveExamWorkspaceHistoryPositionRequest
+         * @description Undo or redo to an already retained snapshot without storing a new step.
+         */
+        MoveExamWorkspaceHistoryPositionRequest: {
+            /**
+             * Expected Cursor
+             * Format: uuid
+             */
+            expected_cursor: string;
+            /**
+             * Step Id
+             * Format: uuid
+             */
+            step_id: string;
+            /**
+             * Tab Id
+             * Format: uuid
+             */
+            tab_id: string;
         };
         /** MyRunItem */
         MyRunItem: {
@@ -7248,6 +7423,11 @@ export interface components {
             import_record?: components["schemas"]["NativeExamImportRecord-Input"] | null;
             /** Item Id */
             item_id: string;
+            /**
+             * Kept Gaps
+             * @default []
+             */
+            kept_gaps: components["schemas"]["NativeGap-Input"][];
             kind: components["schemas"]["NativeExamItemKind"];
             /**
              * Match Left
@@ -7313,6 +7493,11 @@ export interface components {
             import_record: components["schemas"]["NativeExamImportRecord-Output"] | null;
             /** Item Id */
             item_id: string;
+            /**
+             * Kept Gaps
+             * @default []
+             */
+            kept_gaps: components["schemas"]["NativeGap-Output"][];
             kind: components["schemas"]["NativeExamItemKind"];
             /**
              * Match Left
@@ -7786,6 +7971,8 @@ export interface components {
         NativeParseOrigin: "source_fallback" | "deterministic" | "llm_parsed" | "teacher_created";
         /** NativeTextSegment */
         NativeTextSegment: {
+            /** Kept Gap Id */
+            kept_gap_id?: string | null;
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
@@ -7828,6 +8015,11 @@ export interface components {
              * @default item_001
              */
             item_id: string;
+            /**
+             * Kept Gaps
+             * @default []
+             */
+            kept_gaps: components["schemas"]["NativeGap-Input"][];
             kind: components["schemas"]["NativeExamItemKind"];
             /**
              * Match Left
@@ -7889,6 +8081,11 @@ export interface components {
              * Format: uuid
              */
             expected_cursor: string;
+            /**
+             * Tab Id
+             * Format: uuid
+             */
+            tab_id: string;
         };
         /** ParsedStudentRow */
         ParsedStudentRow: {
@@ -9201,6 +9398,11 @@ export interface components {
             expected_cursor: string;
             /** Item Ids */
             item_ids: string[];
+            /**
+             * Tab Id
+             * Format: uuid
+             */
+            tab_id: string;
         };
         /** RequestChangesRequest */
         RequestChangesRequest: {
@@ -9585,17 +9787,6 @@ export interface components {
             /** Usage Instructions */
             usage_instructions?: string | null;
         };
-        /** SaveExamWorkspaceDocumentRequest */
-        SaveExamWorkspaceDocumentRequest: {
-            document: components["schemas"]["NativeExamDocument-Input"];
-            /** Expected Revision */
-            expected_revision: number;
-            /**
-             * Position Step Id
-             * Format: uuid
-             */
-            position_step_id: string;
-        };
         /** SaveResult */
         SaveResult: {
             /** Redirect Url */
@@ -9923,6 +10114,11 @@ export interface components {
              * Format: uuid
              */
             expected_cursor: string;
+            /**
+             * Tab Id
+             * Format: uuid
+             */
+            tab_id: string;
         };
         /**
          * Student
@@ -13721,41 +13917,6 @@ export interface operations {
             };
         };
     };
-    save_exam_workspace_document_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__put: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                lineage_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SaveExamWorkspaceDocumentRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ExamWorkspaceDocumentResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
     find_exam_workspace_answer_key_suggestions_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__answer_key_suggestions_get: {
         parameters: {
             query: {
@@ -14056,6 +14217,146 @@ export interface operations {
             };
         };
     };
+    claim_exam_workspace_edit_lease_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__edit_lease_claim_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lineage_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExamWorkspaceEditLeaseRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamWorkspaceEditLeaseResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    release_exam_workspace_edit_lease_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__edit_lease_release_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lineage_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExamWorkspaceEditLeaseRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamWorkspaceEditLeaseResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    renew_exam_workspace_edit_lease_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__edit_lease_renew_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lineage_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExamWorkspaceEditLeaseRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamWorkspaceEditLeaseResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    request_exam_workspace_edit_lease_takeover_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__edit_lease_takeover_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lineage_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExamWorkspaceEditLeaseRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamWorkspaceEditLeaseResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     export_exam_workspace_document_checklist_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__export_checklist_get: {
         parameters: {
             query: {
@@ -14175,6 +14476,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ExamWorkspaceHistoryResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    move_exam_workspace_history_position_api_v1_apps_documents_conversion_hub_exam_workspace_documents__lineage_id__history_position_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lineage_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MoveExamWorkspaceHistoryPositionRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamWorkspaceUndoStepResponse"];
                 };
             };
             /** @description Validation Error */

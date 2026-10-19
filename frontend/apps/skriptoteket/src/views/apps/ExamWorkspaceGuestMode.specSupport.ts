@@ -64,6 +64,7 @@ export function keylessItem(sequence: number, kind: "single_choice" | "multiple_
     criteria: [],
     facit_text: null,
     gaps: [],
+    kept_gaps: [],
     import_record: null,
     item_id: itemId,
     kind,
@@ -94,6 +95,7 @@ export function retryItem(): NativeExamItem {
     criteria: [],
     facit_text: null,
     gaps: [],
+    kept_gaps: [],
     import_record: {
       original_wording: { answer_key_text: null, question_text: "Förklara begreppet." },
       steps: [],

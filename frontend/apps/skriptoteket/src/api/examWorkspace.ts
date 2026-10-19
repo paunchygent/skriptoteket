@@ -15,7 +15,7 @@
  *     `useExamWorkspaceExports.ts`, and `useExamWorkspaceEnrichment.ts`.
  */
 
-import { apiGet, apiPatch, apiPost, apiPut, resolveProtectedApiUrl } from "./client";
+import { apiGet, apiPatch, apiPost, resolveProtectedApiUrl } from "./client";
 import type { components } from "./openapi";
 
 type Schemas = components["schemas"];
@@ -74,11 +74,17 @@ export type ExamWorkspaceContentSuggestions = Schemas["ContentSuggestionsRespons
 export type NativeExamImportRecord = Schemas["NativeExamImportRecord-Output"];
 export type ChangeExamWorkspaceItemTypeResponse = Schemas["ChangeExamWorkspaceItemTypeResponse"];
 
-export type SaveExamWorkspaceDocumentParams = {
-  expectedRevision: number;
+export type ExamWorkspaceUndoStepParams = {
+  expectedCursor: string;
   document: NativeExamDocument;
-  /** The history snapshot the editor stands on; the server keeps the saved copy there. */
-  positionStepId: string;
+  afterStepId: string | null;
+  tabId: string;
+};
+
+export type MoveExamWorkspaceHistoryPositionParams = {
+  expectedCursor: string;
+  stepId: string;
+  tabId: string;
 };
 
 /**
@@ -141,16 +147,58 @@ export async function getExamWorkspaceDocument(
   return await apiGet<ExamWorkspaceDocumentResponse>(documentPath(lineageId));
 }
 
-export async function saveExamWorkspaceDocument(
+export async function moveExamWorkspaceHistoryPosition(
   lineageId: string,
-  params: SaveExamWorkspaceDocumentParams,
-): Promise<ExamWorkspaceDocumentResponse> {
-  const body: Schemas["SaveExamWorkspaceDocumentRequest"] = {
-    document: params.document,
-    expected_revision: params.expectedRevision,
-    position_step_id: params.positionStepId,
+  params: MoveExamWorkspaceHistoryPositionParams,
+): Promise<ExamWorkspaceUndoStep> {
+  const body: Schemas["MoveExamWorkspaceHistoryPositionRequest"] = {
+    expected_cursor: params.expectedCursor,
+    step_id: params.stepId,
+    tab_id: params.tabId,
   };
-  return await apiPut<ExamWorkspaceDocumentResponse>(documentPath(lineageId), body);
+  return await apiPost<ExamWorkspaceUndoStep>(`${documentPath(lineageId)}/history/position`, body);
+}
+
+export type ExamWorkspaceEditLeaseResponse = Schemas["ExamWorkspaceEditLeaseResponse"];
+
+function editLeasePath(lineageId: string, operation: string): string {
+  return `${documentPath(lineageId)}/edit-lease/${operation}`;
+}
+
+/** Take the exam's edit lease for one tab; a live foreign lease refuses with 409. */
+export async function claimExamWorkspaceEditLease(
+  lineageId: string,
+  tabId: string,
+): Promise<ExamWorkspaceEditLeaseResponse> {
+  const body: Schemas["ExamWorkspaceEditLeaseRequest"] = { tab_id: tabId };
+  return await apiPost<ExamWorkspaceEditLeaseResponse>(editLeasePath(lineageId, "claim"), body);
+}
+
+/** Refresh the holder's lease; the response names a waiting takeover tab. */
+export async function renewExamWorkspaceEditLease(
+  lineageId: string,
+  tabId: string,
+): Promise<ExamWorkspaceEditLeaseResponse> {
+  const body: Schemas["ExamWorkspaceEditLeaseRequest"] = { tab_id: tabId };
+  return await apiPost<ExamWorkspaceEditLeaseResponse>(editLeasePath(lineageId, "renew"), body);
+}
+
+/** Ask for the lease; the holder sees the request at its next heartbeat. */
+export async function requestExamWorkspaceEditLeaseTakeover(
+  lineageId: string,
+  tabId: string,
+): Promise<ExamWorkspaceEditLeaseResponse> {
+  const body: Schemas["ExamWorkspaceEditLeaseRequest"] = { tab_id: tabId };
+  return await apiPost<ExamWorkspaceEditLeaseResponse>(editLeasePath(lineageId, "takeover"), body);
+}
+
+/** Clear the holder's lease; a waiting takeover claims it next. */
+export async function releaseExamWorkspaceEditLease(
+  lineageId: string,
+  tabId: string,
+): Promise<ExamWorkspaceEditLeaseResponse> {
+  const body: Schemas["ExamWorkspaceEditLeaseRequest"] = { tab_id: tabId };
+  return await apiPost<ExamWorkspaceEditLeaseResponse>(editLeasePath(lineageId, "release"), body);
 }
 
 /**
@@ -233,12 +281,13 @@ export async function requestExamWorkspaceAnswerMisspellings(
 /** Store the editor's document as the newest undo step; `afterStepId` branches after an undo. */
 export async function storeExamWorkspaceUndoStep(
   lineageId: string,
-  params: { expectedCursor: string; document: NativeExamDocument; afterStepId: string | null },
+  params: ExamWorkspaceUndoStepParams,
 ): Promise<ExamWorkspaceUndoStep> {
   const body: Schemas["StoreExamWorkspaceUndoStepRequest"] = {
     after_step_id: params.afterStepId,
     document: params.document,
     expected_cursor: params.expectedCursor,
+    tab_id: params.tabId,
   };
   return await apiPost<ExamWorkspaceUndoStep>(`${documentPath(lineageId)}/autosaves`, body);
 }

@@ -6,7 +6,7 @@
 import { mount } from "@vue/test-utils";
 import type { Editor } from "@tiptap/core";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { defineComponent, h, nextTick } from "vue";
+import { defineComponent, h, nextTick, ref } from "vue";
 
 import { provideExamWorkspaceHistoryKeys } from "./examWorkspaceHistoryKeys";
 import ExamWorkspaceRichTextEditor from "./ExamWorkspaceRichTextEditor.vue";
@@ -25,7 +25,7 @@ describe("ExamWorkspaceRichTextEditor on a Mac", () => {
     ["Cmd+Shift+Z", "Z", { metaKey: true, shiftKey: true }, "redo"],
     ["Ctrl+Z", "z", { ctrlKey: true }, null],
   ] as const)("%s calls the workspace history only for the Cmd shortcuts", async (_name, key, modifiers, call) => {
-    const keys = { undo: vi.fn(), redo: vi.fn() };
+    const keys = { undo: vi.fn(), redo: vi.fn(), canUndo: ref(false), canRedo: ref(false) };
     const Host = defineComponent({
       setup() {
         provideExamWorkspaceHistoryKeys(keys);

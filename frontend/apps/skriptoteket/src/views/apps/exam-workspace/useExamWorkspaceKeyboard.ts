@@ -2,10 +2,10 @@
  * Exam workspace keyboard shortcuts.
  *
  * Domain purpose:
- *   Ctrl/Cmd+S saves (and never the browser's save page), Ctrl/Cmd+Z and
- *   Ctrl/Cmd+Shift+Z step through the autosave history outside text fields,
- *   ↑ and ↓ move between questions outside text fields, menus and dialogs,
- *   and Escape closes the phone list.
+ *   Ctrl/Cmd+S stores a pending edit at once (and never the browser's save
+ *   page), Ctrl/Cmd+Z and Ctrl/Cmd+Shift+Z step through the autosave history
+ *   outside text fields, ↑ and ↓ move between questions outside text fields,
+ *   menus and dialogs, and Escape closes the phone list.
  *
  * Relationships:
  *   - Registers one window `keydown` listener for the lifetime of the

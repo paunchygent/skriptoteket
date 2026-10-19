@@ -18,6 +18,7 @@ import {
   DOCUMENT_ID,
   exam,
   installGuestStoreObjectUrls,
+  LEASE_TAB_ID,
   setupGuestStore,
   startBlank,
   STALE_CURSOR,
@@ -52,6 +53,7 @@ describe("examWorkspaceGuestStore structural commands", () => {
       expected_cursor: opened.history_cursor,
       instruction,
       position: 0,
+      tab_id: LEASE_TAB_ID,
     });
 
     expect(context.mocks.createParent).toHaveBeenCalledWith({
@@ -87,7 +89,7 @@ describe("examWorkspaceGuestStore structural commands", () => {
 
     const grouped = await context.store.store.shared.groupExamWorkspaceItems(lineageId, [
       "item_004",
-    ], opened.history_cursor);
+    ], opened.history_cursor, LEASE_TAB_ID);
     expect(context.mocks.groupItems).toHaveBeenCalledTimes(1);
     expect(context.mocks.groupItems.mock.calls[0]![0]).toEqual(opened.document);
     expect(context.mocks.groupItems).toHaveBeenCalledWith(expect.anything(), ["item_004"]);
@@ -104,6 +106,7 @@ describe("examWorkspaceGuestStore structural commands", () => {
       lineageId,
       2,
       grouped.history_cursor,
+      LEASE_TAB_ID,
     );
     expect(context.mocks.createEmptyPart).toHaveBeenCalledTimes(1);
     expect(context.mocks.createEmptyPart.mock.calls[0]![0]).toEqual(grouped.document);
@@ -120,6 +123,7 @@ describe("examWorkspaceGuestStore structural commands", () => {
       "item_004",
       "parent_002",
       emptied.history_cursor,
+      LEASE_TAB_ID,
     );
     expect(context.mocks.moveItem).toHaveBeenCalledTimes(1);
     expect(context.mocks.moveItem.mock.calls[0]![0]).toEqual(emptied.document);
@@ -138,10 +142,10 @@ describe("examWorkspaceGuestStore structural commands", () => {
 
     const attempts = [
       () =>
-        context.store.store.shared.groupExamWorkspaceItems(lineageId, ["item_004"], STALE_CURSOR),
-      () => context.store.store.shared.createEmptyExamWorkspacePart(lineageId, 0, STALE_CURSOR),
+        context.store.store.shared.groupExamWorkspaceItems(lineageId, ["item_004"], STALE_CURSOR, LEASE_TAB_ID),
+      () => context.store.store.shared.createEmptyExamWorkspacePart(lineageId, 0, STALE_CURSOR, LEASE_TAB_ID),
       () =>
-        context.store.store.shared.moveExamWorkspaceItem(lineageId, "item_004", null, STALE_CURSOR),
+        context.store.store.shared.moveExamWorkspaceItem(lineageId, "item_004", null, STALE_CURSOR, LEASE_TAB_ID),
     ];
     for (const attempt of attempts) {
       const error = await attempt().catch((caught: unknown) => caught);
@@ -168,7 +172,7 @@ describe("examWorkspaceGuestStore structural commands", () => {
     });
     context.mocks.moveItem.mockRejectedValue(refusal);
     const refused = await context.store.store.shared
-      .moveExamWorkspaceItem(lineageId, "item_004", null, opened.history_cursor)
+      .moveExamWorkspaceItem(lineageId, "item_004", null, opened.history_cursor, LEASE_TAB_ID)
       .catch((caught: unknown) => caught);
     expect(refused).toBe(refusal);
     expect(await context.storage.load()).toEqual(persisted);
@@ -181,7 +185,7 @@ describe("examWorkspaceGuestStore structural commands", () => {
     });
     context.mocks.groupItems.mockRejectedValue(limit);
     const limited = await context.store.store.shared
-      .groupExamWorkspaceItems(lineageId, ["item_004"], opened.history_cursor)
+      .groupExamWorkspaceItems(lineageId, ["item_004"], opened.history_cursor, LEASE_TAB_ID)
       .catch((caught: unknown) => caught);
     expect(limited).toBe(limit);
     expect(isGuestLimitError(limited)).toBe(true);

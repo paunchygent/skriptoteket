@@ -16,6 +16,10 @@ import {
 } from "./examWorkspaceGuestStore";
 import type { ExamWorkspaceGuestDraftIdSource } from "./examWorkspaceGuestDraft";
 import { createInMemoryExamWorkspaceGuestDraftStorage } from "./examWorkspaceGuestDraftStorage";
+import {
+  createInMemoryGuestEditLeaseStorage,
+  type GuestEditLeaseStoragePort,
+} from "./examWorkspaceGuestEditLease";
 
 export type PublicApi = ExamWorkspaceGuestStoreDeps["api"];
 
@@ -53,6 +57,8 @@ export function createGuestPublicApiMocks(): GuestPublicApiMocks {
 
 export const DOCUMENT_ID = "00000000-0000-4000-8000-000000000001";
 export const STALE_CURSOR = "99999999-9999-4999-8999-999999999999";
+/** The tab id the guest store specs write with; the lease slot starts empty. */
+export const LEASE_TAB_ID = "20000000-0000-4000-8000-000000000001";
 export const NOW = "2026-10-18T10:00:00.000Z";
 
 /** Any current-schema document; scenarios override only the title. */
@@ -125,11 +131,15 @@ export type GuestStoreSetup = {
   };
   onLimit: Mock<() => void>;
   storage: ReturnType<typeof createInMemoryExamWorkspaceGuestDraftStorage>;
+  leaseStorage: GuestEditLeaseStoragePort;
   store: ReturnType<typeof createGuestExamWorkspaceStore>;
 };
 
-export function setupGuestStore(): GuestStoreSetup {
+export function setupGuestStore(overrides?: {
+  leaseStorage?: GuestEditLeaseStoragePort;
+}): GuestStoreSetup {
   const storage = createInMemoryExamWorkspaceGuestDraftStorage();
+  const leaseStorage = overrides?.leaseStorage ?? createInMemoryGuestEditLeaseStorage();
   const ids = createIds();
   const publicMocks = createGuestPublicApiMocks();
   const mocks: GuestStoreSetup["mocks"] = {
@@ -151,8 +161,8 @@ export function setupGuestStore(): GuestStoreSetup {
   };
   const api: PublicApi = publicMocks;
   const onLimit = vi.fn();
-  const store = createGuestExamWorkspaceStore({ api, ids, onLimit, storage });
-  return { api, ids, mocks, onLimit, storage, store };
+  const store = createGuestExamWorkspaceStore({ api, ids, leaseStorage, onLimit, storage });
+  return { api, ids, leaseStorage, mocks, onLimit, storage, store };
 }
 
 /** A second store instance over the same browser slot, like a second tab. */
@@ -160,6 +170,7 @@ export function openSecondTab(context: GuestStoreSetup): GuestStoreSetup["store"
   return createGuestExamWorkspaceStore({
     api: context.api,
     ids: createIds(),
+    leaseStorage: context.leaseStorage,
     onLimit: context.onLimit,
     storage: context.storage,
   });

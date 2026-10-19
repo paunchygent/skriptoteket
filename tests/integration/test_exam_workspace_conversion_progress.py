@@ -183,7 +183,11 @@ async def test_batches_replace_their_placeholders_keep_teacher_edits_and_hold_on
             await teacher.teacher_save(
                 actor, opened.model_copy(update={"items": (q1, q2, opened.items[2])})
             )
-        assert refused.value.code is ErrorCode.VALIDATION_ERROR
+        assert refused.value.code is ErrorCode.CONVERSION_IN_PROGRESS
+        assert refused.value.message == (
+            "Provet kunde inte sparas. Vänta tills frågorna har konverterats "
+            "innan du ändrar, flyttar eller tar bort dem."
+        )
         assert refused.value.details["item_ids"] == ["item_002"]
         assert (await teacher.open(actor, lineage_id)).revision == 1
         # The same edit of converted q1 alone saves revision 2.
@@ -306,6 +310,7 @@ async def test_saves_that_remove_or_take_over_a_placeholder_are_refused(
         )
         with pytest.raises(DomainError) as deleted:
             await teacher.teacher_save(actor, NativeExamDocument.model_validate(without_q2))
+        assert deleted.value.code is ErrorCode.CONVERSION_IN_PROGRESS
         assert deleted.value.details["item_ids"] == [q2.item_id]
 
         # Probe 2: delete the last placeholder and give its id to a new teacher question.
@@ -326,6 +331,7 @@ async def test_saves_that_remove_or_take_over_a_placeholder_are_refused(
         )
         with pytest.raises(DomainError) as taken_over:
             await teacher.teacher_save(actor, NativeExamDocument.model_validate(reused))
+        assert taken_over.value.code is ErrorCode.CONVERSION_IN_PROGRESS
         assert taken_over.value.details["item_ids"] == [q3.item_id]
 
         # Adding a question after the placeholders and editing converted q1 is allowed.

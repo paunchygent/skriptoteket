@@ -3,8 +3,9 @@
  *
  * Expected behavior:
  *   The browser draft reproduces the server's exam history exactly: the same
- *   cursor guard, branch-after-undo, ten-step retention, Spara revision and
- *   saved-copy retention. A stale cursor or revision changes nothing, a
+ *   cursor guard, branch-after-undo, hundred-step retention, the stored step
+ *   that also updates the saved draft, and the position move that writes a
+ *   step to the saved draft. A stale cursor changes nothing, a
  *   refused document never becomes a step, reading a step leaves the stored
  *   position alone (only a write moves it), and every created id and
  *   timestamp comes from the injected source.
@@ -14,11 +15,12 @@ import { describe, expect, it } from "vitest";
 
 import type { NativeExamDocument } from "../../../api/examWorkspace";
 import {
+  GUEST_MAX_RETAINED_UNDO_STEPS,
   guestDocumentResponse,
   guestHistory,
   guestHistoryStep,
+  moveGuestHistoryPosition,
   newGuestDraft,
-  saveGuestDraft,
   storeGuestUndoStep,
   type ExamWorkspaceGuestDraft,
   type ExamWorkspaceGuestDraftIdSource,
@@ -124,25 +126,28 @@ describe("examWorkspaceGuestDraft", () => {
     });
   });
 
-  it("keeps only the newest ten steps after the baseline, dropping the oldest", () => {
+  it("keeps only the newest hundred steps after the baseline, dropping the oldest", () => {
     const { ids, issued } = createIds();
     let draft = newGuestDraft(exam(), ids, []);
     const storedStepIds: string[] = [];
 
-    for (let index = 1; index <= 11; index += 1) {
+    for (let index = 1; index <= GUEST_MAX_RETAINED_UNDO_STEPS + 1; index += 1) {
       const outcome = store(draft, exam(`Steg ${index}`), ids);
       draft = outcome.draft;
       storedStepIds.push(outcome.step.history.position_step_id);
     }
 
-    expect(draft.steps).toHaveLength(10);
+    expect(GUEST_MAX_RETAINED_UNDO_STEPS).toBe(100);
+    expect(draft.steps).toHaveLength(100);
     expect(draft.baseline.step_id).toBe(DOCUMENT_ID);
     expect(draft.steps.map((step) => step.step_id)).toEqual(storedStepIds.slice(1));
     expect(draft.steps.map((step) => step.document.title)).toEqual(
-      Array.from({ length: 10 }, (_, index) => `Steg ${index + 2}`),
+      Array.from({ length: 100 }, (_, index) => `Steg ${index + 2}`),
     );
-    expect(draft.position_step_id).toBe(draft.steps[9]?.step_id);
+    expect(draft.position_step_id).toBe(draft.steps[99]?.step_id);
     expect(draft.cursor).toBe(draft.position_step_id);
+    expect(draft.saved_document.title).toBe(`Steg ${GUEST_MAX_RETAINED_UNDO_STEPS + 1}`);
+    expect(draft.saved_document.revision).toBe(GUEST_MAX_RETAINED_UNDO_STEPS + 2);
     expect(guestHistory(draft).step_ids).toEqual(draft.steps.map((step) => step.step_id));
 
     for (const step of draft.steps) {
@@ -203,7 +208,7 @@ describe("examWorkspaceGuestDraft", () => {
     const before = structuredClone(draft);
     const issuedBefore = issued.length;
     const refused = refusedExam();
-    const copy = examWorkspaceSaveRefusalCopy(refused.items);
+    const copy = examWorkspaceSaveRefusalCopy(refused);
     expect(copy).not.toBeNull();
 
     const outcome = storeGuestUndoStep(
@@ -217,26 +222,7 @@ describe("examWorkspaceGuestDraft", () => {
     expect(issued).toHaveLength(issuedBefore);
   });
 
-  it("refuses Spara with a stale revision without changing the draft", () => {
-    const { ids } = createIds();
-    const draft = newGuestDraft(exam(), ids, []);
-    const before = structuredClone(draft);
-
-    const outcome = saveGuestDraft(
-      draft,
-      {
-        document: exam("Ny"),
-        expectedRevision: draft.saved_document.revision + 1,
-        positionStepId: draft.position_step_id,
-      },
-      ids,
-    );
-
-    expect(outcome).toEqual({ kind: "conflict" });
-    expect(draft).toEqual(before);
-  });
-
-  it("increments the saved revision once and rotates the cursor on Spara", () => {
+  it("rotates the cursor and bumps the saved revision on every stored step", () => {
     const { ids, issued } = createIds();
     let draft = newGuestDraft(exam(), ids, []);
     const stored = store(draft, titled(exam(), "Redigerad"), ids);
@@ -245,61 +231,20 @@ describe("examWorkspaceGuestDraft", () => {
     const cursorBefore = draft.cursor;
     const issuedBefore = issued.length;
 
-    const outcome = saveGuestDraft(
-      draft,
-      {
-        document: titled(exam(), "Redigerad"),
-        expectedRevision: 1,
-        positionStepId: stepId,
-      },
-      ids,
-    );
+    const outcome = store(draft, titled(exam(), "Redigerad igen"), ids);
 
     expect(outcome.kind).toBe("ok");
     if (outcome.kind !== "ok") {
       return;
     }
-    expect(outcome.draft.saved_document.revision).toBe(2);
-    expect(outcome.draft.saved_document.title).toBe("Redigerad");
+    expect(outcome.draft.saved_document.revision).toBe(3);
+    expect(outcome.draft.saved_document.title).toBe("Redigerad igen");
     expect(outcome.draft.cursor).not.toBe(cursorBefore);
     expect(issued.slice(issuedBefore)).toContain(outcome.draft.cursor);
-    expect(outcome.draft.position_step_id).toBe(stepId);
-    expect(outcome.draft.steps.map((step) => step.step_id)).toEqual([stepId]);
-    expect(outcome.response.document.revision).toBe(2);
-    expect(outcome.response.saved_document.revision).toBe(2);
-    expect(outcome.response.summary.version).toBe(2);
-    expect(outcome.response.summary.vault_file_id).toBe(outcome.draft.lineage_id);
-    expect(outcome.response.history_cursor).toBe(outcome.draft.cursor);
-    expect(outcome.response.document.title).toBe("Redigerad");
-  });
-
-  it("appends the saved copy after the position when no snapshot holds it", () => {
-    const { ids } = createIds();
-    let draft = newGuestDraft(exam(), ids, []);
-    const first = store(draft, exam("A"), ids);
-    draft = first.draft;
-    const firstStepId = first.step.history.position_step_id;
-    const second = store(draft, exam("B"), ids);
-    draft = second.draft;
-
-    const outcome = saveGuestDraft(
-      draft,
-      {
-        document: exam("Sparad"),
-        expectedRevision: 1,
-        positionStepId: firstStepId,
-      },
-      ids,
-    );
-
-    expect(outcome.kind).toBe("ok");
-    if (outcome.kind !== "ok") {
-      return;
-    }
-    expect(outcome.draft.steps.map((step) => step.document.title)).toEqual(["A", "Sparad"]);
-    expect(outcome.draft.position_step_id).toBe(outcome.draft.steps[1]?.step_id);
-    expect(outcome.draft.saved_document.revision).toBe(2);
-    expect(outcome.draft.steps[1]?.document.revision).toBe(2);
+    expect(outcome.draft.position_step_id).not.toBe(stepId);
+    expect(outcome.draft.steps).toHaveLength(2);
+    expect(outcome.step.document.revision).toBe(3);
+    expect(outcome.step.history.position_step_id).toBe(outcome.draft.position_step_id);
   });
 
   it("returns a read step's document without moving the stored position", () => {
@@ -341,9 +286,9 @@ describe("examWorkspaceGuestDraft", () => {
     const opened = guestDocumentResponse(draft);
 
     expect(opened.document.title).toBe("C");
-    expect(opened.document.revision).toBe(1);
-    expect(opened.saved_document.title).toBe("Original");
-    expect(opened.summary.version).toBe(1);
+    expect(opened.document.revision).toBe(4);
+    expect(opened.saved_document.title).toBe("C");
+    expect(opened.summary.version).toBe(4);
     expect(opened.summary.lineage_id).toBe(DOCUMENT_ID);
     expect(opened.history_cursor).toBe(draft.cursor);
     expect(opened.notes).toEqual([]);
@@ -379,7 +324,7 @@ describe("examWorkspaceGuestDraft", () => {
     expect(guestDocumentResponse(draft).notes).toEqual([]);
   });
 
-  it("keeps the notes across an undo step and Spara", () => {
+  it("keeps the notes across an undo step and a position move", () => {
     const { ids } = createIds();
     let draft = newGuestDraft(exam(), ids, ["Fråga 3 hoppades över."]);
     const stored = store(draft, titled(exam(), "Redigerad"), ids);
@@ -387,20 +332,16 @@ describe("examWorkspaceGuestDraft", () => {
 
     expect(guestDocumentResponse(draft).notes).toEqual(["Fråga 3 hoppades över."]);
 
-    const saved = saveGuestDraft(
+    const moved = moveGuestHistoryPosition(
       draft,
-      {
-        document: titled(exam(), "Redigerad"),
-        expectedRevision: 1,
-        positionStepId: draft.position_step_id,
-      },
+      { expectedCursor: draft.cursor, stepId: draft.baseline.step_id },
       ids,
     );
-    if (saved.kind !== "ok") {
-      throw new Error(`expected a saved draft, got ${saved.kind}`);
+    if (moved.kind !== "ok") {
+      throw new Error(`expected a moved draft, got ${moved.kind}`);
     }
 
-    expect(saved.draft.notes).toEqual(["Fråga 3 hoppades över."]);
-    expect(saved.response.notes).toEqual(["Fråga 3 hoppades över."]);
+    expect(moved.draft.notes).toEqual(["Fråga 3 hoppades över."]);
+    expect(guestDocumentResponse(moved.draft).notes).toEqual(["Fråga 3 hoppades över."]);
   });
 });

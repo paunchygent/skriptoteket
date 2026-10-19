@@ -25,15 +25,17 @@ from skriptoteket.application.curated_apps.exam_workspace import (
     ExamWorkspaceItemRetryResponse,
     ExamWorkspacePrintPreviewResponse,
     RetryExamWorkspaceItemRequest,
-    SaveExamWorkspaceDocumentRequest,
 )
 from skriptoteket.application.curated_apps.exam_workspace_content_suggestions import (
     ContentSuggestionsResponse,
 )
 from skriptoteket.application.curated_apps.exam_workspace_history import (
+    ExamWorkspaceEditLeaseRequest,
+    ExamWorkspaceEditLeaseResponse,
     ExamWorkspaceHistoryDocumentResponse,
     ExamWorkspaceHistoryResponse,
     ExamWorkspaceUndoStepResponse,
+    MoveExamWorkspaceHistoryPositionRequest,
     SaveAsExamWorkspaceDocumentRequest,
     StoreExamWorkspaceUndoStepRequest,
 )
@@ -68,7 +70,10 @@ from skriptoteket.protocols.exam_workspace import (
 from skriptoteket.protocols.exam_workspace_guest_drafts import (
     ImportGuestExamDraftHandlerProtocol,
 )
-from skriptoteket.protocols.exam_workspace_history import StoreExamWorkspaceUndoStepHandlerProtocol
+from skriptoteket.protocols.exam_workspace_history import (
+    ExamWorkspaceEditLeaseHandlerProtocol,
+    StoreExamWorkspaceUndoStepHandlerProtocol,
+)
 from skriptoteket.web.api.v1.apps_conversion_hub_access import (
     APP_ID,
     require_conversion_hub_access,
@@ -319,21 +324,6 @@ async def preview_exam_workspace_document_print(
     )
 
 
-@router.put(
-    "/exam-workspace/documents/{lineage_id}",
-    response_model=ExamWorkspaceDocumentResponse,
-)
-async def save_exam_workspace_document(
-    lineage_id: UUID,
-    request: SaveExamWorkspaceDocumentRequest,
-    registry: FromDishka[CuratedAppRegistryProtocol],
-    handler: FromDishka[SaveExamWorkspaceDocumentHandlerProtocol],
-    user: User = Depends(require_app_user_api),
-) -> ExamWorkspaceDocumentResponse:
-    require_conversion_hub_access(registry=registry, user=user)
-    return await handler.handle(actor=user, lineage_id=lineage_id, request=request)
-
-
 @router.post(
     "/exam-workspace/documents/{lineage_id}/autosaves", response_model=ExamWorkspaceUndoStepResponse
 )
@@ -346,6 +336,70 @@ async def autosave_exam_workspace_document(
 ) -> ExamWorkspaceUndoStepResponse:
     require_conversion_hub_access(registry=registry, user=user)
     return await handler.handle(actor=user, lineage_id=lineage_id, request=request)
+
+
+@router.post(
+    "/exam-workspace/documents/{lineage_id}/edit-lease/claim",
+    response_model=ExamWorkspaceEditLeaseResponse,
+)
+async def claim_exam_workspace_edit_lease(
+    lineage_id: UUID,
+    request: ExamWorkspaceEditLeaseRequest,
+    registry: FromDishka[CuratedAppRegistryProtocol],
+    handler: FromDishka[ExamWorkspaceEditLeaseHandlerProtocol],
+    user: User = Depends(require_app_user_api),
+) -> ExamWorkspaceEditLeaseResponse:
+    """Take the exam's edit lease for one tab; a live foreign lease refuses with 409."""
+    require_conversion_hub_access(registry=registry, user=user)
+    return await handler.claim(actor=user, lineage_id=lineage_id, tab_id=request.tab_id)
+
+
+@router.post(
+    "/exam-workspace/documents/{lineage_id}/edit-lease/renew",
+    response_model=ExamWorkspaceEditLeaseResponse,
+)
+async def renew_exam_workspace_edit_lease(
+    lineage_id: UUID,
+    request: ExamWorkspaceEditLeaseRequest,
+    registry: FromDishka[CuratedAppRegistryProtocol],
+    handler: FromDishka[ExamWorkspaceEditLeaseHandlerProtocol],
+    user: User = Depends(require_app_user_api),
+) -> ExamWorkspaceEditLeaseResponse:
+    """Refresh the holder's lease; the response names a waiting takeover tab."""
+    require_conversion_hub_access(registry=registry, user=user)
+    return await handler.renew(actor=user, lineage_id=lineage_id, tab_id=request.tab_id)
+
+
+@router.post(
+    "/exam-workspace/documents/{lineage_id}/edit-lease/takeover",
+    response_model=ExamWorkspaceEditLeaseResponse,
+)
+async def request_exam_workspace_edit_lease_takeover(
+    lineage_id: UUID,
+    request: ExamWorkspaceEditLeaseRequest,
+    registry: FromDishka[CuratedAppRegistryProtocol],
+    handler: FromDishka[ExamWorkspaceEditLeaseHandlerProtocol],
+    user: User = Depends(require_app_user_api),
+) -> ExamWorkspaceEditLeaseResponse:
+    """Ask for the lease; the holder sees the request at its next heartbeat."""
+    require_conversion_hub_access(registry=registry, user=user)
+    return await handler.request_takeover(actor=user, lineage_id=lineage_id, tab_id=request.tab_id)
+
+
+@router.post(
+    "/exam-workspace/documents/{lineage_id}/edit-lease/release",
+    response_model=ExamWorkspaceEditLeaseResponse,
+)
+async def release_exam_workspace_edit_lease(
+    lineage_id: UUID,
+    request: ExamWorkspaceEditLeaseRequest,
+    registry: FromDishka[CuratedAppRegistryProtocol],
+    handler: FromDishka[ExamWorkspaceEditLeaseHandlerProtocol],
+    user: User = Depends(require_app_user_api),
+) -> ExamWorkspaceEditLeaseResponse:
+    """Clear the holder's lease; a waiting takeover claims it next."""
+    require_conversion_hub_access(registry=registry, user=user)
+    return await handler.release(actor=user, lineage_id=lineage_id, tab_id=request.tab_id)
 
 
 @router.get(
@@ -374,6 +428,22 @@ async def get_exam_workspace_history_step(
 ) -> ExamWorkspaceHistoryDocumentResponse:
     require_conversion_hub_access(registry=registry, user=user)
     return await handler.history_step(actor=user, lineage_id=lineage_id, step_id=step_id)
+
+
+@router.post(
+    "/exam-workspace/documents/{lineage_id}/history/position",
+    response_model=ExamWorkspaceUndoStepResponse,
+)
+async def move_exam_workspace_history_position(
+    lineage_id: UUID,
+    request: MoveExamWorkspaceHistoryPositionRequest,
+    registry: FromDishka[CuratedAppRegistryProtocol],
+    handler: FromDishka[StoreExamWorkspaceUndoStepHandlerProtocol],
+    user: User = Depends(require_app_user_api),
+) -> ExamWorkspaceUndoStepResponse:
+    """Ångra or Gör om: stand on a retained step and write it to the exam file, no new step."""
+    require_conversion_hub_access(registry=registry, user=user)
+    return await handler.move_to_step(actor=user, lineage_id=lineage_id, request=request)
 
 
 @router.post(

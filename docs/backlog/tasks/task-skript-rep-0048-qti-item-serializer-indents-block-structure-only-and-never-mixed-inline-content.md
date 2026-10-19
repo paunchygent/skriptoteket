@@ -42,6 +42,7 @@ The vertical is one QTI item built in memory and serialized to bytes in an Exam.
 - Focused: `tests/unit/domain/curated_apps/exam_conversion/test_examnet_qti_item_indentation.py` (new), `test_examnet_qti_inline_prompt.py`, `test_examnet_qti_package.py`, `tests/unit/application/curated_apps/test_exam_conversion_parity.py`, `tests/unit/domain/curated_apps/exam_workspace/test_examnet_qti_parents_and_matching.py`.
 - The exam_conversion domain suite once at the end; `pdm run lint` and `pdm run typecheck`.
 - Behaviour: the next staging walk re-checks nested marks and marked runs in Exam.net.
+- Walk check from TASK-SKRIPT-40-04-09 R14 (user 2026-10-19, "Test first"): import into Exam.net a PDF för Exam.net and a QTI package whose question headings and titles use list labels such as "2a", and record whether Exam.net accepts them. Today both keep position numbers; they switch to list labels only after this check passes.
 
 ## Stop Conditions
 
@@ -69,3 +70,4 @@ Stop and report to the parent if a test outside the pinned hashes asserts the ol
 - Done: indenter (u1), adversarial tests and regenerated pins (u2), byte-diff explanation, focused proof.
 - Next: independent review routed by the parent, then merge to main. After the merge, TASK-SKRIPT-41-02-01 updates its importer test that asserts the indentation loss.
 - User gate: the next staging walk re-checks nested marks and marked runs in Exam.net.
+- Walk check: Exam.net imports list-label headings and titles such as "2a" (from TASK-SKRIPT-40-04-09 R14; see `Validation`).

@@ -73,8 +73,8 @@ describe("ExamWorkspaceBodyEditor marks", () => {
 
     const [itemId, body, structural] = lastUpdate(wrapper);
     expect(itemId).toBe("item_001");
-    expect(body[0]!.segments[0]).toEqual({ kind: "text", marks: ["bold"], text: "Vatten" });
-    expect(body[0]!.segments[1]).toEqual({ kind: "text", marks: [], text: " kokar vid " });
+    expect(body[0]!.segments[0]).toEqual({ kind: "text", marks: ["bold"], text: "Vatten", kept_gap_id: null });
+    expect(body[0]!.segments[1]).toEqual({ kind: "text", marks: [], text: " kokar vid ", kept_gap_id: null });
     expect(structural).toBe(true);
     wrapper.unmount();
   });
@@ -99,7 +99,7 @@ describe("ExamWorkspaceBodyEditor marks", () => {
     await wrapper.get('[data-test="exam-workspace-body-mark-bold"]').trigger("click");
 
     expect(lastUpdate(wrapper)[1][0]!.segments).toEqual([
-      { kind: "text", marks: [], text: "Vatten kokar." },
+      { kind: "text", marks: [], text: "Vatten kokar.", kept_gap_id: null },
     ]);
     wrapper.unmount();
   });
@@ -110,7 +110,7 @@ describe("ExamWorkspaceBodyEditor marks", () => {
 
     press(surface(wrapper), "b", { ctrlKey: true });
 
-    expect(lastUpdate(wrapper)[1][0]!.segments[0]).toEqual({ kind: "text", marks: ["bold"], text: "Vatten" });
+    expect(lastUpdate(wrapper)[1][0]!.segments[0]).toEqual({ kind: "text", marks: ["bold"], text: "Vatten", kept_gap_id: null });
     wrapper.unmount();
   });
 
@@ -128,7 +128,7 @@ describe("ExamWorkspaceBodyEditor marks", () => {
     await wrapper.get('[data-test="exam-workspace-body-mark-superscript"]').trigger("click");
 
     expect(lastUpdate(wrapper)[1][0]!.segments).toEqual([
-      { kind: "text", marks: ["superscript"], text: "H2O" },
+      { kind: "text", marks: ["superscript"], text: "H2O", kept_gap_id: null },
     ]);
     wrapper.unmount();
   });
@@ -159,7 +159,7 @@ describe("ExamWorkspaceBodyEditor marks", () => {
 
     editor.commands.insertContentAt(posIn(editor, "fet", 1), "x");
 
-    expect(lastUpdate(wrapper)[1][0]!.segments).toEqual([{ kind: "text", marks: ["bold"], text: "fxet" }]);
+    expect(lastUpdate(wrapper)[1][0]!.segments).toEqual([{ kind: "text", marks: ["bold"], text: "fxet", kept_gap_id: null }]);
     wrapper.unmount();
   });
 });

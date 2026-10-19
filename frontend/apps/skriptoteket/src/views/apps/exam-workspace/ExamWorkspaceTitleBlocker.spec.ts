@@ -30,19 +30,20 @@ import {
   succeededConversion,
   unmountWrappers,
 } from "../ExamWorkspaceExportsSlice.specSupport";
+import { saveDocument } from "../ExamWorkspaceSlice.specSupport";
 import { arrangeStepHistory } from "../ExamWorkspaceHistory.specSupport";
 import { EXAM_WORKSPACE_TYPING_PAUSE_MS } from "./useExamWorkspaceHistory";
 
 const apiMocks = vi.hoisted(() => ({
   getExamWorkspaceHistory: vi.fn(),
   getExamWorkspaceHistoryStep: vi.fn(),
+  moveExamWorkspaceHistoryPosition: vi.fn(),
   storeExamWorkspaceUndoStep: vi.fn(),
   findExamWorkspaceAnswerKeySuggestions: vi.fn(),
   getExamWorkspaceDocument: vi.fn(),
   importExamWorkspaceDocument: vi.fn(),
   getExamWorkspaceConversionStatus: vi.fn(),
   listExamWorkspaceDocuments: vi.fn(),
-  saveExamWorkspaceDocument: vi.fn(),
 }));
 const exportApiMocks = vi.hoisted(() => ({
   downloadExamWorkspaceExport: vi.fn(),
@@ -84,14 +85,6 @@ function importTitled(title: string): void {
   });
 }
 
-function savedWithTitle(title: string) {
-  const response = exportableResponse({ version: 2 });
-  response.document.title = title;
-  response.saved_document.title = title;
-  response.summary.title = title;
-  return { ...response, export_blockers: judge(title) };
-}
-
 /** The autosave double judges the stored step like the server does. */
 function judgeAutosaves(): void {
   const store = apiMocks.storeExamWorkspaceUndoStep.getMockImplementation()!;
@@ -105,9 +98,6 @@ beforeEach(() => {
   arrangeExportApis({ api: apiMocks, exportApi: exportApiMocks, download: downloadMocks });
   arrangeStepHistory(apiMocks);
   judgeAutosaves();
-  apiMocks.saveExamWorkspaceDocument.mockImplementation(async (_lineage, body) =>
-    savedWithTitle(body.document.title),
-  );
 });
 
 afterEach(() => {
@@ -140,7 +130,7 @@ describe("ExamWorkspaceView title export blocker", () => {
       }
       await requirePage("exam-workspace-export-qti").trigger("click");
       await flushPromises();
-      expect(apiMocks.saveExamWorkspaceDocument).not.toHaveBeenCalled();
+      expect(apiMocks.storeExamWorkspaceUndoStep).not.toHaveBeenCalled();
       expect(exportApiMocks.downloadExamWorkspaceExport).not.toHaveBeenCalled();
     },
   );
@@ -226,17 +216,16 @@ describe("ExamWorkspaceView title export blocker", () => {
     },
   );
 
-  it("saves an emptied title with Spara, shows the red row and raises no failure toast", async () => {
+  it("stores an emptied title, shows the red row and raises no failure toast", async () => {
     importTitled("Prov 1");
     const wrapper = await mountImported();
     await openTitleField(wrapper);
 
     await typeTitle(wrapper, "   ");
-    await wrapper.get('[data-test="exam-workspace-save"]').trigger("click");
-    await flushPromises();
+    await saveDocument(wrapper);
 
-    expect(apiMocks.saveExamWorkspaceDocument).toHaveBeenCalledTimes(1);
-    expect(apiMocks.saveExamWorkspaceDocument.mock.calls[0]?.[1].document.title).toBe("   ");
+    expect(apiMocks.storeExamWorkspaceUndoStep).toHaveBeenCalledTimes(1);
+    expect(apiMocks.storeExamWorkspaceUndoStep.mock.calls[0]?.[1].document.title).toBe("   ");
     expect(useToastStore().failure).not.toHaveBeenCalled();
     await openMenu(wrapper);
     expect(requirePage("exam-workspace-blocker-title").text()).toBe(TITLE_ROW);

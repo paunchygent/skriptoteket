@@ -22,11 +22,14 @@ import {
 import { buildParentDocument } from "./examWorkspaceParentDocument.specSupport";
 import {
   createExamWorkspaceGuestDraftStorage,
+  createIndexedDbGuestEditLeaseStorage,
   createInMemoryExamWorkspaceGuestDraftStorage,
   EXAM_WORKSPACE_GUEST_DRAFT_DB_NAME,
   EXAM_WORKSPACE_GUEST_DRAFT_DB_VERSION,
   EXAM_WORKSPACE_GUEST_DRAFT_RECORD_KEY,
   EXAM_WORKSPACE_GUEST_DRAFT_STORE_NAME,
+  EXAM_WORKSPACE_GUEST_EDIT_LEASE_RECORD_KEY,
+  EXAM_WORKSPACE_GUEST_EDIT_LEASE_STORE_NAME,
   type ExamWorkspaceGuestDraftStoragePort,
   type StoredGuestDraft,
 } from "./examWorkspaceGuestDraftStorage";
@@ -58,12 +61,21 @@ function storedDraft(title = "Original"): StoredGuestDraft {
 }
 
 describe("examWorkspaceGuestDraftStorage", () => {
-  it("names its own database, store and single record key", () => {
+  it("names its own database, stores and single record keys", () => {
     expect(EXAM_WORKSPACE_GUEST_DRAFT_DB_NAME).toBe("skriptoteket_exam_workspace_guest");
-    expect(EXAM_WORKSPACE_GUEST_DRAFT_DB_VERSION).toBe(1);
+    expect(EXAM_WORKSPACE_GUEST_DRAFT_DB_VERSION).toBe(2);
     expect(EXAM_WORKSPACE_GUEST_DRAFT_STORE_NAME).toBe("drafts");
     expect(EXAM_WORKSPACE_GUEST_DRAFT_RECORD_KEY).toBe("current");
     expect(EXAM_WORKSPACE_GUEST_DRAFT_DB_NAME).not.toBe("skriptoteket_curated_apps");
+    expect(EXAM_WORKSPACE_GUEST_EDIT_LEASE_STORE_NAME).toBe("edit_lease");
+    expect(EXAM_WORKSPACE_GUEST_EDIT_LEASE_RECORD_KEY).toBe("current");
+  });
+
+  it("creates the IndexedDB lease port without opening the database", () => {
+    const storage = createIndexedDbGuestEditLeaseStorage();
+
+    expect(typeof storage.load).toBe("function");
+    expect(typeof storage.save).toBe("function");
   });
 
   it("round-trips the draft and its picture blobs through replaceIf on an empty slot", async () => {
@@ -109,7 +121,7 @@ describe("examWorkspaceGuestDraftStorage", () => {
     const second: StoredGuestDraft = { assets: {}, draft: outcome.draft };
 
     expect(await storage.replaceIf(first.draft.cursor, second)).toBe(true);
-    expect((await storage.load())?.draft.saved_document.title).toBe("Första");
+    expect((await storage.load())?.draft.saved_document.title).toBe("Andra");
     expect((await storage.load())?.draft.cursor).toBe(outcome.draft.cursor);
   });
 

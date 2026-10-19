@@ -126,10 +126,10 @@ NON_AI_JOB_REPOSITORY_USERS: dict[type, str] = {
     ImportGuestExamDraftHandlerProtocol: (
         "creates the exam from the posted guest draft; no LLM call"
     ),
-    SaveExamWorkspaceDocumentHandlerProtocol: (
-        "saves, copies and reads document history; no LLM call"
+    SaveExamWorkspaceDocumentHandlerProtocol: ("copies and reads document history; no LLM call"),
+    StoreExamWorkspaceUndoStepHandlerProtocol: (
+        "stores an autosave undo step and moves its position; no LLM call"
     ),
-    StoreExamWorkspaceUndoStepHandlerProtocol: "stores an autosave undo step; no LLM call",
 }
 
 # The routes that can start a paid LLM call today, as (method, path) pairs.

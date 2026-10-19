@@ -88,7 +88,7 @@ function bodyOf(emitted: unknown[][] | undefined, index: number): NativeExamBody
 }
 
 function boldOf(text: string): NativeExamBodyParagraph[] {
-  return [{ heading_level: null, segments: [{ kind: "text", marks: ["bold"], text }] }];
+  return [{ heading_level: null, segments: [{ kind: "text", marks: ["bold"], text, kept_gap_id: null }] }];
 }
 
 describe("ExamWorkspaceQuestionEditor shared rich-text target", () => {
@@ -123,12 +123,12 @@ describe("ExamWorkspaceQuestionEditor shared rich-text target", () => {
 
     await wrapper.get(SUPERSCRIPT).trigger("click");
     expect(bodyOf(wrapper.emitted("updateChoiceBody"), 0)[0]!.segments).toEqual([
-      { kind: "text", marks: ["superscript"], text: "Option" },
+      { kind: "text", marks: ["superscript"], text: "Option", kept_gap_id: null },
     ]);
 
     await wrapper.get(SUBSCRIPT).trigger("click");
     expect(bodyOf(wrapper.emitted("updateChoiceBody"), 1)[0]!.segments).toEqual([
-      { kind: "text", marks: ["subscript"], text: "Option" },
+      { kind: "text", marks: ["subscript"], text: "Option", kept_gap_id: null },
     ]);
 
     await wrapper.get(HEADING_2).trigger("click");
@@ -199,7 +199,7 @@ describe("ExamWorkspaceQuestionEditor shared rich-text target", () => {
 
     await wrapper.get(BOLD).trigger("click");
     expect(bodyOf(wrapper.emitted("updateChoiceBody"), 0)[0]!.segments).toEqual([
-      { kind: "text", marks: ["bold"], text: "Option" },
+      { kind: "text", marks: ["bold"], text: "Option", kept_gap_id: null },
     ]);
 
     // The owner stores the emitted body and passes it back; the selection stays.
@@ -209,7 +209,7 @@ describe("ExamWorkspaceQuestionEditor shared rich-text target", () => {
 
     await wrapper.get(BOLD).trigger("click");
     expect(bodyOf(wrapper.emitted("updateChoiceBody"), 1)[0]!.segments).toEqual([
-      { kind: "text", marks: [], text: "Option" },
+      { kind: "text", marks: [], text: "Option", kept_gap_id: null },
     ]);
   });
 

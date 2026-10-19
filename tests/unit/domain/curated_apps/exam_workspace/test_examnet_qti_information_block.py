@@ -337,7 +337,7 @@ class TestInformationBlock:
         without_block = native_exam_export_checklist(_document(items=document.items))
 
         assert with_block == without_block
-        assert [entry.question_number for entry in with_block] == ["1"]
+        assert [entry.item_id for entry in with_block] == ["item_001"]
 
         # A block at place 0 names no native question, so the checklist must skip it
         # rather than look one up by its sequence.

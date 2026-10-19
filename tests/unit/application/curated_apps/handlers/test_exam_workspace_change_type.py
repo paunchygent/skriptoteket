@@ -42,7 +42,7 @@ async def test_one_command_uses_one_atomic_autosave_and_returns_authoritative_re
     current, reader, steps = _ports()
     actor = make_user()
     cursor = uuid4()
-    # The autosave port can normalize data; handler must return its document and cursor.
+    # The autosave port can normalize data; the re-read after the store is authoritative.
     normalized = current.document.model_copy(update={"title": "Normalized editor document"})
     steps.handle.return_value = ExamWorkspaceUndoStepResponse(
         document=normalized,
@@ -50,26 +50,32 @@ async def test_one_command_uses_one_atomic_autosave_and_returns_authoritative_re
             cursor=cursor, baseline_step_id=uuid4(), step_ids=(cursor,), position_step_id=cursor
         ),
     )
+    reread = current.model_copy(update={"document": normalized, "history_cursor": cursor})
+    reader.handle.side_effect = [current, reread]
     handler = ChangeExamWorkspaceItemTypeHandler(
         reader=reader, undo_steps=steps, rng=random.Random(1)
     )
+    tab_id = uuid4()
     response = await handler.handle(
         actor=actor,
         lineage_id=current.document.document_id,
         request=ChangeExamWorkspaceItemTypeRequest(
+            tab_id=tab_id,
             item_id="item_001",
             target_kind=NativeExamItemKind.FREE_TEXT,
             expected_revision=current.document.revision,
             expected_cursor=current.history_cursor,
         ),
     )
-    reader.handle.assert_awaited_once_with(actor=actor, lineage_id=current.document.document_id)
+    assert reader.handle.await_count == 2
+    reader.handle.assert_awaited_with(actor=actor, lineage_id=current.document.document_id)
     steps.handle.assert_awaited_once()
     call = steps.handle.call_args.kwargs
     assert call["actor"] == actor
     assert call["lineage_id"] == current.document.document_id
     request = call["request"]
     assert request.expected_cursor == current.history_cursor
+    assert request.tab_id == tab_id
     assert request.after_step_id is None
     assert request.document.revision == current.document.revision
     item = request.document.items[0]
@@ -96,6 +102,7 @@ async def test_stale_precondition_never_stores_a_step(stale: str) -> None:
             actor=make_user(),
             lineage_id=current.document.document_id,
             request=ChangeExamWorkspaceItemTypeRequest(
+                tab_id=uuid4(),
                 item_id="item_001",
                 target_kind=NativeExamItemKind.SINGLE_CHOICE,
                 expected_revision=(
@@ -122,6 +129,7 @@ async def test_concurrent_autosave_conflict_is_not_retried_or_hidden() -> None:
             actor=make_user(),
             lineage_id=current.document.document_id,
             request=ChangeExamWorkspaceItemTypeRequest(
+                tab_id=uuid4(),
                 item_id="item_001",
                 target_kind=NativeExamItemKind.FREE_TEXT,
                 expected_revision=current.document.revision,
@@ -147,6 +155,7 @@ async def test_matching_precision_error_never_autosaves_or_rounds_points() -> No
             actor=make_user(),
             lineage_id=current.document.document_id,
             request=ChangeExamWorkspaceItemTypeRequest(
+                tab_id=uuid4(),
                 item_id=question.item_id,
                 target_kind=NativeExamItemKind.MATCHING,
                 expected_revision=current.document.revision,
@@ -168,6 +177,7 @@ async def test_unknown_question_never_stores_a_step() -> None:
             actor=make_user(),
             lineage_id=current.document.document_id,
             request=ChangeExamWorkspaceItemTypeRequest(
+                tab_id=uuid4(),
                 item_id="item_999",
                 target_kind=NativeExamItemKind.FREE_TEXT,
                 expected_revision=current.document.revision,

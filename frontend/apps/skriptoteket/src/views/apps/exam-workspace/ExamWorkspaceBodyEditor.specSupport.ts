@@ -43,6 +43,7 @@ export function buildGapItem(overrides: Partial<NativeExamItem> = {}): NativeExa
       buildGap("gap_001", ["100"]),
       buildGap("gap_002"),
     ],
+    kept_gaps: [],
     item_id: "item_001",
     kind: "gap_fill",
     match_left: [],
