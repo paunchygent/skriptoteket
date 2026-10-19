@@ -110,9 +110,14 @@ useDialogFocus(frame, {
 }
 .drawer--tablet {
   position: absolute; top: 12px; right: 12px; bottom: 12px; z-index: 12; overflow: hidden;
-  width: min(var(--xw-drawer, 380px), calc(100% - 24px));
+  width: min(var(--xw-float), calc(100% - 24px));
   border: 1px solid var(--huleedu-panel-border); border-radius: var(--huleedu-radius-xl);
   background: var(--huleedu-modal); box-shadow: var(--huleedu-shadow-md);
+}
+@media (min-width: 1280px) {
+  /* Below its minimum the drawer keeps its minimum layout and scrolls inside itself. */
+  .drawer { overflow-x: auto; }
+  .drawer__body { min-width: var(--xw-drawer-min); }
 }
 .drawer--phone { position: fixed; inset: 0; z-index: 26; border: 0; background: var(--huleedu-canvas); }
 .drawer--phone .drawer__head { height: 56px; padding: 0 var(--huleedu-space-4); }

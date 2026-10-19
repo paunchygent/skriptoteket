@@ -180,6 +180,19 @@ const blockers = computed(() => [
   ...examWorkspaceTitleBlockerEntries(titleWithoutText.value),
   ...examWorkspaceBlockerEntries(entries.value, items.value, readiness.value, exports.exportBlockersByItemId.value),
 ]);
+
+/**
+ * The width owner's side state (TASK-SKRIPT-41-02-04): the open drawer wins,
+ * else the rendered print preview, else no side column. The `.ws__body` grid
+ * keys one rule per state off `data-side`.
+ */
+const side = computed(() => {
+  if (drawer.value !== null) return drawer.value;
+  if (previewOpen.value && workspaceDocument.value && !isPhone.value && props.store.teacher !== null) {
+    return "preview";
+  }
+  return "none";
+});
 const saveFlow = useExamWorkspaceSaveFlow({
   editing, enrichment, exports, blockers, disabled, frame, gotoItem,
   openDetails: () => { drawer.value = "details"; },
@@ -261,7 +274,7 @@ onMounted(() => {
   <main
     ref="frame"
     class="xw-root ws"
-    :class="{ 'ws--drawer': drawer !== null, 'ws--preview': previewOpen }"
+    :data-side="side"
     aria-label="Provredigering"
     :data-layout="layout"
     data-test="exam-workspace-frame"
@@ -480,20 +493,36 @@ onMounted(() => {
 .ws__bar { margin: var(--huleedu-space-2) var(--huleedu-space-6) 0; }
 .ws__body {
   position: relative; flex: 1; min-height: 0; display: grid;
-  grid-template-columns: var(--xw-list) minmax(0, 1fr);
+  grid-template-columns: min(var(--xw-list-size), max(0px, 100% - var(--xw-editor-min))) minmax(0, 1fr);
 }
-.ws--drawer .ws__body { grid-template-columns: var(--xw-list) minmax(0, 1fr) var(--xw-drawer); }
-.ws__body--empty, .ws--drawer .ws__body--empty { grid-template-columns: minmax(0, 1fr); }
-.ws--drawer .ws__body--empty { grid-template-columns: minmax(0, 1fr) var(--xw-drawer); }
+.ws__body--empty { grid-template-columns: minmax(0, 1fr); }
+/* The side track squeezes first, then the list, the editor last (TASK-SKRIPT-41-02-04). */
+.ws[data-side="open"],
+.ws[data-side="export"],
+.ws[data-side="details"] { --xw-side-size: var(--xw-drawer-size); }
+.ws[data-side="preview"] { --xw-side-size: var(--xw-preview-size); }
 @media (min-width: 1280px) {
-  .ws--preview .ws__body { grid-template-columns: var(--xw-list) minmax(0, 1fr) minmax(320px, 0.8fr); }
+  .ws[data-side="open"] .ws__body,
+  .ws[data-side="export"] .ws__body,
+  .ws[data-side="details"] .ws__body,
+  .ws[data-side="preview"] .ws__body {
+    grid-template-columns:
+      min(var(--xw-list-size), max(0px, 100% - var(--xw-editor-min)))
+      minmax(0, 1fr)
+      min(var(--xw-side-size), max(0px, 100% - var(--xw-list-size) - var(--xw-editor-min)));
+  }
+  .ws[data-side="open"] .ws__body--empty,
+  .ws[data-side="export"] .ws__body--empty,
+  .ws[data-side="details"] .ws__body--empty {
+    grid-template-columns: minmax(0, 1fr) min(var(--xw-side-size), 100%);
+  }
 }
 @media (max-width: 1279px) {
-  .ws__body, .ws--drawer .ws__body { grid-template-columns: 280px minmax(0, 1fr); }
-  .ws__body--empty, .ws--drawer .ws__body--empty { grid-template-columns: minmax(0, 1fr); }
+  .ws__body { grid-template-columns: 280px minmax(0, 1fr); }
+  .ws__body--empty { grid-template-columns: minmax(0, 1fr); }
   .ws__bar { margin: var(--huleedu-space-2) var(--huleedu-space-4) 0; }
 }
 @media (max-width: 767px) {
-  .ws__body, .ws--drawer .ws__body { grid-template-columns: minmax(0, 1fr); }
+  .ws__body { grid-template-columns: minmax(0, 1fr); }
 }
 </style>

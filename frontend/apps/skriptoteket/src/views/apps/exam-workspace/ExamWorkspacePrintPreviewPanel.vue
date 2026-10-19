@@ -144,9 +144,14 @@ watch(
 @media (max-width: 1279px) {
   .pp {
     position: absolute; top: 12px; right: 12px; bottom: 12px; z-index: 12; overflow: hidden;
-    width: min(var(--xw-drawer, 380px), calc(100% - 24px));
+    width: min(var(--xw-float), calc(100% - 24px));
     border: 1px solid var(--huleedu-panel-border); border-radius: var(--huleedu-radius-xl);
     background: var(--huleedu-modal); box-shadow: var(--huleedu-shadow-md);
   }
+}
+@media (min-width: 1280px) {
+  /* Below its minimum the panel keeps its minimum layout and scrolls inside itself. */
+  .pp { overflow-x: auto; }
+  .pp__body { min-width: var(--xw-preview-min); }
 }
 </style>

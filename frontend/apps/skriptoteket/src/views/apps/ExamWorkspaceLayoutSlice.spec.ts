@@ -17,12 +17,20 @@
  */
 
 import { flushPromises } from "@vue/test-utils";
+import { createTestingPinia } from "@pinia/testing";
+import { mount } from "@vue/test-utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { ref } from "vue";
+import { createMemoryHistory, createRouter } from "vue-router";
 
 import type { ExamWorkspaceConversionStatus, NativeExamDocument } from "../../api/examWorkspace";
 import type { ExamWorkspaceLayout } from "./exam-workspace/useExamWorkspaceLayout";
+import { EXAM_WORKSPACE_LAYOUT_KEY } from "./exam-workspace/useExamWorkspaceLayout";
+import ExamWorkspaceView from "./ExamWorkspaceView.vue";
+import { serverExamWorkspaceStore } from "./exam-workspace/examWorkspaceStore";
 import {
   buildResponse,
+  EXAM_WORKSPACE_PATH,
   importFixtureDocument,
   mountExamWorkspace,
 } from "./ExamWorkspaceSlice.specSupport";
@@ -429,5 +437,161 @@ describe("ExamWorkspaceView frame layout", () => {
     await flushPromises();
 
     expect(isListLayerOpen(wrapper)).toBe(false);
+  });
+});
+
+describe("exam workspace width owner (data-side)", () => {
+  function frameSide(wrapper: Mounted): string | undefined {
+    return wrapper.get('[data-test="exam-workspace-frame"]').attributes("data-side");
+  }
+
+  function frameClasses(wrapper: Mounted): string[] {
+    return wrapper.get('[data-test="exam-workspace-frame"]').classes();
+  }
+
+  function expectNoLegacyStateClasses(wrapper: Mounted): void {
+    expect(frameClasses(wrapper)).not.toContain("ws--drawer");
+    expect(frameClasses(wrapper)).not.toContain("ws--preview");
+  }
+
+  /** A signed-in view whose teacher half is null, so the preview can never render. */
+  async function mountGuestLikeDesktop(): Promise<Mounted> {
+    const slot = globalThis.document.createElement("div");
+    slot.id = "app-topbar-page-slot";
+    globalThis.document.body.append(slot);
+    const host = globalThis.document.createElement("div");
+    globalThis.document.body.append(host);
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [{ component: { template: "<div />" }, path: EXAM_WORKSPACE_PATH }],
+    });
+    await router.push({ path: EXAM_WORKSPACE_PATH });
+    await router.isReady();
+    const layoutRef = ref<ExamWorkspaceLayout>("desktop");
+    const wrapper = mount(ExamWorkspaceView, {
+      attachTo: host,
+      props: { store: { ...serverExamWorkspaceStore, teacher: null } },
+      global: {
+        plugins: [createTestingPinia({ createSpy: vi.fn }), router],
+        provide: { [EXAM_WORKSPACE_LAYOUT_KEY]: layoutRef },
+      },
+    });
+    await flushPromises();
+    mounted.push(wrapper);
+    return wrapper;
+  }
+
+  it("reports none with no side open on desktop", async () => {
+    const wrapper = await mountImported("desktop");
+    await wrapper.get('[data-test="exam-workspace-open"]').trigger("click");
+
+    expect(frameSide(wrapper)).toBe("none");
+    expectNoLegacyStateClasses(wrapper);
+  });
+
+  it("reports open for the Öppna drawer on desktop", async () => {
+    const wrapper = await mountImported("desktop");
+
+    expect(wrapper.find('[data-test="exam-workspace-drawer-open"]').exists()).toBe(true);
+    expect(frameSide(wrapper)).toBe("open");
+    expectNoLegacyStateClasses(wrapper);
+  });
+
+  it("reports details for Provets uppgifter on desktop", async () => {
+    const wrapper = await mountImported("desktop");
+    await clickTitle();
+
+    expect(wrapper.find('[data-test="exam-workspace-drawer-details"]').exists()).toBe(true);
+    expect(frameSide(wrapper)).toBe("details");
+    expectNoLegacyStateClasses(wrapper);
+  });
+
+  it("reports export for the Exportera drawer on desktop", async () => {
+    const wrapper = await mountImported("desktop");
+    await wrapper.get('[data-test="exam-workspace-open"]').trigger("click");
+    await wrapper.get('[data-test="exam-workspace-export"]').trigger("click");
+    const more = document.body.querySelector<HTMLElement>('[data-test="exam-workspace-export-more"]');
+    expect(more).not.toBeNull();
+    more?.click();
+    await flushPromises();
+
+    expect(wrapper.find('[data-test="exam-workspace-drawer-export"]').exists()).toBe(true);
+    expect(frameSide(wrapper)).toBe("export");
+    expectNoLegacyStateClasses(wrapper);
+  });
+
+  it("reports preview when a teacher opens Förhandsgranska on desktop", async () => {
+    const wrapper = await mountImported("desktop");
+    await wrapper.get('[data-test="exam-workspace-print-preview-toggle"]').trigger("click");
+    await flushPromises();
+
+    expect(wrapper.find('[data-test="exam-workspace-print-preview"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="exam-workspace-drawer-open"]').exists()).toBe(false);
+    expect(frameSide(wrapper)).toBe("preview");
+    expectNoLegacyStateClasses(wrapper);
+  });
+
+  it("prefers the drawer when one opens while the preview is open", async () => {
+    const wrapper = await mountImported("desktop");
+    await wrapper.get('[data-test="exam-workspace-print-preview-toggle"]').trigger("click");
+    await flushPromises();
+    expect(frameSide(wrapper)).toBe("preview");
+
+    await clickTitle();
+
+    expect(wrapper.find('[data-test="exam-workspace-drawer-details"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="exam-workspace-print-preview"]').exists()).toBe(false);
+    expect(frameSide(wrapper)).toBe("details");
+    expectNoLegacyStateClasses(wrapper);
+  });
+
+  it("prefers the preview when it opens while a drawer is open", async () => {
+    const wrapper = await mountImported("desktop");
+    expect(frameSide(wrapper)).toBe("open");
+
+    await wrapper.get('[data-test="exam-workspace-print-preview-toggle"]').trigger("click");
+    await flushPromises();
+
+    expect(wrapper.find('[data-test="exam-workspace-print-preview"]').exists()).toBe(true);
+    expect(wrapper.find('[data-test="exam-workspace-drawer-open"]').exists()).toBe(false);
+    expect(frameSide(wrapper)).toBe("preview");
+    expectNoLegacyStateClasses(wrapper);
+  });
+
+  it("keeps data-side on the drawer for a guest with no preview toggle", async () => {
+    const wrapper = await mountGuestLikeDesktop();
+
+    expect(wrapper.find('[data-test="exam-workspace-print-preview-toggle"]').exists()).toBe(false);
+    expect(wrapper.find('[data-test="exam-workspace-drawer-open"]').exists()).toBe(true);
+    expect(frameSide(wrapper)).toBe("open");
+    expectNoLegacyStateClasses(wrapper);
+  });
+
+  it("follows the same semantic state on tablet without legacy classes", async () => {
+    const wrapper = await mountImported("tablet");
+
+    expect(frameSide(wrapper)).toBe("none");
+    expectNoLegacyStateClasses(wrapper);
+
+    await clickTitle();
+
+    expect(wrapper.find('[data-test="exam-workspace-drawer-details"]').exists()).toBe(true);
+    expect(frameSide(wrapper)).toBe("details");
+    expectNoLegacyStateClasses(wrapper);
+  });
+
+  it("follows the same semantic state on phone without legacy classes", async () => {
+    const wrapper = await mountImported("phone");
+
+    expect(frameSide(wrapper)).toBe("none");
+    expect(frameSide(wrapper)).not.toBeUndefined();
+    expectNoLegacyStateClasses(wrapper);
+
+    await clickTitle();
+
+    expect(wrapper.find('[data-test="exam-workspace-drawer-details"]').exists()).toBe(true);
+    expect(frameSide(wrapper)).toBe("details");
+    expect(wrapper.find('[data-test="exam-workspace-print-preview-toggle"]').exists()).toBe(false);
+    expectNoLegacyStateClasses(wrapper);
   });
 });
