@@ -7,10 +7,14 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-18'
-status: proposed
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: approved
+  reviewer: ruthless-reviewer
+  decided_at: '2026-10-19'
+  approval_protocol: agent-overseer:approved-review-closeout
+  approval_evidence: 'Pi ruthless-reviewer 898d311f (Hemma retained session 01a14f3e-12df-7020-8c18-18ad39a131cf, evidence/reviews/898d311f-da73-489f-9b10-76a36892ff88.md and -rereview.md): changes_requested with F1 and F2 high, F3 and F4 medium; F1 and F2 cleared on re-review at e5b17901 (approved). F3, F4 and the low F5 admitted by the parent on focused proof; the fold onto the 39-04-16 source_paragraph() (merge b0904608, ff8c1ebb) admitted on focused proof and identical replays. 166 focused tests, lint, typecheck, docs-validate pass; domain suite 4798 passed, 59 skipped; ten replays differ from main only in q8 (the contracted fix). Merged to main at ff8c1ebb on 2026-10-19.'
 task_kind: story
 acceptance_criteria:
   - A body paragraph aligned to another item's source span and not to its own is rebuilt from the item's own source or dropped; q8 of the v14 chapter_4 replay shows its own stem; correctly placed paragraphs keep the model's wording; every replay difference is read interpretively and classified
