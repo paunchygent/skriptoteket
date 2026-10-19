@@ -33,6 +33,9 @@ from skriptoteket.application.curated_apps.exam_workspace_parents import (
 from skriptoteket.application.curated_apps.handlers.exam_workspace_documents import (
     GetExamWorkspaceDocumentHandler,
 )
+from skriptoteket.application.curated_apps.handlers.exam_workspace_export_renderer import (
+    ExamWorkspaceExportRenderer,
+)
 from skriptoteket.application.curated_apps.handlers.exam_workspace_exports import (
     ExportExamWorkspaceDocumentHandler,
 )
@@ -146,9 +149,11 @@ async def _client(world: ConversionWorld, actor: User) -> AsyncIterator[httpx.As
                 vault_files=world.vault_files,
                 codec=world.codec,
                 store=world.store,
-                qti_writer=ExamNetQtiPackageWriter(),
-                pdf_renderer=WeasyPrintExamNetPdfRenderer(),
-                docx_writer=exam_workspace_docx_writer.ExamWorkspaceDocxWriter(),
+                renderer=ExamWorkspaceExportRenderer(
+                    qti_writer=ExamNetQtiPackageWriter(),
+                    pdf_renderer=WeasyPrintExamNetPdfRenderer(),
+                    docx_writer=exam_workspace_docx_writer.ExamWorkspaceDocxWriter(),
+                ),
             ),
         },
     )
