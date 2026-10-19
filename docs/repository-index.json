@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "d9ef765934aa5a024daf37a54c7360fab17477f20e616048bee406664037d9a5",
+  "source_set_digest": "9f52aed454bf0016c040534e4ad1083521c343a59d32ab6eec61960a576ee9ba",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5241,6 +5241,25 @@
         "decided_at": "2026-10-19",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "Pi ruthless-reviewer c54c4ae4 (Hemma): no functional defects; medium M1 and M2 (file splits) repaired at 33ee7ad2 and admitted on focused proof (544 passed, lint and typecheck clean). Domain suite 5480 passed; its 15 test_spa_fallback failures match main (no built SPA in the worktree). Ten replays equal the base; the Del A probe ends review_complete with no reasons. origin/main 06985163 merged at 915be481; merged to main 2026-10-19. Validation names no staging walk."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-39-04-20",
+      "type": "task",
+      "title": "A paragraph that holds only a score field is consumed whole as the points source and leaves no slash in the question",
+      "path": "docs/backlog/tasks/task-skript-39-04-20-a-paragraph-that-holds-only-a-score-field-is-consumed-whole-as-the-points-source-and-leaves-no-slash-in-the-question.md",
+      "status": "in_progress",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-39-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
       }
     },
     {
