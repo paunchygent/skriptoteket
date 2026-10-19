@@ -131,44 +131,37 @@ Evidence: retained root `01a14f3e-12df-7020-8c18-18ad39a131cf` (`evidence/probes
   shows its morpheme split from the key with gaps for the labels. Neither D4 nor Task 1
   reaches them. Reported to the parent, not fixed.
 
-### Resume here (2026-10-18, clean break for an account switch)
+### Resume here (2026-10-19, review repair by lead 8bb7a3b6)
 
 - Branch `codex/task-skript-39-04-listed-chunks`, worktree
-  `/home/paunchygent/apps/skriptoteket-task-skript-39-04-listed-chunks`. The head is the
-  commit that adds this note. Code head before the break: `6249a2e8`. Not merged with
+  `/home/paunchygent/apps/skriptoteket-task-skript-39-04-listed-chunks`. Not merged with
   `origin/main`; never pushed.
 - Retained root: `/home/paunchygent/apps/skriptoteket/.orchestration/context/sessions/01a14f3e-12df-7020-8c18-18ad39a131cf`
-  (work orders in `evidence/orders/`, probes in `evidence/probes/`, reads in
-  `evidence/read/`, review in `evidence/reviews/898d311f-da73-489f-9b10-76a36892ff88.md`
-  with the probe at `scratch/898d311f-da73-489f-9b10-76a36892ff88/review_probe.py`).
-- Units done: D1-D2 listed-chunk check plus blank answer lines (`5bc0e8a4`); D4 misplaced
-  paragraph rebuild (`6249a2e8`); outcome docs (`6d58822f`). Domain suite at `6249a2e8`:
-  4631 passed, 59 skipped. Ten replays: q8 is the only difference.
-- Review 898d311f: changes requested. Open findings:
-  - F1 (high): the rebuild truncates at an excluded points interval.
-  - F2 (high): an unrenderable own paragraph (interior picture) is silently dropped.
-  - F3 (medium): ownership is conflated with the cursor.
-  - F4 (medium): four files are over 500 lines.
-    F1 and F2 go back to reviewer 898d311f; F3 and F4 are admitted on focused proof. Each
-    finding gets its own commit and a fresh junior.
-- F1 is done (code in `a2ec34d0`, tests in the following commit), by junior
-  `cf28dc3e-1c3d-4818-b734-a8f8ca0c5355`, which has finished. The rebuild picks whole source
-  paragraphs and removes the excluded intervals inside them. Proof: 7 new adversarial tests
-  (points in the middle of a stem, in a table cell, right after the label, and marks around
-  the interval); focused files 87 passed; lint clean. The ten replays are unchanged from
-  `6249a2e8`, so q8 is still the only difference. F1 is not yet re-reviewed: the user said
-  no reviews at this break. No child runs.
-- Next units, in order:
-  1. F2: order ready at `evidence/orders/junior-f2.md`.
-  2. F3 (`evidence/orders/junior-f3.md`) and F4 part 1, the admission and test-file split
-     (`evidence/orders/junior-f4a.md`). These two can run in parallel.
-  3. F4 part 2: split `source_formatting.py`, with no order written yet.
-     Then rerun the ten replays (q8 must stay the only difference) and the domain suite, and
-     send F1-F2 to reviewer 898d311f.
+  (work orders in `evidence/orders/`, review in
+  `evidence/reviews/898d311f-da73-489f-9b10-76a36892ff88.md`, its probe at
+  `scratch/898d311f-da73-489f-9b10-76a36892ff88/review_probe.py`).
+- Review 898d311f findings, each repaired by a fresh junior:
+  - F1 (high, `a2ec34d0`, `757b07ef`): the rebuild renders the whole own source paragraph
+    minus its excluded intervals.
+  - F2 (high, `57eab5ca`, typing `ba9c561a`): an own paragraph with a source picture or an
+    inline answer key raises `FormattingTransferError`, so admission makes the item its
+    source review item. The probe's `picture_source` case is now `review_required`.
+  - F3 (medium, `80c79b2b`): ownership reads the item's whole own source, never the cursor.
+    The probe's `shared_consumed` case keeps `Give a reason.` twice.
+  - F4 (medium, `2256143e`, `7dc51124`): the left-out check moved to
+    `exam_workspace_docx_build_left_out.py`; the listed-chunk and continuation-ownership
+    tests moved to their own files; `source_formatting.py` split into `source_format_index.py`
+    (indexed source), `source_misplaced_paragraph.py` (D4/D5 rule) and
+    `source_format_errors.py`. Every changed file is under 500 lines.
+- Proof at `7dc51124`: focused files 119 passed; lint and typecheck clean. The ten replays
+  (Hemma `~/logs/replays-39-04-listed/f4`) differ from base exactly as at `6249a2e8`: q8 is
+  the only difference.
+- Next: the domain suite (after the parent's go); then F1 and F2 go back to reviewer
+  898d311f through the parent. F3 and F4 are admitted on focused proof.
 - Gates: merge `origin/main` only when the parent says TASK-SKRIPT-39-04-16 has landed,
-  then fold `_source_paragraph` onto its `source_paragraph()` and rerun the replays.
-  Reported, not fixed: metodprov 1 (reply shortens its own paragraph, D7) and svenska_2
-  Fråga 1 (inline `Svar:` gap paragraphs).
+  then fold `_source_paragraph` (now in `source_misplaced_paragraph.py`) onto its
+  `source_paragraph()` and rerun the replays. Reported, not fixed: metodprov 1 (REP-0049)
+  and svenska_2 Fråga 1 (TASK-SKRIPT-39-04-17).
 
 ## Stop Conditions
 
