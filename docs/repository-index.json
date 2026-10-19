@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "1dd74f7a06117d381dc507cc0b2be49d3ccc4eeedd664089f1b5404aa315bb6d",
+  "source_set_digest": "12d4f7a922f31fd5b8b77241c327987c460815876d53ef2df588604f3ce96b10",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5307,7 +5307,7 @@
       "type": "task",
       "title": "Printed points wording at the end of a question's text becomes its points and leaves the text",
       "path": "docs/backlog/tasks/task-skript-39-04-21-printed-points-wording-at-the-end-of-a-question-s-text-becomes-its-points-and-leaves-the-text.md",
-      "status": "ready",
+      "status": "done",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-04",
       "owners": [
@@ -5318,7 +5318,10 @@
       ],
       "closeout_review": {
         "record": "inline",
-        "status": "not_started"
+        "status": "not_required",
+        "decided_at": "2026-10-19",
+        "approval_protocol": "agent-planning:user-closure-gate",
+        "approval_evidence": "User closed 39-04-21 on 2026-10-19 in the Hemma orchestrator session, with U4 (the offer line, D10) left parked as a later item and not built. Pi ruthless-reviewer 82849a3b rounds 1-4 (root 01a15594): R1-R6 fixed; rereview 4 ended changes_requested with mediums R7/R8 only, admitted by the parent on focused proof (123 files, 2651 passed) at f3bef38e. Full suite at 5c5b0503: backend 7898 passed, 59 skipped; frontend 3934 passed (root 01a1546f evidence/proof/full-suite-5c5b0503.log). Merged to main as 99378586 from dbcd9bcd; Mac staging walk PASS at 99378586 (Mac .artifacts/staging-walk-99378586/walk-record.md)."
       }
     },
     {

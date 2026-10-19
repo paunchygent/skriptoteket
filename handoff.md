@@ -1,28 +1,17 @@
 ## Current
 
-- ACCOUNT SWITCH 2026-10-19 (Hemma orchestrator 944b5a5a): every lead below is
-  STOPPED mid-work; resume each from its branch and retained root. Main `120c1cc9`
-  holds every release; staging is at it. Nothing is in production.
-- 40-04 gap lane (TASK-SKRIPT-40-04-13/-14): branch
-  `codex/task-skript-40-04-gap-toggle-back-remote`, root `01a1541f`. Head after
-  `813fd183` + CR2 `bf3a40f0`. Open: Pi code review `23bc9c5a` (root `01a155b5`,
-  worktree `skriptoteket-verify-40-04-c4k`) reproduced 10 failures in C4K "Ta över
-  keeps the edit" and lease paths; its findings file is due in that root. Next:
-  repair them, change 'Luckverktyg – högst 999 luckor' to '… inga fler luckor kan
-  läggas till i frågan', finish capture RC1, copy rereview by `4c9e2855` (root
-  `01a155a3`), full suites, then the Mac merges and walks.
-- Gap lead hit its usage limit: committed `94318cce` (+CR3 cap text); review
-  `23bc9c5a` (8 high) repair units LA/KE/MG/GA/DS are UNCOMMITTED in the gap
-  worktree. Next lead: review each diff vs root `01a1541f` part-b/*.txt, focused
-  specs, commit by path, F11 (move capture scripts to evidence), suites, rereviews.
-- TASK-SKRIPT-39-04-21 (points wording): branch
-  `codex/task-skript-39-04-strip-points-wording-remote`, root `01a1546f`. Review
-  `82849a3b` changes_requested (F1-F6). Done: F2, F3, F5 + D13 (`9730c695`).
-  Next: U13 F1 per option A (heading labels leave when equal, D12 extension, Q8),
-  U14 schema v10, U15 test split, rereview by `82849a3b`. U4 offer parked.
-- Open user-side: TASK-SKILL-REP-0351 (toggle cast, 0.1.34) and REP-0352
-  (agent-harness mailbox refusal) wait in skill-repository. Closeout docs owed:
-  TASK-SKRIPT-06-18-01 and REP-0050 (both on main).
+- 40-04 gap lane (TASK-SKRIPT-40-04-13/-14): lead `73032e62`, branch
+  `codex/task-skript-40-04-gap-toggle-back-remote`, root `01a1541f`. Code
+  rereview 3 (`23bc9c5a`, root `01a155b5`) found T1/T2 high; the user chose to
+  simplify: one sync gate owns writes (G1a `eb26222f`, G1b `e52bf532`). Also
+  admitted: the Provets uppgifter ticks loss (TK1 `4a18beba`, TK2 `48be6751`:
+  Kurs clear save loop and backlog collapse). Next: G2 spec ports, T3 split,
+  copy rereview by `4c9e2855`, suites, rereview 4 by `23bc9c5a`, then the Mac.
+- TASK-SKRIPT-41-02-05 (guest draft handover to Mina filer): lead `489a15c8`,
+  branch `codex/task-skript-41-02-guest-handover-rejection-remote`, root
+  `01a1567f`. A permanent rejection stops retrying and offers download or remove
+  (user, 2026-10-19). Next: implementation, copy review, review, the Mac.
+- Closeout docs owed: TASK-SKRIPT-06-18-01 and REP-0050 (both on main).
 
 - [TASK-SKRIPT-REP-0038](docs/backlog/tasks/task-skript-rep-0038-retire-repository-rules-and-route-staging-walks-to-staging-walk.md)
   `ready`, owner delegated Codex lead on `codex/task-skript-rep-0038`.
@@ -145,6 +134,8 @@
 - Completed REP/ST-38 outcomes and evidence are in the 2026-09-05 archive above.
 
 ## Recent
+
+- 2026-10-19 `done` on main: TASK-SKRIPT-39-04-21 points wording (`99378586`, user closure; Mac walk `.artifacts/staging-walk-99378586/walk-record.md`). U4 offer line parked.
 
 - 2026-10-19 40-04-11 control system `canceled` as superseded by 40-04-17 (user decision; no product code). The docs-only branch `codex/task-skript-40-04-compact-tools-remote` holds the reuse list (task section "Superseded by TASK-SKRIPT-40-04-17"); the inventory and mocks are in root 01a15383.
 

@@ -7,10 +7,13 @@ owners:
   - kind: service
     id: skriptoteket
 created: '2026-10-19'
-status: ready
+status: done
 closeout_review:
   record: inline
-  status: not_started
+  status: not_required
+  decided_at: '2026-10-19'
+  approval_protocol: agent-planning:user-closure-gate
+  approval_evidence: 'User closed 39-04-21 on 2026-10-19 in the Hemma orchestrator session, with U4 (the offer line, D10) left parked as a later item and not built. Pi ruthless-reviewer 82849a3b rounds 1-4 (root 01a15594): R1-R6 fixed; rereview 4 ended changes_requested with mediums R7/R8 only, admitted by the parent on focused proof (123 files, 2651 passed) at f3bef38e. Full suite at 5c5b0503: backend 7898 passed, 59 skipped; frontend 3934 passed (root 01a1546f evidence/proof/full-suite-5c5b0503.log). Merged to main as 99378586 from dbcd9bcd; Mac staging walk PASS at 99378586 (Mac .artifacts/staging-walk-99378586/walk-record.md).'
 task_kind: story
 acceptance_criteria:
   - Points wording printed at the end of an imported question's text, whose number equals the question's points, leaves the text; the points, the QTI score, the source record and every points reader stay as before
