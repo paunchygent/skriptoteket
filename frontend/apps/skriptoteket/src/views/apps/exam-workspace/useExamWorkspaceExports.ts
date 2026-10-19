@@ -101,7 +101,7 @@ export const EXPORT_FORMAT_NAMES: Record<ExamWorkspaceExportTarget, string> = {
   examnet_pdf: "PDF för Exam.net",
 };
 
-type ExportDestination = "download" | "files";
+export type ExportDestination = "download" | "files";
 
 const BLOCKER_REASONS = new Set<string>(Object.keys(EXAM_WORKSPACE_EXPORT_BLOCKER_COPY));
 
@@ -166,7 +166,17 @@ export function useExamWorkspaceExports(
 ) {
   const toast = useToast();
 
-  const exportingTarget = ref<ExamWorkspaceExportTarget | null>(null);
+  const exporting = ref<{ target: ExamWorkspaceExportTarget; destination: ExportDestination } | null>(
+    null,
+  );
+  /** The format running an export, if any; the menu spins that part. */
+  const exportingTarget = computed<ExamWorkspaceExportTarget | null>(() =>
+    exporting.value === null ? null : exporting.value.target,
+  );
+  /** Whether the running export downloads or saves to Mina filer; the menu spins that part. */
+  const exportingDestination = computed<ExportDestination | null>(() =>
+    exporting.value === null ? null : exporting.value.destination,
+  );
   const refusedItems = ref<Record<string, RefusedItem>>({});
   /**
    * The reasons the server gave when it last refused an export, per question,
@@ -312,10 +322,10 @@ export function useExamWorkspaceExports(
    * the export running from the save on; a failed save exports nothing.
    */
   async function runExport(target: ExamWorkspaceExportTarget, destination: ExportDestination): Promise<void> {
-    if (!summary.value || exportingTarget.value !== null) {
+    if (!summary.value || exporting.value !== null) {
       return;
     }
-    exportingTarget.value = target;
+    exporting.value = { target, destination };
     let savedSummary: ExamWorkspaceDocumentSummary | null = null;
     let created = false;
     let requestId = checklistRequestId;
@@ -328,7 +338,7 @@ export function useExamWorkspaceExports(
       requestId = checklistRequestId;
       created = await createExport(target, destination, savedSummary);
     } finally {
-      exportingTarget.value = null;
+      exporting.value = null;
     }
     if (created && target === "qti") {
       await loadExportChecklist(savedSummary.lineage_id, savedSummary.version, requestId);
@@ -350,6 +360,7 @@ export function useExamWorkspaceExports(
     exportDocument,
     exportNotice,
     exportResult,
+    exportingDestination,
     exportingTarget,
     saveExportToFiles,
     savedExports,
