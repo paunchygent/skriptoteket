@@ -24,18 +24,23 @@
  *   part (G2, G11); a part and a question inside a part carry no checkbox.
  *
  * Relationships:
- *   - Rendered by `ExamWorkspaceView`; the lines render the `mismatches`
- *     from `examWorkspaceTotals` with the list's entry labels; the list
- *     never recomputes the difference.
+ *   - Rendered by `ExamWorkspaceView`; the lines come from
+ *     `examWorkspaceNoteLines` (the `mismatches` from `examWorkspaceTotals`
+ *     with the list's entry labels) and render through
+ *     `ExamWorkspaceNoteLine`; the list never recomputes the difference.
  */
 
 import { computed, nextTick, ref, watch } from "vue";
 
 import { UiGlyph } from "../../../components/ui";
 import ExamWorkspaceNewItemMenu from "./ExamWorkspaceNewItemMenu.vue";
+import ExamWorkspaceNoteLine from "./ExamWorkspaceNoteLine.vue";
+import type { ExamWorkspaceNoteLineAction } from "./ExamWorkspaceNoteLine.vue";
 import ExamWorkspaceQuestionRow from "./ExamWorkspaceQuestionRow.vue";
 import type { TeacherItemKind } from "./examWorkspaceItemEdits";
 import type { ExamWorkspaceListEntry } from "./examWorkspaceListEntries";
+import { buildExamWorkspaceNoteLines } from "./examWorkspaceNoteLines";
+import type { ExamWorkspaceNoteLine as NoteLine } from "./examWorkspaceNoteLines";
 import { examWorkspaceFormatExactPoints, examWorkspaceFormatPoints } from "./examWorkspaceTotals";
 import type { PrintedTotalMismatch } from "./examWorkspaceTotals";
 import { EXAM_INSTRUCTIONS_ENTRY_ID } from "./useExamWorkspaceSelection";
@@ -68,46 +73,51 @@ const emit = defineEmits<{
   close: [];
 }>();
 
-/** One rendered mismatch line: the text with its jump target and the level it clears. */
-type PrintedTotalLine = {
-  key: string;
-  text: string;
-  parentId: string | null;
-  target: string | null;
-  changeTitle: string;
-};
+/** The footer note lines in order, named with the list's part numbers. */
+const lines = computed<NoteLine[]>(() => buildExamWorkspaceNoteLines(props.mismatches, props.entries));
 
-const entryById = computed(() => new Map(props.entries.map((entry) => [entry.id, entry])));
-
-/** The footer lines in order, named with the list's part numbers; a part the list never names is skipped. */
-const lines = computed<PrintedTotalLine[]>(() => {
-  const rendered: PrintedTotalLine[] = [];
-  for (const mismatch of props.mismatches) {
-    const sum = `Godta frågornas summa, ${examWorkspaceFormatExactPoints(mismatch.sum)} p`;
-    if (mismatch.level === "exam") {
-      rendered.push({
-        changeTitle: sum,
-        key: "exam",
-        parentId: null,
-        target: mismatch.target,
-        text: `Provtexten säger ${examWorkspaceFormatExactPoints(mismatch.printed)} p, frågorna ger ${examWorkspaceFormatExactPoints(mismatch.sum)} p.`,
-      });
-      continue;
+/** Each line's glyph-only actions; a second line kind adds its branch here. */
+function actionsFor(line: NoteLine): ExamWorkspaceNoteLineAction[] {
+  switch (line.kind) {
+    case "printed-total": {
+      const changeLabel = `Godta frågornas summa, ${examWorkspaceFormatExactPoints(line.sum)} p`;
+      const actions: ExamWorkspaceNoteLineAction[] = [
+        { dataTest: "exam-workspace-printed-total-change", key: "change", label: changeLabel, meaning: "confirm" },
+      ];
+      if (line.target !== null) {
+        actions.push({ dataTest: "exam-workspace-printed-total-show", key: "show", label: "Visa frågorna", meaning: "continue" });
+      }
+      return actions;
     }
-    const entry = entryById.value.get(mismatch.parentId);
-    if (!entry || entry.kind !== "parent") {
-      continue;
+    default: {
+      // Exhaustiveness: `line` is `never` here. The `const exhaustive:
+      // never = line` assignment belongs here as soon as the union has a
+      // second member; with a single member tsc keeps the member type and
+      // rejects the assignment, so the default throws until then.
+      throw new Error(`Unknown note line kind: ${JSON.stringify(line)}`);
     }
-    rendered.push({
-      changeTitle: sum,
-      key: `part-${mismatch.parentId}`,
-      parentId: mismatch.parentId,
-      target: mismatch.target,
-      text: `Del ${entry.label} i provtexten säger ${examWorkspaceFormatExactPoints(mismatch.printed)} p, frågorna ger ${examWorkspaceFormatExactPoints(mismatch.sum)} p.`,
-    });
   }
-  return rendered;
-});
+}
+
+function handleNoteAction(line: NoteLine, key: string): void {
+  switch (line.kind) {
+    case "printed-total":
+      if (key === "change") {
+        emit("clearPrintedTotal", line.parentId);
+        return;
+      }
+      if (key === "show" && line.target !== null) {
+        emit("select", line.target);
+        return;
+      }
+      return;
+    default: {
+      // Exhaustiveness: see actionsFor; the `never` assignment belongs here
+      // as soon as the union has a second member.
+      throw new Error(`Unknown note line kind: ${JSON.stringify(line)}`);
+    }
+  }
+}
 
 const formattedTotal = computed(() => `${examWorkspaceFormatPoints(props.total)} p`);
 
@@ -308,45 +318,15 @@ watch(
         class="list__printed-lines"
         data-test="exam-workspace-printed-total-lines"
       >
-        <div
+        <ExamWorkspaceNoteLine
           v-for="line in lines"
           :key="line.key"
-          class="list__printed-line"
-          role="group"
-          :aria-label="line.text"
           data-test="exam-workspace-printed-total-line"
-        >
-          <span class="list__printed-text">{{ line.text }}</span>
-          <button
-            type="button"
-            class="list__printed-change"
-            :disabled="disabled"
-            :aria-label="line.changeTitle"
-            :title="line.changeTitle"
-            data-test="exam-workspace-printed-total-change"
-            @click="emit('clearPrintedTotal', line.parentId)"
-          >
-            <UiGlyph
-              meaning="confirm"
-              :size="16"
-            />
-          </button>
-          <button
-            v-if="line.target !== null"
-            type="button"
-            class="list__printed-show"
-            :disabled="disabled"
-            aria-label="Visa frågorna"
-            title="Visa frågorna"
-            data-test="exam-workspace-printed-total-show"
-            @click="emit('select', line.target)"
-          >
-            <UiGlyph
-              meaning="continue"
-              :size="16"
-            />
-          </button>
-        </div>
+          :text="line.text"
+          :actions="actionsFor(line)"
+          :disabled="disabled"
+          @action="handleNoteAction(line, $event)"
+        />
       </div>
     </div>
     <ExamWorkspaceNewItemMenu
@@ -407,22 +387,6 @@ watch(
 .list__sum { font-weight: var(--huleedu-font-semibold); }
 /* The mismatch lines: neutral text under the total, scrolling inside the footer when long. */
 .list__printed-lines { overflow-y: auto; min-height: 0; display: flex; flex-direction: column; gap: var(--huleedu-space-1); }
-.list__printed-line { display: flex; align-items: center; gap: var(--huleedu-space-1-5); }
-.list__printed-text { flex: 1; min-width: 0; overflow-wrap: anywhere; }
-.list__printed-change, .list__printed-show {
-  flex: none; display: inline-flex; align-items: center; justify-content: center;
-  width: 28px; height: 28px; padding: 0; border: 0; border-radius: 50%;
-  background: transparent; color: var(--huleedu-navy); cursor: pointer;
-}
-.list__printed-change:disabled, .list__printed-show:disabled { cursor: not-allowed; opacity: 0.5; }
-.list__printed-change:focus-visible, .list__printed-show:focus-visible {
-  outline: 2px solid var(--huleedu-action-40); outline-offset: 2px;
-}
-@media (hover: hover) {
-  .list__printed-change:not(:disabled):hover, .list__printed-show:not(:disabled):hover {
-    background: var(--huleedu-action-05);
-  }
-}
 @media (max-width: 1279px) {
   .list__head { padding: 0 var(--huleedu-space-3) 0 var(--huleedu-space-4); }
   .list__markbar { padding: 0 var(--huleedu-space-3) 0 var(--huleedu-space-4); }

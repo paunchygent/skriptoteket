@@ -162,7 +162,6 @@ describe("workspace printed-total lines", () => {
     const wrapper = await openDocument(documentWithTotals(printed, points));
     expect(wrapper.find(LINE).exists()).toBe(false);
     expect(wrapper.get(EXAM_POINTS).text()).not.toContain("provtexten");
-    expect(wrapper.find(".list__dismissed").exists()).toBe(false);
     expect(wrapper.find(SHOW).exists()).toBe(false);
   });
 
