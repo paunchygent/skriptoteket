@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "45cc997aa72ff9cf026a0350e9f3b29e923991397b0e465479bc4b52dabc22d3",
+  "source_set_digest": "c9269c2cecd73df0c0a997b004539f9021683477a177852e85f69b567d37ec81",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -5267,7 +5267,7 @@
       "type": "task",
       "title": "Printed points wording at the end of a question's text becomes its points and leaves the text",
       "path": "docs/backlog/tasks/task-skript-39-04-21-printed-points-wording-at-the-end-of-a-question-s-text-becomes-its-points-and-leaves-the-text.md",
-      "status": "proposed",
+      "status": "ready",
       "task_kind": "story",
       "story": "ST-SKRIPT-39-04",
       "owners": [
