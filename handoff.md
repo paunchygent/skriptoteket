@@ -71,7 +71,7 @@
   - 40-04-08 (gap/short-answer editor, click-a-word gaps, popover): lead on Hemma; its Mac staging walk also covers the owed 40-04-04 walk, then close 40-04-04.
   - 39-04-18 facit carry-over: high finding (label-prefix runaway) in repair; rereview 9f931df3. 39-04-20 score field: in review. 40-04-09 gap tool and 40-04-10 points banner: planning; 40-04-10 per-question list awaits user A/B.
   - 41-02-02: merged to main (review approved, b9b3e6a9); next Mac guest staging walk (ST-SKRIPT-41-02), then close. Production deploy with nginx-proxy fixed IP 172.18.255.10 and `TRUSTED_PROXY_CIDRS=172.18.255.10/32` is a USER GATE (restarts shared nginx-proxy).
-  - REP-0046: USER GATE re-record 8 stale omprov_grammatik_sve2 labeler calls. REP-0048: 6 Exam.net walk checks (Mac walk).
+  - REP-0048: 6 Exam.net walk checks (Mac walk).
   - Converter repair (new, 2026-10-19 walk): a source score field "/4 p" leaves a lone "/" in each question text; sent to the Hemma orchestrator.
   - HuleEdu after HULE-14-03-01: 41-01-03, 41-01-02, 41-01-04; http_runtime workers repair.
     Hemma Opus lead `3b164d53`: 40-03-01..09 and 08-36-02 `done`; 40-02-01 tranche 1 on
@@ -110,7 +110,7 @@
 
 ## Recent
 
-- 2026-10-19 `done` on main: 40-04-07 writing areas (staging walk at `003c874a`, Mac `.artifacts/staging-walk-40-04-07/evidence/walk-record.md`), 41-02-01 QTI import, 39-04-15, 39-04-16, 39-04-17, REP-0047, HULE-14-03-01, 39-04-19 Del A left-out repair. Pre-push hook SIGPIPE false skip fixed (`003c874a`).
+- 2026-10-19 `done` on main: 40-04-07 writing areas (staging walk at `003c874a`, Mac `.artifacts/staging-walk-40-04-07/evidence/walk-record.md`), 41-02-01 QTI import, 39-04-15, 39-04-16, 39-04-17, REP-0047, HULE-14-03-01, 39-04-19 Del A left-out repair, REP-0046 re-recorded omprov labeler calls. Pre-push hook SIGPIPE false skip fixed (`003c874a`).
 
 - Wave 2 closed 2026-10-17 at `agent-overseer:approved-review-closeout`:
   39-04-06, 39-04-08, 39-04-10, 39-06-03, 39-06-04, 39-06-05, 39-06-07, 39-07-01,

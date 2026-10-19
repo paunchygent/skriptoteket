@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "6ce123992906be37bc83c836abe85813a28cb97bc37a220500fafe062fbec125",
+  "source_set_digest": "09056fec1f704c963ee5e1838c9ab322ef0a391bad1a32f952c3441aa8264ea6",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -7810,6 +7810,28 @@
         "decided_at": "2026-10-18",
         "approval_protocol": "agent-overseer:approved-review-closeout",
         "approval_evidence": "Independent ruthless-reviewer review of the delivery (root 01a14f23 evidence/reviews/10b693b6-1db4-4125-a880-ac5f7273bde7.md); its only finding F1 (medium) repaired at cbd290bd (capture-time request key sidecar per label_b recording, refused without one) and admitted on focused proof; user-approved re-recording of exactly 14 labeler calls (16,286 in, 1,315 out tokens); integration file 11/11, domain suite 3586 passed on Hemma; merged into main."
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-REP-0046",
+      "type": "task",
+      "title": "Unit DOCX replay serves label_b recordings only by their capture-time request key",
+      "path": "docs/backlog/tasks/task-skript-rep-0046-unit-docx-replay-serves-label-b-recordings-only-by-their-capture-time-request-key.md",
+      "status": "done",
+      "task_kind": "repository",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "approved",
+        "reviewer": "ruthless-reviewer",
+        "decided_at": "2026-10-19",
+        "approval_protocol": "agent-overseer:approved-review-closeout",
+        "approval_evidence": "Pi ruthless-reviewer 511155e5 (Hemma): one medium finding, F1 (user-exam capture provenance), repaired at 278ff319 and admitted on focused proof with no rereview. User decision 2026-10-19 \"Re-record now\": exactly 8 live omprov label_b calls (10,080 tokens), labels unchanged, sidecars byte-identical; 22 + 63 unit and 11 integration tests pass. Merged to main from 15a38c98 on 2026-10-19."
       }
     },
     {

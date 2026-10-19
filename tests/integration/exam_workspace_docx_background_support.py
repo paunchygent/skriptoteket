@@ -59,6 +59,7 @@ from skriptoteket.protocols.docx_conversion_progress import (
 from skriptoteket.protocols.exam_answer_key import AnswerKeyTokenLeaseRepositoryProtocol
 from skriptoteket.protocols.sleeper import SleeperProtocol
 from skriptoteket.protocols.uow import UnitOfWorkProtocol
+from tests.fixtures.label_b_request_keys import label_b_request_keys, matching_label_b
 
 API_KEY = "fixture-key"
 
@@ -126,29 +127,12 @@ class RecordedTransport:
         self._batches: dict[str, JsonValue] = {
             p.stem: json.loads(p.read_text()) for p in self._dir.glob("docx_w*.json")
         }
-        self._label_keys = self._label_b_request_keys()
+        self._label_keys = label_b_request_keys(self._dir)
         self._groupings = 0
         self.served: list[str] = []
         self.unmatched: list[str] = []
         self.decisions_requests = 0
         self.responses_requests = 0
-
-    def _label_b_request_keys(self) -> dict[str, str]:
-        """Each label_b recording's capture-time request key, read from its sidecar file."""
-        recordings = {p.stem for p in self._dir.glob("label_b_*.json")}
-        keys = {
-            p.name.removesuffix(".request.txt") for p in self._dir.glob("label_b_*.request.txt")
-        }
-        missing = sorted(recordings - keys)
-        extra = sorted(keys - recordings)
-        assert recordings == keys, (
-            f"{self._dir}: label_b request keys must match their recordings; "
-            f"missing sidecars for {missing}, unexpected sidecars for {extra}"
-        )
-        return {
-            p.stem: (self._dir / f"{p.stem}.request.txt").read_text().removesuffix("\n")
-            for p in self._dir.glob("label_b_*.json")
-        }
 
     def __call__(self, request: httpx.Request) -> httpx.Response:
         assert request.headers["Authorization"] == f"Bearer {API_KEY}"
@@ -186,14 +170,7 @@ class RecordedTransport:
             self._groupings += 1
             return f"docx_grouping_{self._groupings}"
         if schema_name == "item_type_label":
-            return next(
-                (
-                    n
-                    for n, key in self._label_keys.items()
-                    if n not in self.served and text.endswith(f"### Question q1\n{key}")
-                ),
-                None,
-            )
+            return matching_label_b(self._label_keys, text, self.served)
         assert schema_name == "docx_exam_build"
         body = _BuildRequestBody.model_validate_json(text)
         pending = {c.anchor for c in body.chunks}
