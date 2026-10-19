@@ -83,6 +83,10 @@ export function expandVitestTarget(target) {
   const folder = target.replace(/\/+$/, "");
   if (folder === "" || folder === ".") return [folderSpecPattern];
   if (folder.endsWith("**")) return [`${folder}/*.spec.ts`];
+  // A trailing name wildcard also names spec files beside the matched folders.
+  if (/(^|[^*])\*$/.test(folder)) {
+    return [`${folder}.spec.ts`, `${folder}/${folderSpecPattern}`];
+  }
   return [`${folder}/${folderSpecPattern}`];
 }
 

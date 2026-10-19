@@ -59,6 +59,13 @@ describe("expandVitestTarget", () => {
     expect(expandVitestTarget(`${examFolder}/`)).toEqual([`${examFolder}/**/*.spec.ts`]);
   });
 
+  it("expands a trailing name wildcard to matching spec files and folders", () => {
+    expect(expandVitestTarget(`${examFolder}/*`)).toEqual([
+      `${examFolder}/*.spec.ts`,
+      `${examFolder}/*/**/*.spec.ts`,
+    ]);
+  });
+
   it("expands a folder glob to the spec files beneath it", () => {
     expect(expandVitestTarget("src/views/apps/**")).toEqual(["src/views/apps/**/*.spec.ts"]);
   });
@@ -115,6 +122,11 @@ describe("planVitestRun", () => {
   it("collects a glob target", async () => {
     const plan = await planVitestRun(["run", `${examFolder}/ExamCourse*.spec.ts`]);
     expect(collectedFiles(plan.include ?? [])).toEqual([examSpec]);
+  });
+
+  it("collects the spec files directly inside a folder named by a trailing wildcard", async () => {
+    const plan = await planVitestRun(["run", `${examFolder}/*`]);
+    expect(collectedFiles(plan.include ?? [])).toEqual(examFolderSpecs);
   });
 
   it("passes flags and their values through without treating them as targets", async () => {
