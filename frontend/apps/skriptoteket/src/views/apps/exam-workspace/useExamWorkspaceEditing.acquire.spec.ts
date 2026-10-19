@@ -22,7 +22,6 @@ import type {
   ExamWorkspaceDocumentResponse,
   ExamWorkspaceEditLeaseResponse,
   ExamWorkspaceHistory,
-  ExamWorkspaceUndoStep,
   NativeExamDocument,
 } from "../../../api/examWorkspace";
 import { serverExamWorkspaceStore } from "./examWorkspaceStore";
@@ -125,19 +124,6 @@ function lastStoredDocument(): NativeExamDocument {
     throw new Error("expected a store request");
   }
   return request.document;
-}
-
-function stored(document: NativeExamDocument, cursor: string): ExamWorkspaceUndoStep {
-  return {
-    document,
-    export_blockers: [],
-    history: {
-      baseline_step_id: "step-0",
-      cursor,
-      position_step_id: cursor,
-      step_ids: [cursor],
-    },
-  };
 }
 
 function deferred<T>(): {
@@ -297,8 +283,8 @@ describe("a structural command's 409 after a kept-edit recovery", () => {
   });
 });
 
-describe("two overlapping kept-edit recoveries", () => {
-  it("keeps the replacing lock until the second recovery's history read settles", async () => {
+describe("a heartbeat reclaim during a kept-edit recovery", () => {
+  it("serializes the reclaim flush after the single recovery and keeps a later edit", async () => {
     vi.useFakeTimers();
     renewGate.fail = false;
     const baseline = exam();
@@ -344,100 +330,122 @@ describe("two overlapping kept-edit recoveries", () => {
     await flushPromises();
     expect(editing.history.pending.value).toBe(true);
 
+    // Gate the single recovery's reads: the history store owns the only
+    // recovery phase, so the reclaim below only queues another flush behind
+    // it instead of starting a second concurrent recovery.
     const firstDocument = deferred<ExamWorkspaceDocumentResponse>();
-    const secondDocument = deferred<ExamWorkspaceDocumentResponse>();
     const firstHistory = deferred<ExamWorkspaceHistory>();
-    const secondHistory = deferred<ExamWorkspaceHistory>();
-    const mergedStore = deferred<ExamWorkspaceUndoStep>();
-    let gets = 0;
-    let historyReads = 0;
-    api.getExamWorkspaceDocument.mockImplementation(async () => {
-      gets += 1;
-      if (gets === 1) {
-        return firstDocument.promise;
-      }
-      return secondDocument.promise;
+    let documentGets = 0;
+    let historyGets = 0;
+    api.getExamWorkspaceDocument.mockClear();
+    api.getExamWorkspaceHistory.mockClear();
+    api.storeExamWorkspaceUndoStep.mockClear();
+    api.getExamWorkspaceDocument.mockImplementation(() => {
+      documentGets += 1;
+      return firstDocument.promise;
     });
     api.getExamWorkspaceHistory.mockImplementation(() => {
-      // The first two loads belong to the first recovery's resync and the
-      // history watcher's reload follow-up; the second recovery's resync is
-      // the third, whatever order the first two land in.
-      historyReads += 1;
-      if (historyReads <= 2) {
-        return firstHistory.promise;
-      }
-      return secondHistory.promise;
+      historyGets += 1;
+      return firstHistory.promise;
     });
 
+    // The stale cursor starts a save recovery; its document GET stays pending.
     const saving = editing.save();
     await flushPromises();
+    expect(documentGets).toBe(1);
+    firstDocument.resolve(response(JSON.parse(JSON.stringify(other)), "step-B"));
+    for (let attempt = 0; attempt < 20 && historyGets < 2; attempt += 1) {
+      await flushPromises();
+    }
+    // Two history reads: the recovery's resync and the history watcher's
+    // reload follow-up for the fresh cursor (the same pair the previous
+    // version of this test documented); no second recovery phase reads.
+    expect(historyGets).toBe(2);
+
+    // (a) While the recovery's history read is pending, the replacing lock
+    // refuses typing: the standing value is unchanged.
+    expect(editing.isReplacing.value).toBe(true);
+    const workspaceBefore = editing.workspaceDocument.value;
+    if (workspaceBefore === null) {
+      throw new Error("expected an open document");
+    }
+    const standing = pointsOf(workspaceBefore, "item_001");
+    editing.updateItemPoints("item_001", 8);
+    await flushPromises();
+    const refusedWorkspace = editing.workspaceDocument.value;
+    if (refusedWorkspace === null) {
+      throw new Error("expected an open document");
+    }
+    expect(pointsOf(refusedWorkspace, "item_001")).toBe(standing);
     expect(editing.isReplacing.value).toBe(true);
 
+    // Renewals fail, so the lease expires locally at 15 s; the 20 s heartbeat
+    // self-claims the free lease and queues its flush behind the running one.
     renewGate.fail = true;
     await vi.advanceTimersByTimeAsync(20000);
-    for (let attempt = 0; attempt < 20 && gets < 2; attempt += 1) {
-      await flushPromises();
-    }
+    await flushPromises();
+    // (b) No second concurrent recovery phase started: still one document GET
+    // and the same two history reads, and the lock never released meanwhile.
+    expect(documentGets).toBe(1);
+    expect(historyGets).toBe(2);
+    expect(editing.isReplacing.value).toBe(true);
 
-    firstDocument.resolve(response(JSON.parse(JSON.stringify(other)), "step-B"));
-    for (let attempt = 0; attempt < 10 && historyReads < 1; attempt += 1) {
-      await flushPromises();
-    }
     firstHistory.resolve({
       baseline_step_id: "step-0",
       cursor: server.state.cursor,
       position_step_id: server.state.position,
       step_ids: [...server.state.steps],
     });
-    api.storeExamWorkspaceUndoStep.mockImplementationOnce(() => mergedStore.promise);
-    for (let attempt = 0; attempt < 10; attempt += 1) {
-      await flushPromises();
-    }
-    secondDocument.resolve(response(JSON.parse(JSON.stringify(other)), "step-B"));
-    for (let attempt = 0; attempt < 20 && historyReads < 3; attempt += 1) {
-      await flushPromises();
-    }
-
-    const duringSecond = { locked: editing.isReplacing.value, editable: !editing.readOnly.value };
-    const standing = editing.workspaceDocument.value?.items.find((item) => item.item_id === "item_001")?.points;
-    editing.updateItemPoints("item_001", 8);
-    const workspace = editing.workspaceDocument.value;
-    if (workspace === null) {
-      throw new Error("expected an open document");
-    }
-    const typed = workspace.items.find((item) => item.item_id === "item_001")?.points;
-
-    const storedCalls = api.storeExamWorkspaceUndoStep.mock.calls;
-    const firstStoreCall = storedCalls[storedCalls.length - 1];
-    if (firstStoreCall === undefined) {
-      throw new Error("expected the merged store");
-    }
-    const firstStoreRequest: { document: NativeExamDocument } = firstStoreCall[1];
-    // Answer the parked merged store with the still-current cursor: the fake
-    // server never advanced, so inventing a new cursor would desynchronize
-    // the follow-up store from it.
-    mergedStore.resolve(stored(firstStoreRequest.document, server.state.cursor));
-    secondHistory.resolve({
-      baseline_step_id: "step-0",
-      cursor: server.state.cursor,
-      position_step_id: server.state.position,
-      step_ids: [...server.state.steps],
-    });
+    expect(await saving).toBe(true);
     for (let attempt = 0; attempt < 20; attempt += 1) {
       await flushPromises();
     }
+    // The reclaim's flush ran after the recovery and its merged store without
+    // any further reads: the queued flush found nothing left to recover.
+    const storeOrder = api.storeExamWorkspaceUndoStep.mock.invocationCallOrder[0];
+    if (storeOrder === undefined) {
+      throw new Error("expected the merged store");
+    }
+    const documentGetsBeforeStore =
+      api.getExamWorkspaceDocument.mock.invocationCallOrder.filter(
+        (order) => order < storeOrder,
+      );
+    const historyGetsBeforeStore =
+      api.getExamWorkspaceHistory.mock.invocationCallOrder.filter(
+        (order) => order < storeOrder,
+      );
+    expect(documentGetsBeforeStore).toHaveLength(1);
+    expect(historyGetsBeforeStore).toHaveLength(2);
+    // The queued reclaim flush stored nothing of its own: one merged store.
+    expect(api.storeExamWorkspaceUndoStep).toHaveBeenCalledTimes(1);
+    expect(editing.isReplacing.value).toBe(false);
+    const merged = editing.workspaceDocument.value;
+    if (merged === null) {
+      throw new Error("expected an open document");
+    }
+    expect(merged.items.map((item) => item.points)).toEqual([7, 9]);
+    expect(editing.history.pending.value).toBe(false);
+
+    // (c) An edit accepted after the recovery settles is stored and never
+    // replaced by the older refused snapshot.
+    editing.updateItemPoints("item_001", 8);
+    const edited = editing.workspaceDocument.value;
+    if (edited === null) {
+      throw new Error("expected an open document");
+    }
+    expect(pointsOf(edited, "item_001")).toBe(8);
+    expect(await editing.save()).toBe(true);
+    await flushPromises();
     const finalWorkspace = editing.workspaceDocument.value;
     if (finalWorkspace === null) {
       throw new Error("expected an open document");
     }
-    expect(duringSecond).toEqual({ locked: true, editable: true });
-    // The second recovery reloaded the newest copy before merging, and the
-    // write attempted meanwhile was refused: the standing value is unchanged.
-    expect(typed).toBe(standing);
-    expect(typed).not.toBe(8);
-    expect(await saving).toBe(true);
-    expect(finalWorkspace.items.map((item) => item.points)).toEqual([7, 9]);
-    expect(editing.history.pending.value).toBe(false);
+    expect(finalWorkspace.items.map((item) => item.points)).toEqual([8, 9]);
+    const storedFinal = server.documents.get(server.state.cursor);
+    if (storedFinal === undefined) {
+      throw new Error("expected the stored step");
+    }
+    expect(storedFinal.items.map((item) => item.points)).toEqual([8, 9]);
     renewGate.fail = false;
   });
 });

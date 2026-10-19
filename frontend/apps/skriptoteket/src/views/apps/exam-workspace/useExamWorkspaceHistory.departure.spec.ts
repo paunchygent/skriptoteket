@@ -105,6 +105,9 @@ function setup(
         workspaceDocument.value = document;
       },
       isBlocked: () => false,
+      hasKeptEdit: () => false,
+      noteKeptStored: () => undefined,
+      recoverKeptEdit: async () => false,
       isGuest: () => false,
       isReadOnly: () => false,
       isReplacing: hooks.isReplacing ?? (() => false),
@@ -253,6 +256,9 @@ describe("departure under the held editing lock", () => {
             workspaceDocument.value = document;
           },
           isBlocked: () => false,
+          hasKeptEdit: () => false,
+          noteKeptStored: () => undefined,
+          recoverKeptEdit: async () => false,
           isGuest: () => false,
           isReadOnly: () => false,
           isReplacing: () => false,

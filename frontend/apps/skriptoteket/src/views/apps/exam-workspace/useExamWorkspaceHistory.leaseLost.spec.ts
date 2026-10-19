@@ -130,6 +130,9 @@ describe("a tab that loses the lease with a pending edit", () => {
           workspaceDocument.value = document;
         },
         isBlocked: () => false,
+        hasKeptEdit: () => false,
+        noteKeptStored: () => undefined,
+        recoverKeptEdit: async () => false,
         isGuest: () => false,
         isReadOnly: () => isReadOnly.value,
         isReplacing: () => false,
@@ -201,6 +204,9 @@ describe("a tab that loses the lease with a pending edit", () => {
           workspaceDocument.value = document;
         },
         isBlocked: () => false,
+        hasKeptEdit: () => false,
+        noteKeptStored: () => undefined,
+        recoverKeptEdit: async () => false,
         isGuest: () => false,
         isReadOnly: () => isReadOnly.value,
         isReplacing: () => false,
@@ -269,6 +275,9 @@ describe("a tab that loses the lease with a pending edit", () => {
           workspaceDocument.value = document;
         },
         isBlocked: () => false,
+        hasKeptEdit: () => false,
+        noteKeptStored: () => undefined,
+        recoverKeptEdit: async () => false,
         isGuest: () => true,
         isReadOnly: () => false,
         isReplacing: () => false,

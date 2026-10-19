@@ -79,11 +79,11 @@ export type ExamWorkspaceHistoryDeps = {
   /** The tab id the edit lease holds; every store and move carries it. */
   tabId: () => string;
   /** A refused edit still waits for its recovery; an ordinary store merges it first. */
-  hasKeptEdit?: () => boolean;
+  hasKeptEdit: () => boolean;
   /** Reload, resync and merge the kept edit onto the newest copy; true when the merged copy stands. */
-  recoverKeptEdit?: (lineageId: string | null) => Promise<boolean>;
+  recoverKeptEdit: (lineageId: string | null) => Promise<boolean>;
   /** The merged copy was stored; the kept edit is recovered. */
-  noteKeptStored?: () => void;
+  noteKeptStored: () => void;
   /** True while another tab holds the edit lease: writes wait and undo stops. */
   isReadOnly: () => boolean;
   /** A write met `EDIT_LEASE_HELD`: turn read-only and keep the pending edit. */
@@ -242,10 +242,10 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
       // The step list failed to load earlier; without it no step can be stored.
       await load(lineageId);
     }
-    if (snapshot === null && (deps.hasKeptEdit?.() ?? false)) {
+    if (snapshot === null && deps.hasKeptEdit()) {
       // Merge a still-waiting kept edit onto the newest copy first; it clears
       // only after the merged store succeeds.
-      if (!(await deps.recoverKeptEdit?.(lineageId))) {
+      if (!(await deps.recoverKeptEdit(lineageId))) {
         schedule();
         return "failed";
       }
@@ -259,7 +259,7 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
     }
     const undone = after !== newestId.value;
     if (sameContent(document, stepDocument.value) && !(settle && undone)) {
-      deps.noteKeptStored?.();
+      deps.noteKeptStored();
       return "stored";
     }
     const refusal = examWorkspaceSaveRefusalCopy(document);
@@ -291,7 +291,7 @@ export function useExamWorkspaceHistory(deps: ExamWorkspaceHistoryDeps) {
       position.value = response.history.position_step_id;
       stepDocument.value = response.document;
       status.confirmed(response.document);
-      deps.noteKeptStored?.();
+      deps.noteKeptStored();
       if (!sameContent(deps.workspaceDocument.value, response.document)) {
         // Keystrokes typed while the store was in flight stay in the copy;
         // the newer copy is stored next, so the status reads `Sparar …`.

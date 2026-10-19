@@ -227,42 +227,15 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
   }
 
   /**
-   * Run a kept-edit recovery, then store the merged copy through the normal
-   * save path (TASK-SKRIPT-40-04-14, USER decision 2026-10-19 "Ta över keeps
-   * the edit"). A refused save or a failed store keeps the existing status
-   * and toasts; the kept edit clears only after a merged store succeeds.
-   */
-  async function recoverKeptEdit(startLineage: string, awaitStore: boolean): Promise<void> {
-    if (!(await enqueueKeptRecovery(startLineage))) {
-      return;
-    }
-    if (disposed || lineageId() !== startLineage) {
-      return;
-    }
-    if (awaitStore) {
-      if (await abortable(history.flush())) {
-        keptEdit.clear();
-      }
-      return;
-    }
-    // Inside the history's own 409 handling its flush queue is still running:
-    // queue the merged store without awaiting it, so the outer store cannot
-    // deadlock on the queue it already holds.
-    void history.flush().then((stored) => {
-      if (stored) {
-        keptEdit.clear();
-      }
-    });
-  }
-
-  /**
    * A refused edit survives the takeover: keep its step document as the
    * recovery base while a pending edit stands, then always read the newest
-   * server document: with a kept refused edit the recovery routine merges it
-   * onto the newest copy, without one the reload alone replaces the stale
-   * copy a read-only tab shows. Before KE the acquisition always reloaded,
-   * so a tab that gets the lease with nothing pending reads the newest
-   * state instead of keeping its stale copy.
+   * server document. With a kept refused edit the history store runs the
+   * recovery routine, which merges it onto the newest copy; without one the
+   * reload alone replaces the stale copy a read-only tab shows. Before KE
+   * the acquisition always reloaded, so a tab that gets the lease with
+   * nothing pending reads the newest state instead of keeping its stale
+   * copy. The store owns the single recovery phase, so the acquisition only
+   * requests the store and waits for it.
    */
   async function acquireWithKeptEdit(): Promise<void> {
     const startLineage = lineageId();
@@ -280,22 +253,25 @@ export function useExamWorkspaceEditing(store: ExamWorkspaceStore, lease?: ExamW
     // a reload already replaced the copy and reset the step document, but the
     // refused base and edited snapshot are still kept for the next attempt.
     if (keptEdit.get() !== null) {
-      await recoverKeptEdit(startLineage, true);
+      await history.flush();
       return;
     }
     await reload();
   }
 
   /**
-   * The 409 conflict path while a refused edit is recovering: run the same
-   * recovery routine instead of reloading past the edit, so a later save
-   * after a failed reload merges the edit onto the newest copy. A reload
-   * failure keeps the recovery set and the edit visible and pending.
+   * The 409 conflict path while a refused edit is recovering: queue the
+   * merged store through the history, whose store runs the recovery routine
+   * instead of reloading past the edit, so a later save after a failed
+   * reload merges the edit onto the newest copy. The queue is not awaited,
+   * so the running flush that met the 409 cannot deadlock on itself.
+   * A reload failure keeps the recovery set and the edit visible and
+   * pending.
    */
   async function handleConflict(): Promise<void> {
     const startLineage = lineageId();
     if (!disposed && startLineage !== null && keptEdit.get() !== null) {
-      await recoverKeptEdit(startLineage, false);
+      void history.flush();
       return;
     }
     await reload();

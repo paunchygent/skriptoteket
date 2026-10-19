@@ -113,6 +113,9 @@ function setup(isGuest = false) {
         workspaceDocument.value = document;
       },
       isBlocked: () => false,
+      hasKeptEdit: () => false,
+      noteKeptStored: () => undefined,
+      recoverKeptEdit: async () => false,
       isGuest: () => isGuest,
       isReadOnly: () => false,
       isReplacing: () => false,

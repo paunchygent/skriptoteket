@@ -43,6 +43,9 @@ function mountFromHistory(
         workspaceDocument.value = next;
       },
       isBlocked: () => false,
+      hasKeptEdit: () => false,
+      noteKeptStored: () => undefined,
+      recoverKeptEdit: async () => false,
       isGuest: () => false,
       isReadOnly: () => false,
       isReplacing: () => false,
