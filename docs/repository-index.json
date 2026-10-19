@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "repository": "skriptoteket",
-  "source_set_digest": "7de4ba6be2c4a611d1b6ad7291bc2131ae4e655635e9d91e37410f8a3eba77e0",
+  "source_set_digest": "6af3f7cb557cceaf9f9849a6a9ebb49ae0c9e1e68746ff551877012859516dce",
   "documents": [
     {
       "id": "EPIC-SKRIPT-02",
@@ -6584,6 +6584,25 @@
       "type": "task",
       "title": "Short-answer and gap-text questions look different, teachers create gaps by clicking a word, and the gap popover shows its whole answer list",
       "path": "docs/backlog/tasks/task-skript-40-04-08-short-answer-and-gap-text-questions-look-different-teachers-create-gaps-by-clicking-a-word-and-the-gap-popover-shows-its-whole-answer-list.md",
+      "status": "proposed",
+      "task_kind": "story",
+      "story": "ST-SKRIPT-40-04",
+      "owners": [
+        {
+          "kind": "service",
+          "id": "skriptoteket"
+        }
+      ],
+      "closeout_review": {
+        "record": "inline",
+        "status": "not_started"
+      }
+    },
+    {
+      "id": "TASK-SKRIPT-40-04-09",
+      "type": "task",
+      "title": "Teachers switch on a gap tool and click words to make gaps, the gap tool has a keyboard shortcut, and a text gap's width can be set for Exam.net",
+      "path": "docs/backlog/tasks/task-skript-40-04-09-teachers-switch-on-a-gap-tool-and-click-words-to-make-gaps-the-gap-tool-has-a-keyboard-shortcut-and-a-text-gap-s-width-can-be-set-for-exam-net.md",
       "status": "proposed",
       "task_kind": "story",
       "story": "ST-SKRIPT-40-04",
