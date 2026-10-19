@@ -71,7 +71,7 @@ describe("examWorkspaceExports transport", () => {
     expect(result).toBe(response);
   });
 
-  it("renders the preview for the persisted history cursor with both guards", async () => {
+  it("renders the preview of the retained step with all three guards", async () => {
     const response = {
       message: null,
       pages: ["data:image/png;base64,page"],
@@ -81,10 +81,10 @@ describe("examWorkspaceExports transport", () => {
     };
     apiGetMock.mockResolvedValueOnce(response);
 
-    const result = await fetchExamWorkspacePrintPreview("lineage-1", 2, "cursor/one");
+    const result = await fetchExamWorkspacePrintPreview("lineage-1", 2, "cursor/one", "step-0");
 
     expect(apiGetMock).toHaveBeenCalledWith(
-      `${DOCUMENTS_ROOT}/lineage-1/print-preview?expected_revision=2&expected_cursor=cursor%2Fone`,
+      `${DOCUMENTS_ROOT}/lineage-1/print-preview?expected_revision=2&expected_cursor=cursor%2Fone&step_id=step-0`,
     );
     expect(result).toBe(response);
   });

@@ -68,6 +68,7 @@ describe("the preview follows the persisted history cursor after a real edit (R3
     const preview = scope.run(() =>
       useExamWorkspacePrintPreview({
         historyCursor: editing.historyCursor,
+        historyPosition: editing.history.position,
         lineageId: computed(() => editing.summary.value?.lineage_id ?? null),
         open,
         savedRevision: editing.savedRevision,
@@ -77,7 +78,7 @@ describe("the preview follows the persisted history cursor after a real edit (R3
     if (!preview) throw new Error("preview composable did not mount");
     await nextTick();
     await elapse(PREVIEW_DEBOUNCE_MS);
-    expect(previewApi.fetchExamWorkspacePrintPreview).toHaveBeenCalledWith(LINEAGE, 1, "step-0");
+    expect(previewApi.fetchExamWorkspacePrintPreview).toHaveBeenCalledWith(LINEAGE, 1, "step-0", "step-0");
     expect(preview.pages.value).toEqual(["page-1"]);
 
     // A real Skrivyta stepper click: one structural undo step, and the saved file does not move.
@@ -88,7 +89,7 @@ describe("the preview follows the persisted history cursor after a real edit (R3
     expect(editing.savedRevision.value).toBe(1);
 
     await elapse(PREVIEW_DEBOUNCE_MS);
-    expect(previewApi.fetchExamWorkspacePrintPreview).toHaveBeenLastCalledWith(LINEAGE, 1, "step-1");
+    expect(previewApi.fetchExamWorkspacePrintPreview).toHaveBeenLastCalledWith(LINEAGE, 1, "step-1", "step-1");
     expect(preview.pages.value).toEqual(["page-2"]);
     scope.stop();
   });
@@ -102,6 +103,7 @@ describe("the preview follows the persisted history cursor after a real edit (R3
     const preview = scope.run(() =>
       useExamWorkspacePrintPreview({
         historyCursor: editing.historyCursor,
+        historyPosition: editing.history.position,
         lineageId: computed(() => editing.summary.value?.lineage_id ?? null),
         open,
         savedRevision: editing.savedRevision,
@@ -119,8 +121,64 @@ describe("the preview follows the persisted history cursor after a real edit (R3
     expect(storedCursor).toBe("step-1");
 
     await elapse(PREVIEW_DEBOUNCE_MS);
-    expect(previewApi.fetchExamWorkspacePrintPreview).toHaveBeenLastCalledWith(LINEAGE, 1, storedCursor);
+    expect(previewApi.fetchExamWorkspacePrintPreview).toHaveBeenLastCalledWith(LINEAGE, 1, storedCursor, "step-1");
     expect(preview.pages.value).toEqual(["page-2"]);
+    scope.stop();
+  });
+
+  it("re-renders the retained step the editor stands on after undo and redo", async () => {
+    const { editing, server } = await openEditing(api);
+    const baselineLines = editing.workspaceDocument.value!.items[0]!.writing_lines;
+    previewApi.fetchExamWorkspacePrintPreview.mockImplementation(
+      async (_lineage: string, _revision: number, _cursor: string, stepId: string) =>
+        ready([`writing-lines:${server.documents.get(stepId)!.items[0]!.writing_lines}`]),
+    );
+
+    const open = ref(true);
+    const scope = effectScope();
+    const preview = scope.run(() =>
+      useExamWorkspacePrintPreview({
+        historyCursor: editing.historyCursor,
+        historyPosition: editing.history.position,
+        lineageId: computed(() => editing.summary.value?.lineage_id ?? null),
+        open,
+        savedRevision: editing.savedRevision,
+        selectedItemId: editing.selectedItemId,
+      }),
+    );
+    if (!preview) throw new Error("preview composable did not mount");
+    await nextTick();
+    await elapse(PREVIEW_DEBOUNCE_MS);
+    expect(preview.pages.value).toEqual([`writing-lines:${baselineLines}`]);
+
+    editing.updateItemWritingLines("item_001", 9);
+    await elapse(0);
+    await elapse(PREVIEW_DEBOUNCE_MS);
+    expect(preview.pages.value).toEqual(["writing-lines:9"]);
+
+    await editing.history.undo();
+    await nextTick();
+    expect(editing.history.position.value).toBe("step-0");
+    await elapse(PREVIEW_DEBOUNCE_MS);
+    expect(previewApi.fetchExamWorkspacePrintPreview).toHaveBeenLastCalledWith(
+      LINEAGE,
+      1,
+      editing.historyCursor.value,
+      "step-0",
+    );
+    expect(preview.pages.value).toEqual([`writing-lines:${baselineLines}`]);
+
+    await editing.history.redo();
+    await nextTick();
+    expect(editing.history.position.value).toBe("step-1");
+    await elapse(PREVIEW_DEBOUNCE_MS);
+    expect(previewApi.fetchExamWorkspacePrintPreview).toHaveBeenLastCalledWith(
+      LINEAGE,
+      1,
+      editing.historyCursor.value,
+      "step-1",
+    );
+    expect(preview.pages.value).toEqual(["writing-lines:9"]);
     scope.stop();
   });
 });

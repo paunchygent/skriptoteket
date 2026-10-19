@@ -104,6 +104,7 @@ const printPreview = useExamWorkspacePrintPreview({
   open: previewOpen,
   savedRevision,
   historyCursor,
+  historyPosition: history.position,
   selectedItemId: editing.selectedItemId,
 });
 const {

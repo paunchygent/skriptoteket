@@ -43,14 +43,15 @@ function mountPreview() {
   const lineageId = ref<string | null>("lineage-1");
   const savedRevision = ref<number | null>(1);
   const historyCursor = ref<string | null>("cursor-1");
+  const historyPosition = ref<string | null>("step-0");
   const open = ref(false);
   const selectedItemId = ref<string | null>(null);
   const scope = effectScope();
   const preview = scope.run(() =>
-    useExamWorkspacePrintPreview({ historyCursor, lineageId, open, savedRevision, selectedItemId }),
+    useExamWorkspacePrintPreview({ historyCursor, historyPosition, lineageId, open, savedRevision, selectedItemId }),
   );
   if (!preview) throw new Error("preview composable did not mount");
-  return { historyCursor, lineageId, open, preview, savedRevision, scope, selectedItemId };
+  return { historyCursor, historyPosition, lineageId, open, preview, savedRevision, scope, selectedItemId };
 }
 
 describe("useExamWorkspacePrintPreview", () => {
@@ -87,30 +88,53 @@ describe("useExamWorkspacePrintPreview", () => {
     await vi.advanceTimersByTimeAsync(PREVIEW_DEBOUNCE_MS);
 
     expect(apiMocks.fetchExamWorkspacePrintPreview).toHaveBeenCalledTimes(1);
-    expect(apiMocks.fetchExamWorkspacePrintPreview).toHaveBeenCalledWith("lineage-1", 3, "cursor-1");
+    expect(apiMocks.fetchExamWorkspacePrintPreview).toHaveBeenCalledWith("lineage-1", 3, "cursor-1", "step-0");
     scope.stop();
   });
 
   it("renders once with the new persisted cursor and the current revision after a Skrivyta edit", async () => {
     apiMocks.fetchExamWorkspacePrintPreview.mockResolvedValue(ready(["page-1"]));
-    const { historyCursor, open, scope } = mountPreview();
+    const { historyCursor, historyPosition, open, scope } = mountPreview();
 
     open.value = true;
     await nextTick();
     await vi.advanceTimersByTimeAsync(PREVIEW_DEBOUNCE_MS);
     // The autosave stored the edit as a new undo step; the saved revision did not move.
     historyCursor.value = "cursor-2";
+    historyPosition.value = "step-1";
     await nextTick();
     await vi.advanceTimersByTimeAsync(PREVIEW_DEBOUNCE_MS);
 
     expect(apiMocks.fetchExamWorkspacePrintPreview).toHaveBeenCalledTimes(2);
-    expect(apiMocks.fetchExamWorkspacePrintPreview).toHaveBeenLastCalledWith("lineage-1", 1, "cursor-2");
+    expect(apiMocks.fetchExamWorkspacePrintPreview).toHaveBeenLastCalledWith("lineage-1", 1, "cursor-2", "step-1");
+    scope.stop();
+  });
+
+  it("re-renders with the retained step after an undo that leaves the cursor alone", async () => {
+    apiMocks.fetchExamWorkspacePrintPreview.mockResolvedValue(ready(["page-1"]));
+    const { historyCursor, historyPosition, open, scope } = mountPreview();
+
+    open.value = true;
+    await nextTick();
+    await vi.advanceTimersByTimeAsync(PREVIEW_DEBOUNCE_MS);
+    // A Skrivyta edit stored a new step: the cursor and the retained step move together.
+    historyCursor.value = "cursor-2";
+    historyPosition.value = "step-1";
+    await nextTick();
+    await vi.advanceTimersByTimeAsync(PREVIEW_DEBOUNCE_MS);
+    // Undo: the retained step moves back while the concurrency token stays.
+    historyPosition.value = "step-0";
+    await nextTick();
+    await vi.advanceTimersByTimeAsync(PREVIEW_DEBOUNCE_MS);
+
+    expect(apiMocks.fetchExamWorkspacePrintPreview).toHaveBeenCalledTimes(3);
+    expect(apiMocks.fetchExamWorkspacePrintPreview).toHaveBeenLastCalledWith("lineage-1", 1, "cursor-2", "step-0");
     scope.stop();
   });
 
   it("renders once for the last cursor after a burst of three cursor changes", async () => {
     apiMocks.fetchExamWorkspacePrintPreview.mockResolvedValue(ready(["page-1"]));
-    const { historyCursor, open, scope } = mountPreview();
+    const { historyCursor, historyPosition, open, scope } = mountPreview();
 
     open.value = true;
     await nextTick();
@@ -118,10 +142,25 @@ describe("useExamWorkspacePrintPreview", () => {
       historyCursor.value = cursor;
       await nextTick();
     }
+    historyPosition.value = "step-3";
+    await nextTick();
     await vi.advanceTimersByTimeAsync(PREVIEW_DEBOUNCE_MS);
 
     expect(apiMocks.fetchExamWorkspacePrintPreview).toHaveBeenCalledTimes(1);
-    expect(apiMocks.fetchExamWorkspacePrintPreview).toHaveBeenCalledWith("lineage-1", 1, "cursor-4");
+    expect(apiMocks.fetchExamWorkspacePrintPreview).toHaveBeenCalledWith("lineage-1", 1, "cursor-4", "step-3");
+    scope.stop();
+  });
+
+  it("fetches nothing while the retained step is not loaded yet", async () => {
+    const { historyPosition, open, scope } = mountPreview();
+    historyPosition.value = null;
+    await nextTick();
+
+    open.value = true;
+    await nextTick();
+    await vi.advanceTimersByTimeAsync(5000);
+
+    expect(apiMocks.fetchExamWorkspacePrintPreview).not.toHaveBeenCalled();
     scope.stop();
   });
 
