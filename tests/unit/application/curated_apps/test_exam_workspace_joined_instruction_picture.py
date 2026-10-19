@@ -103,6 +103,7 @@ def _converted(anchor: str, text: str = "svar") -> AlignedItem:
             }
         ),
         language="sv",
+        foreign_chunks=(),
     )
 
 
@@ -131,6 +132,7 @@ def _joined_item(paragraphs: _PARAGRAPHS) -> AlignedItem:
         ),
         chunks=_joined_chunks(),
         language="sv",
+        foreign_chunks=(),
     )
 
 

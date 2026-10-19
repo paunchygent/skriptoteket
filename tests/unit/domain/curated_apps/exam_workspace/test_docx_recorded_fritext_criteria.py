@@ -25,7 +25,7 @@ def test_recorded_prose_guides_become_estimated_native_criteria() -> None:
             # These recordings contain prose guides, not per-criterion point breakdowns.
             assert criterion.points is None, path
             native = aligned_native_item(
-                produced, language=recorded_exam_language(path.parent.name)
+                produced, language=recorded_exam_language(path.parent.name), foreign_chunks=()
             ).item
             assert len(native.criteria) == 1, path
             assert native.criteria[0].text == criterion.text, path

@@ -22,7 +22,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.docx_item_alignment import 
     Accepted,
     AlignedItem,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import answer_line
+from skriptoteket.domain.curated_apps.exam_workspace.docx_source_rules import (
+    answer_line,
+    blank_line,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import (
     NativeExamItem,
 )
@@ -50,13 +53,15 @@ class ReturnedChunks:
 def left_out_chunks(aligned: AlignedItem, chunks: Iterable[DocxChunk]) -> tuple[DocxChunk, ...]:
     """The chunks no body paragraph, choice or matching entry of the item is aligned to (D4):
     the alignment, never the reply's wording, says what the item shows. A source answer or
-    facit line is the item's key, never left-out text (TASK-SKRIPT-39-04-14)."""
+    facit line is the item's key, never left-out text (TASK-SKRIPT-39-04-14); a blank answer
+    line is the response space."""
     return tuple(
         chunk
         for chunk in chunks
         if not aligned.shows(chunk.anchor)
         and chunk.anchor not in aligned.entry_chunks
         and not answer_line(chunk.text)
+        and not blank_line(chunk.text)
     )
 
 

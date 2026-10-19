@@ -26,6 +26,9 @@ from skriptoteket.application.curated_apps.exam_workspace import (
     RetryExamWorkspaceItemRequest,
     SaveExamWorkspaceDocumentRequest,
 )
+from skriptoteket.application.curated_apps.exam_workspace_content_suggestions import (
+    ContentSuggestionsResponse,
+)
 from skriptoteket.application.curated_apps.exam_workspace_history import (
     ExamWorkspaceHistoryDocumentResponse,
     ExamWorkspaceHistoryResponse,
@@ -38,10 +41,7 @@ from skriptoteket.application.curated_apps.exam_workspace_misspellings import (
     ExamWorkspaceMisspellingsResponse,
 )
 from skriptoteket.application.curated_apps.handlers.exam_workspace_content_tags import (
-    ContentSuggestionsResponse,
     ExamCourseContentResponse,
-    GetExamContentSuggestionsHandler,
-    RequestExamContentSuggestionsHandler,
     course_content,
 )
 from skriptoteket.domain.identity.models import User
@@ -50,6 +50,7 @@ from skriptoteket.protocols.curated_apps import CuratedAppRegistryProtocol
 from skriptoteket.protocols.exam_workspace import (
     ExportExamWorkspaceDocumentHandlerProtocol,
     GenerateExamWorkspaceMisspellingsHandlerProtocol,
+    GetExamContentSuggestionsHandlerProtocol,
     GetExamCourseCatalogHandlerProtocol,
     GetExamWorkspaceConversionStatusHandlerProtocol,
     GetExamWorkspaceDocumentHandlerProtocol,
@@ -57,6 +58,7 @@ from skriptoteket.protocols.exam_workspace import (
     ImportExamWorkspaceDocumentHandlerProtocol,
     ImportExamWorkspaceQtiDocumentHandlerProtocol,
     ListExamWorkspaceDocumentsHandlerProtocol,
+    RequestExamContentSuggestionsHandlerProtocol,
     RetryExamWorkspaceItemHandlerProtocol,
     SaveExamWorkspaceDocumentHandlerProtocol,
 )
@@ -90,7 +92,7 @@ def get_exam_course_content(
 async def request_exam_content_suggestions(
     lineage_id: UUID,
     registry: FromDishka[CuratedAppRegistryProtocol],
-    handler: FromDishka[RequestExamContentSuggestionsHandler],
+    handler: FromDishka[RequestExamContentSuggestionsHandlerProtocol],
     user: User = Depends(require_app_ai_api),
 ) -> ContentSuggestionsResponse:
     require_conversion_hub_access(registry=registry, user=user)
@@ -105,7 +107,7 @@ async def get_exam_content_suggestions(
     lineage_id: UUID,
     job_id: UUID,
     registry: FromDishka[CuratedAppRegistryProtocol],
-    handler: FromDishka[GetExamContentSuggestionsHandler],
+    handler: FromDishka[GetExamContentSuggestionsHandlerProtocol],
     user: User = Depends(require_app_user_api),
 ) -> ContentSuggestionsResponse:
     require_conversion_hub_access(registry=registry, user=user)

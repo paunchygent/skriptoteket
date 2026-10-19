@@ -31,7 +31,9 @@ def recorded_matching_items(
             continue
         if not keyed:
             produced = produced.model_copy(update={"match_pairs": ()})
-        item = aligned_native_item(produced, language=recorded_exam_language(exam)).item
+        item = aligned_native_item(
+            produced, language=recorded_exam_language(exam), foreign_chunks=()
+        ).item
         sequence = len(items) + 1
         items.append(
             NativeExamItem.model_validate(

@@ -136,7 +136,7 @@ def test_native_item_maps_the_model_carrier_to_the_source_picture() -> None:
         ]
     )
 
-    item = aligned_native_item(produced, chunks=(chunk,), language="sv").item
+    item = aligned_native_item(produced, chunks=(chunk,), language="sv", foreign_chunks=()).item
 
     (paragraph,) = item.body
     assert paragraph.segments == (
@@ -159,7 +159,7 @@ def test_native_item_rejects_a_picture_the_source_does_not_carry() -> None:
     )
 
     with pytest.raises(ValueError):
-        aligned_native_item(produced, chunks=(), language="sv").item
+        aligned_native_item(produced, chunks=(), language="sv", foreign_chunks=()).item
 
 
 def test_manifest_carries_a_retry_only_picture_without_exporting_it() -> None:
@@ -179,7 +179,9 @@ def test_manifest_carries_a_retry_only_picture_without_exporting_it() -> None:
             },
         ]
     )
-    item = aligned_native_item(produced, chunks=(chunk,), language="sv").item.model_copy(
+    item = aligned_native_item(
+        produced, chunks=(chunk,), language="sv", foreign_chunks=()
+    ).item.model_copy(
         update={
             "retry_source": NativeExamRetrySource(
                 chunks=(
@@ -239,7 +241,7 @@ def test_manifest_drops_a_picture_no_item_references() -> None:
             },
         ]
     )
-    item = aligned_native_item(produced, chunks=(chunk,), language="sv").item
+    item = aligned_native_item(produced, chunks=(chunk,), language="sv", foreign_chunks=()).item
 
     assets, payloads = asset_manifest((item,), (chunk,))
 
@@ -264,7 +266,7 @@ def test_native_item_refuses_a_question_whose_source_picture_is_missing() -> Non
     )
 
     with pytest.raises(ValueError) as raised:
-        aligned_native_item(produced, chunks=(chunk,), language="sv").item
+        aligned_native_item(produced, chunks=(chunk,), language="sv", foreign_chunks=()).item
 
     assert "unresolved source pictures" in str(raised.value)
     assert "/word/media/figur.emf" in str(raised.value)
