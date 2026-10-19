@@ -25,6 +25,7 @@
 
 import { computed, ref, shallowRef, watch } from "vue";
 
+import { isApiError } from "../../../api/client";
 import type {
   ExamWorkspaceDocumentResponse,
   ExamWorkspaceDocumentSummary,
@@ -55,6 +56,7 @@ export { EXAM_WORKSPACE_CONVERSION_POLL_MS } from "./useExamWorkspaceConversion"
 export type { ExamWorkspaceSaveAsOutcome } from "./useExamWorkspaceSave";
 
 const OPEN_FAILURE_COPY = "Det gick inte att öppna provet. Försök igen.";
+const OPEN_OUTDATED_COPY = "Provet är sparat i ett äldre format och kan inte öppnas.";
 
 /**
  * One opening of an exam: created when a document of another lineage is
@@ -211,8 +213,12 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) 
       applyResponse(response);
       keying.invalidateCopy();
       return true;
-    } catch {
-      toast.failure(OPEN_FAILURE_COPY);
+    } catch (error) {
+      toast.failure(
+        isApiError(error) && error.code === "DOCUMENT_SCHEMA_OUTDATED"
+          ? OPEN_OUTDATED_COPY
+          : OPEN_FAILURE_COPY,
+      );
       return false;
     } finally {
       operationBusy.value = false;

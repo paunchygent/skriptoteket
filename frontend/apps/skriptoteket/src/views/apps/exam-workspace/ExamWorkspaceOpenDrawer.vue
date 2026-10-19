@@ -22,6 +22,7 @@ import { computed, ref } from "vue";
 import type { ExamListOrdering, ExamWorkspaceDocumentSummary } from "../../../api/examWorkspace";
 import { UiGlyph } from "../../../components/ui";
 import { AI_ADMIN_ONLY_NOTE, useAiAccess } from "../../../composables/useAiAccess";
+import { useToast } from "../../../composables/useToast";
 import ExamCourseCombobox from "./ExamCourseCombobox.vue";
 import { examWorkspaceOpenGroups } from "./examWorkspaceOpenGroups";
 import { GUEST_IMPORT_SIGN_IN } from "./examWorkspaceGuestCopy";
@@ -78,6 +79,9 @@ const groups = computed(() =>
   ),
 );const sameName = computed(() => examWorkspaceSameNameCounts(props.documents));
 const openBlocked = computed(() => props.isBusy || props.isDirty);
+/** A blocked Öppna click answers at once, through the same toast channel an open failure uses. */
+const OPEN_BLOCKED_COPY = "Vänta tills ändringarna har sparats.";
+const toast = useToast();
 
 /** A guest may start from a QTI .zip only; DigiExam (.dxe) and Word (.docx) stay signed-in. */
 function isGuestImportFile(file: File): boolean {
@@ -126,9 +130,14 @@ async function startBlankExam(): Promise<void> {
 }
 
 function openEntry(entry: ExamWorkspaceDocumentSummary): void {
-  if (entry.lineage_id !== props.currentLineageId && !openBlocked.value) {
-    emit("open", entry.lineage_id);
+  if (entry.lineage_id === props.currentLineageId) {
+    return;
   }
+  if (openBlocked.value) {
+    toast.failure(OPEN_BLOCKED_COPY);
+    return;
+  }
+  emit("open", entry.lineage_id);
 }
 </script>
 

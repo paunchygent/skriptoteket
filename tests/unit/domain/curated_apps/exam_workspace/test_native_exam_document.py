@@ -49,13 +49,13 @@ class TestSerializationRoundTrip:
 
     def test_invalid_payload_raises_domain_error(self) -> None:
         with pytest.raises(DomainError) as exc_info:
-            parse_native_exam_document(b'{"schema_version": "native_exam_document_v1"}')
+            parse_native_exam_document(b"{}")
         assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
 
     def test_document_declares_the_current_schema(self) -> None:
         assert make_document(make_free_text_item()).schema_version == "native_exam_document_v9"
 
-    def test_saved_v1_payload_has_no_compatibility_reader(self) -> None:
+    def test_saved_v1_payload_reports_an_outdated_schema(self) -> None:
         document = make_document(make_free_text_item())
         payload = json.loads(native_exam_document_json_bytes(document))
         payload["schema_version"] = "native_exam_document_v1"
@@ -63,9 +63,9 @@ class TestSerializationRoundTrip:
         with pytest.raises(DomainError) as exc_info:
             parse_native_exam_document(json.dumps(payload).encode("utf-8"))
 
-        assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
+        assert exc_info.value.code is ErrorCode.DOCUMENT_SCHEMA_OUTDATED
 
-    def test_saved_v6_payload_has_no_compatibility_reader(self) -> None:
+    def test_saved_v6_payload_reports_an_outdated_schema(self) -> None:
         document = make_document(make_free_text_item())
         payload = json.loads(native_exam_document_json_bytes(document))
         payload["schema_version"] = "native_exam_document_v6"
@@ -73,12 +73,22 @@ class TestSerializationRoundTrip:
         with pytest.raises(DomainError) as exc_info:
             parse_native_exam_document(json.dumps(payload).encode("utf-8"))
 
-        assert exc_info.value.code is ErrorCode.VALIDATION_ERROR
+        assert exc_info.value.code is ErrorCode.DOCUMENT_SCHEMA_OUTDATED
 
-    def test_saved_v8_payload_has_no_compatibility_reader(self) -> None:
+    def test_saved_v8_payload_reports_an_outdated_schema(self) -> None:
         document = make_document(make_free_text_item())
         payload = json.loads(native_exam_document_json_bytes(document))
         payload["schema_version"] = "native_exam_document_v8"
+
+        with pytest.raises(DomainError) as exc_info:
+            parse_native_exam_document(json.dumps(payload).encode("utf-8"))
+
+        assert exc_info.value.code is ErrorCode.DOCUMENT_SCHEMA_OUTDATED
+
+    def test_missing_schema_version_stays_a_validation_error(self) -> None:
+        document = make_document(make_free_text_item())
+        payload = json.loads(native_exam_document_json_bytes(document))
+        del payload["schema_version"]
 
         with pytest.raises(DomainError) as exc_info:
             parse_native_exam_document(json.dumps(payload).encode("utf-8"))
@@ -136,6 +146,13 @@ class TestSerializationRoundTrip:
 
         assert parsed == document
         assert parsed.items[0].criteria[1].text == "En korrekt förklaring."
+
+
+class TestOutdatedSchemaMapping:
+    def test_outdated_schema_maps_to_422(self) -> None:
+        from skriptoteket.web.error_mapping import error_to_status
+
+        assert error_to_status(ErrorCode.DOCUMENT_SCHEMA_OUTDATED) == 422
 
 
 class TestDocumentInvariants:

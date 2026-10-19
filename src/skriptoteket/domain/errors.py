@@ -49,6 +49,9 @@ class ErrorCode(StrEnum):
     # Conversion guard (422)
     CONVERSION_IN_PROGRESS = "CONVERSION_IN_PROGRESS"
 
+    # Document schema (422)
+    DOCUMENT_SCHEMA_OUTDATED = "DOCUMENT_SCHEMA_OUTDATED"
+
     # Server Errors (500)
     INTERNAL_ERROR = "INTERNAL_ERROR"
     DATABASE_ERROR = "DATABASE_ERROR"
