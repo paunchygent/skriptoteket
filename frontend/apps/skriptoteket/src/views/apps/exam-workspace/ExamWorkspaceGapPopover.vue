@@ -149,9 +149,11 @@ function handleFocusOut(event: FocusEvent): void {
 }
 
 function handleRemoveAutomaticValue(value: string): void {
+  // The chip and its button disappear with the re-render; move focus first,
+  // synchronously, or the browser fires focusout with no relatedTarget and
+  // the popover closes.
+  answerList.value?.focusFirst();
   emit("removeAutomaticValue", itemId, gapId, value);
-  // The chip and its button disappear; keep keyboard focus in the popover.
-  void nextTick(() => answerList.value?.focusFirst());
 }
 
 function handleShowAsText(): void {
