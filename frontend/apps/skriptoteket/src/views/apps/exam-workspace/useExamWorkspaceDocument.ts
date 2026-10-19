@@ -7,7 +7,7 @@
  *   reconvert one question.
  *
  * Relationships:
- *   - Transport through `api/examWorkspace.ts`; item edits through one patch
+ *   - Transport through the exam workspace store; item edits through one patch
  *     path (`useExamWorkspaceItemEdits`, `useExamWorkspaceGapKeying`).
  *   - Reports each teacher edit through `onEdit`, which the undo history
  *     (`useExamWorkspaceHistory`) turns into autosaved steps; installs the
@@ -23,7 +23,6 @@
 
 import { computed, ref, shallowRef } from "vue";
 
-import { getExamWorkspaceDocument } from "../../../api/examWorkspace";
 import type {
   ExamWorkspaceDocumentResponse,
   ExamWorkspaceDocumentSummary,
@@ -38,6 +37,7 @@ import { sameDocument } from "./examWorkspaceConversionMerge";
 import { useExamWorkspaceItemEdits } from "./useExamWorkspaceItemEdits";
 import { withReferencedAssetsOnly } from "./examWorkspaceStructure";
 import { withRestoredSuggestion } from "./examWorkspaceSuggestionEdits";
+import type { ExamWorkspaceStore } from "./examWorkspaceStore";
 import { useExamWorkspaceConversion } from "./useExamWorkspaceConversion";
 import { useExamWorkspaceDocumentFields } from "./useExamWorkspaceDocumentFields";
 import { useExamWorkspaceGapKeying } from "./useExamWorkspaceGapKeying";
@@ -69,11 +69,14 @@ export type ExamWorkspaceDocumentOptions = {
    * stored as its own step first; null when no such copy applies.
    */
   onEdit?: (structural: boolean, before: NativeExamDocument | null) => void;
+  /** The store every server call the document owns runs through. */
+  store: ExamWorkspaceStore;
 };
 
-export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions = {}) {
+export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions) {
   const toast = useToast();
   const noteEdit = options.onEdit ?? (() => undefined);
+  const store = options.store;
 
   const workspaceDocument = ref<NativeExamDocument | null>(null);
   // The last working response remains the conversion merge base, not the Spara baseline.
@@ -91,7 +94,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
   const operationBusy = ref(false);
   const selectedItemId = ref<string | null>(null);
   const { listOrdering, loadSavedDocuments, recordSummary, savedDocuments } =
-    useExamWorkspaceSavedList({ beginSummaryRead: () => beginSummaryRead() });
+    useExamWorkspaceSavedList({ beginSummaryRead: () => beginSummaryRead(), teacher: store.teacher });
   const {
     adoptConversion,
     conversionError,
@@ -120,6 +123,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
       serverDocument,
       summary,
       workspaceDocument,
+      store,
     },
     (lineageId) => openDocument(lineageId),
   );
@@ -149,7 +153,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
 
   /** The open document's pictures by asset id, for the editor's image atoms. */
   const assetUrls = computed(() =>
-    examWorkspaceAssetUrls(workspaceDocument.value, summary.value?.lineage_id ?? null),
+    examWorkspaceAssetUrls(store.shared, workspaceDocument.value, summary.value?.lineage_id ?? null),
   );
 
   /** Whether `opening` is the exam opening in front of the teacher now. */
@@ -199,7 +203,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
     operationBusy.value = true;
     try {
       const reconcile = beginDocumentRead();
-      const response = reconcile(await getExamWorkspaceDocument(lineageId));
+      const response = reconcile(await store.shared.getExamWorkspaceDocument(lineageId));
       selectedItemId.value = null;
       applyResponse(response);
       keying.invalidateCopy();
@@ -225,7 +229,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
     operationBusy.value = true;
     try {
       const reconcile = beginDocumentRead();
-      const response = reconcile(await getExamWorkspaceDocument(currentSummary.lineage_id));
+      const response = reconcile(await store.shared.getExamWorkspaceDocument(currentSummary.lineage_id));
       applyResponse(response);
       keying.invalidateCopy();
       if (held) {
@@ -263,6 +267,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
     operationBusy,
     summary,
     savedDocuments,
+    teacher: store.teacher,
   });
 
   const { retryItem: requestItemRetry } = useExamWorkspaceItemRetry({
@@ -272,6 +277,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
     serverDocument,
     summary,
     workspaceDocument,
+    teacher: store.teacher,
   });
 
   /** Retry one question, and drop in-flight keying replies for the item it replaced. */
@@ -316,7 +322,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
   }
 
   // Every gap keying edit and its asynchronous misspelling reply.
-  const keying = useExamWorkspaceGapKeying({ openExam, patchItem, workspaceDocument });
+  const keying = useExamWorkspaceGapKeying({ openExam, patchItem, workspaceDocument, shared: store.shared });
 
   const { conflictNotice, saveDocument, saveDocumentAs } = useExamWorkspaceSave({
     applyResponse,
@@ -328,6 +334,7 @@ export function useExamWorkspaceDocument(options: ExamWorkspaceDocumentOptions =
     summary,
     syncAfterConflict,
     workspaceDocument,
+    store,
   });
 
   // Every teacher edit command, applied through the one patch path above.

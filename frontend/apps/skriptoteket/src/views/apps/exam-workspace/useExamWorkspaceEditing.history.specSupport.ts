@@ -11,6 +11,7 @@ import type { Mock } from "vitest";
 
 import { ApiError } from "../../../api/client";
 import type { ExamWorkspaceDocumentResponse, NativeExamDocument } from "../../../api/examWorkspace";
+import { serverExamWorkspaceStore } from "./examWorkspaceStore";
 import { newTeacherItem } from "./examWorkspaceItemEdits";
 import { useExamWorkspaceEditing } from "./useExamWorkspaceEditing";
 
@@ -141,7 +142,7 @@ export function inScope<T>(run: () => T): T {
 
 export async function openEditing(api: EditingApiMocks, baseline = exam()) {
   const server = fakeServer(api, baseline);
-  const editing = inScope(() => useExamWorkspaceEditing());
+  const editing = inScope(() => useExamWorkspaceEditing(serverExamWorkspaceStore));
   editing.applyCommandResponse(response(baseline, "step-0"));
   await flushPromises();
   return { editing, server };

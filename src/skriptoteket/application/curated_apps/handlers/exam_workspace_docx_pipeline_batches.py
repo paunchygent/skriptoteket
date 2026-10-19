@@ -33,12 +33,14 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_build_st
 from skriptoteket.application.curated_apps.handlers.exam_workspace_docx_run import (
     DocxConversionRun,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import missing_picture_reasons
 from skriptoteket.domain.curated_apps.exam_workspace.docx_batches import (
     ConversionBatch,
     QuestionFamily,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk
+from skriptoteket.domain.curated_apps.exam_workspace.docx_source_review import (
+    missing_picture_reasons,
+)
 
 _BATCH_FAILED_REASON = "Frågan kunde inte tolkas. Kontrollera källtexten manuellt."
 

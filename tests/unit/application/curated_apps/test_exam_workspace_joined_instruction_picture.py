@@ -23,15 +23,13 @@ from skriptoteket.application.curated_apps.handlers.exam_workspace_conversion_me
     ConversionTarget,
     merge_conversion,
 )
-from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import (
-    aligned_native_item,
-    assemble_build_result,
-)
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_build import assemble_build_result
 from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_contracts import (
     DocxBuildResult,
     ProducedItem,
     ProducedMetadata,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.docx_ai_item import aligned_native_item
 from skriptoteket.domain.curated_apps.exam_workspace.docx_chunks import DocxChunk, DocxImage
 from skriptoteket.domain.curated_apps.exam_workspace.docx_item_alignment import AlignedItem
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (

@@ -4,12 +4,14 @@ import { describe, expect, it } from "vitest";
 
 import type { NativeExamItem } from "../../../api/examWorkspace";
 import ExamWorkspaceQuestionEditor from "./ExamWorkspaceQuestionEditor.vue";
+import { examWorkspaceProvidersPlugin } from "./examWorkspaceProviders.specSupport";
 import { buildGap, choiceItem, gapItem } from "./examWorkspaceKeyedItems.specSupport";
 import { plainBody } from "./examWorkspaceRichText";
 import { reviewed, withCorrectChoices, withoutInterpretedKey } from "./examWorkspaceItemEdits";
 
 function mountEditor(item: NativeExamItem, disabled = false) {
   return mount(ExamWorkspaceQuestionEditor, {
+    global: { plugins: [examWorkspaceProvidersPlugin()] },
     props: {
       item,
       label: "1",

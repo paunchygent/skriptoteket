@@ -17,9 +17,12 @@ import { computed, ref, useId, watch } from "vue";
 
 import type { NativeExamDocument, NativeExamItem, NativeExamItemKind } from "../../../api/examWorkspace";
 import { UiGlyph } from "../../../components/ui";
-import { AI_ADMIN_ONLY_NOTE, useAiAccess } from "../../../composables/useAiAccess";
+import { AI_ADMIN_ONLY_NOTE } from "../../../composables/useAiAccess";
 import { examWorkspaceImportSteps } from "./examWorkspaceImportSteps";
+import { GUEST_AI_SIGN_IN } from "./examWorkspaceGuestCopy";
+import { useExamWorkspaceSignIn } from "./examWorkspaceSignIn";
 import { EXAM_WORKSPACE_TYPE_LABELS, examWorkspaceReviewReasonLabel } from "./examWorkspaceRows";
+import { useExamWorkspaceAiMode } from "./useExamWorkspaceAiMode";
 
 /** The five types the converter produces, in the order the retry selector offers them. */
 const RETRY_KINDS: readonly NativeExamItemKind[] = [
@@ -39,8 +42,20 @@ const props = defineProps<{
 
 const emit = defineEmits<{ retry: [kind: NativeExamItemKind] }>();
 
-const { canUseAi } = useAiAccess();
+const requestSignIn = useExamWorkspaceSignIn();
 const aiNoteId = useId();
+/** Guest controls stay enabled and ask for sign-in; signed-in controls follow the admin gate. */
+const aiMode = useExamWorkspaceAiMode();
+const isGuest = computed(() => aiMode.value === "guest");
+const adminOnly = computed(() => aiMode.value === "admin_only");
+
+function handleRetry(): void {
+  if (isGuest.value) {
+    requestSignIn(GUEST_AI_SIGN_IN);
+    return;
+  }
+  emit("retry", selectedKind.value);
+}
 
 /** Null until the teacher picks, so the type the file was read as shows first. */
 const retryKind = ref<NativeExamItemKind | null>(null);
@@ -130,7 +145,7 @@ function chooseKind(event: Event): void {
           <select
             :id="`retry-${item.item_id}`"
             :value="selectedKind"
-            :disabled="disabled || !canUseAi"
+            :disabled="disabled || adminOnly"
             data-test="exam-workspace-retry-kind"
             @change="chooseKind"
           >
@@ -145,11 +160,11 @@ function chooseKind(event: Event): void {
           <button
             type="button"
             class="xw-btn xw-btn--compact"
-            :disabled="disabled || !canUseAi"
-            :title="!canUseAi ? AI_ADMIN_ONLY_NOTE : undefined"
-            :aria-describedby="!canUseAi ? aiNoteId : undefined"
+            :disabled="disabled || adminOnly"
+            :title="adminOnly ? AI_ADMIN_ONLY_NOTE : undefined"
+            :aria-describedby="adminOnly ? aiNoteId : undefined"
             data-test="exam-workspace-retry"
-            @click="emit('retry', selectedKind)"
+            @click="handleRetry"
           >
             <UiGlyph
               meaning="retry"
@@ -157,7 +172,7 @@ function chooseKind(event: Event): void {
             />Konvertera igen
           </button>
           <p
-            v-if="!canUseAi"
+            v-if="adminOnly"
             :id="aiNoteId"
             class="xw-hint imp__retry-note"
           >
