@@ -150,8 +150,8 @@ const noteRows = computed<PointsNoteRow[]>(() => {
       target: null,
       text:
         row.points > 0
-          ? `Övriga ${examWorkspaceFormatExactPoints(row.points)} p finns inte i någon fråga`
-          : `${examWorkspaceFormatExactPoints(Math.abs(row.points))} p fler än provtexten anger`,
+          ? `Övriga ${examWorkspaceFormatPoints(row.points)} p finns inte i någon fråga`
+          : `${examWorkspaceFormatPoints(Math.abs(row.points))} p fler än provtexten anger`,
     }];
   });
 });

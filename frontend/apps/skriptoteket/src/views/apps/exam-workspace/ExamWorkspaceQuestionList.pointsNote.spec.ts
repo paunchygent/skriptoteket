@@ -149,6 +149,16 @@ describe("ExamWorkspaceQuestionList points note", () => {
     expect(rowTexts(mountList(under))).toEqual(["7 p fler än provtexten anger"]);
   });
 
+  it("rounds a subtraction-noise remainder instead of printing the float tail", () => {
+    const document: NativeExamDocument = {
+      ...mockupDocument(),
+      header: { printed_total: 70, printed_total_dismissed: false, tags: [] },
+      items: [item(1, 60, 60), item(2, 7.1, 7.1)],
+      parents: [],
+    };
+    expect(rowTexts(mountList(document))).toEqual(["Övriga 2,9 p finns inte i någon fråga"]);
+  });
+
   it("keeps a third-decimal difference readable instead of two equal numbers", () => {
     const document: NativeExamDocument = {
       ...mockupDocument(),
