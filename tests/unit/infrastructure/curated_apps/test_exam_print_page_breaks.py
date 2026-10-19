@@ -27,6 +27,11 @@ from skriptoteket.domain.curated_apps.exam_workspace.exam_print_document import 
 from skriptoteket.domain.curated_apps.exam_workspace.exam_print_html import (
     render_print_html,
 )
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
+    NativeGapSegment,
+    NativeParagraph,
+    NativeTextSegment,
+)
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import (
     NativeExamDocument,
     NativeExamDocumentOrigin,
@@ -43,10 +48,14 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import (
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_values import (
     NativeAnswerKey,
     NativeChoice,
+    NativeGap,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
     NativeAnswerKeyOrigin,
     NativeExamItemKind,
+)
+from tests.unit.domain.curated_apps.exam_workspace.exam_print_document_test_support import (
+    gap_fill_item,
 )
 from tests.unit.domain.curated_apps.exam_workspace.native_exam_test_builders import (
     make_document,
@@ -298,6 +307,53 @@ def test_k5_k14_tall_question_splits_only_between_paragraphs(
     assert not broken, (
         f"N={filler_lines} {variant.value}: {len(rendered.pages)} pages, "
         f"paragraphs split inside: {broken[:6]}"
+    )
+
+
+def _tall_gap_fill_item() -> NativeExamItem:
+    """Eight ~70 mm gap-fill paragraphs, each with a unique marker and one gap."""
+    paragraphs = tuple(
+        NativeParagraph(
+            heading_level=None,
+            segments=(
+                NativeTextSegment(text=" ".join([f"GAP{index:02d}"] * 65), marks=()),
+                NativeGapSegment(gap_id=f"gap_{index + 1:03d}"),
+            ),
+        )
+        for index in range(8)
+    )
+    gaps = tuple(
+        NativeGap(gap_id=f"gap_{index + 1:03d}", accepted_values=("ja",)) for index in range(8)
+    )
+    return gap_fill_item(paragraphs, gaps, sequence=2, item_id="item_002")
+
+
+@pytest.mark.parametrize("variant", VARIANTS)
+@pytest.mark.parametrize("filler_lines", HEIGHTS)
+def test_k5_k14_tall_gap_fill_question_splits_only_between_paragraphs(
+    variant: ExamPrintVariant, filler_lines: int
+) -> None:
+    """K5/K14: a taller-than-a-page gap-fill question never splits inside a paragraph."""
+    document = make_document(_filler(filler_lines), _tall_gap_fill_item())
+    html = render_print_html(
+        build_print_document(document, variant=variant),
+        assets=document.assets,
+        assets_by_id={},
+    )
+    assert html.count('class="print-gap_line"') == 8, (
+        "the fixture does not exercise gap-fill paragraphs"
+    )
+    rendered = _render(document, variant)
+    assert len(rendered.pages) > 1, (
+        f"N={filler_lines} {variant.value}: the tall gap-fill question fits on one page"
+    )
+    split = [(index, sorted(_pages_with(rendered, f"GAP{index:02d}"))) for index in range(8)]
+    missing = [(index, pages) for index, pages in split if not pages]
+    assert not missing, f"N={filler_lines} {variant.value}: markers missing: {missing}"
+    broken = [(index, pages) for index, pages in split if len(pages) > 1]
+    assert not broken, (
+        f"N={filler_lines} {variant.value}: {len(rendered.pages)} pages, "
+        f"gap-fill paragraphs split inside: {broken[:6]}"
     )
 
 
