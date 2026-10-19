@@ -42,10 +42,14 @@ async def test_fraga_1_with_an_inline_answer_key_goes_to_review(
     item = next(item for item in outcome.update.document.items if item.printed_label == "Fråga 1")
     assert item.review.state is NativeItemReviewState.REVIEW_REQUIRED
     assert item.review.parse_origin is NativeParseOrigin.SOURCE_FALLBACK
-    assert "Frågan följer inte provformatet: 5 luckor men 1 tom svarsrad." in item.review.reasons
+    assert "Frågan följer inte provformatet: 5 luckor men 1 svarsplats." in item.review.reasons
     mismatches = [event for event in outcome.result.events if event.code == "gap_count_mismatch"]
     assert [event.detail for event in mismatches] == ["5 gaps for 1 blank runs"]
     text = body_plain_text(item.body)
     assert word in text
     assert reply_split not in text
     assert "[___]" not in text
+    assert "Svar:" not in text
+    assert "(R)" not in text
+    assert "(A)" not in text
+    assert "(B)" not in text

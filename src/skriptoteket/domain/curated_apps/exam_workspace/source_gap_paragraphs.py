@@ -26,7 +26,7 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_body import (
     NativeTextSegment,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.source_format_alignment import (
-    ANSWER_LABEL,
+    answer_label_cut,
 )
 from skriptoteket.domain.curated_apps.exam_workspace.source_format_errors import (
     FormattingTransferError,
@@ -60,9 +60,9 @@ class GapCountMismatchError(ValueError):
 
     @property
     def reason(self) -> str:
-        """The teacher's review reason, inflected by count (user decision 2026-10-18)."""
+        """The teacher's review reason, inflected by count (user decision 2026-10-19)."""
         gaps = f"{self.gaps} {'lucka' if self.gaps == 1 else 'luckor'}"
-        blanks = f"{self.blanks} {'tom svarsrad' if self.blanks == 1 else 'tomma svarsrader'}"
+        blanks = f"{self.blanks} {'svarsplats' if self.blanks == 1 else 'svarsplatser'}"
         return f"Frågan följer inte provformatet: {gaps} men {blanks}."
 
 
@@ -124,21 +124,6 @@ def _source_unit(source: SourceFormatting, anchor: int) -> tuple[SourceParagraph
     return tuple(source.paragraphs[first : last + 1])
 
 
-def _answer_label_cut(source: SourceFormatting, start: int, end: int) -> int | None:
-    """Cut the build span at the first inline answer label, with any wrapper ``(``.
-
-    Returns None when no answer label stands in the span, so the caller keeps the
-    unit's end.
-    """
-    label = ANSWER_LABEL.search(source.text, start, end)
-    if label is None:
-        return None
-    opening = source.text.rfind("(", start, label.start())
-    if opening >= start and not source.text[opening + 1 : label.start()].strip():
-        return opening
-    return label.start()
-
-
 def _unit_blank_runs(
     source: SourceFormatting,
     unit: tuple[SourceParagraph, ...],
@@ -180,7 +165,7 @@ def _gap_unit(source: SourceFormatting, anchor: int) -> _GapUnit | None:
     if unit is None:
         return None
     start = source.content_start(unit[0])
-    cut = _answer_label_cut(source, start, unit[-1].end)
+    cut = answer_label_cut(source.text, start, unit[-1].end)
     end = unit[-1].end if cut is None else cut
     runs = _unit_blank_runs(source, unit, start, end)
     if not runs:
