@@ -260,7 +260,12 @@ def test_a_mixed_parent_reads_back_every_child_and_the_shared_instruction() -> N
     assert len(parent.children) == len(exported.children) == 4
     for export_child, read_child in zip(exported.children, parent.children, strict=True):
         assert read_child.item_id == f"parent_001_child_{read_child.sequence}"
-        assert _child_projection(read_child) == _child_projection(export_child)
+    # Review 596c1654 F4: the rounded per-gap share states no total, so the two
+    # gap children keep None for the mapper's review loss; the block children
+    # still invert exactly.
+    assert [child.max_score for child in parent.children] == [1, None, 4, None]
+    assert _child_projection(parent.children[0]) == _child_projection(exported.children[0])
+    assert _child_projection(parent.children[2]) == _child_projection(exported.children[2])
 
 
 def test_a_matching_child_round_trips_its_lists_and_pairs() -> None:
@@ -297,22 +302,25 @@ def test_a_parent_with_only_a_gap_fill_child_reads_as_one_separator_child() -> N
 
 
 @pytest.mark.parametrize(
-    ("points", "gap_count", "expected"),
-    [(1, 3, 1), (2.5, 2, 2.5), (1, 2, 1), (2, 3, 2), (0.5, 1, 0.5), (3, 1, 3)],
+    ("points", "expected"),
+    [(0.99, 0.99), (1, 1), (1.01, 1.01)],
 )
-def test_a_gap_child_recovers_its_points_from_the_rounded_share(
-    points: int | float, gap_count: int, expected: int | float
+def test_a_gap_child_takes_its_points_from_the_parent_remainder(
+    points: float, expected: float
 ) -> None:
-    child = _gap_fill_child(sequence=1, item_id="item_001", points=points, gap_count=gap_count)
-    document = _document((child,), parent=_parent((child,)))
+    gap = _gap_fill_child(sequence=1, item_id="item_001", points=points, gap_count=3)
+    other = make_single_choice_item(sequence=2, item_id="item_002")
+    document = _document((gap, other), parent=_parent((gap, other)))
     (exported,) = _export(document, assets_by_id={})
 
     (parent,) = _round_trip((exported,))
 
     assert isinstance(parent, ExamNetQtiItem)
-    (read_child,) = parent.children
-    assert read_child.max_score == expected
-    assert type(read_child.max_score) is type(expected)
+    assert exported.max_score == pytest.approx(points + 1)
+    gap_child, choice_child = parent.children
+    assert gap_child.max_score == expected
+    assert type(gap_child.max_score) is type(expected)
+    assert choice_child.max_score == 1
 
 
 def test_an_inline_choice_child_recovers_its_points_from_its_gap_shares() -> None:
@@ -703,7 +711,9 @@ def test_the_three_scoring_routes_read_their_own_points() -> None:
     (parent,) = read
     assert isinstance(parent, ExamNetQtiItem)
     assert parent.max_score == 11
-    assert [child.max_score for child in parent.children] == [3, 2, 2, 4]
+    # Review 596c1654 F4: the gap child's rounded share states no total and the
+    # unkeyed free-text child states none either, so both keep None.
+    assert [child.max_score for child in parent.children] == [3, None, 2, None]
 
 
 def _read(xml: bytes, *, sequence: int = 1) -> tuple[ExamNetQtiReadItem, ...]:

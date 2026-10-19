@@ -8,10 +8,11 @@ from __future__ import annotations
 
 from collections.abc import Mapping as AbcMapping
 from dataclasses import dataclass, replace
-from decimal import ROUND_CEILING, Decimal, InvalidOperation
+from decimal import ROUND_DOWN, Decimal, InvalidOperation
 from xml.etree import ElementTree
 
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_contracts import (
+    ExamNetQtiInteractionType,
     ExamNetQtiItem,
 )
 from skriptoteket.domain.curated_apps.exam_conversion.examnet_qti_item_support import (
@@ -110,8 +111,21 @@ def max_score(root: ElementTree.Element) -> int | float | None:
     value = default_value.find(qti_tag("qti-value"))
     if value is None or value.text is None:
         return None
-    score = number(value.text)
-    return None if score == 0 else score
+    # A present zero stays zero: export admissibility
+    # (examnet_qti_item_admissibility._item_errors: an automatic item without
+    # points is blocked) means an exported package never writes an absent score
+    # as "0", so MAXSCORE 0 is always a stated zero. Only a missing
+    # declaration or value reads as None.
+    return number(value.text)
+
+
+# The native points contract (NativeExamItem.points: a finite non-negative
+# int | float; tick_points: a non-negative two-decimal Decimal) admits no
+# million-point question and no sub-hundred-quintillionth share. Decimal
+# comparisons, adjusted() and exponent reads below never expand the number
+# into an int or float; only _to_number does, after these bounds hold.
+_MAX_SCORE_ADJUSTED_LIMIT = 5
+_MIN_SCORE_EXPONENT = -20
 
 
 def number(text: str) -> int | float:
@@ -124,6 +138,13 @@ def _decimal(text: str) -> Decimal:
     except InvalidOperation as error:
         raise UnsupportedInteraction from error
     if not value.is_finite():
+        raise UnsupportedInteraction
+    if value < 0:
+        raise UnsupportedInteraction
+    if value.adjusted() > _MAX_SCORE_ADJUSTED_LIMIT:
+        raise UnsupportedInteraction
+    exponent = value.as_tuple().exponent
+    if isinstance(exponent, int) and exponent < _MIN_SCORE_EXPONENT:
         raise UnsupportedInteraction
     return value
 
@@ -184,38 +205,30 @@ def gap_child_points(
     declarations: AbcMapping[str, ResponseDeclaration],
     gap_elements: tuple[ElementTree.Element, ...],
 ) -> int | float | None:
-    values: set[Decimal] = set()
-    for element in gap_elements:
-        response_identifier = element.get("response-identifier")
-        declaration = declarations.get(response_identifier) if response_identifier else None
-        if declaration is None or declaration.mapping is None or not declaration.mapping.entries:
-            return None
-        for entry in declaration.mapping.entries:
-            values.add(_decimal(entry.mapped_value))
-    if len(values) != 1:
-        return None
-    return _recover_total(len(gap_elements), next(iter(values)))
+    """A parent gap child's own score: the package never states it exactly.
 
+    The exporter writes only a per-gap share rounded down to 0.01, whose
+    interval does not identify the total, so a gap or inline-choice child
+    inside a parent keeps None here. The parent remainder in
+    apply_unknown_remainder is the only exact evidence and assigns it there.
+    """
 
-def _recover_total(gap_count: int, gap_value: Decimal) -> int | float:
-    """The export's total from its rounded-down per-gap share (see gap_point_values)."""
-
-    lower = gap_count * gap_value
-    upper = lower + gap_count * Decimal("0.01")
-    smallest_integer = lower.to_integral_value(rounding=ROUND_CEILING)
-    if smallest_integer < upper:
-        return _to_number(smallest_integer)
-    smallest_tenth = (lower * 10).to_integral_value(rounding=ROUND_CEILING) / Decimal(10)
-    if smallest_tenth < upper:
-        return _to_number(smallest_tenth)
-    return _to_number(lower)
+    return None
 
 
 def apply_unknown_remainder(
     children: list[ExamNetQtiItem],
     max_score: int | float | None,
+    declarations: AbcMapping[str, ResponseDeclaration] | None = None,
 ) -> None:
-    """Give a single child without its own points the parent total's remainder."""
+    """Give a single child without its own points the parent total's remainder.
+
+    A gap or inline-choice child takes the remainder only when it is
+    consistent with its stated per-gap share (remainder / gap count, rounded
+    down to 0.01, equals the share). More than one unknown child, a negative
+    remainder, or an inconsistent or unstated share leaves the child at None
+    so the mapper sends it to review instead of guessing.
+    """
 
     if max_score is None:
         return
@@ -227,7 +240,42 @@ def apply_unknown_remainder(
         Decimal(0),
     )
     remainder = Decimal(str(max_score)) - known
-    if remainder <= 0:
+    if remainder < 0:
         return
     position = unknown[0]
+    child = children[position]
+    if declarations is not None and child.interaction_type in (
+        ExamNetQtiInteractionType.GAP_FILL,
+        ExamNetQtiInteractionType.INLINE_CHOICE,
+    ):
+        if not _remainder_matches_share(child, declarations, remainder):
+            return
     children[position] = replace(children[position], max_score=_to_number(remainder))
+
+
+def _remainder_matches_share(
+    child: ExamNetQtiItem,
+    declarations: AbcMapping[str, ResponseDeclaration],
+    remainder: Decimal,
+) -> bool:
+    if child.interaction_type is ExamNetQtiInteractionType.INLINE_CHOICE:
+        gaps: tuple[str, ...] = tuple(gap.response_identifier for gap in child.inline_choice_gaps)
+    else:
+        gaps = tuple(gap.response_identifier for gap in child.text_entry_gaps)
+    if not gaps:
+        return False
+    values: set[Decimal] = set()
+    for response_identifier in gaps:
+        declaration = declarations.get(response_identifier)
+        if declaration is None or declaration.mapping is None or not declaration.mapping.entries:
+            return False
+        for entry in declaration.mapping.entries:
+            try:
+                values.add(_decimal(entry.mapped_value))
+            except UnsupportedInteraction:
+                return False
+    if len(values) != 1:
+        return False
+    share = next(iter(values))
+    expected = (remainder / len(gaps)).quantize(Decimal("0.01"), rounding=ROUND_DOWN)
+    return expected == share

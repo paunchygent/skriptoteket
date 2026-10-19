@@ -344,7 +344,10 @@ def test_gap_fill_reads_every_accepted_value_with_and_without_points(
     exported, read = _round_trip(item)
 
     assert exported.max_score == points
-    assert read.max_score == points
+    # The writer coerces an inadmissible absent score to "0", which reads back
+    # as a stated zero (review 596c1654 F5); the real export route blocks such
+    # items with the missing_points blocker instead.
+    assert read.max_score == (0 if points is None else points)
     assert read.text_entry_gaps == (
         ExamNetQtiTextEntryGap(
             response_identifier=exported.text_entry_gaps[0].response_identifier,
@@ -360,7 +363,7 @@ def test_a_zero_point_item_reads_max_score_none() -> None:
     exported, read = _round_trip(item)
 
     assert exported.max_score == 0
-    assert read.max_score is None
+    assert read.max_score == 0
 
 
 def test_free_text_reads_a_one_row_mapping_as_its_criterion_points() -> None:
@@ -406,7 +409,10 @@ def test_free_text_without_points_stays_manual_unkeyed() -> None:
     assert exported.evaluation_mode is ExamNetQtiEvaluationMode.MANUAL_UNKEYED
     assert read.evaluation_mode is ExamNetQtiEvaluationMode.MANUAL_UNKEYED
     assert read.free_text_criterion_points is None
-    assert read.max_score is None
+    # The writer coerces the inadmissible absent score to "0", which reads back
+    # as a stated zero (review 596c1654 F5); the real export route blocks such
+    # items with the missing_points blocker instead.
+    assert read.max_score == 0
 
 
 def test_png_and_jpeg_prompt_images_round_trip_in_placement_order() -> None:

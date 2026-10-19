@@ -62,6 +62,7 @@ KINDS = {
 _CHOICE_KINDS = (NativeExamItemKind.SINGLE_CHOICE, NativeExamItemKind.MULTIPLE_RESPONSE)
 _PARTIAL_GAP_KEY_REASON = "Facit saknades för en eller flera luckor och importerades inte."
 _UNEVEN_MATCH_TICK_REASON = "Poängen kunde inte delas lika mellan paren. Kontrollera poängen."
+_MISSING_POINTS_REASON = "Poängen stod inte i paketet. Ange poäng."
 
 
 class AssetRegistry(Protocol):
@@ -204,6 +205,9 @@ def leaf_item(
         else:
             points = None
             answer_key = NativeAnswerKey(origin=NativeAnswerKeyOrigin.ABSENT)
+
+    if points is None:
+        reasons.append(_MISSING_POINTS_REASON)
 
     try:
         item = NativeExamItem(

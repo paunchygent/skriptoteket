@@ -39,6 +39,10 @@ from skriptoteket.domain.curated_apps.exam_workspace.native_exam_document import
 )
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_item import NativeExamItem
 from skriptoteket.domain.curated_apps.exam_workspace.native_exam_parent import NativeExamParent
+from skriptoteket.domain.curated_apps.exam_workspace.native_exam_vocabulary import (
+    NativeExamItemKind,
+    NativeItemReviewState,
+)
 from skriptoteket.infrastructure.curated_apps.apps.conversion_hub.examnet_qti_package_reader import (  # noqa: E501
     ExamNetQtiPackageReader,
 )
@@ -143,7 +147,9 @@ def test_omprov_exam_round_trips_through_the_real_package_bytes(exam: str) -> No
 
 
 @pytest.mark.parametrize("exam", _ROUND_TRIP_EXAMS)
-def test_parent_over_four_recorded_items_round_trips_its_grouping(exam: str) -> None:
+def test_parent_over_four_recorded_items_round_trips_its_grouping_and_sends_unstated_gap_scores_to_review(  # noqa: E501
+    exam: str,
+) -> None:
     items = recorded_items(exam)
     numbers = tuple(item.sequence for item in items[:4])
     document = recorded_document(
@@ -154,7 +160,36 @@ def test_parent_over_four_recorded_items_round_trips_its_grouping(exam: str) -> 
     _package, container = _round_trip(document)
 
     assert container.notes == ()
-    assert _document_projection(container.document) == _document_projection(document)
+    imported = container.document
+    assert len(imported.items) == len(document.items)
+    (parent,) = imported.parents
+    (expected_parent,) = document.parents
+    assert parent.item_ids == expected_parent.item_ids
+    gap_positions = {
+        index
+        for index, item in enumerate(document.items)
+        if item.item_id in expected_parent.item_ids
+        and item.kind in (NativeExamItemKind.GAP_FILL, NativeExamItemKind.INLINE_CHOICE)
+    }
+    # More than one gap child states no score of its own, so each of them goes
+    # to review with points None instead of being guessed.
+    assert len(gap_positions) >= 2
+    for index in sorted(gap_positions):
+        item = imported.items[index]
+        assert item.points is None
+        assert item.review.state is NativeItemReviewState.REVIEW_REQUIRED
+        assert "Poängen stod inte i paketet. Ange poäng." in item.review.reasons
+    expected_projection = _document_projection(document)
+    raw_items = expected_projection["items"]
+    assert isinstance(raw_items, tuple)
+    expected_items: list[dict[str, object]] = []
+    for index, raw in enumerate(raw_items):
+        assert isinstance(raw, dict)
+        expected_items.append({**raw, "points": None} if index in gap_positions else raw)
+    assert _document_projection(imported) == {
+        **expected_projection,
+        "items": tuple(expected_items),
+    }
 
 
 def test_free_text_criteria_text_is_not_carried_by_qti() -> None:
