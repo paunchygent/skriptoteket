@@ -18,9 +18,21 @@
  *   `pagehide` with `keepalive`, so the release reaches the server after the
  *   page is gone. A claim refused with `EDIT_LEASE_HELD` opens read-only and
  *   retries at the heartbeat cadence, taking the lease as soon as it is free
- *   (expired or released) with no `Ta över`; any
- *   other claim failure stays editable, since the write guard is
- *   authoritative and refuses a tab without the lease.
+ *   (expired or released) with no `Ta över`. Only the claim on open stays
+ *   editable on any other claim failure, since the write guard is
+ *   authoritative and refuses a tab without the lease; every retry claim
+ *   (the read-only heartbeat, the `Ta över` poll and the claim inside
+ *   `requestTakeover`) treats such a failure as stay read-only and retries
+ *   at the next tick or poll, so one failed request never turns a read-only
+ *   tab editable while another tab holds the lease. After yielding to a
+ *   takeover the tab restarts its heartbeat, so its first retry claim
+ *   happens one full heartbeat after the release instead of racing the
+ *   waiting tab's poll; a refused write keeps its heartbeat phase. A holder
+ *   whose renewals keep failing stays editable only while its last
+ *   successful claim or renew is within the 15 s lease TTL; once the TTL
+ *   has passed it turns read-only, keeps retrying the claim at the
+ *   heartbeat cadence and reads the newest state when it takes the lease
+ *   back.
  *
  * Relationships:
  *   - The server half runs on the edit-lease transport of
@@ -114,6 +126,8 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
   let driver: ExamWorkspaceEditLeaseDriver | null = null;
   let heartbeat: ReturnType<typeof setInterval> | null = null;
   let takeoverTimer: ReturnType<typeof setTimeout> | null = null;
+  const clock = deps.now ?? (() => Date.now());
+  let lastLeaseSuccessAt = clock();
 
   function stopHeartbeat(): void {
     if (heartbeat !== null) {
@@ -162,6 +176,12 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
     } finally {
       await tryRelease(lineageId);
       noteLostLease();
+      // Restart the heartbeat so the first retry claim happens one full
+      // heartbeat after the release, not on the old phase: otherwise this
+      // tab could reclaim the freed lease before the waiting tab's `Ta över`
+      // poll. A refused write keeps its phase through `noteLostLease`.
+      stopHeartbeat();
+      startHeartbeat();
     }
   }
 
@@ -209,12 +229,14 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
     }
     // A read-only tab retries its refused claim at the heartbeat cadence and
     // takes the lease as soon as it is free, with no `Ta över`. A waiting
-    // takeover claims on its own faster poll instead.
+    // takeover claims on its own faster poll instead. A `failed` retry claim
+    // stays read-only; only the claim on open stays editable on such a
+    // failure.
     if (!holding.value) {
       if (waiting.value) {
         return;
       }
-      let outcome: "held" | "readonly";
+      let outcome: "held" | "readonly" | "failed";
       try {
         outcome = await active.claim(lineageId);
       } catch {
@@ -228,16 +250,26 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
       }
       return;
     }
-    let held: boolean;
+    let renewed: "held" | "lost" | "failed";
     try {
-      held = await active.renew(lineageId);
+      renewed = await active.renew(lineageId);
     } catch {
-      return;
+      renewed = "failed";
     }
     if (disposed || deps.lineageId() !== lineageId) {
       return;
     }
-    holding.value = held;
+    if (renewed === "held") {
+      lastLeaseSuccessAt = clock();
+      holding.value = true;
+    } else if (renewed === "lost") {
+      holding.value = false;
+    } else if (clock() - lastLeaseSuccessAt >= EXAM_WORKSPACE_EDIT_LEASE_TTL_MS) {
+      // Renewals kept failing past the lease TTL, so the server lease is
+      // dead: turn read-only. The next ticks retry the claim and take the
+      // lease back as soon as it is free.
+      noteLostLease();
+    }
     // A lost lease keeps the heartbeat: the next tick retries the claim and
     // takes the lease back as soon as it is free.
   }
@@ -250,7 +282,10 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
     }
     let outcome: "held" | "readonly";
     try {
-      outcome = await active.claim(lineageId);
+      const claimed = await active.claim(lineageId);
+      // Only the claim on open stays editable on a failure that is not a
+      // live foreign lease; every retry claim maps `failed` to read-only.
+      outcome = claimed === "failed" ? "held" : claimed;
     } catch {
       outcome = "held";
     }
@@ -261,12 +296,16 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
       return;
     }
     holding.value = outcome === "held";
+    if (holding.value) {
+      lastLeaseSuccessAt = clock();
+    }
     // The heartbeat both renews a held lease and retries a refused claim, so
     // a reloaded tab takes the lease as soon as it is free, with no `Ta över`.
     startHeartbeat();
   }
 
   async function noteAcquired(lineageId: string): Promise<void> {
+    lastLeaseSuccessAt = clock();
     holding.value = true;
     stopWaiting();
     startHeartbeat();
@@ -307,6 +346,7 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
         return;
       }
       if (outcome === "own") {
+        lastLeaseSuccessAt = clock();
         holding.value = true;
         stopWaiting();
         startHeartbeat();
@@ -321,12 +361,14 @@ export function useExamWorkspaceEditLease(deps: ExamWorkspaceEditLeaseDeps) {
         if (disposed || !waiting.value || deps.lineageId() !== lineageId) {
           return;
         }
-        let next: "held" | "readonly";
+        let next: "held" | "readonly" | "failed";
         try {
           next = await active.claim(lineageId);
         } catch {
           continue;
         }
+        // A `failed` poll claim keeps waiting read-only; only the claim on
+        // open stays editable on such a failure.
         if (next === "held") {
           await noteAcquired(lineageId);
           return;

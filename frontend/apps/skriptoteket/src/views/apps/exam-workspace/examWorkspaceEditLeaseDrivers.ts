@@ -5,10 +5,13 @@
  *   Claim, renew, request takeover and release the edit lease against the
  *   server lease transport or the guest IndexedDB controller, so one tab at a
  *   time edits an exam (TASK-SKRIPT-40-04-14 behaviour item 7, decision D4).
- *   A live foreign lease opens read-only; any other claim failure stays
- *   editable, since the write guard is authoritative and refuses a tab
- *   without the lease. The `pagehide` release goes out with `keepalive`, so
- *   the browser finishes the POST after the page is gone.
+ *   A live foreign lease opens read-only; any other claim failure is reported
+ *   distinctly as `failed`, so only the claim on open stays editable while
+ *   every retry claim stays read-only and retries at the next tick or poll.
+ *   After a yield the composable restarts its heartbeat, so the first retry
+ *   claim happens one full heartbeat after the release instead of racing the
+ *   waiting tab's `Ta över` poll. The `pagehide` release goes out with
+ *   `keepalive`, so the browser finishes the POST after the page is gone.
  *
  * Relationships:
  *   - Owned by `useExamWorkspaceEditLease`, which feeds the tab id into the
@@ -42,8 +45,8 @@ export type ExamWorkspaceEditLeaseServer = {
 
 export type ExamWorkspaceEditLeaseDriver = {
   readonly tabId: string;
-  claim(lineageId: string): Promise<"held" | "readonly">;
-  renew(lineageId: string): Promise<boolean>;
+  claim(lineageId: string): Promise<"held" | "readonly" | "failed">;
+  renew(lineageId: string): Promise<"held" | "lost" | "failed">;
   requestTakeover(lineageId: string): Promise<"claimed" | "requested" | "own">;
   release(lineageId: string, options?: { keepalive?: boolean }): Promise<boolean>;
   dispose(): void;
@@ -61,9 +64,10 @@ export function createServerDriver(
         await server.claim(lineageId, tabId);
         return "held";
       } catch (error) {
-        // A live foreign lease opens read-only; any other failure stays
-        // editable, since the write guard refuses a tab without the lease.
-        return isEditLeaseHeldError(error) ? "readonly" : "held";
+        // A live foreign lease opens read-only; any other failure is
+        // reported distinctly, so only the claim on open stays editable
+        // while every retry claim stays read-only.
+        return isEditLeaseHeldError(error) ? "readonly" : "failed";
       }
     },
     async renew(lineageId) {
@@ -71,15 +75,16 @@ export function createServerDriver(
         const response = await server.renew(lineageId, tabId);
         if (response.takeover_requested) {
           await yieldLease(lineageId);
-          return false;
+          return "lost";
         }
-        return true;
+        return "held";
       } catch (error) {
         if (isEditLeaseHeldError(error)) {
-          return false;
+          return "lost";
         }
-        // A transient failure keeps the hold; the write guard stays authoritative.
-        return true;
+        // A transient failure keeps the hold only until the lease TTL dies;
+        // the composable turns read-only once no success is within the TTL.
+        return "failed";
       }
     },
     async requestTakeover(lineageId) {
@@ -95,6 +100,8 @@ export function createServerDriver(
       if (response.holder_tab_id === tabId) {
         return "own";
       }
+      // A `failed` retry claim stays waiting like a refused one; only the
+      // claim on open stays editable.
       return (await driver.claim(lineageId)) === "held" ? "claimed" : "requested";
     },
     async release(lineageId, options) {
@@ -142,11 +149,19 @@ export function createGuestDriver(
     renew: async () => {
       // The controller's own heartbeat calls this too, so a lost lease turns
       // read-only even when this tab's heartbeat is the one that finds it.
-      const held = await controller.renew();
+      // A transient storage failure is reported distinctly, like the server
+      // driver's, so the composable keeps the hold only until the lease TTL.
+      let held: boolean;
+      try {
+        held = await controller.renew();
+      } catch {
+        return "failed";
+      }
       if (!held) {
         noteLostLease();
+        return "lost";
       }
-      return held;
+      return "held";
     },
     requestTakeover: () => controller.requestTakeover(),
   };

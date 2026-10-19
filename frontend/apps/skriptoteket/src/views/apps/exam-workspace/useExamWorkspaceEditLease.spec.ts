@@ -500,4 +500,260 @@ describe("useExamWorkspaceEditLease on the server lease", () => {
       scope.stop();
     }
   });
+
+  it("stays read-only when a retry claim fails with a 500 or a network error, then takes the freed lease", async () => {
+    const fake = createFakeLeaseServer();
+    const holder = setupLease(fake, { tabId: "tab-b" });
+    try {
+      await flushPromises();
+      expect(holder.lease.readOnly.value).toBe(false);
+      const waiter = setupLease(fake, { tabId: "tab-a" });
+      try {
+        await flushPromises();
+        expect(waiter.lease.readOnly.value).toBe(true);
+        const originalClaim = fake.server.claim.bind(fake.server);
+        let failure: unknown = new ApiError({ code: "INTERNAL", message: "boom", status: 500 });
+        const claimSpy = vi
+          .spyOn(fake.server, "claim")
+          .mockImplementation(async (lineage: string, tabId: string) => {
+            if (tabId === "tab-a" && failure !== null) {
+              throw failure;
+            }
+            return originalClaim(lineage, tabId);
+          });
+        try {
+          await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_EDIT_LEASE_HEARTBEAT_MS);
+          expect(waiter.lease.readOnly.value).toBe(true);
+          expect(waiter.acquired).toEqual([]);
+          failure = new TypeError("offline");
+          await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_EDIT_LEASE_HEARTBEAT_MS);
+          expect(waiter.lease.readOnly.value).toBe(true);
+          expect(waiter.acquired).toEqual([]);
+
+          // The holder releases; the next retry claims the freed lease.
+          failure = null;
+          await fake.server.release(LINEAGE, "tab-b");
+          await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_EDIT_LEASE_HEARTBEAT_MS);
+          expect(fake.state().holder).toBe("tab-a");
+          expect(waiter.lease.readOnly.value).toBe(false);
+          expect(waiter.acquired).toEqual(["reloaded"]);
+        } finally {
+          claimSpy.mockRestore();
+        }
+      } finally {
+        waiter.stop();
+      }
+    } finally {
+      holder.stop();
+    }
+  });
+
+  it("keeps a Ta över wait read-only while poll claims fail with a non-409 error", async () => {
+    const fake = createFakeLeaseServer();
+    const holder = setupLease(fake, { tabId: "tab-b" });
+    try {
+      await flushPromises();
+      const waiter = setupLease(fake, { tabId: "tab-a" });
+      try {
+        await flushPromises();
+        const originalClaim = fake.server.claim.bind(fake.server);
+        let failure: unknown = new ApiError({ code: "INTERNAL", message: "boom", status: 500 });
+        const claimSpy = vi
+          .spyOn(fake.server, "claim")
+          .mockImplementation(async (lineage: string, tabId: string) => {
+            if (tabId === "tab-a" && failure !== null) {
+              throw failure;
+            }
+            return originalClaim(lineage, tabId);
+          });
+        try {
+          const taking = waiter.lease.requestTakeover();
+          await flushPromises();
+          await vi.advanceTimersByTimeAsync(3 * EXAM_WORKSPACE_EDIT_LEASE_TAKEOVER_POLL_MS);
+          expect(waiter.lease.waiting.value).toBe(true);
+          expect(waiter.lease.readOnly.value).toBe(true);
+          expect(waiter.acquired).toEqual([]);
+          failure = new TypeError("offline");
+          await vi.advanceTimersByTimeAsync(2 * EXAM_WORKSPACE_EDIT_LEASE_TAKEOVER_POLL_MS);
+          expect(waiter.lease.waiting.value).toBe(true);
+          expect(waiter.lease.readOnly.value).toBe(true);
+          expect(waiter.acquired).toEqual([]);
+
+          // The holder releases; the next poll claims the freed lease. (The
+          // holder may also have yielded on its own heartbeat after seeing
+          // the request, so always advance to the next poll either way.)
+          failure = null;
+          if (fake.state().holder === "tab-b") {
+            await fake.server.release(LINEAGE, "tab-b");
+          }
+          await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_EDIT_LEASE_TAKEOVER_POLL_MS);
+          await taking;
+          expect(waiter.lease.readOnly.value).toBe(false);
+          expect(waiter.acquired).toEqual(["reloaded"]);
+        } finally {
+          claimSpy.mockRestore();
+        }
+      } finally {
+        waiter.stop();
+      }
+    } finally {
+      holder.stop();
+    }
+  });
+
+  it("stays editable when the open claim fails with a 500 or a network error", async () => {
+    const failures: Error[] = [
+      new ApiError({ code: "INTERNAL", message: "boom", status: 500 }),
+      new TypeError("offline"),
+    ];
+    for (const failure of failures) {
+      const failing: ExamWorkspaceEditLeaseServer = {
+        claim: () => Promise.reject(failure),
+        release: () => Promise.reject(failure),
+        renew: () => Promise.reject(failure),
+        requestTakeover: () => Promise.reject(failure),
+      };
+      const scope = effectScope();
+      const lease = scope.run(() =>
+        useExamWorkspaceEditLease({
+          isGuest: () => false,
+          lineageId: () => LINEAGE,
+          onAcquired: () => Promise.resolve(),
+          onTakeoverRequested: () => Promise.resolve(),
+          server: failing,
+          tabId: "tab-a",
+        }),
+      )!;
+      try {
+        await flushPromises();
+        expect(lease.readOnly.value).toBe(false);
+      } finally {
+        scope.stop();
+      }
+    }
+  });
+
+  it("waits one full heartbeat after a yield before claiming again, letting the waiter take over", async () => {
+    const fake = createFakeLeaseServer();
+    const claimSpy = vi.spyOn(fake.server, "claim");
+    let delayTakeoverFlush = true;
+    const first = setupLease(fake, {
+      onTakeoverRequested: () =>
+        new Promise<void>((resolve) => {
+          if (delayTakeoverFlush) {
+            delayTakeoverFlush = false;
+            setTimeout(resolve, EXAM_WORKSPACE_EDIT_LEASE_HEARTBEAT_MS - 100);
+          } else {
+            resolve();
+          }
+        }),
+      tabId: "tab-a",
+    });
+    const second = setupLease(fake, { tabId: "tab-b" });
+    try {
+      await flushPromises();
+      expect(first.lease.readOnly.value).toBe(false);
+      expect(second.lease.readOnly.value).toBe(true);
+      const taking = second.lease.requestTakeover();
+      await flushPromises();
+      expect(fake.state().waiting).toBe("tab-b");
+
+      // The holder's next renew starts the slow yield; the release lands just
+      // before its old heartbeat phase would fire again.
+      await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_EDIT_LEASE_HEARTBEAT_MS);
+      await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_EDIT_LEASE_HEARTBEAT_MS - 100);
+      expect(first.lease.readOnly.value).toBe(true);
+      const claimsFromYielded = claimSpy.mock.calls.filter((call) => call[1] === "tab-a").length;
+
+      // 200 ms later the old phase would already have fired: the yielded tab
+      // must still have sent no claim, while the waiter's poll takes the lease.
+      // (Assert before awaiting the takeover: on the old phase the yielded
+      // tab reclaims first and the waiter never resolves here.)
+      await vi.advanceTimersByTimeAsync(200);
+      expect(claimSpy.mock.calls.filter((call) => call[1] === "tab-a").length).toBe(
+        claimsFromYielded,
+      );
+      await taking;
+      expect(fake.state().holder).toBe("tab-b");
+      expect(second.lease.readOnly.value).toBe(false);
+      expect(second.acquired).toEqual(["reloaded"]);
+      expect(first.lease.readOnly.value).toBe(true);
+
+      // One full heartbeat after the release the yielded tab retries once and
+      // is refused, staying read-only without a reload.
+      await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_EDIT_LEASE_HEARTBEAT_MS);
+      expect(claimSpy.mock.calls.filter((call) => call[1] === "tab-a").length).toBe(
+        claimsFromYielded + 1,
+      );
+      expect(fake.state().holder).toBe("tab-b");
+      expect(first.lease.readOnly.value).toBe(true);
+      expect(first.acquired).toEqual([]);
+    } finally {
+      first.stop();
+      second.stop();
+      claimSpy.mockRestore();
+    }
+  });
+
+  it("turns read-only once the lease TTL passes while renews keep failing, then recovers", async () => {
+    const fake = createFakeLeaseServer();
+    const first = setupLease(fake, { tabId: "tab-a" });
+    try {
+      await flushPromises();
+      expect(first.lease.readOnly.value).toBe(false);
+      const renewSpy = vi
+        .spyOn(fake.server, "renew")
+        .mockRejectedValue(new ApiError({ code: "INTERNAL", message: "boom", status: 500 }));
+      try {
+        await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_EDIT_LEASE_HEARTBEAT_MS);
+        expect(first.lease.readOnly.value).toBe(false);
+        await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_EDIT_LEASE_HEARTBEAT_MS);
+        expect(first.lease.readOnly.value).toBe(false);
+        await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_EDIT_LEASE_HEARTBEAT_MS);
+        expect(first.lease.readOnly.value).toBe(true);
+        expect(first.acquired).toEqual([]);
+
+        // Renew and claim succeed again: the next retry takes the lease back.
+        renewSpy.mockRestore();
+        await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_EDIT_LEASE_HEARTBEAT_MS);
+        expect(first.lease.readOnly.value).toBe(false);
+        expect(first.acquired).toEqual(["reloaded"]);
+      } finally {
+        renewSpy.mockRestore();
+      }
+    } finally {
+      first.stop();
+    }
+  });
+
+  it("stays editable when a single failed renew is followed by a success", async () => {
+    const fake = createFakeLeaseServer();
+    const first = setupLease(fake, { tabId: "tab-a" });
+    try {
+      await flushPromises();
+      expect(first.lease.readOnly.value).toBe(false);
+      const originalRenew = fake.server.renew.bind(fake.server);
+      let failNext = true;
+      const renewSpy = vi
+        .spyOn(fake.server, "renew")
+        .mockImplementation(async (lineage: string, tabId: string) => {
+          if (failNext) {
+            failNext = false;
+            throw new ApiError({ code: "INTERNAL", message: "boom", status: 500 });
+          }
+          return originalRenew(lineage, tabId);
+        });
+      try {
+        await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_EDIT_LEASE_HEARTBEAT_MS);
+        expect(first.lease.readOnly.value).toBe(false);
+        await vi.advanceTimersByTimeAsync(EXAM_WORKSPACE_EDIT_LEASE_HEARTBEAT_MS);
+        expect(first.lease.readOnly.value).toBe(false);
+        expect(first.acquired).toEqual([]);
+      } finally {
+        renewSpy.mockRestore();
+      }
+    } finally {
+      first.stop();
+    }
+  });
 });
