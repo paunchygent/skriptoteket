@@ -29,8 +29,11 @@ backlog_document_profile: contract-derived
   application and web 5735 passed, 59 skipped; frontend full 560 files, 3992
   passed (`evidence/proof/`). Focused frontend proof at d5461f6d: 8 files, 29
   passed; fe-type-check, fe-lint rc 0. Copy packet (component-rendered):
-  `evidence/screenshots/`. Next: independent review and copy review (routed by
-  the orchestrator), then the Mac walk.
+  `evidence/screenshots/`. Review 32297fc0 at 511a5227: changes_requested, one medium F1 (kept gaps
+  break a type change); repaired by U11 (see head), admitted on focused proof
+  without rereview: 214 passed, the reviewer's probe passes for all three
+  targets, lint and typecheck rc 0 (`evidence/proof/f1-*.log`). Next: copy
+  review, then the Mac walk.
 - Walk precondition: the stored staging item_006 is already `gap_fill` with
   `source_fallback` and its gap in its own last paragraph (written by the old
   retype). Choosing Lucktext there takes the same-kind path, flips only the
