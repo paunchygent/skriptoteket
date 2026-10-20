@@ -68,6 +68,57 @@ def _options_from_accepted_values(values: tuple[str, ...]) -> tuple[NativeChoice
     )
 
 
+def _without_kept_links(
+    body: list[dict[str, object]] | tuple[dict[str, object], ...],
+    *,
+    gap_ids: set[str] | None = None,
+) -> list[dict[str, object]]:
+    """Strip kept-gap word links, keeping the visible words and their marks."""
+    cleaned_body: list[dict[str, object]] = []
+    for paragraph in body:
+        raw_segments = paragraph.get("segments")
+        if not isinstance(raw_segments, (list, tuple)):
+            cleaned_body.append(paragraph)
+            continue
+        segments: list[dict[str, object]] = []
+        for segment in raw_segments:
+            if (
+                isinstance(segment, dict)
+                and segment.get("kind") == "text"
+                and segment.get("kept_gap_id") is not None
+                and (gap_ids is None or segment.get("kept_gap_id") in gap_ids)
+            ):
+                segments.append({**segment, "kept_gap_id": None})
+            elif isinstance(segment, dict):
+                segments.append(segment)
+        cleaned_body.append({**paragraph, "segments": segments})
+    return cleaned_body
+
+
+def _kept_gaps_become_options(
+    kept_gaps: tuple[NativeGap, ...],
+) -> tuple[tuple[NativeGap, ...], set[str]]:
+    """Turn kept typed answers into kept dropdown options, like the live gaps.
+
+    Returns the transformed records and the ids of kept gaps without answers,
+    which a revert never keeps and which drop with their links.
+    """
+    transformed: list[NativeGap] = []
+    dropped_ids: set[str] = set()
+    for gap in kept_gaps:
+        if not gap.accepted_values:
+            dropped_ids.add(gap.gap_id)
+            continue
+        transformed.append(
+            NativeGap(
+                gap_id=gap.gap_id,
+                options=_options_from_accepted_values(gap.accepted_values),
+                correct_option_id="choice_001",
+            )
+        )
+    return tuple(transformed), dropped_ids
+
+
 def _rebuild_with_changed_item(
     document: NativeExamDocument, *, item_id: str, changed: NativeExamItem
 ) -> NativeExamDocument:
@@ -187,13 +238,36 @@ def change_item_type(
     drop(
         "accepted_values",
         not values_become_options
-        and any(
-            g.accepted_values or g.automatic_values or g.excluded_automatic_values
-            for g in item.gaps
+        and (
+            any(
+                g.accepted_values or g.automatic_values or g.excluded_automatic_values
+                for g in item.gaps
+            )
+            or (
+                target_kind not in _GAP
+                and any(
+                    gap.accepted_values or gap.automatic_values or gap.excluded_automatic_values
+                    for gap in item.kept_gaps
+                )
+            )
         ),
     )
-    drop("options", any(g.options for g in item.gaps))
-    drop("correct_option_id", any(g.correct_option_id for g in item.gaps))
+    drop(
+        "options",
+        any(g.options for g in item.gaps)
+        or (
+            target_kind is not NativeExamItemKind.INLINE_CHOICE
+            and any(gap.options for gap in item.kept_gaps)
+        ),
+    )
+    drop(
+        "correct_option_id",
+        any(g.correct_option_id for g in item.gaps)
+        or (
+            target_kind is not NativeExamItemKind.INLINE_CHOICE
+            and any(gap.correct_option_id for gap in item.kept_gaps)
+        ),
+    )
     for name in ("match_left", "match_right", "criteria"):
         drop(name, bool(getattr(item, name)))
         data[name] = ()
@@ -284,6 +358,17 @@ def change_item_type(
                 match_pairs=(NativeMatchPair(left_id="left_001", right_id="right_001"),),
             )
     data["answer_key"] = key
+    if values_become_options:
+        transformed_kept_gaps, dropped_kept_ids = _kept_gaps_become_options(item.kept_gaps)
+        data["kept_gaps"] = transformed_kept_gaps
+        if dropped_kept_ids:
+            data["body"] = _without_kept_links(data["body"], gap_ids=dropped_kept_ids)
+    elif item.kept_gaps and target_kind is not NativeExamItemKind.INLINE_CHOICE:
+        # Kept answers survive only as kept dropdown options above: every other
+        # target drops the hidden records while the words stay as plain text
+        # with their marks. Dropdown options never become typed answers.
+        data["kept_gaps"] = ()
+        data["body"] = _without_kept_links(data["body"])
     if item.kind in _GAP and not keep_gaps:
         # Remove interaction markers, not surrounding teacher text or its formatting.
         body = []
