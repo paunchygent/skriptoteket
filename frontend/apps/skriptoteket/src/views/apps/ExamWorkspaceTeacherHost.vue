@@ -4,13 +4,15 @@
  *
  * Domain purpose:
  *   Mount the exam workspace on the signed-in store, which delegates every
- *   server call to the transport modules. A guest host mounts the same view on
- *   a browser store instead. A browser draft left behind by a guest is handed
- *   off to Mina filer once on mount through the handoff controller; the view
- *   renders only after the first attempt settles, opening the handed-off
- *   exam. A draft Mina filer refused for good leaves a notice above the view
- *   with glyph actions (download, remove, and for a full Mina filer retry);
- *   transient failures toast and retry in the background.
+ *   server call to the transport modules. A guest host mounts the same view
+ *   on a browser store instead. A browser draft left behind by a guest is
+ *   handed off to Mina filer once on mount through the handoff controller;
+ *   the view renders only after the first attempt settles, and a successful
+ *   first handoff points the route at the handed-off lineage before the view
+ *   mounts, so the view opens the handed-off exam. A draft Mina filer
+ *   refused for good leaves a notice above the view with glyph actions
+ *   (download, remove, and for a full Mina filer retry); transient failures
+ *   toast and retry in the background.
  *
  * Relationships:
  *   - Mounted by the `/apps/exam-workspace` route and the curated app host.
@@ -44,14 +46,13 @@ const handoff = useExamWorkspaceGuestHandoffController({
 const handoffSettled = ref(false);
 
 onMounted(async () => {
-  let lineageId: string | null = null;
   try {
-    lineageId = await handoff.start();
+    const lineageId = await handoff.start();
+    if (lineageId) {
+      await router.replace({ query: { ...route.query, document: lineageId } });
+    }
   } finally {
     handoffSettled.value = true;
-  }
-  if (lineageId) {
-    await router.replace({ query: { ...route.query, document: lineageId } });
   }
 });
 </script>
