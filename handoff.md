@@ -1,15 +1,15 @@
 ## Current
 
 - 40-04 gap lane (TASK-SKRIPT-40-04-13/-14): lead `73032e62`, branch
-  `codex/task-skript-40-04-gap-toggle-back-remote`, root `01a1541f`. One
-  generation fence for every async result (user, 2026-10-20): FF `0090a024`,
-  U4 `663766bd`, F1 `b9223d61`, F2 `6879c6da`, F3 `303bc263`, F4 `6202fe16`.
-  R1 closed (user): an old-format kept edit is upgraded before the merge.
-  Rereview 6 closed V1-V3; its lock findings R6-1..R6-3 are in repair (head
-  `31fbd255`, 2026-10-20). Next: focused proof, suite slot, rereview 7 of R6-1,
-  then the Mac merge and walk (lease paths, Kurs clear, ticks, drawer hints).
+  `codex/task-skript-40-04-gap-toggle-back-remote`, root `01a1541f`. Released
+  to main as 4951dec2; the Mac walk failed step 5 (route race, CSRF 403).
+  Repairs W1, W2, then rereview 8 repairs FF4 and R8 (head `9483c418`,
+  2026-10-20). Next: frontend suite slot, rereview 9 of R8-1/R8-2, the Mac
+  re-walk of step 5. Status: the task doc's "Resume here".
+
 - 41-02-05 follow-ups (unscheduled): D10 pictures in the guest draft download;
   D24 a server claim per draft_id.
+
 - Closeout docs owed: TASK-SKRIPT-06-18-01 and REP-0050 (both on main).
 
 - [TASK-SKRIPT-REP-0038](docs/backlog/tasks/task-skript-rep-0038-retire-repository-rules-and-route-staging-walks-to-staging-walk.md)
